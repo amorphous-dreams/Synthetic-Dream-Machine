@@ -34,7 +34,7 @@ async function rowsOf(homes: CustodyHomes, files: Record<string, string | Uint8A
 
 describe("custody ⊥ secret-kind — one reading names both axes", () => {
   const SOWN = {
-    ".vessel-key-joshua.json": "{}", "keyhive-archive.bin": "x", [`faces/${"ab".repeat(16)}/veil-archive-g${"a".repeat(64)}.bin`]: "x",
+    ".vessel-key-joshua.json": "{}", "place-archive.bin": "x", [`faces/${"ab".repeat(16)}/veil-archive-g${"a".repeat(64)}.bin`]: "x",
     [`faces/${"ab".repeat(16)}/.persona-group-root-joshua-h0.json`]: "{}", [`faces/${"ab".repeat(16)}/recovery-device-share-h0.bin`]: "x",
     ".vessel-card-joshua.json": "{}",
   };
@@ -45,7 +45,7 @@ describe("custody ⊥ secret-kind — one reading names both axes", () => {
       const rows = await rowsOf(v.homes, SOWN);
       expect(Object.fromEntries([...rows].map(([name, r]) => [name, `${r.keyClass ?? "-"} ${r.custody}`]))).toEqual({
         "vessel-key": "device-minted floor", "vessel-card": "- floor-plain",
-        "keyhive-archive": "device-minted hot", [`veil-archive-g${"a".repeat(64)}`]: "device-minted face-hot",
+        "place-archive": "device-minted hot", [`veil-archive-g${"a".repeat(64)}`]: "device-minted face-hot",
         "persona-root-h0": "seed face-cold", "recovery-device-share-h0": "seed face-cold",
       });
       for (const r of rows.values()) expect(r.keyClass === null || isKeyClass(r.keyClass), r.name).toBe(true);
@@ -59,7 +59,7 @@ describe("custody ⊥ secret-kind — one reading names both axes", () => {
       const io = new FsCustodyIo(v.homes);
       await foundCustody({ io, homes: v.homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "census-test-route" }] }] });
       const rows = await rowsOf(v.homes, { [`faces/${"ab".repeat(16)}/.persona-group-root-joshua-h0.json`]: "{}", [`faces/${"ab".repeat(16)}/recovery-device-share-h0.bin`]: "x" });
-      expect(rows.get("custody-root")).toMatchObject({ keyClass: "device-minted", custody: "hot", reading: "sealed", fault: false });
+      expect(rows.get("gate-root")).toMatchObject({ keyClass: "device-minted", custody: "hot", reading: "sealed", fault: false });
       expect(rows.get("persona-root-h0")).toMatchObject({ keyClass: "seed", custody: "face-cold", reading: "bare", fault: true });
       expect(rows.get("recovery-device-share-h0")).toMatchObject({ keyClass: "seed", custody: "face-cold", reading: "bare", fault: true });
       // CONTROL: the floor's own key reads bare by law, and no fault.

@@ -260,19 +260,19 @@ describe("the custody write census", () => {
   });
 
   test("K2 — PLANTED: a command source that writes a custody row reads red, by each road; one that asks through acts reads clean", () => {
-    const flat = SEALED_ROWS.find((r) => r.row === "keyhive-archive")!;
+    const flat = SEALED_ROWS.find((r) => r.row === "place-archive")!;
     const seatDoor = SEAT_DOORS[0]!;
     const writerFn = [...EVERY_WRITER_FUNCTION][0]!;
     const planted: Array<[string, string, RegExp]> = [
       ["a command that writes a flat row's file",
         `import { writeFileSync } from "node:fs";\nimport { join } from "node:path";\nexport function f(home: string): void { writeFileSync(join(home, "${spell(rowName(flat)!)}"), "[]"); }\n`,
-        /^C3 names the row keyhive-archive/],
+        /^C3 names the row place-archive/],
       ["a command that calls a seat door",
         `import { ${seatDoor} } from "@lararium/node";\nexport async function f(): Promise<void> { await (${seatDoor} as (...a: unknown[]) => Promise<unknown>)("identity", "x", new Uint8Array()); }\n`,
         new RegExp(`^C1 calls the write door ${seatDoor}$`)],
       ["a command that reaches a file-system write by a computed name",
         `import * as fs from "node:fs";\nimport { join } from "node:path";\nexport function f(home: string): void { fs["writeFileSync"](join(home, "${spell(rowName(flat)!)}"), "[]"); }\n`,
-        /^C3 names the row keyhive-archive/],
+        /^C3 names the row place-archive/],
       ["a command that calls a holder method",
         `export async function f(holder: { ${HOLDER_WRITES[0]}: (...a: unknown[]) => Promise<void> }): Promise<void> { await holder.${HOLDER_WRITES[0]}("identity", "x", new Uint8Array()); }\n`,
         new RegExp(`^C1 calls the write door ${HOLDER_WRITES[0]}$`)],

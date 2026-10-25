@@ -240,7 +240,7 @@ describe("custodyStatus", () => {
     if (s.tree.reading !== "readable") throw new Error("unreachable");
     expect(s.tree.slots.map((x) => x.pins)).toEqual([["passphrase"]]);
     const byRow = new Map(s.rows.map((r) => [r.row, r]));
-    expect(byRow.get("custody-root")?.reading).toBe("sealed");
+    expect(byRow.get("gate-root")?.reading).toBe("sealed");
     expect(byRow.get("anchors")?.reading).toBe("bare");
     expect(byRow.get("anchors")?.custody).toBe("face-hot");
   });
@@ -257,7 +257,7 @@ describe("custodyStatus", () => {
     expect(byRow.get("vessel-key")).toMatchObject({ reading: "bare", custody: "floor", fault: false });
     expect(byRow.get("vessel-key")?.bare).toMatch(/floor/);
     expect(byRow.get("s-slots")).toMatchObject({ reading: "bare", fault: false });
-    expect(byRow.get("custody-root")).toMatchObject({ reading: "sealed", bare: null, fault: false });
+    expect(byRow.get("gate-root")).toMatchObject({ reading: "sealed", bare: null, fault: false });
     expect(byRow.get("anchors")).toMatchObject({ reading: "bare", bare: null, fault: true });
     expect(s.outside.map((o) => [o.home, o.file, o.why])).toEqual([["identity", "side-key.json", "owner-only"]]);
     expect(new Set(s.rows.map((r) => `${r.home}/${r.file}`)).size).toBe(s.rows.length);
@@ -370,7 +370,7 @@ describe("runInit seals custody from birth", () => {
         return larIdentityDir();
       });
       expect(existsSync(join(idHome, "s-slots.bin"))).toBe(true);
-      const sealed = readFileSync(join(idHome, "custody-root.bin"));
+      const sealed = readFileSync(join(idHome, "gate-root.bin"));
       expect(Array.from(sealed.subarray(0, VK_SEAL_MAGIC.length))).toEqual(Array.from(VK_SEAL_MAGIC));
 
       const live = await withLarRoot(r, async () => {

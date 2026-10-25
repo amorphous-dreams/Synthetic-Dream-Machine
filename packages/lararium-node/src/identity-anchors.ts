@@ -117,7 +117,7 @@ export function listFaceOrdinals(): number[] {
 }
 
 /** The vessel's own keyhive Archive row. */
-const ARCHIVE_FILE = "keyhive-archive.bin";
+const ARCHIVE_FILE = "place-archive.bin";
 
 /** The keyhive Archive carrier path. The carrier table spells its row through it. */
 export function archivePath(): string {

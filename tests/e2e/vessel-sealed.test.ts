@@ -66,7 +66,7 @@ const PLAIN: Record<string, string> = {};
 
 const identity = (file: string): string => join(lar!.root, "data/lares/identity", file);
 /** The rows this witness watches at rest: the vessel-key family the founding seals, and the face rows beside it. */
-const SEALED_ROWS = ["keyhive-archive.bin"] as const;
+const SEALED_ROWS = ["place-archive.bin"] as const;
 /** A face's row rests in that face's own directory: the file, found in whichever face holds it. */
 const faceDirs = (): string[] => { try { return readdirSync(identity("faces")); } catch { return []; } };
 const faceRowFile = (file: string): string => {

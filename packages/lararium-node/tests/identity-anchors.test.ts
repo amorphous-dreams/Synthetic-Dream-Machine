@@ -88,7 +88,7 @@ describe("the identity home's sealed family", () => {
     writeFileSync(at("anchors-h0.json"), sealed.subarray(0, sealed.length - 9));
     await expect(loadIdentityAnchors()).rejects.toThrow(/anchors-h0\.json reads (torn|key-fails)/);
     writeFileSync(archivePath(), bytesOf("a bare archive from an earlier shape"));
-    await expect(loadIdentityArchive()).rejects.toThrow(/keyhive-archive\.bin reads bare/);
+    await expect(loadIdentityArchive()).rejects.toThrow(/place-archive\.bin reads bare/);
     // a writer never lands over what it cannot open
     await expect(persistIdentityArchive(bytesOf("fresh"))).rejects.toThrow();
     expect(readFileSync(archivePath()).equals(Buffer.from(bytesOf("a bare archive from an earlier shape")))).toBe(true);
@@ -99,7 +99,7 @@ describe("the identity home's sealed family", () => {
     await persistIdentityArchive(bytesOf("archive"));
     await ensureFaceCustodyOfGroup(anchors.personaGroupId);
     await persistVeilArchive(bytesOf("veil"), anchors.personaGroupId);
-    const before = ["anchors-h0.json", "keyhive-archive.bin", veilArchiveFile(anchors.personaGroupId)].map((f) => readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : f.startsWith("anchors-") ? handleRowPathIn(c.homes.identity, f) : at(f)));
+    const before = ["anchors-h0.json", "place-archive.bin", veilArchiveFile(anchors.personaGroupId)].map((f) => readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : f.startsWith("anchors-") ? handleRowPathIn(c.homes.identity, f) : at(f)));
     await c.holder.lock();
     await expect(loadIdentityAnchors()).rejects.toThrow(CustodyLocked);
     await expect(listAnchoredPersonas()).rejects.toThrow(CustodyLocked);
@@ -109,7 +109,7 @@ describe("the identity home's sealed family", () => {
     await expect(persistIdentityArchive(bytesOf("floor"))).rejects.toThrow(CustodyLocked);
     await expect(persistVeilArchive(bytesOf("floor"), anchors.personaGroupId)).rejects.toThrow(CustodyLocked);
     expect(existsSync(at("anchors-h1.json"))).toBe(false);
-    ["anchors-h0.json", "keyhive-archive.bin", veilArchiveFile(anchors.personaGroupId)].forEach((f, i) => {
+    ["anchors-h0.json", "place-archive.bin", veilArchiveFile(anchors.personaGroupId)].forEach((f, i) => {
       expect(readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : f.startsWith("anchors-") ? handleRowPathIn(c.homes.identity, f) : at(f)).equals(before[i]!), f).toBe(true);
     });
     // no seat at all reads the same floor: every seat cleared, the suites' when-needed seat among them
@@ -123,7 +123,7 @@ describe("the identity home's sealed family", () => {
     await ensureFaceCustodyOfGroup(anchors.personaGroupId);
     await persistVeilArchive(bytesOf("veil-under-A"), anchors.personaGroupId);
     await persistIdentityAnchors(anchors);
-    const files = ["keyhive-archive.bin"];
+    const files = ["place-archive.bin"];
     const standing = files.map((f) => readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : f.startsWith("anchors-") ? handleRowPathIn(c.homes.identity, f) : at(f)));
     const anchorStanding = readFileSync(at("anchors-h0.json"));
     const veilStanding = readFileSync(veilArchivePath(anchors.personaGroupId));
@@ -179,7 +179,7 @@ describe("the identity home's sealed family", () => {
   });
 
   test("A8 an archive never rests in the clear", async () => {
-    const marker = bytesOf("PLAINTEXT-MARKER-keyhive-archive");
+    const marker = bytesOf("PLAINTEXT-MARKER-place-archive");
     await persistIdentityArchive(marker);
     const rest = readFileSync(archivePath());
     expect(readVkCarrier(rest)).toBe("sealed");

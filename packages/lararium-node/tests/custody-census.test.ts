@@ -11,7 +11,7 @@ const SPEC: ReadonlyArray<readonly [row: string, classes: readonly CustodyPart[]
   ["vessel-card", ["F"], false], ["charter", ["F"], false], ["carried-charter", ["F"], false],
   ["carriage-consent", ["F"], false], ["nexus-key-line", ["F"], false], ["carriage-admit", ["F"], false],
   ["sealed-rest", ["F"], false], ["sealed-own", ["F"], true], ["sealed-chunk", ["F"], false],
-  ["custody-root", ["D"], true], ["keyhive-archive", ["D"], true], ["veil-archive", ["D"], true], ["face-atom", ["D"], false], ["face-anchor", ["D"], false], ["face-atom-ask", ["D"], false], ["face-owner", ["D"], false],
+  ["gate-root", ["D"], true], ["place-archive", ["D"], true], ["veil-archive", ["D"], true], ["face-atom", ["D"], false], ["face-anchor", ["D"], false], ["face-atom-ask", ["D"], false], ["face-owner", ["D"], false],
   ["enroll-pending", ["D"], true], ["grant-pending", ["D"], true], ["admissions", ["D"], true],
   ["anchors", ["D"], false], ["persona-roster", ["D"], false],
   ["persona-petnames", ["D"], false], ["persona-declarations", ["D"], false],
@@ -80,7 +80,7 @@ describe("the node custody census (K15 step zero)", () => {
     const joints = Object.fromEntries(table.filter((r) => r.target.joint !== null).map((r) => [r.row, r.target.joint]));
     expect(joints).toEqual({
       "vessel-key": "place-signer", "s-slots": "place-signer",
-      "keyhive-archive": "archive-row-selector", "veil-archive": "archive-row-selector",
+      "place-archive": "archive-row-selector", "veil-archive": "archive-row-selector",
     });
   });
 
@@ -96,7 +96,7 @@ describe("the node custody census (K15 step zero)", () => {
       expect(refusals(retarget("walk", { classes: [], lead: true, joint: null }))).toContain("walk: empty classes");
     });
     it("refuses an S row the spec does not name", () => {
-      expect(refusals(retarget("custody-root", { classes: ["S"], lead: true, joint: null }))).toContain("custody-root: S on a row the spec does not name");
+      expect(refusals(retarget("gate-root", { classes: ["S"], lead: true, joint: null }))).toContain("gate-root: S on a row the spec does not name");
     });
     it("refuses an S row that is neither LEAD nor joint", () => {
       expect(refusals(retarget("sk-slots", { classes: ["S"], lead: false, joint: null }))).toContain("sk-slots: S row neither LEAD nor joint");

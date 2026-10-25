@@ -71,9 +71,9 @@ const SOWN: Record<string, string> = {
   "identity/.vessel-card-joshua.json":          "{}",
   "identity/s-slots.bin":                      "slots",
   "identity/sk-slots.bin":                      "serving",
-  "identity/custody-root.bin":                  "root",
+  "identity/gate-root.bin":                  "root",
   [`identity/faces/${FCID}/outbox-key-h0.bin`]: "x",
-  "identity/keyhive-archive.bin":               "x",
+  "identity/place-archive.bin":               "x",
   [`identity/faces/${FCID}/veil-archive-g${"a".repeat(64)}.bin`]: "x",
   [`identity/faces/${FCID}/face-atom-g${"a".repeat(64)}.bin`]: "x",
   [`identity/faces/${FCID}/face-anchor-g${"a".repeat(64)}.json`]: "x",
@@ -131,7 +131,7 @@ const RULED: Record<string, CustodyClass> = {
   "sealed-rest": "floor-plain", "sealed-own": "floor-plain", "sealed-chunk": "floor-plain",
   // The outbox's parcels rest under the outbox key, which its face key seals in a face-hot row.
   "sealed-outbox": "outbox", "outbox-key": "face-hot",
-  "custody-root": "hot", "keyhive-archive": "hot", "veil-archive": "face-hot", "face-anchor": "face-hot", "face-atom": "face-hot", "face-atom-ask": "face-hot", "face-owner": "face-hot",
+  "gate-root": "hot", "place-archive": "hot", "veil-archive": "face-hot", "face-anchor": "face-hot", "face-atom": "face-hot", "face-atom-ask": "face-hot", "face-owner": "face-hot",
   "fk-slots": "floor", "face-index": "floor-plain",
   "enroll-pending": "hot", "grant-pending": "hot", "guardian-set": "face-hot", "admissions": "hot", "anchors": "face-hot",
   "persona-roster": "face-hot", "persona-petnames": "face-hot", "persona-declarations": "face-hot",
@@ -200,7 +200,7 @@ describe("the carrier table", () => {
       expect(at("seal", "transitions.json")).toMatchObject({ row: "transitions", custody: "floor-plain" });
       expect(at("identity", `faces/${FCID}/cofound-h0-${"5a".repeat(32)}.json`)).toMatchObject({ row: "cofound", custody: "face-hot", face: 0 });
       expect(at("identity", `faces/${FCID}/cadence-key-h0-${"7c".repeat(16)}.bin`)).toMatchObject({ row: "cadence-key", custody: "face-cold", face: 0, keyClass: "device-minted" });
-      expect(at("identity", "keyhive-archive.bin")).toMatchObject({ row: "keyhive-archive", face: "vessel", bare: null });
+      expect(at("identity", "place-archive.bin")).toMatchObject({ row: "place-archive", face: "vessel", bare: null });
       expect(at("identity", `faces/${FCID}/veil-archive-g${"a".repeat(64)}.bin`)).toMatchObject({ row: "veil-archive", face: `group:${"a".repeat(64)}`, bare: null });
       expect(at("identity", `faces/${FCID}/face-atom-g${"a".repeat(64)}.bin`)).toMatchObject({ row: "face-atom", face: `group:${"a".repeat(64)}`, bare: null });
       expect(at("identity", `faces/${FCID}/face-atom-ask-${"b".repeat(64)}.bin`)).toMatchObject({ row: "face-atom-ask", face: `fcid:${FCID}`, bare: null });
@@ -296,7 +296,7 @@ describe("the VK rotation reads its carriers from the table", { timeout: 30_000 
       const carriers = vkSealedCarriers(v.homes);
       expect(carriers.map((c) => c.name).sort()).toEqual(v.sealed.map((c) => c.name).sort());
       expect(carriers.some((c) => c.name.includes("/hosting-h"))).toBe(false); // hosting belongs to a face key
-      expect(carriers.find((c) => c.name === "identity/custody-root.bin")).toEqual(custodyRootCarrier(v.homes.identity));
+      expect(carriers.find((c) => c.name === "identity/gate-root.bin")).toEqual(custodyRootCarrier(v.homes.identity));
       expect(carriers.some((c) => c.name.startsWith("seal/transition"))).toBe(false);
     } finally { v.drop(); }
   });
@@ -432,10 +432,10 @@ describe("the census names every private file outside the table", () => {
     const { homes, root } = freshHomes();
     try {
       sownOwnerOnly(homes);
-      sow(homes, { "identity/custody-root.bin.s-sealing": "x", [`identity/faces/${FCID}/hosting-h0/${HOST}/state.json.s-rotating`]: "x", "vessel/sealed/lockbox/TMP-00aa": "x" });
+      sow(homes, { "identity/gate-root.bin.s-sealing": "x", [`identity/faces/${FCID}/hosting-h0/${HOST}/state.json.s-rotating`]: "x", "vessel/sealed/lockbox/TMP-00aa": "x" });
       expect(outsideTheTable(homes).map((o) => [o.home, o.file, o.why])).toEqual([
-        ["identity", "custody-root.bin.s-sealing", "sidecar"],
         ["identity", `faces/${FCID}/hosting-h0/${HOST}/state.json.s-rotating`, "sidecar"],
+        ["identity", "gate-root.bin.s-sealing", "sidecar"],
         ["storage", "sealed/lockbox/TMP-00aa", "sidecar"],
       ]);
     } finally { rmSync(root, { recursive: true, force: true }); }

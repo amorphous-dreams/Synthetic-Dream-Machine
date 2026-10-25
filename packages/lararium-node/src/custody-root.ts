@@ -25,7 +25,7 @@
  *
  * ── THE CARRIER ─────────────────────────────────────────────────────────────────────────────────
  * The carrier rests at `custodyRootPath()`, written once at founding through the one sealed writer
- * (`sealCustodyRoot`). Its seal names it by home and file (`identity/custody-root.bin`), the name the
+ * (`sealCustodyRoot`). Its seal names it by home and file (`identity/gate-root.bin`), the name the
  * carrier table's VK-sealed census gives it, so the AAD binds where the bytes rest.
  */
 
@@ -61,7 +61,7 @@ export class CustodyRootRefused extends Error {
   }
 }
 
-const CARRIER_FILE = "custody-root.bin";
+const CARRIER_FILE = "gate-root.bin";
 
 /** The custody root carrier's path in the identity home. */
 export function custodyRootPath(identityDir: string = larIdentityDir()): string {

@@ -63,7 +63,7 @@ let archiveAbsentBefore = false;
 const sealedFiles = (): Record<string, Buffer> => {
   const out: Record<string, Buffer> = {};
   for (const f of readdirSync(larIdentityDir())) {
-    if (/^(anchor-roster\.json|keyhive-archive\.bin)$/.test(f)) out[f] = readFileSync(join(larIdentityDir(), f));
+    if (/^(anchor-roster\.json|place-archive\.bin)$/.test(f)) out[f] = readFileSync(join(larIdentityDir(), f));
   }
   for (const f of faceRowNames().filter((name) => /^anchors-h\d+\.json$/.test(name))) out[f] = readFileSync(handleRowPath(f));
   for (const [fcid, f] of listFaceFiles(larIdentityDir(), readFaceIndexSync(larIdentityDir()))) {

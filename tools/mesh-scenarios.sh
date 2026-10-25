@@ -1608,7 +1608,7 @@ run_seal() {
   local ROW HEAD BARE="" VEIL_ROWS
   VEIL_ROWS=$($COMPOSE exec -T lararium-a sh -c 'ls -1 /state/data/lares/identity/faces/*/ 2>/dev/null' 2>/dev/null | tr -d '\r' | grep -E '^veil-archive-g[0-9a-f]{64}\.bin$' || true)
   [ -n "$VEIL_ROWS" ] || BARE=" veil-archive-g<64 lowercase hex>.bin (missing)"
-  for ROW in keyhive-archive.bin; do
+  for ROW in place-archive.bin; do
     HEAD=$($COMPOSE exec -T lararium-a sh -c "head -c 12 /state/data/lares/identity/$ROW 2>/dev/null" 2>/dev/null | tr -d '\r')
     [ "$HEAD" = "lares-s-seal" ] || BARE="$BARE $ROW"
   done

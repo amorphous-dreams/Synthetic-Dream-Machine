@@ -276,7 +276,7 @@ async function found(io: CustodyIo): Promise<{ vk: VesselKey; treePath: string; 
   await commitSlotTree({ io, path: treePath, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [pass] }), carriers: vkSealedCarriers(homes) });
   const sealed: SealedCarrier[] = [
     { name: "identity/.persona-enroll-pending.json", path: join(homes.identity, ".persona-enroll-pending.json"), keyClass: "relation" },
-    { name: "identity/custody-root.bin", path: join(homes.identity, "custody-root.bin"), keyClass: "device-minted" },
+    { name: "identity/gate-root.bin", path: join(homes.identity, "gate-root.bin"), keyClass: "device-minted" },
     { name: "identity/.persona-grant-pending.json", path: join(homes.identity, ".persona-grant-pending.json"), keyClass: "relation" },
   ];
   for (const c of sealed) await writeSealedCarrier({ io, vk, treePath, carrier: c, plaintext: text(`${c.name}-v1`) });
@@ -326,7 +326,7 @@ describe("PROOF 3 — the old-shape refusal fires before any write", () => {
   test("a standing cleartext pending-enrollment row and no slot tree: the founding refuses as an occupied store, and every byte stands", async () => {
     const io = new FsCustodyIo(homes);
     writeFileSync(join(homes.identity, ".persona-enroll-pending.json"), "{\"cleartext\":true}");
-    writeFileSync(join(homes.identity, "custody-root.bin"), "bare-root");
+    writeFileSync(join(homes.identity, "gate-root.bin"), "bare-root");
     const before = treeHash(root);
     const vk = mintVk();
     const err = await commitSlotTree({
@@ -334,7 +334,7 @@ describe("PROOF 3 — the old-shape refusal fires before any write", () => {
       tree: bindSlot(null, vk, { t: 1, pins: [pass] }), carriers: vkSealedCarriers(homes),
     }).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(OccupiedStoreRefusal);
-    expect((err as OccupiedStoreRefusal).standing.map((s) => s.carrier.name).sort()).toEqual(["identity/.persona-enroll-pending.json", "identity/custody-root.bin"]);
+    expect((err as OccupiedStoreRefusal).standing.map((s) => s.carrier.name).sort()).toEqual(["identity/.persona-enroll-pending.json", "identity/gate-root.bin"]);
     expect((err as OccupiedStoreRefusal).standing.find((s) => s.carrier.keyClass === "relation")).toBeDefined();   // the table's class rides the list
     expect(treeHash(root)).toBe(before);
     expect(existsSync(vkSlotsPath(homes.identity))).toBe(false);

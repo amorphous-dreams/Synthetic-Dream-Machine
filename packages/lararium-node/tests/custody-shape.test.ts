@@ -87,13 +87,13 @@ describe("readCustodyShape — the custody shape refusal reads before any write"
       sow(homes, {
         "identity/.vessel-key.json": "{}",
         "identity/s-slots.bin": "slots",
-        "identity/keyhive-archive.bin": otherSchemeBytes("kh"),
+        "identity/place-archive.bin": otherSchemeBytes("kh"),
       });
       for (const r of [reading, { sealed: () => true }]) {
         const shape = readCustodyShape(homes, r);
         expect(shape.kind).toBe("occupied");
         if (shape.kind === "occupied") {
-          expect(shape.offenders).toEqual([{ home: "identity", file: "keyhive-archive.bin", row: "keyhive-archive", reason: "unknown-envelope" }]);
+          expect(shape.offenders).toEqual([{ home: "identity", file: "place-archive.bin", row: "place-archive", reason: "unknown-envelope" }]);
         }
       }
     } finally { rmSync(root, { recursive: true, force: true }); }
@@ -115,7 +115,7 @@ describe("readCustodyShape — the custody shape refusal reads before any write"
     try {
       sow(homes, {
         "identity/s-slots.bin": "slots",
-        "identity/custody-root.bin": sealedBytes("root"),
+        "identity/gate-root.bin": sealedBytes("root"),
         [`identity/faces/${"ab".repeat(16)}/walk-h0-0123456789abcdef0123456789abcdef.json`]: '{"wallet":"plain"}',
         "nexus/transitions.json": "{}",
       });
@@ -160,7 +160,7 @@ describe("readCustodyShape — the custody shape refusal reads before any write"
         "identity/.vessel-key.json": "{}",
         "identity/.vessel-kel.json": "{}",
         "identity/s-slots.bin": "slots",
-        "identity/custody-root.bin": sealedBytes("root"),
+        "identity/gate-root.bin": sealedBytes("root"),
       });
       expect(readCustodyShape(homes, reading)).toEqual({ kind: "slotted" });
     } finally { rmSync(root, { recursive: true, force: true }); }
@@ -172,7 +172,7 @@ describe("readCustodyShape — the custody shape refusal reads before any write"
       sow(homes, {
         "identity/.vessel-key.json": "{}",
         "identity/s-slots.bin": "slots",
-        "identity/custody-root.bin": sealedBytes("root"),
+        "identity/gate-root.bin": sealedBytes("root"),
         [`identity/faces/${"ab".repeat(16)}/.persona-group-root-h0.json`]: fckSealedBytes("seed"),
         [`identity/faces/${"ab".repeat(16)}/.handle-book-h0.json`]: fckSealedBytes("book"),
         "vessel/hosting/0123456789abcdef0123456789abcdef/state.json": sealedBytes("state"),
