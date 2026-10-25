@@ -81,8 +81,14 @@ def diversity_parents(rows,limit,*,specialist=False):
 
 class SurrogatePreview:
     """Uncertainty/novelty-aware *ordering* only. No model may waive an exact audit."""
-    def __init__(self,bounds,archive,*,min_samples=None,before_generation=None):
+    def __init__(self,bounds,archive,*,min_samples=None,before_generation=None,
+                 activation_loci=()):
         self.keys=list(bounds)
+        activation_loci=tuple(activation_loci)
+        if len(set(activation_loci))!=len(activation_loci) or any(
+                k not in bounds for k in activation_loci):
+            raise ValueError('Activation loci must be distinct declared genome keys')
+        self.activation_indices=tuple(self.keys.index(k) for k in activation_loci)
         # A dozen scores in a 29-locus grammar cannot validate a global
         # predictor. Only use model-based ordering after a conservative
         # observations-per-dimension floor; earlier epochs still explore by
@@ -105,12 +111,23 @@ class SurrogatePreview:
     def predict(self,genome):
         x=(np.array([genome[k] for k in self.keys],dtype=float)-self.low)/self.spread
         if not np.isfinite(x).all():raise ValueError('Invalid candidate vector')
-        if not len(self.y):return {'predicted_loss':None,'novelty':1.,'neighbors':0}
-        dist=np.sqrt(np.mean((self.x-x)**2,axis=1))
+        if not len(self.y):
+            return {'predicted_loss':None,'novelty':1.,'neighbors':0}
+        # Do not extrapolate measured inactive-topology fitness onto newly
+        # activated geometry. Preserve new structural branches as high-
+        # uncertainty exploration until their own native scores exist.
+        cohort=np.ones(len(self.y),dtype=bool)
+        for index in self.activation_indices:
+            cohort &= (self.x[:,index]>=.5)==(x[index]>=.5)
+        if not cohort.any():
+            return {'predicted_loss':None,'novelty':1.,'neighbors':0}
+        members=self.x[cohort]
+        losses=self.y[cohort]
+        dist=np.sqrt(np.mean((members-x)**2,axis=1))
         nearest=np.argsort(dist,kind='stable')[:min(5,len(dist))]
         weights=1/np.maximum(dist[nearest],.015)
-        value=float(np.dot(weights,self.y[nearest])/weights.sum())
-        return {'predicted_loss':value if self.ready else None,
+        value=float(np.dot(weights,losses[nearest])/weights.sum())
+        return {'predicted_loss':value if len(losses)>=self.min_samples else None,
                 'novelty':float(dist.min()),'neighbors':len(nearest)}
     def priority(self,genome):
         result=self.predict(genome)
@@ -247,16 +264,17 @@ def infer_locus_interactions(bounds,archive,*,before_generation=None,
         raise ValueError('Interaction data must be finite')
     x=data-data.mean(axis=0)
     target=y-y.mean()
-    coefficients=np.linalg.lstsq(np.column_stack([np.ones(len(rows)),x]),
-                                 target,rcond=None)[0]
-    residual=target-np.column_stack([np.ones(len(rows)),x])@coefficients
+    baseline=np.column_stack([np.ones(len(rows)),x])
+    if np.linalg.matrix_rank(baseline)<len(keys)+1:
+        return []
+    coefficients=np.linalg.lstsq(baseline,target,rcond=None)[0]
+    residual=target-baseline@coefficients
     observed=[]
     for i in range(len(keys)):
         for j in range(i+1,len(keys)):
             v=x[:,i]*x[:,j]
             # Remove additive projections from the interaction feature.
-            v=v-np.column_stack([np.ones(len(rows)),x])@np.linalg.lstsq(
-                np.column_stack([np.ones(len(rows)),x]),v,rcond=None)[0]
+            v=v-baseline@np.linalg.lstsq(baseline,v,rcond=None)[0]
             den=float(np.linalg.norm(v)*np.linalg.norm(residual))
             effect=abs(float(v@residual)/den) if den>1e-12 else 0.
             if effect>=threshold:

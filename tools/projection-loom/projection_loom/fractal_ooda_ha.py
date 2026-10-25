@@ -778,7 +778,11 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                 builds = {}
                 visual_index = {}
                 from .capability_stack import digest as genome_digest
-                surrogate=SurrogatePreview(bounds,archive,before_generation=i+1) if breeding else None
+                surrogate=SurrogatePreview(
+                    bounds,archive,before_generation=i+1,
+                    activation_loci=tuple(sorted({step.activation for step
+                                                  in recipe.steps if step.activation}))
+                    ) if breeding else None
                 emitter_credit=adaptive_priorities(batch,archive,before_generation=i+1) if breeding else {}
                 by_genome={}
                 for proposal in batch:
