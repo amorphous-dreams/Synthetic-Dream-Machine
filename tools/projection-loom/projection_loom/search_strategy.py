@@ -9,7 +9,7 @@ FAMILY_REGIONS = {
     'terraces':(1,2,3,4), 'crown':(0,1,2), 'keep':(0,1,2),
 }
 
-def regional_loss(source, candidate, family):
+def regional_loss(source, candidate, family, *, attention=None):
     """Small regional feedback term; fixed artwork view, not surveyed component evidence."""
     if family not in FAMILY_REGIONS:
         raise ValueError('Unknown architectural family')
@@ -17,9 +17,16 @@ def regional_loss(source, candidate, family):
     if a.dtype!=np.dtype('bool') or b.dtype!=np.dtype('bool') or a.shape!=b.shape or a.ndim!=2:
         raise ValueError('Regional loss needs matching binary source-view masks')
     bands=np.array_split(np.arange(a.shape[0]),6)
-    rows=np.concatenate([bands[n] for n in FAMILY_REGIONS[family]])
-    u=np.logical_or(a[rows],b[rows]).sum()
-    return float(.04*(1-float(np.logical_and(a[rows],b[rows]).sum()/u))) if u else 0.
+    if attention is not None:
+        region=np.asarray(attention)
+        if region.dtype!=np.dtype('bool') or region.shape!=a.shape or not region.any():
+            raise ValueError('Feature attention needs a nonempty matching binary mask')
+        x,y=a[region],b[region]
+    else:
+        rows=np.concatenate([bands[n] for n in FAMILY_REGIONS[family]])
+        x,y=a[rows],b[rows]
+    u=np.logical_or(x,y).sum()
+    return float(.04*(1-float(np.logical_and(x,y).sum()/u))) if u else 0.
 
 def pareto_front(rows):
     """Keep nondominated audited observations; hard native gates happen upstream."""
@@ -197,3 +204,59 @@ def multiscale_source_loss(source,candidate):
         contour=.5*(float(np.mean(db[edge_a]))+float(np.mean(da[edge_b])))/8.
     return {'macro':float(.04*np.mean(levels)),
             'contour':float(.025*contour)}
+
+def infer_locus_interactions(bounds,archive,*,before_generation=None,
+                             min_samples=24,threshold=.25,max_pairs=24):
+    """Observational residual associations, never causal gene interaction claims.
+
+    Fit a baseline additive linear least-squares model, then rank product-term
+    association with held residuals. Only stored scored native-admitted rows
+    enter; generation cutoffs keep scheduling deterministic on replay.
+    """
+    keys=sorted(bounds)
+    rows=sorted((r for r in archive.data['members'].values()
+        if before_generation is None or int(r['id'].split('/')[0])<before_generation),
+        key=lambda r:r['id']) if archive else []
+    if len(rows)<min_samples or len(keys)<2:return []
+    data=np.array([[(r['genome'][k]-bounds[k][0])/(bounds[k][1]-bounds[k][0])
+                    for k in keys] for r in rows],dtype=float)
+    y=np.array([r['losses']['silhouette'] for r in rows],dtype=float)
+    if not np.isfinite(data).all() or not np.isfinite(y).all():
+        raise ValueError('Interaction data must be finite')
+    x=data-data.mean(axis=0)
+    target=y-y.mean()
+    coefficients=np.linalg.lstsq(np.column_stack([np.ones(len(rows)),x]),
+                                 target,rcond=None)[0]
+    residual=target-np.column_stack([np.ones(len(rows)),x])@coefficients
+    observed=[]
+    for i in range(len(keys)):
+        for j in range(i+1,len(keys)):
+            v=x[:,i]*x[:,j]
+            # Remove additive projections from the interaction feature.
+            v=v-np.column_stack([np.ones(len(rows)),x])@np.linalg.lstsq(
+                np.column_stack([np.ones(len(rows)),x]),v,rcond=None)[0]
+            den=float(np.linalg.norm(v)*np.linalg.norm(residual))
+            effect=abs(float(v@residual)/den) if den>1e-12 else 0.
+            if effect>=threshold:
+                observed.append({'a':keys[i],'b':keys[j],
+                    'strength':round(effect,9),'samples':len(rows),
+                    'evidence':'observational-association'})
+    return sorted(observed,key=lambda item:(-item['strength'],item['a'],item['b']))[:max_pairs]
+
+def adaptive_foci(family_focus, interactions, *, max_extra=2):
+    """Expand each family with bounded implicated partners; keep original loci."""
+    if type(max_extra) is not int or max_extra<0 or max_extra>8:
+        raise ValueError('Invalid interaction expansion budget')
+    results={}
+    for family, focus in family_focus.items():
+        ordered=list(dict.fromkeys(focus))
+        additions=0
+        for item in interactions:
+            a,b=item['a'],item['b']
+            if additions>=max_extra:break
+            if (a in ordered) != (b in ordered):
+                other=b if a in ordered else a
+                if other not in ordered:
+                    ordered.append(other); additions+=1
+        results[family]=tuple(ordered)
+    return results
