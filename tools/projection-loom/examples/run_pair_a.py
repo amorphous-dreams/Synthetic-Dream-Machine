@@ -138,7 +138,7 @@ def assess(subject, *, passes=2, count=7, exact=5, detail=4, seed=81):
         overlay[...,1]=(candidate&~baseline)*240
         overlay[...,2]=(baseline&candidate)*210
         Image.fromarray(overlay).save(result_dir/f'overlay_{view}.png')
-    summary={'schema':'projection-loom/pair-a-control/v1',
+    summary={'schema':'projection-loom/pair-a-control',
              'subject':subject,'external_sources_ingested':False,
              'source_test_type':'locally authored SCAD/STL control (not third party)',
              'evidence_state':'synthetic','units':source_pts.units,
