@@ -146,7 +146,7 @@ def acquire(source_id, cache, *, lockfile=None, bootstrap=False, offline=False,
     lock = Path(lockfile) if lockfile is not None else None
     if lock and lock.exists():
         obj = json.loads(lock.read_text())
-        if obj.get('schema') != 'projection-loom/reference-lock/v1':
+        if obj.get('schema') != 'projection-loom/reference-lock':
             raise ValueError('Unrecognized reference lock schema')
         expected = dict(obj.get('sources', {}))
     if not bootstrap and source_id not in expected:
@@ -192,7 +192,7 @@ def acquire(source_id, cache, *, lockfile=None, bootstrap=False, offline=False,
     finally:
         if stage.exists():
             shutil.rmtree(stage)
-    receipt = {'schema': 'projection-loom/reference-receipt/v1', 'source': source_id,
+    receipt = {'schema': 'projection-loom/reference-receipt', 'source': source_id,
                'source_page': spec['source_page'], 'license': spec['license'],
                'sha256': digest, 'bytes': len(raw), 'locked': source_id in expected,
                'files': listing, 'archive_path': str(archive),
@@ -208,7 +208,7 @@ def acquire(source_id, cache, *, lockfile=None, bootstrap=False, offline=False,
         expected[source_id] = {'sha256': digest, 'bytes': len(raw),
                                'source_page': spec['source_page'], 'license': spec['license']}
         lock.parent.mkdir(parents=True, exist_ok=True)
-        lock.write_text(json.dumps({'schema': 'projection-loom/reference-lock/v1',
+        lock.write_text(json.dumps({'schema': 'projection-loom/reference-lock',
                                     'sources': dict(sorted(expected.items()))}, indent=2)+'\n')
     return receipt
 
