@@ -214,9 +214,8 @@ export function scanFiles(
     const base       = tree.baseAt(syncedTreeKey(toBag, uri), file);
     const syncedHash = base?.disk ?? null;
     const syncedRecordsHash = base !== null && !digestsEqual(base.disk, base.records) ? base.records : undefined;
-    // Both sides ride tagged now (`carrierHash` emits `sha256:…`; the tree stores
-    // the same tagged form) — `digestsEqual` still normalizes the two spellings a
-    // tagged digest can carry (canonical `:` vs legacy SRI `-`).
+    // Both sides ride tagged (`carrierHash` emits `sha256:…`; the tree stores the same
+    // tagged form); `digestsEqual` compares them as `(algo, hex)`.
     const status: ScanStatus =
       syncedHash === null ? "new" : digestsEqual(diskHash, syncedHash) ? "unchanged" : "changed";
     rows.push({ file, uri, text, diskHash, syncedHash, ...(syncedRecordsHash !== undefined ? { syncedRecordsHash } : {}), status, ext, binary, ...(meta !== undefined ? { meta } : {}) });

@@ -352,9 +352,8 @@ cryptographic history.'' The move:
 
 Four parts carry it:
 
-# ''The recovery root rides SEPARATE entropy'' — a random seed independent of the operational
-  (persona-root) signing seed, exactly as the charter reserve's seed rides "a SEPARATE 32-byte CSPRNG
-  seed — NEVER the live signing seed" (the retired charter reserve rode separate entropy the same way; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>).
+# ''The recovery root rides SEPARATE entropy'' — a random 32-byte CSPRNG seed independent of the operational
+  (persona-root) signing seed, NEVER the live signing seed.
   A thief of today's operational key learns ''nothing'' about the recovery authority; a holder of the
   recovery authority signs ''only rotations'', never content.
 # ''The identifier pre-COMMITS the recovery authority at founding'' — the persona's inception folds a
@@ -697,6 +696,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;e8CkKPs6vM-nJr_9WWGy6LWU9QnXYPd1slMRZgmpZjU
+<<^ code="&#x0003;">>ni:///sha-256;3_Ltxk6zCEH3XzMVBBW235twWXUKoRrWq3E3eRlq1Xg
 
 <<^ code="&#x0004;" -> to="?">>

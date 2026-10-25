@@ -3,11 +3,9 @@
  * variants are installed — stable + Insiders, remote-server (WSL/SSH) + local-profile. Backs up
  * before each change; preserves the operator's other servers.
  *
- * The lares house owns this seat. A per-editor *mempalace* MCP lets each editor open the palace
- * itself, and Chroma tolerates one writer — N harnesses on one index is the contention that truncates
- * the HNSW segment and forces a drift-quarantine. So VS Code reaches memory THROUGH the lares house
- * (`lares_mcp.py` over the memory sensorium), and a stale mempalace entry is reaped in the same pass,
- * so a profile another wiring touched heals on the next stand.
+ * The lares house owns this seat. Chroma tolerates one writer — N harnesses on one index is the
+ * contention that truncates the HNSW segment and forces a drift-quarantine. So VS Code reaches memory
+ * THROUGH the lares house (`lares_mcp.py` over the memory sensorium) and opens no palace of its own.
  *
  * VS Code went native-MCP in v1.102. Schema (DISTINCT from Claude/Cursor's `mcpServers`): top-level
  * key is **`servers`**. Under a remote window the config lives on the remote-server side
@@ -126,9 +124,6 @@ export function wireVscode(opts: { home?: string } = {}): VscodeWireResult {
     const servers = (cfg.servers ??= {});
     let dirty = false;
 
-    // A harness holding its own palace holder reaches PAST the node into the store.
-    if (servers["mempalace"] !== undefined) { delete servers["mempalace"]; dirty = true; }
-
     // Converge on the RESOLVED spawn, never on mere presence. A seat aimed at a re-homed script (a
     // package that moves its holder) otherwise sits drifted forever while the wire reports it present —
     // the door stays shut, the health line stays green. Re-aim whenever the registered command/args drift.
@@ -147,7 +142,7 @@ export function wireVscode(opts: { home?: string } = {}): VscodeWireResult {
     if (existsSync(mcpPath)) copyFileSync(mcpPath, mcpPath + ".bak");
     mkdirSync(v.dir, { recursive: true });
     writeFileSync(mcpPath, JSON.stringify(cfg, null, 2) + "\n", "utf8");
-    steps.push({ item: v.name, action: "wired", detail: `${mcpPath} — the memory sensorium (stale mempalace reaped)` });
+    steps.push({ item: v.name, action: "wired", detail: `${mcpPath} — the memory sensorium` });
     changed = true;
   }
 

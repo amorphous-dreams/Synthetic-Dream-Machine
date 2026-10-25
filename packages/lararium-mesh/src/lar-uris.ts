@@ -369,8 +369,7 @@ export const PERSONA_NAMESPACE    = bagUri("persona");
 
 /** e.g. recipeUri("lararium", "default") → "lar:///ha.ka.ba/lararium/recipes/default" */
 export function recipeUri(root: string, name: string): string {
-  // Root-aware: a full bag URI (`bags/x`) passes through; a bare slug or legacy `@slug`
-  // normalizes to the bag root, so every call site follows the bags/ move untouched.
+  // Root-aware: a full bag URI (`bags/x`) passes through; a bare slug normalizes to the bag root.
   const base = root.startsWith("lar:") ? root : bagUri(root);
   return `${base}/recipes/${name}`;
 }

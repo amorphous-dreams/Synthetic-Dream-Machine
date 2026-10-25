@@ -238,10 +238,14 @@ export function parseSensoriumManifest(value: unknown): SensoriumManifest {
   if (typeof raw.ephemeral !== "boolean") {
     throw new Error("sensorium manifest: ephemeral needs a boolean");
   }
-  // The lifecycle reader-default: a declared state stands; an absent/unknown one re-derives from
-  // ephemeral+halfLife, so a manifest that predates the field reads a lifecycle with zero disk edit.
+  // The lifecycle stands as a declared fact. The TS builder writes it. The Python writer owns the
+  // `ephemeral` dial and declares no lifecycle, so an absent field derives from ephemeral+halfLife.
+  // A declared value outside the ladder refuses.
   const halfLife = persistence ? (persistence.halfLife as number | null) : undefined;
-  const lifecycle = isLifecycleState(raw.lifecycle) ? raw.lifecycle : deriveLifecycle(raw.ephemeral, halfLife);
+  if (raw.lifecycle !== undefined && !isLifecycleState(raw.lifecycle)) {
+    throw new Error("sensorium manifest: lifecycle needs one of pioneer, hardening, durable or tombstone");
+  }
+  const lifecycle = raw.lifecycle ?? deriveLifecycle(raw.ephemeral, halfLife);
   const retirement = parseRetirementRecord(raw.retirement);
   return {
     schema: SENSORIUM_SCHEMA,

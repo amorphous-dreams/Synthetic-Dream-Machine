@@ -163,17 +163,13 @@ export class SyncedTree {
     private dirPath: string | null,
   ) {
     if (dirPath === null) return;
-    // A TREE IN AN EARLIER SHAPE NAMES NO BASE, AND SAYS SO BY NAME. A vessel founded under the single-file
-    // tree keeps that file beside this directory. Nothing reads it and nothing rewrites it: every carrier
-    // reads as never agreed, and each gate falls back to its fresh-adoption answer (an unchanged corpus pins
-    // anew and writes nothing; a real difference stands off for a person).
     // A file standing at the directory's own path leaves this tree nowhere to rest: it holds its bases in memory.
-    for (const earlier of [`${dirPath}.json`, dirPath]) {
-      let isFile = false;
-      try { isFile = statSync(earlier).isFile(); } catch { /* absent */ }
-      if (!isFile) continue;
-      console.warn(`[synced-tree] ${earlier} holds a tree in an earlier shape; it names no base here, and each carrier reads as never agreed`);
-      if (earlier === dirPath) { this.dirPath = null; return; }
+    let isFile = false;
+    try { isFile = statSync(dirPath).isFile(); } catch { /* absent */ }
+    if (isFile) {
+      console.warn(`[synced-tree] ${dirPath} stands as a file; the tree holds its bases in memory`);
+      this.dirPath = null;
+      return;
     }
     const { rows, unread } = readRows(dirPath);
     for (const row of rows) this.put(row);

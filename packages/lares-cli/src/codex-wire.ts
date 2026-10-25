@@ -1,8 +1,8 @@
 /**
  * codex-wire — `lares vessel stand --codex`: wire the LARES MCP seat (memory through the lares house),
- * the Lares session-ingest hook, and the BOOT POINTER into the OpenAI Codex home (~/.codex/). A stale
- * mempalace MCP block is reaped in the same pass — a harness holding its own palace holder reaches
- * past the node into the store, and N writers on one Chroma index is what corrupts it.
+ * the Lares session-ingest hook, and the BOOT POINTER into the OpenAI Codex home (~/.codex/). A harness
+ * reaches memory through that seat and holds no palace holder of its own: N writers on one Chroma index
+ * corrupt it.
  *
  * Codex reads TOML:
  *   - MCP   → [mcp_servers.<name>]  (command / args / env)
@@ -32,7 +32,6 @@ import { resolveLaresMcp, type WireAction } from "./mcp-resolve.js";
 import { tendBootPointer, asLink, BOOT_CARRIER } from "./boot-pointer.js";
 
 const INGEST_HOOK = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh";
-const MEMPALACE_MCP_KEY = "[mcp_servers.mempalace]";
 const LARES_MCP_KEY = "[mcp_servers.lares]";
 
 export interface CodexWireStep {
@@ -58,16 +57,7 @@ export function wireCodexHome(opts: { home?: string } = {}): CodexWireResult {
   const steps: CodexWireStep[] = [];
   const append: string[] = [];
 
-  // 1a. Reap a stale mempalace MCP block — a harness holding its own palace holder reaches PAST the
-  //     node into the store (N sessions, N writers, one Chroma index). The lares seat replaces it.
-  if (toml.includes(MEMPALACE_MCP_KEY)) {
-    toml = stripTomlSection(toml, MEMPALACE_MCP_KEY);
-    steps.push({ item: "mcp:mempalace", action: "reaped", detail: `removed a stale ${MEMPALACE_MCP_KEY} — memory rides the lares seat now` });
-  } else {
-    steps.push({ item: "mcp:mempalace", action: "absent", detail: "not registered (memory rides the lares seat)" });
-  }
-
-  // 1b. The LARES MCP seat — recall/harvest/status/worldline over the memory sensorium, through the
+  // 1. The LARES MCP seat — recall/harvest/status/worldline over the memory sensorium, through the
   //     lares house. Codex reads `env` as an inline TOML table.
   const laresMcp = resolveLaresMcp();
   if (laresMcp === null) {
