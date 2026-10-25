@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "projection-loom/solid-project/v2",
+  "$id": "projection-loom/solid-project",
   "title": "Projection Loom constructive CAD project",
   "type": "object",
   "required": [
@@ -13,7 +13,7 @@
   "additionalProperties": false,
   "properties": {
     "schema": {
-      "const": "projection-loom/solid-project/v2"
+      "const": "projection-loom/solid-project"
     },
     "builder": {
       "type": "string",
