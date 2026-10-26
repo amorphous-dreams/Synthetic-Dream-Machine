@@ -1,24 +1,37 @@
 /**
- * place-floor-pin — a PLACE's floor pin, carried where a reader already holds the Nexus that carries the place, and the
- * place's own presentation at that Nexus's floor gates.
+ * place-floor-pin — the FLOOR PIN CLAIM: a place claims one exact gate pin at one head of its own KEL, and the place's own
+ * presentation at that Nexus's floor gates.
  *
- * WHY A PLACE SIGNS ITS OWN PIN. A herm stands a floor gate only at a Nexus whose quorum counted a `carry` act over the
- * herm's own vessel key (`placeCarriedNexuses`). Its floor pin derives from its floor key, which no seat holds, so no seat
- * can mint it; and an announcement never authenticates its own first pin (house ruling "The admit's gate pin"). So the
- * herm signs ONE statement per Nexus with the key the quorum's act names: `{ kind, placeKey, nexus, route, tier, digest }`
- * over the pin it stands there. A reader files that pin only when
+ * ONE RELATION. A place claims THIS gate pin at one (place AID, place-KEL seq, event digest, Nexus, tier, route), signed through
+ * the place's scoped signer under the place floor pin duty (`frameFloorDuty`, `len(D) ‖ D ‖ preimage`; no sixth domain). The
+ * verifier resolves the signer at the NAMED head through `verifyPlaceDutyAtHead`: a claim signed by an older signer after the
+ * KEL rotated refuses. The claim names no release head: W26's release tracks floor CONTENT, the claim tracks the place's KEY
+ * STATE, and nothing signs a release pointer into pin succession. The Nexus AID anchors the carrying relation and never signs
+ * as the place.
+ *
+ * WHAT A READER FILES. A claim files only when
  *
  *   1. the statement reads whole, its pin reads whole, at floor tier, at the Nexus the reader asked, on the route asked;
- *   2. the place's signature verifies under `placeKey`, over this exact image (domain-separated from every other seal);
- *   3. the reader's OWN held root of that Nexus counts a `carry` for `placeKey` (the carrier fold over its own replica).
+ *   2. the reader's KEL rows fold to the named head (`foldClaimHead`: a walk from the head digest to the inception that is
+ *      the AID, every digest, sequence, reveal and cold signature verified), and the head sits on no forked branch;
+ *   3. the place's signer AT THAT HEAD signed this exact image (`verifyPlaceDutyAtHead`);
+ *   4. the place stands: the signer at the head is a counted `carry` of the reader's own replica of the Nexus (a CARRIER
+ *      standing), or the AID is the anchor the reader was handed apart from the card (an ANCHORED standing: the founder's own
+ *      genesis, an authenticated admit, or a deliberate person-to-person transfer; a card alone never anchors).
  *
- * The quorum's act authenticates the key; the key authenticates the pin. A statement for an uncarried key, a pin of
- * another Nexus or route, or a torn signature files nothing. The statement rides the Nexus's carriage board beside the acts
- * (a sidecar keyed by the place key, which the act extractor skips), so any replica writer may carry it and none can forge
- * it (lar:///ha.ka.ba/lararium/mesh/place-floor-pin, whose status line names its standing).
+ * KEL DESCENT ORDERS THE PIN. A floor route's keys derive from the place floor key, tier, Nexus and route
+ * (`gate-bundle`), so a pin changes on its route only when the place key rotates. The pair index (`admit-gate-pin`) takes the
+ * claim with the lineage this reader folded: a descendant claim replaces, a known ancestor refuses (rollback), two claims at one
+ * head and a forked KEL surface as a fork, and arrival order never selects. An offline reader holds its last accepted head
+ * ("as of my last sync"); node and browser run this one fold.
  *
- * OWED (the carrier's #/owed): the statement carries no causal position, and the pair index holds no replace, so an older
- * valid statement can stand in for a newer one after a floor-key rotation until the index drops it.
+ * The sovereign tier's pins follow custody-key changes by their own signed relation; a place-KEL claim never orders them,
+ * and the index refuses a claim over a sovereign pin by name.
+ *
+ * The statement rides the Nexus's carriage board beside the acts (a sidecar keyed by the place AID and the head, which the act
+ * extractor skips), so any replica writer may carry it and none can forge it; the place's KEL rows ride the same board
+ * (`place-kel-board`) and the carry bundle carries both (lar:///ha.ka.ba/lararium/mesh/place-floor-pin, whose status line names
+ * its standing).
  *
  * THE PLACE ARM. A place presents the quorum's counted `carry` act over its own key at the gate's Nexus, with every
  * counted act of that relation in its causal past as the lineage the gate's reader walks (`verifyPresentedCarry`). The
@@ -31,72 +44,158 @@ import type { LarDoc } from "./base-doc.js";
 import { tiddlerText } from "./base-doc.js";
 import { CARRIAGE_ENTRY_PREFIX } from "./carriage-board.js";
 import { carriageEntryActCid, foldCarriageDetails, isCarriageDescendant, resolveAnchoredChain, rollAnchorCid, type CarriageAncestry, type CarriageEntry, type RollAnchor } from "./carriage-registry.js";
-import { canonicalJsonBytes, hex, hexToBytes } from "./crypto.js";
-import { frameFloorDuty } from "./place-signer.js";
+import { canonicalJsonBytes, hex } from "./crypto.js";
+import { frameFloorDuty, verifyPlaceDutyAtHead } from "./place-signer.js";
 import { PLACE_FLOOR_PIN_DOMAIN } from "./domains.js";
-import { verifyEd25519 } from "./ed25519-door.js";
 import { gateBundleDigest, readGateBundlePin, type GateBundlePin } from "./gate-bundle.js";
 import { PLACE_LINEAGE_BOUND, type PlaceArm } from "./gate-exchange.js";
+import type { PlaceClaimStand, PlaceKelForkNote } from "./admit-gate-pin.js";
 import type { KahuQuorumSeats } from "./kapae-antigen.js";
 import { storedLarRecord } from "./stored-record.js";
+import { PLACE_KEL_ROWS_PER_AID, decodePlaceKelEvent, foldPlaceKel, placeKelEventDigest, verifyPlaceKel, type PlaceKelEvent, type PlaceKelHead } from "./vessel-kel.js";
 
 /** The statement's domain: a place's floor pin, and nothing any other seal signs (`domains`). */
 export const PLACE_FLOOR_PIN_KIND = PLACE_FLOOR_PIN_DOMAIN;
-/** The board sidecar's prefix: one tiddler per place key, apart from the acts. */
+/** The board sidecar's prefix: one tiddler per (place AID, head, route), apart from the acts. */
 export const PLACE_FLOOR_PIN_PREFIX = `${CARRIAGE_ENTRY_PREFIX}place-floor-pin/` as const;
 
-const KEY_RE = /^[0-9a-f]{64}$/;
+const HEX64 = /^[0-9a-f]{64}$/;
 const SIG_RE = /^[0-9a-f]{128}$/;
 
-/** A place's signed floor pin at one Nexus. */
+/** A place's signed claim of one floor pin at one head of its KEL. */
 export interface PlaceFloorPinStatement {
-  readonly kind:     typeof PLACE_FLOOR_PIN_KIND;
-  readonly placeKey: string;
-  readonly pin:      GateBundlePin;
-  readonly sig:      string;
+  readonly kind: typeof PLACE_FLOOR_PIN_KIND;
+  /** The place AID: the digest of its KEL inception. */
+  readonly aid:  string;
+  /** The sequence of the KEL head the claim names, and the digest of that head's event. */
+  readonly seq:  number;
+  readonly head: string;
+  readonly pin:  GateBundlePin;
+  readonly sig:  string;
 }
 
 export const PLACE_FLOOR_PIN_REFUSALS = [
-  "statement-malformed", "pin-unreadable", "pin-not-floor", "pin-other-nexus", "pin-other-route", "signature-refused", "place-uncarried",
+  "statement-malformed", "pin-unreadable", "pin-not-floor", "pin-other-nexus", "pin-other-route", "head-unreadable", "kel-forked",
+  "signature-refused", "place-uncarried", "place-unanchored",
 ] as const;
 export type PlaceFloorPinRefusal = (typeof PLACE_FLOOR_PIN_REFUSALS)[number];
 
-/** The exact bytes a place signs over its floor pin: the domain, its key, and the pin's coordinates and digest. */
-export function placeFloorPinImage(placeKey: string, pin: GateBundlePin): Uint8Array {
+/** The exact bytes a place signs over its floor pin claim: the domain, its AID and head, and the pin's coordinates and digest. */
+export function placeFloorPinImage(claim: { readonly aid: string; readonly seq: number; readonly head: string }, pin: GateBundlePin): Uint8Array {
   return frameFloorDuty(PLACE_FLOOR_PIN_KIND, canonicalJsonBytes({
-    kind: PLACE_FLOOR_PIN_KIND, placeKey: placeKey.toLowerCase(),
+    kind: PLACE_FLOOR_PIN_KIND, aid: claim.aid, seq: claim.seq, head: claim.head,
     nexus: pin.nexus, route: pin.route, tier: pin.tier, digest: gateBundleDigest(pin),
   }));
 }
 
-/** Sign a place's floor pin with the place's own signing door. */
+/**
+ * Sign a place's floor pin claim at the head `at` (a KEL fold that verified) with the place's own signing door. The signer
+ * the door holds must be the head's: a door of any other key throws, since the claim would refuse at every reader.
+ */
 export async function signPlaceFloorPin(args: {
-  readonly placeKey: string;
-  readonly pin:      GateBundlePin;
-  readonly sign:     (image: Uint8Array) => Promise<Uint8Array> | Uint8Array;
+  readonly at:   PlaceKelHead;
+  readonly pin:  GateBundlePin;
+  readonly sign: (image: Uint8Array) => Promise<Uint8Array> | Uint8Array;
 }): Promise<PlaceFloorPinStatement> {
-  const placeKey = args.placeKey.toLowerCase();
+  const { at } = args;
+  if (!at || at.ok !== true) throw new Error("signPlaceFloorPin: the head does not read");
   const read = readGateBundlePin(args.pin);
   if (!("pin" in read)) throw new Error("signPlaceFloorPin: the pin does not read whole");
-  const sig = await args.sign(placeFloorPinImage(placeKey, read.pin));
-  return Object.freeze({ kind: PLACE_FLOOR_PIN_KIND, placeKey, pin: read.pin, sig: hex(sig) });
+  const claim = { aid: at.aid, seq: at.seq, head: at.headDigest };
+  const sig = hex(await args.sign(placeFloorPinImage(claim, read.pin)));
+  if (!verifyPlaceDutyAtHead({ kel: at, domain: PLACE_FLOOR_PIN_KIND, image: placeFloorPinImage(claim, read.pin), sig })) {
+    throw new Error("signPlaceFloorPin: the signing door does not hold the signer at the named head");
+  }
+  return Object.freeze({ kind: PLACE_FLOOR_PIN_KIND, ...claim, pin: read.pin, sig });
+}
+
+const ROWS_EXAMINED = PLACE_KEL_ROWS_PER_AID * 8;
+
+/** The reading `foldClaimHead` answers: the chain to the named head, or the refusal (a fork also names its trunk). */
+export type ClaimHeadReading =
+  | { readonly ok: true;  readonly head: PlaceKelHead; readonly lineage: readonly string[] }
+  | { readonly ok: false; readonly refusal: "head-unreadable" }
+  | { readonly ok: false; readonly refusal: "kel-forked"; readonly fork: PlaceKelForkNote };
+
+/**
+ * Fold a reader's unordered KEL rows to the head a claim names: walk from the head digest back through `prev` to the
+ * inception, check that inception is the AID, and verify the whole chain (`verifyPlaceKel`). Work is bounded by
+ * `PLACE_KEL_ROWS_PER_AID`. A row of another AID or a torn row is noise. A head on a branch past the first fork the rows
+ * show (`foldPlaceKel` reads the whole set) refuses `kel-forked` and names the trunk both branches share; a head at or before the fork's
+ * common ancestor reads whole, since every branch descends from it.
+ */
+export function foldClaimHead(rows: readonly unknown[], aid: string, headDigest: string): ClaimHeadReading {
+  if (!HEX64.test(aid) || !HEX64.test(headDigest)) return { ok: false, refusal: "head-unreadable" };
+  const byDigest = new Map<string, PlaceKelEvent>();
+  const decoded: PlaceKelEvent[] = [];
+  for (const raw of rows.slice(0, ROWS_EXAMINED)) {
+    const event = decodePlaceKelEvent(raw);
+    if (event === null) continue;
+    decoded.push(event);
+    byDigest.set(placeKelEventDigest(event), event);
+  }
+  const walked: PlaceKelEvent[] = [];
+  let cursor = headDigest;
+  for (let step = 0; step <= PLACE_KEL_ROWS_PER_AID + 1; step++) {
+    const event = byDigest.get(cursor);
+    if (event === undefined) return { ok: false, refusal: "head-unreadable" };
+    walked.push(event);
+    if (event.t === "icp") break;
+    cursor = event.prev;
+  }
+  if (walked[walked.length - 1]!.t !== "icp") return { ok: false, refusal: "head-unreadable" };
+  const chain = walked.reverse();
+  const reading = verifyPlaceKel(chain);
+  if (!reading.ok || reading.aid !== aid || reading.headDigest !== headDigest) return { ok: false, refusal: "head-unreadable" };
+  const lineage = chain.map(placeKelEventDigest);
+  const whole = foldPlaceKel(decoded, { aid });
+  if (!whole.ok && whole.refusal === "fork" && whole.commonAncestor !== undefined) {
+    const at = lineage.indexOf(whole.commonAncestor);
+    if (at >= 0 && at < lineage.length - 1) return { ok: false, refusal: "kel-forked", fork: { aid, trunk: lineage.slice(0, at + 1) } };
+  }
+  return { ok: true, head: reading, lineage };
 }
 
 /**
- * Read one statement for a reader at `nexusHex` (the Nexus as a pin carries it), on `route`, against the carrier set the
- * reader's own held root folds. Never throws.
+ * What stands a claim's place: the carriers a reader's replica of the Nexus counts (the signer AT THE HEAD must be one), or
+ * the AID the reader was handed apart from the card.
  */
-export function readPlaceFloorPin(raw: unknown, at: {
+export type ClaimStanding =
+  | { readonly via: "carrier"; readonly carriers: ReadonlySet<string> }
+  | { readonly via: "anchor";  readonly aid: string };
+
+/** One claim, read and verified: the place, the head it names, the name a dial carries for the place, and the pin. */
+export interface PlaceFloorPinReading {
+  readonly aid:       string;
+  readonly seq:       number;
+  readonly head:      string;
+  /** The signer key at the head: the key a carriage peer's dial and a flow pointer's publisher name. */
+  readonly signerKey: string;
+  readonly pin:       GateBundlePin;
+  readonly stand:     PlaceClaimStand;
+}
+
+export interface ClaimReadAt {
   readonly nexusHex: string;
   readonly route:    string;
-  readonly carriers: ReadonlySet<string>;
-}): { readonly placeKey: string; readonly pin: GateBundlePin } | { readonly refusal: PlaceFloorPinRefusal } {
+  /** The KEL rows the reader holds for this place, unordered and unread (the carriage board's rows, a card's, a bundle's). */
+  readonly kelRows:  readonly unknown[];
+  readonly standing: ClaimStanding;
+}
+
+/**
+ * Read one statement for a reader at `at.nexusHex` (the Nexus as a pin carries it), on `at.route`. Never throws. A
+ * `kel-forked` refusal names the fork the reader met, so the caller may note it in the index.
+ */
+export function readPlaceFloorPin(raw: unknown, at: ClaimReadAt):
+  PlaceFloorPinReading | { readonly refusal: PlaceFloorPinRefusal; readonly fork?: PlaceKelForkNote } {
   try {
     if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return { refusal: "statement-malformed" };
     const keys = Object.keys(raw).sort();
-    if (keys.join(",") !== "kind,pin,placeKey,sig") return { refusal: "statement-malformed" };
+    if (keys.join(",") !== "aid,head,kind,pin,seq,sig") return { refusal: "statement-malformed" };
     const s = raw as Record<string, unknown>;
-    if (s["kind"] !== PLACE_FLOOR_PIN_KIND || typeof s["placeKey"] !== "string" || !KEY_RE.test(s["placeKey"])
+    if (s["kind"] !== PLACE_FLOOR_PIN_KIND || typeof s["aid"] !== "string" || !HEX64.test(s["aid"]) || typeof s["head"] !== "string" || !HEX64.test(s["head"])
+      || typeof s["seq"] !== "number" || !Number.isSafeInteger(s["seq"]) || s["seq"] < 0
       || typeof s["sig"] !== "string" || !SIG_RE.test(s["sig"])) return { refusal: "statement-malformed" };
     const read = readGateBundlePin(s["pin"]);
     if (!("pin" in read)) return { refusal: "pin-unreadable" };
@@ -104,22 +203,30 @@ export function readPlaceFloorPin(raw: unknown, at: {
     if (pin.tier !== "floor") return { refusal: "pin-not-floor" };
     if (pin.nexus !== at.nexusHex) return { refusal: "pin-other-nexus" };
     if (pin.route !== at.route) return { refusal: "pin-other-route" };
-    const placeKey = s["placeKey"];
-    if (!verifyEd25519(hexToBytes(s["sig"]), placeFloorPinImage(placeKey, pin), placeKey)) return { refusal: "signature-refused" };
-    // Last: the relation. A key the reader's own replica of the Nexus does not count as a carrier authenticates nothing.
-    if (!at.carriers.has(placeKey)) return { refusal: "place-uncarried" };
-    return { placeKey, pin };
+    const aid = s["aid"], head = s["head"], seq = s["seq"];
+    const folded = foldClaimHead(at.kelRows, aid, head);
+    if (!folded.ok) return folded.refusal === "kel-forked" ? { refusal: "kel-forked", fork: folded.fork } : { refusal: "head-unreadable" };
+    if (folded.head.seq !== seq) return { refusal: "head-unreadable" };
+    const claim = { aid, seq, head };
+    if (!verifyPlaceDutyAtHead({ kel: folded.head, domain: PLACE_FLOOR_PIN_KIND, image: placeFloorPinImage(claim, pin), sig: s["sig"] })) {
+      return { refusal: "signature-refused" };
+    }
+    // Last: the relation. A place the reader's own replica does not count, and no anchor names, authenticates nothing.
+    if (at.standing.via === "carrier") { if (!at.standing.carriers.has(folded.head.signerKey)) return { refusal: "place-uncarried" }; }
+    else if (at.standing.aid !== aid) return { refusal: "place-unanchored" };
+    return Object.freeze({ aid, seq, head, signerKey: folded.head.signerKey, pin,
+      stand: Object.freeze({ aid, seq, head, lineage: folded.lineage }) });
   } catch { return { refusal: "statement-malformed" }; }
 }
 
-/** The board tiddler one place's statement rides under. */
-export function placeFloorPinKey(placeKey: string): string {
-  return `${PLACE_FLOOR_PIN_PREFIX}${placeKey.toLowerCase()}`;
+/** The board tiddler one claim rides under: the place AID, the head digest and the route (a claim per route per head). */
+export function placeFloorPinKey(statement: Pick<PlaceFloorPinStatement, "aid" | "head" | "pin">): string {
+  return `${PLACE_FLOOR_PIN_PREFIX}${statement.aid}/${statement.head}/${gateBundleDigest(statement.pin)}`;
 }
 
 /** Land a statement onto a carriage board draft. Call INSIDE a `handle.change()` callback. Writes no trust: the reader decides. */
 export function writePlaceFloorPin(draft: LarDoc, statement: PlaceFloorPinStatement): void {
-  const key = placeFloorPinKey(statement.placeKey);
+  const key = placeFloorPinKey(statement);
   draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(statement) }, PLACE_FLOOR_PIN_KIND);
 }
 
@@ -135,23 +242,40 @@ export function placeFloorPinsFromBoard(doc: LarDoc | undefined | null): unknown
   return out;
 }
 
+/** The index door a claim files through: `HearthPinIndex.fileClaim` and `noteKelFork`. */
+export interface ClaimIndex {
+  fileClaim(hearth: string, pin: unknown, stand: PlaceClaimStand): { readonly filed: boolean; readonly refusal?: string };
+  noteKelFork(fork: PlaceKelForkNote): void;
+}
+
+/** What one filing pass did: the names that filed, the claims the reader refused, and the index's own refusals (rollback, fork). */
+export interface ClaimFilingReport {
+  readonly filed:   readonly string[];
+  readonly refused: readonly PlaceFloorPinRefusal[];
+  readonly held:    readonly string[];
+}
+
 /**
- * File every statement that reads at `at` into a pair index, each under its place key (the name a carriage peer's dial
- * carries). Returns what filed and why each other one did not.
+ * File every statement that reads at `at` into a pair index, each under the signer key at its head (the name a carriage
+ * peer's dial carries). A claim past a KEL fork notes the fork in the index. Returns what filed, what the reader refused and
+ * what the index held back (`rollback`, `fork`).
  */
 export function filePlaceFloorPins(
-  index: { put(hearth: string, pin: unknown): boolean },
+  index: ClaimIndex,
   statements: readonly unknown[],
-  at: { readonly nexusHex: string; readonly route: string; readonly carriers: ReadonlySet<string> },
-): { readonly filed: readonly string[]; readonly refused: readonly PlaceFloorPinRefusal[] } {
+  at: ClaimReadAt,
+  nameFor: (reading: PlaceFloorPinReading) => string = (reading) => reading.signerKey,
+): ClaimFilingReport {
   const filed: string[] = [];
   const refused: PlaceFloorPinRefusal[] = [];
+  const held: string[] = [];
   for (const raw of statements) {
     const read = readPlaceFloorPin(raw, at);
-    if ("refusal" in read) { refused.push(read.refusal); continue; }
-    if (index.put(read.placeKey, read.pin)) filed.push(read.placeKey);
+    if ("refusal" in read) { refused.push(read.refusal); if (read.fork) index.noteKelFork(read.fork); continue; }
+    const result = index.fileClaim(nameFor(read), read.pin, read.stand);
+    if (result.filed) filed.push(nameFor(read)); else held.push(result.refusal ?? "refused");
   }
-  return { filed, refused };
+  return { filed, refused, held };
 }
 
 /**

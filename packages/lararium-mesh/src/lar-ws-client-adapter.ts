@@ -41,7 +41,7 @@ import { WebSocketClientAdapter } from "@automerge/automerge-repo-network-websoc
 import type { PeerId, PeerMetadata } from "@automerge/automerge-repo";
 import { SOVEREIGN_SYNC_ROUTE, type DialPinKey } from "./admit-gate-pin.js";
 import { isLarSessionMsg, mkLarSessionMsg, type LarSessionMsg } from "./leaf-presentation.js";
-import { HEARTH_FLOOR_PINS_SESSION_KIND, readHearthFloorPinsBody } from "./hearth-floor-pins.js";
+import { HEARTH_FLOOR_PINS_SESSION_KIND, type ClaimDoor, fileSessionClaims, readHearthFloorPinsBody, readHearthFloorProofBody } from "./hearth-floor-pins.js";
 import { hex, utf8Bytes } from "./crypto.js";
 import type { WithdrawalMemory } from "./face-authority.js";
 import { dialFaceGate, type DialSocket, type FaceDialOutcome } from "./face-dial.js";
@@ -74,7 +74,7 @@ export interface LarWSClientOptions {
    * The pair index, injected: the dial reads the pin for (hearth, nexus, route, tier) from it at each connect. Where it
    * takes `put`, the hearth's floor pin set that arrives over the verified crossing files into it (`hearth/floor-pins`).
    */
-  pins:       { get(key: DialPinKey): GateBundlePin | null; put?(hearth: string, pin: unknown): boolean };
+  pins:       { get(key: DialPinKey): GateBundlePin | null; put?(hearth: string, pin: unknown): boolean } & Partial<ClaimDoor>;
   /** The hearth the dial reaches, by its true name (the index's first key part). */
   hearth:     string;
   /** The Nexus the dial stands at, as the pin carries it (hex of the AID's bytes). */
@@ -365,6 +365,12 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
     if ((this.#opts.tier ?? "sovereign") !== "sovereign" || typeof pins.put !== "function") return;
     const set = readHearthFloorPinsBody(body, nexus);
     if (set === null) return;
+    // THE CLAIMS FIRST: a rotated hearth's pin moves by its claim's descent, so a pin that rides a claim files through the
+    // index's claim door and the bare put that follows only matches what the claims serve.
+    const proof = readHearthFloorProofBody(body);
+    if (proof !== null && typeof pins.fileClaim === "function" && typeof pins.noteKelFork === "function" && typeof pins.standingOf === "function") {
+      try { fileSessionClaims(pins as ClaimDoor, hearth, nexus, proof); } catch { /* an index that refuses keeps what it held */ }
+    }
     for (const pin of set) { try { pins.put(hearth, pin); } catch { /* an index that refuses keeps what it held */ } }
   }
 

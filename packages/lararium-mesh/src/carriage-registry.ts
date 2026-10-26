@@ -37,7 +37,8 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-operator-contract
  */
 
-import { frameFloorDuty, verifyPlaceDuty } from "./place-signer.js";
+import { frameFloorDuty, verifyPlaceDuty, verifyPlaceDutyAtHead } from "./place-signer.js";
+import type { PlaceKelHead } from "./vessel-kel.js";
 import { CARRIAGE_ADMIT_OPENING_DOMAIN, CARRIAGE_CARRIER_DOMAIN, CARRIAGE_CONTRACT_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_ROLL_ANCHOR_DOMAIN } from "./domains.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { admitGatePinDigest, readAdmitGatePin } from "./admit-gate-pin.js";
@@ -275,6 +276,21 @@ export async function verifyCarrierContract(
   const bytes = carrierContractBytes({ nym, sealEpochCid: seal.sealEpochCid });
   try { return verifyPlaceDuty({ domain: CARRIAGE_CARRIER_DOMAIN, image: bytes, sig: seal.sig, signerKey: nym }); }
   catch { return false; }
+}
+
+/**
+ * Does a carrier seal prove itself AT THE HEAD of the place's KEL it names? The signer is the one the KEL seats at `kel`
+ * (`verifyPlaceDutyAtHead`), and the seal names that signer as its nym: an older signer after a rotation, and a seal naming any
+ * other key, each read false. The landing doors judge a carry through here with the head the carried floor pin claim names;
+ * the fold itself stays keyless of any KEL (`verifyCarrierContract`), since a counted seal records the signer the place held when
+ * it consented.
+ */
+export function verifyCarrierContractAtHead(seal: { nym: string; sealEpochCid: string; sig: string }, kel: PlaceKelHead): boolean {
+  try {
+    const nym = seal.nym.trim().toLowerCase();
+    if (!kel || kel.ok !== true || kel.signerKey !== nym || !/^[0-9a-f]+$/.test(seal.sig)) return false;
+    return verifyPlaceDutyAtHead({ kel, domain: CARRIAGE_CARRIER_DOMAIN, image: carrierContractBytes({ nym, sealEpochCid: seal.sealEpochCid }), sig: seal.sig });
+  } catch { return false; }
 }
 
 /**

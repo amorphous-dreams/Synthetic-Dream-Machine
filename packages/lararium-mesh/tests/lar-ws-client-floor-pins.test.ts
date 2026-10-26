@@ -11,6 +11,9 @@
  *   S4  RED: a body with a stray key files nothing; a set before the crossing verified cannot arrive (no channel)
  *   S5  RED: an index with no `put` (a read-only index) hears the set and files nothing, with no throw
  *   S6  RED: the same set under another session kind files nothing: only the hearth's floor-pin message files
+ *   S7  CONTROL/POSITIVE: a set with a floor pin claim files through the claim door, and the hearth's rotated successor
+ *       claim re-files LIVE over the same crossing (the first claim over the authenticated crossing adopts the AID)
+ *   S8  RED: a claim of another place AID, a stale (rollback) claim and a claim whose rows do not fold file nothing
  */
 import { cbor } from "@automerge/automerge-repo/slim";
 import type { PeerId } from "@automerge/automerge-repo";
@@ -20,6 +23,7 @@ import { deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, type GateBun
 import { mkLarSessionMsg } from "../src/leaf-presentation.js";
 import { HEARTH_FLOOR_PINS_SESSION_KIND, hearthFloorPinsBody } from "../src/hearth-floor-pins.js";
 import { dialGate, faceGateRig, type FaceGateRig } from "./gate-dial-fixture.js";
+import { claimAt, foundPlace, headOf, rotatePlace, rowsOf } from "./place-claim-fixture.js";
 
 const PEER = "leaf-floor-pins" as PeerId;
 const floorPinAt = (nexus: string, route = "/flow", tag = 8): GateBundlePin => {
@@ -99,6 +103,36 @@ describe("the hearth's floor pin set over the sovereign session", () => {
     await sendSession(hearthFloorPinsBody([floorPinAt(rig.w.nexus)]), "hosting/grant");
     expect(rig.pins.get(flowKey(rig))).toBeNull();
     expect(heard).toEqual(["hosting/grant"]);
+    adapter.disconnect();
+  });
+
+  it("S7 CONTROL/POSITIVE: a claim set files through the claim door; the rotated successor re-files live; the superseded pin leaves", async () => {
+    const rig = await faceGateRig();
+    const { adapter, sendSession } = await crossed(rig);
+    const p0 = foundPlace(1), p1 = rotatePlace(p0);
+    const flow0 = floorPinAt(rig.w.nexus, "/flow", 8), flow1 = floorPinAt(rig.w.nexus, "/flow", 9);
+    await sendSession(hearthFloorPinsBody([flow0], { claims: [await claimAt(p0, flow0)], kel: p0.chain as never }));
+    expect(rig.pins.get(flowKey(rig))).toEqual(flow0);
+    expect(rig.pins.standingOf(flowKey(rig))).toMatchObject({ aid: p0.aid, seq: 0 });
+    await sendSession(hearthFloorPinsBody([flow1], { claims: [await claimAt(p1, flow1)], kel: p1.chain as never }));
+    expect(rig.pins.get(flowKey(rig))).toEqual(flow1);
+    expect(rig.pins.standingOf(flowKey(rig))).toMatchObject({ aid: p0.aid, seq: 1, head: headOf(p1).headDigest });
+    adapter.disconnect();
+  });
+
+  it("S8 RED: another place's claim, a stale claim and a claim whose rows do not fold file nothing", async () => {
+    const rig = await faceGateRig();
+    const { adapter, sendSession } = await crossed(rig);
+    const p0 = foundPlace(1), p1 = rotatePlace(p0), stranger = foundPlace(2);
+    const flow0 = floorPinAt(rig.w.nexus, "/flow", 8), flow1 = floorPinAt(rig.w.nexus, "/flow", 9), foreign = floorPinAt(rig.w.nexus, "/flow", 3);
+    await sendSession(hearthFloorPinsBody([flow1], { claims: [await claimAt(p1, flow1)], kel: p1.chain as never }));
+    expect(rig.pins.get(flowKey(rig))).toEqual(flow1);
+    await sendSession(hearthFloorPinsBody([foreign], { claims: [await claimAt(stranger, foreign)], kel: stranger.chain as never }));
+    expect(rig.pins.get(flowKey(rig))).toEqual(flow1);                        // the adopted AID anchors the crossing
+    await sendSession(hearthFloorPinsBody([flow0], { claims: [await claimAt(p0, flow0)], kel: rowsOf(p0) as never }));
+    expect(rig.pins.get(flowKey(rig))).toEqual(flow1);                        // a rollback
+    await sendSession(hearthFloorPinsBody([flow1], { claims: [await claimAt(p1, flow1)], kel: [] as never }));
+    expect(rig.pins.get(flowKey(rig))).toEqual(flow1);                        // rows that do not fold
     adapter.disconnect();
   });
 });
