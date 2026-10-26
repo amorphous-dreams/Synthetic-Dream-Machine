@@ -60,11 +60,11 @@ governs that Nexus's own hearths and never the waystone; `nexus posture` refuses
 !! The pin a reader dials
 
 A herm's floor pin derives from its floor key, which no seat holds, and an announcement never
-authenticates its own first pin (house ruling "The admit's gate pin"). So the herm signs ONE statement per
-carrying Nexus with the key the quorum's act names, and lays it on its own replica of that Nexus's
-carriage board (`layStatementOn`: once, and again only when moved). A reader files that pin only where its
-own replica counts the herm as a carrier (`place-floor-pin`): the quorum's act authenticates the key, the
-key authenticates the pin.
+authenticates its own first pin (house ruling "The admit's gate pin"). So the herm signs ONE floor pin claim per
+carrying Nexus, at the head of its own place KEL and with the signer the KEL seats there (the key the quorum's act names), and lays
+the claim and its KEL rows on its own replica of that Nexus's carriage board (`layStatementOn`: once, and a claim at a new head lays
+beside the older ones). A reader files the claim only where its own replica counts that signer as a carrier (`place-floor-pin`), and KEL
+descent orders the claims it files; a rotated herm is carried again under its new signer.
 
 <<~/ahu>>
 
@@ -102,6 +102,6 @@ carried there as a place; a hearth that holds neither presents nothing there, an
 <<~ loulou "lar:///ha.ka.ba/lararium/node/carry-bundle">>
 <<~ loulou "lar:///ha.ka.ba/lararium/node/socket-sorter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;C-RuyN2yWe1KOnSuc5-5z96GR075-szLnHfyGdBxLrE
+<<^ code="&#x0003;">>ni:///sha-256;IuslWyC_JXur83jDwigA1WTyP2QhjZvQYWtUNj-AcjQ
 
 <<^ code="&#x0004;" -> to="?">>

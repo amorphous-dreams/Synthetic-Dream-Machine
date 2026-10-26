@@ -1,0 +1,71 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/w14-floor-pin-lane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/w14-floor-pin-lane.mem"
+l-space   = "adjacent"
+role      = "the W14 to W16 lane's kit: the floor pin claim a place signs at one head of its own KEL, the pair index that orders pins by KEL descent as a set, the floor card that carries the claim and never anchors itself, and the carry that lands act and claim in one write"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/w14-floor-pin-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/w14-floor-pin-lane"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! W14 to W16 ~ the place claims its floor pin
+
+Three road rows share one shape: the `#floor=` card read unsigned on origin trust (W14), a floor pin statement carried no causal position and the index filed first-wins, so a rotated floor key re-filed only on a restart (W15), and two-vault carry partials landed no floor pin, so a cofounded Nexus carried no herm (W16). The prerequisite, the pre-rotated place KEL, stands from W29 (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/w29-place-kel-lane">>). This lane builds the one relation the three rows name.
+
+<<~/ahu>>
+
+<<~ ahu #/the-model>>
+
+!! The model ~ what stands
+
+* ''One relation: the floor pin claim.'' A place claims this exact gate pin at one (place AID, place-KEL seq, event digest, Nexus AID, tier, route), signed through its scoped signer under the place floor pin duty (framed `len(D) ‖ D ‖ preimage`; no sixth domain). Its reader resolves the signer AT THE NAMED HEAD through `verifyPlaceDutyAtHead`. The Nexus AID anchors the carrying relation and never signs as the place. The name avoids "standing" (realm standing) and "position" (causal coordinates).
+* ''No release head in the claim.'' W26's release tracks floor CONTENT; the claim tracks the place's KEY STATE. A card may point at release evidence beside the claim, and nothing signs that pointer into pin succession.
+* ''KEL descent orders the pin.'' A floor route's keys derive from the place floor key, tier, Nexus and route (`gate-bundle.ts`), so a pin changes on its route only when the place key rotates: no per-route successor log. The pair index (`admit-gate-pin.ts`) replaces first-wins with a SET fold: a descendant claim replaces; a known ancestor refuses `rollback`; two claims at one head, a sibling rotation and another AID at one key surface as a fork and the index serves the settled ancestor (or nothing where none is held); arrival order never selects. An offline reader holds its last accepted head and says "as of my last sync". Node and browser run this one fold.
+* ''Two standings, one reader.'' A claim files when the signer AT ITS HEAD is a counted `carry` of the reader's own held root (herm boards, bundles, partials), or when its AID is the anchor the reader was handed apart from the card.
+* ''First contact takes an anchor apart from the card.'' Three conveyances stand: the founder's own genesis; an authenticated admit (a claim set a sovereign crossing carried, whose first claim adopts the AID, and every later claim must descend from it); a deliberate person-to-person transfer (`#anchor=<aid>`, printed on its own banner line). The card alone never anchors: an unanchored or forged card refuses by name.
+* ''Two-vault carry.'' A carry partial (`nexus-partial`, family `carry`) crosses with its claim and the KEL rows that fold to its head. The claim files ONLY atomically with the counted act, in one write; a partial below the quorum exposes no pin. The carrier seal verifies under the signer the KEL seats at the claim's head (`verifyCarrierContractAtHead`). The herm carries the claim opaque.
+* ''Rotation carries again.'' A carry names the signer at the head, so a rotated place is carried again under its new signer; the older signer's name answers nothing once the new claim replaces the old.
+* ''The sovereign tier is fenced.'' Sovereign pins follow custody-key changes by their own signed relation; a place-KEL claim never orders them, and the index refuses a claim over a sovereign pin by name.
+
+<<~/ahu>>
+
+<<~ ahu #/the-slices>>
+
+!! The slices
+
+# ''Built ~ the claim and its reader'' (`place-floor-pin.ts`: `signPlaceFloorPin`, `foldClaimHead`, `readPlaceFloorPin`, `filePlaceFloorPins`; mesh test `place-floor-pin-claim`).
+# ''Built ~ the index'' (`admit-gate-pin.ts`: `fileClaim`, `noteKelFork`, `standingOf`, `forks`; mesh test `place-claim-index`).
+# ''Built ~ the card'' (`hearth-floor-pins.ts`: `HearthFloorCard` {claim, kel}, `verifyHearthFloorCard`, `fileHearthFloorCard`, `lastSyncNote`; the sovereign session body `{pins, claims, kel}` and `fileSessionClaims`; mesh tests `hearth-floor-card`, `lar-ws-client-floor-pins`).
+# ''Built ~ the carry'' (`nexus-partial.ts` family `carry`; `verifyCarrierContractAtHead`; node `nexus-contract.ts` lands claim and rows with the counted act, `carry-bundle.ts` folds claims off the bundle's rows, `herm-carriage.ts` lays the herm's claim and rows; CLI `carry-for --out` and `carry --floor-pin`, `--out`, `--from`; tests `nexus-partial`, `nexus-carry-two-vault`, `herm-explicit-join`, `carry-bundle-*`).
+# ''Built ~ the node card and session'' (`hearth-floor-claims.ts`, `main.ts`'s banner card and anchor line, `gate-sync-server.ts`'s `floorProof`; node tests `hearth-floor-claims`, `gate-sync-server`).
+# ''Built ~ the browser and the page'' (`browser-gate-pins.ts` `fileFloorCard`, `browser-floor-read.ts` last-sync note, `open-browser-vessel.ts` `floorAnchor`; web `live-status.ts` `floorAnchorOf`, `main.ts`'s kept transfer).
+# ''Built ~ the storm witness'' (mesh and browser `place-claim-storm.test`): a place rotating through four carried heads, under reorder, restart and offline gaps, ends on one head with no arrival winner on node and browser; the empty fixture is paired with a known-positive rotation and carry and with a planted fork.
+# ''Built ~ the duties by head.'' Of the four makers W29 left keyed by a caller's key: the floor pin duty resolves through `verifyPlaceDutyAtHead` (the claim); the carrier seal verifies at the claim's head at every landing door and in the partial judge, and the fold itself stays keyless of any KEL, since a counted seal records the signer the place held when it consented; the flow pointer's publisher key reads off the verified head (the card's `publisher`, the name the claim filed under); the raise grant is signed by the admit's leaf, not by a place key, so no place head enters it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-reds>>
+
+!! The reds
+
+# A forged claim, a foreign place, a wrong Nexus, tier or route, a claim at a head the reader cannot fold, a claim past a KEL fork and an old signer after rotation refuse (control: a claim at the inception head; known positive: a valid claim at a rotated head).
+# A rollback to a known ancestor refuses, an equal-head divergence and a KEL fork surface as forks, and opposite arrival orders converge to one head (control: a duplicate of the same digest; known positive: a live replacement after rotation with no restart, and a restart converges the same).
+# An unanchored card and a forged card refuse; a stale card at a known older head reads the newer head; an admitted joiner's successor re-files live; an offline answer names its last sync (control: the anchored genesis card; known positive: browser and node both).
+# A carry with no claim, a foreign claim, a forged claim and a seal an old signer made refuse; a partial below the quorum files nothing (control: an uncounted partial); a two-vault quorum carry lands act and claim atomically and the herm relays it (known positive).
+# The storm witness across node and browser (silent-zero: an empty fixture paired with a known-positive rotation and carry, and a planted fork).
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;78CqwJNbg-cAjC3KUS_amGj5yPEkP8zVGSVud2g48LM
+
+<<^ code="&#x0004;" -> to="?">>
