@@ -88,8 +88,9 @@ GitHub Copilot reaches models the Codex budget never spends. Nothing the house g
 A premium request counts per prompt, never per tool call.
 
 !!! Its fences
-# ''Read-only when it reads'' (`launch-copilot.sh`, called through `bash`): every write, commit and push tool denied; git and file reads alone.
-# ''Walled when it builds'' (`launch-copilot-builder.sh`, where a build must go to Copilot): file writes in the lane's build worktree alone, `npx vitest` and `npx tsc` there; every git write, push, network fetch, `rm`, `mv`, `npm` and `pnpm` denied; it refuses to start without a scratch `LAR_ROOT` outside the repo and drops any `LAR_BAGS`. A launch never widens these walls (no `shell(bash)`, no `shell(env)`).
+# ''One launcher'', `tools/launch-copilot.mjs read|build`, its walls pinned by `tools/launch-copilot.test.mjs`. Both modes run with no URL, no built-in MCP server (the GitHub server reaches the network and writes), no system temp directory, no prompt and no auto-update, stdin closed and `COPILOT_ALLOW_ALL` dropped; a seat whose working directory sits in the system temp directory refuses, since the temp wall blinds it there. The seat's handback, log and share land in its seat directory.
+# ''Read-only when it reads'' (`read`): every write, commit and push tool denied; git and file reads alone.
+# ''Walled when it builds'' (`build`, where a build must go to Copilot): file writes in the lane's build worktree alone, `npx vitest` and `npx tsc` there; every git write, push, network fetch, `rm`, `mv`, `npm` and `pnpm` denied; it refuses the main checkout, a directory that holds no worktree, and a missing or in-checkout `LAR_ROOT`, refuses `--add-dir`, and drops any `LAR_BAGS`. A launch never widens these walls (no `shell(bash)`, no `shell(env)`, never `--allow-all-*` or `--yolo`).
 # ''No laundering.'' A step this session's safety check refused never travels to Copilot, since routing a refused step through a second permission system counts as a retry.
 # ''Overage off.'' The allowance empties and stops; it resets on the first of each month and carries nothing over.
 # ''No cloud agent.'' A cloud agent opens branches and pull requests under its own hand: outward-facing, and a second writer.
@@ -143,7 +144,10 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 !! The launch ~ one brief file, any lineage
 
 * ''A brief stands as a file'' that names the mask, the ground, the ruling it enacts, the house style and the handback shape.
-* ''The walled Codex seat'': `cd <dir> && TMPDIR=<dir>/.tmp TMPPREFIX=<dir>/.tmp/zsh codex exec -m gpt-6-sol -c model_reasoning_effort=medium -s workspace-write -c sandbox_workspace_write.exclude_slash_tmp=true -c sandbox_workspace_write.exclude_tmpdir_env_var=true --ephemeral --skip-git-repo-check -C <dir> -o <dir>/final.md "<brief>" < /dev/null`, in the background. A builder runs `-C <worktree> --add-dir <dir>`; a reader runs `-C <dir>` over an empty directory and reads the repo from there. The walls keep `/tmp` and every other worktree unwritable, the seat's temp files live inside its own directory, and `workspace-write` keeps `gh` reachable where `read-only` reaches no network.
+* ''The walled Codex seat'': `cd <dir> && TMPDIR=<dir>/.tmp TMPPREFIX=<dir>/.tmp/zsh codex exec -m gpt-6-sol -c model_reasoning_effort=medium -s workspace-write -c sandbox_workspace_write.exclude_slash_tmp=true -c sandbox_workspace_write.exclude_tmpdir_env_var=true [--ephemeral, a reader alone] --skip-git-repo-check -C <dir> -o <dir>/final.md "<brief>" < /dev/null`, in the background. A builder runs `-C <worktree> --add-dir <dir>`; a reader runs `-C <dir>` over an empty directory and reads the repo from there. The walls keep `/tmp` and every other worktree unwritable, the seat's temp files live inside its own directory, and `workspace-write` keeps `gh` reachable where `read-only` reaches no network.
+* ''A builder keeps its rollout; a reader stays ephemeral.'' A builder launches without `--ephemeral`, so a seat cut short continues by its session id (`codex exec resume <id> -m <model> -c model_reasoning_effort=<level>`), and the lead's resume sheet records that id beside the seat's directory, model, effort and head. A reader keeps `--ephemeral`.
+* ''Web search rides before `exec`'' (`codex --search exec …`) on this host's CLI, and only where the brief asks for the field.
+* ''`codex exec` stands as the shell seat.'' `codex mcp-server` left the CLI upstream; `codex mcp` connects tools to Codex and never serves Codex as a tool.
 * ''Stdin closes'' on every background Codex launch (`< /dev/null`), or `codex exec` waits for input and never starts.
 * ''The handback and `-o` never share a file'': the brief names `out.md`, `-o` names `final.md`, and a wave trades only once its handback's word count reads whole.
 * ''A walled seat builds and never runs suites'': vitest, pnpm and tsx each break behind the walls, so the seat builds modules and writes reds and controls, and the lead runs the build and the red proofs.
@@ -152,6 +156,8 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 * ''A Codex resume names its model again'' (`-c model=<id>`), since a resume takes the config's default.
 * ''A Copilot read names its target'': the branch, its head sha and the pull request, read through `git show <branch>:<path>` or the lane's own worktree, never the main tree. A paired read runs each face alone, then hands each its twin's handback.
 * ''A seat that cannot write its out file'' hands back on stdout; the launcher's log keeps it.
+* ''The lead's own watch wakes it.'' A spirit's finish reaches its lead only through a watch the lead arms in the harness's background mode (`until [ -f <seat>/final.md ]`), never a watcher the spirit leaves behind; where a lead pauses on its own spirits, the controller arms that watch and messages the lead on the finish.
+* ''Owed probes'' (Sol's read of OpenAI's Codex docs, 2026-10-25, <<~ loulou "lar:///ha.ka.ba/lares/docs/research/codex-controller-2026">>): a `--json` event stream ending on `turn.completed` as the watch's signal, `--output-schema` for a mechanical status beside `out.md`, a reader with command network off where its brief needs none, permission profiles in place of the flag list, and a matched A/B across Sol, a newer Sol and Luna; each lands here once measured on this host.
 
 <<~/ahu>>
 
@@ -177,6 +183,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FNXp1ZhfIm4aIRGMWTC8B55jw1e4KQIidSeahDvew5k
+<<^ code="&#x0003;">>ni:///sha-256;OEgxMy7yNVD3qTOON49pHgxj0IISQUUAxh1zODjIbjE
 
 <<^ code="&#x0004;" -> to="?">>
