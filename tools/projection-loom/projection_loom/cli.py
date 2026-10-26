@@ -173,6 +173,12 @@ def main(argv=None):
     p.add_argument('--out',type=Path,required=True,help='completed native OODA-HA directory')
     p.add_argument('--gallery',type=Path,required=True,help='fresh gallery output directory')
     p.add_argument('--seats',type=int,choices=[2,3,4,5],default=3)
+    p=commands.add_parser('fire-review',
+                          help='Re-render admitted Fire proposals as native six-view structural orthos')
+    p.add_argument('--project',type=Path,required=True)
+    p.add_argument('--capability-recipe',type=Path,required=True)
+    p.add_argument('--receipt',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
     for name in ('fire-context','fire-audition'):
         p=commands.add_parser(name,
             help='Current AI Fire uses this typed Loom boundary; no autonomous interpreter')
@@ -249,6 +255,16 @@ def main(argv=None):
         result=make(args.out,args.project,args.capability_recipe,args.gallery,
                     seats=args.seats)
         print(json.dumps(result,indent=2));return result
+    if args.command=='fire-review':
+        from .capability_stack import CapabilityRecipe
+        from .fire_review import render_fire_review
+        project=Project.load(args.project)
+        recipe=CapabilityRecipe.load(args.capability_recipe)
+        receipt=json.loads(args.receipt.read_text())
+        result=render_fire_review(project,recipe,receipt,args.out)
+        print(json.dumps({'file':str(args.out/'summary.json'),'sha256':result['sha256'],
+                          'alternatives':len(result['alternatives'])},indent=2))
+        return result
     if args.command in ('fire-context','fire-audition'):
         from .capability_stack import CapabilityCompositor, CapabilityRecipe
         from .fire_contract import validate_proposal
