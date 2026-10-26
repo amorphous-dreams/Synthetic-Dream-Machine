@@ -1,10 +1,10 @@
-/** One lease law: retired spellings stay absent, and every raw prefix scan faces a signed reader. */
+/** One lease law: the unsigned register's spellings stay absent, and every raw prefix scan faces a signed reader. */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { describe, expect, test } from "vitest";
 
 const PACKAGES = join(import.meta.dirname, "..", "..");
-const RETIRED = [["effective", "Lease", "Epoch"], ["roll", "Lease", "Epoch", "OnBoard"]].map((parts) => parts.join(""));
+const GONE_SPELLINGS = [["effective", "Lease", "Epoch"], ["roll", "Lease", "Epoch", "OnBoard"]].map((parts) => parts.join(""));
 const READERS = ["signedLeaseEpoch", "quorumLeaseEpoch", "quorumLeaseEpochOnBoard", "readLeaseAdvance"];
 /** Address makers and writers name the prefix without making an authority read. */
 const ALLOWED: Record<string, string> = {
@@ -49,11 +49,11 @@ describe("lease-law census", () => {
     expect(barePrefixScan("const value = leaseEpochPrefix(resource); signedLeaseEpoch(resource, [], allow);")).toBe(false);
     expect(files().length).toBeGreaterThan(0);
   });
-  test("RED: retired names occur nowhere in package source, tests or probes", () => {
-    const offenders = files().flatMap((file) => RETIRED.filter((name) => file.src.includes(name)).map((name) => `${file.rel}: ${name}`));
+  test("RED: the unsigned register's spellings occur nowhere in package source, tests or probes", () => {
+    const offenders = files().flatMap((file) => GONE_SPELLINGS.filter((name) => file.src.includes(name)).map((name) => `${file.rel}: ${name}`));
     expect(offenders).toEqual([]);
   });
-  test("RED until round B: every authority prefix scan names a signed reader", () => {
+  test("RED: every authority prefix scan names a signed reader", () => {
     const offenders = files().filter((file) => file.rel.includes("/src/") && barePrefixScan(file.src) && !(file.rel in ALLOWED)).map((file) => file.rel).sort();
     expect(offenders).toEqual([]);
   });
