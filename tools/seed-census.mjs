@@ -7,15 +7,15 @@ import { fileURLToPath } from 'node:url';
 const REPO = fileURLToPath(new URL('../', import.meta.url));
 const SELF = new Set(['tools/seed-census.mjs', 'tools/seed-census.test.mjs', 'tools/seed-census-witness.sh']);
 const SOURCE = /\.(?:ts|mts|cts|js|mjs|cjs)$/;
-const TOKEN = /\b(?:loadVesselSigningSeed|placeSignerFromSeed|vesselSeed|vesselFloorKeyDoor|floor[K]eyDoor)\b|signingSeedFromHex\(raw\.signingKey\)/;
+const TOKEN = /\b(?:loadVesselSigningSeed|placeSignerFromSeed|vesselSeed|vesselFloorKeyDoor|floorKeyDoor)\b|signingSeedFromHex\(raw\.signingKey\)/;
 
 // Each entry covers exactly `count` lines. K15 retires the owed entries as its callers move to duty adapters.
 export const ENTRIES = [
   { rule: 'K15', file: 'packages/lararium-browser/src/browser-vessel-identity.ts', match: 'signingSeedFromHex(existing.signingKey)', count: 1, reason: 'K15 moves browser device seed extraction away from the vessel key.' },
   { rule: 'K15', file: 'packages/lararium-browser/src/open-browser-vessel.ts', match: 'vesselSeed', count: 4, reason: 'K15 moves browser founding and device work away from the vessel seed.' },
   { rule: 'K15', file: 'packages/lararium-keyhive/src/ceremony-core.ts', match: 'vesselSeed', count: 7, reason: 'K15 retires the vessel-wide Keyhive Individual and its place card mint.' },
-  { rule: 'allowed', file: 'packages/lararium-mesh/src/gate-bundle.ts', match: 'oorKeyDoor', count: 1, reason: 'gate-bundle.floorKeyDoor declares the floor derivation adapter.' },
-  { rule: 'allowed', file: 'packages/lararium-mesh/src/index.ts', match: 'oorKeyDoor', count: 1, reason: 'The mesh barrel exports the floor derivation adapter.' },
+  { rule: 'allowed', file: 'packages/lararium-mesh/src/gate-bundle.ts', match: 'floorKeyDoor', count: 1, reason: 'gate-bundle.floorKeyDoor declares the floor derivation adapter.' },
+  { rule: 'allowed', file: 'packages/lararium-mesh/src/index.ts', match: 'floorKeyDoor', count: 1, reason: 'The mesh barrel exports the floor derivation adapter.' },
   { rule: 'allowed', file: 'packages/lararium-mesh/src/place-signer.ts', match: 'placeSignerFromSeed', count: 1, reason: 'place-signer.placeSignerFromSeed holds the five framed floor duties.' },
   { rule: 'K15', file: 'packages/lararium-node/src/carriage-relay.ts', match: 'vesselSeed', count: 2, reason: 'K15 moves the relay gate derivation off the vessel seed.' },
   { rule: 'K15', file: 'packages/lararium-node/src/commands/fleet-join.ts', match: 'vesselFloorKeyDoor', count: 2, reason: 'K15 moves the fleet join floor pin child derivation.' },
@@ -26,7 +26,7 @@ export const ENTRIES = [
   { rule: 'allowed', file: 'packages/lararium-node/src/index.ts', match: 'loadVesselSigningSeed', count: 1, reason: 'The node barrel exports the key file door for named callers.' },
   { rule: 'K15', file: 'packages/lararium-node/src/leaf-identity.ts', match: 'loadVesselSigningSeed', count: 2, reason: 'K15 moves leaf device identity off the vessel seed.' },
   { rule: 'K15', file: 'packages/lararium-node/src/main.ts', match: 'vesselFloorKeyDoor', count: 2, reason: 'K15 moves the main floor gate child derivation.' },
-  { rule: 'allowed', file: 'packages/lararium-node/src/node-vessel-identity.ts', match: 'oorKeyDoor', count: 2, reason: 'node-vessel-identity.vesselFloorKeyDoor owns the floor key file door.' },
+  { rule: 'allowed', file: 'packages/lararium-node/src/node-vessel-identity.ts', match: 'floorKeyDoor', count: 2, reason: 'node-vessel-identity.vesselFloorKeyDoor owns the floor key file door.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/node-vessel-identity.ts', match: 'vesselFloorKeyDoor()', count: 1, reason: 'node-vessel-identity.vesselFloorKeyDoor names its floor key door.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/node-vessel-identity.ts', match: 'loadVesselSigningSeed', count: 1, reason: 'node-vessel-identity.loadVesselSigningSeed reads the standing key file.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/node-vessel-identity.ts', match: 'signingSeedFromHex(raw.signingKey)', count: 2, reason: 'The key file door decodes the standing vessel seed and its floor child.' },
