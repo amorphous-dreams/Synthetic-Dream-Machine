@@ -24,7 +24,7 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import {
-  composeVessel, dialEntryToRecord, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, hearthPinIndex, memoryBackedWithdrawals,
+  composeVessel, dialEntryToRecord, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, hearthPinIndex, filePlaceFloorPins, placeFloorPinsFromBoard, placeKelRowsFromBoard, memoryBackedWithdrawals,
   FLOW_SOCKET_ROUTE, pullAndVerifyFlow, CARRIAGE_PIN_ABSENT,
   type CapModule, type CarriageEntry, type HearthPinIndex, type LarDoc, type MeshPalaceDoc,
 } from "@lararium/mesh";
@@ -227,14 +227,13 @@ describe("the herm relay and carriage peering, gate-native, at one explicit Nexu
     expect(forced.pointer).toBeUndefined();
   }, 30_000);
 
-  /** relay two's pin as the last hop's index filed it off the board. */
+  /** relay two's pin as the last hop's index filed it off the board: the claims through the one fold, with the board's KEL rows and counted carriers. */
   function lastHopPin() {
     const pins = hearthPinIndex();
-    for (const raw of Object.values(board.doc.tiddlers)) {
-      const text = (raw as { tiddler?: { text?: string } }).tiddler?.text;
-      const parsed = text ? JSON.parse(text) as { placeKey?: string; pin?: unknown } : null;
-      if (parsed?.placeKey === relayTwo.key) pins.put(relayTwo.key, parsed.pin);
-    }
+    const carriers = new Set(acts.map((act) => act.nym));
+    filePlaceFloorPins(pins, placeFloorPinsFromBoard(board.doc), {
+      nexusHex: w.pin.nexus, route: FLOW_SOCKET_ROUTE, kelRows: placeKelRowsFromBoard(board.doc), standing: { via: "carrier", carriers },
+    });
     return pins.get({ hearth: relayTwo.key, nexus: w.pin.nexus, route: FLOW_SOCKET_ROUTE, tier: "floor" });
   }
 

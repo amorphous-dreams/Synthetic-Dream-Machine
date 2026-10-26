@@ -8,7 +8,7 @@
 import { describe, expect, test } from "vitest";
 import { hex } from "@lararium/mesh";
 import { browserGatePins, fileFloorCard } from "../src/browser-gate-pins.js";
-import { headOf, prng, shuffled, stormStages } from "../../lararium-mesh/tests/place-claim-fixture.js";
+import { claimAt, floorPinFor, headOf, prng, rotatePlace, shuffled, stormStages } from "../../lararium-mesh/tests/place-claim-fixture.js";
 
 const NEXUS = "nexus-storm.synthetic";
 const RELAY = "ws://node:8080/ws";
@@ -56,4 +56,25 @@ describe("the storm witness, browser leg", () => {
     fileFloorCard(pins, RELAY, { claim: stages[1]!.claim, kel: stages[1]!.place.chain }, anchor);
     expect(pins.standingOf(KEY)?.seq).toBe(1);
   });
+
+  test("a planted fork (a sibling rotation) surfaces in every arrival order and holds the settled ancestor", async () => {
+    const stages = await stormStages(NEXUS, 2);
+    const sibling = rotatePlace(stages[0]!.place, 1);
+    const siblingPin = floorPinFor(NEXUS, "/flow", 77);
+    const cards = [
+      { claim: stages[0]!.claim, kel: stages[0]!.place.chain },
+      { claim: stages[1]!.claim, kel: stages[1]!.place.chain },
+      { claim: await claimAt(sibling, siblingPin), kel: sibling.chain },
+    ];
+    const anchor = { aid: stages[0]!.place.aid, via: "genesis" as const };
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 6; seed++) {
+      const pins = browserGatePins();
+      for (const card of shuffled(cards, prng(seed))) fileFloorCard(pins, RELAY, card, anchor);
+      expect(pins.forks().length).toBeGreaterThan(0);
+      expect(pins.get(KEY)).toEqual(stages[0]!.pin);
+      seen.add(JSON.stringify({ forks: pins.forks(), head: pins.standingOf(KEY)?.head }));
+    }
+    expect(seen.size).toBe(1);
+  }, 120_000);
 });

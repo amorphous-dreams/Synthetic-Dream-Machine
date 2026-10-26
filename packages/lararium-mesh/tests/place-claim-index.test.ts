@@ -145,13 +145,13 @@ describe("arrival order selects nothing", () => {
   });
 });
 
-describe("the rest of the index is unchanged", () => {
+describe("a pin that rides no claim keeps the unclaimed rule (claims always use the set fold)", () => {
   test("an unclaimed floor pin files first-wins until a claim serves; then a bare put matches what is served or files nothing", async () => {
     const ix = hearthPinIndex();
     const p0 = foundPlace(1), p1 = rotatePlace(p0);
     const admitPin = pinAt(9);
     expect(ix.put("h", admitPin)).toBe(true);
-    expect(ix.put("h", pinAt(8))).toBe(false);                     // first-wins while no claim rides the key
+    expect(ix.put("h", pinAt(8))).toBe(false);                     // an UNCLAIMED admit pin is first-wins while no claim rides the key
     const a = await stood(p0, 10), b = await stood(p1, 11);
     file(ix, "h", a);
     expect(ix.get(keyFor("h"))).toEqual(a.pin);                    // the claim serves over the unclaimed pin
@@ -197,5 +197,13 @@ describe("the rest of the index is unchanged", () => {
     expect(report.filed).toEqual([headOf(p1).signerKey]);
     expect(report.held).toEqual(["rollback"]);
     expect(dialPinKeyOf(headOf(p1).signerKey, pinAt(11)).hearth).toBe(headOf(p1).signerKey);
+  });
+
+  test("noted KEL forks are bounded: a hostile writer minting forks of its own AIDs cannot grow the index past its bound", () => {
+    const ix = hearthPinIndex();
+    for (let i = 0; i < 1100; i++) ix.noteKelFork({ aid: i.toString(16).padStart(64, "0"), trunk: ["a".repeat(64)] });
+    expect(ix.forks().length).toBe(1024);
+    ix.noteKelFork({ aid: "0".repeat(64), trunk: ["b".repeat(64)] });         // CONTROL: an AID already noted still takes its earlier fork
+    expect(ix.forks().length).toBe(1024);
   });
 });

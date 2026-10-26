@@ -21,6 +21,7 @@ export const ENTRIES = [
   { rule: 'K15', file: 'packages/lararium-node/src/commands/fleet-join.ts', match: 'vesselFloorKeyDoor', count: 2, reason: 'K15 moves the fleet join floor pin child derivation.' },
   { rule: 'K15', file: 'packages/lararium-node/src/commands/init.ts', match: 'loadVesselSigningSeed', count: 2, reason: 'K15 moves the founding Keyhive Individual away from the vessel seed.' },
   { rule: 'K15', file: 'packages/lararium-node/src/commands/init.ts', match: 'foundThePlace({ repo, vesselSeed', count: 1, reason: 'K15 moves place founding away from the vessel-wide Individual.' },
+  { rule: 'allowed', file: 'packages/lararium-node/src/hearth-floor-claims.ts', match: 'loadVesselSigningSeed', count: 2, reason: 'hearth-floor-claims signs the place floor pin claims the sovereign session and the banner card carry, at the place KEL head.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/commands/nexus-contract.ts', match: 'loadVesselSigningSeed', count: 2, reason: 'nexus-contract.runNexusCarryFor signs carriage carrier and place floor pin.' },
   { rule: 'K15', file: 'packages/lararium-node/src/commands/nexus-contract.ts', match: 'vesselFloorKeyDoor', count: 2, reason: 'K15 moves the floor pin child derivation.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/index.ts', match: 'loadVesselSigningSeed', count: 1, reason: 'The node barrel exports the key file door for named callers.' },

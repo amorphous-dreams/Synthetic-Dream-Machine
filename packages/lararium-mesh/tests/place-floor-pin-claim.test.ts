@@ -8,7 +8,10 @@
 import { describe, expect, test } from "vitest";
 import * as nobleEd from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
-import { PLACE_FLOOR_PIN_REFUSALS, foldClaimHead, readPlaceFloorPin, type ClaimReadAt } from "../src/place-floor-pin.js";
+import { PLACE_FLOOR_PIN_REFUSALS, PLACE_FLOOR_PIN_ROWS, PLACE_FLOOR_PIN_ROW_CHARS, foldClaimHead, placeFloorPinsFromBoard, placeFloorPinKey, readPlaceFloorPin, writePlaceFloorPin, filePlaceFloorPins, type ClaimReadAt } from "../src/place-floor-pin.js";
+import { PLACE_KEL_BOARD_ROWS, PLACE_KEL_ROW_CHARS, PLACE_KEL_PREFIX, placeKelRowsFromBoard } from "../src/place-kel-board.js";
+import { hearthPinIndex } from "../src/admit-gate-pin.js";
+import type { LarDoc } from "../src/base-doc.js";
 import { claimAt, digests, floorPinFor, forgedClaim, foundPlace, headOf, keyOf, rotatePlace, rowsOf, seedOf } from "./place-claim-fixture.js";
 
 const NEXUS = "nexus-claim.synthetic";
@@ -132,4 +135,28 @@ describe("a floor pin claim reads at the head it names", () => {
     expect(foldClaimHead(shuffled, place.aid, "0".repeat(64)).ok).toBe(false);
     expect(foldClaimHead(shuffled, "z", headOf(place).headDigest).ok).toBe(false);
   });
+
+  test("hostile boards are bounded at the board: claim rows and KEL rows cap, an oversized payload is noise, a pass folds each head once", async () => {
+    const place = foundPlace(1);
+    const claim = await claimAt(place, pinAt(10));
+    const board = { schemaVersion: "lar/1", tiddlers: {} } as unknown as LarDoc;
+    writePlaceFloorPin(board, claim);                                          // CONTROL: the honest row reads
+    expect(placeFloorPinsFromBoard(board)).toHaveLength(1);
+    const text = JSON.stringify(claim);
+    for (let i = 0; i < PLACE_FLOOR_PIN_ROWS + 50; i++) {
+      board.tiddlers[`${placeFloorPinKey(claim).replace(/[^/]+$/, "")}${String(i).padStart(4, "0")}x`] = { tiddler: { title: "x", text } } as never;
+    }
+    board.tiddlers[`${placeFloorPinKey(claim)}-fat`] = { tiddler: { title: "x", text: " ".repeat(PLACE_FLOOR_PIN_ROW_CHARS + 1) + text } } as never;
+    expect(placeFloorPinsFromBoard(board)).toHaveLength(PLACE_FLOOR_PIN_ROWS);
+    const kelBoard = { schemaVersion: "lar/1", tiddlers: {} } as unknown as LarDoc;
+    const row = JSON.stringify(place.chain[0]);
+    for (let i = 0; i < PLACE_KEL_BOARD_ROWS + 10; i++) kelBoard.tiddlers[`${PLACE_KEL_PREFIX}${place.aid}/${String(i).padStart(5, "0")}`] = { tiddler: { title: "x", text: row } } as never;
+    kelBoard.tiddlers[`${PLACE_KEL_PREFIX}${place.aid}/fat`] = { tiddler: { title: "x", text: " ".repeat(PLACE_KEL_ROW_CHARS + 1) + row } } as never;
+    expect(placeKelRowsFromBoard(kelBoard)).toHaveLength(PLACE_KEL_BOARD_ROWS);
+    // A pass over the surplus files the one honest head once and reads the same in the same order.
+    const index = hearthPinIndex();
+    const report = filePlaceFloorPins(index, placeFloorPinsFromBoard(board), at(rowsOf(place), { via: "anchor", aid: place.aid }));
+    expect(report.filed.length).toBe(PLACE_FLOOR_PIN_ROWS);
+    expect(index.size).toBe(1);
+  }, 120_000);
 });

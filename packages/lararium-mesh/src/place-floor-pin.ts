@@ -120,12 +120,21 @@ export type ClaimHeadReading =
 /**
  * Fold a reader's unordered KEL rows to the head a claim names: walk from the head digest back through `prev` to the
  * inception, check that inception is the AID, and verify the whole chain (`verifyPlaceKel`). Work is bounded by
- * `PLACE_KEL_ROWS_PER_AID`. A row of another AID or a torn row is noise. A head on a branch past the first fork the rows
+ * `PLACE_KEL_ROWS_PER_AID`, and a pass over many claims names a `memo` so each (AID, head) folds once. A row of another AID or a torn row is noise. A head on a branch past the first fork the rows
  * show (`foldPlaceKel` reads the whole set) refuses `kel-forked` and names the trunk both branches share; a head at or before the fork's
  * common ancestor reads whole, since every branch descends from it.
  */
-export function foldClaimHead(rows: readonly unknown[], aid: string, headDigest: string): ClaimHeadReading {
+export function foldClaimHead(rows: readonly unknown[], aid: string, headDigest: string, memo?: Map<string, ClaimHeadReading>): ClaimHeadReading {
   if (!HEX64.test(aid) || !HEX64.test(headDigest)) return { ok: false, refusal: "head-unreadable" };
+  const memoKey = `${aid}\n${headDigest}`;
+  const had = memo?.get(memoKey);
+  if (had) return had;
+  const read = foldClaimHeadOnce(rows, aid, headDigest);
+  memo?.set(memoKey, read);
+  return read;
+}
+
+function foldClaimHeadOnce(rows: readonly unknown[], aid: string, headDigest: string): ClaimHeadReading {
   const byDigest = new Map<string, PlaceKelEvent>();
   const decoded: PlaceKelEvent[] = [];
   for (const raw of rows.slice(0, ROWS_EXAMINED)) {
@@ -181,6 +190,8 @@ export interface ClaimReadAt {
   /** The KEL rows the reader holds for this place, unordered and unread (the carriage board's rows, a card's, a bundle's). */
   readonly kelRows:  readonly unknown[];
   readonly standing: ClaimStanding;
+  /** One filing pass's fold memo: each (AID, head) folds once however many claims name it. */
+  readonly folds?:   Map<string, ClaimHeadReading>;
 }
 
 /**
@@ -204,7 +215,7 @@ export function readPlaceFloorPin(raw: unknown, at: ClaimReadAt):
     if (pin.nexus !== at.nexusHex) return { refusal: "pin-other-nexus" };
     if (pin.route !== at.route) return { refusal: "pin-other-route" };
     const aid = s["aid"], head = s["head"], seq = s["seq"];
-    const folded = foldClaimHead(at.kelRows, aid, head);
+    const folded = foldClaimHead(at.kelRows, aid, head, at.folds);
     if (!folded.ok) return folded.refusal === "kel-forked" ? { refusal: "kel-forked", fork: folded.fork } : { refusal: "head-unreadable" };
     if (folded.head.seq !== seq) return { refusal: "head-unreadable" };
     const claim = { aid, seq, head };
@@ -230,13 +241,22 @@ export function writePlaceFloorPin(draft: LarDoc, statement: PlaceFloorPinStatem
   draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(statement) }, PLACE_FLOOR_PIN_KIND);
 }
 
-/** Every statement-shaped payload a carriage board carries under the sidecar prefix, unread. */
+/** The most claim rows one board read takes, and the longest payload one row may carry: a lawful claim is under a kilobyte. */
+export const PLACE_FLOOR_PIN_ROWS = 512;
+export const PLACE_FLOOR_PIN_ROW_CHARS = 4096;
+
+/**
+ * Every statement-shaped payload a carriage board carries under the sidecar prefix, unread. The read is bounded at the board:
+ * the rows sort by key (so the same board reads the same rows), a payload past `PLACE_FLOOR_PIN_ROW_CHARS` is noise, and no more
+ * than `PLACE_FLOOR_PIN_ROWS` parse. A board holding more reads its first rows only; the rest wait unread.
+ */
 export function placeFloorPinsFromBoard(doc: LarDoc | undefined | null): unknown[] {
   const out: unknown[] = [];
-  for (const [title, record] of Object.entries(doc?.tiddlers ?? {})) {
-    if (!title.startsWith(PLACE_FLOOR_PIN_PREFIX)) continue;
-    const text = tiddlerText(record);
-    if (text === null) continue;
+  const titles = Object.keys(doc?.tiddlers ?? {}).filter((title) => title.startsWith(PLACE_FLOOR_PIN_PREFIX)).sort();
+  for (const title of titles) {
+    if (out.length >= PLACE_FLOOR_PIN_ROWS) break;
+    const text = tiddlerText(doc!.tiddlers[title]);
+    if (text === null || text.length > PLACE_FLOOR_PIN_ROW_CHARS) continue;
     try { out.push(JSON.parse(text) as unknown); } catch { /* a torn sidecar files nothing */ }
   }
   return out;
@@ -269,8 +289,9 @@ export function filePlaceFloorPins(
   const filed: string[] = [];
   const refused: PlaceFloorPinRefusal[] = [];
   const held: string[] = [];
-  for (const raw of statements) {
-    const read = readPlaceFloorPin(raw, at);
+  const pass: ClaimReadAt = at.folds ? at : { ...at, folds: new Map() };
+  for (const raw of statements.slice(0, PLACE_FLOOR_PIN_ROWS)) {
+    const read = readPlaceFloorPin(raw, pass);
     if ("refusal" in read) { refused.push(read.refusal); if (read.fork) index.noteKelFork(read.fork); continue; }
     const result = index.fileClaim(nameFor(read), read.pin, read.stand);
     if (result.filed) filed.push(nameFor(read)); else held.push(result.refusal ?? "refused");

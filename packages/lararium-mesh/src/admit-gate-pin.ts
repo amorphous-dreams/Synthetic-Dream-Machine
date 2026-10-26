@@ -153,6 +153,8 @@ const keyText = (hearth: string, nexus: string, route: string, tier: string): st
 const HEX64 = /^[0-9a-f]{64}$/;
 /** The most claims one (place, Nexus, route, tier) set keeps: a lawful chain stays far below it. */
 const CLAIMS_PER_SET = 256;
+/** The most place KEL forks the index notes: a note is evidence of a fork the reader met, and a hostile writer mints forks only of its own AIDs. */
+const KEL_FORK_NOTES = 1024;
 
 interface HeldClaim {
   readonly pin:    GateBundlePin;
@@ -277,6 +279,7 @@ export function hearthPinIndex(): HearthPinIndex {
     noteKelFork(fork: PlaceKelForkNote): void {
       if (!HEX64.test(fork?.aid) || !Array.isArray(fork.trunk) || fork.trunk.length === 0 || !fork.trunk.every((d) => typeof d === "string" && HEX64.test(d))) return;
       const had = kelForks.get(fork.aid);
+      if (had === undefined && kelForks.size >= KEL_FORK_NOTES) return;
       // The earliest fork governs: the shorter trunk, and for equal trunks the one that sorts first.
       if (had === undefined || fork.trunk.length < had.length || (fork.trunk.length === had.length && fork.trunk.join() < had.join())) {
         kelForks.set(fork.aid, Object.freeze([...fork.trunk]));
