@@ -156,12 +156,12 @@ describe("a contracted founding carries its binding instead of signing it", () =
     const f = await found({ mode: "contracted", ...b }, deviceKey, repo);
     const anchor = mintFaceAnchor({ personaGroup: f.personaGroupId, personaKelPrefix: f.personaKelPrefix, personaRootDid: f.founderEdge.personaRootDid, edge: f.founderEdge, leaseEpoch: 0 });
     const plane = await repo.find<LarDoc>(f.personaUrl as never);
-    const proof = (records: unknown[]) => proveFaceFromLog({ records, chain: b.personaKelChain, group: f.personaGroupId, anchor, deviceKey, planes: { persona: f.personaUrl } });
+    const proof = (records: unknown[]) => proveFaceFromLog({ records, chain: b.personaKelChain, group: f.personaGroupId, anchor, deviceKey, planes: { persona: f.personaUrl, intents: f.intentsUrl } });
     expect(proof(personaActRecordsOfGroup(plane.doc(), f.personaGroupId))).toEqual({ ok: false, refusal: { why: "no-founding" } });
     const operatorKey = f.founderEdge.personaRootDid.replace(/^0x/, "");
     const log = await signFoundingLog({
       group: f.personaGroupId, personaKelPrefix: f.personaKelPrefix, rootCommitment: faceRootCommitment(f.founderEdge.personaRootDid), epoch: 0,
-      planes: { persona: f.personaUrl }, deviceKey, edgeDigest: edgeBodyDigest(f.founderEdge),
+      planes: { persona: f.personaUrl, intents: f.intentsUrl }, deviceKey, edgeDigest: edgeBodyDigest(f.founderEdge),
     }, { key: operatorKey, sign: ed25519SignerFromSeed(OPERATOR_SEED) });
     plane.change((d) => { for (const a of log) writePersonaAct(d, a); });
     expect(proof(personaActRecordsOfGroup(plane.doc(), f.personaGroupId)).ok).toBe(true);

@@ -15,7 +15,7 @@ import type { PersonaProjection } from "./persona-act.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 
 /** The planes of a face, by the name a `plane` act carries. */
-export const FACE_PLANE_NAMES = ["persona", "identities", "circles", "sessions"] as const;
+export const FACE_PLANE_NAMES = ["persona", "identities", "circles", "sessions", "intents"] as const;
 export type FacePlaneName = (typeof FACE_PLANE_NAMES)[number];
 
 export type FaceBootRefusal =

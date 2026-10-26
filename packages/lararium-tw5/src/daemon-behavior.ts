@@ -136,6 +136,8 @@ export interface DaemonBehaviorOptions {
    * all three flows. ABSENT → no seed (a non-operator makeDaemonBehavior caller keeps its old behavior).
    */
   runnableHulls?: RunnableHulls;
+  /** Seed the read-only face pane only when this vessel wears a face. */
+  faceIntents?: boolean;
 }
 
 export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBehavior {
@@ -177,7 +179,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
       // The ONE cap-gated daemon protocol seed (the isomorphic seed lift): Ui+Persona+Circle+Flow, once,
       // on the hook BOTH boots reach — so neither entry re-seeds. Gated on `runnableHulls` (absent → skip,
       // preserving old behavior for non-operator callers). Idempotent (each seed setTiddler-overwrites).
-      if (opts.runnableHulls) seedDaemonProtocol(tw5, opts.runnableHulls);
+      if (opts.runnableHulls) seedDaemonProtocol(tw5, opts.runnableHulls, opts.faceIntents === true);
       const registry = new VerbTable();
       // Sovereign-worker: the data-plane reactors register HERE, in-worker, over the
       // IslandContext (ctx.composite/ctx.repo) — so they ride the dispatcher's

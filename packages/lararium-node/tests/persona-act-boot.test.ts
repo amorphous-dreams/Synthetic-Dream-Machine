@@ -23,7 +23,7 @@ async function fixture() {
   const board = emptyLarDoc();
   writePersonaKelEvent(board, inception);
   const chain = personaKelChainForPrefix(board, inception.prefix)!;
-  const planes = { persona: handle.url as string, identities: "automerge:i", circles: "automerge:c", sessions: "automerge:s" };
+  const planes = { persona: handle.url as string, identities: "automerge:i", circles: "automerge:c", sessions: "automerge:s", intents: "automerge:t" };
   const log = await signFoundingLog({ group, personaKelPrefix: inception.prefix,
     rootCommitment: faceRootCommitment(did), epoch: 0, planes, deviceKey: rootKey, edgeDigest: "edge" }, signer);
   const anchor = mintFaceAnchor({ personaGroup: group, personaKelPrefix: inception.prefix,

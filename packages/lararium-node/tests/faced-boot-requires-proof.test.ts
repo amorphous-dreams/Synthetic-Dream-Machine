@@ -49,6 +49,14 @@ describe("a faced boot proves its face", () => {
     expect(src).not.toMatch(/raiseAnchorFromSlots\(faceAnchor,/);
     expect(src).toContain("{ await keepFaceAnchorOfGroup(pinned); standingAnchor = pinned; }");
   });
+  test("RED: both composers prove the intents url before registering it; CONTROL: they still register the circles plane", () => {
+    for (const rel of ["lararium-node/src/open-node-vessel.ts", "lararium-browser/src/open-browser-vessel.ts"]) {
+      const src = read(rel);
+      expect(src).toMatch(/planes: \{[^}]*intents:/s);
+      expect(src).toMatch(/registerInCatalog\(wornFace\.intents,/);
+      expect(src).toMatch(/registerInCatalog\(wornFace\.circles,/);
+    }
+  });
 
   test("RED: the worn face's gates, same-operator views and Kahu mount read sealed custody's group, never the bootstrap's group text, and the views and gates wait for the proof", () => {
     const src = read("lararium-node/src/open-node-vessel.ts");

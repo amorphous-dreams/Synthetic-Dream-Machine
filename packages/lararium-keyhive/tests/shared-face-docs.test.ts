@@ -44,14 +44,16 @@ describe("a face's circles and identities follow the face", () => {
     const f = await founderAndJoinee();
     expect(f.applied.identitiesUrl, "the founder's identities document, same url").toBe(f.face.identitiesUrl);
     expect(f.applied.circlesUrl, "the founder's circles document, same url").toBe(f.face.circlesUrl);
+    expect(f.applied.intentsUrl, "the founder's intents document, same url").toBe(f.face.intentsUrl);
     expect(f.applied.sessionsUrl, "sessions stay per vessel").not.toBe(f.face.sessionsUrl);
     const anchor = mintFaceAnchor({ personaGroup: f.face.personaGroupId, personaKelPrefix: f.face.personaKelPrefix, personaRootDid: f.face.founderEdge.personaRootDid, edge: f.applied.deviceEdge, leaseEpoch: 0 });
     const proof = (planes: Record<string, string>, records = f.personaActs) => proveFaceFromLog({ records, chain: f.chain, group: f.face.personaGroupId, anchor, deviceKey: f.joineeKey, planes });
-    const shared = { persona: f.applied.personaUrl, identities: f.applied.identitiesUrl, circles: f.applied.circlesUrl };
+    const shared = { persona: f.applied.personaUrl, identities: f.applied.identitiesUrl, circles: f.applied.circlesUrl, intents: f.applied.intentsUrl };
     expect(proof(shared).ok).toBe(true);
     // RED: a document named by no act refuses
     expect(proof({ ...shared, circles: "automerge:forged" })).toEqual({ ok: false, refusal: { why: "plane", plane: "circles" } });
     expect(proof({ ...shared, identities: "automerge:forged" })).toEqual({ ok: false, refusal: { why: "plane", plane: "identities" } });
+    expect(proof({ ...shared, intents: "automerge:forged" })).toEqual({ ok: false, refusal: { why: "plane", plane: "intents" } });
   });
 
   test("RED: a document named only by a stranger's act refuses", async () => {
@@ -81,6 +83,9 @@ describe("a face's circles and identities follow the face", () => {
     };
     const forgedFirst = await adopt([forged, ...(f.personaActs as unknown[])]).run;
     expect(forgedFirst.circlesUrl, "the verified projection names the url, not the first raw record").toBe(f.face.circlesUrl);
+    expect(forgedFirst.intentsUrl).toBe(f.face.intentsUrl);
+    const noIntents = (f.personaActs as Array<{ body: { act: string; plane?: string } }>).filter((a) => a.body.act !== "plane" || a.body.plane !== "intents");
+    await expect(adopt(noIntents).run).rejects.toThrow(/no signed intents plane; re-admit the face/);
     const malformed = adopt([null, ...(f.personaActs as unknown[])]);
     await expect(malformed.run).rejects.toThrow(/malformed persona act/);
     // A bundle with no founded log, or no signed fleet frontier record, joins nothing and writes nothing.
@@ -95,7 +100,7 @@ describe("a face's circles and identities follow the face", () => {
     const place = await foundThePlace({ repo: placeRepo, vesselSeed: new Uint8Array(32).fill(91), hearthTrueName: "hearth" });
     const doc = place.daemonHandle.doc() as LarDoc;
     expect(personaActRecordsOfGroup(doc, "any")).toEqual([]);
-    expect(Object.keys(place).filter((k) => /identities|circles|sessions|persona/i.test(k))).toEqual([]);
+    expect(Object.keys(place).filter((k) => /identities|circles|sessions|intents|persona/i.test(k))).toEqual([]);
     void writePersonaAct;
   });
 });

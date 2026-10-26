@@ -1761,7 +1761,7 @@ async function prepareNodeBootOn(
       // The WORN face decides which plane mounts; the Binding Gate below resolves the same face. The
       // family, the pin and every face plane read off the bootstrap alone.
       const {
-        personaPlanes, personaBagId, personaUrl, identitiesUrl, circlesUrl, sessionsUrl,
+        personaPlanes, personaBagId, personaUrl, identitiesUrl, circlesUrl, sessionsUrl, intentsUrl,
       } = bootFacePlanes(bootstrapTiddlers, wornMount?.personaGroupId ?? null);
       // ── THE PLACE STANDS ALONE; THE FACE RIDES OPTIONAL ────────────────────────────────────────
       // Only the daemon doc reads required — a founding stands a PLACE first (`lares vessel found`) and a FACE
@@ -1772,12 +1772,12 @@ async function prepareNodeBootOn(
       }
       // A TORN face refuses outright, mirroring `bootDaemonKeyhive`: some pins standing and others absent
       // names a half-finished founding, and guessing which half to trust is the confused-deputy error.
-      const faceParts = [identitiesUrl, circlesUrl, sessionsUrl, personaUrl, personaBagId];
+      const faceParts = [identitiesUrl, circlesUrl, sessionsUrl, intentsUrl, personaUrl, personaBagId];
       const faceHeld  = faceParts.filter(Boolean).length;
       if (faceHeld > 0 && faceHeld < faceParts.length) {
         throw new Error(
           `[lararium] the face this vessel carries reads TORN — some social planes stand and others do not.\n` +
-          `  missing: ${[!identitiesUrl && "the identities plane", !circlesUrl && "the circles plane", !sessionsUrl && "the sessions plane", !personaUrl && "the PersonaGroup plane", !personaBagId && "the PersonaGroup sentinel"].filter(Boolean).join(", ")}\n` +
+          `  missing: ${[!identitiesUrl && "the identities plane", !circlesUrl && "the circles plane", !sessionsUrl && "the sessions plane", !intentsUrl && "the intents plane", !personaUrl && "the PersonaGroup plane", !personaBagId && "the PersonaGroup sentinel"].filter(Boolean).join(", ")}\n` +
           `  Re-light the face (\`lares persona new 0\`) rather than booting on half of one.`,
         );
       }
@@ -1786,6 +1786,7 @@ async function prepareNodeBootOn(
         ...(identitiesUrl ? { identitiesUrl } : {}),
         ...(circlesUrl    ? { circlesUrl }    : {}),
         ...(sessionsUrl   ? { sessionsUrl }   : {}),
+        ...(intentsUrl    ? { intentsUrl }    : {}),
         ...(personaUrl    ? { personaUrl }    : {}),
         ...(personaBagId  ? { personaBagId }  : {}),
       };
@@ -1984,7 +1985,7 @@ async function prepareNodeBootOn(
           anchor: faceAnchor, deviceKey: activeAtom.key, ...(deviceEdge ? { edge: deviceEdge } : {}),
           // The face's SHARED documents: its persona plane, its circles and its identities, each named by a signed act. Sessions
           // stay per vessel (motion, never a decision that crosses devices), so no act names them.
-          planes: { persona: bootstrap.personaUrl, identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl } });
+          planes: { persona: bootstrap.personaUrl, identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl, intents: bootstrap.intentsUrl } });
         if (!proof.ok) throw new Error(`[lararium] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
         wornFaceProved = true;
         wornFaceProven = true;
@@ -2193,8 +2194,8 @@ async function prepareNodeBootOn(
     // verbs that read a persona plane resolve it the way every user bag resolves, from the catalog registry. This boot
     // carries the seed across that gap.
     //
-    // ALL FOUR OF A FACE'S PLANES, not the persona plane alone: the circles, identities and sessions planes carry
-    // the same tag and answer the same ownership question, so one bridge serves the whole face and the four
+    // ALL FIVE OF A FACE'S PLANES, including intents: the circles, identities, sessions and intents planes carry
+    // the same tag and answer the same ownership question, so one bridge serves the whole face and the five
     // cannot drift onto different registries.
     //
     // Idempotent by construction: it writes the url the seed already names, so a plane registered on an
@@ -2217,7 +2218,9 @@ async function prepareNodeBootOn(
         const chain = personaKelChainForPrefix(board.doc(), other.personaKelPrefix);
         if (!chain || chain.length === 0) continue;
         const records = await readFacePersonaRecords(repo, { personaUrl: plane.url, group: plane.personaGroupId, extraDocs: [daemonDoc], heldOnly: true });
-        if (proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url } }).ok) provenPlanes.set(plane.personaGroupId, plane.url);
+        const otherFace = faceBootTiddlers ? bootFacePlanes(faceBootTiddlers, plane.personaGroupId) : null;
+        if (!otherFace?.intentsUrl) continue;
+        if (proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url, intents: otherFace?.intentsUrl } }).ok) provenPlanes.set(plane.personaGroupId, plane.url);
       } catch (e) { if (!(e instanceof CustodyLocked)) throw e; }
     }
     for (const plane of bootstrap.personaPlanes) {
@@ -2229,6 +2232,7 @@ async function prepareNodeBootOn(
       registerInCatalog(wornFace.circles,    bootstrap.circlesUrl);
       registerInCatalog(wornFace.identities, bootstrap.identitiesUrl);
       registerInCatalog(wornFace.sessions,   bootstrap.sessionsUrl);
+      registerInCatalog(wornFace.intents,    bootstrap.intentsUrl);
     }
     // M3 — node-main reads the persisted keyhive Archive from the identity home and passes it into the
     // worker (same custody boundary the 32-byte seed already crosses). keyhive inits from it as the
@@ -3009,6 +3013,7 @@ async function prepareNodeBootOn(
       void residency.pin(pinFace.identities, "boot:identities");
       void residency.pin(pinFace.circles,    "boot:circles");
       void residency.pin(pinFace.sessions,   "boot:sessions");
+      void residency.pin(pinFace.intents,    "boot:intents");
     }
     void residency.pin(DAEMON_BAG_ID,       "boot:daemon");
     // Durable pin replay — BEFORE the sweeper starts, so a replayed pin never races the first

@@ -49,6 +49,7 @@ async function stand() {
   const plane = memoryStore();
   const input = (s: ReturnType<typeof summons>) => ({
     provider: founder, summons: s, ctx, founderEdge,
+    fence: { intentId: JSON.stringify(s), pinnedAtom: founderEdge.deviceVerifyingKey, ownAtom: founderEdge.deviceVerifyingKey },
     signGrant: (bytes: Uint8Array) => faceAtomKeyFromSeed(seedOf(7), group.groupId).sign(bytes),
     atomSeed: seedOf(7),
     operationStore: operations.store,

@@ -77,7 +77,7 @@ export function fakeAdmitResult(input?: { readonly payload?: { readonly deviceEd
   return {
     // The complete edge the ceremony returns; the faked ceremony carries the payload's own.
     ...(input?.payload?.deviceEdge ? { deviceEdge: input.payload.deviceEdge } : {}),
-    identitiesUrl: generateAutomergeUrl(), circlesUrl: generateAutomergeUrl(), sessionsUrl: generateAutomergeUrl(),
+    identitiesUrl: generateAutomergeUrl(), circlesUrl: generateAutomergeUrl(), sessionsUrl: generateAutomergeUrl(), intentsUrl: generateAutomergeUrl(),
     daemonUrl: generateAutomergeUrl(), personaUrl: generateAutomergeUrl(), personaBagId: "persona-wire-rig",
     contactCardJson: "{\"wire\":\"rig\"}", hearthDaemonUrl: null,
     archive: new Uint8Array([0x77, 0x69, 0x72, 0x65]),

@@ -46,6 +46,7 @@ export interface VesselBootstrap {
   identitiesUrl?: string;
   circlesUrl?:   string;
   sessionsUrl?:  string;
+  intentsUrl?:   string;
   daemonUrl:      string;
   /** The mounted PersonaGroup plane's doc URL — founded alongside the daemon bag. */
   personaUrl?:    string;
@@ -273,7 +274,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
   // A PLACE names no social plane, so each mount rides its own url standing. A faceless vessel carries
   // and serves with these absent — the waking floor, reached by founding rather than by falling.
   //
-  // THE NAME IS THE INDEX. The three planes that travel with a face answer to names derived off the SAME
+  // THE NAME IS THE INDEX. The four sibling planes that travel with a face answer to names derived off the SAME
   // tag as the persona plane already mounted here, so the plane id in hand yields its own siblings and
   // nothing stores a second copy to drift from. A vessel that names no persona plane names none of them.
   const face = bootstrap.personaBagId ? personaSiblingBagIds(bootstrap.personaBagId) : null;
@@ -281,6 +282,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
     if (bootstrap.identitiesUrl) await mountSocial(face.identities, bootstrap.identitiesUrl);
     if (bootstrap.circlesUrl)    await mountSocial(face.circles,    bootstrap.circlesUrl);
     if (bootstrap.sessionsUrl)   await mountSocial(face.sessions,   bootstrap.sessionsUrl);
+    if (bootstrap.intentsUrl)    await mountSocial(face.intents,    bootstrap.intentsUrl);
   }
   await mountSocial(DAEMON_BAG_ID,      bootstrap.daemonUrl);
   // The PersonaGroup plane this vessel stands in, mounted under its own derived name. Exactly one face

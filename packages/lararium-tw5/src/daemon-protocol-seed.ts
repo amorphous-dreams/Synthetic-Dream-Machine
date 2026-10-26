@@ -21,6 +21,7 @@ import { seedDaemonPersonaTiddlers } from "./daemon-persona-tiddlers.js";
 import { seedDaemonCircleTiddlers } from "./daemon-circle-tiddlers.js";
 import { seedDaemonFlowTiddlers } from "./daemon-flow-tiddlers.js";
 import { seedDaemonRosterTiddlers } from "./daemon-roster-tiddlers.js";
+import { seedDaemonIntentTiddlers } from "./daemon-intent-tiddlers.js";
 
 /**
  * Seed the whole daemon protocol surface into the live wiki, ONCE: the UI widgets, the persona circle,
@@ -28,10 +29,11 @@ import { seedDaemonRosterTiddlers } from "./daemon-roster-tiddlers.js";
  * vessel can enact); the Ui/Persona/Circle seeds are hull-blind. Idempotent (each seed setTiddler-overwrites).
  * A ts-only vessel seeds crystal alone; a full node vessel seeds all three flows.
  */
-export function seedDaemonProtocol(tw5: TW5Engine, runnableHulls: RunnableHulls = HULLS_TS_ONLY): void {
+export function seedDaemonProtocol(tw5: TW5Engine, runnableHulls: RunnableHulls = HULLS_TS_ONLY, faceIntents = false): void {
   seedDaemonUiTiddlers(tw5);
   seedDaemonPersonaTiddlers(tw5);
   seedDaemonCircleTiddlers(tw5);
   seedDaemonRosterTiddlers(tw5);
+  if (faceIntents) seedDaemonIntentTiddlers(tw5);
   seedDaemonFlowTiddlers(tw5, runnableHulls);
 }

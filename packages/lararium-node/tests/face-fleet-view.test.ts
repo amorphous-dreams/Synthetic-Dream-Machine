@@ -20,7 +20,7 @@ import { faceFleetFacets, faceFleetViews, bridgeBooks } from "../src/face-fleet-
 import { selfSlotShareDecision } from "../src/self-slot-share.js";
 
 const G1 = "0x" + "11".repeat(16), G2 = "0x" + "22".repeat(16);
-const urls = (g: string) => ({ persona: generateAutomergeUrl(), identities: generateAutomergeUrl(), circles: generateAutomergeUrl(), sessions: generateAutomergeUrl(), group: g });
+const urls = (g: string) => ({ persona: generateAutomergeUrl(), identities: generateAutomergeUrl(), circles: generateAutomergeUrl(), sessions: generateAutomergeUrl(), intents: generateAutomergeUrl(), group: g });
 const ONE = urls(G1), TWO = urls(G2);
 const DAEMON = generateAutomergeUrl();
 const STRAY = generateAutomergeUrl();
@@ -33,6 +33,7 @@ function bootstrap(...faces: Array<ReturnType<typeof urls>>): Record<string, { t
     out[sib.identities] = { text: f.identities };
     out[sib.circles] = { text: f.circles };
     out[sib.sessions] = { text: f.sessions };
+    out[sib.intents] = { text: f.intents };
   }
   return out;
 }
@@ -45,7 +46,7 @@ describe("a same-operator session reads its own face's documents", () => {
     const facets = faceFleetFacets(bootstrap(ONE, TWO), G1)!;
     expect(facets.documents.map((d) => [d.name, d.document, d.layer])).toEqual([
       ["persona", ONE.persona, "plane"], ["identities", ONE.identities, "plane"], ["circles", ONE.circles, "plane"],
-      ["sessions", ONE.sessions, "plane"], ["daemon", DAEMON, "plane"],
+      ["sessions", ONE.sessions, "plane"], ["intents", ONE.intents, "plane"], ["daemon", DAEMON, "plane"],
     ]);
     expect(faceFleetFacets(bootstrap(ONE), G2)).toBeNull();
   });
@@ -58,9 +59,11 @@ describe("a same-operator session reads its own face's documents", () => {
       federationPosture: "private", peerId: "device-two", documentId, sessionFace,
     });
     expect(await verdict(idOf(ONE.circles))).toBe(true);
+    expect(await verdict(idOf(ONE.intents))).toBe(true);
     expect(await verdict(idOf(ONE.persona))).toBe(true);
     expect(await verdict(idOf(DAEMON))).toBe(true);
     expect(await verdict(idOf(TWO.circles))).toBe(false);               // RED: another face's book
+    expect(await verdict(idOf(TWO.intents))).toBe(false);               // RED: another face's intent log
     expect(await verdict(idOf(STRAY))).toBe(false);                     // RED: a document of no face
     expect(await verdict(idOf(ONE.circles), null)).toBe(false);         // RED: the class alone reads no plane
   });
@@ -89,7 +92,7 @@ describe("the worn face's books: the bridge until O1 (an allow-list the catalog 
     const gate = views.gateFor("worn-device")!;
     expect(await gate.mayFederate(idOf(WIKI))).toBe(true);
     expect(await gate.mayFederate(idOf(ONE.circles))).toBe(true);
-    for (const theirs of [TWO.persona, TWO.identities, TWO.circles, TWO.sessions]) expect(await gate.mayFederate(idOf(theirs))).toBe(false);
+    for (const theirs of [TWO.persona, TWO.identities, TWO.circles, TWO.sessions, TWO.intents]) expect(await gate.mayFederate(idOf(theirs))).toBe(false);
     views.drop("worn-device");
     expect(await gate.mayFederate(idOf(WIKI))).toBe(false);              // a closed view reads nothing
   });
@@ -122,6 +125,7 @@ describe("the worn face's books: the bridge until O1 (an allow-list the catalog 
     const catalog = { tiddlers: {
       [personaBagIdFor(G2)]: { tiddler: { title: personaBagIdFor(G2), text: TWO.persona } },
       [sib.circles]: { tiddler: { title: sib.circles, text: TWO.circles } },
+      [sib.intents]: { tiddler: { title: sib.intents, text: TWO.intents } },
       [personaBagIdFor(G1)]: { tiddler: { title: personaBagIdFor(G1), text: ONE.persona } },
       "lar:///ha.ka.ba/bags/my-wiki": { tiddler: { title: "lar:///ha.ka.ba/bags/my-wiki", text: WIKI } },
     } } as never;
@@ -132,7 +136,7 @@ describe("the worn face's books: the bridge until O1 (an allow-list the catalog 
     const withRealm = { tiddlers: { ...(catalog as { tiddlers: object }).tiddlers, "lar:///ha.ka.ba/lares/api/realm/doc/nexus-x": { tiddler: { title: "lar:///ha.ka.ba/lares/api/realm/doc/nexus-x", text: REALM } } } } as never;
     expect(bridgeBooks(withRealm).has(String(idOf(REALM))), "a realm's doc pointer").toBe(true);
     expect(bridgeBooks(withRealm).has(String(idOf(TWO.persona))), "CONTROL: a face-scoped row stays out").toBe(false);
-    for (const face of [TWO.persona, TWO.circles, ONE.persona]) expect(allowed.has(String(idOf(face))), "face-scoped rows are never books").toBe(false);
+    for (const face of [TWO.persona, TWO.circles, TWO.intents, ONE.persona]) expect(allowed.has(String(idOf(face))), "face-scoped rows are never books").toBe(false);
     const onlyWorn = { ...bootstrap(ONE), [PERSONA_GROUP_ID_TIDDLER]: { text: G1 } };    // the bootstrap forgets face two
     const views = faceFleetViews(() => onlyWorn, () => G1, () => allowed);
     views.seat("worn", grant(G1));

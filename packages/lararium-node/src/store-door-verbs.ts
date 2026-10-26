@@ -74,6 +74,7 @@ import { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaeParti
 import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runEdgeRollAnchorStanding, runNexusRollPriorAnchorCheck, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
 import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 import { runPersonaLease, PersonaLeaseError } from "./commands/persona-lease.js";
+import { runIntentCommand, IntentRefused, type IntentCommandOptions } from "./commands/intent.js";
 import { FaceNotNamed } from "./face-selector.js";
 import { runEdgeRollAnchors, EdgeRollAnchorError } from "./commands/edge-roll-anchor.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
@@ -161,6 +162,7 @@ export const STORE_DOOR_VERBS = [
   "fleet-join-offer", "fleet-join-answer",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-lease", "persona-kel-head",
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
+  "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
 
@@ -171,6 +173,7 @@ const REFUSALS = [
   NexusKapaeError, NexusContractError, EdgeKapaeError, PersonaLeaseError, FaceNotNamed, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError, CabalFaceError,
   NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError, FleetJoinRefused, NexusCabalError,
   CarryBundleError,
+  IntentRefused,
 ] as const;
 
 const str = (v: unknown): string | undefined => (typeof v === "string" && v.length > 0 ? v : undefined);
@@ -210,7 +213,31 @@ function need(verb: string, args: Readonly<Record<string, unknown>>, key: string
 /** The rows over one holder, by verb. */
 function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
   const { storageDir, sealHome, repo } = deps;
+  const intent = (action: IntentCommandOptions["action"], args: Readonly<Record<string, unknown>>) =>
+    runIntentCommand({ repo, ...opt("catalogUrl", deps.catalogUrl), action,
+      ...opt("face", int(args["face"])), ...opt("target", str(args["target"])),
+      ...opt("verb", str(args["intentVerb"])), ...opt("args", args["args"]),
+      ...opt("nonce", str(args["nonce"])), ...opt("to", str(args["to"])),
+      ...opt("prefer", str(args["prefer"])), ...opt("class", str(args["class"])),
+      ...opt("every", args["every"] === true ? true : undefined),
+      ...opt("voidAt", str(args["voidAt"])), ...opt("through", str(args["through"])),
+      ...opt("executor", str(args["executor"])), ...opt("deny", args["deny"] === true ? true : undefined),
+    });
   return {
+    "intent-issue": (args) => answer("intent-issue", () => intent("issue", args)),
+    "intent-show": (args) => answer("intent-show", () => intent("show", args)),
+    "intent-ask": (args) => answer("intent-ask", () => intent("ask", args)),
+    "intent-answer": (args) => answer("intent-answer", () => intent("answer", args)),
+    "intent-steer": (args) => answer("intent-steer", () => {
+      const action = args["action"];
+      if (action !== "claim" && action !== "takeover" && action !== "release") throw new IntentRefused("steer-action-malformed");
+      return intent(action, args);
+    }),
+    "intent-root": (args) => answer("intent-root", () => {
+      const action = args["action"];
+      if (action !== "cancel" && action !== "supersede" && action !== "release-root") throw new IntentRefused("root-action-malformed");
+      return intent(action, args);
+    }),
     "nexus-kapae": (args) => answer("nexus-kapae", async () => {
       const action = args["action"] === "un_kapae" ? "un_kapae" : "kapae";
       const r = await runNexusKapae({ action, nym: need("nexus-kapae", args, "nym"), sealHome, repo, ...opt("reason", str(args["reason"])), ...opt("aid", str(args["aid"])) });

@@ -94,7 +94,7 @@ describe("who may ask the island's seat-duties verb", () => {
     const behavior = readFileSync(join(packages, "lararium-keyhive", "src", "operator-daemon-behavior.ts"), "utf8");
     const registrations = behavior.split('registry.register("seat-duties"').length - 1;
     expect(registrations).toBe(1);
-    const body = behavior.slice(behavior.indexOf('registry.register("seat-duties"'), behavior.indexOf('registry.register("face-join"'));
+    const body = behavior.slice(behavior.indexOf('registry.register("seat-duties"'), behavior.indexOf('faceJoinEffect = async'));
     const at = (needle: string): number => { const i = body.indexOf(needle); expect(i, needle).toBeGreaterThan(-1); return i; };
     const check = at("seatDutiesAskRefusal(");
     expect(at("if (unlicensed) throw")).toBeGreaterThan(check);
