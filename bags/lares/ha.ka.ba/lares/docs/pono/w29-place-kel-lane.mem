@@ -1,0 +1,73 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/w29-place-kel-lane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/w29-place-kel-lane.mem"
+l-space   = "adjacent"
+role      = "the W29 lane's kit: the place KEL arms (an inception commits a next cold key, a rotation reveals it from the founding card), the five floor duties sign one framed image, peers learn the head through the carriage board and the carry bundle, and a seed census names every raw-seed consumer"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/w29-place-kel-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/w29-place-kel-lane"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! W29 ~ the place KEL rotates by its card
+
+The floor trust chain orders its pin claims by place-KEL descent, so the place KEL carries a sequence, a digest chain and a committed next key. X0 bakes the pre-rotation and the scoped signer; each member of X0 carries its own readiness red, and this lane builds them (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> :207, :544).
+
+<<~/ahu>>
+
+<<~ ahu #/the-model>>
+
+!! The model ~ what stands
+
+* ''One KEL grammar.'' `packages/lararium-mesh/src/vessel-kel.ts` follows the house grammar (stable AID, `seq`, predecessor digest, event digest from the canonical core, strict fold, forks surfaced) with place authority alone: one key, no guardians, no quorum, no interaction events.
+* ''Inception.'' `{kind, t:"icp", seq:0, key, next}`: `key` seats the ONLINE signer, `next` commits the digest of the cold key under `PLACE_NEXT_KEY_DOMAIN`, and the signer signs the event itself. The AID is the inception's digest.
+* ''Rotation.'' `{kind, t:"rot", aid, seq, prev, reveal, key, next}`: `reveal` opens the prior event's commitment, `key` seats the replacement signer, `next` commits a fresh cold key, and the REVEALED cold key signs. The online signer never selects its successor. A reused commitment or key refuses.
+* ''The card ceremony.'' The cold key rests on a founding card alone: its seed reaches no file. A founding and every rotation read the card back through an injected `PlaceFoundingCard` before a byte lands (the CLI adapts `cold-card-readback`; a staged test root stands in). A rotation runs under one custody claim: verify the card against the head, mint the next cold key and the replacement signer, read the replacement card back, stage the signed event with the replacement signer durably (`.vessel-rotating*.json`), publish the chain and the key file, remove the stage. A restart reconciles a staged file against the last verified head and never invents a successor; a staged file with no read-back card, or of another head, refuses.
+* ''Peers learn the head.'' Rows ride the Nexus carriage board under `PLACE_KEL_PREFIX` keyed by the inception AID (`place-kel-board.ts`), and the carry bundle carries them to an offline herm (`carry-bundle.ts`, `placeKel`). A reader pins the inception, `foldPlaceKel` verifies every digest, sequence, predecessor, reveal and cold signature to the head, and `acceptPlaceHead` holds it against the last accepted head. A gap, rollback or fork refuses advancement; the last accepted head stays "as of my last sync". A row that fails its own signature never advances a head.
+* ''The framed duties.'' The five floor duties (carriage carrier, place floor pin, flow pointer, raise challenge, gate place finish) sign and verify one image `u32 len(D) ‖ D ‖ preimage` (`frameFloorDuty`, `floorDutyOf`, `verifyPlaceDuty`, `verifyPlaceDutyAtHead` in `place-signer.ts`). The KEL events sign under the KEL grammar, never a sixth floor domain.
+* ''The seed census.'' `tools/seed-census.mjs` names every raw-seed consumer against an explicit list, proves itself on a planted consumer, and fails on any new consumer or stale entry. The K15 entries ride it as named owed exceptions in `{rule, file, match, count, reason}` shape, and K15 burns each when its bond lands.
+
+<<~/ahu>>
+
+<<~ ahu #/the-slices>>
+
+!! The slices
+
+# ''Built ~ the grammar and the reader'' (`vessel-kel.ts`, `place-kel-board.ts`, mesh tests `place-kel`, `place-kel-reader`, `place-kel-board`).
+# ''Built ~ the framed duties'' (`place-signer.ts` and the four makers; `place-signer.test`).
+# ''Built ~ the node founding and rotation'' (`node-vessel-identity.ts`, `place-founding-card.ts`, `place-rotation.ts`, `commands/{init,found-hearth}`, `kindle.ts`, CLI `found`; node tests `place-founding`, `place-rotation`).
+# ''Built ~ the carry bundle'' (`carry-bundle.ts`; `carry-bundle-place-kel.test`).
+# ''Built ~ the seed census'' (`tools/seed-census{.mjs,.test.mjs,-witness.sh}`).
+# ''Built ~ the browser founding'' (`browser-vessel-identity.ts`: `foundBrowserPlaceKel`, `loadBrowserPlaceKel`, `readBrowserPlaceHead`). A leaf mints the armed inception through the same mesh grammar and reads its cold card back through the same `PlaceFoundingCard` port (`place-founding-card.ts` in mesh). A leaf holds no floor, so with no ceremony seated the identity open founds the device key and no KEL, and the explicit door refuses `PlaceFoundingCardUnread` until a ceremony UI seats a card (`placeFoundingCard` on `openBrowserVessel`). Heads read through the one `foldPlaceKel`.
+# ''Built ~ the genesis paths.'' Node `runInit`, the hearth founding, the herm's cold kindle (`bulb-kindle.test`) and both cofounders' places each mint the armed chain through the real founding door.
+# ''Built ~ the rotate door.'' `lares vessel rotate` (`commands/rotate-place.ts`) reads the old card on a terminal, prints and reads back the replacement through the same port, refuses beside a standing vessel, and leaves reconcile of a cut-short stage to the node (`vessel-rotate-door.test`).
+# ''Built ~ the fold bound.'' `foldPlaceKel` drops foreign and unsigned rows before any digest walk, caps the signed rows it walks at `PLACE_KEL_ROWS_PER_AID`, and carries at most `PLACE_KEL_FORK_EVIDENCE` competing successors from the first fork seq.
+# ''Owed ~ the readers by head.'' The four duty verifiers verify under the key a caller passes; the floor pin claim lane (W14 to W16) resolves each duty's signer through `verifyPlaceDutyAtHead`. Names that key a place by its inception key follow the head when that lane lands.
+# ''Owed ~ the gate place finish.'' `gate-exchange.ts` already frames its image and did not move.
+# ''Owed ~ K15's bonds.'' The vessel-wide Keyhive Individual and place card, the bare place leaf, the relay key, daemon auth, device and face work, internal asks and `lares meme` signing stay on the seed census as named K15 exceptions.
+
+<<~/ahu>>
+
+<<~ ahu #/the-reds>>
+
+!! The reds
+
+# An unarmed inception, a one-key inception, a wrong card, a reused commitment, a mismatched signer and a torn landing refuse; a fresh node and hearth founding, a cold-card rotation and a restart land.
+# A gap, a rollback, a fork and a forged board row refuse; an inception-only reader and an offline herm descend to a rotated head; an unrotated head reads unchanged.
+# A sixth signer domain, an embedded-domain trick, a cross-duty replay, an unframed image and an old key after rotation refuse; each of the five duties signs and verifies framed.
+# The seed census reads its list exactly, and a planted consumer turns it red.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;SXrJG-r3Lxj6MuNDIdbj5m5-q4HqbAWCDg9sJM0LD8w
+
+<<^ code="&#x0004;" -> to="?">>

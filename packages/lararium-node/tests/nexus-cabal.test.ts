@@ -35,9 +35,9 @@ async function withRepo<T>(index: number, run: (repo: Repo) => Promise<T>): Prom
 beforeEach(async () => {
   priorLarRoot = process.env["LAR_ROOT"];
   roots = [mkdtempSync(join(tmpdir(), "lares-cabal-a-")), mkdtempSync(join(tmpdir(), "lares-cabal-b-"))];
-  process.env["LAR_ROOT"] = roots[0]!; await generateOrLoadVesselIdentity(); await generateOrLoadPersonaGroupRoot(0);
+  process.env["LAR_ROOT"] = roots[0]!; await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } }); await generateOrLoadPersonaGroupRoot(0);
   const chairA = (await seatChairs([0])).keys[0]!;
-  process.env["LAR_ROOT"] = roots[1]!; await generateOrLoadVesselIdentity(); await generateOrLoadPersonaGroupRoot(1);
+  process.env["LAR_ROOT"] = roots[1]!; await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } }); await generateOrLoadPersonaGroupRoot(1);
   const chairB = (await seatChairs([1])).keys[0]!;
   seatB = chairB;
   const charter = heldCharter({ keys: [chairA, chairB], threshold: 2, successors: { keys: [await chairKey(0, 1), await chairKey(1, 1)], threshold: 2 } });

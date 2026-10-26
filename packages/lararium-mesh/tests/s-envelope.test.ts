@@ -10,7 +10,7 @@ import { describe, test, expect } from "vitest";
 import { readSCarrier, S_SEAL_MAGIC, S_SEAL_MIN_LENGTH } from "../src/s-envelope.js";
 import { mintTreeKey, sealUnderS, openUnderS } from "../src/tree-key.js";
 import { LARK_MAGIC } from "../src/s-envelope.js";
-import { ALL_DOMAINS, DOMAIN_ROOT, VESSEL_KEL_DOMAIN, SLOT_WRAP_INFO } from "../src/domains.js";
+import { ALL_DOMAINS, DOMAIN_ROOT, VESSEL_KEL_DOMAIN, PLACE_NEXT_KEY_DOMAIN, SLOT_WRAP_INFO } from "../src/domains.js";
 
 const text = (s: string): Uint8Array => new TextEncoder().encode(s);
 
@@ -121,6 +121,8 @@ describe("the custody domain names", () => {
     expect(VESSEL_KEL_DOMAIN).toBe(`${DOMAIN_ROOT}/vessel-kel`);
     expect(SLOT_WRAP_INFO).toBe(`${DOMAIN_ROOT}/slot-wrap`);
     expect(ALL_DOMAINS).toContain(VESSEL_KEL_DOMAIN);
+    expect(PLACE_NEXT_KEY_DOMAIN).toBe(`${DOMAIN_ROOT}/place-next-key`);
+    expect(ALL_DOMAINS).toContain(PLACE_NEXT_KEY_DOMAIN);
     expect(ALL_DOMAINS).toContain(SLOT_WRAP_INFO);
   });
 });

@@ -74,7 +74,7 @@ interface Vault { readonly c: SeatedScratchCustody; readonly repo: RestingRepo }
 async function vault(label: string): Promise<Vault> {
   const c = await seatScratchCustody(label);
   drops.push(c);
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   return { c, repo: restingRepo(larDataDir()) };
 }

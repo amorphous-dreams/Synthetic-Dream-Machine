@@ -206,7 +206,7 @@ describe("an act frame and the daemon's document", () => {
   test("L3 — the fleet mirror of a pet-name and a declared Handle reaches the face's own plane and nothing else", async () => {
     const c: SeatedScratchCustody = await seatScratchCustody("act-leak-mirror");
     drops.push(() => c.drop());
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     await generateOrLoadPersonaGroupRoot(1);
     const logs: string[] = [];
@@ -260,7 +260,7 @@ describe("an act frame and the daemon's document", () => {
   test("L4 — the mirror moves a plane no further than the sealed row says", async () => {
     const c: SeatedScratchCustody = await seatScratchCustody("act-leak-clear");
     drops.push(() => c.drop());
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     await generateOrLoadPersonaGroupRoot(1);
     let v!: Awaited<ReturnType<typeof stand>>;
@@ -308,7 +308,7 @@ describe("an act frame and the daemon's document", () => {
   test("L5 — a plane whose rest stands clear takes no name: the carry refuses by name and the name stays sealed", async () => {
     const c: SeatedScratchCustody = await seatScratchCustody("act-leak-clear-rest");
     drops.push(() => c.drop());
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     let v!: Awaited<ReturnType<typeof stand>>;
     const door = custodyFrameHandler({

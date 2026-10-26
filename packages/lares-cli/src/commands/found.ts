@@ -109,8 +109,12 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
       noteFoundingNodeRoute(slots);
     }
     if (args.flags["hearth"] === true) return await foundHearth(args, { storageDir, genesisDir, slots });
+    const { readBack } = await import("../cold-card-readback.js");
     await ownedStore(storageDir, (repo) => runInit({
       repo, storageDir, genesisDir, custody: { slots },
+      placeFoundingCard: { readBack: async (card, fingerprint, generation) => {
+        await readBack(args, [{ chair: "place", seed: card.seed, digest: card.digest }], generation, fingerprint);
+      } },
       ...(args.flags["force"] ? { force: true } : {}),
     }));
   } catch (err) {
@@ -144,6 +148,9 @@ async function foundHearth(args: ParsedArgs, at: { storageDir: string; genesisDi
       repo, storageDir: at.storageDir, genesisDir: at.genesisDir, custody: { slots: at.slots },
       ...(args.flags["force"] ? { force: true } : {}),
       name, ...(chair ? { chair } : {}), ...(restore ? { restore } : {}),
+      placeFoundingCard: { readBack: async (card, fingerprint, generation) => {
+        await readBack(args, [{ chair: "place", seed: card.seed, digest: card.digest }], generation, fingerprint);
+      } },
       readBack: async (cards, fingerprint) => { printed = await readBack(args, cards, 1, fingerprint); },
     }));
   } finally { restore?.bundleKey.fill(0); }

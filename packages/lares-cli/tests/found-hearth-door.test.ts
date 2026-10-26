@@ -77,7 +77,7 @@ describe("lares vessel found --hearth", () => {
     expect(await cmdVessel(found({ name: "keeper" }, { hearth: true }))).not.toBe(0);
     expect(errors.join("\n")).toMatch(/CardReadBackRefused: .*prints each chair's cold-key card on the terminal/);
     expect(readNexusDoc(larSealHome())).toBeNull();
-    expect(await listPersonaRoots()).toEqual([0]);                 // the root its seat claim stood for stays held
+    expect(await listPersonaRoots()).toEqual([]);                  // the place card refuses first, so no persona root stood
   });
 
   test("D4 — persona new 0 on a place refuses and names the act — CONTROL: after the act it answers", async () => {

@@ -93,7 +93,7 @@ const refusalOf = async (p: Promise<unknown>): Promise<string> => {
   return e === null ? "LANDED" : e instanceof HearthFoundingRefused ? e.restoreRefusal ?? "hearth-founding-refused" : `threw: ${(e as Error).message.slice(0, 160)}`;
 };
 const pendingStands = (): boolean => faceRowNames().some((n) => RESTORE_PENDING_FILE.test(n));
-const stopAtCard = async (): Promise<void> => { throw new Error("the card did not read back"); };
+const stopAtCard = async (cards: ReadonlyArray<{ readonly chair: string }>): Promise<void> => { if (cards[0]?.chair === "place") return; throw new Error("the card did not read back"); };
 
 describe("a restore as persona zero, through the founding act", () => {
   test("F1 — the bundle's face stands as persona zero of a fresh seed charter, bound to its new AID, provisional", async () => {

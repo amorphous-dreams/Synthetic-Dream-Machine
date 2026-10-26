@@ -129,7 +129,7 @@ describe.skipIf(gaps.length > 0)("★ the arrival surfaces — the house's own o
     const custody = await seatStagedCustody(device);
     const repo = new Repo({ sharePolicy: async () => true });
     try {
-      const k = await kindleFromBulb({ bulb: fire, repo, storageDir: join(device, "store") });
+      const k = await kindleFromBulb({ placeFoundingCard: { readBack: async () => {} }, bulb: fire, repo, storageDir: join(device, "store") });
       expect(k.did).toBe(didKeyFromVerifyingKey(k.deviceVerifyingKey));
       const houseKey = await awaitOwnGateKey(hearth!);
       expect(k.deviceVerifyingKey).not.toBe(houseKey);

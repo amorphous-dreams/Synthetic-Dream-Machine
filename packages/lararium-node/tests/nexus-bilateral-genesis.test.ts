@@ -102,7 +102,7 @@ interface Hearth {
 async function standHearth(root: string, threshold = 2): Promise<Hearth> {
   return asRoot(root, async () => {
     const dir = larDataDir();
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const nexusPubkey = await loadVesselVerifyingKey();
     const { keys } = await seatChairs([0, 1, 2], { family: root });           // each hearth's chairs hold keys of their own

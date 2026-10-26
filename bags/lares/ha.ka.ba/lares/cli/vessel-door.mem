@@ -93,7 +93,7 @@ Every substrate motion in this CLI composes from these, and no composition earns
 presence, storage size, port, seal state, personas, quorum).
 
 `build` compiles the workspace and stamps its source digest inside `rite refresh`; it names no vessel door.
-`stand` carries `--foreground`, `--with-web`, `--restart`, `--observe`, `--install`, and `--init` postures. The sub-doors `card`, `wire`, and `rite` print the ContactCard, point machine AI surfaces at the vessel, and run the named compositions. The sub-door `unbound` lists the documents this vessel minted that no binding names, through the daemon's own read; it removes nothing. `lares fleet join` carries a new vessel into one face's fleet.
+`stand` carries `--foreground`, `--with-web`, `--restart`, `--observe`, `--install`, and `--init` postures. The sub-doors `card`, `wire`, `rotate`, and `rite` print the ContactCard, point machine AI surfaces at the vessel, rotate the place's online signer by its founding card (it reads the old card and reads the replacement card back, and refuses beside a standing vessel), and run the named compositions. The sub-door `unbound` lists the documents this vessel minted that no binding names, through the daemon's own read; it removes nothing. `lares fleet join` carries a new vessel into one face's fleet.
 
 ''What a stand's `ok` answers.'' `ok` reads true where the vessel stands and no organ a hand installed stands broken. The memory library keeps its own door (`lares mempalace install`) and never rides a founding, so a machine that holds none of it reads `mempalace: absent` beside a true `ok`: an absent optional organ never reads as a failed stand. A half-installed library reads `incomplete` and fails the reading (one half of the library standing without the other, or a source directory that holds files and lacks its entry), and a node that fails to answer fails the stand whatever the library says (`packages/lares-cli/src/integration-check.ts`, `mempalaceStanding`, `standOk`; `packages/lares-cli/tests/stand-ok-reads-the-vessel.test.ts`).
 
@@ -268,6 +268,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RgLtQoEsWD22hOH2PhZ_xXq2pFCzHcemdOfUcHGHuis
+<<^ code="&#x0003;">>ni:///sha-256;rGnazyHvHvmerv9zaPHIz0bimP_k6ZQ8ZNMAo5pDWdo
 
 <<^ code="&#x0004;" -> to="?">>

@@ -78,7 +78,7 @@ function seedMinimalGenesis(): void {
 
 async function stand(): Promise<void> {
   seedMinimalGenesis();
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await wearPersona(0);
 }

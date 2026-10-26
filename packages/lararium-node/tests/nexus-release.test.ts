@@ -41,12 +41,12 @@ beforeEach(async () => {
   prior = process.env["LAR_ROOT"];
   roots = [mkdtempSync(join(tmpdir(), "lares-release-a-")), mkdtempSync(join(tmpdir(), "lares-release-b-"))];
   work = mkdtempSync(join(tmpdir(), "lares-release-files-"));
-  process.env["LAR_ROOT"] = roots[0]!; await generateOrLoadVesselIdentity(); await generateOrLoadPersonaGroupRoot(0);
+  process.env["LAR_ROOT"] = roots[0]!; await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } }); await generateOrLoadPersonaGroupRoot(0);
   const chair = (await seatChairs([0])).keys[0]!;
   const charter = heldCharter({ keys: [chair], threshold: 1, successors: { keys: [await chairKey(0, 1)], threshold: 1 } });
   writeNexusDoc(larSealHome(), charter.doc());
   // Root B holds the SAME charter and NO seat key: a vessel that cannot seal.
-  process.env["LAR_ROOT"] = roots[1]!; await generateOrLoadVesselIdentity();
+  process.env["LAR_ROOT"] = roots[1]!; await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   writeNexusDoc(larSealHome(), charter.doc());
 });
 afterEach(async () => {

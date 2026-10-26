@@ -53,6 +53,8 @@ import {
 } from "../node-vessel-identity.js";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import type { LarDoc, SlotSpec } from "@lararium/mesh";
+import type { RandomProvider } from "@lararium/mesh";
+import type { PlaceFoundingCard } from "@lararium/mesh";
 import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
 import {
   foundThePlace, foundTheFace, runApplyAdmitPayload, archiveIsOf,
@@ -61,6 +63,8 @@ import {
 import { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "../open-node-vessel.js";
 
 export interface InitOptions {
+  readonly placeFoundingCard?: PlaceFoundingCard;
+  readonly entropy?: RandomProvider;
   /** The direct holder's Repo (`ownedStore`) over this vessel's store — a founding runs with no vessel standing. */
   readonly repo:        Repo;
   /** The directory `repo` holds. Defaults to `larDataDir()`. */
@@ -245,7 +249,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     console.log("[lares vessel found] custody sealed from birth: s-slots.bin and the custody root.");
   }
 
-  const operatorIdentity = await generateOrLoadVesselIdentity();
+  const operatorIdentity = await generateOrLoadVesselIdentity({ ...(opts.placeFoundingCard ? { placeFoundingCard: opts.placeFoundingCard } : {}), ...(opts.entropy ? { entropy: opts.entropy } : {}) });
   console.log(`[lares vessel found] operator verifyingKey  ${operatorIdentity.verifyingKey.slice(0, 16)}…`);
 
   const repo = opts.repo;

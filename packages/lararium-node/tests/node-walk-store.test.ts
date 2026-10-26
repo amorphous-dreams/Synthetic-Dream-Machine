@@ -184,7 +184,7 @@ describe("a walk record at rest", () => {
   test("W6 — the walk acts keep, answer and re-present through the door's context", async () => {
     await custody("walk-w6");
     setWornFaceInSession(undefined);
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     await generateOrLoadPersonaGroupRoot(1);
     const epoch = await mintHostingAct({ leafSeed: HEARTH, nexusAid: AID, prev: null, cap: 3 });

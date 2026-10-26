@@ -52,7 +52,7 @@ describe("the True Name Model — vessel, persona root, and the edge that binds 
   });
 
   test("founding mints TWO distinct keys — the place's and the human's", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const vesselKey = await loadVesselVerifyingKey();
     const personaRoot = await generateOrLoadPersonaGroupRoot();
 
@@ -75,7 +75,7 @@ describe("the True Name Model — vessel, persona root, and the edge that binds 
   });
 
   test("the persona root SIGNS the edge that binds the vessel to the hearth's True Name", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const vesselKey   = await loadVesselVerifyingKey();
     const personaRoot = await generateOrLoadPersonaGroupRoot();
     const signerSeed  = await loadPersonaGroupRootSeed();
@@ -103,7 +103,7 @@ describe("the True Name Model — vessel, persona root, and the edge that binds 
   });
 
   test("pinning the VESSEL key REFUSES the edge — the two names never substitute", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const vesselKey  = await loadVesselVerifyingKey();
     await generateOrLoadPersonaGroupRoot();
     const signerSeed = await loadPersonaGroupRootSeed();
@@ -120,8 +120,8 @@ describe("the True Name Model — vessel, persona root, and the edge that binds 
   });
 
   test("a re-read of the vessel key loads the SAME place — founding never re-mints it", async () => {
-    const first = await generateOrLoadVesselIdentity();
-    const again = await generateOrLoadVesselIdentity();
+    const first = await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
+    const again = await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     expect(again.verifyingKey).toBe(first.verifyingKey);
     // The persona root is idempotent per index the same way — a second call loads, never mints.
     const minted = await generateOrLoadPersonaGroupRoot();

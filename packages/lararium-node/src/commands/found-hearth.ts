@@ -197,7 +197,9 @@ export async function runFoundHearth(opts: FoundHearthOptions): Promise<FoundHea
     throw new HearthFoundingRefused("persona zero needs a private label (--name '<label>'); nothing was written");
   }
   const { name: _name, chair, readBack, restore, ...init } = opts;
-  await runInit(init);
+  await runInit({ ...init, placeFoundingCard: opts.placeFoundingCard ?? {
+    readBack: async (card, fingerprint) => readBack([{ chair: "place", seed: card.seed, digest: card.digest }], fingerprint),
+  } });
   const seed = () => foundSeedCharter({ name: label, ...(chair ? { chair } : {}), readBack });
   // The face lights, then the founding admits its group to the hearth's Kahu cabal (a counted 1-of-1 act at the
   // one seat; a group already admitted lands nothing), so persona zero's group holds the Kahu realm from birth.

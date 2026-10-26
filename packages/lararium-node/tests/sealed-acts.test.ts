@@ -133,7 +133,7 @@ describe("the sealed-act table", () => {
 
   test("T4 — no act hands out a seed", async () => {
     await vessel("acts-t4");
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     const seeds = [hex(await loadPersonaGroupRootSeed(0)), hex(await loadVesselSigningSeed())];
     expect(seeds.every((s) => s.length === 64)).toBe(true);

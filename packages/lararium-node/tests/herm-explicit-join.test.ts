@@ -58,13 +58,13 @@ afterEach(async () => {
 /** The hearth seats a 2-of-3 charter; the herm founds its vessel key and imports that charter. Ends standing at the herm. */
 async function standBoth(): Promise<{ aid: string }> {
   at(hearthRoot);
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   const seated = await seatChairs([0, 1, 2]);
   writeNexusDoc(larSealHome(), heldCharter({ keys: seated.keys, threshold: 2 }).doc({ labels: ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"] }));
   const doc = readNexusDoc(larSealHome());
   const aid = primaryNexusAid(larSealHome())!;
   at(hermRoot);
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   writeNexusDoc(larSealHome(), doc!);
   return { aid };
 }

@@ -130,7 +130,7 @@ async function seedSignedGift(): Promise<{ readonly dir: string; readonly offero
 }
 
 async function standPersona(): Promise<void> {
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await wearPersona(0);
 }
@@ -177,7 +177,7 @@ describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", ()
 
   it("refuses without an explicitly worn persona and leaves no board behind", async () => {
     const source = seedUnsignedSource();
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
 
     await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() }))

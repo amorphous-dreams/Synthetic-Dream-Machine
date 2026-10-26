@@ -115,7 +115,7 @@ describe("who may ask the island's seat-duties verb", () => {
   test("Q4 — the store door's row names a fleet and reads its facts itself; it takes no facts from its caller", async () => {
     const c = await seatScratchCustody("seat-duties-q4");
     try {
-      await generateOrLoadVesselIdentity();
+      await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
       const root = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
       await seedFaceAtom(0);
       const asked: unknown[] = [];

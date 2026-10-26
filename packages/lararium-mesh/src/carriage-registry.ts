@@ -37,6 +37,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-operator-contract
  */
 
+import { frameFloorDuty, verifyPlaceDuty } from "./place-signer.js";
 import { CARRIAGE_ADMIT_OPENING_DOMAIN, CARRIAGE_CARRIER_DOMAIN, CARRIAGE_CONTRACT_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_ROLL_ANCHOR_DOMAIN } from "./domains.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { admitGatePinDigest, readAdmitGatePin } from "./admit-gate-pin.js";
@@ -240,11 +241,11 @@ export function carriageContractBytes(parts: { nym: string; sealEpochCid: string
  * for one asked a crossroads to seat the one thing its class exists to prevent.
  */
 export function carrierContractBytes(parts: { nym: string; sealEpochCid: string }): Uint8Array {
-  return canonicalJsonBytes({
+  return frameFloorDuty(CARRIAGE_CARRIER_DOMAIN, canonicalJsonBytes({
     kind:         CARRIAGE_CARRIER_DOMAIN,
     nym:          parts.nym,
     sealEpochCid: parts.sealEpochCid,
-  });
+  }));
 }
 
 /**
@@ -272,7 +273,7 @@ export async function verifyCarrierContract(
   if (!/^[0-9a-f]{64}$/.test(nym)) return false;
   if (!/^[0-9a-f]+$/.test(seal.sig) || seal.sig.length === 0) return false;
   const bytes = carrierContractBytes({ nym, sealEpochCid: seal.sealEpochCid });
-  try { return verifyEd25519(seal.sig, bytes, nym); }
+  try { return verifyPlaceDuty({ domain: CARRIAGE_CARRIER_DOMAIN, image: bytes, sig: seal.sig, signerKey: nym }); }
   catch { return false; }
 }
 

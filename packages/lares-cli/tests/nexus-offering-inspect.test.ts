@@ -52,6 +52,7 @@ async function stand(): Promise<void> {
   // Founding needs the genesis seed (the engine CID etc.) regardless of this door's own offering
   // source (H3: publish reads a local `--source`, never genesis) — something must still found the vessel.
   cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(root, "genesis"), { recursive: true });
+  writeFileSync(join(root, ".lar-test-scratch"), "");   // a staged root: the place card's read-back stands in
   await cmdVessel({ command: "vessel", positional: ["found"], options: {}, flags: { json: true } });
   await generateOrLoadPersonaGroupRoot(0);
   await wearPersona(0);

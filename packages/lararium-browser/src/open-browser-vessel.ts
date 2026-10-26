@@ -85,7 +85,7 @@ import {
 } from "./browser-keyhive-archive.js";
 import { vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
-import type { LarOpenPhase }                 from "@lararium/mesh";
+import type { LarOpenPhase, PlaceFoundingCard } from "@lararium/mesh";
 import { readWornPersonaMount }              from "@lararium/mesh";
 import {
   generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed,
@@ -202,6 +202,8 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
   /** The Web Locks host the one-holder-per-store law rides; the platform's own when omitted (the test door). */
   locks?:          LockHost | null;
   displayName?:    string;
+  /** The ceremony that reads the new place's cold card back; seated, the founding arms the place KEL, and absent the leaf founds none. */
+  placeFoundingCard?: PlaceFoundingCard;
   /**
    * The PLAIN-DATA genesis seed (seed.json) — the oracle doc's initial state the
    * boot MATERIALIZES fresh under the deterministic doc id (the node-parity materialize-fresh
@@ -474,7 +476,7 @@ async function houseOfBoot(idbName: string, admitting: boolean): Promise<string 
 async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promise<BrowserVesselResult> {
   const {
     wikiId,
-    idbName = "lares:vessel", displayName, onPhase,
+    idbName = "lares:vessel", displayName, onPhase, placeFoundingCard,
     genesisSeed,
     genesisCasBaseUrl,
     daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onFrame, onControlResult, onCoherence, relayUrl, relayDial, floorCard,
@@ -562,7 +564,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   emit("repo-open");
 
   // ── Keypair (WebCrypto substrate) + founding (the personaGroup capability) ───
-  const vesselIdentity = await generateOrLoadBrowserVesselIdentity(idbName, displayName);
+  const vesselIdentity = await generateOrLoadBrowserVesselIdentity(idbName, displayName, placeFoundingCard ? { placeFoundingCard } : {});
   const vesselSeed     = await loadBrowserSigningSeed(idbName);
   const vesselVerifyingKey      = vesselIdentity.verifyingKey;
 

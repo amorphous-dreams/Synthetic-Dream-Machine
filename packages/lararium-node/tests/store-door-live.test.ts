@@ -77,7 +77,7 @@ async function seatVessel(root: string): Promise<void> {
     },
   };
   writeFileSync(join(root, "genesis", "seed.json"), JSON.stringify(seed));
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
   await Promise.all([0, 1, 2].map((i) => seedFaceAtom(i)));
   await seedFleet(0);
@@ -284,7 +284,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
     // the knock": OPEN by class, so the charter's posture joint governs nothing here).
     const root = join(base, "herm-root");
     at(root);
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const { keys } = await seatChairs([0, 1, 2]);
     writeNexusDoc(sealHome(), heldCharter({ keys, threshold: 2 }).doc({ labels: keys.map((_, i) => `Kahu ${i}`) }));
     await expect(storeDoorDirect("nexus-posture", { want: "private" }, { sealHome: sealHome() })).rejects.toThrow(/answers the knock/);

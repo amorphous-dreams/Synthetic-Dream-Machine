@@ -284,7 +284,8 @@ export {
 } from "./cas-wire.js";
 export type { CasWireServerDeps, CasWireFetch } from "./cas-wire.js";
 
-export { loadVesselVerifyingKey, loadVesselSigningSeed, loadVesselCard, persistVesselCard, vesselFloorKeyDoor, FloorKeyDoorRefused } from "./node-vessel-identity.js";
+export { loadVesselVerifyingKey, loadVesselSigningSeed, loadVesselCard, persistVesselCard, vesselFloorKeyDoor, FloorKeyDoorRefused, loadPlaceKelChain, loadPlaceAid } from "./node-vessel-identity.js";
+export { rotatePlace, reconcilePlaceRotation } from "./place-rotation.js";
 export { PlaceCardRefused, ensurePlaceCard, requirePlaceCardOfOwnSeed } from "./place-card.js";
 // The reach-face helpers — every http origin a vessel answers on + the ws:// dial each yields. Re-used by the
 // `lares herm` stand-up verb to print the carriage crossroads' dial URLs (host from the face, the relay's own port).
