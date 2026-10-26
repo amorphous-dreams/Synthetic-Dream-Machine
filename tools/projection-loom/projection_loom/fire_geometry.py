@@ -71,10 +71,12 @@ def _operations(rule, resolved, original):
         overlap_y = min(shi[1],thi[1])-max(slo[1],tlo[1])
         if min(overlap_x,overlap_y) <= 0:
             raise ValueError("Bearing volumes have no horizontal overlap")
-        # Locate the member near the upper mass's outside corner, still
-        # overlapping both bodies; a completely buried column is a no-op.
-        x = min(shi[0],thi[0]) - min(width,overlap_x)*.35
-        y = min(shi[1],thi[1]) - min(depth,overlap_y)*.35
+        # Give the native bearing a visible shoulder beyond the upper mass
+        # while retaining positive overlap with both existing bodies. A
+        # buried member would pass contact but change no architectural form.
+        # The joint audit still decides whether this placement actually holds.
+        x = min(shi[0],thi[0]) + min(width,overlap_x)*.25
+        y = min(shi[1],thi[1]) + min(depth,overlap_y)*.25
         start_z = (slo[2]+shi[2])/2
         end_z = (tlo[2]+thi[2])/2
         if end_z <= start_z+.01:
