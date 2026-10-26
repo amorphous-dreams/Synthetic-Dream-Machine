@@ -17,9 +17,9 @@ retain    = true
 <<~ ahu #/orientation>>
 ! Art Sigils — Formal Analysis
 
-When the operator invokes Formal Analysis upon an existing image, examine the evidence before forming conclusions; **the first visible output must supply one complete Inscription**: a single `<<art ...>>` invocation, total transmitted source <= 1,024 characters, with no explanatory preamble. Then proceed with a *verbose natural-language analysis*. A Folio requires a distinct request rather than following automatically from Formal Analysis. The initial reverse-specified sigil remains a plausible artistic description, never a recovered original prompt or verified creator intention.
+When the operator invokes Formal Analysis upon an existing image, examine the evidence before forming conclusions; **the first artistic output after the required Lares turn opening must supply one complete Inscription**: a `<<~ art ...>>` invocation, total transmitted source <= 1,024 characters, with no explanatory preamble between the house HUD and the Inscription. Then proceed with verbose natural-language analysis. A Folio requires a distinct request rather than following automatically. Reverse specification describes a plausible artwork, never its recovered prompt or verified creator intention.
 
-The native core procedure bears the name `art`, while the discipline retains the name Art Sigils. The canonical declaration and its defaults live in [[Art Sigils Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]], outside the Inscription. A TW5 runtime requires that procedure in scope; a model may read the invocation directly. The source block excludes definitions, critical prose and wrapper metadata from its character budget.
+The house core sigil bears the name `art`, invoked as `<<~ art ...>>`; the discipline retains the name Art Sigils. The canonical `~art` declaration and its defaults live in [[Art Sigils Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]], outside the Inscription. A Lares-enabled wiki needs the sigil binding in scope; a receiving image model may interpret the call directly.
 <<~/ahu>>
 
 <<~ ahu #/discipline>>
@@ -41,7 +41,7 @@ The opening Inscription may keep weakly evidenced fields delegated or broad. Its
 <<~ ahu #/response>>
 !! Required output shape for invoked Formal Analysis
 
-**First visible output:** one native `<<art ...>>` invocation in a fenced `tiddlywiki` block, at most 1,024 characters including no procedure definition. Invocation arguments use backtick-wrapped values; the referenced canonical definition lives in the Procedures meme. Supply defensible `subject` and `read` values and other fields as supported. No explanatory preamble precedes this initial source block.
+**First artistic output (after `lares aim` and `set hud="aim"`):** one `<<~ art ...>>` invocation in a fenced `tiddlywiki` block, at most 1,024 characters and with no procedure definition. Invocation arguments use quoted `name="value"` literals. No explanatory preamble interrupts the first artwork payload; the ordinary Lares turn chiasmus still brackets the response.
 
 **Then:** natural-language formal analysis at the depth warranted by the work, normally addressing:
 
@@ -63,7 +63,7 @@ When closer inspection contradicts the opening Inscription, the analysis names t
 
 When an operator presents several versions of a work, make comparisons on **visible and source-grounded grounds**.
 
-* **Identify the comparison:** record which works share a source, which differ, and whether a receiver saw native TW5 syntax, literal prose expansion, external visual references, an edited image or other contextual information.
+* **Identify the comparison:** record which works share a source, which differ, and whether a receiver saw Lares sharktooth syntax, its literal prose expansion, external visual references, an edited image or other contextual information.
 * **Retain available conditions:** model or artist, version, effort, generation or performance controls, aspect ratio, material setup, references and selection history. A missing condition remains unknown; never reconstruct a hidden prompt or latent mechanism from the result.
 * **Name specific criteria:** worktype fidelity, the primary read, formal arrangement, figure-ground hierarchy, space, color relationships, apparent facture, depicted boundaries, any explicitly assigned inter-image relationships and the consequences a viewer can perceive.
 * **Match criteria to subject:** compare portrait expression where the work concerns faces, gesture and social address; compare interval, edge or color relationships for abstraction; compare circulation and material presence for installation; examine terrain or perspective fidelity only when the specific artwork requires them.
@@ -104,6 +104,6 @@ Across painting, print, photography, installation, abstraction and pictures with
 Getty CDWA subject analysis, material and facture; Harvard Project Zero's See, Think, Wonder and What Makes You Say That?; Panofsky, Arnheim, Baxandall, Kress/van Leeuwen, Mitchell and Warburg; Feldman's descriptive/interpretive/critical moves. See the Art Sigils Specification's research ahu for source paths and authority boundaries. No reference source alone settles the intention of an unknown artist.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PJ-gnSDofwV6sJ4rEofvULfuNoXxKEElyfYKa8rHjZw
+<<^ code="&#x0003;">>ni:///sha-256;gJS_Ga-f5841AZErEG6sLOIdJ9gXvQ-SWeuAoJILa2s
 
 <<^ code="&#x0004;" -> to="?">>
