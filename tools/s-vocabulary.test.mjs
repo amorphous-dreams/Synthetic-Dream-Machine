@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { trackedCode, retiredWords } from "./s-vocabulary.mjs";
+import { memWords, trackedCanon, trackedCode, retiredWords } from "./s-vocabulary.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 // The retired abbreviation, spelled only by joining letters, so this file passes its own check.
@@ -20,6 +20,12 @@ test("KNOWN POSITIVE: the check catches every spelling, in code, in a comment an
   for (const line of planted) assert.ok(retiredWords(line).length > 0, `the check misses: ${line}`);
 });
 
+test("KNOWN POSITIVE (canon): a carrier's prose that spells it is caught, and a content address is not prose", () => {
+  assert.ok(memWords(`The ${up} opens the tree.`).length > 0);
+  assert.ok(memWords(`* ''${cap}'' rotation re-wraps the entry`).length > 0);
+  assert.deepEqual(memWords(`<<^ code="&#x0003;">>ni:///sha-256;rhCZHcumogmxUwIG${up}-4mFt8tZrJ48k1hAEfqv65ps`), []);
+});
+
 test("CONTROL: unrelated words read clean", () => {
   const clean = [
     "const prevKeys = 1; const recvKey = 2;", "const treeKey = 3; const S_SEAL_MAGIC = 4; const VERIFYING_KEY = 5; const keyCheck = 6;",
@@ -32,6 +38,14 @@ test("no word in tracked code, comment or string spells the retired omnibus key"
   const hits = [];
   for (const f of trackedCode()) {
     for (const h of retiredWords(readFileSync(join(ROOT, f), "utf8"))) hits.push(`${f}:${h.line}  ${h.word}`);
+  }
+  assert.deepEqual(hits, []);
+});
+
+test("no live canon carrier (outside docs/history and the third-party scouts) spells the retired omnibus key", () => {
+  const hits = [];
+  for (const f of trackedCanon()) {
+    for (const h of memWords(readFileSync(join(ROOT, f), "utf8"))) hits.push(`${f}:${h.line}  ${h.word}`);
   }
   assert.deepEqual(hits, []);
 });

@@ -28,7 +28,7 @@ F6 moves the browser's Repo and daemon kernel into its shared holder, and the ke
 !! The rulings (operator, 2026-10-19)
 
 # ''The asker seals.'' The browser holder routes each sealed write to the admitted tab whose session caused it, else to any admitted, unlocked tab of that face; with no awake admitted tab the write waits, named `seal-awaits-session`. A SharedWorker carries no promise to run while its tabs freeze, and no `MessagePort` event reports a peer's death, so a wait names itself and no clock decides it.
-# ''A face's custody rows seal under its own key.'' Each PersonaGroup holds an independent random face custody key (FCK) that only its own slot tree opens, never wrapped under a vessel key; a holder of the VK or of a sibling's unlock opens none of its rows.
+# ''A face's custody rows seal under its own key.'' Each PersonaGroup holds an independent random face custody key (FCK) that only its own slot tree opens, never wrapped under a vessel key; a holder of the S key or of a sibling's unlock opens none of its rows.
 # ''A shared act never makes a shared secret.'' Every act touching more than one face sorts D (its private bytes dissolve into the owning face's rows), F (its public bytes stand at the floor by design) or S (a named vessel secret, its principal and opener named). The browser holds no vessel key; a node holds S only for rows it names.
 
 !! What each vessel holds
@@ -65,6 +65,6 @@ A YANG scout read the code and a YIN scout read the field, then they traded. The
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/session-unlock-2026">>
 
-<<^ code="&#x0003;">>ni:///sha-256;A7KUBW17LIq6-x3-dKzpY-odJawqA_-FgvteBOlFjpw
+<<^ code="&#x0003;">>ni:///sha-256;k-W6A7uuPOCYtBgfyR1Q9zaerEGVerIcqsLRN35Pyjw
 
 <<^ code="&#x0004;" -> to="?">>

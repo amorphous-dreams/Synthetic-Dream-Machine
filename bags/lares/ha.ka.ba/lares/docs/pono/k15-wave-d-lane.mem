@@ -30,10 +30,10 @@ Wave D builds the FCK fence the custody contract of <<~ loulou "lar:///ha.ka.ba/
 
 !! The six slices, one lane
 
-# ''The tree, the key and the context.'' Each face holds a fresh random FCK, wrapped only in that face's independent slot and recovery tree; the sealed writer generalizes from `(vk, VK tree, carrier)` to an explicit `(row class, owner, key, matching tree, bound carrier context)`, and each D seal authenticates one canonical context of format, store namespace, immutable PersonaGroup, row name, row kind and the logical row reference. The face atom and the sealed anchor are the first rows to move; the two key-class rows in `face-isolation-routes.test.ts` turn green here and come off `test.fails`.
+# ''The tree, the key and the context.'' Each face holds a fresh random FCK, wrapped only in that face's independent slot and recovery tree; the sealed writer generalizes from `(key, tree, carrier)` to an explicit `(row class, owner, key, matching tree, bound carrier context)`, and each D seal authenticates one canonical context of format, store namespace, immutable PersonaGroup, row name, row kind and the logical row reference. The face atom and the sealed anchor are the first rows to move; the two key-class rows in `face-isolation-routes.test.ts` turn green here and come off `test.fails`.
 # ''Every other node D carrier'' moves under its face's FCK in the same lane: the custody root, the Keyhive and veil archives, the proof keys, the face join rows, the roster, book and outbox partitions.
-# ''Per-face unlock'' in node boot, the daemon, the CLI and the vault verbs: a node that wears several faces unlocks each separately, and the node holds no omnibus VK for D rows.
-# ''The browser mirror'': each tab asks for its own face unlock, the last tab's close drops the bare face keys, and the browser holds no VK.
+# ''Per-face unlock'' in node boot, the daemon, the CLI and the vault verbs: a node that wears several faces unlocks each separately, and the node holds no omnibus key for D rows.
+# ''The browser mirror'': each tab asks for its own face unlock, the last tab's close drops the bare face keys, and the browser holds no S key.
 # ''The one-face bundle and restore'': a bundle carries only that face's rows and a wrapped recovery route, never a bare FCK, and a restore opens no sibling.
 
 # ''The anon-veil lift on join'' (operator ruling, 2026-10-22): when an anonymous vessel joins a PersonaGroup, every piece of keyed material its anon veil holds, drafts included, lifts into the face's cap stack. The join act is the gate, with no separate per-item accept. The lift is idempotent by intent: a replayed or repeated join lifts nothing twice. It carries only that vessel's own material, never a view of its other faces (the multitude-view stays local to the vessel). It lands once, under the end-state key classes, so that no omnibus re-home precedes a re-wrap under the FCK. Reds: a vessel that drafts while anonymous and then joins finds the draft under the face's cap stack; a second join, or a replayed admit apply, lifts nothing twice; the lift carries no other face's material. Control: a vessel that never joins keeps its drafts at the floor.
@@ -47,6 +47,6 @@ Found A and B with independently random FCKs and trees, occupied D carriers for 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;l0PGoLrUBOCcN0wCpd2Iu9n2IK9OsYZIPJl1O8go9uA
+<<^ code="&#x0003;">>ni:///sha-256;6Smy7TiXXivNz_XsIfLRU_jiUwbFE10PvhOxFQK5n1A
 
 <<^ code="&#x0004;" -> to="?">>
