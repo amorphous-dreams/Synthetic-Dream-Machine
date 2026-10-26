@@ -63,10 +63,9 @@ describe("lares intent over a founded face", () => {
       const catalogUrl = readFileSync(join(storage, "catalog-url"), "utf8").trim();
       const catalog = (await repo.find<LarDoc>(catalogUrl as never)).doc()!;
       const url = (catalog.tiddlers[personaSiblingBagIds(personaBagIdFor(group))!.intents] as { tiddler: { text: string } }).tiddler.text;
-      return intentEntryRecordsOfGroup((await repo.find<LarDoc>(url as never)).doc(), group) as Array<{ body: { verb?: string; args?: { summons?: { kind: string; contactCard: string; deviceEdge: unknown } } } }>;
+      return intentEntryRecordsOfGroup((await repo.find<LarDoc>(url as never)).doc(), group) as Array<{ body: { verb?: string; args?: { summons?: { contactCard: string; deviceEdge: unknown } } } }>;
     });
     const summons = records.find((r) => r.body.verb === "face-join")!.body.args!.summons!;
-    expect(summons.kind).toBe("face-join/v1");
     expect(summons.contactCard.length).toBeGreaterThan(10);
     expect(summons.deviceEdge).toBeTruthy();
   }, 240_000);

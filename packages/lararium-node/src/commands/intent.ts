@@ -147,7 +147,7 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
             await khp.init({ seed: atomSeed, eventStore: new InMemoryEventStore(), archiveBytes: archive });
             let contactCard: string;
             try { contactCard = new TextDecoder().decode(await khp.contactCard()); } finally { await khp.dispose(); }
-            args = { summons: { kind: "face-join/v1", contactCard, deviceEdge: anchors.deviceEdge } };
+            args = { summons: { contactCard, deviceEdge: anchors.deviceEdge } };
           }
           nonce ??= atom.key;
         } else audience = intentAudience(opts);
