@@ -6,7 +6,7 @@ name = "projection-loom"
 version = "2.2.0"
 description = "Evidence-first constructive CAD, relational grammar, staged epochs and fixed witnesses"
 requires-python = ">=3.12"
-dependencies = ["cadquery>=2.4", "numpy>=1.26", "scipy>=1.11", "networkx>=3", "opencv-python-headless>=4.8", "Pillow>=10", "trimesh>=4", "scikit-image>=0.25"]
+dependencies = ["cadquery>=2.4", "numpy>=1.26", "scipy>=1.11", "networkx>=3", "opencv-python-headless>=4.8", "Pillow>=10", "trimesh>=4", "scikit-image>=0.25", "jsonschema>=4.23"]
 [project.optional-dependencies]
 fragment-geometry = ["manifold3d>=3"]
 inspection = ["pyvista>=0.45"]

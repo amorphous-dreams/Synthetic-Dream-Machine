@@ -173,6 +173,17 @@ def main(argv=None):
     p.add_argument('--out',type=Path,required=True,help='completed native OODA-HA directory')
     p.add_argument('--gallery',type=Path,required=True,help='fresh gallery output directory')
     p.add_argument('--seats',type=int,choices=[2,3,4,5],default=3)
+    for name in ('fire-context','fire-audition'):
+        p=commands.add_parser(name,
+            help='Current AI Fire uses this typed Loom boundary; no autonomous interpreter')
+        p.add_argument('--project',type=Path,required=True)
+        p.add_argument('--capability-recipe',type=Path,required=True)
+        p.add_argument('--out',type=Path,required=True)
+        p.add_argument('--genome',type=Path)
+        p.add_argument('--identity-ledger',type=Path)
+        if name=='fire-audition':
+            p.add_argument('--proposal',type=Path,required=True,
+                help='Fire-authored JSON proposal, NOT raw executable memetic-wikitext')
     p=commands.add_parser('experiment-zero-select',
                           help='Record separately attributed Operator or adviser review choice')
     p.add_argument('--out',type=Path,required=True)
@@ -238,6 +249,49 @@ def main(argv=None):
         result=make(args.out,args.project,args.capability_recipe,args.gallery,
                     seats=args.seats)
         print(json.dumps(result,indent=2));return result
+    if args.command in ('fire-context','fire-audition'):
+        from .capability_stack import CapabilityCompositor, CapabilityRecipe
+        from .fire_contract import validate_proposal
+        from .fire_geometry import fire_audition
+        from .provenance_encoding import canonical_json_sha256
+        from .epochs import _hash
+        project=Project.load(args.project)
+        recipe=CapabilityRecipe.load(args.capability_recipe)
+        genome=json.loads(args.genome.read_text()) if args.genome else None
+        if args.out.exists():
+            raise ValueError('Fire output is immutable; use a new output path')
+        if args.command=='fire-context':
+            from .relations import PetNameLedger
+            compositor=CapabilityCompositor(project,recipe,size=(64,96),
+                                            source_mask=project.source_mask((64,96)))
+            built=compositor.grow(recipe.initial if genome is None else genome)
+            witness=built.witness()
+            ledger=PetNameLedger.load(args.identity_ledger) if args.identity_ledger else None
+            if ledger is not None and ledger.location!=project.location:
+                raise ValueError('Fire ledger belongs to another location')
+            result={'schema':'projection-loom/fire-context',
+                'source':{'location':project.location,'witness_id':witness.witness_id,
+                          **({'seed_entity_sha256':project.seed_entity.sha256}
+                             if project.seed_entity is not None else {})},
+                'bindings':[{'handle':handle,'selector':witness.selector(handle)}
+                            for handle in sorted(witness.nodes)],
+                'pet_names':ledger.resolve(witness) if ledger else [],
+                'capability_recipe_sha256':recipe.sha256,
+                'genome_sha256':_hash(built.genome),
+                'scope':'read-only; AI Fire interprets natural/sigil prose',
+                'authority':'source witness and operator ledger, no promotion'}
+            result['sha256']=canonical_json_sha256(result)
+        else:
+            proposal=validate_proposal(json.loads(args.proposal.read_text()))
+            result=fire_audition(project,recipe,proposal,
+                identity_ledger=args.identity_ledger,genome=genome)
+        _save(args.out,result)
+        print(json.dumps({'file':str(args.out),'sha256':result['sha256'],
+                          'schema':result['schema'],
+                          'results':result.get('results') and
+                                    [{k:v for k,v in row.items() if k in ('id','state','reason')}
+                                     for row in result['results']]},indent=2))
+        return result
     if args.command=='experiment-zero-select':
         from .experiment_zero import select_survivor
         result=select_survivor(args.out,proposal=args.proposal,actor=args.actor,
