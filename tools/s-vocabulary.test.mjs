@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { memWords, trackedCanon, trackedCode, retiredWords } from "./s-vocabulary.mjs";
+import { EXCEPTIONS, findingsFor, memWords, trackedCanon, trackedCode, retiredWords } from "./s-vocabulary.mjs";
+import { classify } from "./evergreen-boundary.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 // The retired abbreviation, spelled only by joining letters, so this file passes its own check.
@@ -42,12 +43,32 @@ test("no word in tracked code, comment or string spells the retired omnibus key"
   assert.deepEqual(hits, []);
 });
 
-test("no live canon carrier (outside docs/history and the third-party scouts) spells the retired omnibus key", async () => {
-  const hits = [];
+test("scouts enter the carrier set and seven cited lines consume their exceptions", async () => {
   const canon = await trackedCanon();
-  assert.ok(canon.length > 0, "the finder returned no carriers — a silent zero");
-  for (const f of canon) {
-    for (const h of memWords(readFileSync(join(ROOT, f), "utf8"))) hits.push(`${f}:${h.line}  ${h.word}`);
-  }
-  assert.deepEqual(hits, []);
+  assert.ok(canon.length > 0);
+  const scouts = canon.filter(f => f.endsWith("-scout.mem"));
+  assert.ok(scouts.length > 0);
+  const findings = scouts.flatMap(f => findingsFor(f, readFileSync(join(ROOT, f), "utf8"), memWords));
+  const result = classify(findings, EXCEPTIONS);
+  assert.deepEqual(result.open, []);
+  assert.deepEqual(result.stale, []);
+  assert.equal(result.excepted.length, 7);
+});
+
+test("a new scout line remains open beside a cited exception", () => {
+  const file = EXCEPTIONS[0].file;
+  const findings = findingsFor(file, `clean line\nnew ${up} line`, memWords);
+  assert.equal(classify(findings, EXCEPTIONS.filter(e => e.file === file)).open.length, 1);
+});
+
+test("an edited cited phrase makes its exception stale", () => {
+  const exception = EXCEPTIONS[0];
+  const finding = { rule: "s-vocabulary", file: exception.file, line: 1, text: `another ${up} citation` };
+  const result = classify([finding], [exception]);
+  assert.equal(result.open.length, 1);
+  assert.equal(result.stale.length, 1);
+});
+
+test("CONTROL: a clean scout line passes", () => {
+  assert.deepEqual(findingsFor(EXCEPTIONS[0].file, "a clean citation", memWords), []);
 });
