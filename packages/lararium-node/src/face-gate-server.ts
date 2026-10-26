@@ -10,8 +10,9 @@
  *     every other alone (it returns false, and the vessel's dispatcher destroys that socket before any 101). Two
  *     Nexuses, or two tiers, on one route stand two paths, and a flight written to one pin decrypts at no other.
  *   · THE FIRST FLIGHT rides the upgrade's `Sec-WebSocket-Protocol` (`readGateFlightHeader`): the fixed name, then
- *     the flight as one token. A claimed upgrade whose header reads no flight gets its socket destroyed before any
- *     101. The 101 selects `GATE_PROTOCOL` alone and never echoes the token. No compression rides the socket, and
+ *     the flight as one token. A claimed upgrade whose header reads no flight, or whose flight decrypts under no bundle of the stood gate
+ *     (`FaceGate.preflight`, one decryption before the upgrade; `accept` decrypts the same bytes once more), gets its socket
+ *     destroyed before any 101. The 101 selects `GATE_PROTOCOL` alone and never echoes the token. No compression rides the socket, and
  *     no frame outweighs a Noise message.
  *   · THE GATE SOCKET (`wsGateSocket`). Binary frames alone carry the gate's sealed frames; a text frame cuts the
  *     socket. Frames wait in a queue for the gate (and, after the seat, its channel) to read them, bounded TWICE:
@@ -296,7 +297,7 @@ export interface StoodGate {
 }
 
 /** Why a claimed upgrade drew no gate, for the vessel's own log. Nothing of it crosses the wire. */
-export type GateUpgradeRefusal = GateFlightRefusal | "server-closed" | "server-full";
+export type GateUpgradeRefusal = GateFlightRefusal | "server-closed" | "server-full" | "flight-undecrypted";
 
 export interface FaceGateServerOptions {
   /** How many frames wait unread per socket before it pauses. */
@@ -397,6 +398,10 @@ export function faceGateServer(opts: FaceGateServerOptions = {}): FaceGateServer
       const header = req.headers["sec-websocket-protocol"];
       const flight = readGateFlightHeader(Array.isArray(header) ? header.join(", ") : header);
       if (!flight.ok) { refuse(path, flight.refusal); socket.destroy(); return true; }
+      // The flight decrypts under this gate's bundle BEFORE any 101: a token that opens nothing draws the same
+      // destroyed socket the other pre-upgrade refusals draw. Bounded by size (one fixed-length flight) and work
+      // (one decryption), never by time; `accept` decrypts the same bytes once more.
+      if (!stood.gate.preflight(flight.message1)) { refuse(path, "flight-undecrypted"); socket.destroy(); return true; }
       upgrading++;
       let settled = false;
       const settle = (): void => { if (!settled) { settled = true; upgrading--; } };
