@@ -15,7 +15,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { encodeInvite, mintHostToken, takeInvite } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
-import { larDataDir } from "../src/vessel-paths.js";
+import { faceRowNames } from "./face-paths.js";
 import { carriedSet } from "../src/carried-set.js";
 import { nodeWalkStore } from "../src/node-walk-store.js";
 import { rollHosting, readHostingState, liveEpochs } from "../src/hosting-store.js";
@@ -45,14 +45,14 @@ async function invite(): Promise<() => string> {
 
 describe("N — a node vessel walks like any leaf", () => {
   it("walking grants no carry duty: the carried set and the node's own charter stand as before", async () => {
-    const mint = await invite();
     await generateOrLoadVesselIdentity();
     await generateOrLoadPersonaGroupRoot(0);
+    const mint = await invite();
     const sealHome = join(root, "state", "nexus");
     const before = await carriedSet(sealHome);
-    await takeInvite(nodeWalkStore(), mint());
+    await takeInvite(nodeWalkStore({ face: 0 }), mint());
     expect(await carriedSet(sealHome)).toEqual(before);
     expect(existsSync(join(sealHome, "nexus.json"))).toBe(false);
-    expect(readdirSync(join(larDataDir(), "walk"))).toHaveLength(1);
+    expect(faceRowNames().filter((n) => n.startsWith("walk-"))).toHaveLength(1);
   });
 });

@@ -217,11 +217,14 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     node.seatCustody(holder);
     t.after(async () => { await holder.lock(); node.unseatCustody(holder); });
     assert.equal(node.custodyHeld(), false, "T2: a seated holder that never unlocked holds nothing");
-    assert.equal((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading, "opens");
-    const archiveAt = join(homes.identity, "keyhive-archive.bin");
-    const veilName = readdirSync(homes.identity).find((name) => /^veil-archive-g[0-9a-f]{64}\.bin$/.test(name));
-    assert.ok(veilName, "T2 control: no veil-archive-g<64 lowercase hex>.bin row stands in the identity home");
-    const veilAt = join(homes.identity, veilName);
+    const route = [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }];
+    assert.equal((await holder.unlock(route)).reading, "opens");
+    await holder.unlockFaces(route);
+    const archiveAt = join(homes.identity, "place-archive.bin");
+    const faceDirs = readdirSync(join(homes.identity, "faces"));
+    const veilAt = faceDirs.map((d) => join(homes.identity, "faces", d)).flatMap((d) => readdirSync(d).map((name) => join(d, name)))
+      .find((path) => /\/veil-archive-g[0-9a-f]{64}\.bin$/.test(path));
+    assert.ok(veilAt, "T2 control: no veil-archive-g<64 lowercase hex>.bin row stands in a face's directory");
     const restBefore = { archive: readFileSync(archiveAt), veil: readFileSync(veilAt) };
     phases.length = 0;
     const first = counting(node.seatedSovereignReaders());
@@ -235,11 +238,11 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     // The island's exports landed through the custody write door: both rows moved, and both rest sealed.
     for (const [name, at] of [["archive", archiveAt], ["veil", veilAt]]) {
       const now = readFileSync(at);
-      assert.equal(mesh.readVkCarrier(now), "sealed", `T2 control: the ${name} archive rests sealed under the vessel key`);
+      assert.equal(name === "veil" ? mesh.readFckCarrier(now) : mesh.readSCarrier(now), "sealed", `T2 control: the ${name} archive rests sealed under its key`);
       assert.equal(now.equals(restBefore[name]), false, `T2 control: the island's ${name} export replaced the row`);
     }
     const rowsRead = new Set(sovereignly.seen.map(privateRow).filter(Boolean));
-    assert.ok(rowsRead.has("keyhive-archive"), `T2 control: the sovereign composition reaches the archive row (reached: ${[...rowsRead].join(", ") || "none"})`);
+    assert.ok(rowsRead.has("place-archive"), `T2 control: the sovereign composition reaches the archive row (reached: ${[...rowsRead].join(", ") || "none"})`);
     assert.notEqual(one.repo, zero.repo, "T1: a fresh Repo");
     assert.notEqual(one.daemon, zero.daemon, "T1: a fresh daemon island");
     // A herm stands a gate knock only at a Nexus whose carriage board counts a carry for it (`gateNexuses`), and this

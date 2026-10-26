@@ -30,7 +30,8 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { openStaged, cliFor, foundStagedHearth, unlockStaged, type LarInstance, type CliResult } from "../harness/instance.js";
 import { unlockTestCustody } from "../harness/test-door.js";
-import { readVkCarrier } from "../../packages/lararium-mesh/src/vk-envelope.js";
+import { readSCarrier } from "../../packages/lararium-mesh/src/s-envelope.js";
+import { readFckCarrier } from "../../packages/lararium-mesh/src/fck-envelope.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -64,12 +65,36 @@ let carrierHash = "";
 const PLAIN: Record<string, string> = {};
 
 const identity = (file: string): string => join(lar!.root, "data/lares/identity", file);
-/** The rows this witness watches at rest: the family the founding seals under the vessel key. */
-const SEALED_ROWS = ["keyhive-archive.bin", "anchors-h0.json", "anchor-roster.json"] as const;
+/** The rows this witness watches at rest: the vessel-key family the founding seals, and the face rows beside it. */
+const SEALED_ROWS = ["place-archive.bin"] as const;
+/** A face's row rests in that face's own directory: the file, found in whichever face holds it. */
+const faceDirs = (): string[] => { try { return readdirSync(identity("faces")); } catch { return []; } };
+const faceRowFile = (file: string): string => {
+  const at = faceDirs().map((d) => identity(`faces/${d}/${file}`)).find((p) => { try { readFileSync(p); return true; } catch { return false; } });
+  if (!at) throw new Error(`no face holds ${file}`);
+  return at;
+};
 /** The face's veil archive rests under a name that carries its PersonaGroup's digest, so the witness finds it by its family. */
-const veilArchiveRows = (): string[] => readdirSync(identity("")).filter((f) => /^veil-archive-g[0-9a-f]{64}\.bin$/.test(f));
-const rowsAtRest = (): Record<string, Buffer> => Object.fromEntries([...SEALED_ROWS, ...veilArchiveRows()].map((f) => [f, readFileSync(identity(f))]));
-const SHARE = (): string => identity("recovery-device-share-h0.bin");
+const veilArchiveRows = (): string[] => faceDirs().flatMap((d) => readdirSync(identity(`faces/${d}`)).filter((f) => /^veil-archive-g[0-9a-f]{64}\.bin$/.test(f)));
+/** The face's own roster line: its name carries the login hint when the host has one. */
+const rosterRow = (): string => {
+  const name = faceDirs().flatMap((d) => readdirSync(identity(`faces/${d}`))).find((f) => /^\.persona-roster(?:-[^./]+?)?-h0\.json$/.test(f));
+  if (!name) throw new Error("CONTROL: the founded face holds no roster line at rest");
+  return name;
+};
+const rowsAtRest = (): Record<string, Buffer> => {
+  const veil = veilArchiveRows();
+  if (veil.length === 0) throw new Error("CONTROL: the founded face holds no veil archive at rest");
+  return Object.fromEntries([
+    ...SEALED_ROWS.map((f) => [f, readFileSync(identity(f))] as const),
+    ["anchors-h0.json", readFileSync(faceRowFile("anchors-h0.json"))] as const,
+    [rosterRow(), readFileSync(faceRowFile(rosterRow()))] as const,
+    ...veil.map((f) => [f, readFileSync(faceRowFile(f))] as const),
+  ]);
+};
+/** Each row reads its own key's seal: the vessel-key rows the S key's, the face rows their face's. */
+const sealOf = (file: string, bytes: Buffer): string => ((SEALED_ROWS as readonly string[]).includes(file) ? readSCarrier(bytes) : readFckCarrier(bytes));
+const SHARE = (): string => faceRowFile("recovery-device-share-h0.bin");
 
 /** The custody door's own reading of what stands. Looks are COUNTED while no daemon answers; no clock decides. */
 async function custodyReading(): Promise<Record<string, unknown>> {
@@ -117,7 +142,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     expect(reading["unlocked"]).toBe(false);
     expect(reading["slot"]).toBeNull();
     for (const [file, bytes] of Object.entries(rowsAtRest())) {
-      expect(readVkCarrier(bytes), `${file} carries the vessel key's seal`).toBe("sealed");
+      expect(sealOf(file, bytes), `${file} carries its key's seal`).toBe("sealed");
     }
     // No sovereign act answers on the floor: the recipe seat reads nothing.
     const r = await readCarrier();
@@ -145,7 +170,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     expect(String(dataOf(got)["canonicalHash"])).toBe(carrierHash);
 
     // The hearth's own archive export lands through the sealed writer: still the vessel key's seal, never bare.
-    for (const [file, bytes] of Object.entries(rowsAtRest())) expect(readVkCarrier(bytes), file).toBe("sealed");
+    for (const [file, bytes] of Object.entries(rowsAtRest())) expect(sealOf(file, bytes), file).toBe("sealed");
     expect(readFileSync(SHARE()).equals(shareAtFounding), "an unlock re-minted the device share").toBe(true);
   }, 300_000);
 
@@ -188,7 +213,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     const got = await readCarrier();
     expect(got.json?.["ok"], said(got)).toBe(true);
     expect(String(dataOf(got)["canonicalHash"])).toBe(carrierHash);
-    for (const [file, bytes] of Object.entries(rowsAtRest())) expect(readVkCarrier(bytes), file).toBe("sealed");
+    for (const [file, bytes] of Object.entries(rowsAtRest())) expect(sealOf(file, bytes), file).toBe("sealed");
     expect(readFileSync(SHARE()).equals(shareAtFounding), "a stand re-minted the device share").toBe(true);
   }, 300_000);
 
@@ -203,13 +228,13 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     expect(custody.rows.filter((r) => r.fault).map((r) => r.file)).toEqual([]);
     expect(new Set(custody.rows.map((r) => `${r.home}/${r.file}`)).size).toBe(custody.rows.length);
     for (const r of custody.rows) {
-      if (r.custody === "hot" || r.custody === "cold") expect(r.reading, r.file).toBe("sealed");
+      if (r.custody === "hot" || r.custody === "cold" || r.custody === "face-hot" || r.custody === "face-cold") expect(r.reading, r.file).toBe("sealed");
       else expect(typeof r.bare === "string" && r.bare.length > 0, `${r.file} names the law it rests bare under`).toBe(true);
     }
     // CONTROL: the reading holds rows of both kinds, so neither loop above ran over nothing.
     expect(custody.rows.some((r) => r.row === "device-share" && r.reading === "sealed")).toBe(true);
-    expect(custody.rows.some((r) => r.row === "vk-slots" && r.reading === "bare")).toBe(true);
-    expect(readVkCarrier(readFileSync(SHARE()))).toBe("sealed");
+    expect(custody.rows.some((r) => r.row === "s-slots" && r.reading === "bare")).toBe(true);
+    expect(readFckCarrier(readFileSync(SHARE()))).toBe("sealed");
   }, 120_000);
 
   test("⑦ a word outside the vault door's seven verbs answers as no door, and the share keeps its bytes", async () => {

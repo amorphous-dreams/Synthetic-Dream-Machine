@@ -540,25 +540,31 @@ export { crossingDirection, type CrossingDirection, type CrossingCost } from "./
 export { realmStanding, type RealmStanding, type RealmStandingName, type RealmFeedSlot } from "./realm-standing.js";
 export { KEY_CLASSES, isKeyClass, isRelationClass } from "./key-class.js";
 export type { KeyClass } from "./key-class.js";
-// The VK custody spine: the keyslot tree that commits to its VK, and the ONE writer of VK-sealed carriers, which
-// proves every VK in hand against the standing tree under one custody holder — see `sealed-writer`.
+export { FCK_SEAL_MAGIC, FCK_SEAL_NONCE_LENGTH, FCK_SEAL_TAG_LENGTH, FCK_SEAL_MIN_LENGTH, readFckCarrier, splitFckFrame, joinFckFrame } from "./fck-envelope.js";
+export type { FckCarrierReading } from "./fck-envelope.js";
+export { mintFck, faceCarrierContext, sealUnderFck, openUnderFck } from "./fck.js";
+export type { FaceCustodyKey, FaceCarrier, FckOpening } from "./fck.js";
+// The tree key custody spine: the keyslot tree that commits to its tree key, and the ONE writer of tree-key-sealed carriers, which
+// proves every tree key in hand against the standing tree under one custody holder — see `sealed-writer`.
 export {
-  writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, openSealedCarrier, commitSlotTree, rotateVk, settleRotation, assertNoOldCustodyShape,
-  CustodyRefusal, TreeVkRefusal, CensusRefusal, OldShapeRefusal, SEALING_SUFFIX, ROTATING_SUFFIX,
+  writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, openSealedCarrier, commitSlotTree, rotateTreeKey, settleRotation, assertStoreUnoccupied,
+  CustodyRefusal, TreeKeyRefusal, CensusRefusal, OccupiedStoreRefusal, SEALING_SUFFIX, ROTATING_SUFFIX,
+  writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, openFaceCarrier, rotateFck, settleFaceRotation, assertFaceStoreUnoccupied, commitFaceTree,
 } from "./sealed-writer.js";
 export type {
-  CustodyIo, SealedCarrier, SealedCarrierUpdate, StandingCarrier, TreeVkReading, WriteSealedCarrierArgs, CommitSlotTreeArgs, RotateVkArgs, SettleRotationArgs,
+  CustodyIo, SealedCarrier, SealedCarrierUpdate, StandingCarrier, TreeKeyReading, WriteSealedCarrierArgs, CommitSlotTreeArgs, RotateTreeKeyArgs, SettleRotationArgs,
+  WriteFaceCarrierArgs, RotateFckArgs, CommitFaceTreeArgs,
 } from "./sealed-writer.js";
-export { bindSlot, unbindSlot, openVk, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper } from "./keyslot.js";
-export type { PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, Credential, VkUnlock, SlotTreeReading } from "./keyslot.js";
-export { mintVk, vkEquals } from "./vk.js";
-// The serving key and the serving tree that wraps it under the VK's entry — see `serving-key`.
-export { mintServingKey, foundServingTree, openServingKey, encodeServingTree, decodeServingTree, skCheckOf, SK_LENGTH } from "./serving-key.js";
-export type { ServingKey, ServingTree, ServingVkEntry, ServingKeyOpening, ServingTreeReading } from "./serving-key.js";
-export type { VesselKey, VkOpening } from "./vk.js";
-// The VK's sealed-carrier frame: the magic that names the scheme, with no version byte — see `vk-envelope`.
-export { VK_SEAL_MAGIC, LARK_MAGIC, VK_SEAL_NONCE_LENGTH, VK_SEAL_TAG_LENGTH, VK_SEAL_MIN_LENGTH, readVkCarrier, splitVkFrame, joinVkFrame } from "./vk-envelope.js";
-export type { VkCarrierReading } from "./vk-envelope.js";
+export { bindSlot, unbindSlot, openTreeKey, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper } from "./keyslot.js";
+export type { PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, Credential, TreeKeyUnlock, SlotTreeReading } from "./keyslot.js";
+export { mintTreeKey, treeKeyEquals } from "./tree-key.js";
+// The serving key and the serving tree that wraps it under the tree key's entry — see `serving-key`.
+export { mintServingKey, SK_LENGTH } from "./serving-key.js";
+export type { ServingKey } from "./serving-key.js";
+export type { TreeKey, TreeKeyOpening } from "./tree-key.js";
+// The tree key's sealed-carrier frame: the magic that names the scheme, with no version byte — see `s-envelope`.
+export { S_SEAL_MAGIC, LARK_MAGIC, S_SEAL_NONCE_LENGTH, S_SEAL_TAG_LENGTH, S_SEAL_MIN_LENGTH, readSCarrier, splitSFrame, joinSFrame } from "./s-envelope.js";
+export type { SCarrierReading } from "./s-envelope.js";
 // SLIP-39: the paper pin's encoder, over the house's own GF(256) field ops — see `slip39`.
 export { Slip39Error, decodeShare, encodeShare, generateMnemonics, combineMnemonics, readBackMismatch } from "./slip39.js";
 export type { Slip39Share, ReadBackMismatch } from "./slip39.js";

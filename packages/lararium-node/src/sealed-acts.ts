@@ -630,11 +630,11 @@ export const SEALED_ACTS = Object.freeze({
     return { view: { ...view } };
   }),
 
-  "handle-book.load": act({}, async () => ({ snapshot: (await loadNodeHandleBook()).snapshot() })),
-  "handle-book.save": act({ snapshot }, async (a) => {
+  "handle-book.load": act({ face: index }, async (a) => ({ snapshot: (await loadNodeHandleBook(a.face)).snapshot() })),
+  "handle-book.save": act({ face: index, snapshot }, async (a) => {
     // The snapshot crosses the recogniser's own verification before it seals: a record whose causal closure does
     // not verify drops there, exactly as it would on a load.
-    await saveNodeHandleBook(await HandleBook.restore(a.snapshot));
+    await saveNodeHandleBook(a.face, await HandleBook.restore(a.snapshot));
     return {};
   }),
 

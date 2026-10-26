@@ -1,0 +1,74 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { EXCEPTIONS, findingsFor, memWords, trackedCanon, trackedCode, retiredWords } from "./s-vocabulary.mjs";
+import { classify } from "./evergreen-boundary.mjs";
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+// The retired abbreviation, spelled only by joining letters, so this file passes its own check.
+const lo = "v" + "k";
+const up = "V" + "K";
+const cap = "V" + "k";
+
+test("KNOWN POSITIVE: the check catches every spelling, in code, in a comment and in a string", () => {
+  const planted = [
+    `const ${lo} = 1;`, `function mint${cap}() {}`, `type Vessel${cap} = number;`, `const ${up}_SEAL_MAGIC = 1;`, `const new${cap} = 2;`,
+    `obj.${lo}Check = 3;`, `class Tree${cap}Refusal {}`, `export { open${cap} };`, `let old${up} = 4;`,
+    `// the ${up} retired`, `/* a ${up}-sealed carrier */ const a = 1;`, `const info = "${lo}-check";`, `const text = 'the ${up} opens';`,
+  ];
+  for (const line of planted) assert.ok(retiredWords(line).length > 0, `the check misses: ${line}`);
+});
+
+test("KNOWN POSITIVE (canon): a carrier's prose that spells it is caught, and a content address is not prose", () => {
+  assert.ok(memWords(`The ${up} opens the tree.`).length > 0);
+  assert.ok(memWords(`* ''${cap}'' rotation re-wraps the entry`).length > 0);
+  assert.deepEqual(memWords(`<<^ code="&#x0003;">>ni:///sha-256;rhCZHcumogmxUwIG${up}-4mFt8tZrJ48k1hAEfqv65ps`), []);
+});
+
+test("CONTROL: unrelated words read clean", () => {
+  const clean = [
+    "const prevKeys = 1; const recvKey = 2;", "const treeKey = 3; const S_SEAL_MAGIC = 4; const VERIFYING_KEY = 5; const keyCheck = 6;",
+    "// the S key opens the gate root", 'const info = "tree-key-check";', "const tkv = 7; const vkx = 8;".replace("vkx", "vxk"),
+  ];
+  for (const line of clean) assert.deepEqual(retiredWords(line), [], `the check flags a clean line: ${line}`);
+});
+
+test("no word in tracked code, comment or string spells the retired omnibus key", () => {
+  const hits = [];
+  for (const f of trackedCode()) {
+    for (const h of retiredWords(readFileSync(join(ROOT, f), "utf8"))) hits.push(`${f}:${h.line}  ${h.word}`);
+  }
+  assert.deepEqual(hits, []);
+});
+
+test("scouts enter the carrier set and seven cited lines consume their exceptions", async () => {
+  const canon = await trackedCanon();
+  assert.ok(canon.length > 0);
+  const scouts = canon.filter(f => f.endsWith("-scout.mem"));
+  assert.ok(scouts.length > 0);
+  const findings = scouts.flatMap(f => findingsFor(f, readFileSync(join(ROOT, f), "utf8"), memWords));
+  const result = classify(findings, EXCEPTIONS);
+  assert.deepEqual(result.open, []);
+  assert.deepEqual(result.stale, []);
+  assert.equal(result.excepted.length, 7);
+});
+
+test("a new scout line remains open beside a cited exception", () => {
+  const file = EXCEPTIONS[0].file;
+  const findings = findingsFor(file, `clean line\nnew ${up} line`, memWords);
+  assert.equal(classify(findings, EXCEPTIONS.filter(e => e.file === file)).open.length, 1);
+});
+
+test("an edited cited phrase makes its exception stale", () => {
+  const exception = EXCEPTIONS[0];
+  const finding = { rule: "s-vocabulary", file: exception.file, line: 1, text: `another ${up} citation` };
+  const result = classify([finding], [exception]);
+  assert.equal(result.open.length, 1);
+  assert.equal(result.stale.length, 1);
+});
+
+test("CONTROL: a clean scout line passes", () => {
+  assert.deepEqual(findingsFor(EXCEPTIONS[0].file, "a clean citation", memWords), []);
+});

@@ -1,6 +1,6 @@
 /**
  * seal-ceremony — a SEAT signs what the standing ceremony state licenses, and the growth rite's two rows rest
- * sealed. A chair's key rests as a seat row of its own (`seat-fixture` stores them), apart from every persona root.
+ * in the clear. A chair's key rests as a seat row of its own (`seat-fixture` stores them), apart from every persona root.
  *
  * THE ROLL (through the custody door's `seal.sign`):
  *   L1  CONTROL: the roll the standing head licenses signs, and the signature verifies under the seat's key.
@@ -16,7 +16,7 @@
  *       canonical spelling.
  * THE CROSSING (the rite's own acts):
  *   C1  the rite walks: open, (the chain moves), bind, sign as the outgoing and incoming hands, witness, seal. Both
- *       rows rest sealed and spell no key, signature or note; the sealed record verifies; the pending row leaves.
+ *       rows rest as public JSON with no vessel key; the record verifies; the pending row leaves.
  *   C2  RED: A HAND MARKS ONLY THE CROSSING THAT STANDS, AS WHAT IT HOLDS THERE. No crossing, an unbound one, a
  *       face that holds no seat key in either set (it may witness, never sign), a face that holds one (it may
  *       sign, never witness), a face whose root this vessel does not hold: each refuses, and the pending row keeps
@@ -26,18 +26,17 @@
  *   C4  PREPARED WITHOUT COMMIT RESUMES; COMMITTED WITHOUT REMOVAL RESUMES; COMMIT WITHOUT PREPARE READS CLEAN. A
  *       seal that committed its record and stopped before it removed the pending row seals again to ONE kept
  *       record and no pending row; kept records with no pending row read as a clean state that opens anew.
- *   C5  RED: a wrong key, another shape and a locked seat refuse each row by name, and nothing lands over them.
+ *   C5  RED: another shape refuses each row by name; a locked seat still reads public rows.
  */
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
-  NEXUS_DOC_DOMAIN, RESERVE_TRANSITION_DOMAIN, canonicalJsonBytes, charterInceptionBytes, charterInceptionImage, genesisOfInception, verifySealLineage, ed25519SignerFromSeed, hex, mintCharterEpoch, readVkCarrier,
+  NEXUS_DOC_DOMAIN, RESERVE_TRANSITION_DOMAIN, canonicalJsonBytes, charterInceptionBytes, charterInceptionImage, genesisOfInception, verifySealLineage, ed25519SignerFromSeed, hex, mintCharterEpoch, readSCarrier,
   rotateSealEpoch, sealKeySetHash, sealLineageHead, sealRollBytes, seatNextDigest, verifyEd25519,
   type NexusDoc, type SealEpoch,
 } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
-import { readCustodyRow, writeCustodyRow } from "../src/custody-seat.js";
 import { nexusCharterDocPath, readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { verifyReserveTransition, type ReserveTransition } from "../src/reserve-transition.js";
@@ -256,13 +255,15 @@ describe("the growth rite's rows", () => {
     return { next, keys };
   }
 
-  test("C1 — the rite walks, both rows rest sealed, and the sealed record verifies", async () => {
+  test("C1 — the rite walks, both rows rest as plain JSON, and the record verifies", async () => {
     const { keys, witness, genesis } = await founded("ceremony-c1");
     expect(await act("crossing.state")).toEqual({ kept: 0, open: null });
     expect(await act("crossing.open")).toEqual({ fromEpochCid: genesis.epochCid, oldHands: 3 });
-    const sealedPending = readFileSync(pendingPath());
-    expect(readVkCarrier(sealedPending)).toBe("sealed");
-    for (const key of keys.slice(0, 3)) expect(sealedPending.includes(Buffer.from(key)), "a seated key").toBe(false);
+    const plainPending = readFileSync(pendingPath());
+    const opened = JSON.parse(plainPending.toString("utf8")) as { fromEpochCid: string; oldKeys: string[] };
+    expect(opened.fromEpochCid).toBe(genesis.epochCid);
+    expect(opened.oldKeys).toEqual(expect.arrayContaining(keys));
+    expect(readSCarrier(plainPending)).toBe("bare");
     // The chain moves: the same three chairs, each on its committed next key (faces 0-2 hold a key in each set).
     const { next, keys: rolled } = await moveChain();
     const both = (i: number): string[] => [keys[i]!, rolled[i]!].sort();
@@ -280,9 +281,9 @@ describe("the growth rite's rows", () => {
     expect(await act("seat.held", { keys: rolled })).toEqual({ held: rolled });      // CONTROL: the seated keys stay
     expect(existsSync(pendingPath())).toBe(false);
     const keptBytes = readFileSync(keptPath());
-    expect(readVkCarrier(keptBytes)).toBe("sealed");
-    for (const secret of [keys[0]!, note, sealed.transitionCid]) expect(keptBytes.includes(Buffer.from(secret)), secret.slice(0, 12)).toBe(false);
-    const kept = JSON.parse(new TextDecoder().decode((await readCustodyRow("seal", TRANSITIONS_FILE))!)) as ReserveTransition[];
+    expect(readSCarrier(keptBytes)).toBe("bare");
+    const kept = JSON.parse(keptBytes.toString("utf8")) as ReserveTransition[];
+    expect(keptBytes.includes(Buffer.from(sealed.transitionCid))).toBe(true);
     expect(kept).toHaveLength(1);
     expect(kept[0]).toMatchObject({ transitionCid: sealed.transitionCid, fromEpochCid: genesis.epochCid, toEpochCid: next.epochCid });
     expect(await verifyReserveTransition(kept[0]!, { oldKeys: keys, oldThreshold: 2, newKeys: rolled, newThreshold: 2 })).toEqual({ ok: true, independentWitnesses: 1 });
@@ -317,7 +318,7 @@ describe("the growth rite's rows", () => {
     const read = (await readCrossing()).pending!;
     const core = boundCore(read)!;
     const moved = { ...read, rite: "lar:///a-synthetic/other-rite", oldSigs: [], newSigs: [] };
-    await writeCustodyRow("seal", TRANSITION_PENDING_FILE, new TextEncoder().encode(JSON.stringify(moved)));
+    writeFileSync(pendingPath(), JSON.stringify(moved));
     const late = await keepCrossingMark(core, (p) => ({ next: { ...p, witnesses: [] }, value: "kept" })).catch((e: unknown) => e);
     expect(String((late as Error).message)).toMatch(/the crossing moved under this mark/);
     expect(await act("crossing.state")).toMatchObject({ open: { oldSigs: 0, newSigs: 0 } });
@@ -374,12 +375,12 @@ describe("the growth rite's rows", () => {
     expect((await sealCrossing()).resumed).toBe(false);
     expect(await act("crossing.state")).toEqual({ kept: 2, open: null });            // the second record lands beside the first
     // A kept record whose cid does not recompute over its own fields reads malformed: the row holds records, never claims.
-    const kept = JSON.parse(new TextDecoder().decode((await readCustodyRow("seal", TRANSITIONS_FILE))!)) as ReserveTransition[];
-    await writeCustodyRow("seal", TRANSITIONS_FILE, new TextEncoder().encode(JSON.stringify([kept[0], { ...kept[1]!, rite: "another-rite" }])));
+    const kept = JSON.parse(readFileSync(keptPath(), "utf8")) as ReserveTransition[];
+    writeFileSync(keptPath(), JSON.stringify([kept[0], { ...kept[1]!, rite: "another-rite" }]));
     expect(await act("crossing.state").catch((e: unknown) => e)).toMatchObject({ home: "seal", file: TRANSITIONS_FILE, reading: "malformed" });
   });
 
-  test("C5 — a wrong key, another shape and a locked seat refuse each row by name", async () => {
+  test("C5 — public rows read without a key; malformed rows refuse by name", async () => {
     const b = await custody("ceremony-c5-b");
     const a = await custody("ceremony-c5-a");
     const as = (c: SeatedScratchCustody): void => { process.env["LAR_ROOT"] = c.root; };
@@ -399,20 +400,19 @@ describe("the growth rite's rows", () => {
     as(a);
     await walk();
     const own = readFileSync(pendingPath());
-    expect(own.equals(readFileSync(foreignPending))).toBe(false);                    // two keys, two encodings
-    copyFileSync(foreignPending, pendingPath());                                     // a pending row another vessel sealed
+    // Public rows carry no vessel's seal: two vessels that walk the same crossing rest the same bytes, and either reads the other's.
+    expect(own.equals(readFileSync(foreignPending))).toBe(true);
+    copyFileSync(foreignPending, pendingPath());                                     // a pending row another vessel wrote
     const foreign = readFileSync(pendingPath());
-    for (const step of [act("crossing.state"), act("crossing.open"), act("crossing.sign", { handleIndex: 0 }), act("crossing.seal")]) {
-      expect(await why(step)).toBe("CustodyRowUnavailable");
-    }
+    expect((await act("crossing.state"))["open"]).not.toBeNull();
     expect(readFileSync(pendingPath()).equals(foreign)).toBe(true);
     writeFileSync(pendingPath(), own);
     // Another shape under the right key refuses `malformed`: a far side half bound, a field beside the row's own, bare JSON.
-    const whole = JSON.parse(new TextDecoder().decode((await readCustodyRow("seal", TRANSITION_PENDING_FILE))!)) as Record<string, unknown>;
+    const whole = JSON.parse(readFileSync(pendingPath(), "utf8")) as Record<string, unknown>;
     const { newKeys: _dropped, ...halfBound } = whole;
     for (const shape of [halfBound, { ...whole, extra: 1 }, { ...whole, oldSigs: [{ signer: "x", sig: "y" }] }, { ...whole, oldThreshold: 0 }, [whole]]) {
       writeFileSync(pendingPath(), own);
-      await writeCustodyRow("seal", TRANSITION_PENDING_FILE, new TextEncoder().encode(JSON.stringify(shape)));
+      writeFileSync(pendingPath(), JSON.stringify(shape));
       const refused = await act("crossing.state").catch((e: unknown) => e);
       expect(refused, JSON.stringify(shape).slice(0, 50)).toBeInstanceOf(CustodyRowUnavailable);
       expect(refused).toMatchObject({ home: "seal", file: TRANSITION_PENDING_FILE, reading: "malformed" });
@@ -420,13 +420,14 @@ describe("the growth rite's rows", () => {
     }
     writeFileSync(pendingPath(), own);
     // A kept row that does not read whole refuses the seal before it commits beside it.
-    await writeCustodyRow("seal", TRANSITIONS_FILE, new TextEncoder().encode(JSON.stringify([{ transitionCid: "rtr-not-a-record" }])));
+    writeFileSync(keptPath(), JSON.stringify([{ transitionCid: "rtr-not-a-record" }]));
     expect(await act("crossing.seal").catch((e: unknown) => e)).toMatchObject({ home: "seal", file: TRANSITIONS_FILE, reading: "malformed" });
     expect(readFileSync(pendingPath()).equals(own)).toBe(true);                      // the pending row stands
-    // The floor reads neither row.
+    // The floor reads both public rows, but a seat signature still needs its key.
+    writeFileSync(keptPath(), "[]");
     await a.holder.lock();
-    for (const step of [act("crossing.state"), act("crossing.open"), act("crossing.sign", { handleIndex: 0 }), act("crossing.seal"), act("seal.sign", { seat: "ab".repeat(32), image: "ab" })]) {
-      expect(await step.catch((e: unknown) => e)).toBeInstanceOf(CustodyLocked);
-    }
+    expect((await act("crossing.state"))["open"]).not.toBeNull();
+    expect(JSON.parse(readFileSync(pendingPath(), "utf8"))).toMatchObject(whole);
+    expect(await act("seal.sign", { seat: "ab".repeat(32), image: "ab" }).catch((e: unknown) => e)).toBeInstanceOf(CustodyLocked);
   });
 });

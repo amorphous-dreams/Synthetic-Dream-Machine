@@ -135,20 +135,15 @@ export const CADENCE_INCEPTION_DOMAIN = mint("cadence-inception");
  *  commitment never reads as a seat's. */
 export const CADENCE_NEXT_KEY_DOMAIN = mint("cadence-next-key");
 
-// ── CUSTODY: THE VK, ITS KEYSLOTS, AND THE VESSEL KEL ───────────────────────────────────────────
+// ── CUSTODY: THE tree key, ITS KEYSLOTS, AND THE VESSEL KEL ───────────────────────────────────────────
 /** The floor key's own inception: the key signed by itself, committing no next key. */
 export const VESSEL_KEL_DOMAIN = mint("vessel-kel");
 /** The HKDF `info` every keyslot wrap derives under: a pin's KEK wrapping its share of the slot key, and the
- *  slot key wrapping the VK. */
-export const VK_SLOT_WRAP_INFO = mint("vk-slot-wrap");
-/** The HKDF `info` of the slot tree's VK check: the keyed digest a tree carries so every writer proves the VK
+ *  slot key wrapping the tree key. */
+export const SLOT_WRAP_INFO = mint("slot-wrap");
+/** The HKDF `info` of the slot tree's tree key check: the keyed digest a tree carries so every writer proves the tree key
  *  in hand against the standing tree before any byte moves. */
-export const VK_CHECK_INFO = mint("vk-check");
-/** The HKDF `info` of the serving tree's VK entry: the key the VK derives to wrap the serving key (SK). Its own
- *  name: no slot wrap and no VK check ever derives the same key from the VK. */
-export const SK_VK_WRAP_INFO = mint("sk-vk-wrap");
-/** The HKDF `info` of the serving tree's SK check: the keyed digest that commits the tree to the one SK it wraps. */
-export const SK_CHECK_INFO = mint("sk-check");
+export const TREE_CHECK_INFO = mint("tree-key-check");
 
 // ── ADMISSION + ENROLMENT ───────────────────────────────────────────────────────────────────────
 /** A hearth's HOSTING ACT in one Nexus: its per-Nexus leaf signs the Nexus, itself, the act's POPRF public key

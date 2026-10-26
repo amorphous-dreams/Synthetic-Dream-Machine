@@ -6,7 +6,7 @@
  *   S2  THE BURN: a token burns once. The same claim again reads `retry` (refuse before destroy); a different
  *       claim reads `spent-other`; burns of one nonce that start together under different claims yield exactly one
  *       `fresh`.                                  control: another nonce burns `fresh` beside it
- *   S3  RED: EVERY ROW RESTS SEALED. The state row and each spend row read as VK-sealed frames; no file's bytes
+ *   S3  RED: EVERY ROW RESTS SEALED. The state row and each spend row read as face-key-sealed frames; no file's bytes
  *       spell the nonce, the claim digest, the act, the guest leaf, the lineage or the claim, and a spend row's
  *       name carries no nonce. The parent commit's store appended `n <nonce> <claim digest>` to a readable file.
  *                                                 control: the store's own read answers the act and the outcome
@@ -16,23 +16,25 @@
  *       roll and the spend by name, and their bytes never move.
  *   S6  RED: a state or a spend row that opens to another shape refuses by name; a state whose two acts form no
  *       chain refuses.
- *   S7  RED: THE FLOOR READS NO HOSTING ROW: a locked seat refuses the read, the roll, the spend and the count.
+ *   S7  RED: THE FLOOR READS NO HOSTING ROW: a locked seat refuses the read, the roll and the spend; the count reads names alone.
  *   S8  A ROLL ANOTHER ROLL OVERTOOK refuses `HostingStateMoved` and writes nothing over the newer state.
- *   S9  THE SWEEP removes only rows this vessel's key opens: a dead epoch's row sealed by another key stays, and
+ *   S9  THE SWEEP removes only rows this face's key opens: a dead epoch's row sealed by another key stays, and
  *       the roll names it `unswept`.
- *   S10 THE STORE TAKES NO DIRECTORY: its rows rest under the storage home of the seated custody.
+ *   S10 THE STORE TAKES NO DIRECTORY: its rows rest under the seated custody face in identity.
  */
 import { describe, test, expect, afterEach } from "vitest";
 import { copyFileSync, existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { hostingActCid, claimDigest, lineageOf, mintHostingAct, readVkCarrier, redeemClaim } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
+import { hostingActCid, claimDigest, lineageOf, mintHostingAct, readFckCarrier, redeemClaim } from "@lararium/mesh";
+import { CustodyLocked, CustodyRowUnavailable, FaceLocked } from "../src/custody-holder.js";
 import { seatedCustody, writeCustodyRow } from "../src/custody-seat.js";
 import {
-  rollHosting, readHostingState, liveEpochs, spendToken, spendMintMarker, redeemedCount, mintedCount, hostingDir, hostingRowDir,
+  rollHosting, readHostingState, liveEpochs, spendToken, spendMintMarker, redeemedCount, mintedCount,
   DEFAULT_HOSTING_CAP, HostingStateMoved,
 } from "../src/hosting-store.js";
-import { holdSealsUntilBothArrive, seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import { HostingFaceAbsent, hostingDirPath, hostingRowDir } from "../src/hosting-face.js";
+import { setWornFaceInSession } from "../src/node-vessel-identity.js";
+import { FIXTURE_PASSPHRASE, holdSealsUntilBothArrive, seatHostingCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 const AID  = "nexus-" + "a".repeat(64);
 const LEAF = new Uint8Array(32).fill(51);
@@ -42,16 +44,39 @@ const GUEST_LEAF = "c".repeat(64);
 const drops: Array<() => Promise<void>> = [];
 afterEach(async () => { for (const drop of drops.splice(0).reverse()) await drop(); });
 async function custody(label: string): Promise<SeatedScratchCustody> {
-  const c = await seatScratchCustody(label);
+  const c = await seatHostingCustody(label);
   drops.push(() => c.drop());
   return c;
 }
 const refusal = async (act: Promise<unknown>): Promise<unknown> => act.then(() => "landed", (e: unknown) => e);
-const dirFiles = async (): Promise<string[]> => readdirSync(await hostingDir(AID)).sort();
+const dirFiles = async (): Promise<string[]> => readdirSync(hostingDirPath(0, AID)!).sort();
 const spendsOf = async (epoch: string): Promise<string[]> => (await dirFiles()).filter((f) => f.startsWith(`spent-${epoch}-`));
-const fileBytes = async (name: string): Promise<Buffer> => readFileSync(join(await hostingDir(AID), name));
+const fileBytes = async (name: string): Promise<Buffer> => readFileSync(join(hostingDirPath(0, AID)!, name));
 
 describe("the roll — two live epochs, nothing older", () => {
+  test("RED: two unlocked faces with none worn refuse a first roll; CONTROL: wearing face 1 binds and seals there", async () => {
+    const c = await custody("host-face-choice");
+    const other = await c.holder.foundFace({ ordinal: 1, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
+    const first = await c.holder.faceStanding({ ordinal: 0 });
+    setWornFaceInSession(undefined);
+    expect(await refusal(rollHosting({ nexusAid: AID, leafSeed: LEAF }))).toBeInstanceOf(HostingFaceAbsent);
+    expect(existsSync(hostingDirPath(0, AID)!)).toBe(false);
+    expect(existsSync(hostingDirPath(1, AID)!)).toBe(false);
+    setWornFaceInSession(1);
+    const rolled = await rollHosting({ nexusAid: AID, leafSeed: LEAF });
+    const row = hostingDirPath(1, AID)!;
+    expect(row).toBe(join(c.homes.identity, "faces", other.fcid, ...hostingRowDir(1, AID).split("/")));
+    expect(existsSync(join(row, "state.json"))).toBe(true);
+    expect(readFckCarrier(readFileSync(join(row, "state.json")))).toBe("sealed");
+    expect(existsSync(hostingDirPath(0, AID)!)).toBe(false);
+    await c.holder.lockFace(other.fcid);
+    expect(await refusal(readHostingState(AID))).toBeInstanceOf(FaceLocked);
+    expect((await c.holder.faceStanding({ ordinal: 0 }))?.unlocked).toBe(true);
+    expect(await c.holder.unlockFace({ ordinal: 1 }, [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }])).toMatchObject({ reading: "opens" });
+    await c.holder.lockFace(first!.fcid);
+    expect((await readHostingState(AID))?.current).toEqual(rolled.act);
+  });
+
   test("S1 — a roll keeps the old act as previous; rolling twice removes the spend rows two epochs back", async () => {
     await custody("host-s1");
     expect(await readHostingState(AID)).toBeNull();                                // control: hosts nowhere yet
@@ -132,7 +157,7 @@ describe("the burn — once, sealed, refuse before destroy", () => {
     const files = await dirFiles();
     expect(files).toHaveLength(2);
     expect(files.filter((f) => /^spent-[0-9a-f]{64}-n-[0-9a-f]{32}$/.test(f))).toHaveLength(1);
-    for (const f of files) expect(readVkCarrier(await fileBytes(f)), f).toBe("sealed");
+    for (const f of files) expect(readFckCarrier(await fileBytes(f)), f).toBe("sealed");
     const everything = Buffer.concat([Buffer.from(files.join("\n")), ...(await Promise.all(files.map(fileBytes)))]);
     for (const secret of [n, n.slice(0, 16), digest, claim, lineageOf(n, claim), GUEST_LEAF, act.sig, act.oprfPub, AID]) {
       expect(everything.includes(Buffer.from(secret)), secret.slice(0, 12)).toBe(false);
@@ -154,7 +179,7 @@ describe("the burn — once, sealed, refuse before destroy", () => {
     expect(await spendToken({ nexusAid: AID, epochCid: e, n, claimDigest: digest })).toBe("retry");
     expect(await redeemedCount(AID, e)).toBe(1);
     // The count derives from the rows by name: with the row gone, no counter remembers it, and the nonce burns fresh.
-    rmSync(join(await hostingDir(AID), (await spendsOf(e))[0]!));
+    rmSync(join(hostingDirPath(0, AID)!, (await spendsOf(e))[0]!));
     expect(await redeemedCount(AID, e)).toBe(0);
     expect(await spendToken({ nexusAid: AID, epochCid: e, n, claimDigest: digest })).toBe("fresh");
     expect(await redeemedCount(AID, "9".repeat(64))).toBe(0);                      // another epoch counts none of them
@@ -169,23 +194,23 @@ describe("the burn — once, sealed, refuse before destroy", () => {
     const e = hostingActCid(act);
     const n = "bb".repeat(32);
     await spendToken({ nexusAid: AID, epochCid: e, n, claimDigest: "01".repeat(32) });
-    const bDir = await hostingDir(AID);
+    const bDir = hostingDirPath(0, AID)!;
     const foreign = new Map(readdirSync(bDir).map((f) => [f, readFileSync(join(bDir, f))]));
     as(a);
-    // A's own state and spend, under A's key: two keys, two encodings of the same rows.
+    // A's own state and spend, under A's face key: two face keys, two encodings of the same rows.
     await rollHosting({ nexusAid: AID, leafSeed: LEAF });
     await spendToken({ nexusAid: AID, epochCid: e, n, claimDigest: "01".repeat(32) });
-    const aDir = await hostingDir(AID);
+    const aDir = hostingDirPath(0, AID)!;
     for (const [f, bytes] of foreign) expect(readFileSync(join(aDir, f)).equals(bytes), f).toBe(false);
     for (const f of foreign.keys()) copyFileSync(join(bDir, f), join(aDir, f));     // B's rows, at A's paths
     expect(await refusal(readHostingState(AID))).toBeInstanceOf(CustodyRowUnavailable);
     expect(await refusal(rollHosting({ nexusAid: AID, leafSeed: LEAF }))).toBeInstanceOf(CustodyRowUnavailable);
     const spend = await refusal(spendToken({ nexusAid: AID, epochCid: e, n, claimDigest: "02".repeat(32) }));
     expect(spend).toBeInstanceOf(CustodyRowUnavailable);                            // a burn nobody can read never reads as unspent
-    expect(spend).toMatchObject({ home: "storage" });
+    expect(spend).toMatchObject({ home: "identity" });
     for (const [f, bytes] of foreign) expect(readFileSync(join(aDir, f)).equals(bytes), f).toBe(true);
     as(b);
-    expect(await spendToken({ nexusAid: AID, epochCid: e, n, claimDigest: "01".repeat(32) })).toBe("retry");   // the sealing vessel still opens them
+    expect(await spendToken({ nexusAid: AID, epochCid: e, n, claimDigest: "01".repeat(32) })).toBe("retry");   // the sealing face still opens them
     as(a);
   });
 
@@ -196,15 +221,15 @@ describe("the burn — once, sealed, refuse before destroy", () => {
     const n = "cc".repeat(32);
     await spendToken({ nexusAid: AID, epochCid: e, n, claimDigest: "01".repeat(32) });
     const enc = (v: unknown): Uint8Array => new TextEncoder().encode(typeof v === "string" ? v : JSON.stringify(v));
-    const spendRow = `${hostingRowDir(AID)}/${(await spendsOf(e))[0]!}`;
+    const spendRow = `${hostingRowDir(0, AID)}/${(await spendsOf(e))[0]!}`;
     for (const line of ["n only-two", `m ${n} ${"01".repeat(32)}`, `n ${n} ${"01".repeat(32)} extra`, ""]) {
-      await writeCustodyRow("storage", spendRow, enc(line));                         // sealed under the right key, of the wrong shape
+      await writeCustodyRow("identity", spendRow, enc(line));                         // sealed under the right key, of the wrong shape
       expect(await refusal(spendToken({ nexusAid: AID, epochCid: e, n, claimDigest: "01".repeat(32) })), JSON.stringify(line)).toMatchObject({ reading: "malformed" });
     }
-    await writeCustodyRow("storage", spendRow, enc(`n ${n} ${"01".repeat(32)}`));    // control: the true shape answers again
+    await writeCustodyRow("identity", spendRow, enc(`n ${n} ${"01".repeat(32)}`));    // control: the true shape answers again
     expect(await spendToken({ nexusAid: AID, epochCid: e, n, claimDigest: "01".repeat(32) })).toBe("retry");
 
-    const stateRow = `${hostingRowDir(AID)}/state.json`;
+    const stateRow = `${hostingRowDir(0, AID)}/state.json`;
     const other = (await mintHostingAct({ leafSeed: LEAF, nexusAid: AID, prev: "7".repeat(64), cap: 3 })).act;
     const shapes = [
       { current: act, previous: null },                                              // no depth
@@ -218,14 +243,14 @@ describe("the burn — once, sealed, refuse before destroy", () => {
       [act],
     ];
     for (const shape of shapes) {
-      await writeCustodyRow("storage", stateRow, enc(shape));
+      await writeCustodyRow("identity", stateRow, enc(shape));
       expect(await refusal(readHostingState(AID)), JSON.stringify(shape).slice(0, 60)).toMatchObject({ reading: "malformed" });
       expect(await refusal(rollHosting({ nexusAid: AID, leafSeed: LEAF }))).toMatchObject({ reading: "malformed" });
     }
-    await writeCustodyRow("storage", stateRow, enc({ current: act, previous: null, depth: 1 }));
+    await writeCustodyRow("identity", stateRow, enc({ current: act, previous: null, depth: 1 }));
     expect((await readHostingState(AID))!.current).toEqual(act);
     // Bare bytes (an earlier build's cleartext state) refuse too, and nothing rolls over them.
-    writeFileSync(join(await hostingDir(AID), "state.json"), JSON.stringify({ current: act, previous: null, depth: 1 }));
+    writeFileSync(join(hostingDirPath(0, AID)!, "state.json"), JSON.stringify({ current: act, previous: null, depth: 1 }));
     expect(await refusal(readHostingState(AID))).toBeInstanceOf(CustodyRowUnavailable);
     expect(await refusal(rollHosting({ nexusAid: AID, leafSeed: LEAF }))).toBeInstanceOf(CustodyRowUnavailable);
   });
@@ -239,8 +264,8 @@ describe("the burn — once, sealed, refuse before destroy", () => {
     expect(await refusal(readHostingState(AID))).toBeInstanceOf(CustodyLocked);
     expect(await refusal(rollHosting({ nexusAid: AID, leafSeed: LEAF }))).toBeInstanceOf(CustodyLocked);
     expect(await refusal(spendToken({ nexusAid: AID, epochCid: e, n: "dd".repeat(32), claimDigest: "01".repeat(32) }))).toBeInstanceOf(CustodyLocked);
-    expect(await refusal(redeemedCount(AID, e))).toBeInstanceOf(CustodyLocked);
-    await c.holder.adopt(c.vk);
+    expect(await redeemedCount(AID, e)).toBe(0);                              // the count reads row names alone
+    await c.holder.adopt(c.treeKey);
     expect(await dirFiles()).toEqual(before);
   });
 
@@ -252,29 +277,30 @@ describe("the burn — once, sealed, refuse before destroy", () => {
     const first = await rollHosting({ nexusAid: AID, leafSeed: LEAF });
     const e1 = hostingActCid(first.act);
     await spendToken({ nexusAid: AID, epochCid: e1, n: "ee".repeat(32), claimDigest: "01".repeat(32) });
-    const bDir = await hostingDir(AID);
+    const bDir = hostingDirPath(0, AID)!;
     const foreignName = (await spendsOf(e1))[0]!;
     as(a);
     await rollHosting({ nexusAid: AID, leafSeed: LEAF });                            // the same act, under A's key
     await spendToken({ nexusAid: AID, epochCid: e1, n: "ef".repeat(32), claimDigest: "01".repeat(32) });   // A's own row at that epoch
-    copyFileSync(join(bDir, foreignName), join(await hostingDir(AID), foreignName)); // a row B sealed, at that epoch
+    copyFileSync(join(bDir, foreignName), join(hostingDirPath(0, AID)!, foreignName)); // a row B sealed, at that epoch
     const foreign = await fileBytes(foreignName);
     await rollHosting({ nexusAid: AID, leafSeed: LEAF });
     const third = await rollHosting({ nexusAid: AID, leafSeed: LEAF });              // e1 falls two rolls back
-    expect(third.unswept).toEqual([`${hostingRowDir(AID)}/${foreignName}`]);
+    expect(third.unswept).toEqual([`${hostingRowDir(0, AID)}/${foreignName}`]);
     expect(await spendsOf(e1)).toEqual([foreignName]);                               // A's own dead row left; the foreign one stays
     expect((await fileBytes(foreignName)).equals(foreign)).toBe(true);
   });
 
-  test("S10 — the store takes no directory: its rows rest under the seated custody's storage home", async () => {
+  test("S10 — the store takes no directory: its rows rest under the seated face in identity", async () => {
     const c = await custody("host-s10");
     expect(rollHosting.length).toBe(1);
     await rollHosting({ nexusAid: AID, leafSeed: LEAF });
-    expect(await hostingDir(AID)).toBe(join(c.homes.storage, ...hostingRowDir(AID).split("/")));
-    expect(existsSync(join(c.homes.storage, ...hostingRowDir(AID).split("/"), "state.json"))).toBe(true);
+    const face = await c.holder.faceStanding({ ordinal: 0 });
+    expect(hostingDirPath(0, AID)!).toBe(join(c.homes.identity, "faces", face!.fcid, ...hostingRowDir(0, AID).split("/")));
+    expect(existsSync(join(hostingDirPath(0, AID)!, "state.json"))).toBe(true);
     // A hosting directory that refuses its listing refuses the count by name: it never reads as zero.
-    rmSync(await hostingDir(AID), { recursive: true });
-    writeFileSync(await hostingDir(AID), "a file where the directory belongs");
-    expect(await refusal(redeemedCount(AID, "1".repeat(64)))).toMatchObject({ home: "storage", file: hostingRowDir(AID) });
+    rmSync(hostingDirPath(0, AID)!, { recursive: true });
+    writeFileSync(hostingDirPath(0, AID)!, "a file where the directory belongs");
+    expect(await refusal(redeemedCount(AID, "1".repeat(64)))).toMatchObject({ home: "identity", file: hostingRowDir(0, AID) });
   });
 });

@@ -1,4 +1,6 @@
 import { faceAtomKeyFromSeed, type FaceAtomKey } from "@lararium/mesh";
+import "./found-route.js";
+import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { loadActivePersonaIndex } from "../src/node-vessel-identity.js";
 import { loadFaceAtom, standFaceAtom } from "../src/face-atom-store.js";
 import { loadIdentityAnchors, persistIdentityAnchors } from "../src/identity-anchors.js";
@@ -8,6 +10,7 @@ import { loadIdentityAnchors, persistIdentityAnchors } from "../src/identity-anc
  * Call after the vessel's custody and persona root stand.
  */
 export async function seedFaceAtom(handleIndex = 0, personaGroupId = `group-fixture-h${handleIndex}`): Promise<FaceAtomKey> {
+  await ensureFaceCustodyOfGroup(personaGroupId);
   const seed = await standFaceAtom(personaGroupId);
   await persistIdentityAnchors({ personaGroupId, meshCabalDocIdHex: "ab".repeat(32) }, handleIndex);
   return faceAtomKeyFromSeed(seed, personaGroupId);

@@ -81,7 +81,7 @@ async function stage(): Promise<string> {
   const io = new FsCustodyIo(homes);
   const founded = await foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }] }] });
   const holder = makeCustodyHolder({ io, homes });
-  await holder.adopt(founded.vk);
+  await holder.adopt(founded.treeKey);
   seatCustody(holder);
   await persistIdentityAnchors(ANCHORS);
   await holder.lock();
@@ -93,7 +93,7 @@ async function stage(): Promise<string> {
 async function standVessel(opts: { unlocked: boolean; table?: (act: string, args: unknown) => Record<string, unknown> }) {
   const frames: unknown[] = [];
   const acts: string[] = [];
-  const holder = { isUnlocked: () => opts.unlocked, openedSlot: () => (opts.unlocked ? "slot-1" : null), attemptsLeft: () => 3 } as unknown as CustodyHolder;
+  const holder = { isUnlocked: () => opts.unlocked, openedSlot: () => (opts.unlocked ? "slot-1" : null), attemptsLeft: () => 3, unlockedFaces: () => [] } as unknown as CustodyHolder;
   const door = custodyFrameHandler({
     holder, testScratch: true, standing: () => "hearth", recompose: async () => ({ standing: "hearth" }), onLog: () => {},
     runAct: async (act, args) => { acts.push(act); return (opts.table ?? answers)(act, args); },

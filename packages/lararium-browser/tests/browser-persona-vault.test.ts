@@ -95,7 +95,7 @@ describe("the browser persona multitude over IndexedDB", () => {
     await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0);
     await expect(wearBrowserPersona(name, 5)).rejects.toThrow(/cannot wear persona h5|no persona-root/);
-    expect(await loadBrowserActivePersona(name)).toBeUndefined();   // the refusal moved nothing
+    expect(await loadBrowserActivePersona(name)).toBe(0);   // the refusal moved nothing: the one root held is still the face worn
   });
 
   test("the seed loads only where a root is HELD; an unheld index throws", async () => {

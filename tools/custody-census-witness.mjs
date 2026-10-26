@@ -103,7 +103,7 @@ try {
   step("the reading holds rows under the vessel key and rows outside it by law", sealed.length >= 8 && byLaw.length >= 4 && sealed.length + byLaw.length === clean.rows.length,
     `${sealed.length} sealed, ${byLaw.length} by law, ${clean.rows.length} rows`);
   step("each bare row names its law: the vessel key, its log, the slot tree, the serving tree, the contact card",
-    ["vessel-key", "vessel-kel", "vk-slots", "sk-slots", "vessel-card"].every((row) => byLaw.some((r) => r.row === row && r.reading === "bare")),
+    ["vessel-key", "vessel-kel", "s-slots", "sk-slots", "vessel-card"].every((row) => byLaw.some((r) => r.row === row && r.reading === "bare")),
     byLaw.map((r) => r.row).join(", "));
 
   // ── RED: an owner-only file no row names ──────────────────────────────────────────────────────────────────
@@ -114,10 +114,10 @@ try {
   rmSync(sideKey);
 
   // ── RED: an orphan sidecar ────────────────────────────────────────────────────────────────────────────────
-  const sidecar = join(identity, "custody-root.bin.vk-sealing");
-  copyFileSync(join(identity, "custody-root.bin"), sidecar);
+  const sidecar = join(identity, "gate-root.bin.s-sealing");
+  copyFileSync(join(identity, "gate-root.bin"), sidecar);
   got = breaches(census(root));
-  step("RED: an orphan sidecar reads outside the table", got.length === 1 && got[0] === "outside: identity/custody-root.bin.vk-sealing (sidecar)", got.join("; "));
+  step("RED: an orphan sidecar reads outside the table", got.length === 1 && got[0] === "outside: identity/gate-root.bin.s-sealing (sidecar)", got.join("; "));
   rmSync(sidecar);
 
   // ── RED: a file spelled like a plain row answers to that row's law ────────────────────────────────────────
@@ -129,17 +129,17 @@ try {
   rmSync(restStray);
   const sealedPlain = join(root, "data/lares/nexus/nexus/carriage-consent/planted.json");
   mkdirSync(join(root, "data/lares/nexus/nexus/carriage-consent"), { recursive: true });
-  copyFileSync(join(identity, "custody-root.bin"), sealedPlain);
+  copyFileSync(join(identity, "gate-root.bin"), sealedPlain);
   got = breaches(census(root));
   step("RED: a sealed file at a plain row's path reads as a fault", got.length === 1 && got[0] === "fault: seal/nexus/carriage-consent/planted.json (floor-plain) reads sealed and breaks its row's law", got.join("; "));
   rmSync(sealedPlain);
 
   // ── RED: a file under the vessel key's seal that no row names, and the rotation it refuses ────────────────
   const stray = join(storage, "stray.bin");
-  copyFileSync(join(identity, "custody-root.bin"), stray);
+  copyFileSync(join(identity, "gate-root.bin"), stray);
   chmodSync(stray, 0o644);
   got = breaches(census(root));
-  step("RED: a sealed file no row names reads outside the table", got.length === 1 && got[0] === "outside: storage/stray.bin (vk-seal)", got.join("; "));
+  step("RED: a sealed file no row names reads outside the table", got.length === 1 && got[0] === "outside: storage/stray.bin (s-seal)", got.join("; "));
   const bound = await bindTestCustody(root);
   step("a second route binds", bound.ok === true && bound.slots === 2, JSON.stringify(bound));
   const refusedRotation = await unbindTestCustody(root, { slotId: bound.slotId, rotate: true });

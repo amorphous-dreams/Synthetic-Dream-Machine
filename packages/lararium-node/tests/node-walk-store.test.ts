@@ -1,7 +1,7 @@
 /**
  * node-walk-store — a walk record rests as one row per hearth under the vessel key, and its acts ride the custody door.
  *
- *   W1  a record rests as a VK-sealed row named by a digest of the hearth's gate key; its relay, its invite and a
+ *   W1  a record rests as a S-sealed row named by a digest of the hearth's gate key; its relay, its invite and a
  *       carried document's key appear nowhere in the file, and it reads back identically and lists.
  *                                                 control: nothing at a hearth's path reads as no walk there
  *   W2  RED: A WRONG KEY REPLACES NO RECORD. A row another vessel sealed refuses the read, the list and the update
@@ -12,8 +12,8 @@
  *   W4  RED: THE FLOOR READS NO WALK RECORD. A locked seat refuses the read, the list and the update by name, and
  *       the composing vessel reads a walk row under a sovereign composition alone (every read site in
  *       `open-node-vessel.ts` stands behind `sovereign`).
- *   W5  THE ROW RESTS IN THE CUSTODY HOME: the store takes no directory, and a row lands under the storage home of
- *       the seated custody. No `walk/` directory lists as walking nowhere; a `walk` that refuses its listing
+ *   W5  THE ROW RESTS IN ITS FACE: the store takes a face, and the row lands under that face's identity home.
+ *       No walk row lists as walking nowhere; a row that refuses its listing
  *       refuses the list by name.
  *   W6  THE WALK ACTS: `walk.take` keeps a carried invite and answers `dialing: "now"` with ONE re-presentation
  *       when the hearth's gate equals the standing dial's, `next-stand` otherwise and with no dial standing; a
@@ -25,20 +25,22 @@
  *   W8  RED: A LOCK UNDER A LIVE WALK. The key locks, then a grant arrives on the riding walk: the store refuses
  *       `CustodyLocked`, the walk tells its fault port, and nothing floats.   control: unlocked, the grant keeps
  */
-import { copyFileSync, existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import {
-  HOSTING_GRANT_SESSION_KIND, decodeInvite, encodeInvite, issueGrant, mintHostToken, mintHostingAct, popInvite, readVkCarrier, walkOver,
+  HOSTING_GRANT_SESSION_KIND, decodeInvite, encodeInvite, issueGrant, mintHostToken, mintHostingAct, popInvite, readFckCarrier, walkOver,
   type LarSessionMsg, type LeafIdentity, type WalkFault, type WalkRecord,
 } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
 import { writeCustodyRow } from "../src/custody-seat.js";
-import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, wearPersona } from "../src/node-vessel-identity.js";
+import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, wearPersona, setWornFaceInSession } from "../src/node-vessel-identity.js";
 import { listWalkRecords, nodeWalkStore, walkRowFile, WalksElsewhere } from "../src/node-walk-store.js";
 import { runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
-import { larDataDir } from "../src/vessel-paths.js";
-import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import { handleRowPath, faceRowNames } from "./face-paths.js";
+import { seatCustody } from "../src/custody-seat.js";
+import { FIXTURE_PASSPHRASE, seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import { findFace, readFaceIndexSync } from "../src/face-index.js";
 
 const AID = "nexus-" + "a".repeat(64);
 const GATE = "ee".repeat(32), OTHER_GATE = "dd".repeat(32);
@@ -49,7 +51,7 @@ const RECORD: WalkRecord = {
   nexusAid: AID, relay: RELAY, invite: CARRIED_INVITE,
   carried: [{ cid: "blake3:" + "ab".repeat(32), ref: "cd".repeat(32), key: "9f".repeat(32) }],
 };
-const rowPath = (gate = GATE): string => join(larDataDir(), ...walkRowFile(gate).split("/"));
+const rowPath = (gate = GATE): string => handleRowPath(walkRowFile(0, gate));
 
 const drops: Array<() => Promise<void>> = [];
 afterEach(async () => { for (const drop of drops.splice(0).reverse()) await drop(); });
@@ -59,28 +61,28 @@ async function custody(label: string): Promise<SeatedScratchCustody> {
   return c;
 }
 const refusal = async (act: Promise<unknown>): Promise<unknown> => act.then(() => "landed", (e: unknown) => e);
-const store = () => nodeWalkStore();
+const store = () => nodeWalkStore({ face: 0 });
 /** Seal `record` whole over whatever record stands. */
 const put = (gate: string, record: WalkRecord): Promise<WalkRecord | null> => store().update(gate, () => record);
 
 describe("a walk record at rest", () => {
-  test("W1 — a record rests sealed under the vessel key, reads back and lists", async () => {
+  test("W1 — a record rests sealed under the face key, reads back and lists", async () => {
     await custody("walk-w1");
     expect(await store().read(GATE)).toBeNull();                                   // control: no walk there
     expect(await listWalkRecords()).toEqual([]);
     await put(GATE, RECORD);
     const file = readFileSync(rowPath());
-    expect(readVkCarrier(file)).toBe("sealed");
+    expect(readFckCarrier(file)).toBe("sealed");
     for (const secret of [RELAY, CARRIED_INVITE, "5a".repeat(32), "9f".repeat(32), GATE]) expect(file.includes(Buffer.from(secret)), secret).toBe(false);
-    expect(readdirSync(join(larDataDir(), "walk")).every((n) => /^[0-9a-f]{32}\.json$/.test(n))).toBe(true);
+    expect(faceRowNames().filter((n) => n.startsWith("walk-")).every((n) => /^walk-h0-[0-9a-f]{32}\.json$/.test(n))).toBe(true);
     expect(await store().read(GATE)).toEqual(RECORD);
-    expect(await listWalkRecords()).toEqual([{ gatePubKey: GATE, record: RECORD }]);
+    expect(await listWalkRecords()).toEqual([{ face: 0, gatePubKey: GATE, record: RECORD }]);
   });
 
   test("W2 — a wrong key replaces no record", async () => {
     const b = await custody("walk-w2-b");
     const a = await custody("walk-w2-a");
-    const as = (c: SeatedScratchCustody): void => { process.env["LAR_ROOT"] = c.root; };
+    const as = (c: SeatedScratchCustody): void => { process.env["LAR_ROOT"] = c.root; seatCustody(c.holder); };
     as(b);
     await put(GATE, RECORD);
     const foreign = readFileSync(rowPath()), bPath = rowPath();
@@ -90,7 +92,7 @@ describe("a walk record at rest", () => {
     copyFileSync(bPath, rowPath());
     const read = await refusal(store().read(GATE));
     expect(read).toBeInstanceOf(CustodyRowUnavailable);
-    expect(read).toMatchObject({ home: "storage", file: walkRowFile(GATE) });
+    expect(read).toMatchObject({ home: "identity", file: walkRowFile(0, GATE) });
     expect(await refusal(listWalkRecords())).toBeInstanceOf(CustodyRowUnavailable);
     expect(await refusal(put(GATE, { nexusAid: AID }))).toBeInstanceOf(CustodyRowUnavailable);   // a wallet never lands over it
     expect(readFileSync(rowPath()).equals(foreign)).toBe(true);
@@ -130,14 +132,14 @@ describe("a walk record at rest", () => {
       { gatePubKey: GATE, record: { nexusAid: AID, grant: { nexusAid: "nexus-" + "b".repeat(64), leaf: "ab".repeat(32), epoch: "e".repeat(64), lineage: "d".repeat(64), survived: 0, from: "host", tag: "f".repeat(128) } } },
     ];
     for (const shape of shapes) {
-      await writeCustodyRow("storage", walkRowFile(GATE), enc(shape));              // sealed under the right key, of the wrong shape
+      await writeCustodyRow("identity", walkRowFile(0, GATE), enc(shape));              // sealed under the right key, of the wrong shape
       expect(await refusal(store().read(GATE))).toMatchObject({ reading: "malformed" });
       expect(await refusal(listWalkRecords())).toMatchObject({ reading: "malformed" });
       expect(await refusal(put(GATE, RECORD))).toMatchObject({ reading: "malformed" });
     }
-    await writeCustodyRow("storage", walkRowFile(GATE), enc({ gatePubKey: GATE, record: RECORD }));   // control: the true shape opens again
-    writeFileSync(join(larDataDir(), "walk", "a-stray-name.txt"), "not a row");
-    expect(await listWalkRecords()).toEqual([{ gatePubKey: GATE, record: RECORD }]);
+    await writeCustodyRow("identity", walkRowFile(0, GATE), enc({ gatePubKey: GATE, record: RECORD }));   // control: the true shape opens again
+    writeFileSync(join(rowPath(), "..", "a-stray-name.txt"), "not a row");
+    expect(await listWalkRecords()).toEqual([{ face: 0, gatePubKey: GATE, record: RECORD }]);
     // An update whose decision answers a malformed record seals nothing, and the standing row stays.
     const standing = readFileSync(rowPath());
     expect(String(await refusal(store().update(GATE, (held) => ({ ...held!, wallet: "x" as never }))))).toMatch(/reads malformed; nothing sealed/);
@@ -163,27 +165,28 @@ describe("a walk record at rest", () => {
     for (const line of reads) expect(/\bsovereign\b/.test(line), line.trim()).toBe(true);
   });
 
-  test("W5 — the row rests in the custody home, and the store takes no directory", async () => {
+  test("W5 — the row rests in its face's identity home, and the store takes no directory", async () => {
     const c = await custody("walk-w5");
-    expect(nodeWalkStore.length).toBe(0);
+    expect(nodeWalkStore.length).toBe(1);
     expect(listWalkRecords.length).toBe(0);
-    expect(await listWalkRecords()).toEqual([]);                                   // control: no `walk/` directory, walking nowhere
-    expect(existsSync(join(c.homes.storage, "walk"))).toBe(false);
+    expect(await listWalkRecords()).toEqual([]); // no face row, walking nowhere
+    expect(faceRowNames().some((n) => n.startsWith("walk-"))).toBe(false);
     await put(GATE, RECORD);
-    expect(readVkCarrier(readFileSync(join(c.homes.storage, ...walkRowFile(GATE).split("/"))))).toBe("sealed");
-    // A `walk` that stands and refuses its listing refuses the list by name: it never reads as walking nowhere.
-    rmSync(join(c.homes.storage, "walk"), { recursive: true });
-    writeFileSync(join(c.homes.storage, "walk"), "a file where the directory belongs");
+    expect(readFckCarrier(readFileSync(rowPath()))).toBe("sealed");
+    expect(rowPath().startsWith(join(c.homes.identity, "faces"))).toBe(true);
+    // A row that cannot open refuses the listing; it never reads as walking nowhere.
+    writeFileSync(rowPath(), "bare row");
     const listed = await refusal(listWalkRecords());
     expect(listed).toBeInstanceOf(CustodyRowUnavailable);
-    expect(listed).toMatchObject({ home: "storage", file: "walk" });
-    expect(String((listed as Error).message)).toMatch(/unlistable \(ENOTDIR\)/);
+    expect(listed).toMatchObject({ home: "identity", file: walkRowFile(0, GATE) });
   });
 
   test("W6 — the walk acts keep, answer and re-present through the door's context", async () => {
     await custody("walk-w6");
+    setWornFaceInSession(undefined);
     await generateOrLoadVesselIdentity();
     await generateOrLoadPersonaGroupRoot(0);
+    await generateOrLoadPersonaGroupRoot(1);
     const epoch = await mintHostingAct({ leafSeed: HEARTH, nexusAid: AID, prev: null, cap: 3 });
     const invite = (gate = GATE): string => encodeInvite({ nexusAid: AID, gatePubKey: gate, token: mintHostToken(epoch), relay: RELAY });
     let represented = 0;
@@ -209,7 +212,7 @@ describe("a walk record at rest", () => {
     // A dial pinned elsewhere refuses the take, as the door's own rule says.
     expect(await reason(runSealedAct("walk.take", { carried: invite() }, ctx(OTHER_GATE, true)))).toMatch(/^act-refused: .*dial stands to the hearth/);
     expect(await runSealedAct("walk.state", {}, ctx(null, false))).toEqual({ walks: [expect.objectContaining({ gatePubKey: GATE, relay: RELAY, redeeming: true, wallet: 0 })] });
-    expect(readVkCarrier(readFileSync(rowPath()))).toBe("sealed");
+    expect(readFckCarrier(readFileSync(rowPath()))).toBe("sealed");
     // THE HAND-OUT, for real: an empty wallet refuses; two tokens leave as two invites, newest first, each once.
     expect(await reason(runSealedAct("walk.invite", {}, ctx(null, false)))).toMatch(/^act-refused: .*holds no invite/);
     const older = mintHostToken(epoch), newer = mintHostToken(epoch);
@@ -231,18 +234,31 @@ describe("a walk record at rest", () => {
     const sealed = readFileSync(rowPath());
     expect(await store().update(GATE, () => null)).toBeNull();                     // a declined update moves no byte
     expect(readFileSync(rowPath()).equals(sealed)).toBe(true);
-    const handed = await Promise.all([popInvite(store(), GATE), popInvite(nodeWalkStore(), GATE)]);
+    const handed = await Promise.all([popInvite(store(), GATE), popInvite(nodeWalkStore({ face: 0 }), GATE)]);
     expect(handed.filter((i) => i !== null)).toHaveLength(1);
     expect(decodeInvite(handed.find((i) => i !== null)!)!.token).toEqual(token);
     expect((await store().read(GATE))!.wallet).toEqual([]);
     // ONE HEARTH, decided inside the custody hold: a row that stands for another hearth, readable or not, refuses
     // a keep under the one-hearth store, and the plain store still serves the hearth already walked at.
-    const sole = nodeWalkStore({ oneHearth: true });
+    const sole = nodeWalkStore({ face: 0, oneHearth: true });
     expect(await refusal(sole.update(OTHER_GATE, () => ({ nexusAid: AID })))).toBeInstanceOf(WalksElsewhere);
     expect(existsSync(rowPath(OTHER_GATE))).toBe(false);
     expect(await sole.update(GATE, (held) => ({ ...held!, relay: RELAY }))).toMatchObject({ relay: RELAY });   // CONTROL: its own hearth
     writeFileSync(rowPath(OTHER_GATE), "bytes no key sealed");
     expect(await refusal(sole.update(GATE, (held) => held))).toBeInstanceOf(WalksElsewhere);
+  });
+
+  test("W7 — one-hearth checks row names in every face", async () => {
+    const c = await custody("walk-w7-faces");
+    await put(GATE, { nexusAid: AID });
+    await nodeWalkStore({ face: 1 }).update(OTHER_GATE, () => ({ nexusAid: AID }));
+    expect((await listWalkRecords()).map(({ face, gatePubKey }) => ({ face, gatePubKey }))).toEqual([
+      { face: 1, gatePubKey: OTHER_GATE }, { face: 0, gatePubKey: GATE },
+    ]);
+    await c.holder.lockFace(findFace(readFaceIndexSync(c.homes.identity), { ordinal: 1 })!.fcid);
+    expect((await listWalkRecords()).map(({ face }) => face)).toEqual([0]);
+    await expect(nodeWalkStore({ face: 0, oneHearth: true }).update(GATE, (held) => held)).rejects.toBeInstanceOf(WalksElsewhere);
+    expect(await store().read(GATE)).toEqual({ nexusAid: AID });
   });
 
   test("W8 — a key that locks under a live walk costs one grant and tells the fault port", async () => {
@@ -274,7 +290,8 @@ describe("a walk record at rest", () => {
     expect(faults.map((f) => f.at)).toEqual(["grant"]);
     expect(faults[0]!.error).toBeInstanceOf(CustodyLocked);
     expect(represented).toHaveLength(0);
-    await c.holder.adopt(c.vk);                                                    // CONTROL: unlocked, the same grant keeps
+    await c.holder.adopt(c.treeKey);                                                    // CONTROL: unlocked, the same grant keeps
+    await c.holder.unlockFace({ ordinal: 0 }, [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
     expect((await store().read(GATE))!.grant).toBeUndefined();
     await frame();
     expect((await store().read(GATE))!.grant).toEqual(grant);

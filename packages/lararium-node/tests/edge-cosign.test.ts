@@ -63,7 +63,8 @@ beforeEach(async () => {
   // The charter commits to the chairs' next keys, so a roll moves its head and keeps its Nexus.
   genesis = heldCharter({ keys, threshold: 2, successors: { keys: [await chairKey(0, 1), await chairKey(1, 1)], threshold: 2 } });
   await stand(0, 0, keys); await stand(1, 1, keys);
-});
+  // Each vessel founds its face's custody under a key derivation of its own, so the hook gets room beside a loaded runner.
+}, 90_000);
 afterEach(async () => {
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorLarRoot;
   await new Promise((resolve) => setTimeout(resolve, 200));

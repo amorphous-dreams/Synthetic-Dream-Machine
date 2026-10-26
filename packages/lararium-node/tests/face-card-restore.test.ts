@@ -36,6 +36,7 @@ import {
   CARD_REFUSALS, CardRestoreRefused, buildCardBody, restoreFaceFromCards, type FaceNamed, type PresentedCard,
 } from "../src/face-card-restore.js";
 import { FACE_PROOF_KEY_FILE } from "../src/face-key-custody.js";
+import { faceRowNames } from "./face-paths.js";
 import { RestoreRefused } from "../src/face-bundle-restore.js";
 import { loadIdentityAnchors, veilArchivePath } from "../src/identity-anchors.js";
 import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
@@ -142,9 +143,9 @@ function homeTree(): string {
   walk(larDataDir());
   return h.digest("hex");
 }
-/** The names of every file under the identity home. */
-const identityNames = (): string[] => readdirSync(larIdentityDir()).sort();
-const pendingStands = (): boolean => existsSync(join(larIdentityDir(), RESTORE_PENDING_FILE));
+/** The identity home's files and every file in its indexed face directories. */
+const identityNames = (): string[] => [...readdirSync(larIdentityDir()), ...faceRowNames()].sort();
+const pendingStands = (): boolean => faceRowNames().some((n) => RESTORE_PENDING_FILE.test(n));
 
 describe("the root cards re-land a face's lineage and root, and open no memory", () => {
   test("C1 — two cards restore the face onto a fresh hearth at a free index, under a new seat, holding no key and no memory", async () => {
@@ -164,9 +165,9 @@ describe("the root cards re-land a face's lineage and root, and open no memory",
     // PAPER LANDED THE ROOT AND NOTHING ELSE: no proof key, no name, no handle-book record, no memory entry.
     expect(restored.landed).toEqual({ faceProofKeys: 0, petname: false, handle: false, handleBook: { landed: 0, kept: 0 } });
     expect(restored.holds, "the memory section holds no key version").toEqual([]);
-    expect(readdirSync(larIdentityDir()).filter((n) => FACE_PROOF_KEY_FILE.test(n))).toHaveLength(0);
+    expect(faceRowNames().filter((n) => FACE_PROOF_KEY_FILE.test(n))).toHaveLength(0);
     expect(await (await makeNodePersonaPetnameStore()).get(1)).toBeUndefined();
-    expect((await loadNodeHandleBook()).snapshotFor(face.rootKey).records).toEqual([]);
+    expect((await loadNodeHandleBook(1)).snapshotFor(face.rootKey).records).toEqual([]);
 
     // THE LINEAGE RETURNED: the same root, the same fixed prefix, the same signer name, at a NEW seat.
     expect(await listPersonaRosterLines()).toEqual([own, { handleIndex: 1, verifyingKey: face.rootKey }]);

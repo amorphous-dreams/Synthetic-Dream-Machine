@@ -18,8 +18,8 @@
  *       key no row holds reads as done; a torn charter, primary or carried, refuses the whole act.
  *   A6  RED: THE CARDS READ BEFORE ANY ROW MOVES: a card the head never committed, two cards for one chair, fewer
  *       cards than the head's count, an unarmed head: each refuses by name and no row moves.
- *   A7  AT THE FLOOR every arming, the retirement, the roll's hand and the stand-in reading refuse `CustodyLocked`;
- *       `seat.held` answers.
+ *   A7  AT THE FLOOR armings, the roll's hand and stand-in reading refuse `CustodyLocked`;
+ *       public retirement and `seat.held` readings answer.
  *   A8  ONE FACE'S PUBLIC HALVES: the reader opens that face's rows alone; a row that answers another key refuses.
  *   A9  RED: THE ROLL'S HAND SIGNS ONLY A LAWFUL ROLL OF THIS VESSEL'S SEATS: a key no row here holds, a successor
  *       short of one distinct digest per seat or under another rule, a roll revealing fewer seats than the head's
@@ -32,6 +32,7 @@
 import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { faceRowNames, handleRowPath } from "./face-paths.js";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
   NEXUS_DOC_DOMAIN, charterInceptionBytes, charterInceptionImage, foundingRoster, genesisOfInception, hex, mintColdKey, rotateSealEpoch, sealLineageHead, sealRollBytes, verifySealLineage,
@@ -232,14 +233,15 @@ describe("the rite arms its heads behind the door", () => {
     expect(seatRows()).toBe(rows);
   });
 
-  test("A7 — at the floor the armings, the retirement, the roll's hand and the stand-in refuse; the held reading answers", async () => {
+  test("A7 — at the floor the armings, the roll's hand and stand-in refuse; public retirement and held readings answer", async () => {
     const c = await custody("arm-a7");
     await stand([0]);
     const { armed, cards } = await writeGenesis();
     await c.holder.lock();
-    const steps = [() => act("seat.arm-genesis"), () => act("seat.arm-roll", { cards: cards.map(hexOf) }), () => act("seat.retire", { keys: armed.seatedKeys }),
+    const steps = [() => act("seat.arm-genesis"), () => act("seat.arm-roll", { cards: cards.map(hexOf) }),
       () => act("seal.sign", { seat: armed.seatedKeys[0], image: "ab" })];
     for (const step of steps) expect(await step().catch((e: unknown) => e)).toBeInstanceOf(CustodyLocked);
+    expect(await act("seat.retire", { keys: armed.seatedKeys })).toEqual({ retired: [], kept: armed.seatedKeys.map((key) => ({ key, why: "seated" })) });
     writeFileSync(join(c.root, ".lar-test-scratch"), "");
     expect(await act("seat.readback-stand-in").catch((e: unknown) => e)).toBeInstanceOf(CustodyLocked);
     expect(await act("seat.held", { keys: armed.seatedKeys })).toEqual({ held: armed.seatedKeys });
@@ -251,8 +253,9 @@ describe("the rite arms its heads behind the door", () => {
     const one = (await seatChairs([1], { family: "a8" })).keys[0]!;
     expect(await seatKeysOfFace(0)).toEqual([zero.keys[0]]);
     expect(await seatKeysOfFace(1)).toEqual([one]);
-    const rows = readdirSync(larIdentityDir()).filter((f) => f.startsWith("seat-key-h0-"));
-    copyFileSync(join(larIdentityDir(), rows[0]!), join(larIdentityDir(), `seat-key-h2-${"0".repeat(32)}.bin`));
+    const rows = faceRowNames().filter((f) => f.startsWith("seat-key-h0-"));
+    await updateColdCustodyRow("identity", `seat-key-h2-${"0".repeat(32)}.bin`, () => ({ plaintext: chairSeed(2, 0, "a8"), value: undefined }));
+    copyFileSync(handleRowPath(rows[0]!), handleRowPath(`seat-key-h2-${"0".repeat(32)}.bin`));
     expect(await seatKeysOfFace(2).catch((e: unknown) => e)).toMatchObject({ reading: "key-fails" });
     await updateColdCustodyRow("identity", seatKeyFile(one, 3), () => ({ plaintext: chairSeed(0, 0, "a8"), value: undefined }));
     expect(await seatKeysOfFace(3).catch((e: unknown) => e)).toBeInstanceOf(CustodyRowUnavailable);
@@ -316,7 +319,7 @@ describe("the rite arms its heads behind the door", () => {
     const io = new FsCustodyIo(homes);
     const founded = await foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "test-founding-passphrase" }] }] });
     const holder = makeCustodyHolder({ io, homes });
-    await holder.adopt(founded.vk);
+    await holder.adopt(founded.treeKey);
     seatCustody(holder);
     try {
       writeFileSync(join(root, ".lar-test-scratch"), "");

@@ -19,10 +19,13 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve, sep } from "node:path";
 import { beforeEach } from "vitest";
 import {
-  FsCustodyIo, custodyTreeStands, foundCustody, makeCustodyHolder, seatCustodyWhenNeeded, vesselCustodyHomes,
+  FsCustodyIo, custodyTreeStands, foundCustody, makeCustodyHolder, seatCustodyWhenNeeded, seatFaceAutoFounder, vesselCustodyHomes,
   type CustodyHolder,
 } from "@lararium/node";
 import { TEST_PASSPHRASE } from "./found-route.js";
+
+// A write to a face the floor index does not name founds that face under the scratch route (the product seats no such policy).
+seatFaceAutoFounder(() => [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }] }]);
 
 /** Thrown when a suite reaches a sealed row outside a scratch root. */
 export class ScratchCustodyRefused extends Error {
@@ -61,14 +64,15 @@ async function openScratch(holder: CustodyHolder): Promise<void> {
   if (!(await custodyTreeStands(io, holder.homes))) {
     mkdirSync(holder.homes.identity, { recursive: true, mode: 0o700 });
     const founded = await foundCustody({ io, homes: holder.homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }] }] });
-    await holder.adopt(founded.vk);
-    founded.vk.fill(0);
+    await holder.adopt(founded.treeKey);
+    founded.treeKey.fill(0);
     return;
   }
   const u = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
   if (u.reading !== "opens" && u.reading !== "already-unlocked") {
     throw new ScratchCustodyRefused(`the custody standing at ${identity} reads ${u.reading} under the suites' founding route`);
   }
+  await holder.unlockFaces([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);   // the route tries every face tree too (`--all`)
 }
 
 function arm(): void {

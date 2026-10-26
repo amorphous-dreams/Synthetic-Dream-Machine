@@ -100,7 +100,7 @@ describe("main leaves the floor standing under a sovereign refusal", () => {
 
   test("the first boot and the custody door's recomposition both compose through that one road", () => {
     expect(SOURCE).toContain("composition = (await composeOrFloor(null)).stood;");
-    expect(SOURCE).toContain("const out = await composeOrFloor(sovereign ? seatedSovereignReaders() : null);");
+    expect(SOURCE).toContain("const out = await composeOrFloor(sovereign && sovereignStands() ? seatedSovereignReaders() : null);");
     expect(SOURCE.match(/composeStanding\(/g)!.length, "no third road composes past composeOrFloor").toBe(3);
   });
 });

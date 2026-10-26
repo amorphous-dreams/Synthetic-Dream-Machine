@@ -60,7 +60,7 @@ Start pure signed-act and grant vectors beside N and W on disjoint files. Start 
 |---|---|
 | N | Consume final AID and operator seat from N; leave charter and cofounding bytes with N. |
 | W | Take `socket-sorter.ts` after W's gate cutover; keep its verified face and per-Nexus gate pin. |
-| S8 and sealed-store step 3 | Keep hosting HOT rows under VK and serving rows under SK; leave selves rows and Repo value sealing to their owners. |
+| S8 and sealed-store step 3 | Keep hosting HOT rows under S key and serving rows under SK; leave selves rows and Repo value sealing to their owners. |
 | O1 | Consume the worn session face through O1's verified session. A delegated hosting key, rather than the session lifetime, sustains acts. |
 | E and X | E waits for H8's public-half verifier before its walker arm. X consumes hosted restart and strangers' dial without changing H's act image. |
 
@@ -82,6 +82,6 @@ The hosting-key and worn-face rulings already stand at the roadmap's `#/rulings`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ddom9J6mK5CGGkXJD1qENIJ4Thy7nU_QZ6xCWEubpN4
+<<^ code="&#x0003;">>ni:///sha-256;WbXuZui_X5eq0d1PnZqceES_TyTpEKhFOLxognavxVM
 
 <<^ code="&#x0004;" -> to="?">>

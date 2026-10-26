@@ -10,15 +10,15 @@
  *               atomic step.
  *   `remove`  — `rm -f`: nothing standing is no fault.
  *   `list`    — EVERY regular file under EVERY home, recursively, as absolute paths. The founding census and the
- *               rotation census read it, and both refuse on a VK-sealed file no row names; a list that skipped a
+ *               rotation census read it, and both refuse on a S-sealed file no row names; a list that skipped a
  *               subtree would let a stray seal hide there. A symlink is not followed (it lists as nothing, and its
  *               target is never read through it); an absent home lists nothing.
  *   `exclusive` — the ONE custody holder, across processes. A queue serializes callers inside this process; a socket
- *               claim beside the slot tree (`<identity>/vk-slots.claim`) serializes processes, containers included.
+ *               claim beside the slot tree (`<identity>/s-slots.claim`) serializes processes, containers included.
  *               Not reentrant.
  *
  * ── THE CLAIM READS NO CLOCK AND NO PID ─────────────────────────────────────────────────────────
- * The holder is a socket claim (`claimName`) on `<identity>/vk-slots.claim`, spelled through an open descriptor on the
+ * The holder is a socket claim (`claimName`) on `<identity>/s-slots.claim`, spelled through an open descriptor on the
  * identity home so a deep home fits `sun_path`. The kernel's own listener state decides live vs dead, so a reused pid,
  * a pid namespace split (a container beside a host process on the same bind mount) and a SIGKILLed holder's corpse all
  * read true: a corpse is reaped by exactly one claimant, a live holder in any namespace is waited on. A contender
@@ -36,7 +36,7 @@ import { anchoredName, answers, claimName, letGo, NameHeld } from "./socket-clai
 import { vesselCustodyHomes, type CustodyHomes } from "./vault-carriers.js";
 
 /** The claim's name, in the identity home beside the slot tree. */
-export const CUSTODY_CLAIM_NAME = "vk-slots.claim";
+export const CUSTODY_CLAIM_NAME = "s-slots.claim";
 
 /** A custody holder that could not be taken: a live holder outlasted the wait, or the claim could not be taken. */
 export class CustodyLockRefused extends Error {

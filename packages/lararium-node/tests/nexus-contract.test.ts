@@ -24,6 +24,7 @@ import { runNexusKeyReissue } from "../src/nexus-key-reissue.js";
 import { keepKeyLine, readKeyLine } from "../src/carried-set.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
 import { signNexusKeyHandOver, writeNexusKeyHandOver } from "@lararium/mesh";
+import { handleRowPath } from "./face-paths.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -900,8 +901,8 @@ describe("a face's key at a Nexus mints at random and re-issues by a signed hand
     const minted = await mintNexusLeaf(3, aid);
     expect((await mintNexusLeaf(3, aid)).verifyingKey).toBe(minted.verifyingKey);           // a second act finds the first's key
     expect((await nexusLeafFor(3, aid))!.verifyingKey).toBe(minted.verifyingKey);
-    expect(existsSync(join(larIdentityDir(), faceProofKeyFile(3, aid)))).toBe(true);
-    expect(readFileSync(join(larIdentityDir(), faceProofKeyFile(3, aid))).includes(Buffer.from(minted.seed))).toBe(false); // sealed, never the clear bytes
+    expect(existsSync(handleRowPath(faceProofKeyFile(3, aid)))).toBe(true);
+    expect(readFileSync(handleRowPath(faceProofKeyFile(3, aid))).includes(Buffer.from(minted.seed))).toBe(false); // sealed, never the clear bytes
   });
 
   it("K8b RED: two vessels whose face holds ONE root seed mint two unrelated keys at one Nexus — no seed derives a per-Nexus key", async () => {
@@ -910,7 +911,7 @@ describe("a face's key at a Nexus mints at random and re-issues by a signed hand
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const aid = nexusAidOf(readNexusDoc(sealHome()))!;
     const first = await mintNexusLeaf(3, aid);
-    rmSync(join(larIdentityDir(), faceProofKeyFile(3, aid)));
+    rmSync(handleRowPath(faceProofKeyFile(3, aid)));
     const second = await mintNexusLeaf(3, aid);                                              // the same root seed stands
     expect(second.verifyingKey).not.toBe(first.verifyingKey);
   });

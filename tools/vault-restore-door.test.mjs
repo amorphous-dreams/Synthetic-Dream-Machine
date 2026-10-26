@@ -72,9 +72,9 @@ async function stand(root) {
   });
   return { log: () => log, stop, env };
 }
-async function standUnlocked(root) {
+async function standUnlocked(root, face = undefined) {
   const vessel = await stand(root);
-  const unlocked = await unlockTestCustody(root);
+  const unlocked = await unlockTestCustody(root, "unlock", face);
   if (unlocked?.reading !== "opens" || unlocked?.held !== true) { await vessel.stop(); throw new Error(`the vessel did not unlock: ${JSON.stringify(unlocked)}\n${vessel.log().slice(-2000)}`); }
   return vessel;
 }
@@ -146,7 +146,7 @@ test("a face cut on one vessel restores onto a fresh one through its custody doo
     await vessel.stop();
     const worn = spawnSync(process.execPath, [cli, "persona", "wear", "1"], { cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: rootB } });
     assert.equal(worn.status, 0, `the hearth wears the restored face: ${worn.stderr}`);
-    vessel = await standUnlocked(rootB);
+    vessel = await standUnlocked(rootB, 1);   // the unlock NAMES the face worn: nothing at rest remembers a choice
     const again = join(outDir, "gardener-from-b.bundle");
     const recut = await backupTestCustody(rootB, { face: 1, out: again });
     assert.equal(recut.ok, true, `the restored vessel wears the face lit, and cuts it from its own seat: ${JSON.stringify(recut)}`);

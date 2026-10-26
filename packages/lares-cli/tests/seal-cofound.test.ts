@@ -9,14 +9,15 @@
  *       terminal, a misheard fingerprint, a file of the wrong kind; CONTROL: C1.
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
+import { createHash } from "node:crypto";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
-import { carriedCharterHome, generateOrLoadPersonaGroupRoot, listSeatKeys, readNexusDoc } from "@lararium/node";
-import { cidV1Sha256, cidV1Sha256FromHex, seatFingerprint } from "@lararium/mesh";
+import { carriedCharterHome, generateOrLoadPersonaGroupRoot, listSeatKeys, readFaceIndexSync, readNexusDoc } from "@lararium/node";
+import { cidV1Sha256, cidV1Sha256FromHex, offerFingerprint, readFckCarrier, seatFingerprint, type CofoundOffer } from "@lararium/mesh";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 vi.setConfig({ testTimeout: 120_000, hookTimeout: 120_000 });
@@ -49,6 +50,16 @@ async function vault(label: string): Promise<Vault> {
   return v;
 }
 const at = (v: Vault): void => { process.env["LAR_ROOT"] = v.root; };
+const faceRow = (v: Vault, file: string): string => {
+  const face = readFaceIndexSync(v.custody.homes.identity).faces[0];
+  if (!face || !("fcid" in face)) throw new Error("founding face h0 does not stand");
+  return join(v.custody.homes.identity, "faces", face.fcid, file);
+};
+const expectFoundingRows = (v: Vault, fingerprint: string, verifyingKey: string): void => {
+  expect(readFckCarrier(readFileSync(faceRow(v, `cofound-h0-${fingerprint}.json`)))).toBe("sealed");
+  const keyName = createHash("sha256").update(`cadence-key\n${verifyingKey.toLowerCase()}`).digest("hex").slice(0, 32);
+  expect(readFckCarrier(readFileSync(faceRow(v, `cadence-key-h0-${keyName}.bin`)))).toBe("sealed");
+};
 
 const nexus = (positional: string[], options: Record<string, string> = {}): ParsedArgs =>
   ({ command: "nexus", positional: ["seal", "cofound", ...positional], options: { face: "0", ...options }, flags: { json: true } } as unknown as ParsedArgs);
@@ -72,13 +83,18 @@ describe("lares nexus seal cofound", () => {
       expect(opened.code, JSON.stringify(opened.out)).toBe(0);
       const aSeat = opened.out["data"]["seat"] as string;
       expect(opened.out["data"]["cards"]).toHaveLength(1);
-      expect(JSON.parse(readFileSync(offerPath, "utf8"))["manifest"]["genesis"]).toBe(cidV1Sha256FromHex(seedHex));
+      const offer = JSON.parse(readFileSync(offerPath, "utf8")) as CofoundOffer;
+      expect(offer.manifest.genesis).toBe(cidV1Sha256FromHex(seedHex));
+      const fingerprint = offerFingerprint(offer);
+      expectFoundingRows(A, fingerprint, offer.cadence.key);
 
       at(B);
       const joined = await run(nexus(["join", offerPath], { out: joinPath, heard: seatFingerprint(aSeat) }));
       expect(joined.code, JSON.stringify(joined.out)).toBe(0);
       const bSeat = joined.out["data"]["seat"] as string;
       const aid = joined.out["data"]["aid"] as string;
+      const joinedFile = JSON.parse(readFileSync(joinPath, "utf8")) as { cadence: { key: string } };
+      expectFoundingRows(B, fingerprint, joinedFile.cadence.key);
 
       at(A);
       const sealed = await run(nexus(["seal", joinPath], { out: inceptionPath, heard: seatFingerprint(bSeat) }));

@@ -33,6 +33,7 @@ import type { ParsedArgs } from "../parse-args.js";
 import { refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { storeVerb, StoreDoorRefusal } from "../store-door.js";
+import { seatNewFaceRoute } from "../face-route-prompt.js";
 
 function usage(args: ParsedArgs): number {
   return refuseUsage(args, "fleet", helpLines("fleet"));
@@ -72,6 +73,7 @@ function refuseFaceOnJoinee(args: ParsedArgs, act: string): void {
 }
 
 export async function cmdFleet(args: ParsedArgs): Promise<number> {
+  seatNewFaceRoute();
   const [group, act, file] = args.positional;
   if (group !== "join" || act === undefined) return usage(args);
   try {

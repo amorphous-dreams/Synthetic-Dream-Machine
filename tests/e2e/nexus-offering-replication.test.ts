@@ -87,7 +87,7 @@ beforeAll(async () => {
       // The publish door opens the source's store directly, so it runs here, while NO daemon holds that
       // store (the single-owner law): a write beside a live holder lands on disk the holder never reads,
       // and the source's daemon would carry a board without the gift.
-      const published = await source(["nexus", "publish", "plugins", "--source", HIGHLIGHT_SOURCE, "--apply", "--json"]);
+      const published = await source(["nexus", "publish", "plugins", "--source", HIGHLIGHT_SOURCE, "--apply", "--face", "0", "--json"]);
       if (published.code !== 0 || published.json?.["ok"] !== true) {
         throw new Error(`source offering publish failed: ${published.stdout}\n${published.stderr}`);
       }

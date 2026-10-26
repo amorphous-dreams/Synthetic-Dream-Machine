@@ -110,7 +110,7 @@ async function standHearth(founder: { w: World; p: Presenter }, joinee: Presente
   };
   for (const e of personaMembershipEntries({ personaGroupId: GROUP, url: planeHandle.url })) bootstrap[e.title] = { text: e.text ?? undefined };
   for (const e of personaMembershipEntries({ personaGroupId: GROUP_B, url: planeB.url })) bootstrap[e.title] = { text: e.text ?? undefined };
-  const views = faceFleetViews(() => bootstrap);
+  const views = faceFleetViews(() => bootstrap, undefined, () => new Set([String(interpretAsDocumentId(wiki.url))]));   // the catalog names the wiki as a book
   const shelfId = interpretAsDocumentId(shelfHandle.url);
   const shelfGate: FederationGate = { mayFederate: (d) => d === shelfId };
 

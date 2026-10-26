@@ -27,6 +27,7 @@ import {
 import { BUNDLE_EXTRACTOR_ROWS, BackupRefused, CUT_REFUSALS, cutFaceBundle, type BackupDoor } from "../src/face-bundle-cut.js";
 import { storeFaceProofKey, storeVesselFaceKey } from "../src/face-key-custody.js";
 import { persistIdentityAnchors } from "../src/identity-anchors.js";
+import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { keepFaceAtom } from "../src/face-atom-store.js";
 import { IslandVerbRefused } from "../src/island-verb-ask.js";
 import { saveNodeHandleBook } from "../src/node-circle-store.js";
@@ -63,6 +64,8 @@ beforeEach(async () => {
   keys = { face0: r0.verifyingKey, face1: r1.verifyingKey };
   kel0 = [mintPersonaInception(`0x${keys.face0}`, "ab".repeat(32))];
   const kel1 = [mintPersonaInception(`0x${keys.face1}`, "cd".repeat(32))];
+  await ensureFaceCustodyOfGroup("GROUP-DOC-OF-FACE-ZERO");
+  await ensureFaceCustodyOfGroup("GROUP-DOC-OF-FACE-ONE");
   await keepFaceAtom("GROUP-DOC-OF-FACE-ZERO", secretOf(21));
   await keepFaceAtom("GROUP-DOC-OF-FACE-ONE", secretOf(22));
   await persistIdentityAnchors({
@@ -83,13 +86,15 @@ beforeEach(async () => {
   const proof0 = secretOf(3), proof1 = secretOf(5), vesselFace = secretOf(9);
   await storeFaceProofKey({ faceKey: await publicOf(proof0), nexus: "nexus-test-one" }, proof0, 0);
   await storeFaceProofKey({ faceKey: await publicOf(proof1), nexus: "nexus-test-one" }, proof1, 1);
-  await storeVesselFaceKey({ faceKey: await publicOf(proof0), nexus: "nexus-test-one" }, vesselFace);
+  await storeVesselFaceKey(0, { faceKey: await publicOf(proof0), nexus: "nexus-test-one" }, vesselFace);
   const book = new HandleBook();
   const mine = await cardOf(11, "friend-of-zero"), theirs = await cardOf(12, "FRIEND-OF-ONE"), nobodys = await cardOf(13, "UNTAGGED-FRIEND");
   await book.ingest(mine, undefined, keys.face0); book.setPetname(mine.nym, "Ana", keys.face0);
-  await book.ingest(theirs, undefined, keys.face1); book.setPetname(theirs.nym, "LABEL-OF-FACE-ONE", keys.face1);
-  await book.ingest(nobodys); book.setPetname(nobodys.nym, "LABEL-OF-NOBODY");
-  await saveNodeHandleBook(book);
+  await saveNodeHandleBook(0, book);
+  const book1 = new HandleBook();
+  await book1.ingest(theirs, undefined, keys.face1); book1.setPetname(theirs.nym, "LABEL-OF-FACE-ONE", keys.face1);
+  await book1.ingest(nobodys); book1.setPetname(nobodys.nym, "LABEL-OF-NOBODY");
+  await saveNodeHandleBook(1, book1);
 });
 afterEach(async () => { await seat.drop(); });
 
@@ -156,7 +161,7 @@ describe("a cut carries one face's standing section and its memory section", () 
       otherSeed, keys.face1, "PETNAME-OF-FACE-ONE", "HANDLE-OF-FACE-ONE", hex(secretOf(5)), "FRIEND-OF-ONE", "LABEL-OF-FACE-ONE",
       "UNTAGGED-FRIEND", "LABEL-OF-NOBODY",
       hex(secretOf(21)), hex(secretOf(22)), "DEVICE-EDGE-OF-FACE-ZERO", "GROUP-DOC-OF-FACE-ZERO", "CABAL-DOC-OF-FACE-ZERO", "GROUP-AGENT-OF-FACE-ZERO",
-      "CHAIR-OF-FACE-ZERO", "\"seat\"", hex(secretOf(9)), hex(seat.vk),
+      "CHAIR-OF-FACE-ZERO", "\"seat\"", hex(secretOf(9)), hex(seat.treeKey),
     ];
     for (const word of strangers) expect(text.includes(word), `the body carries ${word.slice(0, 24)}`).toBe(false);
     // CONTROL: the hunt finds a word the body does carry, and the cut of face 1 carries face 1's own.
@@ -187,9 +192,9 @@ describe("the table picks the rows a bundle carries", () => {
     expect([...BUNDLE_EXTRACTOR_ROWS].sort()).toEqual(carriers.bundleRows().map((r) => r.row).sort());
     // The law's table (custody#/the-table): three rows ride whole, five ride as one face's lines, the rest stay.
     const by = (t: string): string[] => carriers.bundleRows().filter((r) => r.bundle === t).map((r) => r.row).sort();
-    expect(by("whole")).toEqual(["face-proof-key", "guardian-set", "persona-root"]);
-    expect(by("lines")).toEqual(["anchors", "handle-book", "persona-declarations", "persona-petnames", "persona-roster"]);
-    for (const stays of ["face-atom", "veil-archive", "keyhive-archive", "vessel-face-key", "gate-memory", "device-share", "public-handles", "restore-pending", "custody-root", "seat-key", "face-address-secret", "fleet-join-pending", "face-join-record"]) {
+    expect(by("whole")).toEqual(["face-proof-key", "guardian-set", "handle-book", "persona-root"]);
+    expect(by("lines")).toEqual(["anchors", "persona-declarations", "persona-petnames", "persona-roster"]);
+    for (const stays of ["face-atom", "veil-archive", "place-archive", "vessel-face-key", "gate-memory", "device-share", "public-handles", "restore-pending", "gate-root", "seat-key", "face-address-secret", "fleet-join-pending", "face-join-record"]) {
       expect(carriers.carrierTable().find((r) => r.row === stays)?.bundle, stays).toBe("stays");
     }
   });

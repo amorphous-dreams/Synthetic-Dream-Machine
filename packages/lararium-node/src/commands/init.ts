@@ -38,7 +38,9 @@ import { admittedJoineeIsland } from "../nexus-standing.js";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import { listPersonaRoots } from "../node-vessel-identity.js";
 import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, loadIdentityArchive, persistIdentityArchive, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../identity-anchors.js";
-import { openedCustody, seatCustody } from "../custody-seat.js";
+import { faceStandingCustody, openedCustody, seatCustody } from "../custody-seat.js";
+import { personaGroupDigest } from "../persona-group-file.js";
+import { ensureFaceCustodyOfAsk, settleFaceCustody } from "../face-route.js";
 import { ensurePlaceCard } from "../place-card.js";
 import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, sweepFoundingSeeds, type FoundingAtomAsk } from "../face-atom-store.js";
 import { keepFaceAnchorOfGroup, loadFaceAnchorOfGroup } from "../face-anchor-store.js";
@@ -181,7 +183,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
   }
 
   // THE ROUTE IS CHECKED BEFORE THE FIRST MUTATION: a founding that binds no human route writes nothing. A tree
-  // already standing needs no new route (the VK and its slots stay), so only a founding of custody demands one.
+  // already standing needs no new route (the S key and its slots stay), so only a founding of custody demands one.
   const custodyHomes = { identity: larIdentityDir(), storage: storageDir, seal: larSealHome() };
   const custodyIo = new FsCustodyIo(custodyHomes);
   const custodyStands = await custodyTreeStands(custodyIo, custodyHomes);
@@ -209,8 +211,8 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
 
   // ── CUSTODY SEALS FROM BIRTH, BEFORE THE FIRST IDENTITY FILE ─────────────────────────────────
   // The slot tree and the custody root land first, so a store that already holds a carrier refuses
-  // (`OldShapeRefusal`) with the identity home untouched. A tree already standing means a re-seed over a
-  // sealed custody: the VK stays, and nothing here re-mints it.
+  // (`OccupiedStoreRefusal`) with the identity home untouched. A tree already standing means a re-seed over a
+  // sealed custody: the S key stays, and nothing here re-mints it.
   //
   // THE FOUNDING HOLDS THE KEY IT MINTED. Every identity row this act writes rests sealed under the vessel key,
   // so the founding seats a fresh holder over the key `foundCustody` hands back and asks nobody for it. Over a
@@ -220,7 +222,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     // THE KEY COMES FIRST: this act seals rows under the standing key, so it opens the seat before it mints or
     // writes anything. A vessel whose key stays shut refuses here, by name, with the identity home untouched.
     await openedCustody();
-    console.log("[lares vessel found] custody already sealed (vk-slots.bin stands) — the VK and its slots stay as they are.");
+    console.log("[lares vessel found] custody already sealed (s-slots.bin stands) — the S key and its slots stay as they are.");
     // A FRESH BOOTSTRAP NAMES NO FACE, AND `faceStands` READS ONLY THE BOOTSTRAP. So re-seeding over a vessel
     // whose persona roots stand drops it to the waking floor while every other reading still answers that the
     // face stands — `persona list` reads the ROSTER and keeps naming it. The root stays held (`persona new <i>`
@@ -236,10 +238,10 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
   } else {
     const founded = await foundCustody({ io: custodyIo, homes: custodyHomes, slots: opts.custody.slots });
     const holder = makeCustodyHolder({ io: custodyIo, homes: custodyHomes });
-    await holder.adopt(founded.vk);
-    founded.vk.fill(0);
+    await holder.adopt(founded.treeKey);
+    founded.treeKey.fill(0);
     seatCustody(holder);
-    console.log("[lares vessel found] custody sealed from birth: vk-slots.bin and the custody root.");
+    console.log("[lares vessel found] custody sealed from birth: s-slots.bin and the custody root.");
   }
 
   const operatorIdentity = await generateOrLoadVesselIdentity();
@@ -266,7 +268,9 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     const anchored = landsBeside ? await listAnchoredPersonas() : [];
     const stoodIndex = landsBeside ? (await Promise.all(anchored.map(async (index) => ({ index, anchors: await loadIdentityAnchors(index) }))))
       .find(({ anchors }) => anchors?.personaGroupId === payload.personaGroupId)?.index : undefined;
-    const handleIndex = stoodIndex ?? (landsBeside ? Math.max(0, ...anchored) + 1 : 0);
+    // A face's handle index IS its ordinal in the floor index: the joinee took it when its request founded the face's custody.
+    const standingFace = await faceStandingCustody({ group: personaGroupDigest(payload.personaGroupId) });
+    const handleIndex = standingFace?.ordinal ?? stoodIndex ?? (landsBeside ? Math.max(0, ...anchored) + 1 : 0);
     const admitSeed = await loadFaceAtomOfGroup(payload.personaGroupId);
     if (!admitSeed) throw new Error("this face holds no atom; re-found or re-admit it");
     if (stoodIndex !== undefined) {
@@ -581,14 +585,19 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   // The persona ROOT for THIS face — the human's side. It only ever SIGNS; the per-vessel key stays the
   // Individual. Each compartment carries its OWN sovereign signing key at its handle-index; the founding
   // face seats at h0.
-  await generateOrLoadPersonaGroupRoot(handleIndex);
-  const signerSeed = await loadPersonaGroupRootSeed(handleIndex);
-
   // The pending row keeps an interrupted ask. A completed group's atom stays with that group; only an
   // authenticated checkpoint can recover a seed after the ask row moves into a group row.
   const foundingAsk: FoundingAtomAsk = {
     hearthTrueName, bindingMode: "self-stood", personaKelPrefix: null, mount: mounts, handleIndex,
   };
+  // THE FACE'S CUSTODY STANDS BEFORE ITS ROOT: the root, like every private row of this face, rests under the face's own key,
+  // at the ordinal that is its handle index. The face asks the route it binds (never the vessel's).
+  await ensureFaceCustodyOfAsk(foundingAskDigest(foundingAsk), `h${handleIndex}`, handleIndex);
+  await generateOrLoadPersonaGroupRoot(handleIndex);
+  const signerSeed = await loadPersonaGroupRootSeed(handleIndex);
+  // The ask's first row founds the face's own custody (never the vessel's route), keyed by this ask until its group exists;
+  // an interrupted founding re-enters the face it already holds.
+  const askDigest = foundingAskDigest(foundingAsk);
   const atomSeed = (await loadPendingFoundingSeed(foundingAsk))
     ?? await recoverFoundingSeedFromGroup(foundingAsk, daemonHandle.doc()?.tiddlers ?? {})
     ?? await standPendingFoundingSeed(foundingAsk);
@@ -624,7 +633,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     // The founding face MOUNTS; an added compartment does not. Omit for h0 so its path is byte-unchanged.
     ...(mounts ? {} : { mount: false }),
   });
-  await keepAndRetireFoundingSeed(face.personaGroupId, foundingAsk, atomSeed);
+  await settleFaceCustody(askDigest, face.personaGroupId, () => keepAndRetireFoundingSeed(face.personaGroupId, foundingAsk, atomSeed));
   await keepFaceAnchorOfGroup(mintFaceAnchor({
     personaGroup: face.personaGroupId, personaKelPrefix: face.personaKelPrefix,
     personaRootDid: face.founderEdge.personaRootDid, edge: face.founderEdge, leaseEpoch: 0,

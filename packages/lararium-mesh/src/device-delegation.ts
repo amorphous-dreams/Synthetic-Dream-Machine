@@ -45,7 +45,7 @@ import type { AuthorityEvidenceVerdict } from "./authority-verdict.js";
 import { acceptEd25519Key, verifyEd25519 } from "./ed25519-door.js";
 
 export { DEVICE_DELEGATION_DOMAIN } from "./domains.js";
-const VK_RE   = /^[0-9a-f]{64}$/;          // raw 32-byte verifying-key hex, lowercase
+const S_SEAL_RE   = /^[0-9a-f]{64}$/;          // raw 32-byte verifying-key hex, lowercase
 const SIG_RE  = /^[0-9a-f]{128}$/;         // 64-byte Ed25519 signature hex, lowercase
 const TRUE_NAME_RE = /^[A-Za-z0-9._:/@-]*$/;   // CID / lar:-name safe; no `|`, no whitespace; "" allowed (place-agnostic)
 const EPOCH_RE = /^\d{1,15}$/;             // decimal lease epoch; 1-15 digits, bounded < Number.MAX_SAFE_INTEGER
@@ -105,7 +105,7 @@ export function deviceAtomProofBytes(edge: DeviceDelegationRootHalf): Uint8Array
 function fieldError(d: Partial<DeviceDelegationRootHalf>, complete = true): string | null {
   if (d.kind !== "device-delegation")                            return "not a device-delegation";
   if (typeof d.personaRootDid !== "string" || !DID_RE.test(d.personaRootDid))                 return "personaRootDid not 0x+32-byte lowercase hex";
-  if (typeof d.deviceVerifyingKey !== "string" || !VK_RE.test(d.deviceVerifyingKey))    return "deviceVerifyingKey not 32-byte lowercase hex";
+  if (typeof d.deviceVerifyingKey !== "string" || !S_SEAL_RE.test(d.deviceVerifyingKey))    return "deviceVerifyingKey not 32-byte lowercase hex";
   if (typeof d.deviceDid !== "string" || d.deviceDid !== didFromVerifyingKey(d.deviceVerifyingKey)) return "deviceDid not bound to deviceVerifyingKey";
   // Both keys the edge names pass the door before the edge reads: a small-order DEVICE key would let everyone
   // prove as that device, and a small-order root would let everyone edge a device under that persona.

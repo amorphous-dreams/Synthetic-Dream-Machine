@@ -25,6 +25,7 @@ import { runFoundTheFace } from "../src/commands/init.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { hearthAid } from "../src/hearth-aid.js";
 import { faceAtomGroupFile, loadFaceAtomOfGroup, loadPendingFoundingSeed, pendingFoundingFile, type FoundingAtomAsk } from "../src/face-atom-store.js";
+import { askRowPath, faceRowNames, groupRowPath } from "./face-paths.js";
 import { larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";
@@ -33,7 +34,7 @@ const foundFace = direct(runFoundTheFace);
 const roots: string[] = [];
 const genesisSource = join(import.meta.dirname, "..", "..", "..", "genesis");
 const liveRows = (ask: FoundingAtomAsk, group: string) => {
-  const files = new Set(readdirSync(larIdentityDir()));
+  const files = new Set(faceRowNames());
   return Number(files.has(pendingFoundingFile(ask))) + Number(files.has(faceAtomGroupFile(group)));
 };
 
@@ -67,9 +68,9 @@ describe("the founding seed moves in one act", () => {
     await withLarRoot(root, async () => {
       fault.throwAfterGroup = true;
       await expect(foundFace({ storageDir: larDataDir(), genesisDir })).rejects.toThrow("planted after the group row");
-      const groupRows = readdirSync(larIdentityDir()).filter((f) => /^face-atom-g[0-9a-f]{64}\.bin$/.test(f));
+      const groupRows = faceRowNames().filter((f) => /^face-atom-g[0-9a-f]{64}\.bin$/.test(f));
       expect(groupRows).toHaveLength(1);
-      const askRow = readdirSync(larIdentityDir()).filter((f) => f === pendingFoundingFile(ask));
+      const askRow = faceRowNames().filter((f) => f === pendingFoundingFile(ask));
       const stoppedSeed = await loadFaceAtomOfGroup(fault.group);
       expect(stoppedSeed).toHaveLength(32);
       expect(await loadPendingFoundingSeed(ask)).toBeNull();
@@ -86,7 +87,7 @@ describe("the founding seed moves in one act", () => {
     await withLarRoot(root, async () => {
       const face = await foundFace({ storageDir: larDataDir(), genesisDir });
       expect(liveRows(ask, face.personaGroupId)).toBe(1);
-      expect(readdirSync(larIdentityDir())).toContain(faceAtomGroupFile(face.personaGroupId));
+      expect(faceRowNames()).toContain(faceAtomGroupFile(face.personaGroupId));
     });
   }, 180_000);
 });

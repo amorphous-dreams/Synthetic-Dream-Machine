@@ -192,7 +192,7 @@ beforeAll(async () => {
   // throwaway joinee requests under its own key (its face-scoped keys rest in this process alone), the hearth answers.
   courier = mkdtempSync(join(tmpdir(), "lares-face-join-courier-"));
   const files = { offer: join(courier, "offer.json"), request: join(courier, "request.json"), answer: join(courier, "answer.json") };
-  const offered = await lar.cli(["fleet", "join", "offer", "--out", files.offer]);
+  const offered = await lar.cli(["fleet", "join", "offer", "--face", "0", "--out", files.offer]);
   if (offered.code !== 0) throw new Error(`fleet join offer failed (${offered.code})\n${offered.stderr.slice(-800)}`);
   const offer = readFleetJoinOffer(JSON.parse(readFileSync(files.offer, "utf8")));
   if ("refusal" in offer) throw new Error(`the hearth's offer refuses: ${offer.refusal}`);
@@ -205,7 +205,7 @@ beforeAll(async () => {
   });
   if ("refusal" in request) throw new Error(`the joinee's request refuses: ${request.refusal}`);
   writeFileSync(files.request, JSON.stringify(request));
-  const answered = await lar.cli(["fleet", "join", "answer", files.request, "--out", files.answer]);
+  const answered = await lar.cli(["fleet", "join", "answer", files.request, "--face", "0", "--out", files.answer]);
   if (answered.code !== 0) throw new Error(`fleet join answer failed (${answered.code})\n${answered.stderr.slice(-800)}`);
   // The answer carries the root's half; the joinee countersigns it with its own atom, as a landing does.
   const half = (JSON.parse(readFileSync(files.answer, "utf8")) as { edge?: { deviceEdge?: DeviceDelegationRootHalf } }).edge?.deviceEdge ?? null;

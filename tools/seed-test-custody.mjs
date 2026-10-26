@@ -33,8 +33,8 @@ if (!(await node.custodyTreeStands(io, homes))) {
   try {
     await node.foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }] }] });
   } catch (e) {
-    if (e?.name !== "OldShapeRefusal") throw e;
-    console.error(`OldShapeRefusal: ${root} holds identity carriers and no custody tree — nothing was written (${e.standing.length + e.unlisted.length} carrier(s) stand)`);
+    if (e?.name !== "OccupiedStoreRefusal") throw e;
+    console.error(`OccupiedStoreRefusal: ${root} holds identity carriers and no custody tree — nothing was written (${e.standing.length + e.unlisted.length} carrier(s) stand)`);
     process.exit(2);
   }
 }

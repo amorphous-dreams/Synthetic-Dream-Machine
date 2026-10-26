@@ -133,10 +133,10 @@ function composeDoc(seal: unknown, kahu: unknown, practice: unknown): NexusDoc |
     if (typeof raw !== "object" || raw === null) return null;     // a torn seat reads the whole doc closed
     const seat = raw as Record<string, unknown>;
     if (typeof seat["chairLabel"] !== "string") return null;
-    const vk = seat["verifyingKey"];
+    const treeKey = seat["verifyingKey"];
     seats.push({
       chairLabel:   seat["chairLabel"] as string,
-      verifyingKey: typeof vk === "string" && vk.length > 0 ? vk : null,
+      verifyingKey: typeof treeKey === "string" && treeKey.length > 0 ? treeKey : null,
     });
   }
 

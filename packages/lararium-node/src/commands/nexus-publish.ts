@@ -68,6 +68,8 @@ export interface NexusPublishPluginsOptions {
   readonly source: string;
   /** The genesis directory whose blob ids `boot-set-collision` reads; absent, the vessel's own (`readGenesisSeed`'s default). */
   readonly genesisDir?: string;
+  /** The face that signs the offering: named by the caller, else the face this vessel wears. */
+  readonly handleIndex?: number;
 }
 
 export interface NexusPublishPluginsResult {
@@ -105,10 +107,10 @@ function sourceBlobPath(sourceDir: string, blob: { readonly sha256: string; read
 export async function runNexusPublishPlugins(
   opts: NexusPublishPluginsOptions,
 ): Promise<NexusPublishPluginsResult> {
-  const handleIndex = await loadActivePersonaIndex();
+  const handleIndex = opts.handleIndex ?? await loadActivePersonaIndex();
   if (handleIndex === undefined) {
     throw new NexusPublishError(
-      "publishing requires an active persona — wear a held persona before offering a collection",
+      "publishing requires a face to sign as — name one (--face N) or unlock the vessel on one (`lares vault unlock --face N`)",
     );
   }
   if (!(await personaRootExists(handleIndex))) {

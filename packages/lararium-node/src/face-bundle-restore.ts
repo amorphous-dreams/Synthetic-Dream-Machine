@@ -70,7 +70,10 @@ import {
   landPersonaRoot, listPersonaRosterLines, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, orphanPersonaRootKey,
 } from "./node-vessel-identity.js";
 import { readLocalPersonaKelEvents, seatLocalPersonaKelChain } from "./local-persona-kel.js";
-import { RESTORE_PENDING_FILE } from "./vault-carriers.js";
+import { RESTORE_PENDING_FILE, restorePendingFile } from "./vault-carriers.js";
+import { faceFileNames } from "./face-index.js";
+import { ensureFaceCustodyAtHandle } from "./face-route.js";
+import { larIdentityDir } from "./vessel-paths.js";
 import { hearthAid } from "./hearth-aid.js";
 import { larBootstrapPath } from "./vessel-paths.js";
 
@@ -196,19 +199,19 @@ async function currentHead(body: FaceBundleBody, carried: readonly PersonaKelEve
 
 /** Read the pending row, or null where none stands. A row that stands and reads as no pending row refuses by name. */
 async function readPending(): Promise<Pending | null> {
-  try {
-    return await openColdCustodyRow("identity", RESTORE_PENDING_FILE, (bytes) => {
-      let raw: { target?: unknown; body?: unknown };
-      try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as typeof raw; }
-      catch { throw new CustodyRowUnavailable("identity", RESTORE_PENDING_FILE, "malformed"); }
-      const body = raw.body === undefined ? null : readFaceBundleBody(canonicalJsonBytes(raw.body));
-      if (!Number.isSafeInteger(raw.target) || (raw.target as number) < 0 || body === null) throw new CustodyRowUnavailable("identity", RESTORE_PENDING_FILE, "malformed");
-      return { target: raw.target as number, body };
-    });
-  } catch (err) {
-    if (err instanceof CustodyRowUnavailable && err.reading === "absent") return null;
-    throw err;
-  }
+  // The pending row rests in its target face: the one file name any face holds names the target.
+  const standing = faceFileNames(larIdentityDir()).filter((n) => RESTORE_PENDING_FILE.test(n));
+  if (standing.length === 0) return null;
+  if (standing.length > 1) throw new RestoreRefused("restore-pending", "more than one face holds a restore pending on this vessel; run each face's own restore again, lowest handle index first. Nothing moved.");
+  const file = standing[0]!;
+  return await openColdCustodyRow("identity", file, (bytes) => {
+    let raw: { target?: unknown; body?: unknown };
+    try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as typeof raw; }
+    catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+    const body = raw.body === undefined ? null : readFaceBundleBody(canonicalJsonBytes(raw.body));
+    if (!Number.isSafeInteger(raw.target) || (raw.target as number) < 0 || body === null || restorePendingFile(raw.target as number) !== file) throw new CustodyRowUnavailable("identity", file, "malformed");
+    return { target: raw.target as number, body };
+  });
 }
 
 /** The root key of the face whose restore stands pending on this vessel, or null where none stands. Writes nothing. */
@@ -239,7 +242,7 @@ async function preflight(body: FaceBundleBody, target: number, founding = false)
   // refuses here, by its own name, before the commit row. The landing then meets no row it has not already read.
   await (await makeNodePersonaPetnameStore()).get(target);
   await (await makeNodePersonaDeclarationStore()).get(target);
-  await loadNodeHandleBook();
+  await loadNodeHandleBook(target);
   for (const key of body.faceProofKeys) {
     const secret = Uint8Array.from(Buffer.from(key.secret, "hex"));
     try {
@@ -284,9 +287,9 @@ async function land(pending: Pending, head: { readonly seq: number; readonly eve
     const standing = await store.get(target);
     if (standing?.handle === undefined) { await store.set(target, { ...(standing ?? {}), handle: body.names.handle }); handle = true; }
   }
-  const book = await loadNodeHandleBook();
+  const book = await loadNodeHandleBook(target);
   const handleBook = await book.landFor(body.root.verifyingKey, { era: HANDLE_BOOK_SNAPSHOT_ERA, records: body.handleBook.records });
-  if (handleBook.landed > 0 || handleBook.kept > 0) await saveNodeHandleBook(book);
+  if (handleBook.landed > 0 || handleBook.kept > 0) await saveNodeHandleBook(target, book);
   // THE GUARDIAN SET lands where none stands; the same set there stays as it stands.
   let guardianSet: "landed" | "held" | null = null;
   const record = guardianRecordOf(body);
@@ -365,8 +368,11 @@ export async function restoreFaceBody(args: {
       // ONE DURABLE COMMIT. Before this write nothing moved; after it the restore completes, in this run or the next.
       pending = { target, body };
       const row = canonicalJsonBytes(pending);
+      // THE TARGET FACE'S CUSTODY COMES FIRST: its slot and owner binding stand (reserved at the handle index, under the route
+      // the face asks for), and the pending row rests under that face's own key.
+      await ensureFaceCustodyAtHandle(target, `h${target}`);
       try {
-        await updateColdCustodyRow("identity", RESTORE_PENDING_FILE, (standing) => {
+        await updateColdCustodyRow("identity", restorePendingFile(target), (standing) => {
           if (standing !== null) throw new RestoreRefused("restore-pending", "a restore's commit row appeared while this one checked its rows. Run the restore again.");
           return { plaintext: row, value: undefined };
         });
@@ -382,7 +388,7 @@ export async function restoreFaceBody(args: {
     if (!lit.alreadyStood && lit.personaKelPrefix !== pending.body.anchors.personaKelPrefix) {
       throw new Error(`face-bundle-restore: the face lit under prefix ${lit.personaKelPrefix}, and the bundle carried ${pending.body.anchors.personaKelPrefix}; the pending row stays for a person to read`);
     }
-    await removeColdCustodyRow("identity", RESTORE_PENDING_FILE);
+    await removeColdCustodyRow("identity", restorePendingFile(pending.target));
     return {
       face: { handleIndex: pending.target, verifyingKey: pending.body.root.verifyingKey },
       prefix: pending.body.anchors.personaKelPrefix, resumed, checked: { seq: checked.seq, from: checked.from }, landed,

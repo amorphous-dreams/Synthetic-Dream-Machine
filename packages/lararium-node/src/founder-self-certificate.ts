@@ -129,7 +129,7 @@ export async function ensureFounderCertificate(
       let vesselFaceKey = standingKey;
       if (vesselFaceKey === null) {
         const minted = await mintVesselFaceKey();
-        try { await storeVesselFaceKey(scope, minted.secret); } finally { minted.secret.fill(0); }
+        try { await storeVesselFaceKey(face, scope, minted.secret); } finally { minted.secret.fill(0); }
         vesselFaceKey = minted.publicKey;
       }
       const apart = [root.verifyingKey, (await (doors.vesselKey ?? loadVesselVerifyingKey)()).toLowerCase()];

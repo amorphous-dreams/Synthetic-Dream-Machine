@@ -10,6 +10,7 @@ import { seatedCustody, unseatCustody, readCustodyRow } from "../src/custody-sea
 import { hearthAid } from "../src/hearth-aid.js";
 import { faceAtomGroupFile, pendingFoundingFile, sweepFoundingSeeds, type FoundingAtomAsk } from "../src/face-atom-store.js";
 import { loadIdentityAnchors } from "../src/identity-anchors.js";
+import { askRowPath, faceRowNames, groupRowPath } from "./face-paths.js";
 import { larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";
@@ -47,13 +48,13 @@ describe("the founding sweep and a live handoff", () => {
         const founding = foundFace({ storageDir: larDataDir(), genesisDir });
         await reachedRemoval.promise;
         // The group row has landed, but founding still owns the claim and its ask row.
-        const before = readdirSync(larIdentityDir());
+        const before = faceRowNames();
         expect(before.filter((file) => file === pendingFoundingFile(ask) || /^face-atom-g[0-9a-f]{64}\.bin$/.test(file)), "the pause exposes both rows").toHaveLength(2);
         const sweep = sweepFoundingSeeds();
         releaseRemoval.resolve();
         const [face] = await Promise.all([founding, sweep]);
         // This control observes the settled state after both operations; it does not instrument claim-queue entry.
-        const rows = readdirSync(larIdentityDir()).filter((file) => file === pendingFoundingFile(ask) || file === faceAtomGroupFile(face.personaGroupId));
+        const rows = faceRowNames().filter((file) => file === pendingFoundingFile(ask) || file === faceAtomGroupFile(face.personaGroupId));
         expect(rows, "exactly one row holds the live founding seed").toEqual([faceAtomGroupFile(face.personaGroupId)]);
         expect(await readCustodyRow("identity", rows[0]!), "the surviving group row holds the seed").toHaveLength(32);
         expect(await loadIdentityAnchors(0), "the face stands after the race").toMatchObject({ personaGroupId: face.personaGroupId });

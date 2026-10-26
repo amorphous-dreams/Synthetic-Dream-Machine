@@ -7,26 +7,26 @@ import { carrierTable, CUSTODY_PARTS, type CarrierRow, type CustodyPart } from "
  * spec adds or drops moves this list in the same commit.
  */
 const SPEC: ReadonlyArray<readonly [row: string, classes: readonly CustodyPart[], lead: boolean]> = [
-  ["vessel-key", ["S"], true], ["vessel-kel", ["F"], false], ["vk-slots", ["D", "S"], true], ["sk-slots", ["S"], true],
+  ["vessel-key", ["S"], true], ["vessel-kel", ["F"], false], ["s-slots", ["D", "S"], true], ["sk-slots", ["S"], true], ["fk-slots", ["D"], false], ["face-index", ["F"], false],
   ["vessel-card", ["F"], false], ["charter", ["F"], false], ["carried-charter", ["F"], false],
   ["carriage-consent", ["F"], false], ["nexus-key-line", ["F"], false], ["carriage-admit", ["F"], false],
   ["sealed-rest", ["F"], false], ["sealed-own", ["F"], true], ["sealed-chunk", ["F"], false],
-  ["custody-root", ["D"], true], ["keyhive-archive", ["D"], true], ["veil-archive", ["D"], true], ["face-atom", ["D"], false], ["face-anchor", ["D"], false], ["face-atom-ask", ["D"], false],
+  ["gate-root", ["D"], true], ["place-archive", ["D"], true], ["veil-archive", ["D"], true], ["face-atom", ["D"], false], ["face-anchor", ["D"], false], ["face-atom-ask", ["D"], false], ["face-owner", ["D"], false],
   ["enroll-pending", ["D"], true], ["grant-pending", ["D"], true], ["admissions", ["D"], true],
-  ["anchors", ["D"], false], ["anchor-roster", ["D", "F"], true], ["persona-roster", ["D", "F"], false],
-  ["active-persona", ["D", "F"], true], ["persona-petnames", ["D"], false], ["persona-declarations", ["D", "F"], true],
-  ["public-handles", ["D", "F"], true], ["vessel-face-key", ["D"], false], ["face-address-secret", ["D"], false],
-  ["fleet-join-pending", ["D"], false], ["face-join-record", ["D"], false], ["handle-book", ["D", "F"], false],
-  ["guardian-set", ["D"], false], ["face-provisional", ["D"], false], ["hosting-state", ["D", "F"], true],
-  ["hosting-spent", ["D", "F"], true], ["hosting-carry", ["D", "F"], true], ["walk", ["D", "F"], true],
-  ["gate-memory", ["D", "F"], true], ["transition-pending", ["D", "F"], true], ["transitions", ["D", "F"], true],
-  ["cofound", ["D", "F"], true], ["outbox-key", ["D"], false], ["sealed-outbox", ["D"], false],
+  ["anchors", ["D"], false], ["persona-roster", ["D"], false],
+  ["persona-petnames", ["D"], false], ["persona-declarations", ["D"], false],
+  ["public-handles", ["D"], false], ["vessel-face-key", ["D"], false], ["face-address-secret", ["D"], false],
+  ["fleet-join-pending", ["D"], false], ["face-join-record", ["D"], false], ["handle-book", ["D"], false],
+  ["guardian-set", ["D"], false], ["face-provisional", ["D"], false], ["hosting-state", ["D"], false],
+  ["hosting-spent", ["D"], false], ["hosting-carry", ["D"], false], ["walk", ["D"], false],
+  ["gate-memory", ["D"], false], ["transition-pending", ["F"], false], ["transitions", ["F"], false],
+  ["cofound", ["D"], false], ["outbox-key", ["D"], false], ["sealed-outbox", ["D"], false],
   ["persona-root", ["D"], false], ["face-proof-key", ["D"], false], ["seat-key", ["D"], false],
-  ["cadence-key", ["D", "F"], true], ["restore-pending", ["D"], false], ["device-share", ["D"], false],
+  ["cadence-key", ["D"], false], ["restore-pending", ["D"], false], ["device-share", ["D"], false],
 ];
 
 /** The spec's node S candidates: the only rows that may carry an S part. */
-const S_ROWS = new Set(["vessel-key", "vk-slots", "sk-slots"]);
+const S_ROWS = new Set(["vessel-key", "s-slots", "sk-slots"]);
 const JOINTS = new Set(["place-signer", "archive-row-selector"]);
 
 /** Every refusal the census law reads off a table, named; an empty list reads green. */
@@ -43,7 +43,7 @@ function refusals(table: readonly CarrierRow[], spec = SPEC): string[] {
       if (!t.lead && t.joint === null) out.push(`${r.row}: S row neither LEAD nor joint`);
     }
     if (t.joint !== null && !JOINTS.has(t.joint)) out.push(`${r.row}: unknown joint ${t.joint}`);
-    if (["hot", "cold", "outbox"].includes(r.custody) && !t.classes.includes("D")) out.push(`${r.row}: ${r.custody} row without a D part`);
+    if (["hot", "cold", "outbox", "face-hot", "face-cold"].includes(r.custody) && !t.classes.includes("D")) out.push(`${r.row}: ${r.custody} row without a D part`);
     if (r.custody === "floor-plain" && !t.classes.includes("F")) out.push(`${r.row}: floor-plain row without an F part`);
   }
   const names = table.map((r) => r.row);
@@ -66,12 +66,12 @@ describe("the node custody census (K15 step zero)", () => {
     expect(table.map((r) => r.row)).toEqual(SPEC.map(([row]) => row));
   });
 
-  it("carries S only on vessel-key, vk-slots and sk-slots", () => {
+  it("carries S only on vessel-key, s-slots and sk-slots", () => {
     expect(table.filter((r) => r.target.classes.includes("S")).map((r) => r.row)).toEqual([...S_ROWS]);
   });
 
   it("gives every hot, cold and outbox row a D part", () => {
-    const sealed = table.filter((r) => ["hot", "cold", "outbox"].includes(r.custody));
+    const sealed = table.filter((r) => ["hot", "cold", "outbox", "face-hot", "face-cold"].includes(r.custody));
     expect(sealed.length).toBeGreaterThan(20);
     for (const r of sealed) expect(r.target.classes).toContain("D");
   });
@@ -79,8 +79,8 @@ describe("the node custody census (K15 step zero)", () => {
   it("names the two open joints on the rows that wait on them", () => {
     const joints = Object.fromEntries(table.filter((r) => r.target.joint !== null).map((r) => [r.row, r.target.joint]));
     expect(joints).toEqual({
-      "vessel-key": "place-signer", "vk-slots": "place-signer",
-      "keyhive-archive": "archive-row-selector", "veil-archive": "archive-row-selector",
+      "vessel-key": "place-signer", "s-slots": "place-signer",
+      "place-archive": "archive-row-selector", "veil-archive": "archive-row-selector",
     });
   });
 
@@ -96,13 +96,13 @@ describe("the node custody census (K15 step zero)", () => {
       expect(refusals(retarget("walk", { classes: [], lead: true, joint: null }))).toContain("walk: empty classes");
     });
     it("refuses an S row the spec does not name", () => {
-      expect(refusals(retarget("custody-root", { classes: ["S"], lead: true, joint: null }))).toContain("custody-root: S on a row the spec does not name");
+      expect(refusals(retarget("gate-root", { classes: ["S"], lead: true, joint: null }))).toContain("gate-root: S on a row the spec does not name");
     });
     it("refuses an S row that is neither LEAD nor joint", () => {
       expect(refusals(retarget("sk-slots", { classes: ["S"], lead: false, joint: null }))).toContain("sk-slots: S row neither LEAD nor joint");
     });
     it("refuses a hot row that falls to F", () => {
-      expect(refusals(retarget("anchors", { classes: ["F"], lead: false, joint: null }))).toContain("anchors: hot row without a D part");
+      expect(refusals(retarget("anchors", { classes: ["F"], lead: false, joint: null }))).toContain("anchors: face-hot row without a D part");
     });
     it("refuses a table missing a spec row and one adding a row", () => {
       expect(refusals(table.filter((r) => r.row !== "device-share"))).toContain("device-share: spec row missing from the table");

@@ -159,7 +159,6 @@ import { waitHandle, resolveBootDoc } from "./repo-helpers.js";
 import { makeChildProcessDocLoadProbe, quarantineDoc, recoverCleanTail } from "./doc-load-probe.js";
 import { listAnchoredPersonas, loadIdentityAnchors, loadIdentityArchive, loadVeilArchive, persistIdentityArchive, persistVeilArchive } from "./identity-anchors.js";
 import { openOutboxKey } from "./outbox-key.js";
-import { custodyHeld } from "./custody-seat.js";
 import { sweepFoundingSeeds } from "./face-atom-store.js";
 import { readWornPersonaMount } from "./worn-mount.js";
 import { openDaemonVm }                    from "./open-daemon-vm.js";
@@ -180,14 +179,14 @@ import {
   makeVesselResidency, type VesselResidency,
   replayPinsFromDaemonDoc,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
-import { loadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootVerifyingKey, listPersonaRoots } from "./node-vessel-identity.js";
+import { loadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootVerifyingKey, listPersonaRoots, sovereignStands } from "./node-vessel-identity.js";
 import { socketsNoLongerHeld, ownPlacePosture, sameOperatorStands, seatedDeviceKey, type PlaceClass, type SeatedPresenter } from "./socket-sorter.js";
 import { faceGateServer, gateSessionRegistry, timerGateDeadlines } from "./face-gate-server.js";
 import { gateSyncServer, type GateSyncSocket }    from "./gate-sync-server.js";
 import { vesselAdmitReader, vesselGate, type VesselGateDeps } from "./vessel-gates.js";
 import { gateShadowRing, type FaceDeviceReading } from "./gate-shadow-ring.js";
 import { faceDeviceBook }                        from "./face-device-book.js";
-import { faceFleetViews, foreignFaceDocs }          from "./face-fleet-view.js";
+import { faceFleetViews, bridgeBooks }                from "./face-fleet-view.js";
 import { heldRootHoldings }                      from "./face-root-holdings.js";
 import { gateGrantRing }                         from "./gate-rings.js";
 import { readFaceJoinRecord }                    from "./fleet-join-custody.js";
@@ -411,7 +410,7 @@ export interface SovereignReaders {
   /** Seal one face's veil archive at rest. */
   readonly writeVeilArchive: (bytes: Uint8Array, personaGroup: string) => Promise<void>;
   /** The vessel's outbox key, minted into its hot row on the first ask and opened on every later one (`outbox-key`). */
-  readonly outboxKey: () => Promise<Uint8Array>;
+  readonly outboxKey: (face: number) => Promise<Uint8Array>;
 }
 
 /** The sovereign rows, read and written through the custody seated in this process (`custody-seat`). */
@@ -646,15 +645,25 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   }
 }
 
+/**
+ * The founding-seed sweep runs under the sovereign gate only: a composition at the floor sweeps nothing, since the sweep reads and
+ * moves private rows. One door for the boot's call, so a witness drives the gate's caller without a vessel boot.
+ */
+export async function sweepUnderTheGate(sovereignOpen: boolean, sweep: () => Promise<void>): Promise<void> {
+  if (sovereignOpen) await sweep();
+}
+
 async function prepareNodeBootOn(
   opts: NodeVesselOptions, placeClass: PlaceClass, floor: NodeFloor, stood: Stood, teardown: () => Promise<void>,
 ): Promise<NodeBootPrep> {
   const { wikiId, storageDir, wss, catalogUrl, onPhase, genesisDir, rootDir: rootDirOpt } = opts;
-  if (custodyHeld()) await sweepFoundingSeeds();
+  // THE GATE: sovereign only when the node key stands held AND the worn face stands unlocked; otherwise the floor composes.
+  const sovereignOpen = sovereignStands();
+  await sweepUnderTheGate(sovereignOpen, sweepFoundingSeeds);
   // ONE READING OF WHAT THIS COMPOSITION MAY OPEN. Handed readers, it reads the private rows through them; handed
   // `null`, it stands at the floor and reads none. Left to itself it reads the seated custody's rows when this
   // process holds its vessel key, and stands at the floor when it holds none.
-  const sovereign = opts.sovereign !== undefined ? opts.sovereign : (custodyHeld() ? seatedSovereignReaders() : null);
+  const sovereign = opts.sovereign !== undefined ? opts.sovereign : (sovereignOpen ? seatedSovereignReaders() : null);
   // THE CORPUS ROOT every disk projection mirrors under: the one named, else `LAR_ROOT`, else the repo. A boot
   // isolated under `LAR_ROOT` projects into that root, never into the tracked tree; with neither, a fresh clone
   // boots repo-relative as it always has.
@@ -751,7 +760,7 @@ async function prepareNodeBootOn(
   // The worn face also reads this vessel's wikis, catalog and bags (the bridge until O1, `face-fleet-view`).
   let catalogForViews: (() => LarDoc | undefined) | null = null;
   const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,
-    () => (custodyGroup && catalogForViews ? foreignFaceDocs(catalogForViews(), custodyGroup) : new Set<string>()));
+    () => (catalogForViews ? bridgeBooks(catalogForViews()) : new Set<string>()));
   stood.push({ what: "the face views", down: () => faceViews.close() });
   // THIS HEARTH'S OWN HOSTING DOCS — one per Nexus it carries, under its own gate key. A contracted peer (a carrier
   // of that Nexus) replicates them for the cross-check every walker's fork reading rests on. Filled once the vessel
@@ -1306,6 +1315,9 @@ async function prepareNodeBootOn(
     return activeAtom.key;
   } });
   deviceOfPresenter = (seat) => deviceBook.deviceOfSeat(seat);
+  // THE GATE'S FACE: the face whose gate this composition stands (the mount's own, else the founding face). Its withdrawal memory
+  // rests in that face's subtree under its key, and no other face's gate reads it.
+  const gateFace = wornMount?.handleIndex ?? 0;
   const gateDeps: VesselGateDeps = {
     readings: readEveryCarried,
     posture:  postureOf,
@@ -1319,7 +1331,7 @@ async function prepareNodeBootOn(
       },
     }),
     withdrawals: sovereign
-      ? storedWithdrawals(gateMemoryRows(), { onTorn: (name) => console.warn(`[lar-gate] a gate memory row reads torn (${name.slice(0, 12)}…); a hand repairs or removes it`) })
+      ? storedWithdrawals(gateMemoryRows(gateFace), { onTorn: (name) => console.warn(`[lar-gate] a gate memory row reads torn (${name.slice(0, 12)}…); a hand repairs or removes it`) })
       : memoryBackedWithdrawals(),
     deadlines: timerGateDeadlines(),
     audience:  DAEMON_BAG_ID,
@@ -2242,7 +2254,7 @@ async function prepareNodeBootOn(
     // A row that stands and opens to no outbox key stops no boot: the island stands with its outbox shut, each parcel
     // verb refuses `outbox-shut`, and `lares vault status` names the row.
     const outboxKey = sovereign
-      ? await sovereign.outboxKey().catch((err: unknown) => {
+      ? await sovereign.outboxKey(mountedFace).catch((err: unknown) => {
         console.log(`[outbox] the outbox key's row opens to no key (${err instanceof Error ? err.message : String(err)}) — the daemon island stands with its outbox shut`);
         return null;
       })
@@ -2255,6 +2267,16 @@ async function prepareNodeBootOn(
         ? sovereign.writeArchive(bytes)
         : personaGroupId ? sovereign.writeVeilArchive(bytes, personaGroupId) : Promise.reject(new Error("the mounted face names no PersonaGroup")));
       stood.push({ what: "the custody write door", down: () => setCustodyWriteDoor(null) });
+    }
+    // THE ANCHOR THE DAEMON STANDS ON ALREADY CARRIES THE VERIFIED LEASE: this runs before `daemonAuth` snapshots `standingAnchor`, so the
+    // daemon's live join and grant reads floor under the anchor this boot raised, never an older copy (read 6, opening row 2).
+    // The sealed frontier rises only on a VERIFIED observation (`lease-observation`): a signed advance from a key the KEL
+    // lineage seats. An unsigned slot on the mirrored daemon doc raises nothing, so a forged high slot cannot ratchet custody.
+    if (faceAnchor && personaGroupId && personaKelChain) {
+      const prefix = leaseEpochPrefix(personaGroupId);
+      const slots = Object.entries(daemonDoc?.tiddlers ?? {}).filter(([t]) => t.startsWith(prefix)).map(([, r]) => tiddlerText(r));
+      const raised = raiseAnchorFromSlots(standingAnchor!, slots, personaKelChain);
+      if (raised !== standingAnchor) { await keepFaceAnchorOfGroup(raised); standingAnchor = raised; }
     }
     const faceLit = activeAtom !== null && atomSeed !== null;
     const daemonAuth = {
@@ -2337,20 +2359,11 @@ async function prepareNodeBootOn(
       rootDir: corpusRoot,
       guardCrossroadsNexusHandles: nexusStanding.kind !== "charter",
     });
-    // The sealed frontier rises only on a VERIFIED observation (`lease-observation`): a signed advance from a key the KEL
-    // lineage seats. An unsigned slot on the mirrored daemon doc raises nothing, so a forged high slot cannot ratchet custody.
-    if (faceAnchor && personaGroupId && personaKelChain) {
-      const prefix = leaseEpochPrefix(personaGroupId);
-      const slots = Object.entries(daemonDoc?.tiddlers ?? {}).filter(([t]) => t.startsWith(prefix)).map(([, r]) => tiddlerText(r));
-      const raised = raiseAnchorFromSlots(standingAnchor!, slots, personaKelChain);
-      if (raised !== standingAnchor) { await keepFaceAnchorOfGroup(raised); standingAnchor = raised; }
-    }
-
     // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ───────────────
     // A cross-operator peer holding a VERIFIED face-join grant on THIS face's plane reaches the face's own
     // planes — and nothing else. The ring WIDENS the self-slot fed gate by that ONE path (`compose` ORs it
     // atop the deterministic federatable set), so a stranger, and every private plane, read exactly as
-    // before. The grant read reuses the plane the joinee's own `takeFaceGrantIfPublished` reads, bound to
+    // before. The grant read reuses the plane the joinee's own seat act reads, bound to
     // the ONE `verifyFaceGrantRecord`. NO CLOCK RIDES IN: admission licenses off the persona-KEL HEAD alone
     // (event order), so absent a resolved KEL chain the ring stays UNWIRED — the pre-ring verdict stands
     // rather than a widening the vessel cannot walk clocklessly.

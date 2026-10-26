@@ -17,7 +17,8 @@
 //   rc 2  the root carries no marker · bad usage
 //   rc 3  no daemon answers at the root's rendezvous name
 import { createConnection } from "node:net";
-import { resolve } from "node:path";
+import { existsSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { hasMarker, MARKER_NAME } from "./test-scratch-marker.mjs";
 import { TEST_PASSPHRASE } from "./test-custody-route.mjs";
@@ -62,12 +63,14 @@ export async function sendCustodyFrame(root, frame) {
 }
 
 /** The door's whole act, exported so a harness drives it in-process: refuses an unmarked root before any socket opens. */
-export async function unlockTestCustody(root, act = "unlock") {
+export async function unlockTestCustody(root, act = "unlock", face = undefined) {
   const dir = resolve(root);
+  // A staged vessel wears its founding face, h0, for the life of the unlock when it holds one: the unlock NAMES the worn face.
+  if (face === undefined && existsSync(join(dir, "data", "lares", "identity", "face-index.json"))) face = 0;
   refuseUnmarked(dir);
   const frame = act === "lock" ? { op: "lock" }
     : act === "status" ? { op: "custody" }
-    : { op: "unlock", credentials: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }] };
+    : { op: "unlock", credentials: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }], all: true, ...(face !== undefined ? { face } : {}) };
   return await sendCustodyFrame(dir, frame);
 }
 

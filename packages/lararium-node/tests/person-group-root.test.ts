@@ -17,13 +17,14 @@ import {
   loadPersonaGroupRootSeed,
   generateOrLoadVesselIdentity,
 } from "../src/node-vessel-identity.js";
+import { faceRowNames } from "./face-paths.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
 
 const freshDataDir = (): string => join(mkdtempSync(join(tmpdir(), "lares-pgroot-")), ".lararium");
 /** The identity dir answers to `larIdentityDir()` — `<state>/identity`, beside the wiped `<lares>/vessel`. */
 const idDirOf = (_dataDir: string): string => larIdentityDir();
 const find = (idDir: string, prefix: string): string | undefined =>
-  readdirSync(idDir).find((f) => f.startsWith(prefix));
+  faceRowNames().find((f) => f.startsWith(prefix));
 
 describe("PersonaGroup-root custody (operator-root capability)", () => {
   // `LAR_ROOT` reroots every lares home, so a mint here never reads or writes the operator's OWN root

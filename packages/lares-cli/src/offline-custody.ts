@@ -56,7 +56,6 @@ function refusal(reading: string): OfflineCustodyRefused {
     case "tree-absent":     return new OfflineCustodyRefused("no custody stands at this root (a founding seals custody from birth: `lares vessel found`).");
     case "attempts-spent":  return new OfflineCustodyRefused("three routes failed in this run; run the command again.");
     case "root-unopenable": return new OfflineCustodyRefused("the vessel key opened and the custody root did not; recover the custody root from a backup.");
-    case "serving-unopenable": return new OfflineCustodyRefused("the vessel key opened and the serving tree's key did not; a vessel whose serving tree stands torn or apart from its key re-founds.");
     default:                return new OfflineCustodyRefused(`the slot tree reads ${reading}.`);
   }
 }
@@ -79,8 +78,9 @@ export async function openOfflineCustody(holder: CustodyHolder): Promise<void> {
   }
   if (testScratchRoot()) {
     process.stderr.write("[custody] TEST SCRATCH ROOT: opening the vessel key under the published test route\n");
-    const u = await holder.unlock([{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }]);
-    if (u.reading === "opens" || u.reading === "already-unlocked") return;
+    const route = [{ kind: "passphrase" as const, passphrase: TEST_ROUTE_PASSPHRASE }];
+    const u = await holder.unlock(route);
+    if (u.reading === "opens" || u.reading === "already-unlocked") { await holder.unlockFaces(route); return; }
     throw u.reading === "no-slot-opens"
       ? new OfflineCustodyRefused("this staged root's custody answers no test route; it was bound to another.")
       : refusal(u.reading);
@@ -93,8 +93,10 @@ export async function openOfflineCustody(holder: CustodyHolder): Promise<void> {
   }
   process.stdout.write("This command opens rows sealed under the vessel key.\n");
   for (;;) {
-    const u = await holder.unlock(await gatherCredentials("this command"));
-    if (u.reading === "opens" || u.reading === "already-unlocked") return;
+    const typed = await gatherCredentials("this command");
+    const u = await holder.unlock(typed);
+    // The typed credential tries every face tree too (`--all`): a face it does not fit stays shut and costs nothing.
+    if (u.reading === "opens" || u.reading === "already-unlocked") { await holder.unlockFaces(typed); return; }
     if (u.reading !== "no-slot-opens") throw refusal(u.reading);
     if (u.attemptsLeft <= 0) throw refusal("attempts-spent");
     process.stdout.write(`  no slot opens under that route; ${u.attemptsLeft} attempt(s) left.\n`);

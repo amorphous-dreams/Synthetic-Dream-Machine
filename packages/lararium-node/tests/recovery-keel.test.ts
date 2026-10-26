@@ -78,13 +78,13 @@ describe("recovery-keel — found → device drowns → recover → re-admit", (
 
     // DEVICE DROWNS: the device-share is gone. Recovery rides the two SURVIVING custodians.
     const surviving = [founding.recordedCodeShare, founding.escrowShare];
-    const freshVK = freshDeviceKey();
-    const payload = await reconstructAndReadmit(surviving, readmitFields(freshVK));
+    const freshTreeKey = freshDeviceKey();
+    const payload = await reconstructAndReadmit(surviving, readmitFields(freshTreeKey));
 
     // The re-admit edge verifies against the ORIGINAL root — the Handle's pinned signer is unchanged.
     const rootDid = `0x${Buffer.from(await ed25519.getPublicKeyAsync(ROOT)).toString("hex")}`;
     expect(payload.signerDid).toBe(rootDid);
-    expect(payload.deviceEdge.deviceVerifyingKey).toBe(freshVK);
+    expect(payload.deviceEdge.deviceVerifyingKey).toBe(freshTreeKey);
     expect((await verifyDeviceDelegation(await complete(payload.deviceEdge), rootDid)).ok).toBe(true);
   });
 
@@ -210,13 +210,13 @@ describe("recovery-keel — identity recovery issues the SHARED guardian cards (
     expect((await loadRecoveryDeviceShare())?.custodian).toBe("device");
     const guardianCards = cards.filter((c) => c.slot !== "mine");
     const quorum = guardianCards.map((c) => guardianShareFromCard(c, 1));
-    const freshVK = freshDeviceKey();
-    const payload = await reconstructAndReadmit(quorum, readmitFields(freshVK));
+    const freshTreeKey = freshDeviceKey();
+    const payload = await reconstructAndReadmit(quorum, readmitFields(freshTreeKey));
 
     // The re-admit edge verifies against the ORIGINAL minted root — reconstruct-to-readmit, unchanged.
     const rootDid = `0x${Buffer.from(await ed25519.getPublicKeyAsync(await loadPersonaGroupRootSeed())).toString("hex")}`;
     expect(payload.signerDid).toBe(rootDid);
-    expect(payload.deviceEdge.deviceVerifyingKey).toBe(freshVK);
+    expect(payload.deviceEdge.deviceVerifyingKey).toBe(freshTreeKey);
     expect((await verifyDeviceDelegation(await complete(payload.deviceEdge), rootDid)).ok).toBe(true);
   });
 

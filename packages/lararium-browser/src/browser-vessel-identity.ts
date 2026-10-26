@@ -48,10 +48,9 @@ export function browserIdentityContinuityKey(idbName: string): string {
   return `${IDENTITY_CONTINUITY_PREFIX}${idbName}`;
 }
 
-// The keystore holds device and persona secrets; bootstrap holds the founding floor.
-// A schema upgrade drops clear secret stores without carrying their records.
+// The keystore holds device and persona secrets; bootstrap holds the founding floor. The worn face is session state of one tab
+// and rests in no store.
 const IDB_VERSION       = 11;
-const ACTIVE_PERSONA_STORE = "active-persona";    // the worn-mask pointer (one handle-index)
 const ANCHORS_STORE        = "anchors";           // per-index veiled-Handle anchors (public doc-ids)
 const ANCHOR_ROSTER_STORE  = "anchor-roster";     // the EXPLICIT anchored-index record
 // The two-layer pet-names (#64 stage 4): the PRIVATE own-persona label map (fleet-only; never PUBLICLY
@@ -69,7 +68,6 @@ export const SEED_WRAP_STORE        = "seed-wrap";           // handleIndex → 
 // The fleet-join store carries signed public material for each joined face.
 export const FLEET_JOIN_STORE       = "fleet-join";          // `record:${group}` · `dial:${group}`
 const ROSTER_RECORD        = "roster";            // the anchor roster key
-const ACTIVE_RECORD        = "active";            // the single key the selector writes under
 
 /** A per-handle-index key shared by persona rows and their adjacent stores. */
 function personaRootKey(handleIndex: number): string { return `h${handleIndex}`; }
@@ -93,12 +91,8 @@ export function openVesselIdb(idbName: string): Promise<IDBDatabase> {
     const req = indexedDB.open(idbName, IDB_VERSION);
     req.onupgradeneeded = (e) => {
       const db = (e.target as IDBOpenDBRequest).result;
-      // Keep custody and social rows while removing stores outside the custody door.
       if (!db.objectStoreNames.contains("keystore"))         db.createObjectStore("keystore");
       if (!db.objectStoreNames.contains("bootstrap"))        db.createObjectStore("bootstrap");
-      if (db.objectStoreNames.contains("persona-roots")) db.deleteObjectStore("persona-roots");
-      if (db.objectStoreNames.contains("persona-roster")) db.deleteObjectStore("persona-roster");
-      if (!db.objectStoreNames.contains(ACTIVE_PERSONA_STORE)) db.createObjectStore(ACTIVE_PERSONA_STORE);
       if (!db.objectStoreNames.contains(ANCHORS_STORE))        db.createObjectStore(ANCHORS_STORE);
       if (!db.objectStoreNames.contains(ANCHOR_ROSTER_STORE))  db.createObjectStore(ANCHOR_ROSTER_STORE);
       // v3 additive: the two-layer pet-name stores. A v2 DB gains them empty; no persona names until the
@@ -112,23 +106,8 @@ export function openVesselIdb(idbName: string): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(HANDLE_BOOK_STORE))      db.createObjectStore(HANDLE_BOOK_STORE);
       // The optional seed-wrap store stays distinct from the custody row.
       if (!db.objectStoreNames.contains(SEED_WRAP_STORE))        db.createObjectStore(SEED_WRAP_STORE);
-      // A leaf re-founds after clear secret stores leave the schema; no clear secret carries into custody.
-      for (const secretStore of ["hosting-walk", "nexus-keys", "vessel-face-keys"]) {
-        if (db.objectStoreNames.contains(secretStore)) db.deleteObjectStore(secretStore);
-      }
-      if (db.objectStoreNames.contains("boot-invite-burned"))    db.deleteObjectStore("boot-invite-burned");
       // The public fleet rows stand beside the custody tree.
       if (!db.objectStoreNames.contains(FLEET_JOIN_STORE))       db.createObjectStore(FLEET_JOIN_STORE);
-      else {
-        const rows = (e.target as IDBOpenDBRequest).transaction!.objectStore(FLEET_JOIN_STORE);
-        const cursor = rows.openCursor();
-        cursor.onsuccess = () => {
-          const at = cursor.result;
-          if (!at) return;
-          if (at.key === "pending" || String(at.key).startsWith("secret:")) at.delete();
-          at.continue();
-        };
-      }
     };
     req.onsuccess = () => {
       // A newer version opening in another tab closes this connection, so that open never waits on this one.
@@ -343,23 +322,22 @@ async function recordPersonaRoot(idbName: string, handleIndex: number): Promise<
   await writeKeystoreRow(idbName, "persona-root-roster", { roots: [...roots].sort((a, b) => a - b) });
 }
 
-/** The IDB ActivePersonaStore — one worn-mask pointer (never a root). No inference from an empty home:
- *  an unset selector reads undefined (the caller decides any default). */
-function idbActivePersonaStore(idbName: string): ActivePersonaStore {
+/**
+ * The worn face is SESSION state of this tab: it rests in no store, so a reload asks the unlock again and a second tab wears its own
+ * face. With no choice made and exactly one persona root held, that one root is the face worn. No inference past that one.
+ */
+const wornInTab = new Map<string, number>();
+export function forgetWornFaceOfTab(idbName: string): void { wornInTab.delete(idbName); }
+
+function tabActivePersonaStore(idbName: string): ActivePersonaStore {
   return {
     async load() {
-      const db = await openVesselIdb(idbName);
-      const raw = await idbGet<{ handleIndex?: unknown }>(db, ACTIVE_PERSONA_STORE, ACTIVE_RECORD);
-      db.close();
-      return Number.isSafeInteger(raw?.handleIndex) && (raw!.handleIndex as number) >= 0
-        ? (raw!.handleIndex as number)
-        : undefined;
+      const chosen = wornInTab.get(idbName);
+      if (chosen !== undefined) return chosen;
+      const roots = await readPersonaRoster(idbName);
+      return roots.length === 1 ? roots[0] : undefined;
     },
-    async save(handleIndex) {
-      const db = await openVesselIdb(idbName);
-      await idbPut(db, ACTIVE_PERSONA_STORE, ACTIVE_RECORD, { handleIndex });
-      db.close();
-    },
+    async save(handleIndex) { wornInTab.set(idbName, handleIndex); },
   };
 }
 
@@ -429,7 +407,7 @@ export async function makeBrowserIdbPersonaVault(idbName = "lares:vessel"): Prom
     },
     listRoots: () => readPersonaRoster(idbName),
     async hasRoot(handleIndex) { return (await readPersonaRoster(idbName)).includes(handleIndex); },
-    selector: idbActivePersonaStore(idbName),
+    selector: tabActivePersonaStore(idbName),
     anchors,
     // SURFACED (identity/security fork, resolved toward null): a device
     // recovery-share is share material of the root; sealing it needs the WebCrypto seal leg (the browser
