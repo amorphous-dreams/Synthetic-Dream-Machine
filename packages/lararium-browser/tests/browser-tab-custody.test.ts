@@ -1,6 +1,7 @@
 /**
  * browser-tab-custody — an unlock belongs to ONE tab, and no key rests where another tab or the shared holder can read it.
  *
+ *   The fixture's `ask` refuses when the tab worker faults (KNOWN POSITIVE: a planted worker that throws at load).
  *   TC1  RED: a face unlocked in one tab reads LOCKED in a second tab of the same origin (a second realm over the same
  *        IndexedDB); the second tab's sealed-row read refuses `sealed-locked`.
  *        CONTROL: the first tab still reads unlocked, and the second tab's own unlock opens its own session.
@@ -27,9 +28,15 @@ const hex = (b: Uint8Array): string => Array.from(b, (x) => x.toString(16).padSt
 const PASS = { kind: "passphrase", passphrase: "the hearth keeps its fire" } as const;
 
 function tab(): Worker { return new Worker(new URL("./fixtures/custody-tab.worker.ts", import.meta.url), { type: "module" }); }
+/** A worker that dies at load or posts an unreadable reply refuses by name; listening for `message` alone left it a silent hang. */
 function ask<T>(worker: Worker, msg: Record<string, unknown>): Promise<T> {
   return new Promise((resolve, reject) => {
-    worker.addEventListener("message", (e) => (e.data?.error ? reject(new Error(e.data.error)) : resolve(e.data as T)), { once: true });
+    const settle = (): void => { worker.removeEventListener("message", onMessage); worker.removeEventListener("error", onError); worker.removeEventListener("messageerror", onError); };
+    const onMessage = (e: MessageEvent): void => { settle(); if (e.data?.error) reject(new Error(`${String(msg.op)}: ${e.data.error}`)); else resolve(e.data as T); };
+    const onError = (e: Event): void => { settle(); reject(new Error(`${String(msg.op)}: the tab worker faulted (${(e as ErrorEvent).message ?? e.type})`)); };
+    worker.addEventListener("message", onMessage);
+    worker.addEventListener("error", onError);
+    worker.addEventListener("messageerror", onError);
     worker.postMessage(msg);
   });
 }
@@ -42,6 +49,12 @@ async function sealedVessel(tag: string): Promise<string> {
 }
 
 describe("an unlock belongs to one tab", () => {
+  test("KNOWN POSITIVE: a tab worker that faults at load refuses its ask by name, never hangs", async () => {
+    const dead = new Worker(new URL("./fixtures/faulting-tab.worker.ts", import.meta.url), { type: "module" });
+    try { await expect(ask(dead, { op: "status", idbName: "unused" })).rejects.toThrow(/status: the tab worker faulted/); }
+    finally { dead.terminate(); }
+  }, SLOW);
+
   test("TC1 a face unlocked in one tab reads locked in a second tab of the same origin — CONTROL: the first tab holds it, the second unlocks on its own", async () => {
     const idbName = await sealedVessel("two-tabs");
     const second = tab();
