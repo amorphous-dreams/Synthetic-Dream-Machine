@@ -34,3 +34,7 @@ While a run is active, the existing ooda-ha-steer CLI and opt-in --llm-provider 
 An adviser record is explicitly advisory-only; an Operator selection is separately attributed. No new pet-name or promotion follows from an adviser record. Both choices remain bound to exact reviewed receipts.
 
 All reference images remain provisional artwork evidence, other orthographic views are synthetic inspection, and neither implies surveyed truth. Never compare this experiment's scores directly to the frozen six-generation pilot.
+
+## Native six-view gallery
+
+Once a bounded OODA-HA run has completed, `python -m projection_loom review-orthos --project ... --capability-recipe ... --out <run> --gallery <new-empty-folder> --seats 3` re-grows the archived native finalists and verifies all original mask and camera digests before producing shaded/line and silhouette boards. This is read-only presentation, not a new scorer or winner. See [Loom Field Guide](GUIDEBOOK.md) for the image-seed interpretation and architectural expansion hypotheses.

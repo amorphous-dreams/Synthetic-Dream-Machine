@@ -46,5 +46,13 @@ Do not rewrite the frozen historical six-generation pilot or retroactively
 relabel the already completed fresh lineages. New runs receive the new source
 contract, and old archived outputs retain their original experimental identity.
 
+The original two-channel seed can provide future source-region cues to
+additional architectural capability operators. Their inferred painterly
+edges, perspective and material zones must be explicitly attributed,
+conditioned on the one seed identity, reversible by same-genome ablation
+and measured separately from native structural CAD. See
+[Experiment Zero Field Guide](GUIDEBOOK.md) for proposed grammar and
+image-space freedoms. No structural reconstruction from RGB is implied.
+
 The full source-bound, native proof runs in
 `.github/workflows/necrospire-source-seed.yml`.
