@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { createPortLog, echoBeforeWritten, transactionDigest, validateTx, type PortRecord } from "../src/record-port-log.js";
+import { createPortLog, createTxLedger, echoBeforeWritten, transactionDigest, validateTx, type PortRecord } from "../src/record-port-log.js";
 import { shapeId } from "../src/record-port-projection.js";
 
 const shape = { width: "full" as const, localFilter: ["local"], fields: ["text", "tags"] };
@@ -7,6 +7,14 @@ const otherShape = { ...shape, width: "skinny" as const };
 const record = (title: string, text = title): PortRecord => ({ title, fields: { text } });
 
 describe("record port log", () => {
+  test("in-flight-window-full reads 128 genuinely unanswered writes; CONTROL: an answered slot admits the next", () => {
+    const ledger = createTxLedger();
+    for (let index = 0; index < 128; index++) ledger.begin(`held-${index}`, ["bag"], `digest-${index}`);
+    expect(() => ledger.begin("overflow", ["bag"], "digest-overflow")).toThrow("in-flight-window-full");
+    ledger.recordApplied("held-0", "bag");
+    ledger.answer("held-0");
+    expect(ledger.begin("overflow", ["bag"], "digest-overflow").pending).toEqual(["bag"]);
+  });
   test("txid-payload-mismatch binds ordered canonical payload; CONTROL: reordered field keys resume", () => {
     const ledger = createPortLog({ bootNonce: "boot", lagByteBudget: 1000 }).ledger;
     const original = transactionDigest([

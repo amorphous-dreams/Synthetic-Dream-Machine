@@ -282,14 +282,13 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
   };
   const write = async (msg: PortMsg_Write, ctx: IslandContext, port: OpenPort): Promise<void> => {
     const answer = (status: "applied" | "partial" | "refused", applied: string[], failed: string[], reason?: string) => {
-      if (!faceHolds(port)) return;
       const wire = mkPortWritten({ portId: msg.portId, txId: msg.txId, status, applied, failed,
         ...(reason ? { reason } : {}), cursor: log.cursorOf(port.shape, log.headSeq) });
       if (status !== "refused") {
         port.written.set(msg.txId, wire);
         if (port.written.size > 1024) port.written.delete(port.written.keys().next().value!);
       }
-      ctx.post(wire);
+      if (faceHolds(port)) ctx.post(wire);
     };
     if (port.closed) return;
     if (port.faceId !== undefined && readFace(msg.portId) !== port.faceId) {
@@ -346,7 +345,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       }
       const failed: string[] = [];
       for (const family of begun.pending) {
-        if (!faceHolds(port)) { if (port.ledger.discard(msg.txId)) port.actorState.unanswered.delete(msg.txId); return; }
+        if (!faceHolds(port)) { failed.push(...begun.pending.slice(begun.pending.indexOf(family))); break; }
         const members = msg.records.filter(record => (record.bag ?? "(default)") === family);
         const puts = members.filter(record => !record.tombstone).map(record => ({ tiddler: { ...record.fields, title: record.title } }));
         const tombstones = members.filter(record => record.tombstone).map(record => record.title);
@@ -358,14 +357,12 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
             { kind: "tw-local", instanceId: token },
             family === "(default)" ? undefined : { bag: family });
           port.ledger.recordApplied(msg.txId, family);
-          if (!faceHolds(port)) return;
         } catch { failed.push(...begun.pending.slice(begun.pending.indexOf(family))); break; }
         finally {
           tokens.delete(token);
           flush(ctx);
         }
       }
-      if (!faceHolds(port)) return;
       const result = port.ledger.answer(msg.txId, failed);
       if (result.status === "applied") port.actorState.unanswered.delete(msg.txId);
       flush(ctx);
