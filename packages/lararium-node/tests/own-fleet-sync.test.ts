@@ -106,7 +106,7 @@ async function standHearth(founder: { w: World; p: Presenter }, joinee: Presente
   const sib = personaSiblingBagIds(personaBagIdFor(GROUP));
   const bootstrap: Record<string, { text?: string }> = {
     [DAEMON_BAG_ID]: { text: generateAutomergeUrl() }, [PERSONA_GROUP_ID_TIDDLER]: { text: GROUP },
-    [sib.identities]: { text: generateAutomergeUrl() }, [sib.circles]: { text: generateAutomergeUrl() }, [sib.sessions]: { text: generateAutomergeUrl() },
+    [sib.identities]: { text: generateAutomergeUrl() }, [sib.circles]: { text: generateAutomergeUrl() }, [sib.sessions]: { text: generateAutomergeUrl() }, [sib.intents]: { text: generateAutomergeUrl() },
   };
   for (const e of personaMembershipEntries({ personaGroupId: GROUP, url: planeHandle.url })) bootstrap[e.title] = { text: e.text ?? undefined };
   for (const e of personaMembershipEntries({ personaGroupId: GROUP_B, url: planeB.url })) bootstrap[e.title] = { text: e.text ?? undefined };

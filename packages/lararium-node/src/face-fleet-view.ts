@@ -10,7 +10,7 @@
  *   · THE FACE comes from the gate alone: the PersonaGroup grant its ring answered for the session (`GateSession.face`).
  *     A session that carries none reads no face document here.
  *   · THE FACETS come from this vessel's bootstrap alone (`boot-face-planes`), for that PersonaGroup: its plane and
- *     the three planes that travel with it (identities, circles, sessions), each in the `plane` layer, and the
+ *     the four planes that travel with it (identities, circles, sessions, intents), each in the `plane` layer, and the
  *     vessel's daemon doc, the door the face's joined vessel reads its cap events through. A PersonaGroup this
  *     vessel carries no plane for has no facets: its session reads no face document.
  *   · THE VIEW is the mesh's own (`SessionDocumentView`), opened once per session under the `face` profile, and its
@@ -48,6 +48,7 @@ export function faceFleetFacets(bootstrapTiddlers: BootTiddlers, personaGroup: s
   add("identities", planes.identitiesUrl);
   add("circles", planes.circlesUrl);
   add("sessions", planes.sessionsUrl);
+  add("intents", planes.intentsUrl);
   add("daemon", bootDaemonUrl(bootstrapTiddlers));
   return { documents, content: [] };
 }
@@ -57,7 +58,7 @@ export function faceFleetFacets(bootstrapTiddlers: BootTiddlers, personaGroup: s
  * title that is NOT a face-scoped bag id: the vessel's books (a wiki, a draft, the catalog, the oracle) and the pointers its planes
  * stand on (a realm's doc, its steward, its standing), as document IDs. An ALLOW-LIST: a document the catalog does not point at
  * reads nothing across the bridge, so a foreign face's plane whose catalog row is absent, withheld or face-scoped is shut out by
- * default and never let in by an omission. The worn face's own four planes ride its view.
+ * default and never let in by an omission. The worn face's own five planes ride its view.
  */
 export function bridgeBooks(catalog: LarDoc | undefined | null): ReadonlySet<string> {
   const out = new Set<string>();

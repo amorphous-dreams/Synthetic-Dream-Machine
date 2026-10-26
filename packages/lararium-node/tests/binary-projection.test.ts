@@ -18,7 +18,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { SyncedTree, syncedTreeKey } from "../src/index.js";
-import { carrierHash } from "@lararium/mesh";
+import { carrierHash, personaScopedBagIds, wikiBagUri } from "@lararium/mesh";
 
 const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0xff, 0x00, 0xfe, 0x01]);
 const CID = createHash("sha256").update(PNG).digest("hex");
@@ -29,6 +29,19 @@ let root = "";
 afterEach(() => { if (root) { rmSync(root, { recursive: true, force: true }); root = ""; } });
 
 describe("binary projection — base64 body decodes to raw bytes on disk", () => {
+  test("RED: a face's intents mirror writes no file; CONTROL: a projected wiki in the same projector writes one", async () => {
+    root = mkdtempSync(join(tmpdir(), "lar-face-mirror-"));
+    const intents = personaScopedBagIds("founded-face").intents;
+    const wiki = wikiBagUri("garden");
+    const projector = new LarDiskProjector({
+      mirrors: [{ bagId: intents, mirrorRoot: join(root, "intents") }, { bagId: wiki, mirrorRoot: join(root, "wiki") }],
+      carrierFileFn: async () => ({ ext: ".tid", body: "title: record\n\nwritten", defaultRelPath: "record.tid" }),
+    });
+    await flushOf(projector)(intents, "record");
+    await flushOf(projector)(wiki, "record");
+    expect(existsSync(join(root, "intents", "record.tid"))).toBe(false);
+    expect(existsSync(join(root, "wiki", "record.tid"))).toBe(true);
+  });
   test("a base64 carrier writes the decoded image bytes + a .meta sidecar", async () => {
     root = mkdtempSync(join(tmpdir(), "lar-binproj-"));
     // A tiny PNG-ish byte sequence (a real signature + noise) — the point is that

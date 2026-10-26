@@ -84,11 +84,11 @@ describe("a faceless place stands", () => {
     }
   });
 
-  test("V2b — face-join stays unregistered: a floor seats nobody, and no message changes that", () => {
-    // Distinct from the read verbs above. `circle-list` refuses an act this vessel could perform once
-    // lifted; `face-join` would seat another device into a group that does not exist, so it holds no
-    // lifted form to describe and stands as an unknown verb rather than a refusal that implies one.
+  test("V2b — face-join registers on no daemon verb table: a floor seats nobody, and a worn face answers only through its intent door", () => {
+    // `face-join` rides the face's intent plane as a pinned single-effect intent; a daemon-doc summons naming it finds
+    // no handler on a floor or on a worn face, so no message on the daemon doc moves a seat.
     expect(wire(false)).not.toContain("face-join");
+    expect(wire(true)).not.toContain("face-join");
   });
 
   test("V3 — the place-scoped verbs register anyway; carrying and serving is what it is for", () => {
@@ -98,7 +98,7 @@ describe("a faceless place stands", () => {
 
   test("V4 — with a face, the face verbs return", () => {
     const names = wire(true);
-    for (const v of ["circle-add", "circle-remove", "circle-list", "face-join"]) {
+    for (const v of ["circle-add", "circle-remove", "circle-list"]) {
       expect(names).toContain(v);
     }
   });

@@ -116,14 +116,14 @@ function placeTiddlers(daemonUrl: string): PackedTiddlers {
 }
 
 /**
- * A FACE'S REGISTER-MANY PLANE ENTRY — the four social planes, all named off the one tag this PersonaGroup's
+ * A FACE'S REGISTER-MANY PLANE ENTRY — the five social planes, all named off the one tag this PersonaGroup's
  * doc id yields, plus the membership that names the group. This is what the boot's `readPersonaPlanes`
  * consumes to hold a compartment in the family (register-many), and it carries NO singular mount pin — so
  * one shape serves both the mounted founding face and every additional compartment a multitude holds.
  * A vessel-wide circles plane would name one shelf where a multitude needs one per face.
  */
 function facePlaneTiddlers(
-  identitiesUrl: string, circlesUrl: string, sessionsUrl: string, personaUrl: string,
+  identitiesUrl: string, circlesUrl: string, sessionsUrl: string, intentsUrl: string, personaUrl: string,
   personaGroupId: string,
 ): PackedTiddlers {
   const face = personaScopedBagIds(personaGroupId);
@@ -131,6 +131,7 @@ function facePlaneTiddlers(
     [face.identities]: { title: face.identities, text: identitiesUrl, kind: "oracle" },
     [face.circles]:    { title: face.circles,    text: circlesUrl,    kind: "oracle" },
     [face.sessions]:   { title: face.sessions,   text: sessionsUrl,   kind: "oracle" },
+    [face.intents]:    { title: face.intents,    text: intentsUrl,    kind: "oracle" },
     // The PersonaGroup plane and the membership that names it — written through the same pair a vessel
     // standing in a SECOND compartment would add, so founding and admission lay down one shape. The boot
     // path reads the family back by derivation; nothing here holds an order or an index.
@@ -144,12 +145,12 @@ function facePlaneTiddlers(
 /** What the MOUNTED FACE adds: its register-many plane entry PLUS the singular sentinel pins the boot reads
  *  to run the ONE mounted face's Binding Gate. Only the founding face (h0) writes these. */
 function faceTiddlers(
-  identitiesUrl: string, circlesUrl: string, sessionsUrl: string, personaUrl: string,
+  identitiesUrl: string, circlesUrl: string, sessionsUrl: string, intentsUrl: string, personaUrl: string,
   personaGroupId: string, meshCabalDocIdHex: string,
 ): PackedTiddlers {
   return {
     [MESH_CABAL_DOC_ID_TIDDLER]: { title: MESH_CABAL_DOC_ID_TIDDLER, text: meshCabalDocIdHex, kind: "sentinel-id" },
-    ...facePlaneTiddlers(identitiesUrl, circlesUrl, sessionsUrl, personaUrl, personaGroupId),
+    ...facePlaneTiddlers(identitiesUrl, circlesUrl, sessionsUrl, intentsUrl, personaUrl, personaGroupId),
     [PERSONA_GROUP_ID_TIDDLER]: { title: PERSONA_GROUP_ID_TIDDLER, text: personaGroupId, kind: "persona-group-id" },
   };
 }
@@ -291,7 +292,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
       await repo.flush();
       writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin(placeTiddlers(admitDaemon.url))), "utf8");
     }
-    const { archive, identitiesUrl, circlesUrl, sessionsUrl, daemonUrl, personaUrl, deviceEdge } = await runApplyAdmitPayload({
+    const { archive, identitiesUrl, circlesUrl, sessionsUrl, intentsUrl, daemonUrl, personaUrl, deviceEdge } = await runApplyAdmitPayload({
       repo,
       atomSeed: admitSeed,
       daemonHandle: admitDaemon,
@@ -335,7 +336,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
       }, handleIndex);
       writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({
         ...readPackedTiddlers(bootstrap),
-        ...facePlaneTiddlers(identitiesUrl, circlesUrl, sessionsUrl, personaUrl, payload.personaGroupId),
+        ...facePlaneTiddlers(identitiesUrl, circlesUrl, sessionsUrl, intentsUrl, personaUrl, payload.personaGroupId),
       }), null, 2), "utf8");
       await retireApplyCheckpoint(admitDaemon, admitSeed);
       await repo.flush();
@@ -362,7 +363,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     });
     writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({
       ...placeTiddlers(daemonUrl),
-      ...faceTiddlers(identitiesUrl, circlesUrl, sessionsUrl, personaUrl,
+      ...faceTiddlers(identitiesUrl, circlesUrl, sessionsUrl, intentsUrl, personaUrl,
                       payload.personaGroupId, payload.meshCabalDocIdHex),
       ...hearthDialTiddlers(payload.syncUrl, payload.hearthGatePubKey, {
         kind:  payload.hearthIslandKind,
@@ -643,9 +644,9 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   // The mounting face writes the sentinel pins + its plane entry; an added compartment writes ONLY the
   // register-many plane entry the boot's `readPersonaPlanes` consumes, merged over the mounted face's pins.
   const faceEntry = mounts
-    ? faceTiddlers(face.identitiesUrl, face.circlesUrl, face.sessionsUrl, face.personaUrl,
+    ? faceTiddlers(face.identitiesUrl, face.circlesUrl, face.sessionsUrl, face.intentsUrl, face.personaUrl,
                    face.personaGroupId, face.meshCabalDocIdHex)
-    : facePlaneTiddlers(face.identitiesUrl, face.circlesUrl, face.sessionsUrl, face.personaUrl,
+    : facePlaneTiddlers(face.identitiesUrl, face.circlesUrl, face.sessionsUrl, face.intentsUrl, face.personaUrl,
                         face.personaGroupId);
   // THREE WRITES, ONE COMMIT POINT. The atom's archive rests first, under this face's own row; the anchors and
   // their roster line follow; the bootstrap entry lands LAST and commits the face. Every "already stood" reading

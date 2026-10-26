@@ -204,6 +204,7 @@ export type { DeviceAdmitOptions, DeviceAdmitPayload, DeviceAdmitResult } from "
 // THE FLEET-JOIN DOOR: the root holder's offer and answer ride the store door; the joining vessel requests, lands
 // and abandons in its own process, with no vessel standing.
 export { runFleetJoinOffer, runFleetJoinAnswer, runFleetJoinRequest, runFleetJoinLand, runFleetJoinAbandon, FleetJoinRefused } from "./commands/fleet-join.js";
+export { runIntentCommand, resolveIntentFaceIndex, intentAudience, IntentRefused } from "./commands/intent.js";
 export type { FleetJoinAnswerOptions } from "./commands/fleet-join.js";
 export { readJoinedFaceProof } from "./joined-face-proof.js";
 export type { JoinedFaceProof, JoinedFaceAbsence } from "./joined-face-proof.js";
