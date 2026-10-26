@@ -1,15 +1,15 @@
 # Projection Loom · Experiment Zero Field Guide
 
 This is the **Loom operator guidebook**, not the separately authored
-\`sdm/Vastlands_Guidebook\` (which is source material, not the Loom manual).
+`sdm/Vastlands_Guidebook` (which is source material, not the Loom manual).
 Read alongside [HANDOFF](HANDOFF.md), [EXPERIMENT_ZERO](EXPERIMENT_ZERO.md),
 and [OBLIQUE_SEED](OBLIQUE_SEED.md). Project canon lives in branch-current
-\`bags/\`; this document describes measured machinery and design possibilities,
+`bags/`; this document describes measured machinery and design possibilities,
 not promoted Lares law.
 
 ## One pet-named image seed, not two independent photographs
 
-Necrospire's First Glimpse (\`@seed/oblique-seed\`) binds the original
+Necrospire's First Glimpse (`@seed/oblique-seed`) binds the original
 1024×1536 RGBA artwork and extracted L8 alpha as **one** digest-verified
 source entity. The RGB/appearance channel and silhouette channel cannot count
 as two independent observations. The oblique source is provisional artwork,
@@ -18,10 +18,10 @@ not a registered camera survey.
 Current code consumes:
 - **Alpha** for fixed-oblique occupancy / IoU and limited source-guided
   polymesh surface deformation.
-- **RGB-derived edges**, bounded by the alpha and active \`guide\` locus,
+- **RGB-derived edges**, bounded by the alpha and active `guide` locus,
   as a small, local modulation of that same polygon surface treatment.
 - **Operator drawn feature evidence** as separately attributed Crystal,
-  Joining and Fortress attention masks via \`feature-annotate\` when provided.
+  Joining and Fortress attention masks via `feature-annotate` when provided.
   These masks are interpretations of the source, not independent imagery.
 - **Named-seed receipts**, stable SHA-256 identity and relational witness
   so a downstream capability can declare dependency instead of opening files.
@@ -31,7 +31,7 @@ precise material, room plans, or a surveyed 3D camera from the image.
 
 ## Small two-epoch observed search (held outside the Loom branch)
 
-The Oct 25 fresh test used OODA-HA seed \`68421\`, two generations,
+The Oct 25 fresh test used OODA-HA seed `68421`, two generations,
 12 offspring per generation, 12 exact native and 6 detailed scoring seats
 per generation, 64×96 source scoring and 2× exploration overscan.
 Its experiment branch and [native Actions receipts](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40247399160)
@@ -52,23 +52,23 @@ crystal/needle, terrace, keep and applied facade.
 
 ## Use actual reviewed orthos in a new campaign
 
-After a bounded \`ooda-ha-run\` has completed and
-\`experiment_zero_review/review.json\` exists, run:
+After a bounded `ooda-ha-run` has completed and
+`experiment_zero_review/review.json` exists, run:
 
-\`\`\`bash
+```bash
 cd tools/projection-loom
 python -m projection_loom review-orthos \
   --project examples/necrospire/project_alpha.json \
   --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
   --out out/my-new-experiment \
   --gallery out/my-new-gallery --seats 3
-\`\`\`
+```
 
-\`review-orthos\` accepts **2–5** native reviewed specimens. It verifies
+`review-orthos` accepts **2–5** native reviewed specimens. It verifies
 the signed review digest and original saved mask/camera receipts before
 re-rendering their native-audited CAD/polymesh with common six-view cameras.
-It emits \`native_shaded_orthos.png\`, \`native_silhouette_orthos.png\`
-and \`summary.json\` with digest-bound evidence. It rejects reused output
+It emits `native_shaded_orthos.png`, `native_silhouette_orthos.png`
+and `summary.json` with digest-bound evidence. It rejects reused output
 directories. It does **not** generate new lineages or select survivors.
 
 ## Freeing early lineages · design bearings, NOT yet implemented
@@ -84,7 +84,7 @@ operators may infer broad appearance/material zones, edge-direction fields,
 occlusion boundaries, illuminated-face hypotheses, and region-specific
 confidence. They must record the source crop and cue digest, treat painterly
 lighting as ambiguous, and never assume RGB gradient means real topography.
-Provide ablations \`cue on/off\` on the **same genotype**; record native
+Provide ablations `cue on/off` on the **same genotype**; record native
 geometry and all-camera differences rather than inserting a hidden scalar.
 
 **C. Separate source preservation from architectural freedom.** Retain a

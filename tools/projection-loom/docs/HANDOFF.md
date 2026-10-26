@@ -7,23 +7,23 @@
 ## Two-epoch live ortho handback · reusable capability only
 
 A fresh two-generation source-bound Necrospire witness completed on the
-**separate** branch \`feature/necrospire-two-epoch-orthos-20261025\`;
+**separate** branch `feature/necrospire-two-epoch-orthos-20261025`;
 [Actions #40247399160](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40247399160)
-holds the raw native archive. The experiment used source seed \`68421\`,
+holds the raw native archive. The experiment used source seed `68421`,
 24 births, up to 24 exact native auditions and 12 detailed scores,
 then four reviewed candidates, three displayed. The reviewed Crystal,
 Keep and Fractured generation-two specimens reached respectively
-\`0.709156\`, \`0.695613\`, \`0.689807\` source alpha IoU.
+`0.709156`, `0.695613`, `0.689807` source alpha IoU.
 Their off-core occupancy was **zero** in this sample. This is a
 limited sample, not a quality policy or evidence of an intrinsically
 saturated image. **No experiment descendant, scored journal, binary
 board, or promoted winner is merged into the Loom working branch.**
 
-What the Loom keeps: \`projection_loom/ortho_gallery.py\`, the
-\`review-orthos\` CLI, digest and camera consistency checks and focused
+What the Loom keeps: `projection_loom/ortho_gallery.py`, the
+`review-orthos` CLI, digest and camera consistency checks and focused
 unit/native CI. The operator can reproduce two presentation boards from
 any completed Experiment Zero review by supplying matching project,
-recipe, original \`--out\` and a fresh \`--gallery\`; it does not change
+recipe, original `--out` and a fresh `--gallery`; it does not change
 the review or import another lineage.
 
 The single named RGBA/L8 source seed is already live. Its RGB cue
@@ -32,8 +32,8 @@ currently modulates source-guided polygon surface treatment; it does
 3D measurements. The next design exploration should investigate
 conditional source-region cues, alternate structural relations, matched
 seed ablations and true expression witnesses, without turning all
-painterly edges into pseudo-geometry. See \`docs/GUIDEBOOK.md\`.
-The published \`sdm/Vastlands_Guidebook\` is not the Loom manual and
+painterly edges into pseudo-geometry. See `docs/GUIDEBOOK.md`.
+The published `sdm/Vastlands_Guidebook` is not the Loom manual and
 remains untouched.
 
 ---
