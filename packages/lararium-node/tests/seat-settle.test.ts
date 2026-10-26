@@ -63,7 +63,7 @@ describe("a fold of the fleet's board settles the key side", () => {
 
   beforeEach(async () => {
     custody = await seatScratchCustody("seat-settle");
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     await seedFaceAtom(0);
     repo = new Repo({});

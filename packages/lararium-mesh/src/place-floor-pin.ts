@@ -32,6 +32,7 @@ import { tiddlerText } from "./base-doc.js";
 import { CARRIAGE_ENTRY_PREFIX } from "./carriage-board.js";
 import { carriageEntryActCid, foldCarriageDetails, isCarriageDescendant, resolveAnchoredChain, rollAnchorCid, type CarriageAncestry, type CarriageEntry, type RollAnchor } from "./carriage-registry.js";
 import { canonicalJsonBytes, hex, hexToBytes } from "./crypto.js";
+import { frameFloorDuty } from "./place-signer.js";
 import { PLACE_FLOOR_PIN_DOMAIN } from "./domains.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { gateBundleDigest, readGateBundlePin, type GateBundlePin } from "./gate-bundle.js";
@@ -62,10 +63,10 @@ export type PlaceFloorPinRefusal = (typeof PLACE_FLOOR_PIN_REFUSALS)[number];
 
 /** The exact bytes a place signs over its floor pin: the domain, its key, and the pin's coordinates and digest. */
 export function placeFloorPinImage(placeKey: string, pin: GateBundlePin): Uint8Array {
-  return canonicalJsonBytes({
+  return frameFloorDuty(PLACE_FLOOR_PIN_KIND, canonicalJsonBytes({
     kind: PLACE_FLOOR_PIN_KIND, placeKey: placeKey.toLowerCase(),
     nexus: pin.nexus, route: pin.route, tier: pin.tier, digest: gateBundleDigest(pin),
-  });
+  }));
 }
 
 /** Sign a place's floor pin with the place's own signing door. */

@@ -58,7 +58,7 @@ async function carryFor(peer: string, again = false): Promise<Carry> {
   const charter = readNexusDoc(larSealHome())!;
   at(peer);
   if (again) await openTestCustody(); else await sealTestCustody();
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   writeNexusDoc(larSealHome(), charter);
   const carry = await runNexusCarryFor({ sealHome: larSealHome() });
   at(roots.hearth);
@@ -79,7 +79,7 @@ async function land(carries: readonly Carry[]): Promise<void> {
 async function stage(roll: "none" | "anchored" | "anchor-taken"): Promise<{ carries: Carry[]; later: () => Promise<Carry> }> {
   at(roots.hearth);
   await sealTestCustody();
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   for (const face of [0, 1, 2]) await generateOrLoadPersonaGroupRoot(face);
   const seats = await seatChairs([0, 1, 2]);
   const next = await seatChairs([0, 1, 2], { generation: 1 });
@@ -170,7 +170,7 @@ describe("a carrier fold crosses a charter roll through its anchor alone (W18)",
 async function carryCycle(rollBetween: boolean): Promise<Carry> {
   at(roots.hearth);
   await sealTestCustody();
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   for (const face of [0, 1, 2]) await generateOrLoadPersonaGroupRoot(face);
   const seats = await seatChairs([0, 1, 2]);
   const next = await seatChairs([0, 1, 2], { generation: 1 });

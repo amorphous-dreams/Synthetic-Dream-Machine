@@ -33,7 +33,7 @@ seatFaceAutoFounder(() => [TEST_SLOT]);
 /** `runInit` over the direct holder, with the test route unless the suite names its own. */
 export function foundDirect(opts: Omit<InitOptions, "repo" | "custody"> & { readonly custody?: InitOptions["custody"] }) {
   const run = direct(runInit);
-  return run({ ...opts, custody: opts.custody ?? TEST_CUSTODY });
+  return run({ placeFoundingCard: { readBack: async () => {} }, ...opts, custody: opts.custody ?? TEST_CUSTODY });
 }
 
 /**

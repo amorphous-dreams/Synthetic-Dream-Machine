@@ -53,6 +53,7 @@ describe("the domain registry", () => {
   test("the floor release mints bare under its own name, apart from the pointer and the acts a seat also signs (W26 slice 4)", () => {
     expect(domains.FLOOR_RELEASE_DOMAIN).toBe(`${DOMAIN_ROOT}/floor-release`);
     expect(domains.ALL_DOMAINS).toContain(domains.FLOOR_RELEASE_DOMAIN);
+    expect(domains.ALL_DOMAINS).toContain(domains.PLACE_NEXT_KEY_DOMAIN);
     for (const other of [domains.FLOW_POINTER_DOMAIN, domains.KAHU_CABAL_ADMIT_DOMAIN, domains.PROMOTION_APPROVAL_DOMAIN, domains.REALM_BAG_DOMAIN]) {
       expect(domains.FLOOR_RELEASE_DOMAIN).not.toBe(other);
     }

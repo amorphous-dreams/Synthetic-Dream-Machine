@@ -116,10 +116,12 @@ PersonaGroup fleet, stands at the non-transferable floor, and that reads pono. W
 it holds stay ephemeral: they leave with that device. Joining a PersonaGroup's fleet — the device edge
 under a persona root — gives the vessel a face whose durability lives in the root, and a binding minted at
 the floor carries its document across when a face lifts the vessel
-(`packages/lararium-keyhive/src/resolve-binding.ts`). ''Built'': the floor key's own inception names the key,
-carries the key's own signature and commits no next key (`packages/lararium-mesh/src/vessel-kel.ts`), so the
-floor key cannot rotate by construction. A load of a standing key reads that inception and refuses by name where
-it fails to prove the key; a lost or stolen floor key gets answered by founding the place afresh.
+(`packages/lararium-keyhive/src/resolve-binding.ts`). ''Built'': the place KEL arms (`packages/lararium-mesh/src/vessel-kel.ts`). Its inception seats the online signer
+that signs the floor's five duties and commits the digest of a cold next key, which rests on the founding card alone.
+A rotation reveals that key, signs under it, seats a replacement signer and commits the following cold key; the online
+signer never selects its successor. A load of a standing key reads the chain and refuses by name where it fails to
+prove the key. A lost or stolen online signer answers by the card's rotation; a lost card beside a stolen signer
+answers by founding the place afresh.
 
 ''RE-MADE, RE-DELEGATED, RECOVERED.'' The ladder decides which act answers a loss. A non-transferable face
 gets RE-MADE: a fresh identifier, fresh keys, no memory carried over. A delegated leaf gets RE-DELEGATED
@@ -696,6 +698,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3_Ltxk6zCEH3XzMVBBW235twWXUKoRrWq3E3eRlq1Xg
+<<^ code="&#x0003;">>ni:///sha-256;IwGDToElMWNQhci2hETKMTtRtAIKX2PMaWpOqZBrxZk
 
 <<^ code="&#x0004;" -> to="?">>

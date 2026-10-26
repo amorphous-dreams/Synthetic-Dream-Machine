@@ -14,7 +14,7 @@ import { seedFaceAtom } from "./atom-fixture.js";
 let root: string; let prior: string | undefined;
 beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), "lares-face-sel-")); prior = process.env["LAR_ROOT"]; process.env["LAR_ROOT"] = root;
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
 });
 afterEach(() => { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; rmSync(root, { recursive: true, force: true }); });
 

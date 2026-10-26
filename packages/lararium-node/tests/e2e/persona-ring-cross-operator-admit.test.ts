@@ -185,7 +185,7 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
 
   beforeAll(async () => {
     // ── Found + wear a face ──────────────────────────────────────────────────────────────────
-    await withLarRoot(FOUNDER.root, () => direct(runInit)({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis, custody: TEST_CUSTODY }));
+    await withLarRoot(FOUNDER.root, () => direct(runInit)({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis, custody: TEST_CUSTODY, placeFoundingCard: { readBack: async () => {} } }));
     // The seed charter seats before the face, as the Stable founding act seats it: the face binds its AID.
     await withLarRoot(FOUNDER.root, () => foundSeedCharter({ name: "founder", readBack: async () => {} }));
     seedCharter = await withLarRoot(FOUNDER.root, async () => readNexusDoc(larSealHome()));

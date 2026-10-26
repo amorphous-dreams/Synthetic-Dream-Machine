@@ -23,7 +23,7 @@ beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), "lares-held-quorum-"));
   priorLarRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
 });
 afterEach(() => {
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];

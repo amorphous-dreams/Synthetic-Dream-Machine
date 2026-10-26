@@ -93,7 +93,7 @@ describe("Follow-on 3 — identityDir() takes NO dataDir (the removed footgun)",
         // `npx tsc --noEmit -p tsconfig.typecheck.json` with tests temporarily un-excluded (done once, by
         // hand, when this commit landed) is what actually proved the gate. Flagged rather than silently
         // relied on — see the commit message's WELD note.
-        const id = await generateOrLoadVesselIdentity("some/caller-believed-isolated/path");
+        const id = await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} }, dataDir: "some/caller-believed-isolated/path" });
         expect(id.verifyingKey.length).toBe(64);   // the extra arg was ignored; the call still resolved
       });
     } finally {
@@ -106,10 +106,10 @@ describe("Follow-on 3 — identityDir() takes NO dataDir (the removed footgun)",
     const rootA = mkdtempSync(join(tmpdir(), "lares-identity-rootA-"));
     const rootB = mkdtempSync(join(tmpdir(), "lares-identity-rootB-"));
     try {
-      const a = await withLarRoot(rootA, () => generateOrLoadVesselIdentity());
-      const b = await withLarRoot(rootB, () => generateOrLoadVesselIdentity());
+      const a = await withLarRoot(rootA, () => generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } }));
+      const b = await withLarRoot(rootB, () => generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } }));
       // CONTROL: re-reading root A returns the SAME identity (a real resolver, not a fresh mint each time).
-      const aAgain = await withLarRoot(rootA, () => generateOrLoadVesselIdentity());
+      const aAgain = await withLarRoot(rootA, () => generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } }));
       expect(a.verifyingKey).not.toBe(b.verifyingKey);
       expect(a.verifyingKey).toBe(aAgain.verifyingKey);
     } finally {

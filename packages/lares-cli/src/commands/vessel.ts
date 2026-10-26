@@ -44,6 +44,7 @@ import { cmdSeed }     from "./seed.js";
 import { cmdRead, cmdStop } from "./read.js";
 import { cmdWire } from "./wire.js";
 import { cmdVesselCard } from "./vessel-card.js";
+import { cmdRotatePlace } from "./rotate-place.js";
 import { cmdStandForeground, cmdStandWithWeb, cmdRestart, cmdRiteRebuild, cmdRiteRefresh } from "./scripted.js";
 import { vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
@@ -174,6 +175,7 @@ const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Su
   // THE HANDOFF ARTIFACT. A second operator cannot enter a relation with this vessel until she holds
   // its card; the founding mints one and nothing surfaced it.
   card: { summary: "print this vessel's ContactCard — the artifact another operator needs to relate to it", run: cmdVesselCard },
+  rotate: { summary: "rotate the place's online signer by its founding card — reads the card, prints and reads back the replacement", run: (a) => cmdRotatePlace(under(a)) },
   stand: { summary: "bring the daemon up and report — [--foreground] [--with-web] [--restart]", run: standVessel },
   // THE ONE VESSEL VERB THAT REACHES OUTSIDE THE ROOT. Standing stays inside `LAR_ROOT`; wiring
   // always touches the operator's home. Two radii, two verbs — a reader sees the reach in the name.

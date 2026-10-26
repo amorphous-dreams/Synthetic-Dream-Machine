@@ -27,8 +27,9 @@ import {
   foundingRoster, materializeSharedLarDoc, placeArmFor, placeFloorPinsFromBoard, readPlaceFloorPin, writeCarriageEntry,
   writePlaceFloorPin, writeRollAnchor, rollAnchorsFromBoard, isRollAnchor, carriageAncestryFromBoard,
   epochSeats, rollAnchorCounts, verifySealLineage,
+  decodePlaceKelEvent, foldPlaceKel, placeKelEventDigest, placeKelRowsFromBoard, writePlaceKelEvent,
   CARRY_BUNDLE_DOMAIN, NEXUS_AID_PATTERN, FLOW_SOCKET_ROUTE,
-  type CarriageEntry, type PlaceFloorPinStatement, type RollAnchor, type SealEpoch,
+  type CarriageEntry, type PlaceFloorPinStatement, type RollAnchor, type SealEpoch, type PlaceKelEvent,
 } from "@lararium/mesh";
 import { charterHomeFor } from "./carried-set.js";
 import { readNexusDoc } from "./nexus-doc.js";
@@ -45,6 +46,7 @@ export interface CarryBundle {
   readonly contract:  CarriageEntry;
   readonly lineage:   readonly CarriageEntry[];
   readonly floorPins: readonly unknown[];
+  readonly placeKel: readonly unknown[];
   /** The carry/uncarry acts of every other place the board holds; absent on a bundle minted before they rode. */
   readonly peers?:    readonly CarriageEntry[];
   /** The board's roll anchors carry peers minted under a closed charter epoch. */
@@ -66,7 +68,39 @@ export async function carryBundleFrom(opts: {
   // The arm's lineage carries its acts and the anchors that chain them to the head; the bundle keeps the two apart.
   const acts = arm.lineage.filter((act): act is CarriageEntry => !isRollAnchor(act));
   return { kind: CARRY_BUNDLE_KIND, aid: opts.aid, contract: arm.contract, lineage: acts,
-    floorPins: placeFloorPinsFromBoard(opts.board), peers, rollAnchors: ancestry.anchors };
+    floorPins: placeFloorPinsFromBoard(opts.board), placeKel: placeKelRowsFromBoard(opts.board), peers, rollAnchors: ancestry.anchors };
+}
+
+/** Walk each pinned inception one step at a time. A gap, forged step, or fork leaves only the verified prefix. */
+function landingPlaceKel(rows: readonly unknown[]): Array<{ aid: string; event: PlaceKelEvent }> {
+  const events = rows.map(decodePlaceKelEvent).filter((event): event is PlaceKelEvent => event !== null);
+  const landed: Array<{ aid: string; event: PlaceKelEvent }> = [];
+  const seen = new Set<string>();
+  for (const first of events) {
+    if (first.t !== "icp") continue;
+    const aid = placeKelEventDigest(first);
+    if (seen.has(aid)) continue;
+    seen.add(aid);
+    const own = events.filter((event) => event.t === "icp" ? placeKelEventDigest(event) === aid : event.aid === aid);
+    const chain: PlaceKelEvent[] = [];
+    const start = foldPlaceKel([first], { aid, inceptionDigest: aid });
+    if (!start.ok) continue;
+    chain.push(first);
+    let headDigest = start.headDigest;
+    for (;;) {
+      const next = own.filter((event) => event.t === "rot" && event.seq === chain.length && event.prev === headDigest);
+      const valid = next.filter((event) => foldPlaceKel([...chain, event], { aid, inceptionDigest: aid }).ok);
+      const distinct = [...new Map(valid.map((event) => [placeKelEventDigest(event), event])).values()];
+      if (distinct.length !== 1) break;
+      const candidate = distinct[0]!;
+      const read = foldPlaceKel([...chain, candidate], { aid, inceptionDigest: aid });
+      if (!read.ok) break;
+      chain.push(candidate);
+      headDigest = read.headDigest;
+    }
+    for (const event of chain) landed.push({ aid, event });
+  }
+  return landed;
 }
 
 export interface CarryTakeResult {
@@ -95,10 +129,11 @@ export async function takeCarryBundle(opts: {
   const contract = coerceCarriageEntry(b["contract"]);
   const lineage = Array.isArray(b["lineage"]) ? b["lineage"].map(coerceCarriageEntry) : null;
   const floorPins = Array.isArray(b["floorPins"]) ? b["floorPins"] : null;
+  const placeKel = Array.isArray(b["placeKel"]) ? b["placeKel"] : null;
   const peerRaw = b["peers"] === undefined ? [] : Array.isArray(b["peers"]) ? b["peers"].map(coerceCarriageEntry) : null;
   const anchorRaw = b["rollAnchors"] === undefined ? [] : Array.isArray(b["rollAnchors"]) ? b["rollAnchors"] : null;
   if (b["kind"] !== CARRY_BUNDLE_KIND || !NEXUS_AID_PATTERN.test(aid) || aid.includes("..") || contract === null
-    || lineage === null || lineage.some((e) => e === null) || floorPins === null || peerRaw === null || peerRaw.some((e) => e === null)
+    || lineage === null || lineage.some((e) => e === null) || floorPins === null || placeKel === null || peerRaw === null || peerRaw.some((e) => e === null)
     || anchorRaw === null || anchorRaw.some((a) => !isRollAnchor(a))) {
     throw new CarryBundleError("the carry bundle is malformed — it needs its kind, an `aid`, the quorum's `carry` contract, its lineage and the floor pins.");
   }
@@ -151,10 +186,12 @@ export async function takeCarryBundle(opts: {
     const read = readPlaceFloorPin(raw, { nexusHex, route: FLOW_SOCKET_ROUTE, carriers });
     if (!("refusal" in read)) landing.push(raw as PlaceFloorPinStatement);
   }
+  const kel = landingPlaceKel(placeKel);
   handle.change((d) => {
     for (const anchor of landingAnchors) writeRollAnchor(d, anchor);
     for (const act of [...acts, ...peers]) writeCarriageEntry(d, act);
     for (const s of landing) writePlaceFloorPin(d, s);
+    for (const row of kel) writePlaceKelEvent(d, row.aid, row.event);
   });
   await opts.repo.flush().catch(() => { /* best effort */ });
   return { aid, nym: own, carryCid: carriageEntryActCid(contract), lineage: lineage.length, floorPins: landing.map((s) => s.placeKey), boardUrl };

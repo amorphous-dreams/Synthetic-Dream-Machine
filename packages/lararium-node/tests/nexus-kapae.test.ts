@@ -64,7 +64,7 @@ function seatCharter(keys: string[], threshold = 2): string {
 
 describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   it("RAISE → board → fold → isKapaed: a 2-of-3 held-seat ban Kapae's the victim", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const chairs = await seatChairs([0, 1, 2]); seatCharter([...chairs.keys]);
 
@@ -82,7 +82,7 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   });
 
   it("un_kapae as a causal descendant LIFTS the standing ban", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const chairs = await seatChairs([0, 1, 2]); seatCharter([...chairs.keys]);
 
@@ -103,7 +103,7 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   });
 
   it("rejects a raw CID-poisoned board act when selecting the next frontier", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const chairs = await seatChairs([0, 1, 2]); seatCharter([...chairs.keys]);
     const ban = await direct(runNexusKapae)({ action: "kapae", nym: VICTIM, sealHome: sealHome() });
@@ -118,7 +118,7 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   });
 
   it("excludes a verified parent whose own grandparent is absent", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const chairs = await seatChairs([0, 1, 2]);
     const epoch = seatCharter([...chairs.keys]);
@@ -135,7 +135,7 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   });
 
   it("SUB-QUORUM REFUSES: one held seat key against a 2-of-3 roster writes NOTHING", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     const held = (await seatChairs([0])).keys[0]!;   // the ONLY held seat key
     // Two roster co-signers the vessel does NOT hold — real ed25519 keys, just not in this vault.
@@ -155,7 +155,7 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   });
 
   it("UNSEATED charter REFUSES: no roster to root a ban on", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     // No seatCharter — the authority home is absent.
     await expect(direct(runNexusKapae)({ action: "kapae", nym: VICTIM, sealHome: sealHome() }))
@@ -163,7 +163,7 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   });
 
   it("a malformed nym REFUSES before any quorum work", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const chairs = await seatChairs([0, 1, 2]); seatCharter([...chairs.keys]);
     await expect(direct(runNexusKapae)({ action: "kapae", nym: "not-a-key", sealHome: sealHome() }))

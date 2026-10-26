@@ -35,6 +35,8 @@ import {
   type PersonaDeclarationStore,
   type OwnPublicHandleStore,
   type PersonaPublicHandleRecord,
+  armPlaceInception, verifyPlaceKel, foldPlaceKel, acceptPlaceHead, PlaceFoundingCardUnread,
+  type PlaceFoundingCard, type PlaceKelEvent, type PlaceKelReading, type RandomProvider,
 } from "@lararium/mesh";
 import type { SeedWrapRecord } from "./seed-wrap-prf.js";
 
@@ -238,6 +240,7 @@ function idbKeypairStore(idbName: string): KeypairStore {
 export async function generateOrLoadBrowserVesselIdentity(
   idbName    = "lares:vessel",
   displayName?: string,
+  opts: { readonly placeFoundingCard?: PlaceFoundingCard; readonly entropy?: RandomProvider } = {},
 ): Promise<BrowserVesselIdentity> {
   let continuity: string | null;
   try {
@@ -272,8 +275,60 @@ export async function generateOrLoadBrowserVesselIdentity(
   } catch (error) {
     throw new Error(`[browser-vessel-identity] local-storage-unavailable — identity exists but its continuity marker could not be sealed: ${String(error)}`);
   }
+  // A seated founding card arms the place KEL in the same act; with none seated the leaf founds no KEL, and the explicit door
+  // below refuses by name until a ceremony seats one.
+  if (opts.placeFoundingCard) await foundBrowserPlaceKel(idbName, { placeFoundingCard: opts.placeFoundingCard, ...(opts.entropy ? { entropy: opts.entropy } : {}) });
   const base: BrowserVesselIdentity = { verifyingKey };
   return displayName ? { ...base, displayName } : base;
+}
+
+// ── The place KEL — the armed chain the device key signs under ───────────────────────────────────
+//
+// The chain is public bytes and rests in the plain `bootstrap` store; its cold next key rests on the card alone, so no byte of
+// it reaches this store. The leaf reads heads through the one mesh fold (`foldPlaceKel`) that the node reads through.
+const PLACE_KEL_RECORD = "place-kel";
+
+/** The chain this leaf founded, verified to its head, or null where it founded none. A chain that fails its proof refuses by name. */
+export async function loadBrowserPlaceKel(idbName = "lares:vessel"): Promise<PlaceKelReading | null> {
+  const db = await openVesselIdb(idbName);
+  try {
+    const chain = await idbGet<readonly PlaceKelEvent[]>(db, "bootstrap", PLACE_KEL_RECORD);
+    if (chain === undefined) return null;
+    const reading = verifyPlaceKel(chain);
+    if (!reading.ok) throw new Error(`[browser-vessel-identity] place-kel-refused — the stored place KEL reads ${reading.refusal}`);
+    const key = await idbKeypairStore(idbName).load();
+    if (!key || reading.signerKey !== key.verifyingKey) throw new Error("[browser-vessel-identity] place-kel-refused — the stored place KEL names another key than this device's");
+    return reading;
+  } finally { db.close(); }
+}
+
+/**
+ * Found the leaf's place KEL: draw the cold card, read it back through `placeFoundingCard`, and land the armed inception only
+ * after it reads back. With no card seated it refuses `PlaceFoundingCardUnread` before any byte lands. A KEL that stands is kept.
+ */
+export async function foundBrowserPlaceKel(
+  idbName = "lares:vessel",
+  opts: { readonly placeFoundingCard?: PlaceFoundingCard; readonly entropy?: RandomProvider } = {},
+): Promise<{ readonly aid: string; readonly minted: boolean }> {
+  const standing = await loadBrowserPlaceKel(idbName);
+  if (standing !== null) { if (!standing.ok) throw new Error("unreachable"); return { aid: standing.aid, minted: false }; }
+  if (!opts.placeFoundingCard) throw new PlaceFoundingCardUnread();
+  const seed = await loadBrowserSigningSeed(idbName);
+  let inception: PlaceKelEvent, aid: string;
+  try { ({ event: inception, aid } = await armPlaceInception({ signerSeed: seed, card: opts.placeFoundingCard, ...(opts.entropy ? { entropy: opts.entropy } : {}) })); }
+  finally { seed.fill(0); }
+  const db = await openVesselIdb(idbName);
+  try { await idbPut(db, "bootstrap", PLACE_KEL_RECORD, [inception]); } finally { db.close(); }
+  return { aid, minted: true };
+}
+
+/** The head this leaf accepts from board or bundle rows: its own chain pins the inception, the one mesh fold reads the rows. */
+export async function readBrowserPlaceHead(
+  idbName: string, rows: readonly unknown[], lastAccepted: { readonly aid: string; readonly seq: number; readonly headDigest: string } | null,
+): Promise<PlaceKelReading> {
+  const own = await loadBrowserPlaceKel(idbName);
+  if (own === null || !own.ok) return { ok: false, refusal: "gap" };
+  return acceptPlaceHead(lastAccepted, foldPlaceKel([...own.chain, ...rows], { aid: own.aid }));
 }
 
 /**

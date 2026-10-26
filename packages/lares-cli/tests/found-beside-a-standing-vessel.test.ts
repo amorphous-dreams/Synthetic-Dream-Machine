@@ -11,7 +11,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createHash } from "node:crypto";
-import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { claimStore } from "@lararium/node";
@@ -46,6 +46,7 @@ beforeEach(async () => {
   process.env["LAR_ROOT"] = root;
   vi.spyOn(console, "log").mockImplementation(() => {});
   cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(root, "genesis"), { recursive: true });
+  writeFileSync(join(root, ".lar-test-scratch"), "");      // a staged root: the place card's read-back stands in
   expect(await found()).toBe(0);
 });
 afterEach(() => {

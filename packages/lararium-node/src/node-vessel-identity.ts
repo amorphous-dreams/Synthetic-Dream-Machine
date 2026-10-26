@@ -52,7 +52,7 @@
 import { createPrivateKey, createPublicKey, generateKeyPairSync, hkdfSync } from "node:crypto";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync, renameSync, openSync, writeSync, fsyncSync, closeSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync, renameSync, openSync, writeSync, fsyncSync, closeSync, unlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { faceFileNames } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
@@ -73,14 +73,14 @@ import {
   type PersonaDeclarationStore,
   type OwnPublicHandleStore,
   type PersonaPublicHandleRecord,
-  inceptVesselKel,
-  decodeVesselKelInception,
-  verifyVesselKelInception,
+  armPlaceInception, PlaceFoundingCardUnread, type PlaceFoundingCard, mintPlaceRotation, placeNextDigest, verifyPlaceKel, decodePlaceKelEvent,
+  mintColdKey, canonicalJson, hex, type PlaceKelEvent, type PlaceRotation, type RandomProvider,
   ALL_DOMAINS,
   GATE_BUNDLE_INFO,
   floorKeyDoor,
   type FloorKeyDoor,
 } from "@lararium/mesh";
+import { readBackStandsIn } from "./seal-ceremony.js";
 import { nodeAnchorStore } from "./identity-anchors.js";
 import { nodeRecoveryShareStore } from "./recovery-share-store.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
@@ -196,36 +196,57 @@ function fileKeypairStore(keyFile: string, login: string | null): KeypairStore {
   };
 }
 
-// ── THE INCEPTION: the floor key signed by itself, and no next key ───────────
+// ── THE PLACE KEL: an armed inception, rotated by the founding card ───────────
 //
-// The floor key stands NON-TRANSFERABLE (lar:///ha.ka.ba/lararium/mesh/identity-classes): it commits no next key, so
-// it cannot rotate by construction, and a lost or stolen floor key gets answered by founding the place afresh. Its
-// one inception (`packages/lararium-mesh/src/vessel-kel.ts`) names the key and carries the key's own signature, and
-// nothing beside: no next-key digest, no next threshold, no clock, no version. The same seed mints the same bytes.
-// It rests in the clear beside the key (a `floor` row), and every load of a standing key reads it: an inception that
-// fails to prove that key refuses by name (`VesselInceptionRefused`), and nothing writes one over a standing key.
+// The place KEL (`packages/lararium-mesh/src/vessel-kel.ts`) seats the online signer and commits the digest of a cold
+// next key that rests on the founding card alone. A founding reads that card back before any byte lands; a rotation
+// reveals it, seats a replacement signer and commits the following cold key. The chain rests in the clear beside the
+// key (a `floor` row), and every load of a standing key verifies the chain to its head: a chain that fails to prove
+// the key refuses by name (`VesselInceptionRefused`), and nothing writes one over a standing key.
 function kelFileName(login: string | null): string {
   return login ? `.vessel-kel-${login}.json` : ".vessel-kel.json";
+}
+function stagedFileName(login: string | null): string {
+  return login ? `.vessel-rotating-${login}.json` : ".vessel-rotating.json";
 }
 
 /** A standing vessel key whose own files fail to prove it (its inception, or a seed that derives another key); nothing gets written over either file. */
 export class VesselInceptionRefused extends Error {
   override readonly name = "VesselInceptionRefused";
-  constructor(readonly kelFile: string, readonly reading: "absent" | "malformed" | "names-another-key" | "signature-fails" | "seed-names-another-key") {
+  constructor(readonly kelFile: string, readonly reading: "absent" | "malformed" | "old-shape" | "unarmed" | "names-another-key" | "signature-fails" | "seed-names-another-key" | "chain-refused", readonly chainRefusal?: string) {
     super(
-      `the vessel key's inception at ${kelFile} reads ${reading}: a floor key proves itself by its own inception, ` +
-      `and none gets written over a standing key — found the place afresh on a fresh root`,
+      `the place KEL at ${kelFile} reads ${reading}${chainRefusal ? `: ${chainRefusal}` : ""}; no standing key gets overwritten`,
     );
   }
 }
 
 /** Read the inception standing at `kelFile` and hold it to `verifyingKey`; refuse by name where it fails. */
-function proveInception(kelFile: string, verifyingKey: string): void {
+function readPlaceChain(kelFile: string): PlaceKelEvent[] {
   if (!existsSync(kelFile)) throw new VesselInceptionRefused(kelFile, "absent");
-  const inception = decodeVesselKelInception(readFileSync(kelFile));
-  if (inception === null) throw new VesselInceptionRefused(kelFile, "malformed");
-  if (inception.k.length !== 1 || inception.k[0] !== verifyingKey) throw new VesselInceptionRefused(kelFile, "names-another-key");
-  if (!verifyVesselKelInception(inception)) throw new VesselInceptionRefused(kelFile, "signature-fails");
+  let raw: unknown;
+  try { raw = JSON.parse(readFileSync(kelFile, "utf8")); } catch { throw new VesselInceptionRefused(kelFile, "malformed"); }
+  if (!Array.isArray(raw)) {
+    if (raw && typeof raw === "object" && (raw as { t?: unknown }).t === "icp")
+      throw new VesselInceptionRefused(kelFile, "old-shape");
+    throw new VesselInceptionRefused(kelFile, "malformed");
+  }
+  return raw as PlaceKelEvent[];
+}
+
+function verifiedPlaceChain(kelFile: string) {
+  const chain = readPlaceChain(kelFile);
+  const reading = verifyPlaceKel(chain);
+  if (!reading.ok) {
+    const named = reading.refusal === "old-shape-inception" ? "old-shape" : reading.refusal === "unarmed-inception" ? "unarmed" :
+      reading.refusal === "bad-signature" ? "signature-fails" : reading.refusal === "malformed" ? "malformed" : "chain-refused";
+    throw new VesselInceptionRefused(kelFile, named, reading.refusal);
+  }
+  return reading;
+}
+
+function proveInception(kelFile: string, verifyingKey: string): void {
+  const reading = verifiedPlaceChain(kelFile);
+  if (reading.signerKey !== verifyingKey) throw new VesselInceptionRefused(kelFile, "names-another-key");
 }
 
 /**
@@ -262,6 +283,88 @@ function publishFile(file: string, bytes: string | Uint8Array): void {
   finally { if (dir !== undefined) closeSync(dir); }
 }
 
+interface StagedPlaceRotation { readonly event: PlaceRotation; readonly signingKey: string; readonly cardRead: true }
+function placeFiles(login: string | null) {
+  const dir = identityDir();
+  return { key: join(dir, keyFileName(login)), kel: join(dir, kelFileName(login)), stage: join(dir, stagedFileName(login)) };
+}
+function stagedRotation(file: string): StagedPlaceRotation {
+  let raw: unknown;
+  try { raw = JSON.parse(readFileSync(file, "utf8")); } catch { throw new Error("place-rotation-torn"); }
+  if (!raw || typeof raw !== "object" || (raw as { cardRead?: unknown }).cardRead !== true ||
+      typeof (raw as { signingKey?: unknown }).signingKey !== "string" ||
+      !/^[0-9a-f]{64}$/.test((raw as { signingKey: string }).signingKey) ||
+      decodePlaceKelEvent((raw as { event?: unknown }).event)?.t !== "rot") throw new Error("place-rotation-torn");
+  return raw as StagedPlaceRotation;
+}
+function reconcileFiles(files: ReturnType<typeof placeFiles>, login: string | null): void {
+  if (!existsSync(files.stage)) return;
+  const staged = stagedRotation(files.stage);
+  const chain = readPlaceChain(files.kel);
+  const reading = verifiedPlaceChain(files.kel);
+  const extended = verifyPlaceKel([...chain, staged.event]);
+  const already = chain.at(-1)?.t === "rot" && canonicalJson(chain.at(-1)) === canonicalJson(staged.event);
+  if (!already && (!extended.ok || extended.seq !== reading.seq + 1)) throw new Error("place-rotation-torn");
+  if (verifyingKeyOfSeed(staged.signingKey) !== staged.event.key) throw new Error("place-rotation-torn");
+  if (already && reading.signerKey !== staged.event.key) throw new Error("place-rotation-torn");
+  const raw = JSON.parse(readFileSync(files.key, "utf8")) as PersistedKey;
+  if (!already && raw.verifyingKey !== reading.signerKey) throw new Error("place-rotation-torn");
+  if (!already) publishFile(files.kel, canonicalJson([...chain, staged.event]));
+  if (raw.verifyingKey !== staged.event.key) publishFile(files.key, JSON.stringify({ verifyingKey: staged.event.key, signingKey: staged.signingKey, ...(login ? { gitEmail: login } : {}) }, null, 2));
+  unlinkSync(files.stage);
+}
+
+/** Finish a fully read-back card's staged rotation under the custody claim. */
+export async function reconcilePlaceRotation(): Promise<void> {
+  const hint = await readLocalOperatorHint();
+  const files = placeFiles(hint.login);
+  if (existsSync(files.stage)) await exclusiveCustody(async () => reconcileFiles(files, hint.login));
+}
+
+export async function loadPlaceKelChain(): Promise<readonly PlaceKelEvent[]> {
+  await reconcilePlaceRotation();
+  const hint = await readLocalOperatorHint();
+  return verifiedPlaceChain(placeFiles(hint.login).kel).chain;
+}
+export async function loadPlaceAid(): Promise<string> {
+  await reconcilePlaceRotation();
+  const hint = await readLocalOperatorHint();
+  return verifiedPlaceChain(placeFiles(hint.login).kel).aid;
+}
+
+/** Rotate a place only after the replacement cold card reads back. */
+export async function rotatePlace(opts: { card: Uint8Array; placeFoundingCard: PlaceFoundingCard; entropy?: RandomProvider }):
+  Promise<{ event: PlaceRotation; aid: string; seq: number }> {
+  await openedCustody();
+  const hint = await readLocalOperatorHint();
+  const files = placeFiles(hint.login);
+  // A staged rotation finishes (or refuses) before another begins.
+  await reconcilePlaceRotation();
+  const reading = verifiedPlaceChain(files.kel);
+  if (!(opts.card instanceof Uint8Array) || opts.card.length !== 32) throw new Error("place-card-refused");
+  let reveal: string;
+  try { reveal = verifyingKeyOfSeed(hex(opts.card)); }
+  catch { throw new Error("place-card-refused"); }
+  if (placeNextDigest(reveal) !== reading.nextDigest) throw new Error("place-card-refused");
+  const next = await mintColdKey(opts.entropy);
+  const signer = new Uint8Array(32);
+  (opts.entropy ?? globalThis.crypto).getRandomValues(signer);
+  try {
+    const signingKey = hex(signer);
+    const event = mintPlaceRotation({ chain: reading.chain, coldSeed: opts.card, newSignerKey: verifyingKeyOfSeed(signingKey), nextColdVerifyingKey: next.verifyingKey });
+    // THE REPLACEMENT CARD READS BACK BEFORE THE CLAIM (a read-back may ask the custody its own questions), and no event
+    // stages until it has: the chain, the key file and the stage change only inside the claim below.
+    await opts.placeFoundingCard.readBack({ seed: next.seed, digest: event.next, verifyingKey: next.verifyingKey }, reading.aid.slice(-16), reading.seq + 1);
+    return await exclusiveCustody(async () => {
+      if (existsSync(files.stage)) throw new Error("place-rotation-torn");
+      if (verifiedPlaceChain(files.kel).headDigest !== reading.headDigest) throw new Error("place-rotation-raced");
+      publishFile(files.stage, canonicalJson({ event, signingKey, cardRead: true }));
+      reconcileFiles(files, hint.login);
+      return { event, aid: reading.aid, seq: event.seq };
+    });
+  } finally { next.seed.fill(0); signer.fill(0); }
+}
+
 /**
  * Generate or load the device Ed25519 operator keypair.
  *
@@ -285,7 +388,7 @@ export class VesselKeyMintRefused extends Error {
   }
 }
 
-export async function generateOrLoadVesselIdentity(): Promise<VesselIdentity> {
+export async function generateOrLoadVesselIdentity(opts: { placeFoundingCard?: PlaceFoundingCard; entropy?: RandomProvider } = {}): Promise<VesselIdentity> {
   const idDir = identityDir();
   mkdirSync(idDir, { recursive: true });
 
@@ -294,6 +397,7 @@ export async function generateOrLoadVesselIdentity(): Promise<VesselIdentity> {
   // is re-mintable but still identity, and belongs beside its key.
   const keyFile  = join(idDir, keyFileName(hint.login));
   const base     = fileKeypairStore(keyFile, hint.login);
+  if (existsSync(join(idDir, stagedFileName(hint.login)))) await reconcilePlaceRotation();
 
   // THE MINT: the inception, then the key file, and THE KEY FILE COMMITS THE MINT. Both land inside ONE hold of the
   // custody claim (`exclusiveCustody`), the same claim every sealed write in every process takes, so two racing acts
@@ -308,10 +412,18 @@ export async function generateOrLoadVesselIdentity(): Promise<VesselIdentity> {
     load: () => base.load(),
     async save(keypair) {
       try { await openedCustody(); } catch (err) { throw new VesselKeyMintRefused(keyFile, err); }
+      // THE CARD READS BACK BEFORE THE CLAIM: a read-back may ask the custody its own questions (a staged root's stand-in
+      // proves the test route), and the claim admits one holder. Nothing lands until the card reads back.
+      const seed = signingSeedFromHex(keypair.signingKey);
+      let inception: PlaceKelEvent;
+      try {
+        const card: PlaceFoundingCard | null = opts.placeFoundingCard ?? ((await readBackStandsIn()) ? { readBack: async () => {} } : null);
+        if (card === null) throw new PlaceFoundingCardUnread();
+        inception = (await armPlaceInception({ signerSeed: seed, card, ...(opts.entropy ? { entropy: opts.entropy } : {}) })).event;
+      } finally { seed.fill(0); }
       const committed = await exclusiveCustody(async () => {
         if (existsSync(keyFile)) return false;
-        const seed = signingSeedFromHex(keypair.signingKey);
-        try { publishFile(kelFile, inceptVesselKel(seed).bytes); } finally { seed.fill(0); }
+        publishFile(kelFile, canonicalJson([inception]));
         const persisted: PersistedKey = { verifyingKey: keypair.verifyingKey, signingKey: keypair.signingKey, ...(hint.login ? { gitEmail: hint.login } : {}) };
         publishFile(keyFile, JSON.stringify(persisted, null, 2));
         return true;
@@ -321,7 +433,13 @@ export async function generateOrLoadVesselIdentity(): Promise<VesselIdentity> {
       if (!lostTo) throw new VesselKeyMintRefused(keyFile, new Error("the key another act landed vanished before this act read it; run the founding again"));
     },
   };
-  const minted = await generateOrLoadKeypair(minting, nodeKeypairCrypto);
+  const crypto = opts.entropy ? { generate: async () => {
+    const seed = new Uint8Array(32);
+    opts.entropy!.getRandomValues(seed);
+    try { const signingKey = hex(seed); return { signingKey, verifyingKey: verifyingKeyOfSeed(signingKey) }; }
+    finally { seed.fill(0); }
+  } } : nodeKeypairCrypto;
+  const minted = await generateOrLoadKeypair(minting, crypto);
   const verifyingKey = lostTo ? lostTo.verifyingKey : minted.verifyingKey;
   const created = minted.created && !lostTo;
 
@@ -332,7 +450,7 @@ export async function generateOrLoadVesselIdentity(): Promise<VesselIdentity> {
     proveStandingKey(kelFile, standing);
     console.log(`[vessel-identity] loaded keypair${hint.login ? ` for ${hint.login}` : ""}`);
   } else {
-    console.log(`[vessel-identity] generated new Ed25519 keypair and its inception (no next key)${hint.login ? ` for ${hint.login}` : ""}`);
+    console.log(`[vessel-identity] generated place signer and armed KEL${hint.login ? ` for ${hint.login}` : ""}`);
   }
 
   const base2: VesselIdentity = { verifyingKey };
@@ -376,6 +494,7 @@ export async function loadVesselIdentity(): Promise<VesselIdentity> {
  * file exists, and refuses `VesselInceptionRefused` by name where the key fails its proof.
  */
 export async function loadVesselVerifyingKey(): Promise<string> {
+  await reconcilePlaceRotation();
   const hint    = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
   const keyFile = join(identityDir(), keyFileName(hint.login));
   if (!existsSync(keyFile)) {
@@ -429,6 +548,7 @@ export async function loadVesselCard(): Promise<string> {
 }
 
 export async function loadVesselSigningSeed(): Promise<Uint8Array> {
+  await reconcilePlaceRotation();
   const hint    = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
   const keyFile = join(identityDir(), keyFileName(hint.login));
   if (!existsSync(keyFile)) {
@@ -464,6 +584,7 @@ export class FloorKeyDoorRefused extends Error {
  * same way (`custodyGateDoor`), and the two doors carry two types no composer can swap.
  */
 export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
+  await reconcilePlaceRotation();
   const hint    = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
   const keyFile = join(identityDir(), keyFileName(hint.login));
   const kelFile = join(identityDir(), kelFileName(hint.login));

@@ -37,7 +37,7 @@ const ask = async (resource: string) => {
 
 describe("nexus-rekey on a booted vessel", () => {
   test("a missing quorum changes no slot; held seats sign the nexus and a ledger-pinned realm", async () => {
-    await withLarRoot(root, () => direct(runInit)({ storageDir, genesisDir, custody: TEST_CUSTODY }));
+    await withLarRoot(root, () => direct(runInit)({ storageDir, genesisDir, custody: TEST_CUSTODY, placeFoundingCard: { readBack: async () => {} } }));
     await withLarRoot(root, () => foundSeedCharter({ name: "rekey founder", readBack: async () => {} }));
     await withLarRoot(root, () => direct(runFoundTheFace)({ storageDir, genesisDir }));
     const primary = await withLarRoot(root, async () => readNexusDoc(larSealHome()));

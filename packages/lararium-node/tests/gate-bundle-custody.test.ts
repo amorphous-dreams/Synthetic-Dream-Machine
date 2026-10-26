@@ -61,7 +61,7 @@ async function staged(): Promise<{ root: string; holder: CustodyHolder; open(): 
     return holder;
   };
   const holder = await open();
-  await generateOrLoadVesselIdentity();   // the floor key mints inside the held custody, as a founding mints it
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });   // the floor key mints inside the held custody, as a founding mints it
   return { root, holder, open };
 }
 

@@ -19,6 +19,7 @@
  * existing channel) rides a separate, node-side module.
  */
 
+import { frameFloorDuty } from "./place-signer.js";
 import { FLOW_POINTER_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
 import { save, getHeads, type Doc } from "@automerge/automerge";
@@ -94,8 +95,8 @@ function pointerIdentityString(p: Pick<FlowPointer, "cid" | "heads" | "actCid" |
  * The SIGNED string — the identity itself; the signature covers every pointer field
  * except the signature.
  */
-function pointerSigningString(p: Omit<FlowPointer, "sig">): string {
-  return pointerIdentityString(p);
+export function flowPointerSigningImage(p: Omit<FlowPointer, "sig">): Uint8Array {
+  return frameFloorDuty(FLOW_POINTER_DOMAIN, utf8Bytes(pointerIdentityString(p)));
 }
 
 /**
@@ -125,7 +126,7 @@ export async function buildFlowPointer(args: {
   };
   const actCid = await sha256Hex(utf8Bytes(pointerIdentityString({ ...base, actCid: "" })), defaultCryptoProvider);
   const fields: Omit<FlowPointer, "sig"> = { ...base, actCid };
-  const sig = hex(await ed25519.signAsync(utf8Bytes(pointerSigningString(fields)), args.signerSeed));
+  const sig = hex(await ed25519.signAsync(flowPointerSigningImage(fields), args.signerSeed));
   return { ...fields, sig };
 }
 
@@ -174,7 +175,7 @@ export async function verifyFlowPointer(
   // Signature.
   let sigOk = false;
   try {
-    sigOk = verifyEd25519(p.sig, utf8Bytes(pointerSigningString(p)), p.pub);
+    sigOk = verifyEd25519(p.sig, flowPointerSigningImage(p), p.pub);
   } catch { sigOk = false; }
   if (!sigOk) return { ok: false, reason: "signature verify failed" };
 
