@@ -71,8 +71,10 @@ def _operations(rule, resolved, original):
         overlap_y = min(shi[1],thi[1])-max(slo[1],tlo[1])
         if min(overlap_x,overlap_y) <= 0:
             raise ValueError("Bearing volumes have no horizontal overlap")
-        x = (max(slo[0],tlo[0])+min(shi[0],thi[0]))/2
-        y = (max(slo[1],tlo[1])+min(shi[1],thi[1]))/2
+        # Locate the member near the upper mass's outside corner, still
+        # overlapping both bodies; a completely buried column is a no-op.
+        x = min(shi[0],thi[0]) - min(width,overlap_x)*.35
+        y = min(shi[1],thi[1]) - min(depth,overlap_y)*.35
         start_z = (slo[2]+shi[2])/2
         end_z = (tlo[2]+thi[2])/2
         if end_z <= start_z+.01:
@@ -88,7 +90,7 @@ def _operations(rule, resolved, original):
         cx,cy,_ = _center(tb)
         dx=(thi[0]-tlo[0])/2 + clearance
         dy=(thi[1]-tlo[1])/2 + clearance
-        z=shi[2] - min(.2, (shi[2]-slo[2])*.2)
+        z=shi[2] - min(.1, (shi[2]-slo[2])*.05)
         if min(dx,dy)<=0:
             raise ValueError("Encirclement requires positive target dimensions")
         # Four material members arranged around the target in horizontal
@@ -149,6 +151,8 @@ def audition_plan(plan, native_assembly, *, location, max_parts=96,
                 if not receipt["valid"] or receipt.get("union_solids")!=1:
                     raise ValueError("Native CAD/void audit rejected the construction")
                 added=max(0.,receipt["union_volume"]-old_volume)
+                if added <= max(1e-7,old_volume*1e-6):
+                    raise ValueError("Capability was active but made no native material change")
                 if added > old_volume*max_added_volume_ratio:
                     raise ValueError("Native construction exceeds relative-volume budget")
                 witness=staged.relation_witness(location=location)
