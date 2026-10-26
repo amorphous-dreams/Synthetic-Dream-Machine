@@ -52,7 +52,7 @@ The daemon wiki shows the intent plane through a read-only view: the pane where 
 ** `asks` and `answer`: an outcome that needs a hand (a human approval, a missing capability) names what answers it; any session wearing the face answers by an entry citing the ask's id.
 ** `claim`, `release`, `takeover`: soft steering for a long act (#/who-answers); never safety.
 ** `supersede` and `cancel`: an issuer's or the operator's later word on an intent.
-* ''The audience'' names one of four modes, as data: one pinned device (by atom), an ordered preference list of devices, a capability class (any device holding a named capability), or every device. Per-device inboxes stay views of the plane, never storage.
+* ''The audience'' names one of four modes, as data: one pinned device (by atom), an ordered preference list of devices, a capability class (any device holding a named capability), or every device. A single-effect request that pins no executor issues only into an `asks` gate: an `answer` citing the ask names the executing atom, and a stray answer grants nothing. Per-device inboxes stay views of the plane, never storage.
 
 <<~/ahu>>
 
@@ -150,6 +150,6 @@ Row `I1` at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> carri
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ojmgpl0XIzQtku_tme_w08CRifpRdsRrPRJpyOqSVnA
+<<^ code="&#x0003;">>ni:///sha-256;yVyYfhWuUuPZSEgSw_YlFoohmlBfMlyGMDXVLHArGHc
 
 <<^ code="&#x0004;" -> to="?">>
