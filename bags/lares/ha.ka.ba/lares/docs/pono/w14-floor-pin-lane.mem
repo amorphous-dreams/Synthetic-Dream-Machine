@@ -35,6 +35,7 @@ Three road rows share one shape: the `#floor=` card read unsigned on origin trus
 * ''First contact takes an anchor apart from the card.'' Three conveyances stand: the founder's own genesis; an authenticated admit (a claim set a sovereign crossing carried, whose first claim adopts the AID, and every later claim must descend from it); a deliberate person-to-person transfer (`#anchor=<aid>`, printed on its own banner line). The card alone never anchors: an unanchored or forged card refuses by name.
 * ''Two-vault carry.'' A carry partial (`nexus-partial`, family `carry`) crosses with its claim and the KEL rows that fold to its head. The claim files ONLY atomically with the counted act, in one write; a partial below the quorum exposes no pin. The carrier seal verifies under the signer the KEL seats at the claim's head (`verifyCarrierContractAtHead`). The herm carries the claim opaque.
 * ''Rotation carries again.'' A carry names the signer at the head, so a rotated place is carried again under its new signer; the older signer's name answers nothing once the new claim replaces the old.
+* ''Hostile rows are bounded at the board.'' A board read takes at most `PLACE_FLOOR_PIN_ROWS` (512) claim rows and `PLACE_KEL_BOARD_ROWS` (4096) KEL rows in key order, treats a payload past its byte bound as noise, folds each (AID, head) once per filing pass, and the index keeps at most 256 claims per set and 1024 noted KEL forks.
 * ''The sovereign tier is fenced.'' Sovereign pins follow custody-key changes by their own signed relation; a place-KEL claim never orders them, and the index refuses a claim over a sovereign pin by name.
 
 <<~/ahu>>
@@ -66,6 +67,6 @@ Three road rows share one shape: the `#floor=` card read unsigned on origin trus
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;78CqwJNbg-cAjC3KUS_amGj5yPEkP8zVGSVud2g48LM
+<<^ code="&#x0003;">>ni:///sha-256;yU2ZGTCieHBatIg2bP5NkY6YXZo6nRg3EKIdXItWKXk
 
 <<^ code="&#x0004;" -> to="?">>
