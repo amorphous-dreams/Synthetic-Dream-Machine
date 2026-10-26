@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { FACE_GRANT_PREFIX, type FaceGrantRecord } from "../src/face-grant-record.js";
-import { makeFaceSeat } from "../src/face-seat.js";
+import { makeFaceSeat, makeGroupDocListener, type GroupDocHandle } from "../src/face-seat.js";
 
 const group = "group";
 const leasePrefix = "lease/group/";
@@ -17,6 +17,7 @@ function fixture() {
   let failIngest = false;
   let failLift = false;
   let refuse = false;
+  const logs: string[] = [];
   const seat = makeFaceSeat({
     group, leasePrefix, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
     knowsAgent: async () => known,
@@ -25,10 +26,10 @@ function fixture() {
     verify: async () => { verifies++; return refuse ? { ok: false, reason: "refused" } : { ok: true }; },
     ingest: async () => { ingests++; if (failIngest) throw new Error("ingest"); known = true; },
     lift: async () => { lifts++; if (failLift) throw new Error("lift"); },
-    log: () => {},
+    log: (message) => { logs.push(message); },
   });
   return {
-    seat, arrive: () => { records = [{ title, record: grant }]; },
+    logs, seat, arrive: () => { records = [{ title, record: grant }]; },
     leaseArrives: () => { lease = true; },
     failIngest: (value: boolean) => { failIngest = value; },
     failLift: (value: boolean) => { failLift = value; },
@@ -158,4 +159,114 @@ test("R6 the resolver's lift never waits on the seat act", async () => {
   });
   expect(await resolver.liftFloor()).toEqual({ moved: [], finished: [] });
   expect(settledCalls).toBe(0);
+});
+
+describe("the seat speaks its states", () => {
+  test("S1 an unseated pass logs the pinned line once; two identical passes log one; no grant moves no binding", async () => {
+    const f = fixture(); f.leaseArrives();
+    await f.seat.run(); await f.seat.run(); f.seat.wake(); await f.seat.settled();
+    expect(f.logs.filter(l => l.includes("pinned, not yet seated"))).toHaveLength(1);
+    expect(f.logs.some(l => l.includes("grant record taken"))).toBe(false);
+  });
+  test("S2 a landed ingest logs the taken line with its counts and SEATED, and no pinned line", async () => {
+    const f = fixture(); f.leaseArrives();
+    await f.seat.run(); f.arrive(); await f.seat.run();
+    const taken = f.logs.filter(l => l.includes("grant record taken"));
+    expect(taken).toHaveLength(1);
+    expect(taken[0]).toMatch(/grant record taken from the PersonaGroup plane \(0 cap events, 0 chunks re-sealed\) — face SEATED/);
+    await f.seat.run();
+    expect(f.logs.filter(l => l.includes("grant record taken"))).toHaveLength(1);
+  });
+  test("S3 a seated boot logs neither line", async () => {
+    const logs: string[] = [];
+    const seat = makeFaceSeat({
+      group, leasePrefix, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+      knowsAgent: async () => true, grants: async () => [], readLease: async () => ({ kind: "epoch", n: 0 }),
+      verify: async () => ({ ok: true }), ingest: async () => {}, lift: async () => {}, log: (m) => { logs.push(m); },
+    });
+    await seat.run();
+    expect(logs).toEqual([]);
+  });
+  test("S4 an ingest that leaves the face unseated logs the still-unseated taken line once", async () => {
+    const logs: string[] = [];
+    const seat = makeFaceSeat({
+      group, leasePrefix, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+      knowsAgent: async () => false, grants: async () => [{ title, record: grant }], readLease: async () => ({ kind: "epoch", n: 0 }),
+      verify: async () => ({ ok: true }), ingest: async () => {}, lift: async () => {}, log: (m) => { logs.push(m); },
+    });
+    await seat.run(); await seat.run();
+    expect(logs.filter(l => l.includes("still unseated after ingest"))).toHaveLength(1);
+    expect(logs.some(l => l.includes("pinned, not yet seated"))).toBe(false);
+  });
+});
+
+function listenerFixture(opts: { urlAtBoot: boolean }) {
+  let url: string | null = opts.urlAtBoot ? "automerge:group" : null;
+  const logs: string[] = [];
+  let catalogChange: (() => void) | null = null;
+  let subscriptions = 0; let unsubscribes = 0;
+  let opens = 0; let failOpen = false; let wakes = 0;
+  let docListener: ((p: { patches?: { path: (string | number)[] }[] }) => void) | null = null;
+  const handle: GroupDocHandle = {
+    on: (_e, l) => { docListener = l as never; },
+    off: () => { docListener = null; },
+    doc: () => ({ tiddlers: {} }),
+  };
+  const listener = makeGroupDocListener({
+    group, selfVerifyingKey: self,
+    urlOf: async () => url,
+    open: async () => { opens++; if (failOpen) throw new Error("not ready"); return handle; },
+    subscribeCatalog: async (onChange) => { subscriptions++; catalogChange = onChange; return () => { unsubscribes++; catalogChange = null; }; },
+    wake: () => { wakes++; },
+    log: (m) => { logs.push(m); },
+  });
+  const settle = () => new Promise<void>(resolve => setTimeout(resolve, 0));
+  return {
+    listener, logs, settle, handle,
+    learn: () => { url = "automerge:group"; catalogChange?.(); },
+    failOpen: (v: boolean) => { failOpen = v; },
+    counts: () => ({ opens, wakes, subscriptions, unsubscribes }),
+    hasDocListener: () => docListener !== null,
+    fireDoc: (t: string) => docListener?.({ patches: [{ path: ["tiddlers", t] }] }),
+  };
+}
+
+describe("the group document listener never gives up silently", () => {
+  test("L1 a URL that arrives after boot still attaches once and wakes the act", async () => {
+    const f = listenerFixture({ urlAtBoot: false });
+    await f.listener.attempt();
+    expect(f.listener.attached()).toBe(false);
+    expect(f.logs.filter(l => l.includes("URL stands unknown"))).toHaveLength(1);
+    await f.listener.attempt();
+    expect(f.logs.filter(l => l.includes("URL stands unknown"))).toHaveLength(1);
+    f.learn(); await f.settle();
+    expect(f.listener.attached()).toBe(true);
+    expect(f.counts()).toMatchObject({ opens: 1, wakes: 1, unsubscribes: 1 });
+    f.fireDoc(title); expect(f.counts().wakes).toBe(2);
+    f.fireDoc("unrelated"); expect(f.counts().wakes).toBe(2);
+  });
+  test("L1 CONTROL a URL present at boot attaches once, not twice, whatever pulses follow", async () => {
+    const f = listenerFixture({ urlAtBoot: true });
+    await f.listener.attempt(); await f.listener.attempt();
+    await f.listener.attempt();
+    expect(f.counts()).toMatchObject({ opens: 1, wakes: 1 });
+    expect(f.logs).toEqual([]);
+  });
+  test("L2 a rejected open logs by name and the next causal change attaches", async () => {
+    const f = listenerFixture({ urlAtBoot: true }); f.failOpen(true);
+    await f.listener.attempt();
+    expect(f.logs.some(l => l.includes("face grant arrival unavailable"))).toBe(true);
+    expect(f.listener.attached()).toBe(false);
+    f.failOpen(false); await f.listener.attempt();
+    expect(f.listener.attached()).toBe(true);
+    expect(f.counts().opens).toBe(2);
+  });
+  test("L3 stop detaches the document listener and ends the catalog watch", async () => {
+    const f = listenerFixture({ urlAtBoot: true });
+    await f.listener.attempt(); f.listener.stop();
+    expect(f.hasDocListener()).toBe(false);
+    const g = listenerFixture({ urlAtBoot: false });
+    await g.listener.attempt(); g.listener.stop(); g.learn(); await g.settle();
+    expect(g.counts().opens).toBe(0);
+  });
 });

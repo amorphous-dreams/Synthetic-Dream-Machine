@@ -143,7 +143,7 @@ import { type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
 import { announceSeatRoll } from "./seat-duty-executor.js";
 import { FACE_GRANT_PREFIX, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
-import { makeFaceSeat } from "./face-seat.js";
+import { makeFaceSeat, makeGroupDocListener, type GroupDocHandle } from "./face-seat.js";
 import { runFaceJoinOperation } from "./face-join-operation.js";
 import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
 import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
@@ -1093,33 +1093,27 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         });
         const seat = faceSeat;
         let stopped = false;
-        let stopDoc = () => {};
-        const stopLease = ctx.composite.subscribe((change) => {
-          if (!stopped && change.bag === DAEMON_BAG_ID) seat.daemonChanged(change.title);
-        });
-        const stop = () => { stopped = true; stopLease(); stopDoc(); };
-        veil.whenDisposed(stop);
-        // The group document's arrival gates its listener without holding the boot: a plane that has not synced yet
-        // attaches when it lands, and that arrival replays the act once.
-        void (async () => {
-          try {
-            const url = await catalog.urlOf(personaBagIdFor(group));
-            if (!url) return;
-            const handle = await ctx.repo.findWithProgress<LarDoc>(url as AutomergeUrl).whenReady();
-            if (stopped) return;
-            const prefix = `${FACE_GRANT_PREFIX}${group}/`;
-            const self = edge.deviceVerifyingKey.toLowerCase();
-            const named = (title: string) => title.startsWith(prefix) && title.toLowerCase().endsWith(self);
-            const onChange = ({ patches }: { patches?: readonly { path: readonly (string | number)[] }[] }) => {
-              if (stopped) return;
-              if (patches ? patches.some(p => p.path[0] === "tiddlers" && typeof p.path[1] === "string" && named(p.path[1]))
-                : Object.keys(handle.doc()?.tiddlers ?? {}).some(named)) seat.wake();
-            };
+        // The group document's arrival gates its listener without holding the boot: the catalog's own change brings a URL it
+        // learns after boot, a daemon-layer change retries a rejected open, and the attach lands exactly once.
+        const groupDoc = makeGroupDocListener({
+          group, selfVerifyingKey: edge.deviceVerifyingKey,
+          urlOf: () => catalog.urlOf(personaBagIdFor(group)),
+          open: (url) => ctx.repo.findWithProgress<LarDoc>(url as AutomergeUrl).whenReady() as Promise<GroupDocHandle>,
+          subscribeCatalog: async (onChange) => {
+            const handle = await catalog.handle();
             handle.on("change", onChange);
-            stopDoc = () => handle.off("change", onChange);
-            seat.wake();
-          } catch (error) { console.log(`[daemon] face grant arrival unavailable: ${String(error)}`); }
-        })();
+            return () => handle.off("change", onChange);
+          },
+          wake: () => seat.wake(),
+          log: (message) => console.log(`[daemon] ${message}`),
+        });
+        const stopLease = ctx.composite.subscribe((change) => {
+          if (stopped || change.bag !== DAEMON_BAG_ID) return;
+          seat.daemonChanged(change.title);
+          if (!groupDoc.attached()) void groupDoc.attempt();
+        });
+        veil.whenDisposed(() => { stopped = true; stopLease(); groupDoc.stop(); });
+        void groupDoc.attempt();
         await seat.run();
       }
       // Archive refusal records use the daemon wiki's default writable layer, so attachment precedes them.
