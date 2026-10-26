@@ -364,3 +364,8 @@ The OODA-HA run command supports optional --explore-overscan, depth, mesh limits
 review seats. The source crop stays fixed inside the extra frame. Native-screened
 and scored lineages receive multi-view evidence and independently attributable
 Operator/adviser selection. See [Experiment Zero](docs/EXPERIMENT_ZERO.md).
+
+
+### Current Fire → typed architectural proposals
+
+The canonical house Art Sigils are integrated into Loom ancestry. The *current source-backed AI Fire* translates operator intent into explicitly validated JSON rather than executing memetic-wikitext. `fire-context`, `fire-audition`, and `fire-review` expose relational binding, native CAD auditions, and actual six-view evidence. See [Fire grammar](docs/FIRE_GRAMMAR.md).

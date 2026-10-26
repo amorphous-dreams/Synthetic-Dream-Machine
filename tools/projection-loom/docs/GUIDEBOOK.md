@@ -7,6 +7,10 @@ and [OBLIQUE_SEED](OBLIQUE_SEED.md). Project canon lives in branch-current
 `bags/`; this document describes measured machinery and design possibilities,
 not promoted Lares law.
 
+## Fire-facing typed architectural grammar
+
+The current backed-source **AI Fire** remains the Operator interface: memetic-wikitext + the canonical Art Sigil Inscription/Folio. Typed machine bindings and native CAD proofs live below that boundary, not inside the artistic invocation. See [Current Fire grammar](FIRE_GRAMMAR.md) for reference, schema, CLI use and limits. No LLM service was added.
+
 ## One pet-named image seed, not two independent photographs
 
 Necrospire's First Glimpse (`@seed/oblique-seed`) binds the original

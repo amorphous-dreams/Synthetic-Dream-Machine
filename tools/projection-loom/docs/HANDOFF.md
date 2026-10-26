@@ -4,6 +4,20 @@
 
 **Alpha code law:** no application release ordinals, compatibility shims or numeric schema migration ladders. Live project, recipe, and result formats use semantic `projection-loom/...` type identifiers. Recipe SHA-256, source bytes, camera, operator implementation fingerprints, and checkpoint digests carry identity. Git holds earlier behavior. External Python packaging metadata and fixed CI dependency pins serve tooling/reproducibility, not Loom release governance.
 
+## Art Sigils merged · current Fire is the Operator interface
+
+The complete Art Sigils house grammar (8 evolution commits, real two-parent
+merge) now belongs to the Loom ancestry, retaining canonical `~art` and
+the scoped Folio. Its new optional `~loom-relation` is for Operator–AI
+communication, not an executable macro. The current backed-source AI Fire
+interprets, asks, cites and writes typed bounded proposals; only deterministic
+JSON Schema and native CAD validate them. See
+`docs/FIRE_GRAMMAR.md` and `projection_loom/fire_contract.py`,
+`fire_geometry.py`, `fire_review.py`. The historic pilot and recent
+two-epoch descendants remain outside lineage ancestry.
+
+---
+
 ## Two-epoch live ortho handback · reusable capability only
 
 A fresh two-generation source-bound Necrospire witness completed on the
