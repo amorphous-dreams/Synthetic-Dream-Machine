@@ -134,3 +134,24 @@ PROV-O's entity/activity/agent attribution remains about provenance,
 not physical load or architectural support. Any future mapping requires its
 own correctness/round-trip tests and independent authority.
 
+
+
+## Paired Fire expression study
+
+The single-source Necrospire fixture (`examples/necrospire/fire_study.py`) consumes
+an actual `fire-context` receipt and writes a bounded typed proposal. It does not
+interpret Art Sigils or create an independent agent. The native Fire audit then
+tries two independently staged `bears` contacts and holds a `study-only`
+interpretation alongside them. Source-bound selectors and digest validation
+remain mandatory. The fixture asserts no artistic or engineering truth.
+
+For native-admitted alternatives, `fire-review` now writes:
+- `fire_native_orthos.png`: source baseline + each alternative, six seed-frozen views.
+- `fire_native_differences.png`: the same source/candidate paired silhouettes;
+  cyan pixels appeared, coral disappeared, grey persisted.
+- `summary.json`: signed source audit, paired mask digests, occupied/appeared/
+  disappeared/shared pixel counts, view IoU, and per-view expression witnesses.
+
+A native-valid alternative whose difference counts vanish remains native-valid,
+but the result does not pretend the candidate looks architecturally distinct.
+All evidence belongs to the single original RGB/alpha seed's causal island.

@@ -361,7 +361,7 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
 }
 
 /**
- * Load a PREVIOUSLY-FOUNDED catalog doc by its persisted url — and never re-found it SILENTLY. A stored
+ * Load the founded catalog doc by its persisted URL; never silently re-found it. A stored
  * catalogUrl means this vessel already founded + persisted a catalog; a find() rejection here means the
  * LOCAL copy is gone (IndexedDB quota eviction under storage pressure, or corruption). Re-founding a
  * BLANK catalog in that case is data-amnesia — every registered wiki/recipe vanishes from local view

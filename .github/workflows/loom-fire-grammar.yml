@@ -45,7 +45,7 @@ jobs:
       - name: Verify machine contracts, native graph transformations and provenance
         run: |
           python -m compileall -q projection_loom
-          python -m pytest -q tests/test_fire_contract.py tests/test_fire_native.py tests/test_seed_entity.py tests/test_experiment_zero.py
+          python -m pytest -q tests/test_fire_contract.py tests/test_fire_native.py tests/test_fire_expression.py tests/test_seed_entity.py tests/test_experiment_zero.py
       - name: Read actual named source context from the existing OODA-HA machinery
         run: |
           python -m projection_loom fire-context \
@@ -93,6 +93,33 @@ jobs:
           assert record['source_seed_sha256']
           print('Native Fire decisions:',[(r['id'],r['state']) for r in record['results']])
           PY
+      - name: Prove real-source bearing variations and six-view differential handback
+        run: |
+          python examples/necrospire/fire_study.py \
+            --context fire-source-context.json --out fire-bearing-proposal.json
+          python -m projection_loom fire-audition \
+            --project examples/necrospire/project_alpha.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+            --proposal fire-bearing-proposal.json --out fire-bearing-audition.json
+          python -m projection_loom fire-review \
+            --project examples/necrospire/project_alpha.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+            --receipt fire-bearing-audition.json --out fire-bearing-review
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          audit=json.loads(Path('fire-bearing-audition.json').read_text())
+          rows=audit['results']
+          assert [r['state'] for r in rows]==['native-admitted','native-admitted','study-only'], rows
+          summary=json.loads(Path('fire-bearing-review/summary.json').read_text())
+          assert len(summary['alternatives'])==2
+          assert all(len(row['views'])==6 for row in summary['alternatives'])
+          assert all(row['added_volume']>0 for row in summary['alternatives'])
+          assert all(Path('fire-bearing-review',summary[key]['path']).is_file()
+                     for key in ('image','differences'))
+          print('Source-bound native studies:',[(r['id'],r['state']) for r in rows])
+          print('Per-view observable changes:',[r['expressed_in_views'] for r in summary['alternatives']])
+          PY
       - name: Upload attributable source and native experiment receipts
         if: always()
         uses: actions/upload-artifact@v4
@@ -102,5 +129,8 @@ jobs:
             tools/projection-loom/fire-source-context.json
             tools/projection-loom/fire-source-proposal.json
             tools/projection-loom/fire-source-audition.json
+            tools/projection-loom/fire-bearing-proposal.json
+            tools/projection-loom/fire-bearing-audition.json
+            tools/projection-loom/fire-bearing-review/**
           if-no-files-found: warn
           retention-days: 60

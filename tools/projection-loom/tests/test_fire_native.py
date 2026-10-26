@@ -83,3 +83,34 @@ def test_native_rule_receipt_measures_nonzero_expression():
         assert row["part_delta"]==4
     else:
         assert row["reason"]
+
+
+
+def test_real_single_seed_fire_bearing_has_native_expression():
+    """Source-specific proof; controlled fixtures alone do not meet this gate."""
+    from pathlib import Path
+    from projection_loom.pipeline import Project
+    from projection_loom.capability_stack import CapabilityRecipe, CapabilityCompositor
+    from projection_loom.fire_geometry import fire_audition
+    import sys
+    root = Path(__file__).resolve().parents[1]
+    project = Project.load(root / "examples/necrospire/project_alpha.json")
+    recipe = CapabilityRecipe.load(root / "examples/necrospire/hybrid/recipe_alpha.json")
+    context = CapabilityCompositor(project, recipe, size=(64, 96),
+                  source_mask=project.source_mask((64, 96))).grow(recipe.initial).witness()
+    # The fixture author shares the same root as the CLI; no runtime AI service.
+    sys.path.insert(0, str(root / "examples/necrospire"))
+    try:
+        from fire_study import build_study
+        proposal = build_study({
+            "source": {"location": context.location, "witness_id": context.witness_id,
+                       "seed_entity_sha256": project.seed_entity.sha256},
+            "bindings": [{"handle": name, "selector": context.selector(name)}
+                         for name in ("lower terrace", "central keep")]})
+    finally:
+        sys.path.remove(str(root / "examples/necrospire"))
+    result = fire_audition(project, recipe, proposal)
+    assert [x["state"] for x in result["results"]] == [
+        "native-admitted", "native-admitted", "study-only"]
+    assert all(x["added_volume"] > 0 for x in result["results"][:2])
+    assert all(x["native_audit"]["union_solids"] == 1 for x in result["results"][:2])

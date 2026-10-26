@@ -75,3 +75,13 @@ Prior failed runs remain genuine historical receipts, not current failures:
 **✶ Observe:** Re-run full current-head CI, collect exact failing job/step and record digest. **⏿ Orient:** distinguish implementation regression from stale expectation and external dependency. **◇ Decide:** fix source of truth; leave unrelated failing workflows as explicit backlog. **▶ Act:** commit a focused test-first correction, run it in the same environment, and preserve rejection receipts. **↺ Aftermath:** append verified counts and status to this roadmap and `HANDOFF.md`, then choose a new *fresh* relationship experiment only after CI health is understood.
 
 Fire is the living Operator↔AI interpreter. Memetic-wikitext is its conversational surface. Typed proposals and CAD truth are the downstream machine boundary, not additional conversational agents.
+
+
+## Source-bound Fire / expression wave · implementation staged, awaiting this commit's Actions
+
+- One current Operator-facing Fire; no additional model, web2 endpoint, sigil executor or OODA-HA controller.
+- A deterministic research fixture binds the actual `lower terrace` and `central keep` selectors from source context and proposes two independently staged native bearing relations plus a `study-only` question. Its proposal does not grant a pet-name, artistic approval, or an inferred hidden elevation.
+- The native Fire handback now renders an unchanged source baseline and admitted variants under common seed-frozen cameras. Its paired differential board and SHA-bound per-view counts record appeared/disappeared/shared silhouettes, not physical load or creative merit.
+- Focused tests cover mask arithmetic and actual one-seed CAD admission. Fire CI now executes the full source context → proposed alternatives → native audition → six-view handback path and publishes receipts.
+- Repository-wide evergreen witness repair rewrites one historical comment into present-tense operational language rather than raising the one-way ceiling.
+- **Verification pending:** these additions require a successful same-head Fire CI and repository-wide CI; native success must not be announced from code alone. Existing historical lineages remain frozen.
