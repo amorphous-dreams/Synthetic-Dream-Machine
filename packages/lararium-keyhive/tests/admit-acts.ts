@@ -9,7 +9,7 @@ import {
 } from "@lararium/mesh";
 
 export async function founderAndJoineeActs(input: {
-  face: { personaGroupId: string; personaKelPrefix: string; personaUrl: string; identitiesUrl: string; circlesUrl: string; sessionsUrl: string; founderEdge: { personaRootDid: string; hearthTrueName: string } };
+  face: { personaGroupId: string; personaKelPrefix: string; personaUrl: string; identitiesUrl: string; circlesUrl: string; sessionsUrl: string; intentsUrl: string; founderEdge: { personaRootDid: string; hearthTrueName: string } };
   signerSeed: Uint8Array;
   founderAtomSeed: Uint8Array;
   joineeKey: string;
@@ -21,7 +21,7 @@ export async function founderAndJoineeActs(input: {
   const founding = await signFoundingLog({
     group: face.personaGroupId, personaKelPrefix: face.personaKelPrefix,
     rootCommitment: faceRootCommitment(face.founderEdge.personaRootDid), epoch: 0,
-    planes: { persona: face.personaUrl, identities: face.identitiesUrl, circles: face.circlesUrl, sessions: face.sessionsUrl },
+    planes: { persona: face.personaUrl, identities: face.identitiesUrl, circles: face.circlesUrl, sessions: face.sessionsUrl, intents: face.intentsUrl },
     deviceKey: faceAtomKeyFromSeed(input.founderAtomSeed, face.personaGroupId).key,
     edgeDigest: edgeBodyDigest({ ...face.founderEdge, deviceVerifyingKey: "founder", boundEpoch: 0 }),
   }, signer);

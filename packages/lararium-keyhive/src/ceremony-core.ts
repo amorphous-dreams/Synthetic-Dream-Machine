@@ -50,7 +50,7 @@ import {
   HEARTH_DAEMON_URL_TIDDLER,
   SIGNER_DID_TIDDLER, HEARTH_TRUE_NAME_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER,
   CAP_EVENT_TAG,
-  seedIdentitiesDoc, seedCirclesDoc, seedSessionsDoc, seedDaemonDoc, seedPersonaDoc,
+  seedIdentitiesDoc, seedCirclesDoc, seedSessionsDoc, seedIntentsDoc, seedDaemonDoc, seedPersonaDoc,
   personaScopedBagIds, readFace,
   buildDeviceDelegation, countersignDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler, type DeviceDelegationRootHalf,
   personaKelBoardDocUrl, writePersonaKelEvent, materializeSharedLarDoc, fleetEdgeBoardDocUrl, writeEdgeFrontier, writeFrontierSnapshot, frontierSnapshotCid, verifyingKeyFromDid, type EdgeFrontier,
@@ -166,6 +166,7 @@ export interface FoundingCeremonyResult {
   identitiesUrl:         string;
   circlesUrl:            string;
   sessionsUrl:           string;
+  intentsUrl:            string;
   daemonUrl:              string;
   /** The mounted PersonaGroup plane's doc URL — founded alongside the daemon bag. */
   personaUrl:             string;
@@ -360,6 +361,7 @@ export interface FaceFoundingResult {
   identitiesUrl:          string;
   circlesUrl:             string;
   sessionsUrl:            string;
+  intentsUrl:             string;
   personaUrl:             string;
   personaBagId:           string;
   personaGroupId:   string;
@@ -451,7 +453,7 @@ function writeGroupSecretSeal(
  * checkpoint lands the same bytes and nothing doubles. A contracted founding holds no root seed and signs none: the
  * contracting operator's records arrive with its edge.
  */
-async function landFaceGenesis(input: { repo: Repo; binding: FoundingBinding; atomSeed: Uint8Array; face: Pick<FaceFoundingResult, "personaGroupId" | "personaKelPrefix" | "personaUrl" | "identitiesUrl" | "circlesUrl" | "sessionsUrl" | "founderEdge" | "signerDid"> }): Promise<void> {
+async function landFaceGenesis(input: { repo: Repo; binding: FoundingBinding; atomSeed: Uint8Array; face: Pick<FaceFoundingResult, "personaGroupId" | "personaKelPrefix" | "personaUrl" | "identitiesUrl" | "circlesUrl" | "sessionsUrl" | "intentsUrl" | "founderEdge" | "signerDid"> }): Promise<void> {
   if (input.binding.mode !== "self-stood") return;
   const { face } = input;
   const seed = input.binding.signerSeed;
@@ -461,7 +463,7 @@ async function landFaceGenesis(input: { repo: Repo; binding: FoundingBinding; at
   const acts = await signFoundingLog({
     group: face.personaGroupId, personaKelPrefix: face.personaKelPrefix,
     rootCommitment: faceRootCommitment(face.founderEdge.personaRootDid), epoch: 0,
-    planes: { persona: face.personaUrl, identities: face.identitiesUrl, circles: face.circlesUrl, sessions: face.sessionsUrl },
+    planes: { persona: face.personaUrl, identities: face.identitiesUrl, circles: face.circlesUrl, sessions: face.sessionsUrl, intents: face.intentsUrl },
     deviceKey: faceAtomKeyFromSeed(input.atomSeed, face.personaGroupId).key,
     edgeDigest: edgeBodyDigest(face.founderEdge),
   }, signer);
@@ -490,6 +492,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const foundingScope = JSON.stringify([input.hearthTrueName, input.binding.mode, input.binding.mode === "contracted" ? input.binding.personaKelPrefix : null, input.mount !== false, ...(input.askDigest === undefined ? [] : [input.askDigest])]);
   const prior = await readFaceCheckpoint(daemonHandle, atomSeed, foundingScope);
   if (prior) {
+    if (!prior.result.intentsUrl) throw new Error("[founding] checkpoint names no intents plane; re-found the face.");
     await landFaceCheckpoint(daemonHandle, prior);
     const resumed = { ...prior.result, atomSeed, veilArchive: base64ToBytes(prior.result.veilArchive) };
     await landFaceGenesis({ repo, binding: input.binding, atomSeed, face: resumed });
@@ -521,7 +524,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // reaches and rolls their key; a sentinel document's rolls none (`tests/seat-roll-substrate.probe.test.ts`).
   const personaGroup = await veilKeyhive.createGroup();
 
-  // THE FACE'S FOUR PLANES, SEEDED ONLY NOW — every one of them names the group's own tag, so the group
+  // THE FACE'S FIVE PLANES, SEEDED ONLY NOW — every one of them names the group's own tag, so the group
   // must exist before any of them can stand under its true name. The capability layer keys a document by
   // hashing its bag URL (`changeIdForBag`), so a plane seeded under one name and renamed later leaves
   // behind a document nothing can ever reach again.
@@ -536,6 +539,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const identitiesHandle = seedIdentitiesDoc(repo, planes.identities);
   const circlesHandle    = seedCirclesDoc(repo, planes.circles);
   const sessionsHandle   = seedSessionsDoc(repo, planes.sessions);
+  const intentsHandle    = seedIntentsDoc(repo, planes.intents);
 
   // The operator's own identity + circle tiddlers land on the planes that now carry this face's tag.
   const ceremonyTiddlers = buildCeremonyTiddlers(atom.key, vesselDisplayName);
@@ -675,6 +679,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
     identitiesUrl: identitiesHandle.url as string,
     circlesUrl:    circlesHandle.url    as string,
     sessionsUrl:   sessionsHandle.url   as string,
+    intentsUrl:    intentsHandle.url    as string,
     personaUrl:    personaHandle.url    as string,
     personaBagId,
     personaGroupId:   personaGroup.groupId,
@@ -924,6 +929,7 @@ export interface ApplyAdmitResult {
   identitiesUrl: string;
   circlesUrl:    string;
   sessionsUrl:   string;
+  intentsUrl:    string;
   daemonUrl:      string;
   /** The PersonaGroup plane's doc URL the joinee resolves — the founder's shared doc
    *  (membership-sync) when the payload carries it, else a fresh local seed. */
@@ -1007,6 +1013,8 @@ export async function runApplyAdmitPayload(
   if (!carriedLog.founded || carriedLog.fork || !carriedLog.head) throw new Error("[ceremony] runApplyAdmitPayload: payload's persona log is empty, unfounded or forked; re-admit the face.");
   if (payload.edgeFrontier.records.length === 0) throw new Error("[ceremony] runApplyAdmitPayload: payload carries no signed fleet frontier record; re-admit the face.");
   const carriedPlanes = carriedLog.planes;
+  if (!carriedPlanes.intents) throw new Error("[ceremony] runApplyAdmitPayload: payload names no signed intents plane; re-admit the face.");
+  if (checkpoint && checkpoint.result.intentsUrl !== carriedPlanes.intents) throw new Error("[ceremony] runApplyAdmitPayload: checkpoint names another intents plane; re-admit the face.");
   if (payload.hearthDaemonUrl === undefined) {
     throw new Error("[ceremony] runApplyAdmitPayload: payload lacks hearthDaemonUrl — refusing to admit (pre-field payload would seat door-less with no stated absence).");
   }
@@ -1015,17 +1023,17 @@ export async function runApplyAdmitPayload(
     throw new Error("[ceremony] runApplyAdmitPayload: payload carries no PersonaGroup secret sealed to this device under the pinned prefix — refusing to admit (an enrolment without its secret meets no sibling).");
   }
 
-  // THE FOUR PLANES OF THE FACE THIS VESSEL JOINS — all named off the SAME group doc id the founder used,
+  // THE FIVE PLANES OF THE FACE THIS VESSEL JOINS — all named off the SAME group doc id the founder used,
   // so the two devices name one set identically or they sync nothing. the daemon bag stays sovereign-per-vessel
   // and is seeded fresh above; the face's planes are shared ground reached by one derivation.
   const planes = personaScopedBagIds(payload.personaGroupId);
-  // A FACE'S CIRCLES AND IDENTITIES ARE THE FACE'S, NOT THE DEVICE'S: the founder minted them once and a signed `plane` act in
-  // the bundle names each, so this device adopts those documents by url and syncs them; a bundle that names none seeds
-  // this device's own (a bare probe). The boot proves the urls it mounts against the verified acts, so an act this apply
+  // A FACE'S CIRCLES, IDENTITIES AND INTENTS ARE THE FACE'S, NOT THE DEVICE'S: the founder minted them once and a signed `plane` act in
+  // the bundle names each, so this device adopts those documents by url and syncs them. Circles and identities may
+  // seed a local probe where absent; intents refuses without its signed act. The boot proves the urls it mounts against the verified acts, so an act this apply
   // reads unverified moves nothing there. SESSIONS stay per vessel: a session is motion (which device wears the face now),
   // and decisions cross devices, never motion.
   const planeUrlOf = (name: string): string | undefined => carriedPlanes[name];
-  const sharedIdentitiesUrl = planeUrlOf("identities"), sharedCirclesUrl = planeUrlOf("circles");
+  const sharedIdentitiesUrl = planeUrlOf("identities"), sharedCirclesUrl = planeUrlOf("circles"), sharedIntentsUrl = planeUrlOf("intents")!;
   const identitiesHandle: ReturnType<typeof seedIdentitiesDoc> | null = sharedIdentitiesUrl ? null
     : checkpoint ? await repo.find(checkpoint.result.identitiesUrl as never) : seedIdentitiesDoc(repo, planes.identities);
   const circlesHandle: ReturnType<typeof seedCirclesDoc> | null = sharedCirclesUrl ? null
@@ -1082,6 +1090,7 @@ export async function runApplyAdmitPayload(
       identitiesUrl: sharedIdentitiesUrl ?? identitiesHandle!.url as string,
       circlesUrl: sharedCirclesUrl ?? circlesHandle!.url as string,
       sessionsUrl: sessionsHandle.url as string,
+      intentsUrl: sharedIntentsUrl,
       daemonUrl: daemonHandle.url as string,
       personaUrl, personaBagId,
       hearthDaemonUrl: payload.hearthDaemonUrl,

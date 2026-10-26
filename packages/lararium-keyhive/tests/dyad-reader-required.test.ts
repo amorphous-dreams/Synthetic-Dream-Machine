@@ -33,6 +33,8 @@ describe("the island's dyad consults take a reader or refuse", () => {
     expect(code).toMatch(/const dyadReader = \(ctx: IslandContext\): DyadReader \| undefined => readDyadFromBoard\s*\?[\s\S]*?boardDyadReader\(\s*ctx\.repo,[\s\S]*?:\s*dyadReading;/);
     expect((code.match(/requireDyadReader\(dyadReader\(ctx\), "the join gate"\)\(/g) ?? []).length).toBe(1);
     expect((code.match(/requireDyadReader\(dyadReader\(ctx\), "the Binding Gate"\)\(/g) ?? []).length).toBe(1);
+    // The intent door reads a device's standing through the same guard: an island with no reader stalls it as unknown, never as clear.
+    expect((code.match(/requireDyadReader\(dyadReader\(ctx\), "the intent door"\)\(/g) ?? []).length).toBe(1);
     // The content-key seat reads a seat's standing and its own shadow through the same guard.
     expect((code.match(/requireDyadReader\(dyadReader\(ctx\), "the content-key seat"\)\(/g) ?? []).length).toBe(2);
     expect(code).not.toMatch(/dyadReading\s*\?(?!:)/);     // no ternary over the reader: no optional consult, no default

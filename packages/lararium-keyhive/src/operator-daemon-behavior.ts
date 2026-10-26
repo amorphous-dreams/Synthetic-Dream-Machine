@@ -27,12 +27,13 @@ import {
   makeCircleStateReactor,
   makeCircleReactors,
   makeCabalRealmReactors,
+  makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, SEED_OFF_DISK,
 } from "@lararium/tw5";
-import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, leaseEpochPrefix, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
-import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor } from "@lararium/tw5";
+import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, leaseEpochPrefix, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
+import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest } from "@lararium/mesh";
 import { boardDyadReader } from "./board-dyad-reader.js";
-import type { DocHandle, LarDoc, AutomergeUrl } from "@lararium/mesh";
+import type { DocHandle, LarDoc, AutomergeUrl, CapabilityVerifier, Verb } from "@lararium/mesh";
 
 /** Vessel-injected daemon shore the platform entry supplies (node folds the telemetry capture SINK here; a
  *  browser/node entry folds the projection `onBoot` mount so the daemon inherits the wiki render cap).
@@ -122,7 +123,7 @@ export type DyadReader = (fleetRootDid: string, deviceVerifyingKey: string) => i
  * The dyad's reader a gate asks through, or a refusal by name. A gate that binds or seats a device reads that
  * device's standing first; with no reader composed it cannot read one, and it never reads the absence as `clear`.
  */
-export function requireDyadReader(reader: DyadReader | undefined, gate: "the Binding Gate" | "the join gate" | "the content-key seat"): DyadReader {
+export function requireDyadReader(reader: DyadReader | undefined, gate: "the Binding Gate" | "the join gate" | "the content-key seat" | "the intent door"): DyadReader {
   if (!reader) {
     throw new Error(
       `[daemon] DyadReaderAbsent: ${gate} reads a device's standing off the vessel's own fold of its fleet board, and this island ` +
@@ -145,6 +146,7 @@ import { announceSeatRoll } from "./seat-duty-executor.js";
 import { FACE_GRANT_PREFIX, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
 import { makeFaceSeat, makeGroupDocListener, type GroupDocHandle } from "./face-seat.js";
 import { runFaceJoinOperation } from "./face-join-operation.js";
+import { makeFaceIntentDoor } from "./face-intent-door.js";
 import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
 import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
@@ -272,6 +274,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // capability), so a binding never delegates to an agent the veil cannot name.
   let slotDocs: SlotDocResolver | null = null;
   let faceSeat: ReturnType<typeof makeFaceSeat> | null = null;
+  /** The face-join effect the intent door runs for a pinned `face-join` intent; the daemon-doc summons route carries no such verb. */
+  let faceJoinEffect: ((args: Record<string, unknown>, at: { readonly intentId: string; readonly pinnedAtom: string }) => Promise<Record<string, unknown>>) | null = null;
+  let intentRegistry: VerbTable | null = null;
+  let intentVerifier: CapabilityVerifier | null = null;
+  let registerIntentView: (() => void) | null = null;
+  let heedIntentDoor: (() => void) | null = null;
   const slotDocsOf = (ctx: IslandContext): SlotDocResolver => {
     if (slotDocs) return slotDocs;
     if (!kh) throw new Error("keyhive not booted");
@@ -354,6 +362,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
 
   return {
     ...daemonExtra, // the vessel-injected telemetry capture SINK flows through (idempotent cap → live)
+    faceIntents: !!daemonAuth.personaGroupId,
     // WHO A VERB PRESENTS AS. The vessel's presence channel (the 0600 rendezvous) carries a session, and a session
     // wears the face this island mounts (session model): authority comes from the channel, never from the unsigned
     // `requestedBy` claim. With a face lit, a local verb that names this place presents as the mounted face's atom;
@@ -364,6 +373,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     // IslandContext composite (verify-then-delegate gate inherited); the residency
     // ACTION reactors register alongside them below.
     wireWorkerVerbs: (registry, ctx: IslandContext) => {
+      intentRegistry = registry;
+      registerIntentView?.();
+      heedIntentDoor?.();
       const kahuReach = kahuReachOf(ctx);
       // `where` reaches every registered bag across both oracle planes by ACCESS
       // (access≠load) — the daemon queries all bags, mounts none. resolve stays
@@ -476,7 +488,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // is reachable here, the never-federates wall made structural. `ctx.tw5` lets a mutation/list re-render
       // the daemon follow surface (a browser paints it; a headless node daemon rests the temp tiddler).
       if (ctx.oracleUrl) {
-        // The registry a FACE's planes answer to — the persona, circles, identities and sessions planes all share one
+        // The registry a FACE's planes answer to — the persona, circles, identities, sessions and intents planes all share one
         // tag and one home. Built once so the two verb families below cannot drift onto different planes.
         const facePlane = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null;
         // THE FOLLOW GRAPH BELONGS TO THE FACE THAT IS WORN, AND A FACE'S PLANES ARE USER BAGS.
@@ -598,7 +610,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             });
             return { verb: "seat-duties", ran: true, ...answered };
           });
-          registry.register("face-join", async (args) => {
+          faceJoinEffect = async (args, at) => {
             if (!kh) throw new Error("[daemon] face-join: keyhive unbooted");
             const ownEdge = daemonAuth.deviceEdge;
             if (!ownEdge) {
@@ -675,8 +687,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               founderEdge: ownEdge, signGrant: faceAtom().sign, atomSeed: meshHexToBytes(daemonAuth.atom!.seed),
               operationStore,
               grantPlane: { store: new AutomergeDocStore(planeHandle, personaBagIdFor(faceGroup())), heads: () => planeHandle.heads() },
+              fence: { intentId: at.intentId, pinnedAtom: at.pinnedAtom, ownAtom: faceAtom().key },
             });
-          });
+          };
         }
       }
 
@@ -1110,13 +1123,72 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           wake: () => seat.wake(),
           log: (message) => console.log(`[daemon] ${message}`),
         });
+        // THE INTENT DOOR: the face's intents plane carries each pinned `face-join` request; this hearth answers only the
+        // intents that pin its own atom, through the effect door (`face-join-operation`'s fence). It attaches once the
+        // plane and the persona plane resolve in the catalog, and wakes on their own changes alone.
+        const intentsBag = personaSiblingBagIds(personaBagIdFor(group))!.intents;
+        const faceJoinVia = (args: unknown, at: { readonly intentId: string; readonly pinnedAtom: string }): Promise<unknown> =>
+          faceJoinEffect ? faceJoinEffect((args ?? {}) as Record<string, unknown>, at) : Promise.reject(new Error("face-join: the effect door stands unregistered"));
+        let doorStop: (() => void) | null = null, doorAttaching = false;
+        const attachDoor = async (): Promise<void> => {
+          if (doorStop || doorAttaching || stopped || !daemonAuth.atom) return;
+          doorAttaching = true;
+          try {
+            const [intentsUrl, personaUrl] = [await catalog.urlOf(intentsBag), await catalog.urlOf(personaBagIdFor(group))];
+            if (!intentsUrl || !personaUrl) return;
+            const plane = await ctx.repo.findWithProgress<LarDoc>(intentsUrl as AutomergeUrl).whenReady();
+            const personaPlane = await ctx.repo.findWithProgress<LarDoc>(personaUrl as AutomergeUrl).whenReady();
+            const atom = faceAtom();
+            const door = makeFaceIntentDoor({
+              group, atom: { key: atom.key, sign: atom.sign }, plane, personaRecords: () => faceRecordsOf([personaPlane.doc()], group),
+              kelChain: daemonAuth.personaKel!.chain, anchor: daemonAuth.faceAnchor ?? null,
+              standing: async (device) => {
+                const reading = await requireDyadReader(dyadReader(ctx), "the intent door")(edge.personaRootDid, device);
+                return reading === "clear" ? "stands" : reading === "aside" ? "aside" : "unknown";
+              },
+              verbs: faceIntentVerbs(), effects: new Map([["face-join", faceJoinVia]]),
+              runDeclaredEffect: async (verb, args, at) => {
+                const table = intentRegistry, verifier = intentVerifier;
+                if (!table?.get(verb) || !verifier) throw new Error(`intent effect ${verb}: daemon handler or verifier absent`);
+                if (!args || typeof args !== "object" || Array.isArray(args)) throw new Error(`intent effect ${verb}: arguments must be a record`);
+                const invocation: Verb = {
+                  requestId: at.intentId, title: `lar:///lararium.local.vm/verbs/intent-${at.intentId}`,
+                  action: verb, args: args as Record<string, unknown>, targets: [], batchMode: "atomic", status: "pending",
+                  requestedBy: atom.key, requestedAt: "",
+                };
+                return runLocalVerb(invocation, { daemon: ctx.composite, registry: table,
+                  verifier, presenterOf: () => atom.key, localOf: () => true });
+              },
+              log: (message) => console.log(`[daemon] ${message}`),
+            });
+            registerIntentView = () => {
+              if (intentRegistry && !intentRegistry.has("intent-view"))
+                intentRegistry.register("intent-view", makeIntentViewReactor(ctx.tw5, intentsBag, async () => (await door.describe()).pane));
+              if (intentVerifier) void intentVerifier.verify({ presenter: atom.key, bagUrl: intentsBag, access: "read", channel: "local" })
+                .then((proof) => ctx.tw5.setTiddler({ title: INTENT_VIEW_CAP, text: proof.ok ? "1" : "0", ...SEED_OFF_DISK }))
+                .catch(() => ctx.tw5.setTiddler({ title: INTENT_VIEW_CAP, text: "0", ...SEED_OFF_DISK }));
+            };
+            registerIntentView();
+            heedIntentDoor = () => { void door.heed(); };
+            const wake = (): void => { void door.heed(); };
+            personaPlane.on("change", wake);
+            const stopDoor = door.attach();
+            doorStop = () => { stopDoor(); personaPlane.off("change", wake); };
+          } catch (error) { console.log(`[daemon] the face intent door waits: ${String(error)}`); }
+          finally { doorAttaching = false; }
+        };
         const stopLease = ctx.composite.subscribe((change) => {
           if (stopped || change.bag !== DAEMON_BAG_ID) return;
           seat.daemonChanged(change.title);
           if (!groupDoc.attached()) void groupDoc.attempt();
+          if (!doorStop) void attachDoor();
         });
-        veil.whenDisposed(() => { stopped = true; stopLease(); groupDoc.stop(); });
+        const doorCatalog = await catalog.handle();
+        const doorCatalogWake = (): void => { if (!doorStop) void attachDoor(); };
+        doorCatalog.on("change", doorCatalogWake);
+        veil.whenDisposed(() => { stopped = true; stopLease(); groupDoc.stop(); doorCatalog.off("change", doorCatalogWake); doorStop?.(); });
         void groupDoc.attempt();
+        void attachDoor();
         await seat.run();
       }
       // Archive refusal records use the daemon wiki's default writable layer, so attachment precedes them.
@@ -1144,10 +1216,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         }
       }
       // The Kahu predicate stands in the verifier as well: a verb routed into a wiki island clears its cap HERE.
-      return withKahuReach(
+      intentVerifier = withKahuReach(
         faceOwnerVerifier({ vessel: keyhive, face: veilKh, ...(daemonAuth.atom ? { mount: { atomKey: daemonAuth.atom.key, placeKey: daemonAuth.vesselVerifyingKey } } : {}) }),
         kahuReachOf(ctx),
       );
+      return intentVerifier;
     },
 
     // NO PEER ADMISSION HERE. A sealed gate (`face-gate`) proves the face key in its Noise finish and sorts the socket

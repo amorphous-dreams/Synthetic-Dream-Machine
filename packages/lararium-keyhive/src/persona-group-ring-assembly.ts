@@ -5,7 +5,7 @@
  * records. `makePersonaGroupIdentityRing` (mesh) holds that verdict; this function hands it the inputs every
  * vessel reads the same way:
  *
- *   · `governs`         — the face's four plane doc-ids, resolved off the vessel's own catalog
+ *   · `governs`         — the face's five plane doc-ids, resolved off the vessel's own catalog
  *                         (`governedPlaneDocIds`, the resolution `DeterministicFederationGate` runs);
  *   · `provenVesselKey` — the trailing 64 hex of what the peer PROVED (`provenVesselKeyOf`), never a claim;
  *   · `isOwnHand`       — the vessel's own in-process hand, never questioned;
