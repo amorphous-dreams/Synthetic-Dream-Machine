@@ -12,6 +12,8 @@ import {
 } from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { listAnchoredPersonas, loadIdentityAnchors } from "../identity-anchors.js";
+import { KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
+import { loadVeilArchive } from "../identity-anchors.js";
 import { loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";
 import { loadPersonaGroupRootSeed } from "../node-vessel-identity.js";
@@ -75,7 +77,7 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
   const projection = face.project(faceRecordsOf([persona?.doc()], group), group);
   if (!projection.founded || projection.fork) throw new IntentRefused("face-log-unreadable");
   const planeUrl = await catalog.urlOf(bag);
-  if (!planeUrl || projection.planes[bag] !== planeUrl) throw new IntentRefused("intent-plane-unproved: the catalog entry lacks the face's signed plane act");
+  if (!planeUrl || projection.planes["intents"] !== planeUrl) throw new IntentRefused("intent-plane-unproved: the catalog entry lacks the face's signed plane act");
   const atomSeed = await loadFaceAtomOfGroup(group);
   if (!atomSeed) throw new IntentRefused("face-atom-absent");
   const atom = faceAtomKeyFromSeed(atomSeed, group);
@@ -126,9 +128,30 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
     switch (opts.action) {
       case "issue": {
         if (!opts.verb) throw new IntentRefused("verb-absent");
-        const audience = intentAudience(opts);
         const bound: IntentBound = { ...(opts.voidAt ? { void: opts.voidAt } : {}), ...(opts.through ? { through: opts.through } : {}) };
-        entry = await buildIntent({ group, signer, verb: opts.verb, args: opts.args ?? {}, nonce: opts.nonce ?? randomBytes(16).toString("hex"), audience, bound, verbs });
+        const named = opts.to !== undefined || opts.prefer !== undefined || opts.class !== undefined || opts.every === true;
+        let args = opts.args, nonce = opts.nonce, audience: IntentAudience;
+        if (opts.verb === "face-join") {
+          // A joinee asks the face's founding hearth to seat it: the request carries this vessel's own ContactCard and complete
+          // device edge, pins the hearth, and takes the joinee's atom key as nonce so a replay keeps one intent id.
+          const hearth = projection.admissions[0]?.deviceKey;
+          if (!named && !hearth) throw new IntentRefused("hearth-absent: the face's log names no founding hearth; name one with --to");
+          audience = named ? intentAudience(opts) : { mode: "pinned", atom: hearth! };
+          if (args === undefined) {
+            // A ContactCard is not byte-stable across derivations, so a replay returns the request already standing.
+            const standing = view().intents.find((state) => state.verb === "face-join" && state.issuer === atom.key && state.status !== "void");
+            if (standing) return { id: standing.id, replayed: true };
+            const archive = await loadVeilArchive(group);
+            if (!archive) throw new IntentRefused("veil-archive-absent: this vessel holds no ContactCard for the face; re-admit it");
+            const khp = new KeyhiveProvider();
+            await khp.init({ seed: atomSeed, eventStore: new InMemoryEventStore(), archiveBytes: archive });
+            let contactCard: string;
+            try { contactCard = new TextDecoder().decode(await khp.contactCard()); } finally { await khp.dispose(); }
+            args = { summons: { kind: "face-join/v1", contactCard, deviceEdge: anchors.deviceEdge } };
+          }
+          nonce ??= atom.key;
+        } else audience = intentAudience(opts);
+        entry = await buildIntent({ group, signer, verb: opts.verb, args: args ?? {}, nonce: nonce ?? randomBytes(16).toString("hex"), audience, bound, verbs });
         break;
       }
       case "ask":
