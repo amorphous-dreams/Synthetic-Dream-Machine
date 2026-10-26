@@ -59,12 +59,13 @@ import {
   type AdmitOpening, type CustodyRootDoor, type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
   type PresentationFinding,
   signPlaceFloorPin, readPlaceFloorPin, writePlaceFloorPin, hexToBytes, FLOW_SOCKET_ROUTE,
-  type FloorKeyDoor, type PlaceFloorPinStatement,
+  foldClaimHead, verifyCarrierContractAtHead, verifyPlaceKel, writePlaceKelEvent, decodePlaceKelEvent,
+  type FloorKeyDoor, type PlaceFloorPinStatement, type PlaceKelEvent,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
 import { hearthSovereignPin } from "../hearth-sovereign-pin.js";
 
-import { personaRootExists, loadVesselVerifyingKey, loadVesselSigningSeed } from "../node-vessel-identity.js";
+import { personaRootExists, loadVesselVerifyingKey, loadVesselSigningSeed, loadPlaceKelChain } from "../node-vessel-identity.js";
 import { loadWornFaceAtomKey } from "../face-atom-store.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
@@ -96,9 +97,12 @@ export interface NexusContractOptions {
    *  that place). `carry` only, and REQUIRED there: this path reads NO persona seed and mints NO root, so
    *  there is no self-sign arm and a Nexus never conscripts a crossroads either. */
   readonly carrierSig?:  string;
-  /** The joining PLACE's signed floor-pin statement (`nexus carry-for` prints it; JSON). `carry` only, optional: where it
-   *  reads as the named place's own pin at this Nexus, it lands beside the act on the carriage board, so every replica that
-   *  counts the carry files the pin (lar:///ha.ka.ba/lararium/mesh/place-floor-pin). A statement that does not read refuses the act. */
+  /** The joining PLACE's signed floor pin claim and the KEL rows that fold to its head (`nexus carry-for` prints them; JSON
+   *  `{ "floorPin": <claim>, "placeKel": [<event>…] }`). `carry` only, and REQUIRED there: the claim reads as the named place's own
+   *  pin at this Nexus, at a head whose signer is the key the carry names, and the carrier seal verifies under that signer
+   *  (`verifyCarrierContractAtHead`). It lands ATOMICALLY beside the counted act on the carriage board, so every replica that
+   *  counts the carry files the pin (lar:///ha.ka.ba/lararium/mesh/place-floor-pin); a claim that does not read refuses the act,
+   *  and a carry with no claim lands nothing. */
   readonly floorPin?:    string;
   /** The charter DOC's authority home (the CLI supplies `larSealHome()`). */
   readonly sealHome:    string;
@@ -250,7 +254,7 @@ export async function runNexusCarryFor(opts: {
   floorDoor?: FloorKeyDoor;
   /** The Nexus to sign at: the carried charter this AID names (`charterHomeFor`, as `carry` reads it). Absent → the primary charter's. */
   aid?: string;
-}): Promise<{ nym: string; sealEpochCid: string; carrierSig: string; floorPin: PlaceFloorPinStatement | null }> {
+}): Promise<{ nym: string; sealEpochCid: string; carrierSig: string; floorPin: PlaceFloorPinStatement | null; placeKel: readonly PlaceKelEvent[] }> {
   const home = charterHomeOrRefuse(opts.sealHome, opts.aid);
   const roster = foundingRoster(readNexusDoc(home));
   if (roster.sealEpochCid.length === 0) {
@@ -259,27 +263,47 @@ export async function runNexusCarryFor(opts: {
   const nym  = (await loadVesselVerifyingKey()).toLowerCase();
   const seed = await loadVesselSigningSeed();
   const sig  = await signCarrierContract(nym, roster.sealEpochCid, ed25519SignerFromSeed(seed));
-  // THE PLACE'S FLOOR PIN AT THIS NEXUS, signed with the same vessel key the carry will name (`place-floor-pin`). It
-  // authenticates nothing on its own: a reader files it only once its own replica counts the carry.
+  // THE PLACE'S FLOOR PIN CLAIM AT THIS NEXUS: the pin, at the head of the place's own KEL, signed by the signer the KEL seats there
+  // (the key the carry will name; `place-floor-pin`). It authenticates nothing on its own: a reader files it only once its
+  // own replica counts the carry. The KEL rows that fold to the head ride beside it.
   const aid = primaryNexusAid(home);
+  const placeKel = await loadPlaceKelChain();
+  const head = verifyPlaceKel(placeKel);
   let floorPin: PlaceFloorPinStatement | null = null;
-  if (aid) {
+  if (aid && head.ok) {
     const pin = flowFloorPinAt(aid, opts.floorDoor ?? await vesselFloorKeyDoor());
     const signer = ed25519SignerFromSeed(seed);
-    floorPin = await signPlaceFloorPin({ placeKey: nym, pin, sign: async (image) => hexToBytes(await signer(image)) });
+    floorPin = await signPlaceFloorPin({ at: head, pin, sign: async (image) => hexToBytes(await signer(image)) });
   }
-  return { nym, sealEpochCid: roster.sealEpochCid, carrierSig: sig.sig, floorPin };
+  return { nym, sealEpochCid: roster.sealEpochCid, carrierSig: sig.sig, floorPin, placeKel };
 }
 
-/** Read a supplied floor-pin statement for a `carry` of `nym` at `aid`: its own pin, signed by its own key. Refuses otherwise. */
-function floorPinOrRefuse(raw: string, nym: string, aid: string): PlaceFloorPinStatement {
+/**
+ * Read the floor pin claim a `carry` of `nym` at `aid` carries, whole: its own pin at the flow route, at a head whose KEL rows fold,
+ * signed by the signer the KEL seats there, and that signer is `nym`; and the carrier seal verifies under that signer at that head.
+ * Refuses otherwise. The carrier set here is the named place alone: this checks the claim's own bytes; the board's readers judge
+ * the relation.
+ */
+function floorPinOrRefuse(raw: string | undefined, nym: string, aid: string, carrierSeal: QuorumSignature, sealEpochCid: string):
+  { readonly statement: PlaceFloorPinStatement; readonly kel: readonly PlaceKelEvent[] } {
+  if (raw === undefined || raw.trim().length === 0) {
+    throw new NexusContractError("carry REFUSED: a carry lands with the place's floor pin claim — pass the `--floor-pin` file `lares nexus carry-for --out` wrote. Nothing was written.");
+  }
   let parsed: unknown;
-  try { parsed = JSON.parse(raw); } catch { throw new NexusContractError("carry REFUSED: the --floor-pin statement does not parse as JSON — pass the `floorPin` `nexus carry-for --json` printed, whole."); }
-  // The carrier set here is the named place alone: this checks the statement's own bytes; the board's readers judge the relation.
-  const read = readPlaceFloorPin(parsed, { nexusHex: Buffer.from(aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, carriers: new Set([nym]) });
-  if ("refusal" in read) throw new NexusContractError(`carry REFUSED: the --floor-pin statement does not read for this place at this Nexus (${read.refusal}). Nothing was written.`);
-  if (read.placeKey !== nym) throw new NexusContractError("carry REFUSED: the --floor-pin statement names another place than the carry. Nothing was written.");
-  return parsed as PlaceFloorPinStatement;
+  try { parsed = JSON.parse(raw); } catch { throw new NexusContractError("carry REFUSED: the --floor-pin file does not parse as JSON — pass the file `carry-for --out` wrote, whole."); }
+  const file = (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed) ? parsed : {}) as { floorPin?: unknown; placeKel?: unknown };
+  if (file.floorPin === undefined || !Array.isArray(file.placeKel)) {
+    throw new NexusContractError("carry REFUSED: the --floor-pin file names no `floorPin` claim and no `placeKel` rows — pass the file `carry-for --out` wrote, whole.");
+  }
+  const kel: PlaceKelEvent[] = [];
+  for (const row of file.placeKel) { const event = decodePlaceKelEvent(row); if (event === null) throw new NexusContractError("carry REFUSED: a --floor-pin KEL row does not read. Nothing was written."); kel.push(event); }
+  const read = readPlaceFloorPin(file.floorPin, { nexusHex: Buffer.from(aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, kelRows: kel, standing: { via: "carrier", carriers: new Set([nym]) } });
+  if ("refusal" in read) throw new NexusContractError(`carry REFUSED: the --floor-pin claim does not read for this place at this Nexus (${read.refusal}). Nothing was written.`);
+  const folded = foldClaimHead(kel, read.aid, read.head);
+  if (!folded.ok || !verifyCarrierContractAtHead({ nym, sealEpochCid, sig: carrierSeal.sig }, folded.head)) {
+    throw new NexusContractError("carry REFUSED: the carrier seal does not verify under the signer the place KEL seats at the claim's head. Nothing was written.");
+  }
+  return { statement: file.floorPin as PlaceFloorPinStatement, kel };
 }
 
 /** The charter home an act reads: the carried charter `aid` names, else the primary. Refuses an AID this vessel never carried. */
@@ -304,8 +328,10 @@ interface ContractCore {
   /** An admit's carriage opening: this hearth's full sovereign sync pin and the canon documents it names, under a fresh
    *  salt. The quorum signs its commitment; the board never holds the opening. Null for every other act. */
   readonly opening:  AdmitOpening | null;
-  /** A carry's supplied floor-pin statement, read whole for the named place at this Nexus; null otherwise. */
+  /** A carry's supplied floor pin claim, read whole for the named place at this Nexus; null otherwise. */
   readonly floorPin: PlaceFloorPinStatement | null;
+  /** The place KEL rows that fold to the claim's head; empty where no claim rides. */
+  readonly placeKel: readonly PlaceKelEvent[];
 }
 
 /** The carriage board one charter home's island names on this vessel, with the gate key that resolved the island. */
@@ -339,8 +365,8 @@ async function contractCore(opts: NexusContractOptions): Promise<ContractCore> {
   const opening: AdmitOpening | null = opts.action === "admit"
     ? openAdmitCarriage({ gatePin: hearthSovereignPin(nexusAidOrRefuse(home), opts.gateDoor), canon: opts.catalogUrl ? await admitCanonDocs(opts.repo, opts.catalogUrl) : {} })
     : null;
-  const floorPin = opts.action === "carry" && opts.floorPin ? floorPinOrRefuse(opts.floorPin, nym, nexusAidOrRefuse(home)) : null;
-  return { nym, home, roster, contract, gateKey, boardUrl, handle, parents, opening, floorPin };
+  const claimed = opts.action === "carry" ? floorPinOrRefuse(opts.floorPin, nym, nexusAidOrRefuse(home), contract!.contractSig, roster.sealEpochCid) : null;
+  return { nym, home, roster, contract, gateKey, boardUrl, handle, parents, opening, floorPin: claimed?.statement ?? null, placeKel: claimed?.kel ?? [] };
 }
 
 /**
@@ -364,7 +390,10 @@ async function landEntry(core: ContractCore, repo: Repo, action: CarriageAction,
   if (beforeWrite) await beforeWrite();
   handle.change((d) => {
     writeCarriageEntry(d, entry);
-    if (core.floorPin) writePlaceFloorPin(d, core.floorPin);
+    if (core.floorPin) {
+      writePlaceFloorPin(d, core.floorPin);
+      for (const event of core.placeKel) writePlaceKelEvent(d, core.floorPin.aid, event);
+    }
   });
   await repo.flush();
 
@@ -449,9 +478,9 @@ function partialReader(aid: string, core: Pick<ContractCore, "roster" | "handle"
   return { aid, head: core.roster, board: { carriage: carriageEntriesFromBoard(doc), anchors: rollAnchorsFromBoard(doc), antigen: [] } };
 }
 
-const partialFamily = (action: CarriageAction): "admit" | "revoke" => {
-  if (action === "admit" || action === "revoke") return action;
-  throw new NexusContractError(`a ${action} crosses no vaults as a partial: only an admit and a revoke ride the two-vault door.`);
+const partialFamily = (action: CarriageAction): "admit" | "revoke" | "carry" => {
+  if (action === "admit" || action === "revoke" || action === "carry") return action;
+  throw new NexusContractError(`${action} crosses no vaults as a partial: only admit, revoke and carry ride the two-vault door.`);
 };
 
 /**
@@ -478,7 +507,9 @@ export async function runNexusContractOpen(opts: NexusContractOptions): Promise<
     );
     const aid = nexusAidOrRefuse(core.home);
     // The opening crosses with the partial, so whichever vault lands the act hands the subject its bundle.
-    const partial = nexusActPartial(aid, { family, entry, ...(core.opening ? { opening: core.opening } : {}) });
+    const partial = family === "carry"
+      ? nexusActPartial(aid, { family, entry, claim: core.floorPin!, kel: core.placeKel })
+      : nexusActPartial(aid, { family, entry, ...(core.opening ? { opening: core.opening } : {}) });
     const judged = await judgeNexusActPartial(partial, partialReader(aid, core));
     if (judged.verdict !== "ready") throw new NexusContractError(`the partial this vessel signed reads ${judged.verdict} here${judged.why ? `: ${judged.why}` : ""}; nothing crosses.`);
     return { partial, verdict: judged.verdict, signed: judged.signed, landed: null };
@@ -497,7 +528,7 @@ export async function runNexusContractPartial(opts: { readonly partial: unknown;
   Promise<NexusContractPartialResult> {
   const read = readNexusActPartial(opts.partial);
   if (!read || read.act.family === "kapae" || read.act.family === "roll-anchor" || read.act.family === "edge-roll-anchor") {
-    throw new NexusContractError("the file reads as no admit or revoke partial");
+    throw new NexusContractError("the file reads as no admit, revoke or carry partial");
   }
   const entry0 = read.act.entry;
   const home = charterHomeOrRefuse(opts.sealHome, read.aid);
@@ -507,8 +538,8 @@ export async function runNexusContractPartial(opts: { readonly partial: unknown;
     const { gateKey, boardUrl, handle } = await carriageBoardFor(repo, home);
     const core: ContractCore = { nym: entry0.nym, home, roster, contract: null, gateKey, boardUrl, handle, parents: entry0.parents,
       opening: read.act.family === "admit" ? read.act.opening ?? null : null,
-      // A partial carries the act alone: a two-vault carry lands no floor-pin statement (the herm's own replica lays it).
-      floorPin: null };
+      // A carry partial carries the place's claim and its KEL rows; they land ONLY with the counted act, in one write.
+      floorPin: read.act.family === "carry" ? read.act.claim : null, placeKel: read.act.family === "carry" ? read.act.kel : [] };
     const reader = partialReader(read.aid, core);
     let partial: NexusActPartial = read;
     let judged = await judgeNexusActPartial(partial, reader);
@@ -523,7 +554,7 @@ export async function runNexusContractPartial(opts: { readonly partial: unknown;
     if (judged.verdict !== "complete") {
       throw new NexusContractError(`the partial reads ${judged.verdict} on this vessel${judged.why ? `: ${judged.why}` : ""}; nothing signs or lands.`);
     }
-    const act = partial.act as Extract<NexusActPartial["act"], { family: "admit" | "revoke" }>;
+    const act = partial.act as Extract<NexusActPartial["act"], { family: "admit" | "revoke" | "carry" }>;
     // A seat's signature awaits custody, and the board or the charter head may move meanwhile: the act lands only
     // where it still reads `complete` against the head and the board as they stand at the write.
     const fresh: ContractCore = { ...core, roster: seatedRosterOrRefuse(home) };

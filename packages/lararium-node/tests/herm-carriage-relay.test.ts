@@ -32,6 +32,7 @@ import { mountFlowMapReadFace } from "../src/flow-read-face.js";
 import { carriageCap, CAP, type MeshPalaceComponent } from "../src/node-caps.js";
 import { vesselGate } from "../src/vessel-gates.js";
 import { gateReadingsFor, layStatementOn, vesselCarriagePull } from "../src/herm-carriage.js";
+import { foundPlace } from "../../lararium-mesh/tests/place-claim-fixture.js";
 import { ownPlacePosture } from "../src/socket-sorter.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 import { dialer, realDeadlines, AUDIENCE } from "./flow-floor-rig.js";
@@ -107,7 +108,8 @@ async function stand(h: Herm, w: World, readings: () => Promise<readonly Carried
     placeClass: "herm", ownPlaceKey: h.key, sign: h.sign, readings, ownNexus: () => null,
     openBoard: async () => board.doc,
     ownFloorPin: async (nexus) => deriveGateBundle(floorGateRoot(door), new TextEncoder().encode(nexus), floorRoute(FLOW_SOCKET_ROUTE)).pin,
-    layStatement: async (_url, statement) => { layStatementOn(board.handle, statement); },
+    ownPlaceChain: async () => foundPlace(6, h.seed).chain,
+    layStatement: async (_url, statement, kel) => { layStatementOn(board.handle, statement, kel); },
     pins, audience: AUDIENCE, deadlines: realDeadlines(1_500), dialSocket: dialer,
   });
   const meshpalace: CapModule = { id: CAP.meshpalace, build: () => ({ handle } as MeshPalaceComponent) };
