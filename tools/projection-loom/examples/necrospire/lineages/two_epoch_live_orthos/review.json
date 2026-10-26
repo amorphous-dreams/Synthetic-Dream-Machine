@@ -1,0 +1,1503 @@
+{
+  "schema": "projection-loom/experiment-zero-review",
+  "budget_sha256": "92b10fbe1a60a4d5b0921ed2c50267ad1b04c87cac22bac37cda23cf11c8909f",
+  "passes": 2,
+  "seats": 4,
+  "eligible": 12,
+  "reviewed": 4,
+  "cameras": {
+    "back": {
+      "azimuth": 180.0,
+      "elevation": 0.0,
+      "roll": 0.0,
+      "fit": "fixed",
+      "margin": 0.02,
+      "pixel_scale": 12.64447065044071,
+      "world_anchor": [
+        0,
+        0,
+        0
+      ],
+      "pixel_center": [
+        121.37068668879567,
+        97.32929884101775
+      ],
+      "reference_size": [
+        256,
+        384
+      ]
+    },
+    "front": {
+      "azimuth": 0.0,
+      "elevation": 0.0,
+      "roll": 0.0,
+      "fit": "fixed",
+      "margin": 0.02,
+      "pixel_scale": 12.64447065044071,
+      "world_anchor": [
+        0,
+        0,
+        0
+      ],
+      "pixel_center": [
+        134.62931331120433,
+        97.32929884101775
+      ],
+      "reference_size": [
+        256,
+        384
+      ]
+    },
+    "l-side": {
+      "azimuth": 270.0,
+      "elevation": 0.0,
+      "roll": 0.0,
+      "fit": "fixed",
+      "margin": 0.02,
+      "pixel_scale": 12.64447065044071,
+      "world_anchor": [
+        0,
+        0,
+        0
+      ],
+      "pixel_center": [
+        126.91573684672272,
+        97.32929884101775
+      ],
+      "reference_size": [
+        256,
+        384
+      ]
+    },
+    "oblique": {
+      "azimuth": 42.0,
+      "elevation": 17.0,
+      "roll": 0.0,
+      "fit": "fixed",
+      "margin": 0.02,
+      "pixel_scale": 51.71930758824003,
+      "world_anchor": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pixel_center": [
+        524.8549372075925,
+        415.8641142558465
+      ],
+      "reference_size": [
+        1024,
+        1536
+      ]
+    },
+    "r-side": {
+      "azimuth": 90.0,
+      "elevation": 0.0,
+      "roll": 0.0,
+      "fit": "fixed",
+      "margin": 0.02,
+      "pixel_scale": 12.64447065044071,
+      "world_anchor": [
+        0,
+        0,
+        0
+      ],
+      "pixel_center": [
+        129.08426315327728,
+        97.32929884101775
+      ],
+      "reference_size": [
+        256,
+        384
+      ]
+    },
+    "top": {
+      "azimuth": 0.0,
+      "elevation": 90.0,
+      "roll": 0.0,
+      "fit": "fixed",
+      "margin": 0.02,
+      "pixel_scale": 35.20357029487278,
+      "world_anchor": [
+        0,
+        0,
+        0
+      ],
+      "pixel_center": [
+        146.4567233860109,
+        188.98129441795126
+      ],
+      "reference_size": [
+        256,
+        384
+      ]
+    }
+  },
+  "candidates": [
+    {
+      "id": "0002/crystal-002-001",
+      "epoch": 2,
+      "family": "crystal",
+      "emitter": "family:crystal:sobol",
+      "parent": "0001/crystal-001-002",
+      "ancestry": {
+        "entity": "Crystal",
+        "family": "crystal",
+        "component_parent": "0001/crystal-001-002",
+        "collaborators": {
+          "needle": "0001/needle-001-002",
+          "terraces": "0001/terraces-001-002",
+          "keep": "0001/keep-001-002"
+        },
+        "generation": 2,
+        "mode": "sobol",
+        "transfer": null,
+        "interaction_pairs": []
+      },
+      "genome": {
+        "brutalist.band_count": 4.0,
+        "brutalist.bands": 1.0,
+        "brutalist.pier_count": 2.9817631492507837,
+        "brutalist.piers": 0.9669754608628737,
+        "brutalist.projection": 0.26,
+        "crown_offset": 0.0,
+        "crown_taper": 0.0,
+        "crystal.fracture": 0.09493627635762096,
+        "crystal.guide": 0.12157382420264184,
+        "crystal.relief": 0.1336055313050747,
+        "crystal.seed": 33.21767835505307,
+        "crystal.wave": 7.0,
+        "fortress_width": 4.79893976631004,
+        "gallery_reach": 1.0091815023584036,
+        "gate_width": 0.633377650987387,
+        "grammar.brace_span": 1.15,
+        "grammar.buttress": 0.2,
+        "grammar.gallery": 0.5540406588971748,
+        "grammar.gallery_span": 1.918833756204547,
+        "join.enable": 0.3486852292291842,
+        "join.fracture": 0.06810099690540557,
+        "join.relief": 0.08657822215679203,
+        "join.seed": 0.0,
+        "join.wave": 6.3646273689385,
+        "keep_taper": 0.011710315156751985,
+        "parapet_fraction": 0.68,
+        "shaft_asymmetry": 0.03388654890349733,
+        "shaft_jaggedness": 0.05956412397640926,
+        "shaft_length": 20.12881448718596,
+        "shaft_width": 3.0077008772123732,
+        "spire_segmentation": 0.5737051603627407,
+        "terrace_offset": 0.06199413017177656,
+        "terrace_overhang": 1.2700720229959708,
+        "tower_height": 2.5522847061362515
+      },
+      "native_witness_id": "e8ac6e7ce844219e178e",
+      "combined_loss": 0.30653934133780086,
+      "losses": {
+        "silhouette": 0.2908438061041293,
+        "prior": 0.00019824599456809308,
+        "regional": 0.012661064425770308,
+        "macro": 0.010653225806451613,
+        "contour": 0.004844063432651881
+      },
+      "observation": {
+        "schema": "projection-loom/exploration-observation",
+        "budget_sha256": "92b10fbe1a60a4d5b0921ed2c50267ad1b04c87cac22bac37cda23cf11c8909f",
+        "core_mask_sha256": "a070936ee4e5a5a3204702474fe179d8726ac1cc29bbf3d44944591bbd9cbe20",
+        "outer_mask_sha256": "b8c3a20826e0941f9fffb670b33353e648b65cc35ba9a06d1e99882dd1174312",
+        "core_occupied": 1073,
+        "extra_occupied": 0,
+        "extra_fraction": 0.0,
+        "native_geometry": {
+          "vertices": 528,
+          "faces": 356,
+          "depth_min": -5.9273683626158755,
+          "depth_max": 4.528200747135573,
+          "depth_anchor": -1.0418686639399426,
+          "depth_radius": 11.039436575758838,
+          "projected_bounds": [
+            49.65288767995014,
+            51.25427771688135,
+            78.24139206061399,
+            136.3930305300965
+          ]
+        },
+        "evidence_state": "source-frame projection and observed geometry; not survey registration"
+      },
+      "rank": 1,
+      "audit": {
+        "location": "necrospire",
+        "pet_name": "Necrospire: A Crystal Bearing a Fortress",
+        "cad_valid": true,
+        "cad": {
+          "valid_joints": true,
+          "root": "obsidian needle",
+          "parts": 15,
+          "joints": 14,
+          "failed": [],
+          "weakest_volume_ratio": 0.1541719913862355,
+          "min_intersection_extent": 0.11000000000000032,
+          "contacts": [
+            {
+              "parent": "obsidian needle",
+              "child": "lower terrace",
+              "overlap_volume": 7.00093488494586,
+              "volume_ratio": 0.1541719913862355,
+              "minimum_intersection_extent": 0.5750002,
+              "required_volume": 0.22704950562021814,
+              "required_thickness": 0.02025,
+              "valid": true
+            },
+            {
+              "parent": "lower terrace",
+              "child": "central keep",
+              "overlap_volume": 9.155576228098798,
+              "volume_ratio": 0.20162070388766173,
+              "minimum_intersection_extent": 0.7377616235306816,
+              "required_volume": 0.22704950562021814,
+              "required_thickness": 0.02025,
+              "valid": true
+            },
+            {
+              "parent": "central keep",
+              "child": "upper keep",
+              "overlap_volume": 11.505513012198401,
+              "volume_ratio": 0.6051653128736145,
+              "minimum_intersection_extent": 1.7456041294511184,
+              "required_volume": 0.09506090953531952,
+              "required_thickness": 0.038151571142164824,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "parapet",
+              "overlap_volume": 2.1563379924242025,
+              "volume_ratio": 0.41374618904469557,
+              "minimum_intersection_extent": 0.3271572940795622,
+              "required_volume": 0.02605870518593781,
+              "required_thickness": 0.007799999999999994,
+              "valid": true
+            },
+            {
+              "parent": "lower terrace",
+              "child": "front lower terrace",
+              "overlap_volume": 1.512342701523879,
+              "volume_ratio": 0.6350955623234633,
+              "minimum_intersection_extent": 0.55,
+              "required_volume": 0.011906418429307347,
+              "required_thickness": 0.00825,
+              "valid": true
+            },
+            {
+              "parent": "lower terrace",
+              "child": "western gallery",
+              "overlap_volume": 0.9175856697379001,
+              "volume_ratio": 0.7197315215233917,
+              "minimum_intersection_extent": 0.4500000000000002,
+              "required_volume": 0.006374499673126225,
+              "required_thickness": 0.0067500000000000025,
+              "valid": true
+            },
+            {
+              "parent": "lower terrace",
+              "child": "east gallery",
+              "overlap_volume": 0.4909391561179387,
+              "volume_ratio": 0.3198161086978531,
+              "minimum_intersection_extent": 0.6136739451474233,
+              "required_volume": 0.007675335024818191,
+              "required_thickness": 0.009600000000000001,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat facade band 0",
+              "overlap_volume": 0.07398410404694919,
+              "volume_ratio": 0.6636002193060245,
+              "minimum_intersection_extent": 0.11000000000000032,
+              "required_volume": 0.0005574448432545712,
+              "required_thickness": 0.0016500000000000048,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat facade band 1",
+              "overlap_volume": 0.07398410404694919,
+              "volume_ratio": 0.6636002193060245,
+              "minimum_intersection_extent": 0.11000000000000032,
+              "required_volume": 0.0005574448432545712,
+              "required_thickness": 0.0016500000000000048,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat facade band 2",
+              "overlap_volume": 0.07398410404694919,
+              "volume_ratio": 0.6636002193060245,
+              "minimum_intersection_extent": 0.11000000000000032,
+              "required_volume": 0.0005574448432545712,
+              "required_thickness": 0.0016500000000000048,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat facade band 3",
+              "overlap_volume": 0.07398410404694919,
+              "volume_ratio": 0.6636002193060245,
+              "minimum_intersection_extent": 0.11000000000000032,
+              "required_volume": 0.0005574448432545712,
+              "required_thickness": 0.0016500000000000048,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat vertical pier 0",
+              "overlap_volume": 0.05737557187189268,
+              "volume_ratio": 0.6564871662927192,
+              "minimum_intersection_extent": 0.13,
+              "required_volume": 0.00043698928796964215,
+              "required_thickness": 0.00195,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat vertical pier 1",
+              "overlap_volume": 0.05737557187189271,
+              "volume_ratio": 0.6564871662927191,
+              "minimum_intersection_extent": 0.13000000000000006,
+              "required_volume": 0.0004369892879696424,
+              "required_thickness": 0.00195,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat vertical pier 2",
+              "overlap_volume": 0.05737557187189267,
+              "volume_ratio": 0.656487166292719,
+              "minimum_intersection_extent": 0.13,
+              "required_volume": 0.00043698928796964215,
+              "required_thickness": 0.00195,
+              "valid": true
+            }
+          ],
+          "valid": true,
+          "union_solids": 1,
+          "union_valid": true,
+          "union_volume": 242.9644512938226,
+          "voids": {
+            "valid": true,
+            "errors": [],
+            "contacts": [
+              {
+                "name": "great-hall",
+                "kind": "room",
+                "inside_volume": 2.375825,
+                "outside_volume": 0.0
+              },
+              {
+                "name": "guarded-gate",
+                "kind": "doorway",
+                "inside_volume": 0.9898269796487478,
+                "outside_volume": 1.4722013894477368
+              },
+              {
+                "name": "upper-shaft",
+                "kind": "shaft",
+                "inside_volume": 0.3145151230359152,
+                "outside_volume": 0.0
+              }
+            ],
+            "reachable": [
+              "great-hall",
+              "guarded-gate",
+              "upper-shaft"
+            ],
+            "material_solids": 1,
+            "material_volume": 239.7334920400665
+          }
+        },
+        "layers": [
+          {
+            "name": "~crystal-surface",
+            "role": "sculptural",
+            "source": "procedural",
+            "valid": true,
+            "triangles": 92,
+            "watertight": true,
+            "positive_volume": true,
+            "covers_part": "obsidian needle",
+            "scope": "polygon-surface-only"
+          }
+        ],
+        "attachments": [
+          {
+            "name": "crystal.socket",
+            "valid": true,
+            "mesh_to_cad_anchor": 0.0,
+            "cad_point_to_brep": 0.0,
+            "tolerance": 0.08,
+            "selector": "top-east",
+            "scope": "interface-proximity-not-structural-fusion"
+          }
+        ],
+        "composite_valid_for_render": true,
+        "composite_cad_union_verified": false,
+        "authority": "CAD valid per body; meshes valid for render; anchors verify proximity only"
+      },
+      "views": {
+        "back": {
+          "image": "experiment_zero_review/candidate_01/back.png",
+          "mask_sha256": "fe1459b871587e3b0a9951627f6a6465244c69424ffebee37f4f7221ed1b1e60",
+          "camera_sha256": "3d112f427501d8f15c22a571b11fb34a36f0b725b5f075178645ac6fb0985742"
+        },
+        "front": {
+          "image": "experiment_zero_review/candidate_01/front.png",
+          "mask_sha256": "56f97e6b69c9218076f0fec632f6ba34297a867fce4ed99eafef296793f5ff3e",
+          "camera_sha256": "4afa50ea2e4830e8e1568a334858c78835db176a325b51d0326e7a43550ee1ab"
+        },
+        "l-side": {
+          "image": "experiment_zero_review/candidate_01/l-side.png",
+          "mask_sha256": "047ed36f64f56545e9906aa0dfd8cebd3edbbb4bd6e78beab3c584259d3ecbbf",
+          "camera_sha256": "fcc4dc5095e83a1a9eb1daf5b265e28a75d9e5548a507bc67e76bc55e24856cc"
+        },
+        "oblique": {
+          "image": "experiment_zero_review/candidate_01/oblique.png",
+          "mask_sha256": "08bd5d5d04e599d8da05b6a78bb3f9528e473553e16c0304e42c9e9d27c20c89",
+          "camera_sha256": "35431e87e381496f9d749418142fb1fd5395d63638d8852705c24553f0b59568"
+        },
+        "r-side": {
+          "image": "experiment_zero_review/candidate_01/r-side.png",
+          "mask_sha256": "7a44d0b83171ab8eb7ce147092645839d8d1f6f32d5ebea04a721845d53dd18f",
+          "camera_sha256": "14557a76de784d241d12a1a60577fea5b3d082021c84536c45e62700bc6e18fe"
+        },
+        "top": {
+          "image": "experiment_zero_review/candidate_01/top.png",
+          "mask_sha256": "c6c25cce3d0f5614ecf6b4959f358906d16dc972b3cd58f8d53771a1ae861a59",
+          "camera_sha256": "a28c0912247fd7d69c077fdae5840be8a8a0b9dabbe6ed7f6c21b23709bddabe"
+        }
+      },
+      "relations": "experiment_zero_review/candidate_01/relations.json",
+      "review_authority": "CAD-native and render diagnostic; not survey or selection"
+    },
+    {
+      "id": "0002/keep-002-001",
+      "epoch": 2,
+      "family": "keep",
+      "emitter": "family:keep:sobol",
+      "parent": "0001/keep-001-002",
+      "ancestry": {
+        "entity": "Fortress",
+        "family": "keep",
+        "component_parent": "0001/keep-001-002",
+        "collaborators": {
+          "needle": "0001/needle-001-002",
+          "terraces": "0001/terraces-001-002"
+        },
+        "generation": 2,
+        "mode": "sobol",
+        "transfer": null,
+        "interaction_pairs": []
+      },
+      "genome": {
+        "brutalist.band_count": 4.0,
+        "brutalist.bands": 1.0,
+        "brutalist.pier_count": 3.5288978489115834,
+        "brutalist.piers": 0.8225917015224695,
+        "brutalist.projection": 0.26,
+        "crown_offset": 0.0,
+        "crown_taper": 0.0,
+        "crystal.fracture": 0.1,
+        "crystal.guide": 0.0,
+        "crystal.relief": 0.14,
+        "crystal.seed": 13.0,
+        "crystal.wave": 7.0,
+        "fortress_width": 4.79893976631004,
+        "gallery_reach": 1.0091815023584036,
+        "gate_width": 0.7118988292105496,
+        "grammar.brace_span": 1.15,
+        "grammar.buttress": 0.2,
+        "grammar.gallery": 0.5540406588971748,
+        "grammar.gallery_span": 1.918833756204547,
+        "join.enable": 0.3486852292291842,
+        "join.fracture": 0.06810099690540557,
+        "join.relief": 0.08657822215679203,
+        "join.seed": 0.0,
+        "join.wave": 6.3646273689385,
+        "keep_taper": 0.05426531787961722,
+        "parapet_fraction": 0.68,
+        "shaft_asymmetry": 0.03388654890349733,
+        "shaft_jaggedness": 0.05956412397640926,
+        "shaft_length": 20.12881448718596,
+        "shaft_width": 3.0077008772123732,
+        "spire_segmentation": 0.9850670173764229,
+        "terrace_offset": 0.06199413017177656,
+        "terrace_overhang": 1.2700720229959708,
+        "tower_height": 2.676751608774066
+      },
+      "native_witness_id": "6b7a04a938396aa4a291",
+      "combined_loss": 0.32096655253708434,
+      "losses": {
+        "silhouette": 0.3043867502238138,
+        "prior": 0.0002094282925108008,
+        "regional": 0.011045576407506702,
+        "macro": 0.011236237879484318,
+        "contour": 0.005134136141275428
+      },
+      "observation": {
+        "schema": "projection-loom/exploration-observation",
+        "budget_sha256": "92b10fbe1a60a4d5b0921ed2c50267ad1b04c87cac22bac37cda23cf11c8909f",
+        "core_mask_sha256": "e0f23a4c195a42d0618d90f5f30463e950df6d03f2f0562257957c3204bf57d8",
+        "outer_mask_sha256": "bfef3691df517a41d89df362127a3aa516f27c1b638e8f58639921b512558922",
+        "core_occupied": 1063,
+        "extra_occupied": 0,
+        "extra_fraction": 0.0,
+        "native_geometry": {
+          "vertices": 576,
+          "faces": 380,
+          "depth_min": -6.022131284149405,
+          "depth_max": 4.528200747135573,
+          "depth_anchor": -1.0418686639399426,
+          "depth_radius": 11.039436575758838,
+          "projected_bounds": [
+            49.65288767995014,
+            50.79257200272692,
+            78.24139206061399,
+            136.41271957899738
+          ]
+        },
+        "evidence_state": "source-frame projection and observed geometry; not survey registration"
+      },
+      "rank": 2,
+      "audit": {
+        "location": "necrospire",
+        "pet_name": "Necrospire: A Crystal Bearing a Fortress",
+        "cad_valid": true,
+        "cad": {
+          "valid_joints": true,
+          "root": "obsidian needle",
+          "parts": 17,
+          "joints": 16,
+          "failed": [],
+          "weakest_volume_ratio": 0.1541719913862355,
+          "min_intersection_extent": 0.11000000000000032,
+          "contacts": [
+            {
+              "parent": "obsidian needle",
+              "child": "lower terrace",
+              "overlap_volume": 7.00093488494586,
+              "volume_ratio": 0.1541719913862355,
+              "minimum_intersection_extent": 0.5750002,
+              "required_volume": 0.22704950562021814,
+              "required_thickness": 0.02025,
+              "valid": true
+            },
+            {
+              "parent": "lower terrace",
+              "child": "central keep",
+              "overlap_volume": 9.094712796786416,
+              "volume_ratio": 0.20028039197757574,
+              "minimum_intersection_extent": 0.7383839580438707,
+              "required_volume": 0.22704950562021814,
+              "required_thickness": 0.02025,
+              "valid": true
+            },
+            {
+              "parent": "central keep",
+              "child": "upper keep",
+              "overlap_volume": 11.632671632688348,
+              "volume_ratio": 0.5949110589835492,
+              "minimum_intersection_extent": 1.7648964993599803,
+              "required_volume": 0.0977681575844602,
+              "required_thickness": 0.038151571142164824,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "parapet",
+              "overlap_volume": 2.033281262917813,
+              "volume_ratio": 0.3901347454544754,
+              "minimum_intersection_extent": 0.3084872586838907,
+              "required_volume": 0.02605870518593781,
+              "required_thickness": 0.007799999999999994,
+              "valid": true
+            },
+            {
+              "parent": "lower terrace",
+              "child": "front lower terrace",
+              "overlap_volume": 1.512342701523879,
+              "volume_ratio": 0.6350955623234633,
+              "minimum_intersection_extent": 0.55,
+              "required_volume": 0.011906418429307347,
+              "required_thickness": 0.00825,
+              "valid": true
+            },
+            {
+              "parent": "lower terrace",
+              "child": "western gallery",
+              "overlap_volume": 0.9175856697379001,
+              "volume_ratio": 0.7197315215233917,
+              "minimum_intersection_extent": 0.4500000000000002,
+              "required_volume": 0.006374499673126225,
+              "required_thickness": 0.0067500000000000025,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "northern crown buttress",
+              "overlap_volume": 0.8860174305173647,
+              "volume_ratio": 0.5714285714285714,
+              "minimum_intersection_extent": 0.5758727719572048,
+              "required_volume": 0.007752652517026943,
+              "required_thickness": 0.014396819298930122,
+              "valid": true
+            },
+            {
+              "parent": "lower terrace",
+              "child": "east gallery",
+              "overlap_volume": 0.4909391561179387,
+              "volume_ratio": 0.3198161086978531,
+              "minimum_intersection_extent": 0.6136739451474233,
+              "required_volume": 0.007675335024818191,
+              "required_thickness": 0.009600000000000001,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat facade band 0",
+              "overlap_volume": 0.07398410404694919,
+              "volume_ratio": 0.6636002193060244,
+              "minimum_intersection_extent": 0.11000000000000032,
+              "required_volume": 0.0005574448432545714,
+              "required_thickness": 0.0016500000000000048,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat facade band 1",
+              "overlap_volume": 0.07398410404694919,
+              "volume_ratio": 0.6636002193060245,
+              "minimum_intersection_extent": 0.11000000000000032,
+              "required_volume": 0.0005574448432545712,
+              "required_thickness": 0.0016500000000000048,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat facade band 2",
+              "overlap_volume": 0.07398410404694919,
+              "volume_ratio": 0.6636002193060245,
+              "minimum_intersection_extent": 0.11000000000000032,
+              "required_volume": 0.0005574448432545712,
+              "required_thickness": 0.0016500000000000048,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat facade band 3",
+              "overlap_volume": 0.07398410404694919,
+              "volume_ratio": 0.6636002193060245,
+              "minimum_intersection_extent": 0.11000000000000032,
+              "required_volume": 0.0005574448432545712,
+              "required_thickness": 0.0016500000000000048,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat vertical pier 0",
+              "overlap_volume": 0.05845056079079856,
+              "volume_ratio": 0.6564871662927192,
+              "minimum_intersection_extent": 0.13,
+              "required_volume": 0.0004451767208251578,
+              "required_thickness": 0.00195,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat vertical pier 1",
+              "overlap_volume": 0.05845056079079859,
+              "volume_ratio": 0.6564871662927192,
+              "minimum_intersection_extent": 0.13000000000000012,
+              "required_volume": 0.00044517672082515806,
+              "required_thickness": 0.00195,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat vertical pier 2",
+              "overlap_volume": 0.05845056079079859,
+              "volume_ratio": 0.6564871662927192,
+              "minimum_intersection_extent": 0.13000000000000006,
+              "required_volume": 0.00044517672082515806,
+              "required_thickness": 0.00195,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat vertical pier 3",
+              "overlap_volume": 0.05845056079079855,
+              "volume_ratio": 0.6564871662927191,
+              "minimum_intersection_extent": 0.13,
+              "required_volume": 0.0004451767208251578,
+              "required_thickness": 0.00195,
+              "valid": true
+            }
+          ],
+          "valid": true,
+          "union_solids": 1,
+          "union_valid": true,
+          "union_volume": 242.3476703776465,
+          "voids": {
+            "valid": true,
+            "errors": [],
+            "contacts": [
+              {
+                "name": "great-hall",
+                "kind": "room",
+                "inside_volume": 2.375825,
+                "outside_volume": 0.0
+              },
+              {
+                "name": "guarded-gate",
+                "kind": "doorway",
+                "inside_volume": 1.0982473851924999,
+                "outside_volume": 1.669003891688834
+              },
+              {
+                "name": "upper-shaft",
+                "kind": "shaft",
+                "inside_volume": 0.39733115533657926,
+                "outside_volume": 0.0
+              }
+            ],
+            "reachable": [
+              "great-hall",
+              "guarded-gate",
+              "upper-shaft"
+            ],
+            "material_solids": 1,
+            "material_volume": 238.99883083673296
+          }
+        },
+        "layers": [
+          {
+            "name": "~crystal-surface",
+            "role": "sculptural",
+            "source": "procedural",
+            "valid": true,
+            "triangles": 92,
+            "watertight": true,
+            "positive_volume": true,
+            "covers_part": "obsidian needle",
+            "scope": "polygon-surface-only"
+          }
+        ],
+        "attachments": [
+          {
+            "name": "crystal.socket",
+            "valid": true,
+            "mesh_to_cad_anchor": 0.0,
+            "cad_point_to_brep": 0.0,
+            "tolerance": 0.08,
+            "selector": "top-east",
+            "scope": "interface-proximity-not-structural-fusion"
+          }
+        ],
+        "composite_valid_for_render": true,
+        "composite_cad_union_verified": false,
+        "authority": "CAD valid per body; meshes valid for render; anchors verify proximity only"
+      },
+      "views": {
+        "back": {
+          "image": "experiment_zero_review/candidate_02/back.png",
+          "mask_sha256": "2dee36e4f725b6b4067fda7ca60a7ceb283a5b4d0412ea81f62ff6878fe75d4b",
+          "camera_sha256": "3d112f427501d8f15c22a571b11fb34a36f0b725b5f075178645ac6fb0985742"
+        },
+        "front": {
+          "image": "experiment_zero_review/candidate_02/front.png",
+          "mask_sha256": "cfe03f0a474df25f4dfab49544ca58e3907171a0ec390142321a002ab6c1905c",
+          "camera_sha256": "4afa50ea2e4830e8e1568a334858c78835db176a325b51d0326e7a43550ee1ab"
+        },
+        "l-side": {
+          "image": "experiment_zero_review/candidate_02/l-side.png",
+          "mask_sha256": "7cd949ba67a65eb1ac54e2706e6cb0505b91eeddf7f239d577a064e0729afcc0",
+          "camera_sha256": "fcc4dc5095e83a1a9eb1daf5b265e28a75d9e5548a507bc67e76bc55e24856cc"
+        },
+        "oblique": {
+          "image": "experiment_zero_review/candidate_02/oblique.png",
+          "mask_sha256": "4f5bc28dade311bf183325642391b6f1694db093a8244b053eca6f7aaae1f050",
+          "camera_sha256": "35431e87e381496f9d749418142fb1fd5395d63638d8852705c24553f0b59568"
+        },
+        "r-side": {
+          "image": "experiment_zero_review/candidate_02/r-side.png",
+          "mask_sha256": "05de7b8f5e60cfb0130eb0ad19f9da5a8db2ea3f14ca4ea131d6c3d33e3f50f7",
+          "camera_sha256": "14557a76de784d241d12a1a60577fea5b3d082021c84536c45e62700bc6e18fe"
+        },
+        "top": {
+          "image": "experiment_zero_review/candidate_02/top.png",
+          "mask_sha256": "c6c25cce3d0f5614ecf6b4959f358906d16dc972b3cd58f8d53771a1ae861a59",
+          "camera_sha256": "a28c0912247fd7d69c077fdae5840be8a8a0b9dabbe6ed7f6c21b23709bddabe"
+        }
+      },
+      "relations": "experiment_zero_review/candidate_02/relations.json",
+      "review_authority": "CAD-native and render diagnostic; not survey or selection"
+    },
+    {
+      "id": "0002/fractured-002-001",
+      "epoch": 2,
+      "family": "fractured",
+      "emitter": "family:fractured:sobol",
+      "parent": "0001/fractured-001-002",
+      "ancestry": {
+        "entity": "Crystal",
+        "family": "fractured",
+        "component_parent": "0001/fractured-001-002",
+        "collaborators": {
+          "needle": "0001/needle-001-002",
+          "terraces": "0001/terraces-001-002",
+          "keep": "0001/keep-001-002"
+        },
+        "generation": 2,
+        "mode": "sobol",
+        "transfer": null,
+        "interaction_pairs": []
+      },
+      "genome": {
+        "brutalist.band_count": 4.0,
+        "brutalist.bands": 1.0,
+        "brutalist.pier_count": 2.9817631492507837,
+        "brutalist.piers": 0.9669754608628737,
+        "brutalist.projection": 0.26,
+        "crown_offset": 0.0,
+        "crown_taper": 0.0,
+        "crystal.fracture": 0.08132507428526879,
+        "crystal.guide": 0.0,
+        "crystal.relief": 0.14,
+        "crystal.seed": 79.7175870789215,
+        "crystal.wave": 13.966875214129686,
+        "fortress_width": 4.79893976631004,
+        "gallery_reach": 1.0091815023584036,
+        "gate_width": 0.633377650987387,
+        "grammar.brace_span": 1.15,
+        "grammar.buttress": 0.2,
+        "grammar.gallery": 0.5540406588971748,
+        "grammar.gallery_span": 1.918833756204547,
+        "join.enable": 0.3486852292291842,
+        "join.fracture": 0.06810099690540557,
+        "join.relief": 0.08657822215679203,
+        "join.seed": 0.0,
+        "join.wave": 6.3646273689385,
+        "keep_taper": 0.011710315156751985,
+        "parapet_fraction": 0.68,
+        "shaft_asymmetry": 0.03388654890349733,
+        "shaft_jaggedness": 0.1308496064366773,
+        "shaft_length": 20.12881448718596,
+        "shaft_width": 3.0077008772123732,
+        "spire_segmentation": 0.060990069061517715,
+        "terrace_offset": 0.06199413017177656,
+        "terrace_overhang": 1.2700720229959708,
+        "tower_height": 2.5522847061362515
+      },
+      "native_witness_id": "e8ac6e7ce844219e178e",
+      "combined_loss": 0.32702076850327955,
+      "losses": {
+        "silhouette": 0.31019332161687174,
+        "prior": 0.0004315644869464306,
+        "regional": 0.014908136482939632,
+        "macro": 0.011086783396061749,
+        "contour": 0.0053090990033995995
+      },
+      "observation": {
+        "schema": "projection-loom/exploration-observation",
+        "budget_sha256": "92b10fbe1a60a4d5b0921ed2c50267ad1b04c87cac22bac37cda23cf11c8909f",
+        "core_mask_sha256": "7e38598961290c7ff4cfb92ce8b125b313a3d5d203b3249fcdb659723502015b",
+        "outer_mask_sha256": "5fa94e55c8d029708383296da3d8ef0c37e51a6243b61d6c0a5e37772ee49fa4",
+        "core_occupied": 1092,
+        "extra_occupied": 0,
+        "extra_fraction": 0.0,
+        "native_geometry": {
+          "vertices": 520,
+          "faces": 340,
+          "depth_min": -5.963519592899418,
+          "depth_max": 4.528200747135573,
+          "depth_anchor": -1.0418686639399426,
+          "depth_radius": 11.039436575758838,
+          "projected_bounds": [
+            49.65288767995014,
+            51.25427771688135,
+            78.24139206061399,
+            136.37035560417075
+          ]
+        },
+        "evidence_state": "source-frame projection and observed geometry; not survey registration"
+      },
+      "rank": 3,
+      "audit": {
+        "location": "necrospire",
+        "pet_name": "Necrospire: A Crystal Bearing a Fortress",
+        "cad_valid": true,
+        "cad": {
+          "valid_joints": true,
+          "root": "obsidian needle",
+          "parts": 15,
+          "joints": 14,
+          "failed": [],
+          "weakest_volume_ratio": 0.15358547044998425,
+          "min_intersection_extent": 0.11000000000000032,
+          "contacts": [
+            {
+              "parent": "obsidian needle",
+              "child": "lower terrace",
+              "overlap_volume": 6.974301027223509,
+              "volume_ratio": 0.15358547044998425,
+              "minimum_intersection_extent": 0.5750002,
+              "required_volume": 0.22704950562021814,
+              "required_thickness": 0.02025,
+              "valid": true
+            },
+            {
+              "parent": "lower terrace",
+              "child": "central keep",
+              "overlap_volume": 9.155576228098798,
+              "volume_ratio": 0.20162070388766173,
+              "minimum_intersection_extent": 0.7377616235306816,
+              "required_volume": 0.22704950562021814,
+              "required_thickness": 0.02025,
+              "valid": true
+            },
+            {
+              "parent": "central keep",
+              "child": "upper keep",
+              "overlap_volume": 11.505513012198401,
+              "volume_ratio": 0.6051653128736145,
+              "minimum_intersection_extent": 1.7456041294511184,
+              "required_volume": 0.09506090953531952,
+              "required_thickness": 0.038151571142164824,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "parapet",
+              "overlap_volume": 2.1563379924242025,
+              "volume_ratio": 0.41374618904469557,
+              "minimum_intersection_extent": 0.3271572940795622,
+              "required_volume": 0.02605870518593781,
+              "required_thickness": 0.007799999999999994,
+              "valid": true
+            },
+            {
+              "parent": "lower terrace",
+              "child": "front lower terrace",
+              "overlap_volume": 1.512342701523879,
+              "volume_ratio": 0.6350955623234633,
+              "minimum_intersection_extent": 0.55,
+              "required_volume": 0.011906418429307347,
+              "required_thickness": 0.00825,
+              "valid": true
+            },
+            {
+              "parent": "lower terrace",
+              "child": "western gallery",
+              "overlap_volume": 0.9175856697379001,
+              "volume_ratio": 0.7197315215233917,
+              "minimum_intersection_extent": 0.4500000000000002,
+              "required_volume": 0.006374499673126225,
+              "required_thickness": 0.0067500000000000025,
+              "valid": true
+            },
+            {
+              "parent": "lower terrace",
+              "child": "east gallery",
+              "overlap_volume": 0.4909391561179387,
+              "volume_ratio": 0.3198161086978531,
+              "minimum_intersection_extent": 0.6136739451474233,
+              "required_volume": 0.007675335024818191,
+              "required_thickness": 0.009600000000000001,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat facade band 0",
+              "overlap_volume": 0.07398410404694919,
+              "volume_ratio": 0.6636002193060245,
+              "minimum_intersection_extent": 0.11000000000000032,
+              "required_volume": 0.0005574448432545712,
+              "required_thickness": 0.0016500000000000048,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat facade band 1",
+              "overlap_volume": 0.07398410404694919,
+              "volume_ratio": 0.6636002193060245,
+              "minimum_intersection_extent": 0.11000000000000032,
+              "required_volume": 0.0005574448432545712,
+              "required_thickness": 0.0016500000000000048,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat facade band 2",
+              "overlap_volume": 0.07398410404694919,
+              "volume_ratio": 0.6636002193060245,
+              "minimum_intersection_extent": 0.11000000000000032,
+              "required_volume": 0.0005574448432545712,
+              "required_thickness": 0.0016500000000000048,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat facade band 3",
+              "overlap_volume": 0.07398410404694919,
+              "volume_ratio": 0.6636002193060245,
+              "minimum_intersection_extent": 0.11000000000000032,
+              "required_volume": 0.0005574448432545712,
+              "required_thickness": 0.0016500000000000048,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat vertical pier 0",
+              "overlap_volume": 0.05737557187189268,
+              "volume_ratio": 0.6564871662927192,
+              "minimum_intersection_extent": 0.13,
+              "required_volume": 0.00043698928796964215,
+              "required_thickness": 0.00195,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat vertical pier 1",
+              "overlap_volume": 0.05737557187189271,
+              "volume_ratio": 0.6564871662927191,
+              "minimum_intersection_extent": 0.13000000000000006,
+              "required_volume": 0.0004369892879696424,
+              "required_thickness": 0.00195,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat vertical pier 2",
+              "overlap_volume": 0.05737557187189267,
+              "volume_ratio": 0.656487166292719,
+              "minimum_intersection_extent": 0.13,
+              "required_volume": 0.00043698928796964215,
+              "required_thickness": 0.00195,
+              "valid": true
+            }
+          ],
+          "valid": true,
+          "union_solids": 1,
+          "union_valid": true,
+          "union_volume": 240.91472034137155,
+          "voids": {
+            "valid": true,
+            "errors": [],
+            "contacts": [
+              {
+                "name": "great-hall",
+                "kind": "room",
+                "inside_volume": 2.375825,
+                "outside_volume": 0.0
+              },
+              {
+                "name": "guarded-gate",
+                "kind": "doorway",
+                "inside_volume": 0.9898269796487478,
+                "outside_volume": 1.4722013894477368
+              },
+              {
+                "name": "upper-shaft",
+                "kind": "shaft",
+                "inside_volume": 0.3145151230359152,
+                "outside_volume": 0.0
+              }
+            ],
+            "reachable": [
+              "great-hall",
+              "guarded-gate",
+              "upper-shaft"
+            ],
+            "material_solids": 1,
+            "material_volume": 237.68376110673844
+          }
+        },
+        "layers": [
+          {
+            "name": "~crystal-surface",
+            "role": "sculptural",
+            "source": "procedural",
+            "valid": true,
+            "triangles": 76,
+            "watertight": true,
+            "positive_volume": true,
+            "covers_part": "obsidian needle",
+            "scope": "polygon-surface-only"
+          }
+        ],
+        "attachments": [
+          {
+            "name": "crystal.socket",
+            "valid": true,
+            "mesh_to_cad_anchor": 0.0,
+            "cad_point_to_brep": 0.0,
+            "tolerance": 0.08,
+            "selector": "top-east",
+            "scope": "interface-proximity-not-structural-fusion"
+          }
+        ],
+        "composite_valid_for_render": true,
+        "composite_cad_union_verified": false,
+        "authority": "CAD valid per body; meshes valid for render; anchors verify proximity only"
+      },
+      "views": {
+        "back": {
+          "image": "experiment_zero_review/candidate_03/back.png",
+          "mask_sha256": "5dda24f264b5da5465fac2f4b61a6ffbb9471357aceae2427a18afc4ca3fe621",
+          "camera_sha256": "3d112f427501d8f15c22a571b11fb34a36f0b725b5f075178645ac6fb0985742"
+        },
+        "front": {
+          "image": "experiment_zero_review/candidate_03/front.png",
+          "mask_sha256": "b92ea6cb1c473e2a5c9fc5e4e06f07b91843f3822cbba419f011cd70418aaf89",
+          "camera_sha256": "4afa50ea2e4830e8e1568a334858c78835db176a325b51d0326e7a43550ee1ab"
+        },
+        "l-side": {
+          "image": "experiment_zero_review/candidate_03/l-side.png",
+          "mask_sha256": "4de93a558a357962afcd137919947e098ef7a38008c1129c621f1b6d1d84f5a1",
+          "camera_sha256": "fcc4dc5095e83a1a9eb1daf5b265e28a75d9e5548a507bc67e76bc55e24856cc"
+        },
+        "oblique": {
+          "image": "experiment_zero_review/candidate_03/oblique.png",
+          "mask_sha256": "cad1f29a2a9a8e3d2493313d5b2007a51f4210edd66f4d3a972f2a2e176d81a6",
+          "camera_sha256": "35431e87e381496f9d749418142fb1fd5395d63638d8852705c24553f0b59568"
+        },
+        "r-side": {
+          "image": "experiment_zero_review/candidate_03/r-side.png",
+          "mask_sha256": "398bb88b23a837a88cb81a982f6078c0f4fd755413785be9d6b948322b1f714a",
+          "camera_sha256": "14557a76de784d241d12a1a60577fea5b3d082021c84536c45e62700bc6e18fe"
+        },
+        "top": {
+          "image": "experiment_zero_review/candidate_03/top.png",
+          "mask_sha256": "c6c25cce3d0f5614ecf6b4959f358906d16dc972b3cd58f8d53771a1ae861a59",
+          "camera_sha256": "a28c0912247fd7d69c077fdae5840be8a8a0b9dabbe6ed7f6c21b23709bddabe"
+        }
+      },
+      "relations": "experiment_zero_review/candidate_03/relations.json",
+      "review_authority": "CAD-native and render diagnostic; not survey or selection"
+    },
+    {
+      "id": "0002/crown-002-001",
+      "epoch": 2,
+      "family": "crown",
+      "emitter": "family:crown:sobol",
+      "parent": "0001/crown-001-002",
+      "ancestry": {
+        "entity": "Fortress",
+        "family": "crown",
+        "component_parent": "0001/crown-001-002",
+        "collaborators": {
+          "needle": "0001/needle-001-002",
+          "terraces": "0001/terraces-001-002",
+          "keep": "0001/keep-001-002"
+        },
+        "generation": 2,
+        "mode": "sobol",
+        "transfer": null,
+        "interaction_pairs": []
+      },
+      "genome": {
+        "brutalist.band_count": 3.869854886084795,
+        "brutalist.bands": 0.041933635249733925,
+        "brutalist.pier_count": 2.9817631492507837,
+        "brutalist.piers": 0.9669754608628737,
+        "brutalist.projection": 0.27463824465870856,
+        "crown_offset": -0.23091758228838444,
+        "crown_taper": 0.14059585712850092,
+        "crystal.fracture": 0.1,
+        "crystal.guide": 0.0,
+        "crystal.relief": 0.14,
+        "crystal.seed": 13.0,
+        "crystal.wave": 7.0,
+        "fortress_width": 4.79893976631004,
+        "gallery_reach": 1.0091815023584036,
+        "gate_width": 0.633377650987387,
+        "grammar.brace_span": 1.266874655056745,
+        "grammar.buttress": 0.6801982652395964,
+        "grammar.gallery": 0.5540406588971748,
+        "grammar.gallery_span": 1.918833756204547,
+        "join.enable": 0.3486852292291842,
+        "join.fracture": 0.06810099690540557,
+        "join.relief": 0.08657822215679203,
+        "join.seed": 0.0,
+        "join.wave": 6.3646273689385,
+        "keep_taper": 0.011710315156751985,
+        "parapet_fraction": 0.7385111139714717,
+        "shaft_asymmetry": 0.03388654890349733,
+        "shaft_jaggedness": 0.05956412397640926,
+        "shaft_length": 20.12881448718596,
+        "shaft_width": 3.0077008772123732,
+        "spire_segmentation": 0.5737051603627407,
+        "terrace_offset": 0.06199413017177656,
+        "terrace_overhang": 1.2700720229959708,
+        "tower_height": 2.558827746566385
+      },
+      "native_witness_id": "c2bfefe39b8dfdfe5868",
+      "combined_loss": 0.3294735036758505,
+      "losses": {
+        "silhouette": 0.31233362910381546,
+        "prior": 0.0005418893928132952,
+        "regional": 0.011534391534391534,
+        "macro": 0.011381095306450912,
+        "contour": 0.005216889872770843
+      },
+      "observation": {
+        "schema": "projection-loom/exploration-observation",
+        "budget_sha256": "92b10fbe1a60a4d5b0921ed2c50267ad1b04c87cac22bac37cda23cf11c8909f",
+        "core_mask_sha256": "43cb083a57fdc12d2daa0a95b36a9fcc523ddddad52537319f627973a9edb73a",
+        "outer_mask_sha256": "4ae1e937b934eba9a040f4148696c0e75ee475316bbaf5742ae45e48cae87cce",
+        "core_occupied": 1071,
+        "extra_occupied": 0,
+        "extra_fraction": 0.0,
+        "native_geometry": {
+          "vertices": 456,
+          "faces": 320,
+          "depth_min": -6.022131284149405,
+          "depth_max": 4.528200747135573,
+          "depth_anchor": -1.0418686639399426,
+          "depth_radius": 11.039436575758838,
+          "projected_bounds": [
+            49.65288767995014,
+            50.99519369344055,
+            78.24139206061399,
+            136.41271957899738
+          ]
+        },
+        "evidence_state": "source-frame projection and observed geometry; not survey registration"
+      },
+      "rank": 4,
+      "audit": {
+        "location": "necrospire",
+        "pet_name": "Necrospire: A Crystal Bearing a Fortress",
+        "cad_valid": true,
+        "cad": {
+          "valid_joints": true,
+          "root": "obsidian needle",
+          "parts": 12,
+          "joints": 11,
+          "failed": [],
+          "weakest_volume_ratio": 0.09430780104091693,
+          "min_intersection_extent": 0.1300001999999999,
+          "contacts": [
+            {
+              "parent": "obsidian needle",
+              "child": "lower terrace",
+              "overlap_volume": 7.00093488494586,
+              "volume_ratio": 0.1541719913862355,
+              "minimum_intersection_extent": 0.5750002,
+              "required_volume": 0.22704950562021814,
+              "required_thickness": 0.02025,
+              "valid": true
+            },
+            {
+              "parent": "lower terrace",
+              "child": "central keep",
+              "overlap_volume": 9.155998267480966,
+              "volume_ratio": 0.2016299978824012,
+              "minimum_intersection_extent": 0.7377943387328323,
+              "required_volume": 0.22704950562021814,
+              "required_thickness": 0.02025,
+              "valid": true
+            },
+            {
+              "parent": "central keep",
+              "child": "upper keep",
+              "overlap_volume": 10.56132183480462,
+              "volume_ratio": 0.6405044225210693,
+              "minimum_intersection_extent": 1.746618500717791,
+              "required_volume": 0.08244534669436421,
+              "required_thickness": 0.03815157414216482,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "parapet",
+              "overlap_volume": 1.6173512010246842,
+              "volume_ratio": 0.28574154222903064,
+              "minimum_intersection_extent": 0.326176038015042,
+              "required_volume": 0.02830094616988396,
+              "required_thickness": 0.007799999999999994,
+              "valid": true
+            },
+            {
+              "parent": "lower terrace",
+              "child": "front lower terrace",
+              "overlap_volume": 1.512342701523879,
+              "volume_ratio": 0.6350955623234633,
+              "minimum_intersection_extent": 0.55,
+              "required_volume": 0.011906418429307347,
+              "required_thickness": 0.00825,
+              "valid": true
+            },
+            {
+              "parent": "lower terrace",
+              "child": "western gallery",
+              "overlap_volume": 0.9175856697379001,
+              "volume_ratio": 0.7197315215233917,
+              "minimum_intersection_extent": 0.4500000000000002,
+              "required_volume": 0.006374499673126225,
+              "required_thickness": 0.0067500000000000025,
+              "valid": true
+            },
+            {
+              "parent": "lower terrace",
+              "child": "east gallery",
+              "overlap_volume": 0.4909391561179387,
+              "volume_ratio": 0.3198161086978531,
+              "minimum_intersection_extent": 0.6136739451474233,
+              "required_volume": 0.007675335024818191,
+              "required_thickness": 0.009600000000000001,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "crown brace",
+              "overlap_volume": 0.15388529783177887,
+              "volume_ratio": 0.09430780104091693,
+              "minimum_intersection_extent": 0.16361899195227558,
+              "required_volume": 0.008158672778565438,
+              "required_thickness": 0.0138,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat vertical pier 0",
+              "overlap_volume": 0.04182188752135933,
+              "volume_ratio": 0.46330865028913654,
+              "minimum_intersection_extent": 0.1300002,
+              "required_volume": 0.00045133937705738486,
+              "required_thickness": 0.00195,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat vertical pier 1",
+              "overlap_volume": 0.04182188757494254,
+              "volume_ratio": 0.46330865088273837,
+              "minimum_intersection_extent": 0.1300002,
+              "required_volume": 0.00045133937705738524,
+              "required_thickness": 0.00195,
+              "valid": true
+            },
+            {
+              "parent": "upper keep",
+              "child": "nosycat vertical pier 2",
+              "overlap_volume": 0.041821887521359326,
+              "volume_ratio": 0.4633086502891363,
+              "minimum_intersection_extent": 0.1300001999999999,
+              "required_volume": 0.000451339377057385,
+              "required_thickness": 0.0019499999999999993,
+              "valid": true
+            }
+          ],
+          "valid": true,
+          "union_solids": 1,
+          "union_valid": true,
+          "union_volume": 243.1522582027116,
+          "voids": {
+            "valid": true,
+            "errors": [],
+            "contacts": [
+              {
+                "name": "great-hall",
+                "kind": "room",
+                "inside_volume": 2.375825,
+                "outside_volume": 0.0
+              },
+              {
+                "name": "guarded-gate",
+                "kind": "doorway",
+                "inside_volume": 0.989830012149929,
+                "outside_volume": 1.4721983569465555
+              },
+              {
+                "name": "upper-shaft",
+                "kind": "shaft",
+                "inside_volume": 0.3145151230359152,
+                "outside_volume": 0.0
+              }
+            ],
+            "reachable": [
+              "great-hall",
+              "guarded-gate",
+              "upper-shaft"
+            ],
+            "material_solids": 1,
+            "material_volume": 239.92129587043823
+          }
+        },
+        "layers": [
+          {
+            "name": "~crystal-surface",
+            "role": "sculptural",
+            "source": "procedural",
+            "valid": true,
+            "triangles": 92,
+            "watertight": true,
+            "positive_volume": true,
+            "covers_part": "obsidian needle",
+            "scope": "polygon-surface-only"
+          }
+        ],
+        "attachments": [
+          {
+            "name": "crystal.socket",
+            "valid": true,
+            "mesh_to_cad_anchor": 0.0,
+            "cad_point_to_brep": 0.0,
+            "tolerance": 0.08,
+            "selector": "top-east",
+            "scope": "interface-proximity-not-structural-fusion"
+          }
+        ],
+        "composite_valid_for_render": true,
+        "composite_cad_union_verified": false,
+        "authority": "CAD valid per body; meshes valid for render; anchors verify proximity only"
+      },
+      "views": {
+        "back": {
+          "image": "experiment_zero_review/candidate_04/back.png",
+          "mask_sha256": "68e7d673e46ac67f39a34fe8bc318da37407469cf9c0d9f14a70784ad29a16b0",
+          "camera_sha256": "3d112f427501d8f15c22a571b11fb34a36f0b725b5f075178645ac6fb0985742"
+        },
+        "front": {
+          "image": "experiment_zero_review/candidate_04/front.png",
+          "mask_sha256": "c2c61f071e411f4e67021d0773827488af08430785c50219cbc86287435bb581",
+          "camera_sha256": "4afa50ea2e4830e8e1568a334858c78835db176a325b51d0326e7a43550ee1ab"
+        },
+        "l-side": {
+          "image": "experiment_zero_review/candidate_04/l-side.png",
+          "mask_sha256": "6f739cf08870a380bda7ee08dd2224980a39d4ee4a1d25f6807062d90185bfaf",
+          "camera_sha256": "fcc4dc5095e83a1a9eb1daf5b265e28a75d9e5548a507bc67e76bc55e24856cc"
+        },
+        "oblique": {
+          "image": "experiment_zero_review/candidate_04/oblique.png",
+          "mask_sha256": "eaf01300ec86435867cd35c61480c28d9f999c6740da6f9872ae6e84bd188a60",
+          "camera_sha256": "35431e87e381496f9d749418142fb1fd5395d63638d8852705c24553f0b59568"
+        },
+        "r-side": {
+          "image": "experiment_zero_review/candidate_04/r-side.png",
+          "mask_sha256": "15b59c00eba47f7cb3081873decc399fe49186f9f82aea740f2f79728c756e4a",
+          "camera_sha256": "14557a76de784d241d12a1a60577fea5b3d082021c84536c45e62700bc6e18fe"
+        },
+        "top": {
+          "image": "experiment_zero_review/candidate_04/top.png",
+          "mask_sha256": "c6c25cce3d0f5614ecf6b4959f358906d16dc972b3cd58f8d53771a1ae861a59",
+          "camera_sha256": "a28c0912247fd7d69c077fdae5840be8a8a0b9dabbe6ed7f6c21b23709bddabe"
+        }
+      },
+      "relations": "experiment_zero_review/candidate_04/relations.json",
+      "review_authority": "CAD-native and render diagnostic; not survey or selection"
+    }
+  ],
+  "contact_sheet": "experiment_zero_review/contact_sheet.png",
+  "selection_basis": "source champion, outer mask novelty, family coverage, overscan occupancy",
+  "evidence_state": "provisional source, other views synthetic diagnostic",
+  "sha256": "7e231feccb5468e95250bce288434af34e9c1700aa647fb2380f800487a030c8"
+}
