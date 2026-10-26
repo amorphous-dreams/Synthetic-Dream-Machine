@@ -3,6 +3,8 @@ import numpy as np
 from PIL import Image
 import pytest
 from projection_loom.ortho_gallery import VIEWS, board, make
+from projection_loom.cameras import Camera
+from projection_loom.epochs import _hash
 
 
 def test_exact_six_view_presentation():
@@ -25,3 +27,13 @@ def test_refuses_nonreview_seats_without_touching_files(tmp_path):
 
 def test_review_view_names_stable():
     assert VIEWS==("oblique","front","r-side","back","l-side","top")
+
+
+def test_review_camera_digest_uses_archived_json_not_float_roundtrip():
+    # JSON-canonical digests distinguish integer and float values even if
+    # Camera.from_dict normalizes the same camera for rendering.
+    original={'azimuth':0,'elevation':0,'roll':0,'fit':'height','margin':0.02}
+    camera=Camera.from_dict(original)
+    assert camera.to_dict()==original
+    assert _hash(camera.to_dict())!=_hash(original)
+    assert _hash(original)==_hash(dict(original))

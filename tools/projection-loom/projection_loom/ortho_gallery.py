@@ -109,8 +109,14 @@ def make(root,project_path,recipe_path,output,seats=3):
                 native_mask=np.asarray(archived.convert("L"))>96
             if visual_descriptor(native_mask)["mask_sha256"]!=candidate["views"][view]["mask_sha256"]:
                 raise ValueError("Archived silhouette differs from native mask receipt")
-            if _hash(cameras[view].to_dict())!=candidate["views"][view]["camera_sha256"]:
+            # Hash the *archived canonical JSON*, not a typed Camera round-trip.
+            # Camera.from_dict legitimately normalizes integer angles to floats;
+            # 0 and 0.0 render identically but have different JSON digests.
+            archived_camera=report["cameras"][view]
+            if _hash(archived_camera)!=candidate["views"][view]["camera_sha256"]:
                 raise ValueError("Archived review camera differs from frozen camera")
+            if cameras[view].to_dict()!=archived_camera:
+                raise ValueError("Parsed review camera differs from archived values")
             mask=Image.fromarray(native_mask.astype(np.uint8)*255,"L").resize(
                 (160,240),Image.Resampling.NEAREST)
             board_mask=Image.new("RGBA",(160,240),(0,0,0,0))

@@ -277,7 +277,6 @@ def main(argv=None):
         if args.out.exists():
             raise ValueError('Fire output is immutable; use a new output path')
         if args.command=='fire-context':
-            from .relations import PetNameLedger
             compositor=CapabilityCompositor(project,recipe,size=(64,96),
                                             source_mask=project.source_mask((64,96)))
             built=compositor.grow(recipe.initial if genome is None else genome)
