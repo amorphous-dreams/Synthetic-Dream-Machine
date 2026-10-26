@@ -20,11 +20,10 @@ import { interpretAsDocumentId } from "@automerge/automerge-repo";
 import {
   fleetEdgeBoardDocUrl, realmEdgeBoardDocUrl, realmVouchBoardDocUrl, materializeSharedLarDoc,
   fleetEdgeAuthority, deviceEdgeId, realmEdgeAuthority, memberEdgeId, memberStandsAside, lineageStanding,
-  readLedgeredVouches, canonicalIdentity, edgeLedgerDocUrl, ledgerRealms, edgeStandingAsOf, raisesSeenThrough, readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, charterHandLineage,
+  readLedgeredVouches, canonicalIdentity, edgeLedgerDocUrl, ledgerRealms, edgeStandingAsOf, raisesSeenThrough, readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, charterHandLineage, readRealmBoardFrontiers, holderHand, vouchEdgeId,
   type CabalInvite, type EdgeReading, type EdgeStanding, type LarDoc, type ShadowConsult, type HandLineage, type WideningRead,
 } from "@lararium/mesh";
 import { readVesselEdgeBoard, realmNexusIn, vesselEdgeCharter } from "./edge-board.js";
-import { readVesselRealmFrontier, pinRealmFrontier } from "./realm-frontier-door.js";
 
 const bare = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "").slice(-64);
 
@@ -58,6 +57,7 @@ export interface RealmFold {
   /** The identities that hold lineage standing here, as this replica reads it. Never a whole set. */
   readonly standing: ReadonlySet<string>;
   readonly frontier: WideningRead;
+  readonly holders: ReadonlyMap<string, WideningRead>;
 }
 
 /** What one fold read off one fleet's board. */
@@ -90,6 +90,7 @@ export interface EdgeShadowRing extends ShadowConsult {
   widenBlocked(fleetRoot: string): boolean;
   frontierOf(fleetRoot: string): WideningRead | null;
   realmFrontierOf(realm: string): WideningRead | null;
+  realmHoldersOf(realm: string): ReadonlyMap<string, WideningRead> | null;
   /**
    * THE BINDING GATE'S CONSULT: what one device's edge reads in one fleet (`edgeStandingAsOf`), against the raises
    * this vessel already answered. `aside` until the first fold lands, and for a fleet this vessel reads no board
@@ -162,6 +163,7 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
     widenBlocked: (fleetRoot) => last?.fleets.find((f) => f.fleetRoot === bare(fleetRoot))?.frontier.status !== "known",
     frontierOf: (fleetRoot) => last?.fleets.find((f) => f.fleetRoot === bare(fleetRoot))?.frontier ?? null,
     realmFrontierOf: (realm) => realmFold(realm)?.frontier ?? null,
+    realmHoldersOf: (realm) => realmFold(realm)?.holders ?? null,
     deviceStanding(fleetRoot, vesselKey) {
       const at = last?.fleets.find((f) => f.fleetRoot === bare(fleetRoot));
       if (!at) return "aside";                                   // no fold yet, or a fleet this vessel never read
@@ -253,15 +255,27 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
         // THE LINEAGE'S ROOTS: the seats of the charter the realm stands under. Nothing else roots a lineage, so a
         // vessel that holds no charter of that Nexus, or notes the realm under none, reads no joiner as standing.
         const roots = charter?.head.keys ?? [];
-        const frontier = readVesselRealmFrontier({ realm, board: read.handle.doc(), ledger: read.ledger.doc(),
-          lineage: charterHandLineage(charter?.sealLineage ?? [])?.lineage ?? null, counted: read.counted.acts });
-        pinRealmFrontier(read.ledger, realm, frontier);
+        const vouchers = new Map<string, Set<string>>();
+        for (const invite of invites) {
+          const edges = vouchers.get(invite.voucherDid) ?? new Set<string>();
+          edges.add(vouchEdgeId(invite));
+          vouchers.set(invite.voucherDid, edges);
+        }
+        const hands = readRealmBoardFrontiers({ realm, board: read.handle.doc(),
+          quorumLineage: charterHandLineage(charter?.sealLineage ?? [])?.lineage ?? null,
+          vouchers, counted: read.counted.acts, pins: readFrontierPins(read.ledger.doc(), realm) });
+        const frontier = hands.quorum;
+        const pins = [...[["quorum", frontier] as const], ...[...hands.holders].map(([voucher, result]) => [holderHand(voucher), result] as const)]
+          .filter(([, result]) => result.status === "known");
+        if (pins.length) read.ledger.change((draft) => {
+          for (const [hand, result] of pins) if (result.status === "known") writeFrontierPin(draft, realm, hand, result.asOf[hand]!);
+        });
         follow(vouchUrl, vouches.handle);
         follow(edgeUrl, read.handle);
         const stands = (edgeId: string): boolean => read.readings.get(edgeId)?.stands === true;
         realms.push({
-          realm, roots, invites, readings: read.readings, frontier,
-          standing: lineageStanding({ realmDocIdHex: realm, roots, invites, stands }),
+          realm, roots, invites, readings: read.readings, frontier, holders: hands.holders,
+          standing: lineageStanding({ realmDocIdHex: realm, roots, invites: invites.filter((invite) => hands.holders.get(invite.voucherDid)?.status === "known"), stands }),
         });
       }
       const folded: EdgeShadowFold = { fleets, realms };

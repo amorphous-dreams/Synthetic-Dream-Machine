@@ -28,6 +28,7 @@ import type { Repo } from "@automerge/automerge-repo";
 import {
   signCabalInvite, writeVouch, verifiedVouchesFromBoard, vouchDagFromInvites, vouchEdgeId,
   realmVouchBoardDocUrl, realmEdgeBoardDocUrl, materializeSharedLarDoc,
+  prepareHolderFrontier, registerHandFrontierInto, realmAdmitBundle, type RealmAdmitBundle,
   type CabalInvite,
 } from "@lararium/mesh";
 import { loadWornFaceAtomKey } from "../face-atom-store.js";
@@ -82,6 +83,7 @@ export interface CabalVouchResult {
   readonly outDegreeFloor: number;
   /** True when this vouch replaced the voucher's own prior vouch for the SAME joiner (one edge, not two). */
   readonly reMinted:    boolean;
+  readonly bundle: RealmAdmitBundle;
 }
 
 /**
@@ -180,8 +182,12 @@ export async function runCabalVouch(opts: CabalVouchOptions): Promise<CabalVouch
     const reMinted = before.some((i) => i.voucherDid === voucherDid && i.joinerIdentityHex === joiner);
 
     handle.change((d) => writeVouch(d, invite));
+    const edgeHandle = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(realm), "board:edge-kapae");
+    const holderHead = await prepareHolderFrontier({ realm, board: edgeHandle.doc(), voucher: voucherDid,
+      counted: [], signer: { key: signer.signer, sign: signer.sign } });
+    if (holderHead.kind !== "none") edgeHandle.change((d) => registerHandFrontierInto(d, holderHead));
     await registerRealmFrontier({ repo, vesselKey, sealHome: opts.sealHome, realm, nexus: nexusAid,
-      handle: await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(realm), "board:edge-kapae"), counted: [] });
+      handle: edgeHandle, counted: [] });
     // This vessel reads this realm's boards from here on, under the Nexus the vouch named: its gates consult
     // every shadow raised there, and the realm's quorum reads off that Nexus's charter.
     await noteVesselRealm(repo, vesselKey, realm, nexusAid);
@@ -198,7 +204,8 @@ export async function runCabalVouch(opts: CabalVouchOptions): Promise<CabalVouch
     }
 
     const outDegreeFloor = vouchDagFromInvites(after).edges.filter((e) => e.voucher === voucherDid).length;
-    return { voucherDid, nexusAid, joiner, realm, boundEpoch, boardUrl, edgeId: vouchEdgeId(invite), outDegreeFloor, reMinted };
+    return { voucherDid, nexusAid, joiner, realm, boundEpoch, boardUrl, edgeId: vouchEdgeId(invite), outDegreeFloor, reMinted,
+      bundle: realmAdmitBundle({ invite, realm, nexus: nexusAid, board: edgeHandle.doc() }) };
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
   }

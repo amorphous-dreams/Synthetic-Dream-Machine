@@ -5,14 +5,16 @@
  */
 import type { LarDoc } from "./base-doc.js";
 import type { EdgeKapae } from "./edge-kapae.js";
-import { foldHandFrontiers, readWideningFrontier, signGenesisFrontier, signNextFrontier, type EdgeFrontier, type HandReading, type WideningRead } from "./edge-frontier.js";
+import { foldHandFrontiers, frontierSnapshotCid, readWideningFrontier, signGenesisFrontier, signNextFrontier, type EdgeFrontier, type HandReading, type WideningRead } from "./edge-frontier.js";
 import { edgeFrontierRecords, frontierSnapshots, writeEdgeFrontier, writeFrontierSnapshot } from "./edge-frontier-board.js";
 import { currentRoster, type HandLineage } from "./hand-lineage.js";
+import { actCid } from "./signed-act.js";
 
 export const FLEET_HAND = "fleet" as const;
 const bare = (root: string): string => root.trim().toLowerCase().replace(/^0x/, "");
 type Signer = { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> };
 export type RegisteredFrontier = { readonly frontier: EdgeFrontier; readonly raises: readonly string[] };
+export type HandFrontierCarriage = { readonly hand: string; readonly records: readonly unknown[]; readonly snapshots: readonly (readonly [string, readonly string[]])[] };
 
 /** The holder's raises among counted fleet acts. */
 export function fleetRaiseCids(counted: readonly Pick<EdgeKapae, "actCid" | "raised" | "hand">[]): string[] {
@@ -23,9 +25,25 @@ export function fleetRaiseCids(counted: readonly Pick<EdgeKapae, "actCid" | "rai
 export function readHandFrontier(input: {
   readonly board: LarDoc | undefined | null; readonly boardId: string; readonly hand: string; readonly lineage: HandLineage;
   readonly seenRaises: readonly string[]; readonly pinned: { readonly seq: number; readonly cid: string } | null;
+  readonly carried?: readonly HandFrontierCarriage[];
 }): WideningRead {
+  const carried = input.carried?.filter((entry) => entry.hand === input.hand) ?? [];
+  const snapshots = frontierSnapshots(input.board);
+  // Carried snapshots join the reader's set by content address. They add no SEEN raise: a head that counts a raise
+  // this reader holds no act for waits (`counts-unseen-raise`) until the act itself arrives, with the bundle or by sync.
+  for (const entry of carried) for (const [cid, raises] of entry.snapshots) if (frontierSnapshotCid(raises) === cid) snapshots.set(cid, raises);
+  const byCid = new Map<string, EdgeFrontier>();
+  for (const raw of [...edgeFrontierRecords(input.board, input.boardId, input.hand), ...carried.flatMap((entry) => entry.records)]) {
+    if (typeof raw !== "object" || raw === null || !Object.hasOwn(raw, "body") || !Object.hasOwn(raw, "signatures")) continue;
+    const candidate = raw as EdgeFrontier;
+    if (!Array.isArray(candidate.signatures)) continue;
+    try {
+      const cid = actCid(candidate.body), prior = byCid.get(cid);
+      byCid.set(cid, prior ? { body: prior.body, signatures: [...prior.signatures, ...candidate.signatures] } : candidate);
+    } catch { /* torn carriage receives no vote */ }
+  }
   const readings = new Map<string, HandReading>([[input.hand, {
-    frontiers: edgeFrontierRecords(input.board, input.boardId, input.hand), snapshots: frontierSnapshots(input.board),
+    frontiers: [...byCid.values()], snapshots,
     seenRaises: input.seenRaises, pinned: input.pinned,
   }]]);
   return readWideningFrontier(input.boardId, [{ hand: input.hand, lineage: input.lineage }], readings);

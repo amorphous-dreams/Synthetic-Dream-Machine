@@ -24,16 +24,16 @@ import {
   readLedgeredVouches, materializeSharedLarDoc,
   vouchEdgeId, realmEdgeBoardDocUrl, memberEdgeId, realmEdgeAuthority, type EdgeKapaeVerdict,
   quorumLeaseEpochOnBoard, DAEMON_BAG_ID, charterHandLineage, type HandLineage, type WideningRead,
-  DEFAULT_JOIN_POLICY, alphaFromHalfLife,
+  DEFAULT_JOIN_POLICY, alphaFromHalfLife, writeEdgeKapae,
+  readRealmAdmitBundle, readRealmBoardFrontiers, readFrontierPins, writeFrontierPin, holderHand, type RealmAdmitBundle,
   type CabalInvite, type CabalJoinPolicy, type AdmissionDials,
 } from "@lararium/mesh";
 import { type LarDoc } from "@lararium/mesh";
 import { admitOnLineage, type LineageAdmission } from "../realm-admission.js";
 import { larBootstrapPath } from "../vessel-paths.js";
 import { loadWornFaceAtomKey } from "../face-atom-store.js";
-import { readVesselEdgeBoard, realmEdgeCharter } from "../edge-board.js";
-import { leaseLineageOfRealm } from "../lease-charter.js";
-import { readVesselRealmFrontier, pinRealmFrontier } from "../realm-frontier-door.js";
+import { readVesselEdgeBoard, readRealmNexus, vesselEdgeCharter } from "../edge-board.js";
+import { leaseLineageOfNexus } from "../lease-charter.js";
 import { verifyEd25519, cabalInviteBytes } from "@lararium/mesh";
 
 const NYM_RE = /^[0-9a-f]{64}$/;
@@ -103,6 +103,7 @@ export interface CabalJoinOptions {
   readonly epoch?:    number;
   /** An invite carried out of band, for a joiner the realm's board has not reached. Same gate either way. */
   readonly invite?:   CabalInvite | null;
+  readonly bundle?: RealmAdmitBundle | unknown;
   /** The choke on one hand's out-degree. Absent → uncapped, a deliberate operator turn. */
   readonly maxVouchesPerVoucher?: number;
   readonly policy?:   CabalJoinPolicy;
@@ -165,7 +166,9 @@ export async function runCabalJoin(
   let boardEpoch = 0;
   let frontierAsOf: CabalJoinResult["frontier"];
   let frontierMissing: CabalJoinResult["missing"];
+  let waitingApplicant: CabalJoinResult["missing"] = [];
   let epochUnreadable = false;
+  let realmNexus: string | null = null;
   const repo = opts.repo;
   let issued: CabalInvite[];
   const setAside: SetAsideVouch[] = [];
@@ -173,7 +176,9 @@ export async function runCabalJoin(
   // its own refusal (bad signature, wrong realm). The lineage fold and the shadow read take a carried invite
   // only once it verifies for THIS realm — the same bar the board's read sets — so a forged one lends no
   // mass under any policy and names no shadow.
-  let carried = opts.invite ?? null;
+  const bundle = opts.bundle === undefined ? null : readRealmAdmitBundle(opts.bundle);
+  if (opts.bundle !== undefined && (!bundle || bundle.realm !== realm)) throw new CabalJoinError("bad-bundle: the bundle does not name this realm with a valid invite and frontier carriage");
+  let carried = bundle?.invite ?? opts.invite ?? null;
   let carriedCounts = false;
   if (carried) {
     const { sig: _sig, ...unsigned } = carried;
@@ -192,7 +197,20 @@ export async function runCabalJoin(
     // the seat quorum; a member edge answers to the seat quorum alone (kapae#/edge-hands). An act signed by any
     // other hand drops before the fold.
     const candidates = carried && carriedCounts ? [...onBoard, carried] : onBoard;
-    const charter = await realmEdgeCharter(repo, vesselKey, realm, opts.sealHome);
+    // THE NEXUS THE REALM STANDS UNDER: this vessel's own ledger pin, else the bundle's claim (a vessel that never acted in the realm).
+    // The claim buys nothing alone: the frontier it carries counts only where it verifies under the charter THIS vessel holds for that Nexus.
+    const pinned = await readRealmNexus(repo, vesselKey, realm);
+    if (pinned !== null && bundle?.nexus !== undefined && bundle.nexus !== pinned) {
+      throw new CabalJoinError("bad-bundle: the bundle names another Nexus than the one this realm stands under here");
+    }
+    realmNexus = pinned ?? bundle?.nexus ?? null;
+    const charter = vesselEdgeCharter(realm, opts.sealHome, realmNexus);
+    // THE BUNDLE SEEDS THIS REPLICA THE WAY SYNC WOULD: its edge acts land on the realm's board unjudged, and the counting fold below
+    // judges each under the charter this vessel holds. A head that counts a raise waits until that raise counts here.
+    if (bundle && bundle.acts.length > 0) {
+      const seed = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(realm), "board:edge-kapae");
+      seed.change((d) => { for (const act of bundle.acts) writeEdgeKapae(d, act); });
+    }
     const edges = await readVesselEdgeBoard({
       repo, scope: realm, kind: "realm", boardUrl: realmEdgeBoardDocUrl(realm), label: "board:edge-kapae", vesselKey,
       authorityFor: realmEdgeAuthority(candidates),
@@ -200,11 +218,24 @@ export async function runCabalJoin(
       // vessel's own primary charter by default (kapae#/edge-hands).
       charter,
     });
-    const frontier = readVesselRealmFrontier({ realm, board: edges.handle.doc(), ledger: edges.ledger.doc(),
-      lineage: charterHandLineage(charter?.sealLineage ?? [])?.lineage ?? null, counted: edges.counted.acts });
+    const vouchers = new Map<string, Set<string>>();
+    for (const invite of candidates) {
+      const ids = vouchers.get(invite.voucherDid) ?? new Set<string>();
+      ids.add(vouchEdgeId(invite)); vouchers.set(invite.voucherDid, ids);
+    }
+    const hands = readRealmBoardFrontiers({ realm, board: edges.handle.doc(),
+      quorumLineage: charterHandLineage(charter?.sealLineage ?? [])?.lineage ?? null,
+      vouchers, counted: edges.counted.acts, pins: readFrontierPins(edges.ledger.doc(), realm),
+      ...(bundle ? { carried: bundle.frontiers } : {}) });
+    const frontier = hands.quorum;
     // A refusal narrows and needs no frontier; only an ADMISSION widens, so it waits on one (below).
     if (frontier.status === "unknown") frontierMissing = frontier.missing;
-    else { pinRealmFrontier(edges.ledger, realm, frontier); frontierAsOf = { asOf: frontier.asOf }; }
+    else { edges.ledger.change((d) => writeFrontierPin(d, realm, "quorum", frontier.asOf["quorum"]!)); frontierAsOf = { asOf: frontier.asOf }; }
+    for (const invite of candidates) {
+      const holder = hands.holders.get(invite.voucherDid);
+      if (holder?.status === "known") edges.ledger.change((d) => writeFrontierPin(d, realm, holderHand(invite.voucherDid), holder.asOf[holderHand(invite.voucherDid)]!));
+      else if (invite.joinerIdentityHex === applicant && holder?.status === "unknown") waitingApplicant = [...waitingApplicant ?? [], ...holder.missing];
+    }
     // ONLY A CAUSAL LOWER LIFTS: a contested or unreadable edge stays aside.
     const shadowOver = (i: CabalInvite): SetAsideVouch | null => {
       const vouch = vouchEdgeId(i), voucher = memberEdgeId(realm, i.voucherDid);
@@ -221,9 +252,9 @@ export async function runCabalJoin(
       seen.add(key);
       setAside.push(aside);
     }
-    issued = onBoard.filter((i) => !stands(i));
+    issued = onBoard.filter((i) => !stands(i) && hands.holders.get(i.voucherDid)?.status === "known");
     // A vouch carried out of band meets the same shadow the board's copy would.
-    if (carried && carriedCounts && stands(carried)) carried = null;
+    if (carried && carriedCounts && (stands(carried) || hands.holders.get(carried.voucherDid)?.status !== "known")) carried = null;
     // THE APPLICANT'S OWN PLACE IN THE REALM. A shadow over the member edge holds against every vouch, a fresh
     // one included: the crossing refuses below, whatever the lineage would price.
     const own = memberEdgeId(realm, applicant);
@@ -239,7 +270,7 @@ export async function runCabalJoin(
     const daemonUrl = daemonDocUrlFromBootstrap();
     if (daemonUrl) {
       const dh = await materializeSharedLarDoc(repo, daemonUrl as never, "daemon");
-      const lineage = await leaseLineageOfRealm(repo, vesselKey, opts.sealHome, realm);
+      const lineage = realmNexus === null ? null : leaseLineageOfNexus(opts.sealHome, realmNexus);
       // A realm whose charter this vessel cannot verify reads no fence: a refusal still narrows, and only an admission waits on it (below).
       epochUnreadable = lineage === null && opts.epoch === undefined;
       boardEpoch = cabalAdmissionEpoch(dh.doc(), realm, lineage);
@@ -291,6 +322,9 @@ export async function runCabalJoin(
   const applicantSetAside = setAside.some((s) => s.joinerIdentityHex.toLowerCase() === applicant);
   if (!verdict.admitted && verdict.refusal === "no-invite" && applicantSetAside) {
     return { ...verdict, refusal: "set-aside", setAside, ...(frontierAsOf ? { frontier: frontierAsOf } : {}) };
+  }
+  if (!verdict.admitted && verdict.refusal === "no-invite" && waitingApplicant?.length) {
+    return { ...verdict, refusal: "frontier-unknown", setAside, missing: waitingApplicant, ...(frontierAsOf ? { frontier: frontierAsOf } : {}) };
   }
   return { ...verdict, setAside, ...(frontierAsOf ? { frontier: frontierAsOf } : {}) };
 }

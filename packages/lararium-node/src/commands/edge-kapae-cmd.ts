@@ -35,6 +35,7 @@ import {
   signEdgeKapae, writeEdgeKapae, edgeLineHeads, nextFleetFrontier, landFleetFrontier, fleetRaiseCids, realmRaiseCids,
   realmEdgeBoardDocUrl, fleetEdgeBoardDocUrl, ed25519SignerFromSeed, memberEdgeId, deviceEdgeId,
   realmEdgeAuthority, readLedgeredVouches, withdrawForRemoval,
+  prepareHolderFrontier, holderRaiseCids, registerHandFrontierInto, vouchEdgeId,
   faceAtomKeyFromSeed,
   type DeviceCertificateHeld, type DeviceWithdrawalReport, type FaceWithdrawal, type EdgeAuthority, type EdgeHand, type EdgeKapaeVerdict, type EdgeSigner,
 } from "@lararium/mesh";
@@ -232,9 +233,11 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
   // WHO HOLDS THE EDGE, as any reader would find it. A realm's board: the verified vouches name each vouch
   // edge's voucher, and the seat quorum holds every edge. A fleet's board: the signing root holds every edge.
   let authorityFor: (id: string) => EdgeAuthority | undefined;
+  let voucherEdges = new Set<string>();
   if (realm !== undefined) {
     const vouches = await readLedgeredVouches({ repo, realm, vesselKey });
     authorityFor = realmEdgeAuthority(vouches.invites);
+    if (hand === "holder") voucherEdges = new Set(vouches.invites.filter((i) => i.voucherDid === signers[0]!.signer).map(vouchEdgeId));
     if (hand === "holder") {
       const holder = authorityFor(acted)?.holder?.toLowerCase().replace(/^0x/, "");
       if (holder !== authority.holder) {
@@ -278,8 +281,13 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
       ? await prepareRealmFrontier({ realm, board: before.handle.doc(), lineage: leaseCharter.lineage,
         counted: [...realmRaiseCids(before.counted.acts), ...(opts.raised ? [act.actCid] : [])],
         signers: signers.map((s) => ({ key: s.signer, sign: s.sign })) }) : null;
+    const holderHead = realm !== undefined && hand === "holder"
+      ? await prepareHolderFrontier({ realm, board: before.handle.doc(), voucher: signers[0]!.signer,
+        counted: [...holderRaiseCids(before.counted.acts, voucherEdges), ...(opts.raised ? [act.actCid] : [])],
+        signer: { key: signers[0]!.signer, sign: signers[0]!.sign } }) : null;
     before.handle.change((d) => { writeEdgeKapae(d, act); if (registered) landFleetFrontier(d, registered);
-      if (realmHead) registerRealmFrontierInto(d, realmHead); });
+      if (realmHead) registerRealmFrontierInto(d, realmHead);
+      if (holderHead) registerHandFrontierInto(d, holderHead); });
     // AN ACT STANDS THE REALM UNDER ITS NEXUS, once it landed: the ledger keeps the first act's word
     // (kapae#/edge-hands), and an act refused before its write pins nothing.
     if (realm !== undefined) await noteVesselRealm(repo, vesselKey, realm, realmNexus!);

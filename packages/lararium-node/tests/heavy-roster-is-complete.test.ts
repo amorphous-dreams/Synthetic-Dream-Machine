@@ -87,6 +87,9 @@ const EXCLUDED_BY_DESIGN: Record<string, string> = {
     "excluded from `main`, absent from `heavy` — two vessel roots through offer, request, answer, land and the " +
     "joinee's boot dial over a live sealed gate. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, " +
     "`tests/e2e/**/*.test.ts`; tools/e2e-shards.mjs tracks `tests/e2e/*.test.ts`).",
+  "tests/e2e/nexus-rekey-full-boot.test.ts":
+    "excluded from `main`, absent from `heavy` — a full `openNodeVessel` boot that calls the registered `nexus-rekey` verb through the " +
+    "island. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
 };
 
 describe("the serial heavy roster detects its own staleness", () => {

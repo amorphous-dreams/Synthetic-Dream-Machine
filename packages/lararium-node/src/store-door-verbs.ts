@@ -66,7 +66,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
-import { federationPostureFromDoc, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats } from "@lararium/mesh";
+import { federationPostureFromDoc, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats, type SealEpoch } from "@lararium/mesh";
 import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "./commands/nexus-cabal.js";
 import { runFloorRelease } from "./commands/nexus-release.js";
 import { casDirForStorage } from "./node-cas.js";
@@ -260,7 +260,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       const closing = args["closing"] as KahuQuorumSeats, opened = args["opened"] as KahuQuorumSeats;
       const r = await runNexusRollAnchor({ sealHome, repo, closing, opened });
       // The same roll anchors every realm edge board this vessel keeps quorum acts for (kapae#/rolls).
-      const edgeAnchors = await runEdgeRollAnchors({ sealHome, repo, closing, opened });
+      const edgeAnchors = await runEdgeRollAnchors({ sealHome, repo, closing, opened, openedEpoch: args["epoch"] as SealEpoch });
       await awaitOnRolled(deps.onRolled?.());
       return { ...r, edgeAnchors };
     }),
@@ -425,6 +425,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...(await runCabalJoin({
         realm: str(args["realm"]) ?? "", applicant: str(args["applicant"]) ?? "", sealHome, repo,
         ...opt("maxVouchesPerVoucher", int(args["maxVouchesPerVoucher"])),
+        ...(args["bundle"] === undefined ? {} : { bundle: args["bundle"] }),
       })),
     })),
     // The fleet-join door's root half: an offer, and the answer to one carried request. The answer carries the face's

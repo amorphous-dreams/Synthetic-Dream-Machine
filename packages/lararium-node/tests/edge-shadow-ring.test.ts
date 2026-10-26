@@ -22,7 +22,7 @@ import {
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, wearPersona,
 } from "../src/node-vessel-identity.js";
-import { signCabalInvite, writeVouch, type NexusDoc } from "@lararium/mesh";
+import { signCabalInvite, writeVouch, prepareHolderFrontier, registerHandFrontierInto, type NexusDoc } from "@lararium/mesh";
 import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { noteVesselRealm } from "../src/edge-board.js";
@@ -106,6 +106,11 @@ async function rootFaceInRealm(face: string): Promise<void> {
   await ownedStore(larDataDir(), async (repo) => {
     const board = await materializeSharedLarDoc(repo, realmVouchBoardDocUrl(REALM), "board:vouch-registry");
     board.change((d) => writeVouch(d, invite));
+    const edge = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
+    const chair = (await seatChairs([0])).hands[0]!;
+    const head = await prepareHolderFrontier({ realm: REALM, board: edge.doc(), voucher: seatKey,
+      counted: [], signer: { key: chair.signer, sign: chair.sign } });
+    if (head.kind !== "none") edge.change((d) => registerHandFrontierInto(d, head));
     await repo.flush();
   });
 }

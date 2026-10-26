@@ -14,16 +14,18 @@ import { mkdtempSync, rmSync, mkdirSync, writeFileSync, existsSync, unlinkSync }
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
-import { hex, hexToBytes, signCabalInvite, DEFAULT_JOIN_POLICY, DAEMON_BAG_ID, seedDaemonDoc } from "@lararium/mesh";
+import { hex, hexToBytes, signCabalInvite, writeVouch, realmVouchBoardDocUrl, materializeSharedLarDoc, DEFAULT_JOIN_POLICY, DAEMON_BAG_ID, seedDaemonDoc } from "@lararium/mesh";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey,
+  wearPersona,
 } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
-import { writeNexusDoc } from "../src/nexus-doc.js";
+import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { ownedStore } from "../src/owned-store.js";
 import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { runCabalJoin, CabalJoinError } from "../src/commands/cabal-join.js";
+import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
 import { direct } from "./direct-store.js";
 import { fixtureKey } from "./fixture-keys.js";
 import { seatChairs } from "./seat-fixture.js";
@@ -86,9 +88,27 @@ async function foreignNym(seedByte: number): Promise<string> {
 }
 
 describe("cabal join — the crossing, and what it refuses", () => {
+  it("a verified invite without its voucher head waits; the real vouch registers the hand", async () => {
+    const joiner = await foreignNym(30), seed = new Uint8Array(32).fill(31);
+    const voucherDid = hex(await ed.getPublicKeyAsync(seed));
+    const invite = await signCabalInvite({ realmDocIdHex: REALM, joinerIdentityHex: joiner, voucherDid, boundEpoch: "0" },
+      async (bytes) => hex(await ed.signAsync(bytes, seed)));
+    await ownedStore(larDataDir(), async (repo) => {
+      const board = await materializeSharedLarDoc(repo, realmVouchBoardDocUrl(REALM), "board:vouch-registry");
+      board.change((d) => writeVouch(d, invite));
+      await repo.flush();
+    });
+    const waiting = await direct(runCabalJoin)({ realm: REALM, applicant: joiner });
+    expect(waiting).toMatchObject({ admitted: false, refusal: "frontier-unknown" });
+    expect(waiting.missing).toContainEqual(expect.objectContaining({ hand: `holder:${voucherDid}` }));
+    const vouched = await direct(runCabalVouch)({ joiner, realm: REALM });
+    expect(vouched.bundle.frontiers.map((f) => f.hand)).toContain(`holder:${vouched.voucherDid}`);
+    const entered = await direct(runCabalJoin)({ realm: REALM, applicant: joiner });
+    expect(entered.admitted).toBe(true);
+  });
   it("admits a joiner the realm vouched for, and names the voucher the co-pay charges", async () => {
     const joiner = await foreignNym(7);
-    await direct(runCabalVouch)({ joiner, realm: REALM }, NOW);
+    const vouched = await direct(runCabalVouch)({ joiner, realm: REALM }, NOW);
 
     const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner });
 
@@ -96,6 +116,63 @@ describe("cabal join — the crossing, and what it refuses", () => {
     // The co-pay charges the hand that staked; an admission that forgot who vouched charges nobody.
     expect(v.voucherDid).toBe(face);
     expect(v.voucherDid).not.toBe((await loadPersonaGroupRootVerifyingKey(0))?.toLowerCase());
+    const bundled = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, bundle: vouched.bundle });
+    expect(bundled).toMatchObject({ admitted: true, frontier: { asOf: { quorum: { seq: 0 } } } });
+    await expect(direct(runCabalJoin)({ realm: REALM, applicant: joiner,
+      bundle: { ...vouched.bundle, realm: "ee".repeat(32) } })).rejects.toThrow(/bad-bundle/);
+  });
+
+  it("a separate vessel with the charter but no realm boards admits on the carried invite and frontier", async () => {
+    const joiner = await foreignNym(72);
+    const vouched = await direct(runCabalVouch)({ joiner, realm: REALM });
+    const charter = readNexusDoc(larSealHome());
+    expect(charter).not.toBeNull();
+    const firstRoot = root;
+    const secondRoot = mkdtempSync(join(tmpdir(), "lares-join-independent-"));
+    try {
+      process.env["LAR_ROOT"] = secondRoot;
+      await generateOrLoadVesselIdentity();
+      await generateOrLoadPersonaGroupRoot(0);
+      await seedFaceAtom(0);
+      await wearPersona(0);
+      writeNexusDoc(larSealHome(), charter!);
+      await seedDaemonBootstrap();
+      const withoutHeads = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, invite: vouched.bundle.invite });
+      expect(withoutHeads).toMatchObject({ admitted: false, refusal: "frontier-unknown" });
+      const joined = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, bundle: vouched.bundle });
+      expect(joined).toMatchObject({ admitted: true, frontier: { asOf: { quorum: { seq: 0 } } } });
+      await expect(direct(runCabalJoin)({ realm: REALM, applicant: joiner,
+        bundle: { ...vouched.bundle, realm: OTHER_REALM } })).rejects.toThrow(/bad-bundle/);
+    } finally {
+      process.env["LAR_ROOT"] = firstRoot;
+      rmSync(secondRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("a bundle's head never vouches for its own raises: stripped of the acts it counts, the head waits; with them the joiner admits", async () => {
+    const joiner = await foreignNym(73), other = await foreignNym(74);
+    await direct(runEdgeKapae)({ member: other, realm: REALM, raised: true, hand: "quorum" });
+    const vouched = await direct(runCabalVouch)({ joiner, realm: REALM });
+    expect(vouched.bundle.acts.length).toBeGreaterThan(0);
+    const charter = readNexusDoc(larSealHome());
+    const firstRoot = root;
+    const secondRoot = mkdtempSync(join(tmpdir(), "lares-join-stripped-"));
+    try {
+      process.env["LAR_ROOT"] = secondRoot;
+      await generateOrLoadVesselIdentity();
+      await generateOrLoadPersonaGroupRoot(0);
+      await seedFaceAtom(0);
+      await wearPersona(0);
+      writeNexusDoc(larSealHome(), charter!);
+      await seedDaemonBootstrap();
+      const stripped = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, bundle: { ...vouched.bundle, acts: [] } });
+      expect(stripped).toMatchObject({ admitted: false, refusal: "frontier-unknown" });
+      const whole = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, bundle: vouched.bundle });
+      expect(whole).toMatchObject({ admitted: true, frontier: { asOf: { quorum: { seq: 1 } } } });
+    } finally {
+      process.env["LAR_ROOT"] = firstRoot;
+      rmSync(secondRoot, { recursive: true, force: true });
+    }
   });
 
   it("refuses a joiner nobody vouched for — invite-only is the fail-closed default", async () => {
