@@ -70,3 +70,16 @@ def test_prov_export_distinguishes_failed_and_verified_entities():
     import pytest
     with pytest.raises(ValueError,match="digest"):
         provenance_document(wrong)
+
+
+
+def test_native_rule_receipt_measures_nonzero_expression():
+    base=fixture()
+    witness=base.relation_witness(location="necrospire")
+    row=audition_plan(resolve_proposal(example(witness,"encircles","ring-around"),witness),
+                      base,location="necrospire")["results"][0]
+    if row["state"]=="native-admitted":
+        assert row["added_volume"]>0
+        assert row["part_delta"]==4
+    else:
+        assert row["reason"]

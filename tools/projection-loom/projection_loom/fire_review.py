@@ -70,6 +70,8 @@ def render_fire_review(project,recipe,receipt,output,*,size=(160,240)):
         raise ValueError("Fire review output must be a new empty directory")
     comp=CapabilityCompositor(project,recipe,size=(64,96),
                                source_mask=project.source_mask((64,96)))
+    if comp.construction_digest()!=receipt.get("source_construction_digest"):
+        raise ValueError("Fire review construction implementation drifted")
     built=comp.grow(receipt["source_genome"])
     if not CompoundAuditReceipt.from_native(built.audit).render_admissible:
         raise ValueError("Regrown source no longer has native construction authority")
@@ -101,6 +103,9 @@ def render_fire_review(project,recipe,receipt,output,*,size=(160,240)):
         rerun=draft.audit(join=True)
         if not rerun.get("valid") or rerun["union_solids"]!=1:
             raise ValueError("Reconstructed Fire variant did not pass native audit")
+        original_volume=item["native_audit"]["union_volume"]
+        if abs(rerun["union_volume"]-original_volume)>max(1e-6,original_volume*1e-7):
+            raise ValueError("Fire CAD union volume departed from original native receipt")
         witness=draft.relation_witness(location=project.location)
         if witness.witness_id!=item["witness_id"]:
             raise ValueError("Fire alternative no longer matches native witness")

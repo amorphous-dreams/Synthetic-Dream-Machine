@@ -192,6 +192,7 @@ def fire_audition(project, recipe, proposal, *, identity_ledger=None,
                           source_seed_sha256=(project.seed_entity.sha256
                                               if project.seed_entity is not None else None))
     result=audition_plan(plan,built.scene.assembly,location=project.location)
+    result["source_construction_digest"]=loom.construction_digest()
     result["source_recipe_sha256"]=recipe.sha256
     result["source_genome_sha256"]=_hash(built.genome)
     result["source_genome"]=built.genome
