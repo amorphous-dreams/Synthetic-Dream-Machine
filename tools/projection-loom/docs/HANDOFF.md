@@ -6,13 +6,53 @@
 
 ## KAIROS interrupted-turn recovery · current Fire / Art Sigils checkpoint
 
-**As of 2026-10-26 UTC:** The interrupted feature work **is in Git**: PR #84 head `7bf23db4` before this recovery. The standalone Art Sigils branch has been merged with ancestry preserved and its ref retired; PR #82 is closed. The current source-backed **AI Fire** remains the Operator-facing interpreter, not an added model service or alternative controller. Core artifacts: `schemas/fire_proposal.schema.json`, `projection_loom/fire_contract.py`, `fire_geometry.py`, `fire_review.py`, the Art Sigils Loom dialect, and `docs/FIRE_GRAMMAR.md`.
+**Verified code head `0b411b22` (2026-10-26 UTC):** The Art Sigils
+evolution was merged into Loom through **two real two-parent Git merges**;
+PR #82 is closed and the standalone branch ref retired. Its source/history
+remain available in PR #84's ancestry. The current **backed-source AI Fire**
+is the sole Operator-facing memetic-wikitext interpreter. There is no
+additional AI service, executable Art Sigil parser, or replacement OODA-HA
+controller. The typed Fire proposal schema and native graph-rule audits,
+source-bound rejections, six-view review, provenance, and documentation are
+committed to the Loom PR.
 
-**Verified completed:** Dedicated Fire grammar [CI #40261722482](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40261722482) passed (16 focused tests, real-source context/native audition). Other dedicated Experiment Zero, source/native evidence and alpha-coevolution workflows passed. The real source-bound bridge proposal **failed** native CAD, and remained an attributed rejection; controlled bridge/bearing fixtures passed. Do **not** report a source-bound valid bridge or rendered six-view Fire handback as completed.
+**Regression recovery verified:** The three intervening failures at
+`7bf23db4`—pet-name CLI import shadowing, stale named-seed hash-map
+expectation, and archived camera `0` vs `0.0` SHA comparison—were fixed
+in `927832b4`, followed by the source-backed roadmap commit `0b411b22`.
+**Eight of eight dedicated Loom workflows passed** on this code head:
+Fire [#40263195584](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195584),
+CAD/evidence [#40263195410](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195410)
+and [#40263199650](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263199650),
+Experiment Zero [#40263195505](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195505),
+evergreen grammar [#40263195398](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195398),
+native gallery [#40263195368](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195368),
+alpha coevolution [#40263195583](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195583),
+and native pre-campaign [#40263195366](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195366).
+**Repository-wide CI** [#40263195741](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195741)
+was still in progress, and **held-out witnesses**
+[#40263195361](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195361)
+were queued at last inspection; do not assume those outcomes. Inspect the
+*newest pushed head* and its independent Actions receipts on re-entry.
 
-**Integrity gaps found in the pre-recovery head:** full Loom CAD regressions failed on CLI shadowed `PetNameLedger` and a legacy source-hash assertion; evergreen grammar repeated the latter; native ortho-gallery rejected its own camera digest after a harmless integer-to-float roundtrip. A source-preserving repair is staged in recovery commits. The whole-repository and held-out CI results must be rechecked at the final pushed head. This is a CI boundary, not a license to bypass source/geometry proof.
+**Important unproved boundary:** The real-source Necrospire
+`bridge-between` attempt was natively **rejected**; a study-only alternative
+remained open. Controlled-fixture bridge/bearing operations passed native
+audits, but no successful real-source relationship or its six-view handback
+has yet been demonstrated. Do not turn those fixtures into an artistic
+or engineering success claim. New grammar alternatives, rich RGB semantic
+inference and matched-seed architectural diversity remain open work; historic
+six-generation and small two-epoch lineages remain separate.
 
-**Operator next:** [Loom Roadmap](ROADMAP.md) records completed, pending and deferred work with explicit receipts. [Fire Grammar](FIRE_GRAMMAR.md) explains the only Fire interface; [Loom Field Guide](GUIDEBOOK.md) covers source/architecture proposals. Historical Necrospire generations remain excluded from new ancestry. Refresh actual Actions and PR head before asserting a green result.
+**Next-session entry:** Fetch the full Lares boot at
+`feature/green-jello-dinosaur-5` (not `main`), confirm PR #84 remote head,
+read `docs/ROADMAP.md`, `docs/BRANCHED_SESSION_HANDOFF.md`,
+`docs/FIRE_GRAMMAR.md` and latest Actions. Repair only fresh failures.
+Then choose a **fresh, source-bound relation audition** which demonstrates
+a native-valid architectural variation and actual comparable orthographic
+evidence, without altering settled historical results or granting Operator
+approval.
+
 
 ---
 

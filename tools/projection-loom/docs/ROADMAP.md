@@ -18,16 +18,38 @@
 | Experiment Zero controls | **Previously verified** | Finite 2x overscan, original source-view score, depth/mesh budgets, seed-frozen orthos, stable pet-named RGBA/L8 Oblique Seed, prior independently archived campaign evidence. [Actions #40261722425](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40261722425) passed |
 | Source history | **Preserved** | Frozen six-generation pilot and later small two-epoch preview are never silently imported, rewritten, or promoted |
 
-## Integrity repair staged after interrupted push
+## KAIROS repairs verified on code head `0b411b22`
 
-These changes have a new commit on top of `7bf23db4`, but require their **own Actions verdict** after final branch push:
+**All eight dedicated Loom-specific jobs passed** against commit
+`0b411b22deb0e44a13fe91a911b1ffc151c49173`, including two CAD/evidence
+runs, Fire grammar, Experiment Zero, native six-view gallery, evergreen grammar,
+alpha coevolution, and native pre-campaign evidence. Recovery commit
+[`927832b4`](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/commit/927832b474d31d517ea90a83419d9090cd41d1a7)
+is therefore **verified by the same-head runners**, not merely staged.
 
-1. **CLI pet-name scope**: `fire-context` had a local `PetNameLedger` import shadowing the module-level binding and breaking unrelated `pet-name` CLI commands. Remove the shadowing import; preserve one public binding.
-2. **Current seed test**: an old recipe-rebuild assertion required exact equality of the pre-seed source hash map. Preserve the original image witness and test the added, verified `seed:entity`, `seed:appearance`, `seed:silhouette` identities instead; do not remove these identities for a green check.
-3. **Native ortho camera**: archived JSON camera digests distinguish numeric `0` and `0.0`; `Camera.from_dict` legitimately produces floats. Verify the **archived raw camera** against the archived hash before typed rendering, and independently check semantic equality. Do not bypass the hash.
-4. **Workflow reruns**: full Loom CAD evidence, evergreen-grammar, six-view gallery, held-out and repo-wide CI must be checked on the final commit; any remaining failures are unverified, not declared green.
+| Earlier failure on `7bf23db4` | Recovery disposition | Current-head witness |
+| --- | --- | --- |
+| Shadowing local `PetNameLedger` in CLI | Fixed; existing pet-name commands retain module-level import | [CAD/evidence #40263195410](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195410) **passed** |
+| Obsolete assertion requiring old source-hash map | Fixed test without removing the one RGBA/L8 seed's three additional digests | [Evergreen grammar #40263195398](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195398) **passed** |
+| Camera digest `0` versus `0.0` after typed rendering | Verify archived raw camera SHA first, then compare normalized typed semantics; never bypass archival hash | [Gallery #40263195368](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195368) **passed** |
 
-Failing initial receipts on `7bf23db4`: [CAD regression #40261725075](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40261725075), [evergreen #40261722443](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40261722443), [gallery #40261722396](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40261722396).
+Other **passed** dedicated witnesses on `0b411b22`:
+[Fire #40263195584](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195584),
+[Experiment Zero #40263195505](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195505),
+[alpha coevolution #40263195583](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195583),
+[native pre-campaign #40263195366](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195366),
+[second CAD/evidence #40263199650](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263199650).
+The full [repository CI #40263195741](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195741)
+was **in progress**, and
+[held-out witnesses #40263195361](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195361)
+were **queued** at the 2026-10-26 UTC recovery inspection. Their verdicts
+must be re-read before claiming repository-wide green. This document-only
+successor commit also requires its own final PR-head inspection.
+
+Prior failed runs remain genuine historical receipts, not current failures:
+[CAD #40261725075](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40261725075),
+[evergreen #40261722443](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40261722443),
+[gallery #40261722396](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40261722396).
 
 ## Not implemented / not yet demonstrated
 
