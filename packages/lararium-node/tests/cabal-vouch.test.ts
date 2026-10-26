@@ -43,7 +43,7 @@ beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), "lares-vouch-"));
   priorLarRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;
-  await generateOrLoadVesselIdentity();   // the REALM's key — scopes the board
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });   // the REALM's key — scopes the board
   await generateOrLoadPersonaGroupRoot(); // the HUMAN's face — the hand that stakes
   await seedFaceAtom(0);
   await seatOwnCharter([0]);              // the Nexus the realm stands under

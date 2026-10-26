@@ -26,7 +26,7 @@ describe("the place card", () => {
   test("RED: a cardless joinee refuses `absent`; CONTROL: its own-seed card is minted, kept and verifies", async () => {
     await withLarRoot(root, async () => {
       await sealTestCustody();
-      await generateOrLoadVesselIdentity();
+      await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
       await expect(requirePlaceCardOfOwnSeed()).rejects.toMatchObject({ why: "absent" });
       expect(await ensurePlaceCard()).toBe("minted");
       expect(await requirePlaceCardOfOwnSeed()).toContain("{");

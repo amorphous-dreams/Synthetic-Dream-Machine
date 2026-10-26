@@ -70,7 +70,7 @@ beforeAll(async () => {
   process.env["LAR_ROOT"] = root;
   // A boot loads its vessel key and never mints one, so the staged root gets its key here, inside the custody the
   // seeding founded (the suites' scratch custody opens it under the published test route).
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
 }, TIMEOUT_MS);
 
 afterAll(async () => {

@@ -31,7 +31,7 @@ const REALM = "af".repeat(32), MEMBER = "bc".repeat(32);
 
 async function stand(index: number, seatIndex: number, keys: string[]) {
   process.env["LAR_ROOT"] = roots[index]!;
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await seedFaceAtom(0);
   await generateOrLoadPersonaGroupRoot(seatIndex); await seedFaceAtom(seatIndex);
   await seatChairs([seatIndex]);
@@ -55,9 +55,9 @@ async function withRepo<T>(index: number, run: (repo: Repo) => Promise<T>): Prom
 beforeEach(async () => {
   priorLarRoot = process.env["LAR_ROOT"];
   roots = [mkdtempSync(join(tmpdir(), "lares-cosign-a-")), mkdtempSync(join(tmpdir(), "lares-cosign-b-"))];
-  process.env["LAR_ROOT"] = roots[0]!; await generateOrLoadVesselIdentity(); await generateOrLoadPersonaGroupRoot(0); await seedFaceAtom(0);
+  process.env["LAR_ROOT"] = roots[0]!; await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } }); await generateOrLoadPersonaGroupRoot(0); await seedFaceAtom(0);
   chairA = (await seatChairs([0])).keys[0]!;
-  process.env["LAR_ROOT"] = roots[1]!; await generateOrLoadVesselIdentity(); await generateOrLoadPersonaGroupRoot(1); await seedFaceAtom(1);
+  process.env["LAR_ROOT"] = roots[1]!; await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } }); await generateOrLoadPersonaGroupRoot(1); await seedFaceAtom(1);
   chairB = (await seatChairs([1])).keys[0]!;
   const keys = [chairA, chairB];
   // The charter commits to the chairs' next keys, so a roll moves its head and keeps its Nexus.

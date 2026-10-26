@@ -73,7 +73,7 @@ describe("PersonaGroup-root custody (operator-root capability)", () => {
   it("the root is a DISTINCT capability from the per-vessel device key (not numbered planes)", async () => {
     const dataDir = freshDataDir();
     try {
-      const vessel = await generateOrLoadVesselIdentity();
+      const vessel = await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
       const root   = await generateOrLoadPersonaGroupRoot();
       expect(root.verifyingKey).not.toBe(vessel.verifyingKey); // the split actually splits
     } finally {

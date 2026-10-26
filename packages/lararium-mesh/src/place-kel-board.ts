@@ -44,6 +44,18 @@ export function placeKelEventsFromBoard(doc: LarDoc | undefined | null, aid: str
   return out;
 }
 
+/** Every parseable place KEL payload on the board, across all inception AIDs. The carry reader verifies each chain. */
+export function placeKelRowsFromBoard(doc: LarDoc | undefined | null): unknown[] {
+  const out: unknown[] = [];
+  for (const [title, record] of Object.entries(doc?.tiddlers ?? {})) {
+    if (!title.startsWith(PLACE_KEL_PREFIX)) continue;
+    const text = tiddlerText(record);
+    if (text === null) continue;
+    try { out.push(JSON.parse(text) as unknown); } catch { /* a torn row carries no payload */ }
+  }
+  return out;
+}
+
 /**
  * The head a reader accepts from a board: the events filed under the pinned AID folded from the pinned inception, then held
  * against the head the reader last accepted. A row that decodes to no event never counts.

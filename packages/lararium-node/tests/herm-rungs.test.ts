@@ -129,7 +129,7 @@ describe("SILENT — the herm hands over its bulb by CID and describes nothing",
     process.env["LAR_ROOT"] = mkdtempSync(join(tmpdir(), "lr-herm-rungs-root-")); dirs.push(process.env["LAR_ROOT"]);
     const storageDir = mkdtempSync(join(tmpdir(), "lr-herm-rungs-device-")); dirs.push(storageDir);
     const repo = new Repo({ sharePolicy: async () => true }); repos.push(repo);
-    const k = await kindleFromBulb({ bulb: pulled, repo, storageDir });
+    const k = await kindleFromBulb({ placeFoundingCard: { readBack: async () => {} }, bulb: pulled, repo, storageDir });
     expect(k.did).toBe(didKeyFromVerifyingKey(k.deviceVerifyingKey));
   }, 30_000);
 

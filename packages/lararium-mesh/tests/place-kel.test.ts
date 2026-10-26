@@ -19,7 +19,7 @@ describe("place KEL", () => {
     if (read.ok) { expect(read.aid).toBe(first.aid); expect(read.seq).toBe(2); expect(read.signerKey).toBe(key(5)); }
   });
 
-  it("refuses an unarmed or old-shape inception, while the armed control verifies", () => {
+  it("refuses an unarmed inception and a one-key inception, while the armed control verifies", () => {
     const first = mintPlaceInception({ signerSeed: seed(1), coldVerifyingKey: key(2) });
     expect(verifyPlaceKel([first.event]).ok).toBe(true);
     expect(refusal([{ kind: VESSEL_KEL_DOMAIN, t: "icp", seq: 0, key: key(1), sig: first.event.sig }])).toBe("unarmed-inception");

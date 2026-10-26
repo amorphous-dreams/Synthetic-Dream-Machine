@@ -45,6 +45,7 @@ import { storedRecord } from "@lararium/mesh";
 import { assembleBulb, bulbSeed, bulbSeedInventory, type BulbArtifact } from "./bulb.js";
 import { parseGenesisSeed } from "./genesis-artifact.js";
 import { generateOrLoadVesselIdentity } from "./node-vessel-identity.js";
+import type { PlaceFoundingCard } from "./place-founding-card.js";
 import { openedCustody } from "./custody-seat.js";
 import { writeCasEntriesFs, casDirForStorage } from "./node-cas.js";
 
@@ -155,6 +156,8 @@ export async function kindleFromBulb(args: {
   readonly repo:        Repo;
   readonly storageDir:  string;
   readonly displayName?: string;
+  /** The ceremony that reads the new place's cold card back; absent, only a staged test root stands in for it. */
+  readonly placeFoundingCard?: PlaceFoundingCard;
 }): Promise<KindleResult> {
   const { bulb, repo, storageDir } = args;
   const seed = bulbSeed(bulb);
@@ -176,7 +179,7 @@ export async function kindleFromBulb(args: {
 
   // 3. the DEVICE mints its OWN Ed25519 — HERE, on the cold device. The Herm never sees this key (serve fire, never
   //    key). A fresh storageDir → a fresh keypair → a NEW sovereign; the bulb supplies NO key to source it from.
-  const identity = await generateOrLoadVesselIdentity();
+  const identity = await generateOrLoadVesselIdentity(args.placeFoundingCard ? { placeFoundingCard: args.placeFoundingCard } : {});
 
   // 4. build the cold-boot ceremony ON the device's own verifying key — the identity did:key derives from IT.
   const ceremony = buildCeremonyTiddlers(identity.verifyingKey, args.displayName);

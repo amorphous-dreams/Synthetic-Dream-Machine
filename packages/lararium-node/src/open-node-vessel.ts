@@ -1504,7 +1504,11 @@ async function prepareNodeBootOn(
   const carriagePull = vesselCarriagePull<MeshPalaceDoc>({
     placeClass,
     ownPlaceKey: vesselIdentity.verifyingKey,
-    sign:        async (image) => carriageHexToBytes(await carriageSign.signFloor(carriageFloorDutyOf(image), image)),
+    sign:        async (image) => {
+      const duty = carriageFloorDutyOf(image);
+      if (duty === null) throw new Error("place-signer: unframed floor duty");
+      return carriageHexToBytes(await carriageSign.signFloor(duty, image));
+    },
     readings:    readEveryCarried,
     ownNexus:    ownNexusAid,
     openBoard:   (url) => carriedBoards.open(url, "board:carriage-contracts"),

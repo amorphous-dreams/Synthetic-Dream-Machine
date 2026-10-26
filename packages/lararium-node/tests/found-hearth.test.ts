@@ -111,8 +111,8 @@ describe("the Stable founding act", () => {
       expect(existsSync(join(larIdentityDir(), "sk-slots.bin"))).toBe(true);
       expect(founded.face.alreadyStood).toBe(false);
     });
-    expect(seeds).toHaveLength(1);
-    expect(seeds[0]!.every((b) => b === 0)).toBe(true);                                    // the card's seed zero-filled
+    expect(seeds).toHaveLength(2);                                                          // the place card, then the chair's
+    expect(seeds.every((seed) => seed.every((b) => b === 0))).toBe(true);                   // each card's seed zero-filled
   });
 
   test("H2 — the device edge, the true-name pin and the dyad binding each name the charter's AID", async () => {
@@ -265,7 +265,7 @@ describe("the card reads back before the charter moves", () => {
   test("H5 — a refused read-back writes no charter and no face and retires its seat key — the act run again completes", async () => {
     const r = freshRoot("refused");
     let seen: Uint8Array | null = null;
-    await expect(foundAt(r, async (cards) => { seen = cards[0]!.seed; throw new Error("the card read back otherwise"); }))
+    await expect(foundAt(r, async (cards) => { if (cards[0]!.chair === "place") return; seen = cards[0]!.seed; throw new Error("the card read back otherwise"); }))
       .rejects.toThrow(/read back otherwise/);
     await withLarRoot(r, async () => {
       expect(existsSync(join(larSealHome(), "founding-roster.mem"))).toBe(false);

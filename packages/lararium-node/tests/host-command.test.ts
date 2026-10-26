@@ -60,7 +60,7 @@ afterEach(async () => {
 
 /** Seat a charter whose founding kahu are this vessel's held seat keys — so the vessel carries it. */
 async function seatOwnCharter(): Promise<{ aid: string; doc: NexusDoc }> {
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
   const keys = (await seatChairs([0, 1, 2])).keys;
   const doc: NexusDoc = heldCharter({ keys, threshold: 2 }).doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
@@ -243,7 +243,7 @@ describe("lares host — roll, invite, state", () => {
   });
 
   it("REFUSALS write nothing: no charter, an uncarried Nexus, an invite before any roll", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await expect(direct(runHostRoll)({ sealHome: sealHome() })).rejects.toBeInstanceOf(HostRefusal);
     const { aid } = await seatAndWear();
     await expect(direct(runHostRoll)({ sealHome: sealHome(), nexusAid: "nexus-" + "b".repeat(64) })).rejects.toThrow(/does not carry/);

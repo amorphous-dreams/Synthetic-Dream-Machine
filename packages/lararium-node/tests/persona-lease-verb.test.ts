@@ -25,7 +25,7 @@ let prior: string | undefined;
 let daemonUrl: string;
 
 async function setup(withFleet: boolean) {
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
   if (withFleet) await seedFleet(0);

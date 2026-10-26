@@ -45,7 +45,7 @@ async function invite(): Promise<() => string> {
 
 describe("N — a node vessel walks like any leaf", () => {
   it("walking grants no carry duty: the carried set and the node's own charter stand as before", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     const mint = await invite();
     const sealHome = join(root, "state", "nexus");

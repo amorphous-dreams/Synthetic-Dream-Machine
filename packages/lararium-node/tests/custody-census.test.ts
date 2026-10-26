@@ -7,7 +7,7 @@ import { carrierTable, CUSTODY_PARTS, type CarrierRow, type CustodyPart } from "
  * spec adds or drops moves this list in the same commit.
  */
 const SPEC: ReadonlyArray<readonly [row: string, classes: readonly CustodyPart[], lead: boolean]> = [
-  ["vessel-key", ["S"], true], ["vessel-kel", ["F"], false], ["s-slots", ["D", "S"], true], ["sk-slots", ["S"], true], ["fk-slots", ["D"], false], ["face-index", ["F"], false],
+  ["vessel-key", ["S"], true], ["vessel-kel", ["F"], false], ["vessel-rotating", ["S"], true], ["s-slots", ["D", "S"], true], ["sk-slots", ["S"], true], ["fk-slots", ["D"], false], ["face-index", ["F"], false],
   ["vessel-card", ["F"], false], ["charter", ["F"], false], ["carried-charter", ["F"], false],
   ["carriage-consent", ["F"], false], ["nexus-key-line", ["F"], false], ["carriage-admit", ["F"], false],
   ["sealed-rest", ["F"], false], ["sealed-own", ["F"], true], ["sealed-chunk", ["F"], false],
@@ -26,7 +26,7 @@ const SPEC: ReadonlyArray<readonly [row: string, classes: readonly CustodyPart[]
 ];
 
 /** The spec's node S candidates: the only rows that may carry an S part. */
-const S_ROWS = new Set(["vessel-key", "s-slots", "sk-slots"]);
+const S_ROWS = new Set(["vessel-key", "vessel-rotating", "s-slots", "sk-slots"]);
 const JOINTS = new Set(["place-signer", "archive-row-selector"]);
 
 /** Every refusal the census law reads off a table, named; an empty list reads green. */
@@ -66,7 +66,7 @@ describe("the node custody census (K15 step zero)", () => {
     expect(table.map((r) => r.row)).toEqual(SPEC.map(([row]) => row));
   });
 
-  it("carries S only on vessel-key, s-slots and sk-slots", () => {
+  it("carries S only on vessel-key, vessel-rotating, s-slots and sk-slots", () => {
     expect(table.filter((r) => r.target.classes.includes("S")).map((r) => r.row)).toEqual([...S_ROWS]);
   });
 
@@ -79,7 +79,7 @@ describe("the node custody census (K15 step zero)", () => {
   it("names the two open joints on the rows that wait on them", () => {
     const joints = Object.fromEntries(table.filter((r) => r.target.joint !== null).map((r) => [r.row, r.target.joint]));
     expect(joints).toEqual({
-      "vessel-key": "place-signer", "s-slots": "place-signer",
+      "vessel-key": "place-signer", "vessel-rotating": "place-signer", "s-slots": "place-signer",
       "place-archive": "archive-row-selector", "veil-archive": "archive-row-selector",
     });
   });

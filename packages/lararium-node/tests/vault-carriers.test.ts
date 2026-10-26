@@ -68,6 +68,7 @@ const FCID = "cd".repeat(16);
 const SOWN: Record<string, string> = {
   "identity/.vessel-key-joshua.json":           "{}",
   "identity/.vessel-kel-joshua.json":           "{}",
+  "identity/.vessel-rotating-joshua.json":    "{}",
   "identity/.vessel-card-joshua.json":          "{}",
   "identity/s-slots.bin":                      "slots",
   "identity/sk-slots.bin":                      "serving",
@@ -124,7 +125,7 @@ const SOWN: Record<string, string> = {
 
 /** The ruled class of every row (refound K7, K12, K15 and the custody plan's hot and cold lists). */
 const RULED: Record<string, CustodyClass> = {
-  "vessel-key": "floor", "vessel-kel": "floor", "s-slots": "floor", "sk-slots": "floor",
+  "vessel-key": "floor", "vessel-kel": "floor", "vessel-rotating": "floor", "s-slots": "floor", "sk-slots": "floor",
   "vessel-card": "floor-plain", "charter": "floor-plain", "carried-charter": "floor-plain",
   "carriage-consent": "floor-plain", "carriage-admit": "floor-plain", "nexus-key-line": "floor-plain",
   // The sealed store's rests hold no secret in the clear, and a blind carrier may hold every one (sealed-store#/the-store).

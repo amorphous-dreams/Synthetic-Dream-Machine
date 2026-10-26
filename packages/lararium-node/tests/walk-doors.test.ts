@@ -59,7 +59,7 @@ const walkDirOf = (): string => dirname(handleRowPath(walkRowFile(0, GATE)));
 
 describe("lares walk — take, as the worn face, at one hearth", () => {
   it("RED: a vessel wearing no face takes no invite and writes nothing; CONTROL: worn, the take keeps it as that face", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     await generateOrLoadPersonaGroupRoot(1);
     await expect(runWalkTake({ carried: await invite() })).rejects.toThrow(/wears no face/);
@@ -71,7 +71,7 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
   });
 
   it("the worn face, never the roster's first: two faces held and h1 worn, the walk presents h1's leaf", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     await generateOrLoadPersonaGroupRoot(1);
     await wearPersona(1);
@@ -85,7 +85,7 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
   });
 
   it("RED: two takes for two hearths that start together keep ONE hearth; the other refuses", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     await wearPersona(0);
     const [here, there] = [await invite(GATE), await invite(OTHER_GATE)];
@@ -103,7 +103,7 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
   });
 
   it("RED: a second hearth, or a dial pinned elsewhere, refuses and writes nothing; CONTROL: the same hearth takes a fresh invite", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     await wearPersona(0);
     await expect(runWalkTake({ carried: await invite(), dialGate: OTHER_GATE })).rejects.toThrow(/dial stands to the hearth/);
@@ -121,7 +121,7 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
   });
 
   it("an invite with no relay, for a hearth this vessel knows no relay of, refuses", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     await wearPersona(0);
     await expect(runWalkTake({ carried: await invite(GATE, null) })).rejects.toThrow(/names no relay/);
@@ -129,7 +129,7 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
   });
 
   it("walk invite hands out the newest token with the hearth's relay; an empty wallet refuses", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     await wearPersona(0);
     await expect(runWalkInvite()).rejects.toThrow(/walks nowhere/);
@@ -150,7 +150,7 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
 describe("the walk and hosting stores stand owner-only", () => {
   it("RED: the walk and hosting directories are 0700, and an existing wider one is re-moded", async () => {
     const mode = (p: string): number => statSync(p).mode & 0o777;
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     await wearPersona(0);
     await runWalkTake({ carried: await invite() });

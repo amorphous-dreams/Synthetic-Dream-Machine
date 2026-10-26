@@ -62,7 +62,7 @@ beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), "lares-join-"));
   priorLarRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot();
   await seedFaceAtom(0);
   await seedDaemonBootstrap();

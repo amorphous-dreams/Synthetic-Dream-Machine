@@ -66,7 +66,7 @@ async function filedHere(): Promise<readonly string[]> {
 /** The hearth seats a charter; each place founds a key and imports it, signs its carrier seal, and the hearth carries it. */
 async function carryBoth(rolled = false): Promise<{ herm: string; reader: string; readerBundle: CarryBundle; lastHop?: string }> {
   at(roots.hearth);
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   if (rolled) for (const face of [0, 1, 2]) await generateOrLoadPersonaGroupRoot(face);
   const seated = await seatChairs([0, 1, 2]);
   const successors = rolled ? await seatChairs([0, 1, 2], { generation: 1 }) : null;
@@ -78,7 +78,7 @@ async function carryBoth(rolled = false): Promise<{ herm: string; reader: string
   const bundles: Record<string, CarryBundle> = {};
   for (const who of (rolled ? ["herm", "relay", "lastHop", "reader"] as const : ["herm", "reader"] as const)) {
     at(roots.hearth); const doc = readNexusDoc(larSealHome())!;
-    at(roots[who]); await generateOrLoadVesselIdentity(); writeNexusDoc(larSealHome(), doc);
+    at(roots[who]); await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } }); writeNexusDoc(larSealHome(), doc);
     seals[who] = await runNexusCarryFor({ sealHome: larSealHome() });
     at(roots.hearth);
     const s = seals[who]!;
@@ -127,7 +127,7 @@ describe("a carry bundle carries the counted carries of the places whose floor p
     const opening = epochSeats(opened!)!;
     expect(opening.keys).not.toEqual(closing.keys);
     at(roots.outsider);
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     writeNexusDoc(larSealHome(), charter);
     const stranger = await runNexusCarryFor({ sealHome: larSealHome() });
     const contractSig = await signCarrierContract(stranger.nym, closed!.epochCid,
@@ -169,7 +169,7 @@ describe("a carry bundle carries the counted carries of the places whose floor p
     const aid = primaryNexusAid(larSealHome())!;
     const pins = hearthPinIndex();
     at(roots.outsider);
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const unrelated = heldCharter({ keys: (await seatChairs([0, 1, 2], { generation: 1 })).keys, threshold: 2, variant: 7 });
     writeNexusDoc(larSealHome(), unrelated.doc());
     const stranger = await runNexusCarryFor({ sealHome: larSealHome() });

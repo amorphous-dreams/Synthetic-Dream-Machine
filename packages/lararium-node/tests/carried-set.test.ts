@@ -117,7 +117,7 @@ function genesisOnlyCharter(keys: string[], threshold: number): NexusDoc {
 
 /** This vessel's own founding: three held seat keys, filed under held persona-roots. */
 async function standFounding(): Promise<string[]> {
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
   const { keys } = await seatChairs([0, 1, 2]);
   writeNexusDoc(sealHome(), genesisCharter(keys).doc);
@@ -126,7 +126,7 @@ async function standFounding(): Promise<string[]> {
 
 /** A vessel that founded nothing and holds one persona to consent with. */
 async function standJoiner(): Promise<void> {
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
 }
 

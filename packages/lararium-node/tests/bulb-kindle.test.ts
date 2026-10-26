@@ -60,7 +60,7 @@ describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire,
   // two REAL machines (or a Pi) prove the placement in the field; here one process stands in for two devices via env.
   const kindleAsFreshDevice = async (bulb: BulbArtifact, tag: string): Promise<KindleResult> => {
     process.env["LAR_ROOT"] = mkDir(`root-${tag}`);
-    try { return await kindleFromBulb({ bulb, repo: newRepo(), storageDir: mkDir(`store-${tag}`) }); }
+    try { return await kindleFromBulb({ placeFoundingCard: { readBack: async () => {} }, bulb, repo: newRepo(), storageDir: mkDir(`store-${tag}`) }); }
     finally { if (priorLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorLarRoot; }
   };
 
@@ -148,7 +148,7 @@ describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire,
     process.env["LAR_ROOT"] = mkDir("root-serve");
     const repo = newRepo();
     let k: KindleResult;
-    try { k = await kindleFromBulb({ bulb: pulled, repo, storageDir: mkDir("device-a") }); }
+    try { k = await kindleFromBulb({ placeFoundingCard: { readBack: async () => {} }, bulb: pulled, repo, storageDir: mkDir("device-a") }); }
     finally { if (priorLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorLarRoot; }
     expect(k.did).toBe(didKeyFromVerifyingKey(k.deviceVerifyingKey));
 
