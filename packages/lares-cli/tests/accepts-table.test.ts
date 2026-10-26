@@ -45,7 +45,7 @@ const HANDLER_FILE: Readonly<Record<string, string>> = {
   sensorium: "commands/sensorium", "test-quine": "commands/scripted", vault: "commands/vault",
   library: "commands/library", persona: "commands/persona", circle: "commands/circle", cabal: "commands/cabal",
   edge: "commands/edge", raise: "commands/raise", nexus: "commands/nexus",
-  handle: "commands/handle", fleet: "commands/fleet",
+  handle: "commands/handle", fleet: "commands/fleet", intent: "commands/intent",
 };
 
 /** Files whose reads are not a command's own: the renderer (json), help, and the table itself. */

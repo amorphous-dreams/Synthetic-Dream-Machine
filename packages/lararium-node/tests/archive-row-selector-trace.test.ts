@@ -25,6 +25,7 @@ const SITES: readonly Site[] = [
   { file: join(NODE, "commands/init.ts"), token: CALL("loadVeilArchive"), count: 1, selector: "authenticated", act: "admit reads the payload group's archive; a new founding restores no archive, since a fresh group mints a fresh atom" },
   { file: join(NODE, "commands/init.ts"), token: CALL("persistVeilArchive"), count: 3, selector: "authenticated", act: "admit writes the payload group's archive and persona new writes the founded group's archive" },
   { file: join(NODE, "leaf-identity.ts"), token: CALL("loadVeilArchive"), count: 1, selector: "authenticated", act: "the face presenter reads the face's group archive" },
+  { file: join(NODE, "commands/intent.ts"), token: CALL("loadVeilArchive"), count: 1, selector: "authenticated", act: "a face-join request reads the face's group archive to present this vessel's ContactCard" },
   { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.writeArchive\(/g, count: 1, selector: "none", act: "boot's write door for the place archive" },
   { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.writeVeilArchive\(/g, count: 1, selector: "authenticated", act: "boot's write door uses the mounted face's group from its mount or daemon pins" },
   { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.archive\(/g, count: 1, selector: "none", act: "boot reads the place's archive whatever face is worn" },
@@ -63,7 +64,7 @@ describe("the node archive-row selector trace (K15 step zero joint)", () => {
   });
 
   it("names the sites that hand a PersonaGroup to a veil archive row", () => {
-    expect(SITES.filter((s) => s.selector === "authenticated")).toHaveLength(5);
+    expect(SITES.filter((s) => s.selector === "authenticated")).toHaveLength(6);
     expect(new Set(SITES.map((s) => s.selector))).toEqual(new Set(["none", "authenticated", "bytes-only"]));
   });
 

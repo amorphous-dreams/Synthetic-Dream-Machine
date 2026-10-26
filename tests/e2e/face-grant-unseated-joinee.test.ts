@@ -21,8 +21,8 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { joinedDeviceEdge, joinedFaceCard, openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance } from "../harness/instance.js";
-import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
+import { openStagedJoinee, type StagedJoinee, type LarInstance } from "../harness/instance.js";
+import { faceJoinOutcome, requestFaceJoin } from "../harness/face-join-intent.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -39,7 +39,6 @@ const gaps = missing();
 if (gaps.length > 0) console.error(`face-grant-unseated-joinee: SKIPPED — missing ${gaps.join("; ")}`);
 
 let pair: StagedJoinee | null = null;
-let A: LarInstance | null = null;
 let B: LarInstance | null = null;
 let rootB = "";
 let admitCode = -1;
@@ -50,7 +49,7 @@ describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that dialed b
   beforeAll(async () => {
     // The joinee rite — one door in the harness; B boots by its PIN alone.
     pair = await openStagedJoinee({ tag: "pin", dial: "pin" });
-    A = pair.A; B = pair.B; rootB = pair.rootB; admitCode = pair.admitted.code; bootFailure = pair.joinGate ?? "";
+    B = pair.B; rootB = pair.rootB; admitCode = pair.admitted.code; bootFailure = pair.joinGate ?? "";
     if (!B) console.error(`face-grant-unseated-joinee MEASURE B: never stood — ${bootFailure.slice(0, 240)}`);
   }, 400_000);
 
@@ -94,13 +93,8 @@ describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that dialed b
     expect(taken, `the record never reached B:\n  ${tail}`).toBe(true);
   }, 180_000);
 
-  /** A seats B by summons — the verb runs where A's booted provider lives; the record lands on A's plane. */
+  /** B asks for its seat on the face's intents plane; A's door answers and the record lands on A's plane. */
   async function seatB(): Promise<Record<string, unknown>> {
-    const contactCard = await joinedFaceCard(pair!);
-    const deviceEdge = await joinedDeviceEdge(pair!);
-    const r = await invokeLocal("face-join", { summons: { kind: "face-join/v1", contactCard, deviceEdge } },
-      `0x${"0".repeat(64)}`, { dataDir: vesselStorageDir(A!), timeoutMs: 60_000 }) as
-      { results?: { summary?: { output?: Record<string, unknown> } } };
-    return r.results?.summary?.output ?? {};
+    return faceJoinOutcome(B!, await requestFaceJoin(B!));
   }
 });

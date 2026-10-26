@@ -135,13 +135,13 @@ export function provenVesselKeyOf(identifier: string | null | undefined): string
 }
 
 /**
- * The face's four plane bags resolved to the doc-ids a ring decides over, off the vessel's own catalog — the
+ * The face's five plane bags resolved to the doc-ids a ring decides over, off the vessel's own catalog — the
  * SAME resolution `DeterministicFederationGate` runs for its own set. An absent plane falls out (fail-closed).
  */
 export async function governedPlaneDocIds(catalog: PlaneCatalog, personaGroupId: string): Promise<ReadonlySet<DocumentId>> {
   const planes = personaScopedBagIds(personaGroupId);
   const ids = new Set<DocumentId>();
-  for (const bag of [planes.persona, planes.circles, planes.identities, planes.sessions]) {
+  for (const bag of [planes.persona, planes.circles, planes.identities, planes.sessions, planes.intents]) {
     const url = await catalog.urlOf(bag);
     if (url) ids.add(interpretAsDocumentId(url as AutomergeUrl) as DocumentId);
   }

@@ -27,6 +27,7 @@
 import { attachMessageChannelSync } from "./island-repo.js";
 import { awaitIslandMsg } from "./vessel-host.js";
 import { SYSTEM_BAGS, wikiBagUri, wikiSlotUri, type WikiSlotKind } from "./wiki-recipe.js";
+import { isFaceScopedBag } from "./persona-scope.js";
 import type { VesselWorkerHandle, VesselIslandHost } from "./vessel-host.js";
 import {
   isIslandToVesselMsg,
@@ -220,6 +221,7 @@ export function resolveDiskMirrors(
   return grant
     .filter((g) => {
       const bag = perWikiBag(g);
+      if (isFaceScopedBag(bag)) return false;
       // A SYSTEM wiki's canon projects through its LITERAL grant alone, which only the Kahu's vessel holds: self-canon
       // never reaches `bags/lares` or `bags/lararium`, so no vessel outside the cabal writes under them.
       return g.selfCanon

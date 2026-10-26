@@ -730,7 +730,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       await keepBrowserFaceAnchor(idbName, priorAnchor ? raiseFaceFrontier(admitted, priorAnchor.frontier) : admitted);
     }
     bootstrap = {
-      identitiesUrl: a.identitiesUrl, circlesUrl: a.circlesUrl, sessionsUrl: a.sessionsUrl,
+      identitiesUrl: a.identitiesUrl, circlesUrl: a.circlesUrl, sessionsUrl: a.sessionsUrl, intentsUrl: a.intentsUrl,
       daemonUrl: a.daemonUrl, personaUrl: a.personaUrl, personaBagId: a.personaBagId,
       // The compartments this vessel carries. An admitted browser joins one today; the shape takes the
       // family so a second admission adds an entry rather than re-typing the boot path.
@@ -793,7 +793,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     }));
     await saveBrowserKeyhiveArchive(idbName, f.archive);
     bootstrap = {
-      identitiesUrl: f.identitiesUrl, circlesUrl: f.circlesUrl, sessionsUrl: f.sessionsUrl, daemonUrl: f.daemonUrl, personaUrl: f.personaUrl, personaBagId: f.personaBagId,
+      identitiesUrl: f.identitiesUrl, circlesUrl: f.circlesUrl, sessionsUrl: f.sessionsUrl, intentsUrl: f.intentsUrl, daemonUrl: f.daemonUrl, personaUrl: f.personaUrl, personaBagId: f.personaBagId,
       personaPlanes: [{ personaGroupId: f.personaGroupId, url: f.personaUrl }],
       personaGroupId: f.personaGroupId, meshCabalDocIdHex: f.meshCabalDocIdHex,
       signerDid: f.signerDid, personaKelPrefix: f.personaKelPrefix, deviceEdge: f.founderEdge,
@@ -1180,7 +1180,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // the crossroads bag into the recipe + registerBags for either vessel — only the nexus key differs (here the
       // relay's gate key, so a human's two vessels register the SAME crossroads doc).
       if (relayGated) await registerCrossroadsPointer(repo, assembly.catalogHandle, nexusPubkey);
-      // THE CATALOG PLANE REGISTERS, as the node's boot registers it: a face's four planes ride the bootstrap, and every verb
+      // THE CATALOG PLANE REGISTERS, as the node's boot registers it: a face's five planes ride the bootstrap, and every verb
       // and gate that reads a persona plane (the face bag ledger, the join's crash-replay record, the grant record) resolves
       // it from the catalog registry. Idempotent: the url the seed already names re-writes identically.
       const registerInCatalog = (bagId: string, url: string | null | undefined): void => {
@@ -1267,12 +1267,15 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         const foundingFace = wornGroup === social.personaGroupId;
         const wornPlaneUrl = foundingFace ? social.personaUrl : (social.personaPlanes.find((p) => p.personaGroupId === wornGroup)?.url ?? null);
         if (!wornPlaneUrl) throw new Error("[lararium-browser] Face proof: plane persona; the bootstrap names no persona plane for a face with a sealed anchor; re-found or re-admit the face");
+        const wornIntentsBag = personaSiblingBagIds(personaBagIdFor(wornGroup))!.intents;
+        const wornIntentsUrl = foundingFace ? social.intentsUrl : tiddlerText(assembly.catalogHandle.doc()?.tiddlers?.[wornIntentsBag]);
+        if (!wornIntentsUrl) throw new Error("[lararium-browser] Face proof: plane intents; the vessel names no intents plane for a face with a sealed anchor; re-found or re-admit the face");
         const planeDoc = heldDocOf(repo, wornPlaneUrl);   // an unsynced plane proves from the admit bundle in the daemon doc
         const daemonDoc = heldDocOf(repo, social.daemonUrl);
         const proof = proveFaceFromLog({
           records: faceRecordsOf([planeDoc, daemonDoc], wornGroup),
           chain: personaKelChain, group: wornGroup, anchor: faceAnchor, deviceKey: wornAtom.key, ...(wornEdge ? { edge: wornEdge } : {}),
-          planes: { persona: wornPlaneUrl, ...(foundingFace ? { identities: social.identitiesUrl, circles: social.circlesUrl } : {}) },   // the face's shared documents; sessions stay per vessel
+          planes: { persona: wornPlaneUrl, intents: wornIntentsUrl, ...(foundingFace ? { identities: social.identitiesUrl, circles: social.circlesUrl } : {}) },   // the face's shared documents; sessions stay per vessel
         });
         if (!proof.ok) throw new Error(`[lararium-browser] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
         // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
@@ -1296,19 +1299,24 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const chain = personaKelChainForPrefix(kelBoard.doc(), other.personaKelPrefix);
           if (!chain || chain.length === 0) continue;
           const otherDoc = heldDocOf(repo, plane.url);
+          const otherIntentsBag = personaSiblingBagIds(personaBagIdFor(plane.personaGroupId))!.intents;
+          const otherIntentsUrl = tiddlerText(assembly.catalogHandle.doc()?.tiddlers?.[otherIntentsBag]);
+          if (!otherIntentsUrl) continue;
           if (proveFaceFromLog({
             records: faceRecordsOf([otherDoc, daemonDoc], plane.personaGroupId),
-            chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url },
+            chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url, intents: otherIntentsUrl },
           }).ok) provenPlanes.set(plane.personaGroupId, plane.url);
         }
         for (const plane of social.personaPlanes) {
           if (provenPlanes.get(plane.personaGroupId) === plane.url) registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url);
         }
+        if (!foundingFace) registerInCatalog(wornIntentsBag, wornIntentsUrl);
         const wornFace = foundingFace && social.personaBagId ? personaSiblingBagIds(social.personaBagId) : null;
         if (wornFace) {
           registerInCatalog(wornFace.circles, social.circlesUrl);
           registerInCatalog(wornFace.identities, social.identitiesUrl);
           registerInCatalog(wornFace.sessions, social.sessionsUrl);
+          registerInCatalog(wornFace.intents, social.intentsUrl);
         }
         // THIS DEVICE'S OWN ENTRY joins the face's shared documents the moment its replica holds them (a causal read, never a timer or the next boot).
         if (foundingFace && social.identitiesUrl && social.circlesUrl) {
@@ -1733,6 +1741,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         void residency.pin(pinFace.identities, "boot:identities");
         void residency.pin(pinFace.circles,    "boot:circles");
         void residency.pin(pinFace.sessions,   "boot:sessions");
+        void residency.pin(pinFace.intents,    "boot:intents");
       }
       void residency.pin(DAEMON_BAG_ID,       "boot:daemon");
       // Durable pin replay — BEFORE the sweeper starts, so a replayed pin never races the first

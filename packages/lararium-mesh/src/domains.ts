@@ -224,6 +224,8 @@ export const EDGE_KAPAE_DOMAIN = mint("edge-act");
 /** One signed ACT in a face's `@persona` log (founding, admission, device edge, lease advance): the canonical
  *  body's `kind` names this domain, so no act verifies as another record and no record as an act. */
 export const PERSONA_ACT_DOMAIN = mint("persona-act");
+/** A face's independently signed, content-addressed intent entry. */
+export const INTENT_ENTRY_DOMAIN = mint("intent-entry");
 /** The COMMITMENT a sealed face anchor keeps to its persona root: the root's DID hashes under this name, so
  *  the anchor names the root without carrying it. */
 export const FACE_ANCHOR_ROOT_DOMAIN = mint("face-anchor-root");

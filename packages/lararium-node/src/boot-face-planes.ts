@@ -20,6 +20,7 @@ export interface BootFacePlanes {
   readonly identitiesUrl:  string | null;
   readonly circlesUrl:     string | null;
   readonly sessionsUrl:    string | null;
+  readonly intentsUrl:     string | null;
 }
 
 export function bootFacePlanes(
@@ -44,7 +45,7 @@ export function bootFacePlanes(
     ? mountedPlaneBagId(personaPlanes, personaGroupId)
     : null;
   const personaUrl = personaPlanes.find((p) => p.personaGroupId === personaGroupId)?.url ?? null;
-  // The three planes that travel with the face derive from the plane id: the name is the index.
+  // The four sibling planes that travel with the face derive from the plane id: the name is the index.
   const siblings = personaBagId ? personaSiblingBagIds(personaBagId) : null;
   const readPlane = (bagId: string | undefined): string | null =>
     bagId ? (bootstrapTiddlers[bagId]?.text ?? null) : null;
@@ -53,6 +54,7 @@ export function bootFacePlanes(
     identitiesUrl: readPlane(siblings?.identities),
     circlesUrl:    readPlane(siblings?.circles),
     sessionsUrl:   readPlane(siblings?.sessions),
+    intentsUrl:    readPlane(siblings?.intents),
   };
 }
 

@@ -25,6 +25,8 @@ export interface GrantPlane {
 }
 
 export interface FaceJoinOperationInput {
+  /** The pinned executor and stable invocation identity. */
+  readonly fence: { readonly intentId: string; readonly pinnedAtom: string; readonly ownAtom: string };
   readonly provider: FaceJoinProvider;
   readonly summons: FaceJoinSummons;
   readonly ctx: FaceJoinContext;
@@ -51,8 +53,9 @@ export function runFaceJoinOperation(input: FaceJoinOperationInput): Promise<Rec
 }
 
 async function runOne(input: FaceJoinOperationInput): Promise<Record<string, unknown>> {
-  const { provider, summons, ctx, founderEdge, signGrant, atomSeed, operationStore, grantPlane } = input;
-  const signedInput = new TextEncoder().encode(JSON.stringify(summons));
+  const { provider, summons, ctx, founderEdge, signGrant, atomSeed, operationStore, grantPlane, fence } = input;
+  if (fence.ownAtom.toLowerCase() !== fence.pinnedAtom.toLowerCase()) throw new Error("face-join-fence: not-the-pinned-hearth");
+  const signedInput = new TextEncoder().encode(fence.intentId);
 
   /**
    * The serial of the grant standing at `title`, counted only when the record is this face's own: the joinee's kit reads
