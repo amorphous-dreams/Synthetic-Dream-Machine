@@ -7,11 +7,11 @@ import { defaultCryptoProvider, type RandomProvider } from "./crypto.js";
 import { CUSTODY_D_DOMAIN } from "./domains.js";
 import { encodeCarrierContext } from "./custody-carrier-context.js";
 import { FCK_SEAL_MAGIC, FCK_SEAL_NONCE_LENGTH, joinFckFrame, readFckCarrier, splitFckFrame, type FckCarrierReading } from "./fck-envelope.js";
-import { mintVk, type VesselKey } from "./vk.js";
+import { mintTreeKey, type TreeKey } from "./tree-key.js";
 import type { KeyClass } from "./key-class.js";
 
-export type FaceCustodyKey = VesselKey;
-export const mintFck = (rng: RandomProvider = defaultCryptoProvider): FaceCustodyKey => mintVk(rng);
+export type FaceCustodyKey = TreeKey;
+export const mintFck = (rng: RandomProvider = defaultCryptoProvider): FaceCustodyKey => mintTreeKey(rng);
 
 export interface FaceCarrier {
   readonly name: string;

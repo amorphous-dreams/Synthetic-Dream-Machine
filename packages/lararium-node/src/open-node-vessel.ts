@@ -645,13 +645,21 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   }
 }
 
+/**
+ * The founding-seed sweep runs under the sovereign gate only: a composition at the floor sweeps nothing, since the sweep reads and
+ * moves private rows. One door for the boot's call, so a witness drives the gate's caller without a vessel boot.
+ */
+export async function sweepUnderTheGate(sovereignOpen: boolean, sweep: () => Promise<void>): Promise<void> {
+  if (sovereignOpen) await sweep();
+}
+
 async function prepareNodeBootOn(
   opts: NodeVesselOptions, placeClass: PlaceClass, floor: NodeFloor, stood: Stood, teardown: () => Promise<void>,
 ): Promise<NodeBootPrep> {
   const { wikiId, storageDir, wss, catalogUrl, onPhase, genesisDir, rootDir: rootDirOpt } = opts;
   // THE GATE: sovereign only when the node key stands held AND the worn face stands unlocked; otherwise the floor composes.
   const sovereignOpen = sovereignStands();
-  if (sovereignOpen) await sweepFoundingSeeds();
+  await sweepUnderTheGate(sovereignOpen, sweepFoundingSeeds);
   // ONE READING OF WHAT THIS COMPOSITION MAY OPEN. Handed readers, it reads the private rows through them; handed
   // `null`, it stands at the floor and reads none. Left to itself it reads the seated custody's rows when this
   // process holds its vessel key, and stands at the floor when it holds none.

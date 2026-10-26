@@ -4,7 +4,7 @@
  *
  *   S1 · a founding leaves `sk-slots.bin` beside `s-slots.bin`, and the census reads it as the `floor` row `sk-slots`
  *        (CONTROL: the slot tree's own row reads beside it; the class list names `serving`).
- *   S2 · an unlock opens the VK, then SK, and two unlocks of one vessel open the same SK (CONTROL: two vessels' SKs differ).
+ *   S2 · an unlock opens the S key, then SK, and two unlocks of one vessel open the same SK (CONTROL: two vessels' SKs differ).
  *   S3 · a serving tree whose routes this credential does not fit opens no SK while the node key opens: the unlock hands back
  *        `sk: null` (CONTROL: the vessel's own tree put back opens SK again).
  *   S4 · a torn or absent serving tree opens no SK by name, and the node key still opens.
@@ -63,7 +63,7 @@ describe("the serving key at the founding", () => {
     expect(carriers.outsideTheTable(homes)).toEqual([]);
   });
 
-  test("S2 — an unlock opens SK beside the VK, the same SK each time — CONTROL: another vessel's SK differs", async () => {
+  test("S2 — an unlock opens SK beside the S key, the same SK each time — CONTROL: another vessel's SK differs", async () => {
     const f = await session.foundCustody({ io, homes, slots: [slotOf(PW)] }) as { sk?: Uint8Array };
     const first = await unlockSk(homes, new FsCustodyIo(homes));
     const second = await unlockSk(homes, new FsCustodyIo(homes));
@@ -113,7 +113,7 @@ describe("a rotation of the node key leaves the serving tree whole", () => {
     const f = await session.foundCustody({ io, homes, slots: [slotOf(PW)] });
     const before = await unlockSk(homes, io);
     const treeBefore = readFileSync(skTree(homes));
-    await session.rotateCustody({ io, homes, oldVk: f.vk, slots: [slotOf(PW)] });
+    await session.rotateCustody({ io, homes, oldTreeKey: f.treeKey, slots: [slotOf(PW)] });
     const after = await unlockSk(homes, io);
     expect(after.reading).toBe("opens");
     expect(hex(after.sk)).toBe(hex(before.sk));
@@ -155,7 +155,7 @@ describe("one claim spans each act that writes twice", () => {
   test("S9 — a rotation takes ONE claim and writes nothing outside it — CONTROL: it rotates", async () => {
     const f = await session.foundCustody({ io, homes, slots: [slotOf(PW)] });
     const spy = spyIo(io);
-    await session.rotateCustody({ io: spy.io, homes, oldVk: f.vk, slots: [slotOf("rotated")] });
+    await session.rotateCustody({ io: spy.io, homes, oldTreeKey: f.treeKey, slots: [slotOf("rotated")] });
     expect(spy.seen).toEqual({ claims: 1, writesOutside: 0 });
     expect((await unlockSk(homes, io, "rotated")).reading).toBe("opens");                             // CONTROL
   });

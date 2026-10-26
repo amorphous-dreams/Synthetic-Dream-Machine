@@ -14,7 +14,7 @@
  * shut and every parcel verb refuses by name.
  *
  * ── A VESSEL-KEY ROTATION RE-SEALS THIS ROW AND NO PARCEL ───────────────────────────────────────
- * The row counts among the VK-sealed carriers, so a rotation re-seals it under the new VK with its bytes unchanged.
+ * The row counts among the S-sealed carriers, so a rotation re-seals it under the new S key with its bytes unchanged.
  * The parcels rest under the outbox key's own seal, which the rotation never reads.
  */
 import { readOutboxKey, mintOutboxKey, type OutboxKey } from "@lararium/mesh";

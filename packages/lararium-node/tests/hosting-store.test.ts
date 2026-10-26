@@ -265,7 +265,7 @@ describe("the burn — once, sealed, refuse before destroy", () => {
     expect(await refusal(rollHosting({ nexusAid: AID, leafSeed: LEAF }))).toBeInstanceOf(CustodyLocked);
     expect(await refusal(spendToken({ nexusAid: AID, epochCid: e, n: "dd".repeat(32), claimDigest: "01".repeat(32) }))).toBeInstanceOf(CustodyLocked);
     expect(await redeemedCount(AID, e)).toBe(0);                              // the count reads row names alone
-    await c.holder.adopt(c.vk);
+    await c.holder.adopt(c.treeKey);
     expect(await dirFiles()).toEqual(before);
   });
 

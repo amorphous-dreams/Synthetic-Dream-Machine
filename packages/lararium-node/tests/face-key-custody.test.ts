@@ -12,16 +12,16 @@
  *   K5  a row that stands and does not open (one byte moved, a bare 32 bytes) refuses by name at both doors, and
  *       one that opens to another length refuses `malformed`.
  *   K6  at the floor both doors and both stores refuse `CustodyLocked` and no file moves.
- *   K7  VK rotation leaves both face rows sealed under their own tree; a stranger face key handed to the sealed
- *       writer refuses `TreeVkRefusal` for either row, and no byte moves.
- *                                                  control: a holder over the new VK signs under both rows
+ *   K7  S key rotation leaves both face rows sealed under their own tree; a stranger face key handed to the sealed
+ *       writer refuses `TreeKeyRefusal` for either row, and no byte moves.
+ *                                                  control: a holder over the new S key signs under both rows
  *   K8  the carrier table names both rows as the library names them: `face-proof-key` cold and of ONE face,
  *       `vessel-face-key` hot and of its face; and the table's shapes match `FACE_PROOF_CUSTODY_ROWS`.
  */
 import { createPrivateKey, createPublicKey, verify } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { mintFck, readFckCarrier, writeFaceCarrier, TreeVkRefusal } from "@lararium/mesh";
+import { mintFck, readFckCarrier, writeFaceCarrier, TreeKeyRefusal } from "@lararium/mesh";
 import { FACE_PROOF_CUSTODY_ROWS } from "../../lararium-mesh/src/face-authority.js";
 import {
   faceProofKeyFile, vesselFaceKeyFile, storeFaceProofKey, storeVesselFaceKey, nodeFaceKeyCustody, nodeVesselFaceKeyCustody,
@@ -147,14 +147,14 @@ describe("the face proof's custody rows and signing doors", () => {
     files.forEach((f, i) => expect(readFileSync(at(f)).equals(standing[i]!)).toBe(true));
   });
 
-  test("K7 — VK rotation leaves both face keys sealed under their own tree; foreign keys move neither row", async () => {
+  test("K7 — S key rotation leaves both face keys sealed under their own tree; foreign keys move neither row", async () => {
     await storeFaceProofKey(scope, FACE_SECRET, 0);
     await storeVesselFaceKey(0, scope, VESSEL_SECRET);
     const files = [faceProofKeyFile(0, scope.nexus), vesselFaceKeyFile(0, scope)];
     const beforeRotation = files.map((f) => readFileSync(at(f)));
-    const rotated = await rotateCustody({ io: c.io, homes: c.homes, oldVk: c.vk, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
+    const rotated = await rotateCustody({ io: c.io, homes: c.homes, oldTreeKey: c.treeKey, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
     const standing = files.map((f) => readFileSync(at(f)));
-    files.forEach((f, i) => expect(standing[i]!.equals(beforeRotation[i]!), `VK rotation leaves ${f} byte-identical`).toBe(true));
+    files.forEach((f, i) => expect(standing[i]!.equals(beforeRotation[i]!), `S key rotation leaves ${f} byte-identical`).toBe(true));
     expect(verifies(scope.faceKey, IMAGE, await nodeFaceKeyCustody.signAsFace(scope, IMAGE))).toBe(true);
     expect(verifies(vesselFaceKey, IMAGE, await nodeVesselFaceKeyCustody.signAsVesselFace(scope, vesselFaceKey, IMAGE))).toBe(true);
     await storeFaceProofKey(scope, FACE_SECRET, 0);
@@ -164,14 +164,14 @@ describe("the face proof's custody rows and signing doors", () => {
       await expect(writeFaceCarrier({
         io: c.io, key: mintFck(), treePath: faceTreePath(c.homes.identity, face.fcid),
         carrier: faceCarrierFor(c.homes, face.fcid, file, { row, keyClass }), plaintext: secretOf(200),
-      })).rejects.toThrow(TreeVkRefusal);
+      })).rejects.toThrow(TreeKeyRefusal);
     }
     files.forEach((f, i) => {
       expect(readFileSync(at(f)).equals(standing[i]!), `${f} never moved`).toBe(true);
       expect(existsSync(`${at(f)}.s-sealing`)).toBe(false);
     });
     const fresh = makeCustodyHolder({ io: c.io, homes: c.homes });
-    await fresh.adopt(rotated.vk);
+    await fresh.adopt(rotated.treeKey);
     await fresh.unlockFace({ ordinal: 0 }, [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
     seatCustody(fresh);
     expect(verifies(scope.faceKey, IMAGE, await nodeFaceKeyCustody.signAsFace(scope, IMAGE))).toBe(true);

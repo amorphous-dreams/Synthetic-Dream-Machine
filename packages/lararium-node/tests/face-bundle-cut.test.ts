@@ -161,7 +161,7 @@ describe("a cut carries one face's standing section and its memory section", () 
       otherSeed, keys.face1, "PETNAME-OF-FACE-ONE", "HANDLE-OF-FACE-ONE", hex(secretOf(5)), "FRIEND-OF-ONE", "LABEL-OF-FACE-ONE",
       "UNTAGGED-FRIEND", "LABEL-OF-NOBODY",
       hex(secretOf(21)), hex(secretOf(22)), "DEVICE-EDGE-OF-FACE-ZERO", "GROUP-DOC-OF-FACE-ZERO", "CABAL-DOC-OF-FACE-ZERO", "GROUP-AGENT-OF-FACE-ZERO",
-      "CHAIR-OF-FACE-ZERO", "\"seat\"", hex(secretOf(9)), hex(seat.vk),
+      "CHAIR-OF-FACE-ZERO", "\"seat\"", hex(secretOf(9)), hex(seat.treeKey),
     ];
     for (const word of strangers) expect(text.includes(word), `the body carries ${word.slice(0, 24)}`).toBe(false);
     // CONTROL: the hunt finds a word the body does carry, and the cut of face 1 carries face 1's own.

@@ -33,7 +33,7 @@ import { tmpdir } from "node:os";
 import { mkdtempSync, rmSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import {
-  readFckCarrier, readVkCarrier,
+  readFckCarrier, readSCarrier,
   inceptVesselKel, decodeVesselKelInception, verifyVesselKelInception, canonicalJsonBytes, VESSEL_KEL_DOMAIN, ed25519SignerFromSeed,
   GATE_FLOOR_BUNDLE_INFO,
 } from "@lararium/mesh";
@@ -62,7 +62,7 @@ let priorGlobal: string | undefined;
 let configHome: string;
 const at = (file: string): string => /^\.persona-(?:group-root|roster|petnames|declarations|public-handles)(?:-[^./]+)?-h\d+\.json$/.test(file) ? handleRowPathIn(c.homes.identity, file) : join(c.homes.identity, file);
 const read = (file: string): Buffer => readFileSync(at(file));
-const sealed = (file: string): void => expect(at(file) === join(c.homes.identity, file) ? readVkCarrier(read(file)) : readFckCarrier(read(file))).toBe("sealed");
+const sealed = (file: string): void => expect(at(file) === join(c.homes.identity, file) ? readSCarrier(read(file)) : readFckCarrier(read(file))).toBe("sealed");
 const rosterFile = (i: number): string => `.persona-roster-h${i}.json`;
 const petFile = (i: number): string => `.persona-petnames-h${i}.json`;
 const declarationFile = (i: number): string => `.persona-declarations-h${i}.json`;
@@ -250,7 +250,7 @@ describe("sealed vessel identity family", () => {
     await floorHolder.lock();
     const locked = await generateOrLoadVesselIdentity();
     expect(locked.verifyingKey).toBe(first.verifyingKey);
-    await floorHolder.adopt(c.vk);
+    await floorHolder.adopt(c.treeKey);
     seatCustody(floorHolder);
     expect((await generateOrLoadVesselIdentity()).verifyingKey).toBe(first.verifyingKey);
     expect(read(".vessel-kel.json").equals(kel)).toBe(true); expect(read(".vessel-key.json").equals(key)).toBe(true);
@@ -288,18 +288,18 @@ describe("sealed vessel identity family", () => {
     expect(await handles.load(1)).toEqual({ handleIndex: 1, contextIndex: 0, nym: "nym-1", glamour: "G", heads: [] });
   });
 
-  test("V11 VK rotation leaves face rows sealed under their own keys and the worn choice stays in session", async () => {
+  test("V11 S key rotation leaves face rows sealed under their own keys and the worn choice stays in session", async () => {
     await generateOrLoadPersonaGroupRoot(0); await wearPersona(0);
     const pets = await makeNodePersonaPetnameStore(); await pets.set(0, "private");
     const faceFiles = [rootFile(0), rosterFile(0), petFile(0)];
     const faceBefore = faceFiles.map(read);
-    const rotated = await rotateCustody({ io: c.io, homes: c.homes, oldVk: c.vk, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
-    faceFiles.forEach((file, i) => expect(read(file).equals(faceBefore[i]!), `${file} keeps its face seal through VK rotation`).toBe(true));
+    const rotated = await rotateCustody({ io: c.io, homes: c.homes, oldTreeKey: c.treeKey, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
+    faceFiles.forEach((file, i) => expect(read(file).equals(faceBefore[i]!), `${file} keeps its face seal through S key rotation`).toBe(true));
     expect(await listPersonaRoots()).toEqual([0]);
     expect(await pets.get(0)).toBe("private");
     expect(await loadActivePersonaIndex()).toBe(0);
     expect((await cold<{ verifyingKey: string }>(rootFile(0))).verifyingKey).toMatch(HEX);
-    const fresh = makeCustodyHolder({ io: c.io, homes: c.homes }); await fresh.adopt(rotated.vk);
+    const fresh = makeCustodyHolder({ io: c.io, homes: c.homes }); await fresh.adopt(rotated.treeKey);
     await fresh.unlockFaces([{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]); seatCustody(fresh);
     setWornFaceInSession(undefined);
     expect(await listPersonaRoots()).toEqual([0]); expect(await loadActivePersonaIndex()).toBe(0);
@@ -311,7 +311,7 @@ describe("sealed vessel identity family", () => {
     const pets = await makeNodePersonaPetnameStore();
     for (const i of [0, 1, 2]) await pets.set(i, `p${i}`);
     for (const i of [3, 4, 5]) await pets.clear(i); // found each face with an empty map before the second holder writes
-    const other = makeCustodyHolder({ io: c.io, homes: c.homes }); await other.adopt(c.vk);
+    const other = makeCustodyHolder({ io: c.io, homes: c.homes }); await other.adopt(c.treeKey);
     await other.unlockFaces([{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
     const viaOther = (i: number) => other.updateRow("identity", petFile(i), (row) => {
       const names = row.reading === "opens" ? JSON.parse(new TextDecoder().decode(row.plaintext)).names as Record<string, string> : {};
@@ -401,7 +401,7 @@ describe("sealed vessel identity family", () => {
     const identityB = await import("../src/node-vessel-identity.js");
     expect(seatB.seatCustody).not.toBe(seatCustody);                         // the setup took: two graphs
     const second = holderB.makeCustodyHolder({ io: new ioB.FsCustodyIo(c.homes), homes: c.homes });
-    await second.adopt(c.vk);
+    await second.adopt(c.treeKey);
     seatB.seatCustody(gated(second as unknown as Holder, "b") as unknown as Parameters<typeof seatB.seatCustody>[0]);
     try {
       const [a, b] = await Promise.all([generateOrLoadVesselIdentity(), identityB.generateOrLoadVesselIdentity()]);

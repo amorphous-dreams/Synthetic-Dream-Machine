@@ -23,7 +23,7 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { GATE_MEMORY_ROW_MAX_BYTES, readFckCarrier, bindSlot, commitSlotTree, mintVk } from "@lararium/mesh";
+import { GATE_MEMORY_ROW_MAX_BYTES, readFckCarrier, bindSlot, commitSlotTree, mintTreeKey } from "@lararium/mesh";
 import { canonicalJsonBytes } from "../../lararium-mesh/src/crypto.js";
 import { faceProofSubjectRef, withdrawalHead } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { storedWithdrawals } from "../../lararium-mesh/src/gate-withdrawal-store.js";
@@ -33,7 +33,7 @@ import { FsCustodyIo } from "../src/custody-io.js";
 import { CustodyLocked, CustodyRowUnavailable, FaceLocked, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { GateMemoryRowRefused, gateMemoryRowFile, gateMemoryRows } from "../src/gate-memory-rows.js";
-import { carrierTable, vkSealedCarriers } from "../src/vault-carriers.js";
+import { carrierTable, sSealedCarriers } from "../src/vault-carriers.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { handleRowPathIn, faceRowNames } from "./face-paths.js";
 import { readFaceIndexSync, findFace } from "../src/face-index.js";
@@ -90,7 +90,7 @@ describe("a gate's memory behind the custody seat", () => {
     // over a new door. Nothing but the sealed row carries the memory across.
     await c.holder.lock();
     const again = makeCustodyHolder({ io: new FsCustodyIo(c.homes), homes: c.homes });
-    await again.adopt(c.vk);
+    await again.adopt(c.treeKey);
     await again.unlockFace({ ordinal: 0 }, [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
     seatCustody(again);
     const after = await world({ withdrawals: storedWithdrawals(gateMemoryRows(0)) });
@@ -138,7 +138,7 @@ describe("a gate's memory behind the custody seat", () => {
     seatCustody(null);
     await expect(rows.read(NAME)).rejects.toBeInstanceOf(CustodyLocked);
     seatCustody(c.holder);
-    await c.holder.adopt(c.vk);
+    await c.holder.adopt(c.treeKey);
     await c.holder.unlockFace({ ordinal: 0 }, [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
     expect(new TextDecoder().decode((await rows.read(NAME))!)).toBe("[1]");                 // CONTROL: unlocked, the row reads whole
   });
@@ -192,7 +192,7 @@ describe("a gate's memory behind the custody seat", () => {
     const m = row.match.exec(`faces/${"ab".repeat(16)}/${gateMemoryRowFile(0, NAME)}`)!;
     expect(m).not.toBeNull();
     expect(row.face(m)).toBe(0);                                                    // no face's bundle carries it
-    const listed = () => vkSealedCarriers(c.homes).map((s) => s.name).filter((n) => n.includes("gate-memory"));
+    const listed = () => sSealedCarriers(c.homes).map((s) => s.name).filter((n) => n.includes("gate-memory"));
     expect(listed()).toEqual([]);
     await gateMemoryRows(0).write(NAME, text("[1]"));
     expect(listed()).toEqual([]);
@@ -248,7 +248,7 @@ describe("a gate's memory behind the custody seat", () => {
     // A new holder over the same tree answers a new door: its store verifies every row again.
     await c.holder.lock();
     const again = makeCustodyHolder({ io: new FsCustodyIo(c.homes), homes: c.homes });
-    await again.adopt(c.vk);
+    await again.adopt(c.treeKey);
     await again.unlockFace({ ordinal: 0 }, [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
     seatCustody(again);
     expect(gateMemoryRows(0)).not.toBe(rows);

@@ -47,7 +47,7 @@ describe("the outbox key's row", () => {
     const parcel = sealOutboxParcel(key, "reader-one", new TextEncoder().encode("a parcel"));
     await c.holder.lock();
     const next = makeCustodyHolder({ io: c.io, homes: c.homes });
-    await next.adopt(c.vk);
+    await next.adopt(c.treeKey);
     await next.unlockFace({ ordinal: 0 }, [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
     seatCustody(next);
     try {
@@ -61,7 +61,7 @@ describe("the outbox key's row", () => {
     await c.holder.lock();
     await expect(openOutboxKey(0)).rejects.toBeInstanceOf(CustodyLocked);
     expect(existsSync(path())).toBe(false);
-    await c.holder.adopt(c.vk);
+    await c.holder.adopt(c.treeKey);
     await c.holder.writeRow("identity", outboxKeyFile(0), new Uint8Array(16));
     const before = readFileSync(path());
     await expect(openOutboxKey(0)).rejects.toBeInstanceOf(OutboxKeyUnreadable);

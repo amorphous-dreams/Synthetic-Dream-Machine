@@ -27,8 +27,8 @@ import { makeSlotDocResolver, type SlotDocResolver } from "../src/slot-doc-resol
 import { makeFaceBagDoor, type FaceBagDoor } from "../src/face-bag-door.js";
 
 const noopStore = { put: async () => {}, list: async () => [] };
-const VK = "ab".repeat(32);
-const DID = didFromVerifyingKey(VK);
+const VERIFYING_KEY = "ab".repeat(32);
+const DID = didFromVerifyingKey(VERIFYING_KEY);
 const MINTED_BY = "0x" + "a".repeat(64);
 
 interface Vessel { repo: Repo; daemon: CompositeStore; kh: KeyhiveProvider; catalogUrl: string; wikiUrl: string; fp: string }

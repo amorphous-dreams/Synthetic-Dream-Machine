@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { FCK_SEAL_MAGIC, FCK_SEAL_MIN_LENGTH, readFckCarrier } from "../src/fck-envelope.js";
-import { VK_SEAL_MAGIC, LARK_MAGIC, readVkCarrier } from "../src/vk-envelope.js";
+import { S_SEAL_MAGIC, LARK_MAGIC, readSCarrier } from "../src/s-envelope.js";
 
 const bytes = (s: string) => new TextEncoder().encode(s);
 
@@ -9,11 +9,11 @@ describe("face frame readings", () => {
     expect(readFckCarrier(null)).toBe("absent");
     expect(readFckCarrier(Uint8Array.from([...FCK_SEAL_MAGIC, ...new Uint8Array(FCK_SEAL_MIN_LENGTH - FCK_SEAL_MAGIC.length)]))).toBe("sealed");
   });
-  test("RED: a VK frame cannot masquerade as a face frame or cleartext", () => {
-    const vk = Uint8Array.from([...VK_SEAL_MAGIC, ...new Uint8Array(40)]);
-    expect(readFckCarrier(vk)).toBe("unopenable");
+  test("RED: a tree key frame cannot masquerade as a face frame or cleartext", () => {
+    const treeKey = Uint8Array.from([...S_SEAL_MAGIC, ...new Uint8Array(40)]);
+    expect(readFckCarrier(treeKey)).toBe("unopenable");
     const face = Uint8Array.from([...FCK_SEAL_MAGIC, ...new Uint8Array(40)]);
-    expect(readVkCarrier(face)).toBe("unopenable");
+    expect(readSCarrier(face)).toBe("unopenable");
   });
   test("RED: torn, damaged, LARK and bare bytes stay distinct", () => {
     expect(readFckCarrier(FCK_SEAL_MAGIC.subarray(0, 4))).toBe("torn");

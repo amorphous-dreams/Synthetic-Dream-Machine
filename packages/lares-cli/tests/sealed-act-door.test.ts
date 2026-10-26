@@ -81,7 +81,7 @@ async function stage(): Promise<string> {
   const io = new FsCustodyIo(homes);
   const founded = await foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }] }] });
   const holder = makeCustodyHolder({ io, homes });
-  await holder.adopt(founded.vk);
+  await holder.adopt(founded.treeKey);
   seatCustody(holder);
   await persistIdentityAnchors(ANCHORS);
   await holder.lock();

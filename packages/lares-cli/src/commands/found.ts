@@ -31,7 +31,7 @@ import { readFileSync } from "node:fs";
 import { OccupiedStoreRefusal, assertStoreUnoccupied, openBundleKey, readFaceBundle, seatFingerprint, type Credential, type SlotSpec } from "@lararium/mesh";
 import {
   runInit, runFoundHearth, ownedStore, StoreHeld, CustodyFoundingRefused, FsCustodyIo, custodyTreeStands,
-  CustodyLockRefused, HearthFoundingRefused, NameTooLong, occupantCarriers, vkSlotsPath,
+  CustodyLockRefused, HearthFoundingRefused, NameTooLong, occupantCarriers, sSlotsPath,
 } from "@lararium/node";
 import { larDataDir, larGenesisDir, larIdentityDir, larSealHome } from "../env.js";
 import { CredentialTtyRefusal, gatherCredentials, gatherFoundingRoute } from "../custody-prompt.js";
@@ -104,7 +104,7 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
       // THE STORE'S SHAPE, READ BEFORE ANY ROUTE GETS ASKED: the sealed writer's own founding check, as a read. A
       // store that holds a carrier and no tree refuses `OccupiedStoreRefusal` here, before the operator types anything;
       // the founding itself runs the same check again under its custody claim.
-      await assertStoreUnoccupied({ io, treePath: vkSlotsPath(homes.identity), carriers: occupantCarriers(homes) });
+      await assertStoreUnoccupied({ io, treePath: sSlotsPath(homes.identity), carriers: occupantCarriers(homes) });
       slots = await gatherRoute();
       noteFoundingNodeRoute(slots);
     }

@@ -6,8 +6,8 @@
  * or a cleartext secret beside a slot tree reads as a shape nothing here writes over, and the reader names
  * every offender. The reader writes nothing: a recursive hash of every home reads identical before and after.
  *
- * The VK envelope's recognizer arrives as an input (`sealed`); these tests stand a fixture recognizer that
- * answers for a fixture magic. The house envelope reader (`readVkCarrier`) names a frame no unlock here opens.
+ * The S key envelope's recognizer arrives as an input (`sealed`); these tests stand a fixture recognizer that
+ * answers for a fixture magic. The house envelope reader (`readSCarrier`) names a frame no unlock here opens.
  */
 import { describe, test, expect } from "vitest";
 import { createHash } from "node:crypto";
@@ -17,7 +17,7 @@ import { dirname, join } from "node:path";
 import { readCustodyShape, occupiedStoreRefusal } from "../src/custody-shape.js";
 import type { CustodyHomes } from "../src/vault-carriers.js";
 
-const FIXTURE_MAGIC = Buffer.from("FIXTURE-VK-SEAL:");
+const FIXTURE_MAGIC = Buffer.from("FIXTURE-S key-SEAL:");
 /** The fixture recognizer: bytes that open with the fixture magic read sealed. */
 const reading = { sealed: (head: Uint8Array): boolean => Buffer.from(head).subarray(0, FIXTURE_MAGIC.length).equals(FIXTURE_MAGIC) };
 const sealedBytes = (body: string): Buffer => Buffer.concat([FIXTURE_MAGIC, Buffer.from(body)]);
@@ -25,7 +25,7 @@ const sealedBytes = (body: string): Buffer => Buffer.concat([FIXTURE_MAGIC, Buff
 const fckSealedBytes = (body: string): Buffer => Buffer.concat([Buffer.from("lares-fck-seal"), Buffer.alloc(48, 5), Buffer.from(body)]);
 /** A seal of the house family under a scheme this build does not frame: the family prefix, a scheme name, a frame. */
 const otherSchemeBytes = (scheme: string): Buffer => Buffer.concat([Buffer.from(`lares-${scheme}-seal`), Buffer.alloc(48, 7)]);
-/** The VK magic standing in a face row (another house scheme), over a frame long enough to hold a nonce and a tag. */
+/** The S key magic standing in a face row (another house scheme), over a frame long enough to hold a nonce and a tag. */
 const damagedMagicBytes = (): Buffer => Buffer.concat([Buffer.from("lares-s-seal"), Buffer.alloc(48, 9)]);
 
 function freshHomes(): { homes: CustodyHomes; root: string } {

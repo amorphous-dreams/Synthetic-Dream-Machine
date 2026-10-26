@@ -35,7 +35,7 @@ import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
 import * as ed from "@noble/ed25519";
 import {
-  DAEMON_BAG_ID, faceAtomKeyFromSeed, didFromVerifyingKey, hex, personaScopedBagIds, readVkCarrier, readFckCarrier, vesselDyads, type LarDoc,
+  DAEMON_BAG_ID, faceAtomKeyFromSeed, didFromVerifyingKey, hex, personaScopedBagIds, readSCarrier, readFckCarrier, vesselDyads, type LarDoc,
 } from "@lararium/mesh";
 import { runFoundTheFace } from "../src/commands/init.js";
 import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
@@ -99,7 +99,7 @@ afterAll(async () => {
 describe("a founding keeps its archives, sealed per face", () => {
   test("F1 the place founding seals the vessel's keyhive archive", async () => {
     expect(archiveAbsentBefore).toBe(true);
-    expect(readVkCarrier(readFileSync(archivePath()))).toBe("sealed");
+    expect(readSCarrier(readFileSync(archivePath()))).toBe("sealed");
     const bytes = await loadIdentityArchive();
     expect(bytes && bytes.length).toBeGreaterThan(0);
     // The archive restores the vessel's own individual.

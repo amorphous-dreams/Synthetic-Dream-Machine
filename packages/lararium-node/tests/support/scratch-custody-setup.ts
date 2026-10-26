@@ -74,8 +74,8 @@ async function openScratch(holder: CustodyHolder): Promise<void> {
   if (!(await custodyTreeStands(io, holder.homes))) {
     mkdirSync(holder.homes.identity, { recursive: true, mode: 0o700 });
     const founded = await foundCustody({ io, homes: holder.homes, slots });
-    await holder.adopt(founded.vk);
-    founded.vk.fill(0);
+    await holder.adopt(founded.treeKey);
+    founded.treeKey.fill(0);
     return;
   }
   const u = await holder.unlock([

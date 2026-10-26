@@ -47,7 +47,7 @@ export async function sealTestCustody(): Promise<void> {
   const founded = await foundCustody({ io, homes, slots: TEST_CUSTODY.slots });
   // The founding that follows writes rows sealed under this key, so the suite seats the holder that keeps it.
   const holder = makeCustodyHolder({ io, homes });
-  await holder.adopt(founded.vk);
+  await holder.adopt(founded.treeKey);
   seatCustody(holder);
 }
 

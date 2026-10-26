@@ -8,7 +8,7 @@
  */
 import { join } from "node:path";
 import {
-  decodeSlotTree, openVk, settleFaceRotation,
+  decodeSlotTree, openTreeKey, settleFaceRotation,
   type Credential, type CustodyIo, type FaceCarrier, type FaceCustodyKey, type SlotTree,
 } from "@lararium/mesh";
 import { carrierTable, type CarrierRow, type CustodyHomes } from "./vault-carriers.js";
@@ -56,9 +56,9 @@ export async function openFaceTree(args: {
   const reading = decodeSlotTree(await args.io.read(treePath));
   if (reading.reading === "absent") return { reading: "tree-absent" };
   if (reading.reading === "unreadable") return { reading: "tree-unreadable", why: reading.why };
-  const opened = openVk(reading.tree, args.credentials);
+  const opened = openTreeKey(reading.tree, args.credentials);
   if (opened.reading !== "opens") return { reading: "no-slot-opens", notes: opened.notes };
-  return { reading: "opens", fck: opened.vk, slot: opened.slot };
+  return { reading: "opens", fck: opened.treeKey, slot: opened.slot };
 }
 
 /** The tree standing for a face, readable or the reading that names why not. */

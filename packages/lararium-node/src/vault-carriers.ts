@@ -3,20 +3,20 @@
  * class, its secret kind and its writer in exactly one row here.
  *
  * ── SIX CUSTODY CLASSES ─────────────────────────────────────────────────────────────────────────
- *   `floor`       — outside the vessel KEK (VK): the floor key, its own log, the slot tree that wraps the VK, and
- *                   the serving tree that wraps the serving key (SK). The floor signs and unlocks before any VK
+ *   `floor`       — outside the S key: the floor key, its own log, the slot tree that wraps the S key, and
+ *                   the serving tree that wraps the serving key (SK). The floor signs and unlocks before any S key
  *                   opens, so nothing here may need one.
  *   `floor-plain` — plain bytes the floor reads (the gate, the arrival page, the raise door), bytes public by
- *                   construction, or bytes sealed under a key the VK never wraps (the sealed store's rests).
+ *                   construction, or bytes sealed under a key the S key never wraps (the sealed store's rests).
  *                   Sealing them would lock the floor out of its own door, or wrap what a blind carrier holds.
- *   `serving`     — sealed under SK, which the VK's entry in the serving tree wraps (ember#/the-serving-key). It
- *                   holds the serving rows and nothing beside them; no VK rotation re-seals one. No serving row
+ *   `serving`     — sealed under SK, which the S key's entry in the serving tree wraps (ember#/the-serving-key). It
+ *                   holds the serving rows and nothing beside them; no S key rotation re-seals one. No serving row
  *                   stands yet: the rows move under SK with the ember's serving tier.
- *   `hot`         — sealed under the VK, opened once at unlock and held for the process life.
- *   `cold`        — sealed under the VK, opened for one act and then dropped.
- *   `outbox`      — sealed under the outbox key, which the VK wraps in its own hot row (`outbox-key`); an unlock hands
+ *   `hot`         — sealed under the S key, opened once at unlock and held for the process life.
+ *   `cold`        — sealed under the S key, opened for one act and then dropped.
+ *   `outbox`      — sealed under the outbox key, which the S key wraps in its own hot row (`outbox-key`); an unlock hands
  *                   that key to the daemon island, which seals and opens the parcels for the life of the unlock. The
- *                   bytes frame as the outbox seal and never as the VK's, so no VK rotation re-seals one: it re-seals
+ *                   bytes frame as the outbox seal and never as the S key's, so no S key rotation re-seals one: it re-seals
  *                   the outbox key's row alone (custody#/the-table, the outbox).
  *   `face-hot`    — a D row sealed under ONE face's custody key (FCK) and resting in that face's own directory
  *                   (`faces/<fcid>/`). Opened once when its face unlocks, held while the face stays unlocked.
@@ -32,25 +32,25 @@
  * never enter it.
  *
  * ── ONE TABLE, EVERY READER DERIVES ─────────────────────────────────────────────────────────────
- * The custody status (`custody-session`), the VK rotation, the backup bundle's cut and the custody shape reader
+ * The custody status (`custody-session`), the S key rotation, the backup bundle's cut and the custody shape reader
  * (`custody-shape`) all read these rows. A second list of filenames anywhere else would drift from this one,
  * and the drift costs in both directions: a carrier a sweep omits stays unsealed while the sweep reports
  * success; a carrier a sweep invents gets written over by an act nobody owns.
  *
  * ── A ROW OUTSIDE THE VESSEL KEY NAMES ITS LAW ──────────────────────────────────────────────────
- * Every `floor` and `floor-plain` row states, in its `bare` column, why its bytes rest outside the VK. A serving,
+ * Every `floor` and `floor-plain` row states, in its `bare` column, why its bytes rest outside the S key. A serving,
  * hot, cold or outbox row states none: such a file that reads bare reads as a fault.
  *
  * ── THE CENSUS NAMES WHAT STANDS OUTSIDE THE TABLE ──────────────────────────────────────────────
  * `outsideTheTable` walks the three homes whole and names each file there that reads private and matches no row:
- * an owner-only file, a file under the VK's seal, a sidecar a writer left. `vault status` prints the list and the
+ * an owner-only file, a file under the S key's seal, a sidecar a writer left. `vault status` prints the list and the
  * custody census witness refuses a vessel that holds one. Its reach ends at the three homes, and its mode sign
  * reads what a writer chose: under a umask that strips group and other from every file it names files no writer
  * marked, so it errs toward naming more and never less.
  *
  * ── A FILE SPELLED LIKE A ROW ANSWERS TO THAT ROW'S LAW ─────────────────────────────────────────
  * A row never excuses the file it matched. A hot or cold file that reads anything but sealed reads as a fault; a
- * floor or floor-plain file under the VK's seal reads as a fault, since no rotation re-seals it; and a row whose
+ * floor or floor-plain file under the S key's seal reads as a fault, since no rotation re-seals it; and a row whose
  * law reads off the bytes (`holds`) faults a file that fails it. A row with no such check (a note, a chunk, a
  * card, a charter, a consent, an admit pin) takes any bytes under its exact spelling: the census reads the
  * vessel's own writers, and catches no secret a hand plants under one of those spellings.
@@ -64,19 +64,19 @@
  * Where a writer exports its own path function, the row spells its filename through it, so a writer that
  * moves takes the row with it. Login-keyed identity filenames carry an optional `-<login>` segment.
  *
- * ── THE VK ROTATION READS THESE ROWS ────────────────────────────────────────────────────────────
- * Every `hot` and `cold` carrier standing is a VK-sealed carrier (`vkSealedCarriers`), named by its home and
- * its file, and `rotateVesselVk` hands exactly that list to the sealed writer's rotation. No caller picks the
+ * ── THE S key ROTATION READS THESE ROWS ────────────────────────────────────────────────────────────
+ * Every `hot` and `cold` carrier standing is a S-sealed carrier (`sSealedCarriers`), named by its home and
+ * its file, and `rotateNodeKey` hands exactly that list to the sealed writer's rotation. No caller picks the
  * carriers a rotation re-seals; the writer then checks the list against every file the homes hold, so a
- * VK-sealed file no row names refuses the rotation rather than staying behind under a retired VK.
+ * S-sealed file no row names refuses the rotation rather than staying behind under a retired S key.
  */
 
 import { closeSync, openSync, readdirSync, readSync, statSync, type Dirent } from "node:fs";
 import { basename, join } from "node:path";
 import {
-  REST_KINDS, ROTATING_SUFFIX, SEALING_SUFFIX, VK_SEAL_MIN_LENGTH,
-  readCarriedRecord, readIndexRow, readLockboxRecord, readsAsOutboxSeal, readVkCarrier, restNameHolds, rotateVk,
-  type CustodyIo, type KeyClass, type SealedCarrier, type SlotSpec, type SlotTree, type VesselKey,
+  REST_KINDS, ROTATING_SUFFIX, SEALING_SUFFIX, S_SEAL_MIN_LENGTH,
+  readCarriedRecord, readIndexRow, readLockboxRecord, readsAsOutboxSeal, readSCarrier, restNameHolds, rotateTreeKey,
+  type CustodyIo, type KeyClass, type SealedCarrier, type SlotSpec, type SlotTree, type TreeKey,
 } from "@lararium/mesh";
 import { custodyRootPath } from "./custody-root.js";
 import { archivePath, VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
@@ -100,8 +100,8 @@ export interface CustodyHomes {
   readonly seal:     string;
 }
 
-/** The slot tree's path: the one file outside the VK that wraps it. */
-export function vkSlotsPath(identityDir: string = larIdentityDir()): string {
+/** The slot tree's path: the one file outside the S key that wraps it. */
+export function sSlotsPath(identityDir: string = larIdentityDir()): string {
   return join(identityDir, "s-slots.bin");
 }
 
@@ -111,8 +111,8 @@ export function skSlotsPath(identityDir: string = larIdentityDir()): string {
 }
 
 /**
- * The suffix of the serving tree a VK rotation re-wraps: it lands beside `sk-slots.bin` before the rotation commits,
- * and the next opening of SK settles it (`openServingTree`). Its own suffix: the VK rotation's settle sweeps every
+ * The suffix of the serving tree an S key rotation re-wraps: it lands beside `sk-slots.bin` before the rotation commits,
+ * and the next opening of SK settles it (`openServingTree`). Its own suffix: the S key rotation's settle sweeps every
  * `.s-rotating` file, and this one must outlive that sweep.
  */
 export const SK_REWRAP_SUFFIX = ".sk-rewrap";
@@ -304,14 +304,14 @@ function faceRowOf(spec: {
 function buildTable(): readonly CarrierRow[] {
   const id = (r: IdentityRowSpec): CarrierRow => row({ home: "identity", under: "", ...r });
   return Object.freeze([
-    // ── floor: outside the VK ──────────────────────────────────────────────────────────────────
+    // ── floor: outside the S key ──────────────────────────────────────────────────────────────────
     id({ row: "vessel-key", target: tgt(["S"], LEAD, "place-signer"), match: loginKeyed("vessel-key"), custody: "floor", keyClass: "device-minted",
          writer: "node-vessel-identity (founding)",
          bare: "the floor signs with it before any person unlocks, so no vessel key may stand between a boot and it" }),
     id({ row: "vessel-kel", target: tgt(["F"]), match: loginKeyed("vessel-kel"), custody: "floor", keyClass: null,
          writer: "node-vessel-identity (founding)",
          bare: "the vessel key's own inception names that key and carries its signature: it stands public and proves itself, and a load of the key reads it before any person unlocks" }),
-    id({ row: "s-slots", target: tgt(["D", "S"], LEAD, "place-signer"), match: exact(vkSlotsPath()), custody: "floor", keyClass: null,
+    id({ row: "s-slots", target: tgt(["D", "S"], LEAD, "place-signer"), match: exact(sSlotsPath()), custody: "floor", keyClass: null,
          writer: "vault bind",
          bare: "the slot tree wraps the vessel key under each human route, so the key it wraps cannot seal it" }),
     id({ row: "sk-slots", target: tgt(["S"], LEAD), match: exact(skSlotsPath()), custody: "floor", keyClass: null,
@@ -359,7 +359,7 @@ function buildTable(): readonly CarrierRow[] {
           custody: "floor-plain", keyClass: null, writer: "sealed-store-fs",
           bare: "a chunk rests as Keyhive ciphertext under an opaque name, and a blind carrier may hold every one" }),
 
-    // ── hot: sealed under the VK, opened at unlock ─────────────────────────────────────────────
+    // ── hot: sealed under the S key, opened at unlock ─────────────────────────────────────────────
     id({ row: "gate-root", target: tgt(["D"], LEAD), match: exact(custodyRootPath()), custody: "hot", keyClass: "device-minted",
          writer: "custody-root (founding)" }),
     id({ row: "place-archive", target: tgt(["D"], LEAD, "archive-row-selector"), match: exact(archivePath()), custody: "hot", keyClass: "device-minted",
@@ -455,13 +455,13 @@ function buildTable(): readonly CarrierRow[] {
     faceRowOf({ row: "outbox-key", target: tgt(["D"]), inner: OUTBOX_KEY_FILE, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: "device-minted",
          writer: "outbox-key", name: (m) => `outbox-key-h${m[1]}`, face: faceOf }),
 
-    // ── outbox: sealed under the outbox key the VK wraps ───────────────────────────────────────
+    // ── outbox: sealed under the outbox key the S key wraps ───────────────────────────────────────
     // The parcels a vessel wrapped for a reader, until the member lane takes them: each sealed whole, its reader
     // inside the seal, under a random name (`sealed-store-rest`). They stay on their vessel.
     row({ row: "sealed-outbox", target: tgt(["D"]), home: "storage", under: "sealed", match: new RegExp(`^sealed/outbox/${REST_NAME}$`),
           custody: "outbox", keyClass: null, writer: "sealed-store-fs", holds: restFileHolds }),
 
-    // ── cold: sealed under the VK, opened per act ──────────────────────────────────────────────
+    // ── cold: sealed under the S key, opened per act ──────────────────────────────────────────────
     faceRowOf({ row: "persona-root", target: tgt(["D"]), inner: /^\.persona-group-root(?:-[^./]+?)?-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
          writer: "node-vessel-identity", name: (m) => `persona-root-h${m[1]}`, face: faceOf, bundle: "whole" }),
     // One face's proof key at one Nexus, held by the root-holding vessel alone (`face-key-custody`). Its file names
@@ -547,13 +547,13 @@ export function carrierCensus(homes: CustodyHomes): CarrierEntry[] {
   ];
 }
 
-// ── the VK-sealed carriers, derived from the rows ────────────────────────────────────────────────
+// ── the S-sealed carriers, derived from the rows ────────────────────────────────────────────────
 
 /**
  * Every hot and cold carrier standing in `homes`, as the sealed writer names it: `<home>/<file>`. Each carries its
  * row's key class, so a refusal over a `relation` carrier says no rotation regenerates it.
  */
-export function vkSealedCarriers(homes: CustodyHomes): SealedCarrier[] {
+export function sSealedCarriers(homes: CustodyHomes): SealedCarrier[] {
   // The hot and cold rows alone get walked: a rotation and an unlock never list a subtree only a plain row names.
   const sealed = carrierTable().filter((r) => r.custody === "hot" || r.custody === "cold");
   return [
@@ -564,36 +564,36 @@ export function vkSealedCarriers(homes: CustodyHomes): SealedCarrier[] {
 }
 
 /**
- * Every carrier whose standing, with no slot tree, makes a store occupied: the VK-sealed rows plus the face rows. A founding
+ * Every carrier whose standing, with no slot tree, makes a store occupied: the S-sealed rows plus the face rows. A founding
  * over any of them refuses before a byte lands; the face rows ride this list and no rotation, since a face key seals them.
  */
 export function occupantCarriers(homes: CustodyHomes): SealedCarrier[] {
   const faceRows = carrierCensus(homes).filter((e) => e.custody === "face-hot" || e.custody === "face-cold");
-  return [...vkSealedCarriers(homes), ...faceRows.map((e) => ({ name: `${e.home}/${e.file}`, path: e.path, keyClass: e.keyClass }))];
+  return [...sSealedCarriers(homes), ...faceRows.map((e) => ({ name: `${e.home}/${e.file}`, path: e.path, keyClass: e.keyClass }))];
 }
 
 /**
- * Rotate the vessel's VK over every VK-sealed carrier the table names in `homes`, binding `slots` over the new
- * VK at the identity home's slot tree. The sealed writer proves `oldVk` against the standing tree and refuses a
- * VK-sealed file the census omits, before any write.
+ * Rotate the vessel's S key over every S-sealed carrier the table names in `homes`, binding `slots` over the new
+ * S key at the identity home's slot tree. The sealed writer proves `oldTreeKey` against the standing tree and refuses a
+ * S-sealed file the census omits, before any write.
  */
-export async function rotateVesselVk(args: {
+export async function rotateNodeKey(args: {
   readonly io:     CustodyIo;
   readonly homes:  CustodyHomes;
-  readonly oldVk:  VesselKey;
-  readonly newVk:  VesselKey;
+  readonly oldTreeKey:  TreeKey;
+  readonly newTreeKey:  TreeKey;
   readonly slots:  readonly SlotSpec[];
 }): Promise<SlotTree> {
-  return rotateVk({
-    io: args.io, treePath: vkSlotsPath(args.homes.identity), carriers: vkSealedCarriers(args.homes),
-    oldVk: args.oldVk, newVk: args.newVk, slots: args.slots,
+  return rotateTreeKey({
+    io: args.io, treePath: sSlotsPath(args.homes.identity), carriers: sSealedCarriers(args.homes),
+    oldTreeKey: args.oldTreeKey, newTreeKey: args.newTreeKey, slots: args.slots,
   });
 }
 
 // ── what stands outside the table ────────────────────────────────────────────────────────────────
 
 /** Why a file outside the table reads private. */
-export type OutsideWhy = "sidecar" | "vk-seal" | "owner-only";
+export type OutsideWhy = "sidecar" | "s-seal" | "owner-only";
 
 /** One file that reads private and matches no row. */
 export interface OutsideFile {
@@ -607,12 +607,12 @@ export interface OutsideFile {
 /** A name a writer gives a file it has not landed yet: the sealed writer's two sidecars, the serving tree's re-wrap, a port's or a rest's temporary file. */
 const SIDECAR_NAME = new RegExp(`(?:${escape(SEALING_SUFFIX)}|${escape(ROTATING_SUFFIX)}|${escape(SK_REWRAP_SUFFIX)}|\\.io-tmp)$|(?:^|/)TMP-[0-9a-f]+$`);
 
-/** The first bytes of a file, enough to read a VK frame's magic and its least length; nothing on any fault. */
+/** The first bytes of a file, enough to read an S key frame's magic and its least length; nothing on any fault. */
 function headOf(path: string): Uint8Array {
   let fd: number;
   try { fd = openSync(path, "r"); } catch { return new Uint8Array(0); }
   try {
-    const buf = Buffer.alloc(VK_SEAL_MIN_LENGTH);
+    const buf = Buffer.alloc(S_SEAL_MIN_LENGTH);
     return new Uint8Array(buf.subarray(0, readSync(fd, buf, 0, buf.length, 0)));
   } catch { return new Uint8Array(0); }
   finally { closeSync(fd); }
@@ -621,7 +621,7 @@ function headOf(path: string): Uint8Array {
 /**
  * Every file in `homes` that reads private and that no row of the table names. It walks each home WHOLE, the
  * subtrees no row names among them, and reads three signs: a writer's unlanded name (`sidecar`), the vessel
- * key's seal in the first bytes (`vk-seal`), and a mode that admits the owner alone (`owner-only`). A file a row
+ * key's seal in the first bytes (`s-seal`), and a mode that admits the owner alone (`owner-only`). A file a row
  * names never lists, whatever its bytes: the row's own reading answers for it. It only reads; an absent home
  * names nothing.
  */
@@ -639,8 +639,8 @@ export function outsideTheTable(homes: CustodyHomes): OutsideFile[] {
       let why: OutsideWhy | null = null;
       if (SIDECAR_NAME.test(rel)) why = "sidecar";
       else {
-        const reading = readVkCarrier(headOf(path));
-        if (reading === "sealed" || reading === "torn") why = "vk-seal";
+        const reading = readSCarrier(headOf(path));
+        if (reading === "sealed" || reading === "torn") why = "s-seal";
         else {
           try { if ((statSync(path).mode & 0o077) === 0) why = "owner-only"; } catch { /* a file that left mid-walk names nothing */ }
         }

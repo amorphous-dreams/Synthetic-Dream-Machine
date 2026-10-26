@@ -76,7 +76,8 @@ describe("the founding seed sweep", () => {
       expect(names()).toEqual([groupFile]);
       expect(readFileSync(groupRowPath(face.personaGroupId, groupFile!))).toEqual(bytes);
       const boot = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
-      expect(boot, "node boot invokes the founding sweep").toMatch(/sweepFoundingSeeds\s*\(/);
+      expect(boot, "node boot reaches the founding sweep through the sovereign gate's door").toMatch(/sweepUnderTheGate\(\s*sovereignOpen\s*,\s*sweepFoundingSeeds\s*\)/);
+      expect(boot, "the gate's door runs the sweep it is handed, when the gate stands open").toMatch(/if \(sovereignOpen\) await sweep\(\)/);
     });
   }, 180_000);
 });

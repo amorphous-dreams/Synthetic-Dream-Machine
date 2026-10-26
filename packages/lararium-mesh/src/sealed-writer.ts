@@ -1,18 +1,18 @@
 /**
- * sealed-writer — THE one writer of VK-sealed carriers and of the slot tree that holds the VK.
+ * sealed-writer — THE one writer of tree-key-sealed carriers and of the slot tree that holds the tree key.
  *
  * TWO PROOFS GOVERN EVERY WRITE, both before any byte moves.
  *
- *  1. THE VK IN HAND IS THE TREE'S. The slot tree standing at `treePath` carries the keyed check of its VK
- *     (`keyslot.ts`), and every writer — a carrier write, a tree commit, a rotation — proves the VK in hand against
- *     it. A mismatch refuses as `TreeVkRefusal` (`vk-mismatch`); no tree standing, or a torn one, refuses too
- *     (`tree-absent`, `tree-unreadable`), since then no VK is the vessel's. So a stranger VK founds no carrier, and
- *     a process still holding a VK a rotation retired writes nothing, an absent carrier included.
- *  2. THE KEY OPENS WHAT STANDS. A carrier accepts a write only when nothing stands there, or when the VK opens the
- *     sealed bytes; every other reading refuses with its own name (`vk-envelope.ts`): `key-fails`, `torn`,
+ *  1. THE tree key IN HAND IS THE TREE'S. The slot tree standing at `treePath` carries the keyed check of its tree key
+ *     (`keyslot.ts`), and every writer — a carrier write, a tree commit, a rotation — proves the tree key in hand against
+ *     it. A mismatch refuses as `TreeKeyRefusal` (`tree-key-mismatch`); no tree standing, or a torn one, refuses too
+ *     (`tree-absent`, `tree-unreadable`), since then no tree key is the vessel's. So a stranger tree key founds no carrier, and
+ *     a process still holding a tree key a rotation retired writes nothing, an absent carrier included.
+ *  2. THE KEY OPENS WHAT STANDS. A carrier accepts a write only when nothing stands there, or when the tree key opens the
+ *     sealed bytes; every other reading refuses with its own name (`s-envelope.ts`): `key-fails`, `torn`,
  *     `unopenable`, `old-shape`, `bare`.
  *
- * A wrong passphrase opens no VK, so it reaches no write at all; a VK the tree does not commit to replaces nothing.
+ * A wrong passphrase opens no tree key, so it reaches no write at all; a tree key the tree does not commit to replaces nothing.
  *
  * ONE HOLDER FROM CHECK TO RENAME. Every writer and the rotation run inside `io.exclusive`, so no write checks
  * against a tree a rotation then replaces before its rename lands. A carrier whose next bytes depend on its
@@ -22,16 +22,16 @@
  * THE SHAPE OF A WRITE: seal → write a SIDECAR → read it back → compare the bytes and open them → rename over the
  * carrier. It never seals in place, and a sidecar that does not read back as written never lands.
  *
- * A VK ROTATION opens EVERY carrier under the old VK before it writes a single temp: the failure that matters (a
- * carrier the old VK does not open) costs nothing, because it surfaces while nothing has moved. Its carrier list
+ * A tree key ROTATION opens EVERY carrier under the old tree key before it writes a single temp: the failure that matters (a
+ * carrier the old tree key does not open) costs nothing, because it surfaces while nothing has moved. Its carrier list
  * comes from the one carrier table (the node's `vault-carriers`), and the rotation checks that list against the
- * store: a file bearing the VK seal's magic that the list omits refuses the whole rotation (`CensusRefusal`), so a
+ * store: a file bearing the tree key seal's magic that the list omits refuses the whole rotation (`CensusRefusal`), so a
  * partial list strands nothing. It then binds the new tree, writes and checks every carrier sidecar, writes the
  * tree's sidecar LAST, and renames carriers before the tree. The tree's sidecar is the commit point: when it stands, every carrier sidecar beside it was written and
  * read back, so `settleRotation` finishes the renames; when it does not, the rotation never committed and the
  * carrier sidecars go. The unlock settles before it opens anything.
  *
- * THE GUARD PROVES THE KEY, NEVER THE CONTENT. An opening VK still admits an empty state over a full one; the boot
+ * THE GUARD PROVES THE KEY, NEVER THE CONTENT. An opening tree key still admits an empty state over a full one; the boot
  * hydrates from what it opens before anything writes back, and those two facts stay two.
  *
  * Platform-blind: the store arrives as a `CustodyIo` port (node `fs`, browser IndexedDB), and nothing here imports
@@ -40,8 +40,8 @@
 
 import { bytesEqual, defaultCryptoProvider, type RandomProvider } from "./crypto.js";
 import { bindSlot, encodeSlotTree, decodeSlotTree, type SlotSpec, type SlotTree } from "./keyslot.js";
-import { sealUnderVk, openUnderVk, vkAnswersCheck, type VesselKey, type VkOpening } from "./vk.js";
-import { readVkCarrier, type VkCarrierReading } from "./vk-envelope.js";
+import { sealUnderS, openUnderS, treeKeyAnswersCheck, type TreeKey, type TreeKeyOpening } from "./tree-key.js";
+import { readSCarrier, type SCarrierReading } from "./s-envelope.js";
 import { isRelationClass, type KeyClass } from "./key-class.js";
 import { openUnderFck, sealUnderFck, type FaceCarrier, type FaceCustodyKey, type FckOpening } from "./fck.js";
 import { readFckCarrier } from "./fck-envelope.js";
@@ -73,23 +73,23 @@ export interface SealedCarrier { readonly name: string; readonly path: string; r
 
 /** The frame and context for one custody class; every mutating operation uses the same holder and tree proof. */
 interface CarrierSeal<C extends SealedCarrier> {
-  readonly open: (key: VesselKey, carrier: C, bytes: Uint8Array | null) => VkOpening | FckOpening;
-  readonly seal: (key: VesselKey, carrier: C, plaintext: Uint8Array, rng: RandomProvider) => Uint8Array;
-  readonly read: (bytes: Uint8Array | null) => VkCarrierReading;
+  readonly open: (key: TreeKey, carrier: C, bytes: Uint8Array | null) => TreeKeyOpening | FckOpening;
+  readonly seal: (key: TreeKey, carrier: C, plaintext: Uint8Array, rng: RandomProvider) => Uint8Array;
+  readonly read: (bytes: Uint8Array | null) => SCarrierReading;
 }
-const VK_SEAL: CarrierSeal<SealedCarrier> = {
-  open: (key, carrier, bytes) => openUnderVk(key, carrier.name, bytes),
-  seal: (key, carrier, plaintext, rng) => sealUnderVk(key, carrier.name, plaintext, rng),
-  read: readVkCarrier,
+const S_SEAL: CarrierSeal<SealedCarrier> = {
+  open: (key, carrier, bytes) => openUnderS(key, carrier.name, bytes),
+  seal: (key, carrier, plaintext, rng) => sealUnderS(key, carrier.name, plaintext, rng),
+  read: readSCarrier,
 };
 const FACE_SEAL: CarrierSeal<FaceCarrier> = { open: openUnderFck, seal: sealUnderFck, read: readFckCarrier };
 
 /** The sidecar of a single write. A stray one never committed; settling removes it. */
 export const SEALING_SUFFIX = ".s-sealing";
-/** The sidecar of a VK rotation. The tree's rotating sidecar marks the rotation committed. */
+/** The sidecar of a tree key rotation. The tree's rotating sidecar marks the rotation committed. */
 export const ROTATING_SUFFIX = ".s-rotating";
 
-type RefusedReading = Exclude<VkOpening["reading"], "opens" | "absent">;
+type RefusedReading = Exclude<TreeKeyOpening["reading"], "opens" | "absent">;
 
 /** A write or rotation the standing bytes refuse. `reading` names the fact met; nothing was written. */
 export class CustodyRefusal extends Error {
@@ -109,7 +109,7 @@ const RELATION_LOSS =
 
 const SAYS: Record<RefusedReading, string> = {
   "key-fails":
-    "the VK in hand does not open the bytes standing there, so this write would replace sealed state under a key " +
+    "the tree key in hand does not open the bytes standing there, so this write would replace sealed state under a key " +
     "that never sealed it",
   torn:
     "the carrier is torn (the house magic over a frame too short to hold a nonce and a tag), so no credential is at " +
@@ -121,33 +121,33 @@ const SAYS: Record<RefusedReading, string> = {
     "it opens with the LARK frame, which no custody of this house writes and no unlock opens; the fresh-start runbook " +
     "(stable-founding-road #/fresh-start) answers it",
   bare:
-    "cleartext stands there, and this writer replaces only bytes the VK sealed",
+    "cleartext stands there, and this writer replaces only bytes the tree key sealed",
 };
 
-/** Why the standing tree refuses the VK in hand. */
-export type TreeVkReading = "tree-absent" | "tree-unreadable" | "vk-mismatch";
+/** Why the standing tree refuses the tree key in hand. */
+export type TreeKeyReading = "tree-absent" | "tree-unreadable" | "tree-key-mismatch";
 
-/** A writer whose VK the standing slot tree does not commit to. Nothing was written. */
-export class TreeVkRefusal extends Error {
-  constructor(readonly reading: TreeVkReading, readonly treePath: string) {
+/** A writer whose tree key the standing slot tree does not commit to. Nothing was written. */
+export class TreeKeyRefusal extends Error {
+  constructor(readonly reading: TreeKeyReading, readonly treePath: string) {
     super(`sealed-writer: refusing to write — ${TREE_SAYS[reading]} (the slot tree at ${treePath})`);
-    this.name = "TreeVkRefusal";
+    this.name = "TreeKeyRefusal";
   }
 }
 
-const TREE_SAYS: Record<TreeVkReading, string> = {
-  "tree-absent": "no slot tree stands, so no VK is this vessel's yet; bind the tree before any carrier",
-  "tree-unreadable": "the slot tree does not read, so no VK can prove itself against it",
-  "vk-mismatch":
-    "the VK in hand is not the VK the standing tree commits to (a stranger's, or one a rotation retired), and a " +
+const TREE_SAYS: Record<TreeKeyReading, string> = {
+  "tree-absent": "no slot tree stands, so no tree key is this vessel's yet; bind the tree before any carrier",
+  "tree-unreadable": "the slot tree does not read, so no tree key can prove itself against it",
+  "tree-key-mismatch":
+    "the tree key in hand is not the tree key the standing tree commits to (a stranger's, or one a rotation retired), and a " +
     "write under it would seal state no slot opens",
 };
 
-/** A rotation whose carrier list omits files that bear the VK seal. Nothing was written. */
+/** A rotation whose carrier list omits files that bear the tree key seal. Nothing was written. */
 export class CensusRefusal extends Error {
   constructor(readonly uncovered: readonly string[]) {
     super(
-      `sealed-writer: refusing to rotate — the carrier list omits ${uncovered.length} file(s) sealed under the VK, ` +
+      `sealed-writer: refusing to rotate — the carrier list omits ${uncovered.length} file(s) sealed under the tree key, ` +
       `which a rotation would strand: ${uncovered.join(", ")}`,
     );
     this.name = "CensusRefusal";
@@ -155,12 +155,12 @@ export class CensusRefusal extends Error {
 }
 
 /** One standing carrier, and what its bytes read as. */
-export interface StandingCarrier { readonly carrier: SealedCarrier; readonly reading: Exclude<VkCarrierReading, "absent"> }
+export interface StandingCarrier { readonly carrier: SealedCarrier; readonly reading: Exclude<SCarrierReading, "absent"> }
 
 /**
  * A founding or a write over a store this custody never sealed: a carrier stands (cleartext, a LARK
  * envelope, or a seal no tree commits to) and no slot tree does. Nothing was written. `standing` names the listed
- * carriers met; `unlisted` the paths that bear the VK seal's magic yet no listed carrier names.
+ * carriers met; `unlisted` the paths that bear the tree key seal's magic yet no listed carrier names.
  */
 export class OccupiedStoreRefusal extends Error {
   constructor(readonly standing: readonly StandingCarrier[], readonly unlisted: readonly string[], readonly treePath: string) {
@@ -175,7 +175,7 @@ export class OccupiedStoreRefusal extends Error {
 
 /**
  * THE FOUNDING'S OWN CHECK, AS A READ. Throws `OccupiedStoreRefusal` when any carrier of `carriers` stands while no slot
- * tree stands at `treePath`, or when an unlisted file bears the VK seal's magic. It reads and lists alone: it takes
+ * tree stands at `treePath`, or when an unlisted file bears the tree key seal's magic. It reads and lists alone: it takes
  * no custody claim and writes nothing, so a command may ask it before it gathers a human route. The founding runs
  * the same check again under its claim (`commitSlotTree`).
  */
@@ -186,7 +186,7 @@ export async function assertStoreUnoccupied(args: {
 }
 
 /** Read the store for occupants. Throws `OccupiedStoreRefusal` when any carrier stands with no tree; writes nothing. */
-async function refuseOccupiedStore<C extends SealedCarrier>(io: Pick<CustodyIo, "read" | "list">, treePath: string, carriers: readonly C[], seal: CarrierSeal<C> = VK_SEAL as CarrierSeal<C>, scope?: (path: string) => boolean): Promise<void> {
+async function refuseOccupiedStore<C extends SealedCarrier>(io: Pick<CustodyIo, "read" | "list">, treePath: string, carriers: readonly C[], seal: CarrierSeal<C> = S_SEAL as CarrierSeal<C>, scope?: (path: string) => boolean): Promise<void> {
   const standing: StandingCarrier[] = [];
   for (const carrier of carriers) {
     const reading = seal.read(await io.read(carrier.path));
@@ -203,13 +203,13 @@ async function refuseOccupiedStore<C extends SealedCarrier>(io: Pick<CustodyIo, 
   if (standing.length > 0 || unlisted.length > 0) throw new OccupiedStoreRefusal(standing, unlisted.sort(), treePath);
 }
 
-/** Prove `vk` against the tree standing at `treePath`. Returns the standing bytes, or throws `TreeVkRefusal`. */
-async function proveAgainstTree(io: CustodyIo, treePath: string, vk: VesselKey): Promise<Uint8Array> {
+/** Prove `treeKey` against the tree standing at `treePath`. Returns the standing bytes, or throws `TreeKeyRefusal`. */
+async function proveAgainstTree(io: CustodyIo, treePath: string, treeKey: TreeKey): Promise<Uint8Array> {
   const bytes = await io.read(treePath);
   const reading = decodeSlotTree(bytes);
-  if (reading.reading === "absent") throw new TreeVkRefusal("tree-absent", treePath);
-  if (reading.reading === "unreadable") throw new TreeVkRefusal("tree-unreadable", treePath);
-  if (!vkAnswersCheck(vk, reading.tree.vkCheck)) throw new TreeVkRefusal("vk-mismatch", treePath);
+  if (reading.reading === "absent") throw new TreeKeyRefusal("tree-absent", treePath);
+  if (reading.reading === "unreadable") throw new TreeKeyRefusal("tree-unreadable", treePath);
+  if (!treeKeyAnswersCheck(treeKey, reading.tree.keyCheck)) throw new TreeKeyRefusal("tree-key-mismatch", treePath);
   return bytes!;
 }
 
@@ -220,17 +220,17 @@ function sameReading(a: Uint8Array | null, b: Uint8Array | null): boolean {
   return a === null || b === null ? a === b : bytesEqual(a, b);
 }
 
-/** Open the carrier under `vk`, reading what stands. */
-export async function openSealedCarrier(args: { readonly io: CustodyIo; readonly vk: VesselKey; readonly carrier: SealedCarrier }): Promise<VkOpening> {
-  return openUnderVk(args.vk, args.carrier.name, await args.io.read(args.carrier.path));
+/** Open the carrier under `treeKey`, reading what stands. */
+export async function openSealedCarrier(args: { readonly io: CustodyIo; readonly treeKey: TreeKey; readonly carrier: SealedCarrier }): Promise<TreeKeyOpening> {
+  return openUnderS(args.treeKey, args.carrier.name, await args.io.read(args.carrier.path));
 }
 
 /**
- * Seal `plaintext` as the carrier, and land it only when the tree at `treePath` commits to `vk` and the carrier
- * holds nothing or bytes `vk` opens.
+ * Seal `plaintext` as the carrier, and land it only when the tree at `treePath` commits to `treeKey` and the carrier
+ * holds nothing or bytes `treeKey` opens.
  */
 export async function writeSealedCarrier(args: WriteSealedCarrierArgs): Promise<void> {
-  return args.io.exclusive(() => writeHeld(args, VK_SEAL));
+  return args.io.exclusive(() => writeHeld(args, S_SEAL));
 }
 
 export interface WriteFaceCarrierArgs {
@@ -240,7 +240,7 @@ export interface WriteFaceCarrierArgs {
 
 /** Seal a D row only after its own face tree proves the key and its standing context opens. */
 export async function writeFaceCarrier(args: WriteFaceCarrierArgs): Promise<void> {
-  return args.io.exclusive(() => writeHeld({ ...args, vk: args.key }, FACE_SEAL, facePathScope(args.treePath)));
+  return args.io.exclusive(() => writeHeld({ ...args, treeKey: args.key }, FACE_SEAL, facePathScope(args.treePath)));
 }
 
 /** Read a D row with the expected context supplied by the caller. */
@@ -253,13 +253,13 @@ export interface SealedCarrierUpdate<T> { readonly plaintext: Uint8Array | null;
 
 /**
  * Read one sealed carrier, decide, and write it, as ONE custody holder. `decide` receives the carrier's standing
- * reading under `vk` and answers its next plaintext (`null` writes nothing). A `decide` that throws writes nothing.
+ * reading under `treeKey` and answers its next plaintext (`null` writes nothing). A `decide` that throws writes nothing.
  * The write holds both proofs of `writeSealedCarrier`.
  */
 export async function updateSealedCarrier<T>(args: Omit<WriteSealedCarrierArgs, "plaintext"> & {
-  readonly decide: (standing: VkOpening) => SealedCarrierUpdate<T> | Promise<SealedCarrierUpdate<T>>;
+  readonly decide: (standing: TreeKeyOpening) => SealedCarrierUpdate<T> | Promise<SealedCarrierUpdate<T>>;
 }): Promise<T> {
-  return updateCarrierHeld(args.io, args.vk, args.treePath, args.carrier, args.decide, VK_SEAL, args.rng);
+  return updateCarrierHeld(args.io, args.treeKey, args.treePath, args.carrier, args.decide, S_SEAL, args.rng);
 }
 
 export async function updateFaceCarrier<T>(args: Omit<WriteFaceCarrierArgs, "plaintext"> & {
@@ -268,8 +268,8 @@ export async function updateFaceCarrier<T>(args: Omit<WriteFaceCarrierArgs, "pla
   return updateCarrierHeld(args.io, args.key, args.treePath, args.carrier, args.decide, FACE_SEAL, args.rng, facePathScope(args.treePath));
 }
 
-async function updateCarrierHeld<C extends SealedCarrier, O extends VkOpening | FckOpening, T>(
-  io: CustodyIo, key: VesselKey, treePath: string, carrier: C,
+async function updateCarrierHeld<C extends SealedCarrier, O extends TreeKeyOpening | FckOpening, T>(
+  io: CustodyIo, key: TreeKey, treePath: string, carrier: C,
   decide: (standing: O) => SealedCarrierUpdate<T> | Promise<SealedCarrierUpdate<T>>,
   seal: CarrierSeal<C>, rng?: RandomProvider, scope?: (path: string) => boolean,
 ): Promise<T> {
@@ -277,15 +277,15 @@ async function updateCarrierHeld<C extends SealedCarrier, O extends VkOpening | 
     if (scope) await proveAgainstTree(io, treePath, key);
     const standing = seal.open(key, carrier, await io.read(carrier.path)) as O;
     const next = await decide(standing);
-    if (next.plaintext !== null) await writeHeld({ io, vk: key, treePath, carrier, plaintext: next.plaintext,
+    if (next.plaintext !== null) await writeHeld({ io, treeKey: key, treePath, carrier, plaintext: next.plaintext,
       ...(rng ? { rng } : {}) }, seal, scope);
     return next.value;
   });
 }
 
 /**
- * Remove one sealed carrier, as ONE custody holder. The tree at `treePath` must commit to `vk`, and the carrier
- * must hold nothing or bytes `vk` opens: a holder removes only what its own key sealed, so bytes another key
+ * Remove one sealed carrier, as ONE custody holder. The tree at `treePath` must commit to `treeKey`, and the carrier
+ * must hold nothing or bytes `treeKey` opens: a holder removes only what its own key sealed, so bytes another key
  * sealed, torn bytes and bare bytes each refuse `CustodyRefusal` and stay. A stray sidecar of the carrier leaves
  * with it. Answers whether a carrier left. `when`, where given, reads the standing plaintext under the same hold:
  * a carrier it declines stays, and the removal answers false.
@@ -293,7 +293,7 @@ async function updateCarrierHeld<C extends SealedCarrier, O extends VkOpening | 
 export async function removeSealedCarrier(args: Omit<WriteSealedCarrierArgs, "plaintext" | "rng"> & {
   readonly when?: (plaintext: Uint8Array) => boolean;
 }): Promise<boolean> {
-  return removeCarrierHeld(args.io, args.vk, args.treePath, args.carrier, VK_SEAL, args.when);
+  return removeCarrierHeld(args.io, args.treeKey, args.treePath, args.carrier, S_SEAL, args.when);
 }
 
 export async function removeFaceCarrier(args: Omit<WriteFaceCarrierArgs, "plaintext" | "rng"> & {
@@ -302,12 +302,12 @@ export async function removeFaceCarrier(args: Omit<WriteFaceCarrierArgs, "plaint
   return removeCarrierHeld(args.io, args.key, args.treePath, args.carrier, FACE_SEAL, args.when, facePathScope(args.treePath));
 }
 
-async function removeCarrierHeld<C extends SealedCarrier>(io: CustodyIo, vk: VesselKey, treePath: string, carrier: C,
+async function removeCarrierHeld<C extends SealedCarrier>(io: CustodyIo, treeKey: TreeKey, treePath: string, carrier: C,
   seal: CarrierSeal<C>, when?: (plaintext: Uint8Array) => boolean, scope?: (path: string) => boolean): Promise<boolean> {
   if (scope && !scope(carrier.path)) throw new Error("sealed-writer: a face carrier lies outside its tree namespace");
   return io.exclusive(async () => {
-    await proveAgainstTree(io, treePath, vk);
-    const standing = seal.open(vk, carrier, await io.read(carrier.path));
+    await proveAgainstTree(io, treePath, treeKey);
+    const standing = seal.open(treeKey, carrier, await io.read(carrier.path));
     if (standing.reading !== "absent" && standing.reading !== "opens") throw new CustodyRefusal(standing.reading, carrier);
     let wanted = true;
     if (standing.reading === "opens") {
@@ -323,8 +323,8 @@ async function removeCarrierHeld<C extends SealedCarrier>(io: CustodyIo, vk: Ves
 
 export interface WriteSealedCarrierArgs {
   readonly io:        CustodyIo;
-  readonly vk:        VesselKey;
-  /** The slot tree the VK proves against. */
+  readonly treeKey:        TreeKey;
+  /** The slot tree the tree key proves against. */
   readonly treePath:  string;
   readonly carrier:   SealedCarrier;
   readonly plaintext: Uint8Array;
@@ -332,22 +332,22 @@ export interface WriteSealedCarrierArgs {
 }
 
 async function writeHeld<C extends SealedCarrier>(args: WriteSealedCarrierArgs & { readonly carrier: C }, seal: CarrierSeal<C>, scope?: (path: string) => boolean): Promise<void> {
-  const { io, vk, carrier } = args;
+  const { io, treeKey, carrier } = args;
   if (scope && !scope(carrier.path)) throw new Error("sealed-writer: a face carrier lies outside its tree namespace");
   try {
-    await proveAgainstTree(io, args.treePath, vk);
+    await proveAgainstTree(io, args.treePath, treeKey);
   } catch (err) {
-    if (err instanceof TreeVkRefusal && err.reading === "tree-absent") await refuseOccupiedStore(io, args.treePath, [carrier], seal, scope);
+    if (err instanceof TreeKeyRefusal && err.reading === "tree-absent") await refuseOccupiedStore(io, args.treePath, [carrier], seal, scope);
     throw err;
   }
-  const standing = seal.open(vk, carrier, await io.read(carrier.path));
+  const standing = seal.open(treeKey, carrier, await io.read(carrier.path));
   if (standing.reading !== "absent" && standing.reading !== "opens") throw new CustodyRefusal(standing.reading, carrier);
 
-  const sealed = seal.seal(vk, carrier, args.plaintext, args.rng ?? defaultCryptoProvider);
+  const sealed = seal.seal(treeKey, carrier, args.plaintext, args.rng ?? defaultCryptoProvider);
   const side = `${carrier.path}${SEALING_SUFFIX}`;
   await io.write(side, sealed);
   await readBackOrDiscard(io, side, sealed, (back) => {
-    const o = seal.open(vk, carrier, back);
+    const o = seal.open(treeKey, carrier, back);
     return o.reading === "opens" && sameReading(o.plaintext, args.plaintext);
   });
   await io.rename(side, carrier.path);
@@ -362,11 +362,11 @@ async function readBackOrDiscard(io: CustodyIo, side: string, written: Uint8Arra
 
 /**
  * Write the slot tree. Refuses when the tree standing at `path` moved since the caller read `expected`, when `tree`
- * does not commit to `vk`, and when a standing tree commits to another VK: a bind or unbind keeps the VK, and only
- * `rotateVk` moves it. Founding (nothing standing) commits the first tree.
+ * does not commit to `treeKey`, and when a standing tree commits to another tree key: a bind or unbind keeps the tree key, and only
+ * `rotateTreeKey` moves it. Founding (nothing standing) commits the first tree.
  */
 export async function commitSlotTree(args: CommitSlotTreeArgs): Promise<void> {
-  return args.io.exclusive(() => commitHeld(args, VK_SEAL));
+  return args.io.exclusive(() => commitHeld(args, S_SEAL));
 }
 
 export interface CommitFaceTreeArgs {
@@ -376,7 +376,7 @@ export interface CommitFaceTreeArgs {
 
 /** Bind a face tree only when its key answers its check and no face row stands without it. */
 export async function commitFaceTree(args: CommitFaceTreeArgs): Promise<void> {
-  return args.io.exclusive(() => commitHeld({ ...args, vk: args.key }, FACE_SEAL, facePathScope(args.path)));
+  return args.io.exclusive(() => commitHeld({ ...args, treeKey: args.key }, FACE_SEAL, facePathScope(args.path)));
 }
 
 export async function assertFaceStoreUnoccupied(args: {
@@ -389,13 +389,13 @@ export interface CommitSlotTreeArgs {
   readonly io:       CustodyIo;
   readonly path:     string;
   readonly expected: Uint8Array | null;
-  /** The VK the tree wraps: the standing tree's, and the one `tree` commits to. */
-  readonly vk:       VesselKey;
+  /** The tree key the tree wraps: the standing tree's, and the one `tree` commits to. */
+  readonly treeKey:       TreeKey;
   readonly tree:     SlotTree;
   /**
-   * Every VK-sealed carrier the vessel keeps (the carrier table's hot and cold rows). A founding (nothing standing
+   * Every tree-key-sealed carrier the vessel keeps (the carrier table's hot and cold rows). A founding (nothing standing
    * at `path`) refuses with `OccupiedStoreRefusal`, before any write, when any of them already stands or when an
-   * unlisted file bears the VK seal's magic.
+   * unlisted file bears the tree key seal's magic.
    */
   readonly carriers: readonly SealedCarrier[];
 }
@@ -407,9 +407,9 @@ async function commitHeld<C extends SealedCarrier>(args: CommitSlotTreeArgs & { 
   if (!sameReading(standing, args.expected)) {
     throw new Error(`sealed-writer: the slot tree at ${path} moved since it was read; read it again before binding`);
   }
-  if (standing !== null) await proveAgainstTree(io, path, args.vk);
+  if (standing !== null) await proveAgainstTree(io, path, args.treeKey);
   else await refuseOccupiedStore(io, path, args.carriers, seal, scope);
-  if (!vkAnswersCheck(args.vk, args.tree.vkCheck)) throw new TreeVkRefusal("vk-mismatch", path);
+  if (!treeKeyAnswersCheck(args.treeKey, args.tree.keyCheck)) throw new TreeKeyRefusal("tree-key-mismatch", path);
   const bytes = encodeSlotTree(args.tree);
   const reading = decodeSlotTree(bytes);
   if (reading.reading !== "readable") throw new Error(`sealed-writer: refusing to write a slot tree that reads ${reading.reading}`);
@@ -420,13 +420,13 @@ async function commitHeld<C extends SealedCarrier>(args: CommitSlotTreeArgs & { 
 }
 
 /**
- * Rotate the VK: re-seal every carrier under `newVk` and bind `slots` over it as the new tree. Before any write it
- * proves `oldVk` against the standing tree, checks that `carriers` covers every file the store holds under the VK
- * seal's magic, and opens every carrier under `oldVk`; any of these refusing refuses the whole rotation with nothing
+ * Rotate the tree key: re-seal every carrier under `newTreeKey` and bind `slots` over it as the new tree. Before any write it
+ * proves `oldTreeKey` against the standing tree, checks that `carriers` covers every file the store holds under the tree key
+ * seal's magic, and opens every carrier under `oldTreeKey`; any of these refusing refuses the whole rotation with nothing
  * written. Returns the new tree.
  */
-export async function rotateVk(args: RotateVkArgs): Promise<SlotTree> {
-  return args.io.exclusive(() => rotateHeld(args, VK_SEAL));
+export async function rotateTreeKey(args: RotateTreeKeyArgs): Promise<SlotTree> {
+  return args.io.exclusive(() => rotateHeld(args, S_SEAL));
 }
 
 export interface RotateFckArgs {
@@ -437,7 +437,7 @@ export interface RotateFckArgs {
 
 /** Re-seal the complete carrier census of one face, then commit that face's new slot tree. */
 export async function rotateFck(args: RotateFckArgs): Promise<SlotTree> {
-  return args.io.exclusive(() => rotateHeld({ ...args, oldVk: args.oldKey, newVk: args.newKey }, FACE_SEAL, facePathScope(args.treePath)));
+  return args.io.exclusive(() => rotateHeld({ ...args, oldTreeKey: args.oldKey, newTreeKey: args.newKey }, FACE_SEAL, facePathScope(args.treePath)));
 }
 
 /** A face tree and its rows occupy one directory subtree so a census cannot claim a sibling's files. */
@@ -448,18 +448,18 @@ function facePathScope(treePath: string): (path: string) => boolean {
   return (path) => path.startsWith(prefix);
 }
 
-export interface RotateVkArgs {
+export interface RotateTreeKeyArgs {
   readonly io:       CustodyIo;
   readonly treePath: string;
-  /** Every VK-sealed carrier the vessel keeps: the carrier table's hot and cold rows, never a hand-picked subset. */
+  /** Every tree-key-sealed carrier the vessel keeps: the carrier table's hot and cold rows, never a hand-picked subset. */
   readonly carriers: readonly SealedCarrier[];
-  readonly oldVk:    VesselKey;
-  readonly newVk:    VesselKey;
+  readonly oldTreeKey:    TreeKey;
+  readonly newTreeKey:    TreeKey;
   readonly slots:    readonly SlotSpec[];
   readonly rng?:     RandomProvider;
 }
 
-async function rotateHeld<C extends SealedCarrier>(args: RotateVkArgs & { readonly carriers: readonly C[] }, seal: CarrierSeal<C>, scope?: (path: string) => boolean): Promise<SlotTree> {
+async function rotateHeld<C extends SealedCarrier>(args: RotateTreeKeyArgs & { readonly carriers: readonly C[] }, seal: CarrierSeal<C>, scope?: (path: string) => boolean): Promise<SlotTree> {
   const { io, treePath } = args;
   if (scope && args.carriers.some((c) => !scope(c.path))) throw new Error("sealed-writer: a face carrier lies outside its tree namespace");
   const rng = args.rng ?? defaultCryptoProvider;
@@ -467,9 +467,9 @@ async function rotateHeld<C extends SealedCarrier>(args: RotateVkArgs & { readon
   if (await io.read(treeSide) !== null) {
     throw new Error(`sealed-writer: an unsettled rotation stands at ${treeSide}; settle it before rotating again`);
   }
-  await proveAgainstTree(io, treePath, args.oldVk);
+  await proveAgainstTree(io, treePath, args.oldTreeKey);
 
-  // THE CENSUS: every file bearing the VK seal's magic stands in the list, or the rotation would strand it.
+  // THE CENSUS: every file bearing the tree key seal's magic stands in the list, or the rotation would strand it.
   const named = new Set(args.carriers.map((c) => c.path));
   const uncovered: string[] = [];
   for (const path of await io.list()) {
@@ -480,17 +480,17 @@ async function rotateHeld<C extends SealedCarrier>(args: RotateVkArgs & { readon
   }
   if (uncovered.length > 0) throw new CensusRefusal(uncovered.sort());
 
-  // PRE-VALIDATE: every carrier opens under the old VK before a single temp exists.
+  // PRE-VALIDATE: every carrier opens under the old tree key before a single temp exists.
   const opened: { carrier: C; plaintext: Uint8Array }[] = [];
   for (const carrier of args.carriers) {
-    const o = seal.open(args.oldVk, carrier, await io.read(carrier.path));
+    const o = seal.open(args.oldTreeKey, carrier, await io.read(carrier.path));
     if (o.reading === "absent") continue;
     if (o.reading !== "opens") throw new CustodyRefusal(o.reading, carrier);
     opened.push({ carrier, plaintext: o.plaintext });
   }
-  if (args.slots.length === 0) throw new Error("sealed-writer: a rotation that binds no slot leaves the new VK with no human route");
+  if (args.slots.length === 0) throw new Error("sealed-writer: a rotation that binds no slot leaves the new tree key with no human route");
   let tree: SlotTree | null = null;
-  for (const spec of args.slots) tree = bindSlot(tree, args.newVk, spec, rng);
+  for (const spec of args.slots) tree = bindSlot(tree, args.newTreeKey, spec, rng);
   const treeBytes = encodeSlotTree(tree!);
 
   // WRITE AND CHECK every sidecar; the tree's goes last, as the commit point.
@@ -498,11 +498,11 @@ async function rotateHeld<C extends SealedCarrier>(args: RotateVkArgs & { readon
   try {
     for (const { carrier, plaintext } of opened) {
       const side = `${carrier.path}${ROTATING_SUFFIX}`;
-      const sealed = seal.seal(args.newVk, carrier, plaintext, rng);
+      const sealed = seal.seal(args.newTreeKey, carrier, plaintext, rng);
       sides.push(side);
       await io.write(side, sealed);
       await readBackOrDiscard(io, side, sealed, (back) => {
-        const o = seal.open(args.newVk, carrier, back);
+        const o = seal.open(args.newTreeKey, carrier, back);
         return o.reading === "opens" && sameReading(o.plaintext, plaintext);
       });
     }

@@ -33,12 +33,12 @@ import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { canonicalJsonBytes, defaultCryptoProvider, utf8Bytes, type RandomProvider } from "./crypto.js";
 import { FACE_BUNDLE_BODY_INFO, FACE_BUNDLE_DOMAIN, FACE_BUNDLE_MEMORY_INFO } from "./domains.js";
-import { bindSlot, decodeSlotTree, encodeSlotTree, openVk, type Credential, type SlotSpec, type SlotTree } from "./keyslot.js";
+import { bindSlot, decodeSlotTree, encodeSlotTree, openTreeKey, type Credential, type SlotSpec, type SlotTree } from "./keyslot.js";
 import { memoryKeypairOf, type MemoryKeypair } from "./memory-section.js";
 import { coercePersonaKelEvent } from "./persona-kel-board.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 import type { GuardianRecoveryRegistration } from "./recovery-registration.js";
-import type { VesselKey } from "./vk.js";
+import type { TreeKey } from "./tree-key.js";
 
 /** A bundle key's width, in bytes. */
 export const BUNDLE_KEY_LENGTH = 32;
@@ -75,7 +75,7 @@ export function bindBundleRoutes(bundleKey: Uint8Array, routes: readonly SlotSpe
   assertKey(bundleKey);
   if (routes.length === 0) throw new Error("face-bundle: a bundle with no route opens for nobody");
   let tree: SlotTree | null = null;
-  for (const spec of routes) tree = bindSlot(tree, bundleKey as VesselKey, spec, rng);
+  for (const spec of routes) tree = bindSlot(tree, bundleKey as TreeKey, spec, rng);
   return tree!;
 }
 
@@ -294,8 +294,8 @@ export type BundleKeyOpening =
 
 /** Open a bundle's key with the routes a person presents. The caller owns the key and zero-fills it. */
 export function openBundleKey(tree: SlotTree, credentials: readonly Credential[]): BundleKeyOpening {
-  const opened = openVk(tree, credentials);
-  return opened.reading === "opens" ? { reading: "opens", bundleKey: opened.vk, slot: opened.slot } : opened;
+  const opened = openTreeKey(tree, credentials);
+  return opened.reading === "opens" ? { reading: "opens", bundleKey: opened.treeKey, slot: opened.slot } : opened;
 }
 
 /** What a holder of the file reads with no route: the residue, and nothing of the face. */

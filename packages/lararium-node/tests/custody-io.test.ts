@@ -12,11 +12,11 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  CustodyRefusal, OccupiedStoreRefusal, SEALING_SUFFIX, ROTATING_SUFFIX, bindSlot, commitSlotTree, decodeSlotTree, mintVk,
-  openSealedCarrier, openVk, readVkCarrier, writeSealedCarrier, type CustodyIo, type SealedCarrier, type VesselKey,
+  CustodyRefusal, OccupiedStoreRefusal, SEALING_SUFFIX, ROTATING_SUFFIX, bindSlot, commitSlotTree, decodeSlotTree, mintTreeKey,
+  openSealedCarrier, openTreeKey, readSCarrier, writeSealedCarrier, type CustodyIo, type SealedCarrier, type TreeKey,
 } from "@lararium/mesh";
 import { CustodyLockRefused, FsCustodyIo } from "../src/custody-io.js";
-import { rotateVesselVk, vesselCustodyHomes, vkSealedCarriers, vkSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
+import { rotateNodeKey, vesselCustodyHomes, sSealedCarriers, sSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
 
 const pass = { kind: "passphrase", passphrase: "the hearth remembers" } as const;
 const text = (v: string): Uint8Array => new TextEncoder().encode(v);
@@ -269,55 +269,55 @@ describe("FsCustodyIo — the port over the real filesystem", () => {
   });
 });
 
-/** Found a scratch vessel through the production port: a tree over a fresh VK, plus public seal rows. */
-async function found(io: CustodyIo): Promise<{ vk: VesselKey; treePath: string; sealed: SealedCarrier[] }> {
-  const vk = mintVk();
-  const treePath = vkSlotsPath(homes.identity);
-  await commitSlotTree({ io, path: treePath, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [pass] }), carriers: vkSealedCarriers(homes) });
+/** Found a scratch vessel through the production port: a tree over a fresh S key, plus public seal rows. */
+async function found(io: CustodyIo): Promise<{ treeKey: TreeKey; treePath: string; sealed: SealedCarrier[] }> {
+  const treeKey = mintTreeKey();
+  const treePath = sSlotsPath(homes.identity);
+  await commitSlotTree({ io, path: treePath, expected: null, treeKey, tree: bindSlot(null, treeKey, { t: 1, pins: [pass] }), carriers: sSealedCarriers(homes) });
   const sealed: SealedCarrier[] = [
     { name: "identity/.persona-enroll-pending.json", path: join(homes.identity, ".persona-enroll-pending.json"), keyClass: "relation" },
     { name: "identity/gate-root.bin", path: join(homes.identity, "gate-root.bin"), keyClass: "device-minted" },
     { name: "identity/.persona-grant-pending.json", path: join(homes.identity, ".persona-grant-pending.json"), keyClass: "relation" },
   ];
-  for (const c of sealed) await writeSealedCarrier({ io, vk, treePath, carrier: c, plaintext: text(`${c.name}-v1`) });
+  for (const c of sealed) await writeSealedCarrier({ io, treeKey, treePath, carrier: c, plaintext: text(`${c.name}-v1`) });
   await io.write(join(homes.seal, "transition-pending.json"), text("{}"));
   await io.write(join(homes.seal, "transitions.json"), text("[]"));
-  return { vk, treePath, sealed };
+  return { treeKey, treePath, sealed };
 }
 
 describe("PROOF 1 — rotate, reopen, compare, rename on actual carrier files", { timeout: 60_000 }, () => {
-  test("CONTROL: a rotation re-seals every VK carrier and leaves public seal rows readable with no key", async () => {
+  test("CONTROL: a rotation re-seals every S key carrier and leaves public seal rows readable with no key", async () => {
     const io = new FsCustodyIo(homes);
     const f = await found(io);
     const before = new Map(await Promise.all(f.sealed.map(async (c) => [c.path, Buffer.from((await io.read(c.path))!).toString("hex")] as const)));
     const plain = ["transition-pending.json", "transitions.json"].map((file) => ({ path: join(homes.seal, file), bytes: readFileSync(join(homes.seal, file)) }));
-    const newVk = mintVk();
-    await rotateVesselVk({ io, homes, oldVk: f.vk, newVk, slots: [{ t: 1, pins: [pass] }] });
+    const newTreeKey = mintTreeKey();
+    await rotateNodeKey({ io, homes, oldTreeKey: f.treeKey, newTreeKey, slots: [{ t: 1, pins: [pass] }] });
 
     const tree = decodeSlotTree((await io.read(f.treePath))!);
-    const opened = tree.reading === "readable" ? openVk(tree.tree, [pass]) : null;
+    const opened = tree.reading === "readable" ? openTreeKey(tree.tree, [pass]) : null;
     expect(opened?.reading).toBe("opens");
-    const vk2 = (opened as { vk: VesselKey }).vk;
+    const treeKey2 = (opened as { treeKey: TreeKey }).treeKey;
     for (const c of f.sealed) {
-      const r = await openSealedCarrier({ io, vk: vk2, carrier: c });
+      const r = await openSealedCarrier({ io, treeKey: treeKey2, carrier: c });
       expect(r.reading === "opens" && str(r.plaintext), c.name).toBe(`${c.name}-v1`);                       // compare
-      expect((await openSealedCarrier({ io, vk: f.vk, carrier: c })).reading, c.name).toBe("key-fails");    // the retired VK opens nothing
+      expect((await openSealedCarrier({ io, treeKey: f.treeKey, carrier: c })).reading, c.name).toBe("key-fails");    // the retired S key opens nothing
       expect(Buffer.from((await io.read(c.path))!).toString("hex"), c.name).not.toBe(before.get(c.path));   // the bytes MOVED
-      expect(readVkCarrier((await io.read(c.path))!)).toBe("sealed");
+      expect(readSCarrier((await io.read(c.path))!)).toBe("sealed");
     }
     for (const row of plain) {
       expect(readFileSync(row.path).equals(row.bytes)).toBe(true);
-      expect(readVkCarrier((await io.read(row.path))!)).toBe("bare");
+      expect(readSCarrier((await io.read(row.path))!)).toBe("bare");
     }
     for (const p of await io.list()) expect(p.endsWith(SEALING_SUFFIX) || p.endsWith(ROTATING_SUFFIX) || p.endsWith(".io-tmp"), p).toBe(false);   // rename left no sidecar
     expect(existsSync(io.claimPath())).toBe(false);
   });
 
-  test("MUTATION: a stranger VK rotates nothing — every carrier stands byte-for-byte", async () => {
+  test("MUTATION: a stranger S key rotates nothing — every carrier stands byte-for-byte", async () => {
     const io = new FsCustodyIo(homes);
     await found(io);
     const before = treeHash(root);
-    await expect(rotateVesselVk({ io, homes, oldVk: mintVk(), newVk: mintVk(), slots: [{ t: 1, pins: [pass] }] })).rejects.toThrow(/refusing/);
+    await expect(rotateNodeKey({ io, homes, oldTreeKey: mintTreeKey(), newTreeKey: mintTreeKey(), slots: [{ t: 1, pins: [pass] }] })).rejects.toThrow(/refusing/);
     expect(treeHash(root)).toBe(before);
   });
 });
@@ -328,72 +328,72 @@ describe("PROOF 3 — the old-shape refusal fires before any write", () => {
     writeFileSync(join(homes.identity, ".persona-enroll-pending.json"), "{\"cleartext\":true}");
     writeFileSync(join(homes.identity, "gate-root.bin"), "bare-root");
     const before = treeHash(root);
-    const vk = mintVk();
+    const treeKey = mintTreeKey();
     const err = await commitSlotTree({
-      io, path: vkSlotsPath(homes.identity), expected: null, vk,
-      tree: bindSlot(null, vk, { t: 1, pins: [pass] }), carriers: vkSealedCarriers(homes),
+      io, path: sSlotsPath(homes.identity), expected: null, treeKey,
+      tree: bindSlot(null, treeKey, { t: 1, pins: [pass] }), carriers: sSealedCarriers(homes),
     }).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(OccupiedStoreRefusal);
     expect((err as OccupiedStoreRefusal).standing.map((s) => s.carrier.name).sort()).toEqual(["identity/.persona-enroll-pending.json", "identity/gate-root.bin"]);
     expect((err as OccupiedStoreRefusal).standing.find((s) => s.carrier.keyClass === "relation")).toBeDefined();   // the table's class rides the list
     expect(treeHash(root)).toBe(before);
-    expect(existsSync(vkSlotsPath(homes.identity))).toBe(false);
-    expect(existsSync(`${vkSlotsPath(homes.identity)}${SEALING_SUFFIX}`)).toBe(false);
+    expect(existsSync(sSlotsPath(homes.identity))).toBe(false);
+    expect(existsSync(`${sSlotsPath(homes.identity)}${SEALING_SUFFIX}`)).toBe(false);
   });
 
   test("CONTROL: empty homes found cleanly", async () => {
     const io = new FsCustodyIo(homes);
     await found(io);
-    expect(existsSync(vkSlotsPath(homes.identity))).toBe(true);
+    expect(existsSync(sSlotsPath(homes.identity))).toBe(true);
   });
 
-  test("a VK-sealed stray in a storage subtree no row names refuses the founding through list(); MUTATION: a port whose list() is empty lets it through", async () => {
+  test("a S-sealed stray in a storage subtree no row names refuses the founding through list(); MUTATION: a port whose list() is empty lets it through", async () => {
     const io = new FsCustodyIo(homes);
-    const vk0 = mintVk();
+    const treeKey0 = mintTreeKey();
     const t0 = join(root, "other-tree.bin");
     const stray: SealedCarrier = { name: "storage/odd/stray.bin", path: join(homes.storage, "odd", "stray.bin") };
     // Seal a stray under another vessel's tree, then drop it into this vessel's storage home.
-    await commitSlotTree({ io, path: t0, expected: null, vk: vk0, tree: bindSlot(null, vk0, { t: 1, pins: [pass] }), carriers: [] });
-    await writeSealedCarrier({ io, vk: vk0, treePath: t0, carrier: stray, plaintext: text("x") });
+    await commitSlotTree({ io, path: t0, expected: null, treeKey: treeKey0, tree: bindSlot(null, treeKey0, { t: 1, pins: [pass] }), carriers: [] });
+    await writeSealedCarrier({ io, treeKey: treeKey0, treePath: t0, carrier: stray, plaintext: text("x") });
     rmSync(t0);
 
-    const vk = mintVk();
-    const args = { path: vkSlotsPath(homes.identity), expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [pass] }), carriers: vkSealedCarriers(homes) };
+    const treeKey = mintTreeKey();
+    const args = { path: sSlotsPath(homes.identity), expected: null, treeKey, tree: bindSlot(null, treeKey, { t: 1, pins: [pass] }), carriers: sSealedCarriers(homes) };
     const err = await commitSlotTree({ io, ...args }).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(OccupiedStoreRefusal);
     expect((err as OccupiedStoreRefusal).unlisted).toEqual([stray.path]);
-    expect(existsSync(vkSlotsPath(homes.identity))).toBe(false);
+    expect(existsSync(sSlotsPath(homes.identity))).toBe(false);
 
     const blind: CustodyIo = {
       read: (p) => io.read(p), write: (p, b) => io.write(p, b), rename: (a, b) => io.rename(a, b),
       remove: (p) => io.remove(p), exclusive: (fn) => io.exclusive(fn), list: async () => [],
     };
     await commitSlotTree({ io: blind, ...args });   // the hole: with no census the stray hides and the founding lands
-    expect(existsSync(vkSlotsPath(homes.identity))).toBe(true);
+    expect(existsSync(sSlotsPath(homes.identity))).toBe(true);
   });
 });
 
 describe("the relation refusal — no rotation regenerates it", () => {
-  test("a write over a relation row the VK cannot open says only the other party re-issues it; a non-relation carrier says nothing of the kind", async () => {
+  test("a write over a relation row the S key cannot open says only the other party re-issues it; a non-relation carrier says nothing of the kind", async () => {
     const io = new FsCustodyIo(homes);
     const f = await found(io);
     const [pending, walk] = f.sealed as [SealedCarrier, SealedCarrier, SealedCarrier];   // a relation row, and a device-minted one that is no relation
-    // Replace both with bytes sealed under a DIFFERENT vk (same carrier name, so only the key differs).
+    // Replace both with bytes sealed under a DIFFERENT treeKey (same carrier name, so only the key differs).
     const altRoot = join(root, "alt");
     const altIo = new FsCustodyIo({ identity: join(altRoot, "i"), storage: join(altRoot, "s"), seal: join(altRoot, "n") });
-    const other = mintVk();
+    const other = mintTreeKey();
     const altTree = join(altRoot, "i", "s-slots.bin");
-    await commitSlotTree({ io: altIo, path: altTree, expected: null, vk: other, tree: bindSlot(null, other, { t: 1, pins: [pass] }), carriers: [] });
+    await commitSlotTree({ io: altIo, path: altTree, expected: null, treeKey: other, tree: bindSlot(null, other, { t: 1, pins: [pass] }), carriers: [] });
     for (const c of [pending, walk]) {
       const alt = { ...c, path: join(altRoot, "c", c.name.replace(/\//g, "_")) };
-      await writeSealedCarrier({ io: altIo, vk: other, treePath: altTree, carrier: alt, plaintext: text("alien") });
+      await writeSealedCarrier({ io: altIo, treeKey: other, treePath: altTree, carrier: alt, plaintext: text("alien") });
       await io.write(c.path, (await altIo.read(alt.path))!);
     }
 
-    const relation = await writeSealedCarrier({ io, vk: f.vk, treePath: f.treePath, carrier: pending, plaintext: text("x") }).catch((e: unknown) => e);
+    const relation = await writeSealedCarrier({ io, treeKey: f.treeKey, treePath: f.treePath, carrier: pending, plaintext: text("x") }).catch((e: unknown) => e);
     expect(relation).toBeInstanceOf(CustodyRefusal);
     expect((relation as Error).message).toMatch(/only the other party can re-issue it/);
-    const plain = await writeSealedCarrier({ io, vk: f.vk, treePath: f.treePath, carrier: walk, plaintext: text("x") }).catch((e: unknown) => e);
+    const plain = await writeSealedCarrier({ io, treeKey: f.treeKey, treePath: f.treePath, carrier: walk, plaintext: text("x") }).catch((e: unknown) => e);
     expect(plain).toBeInstanceOf(CustodyRefusal);
     expect((plain as Error).message).not.toMatch(/other party/);
   });

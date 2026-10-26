@@ -30,7 +30,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { openStaged, cliFor, foundStagedHearth, unlockStaged, type LarInstance, type CliResult } from "../harness/instance.js";
 import { unlockTestCustody } from "../harness/test-door.js";
-import { readVkCarrier } from "../../packages/lararium-mesh/src/vk-envelope.js";
+import { readSCarrier } from "../../packages/lararium-mesh/src/s-envelope.js";
 import { readFckCarrier } from "../../packages/lararium-mesh/src/fck-envelope.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
@@ -92,8 +92,8 @@ const rowsAtRest = (): Record<string, Buffer> => {
     ...veil.map((f) => [f, readFileSync(faceRowFile(f))] as const),
   ]);
 };
-/** Each row reads its own key's seal: the vessel-key rows the VK's, the face rows their face's. */
-const sealOf = (file: string, bytes: Buffer): string => ((SEALED_ROWS as readonly string[]).includes(file) ? readVkCarrier(bytes) : readFckCarrier(bytes));
+/** Each row reads its own key's seal: the vessel-key rows the S key's, the face rows their face's. */
+const sealOf = (file: string, bytes: Buffer): string => ((SEALED_ROWS as readonly string[]).includes(file) ? readSCarrier(bytes) : readFckCarrier(bytes));
 const SHARE = (): string => faceRowFile("recovery-device-share-h0.bin");
 
 /** The custody door's own reading of what stands. Looks are COUNTED while no daemon answers; no clock decides. */

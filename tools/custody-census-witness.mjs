@@ -139,7 +139,7 @@ try {
   copyFileSync(join(identity, "gate-root.bin"), stray);
   chmodSync(stray, 0o644);
   got = breaches(census(root));
-  step("RED: a sealed file no row names reads outside the table", got.length === 1 && got[0] === "outside: storage/stray.bin (vk-seal)", got.join("; "));
+  step("RED: a sealed file no row names reads outside the table", got.length === 1 && got[0] === "outside: storage/stray.bin (s-seal)", got.join("; "));
   const bound = await bindTestCustody(root);
   step("a second route binds", bound.ok === true && bound.slots === 2, JSON.stringify(bound));
   const refusedRotation = await unbindTestCustody(root, { slotId: bound.slotId, rotate: true });

@@ -1,9 +1,9 @@
 /**
- * keyslot — the VK rests only inside slots, LUKS-shaped: each slot an `sss{t, pins}` over human routes.
+ * keyslot — the tree key rests only inside slots, LUKS-shaped: each slot an `sss{t, pins}` over human routes.
  *
- * A SLOT holds the VK wrapped under a random slot key, and the slot key split `t`-of-n across its pins (house
+ * A SLOT holds the tree key wrapped under a random slot key, and the slot key split `t`-of-n across its pins (house
  * Shamir over GF(256); at t=1 every pin holds the whole slot key). A PIN wraps its share under a KEK only its human
- * route yields. Any ONE slot opens the VK, so a tree holding a passphrase slot and a paper slot opens under either,
+ * route yields. Any ONE slot opens the tree key, so a tree holding a passphrase slot and a paper slot opens under either,
  * and a 2-of-2 slot asks for both pins at once.
  *
  * THE PIN KINDS form a CLOSED union of the kinds this build BUILDS: `passphrase` (scrypt) and `paper` (a SLIP-39
@@ -20,16 +20,16 @@
  * included) or the same paper secret as two pins of one slot refuses, since a t-of-n slot whose pins share a route
  * opens under fewer routes than its threshold names.
  *
- * EVERY UNBIND OFFERS THE ROTATION. A copy of the tree taken before an unbind still opens the VK through the slot it
- * removed; only a VK rotation (`sealed-writer.rotateVk`) ends that route, so the offer rides every unbind's result.
+ * EVERY UNBIND OFFERS THE ROTATION. A copy of the tree taken before an unbind still opens the tree key through the slot it
+ * removed; only a tree key rotation (`sealed-writer.rotateTreeKey`) ends that route, so the offer rides every unbind's result.
  *
- * THE KEYS. Each wrap derives its AEAD key by HKDF-SHA256 under `vk-slot-wrap`, salted by the slot's random id: a
- * pin's KEK material wraps its share, the slot key wraps the VK. The AAD binds what the bytes belong to (the slot,
- * the pin's place and kind, or the VK role), so a wrapped share moved to another pin or slot does not open.
+ * THE KEYS. Each wrap derives its AEAD key by HKDF-SHA256 under `slot-wrap`, salted by the slot's random id: a
+ * pin's KEK material wraps its share, the slot key wraps the tree key. The AAD binds what the bytes belong to (the slot,
+ * the pin's place and kind, or the tree key role), so a wrapped share moved to another pin or slot does not open.
  *
- * THE TREE COMMITS TO ITS VK. Every tree carries `vkCheck` (`vk.ts`), the keyed check of the one VK its slots wrap.
- * A bind over a VK the tree does not commit to refuses, and a slot whose unwrap yields a VK the check does not name
- * opens nothing (a slot spliced in from another tree). The sealed writer proves every VK in hand against this check.
+ * THE TREE COMMITS TO ITS tree key. Every tree carries `keyCheck` (`tree-key.ts`), the keyed check of the one tree key its slots wrap.
+ * A bind over a tree key the tree does not commit to refuses, and a slot whose unwrap yields a tree key the check does not name
+ * opens nothing (a slot spliced in from another tree). The sealed writer proves every tree key in hand against this check.
  *
  * THE TREE AT REST is plain JSON with no version, counter or clock: the check, the slots, their pins, nonces and
  * wrapped bytes. It carries nothing secret without a route. A tree that fails to parse reads `unreadable` with the reason, named apart
@@ -41,10 +41,10 @@ import { hkdf } from "@noble/hashes/hkdf.js";
 import { scrypt } from "@noble/hashes/scrypt.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { defaultCryptoProvider, hex, type RandomProvider } from "./crypto.js";
-import { VK_SLOT_WRAP_INFO } from "./domains.js";
+import { SLOT_WRAP_INFO } from "./domains.js";
 import { splitSecret, combineSecret, type ShareBytes } from "./shamir-gf256.js";
 import { generateMnemonics, combineMnemonics, readBackMismatch, Slip39Error } from "./slip39.js";
-import { adoptUnwrappedVk, vkAnswersCheck, vkCheckOf, VK_LENGTH, type VesselKey } from "./vk.js";
+import { adoptUnwrappedTreeKey, treeKeyAnswersCheck, treeKeyCheckOf, TREE_KEY_LENGTH, type TreeKey } from "./tree-key.js";
 
 /** The pin kinds this build builds. */
 export type PinKind = "passphrase" | "paper";
@@ -63,9 +63,9 @@ const TAG_LENGTH = 16;
 const SHARE_LENGTH = 1 + SLOT_KEY_LENGTH;
 
 /** The text every unbind returns for the operator: what an unbind leaves open, and what closes it. */
-export const VK_ROTATION_OFFER =
-  "A copy of the slot tree taken before this unbind still opens the VK through the slot it removed. " +
-  "Rotate the VK to close that route: a fresh VK re-seals every carrier and every remaining slot binds again.";
+export const ROTATION_OFFER =
+  "A copy of the slot tree taken before this unbind still opens the key through the slot it removed. " +
+  "Rotate the key to close that route: a fresh key re-seals every carrier and every remaining slot binds again.";
 
 // ── the records ─────────────────────────────────────────────────────────────────────────────────────
 
@@ -79,17 +79,17 @@ export interface SlotRecord {
   readonly t:         number;
   readonly pins:      readonly PinRecord[];
   readonly nonce:     string;
-  readonly wrappedVk: string;
+  readonly wrappedKey: string;
 }
 
 export interface SlotTree {
-  /** The keyed check of the one VK every slot wraps (`vkCheckOf`). */
-  readonly vkCheck: string;
+  /** The keyed check of the one tree key every slot wraps (`treeKeyCheckOf`). */
+  readonly keyCheck: string;
   readonly slots:   readonly SlotRecord[];
 }
 
-/** The width of a tree's VK check, in bytes. */
-const VK_CHECK_LENGTH = 32;
+/** The width of a tree's tree key check, in bytes. */
+const TREE_CHECK_LENGTH = 32;
 
 // ── the paper pin's read-back ─────────────────────────────────────────────────────────────────────
 
@@ -147,7 +147,7 @@ export function confirmHeldPaper(sheets: readonly string[]): ConfirmedPaperPin {
 
 // ── derivations ──────────────────────────────────────────────────────────────────────────────────
 
-const INFO = new TextEncoder().encode(VK_SLOT_WRAP_INFO);
+const INFO = new TextEncoder().encode(SLOT_WRAP_INFO);
 const utf8 = (s: string): Uint8Array => new TextEncoder().encode(s);
 
 function concat(...parts: Uint8Array[]): Uint8Array {
@@ -159,7 +159,7 @@ function concat(...parts: Uint8Array[]): Uint8Array {
 
 const wrapKey = (material: Uint8Array, slotId: Uint8Array): Uint8Array => hkdf(sha256, material, slotId, INFO, 32);
 const pinAad = (slotId: Uint8Array, index: number, kind: PinKind): Uint8Array => concat(utf8("pin"), slotId, Uint8Array.of(index), utf8(kind));
-const vkAad = (slotId: Uint8Array): Uint8Array => concat(utf8("vk"), slotId);
+const treeKeyAad = (slotId: Uint8Array): Uint8Array => concat(utf8("treeKey"), slotId);
 
 function passphraseMaterial(passphrase: string, salt: Uint8Array): Uint8Array {
   return scrypt(passphrase.normalize("NFKC"), salt, SCRYPT);
@@ -181,14 +181,14 @@ export type PinSpec =
 export interface SlotSpec { readonly t: number; readonly pins: readonly PinSpec[] }
 
 /**
- * Bind one slot over `vk` into `tree` (`null` founds the tree, committing it to `vk`). Refuses a slot with no human
- * route, a route bound twice in one slot, and a `vk` the standing tree does not commit to.
+ * Bind one slot over `treeKey` into `tree` (`null` founds the tree, committing it to `treeKey`). Refuses a slot with no human
+ * route, a route bound twice in one slot, and a `treeKey` the standing tree does not commit to.
  */
-export function bindSlot(tree: SlotTree | null, vk: VesselKey, spec: SlotSpec, rng: RandomProvider = defaultCryptoProvider): SlotTree {
-  if (tree !== null && !vkAnswersCheck(vk, tree.vkCheck)) {
-    throw new Error("keyslot: the VK in hand is not the VK this tree commits to; a slot binds only over the tree's own VK");
+export function bindSlot(tree: SlotTree | null, treeKey: TreeKey, spec: SlotSpec, rng: RandomProvider = defaultCryptoProvider): SlotTree {
+  if (tree !== null && !treeKeyAnswersCheck(treeKey, tree.keyCheck)) {
+    throw new Error("keyslot: the tree key in hand is not the tree key this tree commits to; a slot binds only over the tree's own tree key");
   }
-  if (spec.pins.length === 0) throw new Error("keyslot: a slot with no pin holds no human route to the VK");
+  if (spec.pins.length === 0) throw new Error("keyslot: a slot with no pin holds no human route to the tree key");
   if (!Number.isInteger(spec.t) || spec.t < 1 || spec.t > spec.pins.length) {
     throw new Error(`keyslot: a slot's threshold must be an integer in 1..${spec.pins.length} (its pin count); got ${spec.t}`);
   }
@@ -232,10 +232,10 @@ export function bindSlot(tree: SlotTree | null, vk: VesselKey, spec: SlotSpec, r
     return { kind: "paper", nonce: hex(nonce), wrapped: hex(wrapped) };
   });
 
-  const vkNonce = rng.getRandomValues(new Uint8Array(NONCE_LENGTH));
-  const wrappedVk = xchacha20poly1305(wrapKey(slotKey, slotId), vkNonce, vkAad(slotId)).encrypt(vk);
-  const slot: SlotRecord = { id: hex(slotId), t: spec.t, pins, nonce: hex(vkNonce), wrappedVk: hex(wrappedVk) };
-  return { vkCheck: tree?.vkCheck ?? vkCheckOf(vk), slots: [...(tree?.slots ?? []), slot] };
+  const treeKeyNonce = rng.getRandomValues(new Uint8Array(NONCE_LENGTH));
+  const wrappedKey = xchacha20poly1305(wrapKey(slotKey, slotId), treeKeyNonce, treeKeyAad(slotId)).encrypt(treeKey);
+  const slot: SlotRecord = { id: hex(slotId), t: spec.t, pins, nonce: hex(treeKeyNonce), wrappedKey: hex(wrappedKey) };
+  return { keyCheck: tree?.keyCheck ?? treeKeyCheckOf(treeKey), slots: [...(tree?.slots ?? []), slot] };
 }
 
 type PinMaterial = { readonly kind: "passphrase"; readonly passphrase: string } | { readonly kind: "paper"; readonly secret: Uint8Array };
@@ -256,8 +256,8 @@ function refuseRouteBoundTwice(materials: readonly PinMaterial[]): void {
 /** Remove one slot. Refuses the last slot, and returns the rotation offer with every tree it returns. */
 export function unbindSlot(tree: SlotTree, slotId: string): { readonly tree: SlotTree; readonly rotationOffer: string } {
   if (!tree.slots.some((s) => s.id === slotId)) throw new Error(`keyslot: no slot ${slotId} stands in this tree`);
-  if (tree.slots.length === 1) throw new Error("keyslot: unbinding the last slot would leave the VK with no human route");
-  return { tree: { vkCheck: tree.vkCheck, slots: tree.slots.filter((s) => s.id !== slotId) }, rotationOffer: VK_ROTATION_OFFER };
+  if (tree.slots.length === 1) throw new Error("keyslot: unbinding the last slot would leave the tree key with no human route");
+  return { tree: { keyCheck: tree.keyCheck, slots: tree.slots.filter((s) => s.id !== slotId) }, rotationOffer: ROTATION_OFFER };
 }
 
 // ── open ─────────────────────────────────────────────────────────────────────────────────────────
@@ -266,8 +266,8 @@ export type Credential =
   | { readonly kind: "passphrase"; readonly passphrase: string }
   | { readonly kind: "paper"; readonly sheets: readonly string[] };
 
-export type VkUnlock =
-  | { readonly reading: "opens"; readonly vk: VesselKey; readonly slot: string }
+export type TreeKeyUnlock =
+  | { readonly reading: "opens"; readonly treeKey: TreeKey; readonly slot: string }
   /** The credentials open no slot. `notes` names credentials that never reached a pin and NEVER quotes one: a note
    *  carries no word of a sheet and no character of a passphrase, so a caller may print or log it. (a sheet that fails its
    *  checksum, say); a passphrase that simply does not unwrap leaves no note, since the AEAD cannot say why. */
@@ -277,8 +277,8 @@ function tryUnwrap(key: Uint8Array, nonce: Uint8Array, aad: Uint8Array, wrapped:
   try { return xchacha20poly1305(key, nonce, aad).decrypt(wrapped); } catch { return null; }
 }
 
-/** Open the VK with whatever credentials the operator presents. Any one slot whose threshold they meet opens it. */
-export function openVk(tree: SlotTree, credentials: readonly Credential[]): VkUnlock {
+/** Open the tree key with whatever credentials the operator presents. Any one slot whose threshold they meet opens it. */
+export function openTreeKey(tree: SlotTree, credentials: readonly Credential[]): TreeKeyUnlock {
   const notes: string[] = [];
   const paperSecrets: Uint8Array[] = [];
   for (const c of credentials) {
@@ -305,14 +305,14 @@ export function openVk(tree: SlotTree, credentials: readonly Credential[]): VkUn
     });
     if (shares.length < slot.t) continue;
     const slotKey = slot.t === 1 ? shares[0]!.ys : combineSecret(shares.slice(0, slot.t));
-    const vk = tryUnwrap(
-      wrapKey(slotKey, slotId), fromHex(slot.nonce, NONCE_LENGTH, "slot nonce"), vkAad(slotId),
-      fromHex(slot.wrappedVk, VK_LENGTH + TAG_LENGTH, "wrapped VK"),
+    const treeKey = tryUnwrap(
+      wrapKey(slotKey, slotId), fromHex(slot.nonce, NONCE_LENGTH, "slot nonce"), treeKeyAad(slotId),
+      fromHex(slot.wrappedKey, TREE_KEY_LENGTH + TAG_LENGTH, "wrapped tree key"),
     );
-    if (vk === null) continue;
-    const opened = adoptUnwrappedVk(vk);
-    if (vkAnswersCheck(opened, tree.vkCheck)) return { reading: "opens", vk: opened, slot: slot.id };
-    notes.push(`slot ${slot.id} unwraps a VK this tree does not commit to; it opens nothing`);
+    if (treeKey === null) continue;
+    const opened = adoptUnwrappedTreeKey(treeKey);
+    if (treeKeyAnswersCheck(opened, tree.keyCheck)) return { reading: "opens", treeKey: opened, slot: slot.id };
+    notes.push(`slot ${slot.id} unwraps a tree key this tree does not commit to; it opens nothing`);
   }
   return { reading: "no-slot-opens", notes };
 }
@@ -322,9 +322,9 @@ export function openVk(tree: SlotTree, credentials: readonly Credential[]): VkUn
 /** Encode the tree as JSON bytes. */
 export function encodeSlotTree(tree: SlotTree): Uint8Array {
   return utf8(JSON.stringify({
-    vkCheck: tree.vkCheck,
+    keyCheck: tree.keyCheck,
     slots: tree.slots.map((s) => ({
-      id: s.id, t: s.t, nonce: s.nonce, wrappedVk: s.wrappedVk,
+      id: s.id, t: s.t, nonce: s.nonce, wrappedKey: s.wrappedKey,
       pins: s.pins.map((p) => (p.kind === "passphrase"
         ? { kind: p.kind, salt: p.salt, nonce: p.nonce, wrapped: p.wrapped }
         : { kind: p.kind, nonce: p.nonce, wrapped: p.wrapped })),
@@ -341,15 +341,15 @@ export type SlotTreeReading =
 export function decodeSlotTree(bytes: Uint8Array | null): SlotTreeReading {
   if (bytes === null) return { reading: "absent" };
   try {
-    const raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as { vkCheck?: unknown; slots?: unknown };
-    fromHex(raw.vkCheck as string, VK_CHECK_LENGTH, "the tree's VK check");
+    const raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as { keyCheck?: unknown; slots?: unknown };
+    fromHex(raw.keyCheck as string, TREE_CHECK_LENGTH, "the tree's tree key check");
     if (!Array.isArray(raw.slots)) throw new Error("the tree names no slots");
     if (raw.slots.length === 0) throw new Error("a tree with no slot holds no human route");
     const slots = raw.slots.map((s: Record<string, unknown>, si: number): SlotRecord => {
       const where = `slot ${si + 1}`;
       fromHex(s.id as string, SLOT_ID_LENGTH, `${where} id`);
       fromHex(s.nonce as string, NONCE_LENGTH, `${where} nonce`);
-      fromHex(s.wrappedVk as string, VK_LENGTH + TAG_LENGTH, `${where} wrapped VK`);
+      fromHex(s.wrappedKey as string, TREE_KEY_LENGTH + TAG_LENGTH, `${where} wrapped tree key`);
       if (!Array.isArray(s.pins) || s.pins.length === 0) throw new Error(`${where} holds no pin`);
       if (!Number.isInteger(s.t) || (s.t as number) < 1 || (s.t as number) > s.pins.length) throw new Error(`${where} threshold lies outside 1..${s.pins.length}`);
       const pins = (s.pins as Record<string, unknown>[]).map((p, pi): PinRecord => {
@@ -363,9 +363,9 @@ export function decodeSlotTree(bytes: Uint8Array | null): SlotTreeReading {
         if (p.kind === "paper") return { kind: "paper", nonce: p.nonce as string, wrapped: p.wrapped as string };
         throw new Error(`${pw}: kind "${String(p.kind)}" lies outside the built pin kinds (${PIN_KINDS.join(", ")})`);
       });
-      return { id: s.id as string, t: s.t as number, pins, nonce: s.nonce as string, wrappedVk: s.wrappedVk as string };
+      return { id: s.id as string, t: s.t as number, pins, nonce: s.nonce as string, wrappedKey: s.wrappedKey as string };
     });
-    return { reading: "readable", tree: { vkCheck: raw.vkCheck as string, slots } };
+    return { reading: "readable", tree: { keyCheck: raw.keyCheck as string, slots } };
   } catch (err) {
     return { reading: "unreadable", why: (err as Error).message };
   }

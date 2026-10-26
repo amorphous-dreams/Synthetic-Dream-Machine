@@ -319,7 +319,7 @@ describe("the rite arms its heads behind the door", () => {
     const io = new FsCustodyIo(homes);
     const founded = await foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "test-founding-passphrase" }] }] });
     const holder = makeCustodyHolder({ io, homes });
-    await holder.adopt(founded.vk);
+    await holder.adopt(founded.treeKey);
     seatCustody(holder);
     try {
       writeFileSync(join(root, ".lar-test-scratch"), "");

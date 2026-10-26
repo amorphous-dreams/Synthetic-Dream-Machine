@@ -2,9 +2,9 @@
  * vault-carriers.test — THE ONE CARRIER TABLE names every carrier at rest, by home, by class and by writer,
  * and the census reads the table rather than a second list.
  *
- * Eight custody classes: `floor` (outside the VK, the floor's own key material), `floor-plain` (plain bytes the
- * floor reads, or public by construction), `serving` (under SK), `hot` (VK-sealed, opened at unlock), `cold`
- * (VK-sealed, opened per act) `outbox` (under the outbox key the VK wraps in its own hot row), `face-hot` and `face-cold` (under a face key). Rows span identity, storage, and seal; hosting rests in face directories under identity.
+ * Eight custody classes: `floor` (outside the S key, the floor's own key material), `floor-plain` (plain bytes the
+ * floor reads, or public by construction), `serving` (under SK), `hot` (S-sealed, opened at unlock), `cold`
+ * (S-sealed, opened per act) `outbox` (under the outbox key the S key wraps in its own hot row), `face-hot` and `face-cold` (under a face key). Rows span identity, storage, and seal; hosting rests in face directories under identity.
  */
 import { describe, test, expect } from "vitest";
 import { createHash } from "node:crypto";
@@ -12,13 +12,13 @@ import { chmodSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, s
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import {
-  CUSTODY_CLASSES, carrierTable, carrierCensus, outsideTheTable, vkSealedCarriers, rotateVesselVk, vkSlotsPath,
+  CUSTODY_CLASSES, carrierTable, carrierCensus, outsideTheTable, sSealedCarriers, rotateNodeKey, sSlotsPath,
   type CustodyHomes, type CustodyClass,
 } from "../src/vault-carriers.js";
 import { custodyRootCarrier } from "../src/custody-root.js";
 import {
-  bindSlot, commitSlotTree, mintVk, openSealedCarrier, openVk, decodeSlotTree, writeSealedCarrier, CensusRefusal,
-  TreeVkRefusal, openOutboxParcel, readOutboxKey, restDigest, sealOutboxParcel, type SealedCarrier, type VesselKey,
+  bindSlot, commitSlotTree, mintTreeKey, openSealedCarrier, openTreeKey, decodeSlotTree, writeSealedCarrier, CensusRefusal,
+  TreeKeyRefusal, openOutboxParcel, readOutboxKey, restDigest, sealOutboxParcel, type SealedCarrier, type TreeKey,
 } from "@lararium/mesh";
 import { ScratchCustodyIo, scratchHomes } from "./custody-io-fixture.js";
 import { seatScratchCustody } from "./custody-seat-fixture.js";
@@ -261,39 +261,39 @@ describe("the carrier table", () => {
       sow(homes, SOWN);
       const before = treeHash(root);
       carrierCensus(homes);
-      vkSealedCarriers(homes);
+      sSealedCarriers(homes);
       expect(treeHash(root)).toBe(before);
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 
 });
 
-describe("the VK rotation reads its carriers from the table", { timeout: 30_000 }, () => {
+describe("the S key rotation reads its carriers from the table", { timeout: 30_000 }, () => {
   const right = { kind: "passphrase", passphrase: "the hearth remembers" } as const;
   const text = (v: string): Uint8Array => new TextEncoder().encode(v);
   const str = (b: Uint8Array): string => new TextDecoder().decode(b);
 
-  /** A founded scratch vessel with two VK-sealed identity carriers, written through the one writer. */
-  async function founded(): Promise<{ io: ScratchCustodyIo; homes: CustodyHomes; vk: VesselKey; drop: () => void; sealed: SealedCarrier[] }> {
+  /** A founded scratch vessel with two S-sealed identity carriers, written through the one writer. */
+  async function founded(): Promise<{ io: ScratchCustodyIo; homes: CustodyHomes; treeKey: TreeKey; drop: () => void; sealed: SealedCarrier[] }> {
     const { homes, drop } = scratchHomes();
     const io = new ScratchCustodyIo(homes);
-    const vk = mintVk();
-    const treePath = vkSlotsPath(homes.identity);
-    await commitSlotTree({ io, path: treePath, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [right] }), carriers: vkSealedCarriers(homes) });
+    const treeKey = mintTreeKey();
+    const treePath = sSlotsPath(homes.identity);
+    await commitSlotTree({ io, path: treePath, expected: null, treeKey, tree: bindSlot(null, treeKey, { t: 1, pins: [right] }), carriers: sSealedCarriers(homes) });
     const sealed: SealedCarrier[] = [
       custodyRootCarrier(homes.identity),
       { name: "identity/.persona-enroll-pending.json", path: join(homes.identity, ".persona-enroll-pending.json"), keyClass: "relation" },
     ];
-    for (const c of sealed) await writeSealedCarrier({ io, vk, treePath, carrier: c, plaintext: text(`${c.name}-v1`) });
+    for (const c of sealed) await writeSealedCarrier({ io, treeKey, treePath, carrier: c, plaintext: text(`${c.name}-v1`) });
     sow(homes, { "nexus/transition-pending.json": "{}", "nexus/transitions.json": "[]" });
-    return { io, homes, vk, drop, sealed };
+    return { io, homes, treeKey, drop, sealed };
   }
 
-  test("every hot and cold carrier standing names its VK-sealed carrier by home and file; plain rows stay out", async () => {
+  test("every hot and cold carrier standing names its S-sealed carrier by home and file; plain rows stay out", async () => {
     const v = await founded();
     try {
       sow(v.homes, { "identity/.vessel-key-joshua.json": "{}", "identity/.vessel-card-joshua.json": "{}", "vessel/sealed/lockbox/aa.bb": "x" });
-      const carriers = vkSealedCarriers(v.homes);
+      const carriers = sSealedCarriers(v.homes);
       expect(carriers.map((c) => c.name).sort()).toEqual(v.sealed.map((c) => c.name).sort());
       expect(carriers.some((c) => c.name.includes("/hosting-h"))).toBe(false); // hosting belongs to a face key
       expect(carriers.find((c) => c.name === "identity/gate-root.bin")).toEqual(custodyRootCarrier(v.homes.identity));
@@ -301,17 +301,17 @@ describe("the VK rotation reads its carriers from the table", { timeout: 30_000 
     } finally { v.drop(); }
   });
 
-  test("CONTROL (P5-2): rotation re-seals VK carriers and preserves plain seal rows", async () => {
+  test("CONTROL (P5-2): rotation re-seals S key carriers and preserves plain seal rows", async () => {
     const v = await founded();
     try {
       const plainBefore = ["transition-pending.json", "transitions.json"].map((file) => readFileSync(join(v.homes.seal, file)));
-      const newVk = mintVk();
-      await rotateVesselVk({ io: v.io, homes: v.homes, oldVk: v.vk, newVk, slots: [{ t: 1, pins: [right] }] });
-      const tree = decodeSlotTree(await v.io.read(vkSlotsPath(v.homes.identity)));
-      const o = tree.reading === "readable" ? openVk(tree.tree, [right]) : null;
+      const newTreeKey = mintTreeKey();
+      await rotateNodeKey({ io: v.io, homes: v.homes, oldTreeKey: v.treeKey, newTreeKey, slots: [{ t: 1, pins: [right] }] });
+      const tree = decodeSlotTree(await v.io.read(sSlotsPath(v.homes.identity)));
+      const o = tree.reading === "readable" ? openTreeKey(tree.tree, [right]) : null;
       expect(o?.reading).toBe("opens");
       for (const c of v.sealed) {
-        const r = await openSealedCarrier({ io: v.io, vk: (o as { vk: VesselKey }).vk, carrier: c });
+        const r = await openSealedCarrier({ io: v.io, treeKey: (o as { treeKey: TreeKey }).treeKey, carrier: c });
         expect(r.reading === "opens" && str(r.plaintext), c.name).toBe(`${c.name}-v1`);
       }
       for (const [i, file] of ["transition-pending.json", "transitions.json"].entries())
@@ -319,7 +319,7 @@ describe("the VK rotation reads its carriers from the table", { timeout: 30_000 
     } finally { v.drop(); }
   });
 
-  test("RED (the outbox): VK rotation leaves the face-sealed key and parcel byte-identical; the face still opens both", async () => {
+  test("RED (the outbox): S key rotation leaves the face-sealed key and parcel byte-identical; the face still opens both", async () => {
     const v = await seatScratchCustody("carrier-outbox");
     try {
       const outboxKey = await openOutboxKey(0);
@@ -330,10 +330,10 @@ describe("the VK rotation reads its carriers from the table", { timeout: 30_000 
       const parcelPath = join(v.homes.storage, "sealed", "outbox", `${"ab".repeat(16)}.${restDigest(parcel)}`);
       mkdirSync(dirname(parcelPath), { recursive: true });
       writeFileSync(parcelPath, parcel);
-      const names = vkSealedCarriers(v.homes).map((c) => c.name);
+      const names = sSealedCarriers(v.homes).map((c) => c.name);
       expect(names.some((n) => n.endsWith(`/${outboxKeyFile(0)}`))).toBe(false);
       expect(names.some((n) => n.includes("sealed/outbox"))).toBe(false);
-      await rotateVesselVk({ io: v.io, homes: v.homes, oldVk: v.vk, newVk: mintVk(), slots: [{ t: 1, pins: [right] }] });
+      await rotateNodeKey({ io: v.io, homes: v.homes, oldTreeKey: v.treeKey, newTreeKey: mintTreeKey(), slots: [{ t: 1, pins: [right] }] });
       expect(readFileSync(keyPath).equals(keyBefore)).toBe(true);
       expect(Array.from(readFileSync(parcelPath))).toEqual(Array.from(parcel));
       expect(Array.from(await openOutboxKey(0))).toEqual(Array.from(outboxKey));
@@ -341,27 +341,27 @@ describe("the VK rotation reads its carriers from the table", { timeout: 30_000 
     } finally { await v.drop(); }
   });
 
-  test("RED (P5-2): a VK-sealed file no row names refuses the rotation before any write, and every carrier still opens", async () => {
+  test("RED (P5-2): a S-sealed file no row names refuses the rotation before any write, and every carrier still opens", async () => {
     const v = await founded();
     try {
       const stray: SealedCarrier = { name: "identity/stray.bin", path: join(v.homes.identity, "stray.bin") };
-      await writeSealedCarrier({ io: v.io, vk: v.vk, treePath: vkSlotsPath(v.homes.identity), carrier: stray, plaintext: text("x") });
+      await writeSealedCarrier({ io: v.io, treeKey: v.treeKey, treePath: sSlotsPath(v.homes.identity), carrier: stray, plaintext: text("x") });
       const before = treeHash(v.homes.identity);
-      const err = await rotateVesselVk({ io: v.io, homes: v.homes, oldVk: v.vk, newVk: mintVk(), slots: [{ t: 1, pins: [right] }] })
+      const err = await rotateNodeKey({ io: v.io, homes: v.homes, oldTreeKey: v.treeKey, newTreeKey: mintTreeKey(), slots: [{ t: 1, pins: [right] }] })
         .catch((e: unknown) => e);
       expect(err).toBeInstanceOf(CensusRefusal);
       expect((err as CensusRefusal).uncovered).toEqual([stray.path]);
       expect(treeHash(v.homes.identity)).toBe(before);
-      for (const c of v.sealed) expect((await openSealedCarrier({ io: v.io, vk: v.vk, carrier: c })).reading).toBe("opens");
+      for (const c of v.sealed) expect((await openSealedCarrier({ io: v.io, treeKey: v.treeKey, carrier: c })).reading).toBe("opens");
     } finally { v.drop(); }
   });
 
-  test("RED (P5-1): a stranger VK rotates nothing", async () => {
+  test("RED (P5-1): a stranger S key rotates nothing", async () => {
     const v = await founded();
     try {
-      await expect(rotateVesselVk({ io: v.io, homes: v.homes, oldVk: mintVk(), newVk: mintVk(), slots: [{ t: 1, pins: [right] }] }))
-        .rejects.toBeInstanceOf(TreeVkRefusal);
-      for (const c of v.sealed) expect((await openSealedCarrier({ io: v.io, vk: v.vk, carrier: c })).reading).toBe("opens");
+      await expect(rotateNodeKey({ io: v.io, homes: v.homes, oldTreeKey: mintTreeKey(), newTreeKey: mintTreeKey(), slots: [{ t: 1, pins: [right] }] }))
+        .rejects.toBeInstanceOf(TreeKeyRefusal);
+      for (const c of v.sealed) expect((await openSealedCarrier({ io: v.io, treeKey: v.treeKey, carrier: c })).reading).toBe("opens");
     } finally { v.drop(); }
   });
 });
@@ -414,17 +414,17 @@ describe("the census names every private file outside the table", () => {
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 
-  test("RED: a file under the vessel key's seal that no row names reads `vk-seal`, whatever its mode", async () => {
+  test("RED: a file under the vessel key's seal that no row names reads `s-seal`, whatever its mode", async () => {
     const { homes, drop } = scratchHomes();
     try {
       const io = new ScratchCustodyIo(homes);
-      const vk = mintVk();
-      const treePath = vkSlotsPath(homes.identity);
-      await commitSlotTree({ io, path: treePath, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [{ kind: "passphrase", passphrase: "the hearth remembers" }] }), carriers: vkSealedCarriers(homes) });
+      const treeKey = mintTreeKey();
+      const treePath = sSlotsPath(homes.identity);
+      await commitSlotTree({ io, path: treePath, expected: null, treeKey, tree: bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "the hearth remembers" }] }), carriers: sSealedCarriers(homes) });
       const stray: SealedCarrier = { name: "storage/stray.bin", path: join(homes.storage, "stray.bin") };
-      await writeSealedCarrier({ io, vk, treePath, carrier: stray, plaintext: new TextEncoder().encode("x") });
+      await writeSealedCarrier({ io, treeKey, treePath, carrier: stray, plaintext: new TextEncoder().encode("x") });
       chmodSync(stray.path, 0o644);
-      expect(outsideTheTable(homes).map((o) => [o.home, o.file, o.why])).toEqual([["storage", "stray.bin", "vk-seal"]]);
+      expect(outsideTheTable(homes).map((o) => [o.home, o.file, o.why])).toEqual([["storage", "stray.bin", "s-seal"]]);
     } finally { drop(); }
   });
 

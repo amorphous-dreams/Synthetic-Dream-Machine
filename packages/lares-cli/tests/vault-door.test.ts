@@ -113,7 +113,7 @@ describe("vault door — one face's own tree", () => {
     const u = await unlockCustody({ io, homes, credentials: [{ kind: "passphrase", passphrase: PW }] });
     if (u.reading !== "opens") throw new Error("node key did not open");
     const holder = makeCustodyHolder({ io, homes });
-    await holder.adopt(u.vk);
+    await holder.adopt(u.treeKey);
     const { fcid } = await holder.foundFace({ group: "1".repeat(64), slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: PW }] }] });
     await holder.lock();
     return fcid;
@@ -177,7 +177,7 @@ describe("vault door — status, unlock, bind, unbind", () => {
     const two = await slots();
     expect(two).toHaveLength(2);
 
-    // unbind WITHOUT --rotate: the offer rides the result every time; the carriers keep their VK.
+    // unbind WITHOUT --rotate: the offer rides the result every time; the carriers keep their S key.
     out.length = 0;
     answers.push("p", PW, "n");
     expect(await run("unbind", two[1]!.id)).toBe(0);
@@ -254,7 +254,7 @@ describe("vault door — status, unlock, bind, unbind", () => {
     const io = new FsCustodyIo(homes);
     const u = await unlockCustody({ io, homes, credentials: [{ kind: "passphrase", passphrase: PW }] });
     if (u.reading !== "opens") throw new Error("the fixture's own route opens");
-    await writeSealedCarrier({ io, vk: u.vk, treePath: join(homes.identity, "s-slots.bin"), carrier: { name: "storage/stray.bin", path: join(homes.storage, "stray.bin") }, plaintext: new TextEncoder().encode("x") });
+    await writeSealedCarrier({ io, treeKey: u.treeKey, treePath: join(homes.identity, "s-slots.bin"), carrier: { name: "storage/stray.bin", path: join(homes.storage, "stray.bin") }, plaintext: new TextEncoder().encode("x") });
     const before = tree(root);
     out.length = 0;
     answers.push("p", PW, "n", PW);

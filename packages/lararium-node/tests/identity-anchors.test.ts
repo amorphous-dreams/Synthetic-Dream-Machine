@@ -8,7 +8,7 @@
  *   A3  a row that opens and holds another shape refuses by name.        control: the well-shaped row reads
  *   A4  a torn row refuses `torn`; a BARE row (plain bytes at the path) refuses `bare`. Neither reads null.
  *   A5  at the floor (the holder locked) every reader and writer refuses `CustodyLocked`, and no file moves.
- *   A6  THE TAMPER PROBE: a write under key A lands; a holder over key B refuses the write (`TreeVkRefusal`), the
+ *   A6  THE TAMPER PROBE: a write under key A lands; a holder over key B refuses the write (`TreeKeyRefusal`), the
  *       standing bytes never move, and they still open under A. The keyhive archive, a veil archive and an anchors
  *       row each carry the probe.
  *   A7  one face's veil archive rests in its own row: three faces keep three rows, each reads its own bytes, and
@@ -21,7 +21,7 @@ import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { mintFck, mintVk, readFckCarrier, readVkCarrier, writeFaceCarrier, TreeVkRefusal, type DeviceDelegationTiddler, type LarDid } from "@lararium/mesh";
+import { mintFck, mintTreeKey, readFckCarrier, readSCarrier, writeFaceCarrier, TreeKeyRefusal, type DeviceDelegationTiddler, type LarDid } from "@lararium/mesh";
 import {
   persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, persistIdentityArchive, loadIdentityArchive,
   persistVeilArchive, loadVeilArchive, veilArchivePath, veilArchiveFile, archivePath, type IdentityAnchors,
@@ -132,13 +132,13 @@ describe("the identity home's sealed family", () => {
     // holder's own door refuses a key the custody root does not open under, so B writes through the sealed writer
     // directly, exactly as a holder that kept a retired key would.
     const { writeSealedCarrier } = await import("@lararium/mesh");
-    const { vkSlotsPath } = await import("../src/vault-carriers.js");
-    const keyB = mintVk();
+    const { sSlotsPath } = await import("../src/vault-carriers.js");
+    const keyB = mintTreeKey();
     for (const f of files) {
       await expect(writeSealedCarrier({
-        io: c.io, vk: keyB, treePath: vkSlotsPath(c.homes.identity),
+        io: c.io, treeKey: keyB, treePath: sSlotsPath(c.homes.identity),
         carrier: { name: `identity/${f}`, path: at(f), keyClass: null }, plaintext: bytesOf("under-B"),
-      })).rejects.toThrow(TreeVkRefusal);
+      })).rejects.toThrow(TreeKeyRefusal);
     }
     // A stranger face key cannot replace either face row under its own face tree.
     for (const [file, path, rowName] of [
@@ -150,7 +150,7 @@ describe("the identity home's sealed family", () => {
       await expect(writeFaceCarrier({
         io: c.io, key: mintFck(), treePath: faceTreePath(c.homes.identity, fcid),
         carrier: faceCarrierFor(c.homes, fcid, file, row), plaintext: bytesOf("under-B"),
-      })).rejects.toThrow(TreeVkRefusal);
+      })).rejects.toThrow(TreeKeyRefusal);
     }
     await expect(makeCustodyHolder({ io: c.io, homes: c.homes }).adopt(keyB)).rejects.toThrow(/custody root reads key-fails/);
     files.forEach((f, i) => expect(readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : f.startsWith("anchors-") ? handleRowPathIn(c.homes.identity, f) : at(f)).equals(standing[i]!), `${f} never moved`).toBe(true));
@@ -182,7 +182,7 @@ describe("the identity home's sealed family", () => {
     const marker = bytesOf("PLAINTEXT-MARKER-place-archive");
     await persistIdentityArchive(marker);
     const rest = readFileSync(archivePath());
-    expect(readVkCarrier(rest)).toBe("sealed");
+    expect(readSCarrier(rest)).toBe("sealed");
     expect(rest.includes(Buffer.from("PLAINTEXT-MARKER"))).toBe(false);
     expect(Array.from((await loadIdentityArchive())!)).toEqual(Array.from(marker));
   });

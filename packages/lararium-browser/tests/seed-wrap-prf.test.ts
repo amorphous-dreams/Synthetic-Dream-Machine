@@ -12,7 +12,7 @@ import {
   detectPrf, wrapSeed, unwrapSeed, SeedWrapRefused, SEED_WRAP_HKDF_INFO,
   type PrfHost, type SeedWrapRecord,
 } from "../src/seed-wrap-prf.js";
-import { VK_SLOT_WRAP_INFO } from "@lararium/mesh";
+import { SLOT_WRAP_INFO } from "@lararium/mesh";
 
 const SEED   = new Uint8Array(32).map((_, i) => (i * 7 + 3) & 0xff);
 const PRF_A  = new Uint8Array(32).fill(0xa5);
@@ -57,7 +57,7 @@ describe("the PRF wrap — round-trip under one PRF output, refusal under anothe
   });
 
   test("the HKDF info is its OWN separated string — never an existing seal's", () => {
-    expect(SEED_WRAP_HKDF_INFO).not.toBe(VK_SLOT_WRAP_INFO);
+    expect(SEED_WRAP_HKDF_INFO).not.toBe(SLOT_WRAP_INFO);
     expect(SEED_WRAP_HKDF_INFO).toMatch(/seed-wrap-prf/);
   });
 

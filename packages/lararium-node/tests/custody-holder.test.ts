@@ -3,11 +3,11 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { TreeVkRefusal, type Credential } from "@lararium/mesh";
+import { TreeKeyRefusal, type Credential } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
 import { makeCustodyHolder, seatFaceAutoFounder, CustodyLocked, CustodyRowUnknown } from "../src/custody-holder.js";
-import { vkSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
+import { sSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
 import { handleRowPathIn } from "./face-paths.js";
 
 // Every unlock runs the slot's own key derivation, priced to cost a guesser; the suite waits it out.
@@ -65,7 +65,7 @@ describe("CustodyHolder", () => {
 
   test("H2 the fourth guess does not read the slot tree; two misses still permit success", async () => {
     const h = await found();
-    const target = vkSlotsPath(homes.identity);
+    const target = sSlotsPath(homes.identity);
     let reads = 0;
     const read = io.read.bind(io);
     io.read = async (path) => { if (path === target) reads++; return read(path); };
@@ -79,7 +79,7 @@ describe("CustodyHolder", () => {
     expect((await control.unlock([pass(RIGHT)])).reading).toBe("opens");
   });
 
-  test("H3 a tree for another VK refuses without changing the row or leaving a sidecar", async () => {
+  test("H3 a tree for another S key refuses without changing the row or leaving a sidecar", async () => {
     const h = await found();
     const b = stage("h3-b");
     await foundCustody({ io: b.io, homes: b.homes, slots: [{ t: 1, pins: [pass(RIGHT)] }] });
@@ -89,12 +89,12 @@ describe("CustodyHolder", () => {
     await h.writeRow("identity", file, first);
     const path = join(homes.identity, file);
     const kept = readFileSync(path);
-    const tree = readFileSync(vkSlotsPath(homes.identity));
-    writeFileSync(vkSlotsPath(homes.identity), readFileSync(vkSlotsPath(b.homes.identity)));
-    await expect(h.writeRow("identity", file, new TextEncoder().encode('{"second":true}'))).rejects.toBeInstanceOf(TreeVkRefusal);
+    const tree = readFileSync(sSlotsPath(homes.identity));
+    writeFileSync(sSlotsPath(homes.identity), readFileSync(sSlotsPath(b.homes.identity)));
+    await expect(h.writeRow("identity", file, new TextEncoder().encode('{"second":true}'))).rejects.toBeInstanceOf(TreeKeyRefusal);
     expect(readFileSync(path).equals(kept)).toBe(true);
     expect(existsSync(`${path}.s-sealing`)).toBe(false);
-    writeFileSync(vkSlotsPath(homes.identity), tree);
+    writeFileSync(sSlotsPath(homes.identity), tree);
     const fresh = makeCustodyHolder({ io, homes });
     await fresh.unlock([pass(RIGHT)]);
     const got = await fresh.readRow("identity", file);
@@ -185,7 +185,7 @@ describe("CustodyHolder.proves — a person stands at an unlocked vessel", () =>
     expect(await h.proves([pass("holder-wrong-P2-a")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 2 });
     expect(await h.proves([pass("holder-wrong-P2-b")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 1 });
     expect(await h.proves([pass("holder-wrong-P2-c")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 0 });
-    const target = vkSlotsPath(homes.identity);
+    const target = sSlotsPath(homes.identity);
     let reads = 0;
     const read = io.read.bind(io);
     io.read = async (path) => { if (path === target) reads++; return read(path); };
@@ -216,13 +216,13 @@ describe("CustodyHolder.proves — a person stands at an unlocked vessel", () =>
     // Another vessel's tree, founded under another route, laid over this vessel's tree file.
     const other = stage("p5-other");
     await foundCustody({ ...other, slots: [{ t: 1, pins: [pass("the-other-vessels-route")] }] });
-    const mine = readFileSync(vkSlotsPath(homes.identity));
-    writeFileSync(vkSlotsPath(homes.identity), readFileSync(vkSlotsPath(other.homes.identity)));
+    const mine = readFileSync(sSlotsPath(homes.identity));
+    writeFileSync(sSlotsPath(homes.identity), readFileSync(sSlotsPath(other.homes.identity)));
     // THE BYTES MOVED: the tree at this vessel's path now reads as the other vessel's.
-    expect(readFileSync(vkSlotsPath(homes.identity)).equals(mine)).toBe(false);
+    expect(readFileSync(sSlotsPath(homes.identity)).equals(mine)).toBe(false);
     expect(await h.proves([pass("the-other-vessels-route")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 2 });
     // CONTROL: with its own tree back, its own route proves.
-    writeFileSync(vkSlotsPath(homes.identity), mine);
+    writeFileSync(sSlotsPath(homes.identity), mine);
     expect(await h.proves([pass(RIGHT)])).toEqual({ reading: "proves" });
   });
 

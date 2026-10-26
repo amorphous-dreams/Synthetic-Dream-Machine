@@ -32,14 +32,14 @@ export function custodyReading(root, env = {}) {
 export function custodyBreaches(custody) {
   const out = [];
   for (const r of custody.rows) {
-    // A face row rests under its own face custody key: sealed like a VK row, and it names no bare law.
-    const underVk = r.custody === "serving" || r.custody === "hot" || r.custody === "cold" || r.custody === "face-hot" || r.custody === "face-cold";
+    // A face row rests under its own face custody key: sealed like an S key row, and it names no bare law.
+    const underS = r.custody === "serving" || r.custody === "hot" || r.custody === "cold" || r.custody === "face-hot" || r.custody === "face-cold";
     // An outbox parcel rests under the outbox key the vessel key wraps: under a key, yet framed by its own seal.
-    const underKey = underVk || r.custody === "outbox";
-    if (underVk && r.reading !== "sealed") out.push(`unsealed: ${r.home}/${r.file} (${r.custody}) reads ${r.reading}`);
+    const underKey = underS || r.custody === "outbox";
+    if (underS && r.reading !== "sealed") out.push(`unsealed: ${r.home}/${r.file} (${r.custody}) reads ${r.reading}`);
     if (underKey !== (r.bare === null)) out.push(`no law: ${r.home}/${r.file} (${r.custody}) ${underKey ? "names a law for resting bare" : "rests outside the vessel key and names no law"}`);
-    if (underVk && !r.fault && r.reading !== "sealed") out.push(`fault misread: ${r.home}/${r.file} (${r.custody}, ${r.reading}) reads fault=${r.fault}`);
-    if (!underVk && r.fault) out.push(`fault: ${r.home}/${r.file} (${r.custody}) reads ${r.reading} and breaks its row's law`);
+    if (underS && !r.fault && r.reading !== "sealed") out.push(`fault misread: ${r.home}/${r.file} (${r.custody}, ${r.reading}) reads fault=${r.fault}`);
+    if (!underS && r.fault) out.push(`fault: ${r.home}/${r.file} (${r.custody}) reads ${r.reading} and breaks its row's law`);
   }
   for (const o of custody.outside) out.push(`outside: ${o.home}/${o.file} (${o.why})`);
   return out;

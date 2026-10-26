@@ -1,7 +1,7 @@
 /**
  * node-walk-store — a walk record rests as one row per hearth under the vessel key, and its acts ride the custody door.
  *
- *   W1  a record rests as a VK-sealed row named by a digest of the hearth's gate key; its relay, its invite and a
+ *   W1  a record rests as a S-sealed row named by a digest of the hearth's gate key; its relay, its invite and a
  *       carried document's key appear nowhere in the file, and it reads back identically and lists.
  *                                                 control: nothing at a hearth's path reads as no walk there
  *   W2  RED: A WRONG KEY REPLACES NO RECORD. A row another vessel sealed refuses the read, the list and the update
@@ -290,7 +290,7 @@ describe("a walk record at rest", () => {
     expect(faults.map((f) => f.at)).toEqual(["grant"]);
     expect(faults[0]!.error).toBeInstanceOf(CustodyLocked);
     expect(represented).toHaveLength(0);
-    await c.holder.adopt(c.vk);                                                    // CONTROL: unlocked, the same grant keeps
+    await c.holder.adopt(c.treeKey);                                                    // CONTROL: unlocked, the same grant keeps
     await c.holder.unlockFace({ ordinal: 0 }, [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
     expect((await store().read(GATE))!.grant).toBeUndefined();
     await frame();

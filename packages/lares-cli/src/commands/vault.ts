@@ -14,7 +14,7 @@ import {
   FsCustodyIo, unlockCustody, bindCustodySlot, unbindCustodySlot, custodyStatus, bindFaceSlot, unbindFaceSlot, openFaceTree, readFaceIndexSync,
   type CustodyHomes, type CustodyStatus, type CustodyStatusRow,
 } from "@lararium/node";
-import { openVk, decodeSlotTree, type Credential, type SlotSpec } from "@lararium/mesh";
+import { openTreeKey, decodeSlotTree, type Credential, type SlotSpec } from "@lararium/mesh";
 import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
 import { gatherBundleRoute, gatherCards, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
 import { backupLines, cutBundleToFile } from "../vault-backup.js";
@@ -35,7 +35,7 @@ class UsageError extends Error {}
 
 /** The refusals the custody door names: each leads its error line, so a caller reads the class, not a guess. */
 const NAMED_REFUSALS: ReadonlySet<string> = new Set([
-  "OccupiedStoreRefusal", "CustodyRefusal", "TreeVkRefusal", "CensusRefusal",
+  "OccupiedStoreRefusal", "CustodyRefusal", "TreeKeyRefusal", "CensusRefusal",
   "CustodyLockRefused", "CustodyFoundingRefused", "CredentialTtyRefusal", "RotationSlotsRefused",
 ]);
 
@@ -120,12 +120,12 @@ function rowLine(r: CustodyStatusRow): string {
 }
 
 /**
- * The "custody (VK)" section: the slot tree, then ONE reading of every standing file the carrier table names, then
+ * The "custody (S key)" section: the slot tree, then ONE reading of every standing file the carrier table names, then
  * every private file it does not name. A row outside the vessel key prints the law it rests bare under; a hot or
  * cold row that reads anything but `sealed` prints as a fault.
  */
 function printCustody(c: CustodyStatus): void {
-  console.log("custody (VK):");
+  console.log("custody (S key):");
   if (c.tree.reading === "absent") console.log("  slot tree      absent — no s-slots.bin stands (a founding seals custody from birth)");
   else if (c.tree.reading === "unreadable") console.log(`  slot tree      UNREADABLE — ${c.tree.why}`);
   else {
@@ -410,7 +410,7 @@ async function vaultBind(args: ParsedArgs): Promise<number> {
   const u = await openOrRefuse(args, "bind", homes, io, creds);
   if (!u) return 1;
   const spec = await gatherNewSlot("lares vault bind", args.flags["paper"] ? "paper" : "passphrase");
-  const out = await bindCustodySlot({ io, homes, vk: u.vk, spec });
+  const out = await bindCustodySlot({ io, homes, treeKey: u.treeKey, spec });
   emit(args, {
     ok: true, data: { slotId: out.slotId, slots: out.tree.slots.length },
     human: () => console.log(`bound: slot ${out.slotId} now opens the vessel key (${out.tree.slots.length} slot(s) stand).`),
@@ -433,7 +433,7 @@ async function vaultUnbindFace(args: ParsedArgs, homes: CustodyHomes, io: FsCust
     staying = [];
     for (const sl of tree.tree.slots.filter((x) => x.id !== slotId)) {
       const got = await gatherStayingSlot({ id: sl.id, t: sl.t, pins: sl.pins.map((p) => p.kind) });
-      const proof = openVk(tree.tree, got.credentials);
+      const proof = openTreeKey(tree.tree, got.credentials);
       if (proof.reading !== "opens" || proof.slot !== sl.id) throw new UsageError(`what was typed for slot ${sl.id} does not open it; nothing was changed`);
       staying.push(got.spec);
     }
@@ -459,8 +459,8 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
   const u = await openOrRefuse(args, "unbind", homes, io, creds);
   if (!u) return 1;
 
-  // GATHER EVERY STAYING SLOT'S ROUTE BEFORE ANY BYTE MOVES: a rotation mints a new VK and binds each slot that stays
-  // over it, so a typo found after a write would leave the tree on a VK nobody holds.
+  // GATHER EVERY STAYING SLOT'S ROUTE BEFORE ANY BYTE MOVES: a rotation mints a new S key and binds each slot that stays
+  // over it, so a typo found after a write would leave the tree on an S key nobody holds.
   let staying: SlotSpec[] | undefined;
   if (rotate) {
     const status = await custodyStatus({ io, homes });
@@ -470,7 +470,7 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
     staying = [];
     for (const sl of status.tree.slots.filter((x) => x.id !== slotId)) {
       const got = await gatherStayingSlot(sl);
-      const proof = tree.reading === "readable" ? openVk(tree.tree, got.credentials) : null;
+      const proof = tree.reading === "readable" ? openTreeKey(tree.tree, got.credentials) : null;
       if (!proof || proof.reading !== "opens" || proof.slot !== sl.id) {
         throw new UsageError(`what was typed for slot ${sl.id} does not open it; nothing was changed`);
       }
@@ -480,7 +480,7 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
 
   // ONE ACT. With --rotate the removal and the rotation land together: the rotation's census and its opening of
   // every carrier run before any byte moves, so a carrier that refuses the rotation leaves the slot bound.
-  const out = await unbindCustodySlot({ io, homes, vk: u.vk, slotId, ...(staying ? { rotate: staying } : {}) });
+  const out = await unbindCustodySlot({ io, homes, treeKey: u.treeKey, slotId, ...(staying ? { rotate: staying } : {}) });
   const say = (line: string): void => { if (!wantsJson(args)) console.log(line); };
   say(`unbound: slot ${slotId} no longer opens the vessel key (${out.tree.slots.length} slot(s) stand).`);
   if (out.rotated) {

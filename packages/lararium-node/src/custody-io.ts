@@ -10,7 +10,7 @@
  *               atomic step.
  *   `remove`  — `rm -f`: nothing standing is no fault.
  *   `list`    — EVERY regular file under EVERY home, recursively, as absolute paths. The founding census and the
- *               rotation census read it, and both refuse on a VK-sealed file no row names; a list that skipped a
+ *               rotation census read it, and both refuse on a S-sealed file no row names; a list that skipped a
  *               subtree would let a stray seal hide there. A symlink is not followed (it lists as nothing, and its
  *               target is never read through it); an absent home lists nothing.
  *   `exclusive` — the ONE custody holder, across processes. A queue serializes callers inside this process; a socket

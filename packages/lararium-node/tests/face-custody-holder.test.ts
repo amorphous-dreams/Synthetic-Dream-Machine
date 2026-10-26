@@ -107,7 +107,7 @@ describe("a face's handle index is its ordinal", () => {
     expect(holder.unlockedFaces()).toEqual([]);
     // the honest row: lock was dropped, so rewrite under a fresh holder view of the same face
     const second = makeCustodyHolder({ io: new FsCustodyIo(seat!.homes), homes: seat!.homes });
-    await second.adopt(seat!.vk);
+    await second.adopt(seat!.treeKey);
     // the index-mismatching row stays; swap in the honest one by reaching the face through its own key
     expect((await second.unlockFace({ fcid: a.fcid }, cred("route-a"))).reading).toBe("index-mismatch");
   });

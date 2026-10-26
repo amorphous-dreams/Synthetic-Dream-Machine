@@ -18,7 +18,7 @@
  *
  * ── THE INFO IS ITS OWN ──────────────────────────────────────────────────────────────────────────
  * `SEED_WRAP_HKDF_INFO` is a NEW separated string (the crypto-spine ruling: the HKDF infos ARE the separation;
- * never reuse another seal's, including `VK_SLOT_WRAP_INFO`). It mints in the mesh domain
+ * never reuse another seal's, including `SLOT_WRAP_INFO`). It mints in the mesh domain
  * registry (`domains.ts`) beside every other separation, so one file names them all and the distinctness
  * witness there reads it.
  *

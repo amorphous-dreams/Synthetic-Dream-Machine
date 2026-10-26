@@ -20,7 +20,7 @@ import {
   type ReserveTransition,
 } from "@lararium/node";
 import {
-  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealLineageHead, readVkCarrier,
+  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealLineageHead, readSCarrier,
 } from "@lararium/mesh";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 import { sealRite, type SealRite } from "./seal-rite-fixture.js";

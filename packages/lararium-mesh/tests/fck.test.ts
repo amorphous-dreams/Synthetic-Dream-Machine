@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { faceCarrierContext, mintFck, openUnderFck, sealUnderFck, type FaceCarrier } from "../src/fck.js";
 import { FCK_SEAL_MAGIC, readFckCarrier } from "../src/fck-envelope.js";
-import { mintVk, sealUnderVk } from "../src/vk.js";
+import { mintTreeKey, sealUnderS } from "../src/tree-key.js";
 import { bytesEqual } from "../src/crypto.js";
 
 const text = (s: string) => new TextEncoder().encode(s);
@@ -29,7 +29,7 @@ describe("face custody context", () => {
     expect(openUnderFck(key, a, tampered).reading).toBe("key-fails");
     expect(bytesEqual(faceCarrierContext(a), faceCarrierContext({ ...a, path: "/elsewhere" }))).toBe(true);
   });
-  test("RED: a VK seal remains unopenable to a face key", () => {
-    expect(openUnderFck(mintFck(), a, sealUnderVk(mintVk(), a.name, text("v"))).reading).toBe("unopenable");
+  test("RED: a tree key seal remains unopenable to a face key", () => {
+    expect(openUnderFck(mintFck(), a, sealUnderS(mintTreeKey(), a.name, text("v"))).reading).toBe("unopenable");
   });
 });

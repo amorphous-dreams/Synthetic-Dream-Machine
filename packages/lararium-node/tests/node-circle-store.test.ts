@@ -153,15 +153,15 @@ describe("the key and the floor", () => {
     expect(readFileSync(at(FILE)).equals(before)).toBe(true);
   });
 
-  test("C8 a VK rotation leaves the face book sealed and readable under its face key", async () => {
+  test("C8 an S key rotation leaves the face book sealed and readable under its face key", async () => {
     const { book, nyms } = await bookOf(1);
     await saveNodeHandleBook(0, book);
     const standing = readFileSync(at(FILE));
-    const rotated = await rotateCustody({ io: c.io, homes: c.homes, oldVk: c.vk, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
+    const rotated = await rotateCustody({ io: c.io, homes: c.homes, oldTreeKey: c.treeKey, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
     expect(readFileSync(at(FILE)).equals(standing)).toBe(true);
     expect((await loadNodeHandleBook(0)).nyms()).toEqual(nyms);
     const fresh = makeCustodyHolder({ io: c.io, homes: c.homes });
-    await fresh.adopt(rotated.vk);
+    await fresh.adopt(rotated.treeKey);
     await fresh.unlockFaces([{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
     seatCustody(fresh);
     expect((await loadNodeHandleBook(0)).nyms()).toEqual(nyms);

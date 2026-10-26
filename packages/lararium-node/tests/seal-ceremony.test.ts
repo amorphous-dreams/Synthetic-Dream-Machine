@@ -32,7 +32,7 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
-  NEXUS_DOC_DOMAIN, RESERVE_TRANSITION_DOMAIN, canonicalJsonBytes, charterInceptionBytes, charterInceptionImage, genesisOfInception, verifySealLineage, ed25519SignerFromSeed, hex, mintCharterEpoch, readVkCarrier,
+  NEXUS_DOC_DOMAIN, RESERVE_TRANSITION_DOMAIN, canonicalJsonBytes, charterInceptionBytes, charterInceptionImage, genesisOfInception, verifySealLineage, ed25519SignerFromSeed, hex, mintCharterEpoch, readSCarrier,
   rotateSealEpoch, sealKeySetHash, sealLineageHead, sealRollBytes, seatNextDigest, verifyEd25519,
   type NexusDoc, type SealEpoch,
 } from "@lararium/mesh";
@@ -263,7 +263,7 @@ describe("the growth rite's rows", () => {
     const opened = JSON.parse(plainPending.toString("utf8")) as { fromEpochCid: string; oldKeys: string[] };
     expect(opened.fromEpochCid).toBe(genesis.epochCid);
     expect(opened.oldKeys).toEqual(expect.arrayContaining(keys));
-    expect(readVkCarrier(plainPending)).toBe("bare");
+    expect(readSCarrier(plainPending)).toBe("bare");
     // The chain moves: the same three chairs, each on its committed next key (faces 0-2 hold a key in each set).
     const { next, keys: rolled } = await moveChain();
     const both = (i: number): string[] => [keys[i]!, rolled[i]!].sort();
@@ -281,7 +281,7 @@ describe("the growth rite's rows", () => {
     expect(await act("seat.held", { keys: rolled })).toEqual({ held: rolled });      // CONTROL: the seated keys stay
     expect(existsSync(pendingPath())).toBe(false);
     const keptBytes = readFileSync(keptPath());
-    expect(readVkCarrier(keptBytes)).toBe("bare");
+    expect(readSCarrier(keptBytes)).toBe("bare");
     const kept = JSON.parse(keptBytes.toString("utf8")) as ReserveTransition[];
     expect(keptBytes.includes(Buffer.from(sealed.transitionCid))).toBe(true);
     expect(kept).toHaveLength(1);

@@ -159,7 +159,7 @@ describe("the carriage at rest", () => {
     expect(await refusal(noteContact(AID, KEY, 5))).toBeInstanceOf(CustodyLocked);
     expect(await refusal(put(blob(5, 3)))).toBeInstanceOf(CustodyLocked);
     expect(await refusal(fetchCarried(AID, KEY, doc.cid))).toBeInstanceOf(CustodyLocked);
-    await c.holder.adopt(c.vk);
+    await c.holder.adopt(c.treeKey);
     const after = (await filesUnder(dir)).map((f) => readFileSync(f));
     expect(after.length).toBe(before.length);
     for (let i = 0; i < after.length; i++) expect(after[i]!.equals(before[i]!)).toBe(true);

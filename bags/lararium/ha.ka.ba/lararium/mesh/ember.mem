@@ -128,7 +128,7 @@ Each refusal names `serving-standing` and `lares vault unlock`.
 ''The serving key rests as a fifth custody class, `serving`'' (house ruling under the operator's delegation, #/rulings): the VK and the ember slots wrap it, and it seals the serving rows alone.
 
 * ''SK mints once, at the Stable founding, beside the custody root'': 32 random bytes from the founding's own source. No key derives it, and it derives from no other key.
-* ''SK rests in the serving tree'' (`sk-slots`, a `floor` row beside `vk-slots`): the same LUKS shape as the VK's tree (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-table">>), committed to the one SK it wraps by a keyed check, holding no version, counter or clock. It holds ONE VK entry and zero or more ember slots.
+* ''SK rests in the serving tree'' (`sk-slots`, a `floor` row beside `s-slots`): the same LUKS shape as the VK's tree (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-table">>), committed to the one SK it wraps by a keyed check, holding no version, counter or clock. It holds ONE VK entry and zero or more ember slots.
 * ''The VK entry'' wraps SK under a key the VK derives under the serving wrap's own registered domain. A human unlock opens the VK, then SK through this entry. The entry stands as the serving tree's human route: the tree refuses any change that would leave it without one, so an ember never stands as the only way to SK.
 * ''An ember slot'' wraps SK under a slot key split t-of-n across ember pins, as a passphrase slot splits across its pins. An ember slot holds ember pins alone; the VK's own tree refuses an ember pin (house reading under the ruling that the ember holds no share of the VK).
 * ''SK seals each serving row through the one sealed writer'', under associated data that names the row by home and file, as the VK seals every other row. No serving row opens under the VK, and no VK row opens under SK.
@@ -251,7 +251,7 @@ Each refusal names `serving-standing` and `lares vault unlock`.
 * ''The ember route and its exchange frame'' (train E): a floor route name, its pin, the dialer's fleet frontier with the edge acts it carries, the ask (slot, pin, blinded point, raise nonce, standing, ordinal) and the answer, inside the floor gate's encrypted channel. Live: a wire frame.
 * ''The ember withdrawal'' (train E): a deny-only act on the fleet's edge board, signed under its own registered domain by a device key the fleet's board shows standing, naming the ember by the digest its pin carries. It accretes as every edge act accretes (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/accretion">>) and never lifts. Live: a signed shape.
 * ''A hosting grant that checks under a public half'' (train H, the hosting act's re-cut, whose bytes change once before the fence): a grant a serving hearth checks with no key that could mint it. Live: a signed shape.
-* ''The serving tree's bytes and the pin record'' (train E): a bare row the census reads like `vk-slots`, holding the pins with their transport keys and device digests, and the `sk-rotation-owed` mark. Live: a stored shape.
+* ''The serving tree's bytes and the pin record'' (train E): a bare row the census reads like `s-slots`, holding the pins with their transport keys and device digests, and the `sk-rotation-owed` mark. Live: a stored shape.
 * ''The serving custody class and its rows'' (train E): the carrier table's class, the census, the rotation and `vault status` all read it.
 * ''The serving gate'' (train E): a third tier name in the route type, its bundle's derivation from SK under its own registered domain, and its pin, which moves only by a signed causal event or a verified key-history step. Live: a wire shape.
 * ''The freshness anchor's attestation'' (train E, for a hearth that holds a hardware-sealed key): the anchor an ember pins at the bind, and the fresh attestation an unattended ask carries. Live: a wire frame.
@@ -282,7 +282,7 @@ Each stands as a house ruling under the operator's delegation, with the conditio
 # ''The unattended answer'': the freshness anchor's attestation, for a hearth that holds a hardware-sealed key; every other hearth's slots answer on a confirm alone.
 # ''Canon'': the custody carrier's class table, the waking floor's expiry wording and the sealed store's key table.
 
-''What stands in code.'' The serving class names a row of the carrier table, and `sk-slots` stands as a `floor` row beside `vk-slots` (`packages/lararium-node/src/vault-carriers.ts`). The founding mints SK beside the custody root and writes the serving tree with its one VK entry; a human unlock opens the VK, then SK through that entry, and the custody holder holds SK beside the VK until a lock zero-fills both; a VK rotation re-wraps the entry and moves no serving row, and the next opening settles a re-wrap a fault left beside the tree (`packages/lararium-mesh/src/serving-key.ts`, `packages/lararium-node/src/custody-session.ts`). The serving tree refuses an ember slot and the `sk-rotation-owed` mark as fields it writes nothing into, until their builders land. No serving row stands yet, so the unlock reads SK and nothing else does. The slot tree holds passphrase and paper pins (`packages/lararium-mesh/src/keyslot.ts`); the floor key's door (`vesselFloorKeyDoor`) and the custody seat's door (`custodyGateDoor`) stand specified in code and reach no composer until the socket cutover.
+''What stands in code.'' The serving class names a row of the carrier table, and `sk-slots` stands as a `floor` row beside `s-slots` (`packages/lararium-node/src/vault-carriers.ts`). The founding mints SK beside the custody root and writes the serving tree with its one VK entry; a human unlock opens the VK, then SK through that entry, and the custody holder holds SK beside the VK until a lock zero-fills both; a VK rotation re-wraps the entry and moves no serving row, and the next opening settles a re-wrap a fault left beside the tree (`packages/lararium-mesh/src/serving-key.ts`, `packages/lararium-node/src/custody-session.ts`). The serving tree refuses an ember slot and the `sk-rotation-owed` mark as fields it writes nothing into, until their builders land. No serving row stands yet, so the unlock reads SK and nothing else does. The slot tree holds passphrase and paper pins (`packages/lararium-mesh/src/keyslot.ts`); the floor key's door (`vesselFloorKeyDoor`) and the custody seat's door (`custodyGateDoor`) stand specified in code and reach no composer until the socket cutover.
 
 <<~/ahu>>
 
@@ -297,6 +297,6 @@ Each stands as a house ruling under the operator's delegation, with the conditio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;O2RoNC3PBBLSPVNSJ5MdJiFKaR8MfWaL0N6T7elq2Fk
+<<^ code="&#x0003;">>ni:///sha-256;ktakznhARwz5r_MM31eGtOkjc9F5jUmEZRAXjX5F6t4
 
 <<^ code="&#x0004;" -> to="?">>

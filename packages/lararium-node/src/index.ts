@@ -460,11 +460,11 @@ export type {
 export { KEY_CLASSES, isKeyClass, isRelationClass } from "@lararium/mesh";
 export { FsCustodyIo, vesselCustodyIo, CustodyLockRefused, CUSTODY_CLAIM_NAME, type FsCustodyIoOptions } from "./custody-io.js";
 export type { KeyClass } from "@lararium/mesh";
-// The ONE carrier table: every carrier at rest by home, custody class and writer. The custody status, the VK
+// The ONE carrier table: every carrier at rest by home, custody class and writer. The custody status, the S key
 // rotation, the bundle's cut and the custody shape reader all derive from it — see `vault-carriers`.
 export {
   CUSTODY_CLASSES, CUSTODY_PARTS, carrierTable, carrierCensus, outsideTheTable, vesselCustodyHomes,
-  vkSlotsPath, skSlotsPath, vkSealedCarriers, occupantCarriers, rotateVesselVk,
+  sSlotsPath, skSlotsPath, sSealedCarriers, occupantCarriers, rotateNodeKey,
 } from "./vault-carriers.js";
 export type {
   CustodyClass, CustodyPart, CustodyTarget, CustodyHome, CustodyHomes, CarrierRow, CarrierEntry, OutsideFile, OutsideWhy,

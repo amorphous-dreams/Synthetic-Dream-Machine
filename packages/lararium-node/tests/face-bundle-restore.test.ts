@@ -140,7 +140,7 @@ async function readHeldKeys(): Promise<{ fck: Uint8Array; nodeKey: Uint8Array; f
   const face = await openFaceTree({ io, homes, fcid: standing.fcid, credentials: creds });
   const node = await unlockCustody({ io, homes, credentials: creds });
   if (face.reading !== "opens" || node.reading !== "opens") throw new Error(`the fixture's trees do not open under the test routes: face ${face.reading}, node ${node.reading}`);
-  return { fck: Uint8Array.from(face.fck), nodeKey: Uint8Array.from(node.vk), fcid: standing.fcid };
+  return { fck: Uint8Array.from(face.fck), nodeKey: Uint8Array.from(node.treeKey), fcid: standing.fcid };
 }
 
 /** Cut face 0's bundle on the standing vessel under a fresh key, with an empty memory section. */

@@ -232,7 +232,7 @@ export function custodyGateDoor(): CustodyRootDoor {
 
 // ── faces: the founding and opening acts a face's custody takes through this home's seated holder ──────────────
 
-/** Found one face's custody on the seated holder (the VK layer must stand open: the founding act reads it). */
+/** Found one face's custody on the seated holder (the S key layer must stand open: the founding act reads it). */
 export async function foundFaceCustody(args: Parameters<CustodyHolder["foundFace"]>[0]): ReturnType<CustodyHolder["foundFace"]> {
   return (await openedCustody()).foundFace(args);
 }

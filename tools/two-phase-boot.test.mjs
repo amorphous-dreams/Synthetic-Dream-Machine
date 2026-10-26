@@ -238,7 +238,7 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     // The island's exports landed through the custody write door: both rows moved, and both rest sealed.
     for (const [name, at] of [["archive", archiveAt], ["veil", veilAt]]) {
       const now = readFileSync(at);
-      assert.equal(name === "veil" ? mesh.readFckCarrier(now) : mesh.readVkCarrier(now), "sealed", `T2 control: the ${name} archive rests sealed under its key`);
+      assert.equal(name === "veil" ? mesh.readFckCarrier(now) : mesh.readSCarrier(now), "sealed", `T2 control: the ${name} archive rests sealed under its key`);
       assert.equal(now.equals(restBefore[name]), false, `T2 control: the island's ${name} export replaced the row`);
     }
     const rowsRead = new Set(sovereignly.seen.map(privateRow).filter(Boolean));

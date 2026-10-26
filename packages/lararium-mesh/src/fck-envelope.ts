@@ -2,7 +2,7 @@
  * A face carrier has one fixed frame: magic, a 24-byte nonce, and ciphertext with a 16-byte tag.
  * A house seal under another magic remains occupied and cannot enter the face writer as cleartext.
  */
-import { LARK_MAGIC, VK_SEAL_MAGIC } from "./vk-envelope.js";
+import { LARK_MAGIC, S_SEAL_MAGIC } from "./s-envelope.js";
 
 export const FCK_SEAL_MAGIC = new TextEncoder().encode("lares-fck-seal");
 export const FCK_SEAL_NONCE_LENGTH = 24;
@@ -18,7 +18,7 @@ const prefix = (b: Uint8Array, p: Uint8Array): boolean => b.length > 0 && b.leng
 export function readFckCarrier(bytes: Uint8Array | null): FckCarrierReading {
   if (bytes === null) return "absent";
   if (starts(bytes, FCK_SEAL_MAGIC)) return bytes.length >= FCK_SEAL_MIN_LENGTH ? "sealed" : "torn";
-  if (starts(bytes, VK_SEAL_MAGIC)) return "unopenable";
+  if (starts(bytes, S_SEAL_MAGIC)) return "unopenable";
   if (prefix(bytes, FCK_SEAL_MAGIC)) return "torn";
   if (starts(bytes, LARK_MAGIC)) return "old-shape";
   if (starts(bytes, family)) return "unopenable";

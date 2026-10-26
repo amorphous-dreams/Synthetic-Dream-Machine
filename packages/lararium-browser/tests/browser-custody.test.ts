@@ -62,7 +62,7 @@
  */
 import { describe, expect, test, vi } from "vitest";
 import {
-  bindSlot, commitSlotTree, confirmPaperPin, decodeSlotTree, draftPaperPin, mintVk, openSealedCarrier, writeSealedCarrier, SEALING_SUFFIX,
+  bindSlot, commitSlotTree, confirmPaperPin, decodeSlotTree, draftPaperPin, mintTreeKey, openSealedCarrier, writeSealedCarrier, SEALING_SUFFIX,
   type CustodyIo,
 } from "@lararium/mesh";
 import { BootHalted } from "./wire-vessel-rig.js";
@@ -503,12 +503,12 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     expect(await io.read("port-probe-moved")).toBeNull();
     expect(await io.exclusive(async () => 7)).toBe(7);
 
-    // A VK of the test's own, bound under a tree the mesh writer commits through the port. The vessel's own VK is
+    // A tree key of the test's own, bound under a tree the mesh writer commits through the port. The vessel's own tree key is
     // unreachable from the public surface, and none is needed: the law under test is the port's.
-    const vk = mintVk();
-    const tree = bindSlot(null, vk, { t: 1, pins: [{ kind: "passphrase", passphrase: "port" }] });
+    const treeKey = mintTreeKey();
+    const tree = bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "port" }] });
     const carrier = sealedCarrierOf("keyhive-archive");
-    await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, vk, tree, carriers: [carrier] });
+    await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, treeKey, tree, carriers: [carrier] });
     expect(await rowOf(idbName, CUSTODY_TREE_ROW)).toBeInstanceOf(Uint8Array);
 
     const flipping: CustodyIo = {
@@ -522,16 +522,16 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
       },
     };
     const plaintext = randomBytes(64);
-    await expect(writeSealedCarrier({ io: flipping, vk, treePath: CUSTODY_TREE_ROW, carrier, plaintext }))
+    await expect(writeSealedCarrier({ io: flipping, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext }))
       .rejects.toThrow(/did not read back/);
     expect(await io.read(carrier.path), "nothing landed at the carrier").toBeNull();
     expect(await io.read(`${carrier.path}${SEALING_SUFFIX}`), "the torn sidecar left").toBeNull();
     expect(await rowOf(idbName, "keyhive-archive"), "no clear row either").toBeUndefined();
 
     // CONTROL: the same write through the honest port lands, at the keystore row the carrier names, and opens.
-    await writeSealedCarrier({ io, vk, treePath: CUSTODY_TREE_ROW, carrier, plaintext });
+    await writeSealedCarrier({ io, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext });
     expect(startsWithMagic(await rowOf(idbName, carrier.path))).toBe(true);
-    const opened = await openSealedCarrier({ io, vk, carrier });
+    const opened = await openSealedCarrier({ io, treeKey, carrier });
     expect(opened.reading).toBe("opens");
     if (opened.reading === "opens") expect(hex(opened.plaintext)).toBe(hex(plaintext));
 
@@ -795,12 +795,12 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
   test("BC20 a torn replacement sidecar leaves the standing sealed value byte-identical", async () => {
     const idbName = `custody-replace-${crypto.randomUUID()}`;
     const io = browserKeystoreCustodyIo(idbName);
-    const vk = mintVk();
-    const tree = bindSlot(null, vk, { t: 1, pins: [{ kind: "passphrase", passphrase: "replace" }] });
+    const treeKey = mintTreeKey();
+    const tree = bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "replace" }] });
     const carrier = sealedCarrierOf("keyhive-archive");
-    await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, vk, tree, carriers: [carrier] });
+    await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, treeKey, tree, carriers: [carrier] });
     const a = randomBytes(64);
-    await writeSealedCarrier({ io, vk, treePath: CUSTODY_TREE_ROW, carrier, plaintext: a });
+    await writeSealedCarrier({ io, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext: a });
     const before = (await io.read(carrier.path))!;
 
     const flipping: CustodyIo = {
@@ -814,7 +814,7 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
       },
     };
     const b = randomBytes(72);
-    await expect(writeSealedCarrier({ io: flipping, vk, treePath: CUSTODY_TREE_ROW, carrier, plaintext: b }))
+    await expect(writeSealedCarrier({ io: flipping, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext: b }))
       .rejects.toThrow(/did not read back/);
     expect(hex((await io.read(carrier.path))!), "the standing seal keeps its exact bytes").toBe(hex(before));
     expect(await io.read(`${carrier.path}${SEALING_SUFFIX}`), "the torn sidecar left").toBeNull();

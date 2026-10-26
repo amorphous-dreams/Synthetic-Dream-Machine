@@ -76,7 +76,7 @@ describe("the sealed-act table", () => {
   });
 
   test("T2 — no row takes a credential", async () => {
-    const credentialish = /credential|passphrase|password|sheet|secret|seed|vk\b|key$/i;
+    const credentialish = /credential|passphrase|password|sheet|secret|seed|treeKey\b|key$/i;
     const named = SEALED_ACT_NAMES.flatMap((name) => Object.keys(SEALED_ACTS[name].shape).map((arg) => `${name}:${arg}`));
     expect(named.length).toBeGreaterThan(8);                           // CONTROL: the scan read real shapes
     // ONE STATED EXCEPTION, and it names no credential of this vessel: the restore's two rows take a BUNDLE's own

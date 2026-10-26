@@ -53,7 +53,7 @@ describe("the S tree and a face tree stand independent under one typed route", (
 
   test("RED: a rotation on the S tree leaves the face tree opening under the old route", async () => {
     const v = await sharedRoute();
-    await rotateCustody({ io: v.seat.io, homes: v.seat.homes, oldVk: v.seat.vk, slots: [slot("an-s-only-route")] });
+    await rotateCustody({ io: v.seat.io, homes: v.seat.homes, oldTreeKey: v.seat.treeKey, slots: [slot("an-s-only-route")] });
     expect(await v.sOpens(FIXTURE_PASSPHRASE)).toBe(false);
     expect(await v.sOpens("an-s-only-route")).toBe(true);
     expect(await v.faceOpens(FIXTURE_PASSPHRASE)).toBe(true);                    // the face tree stands

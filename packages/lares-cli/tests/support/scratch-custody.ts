@@ -31,7 +31,7 @@ export async function seatScratchCustody(): Promise<ScratchCustody> {
   const io = new FsCustodyIo(homes);
   const founded = await foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }] }] });
   const holder = makeCustodyHolder({ io, homes });
-  await holder.adopt(founded.vk);
+  await holder.adopt(founded.treeKey);
   seatCustody(holder);
   writeFileSync(join(process.env["LAR_ROOT"]!, ".lar-test-scratch"), "");
   return { homes, holder, async drop() { await holder.lock(); unseatCustody(holder); } };

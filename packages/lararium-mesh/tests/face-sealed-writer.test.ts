@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { bindSlot, decodeSlotTree } from "../src/keyslot.js";
 import { mintFck, sealUnderFck, type FaceCarrier } from "../src/fck.js";
-import { mintVk, sealUnderVk } from "../src/vk.js";
+import { mintTreeKey, sealUnderS } from "../src/tree-key.js";
 import { writeSealedCarrier, commitSlotTree, writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, openFaceCarrier,
   rotateFck, settleFaceRotation, commitFaceTree, assertFaceStoreUnoccupied, CensusRefusal, OccupiedStoreRefusal,
   ROTATING_SUFFIX, SEALING_SUFFIX, type CustodyIo } from "../src/sealed-writer.js";
@@ -75,10 +75,10 @@ describe("face sealed writer", () => {
     const { io, ak, bk } = await found();
     const before = io.snapshot();
     await expect(writeFaceCarrier({ io, key: ak, treePath: "/faces/b/tree", carrier: b, plaintext: text("x") }))
-      .rejects.toMatchObject({ reading: "vk-mismatch" });
-    await expect(removeFaceCarrier({ io, key: ak, treePath: "/faces/b/tree", carrier: b })).rejects.toMatchObject({ reading: "vk-mismatch" });
+      .rejects.toMatchObject({ reading: "tree-key-mismatch" });
+    await expect(removeFaceCarrier({ io, key: ak, treePath: "/faces/b/tree", carrier: b })).rejects.toMatchObject({ reading: "tree-key-mismatch" });
     await expect(rotateFck({ io, treePath: "/faces/b/tree", carriers: [b], oldKey: ak, newKey: mintFck(), slots: [pin] }))
-      .rejects.toMatchObject({ reading: "vk-mismatch" });
+      .rejects.toMatchObject({ reading: "tree-key-mismatch" });
     expect(io.snapshot()).toEqual(before);
     expect((await openFaceCarrier({ io, key: bk, carrier: b })).reading).toBe("opens");
   });
@@ -86,23 +86,23 @@ describe("face sealed writer", () => {
     const { io } = await found(); const before = io.snapshot();
     const fresh = { ...a, name: "new", path: "/faces/a/new", ref: "new/a" };
     await expect(writeFaceCarrier({ io, key: mintFck(), treePath: "/faces/a/tree", carrier: fresh, plaintext: text("x") }))
-      .rejects.toMatchObject({ reading: "vk-mismatch" });
+      .rejects.toMatchObject({ reading: "tree-key-mismatch" });
     expect(io.snapshot()).toEqual(before);
   });
-  test("RED: VK and FCK frames cannot overwrite one another", async () => {
+  test("RED: tree key and FCK frames cannot overwrite one another", async () => {
     const { io, ak } = await found();
-    const vk = mintVk(), vkCarrier = { name: "vk", path: a.path };
-    const vkTree = "/faces/a/vk-tree";
-    await commitSlotTree({ io, path: vkTree, expected: null, vk, tree: bindSlot(null, vk, pin), carriers: [] });
+    const treeKey = mintTreeKey(), treeKeyCarrier = { name: "treeKey", path: a.path };
+    const treeKeyTree = "/faces/a/s-tree";
+    await commitSlotTree({ io, path: treeKeyTree, expected: null, treeKey, tree: bindSlot(null, treeKey, pin), carriers: [] });
     const faceBytes = (await io.read(a.path))!;
-    await expect(writeSealedCarrier({ io, vk, treePath: vkTree, carrier: vkCarrier, plaintext: text("x") }))
+    await expect(writeSealedCarrier({ io, treeKey, treePath: treeKeyTree, carrier: treeKeyCarrier, plaintext: text("x") }))
       .rejects.toMatchObject({ reading: "unopenable" });
     expect(await io.read(a.path)).toEqual(faceBytes);
-    const vkBytes = sealUnderVk(vk, a.name, text("vk"));
-    io.files.set(a.path, vkBytes);
+    const treeKeyBytes = sealUnderS(treeKey, a.name, text("treeKey"));
+    io.files.set(a.path, treeKeyBytes);
     await expect(writeFaceCarrier({ io, key: ak, treePath: "/faces/a/tree", carrier: a, plaintext: text("x") }))
       .rejects.toMatchObject({ reading: "unopenable" });
-    expect(await io.read(a.path)).toEqual(vkBytes);
+    expect(await io.read(a.path)).toEqual(treeKeyBytes);
   });
   test("RED: read-back mismatch refuses and preserves the occupied row", async () => {
     const { io, ak } = await found(); const before = io.snapshot(); io.corrupt = true;

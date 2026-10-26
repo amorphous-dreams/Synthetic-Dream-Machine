@@ -45,7 +45,7 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 | Current row and code line | Current | Owner / target and required cut |
 | `vessel-key` `:240-242` | floor | ''S, OPEN JOINT:'' private place signing seed owned by this node. Its public verifying key belongs in F. The signer options appear below; it is never a custody VK or face ancestor. `node-vessel-identity.ts:429-442,451-487` proves the private seed is read from disk and used at the floor door. |
 | `vessel-kel` `:243-245` | floor | ''F:'' public inception/signature, node place principal. |
-| `s-slots` `:246-248` | floor | ''D/S split:'' retire the omnibus VK tree. Each face gets its own FCK tree; a node S tree exists only for named S rows. No face FCK wrapper under a node key. |
+| `s-slots` `:246-248` | floor | ''D/S split:'' the node S tree wraps one random S key and seals `gate-root` and `place-archive` alone. Each face has its own FCK tree, and no face FCK wraps under a node key. |
 | `sk-slots` `:249-251` | floor | ''S conditional, node:'' retire current VK-to-SK wrapping. No serving row exists today (`:12-14`). A future serving payload gets its own named S key and boot rule before this tree survives. |
 | `fk-slots` `face-custody.ts` | floor | ''D (the face's own tree):'' one tree per face at `faces/<fcid>/fk-slots.bin`, wrapping that face's random custody key under each human route that face asked for. No VK wraps it and no sibling face's route opens it; the face's rows and this tree rest in one directory, so a bundle or a removal moves them together. |
 | `face-index` `face-index.ts` | floor-plain | ''F:'' the one floor row that names the faces a node can unlock before any face opens: the count of faces (tombstones included), each group's digest, each founding ask's digest and each random directory name, and no other byte. It routes and never decides; see #/the-floor-index. |
@@ -217,7 +217,7 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 ; The custody root's children
 : ''One child derives today.'' The only call that reaches `holder.derive` is `custodyGateDoor` (`custody-seat.ts`), and its only consumers are `hearthSovereignPin`, `stoodSovereignPin` and the gate composition in `open-node-vessel.ts`: each derives the SOVEREIGN GATE BUNDLE (`GATE_BUNDLE_INFO`) of one Nexus and route. The registry (`ALL_DOMAINS`) declares other domains, and the door derives under any of them, but no other caller derives. The veil, Keyhive signer and hosting key named in the root's header derive from the vessel key, a face's atom or their own rows, never from this root.
 : ''Owner: the node, not a face.'' The bundle keys the hearth's gate at a Nexus: the node's seat in that Nexus, apart from any PersonaGroup. It is a NODE-ONLY service secret and enters S as the separately named row `gate-root` (the custody root renamed for what it derives). It is never retained as a generic root, and no face derivation hangs from it.
-: ''Required before the VK tree drops.'' `gate-root` rests under the node's S key (the node route), and a derivation under any other domain refuses by name at the door.
+: ''Stands:'' `gate-root` rests under the node's S key (the node route), and a derivation under any other domain refuses by name at the door.
 
 ; The vessel's Keyhive archive (`keyhive-archive`)
 : ''Owner: the place, not a face.'' The archive is minted at the place card (`ensurePlaceCard`, `init`) from the vessel's own seed before any face stands; a faceless or joinee place holds one. It carries the place Individual's membership and prekey secrets and its contact card. It is a NODE-ONLY secret and enters S as the separately named row `place-archive`. Each face's own archive already rests per PersonaGroup as `veil-archive-g<digest>` (D, ''face-hot'').
@@ -239,6 +239,8 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 !!! The node tree, the serving tree and the unlock (slice 3)
 
 ''The node (S) tree'' is the slot tree `s-slots.bin` wrapping one random S key. It seals exactly two rows: `gate-root` (`gate-root.bin`) and the place archive (`place-archive.bin`). No D row, no face key and no serving key rests under it. The seal frame names it `lares-s-seal`.
+
+''The tree bytes'' (S, serving and face trees alike, one keyslot shape): a plain JSON tree carries `keyCheck` (the keyed check of the one key its slots wrap) and `slots`, each slot `id`, `t`, `pins` and `wrappedKey`; the check derives under the domain `tree-key-check` and each slot wrap under `slot-wrap`; an S-sealed carrier opens with the magic `lares-s-seal`. These names land before the founding bake, so no earlier spelling is read anywhere.
 
 ''The serving tree'' (`sk-slots.bin`) stands on its own: the serving key (SK) wraps under its own slots, bound over the founding route with a wrapped key, salt and slot ids of their own, and no other key wraps it. A rotation of the S key moves no byte of it.
 
@@ -268,6 +270,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;kLUXT23FiRO3SOtG1ZNxlc8cjMsIwzj6k87O1h3ttO8
+<<^ code="&#x0003;">>ni:///sha-256;pajcGKS1LGZroryZk3Ro7N5evD90mYWNyBl1QBl5FNw
 
 <<^ code="&#x0004;" -> to="?">>

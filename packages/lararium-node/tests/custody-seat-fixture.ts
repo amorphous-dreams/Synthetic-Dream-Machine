@@ -10,7 +10,7 @@
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { VesselKey } from "@lararium/mesh";
+import type { TreeKey } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
 import { makeCustodyHolder, seatFaceAutoFounder, type CustodyHolder } from "../src/custody-holder.js";
@@ -32,7 +32,7 @@ export interface SeatedScratchCustody {
   readonly io:     FsCustodyIo;
   readonly holder: CustodyHolder;
   /** A copy of the minted vessel key, for a test that builds a second holder over the same tree. */
-  readonly vk:     VesselKey;
+  readonly treeKey:     TreeKey;
   /** Lock, clear the seat, restore `LAR_ROOT`, remove the root. */
   drop(): Promise<void>;
 }
@@ -47,10 +47,10 @@ export async function seatScratchCustody(label = "seat"): Promise<SeatedScratchC
   const io = new FsCustodyIo(homes);
   const founded = await foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
   const holder = makeCustodyHolder({ io, homes });
-  await holder.adopt(founded.vk);
+  await holder.adopt(founded.treeKey);
   seatCustody(holder);
   return {
-    root, homes, io, holder, vk: founded.vk,
+    root, homes, io, holder, treeKey: founded.treeKey,
     async drop() {
       await holder.lock();
       unseatCustody(holder);

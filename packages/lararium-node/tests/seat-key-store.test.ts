@@ -14,8 +14,8 @@
  *       the store; one that opens to another length refuses `malformed`; one whose secret answers another key
  *       than its name commits to refuses `names-another-key`.
  *   S7  at the floor the door, the mint, the store and the retirement refuse `CustodyLocked` and no file moves.
- *   S8  TAMPER PROBE. VK rotation leaves the face-sealed seat key byte-identical; a holder over the
- *       retired VK can still sign and store the same key. Control: a holder over the current VK signs and retires
+ *   S8  TAMPER PROBE. S key rotation leaves the face-sealed seat key byte-identical; a holder over the
+ *       retired S key can still sign and store the same key. Control: a holder over the current S key signs and retires
  *   S9  a retirement removes the row and the key then reads `absent`; retiring a key no row holds answers false.
  *   S10 the carrier table names the row `seat-key`: face-cold, a seed, of ONE face, and no bundle carries it.
  *   S11 a retirement reads the row first: a row that holds another key, or another length, under this key's name
@@ -166,20 +166,20 @@ describe("a seat's own key on the custody seat", () => {
     expect(readFileSync(at(file)).equals(standing)).toBe(true);
   });
 
-  test("S8 — VK rotation leaves a seat's face-sealed key usable and unchanged", async () => {
+  test("S8 — S key rotation leaves a seat's face-sealed key usable and unchanged", async () => {
     await storeSeatKey(0, SECRET);
     const file = seatKeyFile(KEY, 0);
     const before = readFileSync(at(file));
-    const rotated = await rotateCustody({ io: c.io, homes: c.homes, oldVk: c.vk, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
+    const rotated = await rotateCustody({ io: c.io, homes: c.homes, oldTreeKey: c.treeKey, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
     const standing = readFileSync(at(file));
-    expect(standing.equals(before), "VK rotation leaves the face-sealed row untouched").toBe(true);
-    // The seated holder kept the retired VK, but the seat key opens under its face's key.
+    expect(standing.equals(before), "S key rotation leaves the face-sealed row untouched").toBe(true);
+    // The seated holder kept the retired S key, but the seat key opens under its face's key.
     expect(verifies(KEY, IMAGE, await signAsSeat(KEY, IMAGE))).toBe(true);
     expect(await storeSeatKey(0, SECRET)).toBe(KEY);
     expect(readFileSync(at(file)).equals(standing)).toBe(true);
-    // A holder over the current VK still opens the same face key and retires it.
+    // A holder over the current S key still opens the same face key and retires it.
     const fresh = makeCustodyHolder({ io: c.io, homes: c.homes });
-    await fresh.adopt(rotated.vk);
+    await fresh.adopt(rotated.treeKey);
     await fresh.unlockFaces([{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
     seatCustody(fresh);
     expect(verifies(KEY, IMAGE, await signAsSeat(KEY, IMAGE))).toBe(true);

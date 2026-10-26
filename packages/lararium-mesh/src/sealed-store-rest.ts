@@ -212,7 +212,7 @@ declare const outboxKeyBrand: unique symbol;
  *  island at unlock. No key derives it, and it derives only its parcels' AEAD key. */
 export type OutboxKey = Uint8Array & { readonly [outboxKeyBrand]: true };
 export const OUTBOX_KEY_LENGTH = 32;
-/** The magic that names the outbox seal: a scheme of the house family, so no VK census reads it as its own. */
+/** The magic that names the outbox seal: a scheme of the house family, so no tree key census reads it as its own. */
 export const OUTBOX_SEAL_MAGIC: Uint8Array = utf8Bytes("lares-outbox-seal");
 const OUTBOX_NONCE_LENGTH = 24;
 const OUTBOX_TAG_LENGTH = 16;

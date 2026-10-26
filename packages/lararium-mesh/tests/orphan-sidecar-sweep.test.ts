@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { settleRotation, SEALING_SUFFIX, ROTATING_SUFFIX, type CustodyIo, type SealedCarrier } from "../src/sealed-writer.js";
 import { bindSlot, encodeSlotTree } from "../src/keyslot.js";
-import { mintVk } from "../src/vk.js";
+import { mintTreeKey } from "../src/tree-key.js";
 
 class MemoryIo implements CustodyIo {
   files = new Map<string, Uint8Array>();
@@ -27,8 +27,8 @@ describe("orphan sidecar sweep", () => {
 
   test("completes committed rotations before removing no rotating sidecar", async () => {
     const io = new MemoryIo();
-    const vk = mintVk();
-    const slot = bindSlot(null, vk, { t: 1, pins: [{ kind: "passphrase", passphrase: "synthetic" }] });
+    const treeKey = mintTreeKey();
+    const slot = bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "synthetic" }] });
     io.files.set(`${tree}${ROTATING_SUFFIX}`, encodeSlotTree(slot));
     io.files.set(`/id/y.bin${ROTATING_SUFFIX}`, new Uint8Array([3]));
     const result = await settleRotation({ io, treePath: tree, carriers: listed });
