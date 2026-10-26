@@ -173,3 +173,8 @@ const adaptors = new WeakMap<TW5Engine, IslandAdaptor>();
 export function wikiLandedCovers(tw5: TW5Engine, bag: string, named: readonly string[]): boolean {
   return adaptors.get(tw5)?.landedCovers(bag, named) ?? false;
 }
+
+/** Ask the shore mounted over this engine to take an inbound act boundary. */
+export function wikiHandBoundary(tw5: TW5Engine): void {
+  void adaptors.get(tw5)?.boundary().catch(() => {});
+}

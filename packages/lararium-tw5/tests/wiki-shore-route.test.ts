@@ -9,23 +9,23 @@ import { describe, expect, test } from "vitest";
 import { unroutedSaveAlertTitle } from "../src/island-adaptor.js";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import {
-  afterDispatch, canonBag, draftBag, ManualTimers, personalBag, remote, shoreRig, storeDeleted, storeText,
+  afterDispatch, canonBag, draftBag, ManualBoundary, personalBag, remote, shoreRig, storeDeleted, storeText,
   tempBag, turns, workingBag, type Rig,
 } from "./wiki-shore-rig.js";
 
 const WORKING_POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 const heads = (r: Rig, bag: string): string => JSON.stringify(r.handles[bag]!.heads());
-const hand = async (r: Rig, timers: ManualTimers): Promise<void> => {
+const hand = async (r: Rig, boundary: ManualBoundary): Promise<void> => {
   await afterDispatch();
-  timers.fireAll(400);
+  boundary.fire();
   await turns(48);
   await r.adaptor.landingIdle();
 };
 
 describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
   test("a write-layer pointer naming a writable canon bag steers no save there: the save refuses by name and canon stands unchanged", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers, canonWritable: true, upperSlots: true });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary, canonWritable: true, upperSlots: true });
     const x = "lar:///t/route/steered";
     const control = "lar:///t/route/steered-control";
     await r.canon.put({ tiddler: { title: x, text: "canon text" } }, remote);
@@ -36,16 +36,16 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
     // CONTROL: with the pointer naming the working layer a canon title's save lands in the working layer.
     const controlMark = r.calls.length;
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "ordinary" }));
-    await hand(r, timers);
+    await hand(r, boundary);
     expect(r.calls.slice(controlMark).filter((c) => c.puts.includes(control)).map((c) => c.bag)).toEqual([workingBag]);
 
     r.wiki.addTiddler(new r.Tiddler({ title: WORKING_POINTER, text: canonBag }));
-    await hand(r, timers);
+    await hand(r, boundary);
     const canonBefore = heads(r, canonBag);
     const workingBefore = heads(r, workingBag);
     const mark = r.calls.length;
     r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(x)!.fields, { text: "edited by hand" }));
-    await hand(r, timers);
+    await hand(r, boundary);
     expect(r.calls.slice(mark).filter((c) => c.puts.includes(x)), "no store call carries the save").toEqual([]);
     expect(heads(r, canonBag), "canon's heads stand unchanged").toBe(canonBefore);
     expect(heads(r, workingBag)).toBe(workingBefore);
@@ -61,8 +61,8 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
   }, 120_000);
 
   test("a save of a title the personal layer holds lands in the personal layer and the wiki shows the edit", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers, upperSlots: true });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary, upperSlots: true });
     const mine = "lar:///t/route/held-by-personal";
     const canonTitle = "lar:///t/route/held-by-canon";
     await r.personal.put({ tiddler: { title: mine, text: "personal text" } }, remote);
@@ -75,7 +75,7 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
 
     const mark = r.calls.length;
     r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(mine)!.fields, { text: "edited by hand" }));
-    await hand(r, timers);
+    await hand(r, boundary);
     expect(r.calls.slice(mark).filter((c) => c.puts.includes(mine)).map((c) => c.bag), "the save lands where the title lives").toEqual([personalBag]);
     expect(storeText(r, personalBag, mine)).toBe("edited by hand");
     expect(heads(r, workingBag), "the working layer takes nothing").toBe(workingBefore);
@@ -86,7 +86,7 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
     const canonBefore = heads(r, canonBag);
     const controlMark = r.calls.length;
     r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(canonTitle)!.fields, { text: "copied up" }));
-    await hand(r, timers);
+    await hand(r, boundary);
     expect(r.calls.slice(controlMark).filter((c) => c.puts.includes(canonTitle)).map((c) => c.bag)).toEqual([workingBag]);
     expect(heads(r, canonBag)).toBe(canonBefore);
     expect(r.wiki.getTiddler(canonTitle)!.fields.text).toBe("copied up");
@@ -94,18 +94,18 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
   }, 120_000);
 
   test("a title a tombstone hides from the personal layer is re-created there, so the wiki keeps showing it", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers, upperSlots: true });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary, upperSlots: true });
     const x = "lar:///t/route/hidden-then-recreated";
     await r.personal.put({ tiddler: { title: x, text: "personal text" } }, remote);
     await turns();
     await r.adaptor.armSeedCheckpoint();
     await r.adaptor.landingIdle();
     r.wiki.deleteTiddler(x);
-    await hand(r, timers);
+    await hand(r, boundary);
     expect(storeDeleted(r, personalBag, x)).toBe(true);
     r.wiki.addTiddler(new r.Tiddler({ title: x, text: "back again" }));
-    await hand(r, timers);
+    await hand(r, boundary);
     expect(storeText(r, personalBag, x)).toBe("back again");
     expect(r.doc(workingBag).tiddlers[x], "the working layer holds no record").toBeUndefined();
     expect(r.wiki.getTiddler(x)!.fields.text).toBe("back again");
@@ -113,8 +113,8 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
   }, 120_000);
 
   test("view state a canon bag ships is hidden from the layer its save lands in, never from canon or the working layer", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers, canonWritable: true, upperSlots: true });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary, canonWritable: true, upperSlots: true });
     const session = "$:/state/shipped-by-canon";
     const folded = "$:/state/folded/shipped-by-canon";
     const story = "$:/StoryList";
@@ -129,7 +129,7 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
     const mark = r.calls.length;
     r.wiki.deleteTiddler(session);
     r.wiki.deleteTiddler(folded);
-    await hand(r, timers);
+    await hand(r, boundary);
     const deletes = r.calls.slice(mark);
     expect(deletes.filter((c) => c.deletes.includes(session)).map((c) => c.bag), "session state hides from the temp layer").toEqual([tempBag]);
     expect(deletes.filter((c) => c.deletes.includes(folded)).map((c) => c.bag), "a person's view state hides from the personal layer").toEqual([personalBag]);
@@ -143,7 +143,7 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
     // CONTROL: the story list routes to the personal layer; ordinary canon content hides from working.
     const storyMark = r.calls.length;
     r.wiki.addTiddler(new r.Tiddler({ title: story, list: "HelloThere" }));
-    await hand(r, timers);
+    await hand(r, boundary);
     expect(r.calls.slice(storyMark).filter((c) => c.puts.includes(story)).map((c) => c.bag)).toEqual([personalBag]);
     expect(heads(r, workingBag)).toBe(workingBefore);
     const plain = "lar:///t/route/plain-canon";
@@ -151,15 +151,15 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
     await turns(16);
     await r.adaptor.landingIdle();
     r.wiki.deleteTiddler(plain);
-    await hand(r, timers);
+    await hand(r, boundary);
     expect(storeDeleted(r, workingBag, plain)).toBe(true);
     await r.stop();
   }, 120_000);
 
   test("a parent whose edit removes its last child reference tombstones that child through the one router", async () => {
     for (const childBag of [workingBag, canonBag]) {
-      const timers = new ManualTimers();
-      const r = await shoreRig({ timers, upperSlots: true });
+      const boundary = new ManualBoundary();
+      const r = await shoreRig({ boundary, upperSlots: true });
       const root = `lar:///t/route/last-child-${childBag === canonBag ? "canon" : "working"}`;
       const child = `${root}#/a`;
       const bare = `${root}-never-had-children`;
@@ -176,7 +176,7 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
 
       const mark = r.calls.length;
       r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(root)!.fields, { text: "intro alone\n" }));
-      await hand(r, timers);
+      await hand(r, boundary);
       const issued = r.calls.slice(mark);
       expect(issued.filter((c) => c.deletes.includes(child)).map((c) => c.bag), "the orphan's tombstone lands in the working layer").toEqual([workingBag]);
       expect(storeDeleted(r, workingBag, child)).toBe(true);
@@ -187,7 +187,7 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
       // CONTROL: a parent that never referenced a child writes no tombstone.
       const bareMark = r.calls.length;
       r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(bare)!.fields, { text: "prose, edited" }));
-      await hand(r, timers);
+      await hand(r, boundary);
       expect(r.calls.slice(bareMark).flatMap((c) => c.deletes)).toEqual([]);
       // CONTROL: an edit that keeps the reference keeps the child.
       await r.stop();
@@ -195,8 +195,8 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
   }, 120_000);
 
   test("a parent edit that keeps its child reference writes no tombstone", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const root = "lar:///t/route/keeps-child";
     const child = `${root}#/a`;
     await r.working.writeFamily([
@@ -208,7 +208,7 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
     await r.adaptor.landingIdle();
     const mark = r.calls.length;
     r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(root)!.fields, { text: "intro, edited\n\n<<~ kahea ahu #/a>>\n" }));
-    await hand(r, timers);
+    await hand(r, boundary);
     expect(r.calls.slice(mark).flatMap((c) => c.deletes)).toEqual([]);
     expect(storeText(r, workingBag, child)).toBe("slot body");
     expect(storeDeleted(r, workingBag, child)).toBe(false);
@@ -216,8 +216,8 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
   }, 120_000);
 
   test("a reference quoted inside a code fence names no child: removing the quote tombstones nothing", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const root = "lar:///t/route/quotes-a-reference";
     const child = `${root}#/a`;
     const fenced = "prose\n\n```\n<<~ kahea ahu #/a>>\n```\n";
@@ -230,15 +230,15 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
     await r.adaptor.landingIdle();
     const mark = r.calls.length;
     r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(root)!.fields, { text: "prose alone\n" }));
-    await hand(r, timers);
+    await hand(r, boundary);
     expect(r.calls.slice(mark).flatMap((c) => c.deletes)).toEqual([]);
     expect(storeText(r, workingBag, child)).toBe("a record at the quoted address");
     await r.stop();
   }, 120_000);
 
   test("a removed child takes its own slot children with it", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const root = "lar:///t/route/nested";
     const child = `${root}#/a`;
     const grandchild = `${root}#/a/b`;
@@ -251,7 +251,7 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
     await r.adaptor.armSeedCheckpoint();
     await r.adaptor.landingIdle();
     r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(root)!.fields, { text: "intro alone\n" }));
-    await hand(r, timers);
+    await hand(r, boundary);
     expect(storeDeleted(r, workingBag, child)).toBe(true);
     expect(storeDeleted(r, workingBag, grandchild)).toBe(true);
     expect(r.wiki.getTiddler(grandchild)).toBeUndefined();
@@ -259,11 +259,11 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
   }, 120_000);
 
   test("a title a residency move retracted from the personal layer draws no save back there", async () => {
-    const timers = new ManualTimers();
+    const boundary = new ManualBoundary();
     let hold = false;
     let release!: () => void;
     const held = new Promise<void>((resolve) => { release = resolve; });
-    const r = await shoreRig({ timers, upperSlots: true, yieldHost: async () => { if (hold) await held; } });
+    const r = await shoreRig({ boundary, upperSlots: true, yieldHost: async () => { if (hold) await held; } });
     const x = "lar:///t/route/retracted-from-personal";
     await r.personal.put({ tiddler: { title: x, text: "personal text" } }, remote);
     await turns();
@@ -279,7 +279,7 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
     const mark = r.calls.length;
     r.wiki.addTiddler(new r.Tiddler({ title: x, text: "edited by hand" }));
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     hold = false;
     release();
     await turns(48);

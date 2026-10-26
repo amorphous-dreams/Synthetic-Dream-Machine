@@ -8,7 +8,7 @@
 import { describe, expect, test } from "vitest";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import {
-  afterDispatch, draftBag, ManualTimers, openDraft, peerWrite, remote, saveSequence, shoreRig, storeDeleted,
+  afterDispatch, draftBag, ManualBoundary, openDraft, peerWrite, remote, saveSequence, shoreRig, storeDeleted,
   turns, typeInto, workingBag, type Rig,
 } from "./wiki-shore-rig.js";
 
@@ -19,11 +19,11 @@ const surfaced = async (r: Rig, title: string, field: string): Promise<string[]>
 describe.skipIf(wikiSkip)(`wiki shore field grain${skipNote}`, () => {
   for (const raced of ["none", "a", "b", "c"] as const) {
     test(`a rename onto a standing title writes the fields that differ from its landed state (concurrent change: ${raced})`, async () => {
-      const timers = new ManualTimers();
+      const boundary = new ManualBoundary();
       let hold = false;
       let release!: () => void;
       const held = new Promise<void>((resolve) => { release = resolve; });
-      const r = await shoreRig({ timers, yieldHost: async () => { if (hold) await held; } });
+      const r = await shoreRig({ boundary, yieldHost: async () => { if (hold) await held; } });
       const x = `lar:///t/grain/${raced}-from`;
       const y = `lar:///t/grain/${raced}-to`;
       await r.working.put({ tiddler: { title: x, text: "t", a: "1", b: "9" } }, remote);
@@ -37,7 +37,7 @@ describe.skipIf(wikiSkip)(`wiki shore field grain${skipNote}`, () => {
       const d = openDraft(r, x, "t");
       typeInto(r, d, "t", { "draft.title": y });
       await afterDispatch();
-      timers.fireAll(400);
+      boundary.fire();
       await turns(16);
       if (raced !== "none") {
         hold = true;
