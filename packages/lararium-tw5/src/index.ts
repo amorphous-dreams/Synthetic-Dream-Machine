@@ -118,6 +118,7 @@ export type { Tw5Deserializer } from "./action-handler.js";
 export { canonicalizeNativeCarrierText } from "./native-canonical.js";
 export type { NativeCanonicalCarrier } from "./native-canonical.js";
 export { makeWikiBehavior } from "./wiki-behavior.js";
+export { hasPortLease } from "./record-port-lease.js";
 export type { WikiBehaviorOptions } from "./wiki-behavior.js";
 export { startEngineWatch, ENGINE_WAITING_ALERT_TITLE } from "./engine-watch.js";
 export { startRecipeWatch } from "./recipe-watch.js";

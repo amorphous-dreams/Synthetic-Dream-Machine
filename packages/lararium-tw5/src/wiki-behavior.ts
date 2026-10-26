@@ -27,7 +27,8 @@ import { composeIsland } from "./island-caps.js";
 import { hasEngineWatch, hasRecipeWatch, hasProjection } from "./has-island-watches.js";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandBehavior, IslandContext } from "./island-context.js";
-import { hasRecordPort, type RecordPortOptions } from "./record-port-handler.js";
+import type { RecordPortOptions } from "./record-port-handler.js";
+import { hasPortLease } from "./record-port-lease.js";
 import { wikiHandBoundary } from "./island-recipe.js";
 
 /** The reboot-pending alert tiddler title. Tagged `$:/tags/Alert` so TW5's NATIVE
@@ -185,5 +186,5 @@ export function makeWikiBehavior(opts: WikiBehaviorOptions = {}): IslandBehavior
       return false;
     },
   };
-  return composeIsland([handBoundaryCap, dispatchCap, hasRecordPort(opts.recordPort), hasProjection(opts.onBoot), hasEngineWatch(), hasRecipeWatch(), ...(opts.caps ?? [])]);
+  return composeIsland([handBoundaryCap, dispatchCap, hasPortLease(opts.recordPort), hasProjection(opts.onBoot), hasEngineWatch(), hasRecipeWatch(), ...(opts.caps ?? [])]);
 }

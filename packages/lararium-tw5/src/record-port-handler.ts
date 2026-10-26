@@ -27,8 +27,8 @@ export interface RecordPortOptions {
   actorOf?: (portId: string) => string | undefined;
   /** The port builds its own ACTION table; a caller can substitute a table for a focused witness. */
   verbs?: (ctx: IslandContext) => VerbTable;
-  kahuReach?: KahuReachSource;
-  casTierOf?: (cid: string) => CapTier | undefined;
+  kahuReach?: (portId: string) => KahuReachSource | undefined;
+  casTierOf?: (cid: string, portId: string) => CapTier | undefined;
   /** The composer lends a server-held write grant for this port and actor. */
   mayEdit?: (portId: string, actor: string) => boolean;
   lapseRounds?: number;
@@ -156,15 +156,21 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
   const lastSeq = new Map<string, number>();
   let writes: Promise<void> = Promise.resolve();
   let presenceSource: string | undefined;
-  let verbs: VerbTable | undefined;
-  const verbTable = (ctx: IslandContext): VerbTable => {
-    if (verbs) return verbs;
-    if (opts.verbs) return verbs = opts.verbs(ctx);
+  const verbs = new Map<string, VerbTable>();
+  const verbTable = (ctx: IslandContext, portId: string): VerbTable => {
+    const prior = verbs.get(portId);
+    if (prior) return prior;
+    if (opts.verbs) {
+      const table = opts.verbs(ctx);
+      verbs.set(portId, table);
+      return table;
+    }
     const table = new VerbTable();
     registerActionReactors(table, { composite: ctx.composite, tw5: makeTw5Deserializer(ctx.tw5),
       ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),
-      ...(opts.kahuReach ? { kahuReach: opts.kahuReach } : {}) });
-    return verbs = table;
+      ...(opts.kahuReach ? { kahuReach: () => opts.kahuReach?.(portId)?.() ?? null } : {}) });
+    verbs.set(portId, table);
+    return table;
   };
 
   const finish = (port: OpenPort): void => {
@@ -179,6 +185,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     finish(port);
     presence.close(portId);
     ports.delete(portId);
+    verbs.delete(portId);
   };
   /** A port serves only while the face its open proved still stands; a changed face retires the port. */
   const faceChanged = (port: OpenPort): boolean =>
@@ -310,7 +317,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       let lent = false;
       try { lent = opts.bagGrant?.(msg.portId, port.boundActor, bag) === true; } catch { /* A failed lookup grants nothing. */ }
       if (!lent) { answer("refused", [], [], "bag-not-granted"); return; }
-      try { await requireKahuReach(bag, opts.kahuReach, "port write"); }
+      try { await requireKahuReach(bag, opts.kahuReach?.(msg.portId), "port write"); }
       catch { answer("refused", [], [], "kahu-reach"); return; }
     }
     if (!prior && msg.basis && msg.basis !== log.cursorOf(port.shape, log.headSeq)) {
@@ -459,7 +466,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
           currentRenderCursor: () => "", invokeActions: () => true });
         if (!gated.invoked) { refused(gated.reason); return; }
         const action = msg.subject ?? "";
-        const handler = verbTable(ctx).get(action);
+        const handler = verbTable(ctx, msg.portId).get(action);
         if (!handler) { refused("no-such-verb"); return; }
         const requestedBy = face && "id" in face && typeof face.id === "string" ? face.id : `port:${msg.portId}`;
         const invocation: Verb = { requestId: msg.askId, title: `lar:///ha.ka.ba/bags/wiki/verbs/${msg.askId}`,
@@ -482,7 +489,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       const cid = msg.subject ?? "";
       if (!/^[a-fA-F0-9]{64}$/.test(cid)) { refused("bad-cid"); return; }
       let tier: CapTier | undefined;
-      try { tier = opts.casTierOf?.(cid); } catch { /* A failed tier lookup grants nothing. */ }
+      try { tier = opts.casTierOf?.(cid, msg.portId); } catch { /* A failed tier lookup grants nothing. */ }
       if (tier === undefined) { refused("cas-tier-unknown"); return; }
       if (tier === "contract") { refused("cas-contract"); return; }
       if (tier !== "public") { refused("cas-private"); return; }

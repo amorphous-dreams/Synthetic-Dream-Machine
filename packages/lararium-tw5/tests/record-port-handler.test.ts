@@ -697,11 +697,12 @@ describe("record port handler", () => {
     await r.close();
   });
 
-  test("default makeWikiBehavior refuses write by name; CONTROL: server-granted handler writes", async () => {
+  test("default makeWikiBehavior refuses an unleased open; CONTROL: server-granted handler writes", async () => {
     const defaultPort = await rig({}, makeWikiBehavior());
     await defaultPort.send(openMsg());
     await defaultPort.send(writeMsg("default", "Denied"));
-    expect(ofType(defaultPort.messages, "port:written").at(-1)).toMatchObject({ status: "refused", reason: "edits-not-granted" });
+    expect(ofType(defaultPort.messages, "port:reset").at(-1)).toMatchObject({ reason: "lagged" });
+    expect(ofType(defaultPort.messages, "port:written")).toHaveLength(0);
     expect(await defaultPort.composite.get("Denied")).toBeNull();
     await defaultPort.close();
     const granted = await rig();
@@ -1028,12 +1029,13 @@ describe("record port handler", () => {
     await r.close();
   });
 
-  test("default makeWikiBehavior composition refuses invoke with no-authority", async () => {
+  test("default makeWikiBehavior composition holds no unleased invoke", async () => {
     const behavior = makeWikiBehavior();
     const r = await rig({}, behavior);
     await r.send(openMsg());
     await r.send(askMsg("invoke", { renderCursor: "x", affordanceId: "a0" }));
-    expect(ofType(r.messages, "port:answer").at(-1)?.reason).toBe("no-authority");
+    expect(ofType(r.messages, "port:reset").at(-1)?.reason).toBe("lagged");
+    expect(ofType(r.messages, "port:answer")).toHaveLength(0);
     await r.close();
   });
 
