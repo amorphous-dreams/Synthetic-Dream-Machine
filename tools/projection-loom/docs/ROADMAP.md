@@ -1,6 +1,6 @@
 # Projection Loom · AI Fire / Art Sigils Roadmap
 
-**Evidence checkpoint:** `3dc3236d` (not a globally current release state). **Working branch:** `feature/green-jello-dinosaur-5--projection-loom`, PR [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84).
+**Evidence checkpoint:** `46721eca` (not a globally current release state). **Working branch:** `feature/green-jello-dinosaur-5--projection-loom`, PR [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84).
 **Base / Lares boot ref:** `feature/green-jello-dinosaur-5`.
 **Source of truth:** real Git ancestry, source-bound native witnesses and CI jobs. This document marks provisional completion and blockers, not house law or Operator promotion. Refresh run status on re-entry.
 
@@ -22,7 +22,7 @@ evergreen working map: follow branch SHA and workflow receipts, never a global
   alternatives, 2 relation-topology witnesses, and 4 distinct six-view
   silhouettes**. These are bounded parameter probes, **not** four OODA-HA
   generations, four distinct BRep shapes, or Operator-promoted lineages.
-- **Live code checkpoint:** `3dc3236d` contains the Hephaestian
+- **Earlier code checkpoint:** `3dc3236d` contains the Hephaestian
   Passage-and-Place observer and the ascending/descending OODA-HA integrity
   repairs. The dedicated Fire [#40280351768](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40280351768)
   and CAD [#40280351807](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40280351807)
@@ -303,9 +303,9 @@ the inherited proposal separately. Emergent geometry observations have
 limited AABB meaning, do not certify circulation or safety, and cannot
 promote pet-names or replace the Operator.
 
-The first proof is a constrained two-epoch OODA-HA campaign with the
-birth recipe and retained seed-frozen reference, not a claim that all
-three relation cells will pass. Compare exact CAD acceptance, phenotype
+The first two-epoch source-held OODA-HA birth campaign has completed
+under same-head CI; see the measured census below. It does not prove
+that all three relation cells produce successful native architecture. Compare exact CAD acceptance, phenotype
 diversity, fixed-view source fidelity, and failure reasons. A subsequent
 matched-seed control and separated random streams remain open research.
 
@@ -332,3 +332,48 @@ raises a typed `NativeConstructionRejected`, which WideEpoch records as
 kernel exceptions, missing sources and broken scoring remain `error`.
 This preserves surprising failure testimony without inventing survivors
 or pretending software defects represent native design judgments.
+
+## Architectural Birth · first source-held OODA-HA evidence
+
+**Verified at code head `46721eca`:** the dedicated
+[Architectural Birth workflow #40309995290](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40309995290)
+passed **19 focused tests**, generated the source-derived birth pair,
+regrew a native-valid `bears` construction from the one named Oblique Seed,
+and completed **two OODA-HA epochs** with its existing six breeding families.
+
+The cohort offered **36 proposals**, attempted **24 exact native audits**,
+and produced **12 scored survivors, 12 distinct source-view masks and three
+visual niches**. The `arch.birth.enable` activation funnel records:
+
+| Birth-activation stage | Active | Inactive |
+| --- | ---: | ---: |
+| Proposed | 3 | 33 |
+| Exact attempted | 2 | 22 |
+| Native valid | 2 | 22 |
+| Scored | 1 | 11 |
+| Audited but unscored | 1 | 11 |
+| Deferred | 1 | 11 |
+| Native rejected | 0 | 0 |
+| Operational error | 0 | 0 |
+
+This is actual heritable source-bound graft evidence, *not* proof that
+all three relation cells were attempted or admitted, nor an aesthetic
+improvement over the source. Native-valid **≠** scored, and one distinct
+silhouette **≠** an independently certified architectural organization.
+No historical lineage, novel pet-name or Operator promotion occurred.
+
+The birth recipe SHA is
+`b10070c02ebbc407bd8e76579dd08603606e109a93c09144aee3e5498abbfefa`;
+the original pet-named Oblique Seed entity SHA remains
+`f3763c590f9972e5879dee9df22877e11136ba80e918d77990e51ffd40776c1c`.
+The [retained Actions artifact](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40309995290/artifacts/12644651523)
+contains the campaign archive, audits, source pair, and logs.
+Repo-wide and held-out checks at `46721eca` must be consulted separately.
+
+**Next evidence tasks:** compare a birth-active accepted child to a
+counterfactual with exactly the same other genome loci and the birth switch
+off; report native material deltas and all six fixed-camera silhouettes.
+Then vary relation modes under a controlled native audit budget, retaining
+real CAD refusals and their reasons. Do not call those future experiments
+complete merely because the first cohort passed.
+

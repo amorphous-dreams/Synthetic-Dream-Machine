@@ -1,3 +1,48 @@
+## Architectural Birth · first source-held OODA-HA evidence
+
+**Verified at code head `46721eca`:** the dedicated
+[Architectural Birth workflow #40309995290](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40309995290)
+passed **19 focused tests**, generated the source-derived birth pair,
+regrew a native-valid `bears` construction from the one named Oblique Seed,
+and completed **two OODA-HA epochs** with its existing six breeding families.
+
+The cohort offered **36 proposals**, attempted **24 exact native audits**,
+and produced **12 scored survivors, 12 distinct source-view masks and three
+visual niches**. The `arch.birth.enable` activation funnel records:
+
+| Birth-activation stage | Active | Inactive |
+| --- | ---: | ---: |
+| Proposed | 3 | 33 |
+| Exact attempted | 2 | 22 |
+| Native valid | 2 | 22 |
+| Scored | 1 | 11 |
+| Audited but unscored | 1 | 11 |
+| Deferred | 1 | 11 |
+| Native rejected | 0 | 0 |
+| Operational error | 0 | 0 |
+
+This is actual heritable source-bound graft evidence, *not* proof that
+all three relation cells were attempted or admitted, nor an aesthetic
+improvement over the source. Native-valid **≠** scored, and one distinct
+silhouette **≠** an independently certified architectural organization.
+No historical lineage, novel pet-name or Operator promotion occurred.
+
+The birth recipe SHA is
+`b10070c02ebbc407bd8e76579dd08603606e109a93c09144aee3e5498abbfefa`;
+the original pet-named Oblique Seed entity SHA remains
+`f3763c590f9972e5879dee9df22877e11136ba80e918d77990e51ffd40776c1c`.
+The [retained Actions artifact](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40309995290/artifacts/12644651523)
+contains the campaign archive, audits, source pair, and logs.
+Repo-wide and held-out checks at `46721eca` must be consulted separately.
+
+**Next evidence tasks:** compare a birth-active accepted child to a
+counterfactual with exactly the same other genome loci and the birth switch
+off; report native material deltas and all six fixed-camera silhouettes.
+Then vary relation modes under a controlled native audit budget, retaining
+real CAD refusals and their reasons. Do not call those future experiments
+complete merely because the first cohort passed.
+
+
 
 
 ### Native refusal versus operational exceptions
