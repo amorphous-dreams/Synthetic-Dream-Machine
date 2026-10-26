@@ -59,7 +59,7 @@ import {
 } from "./face-proof-subjects.js";
 import type { GateBundle, GateTier } from "./gate-bundle.js";
 import {
-  GATE_FRAME, encodeGateAnswer, gateFinishPayload, gateFrame, gatePartReader, gateParts, gatePlaceFinishImage,
+  GATE_FINISH_BYTES, GATE_FRAME, encodeGateAnswer, gateFinishPayload, gateFrame, gatePartReader, gateParts, gatePlaceFinishImage,
   gateVerdictImage, readGatePresentation, readPlacePresentation, PLACE_LINEAGE_BOUND, PLACE_SEAL_LINEAGE_BOUND,
   type GateAnswer, type PlaceArm, type PresentationArm,
   type ReadPlacePresentation,
@@ -514,7 +514,7 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
       presented = pushed;
     }
     const finish = await next();
-    if (finish === null || finish.length !== 65 || finish[0] !== GATE_FRAME.finish) return silence("finish-absent");
+    if (finish === null || finish.length !== GATE_FINISH_BYTES || finish[0] !== GATE_FRAME.finish) return silence("finish-absent");
 
     /** Sign and send one answer, sealed. False where the deadline already lapsed: nothing then leaves. */
     const answer = async (named: GateAnswer): Promise<boolean> => {

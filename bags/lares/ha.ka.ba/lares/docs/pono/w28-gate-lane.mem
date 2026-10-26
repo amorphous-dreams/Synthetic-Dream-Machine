@@ -1,0 +1,73 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/w28-gate-lane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/w28-gate-lane.mem"
+l-space   = "stable"
+mana      = 15
+manao     = 15
+manaoio   = 14
+namespace = "&#x2299;"
+role      = "w28-gate-lane — the lane kit for roadmap rows `W28` and `W10`: the sealed channel's frame table stands frozen before the bake, and the research pair's reading of the knock's offline test"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/w28-gate-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/w28-gate-lane"
+written   = "2026-10-26"
+```
+
+<<~ ahu #/head>>
+
+! The w28-gate lane ~ the dial's bytes move once
+
+Both rows touch the sealed channel's dial bytes, so each settles before the X0 bake. `W28` froze the frame table (#/the-frozen-frames). `W10` asked whether a client can prove itself first without breaking admission or pinning (#/the-knock-reading).
+
+<<~/ahu>>
+
+<<~ ahu #/the-frozen-frames>>
+
+!! The frozen frames ~ W28
+
+|! Tag |! Name |! Direction |
+| `0x01` | `presentationPart` | dialer to gate |
+| `0x02` | `presentationEnd` | dialer to gate |
+| `0x03` | `finish` | dialer to gate |
+| `0x11` | `answerPart` | gate to dialer |
+| `0x12` | `answerEnd` | gate to dialer |
+| `0x13` | `verdict` | gate to dialer |
+
+* ''The bounds'': a frame body holds at most 65518 bytes (`GATE_FRAME_BODY_MAX`), a presentation or an answer at most 1048576 bytes (`GATE_SUBJECT_MAX_BYTES`), and a finish or a verdict frame weighs 65 bytes, the tag and one Ed25519 signature (`GATE_FINISH_BYTES`, `GATE_VERDICT_BYTES`). A change to any of them takes a version rite.
+* ''The reserved-tag rule'': tags `0x01` to `0x0f` belong to the dialer's direction and `0x11` to `0x1f` to the gate's. A later frame takes an unassigned tag inside its direction's block and moves no assigned tag. `0x00`, `0x10` and `0x20` to `0xff` take a version rite. Every byte outside the table reads reserved: `gateFrame`, `gateParts` and `gatePartReader` throw a `RangeError` for one, and a received reserved tag refuses.
+* ''The witness'': `packages/lararium-mesh/tests/gate-frame-freeze.test.ts` pins the table, the bounds and the lengths as literals, reads all 250 unassigned bytes as reserved, and runs `gateFrameTableRefusal` against hand-built tables (a reused value, a tag outside the blocks, a gate tag in the dialer's block, a non-integer) with the real table as its known positive.
+
+<<~/ahu>>
+
+<<~ ahu #/the-knock-reading>>
+
+!! The knock reading ~ W10, a research pair woken apart, two waves traded
+
+''MEASURED'' (the code seat, the field seat, and the lead's own read of `face-gate-server.ts`): the dial already runs Noise IK with the dialer's fresh static inside message one, so a dialer already proves itself before the gate sends its verdict. A holder of a candidate responder public key alone cannot test a captured message one (it needs the `es` Diffie-Hellman). The knock (`gateKnock`, an HMAC over the bundle digest, which hashes the whole public pin) tests offline for anyone holding the full candidate pin and an observed path. Any cheap pre-filter keyed on public pin material has that property, WireGuard's `mac1` included (paper section 5.4.4); a pinned dialer holds exactly the public pin, so no filter can tell it from an observer holding the same pin. A filter an observer lacks needs a client-held secret outside the pin, which changes the admission and pinning model.
+
+''MEASURED'': the knock also selects the gate. The dispatcher registers each Nexus and route at an exact `<route>/<knock>` path; a knock-less dial needs another clear selector or a trial decryption against every gate on a route, and each trial costs one X25519.
+
+''MEASURED, a defect apart from the leak'': `handleUpgrade` in `packages/lararium-node/src/face-gate-server.ts` sends the HTTP 101 before the gate decrypts message one, while `face-proof#/the-gate-exchange` states the gate answers the upgrade only after the flight decrypts. A holder of a learned path therefore reads a 101 from a gate for any well-formed token. The cure moves no wire byte: a bounded Noise preflight before the upgrade.
+
+''The lean'' (LEAD): the leak stands accepted and named; the knock stays; the 101 ordering gets repaired; a secret pre-filter waits on the operator, since it adds a credential to the pin.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;p3dR0w8RqF1qvSivylPo8LWNqLDT5Wgu_sqPw7fKIrI
+
+<<^ code="&#x0004;" -> to="?">>

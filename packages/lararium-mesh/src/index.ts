@@ -387,7 +387,11 @@ export type {
   GateFaceGrantRing, GateSortInput, GateSortVerdict, GateSorter, GateWithdrawalMemory, GateSession, GateSeat, GateSessionTable,
   GateSilenceReason, GateSilenceDetail, GateOutcome,
 } from "./face-gate.js";
-export { GATE_PROTOCOL, GATE_FLIGHT_BYTES, GATE_FLIGHT_REFUSALS, gateFlightProtocols, readGateFlightHeader, gateProtocolSelected } from "./gate-exchange.js";
+export {
+  GATE_PROTOCOL, GATE_FLIGHT_BYTES, GATE_FLIGHT_REFUSALS, gateFlightProtocols, readGateFlightHeader, gateProtocolSelected,
+  GATE_FRAME, GATE_FRAME_DIRECTION, GATE_FINISH_BYTES, GATE_VERDICT_BYTES, GATE_FRAME_BODY_MAX, GATE_SUBJECT_MAX_BYTES,
+  gateFrameTagReserved, gateFrameTableRefusal,
+} from "./gate-exchange.js";
 export type { GateFlightRefusal, PresentationArm, PlaceArm } from "./gate-exchange.js";
 export { dialFaceGate, dialPlaceGate, FACE_DIAL_REFUSALS } from "./face-dial.js";
 export type { DialSocket, FaceDialArgs, FaceDialOutcome, FaceDialRefusal, PlaceDialArgs, PlaceDialOutcome } from "./face-dial.js";
