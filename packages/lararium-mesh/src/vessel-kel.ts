@@ -1,69 +1,171 @@
 /**
- * vessel-kel — the floor key's own inception: the key revealed and signed by itself, with no next key committed.
- *
- * THE FLOOR STANDS NON-TRANSFERABLE. A vessel's floor key names a place on one device, and it commits no next
- * key-set, so it cannot rotate by construction (KERI's non-transferable identifier). A lost or stolen floor key gets
- * answered by founding the place afresh, never by a rotation. A next-key seed would rest on the same disk as the key
- * it succeeds, so a thief of the disk would take both, and no verb rotates the floor key: such a commitment guards
- * nothing. See lar:///ha.ka.ba/lararium/mesh/identity-classes.
- *
- * NO CLOCK, NO VERSION. The record holds `t` (the event kind), `k` (the key) and `sig`, and nothing beside them: no
- * creation date, no version tag, no sequence counter, no next-key digest and no next threshold. The key signs the
- * canonical bytes under the `vessel-kel` domain; Ed25519 signs deterministically, so one seed mints one byte string.
- *
- * ONE SHAPE, READ STRICTLY. The reader and the check both refuse a record that carries any other field, so an
- * inception that commits a next key, or tells a time, never reads as this one.
+ * The place KEL commits its next cold key while its current online key signs floor duties.
+ * A cold reveal authorizes each rotation. Event identity comes from the canonical core.
  */
-
 import { ed25519 } from "@noble/curves/ed25519.js";
-import { canonicalJsonBytes, hex } from "./crypto.js";
-import { VESSEL_KEL_DOMAIN } from "./domains.js";
-import { verifyEd25519 } from "./ed25519-door.js";
+import { canonicalJson, canonicalJsonBytes, hex, sha256HexSync } from "./crypto.js";
+import { PLACE_NEXT_KEY_DOMAIN, VESSEL_KEL_DOMAIN } from "./domains.js";
+import { acceptEd25519Key, verifyEd25519 } from "./ed25519-door.js";
 
-export interface VesselKelInception {
-  readonly t:   "icp";
-  /** The floor key's public bytes, hex: one key. */
-  readonly k:   readonly string[];
-  /** The floor key's Ed25519 signature over the signed bytes, hex. */
-  readonly sig: string;
+export type PlaceKelEvent = PlaceInception | PlaceRotation;
+export interface PlaceInception {
+  readonly kind: typeof VESSEL_KEL_DOMAIN; readonly t: "icp"; readonly seq: 0;
+  readonly key: string; readonly next: string; readonly sig: string;
+}
+export interface PlaceRotation {
+  readonly kind: typeof VESSEL_KEL_DOMAIN; readonly t: "rot"; readonly aid: string;
+  readonly seq: number; readonly prev: string; readonly reveal: string;
+  readonly key: string; readonly next: string; readonly sig: string;
+}
+export type PlaceKelRefusal = "unarmed-inception" | "old-shape-inception" | "bad-signature" | "wrong-reveal" |
+  "reused-commitment" | "reused-key" | "gap" | "prev-mismatch" | "aid-mismatch" |
+  "seq-mismatch" | "malformed" | "fork" | "forged-row" | "rollback";
+export type PlaceKelReading =
+  | { readonly ok: true; readonly aid: string; readonly seq: number; readonly head: PlaceKelEvent;
+      readonly headDigest: string; readonly signerKey: string; readonly nextDigest: string; readonly chain: readonly PlaceKelEvent[] }
+  | { readonly ok: false; readonly refusal: PlaceKelRefusal; readonly forks?: readonly PlaceRotation[];
+      readonly commonAncestor?: string };
+const HEX64 = /^[0-9a-f]{64}$/;
+const SIG = /^[0-9a-f]{128}$/;
+const own = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
+const fields = (value: Record<string, unknown>, names: string) => Object.keys(value).sort().join(",") === names;
+const door = (key: string) => HEX64.test(key) && acceptEd25519Key(key).ok;
+const digest = (event: PlaceKelEvent) => sha256HexSync(canonicalJson(core(event)));
+const core = (event: PlaceKelEvent) => {
+  if (event.t === "icp") return { kind: event.kind, t: event.t, seq: event.seq, key: event.key, next: event.next };
+  return { kind: event.kind, t: event.t, aid: event.aid, seq: event.seq, prev: event.prev,
+    reveal: event.reveal, key: event.key, next: event.next };
+};
+
+/** Commit a door-accepted cold verifying key under the place's next-key domain. */
+export function placeNextDigest(coldVerifyingKey: string): string {
+  if (typeof coldVerifyingKey !== "string" || !door(coldVerifyingKey)) throw new Error("place-kel: cold key refused");
+  return sha256HexSync(canonicalJson({ kind: PLACE_NEXT_KEY_DOMAIN, key: coldVerifyingKey }));
 }
 
-/** The fields an inception holds, sorted: any record holding others refuses. */
-const FIELDS = "k,sig,t";
-
-/** The bytes the key signs: the domain, then the event kind and the key. */
-const signedBytes = (t: string, k: readonly string[]): Uint8Array => canonicalJsonBytes({ domain: VESSEL_KEL_DOMAIN, t, k });
-
-/** Mint the inception from the floor seed. Pure: the same seed mints the same bytes. */
-export function inceptVesselKel(signingSeed: Uint8Array): { readonly inception: VesselKelInception; readonly bytes: Uint8Array } {
-  if (signingSeed.length !== 32) throw new Error("vessel-kel: the floor seed must ride 32 bytes");
-  const t = "icp" as const;
-  const k = [hex(ed25519.getPublicKey(signingSeed))];
-  const inception: VesselKelInception = { t, k, sig: hex(ed25519.sign(signedBytes(t, k), signingSeed)) };
-  return { inception, bytes: canonicalJsonBytes(inception) };
+export function mintPlaceInception(args: { signerSeed: Uint8Array; coldVerifyingKey: string }):
+  { event: PlaceInception; bytes: Uint8Array; aid: string; digest: string } {
+  if (!(args.signerSeed instanceof Uint8Array) || args.signerSeed.length !== 32) throw new Error("place-kel: signer seed needs 32 bytes");
+  const key = hex(ed25519.getPublicKey(args.signerSeed));
+  if (!door(key) || key === args.coldVerifyingKey) throw new Error("place-kel: signer key refused");
+  const unsigned = { kind: VESSEL_KEL_DOMAIN, t: "icp" as const, seq: 0 as const, key, next: placeNextDigest(args.coldVerifyingKey) };
+  const event = { ...unsigned, sig: hex(ed25519.sign(canonicalJsonBytes(unsigned), args.signerSeed)) };
+  const aid = digest(event);
+  return { event, bytes: canonicalJsonBytes(event), aid, digest: aid };
 }
 
-/** Does the inception hold exactly its own fields, name one key, and carry that key's signature under `vessel-kel`? */
-export function verifyVesselKelInception(inception: VesselKelInception): boolean {
+/** Extend a chain that verifies: `chain` runs from the inception to the head the cold key rotates. */
+export function mintPlaceRotation(args: { chain: readonly PlaceKelEvent[]; coldSeed: Uint8Array; newSignerKey: string;
+  nextColdVerifyingKey: string }): PlaceRotation {
+  const prior = args.chain;
+  const checked = verifyPlaceKel(prior);
+  if (!checked.ok) throw new Error(`place-kel: ${checked.refusal}`);
+  if (!(args.coldSeed instanceof Uint8Array) || args.coldSeed.length !== 32) throw new Error("place-kel: cold seed needs 32 bytes");
+  const reveal = hex(ed25519.getPublicKey(args.coldSeed));
+  if (placeNextDigest(reveal) !== checked.nextDigest) throw new Error("place-kel: wrong-reveal");
+  const next = placeNextDigest(args.nextColdVerifyingKey);
+  if (prior.some((e) => e.next === next)) throw new Error("place-kel: reused-commitment");
+  if (!door(args.newSignerKey) || args.newSignerKey === reveal || args.newSignerKey === args.nextColdVerifyingKey ||
+      prior.some((e) => e.key === args.newSignerKey || (e.t === "rot" && e.reveal === args.newSignerKey)) ||
+      prior.some((e) => e.key === args.nextColdVerifyingKey || (e.t === "rot" && e.reveal === args.nextColdVerifyingKey)))
+    throw new Error("place-kel: reused-key");
+  const unsigned = { kind: VESSEL_KEL_DOMAIN, t: "rot" as const, aid: checked.aid, seq: checked.seq + 1,
+    prev: checked.headDigest, reveal, key: args.newSignerKey, next };
+  const event = { ...unsigned, sig: hex(ed25519.sign(canonicalJsonBytes(unsigned), args.coldSeed)) };
+  return event;
+}
+
+/** Decode one exact event shape. A wire digest has no place in either shape. */
+export function decodePlaceKelEvent(input: Uint8Array | unknown): PlaceKelEvent | null {
   try {
-    if (Object.keys(inception).sort().join(",") !== FIELDS) return false;
-    if (inception.t !== "icp" || !Array.isArray(inception.k) || inception.k.length !== 1 || typeof inception.k[0] !== "string") return false;
-    return verifyEd25519(inception.sig, signedBytes(inception.t, inception.k), inception.k[0]);
-  } catch {
-    return false;
-  }
-}
-
-/** Read an inception from its bytes; anything torn, extra or missing reads `null`, a next-key commitment among them. */
-export function decodeVesselKelInception(bytes: Uint8Array): VesselKelInception | null {
-  try {
-    const raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as Record<string, unknown>;
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
-    if (Object.keys(raw).sort().join(",") !== FIELDS) return null;
-    const strings = (v: unknown): v is string[] => Array.isArray(v) && v.every((s) => typeof s === "string");
-    if (raw.t !== "icp" || !strings(raw.k) || typeof raw.sig !== "string") return null;
-    return { t: "icp", k: raw.k, sig: raw.sig };
-  } catch {
+    const value: unknown = input instanceof Uint8Array ? JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(input)) : input;
+    if (!own(value) || value.kind !== VESSEL_KEL_DOMAIN || typeof value.sig !== "string" || !SIG.test(value.sig)) return null;
+    if (value.t === "icp") {
+      if (!fields(value, "key,kind,next,seq,sig,t") || value.seq !== 0 || typeof value.key !== "string" || !door(value.key) ||
+          typeof value.next !== "string" || !HEX64.test(value.next)) return null;
+      return value as unknown as PlaceInception;
+    }
+    if (value.t === "rot") {
+      if (!fields(value, "aid,key,kind,next,prev,reveal,seq,sig,t") || !Number.isSafeInteger(value.seq) || (value.seq as number) < 1 ||
+          typeof value.aid !== "string" || !HEX64.test(value.aid) || typeof value.prev !== "string" || !HEX64.test(value.prev) ||
+          typeof value.next !== "string" || !HEX64.test(value.next) || typeof value.reveal !== "string" || !door(value.reveal) ||
+          typeof value.key !== "string" || !door(value.key)) return null;
+      return value as unknown as PlaceRotation;
+    }
     return null;
+  } catch { return null; }
+}
+const oldShape = (e: unknown) => own(e) && e.t === "icp" && fields(e, "k,sig,t");
+const signatureOk = (e: PlaceKelEvent) => verifyEd25519(e.sig, canonicalJsonBytes(core(e)), e.t === "icp" ? e.key : e.reveal);
+
+export function verifyPlaceKel(chain: readonly PlaceKelEvent[]): PlaceKelReading {
+  if (!Array.isArray(chain) || chain.length === 0) return { ok: false, refusal: "gap" };
+  if (oldShape(chain[0])) return { ok: false, refusal: "old-shape-inception" };
+  if (own(chain[0]) && chain[0].t === "icp" && !Object.hasOwn(chain[0], "next")) return { ok: false, refusal: "unarmed-inception" };
+  const first = decodePlaceKelEvent(chain[0]);
+  if (!first || first.t !== "icp") return { ok: false, refusal: "malformed" };
+  if (!signatureOk(first)) return { ok: false, refusal: "bad-signature" };
+  const aid = digest(first);
+  const commitments = new Set([first.next]);
+  const keys = new Set([first.key]);
+  for (let at = 1; at < chain.length; at++) {
+    const e = decodePlaceKelEvent(chain[at]);
+    if (!e || e.t !== "rot") return { ok: false, refusal: "malformed" };
+    const before = chain[at - 1]!;
+    if (e.aid !== aid) return { ok: false, refusal: "aid-mismatch" };
+    if (e.seq !== at) return { ok: false, refusal: e.seq > at ? "gap" : "seq-mismatch" };
+    if (e.prev !== digest(before)) return { ok: false, refusal: "prev-mismatch" };
+    if (placeNextDigest(e.reveal) !== before.next) return { ok: false, refusal: "wrong-reveal" };
+    if (!signatureOk(e)) return { ok: false, refusal: "bad-signature" };
+    if (commitments.has(e.next)) return { ok: false, refusal: "reused-commitment" };
+    if (keys.has(e.key) || keys.has(e.reveal) || e.key === e.reveal) return { ok: false, refusal: "reused-key" };
+    commitments.add(e.next); keys.add(e.key); keys.add(e.reveal);
   }
+  const head = chain[chain.length - 1]!;
+  return { ok: true, aid, seq: chain.length - 1, head, headDigest: digest(head), signerKey: head.key, nextDigest: head.next, chain };
+}
+
+/** Read unordered board rows from the pinned inception. Duplicate bytes add no branch. */
+export function foldPlaceKel(events: readonly unknown[], pinned: { aid: string; inceptionDigest?: string }): PlaceKelReading {
+  const rows = new Map<string, PlaceKelEvent>();
+  for (const raw of events) {
+    const e = decodePlaceKelEvent(raw);
+    if (!e) continue;
+    if (e.t === "rot" && e.aid !== pinned.aid) continue;
+    if (e.t === "icp" && digest(e) !== pinned.aid) continue;
+    if (!signatureOk(e)) continue;
+    rows.set(digest(e), e);
+  }
+  const first = rows.get(pinned.aid);
+  if (!first || first.t !== "icp") return { ok: false, refusal: "gap" };
+  if (pinned.inceptionDigest && pinned.inceptionDigest !== digest(first)) return { ok: false, refusal: "aid-mismatch" };
+  let chain: PlaceKelEvent[] = [first];
+  for (;;) {
+    const read = verifyPlaceKel(chain);
+    if (!read.ok) return read;
+    const candidates = [...rows.values()].filter((e): e is PlaceRotation => e.t === "rot" && e.prev === read.headDigest && e.seq === read.seq + 1);
+    const valid = candidates.filter((e) => verifyPlaceKel([...chain, e]).ok);
+    if (valid.length > 1) return { ok: false, refusal: "fork", forks: valid, commonAncestor: read.headDigest };
+    if (valid.length === 1) { chain = [...chain, valid[0]!]; continue; }
+    const later = [...rows.values()].some((e) => e.t === "rot" && e.seq > read.seq + 1);
+    if (later) return { ok: false, refusal: "gap" };
+    if (candidates.length || [...rows.values()].some((e) => e.t === "rot" && e.seq > read.seq)) return { ok: false, refusal: "forged-row" };
+    return read;
+  }
+}
+
+export function acceptPlaceHead(previouslyAccepted: { aid: string; seq: number; headDigest: string } | null,
+  folded: PlaceKelReading): PlaceKelReading {
+  if (!folded.ok) return folded;
+  if (!previouslyAccepted) return folded;
+  if (folded.aid !== previouslyAccepted.aid || folded.seq < previouslyAccepted.seq ||
+      !folded.chain[previouslyAccepted.seq] || digest(folded.chain[previouslyAccepted.seq]!) !== previouslyAccepted.headDigest)
+    return { ok: false, refusal: "rollback" };
+  return folded;
+}
+export function placeSignerKeyAt(head: PlaceKelEvent | PlaceKelReading): string {
+  if ("ok" in head) { if (!head.ok) throw new Error(`place-kel: ${head.refusal}`); return head.signerKey; }
+  const event = decodePlaceKelEvent(head);
+  if (!event) throw new Error("place-kel: malformed");
+  return event.key;
 }

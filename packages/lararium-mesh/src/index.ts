@@ -572,9 +572,8 @@ export type { SCarrierReading } from "./s-envelope.js";
 // SLIP-39: the paper pin's encoder, over the house's own GF(256) field ops — see `slip39`.
 export { Slip39Error, decodeShare, encodeShare, generateMnemonics, combineMnemonics, readBackMismatch } from "./slip39.js";
 export type { Slip39Share, ReadBackMismatch } from "./slip39.js";
-// The floor key's own inception: the key signed by itself, committing no next key — see `vessel-kel`.
-export { inceptVesselKel, verifyVesselKelInception, decodeVesselKelInception } from "./vessel-kel.js";
-export type { VesselKelInception } from "./vessel-kel.js";
+// The place KEL commits cold successors while online signers carry floor duties.
+export * from "./vessel-kel.js";
 export * from "./vessel-journal.js";
 // ── The sealed store's records, lineage, lockboxes, rest and content-key holder ────────────────────────
 // Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store. The key shore (`@lararium/keyhive`) and the node's

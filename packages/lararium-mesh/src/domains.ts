@@ -138,6 +138,7 @@ export const CADENCE_NEXT_KEY_DOMAIN = mint("cadence-next-key");
 // ── CUSTODY: THE tree key, ITS KEYSLOTS, AND THE VESSEL KEL ───────────────────────────────────────────
 /** The floor key's own inception: the key signed by itself, committing no next key. */
 export const VESSEL_KEL_DOMAIN = mint("vessel-kel");
+export const PLACE_NEXT_KEY_DOMAIN = mint("place-next-key");
 /** The HKDF `info` every keyslot wrap derives under: a pin's KEK wrapping its share of the slot key, and the
  *  slot key wrapping the tree key. */
 export const SLOT_WRAP_INFO = mint("slot-wrap");
