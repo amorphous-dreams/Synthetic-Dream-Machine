@@ -75,8 +75,11 @@ def _operations(rule, resolved, original):
         # while retaining positive overlap with both existing bodies. A
         # buried member would pass contact but change no architectural form.
         # The joint audit still decides whether this placement actually holds.
-        x = min(shi[0],thi[0]) + min(width,overlap_x)*.25
-        y = min(shi[1],thi[1]) + min(depth,overlap_y)*.25
+        inset = float(p.get('setback', 0.0))
+        if not math.isfinite(inset) or not 0.0 <= inset <= 0.20:
+            raise ValueError('Bearing setback must remain within [0,.20]')
+        x = min(shi[0],thi[0]) + min(width,overlap_x)*(.25-inset)
+        y = min(shi[1],thi[1]) + min(depth,overlap_y)*(.25-inset)
         start_z = (slo[2]+shi[2])/2
         end_z = (tlo[2]+thi[2])/2
         if end_z <= start_z+.01:

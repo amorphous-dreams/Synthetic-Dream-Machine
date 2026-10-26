@@ -21,8 +21,8 @@ def grow(p):
         z=-.52*length
         sections.insert(2,(z,asym*.24,0.,shaft*.49,shaft*.56))
     a.add('obsidian needle',faceted_loft(sections,sides=8,jaggedness=rough),role='foundation',material=0)
-    a.add_box('lower terrace',(terrace_offset,0,1.3),(fort*overhang,fort*1.15,1.35),parents=['obsidian needle'],material=1)
-    a.add_box('central keep',(0,0,2.6+tower*.27),(fort*.75,fort*.72,2.7+tower*.55),parents=['lower terrace'],material=1,taper=keep_taper)
+    a.add_box('lower terrace',(terrace_offset,0,1.3),(fort*overhang,fort*1.15,1.35),parents=['obsidian needle'],material=1,slot='lower-terrace')
+    a.add_box('central keep',(0,0,2.6+tower*.27),(fort*.75,fort*.72,2.7+tower*.55),parents=['lower terrace'],material=1,taper=keep_taper,slot='central-keep')
     a.add_box('upper keep',(crown_offset,0,3.2+tower*.72),(fort*.54,fort*.53,1.2+tower*.66),parents=['central keep'],material=1,taper=crown_taper)
     a.add_box('parapet',(crown_offset,0,3.35+tower*1.20),(fort*parapet_fraction,fort*.64,.52),parents=['upper keep'],material=2)
     a.add_box('front lower terrace',(-fort*.53,-fort*.41,1.48),(fort*.47,fort*.40,.55),parents=['lower terrace'],material=1)

@@ -210,6 +210,11 @@
                 "type": "number",
                 "minimum": 0,
                 "maximum": 3
+              },
+              "setback": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 0.2
               }
             }
           }

@@ -114,3 +114,24 @@ def test_real_single_seed_fire_bearing_has_native_expression():
         "native-admitted", "native-admitted", "study-only"]
     assert all(x["added_volume"] > 0 for x in result["results"][:2])
     assert all(x["native_audit"]["union_solids"] == 1 for x in result["results"][:2])
+
+
+def test_source_fire_two_probe_profiles_are_distinct():
+    import sys
+    from pathlib import Path
+    from projection_loom.fire_contract import validate_proposal
+    root=Path(__file__).resolve().parents[1]
+    sys.path.insert(0,str(root/'examples/necrospire'))
+    try:
+        from fire_study import build_study
+        context={'source':{'location':'necrospire','witness_id':'source-12345'},'bindings':[
+            {'handle':'lower terrace','selector':{'kind':'material','role':'primary','parents':[],'slot':'lower-terrace','has':[]}},
+            {'handle':'central keep','selector':{'kind':'material','role':'primary','parents':[],'slot':'central-keep','has':[]}}]}
+        a=validate_proposal(build_study(context,epoch=1))
+        b=validate_proposal(build_study(context,epoch=2))
+        assert a['source']==b['source']
+        assert [x['parameters']['setback'] for x in a['alternatives'][:2]]==[0.,0.]
+        assert [x['parameters']['setback'] for x in b['alternatives'][:2]]==[.1,.1]
+        assert [x['implementation'] for x in a['alternatives']]==['bearing-column','bearing-column','study-only']
+    finally:
+        sys.path.remove(str(root/'examples/necrospire'))

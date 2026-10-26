@@ -120,6 +120,28 @@ jobs:
           print('Source-bound native studies:',[(r['id'],r['state']) for r in rows])
           print('Per-view observable changes:',[r['expressed_in_views'] for r in summary['alternatives']])
           PY
+      - name: Native single-seed free-play bearing cohort (two bounded probes)
+        run: |
+          for epoch in 1 2; do
+            python examples/necrospire/fire_study.py --context fire-source-context.json --epoch "$epoch" --out "fire-probe-$epoch-proposal.json"
+            python -m projection_loom fire-audition --project examples/necrospire/project_alpha.json --capability-recipe examples/necrospire/hybrid/recipe_alpha.json --proposal "fire-probe-$epoch-proposal.json" --out "fire-probe-$epoch-audition.json"
+            python -m projection_loom fire-review --project examples/necrospire/project_alpha.json --capability-recipe examples/necrospire/hybrid/recipe_alpha.json --receipt "fire-probe-$epoch-audition.json" --out "fire-probe-$epoch-review"
+          done
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          receipts=[]
+          for epoch in (1,2):
+              native=json.loads(Path(f'fire-probe-{epoch}-audition.json').read_text())
+              review=json.loads(Path(f'fire-probe-{epoch}-review/summary.json').read_text())
+              assert [r['state'] for r in native['results']]==['native-admitted','native-admitted','study-only']
+              assert len(review['alternatives'])==2
+              assert all(len(r['views'])==6 for r in review['alternatives'])
+              receipts.append({'epoch':epoch,'plan':native['plan_sha256'],'added_volume':[r.get('added_volume') for r in native['results']],'expressed_views':[r['expressed_in_views'] for r in review['alternatives']]})
+          assert receipts[0]['plan'] != receipts[1]['plan']
+          Path('fire-probe-cohort.json').write_text(json.dumps(receipts,indent=2))
+          print('Native Fire cohort:',receipts)
+          PY
       - name: Upload attributable source and native experiment receipts
         if: always()
         uses: actions/upload-artifact@v4
@@ -132,5 +154,9 @@ jobs:
             tools/projection-loom/fire-bearing-proposal.json
             tools/projection-loom/fire-bearing-audition.json
             tools/projection-loom/fire-bearing-review/**
+            tools/projection-loom/fire-probe-*-proposal.json
+            tools/projection-loom/fire-probe-*-audition.json
+            tools/projection-loom/fire-probe-*-review/**
+            tools/projection-loom/fire-probe-cohort.json
           if-no-files-found: warn
           retention-days: 60

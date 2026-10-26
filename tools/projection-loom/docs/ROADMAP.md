@@ -85,3 +85,11 @@ Fire is the living Operator↔AI interpreter. Memetic-wikitext is its conversati
 - Focused tests cover mask arithmetic and actual one-seed CAD admission. Fire CI now executes the full source context → proposed alternatives → native audition → six-view handback path and publishes receipts.
 - Repository-wide evergreen witness repair rewrites one historical comment into present-tense operational language rather than raising the one-way ceiling.
 - **Verification pending:** these additions require a successful same-head Fire CI and repository-wide CI; native success must not be announced from code alone. Existing historical lineages remain frozen.
+
+## Source-stable Fire free-play probe (unpublished commit)
+
+Previous pushed head 06f9c3f2 had Fire/CAD CI failures caused by an ambiguous central-keep selector. The source builder now adds explicit unique lower-terrace and central-keep slots; selector validation remains fail-closed. The native bearing admits bounded setback 0..0.20. Two non-promoting research probes author distinct proposals against one source seed and feed normal Fire audition/review; each creates independent signed six-view evidence if native-admitted.
+
+A separate local CadQuery diagnostic recreated seven source solids and three void solids, then tested 14 bearing parameter placements across two parameter sweeps: 14 passed its BRep union/contact/carving checks, added volume 0.1977..5.9913 cubic model units. This is not a complete Loom audit, nor an OODA-HA generated lineage. Actual source-bound admission and orthographic output await same-head CI.
+
+Do not push until the prior head's held-out and repository-wide CI results have been inspected. Historical lineages remain unchanged.

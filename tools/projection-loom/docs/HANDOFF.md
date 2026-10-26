@@ -1,3 +1,12 @@
+
+## Source-stable Fire free-play probe (unpublished commit)
+
+Previous pushed head 06f9c3f2 had Fire/CAD CI failures caused by an ambiguous central-keep selector. The source builder now adds explicit unique lower-terrace and central-keep slots; selector validation remains fail-closed. The native bearing admits bounded setback 0..0.20. Two non-promoting research probes author distinct proposals against one source seed and feed normal Fire audition/review; each creates independent signed six-view evidence if native-admitted.
+
+A separate local CadQuery diagnostic recreated seven source solids and three void solids, then tested 14 bearing parameter placements across two parameter sweeps: 14 passed its BRep union/contact/carving checks, added volume 0.1977..5.9913 cubic model units. This is not a complete Loom audit, nor an OODA-HA generated lineage. Actual source-bound admission and orthographic output await same-head CI.
+
+Do not push until the prior head's held-out and repository-wide CI results have been inspected. Historical lineages remain unchanged.
+
 # Projection Loom — Evergreen Runbook
 
 **Living ref:** [Projection Loom PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84), branch `feature/green-jello-dinosaur-5--projection-loom`, based on `feature/green-jello-dinosaur-5`. Read the full stable `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` from the preferred boot branch before Lares work. Check the *current* head and Actions on re-entry; this text never substitutes for an actual job receipt.

@@ -10,13 +10,18 @@ import json
 from pathlib import Path
 
 
-def build_study(context):
+def build_study(context, *, epoch=1):
+    if type(epoch) is not int or epoch not in (1, 2):
+        raise ValueError('Fire study requires one of two bounded probe epochs')
     if context.get("source", {}).get("location") != "necrospire":
         raise ValueError("Study requires the actual Necrospire source context")
     parts = {entry["handle"]: entry["selector"] for entry in context["bindings"]}
     for handle in ("lower terrace", "central keep"):
         if handle not in parts or parts[handle]["kind"] != "material":
             raise ValueError("Source context lacks a distinct native terrace and keep")
+    profiles = {1: ((0.6, 0.0), (1.2, 0.0)),
+                2: ((0.6, 0.10), (1.2, 0.10))}
+    narrow, wide = profiles[epoch]
     return {
         "schema": "projection-loom/fire-proposal",
         "inscription": '<<~ art worktype="architectural study" subject="Necrospire terrace and keep" read="a visible contact supports a constructed mass" relation="bearing" >>',
@@ -29,10 +34,10 @@ def build_study(context):
         "alternatives": [
             {"id": "slender-bearing", "subject": "terrace", "object": "keep",
              "relation": "bears", "implementation": "bearing-column",
-             "parameters": {"width": 0.6, "depth": 0.6}},
+             "parameters": {"width": narrow[0], "depth": narrow[0], "setback": narrow[1]}},
             {"id": "broad-bearing", "subject": "terrace", "object": "keep",
              "relation": "bears", "implementation": "bearing-column",
-             "parameters": {"width": 1.2, "depth": 1.2}},
+             "parameters": {"width": wide[0], "depth": wide[0], "setback": wide[1]}},
             {"id": "unresolved-support", "subject": "terrace", "object": "keep",
              "relation": "studies", "implementation": "study-only",
              "parameters": {}},
@@ -46,11 +51,12 @@ def build_study(context):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--context", type=Path, required=True)
+    parser.add_argument("--epoch", type=int, choices=(1, 2), default=1)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     from projection_loom.fire_contract import validate_proposal
     context = json.loads(args.context.read_text(encoding="utf8"))
-    study = validate_proposal(build_study(context))
+    study = validate_proposal(build_study(context, epoch=args.epoch))
     if args.out.exists():
         raise ValueError("Research fixtures must not overwrite an existing proposal")
     args.out.parent.mkdir(parents=True, exist_ok=True)
