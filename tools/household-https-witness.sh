@@ -12,11 +12,12 @@
 #               challenge test server. The certificate names the wildcard alone and chains to Pebble's root.
 #   PER MACHINE a second run under another certificate name issues a second certificate with its own key.
 #   THE EDGE    the terminator serves the issued certificate for the household name, refuses another name's
-#               handshake, proxies `https` to the vessel, and passes a socket upgrade carrying the sealed gate's
-#               first flight (HTTP 101) on the knock the vessel's sovereign sync gate stands, the path the vessel
-#               itself states (`[lar-gate] the sync gate for Nexus … stands on <path>`). The vessel founds a hearth
+#               handshake, proxies `https` to the vessel, and passes a socket upgrade carrying a first flight on the knock the
+#               vessel's sovereign sync gate stands, the path the vessel itself states (`[lar-gate] the sync gate for Nexus … stands on <path>`). The vessel founds a hearth
 #               and the witness opens its key through the test door: a hearth rests at its floor, standing no sync
-#               gate, until a person unlocks it. A `Sec-WebSocket-Protocol` header of 8192 bytes passes the
+#               gate, until a person unlocks it. A flight no dialer sealed to the gate meets the gate's own refusal on its console
+#               (`flight-undecrypted`) and a destroyed socket (502) before any 101: the gate decrypts the flight
+#               before it answers the upgrade. A `Sec-WebSocket-Protocol` header of 8192 bytes passes the
 #               terminator and reaches the gate, which refuses it by name on its own console (`flight-overlong`)
 #               and destroys it before any 101 (502), never nginx's 400. CONTROLS: a knock no gate stood (a random
 #               path) and the stood knock with no flight each draw 502; a header line longer than the terminator's
@@ -278,8 +279,8 @@ result 'CONTROL: another name meets a refused handshake'          test "$other" 
 # flight, `lar-gate, <token>`; every other upgrade meets a destroyed socket before any HTTP 101. A hearth rests at its
 # floor, standing no sync gate, until a person unlocks it, so the witness opens the staged hearth's key through the
 # test door; the hearth composes and its sovereign sync gate states the path it stands on. The witness knocks there
-# with a flight that reads (96 bytes, 128 characters of unpadded base64url): the gate answers 101, then falls silent
-# on a flight no dialer sealed to it.
+# with a flight that reads (96 bytes, 128 characters of unpadded base64url) and that no dialer sealed to the gate: the
+# gate decrypts the flight before any 101, so the knock meets a destroyed socket (502).
 VESSEL=$(compose ps -q lares)
 unlocked=$("$HERE/unlock-staged-container.sh" "$VESSEL" 2>&1 || :)
 result 'the staged hearth opens its key and composes as a hearth' contains "$unlocked" '"standing":"hearth"'
@@ -290,8 +291,10 @@ wspath=$(stood_knock)
 result 'the vessel states the knock its sync gate stands on'      sh -c "case '$wspath' in /ws/?*) exit 0 ;; *) exit 1 ;; esac"
 flight="lar-gate, $(head -c 96 /dev/urandom | base64 | tr -d '\n=' | tr '+/' '-_')"
 result 'the flight spells the gate header (138 bytes)'            test "${#flight}" -eq 138
+vessel_refused() { docker logs "$VESSEL" 2>&1 | grep -q "refused before any 101 ($1)"; }
 head_plain=$(knock "$wspath" "$flight")
-result 'a wss knock through the terminator draws HTTP 101'        contains "$head_plain" 'HTTP/1.1 101'
+result 'a flight no dialer sealed draws 502, never 101'           contains "$head_plain" 'HTTP/1.1 502'
+result 'the gate refused that flight by name'                     vessel_refused flight-undecrypted
 unstood="/ws/$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')"
 head_unstood=$(knock "$unstood" "$flight")
 result 'CONTROL: a knock no gate stood draws 502, never 101'      contains "$head_unstood" 'HTTP/1.1 502'
@@ -299,7 +302,6 @@ head_noflight=$(knock "$wspath" lar.witness)
 result 'CONTROL: the stood knock without a flight draws 502'      contains "$head_noflight" 'HTTP/1.1 502'
 head_tablet=$(knock "$wspath" "$(bytes 8192)")
 # 502 is the vessel's refusal behind the terminator, and the vessel names it on its own console; 400 would be nginx's.
-vessel_refused() { docker logs "$VESSEL" 2>&1 | grep -q "refused before any 101 ($1)"; }
 result 'an 8192-byte Sec-WebSocket-Protocol passes the terminator (502)' contains "$head_tablet" 'HTTP/1.1 502'
 result 'the 8192-byte header meets the vessel, never nginx (no 400)' not_contains "$head_tablet" 'HTTP/1.1 400'
 result 'the gate refused the 8192-byte header by name'            vessel_refused flight-overlong
