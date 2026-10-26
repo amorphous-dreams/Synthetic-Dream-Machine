@@ -65,6 +65,14 @@ A Folio presents one contiguous, copyable `tiddlywiki` block of at most **6,000 
 The nucleus reads in this order: worktype / subject / read / imagery / treatment / composition / relation / depiction-scope. This order gives neither an object inventory nor a mandatory checklist: read carries the governing invitation, while other declared choices retain their own authority.
 <<~/ahu>>
 
+<<~ ahu #/technical-art-boundary>>
+!! Optional technical-art receiver register
+
+For isolated image-generation assets (true-alpha RGBA creature silhouettes, atmospheric FX, small patches and layered composition), consult [[Technical-Art Plate Fieldcraft|ha.ka.ba/lares/api/art-sigils/technical-art]]. It records practical controls, failure modes, alpha/mask behavior, region-targeting limits and approval discipline from an iterative OpenRaster crucible. This specialist practice lives OUTSIDE the portable eight-dimension nucleus: neither transparencies, specific image models, ORA nor a prescribed production pipeline become defaults for ordinary paintings, photographs, textiles or other works.
+
+The compact image-facing sigil describes the requested picture, not an illustrated acceptance-test poster. Engine-side transparent-background flags, reference selection, measured pixel masks and raster registration are recorded separately; words like "exactly at x=..." guide a receiver but cannot guarantee hard positional compliance. An artistic departure may still be excellent art while failing an explicitly isolated layer scope.
+<<~/ahu>>
+
 <<~ ahu #/optional>>
 !! Yin — speech, delegation, silence, withholding
 
@@ -223,6 +231,6 @@ The grammar accommodates portraits, abstract fields, textiles, photographs, inst
 <<~/ahu>>
 
 
-<<^ code="&#x0003;">>ni:///sha-256;TjtvU3FoBusD-JCIHNElXlSn-bj2SClLeBnIjg5OTsc
+<<^ code="&#x0003;">>ni:///sha-256;fL-yZJ-_Vc-BRqwP7vGFWUkKM4tqz6kS2ZHl2Ok2cu0
 
 <<^ code="&#x0004;" -> to="?">>

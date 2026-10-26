@@ -20,7 +20,7 @@ jobs:
       - name: Confirm exact source branch was integrated, then retire it
         env:
           OLD_BRANCH: feature/green-jello-dinosaur-5--art-sigil-house-grammar
-          EXPECTED_HEAD: b94519b31a3b089c89d9b0a20fd386b7469dd97a
+          EXPECTED_HEAD: 0d564b1b91d513d9eec925ce172ec3fd8f763527
         run: |
           set -eu
           git fetch origin "${OLD_BRANCH}"

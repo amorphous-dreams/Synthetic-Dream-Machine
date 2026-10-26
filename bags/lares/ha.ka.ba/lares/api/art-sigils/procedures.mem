@@ -87,6 +87,18 @@ The following example deliberately leaves maps, genre illustration and studio bo
 Load/bind the house procedure definitions in a Lares-enabled wiki before rendering these calls. Plain TW5 inherits the syntax but not the Lararium dispatch. This example demonstrates expressive portability without imposing requirements on other artworks.
 <<~/ahu>>
 
+<<~ ahu #/technical-art-example>>
+!! Optional technical-art Inscription — specialist example
+
+The same eight fields can articulate a genuinely isolated, transparent FX plate without inventing an additional procedure. A single image-facing call names the intended VISUAL result; actual generation flags, reference inputs, exact dimensions and alpha verification belong to the receiver/compositing notes described in [[Technical-Art Plate Fieldcraft|ha.ka.ba/lares/api/art-sigils/technical-art]].
+
+```tiddlywiki
+<<~ art worktype="transparent RGBA technical-art FX plate" subject="several detached luminous vapor wisps" read="scattered breaths of gentle light in open space" imagery="six small pale-violet mist curls, sparse gold and turquoise pinlights, a few hair-fine streamers" treatment="feathered watercolor translucency, restrained local bloom" composition="wide shallow strip, asymmetric separate islands, most canvas clear alpha; a few trails bleed at edges" relation="wind right-to-left and slightly down, warm sun rim from upper-right, cool opposite fill" depiction-scope="FX marks only, no bodies, scenery, panels or captions">>
+```
+
+A second distinct plate for organism bodies would have its own call and independent generated output; it is not a request for a two-panel sheet. A tool's actual transparent-background flag is external receiver control, not a ninth Art Sigil argument. The example sets no universal palette, anatomy or fixed plate dimensions.
+<<~/ahu>>
+
 <<~ ahu #/notation-contract>>
 !! Procedure declaration, invocation and delegation
 
@@ -115,6 +127,6 @@ A support, motif, genre, material convention, named artist or depicted subject b
 These references ground inherited TW5 procedure definitions and parameter literals. The Lararium memetic-wikitext plugin binds the `<<~ ...>>` sigil namespace; neither these references nor the written examples attest live registration or execution. Hand-derived literal expansions state expectations, not runtime test results.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vEOsmChG5AsH7_3E0SU0BEDi3p9hE0Yr81YS12JYB18
+<<^ code="&#x0003;">>ni:///sha-256;H3Be5YunlEvGpBi-dV579W5FOeljwUeHzFHXQ7729kE
 
 <<^ code="&#x0004;" -> to="?">>
