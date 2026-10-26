@@ -27,6 +27,16 @@ async function honest() {
 }
 
 describe("persona-act", () => {
+  test("RED: forked admission adds no ordered member; CONTROL: verified admission names its CID; POSITIVE: later admission follows", async () => {
+    const { root, log } = await honest();
+    const first = projectPersonaLog(log, { group: G, lineage: lineageOf([root.key]), authorize: () => true });
+    expect(first.admissions).toEqual([{ deviceKey: "dev1", cid: actCid(log[2]!.body) }]);
+    const next = await signAct(act(4, actCid(log[3]!.body), "admission", { deviceKey: "dev2" }), root);
+    const fork = await signAct(act(4, actCid(log[3]!.body), "admission", { deviceKey: "dev3" }), root);
+    const accepted = projectPersonaLog([...log, next], { group: G, lineage: lineageOf([root.key]), authorize: () => true });
+    expect(accepted.admissions).toEqual([...first.admissions, { deviceKey: "dev2", cid: actCid(next.body) }]);
+    expect(projectPersonaLog([...log, next, fork], { group: G, lineage: lineageOf([root.key]), authorize: () => true }).admissions).toEqual(first.admissions);
+  });
   test("CONTROL: the honest log projects whole", async () => {
     const { root, log } = await honest();
     const pr = projectPersonaLog(log, { group: G, lineage: lineageOf([root.key]), authorize: () => true });

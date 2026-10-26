@@ -2,7 +2,7 @@
  * session-face — THE ONE SUPPLIER of the face a session wears.
  *
  * A session's `face` holds five references: the PersonaGroup, the proof subject, the verified admit, the
- * causal revision the relation stood at, and the absolute ids of the four planes
+ * causal revision the relation stood at, and the absolute ids of the five planes
  * (`session-contract`). This module builds that value from one verified chain and three readings it joins
  * to that chain, or refuses by name:
  *
@@ -18,7 +18,7 @@
  *     group at this Nexus.
  *
  * The supplier JOINS them: one face key and one Nexus across all three, or a refusal that names which
- * reading stood apart. It derives the proof subject and the four planes; it accepts none from a caller, so a
+ * reading stood apart. It derives the proof subject and the five planes; it accepts none from a caller, so a
  * plane address a caller supplies grants nothing.
  *
  * What it cannot check, and says so: a chain carries its minter's own mark, and nothing spelled by hand

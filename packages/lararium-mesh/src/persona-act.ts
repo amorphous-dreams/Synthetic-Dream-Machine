@@ -35,6 +35,8 @@ export interface PersonaProjection {
   readonly planes: Readonly<Record<string, string>>;
   /** device keys a verified admission act seated. */
   readonly devices: readonly string[];
+  /** Verified admission acts in chain order. */
+  readonly admissions: readonly { readonly deviceKey: string; readonly cid: string }[];
   /** device key -> edge digest, from verified device-edge acts. */
   readonly edges: Readonly<Record<string, string>>;
   /** a fork the fold stopped at, else null. */
@@ -74,21 +76,22 @@ export function projectPersonaLog(records: readonly unknown[], opts: {
   let personaKelPrefix: string | null = null, rootCommitment: string | null = null;
   const planes: Record<string, string> = {}, edges: Record<string, string> = {};
   const devices = new Set<string>();
-  for (const { act } of fold.chain) {
+  const admissions: { deviceKey: string; cid: string }[] = [];
+  for (const { act, cid } of fold.chain) {
     const b = act.body as PersonaActBody & Record<string, unknown>;
     switch (b.act) {
       case "founding":
         if (typeof b["personaKelPrefix"] === "string") personaKelPrefix = b["personaKelPrefix"];
         if (typeof b["rootCommitment"] === "string") rootCommitment = b["rootCommitment"];
         break;
-      case "admission": if (typeof b["deviceKey"] === "string") devices.add(b["deviceKey"]); break;
+      case "admission": if (typeof b["deviceKey"] === "string") { devices.add(b["deviceKey"]); admissions.push({ deviceKey: b["deviceKey"], cid }); } break;
       case "device-edge": if (typeof b["deviceKey"] === "string" && typeof b["edgeDigest"] === "string") edges[b["deviceKey"]] = b["edgeDigest"]; break;
       case "plane": if (typeof b["plane"] === "string" && typeof b["url"] === "string") planes[b["plane"]] = b["url"]; break;
     }
   }
   const last = fold.chain[fold.chain.length - 1];
   return {
-    founded: fold.chain.length > 0, personaKelPrefix, rootCommitment, planes, devices: [...devices].sort(), edges,
+    founded: fold.chain.length > 0, personaKelPrefix, rootCommitment, planes, devices: [...devices].sort(), admissions, edges,
     fork: fold.fork, head: last ? { seq: last.act.body.seq, cid: last.cid } : null, cids: fold.chain.map((e) => e.cid),
   };
 }

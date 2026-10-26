@@ -263,8 +263,8 @@ export const BOOT_SPLASH_ACTIVE_URI = stableLarUri("state/boot-splash/active");
  *
  *  A FACE'S RELATIONS TRAVEL WITH THE FACE. Who a persona follows, blocks and mutes; how it recognises
  *  others; the sessions it wears — each answers WHICH FACE is worn, so a vessel holding a multitude keeps
- *  ONE SET PER FACE. `personaScopedBagIds` derives all four names off the one tag a PersonaGroup's own
- *  id yields, and `personaSiblingBagIds` reaches the other three from any one of them: the name is the
+ *  ONE SET PER FACE. `personaScopedBagIds` derives all five names off the one tag a PersonaGroup's own
+ *  id yields, and `personaSiblingBagIds` reaches the other four from the persona plane: the name is the
  *  index, so nothing stores a second copy to drift from.
  *
  *  NONE OF THESE NAMES A BAG. Titles inside a plane spell `circles/following` whichever plane holds them,
@@ -275,6 +275,7 @@ export const BOOT_SPLASH_ACTIVE_URI = stableLarUri("state/boot-splash/active");
 export const IDENTITIES_NAMESPACE = bagUri("identities");
 export const CIRCLES_NAMESPACE    = bagUri("circles");
 export const SESSIONS_NAMESPACE   = bagUri("sessions");
+export const INTENTS_NAMESPACE    = bagUri("intents");
 
 // ── URI builders ──────────────────────────────────────────────────────────
 
@@ -398,6 +399,7 @@ export function bagDescriptorUri(bagId: string): string {
 export const IDENTITIES_INNER = stableLarUri("identities");
 export const CIRCLES_INNER    = stableLarUri("circles");
 export const SESSIONS_INNER   = stableLarUri("sessions");
+export const INTENTS_INNER    = stableLarUri("intents");
 
 /** identityTiddlerUri("did:key:z…") → "lar:///ha.ka.ba/identities/did:key:z…" */
 export function identityTiddlerUri(did: string): string {
@@ -478,10 +480,12 @@ export type IdentitiesDoc = LarDoc;
 export type CirclesDoc = LarDoc;
 /** SessionsDoc — each session = one tiddler at sessionTiddlerUri(id). */
 export type SessionsDoc = LarDoc;
+export type IntentsDoc = LarDoc;
 
 export function emptyIdentitiesDoc(): IdentitiesDoc { return emptyLarDoc(); }
 export function emptyCirclesDoc(): CirclesDoc       { return emptyLarDoc(); }
 export function emptySessionsDoc(): SessionsDoc     { return emptyLarDoc(); }
+export function emptyIntentsDoc(): IntentsDoc       { return emptyLarDoc(); }
 
 // ── DreamNet identity lattice ────────────────────────────────────────────
 // Two levels:

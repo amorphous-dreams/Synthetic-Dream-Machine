@@ -18,7 +18,7 @@ import { describe, expect, test } from "vitest";
 import { catalogNamedBags, deriveRegisterBags, isVesselGround, type FleetMembership } from "../src/register-bags.js";
 import { personaBagIdFor } from "../src/persona-scope.js";
 import { BAG_IDS, DAEMON_BAG_ID, PERSONA_NAMESPACE } from "../src/lar-uris.js";
-import { personaScopedBagIds, personaTagFromBagId } from "../src/persona-scope.js";
+import { personaScopedBagIds, personaTagFromBagId, personaSiblingBagIds, isFaceScopedBag, faceTagOfBag } from "../src/persona-scope.js";
 
 const WIKI = ["lar:///ha.ka.ba/bags/my-wiki", "lar:///ha.ka.ba/bags/my-wiki/draft"];
 const WORK = ["lar:///ha.ka.ba/bags/elyncia", "lar:///ha.ka.ba/bags/notes"];
@@ -51,7 +51,7 @@ describe("the ground every vessel stands on", () => {
     // follows, where anything reading it correlates the faces a multitude exists to hold apart. So the
     // three planes that travel with a face arrive through a MEMBERSHIP, exactly as the persona plane does.
     const bags = deriveRegisterBags({ fleets: [] });
-    for (const stem of ["circles", "identities", "sessions"]) {
+    for (const stem of ["circles", "identities", "sessions", "intents"]) {
       expect(bags.some((b) => b.includes(stem))).toBe(false);
     }
   });
@@ -59,21 +59,21 @@ describe("the ground every vessel stands on", () => {
   test("★ standing in a group brings the WHOLE face, all four planes sharing ONE tag ★", () => {
     const bags = deriveRegisterBags({ fleets: [standingIn("g1")] });
     const face = personaScopedBagIds("g1");
-    for (const b of [face.persona, face.circles, face.identities, face.sessions]) expect(bags).toContain(b);
+    for (const b of [face.persona, face.circles, face.identities, face.sessions, face.intents]) expect(bags).toContain(b);
     // The tag is what binds them: read it off the persona plane and the other three follow from it.
     const tag = personaTagFromBagId(face.persona);
     expect(tag).not.toBeNull();
-    for (const b of [face.circles, face.identities, face.sessions]) expect(b.endsWith(`-${tag}`)).toBe(true);
+    for (const b of [face.circles, face.identities, face.sessions, face.intents]) expect(b.endsWith(`-${tag}`)).toBe(true);
   });
 
   test("★ two faces on one vessel keep DISJOINT sets — no plane is shared between them ★", () => {
     const a = personaScopedBagIds("g1");
     const b = personaScopedBagIds("g2");
-    const setA = new Set([a.persona, a.circles, a.identities, a.sessions]);
-    for (const id of [b.persona, b.circles, b.identities, b.sessions]) expect(setA.has(id)).toBe(false);
+    const setA = new Set([a.persona, a.circles, a.identities, a.sessions, a.intents]);
+    for (const id of [b.persona, b.circles, b.identities, b.sessions, b.intents]) expect(setA.has(id)).toBe(false);
     // and a vessel standing in both registers all eight, none collapsing into another
     const bags = deriveRegisterBags({ fleets: [standingIn("g1"), standingIn("g2")] });
-    for (const id of [...setA, b.persona, b.circles, b.identities, b.sessions]) expect(bags).toContain(id);
+    for (const id of [...setA, b.persona, b.circles, b.identities, b.sessions, b.intents]) expect(bags).toContain(id);
   });
 
   test("★ an anon dyad stands in no group, so it carries NO persona plane and no one's work ★", () => {
@@ -197,8 +197,20 @@ describe("a group registers its own four planes and never another face's, by the
     const mine = "ab".repeat(16), theirs = "cd".repeat(16);
     const other = personaScopedBagIds(theirs);
     const own = personaScopedBagIds(mine);
-    const bags = deriveRegisterBags({ fleets: [{ personaGroupId: mine, catalogNamed: [...WORK, other.persona, other.circles, other.identities, other.sessions, own.circles] }] });
-    for (const foreign of [other.persona, other.circles, other.identities, other.sessions]) expect(bags, foreign).not.toContain(foreign);
-    for (const bag of [...WORK, own.persona, own.circles, own.identities, own.sessions]) expect(bags, bag).toContain(bag);
+    const bags = deriveRegisterBags({ fleets: [{ personaGroupId: mine, catalogNamed: [...WORK, other.persona, other.circles, other.identities, other.sessions, other.intents, own.circles] }] });
+    for (const foreign of [other.persona, other.circles, other.identities, other.sessions, other.intents]) expect(bags, foreign).not.toContain(foreign);
+    for (const bag of [...WORK, own.persona, own.circles, own.identities, own.sessions, own.intents]) expect(bags, bag).toContain(bag);
+  });
+  test("RED: an intents bag takes only a full lowercase 16-hex tag; CONTROL: its sibling set and wiki bag resolve", () => {
+    const tag = "a1".repeat(8);
+    const id = `lar:///ha.ka.ba/bags/intents-${tag}`;
+    expect(isFaceScopedBag(id)).toBe(true);
+    expect(faceTagOfBag(id)).toBe(tag);
+    expect(personaSiblingBagIds(`lar:///ha.ka.ba/bags/persona-${tag}`)?.intents).toBe(id);
+    for (const malformed of ["intents-xyz", `intents-${tag.slice(1)}`]) {
+      expect(isFaceScopedBag(`lar:///ha.ka.ba/bags/${malformed}`)).toBe(false);
+      expect(faceTagOfBag(`lar:///ha.ka.ba/bags/${malformed}`)).toBeNull();
+    }
+    expect(isFaceScopedBag(WIKI[0]!)).toBe(false);
   });
 });

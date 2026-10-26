@@ -73,3 +73,8 @@ export function currentSignerOf(lineage: HandLineage | null | undefined): (write
   const seated = new Set(currentRoster(lineage).signers);
   return (writer) => seated.has(writer);
 }
+
+/** Whether `signer` sits in the roster of `epoch`: the op-key a signed act names stands under that epoch's keys. */
+export function signsAtEpoch(lineage: HandLineage, epoch: unknown, signer: string): boolean {
+  return rosterAt(lineage, epoch)?.signers.includes(signer.toLowerCase()) === true;
+}

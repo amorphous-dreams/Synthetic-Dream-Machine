@@ -97,7 +97,7 @@ export interface RegisterBagsInput {
  *
  * Every id here belongs to the VESSEL or to the mesh beneath it: its daemon, the catalog and oracle it
  * reads through, and the substrate bags a vessel needs to stand at all. NO PLANE OF A FACE sits among
- * them — not the persona plane, and not the circles, identities or sessions that travel with it. Those
+ * them — not the persona plane, and not the circles, identities, sessions or intents that travel with it. Those
  * belong to a PERSONAGROUP and arrive through this vessel's memberships, so a vessel standing in no group
  * holds none of them, and a vessel standing in several holds one set per face.
  */
@@ -119,8 +119,8 @@ export function isVesselGround(bag: string): boolean {
 /**
  * The bags this vessel registers, derived — its ground, its wiki, and the union over the groups it stands in.
  *
- * Each membership contributes THE WHOLE FACE — its persona plane and the circles, identities and sessions
- * that travel with it, all four derived off the one tag that group's doc id yields — plus every bag that
+ * Each membership contributes THE WHOLE FACE — its persona plane and the circles, identities, sessions and intents
+ * that travel with it, all five derived off the one tag that group's doc id yields — plus every bag that
  * group's catalog names. Order stays stable and duplicates collapse, so two vessels in the same groups
  * produce one comparable set, and two groups naming a bag in common register it once.
  */
@@ -130,7 +130,7 @@ export function deriveRegisterBags(input: RegisterBagsInput): string[] {
     const face = personaScopedBagIds(fleet.personaGroupId);
     // The catalog names every face's planes; a group registers ITS four (above) and never another face's, which the derived shape
     // recognises without any list of the others.
-    out.push(face.persona, face.circles, face.identities, face.sessions, ...(fleet.catalogNamed ?? []).filter((bag) => !isFaceScopedBag(bag)));
+    out.push(face.persona, face.circles, face.identities, face.sessions, face.intents, ...(fleet.catalogNamed ?? []).filter((bag) => !isFaceScopedBag(bag)));
   }
   return [...new Set(out)];
 }

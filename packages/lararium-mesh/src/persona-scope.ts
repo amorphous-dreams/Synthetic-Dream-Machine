@@ -118,14 +118,14 @@ export function isPersonaPlaneSlug(slug: string): boolean {
 // ── ONE TAG NAMES A WHOLE FACE ────────────────────────────────────────────────────────────────────
 
 /**
- * The planes a PersonaGroup carries, all four named off the ONE tag that group derives.
+ * The planes a PersonaGroup carries, all five named off the ONE tag that group derives.
  *
  * A face's relations travel with the face, never with the machine under it. The circles plane holds who this
  * persona follows, blocks and mutes; `@identities` holds how it recognises others; `@sessions` holds the
  * sessions it wears — each a property of WHICH FACE is worn, so a vessel holding a multitude keeps one set
  * per face. A single vessel-wide circles plane would put one persona's blocked list in the same document as
  * another's follows, and anything reading that document correlates the faces the multitude exists to hold
- * apart. The tag is an HMAC of the group's own doc id, so the four names share a suffix a human can grep
+ * apart. The tag is an HMAC of the group's own doc id, so the five names share a suffix a human can grep
  * and a machine can derive, and neither has to be told the relation.
  *
  * NEXUS AUTHORIZATION RINGS DO NOT LIVE HERE. A nexus tier names who may act at a Nexus, not who a person
@@ -136,21 +136,23 @@ export interface PersonaScopedBags {
   readonly circles:    string;
   readonly identities: string;
   readonly sessions:   string;
+  readonly intents:    string;
 }
 
-/** All four of one PersonaGroup's plane ids, derived. The caller mints the group first — a plane must
+/** All five of one PersonaGroup's plane ids, derived. The caller mints the group first — a plane must
  *  stand under its TRUE name from its first write (see `personaBagIdFor`). */
 export function personaScopedBagIds(personaGroupId: string): PersonaScopedBags {
   return personaScopedBagIdsForTag(personaScopeTag(personaGroupId));
 }
 
-/** The same four, named off a tag already in hand. */
+/** The same five, named off a tag already in hand. */
 export function personaScopedBagIdsForTag(tag: string): PersonaScopedBags {
   return {
     persona:    bagUri(`persona-${tag}`),
     circles:    bagUri(`circles-${tag}`),
     identities: bagUri(`identities-${tag}`),
     sessions:   bagUri(`sessions-${tag}`),
+    intents:    bagUri(`intents-${tag}`),
   };
 }
 
@@ -158,7 +160,7 @@ export function personaScopedBagIdsForTag(tag: string): PersonaScopedBags {
  * The tag a persona plane's own id carries, or null when the id names no plane.
  *
  * THE NAME IS THE INDEX. A store that already resolved `persona-<tag>` holds the tag in that string, so a
- * face reaches its own circles, identities and sessions without the group doc id in hand and without a
+ * face reaches its own circles, identities, sessions and intents without the group doc id in hand and without a
  * second copy stored anywhere to drift from. Nothing derives a tag it cannot also verify: this reads only
  * ids the derivation could have produced (`isPersonaPlaneSlug`'s shape, width and case included).
  */
@@ -178,17 +180,17 @@ export function personaSiblingBagIds(personaBagId: string): PersonaScopedBags | 
 }
 
 /**
- * Whether a bag id names ANY face's plane or one of its siblings (persona, circles, identities or sessions), by the derived shape alone.
+ * Whether a bag id names ANY face's plane or one of its siblings (persona, circles, identities, sessions or intents), by the derived shape alone.
  * A reader that must keep one face's reading apart from every other asks THIS, not a list of the other faces a mutable document names.
  */
 export function isFaceScopedBag(bagId: string): boolean {
   const slug = identitySlug(bagId) ?? bagId;
-  return new RegExp(`^(persona|circles|identities|sessions)-[0-9a-f]{${PERSONA_SCOPE_TAG_HEX}}$`).test(slug);
+  return new RegExp(`^(persona|circles|identities|sessions|intents)-[0-9a-f]{${PERSONA_SCOPE_TAG_HEX}}$`).test(slug);
 }
 
-/** The tag a face-scoped bag id of ANY of the four families carries, or null. */
+/** The tag a face-scoped bag id of ANY of the five families carries, or null. */
 export function faceTagOfBag(bagId: string): string | null {
   const slug = identitySlug(bagId) ?? bagId;
-  const m = new RegExp(`^(?:persona|circles|identities|sessions)-([0-9a-f]{${PERSONA_SCOPE_TAG_HEX}})$`).exec(slug);
+  const m = new RegExp(`^(?:persona|circles|identities|sessions|intents)-([0-9a-f]{${PERSONA_SCOPE_TAG_HEX}})$`).exec(slug);
   return m ? m[1]! : null;
 }

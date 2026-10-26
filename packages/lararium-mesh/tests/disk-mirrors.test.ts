@@ -14,6 +14,7 @@
 import { describe, test, expect } from "vitest";
 import { resolveDiskMirrors, type DiskMirrorGrant } from "../src/vessel-island-pool-core.js";
 import { wikiSlotUri, wikiBagUri } from "@lararium/mesh";
+import { personaScopedBagIds } from "../src/persona-scope.js";
 
 const LARES = "lar:///ha.ka.ba/bags/lares";
 
@@ -33,6 +34,16 @@ const canonGrant: DiskMirrorGrant = [
 ];
 
 describe("resolveDiskMirrors — authority ∩ designation + per-wiki slug expansion", () => {
+  test("RED: a face intents bag never gains a mirror root, even when designated; CONTROL: the same grant projects a wiki", () => {
+    const intents = personaScopedBagIds("founded-face").intents;
+    const wiki = wikiBagUri("garden");
+    const roots = resolveDiskMirrors([
+      { bagId: intents, mirrorRoot: "/root/bags/intents", scope: "literal" },
+      { bagId: wiki, mirrorRoot: "/root/bags/garden", scope: "literal" },
+    ], [intents, wiki], "garden");
+    expect(roots.some((r) => r.bagId === intents)).toBe(false);
+    expect(roots.find((r) => r.bagId === wiki)?.mirrorRoot).toBe("/root/bags/garden");
+  });
   test("a wikiSlot grant (working) slug-expands its bag + leaf to wikis/{slug}", () => {
     const workingSlot = wikiSlotUri("myproject", "working");
     const out = resolveDiskMirrors(grant, [LARES, workingSlot], "myproject");

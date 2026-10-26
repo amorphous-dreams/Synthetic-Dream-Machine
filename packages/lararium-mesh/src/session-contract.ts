@@ -84,12 +84,13 @@ export function refuseBeyondProfile(profile: CapabilityProfile, verb: string): P
   return Object.freeze({ ok: false, refusal: "beyond-profile", profile, verb });
 }
 
-/** The absolute ids of a face's four planes. */
+/** The absolute ids of a face's five planes. */
 export interface SessionFacePlanes {
   readonly persona:    string;
   readonly circles:    string;
   readonly identities: string;
   readonly sessions:   string;
+  readonly intents:    string;
 }
 
 /** The resolved face a session wears, immutable within one generation. Every field holds a string REFERENCE. */
@@ -114,7 +115,7 @@ export type SessionFaceHoldsReferences = Holds<NonStringLeaves<SessionFace>>;
 export type SessionFaceWithRootRefuses = Holds<NonStringLeaves<SessionFace & { readonly root: Uint8Array }>>;
 
 const FACE_KEYS = ["personaGroup", "proofSubject", "admitRef", "causalRevision", "planes"] as const;
-const PLANE_KEYS = ["persona", "circles", "identities", "sessions"] as const;
+const PLANE_KEYS = ["persona", "circles", "identities", "sessions", "intents"] as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -137,12 +138,12 @@ function readSessionFace(v: unknown): SessionFace | null {
   const planes = v["planes"];
   if (!isRecord(planes) || !exactKeys(planes, PLANE_KEYS)) return null;
   const { personaGroup, proofSubject, admitRef, causalRevision } = v;
-  const { persona, circles, identities, sessions } = planes;
+  const { persona, circles, identities, sessions, intents } = planes;
   if (!nonEmptyString(personaGroup) || !nonEmptyString(proofSubject) || !nonEmptyString(admitRef) || !nonEmptyString(causalRevision)) return null;
-  if (!nonEmptyString(persona) || !nonEmptyString(circles) || !nonEmptyString(identities) || !nonEmptyString(sessions)) return null;
+  if (!nonEmptyString(persona) || !nonEmptyString(circles) || !nonEmptyString(identities) || !nonEmptyString(sessions) || !nonEmptyString(intents)) return null;
   return Object.freeze({
     personaGroup, proofSubject, admitRef, causalRevision,
-    planes: Object.freeze({ persona, circles, identities, sessions }),
+    planes: Object.freeze({ persona, circles, identities, sessions, intents }),
   });
 }
 
