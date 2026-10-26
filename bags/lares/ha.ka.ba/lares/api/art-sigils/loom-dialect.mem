@@ -81,5 +81,5 @@ dimensions are unchanged. Machine JSON, hash registers, camera controls,
 model execution, and source URLs stay outside the transmitted Inscription.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pending-content-witness
+<<^ code="&#x0003;">>ni:///sha-256;qoGGBc_FFIhgRPLgYTK6deXygsZ9jbMc1MfSWVKMojw
 <<^ code="&#x0004;" -> to="?">>
