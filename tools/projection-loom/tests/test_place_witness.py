@@ -37,7 +37,7 @@ def test_reject_unadmitted_and_excessive_sample_budget():
     a=source()
     with pytest.raises(ValueError,match="1..8"):
         review_place(a,[],location="p")
-    with pytest.raises(ValueError,match="resolution"):
+    with pytest.raises(ValueError,match="total native query budget"):
         review_place(a,[a],location="p",elevations=(1.0,),cell=.2,padding=8)
 
 
