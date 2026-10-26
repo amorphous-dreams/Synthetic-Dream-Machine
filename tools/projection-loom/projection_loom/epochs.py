@@ -21,6 +21,19 @@ from .provenance_encoding import canonical_json_sha256
 SCHEMA = 'projection-loom/wide-epoch'
 
 
+class NativeConstructionRejected(ValueError):
+    """A built candidate failed exact native BRep/void admission, not code execution.
+
+    The native audit travels in the ordinary rejected-candidate receipt.
+    Malformed programs, missing sources and kernel failures are not caught here.
+    """
+    def __init__(self, audit):
+        if not isinstance(audit, dict):
+            raise TypeError('Native rejection requires an actual CAD audit')
+        self.audit=audit
+        super().__init__('Native CAD/void gate rejected candidate')
+
+
 def _hash(value):
     return canonical_json_sha256(value)
 
@@ -327,9 +340,12 @@ class WideEpoch:
                                 'losses':losses,'evidence_state':self.score_state,
                                 'phenotype':phenotype}
                         detail_count+=1
+            except NativeConstructionRejected as exc:
+                # Exact compound native refusal differs from an engine failure.
+                result={'state':'rejected','reason':'CAD or void gate',
+                        'audit':exc.audit}
             except Exception as exc:
-                # A broken scoring backend is not evidence of a bad architectural
-                # candidate. Keep operational failures apart from CAD rejection.
+                # Broken builder, kernel or scoring code is not CAD evidence.
                 result={'state':'error','reason':str(exc),'error_class':type(exc).__name__}
             result.update(emitter=p.emitter,parent=p.parent)
             self.data['results'][p.id]=result

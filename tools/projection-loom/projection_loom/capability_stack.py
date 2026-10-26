@@ -299,7 +299,8 @@ class CapabilityCompositor:
         assembly=self.project.grow(self.recipe.cad_genome(clean))
         report=assembly.audit(join=True)
         if not report['valid'] or report.get('union_solids')!=1 or not report.get('union_valid'):
-            raise ValueError('Composite CAD gate failed')
+            from .epochs import NativeConstructionRejected
+            raise NativeConstructionRejected(report)
         scene=HybridLocation(self.recipe.location,assembly,pet_name=self.recipe.pet_name)
         context=BuildContext(self.recipe,clean,assembly,scene,self.camera,self.size,self.source_mask,self.registry,
                              seed_entity=self.seed_entity)

@@ -326,3 +326,13 @@ Source identity and authored relation choices remain distinct. Read
 six-view survivors. Rejected CAD arrangements count as evidence, not
 successful lineage members. Separate `fire-review` and `place-review`
 are still required for architectural relation and circulation comparisons.
+
+
+### Native refusal versus operational exceptions
+
+A complete compound SolidAssembly rejected by exact BRep/void audit now
+raises a typed `NativeConstructionRejected`, which WideEpoch records as
+`rejected` with the actual audit. Malformed construction programs,
+kernel exceptions, missing sources and broken scoring remain `error`.
+This preserves surprising failure testimony without inventing survivors
+or pretending software defects represent native design judgments.

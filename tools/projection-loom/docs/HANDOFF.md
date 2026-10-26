@@ -1,5 +1,16 @@
 
 
+### Native refusal versus operational exceptions
+
+A complete compound SolidAssembly rejected by exact BRep/void audit now
+raises a typed `NativeConstructionRejected`, which WideEpoch records as
+`rejected` with the actual audit. Malformed construction programs,
+kernel exceptions, missing sources and broken scoring remain `error`.
+This preserves surprising failure testimony without inventing survivors
+or pretending software defects represent native design judgments.
+
+
+
 ## Architectural Birth · heritable relational grafts (opt-in)
 
 The original `project_alpha.json` and `recipe_alpha.json` remain

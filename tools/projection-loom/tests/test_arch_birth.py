@@ -69,6 +69,7 @@ def test_birth_source_seed_is_unchanged_and_native_bearing_is_observed():
 def test_offspring_inherit_birth_loci_through_existing_family_scheduler():
     conf,recipe=_fixture()
     class Empty:
+        data={"members":{},"generations":{}}
         @staticmethod
         def component_parents(*a,**k):return []
     proposals=make_brood(recipe.bounds,recipe.initial,Empty(),
@@ -92,3 +93,21 @@ def test_unproposed_birth_recipe_keeps_source_geometry_unchanged():
     born=project.builder(p)
     assert len(source.parts)==len(born.parts)
     assert source.audit(join=True)["union_volume"]==born.audit(join=True)["union_volume"]
+
+
+def test_compound_native_refusal_is_rejected_not_an_engine_error(tmp_path):
+    from projection_loom.epochs import NativeConstructionRejected, WideEpoch, Proposal
+    native={"valid":False,"union_valid":False,"union_solids":2,
+            "reason":"disconnected source-bound construction"}
+    epoch=WideEpoch(location="test-place",source_digests={"seed":"b"*64},
+                    construction_digest="source-builder",objectives=("silhouette",),
+                    score_state="provisional",checkpoint=tmp_path/"epoch.json",
+                    max_exact=1,max_detail=1,seed=13)
+    proposal=Proposal("candidate-1","family:terraces:topology",{"x":.3})
+    def rejected(_):
+        raise NativeConstructionRejected(native)
+    result=epoch.run([proposal],grow=rejected,
+                     score=lambda g,a:{"silhouette":0.})
+    assert result["results"]["candidate-1"]["state"]=="rejected"
+    assert result["results"]["candidate-1"]["audit"]==native
+    assert result["results"]["candidate-1"]["reason"]=="CAD or void gate"
