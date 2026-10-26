@@ -18,6 +18,21 @@ export interface FaceIntentDoorPorts {
   readonly log: (message: string) => void;
 }
 
+/** What an outcome keeps of an effect's answer: names, counts, flags and short reasons, never a body (the rubric: content never rides an entry). */
+export function receiptFields(result: unknown): Record<string, unknown> {
+  if (typeof result !== "object" || result === null) return {};
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(result as Record<string, unknown>)) {
+    if (typeof value === "boolean" || typeof value === "number") out[key] = value;
+    else if (typeof value === "string" && value.length <= 512) out[key] = value;
+    else if (Array.isArray(value)) {
+      if (value.length <= 16 && value.every((v) => typeof v === "string" && v.length <= 128)) out[key] = value;
+      else out[`${key}Count`] = value.length;
+    }
+  }
+  return out;
+}
+
 export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
   let running: Promise<void> | null = null, dirty = false;
   const read = async (): Promise<IntentView> => {
@@ -47,9 +62,7 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
       if (state.class === "single-effect" && !pinnedAtom) continue;
       try {
         const result = await effect(invocation.body.args, { intentId: state.id, intent: invocation.body, pinnedAtom: pinnedAtom ?? ports.atom.key });
-        const digest = typeof result === "object" && result !== null && "recordCid" in result && typeof result.recordCid === "string" ? result.recordCid : null;
-        const receipt = await buildOutcome({ group: ports.group, signer: ports.atom, cause: state.id,
-          result: { status: "done", ...(digest ? { digest } : {}) } });
+        const receipt = await buildOutcome({ group: ports.group, signer: ports.atom, cause: state.id, result: { status: "done", ...receiptFields(result) } });
         ports.plane.change((draft) => writeIntentEntry(draft, receipt));
       } catch (error) { ports.log(`face intent ${state.id} faulted: ${String(error)}`); }
     }

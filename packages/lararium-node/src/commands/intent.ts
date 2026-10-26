@@ -94,7 +94,7 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
       seenRaises: fleetRaiseCids(board.counted.acts), pinned: readFrontierPins(board.ledger.doc(), fleetRoot)[FLEET_HAND] ?? null });
     if (frontier.status === "known") standing = (key) => {
       const verdict = board.readings.get(deviceEdgeId(fleetRoot, key));
-      return verdict ? verdict.stands === true ? "aside" : "stands" : "unknown";
+      return verdict?.stands === true ? "aside" : verdict && verdict.raiseCids.length > 0 ? "unknown" : "stands";
     };
   } catch { /* A board that cannot verify leaves standing unknown. */ }
   const view = () => readIntentPlane({
@@ -106,6 +106,8 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
   if (opts.action === "show") {
     const reading = view(), pane = intentPaneModel(reading);
     return { rows: opts.target ? pane.rows.filter((r) => r.id === opts.target) : pane.rows,
+      outcomes: reading.intents.flatMap((state) => state.slots.flatMap((slot) => [slot.winner, ...slot.duplicates].filter((r) => r !== null)
+        .map((r) => ({ cause: state.id, signer: r!.entry.signer, winner: slot.winner === r, result: r!.entry.body["result"] })))),
       strayAnswers: reading.strayAnswers.map((r) => r.cid), refused: reading.refused,
       standing: standing(atom.key) };
   }
@@ -139,7 +141,8 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
           audience = named ? intentAudience(opts) : { mode: "pinned", atom: hearth! };
           if (args === undefined) {
             // A ContactCard is not byte-stable across derivations, so a replay returns the request already standing.
-            const standing = view().intents.find((state) => state.verb === "face-join" && state.issuer === atom.key && state.status !== "void");
+            const standing = view().intents.find((state) => state.verb === "face-join" && state.issuer === atom.key && state.status !== "void"
+              && !state.slots.some((slot) => (slot.winner?.entry.body["result"] as { admitted?: unknown } | undefined)?.admitted === false));
             if (standing) return { id: standing.id, replayed: true };
             const archive = await loadVeilArchive(group);
             if (!archive) throw new IntentRefused("veil-archive-absent: this vessel holds no ContactCard for the face; re-admit it");
