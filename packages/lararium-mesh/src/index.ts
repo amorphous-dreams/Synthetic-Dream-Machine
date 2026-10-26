@@ -575,6 +575,7 @@ export type { Slip39Share, ReadBackMismatch } from "./slip39.js";
 // The place KEL commits cold successors while online signers carry floor duties.
 export * from "./vessel-kel.js";
 export * from "./place-kel-board.js";
+export * from "./place-founding-card.js";
 export * from "./vessel-journal.js";
 // ── The sealed store's records, lineage, lockboxes, rest and content-key holder ────────────────────────
 // Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store. The key shore (`@lararium/keyhive`) and the node's

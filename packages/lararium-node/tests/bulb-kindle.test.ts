@@ -27,6 +27,8 @@ import {
 } from "@lararium/mesh";
 import { readBulbArtifact, buildBulb, assembleBulb, bulbSeed, type BulbArtifact } from "../src/bulb.js";
 import { mountBulbReadFace } from "../src/bulb-read-face.js";
+import { verifyPlaceKel } from "@lararium/mesh";
+import { loadPlaceKelChain } from "../src/node-vessel-identity.js";
 import { pullBulb, kindleFromBulb, httpBulbTransport, type KindleResult } from "../src/kindle.js";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 import { readGenesisSeed, genesisCasDir, genesisSeedFileBytes, genesisSeedCid } from "../src/genesis-artifact.js";
@@ -148,7 +150,14 @@ describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire,
     process.env["LAR_ROOT"] = mkDir("root-serve");
     const repo = newRepo();
     let k: KindleResult;
-    try { k = await kindleFromBulb({ placeFoundingCard: { readBack: async () => {} }, bulb: pulled, repo, storageDir: mkDir("device-a") }); }
+    try {
+      k = await kindleFromBulb({ placeFoundingCard: { readBack: async () => {} }, bulb: pulled, repo, storageDir: mkDir("device-a") });
+      // THE HERM'S GENESIS MINTS THE ARMED PLACE KEL: seq 0, a committed next key, the device key as its online signer.
+      const armed = verifyPlaceKel(await loadPlaceKelChain());
+      expect(armed.ok && armed.seq).toBe(0);
+      expect(armed.ok && armed.signerKey).toBe(k.deviceVerifyingKey);
+      expect(armed.ok && /^[0-9a-f]{64}$/.test(armed.nextDigest)).toBe(true);
+    }
     finally { if (priorLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorLarRoot; }
     expect(k.did).toBe(didKeyFromVerifyingKey(k.deviceVerifyingKey));
 

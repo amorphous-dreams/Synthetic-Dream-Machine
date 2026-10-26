@@ -1,7 +1,7 @@
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { describe, expect, it } from "vitest";
 import { hex } from "../src/crypto.js";
-import { acceptPlaceHead, foldPlaceKel, mintPlaceInception, mintPlaceRotation } from "../src/vessel-kel.js";
+import { acceptPlaceHead, foldPlaceKel, mintPlaceInception, mintPlaceRotation, PLACE_KEL_FORK_EVIDENCE, PLACE_KEL_ROWS_PER_AID, type PlaceKelEvent } from "../src/vessel-kel.js";
 
 const seed = (n: number) => new Uint8Array(32).fill(n);
 const key = (n: number) => hex(ed25519.getPublicKey(seed(n)));
@@ -53,4 +53,35 @@ describe("place KEL reader", () => {
     expect(gapped.ok).toBe(false);
     if (!gapped.ok) expect(gapped.verified?.seq).toBe(0);
   });
+
+  const wide = (n: number) => { const b = new Uint8Array(32); new DataView(b.buffer).setUint32(0, n + 1000); return b; };
+  const wideKey = (n: number) => hex(ed25519.getPublicKey(wide(n)));
+  /** A lawful chain of `rotations` rotations: cold seed n reveals at rotation n, signer n+1_000_000 signs the floor. */
+  const lawful = (rotations: number) => {
+    const start = mintPlaceInception({ signerSeed: wide(0), coldVerifyingKey: wideKey(1) });
+    const chain: PlaceKelEvent[] = [start.event];
+    for (let n = 1; n <= rotations; n++) {
+      chain.push(mintPlaceRotation({ chain, coldSeed: wide(n), newSignerKey: wideKey(500_000 + n), nextColdVerifyingKey: wideKey(n + 1) }));
+    }
+    return { start, chain };
+  };
+  it("a lawful chain at the ceiling folds; a board past it refuses in bounded work", () => {
+    const at = lawful(PLACE_KEL_ROWS_PER_AID - 1);
+    const read = foldPlaceKel(at.chain, { aid: at.start.aid });
+    expect(read.ok && read.seq).toBe(PLACE_KEL_ROWS_PER_AID - 1);
+    const past = lawful(PLACE_KEL_ROWS_PER_AID + 1);   // one rotation past the ceiling
+    expect(refusal(foldPlaceKel(past.chain, { aid: past.start.aid }))).toBe("too-many-rows");
+  }, 240_000);
+  it("a key-holder fork flood reads the fork with bounded evidence, and unsigned or foreign rows never reach a digest walk", () => {
+    const f = fixture();
+    const flood = Array.from({ length: 20 }, (_, i) =>
+      mintPlaceRotation({ chain: [f.start.event], coldSeed: seed(2), newSignerKey: wideKey(700_000 + i), nextColdVerifyingKey: wideKey(800_000 + i) }));
+    const read = foldPlaceKel([f.start.event, ...flood], f.pin);
+    expect(refusal(read)).toBe("fork");
+    if (!read.ok) expect(read.forks).toHaveLength(PLACE_KEL_FORK_EVIDENCE);
+    const unsigned = Array.from({ length: 20 }, (_, i) => ({ ...f.one, sig: "00".repeat(64), next: wideKey(900_000 + i) }));
+    const foreign = Array.from({ length: 5000 }, (_, i) => ({ ...f.one, aid: wideKey(i + 1) }));
+    const noisy = foldPlaceKel([f.start.event, f.one, ...unsigned.slice(0, 20), ...foreign], f.pin);
+    expect(noisy.ok && noisy.seq).toBe(1);   // CONTROL: noise under the ceiling reads the lawful head
+  }, 120_000);
 });

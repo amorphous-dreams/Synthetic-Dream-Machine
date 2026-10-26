@@ -54,7 +54,7 @@ import {
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import type { LarDoc, SlotSpec } from "@lararium/mesh";
 import type { RandomProvider } from "@lararium/mesh";
-import type { PlaceFoundingCard } from "../place-founding-card.js";
+import type { PlaceFoundingCard } from "@lararium/mesh";
 import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
 import {
   foundThePlace, foundTheFace, runApplyAdmitPayload, archiveIsOf,

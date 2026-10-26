@@ -45,7 +45,7 @@ import { storedRecord } from "@lararium/mesh";
 import { assembleBulb, bulbSeed, bulbSeedInventory, type BulbArtifact } from "./bulb.js";
 import { parseGenesisSeed } from "./genesis-artifact.js";
 import { generateOrLoadVesselIdentity } from "./node-vessel-identity.js";
-import type { PlaceFoundingCard } from "./place-founding-card.js";
+import type { PlaceFoundingCard } from "@lararium/mesh";
 import { openedCustody } from "./custody-seat.js";
 import { writeCasEntriesFs, casDirForStorage } from "./node-cas.js";
 

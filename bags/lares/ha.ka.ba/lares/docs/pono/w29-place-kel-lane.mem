@@ -47,9 +47,11 @@ The floor trust chain orders its pin claims by place-KEL descent, so the place K
 # ''Built ~ the node founding and rotation'' (`node-vessel-identity.ts`, `place-founding-card.ts`, `place-rotation.ts`, `commands/{init,found-hearth}`, `kindle.ts`, CLI `found`; node tests `place-founding`, `place-rotation`).
 # ''Built ~ the carry bundle'' (`carry-bundle.ts`; `carry-bundle-place-kel.test`).
 # ''Built ~ the seed census'' (`tools/seed-census{.mjs,.test.mjs,-witness.sh}`).
-# ''Owed ~ the browser.'' A browser leaf holds no floor and no place KEL today, so no browser founding mints an inception; a browser floor founds its armed inception through the same mesh mint once a card ceremony surface stands for it.
-# ''Owed ~ the CLI rotation verb.'' `rotatePlace` stands as a node door; a `lares` verb is a new door surface the controller rules on.
-# ''Owed ~ the readers by head.'' The four unframed-era verifiers verify under the key a caller passes; floor pin claim lane (W14 to W16) resolves each duty's signer through `verifyPlaceDutyAtHead`. Names that key a place by its inception key follow the head when that lane lands.
+# ''Built ~ the browser founding'' (`browser-vessel-identity.ts`: `foundBrowserPlaceKel`, `loadBrowserPlaceKel`, `readBrowserPlaceHead`). A leaf mints the armed inception through the same mesh grammar and reads its cold card back through the same `PlaceFoundingCard` port (`place-founding-card.ts` in mesh). A leaf holds no floor, so with no ceremony seated the identity open founds the device key and no KEL, and the explicit door refuses `PlaceFoundingCardUnread` until a ceremony UI seats a card (`placeFoundingCard` on `openBrowserVessel`). Heads read through the one `foldPlaceKel`.
+# ''Built ~ the genesis paths.'' Node `runInit`, the hearth founding, the herm's cold kindle (`bulb-kindle.test`) and both cofounders' places each mint the armed chain through the real founding door.
+# ''Built ~ the rotate door.'' `lares vessel rotate` (`commands/rotate-place.ts`) reads the old card on a terminal, prints and reads back the replacement through the same port, refuses beside a standing vessel, and leaves reconcile of a cut-short stage to the node (`vessel-rotate-door.test`).
+# ''Built ~ the fold bound.'' `foldPlaceKel` drops foreign and unsigned rows before any digest walk, caps the signed rows it walks at `PLACE_KEL_ROWS_PER_AID`, and carries at most `PLACE_KEL_FORK_EVIDENCE` competing successors from the first fork seq.
+# ''Owed ~ the readers by head.'' The four duty verifiers verify under the key a caller passes; the floor pin claim lane (W14 to W16) resolves each duty's signer through `verifyPlaceDutyAtHead`. Names that key a place by its inception key follow the head when that lane lands.
 # ''Owed ~ the gate place finish.'' `gate-exchange.ts` already frames its image and did not move.
 # ''Owed ~ K15's bonds.'' The vessel-wide Keyhive Individual and place card, the bare place leaf, the relay key, daemon auth, device and face work, internal asks and `lares meme` signing stay on the seed census as named K15 exceptions.
 
@@ -66,6 +68,6 @@ The floor trust chain orders its pin claims by place-KEL descent, so the place K
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HPoue-WNBAwQs6Xpy6xuGUENlWa2Wb6Jseo-zI06_rk
+<<^ code="&#x0003;">>ni:///sha-256;SXrJG-r3Lxj6MuNDIdbj5m5-q4HqbAWCDg9sJM0LD8w
 
 <<^ code="&#x0004;" -> to="?">>

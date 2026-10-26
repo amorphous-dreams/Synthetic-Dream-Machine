@@ -19,7 +19,7 @@ export interface PlaceRotation {
 }
 export type PlaceKelRefusal = "unarmed-inception" | "old-shape-inception" | "bad-signature" | "wrong-reveal" |
   "reused-commitment" | "reused-key" | "gap" | "prev-mismatch" | "aid-mismatch" |
-  "seq-mismatch" | "malformed" | "fork" | "rollback";
+  "seq-mismatch" | "malformed" | "fork" | "rollback" | "too-many-rows";
 /** A chain that verified to its head. */
 export interface PlaceKelHead {
   readonly ok: true; readonly aid: string; readonly seq: number; readonly head: PlaceKelEvent;
@@ -129,33 +129,76 @@ export function verifyPlaceKel(chain: readonly PlaceKelEvent[]): PlaceKelReading
   return { ok: true, aid, seq: chain.length - 1, head, headDigest: digest(head), signerKey: head.key, nextDigest: head.next, chain };
 }
 
-/** Read unordered board rows from the pinned inception. Duplicate bytes add no branch. */
+/** The most rows one AID's fold examines; a board holding more reads `too-many-rows`, and a lawful chain stays below it. */
+export const PLACE_KEL_ROWS_PER_AID = 64;
+/** The most competing successors a fork reading carries: the ones at the first fork seq, in digest order. */
+export const PLACE_KEL_FORK_EVIDENCE = 8;
+
+/** One verified step past `state`, or the refusal that names why the event does not extend it. */
+function extendOne(state: { aid: string; seq: number; head: PlaceKelEvent; headDigest: string; commitments: Set<string>; keys: Set<string> },
+  e: PlaceRotation): PlaceKelRefusal | null {
+  if (e.aid !== state.aid) return "aid-mismatch";
+  if (e.seq !== state.seq + 1) return e.seq > state.seq + 1 ? "gap" : "seq-mismatch";
+  if (e.prev !== state.headDigest) return "prev-mismatch";
+  if (placeNextDigest(e.reveal) !== state.head.next) return "wrong-reveal";
+  if (!signatureOk(e)) return "bad-signature";
+  if (state.commitments.has(e.next)) return "reused-commitment";
+  if (state.keys.has(e.key) || state.keys.has(e.reveal) || e.key === e.reveal) return "reused-key";
+  return null;
+}
+
+/**
+ * Read unordered board rows from the pinned inception, in work bounded by `PLACE_KEL_ROWS_PER_AID`. A row of another AID or a
+ * row that does not decode strictly drops before any digest or signature. The signed rows that remain sort by seq and cap at the
+ * ceiling, and they index by predecessor, so each step meets only the candidates for the head it stands on; a chain longer
+ * than the ceiling reads `too-many-rows`. A fork carries at most `PLACE_KEL_FORK_EVIDENCE` competing successors from its first seq.
+ */
 export function foldPlaceKel(events: readonly unknown[], pinned: { aid: string; inceptionDigest?: string }): PlaceKelReading {
-  const rows = new Map<string, PlaceKelEvent>();
+  const seen = new Map<string, PlaceKelEvent>();
   for (const raw of events) {
     const e = decodePlaceKelEvent(raw);
     if (!e) continue;
     if (e.t === "rot" && e.aid !== pinned.aid) continue;
-    if (e.t === "icp" && digest(e) !== pinned.aid) continue;
-    if (!signatureOk(e)) continue;
-    rows.set(digest(e), e);
+    seen.set(canonicalJson(e), e);
   }
-  const first = rows.get(pinned.aid);
-  if (!first || first.t !== "icp") return { ok: false, refusal: "gap" };
+  let first: PlaceInception | null = null;
+  const byPrev = new Map<string, PlaceRotation[]>();
+  const rotations: PlaceRotation[] = [];
+  // SIGNATURES FIRST, in work linear in the input: a row that fails its own signature drops here, before any digest walk, and
+  // the signed rows that remain sort by seq and cap at the ceiling, so the walk below never meets more than the ceiling.
+  for (const e of seen.values()) {
+    if (e.t === "icp") { if (first === null && digest(e) === pinned.aid && signatureOk(e)) first = e; continue; }
+    if (signatureOk(e)) rotations.push(e);
+  }
+  rotations.sort((x, y) => x.seq - y.seq || (x.sig < y.sig ? -1 : x.sig > y.sig ? 1 : 0));
+  rotations.length = Math.min(rotations.length, PLACE_KEL_ROWS_PER_AID + 1);
+  for (const e of rotations) {
+    const list = byPrev.get(e.prev) ?? [];
+    list.push(e); byPrev.set(e.prev, list);
+  }
+  if (!first) return { ok: false, refusal: "gap" };
   if (pinned.inceptionDigest && pinned.inceptionDigest !== digest(first)) return { ok: false, refusal: "aid-mismatch" };
-  let chain: PlaceKelEvent[] = [first];
+  const chain: PlaceKelEvent[] = [first];
+  const state = { aid: pinned.aid, seq: 0, head: first as PlaceKelEvent, headDigest: pinned.aid, commitments: new Set([first.next]), keys: new Set([first.key]) };
   for (;;) {
-    const read = verifyPlaceKel(chain);
-    if (!read.ok) return read;
-    const candidates = [...rows.values()].filter((e): e is PlaceRotation => e.t === "rot" && e.prev === read.headDigest && e.seq === read.seq + 1);
-    const valid = candidates.filter((e) => verifyPlaceKel([...chain, e]).ok);
-    if (valid.length > 1) return { ok: false, refusal: "fork", forks: valid, commonAncestor: read.headDigest };
-    if (valid.length === 1) { chain = [...chain, valid[0]!]; continue; }
-    // A row that chains to no verified head (a missing link, or a row nobody could sign) leaves the verified prefix standing:
-    // the refusal names the gap and hands back what verified, so a reader keeps its head "as of my last sync".
-    if ([...rows.values()].some((e) => e.t === "rot" && e.seq > read.seq)) return { ok: false, refusal: "gap", verified: read };
-    return read;
+    if (state.seq >= PLACE_KEL_ROWS_PER_AID) return { ok: false, refusal: "too-many-rows" };
+    const candidates = byPrev.get(state.headDigest) ?? [];
+    const valid = candidates.filter((e) => extendOne(state, e) === null);
+    if (valid.length > 1) {
+      const forks = valid.sort((x, y) => (digest(x) < digest(y) ? -1 : 1)).slice(0, PLACE_KEL_FORK_EVIDENCE);
+      return { ok: false, refusal: "fork", forks, commonAncestor: state.headDigest };
+    }
+    if (valid.length === 0) break;
+    const e = valid[0]!;
+    chain.push(e); state.commitments.add(e.next); state.keys.add(e.key); state.keys.add(e.reveal);
+    state.seq = e.seq; state.head = e; state.headDigest = digest(e);
   }
+  const read: PlaceKelHead = { ok: true, aid: pinned.aid, seq: state.seq, head: state.head, headDigest: state.headDigest,
+    signerKey: state.head.key, nextDigest: state.head.next, chain };
+  // A signed row past the verified head with no link to it leaves the verified prefix standing: the refusal names the gap and
+  // hands back what verified, so a reader keeps its head "as of my last sync".
+  const beyond = rotations.some((e) => e.seq > state.seq);
+  return beyond ? { ok: false, refusal: "gap", verified: read } : read;
 }
 
 export function acceptPlaceHead(previouslyAccepted: { aid: string; seq: number; headDigest: string } | null,

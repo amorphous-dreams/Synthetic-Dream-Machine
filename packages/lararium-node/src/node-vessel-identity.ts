@@ -73,7 +73,7 @@ import {
   type PersonaDeclarationStore,
   type OwnPublicHandleStore,
   type PersonaPublicHandleRecord,
-  mintPlaceInception, mintPlaceRotation, placeNextDigest, verifyPlaceKel, decodePlaceKelEvent,
+  armPlaceInception, PlaceFoundingCardUnread, type PlaceFoundingCard, mintPlaceRotation, placeNextDigest, verifyPlaceKel, decodePlaceKelEvent,
   mintColdKey, canonicalJson, hex, type PlaceKelEvent, type PlaceRotation, type RandomProvider,
   ALL_DOMAINS,
   GATE_BUNDLE_INFO,
@@ -81,7 +81,6 @@ import {
   type FloorKeyDoor,
 } from "@lararium/mesh";
 import { readBackStandsIn } from "./seal-ceremony.js";
-import { PlaceFoundingCardUnread, type PlaceFoundingCard } from "./place-founding-card.js";
 import { nodeAnchorStore } from "./identity-anchors.js";
 import { nodeRecoveryShareStore } from "./recovery-share-store.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
@@ -416,14 +415,12 @@ export async function generateOrLoadVesselIdentity(opts: { placeFoundingCard?: P
       // THE CARD READS BACK BEFORE THE CLAIM: a read-back may ask the custody its own questions (a staged root's stand-in
       // proves the test route), and the claim admits one holder. Nothing lands until the card reads back.
       const seed = signingSeedFromHex(keypair.signingKey);
-      const cold = await mintColdKey(opts.entropy);
       let inception: PlaceKelEvent;
       try {
-        const minted = mintPlaceInception({ signerSeed: seed, coldVerifyingKey: cold.verifyingKey });
-        inception = minted.event;
-        if (opts.placeFoundingCard) await opts.placeFoundingCard.readBack({ seed: cold.seed, digest: minted.event.next, verifyingKey: cold.verifyingKey }, minted.aid.slice(-16), 0);
-        else if (!(await readBackStandsIn())) throw new PlaceFoundingCardUnread();
-      } finally { seed.fill(0); cold.seed.fill(0); }
+        const card: PlaceFoundingCard | null = opts.placeFoundingCard ?? ((await readBackStandsIn()) ? { readBack: async () => {} } : null);
+        if (card === null) throw new PlaceFoundingCardUnread();
+        inception = (await armPlaceInception({ signerSeed: seed, card, ...(opts.entropy ? { entropy: opts.entropy } : {}) })).event;
+      } finally { seed.fill(0); }
       const committed = await exclusiveCustody(async () => {
         if (existsSync(keyFile)) return false;
         publishFile(kelFile, canonicalJson([inception]));
