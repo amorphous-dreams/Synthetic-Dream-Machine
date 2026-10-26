@@ -16,6 +16,7 @@ import {
   hex, DAEMON_BAG_ID, seedDaemonDoc, materializeSharedLarDoc,
   RealmBoardGate, RealmBagGate, realmDocUrl, realmEdgeBoardDocUrl, realmVouchBoardDocUrl, fleetEdgeBoardDocUrl,
   deviceEdgeId, DeterministicFederationGate, crossroadsDocUrl,
+  nexusAidOf,
   type FederationGate, type NexusMembership, type PlaneSeal, type AntigenRing,
 } from "@lararium/mesh";
 import {
@@ -24,8 +25,10 @@ import {
 import { signCabalInvite, writeVouch, type NexusDoc } from "@lararium/mesh";
 import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
+import { noteVesselRealm } from "../src/edge-board.js";
 import { ownedStore } from "../src/owned-store.js";
 import { runCabalVouch } from "../src/commands/cabal-vouch.js";
+import { runCabalJoin } from "../src/commands/cabal-join.js";
 import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
 import { runEdgeSeatMarks } from "../src/commands/edge-seats.js";
 import { signSeatRoll, ed25519SignerFromSeed } from "@lararium/mesh";
@@ -38,7 +41,8 @@ import { decideAndServeWantBlock, type CasWireServerDeps } from "../src/cas-wire
 import type { FaceScope, GateSortInput, VesselFaceKey } from "@lararium/mesh";
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
-import { seatChairs } from "./seat-fixture.js";
+import { chairKey, seatChairs } from "./seat-fixture.js";
+import { foundRealmFrontier } from "./realm-frontier-fixture.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
 import { fleetLineageOf } from "../src/fleet-lineage.js";
@@ -86,8 +90,14 @@ async function seatOwnCharter(): Promise<void> {
   await seedFaceAtom(0);
   const seat = (await seatChairs([0])).hands[0]!;
   seatKey = seat.signer;
-  charterDoc = heldCharter({ keys: [seat.signer], threshold: 1 }).doc({ labels: ["Kahu 0"] });
+  const charter = heldCharter({ keys: [seat.signer], threshold: 1 });
+  charterDoc = charter.doc({ labels: ["Kahu 0"] });
   writeNexusDoc(larSealHome(), charterDoc);
+  await ownedStore(larDataDir(), async (repo) => {
+    const board = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
+    await foundRealmFrontier(board, REALM, charter, [seat]);
+    await repo.flush();
+  });
   await wearPersona(0);
 }
 async function rootFaceInRealm(face: string): Promise<void> {
@@ -128,9 +138,25 @@ describe("the ring fails closed until its first fold lands", () => {
       expect(ring.memberAside(REALM)("p")).toBe(true);
       expect(ring.standsInRealm("p", REALM)).toBe(false);
       await ring.refold();
-      // CONTROL: once the boards read clean, the same asks answer clear.
       expect(ring.deviceAside(phone)).toBe(false);
       expect(ring.aside("p")).toBe(false);
+      // A fold alone cannot clear a member while the realm has no signed frontier.
+      expect(ring.memberAside(REALM)("p")).toBe(true);
+      expect(ring.standsInRealm("p", REALM)).toBe(false);
+    });
+    const chairs = await seatChairs([0]);
+    const charter = heldCharter({ keys: [...chairs.keys], threshold: 1 });
+    writeNexusDoc(larSealHome(), charter.doc());
+    await ownedStore(larDataDir(), async (repo) => {
+      await noteVesselRealm(repo, await wornAtomKey(), REALM, nexusAidOf(charter.doc())!);
+      const edge = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
+      await foundRealmFrontier(edge, REALM, charter, chairs.hands);
+      await repo.flush();
+    });
+    await withRing({ p: { vessel: phone, nym: phone } }, async (ring) => {
+      await ring.refold();
+      // CONTROL: the charter's held hand founds genesis, so the same member reads clear. (The device half stands in the
+      // first ring: seating a charter renames the island the fleet lineage is read through.)
       expect(ring.memberAside(REALM)("p")).toBe(false);
     });
   });
@@ -390,6 +416,42 @@ describe("a device the fleet root set aside — the sorter, the share verdict an
 });
 
 describe("a realm's members — the realm gate and the lane its boards cross by", () => {
+  it("waits before a qualifying frontier, then admits under the charter quorum's genesis", async () => {
+    const joiner = await nymOf(60);
+    // Name a real chair in the charter before this vessel stores its key. The face can vouch,
+    // but the vouch cannot sign a quorum genesis until the chair's hand is held here.
+    const seat = await chairKey(0);
+    const charter = heldCharter({ keys: [seat], threshold: 1 });
+    writeNexusDoc(larSealHome(), charter.doc({ labels: ["Kahu 0"] }));
+    await wearPersona(0);
+    const vouch = await direct(runCabalVouch)({ joiner, realm: REALM, boundEpoch: 0 });
+    await withRing({ p: { nym: joiner } }, async (ring) => {
+      await ring.refold();
+      expect(ring.realmFrontierOf(REALM)?.status).toBe("unknown");
+      expect(ring.memberAside(REALM)("p")).toBe(true);
+      expect(ring.standsInRealm("p", REALM)).toBe(false);
+    });
+    const waiting = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, epoch: 0 });
+    expect(waiting.refusal).toBe("frontier-unknown");
+    expect(waiting.missing?.length).toBeGreaterThan(0);
+
+    const held = (await seatChairs([0])).hands[0]!;
+    seatKey = held.signer;
+    await ownedStore(larDataDir(), async (repo) => {
+      const edge = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
+      await foundRealmFrontier(edge, REALM, charter, [held]);
+      await repo.flush();
+    });
+    await rootFaceInRealm(vouch.voucherDid);
+    await withRing({ p: { nym: joiner } }, async (ring) => {
+      await ring.refold();
+      expect(ring.realmFrontierOf(REALM)?.status).toBe("known");
+      expect(ring.standsInRealm("p", REALM)).toBe(true);
+    });
+    const entered = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, epoch: 0 });
+    expect(entered.admitted).toBe(true);
+    expect(entered.frontier?.asOf["quorum"]?.cid).toMatch(/^[0-9a-f]{64}$/);
+  });
   it("★ a withdrawn vouch sets its joiner aside at the realm's gate and closes the realm's boards to it ★", async () => {
     await seatOwnCharter();
     const joiner = await nymOf(61), bystander = await nymOf(62);
@@ -493,9 +555,17 @@ describe("a realm's members — the realm gate and the lane its boards cross by"
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await Promise.all([0, 1, 2].map((i) => seedFaceAtom(i)));
     await wearPersona(0);   // three faces held: the vessel wears the one these vectors act as
-    const keys = [...(await seatChairs([0, 1, 2])).keys];
+    const chairs = await seatChairs([0, 1, 2]);
+    const keys = [...chairs.keys];
     const charter = heldCharter({ keys, threshold: 2 });
-    writeNexusDoc(larSealHome(), charter.doc({ labels: keys.map((_, i) => `Kahu ${i}`) }));
+    const doc = charter.doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
+    writeNexusDoc(larSealHome(), doc);
+    await ownedStore(larDataDir(), async (repo) => {
+      const edge = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
+      await foundRealmFrontier(edge, REALM, charter, chairs.hands.slice(0, 2));
+      await noteVesselRealm(repo, await wornAtomKey(), REALM, nexusAidOf(doc)!);
+      await repo.flush();
+    });
     const member = await nymOf(63);
     const peers = { "peer-m": { nym: member } };
     await withRing(peers, async (ring) => { await ring.refold(); expect(ring.memberAside(REALM)("peer-m")).toBe(false); });   // CONTROL

@@ -50,13 +50,12 @@
 
 import {
   mintRaiseChallenge, verifyRaiseGrant, raiseStands, standingClass,
-  leaseEpochPrefix, effectiveLeaseEpoch,
+  quorumLeaseEpochOnBoard, type HandLineage,
   foundingRoster, foldCarrierSet, carriageAncestryFromBoard, carriageEntriesFromBoard, antigenEntriesFromBoard, heldNexusRoot, makeMultiSigQuorumVerifier,
   carriageDocUrl, kapaeAntigenDocUrl, federationPostureFromDoc,
   type RaiseChallenge, type RaiseGrant, type RaiseRefused, type RaisedCaps, type VesselClass,
   type RaiseNexusReading, type LarDoc,
 } from "@lararium/mesh";
-import { tiddlerText } from "@lararium/mesh";
 import type { DocHandle } from "@automerge/automerge-repo";
 import { keyLineAt, type BoardOpener, type CarriedNexusReading } from "./nexus-carriage.js";
 import { charterHomeFor, primaryNexusAid, readCarriedCharters } from "./carried-set.js";
@@ -72,7 +71,7 @@ export interface RaiseDoorOptions {
   /** What this vessel stands as with no raise — from `standAs`, never guessed here. */
   readonly floor:      VesselClass;
   /** The Nexus's effective lease epoch, read FRESH on every call. The fence, live. */
-  readonly leaseEpoch: () => number | Promise<number>;
+  readonly leaseEpoch: () => number | null | Promise<number | null>;
   /** The Nexuses this vessel carries for, read off its own replica — re-read on EVERY answer, so a revoke
    *  that reached this replica closes the next one. A grant's presented admit is judged against these. */
   readonly readings:   () => readonly RaiseNexusReading[] | Promise<readonly RaiseNexusReading[]>;
@@ -104,13 +103,14 @@ export function standRaiseDoor(opts: RaiseDoorOptions): RaiseDoor {
   async function current(): Promise<RaisedCaps | null> {
     if (!raise) return null;
     const effective = await opts.leaseEpoch();
+    if (effective === null) return null;
     return raiseStands(raise, { nexus: opts.nexus, effective }) ? raise : null;
   }
 
   return {
     async ask(): Promise<RaiseChallenge> {
       live = mintRaiseChallenge({
-        vesselId: opts.vesselId, nexus: opts.nexus, epoch: await opts.leaseEpoch(), nonce: opts.nonce(),
+        vesselId: opts.vesselId, nexus: opts.nexus, epoch: (await opts.leaseEpoch()) ?? 0, nonce: opts.nonce(),
       });
       return live;
     },
@@ -130,6 +130,7 @@ export function standRaiseDoor(opts: RaiseDoorOptions): RaiseDoor {
       // read floor while its operator believed it raised, which is worse than a refusal because nothing
       // surfaces. So the door refuses, and the recogniser asks again under the fence that now stands.
       const effective = await opts.leaseEpoch();
+      if (effective === null) return { ok: false, why: "stale-challenge", detail: "lease-fence-unreadable" };
       if (!raiseStands(r.caps, { nexus: opts.nexus, effective })) {
         return { ok: false, why: "stale-challenge", detail: "lease-epoch-rolled-before-the-answer" };
       }
@@ -139,6 +140,7 @@ export function standRaiseDoor(opts: RaiseDoorOptions): RaiseDoor {
 
     async standing(): Promise<VesselClass> {
       const effective = await opts.leaseEpoch();
+      if (effective === null) return opts.floor;
       return standingClass(opts.floor, raise, { nexus: opts.nexus, effective });
     },
 
@@ -151,20 +153,10 @@ export function standRaiseDoor(opts: RaiseDoorOptions): RaiseDoor {
 // ── THE THREE READINGS THE DOOR NEEDS, each borrowed rather than invented ────────────────────────────
 
 /**
- * The effective lease epoch for a resource, read off a LIVE board — the read-only sibling of
- * `rollLeaseEpochOnBoard`. Folds every per-writer slot by max, so a concurrent roll on another hearth
- * still counts. An unfed board answers 0, which is the floor's own reading rather than a fault.
+ * Read only signed quorum advances under the charter lineage this vessel verified.
  */
-export function effectiveLeaseEpochOnBoard(handle: DocHandle<LarDoc>, resource: string): number {
-  const prefix = leaseEpochPrefix(resource);
-  const tids   = handle.doc()?.tiddlers ?? {};
-  const slots: (string | null | undefined)[] = [];
-  for (const key of Object.keys(tids)) {
-    if (key.startsWith(prefix)) {
-      slots.push(tiddlerText(tids[key]));
-    }
-  }
-  return effectiveLeaseEpoch(slots);
+export function leaseEpochOnBoard(handle: DocHandle<LarDoc>, resource: string, lineage: HandLineage | null): number | null {
+  return lineage === null ? null : quorumLeaseEpochOnBoard(handle.doc(), resource, lineage);
 }
 
 /**

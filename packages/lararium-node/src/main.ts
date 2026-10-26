@@ -45,10 +45,11 @@ import { bootFaultReport }                 from "./boot-fault.js";
 import { standAs, FLOW_SOCKET_ROUTE, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
 import {
-  standRaiseDoor, effectiveLeaseEpochOnBoard, verifyNymSignature, placeCarriedNexuses, unionReadings,
+  standRaiseDoor, leaseEpochOnBoard, verifyNymSignature, placeCarriedNexuses, unionReadings,
 } from "./vessel-raise.js";
 import { readCarriedNexuses, type BoardOpener } from "./nexus-carriage.js";
 import { larSealHome } from "./vessel-paths.js";
+import { leaseLineageOfNexus } from "./lease-charter.js";
 import { materializeSharedLarDoc } from "@lararium/mesh";
 import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 import { faceStands } from "./commands/init.js";
@@ -574,11 +575,8 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   // own key names only the vessel a grant must answer for. A vessel that carries no Nexus emits no challenge:
   // no admit could count, so there is nothing to invite.
   //
-  // THE RAISE FENCE'S LEASE RESOURCE IS THE CHALLENGE NEXUS'S AID. `leaseEpoch` reads
-  // `effectiveLeaseEpochOnBoard(daemonHandle, raiseNexus)`, so the epoch a raise must match is the one leased under
-  // that AID on this vessel's own daemon board — never the vessel's key, never a wiki, never a second Nexus it also
-  // carries. A `nexus-rekey` that advances the lease for that AID drops every raise standing against the old epoch;
-  // a rekey under any other Nexus leaves this door's fence where it stood.
+  // THE RAISE FENCE reads the challenge Nexus's lease through that charter's verified seal lineage.
+  // Every ask re-reads the charter and daemon board; an unreadable lineage leaves no standing raise.
   const selfKey  = await loadVesselVerifyingKey();
   const sealHome = larSealHome();
   const openRaiseBoard: BoardOpener = async (url, label) =>
@@ -592,7 +590,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     vesselId:   selfKey,
     nexus:      raiseNexus ?? "",
     floor:      standing,
-    leaseEpoch: () => (raiseNexus ? effectiveLeaseEpochOnBoard(herm.daemon.daemonHandle, raiseNexus) : 0),
+    leaseEpoch: () => (raiseNexus ? leaseEpochOnBoard(herm.daemon.daemonHandle, raiseNexus, leaseLineageOfNexus(sealHome, raiseNexus)) : null),
     readings:   raiseReadings,
     verify:     verifyNymSignature,
     nonce:      () => randomBytes(32).toString("hex"),

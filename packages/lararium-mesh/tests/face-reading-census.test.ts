@@ -38,7 +38,8 @@ const PRIMITIVES = [
 const ALLOWED = new Set([
   "lararium-mesh/src/face-reading.ts", "lararium-mesh/src/persona-act-board.ts", "lararium-mesh/src/persona-act.ts",
   "lararium-mesh/src/lease-advance.ts", "lararium-mesh/src/hand-lineage.ts", "lararium-mesh/src/edge-frontier.ts",
-  "lararium-mesh/src/edge-frontier-board.ts", "lararium-mesh/src/fleet-frontier.ts", "lararium-mesh/src/face-anchor.ts",
+  "lararium-mesh/src/edge-frontier-board.ts", "lararium-mesh/src/fleet-frontier.ts", "lararium-mesh/src/realm-frontier.ts",
+  "lararium-mesh/src/charter-hand-lineage.ts", "lararium-mesh/src/quorum-lease.ts", "lararium-mesh/src/face-anchor.ts",
   "lararium-node/src/persona-act-store.ts", "lararium-keyhive/src/lease-frontier.ts", "lararium-node/src/lease-rekey.ts",
   "lararium-keyhive/src/boot-daemon-keyhive.ts",
 ]);

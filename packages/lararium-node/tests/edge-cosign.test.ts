@@ -19,6 +19,7 @@ import { carriedCharterHome, primaryNexusAid } from "../src/carried-set.js";
 import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "../src/commands/edge-cosign.js";
 import { chairKey, chairSeed, seatChairs } from "./seat-fixture.js";
 import { ed25519SignerFromSeed, nexusAidOf } from "@lararium/mesh";
+import { foundRealmFrontier } from "./realm-frontier-fixture.js";
 import { seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
 
 let genesis: ReturnType<typeof heldCharter> | null = null;
@@ -63,6 +64,12 @@ beforeEach(async () => {
   // The charter commits to the chairs' next keys, so a roll moves its head and keeps its Nexus.
   genesis = heldCharter({ keys, threshold: 2, successors: { keys: [await chairKey(0, 1), await chairKey(1, 1)], threshold: 2 } });
   await stand(0, 0, keys); await stand(1, 1, keys);
+  const hands = [0, 1].map((face) => ({ signer: keys[face]!, sign: ed25519SignerFromSeed(chairSeed(face)) }));
+  for (const index of [0, 1]) await withRepo(index, async (repo) => {
+    const edge = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
+    await foundRealmFrontier(edge, REALM, genesis!, hands);
+    await repo.flush();
+  });
   // Each vessel founds its face's custody under a key derivation of its own, so the hook gets room beside a loaded runner.
 }, 90_000);
 afterEach(async () => {

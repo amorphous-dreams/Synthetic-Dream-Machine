@@ -119,7 +119,7 @@ describe("recovery-keel — the readmitted edge binds the PRESENT lease epoch, n
     const founding = splitRootAtFounding(ROOT, seededRng(7));
     const surviving = [founding.recordedCodeShare, founding.escrowShare];
     // The group rolled to epoch 2 sometime after founding (a face-join regrant, a device loss elsewhere —
-    // any live-lease event `effectiveLeaseEpoch` folds). A readmit that binds `boundEpoch: 0` (the
+    // any live-lease event `signedLeaseEpoch` folds). A readmit that binds `boundEpoch: 0` (the
     // founding-genesis floor, never re-read) is what a caller gets if it forgets to thread a live lease read.
     const payload = await reconstructAndReadmit(surviving, readmitFields(freshDeviceKey(), 0));
     const verdict = await verifyDeviceDelegation(await complete(payload.deviceEdge), await rootDid(), { expectedEpoch: 2 });
@@ -139,7 +139,7 @@ describe("recovery-keel — the readmitted edge binds the PRESENT lease epoch, n
     const founding = splitRootAtFounding(ROOT, seededRng(7));
     const surviving = [founding.recordedCodeShare, founding.escrowShare];
     // The caller read the live lease (2) before minting — exactly the pattern device-admit.ts's own
-    // `leaseEpochPrefix` → `effectiveLeaseEpoch` composition would produce, threaded by hand here since no
+    // `leaseEpochPrefix` → `signedLeaseEpoch` composition would produce, threaded by hand here since no
     // CLI door exists yet to do the daemon-doc read itself.
     const payload = await reconstructAndReadmit(surviving, readmitFields(freshDeviceKey(), 2));
     const verdict = await verifyDeviceDelegation(await complete(payload.deviceEdge), await rootDid(), { expectedEpoch: 2 });

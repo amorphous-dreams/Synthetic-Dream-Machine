@@ -103,7 +103,7 @@ nobody's grammar. Built at `@lararium/mesh` · `plugin-offering` · `offering-an
 ''An office attaches to the PLACE, never to the person.'' Rome's ''vicomagistri'' held a college seat at a ''compitum''; the office belonged to the vicus, the person rotated through, and the shrine kept standing.
 
 <<~ has Office Grant "what/a-quorum-countersigns subject/the-vessel's-PLACE-DID requires/the-vessel's-own-contractSig ~ bilateral; a Nexus conscripts nobody">>
-<<~ has Office Fence "what/boundEpoch >= effectiveLeaseEpoch scope/per-PLACE writer/the-place-alone ~ the same comparison device-delegation makes, on the place's own lease resource (#/welded)">>
+<<~ has Office Fence "what/boundEpoch >= the-signed-lease-epoch scope/per-PLACE writer/the-place-alone ~ the same comparison device-delegation makes, on the place's own lease resource (#/welded)">>
 <<~ has Office Ending "how/non-renewal-of-the-place's-lease ~ a seal roll asks only the holder to re-consent; only a quorum act on the deny board ends an office on purpose (#/welded)">>
 <<~ has Office Exception "when/a-malicious-self-renew rides/convergent-removal + kapae ~ never the counter">>
 
@@ -210,7 +210,7 @@ Three shipped verdicts: ''Lifeguard'' exists because delay-based suspicion ran 5
 
 ''The field ships the split.'' KERI anchors an issuance in the key event log, and the issuance survives a later rotation. Canon law c.184 §2 keeps an office standing when the conferrer's authority lapses. The Demise of the Crown Act 1901 keeps an office held under the Crown from vacating on the sovereign's death. Viewstamped Replication and Vertical Paxos carry committed state across a view or configuration change rather than ending it. And Kleppmann's fencing tokens site the fence AT THE RESOURCE, which the place-keyed lease reproduces.
 
-''What the epoch rulings settle, and road (iii) honours'': the LEASE epoch (a scalar per-writer max-register) ''fences''; the SEAL epoch (a CID chain) ''records lineage''; ''the two never fuse''; the rolling-window reading stands ''STRUCK'' — a set answers //is this listed// and never //is this newer//, and a list of markers reads as a roster of moments; and ''the NEXUS fences, never the cabal'' — an epoch means nothing outside the island that rolls it.
+''What the epoch rulings settle, and road (iii) honours'': the LEASE epoch (a signed scalar: a face's per-writer slots, a Nexus's or realm's charter-quorum advances) ''fences''; the SEAL epoch (a CID chain) ''records lineage''; ''the two never fuse''; the rolling-window reading stands ''STRUCK'' — a set answers //is this listed// and never //is this newer//, and a list of markers reads as a roster of moments; and ''the NEXUS fences, never the cabal'' — an epoch means nothing outside the island that rolls it.
 
 <<~/ahu>>
 
@@ -455,6 +455,6 @@ An operator contracts their OWN herm with one signature, scoped to one place and
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dh-ruO3foaXibea8DFauz-42DZxXXSqfLLAqUGl1SRY
+<<^ code="&#x0003;">>ni:///sha-256;5nhSkrLrw6tPg9LWhRYutowuE0Ut1yowE5NgqtfGNeA
 
 <<^ code="&#x0004;" -> to="?">>

@@ -22,9 +22,10 @@
  * later. The vouching itself already paid the cost: the voucher's score SPLITS across everyone they
  * vouch for, so each vouch dilutes the hand that made it. That carries the whole payment, and it needs no ledger.
  *
- * `feed --realm <id>` — THE OFFERING. A realm lives by being fed: members roll a per-realm lease
- * epoch, one slot per writer, and the realm's liveness reads off that max-register. A FACE feeds, never a
- * device, so adding vessels never inflates a standing. Feeding twice rolls twice — the clock measures how hard
+ * `feed --realm <id>` — THE OFFERING. A realm lives by being fed: members roll its maintenance feed,
+ * one slot per writer, and the clock reads their offerings. The charter quorum advances the separate
+ * admission lease. A FACE feeds, never a device, so adding vessels never inflates a standing.
+ * Feeding twice rolls twice — the clock measures how hard
  * each hand feeds, so a repeated offering SHOULD register.
  *
  * `clock --realm <id>` — THE CAPTURE-CLOCK, and it surfaces rather than judges. It reports who feeds and how
@@ -69,7 +70,7 @@ export async function cmdCabal(args: ParsedArgs): Promise<number> {
 
 class CabalUsageError extends Error {}
 
-/** The realm doc id, fail-closed — a stray value never becomes a lease prefix. */
+/** The realm doc id, fail-closed — a stray value never becomes a feed or admission prefix. */
 function realmOf(args: ParsedArgs): string {
   const realm = (args.options["realm"] ?? "").trim().toLowerCase();
   if (!/^[0-9a-f]{64}$/.test(realm)) {
@@ -122,8 +123,8 @@ async function realmVerb(verb: string, verbArgs: Record<string, unknown>): Promi
 }
 
 /**
- * `lares cabal feed` — make the offering. The realm's liveness rides a max-register, so this rolls only THIS
- * face's own slot; two members feeding concurrently never clobber each other.
+ * `lares cabal feed` — make the offering. This rolls only THIS face's own maintenance-feed slot;
+ * two members feeding concurrently never clobber each other or advance the admission lease.
  */
 async function cmdFeed(args: ParsedArgs): Promise<number> {
   try {

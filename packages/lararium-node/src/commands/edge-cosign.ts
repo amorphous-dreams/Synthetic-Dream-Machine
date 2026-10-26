@@ -21,13 +21,15 @@
  */
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  signEdgeKapae, writeEdgeKapae, edgeLineHeads, realmEdgeBoardDocUrl, realmEdgeAuthority, readLedgeredVouches,
+  signEdgeKapae, writeEdgeKapae, edgeLineHeads, realmEdgeBoardDocUrl, realmEdgeAuthority, readLedgeredVouches, realmRaiseCids,
   edgeActPartial, readEdgeActPartial, judgeEdgeActPartial, cosignEdgeActPartial, edgeIdOfSubject,
   type EdgeActPartial, type EdgeKapaeVerdict, type EdgePartialSubject, type EdgeSigner, type KahuQuorumSeats, type PartialVerdict,
 } from "@lararium/mesh";
 import { loadWornFaceAtomKey } from "../face-atom-store.js";
 import { heldSeatSigners as heldSeats } from "../held-quorum.js";
 import { actingRealmNexus, nexusOfEpoch, noteVesselRealm, readVesselEdgeBoard, vesselEdgeCharter } from "../edge-board.js";
+import { leaseCharterOf } from "../lease-charter.js";
+import { prepareRealmFrontier, registerRealmFrontierInto } from "../realm-frontier-door.js";
 
 export class EdgeCosignError extends Error {
   constructor(message: string, readonly verdict?: PartialVerdict) { super(message); }
@@ -57,7 +59,7 @@ async function readRealm(repo: Repo, realm: string, sealHome: string, named?: st
     repo, scope: realm, kind: "realm", boardUrl: realmEdgeBoardDocUrl(realm), label: "board:edge-kapae", vesselKey,
     authorityFor: realmEdgeAuthority(vouches.invites), charter,
   });
-  return { charter, read, note };
+  return { charter, read, note, vesselKey, aid };
 }
 
 export interface EdgePartialOptions {
@@ -149,7 +151,7 @@ export async function runEdgeCosign(opts: { readonly partial: unknown; readonly 
   // THE ACT NAMES ITS EPOCH, and so its Nexus: a vessel that never acted in this realm reads the Nexus off the
   // charter it holds that carries that epoch. A realm already pinned here answers to its pin alone.
   const named = nexusOfEpoch(opts.sealHome, partial.act.epochCid ?? "") ?? undefined;
-  const { charter, read, note } = await readRealm(opts.repo, partial.scope, opts.sealHome, named);
+  const { charter, read, note, vesselKey, aid } = await readRealm(opts.repo, partial.scope, opts.sealHome, named);
   const before = await read();
   const first = judgeEdgeActPartial(partial, { charter, counted: before.counted });
   if (first.verdict !== "ready" && first.verdict !== "complete") {
@@ -182,8 +184,16 @@ export async function runEdgeCosign(opts: { readonly partial: unknown; readonly 
     added, signed: judged.signed, threshold: charter.head.threshold, partial: standing,
   };
   if (judged.verdict !== "complete") return { ...base, landed: false };
+  const leaseCharter = await leaseCharterOf({ repo: opts.repo, vesselKey, sealHome: opts.sealHome,
+    resource: partial.scope, named: aid });
+  const held = heldSeats(leaseCharter.roster);
+  // OWED: a split-seat partial carries the edge signatures alone; until it also carries frontier signatures,
+  // a vessel below k lands the act without a new head and widening readers wait for a later seated registration.
+  const prepared = held.length < leaseCharter.roster.threshold ? null : await prepareRealmFrontier({ realm: partial.scope, board: before.handle.doc(), lineage: leaseCharter.lineage,
+    counted: [...realmRaiseCids(before.counted.acts), ...(standing.act.raised ? [standing.act.actCid] : [])],
+    signers: held.slice(0, leaseCharter.roster.threshold).map((s) => ({ key: s.verifyingKey, sign: s.sign })) });
   await note();
-  before.handle.change((d) => writeEdgeKapae(d, standing.act));
+  before.handle.change((d) => { writeEdgeKapae(d, standing.act); if (prepared) registerRealmFrontierInto(d, prepared); });
   await opts.repo.flush();
   // Read the act BACK through the counting fold: the door reports standing, never the gesture.
   const after = await read();

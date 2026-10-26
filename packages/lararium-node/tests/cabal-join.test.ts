@@ -26,6 +26,7 @@ import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { runCabalJoin, CabalJoinError } from "../src/commands/cabal-join.js";
 import { direct } from "./direct-store.js";
 import { fixtureKey } from "./fixture-keys.js";
+import { seatChairs } from "./seat-fixture.js";
 import { seatOwnCharter, wear } from "./worn-face-fixture.js";
 import { seedFaceAtom } from "./atom-fixture.js";
 
@@ -206,7 +207,7 @@ describe("cabal join — the crossing, and what it refuses", () => {
 
   it("a climbed vessel's join reads the realm board its vouch wrote", async () => {
     // Vouch and join resolve the board from the same realm id even while a charter is seated.
-    const steward = fixtureKey(0xb2);
+    const steward = (await seatChairs([0])).keys[0]!;
     writeNexusDoc(larSealHome(), heldCharter({ keys: [steward], threshold: 1 }).doc({ labels: ["steward"] }));
     const joiner = await foreignNym(18);
     await direct(runCabalVouch)({ joiner, realm: REALM }, NOW);
@@ -214,5 +215,17 @@ describe("cabal join — the crossing, and what it refuses", () => {
 
     expect(v.refusal).toBeUndefined();
     expect(v.admitted).toBe(true);
+  });
+
+  it("a climbed vessel whose charter seats it does not hold waits for the quorum frontier", async () => {
+    const steward = fixtureKey(0xb2);
+    writeNexusDoc(larSealHome(), heldCharter({ keys: [steward], threshold: 1 }).doc({ labels: ["steward"] }));
+    const joiner = await foreignNym(19);
+    await direct(runCabalVouch)({ joiner, realm: REALM }, NOW);
+
+    const waiting = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, now: NOW });
+    expect(waiting.admitted).toBe(false);
+    expect(waiting.refusal).toBe("frontier-unknown");
+    expect(waiting.missing).toContainEqual(expect.objectContaining({ hand: "quorum" }));
   });
 });

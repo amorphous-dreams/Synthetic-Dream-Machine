@@ -1,14 +1,15 @@
 /**
  * cabal-realm-clock — the CAPTURE-CLOCK: make a realm's maintenance VISIBLE, so the
  * majority can SEE a minority out-feeding it WHILE it happens (while exit is still
- * cheap). A pure, verdict-free read over the realm's lease slots.
+ * cheap). A pure, verdict-free read over the realm's feed slots.
+ * The realm feed follows its own seal law in `cabal-realm.ts` and carries liveness, never an authority epoch.
  *
  * The persistence ≠
  * legitimacy gap is a HARD-BOUND — legitimacy cannot live in the join-gate without the
  * gate becoming the captured object, so the gate STAYS INERT. The buildable answer is
  * not prevention but ESCAPE (fork-as-exit) + SIGHT. This module is the SIGHT half: it
- * instruments who feeds the realm and how hard (free — it reads the liveness signal the
- * epoch-lease already keeps), turning Hirschman's failure case (silent capture under
+ * instruments who feeds the realm and how hard (free — it reads the separate maintenance feed),
+ * turning Hirschman's failure case (silent capture under
  * apathy) into a readable surface (canon: api/pono/cabal-realm#the-unswept-corner).
  *
  * THE BOUNDARY — this clock SURFACES, it never JUDGES. It reports per-maintainer
@@ -18,24 +19,24 @@
  * without recreating a root. The lens is here; the reading stays
  * the operator's seat (OPEN).
  *
- * What it can and cannot see: the lease is a coordinator-free MAX-REGISTER (current
+ * What it can and cannot see: the maintenance feed holds per-writer slots (current
  * epoch per writer, no history), so this reads a STANDING at a point in time — who
  * maintains + how deep each has rolled — not a time-series. Capture shows as a small
  * leading set far ahead of a trailing majority; repeated reads let the operator watch
  * the trend. A richer fed-since-when history stands unbuilt.
  *
- * Platform-blind: rides ./epoch-lease + ./cabal-realm only. NO node: imports.
+ * Platform-blind: reads ./cabal-realm feed slots. NO node: imports.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
  */
 
-import { effectiveLeaseEpoch, rolledLeaseEpoch } from "./epoch-lease.js";
+import { rolledLeaseEpoch } from "./epoch-lease.js";
 import { canonicalJsonBytes } from "./crypto.js";
 import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { realmFeedPrefix, realmFeedSlotUri, type CabalRealm } from "./cabal-realm.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 
-/** One maintainer's standing — the writer and how deep it has rolled the realm's lease. */
+/** One maintainer's standing — the writer and how deep it has rolled the realm's feed. */
 export interface MaintainerStanding {
   readonly writerId: string;
   readonly epoch:    number;
@@ -47,11 +48,11 @@ export interface MaintainerStanding {
  * concentration; it draws NO capture conclusion (that threshold is the operator's).
  */
 export interface CabalRealmMaintenanceProvenance {
-  /** Every maintainer with a lease slot for this realm, sorted DESC by epoch (leaders first). */
+  /** Every maintainer with a feed slot for this realm, sorted DESC by epoch (leaders first). */
   readonly maintainers:     readonly MaintainerStanding[];
   /** The number of distinct maintainers feeding the realm. */
   readonly maintainerCount: number;
-  /** The effective lease epoch = the deepest-rolled slot (max-register). 0 if unfed. */
+  /** The deepest maintenance-feed epoch this replica reads. 0 if unfed; never the admission fence. */
   readonly effectiveEpoch:  number;
   /** The shallowest maintainer's epoch (0 when none) — the trailing edge. */
   readonly trailingEpoch:   number;
@@ -64,11 +65,11 @@ export interface CabalRealmMaintenanceProvenance {
 }
 
 /**
- * Read a realm's maintenance provenance from its lease slots — the capture-CLOCK.
+ * Read a realm's maintenance provenance from its feed slots — the capture-CLOCK.
  *
  * `leaseSlots` is the per-writer slot map (slotUri → epoch string) the realm's writers
- * maintain (the same map the founding ceremony + lease rolls use). This filters to THIS
- * realm's slots (by the realm's lease prefix), recovers each writer from its slot URI,
+ * maintain (the same map the founding ceremony + feed rolls use). This filters to THIS
+ * realm's slots (by the realm's feed prefix), recovers each writer from its slot URI,
  * and reports the standing. Pure + total: an empty or all-foreign map reads as an unfed
  * realm (no maintainers, effective 0).
  *
@@ -95,7 +96,7 @@ export function cabalRealmMaintenanceProvenance(
   }
   maintainers.sort((a, b) => b.epoch - a.epoch || a.writerId.localeCompare(b.writerId));
 
-  const effectiveEpoch = effectiveLeaseEpoch(maintainers.map((m) => String(m.epoch)));
+  const effectiveEpoch = maintainers[0]?.epoch ?? 0;
   const trailer        = maintainers[maintainers.length - 1];
   const trailingEpoch  = trailer ? trailer.epoch : 0;
   const leadingCount   = maintainers.filter((m) => m.epoch === effectiveEpoch && effectiveEpoch > 0).length;
@@ -111,9 +112,9 @@ export function cabalRealmMaintenanceProvenance(
 }
 
 /**
- * Gather a realm's per-writer lease slots OFF A BOARD — the doc→map bridge the clock's pure read wants.
+ * Gather a realm's per-writer feed slots OFF A BOARD — the doc→map bridge the clock's pure read wants.
  *
- * The slots ride as tiddlers under the realm's lease prefix, each holding one writer's epoch as text. This
+ * The slots ride as tiddlers under the realm's feed prefix, each holding one writer's epoch as text. This
  * scans a board replica for them and hands back the map. It reads whatever the supplied doc HOLDS and never
  * asks where the doc came from: the caller chooses the board, because which board carries a realm's feeding
  * decides who can SEE it, and that choice belongs above this line.
@@ -152,7 +153,7 @@ export function realmMaintenanceFromBoard(doc: LarDoc, realmDocIdHex: string): C
  * The plain read above trusts the board that carries it, sound under a vessel's own bag. This one trusts
  * the SIGNATURE instead: it folds a slot only when the slot proves the writer named in its uri rolled that
  * epoch (`verifyRealmFeedSlot`). An unsealed slot, a mis-sealed slot, and a malformed slot each read as
- * IGNORED — never folded, never fatal — so a forged high roll cannot lift the max-register the lease rides.
+ * IGNORED — never folded, never fatal — so a forged high roll cannot lift the maintenance reading.
  * Async, because the check is; a caller that already trusts its board keeps the sync read.
  */
 export async function verifiedMaintenanceFromBoard(
@@ -190,11 +191,11 @@ export interface RealmFeedWrite {
  *
  * A writer rolls only its OWN slot, so two members feeding concurrently never clobber each other and the
  * effective epoch (the max across slots) never moves backward. Both concurrent rolls landing the same value
- * reads as correct for a liveness lease: the realm got fed, and by how many hands the clock reports separately.
+ * reads as correct for the maintenance feed: the realm got fed, and by how many hands the clock reports separately.
  *
  * THE ROLL RIDES A LOCAL SIGHTING. `priorEffective` counts the slots THIS replica holds, so a writer whose
  * peers have not synced rolls to a lower epoch than a fully-synced replica would. Under no-global-now that
- * reads as correct rather than as a fault — the lease is a max-register precisely so a low roll costs nothing
+ * reads as correct rather than as a fault — the feed's slot maximum lets a low roll cost nothing
  * and a high one converges.
  */
 export function realmFeedWrite(
@@ -208,7 +209,7 @@ export function realmFeedWrite(
   for (const [uri, value] of leaseSlots) {
     if (uri.startsWith(prefix)) mine.push(value);
   }
-  const priorEffective = effectiveLeaseEpoch(mine);
+  const priorEffective = mine.reduce((max, value) => Math.max(max, readRealmFeedSlot(value)?.epoch ?? 0), 0);
   return {
     slotUri,
     epoch: rolledLeaseEpoch(priorEffective),
@@ -273,8 +274,8 @@ const REALM_FEED_DOMAIN = "lar/realm-feed" as const;
  *
  * All three travel in the seal because each alone is liftable: a roll lifted to another realm would
  * carry maintenance a face never offered, and a roll lifted to a higher epoch could never be undone.
- * The lease is a MAX-REGISTER, chosen so a low roll costs nothing and a high one converges — and that
- * same property makes a forged high roll IRREVERSIBLE, since the max never decreases.
+ * The maintenance feed folds a slot maximum, so a low roll costs nothing and a high one converges;
+ * that same property makes a forged high feed roll persist until its slot receives a valid higher roll.
  */
 export function realmFeedBytes(parts: { realm: string; writer: string; epoch: number }): Uint8Array {
   return canonicalJsonBytes({

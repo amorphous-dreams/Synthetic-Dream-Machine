@@ -32,7 +32,7 @@
 
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  signEdgeKapae, writeEdgeKapae, edgeLineHeads, nextFleetFrontier, landFleetFrontier, fleetRaiseCids,
+  signEdgeKapae, writeEdgeKapae, edgeLineHeads, nextFleetFrontier, landFleetFrontier, fleetRaiseCids, realmRaiseCids,
   realmEdgeBoardDocUrl, fleetEdgeBoardDocUrl, ed25519SignerFromSeed, memberEdgeId, deviceEdgeId,
   realmEdgeAuthority, readLedgeredVouches, withdrawForRemoval,
   faceAtomKeyFromSeed,
@@ -47,6 +47,8 @@ import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { actingRealmNexus, noteVesselRealm, readVesselEdgeBoard, vesselEdgeCharter } from "../edge-board.js";
 import { wornNexusLeaf } from "../nexus-leaf.js";
 import { fleetLineageForVessel } from "../fleet-lineage.js";
+import { leaseCharterOf } from "../lease-charter.js";
+import { prepareRealmFrontier, registerRealmFrontierInto } from "../realm-frontier-door.js";
 
 import { resolveFace } from "../face-selector.js";
 export class EdgeKapaeError extends Error {}
@@ -171,6 +173,9 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
   let boardUrl: ReturnType<typeof realmEdgeBoardDocUrl>;
   let epochCid: string | undefined;
 
+  const leaseCharter = realm !== undefined && hand === "quorum"
+    ? await leaseCharterOf({ repo: opts.repo, vesselKey, sealHome: opts.sealHome, resource: realm, named: realmNexus! })
+    : null;
   if (hand === "quorum") {
     if (!charter) throw new EdgeKapaeError("no seated charter of the Nexus this realm stands under stands on this vessel — the quorum hand has no seats to sign with.");
     const selected = await selectHeldQuorumSigners(charter.head, (held, k) => new EdgeKapaeError(
@@ -267,7 +272,14 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
         counted: [...fleetRaiseCids(before.counted.acts), act.actCid], signer: { key: scope, sign: signers[0]!.sign } });
       if (!registered) throw new EdgeKapaeError("this fleet's board carries no verified signed frontier to extend — found the face first; nothing was written.");
     }
-    before.handle.change((d) => { writeEdgeKapae(d, act); if (registered) landFleetFrontier(d, registered); });
+    // The charter quorum commits its act and the realm head in one board change. A holder vouch hand
+    // owes its own frontier; it registers no quorum head here.
+    const realmHead = realm !== undefined && hand === "quorum" && leaseCharter
+      ? await prepareRealmFrontier({ realm, board: before.handle.doc(), lineage: leaseCharter.lineage,
+        counted: [...realmRaiseCids(before.counted.acts), ...(opts.raised ? [act.actCid] : [])],
+        signers: signers.map((s) => ({ key: s.signer, sign: s.sign })) }) : null;
+    before.handle.change((d) => { writeEdgeKapae(d, act); if (registered) landFleetFrontier(d, registered);
+      if (realmHead) registerRealmFrontierInto(d, realmHead); });
     // AN ACT STANDS THE REALM UNDER ITS NEXUS, once it landed: the ledger keeps the first act's word
     // (kapae#/edge-hands), and an act refused before its write pins nothing.
     if (realm !== undefined) await noteVesselRealm(repo, vesselKey, realm, realmNexus!);

@@ -63,7 +63,7 @@ describe("② the feed crosses its members", () => {
     expect(Object.keys(mesh)).toContain("verifiedMaintenanceFromBoard");
   });
 
-  test("A FORGED SLOT CANNOT LIFT A REALM'S EPOCH — verifiedMaintenanceFromBoard makes the refusal load-bearing: it folds only sealed+verified slots, so a forged large number reads ignored and the max-register holds at the sealed max. The forged-slot CONTROL (the plain fold takes the forgery) stands in realm-verified-fold.test.ts", () => {
+  test("A FORGED FEED SLOT CANNOT LIFT THE MAINTENANCE READING — verifiedMaintenanceFromBoard folds only sealed+verified feed slots, so a forged large number reads ignored and the feed maximum holds at the sealed max. The forged-slot CONTROL (the plain feed fold takes the forgery) stands in realm-verified-fold.test.ts", () => {
     expect(Object.keys(mesh)).toContain("verifiedMaintenanceFromBoard");
   });
 });

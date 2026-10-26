@@ -31,7 +31,7 @@ Wave C made a PersonaGroup's lease epoch rise only on a signed advance (`lease-a
 !! The mandate (operator rulings on forks 3 and 4, 2026-10-22)
 
 * ''One lease law.'' Every lease epoch rises only on a signed advance. A face advances by a per-writer signed slot under its KEL lineage. A Nexus or cabal-realm advance signs as a `QuorumAct` at the roster's threshold under its own epoch's lineage.
-* ''The unsigned max-register retires entirely'' (`effectiveLeaseEpoch`, `rollLeaseEpochOnBoard`, with their fixtures); the signed path stands alone.
+* ''The unsigned max-register retired entirely''; the signed path stands alone, and a census (`lease-law-census.test.ts`) refuses its names and any lease-prefix scan that names no signed reader.
 * ''The realm boards' frontiers widen K17 the same way the fleet board's do.''
 
 <<~/ahu>>
@@ -40,16 +40,23 @@ Wave C made a PersonaGroup's lease epoch rise only on a signed advance (`lease-a
 
 !! The five slices, one lane landed whole
 
-# ''R1 ~ the mesh format.'' A quorum-lease slot, its writer and its reader under a charter lineage (`makeHandLineage` bound to the seal-epoch chain; an older epoch's keys come from the seal-roll chain).
-# ''R2 ~ the writer on held seats.'' The `nexus-rekey` writer moves from the vessel's atom to a store-door row that signs at held seats, as `lares edge kapae --quorum` does.
-# ''R3 ~ the readers.'' The herm's raise door (`effectiveLeaseEpochOnBoard`), `cabal-join`, the vessel standing and the realm clock read signed advances only.
-# ''R4 ~ the retirement.'' The unsigned max-register leaves, and its fixtures migrate to signed fixtures through the real founding path.
-# ''R5 ~ the realm boards' frontiers.'' The charter quorum hand signs its stream's frontier; the realm boards' readers (`memberAside`, `standsInRealm`, the vouch edges) widen only as of a qualifying frontier.
+# ''R1 ~ the mesh format ~ BUILT.'' `quorum-lease.ts`: one `QuorumAct` per advance under `QUORUM_LEASE_DOMAIN`, a content-addressed slot beside the face's per-writer slots, read under `charterHandLineage` (`makeHandLineage` bound to the seal-epoch chain, so an older epoch's advance verifies under the keys of its own epoch and a forged chain reads no hand). The fold is monotone (the verified maximum only climbs, so no sighting un-stales a cut grant).
+# ''R2 ~ the writer on held seats ~ BUILT.'' The `nexus-rekey` verb resolves the resource's own charter (`lease-charter.ts`: a Nexus AID, or a realm through the Nexus its ledger names), takes the held seats at the threshold (`selectHeldQuorumSigners`) and lands the advance through `rollQuorumLeaseOnBoard`. Fewer held seats refuse by name; the vessel's atom signs nothing here.
+# ''R3 ~ the readers ~ BUILT.'' The herm's raise door (`leaseEpochOnBoard`, null where no lineage verifies, so a raise never stands against a fence that cannot read), `cabalAdmissionEpoch` in `cabal-join` and `cabal-vouch`, and the vessel standing read signed advances only. A join that would admit waits (`incomplete-view`) where the realm's lineage reads none; a refusal narrows and needs no lineage. The realm clock's fold no longer borrows the retired register; the realm FEED stays its own liveness heartbeat under its own seal law (`cabal-realm#/the-tie-break`), never an authority epoch.
+# ''R4 ~ the retirement ~ BUILT.'' The unsigned register, its writer and its readers left; fixtures moved onto `seatedCharter` and held seats.
+# ''R5 ~ the realm boards' frontiers ~ BUILT for the charter quorum hand.'' `realm-frontier.ts` rides the shared hand frontier (`fleet-frontier.ts`): the quorum signs genesis and each successor, a quorum act registers its raise in the same board change (`edge-kapae-cmd`, `edge-cosign`), and a vouch founds the genesis on first touch where this vessel holds the threshold of seats. The shadow ring reads `RealmFold.frontier`: `memberAside` answers aside and `standsInRealm` false where no frontier qualifies; `cabal-join` waits as `frontier-unknown` before an admission and names the head it acted under (`frontier.asOf`).
 
-Red: an unsigned `rollLeaseEpochOnBoard` advance on a realm raises nothing, a sub-threshold hand raises nothing, and a threshold hand raises it.
+!!! Owed
+* The voucher hands' own frontier on a realm board (holder acts register nothing).
+* A seal roll leaves the realm head at the older epoch (`stale-lineage`, closed) until a quorum act, a seated vouch or a cosign signs a head under the new epoch; the roll anchor does not yet register one.
+* A split-seat cosign carries edge signatures alone: a vessel below the threshold lands the act without a frontier, so readers wait until a seat holder registers one.
+* A closed roster's keys can still raise the lease (stale more, never less) until the recovery door (K18) closes that window; the fold never lowers.
+* A realm admit bundle carrying its board's frontier and snapshot.
+
+Reds: an unsigned advance on a realm raises nothing and a threshold hand raises it (`quorum-lease.test.ts`, `lease-rekey.test.ts`); a sub-threshold hand raises nothing; an older epoch's advance verifies under its own epoch's keys and a forged lineage refuses; a realm reader before any qualifying frontier waits as unknown and acts as of it after (`realm-frontier.test.ts`, `edge-shadow-ring.test.ts`); the census proves itself on a planted site.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;w81RZq2mZ3XmelSrJ66mQB4HjNCLlpSfxE1i4V0h-o0
+<<^ code="&#x0003;">>ni:///sha-256;pdYFkfsiavZkCAnZXCfelR7oNeYE8iPBgHJtMpxUKBg
 
 <<^ code="&#x0004;" -> to="?">>

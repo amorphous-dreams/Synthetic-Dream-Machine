@@ -23,15 +23,17 @@ import type { Repo } from "@automerge/automerge-repo";
 import {
   readLedgeredVouches, materializeSharedLarDoc,
   vouchEdgeId, realmEdgeBoardDocUrl, memberEdgeId, realmEdgeAuthority, type EdgeKapaeVerdict,
-  leaseEpochPrefix, effectiveLeaseEpoch, DAEMON_BAG_ID,
+  quorumLeaseEpochOnBoard, DAEMON_BAG_ID, charterHandLineage, type HandLineage, type WideningRead,
   DEFAULT_JOIN_POLICY, alphaFromHalfLife,
   type CabalInvite, type CabalJoinPolicy, type AdmissionDials,
 } from "@lararium/mesh";
-import { tiddlerText, type LarDoc } from "@lararium/mesh";
+import { type LarDoc } from "@lararium/mesh";
 import { admitOnLineage, type LineageAdmission } from "../realm-admission.js";
 import { larBootstrapPath } from "../vessel-paths.js";
 import { loadWornFaceAtomKey } from "../face-atom-store.js";
 import { readVesselEdgeBoard, realmEdgeCharter } from "../edge-board.js";
+import { leaseLineageOfRealm } from "../lease-charter.js";
+import { readVesselRealmFrontier, pinRealmFrontier } from "../realm-frontier-door.js";
 import { verifyEd25519, cabalInviteBytes } from "@lararium/mesh";
 
 const NYM_RE = /^[0-9a-f]{64}$/;
@@ -39,12 +41,10 @@ const NYM_RE = /^[0-9a-f]{64}$/;
 export class CabalJoinError extends Error {}
 
 /**
- * The realm's effective lease epoch, folded off the board doc — max over every per-writer slot.
+ * The realm's lease epoch reads only signed advances under its own charter seal lineage.
  *
- * NO CLOCK, BY CONSTRUCTION. `epoch-lease` holds the epoch as a coordinator-free max-register in
- * per-writer slots: two concurrent rolls both land effective+1 in their own slot and the maximum
- * never decreases. Every replica that has seen the same board therefore reads the same fence, which
- * is the property a timestamp cannot give and the reason admission stopped taking an instant.
+ * NO CLOCK, BY CONSTRUCTION. A charter quorum signs each advance in its own content-addressed slot;
+ * a reader verifies each act under that act's seal epoch before it lifts the maximum.
  *
  * An absent slot-set reads 0 — a realm that has rolled nothing yet, not an open gate: an invite bound
  * at 0 stands until the first roll, and one bound behind 0 cannot exist.
@@ -52,12 +52,10 @@ export class CabalJoinError extends Error {}
 /**
  * The daemon doc's URL, off the social bootstrap this vessel already holds.
  *
- * This is the board a realm's feed is read from, so a caller that never opens the doc reads a genesis
- * epoch for every realm forever. Absent or unreadable reads null, and the caller then prices against
- * genesis — the honest floor when this vessel cannot see the board at all.
+ * This board carries the lease advances. An unreadable daemon document gives no fence to price against.
  *
  * THE BOARD IS THIS VESSEL'S OWN, which is correct for a fence: an admission bound is an authority
- * this vessel holds alone, and a peer able to roll it could stale every outstanding invite.
+ * this vessel holds under its charter quorum; only seated hands can lift it.
  */
 export function daemonDocUrlFromBootstrap(): string | null {
   try {
@@ -68,27 +66,15 @@ export function daemonDocUrlFromBootstrap(): string | null {
 }
 
 /**
- * The epoch outstanding invites to a CABAL are bounded by — a max-register over its per-writer slots.
+ * The epoch outstanding invites to a cabal are bounded by its charter quorum's signed advances.
  *
  * THE CABAL'S, NOT THE REALM'S. A realm is a cabal's shared CRDT and resources; admission is a fact
  * about the collective, not about the stuff it holds. The two share a key only because a cabal carries
  * no identity of its own — it is named by its realm's doc, and `admitOnLineage` keys on that same hex.
  * The realm's OWN epoch is its maintenance feed, which lives in a separate space (`realmFeedPrefix`).
  */
-export function cabalAdmissionEpoch(doc: unknown, realmDocIdHex: string): number {
-  const tiddlers = (doc as LarDoc | null)?.tiddlers;
-  if (!tiddlers) return 0;
-  const prefix = leaseEpochPrefix(realmDocIdHex);
-  const slots: string[] = [];
-  for (const [title, rec] of Object.entries(tiddlers)) {
-    if (!title.startsWith(prefix)) continue;
-    // A LAR RECORD NESTS ITS TIDDLER. `rollLeaseEpochOnBoard` writes `mutableLarRecord`, which carries
-    // `{ tiddler: { text }, meta }` — a reader reaching for `rec.text` finds undefined on every slot,
-    // folds an empty set, and reads epoch 0 forever. The daemon's own lease read takes `.tiddler.text`.
-    const text = tiddlerText(rec);
-    if (typeof text === "string") slots.push(text);
-  }
-  return effectiveLeaseEpoch(slots);
+export function cabalAdmissionEpoch(doc: unknown, realmDocIdHex: string, lineage: HandLineage | null): number {
+  return quorumLeaseEpochOnBoard(doc as LarDoc | null, realmDocIdHex, lineage);
 }
 
 /**
@@ -111,9 +97,8 @@ export interface CabalJoinOptions {
   /**
    * The realm's effective lease epoch to read against.
    *
-   * A causal island holds no global now, so this is a FENCE rather than an instant: the max over the
-   * realm's per-writer lease slots. Absent → read off the board itself, which is what a replica
-   * converging on that board already agrees to.
+   * A causal island holds no global now, so this fence reads verified quorum advances on this
+   * vessel's daemon board. Absent → read that board under the realm's own charter lineage.
    */
   readonly epoch?:    number;
   /** An invite carried out of band, for a joiner the realm's board has not reached. Same gate either way. */
@@ -144,7 +129,10 @@ export interface SetAsideVouch {
   readonly verdict:           EdgeKapaeVerdict;
 }
 
-export interface CabalJoinResult extends LineageAdmission {
+export interface CabalJoinResult extends Omit<LineageAdmission, "refusal"> {
+  readonly refusal?: LineageAdmission["refusal"] | "frontier-unknown";
+  readonly missing?: Extract<WideningRead, { readonly status: "unknown" }>["missing"];
+  readonly frontier?: { readonly asOf: Readonly<Record<string, { readonly seq: number; readonly cid: string }>> };
   /** Every vouch in this realm a standing shadow removed from the crossing — surfaced, never silently short. */
   readonly setAside: readonly SetAsideVouch[];
   /** Present when a shadow stands over the APPLICANT's own member edge: the crossing refuses whatever vouches. */
@@ -175,6 +163,9 @@ export async function runCabalJoin(
   }
 
   let boardEpoch = 0;
+  let frontierAsOf: CabalJoinResult["frontier"];
+  let frontierMissing: CabalJoinResult["missing"];
+  let epochUnreadable = false;
   const repo = opts.repo;
   let issued: CabalInvite[];
   const setAside: SetAsideVouch[] = [];
@@ -201,13 +192,19 @@ export async function runCabalJoin(
     // the seat quorum; a member edge answers to the seat quorum alone (kapae#/edge-hands). An act signed by any
     // other hand drops before the fold.
     const candidates = carried && carriedCounts ? [...onBoard, carried] : onBoard;
+    const charter = await realmEdgeCharter(repo, vesselKey, realm, opts.sealHome);
     const edges = await readVesselEdgeBoard({
       repo, scope: realm, kind: "realm", boardUrl: realmEdgeBoardDocUrl(realm), label: "board:edge-kapae", vesselKey,
       authorityFor: realmEdgeAuthority(candidates),
       // THE QUORUM THE REALM ANSWERS TO: the charter of the Nexus the realm stands under here, never this
       // vessel's own primary charter by default (kapae#/edge-hands).
-      charter: await realmEdgeCharter(repo, vesselKey, realm, opts.sealHome),
+      charter,
     });
+    const frontier = readVesselRealmFrontier({ realm, board: edges.handle.doc(), ledger: edges.ledger.doc(),
+      lineage: charterHandLineage(charter?.sealLineage ?? [])?.lineage ?? null, counted: edges.counted.acts });
+    // A refusal narrows and needs no frontier; only an ADMISSION widens, so it waits on one (below).
+    if (frontier.status === "unknown") frontierMissing = frontier.missing;
+    else { pinRealmFrontier(edges.ledger, realm, frontier); frontierAsOf = { asOf: frontier.asOf }; }
     // ONLY A CAUSAL LOWER LIFTS: a contested or unreadable edge stays aside.
     const shadowOver = (i: CabalInvite): SetAsideVouch | null => {
       const vouch = vouchEdgeId(i), voucher = memberEdgeId(realm, i.voucherDid);
@@ -232,11 +229,8 @@ export async function runCabalJoin(
     const own = memberEdgeId(realm, applicant);
     const ownReading = edges.readings.get(own);
     if (ownReading?.stands) memberSetAside = { edgeId: own, verdict: ownReading.verdict };
-    // THE FENCE LIVES ON THE DAEMON DOC, NOT THIS BOARD. `realm-feed` rolls a realm's per-writer lease
-    // slot "over the sovereign daemon doc — one slot per writer under the daemon bag", so a reader
-    // scanning the VOUCH board for that prefix matches nothing and folds epoch 0 forever. Measured: the
-    // fence read this board, every invite compared against 0, and no vouch could ever lapse — a clock
-    // that at least expired, replaced by a fence that never fired.
+    // THE FENCE LIVES ON THE DAEMON DOC. The vouch board carries relationships; signed lease
+    // advances ride the daemon board and answer only under the charter this vessel verifies.
     // M16 — FAIL CLOSED, mirroring the vouch side (`cabal-vouch.ts`'s `resolveBoundEpoch`). An unreadable
     // daemon doc never falls through to `boardEpoch = 0` (genesis): that prices the crossing against a fence
     // the joiner never read, and a vouch bound at N>0 stands against a board this vessel cannot see. Council ruling 6: a replica missing the history reports an INCOMPLETE VIEW, never "expired" and
@@ -245,7 +239,10 @@ export async function runCabalJoin(
     const daemonUrl = daemonDocUrlFromBootstrap();
     if (daemonUrl) {
       const dh = await materializeSharedLarDoc(repo, daemonUrl as never, "daemon");
-      boardEpoch = cabalAdmissionEpoch(dh.doc(), realm);
+      const lineage = await leaseLineageOfRealm(repo, vesselKey, opts.sealHome, realm);
+      // A realm whose charter this vessel cannot verify reads no fence: a refusal still narrows, and only an admission waits on it (below).
+      epochUnreadable = lineage === null && opts.epoch === undefined;
+      boardEpoch = cabalAdmissionEpoch(dh.doc(), realm, lineage);
     } else if (opts.epoch === undefined) {
       throw new CabalJoinError(
         "incomplete-view: this vessel cannot read the realm's lease fence (its daemon doc is unreadable), " +
@@ -256,7 +253,7 @@ export async function runCabalJoin(
     await repo.flush();
   }
 
-  if (memberSetAside) return { admitted: false, refusal: "set-aside", capped: [], setAside, memberSetAside };
+  if (memberSetAside) return { admitted: false, refusal: "set-aside", capped: [], setAside, memberSetAside, ...(frontierAsOf ? { frontier: frontierAsOf } : {}) };
 
   const presented = carried ?? issued.find((i) => i.joinerIdentityHex.toLowerCase() === applicant) ?? null;
   // A CARRIED INVITE JOINS THE ISSUED SET, never replaces it. The lineage prices the realm's whole
@@ -271,9 +268,7 @@ export async function runCabalJoin(
     realmDocIdHex:     realm,
     joinerIdentityHex: applicant,
     invite:            presented,
-    // THE CABAL'S FENCE, read off the same board the vouches came from — a max-register over the
-    // per-writer lease slots, so every replica that has seen this board reads the same number. The
-    // fence belongs to the cabal that admits; an instant would belong to the machine being gated.
+    // THE CABAL'S FENCE comes from signed quorum advances on the daemon board under this realm's charter.
     effectiveEpoch:    opts.epoch ?? boardEpoch,
     verify:            verifyOffline,
     issued:            forFold,
@@ -284,11 +279,18 @@ export async function runCabalJoin(
     dials:             opts.dials ?? FALLBACK_DIALS,
     ...(opts.maxVouchesPerVoucher !== undefined ? { maxVouchesPerVoucher: opts.maxVouchesPerVoucher } : {}),
   });
+  if (verdict.admitted && epochUnreadable) {
+    throw new CabalJoinError("incomplete-view: this vessel cannot read the realm's verified lease lineage, so the crossing refuses rather than price against a guessed fence. Pass --epoch explicitly to override.");
+  }
+  // AN ADMISSION WIDENS: it waits as unknown where no qualifying signed frontier stands, and names what is missing.
+  if (verdict.admitted && frontierMissing) {
+    return { admitted: false, refusal: "frontier-unknown", capped: [], setAside, missing: frontierMissing };
+  }
   // NAME THE SHADOW. An applicant whose only vouch stands aside holds no invite the gate will read; "no-invite"
   // would say nobody ever vouched, which a person cannot act on. The refusal names what stands in the way.
   const applicantSetAside = setAside.some((s) => s.joinerIdentityHex.toLowerCase() === applicant);
   if (!verdict.admitted && verdict.refusal === "no-invite" && applicantSetAside) {
-    return { ...verdict, refusal: "set-aside", setAside };
+    return { ...verdict, refusal: "set-aside", setAside, ...(frontierAsOf ? { frontier: frontierAsOf } : {}) };
   }
-  return { ...verdict, setAside };
+  return { ...verdict, setAside, ...(frontierAsOf ? { frontier: frontierAsOf } : {}) };
 }

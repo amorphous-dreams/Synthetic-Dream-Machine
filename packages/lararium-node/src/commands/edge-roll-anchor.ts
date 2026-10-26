@@ -7,6 +7,7 @@
  * at the closed epoch, together with the anchor that opened it. An act in those heads' past counts at every
  * later head; an act the closed keys mint afterwards sits in no anchor's past, and counts nowhere. Each anchor
  * cites the one before it, so a reader walks every roll from its charter head down.
+ * After a seal roll the realm frontier reads stale-lineage until a quorum act, seated vouch, or cosign signs a new head.
  *
  * WHICH BOARDS. The vessel's own ledger names them: every board it has kept a quorum act for, of a realm that
  * stands under the Nexus whose charter rolls (kapae#/edge-hands); another Nexus's roll anchors nothing there. A board this
