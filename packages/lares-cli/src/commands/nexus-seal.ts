@@ -642,7 +642,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   let anchored: NexusRollAnchorResult | null = null;
   if (closing.sealEpochCid.length > 0) {
     try {
-      const { output } = await storeVerb("nexus-roll-anchor", { closing, opened }, NexusContractError);
+      const { output } = await storeVerb("nexus-roll-anchor", { closing, opened, epoch: result.epoch }, NexusContractError);
       anchored = output as unknown as NexusRollAnchorResult;
     } catch (err) {
       if (!(err instanceof NexusContractError)) throw err;

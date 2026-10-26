@@ -1,9 +1,10 @@
 /**
  * lease-advance — a PersonaGroup's lease epoch as SIGNED per-writer slots.
  *
- * The lease is a coordinator-free max-register (epoch-lease): each writer owns one slot and the effective epoch is
- * the max over slots. For a face, a slot counts only when it carries the writer's own signature over
- * `{kind, resource, writer, epoch}` and the writer's key stands in the face's roster. An unsigned slot, a slot
+ * A face's lease folds signed per-writer slots to a verified maximum. Nexus and realm resources use
+ * signed charter-quorum advances (`quorum-lease.ts`). For a face, a slot counts only when it carries
+ * the writer's own signature over `{kind, resource, writer, epoch}` and the writer's key stands in
+ * the face's roster. An unsigned slot, a slot
  * signed by a stranger, a slot naming another resource, and a deleted slot each raise nothing; the sealed anchor's
  * frontier keeps what a verified read already saw. The per-writer shape stays, so two writers rolling at once never
  * fork: each lands in its own slot and the max climbs.

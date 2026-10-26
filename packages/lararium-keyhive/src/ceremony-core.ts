@@ -572,7 +572,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
         atomSeed,
         hearthTrueName:     input.hearthTrueName,      // the place this binds TO
         // GENESIS, NOT A PLACEHOLDER: at self-stood founding the daemon bag carries no lease-epoch slots yet
-        // for this PersonaGroup (they cannot — the group is born in this same act), so `effectiveLeaseEpoch`
+        // for this PersonaGroup (they cannot — the group is born in this same act), so `signedLeaseEpoch`
         // over an empty slot set IS 0 (epoch-lease.ts) — this 0 already equals the live read, not a stand-in
         // for one. Nothing to thread here; see the DEVICE-ADMIT mint below for the site that DOES need a live read.
         boundEpoch:         0,
@@ -812,7 +812,7 @@ export interface DeviceAdmitEdgeInput {
   personaGroupId:   string;
   meshCabalDocIdHex:      string;
   syncUrl:                string | null;
-  /** The PersonaGroup's CURRENT lease epoch (`effectiveLeaseEpoch` over `leaseEpochPrefix(personaGroupId)`
+  /** The PersonaGroup's CURRENT lease epoch (`signedLeaseEpoch` over `leaseEpochPrefix(personaGroupId)`
    *  slots, read by the caller off the live daemon replica — the SAME read `gateFaceJoin` folds by max) at
    *  mint time. The minted edge's `boundEpoch` binds to THIS value, so a device admitted before a later roll
    *  reads stale at the admission door and is denied until it re-presents via face-join regrant. OPTIONAL —

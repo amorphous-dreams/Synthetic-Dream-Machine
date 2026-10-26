@@ -56,7 +56,7 @@ export interface BootDaemonKeyhiveInput {
   /** This vessel's signed device-delegation edge (root→vessel) — the public, Beelay-free binding. */
   readonly deviceEdge?: DeviceDelegationTiddler;
   /** The PersonaGroup's CURRENT lease epoch, read by the caller off the live daemon replica
-   *  (`leaseEpochPrefix`/`effectiveLeaseEpoch` — the same fold `gateFaceJoin` runs). The Binding Gate
+   *  (`leaseEpochPrefix`/`signedLeaseEpoch` — the same fold `gateFaceJoin` runs). The Binding Gate
    *  enforces the lease: `deviceEdge.boundEpoch` below this epoch HALTS the boot (the device's own edge has
    *  rolled stale — re-admit via a fresh face-join). A persona-bound boot without this frontier refuses; it
    *  cannot substitute a wall-clock window for causal authority. */

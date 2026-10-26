@@ -73,7 +73,7 @@ export interface KeyhiveIdentitySlotOpts {
   readonly did: string;
   /**
    * §2c — resolve bagUrl's CURRENT effective lease epoch (clockless; the caller composes this off
-   * `epoch-lease.ts`'s `effectiveLeaseEpoch` against its own board read). INJECTED rather than imported
+   * `epoch-lease.ts`'s `signedLeaseEpoch` against its own board read). INJECTED rather than imported
    * directly: this package stays decoupled from the board/materialize machinery that resolves an epoch, so a
    * caller names its own composition. The SAME function is read at mint time (stamps `boundEpoch` onto the
    * token) and at verify time (the fence's "current epoch") — both calls route through this one closure, so a

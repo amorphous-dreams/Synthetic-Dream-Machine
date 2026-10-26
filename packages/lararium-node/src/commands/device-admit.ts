@@ -358,7 +358,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   }
 
   // THE LEASE READ — off the SAME daemon doc already open above, the same fold `gateFaceJoin` runs
-  // (leaseEpochPrefix → per-writer slot values → effectiveLeaseEpoch = max). The minted edge binds to
+  // (leaseEpochPrefix → per-writer slot values → signedLeaseEpoch = max). The minted edge binds to
   // THIS PersonaGroup's current epoch, so a device admitted here reads fresh at the door until a later
   // roll leases it stale (re-admits via face-join regrant, never a silent renewal).
   const leasePrefix = leaseEpochPrefix(personaGroupId);

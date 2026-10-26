@@ -197,7 +197,7 @@ the direction and the boundary, not those fields.
 
 ''And it names the MECHANISM, refusing a third invention'' (`waking-floor:201-205`): //"A raise ENDS by non-renewal, exactly as every other grant in this house does. `raiseStands` reads `boundEpoch >= effective` against the Nexus's own lease epoch — the same comparison, against the same fold, that `device-delegation` already makes. The Nexus is the resource; its lease epoch is the fence. Supersession and expiry come from that one mechanism, with no clock anywhere."//
 
-''One shape STRUCK, and the striking matters'' (`waking-floor:207`): a draft carried a ''rolling WINDOW of markers'' as the epoch. //"A set answers //is this listed// and never //is this newer//, so a partitioned island could not reason about it locally; whatever fell off its far end encoded a retention policy nobody wrote; and a list of valid markers is a roster of moments, which this house does not hold."// ''A supersession cure MUST NOT reach for a set.'' It reads a scalar max-register (`epoch-lease.ts`: `effectiveLeaseEpoch` = max over per-writer slots, //"the max never decreases"//).
+''One shape STRUCK, and the striking matters'' (`waking-floor:207`): a draft carried a ''rolling WINDOW of markers'' as the epoch. //"A set answers //is this listed// and never //is this newer//, so a partitioned island could not reason about it locally; whatever fell off its far end encoded a retention policy nobody wrote; and a list of valid markers is a roster of moments, which this house does not hold."// ''A supersession cure MUST NOT reach for a set.'' It reads a scalar max-register over signed advances (`quorum-lease.ts`: `quorumLeaseEpoch` = max over the advances that verify, //"the max never decreases"//).
 
 ''What supersession therefore asks of the oracle pointer, in the house's own terms'': the reader compares the pointer's `version` (≡ the corm epoch, ≡ `Sequence`) against the highest version it holds for that object, and refuses ONLY what sits below. A pointer nothing has out-versioned stands live however long a clock has moved.
 
@@ -353,6 +353,6 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GmPGlV10pVChhfvUPORXb01lOWT5B5jqjiUOGClqjss
+<<^ code="&#x0003;">>ni:///sha-256;Jxd-sTkS_lsnzI99bLitnmj24Gnu-mVLsS3mJ-LnyvY
 
 <<^ code="&#x0004;" -> to="?">>

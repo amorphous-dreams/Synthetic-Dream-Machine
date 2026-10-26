@@ -2,7 +2,7 @@
  * realm-feed-seal — a roll that proves whose hand made it.
  *
  * ── WHY A SHARED LEDGER NEEDS THIS FIRST ────────────────────────────────────────────────────────
- * A realm's maintenance ledger rides per-writer lease slots, and a slot's stored value is a bare
+ * A realm's maintenance ledger rides per-writer feed slots, and a slot's stored value is a bare
  * epoch number. That is sound where it lives today: the slots sit under the daemon bag, which is this
  * vessel's own, so the only hand that can roll a slot is the hand that owns the bag.
  *
@@ -10,10 +10,9 @@
  * cross-operator reading requires — a doc every dweller may write. `realm-feed` takes its writer as a
  * plain string, so on a shared doc any dweller could roll any other's slot.
  *
- * AND THE DAMAGE WOULD BE PERMANENT. The lease is a MAX-REGISTER, chosen so a low roll costs nothing
- * and a high one converges. That same property makes a forged high roll IRREVERSIBLE: the max never
- * decreases, so nothing can lower it afterwards. The property that makes the lease safe locally is
- * exactly what makes forgery unfixable once shared.
+ * AND THE DAMAGE WOULD PERSIST. The maintenance feed folds the maximum of its slots, so a low roll
+ * costs nothing and a high one converges. A forged high roll could dominate the visible liveness
+ * reading until its slot receives a valid higher offering.
  *
  * ── THE RULE ────────────────────────────────────────────────────────────────────────────────────
  * A roll carries a seal over the realm, the writer and the epoch TOGETHER, made by the writer's own
@@ -52,7 +51,7 @@ describe("realm-feed-seal — a roll names the hand that made it", () => {
   });
 
   it("★ the EPOCH is bound — a roll cannot be replayed at a higher number ★", async () => {
-    // Load-bearing under a max-register: a lifted roll could never be lowered again.
+    // Load-bearing for the maintenance feed: a lifted roll would distort the visible maximum.
     const f = await face(3);
     const sealed = await signRealmFeed({ realm: REALM, writer: f.nym, epoch: 4 }, f.sign);
     expect(await verifyRealmFeedSlot({ realm: REALM, writer: f.nym, epoch: 900, sig: sealed })).toBe(false);

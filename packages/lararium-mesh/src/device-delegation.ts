@@ -15,8 +15,8 @@
  * per-use replay defense (nonce + short exp + seen-cache) rides a separate INVOCATION
  * (the UCAN delegation/invocation split) — a follow-on, not this module. Revocation rides
  * the CRDT membership graph (observed-remove — the PRIMARY targeted revoke). NON-renewal
- * rides the `boundEpoch` LEASE below: the grant names a per-resource max-register epoch and
- * goes stale when that epoch rolls past it (coordinator-free; the epoch is a LEASE, not a
+ * rides the `boundEpoch` LEASE below: the face grant names its verified signed lease epoch and
+ * goes stale when that epoch rolls past it (the epoch is a LEASE, not a
  * targeted revoker — api/pono/convergent-mesh).
  *
  * Canonical signed string (opens on `DEVICE_DELEGATION_DOMAIN` for separation — a FROZEN
@@ -25,7 +25,7 @@
  *   {DEVICE_DELEGATION_DOMAIN}|{personaRootDid}|{deviceDid}|{deviceVerifyingKey}|{hearthTrueName}|{boundEpoch}
  *
  * NO CLOCK rides the edge — no issue instant, no expiry. It decays by its LEASE alone (`boundEpoch`
- * against the resource's max-register epoch) and is withdrawn by the membership graph; a wall-clock
+ * against the face's verified signed epoch) and is withdrawn by the membership graph; a wall-clock
  * window would make an unreliable narrator a party to the grant. Two mints of one binding at one
  * lease are the same bytes.
  *
@@ -61,7 +61,7 @@ export interface DeviceDelegationRootHalf {
   /** the hearth true-name this edge binds the vessel TO — the engine blob's public True Name
    *  (the genesis engineCid), or "" if hearth-agnostic. The binding IS (vessel × hearthTrueName). */
   readonly hearthTrueName:             string;
-  /** the LEASE epoch this grant binds to — a per-resource max-register value (1-15 decimal digits).
+  /** the FACE LEASE epoch this grant binds to — a verified signed value (1-15 decimal digits).
    *  The grant goes stale when the resource's epoch rolls past it (non-renewal). The epoch is a
    *  LEASE, never a targeted revoker (targeted revoke rides the Keyhive membership graph). */
   readonly boundEpoch:          string;
@@ -130,7 +130,7 @@ export async function buildDeviceDelegationRootHalf(args: {
   personaRootSeed:    Uint8Array; // the PERSONA ROOT's 32-byte Ed25519 seed — the HUMAN's side, and the signer
   deviceVerifyingKey: string;     // raw Ed25519 verifying-key hex (64, lowercase) of the delegate
   hearthTrueName:            string;     // hearth true-name (genesis CID), or "" if place-agnostic
-  boundEpoch:         number;     // the per-resource lease epoch this grant binds to (non-negative integer)
+  boundEpoch:         number;     // the face's signed lease epoch this grant binds to (non-negative integer)
 }): Promise<DeviceDelegationRootHalf> {
   const personaRootDid = didFromVerifyingKey(hex(await ed25519.getPublicKeyAsync(args.personaRootSeed)));
   const fields: ProofFields = {
@@ -177,7 +177,7 @@ export async function buildDeviceDelegation(args: {
  * carries authority, no ambient fallback. (verify proving only "someone signed" was the
  * confused-deputy bait the verification swarm flagged; the pin is now a required argument.)
  *
- * Lease: pass `opts.expectedEpoch` (the resource's current max-register epoch) to enforce
+ * Lease: pass `opts.expectedEpoch` (the face's verified signed lease epoch) to enforce
  * non-renewal; omit it to check signature + pin alone. Strict RFC8032 verify
  * (`zip215:false`) → strongly-binding signatures (exclusive ownership; safe to key dedup on
  * canonical content, never on the malleable signature bytes).
@@ -225,7 +225,7 @@ export async function evaluateDeviceDelegation(
   }
 
   // Lease (non-renewal) — the epoch the grant binds to must not have rolled past. OPTIONAL:
-  // pass expectedEpoch (the resource's current max-register epoch the verifier holds) to enforce
+  // pass expectedEpoch (the face's verified signed lease epoch the verifier holds) to enforce
   // the lease; omit to check signature + pin alone. The epoch is the edge's only decay.
   // Targeted revocation rides the Keyhive membership graph, never this counter.
   if (opts?.expectedEpoch !== undefined) {

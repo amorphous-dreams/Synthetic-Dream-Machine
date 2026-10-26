@@ -103,7 +103,7 @@ export interface FaceGrantVerifyContext {
   /** The group this vessel's face belongs to — the record must name it. */
   readonly groupId: string;
   /**
-   * OPTIONAL PersonaGroup lease epoch (`effectiveLeaseEpoch` off the live daemon replica) the JOINEE holds
+   * OPTIONAL PersonaGroup lease epoch (`signedLeaseEpoch` off the live daemon replica) the JOINEE holds
    * at verify time. Present, the founder's OWN edge must not read stale against it — the founder leases too,
    * the same as any other device (FRESHNESS TAKES THE LEASE). An offline/read-only observer may omit this
    * relation witness and receive only the verifier's cryptographic checks;

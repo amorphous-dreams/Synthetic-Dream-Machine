@@ -1,42 +1,33 @@
-/**
- * THE RAISE FENCE READS THE EPOCH THE BOARD LEASES.
- *
- * `effectiveLeaseEpochOnBoard` answers the epoch a raise must match: the maximum over every writer's slot
- * for the resource on the daemon board. A roll (`rollLeaseEpochOnBoard`) advances it, and a raise standing
- * against the earlier epoch then reads stale. The reader takes each slot through the one read door
- * (`tiddlerText`): a slot stands as a record whose `text` rests as an immutable scalar.
- *
- * Control: a board that holds no slot for the resource answers 0, and a roll under another resource leaves
- * this resource's epoch where it stood.
- */
+/** The raise door reads a Nexus lease through its charter's verified seal lineage. */
 import { describe, test, expect, afterEach } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, type LarDoc } from "@lararium/mesh";
-import { rollLeaseEpochOnBoard } from "../src/lease-rekey.js";
-import { effectiveLeaseEpochOnBoard } from "../src/vessel-raise.js";
+import { emptyLarDoc, charterHandLineage, leaseEpochSlotUri, storedLarRecord, type LarDoc } from "@lararium/mesh";
+import { seatedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
+import { rollQuorumLeaseOnBoard } from "../src/lease-rekey.js";
+import { leaseEpochOnBoard } from "../src/vessel-raise.js";
 
-const NEXUS = "0x" + "11".repeat(32);
-const OTHER = "0x" + "22".repeat(32);
-const WRITER = "0x" + "aa".repeat(32);
-
+const NEXUS = "nexus-" + "1".repeat(64), OTHER = "nexus-" + "2".repeat(64);
 const repos: Repo[] = [];
 afterEach(async () => { await Promise.all(repos.splice(0).map((r) => r.shutdown())); });
 
-describe("the raise fence reads the leased epoch", () => {
-  test("a roll under the resource advances the epoch the raise door reads", () => {
-    const repo = new Repo({ network: [] });
-    repos.push(repo);
+describe("the raise fence reads the signed lease epoch", () => {
+  test("a verified lineage sees rolls; a null lineage never reads an epoch", async () => {
+    const repo = new Repo({ network: [] }); repos.push(repo);
     const board = repo.create<LarDoc>(emptyLarDoc());
-    expect(effectiveLeaseEpochOnBoard(board, NEXUS)).toBe(0);
-
-    rollLeaseEpochOnBoard(board, NEXUS, WRITER);
-    expect(effectiveLeaseEpochOnBoard(board, NEXUS)).toBe(1);
-    rollLeaseEpochOnBoard(board, NEXUS, WRITER);
-    expect(effectiveLeaseEpochOnBoard(board, NEXUS)).toBe(2);
-
-    // CONTROL: another resource's roll leaves this one's epoch standing, and reads its own.
-    rollLeaseEpochOnBoard(board, OTHER, WRITER);
-    expect(effectiveLeaseEpochOnBoard(board, NEXUS)).toBe(2);
-    expect(effectiveLeaseEpochOnBoard(board, OTHER)).toBe(1);
+    const charter = await seatedCharter({ seats: 3, threshold: 2, seed: 112 });
+    const lineage = charterHandLineage(charter.chain)!.lineage;
+    const signers = (await charter.signers([0, 1])).map((s) => ({ key: s.signer, sign: s.sign }));
+    const old = leaseEpochSlotUri(NEXUS, "c".repeat(64));
+    board.change((d) => { d.tiddlers[old] = storedLarRecord(old, { text: "9" }, "old-roll"); });
+    expect(leaseEpochOnBoard(board, NEXUS, lineage)).toBe(0);
+    expect(leaseEpochOnBoard(board, NEXUS, null)).toBeNull();
+    await rollQuorumLeaseOnBoard(board, NEXUS, { lineage, signers });
+    expect(leaseEpochOnBoard(board, NEXUS, lineage)).toBe(1);
+    await rollQuorumLeaseOnBoard(board, NEXUS, { lineage, signers });
+    expect(leaseEpochOnBoard(board, NEXUS, lineage)).toBe(2);
+    await rollQuorumLeaseOnBoard(board, OTHER, { lineage, signers });
+    expect(leaseEpochOnBoard(board, NEXUS, lineage)).toBe(2);
+    expect(leaseEpochOnBoard(board, OTHER, lineage)).toBe(1);
+    expect(leaseEpochOnBoard(board, OTHER, null)).toBeNull();
   });
 });

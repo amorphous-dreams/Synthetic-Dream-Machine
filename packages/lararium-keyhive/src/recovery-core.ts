@@ -27,7 +27,7 @@ import type { DeviceAdmitPayload } from "./index.js";
  *  at the first `expectedEpoch`-checking door (`verifyDeviceDelegation`, `device-delegation.ts:183-185`)
  *  with no clue why. Requiring the field here pushes that failure to COMPILE TIME instead: the caller
  *  (today `recovery-keel.ts`'s `reconstructAndReadmit`, or its future CLI door) must read the live lease
- *  the same way `device-admit.ts` does (`leaseEpochPrefix` → per-writer slot values → `effectiveLeaseEpoch`)
+ *  the same way `device-admit.ts` does (`leaseEpochPrefix` → per-writer slot values → `signedLeaseEpoch`)
  *  before it can even construct this input. */
 export interface ReadmitEdgeInput extends Omit<DeviceAdmitEdgeInput, "signerSeed" | "boundEpoch"> {
   /** The PersonaGroup root, RECONSTRUCTED from a recovery Quorum (mesh: reconstructFromQuorum). The
