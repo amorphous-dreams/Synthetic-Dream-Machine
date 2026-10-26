@@ -1,4 +1,10 @@
 
+
+## Native-carved Fire cohort witness · current wave
+
+The first Fire six-view comparison rendered individual component meshes even though the actual produced source is the joined, void-carved BRep. Fire review now renders both source and each admitted alternative via `tessellate(union=True)`, so all six views derive from the native-authoritative carved material rather than uncarved independent parts. The source-frozen camera contract remains unchanged. Fire cohort now verifies 2–16 paired native audition/orthographic handbacks (including each document, per-alternative digest, image bytes, camera baseline, seed/recipe/genome/implementation identity, and silhouette arithmetic), then records source-relative and off-oblique expression, duplicate geometry, and duplicate six-view silhouettes without ranking, breeding or promoting anything. The CLI `fire-cohort` writes an immutable checksum-bound census; the two-probe CI uses it rather than an unverified ad-hoc summary. Negative tests refuse mutated geometry receipts, source drift, camera drift, image changes and inconsistent pixel counts. Any real-source evaluation awaits same-head CI; previous proxy results are not native Loom generations.
+
+
 ## Source-stable Fire free-play probe (unpublished commit)
 
 Previous pushed head 06f9c3f2 had Fire/CAD CI failures caused by an ambiguous central-keep selector. The source builder now adds explicit unique lower-terrace and central-keep slots; selector validation remains fail-closed. The native bearing admits bounded setback 0..0.20. Two non-promoting research probes author distinct proposals against one source seed and feed normal Fire audition/review; each creates independent signed six-view evidence if native-admitted.

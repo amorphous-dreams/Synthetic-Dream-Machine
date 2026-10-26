@@ -155,3 +155,8 @@ For native-admitted alternatives, `fire-review` now writes:
 A native-valid alternative whose difference counts vanish remains native-valid,
 but the result does not pretend the candidate looks architecturally distinct.
 All evidence belongs to the single original RGB/alpha seed's causal island.
+
+
+## Native-carved Fire cohort witness · current wave
+
+The first Fire six-view comparison rendered individual component meshes even though the actual produced source is the joined, void-carved BRep. Fire review now renders both source and each admitted alternative via `tessellate(union=True)`, so all six views derive from the native-authoritative carved material rather than uncarved independent parts. The source-frozen camera contract remains unchanged. Fire cohort now verifies 2–16 paired native audition/orthographic handbacks (including each document, per-alternative digest, image bytes, camera baseline, seed/recipe/genome/implementation identity, and silhouette arithmetic), then records source-relative and off-oblique expression, duplicate geometry, and duplicate six-view silhouettes without ranking, breeding or promoting anything. The CLI `fire-cohort` writes an immutable checksum-bound census; the two-probe CI uses it rather than an unverified ad-hoc summary. Negative tests refuse mutated geometry receipts, source drift, camera drift, image changes and inconsistent pixel counts. Any real-source evaluation awaits same-head CI; previous proxy results are not native Loom generations.

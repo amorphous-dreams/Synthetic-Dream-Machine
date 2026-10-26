@@ -173,6 +173,10 @@ def main(argv=None):
     p.add_argument('--out',type=Path,required=True,help='completed native OODA-HA directory')
     p.add_argument('--gallery',type=Path,required=True,help='fresh gallery output directory')
     p.add_argument('--seats',type=int,choices=[2,3,4,5],default=3)
+    p=commands.add_parser('fire-cohort', help='Verify and census multiple source-bound Fire native/six-view receipts')
+    p.add_argument('--receipt',type=Path,action='append',required=True)
+    p.add_argument('--review',type=Path,action='append',required=True)
+    p.add_argument('--out',type=Path,required=True)
     p=commands.add_parser('fire-review',
                           help='Re-render admitted Fire proposals as native six-view structural orthos')
     p.add_argument('--project',type=Path,required=True)
@@ -255,6 +259,15 @@ def main(argv=None):
         result=make(args.out,args.project,args.capability_recipe,args.gallery,
                     seats=args.seats)
         print(json.dumps(result,indent=2));return result
+    if args.command=='fire-cohort':
+        from .fire_cohort import write_census
+        if len(args.receipt)!=len(args.review):
+            raise ValueError('Every Fire native receipt needs its own six-view review')
+        result=write_census(zip(args.receipt,args.review),args.out)
+        print(json.dumps({'sha256':result['sha256'],'native_admitted':result['native_admitted'],
+                          'unique_geometries':result['unique_geometries'],
+                          'unique_six_view_silhouettes':result['unique_six_view_silhouettes']},indent=2))
+        return result
     if args.command=='fire-review':
         from .capability_stack import CapabilityRecipe
         from .fire_review import render_fire_review

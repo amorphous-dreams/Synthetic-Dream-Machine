@@ -79,7 +79,7 @@ def render_fire_review(project, recipe, receipt, output, *, size=(160, 240)):
         raise ValueError("Fire reviewer source witness changed")
 
     # Freeze on one reference build, before seeing any variant. Native baseline
-    # and native variants use the same rendering transport; polymesh appearance
+    # and native variants use the same carved, fused BRep mesh; polymesh appearance
     # never masquerades as a native structural difference.
     frozen = stable_orthographic_cameras(project, built.scene.render_mesh(), size)
     if set(VIEWS) - set(frozen):
@@ -91,7 +91,7 @@ def render_fire_review(project, recipe, receipt, output, *, size=(160, 240)):
         raise ValueError("Only five finalists may enter costly review")
 
     original = built.scene.assembly
-    native_baseline = original.tessellate()
+    native_baseline = original.tessellate(union=True)
     original_audit = original.audit(join=True)
     if not original_audit["valid"]:
         raise ValueError("Native source became invalid before comparison")
@@ -156,7 +156,7 @@ def render_fire_review(project, recipe, receipt, output, *, size=(160, 240)):
         witness = draft.relation_witness(location=project.location)
         if witness.witness_id != item["witness_id"]:
             raise ValueError("Fire alternative no longer matches native witness")
-        observations = paint(draft.tessellate(), rank, baseline=source_masks)
+        observations = paint(draft.tessellate(union=True), rank, baseline=source_masks)
         y = header + rank * (tile_h + footer + gutter) + tile_h + 6
         draw.text((16, y), f"{rank}  {item['id']}  [{item['relation']}]  native CAD",
                   (216, 227, 241))
