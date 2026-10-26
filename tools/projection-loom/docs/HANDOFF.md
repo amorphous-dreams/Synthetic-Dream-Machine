@@ -4,6 +4,18 @@
 
 **Alpha code law:** no application release ordinals, compatibility shims or numeric schema migration ladders. Live project, recipe, and result formats use semantic `projection-loom/...` type identifiers. Recipe SHA-256, source bytes, camera, operator implementation fingerprints, and checkpoint digests carry identity. Git holds earlier behavior. External Python packaging metadata and fixed CI dependency pins serve tooling/reproducibility, not Loom release governance.
 
+## KAIROS interrupted-turn recovery · current Fire / Art Sigils checkpoint
+
+**As of 2026-10-26 UTC:** The interrupted feature work **is in Git**: PR #84 head `7bf23db4` before this recovery. The standalone Art Sigils branch has been merged with ancestry preserved and its ref retired; PR #82 is closed. The current source-backed **AI Fire** remains the Operator-facing interpreter, not an added model service or alternative controller. Core artifacts: `schemas/fire_proposal.schema.json`, `projection_loom/fire_contract.py`, `fire_geometry.py`, `fire_review.py`, the Art Sigils Loom dialect, and `docs/FIRE_GRAMMAR.md`.
+
+**Verified completed:** Dedicated Fire grammar [CI #40261722482](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40261722482) passed (16 focused tests, real-source context/native audition). Other dedicated Experiment Zero, source/native evidence and alpha-coevolution workflows passed. The real source-bound bridge proposal **failed** native CAD, and remained an attributed rejection; controlled bridge/bearing fixtures passed. Do **not** report a source-bound valid bridge or rendered six-view Fire handback as completed.
+
+**Integrity gaps found in the pre-recovery head:** full Loom CAD regressions failed on CLI shadowed `PetNameLedger` and a legacy source-hash assertion; evergreen grammar repeated the latter; native ortho-gallery rejected its own camera digest after a harmless integer-to-float roundtrip. A source-preserving repair is staged in recovery commits. The whole-repository and held-out CI results must be rechecked at the final pushed head. This is a CI boundary, not a license to bypass source/geometry proof.
+
+**Operator next:** [Loom Roadmap](ROADMAP.md) records completed, pending and deferred work with explicit receipts. [Fire Grammar](FIRE_GRAMMAR.md) explains the only Fire interface; [Loom Field Guide](GUIDEBOOK.md) covers source/architecture proposals. Historical Necrospire generations remain excluded from new ancestry. Refresh actual Actions and PR head before asserting a green result.
+
+---
+
 ## Art Sigils merged · current Fire is the Operator interface
 
 The complete Art Sigils house grammar (8 evolution commits, real two-parent

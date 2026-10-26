@@ -115,5 +115,22 @@ independent OODA-HA helm owns any later generation/selection campaign.
 The historical six-generation Necrospire pilot and two-epoch preview
 lineages are excluded from the new rule ancestry. The pre-existing
 Art Sigils branch commits are preserved as the second parent of the
-Loom merge. The standalone branch should be retired after ancestry
-verification; branch deletion requires repository ref-delete capability.
+Loom merge. The Art Sigils standalone branch **was retired** after ancestry verification;
+[PR #82](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/82)
+is closed, and the guarded branch-retirement workflow passed. Its source
+history remains in the two-parent Loom merge. See [live Roadmap](ROADMAP.md)
+for the current verified / unfinished Fire capabilities and CI boundary.
+
+## Research bearing · standards are adapters, not authority substitutions
+
+As of 2026-10-26, [OpenUSD's glossary](https://openusd.org/dev/glossary.html)
+documents **LIVERPS** strength ordering, including relocates; the older
+LIVRPS shorthand may occur in previous notes. Our inspiration is
+non-destructive opinion composition, *not* a claim that the Loom executes
+OpenUSD layering. [SHACL](https://www.w3.org/TR/shacl/) validates RDF data
+graphs against shapes without mutating those inputs; Fire proposals are
+currently validated as JSON Schema 2020-12, with separate native audits.
+PROV-O's entity/activity/agent attribution remains about provenance,
+not physical load or architectural support. Any future mapping requires its
+own correctness/round-trip tests and independent authority.
+

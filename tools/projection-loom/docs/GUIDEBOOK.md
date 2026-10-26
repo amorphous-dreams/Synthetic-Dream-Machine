@@ -2,7 +2,7 @@
 
 This is the **Loom operator guidebook**, not the separately authored
 `sdm/Vastlands_Guidebook` (which is source material, not the Loom manual).
-Read alongside [HANDOFF](HANDOFF.md), [EXPERIMENT_ZERO](EXPERIMENT_ZERO.md),
+Read alongside [HANDOFF](HANDOFF.md), [ROADMAP](ROADMAP.md), [EXPERIMENT_ZERO](EXPERIMENT_ZERO.md),
 and [OBLIQUE_SEED](OBLIQUE_SEED.md). Project canon lives in branch-current
 `bags/`; this document describes measured machinery and design possibilities,
 not promoted Lares law.
