@@ -166,6 +166,13 @@ def main(argv=None):
     p.add_argument('--min-size',type=float,default=1.)
     p.add_argument('--max-size',type=float,default=64.)
     p.add_argument('--max-total-measure',type=float)
+    p=commands.add_parser('review-orthos',
+                          help='Render verified native six-view boards from completed Experiment Zero review')
+    p.add_argument('--project',type=Path,required=True)
+    p.add_argument('--capability-recipe',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True,help='completed native OODA-HA directory')
+    p.add_argument('--gallery',type=Path,required=True,help='fresh gallery output directory')
+    p.add_argument('--seats',type=int,choices=[2,3,4,5],default=3)
     p=commands.add_parser('experiment-zero-select',
                           help='Record separately attributed Operator or adviser review choice')
     p.add_argument('--out',type=Path,required=True)
@@ -226,6 +233,11 @@ def main(argv=None):
                               max_size=args.max_size,
                               max_total_measure=args.max_total_measure)
         print(json.dumps(record,indent=2));return record
+    if args.command=='review-orthos':
+        from .ortho_gallery import make
+        result=make(args.out,args.project,args.capability_recipe,args.gallery,
+                    seats=args.seats)
+        print(json.dumps(result,indent=2));return result
     if args.command=='experiment-zero-select':
         from .experiment_zero import select_survivor
         result=select_survivor(args.out,proposal=args.proposal,actor=args.actor,
