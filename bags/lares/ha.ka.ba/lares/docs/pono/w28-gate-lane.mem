@@ -55,7 +55,7 @@ Both rows touch the sealed channel's dial bytes, so each settles before the X0 b
 
 ''BUILT, a defect apart from the leak'': `handleUpgrade` in `packages/lararium-node/src/face-gate-server.ts` once sent the HTTP 101 before the gate decrypted message one, so a holder of a learned path read a 101 for any well-formed token. It now asks `FaceGate.preflight` first: a flight that decrypts under no bundle of the stood gate draws a destroyed socket and the refusal `flight-undecrypted`, before any 101. The preflight decrypts message one once and `accept` decrypts it once more, so the gate's API keeps its one shape. It moves no wire byte.
 
-''The lean'' (LEAD): the leak stands accepted and named; the knock stays; the 101 ordering stands repaired; a secret pre-filter waits on the operator, since it adds a credential to the pin.
+''The open question'': W10 stays open under research (the controller, 2026-10-26). The 101 ordering stands repaired, and the question narrows to whether a sovereign-route knock can key on material the join already hands every admitted dialer.
 
 <<~/ahu>>
 
@@ -68,6 +68,6 @@ Both rows touch the sealed channel's dial bytes, so each settles before the X0 b
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rT6IUKQpPNXYg--0hAwWGBRFnUvUdoc4_pyahfFTd64
+<<^ code="&#x0003;">>ni:///sha-256;sUVl6r1H7C2lTdQz9Jq_Ap4IKL1FG2ZE77oqC-0n5Kc
 
 <<^ code="&#x0004;" -> to="?">>
