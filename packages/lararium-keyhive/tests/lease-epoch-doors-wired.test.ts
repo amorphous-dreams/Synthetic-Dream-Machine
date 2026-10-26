@@ -38,22 +38,22 @@ describe("the lease-epoch fence's wiring", () => {
     expect(src).toMatch(/bindingGateLease\.kind\s*===\s*"epoch"\s*\?\s*\{\s*expectedEpoch:\s*bindingGateLease\.n/);
   });
 
-  test("★ operator-daemon-behavior.ts threads it into the joinee's grant-take (verifyFaceGrantRecord) ★", () => {
-    const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
-    expect(src).toMatch(/verifyFaceGrantRecord\(rec,\s*\{[\s\S]{0,300}expectedEpoch/);
+  test("★ the joinee's grant-take reads the fresh lease and threads it into verifyFaceGrantRecord ★", () => {
+    const daemon = KEYHIVE_SRC("operator-daemon-behavior.ts");
+    expect(daemon).toMatch(/readLease:\s*\(\)\s*=>\s*readLeaseEpoch\(ctx\.composite\)/);
+    expect(daemon).toMatch(/verify:\s*verifyFaceGrantRecord/);
+    expect(KEYHIVE_SRC("face-seat.ts")).toMatch(/ports\.verify\(record,\s*\{[\s\S]{0,300}expectedEpoch:\s*lease\.n/);
   });
 
   test("★ an unavailable lease frontier cannot make a face-grant record mutate the joinee ★", () => {
-    const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
-    const start = src.indexOf("const lease = await readLeaseEpoch(ctx.composite)");
-    const end = src.indexOf("const verdict = await verifyFaceGrantRecord", start);
+    const src = KEYHIVE_SRC("face-seat.ts");
+    const start = src.indexOf("const lease = await ports.readLease()");
+    const end = src.indexOf("ports.verify(record", start);
     expect(start).toBeGreaterThanOrEqual(0);
     expect(end).toBeGreaterThan(start);
     const grantTake = src.slice(start, end);
-    expect(grantTake).toMatch(/if \(lease\.kind === "unavailable"\) \{[\s\S]{0,400}face-join grant pending[\s\S]{0,200}current lease frontier unavailable/);
-    expect(grantTake).not.toMatch(/expectedEpoch !== null \? \{ expectedEpoch \}/);
-    expect(grantTake.indexOf('if (lease.kind === "unavailable")')).toBeGreaterThanOrEqual(0);
-    expect(grantTake.indexOf('if (lease.kind === "unavailable")')).toBeLessThan(grantTake.indexOf("judgedGrants.add(rec.sig)"));
+    expect(grantTake).toMatch(/if \(lease\.kind === "unavailable"\) \{[\s\S]{0,400}face-join grant pending[\s\S]{0,200}current lease frontier unavailable[\s\S]{0,80}continue/);
+    expect(src.lastIndexOf("judged.add(record.sig)")).toBeGreaterThan(src.indexOf("await ports.ingest(record)"));
   });
 
   test("★ face-grant-record.ts forwards ctx.expectedEpoch into BOTH the KEL-head and pinned-root verify paths ★", () => {

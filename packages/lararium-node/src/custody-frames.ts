@@ -43,18 +43,23 @@
  * ended, and never an argument, an answer or a refusal's own words.
  */
 import type { Socket } from "node:net";
-import type { Credential } from "@lararium/mesh";
+import type { Credential, SlotSpec } from "@lararium/mesh";
+import { parkFaceRoute } from "./face-route.js";
+import { setWornFaceInSession, sovereignStands, wornFaceOrdinal } from "./node-vessel-identity.js";
+import { listFaceOrdinals } from "./identity-anchors.js";
 import { CustodyLocked, CustodyRowUnavailable, type CustodyHolder, type HolderUnlock } from "./custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
 import { SealedActRefused, isSealedActName } from "./sealed-acts.js";
 
 export type CustodyFrame =
-  | { readonly op: "unlock"; readonly credentials: readonly Credential[] }
-  | { readonly op: "lock" }
+  | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number; readonly all?: boolean }
+  | { readonly op: "lock"; readonly face?: number }
   | { readonly op: "custody" }
   | { readonly op: "act"; readonly act: string; readonly args?: Readonly<Record<string, unknown>> }
   /** Cut face `face`'s bundle body, sealed under `key` (a bundle key, 64 lower hex), once `credentials` prove the vessel's own route. */
-  | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string };
+  | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string }
+  /** Park the human route a NEW face will ask for, for the next face this vessel founds (one use). */
+  | { readonly op: "face-route"; readonly slots: readonly SlotSpec[] };
 
 /** What stands after a custody act: the composition's standing, or the fault that left the floor standing. */
 export interface CustodyStanding {
@@ -65,9 +70,12 @@ export interface CustodyStanding {
 
 export type CustodyAnswer =
   | ({ readonly op: "unlock"; readonly held?: boolean } & HolderUnlock & Partial<CustodyStanding>)
-  | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked" } & Partial<CustodyStanding>)
+  /** The node key opened and a face did not (`face-refused`), or the vessel holds several faces and none was named (`face-not-named`): nothing stays open. */
+  | { readonly op: "unlock"; readonly reading: "face-refused" | "face-not-named"; readonly standing: string; readonly face?: number; readonly faceReading?: string; readonly faces?: readonly unknown[] }
+  | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked"; readonly face?: number } & Partial<CustodyStanding>)
   | { readonly op: "custody"; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly testScratch: boolean }
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
+  | { readonly op: "face-route"; readonly parked: true }
   | { readonly op: "backup"; readonly sealedBody: string; readonly holds: FaceBundleCut["holds"]; readonly face: FaceBundleCut["face"]; readonly carries: FaceBundleCut["carries"] }
   | { readonly op: string; readonly status: "error"; readonly errorMessage: string; readonly refusal: { readonly reason: string; readonly home?: string; readonly file?: string; readonly reading?: string; readonly attemptsLeft?: number } };
 
@@ -92,7 +100,9 @@ export interface CustodyFrameDeps {
   readonly backup?: (face: number, bundleKey: Uint8Array) => Promise<FaceBundleCut>;
 }
 
-const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "custody", "act", "backup"]);
+const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "custody", "act", "backup", "face-route"]);
+/** The keys a `face-route` frame may carry. */
+const FACE_ROUTE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "slots"]);
 /** The keys a `backup` frame may carry. */
 const BACKUP_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "face", "key"]);
 const BUNDLE_KEY_HEX = /^[0-9a-f]{64}$/;
@@ -131,6 +141,24 @@ function credentialsOf(v: unknown): readonly Credential[] | null {
   return out;
 }
 
+function slotsOf(v: unknown): readonly SlotSpec[] | null {
+  if (!Array.isArray(v) || v.length === 0) return null;
+  const out: SlotSpec[] = [];
+  for (const slot of v as unknown[]) {
+    const t = (slot as { t?: unknown } | null)?.t;
+    const pins = (slot as { pins?: unknown } | null)?.pins;
+    if (!Number.isSafeInteger(t) || (t as number) < 1 || !Array.isArray(pins) || pins.length === 0) return null;
+    const keep: SlotSpec["pins"][number][] = [];
+    for (const pin of pins as unknown[]) {
+      const k = (pin as { kind?: unknown } | null)?.kind;
+      if (k === "passphrase" && typeof (pin as { passphrase?: unknown }).passphrase === "string") keep.push({ kind: "passphrase", passphrase: (pin as { passphrase: string }).passphrase });
+      else return null;
+    }
+    out.push({ t: t as number, pins: keep });
+  }
+  return out;
+}
+
 /**
  * The custody door's handler, in the shape the socket front's `onFrame` takes: `true` when the frame was a
  * custody frame (answered here, never seen by a verb seat), `false` for every other frame.
@@ -143,22 +171,79 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
     try { sock.end(JSON.stringify(a) + "\n"); } catch { /* the caller went away */ }
   };
 
-  const unlock = async (credentials: readonly Credential[]): Promise<CustodyAnswer> => {
+  /**
+   * ONE TYPED CREDENTIAL, TRIED WHERE IT IS NAMED. The node key (S) opens alone; a face opens by its own tree: the face the
+   * frame names, or every face (`all`), or (naming none) the vessel's one face. A vessel holding several faces and told none refuses
+   * `face-not-named`, so a credential never opens a sibling by luck. The composition stands sovereign when S and the worn face
+   * both stand open (a place with no face needs S alone).
+   */
+  const unlock = async (credentials: readonly Credential[], sel: { readonly face?: number; readonly all?: boolean }): Promise<CustodyAnswer> => {
     const u = await holder.unlock(credentials);
-    if (u.reading !== "opens") {
+    if (u.reading !== "opens" && u.reading !== "already-unlocked") {
       deps.onLog(`unlock: ${u.reading}${u.reading === "no-slot-opens" ? ` (${u.attemptsLeft} attempt(s) left this boot)` : ""}`);
       return { op: "unlock", ...u, standing: deps.standing() };
     }
-    deps.onLog(`unlocked: slot ${u.slot} opened the vessel key`);
+    const freshly = u.reading === "opens";
+    const openBefore = new Set(holder.unlockedFaces());
+    const wornBefore = wornFaceOrdinal();
+    // A second unlock that names no face finds the key held and the composition standing: nothing to open, nothing to compose.
+    if (!freshly && sel.face === undefined && sel.all !== true) return { op: "unlock", ...u, standing: deps.standing() };
+    const standing = listFaceOrdinals();
+    const refuseFaces = async (reading: "face-refused" | "face-not-named", detail: object): Promise<CustodyAnswer> => {
+      if (freshly) await holder.lock();           // a key never rests over a floor
+      deps.onLog(`unlock: ${reading}`);
+      return { op: "unlock", reading, ...detail, standing: deps.standing() };
+    };
+    let worn: number | undefined = sel.face;
+    if (sel.all) {
+      const readings = await holder.unlockFaces(credentials);
+      const opened = readings.filter((r) => r.reading === "opens" || r.reading === "already-unlocked").map((r) => (r as { ordinal: number }).ordinal);
+      if (standing.length > 0 && opened.length === 0) return refuseFaces("face-refused", { faces: readings.map((r) => r.reading) });
+      if (worn === undefined && opened.length === 1) worn = opened[0];
+    } else if (sel.face !== undefined) {
+      const r = await holder.unlockFace({ ordinal: sel.face }, credentials);
+      if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: sel.face, faceReading: r.reading });
+    } else if (standing.length === 1) {
+      worn = standing[0]!;
+      const r = await holder.unlockFace({ ordinal: worn }, credentials);
+      if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: worn, faceReading: r.reading });
+    } else if (standing.length > 1) {
+      return refuseFaces("face-not-named", { faces: standing });
+    }
+    deps.onLog(`unlocked: slot ${u.reading === "opens" ? u.slot : "(held)"} opened the node key${worn !== undefined ? `; face h${worn} open` : ""}`);
+    // The unlock NAMES the face this vessel wears for the life of the unlock: session state, never a pointer at rest.
+    if (worn !== undefined) setWornFaceInSession(worn);
+    // An unlock over a held key that opens no new face and changes no worn face stands nothing new.
+    if (!freshly && holder.unlockedFaces().every((f) => openBefore.has(f)) && (worn === undefined || worn === wornBefore)) {
+      return { op: "unlock", ...u, standing: deps.standing() };
+    }
     const stood = await deps.recompose(true);
     // A KEY NEVER RESTS OVER A FLOOR. When the composition that should have stood on the key refused, the vessel
     // stands at the floor and the holder drops what it opened: held and standing never disagree.
     if (stood.refused !== undefined) {
       await holder.lock();
-      deps.onLog("the sovereign composition did not stand; the vessel key dropped again");
+      deps.onLog("the sovereign composition did not stand; the node key dropped again");
       return { op: "unlock", ...u, ...stood, held: false };
     }
     return { op: "unlock", ...u, ...stood, held: true };
+  };
+
+  /**
+   * `lock --face N`: one face drops its key. The worn face's lock stands the vessel back at the floor through the same gate the
+   * unlock reads (`sovereignStands`); a sibling's lock leaves the sovereign composition standing.
+   */
+  const lockFaceOf = async (ordinal: number): Promise<CustodyAnswer> => {
+    const named = await holder.faceStanding({ ordinal });
+    if (named === null) return { op: "lock", locked: true, was: "locked", face: ordinal, standing: deps.standing() };
+    const wasOpen = named.unlocked;
+    const wasWorn = sovereignStands();
+    await holder.lockFace(named.fcid);
+    deps.onLog(`locked: face h${ordinal} key dropped`);
+    if (wasOpen && wasWorn && !sovereignStands()) {
+      const stood = await deps.recompose(true);
+      return { op: "lock", locked: true, was: "unlocked", face: ordinal, ...stood };
+    }
+    return { op: "lock", locked: true, was: wasOpen ? "unlocked" : "locked", face: ordinal, standing: deps.standing() };
   };
 
   const lock = async (): Promise<CustodyAnswer> => {
@@ -241,18 +326,43 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
         return true;
       }
       act = runAct(frame["act"], frame["args"]);
+    } else if (op === "face-route") {
+      const frame = parsed as Record<string, unknown>;
+      const stray = Object.keys(frame).find((k) => !FACE_ROUTE_FRAME_KEYS.has(k));
+      const slots = slotsOf(frame["slots"]);
+      if (stray !== undefined || slots === null) {
+        deps.onLog("face-route: refused (bad-custody-frame)");
+        answer(sock, { op, status: "error", errorMessage: "a face-route frame carries `op` and `slots` (one or more slots of passphrase pins), and nothing beside them", refusal: { reason: "bad-custody-frame" } });
+        return true;
+      }
+      act = async () => { parkFaceRoute(slots); deps.onLog("face-route: parked for the next face founding"); return { op: "face-route", parked: true }; };
     } else if (op === "unlock") {
       const credentials = credentialsOf((parsed as { credentials?: unknown }).credentials);
       if (!credentials) {
         answer(sock, { op, status: "error", errorMessage: "an unlock frame carries one or more credentials (a passphrase or paper sheets)", refusal: { reason: "bad-custody-frame" } });
         return true;
       }
-      act = () => unlock(credentials);
+      const named = (parsed as { face?: unknown }).face;
+      if (named !== undefined && (!Number.isSafeInteger(named) || (named as number) < 0)) {
+        answer(sock, { op, status: "error", errorMessage: "an unlock frame's `face` names a handle index (a whole number from 0)", refusal: { reason: "bad-custody-frame" } });
+        return true;
+      }
+      const all = (parsed as { all?: unknown }).all;
+      if (all !== undefined && typeof all !== "boolean") {
+        answer(sock, { op, status: "error", errorMessage: "an unlock frame's `all` is true or false", refusal: { reason: "bad-custody-frame" } });
+        return true;
+      }
+      act = () => unlock(credentials, { ...(named !== undefined ? { face: named as number } : {}), ...(all === true ? { all: true } : {}) });
     } else if (op === "lock") {
-      act = lock;
+      const face = (parsed as { face?: unknown }).face;
+      if (face !== undefined && (!Number.isSafeInteger(face) || (face as number) < 0)) {
+        answer(sock, { op, status: "error", errorMessage: "a lock frame's `face` names a handle index (a whole number from 0)", refusal: { reason: "bad-custody-frame" } });
+        return true;
+      }
+      act = face === undefined ? lock : () => lockFaceOf(face as number);
     } else {
       act = async () => ({
-        op: "custody", unlocked: holder.isUnlocked(), slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(),
+        op: "custody", unlocked: holder.isUnlocked(), slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(), facesOpen: holder.unlockedFaces().length,
         standing: deps.standing(), testScratch: deps.testScratch,
       });
     }

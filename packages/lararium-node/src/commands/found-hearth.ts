@@ -36,6 +36,7 @@
  * The founding cites no cadence inception: that record stands SPECIFIED (kahu#/contract, the cadence lineage). It
  * names the Nexus AID and the AID never names it, so its later inception moves no byte this act writes.
  */
+import { ensureFaceCustodyAtHandle } from "../face-route.js";
 import {
   charterInceptionBytes, charterInceptionImage, emptyFoundingCharterDoc, federationPostureFromDoc, genesisOfInception, mintColdKey, nexusAidOf, sealKeySetHash, seatedKahuKeys, standForKahuSeat,
   renameOwnPersona, type NexusDoc,
@@ -142,6 +143,7 @@ export async function foundSeedCharter(opts: {
   }
 
   // Persona zero's root, its private label, and its claim on the one chair: the roster line lands with the root.
+  await ensureFaceCustodyAtHandle(0, "h0");
   await generateOrLoadPersonaGroupRoot(0);
   if (opts.name.length > 0) await renameOwnPersona(await makeNodePersonaPetnameStore(), 0, opts.name);
   const chair = opts.chair?.trim();

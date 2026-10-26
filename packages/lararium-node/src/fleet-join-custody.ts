@@ -25,25 +25,28 @@
  * `CustodyLocked`.
  */
 import { randomBytes } from "node:crypto";
-import { mkdirSync, readdirSync } from "node:fs";
-import { bytesEqual, sha256HexBytesSync } from "@lararium/mesh";
+import { mkdirSync } from "node:fs";
+import { faceFileNames } from "./face-index.js";
+import { personaGroupDigest } from "./persona-group-file.js";
+import { bytesEqual } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { readCustodyRow, removeCustodyRow, updateCustodyRow } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
-/** A face's address secret's file, for the carrier table: `face-address-secret-<32 hex>.bin`. */
-export const FACE_ADDRESS_SECRET_FILE = /^face-address-secret-([0-9a-f]{32})\.bin$/;
-/** A joining vessel's pending join, for the carrier table: `fleet-join-pending-<32 hex>.json`, one per face it joins. */
-export const FLEET_JOIN_PENDING_FILE = /^fleet-join-pending-([0-9a-f]{32})\.json$/;
-/** A joined face's record, for the carrier table: `face-join-record-<32 hex>.json`. */
-export const FACE_JOIN_RECORD_FILE = /^face-join-record-([0-9a-f]{32})\.json$/;
+/** A face's address secret's file, for the carrier table: `face-address-secret-g<64 hex>.bin`. */
+export const FACE_ADDRESS_SECRET_FILE = /^face-address-secret-g([0-9a-f]{64})\.bin$/;
+/** A joining vessel's pending join, for the carrier table: `fleet-join-pending-g<64 hex>.json`, one per face it joins. */
+export const FLEET_JOIN_PENDING_FILE = /^fleet-join-pending-g([0-9a-f]{64})\.json$/;
+/** A joined face's record, for the carrier table: `face-join-record-g<64 hex>.json`. */
+export const FACE_JOIN_RECORD_FILE = /^face-join-record-g([0-9a-f]{64})\.json$/;
 
 const utf8 = new TextEncoder();
 const PERSONA_GROUP = /^(?:0x)?(?:[0-9a-f]{2}){4,64}$/;
 
-function faceRowName(row: string, personaGroup: string): string {
+/** The row name's digest IS the group digest the floor index holds, so the face that owns the row is found by it before any face opens. */
+function faceRowName(_row: string, personaGroup: string): string {
   if (!PERSONA_GROUP.test(personaGroup)) throw new RangeError("fleet-join-custody: a PersonaGroup id reads as lower-case hex");
-  return sha256HexBytesSync(utf8.encode(`${row}\n${personaGroup}`)).slice(0, 32);
+  return `g${personaGroupDigest(personaGroup)}`;
 }
 
 /** The row a face's address secret rests in, named by a digest of its PersonaGroup. */
@@ -141,7 +144,7 @@ export async function readPendingFleetJoin(personaGroup: string): Promise<Pendin
 export async function listPendingFleetJoinGroups(): Promise<string[]> {
   const out: string[] = [];
   let names: string[] = [];
-  try { names = readdirSync(larIdentityDir()); } catch { return out; }
+  try { names = faceFileNames(larIdentityDir()); } catch { return out; }
   for (const file of names.filter((n) => FLEET_JOIN_PENDING_FILE.test(n)).sort()) {
     const bytes = await readCustodyRow("identity", file);
     if (bytes === null) continue;

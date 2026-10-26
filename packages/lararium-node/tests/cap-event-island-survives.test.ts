@@ -22,12 +22,12 @@ const SEED = new Uint8Array(32).fill(9);
 
 async function foundedFace() {
   const repo = new Repo({ sharePolicy: async () => true });
-  const vk = hex(await ed.getPublicKeyAsync(SEED));
+  const treeKey = hex(await ed.getPublicKeyAsync(SEED));
   const place = await foundThePlace({ repo, vesselSeed: SEED, hearthTrueName: "" });
-  await foundTheFace({ repo, daemonHandle: place.daemonHandle, vesselSeed: SEED, vesselVerifyingKey: vk,
+  await foundTheFace({ repo, daemonHandle: place.daemonHandle, vesselSeed: SEED, vesselVerifyingKey: treeKey,
     vesselDisplayName: "Island Witness",
     binding: { mode: "self-stood", signerSeed: new Uint8Array(32).fill(1) },
-    hearthTrueName: "", nexusPubkey: vk,
+    hearthTrueName: "", nexusPubkey: treeKey,
   });
   return { repo, place };
 }

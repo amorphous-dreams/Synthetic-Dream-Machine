@@ -60,6 +60,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
+import { parkFaceRoute } from "./face-route.js";
 import type { Repo } from "@automerge/automerge-repo";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -455,9 +456,11 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "persona-lease": (args) => answer("persona-lease", async () => ({
       ...(await runPersonaLease({ repo, ...opt("handleIndex", int(args["handleIndex"])) })),
     })),
-    "persona-new": (args) => answer("persona-new", async () => ({
-      ...(await runFoundTheFace({ repo, ...opt("handleIndex", int(args["handleIndex"])) })),
-    })),
+    "persona-new": (args) => answer("persona-new", async () => {
+      try { return { ...(await runFoundTheFace({ repo, ...opt("handleIndex", int(args["handleIndex"])) })) }; }
+      // A route handed for this founding serves this founding alone, whether or not the face needed one.
+      finally { parkFaceRoute(null); }
+    }),
     // M12′/L11: the SAME board resolves BOTH the head op-key and that head's KEL seq, off ONE materialize
     // (`makeLocalPersonaKelHeadAndSeqResolver`), so head and seq never straddle a sync landing between two
     // reads. `seq` reads ADVISORY-ONLY end to end: omitted when the resolver found none, a hint and never a verdict.
@@ -467,7 +470,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       return { head, ...(seq !== null ? { seq } : {}) };
     }),
     "nexus-publish": (args) => answer("nexus-publish", async () => ({
-      ...(await runNexusPublishPlugins({ repo, storageDir, source: need("nexus-publish", args, "source") })),
+      ...(await runNexusPublishPlugins({ repo, storageDir, source: need("nexus-publish", args, "source"), ...opt("handleIndex", int(args["handleIndex"])) })),
     })),
     "nexus-offering-inspect": (args) => answer("nexus-offering-inspect", async () => ({
       ...(await runNexusInspectOffering({ offeringCid: need("nexus-offering-inspect", args, "offeringCid"), storageDir, repo })),

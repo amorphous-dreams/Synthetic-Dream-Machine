@@ -1,0 +1,104 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/codex-controller-2026">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/research/codex-controller-2026.mem"
+l-space   = "lares"
+mana      = 13
+manao     = 13
+manaoio   = 12
+role      = "field and practice read (one walled Sol-6 seat with live web search, 2026-10-25) on working with Codex while another agent controls it: OpenAI's own Codex docs collided with the house's launch and fences; the controller's sort of what landed in canon and what stays a probe; the handback kept verbatim"
+status    = "research; read 2026-10-25; the measured takes landed in mixed-model-swarm#/the-launch, the leads wait there as owed probes"
+tags      = ["research", "codex", "swarm", "launch", "testimony"]
+title     = "lar:///ha.ka.ba/lares/docs/research/codex-controller-2026"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/research/codex-controller-2026"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/question>>
+
+! Codex under a controller, 2026 ~ what Codex's own docs say about our launch
+
+The operator sent one Sol-6 reader to gather how a controller agent works best with Codex: the `codex exec` shell seat, its sandbox and approval modes, resume, the event stream, output schemas, model and effort choice. The seat read OpenAI's Codex pages, the installed `codex-cli 0.163.0` help and this host's config, then collided them with <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">> #/the-launch and the walled-seat lessons. One seat reads as one lens (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">> #/the-lens-law): its MEASURED marks rest on primary sources, and the house measures before it adopts.
+
+<<~/ahu>>
+
+<<~ ahu #/the-sort>>
+
+!! The controller's sort
+
+* ''Landed in canon'' (mixed-model-swarm#/the-launch): a builder keeps its rollout and resumes by session id with its model and effort named again, a reader stays ephemeral; web search rides before `exec`; `codex exec` stands as the shell seat, since `codex mcp-server` left the CLI upstream (measured here: the installed CLI prints its top-level help for that command).
+* ''Owed probes'' (mixed-model-swarm#/the-launch): the `--json` event stream's `turn.completed` as a watch signal; `--output-schema` for a mechanical status beside `out.md`; a reader with command network off where its brief needs none; permission profiles in place of the flag list; a matched model A/B.
+* ''Held as the house's own'': the stdin close, the temp walls, `out.md` apart from `-o`, the lead running every suite, the second-lineage read; the seat's sources confirm each without moving one.
+
+<<~/ahu>>
+
+<<~ ahu #/testimony>>
+
+!! Testimony ~ Sol-Codexreader (verbatim)
+
+````text
+# Sol-Codexreader: controller → walled Codex seats
+
+**Reading key.** **MEASURED** means an opened OpenAI primary source, installed CLI help, or local practice file supports the claim; a short source quote follows. **LEAD** means a proposed behavior or benefit still needs a host probe. Rank below follows likely change to this house, not general importance.
+
+## Good takes, ranked
+
+1. **Watch the JSONL terminal event and process exit, then inspect the handback** — this can wake a controller even when its background completion notice fails. **MEASURED:** [OpenAI non-interactive mode](https://learn.chatgpt.com/docs/non-interactive-mode) names `turn.completed`, `turn.failed`, and `error`; [our lane law](/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/controller-handoff.mem) says background watchers sometimes leave handbacks unread. **LEAD:** a host watcher can reliably deliver the notice.
+2. **Keep resumable builders; use `--ephemeral` only for disposable reads** — ephemeral runs do not persist rollout files, while `codex exec resume <SESSION_ID>` continues a saved run. **MEASURED:** [OpenAI non-interactive mode](https://learn.chatgpt.com/docs/non-interactive-mode), “without persisting session rollout files” and “target a specific session ID.” Record the `thread.started` ID, worktree, model, effort, and head in the controller sheet.
+3. **Keep `out.md` and `-o` on distinct paths; gate on exit, event, and handback completeness** — `-o` writes only the last assistant message and can overwrite a full handback. **MEASURED:** [OpenAI non-interactive mode](https://learn.chatgpt.com/docs/non-interactive-mode), “final message”; [host feedback](/home/joshu/.claude/projects/-home-joshu-Synthetic-Dream-Machine/memory/feedback_walled_codex_spirit.md) records the overwrite.
+4. **Keep stdin at EOF and temps inside the seat** — this host hung on an open stdin and refused writes through external temp paths. **MEASURED:** [host feedback](/home/joshu/.claude/projects/-home-joshu-Synthetic-Dream-Machine/memory/feedback_walled_codex_spirit.md), “`< /dev/null` always”; [OpenAI CLI reference](https://learn.chatgpt.com/docs/cli/reference) supports explicit workspace roots. These flags carry host evidence, not a universal Codex prescription.
+5. **Give builders only their worktree plus handback directory; give readers a scratch root and explicit target** — this preserves the one-writer lane law and blocks incidental writes elsewhere. **MEASURED:** [OpenAI CLI reference](https://learn.chatgpt.com/docs/cli/reference), “prefer `--add-dir`”; [OpenAI permissions](https://learn.chatgpt.com/docs/permissions) says profiles can express filesystem and network together. **LEAD:** a named permission profile may simplify our two-root launch after testing.
+6. **Feed readers the exact branch/commit, relevant AGENTS guidance, and fetched logs** — `-C <scratch>` does not discover the repository's `AGENTS.md`, and a read-only sandbox has no command network. **MEASURED:** [OpenAI AGENTS.md guide](https://learn.chatgpt.com/docs/agent-configuration/agents-md), discovery walks “project root … to your current working directory”; [host feedback](/home/joshu/.claude/projects/-home-joshu-Synthetic-Dream-Machine/memory/feedback_walled_codex_spirit.md), “`-s read-only` reaches NO network.” The controller supplies inaccessible CI evidence.
+7. **Use a schema for controller status, and leave prose in `out.md`** — stable status fields support mechanical gates without squeezing the full handback. **MEASURED:** [OpenAI non-interactive mode](https://learn.chatgpt.com/docs/non-interactive-mode), `--output-schema` requests JSON Schema conformance. **LEAD:** schema validation will reduce malformed handbacks on this host.
+8. **Pin model and effort on every launch and resume; sample newer models by task** — the local default reads `gpt-6-sol`/medium, and a resume can inherit it. **MEASURED:** installed `codex exec resume --help` offers `-m` and `-c`; [OpenAI models](https://learn.chatgpt.com/docs/models) recommends GPT-6.1 Sol for complex coding, Luna for focused repeatable work, and raising effort as complexity grows. **LEAD:** either change beats the house's Sol/medium after cost, latency, and finding-quality measurement.
+9. **Keep a cold second-lineage read and have the lead run suites** — the sandboxed seat's vitest/pnpm/tsx failures do not prove code correctness. **MEASURED:** [host feedback](/home/joshu/.claude/projects/-home-joshu-Synthetic-Dream-Machine/memory/feedback_walled_codex_spirit.md), “Spirits can't run suites”; [our lens law](/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem) says “Correlated eyes count once.” Practitioner reports of Claude launching Codex and inspecting its diff remain **LEAD**, [example](https://www.reddit.com/r/ClaudeCode/comments/1rht68z/how_i_run_long_tasks_with_claude_code_and_codex/).
+
+## Collision with current launch and fences
+
+**MEASURED:** The current [launch](/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem) uses `--ephemeral` for builders, plain text progress, and an unstructured `-o final.md`. OpenAI recommends `codex exec` for bounded scripts, `--json` for events, and `--output-schema` for stable downstream fields ([non-interactive guide](https://learn.chatgpt.com/docs/non-interactive-mode), “machine-readable”). Retain the measured stdin, temp, `--add-dir`, and distinct output paths. `--search` must precede `exec` in this installed CLI; invoke it only when live web context serves the brief. The host config grants workspace-write command network; OpenAI says its default stays off unless configured ([security](https://learn.chatgpt.com/docs/agent-approvals-security), “network access turned off”). Treat network reach as an explicit seat choice.
+
+**MEASURED:** `codex mcp-server --help` on installed `codex-cli 0.163.0` shows the top-level help because that command does not exist. OpenAI's [SDK page](https://learn.chatgpt.com/docs/codex-sdk) says the MCP server “has been removed”; the [older Agents SDK cookbook](https://developers.openai.com/cookbook/examples/codex/codex_mcp_agents_sdk/building_consistent_workflows_codex_cli_agents_sdk) now says “archived.” Use `exec` for current shell seats; evaluate the Codex SDK for programmatic threads or app-server for persistent events and approval handling ([OpenAI platform guide](https://developers.openai.com/blog/codex-as-a-platform)). `codex mcp` connects tools *to* Codex; it does not expose Codex *as* a server. Profiles now layer `$CODEX_HOME/<name>.config.toml` through `-p`; none appear in the inspected host config ([CLI reference](https://learn.chatgpt.com/docs/cli/reference), “Layer ... on top”). The [0.164.0 release](https://github.com/openai/codex/releases) reports a resume fix restoring saved thread settings; keep explicit model/effort on this 0.163.0 host.
+
+## Proposed launch lines
+
+Controller prepares `S/brief.md`, `S/status.schema.json`, `S/.tmp`, and an isolated `W`; the brief orders a full `S/out.md` handback and a schema-shaped final status. The controller launches through its background task facility, never shell `&`.
+
+**Builder** (`W` worktree; `S` seat directory):
+
+```sh
+TMPDIR="$S/.tmp" TMPPREFIX="$S/.tmp/zsh" codex exec -m gpt-6-sol -c model_reasoning_effort=medium -c approval_policy=never -s workspace-write -c sandbox_workspace_write.exclude_slash_tmp=true -c sandbox_workspace_write.exclude_tmpdir_env_var=true --skip-git-repo-check -C "$W" --add-dir "$S" --json --output-schema "$S/status.schema.json" -o "$S/final.json" "$(cat "$S/brief.md")" < /dev/null > "$S/events.jsonl" 2> "$S/stderr.log"
+```
+
+**Reader** (`S` empty except prepared inputs; brief names target head and repository AGENTS paths):
+
+```sh
+TMPDIR="$S/.tmp" TMPPREFIX="$S/.tmp/zsh" codex exec -m gpt-6-sol -c model_reasoning_effort=medium -c approval_policy=never -s workspace-write -c sandbox_workspace_write.network_access=false -c sandbox_workspace_write.exclude_slash_tmp=true -c sandbox_workspace_write.exclude_tmpdir_env_var=true --ephemeral --skip-git-repo-check -C "$S" --json --output-schema "$S/status.schema.json" -o "$S/final.json" "$(cat "$S/brief.md")" < /dev/null > "$S/events.jsonl" 2> "$S/stderr.log"
+```
+
+**MEASURED flag grounds:** `-m`/`-c` pin the seat; `approval_policy=never` returns denied escalations to the agent; `-s` and `--add-dir` name writable roots; temp excludes remove implicit `/tmp` roots; `-C` sets discovery/workspace; `--skip-git-repo-check` allows a scratch reader; `--json` records events; schema plus `-o` writes a final status away from `out.md`; stdin EOF prevents the measured hang. Builder omits `--ephemeral` for resume; reader includes it for disposal. The builder's network follows host config; reader disables command network. No line grants git writes: the brief and lane rules still forbid them, while `.git` protection needs a host probe. [CLI help](https://learn.chatgpt.com/docs/cli/reference), [host feedback](/home/joshu/.claude/projects/-home-joshu-Synthetic-Dream-Machine/memory/feedback_walled_codex_spirit.md).
+
+## Leads to measure here
+
+**LEAD:** Run one disposable task per shape; verify JSONL terminal event, process exit, schema parse, `out.md` length, write attempts to sibling worktrees and `.git`, and reader network denial. Launch two concurrent seats and kill the controller watcher; restart it and measure whether it reaps completed artifacts exactly once. Compare ephemeral and saved runs, then resume a saved session by ID with explicit model/effort and inspect emitted model. A/B three matched briefs across Sol/medium, 6.1 Sol/medium, and Luna/high; score valid fixes, independent findings, elapsed time, and usage. Probe permission profiles in a scratch config before replacing the current flags. Stop at a refused command; the controller investigates it without rerouting the act.
+
+WORDS=1082
+````
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;5VYI5P8Q_kNNL7KolLdX1GcFYRCyFIVVX5sCNX3417M
+
+<<^ code="&#x0004;" -> to="?">>

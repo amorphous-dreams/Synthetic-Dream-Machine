@@ -36,7 +36,7 @@ A native Linux hearth can hold an attestation key (AK) in a TPM 2.0 and ask the 
 
 A disk copy gets public keys, certificates and PCR policy, but no AK private key or fresh quote. A whole-machine thief keeps the TPM and can answer if the machine still meets the accepted boot policy; the quote cannot prove a safe room, owner presence, or every runtime action unless the build measures and verifies those actions too. PCRs identify measured boot state, not arbitrary container contents by themselves.
 
-Setup asks the operator to enable a supported TPM, choose and record a measured-boot policy, pin the AK at an attended bind, and keep a human VK route. Kernel, bootloader, Secure Boot or initramfs changes may alter PCRs; signed PCR policies can ease authorized updates, but someone must review the update path and preserve a human recovery route. TPM loss or clear ends that anchor: the hearth falls back to confirm-only until a human unlocks, binds a replacement anchor and rolls SK where the replacement changes the serving trust path.
+Setup asks the operator to enable a supported TPM, choose and record a measured-boot policy, pin the AK at an attended bind, and keep a human S key route. Kernel, bootloader, Secure Boot or initramfs changes may alter PCRs; signed PCR policies can ease authorized updates, but someone must review the update path and preserve a human recovery route. TPM loss or clear ends that anchor: the hearth falls back to confirm-only until a human unlocks, binds a replacement anchor and rolls SK where the replacement changes the serving trust path.
 
 Native Linux and Linux containers can reach `/dev/tpmrm0` when the host exposes it and the container receives the device. A container device mapping grants the process an interface to the host TPM; keep that mapping on the trusted hearth, never a blind carrier. `systemd-cryptenroll` binds LUKS unlock to PCR policy, but does not itself define the ember's remote challenge protocol; `tpm2_quote` supplies the nonce-qualified quote primitive.
 
@@ -48,7 +48,7 @@ For each ask, the helper must sign the fresh nonce, blinded point, channel bindi
 
 Windows measured boot and a TPM-backed CNG key add host evidence, but a helper that blindly signs caller bytes only proves that the caller reached the helper. A `tcti-tbs` adapter does not solve guest identity. WSL USB pass-through can carry a physical token, while the current house container path would also need an explicit device route; neither grants a measurement of container code. WSL Containers (`wslc`) at its current documented GA lacks device passthrough and the compose/API path this vessel needs.
 
-Setup asks the household to create and pin the TPM key on Windows, install and maintain the helper, restrict its local channel, and confirm exactly which host and vessel claims it checks. A Windows update or TPM reset can break the key; human VK unlock and a new attended bind restore service. A whole-machine thief takes the TPM and helper and may still get SERVING; a disk-only thief on another host gets no hardware signature. The helper's failure mode must remain confirm-only, never a software-key fallback.
+Setup asks the household to create and pin the TPM key on Windows, install and maintain the helper, restrict its local channel, and confirm exactly which host and vessel claims it checks. A Windows update or TPM reset can break the key; human S key unlock and a new attended bind restore service. A whole-machine thief takes the TPM and helper and may still get SERVING; a disk-only thief on another host gets no hardware signature. The helper's failure mode must remain confirm-only, never a software-key fallback.
 
 !! USB security token ~ portable anchor, attached at the hearth
 
@@ -70,7 +70,7 @@ Setup asks a person to install and enroll the anchor app, pin its attestation/pu
 
 A small Linux board with a TPM 2.0 HAT gives the hearth a direct TPM path without WSL's guest boundary. The board runs the same per-ask nonce-bound quote as native Linux; the ember pins the board's AK and measured-boot policy during attended setup. A Raspberry Pi plus an Infineon OPTIGA TPM evaluation HAT offers one concrete route, though the HAT does not configure a trustworthy boot chain by itself.
 
-A disk copy gets no TPM private key. A whole-board thief takes both board and TPM and may serve if its measured boot still passes; the board grants no VK, plaintext, admission or authority-changing act. A board or TPM failure requires a human-route restore or repair, a new attended anchor bind and an SK roll where policy demands; a replacement board does not inherit the old private anchor key.
+A disk copy gets no TPM private key. A whole-board thief takes both board and TPM and may serve if its measured boot still passes; the board grants no S key, plaintext, admission or authority-changing act. A board or TPM failure requires a human-route restore or repair, a new attended anchor bind and an SK roll where policy demands; a replacement board does not inherit the old private anchor key.
 
 Setup asks the household to assemble and power the board, establish measured boot and PCR update policy, pin the AK, and maintain a known-good recovery route. Linux and a container with a deliberate TPM device mapping can reach the chip; WSL2 cannot use a HAT attached to the Windows host unless the host exposes it through a supported, audited path. Costs include another computer, power, cooling, physical security, firmware upkeep and an extra failure point.
 
@@ -106,7 +106,7 @@ For the operator's WSL2 hearth, keep every ember confirm-only today. The measure
 * PCR policy and update handling, plus documented AK/EK trust: pin an AK at a human bind or validate its credential chain; never infer hardware trust from a self-asserted certificate. Name what PCRs cover and what they leave outside the measurement.
 * An explicit host-helper protocol for WSL2, with narrow commands, local-channel authentication, no arbitrary TPM command relay, and a proof that links each answer to the intended vessel. Until that proof lands, the helper cannot lift the confirm-only floor.
 * A custody entry for public anchor metadata and its allowed bare/sealed class; no anchor secret in a `floor`, `floor-plain`, `serving`, `hot`, or `cold` row. Keep `sk-rotation-owed` as a deny-only pre-ask check; state plainly that a disk rollback can omit it.
-* Anchor loss, replacement and TPM clear flows: fail closed to confirm, let the VK human route bind a new key, record the causal transition, and rotate SK where a removed anchor could still unwrap the old serving tier.
+* Anchor loss, replacement and TPM clear flows: fail closed to confirm, let the S key human route bind a new key, record the causal transition, and rotate SK where a removed anchor could still unwrap the old serving tier.
 * Attack rehearsal across a copied disk on another host, a copied WSL distro on the same Windows host, whole-machine theft, a stolen unlocked ember, a PCR-changing update, an absent token, a missing phone, and a crash between quote, count commit and SERVING start.
 
 !! Questions still open ~ each carries a lean
@@ -116,7 +116,7 @@ For the operator's WSL2 hearth, keep every ember confirm-only today. The measure
 * ''Which AK/EK roots can a household verify offline?'' Lean: allow an attended public-key pin as the alpha path, and add manufacturer credential verification only with a maintained root and revocation story that needs no global subject registry.
 * ''Can an inserted PIV token answer unattended without a PIN?'' Lean: support it only as an explicit household risk choice; no touch and no per-boot PIN trade theft resistance for overnight availability.
 * ''What does a whole-machine thief get?'' Lean: document that device-bound anchors cannot prevent a thief who takes the device; constrain the consequence to SERVING's existing blind, no-admission boundary and let relation-scoped removal close future service.
-* ''When does anchor replacement require an SK roll?'' Lean: roll whenever the old anchor could still answer an old copied serving tree; keep the human VK path as the recovery route.
+* ''When does anchor replacement require an SK roll?'' Lean: roll whenever the old anchor could still answer an old copied serving tree; keep the human S key path as the recovery route.
 
 !! References ~ primary specifications and platform guidance
 
@@ -129,6 +129,6 @@ For the operator's WSL2 hearth, keep every ember confirm-only today. The measure
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dOTXVs1cecVtLq4vouNLMiw_Bnc8julylB0TfCBPyV8
+<<^ code="&#x0003;">>ni:///sha-256;EQt9Y3743GbufhozIaA0Ud1xXUIte6Iv4enCa-eyRWM
 
 <<^ code="&#x0004;" -> to="?">>

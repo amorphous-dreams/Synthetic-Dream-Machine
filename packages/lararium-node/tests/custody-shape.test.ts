@@ -1,30 +1,32 @@
 /**
  * custody-shape.test — the custody shape reader reads every home before any write and names one of four
- * shapes: `fresh` · `floor-only` · `slotted` · `old-shape`.
+ * shapes: `fresh` · `floor-only` · `slotted` · `occupied`.
  *
  * A home holding a secret with no slot tree to guard it, a carrier under an envelope this build cannot open,
  * or a cleartext secret beside a slot tree reads as a shape nothing here writes over, and the reader names
  * every offender. The reader writes nothing: a recursive hash of every home reads identical before and after.
  *
- * The VK envelope's recognizer arrives as an input (`sealed`); these tests stand a fixture recognizer that
- * answers for a fixture magic. The house envelope reader (`readVkCarrier`) names a frame no unlock here opens.
+ * The S key envelope's recognizer arrives as an input (`sealed`); these tests stand a fixture recognizer that
+ * answers for a fixture magic. The house envelope reader (`readSCarrier`) names a frame no unlock here opens.
  */
 import { describe, test, expect } from "vitest";
 import { createHash } from "node:crypto";
 import { existsSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { readCustodyShape, oldShapeRefusal, FRESH_START_RUNBOOK } from "../src/custody-shape.js";
+import { readCustodyShape, occupiedStoreRefusal } from "../src/custody-shape.js";
 import type { CustodyHomes } from "../src/vault-carriers.js";
 
-const FIXTURE_MAGIC = Buffer.from("FIXTURE-VK-SEAL:");
+const FIXTURE_MAGIC = Buffer.from("FIXTURE-S key-SEAL:");
 /** The fixture recognizer: bytes that open with the fixture magic read sealed. */
 const reading = { sealed: (head: Uint8Array): boolean => Buffer.from(head).subarray(0, FIXTURE_MAGIC.length).equals(FIXTURE_MAGIC) };
 const sealedBytes = (body: string): Buffer => Buffer.concat([FIXTURE_MAGIC, Buffer.from(body)]);
+/** A frame that reads sealed to the face-key reader: its magic over a body long enough to hold a nonce and a tag. */
+const fckSealedBytes = (body: string): Buffer => Buffer.concat([Buffer.from("lares-fck-seal"), Buffer.alloc(48, 5), Buffer.from(body)]);
 /** A seal of the house family under a scheme this build does not frame: the family prefix, a scheme name, a frame. */
 const otherSchemeBytes = (scheme: string): Buffer => Buffer.concat([Buffer.from(`lares-${scheme}-seal`), Buffer.alloc(48, 7)]);
-/** The house VK magic with two bytes damaged, over a frame long enough to hold a nonce and a tag. */
-const damagedMagicBytes = (): Buffer => { const b = Buffer.concat([Buffer.from("lares-vk-seal"), Buffer.alloc(48, 9)]); b[2] = 0x58; b[7] = 0x58; return b; };
+/** The S key magic standing in a face row (another house scheme), over a frame long enough to hold a nonce and a tag. */
+const damagedMagicBytes = (): Buffer => Buffer.concat([Buffer.from("lares-s-seal"), Buffer.alloc(48, 9)]);
 
 function freshHomes(): { homes: CustodyHomes; root: string } {
   const root = mkdtempSync(join(tmpdir(), "lar-shape-"));
@@ -57,25 +59,25 @@ function treeHash(root: string): string {
 }
 
 describe("readCustodyShape — the custody shape refusal reads before any write", () => {
-  test("RED — a cleartext persona root with no slot tree reads OLD SHAPE, and every home stays byte-identical", () => {
+  test("RED — a cleartext persona root with no slot tree reads OCCUPIED, and every home stays byte-identical", () => {
     const { homes, root } = freshHomes();
     try {
       sow(homes, {
         "identity/.vessel-key-joshua.json": "{}",
-        "identity/.persona-group-root-joshua-h0.json": '{"seed":"00"}',
+        [`identity/faces/abababababababababababababababab/.persona-group-root-h0.json`]: '{"seed":"00"}',
         "nexus/founding-roster.mem": "charter",
       });
       const before = treeHash(root);
       const shape = readCustodyShape(homes, reading);
-      expect(shape.kind).toBe("old-shape");
-      if (shape.kind !== "old-shape") return;
+      expect(shape.kind).toBe("occupied");
+      if (shape.kind !== "occupied") return;
       expect(shape.offenders).toEqual([
-        { home: "identity", file: ".persona-group-root-joshua-h0.json", row: "persona-root", reason: "unslotted-secret" },
+        { home: "identity", file: "faces/abababababababababababababababab/.persona-group-root-h0.json", row: "persona-root", reason: "unslotted-secret" },
       ]);
       expect(treeHash(root)).toBe(before);
-      const refusal = oldShapeRefusal(shape);
-      expect(refusal).toContain(".persona-group-root-joshua-h0.json");
-      expect(refusal).toContain(FRESH_START_RUNBOOK);
+      const refusal = occupiedStoreRefusal(shape);
+      expect(refusal).toContain(".persona-group-root-h0.json");
+      expect(refusal).toContain("move these homes aside by hand");
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 
@@ -84,14 +86,14 @@ describe("readCustodyShape — the custody shape refusal reads before any write"
     try {
       sow(homes, {
         "identity/.vessel-key.json": "{}",
-        "identity/vk-slots.bin": "slots",
-        "identity/keyhive-archive.bin": otherSchemeBytes("kh"),
+        "identity/s-slots.bin": "slots",
+        "identity/place-archive.bin": otherSchemeBytes("kh"),
       });
       for (const r of [reading, { sealed: () => true }]) {
         const shape = readCustodyShape(homes, r);
-        expect(shape.kind).toBe("old-shape");
-        if (shape.kind === "old-shape") {
-          expect(shape.offenders).toEqual([{ home: "identity", file: "keyhive-archive.bin", row: "keyhive-archive", reason: "unknown-envelope" }]);
+        expect(shape.kind).toBe("occupied");
+        if (shape.kind === "occupied") {
+          expect(shape.offenders).toEqual([{ home: "identity", file: "place-archive.bin", row: "place-archive", reason: "unknown-envelope" }]);
         }
       }
     } finally { rmSync(root, { recursive: true, force: true }); }
@@ -100,29 +102,28 @@ describe("readCustodyShape — the custody shape refusal reads before any write"
   test("RED — a damaged house magic reads UNKNOWN-ENVELOPE (the frame decides, never the recognizer)", () => {
     const { homes, root } = freshHomes();
     try {
-      sow(homes, { "identity/vk-slots.bin": "slots", "identity/recovery-device-share-h0.bin": damagedMagicBytes() });
+      sow(homes, { "identity/s-slots.bin": "slots", [`identity/faces/abababababababababababababababab/recovery-device-share-h0.bin`]: damagedMagicBytes() });
       for (const r of [reading, { sealed: () => true }]) {
         const shape = readCustodyShape(homes, r);
-        expect(shape.kind === "old-shape" && shape.offenders.map((o) => o.reason)).toEqual(["unknown-envelope"]);
+        expect(shape.kind === "occupied" && shape.offenders.map((o) => o.reason)).toEqual(["unknown-envelope"]);
       }
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 
-  test("RED — a cleartext secret beside a slot tree reads OLD SHAPE, in any home", () => {
+  test("RED — a cleartext secret beside a slot tree reads OCCUPIED; a public transition stays plain", () => {
     const { homes, root } = freshHomes();
     try {
       sow(homes, {
-        "identity/vk-slots.bin": "slots",
-        "identity/custody-root.bin": sealedBytes("root"),
-        "vessel/walk/0123456789abcdef0123456789abcdef.json": '{"wallet":"plain"}',
+        "identity/s-slots.bin": "slots",
+        "identity/gate-root.bin": sealedBytes("root"),
+        [`identity/faces/${"ab".repeat(16)}/walk-h0-0123456789abcdef0123456789abcdef.json`]: '{"wallet":"plain"}',
         "nexus/transitions.json": "{}",
       });
       const shape = readCustodyShape(homes, reading);
-      expect(shape.kind).toBe("old-shape");
-      if (shape.kind === "old-shape") {
+      expect(shape.kind).toBe("occupied");
+      if (shape.kind === "occupied") {
         expect(shape.offenders).toEqual([
-          { home: "storage", file: "walk/0123456789abcdef0123456789abcdef.json", row: "walk", reason: "cleartext-beside-tree" },
-          { home: "seal", file: "transitions.json", row: "transitions", reason: "cleartext-beside-tree" },
+          { home: "identity", file: `faces/${"ab".repeat(16)}/walk-h0-0123456789abcdef0123456789abcdef.json`, row: "walk", reason: "cleartext-beside-tree" },
         ]);
       }
     } finally { rmSync(root, { recursive: true, force: true }); }
@@ -158,25 +159,25 @@ describe("readCustodyShape — the custody shape refusal reads before any write"
       sow(homes, {
         "identity/.vessel-key.json": "{}",
         "identity/.vessel-kel.json": "{}",
-        "identity/vk-slots.bin": "slots",
-        "identity/custody-root.bin": sealedBytes("root"),
+        "identity/s-slots.bin": "slots",
+        "identity/gate-root.bin": sealedBytes("root"),
       });
       expect(readCustodyShape(homes, reading)).toEqual({ kind: "slotted" });
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 
-  test("CONTROL: a hearth-shaped slotted home, every secret sealed in every home, reads SLOTTED and stays byte-identical", () => {
+  test("CONTROL: a hearth-shaped slotted home keeps secrets sealed and transitions plain", () => {
     const { homes, root } = freshHomes();
     try {
       sow(homes, {
         "identity/.vessel-key.json": "{}",
-        "identity/vk-slots.bin": "slots",
-        "identity/custody-root.bin": sealedBytes("root"),
-        "identity/.persona-group-root-h0.json": sealedBytes("seed"),
-        "identity/.handle-book.json": sealedBytes("book"),
+        "identity/s-slots.bin": "slots",
+        "identity/gate-root.bin": sealedBytes("root"),
+        [`identity/faces/${"ab".repeat(16)}/.persona-group-root-h0.json`]: fckSealedBytes("seed"),
+        [`identity/faces/${"ab".repeat(16)}/.handle-book-h0.json`]: fckSealedBytes("book"),
         "vessel/hosting/0123456789abcdef0123456789abcdef/state.json": sealedBytes("state"),
         "nexus/founding-roster.mem": "charter",
-        "nexus/transitions.json": sealedBytes("[]"),
+        "nexus/transitions.json": "[]",
       });
       const before = treeHash(root);
       expect(readCustodyShape(homes, reading)).toEqual({ kind: "slotted" });

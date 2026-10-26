@@ -87,7 +87,7 @@ describe("the daemon persona surface — mint → list → wear over IndexedDB",
     const name = idb();
     await mintNext(name);   // h0 only
     await expect(wearBrowserPersona(name, 5)).rejects.toThrow(/cannot wear persona h5|no persona-root/);
-    expect(await loadBrowserActivePersona(name)).toBeUndefined();   // the refusal moved nothing
+    expect(await loadBrowserActivePersona(name)).toBe(0);   // the refusal moved nothing: the one root held is still the face worn
   });
 });
 

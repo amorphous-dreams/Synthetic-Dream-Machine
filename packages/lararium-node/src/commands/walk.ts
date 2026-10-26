@@ -21,6 +21,7 @@
 import { decodeInvite, takeInvite, popInvite } from "@lararium/mesh";
 import { nodeWalkStore, listWalkRecords, WalksElsewhere } from "../node-walk-store.js";
 import { mintWornNexusLeaf } from "../nexus-leaf.js";
+import { loadActivePersonaIndex } from "../node-vessel-identity.js";
 
 /** A refusal a walking door names, with nothing written. */
 export class WalkRefusal extends Error {}
@@ -65,7 +66,9 @@ export async function runWalkTake(opts: {
   if (dialGate && dialGate !== gate) {
     throw new WalkRefusal(`this vessel's dial stands to the hearth ${dialGate.slice(0, 16)}… — a vessel dials one hearth, and a walk elsewhere waits for one dial per hearth`);
   }
-  const here = await nodeWalkStore().read(gate);
+  const face = await loadActivePersonaIndex();
+  if (face === undefined) throw new WalkRefusal("this vessel wears no face — a walker walks as a person: unlock it on one (`lares vault unlock --face <N>`) first");
+  const here = await nodeWalkStore({ face }).read(gate);
   if (here && here.nexusAid.toLowerCase() !== invite.nexusAid.toLowerCase()) {
     throw new WalkRefusal("this vessel walks at that hearth in another Nexus — one walk record serves one hearth in one Nexus, and a second waits for one dial per hearth and Nexus");
   }
@@ -76,7 +79,7 @@ export async function runWalkTake(opts: {
   if (!leaf) throw new WalkRefusal("this vessel wears no face — a walker walks as a person: `lares persona wear <N>` first");
   // THE KEEP COMMITS ONE HEARTH. The list above reads before the keep, so two takes for two hearths could each
   // read no other hearth; the store checks again inside the custody hold that seals the row.
-  const taken = await takeInvite(nodeWalkStore({ oneHearth: true }), opts.carried).catch((err: unknown) => {
+  const taken = await takeInvite(nodeWalkStore({ face, oneHearth: true }), opts.carried).catch((err: unknown) => {
     if (err instanceof WalksElsewhere) throw new WalkRefusal("this vessel took an invite for another hearth meanwhile — a vessel walks at one hearth, and a second waits for one dial per hearth");
     throw err;
   });
@@ -89,7 +92,7 @@ export async function runWalkInvite(): Promise<{ readonly gatePubKey: string; re
   const walks = await listWalkRecords();
   const at = walks[0];
   if (!at) throw new WalkRefusal("this vessel walks nowhere — take an invite first (`lares walk take <lar-invite:…>`)");
-  const store = nodeWalkStore();
+  const store = nodeWalkStore({ face: at.face });
   const invite = await popInvite(store, at.gatePubKey, at.record.relay);
   if (!invite) throw new WalkRefusal("the wallet holds no invite — it fills at the next dial that stands on a grant this epoch");
   return { gatePubKey: at.gatePubKey, invite, left: (await store.read(at.gatePubKey))?.wallet?.length ?? 0 };

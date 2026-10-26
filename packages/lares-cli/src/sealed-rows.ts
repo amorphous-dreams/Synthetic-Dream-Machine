@@ -62,15 +62,27 @@ export async function wornFaceKey(): Promise<string | undefined> {
   return roster.active === null ? undefined : roster.roots.find((r) => r.handleIndex === roster.active)?.verifyingKey;
 }
 
-/** Load the recogniser's handle-book: the snapshot crosses the recogniser's own verification on the way in. */
-export async function loadHandleBook(): Promise<HandleBook> {
-  const { snapshot } = await sealedAct<{ snapshot: HandleBookSnapshot }>("handle-book.load");
+/**
+ * The handle index of the face this vessel wears, or a refusal by name: each face keeps its own recognition book in its own row,
+ * so a recognition reads and writes the worn face's book and a vessel wearing none recognises nobody.
+ */
+export async function wornFace(): Promise<number> {
+  const roster = await readPersonaRoots();
+  if (roster.active === null || !roster.roots.some((r) => r.handleIndex === roster.active)) {
+    throw new Error("recognition keeps its book in the worn face, and this vessel wears none it holds a root for: wear one (`lares persona wear <index>`)");
+  }
+  return roster.active;
+}
+
+/** Load the worn face's handle-book: the snapshot crosses the recogniser's own verification on the way in. */
+export async function loadHandleBook(face: number): Promise<HandleBook> {
+  const { snapshot } = await sealedAct<{ snapshot: HandleBookSnapshot }>("handle-book.load", { face });
   return HandleBook.restore(snapshot);
 }
 
-/** Seal the recogniser's handle-book as it stands. */
-export async function saveHandleBook(book: HandleBook): Promise<void> {
-  await sealedAct("handle-book.save", { snapshot: book.snapshot() });
+/** Seal the worn face's handle-book as it stands. */
+export async function saveHandleBook(face: number, book: HandleBook): Promise<void> {
+  await sealedAct("handle-book.save", { face, snapshot: book.snapshot() });
 }
 
 /**

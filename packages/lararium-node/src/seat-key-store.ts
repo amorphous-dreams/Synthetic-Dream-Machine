@@ -41,7 +41,7 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus · lar:///ha.ka.ba/lararium/mesh/custody#/the-table
  */
 import { createPrivateKey, createPublicKey, randomFillSync, sign } from "node:crypto";
-import { readdirSync } from "node:fs";
+import { faceFileNames } from "./face-index.js";
 import { bytesEqual, sha256HexBytesSync } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { openColdCustodyRow, openedCustody, removeColdCustodyRow, updateColdCustodyRow } from "./custody-seat.js";
@@ -99,7 +99,7 @@ function publicOf(secret: Uint8Array): string {
 /** Every seat key this vessel holds, by name. Reads the directory alone: it opens no row and answers at the floor. */
 export function listSeatKeys(): HeldSeatKey[] {
   let names: string[];
-  try { names = readdirSync(larIdentityDir()); } catch { return []; }
+  try { names = faceFileNames(larIdentityDir()); } catch { return []; }
   const out: HeldSeatKey[] = [];
   for (const file of names.sort()) {
     const m = SEAT_KEY_FILE.exec(file);

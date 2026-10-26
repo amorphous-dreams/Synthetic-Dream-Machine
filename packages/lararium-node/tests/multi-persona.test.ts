@@ -9,6 +9,7 @@
  * so N roots widen the self-surface, never a held-principal honeypot — and wearing a persona whose root the
  * vessel does not hold is refused (the custody wall in mask form). Recovery splits PER persona-root.
  */
+import { faceRowNames, handleRowPath } from "./face-paths.js";
 import { afterEach, beforeEach, describe, test, expect } from "vitest";
 import { mkdtempSync, rmSync, readdirSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -18,6 +19,7 @@ import { assembleQuorum, reconstructFromQuorum, decodeShareBytes, type RecoveryS
 import {
   generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed,
   loadActivePersonaIndex, wearPersona, personaRootExists, listPersonaRoots,
+  setWornFaceInSession,
 } from "../src/node-vessel-identity.js";
 import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, type IdentityAnchors } from "../src/identity-anchors.js";
 import { readWornPersonaMount } from "../src/worn-mount.js";
@@ -69,6 +71,7 @@ describe("multi-persona-per-vessel (#63)", () => {
   let seated: Awaited<ReturnType<typeof seatScratchCustody>>;
   const dataDir = () => root;   // identityDir ignores it — the store resolves under XDG state
   beforeEach(async () => {
+    setWornFaceInSession(undefined);
     root = mkdtempSync(join(tmpdir(), "lares-multipersona-"));
     setEnv("LAR_ROOT", undefined);
     setEnv("XDG_STATE_HOME", join(root, "state"));
@@ -81,21 +84,21 @@ describe("multi-persona-per-vessel (#63)", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  test("UNIFORM keying — the founding persona spells `-h0`, its mint records the explicit roster, selector unset reads undefined", async () => {
+  test("UNIFORM keying — the founding persona spells `-h0`, its mint records the explicit roster, session infers the sole unlocked face", async () => {
     const founding = await generateOrLoadPersonaGroupRoot();   // default index 0
     expect(founding.created).toBe(true);
 
     const idDir = larIdentityDir();
-    const rootFiles = readdirSync(idDir).filter((f) => /^\.persona-group-root/.test(f));
+    const rootFiles = faceRowNames().filter((f) => /^\.persona-group-root/.test(f));
     expect(rootFiles.length, "exactly one root file at founding").toBe(1);
     expect(rootFiles[0], "uniform keying — the founding persona carries the -h0 suffix").toMatch(/-h0\.json$/);
 
     // The roster is the store's OWN explicit written record (no dir-scan), and the mint recorded index 0.
     expect(await listPersonaRoots()).toEqual([0]);
 
-    // No selector has landed, so the vessel wears NONE yet — undefined, never a silently-inferred founding.
+    // No selector row lands; the sole unlocked face is worn by session inference.
     expect(existsSync(join(idDir, ".active-persona.json")) || readdirSync(idDir).some((f) => f.startsWith(".active-persona"))).toBe(false);
-    expect(await loadActivePersonaIndex()).toBeUndefined();
+    expect(await loadActivePersonaIndex()).toBe(0);
   });
 
   test("a vessel HOLDS two distinct persona-roots (multitude-of-one), each its own sovereign key", async () => {
@@ -169,7 +172,7 @@ describe("multi-persona-per-vessel (#63)", () => {
 
     expect(await loadIdentityAnchors()).toEqual(a0);       // the founding-persona read round-trips
     expect(await loadIdentityAnchors(1)).toEqual(a1);
-    expect(existsSync(join(larIdentityDir(), "anchors-h0.json"))).toBe(true);   // uniform founding spelling
+    expect(existsSync(handleRowPath("anchors-h0.json"))).toBe(true);   // uniform founding spelling
     expect(await listAnchoredPersonas()).toEqual([0, 1]);   // the explicit roster record
   });
 

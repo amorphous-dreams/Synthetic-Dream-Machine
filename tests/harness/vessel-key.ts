@@ -29,6 +29,7 @@ export function mintStagedNexusKey(root: string, handleIndex = 0): Promise<{ rea
     `const holder = makeCustodyHolder({ io: new FsCustodyIo(homes), homes });\n` +
     `const opened = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);\n` +
     `if (opened.reading !== "opens") throw new Error("the staged custody reads " + opened.reading + " under the test route");\n` +
+    `await holder.unlockFaces([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);\n` +
     `seatCustody(holder);\n` +
     `const nexus = primaryNexusAid(larSealHome());\n` +
     `if (!nexus) throw new Error("no primary charter stands under this root");\n` +

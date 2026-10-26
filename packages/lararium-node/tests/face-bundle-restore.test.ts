@@ -51,6 +51,7 @@ import { removeCustodyRow, seatedCustody, unseatCustody, writeCustodyRow } from 
 import { cutFaceBundle } from "../src/face-bundle-cut.js";
 import { RESTORE_REFUSALS, RestoreRefused, restoreFaceBundle } from "../src/face-bundle-restore.js";
 import { FACE_PROOF_KEY_FILE, storeFaceProofKey } from "../src/face-key-custody.js";
+import { faceRowNames } from "./face-paths.js";
 import { guardianOffer, guardianSetFile, readGuardianSet, runGuardianEnrolment } from "../src/guardian-enrolment.js";
 import { ConfirmRefused, FaceProvisional, chairLogView, confirmProvisional, readProvisionalMark, refuseWhileProvisional } from "../src/face-provisional.js";
 import { readNexusDoc } from "../src/nexus-doc.js";
@@ -67,8 +68,11 @@ import { readLocalPersonaKelChain, readLocalPersonaKelEvents, seatLocalPersonaKe
 import { RESTORE_PENDING_FILE } from "../src/vault-carriers.js";
 import { larDataDir, larIdentityDir, larSealHome } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
-import { foundDirect, seatSeedCharter } from "./found-route.js";
-import { seatScratchCustody } from "./custody-seat-fixture.js";
+import { foundDirect, seatSeedCharter, TEST_PASSPHRASE } from "./found-route.js";
+import { FsCustodyIo } from "../src/custody-io.js";
+import { unlockCustody } from "../src/custody-session.js";
+import { openFaceTree } from "../src/face-custody.js";
+import { FIXTURE_PASSPHRASE, seatScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 600_000, hookTimeout: 600_000 });
 
@@ -118,6 +122,8 @@ async function cardOf(fill: number, glamour: string): Promise<HandleCard> {
 interface Cut {
   readonly sealedBody: Uint8Array; readonly bundleKey: Uint8Array; readonly body: FaceBundleBody;
   readonly rootKey: string; readonly prefix: string; readonly group: string; readonly atomKey: string; readonly vesselKey: string;
+  /** The custody keys of A as A held them, read before A was destroyed: the face's FCK and the node key (S). */
+  readonly heldKeys: { readonly fck: Uint8Array; readonly nodeKey: Uint8Array; readonly fcid: string };
   /** Where the face enrolled guardians before the cut: the bundle cut BEFORE that enrolment, each guardian's own half, and A's board after it. */
   readonly enrolled?: {
     readonly early: { readonly sealedBody: Uint8Array; readonly bundleKey: Uint8Array; readonly body: FaceBundleBody };
@@ -125,6 +131,18 @@ interface Cut {
     readonly kel: readonly PersonaKelEvent[];
   };
 }
+/** The face's FCK and the node key as the standing vessel's trees open them under the test route: what a bundle must never carry. */
+async function readHeldKeys(): Promise<{ fck: Uint8Array; nodeKey: Uint8Array; fcid: string }> {
+  const homes = { identity: larIdentityDir(), storage: larDataDir(), seal: larSealHome() };
+  const io = new FsCustodyIo(homes);
+  const creds = [{ kind: "passphrase" as const, passphrase: TEST_PASSPHRASE }, { kind: "passphrase" as const, passphrase: FIXTURE_PASSPHRASE }];
+  const standing = (await seatedCustody()!.faceStanding({ ordinal: 0 }))!;
+  const face = await openFaceTree({ io, homes, fcid: standing.fcid, credentials: creds });
+  const node = await unlockCustody({ io, homes, credentials: creds });
+  if (face.reading !== "opens" || node.reading !== "opens") throw new Error(`the fixture's trees do not open under the test routes: face ${face.reading}, node ${node.reading}`);
+  return { fck: Uint8Array.from(face.fck), nodeKey: Uint8Array.from(node.treeKey), fcid: standing.fcid };
+}
+
 /** Cut face 0's bundle on the standing vessel under a fresh key, with an empty memory section. */
 async function cutHere(): Promise<{ sealedBody: Uint8Array; bundleKey: Uint8Array; body: FaceBundleBody }> {
   const bundleKey = mintBundleKey();
@@ -155,7 +173,7 @@ async function cutOnDestroyedVessel(label: string, faceLabel = "the gardener", p
   const friend = await cardOf(11, "a-friend");
   await book.ingest(friend, undefined, rootKey);
   book.setPetname(friend.nym, "Ana", rootKey);
-  await saveNodeHandleBook(book);
+  await saveNodeHandleBook(0, book);
   const anchors = (await loadIdentityAnchors(0))!;
   let enrolled: Cut["enrolled"];
   if (guardians > 0) {
@@ -168,8 +186,9 @@ async function cutOnDestroyedVessel(label: string, faceLabel = "the gardener", p
     };
   }
   const cut = await cutHere();
+  const heldKeys = await readHeldKeys();
   const out: Cut = {
-    ...cut, rootKey, prefix: anchors.personaKelPrefix!, group: anchors.personaGroupId,
+    ...cut, heldKeys, rootKey, prefix: anchors.personaKelPrefix!, group: anchors.personaGroupId,
     atomKey: faceAtomKeyFromSeed((await loadFaceAtomOfGroup(anchors.personaGroupId))!, anchors.personaGroupId).key,
     vesselKey: await loadVesselVerifyingKey(), ...(enrolled ? { enrolled } : {}),
   };
@@ -205,7 +224,7 @@ function homeTree(): string {
   walk(larDataDir());
   return h.digest("hex");
 }
-const pendingStands = (): boolean => existsSync(join(larIdentityDir(), RESTORE_PENDING_FILE));
+const pendingStands = (): boolean => faceRowNames().some((n) => RESTORE_PENDING_FILE.test(n));
 
 describe("a face returns from its bundle onto a fresh vessel", () => {
   test("R1 + R2 — the restored face stands under the same prefix at a NEW seat; a second restore refuses", async () => {
@@ -246,9 +265,9 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     // THE CARRIED ROWS LANDED: the names, the record under the face's own tag, the proof key. The seat claim and the chair label stayed behind.
     expect(await (await makeNodePersonaPetnameStore()).get(1)).toBe("the gardener");
     expect(await (await makeNodePersonaDeclarationStore()).get(1)).toEqual({ handle: "the gardener-handle" });
-    const friend = (await loadNodeHandleBook()).snapshotFor(a.rootKey).records;
+    const friend = (await loadNodeHandleBook(1)).snapshotFor(a.rootKey).records;
     expect(friend.map((r) => r.petname)).toEqual(["Ana"]);
-    expect(readdirSync(larIdentityDir()).filter((n) => FACE_PROOF_KEY_FILE.test(n))).toHaveLength(1);
+    expect(faceRowNames().filter((n) => FACE_PROOF_KEY_FILE.test(n))).toHaveLength(1);
     expect(pendingStands(), "the pending row leaves once the face stands lit").toBe(false);
 
     // R2: a second restore over it refuses, and moves nothing.
@@ -257,6 +276,40 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toBe("face-already-held");
     expect(homeTree()).toBe(before);
     expect(pendingStands()).toBe(false);
+  });
+
+  test("R12 — a bundle carries no bare face key and no node key, in any form; the scan proves itself on a planted key first", async () => {
+    const a = await cutOnDestroyedVessel("a");
+    const forms = (k: Uint8Array): string[] => [Buffer.from(k).toString("hex"), Buffer.from(k).toString("base64")];
+    const bodyText = JSON.stringify(a.body);
+    const rawBytes = Buffer.from(a.sealedBody).toString("latin1");
+    const carries = (k: Uint8Array): boolean => forms(k).some((f) => bodyText.includes(f)) || rawBytes.includes(Buffer.from(k).toString("latin1"));
+    // KNOWN POSITIVE: the same scan over a body that carries the key finds it.
+    const planted = JSON.stringify({ ...a.body, planted: Buffer.from(a.heldKeys.fck).toString("hex") });
+    expect(forms(a.heldKeys.fck).some((f) => planted.includes(f))).toBe(true);
+    expect(carries(a.heldKeys.fck)).toBe(false);
+    expect(carries(a.heldKeys.nodeKey)).toBe(false);
+    expect(bodyText).not.toContain(a.heldKeys.fcid);
+  });
+
+  test("R13 — a restore opens no sibling: with the sibling face LOCKED the face still returns, and the sibling's ciphertext stays byte-identical", async () => {
+    const a = await cutOnDestroyedVessel("a");
+    await foundVessel("b");
+    const holder = seatedCustody()!;
+    const sibling = (await holder.faceStanding({ ordinal: 0 }))!;
+    const siblingBytes = (): string => {
+      const h = createHash("sha256");
+      const dir = join(larIdentityDir(), "faces", sibling.fcid);
+      for (const name of readdirSync(dir).sort()) h.update(name).update(readFileSync(join(dir, name)));
+      return h.digest("hex");
+    };
+    const before = siblingBytes();
+    await holder.lockFace(sibling.fcid);                                     // the sibling rests shut for the whole restore
+    expect(holder.unlockedFaces()).toEqual([]);
+    const restored = await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo });
+    expect(restored.face).toEqual({ handleIndex: 1, verifyingKey: a.rootKey });
+    expect(holder.unlockedFaces().includes(sibling.fcid)).toBe(false);       // the restore opened nothing of the sibling
+    expect(siblingBytes()).toBe(before);                                     // and moved nothing of it
   });
 
   test("R3 + R4 — an altered body, another key, and a body whose own parts disagree each refuse by name before any write", async () => {
@@ -295,6 +348,19 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect(pendingStands()).toBe(false);
     // CONTROL: the unbent body, sealed the same way, lands.
     expect(await refusalOf(restoreFaceBundle({ ...sealed(a.body), as: 1, withRepo }))).toBe("LANDED");
+  });
+
+  test("R14 — an old mixed archive (one body that carries a second face's section) refuses before any write; the single-face body lands", async () => {
+    const a = await cutOnDestroyedVessel("a");
+    const other = await cutOnDestroyedVessel("other", "the potter", 5);
+    await foundVessel("b");
+    const before = homeTree();
+    const mixed = { ...a.body, siblings: [other.body], petnames: [...(a.body as unknown as { petnames?: unknown[] }).petnames ?? [], other.rootKey] } as unknown as FaceBundleBody;
+    const reason = await refusalOf(restoreFaceBundle({ ...sealed(mixed), withRepo }));
+    expect(["bundle-refused", "bundle-inconsistent"]).toContain(reason);
+    expect(homeTree()).toBe(before);
+    expect(pendingStands()).toBe(false);
+    expect(await refusalOf(restoreFaceBundle({ ...sealed(a.body), as: 1, withRepo }))).toBe("LANDED");   // CONTROL
   });
 
   test("R5 — a root the face's key history superseded refuses `root-superseded`: in the carried log, and on this vessel's own board", async () => {
@@ -400,7 +466,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
 
     // AN ORPHAN ROOT under another key: a root row with no roster line (an act that stopped between its two writes).
     await foundVessel("orphan", "charter");
-    expect(await removeCustodyRow("identity", readdirSync(larIdentityDir()).find((n) => /persona-roster/.test(n))!)).toBe(true);
+    expect(await removeCustodyRow("identity", ".persona-roster-h0.json")).toBe(true);
     expect(await listPersonaRosterLines()).toEqual([]);
     before = homeTree();
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo }))).toBe("orphan-names-another-key");
@@ -409,7 +475,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     // A NAMES ROW THAT STANDS AND DOES NOT READ WHOLE refuses by its own name before the commit row: the landing
     // meets no row the preflight has not already read.
     await foundVessel("torn");
-    await seatedCustody()!.writeRow("identity", readdirSync(larIdentityDir()).find((n) => /persona-petnames/.test(n)) ?? ".persona-petnames.json", new TextEncoder().encode("{ this row reads as no map"));
+    await seatedCustody()!.writeRow("identity", ".persona-petnames-h1.json", new TextEncoder().encode("{ this row reads as no map"));
     before = homeTree();
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toMatch(/^threw: custody row identity\/\.persona-petnames.*reads malformed/);
     expect(homeTree()).toBe(before);

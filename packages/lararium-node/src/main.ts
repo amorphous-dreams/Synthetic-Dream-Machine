@@ -67,7 +67,7 @@ import { FsCustodyIo } from "./custody-io.js";
 import { custodyTreeStands } from "./custody-session.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
-import { loadVesselIdentity, vesselFloorKeyDoor } from "./node-vessel-identity.js";
+import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands } from "./node-vessel-identity.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
 import { larDataDir }                   from "./vessel-paths.js";
@@ -434,7 +434,7 @@ async function main(): Promise<void> {
     const prior = composition;
     composition = null;
     await prior?.teardown();
-    const out = await composeOrFloor(sovereign ? seatedSovereignReaders() : null);
+    const out = await composeOrFloor(sovereign && sovereignStands() ? seatedSovereignReaders() : null);
     composition = out.stood;
     if (signalHeld !== null) composition.onSignal(signalHeld);
     return { standing: out.stood.standing, ...(out.refused !== undefined ? { refused: out.refused } : {}) };

@@ -7,7 +7,7 @@
  * the joint genesis the pure act sealed. No doc gets written by hand.
  */
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
@@ -74,6 +74,8 @@ describe("the node's charter doors meet a joint genesis", () => {
     expect(parseNexusDoc(body)?.sealLineage?.[0]?.inception).toEqual(genesis.inception);
     expect(foundingRoster(parseNexusDoc(body)).keys).toHaveLength(2);
     expect(importCarriedCharter(sealHome(), body).aid).toBe(genesis.epochCid);
+    // Import files the public charter; only the founding custody act owns face-local cofound and cadence rows.
+    expect(existsSync(join(root, "state", "identity", "faces"))).toBe(false);
   });
 
   test("COFOUND_REQUIRES_TWO_INCEPTION_SIGNATURES: an unsigned or half-signed joint charter raises no roster and lands nowhere", async () => {

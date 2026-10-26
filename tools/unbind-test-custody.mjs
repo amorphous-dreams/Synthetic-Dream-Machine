@@ -54,7 +54,7 @@ export async function bindTestCustody(root) {
   const { node, homes, io, unlock } = await opened(root);
   if (unlock.reading !== "opens") return { ok: false, reason: unlock.reading };
   try {
-    const out = await node.bindCustodySlot({ io, homes, vk: unlock.vk, spec: slotOf(TEST_PASSPHRASE_SECOND) });
+    const out = await node.bindCustodySlot({ io, homes, treeKey: unlock.treeKey, spec: slotOf(TEST_PASSPHRASE_SECOND) });
     return { ok: true, slotId: out.slotId, slots: out.tree.slots.length };
   } catch (e) { return refused(e); }
 }
@@ -64,7 +64,7 @@ export async function unbindTestCustody(root, { slotId, rotate = false }) {
   const { node, homes, io, unlock } = await opened(root);
   if (unlock.reading !== "opens") return { ok: false, reason: unlock.reading };
   try {
-    const out = await node.unbindCustodySlot({ io, homes, vk: unlock.vk, slotId, ...(rotate ? { rotate: [slotOf(TEST_PASSPHRASE)] } : {}) });
+    const out = await node.unbindCustodySlot({ io, homes, treeKey: unlock.treeKey, slotId, ...(rotate ? { rotate: [slotOf(TEST_PASSPHRASE)] } : {}) });
     return { ok: true, rotated: out.rotated, slots: out.tree.slots.map((s) => s.id) };
   } catch (e) { return refused(e); }
 }

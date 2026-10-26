@@ -54,6 +54,20 @@ async function askRoute(question: string, allowBoth: boolean): Promise<readonly 
   throw new Error("no route chosen after three tries");
 }
 
+/**
+ * A yes or no with NO default: a blank line asks again, and three misses refuse. The answer is the operator's each time it is
+ * asked; nothing here remembers one.
+ */
+export async function askYesNo(question: string): Promise<boolean> {
+  for (let i = 0; i < 3; i++) {
+    const a = (await promptLine(`${question} [y/n]: `)).trim().toLowerCase();
+    if (a === "y" || a === "yes") return true;
+    if (a === "n" || a === "no") return false;
+    say("  (answer y or n; there is no default)");
+  }
+  throw new Error("no answer after three tries; nothing was founded");
+}
+
 /** Read the sheets of a paper pin, one line each, hidden; a blank line ends the list. */
 async function readSheets(label: string): Promise<string[]> {
   const sheets: string[] = [];
@@ -72,7 +86,7 @@ async function readCredential(route: Route): Promise<Credential> {
 }
 
 /**
- * The credentials that open the VK. One credential per pass; a slot of several pins asks for more. Refuses with no TTY.
+ * The credentials that open the S key. One credential per pass; a slot of several pins asks for more. Refuses with no TTY.
  * Nothing read here is stored beyond the returned array, which the caller hands to `unlockCustody` and drops.
  */
 export async function gatherCredentials(verb: string, opts: { readonly route?: Route } = {}): Promise<Credential[]> {
@@ -137,7 +151,7 @@ export async function gatherNewSlot(verb: string, route: Route): Promise<SlotSpe
 }
 
 /**
- * The founding route: one slot per chosen route, each opening the VK on its own. Refuses by name with no TTY and names
+ * The founding route: one slot per chosen route, each opening the S key on its own. Refuses by name with no TTY and names
  * the container recipe.
  */
 export async function gatherFoundingRoute(): Promise<SlotSpec[]> {
@@ -166,7 +180,7 @@ export async function gatherBundleRoute(verb: string): Promise<SlotSpec[]> {
 }
 
 /**
- * For `vault unbind --rotate`: the spec of a slot that STAYS, re-read from the human so the new VK can re-bind it.
+ * For `vault unbind --rotate`: the spec of a slot that STAYS, re-read from the human so the new S key can re-bind it.
  * A passphrase pin re-reads the passphrase; a paper pin re-reads its sheets (`confirmHeldPaper`). The caller proves
  * each spec opens its slot BEFORE any byte moves, so a typo never rotates a vessel into a lockout.
  */

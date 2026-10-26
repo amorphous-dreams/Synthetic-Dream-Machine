@@ -78,4 +78,15 @@ describe("a faced boot proves its face", () => {
     expect(node).toContain("provenPlanes.set(plane.personaGroupId, plane.url)");
     expect(node).toContain("provenPlanes.set(personaGroupId, bootstrap.personaUrl)");
   });
+
+  test("RED: the verified lease raises the anchor BEFORE the daemon snapshots it, so its live join and grant reads floor under the raised epoch (read 6, row 2); CONTROL: the snapshot still carries the standing anchor", () => {
+    const node = read("lararium-node/src/open-node-vessel.ts");
+    const raise = node.indexOf("raiseAnchorFromSlots(standingAnchor!, slots, personaKelChain)");
+    const snapshot = node.indexOf("const daemonAuth = {");
+    const daemon = node.indexOf("daemonVm = await openDaemonVm({");
+    expect(raise).toBeGreaterThan(0);
+    expect(raise, "the raise precedes the snapshot").toBeLessThan(snapshot);
+    expect(snapshot).toBeLessThan(daemon);
+    expect(node).toContain("...(faceLit && standingAnchor ? { faceAnchor: standingAnchor } : {}),");
+  });
 });

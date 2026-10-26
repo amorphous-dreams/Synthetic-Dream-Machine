@@ -2,8 +2,8 @@
  * custody-root.test — the custody root is a hot carrier minted at founding, its children derive only under a
  * registered domain, and the weld vectors pin what a later input move may change and what it may not.
  *
- * Two roots stand apart: the FLOOR key (the vessel key, outside the VK) signs and derives every floor act;
- * the CUSTODY root (sealed under the VK) derives what only an unlocked vessel uses. The weld pins both
+ * Two roots stand apart: the FLOOR key (the vessel key, outside the S key) signs and derives every floor act;
+ * the CUSTODY root (sealed under the S key) derives what only an unlocked vessel uses. The weld pins both
  * sides with fixed inputs, so a move of the veil's INPUT from the floor key to the custody root changes no
  * derivation byte, and no floor derivation moves at all.
  */
@@ -13,14 +13,14 @@ import { basename, join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
   ALL_DOMAINS, DEVICE_DELEGATION_DOMAIN, faceAtomKeyFromSeed, mintFaceAtomSeed, groupSecretOpenerFromSeed,
-  bindSlot, commitSlotTree, mintVk, writeSealedCarrier, type VesselKey,
+  bindSlot, commitSlotTree, mintTreeKey, writeSealedCarrier, type TreeKey,
 } from "@lararium/mesh";
 import {
   CUSTODY_ROOT_BYTES, CustodyRootRefused, custodyDerive, custodyRootCarrier, custodyRootFromBytes, custodyRootPath,
   isCustodyRoot, mintCustodyRoot, openCustodyRootCarrier, sealCustodyRoot, type CustodyRoot,
 } from "../src/custody-root.js";
 import { resolveRelayGateSeed } from "../src/carriage-relay.js";
-import { carrierTable, vkSealedCarriers, vkSlotsPath } from "../src/vault-carriers.js";
+import { carrierTable, sSealedCarriers, sSlotsPath } from "../src/vault-carriers.js";
 import { ScratchCustodyIo, scratchHomes } from "./custody-io-fixture.js";
 
 const hex = (b: Uint8Array): string => Buffer.from(b).toString("hex");
@@ -28,22 +28,22 @@ const hex = (b: Uint8Array): string => Buffer.from(b).toString("hex");
 const FIXED_ROOT  = Uint8Array.from({ length: 32 }, (_, i) => i);
 const FIXED_FLOOR = Uint8Array.from({ length: 32 }, (_, i) => 32 + i);
 
-/** A founded scratch vessel: a slot tree over a fresh VK, committed at the identity home's tree path. */
-async function founded(): Promise<{ io: ScratchCustodyIo; vk: VesselKey; identity: string; treePath: string; drop: () => void }> {
+/** A founded scratch vessel: a slot tree over a fresh S key, committed at the identity home's tree path. */
+async function founded(): Promise<{ io: ScratchCustodyIo; treeKey: TreeKey; identity: string; treePath: string; drop: () => void }> {
   const { homes, drop } = scratchHomes();
   const io = new ScratchCustodyIo(homes);
-  const vk = mintVk();
-  const treePath = vkSlotsPath(homes.identity);
-  await commitSlotTree({ io, path: treePath, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [{ kind: "passphrase", passphrase: "fixture" }] }), carriers: vkSealedCarriers(homes) });
-  return { io, vk, identity: homes.identity, treePath, drop };
+  const treeKey = mintTreeKey();
+  const treePath = sSlotsPath(homes.identity);
+  await commitSlotTree({ io, path: treePath, expected: null, treeKey, tree: bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "fixture" }] }), carriers: sSealedCarriers(homes) });
+  return { io, treeKey, identity: homes.identity, treePath, drop };
 }
 
 /** The custody root a sealed custody carrier holding `bytes` opens to — the only road from fixed bytes to a root. */
 async function rootHolding(bytes: Uint8Array): Promise<CustodyRoot> {
   const v = await founded();
   try {
-    await writeSealedCarrier({ io: v.io, vk: v.vk, treePath: v.treePath, carrier: custodyRootCarrier(v.identity), plaintext: bytes });
-    const o = await openCustodyRootCarrier({ io: v.io, vk: v.vk, identityDir: v.identity });
+    await writeSealedCarrier({ io: v.io, treeKey: v.treeKey, treePath: v.treePath, carrier: custodyRootCarrier(v.identity), plaintext: bytes });
+    const o = await openCustodyRootCarrier({ io: v.io, treeKey: v.treeKey, identityDir: v.identity });
     if (o.reading !== "opens") throw new Error(`the custody carrier reads ${o.reading}`);
     return custodyRootFromBytes(o.opened);
   } finally { v.drop(); }
@@ -62,8 +62,8 @@ describe("the custody root — a branded 32-byte carrier", { timeout: 30_000 }, 
     const v = await founded();
     try {
       const minted = mintCustodyRoot();
-      await sealCustodyRoot({ io: v.io, vk: v.vk, treePath: v.treePath, root: minted, identityDir: v.identity });
-      const o = await openCustodyRootCarrier({ io: v.io, vk: v.vk, identityDir: v.identity });
+      await sealCustodyRoot({ io: v.io, treeKey: v.treeKey, treePath: v.treePath, root: minted, identityDir: v.identity });
+      const o = await openCustodyRootCarrier({ io: v.io, treeKey: v.treeKey, identityDir: v.identity });
       expect(o.reading).toBe("opens");
       const back = custodyRootFromBytes((o as { opened: never }).opened);
       expect(isCustodyRoot(back)).toBe(true);
@@ -80,20 +80,20 @@ describe("the custody root — a branded 32-byte carrier", { timeout: 30_000 }, 
     }
   });
 
-  test("RED (M4) — a VK that did not seal the carrier opens no root, and a carrier of the wrong width brands nothing", async () => {
+  test("RED (M4) — an S key that did not seal the carrier opens no root, and a carrier of the wrong width brands nothing", async () => {
     const v = await founded();
     try {
-      await sealCustodyRoot({ io: v.io, vk: v.vk, treePath: v.treePath, root: mintCustodyRoot(), identityDir: v.identity });
-      expect((await openCustodyRootCarrier({ io: v.io, vk: mintVk(), identityDir: v.identity })).reading).toBe("key-fails");
-      await writeSealedCarrier({ io: v.io, vk: v.vk, treePath: v.treePath, carrier: custodyRootCarrier(v.identity), plaintext: new Uint8Array(31) });
-      await expect(openCustodyRootCarrier({ io: v.io, vk: v.vk, identityDir: v.identity })).rejects.toThrow(CustodyRootRefused);
+      await sealCustodyRoot({ io: v.io, treeKey: v.treeKey, treePath: v.treePath, root: mintCustodyRoot(), identityDir: v.identity });
+      expect((await openCustodyRootCarrier({ io: v.io, treeKey: mintTreeKey(), identityDir: v.identity })).reading).toBe("key-fails");
+      await writeSealedCarrier({ io: v.io, treeKey: v.treeKey, treePath: v.treePath, carrier: custodyRootCarrier(v.identity), plaintext: new Uint8Array(31) });
+      await expect(openCustodyRootCarrier({ io: v.io, treeKey: v.treeKey, identityDir: v.identity })).rejects.toThrow(CustodyRootRefused);
     } finally { v.drop(); }
   });
 
   test("RED (M4) — the seal door takes only a root a custody door handed out: the floor key never reaches the carrier", async () => {
     const v = await founded();
     try {
-      await expect(sealCustodyRoot({ io: v.io, vk: v.vk, treePath: v.treePath, root: { bytes: FIXED_FLOOR } as never, identityDir: v.identity }))
+      await expect(sealCustodyRoot({ io: v.io, treeKey: v.treeKey, treePath: v.treePath, root: { bytes: FIXED_FLOOR } as never, identityDir: v.identity }))
         .rejects.toThrow(CustodyRootRefused);
       expect(await v.io.read(custodyRootCarrier(v.identity).path)).toBeNull();
     } finally { v.drop(); }
@@ -102,8 +102,8 @@ describe("the custody root — a branded 32-byte carrier", { timeout: 30_000 }, 
   test("each root holds its own copy: zeroing one root's bytes moves no other root branded from the same opening", async () => {
     const v = await founded();
     try {
-      await writeSealedCarrier({ io: v.io, vk: v.vk, treePath: v.treePath, carrier: custodyRootCarrier(v.identity), plaintext: FIXED_ROOT });
-      const o = await openCustodyRootCarrier({ io: v.io, vk: v.vk, identityDir: v.identity });
+      await writeSealedCarrier({ io: v.io, treeKey: v.treeKey, treePath: v.treePath, carrier: custodyRootCarrier(v.identity), plaintext: FIXED_ROOT });
+      const o = await openCustodyRootCarrier({ io: v.io, treeKey: v.treeKey, identityDir: v.identity });
       if (o.reading !== "opens") throw new Error(o.reading);
       const first = custodyRootFromBytes(o.opened);
       const second = custodyRootFromBytes(o.opened);
@@ -114,11 +114,11 @@ describe("the custody root — a branded 32-byte carrier", { timeout: 30_000 }, 
   });
 
   test("the carrier names itself by its home and file: the AAD binds where the bytes rest", () => {
-    expect(custodyRootCarrier("/scratch/identity")).toEqual({ name: "identity/custody-root.bin", path: join("/scratch/identity", "custody-root.bin"), keyClass: "device-minted" });
+    expect(custodyRootCarrier("/scratch/identity")).toEqual({ name: "identity/gate-root.bin", path: join("/scratch/identity", "gate-root.bin"), keyClass: "device-minted" });
   });
 
   test("the table's custody-root row spells the carrier through the writer's own path function, hot", () => {
-    const row = carrierTable().find((r) => r.row === "custody-root")!;
+    const row = carrierTable().find((r) => r.row === "gate-root")!;
     expect(row.custody).toBe("hot");
     expect(row.match.test(basename(custodyRootPath()))).toBe(true);
   });

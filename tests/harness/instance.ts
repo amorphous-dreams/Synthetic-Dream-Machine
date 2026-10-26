@@ -769,7 +769,7 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
         const files = { offer: join(rootB, "fleet-offer.json"), request: join(rootB, "fleet-request.json"), answer: join(rootB, "fleet-answer.json") };
         const place = await cliB(["vessel", "found", "--skip-build"]);
         if (place.code !== 0) throw new Error(`B: vessel found (a place) failed (${place.code})\n${place.stderr.slice(-2500)}`);
-        const offer = await cliA(["fleet", "join", "offer", "--out", files.offer]);
+        const offer = await cliA(["fleet", "join", "offer", "--face", "0", "--out", files.offer]);
         if (offer.code !== 0) throw new Error(`A: fleet join offer failed (${offer.code})\n${offer.stderr.slice(-2500)}`);
         const request = await cliB(["fleet", "join", "request", files.offer, "--out", files.request]);
         if (request.code !== 0) throw new Error(`B: fleet join request failed (${request.code})\n${request.stderr.slice(-2500)}`);
@@ -787,7 +787,7 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
     const requestedDoc = (opts.dial ?? "pin+doc") === "pin+doc"
       ? (typeof opts.joinDocUrl === "function" ? await opts.joinDocUrl() : opts.joinDocUrl ?? laresA)
       : null;
-    const answer = await A.cli(["fleet", "join", "answer", files.request, "--sync-url", `ws://127.0.0.1:${portA}/ws`,
+    const answer = await A.cli(["fleet", "join", "answer", files.request, "--face", "0", "--sync-url", `ws://127.0.0.1:${portA}/ws`,
       ...(requestedDoc ? ["--doc-url", requestedDoc] : []), "--out", files.answer]);
     if (answer.code !== 0) throw new Error(`A: fleet join answer failed (${answer.code})\n${answer.stderr.slice(-2500)}`);
     await opts.beforeLand?.(cliB, files);

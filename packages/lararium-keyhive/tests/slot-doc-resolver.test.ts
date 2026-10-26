@@ -23,8 +23,8 @@ import { makeSlotDocResolver, type SlotDocResolver } from "../src/slot-doc-resol
 import { makeFaceBagDoor } from "../src/face-bag-door.js";
 
 const noopStore = { put: async () => {}, list: async () => [] };
-const VK = "ab".repeat(32);
-const DID = didFromVerifyingKey(VK);
+const VERIFYING_KEY = "ab".repeat(32);
+const DID = didFromVerifyingKey(VERIFYING_KEY);
 
 async function rig(opts: { seated: boolean }): Promise<{ resolver: SlotDocResolver; repo: Repo; catalogUrl: string; daemon: CompositeStore; kh: KeyhiveProvider; wikiUrl: string }> {
   const kh = new KeyhiveProvider();

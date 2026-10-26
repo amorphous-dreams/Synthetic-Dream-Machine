@@ -35,7 +35,7 @@ import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
 import * as ed from "@noble/ed25519";
 import {
-  DAEMON_BAG_ID, faceAtomKeyFromSeed, didFromVerifyingKey, hex, personaScopedBagIds, readVkCarrier, vesselDyads, type LarDoc,
+  DAEMON_BAG_ID, faceAtomKeyFromSeed, didFromVerifyingKey, hex, personaScopedBagIds, readSCarrier, readFckCarrier, vesselDyads, type LarDoc,
 } from "@lararium/mesh";
 import { runFoundTheFace } from "../src/commands/init.js";
 import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
@@ -46,8 +46,10 @@ import {
 } from "../src/identity-anchors.js";
 import { loadVesselSigningSeed } from "../src/node-vessel-identity.js";
 import { ownedStore } from "../src/owned-store.js";
+import { faceDir, listFaceFiles, readFaceIndexSync } from "../src/face-index.js";
 import { larBootstrapPath, larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
+import { faceRowNames, handleRowPath } from "./face-paths.js";
 import { foundDirect, seatSeedCharter, TEST_PASSPHRASE } from "./found-route.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
@@ -61,7 +63,11 @@ let archiveAbsentBefore = false;
 const sealedFiles = (): Record<string, Buffer> => {
   const out: Record<string, Buffer> = {};
   for (const f of readdirSync(larIdentityDir())) {
-    if (/^(anchors-h\d+\.json|anchor-roster\.json|keyhive-archive\.bin|veil-archive-g[0-9a-f]{64}\.bin)$/.test(f)) out[f] = readFileSync(join(larIdentityDir(), f));
+    if (/^(anchor-roster\.json|place-archive\.bin)$/.test(f)) out[f] = readFileSync(join(larIdentityDir(), f));
+  }
+  for (const f of faceRowNames().filter((name) => /^anchors-h\d+\.json$/.test(name))) out[f] = readFileSync(handleRowPath(f));
+  for (const [fcid, f] of listFaceFiles(larIdentityDir(), readFaceIndexSync(larIdentityDir()))) {
+    if (/^veil-archive-g[0-9a-f]{64}\.bin$/.test(f)) out[f] = readFileSync(join(faceDir(larIdentityDir(), fcid), f));
   }
   return out;
 };
@@ -93,7 +99,7 @@ afterAll(async () => {
 describe("a founding keeps its archives, sealed per face", () => {
   test("F1 the place founding seals the vessel's keyhive archive", async () => {
     expect(archiveAbsentBefore).toBe(true);
-    expect(readVkCarrier(readFileSync(archivePath()))).toBe("sealed");
+    expect(readSCarrier(readFileSync(archivePath()))).toBe("sealed");
     const bytes = await loadIdentityArchive();
     expect(bytes && bytes.length).toBeGreaterThan(0);
     // The archive restores the vessel's own individual.
@@ -110,7 +116,7 @@ describe("a founding keeps its archives, sealed per face", () => {
       const face = await foundFace({ genesisDir, handleIndex: n });
       expect(face.alreadyStood).toBe(false);
       groups.push(face.personaGroupId);
-      expect(readVkCarrier(readFileSync(veilArchivePath(face.personaGroupId)))).toBe("sealed");
+      expect(readFckCarrier(readFileSync(veilArchivePath(face.personaGroupId)))).toBe("sealed");
       kept.push(readFileSync(veilArchivePath(face.personaGroupId)));
       for (let earlier = 0; earlier < n; earlier++) {
         expect(readFileSync(veilArchivePath(groups[earlier]!)).equals(kept[earlier]!), `h${earlier}'s row never moved while h${n} founded`).toBe(true);
@@ -164,7 +170,7 @@ describe("a founding keeps its archives, sealed per face", () => {
     const bootstrapBefore = readFileSync(larBootstrapPath(), "utf8");
     await holder.lock();
     await expect(foundFace({ genesisDir, handleIndex: 3 })).rejects.toThrow(CustodyLocked);
-    expect(existsSync(join(larIdentityDir(), "anchors-h3.json"))).toBe(false);
+    expect(faceRowNames()).not.toContain("anchors-h3.json");
     expect(readFileSync(larBootstrapPath(), "utf8")).toBe(bootstrapBefore);
     const after = sealedFiles();
     expect(Object.keys(after).sort()).toEqual(Object.keys(before).sort());
@@ -172,9 +178,10 @@ describe("a founding keeps its archives, sealed per face", () => {
 
     // control: unlocked by the founding route, the same founding lands its rows
     expect((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading).toBe("opens");
+    await holder.unlockFaces([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
     const face = await foundFace({ genesisDir, handleIndex: 3 });
     expect(face.alreadyStood).toBe(false);
-    expect(readVkCarrier(readFileSync(veilArchivePath(face.personaGroupId)))).toBe("sealed");
+    expect(readFckCarrier(readFileSync(veilArchivePath(face.personaGroupId)))).toBe("sealed");
     expect(await listAnchoredPersonas()).toEqual([0, 1, 2, 3]);
   });
 
@@ -186,12 +193,13 @@ describe("a founding keeps its archives, sealed per face", () => {
       cpSync(REPO_GENESIS, join(second, "genesis"), { recursive: true });
       await foundDirect({ storageDir: larDataDir(), genesisDir: join(second, "genesis") });
       const holder = seatedCustody()!;
-      const roots = (): string[] => readdirSync(larIdentityDir()).filter((f) => f.startsWith(".persona-group-root"));
+      const roots = (): string[] => faceRowNames().filter((f) => f.startsWith(".persona-group-root"));
       await holder.lock();
       await expect(seatSeedCharter()).rejects.toThrow(CustodyLocked);
       expect(roots()).toEqual([]);
       // control
       expect((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading).toBe("opens");
+    await holder.unlockFaces([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
       await seatSeedCharter();
       expect((await foundFace({ genesisDir: join(second, "genesis"), handleIndex: 0 })).alreadyStood).toBe(false);
       expect(roots().length).toBe(1);
@@ -238,7 +246,8 @@ describe("a founding keeps its archives, sealed per face", () => {
   test("F8 removing a completed face's bootstrap entry founds a fresh group", async () => {
     const genesisDir = join(root, "genesis");
     const holder = seatedCustody()!;
-    if (!holder.isUnlocked()) expect((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading).toBe("opens");
+    if (!holder.isUnlocked()) { expect((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading).toBe("opens"); await holder.unlockFaces([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]); }
+    await holder.unlockFaces([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
     const before = (await loadIdentityAnchors(2))!;
     const atomBefore = (await loadFaceAtomOfGroup(before.personaGroupId))!;
     const orphanArchive = readFileSync(veilArchivePath(before.personaGroupId));

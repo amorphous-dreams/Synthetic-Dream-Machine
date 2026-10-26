@@ -27,14 +27,15 @@ import {
   tokenVerifiesAt, redeemClaim, claimDigest, type NexusDoc,
 } from "@lararium/mesh";
 import { restEvery, restingRepo } from "./resting-repo.js";
-import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, wearPersona } from "../src/node-vessel-identity.js";
+import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, wearPersona, setWornFaceInSession } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { heldNexusLeaves, mintNexusLeaf, mintWornNexusLeaf, nexusLeafFor } from "../src/nexus-leaf.js";
 import { runHostRoll, runHostInvite, runHostState, landEveryHostingAct, HostRefusal } from "../src/commands/host.js";
 import { ownedStore } from "../src/owned-store.js";
 import { runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
-import { readHostingState, rollHosting, liveEpochs, hostingDir, spendToken } from "../src/hosting-store.js";
+import { readHostingState, rollHosting, liveEpochs, spendToken } from "../src/hosting-store.js";
+import { hostingDirPath } from "../src/hosting-face.js";
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
@@ -45,6 +46,7 @@ let priorLarRoot: string | undefined;
 const sealHome = (): string => larSealHome();
 
 beforeEach(() => {
+  setWornFaceInSession(undefined);
   root = mkdtempSync(join(tmpdir(), "lares-host-"));
   priorLarRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;
@@ -192,7 +194,7 @@ describe("lares host — roll, invite, state", () => {
   it("RED: a vessel wearing no face hosts no one — the roll refuses and writes nothing", async () => {
     const { aid } = await seatOwnCharter();
     await expect(direct(runHostRoll)({ sealHome: sealHome() })).rejects.toThrow(/wears no face/);
-    expect(existsSync((await hostingDir(aid)))).toBe(false);
+    expect(existsSync((hostingDirPath(0, aid)!))).toBe(false);
   });
 
   it("★ a FORGED act naming this face blocks nothing: only an act the face's own leaf signed counts as hosting elsewhere ★", async () => {
@@ -234,9 +236,9 @@ describe("lares host — roll, invite, state", () => {
     const doc = hostingDocUrl(aid, await loadVesselVerifyingKey());
     const first = await direct(runHostRoll)({ sealHome: sealHome() });
     // The local hosting state is gone — as on a second store hosting under the same face — while the doc keeps the act.
-    rmSync((await hostingDir(aid)), { recursive: true, force: true });
+    rmSync((hostingDirPath(0, aid)!), { recursive: true, force: true });
     await expect(direct(runHostRoll)({ sealHome: sealHome() })).rejects.toThrow(/already hosts in this Nexus from another store/);
-    expect(existsSync((await hostingDir(aid)))).toBe(false);
+    expect(existsSync((hostingDirPath(0, aid)!))).toBe(false);
     expect((await docActs(doc)).map(hostingActCid)).toEqual([first.epoch]);
   });
 
@@ -246,6 +248,6 @@ describe("lares host — roll, invite, state", () => {
     const { aid } = await seatAndWear();
     await expect(direct(runHostRoll)({ sealHome: sealHome(), nexusAid: "nexus-" + "b".repeat(64) })).rejects.toThrow(/does not carry/);
     await expect(runHostInvite({ sealHome: sealHome() })).rejects.toThrow(/hosts no one here yet/);
-    expect(existsSync((await hostingDir(aid)))).toBe(false);
+    expect(existsSync((hostingDirPath(0, aid)!))).toBe(false);
   });
 });

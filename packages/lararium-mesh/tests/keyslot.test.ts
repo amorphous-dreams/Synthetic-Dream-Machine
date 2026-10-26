@@ -1,5 +1,5 @@
 /**
- * keyslot.test — the VK rests only inside slots, each an `sss{t, pins}` over human routes; a slot opens only under
+ * keyslot.test — the tree key rests only inside slots, each an `sss{t, pins}` over human routes; a slot opens only under
  * pins that unwrap, a paper pin binds only after its sheet reads back, and an unbind always offers the rotation.
  */
 import { describe, test, expect, vi } from "vitest";
@@ -9,15 +9,15 @@ import { describe, test, expect, vi } from "vitest";
 // room names the derivations and no case waits on a clock.
 vi.setConfig({ testTimeout: 60_000 });
 import {
-  bindSlot, unbindSlot, openVk, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper,
-  VK_ROTATION_OFFER, type SlotTree, type PinSpec,
+  bindSlot, unbindSlot, openTreeKey, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper,
+  ROTATION_OFFER, type SlotTree, type PinSpec,
 } from "../src/keyslot.js";
-import { mintVk, vkEquals, type VesselKey } from "../src/vk.js";
+import { mintTreeKey, treeKeyEquals, type TreeKey } from "../src/tree-key.js";
 import {
-  commitSlotTree, writeSealedCarrier, openSealedCarrier, rotateVk, OldShapeRefusal, CustodyRefusal,
+  commitSlotTree, writeSealedCarrier, openSealedCarrier, rotateTreeKey, OccupiedStoreRefusal, CustodyRefusal,
   type CustodyIo, type SealedCarrier,
 } from "../src/sealed-writer.js";
-import { LARK_MAGIC } from "../src/vk-envelope.js";
+import { LARK_MAGIC } from "../src/s-envelope.js";
 
 const right = { kind: "passphrase", passphrase: "correct horse battery staple" } as const;
 const wrong = { kind: "passphrase", passphrase: "correct horse battery stapler" } as const;
@@ -28,53 +28,53 @@ function confirmedPaper(threshold = 1, count = 1) {
 }
 
 describe("open", () => {
-  test("CONTROL: a two-slot tree opens under either slot, and both yield the one VK", () => {
-    const vk = mintVk();
+  test("CONTROL: a two-slot tree opens under either slot, and both yield the one tree key", () => {
+    const treeKey = mintTreeKey();
     const { draft, confirmed } = confirmedPaper();
-    let tree = bindSlot(null, vk, { t: 1, pins: [right] });
-    tree = bindSlot(tree, vk, { t: 1, pins: [{ kind: "paper", confirmed }] });
+    let tree = bindSlot(null, treeKey, { t: 1, pins: [right] });
+    tree = bindSlot(tree, treeKey, { t: 1, pins: [{ kind: "paper", confirmed }] });
     expect(tree.slots.length).toBe(2);
 
-    const byPass = openVk(tree, [right]);
-    const byPaper = openVk(tree, [{ kind: "paper", sheets: draft.sheets }]);
+    const byPass = openTreeKey(tree, [right]);
+    const byPaper = openTreeKey(tree, [{ kind: "paper", sheets: draft.sheets }]);
     expect(byPass.reading).toBe("opens");
     expect(byPaper.reading).toBe("opens");
-    expect(byPass.reading === "opens" && vkEquals(byPass.vk, vk)).toBe(true);
-    expect(byPaper.reading === "opens" && vkEquals(byPaper.vk, vk)).toBe(true);
+    expect(byPass.reading === "opens" && treeKeyEquals(byPass.treeKey, treeKey)).toBe(true);
+    expect(byPaper.reading === "opens" && treeKeyEquals(byPaper.treeKey, treeKey)).toBe(true);
     expect(byPass.reading === "opens" && byPaper.reading === "opens" && byPass.slot !== byPaper.slot).toBe(true);
   });
 
   test("a wrong passphrase opens no slot, and the reading names no torn tree", () => {
-    const tree = bindSlot(null, mintVk(), { t: 1, pins: [right] });
-    expect(openVk(tree, [wrong]).reading).toBe("no-slot-opens");
-    expect(openVk(tree, []).reading).toBe("no-slot-opens");
+    const tree = bindSlot(null, mintTreeKey(), { t: 1, pins: [right] });
+    expect(openTreeKey(tree, [wrong]).reading).toBe("no-slot-opens");
+    expect(openTreeKey(tree, []).reading).toBe("no-slot-opens");
   });
 
   test("a 2-of-2 slot (passphrase and paper) opens with both pins and refuses either alone", () => {
-    const vk = mintVk();
+    const treeKey = mintTreeKey();
     const { draft, confirmed } = confirmedPaper();
-    const tree = bindSlot(null, vk, { t: 2, pins: [right, { kind: "paper", confirmed }] });
+    const tree = bindSlot(null, treeKey, { t: 2, pins: [right, { kind: "paper", confirmed }] });
     const paper = { kind: "paper", sheets: draft.sheets } as const;
-    const both = openVk(tree, [right, paper]);
-    expect(both.reading === "opens" && vkEquals(both.vk, vk)).toBe(true);
-    expect(openVk(tree, [right]).reading).toBe("no-slot-opens");
-    expect(openVk(tree, [paper]).reading).toBe("no-slot-opens");
+    const both = openTreeKey(tree, [right, paper]);
+    expect(both.reading === "opens" && treeKeyEquals(both.treeKey, treeKey)).toBe(true);
+    expect(openTreeKey(tree, [right]).reading).toBe("no-slot-opens");
+    expect(openTreeKey(tree, [paper]).reading).toBe("no-slot-opens");
   });
 
   test("a 2-of-3 paper pin opens from any two sheets read back", () => {
-    const vk = mintVk();
+    const treeKey = mintTreeKey();
     const { draft, confirmed } = confirmedPaper(2, 3);
-    const tree = bindSlot(null, vk, { t: 1, pins: [{ kind: "paper", confirmed }] });
-    const o = openVk(tree, [{ kind: "paper", sheets: [draft.sheets[0]!, draft.sheets[2]!] }]);
-    expect(o.reading === "opens" && vkEquals(o.vk, vk)).toBe(true);
+    const tree = bindSlot(null, treeKey, { t: 1, pins: [{ kind: "paper", confirmed }] });
+    const o = openTreeKey(tree, [{ kind: "paper", sheets: [draft.sheets[0]!, draft.sheets[2]!] }]);
+    expect(o.reading === "opens" && treeKeyEquals(o.treeKey, treeKey)).toBe(true);
   });
 
   test("a mis-copied paper word opens nothing and the note names the sheet refusal", () => {
     const { draft, confirmed } = confirmedPaper();
-    const tree = bindSlot(null, mintVk(), { t: 1, pins: [{ kind: "paper", confirmed }] });
+    const tree = bindSlot(null, mintTreeKey(), { t: 1, pins: [{ kind: "paper", confirmed }] });
     const words = draft.sheets[0]!.split(" ");
     words[6] = words[6] === "academic" ? "acid" : "academic";
-    const o = openVk(tree, [{ kind: "paper", sheets: [words.join(" ")] }]);
+    const o = openTreeKey(tree, [{ kind: "paper", sheets: [words.join(" ")] }]);
     expect(o.reading).toBe("no-slot-opens");
     expect(o.reading === "no-slot-opens" && o.notes.some((n) => /a paper credential reads no secret: its sheets fail their own check/.test(n))).toBe(true);
     // The note names the fault and quotes no word of the sheet: it reads the same, byte for byte, over an unrelated
@@ -83,7 +83,7 @@ describe("open", () => {
     const other = confirmedPaper().draft.sheets[0]!.split(" ");
     expect(other.join(" ")).not.toBe(draft.sheets[0]);
     other[6] = other[6] === "academic" ? "acid" : "academic";
-    const o2 = openVk(tree, [{ kind: "paper", sheets: [other.join(" ")] }]);
+    const o2 = openTreeKey(tree, [{ kind: "paper", sheets: [other.join(" ")] }]);
     const notesOf = (r: typeof o) => (r.reading === "no-slot-opens" ? r.notes : null);
     expect(notesOf(o)).toHaveLength(1);
     expect(notesOf(o2)).toEqual(notesOf(o));
@@ -95,28 +95,28 @@ describe("open", () => {
 
 describe("the tree at rest", () => {
   test("encode → decode round-trips, and the record carries no version, counter or clock field", () => {
-    const vk = mintVk();
-    const tree = bindSlot(null, vk, { t: 1, pins: [right] });
+    const treeKey = mintTreeKey();
+    const tree = bindSlot(null, treeKey, { t: 1, pins: [right] });
     const bytes = encodeSlotTree(tree);
     const back = decodeSlotTree(bytes);
     expect(back.reading).toBe("readable");
     const json = JSON.parse(new TextDecoder().decode(bytes)) as { slots: Record<string, unknown>[] };
-    expect(Object.keys(json)).toEqual(["vkCheck", "slots"]);
-    expect(Object.keys(json.slots[0]!).sort()).toEqual(["id", "nonce", "pins", "t", "wrappedVk"]);
+    expect(Object.keys(json)).toEqual(["keyCheck", "slots"]);
+    expect(Object.keys(json.slots[0]!).sort()).toEqual(["id", "nonce", "pins", "t", "wrappedKey"]);
     expect(Object.keys((json.slots[0]!.pins as Record<string, unknown>[])[0]!).sort()).toEqual(["kind", "nonce", "salt", "wrapped"]);
     expect(new TextDecoder().decode(bytes)).not.toMatch(/"v"|version|created|seq|\d{4}-\d{2}-\d{2}T/);
-    const o = openVk((back as { tree: SlotTree }).tree, [right]);
-    expect(o.reading === "opens" && vkEquals(o.vk, vk)).toBe(true);
+    const o = openTreeKey((back as { tree: SlotTree }).tree, [right]);
+    expect(o.reading === "opens" && treeKeyEquals(o.treeKey, treeKey)).toBe(true);
   });
 
   test("a torn tree reads unreadable, never a wrong passphrase; nothing standing reads absent", () => {
-    const bytes = encodeSlotTree(bindSlot(null, mintVk(), { t: 1, pins: [right] }));
+    const bytes = encodeSlotTree(bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }));
     expect(decodeSlotTree(bytes.subarray(0, bytes.length - 9)).reading).toBe("unreadable");
     expect(decodeSlotTree(null).reading).toBe("absent");
   });
 
   test("RED: a stored pin of a kind this build does not build (`tpm`) reads unreadable, naming the kind", () => {
-    const bytes = encodeSlotTree(bindSlot(null, mintVk(), { t: 1, pins: [right] }));
+    const bytes = encodeSlotTree(bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }));
     const json = JSON.parse(new TextDecoder().decode(bytes)) as { slots: { pins: { kind: string }[] }[] };
     json.slots[0]!.pins[0]!.kind = "tpm";
     const r = decodeSlotTree(new TextEncoder().encode(JSON.stringify(json)));
@@ -127,21 +127,21 @@ describe("the tree at rest", () => {
 
 describe("bind", () => {
   test("RED: a slot with no human route refuses to bind — no pins, a threshold above the pins, a threshold below one", () => {
-    const vk = mintVk();
-    expect(() => bindSlot(null, vk, { t: 1, pins: [] })).toThrow(/human route/);
-    expect(() => bindSlot(null, vk, { t: 2, pins: [right] })).toThrow(/threshold/);
-    expect(() => bindSlot(null, vk, { t: 0, pins: [right] })).toThrow(/threshold/);
+    const treeKey = mintTreeKey();
+    expect(() => bindSlot(null, treeKey, { t: 1, pins: [] })).toThrow(/human route/);
+    expect(() => bindSlot(null, treeKey, { t: 2, pins: [right] })).toThrow(/threshold/);
+    expect(() => bindSlot(null, treeKey, { t: 0, pins: [right] })).toThrow(/threshold/);
   });
 
   test("RED: a pin kind outside the built union (`ember`, `tpm`) refuses to bind", () => {
-    const vk = mintVk();
+    const treeKey = mintTreeKey();
     for (const kind of ["ember", "tpm"]) {
-      expect(() => bindSlot(null, vk, { t: 1, pins: [{ kind } as unknown as PinSpec] })).toThrow(new RegExp(kind));
+      expect(() => bindSlot(null, treeKey, { t: 1, pins: [{ kind } as unknown as PinSpec] })).toThrow(new RegExp(kind));
     }
   });
 
   test("an empty passphrase refuses to bind", () => {
-    expect(() => bindSlot(null, mintVk(), { t: 1, pins: [{ kind: "passphrase", passphrase: "" }] })).toThrow(/passphrase/);
+    expect(() => bindSlot(null, mintTreeKey(), { t: 1, pins: [{ kind: "passphrase", passphrase: "" }] })).toThrow(/passphrase/);
   });
 
   test("RED: a paper sheet that does not read back refuses, naming the first departing word's position", () => {
@@ -155,35 +155,35 @@ describe("bind", () => {
 
   test("RED: a paper pin that never passed read-back refuses to bind", () => {
     const forged = { kind: "paper", confirmed: {} } as unknown as PinSpec;
-    expect(() => bindSlot(null, mintVk(), { t: 1, pins: [forged] })).toThrow(/reads back/);
+    expect(() => bindSlot(null, mintTreeKey(), { t: 1, pins: [forged] })).toThrow(/reads back/);
   });
 
   test("held sheets typed back seat a paper pin (a rotation keeps the operator's sheet)", () => {
-    const vk = mintVk();
+    const treeKey = mintTreeKey();
     const { draft } = confirmedPaper();
-    const tree = bindSlot(null, vk, { t: 1, pins: [{ kind: "paper", confirmed: confirmHeldPaper(draft.sheets) }] });
-    const o = openVk(tree, [{ kind: "paper", sheets: draft.sheets }]);
-    expect(o.reading === "opens" && vkEquals(o.vk, vk)).toBe(true);
+    const tree = bindSlot(null, treeKey, { t: 1, pins: [{ kind: "paper", confirmed: confirmHeldPaper(draft.sheets) }] });
+    const o = openTreeKey(tree, [{ kind: "paper", sheets: draft.sheets }]);
+    expect(o.reading === "opens" && treeKeyEquals(o.treeKey, treeKey)).toBe(true);
     expect(() => confirmHeldPaper(["not a sheet"])).toThrow(/slip39/);
   });
 });
 
 describe("unbind", () => {
-  test("RED: every unbind returns the VK-rotation offer", () => {
-    const vk = mintVk();
-    let tree = bindSlot(null, vk, { t: 1, pins: [right] });
-    tree = bindSlot(tree, vk, { t: 1, pins: [right] });
-    tree = bindSlot(tree, vk, { t: 1, pins: [right] });
+  test("RED: every unbind returns the tree key-rotation offer", () => {
+    const treeKey = mintTreeKey();
+    let tree = bindSlot(null, treeKey, { t: 1, pins: [right] });
+    tree = bindSlot(tree, treeKey, { t: 1, pins: [right] });
+    tree = bindSlot(tree, treeKey, { t: 1, pins: [right] });
     const first = unbindSlot(tree, tree.slots[0]!.id);
     const second = unbindSlot(first.tree, first.tree.slots[0]!.id);
-    expect(first.rotationOffer).toBe(VK_ROTATION_OFFER);
-    expect(second.rotationOffer).toBe(VK_ROTATION_OFFER);
-    expect(VK_ROTATION_OFFER).toMatch(/Rotate the VK/);
+    expect(first.rotationOffer).toBe(ROTATION_OFFER);
+    expect(second.rotationOffer).toBe(ROTATION_OFFER);
+    expect(ROTATION_OFFER).toMatch(/Rotate the key/);
     expect(second.tree.slots.length).toBe(1);
   });
 
-  test("the last slot refuses to unbind (the VK would keep no human route); an unknown slot refuses", () => {
-    const tree = bindSlot(null, mintVk(), { t: 1, pins: [right] });
+  test("the last slot refuses to unbind (the tree key would keep no human route); an unknown slot refuses", () => {
+    const tree = bindSlot(null, mintTreeKey(), { t: 1, pins: [right] });
     expect(() => unbindSlot(tree, tree.slots[0]!.id)).toThrow(/human route/);
     expect(() => unbindSlot(tree, "00".repeat(16))).toThrow(/no slot/);
   });
@@ -192,69 +192,69 @@ describe("unbind", () => {
 /** A test that runs several scrypt derivations (~0.5 s each) needs room under a full parallel suite. */
 const SCRYPT_HEAVY = 30_000;
 
-describe("the tree commits to its VK — a keyed check that reveals nothing", () => {
-  const checkOf = (tree: SlotTree): string => (tree as SlotTree & { vkCheck: string }).vkCheck;
+describe("the tree commits to its tree key — a keyed check that reveals nothing", () => {
+  const checkOf = (tree: SlotTree): string => (tree as SlotTree & { keyCheck: string }).keyCheck;
 
-  test("the tree carries a 32-byte keyed check of its VK: stable for one VK, apart across VKs, never the VK itself", () => {
-    const vk = mintVk();
-    const a = bindSlot(null, vk, { t: 1, pins: [right] });
-    const b = bindSlot(null, vk, { t: 1, pins: [wrong] });
-    const other = bindSlot(null, mintVk(), { t: 1, pins: [right] });
+  test("the tree carries a 32-byte keyed check of its tree key: stable for one tree key, apart across TreeKeys, never the tree key itself", () => {
+    const treeKey = mintTreeKey();
+    const a = bindSlot(null, treeKey, { t: 1, pins: [right] });
+    const b = bindSlot(null, treeKey, { t: 1, pins: [wrong] });
+    const other = bindSlot(null, mintTreeKey(), { t: 1, pins: [right] });
     expect(checkOf(a)).toMatch(/^[0-9a-f]{64}$/);
     expect(checkOf(b)).toBe(checkOf(a));
     expect(checkOf(other)).not.toBe(checkOf(a));
-    expect(checkOf(a)).not.toBe(Buffer.from(vk).toString("hex"));
+    expect(checkOf(a)).not.toBe(Buffer.from(treeKey).toString("hex"));
     const back = decodeSlotTree(encodeSlotTree(a));
     expect(back.reading === "readable" && checkOf(back.tree)).toBe(checkOf(a));
   }, SCRYPT_HEAVY);
 
-  test("RED: binding a slot over a VK the tree does not commit to refuses, naming the mismatch", () => {
-    const tree = bindSlot(null, mintVk(), { t: 1, pins: [right] });
-    expect(() => bindSlot(tree, mintVk(), { t: 1, pins: [wrong] })).toThrow(/commit/);
+  test("RED: binding a slot over a tree key the tree does not commit to refuses, naming the mismatch", () => {
+    const tree = bindSlot(null, mintTreeKey(), { t: 1, pins: [right] });
+    expect(() => bindSlot(tree, mintTreeKey(), { t: 1, pins: [wrong] })).toThrow(/commit/);
   });
 
-  test("RED: a slot spliced in from another tree opens no VK, and the note names the commitment", () => {
-    const vk = mintVk();
-    const tree = bindSlot(null, vk, { t: 1, pins: [right] });
-    const foreign = bindSlot(null, mintVk(), { t: 1, pins: [wrong] });
+  test("RED: a slot spliced in from another tree opens no tree key, and the note names the commitment", () => {
+    const treeKey = mintTreeKey();
+    const tree = bindSlot(null, treeKey, { t: 1, pins: [right] });
+    const foreign = bindSlot(null, mintTreeKey(), { t: 1, pins: [wrong] });
     const spliced = { ...tree, slots: [...tree.slots, foreign.slots[0]!] } as SlotTree;
-    const o = openVk(spliced, [wrong]);
+    const o = openTreeKey(spliced, [wrong]);
     expect(o.reading).toBe("no-slot-opens");
     expect(o.reading === "no-slot-opens" && o.notes.some((n) => /commit/.test(n))).toBe(true);
-    const ok = openVk(spliced, [right]);
-    expect(ok.reading === "opens" && vkEquals(ok.vk, vk)).toBe(true);
+    const ok = openTreeKey(spliced, [right]);
+    expect(ok.reading === "opens" && treeKeyEquals(ok.treeKey, treeKey)).toBe(true);
   }, SCRYPT_HEAVY);
 
   test("RED: a tree at rest with no check, or a malformed one, reads unreadable", () => {
-    const bytes = encodeSlotTree(bindSlot(null, mintVk(), { t: 1, pins: [right] }));
+    const bytes = encodeSlotTree(bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }));
     const json = JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>;
-    delete json.vkCheck;
+    delete json.keyCheck;
     expect(decodeSlotTree(new TextEncoder().encode(JSON.stringify(json))).reading).toBe("unreadable");
-    json.vkCheck = "zz";
+    json.keyCheck = "zz";
     expect(decodeSlotTree(new TextEncoder().encode(JSON.stringify(json))).reading).toBe("unreadable");
   });
 });
 
 describe("one slot binds each human route once", () => {
   test("RED: a 2-of-2 slot refuses the same passphrase twice, NFKC-equal spellings included", () => {
-    const vk = mintVk();
-    expect(() => bindSlot(null, vk, { t: 2, pins: [right, right] })).toThrow(/twice/);
+    const treeKey = mintTreeKey();
+    expect(() => bindSlot(null, treeKey, { t: 2, pins: [right, right] })).toThrow(/twice/);
     const composed = { kind: "passphrase", passphrase: "café hearth" } as const;
     const decomposed = { kind: "passphrase", passphrase: "café hearth" } as const;
-    expect(() => bindSlot(null, vk, { t: 2, pins: [composed, decomposed] })).toThrow(/twice/);
+    expect(() => bindSlot(null, treeKey, { t: 2, pins: [composed, decomposed] })).toThrow(/twice/);
   });
 
   test("RED: a slot refuses one paper secret bound as two pins", () => {
     const { confirmed } = confirmedPaper();
-    expect(() => bindSlot(null, mintVk(), { t: 2, pins: [{ kind: "paper", confirmed }, { kind: "paper", confirmed }] })).toThrow(/twice/);
+    expect(() => bindSlot(null, mintTreeKey(), { t: 2, pins: [{ kind: "paper", confirmed }, { kind: "paper", confirmed }] })).toThrow(/twice/);
   });
 
   test("CONTROL: two distinct passphrases bind a 2-of-2 slot, and one passphrase in two slots stands", () => {
-    const vk = mintVk();
-    const tree = bindSlot(null, vk, { t: 2, pins: [right, wrong] });
-    const o = openVk(tree, [right, wrong]);
-    expect(o.reading === "opens" && vkEquals(o.vk, vk)).toBe(true);
-    expect(bindSlot(tree, vk, { t: 1, pins: [right] }).slots.length).toBe(2);
+    const treeKey = mintTreeKey();
+    const tree = bindSlot(null, treeKey, { t: 2, pins: [right, wrong] });
+    const o = openTreeKey(tree, [right, wrong]);
+    expect(o.reading === "opens" && treeKeyEquals(o.treeKey, treeKey)).toBe(true);
+    expect(bindSlot(tree, treeKey, { t: 1, pins: [right] }).slots.length).toBe(2);
   }, SCRYPT_HEAVY);
 });
 
@@ -291,20 +291,20 @@ class ScratchIo implements CustodyIo {
   exclusive<T>(fn: () => Promise<T>): Promise<T> { const r = this.chain.then(fn, fn); this.chain = r.catch(() => undefined); return r; }
 }
 
-const TREE = "/scratch/vk-slots.bin";
+const TREE = "/scratch/s-slots.bin";
 const KEYRING: SealedCarrier = { name: "keyring", path: "/scratch/keyring.bin", keyClass: "relation" };
 const ROOT: SealedCarrier = { name: "custody-root", path: "/scratch/custody-root.bin", keyClass: "device-minted" };
 const text = (s: string) => new TextEncoder().encode(s);
 
-describe("the old shape refuses BEFORE any write", () => {
+describe("an occupied store refuses BEFORE any write", () => {
   test("RED: founding the tree over a CLEARTEXT root refuses by name, and the store sees no mutation", async () => {
     const io = new ScratchIo();
     io.files.set(ROOT.path, text("a cleartext custody root, as the old build kept it"));
-    const vk = mintVk();
-    const tree = bindSlot(null, vk, { t: 1, pins: [right] });
-    const err = await commitSlotTree({ io, path: TREE, expected: null, vk, tree, carriers: [ROOT, KEYRING] }).catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(OldShapeRefusal);
-    expect((err as OldShapeRefusal).standing).toEqual([{ carrier: ROOT, reading: "bare" }]);
+    const treeKey = mintTreeKey();
+    const tree = bindSlot(null, treeKey, { t: 1, pins: [right] });
+    const err = await commitSlotTree({ io, path: TREE, expected: null, treeKey, tree, carriers: [ROOT, KEYRING] }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(OccupiedStoreRefusal);
+    expect((err as OccupiedStoreRefusal).standing).toEqual([{ carrier: ROOT, reading: "bare" }]);
     expect(io.mutations).toEqual([]);
     expect(io.files.has(TREE)).toBe(false);
     expect(new TextDecoder().decode(io.files.get(ROOT.path)!)).toMatch(/cleartext custody root/);
@@ -313,80 +313,80 @@ describe("the old shape refuses BEFORE any write", () => {
   test("RED: a frame that opens with LARK refuses as old-shape, and a relation carrier is NAMED among them", async () => {
     const io = new ScratchIo();
     io.files.set(KEYRING.path, Uint8Array.from([...LARK_MAGIC, 0x01, 0x02, ...new Array(80).fill(7)]));
-    const vk = mintVk();
-    const tree = bindSlot(null, vk, { t: 1, pins: [right] });
-    const err = await commitSlotTree({ io, path: TREE, expected: null, vk, tree, carriers: [ROOT, KEYRING] }).catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(OldShapeRefusal);
-    expect((err as OldShapeRefusal).standing.map((s) => `${s.carrier.name}:${s.reading}`)).toEqual(["keyring:old-shape"]);
-    expect((err as OldShapeRefusal).message).toMatch(/fresh-start/);
+    const treeKey = mintTreeKey();
+    const tree = bindSlot(null, treeKey, { t: 1, pins: [right] });
+    const err = await commitSlotTree({ io, path: TREE, expected: null, treeKey, tree, carriers: [ROOT, KEYRING] }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(OccupiedStoreRefusal);
+    expect((err as OccupiedStoreRefusal).standing.map((s) => `${s.carrier.name}:${s.reading}`)).toEqual(["keyring:old-shape"]);
+    expect((err as OccupiedStoreRefusal).message).toMatch(/empty root/);
     expect(io.mutations).toEqual([]);
   });
 
   test("RED: a sealed file no listed carrier names refuses the founding too (the census law)", async () => {
     const io = new ScratchIo();
-    const old = mintVk();
+    const old = mintTreeKey();
     const oldTree = bindSlot(null, old, { t: 1, pins: [right] });
-    await commitSlotTree({ io, path: "/other/tree.bin", expected: null, vk: old, tree: oldTree, carriers: [] });
-    await writeSealedCarrier({ io, vk: old, treePath: "/other/tree.bin", carrier: { name: "stray", path: "/scratch/stray.bin" }, plaintext: text("x") });
+    await commitSlotTree({ io, path: "/other/tree.bin", expected: null, treeKey: old, tree: oldTree, carriers: [] });
+    await writeSealedCarrier({ io, treeKey: old, treePath: "/other/tree.bin", carrier: { name: "stray", path: "/scratch/stray.bin" }, plaintext: text("x") });
     io.files.delete("/other/tree.bin");
     io.mutations.length = 0;
-    const vk = mintVk();
-    const err = await commitSlotTree({ io, path: TREE, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [right] }), carriers: [ROOT] })
+    const treeKey = mintTreeKey();
+    const err = await commitSlotTree({ io, path: TREE, expected: null, treeKey, tree: bindSlot(null, treeKey, { t: 1, pins: [right] }), carriers: [ROOT] })
       .catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(OldShapeRefusal);
-    expect((err as OldShapeRefusal).unlisted).toEqual(["/scratch/stray.bin"]);
+    expect(err).toBeInstanceOf(OccupiedStoreRefusal);
+    expect((err as OccupiedStoreRefusal).unlisted).toEqual(["/scratch/stray.bin"]);
     expect(io.mutations).toEqual([]);
   });
 
   test("CONTROL: a clean store founds, and a founded tree commits a bind with carriers standing (not a founding)", async () => {
     const io = new ScratchIo();
-    const vk = mintVk();
-    const tree = bindSlot(null, vk, { t: 1, pins: [right] });
-    await commitSlotTree({ io, path: TREE, expected: null, vk, tree, carriers: [ROOT, KEYRING] });
+    const treeKey = mintTreeKey();
+    const tree = bindSlot(null, treeKey, { t: 1, pins: [right] });
+    await commitSlotTree({ io, path: TREE, expected: null, treeKey, tree, carriers: [ROOT, KEYRING] });
     expect(io.files.has(TREE)).toBe(true);
-    await writeSealedCarrier({ io, vk, treePath: TREE, carrier: KEYRING, plaintext: text("k1") });
-    const grown = bindSlot(tree, vk, { t: 1, pins: [wrong] });
-    await commitSlotTree({ io, path: TREE, expected: await io.read(TREE), vk, tree: grown, carriers: [ROOT, KEYRING] });
+    await writeSealedCarrier({ io, treeKey, treePath: TREE, carrier: KEYRING, plaintext: text("k1") });
+    const grown = bindSlot(tree, treeKey, { t: 1, pins: [wrong] });
+    await commitSlotTree({ io, path: TREE, expected: await io.read(TREE), treeKey, tree: grown, carriers: [ROOT, KEYRING] });
     expect(decodeSlotTree(await io.read(TREE)).reading).toBe("readable");
   }, 30_000);
 
-  test("RED: a write to a carrier with NO tree standing refuses before any byte, naming the old shape when cleartext stands", async () => {
+  test("RED: a write to a carrier with NO tree standing refuses before any byte, naming the occupant when cleartext stands", async () => {
     const io = new ScratchIo();
     io.files.set(KEYRING.path, text("{\"cleartext\":true}"));
-    const err = await writeSealedCarrier({ io, vk: mintVk(), treePath: TREE, carrier: KEYRING, plaintext: text("x") }).catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(OldShapeRefusal);
+    const err = await writeSealedCarrier({ io, treeKey: mintTreeKey(), treePath: TREE, carrier: KEYRING, plaintext: text("x") }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(OccupiedStoreRefusal);
     expect(io.mutations).toEqual([]);
     expect(new TextDecoder().decode(io.files.get(KEYRING.path)!)).toBe('{"cleartext":true}');
   });
 });
 
 describe("the relation class rides the sealed writer", () => {
-  async function foundedWithKeyring(): Promise<{ io: ScratchIo; vk: VesselKey }> {
+  async function foundedWithKeyring(): Promise<{ io: ScratchIo; treeKey: TreeKey }> {
     const io = new ScratchIo();
-    const vk = mintVk();
-    await commitSlotTree({ io, path: TREE, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [right] }), carriers: [ROOT, KEYRING] });
-    await writeSealedCarrier({ io, vk, treePath: TREE, carrier: KEYRING, plaintext: text("convergence-secret-epoch-3") });
-    await writeSealedCarrier({ io, vk, treePath: TREE, carrier: ROOT, plaintext: text("root") });
+    const treeKey = mintTreeKey();
+    await commitSlotTree({ io, path: TREE, expected: null, treeKey, tree: bindSlot(null, treeKey, { t: 1, pins: [right] }), carriers: [ROOT, KEYRING] });
+    await writeSealedCarrier({ io, treeKey, treePath: TREE, carrier: KEYRING, plaintext: text("convergence-secret-epoch-3") });
+    await writeSealedCarrier({ io, treeKey, treePath: TREE, carrier: ROOT, plaintext: text("root") });
     io.mutations.length = 0;
-    return { io, vk };
+    return { io, treeKey };
   }
 
   test("a rotation re-seals a relation carrier byte-identical: re-sealed, never regenerated", async () => {
-    const { io, vk } = await foundedWithKeyring();
-    const before = await openSealedCarrier({ io, vk, carrier: KEYRING });
-    const newVk = mintVk();
-    await rotateVk({ io, treePath: TREE, carriers: [ROOT, KEYRING], oldVk: vk, newVk, slots: [{ t: 1, pins: [right] }] });
-    const after = await openSealedCarrier({ io, vk: newVk, carrier: KEYRING });
+    const { io, treeKey } = await foundedWithKeyring();
+    const before = await openSealedCarrier({ io, treeKey, carrier: KEYRING });
+    const newTreeKey = mintTreeKey();
+    await rotateTreeKey({ io, treePath: TREE, carriers: [ROOT, KEYRING], oldTreeKey: treeKey, newTreeKey, slots: [{ t: 1, pins: [right] }] });
+    const after = await openSealedCarrier({ io, treeKey: newTreeKey, carrier: KEYRING });
     expect(before.reading === "opens" && after.reading === "opens" && new TextDecoder().decode(after.plaintext)).toBe("convergence-secret-epoch-3");
-    expect((await openSealedCarrier({ io, vk, carrier: KEYRING })).reading).toBe("key-fails");
+    expect((await openSealedCarrier({ io, treeKey, carrier: KEYRING })).reading).toBe("key-fails");
   }, 30_000);
 
   test("RED: a rotation that cannot open a RELATION carrier refuses with nothing written, and says only the party re-issues it", async () => {
-    const { io, vk } = await foundedWithKeyring();
-    // damage the keyring: flip a ciphertext byte so the VK in hand no longer opens it
+    const { io, treeKey } = await foundedWithKeyring();
+    // damage the keyring: flip a ciphertext byte so the tree key in hand no longer opens it
     const bytes = Uint8Array.from(io.files.get(KEYRING.path)!); bytes[bytes.length - 1] ^= 0xff; io.files.set(KEYRING.path, bytes);
     io.mutations.length = 0;
-    const err = await rotateVk({ io, treePath: TREE, carriers: [ROOT, KEYRING], oldVk: vk, newVk: mintVk(), slots: [{ t: 1, pins: [right] }] })
+    const err = await rotateTreeKey({ io, treePath: TREE, carriers: [ROOT, KEYRING], oldTreeKey: treeKey, newTreeKey: mintTreeKey(), slots: [{ t: 1, pins: [right] }] })
       .catch((e: unknown) => e);
     expect(err).toBeInstanceOf(CustodyRefusal);
     expect((err as CustodyRefusal).message).toMatch(/re-issue/);
@@ -394,9 +394,9 @@ describe("the relation class rides the sealed writer", () => {
   }, 30_000);
 
   test("CONTROL: the same damage on a NON-relation carrier refuses without the re-issue sentence", async () => {
-    const { io, vk } = await foundedWithKeyring();
+    const { io, treeKey } = await foundedWithKeyring();
     const bytes = Uint8Array.from(io.files.get(ROOT.path)!); bytes[bytes.length - 1] ^= 0xff; io.files.set(ROOT.path, bytes);
-    const err = await rotateVk({ io, treePath: TREE, carriers: [ROOT, KEYRING], oldVk: vk, newVk: mintVk(), slots: [{ t: 1, pins: [right] }] })
+    const err = await rotateTreeKey({ io, treePath: TREE, carriers: [ROOT, KEYRING], oldTreeKey: treeKey, newTreeKey: mintTreeKey(), slots: [{ t: 1, pins: [right] }] })
       .catch((e: unknown) => e);
     expect(err).toBeInstanceOf(CustodyRefusal);
     expect((err as CustodyRefusal).message).not.toMatch(/re-issue/);

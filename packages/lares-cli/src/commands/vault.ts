@@ -11,15 +11,16 @@
  */
 
 import {
-  FsCustodyIo, unlockCustody, bindCustodySlot, unbindCustodySlot, custodyStatus,
+  FsCustodyIo, unlockCustody, bindCustodySlot, unbindCustodySlot, custodyStatus, bindFaceSlot, unbindFaceSlot, openFaceTree, readFaceIndexSync,
   type CustodyHomes, type CustodyStatus, type CustodyStatusRow,
 } from "@lararium/node";
-import { openVk, decodeSlotTree, type Credential, type SlotSpec } from "@lararium/mesh";
+import { openTreeKey, decodeSlotTree, type Credential, type SlotSpec } from "@lararium/mesh";
 import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
 import { gatherBundleRoute, gatherCards, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
 import { backupLines, cutBundleToFile } from "../vault-backup.js";
 import { importLines, restoreFromBundle, restoreFromCards, restoreLines } from "../vault-restore.js";
 import { sealedActVia } from "../sealed-act-door.js";
+import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { udsAlive } from "../local-connector.js";
 import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { emit, exitFor, refuseUsage, wantsJson } from "../render.js";
@@ -34,7 +35,7 @@ class UsageError extends Error {}
 
 /** The refusals the custody door names: each leads its error line, so a caller reads the class, not a guess. */
 const NAMED_REFUSALS: ReadonlySet<string> = new Set([
-  "OldShapeRefusal", "CustodyRefusal", "TreeVkRefusal", "CensusRefusal",
+  "OccupiedStoreRefusal", "CustodyRefusal", "TreeKeyRefusal", "CensusRefusal",
   "CustodyLockRefused", "CustodyFoundingRefused", "CredentialTtyRefusal", "RotationSlotsRefused",
 ]);
 
@@ -119,18 +120,30 @@ function rowLine(r: CustodyStatusRow): string {
 }
 
 /**
- * The "custody (VK)" section: the slot tree, then ONE reading of every standing file the carrier table names, then
+ * The "custody (S key)" section: the slot tree, then ONE reading of every standing file the carrier table names, then
  * every private file it does not name. A row outside the vessel key prints the law it rests bare under; a hot or
  * cold row that reads anything but `sealed` prints as a fault.
  */
 function printCustody(c: CustodyStatus): void {
-  console.log("custody (VK):");
-  if (c.tree.reading === "absent") console.log("  slot tree      absent — no vk-slots.bin stands (a founding seals custody from birth)");
+  console.log("custody (S key):");
+  if (c.tree.reading === "absent") console.log("  slot tree      absent — no s-slots.bin stands (a founding seals custody from birth)");
   else if (c.tree.reading === "unreadable") console.log(`  slot tree      UNREADABLE — ${c.tree.why}`);
   else {
     console.log(`  slot tree      ${c.tree.slots.length} slot(s)`);
     for (const sl of c.tree.slots) console.log(`    ${sl.id}  t=${sl.t}  ${sl.pins.join(" + ")}`);
   }
+  // A face's rows fold into ONE line per face: its handle index, its custody id, the count of rows that rest under its key and
+  // the two digests the floor index names for it. A face row never prints by name here; only a fault does.
+  const faceRows = c.rows.filter((r) => r.custody === "face-hot" || r.custody === "face-cold");
+  const floorIndex = readFaceIndexSync(larIdentityDir()).faces;
+  floorIndex.forEach((f, ordinal) => {
+    if (!("fcid" in f)) return;
+    const mine = faceRows.filter((r) => r.file.startsWith(`faces/${f.fcid}/`));
+    const sealedHere = mine.filter((r) => r.reading === "sealed" && !r.fault).length;
+    const faultsHere = mine.filter((r) => r.fault).length;
+    const dg = (d: string | null): string => (d === null ? "-" : `${d.slice(0, 12)}…`);
+    console.log(`  face h${ordinal}        ${f.fcid.slice(0, 12)}…  ${mine.length} row(s): ${sealedHere} sealed under its key, ${faultsHere} at fault   group ${dg(f.group)}  ask ${dg(f.ask)}`);
+  });
   const sealed = c.rows.filter((r) => r.reading === "sealed" && !r.fault).length;
   const byLaw = c.rows.filter((r) => r.bare !== null && !r.fault).length;
   const faults = c.rows.filter((r) => r.fault);
@@ -139,7 +152,7 @@ function printCustody(c: CustodyStatus): void {
     : `  carriers       ${c.rows.length} standing: ${sealed} sealed under the vessel key, ${byLaw} outside it by law, ${faults.length} at fault`);
   // A row that names many files (a spend per burn, a rest file per record) folds into one counted line per reading.
   const groups = new Map<string, CustodyStatusRow[]>();
-  for (const r of c.rows) {
+  for (const r of c.rows.filter((x) => !(x.custody === "face-hot" || x.custody === "face-cold") || x.fault)) {
     const key = `${r.row}\u0000${r.reading}`;
     groups.set(key, [...(groups.get(key) ?? []), r]);
   }
@@ -162,7 +175,6 @@ async function openOrRefuse(args: ParsedArgs, verb: string, homes: CustodyHomes,
   const why =
     u.reading === "no-slot-opens" ? `no slot opens under what was presented${u.notes.length ? ` (${u.notes.join("; ")})` : ""} — nothing was changed`
     : u.reading === "tree-absent"  ? "no slot tree stands at the identity home — nothing to unlock (a founding seals custody from birth)"
-    : u.reading === "serving-unopenable" ? `the vessel key opened and the serving key did not (${u.why}) — nothing stays held; a vessel whose serving tree stands torn or apart from its key re-founds`
     : `the slot tree reads unreadable: ${u.why} — a torn tree is not a credential error; nothing was changed`;
   emit(args, { ok: false, error: { code: u.reading, message: why }, data: { reading: u.reading }, human: () => console.error(`lares vault ${verb}: ${why}`) });
   return null;
@@ -177,12 +189,13 @@ function unlockLine(a: CustodyDoorAnswer): string {
       ? `slot ${String(a["slot"])} opened the vessel key, and the vessel dropped it again: it stands as ${standing}.${refused}`
       : `unlocked: slot ${String(a["slot"])} opened the vessel key; the vessel stands as ${standing}.${refused}`;
     case "already-unlocked": return `already unlocked: the vessel holds its key and stands as ${standing}.`;
+    case "face-refused":     return `the node key opened and ${a["face"] !== undefined ? `face h${String(a["face"])}` : "no face"} did not (${String(a["faceReading"] ?? "no face tree opens under it")}) — nothing stays open; a face opens under its own route, so present the route that face asked for.`;
+    case "face-not-named":   return `this vessel holds several faces (${(Array.isArray(a["faces"]) ? a["faces"] : []).map((i) => `h${String(i)}`).join(", ")}) and none was named — nothing stays open: name one (\`lares vault unlock --face N\`) or try the credential on every face (\`--all\`).`;
     case "no-slot-opens":    return `no slot opens under what was presented — nothing was changed; ${String(a["attemptsLeft"])} attempt(s) left before this vessel refuses every unlock until it restarts.`;
     case "attempts-spent":   return "this vessel refuses every unlock until it restarts: its unlock attempts for this boot stand spent. Restart it (`lares vessel stand --restart`), then unlock.";
     case "tree-absent":      return "no slot tree stands at the identity home — nothing to unlock (a founding seals custody from birth).";
     case "tree-unreadable":  return `the slot tree reads unreadable: ${String(a["why"])} — a torn tree is not a credential error; nothing was changed.`;
     case "root-unopenable":  return `the vessel key opened and the custody root did not (${String(a["why"])}) — nothing stays held; recover the custody root from a backup.`;
-    case "serving-unopenable": return `the vessel key opened and the serving key did not (${String(a["why"])}) — nothing stays held; a vessel whose serving tree stands torn or apart from its key re-founds.`;
     default:                 return typeof a["errorMessage"] === "string" ? a["errorMessage"] : `the vessel answered ${JSON.stringify(a)}`;
   }
 }
@@ -198,7 +211,9 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
   const io = new FsCustodyIo(homes);
   const creds = await gatherCredentials("lares vault unlock", routeFlag(args));
   if (daemonUp) {
-    const a = await sendCustodyFrame({ op: "unlock", credentials: creds });
+    const face = typeof args.options["face"] === "string" ? Number(args.options["face"]) : undefined;
+    if (face !== undefined && (!Number.isSafeInteger(face) || face < 0)) throw new UsageError("--face names a handle index (a whole number from 0)");
+    const a = await sendCustodyFrame({ op: "unlock", credentials: creds, ...(face !== undefined ? { face } : {}), ...(args.flags["all"] === true ? { all: true } : {}) });
     if (a === null) {
       emit(args, { ok: false, error: { code: "daemon-unreachable", message: "the vessel stopped answering before the unlock landed" }, human: () => console.error("lares vault unlock: the vessel stopped answering before the unlock landed — check `lares vessel read`, then unlock again") });
       return 1;
@@ -220,6 +235,8 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
 
 /** `vault lock`: the standing vessel drops its key, tears its sovereign composition down and stands at the floor. */
 async function vaultLock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
+  const face = faceOption(args);
+  if (face !== undefined) return await vaultLockFace(args, daemonUp, face);
   if (!daemonUp) {
     emit(args, { ok: true, data: { locked: true, was: "no-vessel" }, human: () => console.log("no vessel stands on this store: nothing holds a key, so nothing to lock.") });
     return 0;
@@ -234,6 +251,49 @@ async function vaultLock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
     ? `locked: the vessel dropped its key and stands as ${String(a["standing"])}; every sovereign act waits on \`lares vault unlock\`.`
     : `already locked: the vessel holds no key and stands as ${String(a["standing"])}.`) });
   return 0;
+}
+
+/** `--face N` as a handle index, or undefined when the flag stands absent. */
+function faceOption(args: ParsedArgs): number | undefined {
+  const raw = args.options["face"];
+  if (typeof raw !== "string") return undefined;
+  const n = Number(raw);
+  if (!Number.isSafeInteger(n) || n < 0) throw new UsageError("--face names a handle index (a whole number from 0)");
+  return n;
+}
+
+/** `vault lock --face N`: that face drops its key; the vessel stands at the floor only when N was the face it wore. */
+async function vaultLockFace(args: ParsedArgs, daemonUp: boolean, face: number): Promise<number> {
+  if (!daemonUp) {
+    emit(args, { ok: true, data: { locked: true, was: "no-vessel", face }, human: () => console.log(`no vessel stands on this store: nothing holds face h${face}'s key, so nothing to lock.`) });
+    return 0;
+  }
+  const a = await sendCustodyFrame({ op: "lock", face });
+  if (a === null || a["locked"] !== true) {
+    const why = a && typeof a["errorMessage"] === "string" ? a["errorMessage"] : "the vessel stopped answering before the lock landed";
+    emit(args, { ok: false, error: { code: "lock-unconfirmed", message: why }, human: () => console.error(`lares vault lock: ${why}`) });
+    return 1;
+  }
+  emit(args, { ok: true, data: a, human: () => console.log(a["was"] === "unlocked"
+    ? `locked: face h${face} dropped its key; the vessel stands as ${String(a["standing"])}.`
+    : `already locked: face h${face} held no key.`) });
+  return 0;
+}
+
+/** The face's custody id and its opened tree, or null after saying why. */
+async function openFaceOrRefuse(args: ParsedArgs, verb: string, homes: CustodyHomes, io: FsCustodyIo, face: number, creds: readonly Credential[]) {
+  const entry = readFaceIndexSync(homes.identity).faces[face];
+  if (entry === undefined || !("fcid" in entry)) {
+    emit(args, { ok: false, error: { code: "face-not-named", message: `no face h${face} stands in the floor index` }, human: () => console.error(`lares vault ${verb}: no face h${face} stands in the floor index — nothing was changed`) });
+    return null;
+  }
+  const o = await openFaceTree({ io, homes, fcid: entry.fcid, credentials: creds });
+  if (o.reading !== "opens") {
+    const why = o.reading === "no-slot-opens" ? `no route of face h${face} opens under what was presented — nothing was changed` : `the slot tree of face h${face} reads ${o.reading} — nothing was changed`;
+    emit(args, { ok: false, error: { code: o.reading, message: why }, data: { reading: o.reading }, human: () => console.error(`lares vault ${verb}: ${why}`) });
+    return null;
+  }
+  return { fcid: entry.fcid, fck: o.fck };
 }
 
 /**
@@ -286,6 +346,9 @@ async function vaultRestore(args: ParsedArgs, daemonUp: boolean): Promise<number
   }
   if (!wantsJson(args)) console.log("The bundle's own route: the passphrase or the paper sheet it got sealed under.");
   const credentials = await gatherCredentials("lares vault restore", routeFlag(args));
+  // The restored face takes a route of its own; inside a standing vessel it rides the custody door first.
+  seatNewFaceRoute();
+  if (daemonUp && !memory) await handFaceRouteToVessel(`h${asRaw ?? "restore"}`);
   const result = await restoreFromBundle({
     file, credentials, memory, ...(asRaw !== undefined ? { as: Number(asRaw) } : {}),
     run: (act, actArgs) => sealedActVia(act, actArgs),
@@ -312,6 +375,8 @@ async function vaultRestoreCards(args: ParsedArgs): Promise<number> {
   const face = named.startsWith("persona-") ? { prefix: named } : { verifyingKey: named };
   if (!wantsJson(args)) console.log("The split's cards: for each, the custodian it came from, then its code (hidden).");
   const cards = await gatherCards("lares vault restore --cards");
+  seatNewFaceRoute();
+  if ((await sendCustodyFrame({ op: "custody" })) !== null) await handFaceRouteToVessel(`h${asRaw}`);
   const result = await restoreFromCards({ cards, face, as: Number(asRaw), run: (act, actArgs) => sealedActVia(act, actArgs) });
   if (!result.ok) {
     emit(args, { ok: false, error: { code: result.reason, message: result.message }, data: { reason: result.reason }, human: () => console.error(`lares vault restore --cards: ${result.reason}: ${result.message}`) });
@@ -331,15 +396,54 @@ async function vaultBind(args: ParsedArgs): Promise<number> {
   if (args.flags["paper"] && args.flags["passphrase"]) throw new UsageError("bind takes --passphrase or --paper, not both");
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);
+  const face = faceOption(args);
+  if (face !== undefined) {
+    const faceCreds = await gatherCredentials(`lares vault bind --face ${face}`);
+    const f = await openFaceOrRefuse(args, "bind", homes, io, face, faceCreds);
+    if (!f) return 1;
+    const spec = await gatherNewSlot(`lares vault bind --face ${face}`, args.flags["paper"] ? "paper" : "passphrase");
+    const out = await bindFaceSlot({ io, homes, fcid: f.fcid, fck: f.fck, spec });
+    emit(args, { ok: true, data: { face, slotId: out.slotId, slots: out.tree.slots.length }, human: () => console.log(`bound: slot ${out.slotId} now opens face h${face} (${out.tree.slots.length} slot(s) stand). The node tree is untouched.`) });
+    return 0;
+  }
   const creds = await gatherCredentials("lares vault bind");
   const u = await openOrRefuse(args, "bind", homes, io, creds);
   if (!u) return 1;
   const spec = await gatherNewSlot("lares vault bind", args.flags["paper"] ? "paper" : "passphrase");
-  const out = await bindCustodySlot({ io, homes, vk: u.vk, spec });
+  const out = await bindCustodySlot({ io, homes, treeKey: u.treeKey, spec });
   emit(args, {
     ok: true, data: { slotId: out.slotId, slots: out.tree.slots.length },
     human: () => console.log(`bound: slot ${out.slotId} now opens the vessel key (${out.tree.slots.length} slot(s) stand).`),
   });
+  return 0;
+}
+
+/** `vault unbind <slot-id> --face N [--rotate]`: one route leaves the face's own tree; the node tree is untouched. */
+async function vaultUnbindFace(args: ParsedArgs, homes: CustodyHomes, io: FsCustodyIo, face: number, slotId: string, rotate: boolean): Promise<number> {
+  const creds = await gatherCredentials(`lares vault unbind --face ${face}`);
+  const f = await openFaceOrRefuse(args, "unbind", homes, io, face, creds);
+  if (!f) return 1;
+  const entry = readFaceIndexSync(homes.identity).faces[face];
+  const treeBytes = await io.read(`${homes.identity}/faces/${f.fcid}/fk-slots.bin`);
+  const tree = decodeSlotTree(treeBytes);
+  if (tree.reading !== "readable") throw new UsageError(`the slot tree of face h${face} is not readable; nothing was changed`);
+  if (!tree.tree.slots.some((sl) => sl.id === slotId)) throw new UsageError(`no slot ${slotId} stands in face h${face}'s tree`);
+  let staying: SlotSpec[] | undefined;
+  if (rotate) {
+    staying = [];
+    for (const sl of tree.tree.slots.filter((x) => x.id !== slotId)) {
+      const got = await gatherStayingSlot({ id: sl.id, t: sl.t, pins: sl.pins.map((p) => p.kind) });
+      const proof = openTreeKey(tree.tree, got.credentials);
+      if (proof.reading !== "opens" || proof.slot !== sl.id) throw new UsageError(`what was typed for slot ${sl.id} does not open it; nothing was changed`);
+      staying.push(got.spec);
+    }
+  }
+  const out = await unbindFaceSlot({ io, homes, fcid: f.fcid, fck: f.fck, slotId, ...(staying ? { rotate: staying } : {}) });
+  void entry;
+  const say = (line: string): void => { if (!wantsJson(args)) console.log(line); };
+  say(`unbound: slot ${slotId} no longer opens face h${face} (${out.tree.slots.length} slot(s) stand). The node tree is untouched.`);
+  say(out.rotated ? "rotated: a new face key seals this face's rows; the removed route opens nothing." : "not rotated: a copy of the face tree taken before this unbind still opens the face key through the removed slot. `--rotate` ends that route.");
+  emit(args, { ok: true, data: { face, slotId, rotated: out.rotated, slots: out.tree.slots.length }, human: () => undefined });
   return 0;
 }
 
@@ -349,22 +453,24 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
   const rotate = args.flags["rotate"] === true;
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);
+  const face = faceOption(args);
+  if (face !== undefined) return await vaultUnbindFace(args, homes, io, face, slotId, rotate);
   const creds = await gatherCredentials("lares vault unbind");
   const u = await openOrRefuse(args, "unbind", homes, io, creds);
   if (!u) return 1;
 
-  // GATHER EVERY STAYING SLOT'S ROUTE BEFORE ANY BYTE MOVES: a rotation mints a new VK and binds each slot that stays
-  // over it, so a typo found after a write would leave the tree on a VK nobody holds.
+  // GATHER EVERY STAYING SLOT'S ROUTE BEFORE ANY BYTE MOVES: a rotation mints a new S key and binds each slot that stays
+  // over it, so a typo found after a write would leave the tree on an S key nobody holds.
   let staying: SlotSpec[] | undefined;
   if (rotate) {
     const status = await custodyStatus({ io, homes });
     if (status.tree.reading !== "readable") throw new UsageError("the slot tree is not readable; nothing was changed");
     if (!status.tree.slots.some((sl) => sl.id === slotId)) throw new UsageError(`no slot ${slotId} stands in the tree`);
-    const tree = decodeSlotTree(await io.read(`${homes.identity}/vk-slots.bin`));
+    const tree = decodeSlotTree(await io.read(`${homes.identity}/s-slots.bin`));
     staying = [];
     for (const sl of status.tree.slots.filter((x) => x.id !== slotId)) {
       const got = await gatherStayingSlot(sl);
-      const proof = tree.reading === "readable" ? openVk(tree.tree, got.credentials) : null;
+      const proof = tree.reading === "readable" ? openTreeKey(tree.tree, got.credentials) : null;
       if (!proof || proof.reading !== "opens" || proof.slot !== sl.id) {
         throw new UsageError(`what was typed for slot ${sl.id} does not open it; nothing was changed`);
       }
@@ -374,7 +480,7 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
 
   // ONE ACT. With --rotate the removal and the rotation land together: the rotation's census and its opening of
   // every carrier run before any byte moves, so a carrier that refuses the rotation leaves the slot bound.
-  const out = await unbindCustodySlot({ io, homes, vk: u.vk, slotId, ...(staying ? { rotate: staying } : {}) });
+  const out = await unbindCustodySlot({ io, homes, treeKey: u.treeKey, slotId, ...(staying ? { rotate: staying } : {}) });
   const say = (line: string): void => { if (!wantsJson(args)) console.log(line); };
   say(`unbound: slot ${slotId} no longer opens the vessel key (${out.tree.slots.length} slot(s) stand).`);
   if (out.rotated) {

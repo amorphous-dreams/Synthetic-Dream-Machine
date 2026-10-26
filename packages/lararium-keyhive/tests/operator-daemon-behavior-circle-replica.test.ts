@@ -73,9 +73,9 @@ describe("operator-daemon-behavior — the follow-graph's replica injection (M5�
 
   test("F1 — this device's OWN did (off vesselVerifyingKey) is injected as the replica — never the bare-string fallback", () => {
     captured.length = 0;
-    const vk = "ab".repeat(32);
-    wire(vk);
-    expect(captured[0]!.replica).toBe(didFromVerifyingKey(vk));
+    const treeKey = "ab".repeat(32);
+    wire(treeKey);
+    expect(captured[0]!.replica).toBe(didFromVerifyingKey(treeKey));
     expect(captured[0]!.replica).not.toBe("local");
   });
 
@@ -91,9 +91,9 @@ describe("operator-daemon-behavior — the follow-graph's replica injection (M5�
 
   test("MUTATION — the SAME device's own did is stable across a re-wire (a reboot never mints a fresh replica for one device)", () => {
     captured.length = 0;
-    const vk = "cd".repeat(32);
-    wire(vk);
-    wire(vk);
+    const treeKey = "cd".repeat(32);
+    wire(treeKey);
+    wire(treeKey);
     expect(captured[0]!.replica).toBe(captured[1]!.replica);
   });
 });

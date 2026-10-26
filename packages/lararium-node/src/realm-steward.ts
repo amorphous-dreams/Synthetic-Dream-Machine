@@ -39,6 +39,7 @@ import {
 } from "@lararium/mesh";
 import { heldNexusLeaves, mintWornNexusLeaf } from "./nexus-leaf.js";
 import { loadNodeHandleBook } from "./node-circle-store.js";
+import { unlockedFaceOrdinals } from "./custody-seat.js";
 import {
   listPersonaRoots, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
 } from "./node-vessel-identity.js";
@@ -90,7 +91,14 @@ export const nodeStewardVault: StewardVault = {
  */
 export function nodeHandleBookReading(): RealmBagFoldOptions {
   return {
-    heldChain: async (prefix) => (await loadNodeHandleBook()).get(prefix)?.card?.chain ?? null,
+    heldChain: async (prefix) => {
+      // Each unlocked face keeps its own book; the chain any of them verified answers.
+      for (const face of await unlockedFaceOrdinals()) {
+        const chain = (await loadNodeHandleBook(face)).get(prefix)?.card?.chain;
+        if (chain) return chain;
+      }
+      return null;
+    },
   };
 }
 

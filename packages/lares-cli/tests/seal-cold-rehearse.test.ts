@@ -17,6 +17,7 @@
  *       typing refuses.
  *   An unarmed head refuses `rotation-unarmed`: `seal-rotate-refusal-codes.test.ts`, which builds that head.
  */
+import { faceDir, listFaceFiles, readFaceIndexSync } from "@lararium/node";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -79,8 +80,8 @@ describe("lares nexus seal cold rehearse", () => {
     const rows = listSeatKeys();
     // Every row file's BYTES, not only its name: a rehearsal reseals nothing.
     const identity = custody.homes.identity;
-    const rowBytes = (): string[] => readdirSync(identity).filter((n) => n.startsWith("seat-key-")).sort()
-      .map((n) => `${n}:${readFileSync(join(identity, n)).toString("hex")}`);
+    const rowBytes = (): string[] => listFaceFiles(identity, readFaceIndexSync(identity)).filter(([, n]) => n.startsWith("seat-key-")).sort()
+      .map(([fcid, n]) => `${n}:${readFileSync(join(faceDir(identity, fcid), n)).toString("hex")}`);
     const rowsBefore = rowBytes();
     expect(rowsBefore).toHaveLength(3);
     const doc = readNexusDoc(larSealHome())!;
@@ -156,7 +157,7 @@ describe("lares nexus seal cold rehearse", () => {
     const io = new FsCustodyIo(homes);
     const founded = await foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "a-household-passphrase" }] }] });
     const holder = makeCustodyHolder({ io, homes });
-    await holder.adopt(founded.vk);
+    await holder.adopt(founded.treeKey);
     seatCustody(holder);
     custody = { homes, holder, async drop() { await holder.lock(); unseatCustody(holder); } };
     const refused = await run(rehearse({ "cold-key": codes[0]! }));

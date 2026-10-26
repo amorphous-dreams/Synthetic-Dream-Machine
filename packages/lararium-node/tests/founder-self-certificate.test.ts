@@ -124,7 +124,7 @@ describe("the founder's self-certificate", () => {
     await ensureFounderCertificate(args(scopeA), doors);
     const record = (await readFaceJoinRecord(GROUP))!;
     // The custody row now holds another key than the one the standing certificate names.
-    await storeVesselFaceKey(scopeB, SIBLING);
+    await storeVesselFaceKey(0, scopeB, SIBLING);
     const foreign = { ...(record.certificates[0] as object), scope: scopeB };
     await keepFaceJoinRecord({ ...record, certificates: [...record.certificates, foreign] });
     const before = await readFaceJoinRecord(GROUP);

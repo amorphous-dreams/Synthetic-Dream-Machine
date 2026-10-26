@@ -176,7 +176,7 @@ export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";
 export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc } from "./doc-load-probe.js";
 export { precheckDocStore, docStorePath } from "./store-integrity.js";
-export { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, persistIdentityArchive, loadIdentityArchive, persistVeilArchive, loadVeilArchive, archivePath, veilArchivePath, veilArchiveFile, type IdentityAnchors } from "./identity-anchors.js";
+export { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, listFaceOrdinals, persistIdentityArchive, loadIdentityArchive, persistVeilArchive, loadVeilArchive, archivePath, veilArchivePath, veilArchiveFile, type IdentityAnchors } from "./identity-anchors.js";
 
 export type { DaemonVmOptions } from "./open-daemon-vm.js";
 export type { NodeVesselOptions, NodeVesselResult, NodeHermResult, NodeFloor, SovereignReaders, NodeOpenPhase } from "./open-node-vessel.js";
@@ -222,7 +222,7 @@ export { ownedStore, claimStore, StoreHeld, StoreHeldElsewhere, type StoreClaim,
 export { claimName, anchoredName, NameTooLong, NameHeld, NameReaping, type ClaimedName, type ClaimNameOptions } from "./socket-claim.js";
 export { readHearthDialPin } from "./hearth-dial-pin.js";
 export {
-  readHostingState, rollHosting, liveEpochs, spendToken, spendMintMarker, redeemedCount, mintedCount, hostingDir, hostingRowDir, HostingStateMoved,
+  readHostingState, rollHosting, liveEpochs, spendToken, spendMintMarker, redeemedCount, mintedCount, HostingStateMoved,
   DEFAULT_HOSTING_CAP,
 } from "./hosting-store.js";
 export type { HostingState, SpendOutcome } from "./hosting-store.js";
@@ -296,7 +296,7 @@ export {
 export { isSerdeSkewFault, bootFaultReport, fatalLine, SERDE_SKEW_EXIT, SERDE_SKEW_CURE } from "./boot-fault.js";
 // The active-persona selector — "put on a mask" at the identity layer (Plurality Pono). The persona-root
 // SET mints/loads the operator-root the `lares persona` door drives (founder-side custody).
-export { loadActivePersonaIndex, wearPersona, personaRootExists, listPersonaRoots, listPersonaRosterLines, orphanPersonaRoots, VesselKeyMintRefused, VesselInceptionRefused } from "./node-vessel-identity.js";
+export { loadActivePersonaIndex, setWornFaceInSession, sovereignStands, wearPersona, personaRootExists, listPersonaRoots, listPersonaRosterLines, orphanPersonaRoots, VesselKeyMintRefused, VesselInceptionRefused } from "./node-vessel-identity.js";
 export { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 export type { PersonaGroupRoot, PersonaRosterLine } from "./node-vessel-identity.js";
 // The two-layer pet-names (#64 stage 4): the PRIVATE own-persona label map (fleet-only; never PUBLICLY
@@ -309,7 +309,7 @@ export { makeNodePersonaDeclarationStore } from "./node-vessel-identity.js";
 
 // The IoC follow — the node-fs LOCAL adapters for the private circle-graph + the recogniser's handle-book.
 // Both under the identity home, sealed under the vessel key, never federated (the `lares circle` door drives them via composeFollow).
-export { loadNodeHandleBook, saveNodeHandleBook, HANDLE_BOOK_FILE } from "./node-circle-store.js";
+export { loadNodeHandleBook, saveNodeHandleBook, handleBookFile, HANDLE_BOOK_FILE } from "./node-circle-store.js";
 // QR transport — GENERATE a scannable carriage QR (terminal / PNG / SVG / matrix, ECC H) + DECODE a still PNG
 // through an injected decoder shore (the headless node scanner + the browser camera both plug in behind it).
 export {
@@ -460,18 +460,18 @@ export type {
 export { KEY_CLASSES, isKeyClass, isRelationClass } from "@lararium/mesh";
 export { FsCustodyIo, vesselCustodyIo, CustodyLockRefused, CUSTODY_CLAIM_NAME, type FsCustodyIoOptions } from "./custody-io.js";
 export type { KeyClass } from "@lararium/mesh";
-// The ONE carrier table: every carrier at rest by home, custody class and writer. The custody status, the VK
+// The ONE carrier table: every carrier at rest by home, custody class and writer. The custody status, the S key
 // rotation, the bundle's cut and the custody shape reader all derive from it — see `vault-carriers`.
 export {
   CUSTODY_CLASSES, CUSTODY_PARTS, carrierTable, carrierCensus, outsideTheTable, vesselCustodyHomes,
-  vkSlotsPath, skSlotsPath, vkSealedCarriers, rotateVesselVk,
+  sSlotsPath, skSlotsPath, sSealedCarriers, occupantCarriers, rotateNodeKey,
 } from "./vault-carriers.js";
 export type {
   CustodyClass, CustodyPart, CustodyTarget, CustodyHome, CustodyHomes, CarrierRow, CarrierEntry, OutsideFile, OutsideWhy,
 } from "./vault-carriers.js";
-// The old-shape reader: the shape every vessel home stands in, read before any write — see `custody-shape`.
-export { readCustodyShape, oldShapeRefusal, FRESH_START_RUNBOOK } from "./custody-shape.js";
-export type { CustodyShape, CustodyShapeReading, OldShapeOffender, OldShapeReason } from "./custody-shape.js";
+// The custody shape reader: the shape every vessel home stands in, read before any write — see `custody-shape`.
+export { readCustodyShape, occupiedStoreRefusal } from "./custody-shape.js";
+export type { CustodyShape, CustodyShapeReading, OccupantOffender, OccupantReason } from "./custody-shape.js";
 // The custody root: the hot carrier every sovereign derivation stands on, apart from the floor key — see `custody-root`.
 export {
   CUSTODY_ROOT_BYTES, CustodyRootRefused, mintCustodyRoot, custodyRootFromBytes, isCustodyRoot, custodyRootPath,
@@ -491,12 +491,18 @@ export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCi
   GENESIS_ENGINE_CID } from "./genesis-artifact.js";
 export { makeCustodyHolder, CustodyLocked, CustodyRowUnknown, CustodyRowUnavailable, CustodyAdoptRefused, UNLOCK_ATTEMPTS_PER_BOOT } from "./custody-holder.js";
 export { runSealedAct, isSealedActName, SealedActRefused, SEALED_ACTS, SEALED_ACT_NAMES, SIGN_IMAGE_LIMIT, TEXT_ARG_LIMIT, LABEL_ARG_LIMIT, SNAPSHOT_ARG_LIMIT, type SealedActName, type SealedActContext, type SealedActRefusalReason, type PersonaSelvesPlane, type PersonaSelfLine, type PersonaSelfNameKind } from "./sealed-acts.js";
-export { gateMemoryRows, gateMemoryRowFile, GateMemoryRowRefused, GATE_MEMORY_DIR } from "./gate-memory-rows.js";
+export { gateMemoryRows, gateMemoryRowFile, GateMemoryRowRefused } from "./gate-memory-rows.js";
 export { gateGrantFor, gateGrantRing } from "./gate-rings.js";
 export type { GateGrantRing, GateGrantRingReaders, GateRootHolding } from "./gate-rings.js";
 export { custodyGateDoor, seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRow, writeCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow } from "./custody-seat.js";
 export type { RowUpdate } from "./custody-holder.js";
 export type { CustodyOpener } from "./custody-seat.js";
+export { seatFaceAutoFounder } from "./custody-holder.js";
+export { faceDir, faceFileNames, faceFilePathSync, listFaceFiles, readFaceIndexSync } from "./face-index.js";
+export { bindFaceSlot, unbindFaceSlot, FaceTreeUnreadable } from "./face-slot-ops.js";
+export { openFaceTree } from "./face-custody.js";
+export { faceRouteSeated, seatFaceRoute, parkFaceRoute, gatherFaceRoute, ensureFaceCustodyOfGroup, ensureFaceCustodyOfAsk, FaceRouteAbsent } from "./face-route.js";
+export type { FaceRouteGatherer } from "./face-route.js";
 export type { CustodyHolder, HolderUnlock, RowReading } from "./custody-holder.js";
 export { custodyFrameHandler, isCustodyFrame } from "./custody-frames.js";
 // The verb socket's front, named here for a suite that stands a custody door as the vessel's main thread does.

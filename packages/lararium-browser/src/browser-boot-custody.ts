@@ -1,7 +1,7 @@
 /**
  * Each browser tab asks for its own unlock; the shared holder carries no unlock between tabs
  * (operator ruling, 2026-10-18; lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings, row B1).
- * The VK rests in this page's memory alone (`browser-custody.ts`).
+ * The tree key rests in this page's memory alone (`browser-custody.ts`).
  *
  * A browser leaf holds a passphrase or paper slot before it holds a persona root. `secretMintDue`
  * asks for the first slot before the mint; the mint refuses `no-custody-slot` without one.

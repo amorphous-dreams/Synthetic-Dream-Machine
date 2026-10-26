@@ -26,7 +26,7 @@
  */
 
 import {
-  faceStands, armRecoveryAtFounding, guardianOffer, type FoundFaceResult,
+  faceStands, armRecoveryAtFounding, guardianOffer, listFaceOrdinals, CustodyLocked, type FoundFaceResult,
 } from "@lararium/node";
 import {
   renameOwnPersona, ownPersonaPetname, HANDLE_INDEX_CEILING,
@@ -34,12 +34,13 @@ import {
   refuseSlot, personaSlotCeiling, defaultChairLabel, faceLogViewLine, coldKeySeedFromCode, signFaceLogView, type VesselClass,
 } from "@lararium/mesh";
 import { requireTty } from "../custody-prompt.js";
+import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { promptSecret } from "../prompt-secret.js";
 import { storeVerb, storeFailure } from "../store-door.js";
 import { sealedAct } from "../sealed-act-door.js";
 import { vesselStanding } from "../custody-door.js";
 import { larDataDir } from "../env.js";
-import { readPersonaRoots, personaRootKey, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
+import { readPersonaRoots, type PersonaRoots, personaRootKey, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
 import {
   makeFleetPetnameStore, makeFleetDeclarationStore, readFleetSelves, carryOwnName,
 } from "../daemon-persona-store.js";
@@ -338,6 +339,7 @@ let readGuardianCard: () => Promise<string> = async () => {
 export function setGuardianCardPrompt(read: () => Promise<string>): void { readGuardianCard = read; }
 
 async function personaNew(args: ParsedArgs): Promise<number> {
+  seatNewFaceRoute();
   const index = parseIndex(args.positional[1]);
   const name = typeof args.options["name"] === "string" ? args.options["name"].trim() : "";
   if (name.length === 0) throw new UsageError("`persona new` needs a private label: --name '<petname>'");
@@ -376,6 +378,8 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   if (index !== 0 && !faceStands()) {
     throw new UsageError("no face stands on this place yet — light it with `lares persona new 0 --name '<label>'` first.");
   }
+  // A face that founds INSIDE a standing vessel takes its route over the custody door first (the route rides that frame alone).
+  if (!(index === 0 && faceStands()) && (await vesselStanding()).reading === "vessel") await handFaceRouteToVessel(`h${index}`);
   const founded = (await storeVerb("persona-new", { handleIndex: index })).output as unknown as FoundFaceResult;
 
   // THE SPLIT RUNS IN THIS PROCESS ALONE (the guard above refused it beside a standing vessel): its shares
@@ -459,8 +463,16 @@ async function personaWear(args: ParsedArgs): Promise<number> {
 }
 
 async function personaList(args: ParsedArgs): Promise<number> {
-  const roster = await readPersonaRoots();
+  // A LOCKED LIST PRINTS PUBLIC INDICES ONLY: the floor index names the faces that stand here; names, declarations and the worn
+  // face appear once that face unlocks. A vessel with no face standing has nothing to show and refuses naming the unlock.
+  let roster: PersonaRoots;
+  try { roster = await readPersonaRoots(); }
+  catch (err) {
+    if (!(err instanceof CustodyLocked) || listFaceOrdinals().length === 0) throw err;
+    roster = { roots: [], active: null, orphans: [] };
+  }
   const held = roster.roots.map(({ handleIndex }) => handleIndex);
+  const lockedFaces = listFaceOrdinals().filter((i) => !held.includes(i));
   const active = roster.active;
   const orphans = roster.orphans;
   const { petnames, declarations } = fleetStores();
@@ -479,12 +491,14 @@ async function personaList(args: ParsedArgs): Promise<number> {
 
   emit(args, {
     ok: true,
-    data: { active: active ?? null, personas: rows, orphans },
+    data: { active: active ?? null, personas: rows, orphans, locked: lockedFaces },
     human: () => {
       for (const index of orphans) {
         console.log(`persona root h${index} stands with no roster line (a founding stopped between its two writes) — nothing reads it as held.`);
         console.log(`  adopt it:  lares persona new ${index} --name '<label>'   (the root loads; nothing mints over it)`);
       }
+      for (const index of lockedFaces) console.log(`  h${index}  (locked — open it with \`lares vault unlock --face ${index}\`)`);
+      if (rows.length === 0 && lockedFaces.length > 0) return;
       if (rows.length === 0) {
         console.log("no personas held — stand the founder with `lares vessel stand --install`, then name each persona and add a seat claim with `--seat` (no --handle needed).");
         return;

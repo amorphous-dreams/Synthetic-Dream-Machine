@@ -17,11 +17,11 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { mintColdKey, offerFingerprint, readCofoundInception, seatFingerprint, charterInceptionBytes, type CofoundOffer } from "@lararium/mesh";
+import { mintColdKey, offerFingerprint, readCofoundInception, readFckCarrier, seatFingerprint, charterInceptionBytes, type CofoundOffer } from "@lararium/mesh";
 import { cidV1Sha256 } from "@lararium/mesh";
 import { carriedCharterHome } from "../src/carried-set.js";
-import { readCofoundRecord } from "../src/cofound-record.js";
-import { heldCadenceKey } from "../src/cadence-key-store.js";
+import { cofoundRecordFile, readCofoundRecord } from "../src/cofound-record.js";
+import { cadenceKeyFile, heldCadenceKey } from "../src/cadence-key-store.js";
 import { nexusCharterDocPath, readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { SealedActRefused, runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
@@ -31,6 +31,7 @@ import { larSealHome } from "../src/vessel-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { fixtureKey } from "./fixture-keys.js";
+import { handleRowPathIn } from "./face-paths.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
@@ -95,6 +96,10 @@ describe("two vaults found one Nexus through the custody door", () => {
       expect(doc?.sealEpochCid).toBe(aid);
       expect(doc?.kahu.map((k) => k.verifyingKey).sort()).toEqual([aSeat, bSeat].sort());
       expect(readFileSync(nexusCharterDocPath(larSealHome()), "utf8")).toBe(v.seedBytes);
+      const cadence = v === A ? inception.offer.cadence.key : bCadence;
+      for (const file of [cofoundRecordFile(0, fingerprint), cadenceKeyFile(0, cadence)]) {
+        expect(readFckCarrier(readFileSync(handleRowPathIn(v.c.homes.identity, file)))).toBe("sealed");
+      }
     }
     // Each vault holds its own seat and hearth key, and none of the other's.
     at(A);

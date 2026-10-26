@@ -32,7 +32,7 @@ import {
   type HandleCard,
 } from "@lararium/mesh";
 import { parseHandleCardCarriage } from "../handle-carriage.js";
-import { loadHandleBook, saveHandleBook, wornFaceKey } from "../sealed-rows.js";
+import { loadHandleBook, saveHandleBook, wornFace, wornFaceKey } from "../sealed-rows.js";
 import { makeDaemonCircleStore } from "../daemon-circle-store.js";
 import { vesselDid } from "../env.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
@@ -93,7 +93,8 @@ async function circleAdd(args: ParsedArgs): Promise<number> {
   const card     = cardPath ? readCardFile(cardPath) : undefined;
 
   const circles = makeDaemonCircleStore(await vesselDid());
-  const book    = await loadHandleBook();
+  const face    = await wornFace();
+  const book    = await loadHandleBook(face);
   const by      = await wornFaceKey();
 
   let result;
@@ -108,7 +109,7 @@ async function circleAdd(args: ParsedArgs): Promise<number> {
     if (err instanceof FollowRefused) throw new UsageError(err.message);   // fail-closed → clean usage error
     throw err;
   }
-  await saveHandleBook(book);   // persist the recogniser's memory (a card ingest / petname landed on it)
+  await saveHandleBook(face, book);   // persist the recogniser's memory (a card ingest / petname landed on it)
 
   emit(args, {
     ok: true,
@@ -153,10 +154,11 @@ async function circleCard(args: ParsedArgs): Promise<number> {
   const card = parseHandleCardCarriage(readCarriageArg(raw));
   if (!card) throw new UsageError("no self-certifying HandleCard in the carriage — the card did not arrive (re-carry a `#card=<base64url>` token).");
 
-  const book    = await loadHandleBook();
+  const face    = await wornFace();
+  const book    = await loadHandleBook(face);
   const verdict = await book.ingest(card, undefined, await wornFaceKey());
   if (!verdict.ok) throw new UsageError(`handle-card refused (${verdict.reject}) — the book holds this nym to its own lineage (anti-rollback / anti-fork).`);
-  await saveHandleBook(book);   // persist the recogniser's memory — the nym is now known, ready to follow
+  await saveHandleBook(face, book);   // persist the recogniser's memory — the nym is now known, ready to follow
 
   const rec = book.get(card.nym);
   emit(args, {
@@ -189,7 +191,8 @@ async function circleRemove(args: ParsedArgs): Promise<number> {
 
 async function circleList(args: ParsedArgs): Promise<number> {
   const circles = makeDaemonCircleStore(await vesselDid());
-  const book    = await loadHandleBook();
+  const face    = await wornFace();
+  const book    = await loadHandleBook(face);
   const to      = typeof args.options["to"] === "string" ? args.options["to"].trim() : "";
   const circleIds = to.length > 0 ? [to] : [...await circles.circles()];
 

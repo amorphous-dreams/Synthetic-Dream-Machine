@@ -12,8 +12,8 @@ const opSeed  = new Uint8Array(32).fill(7);
 const devSeed = new Uint8Array(32).fill(9);
 const PLACE   = "bafkreic7r3jrao44srh5bp47uryotaqp62bnmovzpqccbfy2kclf447bra";
 
-const vkOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
-const opDidP = vkOf(opSeed).then((vk) => `0x${vk}`);
+const treeKeyOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
+const opDidP = treeKeyOf(opSeed).then((treeKey) => `0x${treeKey}`);
 
 async function mint(boundEpoch = 5): Promise<DeviceDelegationTiddler> {
   return buildDeviceDelegation({
@@ -64,8 +64,8 @@ describe("device-delegation — the signed capability edge (v2, post-verificatio
 
   it("rejects a tampered deviceVerifyingKey", async () => {
     const edge = await mint();
-    const otherVk = await vkOf(new Uint8Array(32).fill(11));
-    expect((await verifyDeviceDelegation({ ...edge, deviceVerifyingKey: otherVk, deviceDid: `0x${otherVk}` }, await opDidP)).ok).toBe(false);
+    const otherTreeKey = await treeKeyOf(new Uint8Array(32).fill(11));
+    expect((await verifyDeviceDelegation({ ...edge, deviceVerifyingKey: otherTreeKey, deviceDid: `0x${otherTreeKey}` }, await opDidP)).ok).toBe(false);
   });
 
   it("rejects a tampered hearthTrueName (signature mismatch)", async () => {
@@ -90,9 +90,9 @@ describe("device-delegation — the signed capability edge (v2, post-verificatio
 
   it("rejects non-canonical personaRootDid (no 0x / uppercase)", async () => {
     const edge = await mint();
-    const vkUpper = (await vkOf(opSeed)).toUpperCase();
-    expect((await verifyDeviceDelegation({ ...edge, personaRootDid: vkUpper }, await opDidP)).ok).toBe(false); // missing 0x
-    expect((await verifyDeviceDelegation({ ...edge, personaRootDid: `0x${vkUpper}` }, await opDidP)).ok).toBe(false); // uppercase
+    const treeKeyUpper = (await treeKeyOf(opSeed)).toUpperCase();
+    expect((await verifyDeviceDelegation({ ...edge, personaRootDid: treeKeyUpper }, await opDidP)).ok).toBe(false); // missing 0x
+    expect((await verifyDeviceDelegation({ ...edge, personaRootDid: `0x${treeKeyUpper}` }, await opDidP)).ok).toBe(false); // uppercase
   });
 
   it("rejects an edge with an illegal-character hearthTrueName at mint", async () => {

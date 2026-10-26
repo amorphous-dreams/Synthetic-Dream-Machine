@@ -1,3 +1,5 @@
+import { setWornFaceInSession } from "../src/node-vessel-identity.js";
+import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { EventEmitter } from "node:events";
 import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -151,6 +153,7 @@ describe("registerBags at node open names only the mounted face", () => {
       const faceA = await foundFace({ storageDir: larDataDir(), genesisDir });
 
       const founderB = await founderForSecondFace();
+      await ensureFaceCustodyOfGroup(founderB.groupB);
       const atomSeedB = await standFaceAtom(founderB.groupB);
       const atomB = faceAtomKeyFromSeed(atomSeedB, founderB.groupB);
       const payload = await founderB.admit(atomB.key);
@@ -162,6 +165,7 @@ describe("registerBags at node open names only the mounted face", () => {
         custody: { slots: [] },
       });
 
+      setWornFaceInSession(0);                    // the unlock names the face this vessel wears: A
       const bags = await captureRegisterBags(root);
       assertOneFaceShape(bags, faceA.personaGroupId);
       const set = new Set(bags);

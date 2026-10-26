@@ -119,9 +119,9 @@ const EXTRACTORS: Readonly<Record<string, Extractor>> = {
     const handle = (await (await makeNodePersonaDeclarationStore()).get(line.handleIndex))?.handle;
     if (typeof handle === "string" && handle.length > 0) parts.names.handle = handle;
   },
-  // lines: the records this face recognised, each under this face's own label. A record no face tagged stays.
+  // whole: the records this face recognised, each under this face's own label; the book rests in the face's own row.
   "handle-book": async (line, parts) => {
-    const mine = (await loadNodeHandleBook()).snapshotFor(line.verifyingKey);
+    const mine = (await loadNodeHandleBook(line.handleIndex)).snapshot();
     parts.handleBook = { records: JSON.parse(JSON.stringify(mine.records)) as Record<string, unknown>[] };
   },
   // whole: the guardian set this face's typed first enrolment committed. It rides only where the face's key history,

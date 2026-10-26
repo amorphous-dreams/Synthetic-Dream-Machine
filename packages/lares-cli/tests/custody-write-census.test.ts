@@ -166,7 +166,8 @@ const WRITE_DOORS: ReadonlySet<string> = new Set([...HOLDER_WRITES, ...SEAT_DOOR
 
 // ── derived from the carrier table ────────────────────────────────────────────────────────────────
 
-const SEALED_ROWS = carrierTable().filter((r) => r.custody === "hot" || r.custody === "cold");
+// The holder's own label row (face-owner) is written by the holder alone and is no row a command could name.
+const SEALED_ROWS = carrierTable().filter((r) => (r.custody === "hot" || r.custody === "cold" || r.custody === "face-hot" || r.custody === "face-cold") && !r.writer.startsWith("custody-holder"));
 
 /** The literal runs a matcher's source spells, with every regex construct read as a break. */
 function literalsOf(source: string): string[] {
@@ -195,10 +196,11 @@ function literalsOf(source: string): string[] {
 /** How a source names one row: its subtree as a whole path segment, or the literal its file name's matcher spells. */
 type RowName = { readonly segment: string } | { readonly literal: string };
 function rowName(row: (typeof SEALED_ROWS)[number]): RowName | null {
-  if (row.under !== "") return { segment: row.under };
+  // A face row rests at faces/<fcid>/<file>: the file's own matcher names it, never the shared `faces` directory.
+  if (row.under !== "" && row.faceRow === undefined) return { segment: row.under };
   // The longest literal the matcher spells names the file; a short run (`h`, `json`) names nothing by itself.
-  const longest = literalsOf(row.match.source).sort((a, b) => b.length - a.length)[0] ?? "";
-  return longest.replace(/[.\-_]/g, "").length >= 6 ? { literal: longest } : null;
+  const longest = literalsOf(row.faceRow ? row.faceRow.inner.source.replace(/^\^\(\?:/, "").replace(/\)\$$/, "") : row.match.source).sort((a, b) => b.length - a.length)[0] ?? "";
+  return longest.replace(/[.\-_]/g, "").length >= (row.faceRow ? 4 : 6) ? { literal: longest } : null;
 }
 /** Whether one spelled string names the row: the subtree as a path segment of it, or the file's literal inside it. */
 function names(name: RowName, spelled: string): boolean {
@@ -258,23 +260,19 @@ describe("the custody write census", () => {
   });
 
   test("K2 — PLANTED: a command source that writes a custody row reads red, by each road; one that asks through acts reads clean", () => {
-    const flat = SEALED_ROWS.find((r) => r.row === "transitions")!;
-    const subtree = SEALED_ROWS.find((r) => r.under !== "")!;
+    const flat = SEALED_ROWS.find((r) => r.row === "place-archive")!;
     const seatDoor = SEAT_DOORS[0]!;
     const writerFn = [...EVERY_WRITER_FUNCTION][0]!;
     const planted: Array<[string, string, RegExp]> = [
       ["a command that writes a flat row's file",
         `import { writeFileSync } from "node:fs";\nimport { join } from "node:path";\nexport function f(home: string): void { writeFileSync(join(home, "${spell(rowName(flat)!)}"), "[]"); }\n`,
-        /^C3 names the row transitions/],
-      ["a command that removes a file under a row's subtree",
-        `import { rmSync } from "node:fs";\nimport { join } from "node:path";\nexport function f(home: string, n: string): void { rmSync(join(home, "${subtree.under}", n)); }\n`,
-        new RegExp(`^C3 names the row ${subtree.row}`)],
+        /^C3 names the row place-archive/],
       ["a command that calls a seat door",
         `import { ${seatDoor} } from "@lararium/node";\nexport async function f(): Promise<void> { await (${seatDoor} as (...a: unknown[]) => Promise<unknown>)("identity", "x", new Uint8Array()); }\n`,
         new RegExp(`^C1 calls the write door ${seatDoor}$`)],
       ["a command that reaches a file-system write by a computed name",
         `import * as fs from "node:fs";\nimport { join } from "node:path";\nexport function f(home: string): void { fs["writeFileSync"](join(home, "${spell(rowName(flat)!)}"), "[]"); }\n`,
-        /^C3 names the row transitions/],
+        /^C3 names the row place-archive/],
       ["a command that calls a holder method",
         `export async function f(holder: { ${HOLDER_WRITES[0]}: (...a: unknown[]) => Promise<void> }): Promise<void> { await holder.${HOLDER_WRITES[0]}("identity", "x", new Uint8Array()); }\n`,
         new RegExp(`^C1 calls the write door ${HOLDER_WRITES[0]}$`)],

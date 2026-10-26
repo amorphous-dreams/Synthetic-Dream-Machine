@@ -47,12 +47,12 @@ describe("recovery keel — quorum → reconstruct → re-admit a fresh device",
     // Layer 3: the reconstructed root signs a FRESH device's re-admit edge (admit ceremony, signer swapped).
     // In Fork-A reconstruct the op-key does NOT rotate — the reconstructed root IS the KEL head — so the
     // re-admit carries the persona's stable inception prefix over (root op-key + unarmed recovery-commit).
-    const freshVK = freshDeviceKey();
+    const freshTreeKey = freshDeviceKey();
     const rootDidPin = `0x${Buffer.from(await ed25519.getPublicKeyAsync(ROOT)).toString("hex")}`;
     const personaKelPrefix = personaPrefixOf(rootDidPin, "");
     const payload = await runReadmitEdge({
       reconstructedRoot,
-      joineeVerifyingKey: freshVK,
+      joineeVerifyingKey: freshTreeKey,
       personaKelPrefix,
       // REQUIRED now (early alpha, no back-compat): `runReadmitEdge`/`runDeviceAdmitEdge` only WRITE this
       // chain forward, never re-verify it at mint time, so a minimal hand-shaped inception suffices here.
@@ -76,7 +76,7 @@ describe("recovery keel — quorum → reconstruct → re-admit a fresh device",
     // pinned signer is unchanged, so the joinee accepts it at the same Binding Gate.
     const rootDid = `0x${Buffer.from(await ed25519.getPublicKeyAsync(ROOT)).toString("hex")}`;
     expect(payload.signerDid).toBe(rootDid);
-    expect(payload.deviceEdge.deviceVerifyingKey).toBe(freshVK);
+    expect(payload.deviceEdge.deviceVerifyingKey).toBe(freshTreeKey);
     expect((await verifyDeviceDelegation(await complete(payload.deviceEdge), rootDid)).ok).toBe(true);
     // A DIFFERENT root would NOT verify — the edge is bound to the recovered root, not any signer.
     expect((await verifyDeviceDelegation(await complete(payload.deviceEdge), `0x${"ff".repeat(32)}`)).ok).toBe(false);

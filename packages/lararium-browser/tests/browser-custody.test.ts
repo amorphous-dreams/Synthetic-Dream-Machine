@@ -55,21 +55,21 @@
  *   BC23 a bound slot seals the root and its roster; neither rests in the clear.
  *   BC24 a locked root read refuses before any row read; unlock returns the same seed.
  *   BC25 a confirmed clear returns the root and roster to clear rows and removes their carriers.
- *   BC27 the schema holds no retired root stores; its keystore remains available.
- *   BC28 an upgrade drops retired clear root records while preserving its custody row.
+ *   BC27 a fresh schema stands the present stores and rests no worn-face pointer.
+ *   BC28 the worn face is session state of one tab: it rests in no store, and a reload asks again.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-custody
  */
 import { describe, expect, test, vi } from "vitest";
 import {
-  bindSlot, commitSlotTree, confirmPaperPin, decodeSlotTree, draftPaperPin, mintVk, openSealedCarrier, writeSealedCarrier, SEALING_SUFFIX,
+  bindSlot, commitSlotTree, confirmPaperPin, decodeSlotTree, draftPaperPin, mintTreeKey, openSealedCarrier, writeSealedCarrier, SEALING_SUFFIX,
   type CustodyIo,
 } from "@lararium/mesh";
 import { BootHalted } from "./wire-vessel-rig.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import {
   browserIdentityContinuityKey, generateOrLoadBrowserVesselIdentity, generateOrLoadBrowserPersonaRoot,
-  loadBrowserPersonaRootSeed, listBrowserPersonaRoots, loadBrowserSigningSeed, openVesselIdb, idbGet, idbPut, idbKeys,
+  loadBrowserPersonaRootSeed, listBrowserPersonaRoots, loadBrowserSigningSeed, openVesselIdb, idbGet, idbPut, idbKeys, makeBrowserIdbPersonaVault, forgetWornFaceOfTab,
 } from "../src/browser-vessel-identity.js";
 import {
   loadBrowserKeyhiveArchive, loadBrowserVeilArchive, requireBrowserKeyhiveArchive,
@@ -85,7 +85,7 @@ import {
 } from "../src/browser-custody.js";
 
 const STORE = "keystore";
-const MAGIC = new TextEncoder().encode("lares-vk-seal");
+const MAGIC = new TextEncoder().encode("lares-s-seal");
 const PASS = { kind: "passphrase", passphrase: "the hearth keeps its fire" } as const;
 const WRONG = { kind: "passphrase", passphrase: "wrong" } as const;
 const CUSTODY_ROWS = ["keyhive-archive", "veil-archive-ggroup-a", "vessel-key"] as const;
@@ -503,12 +503,12 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     expect(await io.read("port-probe-moved")).toBeNull();
     expect(await io.exclusive(async () => 7)).toBe(7);
 
-    // A VK of the test's own, bound under a tree the mesh writer commits through the port. The vessel's own VK is
+    // A tree key of the test's own, bound under a tree the mesh writer commits through the port. The vessel's own tree key is
     // unreachable from the public surface, and none is needed: the law under test is the port's.
-    const vk = mintVk();
-    const tree = bindSlot(null, vk, { t: 1, pins: [{ kind: "passphrase", passphrase: "port" }] });
+    const treeKey = mintTreeKey();
+    const tree = bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "port" }] });
     const carrier = sealedCarrierOf("keyhive-archive");
-    await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, vk, tree, carriers: [carrier] });
+    await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, treeKey, tree, carriers: [carrier] });
     expect(await rowOf(idbName, CUSTODY_TREE_ROW)).toBeInstanceOf(Uint8Array);
 
     const flipping: CustodyIo = {
@@ -522,16 +522,16 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
       },
     };
     const plaintext = randomBytes(64);
-    await expect(writeSealedCarrier({ io: flipping, vk, treePath: CUSTODY_TREE_ROW, carrier, plaintext }))
+    await expect(writeSealedCarrier({ io: flipping, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext }))
       .rejects.toThrow(/did not read back/);
     expect(await io.read(carrier.path), "nothing landed at the carrier").toBeNull();
     expect(await io.read(`${carrier.path}${SEALING_SUFFIX}`), "the torn sidecar left").toBeNull();
     expect(await rowOf(idbName, "keyhive-archive"), "no clear row either").toBeUndefined();
 
     // CONTROL: the same write through the honest port lands, at the keystore row the carrier names, and opens.
-    await writeSealedCarrier({ io, vk, treePath: CUSTODY_TREE_ROW, carrier, plaintext });
+    await writeSealedCarrier({ io, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext });
     expect(startsWithMagic(await rowOf(idbName, carrier.path))).toBe(true);
-    const opened = await openSealedCarrier({ io, vk, carrier });
+    const opened = await openSealedCarrier({ io, treeKey, carrier });
     expect(opened.reading).toBe("opens");
     if (opened.reading === "opens") expect(hex(opened.plaintext)).toBe(hex(plaintext));
 
@@ -795,12 +795,12 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
   test("BC20 a torn replacement sidecar leaves the standing sealed value byte-identical", async () => {
     const idbName = `custody-replace-${crypto.randomUUID()}`;
     const io = browserKeystoreCustodyIo(idbName);
-    const vk = mintVk();
-    const tree = bindSlot(null, vk, { t: 1, pins: [{ kind: "passphrase", passphrase: "replace" }] });
+    const treeKey = mintTreeKey();
+    const tree = bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "replace" }] });
     const carrier = sealedCarrierOf("keyhive-archive");
-    await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, vk, tree, carriers: [carrier] });
+    await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, treeKey, tree, carriers: [carrier] });
     const a = randomBytes(64);
-    await writeSealedCarrier({ io, vk, treePath: CUSTODY_TREE_ROW, carrier, plaintext: a });
+    await writeSealedCarrier({ io, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext: a });
     const before = (await io.read(carrier.path))!;
 
     const flipping: CustodyIo = {
@@ -814,7 +814,7 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
       },
     };
     const b = randomBytes(72);
-    await expect(writeSealedCarrier({ io: flipping, vk, treePath: CUSTODY_TREE_ROW, carrier, plaintext: b }))
+    await expect(writeSealedCarrier({ io: flipping, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext: b }))
       .rejects.toThrow(/did not read back/);
     expect(hex((await io.read(carrier.path))!), "the standing seal keeps its exact bytes").toBe(hex(before));
     expect(await io.read(`${carrier.path}${SEALING_SUFFIX}`), "the torn sidecar left").toBeNull();
@@ -894,71 +894,34 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     expect(await loadBrowserPersonaRootSeed(v.idbName, 0)).toEqual(seed);
   }, SLOW);
 
-  test("BC27 a fresh schema omits retired root stores", async () => {
+  test("BC27 a fresh schema stands the present stores and rests no worn-face pointer", async () => {
     const idbName = `custody-schema-${crypto.randomUUID()}`;
     const db = await openVesselIdb(idbName);
     try {
-      // CONTROL: the keystore remains available for custody rows.
-      expect(db.objectStoreNames.contains("keystore")).toBe(true);
-      expect(db.objectStoreNames.contains("persona-roots")).toBe(false);
-      expect(db.objectStoreNames.contains("persona-roster")).toBe(false);
+      for (const store of ["keystore", "bootstrap", "anchors", "anchor-roster", "fleet-join"]) expect(db.objectStoreNames.contains(store)).toBe(true);   // CONTROL
+      expect(db.objectStoreNames.contains("active-persona")).toBe(false);
     } finally { db.close(); }
   });
 
-  test("BC28 an upgrade retires clear root stores without carrying their records", async () => {
-    const idbName = `custody-upgrade-${crypto.randomUUID()}`;
-    const old = await new Promise<IDBDatabase>((resolve, reject) => {
-      const req = indexedDB.open(idbName, 9);
-      req.onupgradeneeded = () => {
-        req.result.createObjectStore("keystore");
-        req.result.createObjectStore("persona-roots");
-        req.result.createObjectStore("persona-roster");
-      };
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    await idbPut(old, "keystore", "catalog-url", "automerge:kept");
-    await idbPut(old, "persona-roots", "h3", { signingKey: "clear" });
-    await idbPut(old, "persona-roster", "roster", { roots: [3] });
-    old.close();
+  test("BC28 the worn face is session state of one tab: it rests in no store, and a reload asks again", async () => {
+    const v = await plantedVessel("worn-session");
+    await sealBrowserKeystore(v.idbName, PASS);
+    await generateOrLoadBrowserPersonaRoot(v.idbName, 0);
+    await generateOrLoadBrowserPersonaRoot(v.idbName, 1);
+    const vault = await makeBrowserIdbPersonaVault(v.idbName);
+    expect(await vault.selector.load()).toBeUndefined();                       // two roots held and none chosen: no inference
+    await vault.selector.save(1);
+    expect(await vault.selector.load()).toBe(1);
+    const db = await openVesselIdb(v.idbName);
+    try { expect(db.objectStoreNames.contains("active-persona")).toBe(false); } finally { db.close(); }
+    forgetWornFaceOfTab(v.idbName);                                            // the tab reloads
+    expect(await vault.selector.load()).toBeUndefined();
+  }, SLOW);
 
-    const db = await openVesselIdb(idbName);
-    try {
-      // CONTROL: the custody store and its unrelated row survive the upgrade.
-      expect(await idbGet(db, "keystore", "catalog-url")).toBe("automerge:kept");
-      expect(db.objectStoreNames.contains("persona-roots")).toBe(false);
-      expect(db.objectStoreNames.contains("persona-roster")).toBe(false);
-      expect(await idbGet(db, "keystore", "persona-root-h3")).toBeUndefined();
-      expect(await idbGet(db, "keystore", "persona-root-roster")).toBeUndefined();
-    } finally { db.close(); }
-  });
-
-  test("BC31 a schema upgrade drops clear secret stores and fleet secret rows while keeping signed public rows", async () => {
-    const idbName = `custody-secret-upgrade-${crypto.randomUUID()}`;
-    const old = await new Promise<IDBDatabase>((resolve, reject) => {
-      const req = indexedDB.open(idbName, 10);
-      req.onupgradeneeded = () => {
-        for (const store of ["keystore", "hosting-walk", "nexus-keys", "vessel-face-keys", "fleet-join"]) req.result.createObjectStore(store);
-      };
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    await idbPut(old, "hosting-walk", "gate", { nexusAid: "nexus.synthetic", invite: "bearer" });
-    await idbPut(old, "nexus-keys", "h0:nexus.synthetic", randomBytes(32));
-    await idbPut(old, "vessel-face-keys", "scope", randomBytes(32));
-    await idbPut(old, "fleet-join", "pending", { sealSecret: "ab".repeat(32) });
-    await idbPut(old, "fleet-join", "secret:group", randomBytes(32));
-    await idbPut(old, "fleet-join", "record:group", { rootKey: "ab".repeat(32) });
-    await idbPut(old, "fleet-join", "dial:group", { charter: "public" });
-    old.close();
-    const db = await openVesselIdb(idbName);
-    try {
-      for (const store of ["hosting-walk", "nexus-keys", "vessel-face-keys"]) expect(db.objectStoreNames.contains(store)).toBe(false);
-      expect(await idbGet(db, "fleet-join", "pending")).toBeUndefined();
-      expect(await idbGet(db, "fleet-join", "secret:group")).toBeUndefined();
-      // CONTROL: the signed public homes survive the upgrade.
-      expect(await idbGet(db, "fleet-join", "record:group")).toEqual({ rootKey: "ab".repeat(32) });
-      expect(await idbGet(db, "fleet-join", "dial:group")).toEqual({ charter: "public" });
-    } finally { db.close(); }
-  });
+  test("BC28b CONTROL: one root held is the face worn", async () => {
+    const v = await plantedVessel("worn-one-root");
+    await sealBrowserKeystore(v.idbName, PASS);
+    await generateOrLoadBrowserPersonaRoot(v.idbName, 0);
+    expect(await (await makeBrowserIdbPersonaVault(v.idbName)).selector.load()).toBe(0);
+  }, SLOW);
 });

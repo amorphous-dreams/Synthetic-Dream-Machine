@@ -17,10 +17,10 @@ import {
   mintBundleKey, openBundleKey, openFaceBundleBody, readFaceBundle, readFaceBundleBody, sealFaceBundleBody,
   type FaceBundleBody,
 } from "../src/face-bundle.js";
-import { confirmPaperPin, draftPaperPin, bindSlot, openVk, type SlotSpec } from "../src/keyslot.js";
+import { confirmPaperPin, draftPaperPin, bindSlot, openTreeKey, type SlotSpec } from "../src/keyslot.js";
 import { openMemorySection, sealMemorySection } from "../src/memory-section.js";
 import { mintPersonaInception } from "../src/persona-kel.js";
-import { mintVk } from "../src/vk.js";
+import { mintTreeKey } from "../src/tree-key.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { xchacha20poly1305 } from "@noble/ciphers/chacha.js";
@@ -204,13 +204,13 @@ describe("two bundles share nothing, and a holder with no route reads the residu
     const a = cut();
     const b = cut();
     expect(hex(a.bundleKey)).not.toBe(hex(b.bundleKey));
-    expect(a.tree.vkCheck).not.toBe(b.tree.vkCheck);
+    expect(a.tree.keyCheck).not.toBe(b.tree.keyCheck);
     const fields = (made: ReturnType<typeof cut>): string[] => {
       const read = readFaceBundle(made.bytes);
       if (read.reading !== "readable") throw new Error("setup");
       return [
-        read.tree.vkCheck, hex(read.sealedBody.subarray(0, 24)),
-        ...read.tree.slots.flatMap((s) => [s.id, s.nonce, s.wrappedVk, ...s.pins.flatMap((p) => [p.nonce, p.wrapped, ...(p.kind === "passphrase" ? [p.salt] : [])])]),
+        read.tree.keyCheck, hex(read.sealedBody.subarray(0, 24)),
+        ...read.tree.slots.flatMap((s) => [s.id, s.nonce, s.wrappedKey, ...s.pins.flatMap((p) => [p.nonce, p.wrapped, ...(p.kind === "passphrase" ? [p.salt] : [])])]),
       ];
     };
     const inA = new Set(fields(a));
@@ -241,9 +241,9 @@ describe("two bundles share nothing, and a holder with no route reads the residu
 
   it("a slot lifted from a bundle's tree into a vessel's tree opens nothing there", () => {
     const made = cut();
-    const vessel = bindSlot(null, mintVk(), { t: 1, pins: [{ kind: "passphrase", passphrase: "the vessel's own route" }] });
-    const grafted = { vkCheck: vessel.vkCheck, slots: [...vessel.slots, made.tree.slots[0]!] };
-    expect(openVk(grafted, [PASS]).reading).toBe("no-slot-opens");
+    const vessel = bindSlot(null, mintTreeKey(), { t: 1, pins: [{ kind: "passphrase", passphrase: "the vessel's own route" }] });
+    const grafted = { keyCheck: vessel.keyCheck, slots: [...vessel.slots, made.tree.slots[0]!] };
+    expect(openTreeKey(grafted, [PASS]).reading).toBe("no-slot-opens");
   });
 });
 

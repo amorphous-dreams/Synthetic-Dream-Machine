@@ -1,17 +1,15 @@
 /**
- * serving-key.test — the serving key (SK) mints at the founding, rests in the serving tree under the VK's entry, and
+ * serving-key.test — the serving key (SK) mints at the founding, rests in its own serving tree (slots of its own, wrapped by no other key), and
  * opens at a human unlock (lar:///ha.ka.ba/lararium/mesh/ember#/the-serving-key).
  *
- *   S1 · a founding leaves `sk-slots.bin` beside `vk-slots.bin`, and the census reads it as the `floor` row `sk-slots`
+ *   S1 · a founding leaves `sk-slots.bin` beside `s-slots.bin`, and the census reads it as the `floor` row `sk-slots`
  *        (CONTROL: the slot tree's own row reads beside it; the class list names `serving`).
- *   S2 · an unlock opens the VK, then SK, and two unlocks of one vessel open the same SK (CONTROL: two vessels' SKs differ).
- *   S3 · a serving tree copied from another vessel opens nothing under this VK: the unlock reads `serving-unopenable`
- *        and hands back no key (CONTROL: the vessel's own tree put back opens again).
- *   S4 · a serving tree with its VK entry stripped refuses by name (the human-route law), as does a torn or absent one.
- *   S5 · a VK rotation re-wraps the VK entry and keeps the SK: the staying route opens the same SK under the new VK.
- *   S6 · a rotation's re-wrap that committed beside an old tree settles at the next unlock; one that never committed leaves.
+ *   S2 · an unlock opens the S key, then SK, and two unlocks of one vessel open the same SK (CONTROL: two vessels' SKs differ).
+ *   S3 · a serving tree whose routes this credential does not fit opens no SK while the node key opens: the unlock hands back
+ *        `sk: null` (CONTROL: the vessel's own tree put back opens SK again).
+ *   S4 · a torn or absent serving tree opens no SK by name, and the node key still opens.
+ *   S5 · a rotation of the node key moves no byte of the serving tree: the same SK opens before and after.
  *   S7 · status reads the serving tree bare by law and faults nothing.
- *   S8 · a rotation over a serving tree its VK cannot open refuses by name before any byte moves.
  *   S9 · a rotation holds ONE claim across its writes, so no opening settles its re-wrap away mid-act.
  *  S10 · a fault between the serving tree and the slot tree strands no SK: the next founding stands whole.
  *  S11 · a second founding over a standing slot tree refuses before it touches the serving tree.
@@ -54,18 +52,18 @@ afterEach(() => { rmSync(root, { recursive: true, force: true }); });
 describe("the serving key at the founding", () => {
   test("S1 — a founding leaves the serving tree, and the census reads it as a floor row — CONTROL: the slot tree reads beside it", async () => {
     await session.foundCustody({ io, homes, slots: [slotOf(PW)] });
-    expect(existsSync(join(homes.identity, "vk-slots.bin"))).toBe(true);           // CONTROL
+    expect(existsSync(join(homes.identity, "s-slots.bin"))).toBe(true);           // CONTROL
     expect(existsSync(skTree(homes))).toBe(true);
-    expect([...carriers.CUSTODY_CLASSES]).toEqual(["floor", "floor-plain", "serving", "hot", "cold", "outbox"]);
+    expect([...carriers.CUSTODY_CLASSES]).toEqual(["floor", "floor-plain", "serving", "hot", "cold", "outbox", "face-hot", "face-cold"]);
     const census = carriers.carrierCensus(homes);
-    expect(census.find((e) => e.row === "vk-slots")?.custody).toBe("floor");        // CONTROL
+    expect(census.find((e) => e.row === "s-slots")?.custody).toBe("floor");        // CONTROL
     const row = census.find((e) => e.row === "sk-slots");
     expect(row?.custody).toBe("floor");
     expect(row?.bare).toMatch(/serving tree/);
     expect(carriers.outsideTheTable(homes)).toEqual([]);
   });
 
-  test("S2 — an unlock opens SK beside the VK, the same SK each time — CONTROL: another vessel's SK differs", async () => {
+  test("S2 — an unlock opens SK beside the S key, the same SK each time — CONTROL: another vessel's SK differs", async () => {
     const f = await session.foundCustody({ io, homes, slots: [slotOf(PW)] }) as { sk?: Uint8Array };
     const first = await unlockSk(homes, new FsCustodyIo(homes));
     const second = await unlockSk(homes, new FsCustodyIo(homes));
@@ -79,92 +77,47 @@ describe("the serving key at the founding", () => {
   });
 });
 
-describe("the serving tree refuses what it does not commit to", () => {
-  test("S3 — a serving tree copied from another vessel opens nothing — CONTROL: the vessel's own tree opens again", async () => {
+describe("the serving tree stands apart from the node tree", () => {
+  test("S3 — a serving tree no presented route fits opens no SK while the node key opens — CONTROL: the vessel's own tree opens again", async () => {
     await session.foundCustody({ io, homes, slots: [slotOf(PW)] });
     const b = homesAt("b");
-    await session.foundCustody({ io: b.io, homes: b.homes, slots: [slotOf(PW)] });
+    await session.foundCustody({ io: b.io, homes: b.homes, slots: [slotOf("another route")] });
     const mine = readFileSync(skTree(homes));
     writeFileSync(skTree(homes), readFileSync(skTree(b.homes)));
-    const u = await unlockSk(homes, io);
-    expect(u.reading).toBe("serving-unopenable");
-    expect(u.sk).toBeUndefined();
-    expect((u as { why?: string }).why).toMatch(/vk-entry-refuses/);
+    const u = await session.unlockCustody({ io, homes, credentials: [passphrase(PW)] });
+    expect(u.reading).toBe("opens");
+    expect(u.reading === "opens" && u.sk).toBeNull();
     writeFileSync(skTree(homes), mine);
     expect((await unlockSk(homes, io)).reading).toBe("opens");                        // CONTROL
+    expect((await unlockSk(homes, io)).sk?.length).toBe(32);
   });
 
-  test("S4 — a tree with no VK entry refuses by name, as does a torn tree and an absent one — CONTROL: the whole tree opens", async () => {
+  test("S4 — a torn serving tree and an absent one open no SK by name, the node key still opens — CONTROL: the whole tree opens", async () => {
     await session.foundCustody({ io, homes, slots: [slotOf(PW)] });
     const whole = readFileSync(skTree(homes));
-    const parsed = JSON.parse(whole.toString("utf8")) as Record<string, unknown>;
-    const { vkEntry: _dropped, ...stripped } = parsed;
-    expect(Object.keys(parsed)).toContain("vkEntry");                                   // the tamper moved decoded bytes
-    writeFileSync(skTree(homes), JSON.stringify(stripped));
-    const noEntry = await unlockSk(homes, io);
-    expect(noEntry.reading).toBe("serving-unopenable");
-    expect((noEntry as { why?: string }).why).toMatch(/no VK entry/);
     writeFileSync(skTree(homes), "not a tree");
-    expect((await unlockSk(homes, io)).reading).toBe("serving-unopenable");
+    const torn = await session.openServingTree({ io, homes, credentials: [passphrase(PW)] });
+    expect(torn.reading).toBe("serving-tree-unreadable");
     rmSync(skTree(homes));
-    const absent = await unlockSk(homes, io);
-    expect(absent.reading).toBe("serving-unopenable");
-    expect((absent as { why?: string }).why).toMatch(/serving-tree-absent/);
+    const absent = await session.openServingTree({ io, homes, credentials: [passphrase(PW)] });
+    expect(absent.reading).toBe("serving-tree-absent");
+    const u = await session.unlockCustody({ io, homes, credentials: [passphrase(PW)] });
+    expect(u.reading === "opens" && u.sk).toBeNull();
     writeFileSync(skTree(homes), whole);
     expect((await unlockSk(homes, io)).reading).toBe("opens");                        // CONTROL
   });
 });
 
-describe("a VK rotation re-wraps the VK entry and keeps SK", () => {
-  test("S5 — the staying route opens the same SK under the new VK — CONTROL: the removed route opens nothing", async () => {
+describe("a rotation of the node key leaves the serving tree whole", () => {
+  test("S5 — the same SK opens after the node key rotates, and the serving tree's bytes do not move", async () => {
     const f = await session.foundCustody({ io, homes, slots: [slotOf(PW)] });
     const before = await unlockSk(homes, io);
     const treeBefore = readFileSync(skTree(homes));
-    const bound = await session.bindCustodySlot({ io, homes, vk: f.vk, spec: slotOf("staying route") });
-    await session.unbindCustodySlot({ io, homes, vk: f.vk, slotId: f.tree.slots[0]!.id, rotate: [slotOf("staying route")] });
-    expect(bound.tree.slots).toHaveLength(2);
-    expect((await unlockSk(homes, io)).reading).toBe("no-slot-opens");                // CONTROL
-    const after = await unlockSk(homes, io, "staying route");
+    await session.rotateCustody({ io, homes, oldTreeKey: f.treeKey, slots: [slotOf(PW)] });
+    const after = await unlockSk(homes, io);
     expect(after.reading).toBe("opens");
     expect(hex(after.sk)).toBe(hex(before.sk));
-    expect(readFileSync(skTree(homes)).equals(treeBefore)).toBe(false);               // the entry re-wrapped
-    expect(existsSync(`${skTree(homes)}.sk-rewrap`)).toBe(false);
-  });
-
-  test("S6 — a committed re-wrap beside an old tree settles at the next unlock; an uncommitted one leaves — CONTROL: a clean tree opens", async () => {
-    const f = await session.foundCustody({ io, homes, slots: [slotOf(PW)] });
-    const old = readFileSync(skTree(homes));
-    const sk = hex((await unlockSk(homes, io)).sk);
-    await session.rotateCustody({ io, homes, oldVk: f.vk, slots: [slotOf("rotated route")] });
-    const rewrapped = readFileSync(skTree(homes));
-    // The fault: the rotation committed, and the re-wrap never took the tree's place.
-    writeFileSync(skTree(homes), old);
-    writeFileSync(`${skTree(homes)}.sk-rewrap`, rewrapped);
-    const settled = await unlockSk(homes, io, "rotated route");
-    expect(settled.reading).toBe("opens");
-    expect(hex(settled.sk)).toBe(sk);
-    expect(readFileSync(skTree(homes)).equals(rewrapped)).toBe(true);
-    expect(existsSync(`${skTree(homes)}.sk-rewrap`)).toBe(false);
-    // The fault: a re-wrap that never committed (its rotation stopped before the slot tree moved).
-    writeFileSync(`${skTree(homes)}.sk-rewrap`, old);
-    expect((await unlockSk(homes, io, "rotated route")).reading).toBe("opens");     // CONTROL
-    expect(existsSync(`${skTree(homes)}.sk-rewrap`)).toBe(false);
-    expect(readFileSync(skTree(homes)).equals(rewrapped)).toBe(true);
-  });
-});
-
-describe("a rotation that reaches no SK", () => {
-  test("S8 — a rotation over a serving tree its VK cannot open refuses by name and moves no byte — CONTROL: put back, it rotates", async () => {
-    const f = await session.foundCustody({ io, homes, slots: [slotOf(PW)] });
-    const tree = readFileSync(skTree(homes));
-    const slots = readFileSync(join(homes.identity, "vk-slots.bin"));
-    rmSync(skTree(homes));
-    await expect(session.rotateCustody({ io, homes, oldVk: f.vk, slots: [slotOf("rotated")] }))
-      .rejects.toThrow(/re-wraps the serving key under the new vessel key, and none opens \(serving-tree-absent/);
-    expect(readFileSync(join(homes.identity, "vk-slots.bin")).equals(slots)).toBe(true);
-    writeFileSync(skTree(homes), tree);
-    await session.rotateCustody({ io, homes, oldVk: f.vk, slots: [slotOf("rotated")] });              // CONTROL
-    expect((await unlockSk(homes, io, "rotated")).reading).toBe("opens");
+    expect(readFileSync(skTree(homes)).equals(treeBefore)).toBe(true);
   });
 });
 
@@ -174,7 +127,7 @@ describe("status", () => {
     const status = await session.custodyStatus({ io, homes });
     const row = status.rows.find((r) => r.row === "sk-slots");
     expect(row).toMatchObject({ custody: "floor", reading: "bare", fault: false });
-    expect(status.rows.find((r) => r.row === "vk-slots")).toMatchObject({ reading: "bare", fault: false });
+    expect(status.rows.find((r) => r.row === "s-slots")).toMatchObject({ reading: "bare", fault: false });
     expect(status.outside).toEqual([]);
   });
 });
@@ -202,16 +155,16 @@ describe("one claim spans each act that writes twice", () => {
   test("S9 — a rotation takes ONE claim and writes nothing outside it — CONTROL: it rotates", async () => {
     const f = await session.foundCustody({ io, homes, slots: [slotOf(PW)] });
     const spy = spyIo(io);
-    await session.rotateCustody({ io: spy.io, homes, oldVk: f.vk, slots: [slotOf("rotated")] });
+    await session.rotateCustody({ io: spy.io, homes, oldTreeKey: f.treeKey, slots: [slotOf("rotated")] });
     expect(spy.seen).toEqual({ claims: 1, writesOutside: 0 });
     expect((await unlockSk(homes, io, "rotated")).reading).toBe("opens");                             // CONTROL
   });
 
   test("S10 — a fault between the serving tree and the slot tree strands no SK: the next founding stands whole — CONTROL: a whole founding opens", async () => {
-    const faulty = spyIo(io, /vk-slots\.bin/);
+    const faulty = spyIo(io, /s-slots\.bin/);
     await expect(session.foundCustody({ io: faulty.io, homes, slots: [slotOf(PW)] })).rejects.toThrow(/the disk faulted/);
     expect(existsSync(skTree(homes))).toBe(true);
-    expect(existsSync(join(homes.identity, "vk-slots.bin"))).toBe(false);
+    expect(existsSync(join(homes.identity, "s-slots.bin"))).toBe(false);
     expect(faulty.seen.writesOutside).toBe(0);
     const whole = spyIo(io);
     await session.foundCustody({ io: whole.io, homes, slots: [slotOf(PW)] });

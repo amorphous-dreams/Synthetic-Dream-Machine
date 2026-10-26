@@ -152,12 +152,12 @@ export async function personaRootDid(handleIndex = 0): Promise<string> {
   // The roster rests sealed, so the read rides the custody door (`sealed-rows`). It loads here, at the call:
   // this module stands under the store door, and the store door stands under that one.
   const { personaRootKey } = await import("./sealed-rows.js");
-  const vk = await personaRootKey(handleIndex);
-  if (!vk) {
+  const treeKey = await personaRootKey(handleIndex);
+  if (!treeKey) {
     throw new Error(
       `no persona root h${handleIndex} under ${larDataDir()} — this vessel custodies no operator root ` +
       `(found with \`lares vessel found\`, or read the pinned signer DID an admit payload carried)`,
     );
   }
-  return "0x" + vk;
+  return "0x" + treeKey;
 }

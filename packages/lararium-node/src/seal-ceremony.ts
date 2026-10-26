@@ -44,7 +44,7 @@ import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { primaryNexusAid, readCarriedCharters } from "./carried-set.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
-import { openedCustody, readCustodyRow, removeCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { openedCustody } from "./custody-seat.js";
 import { nexusCharterStands, readNexusDoc } from "./nexus-doc.js";
 import { heldNexusLeaves } from "./nexus-leaf.js";
 import { listPersonaRosterLines, loadPersonaGroupRootSeed, makeNodePersonaDeclarationStore } from "./node-vessel-identity.js";
@@ -54,6 +54,7 @@ import {
   type ReserveTransition, type ReserveTransitionCore, type TransitionWitness,
 } from "./reserve-transition.js";
 import { larSealHome } from "./vessel-paths.js";
+import { readPlainRow, removePlainRow, updatePlainRow } from "./plain-rows.js";
 import { aFaceBinds } from "./hearth-aid.js";
 import { recordedJointImage, sameInceptionImage } from "./cofound-record.js";
 import { RollCircleRecordTorn, readRollCircleRecords } from "./roll-circle-record.js";
@@ -200,7 +201,7 @@ export async function armGenesis(opts: { readonly threshold?: number } = {}): Pr
   const sealHome = larSealHome();
   const standingDoc = readNexusDoc(sealHome);
   if (standingDoc === null && nexusCharterStands(sealHome)) {
-    throw refuse("charter-torn", "the charter doc stands here but reads TORN or in an earlier shape — refusing to seat over it (a re-seat would re-genesis a chain that may already have rotated). Repair or move it, then seat.");
+    throw refuse("charter-torn", "the charter doc stands here but reads TORN — refusing to seat over it (a re-seat would re-genesis a chain that may already have rotated). Repair or move it, then seat.");
   }
   const doc = standingDoc ?? emptyFoundingCharterDoc();
   if ((doc.sealLineage?.length ?? 0) > 1) {
@@ -606,7 +607,7 @@ const sealPending = (p: PendingCrossing): Uint8Array => utf8.encode(JSON.stringi
 
 /** Read the pending row, decide over it and seal the next one, under one custody holder. `null` from `decide` writes nothing. */
 function updatePending<T>(decide: (standing: PendingCrossing | null) => { readonly next: PendingCrossing | null; readonly value: T }): Promise<T> {
-  return updateCustodyRow("seal", TRANSITION_PENDING_FILE, (bytes) => {
+  return updatePlainRow("seal", TRANSITION_PENDING_FILE, (bytes) => {
     const d = decide(bytes === null ? null : parsePending(bytes));
     return { plaintext: d.next === null ? null : sealPending(d.next), value: d.value };
   });
@@ -614,14 +615,14 @@ function updatePending<T>(decide: (standing: PendingCrossing | null) => { readon
 
 /** The crossing that stands open, or null. */
 async function readPending(): Promise<PendingCrossing | null> {
-  const pending = await readCustodyRow("seal", TRANSITION_PENDING_FILE);
+  const pending = await readPlainRow("seal", TRANSITION_PENDING_FILE);
   return pending === null ? null : parsePending(pending);
 }
 
 /** The crossing that stands open (or null), and how many sealed records this vessel keeps. */
 export async function readCrossing(): Promise<{ readonly pending: PendingCrossing | null; readonly kept: number }> {
   const pending = await readPending();
-  const kept = await readCustodyRow("seal", TRANSITIONS_FILE);
+  const kept = await readPlainRow("seal", TRANSITIONS_FILE);
   return { pending, kept: kept === null ? 0 : parseKept(kept).length };
 }
 
@@ -673,7 +674,7 @@ export function keepCrossingMark<T>(core: ReserveTransitionCore, apply: (standin
  * Answers whether the row left.
  */
 export function dropPendingCrossing(transitionCid: string): Promise<boolean> {
-  return removeCustodyRow("seal", TRANSITION_PENDING_FILE, (bytes) => {
+  return removePlainRow("seal", TRANSITION_PENDING_FILE, (bytes) => {
     const core = boundCore(parsePending(bytes));
     return core !== null && reserveTransitionCidOf(core) === transitionCid;
   });
@@ -749,7 +750,7 @@ export async function sealCrossing(): Promise<{ readonly transitionCid: string; 
   });
   if (!verdict.ok) throw refuse("crossing-unverified", `crossing REFUSED (fail-closed): ${verdict.reason} — the pending crossing stands; nothing written.`);
   // THE COMMIT POINT: the record rests in `transitions.json`, once.
-  const resumed = await updateCustodyRow("seal", TRANSITIONS_FILE, (bytes) => {
+  const resumed = await updatePlainRow("seal", TRANSITIONS_FILE, (bytes) => {
     const kept = bytes === null ? [] : parseKept(bytes);
     if (kept.some((r) => r.transitionCid === record.transitionCid)) return { plaintext: null, value: true };
     return { plaintext: utf8.encode(JSON.stringify([...kept, record])), value: false };

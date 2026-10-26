@@ -146,8 +146,8 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       await foundStagedHearth(cliA, rootA, "spider-steward");
       const face = await cliA(["persona", "new", "0", "--name", "spider-steward", "--json"]);
       if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
-      const vkA = ((face.json?.["data"] ?? {}) as Record<string, unknown>)["verifyingKey"];
-      if (typeof vkA === "string") rootNymOf.set("A", vkA.toLowerCase());
+      const treeKeyA = ((face.json?.["data"] ?? {}) as Record<string, unknown>)["verifyingKey"];
+      if (typeof treeKeyA === "string") rootNymOf.set("A", treeKeyA.toLowerCase());
       // A steward seals with the face she WEARS: the realm-bag door refuses a vessel that wears none.
       const wear = await cliA(["persona", "wear", "0"]);
       if (wear.code !== 0) throw new Error(`A: persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
@@ -162,8 +162,8 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       await foundStagedHearth(cli as never, root, name);
       const face = await cli(["persona", "new", "0", "--name", name, "--json"]);
       if (face.code !== 0) throw new Error(`${tag}: face failed (${face.code})\n${face.stderr.slice(-800)}`);
-      const vk = ((face.json?.["data"] ?? {}) as Record<string, unknown>)["verifyingKey"];
-      if (typeof vk === "string") rootNymOf.set(tag, vk.toLowerCase());
+      const treeKey = ((face.json?.["data"] ?? {}) as Record<string, unknown>)["verifyingKey"];
+      if (typeof treeKey === "string") rootNymOf.set(tag, treeKey.toLowerCase());
       const wear = await cli(["persona", "wear", "0"]);
       if (wear.code !== 0) throw new Error(`${tag}: persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
     };

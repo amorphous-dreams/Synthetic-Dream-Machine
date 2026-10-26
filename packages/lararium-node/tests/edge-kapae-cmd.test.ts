@@ -13,6 +13,7 @@ import {
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot,
   loadVesselVerifyingKey, loadPersonaGroupRootVerifyingKey, loadPersonaGroupRootSeed,
+  setWornFaceInSession,
 } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { runEdgeKapae, EdgeKapaeError } from "../src/commands/edge-kapae-cmd.js";
@@ -26,6 +27,7 @@ let root: string;
 let priorLarRoot: string | undefined;
 const EDGE = "a".repeat(64), REALM = "b".repeat(64), MEMBER = "c".repeat(64), DEVICE = "d".repeat(64);
 beforeEach(async () => {
+  setWornFaceInSession(undefined);
   root = mkdtempSync(join(tmpdir(), "lares-kapae-"));
   priorLarRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;
