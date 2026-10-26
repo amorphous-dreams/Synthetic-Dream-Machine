@@ -57,6 +57,9 @@ def test_direct_ci_pins_cover_installed_project_declarations(tmp_path):
     assert pins['numpy'] == '2.3.5'
     assert pins['trimesh'] == '4.11.1'
     assert pins['pytest'] == '9.0.2'
+    assert pins['hypothesis'] == '6.168.0'
+    assert pins['shapely'] == '2.1.2'
+    assert 'topologicpy' not in pins and 'pyribs' not in pins
     altered = tmp_path / 'requirements.txt'
     altered.write_text((ROOT / 'requirements-ci.txt').read_text() + '\nunpinned-lib>=1\n')
     with pytest.raises(ValueError, match='unpinned'):

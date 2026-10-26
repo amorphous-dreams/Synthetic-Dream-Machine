@@ -1,4 +1,4 @@
-# Versions exercised in the Loom CI design environment, 2026-10-23.
+# Exact external dependency inputs exercised by Loom CI, 2026-10-23.
 # Direct dependency constraints; pip resolves additional transitive requirements.
 cadquery==2.8.0
 numpy==2.3.5
@@ -20,4 +20,4 @@ jsonschema==4.25.1
 # Planar GEOS analysis is a required native-evidence observer.
 shapely==2.1.2
 # Hypothesis tests contracts/section invariants, not unbounded CAD fuzzing.
-hypothesis>=6.168
+hypothesis==6.168.0

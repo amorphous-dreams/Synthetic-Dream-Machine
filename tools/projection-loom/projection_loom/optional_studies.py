@@ -1,50 +1,63 @@
-"""Read-only research comparisons with replaceable optional libraries.
-
-TopologicPy and pyribs never enter the build, native audit, reproduction,
-proposal compiler, or OODA-HA phases. They are separately installed studies.
-"""
+"""Opt-in, read-only comparisons, never a second native or generation helm."""
 from __future__ import annotations
 
 
 def topologic_route_pilot(place_witness):
-    """Cross-check native void graph node/edge counts in optional TopologicPy."""
-    if not place_witness["assemblies"]:
-        raise ValueError("Place witness has no assemblies")
+    """Check every audited void graph through separately installed TopologicPy.
+
+    Empty void graphs have no library representation worth manufacturing.
+    No physical geometry, source identity, or pet-name crosses this boundary.
+    """
     from topologicpy.Vertex import Vertex
     from topologicpy.Edge import Edge
     from topologicpy.TGraph import TGraph
-    routes=place_witness["assemblies"][0]["routes"]
-    nodes=routes["voids"]
-    index={name:i for i,name in enumerate(nodes)}
-    vertices=[Vertex.ByCoordinates(i*2.0,0,0) for i in range(len(nodes))]
-    edges=[Edge.ByVertices(vertices[index[a]],vertices[index[b]])
-           for a,b in routes["links"]]
-    graph=TGraph.ByVerticesEdges(vertices,edges)
-    observed=(len(TGraph.Vertices(graph)),len(TGraph.Edges(graph)))
-    expected=(len(nodes),len(edges))
-    if observed!=expected:
-        raise ValueError("TopologicPy pilot disagrees with audited void graph")
-    return {"backend":"TopologicPy TGraph","source_witness_id":place_witness["source_witness_id"],
-            "nodes":observed[0],"edges":observed[1],
-            "authority":"read-only comparison, not source geometry or pet-name authority"}
+    assemblies=place_witness.get("assemblies", [])
+    if not assemblies:
+        raise ValueError("Place witness has no assemblies")
+    census=[]
+    for index,assembly in enumerate(assemblies):
+        routes=assembly["routes"]
+        nodes=routes["voids"]
+        loc={name:pos for pos,name in enumerate(nodes)}
+        if len(loc)!=len(nodes):
+            raise ValueError("Optional TGraph pilot needs unique native handles")
+        if any(a not in loc or b not in loc for a,b in routes["links"]):
+            raise ValueError("Optional TGraph pilot found an unbound link")
+        if not nodes:
+            census.append({"assembly":index,"nodes":0,"edges":0,"state":"empty"})
+            continue
+        vertices=[Vertex.ByCoordinates(i*2.0,0,0) for i in range(len(nodes))]
+        edges=[Edge.ByVertices(vertices[loc[a]],vertices[loc[b]])
+               for a,b in routes["links"]]
+        graph=TGraph.ByVerticesEdges(vertices,edges)
+        if graph is None:
+            raise ValueError("TopologicPy refused the bounded source graph")
+        observed=(len(TGraph.Vertices(graph)),len(TGraph.Edges(graph)))
+        if observed!=(len(nodes),len(edges)):
+            raise ValueError("TopologicPy pilot disagrees with native void adjacency")
+        census.append({"assembly":index,"nodes":observed[0],"edges":observed[1],
+                       "state":"observed"})
+    return {"backend":"TopologicPy TGraph",
+            "source_witness_id":place_witness["source_witness_id"],
+            "assemblies":census,
+            "authority":"read-only graph comparison, not native or Operator authority"}
 
 
 def pyribs_archive_pilot(cohort):
-    """Observe existing admitted cohort diversity without running an emitter."""
+    """Inspect already admitted Fire alternatives in an optional QD grid."""
     from ribs.archives import GridArchive
     import numpy as np
     rows=cohort["candidates"]
     if not rows:
         raise ValueError("No native-admitted candidate rows to illuminate")
-    # Two bounded behavioural axes, not a hidden artistic merit score:
-    # change-pixel fraction proxy and number of expressed orthographic views.
     solutions=np.arange(len(rows),dtype=np.float64).reshape(-1,1)
     changed=np.asarray([r["changed_pixels_all_views"] for r in rows],dtype=np.float64)
-    measures=np.stack((changed/np.maximum(1,changed.max()),
+    if not np.isfinite(changed).all() or np.any(changed<0):
+        raise ValueError("Optional QD descriptor requires finite pixel counts")
+    measures=np.stack((changed/max(1.0,float(changed.max())),
                       np.asarray([len(r["expressed_views"])/6 for r in rows])),axis=1)
     archive=GridArchive(solution_dim=1,dims=[5,5],ranges=[(0,1.00001),(0,1.00001)])
-    # A neutral equal objective lets first-seen admission occupy each cell.
     archive.add(solution=solutions,objective=np.zeros(len(rows)),measures=measures)
     return {"backend":"pyribs GridArchive","occupied_cells":len(archive),
             "candidates":len(rows),
-            "authority":"diagnostic only; does not compete with OODA-HA archive or select elites"}
+            "authority":"diagnostic only; no OODA-HA archive mutation or winner selection"}

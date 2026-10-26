@@ -134,6 +134,28 @@ def _operations(rule, resolved, original):
     raise ValueError("Unregistered Fire implementation")
 
 
+def verify_native_rule_replay(plan, native_result, source_assembly):
+    """Re-derive an admitted Fire construction from the typed plan.
+
+    Checks the source-bound rule, implementation, and deterministic compiled
+    operations; a re-sealed receipt cannot substitute different rule steps.
+    This verifier does not itself certify geometry or grant promotion.
+    """
+    plan=verify_plan(plan)
+    choices=[rule for rule in plan["alternatives"]
+             if rule["id"]==native_result.get("id")]
+    if len(choices)!=1 or native_result.get("state")!="native-admitted":
+        raise ValueError("Native Fire result is not an admitted plan alternative")
+    chosen=choices[0]
+    if (native_result.get("relation")!=chosen["relation"] or
+            native_result.get("implementation")!=chosen["implementation"]):
+        raise ValueError("Native Fire result relation changed from typed proposal")
+    expected=_operations(chosen,plan["resolved"],source_assembly)
+    if native_result.get("rule_steps")!=expected:
+        raise ValueError("Native Fire staged operations changed from typed proposal")
+    return expected
+
+
 def audition_plan(plan, native_assembly, *, location, max_parts=96,
                   max_added_volume_ratio=.75):
     """Audition each proposal *independently*; failed attempts change nothing.

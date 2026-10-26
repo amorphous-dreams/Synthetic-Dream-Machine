@@ -181,6 +181,8 @@ def main(argv=None):
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--cell',type=float,default=.5)
     p.add_argument('--clearance',type=float,default=.7)
+    p.add_argument('--elevation',type=float,action='append',
+                   help='ordered native elevation of a sampled XY section (repeatable)')
     p.add_argument('--topology-pilot',action='store_true',help='optional TopologicPy read-only graph comparison')
     p=commands.add_parser('fire-cohort', help='Verify and census multiple source-bound Fire native/six-view receipts')
     p.add_argument('--receipt',type=Path,action='append',required=True)
@@ -271,7 +273,7 @@ def main(argv=None):
         print(json.dumps(result,indent=2));return result
     if args.command=='place-review':
         from .capability_stack import CapabilityRecipe,CapabilityCompositor
-        from .fire_geometry import _staged
+        from .fire_geometry import _staged,verify_native_rule_replay
         from .grammar import grow_program
         from .place_witness import review_place
         from .provenance_encoding import canonical_json_sha256
@@ -284,12 +286,21 @@ def main(argv=None):
             raise ValueError('Place review native receipt digest mismatch')
         if native.get('source_recipe_sha256')!=recipe.sha256:
             raise ValueError('Place review source recipe drifted')
-        if (project.seed_entity is None or
-                native.get('source_seed_sha256')!=project.seed_entity.sha256):
-            raise ValueError('Place review named image seed drifted')
+        from .epochs import _hash
+        if native.get('source_genome_sha256')!=_hash(native['source_genome']):
+            raise ValueError('Place review source genome receipt drifted')
+        actual_seed=(project.seed_entity.sha256
+                     if project.seed_entity is not None else None)
+        if native.get('source_seed_sha256')!=actual_seed:
+            raise ValueError('Place review seed identity drifted')
         from .fire_contract import verify_plan
-        if verify_plan(native['plan'])['sha256']!=native['plan_sha256']:
+        checked_plan=verify_plan(native['plan'])
+        if checked_plan['sha256']!=native['plan_sha256']:
             raise ValueError('Place review bound proposal drifted')
+        if (checked_plan['source_witness_id']!=native['original_witness_id'] or
+                checked_plan['seed_entity_sha256']!=native.get('source_seed_sha256') or
+                checked_plan['location']!=project.location):
+            raise ValueError('Place review bound source differs from native receipt')
         for row in native['results']:
             if row.get('receipt_sha256')!=canonical_json_sha256(
                     {k:v for k,v in row.items() if k!='receipt_sha256'}):
@@ -306,34 +317,50 @@ def main(argv=None):
         if not admitted:raise ValueError('Place review needs admitted alternatives')
         variants=[]
         for row in admitted:
+            rule_steps=verify_native_rule_replay(native['plan'],row,base)
             candidate=_staged(base)
-            grow_program(row['rule_steps'],{},assembly=candidate)
+            grow_program(rule_steps,{},assembly=candidate)
             audit=candidate.audit(join=True)
             if (not audit.get('valid') or
+                    row['native_audit'].get('valid') is not True or
+                    audit.get('union_solids')!=1 or
+                    len(candidate.parts)-len(base.parts)!=row['part_delta'] or
                     abs(audit['union_volume']-row['native_audit']['union_volume'])>1e-6 or
                     candidate.relation_witness(location=project.location).witness_id!=row['witness_id']):
                 raise ValueError('Place review variant native receipts changed')
             variants.append(candidate)
         data=review_place(base,variants,location=project.location,
+                          elevations=tuple(args.elevation) if args.elevation is not None else (1.6,3.2),
                           cell=args.cell,clearance=args.clearance)
         data['native_audition_sha256']=native['sha256']
         if args.topology_pilot:
             from .optional_studies import topologic_route_pilot
             data['topology_pilot']=topologic_route_pilot(data)
         data['sha256']=canonical_json_sha256({k:v for k,v in data.items() if k!='sha256'})
-        _save(args.out,data)
+        from .epochs import _atomic
+        _atomic(args.out,data)
         print(json.dumps({'file':str(args.out),'sha256':data['sha256'],
                           'alternatives':len(variants)},indent=2))
         return data
     if args.command=='fire-cohort':
-        from .fire_cohort import write_census
+        from .fire_cohort import census,write_census
         if len(args.receipt)!=len(args.review):
             raise ValueError('Every Fire native receipt needs its own six-view review')
-        result=write_census(zip(args.receipt,args.review),args.out)
+        pairs=list(zip(args.receipt,args.review))
         if args.quality_pilot:
             from .optional_studies import pyribs_archive_pilot
+            from .epochs import _atomic
+            optional_path=args.out.with_suffix('.quality-pilot.json')
+            if args.out.exists() or optional_path.exists():
+                raise ValueError('Fire cohort and optional study outputs must be new')
+            result=census(pairs)
             pilot=pyribs_archive_pilot(result)
-            _save(args.out.with_suffix('.quality-pilot.json'),pilot)
+            # No base evidence is written until the optional dependency and
+            # descriptor study have succeeded in this same iteration.
+            _atomic(args.out,result)
+            _atomic(optional_path,pilot)
+        else:
+            result=write_census(pairs,args.out)
         print(json.dumps({'sha256':result['sha256'],'native_admitted':result['native_admitted'],
                           'unique_topology_witnesses':result['unique_topology_witnesses'],
                           'unique_six_view_silhouettes':result['unique_six_view_silhouettes']},indent=2))

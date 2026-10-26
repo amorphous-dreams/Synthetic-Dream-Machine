@@ -1,3 +1,15 @@
+## Current OODA-HA re-entry · ascending and descending evergreen audit
+
+Repository head at audit entry: `fec6dc5d`. New source-specific Fire was
+already green; CAD/evidence workflow #40279377114 showed 372 tests passing
+and one failure in `verify_direct_pins` from the unpinned `hypothesis>=6.168`
+constraint. This sweep corrects that and isolates heavyweight optional
+research extras from base CI. It also checks exact source genome identity,
+alternative native part counts, full-scope sampling work budgets, operator-
+selected elevations and material-vs-passage interpretation. Do not
+mistake a buffered material section for safe walking clearance. Full
+verification belongs to same-head CI after this correction.
+
 ## Current locus · Hephaestian place and passage work
 
 On the Loom working branch, source-bound native Fire and the two-probe cohort

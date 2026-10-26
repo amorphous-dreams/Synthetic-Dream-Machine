@@ -11,7 +11,7 @@ from hashlib import sha256
 import numpy as np
 from PIL import Image, ImageDraw
 from .fire_contract import verify_plan
-from .fire_geometry import _staged
+from .fire_geometry import _staged, verify_native_rule_replay
 from .fire_expression import mask_comparison, difference_image
 from .grammar import grow_program
 from .capability_stack import CapabilityCompositor
@@ -61,9 +61,17 @@ def render_fire_review(project, recipe, receipt, output, *, size=(160, 240)):
     plan = verify_plan(receipt["plan"])
     if plan["sha256"] != receipt["plan_sha256"]:
         raise ValueError("Plan and native receipt no longer agree")
+    expected_seed=project.seed_entity.sha256 if project.seed_entity is not None else None
+    if (plan["source_witness_id"]!=receipt["original_witness_id"] or
+            plan["seed_entity_sha256"]!=receipt.get("source_seed_sha256") or
+            plan["location"]!=project.location):
+        raise ValueError("Fire review bound source changed from native receipt")
+    from .epochs import _hash
+    if receipt.get("source_genome_sha256")!=_hash(receipt["source_genome"]):
+        raise ValueError("Fire review source genome digest differs")
     if receipt["source_recipe_sha256"] != recipe.sha256:
         raise ValueError("Review recipe no longer matches native source")
-    if project.seed_entity is not None and receipt["source_seed_sha256"] != project.seed_entity.sha256:
+    if receipt.get("source_seed_sha256") != expected_seed:
         raise ValueError("Review source seed changed")
     result = Path(output)
     if result.exists() and (not result.is_dir() or any(result.iterdir())):
@@ -143,14 +151,20 @@ def render_fire_review(project, recipe, receipt, output, *, size=(160, 240)):
                (216, 227, 241))
     summaries = []
     for rank, item in enumerate(admitted, 1):
+        rule_steps=verify_native_rule_replay(plan,item,original)
         if item["native_audit"].get("valid") is not True:
             raise ValueError("Unverified Fire rule may not render")
         draft = _staged(original)
-        draft = grow_program(item["rule_steps"], {}, assembly=draft)
+        draft = grow_program(rule_steps, {}, assembly=draft)
         rerun = draft.audit(join=True)
         if not rerun.get("valid") or rerun["union_solids"] != 1:
             raise ValueError("Reconstructed Fire variant did not pass native audit")
         prior_volume = item["native_audit"]["union_volume"]
+        if (item["native_audit"].get("union_solids")!=1 or
+                len(draft.parts)-len(original.parts)!=item["part_delta"] or
+                abs((prior_volume-original_audit["union_volume"])-item["added_volume"]) >
+                  max(1e-6,prior_volume*1e-7)):
+            raise ValueError("Fire native volume or part count differs from receipt")
         if abs(rerun["union_volume"] - prior_volume) > max(1e-6, prior_volume * 1e-7):
             raise ValueError("Fire CAD union volume departed from original native receipt")
         witness = draft.relation_witness(location=project.location)

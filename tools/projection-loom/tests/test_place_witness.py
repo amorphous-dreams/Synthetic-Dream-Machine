@@ -52,3 +52,26 @@ def test_native_identity_never_fabricates_material_difference(cell,clearance):
     assert row["exact_native_material_added"]==0
     assert row["exact_native_material_removed"]==0
     assert result["sections"][0]["material"][1]["sampled_symmetric_difference_area"]==0
+
+
+
+def test_sampled_grid_has_total_budget_and_unambiguous_material_semantics():
+    a=source()
+    with pytest.raises(ValueError,match="total native query budget"):
+        review_place(a,[a]*8,location="p",
+                     elevations=tuple(float(x) for x in range(8)),
+                     cell=.2,padding=8)
+    with pytest.raises(ValueError,match="source location"):
+        review_place(a,[a],location="",elevations=(1.0,))
+    result=review_place(a,[a],location="p",elevations=(1.0,))
+    assert "sampled_material_interior_area_after_erosion" in result["sections"][0]["material"][0]
+    assert "sampled_void_interior_area_after_erosion" in result["assemblies"][0]["sampled_voids"][0]["levels"][0]
+    assert result["grid"]["estimated_native_point_queries"]<=result["grid"]["max_query_budget"]
+
+
+
+def test_native_section_requires_strictly_increasing_numeric_elevations():
+    a=source()
+    for bad in ((1.0,1.0),(2.0,1.0),(),(float("inf"),)):
+        with pytest.raises(ValueError,match="sorted elevations"):
+            review_place(a,[a],location="p",elevations=bad)

@@ -47,7 +47,9 @@ def _domain(source, variants, padding):
 
 def _routes(assembly):
     if assembly.voids is None:
-        return {"voids":[],"links":[],"exteriors":[],"reached":[],"hops":{}}
+        return {"voids":[],"links":[],"exteriors":[],"reached":[],
+                "hops":{},"path_handles":{},
+                "interpretation":"no authored voids; no route claim"}
     voids=assembly.voids.voids
     graph=nx.Graph()
     graph.add_nodes_from(sorted(voids))
@@ -83,10 +85,11 @@ def _sections(source, variants, *, elevations, cell, clearance, padding):
             # GEOS planar operations describe sampled sections only.
             common=poly.intersection(original).area
             change=poly.symmetric_difference(original).area
-            samples.append({"sampled_area":round(poly.area,6),
-                            "sampled_shared_area":round(common,6),
+            samples.append({"sampled_material_area":round(poly.area,6),
+                            "sampled_shared_material_area":round(common,6),
                             "sampled_symmetric_difference_area":round(change,6),
-                            "clearance_core_area":round(poly.buffer(-clearance/2).area,6)})
+                            "sampled_material_interior_area_after_erosion":round(
+                                poly.buffer(-clearance/2).area,6)})
         rows.append({"elevation":z,"material":samples})
     return domain, rows
 
@@ -103,12 +106,28 @@ def review_place(source_assembly, alternatives, *, location, elevations=(1.6,3.2
             or any(not math.isfinite(z) for z in elevations)
             or sorted(set(elevations))!=list(elevations)):
         raise ValueError("Place review requires 1..8 alternatives and sorted elevations")
+    if not isinstance(location,str) or not location.strip():
+        raise ValueError("Place review needs a source location")
     for label,value,lo,hi in (("cell",cell,.2,2.0),
                               ("clearance",clearance,.2,4.0),
                               ("padding",padding,0.0,8.0)):
         if type(value) not in (int,float) or not math.isfinite(value) or not lo<=value<=hi:
             raise ValueError("Invalid bounded planar parameter: "+label)
     all_assemblies=[source_assembly,*alternatives]
+    # Bound the total native inside-solid predicates, not just each single
+    # section. Every carved void also contributes separate section samples.
+    shape_count=len(all_assemblies)+sum(
+        len(a.voids.voids) if a.voids is not None else 0
+        for a in all_assemblies)
+    # Preflight using each authored part's bounding box: no expensive
+    # fuse, carve, or sampled native call happens before the global budget.
+    solids_bounds=[part.solid.BoundingBox() for assembly in all_assemblies
+                   for part in assembly.parts.values()]
+    span_x=max(bb.xmax for bb in solids_bounds)-min(bb.xmin for bb in solids_bounds)+2*padding
+    span_y=max(bb.ymax for bb in solids_bounds)-min(bb.ymin for bb in solids_bounds)+2*padding
+    predicates=math.ceil(span_x/cell)*math.ceil(span_y/cell)*len(elevations)*shape_count
+    if predicates>60000:
+        raise ValueError("Place sampling exceeds total native query budget")
     audits=[a.audit(join=True) for a in all_assemblies]
     if any(not a.get("valid") or a.get("union_solids")!=1 for a in audits):
         raise ValueError("Place review requires all sources to pass native CAD/void audit")
@@ -135,20 +154,22 @@ def review_place(source_assembly, alternatives, *, location, elevations=(1.6,3.2
             for z in elevations:
                 poly=_grid(part.solid,z=z,extent=domain,cell=cell)
                 by_level.append({"elevation":z,"sampled_void_area":round(poly.area,6),
-                    "sampled_clearance_core_area":round(poly.buffer(-clearance/2).area,6)})
+                    "sampled_void_interior_area_after_erosion":round(
+                        poly.buffer(-clearance/2).area,6)})
             void_samples.append({"handle":name,"levels":by_level})
         rows.append({
             "role":"original" if idx==0 else "alternative",
             "witness_id":assembly.relation_witness(location=location).witness_id,
-            "native_shell_union_volume":round(float(audits[idx]["union_volume"]),8),
-            "native_carved_material_volume":round(float(solid.Volume()),8),
-            "exact_native_material_added":round(added,8),
-            "exact_native_material_removed":round(removed,8),
+            "native_shell_union_volume":float(audits[idx]["union_volume"]),
+            "native_carved_material_volume":float(solid.Volume()),
+            "exact_native_material_added":added,
+            "exact_native_material_removed":removed,
             "routes":routes, "sampled_voids":void_samples,
         })
     data={"schema":SCHEMA,"location":location,"source_witness_id":rows[0]["witness_id"],
           "grid":{"cell":cell,"elevations":list(elevations),
                   "domain":domain,"clearance_probe":clearance,
+                  "max_query_budget":60000,"estimated_native_point_queries":predicates,
                   "uncertainty":"cell-centre raster XY diagnostic, not exact plan clearance"},
           "sections":sections,"assemblies":rows,
           "authority":"native CAD audit precedes sampled planar analysis; no inferred occupancy or approval"}

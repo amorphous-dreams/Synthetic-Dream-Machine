@@ -150,3 +150,23 @@ def test_open_front_skirting_court_is_native_and_source_unmodified():
     assert row["added_volume"]>0
     assert row["native_audit"]["valid"]
     assert original.audit(join=True)==original_audit
+
+
+
+def test_native_fire_rule_steps_cannot_diverge_from_its_source_plan():
+    from copy import deepcopy
+    from projection_loom.fire_geometry import verify_native_rule_replay
+    base=fixture()
+    witness=base.relation_witness(location="necrospire")
+    plan=resolve_proposal(example(witness,"bears","bearing-column"),witness)
+    native=audition_plan(plan,base,location="necrospire")["results"][0]
+    assert native["state"]=="native-admitted"
+    assert verify_native_rule_replay(plan,native,base)==native["rule_steps"]
+    altered=deepcopy(native)
+    altered["rule_steps"][0]["width"]=2.0
+    with __import__("pytest").raises(ValueError,match="operations changed"):
+        verify_native_rule_replay(plan,altered,base)
+    altered=deepcopy(native)
+    altered["relation"]="bridges"
+    with __import__("pytest").raises(ValueError,match="relation changed"):
+        verify_native_rule_replay(plan,altered,base)

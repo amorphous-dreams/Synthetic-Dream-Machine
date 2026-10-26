@@ -137,3 +137,28 @@ the same native gate. It is not evidence of safe occupancy, measured route
 width or reconstructable hidden source elevation. TopologicPy and pyribs
 are optional read-only research pilots, not authority substitutions.
 Heritable primary massing grammar remains unimplemented research.
+
+
+## Native place-review CLI
+
+Run after a source-bound `fire-audition` receipt has passed exact native
+admission. The section elevations are in project CAD units and must be
+strictly increasing; multiple views share one bounded plan domain.
+
+```sh
+python -m projection_loom place-review \
+  --project examples/necrospire/project_alpha.json \
+  --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+  --receipt out/fire-audition.json \
+  --elevation 1.6 --elevation 3.2 \
+  --cell 0.5 --clearance 0.7 \
+  --out out/place-witness.json
+```
+
+`--topology-pilot` requires explicitly installed TopologicPy and compares
+the resulting void graph in isolation. `fire-cohort --quality-pilot`
+requires explicitly installed pyribs; neither pilot can choose survivors.
+Reported material erosion core area represents sampled material thickness,
+**not** human walking clearance. The void erosion probe likewise measures
+the cutter section, not a certified continuous passage. Small
+native material differences retain full kernel float precision.

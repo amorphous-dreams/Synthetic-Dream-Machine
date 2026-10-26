@@ -216,3 +216,13 @@ from pre-carve shell union volume, alongside approximate sampled XY sections.
 An empty sampled cell cannot certify an accessible route or safe clearance.
 TopologicPy and pyribs pilots require explicit optional installation and
 flags (--topology-pilot and --quality-pilot). Neither can grant promotion.
+
+
+### Recompilation before visual evidence
+
+The fixed-view Fire review and place review recompile each native-admitted
+rule's deterministic operations from the source-bound plan and original
+assembly. Altered rule steps, a changed source genome checksum, missing
+source identity or a discrepant part count cannot pass by matching only a
+topology witness and a union volume. Planar evidence remains approximation;
+the only structural truth stays native BRep/void audit.

@@ -10,7 +10,7 @@ from pathlib import Path
 def check():
     out={}
     for name in ('cadquery','numpy','scipy','networkx','opencv-python-headless',
-                 'Pillow','trimesh','pytest','rasterio','pyproj'):
+                 'Pillow','trimesh','pytest','rasterio','pyproj','shapely','hypothesis'):
         out[name]=metadata.version(name)
     cadquery=importlib.import_module('cadquery')
     sample=cadquery.Workplane('XY').box(2,3,4).val()
@@ -46,8 +46,15 @@ def verify_direct_pins(requirements_path, *, project_path=None, installed=True):
     if project_path is not None:
         project = tomllib.loads(Path(project_path).read_text(encoding='utf8'))['project']
         declared = list(project.get('dependencies', ()))
-        for optional in project.get('optional-dependencies', {}).values():
-            declared.extend(optional)
+        # Opt-in research backends do not ship in the CI environment. Other
+        # declared optional capabilities still belong to direct CI pins.
+        isolated_studies = {'topology-study', 'quality-study'}
+        extras = project.get('optional-dependencies', {})
+        if not isolated_studies.issubset(extras):
+            raise ValueError('Declared isolated research studies changed')
+        for name, optional in extras.items():
+            if name not in isolated_studies:
+                declared.extend(optional)
         for spec in declared:
             match = re.match(r'^([A-Za-z0-9][A-Za-z0-9_.-]*)', spec)
             if not match or normalize(match.group(1)) not in pins:

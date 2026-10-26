@@ -160,3 +160,33 @@ pyribs GridArchive API, Stiny/Gips shape grammar, Hillier/Hanson
 spatial syntax and Alexander's generative systems. The read-only
 TopologicPy pilot may require its own backend; it is never a hard
 dependency of core source-bound CI.
+
+
+
+## OODA-HA ascending/descending sweep · native place integrity
+
+Same-head CAD CI on `fec6dc5d` exposed one environment-contract failure:
+the Hypothesis CI constraint was a lower bound, violating the explicit
+direct-input pin checker; the 372 other focused regression tests passed.
+The next code pass pins Hypothesis exactly for reproducible CI, and keeps
+TopologicPy/pyribs outside base CI by naming their isolated study extras in
+the direct-input checker. A source-candidate review now checks the source
+genome digest and each reconstituted alternative's part count and native
+audit; operator-specified section elevations reach the CLI. Native query
+budgets span the entire cohort and all voids instead of each section alone.
+Material erosion evidence no longer calls itself human clearance. Exact CAD
+difference volumes retain kernel floats, not display-rounded numbers.
+These modifications require their own same-head CI verdict.
+
+
+### Descending aftermath: source authority, sampling and output integrity
+
+Fire review and place review now independently recompile native Fire steps
+from the original typed proposal before staging source-bound alternatives,
+detecting changed rule parameters even when an external receipt is re-sealed.
+They recheck source/genome digests, native topology part counts and measured
+union-volume differences. Place evidence uses a cohort-wide bound on total
+native point queries, checks that elevations are explicitly increasing, and
+saves only atomic result receipts. The optional QD pilot computes its study
+before either output is written. No downstream observer becomes an approval
+or generation controller. Exact same-head CI remains the verification gate.
