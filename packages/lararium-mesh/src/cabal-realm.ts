@@ -99,7 +99,7 @@ export function realmFeedSlotUri(realmDocIdHex: string, writerId: string): strin
 
 /**
  * The realm's LIVENESS feed slot a single writer owns, keyed by the realm's sentinel DocId.
- * Coordinator-free max-register (effectiveLeaseEpoch = max over slots); the realm's own
+ * Coordinator-free feed max over sealed slots; the realm's own
  * collective-maintenance heartbeat, NOT an authority epoch (#the-tie-break).
  *
  * The CABAL holding this realm carries its own epoch under the same DocId, in the epoch-lease space

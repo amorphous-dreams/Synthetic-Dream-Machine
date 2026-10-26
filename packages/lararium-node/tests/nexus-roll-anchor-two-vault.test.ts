@@ -59,6 +59,7 @@ import { restEvery, restingRepo, type RestingRepo } from "./resting-repo.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { chairKey, chairSeed, seatChairs } from "./seat-fixture.js";
 import { seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
+import { makeEdgeShadowRing } from "../src/edge-shadow-ring.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
@@ -311,6 +312,15 @@ describe("a two-founder Nexus anchors its roll across its two vaults", () => {
     const board = await materializeSharedLarDoc(v.repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
     return edgeRollAnchorsFromBoard(board.doc()).map((a) => a.parents.join(","));
   };
+  const ringFrontierAt = async (v: Vault) => {
+    at(v);
+    const key = await wornAtomKey();
+    const ring = makeEdgeShadowRing({ repo: v.repo, vesselKey: () => key, sealHome: larSealHome(),
+      fleetRoots: () => [], charterRealm: () => REALM,
+      vesselKeyOfPeer: () => null, realmNymOfPeer: () => null });
+    try { await ring.refold(); return ring.realmFrontierOf(REALM); }
+    finally { ring.dispose(); }
+  };
 
   test("R6 — a realm's edge anchor crosses as its own partial: A opens one for each realm it keeps, B cosigns where it holds the board, and both land it", async () => {
     const A = await vault("anc-ea"), B = await vault("anc-eb");
@@ -345,11 +355,27 @@ describe("a two-founder Nexus anchors its roll across its two vaults", () => {
     const reopened = await runEdgeRollAnchorOpen({ sealHome: larSealHome(), repo: A.repo, aid });
     expect(reopened[0]!.partial.act.family === "edge-roll-anchor" && reopened[0]!.partial.act.anchor.parents).toEqual([first, second].sort());
     at(B);
+    const missing = courier(reopened[0]!.partial);
+    delete (missing["act"] as Record<string, unknown>)["frontier"];
+    const beforeMissing = signing.calls;
+    expect(await refusal(runEdgeRollAnchorPartial({ partial: missing, sealHome: larSealHome(), repo: B.repo }))).toMatch(/frontier-missing/);
+    expect(signing.calls).toBe(beforeMissing);
+    expect(await edgeAnchorsAt(B)).toEqual([]);
+    const disagreement = courier(reopened[0]!.partial);
+    const act = disagreement["act"] as Record<string, unknown>;
+    const carry = act["frontier"] as { records: Array<{ body: Record<string, unknown> }> };
+    carry.records[carry.records.length - 1]!.body["rosterHash"] = "f".repeat(64);
+    expect(await refusal(runEdgeRollAnchorPartial({ partial: disagreement, sealHome: larSealHome(), repo: B.repo }))).toMatch(/stale.*realm head disagrees/);
+    expect(signing.calls).toBe(beforeMissing);
+    expect(await edgeAnchorsAt(B)).toEqual([]);
     const cosigned = await runEdgeRollAnchorPartial({ partial: courier(reopened[0]!.partial), sealHome: larSealHome(), repo: B.repo });
     expect(cosigned.verdict).toBe("complete");
     expect(cosigned.signed).toEqual([...next].sort());
     expect(cosigned.landed?.parents).toEqual([first, second].sort());
     expect(await edgeAnchorsAt(B)).toEqual([[first, second].sort().join(",")]);
+    const bFrontier = await ringFrontierAt(B);
+    expect(bFrontier?.status).toBe("known");
+    if (bFrontier?.status === "known") expect(bFrontier.asOf["quorum"]?.seq).toBe(1);
 
     at(A);
     const landed = await runEdgeRollAnchorPartial({ partial: courier(cosigned.partial), sealHome: larSealHome(), repo: A.repo });

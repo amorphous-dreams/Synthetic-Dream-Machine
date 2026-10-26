@@ -213,6 +213,11 @@ describe("a realm stands under one Nexus", () => {
 
   it("N8 RED: a roll anchors only the realms standing under the Nexus that rolls / a realm under it takes the anchor", async () => {
     await wearPersona(0);   // two faces held: these vectors act as h0
+    const successor = await chairKey(0, 1);
+    const rolling = heldCharter({ keys: [primary.seat.signer], threshold: 1,
+      successors: { keys: [successor], threshold: 1 } });
+    writeNexusDoc(larSealHome(), rolling.doc());
+    primary = { ...primary, aid: rolling.aid, doc: rolling.doc() };
     // Two realms, each with a counted quorum act kept in the ledger: one under the primary, one under the carried.
     await noteUnder(OTHER_REALM, primary.aid);
     await direct(runEdgeKapae)({ member: MEMBER, realm: OTHER_REALM, hand: "quorum", raised: true });
@@ -228,7 +233,8 @@ describe("a realm stands under one Nexus", () => {
     });
     const { foundingRoster } = await import("@lararium/mesh");
     const closing = foundingRoster(primary.doc);
-    const anchored = await direct(runEdgeRollAnchors)({ closing, opened: closing });
+    const opened = await rolling.roll((await seatChairs([0], { generation: 1 })).hands);
+    const anchored = await direct(runEdgeRollAnchors)({ closing, opened: opened.roster, openedEpoch: opened.head });
     expect(anchored.map((a) => a.realm)).toEqual([OTHER_REALM]);
   });
 

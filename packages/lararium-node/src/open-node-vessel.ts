@@ -110,7 +110,9 @@ import {
 } from "./nexus-carriage.js";
 import { readHearthDialPin } from "./hearth-dial-pin.js";
 import { nodeNexusStandsAt } from "./nexus-standing.js";
-import { rollLeaseEpochOnBoard } from "./lease-rekey.js";
+import { rollQuorumLeaseOnBoard } from "./lease-rekey.js";
+import { leaseCharterOf } from "./lease-charter.js";
+import { selectHeldQuorumSigners } from "./held-quorum.js";
 import { listSealedCids } from "./cas-reshare.js";
 import { readBulbArtifact, type BulbArtifact } from "./bulb.js";
 import { hermRealmShoreBooks, publicCasShore } from "./bulb-read-face.js";
@@ -2857,21 +2859,19 @@ async function prepareNodeBootOn(
     // the realm doc as-of-last-sync, and a read never enters a realm.
     registry.register("realm-bags", (args) => runRealmBags({ plane: realmPlane, args }));
 
-    // nexus-rekey — the immune keel's RE-KEY tooth at the Herm's OWN tier: roll a resource's LEASE EPOCH
-    // forward on the live daemon board, staling every grant bound below the new epoch. It writes the
-    // CALLER's OWN per-writer slot only (a MAX-REGISTER, never a bare scalar — the Automerge-LWW backward-drop
-    // hazard), so two hearths rekeying the same resource concurrently both climb, never drop. This is the
-    // NON-RENEWAL half of revocation (a lease stales; it never re-derives a secret) — targeted key-material
-    // rotation rides keyhive CGKA, NEVER this lease. A live board write → the roll rides WS-sync to replicas.
-    // THE RAISE DOOR'S FENCE READS ONE RESOURCE: the AID of the Nexus its challenge names (main.ts, the raise door).
-    // Rolling `resource = <that AID>` stales every raise granted against the old epoch; a roll under any other
-    // resource id leaves the raise fence untouched.
+    // nexus-rekey — the resource's own charter quorum signs its lease advance under its verified seal
+    // lineage. The vessel's atom signs nothing here; each held seat signs only through its custody door.
     registry.register("nexus-rekey", async (args) => {
       const resource = typeof args["resource"] === "string" ? (args["resource"] as string) : "";
       if (!resource) throw new Error("nexus-rekey: `resource` required (the lease resource id to roll)");
-      if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
-      const r = rollLeaseEpochOnBoard(await readDaemonDoc(), resource, activeAtom.key);
-      return { verb: "nexus-rekey", ...r };
+      const named = typeof args["nexus"] === "string" ? args["nexus"] as string : undefined;
+      const charter = await leaseCharterOf({ repo, vesselKey: activeAtom?.key ?? vesselIdentity.verifyingKey, sealHome, resource,
+        ...(named ? { named } : {}) });
+      const held = await selectHeldQuorumSigners(charter.roster, (count, threshold) =>
+        new Error(`nexus-rekey: seats-not-held: ${count} of ${threshold} charter seats held`));
+      const r = await rollQuorumLeaseOnBoard(await readDaemonDoc(), resource,
+        { lineage: charter.lineage, signers: held.map((s) => ({ key: s.verifyingKey, sign: s.sign })) });
+      return { verb: "nexus-rekey", nexus: charter.nexus, ...r };
     });
 
     // nexus-reshare — the immune keel's RE-SHARE tooth: the sealed bodies this hearth HOLDS (the cad ciphertext tier

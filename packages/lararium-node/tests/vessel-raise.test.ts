@@ -138,6 +138,22 @@ describe("★ one challenge, one answer ★", () => {
 });
 
 describe("★ the fence is re-read, never remembered ★", () => {
+  test("a null lineage mints an epoch-zero challenge but never carries a raise; a verified fence does", async () => {
+    let readable = true;
+    const { d, admit } = await door({ leaseEpoch: () => readable ? 7 : null });
+    const challenge = await d.ask();
+    expect(challenge.epoch).toBe(7);
+    expect((await d.answer(await answerWith(challenge, admit))).ok).toBe(true);
+    expect(await d.standing()).toBe("hearth");
+    readable = false;
+    expect(await d.raised()).toBeNull();
+    expect(await d.standing()).toBe("herm");
+    const unreadable = await d.ask();
+    expect(unreadable.epoch).toBe(0);
+    expect(await d.answer(await answerWith(unreadable, admit))).toMatchObject({
+      ok: false, why: "stale-challenge", detail: "lease-fence-unreadable",
+    });
+  });
   test("★ a raise falls back to the floor when the epoch rolls past it — nobody lowers it ★", async () => {
     // The whole non-renewal ruling, measured: no lowering act runs anywhere, and the reading simply
     // stops coming back raised. A cached epoch here would keep a stale vessel raised forever.

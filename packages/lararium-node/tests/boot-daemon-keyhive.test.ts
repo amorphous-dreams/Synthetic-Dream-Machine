@@ -165,7 +165,7 @@ describe("bootDaemonKeyhive", () => {
   });
 
   // ── THE LEASE-EPOCH FENCE (Option 1: license off the PersonaGroup lease epoch, not the wall clock) ──────
-  // The founding edge mints `boundEpoch: 0` (a genesis founding — `effectiveLeaseEpoch` over no slots IS 0,
+  // The founding edge mints `boundEpoch: 0` (a genesis founding — `signedLeaseEpoch` over no slots IS 0,
   // ceremony-core.ts). Passing `expectedEpoch` to the Binding Gate must therefore ADMIT at 0 and HALT above it.
   describe("★ the Binding Gate fences on `expectedEpoch` (the PersonaGroup lease), not the wall clock alone ★", () => {
     test("RED-FIRST — expectedEpoch ABOVE the edge's boundEpoch HALTS; AT it, boots clean", async () => {

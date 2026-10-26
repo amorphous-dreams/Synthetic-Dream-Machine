@@ -31,7 +31,7 @@ Wave C made a PersonaGroup's lease epoch rise only on a signed advance (`lease-a
 !! The mandate (operator rulings on forks 3 and 4, 2026-10-22)
 
 * ''One lease law.'' Every lease epoch rises only on a signed advance. A face advances by a per-writer signed slot under its KEL lineage. A Nexus or cabal-realm advance signs as a `QuorumAct` at the roster's threshold under its own epoch's lineage.
-* ''The unsigned max-register retires entirely'' (`effectiveLeaseEpoch`, `rollLeaseEpochOnBoard`, with their fixtures); the signed path stands alone.
+* ''The unsigned max-register retired entirely''; the signed path stands alone, and a census (`lease-law-census.test.ts`) refuses its names and any lease-prefix scan that names no signed reader.
 * ''The realm boards' frontiers widen K17 the same way the fleet board's do.''
 
 <<~/ahu>>
@@ -40,16 +40,23 @@ Wave C made a PersonaGroup's lease epoch rise only on a signed advance (`lease-a
 
 !! The five slices, one lane landed whole
 
-# ''R1 ~ the mesh format.'' A quorum-lease slot, its writer and its reader under a charter lineage (`makeHandLineage` bound to the seal-epoch chain; an older epoch's keys come from the seal-roll chain).
-# ''R2 ~ the writer on held seats.'' The `nexus-rekey` writer moves from the vessel's atom to a store-door row that signs at held seats, as `lares edge kapae --quorum` does.
-# ''R3 ~ the readers.'' The herm's raise door (`effectiveLeaseEpochOnBoard`), `cabal-join`, the vessel standing and the realm clock read signed advances only.
-# ''R4 ~ the retirement.'' The unsigned max-register leaves, and its fixtures migrate to signed fixtures through the real founding path.
-# ''R5 ~ the realm boards' frontiers.'' The charter quorum hand signs its stream's frontier; the realm boards' readers (`memberAside`, `standsInRealm`, the vouch edges) widen only as of a qualifying frontier.
+# ''R1 ~ the mesh format ~ BUILT.'' `quorum-lease.ts`: one `QuorumAct` per advance under `QUORUM_LEASE_DOMAIN`, a content-addressed slot beside the face's per-writer slots, read under `charterHandLineage` (`makeHandLineage` bound to the seal-epoch chain, so an older epoch's advance verifies under the keys of its own epoch and a forged chain reads no hand). The fold is monotone (the verified maximum only climbs, so no sighting un-stales a cut grant).
+# ''R2 ~ the writer on held seats ~ BUILT.'' The `nexus-rekey` verb resolves the resource's own charter (`lease-charter.ts`: a Nexus AID, or a realm through the Nexus its ledger names), takes the held seats at the threshold (`selectHeldQuorumSigners`) and lands the advance through `rollQuorumLeaseOnBoard`. Fewer held seats refuse by name; the vessel's atom signs nothing here.
+# ''R3 ~ the readers ~ BUILT.'' The herm's raise door (`leaseEpochOnBoard`, null where no lineage verifies, so a raise never stands against a fence that cannot read), `cabalAdmissionEpoch` in `cabal-join` and `cabal-vouch`, and the vessel standing read signed advances only. A join that would admit waits (`incomplete-view`) where the realm's lineage reads none; a refusal narrows and needs no lineage. The realm clock's fold no longer borrows the retired register; the realm FEED stays its own liveness heartbeat under its own seal law (`cabal-realm#/the-tie-break`), never an authority epoch.
+# ''R4 ~ the retirement ~ BUILT.'' The unsigned register, its writer and its readers left; fixtures moved onto `seatedCharter` and held seats.
+# ''R5 ~ the realm boards' frontiers ~ BUILT.'' `realm-frontier.ts` rides the shared hand frontier (`fleet-frontier.ts`) for the charter quorum and for each voucher. The quorum signs genesis and each successor; a voucher's own hand (`holder:<key>`, one key, one epoch) registers its genesis at its vouch and its raises with each act it signs. A quorum act registers its raise in the same board change (`edge-kapae-cmd`); a seated vouch founds the quorum genesis on first touch where this vessel holds the threshold of seats.
+** ''The roll registers its head.'' The roll anchor signs each anchored realm's head under the lineage that includes the rolled epoch, in the same board change as the anchor (`runEdgeRollAnchors` takes the rolled `SealEpoch`); the two-vault anchor partial carries the opener's frontier signatures, and the cosigner lands anchor and head together once they stand at the threshold.
+** ''A split-seat cosign carries its head.'' The opener's partial carries the frontier it signs (`frontier-carry.ts`); the cosigner checks it against what it would sign itself, adds its seats, and lands act and head in one change. A partial that needs a head and carries none refuses `frontier-missing` below the threshold.
+** ''The admit bundle carries the board's frontier.'' `realmAdmitBundle` (invite, the Nexus claim, the quorum's and the voucher's frontier records and snapshots) rides out of `cabal vouch` and into `cabal join --bundle`; a joiner holding no copy of the realm's boards acts as of the carried head, which counts only where it verifies under the charter that joiner holds.
+** ''Readers.'' The shadow ring reads every hand (`RealmFold.frontier`, `RealmFold.holders`): `memberAside` answers aside and `standsInRealm` false where the quorum frontier does not qualify, and a vouch whose voucher's hand does not qualify counts for nobody. `cabal-join` waits as `frontier-unknown` before an admission and names the head it acted under (`frontier.asOf`).
 
-Red: an unsigned `rollLeaseEpochOnBoard` advance on a realm raises nothing, a sub-threshold hand raises nothing, and a threshold hand raises it.
+!!! Owed
+* A closed roster's keys can still raise the lease (stale more, never less) until the recovery door (K18) closes that window; the fold never lowers.
+
+Reds: an unsigned advance on a realm raises nothing and a threshold hand raises it (`quorum-lease.test.ts`, `lease-rekey.test.ts`); a sub-threshold hand raises nothing; an older epoch's advance verifies under its own epoch's keys and a forged lineage refuses; a realm reader before any qualifying frontier waits as unknown and acts as of it after (`realm-frontier.test.ts`, `edge-shadow-ring.test.ts`); the census proves itself on a planted site.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;w81RZq2mZ3XmelSrJ66mQB4HjNCLlpSfxE1i4V0h-o0
+<<^ code="&#x0003;">>ni:///sha-256;DJaDZbPfsLeZaCMym79jb6CogPThXJukr8J4L71joBY
 
 <<^ code="&#x0004;" -> to="?">>

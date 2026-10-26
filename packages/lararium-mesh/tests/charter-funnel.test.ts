@@ -52,6 +52,8 @@ const OUTSIDE: Readonly<Record<string, Outside>> = {
   "packages/lararium-mesh/tests/seal-fork.test.ts":                     "roll-law",
   "packages/lararium-mesh/tests/charter-fixture.test.ts":               "roll-law",
   "packages/lararium-node/tests/seal-ceremony.test.ts":                 "roll-law",
+  // A probe compiles with its package's source, where the test helper stands outside the root: it incepts one genesis for the lease witness.
+  "packages/lararium-keyhive/probes/cabal-realm-lifecycle.ts":          "roll-law",
   // What the seat and rotate rites write and refuse.
   "packages/lares-cli/tests/nexus-seal-lineage.test.ts":                "rite-law",
   "packages/lares-cli/tests/seal-rotate-refusal-codes.test.ts":         "rite-law",

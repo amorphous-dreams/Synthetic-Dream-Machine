@@ -154,13 +154,15 @@ describe("lares cabal join — the crossing reads the shadow board", () => {
     await writeForeignAct(edge, true, [], foreignSeed(41));
     await wearPersona(1);
     await expect(direct(runEdgeKapae)({ edgeId: edge, raised: true, realm: REALM })).rejects.toThrow();
+    // Face 0 made the vouch and noted this realm in its own edge ledger.
+    await wearPersona(0);
     expect((await direct(runCabalJoin)({ realm: REALM, applicant: joiner })).admitted).toBe(true);
 
-    await wearPersona(0);
     const up = await direct(runEdgeKapae)({ edgeId: edge, raised: true, realm: REALM });
     await writeForeignAct(edge, false, [up.actCid], foreignSeed(41));                    // a forged causal lower
     await wearPersona(1);
     await expect(direct(runEdgeKapae)({ edgeId: edge, raised: false, realm: REALM })).rejects.toThrow();
+    await wearPersona(0);
     const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner });
     expect(v.admitted).toBe(false);
     expect((v as { setAside?: readonly { verdict: string }[] }).setAside?.[0]?.verdict).toBe("held");

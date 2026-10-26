@@ -14,7 +14,7 @@ import * as ed from "@noble/ed25519";
 import {
   hex, DAEMON_BAG_ID, seedDaemonDoc,
   foundingRoster, memberEdgeId, materializeSharedLarDoc, realmEdgeBoardDocUrl, edgeRollAnchorsFromBoard,
-  edgeKapaeActsFromBoard,
+  edgeKapaeActsFromBoard, charterHandLineage, readRealmFrontier,
 } from "@lararium/mesh";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, wearPersona,
@@ -30,6 +30,8 @@ import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
 import { seedFaceAtom } from "./atom-fixture.js";
+import { wornAtomKey } from "./atom-fixture.js";
+import { makeEdgeShadowRing } from "../src/edge-shadow-ring.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -49,10 +51,10 @@ async function seatCharter() {
   writeNexusDoc(larSealHome(), genesis.doc({ labels: chairs(oldKeys) }));
   const rolled = await genesis.roll(next.hands);
   const opened = rolled.roster;
-  const roll = (): void => writeNexusDoc(larSealHome(), rolled.doc({ labels: chairs(newKeys) }));
+  const roll = (): void => { writeNexusDoc(larSealHome(), rolled.doc({ labels: chairs(newKeys) })); };
   // The worn face vouches, with its key at this charter's Nexus (cabal-realm#/the-steward-signer).
   await wearPersona(0);
-  return { e0: genesis.head, opened, roll };
+  return { e0: genesis.head, opened, openedEpoch: rolled.head, roll };
 }
 
 beforeEach(async () => {
@@ -79,7 +81,14 @@ afterEach(async () => {
 
 const edgeBoard = () => ownedStore(larDataDir(), async (repo) => {
   const doc = (await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae")).doc();
-  return { acts: edgeKapaeActsFromBoard(doc), anchors: edgeRollAnchorsFromBoard(doc) };
+  return { doc, acts: edgeKapaeActsFromBoard(doc), anchors: edgeRollAnchorsFromBoard(doc) };
+});
+const ringRealm = () => ownedStore(larDataDir(), async (repo) => {
+  const key = await wornAtomKey();
+  const ring = makeEdgeShadowRing({ repo, vesselKey: () => key, sealHome: larSealHome(), fleetRoots: () => [],
+    charterRealm: () => REALM, vesselKeyOfPeer: () => null, realmNymOfPeer: () => null });
+  try { await ring.refold(); return { frontier: ring.realmFrontierOf(REALM), holders: ring.realmHoldersOf(REALM) }; }
+  finally { ring.dispose(); }
 });
 
 describe("the quorum hand — the seats of the charter act on a realm's edges", () => {
@@ -148,17 +157,25 @@ describe("the quorum hand — the seats of the charter act on a realm's edges", 
 
 describe("a seal roll carries the shadow, and a lift at the new head cites the raise it lifts", () => {
   it("★ the rotate anchors the realm's edge board; the shadow stands at the new head; the new quorum lifts it ★", async () => {
-    const { e0, opened, roll } = await seatCharter();
+    const { e0, opened, openedEpoch, roll } = await seatCharter();
     const joiner = await nymOf(10);
     await direct(runCabalVouch)({ joiner, realm: REALM });
     const up = await direct(runEdgeKapae)({ member: joiner, realm: REALM, raised: true, hand: "quorum" });
     expect(up.epochCid).toBe(e0.epochCid);
+    const beforeRoll = (await edgeBoard()).doc;
 
     const closing = foundingRoster(readNexusDoc(larSealHome()));
-    const landed = await direct(runEdgeRollAnchors)({ closing, opened });
+    const landed = await direct(runEdgeRollAnchors)({ closing, opened, openedEpoch });
     expect(landed.map((a) => [a.realm, a.parents])).toEqual([[REALM, [up.actCid]]]);
     roll();
     const board = await edgeBoard();
+    const lineage = charterHandLineage(readNexusDoc(larSealHome())!.sealLineage!)!.lineage;
+    const readHead = (doc: typeof board.doc) => readRealmFrontier({ realm: REALM, board: doc, lineage,
+      seenRaises: [up.actCid], pinned: null });
+    expect(readHead(beforeRoll)).toMatchObject({ status: "unknown", missing: [{ why: "stale-lineage" }] });
+    expect(readHead(board.doc)).toMatchObject({ status: "known", asOf: { quorum: { seq: expect.any(Number) } } });
+    const folded = await ringRealm();
+    expect(folded.frontier).toMatchObject({ status: "known", asOf: { quorum: { seq: expect.any(Number) } } });
     expect(board.anchors).toHaveLength(1);
     expect(board.anchors[0]!.signatures.map((s) => s.signer.toLowerCase()).every((k) => opened.keys.map((x) => x.toLowerCase()).includes(k))).toBe(true);
 
@@ -175,13 +192,18 @@ describe("a seal roll carries the shadow, and a lift at the new head cites the r
     expect((await direct(runCabalJoin)({ realm: REALM, applicant: joiner })).admitted).toBe(true);
   });
 
-  it("CONTROL — a vessel that keeps no quorum act anchors nothing, and a holder's act takes no anchor", async () => {
-    const { opened } = await seatCharter();
+  it("CONTROL — a vessel that notes no realm anchors nothing; a realm it only vouched in takes an anchor that carries no act and a head under the new epoch", async () => {
+    const { opened, openedEpoch, roll } = await seatCharter();
+    const closing = foundingRoster(readNexusDoc(larSealHome()));
+    expect(await direct(runEdgeRollAnchors)({ closing, opened, openedEpoch })).toEqual([]);   // no realm noted: nothing to anchor
+    expect((await edgeBoard()).anchors).toEqual([]);
     const joiner = await nymOf(11);
     const vouch = await direct(runCabalVouch)({ joiner, realm: REALM });
     await direct(runEdgeKapae)({ edgeId: vouch.edgeId, realm: REALM, raised: true });
-    const closing = foundingRoster(readNexusDoc(larSealHome()));
-    expect(await direct(runEdgeRollAnchors)({ closing, opened })).toEqual([]);
-    expect((await edgeBoard()).anchors).toEqual([]);
+    expect((await ringRealm()).holders?.get(vouch.voucherDid)).toMatchObject({ status: "known" });
+    const landed = await direct(runEdgeRollAnchors)({ closing, opened, openedEpoch });
+    expect(landed.map((a) => [a.realm, a.parents])).toEqual([[REALM, []]]);   // a holder's act strands nothing: no parents
+    roll();
+    expect((await ringRealm()).frontier).toMatchObject({ status: "known" });   // the head stands under the new epoch with no further act
   });
 });

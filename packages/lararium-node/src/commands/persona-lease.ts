@@ -1,7 +1,8 @@
 /**
  * persona-lease — roll a PersonaGroup's lease epoch forward with a SIGNED advance (`lares persona lease`).
  *
- * The lease is a max-register of per-writer slots (`epoch-lease`), and for a face each slot counts only when its writer
+ * A face lease folds signed per-writer slots (`lease-advance`); Nexus and realm leases use charter-quorum
+ * advances (`quorum-lease`). Here each face slot counts only when its writer
  * signed it and the writer's key stands in the face's KEL lineage (`lease-advance`). The persona ROOT signs here: it is
  * the key the lineage seats, and it rests on this vessel's identity home, never in the running daemon. The verb reads
  * the signed slots on the daemon doc, signs effective + 1 into the root's own slot, and raises the sealed anchor's

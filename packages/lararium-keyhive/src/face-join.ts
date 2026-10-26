@@ -27,7 +27,7 @@
  * key the presented ContactCard carries. Nothing is looked up, so nothing can drift or be forged by writing to
  * a list. Three of the four checks read the edge alone and run BEFORE the card enters local state.
  *
- * FRESHNESS READS THE LEASE. The LEASE — a per-resource max-register epoch, monotone and read locally — carries
+ * FRESHNESS READS THE LEASE. The face's verified signed lease epoch, read locally, carries
  * the authority: a grant bound below the current epoch reads stale. Connection replay is handled by the summons
  * transport and its fresh exchange; this gate does not turn a wall clock into authority.
  *
@@ -109,9 +109,9 @@ export interface FaceJoinContext {
    */
   readonly reseal?: readonly string[];
   /**
-   * THE LEASE AUTHORITY — this resource's current max-register epoch (`effectiveLeaseEpoch` over its slots).
-   * A grant whose `boundEpoch` sits below it reads STALE and the gate refuses. A max-register is monotone and
-   * read locally, so two islands need no shared clock to agree which way it moved; an unfed resource reads 0
+   * THE LEASE AUTHORITY — this face's verified signed epoch (`signedLeaseEpoch` over its slots).
+   * A grant whose `boundEpoch` sits below it reads STALE and the gate refuses. The verified maximum
+   * reads locally, so two islands need no shared clock to agree which way it moved; an unadvanced face reads 0
    * and admits the epoch-0 grants a founding issues.
    */
   readonly leaseEpoch: number;
@@ -154,7 +154,7 @@ export async function gateFaceJoin(args: {
   if (edge?.kind !== "device-delegation") {
     return { ok: false, reason: "the summons carries no device-delegation edge" };
   }
-  // The signature check plus the causal lease frontier: the current max-register decides authority.
+  // The signature check plus the causal lease frontier: the face's verified signed epoch decides authority.
   const verdict = await verifyDeviceDelegation(edge, ctx.personaRootDid, {
     expectedEpoch: ctx.leaseEpoch,
   });

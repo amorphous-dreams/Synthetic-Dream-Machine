@@ -58,6 +58,7 @@ import {
 } from "./edge-kapae.js";
 import type { PartialVerdict } from "./edge-partial.js";
 import { verifyEd25519 } from "./ed25519-door.js";
+import { readFrontierCarry, type FrontierCarry } from "./frontier-carry.js";
 import { NEXUS_AID_PATTERN } from "./wax-stamp.js";
 
 /** The envelope's own tag. It signs nothing: a partial's integrity rides its act's id and signatures. */
@@ -76,7 +77,7 @@ export type NexusPartialAct =
   | { readonly family: "admit" | "revoke"; readonly entry: CarriageEntry; readonly opening?: AdmitOpening }
   | { readonly family: "kapae"; readonly entry: KapaeAntigenEntry }
   | { readonly family: "roll-anchor"; readonly anchor: RollAnchor }
-  | { readonly family: "edge-roll-anchor"; readonly anchor: EdgeRollAnchor };
+  | { readonly family: "edge-roll-anchor"; readonly anchor: EdgeRollAnchor; readonly frontier?: FrontierCarry };
 
 /** The anchor families: both ride an anchor beside the entries and join two epochs. */
 type AnchorAct = Extract<NexusPartialAct, { family: "roll-anchor" | "edge-roll-anchor" }>;
@@ -238,11 +239,13 @@ export function readNexusActPartial(parsed: unknown): NexusActPartial | null {
       act: { family, anchor } };
   }
   if (family === "edge-roll-anchor") {
-    if (!exactKeys(a, ["family", "anchor"]) || !exactKeys(s, ["kind", "realm", "closes", "opens"]) || s["kind"] !== "edge-roll") return null;
+    if (!exactKeys(a, "frontier" in a ? ["family", "anchor", "frontier"] : ["family", "anchor"]) || !exactKeys(s, ["kind", "realm", "closes", "opens"]) || s["kind"] !== "edge-roll") return null;
     const anchor = readEdgeAnchor(a["anchor"]);
     if (!anchor || s["realm"] !== anchor.scope || s["closes"] !== anchor.prevEpochCid || s["opens"] !== anchor.sealEpochCid) return null;
+    const frontier = "frontier" in a ? readFrontierCarry(a["frontier"]) : null;
+    if ("frontier" in a && !frontier) return null;
     return { kind: NEXUS_PARTIAL_KIND, aid: p["aid"], subject: { kind: "edge-roll", realm: anchor.scope, closes: anchor.prevEpochCid, opens: anchor.sealEpochCid },
-      act: { family, anchor } };
+      act: { family, anchor, ...(frontier ? { frontier } : {}) } };
   }
   return null;
 }
@@ -421,7 +424,7 @@ export async function cosignNexusActPartial(parsed: unknown, reader: NexusPartia
   const act: NexusPartialAct = partial.act.family === "roll-anchor"
     ? { family: "roll-anchor", anchor: { ...partial.act.anchor, signatures } }
     : partial.act.family === "edge-roll-anchor"
-      ? { family: "edge-roll-anchor", anchor: { ...partial.act.anchor, signatures } }
+      ? { family: "edge-roll-anchor", anchor: { ...partial.act.anchor, signatures }, ...(partial.act.frontier ? { frontier: partial.act.frontier } : {}) }
     : partial.act.family === "kapae"
       ? { family: "kapae", entry: { ...partial.act.entry, signatures } }
       : { ...partial.act, entry: { ...partial.act.entry, signatures } };   // an admit keeps the opening it carried

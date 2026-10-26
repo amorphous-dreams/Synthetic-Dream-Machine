@@ -612,7 +612,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares cabal face --realm <realm-doc-id>                        # your worn face's key there: the nym a voucher names",
       "lares cabal vouch <joiner-nym> --realm <realm-doc-id>          # dilutes you, admits nobody",
-      "lares cabal join --realm <realm-doc-id>                        # PRESENT and cross",
+      "lares cabal join --realm <realm-doc-id> [--bundle <path|json>] # PRESENT and cross with carried heads",
       "lares cabal feed --realm <realm-doc-id>                        # the OFFERING — roll your lease slot",
       "lares cabal clock --realm <realm-doc-id>                       # who feeds this realm, and how deep",
     ],

@@ -43,6 +43,7 @@ import {
 import { memberEdgeId } from "./realm-edges.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { vouchEdgeId } from "./vouch-board.js";
+import { readFrontierCarry, type FrontierCarry } from "./frontier-carry.js";
 
 /** The envelope's own tag. It signs nothing: a partial's integrity rides the act's id and its signatures. */
 export const EDGE_PARTIAL_KIND = "edge-act-partial" as const;
@@ -59,6 +60,7 @@ export interface EdgeActPartial {
   readonly subject: EdgePartialSubject;
   /** The whole act: its body, its id, and every signature gathered so far. */
   readonly act:     EdgeKapae;
+  readonly frontier?: FrontierCarry;
 }
 
 /** What a cosigner reads off a partial. See the header. */
@@ -78,10 +80,16 @@ export function edgeIdOfSubject(scope: string, subject: EdgePartialSubject): str
 }
 
 /** Wrap an act as a partial. Refuses an act whose id fails its bytes, or a subject that names another edge. */
-export function edgeActPartial(act: EdgeKapae, scope: string, subject: EdgePartialSubject): EdgeActPartial {
-  const partial: EdgeActPartial = { kind: EDGE_PARTIAL_KIND, scope: scope.trim().toLowerCase(), subject, act };
+export function edgeActPartial(act: EdgeKapae, scope: string, subject: EdgePartialSubject, frontier?: FrontierCarry): EdgeActPartial {
+  const partial: EdgeActPartial = { kind: EDGE_PARTIAL_KIND, scope: scope.trim().toLowerCase(), subject, act, ...(frontier ? { frontier } : {}) };
   if (readEdgeActPartial(partial) === null) throw new Error("edge-partial: the act, its realm and its subject do not name one edge");
   return partial;
+}
+
+export function withPartialFrontier(partial: EdgeActPartial, carry: FrontierCarry): EdgeActPartial {
+  const joined = { ...partial, frontier: carry };
+  if (!readEdgeActPartial(joined)) throw new Error("edge-partial: frontier carry torn");
+  return joined;
 }
 
 function coerceSubject(v: unknown): EdgePartialSubject | null {
@@ -126,7 +134,9 @@ export function readEdgeActPartial(parsed: unknown): EdgeActPartial | null {
   const { signatures: _s, actCid, ...body } = act;
   if (actCid !== edgeKapaeActCid(body)) return null;
   if (edgeIdOfSubject(p["scope"], subject) !== act.edgeId) return null;
-  return { kind: EDGE_PARTIAL_KIND, scope: p["scope"], subject, act };
+  const frontier = Object.hasOwn(p, "frontier") ? readFrontierCarry(p["frontier"]) : null;
+  if (Object.hasOwn(p, "frontier") && !frontier) return null;
+  return { kind: EDGE_PARTIAL_KIND, scope: p["scope"], subject, act, ...(frontier ? { frontier } : {}) };
 }
 
 /** The roster's seats whose signature verifies over the act's bytes, one per seat, as bare keys. */

@@ -8,7 +8,7 @@
  * addSentinelMember) into a primitive any number of cabal-realms re-enact: a
  * realm FOUNDS by minting its sentinel Document identity and takes a dweller by
  * adding them to that sentinel. The mesh floor carries
- * the LIVENESS (lease + residency); this carries the AUTHORITY graph (Keyhive).
+ * the LIVENESS (maintenance feed + residency); this carries the AUTHORITY graph (Keyhive).
  *
  * DESIGN CONSTRAINTS:
  *   · DOCUMENT, not Group, and that is RULED rather than pending. A Group carries one HUMAN'S
@@ -59,10 +59,10 @@ import type { KeyhiveProvider } from "./keyhive-provider.js";
  * when omitted (a bare found just mints the sentinel + pairs the substrate):
  *   · residency  — registerCold the substrate (born anu / unfed until the first
  *                  feedCabalRealm warms it — #the-realm DISSOLVED-by-cooling).
- *   · leaseWriterId + leaseSlots — REGISTER this writer's liveness lease slot
+ *   · leaseWriterId + leaseSlots — REGISTER this writer's maintenance-feed slot
  *                  (cabalRealmLeaseSlot) at genesis epoch 0 in the provided
- *                  coordinator-free max-register backing store. In production the
- *                  backing store holds a set of daemon lease-epoch tiddlers; here the
+ *                  per-writer backing store. In production the
+ *                  backing store holds a set of daemon realm-feed tiddlers; here the
  *                  caller passes a Map so the floor stays storage-blind.
  */
 export interface FoundCabalRealmOpts {
@@ -99,7 +99,7 @@ export async function foundCabalRealm(
   // a fact about the realm — never this vessel failing to look.
   if (opts.residency) opts.residency.registerCold(substrateUrl, DEFAULT_GRAIN_TYPE, "unfed");
 
-  // Register this writer's liveness lease slot at genesis epoch 0 (max-register).
+  // Register this writer's maintenance-feed slot at genesis epoch 0.
   if (opts.leaseWriterId && opts.leaseSlots) {
     const slot = cabalRealmLeaseSlot(realm.realmDocIdHex, opts.leaseWriterId);
     if (!opts.leaseSlots.has(slot)) opts.leaseSlots.set(slot, "0");
@@ -110,7 +110,7 @@ export async function foundCabalRealm(
 
 /**
  * A FOUNDED cabal-realm AND its public CHARTER, born together — the realm's
- * sovereign identity (members-only substrate + roster + lease) PLUS its
+ * sovereign identity (members-only substrate + roster + maintenance feed) PLUS its
  * veil-public face (the only projection that ever crosses the read-face wire).
  */
 export interface FoundedCabalRealm {
@@ -120,7 +120,7 @@ export interface FoundedCabalRealm {
 
 /**
  * FOUND a cabal-realm AND its veil-public CHARTER in one act — the founding that
- * gives the realm its public face. Mints the sentinel + substrate + lease
+ * gives the realm its public face. Mints the sentinel + substrate + maintenance feed
  * (foundCabalRealm, unchanged) and ALSO projects the realm's charter through the
  * pure disclosure shore (mesh/projectRealmGlamour): the charter carries
  * ONLY the realm's content-addressed name + bearing + whatever the founder CHOOSES

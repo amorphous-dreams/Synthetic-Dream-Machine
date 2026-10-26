@@ -21,7 +21,8 @@
 import type { Repo } from "@automerge/automerge-repo";
 import {
   edgeRollAnchorParents, signEdgeRollAnchor, edgeRollAnchorCounts, edgeRollAnchorCid, writeEdgeRollAnchor,
-  keptFromLedger, ledgerScopes, keepInLedger, edgeLedgerDocUrl, realmEdgeBoardDocUrl, materializeSharedLarDoc,
+  charterHandLineage, prepareRealmFrontier, registerRealmFrontierInto, realmRaiseCids, type SealEpoch,
+  keptFromLedger, ledgerScopes, ledgerRealms, keepInLedger, edgeLedgerDocUrl, realmEdgeBoardDocUrl, materializeSharedLarDoc,
   type KahuQuorumSeats, type LarDoc,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
@@ -41,12 +42,13 @@ export interface EdgeRollAnchorLanded {
 }
 
 /**
- * The realm boards a roll of the Nexus `rolling` anchors: each realm that stands under that Nexus at this vessel
- * and holds a quorum act the vessel's ledger kept. Sorted. Another Nexus's roll anchors nothing there.
+ * The realm boards a roll of the Nexus `rolling` anchors: each realm that stands under that Nexus at this vessel,
+ * whether its ledger kept a quorum act there or only noted the realm. The roll signs the realm's head under the new
+ * epoch for every one, so no realm reads stale-lineage after a roll. Sorted. Another Nexus's roll anchors nothing there.
  */
 export function edgeRollAnchorRealms(ledger: LarDoc | undefined | null, rolling: string): string[] {
-  return ledgerScopes(ledger).filter((scope) =>
-    realmNexusIn(ledger, scope) === rolling && keptFromLedger(ledger, scope).acts.some((a) => a.hand === "quorum"));
+  return [...new Set([...ledgerScopes(ledger), ...ledgerRealms(ledger)])].filter((scope) =>
+    realmNexusIn(ledger, scope) === rolling && (ledgerRealms(ledger).includes(scope) || keptFromLedger(ledger, scope).acts.some((a) => a.hand === "quorum"))).sort();
 }
 
 export async function runEdgeRollAnchors(opts: {
@@ -55,6 +57,7 @@ export async function runEdgeRollAnchors(opts: {
   readonly closing:  KahuQuorumSeats;
   /** The roster the roll seats, rooted on the new head's epoch cid. */
   readonly opened:   KahuQuorumSeats;
+  readonly openedEpoch: SealEpoch;
   readonly repo:     Repo;
 }): Promise<readonly EdgeRollAnchorLanded[]> {
   const vesselKey = await loadWornFaceAtomKey().catch(() => "");
@@ -75,6 +78,10 @@ export async function runEdgeRollAnchors(opts: {
   ));
   const signers = selected.map((s) => ({ signer: s.verifyingKey, sign: s.sign }));
   const sealLineage = readNexusDoc(opts.sealHome)?.sealLineage ?? [];
+  const openedLineage = charterHandLineage([...sealLineage, opts.openedEpoch]);
+  if (!openedLineage || openedLineage.roster.sealEpochCid !== opts.opened.sealEpochCid) {
+    throw new EdgeRollAnchorError("edge roll anchor REFUSED: the opened epoch does not extend the verified charter lineage");
+  }
   const landed: EdgeRollAnchorLanded[] = [];
   try {
     for (const realm of realms) {
@@ -93,7 +100,10 @@ export async function runEdgeRollAnchors(opts: {
       if (!(await edgeRollAnchorCounts(anchor, opts.opened))) {
         throw new EdgeRollAnchorError("refusing to write: the edge roll anchor does not count under the new roster (fail-closed).");
       }
-      read.handle.change((d) => writeEdgeRollAnchor(d, anchor));
+      const head = await prepareRealmFrontier({ realm, board: read.handle.doc(), lineage: openedLineage.lineage,
+        counted: realmRaiseCids(read.counted.acts),
+        signers: selected.map((s) => ({ key: s.verifyingKey, sign: s.sign })) });
+      read.handle.change((d) => { writeEdgeRollAnchor(d, anchor); registerRealmFrontierInto(d, head); });
       ledger.change((d) => { keepInLedger(d, realm, { acts: [], anchors: [anchor] }); });
       landed.push({ realm, anchorCid: edgeRollAnchorCid(anchor), parents, boardUrl });
     }

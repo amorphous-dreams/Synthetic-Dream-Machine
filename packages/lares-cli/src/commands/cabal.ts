@@ -22,9 +22,10 @@
  * later. The vouching itself already paid the cost: the voucher's score SPLITS across everyone they
  * vouch for, so each vouch dilutes the hand that made it. That carries the whole payment, and it needs no ledger.
  *
- * `feed --realm <id>` — THE OFFERING. A realm lives by being fed: members roll a per-realm lease
- * epoch, one slot per writer, and the realm's liveness reads off that max-register. A FACE feeds, never a
- * device, so adding vessels never inflates a standing. Feeding twice rolls twice — the clock measures how hard
+ * `feed --realm <id>` — THE OFFERING. A realm lives by being fed: members roll its maintenance feed,
+ * one slot per writer, and the clock reads their offerings. The charter quorum advances the separate
+ * admission lease. A FACE feeds, never a device, so adding vessels never inflates a standing.
+ * Feeding twice rolls twice — the clock measures how hard
  * each hand feeds, so a repeated offering SHOULD register.
  *
  * `clock --realm <id>` — THE CAPTURE-CLOCK, and it surfaces rather than judges. It reports who feeds and how
@@ -38,6 +39,7 @@
  * generate identically, so the reading names a local sighting and never a total.
  */
 
+import { readFileSync, existsSync } from "node:fs";
 import { realmStanding } from "@lararium/mesh";
 import {
   CabalVouchError, CabalJoinError, CabalFaceError,
@@ -69,7 +71,7 @@ export async function cmdCabal(args: ParsedArgs): Promise<number> {
 
 class CabalUsageError extends Error {}
 
-/** The realm doc id, fail-closed — a stray value never becomes a lease prefix. */
+/** The realm doc id, fail-closed — a stray value never becomes a feed or admission prefix. */
 function realmOf(args: ParsedArgs): string {
   const realm = (args.options["realm"] ?? "").trim().toLowerCase();
   if (!/^[0-9a-f]{64}$/.test(realm)) {
@@ -122,8 +124,8 @@ async function realmVerb(verb: string, verbArgs: Record<string, unknown>): Promi
 }
 
 /**
- * `lares cabal feed` — make the offering. The realm's liveness rides a max-register, so this rolls only THIS
- * face's own slot; two members feeding concurrently never clobber each other.
+ * `lares cabal feed` — make the offering. This rolls only THIS face's own maintenance-feed slot;
+ * two members feeding concurrently never clobber each other or advance the admission lease.
  */
 async function cmdFeed(args: ParsedArgs): Promise<number> {
   try {
@@ -202,7 +204,8 @@ async function cmdVouch(args: ParsedArgs): Promise<number> {
   if (!joiner || !realm) return usage(args, `vouch wants ${!joiner ? "<joiner-nym>" : "--realm <realm-doc-id>"}`);
 
   try {
-    const r = (await storeVerb("cabal-vouch", { joiner, realm, ...nexusOf(args) }, CabalVouchError)).output as unknown as CabalVouchResult;
+    const r = (await storeVerb("cabal-vouch", { joiner, realm, ...nexusOf(args) }, CabalVouchError)).output as unknown as CabalVouchResult & { bundle: unknown };
+    emit(args, { ok: true, data: { ...r }, human: () => {
     console.log(r.reMinted ? "RE-VOUCHED (one edge, not two)" : "VOUCHED");
     console.log(`  voucher:   ${r.voucherDid}  (the worn face's key at ${r.nexusAid.slice(0, 22)}…)`);
     console.log(`  joiner:    ${r.joiner}`);
@@ -213,6 +216,8 @@ async function cmdVouch(args: ParsedArgs): Promise<number> {
     // The number that matters to the voucher — stated as a FLOOR, because it counts what this replica has
     // synced. A peer may hold edges we have not seen, so real dilution reads at or above this.
     console.log(`  out-degree: at least ${r.outDegreeFloor}  (this replica sees your standing split ${r.outDegreeFloor} way${r.outDegreeFloor === 1 ? "" : "s"} — a peer may hold more)`);
+    console.log(`  bundle:    ${JSON.stringify(r.bundle)}`);
+    } });
     return 0;
   } catch (err) {
     if (err instanceof CabalVouchError) { console.error(`refused: ${err.message}`); return 1; }
@@ -232,15 +237,23 @@ async function cmdJoin(args: ParsedArgs): Promise<number> {
     if (cap !== undefined && !Number.isInteger(cap)) {
       throw new CabalUsageError(`--cap expects an integer out-degree ceiling, got "${capRaw}"`);
     }
+    const bundleArg = args.options["bundle"];
+    let bundle: unknown;
+    if (bundleArg !== undefined) {
+      const text = existsSync(bundleArg) ? readFileSync(bundleArg, "utf8") : bundleArg;
+      try { bundle = JSON.parse(text); }
+      catch { throw new CabalUsageError("--bundle expects a JSON file or inline JSON bundle"); }
+    }
 
     const v = (await storeVerb("cabal-join", {
       realm, applicant,
+      ...(bundleArg !== undefined ? { bundle } : {}),
       ...(cap !== undefined ? { maxVouchesPerVoucher: cap } : {}),
     }, CabalJoinError)).output as unknown as CabalJoinResult;
 
     emit(args, {
       ok: true,
-      data: { admitted: v.admitted, refusal: v.refusal, voucherDid: v.voucherDid, capped: v.capped.length, setAside: v.setAside, memberSetAside: v.memberSetAside },
+      data: { admitted: v.admitted, refusal: v.refusal, voucherDid: v.voucherDid, capped: v.capped.length, setAside: v.setAside, memberSetAside: v.memberSetAside, frontier: v.frontier, missing: v.missing },
       human: () => {
         if (v.admitted) {
           console.log("ADMITTED");

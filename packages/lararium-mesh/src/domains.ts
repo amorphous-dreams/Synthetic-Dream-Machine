@@ -235,6 +235,8 @@ export const EDGE_FRONTIER_DOMAIN = mint("edge-frontier");
 /** One signed LEASE ADVANCE in a PersonaGroup's per-writer slot: the writer signs the resource, its own key and
  *  the epoch it lifts the max-register to. An unsigned slot, or one signed by a key outside the face's roster, raises nothing. */
 export const LEASE_ADVANCE_DOMAIN = mint("lease-advance");
+/** One charter quorum's signed lease advance for a Nexus or realm, bound to its own seal epoch roster. */
+export const QUORUM_LEASE_DOMAIN = mint("quorum-lease");
 /** A SEAL ROLL's anchor on an edge board: the NEW epoch's quorum names the epoch it closes, that epoch's
  *  key-set, and the heads of the quorum acts that counted there, so a shadow carries across the roll. */
 export const EDGE_ROLL_ANCHOR_DOMAIN = mint("edge-roll-anchor");

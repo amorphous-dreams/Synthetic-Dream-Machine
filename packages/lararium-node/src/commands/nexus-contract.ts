@@ -53,6 +53,8 @@ import {
   admitCarriageCommit, openAdmitCarriage,
   realmEdgeBoardDocUrl, edgeLedgerDocUrl, readEdgeBoard, keptFromLedger, keepInLedger, ledgerRealms, ledgerScopes, edgeRollAnchorsFromBoard, edgeKapaeActsFromBoard,
   edgeRollAnchorParents, edgeRollAnchorCounts, edgeRollAnchorCid, signEdgeRollAnchor, writeEdgeRollAnchor, mergeEdgeRollAnchors,
+  charterHandLineage, prepareRealmFrontier, realmRaiseCids, carryOfPrepared, cosignFrontierCarry,
+  frontierCarryAgrees, frontierCarryStands, landFrontierCarry,
   type CountedEdgeBoard, type EdgeRollAnchor,
   type AdmitOpening, type CustodyRootDoor, type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
   type PresentationFinding,
@@ -863,6 +865,8 @@ export async function runEdgeRollAnchorOpen(opts: { readonly sealHome: string; r
   const realms = edgeRollAnchorRealms(ledger.doc(), aid);
   if (realms.length === 0) return [];
   const held = heldSeatSigners(opened);
+  const lineage = charterHandLineage(readNexusDoc(home)?.sealLineage ?? []);
+  if (!lineage) throw new NexusContractError("the opened charter lineage reads null; no realm head can be signed");
   if (held.length === 0) throw new NexusContractError("this vessel holds no seat of the head roster, so it opens no edge anchor for it.");
   if (held.length >= opened.threshold) {
     throw new NexusContractError("this vessel holds the whole new quorum: the edge anchors land here whole, inside the rotate, and no partial crosses.");
@@ -876,7 +880,11 @@ export async function runEdgeRollAnchorOpen(opts: { readonly sealHome: string; r
         scope: realm, prevEpochCid: closing.sealEpochCid, sealEpochCid: opened.sealEpochCid, prevKeys: closing.keys, prevThreshold: closing.threshold,
         parents: edgeRollAnchorParents(view.counted, closing.sealEpochCid),
       }, held.map((s) => ({ signer: s.verifyingKey, sign: s.sign })));
-      const partial = nexusActPartial(aid, { family: "edge-roll-anchor", anchor });
+      const prepared = await prepareRealmFrontier({ realm, board: view.handle.doc(), lineage: lineage.lineage,
+        counted: realmRaiseCids(view.counted.acts), signers: held.map((s) => ({ key: s.verifyingKey, sign: s.sign })) });
+      const frontier = carryOfPrepared(prepared);
+      if (!frontier) throw new NexusContractError("frontier-missing: no rolled realm head to carry");
+      const partial = nexusActPartial(aid, { family: "edge-roll-anchor", anchor, frontier });
       const { reader } = await edgeAnchorReader(home, repo, vesselKey, partial);
       const judged = await judgeNexusActPartial(partial, reader);
       if (judged.verdict !== "ready") throw new NexusContractError(`the partial this vessel signed for realm ${realm.slice(0, 12)}… reads ${judged.verdict} here${judged.why ? `: ${judged.why}` : ""}; nothing crosses.`);
@@ -922,6 +930,8 @@ export async function runEdgeRollAnchorPartial(opts: { readonly partial: unknown
   if (!read || read.act.family !== "edge-roll-anchor") throw new NexusContractError("the file reads as no edge-roll-anchor partial");
   const home = charterHomeOrRefuse(opts.sealHome, read.aid);
   const { opened } = rolledRostersOrRefuse(home);
+  const lineage = charterHandLineage(readNexusDoc(home)?.sealLineage ?? []);
+  if (!lineage) throw new NexusContractError("the opened charter lineage reads null; no realm head can be signed");
   const vesselKey = await edgeVesselKeyOrRefuse();
   const repo = opts.repo;
   const realm = read.act.anchor.scope;
@@ -929,11 +939,21 @@ export async function runEdgeRollAnchorPartial(opts: { readonly partial: unknown
     let partial: NexusActPartial = read;
     const { reader, view } = await edgeAnchorReader(home, repo, vesselKey, partial);
     let judged = await judgeNexusActPartial(partial, reader);
+    const carry = partial.act.family === "edge-roll-anchor" ? partial.act.frontier : undefined;
+    if (!view || (judged.verdict !== "ready" && judged.verdict !== "complete")) throw new NexusContractError(`the partial reads ${judged.verdict} on this vessel${judged.why ? `: ${judged.why}` : ""}; nothing signs or lands.`);
+    if (!carry) throw new NexusContractError("frontier-missing: the edge roll partial has no realm head");
+    // A READ SIGNS NOTHING: the head this vessel would sign is shaped with hands that sign no bytes; the cosign below signs for real.
+    const prepared = await prepareRealmFrontier({ realm, board: view.handle.doc(), lineage: lineage.lineage,
+      counted: realmRaiseCids(view.counted.acts),
+      signers: heldSeatSigners(opened).map((s) => ({ key: s.verifyingKey, sign: async () => "" })) });
+    if (!frontierCarryAgrees(carry, prepared)) throw new NexusContractError("stale: the carried realm head disagrees with this board");
     if (judged.verdict === "ready") {
       const hands = heldSeatSigners(opened, new Set(judged.signed));
       if (hands.length === 0) throw new NexusContractError("the partial waits on a seat this vessel does not hold; carry it to the vault that holds one.");
       try { partial = await cosignNexusActPartial(partial, reader, hands.map((h) => ({ signer: h.verifyingKey, sign: h.sign }))); }
       catch (err) { if (err instanceof NexusPartialRefusal) throw new NexusContractError(`the partial refuses a cosign here: ${err.message}`); throw err; }
+      if (partial.act.family === "edge-roll-anchor") partial = { ...partial, act: { ...partial.act,
+        frontier: await cosignFrontierCarry(carry, hands.map((h) => ({ key: h.verifyingKey, sign: h.sign }))) } };
       judged = await judgeNexusActPartial(partial, reader);
     }
     if (judged.verdict === "ready") return { realm, partial, verdict: judged.verdict, signed: judged.signed, landed: null };
@@ -944,6 +964,11 @@ export async function runEdgeRollAnchorPartial(opts: { readonly partial: unknown
     if (!(await edgeRollAnchorCounts(anchor, opened))) {
       throw new NexusContractError("refusing to write: the edge roll anchor does not count under the head roster (fail-closed).");
     }
+    const finished = (partial.act as Extract<NexusActPartial["act"], { family: "edge-roll-anchor" }>).frontier;
+    if (!finished || !frontierCarryAgrees(finished, prepared) || !frontierCarryStands({ carry: finished,
+      board: view.handle.doc(), boardId: realm, hand: "quorum", lineage: lineage.lineage })) {
+      throw new NexusContractError("frontier-short: the rolled realm head does not stand at the opened threshold");
+    }
     const marked = (): string => {
       const doc = view.handle.doc();
       return `${rolledRostersOrRefuse(home).opened.sealEpochCid}|${edgeKapaeActsFromBoard(doc).map((a) => a.actCid).sort().join(",")}|${edgeRollAnchorsFromBoard(doc).map(edgeRollAnchorCid).sort().join(",")}`;
@@ -953,7 +978,7 @@ export async function runEdgeRollAnchorPartial(opts: { readonly partial: unknown
       judge: async () => judgeNexusActPartial(partial, (await edgeAnchorReader(home, repo, vesselKey, partial)).reader),
       refuse: (message) => new NexusContractError(message),
     });
-    view.handle.change((d) => writeEdgeRollAnchor(d, anchor));
+    view.handle.change((d) => { writeEdgeRollAnchor(d, anchor); landFrontierCarry(d, finished); });
     view.ledger.change((d) => { keepInLedger(d, realm, { acts: [], anchors: [anchor] }); });
     await repo.flush();
     return {
