@@ -210,7 +210,7 @@ function listenerFixture(opts: { urlAtBoot: boolean }) {
   const handle: GroupDocHandle = {
     on: (_e, l) => { docListener = l as never; },
     off: () => { docListener = null; },
-    doc: () => ({ tiddlers: {} }),
+    titles: () => [],
   };
   const listener = makeGroupDocListener({
     group, selfVerifyingKey: self,

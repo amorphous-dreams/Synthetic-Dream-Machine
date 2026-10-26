@@ -22,7 +22,8 @@ export interface FaceSeatPorts {
 export interface GroupDocHandle {
   on(event: "change", listener: (payload: { patches?: readonly { path: readonly (string | number)[] }[] }) => void): unknown;
   off(event: "change", listener: (payload: { patches?: readonly { path: readonly (string | number)[] }[] }) => void): unknown;
-  doc(): { tiddlers?: Record<string, unknown> } | undefined;
+  /** The titles the document holds now. */
+  titles(): readonly string[];
 }
 
 export interface GroupDocListenerPorts {
@@ -71,7 +72,7 @@ export function makeGroupDocListener(ports: GroupDocListenerPorts) {
       const onChange = ({ patches }: { patches?: readonly { path: readonly (string | number)[] }[] }) => {
         if (stopped) return;
         if (patches ? patches.some(p => p.path[0] === "tiddlers" && typeof p.path[1] === "string" && named(p.path[1]))
-          : Object.keys(handle.doc()?.tiddlers ?? {}).some(named)) ports.wake();
+          : handle.titles().some(named)) ports.wake();
       };
       handle.on("change", onChange);
       stopDoc = () => handle.off("change", onChange);

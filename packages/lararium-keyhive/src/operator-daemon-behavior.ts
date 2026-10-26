@@ -1098,7 +1098,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const groupDoc = makeGroupDocListener({
           group, selfVerifyingKey: edge.deviceVerifyingKey,
           urlOf: () => catalog.urlOf(personaBagIdFor(group)),
-          open: (url) => ctx.repo.findWithProgress<LarDoc>(url as AutomergeUrl).whenReady() as Promise<GroupDocHandle>,
+          open: async (url): Promise<GroupDocHandle> => {
+            const handle = await ctx.repo.findWithProgress<LarDoc>(url as AutomergeUrl).whenReady();
+            return { on: (e, l) => handle.on(e, l as never), off: (e, l) => handle.off(e, l as never), titles: () => Object.keys(handle.doc()?.tiddlers ?? {}) };
+          },
           subscribeCatalog: async (onChange) => {
             const handle = await catalog.handle();
             handle.on("change", onChange);
