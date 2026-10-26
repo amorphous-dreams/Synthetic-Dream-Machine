@@ -2363,7 +2363,7 @@ async function prepareNodeBootOn(
     // A cross-operator peer holding a VERIFIED face-join grant on THIS face's plane reaches the face's own
     // planes — and nothing else. The ring WIDENS the self-slot fed gate by that ONE path (`compose` ORs it
     // atop the deterministic federatable set), so a stranger, and every private plane, read exactly as
-    // before. The grant read reuses the plane the joinee's own `takeFaceGrantIfPublished` reads, bound to
+    // before. The grant read reuses the plane the joinee's own seat act reads, bound to
     // the ONE `verifyFaceGrantRecord`. NO CLOCK RIDES IN: admission licenses off the persona-KEL HEAD alone
     // (event order), so absent a resolved KEL chain the ring stays UNWIRED — the pre-ring verdict stands
     // rather than a widening the vessel cannot walk clocklessly.

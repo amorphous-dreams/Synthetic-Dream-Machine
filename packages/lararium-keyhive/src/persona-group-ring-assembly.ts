@@ -74,7 +74,7 @@ export async function assemblePersonaGroupRing(input: PersonaGroupRingInput): Pr
     deviceAside: input.deviceAside,
     ...(input.siblingKeyOf ? { siblingKeyOf: (peerId: RingPeerId) => provenVesselKeyOf(input.siblingKeyOf!(peerId)) } : {}),
     grants: {
-      // The records resting on the face's own plane — the SAME store `takeFaceGrantIfPublished` reads.
+      // The records resting on the face's own plane — the SAME plane the joinee's seat act reads (`face-seat`).
       records: async () => {
         const store = await input.catalog.storeOf(planeBag);
         if (!store) return [];

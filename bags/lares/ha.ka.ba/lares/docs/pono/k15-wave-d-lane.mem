@@ -28,7 +28,7 @@ Wave D builds the FCK fence the custody contract of <<~ loulou "lar:///ha.ka.ba/
 
 <<~ ahu #/the-slices>>
 
-!! The six slices, one lane
+!! The eight slices, one lane
 
 # ''The tree, the key and the context.'' Each face holds a fresh random FCK, wrapped only in that face's independent slot and recovery tree; the sealed writer generalizes from `(key, tree, carrier)` to an explicit `(row class, owner, key, matching tree, bound carrier context)`, and each D seal authenticates one canonical context of format, store namespace, immutable PersonaGroup, row name, row kind and the logical row reference. The face atom and the sealed anchor are the first rows to move; the two key-class rows in `face-isolation-routes.test.ts` turn green here and come off `test.fails`.
 # ''Every other node D carrier'' moves under its face's FCK in the same lane: the custody root, the Keyhive and veil archives, the proof keys, the face join rows, the roster, book and outbox partitions.
@@ -37,6 +37,9 @@ Wave D builds the FCK fence the custody contract of <<~ loulou "lar:///ha.ka.ba/
 # ''The one-face bundle and restore'': a bundle carries only that face's rows and a wrapped recovery route, never a bare FCK, and a restore opens no sibling.
 
 # ''The anon-veil lift on join'' (operator ruling, 2026-10-22): when an anonymous vessel joins a PersonaGroup, every piece of keyed material its anon veil holds, drafts included, lifts into the face's cap stack. The join act is the gate, with no separate per-item accept. The lift is idempotent by intent: a replayed or repeated join lifts nothing twice. It carries only that vessel's own material, never a view of its other faces (the multitude-view stays local to the vessel). It lands once, under the end-state key classes, so that no omnibus re-home precedes a re-wrap under the FCK. Reds: a vessel that drafts while anonymous and then joins finds the draft under the face's cap stack; a second join, or a replayed admit apply, lifts nothing twice; the lift carries no other face's material. Control: a vessel that never joins keeps its drafts at the floor.
+# ''The seat lands when the grant arrives'': one serialized seat act owns the later grant's take, verify, ingest and the floor lift, with one in-flight promise, so duplicate wakes coalesce and a wake that lands mid-act earns one trailing pass. Three causal wakes feed it and nothing else: a change on the retained PersonaGroup document, filtered to this vessel's `face-join-grant/v1` title; a daemon-layer change under the group's lease prefix, and, only while a grant waits unjudged on an unavailable lease frontier, any daemon-layer change (a late layer wakes it even when it holds no lease slot, since the composite forwards a joining layer's records as changes); and one replay at boot once the lease listener attaches. The PersonaGroup document listener attaches when that plane arrives and replays the act once, so a boot never waits on an unsynced plane and no grant falls between the boot pass and the listener. A signature reads judged only after its ingest lands (a definitive verify refusal judges once per boot); an ingest fault, or a lease frontier that reads unavailable, leaves the record unjudged for the next causal change. No clock, no poll, no retry timer. `faceSeated` reports `knowsAgent` and takes nothing; vessel-only reuse reads the record and returns it; the mint path waits for the seat act before it reads the seat. The binding rests in D, in the face subtree, never in the floor index. Reds: a grant arriving after a vessel-only binding seats and lifts with no binding call (control: no grant, the floor stays); a grant before the daemon layer stays unjudged until the layer's join seats it; duplicate pulses ingest once; an ingest fault then a later change still seats; a crash between ingest and lift finishes once at restart.
+# ''The scout exemption goes line by line'': the vocabulary check reads the third-party scouts like any other carrier, and each cited phrase that spells the retired abbreviation (a research system's acronym, a verifying-key field another project names) rides one named exception in the evergreen witness's shape (rule, file, a substring of the cited phrase, a count, a present-tense reason). A stale entry fails the run, and a retired word planted on a new scout line reads open.
+
 <<~/ahu>>
 
 <<~ ahu #/the-red>>
@@ -47,6 +50,6 @@ Found A and B with independently random FCKs and trees, occupied D carriers for 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6Smy7TiXXivNz_XsIfLRU_jiUwbFE10PvhOxFQK5n1A
+<<^ code="&#x0003;">>ni:///sha-256;NRaoene-v78uN6Pz03km_9pOlLQz9SB2DkClceHQMu4
 
 <<^ code="&#x0004;" -> to="?">>

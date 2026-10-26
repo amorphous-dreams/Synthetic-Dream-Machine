@@ -48,7 +48,9 @@ export interface SlotDocResolverArgs {
   readonly vesselDid: () => string | Promise<string>;
   readonly mintedByHex: () => string;
   readonly personaGroupId?: string | undefined;
+  /** Read the veil seat without taking a grant. */
   readonly faceSeated?: () => Promise<boolean>;
+  readonly seatSettled?: () => Promise<void>;
   readonly faceDoor?: FaceBagDoor;
 }
 
@@ -106,6 +108,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       ...(args.personaGroupId ? { personaGroupId: args.personaGroupId } : {}),
       ...(args.faceDoor ? { faceDoor: args.faceDoor } : {}),
       ...(args.faceSeated ? { faceSeated: args.faceSeated } : {}),
+      ...(args.seatSettled ? { seatSettled: args.seatSettled } : {}),
       mintedByHex: args.mintedByHex(),
     });
     const rec = await args.daemonStore.get(bindingKey(kind, fingerprint));
@@ -150,6 +153,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
   };
 
   const slotDoc = async (slug: string, kind: WikiSlotKind, opts?: { mint?: boolean }): Promise<SlotDoc | null> => {
+    await args.seatSettled?.();
     if (kind === "temp") return null;
     const mint = opts?.mint ?? true;
     const { fingerprint, recipeTrace } = await traceOf(slug);
@@ -170,6 +174,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
 
   return {
     bindings: async (fingerprint, recipeTrace, slug) => {
+      await args.seatSettled?.();
       mounted.set(slug, { fingerprint, recipeTrace });
       const personal = await binding("personal", fingerprint, recipeTrace);
       const draft    = await draftDoc(slug, fingerprint, recipeTrace);

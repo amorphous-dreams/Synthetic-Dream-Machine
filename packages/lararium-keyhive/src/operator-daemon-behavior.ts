@@ -28,11 +28,11 @@ import {
   makeCircleReactors,
   makeCabalRealmReactors,
 } from "@lararium/tw5";
-import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
+import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, leaseEpochPrefix, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor } from "@lararium/tw5";
 import type { IslandMsg_Manifest } from "@lararium/mesh";
 import { boardDyadReader } from "./board-dyad-reader.js";
-import type { DocHandle, LarDoc } from "@lararium/mesh";
+import type { DocHandle, LarDoc, AutomergeUrl } from "@lararium/mesh";
 
 /** Vessel-injected daemon shore the platform entry supplies (node folds the telemetry capture SINK here; a
  *  browser/node entry folds the projection `onBoot` mount so the daemon inherits the wiki render cap).
@@ -143,6 +143,7 @@ import { type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
 import { announceSeatRoll } from "./seat-duty-executor.js";
 import { FACE_GRANT_PREFIX, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
+import { makeFaceSeat } from "./face-seat.js";
 import { runFaceJoinOperation } from "./face-join-operation.js";
 import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
 import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
@@ -269,71 +270,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // `meme put --recipe`, the daemon's own working layer). Built once the keyhive stands, over the
   // live context; the face-seat read rides the veil's own registry (a pin is standing, a seat is
   // capability), so a binding never delegates to an agent the veil cannot name.
-  // The grant records this vessel already judged, by signature — a refused record is judged ONCE per boot
-  // (the refusal logs once), a taken one never re-ingests.
-  const judgedGrants = new Set<string>();
-  /**
-   * The joinee's half of THE LATER GRANT. Reads the PersonaGroup plane (the doc both vessels sync by membership)
-   * for a `face-join-grant/v1` record naming THIS vessel; verifies it against the persona root pinned at admit
-   * and the founder's edge under that root; on a verdict, ingests the cap events into the atom and
-   * persists them as cap-event records so the next boot re-hydrates the seat. Returns whether the face now
-   * reads seated. Any failure → false, a logged refusal, and NO binding moved.
-   */
-  const takeFaceGrantIfPublished = async (ctx: IslandContext): Promise<boolean> => {
-    const group = daemonAuth.personaGroupId;
-    const ownEdge = daemonAuth.deviceEdge;
-    if (!group || !ownEdge || !veilKh || !ctx.catalogUrl) return false;
-    // NO CLOCK. Absent a founder persona-KEL chain to walk, ABSTAIN rather than fall back to a
-    // pinned-root-only verify gated on a wall clock — fail-closed, event order or nothing (no global now).
-    if (!daemonAuth.personaKel) return false;
-    let store: Awaited<ReturnType<ReturnType<typeof makeCatalogAccessor>["storeOf"]>>;
-    try { store = await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).storeOf(personaBagIdFor(group)); } catch { return false; }
-    if (!store) return false;
-    const prefix = `${FACE_GRANT_PREFIX}${group}/`;
-    const self = ownEdge.deviceVerifyingKey.toLowerCase();
-    let titles: string[];
-    try { titles = (await store.listVisible()).filter((t) => t.startsWith(prefix) && t.toLowerCase().endsWith(self)); } catch { return false; }
-    for (const title of titles) {
-      const record = await store.get(title);
-      const text = (record as { tiddler?: { text?: unknown } } | null)?.tiddler?.text;
-      if (typeof text !== "string") continue;
-      let rec: FaceGrantRecord;
-      try { rec = JSON.parse(text) as FaceGrantRecord; } catch { continue; }
-      // The founder's own edge leases too — read the SAME epoch the founder's door checks it against
-      // (readLeaseEpoch, shared). An unavailable frontier is a pending mutation, never a reason to
-      // let the signature and soft wall-clock window license the ingest. Keep the record unjudged so
-      // a later live attempt can retry after the causal shore returns.
-      const lease = await readLeaseEpoch(ctx.composite);
-      if (typeof rec?.sig !== "string" || judgedGrants.has(rec.sig)) continue;
-      if (lease.kind === "unavailable") {
-        console.log(`[daemon] face-join grant pending (${title.slice(-16)}): current lease frontier unavailable (${lease.why}) — no binding moves`);
-        continue;
-      }
-      const expectedEpoch = lease.n;
-      judgedGrants.add(rec.sig);
-      const verdict = await verifyFaceGrantRecord(rec, {
-        personaRootDid: ownEdge.personaRootDid, selfVerifyingKey: self, groupId: group,
-        personaKel: daemonAuth.personaKel,   // the edge verifies under the KEL HEAD, never a frozen root — no clock
-        expectedEpoch,
-      });
-      if (!verdict.ok) {
-        console.log(`[daemon] face-join grant record REFUSED (${title.slice(-16)}): ${verdict.reason} — no binding moves`);
-        continue;
-      }
-      // THE KIT'S OWN ACT: take the cap events (live) and persist them (boot re-hydrates the seat).
-      // Ingest is also the READING — the vessel's own handler stamps the true variant and island on the
-      // events keyhive accepts, so it must reach the store before any backstop row masks them.
-      const events = rec.capEvents.map(base64ToBytes);
-      try { await absorbCapEvents(veilKh, new DaemonEventStore({ daemon: ctx.composite }), events); } catch (err) { console.log(`[daemon] face-join grant: atom ingest faulted: ${(err as Error)?.message ?? err}`); }
-      const seated = await veilKh.knowsAgent(group);
-      console.log(`[daemon] face-join grant record taken from the PersonaGroup plane (${events.length} cap events, ${rec.reSealed.length} chunks re-sealed) — face ${seated ? "SEATED" : "still unseated after ingest"}`);
-      if (seated) return true;
-    }
-    return false;
-  };
-
   let slotDocs: SlotDocResolver | null = null;
-  let floorLifted = false;
+  let faceSeat: ReturnType<typeof makeFaceSeat> | null = null;
   const slotDocsOf = (ctx: IslandContext): SlotDocResolver => {
     if (slotDocs) return slotDocs;
     if (!kh) throw new Error("keyhive not booted");
@@ -346,26 +284,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       mintedByHex: () => mintedByHex,
       ...(daemonAuth.personaGroupId ? { personaGroupId: daemonAuth.personaGroupId } : {}),
       ...(faceDoor() ? { faceDoor: faceDoor()! } : {}),
-      faceSeated: async () => {
-        const agent = daemonAuth.personaGroupId;
-        if (!agent) return false;
-        let seated = veilKh ? await veilKh.knowsAgent(agent) : false;
-        // THE LATER GRANT (basket-one #/the-later-grant): not seated → read the PersonaGroup plane for a grant
-        // record naming this vessel, verify it OFFLINE against the published seal, and take the seat by this
-        // kit's own act. Reading alone re-cuts nothing — a record that fails stays a record.
-        if (!seated) seated = await takeFaceGrantIfPublished(ctx);
-        if (!seated) console.log(`[daemon] face ${agent.slice(0, 16)}… pinned, not yet seated — bindings mint vessel-only until a face-join lands`);
-        // THE ANON-VEIL LIFT runs ONCE per process, the first time this vessel reads as seated: at the seat's landing, or at a
-        // boot that finds the face already seated. The join is the gate; nothing asks per item.
-        if (seated && !floorLifted) {
-          floorLifted = true;
-          try {
-            const lifted = await slotDocs!.liftFloor();
-            if (lifted.moved.length + lifted.finished.length > 0) console.log(`[daemon] the seat landed: ${lifted.moved.length} floor record(s) moved under the face, ${lifted.finished.length} burn(s) finished`);
-          } catch (err) { floorLifted = false; console.log(`[daemon] the anon-veil lift faulted (${(err as Error)?.message ?? err}) — it runs again at the next seat read`); }
-        }
-        return seated;
-      },
+      faceSeated: async () => faceSeat ? faceSeat.seated() : !!(veilKh && daemonAuth.personaGroupId && await veilKh.knowsAgent(daemonAuth.personaGroupId)),
+      seatSettled: async () => { await faceSeat?.settled(); },
     });
     return slotDocs;
   };
@@ -1136,6 +1056,71 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // and overwrites every key in the same breath.
         const seat = contentKeys;
         keyhive.whenDisposed(() => { seat.lock(); if (contentKeys === seat) contentKeys = null; });
+      }
+      // Grant and lease arrivals drive the joinee's single serialized seat act.
+      if (daemonAuth.personaGroupId && daemonAuth.deviceEdge && daemonAuth.personaKel && veilKh && ctx.catalogUrl) {
+        const group = daemonAuth.personaGroupId;
+        const edge = daemonAuth.deviceEdge;
+        const veil = veilKh;
+        const catalog = makeCatalogAccessor(ctx.repo, ctx.catalogUrl);
+        faceSeat = makeFaceSeat({
+          group, leasePrefix: leaseEpochPrefix(group), selfVerifyingKey: edge.deviceVerifyingKey, personaRootDid: edge.personaRootDid,
+          personaKel: daemonAuth.personaKel,
+          knowsAgent: (agent) => veil.knowsAgent(agent),
+          grants: async () => {
+            const store = await catalog.storeOf(personaBagIdFor(group));
+            if (!store) return [];
+            const prefix = `${FACE_GRANT_PREFIX}${group}/`;
+            const self = edge.deviceVerifyingKey.toLowerCase();
+            const found: { title: string; record: FaceGrantRecord }[] = [];
+            for (const title of await store.listVisible()) {
+              if (!title.startsWith(prefix) || !title.toLowerCase().endsWith(self)) continue;
+              const raw = (await store.get(title))?.tiddler.text;
+              if (typeof raw !== "string") continue;
+              try { found.push({ title, record: JSON.parse(raw) as FaceGrantRecord }); } catch { /* An unreadable record grants nothing. */ }
+            }
+            return found;
+          },
+          readLease: () => readLeaseEpoch(ctx.composite),
+          verify: verifyFaceGrantRecord,
+          ingest: async (record) => { await absorbCapEvents(veil, new DaemonEventStore({ daemon: ctx.composite }), record.capEvents.map(base64ToBytes)); },
+          lift: async () => {
+            const lifted = await slotDocsOf(ctx).liftFloor();
+            if (lifted.moved.length + lifted.finished.length > 0)
+              console.log(`[daemon] the seat landed: ${lifted.moved.length} floor record(s) moved under the face, ${lifted.finished.length} burn(s) finished`);
+          },
+          log: (message) => console.log(`[daemon] ${message}`),
+        });
+        const seat = faceSeat;
+        let stopped = false;
+        let stopDoc = () => {};
+        const stopLease = ctx.composite.subscribe((change) => {
+          if (!stopped && change.bag === DAEMON_BAG_ID) seat.daemonChanged(change.title);
+        });
+        const stop = () => { stopped = true; stopLease(); stopDoc(); };
+        veil.whenDisposed(stop);
+        // The group document's arrival gates its listener without holding the boot: a plane that has not synced yet
+        // attaches when it lands, and that arrival replays the act once.
+        void (async () => {
+          try {
+            const url = await catalog.urlOf(personaBagIdFor(group));
+            if (!url) return;
+            const handle = await ctx.repo.findWithProgress<LarDoc>(url as AutomergeUrl).whenReady();
+            if (stopped) return;
+            const prefix = `${FACE_GRANT_PREFIX}${group}/`;
+            const self = edge.deviceVerifyingKey.toLowerCase();
+            const named = (title: string) => title.startsWith(prefix) && title.toLowerCase().endsWith(self);
+            const onChange = ({ patches }: { patches?: readonly { path: readonly (string | number)[] }[] }) => {
+              if (stopped) return;
+              if (patches ? patches.some(p => p.path[0] === "tiddlers" && typeof p.path[1] === "string" && named(p.path[1]))
+                : Object.keys(handle.doc()?.tiddlers ?? {}).some(named)) seat.wake();
+            };
+            handle.on("change", onChange);
+            stopDoc = () => handle.off("change", onChange);
+            seat.wake();
+          } catch (error) { console.log(`[daemon] face grant arrival unavailable: ${String(error)}`); }
+        })();
+        await seat.run();
       }
       // Archive refusal records use the daemon wiki's default writable layer, so attachment precedes them.
       await attachDaemonWorking(ctx);

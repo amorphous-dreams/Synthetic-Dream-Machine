@@ -8,7 +8,7 @@
  *   V1 — `knowsAgent` reads false for a group agent the provider never met, true once the seat's events land
  *   V2 — `resolveOrMintBinding` with a face pinned and NO seat mints on the vessel's own key, never throws,
  *        and the binding record says so
- *   V3 — a face record adopts its document without another grant (CONTROL), and a seat still absent leaves `vessel-only`
+ *   V3 — a face record adopts its document without another grant (CONTROL), and reuse leaves `vessel-only`
  *        standing (CONTROL). A vessel-only record moves under a seated face by the lift (`anon-veil-lift.test.ts`), never here.
  */
 import { describe, test, expect } from "vitest";
@@ -96,7 +96,7 @@ describe("a face pinned is not a face seated", () => {
     await joinee.dispose();
   });
 
-  test("V3 CONTROL — a seat still absent leaves `vessel-only` standing", async () => {
+  test("V3 CONTROL — reuse leaves `vessel-only` standing", async () => {
     const joinee = await vessel(11);
     const key = "lar:///ha.ka.ba/bags/daemon/draft-bindings/" + "f".repeat(64);
     const put: unknown[] = [];
@@ -109,7 +109,7 @@ describe("a face pinned is not a face seated", () => {
         put: async (rec: unknown) => { put.push(rec); },
       } as never,
       keyhive: joinee, personaGroupId: "cd".repeat(16),
-      faceSeated: async () => false,
+      faceSeated: async () => { throw new Error("reuse asked the seat"); },
       faceDoor: { mint: async () => { throw new Error("unseated mint reached face"); }, adopt: () => {}, remint: async () => { throw new Error("unseated remint reached face"); } },
       mintedByHex: "0x" + "a".repeat(64), recipeTrace: { wikiDocId: "w", libraryBagDocIds: [] },
     });
