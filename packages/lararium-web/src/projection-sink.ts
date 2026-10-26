@@ -339,6 +339,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     if (readLarFrame(frame) === null || typeof frame.surface !== "string" || frame.surface === "") return "malformed";
     const switching = frame.surface !== shownSurface;
     const st = stateOf(frame.surface);
+    if (st.epoch !== null && st.epoch !== frame.mountEpoch) endEpochPending(frame.surface, st.epoch);
     const newEpoch = switching || st.epoch !== frame.mountEpoch;
     if (newEpoch) {
       if (st.epoch !== frame.mountEpoch) st.hintSequence = 0;
@@ -351,6 +352,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
       return true;
     });
     if (!newEpoch && fresh.length === 0) return "stale-frame";
+    if (!newEpoch && frame.surface === shownSurface) resendPending(frame.surface);
     const style = fresh.find((k) => k.key === LAR_KEY_STYLE);
     if (style) st.sheet = style.tombstone ? "" : style.css ?? "";
     const membership = fresh.find((k) => k.key === LAR_KEY_MEMBERSHIP);
@@ -473,8 +475,37 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
   /** Hint selectors the console already named. */
   const refusedHintSelectors = new Set<string>();
   /** Every reliable act this page relayed and has no answer for yet, by event id. */
-  const pending = new Map<string, { readonly surface: string; readonly target: string }>();
+  const pending = new Map<string, { readonly surface: string; readonly target: string; readonly ev: LarMsg_ControlEvent; readonly mountEpoch: number; attempts: number }>();
   const PENDING_MAX = 1024;
+  const RESEND_ATTEMPTS = 3;
+  const endPending = (id: string, reason: LarRefusal): void => {
+    const asked = pending.get(id);
+    if (!asked) return;
+    pending.delete(id);
+    const fieldId = endFieldAct(id);
+    const picker = pickers.get(id);
+    if (picker) { pickers.delete(id); picker.setStatus("refused"); }
+    if (asked.surface === shownSurface) paintRefusal(fieldId ?? asked.target, reason);
+  };
+  const endEpochPending = (surface: string, epoch: number): void => {
+    for (const [id, asked] of pending) {
+      if (asked.surface === surface && asked.mountEpoch === epoch) endPending(id, "stale-target");
+    }
+  };
+  const resendPending = (surface: string): void => {
+    if (!doors || surface !== shownSurface) return;
+    const epoch = stateOf(surface).epoch;
+    for (const [id, asked] of pending) {
+      if (asked.surface !== surface || asked.mountEpoch !== epoch) continue;
+      if (asked.attempts >= RESEND_ATTEMPTS) { endPending(id, "binding-unavailable"); continue; }
+      asked.attempts++;
+      doors.sendControlEvent(surface, asked.ev);
+    }
+  };
+  const holdPending = (surface: string, target: string, ev: LarMsg_ControlEvent): void => {
+    pending.set(ev.eventId, { surface, target, ev, mountEpoch: ev.mountEpoch, attempts: 1 });
+    if (pending.size > PENDING_MAX) endPending(pending.keys().next().value!, "binding-unavailable");
+  };
   // THE PAGE HOLDS ITS UNLOAD while a relayed act still waits for its result: a confirmed edit answers once its
   // document rests, and a page that leaves first would lose it. The hold rides the browser's own leave prompt and
   // reads the pending count at the moment of the leave: no timer decides. `pagehide` gives a page no way to hold.
@@ -490,6 +521,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     if (!doors || shownSurface === null || !plateEl.hidden) return;    // under the plate the shown frame names no live mount
     const st = stateOf(shownSurface);
     if (st.epoch === null) return;
+    if (kind !== "lar:sense") resendPending(shownSurface);
     const membershipRev = st.revs.get(LAR_KEY_MEMBERSHIP);
     const ev = mkLarControlEvent({
       eventId: mintEventId(), cameraId: LAR_CAMERA_STORY, mountEpoch: st.epoch, kind,
@@ -498,10 +530,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
       ...(target.field === "controlId" ? { controlId: target.id } : { renderId: target.id }),
       ...body,
     });
-    if (kind !== "lar:sense") {
-      pending.set(ev.eventId, { surface: shownSurface, target: target.id });
-      if (pending.size > PENDING_MAX) pending.delete(pending.keys().next().value!);
-    }
+    if (kind !== "lar:sense") holdPending(shownSurface, target.id, ev);
     doors.sendControlEvent(shownSurface, ev);
     if (kind === "lar:act") activation = { at: performance.now(), surface: shownSurface, target: target.id };
     return ev;
@@ -960,7 +989,15 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
   let lastField: LarFieldNode | null = null;
   let lastActivated: HTMLElement | null = null;
   /** Each toolbar act in flight, by event id: its field, the revision it carried and the one it reserved. */
-  const fieldActs = new Map<string, { readonly id: string; readonly node: LarFieldNode; readonly carried: number; readonly reserved: number }>();
+  const fieldActs = new Map<string, { readonly surface: string; readonly id: string; readonly node: LarFieldNode; readonly carried: number; readonly reserved: number }>();
+  const endFieldAct = (eventId: string): string | undefined => {
+    const act = fieldActs.get(eventId);
+    if (!act) return undefined;
+    fieldActs.delete(eventId);
+    const st = stateOf(act.surface);
+    if (st.localRev.get(act.id) === act.reserved) st.localRev.set(act.id, act.carried);
+    return act.id;
+  };
   /** A node's own control id or render id, never an ancestor's. */
   const ownId = (el: Element): string | null => el.getAttribute("data-control-id") ?? el.getAttribute("data-lar-rid");
 
@@ -982,7 +1019,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     const act = fieldActs.get(result.eventId);
     if (!act || shownSurface === null) return undefined;
     fieldActs.delete(result.eventId);
-    const st = stateOf(shownSurface);
+    const st = stateOf(act.surface);
     const rev = st.localRev.get(act.id);
     if (result.status === "applied" && result.want && rev === act.reserved && paneEl.contains(act.node)) {
       applyWholeValue(act.node, result.want.value, result.want.selStart, result.want.selEnd);
@@ -1022,7 +1059,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
       selection: { start: field.selectionStart ?? 0, end: field.selectionEnd ?? 0 }, localRev: carried,
     });
     if (!ev) { st.localRev.set(fieldTarget.id, carried); return; }
-    fieldActs.set(ev.eventId, { id: fieldTarget.id, node: field, carried, reserved: carried + 1 });
+    fieldActs.set(ev.eventId, { surface: shownSurface, id: fieldTarget.id, node: field, carried, reserved: carried + 1 });
     if (fieldActs.size > PENDING_MAX) fieldActs.delete(fieldActs.keys().next().value!);
   }, true);
   paneEl.addEventListener(LAR_FIELD_TAKE_THEIRS, (event) => {
@@ -1053,8 +1090,8 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     settleOffer(result);                                           // S6: a file picker's status
     const asked = pending.get(result.eventId);
     if (!asked) return "ignored";                                  // an answer to nothing this page relayed
-    if (asked.surface !== shownSurface) { pending.delete(result.eventId); return "ignored"; }
-    if (result.mountEpoch !== stateOf(asked.surface).epoch) return "ignored";
+    if (asked.surface !== shownSurface) { pending.delete(result.eventId); endFieldAct(result.eventId); return "ignored"; }
+    if (result.mountEpoch !== asked.mountEpoch || result.mountEpoch !== stateOf(asked.surface).epoch) return "ignored";
     pending.delete(result.eventId);
     const refusalBeside = settleFieldAct(result)?.id ?? asked.target;  // a toolbar act's words stand beside its field
     if (result.status === "applied") { dropRefusal(refusalBeside); return "cleared"; }
@@ -1100,13 +1137,13 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
   const answerService = (ask: LarSurfaceService, status: "ok" | LarRefusal): void => {
     const st = stateOf(ask.surface);
     if (!doors || st.epoch === null) return;
+    if (ask.surface === shownSurface) resendPending(ask.surface);
     const ev = mkLarControlEvent({
       eventId: mintEventId(), cameraId: LAR_CAMERA_STORY, mountEpoch: st.epoch, kind: "lar:service-result",
       controlId: "lar:document", action: "lar:service-result", seenFrameRev: st.revs.get(LAR_KEY_SURFACE) ?? 0,
       requestId: ask.requestId, status,
     });
-    pending.set(ev.eventId, { surface: ask.surface, target: "lar:document" });
-    if (pending.size > PENDING_MAX) pending.delete(pending.keys().next().value!);
+    holdPending(ask.surface, "lar:document", ev);
     doors.sendControlEvent(ask.surface, ev);
   };
   const applyService = async (ask: LarSurfaceService): Promise<ServiceVerdict> => {
@@ -1142,7 +1179,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     manifest: () => ({ services: [...manifestKinds] }),
     setBreath: (surface, breath) => { stateOf(surface).breath = breath; renderPlate(); },
     awaitSurface: (surface) => { awaited = surface === shownSurface ? null : surface; renderPlate(); },
-    arm: (d) => { doors = d; },
+    arm: (d) => { const rearming = doors !== null; doors = d; if (rearming && shownSurface !== null) resendPending(shownSurface); },
     surface: () => shownSurface,
     members: () => (shownSurface === null ? null : stateOf(shownSurface).members),
     route: () => (shownSurface === null ? null : routeOf(stateOf(shownSurface))),
