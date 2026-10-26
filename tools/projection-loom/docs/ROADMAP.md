@@ -73,13 +73,12 @@ rejection message (or explicitly justify a changed error precedence); retain
 both total-query and individual-section bounds. Run dedicated Fire and CAD
 suites and then inspect repo-wide plus held-out results against the same SHA.
 
-**P1 · Architectural Birth, without replacing the helm.** Grow heritable,
-source-bound *spatial relation programs* capable of changing adjacency,
-support, open courts, crossings and negative-space continuity. Test a bounded
-`bears / bridges / skirts` family against the unchanged source with exact
-native gate, paired sections and six-view handback. A relation study must not
-be mistaken for an already heritable replacement of the original
-needle–terrace–keep skeleton.
+**P1 · Architectural Birth (opt-in graft implemented; campaign evidence pending).**
+A separate birth recipe adds inheritable `bears / bridges / skirts` graft loci
+beneath the unchanged OODA-HA helm, with a source-derived paired recipe and
+read-only geometry observation. Run exact native admission, paired sections and
+six-view comparisons. **This does not replace the needle–terrace–keep skeleton**;
+a more radical primary-massing grammar remains separate research.
 
 **P2 · Free-play comparison.** Run matched-seed cohorts with reserved
 exploratory seats, independent proposal streams, exact-CAD quotas, cost and
@@ -278,3 +277,48 @@ native point queries, checks that elevations are explicitly increasing, and
 saves only atomic result receipts. The optional QD pilot computes its study
 before either output is written. No downstream observer becomes an approval
 or generation controller. Exact same-head CI remains the verification gate.
+
+
+## Architectural Birth · heritable relational grafts (opt-in)
+
+The original `project_alpha.json` and `recipe_alpha.json` remain
+unchanged one-seed controls. `examples/necrospire/birth_fixture.py`
+authors a separate source-bound `project_birth.json` +
+`hybrid/recipe_birth.json` in their original source directories,
+preserving all RGB/alpha source SHA identities and original camera settings.
+Generation of the two files refuses any overwrite.
+
+The opt-in `arch.birth.*` loci carry a bounded on/off choice,
+one of three inherited relation cells (`bears`, `bridges`, `skirts`),
+and native dimensions. Those loci belong to the existing `terraces`
+breeding family, with inherited source bounds and original OODA-HA
+family scheduling. The growth builder compiles them through the existing
+native Fire operations and staged CAD construction rather than writing
+new geometry rules or a second optimizer. Invalid arrangements remain
+native-rejected and recorded; a relation label is not an admission.
+
+The existing scored phenotype hook independently observes part-envelope
+extensions from the **built geometry**. The generation ancestry records
+the inherited proposal separately. Emergent geometry observations have
+limited AABB meaning, do not certify circulation or safety, and cannot
+promote pet-names or replace the Operator.
+
+The first proof is a constrained two-epoch OODA-HA campaign with the
+birth recipe and retained seed-frozen reference, not a claim that all
+three relation cells will pass. Compare exact CAD acceptance, phenotype
+diversity, fixed-view source fidelity, and failure reasons. A subsequent
+matched-seed control and separated random streams remain open research.
+
+
+### Architectural Birth operator controls and evidence funnel
+
+The new opt-in source-derived recipe keeps the existing six-family OODA-HA
+controller; it does not create a seventh runner. The inherited
+`arch.birth.enable` switch participates in exact-attempted / native-valid /
+scored activation funnels and is isolated for surrogate uncertainty, so
+newly enabled geometry does not inherit invented confidence from inactive
+offspring. The mode cell also appears in explicit topology-locus identity.
+The dedicated native birth workflow has a source-pair creation gate, a
+source-verified active bearing gate, two short OODA-HA epochs, an immutable
+archive census, and retained CAD rejection receipts. Those results are
+unknown until same-head Actions completes.

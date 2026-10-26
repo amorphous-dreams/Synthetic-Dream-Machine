@@ -644,6 +644,8 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
         construction_digest = compositor.construction_digest()
         objectives = ('silhouette','prior','regional','macro','contour') if breeding else ('silhouette','prior')
         extra_topology = [step.activation for step in recipe.steps if step.activation]
+        if 'arch.birth.enable' in recipe.bounds:
+            extra_topology.extend(('arch.birth.enable','arch.birth.mode'))
         topology_loci = tuple(dict.fromkeys([*topology_loci,*extra_topology]))
     else:
         source_hashes = _source_hashes(project,location_stack)
@@ -809,10 +811,12 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                 builds = {}
                 visual_index = {}
                 from .capability_stack import digest as genome_digest
+                active_switches=tuple(sorted(
+                    {step.activation for step in recipe.steps if step.activation}
+                    | ({'arch.birth.enable'} if 'arch.birth.enable' in bounds else set())))
                 surrogate=SurrogatePreview(
                     bounds,archive,before_generation=i+1,
-                    activation_loci=tuple(sorted({step.activation for step
-                                                  in recipe.steps if step.activation}))
+                    activation_loci=active_switches
                     ) if breeding else None
                 emitter_credit=adaptive_priorities(batch,archive,before_generation=i+1) if breeding else {}
                 by_genome={}
@@ -907,6 +911,9 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                         visual = visual_index[genome_digest(genome)]
                         traits.add('visual:'+visual['mask_sha256'])
                         traits.add('visual-niche:'+visual['niche'])
+                    if "arch.birth.enable" in genome:
+                        from .birth_relations import birth_traits
+                        traits.update(birth_traits(assembly,genome))
                     for key,value in genome.items():
                         if key in recipe.cad_keys or key.endswith('seed'):continue
                         lo,hi=bounds[key]
@@ -947,17 +954,14 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                 if not runner.completed(batch, preview=preview):
                     break
                 if archive is not None and not node.get('archive_assimilated'):
-                    culling = archive.assimilate(i+1,data,activations=tuple(
-                        dict.fromkeys(step.activation for step in recipe.steps
-                                      if step.activation)))
+                    culling = archive.assimilate(i+1,data,activations=active_switches)
                     node['archive_assimilated']=True
                     journal.event('lineage-culling',loop_id,generation=i+1,
                                   counts=culling,niches=len(archive.elites()),
                                   surviving_families=sorted(archive.data['champions']),
                                   adaptive_emitter_evidence=emitter_performance(archive),
                                   measured_searchability=archive.census(
-                                      bounds,activations=tuple(
-                                          step.activation for step in recipe.steps if step.activation)))
+                                      bounds,activations=active_switches))
                     journal.save()
                 options = (render_compound_review(compositor,runner,i,
                                 out/f'previews/epoch_{i+1:03d}',

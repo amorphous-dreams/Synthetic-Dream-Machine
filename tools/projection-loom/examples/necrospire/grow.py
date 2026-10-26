@@ -57,4 +57,10 @@ def grow(p):
              'when':{'param':'grammar.buttress','min':.5}},
         ]
         grow_program(grammar,p,assembly=a)
+    # Opt-in architecture is inherited in a separately authored source-bound
+    # birth recipe. Old original source genomes lack these loci and remain
+    # geometrically unchanged; failures are genuine native rejections.
+    if "arch.birth.enable" in p:
+        from projection_loom.birth_relations import apply_birth
+        apply_birth(a,p)
     return a

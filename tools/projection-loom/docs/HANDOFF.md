@@ -1,3 +1,35 @@
+
+
+## Architectural Birth · heritable relational grafts (opt-in)
+
+The original `project_alpha.json` and `recipe_alpha.json` remain
+unchanged one-seed controls. `examples/necrospire/birth_fixture.py`
+authors a separate source-bound `project_birth.json` +
+`hybrid/recipe_birth.json` in their original source directories,
+preserving all RGB/alpha source SHA identities and original camera settings.
+Generation of the two files refuses any overwrite.
+
+The opt-in `arch.birth.*` loci carry a bounded on/off choice,
+one of three inherited relation cells (`bears`, `bridges`, `skirts`),
+and native dimensions. Those loci belong to the existing `terraces`
+breeding family, with inherited source bounds and original OODA-HA
+family scheduling. The growth builder compiles them through the existing
+native Fire operations and staged CAD construction rather than writing
+new geometry rules or a second optimizer. Invalid arrangements remain
+native-rejected and recorded; a relation label is not an admission.
+
+The existing scored phenotype hook independently observes part-envelope
+extensions from the **built geometry**. The generation ancestry records
+the inherited proposal separately. Emergent geometry observations have
+limited AABB meaning, do not certify circulation or safety, and cannot
+promote pet-names or replace the Operator.
+
+The first proof is a constrained two-epoch OODA-HA campaign with the
+birth recipe and retained seed-frozen reference, not a claim that all
+three relation cells will pass. Compare exact CAD acceptance, phenotype
+diversity, fixed-view source fidelity, and failure reasons. A subsequent
+matched-seed control and separated random streams remain open research.
+
 ## Current OODA-HA re-entry · ascending and descending evergreen audit
 
 Repository head at audit entry: `fec6dc5d`. New source-specific Fire was

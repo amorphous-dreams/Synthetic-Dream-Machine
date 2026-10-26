@@ -19,6 +19,11 @@ from .search_strategy import diversity_parents, pareto_front, searchability_cens
 SCHEMA = 'projection-loom/lineage-archive'
 
 
+def _birth_ancestry(genome):
+    from .birth_relations import describe_birth
+    return describe_birth(genome)
+
+
 def visual_descriptor(mask):
     """Camera-fixed binary occupancy phenotype; identical pixels have one ID.
 
@@ -346,7 +351,9 @@ FAMILY_FOCUSES = {
     'fractured': ('shaft_jaggedness','spire_segmentation','crystal.fracture','crystal.wave','crystal.seed'),
     'terraces': ('terrace_overhang','terrace_offset','gallery_reach','fortress_width',
                  'join.enable','join.relief','join.fracture','join.seed','join.wave',
-                 'grammar.gallery','grammar.gallery_span'),
+                 'grammar.gallery','grammar.gallery_span',
+                 'arch.birth.enable','arch.birth.mode','arch.birth.width',
+                 'arch.birth.depth','arch.birth.clearance','arch.birth.setback'),
     'crown': ('crown_taper','crown_offset','parapet_fraction','tower_height',
               'grammar.buttress','grammar.brace_span',
               'brutalist.bands','brutalist.band_count','brutalist.projection'),
@@ -367,7 +374,7 @@ def validate_breeding_recipe(recipe):
     # (gallery, buttress, brutalist, future detail) contribute their loci
     # when actually present; the brood filters its family foci by bounds.
     required={key for genes in FAMILY_FOCUSES.values()
-              for key in genes if not key.startswith(('grammar.','brutalist.'))}
+              for key in genes if not key.startswith(('grammar.','brutalist.','arch.birth.'))}
     if (recipe is None or not required.issubset(recipe.bounds)
             or not recipe.source_hashes or not recipe.cad_keys):
         raise ValueError('Breeding requires a source-bound structural recipe with all required loci')
@@ -380,7 +387,7 @@ def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_fami
     """Evolve family-owned gene blocks semi-independently in distinct collaborators.
 
     A family inherits its own measured fragment, not its whole old context.
-    Other families donate versioned *fragments* to an assembled whole-location
+    Other families donate attributed *fragments* to an assembled whole-location
     candidate, whose native CAD/mesh audit remains mandatory. No second helm.
     """
     from scipy.stats import qmc
@@ -475,9 +482,15 @@ def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_fami
                     # gate cannot be attributed to an individual capability.
                     discrete=tuple(k for k in focus if k in (
                         'spire_segmentation','join.enable',
-                        'grammar.gallery','grammar.buttress'))
+                        'grammar.gallery','grammar.buttress',
+                        'arch.birth.enable','arch.birth.mode'))
                     selected=(discrete[(generation + j//3) % len(discrete)]
                               if discrete else None)
+                    # One reserved architecture birth seat per terraces brood:
+                    # switch the single activation locus, not a bundle of
+                    # correlated dimensions. The mode is inherited separately.
+                    if (family=='terraces' and 'arch.birth.enable' in focus):
+                        selected='arch.birth.enable'
                     if key==selected:
                         value=lo+(.8 if value < (lo+hi)/2 else .2)*(hi-lo)
                     elif selected is None and k==(j//3)%len(focus):
@@ -492,5 +505,6 @@ def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_fami
                     'collaborators':collaborators,
                     'generation':generation,'mode':mode,
                     'transfer':dict(active_transfer) if active_transfer else None,
-                    'interaction_pairs':interactions[:8]}))
+                    'interaction_pairs':interactions[:8],
+                    'architectural_birth':(_birth_ancestry(genome) if 'arch.birth.enable' in bounds else None)}))
     return brood

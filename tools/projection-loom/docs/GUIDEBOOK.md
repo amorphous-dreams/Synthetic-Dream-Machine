@@ -263,12 +263,66 @@ research receipts, not Operator-approved offspring. The optional
 
 ### OODA-HA next experiments
 
-After the stale CI expectation is resolved, attempt a bounded
-**Architectural Birth** family that can truly alter structural adjacency,
-passages and massing; pair each child with native carved-geometry and
-six-view witnesses. Then run a matched-source, matched-seed comparison
+After the CI floor is repaired, run the opt-in **Architectural Birth**
+source-derived graft family, pairing each admitted child with native
+carved-geometry and six-view witnesses. Grafts extend but do not yet
+replace the primary massing; radical structural rearrangement remains
+unimplemented. Then run a matched-source, matched-seed comparison
 against the original additive grammar with dedicated exploratory seats.
 Measure contact validity, native volume change, route/void continuity,
 view expression, source fit, CPU cost and distinct topology independently.
 Neither an archive score nor one image's ambiguity may overwrite
 Operator judgments or source provenance.
+
+
+## Architectural Birth · heritable relational grafts (opt-in)
+
+The original `project_alpha.json` and `recipe_alpha.json` remain
+unchanged one-seed controls. `examples/necrospire/birth_fixture.py`
+authors a separate source-bound `project_birth.json` +
+`hybrid/recipe_birth.json` in their original source directories,
+preserving all RGB/alpha source SHA identities and original camera settings.
+Generation of the two files refuses any overwrite.
+
+The opt-in `arch.birth.*` loci carry a bounded on/off choice,
+one of three inherited relation cells (`bears`, `bridges`, `skirts`),
+and native dimensions. Those loci belong to the existing `terraces`
+breeding family, with inherited source bounds and original OODA-HA
+family scheduling. The growth builder compiles them through the existing
+native Fire operations and staged CAD construction rather than writing
+new geometry rules or a second optimizer. Invalid arrangements remain
+native-rejected and recorded; a relation label is not an admission.
+
+The existing scored phenotype hook independently observes part-envelope
+extensions from the **built geometry**. The generation ancestry records
+the inherited proposal separately. Emergent geometry observations have
+limited AABB meaning, do not certify circulation or safety, and cannot
+promote pet-names or replace the Operator.
+
+The first proof is a constrained two-epoch OODA-HA campaign with the
+birth recipe and retained seed-frozen reference, not a claim that all
+three relation cells will pass. Compare exact CAD acceptance, phenotype
+diversity, fixed-view source fidelity, and failure reasons. A subsequent
+matched-seed control and separated random streams remain open research.
+
+### Opt-in source-derived Architectural Birth
+
+In `tools/projection-loom`, author the separate source-bound project and
+recipe exactly once, leaving the alpha controls untouched:
+
+```sh
+python examples/necrospire/birth_fixture.py
+python -m projection_loom ooda-ha-run \
+  --project examples/necrospire/project_birth.json \
+  --capability-recipe examples/necrospire/hybrid/recipe_birth.json \
+  --breeding --offspring-per-family 3 --passes 2 \
+  --control full-speed --exact-budget 8 --detail-budget 4 \
+  --score-size 64 96 --finalists 3 \
+  --out out/architectural-birth-experiment
+```
+
+Source identity and authored relation choices remain distinct. Read
+`session.json`, generation checkpoints, `lineage_archive.json` and
+six-view survivors. Rejected CAD arrangements count as evidence, not
+successful lineage members. Separate `fire-review` and `place-review`
+are still required for architectural relation and circulation comparisons.
