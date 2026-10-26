@@ -45,6 +45,7 @@ async function stand() {
   const plane = memoryStore();
   const input = {
     provider: founder, summons, ctx, founderEdge,
+    fence: { intentId: "join-106", pinnedAtom: founderEdge.deviceVerifyingKey, ownAtom: founderEdge.deviceVerifyingKey },
     signGrant: async (bytes: Uint8Array) => (await import("@lararium/mesh")).faceAtomKeyFromSeed(seedOf(7), group.groupId).sign(bytes),
     atomSeed: seedOf(7),
     operationStore: operations.store,
@@ -56,6 +57,18 @@ async function stand() {
 const grantTitles = (records: Map<string, LarTiddlerRecord>): string[] => [...records.keys()].filter((t) => t.startsWith("$:/lares/face-grant/"));
 
 describe("a face-join re-enters to one seat, one seal and one grant", () => {
+  test("RED: another hearth refuses before force and provider calls; CONTROL: pinned hearth seats; POSITIVE: replay returns its grant", { timeout: 90_000 }, async () => {
+    const t = await stand();
+    const other = { ...t.input, summons: { ...t.summons, force: true }, fence: { ...t.input.fence, ownAtom: t.summons.deviceEdge.deviceVerifyingKey } };
+    await expect(runFaceJoinOperation(other)).rejects.toThrow("face-join-fence: not-the-pinned-hearth");
+    expect(t.operations.state.puts).toBe(0);
+    expect(t.plane.state.puts).toBe(0);
+    const first = await runFaceJoinOperation(t.input);
+    expect(first["admitted"]).toBe(true);
+    const writes = t.operations.state.puts + t.plane.state.puts;
+    expect(await runFaceJoinOperation(t.input)).toEqual(first);
+    expect(t.operations.state.puts + t.plane.state.puts).toBe(writes);
+  });
   test("a crash after the issue and before the publish re-enters to the grant it issued", { timeout: 90_000 }, async () => {
     const t = await stand();
     // put 1 is the issued record (lands); put 2 is the grant publication (cut).
@@ -64,7 +77,7 @@ describe("a face-join re-enters to one seat, one seal and one grant", () => {
     // The plane store holds the grant; the operation store holds the record. Cut the grant publication once.
     await expect(runFaceJoinOperation(t.input)).rejects.toThrow(/cut at put 1/);
     expect(grantTitles(t.plane.records)).toEqual([]);
-    const issued = await readFaceOperation<{ state: string; grantRecord: unknown }>(t.operations.store, seedOf(7), new TextEncoder().encode(JSON.stringify(t.summons)));
+    const issued = await readFaceOperation<{ state: string; grantRecord: unknown }>(t.operations.store, seedOf(7), new TextEncoder().encode(t.input.fence.intentId));
     expect(issued?.state).toBe("issued");
     const eventsAtCrash = (await t.founder.eventsForPeer(t.summons.deviceEdge.deviceDid)).length;
 
@@ -97,7 +110,7 @@ describe("a face-join re-enters to one seat, one seal and one grant", () => {
     expect(two).toEqual(one);
     expect(t.operations.state.puts + t.plane.state.puts).toBe(writes);
     expect(grantTitles(t.plane.records)).toHaveLength(1);
-    expect([...t.operations.records.keys()]).toEqual([await faceOperationTitle(new TextEncoder().encode(JSON.stringify(t.summons)))]);
+    expect([...t.operations.records.keys()]).toEqual([await faceOperationTitle(new TextEncoder().encode(t.input.fence.intentId))]);
   });
 
   test("CONTROL: without the operation record a second join issues a different grant", { timeout: 90_000 }, async () => {

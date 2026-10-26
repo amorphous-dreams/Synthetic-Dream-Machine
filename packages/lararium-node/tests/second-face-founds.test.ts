@@ -50,7 +50,7 @@ const pins = (h: DaemonHandle): Record<string, string | undefined> => {
 
 async function foundFace(
   repo: Repo, daemonHandle: DaemonHandle, signerSeed: Uint8Array, opts: { mount?: boolean } = {},
-): Promise<{ groupId: string; cabalId: string; prefix: string; personaUrl: string; identitiesUrl: string; circlesUrl: string; sessionsUrl: string }> {
+): Promise<{ groupId: string; cabalId: string; prefix: string; personaUrl: string; identitiesUrl: string; circlesUrl: string; sessionsUrl: string; intentsUrl: string }> {
   const verifyingKey = await pubOf(VESSEL_SEED);
   const face = await foundTheFace({ repo,
     daemonHandle,
@@ -64,7 +64,7 @@ async function foundFace(
   });
   return {
     groupId: face.personaGroupId, cabalId: face.meshCabalDocIdHex, prefix: face.personaKelPrefix,
-    personaUrl: face.personaUrl, identitiesUrl: face.identitiesUrl, circlesUrl: face.circlesUrl, sessionsUrl: face.sessionsUrl,
+    personaUrl: face.personaUrl, identitiesUrl: face.identitiesUrl, circlesUrl: face.circlesUrl, sessionsUrl: face.sessionsUrl, intentsUrl: face.intentsUrl,
   };
 }
 
@@ -125,6 +125,7 @@ describe("a per-persona founding stands a second face without unseating the firs
         { title: face.identities, text: `${url}-id` },
         { title: face.circles,    text: `${url}-ci` },
         { title: face.sessions,   text: `${url}-se` },
+        { title: face.intents,    text: `${url}-in` },
         ...personaMembershipEntries({ personaGroupId: g, url }),
       ];
     };

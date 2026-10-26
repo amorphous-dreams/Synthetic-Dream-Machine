@@ -531,7 +531,7 @@ export function computeGrammarCid(plugins: readonly RegionEntry[]): string {
 /**
  * The bags GENESIS itself stands — the universal floor every vessel carries, and nothing else.
  *
- * A FACE'S PLANES ARE NOT DECLARED HERE. The persona · circles · identities · sessions planes each derive their id
+ * A FACE'S PLANES ARE NOT DECLARED HERE. The persona · circles · identities · sessions · intents planes each derive their id
  * from the tag their PersonaGroup mints, so no name for them exists when this seed is built, and a genesis
  * every vessel shares can describe no plane belonging to one person. They describe themselves at founding,
  * where the knowledge lives.

@@ -1,0 +1,70 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/i1-intent-lane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/i1-intent-lane.mem"
+l-space   = "adjacent"
+role      = "the I1 lane's kit: the face intent plane built, a fifth face plane that carries signed entries, folds them by slot and causal reference, answers with no election and no clock, and moves the face-join summons off the daemon doc"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/i1-intent-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/i1-intent-lane"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! I1 ~ the face intent plane, built
+
+The carrier (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-intent-plane">>) rules the model; this kit reads what stands in the code. The lane opened after Wave C sealed each face's identity anchor, Wave D put each face under its own key and K17-R made every lease rise on a signed advance. The far agent's relay seat stays outside the lane; its research follows.
+
+<<~/ahu>>
+
+<<~ ahu #/the-model>>
+
+!! The model the lane enacts
+
+* ''One fifth face plane.'' `@intents-<tag>` derives from the PersonaGroup's tag beside `@persona`, `@circles`, `@identities` and `@sessions` (`persona-scope.ts`, `persona-group-ring.ts`), founds with the face, and registers only where a signed `plane` act on `@persona` names its url (`persona-act.ts`, `face-boot-proof.ts`, the node and browser openers). A joinee adopts the founder's url from the verified plane act in its admit bundle and refuses a bundle whose log names none. The disk projector refuses every face-scoped bag, so the plane never reaches a mirror.
+* ''The signed image.'' One domain, `INTENT_ENTRY_DOMAIN`, mints in `domains.ts`. An entry is `{ body, signer, sig }` over canonical JSON; the signature covers the kind, audience, bound and references as well as the fields. The entry CID hashes the body and the signer, so two devices that sign one body stay two entries. The intent id hashes issuer, verb, arguments and nonce alone, apart from the CID. Entries rest as content-addressed tiddlers and fold by slot and causal reference, so a concurrent append never forks the plane.
+* ''Answer binds an ask.'' A single-effect verb never addresses "any device": it pins an executor, or issues into an `asks` gate. Dispatch verifies the answer's ask id and the named atom first; a stray answer grants nothing and the view lists it. Any device of the face may answer an ask, as canon says ("any session wearing the face"). An answer that cites the effective answer re-pins; two answers that cite neither read `contested` and no device acts.
+* ''The effect door fences.'' `face-join` reads as a single-effect verb. Its summons pins one hearth atom; `runFaceJoinOperation` checks `{ intentId, pinnedAtom, ownAtom }` before any provider call, the `force` branch included, and keys its operation record by the intent id, so a replay returns its recorded grant and any other hearth refuses by name.
+* ''Causal bounds.'' A bound's `void` names the CID of a signed roster act on `@persona`; the intent voids once the reader holds that act. A finite `every` campaign names its last admitted member through `through`, refuses later joiners and waits while the reader holds no such act; an unbounded `every` reaches them. A device's standing reads through K17's verified frontier, and an unknown frontier stalls execution without a rival board.
+* ''The operator's word.'' A `release`, `cancel` or operator `supersede` that outranks claims signs under the persona root (the op-key under the face's KEL, verified at the entry's `epoch`). An issuer's own atom may supersede or cancel its own intent, a claimant releases its own claim, and any other atom's release refuses by name. A device that holds no root asks the root's hearth through an `asks` entry.
+* ''The view.'' The daemon wiki's pane shows duplicates, void-after-act receipts, stray answers and an unknown frontier as distinct states, and counts no winner while proof stays unknown.
+
+<<~/ahu>>
+
+<<~ ahu #/the-slices>>
+
+!! The slices, one lane, each red-first with its control and its known positive
+
+# ''Plane and image ~ BUILT.'' `intents-<tag>` joins the face's planes at every site that lists the four siblings (founding, admit apply, node init and boot, browser boot, the ring, the session face, fleet facets, registration proofs). The entry image lives in `intent-entry.ts`. Reds: an unsigned, cross-face or wrong-domain plane url registers nothing and a wrong-domain entry reads `domain`; controls: the four siblings still register; positives: the fifth plane registers by signed act and a late joinee adopts the same url (`boot-face-planes.test.ts`, `shared-face-docs.test.ts`, `intent-entry.test.ts`).
+# ''Stand-down, effect classes, read winner ~ BUILT.'' `intent-verbs.ts` declares each verb's class (idempotent, per-device, single-effect) and refuses an unclassified verb at issue; `intent-read.ts` folds the plane and `mayAct` answers by reason (`answered`, `void`, `not-audience`, `pinned-elsewhere`, `fenced-by-claim`, `awaiting-answer`, `unknown-frontier`, `atom-aside`). The winner reads by the intent's preference list, then by the lowest `H(atom ‖ intent id)`; every other outcome stays listed as a duplicate (`intent-read.test.ts`).
+# ''Claims, release, causal voids ~ BUILT.'' A takeover fences a zombie claimant's act on a fenced effect and an idempotent effect converges; the read never touches a clock (the tests install throwing spies); a root-signed release steers the read and an atom that is neither issuer nor root releases nothing; a device that merges a void declines and an unbounded intent is honored (`intent-read.test.ts`, `intent-issue.test.ts`).
+# ''The face-join summons moves onto the plane ~ BUILT.'' The daemon registers no `face-join` verb; `makeFaceIntentDoor` (`face-intent-door.ts`) runs a serialized pass on each change of the plane, the persona plane or the catalog, appends one signed outcome per effect, and the daemon's `faceJoinEffect` runs the former handler under the fence. A joinee issues `requestFaceJoin` with its own atom key as nonce, so a replay keeps one id. `lares intent` (`issue`, `show`, `ask`, `answer`, `claim`, `takeover`, `release`, `cancel`, `supersede`) names its face per invocation through `--face N` and runs as store-door rows; the root's acts load the root seed and refuse by name where a rotated or absent root cannot sign. Reds: two hearths of one face re-key one joinee only once, on the pinned hearth, and `force` on the other hearth still refuses; another face sees no summons; an unknown frontier runs no effect (`face-intent-door.test.ts`, `face-join-reenters.test.ts`, `intent-command.test.ts`, `intent-face-flag.test.ts`).
+# ''The daemon wiki's read-only view ~ BUILT.'' `daemon-intent-tiddlers.ts` seeds the pane `$:/lares/ui/face-intents`; the `intent-view` verb registers once the face door stands, reads the door's pane model and writes local state alone, and refuses `intent-view-no-capability` without the read capability. The pane carries no action that writes or pipes an intent (`daemon-intent-tiddlers.test.ts`).
+# ''The rubric witness ~ BUILT.'' `intent-rubric.ts` counts a plane's entries and duplicates. A seeded duplicate reads one before any zero counts; a hundred wiki edits and a save write no entry while the projected wiki still mirrors; one addressed `MOVE` writes one intent and one outcome, and a second pass writes none (`intent-rubric-witness.test.ts`).
+
+!!! Declared verbs
+`face-join` (single-effect) and `MOVE` (idempotent: it follows the carrier-group move law, and two answers keyed by the intent id harm nothing). The door runs a declared idempotent verb through the daemon's own registry handler under its capability verifier, so a later idempotent verb adds one row to `faceIntentVerbs()`; a single-effect verb brings its own fenced effect and operation record (`face-join` does), and the generic road never runs one.
+
+!!! Genesis
+The bundled plugin carries the mesh's bag table, so `genesis/unbaked.json` declares the plugin's new sha until the next labelled GENESIS RE-BAKE.
+
+<<~/ahu>>
+
+<<~ ahu #/the-fences>>
+
+!! What the lane keeps off
+
+The W14-W16 floor pin lane's files, K17's frontier, lease and realm boards (the lane consumes their verified readers), W26's floor accept act, `vessel-kel.ts`, the boot seed and genesis stay untouched. The far agent's relay seat waits for its own research.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;HNPnKu2FmhyuvQbmX5O_lCdJb-uknjfzqO5uUJh7n4I
+
+<<^ code="&#x0004;" -> to="?">>

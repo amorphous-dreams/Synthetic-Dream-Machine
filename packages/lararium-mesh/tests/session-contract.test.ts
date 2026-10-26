@@ -24,7 +24,7 @@ import {
 const face = (suffix = "a"): SessionFace => ({
   personaGroup: `persona-${suffix}`, proofSubject: `proof-${suffix}`, admitRef: `admit-${suffix}`,
   causalRevision: `revision-${suffix}`,
-  planes: { persona: `plane-persona-${suffix}`, circles: `plane-circles-${suffix}`, identities: `plane-identities-${suffix}`, sessions: `plane-sessions-${suffix}` },
+  planes: { persona: `plane-persona-${suffix}`, circles: `plane-circles-${suffix}`, identities: `plane-identities-${suffix}`, sessions: `plane-sessions-${suffix}`, intents: `plane-intents-${suffix}` },
 });
 const envelope = (sessionId: string, ownerEpoch = "epoch-a", generation = 0) => ({ ownerEpoch, sessionId, generation });
 const opened = (table: SessionTable, binding = sessionBinding("port"), wearing: SessionFace = face()) => {

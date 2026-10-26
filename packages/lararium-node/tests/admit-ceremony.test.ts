@@ -140,7 +140,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
     expect(carried.deviceEdge).toBeTruthy();
 
     // It seeds its OWN sovereign social docs (the daemon bag stays sovereign-per-vessel) …
-    for (const url of [applied.identitiesUrl, applied.circlesUrl, applied.sessionsUrl, applied.daemonUrl]) {
+    for (const url of [applied.identitiesUrl, applied.circlesUrl, applied.sessionsUrl, applied.intentsUrl, applied.daemonUrl]) {
       expect(url, "the joinee seeds its own sovereign docs").toMatch(/^automerge:/);
     }
     // … and adopts the founder's persona doc — membership is what CROSSES.

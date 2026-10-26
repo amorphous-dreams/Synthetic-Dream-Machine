@@ -40,6 +40,18 @@ export interface CommandHelp {
 }
 
 export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
+  intent: {
+    usage: "usage: lares intent issue|show|ask|answer|claim|takeover|release|cancel|supersede|release-root [verb-or-id] [--face N]",
+    synopsis: "Read and write one face's signed intent plane. Name --face N on every invocation when this vessel holds several faces; a sole face resolves itself.",
+    examples: [
+      "lares intent issue face-join --face 1 --to <atom> --args '{}'",
+      "lares intent show --face 1",
+      "lares intent ask <intent-id> --face 1",
+      "lares intent answer <ask-cid> --face 1 --executor <atom>",
+      "lares intent cancel <intent-id> --face 1",
+    ],
+    flags: ["--face N   face index", "--to <atom> | --prefer <atoms> | --class <capability> | --every   audience", "--args <json>   issue arguments", "--nonce <text>   invocation nonce", "--void-at <act-cid> | --through <act-cid>   causal bounds", "--executor <atom> [--deny]   answer", "--json   structured show"],
+  },
   nexus: {
     usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | carry-take | posture | kahuli | publish | realm-bag | realm-bags | offering | promote | cabal | release>",
     synopsis: "the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.",

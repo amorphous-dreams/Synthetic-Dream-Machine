@@ -14,7 +14,7 @@ import { personaActRecordsOfGroup, signFoundingLog, signPersonaAct, writePersona
 import { writePersonaKelEvent, personaKelChainForPrefix } from "../src/persona-kel-board.js";
 import { provisionThresholdRecoveryAtFounding } from "../src/recovery-keel-core.js";
 import { guardianRecoveryRegistrationCard } from "../src/recovery-registration.js";
-import { actCid } from "../src/signed-act.js";
+import { actCid, signAct } from "../src/signed-act.js";
 
 const G = "g-mine";
 const pub = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
@@ -32,7 +32,7 @@ async function founded(prefixOverride?: string) {
   const chain = personaKelChainForPrefix(kelDoc, prov.inception.prefix)!;
   const root = { key: rootKey, sign: async (b: Uint8Array) => hex(await ed.signAsync(b, rootSeed)) };
   const edge = { personaRootDid: didFromVerifyingKey(rootKey), deviceVerifyingKey: "dev1", hearthTrueName: "hearth", boundEpoch: 0 };
-  const planes = { persona: "automerge:p", identities: "automerge:i", circles: "automerge:c", sessions: "automerge:s" };
+  const planes = { persona: "automerge:p", identities: "automerge:i", circles: "automerge:c", sessions: "automerge:s", intents: "automerge:t" };
   const log = await signFoundingLog({
     group: G, personaKelPrefix: prefixOverride ?? prov.inception.prefix, rootCommitment: faceRootCommitment(didFromVerifyingKey(rootKey)),
     epoch: 0, planes, deviceKey: "dev1", edgeDigest: edgeBodyDigest(edge),
@@ -47,6 +47,27 @@ describe("face-boot-proof", () => {
     const f = await founded();
     const r = proveFaceFromLog({ records: docRecords(f.log), chain: f.chain, group: G, anchor: f.anchor, deviceKey: "dev1", edge: f.edge, planes: f.planes });
     expect(r.ok).toBe(true);
+  });
+  test("RED: the intents url needs this face's signed plane act; CONTROL: its signed url and sibling still prove", async () => {
+    const f = await founded();
+    const base = { records: docRecords(f.log), chain: f.chain, group: G, anchor: f.anchor };
+    expect(proveFaceFromLog({ ...base, planes: { intents: "automerge:unsigned" } }))
+      .toEqual({ ok: false, refusal: { why: "plane", plane: "intents" } });
+    expect(proveFaceFromLog({ ...base, planes: { intents: f.planes.intents } }).ok).toBe(true);
+    expect(proveFaceFromLog({ ...base, planes: { circles: f.planes.circles } }).ok).toBe(true);
+  });
+  test("RED: another face, a wrong domain, and a non-root signer cannot back an intents url", async () => {
+    const f = await founded();
+    const head = f.log[f.log.length - 1]!;
+    const next = { seq: head.body.seq + 1, prior: actCid(head.body), group: G, act: "plane", epoch: 0, plane: "intents", url: "automerge:forged" };
+    const strangerSeed = new Uint8Array(32).fill(71);
+    const stranger = { key: await pub(strangerSeed), sign: async (b: Uint8Array) => hex(await ed.signAsync(b, strangerSeed)) };
+    const wrongDomain = await signAct({ ...next, kind: "wrong-domain" }, f.root);
+    const wrongSigner = await signPersonaAct({ seq: head.body.seq, cid: next.prior }, { group: G, act: "plane", epoch: 0, fields: { plane: "intents", url: next.url } }, stranger);
+    const wrongFace = await signPersonaAct({ seq: head.body.seq, cid: next.prior }, { group: "g-other", act: "plane", epoch: 0, fields: { plane: "intents", url: next.url } }, f.root);
+    const check = (extra: unknown) => proveFaceFromLog({ records: docRecords([...f.log, extra]), chain: f.chain, group: G, anchor: f.anchor, planes: { intents: next.url } });
+    for (const act of [wrongDomain, wrongSigner, wrongFace]) expect(check(act)).toEqual({ ok: false, refusal: { why: "plane", plane: "intents" } });
+    expect(proveFaceFromLog({ records: docRecords(f.log), chain: f.chain, group: G, anchor: f.anchor, planes: { intents: f.planes.intents } }).ok).toBe(true);
   });
   test("RED: a plane the log never named, a device no admission seated and a missing log each refuse by name", async () => {
     const f = await founded();

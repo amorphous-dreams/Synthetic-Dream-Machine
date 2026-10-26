@@ -37,7 +37,7 @@ import { mutableLarRecord } from "./base-doc.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { plainField, plainRecord, type StoredLarRecord } from "./stored-value.js";
 import { bagUri, MESH_SCALES, MESH_SCALE_FEDERATES, type MeshScale } from "./lar-uris.js";
-import { isPersonaPlaneSlug } from "./persona-scope.js";
+import { isFaceScopedBag } from "./persona-scope.js";
 import {
   type FlowSnapshot,
   type FlowPointer,
@@ -447,7 +447,7 @@ const SOVEREIGN_BAGS: ReadonlySet<string> = new Set(["catalog", "persona", "daem
  * `persona-scope`, so this fence and the regenesis refusal cannot drift apart on what counts as a plane.
  */
 export function isSovereignBag(slug: string): boolean {
-  return SOVEREIGN_BAGS.has(slug) || isPersonaPlaneSlug(slug);
+  return SOVEREIGN_BAGS.has(slug) || isFaceScopedBag(slug);
 }
 
 /** The first segments that name a MEME namespace — a corpus whose tiddlers belong to the same-named bag.
