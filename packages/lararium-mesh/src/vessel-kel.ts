@@ -169,3 +169,6 @@ export function placeSignerKeyAt(head: PlaceKelEvent | PlaceKelReading): string 
   if (!event) throw new Error("place-kel: malformed");
   return event.key;
 }
+
+/** The digest an event answers to: the stable AID for an inception, the predecessor link for a rotation. */
+export const placeKelEventDigest = digest;
