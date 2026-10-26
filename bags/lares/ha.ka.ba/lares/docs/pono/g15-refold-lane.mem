@@ -1,0 +1,70 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/g15-refold-lane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/g15-refold-lane.mem"
+l-space   = "adjacent"
+role      = "the G15 lane's kit: the after-roll refold stands as a module a vector runs, its queue bounded by a causal rule, and the pack transcript names the TW5 binary the build read"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/g15-refold-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/g15-refold-lane"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! G15 ~ the refold's answers
+
+The operator ruled (2026-10-26) to close as much open work as possible before the X0 bake. G15 sits on X0's critical path: its transcript cure moves genesis attestation bytes, and its refold bound carries a stride-3 integrity witness. The lane waits on no other lane.
+
+<<~/ahu>>
+
+<<~ ahu #/the-chain>>
+
+!! The chain as a module
+
+`packages/lararium-node/src/after-roll-chain.ts` holds the after-roll refold. `openNodeVessel` hands it the holders as stages (`createAfterRoll`) and wraps the answer in `afterRoll`, which first notes the hosting doc a roll names. Every `store-door-verbs` row that lands a board or a practice joint, and each socket reconnect, awaits `afterRoll`'s `Promise<boolean>`.
+
+* ''The order of a pass.'' Land the owed hosting acts; refold antigen then membership (one `try`); refresh the realm plane (its own `try`); refold the edge shadows (its own `try`); re-verdict, unguarded; re-present (its own `try`). A fault in a stage logs and never skips the stages after it. The answer reads `true` when the re-presentation ran without throwing and `false` when it threw. A throw out of the owed hosting acts rejects the rolls that pass answers; the queue serves the next.
+* ''The tests run the module.'' `after-roll-chain.test.ts` runs the order, the split and the truthful return as the control; `after-roll-awaited.test.ts` runs the module and reads only the vessel's wiring (the import, `onRolled: afterRoll`, the awaiting `onReconnect`).
+
+<<~/ahu>>
+
+<<~ ahu #/the-bound>>
+
+!! The bound
+
+The queue counts passes. No clock, timer or "now" decides anything.
+
+* Passes run one at a time, so two refolds never overlap (a pass refolds holders every other pass shares).
+* Each holder (the hosting nexus a roll names, or none) owns at most ONE queued pass. A roll that lands before that pass starts folds into it, since a pass reads the state it finds when it starts. A roll that lands mid-pass queues the holder's NEXT pass, so a roll never receives the answer of a pass that began before it landed.
+* Queued holders run in the order their passes queued, and a holder that rolls again while its pass runs queues at the TAIL, behind every holder already waiting.
+
+So a storm of N rolls over H holders completes in at most H + 1 passes, and a holder waits behind at most one pass of each other holder: no holder starves. The queue cannot grow past one entry per holder; a stage that never settles still blocks the passes behind it, since no timer may cut it (a stall finds its own causal event).
+
+Reds: sixty rolls over four holders land in at most five passes, never two at once, every roll answered (the CONTROL for the counter: the retired one-pass-per-roll chain reads sixty on the same instrument); a holder that rolls again re-queues behind the holders waiting; rolls landing mid-pass fold into one following pass; a throwing clock spy and throwing timers prove no wall clock decides, and the spy throws when a timer is asked (the known positive); a single roll runs exactly one pass.
+
+<<~/ahu>>
+
+<<~ ahu #/the-transcript>>
+
+!! The transcript
+
+`plugin-build/tw5-bin-path.ts` resolves the TW5 binary the build ran (`resolveTw5BinLogicalPath`). It takes the real file and expresses it under the repo: under the submodule's own logical location when the real file sits inside the submodule's real tree (so a scratch worktree whose submodule sits behind a symlink attests the same path as an in-tree checkout), under the repo root otherwise, and it refuses a binary outside the repo. `build-plugin-tiddler.ts` records that path as `tw5BinPath` and warns when `tw5BinMismatch` reads a binary other than `TiddlyWiki5/tiddlywiki.js`.
+
+Reds: a build whose resolved binary sits at `node_modules/tiddlywiki/tiddlywiki.js` reads a mismatch against the fixed path; a binary behind a symlink still records the submodule's logical path; a binary outside the repo refuses. The positive: the build resolving the submodule records `TiddlyWiki5/tiddlywiki.js`, and the transcript names the binary the build read.
+
+!!! The labelled re-bake
+
+The lane's re-bake carries the plugin bundle `genesis/unbaked.json` declared, the floor snapshots re-taken over the lane's canon, and the transcript cure. A checkout that resolves the submodule in-tree records the same `tw5BinPath` as before, so the cure itself moves no byte there; it moves bytes only where a build reads another binary.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;FkanWt2umiecWiCV4nq0d_cYGOcplEgTaPpn6PKFZq8
+
+<<^ code="&#x0004;" -> to="?">>
