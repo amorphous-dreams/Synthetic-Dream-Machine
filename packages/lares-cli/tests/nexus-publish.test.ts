@@ -119,6 +119,7 @@ describe("lares nexus publish — the operator's own collection, apart from the 
 
     // Stand the minimum real place + face context. The command under test remains the production CLI
     // door; no adapter is mocked and no offering is assembled by the test.
+    writeFileSync(join(process.env["LAR_ROOT"]!, ".lar-test-scratch"), "");   // a staged root: the place card's read-back stands in
     expect(await cmdVessel({ command: "vessel", positional: ["found"], options: {}, flags: { json: true } })).toBe(0);
     await generateOrLoadPersonaGroupRoot(0);
     await wearPersona(0);

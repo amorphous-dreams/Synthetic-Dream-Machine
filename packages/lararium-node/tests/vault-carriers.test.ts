@@ -155,7 +155,7 @@ const RULED: Record<string, CustodyClass> = {
 };
 
 describe("the carrier table", () => {
-  test("RED — the floor key commits no next key, so no row names a next-key seed and a file spelled like one answers to no row", () => {
+  test("RED — the cold next key rests on the card alone, so no row names a next-key seed and a file spelled like one answers to no row", () => {
     const { homes, root } = freshHomes();
     try {
       sow(homes, { "identity/.vessel-next-joshua.json": "{}", "identity/.vessel-next.json": "{}", "identity/.vessel-kel.json": "{}" });

@@ -19,12 +19,16 @@ export interface PlaceRotation {
 }
 export type PlaceKelRefusal = "unarmed-inception" | "old-shape-inception" | "bad-signature" | "wrong-reveal" |
   "reused-commitment" | "reused-key" | "gap" | "prev-mismatch" | "aid-mismatch" |
-  "seq-mismatch" | "malformed" | "fork" | "forged-row" | "rollback";
+  "seq-mismatch" | "malformed" | "fork" | "rollback";
+/** A chain that verified to its head. */
+export interface PlaceKelHead {
+  readonly ok: true; readonly aid: string; readonly seq: number; readonly head: PlaceKelEvent;
+  readonly headDigest: string; readonly signerKey: string; readonly nextDigest: string; readonly chain: readonly PlaceKelEvent[];
+}
 export type PlaceKelReading =
-  | { readonly ok: true; readonly aid: string; readonly seq: number; readonly head: PlaceKelEvent;
-      readonly headDigest: string; readonly signerKey: string; readonly nextDigest: string; readonly chain: readonly PlaceKelEvent[] }
+  | PlaceKelHead
   | { readonly ok: false; readonly refusal: PlaceKelRefusal; readonly forks?: readonly PlaceRotation[];
-      readonly commonAncestor?: string };
+      readonly commonAncestor?: string; readonly verified?: PlaceKelHead };
 const HEX64 = /^[0-9a-f]{64}$/;
 const SIG = /^[0-9a-f]{128}$/;
 const own = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
@@ -147,9 +151,9 @@ export function foldPlaceKel(events: readonly unknown[], pinned: { aid: string; 
     const valid = candidates.filter((e) => verifyPlaceKel([...chain, e]).ok);
     if (valid.length > 1) return { ok: false, refusal: "fork", forks: valid, commonAncestor: read.headDigest };
     if (valid.length === 1) { chain = [...chain, valid[0]!]; continue; }
-    const later = [...rows.values()].some((e) => e.t === "rot" && e.seq > read.seq + 1);
-    if (later) return { ok: false, refusal: "gap" };
-    if (candidates.length || [...rows.values()].some((e) => e.t === "rot" && e.seq > read.seq)) return { ok: false, refusal: "forged-row" };
+    // A row that chains to no verified head (a missing link, or a row nobody could sign) leaves the verified prefix standing:
+    // the refusal names the gap and hands back what verified, so a reader keeps its head "as of my last sync".
+    if ([...rows.values()].some((e) => e.t === "rot" && e.seq > read.seq)) return { ok: false, refusal: "gap", verified: read };
     return read;
   }
 }

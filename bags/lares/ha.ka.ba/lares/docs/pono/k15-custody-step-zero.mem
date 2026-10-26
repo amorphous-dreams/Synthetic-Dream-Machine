@@ -44,7 +44,8 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 
 | Current row and code line | Current | Owner / target and required cut |
 | `vessel-key` `:240-242` | floor | ''S, OPEN JOINT:'' private place signing seed owned by this node. Its public verifying key belongs in F. The signer options appear below; it is never a custody S key or face ancestor. `node-vessel-identity.ts:429-442,451-487` proves the private seed is read from disk and used at the floor door. |
-| `vessel-kel` `:243-245` | floor | ''F:'' public inception/signature, node place principal. |
+| `vessel-kel` `:243-245` | floor | ''F:'' public armed chain (inception and rotations), node place principal. |
+| `vessel-rotating` | floor | ''S:'' the staged replacement signer and its signed rotation, present only between a rotation's stage and publish. |
 | `s-slots` `:246-248` | floor | ''D/S split:'' the node S tree wraps one random S key and seals `gate-root` and `place-archive` alone. Each face has its own FCK tree, and no face FCK wraps under a node key. |
 | `sk-slots` `:249-251` | floor | ''S conditional, node:'' retire current S-key-to-SK wrapping. No serving row exists today (`:12-14`). A future serving payload gets its own named S key and boot rule before this tree survives. |
 | `fk-slots` `face-custody.ts` | floor | ''D (the face's own tree):'' one tree per face at `faces/<fcid>/fk-slots.bin`, wrapping that face's random custody key under each human route that face asked for. No S key wraps it and no sibling face's route opens it; the face's rows and this tree rest in one directory, so a bundle or a removal moves them together. |
@@ -270,6 +271,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;uQoQVtRliLQ7fGHcPZ4F7H7DJo0FAEaok52xKI57wds
+<<^ code="&#x0003;">>ni:///sha-256;JnpXDVAfjP7ClQzRaJphATeebs7y5UUxSaXWE2tMII0
 
 <<^ code="&#x0004;" -> to="?">>

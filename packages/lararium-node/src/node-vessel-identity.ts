@@ -197,14 +197,13 @@ function fileKeypairStore(keyFile: string, login: string | null): KeypairStore {
   };
 }
 
-// ── THE INCEPTION: the floor key signed by itself, and no next key ───────────
+// ── THE PLACE KEL: an armed inception, rotated by the founding card ───────────
 //
-// The floor key stands NON-TRANSFERABLE (lar:///ha.ka.ba/lararium/mesh/identity-classes): it commits no next key, so
-// it cannot rotate by construction, and a lost or stolen floor key gets answered by founding the place afresh. Its
-// one inception (`packages/lararium-mesh/src/vessel-kel.ts`) names the key and carries the key's own signature, and
-// nothing beside: no next-key digest, no next threshold, no clock, no version. The same seed mints the same bytes.
-// It rests in the clear beside the key (a `floor` row), and every load of a standing key reads it: an inception that
-// fails to prove that key refuses by name (`VesselInceptionRefused`), and nothing writes one over a standing key.
+// The place KEL (`packages/lararium-mesh/src/vessel-kel.ts`) seats the online signer and commits the digest of a cold
+// next key that rests on the founding card alone. A founding reads that card back before any byte lands; a rotation
+// reveals it, seats a replacement signer and commits the following cold key. The chain rests in the clear beside the
+// key (a `floor` row), and every load of a standing key verifies the chain to its head: a chain that fails to prove
+// the key refuses by name (`VesselInceptionRefused`), and nothing writes one over a standing key.
 function kelFileName(login: string | null): string {
   return login ? `.vessel-kel-${login}.json` : ".vessel-kel.json";
 }
@@ -340,29 +339,31 @@ export async function rotatePlace(opts: { card: Uint8Array; placeFoundingCard: P
   await openedCustody();
   const hint = await readLocalOperatorHint();
   const files = placeFiles(hint.login);
-  return exclusiveCustody(async () => {
-    if (existsSync(files.stage)) {
-      stagedRotation(files.stage);
-      reconcileFiles(files, hint.login);
-    }
-    const reading = verifiedPlaceChain(files.kel);
-    if (!(opts.card instanceof Uint8Array) || opts.card.length !== 32) throw new Error("place-card-refused");
-    let reveal: string;
-    try { reveal = verifyingKeyOfSeed(hex(opts.card)); }
-    catch { throw new Error("place-card-refused"); }
-    if (placeNextDigest(reveal) !== reading.nextDigest) throw new Error("place-card-refused");
-    const next = await mintColdKey(opts.entropy);
-    const signer = new Uint8Array(32);
-    (opts.entropy ?? globalThis.crypto).getRandomValues(signer);
-    try {
-      const signingKey = hex(signer);
-      const event = mintPlaceRotation({ chain: reading.chain, coldSeed: opts.card, newSignerKey: verifyingKeyOfSeed(signingKey), nextColdVerifyingKey: next.verifyingKey });
-      await opts.placeFoundingCard.readBack({ seed: next.seed, digest: event.next, verifyingKey: next.verifyingKey }, reading.aid.slice(-16), reading.seq + 1);
+  // A staged rotation finishes (or refuses) before another begins.
+  await reconcilePlaceRotation();
+  const reading = verifiedPlaceChain(files.kel);
+  if (!(opts.card instanceof Uint8Array) || opts.card.length !== 32) throw new Error("place-card-refused");
+  let reveal: string;
+  try { reveal = verifyingKeyOfSeed(hex(opts.card)); }
+  catch { throw new Error("place-card-refused"); }
+  if (placeNextDigest(reveal) !== reading.nextDigest) throw new Error("place-card-refused");
+  const next = await mintColdKey(opts.entropy);
+  const signer = new Uint8Array(32);
+  (opts.entropy ?? globalThis.crypto).getRandomValues(signer);
+  try {
+    const signingKey = hex(signer);
+    const event = mintPlaceRotation({ chain: reading.chain, coldSeed: opts.card, newSignerKey: verifyingKeyOfSeed(signingKey), nextColdVerifyingKey: next.verifyingKey });
+    // THE REPLACEMENT CARD READS BACK BEFORE THE CLAIM (a read-back may ask the custody its own questions), and no event
+    // stages until it has: the chain, the key file and the stage change only inside the claim below.
+    await opts.placeFoundingCard.readBack({ seed: next.seed, digest: event.next, verifyingKey: next.verifyingKey }, reading.aid.slice(-16), reading.seq + 1);
+    return await exclusiveCustody(async () => {
+      if (existsSync(files.stage)) throw new Error("place-rotation-torn");
+      if (verifiedPlaceChain(files.kel).headDigest !== reading.headDigest) throw new Error("place-rotation-raced");
       publishFile(files.stage, canonicalJson({ event, signingKey, cardRead: true }));
       reconcileFiles(files, hint.login);
       return { event, aid: reading.aid, seq: event.seq };
-    } finally { next.seed.fill(0); signer.fill(0); }
-  });
+    });
+  } finally { next.seed.fill(0); signer.fill(0); }
 }
 
 /**
@@ -412,16 +413,20 @@ export async function generateOrLoadVesselIdentity(opts: { placeFoundingCard?: P
     load: () => base.load(),
     async save(keypair) {
       try { await openedCustody(); } catch (err) { throw new VesselKeyMintRefused(keyFile, err); }
+      // THE CARD READS BACK BEFORE THE CLAIM: a read-back may ask the custody its own questions (a staged root's stand-in
+      // proves the test route), and the claim admits one holder. Nothing lands until the card reads back.
+      const seed = signingSeedFromHex(keypair.signingKey);
+      const cold = await mintColdKey(opts.entropy);
+      let inception: PlaceKelEvent;
+      try {
+        const minted = mintPlaceInception({ signerSeed: seed, coldVerifyingKey: cold.verifyingKey });
+        inception = minted.event;
+        if (opts.placeFoundingCard) await opts.placeFoundingCard.readBack({ seed: cold.seed, digest: minted.event.next, verifyingKey: cold.verifyingKey }, minted.aid.slice(-16), 0);
+        else if (!(await readBackStandsIn())) throw new PlaceFoundingCardUnread();
+      } finally { seed.fill(0); cold.seed.fill(0); }
       const committed = await exclusiveCustody(async () => {
         if (existsSync(keyFile)) return false;
-        const seed = signingSeedFromHex(keypair.signingKey);
-        const cold = await mintColdKey(opts.entropy);
-        try {
-          const minted = mintPlaceInception({ signerSeed: seed, coldVerifyingKey: cold.verifyingKey });
-          if (opts.placeFoundingCard) await opts.placeFoundingCard.readBack({ seed: cold.seed, digest: minted.event.next, verifyingKey: cold.verifyingKey }, minted.aid.slice(-16), 0);
-          else if (!(await readBackStandsIn())) throw new PlaceFoundingCardUnread();
-          publishFile(kelFile, canonicalJson([minted.event]));
-        } finally { seed.fill(0); cold.seed.fill(0); }
+        publishFile(kelFile, canonicalJson([inception]));
         const persisted: PersistedKey = { verifyingKey: keypair.verifyingKey, signingKey: keypair.signingKey, ...(hint.login ? { gitEmail: hint.login } : {}) };
         publishFile(keyFile, JSON.stringify(persisted, null, 2));
         return true;

@@ -44,4 +44,13 @@ describe("place KEL reader", () => {
     const forged = foldPlaceKel([f.start.event, { ...f.one, sig: "00".repeat(64) }], f.pin);
     expect(forged.ok && forged.seq).toBe(0);   // a forged row never advances the head
   });
+  it("a row signed by a stranger's key never blocks the lawful head, and a gap hands back the verified prefix", () => {
+    const f = fixture();
+    const stranger = { ...f.one, reveal: key(9), next: key(9), sig: f.one.sig };   // fails its own signature: dropped as noise
+    const lawful = foldPlaceKel([f.start.event, stranger, f.one], f.pin);
+    expect(lawful.ok && lawful.seq).toBe(1);
+    const gapped = foldPlaceKel([f.start.event, f.two], f.pin);
+    expect(gapped.ok).toBe(false);
+    if (!gapped.ok) expect(gapped.verified?.seq).toBe(0);
+  });
 });

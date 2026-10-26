@@ -6,8 +6,8 @@
  * V5 SEALED ROWS THAT DO NOT OPEN REFUSE EVERY DOOR. Tampered, truncated, and bare bytes move no further. Control: intact rows work.
  * V6 OPEN ROWS WITH ANOTHER SHAPE REFUSE EVERY DOOR. Control: well-shaped rows round-trip.
  * V7 THE FLOOR CLOSES EVERY DOOR, the vessel key's mint among them. Control: an existing vessel key loads at the floor.
- * V8 THE VESSEL MINT COMMITS NO NEXT KEY. It lands the key and its one signed inception, which names that key and
- *    holds no next key, no clock and no version; no next-key seed stands. Control: a second call reads both files unchanged.
+ * V8 THE VESSEL MINT ARMS THE KEL. It lands the key and its armed inception, which names that key and commits the
+ *    digest of a cold next key, with no clock and no version; no next-key seed stands on disk. Control: a second call reads both files unchanged.
  * V9 WEAR REQUIRES A HELD ROOT. Control: a held root wears in session, and a cleared choice leaves two unlocked faces unworn.
  * V10 THREE MAPS SEAL AND ROUND-TRIP. Control: entries sort and absent clears leave a readable row.
  * V11 TAMPER PROBE RETIRES THE SEATED KEY. Control: the new tree key opens every row whole.
