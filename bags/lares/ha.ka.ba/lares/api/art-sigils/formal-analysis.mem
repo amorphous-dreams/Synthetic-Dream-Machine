@@ -75,6 +75,21 @@ When an operator presents several versions of a work, make comparisons on **visi
 The authored Inscription, any associated Folio and the rendered work occupy distinct evidentiary positions. A viewer's reading neither recovers an originating prompt nor supersedes the stated artistic intention.
 <<~/ahu>>
 
+<<~ ahu #/technical-art-reception>>
+!! Technical-art review — rendered plate versus artistic invitation
+
+When the assigned worktype IS an isolated transparent technical-art asset, compare the received bytes as well as its beauty. Use the specialist [[Technical-Art Plate Fieldcraft|ha.ka.ba/lares/api/art-sigils/technical-art]] without importing its assumptions into ordinary formal analysis.
+
+* Record the submitted image-facing Inscription separately from the receiver settings and supplied image seeds. Measure actual RGBA dimensions, fully transparent and partially transparent pixels, alpha bounding box, and whether unintended labels, panels, backgrounds or scene fragments entered the image.
+* Distinguish a renderer's output from later hand-extracted sprites or code-masked corrections. A successful isolation pass and a compelling flattened painting are different results; neither is proof of why the generator behaved as it did.
+* Test exact placement, scale, side/bottom bleed, local overlap, edge haloes, blend mode and internal gradient opacity against the intended composite. A verbally specified bounding box is not proof of pixel registration.
+* Report independent readings at full-frame and local crop sizes; examine silhouette and value hierarchy, important character faces and hands, atmospheric depth, sun/wind consistency, and whether light reflections actually contact the intended material or water plane.
+* Name layer-global opacity separately from image-pixel alpha and from a precomputed clip-to-alpha fade. When a maximum is raised but a minimum held, verify the gradient source and denominator rather than assuming the whole image became opaque.
+* Record operator-approved state, unapproved companions, diagnostic settings, and rollback sources. A small batch of generations provides examples and alternatives, not a causal performance benchmark.
+
+Do not turn a failed requirement into a claim of completion because a post-process can rescue it. Equally, don't discard an attractive failure without recording its aesthetic merit and provenance; the operator decides between reroll and surgical extraction.
+<<~/ahu>>
+
 <<~ ahu #/counter-read>>
 !! Critical drift and failure modes
 
@@ -104,6 +119,6 @@ Across painting, print, photography, installation, abstraction and pictures with
 Getty CDWA subject analysis, material and facture; Harvard Project Zero's See, Think, Wonder and What Makes You Say That?; Panofsky, Arnheim, Baxandall, Kress/van Leeuwen, Mitchell and Warburg; Feldman's descriptive/interpretive/critical moves. See the Art Sigils Specification's research ahu for source paths and authority boundaries. No reference source alone settles the intention of an unknown artist.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gJS_Ga-f5841AZErEG6sLOIdJ9gXvQ-SWeuAoJILa2s
+<<^ code="&#x0003;">>ni:///sha-256;YpOSDZknLqcJdz4prIrt4wQUty0fQ28_VIbA6HAF5ok
 
 <<^ code="&#x0004;" -> to="?">>
