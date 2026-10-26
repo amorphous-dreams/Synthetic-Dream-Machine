@@ -7,6 +7,58 @@ and [OBLIQUE_SEED](OBLIQUE_SEED.md). Project canon lives in branch-current
 `bags/`; this document describes measured machinery and design possibilities,
 not promoted Lares law.
 
+## Live field bearing · start here
+
+**Working branch:** `feature/green-jello-dinosaur-5--projection-loom`,
+[PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84).
+**Last fully green witnessed ancestor:** `ef4f27da`. **Inspected live
+code head:** `3dc3236d` (source and scripts present, **not wholly
+green**). This is a SHA-based receipt, never a universal application clock.
+
+At `ef4f27da` the real single-image Necrospire two-probe bearing study
+passed native Fire review: **4 admitted alternatives, 2 topology witnesses,
+4 different six-view silhouette signatures**. Two independent parameter
+probes are not two generations of heritable architecture; topology
+witness identity is not an exact shape hash. No candidate was pet-named
+or promoted by that workflow.
+
+At `3dc3236d` the Fire and CAD workflows failed one focused test:
+`test_reject_unadmitted_and_excessive_sample_budget` expects
+`resolution`, but the new, intentionally bounded total native query
+guard reports `Place sampling exceeds total native query budget`.
+Fire reported 33 passing tests and one failure; dedicated CAD reported
+376 passing and one failure. Keep both guards and reconcile their test
+expectations before calling the head green. Consult [ROADMAP](ROADMAP.md)
+for run IDs, remaining checks and the next OODA-HA sequence.
+
+### Witness chain and limits
+
+| Surface | Produces | Does not prove |
+| --- | --- | --- |
+| Current AI Fire and `fire-context` | Typed proposals bound to one source witness and operator ledger | An executable Art Sigil, a second service, or approval |
+| `fire-audition` | Independently staged `bears`, `bridges`, `encircles`, `skirts`, or `study-only` outcomes | Mechanical load safety or guaranteed source fidelity |
+| `fire-review` | Six fixed-view carved-native orthos and paired silhouette deltas | Unique 3D topology from one projection |
+| `fire-cohort` | Verified native receipts, topology/volume/view diversity census | An evolutionary controller, artistic winner or promotion |
+| `place-review` | Exact carved BRep material delta; sampled Shapely sections; NetworkX void graph hops | Safe walking clearance, continuous accessibility or a hidden reverse elevation |
+
+**One seed:** the Oblique Seed's RGBA appearance and L8 alpha are one
+pet-named, source-hashed entity. No extra camera or photographic observation
+comes from channel splitting. The reference remains interpretive artwork.
+
+**Place evidence:** all specimens share a bounded plan domain and explicit
+strictly increasing CAD-unit elevations. A global query budget and
+per-section grid bound protect local-first resources. A material erosion
+area is not free pedestrian floor space; an eroded void section describes
+its cutter, not a connected safe passage. A route hop is a declared
+native-verified void overlap, not a metric walking path.
+
+**Optional studies:** TopologicPy's void-graph comparison and pyribs'
+quality-diversity grid are opt-in read-only research lenses. They are
+neither replacement native kernels nor a second OODA-HA scheduler.
+The architecture/location **Looms of Hephaestus** family is the
+Operator's framing; the actual pet-name of this instrument remains
+**Projection Loom**.
+
 ## Fire-facing typed architectural grammar
 
 The current backed-source **AI Fire** remains the Operator interface: memetic-wikitext + the canonical Art Sigil Inscription/Folio. Typed machine bindings and native CAD proofs live below that boundary, not inside the artistic invocation. See [Current Fire grammar](FIRE_GRAMMAR.md) for reference, schema, CLI use and limits. No LLM service was added.
@@ -77,11 +129,7 @@ directories. It does **not** generate new lineages or select survivors.
 
 ## Freeing early lineages · enacted witnesses and remaining hypotheses
 
-**A. Separate architectural syntax from rendering appearance.** Introduce
-bounded morphogenetic grammar alternatives: a needle that *bears* a terrace
-versus one that *penetrates*, *suspends*, or *skirts* a stepped fortress;
-a tier that *supports* a court versus a bridge with a measured load path.
-Reuse native BRep joins, negative-volume audits and socket relations.
+**A. Grow from bounded relations toward heritable architecture.** The Fire grammar already proposes and audits `bears`, `bridges`, `encircles` and `skirts` as independent native studies. They do **not** yet make the primary needle/terrace/keep topology heritable, nor establish load-bearing safety. Next, explore bounded relation programs that mutate mass adjacency, bridging, skirting and void continuity under the existing OODA-HA helm; keep native BRep and route checks authoritative.
 
 **B. Turn RGB information into attributable, reversible cues.** Candidate
 operators may infer broad appearance/material zones, edge-direction fields,
@@ -123,10 +171,7 @@ and architectural value judgments.
   stacked, cantilevered, bridged and suspended primary volume relationships;
   compare their other views, void routing and constructibility.
 
-These are **open design proposals**. No semantic relationship grammar,
-automatic occlusion solver, structural load simulation or altered fitness
-policy is claimed by this guidebook. The unmodified historical six-generation
-pilot and the small two-epoch offspring remain outside live ancestry.
+These are **open experimental proposals** beyond the **implemented bounded Fire relational grammar**. No general structural-shape grammar, automatic occlusion solver, structural load simulation, automatic artifact selection or altered fitness policy is claimed. The historical six-generation pilot and small two-epoch offspring remain outside live ancestry.
 
 ## Hephaestian place witnesses
 
@@ -162,3 +207,68 @@ Reported material erosion core area represents sampled material thickness,
 **not** human walking clearance. The void erosion probe likewise measures
 the cutter section, not a certified continuous passage. Small
 native material differences retain full kernel float precision.
+
+## Runbook · one source, typed Fire, native evidence
+
+Use a fresh output path for each result. Starting in `tools/projection-loom` on the working branch:
+
+```bash
+python -m projection_loom fire-context \
+  --project examples/necrospire/project_alpha.json \
+  --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+  --out out/current-source-context.json
+
+python examples/necrospire/fire_study.py \
+  --context out/current-source-context.json --epoch 1 \
+  --out out/fire-study-1.json
+
+python -m projection_loom fire-audition \
+  --project examples/necrospire/project_alpha.json \
+  --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+  --proposal out/fire-study-1.json \
+  --out out/fire-audition-1.json
+
+python -m projection_loom fire-review \
+  --project examples/necrospire/project_alpha.json \
+  --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+  --receipt out/fire-audition-1.json \
+  --out out/fire-review-1
+
+python -m projection_loom place-review \
+  --project examples/necrospire/project_alpha.json \
+  --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+  --receipt out/fire-audition-1.json \
+  --elevation 1.6 --elevation 3.2 --cell 0.5 \
+  --clearance 0.7 --out out/place-review-1.json
+```
+
+The deterministic `fire_study.py` fixture is a **test proposal author**,
+not the conversational AI Fire. Its two `--epoch` choices are separate
+bounded Fire studies, **not** an alternative OODA-HA generator. To compare
+the two native Fire probes, repeat with `--epoch 2` and independent
+`fire-audition-2.json` / `fire-review-2` outputs, then run:
+
+```bash
+python -m projection_loom fire-cohort \
+  --receipt out/fire-audition-1.json --review out/fire-review-1 \
+  --receipt out/fire-audition-2.json --review out/fire-review-2 \
+  --out out/fire-cohort.json
+```
+
+The produced `fire_native_orthos.png`,
+`fire_native_differences.png`, signed summaries and place witness are
+research receipts, not Operator-approved offspring. The optional
+`--topology-pilot` on `place-review` or `--quality-pilot` on
+`fire-cohort` requires separately installed research dependencies.
+
+### OODA-HA next experiments
+
+After the stale CI expectation is resolved, attempt a bounded
+**Architectural Birth** family that can truly alter structural adjacency,
+passages and massing; pair each child with native carved-geometry and
+six-view witnesses. Then run a matched-source, matched-seed comparison
+against the original additive grammar with dedicated exploratory seats.
+Measure contact validity, native volume change, route/void continuity,
+view expression, source fit, CPU cost and distinct topology independently.
+Neither an archive score nor one image's ambiguity may overwrite
+Operator judgments or source provenance.

@@ -1,23 +1,99 @@
 # Projection Loom · AI Fire / Art Sigils Roadmap
 
-**Checkpoint:** 2026-10-26 UTC. **Working branch:** `feature/green-jello-dinosaur-5--projection-loom`, PR [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84).
+**Evidence checkpoint:** `3dc3236d` (not a globally current release state). **Working branch:** `feature/green-jello-dinosaur-5--projection-loom`, PR [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84).
 **Base / Lares boot ref:** `feature/green-jello-dinosaur-5`.
 **Source of truth:** real Git ancestry, source-bound native witnesses and CI jobs. This document marks provisional completion and blockers, not house law or Operator promotion. Refresh run status on re-entry.
 
-## Current locus · Hephaestian place and passage work
+## Current bearing · architecture, location and evidence
 
-On the Loom working branch, source-bound native Fire and the two-probe cohort
-passed same-head Actions #40276648968 (25 focused tests, four native
-admissions, two relation-topology witnesses, four six-view silhouettes).
-Held-out witnesses passed at that head; repo-wide CI needs its own verdict.
-Source-bound bearing is proved; the historical native bridge rejection stands.
+**Projection Loom** is the Operator-pet-named architecture/location capability
+within the proposed **Looms of Hephaestus** family. The family name describes a
+design bearing, not a newly promoted canonical hierarchy. This file is an
+evergreen working map: follow branch SHA and workflow receipts, never a global
+"now", release number, or a previous assistant's status.
 
-The next capability adds skirting-court, exact carved-material differences,
-sampled Shapely multi-elevation sections and NetworkX void-route witnesses.
-Those observations cannot certify walkability, load or hidden architecture.
-TopologicPy and pyribs remain opt-in read-only studies, not second helms.
-The Operator's Looms of Hephaestus family framing is not a new pet-name.
-Heritable mutation of the main needle/terrace/keep skeleton remains open.
+### Last verified baseline and live blockers
+
+- **Fully green ancestor:** `ef4f27da` passed dedicated Fire
+  [#40276648968](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40276648968),
+  CAD, alpha coevolution, Experiment Zero, evergreen, native pre-campaign,
+  six-view gallery, repo-wide CI and held-out witnesses. The actual
+  source-bound two-probe Fire study produced **4 native-admitted bearing
+  alternatives, 2 relation-topology witnesses, and 4 distinct six-view
+  silhouettes**. These are bounded parameter probes, **not** four OODA-HA
+  generations, four distinct BRep shapes, or Operator-promoted lineages.
+- **Live code checkpoint:** `3dc3236d` contains the Hephaestian
+  Passage-and-Place observer and the ascending/descending OODA-HA integrity
+  repairs. The dedicated Fire [#40280351768](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40280351768)
+  and CAD [#40280351807](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40280351807)
+  workflows **failed** on the same stale test expectation:
+  `test_reject_unadmitted_and_excessive_sample_budget` requires the older
+  word `resolution`, whereas the valid new cohort-wide preflight reports
+  `Place sampling exceeds total native query budget`. Fire: 33 passed,
+  1 failed; CAD: 376 passed, 1 failed. A separate CAD rerun
+  [#40280360222](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40280360222)
+  also failed. The failing expectation must be reconciled and re-tested; a
+  documentation edit does not repair CI.
+- The latest workflow receipt must be inspected again before declaring the
+  current head green. The gallery, evergreen, native pre-campaign and alpha
+  coevolution checks have passed at `3dc3236d`; repository-wide and
+  remaining held-out outcomes were not yet final at this writing.
+
+### What the machinery can actually do
+
+1. **Interpret proposals, then deterministically audit.** The living
+   Operator↔AI Fire authors bounded typed relations; `fire_contract.py`
+   verifies named source selectors and proposal authority. The grammar
+   implements `bears/bearing-column`, `bridges/bridge-between`,
+   `encircles/ring-around`, `skirts/skirting-court`, and
+   `studies/study-only`. Admission is independent per candidate and requires
+   native BRep/void validity; the earlier *real Necrospire bridge* remains a
+   recorded rejection.
+2. **Return independently attributable witnesses.** Fire handback renders
+   six fixed native-carved orthographic views, paired silhouette deltas and
+   signed receipts. `fire-cohort` compares source/seed/camera-preserved
+   alternatives and distinguishes topology identity, added-volume diversity
+   and visual signatures without declaring a winner.
+3. **Observe a place, not certify inhabitation.** `place-review` reports
+   exact carved-material additions/removals, sampled XY sections at bounded
+   elevations and declared void-to-exterior graph hops. Shapely/GEOS
+   cell-center samples and eroded void interiors are **not** certified
+   walking clearance; native contact is **not** structural load safety.
+   The cohort-wide native query budget is a hard resource guard.
+4. **Keep research backends optional.** TopologicPy graph inspection and
+   pyribs archive illumination are opt-in, read-only studies; NetworkX,
+   CadQuery, Shapely and the existing OODA-HA helm retain their distinct
+   roles. Hypothesis exercises targeted test invariants; direct CI inputs
+   are exactly pinned without assigning application release versions.
+
+### Next work, in dependency order
+
+**P0 · Restore same-head evidence.** Correct the outdated test's expected
+rejection message (or explicitly justify a changed error precedence); retain
+both total-query and individual-section bounds. Run dedicated Fire and CAD
+suites and then inspect repo-wide plus held-out results against the same SHA.
+
+**P1 · Architectural Birth, without replacing the helm.** Grow heritable,
+source-bound *spatial relation programs* capable of changing adjacency,
+support, open courts, crossings and negative-space continuity. Test a bounded
+`bears / bridges / skirts` family against the unchanged source with exact
+native gate, paired sections and six-view handback. A relation study must not
+be mistaken for an already heritable replacement of the original
+needle–terrace–keep skeleton.
+
+**P2 · Free-play comparison.** Run matched-seed cohorts with reserved
+exploratory seats, independent proposal streams, exact-CAD quotas, cost and
+failure receipts. Compare source fidelity, distinct topology, exact material
+variation, off-oblique silhouettes and route graphs without a single hidden
+winner. Retain artistic disagreement for the Operator.
+
+**Research holds:** actual multi-image camera registration; full 3D
+circulation or load certification; general IFC/OpenUSD interop; learned
+image-to-geometry reconstruction; TopologicPy/pyribs production adoption.
+The one RGBA/L8 Oblique Seed remains **one** pet-named source, not two views.
+
+
+
 ## Completed and source-verified
 
 | Workstream | State | Concrete evidence / limit |
@@ -26,8 +102,8 @@ Heritable mutation of the main needle/terrace/keep skeleton remains open.
 | Standalone branch retirement | **Completed** | PR #82 closed; former `feature/green-jello-dinosaur-5--art-sigil-house-grammar` ref no longer appears in branch listing; guarded retirement [Actions #40261722529](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40261722529) succeeded |
 | Operator ↔ current AI Fire | **Implemented** | The current source-backed AI Fire writes a *proposed* typed binding from natural language / memetic-wikitext; no second AI server, code-executing sigil parser or separate OODA-HA controller |
 | Deterministic contract | **Implemented, tested** | `schemas/fire_proposal.schema.json` Draft 2020-12, `fire_contract.py` entity resolution, graph and bounded alternative validation; fail-closed unknown/ambiguous selectors |
-| Native relational operations | **Implemented, narrowly scoped** | `fire_geometry.py` independently audits `bridge-between`, `ring-around`, `bearing-column`; `study-only` preserves unimplemented alternatives without false geometry claims |
-| Evidence handback | **Implemented** | `fire_review.py`: frozen six-view structural renders and PROV-O *inspired* JSON-LD evidence; not certified RDF conformance, structural load safety or inferred hidden geometry |
+| Native relational operations | **Implemented, bounded** | `fire_geometry.py` stages `bridge-between`, `ring-around`, `bearing-column`, `skirting-court`; `study-only` keeps open interpretations nonexecuting. Real Necrospire bridge rejection retained |
+| Evidence handback | **Implemented** | `fire_review.py` renders paired six-view carved-native material, `fire_cohort.py` verifies same-seed/camera receipts, `place_witness.py` measures sampled sections and declared void connectivity. No engineering or occupancy certification |
 | Dedicated Fire witness | **Passed** | [Actions #40261722482](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40261722482): 16 focused tests + real source context/native audition. Source-bound bridge attempt was **rejected by native validation**, while a study alternative stayed open; controlled fixture tests admitted valid bridge and bearing relations |
 | Experiment Zero controls | **Previously verified** | Finite 2x overscan, original source-view score, depth/mesh budgets, seed-frozen orthos, stable pet-named RGBA/L8 Oblique Seed, prior independently archived campaign evidence. [Actions #40261722425](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40261722425) passed |
 | Source history | **Preserved** | Frozen six-generation pilot and later small two-epoch preview are never silently imported, rewritten, or promoted |
@@ -68,11 +144,11 @@ Prior failed runs remain genuine historical receipts, not current failures:
 ## Not implemented / not yet demonstrated
 
 - **Source-bound native Fire:** bearing growth and six-view handback passed same-head CI. The earlier real Necrospire bridge remains rejected. New families and heritable primary massing changes require separate proof.
-- **Architectural semantic generality:** only three relationship operators are implemented, not a general Stiny/Gips shape grammar or an IFC building ontology. Other verbs must be bounded, reviewed and independently native-audited.
+- **Architectural semantic generality:** four constructive Fire relation operators are implemented, not a general shape-grammar engine or a heritable alternate primary massing. Additional verbs must be bounded and native-audited.
 - **Rich RGBA attractor freedom:** currently the one named artwork's alpha drives fixed-view silhouette and RGB edges modestly modulate the source-guided polymesh. Image-region interpretation, occlusion hypotheses, semantic roles and uncertainty-bearing alternatives are research and future mechanisms, not completed capabilities.
 - **Structural truth:** native BRep contact/union is not mechanical stress, engineering stability, real building circulation, or accurate reconstruction of the reverse side of a painting.
 - **Operator promotion:** no Fire audition or automated score may silently name, promote or approve a generated lineage.
-- **Comprehensive comparable search:** a matched-seed experiment across `bears / encircles / bridges`, audited geometry deltas, CPU budgets, diversity survival and source fitness remains to run in new outputs with separate provenance.
+- **Comprehensive comparable search:** the source-bound bearing probe is verified, but a matched-seed, genuinely heritable comparison across `bears / bridges / skirts` with exact CAD, route continuity, cost budgets, novelty and source fidelity remains to run.
 - **Interop adapters:** SHACL, IFC/OpenUSD and full RFC 8785 canonical JSON are not installed graph backends or encoding guarantees.
 
 ## Golden principles from primary standards and prior art
@@ -84,41 +160,53 @@ Prior failed runs remain genuine historical receipts, not current failures:
 5. **Canonicalization claims must be exact.** [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785.html) is a portability reference; the Loom currently uses its own canonical JSON SHA-256. Do not claim bit-for-bit JCS conformance without tests.
 6. **Shape-grammar verbs require measurable expression.** A proposed `encircles` relation needs staged candidate alternatives and geometry/evidence witnesses; visual resemblance, prose and native contact alone do not certify the same property.
 
-## Next OODA-HA sequence
+## Next OODA-HA pass
 
-**✶ Observe:** Re-run full current-head CI, collect exact failing job/step and record digest. **⏿ Orient:** distinguish implementation regression from stale expectation and external dependency. **◇ Decide:** fix source of truth; leave unrelated failing workflows as explicit backlog. **▶ Act:** commit a focused test-first correction, run it in the same environment, and preserve rejection receipts. **↺ Aftermath:** append verified counts and status to this roadmap and `HANDOFF.md`, then choose a new *fresh* relationship experiment only after CI health is understood.
+**✶ Observe:** inspect the actual current PR head, including the Fire and
+CAD stale-message failures and all unfinished same-head Actions.
+**⏿ Orient:** distinguish an invalid test expectation from a missing resource
+guard; do not raise budgets simply to satisfy a test.
+**◇ Decide:** retain both individual-section and full-cohort native query
+limits, documenting intentional preflight order.
+**▶ Act:** correct the focused expectation/test only after verifying which
+rejection behavior the code guarantees; run targeted checks and commit a
+complete correction.
+**↺ Hoʻoko/Aftermath:** compare exact SHA receipts, preserve remaining
+rejections, and then begin the next bounded heritable architectural study.
 
-Fire is the living Operator↔AI interpreter. Memetic-wikitext is its conversational surface. Typed proposals and CAD truth are the downstream machine boundary, not additional conversational agents.
+The single Operator↔AI Fire remains the proposal-authoring surface. Native
+CAD judges geometry; observational witnesses describe outcomes. The
+Operator alone owns pet-name, artistic promotion and disposition.
 
 
-## Source-bound Fire / expression wave · implementation staged, awaiting this commit's Actions
+## Historical wave · source-bound Fire expression implemented and later verified
 
 - One current Operator-facing Fire; no additional model, web2 endpoint, sigil executor or OODA-HA controller.
 - A deterministic research fixture binds the actual `lower terrace` and `central keep` selectors from source context and proposes two independently staged native bearing relations plus a `study-only` question. Its proposal does not grant a pet-name, artistic approval, or an inferred hidden elevation.
 - The native Fire handback now renders an unchanged source baseline and admitted variants under common seed-frozen cameras. Its paired differential board and SHA-bound per-view counts record appeared/disappeared/shared silhouettes, not physical load or creative merit.
 - Focused tests cover mask arithmetic and actual one-seed CAD admission. Fire CI now executes the full source context → proposed alternatives → native audition → six-view handback path and publishes receipts.
 - Repository-wide evergreen witness repair rewrites one historical comment into present-tense operational language rather than raising the one-way ceiling.
-- **Verification pending:** these additions require a successful same-head Fire CI and repository-wide CI; native success must not be announced from code alone. Existing historical lineages remain frozen.
+- **Historical outcome:** source-bound bearing/orthographic studies later passed at `ef4f27da`, including the 4-admission two-probe cohort. This does not certify the newer place-review additions on `3dc3236d`. Historical lineages remain frozen.
 
 ## Source-stable Fire free-play probe (subsequently published and verified)
 
 Previous pushed head 06f9c3f2 had Fire/CAD CI failures caused by an ambiguous central-keep selector. The source builder now adds explicit unique lower-terrace and central-keep slots; selector validation remains fail-closed. The native bearing admits bounded setback 0..0.20. Two non-promoting research probes author distinct proposals against one source seed and feed normal Fire audition/review; each creates independent signed six-view evidence if native-admitted.
 
-A separate local CadQuery diagnostic recreated seven source solids and three void solids, then tested 14 bearing parameter placements across two parameter sweeps: 14 passed its BRep union/contact/carving checks, added volume 0.1977..5.9913 cubic model units. This is not a complete Loom audit, nor an OODA-HA generated lineage. Actual source-bound admission and orthographic output await same-head CI.
+A separate local CadQuery diagnostic recreated seven source solids and three void solids, then tested 14 bearing parameter placements across two parameter sweeps: 14 passed its BRep union/contact/carving checks, added volume 0.1977..5.9913 cubic model units. This was a BRep-only diagnostic, not a Loom epoch campaign. Subsequent source-bound native auditions and orthographic reviews passed at `ef4f27da` under independent CI.
 
-Do not push until the prior head's held-out and repository-wide CI results have been inspected. Historical lineages remain unchanged.
+That historical push hold was resolved by ancestry-preserving commits; the work sits on PR #84. Historical lineages remain unchanged.
 
 
-## Native-carved Fire cohort witness · current wave
+## Native-carved Fire cohort witness · implemented evidence
 
-The first Fire six-view comparison rendered individual component meshes even though the actual produced source is the joined, void-carved BRep. Fire review now renders both source and each admitted alternative via `tessellate(union=True)`, so all six views derive from the native-authoritative carved material rather than uncarved independent parts. The source-frozen camera contract remains unchanged. Fire cohort now verifies 2–16 paired native audition/orthographic handbacks (including each document, per-alternative digest, image bytes, camera baseline, seed/recipe/genome/implementation identity, and silhouette arithmetic), then records source-relative and off-oblique expression, duplicate geometry, and duplicate six-view silhouettes without ranking, breeding or promoting anything. The CLI `fire-cohort` writes an immutable checksum-bound census; the two-probe CI uses it rather than an unverified ad-hoc summary. Negative tests refuse mutated geometry receipts, source drift, camera drift, image changes and inconsistent pixel counts. Any real-source evaluation awaits same-head CI; previous proxy results are not native Loom generations.
+The first Fire six-view comparison rendered individual component meshes even though the actual produced source is the joined, void-carved BRep. Fire review now renders both source and each admitted alternative via `tessellate(union=True)`, so all six views derive from the native-authoritative carved material rather than uncarved independent parts. The source-frozen camera contract remains unchanged. Fire cohort now verifies 2–16 paired native audition/orthographic handbacks (including each document, per-alternative digest, image bytes, camera baseline, seed/recipe/genome/implementation identity, and silhouette arithmetic), then records source-relative and off-oblique expression, duplicate geometry, and duplicate six-view silhouettes without ranking, breeding or promoting anything. The CLI `fire-cohort` writes an immutable checksum-bound census; the two-probe CI uses it rather than an unverified ad-hoc summary. Negative tests refuse mutated geometry receipts, source drift, camera drift, image changes and inconsistent pixel counts. The two-probe real-source bearing evaluation passed at `ef4f27da`; the newer place observer still requires its own green head. Previous proxy results are not native Loom generations.
 
 
 ### Native cohort truth-scopes clarified
 
 A relational witness names topology/semantic slot identity, not exact BRep shape. The cohort therefore reports `unique_topology_witnesses` and `topology_duplicate_of`, alongside distinct measured added-volume values and independent six-view silhouette fingerprints. Do not interpret relation-witness uniqueness as geometric shape uniqueness, nor a distinct volume as a complete geometric fingerprint.
 
-## Hephaestian place and passage witness · new enacted capability
+## Hephaestian place and passage witness · implemented; CI reconciliation open
 
 **Projection Loom** remains the Operator's pet-name, understood as an
 architectural/location Loom among the possible **Looms of Hephaestus**.
@@ -176,7 +264,7 @@ audit; operator-specified section elevations reach the CLI. Native query
 budgets span the entire cohort and all voids instead of each section alone.
 Material erosion evidence no longer calls itself human clearance. Exact CAD
 difference volumes retain kernel floats, not display-rounded numbers.
-These modifications require their own same-head CI verdict.
+At `3dc3236d` the focused failure is now the outdated test expectation for the new total-query guard, not the earlier Hypothesis pin; full same-head proof remains red until fixed.
 
 
 ### Descending aftermath: source authority, sampling and output integrity
