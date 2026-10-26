@@ -55,7 +55,7 @@ Both rows touch the sealed channel's dial bytes, so each settles before the X0 b
 
 ''BUILT, a defect apart from the leak'': `handleUpgrade` in `packages/lararium-node/src/face-gate-server.ts` once sent the HTTP 101 before the gate decrypted message one, so a holder of a learned path read a 101 for any well-formed token. It now asks `FaceGate.preflight` first: a flight that decrypts under no bundle of the stood gate draws a destroyed socket and the refusal `flight-undecrypted`, before any 101. The preflight decrypts message one once and `accept` decrypts it once more, so the gate's API keeps its one shape. It moves no wire byte.
 
-''The open question'': W10 stays open under research (the controller, 2026-10-26). The 101 ordering stands repaired, and the question narrows to whether a sovereign-route knock can key on material the join already hands every admitted dialer.
+''The ruling'' (operator, 2026-10-26): the public knock stays on both tiers, and the leak stands named in `face-proof#/named-leaks`. The measured bound: a reader holding candidate sovereign pins learns which Nexus a dial selects among the K gates behind one address and route, at most log2(K) bits per dial and none where K=1; it learns no face, no verdict and no sealed byte. The pins stand as tests in `packages/lararium-mesh/tests/gate-knock-named-leak.test.ts`, so a silent change to the knock reads red. Option B, a secret selector, lost on cost: it needs per-Nexus key delivery, a causal re-key to every remaining device on each removal, and a first-dial exception, and it protects only later visit timelines where K exceeds one. A public first dial with secret later dials reads as a dual mode. More research stays owed later; the road's `W10` row names when.
 
 <<~/ahu>>
 
@@ -68,6 +68,6 @@ Both rows touch the sealed channel's dial bytes, so each settles before the X0 b
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sUVl6r1H7C2lTdQz9Jq_Ap4IKL1FG2ZE77oqC-0n5Kc
+<<^ code="&#x0003;">>ni:///sha-256;kCOvPmklBloQ8Va9a23jFTg1OpQ9sSeB_Dhj4JXRGT8
 
 <<^ code="&#x0004;" -> to="?">>
