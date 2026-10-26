@@ -75,7 +75,7 @@ It emits `native_shaded_orthos.png`, `native_silhouette_orthos.png`
 and `summary.json` with digest-bound evidence. It rejects reused output
 directories. It does **not** generate new lineages or select survivors.
 
-## Freeing early lineages · design bearings, NOT yet implemented
+## Freeing early lineages · enacted witnesses and remaining hypotheses
 
 **A. Separate architectural syntax from rendering appearance.** Introduce
 bounded morphogenetic grammar alternatives: a needle that *bears* a terrace
@@ -127,3 +127,13 @@ These are **open design proposals**. No semantic relationship grammar,
 automatic occlusion solver, structural load simulation or altered fitness
 policy is claimed by this guidebook. The unmodified historical six-generation
 pilot and the small two-epoch offspring remain outside live ancestry.
+
+## Hephaestian place witnesses
+
+place-review observes independently audited carved BRep material differences,
+declared void-to-exterior graph hops and sampled GEOS sections. The Fire
+skirting-court relation creates an open-front U-shaped study candidate under
+the same native gate. It is not evidence of safe occupancy, measured route
+width or reconstructable hidden source elevation. TopologicPy and pyribs
+are optional read-only research pilots, not authority substitutions.
+Heritable primary massing grammar remains unimplemented research.

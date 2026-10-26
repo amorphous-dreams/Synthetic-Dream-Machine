@@ -173,10 +173,20 @@ def main(argv=None):
     p.add_argument('--out',type=Path,required=True,help='completed native OODA-HA directory')
     p.add_argument('--gallery',type=Path,required=True,help='fresh gallery output directory')
     p.add_argument('--seats',type=int,choices=[2,3,4,5],default=3)
+    p=commands.add_parser('place-review',
+                          help='Read-only carved-native passage and section evidence for Fire alternatives')
+    p.add_argument('--project',type=Path,required=True)
+    p.add_argument('--capability-recipe',type=Path,required=True)
+    p.add_argument('--receipt',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--cell',type=float,default=.5)
+    p.add_argument('--clearance',type=float,default=.7)
+    p.add_argument('--topology-pilot',action='store_true',help='optional TopologicPy read-only graph comparison')
     p=commands.add_parser('fire-cohort', help='Verify and census multiple source-bound Fire native/six-view receipts')
     p.add_argument('--receipt',type=Path,action='append',required=True)
     p.add_argument('--review',type=Path,action='append',required=True)
     p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--quality-pilot',action='store_true',help='optional pyribs read-only grid study')
     p=commands.add_parser('fire-review',
                           help='Re-render admitted Fire proposals as native six-view structural orthos')
     p.add_argument('--project',type=Path,required=True)
@@ -259,11 +269,71 @@ def main(argv=None):
         result=make(args.out,args.project,args.capability_recipe,args.gallery,
                     seats=args.seats)
         print(json.dumps(result,indent=2));return result
+    if args.command=='place-review':
+        from .capability_stack import CapabilityRecipe,CapabilityCompositor
+        from .fire_geometry import _staged
+        from .grammar import grow_program
+        from .place_witness import review_place
+        from .provenance_encoding import canonical_json_sha256
+        if args.out.exists():raise ValueError('Place evidence output is immutable')
+        project=Project.load(args.project)
+        recipe=CapabilityRecipe.load(args.capability_recipe)
+        native=json.loads(args.receipt.read_text())
+        if native.get('sha256')!=canonical_json_sha256(
+                {k:v for k,v in native.items() if k!='sha256'}):
+            raise ValueError('Place review native receipt digest mismatch')
+        if native.get('source_recipe_sha256')!=recipe.sha256:
+            raise ValueError('Place review source recipe drifted')
+        if (project.seed_entity is None or
+                native.get('source_seed_sha256')!=project.seed_entity.sha256):
+            raise ValueError('Place review named image seed drifted')
+        from .fire_contract import verify_plan
+        if verify_plan(native['plan'])['sha256']!=native['plan_sha256']:
+            raise ValueError('Place review bound proposal drifted')
+        for row in native['results']:
+            if row.get('receipt_sha256')!=canonical_json_sha256(
+                    {k:v for k,v in row.items() if k!='receipt_sha256'}):
+                raise ValueError('Place review native result digest changed')
+        comp=CapabilityCompositor(project,recipe,size=(64,96),
+                                  source_mask=project.source_mask((64,96)))
+        if comp.construction_digest()!=native['source_construction_digest']:
+            raise ValueError('Place review construction changed')
+        built=comp.grow(native['source_genome'])
+        base=built.scene.assembly
+        if built.witness().witness_id!=native['original_witness_id']:
+            raise ValueError('Place review native source witness changed')
+        admitted=[r for r in native['results'] if r['state']=='native-admitted']
+        if not admitted:raise ValueError('Place review needs admitted alternatives')
+        variants=[]
+        for row in admitted:
+            candidate=_staged(base)
+            grow_program(row['rule_steps'],{},assembly=candidate)
+            audit=candidate.audit(join=True)
+            if (not audit.get('valid') or
+                    abs(audit['union_volume']-row['native_audit']['union_volume'])>1e-6 or
+                    candidate.relation_witness(location=project.location).witness_id!=row['witness_id']):
+                raise ValueError('Place review variant native receipts changed')
+            variants.append(candidate)
+        data=review_place(base,variants,location=project.location,
+                          cell=args.cell,clearance=args.clearance)
+        data['native_audition_sha256']=native['sha256']
+        if args.topology_pilot:
+            from .optional_studies import topologic_route_pilot
+            data['topology_pilot']=topologic_route_pilot(data)
+        data['sha256']=canonical_json_sha256({k:v for k,v in data.items() if k!='sha256'})
+        _save(args.out,data)
+        print(json.dumps({'file':str(args.out),'sha256':data['sha256'],
+                          'alternatives':len(variants)},indent=2))
+        return data
     if args.command=='fire-cohort':
         from .fire_cohort import write_census
         if len(args.receipt)!=len(args.review):
             raise ValueError('Every Fire native receipt needs its own six-view review')
         result=write_census(zip(args.receipt,args.review),args.out)
+        if args.quality_pilot:
+            from .optional_studies import pyribs_archive_pilot
+            pilot=pyribs_archive_pilot(result)
+            _save(args.out.with_suffix('.quality-pilot.json'),pilot)
         print(json.dumps({'sha256':result['sha256'],'native_admitted':result['native_admitted'],
                           'unique_topology_witnesses':result['unique_topology_witnesses'],
                           'unique_six_view_silhouettes':result['unique_six_view_silhouettes']},indent=2))

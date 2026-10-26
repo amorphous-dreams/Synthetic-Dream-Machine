@@ -3,16 +3,18 @@ requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 [project]
 name = "projection-loom"
-version = "2.2.0"
+version = "0"
 description = "Evidence-first constructive CAD, relational grammar, staged epochs and fixed witnesses"
 requires-python = ">=3.12"
-dependencies = ["cadquery>=2.4", "numpy>=1.26", "scipy>=1.11", "networkx>=3", "opencv-python-headless>=4.8", "Pillow>=10", "trimesh>=4", "scikit-image>=0.25", "jsonschema>=4.23"]
+dependencies = ["cadquery>=2.4", "numpy>=1.26", "scipy>=1.11", "networkx>=3", "opencv-python-headless>=4.8", "Pillow>=10", "trimesh>=4", "scikit-image>=0.25", "jsonschema>=4.23", "shapely>=2.1"]
 [project.optional-dependencies]
 fragment-geometry = ["manifold3d>=3"]
 inspection = ["pyvista>=0.45"]
 stress-research = ["scikit-fem>=11", "meshio>=5.3"]
 geo = ["rasterio>=1.3", "pyproj>=3.6"]
-test = ["pytest>=8", "rasterio>=1.3", "pyproj>=3.6"]
+topology-study = ["topologicpy>=0.9"]
+quality-study = ["pyribs>=0.12"]
+test = ["pytest>=8", "hypothesis>=6", "rasterio>=1.3", "pyproj>=3.6"]
 [project.scripts]
 projection-loom = "projection_loom.cli:main"
 [tool.setuptools.packages.find]

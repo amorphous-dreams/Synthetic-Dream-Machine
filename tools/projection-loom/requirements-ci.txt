@@ -16,3 +16,8 @@ pyvista==0.49.1
 scikit-fem==12.0.2
 meshio==5.3.5
 jsonschema==4.25.1
+
+# Planar GEOS analysis is a required native-evidence observer.
+shapely==2.1.2
+# Hypothesis tests contracts/section invariants, not unbounded CAD fuzzing.
+hypothesis>=6.168

@@ -4,6 +4,20 @@
 **Base / Lares boot ref:** `feature/green-jello-dinosaur-5`.
 **Source of truth:** real Git ancestry, source-bound native witnesses and CI jobs. This document marks provisional completion and blockers, not house law or Operator promotion. Refresh run status on re-entry.
 
+## Current locus · Hephaestian place and passage work
+
+On the Loom working branch, source-bound native Fire and the two-probe cohort
+passed same-head Actions #40276648968 (25 focused tests, four native
+admissions, two relation-topology witnesses, four six-view silhouettes).
+Held-out witnesses passed at that head; repo-wide CI needs its own verdict.
+Source-bound bearing is proved; the historical native bridge rejection stands.
+
+The next capability adds skirting-court, exact carved-material differences,
+sampled Shapely multi-elevation sections and NetworkX void-route witnesses.
+Those observations cannot certify walkability, load or hidden architecture.
+TopologicPy and pyribs remain opt-in read-only studies, not second helms.
+The Operator's Looms of Hephaestus family framing is not a new pet-name.
+Heritable mutation of the main needle/terrace/keep skeleton remains open.
 ## Completed and source-verified
 
 | Workstream | State | Concrete evidence / limit |
@@ -53,7 +67,7 @@ Prior failed runs remain genuine historical receipts, not current failures:
 
 ## Not implemented / not yet demonstrated
 
-- **Source-bound native Fire success with actual six-view handback:** the real Necrospire bridge case failed CAD validation. Real-source *valid* structural relation growth and view receipts remain an explicit acceptance milestone. Controlled fixture success is narrower.
+- **Source-bound native Fire:** bearing growth and six-view handback passed same-head CI. The earlier real Necrospire bridge remains rejected. New families and heritable primary massing changes require separate proof.
 - **Architectural semantic generality:** only three relationship operators are implemented, not a general Stiny/Gips shape grammar or an IFC building ontology. Other verbs must be bounded, reviewed and independently native-audited.
 - **Rich RGBA attractor freedom:** currently the one named artwork's alpha drives fixed-view silhouette and RGB edges modestly modulate the source-guided polymesh. Image-region interpretation, occlusion hypotheses, semantic roles and uncertainty-bearing alternatives are research and future mechanisms, not completed capabilities.
 - **Structural truth:** native BRep contact/union is not mechanical stress, engineering stability, real building circulation, or accurate reconstruction of the reverse side of a painting.
@@ -86,7 +100,7 @@ Fire is the living Operator↔AI interpreter. Memetic-wikitext is its conversati
 - Repository-wide evergreen witness repair rewrites one historical comment into present-tense operational language rather than raising the one-way ceiling.
 - **Verification pending:** these additions require a successful same-head Fire CI and repository-wide CI; native success must not be announced from code alone. Existing historical lineages remain frozen.
 
-## Source-stable Fire free-play probe (unpublished commit)
+## Source-stable Fire free-play probe (subsequently published and verified)
 
 Previous pushed head 06f9c3f2 had Fire/CAD CI failures caused by an ambiguous central-keep selector. The source builder now adds explicit unique lower-terrace and central-keep slots; selector validation remains fail-closed. The native bearing admits bounded setback 0..0.20. Two non-promoting research probes author distinct proposals against one source seed and feed normal Fire audition/review; each creates independent signed six-view evidence if native-admitted.
 
@@ -103,3 +117,46 @@ The first Fire six-view comparison rendered individual component meshes even tho
 ### Native cohort truth-scopes clarified
 
 A relational witness names topology/semantic slot identity, not exact BRep shape. The cohort therefore reports `unique_topology_witnesses` and `topology_duplicate_of`, alongside distinct measured added-volume values and independent six-view silhouette fingerprints. Do not interpret relation-witness uniqueness as geometric shape uniqueness, nor a distinct volume as a complete geometric fingerprint.
+
+## Hephaestian place and passage witness · new enacted capability
+
+**Projection Loom** remains the Operator's pet-name, understood as an
+architectural/location Loom among the possible **Looms of Hephaestus**.
+This interpretation does not rename an existing entity or promote a new canon.
+
+Shapely is a direct dependency for sampled plan analysis. The read-only
+`place-review` CLI reconstructs native-audited Fire alternatives from
+their source genome and signed receipt, checks their native union and
+semantic witnesses, then reports exact native-material differences,
+declared room/doorway graph routes, and Shapely XY material/void
+sections at bounded elevations. The rasterized sections are *cell-center
+samples*: their approximate clearance-core areas do not certify
+walkability, load, hidden source architecture, or continuous route width.
+Circulation hops derive from audited VoidAssembly overlaps; NetworkX
+does not substitute for CAD.
+
+The Fire grammar adds a bounded `skirts/skirting-court` U-shaped
+open-front relation. Only separately native-admitted alternatives enter
+review. No pet-name, Art Sigil executor, second service, or second
+OODA-HA scheduler follows from that relation.
+
+Hypothesis supplies targeted bounded invariants. TopologicPy is an
+explicit `topology-study` optional dependency, with an isolated
+read-only TGraph void-link comparison pilot. Pyribs is an explicit
+`quality-study` optional dependency used solely to inspect already
+admitted candidates; its scheduler and emitters are not installed in
+the active generation flow. build123d, COMPAS, IfcOpenShell and
+Ladybug Tools remain under research-only hold rather than redundant
+execution authorities. Future architectural inheritance and multi-image
+reference experiments require their own attributed evidence.
+
+Python distribution metadata retains the packaging-required numeric
+field as an inert `0`; no application release ladder is implied.
+Pinned third-party CI constraints serve reproducible dependency
+resolution, not a Loom project version ontology.
+
+Sources: Shapely/GEOS docs, Hypothesis docs, TopologicPy TGraph docs,
+pyribs GridArchive API, Stiny/Gips shape grammar, Hillier/Hanson
+spatial syntax and Alexander's generative systems. The read-only
+TopologicPy pilot may require its own backend; it is never a hard
+dependency of core source-bound CI.

@@ -135,3 +135,18 @@ def test_source_fire_two_probe_profiles_are_distinct():
         assert [x['implementation'] for x in a['alternatives']]==['bearing-column','bearing-column','study-only']
     finally:
         sys.path.remove(str(root/'examples/necrospire'))
+
+
+
+def test_open_front_skirting_court_is_native_and_source_unmodified():
+    original=fixture()
+    witness=original.relation_witness(location="necrospire")
+    proposal=example(witness,"skirts","skirting-court")
+    original_audit=original.audit(join=True)
+    row=audition_plan(resolve_proposal(proposal,witness),original,
+                      location="necrospire")["results"][0]
+    assert row["state"]=="native-admitted",row["reason"]
+    assert row["part_delta"]==3
+    assert row["added_volume"]>0
+    assert row["native_audit"]["valid"]
+    assert original.audit(join=True)==original_audit

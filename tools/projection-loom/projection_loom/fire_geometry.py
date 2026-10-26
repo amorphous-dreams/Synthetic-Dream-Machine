@@ -111,6 +111,24 @@ def _operations(rule, resolved, original):
                  "slot":prefix+"-"+label,
                  "has":[*desc,"#has/encircling-member"]}
                 for label,center,size in components]
+    if impl == "skirting-court":
+        # An open-front U-shaped court extends above the supporting terrace.
+        # The target locates the inner void, while native support contacts
+        # belong solely to the named supporting body. No load claim follows.
+        slo, shi = sb
+        tlo, thi = tb
+        cx, cy, _ = _center(tb)
+        dx=(thi[0]-tlo[0])/2 + clearance + width/2
+        dy=(thi[1]-tlo[1])/2 + clearance + depth/2
+        z=shi[2] + depth*.25
+        spans=[("north",(cx,cy+dy,z),(2*(dx+width/2),depth,depth)),
+               ("west",(cx-dx,cy,z),(width,2*dy+depth,depth)),
+               ("east",(cx+dx,cy,z),(width,2*dy+depth,depth))]
+        return [{"key":prefix+"-"+label,"op":"box",
+                 "parents":[subject],"center":list(center),"size":list(size),
+                 "role":"secondary","slot":prefix+"-"+label,
+                 "has":[*desc,"#has/skirting-court","#has/open-south"]}
+                for label,center,size in spans]
     if impl == "study-only":
         return []
     raise ValueError("Unregistered Fire implementation")

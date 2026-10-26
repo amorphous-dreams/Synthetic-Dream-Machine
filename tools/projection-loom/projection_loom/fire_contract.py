@@ -24,6 +24,7 @@ ALLOWED = {
     "encircles": "ring-around",
     "bears": "bearing-column",
     "studies": "study-only",
+    "skirts": "skirting-court",
 }
 
 

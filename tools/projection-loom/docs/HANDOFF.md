@@ -1,3 +1,62 @@
+## Current locus · Hephaestian place and passage work
+
+On the Loom working branch, source-bound native Fire and the two-probe cohort
+passed same-head Actions #40276648968 (25 focused tests, four native
+admissions, two relation-topology witnesses, four six-view silhouettes).
+Held-out witnesses passed at that head; repo-wide CI needs its own verdict.
+Source-bound bearing is proved; the historical native bridge rejection stands.
+
+The next capability adds skirting-court, exact carved-material differences,
+sampled Shapely multi-elevation sections and NetworkX void-route witnesses.
+Those observations cannot certify walkability, load or hidden architecture.
+TopologicPy and pyribs remain opt-in read-only studies, not second helms.
+The Operator's Looms of Hephaestus family framing is not a new pet-name.
+Heritable mutation of the main needle/terrace/keep skeleton remains open.
+
+
+## Hephaestian place and passage witness · new enacted capability
+
+**Projection Loom** remains the Operator's pet-name, understood as an
+architectural/location Loom among the possible **Looms of Hephaestus**.
+This interpretation does not rename an existing entity or promote a new canon.
+
+Shapely is a direct dependency for sampled plan analysis. The read-only
+`place-review` CLI reconstructs native-audited Fire alternatives from
+their source genome and signed receipt, checks their native union and
+semantic witnesses, then reports exact native-material differences,
+declared room/doorway graph routes, and Shapely XY material/void
+sections at bounded elevations. The rasterized sections are *cell-center
+samples*: their approximate clearance-core areas do not certify
+walkability, load, hidden source architecture, or continuous route width.
+Circulation hops derive from audited VoidAssembly overlaps; NetworkX
+does not substitute for CAD.
+
+The Fire grammar adds a bounded `skirts/skirting-court` U-shaped
+open-front relation. Only separately native-admitted alternatives enter
+review. No pet-name, Art Sigil executor, second service, or second
+OODA-HA scheduler follows from that relation.
+
+Hypothesis supplies targeted bounded invariants. TopologicPy is an
+explicit `topology-study` optional dependency, with an isolated
+read-only TGraph void-link comparison pilot. Pyribs is an explicit
+`quality-study` optional dependency used solely to inspect already
+admitted candidates; its scheduler and emitters are not installed in
+the active generation flow. build123d, COMPAS, IfcOpenShell and
+Ladybug Tools remain under research-only hold rather than redundant
+execution authorities. Future architectural inheritance and multi-image
+reference experiments require their own attributed evidence.
+
+Python distribution metadata retains the packaging-required numeric
+field as an inert `0`; no application release ladder is implied.
+Pinned third-party CI constraints serve reproducible dependency
+resolution, not a Loom project version ontology.
+
+Sources: Shapely/GEOS docs, Hypothesis docs, TopologicPy TGraph docs,
+pyribs GridArchive API, Stiny/Gips shape grammar, Hillier/Hanson
+spatial syntax and Alexander's generative systems. The read-only
+TopologicPy pilot may require its own backend; it is never a hard
+dependency of core source-bound CI.
+
 
 
 ### Native cohort truth-scopes clarified

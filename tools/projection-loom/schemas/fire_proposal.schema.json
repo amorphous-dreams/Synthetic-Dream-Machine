@@ -178,7 +178,8 @@
               "bridges",
               "encircles",
               "bears",
-              "studies"
+              "studies",
+              "skirts"
             ]
           },
           "object": {
@@ -189,7 +190,8 @@
               "bridge-between",
               "ring-around",
               "bearing-column",
-              "study-only"
+              "study-only",
+              "skirting-court"
             ]
           },
           "parameters": {
