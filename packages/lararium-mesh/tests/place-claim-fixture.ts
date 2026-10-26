@@ -71,3 +71,37 @@ export async function forgedClaim(place: TestPlace, pin: GateBundlePin, signWith
   const sig = hex(await nobleEd.signAsync(placeFloorPinImage({ aid: honest.aid, seq: honest.seq, head: honest.head }, pin), signWith));
   return { ...honest, sig };
 }
+
+// ── THE STORM EVIDENCE ───────────────────────────────────────────────────────────────────────────
+// One set of facts both legs of the storm witness read (node: carried standing off a board; browser: anchored standing off cards):
+// a place that rotates through `stages` heads, and a claim of a different floor pin at each head.
+
+/** A mulberry32 stream: the same seed shuffles the same way on every platform. */
+export function prng(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+}
+export function shuffled<T>(items: readonly T[], next: () => number): T[] {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(next() * (i + 1)); [out[i], out[j]] = [out[j]!, out[i]!]; }
+  return out;
+}
+
+export interface StormStage { readonly place: TestPlace; readonly pin: GateBundlePin; readonly claim: PlaceFloorPinStatement; readonly signerKey: string }
+/** `stages` heads of one place, each claiming its own pin of `nexus`'s flow route. */
+export async function stormStages(nexus: string, stages: number, tag = 7): Promise<StormStage[]> {
+  const out: StormStage[] = [];
+  let place = foundPlace(tag);
+  for (let i = 0; i < stages; i++) {
+    if (i > 0) place = rotatePlace(place);
+    const pin = floorPinFor(nexus, "/flow", 30 + i);
+    out.push({ place, pin, claim: await claimAt(place, pin), signerKey: headOf(place).signerKey });
+  }
+  return out;
+}
