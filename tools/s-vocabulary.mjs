@@ -8,7 +8,7 @@
  * abbreviation only through character classes. The floor vessel key (`.vessel-key*.json`, the place signing seed) is a different
  * thing; its names do not contain the abbreviation.
  *
- * Live canon is scanned too: every `.mem` carrier under `bags/` except `docs/history/` (the canon-history class owns that directory) and
+ * Live canon is scanned too: every carrier the one finder (`carrierFiles()`, the built shore) declares, except `docs/history/` (the canon-history class owns that directory) and
  * the third-party scouts (`*-scout.mem`), whose words are other projects' own terms (a verifying-key field, a tool's acronym). A
  * content-address run (`ni:///sha-256;...`) is not prose and is skipped.
  *
@@ -18,6 +18,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { distCarrierFiles } from "./corpus-read.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const LETTERS = "[Vv][Kk]";
@@ -39,10 +40,10 @@ export function memWords(text) {
   return retiredWords(text.replace(/ni:\/\/\/sha-256;[A-Za-z0-9_-]+/g, "ni:///sha-256;"));
 }
 
-/** Live canon: every tracked `.mem` carrier under `bags/` outside `docs/history/` and the third-party scouts. */
-export function trackedCanon() {
-  return execFileSync("git", ["ls-files", "bags"], { cwd: ROOT, encoding: "utf8" }).split("\n")
-    .filter((f) => f.endsWith(".mem") && !f.includes("/docs/history/") && !f.endsWith("-scout.mem"));
+/** Live canon: every declared carrier outside `docs/history/` and the third-party scouts, read through the one finder. */
+export async function trackedCanon() {
+  const { carrierFiles } = await distCarrierFiles(ROOT, "s-vocabulary");
+  return carrierFiles(ROOT).filter((f) => !f.includes("/docs/history/") && !f.endsWith("-scout.mem"));
 }
 
 export function trackedCode() {
@@ -55,7 +56,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   for (const f of trackedCode()) {
     for (const h of retiredWords(readFileSync(join(ROOT, f), "utf8"))) { console.log(`${f}:${h.line}  ${h.word}`); count++; }
   }
-  for (const f of trackedCanon()) {
+  for (const f of await trackedCanon()) {
     for (const h of memWords(readFileSync(join(ROOT, f), "utf8"))) { console.log(`${f}:${h.line}  ${h.word}`); count++; }
   }
   console.log(`s-vocabulary: ${count} word(s) spell the retired abbreviation`);

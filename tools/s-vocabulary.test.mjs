@@ -42,9 +42,11 @@ test("no word in tracked code, comment or string spells the retired omnibus key"
   assert.deepEqual(hits, []);
 });
 
-test("no live canon carrier (outside docs/history and the third-party scouts) spells the retired omnibus key", () => {
+test("no live canon carrier (outside docs/history and the third-party scouts) spells the retired omnibus key", async () => {
   const hits = [];
-  for (const f of trackedCanon()) {
+  const canon = await trackedCanon();
+  assert.ok(canon.length > 0, "the finder returned no carriers — a silent zero");
+  for (const f of canon) {
     for (const h of memWords(readFileSync(join(ROOT, f), "utf8"))) hits.push(`${f}:${h.line}  ${h.word}`);
   }
   assert.deepEqual(hits, []);
