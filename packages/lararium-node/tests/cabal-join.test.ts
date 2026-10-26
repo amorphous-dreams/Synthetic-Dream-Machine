@@ -131,7 +131,7 @@ describe("cabal join — the crossing, and what it refuses", () => {
     const secondRoot = mkdtempSync(join(tmpdir(), "lares-join-independent-"));
     try {
       process.env["LAR_ROOT"] = secondRoot;
-      await generateOrLoadVesselIdentity();
+      await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
       await generateOrLoadPersonaGroupRoot(0);
       await seedFaceAtom(0);
       await wearPersona(0);
@@ -159,7 +159,7 @@ describe("cabal join — the crossing, and what it refuses", () => {
     const secondRoot = mkdtempSync(join(tmpdir(), "lares-join-stripped-"));
     try {
       process.env["LAR_ROOT"] = secondRoot;
-      await generateOrLoadVesselIdentity();
+      await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
       await generateOrLoadPersonaGroupRoot(0);
       await seedFaceAtom(0);
       await wearPersona(0);
