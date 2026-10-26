@@ -438,6 +438,12 @@ export type GateOutcome =
 export interface FaceGate {
   /** Run the exchange on one accepted socket. It never throws and never rejects. */
   accept(socket: GateSocket): Promise<GateOutcome>;
+  /**
+   * Whether message one decrypts under this gate's bundle: the transport's check BEFORE any upgrade answers. It
+   * reads no state, takes no pending place and sends nothing; `accept` decrypts the same bytes again (one
+   * X25519 pair twice per true dial), so the gate's API keeps its one shape.
+   */
+  preflight(message1: Uint8Array): boolean;
   /** How many sockets stand accepted and neither attached nor cut. A count, never a list. */
   readonly pending: number;
 }
@@ -689,6 +695,10 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
 
   return {
     get pending(): number { return pending; },
+    preflight(message1) {
+      if (!(message1 instanceof Uint8Array) || message1.length !== MIN_MESSAGE1_BYTES) return false;
+      try { bundle.respond(message1); return true; } catch { return false; }
+    },
     async accept(socket) {
       // One socket carries one first flight. A second run on it draws no deadline of its own, sends nothing and
       // touches nothing: the first run's deadline alone governs the socket.

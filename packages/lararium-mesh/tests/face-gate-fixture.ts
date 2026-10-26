@@ -436,6 +436,11 @@ export async function bentDial(w: World, p: Presenter, bend: Bend = {}, over: Pa
   return { gate, log, cutsBeforeLapse, pendingBeforeLapse, transport };
 }
 
+/** Message one, minimal, written to `w`'s pin under a fresh dial-only static: it decrypts at that gate and nowhere else. */
+export function validFlight(w: World): Uint8Array {
+  return noiseInitiate({ prologue: gatePrologue(w.pin), s: noiseKeyPair(seedOf(`static ${Math.random()}`)), rs: hexToBytes(w.pin.transportKey) }).message1;
+}
+
 /** Replay a recorded first flight on a fresh socket, and send nothing after it. */
 export async function replayFlight(w: World, flight: { knock: string; message1: Uint8Array }): Promise<{ gate: GateOutcome; log: WireLog; cutsBeforeLapse: number; pendingBeforeLapse: number }> {
   const { dial: socket, accepted, log } = wire();

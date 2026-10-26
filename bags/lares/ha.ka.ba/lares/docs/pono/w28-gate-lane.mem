@@ -53,9 +53,9 @@ Both rows touch the sealed channel's dial bytes, so each settles before the X0 b
 
 ''MEASURED'': the knock also selects the gate. The dispatcher registers each Nexus and route at an exact `<route>/<knock>` path; a knock-less dial needs another clear selector or a trial decryption against every gate on a route, and each trial costs one X25519.
 
-''MEASURED, a defect apart from the leak'': `handleUpgrade` in `packages/lararium-node/src/face-gate-server.ts` sends the HTTP 101 before the gate decrypts message one, while `face-proof#/the-gate-exchange` states the gate answers the upgrade only after the flight decrypts. A holder of a learned path therefore reads a 101 from a gate for any well-formed token. The cure moves no wire byte: a bounded Noise preflight before the upgrade.
+''BUILT, a defect apart from the leak'': `handleUpgrade` in `packages/lararium-node/src/face-gate-server.ts` once sent the HTTP 101 before the gate decrypted message one, so a holder of a learned path read a 101 for any well-formed token. It now asks `FaceGate.preflight` first: a flight that decrypts under no bundle of the stood gate draws a destroyed socket and the refusal `flight-undecrypted`, before any 101. The preflight decrypts message one once and `accept` decrypts it once more, so the gate's API keeps its one shape. It moves no wire byte.
 
-''The lean'' (LEAD): the leak stands accepted and named; the knock stays; the 101 ordering gets repaired; a secret pre-filter waits on the operator, since it adds a credential to the pin.
+''The lean'' (LEAD): the leak stands accepted and named; the knock stays; the 101 ordering stands repaired; a secret pre-filter waits on the operator, since it adds a credential to the pin.
 
 <<~/ahu>>
 
@@ -68,6 +68,6 @@ Both rows touch the sealed channel's dial bytes, so each settles before the X0 b
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;p3dR0w8RqF1qvSivylPo8LWNqLDT5Wgu_sqPw7fKIrI
+<<^ code="&#x0003;">>ni:///sha-256;rT6IUKQpPNXYg--0hAwWGBRFnUvUdoc4_pyahfFTd64
 
 <<^ code="&#x0004;" -> to="?">>
