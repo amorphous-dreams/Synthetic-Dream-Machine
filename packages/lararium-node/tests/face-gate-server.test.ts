@@ -21,7 +21,7 @@ import {
   GATE_DEADLINE_MAX_BASE_MS, GATE_SERVER_MAX_SOCKETS, GATE_SOCKET_QUEUE_BOUND, faceGateServer, gatePath, gateSessionRegistry, timerGateDeadlines,
   wsGateSocket, type FaceGateServer, type FaceGateServerOptions, type GateWire,
 } from "../src/face-gate-server.js";
-import { AUDIENCE, handDeadlines, presenter, world, type Presenter, type World } from "../../lararium-mesh/tests/face-gate-fixture.js";
+import { AUDIENCE, handDeadlines, presenter, validFlight, world, type Presenter, type World } from "../../lararium-mesh/tests/face-gate-fixture.js";
 import { wsDialSocket, type WsLike } from "../../lararium-mesh/src/ws-dial-socket.js";
 import { WebSocket as WsSocket } from "ws";
 
@@ -141,10 +141,22 @@ describe("the gate over a live socket", () => {
     expect(s.refusals.map(([, r]) => r)).toEqual(["flight-absent", "flight-shape", "flight-token"]);
     expect(w.gate.pending).toBe(0);
     expect(s.outcomes).toEqual([]);
-    // CONTROL: a well-formed flight opens a 101 under the gate's protocol, and the gate takes the socket.
-    expect(await attempt(at, [...gateFlightProtocols(new Uint8Array(96))])).toBe("opened");
+    // RED (W10 finding): a well-formed 96-byte flight that fails to decrypt draws no 101, and the gate never sees the socket.
+    expect(await attempt(at, [...gateFlightProtocols(new Uint8Array(96))])).toBe("refused");
+    expect(s.refusals.map(([, r]) => r)).toEqual(["flight-absent", "flight-shape", "flight-token", "flight-undecrypted"]);
+    expect(s.outcomes).toEqual([]);
+    expect(w.gate.pending).toBe(0);
+  });
+
+  test("RED: a flight written to this gate's pin and sent on its path opens; one under any other pin draws no 101", async () => {
+    const s = await stand();
+    const { w, p } = await seatedWorld();
+    const stood = s.server.stand({ gate: w.gate, pin: w.pin });
+    const { outcome } = dialOver(w, p, s.base("/ws"));
+    expect((await outcome).state).toBe("verified");
     await until(() => s.outcomes.length === 1);
-    expect(s.outcomes[0]![1]).toMatchObject({ outcome: "silence" });   // a flight under no pin decrypts nothing
+    expect(s.refusals).toEqual([]);
+    expect(s.outcomes[0]).toEqual([stood.path, { outcome: "attached", class: "contracted" }]);
   });
 
   test("RED: two Nexuses on one route stand two paths; a flight written to one pin draws silence at the other", async () => {
@@ -159,8 +171,9 @@ describe("the gate over a live socket", () => {
     const { socket } = liveDialSocket(s.base("/ws"));
     const crossed = { ...socket, open: (flight: { knock: string; message1: Uint8Array }) => socket.open({ ...flight, knock: pathB.split("/").pop()! }) };
     void dialFaceGate({ pin: a.w.pin, tier: a.w.pin.tier, socket: crossed, audience: AUDIENCE, certificate: a.p.certificate, signer: a.p.signer, arm: a.p.arm, history: a.p.history, deadlines: handDeadlines() });
-    await until(() => s.outcomes.length === 1);
-    expect(s.outcomes[0]).toEqual([pathB, { outcome: "silence", reason: "flight-undecrypted" }]);
+    await until(() => s.refusals.length === 1);
+    expect(s.refusals[0]).toEqual([pathB, "flight-undecrypted"]);
+    expect(s.outcomes).toEqual([]);
     expect(b.opened).toEqual([]);
     // CONTROL: each presenter reaches its own gate.
     for (const { w, p, opened } of [a, b]) {
@@ -289,15 +302,15 @@ describe("the registry and the deadline", () => {
 
 // ── The server's own bounds, live ───────────────────────────────────────────────────────────────
 
-/** A raw client on `url` presenting a well-formed (undecryptable) flight: it opens a 101, or is refused. */
-async function rawKnock(url: string): Promise<{ ws: WsSocket | null; closed: Promise<number> }> {
-  const ws = new WsSocket(url, [...gateFlightProtocols(new Uint8Array(96))], { perMessageDeflate: false });
+/** A raw client on `url`: with a world, a flight that decrypts at its gate and then goes silent; without one, a well-formed flight a stand-in gate takes. It opens a 101, or is refused. */
+async function rawKnock(url: string, w?: World): Promise<{ ws: WsSocket | null; closed: Promise<number> }> {
+  const ws = new WsSocket(url, [...gateFlightProtocols(w === undefined ? new Uint8Array(96) : validFlight(w))], { perMessageDeflate: false });
   const closed = new Promise<number>((resolve) => { ws.on("close", (code) => resolve(code)); ws.on("error", () => resolve(-1)); });
   const opened = await new Promise<boolean>((resolve) => { ws.on("open", () => resolve(true)); ws.on("error", () => resolve(false)); ws.on("unexpected-response", () => resolve(false)); });
   return { ws: opened ? ws : null, closed };
 }
 /** A gate that takes its socket and reads nothing, ever. */
-const deafGate = (taken: unknown[] = []): FaceGate => ({ accept: (socket) => { taken.push(socket); return new Promise(() => {}); }, get pending() { return 0; } } as unknown as FaceGate);
+const deafGate = (taken: unknown[] = []): FaceGate => ({ accept: (socket) => { taken.push(socket); return new Promise(() => {}); }, preflight: () => true, get pending() { return 0; } } as unknown as FaceGate);
 const stillOpen = async (closed: Promise<number>, ms = 150): Promise<boolean> =>
   Promise.race([closed.then(() => false), new Promise<boolean>((r) => setTimeout(() => r(true), ms))]);
 
@@ -333,9 +346,9 @@ describe("the server's own bounds over a live socket", () => {
     const s = await stand();
     const { w } = await seatedWorld();
     const path = s.server.stand({ gate: w.gate, pin: w.pin }).path;       // hand deadlines: no lapse ever fires
-    const quiet = await rawKnock(s.base(path));
+    const quiet = await rawKnock(s.base(path), w);
     expect(await stillOpen(quiet.closed)).toBe(true);                  // CONTROL: the gate waits on its silent socket
-    const texty = await rawKnock(s.base(path));
+    const texty = await rawKnock(s.base(path), w);
     texty.ws!.send("not sealed");
     expect(await texty.closed).toBeGreaterThan(0);
     quiet.ws!.terminate();
@@ -363,12 +376,12 @@ describe("the server's own bounds over a live socket", () => {
     const s = await stand();
     const w = await world({ maxPending: 1 });
     const path = s.server.stand({ gate: w.gate, pin: w.pin }).path;      // hand deadlines: no lapse fires
-    const holder = await rawKnock(s.base(path));                         // its flight decrypts nothing: it waits
+    const holder = await rawKnock(s.base(path), w);                      // its flight decrypts and then goes silent: it waits
     await until(() => w.gate.pending === 1);
-    const turned = await rawKnock(s.base(path));
+    const turned = await rawKnock(s.base(path), w);
     expect(await turned.closed).toBeGreaterThan(0);
-    await until(() => s.outcomes.length === 2);
-    expect(s.outcomes.map(([, o]) => o)).toEqual([{ outcome: "silence", reason: "flight-undecrypted" }, { outcome: "silence", reason: "pending-full" }]);
+    await until(() => s.outcomes.length === 1);
+    expect(s.outcomes.map(([, o]) => o)).toEqual([{ outcome: "silence", reason: "pending-full" }]);
     expect(await stillOpen(holder.closed)).toBe(true);                 // CONTROL: the one holding its place waits on
     holder.ws!.terminate();
   });
@@ -377,12 +390,12 @@ describe("the server's own bounds over a live socket", () => {
     const s = await stand();
     const { w } = await seatedWorld();
     const pin = w.pin;
-    const throwing = { accept: () => { throw new Error("sync fault"); }, pending: 0 } as unknown as FaceGate;
+    const throwing = { accept: () => { throw new Error("sync fault"); }, preflight: () => true, pending: 0 } as unknown as FaceGate;
     const path = s.server.stand({ gate: throwing, pin }).path;
     expect(await (await rawKnock(s.base(path))).closed).toBeGreaterThan(0);
     s.server.paths();
     const other = await seatedWorld({ nexus: "nexus-b.synthetic" });
-    const rejecting = { accept: () => Promise.reject(new Error("async fault")), pending: 0 } as unknown as FaceGate;
+    const rejecting = { accept: () => Promise.reject(new Error("async fault")), preflight: () => true, pending: 0 } as unknown as FaceGate;
     const path2 = s.server.stand({ gate: rejecting, pin: other.w.pin }).path;
     expect(await (await rawKnock(s.base(path2))).closed).toBeGreaterThan(0);
   });
@@ -407,8 +420,8 @@ describe("the server's own bounds over a live socket", () => {
     const long = await world({ nexus: "nexus-b.synthetic", lapses: timerGateDeadlines({ baseMs: 60_000 }) });
     const pathShort = s.server.stand({ gate: short.gate, pin: short.pin }).path;
     const pathLong = s.server.stand({ gate: long.gate, pin: long.pin }).path;
-    const lapsing = await rawKnock(s.base(pathShort));
-    const waiting = await rawKnock(s.base(pathLong));
+    const lapsing = await rawKnock(s.base(pathShort), short);
+    const waiting = await rawKnock(s.base(pathLong), long);
     expect(await lapsing.closed).toBeGreaterThan(0);
     expect(await stillOpen(waiting.closed)).toBe(true);                // CONTROL: a long base has not lapsed
     waiting.ws!.terminate();

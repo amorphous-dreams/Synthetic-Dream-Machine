@@ -53,21 +53,58 @@ import { gateFields } from "./gate-bundle.js";
 import { isHostingGrant, isInviteToken, type HostingGrant, type InviteToken } from "./hosting.js";
 import { MIN_MESSAGE1_BYTES, NOISE_MAX_MESSAGE_BYTES } from "./noise-ik.js";
 
-// ── Frames on the sealed channel (provisional layout) ───────────────────────────────────────────
+// ── Frames on the sealed channel (frozen layout) ─────────────────────────────────────────────────
 
-/** The tag a sealed frame leads with. */
+/**
+ * The sealed frame layout stands frozen. Tags 0x01–0x0f carry dialer-to-gate frames; 0x11–0x1f
+ * carry gate-to-dialer frames. A new frame takes the next unassigned tag in its direction's block
+ * and moves no assigned tag. Tags 0x00, 0x10, and 0x20–0xff require a version rite. Every byte
+ * outside this table's values reads RESERVED: no frame leads with it, readers refuse it, and no
+ * table row reuses a retired value.
+ */
 export const GATE_FRAME = Object.freeze({
   presentationPart: 0x01, presentationEnd: 0x02, finish: 0x03,
   answerPart: 0x11, answerEnd: 0x12, verdict: 0x13,
 } as const);
 
-/** The most bytes one frame's body holds: a Noise message less its tag and this layout's own tag byte. */
+/** The direction each assigned frame travels. */
+export const GATE_FRAME_DIRECTION = Object.freeze({
+  presentationPart: "dialer", presentationEnd: "dialer", finish: "dialer",
+  answerPart: "gate", answerEnd: "gate", verdict: "gate",
+} as const);
+
+/** A finish frame's tag and Ed25519 signature. */
+export const GATE_FINISH_BYTES = 1 + 64;
+/** A verdict frame's tag and Ed25519 signature. */
+export const GATE_VERDICT_BYTES = 1 + 64;
+/** The frozen body bound: a Noise message less its tag and this layout's own tag byte. A change takes a version rite. */
 export const GATE_FRAME_BODY_MAX = NOISE_MAX_MESSAGE_BYTES - 16 - 1;
-/** The most bytes a presentation or an answer holds. It bounds what one dial can make either end buffer. */
+/** The frozen subject bound limits what one dial can make either end buffer. A change takes a version rite. */
 export const GATE_SUBJECT_MAX_BYTES = 1 << 20;
+
+/** Whether a tag lacks an assigned frame, including malformed and out-of-range numbers. */
+export function gateFrameTagReserved(tag: number): boolean {
+  return !Number.isInteger(tag) || tag < 0 || tag > 255 || !Object.values(GATE_FRAME).includes(tag as (typeof GATE_FRAME)[keyof typeof GATE_FRAME]);
+}
+
+/** Name the first refusal visible from a proposed table alone. */
+export function gateFrameTableRefusal(table: Readonly<Record<string, number>>): string | null {
+  const seen = new Set<number>();
+  for (const [name, tag] of Object.entries(table)) {
+    if (!Number.isInteger(tag) || tag < 0 || tag > 255) return "tag-malformed";
+    if (!(tag >= 0x01 && tag <= 0x0f) && !(tag >= 0x11 && tag <= 0x1f)) return "tag-outside-block";
+    if (seen.has(tag)) return "tag-duplicate";
+    seen.add(tag);
+    if (!Object.hasOwn(GATE_FRAME_DIRECTION, name)) return "tag-unknown-name";
+    const direction = GATE_FRAME_DIRECTION[name as keyof typeof GATE_FRAME_DIRECTION];
+    if ((tag <= 0x0f ? "dialer" : "gate") !== direction) return "tag-wrong-direction";
+  }
+  return null;
+}
 
 /** Cut `bytes` into frames: every frame but the last under `partTag`, the last under `endTag`. */
 export function gateParts(partTag: number, endTag: number, bytes: Uint8Array): Uint8Array[] {
+  if (gateFrameTagReserved(partTag) || gateFrameTagReserved(endTag)) throw new RangeError("gate-exchange: reserved frame tag");
   if (bytes.length > GATE_SUBJECT_MAX_BYTES) throw new RangeError("gate-exchange: a subject outgrew its bound");
   const frames: Uint8Array[] = [];
   for (let at = 0; ; at += GATE_FRAME_BODY_MAX) {
@@ -87,6 +124,7 @@ export function gateParts(partTag: number, endTag: number, bytes: Uint8Array): U
  * bound; a refusal spends the reader.
  */
 export function gatePartReader(partTag: number, endTag: number): { push(frame: Uint8Array): Uint8Array | null | "refused" } {
+  if (gateFrameTagReserved(partTag) || gateFrameTagReserved(endTag)) throw new RangeError("gate-exchange: reserved frame tag");
   const parts: Uint8Array[] = [];
   let size = 0;
   let spent = false;
@@ -110,6 +148,7 @@ export function gatePartReader(partTag: number, endTag: number): { push(frame: U
 
 /** One frame under one tag. */
 export function gateFrame(tag: number, body: Uint8Array): Uint8Array {
+  if (gateFrameTagReserved(tag)) throw new RangeError("gate-exchange: reserved frame tag");
   const frame = new Uint8Array(1 + body.length);
   frame[0] = tag;
   frame.set(body, 1);
