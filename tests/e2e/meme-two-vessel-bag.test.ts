@@ -39,9 +39,9 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { joinedDeviceEdge, joinedFaceCard, openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
+import { openStagedJoinee, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
 import { promoteLoadedTitles } from "../harness/promote.js";
-import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
+import { faceJoinOutcome, requestFaceJoin } from "../harness/face-join-intent.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -246,7 +246,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     expect(aText).not.toContain("<<~ ahu #/b>>");
   });
 
-  // THE LATER GRANT (basket-one #/the-later-grant, ruled 2026-09-11). A's `face-join` seats B in the group
+  // THE LATER GRANT (basket-one #/the-later-grant, ruled 2026-09-11). A's door answers B's `face-join` intent and seats B in the group
   // AND writes the grant as a SIGNED RECORD on the PersonaGroup plane (the doc both sync by membership).
   // B's own kit, on its next present (a `meme put --recipe lares` resolves the binding → `faceSeated`),
   // reads the record, verifies it offline against the persona root it pinned at admit and A's root-signed
@@ -257,16 +257,11 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     const before = B!.bootLog();
     expect(before, "CONTROL: B stood pinned, not seated").toMatch(/pinned, not yet seated/);
     expect(before).not.toMatch(/grant record taken/);
-    // B's summons — ITS card (the identity dir sits beside the vessel store) + the edge A signed for it.
-    const contactCard = await joinedFaceCard(pair!);
-    const deviceEdge = await joinedDeviceEdge(pair!);
-    expect(deviceEdge, "the join carried no device edge").toBeDefined();
-    // A seats B — the verb runs where A's booted provider lives; the record lands on the plane.
-    const r = await invokeLocal("face-join", { summons: { kind: "face-join/v1", contactCard, deviceEdge } },
-      `0x${"0".repeat(64)}`, { dataDir: vesselStorageDir(A!), timeoutMs: 60_000 }) as
-      { results?: { summary?: { output?: Record<string, unknown> } } };
-    const grant = r.results?.summary?.output ?? {};
-    console.error(`meme-two-vessel-bag MEASURE A: face-join → admitted ${String(grant["admitted"])} · reKeyed ${String(grant["reKeyed"])} · reSealed ${Array.isArray(grant["reSealed"]) ? grant["reSealed"].length : "(none)"} · record ${String(grant["recordTitle"] ?? "(none)")} ${grant["reason"] ? `· reason ${String(grant["reason"])}` : ""}`);
+    // B asks for its seat on the face's intents plane: its own card and the edge A signed for it, pinned to the founding
+    // hearth. A's door answers; the record lands on the PersonaGroup plane.
+    const requested = await requestFaceJoin(B!);
+    const grant = await faceJoinOutcome(B!, requested);
+    console.error(`meme-two-vessel-bag MEASURE A: face-join → admitted ${String(grant["admitted"])} · reKeyed ${String(grant["reKeyed"])} · reSealed ${String(grant["reSealedCount"] ?? "(none)")} · record ${String(grant["recordTitle"] ?? "(none)")} ${grant["reason"] ? `· reason ${String(grant["reason"])}` : ""}`);
     expect(grant["admitted"], JSON.stringify(grant).slice(0, 400)).toBe(true);
     expect(typeof grant["recordTitle"], "the grant landed on no plane — A's log names why").toBe("string");
     // B's next present: the binding resolves, the kit reads the record and takes the seat by its own act.
