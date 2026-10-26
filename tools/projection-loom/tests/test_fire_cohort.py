@@ -73,7 +73,7 @@ def test_pair_census_uses_verified_source_cameras_and_silhouette_changes(tmp_pat
     b = pair(tmp_path, 2, visible=False)
     summary = write_census([a,b], tmp_path/"census.json")
     assert summary["native_admitted"] == 2
-    assert summary["unique_geometries"] == 2
+    assert summary["unique_topology_witnesses"] == 2
     assert summary["unique_six_view_silhouettes"] == 2
     assert summary["visible_source_differences"] == 1
     assert summary["off_oblique_expression"] == 1
@@ -122,11 +122,11 @@ def test_cohort_rejects_fake_pixel_arithmetic(tmp_path):
         census([a,b])
 
 
-def test_geometric_novelty_can_exist_without_silhouette_novelty(tmp_path):
+def test_topology_novelty_can_exist_without_silhouette_novelty(tmp_path):
     first=pair(tmp_path,1,visible=False)
     second=pair(tmp_path,2,visible=False)
     observed=census([first,second])
-    assert observed["unique_geometries"] == 2
+    assert observed["unique_topology_witnesses"] == 2
     assert observed["unique_six_view_silhouettes"] == 1
-    assert observed["candidates"][1]["geometric_duplicate_of"] is None
+    assert observed["candidates"][1]["topology_duplicate_of"] is None
     assert observed["candidates"][1]["visual_duplicate_of"] == "1/member"

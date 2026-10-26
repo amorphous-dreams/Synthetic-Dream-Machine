@@ -265,7 +265,7 @@ def main(argv=None):
             raise ValueError('Every Fire native receipt needs its own six-view review')
         result=write_census(zip(args.receipt,args.review),args.out)
         print(json.dumps({'sha256':result['sha256'],'native_admitted':result['native_admitted'],
-                          'unique_geometries':result['unique_geometries'],
+                          'unique_topology_witnesses':result['unique_topology_witnesses'],
                           'unique_six_view_silhouettes':result['unique_six_view_silhouettes']},indent=2))
         return result
     if args.command=='fire-review':

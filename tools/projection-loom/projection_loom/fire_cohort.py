@@ -76,7 +76,7 @@ def census(pairs):
         raise ValueError("Fire cohort requires 2..16 independently audited probes")
     identity = cameras = baseline = source_volume = None
     proposals = set()
-    seen_shapes, seen_views = {}, {}
+    seen_topologies, seen_views = {}, {}
     rows = []
     for epoch, (receipt_path, review_path) in enumerate(pairs, 1):
         receipt = _read(receipt_path, "native audition")
@@ -168,11 +168,11 @@ def census(pairs):
                 "changed_pixels_all_views": changed,
                 "off_oblique_changed_pixels": sum(
                     item["views"][v]["changed"] for v in VIEWS if v != "oblique"),
-                "geometric_duplicate_of": seen_shapes.get(shape_sha),
+                "topology_duplicate_of": seen_topologies.get(shape_sha),
                 "visual_duplicate_of": seen_views.get(visual_sha),
                 "evidence": "native-valid; view differences are observations, not merit",
             }
-            seen_shapes.setdefault(shape_sha, row_id)
+            seen_topologies.setdefault(shape_sha, row_id)
             seen_views.setdefault(visual_sha, row_id)
             rows.append(row)
         if reviewed != set(admitted):
@@ -185,7 +185,8 @@ def census(pairs):
         "source_union_volume": source_volume,
         "probes": len(pairs),
         "native_admitted": len(rows),
-        "unique_geometries": len(seen_shapes),
+        "unique_topology_witnesses": len(seen_topologies),
+        "distinct_added_volume_values": len({x["added_volume"] for x in rows}),
         "unique_six_view_silhouettes": len(seen_views),
         "visible_source_differences": sum(bool(x["expressed_views"]) for x in rows),
         "off_oblique_expression": sum(x["off_oblique_changed_pixels"] > 0 for x in rows),
