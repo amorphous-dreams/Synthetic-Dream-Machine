@@ -21,7 +21,9 @@
 #
 #   HARBOR_PROJECT  compose project name (default lares-harbor-walk)
 #   HARBOR_PORT     loopback port the vessel publishes (default 5460; 5400-5499)
-#   HARBOR_IMAGE    the product image (default lares-surface:local; built when the tag stands absent)
+#   HARBOR_IMAGE    the product image. Unset, the witness builds lares-surface:local from THIS tree on every run (the layer
+#                   cache makes an unchanged tree cheap), so a stale local tag never meets newer code. Set, the witness
+#                   reads that image as given, and builds it from the tree only when the tag stands absent.
 set -eu
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -29,6 +31,8 @@ ROOT=$(dirname -- "$HERE")
 PROJECT=${HARBOR_PROJECT:-lares-harbor-walk}
 PORT=${HARBOR_PORT:-5460}
 IMAGE=${HARBOR_IMAGE:-lares-surface:local}
+BUILD_FROM_TREE=yes
+[ -z "${HARBOR_IMAGE:-}" ] || BUILD_FROM_TREE=
 FILE="$ROOT/docker-compose.surface.yml"
 FAILURES=0
 SCRATCH_STATE=""
@@ -78,7 +82,7 @@ boot_log() { docker logs --since "$(started_at)" "$(compose ps -q lares)" 2>&1; 
 if [ -n "$(compose ps -a -q 2>/dev/null)" ]; then
   printf 'harbor-walk-witness: project %s already stands; pick another HARBOR_PROJECT\n' "$PROJECT" >&2; exit 2
 fi
-if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+if [ -n "$BUILD_FROM_TREE" ] || ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
   docker build -f "$ROOT/Dockerfile" --target serve -t "$IMAGE" "$ROOT"
 fi
 

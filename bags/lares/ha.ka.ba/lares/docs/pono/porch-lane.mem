@@ -50,16 +50,45 @@ The operator ruled on 2026-10-26 to close open work before the founding bake. Th
 
 <<~/ahu>>
 
+<<~ ahu #/bundle-two>>
+
+!! Bundle two ~ the stream manifest, the witness image, the leak and the readings
+
+!!! Closed
+* ''`G38` The stream manifest stands as one shape in both languages.'' The Python writer (`sensorium.py`) declares `lifecycle` in every stream manifest: it mirrors `deriveLifecycle` at mint, `set_stream_ephemeral` recomputes it when `ephemeral` flips, and a declared `tombstone` stays. The reader (`sensorium.ts`) requires a declared state and refuses an absent one by name; the derivation fallback burned. The builder keeps its mint-time default, which writes the field. Python tests pin the writer and the setter; the node tests pin the refusal beside its control.
+* ''`tools/harbor-walk-witness.sh` builds from the tree'' with `HARBOR_IMAGE` unset, as the household witness does.
+* ''The `held-out-steps` test names its actor.'' The plan test read `git config user.name`, which a scratch `HOME` lacks; it now names `GITHUB_ACTOR` as the runner does, and the file reads green under a scratch `HOME`.
+
+!!! Readings, no change owed
+* ''`H7`.'' No line in `membership-doctrine` calls an introduction's lifetime unruled any longer. `#/the-invite` states that the answer consumes the introduction, that the three dials count and read no clock, and that a posture names a setting and never a date. The strike belongs to the road.
+* ''`G19` carriers read true against the code at this head.'' The five sweeps met no disagreeing line:
+** `docker-compose.mesh.yml` and `docker-compose.browser-ci.yml` both state that the localhost exemption is not TLS and cite each other;
+** `secure-context#/behind-the-terminator` and `harbor#/household-https` agree on `LAR_PUBLIC_URL`, loopback publication and the scheme;
+** the test door's marker (`.lar-test-scratch`) and the suites' temp-dir check (`scratch-custody-setup.ts`) stand as two named things, and no carrier merges them.
+* ''`kahu.mem` and `lamplighters.mem` on what the code holds'' needs a reader who holds the operator's intent for the cadence share. It stays on `G19` for the controller.
+
+<<~/ahu>>
+
+<<~ ahu #/rulings-owed>>
+
+!! Rulings and builds owed, each with its lean
+
+* ''`A9` the browser harness image.'' `docker-compose.browser-ci.yml`'s `qa` runner binds the repository read-only at `/repo` because the walks it runs (`tools/browser-ci-smoke.mjs`, `packages/lararium-web/tests/live-wiki.mjs`) import `playwright` and probe modules from the tree. Options: (1) a `browser-harness` Dockerfile target that bakes `tools/`, the probes and the web tests into a Playwright-based image, rebuilt per run; (2) the `probe-code` volume shape `harness-image-law` already allows for the mesh compose, filled from the product image; (3) keep the bind and name it in `harness-image-law`'s exceptions. Lean: (1), since a walk then proves the bytes of its image, but it moves where authors edit a walk, which is the operator's call.
+* ''`G8` measures.'' No earlier per-verb flush reading or bench stands in the tree, so the re-measure has no instrument to name; it wants a bench written first. Pack-PIN recursion stays unbuilt (`blob-carriage#/proposed-law`). `assertBodyIndexTier` has no production caller because `bodyIndexBagUri` has no production producer (`holdings-witness.ts`): the caller arrives with the cad body-index writer. Lean: leave the three on `G8` with those reasons and build the caller with the writer.
+* ''`G17` tests only.'' The closing review that named the mutation survivors does not stand in the tree or the log, so the survivors cannot be listed. The sealed suite shows no test of the node door's scratch-marker admission and rejection (`main.ts`, `.lar-test-scratch`). Lean: the controller names the review; the marker test is a bundle-three build.
+
+<<~/ahu>>
+
 <<~ ahu #/what-stays>>
 
 !! What stays, and why
 
 * ''`projection-input-leg.test.ts` (road `F8`).'' It guards `wiki:dom-event` and `wiki:dom-input` as unclaimed. It belongs to D2's tw5 projection test surface; it burns when D2 lands.
 * ''The CLI unknown-command list and the keyhive cabal names (road `W20`).'' The unknown-command refusal is generic and tests with a nonsense control; no named cabal guard remains outside the held modules (`ceremony-core.ts`, `keyhive-provider.ts`, `boot-daemon-keyhive.ts`, K15).
-* ''The rest of the pile.'' `G6`, `G8`, `G17`, `G19`, `G20`, `G38`, `H7` and `A9` wait for the next bundles.
+* ''Bundle three.'' `G6` and `G20` come after bundle two, as the controller ordered.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;71LXnHxpjMDRZTPZ6XlP4JVXG5xK_TN6QL8nlJQyrjQ
+<<^ code="&#x0003;">>ni:///sha-256;6vTTX7RZkkXahYRYjPsgZ0von5-sJiamvo5JekHnA1U
 
 <<^ code="&#x0004;" -> to="?">>

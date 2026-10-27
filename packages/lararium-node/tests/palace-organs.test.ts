@@ -110,6 +110,7 @@ describe("setupPalaceOrgans — wire-once / detect-existing idempotency", () => 
       bands: { grain: "membership", computed: "capture" },
       coupling: { children: [] },
       ephemeral: false,
+      lifecycle: "durable",
       created: "2026-01-01T00:00:00.000Z",
     };
     const path = join(memorySensoriumDir(), "manifest.json");
