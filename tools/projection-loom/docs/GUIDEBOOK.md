@@ -7,6 +7,15 @@ and [OBLIQUE_SEED](OBLIQUE_SEED.md). Project canon lives in branch-current
 `bags/`; this document describes measured machinery and design possibilities,
 not promoted Lares law.
 
+## Single OODA-HA helm: CAD-only and source-held recipes
+
+The native CAD-only OODA-HA path accepts no capability recipe and
+therefore has no capability activation switches. Compound breeding
+uses its recipe's activations plus `arch.birth.enable` when present.
+That same set drives source-bound preview, archive and aftermath;
+neither family is permitted a second scheduler. This guard restores
+CAD-only reentry without promoting speculative architecture.
+
 ## Live field bearing · start here
 
 **Working branch:** `feature/green-jello-dinosaur-5--projection-loom`,

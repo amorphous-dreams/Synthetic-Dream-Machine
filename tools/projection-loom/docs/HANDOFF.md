@@ -1,3 +1,31 @@
+## OODA-HA recovery · recipe-free CAD and heritable architecture
+
+Working ancestor `9a3c90a9` includes Architectural Birth feature
+`c5c7a146` and native-refusal follow-up `46721eca`. The dedicated
+[Architectural Birth workflow #40309995290](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40309995290)
+passed its source-held, two-epoch cohort at `46721eca`.
+Repository-wide CI and held-out witnesses passed on `9a3c90a9`, but
+dedicated [CAD/evidence CI #40310741241](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40310741241)
+recorded 14 OODA-HA regressions (371 passing) because the candidate
+loop dereferenced `recipe.steps` during CAD-only runs.
+
+**Repair:** `_activation_switches(recipe)` returns no activations for
+the recipe-free CAD helm, and source-typed capability switches plus
+`arch.birth.enable` when a compound recipe exists. One result feeds
+surrogate preview, activation funnels, archive census, and aftermath.
+This restores the original single-helm contract without changing
+birth selection, original seeds, or any held lineage. The CAD-only
+regression suite must pass at the new exact commit before certification.
+
+**Next OODA-HA:** ✶ inspect the exact-head workflow verdicts; ⏿ sort
+CAD rejects, renderer errors and artistic proposals; ◇ prerecord a
+small matched-seed control-vs-graft study; ▶ run source-held, native
+auditions with six-view/route handbacks; ↺ record viable diversity,
+source fit, costs and rejections without automatic pet-name promotion.
+Multi-image experiments and primary massing replacement remain future
+research.
+
+
 ## Architectural Birth · first source-held OODA-HA evidence
 
 **Verified at code head `46721eca`:** the dedicated

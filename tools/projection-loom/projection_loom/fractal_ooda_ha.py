@@ -545,6 +545,16 @@ def _preferred_choice(options, preferred_emitter, autonomy):
     return champion['proposal_id']
 
 
+def _activation_switches(recipe):
+    """Bounded activations for compound recipes; CAD-only has no capabilities."""
+    if recipe is None:
+        return ()
+    active={step.activation for step in recipe.steps if step.activation}
+    if 'arch.birth.enable' in recipe.bounds:
+        active.add('arch.birth.enable')
+    return tuple(sorted(active))
+
+
 def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                     exact_budget=6, detail_budget=3, seed=41,
                     topology_loci=(), autonomy=.70, ledger_path=None,
@@ -564,6 +574,7 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
     """
     if passes < 1 or candidates < 1 or exact_budget < 1 or detail_budget < 1:
         raise ValueError('All OODA-HA budgets must be positive')
+    active_switches = _activation_switches(recipe)
     if detail_budget > exact_budget:
         raise ValueError('Detail budget cannot exceed exact audit budget')
     if breeding:
@@ -643,9 +654,9 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
         score_state = 'provisional' if project.reference is not None else 'synthetic'
         construction_digest = compositor.construction_digest()
         objectives = ('silhouette','prior','regional','macro','contour') if breeding else ('silhouette','prior')
-        extra_topology = [step.activation for step in recipe.steps if step.activation]
-        if 'arch.birth.enable' in recipe.bounds:
-            extra_topology.extend(('arch.birth.enable','arch.birth.mode'))
+        extra_topology = list(active_switches)
+        if 'arch.birth.mode' in recipe.bounds:
+            extra_topology.append('arch.birth.mode')
         topology_loci = tuple(dict.fromkeys([*topology_loci,*extra_topology]))
     else:
         source_hashes = _source_hashes(project,location_stack)
@@ -722,8 +733,7 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                               archive_generation_count=archive.generation_count,
                               archive_unique_niches=len(archive.elites()),
                               lineage_gallery=journal.data.get('lineage_gallery'),
-                              searchability=archive.census(bounds,activations=tuple(
-                                  step.activation for step in recipe.steps if step.activation)))
+                              searchability=archive.census(bounds,activations=active_switches))
             return result
         journal.poll()
         if journal.data['status'] == 'completed':
@@ -811,9 +821,6 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                 builds = {}
                 visual_index = {}
                 from .capability_stack import digest as genome_digest
-                active_switches=tuple(sorted(
-                    {step.activation for step in recipe.steps if step.activation}
-                    | ({'arch.birth.enable'} if 'arch.birth.enable' in bounds else set())))
                 surrogate=SurrogatePreview(
                     bounds,archive,before_generation=i+1,
                     activation_loci=active_switches

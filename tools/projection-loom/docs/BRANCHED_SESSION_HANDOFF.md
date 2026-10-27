@@ -1,35 +1,26 @@
 # Projection Loom · KAIROS re-entry
 
-**Working branch:** `feature/green-jello-dinosaur-5--projection-loom` ·
+**Work branch:** `feature/green-jello-dinosaur-5--projection-loom`,
 [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84).
-**Boot:** read full `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem`
-at `feature/green-jello-dinosaur-5`; never silently substitute `main`.
+**Lares boot:** `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem`
+from `feature/green-jello-dinosaur-5`. Fetch and read its entire content;
+never substitute `main`.
 
-**Verified state on code head `0b411b22` (2026-10-26 UTC):** Art Sigils
-house grammar integrated by two genuine ancestry-preserving merges.
-Standalone Art Sigils branch retired; PR #82 closed; original commits remain
-reachable. The current source-backed **AI Fire** handles Operator↔AI
-memetic-wikitext and authors bounded typed proposals. It does not execute
-Art Sigils as code, create a second AI service or fork the OODA-HA helm.
+The branch contains the AI Fire, Art Sigils interface, native
+single-seed Necrospire studies, Passage-and-Place, and heritable
+Architectural Birth through the one OODA-HA controller. Birth's
+two-epoch native workflow passed at `46721eca`. Parent `9a3c90a9`
+passed general CI and held-out witnesses, but dedicated CAD CI
+failed 14 recipe-free OODA-HA regressions by accessing `recipe.steps`
+when `recipe=None`.
 
-**All eight dedicated Loom CI runs passed on `0b411b22`** after fix
-`927832b4` corrected CLI pet-name scope, named-seed source-hash test
-semantics, and raw-camera SHA vs typed numeric normalization.
-See [ROADMAP](ROADMAP.md) for each Actions ID.
-**Repo-wide [CI #40263195741](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195741)
-was in progress; [held-out #40263195361](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40263195361)
-queued** at last inspection. A later docs-only head must be checked,
-not presumed green.
+The next correction uses one `_activation_switches(recipe)` helper
+for both paths, restoring native-only CAD behavior while preserving
+birth activation funnels. Its same-head CI must be inspected after push.
 
-**Held boundary:** The real Necrospire source-bound bridge was rejected by
-native CAD. Controlled bridge/bearing fixture successes do not demonstrate a
-valid real-source architectural rule or complete six-view Fire handback.
-Source-bound RGB/alpha is one pet-named seed, not two independent attractors.
-No historical pilot or small two-epoch descendants were imported or promoted.
-
-**Re-entry sequence:** inspect GitHub PR head and actual latest Actions;
-read [ROADMAP](ROADMAP.md), [HANDOFF](HANDOFF.md),
-[FIRE_GRAMMAR](FIRE_GRAMMAR.md), [GUIDEBOOK](GUIDEBOOK.md).
-If current CI holds, pursue a new bounded native-valid relation with
-source-evidence and orthographic handback, then matched-seed architectural
-diversity experiments. Operator retains promotion and pet-name authority.
+**OODA-HA:** Observe same-head checks → orient by real failure type
+→ decide a source-frozen control-vs-graft cohort → act under native
+CAD plus fixed-camera/route evidence → aftermath compare diversity,
+cost, source fidelity and failures. Original image seed and Operator
+promotion remain held. See [ROADMAP](ROADMAP.md) and
+[GUIDEBOOK](GUIDEBOOK.md). No synthetic pilot automatically becomes canon.

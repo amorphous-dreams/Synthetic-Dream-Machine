@@ -277,3 +277,15 @@ def test_auto_nav_can_receive_forced_review_during_advice(tmp_path):
     submit_control(session,'choose',proposal_id=x['awaiting']['options'][0])
     assert run_ooda_ha_epochs(current(),folder,passes=1,candidates=3,
         exact_budget=2,detail_budget=1,autonomy=.75)['status']=='completed'
+
+
+def test_activation_switches_preserve_recipe_free_helm_and_birth_funnel():
+    from types import SimpleNamespace
+    from projection_loom.fractal_ooda_ha import _activation_switches
+    assert _activation_switches(None) == ()
+    step=SimpleNamespace(activation='join.enable')
+    without=SimpleNamespace(steps=(step,),bounds={'join.enable':(0.,1.)})
+    with_birth=SimpleNamespace(steps=(step,),bounds={'join.enable':(0.,1.),
+                                                    'arch.birth.enable':(0.,1.)})
+    assert _activation_switches(without)==('join.enable',)
+    assert _activation_switches(with_birth)==('arch.birth.enable','join.enable')
