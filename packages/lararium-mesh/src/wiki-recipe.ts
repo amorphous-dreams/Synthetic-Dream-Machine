@@ -121,6 +121,7 @@ export interface SlotDocPorts {
  * cap-stack falls to the floor, never reds. A seat that lands later resolves the face doc from then
  * on; the floor stays what it was, a private device's own.
  */
+// The working kind derives through resolveFaceWorkingSlot from the face's address secret.
 export async function resolveSlotDoc(ports: SlotDocPorts): Promise<{ url: string; reach: SlotReach }> {
   const seated = await ports.seated().catch(() => false);
   if (seated) return { url: await ports.faceDoc(), reach: "face" };

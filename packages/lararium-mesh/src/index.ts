@@ -453,6 +453,7 @@ export * from "./handle-announce.js";
 export * from "./who-face.js";
 export * from "./who-face-cap.js";
 export * from "./deterministic-doc.js";
+export * from "./face-working-address.js";
 export { pinnedDoc, PINNED_ACTOR } from "./pinned-doc.js";
 export * from "./cabal-realm-clock.js";
 export * from "./realm-bag.js";
