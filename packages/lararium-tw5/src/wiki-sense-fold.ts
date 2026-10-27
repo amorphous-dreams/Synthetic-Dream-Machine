@@ -132,6 +132,8 @@ export interface CorpusFold {
   readonly docs: readonly FoldedDoc[];
   /** corpus form-mine: shingle → how many docs carry it (the recurring-grammar census). */
   readonly shingleDocFreq: ReadonlyMap<string, number>;
+  /** A warm fold carries the form values its changed-shingle owners re-derived. */
+  readonly formByTitle?: ReadonlyMap<string, number>;
 }
 
 /**
@@ -149,6 +151,107 @@ export function foldCorpus(
     for (const s of d.stalk.shingleSet) shingleDocFreq.set(s, (shingleDocFreq.get(s) ?? 0) + 1);
   }
   return { docs: folded, shingleDocFreq };
+}
+
+/** Keep the document-frequency census and its inverse by title across reads. */
+export class IncrementalCorpusFold {
+  private readonly byTitle = new Map<string, FoldedDoc>();
+  private readonly owners = new Map<string, Set<string>>();
+  private readonly freq = new Map<string, number>();
+  private readonly form = new Map<string, number>();
+  private readonly byFrequency = new Map<number, Set<string>>();
+
+  /** A changed corpus identity discards every title and rebuilds on its next read. */
+  reset(): void {
+    this.byTitle.clear();
+    this.owners.clear();
+    this.freq.clear();
+    this.form.clear();
+    this.byFrequency.clear();
+  }
+
+  private setFrequency(shingle: string, next: number): void {
+    const old = this.freq.get(shingle) ?? 0;
+    if (old === next) return;
+    this.byFrequency.get(old)?.delete(shingle);
+    if (next === 0) this.freq.delete(shingle);
+    else this.freq.set(shingle, next);
+    if (next > 0) {
+      let bucket = this.byFrequency.get(next);
+      if (!bucket) { bucket = new Set(); this.byFrequency.set(next, bucket); }
+      bucket.add(shingle);
+    }
+  }
+
+  /** A full first read seeds the index; later reads touch only changed stalks and threshold owners. */
+  update(docs: readonly WikiSenseDoc[], stalkOf: (doc: WikiSenseDoc) => DocStalk = (doc) => deriveDocStalk(senseBodyOf(doc.fields))): CorpusFold {
+    const oldStop = Math.max(2, this.byTitle.size / 2);
+    const incoming = new Set(docs.map((doc) => doc.title));
+    const moved = new Set<string>();
+    const changedShingles = new Set<string>();
+    const remove = (title: string): void => {
+      const old = this.byTitle.get(title);
+      if (!old) return;
+      for (const shingle of old.stalk.shingleSet) {
+        this.owners.get(shingle)?.delete(title);
+        this.setFrequency(shingle, (this.freq.get(shingle) ?? 0) - 1);
+        changedShingles.add(shingle);
+      }
+      this.byTitle.delete(title);
+      this.form.delete(title);
+      moved.add(title);
+    };
+    for (const title of this.byTitle.keys()) if (!incoming.has(title)) remove(title);
+    for (const doc of docs) {
+      const body = senseBodyOf(doc.fields);
+      const old = this.byTitle.get(doc.title);
+      if (old?.body === body) {
+        this.byTitle.set(doc.title, { ...doc, body, stalk: old.stalk });
+        continue;
+      }
+      const stalk = stalkOf(doc);
+      for (const shingle of old?.stalk.shingleSet ?? []) {
+        if (stalk.shingleSet.has(shingle)) continue;
+        this.owners.get(shingle)?.delete(doc.title);
+        this.setFrequency(shingle, (this.freq.get(shingle) ?? 0) - 1);
+        changedShingles.add(shingle);
+      }
+      this.byTitle.set(doc.title, { ...doc, body, stalk });
+      moved.add(doc.title);
+      for (const shingle of stalk.shingleSet) {
+        if (old?.stalk.shingleSet.has(shingle)) continue;
+        let owners = this.owners.get(shingle);
+        if (!owners) { owners = new Set(); this.owners.set(shingle, owners); }
+        owners.add(doc.title);
+        this.setFrequency(shingle, (this.freq.get(shingle) ?? 0) + 1);
+        changedShingles.add(shingle);
+      }
+    }
+    const stop = Math.max(2, this.byTitle.size / 2);
+    // A title's form changes only when its own set moves, a shingle's df moves, or N moves
+    // stopAbove across that shingle's df. The frequency buckets locate the last case.
+    if (stop !== oldStop) {
+      const low = Math.floor(Math.min(oldStop, stop)) + 1;
+      const high = Math.floor(Math.max(oldStop, stop));
+      for (let df = low; df <= high; df++) for (const shingle of this.byFrequency.get(df) ?? []) changedShingles.add(shingle);
+    }
+    for (const shingle of changedShingles) {
+      const owners = this.owners.get(shingle);
+      if (owners?.size === 0) this.owners.delete(shingle);
+      for (const title of owners ?? []) moved.add(title);
+    }
+    for (const title of moved) {
+      const doc = this.byTitle.get(title);
+      if (!doc) continue;
+      let recurring = 0;
+      for (const shingle of doc.stalk.shingleSet) {
+        const df = this.freq.get(shingle) ?? 0;
+        if (df >= 2 && df <= stop) { recurring = 1; break; }
+      }
+      this.form.set(title, recurring);
+    }
+    return { docs: docs.map((doc) => this.byTitle.get(doc.title)!), shingleDocFreq: this.freq, formByTitle: this.form };
+  }
 }
 
 // ── the sensed planes over a fold (structure ⊥ form; the engineered title-universe stalk) ───────────
@@ -173,6 +276,7 @@ export function corpusPlanes(fold: CorpusFold): CorpusPlanes {
   const stopAbove = Math.max(2, fold.docs.length / 2);
   for (const d of fold.docs) {
     structureVal.set(d.title, d.stalk.structure);
+    if (fold.formByTitle) { formVal.set(d.title, fold.formByTitle.get(d.title) ?? 0); continue; }
     let recurring = 0;
     for (const s of d.stalk.shingleSet) {
       const df = fold.shingleDocFreq.get(s) ?? 0;
