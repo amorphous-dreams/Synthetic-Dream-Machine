@@ -1,8 +1,12 @@
 # Projection Loom · AI Fire / Art Sigils Roadmap
 
-**Evidence checkpoint:** `46721eca` (not a globally current release state). **Working branch:** `feature/green-jello-dinosaur-5--projection-loom`, PR [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84).
+**Historical evidence checkpoint:** `46721eca` (not a globally current release state). **Working branch:** `feature/green-jello-dinosaur-5--projection-loom`, PR [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84).
 **Base / Lares boot ref:** `feature/green-jello-dinosaur-5`.
 **Source of truth:** real Git ancestry, source-bound native witnesses and CI jobs. This document marks provisional completion and blockers, not house law or Operator promotion. Refresh run status on re-entry.
+
+## Source-head closing checkpoint · historical records preserved
+
+On source-head `8a073aac` (three-parent historical integration), dedicated CAD [#40429724371](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429724371), evergreen [#40429719118](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719118), and alpha coevolution [#40429719057](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719057) passed. Repo-wide [#40429719100](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719100) and held-out [#40429719007](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719007) were queued; parallel CAD [#40429719027](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719027) was running at inspection. Re-query these before deciding whether the full head passed. `_activation_switches(recipe)` now shields CAD-only OODA-HA while preserving Architectural Birth activation funnels. Both historical experimental merge parents remain attributable but inert; no pet-name or lineage promotion follows from ancestry alone. For a concise new-session re-entry, read [BRANCHED_SESSION_HANDOFF](BRANCHED_SESSION_HANDOFF.md).
 
 ## Historical experiments consolidated by ancestry
 
