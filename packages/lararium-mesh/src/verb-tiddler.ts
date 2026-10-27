@@ -313,14 +313,14 @@ export function outcomeBytesOf(fields: Readonly<Record<string, unknown>>): numbe
  * (digest-on-outcome: stamped onto the outcome tiddler so a later reader can re-check it
  * without re-walking the fact). Distinct from `taskContentId` (the content-addressed task
  * surface, keyed by {subject,command,args,nonce}) — this digest keys the CURRENT running
- * verb/summons/outcome path's request identity, {verb,args,requestedBy,effectKey}.
+ * verb/summons/outcome path's request identity, {verb,args,face,effectKey}.
  */
 export async function verbInputDigest(
-  parts: { verb: string; args: Readonly<Record<string, unknown>>; requestedBy: string; effectKey?: string },
+  parts: { verb: string; args: Readonly<Record<string, unknown>>; face?: string | undefined; effectKey?: string },
   provider: DigestProvider = defaultCryptoProvider,
 ): Promise<string> {
   const canonical = {
-    verb: parts.verb, args: parts.args, requestedBy: parts.requestedBy,
+    verb: parts.verb, args: parts.args, face: parts.face ?? "",
     effectKey: parts.effectKey ?? "",
   };
   return formatDigest("sha256", await sha256Hex(canonicalJsonBytes(canonical), provider));
@@ -387,6 +387,7 @@ export interface Verb {
   readonly batchMode:   BatchMode;
   readonly status:      VerbStatus;
   readonly requestedBy: string;
+  readonly face?:      string;
   readonly requestedAt: string;
   /** Source device instance URI — Verse `fromUri` (papalohe edge origin). */
   readonly fromUri?:    string;
@@ -518,6 +519,7 @@ export function buildVerb(opts: {
   verb:        string;
   args:        Record<string, unknown>;
   requestedBy: string;
+  face?:       string;
   targets?:    string[];
   batchMode?:  BatchMode;
   requestId?:  string;
@@ -539,6 +541,7 @@ export function buildVerb(opts: {
     status:          "pending",
     "requested-by":  opts.requestedBy,
     "requested-at":  new Date().toISOString(),
+    ...(opts.face       !== undefined && { face: opts.face }),
     ...(opts.fromUri    !== undefined && { "from-uri":   opts.fromUri }),
     ...(opts.listenable !== undefined && { listenable:   opts.listenable }),
     ...(opts.aud        !== undefined && { aud:          opts.aud }),
@@ -621,6 +624,7 @@ export function parseVerb(fields: Record<string, unknown>): Verb | null {
   const listenable = typeof fields["listenable"] === "string" ? fields["listenable"] : undefined;
   const aud        = typeof fields["aud"]        === "string" ? fields["aud"]        : undefined;
   const effectKey  = typeof fields["effect-key"] === "string" ? fields["effect-key"] : undefined;
+  const face       = typeof fields["face"] === "string" ? fields["face"] : undefined;
 
   return {
     requestId, title, action: verb, args, targets, batchMode, status, requestedBy, requestedAt,
@@ -628,6 +632,7 @@ export function parseVerb(fields: Record<string, unknown>): Verb | null {
     ...(listenable !== undefined && { listenable }),
     ...(aud        !== undefined && { aud }),
     ...(effectKey  !== undefined && { effectKey }),
+    ...(face       !== undefined && { face }),
   };
 }
 

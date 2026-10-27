@@ -193,6 +193,8 @@ export interface VesselPlaceVerbRequest {
   verb:         string;
   args:         Record<string, unknown>;
   requestedBy?: string;
+  /** The verified face's proof subject; a session seat supplies `requestedBy` from its verified presenter. */
+  face?:        string;
   requestId?:   string;
   targets?:     readonly string[];
   batchMode?:   string;
@@ -712,6 +714,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         ...(o.fromUri         ? { fromUri: o.fromUri } : {}),
         ...(o.listenable      ? { listenable: o.listenable } : {}),
         ...(o.effectKey       ? { effectKey: o.effectKey } : {}),
+        ...(o.face            ? { face: o.face } : {}),
       }));
     },
     placeTelemetry: (turnText: string, sourceFile: string, frontier?: readonly string[], turnKey?: string, chunkIndex?: number) => {

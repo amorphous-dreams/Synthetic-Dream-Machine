@@ -244,6 +244,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
             ...(msg.fromUri   ? { fromUri:    msg.fromUri               } : {}),
             ...(msg.listenable? { listenable: msg.listenable            } : {}),
             ...(msg.effectKey ? { effectKey:  msg.effectKey             } : {}),
+            ...(msg.face      ? { face:       msg.face                  } : {}),
           });
           localAsks.add(placed);
           if (localAsks.size > 4096) localAsks.delete(localAsks.values().next().value as string);

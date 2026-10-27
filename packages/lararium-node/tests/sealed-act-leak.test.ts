@@ -122,7 +122,7 @@ async function stand(door: (parsed: unknown, sock: Socket) => boolean, rest: Pla
 
 /** The digest a receipt fact keeps for a verb's arguments (the worker's own formula). */
 const digestOf = (verb: string, args: Record<string, unknown>): Promise<string> =>
-  verbInputDigest({ verb, args, requestedBy: "did:key:leak-test" });
+  verbInputDigest({ verb, args });
 
 const unlockedHolder = { isUnlocked: () => true, openedSlot: () => "slot-1", attemptsLeft: () => 3 } as unknown as CustodyHolder;
 const drops: Array<() => Promise<void>> = [];

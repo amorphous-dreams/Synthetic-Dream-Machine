@@ -4,14 +4,15 @@
  * The daemon already holds the WARM daemon replica and the worker VerbDispatcher.
  * A co-located `lares` CLI never needed its own leaf replica + sync-on-connect (the
  * ~3s/command tax) — it only needs to hand the daemon a capability-bearing
- * invocation and await the receipt. This Unix-domain socket carries exactly that:
- * the CLI writes one invocation line, the daemon writes the summons into its warm
+ * invocation and await the receipt. This Unix-domain socket carries one-shot maintenance
+ * frames and bound session frames. The daemon writes an invocation into its warm
  * daemon working doc (the SAME tiddler the worker reacts to from a WS peer), awaits the
  * durable bags/daemon/outcomes/<id> outcome, and returns it over the socket. Receipt facts land
  * in the daemon wiki's working document.
  *
  *   transport  = this socket (kernel-local, authority-agnostic)
- *   authority  = the invocation's requestedBy → the worker's verify-then-delegate
+ *   authority  = the session's verified face and worker-held profile on a bound socket;
+ *                a one-shot maintenance invocation follows the worker's verify-then-delegate gate
  *   record     = the CRDT outcome tiddler (unchanged — idempotent, re-queryable)
  *
  * Content routing (the co-located bypass): the CLI and the daemon worker share ONE
@@ -36,6 +37,7 @@
  */
 
 import { type Socket } from "node:net";
+import { randomUUID } from "node:crypto";
 import { PARK_LIMIT } from "./owned-store.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
@@ -43,8 +45,10 @@ import {
   NoWorkingLayerRefusal, newRequestId, OUTCOME_URI_PREFIX, type LarDoc,
   wikiSlotUri,
   RECEIPT_FACT_URI_PREFIX, RECEIPT_RING_DEFAULT, RECEIPT_RING_BYTES_DEFAULT, buildReceiptFact, parseReceiptFact, outcomeBytesOf,
-  verbInputDigest, type ReceiptFact, type ReceiptFactDraft,
+  verbInputDigest, SessionTable, sessionBinding, type SessionBinding,
+  type ReceiptFact, type ReceiptFactDraft,
 } from "@lararium/mesh";
+import type { CapabilityProfile, Hand, SessionFace } from "@lararium/mesh/session-contract";
 // The adaptive-timeout SERVO (fail on a GRADIENT, never a cliff): a per-verb wait that GROWS with the
 // observed durations and clamps FLOOR..CEIL. The machine-code work stays Python; this is the
 // coordinator's PATIENCE, servo'd so a long-but-honest verb (a big-session capture, a refresh queued
@@ -53,6 +57,7 @@ import { adaptiveTimeoutMs, recordMineDuration, verbBudgetMs } from "@lararium/m
 import type { StoreClaim } from "./owned-store.js";
 
 export interface UdsChannelOptions {
+  readonly sessions?: UdsSessionDoor;
   /** The daemon's warm daemon doc handle (result.daemon.daemonHandle). */
   readonly daemonHandle: DocHandle<LarDoc>;
   /** The daemon composite with its attached working layer established as default writable. */
@@ -62,9 +67,10 @@ export interface UdsChannelOptions {
    * (verb + `args` CONTENT) straight to the daemon worker over the MessageChannel,
    * so the carriers reach the dispatcher WITHOUT riding the daemon Automerge doc.
    * The worker still writes the durable outcome to `bags/daemon/outcomes/<id>`, which
-   * this channel awaits via `daemonHandle`.
+   * this channel awaits via `daemonHandle`. For a session call, the seat supplies
+   * `requestedBy` from the verified presenter and `face` from the verified proof subject.
    */
-  readonly placeVerb: (o: { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; effectKey?: string }) => void;
+  readonly placeVerb: (o: { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; face?: string; effectKey?: string }) => void;
   /** The vessel's claim on its store — the rendezvous socket (`/tmp/lares-<uid>/<digest>.sock`) both sides derive. */
   readonly claim: StoreClaim & { readonly holder: "vessel" };
   /**
@@ -94,6 +100,17 @@ export interface UdsChannelOptions {
   readonly onLog?: (line: string) => void;
 }
 
+/** The face supplier verifies the hint at each open and answers the worker's presenter. */
+export interface UdsSessionSupply {
+  readonly face: SessionFace;
+  readonly profile: CapabilityProfile;
+  readonly presenter: string;
+  readonly caps?: readonly string[];
+}
+export interface UdsSessionDoor {
+  open(ask: { faceRef: string; hand: Hand }): Promise<{ ok: true; supply: UdsSessionSupply } | { ok: false; refusal: string }>;
+}
+
 interface Invocation {
   verb: string;
   args?: Record<string, unknown>;
@@ -108,9 +125,10 @@ interface Invocation {
    * commit 1/2) → the dispatcher's own effect index, which answers a repeat attempt under a
    * NEW requestId with the prior `done` outcome rather than running the handler twice. This
    * channel never reads it for arbitration (that stays keyed on `requestId` + the plain
-   * verb/args/requestedBy digest) — only the worker-side effect index consults it.
+   * verb/args/face/effectKey digest) — only the worker-side effect index consults it.
    */
   effectKey?: string;
+  face?: string;
 }
 
 /** A read-only receipt query — `{op:"receipt", requestId}`. Never reaches `placeVerb`; see H1. */
@@ -364,7 +382,7 @@ export class FactLedger {
 
   /**
    * Arbitrate ONE winner per request id, DURABLY. `inputDigest` names the invocation's own content
-   * (verb + args + requestedBy + effectKey, the worker's own `verbInputDigest` formula) — a reused
+   * (verb + args + face + effectKey, the worker's own `verbInputDigest` formula) — a reused
    * id whose digest DIFFERS from the fact already on record refuses by name
    * (`request-id-reused-with-changed-input`), never silently re-runs under borrowed trust in the id
    * alone. `abandoned` refuses on STATE ALONE, whatever the digest says — {@link cancel} is the ONE
@@ -524,9 +542,9 @@ export class FactLedger {
  *  The worker's own formula ({@link verbInputDigest}, mesh), so a request-id reuse compares against
  *  EXACTLY the digest the dispatcher itself would stamp onto the outcome — never a second, locally
  *  invented hash that could drift from it. */
-function inputDigestOf(inv: Pick<Invocation, "verb" | "args" | "requestedBy" | "effectKey">): Promise<string> {
+function inputDigestOf(inv: Pick<Invocation, "verb" | "args" | "face" | "effectKey">): Promise<string> {
   return verbInputDigest({
-    verb: inv.verb, args: inv.args ?? {}, requestedBy: inv.requestedBy,
+    verb: inv.verb, args: inv.args ?? {}, face: inv.face,
     ...(inv.effectKey !== undefined && { effectKey: inv.effectKey }),
   });
 }
@@ -536,6 +554,7 @@ export interface UdsChannel { close: () => void; }
 /** One composition's seat on the verb socket: the ledger, the outcome reads and the dispatch bound to its daemon. */
 export interface UdsSeat {
   readonly handle: (parsed: unknown, sock: Socket) => void;
+  readonly handleSessionFrame?: (parsed: unknown, sock: Socket) => void;
   /**
    * Leave the socket. Resolves once every frame this seat was handed has its answer written (or its caller gone),
    * so the composition beneath it tears down under no request still reading its ledger or awaiting its worker.
@@ -585,20 +604,31 @@ export function serveUdsFront(a: {
       refusal(oldest.sock);
     }
   };
+  const refuseSession = (sock: Socket): void => {
+    try { sock.end(JSON.stringify({ kind: "session:refused", refusal: "recomposing" }) + "\n"); } catch { /* gone */ }
+  };
   a.claim.serve((sock: Socket) => {
     let buf = "";
     let read = true;
+    let sessionMode = false;
     sock.setEncoding("utf8");
     sock.on("data", (chunk: string) => {
       if (!read) return;
       buf += chunk;
-      const nl = buf.indexOf("\n");
-      if (nl === -1) return;
-      read = false;
-      let parsed: unknown;
-      try { parsed = JSON.parse(buf.slice(0, nl)); }
-      catch { try { sock.end(JSON.stringify({ status: "error", errorMessage: "bad invocation json" }) + "\n"); } catch { /* gone */ } return; }
-      hand(parsed, sock);
+      let nl: number;
+      while (read && (nl = buf.indexOf("\n")) !== -1) {
+        const line = buf.slice(0, nl);
+        buf = buf.slice(nl + 1);
+        let parsed: unknown;
+        try { parsed = JSON.parse(line); }
+        catch { try { sock.end(JSON.stringify({ status: "error", errorMessage: "bad invocation json" }) + "\n"); } catch { /* gone */ } read = false; return; }
+        if (!sessionMode) {
+          sessionMode = !!parsed && typeof parsed === "object" && (parsed as { op?: unknown }).op === "session:open";
+          if (!sessionMode) read = false;
+          hand(parsed, sock);
+        } else if (seat?.handleSessionFrame) seat.handleSessionFrame(parsed, sock);
+        else { read = false; refuseSession(sock); }
+      }
     });
   });
   a.onLog?.(`uds verb-channel on ${a.claim.socketPath} (perms 0600)`);
@@ -725,6 +755,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       args:        inv.args ?? {},
       requestedBy: inv.requestedBy,
       requestId,
+      ...(inv.face !== undefined && { face: inv.face }),
       ...(inv.effectKey !== undefined && { effectKey: inv.effectKey }),
     });
     return awaitOutcome(inv.verb, requestId, inv.timeoutMs);
@@ -785,21 +816,115 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   // `arbitrating` counts the frames still inside their own digest / ledger turn, so a caller that hangs up early
   // never lets the seat read as drained while its abandonment still writes.
   const inFlight = new Set<Socket>();
+  const table = new SessionTable(randomUUID());
+  let closing = false;
+  const sessionSockets = new Map<Socket, { binding: SessionBinding; sessionId?: string; supply?: UdsSessionSupply }>();
+  const sessionTurns = new Map<Socket, Promise<void>>();
+  const sessionReply = (sock: Socket, answer: Record<string, unknown>): void => {
+    try { sock.write(JSON.stringify(answer) + "\n"); } catch { /* gone */ }
+  };
+  const sessionRefuse = (sock: Socket, refusal: string, requestId?: string): void =>
+    sessionReply(sock, { kind: "session:refused", ...(requestId !== undefined && { requestId }), refusal });
+  const sessionState = (sock: Socket) => {
+    let state = sessionSockets.get(sock);
+    if (!state) {
+      state = { binding: sessionBinding("socket") };
+      sessionSockets.set(sock, state);
+      sock.once("close", () => {
+        if (state?.sessionId) table.close(state.sessionId);
+        sessionSockets.delete(sock);
+        sessionTurns.delete(sock);
+      });
+    }
+    return state;
+  };
+  const processSession = async (parsed: unknown, sock: Socket): Promise<void> => {
+    const frame = parsed && typeof parsed === "object" ? parsed as Record<string, unknown> : {};
+    const state = sessionState(sock);
+    const requestId = typeof frame["requestId"] === "string" ? frame["requestId"] : undefined;
+    if (frame["op"] === "session:open") {
+      if (state.sessionId) return sessionRefuse(sock, "binding-already-bound", requestId);
+      if (typeof frame["faceRef"] !== "string" || !frame["faceRef"] ||
+          !["tab", "cli", "watcher", "seat"].includes(String(frame["hand"])) || !requestId) {
+        return sessionRefuse(sock, "malformed-message", requestId);
+      }
+      if (!opts.sessions) return sessionRefuse(sock, "no-session-door", requestId);
+      const supplied = await opts.sessions.open({ faceRef: frame["faceRef"], hand: frame["hand"] as Hand });
+      if (closing || sock.destroyed || sock.writableEnded) return;
+      if (!supplied.ok) return sessionRefuse(sock, supplied.refusal, requestId);
+      const opened = table.open(state.binding, supplied.supply.face, supplied.supply.profile, supplied.supply.caps ?? []);
+      if (!opened.ok) return sessionRefuse(sock, opened.refusal, requestId);
+      state.sessionId = opened.session.sessionId;
+      state.supply = supplied.supply;
+      sessionReply(sock, { kind: "session:opened", requestId, ownerEpoch: opened.session.ownerEpoch,
+        sessionId: opened.session.sessionId, generation: opened.session.generation,
+        faceRef: opened.session.face.proofSubject, caps: opened.session.caps });
+      return;
+    }
+    if (frame["op"] !== "session:call" && frame["op"] !== "session:close") return sessionRefuse(sock, "unknown-op", requestId);
+    const checked = table.checkBound(frame, state.binding);
+    if (!checked.ok) return sessionRefuse(sock, checked.refusal, requestId);
+    if (frame["op"] === "session:close") {
+      table.close(checked.session.sessionId);
+      delete state.sessionId;
+      sessionReply(sock, { kind: "session:closed" });
+      sock.end();
+      return;
+    }
+    if (!requestId || typeof frame["verb"] !== "string" || !frame["verb"] ||
+        !frame["args"] || typeof frame["args"] !== "object" || Array.isArray(frame["args"]) ||
+        !state.supply || typeof state.supply.presenter !== "string" || !state.supply.presenter) {
+      return sessionRefuse(sock, "malformed-message", requestId);
+    }
+    await new Promise<void>((resolve) => {
+      const closed = () => resolve();
+      sock.once("close", closed);
+      handle({ verb: frame["verb"], args: frame["args"], requestId,
+        requestedBy: state.supply!.presenter, face: checked.session.face.proofSubject,
+        ...(typeof frame["effectKey"] === "string" && { effectKey: frame["effectKey"] }),
+        ...(typeof frame["timeoutMs"] === "number" && { timeoutMs: frame["timeoutMs"] }) }, sock, requestId,
+        () => { sock.off("close", closed); resolve(); });
+    });
+  };
+  const queueSession = (parsed: unknown, sock: Socket): void => {
+    sessionState(sock);
+    if (closing) { sock.end(); return; }
+    const prior = sessionTurns.get(sock) ?? Promise.resolve();
+    const next = prior.then(() => processSession(parsed, sock));
+    sessionTurns.set(sock, next.catch((error) => {
+      sessionRefuse(sock, error instanceof Error ? error.message : String(error));
+    }));
+  };
   let arbitrating = 0;
   let drained: (() => void) | null = null;
   const idle = (): boolean => inFlight.size === 0 && arbitrating === 0;
   const settleOne = (sock: Socket): void => {
     if (inFlight.delete(sock) && idle()) drained?.();
   };
-  const handle = (parsed: unknown, sock: Socket): void => {
-    inFlight.add(sock);
-    sock.once("finish", () => settleOne(sock));   // this side wrote its answer
-    sock.once("close",  () => settleOne(sock));   // or the caller went away
-    if (sock.destroyed || sock.writableFinished) settleOne(sock);
-    const fail = (msg: string, reason?: string) => {
-      try { sock.end(JSON.stringify({ status: "error", errorMessage: msg, ...(reason !== undefined && { refusal: { reason } }) }) + "\n"); } catch { /* gone */ }
+  const handle = (parsed: unknown, sock: Socket, sessionRequestId?: string, onSessionReply?: () => void): void => {
+    const respond = (answer: Record<string, unknown>): void => {
+      const payload = sessionRequestId === undefined ? answer : { kind: "session:result", ...answer, requestId: sessionRequestId };
+      try {
+        const line = JSON.stringify(payload) + "\n";
+        if (sessionRequestId === undefined) sock.end(line);
+        else sock.write(line);
+      } catch { /* gone */ }
+      onSessionReply?.();
     };
-    const answerUnknown = (requestId: string) => { try { sock.end(JSON.stringify({ status: "unknown", requestId }) + "\n"); } catch { /* gone */ } };
+    if (!inFlight.has(sock)) {
+      inFlight.add(sock);
+      sock.once("finish", () => settleOne(sock));   // this side wrote its answer
+      sock.once("close",  () => settleOne(sock));   // or the caller went away
+      if (sock.destroyed || sock.writableFinished) settleOne(sock);
+    }
+    const fail = (msg: string, reason?: string) => {
+      respond({ status: "error", errorMessage: msg, ...(reason !== undefined && { refusal: { reason } }) });
+    };
+    const answerUnknown = (requestId: string) => { respond({ status: "unknown", requestId }); };
+      if (parsed && typeof parsed === "object" && (parsed as { op?: unknown }).op === "session:open") {
+        queueSession(parsed, sock);
+        return;
+      }
       // READ-ONLY QUERIES NEVER REACH `placeVerb` (H1 fix item 3).
       // BOTH DOORS BELOW COUNT AS WORK THE SEAT WAITS OUT: a caller that hangs up while its cancel still writes, or
       // while its read still holds the ledger, never lets the seat read as drained under them.
@@ -809,7 +934,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       };
       if (isReceiptQuery(parsed)) {
         tended(answerReceipt(parsed.requestId).then(
-          (answer) => { try { sock.end(JSON.stringify(answer) + "\n"); } catch { /* gone */ } },
+          (answer) => { respond(answer as unknown as Record<string, unknown>); },
           (err)    => fail(err instanceof Error ? err.message : String(err)),
         ));
         return;
@@ -825,13 +950,15 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // turn. A cancel that met no fact reads `abandoned`; one that met a commit reads what the vessel holds for
         // that act, which runs on.
         tended(ledger.cancel(parsed.requestId).then(() => answerReceipt(parsed.requestId)).then(
-          (answer) => { try { sock.end(JSON.stringify(answer) + "\n"); } catch { /* gone */ } },
+          (answer) => { respond(answer as unknown as Record<string, unknown>); },
           (err) => fail(err instanceof Error ? err.message : String(err)),
         ));
         return;
       }
 
-      const inv = parsed as Invocation;
+      const oneShot = { ...(parsed as Invocation) };
+      delete oneShot.face;
+      const inv: Invocation = sessionRequestId === undefined ? oneShot : parsed as Invocation;
       if (!inv.verb || !inv.requestedBy) return fail("verb + requestedBy required");
       const requestId = inv.requestId ?? newRequestId();
       // H1′: DEFER DISPATCH, NOT SYNCHRONOUSLY. A vessel frozen between the caller's write and this
@@ -873,7 +1000,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           // dispatch attempt reaching a fact a PRIOR process already drove to `done`/`error` (H1R,
           // across a restart) — answer the existing outcome, never a second `placeVerb`.
           awaitOutcome(inv.verb, requestId, inv.timeoutMs).then(
-            (outcome) => { try { sock.end(JSON.stringify(outcome) + "\n"); } catch { /* gone */ } },
+            (outcome) => { respond(outcome); },
             (err)     => { if (err instanceof VesselWaitExpired) return answerUnknown(requestId); fail(err instanceof Error ? err.message : String(err)); },
           );
           return;
@@ -891,7 +1018,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           return fail(why, verdict.reason);
         }
         runVerb(inv, requestId).then(
-          (outcome) => { try { sock.end(JSON.stringify(outcome) + "\n"); } catch { /* gone */ } },
+          (outcome) => { respond(outcome); },
           (err) => {
             if (err instanceof VesselWaitExpired) return answerUnknown(requestId); // M2: never told as {status:"error"}
             fail(err instanceof Error ? err.message : String(err));
@@ -902,7 +1029,13 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
 
   return {
     handle,
+    handleSessionFrame: queueSession,
     close: async () => {
+      closing = true;
+      for (const [sock, state] of sessionSockets) {
+        if (state.sessionId) table.close(state.sessionId);
+        sock.end();
+      }
       if (!idle()) await new Promise<void>((resolve) => { drained = resolve; });
       unsubOutcomes();
     },

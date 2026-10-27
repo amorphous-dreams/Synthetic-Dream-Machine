@@ -7,7 +7,8 @@
  *
  * The invariants:
  *   · THE ID ROUTES; THE BINDING AUTHORIZES. The owner mints a session's id and binds it to one port or one
- *     socket. A copied id presented on another binding opens nothing. What a session may DO rests with the
+ *     socket with owner epoch, session id, generation, verified face reference and fixed hand profile.
+ *     A copied id presented on another binding opens nothing. What a session may DO rests with the
  *     facets the sovereign worker holds for it; the table carries their labels alone.
  *   · THE OWNER'S EPOCH FENCES A RESTARTED OWNER. Every message after the open names the epoch of the owner
  *     that minted its session. The epoch stands opaque: the owner's own boot epoch, never a clock reading.
@@ -37,7 +38,7 @@ export type SessionState = "opening" | "live" | "switching" | "revoked" | "closi
 
 /** Every named refusal the table answers. A refusal never mutates the table. */
 export const SESSION_REFUSALS = [
-  "malformed-message", "stale-owner-epoch", "unknown-session", "unbound-session", "stale-generation",
+  "malformed-message", "stale-owner-epoch", "unknown-session", "unbound-session", "stale-generation", "wrong-face",
   "session-not-live", "session-not-switching", "binding-already-bound", "face-malformed", "profile-unknown",
 ] as const;
 export type SessionRefusal = (typeof SESSION_REFUSALS)[number];
@@ -180,6 +181,8 @@ export interface SessionEnvelope {
   readonly sessionId:     string;
   readonly generation:    number;
 }
+/** A socket or port presents the verified face's proof subject with every bound message. */
+export type SessionBoundEnvelope = SessionEnvelope & { readonly faceRef: string };
 /** A request, and the reply that returns to the binding that asked, name the request. */
 export interface SessionRequestEnvelope extends SessionEnvelope { readonly requestId: string }
 /** Surface traffic names its surface. */
@@ -214,6 +217,14 @@ export type SessionMessage =
 export function validateSessionEnvelope(v: unknown): SessionEnvelope | null {
   try { return readSessionEnvelope(v); } catch { return null; }
 }
+export function validateSessionBoundEnvelope(v: unknown): SessionBoundEnvelope | null {
+  try {
+    const envelope = readSessionEnvelope(v);
+    if (!envelope || !isRecord(v)) return null;
+    const faceRef = v["faceRef"];
+    return nonEmptyString(faceRef) ? Object.freeze({ ...envelope, faceRef }) : null;
+  } catch { return null; }
+}
 function readSessionEnvelope(v: unknown): SessionEnvelope | null {
   if (!isRecord(v)) return null;
   const { ownerEpoch, sessionId, generation } = v;
@@ -244,6 +255,14 @@ export type SessionOpenResult =
   | { readonly ok: true;  readonly session: Session }
   | { readonly ok: false; readonly refusal: SessionRefusal };
 export type SessionCheckResult = SessionOpenResult;
+/** The references fixed to one socket or port. */
+export interface SessionBound {
+  readonly ownerEpoch: string;
+  readonly sessionId: string;
+  readonly generation: number;
+  readonly faceRef: string;
+  readonly profile: CapabilityProfile;
+}
 
 interface SessionRecord { session: Session; readonly binding: SessionBinding }
 
@@ -310,13 +329,32 @@ export class SessionTable {
    * a session in any state but `live`.
    */
   check(message: unknown, binding: SessionBinding): SessionCheckResult {
-    const envelope = validateSessionEnvelope(message);
+    return this.#read(message, binding, false);
+  }
+
+  /** The bound socket or port also checks its verified face after generation and before liveness. */
+  checkBound(message: unknown, binding: SessionBinding): SessionCheckResult {
+    return this.#read(message, binding, true);
+  }
+
+  /** The five references bound to this socket or port, without face planes or root bytes. */
+  bound(binding: SessionBinding): SessionBound | null {
+    const id = this.#bound.get(binding);
+    const session = id === undefined ? undefined : this.#records.get(id)?.session;
+    if (!session) return null;
+    return Object.freeze({ ownerEpoch: session.ownerEpoch, sessionId: session.sessionId,
+      generation: session.generation, faceRef: session.face.proofSubject, profile: session.profile });
+  }
+
+  #read(message: unknown, binding: SessionBinding, faceBound: boolean): SessionCheckResult {
+    const envelope = faceBound ? validateSessionBoundEnvelope(message) : validateSessionEnvelope(message);
     if (!envelope) return { ok: false, refusal: "malformed-message" };
     if (envelope.ownerEpoch !== this.#ownerEpoch) return { ok: false, refusal: "stale-owner-epoch" };
     const record = this.#records.get(envelope.sessionId);
     if (!record) return { ok: false, refusal: "unknown-session" };
     if (record.binding !== binding) return { ok: false, refusal: "unbound-session" };
     if (envelope.generation !== record.session.generation) return { ok: false, refusal: "stale-generation" };
+    if (faceBound && (envelope as SessionBoundEnvelope).faceRef !== record.session.face.proofSubject) return { ok: false, refusal: "wrong-face" };
     if (record.session.state !== "live") return { ok: false, refusal: "session-not-live" };
     return { ok: true, session: record.session };
   }

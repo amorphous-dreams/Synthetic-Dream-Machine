@@ -195,7 +195,7 @@ test("the custody door opens the vessel key and leaves no trace of the credentia
     for (const secret of [TEST_PASSPHRASE, WRONG]) {
       for (const who of callers) {
         for (const [verb, args] of [["vault-unlock", { passphrase: secret }], ["unlock", { credentials: [{ kind: "passphrase", passphrase: secret }] }]]) {
-          needles.push(await mesh.verbInputDigest({ verb, args, requestedBy: who }));
+          needles.push(await mesh.verbInputDigest({ verb, args, face: who }));
         }
       }
       needles.push(createHash("sha256").update(secret).digest("hex"));

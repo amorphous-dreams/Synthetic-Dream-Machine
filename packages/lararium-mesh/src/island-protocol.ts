@@ -356,6 +356,7 @@ export interface DaemonMsg_PlaceVerb {
   verb: string;
   args: Record<string, unknown>;
   requestedBy: string;
+  face?: string;
   targets?: string[];
   batchMode?: string;
   requestId?: string;
@@ -1117,6 +1118,7 @@ export function mkDaemonPlaceVerb(opts: {
   verb: string;
   args: Record<string, unknown>;
   requestedBy: string;
+  face?: string;
   targets?: string[];
   batchMode?: string;
   requestId?: string;
@@ -1136,6 +1138,7 @@ export function mkDaemonPlaceVerb(opts: {
   if (opts.fromUri)          msg.fromUri    = opts.fromUri;
   if (opts.listenable)       msg.listenable = opts.listenable;
   if (opts.effectKey)        msg.effectKey  = opts.effectKey;
+  if (opts.face)             msg.face       = opts.face;
   return msg;
 }
 

@@ -112,6 +112,8 @@ export interface VerbPlacement {
   readonly verb:        string;
   readonly args:        Record<string, unknown>;
   readonly requestedBy: string;
+  /** The verified face's proof subject; the seat supplies the presenter in `requestedBy`. */
+  readonly face?:       string;
   readonly targets?:    string[];
   readonly batchMode?:  BatchMode;
   readonly requestId?:  string;
@@ -159,7 +161,7 @@ export async function writeOutcome(
   const inputDigest = await verbInputDigest({
     verb:        opts.invocation.action,
     args:        opts.invocation.args,
-    requestedBy: opts.invocation.requestedBy,
+    face: opts.invocation.face,
     ...(opts.invocation.effectKey !== undefined && { effectKey: opts.invocation.effectKey }),
   });
   const outcome = concludeVerb({

@@ -295,7 +295,7 @@ export class VerbDispatcher {
 
   private async resolveEffect(invocation: Verb, effectKey: string, signal?: AbortSignal): Promise<void> {
     const inputDigest = await verbInputDigest({
-      verb: invocation.action, args: invocation.args, requestedBy: invocation.requestedBy, effectKey,
+      verb: invocation.action, args: invocation.args, face: invocation.face, effectKey,
     });
 
     const priorFact = await this.opts.daemon.getLive(EFFECT_URI_PREFIX + effectKey);
@@ -363,7 +363,7 @@ export class VerbDispatcher {
             const priorDigest = prior.tiddler["input-digest"];
             if (typeof priorDigest === "string") {
               const redeliveredDigest = await verbInputDigest({
-                verb: invocation.action, args: invocation.args, requestedBy: invocation.requestedBy,
+                verb: invocation.action, args: invocation.args, face: invocation.face,
                 ...(invocation.effectKey !== undefined && { effectKey: invocation.effectKey }),
               });
               if (redeliveredDigest !== priorDigest) {
