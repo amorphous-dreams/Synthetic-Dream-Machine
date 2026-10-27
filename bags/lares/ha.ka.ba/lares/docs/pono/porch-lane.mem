@@ -1,0 +1,65 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/porch-lane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/porch-lane.mem"
+l-space   = "adjacent"
+role      = "the porch lane's kit: the standing sweeper over the road's hygiene pile, what stands and what each bundle closed"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/porch-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/porch-lane"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! The porch ~ the sweeper's kit
+
+The operator ruled on 2026-10-26 to close open work before the founding bake. This lane sweeps the road's hygiene pile (burned-name guards, evergreen remainders, tests-only debts, re-measures and canon sweeps) beside the slotted lanes, in small trains: each bundle lands off the span head, and the controller writes the road at each land. The crew stands as <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm#/the-shapes">>: one walled Sol builder, one walled Luna reader and sweeper, the lead running every suite.
+
+<<~/ahu>>
+
+<<~ ahu #/bundle-one>>
+
+!! Bundle one ~ three tooling items and the burned-name guards
+
+!!! The Playwright engine cache
+* ''A CDN stall once held a runner for 20 minutes and for 48.'' Every job in `.github/workflows` that installs engines (`ci.yml`'s browser-vessel suite, floor crossing and standalone single-file suite; `held-out.yml`'s browser-weld cell) now restores `~/.cache/ms-playwright` keyed on the runner OS, the Playwright version `pnpm exec playwright --version` names, and the engine set. The install step still runs for the system libraries and downloads only on a miss. A version bump re-downloads once.
+* ''Stays.'' The TiddlyWiki5 submodule's own `bin/ci-test.sh` installs engines for upstream's CI, outside this repository's workflows.
+
+!!! The household witness image
+* ''`household-https-witness` builds `lares-surface:local` from this tree on every run'' when `HOUSEHOLD_IMAGE` stands unset, so a stale local tag never meets newer code (the layer cache keeps an unchanged tree cheap). A set `HOUSEHOLD_IMAGE` reads as given and builds only when the tag stands absent.
+* ''Stays.'' `tools/harbor-walk-witness.sh` keeps the same absent-only build (`HARBOR_IMAGE`); it wants the same line when its next owner touches it.
+
+!!! The `custody-frames` U1 leak
+* ''The cause.'' U1's control read `loadActivePersonaIndex().catch(() => undefined)`. That reader infers the one face standing open, and it opens the seated custody, which refuses outside a scratch root. Under a real `HOME` the refusal fell into the `catch` and the assertion read green by accident; under a scratch `HOME` or `LAR_ROOT` the custody opened, an earlier vector's face stood open, and the reader answered `0`.
+* ''The cure.'' The control reads the session's own choice (`wornFaceOrdinal()`), the thing the unlock frame sets, and the file reads green under a real `HOME` and under a scratch `HOME` with a scratch `LAR_ROOT`. The test title no longer claims a case it never asserted: an unlock naming no face wears the vessel's one face by the door's own rule.
+
+!!! Burned-name guards burned
+* `lar-wire.test.ts`: the control that `wiki:dom-event` and `wiki:dom-input` pass no door (road `F8`).
+* `browser-walk.test.ts`: the control that the `boot-invite-burned`, `hosting-walk` and `nexus-keys` stores stand absent (road `W20`).
+* `vessel-wipe-surfaces.test.ts`, now `vessel-surfaces.test.ts`: the `vessel clear`, `rite rebirth` and `--clear` refusals and the negative help checks; the live `read`, refresh and surface-table assertions stay.
+* `nexus-verb-reach.test.ts`: `nexus refresh` reads as an unknown verb.
+* `vault-door.test.ts`: the former vault verbs (`seal`, `rotate`, `repair`, `passphrase`, `export`), `--yes`, `--check` and the passphrase environment route; the exact seven-verb help assertion and a nonsense-verb refusal stay.
+* `cabal-realm-ceremony.test.ts`: the absent-export list for the former eviction and closing API; the exact live export assertion stays.
+
+<<~/ahu>>
+
+<<~ ahu #/what-stays>>
+
+!! What stays, and why
+
+* ''`projection-input-leg.test.ts` (road `F8`).'' It guards `wiki:dom-event` and `wiki:dom-input` as unclaimed. It belongs to D2's tw5 projection test surface; it burns when D2 lands.
+* ''The CLI unknown-command list and the keyhive cabal names (road `W20`).'' The unknown-command refusal is generic and tests with a nonsense control; no named cabal guard remains outside the held modules (`ceremony-core.ts`, `keyhive-provider.ts`, `boot-daemon-keyhive.ts`, K15).
+* ''The rest of the pile.'' `G6`, `G8`, `G17`, `G19`, `G20`, `G38`, `H7` and `A9` wait for the next bundles.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;71LXnHxpjMDRZTPZ6XlP4JVXG5xK_TN6QL8nlJQyrjQ
+
+<<^ code="&#x0004;" -> to="?">>
