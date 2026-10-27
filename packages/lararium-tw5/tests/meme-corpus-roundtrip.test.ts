@@ -1,6 +1,6 @@
 /**
  * meme-corpus-roundtrip — the round-trip law swept across the WHOLE live
- * lares corpus, not just the boot meme. Born 2026-06-11 after the live
+ * bag corpus (every carrier under bags/), not just the boot meme. Born 2026-06-11 after the live
  * feed found what the single-carrier suite could not: fence-teaching docs
  * whose ambiguous fences masked their own closers (unbounded closer-doubling
  * per cycle), the Kapu SOH variant, plain-toml content swallowing.
@@ -31,7 +31,7 @@ import {
 } from "../src/deserializer.js";
 
 const REPO_ROOT = new URL("../../..", import.meta.url).pathname;
-const CORPUS = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares");
+const CORPUS = join(REPO_ROOT, "bags");
 
 const META_FENCE_RE = /```toml meta\n[\s\S]*?```\n/g;
 const contentView = (s: string) => s.replace(META_FENCE_RE, "META\n");
@@ -54,6 +54,8 @@ const sigilNorm = (s: string) => s
   .replace(/<<\^ code="&#x(0001|0011);"[^>\n]*?( from=\?)/g, '<<^ code="&#x$1;"$2');  // the namespace re-homes (framing)
 const lawView = (s: string) => squeeze(sigilNorm(contentView(s)));
 
+const skipped: string[] = [];
+
 function carriers(): Array<{ rel: string; src: string; uri: string }> {
   const files = execSync(`find ${CORPUS} -name '*.mem'`, { encoding: "utf8" }).trim().split("\n");
   const out: Array<{ rel: string; src: string; uri: string }> = [];
@@ -63,7 +65,7 @@ function carriers(): Array<{ rel: string; src: string; uri: string }> {
     // ZERO carriers the day the corpus took quotes, and every per-carrier law below would have reported
     // clean over an empty set. `toBeGreaterThan(150)` is the only reason that read as a failure.
     const sohs = maskedExecAll(src, carrierHeadPattern("g"));
-    if (sohs.length !== 1) continue;   // multi-meme carriers ride their own law
+    if (sohs.length !== 1) { skipped.push(f.slice(CORPUS.length + 1)); continue; }   // multi-meme carriers ride their own law
     out.push({ rel: f.slice(CORPUS.length + 1), src, uri: sohs[0]![1]! });
   }
   return out;
@@ -73,11 +75,17 @@ function carriers(): Array<{ rel: string; src: string; uri: string }> {
  *  past the 5 s default under the full suite's parallel load. */
 const CORPUS_WALK_MS = 30_000;
 
-describe("corpus round-trip — the lens laws over every lares-bag carrier", () => {
+describe("corpus round-trip — the lens laws over every bag carrier", () => {
   const all = carriers();
 
   test("the corpus presents carriers", () => {
-    expect(all.length).toBeGreaterThan(150);
+    expect(all.length).toBeGreaterThan(700);
+  });
+
+  test("no carrier in any bag (lares, lararium, crossroads, elyncia, elyncia-referee, sdm) escapes the law by shape", () => {
+    // The sweep reaches every bag, so an elyncia carrier fails here as a lares one does. A carrier with no
+    // head or more than one rides its own law and shows by name; none stands today.
+    expect(skipped).toEqual([]);
   });
 
   test("every carrier: single closer · idempotent · content-whole", () => {
