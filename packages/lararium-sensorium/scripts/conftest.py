@@ -108,6 +108,10 @@ _ENV_EXEMPT = {
     # nothing in this tree reads it. Whichever test happens to import torch first would otherwise
     # carry the blame for the library's initialisation.
     "TORCHINDUCTOR_CACHE_DIR": "torch's one-shot inductor cache pointer, set on first use",
+    # The mempalace package defaults this to "False" with `os.environ.setdefault` the first time anything
+    # imports it, so whichever test imports it first would carry that import's blame. It is a constant
+    # opt-out of chroma's telemetry, identical for every later test, and nothing in this tree reads it.
+    "ANONYMIZED_TELEMETRY": "mempalace's one-shot telemetry opt-out, set on first import",
 }
 
 
