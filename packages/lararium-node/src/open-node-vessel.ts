@@ -20,6 +20,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { larBootstrapPath } from "./vessel-paths.js";
 import { refuseLegacyPlaceBytes } from "./legacy-place-bytes.js";
+import { createAfterRoll } from "./after-roll-chain.js";
 import { join }                         from "path";
 import type { Server }                  from "node:http";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
@@ -1150,54 +1151,30 @@ async function prepareNodeBootOn(
    * rather than firing it into the void: `admit-take`'s `represented` and `seal-home-refold`'s
    * `refolded` read this SAME answer, so a fire-and-forget refold could never answer either
    * truthfully (it always finished AFTER the CLI's own answer left). A SECOND roll that lands while
-   * the first still runs waits on it and then runs its OWN full pass afterward — `afterRollChain`
-   * serializes every call through one in-flight promise, so two closely-spaced rolls never
-   * interleave their refolds, and neither one is silently dropped or coalesced into the other's answer.
-   *
-   * THE SINGLE `try` SPLITS IN THREE so a fault in one stage never skips the stages after it: antigen
-   * + membership refold, then `realmPlane.refresh`, then (unconditionally) `reverdict`, then
-   * `representIfMoved`. The return value answers ONE question — did this roll's own re-presentation
-   * run without throwing — because that is exactly what `represented`/`refolded` claim; an earlier
-   * stage's fault is logged and never silently swallows a later stage's own true answer.
+   * the first still runs waits on it and then runs a full pass afterward — `after-roll-chain.ts` owns the
+   * order of a pass and the queue: passes run one at a time, each holder queues at most one pass, and a
+   * roll that lands before that pass starts folds into it, so a storm completes in bounded passes with no
+   * overlap and no starved holder (G15). The return value answers ONE question — did the re-presentation
+   * run without throwing — because that is exactly what `represented`/`refolded` claim.
    */
   // THE HOSTING DOC RE-DERIVES FROM THE SEALED STATE (set where the walkers' session verbs stand, below). While a
   // landing stays owed, every refold tries it again, so one failed landing never leaves an epoch off the doc for
   // the vessel's life.
   let landOwedHostingActs: (() => Promise<void>) | null = null;
-  let afterRollChain: Promise<boolean> = Promise.resolve(true);
+  // The chain stands in `after-roll-chain.ts`: the pass order and the bounded, per-holder queue live there.
+  const afterRollQueue = createAfterRoll({
+    landOwedHostingActs: async () => { await landOwedHostingActs?.(); },
+    refoldAntigen: () => antigenHolder.refold(),
+    refoldMembership: () => membershipHolder.refold(),
+    refreshRealmPlane: async () => { await realmPlane?.refresh(readNexusDoc(sealHome)); },
+    refoldEdgeShadows: async () => { await edgeShadows?.refold(); },
+    reverdict: () => reverdict(),
+    representIfMoved: async () => { await representIfMoved?.(); },
+    log: (line) => console.log(`[nexus] ${line}`),
+  });
   const afterRoll = (nexusAid?: string): Promise<boolean> => {
     if (nexusAid) ownHostingDocs.add(interpretAsDocumentId(hostingDocUrl(nexusAid, vesselIdentity.verifyingKey)) as DocumentId);
-    const runOneRoll = async (): Promise<boolean> => {
-      await landOwedHostingActs?.();
-      try {
-        await antigenHolder.refold();
-        await membershipHolder.refold();
-      } catch (e) {
-        console.log(`[nexus] after-roll refold failed (antigen/membership): ${e instanceof Error ? e.message : String(e)}`);
-      }
-      try {
-        await realmPlane?.refresh(readNexusDoc(sealHome));
-      } catch (e) {
-        console.log(`[nexus] after-roll refold failed (realm plane): ${e instanceof Error ? e.message : String(e)}`);
-      }
-      try {
-        await edgeShadows?.refold();
-      } catch (e) {
-        console.log(`[nexus] after-roll refold failed (edge shadows): ${e instanceof Error ? e.message : String(e)}`);
-      }
-      reverdict();
-      try {
-        await representIfMoved?.();
-        return true;
-      } catch (e) {
-        console.log(`[nexus] after-roll refold failed (re-present): ${e instanceof Error ? e.message : String(e)}`);
-        return false;
-      }
-    };
-    // Serialized through the ONE in-flight chain: a roll that lands mid-refold waits for the
-    // standing one to finish, then runs once more in full — never interleaved, never dropped.
-    afterRollChain = afterRollChain.then(runOneRoll, runOneRoll);
-    return afterRollChain;
+    return afterRollQueue(nexusAid);
   };
 
   // Replay every socket that presented before the holder stood.

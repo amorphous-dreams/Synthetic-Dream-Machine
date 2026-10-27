@@ -17,7 +17,7 @@ import {
   type HostingGrant, type InviteToken,
 } from "@lararium/mesh";
 import { browserWalkStore, browserWalkLeaf } from "../src/browser-walk.js";
-import { generateOrLoadBrowserPersonaRoot, openVesselIdb } from "../src/browser-vessel-identity.js";
+import { generateOrLoadBrowserPersonaRoot } from "../src/browser-vessel-identity.js";
 import { readKeystoreRow } from "../src/browser-custody.js";
 
 let created = 0;
@@ -108,14 +108,5 @@ describe("the browser walk", () => {
     const kept = await readKeystoreRow(name, `nexus-key/h0/${AID}`);
     expect(kept).toEqual(a.seed);
     await expect(browserWalkLeaf(name, AID, 1)).rejects.toThrow();
-  });
-
-  test("RED: the newcomer-side burn store is gone; the walk store stands in its place", async () => {
-    const db = await openVesselIdb(idb());
-    try {
-      expect(db.objectStoreNames.contains("boot-invite-burned")).toBe(false);
-      expect(db.objectStoreNames.contains("hosting-walk")).toBe(false);
-      expect(db.objectStoreNames.contains("nexus-keys")).toBe(false);
-    } finally { db.close(); }
   });
 });

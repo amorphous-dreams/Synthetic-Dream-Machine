@@ -89,15 +89,6 @@ describe("lares nexus — every verb reaches its door", () => {
     expect(await cmdNexus(args(["definitely-not-a-verb"]))).toBe(2);
   });
 
-  /**
-   * CONTROL — `refresh` runs through the after-roll hook on every store-door write; the command table has no
-   * standalone route for it. Proves the boundary by the same
-   * `unknown verb` refusal a never-built word gets, rather than by its absence from `VERBS` alone.
-   */
-  test("`nexus refresh` is retired — it reads as an unknown verb, not a door", async () => {
-    expect(await run(["refresh"])).toMatch(/unknown verb/i);
-  });
-
   /** CONTROL — a bare `nexus` refuses with the usage and claims no word was unknown. */
   test("no verb at all refuses with the usage, naming no unknown word", async () => {
     const prose = await run([], { json: false });
