@@ -43,3 +43,15 @@ export function makePortTransport(opts: {
     },
   };
 }
+
+/** The page's road from the vessel's reply door to its transport: delivery reaches the transport for its own binding alone. */
+export function makePortDelivery() {
+  let transport: ReturnType<typeof makePortTransport> | null = null;
+  return {
+    /** The vessel's `onPortMessage`: a reply for another binding, or one before the transport stands, goes nowhere. */
+    onPortMessage(binding: string, _islandKey: string, msg: unknown): void {
+      if (transport !== null && binding === transport.binding) transport.deliver(msg);
+    },
+    attach(next: ReturnType<typeof makePortTransport>): void { transport = next; },
+  };
+}

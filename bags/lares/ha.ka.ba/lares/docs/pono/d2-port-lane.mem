@@ -48,7 +48,7 @@ The worker half stood since PR #87: the port log, the wire, the island handler, 
 !! What stands beside the lane
 
 * ''The grant belongs to D4.'' The default policy is read-only. The actor manifest and its signed grants name who may edit, invoke and run verbs; until D4 lends a policy, a production page reads and every other act refuses by name. The witnesses lend a policy of their own.
-* ''The page boot.'' `main.ts` stays outside the lane: it passes `onPortMessage` into `openBrowserVessel`, builds `makePortTransport({ doors: result.ports, surface })` once the vessel returns, and has the callback deliver to the transport for its binding. The controller places that patch with the D3 glass lane, which is the first caller.
+* ''The page boot ~ BUILT.'' `main.ts` passes `onPortMessage` into `openBrowserVessel` and stands the page's one transport over `result.ports` (`page-port.ts`: `standPagePort`, `pagePort()`); delivery reaches the transport for its own binding alone, and a reply before the transport stands or for another binding reaches nobody. D3's glass adaptor reads `pagePort()`.
 * ''The hand gate's tail.'' After a title's last mark the entry rests until the next boundary, act, cap or teardown; a blur or reload reaches an act through the control-event signal. The pacing law changed with the clock: marks gather while no boundary crosses and leave when the store lands a family, so a burst inside one dispatch turn leaves as one write.
 * ''Two spellings stay divergent by the alpha line.'' The in-VM reader does not take the legacy or spaced ahu spellings; the witness pins the gap.
 * ''The plugin bundle moved'' (the incremental fold and the projection's mint ride in it); `genesis/unbaked.json` names the new bytes, and the next labelled GENESIS RE-BAKE carries them.
@@ -64,6 +64,6 @@ The worker half stood since PR #87: the port log, the wire, the island handler, 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;npltxQiPD3apz4iy1g7y_raryv6t66Nalg1mvUB-kM4
+<<^ code="&#x0003;">>ni:///sha-256;Ddqfyvg4tW2g3uqhkGKlv61oAZZgJZQ-1Sq68-9UGCw
 
 <<^ code="&#x0004;" -> to="?">>
