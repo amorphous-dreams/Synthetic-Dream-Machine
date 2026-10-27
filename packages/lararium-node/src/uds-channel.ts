@@ -29,8 +29,10 @@
  * the name stands free, and no unlink of a path some other holder answers at. Closing the channel refuses every
  * later caller by name while the vessel flushes; the claim itself lets go only with the vessel.
  *
- * Auth (v1): socket perms 0600 (owner-only) gate PRESENCE — only the operator's own
- * uid opens it; the requestedBy did rides the summons for cap-derivation. A signed
+ * Auth: socket perms 0600 (owner-only) gate PRESENCE — only the operator's own
+ * uid opens it. A session socket binds its session to the verified face (`SessionTable.checkBound`): the
+ * face supplier's presenter rides the summons for cap-derivation, and the frame's own `requestedBy` stays
+ * display text. A one-shot maintenance frame's requestedBy did rides the summons for cap-derivation. A signed
  * Ed25519 proof over the socket is the federation/attenuation hardening (follow-on);
  * a remote peer meets the sealed face gate on the WS path.
  * See lar:///ha.ka.ba/lararium/api/lares-lararium-binding.

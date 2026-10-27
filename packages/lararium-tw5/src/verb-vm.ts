@@ -112,7 +112,8 @@ export interface VerbPlacement {
   readonly verb:        string;
   readonly args:        Record<string, unknown>;
   readonly requestedBy: string;
-  /** The verified face's proof subject; the seat supplies the presenter in `requestedBy`. */
+  /** The verified face's proof subject: it enters the input digest and attributes the outcome. The seat supplies the
+   *  presenter in `requestedBy`, which the capability gate reads and the digest leaves out. */
   readonly face?:       string;
   readonly targets?:    string[];
   readonly batchMode?:  BatchMode;
