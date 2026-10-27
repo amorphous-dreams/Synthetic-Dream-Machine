@@ -1,0 +1,62 @@
+{
+  "kind": "constructive-grammar",
+  "genome": {},
+  "source": {
+    "origin": "experiment-zero authored grammar, derived from declared brutalist vocabulary",
+    "authority": "proposal"
+  },
+  "steps": [
+    {
+      "key": "root",
+      "op": "root-box",
+      "center": [
+        0,
+        0,
+        1
+      ],
+      "size": [
+        7,
+        7,
+        2
+      ],
+      "slot": "mass/root"
+    },
+    {
+      "key": "core",
+      "op": "box",
+      "center": [
+        0,
+        0,
+        2.8
+      ],
+      "size": [
+        3.5,
+        4,
+        2
+      ],
+      "parents": [
+        "root"
+      ],
+      "slot": "brutalist/core",
+      "role": "primary"
+    },
+    {
+      "key": "roof",
+      "op": "box",
+      "center": [
+        1,
+        0,
+        3.8
+      ],
+      "size": [
+        5,
+        4,
+        1
+      ],
+      "parents": [
+        "core"
+      ],
+      "slot": "brutalist/cantilever"
+    }
+  ]
+}
