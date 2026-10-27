@@ -710,7 +710,7 @@ export async function joinedFaceCard(pair: Pick<StagedJoinee, "rootB">): Promise
     try {
       const anchors = await loadIdentityAnchors(0);
       if (!anchors) throw new Error("joinedFaceCard: B holds no anchors for face 0");
-      return (await loadLeafIdentity("face", { handleIndex: 0, personaGroupId: anchors.personaGroupId })).contactCard;
+      return (await loadLeafIdentity({ handleIndex: 0, personaGroupId: anchors.personaGroupId })).contactCard;
     } finally { await seat.drop(); }
   });
 }

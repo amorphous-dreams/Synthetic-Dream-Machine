@@ -9,7 +9,7 @@ export class LegacyPlaceBytesRefused extends Error {
   }
 }
 
-/** The old place Individual cannot enter a face boot or a faceless floor. */
+/** A place Individual at rest cannot enter a face boot or a faceless floor: it refuses by name. */
 export function refuseLegacyPlaceBytes(identityDir = larIdentityDir()): void {
   if (existsSync(join(identityDir, "place-archive.bin"))) throw new LegacyPlaceBytesRefused("place-archive");
   if (!existsSync(identityDir)) return;

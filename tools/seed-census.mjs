@@ -13,7 +13,7 @@ const PUBLIC_SPELLING = /\bvesselIdentity\.verifyingKey\b|\bvesselGateKey\b|\blo
 const FACE_FALLBACK = /activeAtom\?\.key\s*\?\?\s*(?:vesselIdentity\.verifyingKey|vesselGateKey|loadVesselVerifyingKey\s*\(\s*\)|daemonAuth\.placeVerifyingKey)/;
 const KEY_DOORS = new Set(['packages/lararium-node/src/node-vessel-identity.ts', 'packages/lararium-browser/src/browser-vessel-identity.ts']);
 
-// Exact source-line receipts. K15 no longer grants an exception.
+// Exact source-line receipts. The K15 rule grants no exception.
 export const ENTRIES = [
   { rule: 'allowed', file: 'packages/lararium-browser/src/browser-vessel-identity.ts', match: 'signingSeedFromHex(existing.signingKey)', count: 1, reason: 'Browser place KEL key-file door.' },
   { rule: 'allowed', file: 'packages/lararium-mesh/src/gate-bundle.ts', match: 'floorKeyDoor', count: 1, reason: 'The mesh floor derivation adapter.' },
