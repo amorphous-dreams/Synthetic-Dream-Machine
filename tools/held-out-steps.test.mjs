@@ -242,7 +242,9 @@ test("every held-out job installs, renders, builds, stamps, then drives, and upl
   assert.doesNotMatch(HELD_OUT, /mesh-scenarios\.sh (all|[a-z])/, "no step names a scenario, or the whole walk, by hand");
   // The plan reads this process's env, as the runner hands it: on a pull request's detached checkout the runner
   // names the ref there. A local detached checkout names none, so the plan names the dispatched branch it stands for.
-  const env = { ...process.env, GITHUB_REF: process.env.GITHUB_REF || "refs/heads/main" };
+  // The runner also names the login that started the run; a local checkout under a scratch HOME holds no
+  // `git config user.name`, so the plan names an actor the way the runner does.
+  const env = { ...process.env, GITHUB_REF: process.env.GITHUB_REF || "refs/heads/main", GITHUB_ACTOR: process.env.GITHUB_ACTOR || "porch" };
   for (const driver of drivers) {
     const plan = planFor(wf, driver, { env });
     const at = (pred, what) => {

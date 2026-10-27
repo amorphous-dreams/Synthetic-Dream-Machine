@@ -159,8 +159,8 @@ export interface SensoriumManifest {
   readonly ephemeral: boolean;
   /**
    * BASE cap — the DECLARED lifecycle STATE a reconciler drives (pioneer → hardening → durable, then a
-   * judged tombstone). A manifest with no declared value reads one DERIVED from `ephemeral`+`halfLife`
-   * ({@link deriveLifecycle}) — lossless migration, zero disk edit until the next write. The graduated
+   * judged tombstone). Every manifest declares one of these states; the builder derives its mint-time
+   * default from `ephemeral`+`halfLife` ({@link deriveLifecycle}). The graduated
    * state ladder rides the DURABLE manifest here; the binary `ephemeral` bool of the scratch leak-record
    * (sense-sensorium.ts `sensorium.json`) stays its own `docker run --rm` concern.
    */
@@ -238,14 +238,11 @@ export function parseSensoriumManifest(value: unknown): SensoriumManifest {
   if (typeof raw.ephemeral !== "boolean") {
     throw new Error("sensorium manifest: ephemeral needs a boolean");
   }
-  // The lifecycle stands as a declared fact. The TS builder writes it. The Python writer owns the
-  // `ephemeral` dial and declares no lifecycle, so an absent field derives from ephemeral+halfLife.
-  // A declared value outside the ladder refuses.
-  const halfLife = persistence ? (persistence.halfLife as number | null) : undefined;
-  if (raw.lifecycle !== undefined && !isLifecycleState(raw.lifecycle)) {
+  // Both writers declare lifecycle. Missing and unknown states refuse at the same boundary.
+  if (!isLifecycleState(raw.lifecycle)) {
     throw new Error("sensorium manifest: lifecycle needs one of pioneer, hardening, durable or tombstone");
   }
-  const lifecycle = raw.lifecycle ?? deriveLifecycle(raw.ephemeral, halfLife);
+  const lifecycle = raw.lifecycle;
   const retirement = parseRetirementRecord(raw.retirement);
   return {
     schema: SENSORIUM_SCHEMA,
