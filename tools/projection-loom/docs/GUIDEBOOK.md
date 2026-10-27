@@ -53,6 +53,33 @@ held-out A/B, activation-specific audition fairness, and old-path removal
 need further exact native evidence. Do not relabel a green subset as all
 acceptance clauses satisfied.
 
+## Current generalized Loom · 2026-10-27 Aftermath
+
+[ROADMAP](ROADMAP.md) holds twenty witness-scoped status rows and exact
+five-wave commit history. Generic machinery lives in
+`projection_loom/intent_seed.py`, `seed_adapters.py`,
+`developmental.py`, `intent_evolution.py`,
+`generalized_campaign.py` and `gallery_artifacts.py`.
+All fixed seven-cohort input names and their CLI live only in
+`experiments/zero/run.py`. The original image is a provisional
+visual observation, not a calibrated three-dimensional survey.
+
+From `tools/projection-loom/`:
+
+```bash
+python -m pytest -q tests/test_generalized_*.py
+python -m experiments.zero.run --inputs experiments/zero/inputs \
+  --out out/generalized-experiment-zero --epochs 3 \
+  --offspring 4 --exact-budget 4 --finalists 2
+```
+
+The `31a0873d` source-shaped experiment passed 40 tests and 76/84
+native auditions. Its typed-only successor `e12391da` passed 41 tests,
+all seven cohorts and 76/84 native auditions in
+[#40581945846](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40581945846).
+Review later exact-SHA verdicts separately.
+No artistic winner or Operator pet-name was selected by these experiments.
+
 ## Source-head closing checkpoint · historical records preserved
 
 On source-head `8a073aac` (three-parent historical integration), dedicated CAD [#40429724371](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429724371), evergreen [#40429719118](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719118), and alpha coevolution [#40429719057](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719057) passed. Repo-wide [#40429719100](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719100) and held-out [#40429719007](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719007) were queued; parallel CAD [#40429719027](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719027) was running at inspection. Re-query these before deciding whether the full head passed. `_activation_switches(recipe)` now shields CAD-only OODA-HA while preserving Architectural Birth activation funnels. Both historical experimental merge parents remain attributable but inert; no pet-name or lineage promotion follows from ancestry alone. For a concise new-session re-entry, read [BRANCHED_SESSION_HANDOFF](BRANCHED_SESSION_HANDOFF.md).

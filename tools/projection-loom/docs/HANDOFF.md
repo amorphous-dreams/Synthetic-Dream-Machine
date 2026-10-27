@@ -1,3 +1,68 @@
+## Current generalized Loom · 2026-10-27 Aftermath
+
+[ROADMAP](ROADMAP.md) holds twenty witness-scoped status rows and exact
+five-wave commit history. Generic machinery lives in
+`projection_loom/intent_seed.py`, `seed_adapters.py`,
+`developmental.py`, `intent_evolution.py`,
+`generalized_campaign.py` and `gallery_artifacts.py`.
+All fixed seven-cohort input names and their CLI live only in
+`experiments/zero/run.py`. The original image is a provisional
+visual observation, not a calibrated three-dimensional survey.
+
+From `tools/projection-loom/`:
+
+```bash
+python -m pytest -q tests/test_generalized_*.py
+python -m experiments.zero.run --inputs experiments/zero/inputs \
+  --out out/generalized-experiment-zero --epochs 3 \
+  --offspring 4 --exact-budget 4 --finalists 2
+```
+
+The `31a0873d` source-shaped experiment passed 40 tests and 76/84
+native auditions. Its typed-only successor `e12391da` passed 41 tests,
+all seven cohorts and 76/84 native auditions in
+[#40581945846](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40581945846).
+Review later exact-SHA verdicts separately.
+No artistic winner or Operator pet-name was selected by these experiments.
+
+## Aftermath · typed inputs, entire subtrees and image-shaped native proposals (2026-10-27)
+
+The five committed OODA-HA waves entered PR #84. Tightening commits
+`40a14b19`, `5a2e8876`, `0db84c74`, `fb7b0740`, `db5cb295`,
+`d76bf43c`, `31a0873d` and `e12391da` repair integration and isolate
+the generic machina from Experiment Zero's example inputs.
+
+The source-alpha-driven provisional growth program now responds to visible
+foreground geometry rather than using one hard-coded tower for every image.
+The typed brutalist input grows rule subtrees; the authored ziggurat input
+grows tiers with actual CAD recess and exterior-opening cuts. A full donor
+subtree can cross into offspring; old single-leaf crossover expectations were
+replaced. The generic input path accepts only typed growth programs—no
+scalar-step compatibility dialect.
+
+[Dedicated generalized CI #40581659200](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40581659200)
+**passed on `31a0873d`: 40 focused tests**, seven three-epoch cohorts,
+**76/84 native auditions admitted**, eight native refusals. The `e12391da` typed-only cleanup passed 41 focused tests and seven
+three-epoch cohorts in [#40581945846](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40581945846);
+do not infer green from its ancestor. A previous `tee` pipeline masked one
+true Python failure; subsequent workflows use `set -o pipefail` and the
+real typed fixture matrix participates in pytest.
+
+**No source identity, pet-name, Operator selection, architecture canon or
+historical experimental lineage was automatically promoted.** One original
+alpha/RGB artwork remains one image source, synthetic ortho cameras remain
+synthetic, image pose remains provisional. The semantic site occupancy
+witness does not certify load, walking-agent clearance, or geospatial survey.
+
+**Not independently demonstrated:** surveyed multi-image registration and
+fused multi-camera fitness; complete spatial-route and mechanical safety;
+per-individual-rule audition activation guarantees; formal equal-budget
+control-vs-growth held-outs; automatic Operator review; or full removal of
+intentionally separate historical alpha runners. Keep backlog statuses
+witness-scoped; these research and integration gaps remain observable.
+
+---
+
 ## Re-entry · Generalized Projection Loom, five implementation waves
 
 **Read by exact PR head, not by historical summaries.** The Operator-approved

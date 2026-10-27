@@ -56,6 +56,42 @@ kernels, hard per-rule activation-funnel guarantees, matched A/B and held-out
 studies, and authoritative removal of obsolete fixed-genome infrastructure.
 Keep their acceptance rows witness-scoped instead of silently closing them.
 
+## Aftermath · typed inputs, entire subtrees and image-shaped native proposals (2026-10-27)
+
+The five committed OODA-HA waves entered PR #84. Tightening commits
+`40a14b19`, `5a2e8876`, `0db84c74`, `fb7b0740`, `db5cb295`,
+`d76bf43c`, `31a0873d` and `e12391da` repair integration and isolate
+the generic machina from Experiment Zero's example inputs.
+
+The source-alpha-driven provisional growth program now responds to visible
+foreground geometry rather than using one hard-coded tower for every image.
+The typed brutalist input grows rule subtrees; the authored ziggurat input
+grows tiers with actual CAD recess and exterior-opening cuts. A full donor
+subtree can cross into offspring; old single-leaf crossover expectations were
+replaced. The generic input path accepts only typed growth programs—no
+scalar-step compatibility dialect.
+
+[Dedicated generalized CI #40581659200](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40581659200)
+**passed on `31a0873d`: 40 focused tests**, seven three-epoch cohorts,
+**76/84 native auditions admitted**, eight native refusals. The `e12391da` typed-only cleanup passed 41 focused tests and seven
+three-epoch cohorts in [#40581945846](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40581945846);
+do not infer green from its ancestor. A previous `tee` pipeline masked one
+true Python failure; subsequent workflows use `set -o pipefail` and the
+real typed fixture matrix participates in pytest.
+
+**No source identity, pet-name, Operator selection, architecture canon or
+historical experimental lineage was automatically promoted.** One original
+alpha/RGB artwork remains one image source, synthetic ortho cameras remain
+synthetic, image pose remains provisional. The semantic site occupancy
+witness does not certify load, walking-agent clearance, or geospatial survey.
+
+**Not independently demonstrated:** surveyed multi-image registration and
+fused multi-camera fitness; complete spatial-route and mechanical safety;
+per-individual-rule audition activation guarantees; formal equal-budget
+control-vs-growth held-outs; automatic Operator review; or full removal of
+intentionally separate historical alpha runners. Keep backlog statuses
+witness-scoped; these research and integration gaps remain observable.
+
 ## Operator hard reference · Athenaion and input-agnostic Loom backlog (2026-10-27)
 
 The Operator designated [Athenaion](https://github.com/Leonxlnx/athenaion)
@@ -83,22 +119,22 @@ portions of its acceptance language or an independently certified architecture.
 | L-02 | A / identity | Content-addressed source, grammar and proxy assets; hermetic run fingerprint and idempotent entry | Repeated admission/replay cannot duplicate authoritative source, location, pet-name or completed receipts | Implemented; source tamper and replay tests passed at `5a2e8876`. |
 | L-03 | A / place | Make `LocationStack` the normalized location substrate with frame graph, proposed sites, registrations and dependencies | No Necrospire labels required; independent frames/conflicts remain explicit | Implemented for seed inventory; full metric frame registration remains provisional. |
 | L-04 | A / isolation | Separate machinery packages from `experiments/zero/` subjects and code; keep the same OODA-HA helm | Generic engine imports no Experiment Zero builder, seed bytes, fixed-family names or source-size constants | Generalized engine decoupled from all Experiment Zero fixture paths; old alpha implementation remains an independent historical path. |
-| L-05 | B / image-group | Multi-image seed adapter with independently sourced images, grouped RGB/alpha channels, landmarks, camera observations and measured/provisional registration | Distinct images produce independent source identities; channels of one artwork do not; bad pose claims fail visibly | Implemented source/channel identities and provisional views; independently verified calibrated multi-view fitness NOT demonstrated. |
+| L-05 | B / image-group | Multi-image seed adapter with independently sourced images, grouped RGB/alpha channels, landmarks, camera observations and measured/provisional registration | Distinct images produce independent source identities; channels of one artwork do not; bad pose claims fail visibly | Implemented grouped source channels and source-alpha-dependent provisional native massing. Independent calibrated multi-image fitness unverified. |
 | L-06 | B / brutalist | Reusable grammar adapter for pinned nosycat-derived modular construction, license and producer/consumer operator contracts | Grammar alone produces native-admitted structures without any reference image or Necrospire builder | Typed brutalist grammar and native builder witnessed in run #40580691545 (37 tests, seven cohorts). |
 | L-07 | B / ziggurat | Explicit authored proxy adapter with stepped tiers, cores, courtyards, voids and semantic sockets | Proxy alone develops further geometry with proposal authority; fiction never becomes inferred dimensions | Typed ziggurat tiers, recess and exterior doorway witnessed in native tests and seven-cohort run #40580691545. |
 | L-08 | B / composition | Compose inputs alone, in all three pairs and as a triple; bind relationships without overwriting per-input authority | Seven explicit seed matrix cases plus source/conflicting-frame refusals have retained receipts | Seven native seed compositions witnessed in [#40578661646](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40578661646); conflicting registered frame proofs not yet independently solved. |
 | L-09 | C / growth | Bounded typed developmental program supporting spawn, split, attach, bridge, subtract and repeat | Variable-length structures appear; descendants inherit rule trees, not only fixed scalar offsets | Bounded variable growth compiler, branch/split/bridge/carve and inheritable program witnessed; not all continuous geometry styles integrated. |
 | L-10 | C / sites | Semantic site producers and consumers: supporting ledges, sockets, attachment affordances, terrain/structure occupation zones | One grown terrace creates usable sites for another generator; collision/footprint/clearance witnesses stay distinct | Semantic parent/face sites with advisory AABB occupancy; native joint checks separate. Clearance to walking-agent standard not established. |
-| L-11 | C / ancestry | Structure-aware mutation/crossover and source-bound grammar lineages | Reparent/duplicate/add/delete rule subtrees survive regrowth with independent program ancestry | Semantic program identities, bounded multi-node donor-subtree crossover committed at `db5cb295`; exact-head test pending; arbitrary rewrite forms remain scoped. |
+| L-11 | C / ancestry | Structure-aware mutation/crossover and source-bound grammar lineages | Reparent/duplicate/add/delete rule subtrees survive regrowth with independent program ancestry | Semantic program identities and full connected-subtree crossover passed at `31a0873d`; arbitrary advanced rewrites remain unverified. |
 | L-12 | C / native | Multi-body constructive compilation, native BRep contact and void gates, spatial routes | Every body validates its own native truth; separate terrain/water/surfaces never claim a scene-wide fused solid | Individual strict BRep/void gates and one location holding many bodies; no fabricated site-wide union. Access paths remain narrower than architectural habitability. |
 | L-13 | D / objectives | Intent-conditioned metrics: only warranted image evidence receives IoU; add boundaries and region-specific error; grammar/proxy use their own measures | Image-free cohort has no fabricated image fitness; camera/landmark uncertainties remain surfaced | Image-only IoU/Tversky/contour and source authority; regional/landmark-weighted losses and metric view calibration remain open. |
 | L-14 | D / fairness | Structural novelty and quality-diversity niches, with reserved exact auditions per active grammar/operator | Newly born construction rules receive measurable exact/native trial opportunities rather than solely source-fit rankings | Quality-diversity archive, fair seats by emitter and source champion; guaranteed activation per individual grammar rule not demonstrated. |
 | L-15 | D / replay | Independent keyed RNG substreams per source+rule+genome+epoch; deterministic mutation, module execution and resume | Worker order, scheduling and replay leave logical descendants/receipts invariant; future forks remain explicit | Keyed deterministic RNG and replay tests pass; additional multiworker/interrupt-resume stress remains to be witnessed. |
 | L-16 | D / cameras | Seed/frame-frozen multi-camera contact sheets; independent source-view scores; visual inspection budgets | Presentation-only shot dressing cannot change native geometry or lineage; synthetic views never pose as source images | Seed-frozen synthetic six-view witnesses and PNG galleries; per-view dressing cannot change native BRep in this path. |
 | L-17 | E / preregister | Seven seed matrix cohorts with matched budgets: I, B, Z, IB, IZ, BZ, IBZ | Source/intent hashes, constrained objectives, null cases and decision boundaries registered before any epoch | Seven preregistered input combinations and reproducible intent context; [#40578661646](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40578661646) passed. |
-| L-18 | E / crucible | Standalone capability audits + full-location integration; metamorphic perturbations and equal-budget controls | All matrix cases run the same helm/gates; source-relative wins and architectural novelty separately measured | Original seven-cohort run 79/84 native-valid; typed-input run 71/84 native-valid across three epochs. Formal held-out A/B remains open. |
+| L-18 | E / crucible | Standalone capability audits + full-location integration; metamorphic perturbations and equal-budget controls | All matrix cases run the same helm/gates; source-relative wins and architectural novelty separately measured | Three hosted cohorts: original 79/84 valid, typed 71/84, source-shaped 76/84. Formal A/B heldout still open. |
 | L-19 | E / review | Operator-facing galleries: source-group comparisons, six/extra orthos, sockets, routes, failures and constructive ancestry | Reviewer sees which seed/rule produced each body; no pet-name or aesthetic winner auto-promoted | Native finalist, full original source and six-view PNG gallery, no auto-promotion; Operator review UI beyond artifacts remains open. |
-| L-20 | E / aftermath | Remove obsolete fixed-genome/fixture couplings, update guidebook, handoff, research/memes and CI after verified replacement | No shadow controller, no old compatibility scaffold, no misleading repo-head status; archived failures remain attributable | Machina/fixture import boundary separated, wave docs and tests committed. Historical fixed paths retained; full repo-wide green and cleanup require exact-head verification. |
+| L-20 | E / aftermath | Remove obsolete fixed-genome/fixture couplings, update guidebook, handoff, research/memes and CI after verified replacement | No shadow controller, no old compatibility scaffold, no misleading repo-head status; archived failures remain attributable | Fixture-neutral machina and typed-only grammar verified at `e12391da` (41 tests; 76/84 native admissions). Historical fixed alpha paths still separate; entire repository CI verdict not inferred. |
 
 **Athenaion-derived non-negotiable test cases:**
 
