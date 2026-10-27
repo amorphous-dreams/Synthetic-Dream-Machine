@@ -61,12 +61,16 @@ def diversity_parents(rows,limit,*,specialist=False):
     # genuinely best whole-location genome before the global champion is
     # retained. Other masks still compete by local specialist score.
     champion=min(rows,key=lambda r:(r['combined_loss'],r['id']))
-    unique={champion['mask_sha256']:champion}
-    for row in ranked:unique.setdefault(row['mask_sha256'],row)
+    # Preserve source champion, then independent synthetic orthographic niches.
+    def view_key(row):
+        extra = row.get('orthographic_niche_sha256')
+        return (row['mask_sha256'], extra) if extra else row['mask_sha256']
+    unique={view_key(champion):champion}
+    for row in ranked:unique.setdefault(view_key(row),row)
     candidates=list(unique.values())
     selected=[champion]
     def add(row):
-        if row['mask_sha256'] not in {v['mask_sha256'] for v in selected}:
+        if view_key(row) not in {view_key(v) for v in selected}:
             selected.append(row)
     for row in candidates:
         if len(selected)>=limit:break

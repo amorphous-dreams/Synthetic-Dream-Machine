@@ -552,6 +552,8 @@ def _activation_switches(recipe):
     active={step.activation for step in recipe.steps if step.activation}
     if 'arch.birth.enable' in recipe.bounds:
         active.add('arch.birth.enable')
+    for key in ('arch.massing.west_tower','arch.massing.east_tower'):
+        if key in recipe.bounds: active.add(key)
     return tuple(sorted(active))
 
 
@@ -665,6 +667,13 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
         score_state = 'provisional' if project.reference else 'synthetic'
         construction_digest = project_code_digest(project)
         objectives = ('silhouette',)
+    # The first seed alone fixes synthetic inspection cameras for every epoch.
+    view_cameras = None
+    if breeding and compositor is not None and 'arch.massing.terrace_dx' in bounds:
+        from .orthographic_discovery import freeze_seed_views
+        seed_build=compositor.grow(recipe.initial)
+        view_cameras=freeze_seed_views(project,seed_build.scene.render_mesh(),
+                                      compositor.camera,score_size)
     exploration_seed_mesh = None
     if exploration_budget is not None:
         if compositor is None or project.reference is None:
@@ -896,8 +905,13 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                     mask=silhouette(mesh,compositor.camera,score_size)>96
                     if exploration_budget is not None:
                         from .exploration import measure_exploration
-                        observations[genome_digest(genome)]=measure_exploration(
-                            mesh,compositor.camera,exploration_seed_mesh,exploration_budget)
+                        observations.setdefault(genome_digest(genome),{}).update(
+                            measure_exploration(mesh,compositor.camera,
+                                                exploration_seed_mesh,exploration_budget))
+                    if view_cameras is not None:
+                        from .orthographic_discovery import measure_views
+                        observations.setdefault(genome_digest(genome),{})['orthographic'] = (
+                            measure_views(mesh,view_cameras,size=score_size))
                     if breeding:
                         visual_index[genome_digest(genome)]=visual_descriptor(mask)
                     normalized=np.array([(genome[k]-lo)/(hi-lo) for k,(lo,hi) in bounds.items()])
@@ -921,6 +935,9 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                     if "arch.birth.enable" in genome:
                         from .birth_relations import birth_traits
                         traits.update(birth_traits(assembly,genome))
+                    if 'arch.massing.terrace_dx' in genome:
+                        from .massing_relations import massing_traits
+                        traits.update(massing_traits(assembly,genome))
                     for key,value in genome.items():
                         if key in recipe.cad_keys or key.endswith('seed'):continue
                         lo,hi=bounds[key]
@@ -945,7 +962,7 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                     should_continue=go,
                     admission_hook=admission if exploration_budget is not None else None,
                     measurement_hook=(lambda genome,assembly: observations[genome_digest(genome)])
-                                     if exploration_budget is not None else None)
+                                     if exploration_budget is not None or view_cameras is not None else None)
                 data = runner.run(batch, adapter=adapter)
                 # Recover missing micro-loop receipts after a process crash
                 # between the CAD checkpoint and journal acknowledgement.

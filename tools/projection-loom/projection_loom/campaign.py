@@ -24,6 +24,22 @@ def _birth_ancestry(genome):
     return describe_birth(genome)
 
 
+def _massing_ancestry(genome):
+    from .massing_relations import describe_massing
+    return describe_massing(genome)
+
+
+def _non_source_niche(result):
+    observation = result.get('extra_observations',{}).get('orthographic')
+    if observation is None:
+        return None
+    token = observation.get('non_source_niche_sha256')
+    if (observation.get('schema') != 'projection-loom/seed-frozen-six-view-observation'
+            or not isinstance(token,str) or re.fullmatch('[0-9a-f]{64}',token) is None):
+        raise ValueError('Invalid synthetic orthographic evidence')
+    return token
+
+
 def visual_descriptor(mask):
     """Camera-fixed binary occupancy phenotype; identical pixels have one ID.
 
@@ -284,6 +300,7 @@ class LineageArchive:
                    'specialist_loss':float(regional + .2*result['losses']['silhouette'])
                          if regional is not None else float(result['combined_loss']),
                    'mask_sha256': mask_sha, 'niche': niche,
+                   'orthographic_niche_sha256': _non_source_niche(result),
                    'combined_loss': result['combined_loss'],
                    'losses': dict(result['losses']),
                    'witness_id': result.get('witness_id'),
@@ -353,12 +370,18 @@ FAMILY_FOCUSES = {
                  'join.enable','join.relief','join.fracture','join.seed','join.wave',
                  'grammar.gallery','grammar.gallery_span',
                  'arch.birth.enable','arch.birth.mode','arch.birth.width',
-                 'arch.birth.depth','arch.birth.clearance','arch.birth.setback'),
+                 'arch.birth.depth','arch.birth.clearance','arch.birth.setback',
+                 'arch.massing.terrace_dx','arch.massing.terrace_dy'),
     'crown': ('crown_taper','crown_offset','parapet_fraction','tower_height',
               'grammar.buttress','grammar.brace_span',
-              'brutalist.bands','brutalist.band_count','brutalist.projection'),
+              'brutalist.bands','brutalist.band_count','brutalist.projection',
+              'arch.massing.crown_dx','arch.massing.crown_dy',
+              'arch.massing.west_tower','arch.massing.east_tower',
+              'arch.massing.tower_spread','arch.massing.tower_stagger',
+              'arch.massing.tower_scale'),
     'keep': ('keep_taper','tower_height','spire_segmentation','gate_width',
-             'brutalist.piers','brutalist.pier_count'),
+             'brutalist.piers','brutalist.pier_count',
+             'arch.massing.keep_dx','arch.massing.keep_dy'),
     'crystal': ('crystal.relief','crystal.guide','crystal.fracture','crystal.seed'),
 }
 # Search populations and operator-given pet-names have separate authority.
@@ -374,7 +397,7 @@ def validate_breeding_recipe(recipe):
     # (gallery, buttress, brutalist, future detail) contribute their loci
     # when actually present; the brood filters its family foci by bounds.
     required={key for genes in FAMILY_FOCUSES.values()
-              for key in genes if not key.startswith(('grammar.','brutalist.','arch.birth.'))}
+              for key in genes if not key.startswith(('grammar.','brutalist.','arch.birth.','arch.massing.'))}
     if (recipe is None or not required.issubset(recipe.bounds)
             or not recipe.source_hashes or not recipe.cad_keys):
         raise ValueError('Breeding requires a source-bound structural recipe with all required loci')
@@ -483,7 +506,8 @@ def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_fami
                     discrete=tuple(k for k in focus if k in (
                         'spire_segmentation','join.enable',
                         'grammar.gallery','grammar.buttress',
-                        'arch.birth.enable','arch.birth.mode'))
+                        'arch.birth.enable','arch.birth.mode',
+                        'arch.massing.west_tower','arch.massing.east_tower'))
                     selected=(discrete[(generation + j//3) % len(discrete)]
                               if discrete else None)
                     # One reserved architecture birth seat per terraces brood:
@@ -506,5 +530,6 @@ def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_fami
                     'generation':generation,'mode':mode,
                     'transfer':dict(active_transfer) if active_transfer else None,
                     'interaction_pairs':interactions[:8],
-                    'architectural_birth':(_birth_ancestry(genome) if 'arch.birth.enable' in bounds else None)}))
+                    'architectural_birth':(_birth_ancestry(genome) if 'arch.birth.enable' in bounds else None),
+                    'primary_massing':(_massing_ancestry(genome) if 'arch.massing.terrace_dx' in bounds else None)}))
     return brood

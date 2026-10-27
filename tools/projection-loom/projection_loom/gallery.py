@@ -44,11 +44,14 @@ def regrow_compound_gallery(compositor, output, *, passes, count, unique_visual=
                  'niche':result['niche'],'epoch':epoch+1,
                  'combined_loss':result['combined_loss'],
                  'losses':result['losses'],'phenotype':result['phenotype'],
-                 'emitter':data['proposals'][proposal_id]['emitter']}
+                 'emitter':data['proposals'][proposal_id]['emitter'],
+                 'orthographic_niche':result.get('extra_observations',{}).get('orthographic',{}).get('non_source_niche_sha256')}
             if key not in pool or row['combined_loss']<pool[key]['combined_loss']:
                 pool[key]=row
     available=sorted(pool.values(),key=lambda x:(x['combined_loss'],x['proposal_id']))
     chosen=[]
+    # Source champion always occupies seat one. Further seats prefer different
+    # non-source spatial profiles before source-view niche fallback.
     # The full scored pool, not merely one elite per niche, remains eligible.
     # Retain a champion; reserve the remaining seats for distinct niches
     # before falling back to meaningful genome distance.
@@ -58,7 +61,9 @@ def regrow_compound_gallery(compositor, output, *, passes, count, unique_visual=
             continue
         if len(chosen)>=count:break
         if unique_visual and row['visual_mask'] and row['visual_mask'] in {x['visual_mask'] for x in chosen}:continue
-        if row['niche'] in {x['niche'] for x in chosen}:continue
+        if (row.get('orthographic_niche') and row['orthographic_niche'] in
+                {x.get('orthographic_niche') for x in chosen}):continue
+        if not row.get('orthographic_niche') and row['niche'] in {x['niche'] for x in chosen}:continue
         genome=row['genome']
         if any(sum(((genome[k]-x['genome'][k])/(hi-lo))**2
                    for k,(lo,hi) in compositor.recipe.bounds.items())**.5 < .08 for x in chosen):
@@ -80,6 +85,12 @@ def regrow_compound_gallery(compositor, output, *, passes, count, unique_visual=
         witness=silhouette(seed.scene.render_mesh(),compositor.camera,preview_size)>96
     pictures=[Image.fromarray(np.uint8(witness)*255,'L')]
     labels=['SOURCE (provisional)' if compositor.project.reference else 'SYNTHETIC SEED']
+    ortho_cameras = None
+    if any(r.get('orthographic_niche') for r in chosen):
+        from .orthographic_discovery import freeze_seed_views
+        original=compositor.grow(compositor.recipe.initial)
+        ortho_cameras=freeze_seed_views(compositor.project,
+            original.scene.render_mesh(),compositor.camera,preview_size)
     receipts=[]
     for n,row in enumerate(chosen,1):
         built=compositor.grow(row['genome'])
@@ -91,11 +102,21 @@ def regrow_compound_gallery(compositor, output, *, passes, count, unique_visual=
         mask=silhouette(built.scene.render_mesh(),compositor.camera,preview_size)>96
         Image.fromarray(np.uint8(mask)*255,'L').save(folder/'scored_mask.png')
         built.witness().save(folder/'relations.json')
+        ortho = None
+        contact = None
+        if ortho_cameras is not None and row.get('orthographic_niche'):
+            from .orthographic_discovery import measure_views, render_contact
+            ortho=measure_views(built.scene.render_mesh(),ortho_cameras,size=preview_size)
+            if ortho['non_source_niche_sha256'] != row['orthographic_niche']:
+                raise RuntimeError('Synthetic orthographic lineage changed on regrowth')
+            contact=render_contact(built.scene.render_mesh(),ortho_cameras,
+                                   folder/'six_view_contact.png',size=preview_size)
         receipts.append({'rank':n,'epoch':row['epoch'],'niche':row['niche'],
               'loss':row['combined_loss'],'genome':row['genome'],
               'recipe_sha256':compositor.recipe.sha256,'folder':str(folder),
               'cad_valid':True,'mesh_valid_for_render':True,
-              'cad_mesh_union_verified':False})
+              'cad_mesh_union_verified':False,
+              'orthographic':ortho,'six_view_contact':contact})
         pictures.append(Image.fromarray(np.uint8(mask)*255,'L'))
         labels.append(f'COMPOUND {n} / IoU {1-row["losses"]["silhouette"]:.3f}')
     W,H=preview_size

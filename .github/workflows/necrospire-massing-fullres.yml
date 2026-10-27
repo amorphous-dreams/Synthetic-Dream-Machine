@@ -1,0 +1,75 @@
+name: Necrospire primary-massing evolution and full-resolution oblique witnesses
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/green-jello-dinosaur-5--projection-loom
+    paths:
+      - '.github/workflows/necrospire-massing-fullres.yml'
+      - 'tools/projection-loom/projection_loom/**'
+      - 'tools/projection-loom/examples/necrospire/grow.py'
+      - 'tools/projection-loom/examples/necrospire/massing_fixture.py'
+      - 'tools/projection-loom/scripts/full_resolution_massing_audit.py'
+      - 'tools/projection-loom/tests/test_massing_fullres.py'
+permissions:
+  contents: read
+jobs:
+  massing-source-epochs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - name: Install native kernels and exact inputs
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+          python -m pip check
+      - name: Contract tests before generating offspring
+        run: |
+          python -m pytest -q tests/test_massing_fullres.py tests/test_arch_birth.py tests/test_campaign_breeding.py tests/test_campaign_archive.py
+      - name: Make new source-bound primary-massing project and recipe
+        run: python examples/necrospire/massing_fixture.py
+      - name: Run three OODA-HA generations (coarse proposal scoring only)
+        run: |
+          python -m projection_loom ooda-ha-run \
+            --project examples/necrospire/project_massing.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_massing.json \
+            --control full-speed --breeding --passes 3 \
+            --offspring-per-family 4 --exact-budget 12 --detail-budget 6 \
+            --seed 41 --score-size 128 192 --finalists 3 \
+            --out out/necrospire-massing-fullres \
+            | tee massing-generation.log
+      - name: Audit source-held native epoch receipts
+        run: |
+          python scripts/check_compound_epoch.py --out out/necrospire-massing-fullres
+      - name: Independently re-grow and rescore native offspring at 1024x1536
+        run: |
+          python scripts/full_resolution_massing_audit.py \
+            --project examples/necrospire/project_massing.json \
+            --recipe examples/necrospire/hybrid/recipe_massing.json \
+            --session out/necrospire-massing-fullres \
+            --out out/full-resolution-finalists \
+            | tee full-resolution-result.log
+      - name: Retain full receipts, candidates, masks and all failure reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: necrospire-full-resolution-massing
+          path: |
+            tools/projection-loom/out/necrospire-massing-fullres/
+            tools/projection-loom/out/full-resolution-finalists/
+            tools/projection-loom/massing-generation.log
+            tools/projection-loom/full-resolution-result.log
+            tools/projection-loom/examples/necrospire/project_massing.json
+            tools/projection-loom/examples/necrospire/hybrid/recipe_massing.json
+          retention-days: 60

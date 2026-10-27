@@ -428,3 +428,22 @@ Then vary relation modes under a controlled native audit budget, retaining
 real CAD refusals and their reasons. Do not call those future experiments
 complete merely because the first cohort passed.
 
+
+
+## Experiment Zero · source-frozen primary massing and independent high-resolution audit
+
+The early-alpha experimental primary-massing grammar now inherits source-bound
+terrace/keep/crown displacements and two optional watchtowers under the *same*
+six-family OODA-HA controller. The synthetic five other orthographic views
+share seed-frozen inspection cameras and help preserve different inherited
+morphologies even when oblique silhouettes coincide. They provide no extra
+artwork observations. See [MASSING_EVOLUTION](MASSING_EVOLUTION.md).
+
+The dedicated workflow `.github/workflows/necrospire-massing-fullres.yml`
+uses bounded 128×192 scoring during three OODA-HA generations, then re-grows
+every scored native-valid descendant for an independent 1024×1536 source
+alpha IoU audit with the exact original fixed oblique camera. These independent
+high-resolution results do not retroactively select parents or authorize
+Operator pet-name promotion. At authoring time, the campaign had not yet
+produced hosted results; inspect exact-head workflow receipts and archives
+before calling any offspring successful.
