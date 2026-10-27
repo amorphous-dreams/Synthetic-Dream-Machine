@@ -234,6 +234,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   }
 
   let kh: KeyhiveProvider | null = null;
+  // THE FACELESS FLOOR'S VERIFIER. No Keyhive stands, so no capability delegates to anybody: the place acts on its own
+  // ground. A verb the vessel's own presence channel took (`channel: "local"`) clears on a bag this vessel registered at the
+  // floor; every other ask, a peer's or one that names a face's bag, answers the waking-floor refusal.
+  const floorBags = new Set<string>(daemonAuth?.registerBags ?? []);
+  const floorVerifier: CapabilityVerifier = {
+    verify: async ({ bagUrl, channel }) => channel === "local" && (floorBags.has(bagUrl) || isVesselGround(bagUrl))
+      ? { ok: true }
+      : { ok: false, reason: "waking-floor: lightAFace" },
+  };
   let faceLedger: BagDocLedger | null = null;
   // THE CONTENT-KEY HOLDER, seated beside the face identity (sealed-store#/the-store). Bare
   // content keys live in it, in this island's memory alone: no verb answers one, and none crosses the port.
@@ -317,6 +326,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // Keyhive gates this slot by its lar: URI; register the working doc and grant the seated face its reach.
       if (faceDoor() && await kh!.knowsAgent(daemonAuth.personaGroupId!)) await faceDoor()!.mint(working, "admin");
       else if (kh) await registerBagsDurably({ provider: kh, bags: [working], ledger: daemonBagDocLedger(ctx.composite) });
+      else floorBags.add(working);
       const temp = wikiSlotUri(slug, "temp");
       if (ctx.composite.hasWritableBag(temp)) {
         const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: "daemon-working-attach" };
@@ -922,7 +932,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     },
     verifierFactory: async (ctx: IslandContext) => {
       if (!daemonAuth.atom && !daemonAuth.personaGroupId && !daemonAuth.deviceEdge) {
-        return { verify: async () => ({ ok: false, reason: "waking-floor: lightAFace" }) };
+        return floorVerifier;
       }
       // THE BINDING GATE'S OWN LEASE READ — the same fold, done once here (boot only re-runs the gate at
       // boot, so a single read at this moment is exactly as fresh as the gate itself). An UNAVAILABLE frontier
@@ -1199,6 +1209,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const bag = wikiSlotUri(wikiSlug, kind);
         if (faceDoor() && await kh!.knowsAgent(daemonAuth.personaGroupId!)) await faceDoor()!.mint(bag, "admin");
         else if (kh) await kh.registerBag(bag);
+        else floorBags.add(bag);
       }
       return bindings;
     },

@@ -50,6 +50,15 @@ describe("the faceless floor refuses content verbs by name", () => {
     expect(await verifier.verify({ presenter: "public", bagUrl: "lar:///daemon", access: "read" })).toMatchObject({ ok: false, reason: expect.stringContaining("waking-floor") });
     expect(wire(false).get("where")).toBeTypeOf("function");
   });
+  test("the floor's own presence clears the place's ground; a peer's ask and a face's bag still refuse", async () => {
+    const opts = operatorDaemonOptions(manifest(false));
+    const verifier = await opts.verifierFactory!(fakeCtx());
+    const ground = "lar:///ha.ka.ba/bags/daemon";
+    expect(await verifier.verify({ presenter: "0xplace", bagUrl: ground, access: "admin", channel: "local" })).toEqual({ ok: true });
+    // CONTROL: the same ask without the local channel refuses (a peer wrote its presenter), and so does a face's bag.
+    expect(await verifier.verify({ presenter: "0xplace", bagUrl: ground, access: "admin" })).toMatchObject({ ok: false });
+    expect(await verifier.verify({ presenter: "0xplace", bagUrl: "lar:///ha.ka.ba/bags/persona/some-face", access: "admin", channel: "local" })).toMatchObject({ ok: false, reason: expect.stringContaining("waking-floor") });
+  });
   test("V1 — every ACTION verb refuses with the lift and reaches no cap", async () => {
     const registry = wire(false);
     capCalls.length = 0;
