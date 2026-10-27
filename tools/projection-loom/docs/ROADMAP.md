@@ -34,10 +34,10 @@ compatibility requirement in early alpha. All rows below carry
 | L-06 | B / brutalist | Reusable grammar adapter for pinned nosycat-derived modular construction, license and producer/consumer operator contracts | Grammar alone produces native-admitted structures without any reference image or Necrospire builder | **Wave B implemented (pending exact-head CI).** 
 | L-07 | B / ziggurat | Explicit authored proxy adapter with stepped tiers, cores, courtyards, voids and semantic sockets | Proxy alone develops further geometry with proposal authority; fiction never becomes inferred dimensions | **Wave B implemented (pending exact-head CI).** 
 | L-08 | B / composition | Compose inputs alone, in all three pairs and as a triple; bind relationships without overwriting per-input authority | Seven explicit seed matrix cases plus source/conflicting-frame refusals have retained receipts | **Wave B implemented (pending exact-head CI).** 
-| L-09 | C / growth | Bounded typed developmental program supporting spawn, split, attach, bridge, subtract and repeat | Variable-length structures appear; descendants inherit rule trees, not only fixed scalar offsets |
-| L-10 | C / sites | Semantic site producers and consumers: supporting ledges, sockets, attachment affordances, terrain/structure occupation zones | One grown terrace creates usable sites for another generator; collision/footprint/clearance witnesses stay distinct |
-| L-11 | C / ancestry | Structure-aware mutation/crossover and source-bound grammar lineages | Reparent/duplicate/add/delete rule subtrees survive regrowth with independent program ancestry |
-| L-12 | C / native | Multi-body constructive compilation, native BRep contact and void gates, spatial routes | Every body validates its own native truth; separate terrain/water/surfaces never claim a scene-wide fused solid |
+| L-09 | C / growth | Bounded typed developmental program supporting spawn, split, attach, bridge, subtract and repeat | Variable-length structures appear; descendants inherit rule trees, not only fixed scalar offsets | **Wave C implemented pending CI.**
+| L-10 | C / sites | Semantic site producers and consumers: supporting ledges, sockets, attachment affordances, terrain/structure occupation zones | One grown terrace creates usable sites for another generator; collision/footprint/clearance witnesses stay distinct | **Wave C implemented pending CI.**
+| L-11 | C / ancestry | Structure-aware mutation/crossover and source-bound grammar lineages | Reparent/duplicate/add/delete rule subtrees survive regrowth with independent program ancestry | **Wave C implemented pending CI.**
+| L-12 | C / native | Multi-body constructive compilation, native BRep contact and void gates, spatial routes | Every body validates its own native truth; separate terrain/water/surfaces never claim a scene-wide fused solid | **Wave C native body gate exercised; cross-seed developmental compiler handoff pending E.**
 | L-13 | D / objectives | Intent-conditioned metrics: only warranted image evidence receives IoU; add boundaries and region-specific error; grammar/proxy use their own measures | Image-free cohort has no fabricated image fitness; camera/landmark uncertainties remain surfaced |
 | L-14 | D / fairness | Structural novelty and quality-diversity niches, with reserved exact auditions per active grammar/operator | Newly born construction rules receive measurable exact/native trial opportunities rather than solely source-fit rankings |
 | L-15 | D / replay | Independent keyed RNG substreams per source+rule+genome+epoch; deterministic mutation, module execution and resume | Worker order, scheduling and replay leave logical descendants/receipts invariant; future forks remain explicit |
@@ -84,6 +84,10 @@ Implemented `intent_seed.py`: immutable source/intent/context, independent conte
 ### Wave B checkpoint · 2026-10-27
 
 Added independent image-group, constructive-grammar and ziggurat-proxy adapters plus seven-case native CAD composition tests. Image alpha remains a channel, not another view. Structural source inputs retain proposal authority; image-only baselines explicitly label the scaffold provisional. Currently support local source paths and one normalized location inventory; multi-view pose optimization and heritable developmental programs belong to later waves. Full native audit verdict waits for CI at the Wave B SHA.
+
+### Wave C checkpoint · 2026-10-27
+
+Added typed finite `GrowthProgram` with variable-length foundation/spawn/split/bridge/carve operations, semantic coordinate sites and exact native per-body admission. Deterministic mutation and subtree-grafting crossover preserve inherited program digests. The compiler never uses BRep face indices as stable site identity. It retains native validity gates and explicit material/void status. Dedicated tests exercise original, splintering and independently inherited forms. Integration of these genomes into seed matrix reproduction remains tracked for Waves D/E. Check exact-head CI and do not claim it passed before it concludes.
 
 ## Source-head closing checkpoint · historical records preserved
 
