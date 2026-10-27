@@ -16,8 +16,10 @@ from .provenance_encoding import canonical_json_sha256
 
 def source_fit(reference,candidate,*,false_positive_cost=1.6):
     """Exact shared pixel grid; overlarge rectangular blobs lose precision."""
-    r=np.asarray(reference)>96
-    c=np.asarray(candidate)>96
+    rr=np.asarray(reference)
+    cc=np.asarray(candidate)
+    r=rr if rr.dtype==np.bool_ else rr>96
+    c=cc if cc.dtype==np.bool_ else cc>96
     if r.shape != c.shape or r.ndim!=2 or not r.any():
         raise ValueError("Source and candidate need one matching nonempty pixel grid")
     tp=int((r&c).sum())

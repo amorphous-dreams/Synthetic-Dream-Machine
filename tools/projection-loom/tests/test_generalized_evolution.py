@@ -49,3 +49,13 @@ def test_fixed_cameras_are_unchanged_by_new_candidate():
     assert first["camera_authority"]=="seed-frozen-provisional"
     assert first["source_observations"]==0
     assert first["synthetic_non_source_sha256"]!=second["synthetic_non_source_sha256"]
+
+
+def test_bool_mask_and_l8_mask_have_identical_source_scores():
+    target=np.zeros((64,64),np.uint8)
+    target[4:42,9:34]=255
+    candidate=target.copy()
+    candidate[10:15,33:40]=255
+    a=source_fit(target,candidate)
+    b=source_fit(target.astype(bool),candidate.astype(bool))
+    assert a==b

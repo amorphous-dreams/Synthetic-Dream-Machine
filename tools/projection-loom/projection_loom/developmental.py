@@ -211,11 +211,19 @@ def compile_growth(program:GrowthProgram,*,overlap=.20,native_audit=True):
         elif node.op=="carve":
             host=handles[node.target][-1]
             bb=a.parts[host].solid.BoundingBox()
-            center=((bb.xmin+bb.xmax)/2+node.offset[0],
-                    (bb.ymin+bb.ymax)/2+node.offset[1],
-                    (bb.zmin+bb.zmax)/2)
+            if node.face in FACES:
+                # An exterior doorway intersects the native support face.
+                site=sites[host+"/"+node.face]
+                center=_spawn_at(site,node.size,node.offset,overlap)
+                kind,exterior="doorway",True
+            else:
+                # A recess never pretends to provide exterior circulation.
+                center=((bb.xmin+bb.xmax)/2+node.offset[0],
+                        (bb.ymin+bb.ymax)/2+node.offset[1],
+                        (bb.zmin+bb.zmax)/2)
+                kind,exterior="recess",False
             a.add_void(node.key,box(center,node.size),host=host,
-                       kind="room",exterior=False,slot=node.key)
+                       kind=kind,exterior=exterior,slot=node.key)
             handles[node.key]=[node.key]
             relationship.append((node.key,"carves",host))
     result=DevelopmentResult(a,sites,tuple(relationship),program.identity)
@@ -233,8 +241,26 @@ def mutate_growth(program:GrowthProgram,context:GrowthContext,*,epoch,child,
     rng=random.Random(context.substream_seed("growth",epoch,child))
     current=list(program.nodes)
     for _ in range(edits):
-        options=["rescale","offset","substitute","insert","prune","reparent"]
+        options=["rescale","offset","substitute","insert","prune","reparent",
+                 "add-bridge","add-carve","add-split"]
         op=rng.choice(options)
+        supports=[n for n in current if n.op!="carve"]
+        if op in ("add-bridge","add-carve","add-split") and len(current)<MAX_NODES-2:
+            key=f"grown_{epoch}_{child}_{len(current)}"
+            if key in {n.key for n in current}:
+                continue
+            host=rng.choice(supports)
+            if op=="add-carve":
+                current.append(GrowthNode(key,"carve",parent=host.key,target=host.key,
+                              face="east",size=(.65,.65,.65)))
+            elif op=="add-split":
+                current.append(GrowthNode(key,"split",parent=host.key,face="up",
+                              size=(1.0,1.0,.9),repeats=2))
+            elif len(supports)>1:
+                other=rng.choice([n for n in supports if n.key!=host.key])
+                current.append(GrowthNode(key,"bridge",parent=host.key,
+                              target=other.key,size=(.65,.65,.65)))
+            continue
         if op=="prune" and len(current)>1:
             children={n.parent for n in current if n.parent}
             leaves=[i for i,n in enumerate(current) if i and n.key not in children

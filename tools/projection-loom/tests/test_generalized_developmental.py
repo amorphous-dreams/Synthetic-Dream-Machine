@@ -65,3 +65,22 @@ def test_compiler_uses_no_technical_face_index():
     result=compile_growth(p)
     assert all("/" in key for key in result.sites)
     assert "face" not in str(result.relationships)
+
+
+def test_bridges_and_exterior_cuts_have_native_witnesses():
+    source=GrowthProgram((
+        GrowthNode("root","foundation",size=(8,8,3)),
+        GrowthNode("west","spawn",parent="root",face="up",
+                   size=(2,2,1.5),offset=(-2,0)),
+        GrowthNode("east","spawn",parent="root",face="up",
+                   size=(2,2,1.5),offset=(2,0)),
+        GrowthNode("span","bridge",parent="west",target="east",
+                   size=(.6,.6,1)),
+        GrowthNode("opening","carve",parent="root",target="root",
+                   face="east",size=(.7,.8,1.1)),
+    ))
+    result=compile_growth(source)
+    audit=result.audit()
+    assert audit["union_valid"] and audit["valid"]
+    assert "opening" in result.assembly.voids.voids
+    assert any(rel[1]=="bridges" for rel in result.relationships)
