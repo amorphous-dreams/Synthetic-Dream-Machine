@@ -333,7 +333,7 @@ export class FactLedger {
         if (fact.state !== "committed" || fact.bootEpoch >= this.bootEpoch) continue;
         const landed = await this.composite.get(`${OUTCOME_URI_PREFIX}${fact.requestId}`);
         const fields = landed && !landed.meta?.deleted ? landed.tiddler as Record<string, unknown> : null;
-        const status = fields && (fact.face === undefined || fields["face"] === fact.face) ? fields["status"] : undefined;
+        const status = fields && fields["face"] === fact.face ? fields["status"] : undefined;
         const settled: ReceiptFact = landed && (status === "done" || status === "error")
           ? { ...fact, state: status, terminal: status, outcomeBytes: outcomeBytesOf(landed.tiddler as Record<string, unknown>) }
           : { ...fact, state: "interrupted" };
@@ -506,6 +506,7 @@ export class FactLedger {
       ...(victim.inputDigest !== undefined && { inputDigest: victim.inputDigest }),
       ...(victim.effectKey !== undefined && { effectKey: victim.effectKey }),
       ...(victim.face !== undefined && { face: victim.face }),
+      ...(victim.action !== undefined && { action: victim.action }),
       ...(victim.terminal  !== undefined && { terminal:  victim.terminal }),
     };
     // THE BODY LEAVES FIRST, THEN THE FACT SAYS SO. A stop between the two leaves a landed fact with no body: its

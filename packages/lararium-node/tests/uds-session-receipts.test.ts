@@ -177,4 +177,36 @@ describe("face bound session receipts", () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  test("a ring eviction keeps the face and the action, so the receipt still names both and reads evicted", async () => {
+    const repo = new Repo({ sharePolicy: async () => true });
+    const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+    const workingHandle = repo.create<LarDoc>(emptyLarDoc());
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
+    composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(workingHandle, wikiSlotUri("daemon", "working")), writable: true });
+    const dir = mkdtempSync(join(tmpdir(), "uds-session-evict-"));
+    const claim = await claimStore(dir, { holder: "vessel" });
+    const door: UdsSessionDoor = { open: async ({ faceRef }) => ({ ok: true, supply: {
+      face: face(faceRef), profile: "seat", presenter: `verified-${faceRef}` } }) };
+    const front = serveUdsFront({ claim });
+    front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo, sessions: door, ring: 1,
+      placeVerb: (o) => {
+        const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", requestedBy: o.requestedBy,
+          ...(o.face !== undefined && { face: o.face }), cause: "test-worker", batchMode: "best-effort", results: { summary: { ok: true } } });
+        daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
+      } }));
+    const peer = await Peer.connect(claim.socketPath);
+    try {
+      const opened = await peer.ask({ op: "session:open", requestId: "open", faceRef: "a", hand: "seat" });
+      const env = { ownerEpoch: opened.ownerEpoch, sessionId: opened.sessionId, generation: opened.generation, faceRef: opened.faceRef };
+      for (const id of ["old", "newer", "newest"]) {
+        expect(await peer.ask({ op: "session:call", ...env, requestId: id, verb: "load", args: {} })).toMatchObject({ status: "done" });
+      }
+      expect(await peer.ask({ op: "session:receipt", ...env, requestId: "old" }))
+        .toMatchObject({ receipt: { state: "evicted", action: "load", face: "proof-a" } });
+    } finally {
+      peer.destroy(); front.close(); await claim.release(); rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });

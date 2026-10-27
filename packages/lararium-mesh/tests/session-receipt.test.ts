@@ -24,7 +24,7 @@ describe("session receipt", () => {
     expect(validateSessionReceipt({ ...base, state: "done", position: { ...base.position, durable:
       { docUrl: "doc", heads: ["h"], ownerEpoch: "owner", timestamp: "2026-01-01" } } })).toBeNull();
   });
-  test("fact fields carry face and action; eviction keeps face alone", () => {
+  test("fact fields carry face and action; eviction keeps both", () => {
     const fact = buildReceiptFact({ requestId: "r", state: "committed", seq: 1, bootEpoch: 2,
       inputDigest: "digest", face: "proof-a", action: "load" });
     expect(parseReceiptFact(fact.tiddler as Record<string, unknown>)).toMatchObject({ face: "proof-a", action: "load" });
@@ -32,7 +32,6 @@ describe("session receipt", () => {
     expect(parseReceiptFact({ ...fact.tiddler, action: "" })).toBeNull();
     const evicted = buildReceiptFact({ requestId: "r", state: "evicted", seq: 1, inputDigest: "digest",
       face: "proof-a", action: "load" });
-    expect(evicted.tiddler).not.toHaveProperty("action");
-    expect(parseReceiptFact(evicted.tiddler as Record<string, unknown>)).toMatchObject({ face: "proof-a", state: "evicted" });
+    expect(parseReceiptFact(evicted.tiddler as Record<string, unknown>)).toMatchObject({ face: "proof-a", action: "load", state: "evicted" });
   });
 });

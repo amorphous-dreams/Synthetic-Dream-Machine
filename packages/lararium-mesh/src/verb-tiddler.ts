@@ -229,7 +229,7 @@ export function buildReceiptFact(fact: ReceiptFact): LarTiddlerRecord {
       ...(fact.inputDigest !== undefined && { "input-digest": fact.inputDigest }),
       ...(fact.effectKey   !== undefined && { "effect-key":   fact.effectKey }),
       ...(fact.face !== undefined && { face: fact.face }),
-      ...(fact.state !== "evicted" && fact.action !== undefined && { action: fact.action }),
+      ...(fact.action !== undefined && { action: fact.action }),
       ...(fact.terminal    !== undefined && { terminal:       fact.terminal }),
       ...("bootEpoch" in fact && fact.bootEpoch !== undefined && { "boot-epoch":   String(fact.bootEpoch) }),
       ...("outcomeBytes" in fact && { "outcome-bytes": String(fact.outcomeBytes) }),
@@ -259,7 +259,6 @@ export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact |
       (fields["action"] !== undefined && (typeof fields["action"] !== "string" || !fields["action"]))) return null;
   const face = fields["face"] as string | undefined;
   const action = fields["action"] as string | undefined;
-  if (state === "evicted" && action !== undefined) return null;
   const identity = { ...(face !== undefined && { face }), ...(action !== undefined && { action }) };
   const terminalRaw = fields["terminal"];
   const terminal = terminalRaw === "done" || terminalRaw === "error" ? terminalRaw : undefined;
@@ -277,7 +276,7 @@ export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact |
   if (state === "evicted" && inputDigest === undefined) {
     // A cancel names no content: any `terminal` or `effect-key` field beside it, sound or not, reads torn.
     if (fields["terminal"] !== undefined || fields["effect-key"] !== undefined) return null;
-    return { requestId, state, seq, ...(face !== undefined && { face }) };
+    return { requestId, state, seq, ...identity };
   }
   // Every other state claims a digest — a committed/done/error fact with none on the wire reads as torn,
   // never as an "unverifiable" absence.
@@ -296,11 +295,7 @@ export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact |
     if (epoch === undefined) return null;
     return { ...common, state, bootEpoch: epoch };
   }
-  if (state === "evicted") {
-    const { action: _action, ...kept } = common;
-    void _action;
-    return { ...kept, state, ...(epoch !== undefined && { bootEpoch: epoch }) };
-  }
+  if (state === "evicted") return { ...common, state, ...(epoch !== undefined && { bootEpoch: epoch }) };
   // A landed fact names the measure of the outcome it keeps; none on the wire reads as torn.
   const bytesRaw = fields["outcome-bytes"];
   const bytesRead = typeof bytesRaw === "string" && /^\d+$/.test(bytesRaw) ? Number.parseInt(bytesRaw, 10)
