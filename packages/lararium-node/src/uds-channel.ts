@@ -46,6 +46,7 @@ import {
   wikiSlotUri,
   RECEIPT_FACT_URI_PREFIX, RECEIPT_RING_DEFAULT, RECEIPT_RING_BYTES_DEFAULT, buildReceiptFact, parseReceiptFact, outcomeBytesOf,
   verbInputDigest, SessionTable, sessionBinding, type SessionBinding,
+  faceScopedId, type SessionReceipt, type DurabilityReceipt,
   type ReceiptFact, type ReceiptFactDraft,
 } from "@lararium/mesh";
 import type { CapabilityProfile, Hand, SessionFace } from "@lararium/mesh/session-contract";
@@ -331,7 +332,8 @@ export class FactLedger {
         const fact = facts[i]!;
         if (fact.state !== "committed" || fact.bootEpoch >= this.bootEpoch) continue;
         const landed = await this.composite.get(`${OUTCOME_URI_PREFIX}${fact.requestId}`);
-        const status = landed && !landed.meta?.deleted ? (landed.tiddler as Record<string, unknown>)["status"] : undefined;
+        const fields = landed && !landed.meta?.deleted ? landed.tiddler as Record<string, unknown> : null;
+        const status = fields && (fact.face === undefined || fields["face"] === fact.face) ? fields["status"] : undefined;
         const settled: ReceiptFact = landed && (status === "done" || status === "error")
           ? { ...fact, state: status, terminal: status, outcomeBytes: outcomeBytesOf(landed.tiddler as Record<string, unknown>) }
           : { ...fact, state: "interrupted" };
@@ -392,7 +394,7 @@ export class FactLedger {
    * ahead of every other check, and is never written over — this ledger does not guess what a
    * prior process meant to record.
    */
-  async arbitrate(requestId: string, inputDigest: string):
+  async arbitrate(requestId: string, inputDigest: string, face?: string, action?: string, effectKey?: string):
     | Promise<{ readonly verdict: "run" }
       | { readonly verdict: "refuse"; readonly reason: "abandoned" | "interrupted" | "already-committed" | "request-id-reused-with-changed-input" | "retention-gap" | "receipt-fact-torn" }> {
     return this.inTurn(async () => {
@@ -405,7 +407,8 @@ export class FactLedger {
         if (existing.inputDigest !== inputDigest) return { verdict: "refuse", reason: "request-id-reused-with-changed-input" };
         return { verdict: "refuse", reason: "already-committed" };
       }
-      await this.record({ requestId, inputDigest, state: "committed", bootEpoch: this.bootEpoch });
+      await this.record({ requestId, inputDigest, state: "committed", bootEpoch: this.bootEpoch,
+        ...(face !== undefined && { face }), ...(action !== undefined && { action }), ...(effectKey !== undefined && { effectKey }) });
       return { verdict: "run" };
     });
   }
@@ -414,11 +417,11 @@ export class FactLedger {
    *  when a fact already stands (committed, abandoned, or otherwise) — never overwrite a decision
    *  already made. Flushes durably before this returns (the drop itself never answers the caller —
    *  its socket is already gone — but a LATER read-back under the same id must find this fact). */
-  async abandonDrop(requestId: string, inputDigest: string): Promise<void> {
+  async abandonDrop(requestId: string, inputDigest: string, face?: string, action?: string): Promise<void> {
     return this.inTurn(async () => {
       const existing = await this.get(requestId);
       if (existing) return;
-      await this.record({ requestId, inputDigest, state: "abandoned" });
+      await this.record({ requestId, inputDigest, state: "abandoned", ...(face !== undefined && { face }), ...(action !== undefined && { action }) });
     });
   }
 
@@ -427,11 +430,11 @@ export class FactLedger {
    *  never by digest). A no-op once a decision already stands: a cancel racing a dispatch that
    *  already won refuses to un-dispatch it, and a cancel racing a prior cancel/abandon leaves that
    *  fact exactly as it was. */
-  async cancel(requestId: string): Promise<void> {
+  async cancel(requestId: string, face?: string): Promise<void> {
     return this.inTurn(async () => {
       const existing = await this.get(requestId);
       if (existing) return;
-      await this.record({ requestId, state: "abandoned" });
+      await this.record({ requestId, state: "abandoned", ...(face !== undefined && { face }) });
     });
   }
 
@@ -448,12 +451,13 @@ export class FactLedger {
    * is a real content claim, never fabricated. With neither side holding one, this observation is
    * refused by name rather than minting an ill-typed claim.
    */
-  async observeOutcome(requestId: string, status: "done" | "error", inputDigest: string | undefined, outcomeBytes: number): Promise<void> {
+  async observeOutcome(requestId: string, status: "done" | "error", inputDigest: string | undefined, outcomeBytes: number, face?: string, action?: string): Promise<void> {
     return this.inTurn(async () => {
       const existing = await this.get(requestId);
       if (existing === "torn") return; // never write over an unreadable fact — leave it torn, not guessed
       if (existing) {
         if (existing.state === "evicted") return; // already dropped
+        if (existing.face !== undefined && existing.face !== face) return;
       // Already recorded, at this verdict and this measure. A body re-written under the same verdict gets
       // measured again, so the tally reads what the store holds.
       if (existing.state === status && existing.outcomeBytes === outcomeBytes) return;
@@ -467,6 +471,8 @@ export class FactLedger {
         const updated: ReceiptFact = {
           requestId, seq: existing.seq, inputDigest: digest, state: status, terminal: status, outcomeBytes,
           ...(existing.effectKey !== undefined && { effectKey: existing.effectKey }),
+          ...(existing.face !== undefined && { face: existing.face }),
+          ...(existing.action !== undefined && { action: existing.action }),
           ...("bootEpoch" in existing && existing.bootEpoch !== undefined && { bootEpoch: existing.bootEpoch }),
         };
         await this.composite.put(buildReceiptFact(updated), { kind: "lares-verb", requestId });
@@ -482,7 +488,8 @@ export class FactLedger {
         // "unverifiable"; refuse the mint by name rather than fabricate a claim.
         return;
       }
-      await this.record({ requestId, state: status, terminal: status, inputDigest, outcomeBytes });
+      await this.record({ requestId, state: status, terminal: status, inputDigest, outcomeBytes,
+        ...(face !== undefined && { face }), ...(action !== undefined && { action }) });
     });
   }
 
@@ -498,6 +505,7 @@ export class FactLedger {
       requestId: victim.requestId, state: "evicted", seq: victim.seq,
       ...(victim.inputDigest !== undefined && { inputDigest: victim.inputDigest }),
       ...(victim.effectKey !== undefined && { effectKey: victim.effectKey }),
+      ...(victim.face !== undefined && { face: victim.face }),
       ...(victim.terminal  !== undefined && { terminal:  victim.terminal }),
     };
     // THE BODY LEAVES FIRST, THEN THE FACT SAYS SO. A stop between the two leaves a landed fact with no body: its
@@ -677,6 +685,12 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   // wrote, closing H1R (a same-id reuse re-running after restart) and H4 (a cancelled id's
   // abandonment not surviving one).
   const ledger = new FactLedger(composite, opts.repo, opts.ring ?? RECEIPT_RING_DEFAULT, claim.bootEpoch, opts.ringBytes ?? RECEIPT_RING_BYTES_DEFAULT, log);
+  const ownerEpoch = randomUUID();
+  const settleDurably = async (): Promise<DurabilityReceipt> => {
+    const heads = daemonHandle.heads();
+    await opts.repo.flush([daemonHandle.documentId]);
+    return { docUrl: daemonHandle.url, heads, ownerEpoch };
+  };
 
   const readOutcomeFor = async (requestId: string): Promise<Record<string, unknown> | null> => {
     const event = await composite.get(`${OUTCOME_URI_PREFIX}${requestId}`);
@@ -793,6 +807,24 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     return { requestId, state: fact?.state === "committed" ? "committed" : "unknown" };
   };
 
+  const sessionReceipt = async (requestId: string, face: string): Promise<SessionReceipt> => {
+    const scoped = faceScopedId(face, requestId);
+    const found = await ledger.get(scoped);
+    const fact = found === "torn" || found?.face !== face ? null : found;
+    const event = await composite.get(`${OUTCOME_URI_PREFIX}${scoped}`);
+    const fields = event && !event.meta?.deleted ? event.tiddler as Record<string, unknown> : null;
+    const outcome = fields?.["face"] === face ? await readOutcomeFor(scoped) : null;
+    const status = outcome?.["status"] === "done" || outcome?.["status"] === "error" ? outcome["status"] : undefined;
+    const state = fact?.state === "evicted" ? "evicted" : status ?? (fact?.state === "committed" ? "pending" : fact?.state ?? "unknown");
+    const terminal = state === "done" || state === "error" || state === "interrupted" || state === "evicted";
+    const durable = terminal ? await settleDurably() : undefined;
+    return { requestId, action: fact?.action ?? (typeof fields?.["verb"] === "string" && fields["face"] === face ? fields["verb"] : "unknown"),
+      face, state,
+      ...(outcome && (state === "done" || state === "error") && { outcome: { ...outcome, requestId } }),
+      position: { ownerEpoch, bootEpoch: fact && "bootEpoch" in fact && fact.bootEpoch !== undefined ? fact.bootEpoch : claim.bootEpoch,
+        ...(fact && { seq: fact.seq }), ...(durable && { durable }) } };
+  };
+
   // Observe every terminal outcome landing in the durable doc, on ANY path (D1, H1R+M1). The
   // single-writer fact ledger promotes/mints the matching fact here — never inside the worker,
   // never inside `arbitrate` itself — so a remote peer's summons-dispatched verb (one this channel
@@ -806,7 +838,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     const status = fields["status"];
     if (status !== "done" && status !== "error") return;
     const inputDigest = typeof fields["input-digest"] === "string" ? fields["input-digest"] : undefined;
-    void Promise.resolve().then(() => ledger.observeOutcome(requestId, status, inputDigest, outcomeBytesOf(fields))).catch(
+    void Promise.resolve().then(() => ledger.observeOutcome(requestId, status, inputDigest, outcomeBytesOf(fields),
+      typeof fields["face"] === "string" ? fields["face"] : undefined,
+      typeof fields["verb"] === "string" ? fields["verb"] : undefined)).catch(
       (e) => log(`receipt-fact observation failed for ${requestId}: ${e instanceof Error ? e.message : String(e)}`),
     );
   });
@@ -816,7 +850,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   // `arbitrating` counts the frames still inside their own digest / ledger turn, so a caller that hangs up early
   // never lets the seat read as drained while its abandonment still writes.
   const inFlight = new Set<Socket>();
-  const table = new SessionTable(randomUUID());
+  const table = new SessionTable(ownerEpoch);
   let closing = false;
   const sessionSockets = new Map<Socket, { binding: SessionBinding; sessionId?: string; supply?: UdsSessionSupply }>();
   const sessionTurns = new Map<Socket, Promise<void>>();
@@ -861,7 +895,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         faceRef: opened.session.face.proofSubject, caps: opened.session.caps });
       return;
     }
-    if (frame["op"] !== "session:call" && frame["op"] !== "session:close") return sessionRefuse(sock, "unknown-op", requestId);
+    if (frame["op"] !== "session:call" && frame["op"] !== "session:close" &&
+        frame["op"] !== "session:receipt" && frame["op"] !== "session:cancel") return sessionRefuse(sock, "unknown-op", requestId);
     const checked = table.checkBound(frame, state.binding);
     if (!checked.ok) return sessionRefuse(sock, checked.refusal, requestId);
     if (frame["op"] === "session:close") {
@@ -869,6 +904,13 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       delete state.sessionId;
       sessionReply(sock, { kind: "session:closed" });
       sock.end();
+      return;
+    }
+    if (frame["op"] === "session:receipt" || frame["op"] === "session:cancel") {
+      if (!requestId) return sessionRefuse(sock, "malformed-message", requestId);
+      const face = checked.session.face.proofSubject;
+      if (frame["op"] === "session:cancel") await ledger.cancel(faceScopedId(face, requestId), face);
+      sessionReply(sock, { kind: "session:receipt", requestId, receipt: await sessionReceipt(requestId, face) });
       return;
     }
     if (!requestId || typeof frame["verb"] !== "string" || !frame["verb"] ||
@@ -879,9 +921,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     await new Promise<void>((resolve) => {
       const closed = () => resolve();
       sock.once("close", closed);
-      handle({ verb: frame["verb"], args: frame["args"], requestId,
+      const face = checked.session.face.proofSubject;
+      handle({ verb: frame["verb"], args: frame["args"], requestId: faceScopedId(face, requestId),
         requestedBy: state.supply!.presenter, face: checked.session.face.proofSubject,
-        ...(typeof frame["effectKey"] === "string" && { effectKey: frame["effectKey"] }),
+        ...(typeof frame["effectKey"] === "string" && { effectKey: faceScopedId(face, frame["effectKey"]) }),
         ...(typeof frame["timeoutMs"] === "number" && { timeoutMs: frame["timeoutMs"] }) }, sock, requestId,
         () => { sock.off("close", closed); resolve(); });
     });
@@ -903,13 +946,18 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   };
   const handle = (parsed: unknown, sock: Socket, sessionRequestId?: string, onSessionReply?: () => void): void => {
     const respond = (answer: Record<string, unknown>): void => {
-      const payload = sessionRequestId === undefined ? answer : { kind: "session:result", ...answer, requestId: sessionRequestId };
-      try {
-        const line = JSON.stringify(payload) + "\n";
-        if (sessionRequestId === undefined) sock.end(line);
-        else sock.write(line);
-      } catch { /* gone */ }
-      onSessionReply?.();
+      void (async () => {
+        const payload = sessionRequestId === undefined ? answer : {
+          kind: "session:result", ...answer, requestId: sessionRequestId,
+          ...((answer["status"] === "done" || answer["status"] === "error") ? { durable: await settleDurably() } : {}),
+        };
+        try {
+          const line = JSON.stringify(payload) + "\n";
+          if (sessionRequestId === undefined) sock.end(line);
+          else sock.write(line);
+        } catch { /* gone */ }
+      })().catch((error) => sessionRefuse(sock, error instanceof Error ? error.message : String(error), sessionRequestId))
+        .finally(() => onSessionReply?.());
     };
     if (!inFlight.has(sock)) {
       inFlight.add(sock);
@@ -981,7 +1029,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           // the connection, so a LATER connection carrying the SAME request id (a read-back, a
           // retry) — even across a restart — meets the ledger's refusal instead of a bare "never
           // seen" that a second dispatch would then run unannounced.
-          await ledger.abandonDrop(requestId, inputDigest);
+          await ledger.abandonDrop(requestId, inputDigest, inv.face, inv.verb);
           log(`dropped a hung-up "${inv.verb}" invocation (request ${requestId}) — the caller's own socket had already ended before this vessel could read it; refusing rather than running it unannounced, and recording the refusal durably so a later read-back under the same id cannot re-dispatch it`);
           return;
         }
@@ -994,7 +1042,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // by the same request id, through `{op:"receipt"}` — never through a second dispatch attempt.
         // `arbitrate` itself writes the `committed` fact and FLUSHES before returning "run" — the
         // durability floor sits BEFORE `runVerb`/`placeVerb` below, never after.
-        const verdict = await ledger.arbitrate(requestId, inputDigest);
+        const verdict = await ledger.arbitrate(requestId, inputDigest, inv.face, inv.verb, inv.effectKey);
         if (verdict.verdict === "refuse" && verdict.reason === "already-committed") {
           // A genuine concurrent re-read of an id THIS process already dispatched OR a same-digest
           // dispatch attempt reaching a fact a PRIOR process already drove to `done`/`error` (H1R,

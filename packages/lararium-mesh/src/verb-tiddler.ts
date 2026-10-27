@@ -145,6 +145,8 @@ export type ReceiptFactState = "committed" | "interrupted" | "abandoned" | "done
 
 interface ReceiptFactCommon {
   readonly requestId:  string;
+  readonly face?: string;
+  readonly action?: string;
   readonly effectKey?: string;
   /** Set once the fact reaches a terminal outcome; survives the `evicted` transition
    *  (eviction keeps digest, effect key and terminal — only the full outcome drops). */
@@ -226,6 +228,8 @@ export function buildReceiptFact(fact: ReceiptFact): LarTiddlerRecord {
       "disk-projection": "no",
       ...(fact.inputDigest !== undefined && { "input-digest": fact.inputDigest }),
       ...(fact.effectKey   !== undefined && { "effect-key":   fact.effectKey }),
+      ...(fact.face !== undefined && { face: fact.face }),
+      ...(fact.state !== "evicted" && fact.action !== undefined && { action: fact.action }),
       ...(fact.terminal    !== undefined && { terminal:       fact.terminal }),
       ...("bootEpoch" in fact && fact.bootEpoch !== undefined && { "boot-epoch":   String(fact.bootEpoch) }),
       ...("outcomeBytes" in fact && { "outcome-bytes": String(fact.outcomeBytes) }),
@@ -251,12 +255,18 @@ export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact |
   if (!requestId || Number.isNaN(seq) || !isReceiptFactState(state)) return null;
 
   const effectKey = typeof fields["effect-key"] === "string" ? fields["effect-key"] : undefined;
+  if ((fields["face"] !== undefined && (typeof fields["face"] !== "string" || !fields["face"])) ||
+      (fields["action"] !== undefined && (typeof fields["action"] !== "string" || !fields["action"]))) return null;
+  const face = fields["face"] as string | undefined;
+  const action = fields["action"] as string | undefined;
+  if (state === "evicted" && action !== undefined) return null;
+  const identity = { ...(face !== undefined && { face }), ...(action !== undefined && { action }) };
   const terminalRaw = fields["terminal"];
   const terminal = terminalRaw === "done" || terminalRaw === "error" ? terminalRaw : undefined;
 
   if (state === "abandoned") {
     return {
-      requestId, state, seq,
+      requestId, state, seq, ...identity,
       ...(inputDigest !== undefined && { inputDigest }),
       ...(effectKey   !== undefined && { effectKey }),
       ...(terminal    !== undefined && { terminal }),
@@ -267,7 +277,7 @@ export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact |
   if (state === "evicted" && inputDigest === undefined) {
     // A cancel names no content: any `terminal` or `effect-key` field beside it, sound or not, reads torn.
     if (fields["terminal"] !== undefined || fields["effect-key"] !== undefined) return null;
-    return { requestId, state, seq };
+    return { requestId, state, seq, ...(face !== undefined && { face }) };
   }
   // Every other state claims a digest — a committed/done/error fact with none on the wire reads as torn,
   // never as an "unverifiable" absence.
@@ -276,8 +286,8 @@ export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact |
   const epoch = typeof epochRaw === "string" && /^\d+$/.test(epochRaw) ? Number.parseInt(epochRaw, 10)
               : typeof epochRaw === "number" && Number.isInteger(epochRaw) && epochRaw >= 0 ? epochRaw
               : undefined;
-  const common: { requestId: string; seq: number; inputDigest: string; effectKey?: string; terminal?: "done" | "error" } = {
-    requestId, seq, inputDigest,
+  const common: { requestId: string; seq: number; inputDigest: string; face?: string; action?: string; effectKey?: string; terminal?: "done" | "error" } = {
+    requestId, seq, inputDigest, ...identity,
     ...(effectKey !== undefined && { effectKey }),
     ...(terminal  !== undefined && { terminal }),
   };
@@ -286,7 +296,11 @@ export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact |
     if (epoch === undefined) return null;
     return { ...common, state, bootEpoch: epoch };
   }
-  if (state === "evicted") return { ...common, state, ...(epoch !== undefined && { bootEpoch: epoch }) };
+  if (state === "evicted") {
+    const { action: _action, ...kept } = common;
+    void _action;
+    return { ...kept, state, ...(epoch !== undefined && { bootEpoch: epoch }) };
+  }
   // A landed fact names the measure of the outcome it keeps; none on the wire reads as torn.
   const bytesRaw = fields["outcome-bytes"];
   const bytesRead = typeof bytesRaw === "string" && /^\d+$/.test(bytesRaw) ? Number.parseInt(bytesRaw, 10)
@@ -423,6 +437,7 @@ export interface OutcomeRecord extends LarTiddlerRecord {
   readonly tiddler: {
     readonly title:          string;
     readonly "request-id":   string;
+    readonly face?: string;
     readonly verb:           string;
     readonly status:         "done" | "error";
     readonly "requested-by": string;
@@ -443,6 +458,7 @@ export interface OutcomeRecord extends LarTiddlerRecord {
 export function concludeVerb(opts: {
   requestId:     string;
   verb:          string;
+  face?: string;
   status:        "done" | "error";
   requestedBy:   string;
   cause:         string;
@@ -482,6 +498,7 @@ export function concludeVerb(opts: {
       results: JSON.stringify(opts.results ?? {}),
       ...(opts.errorMessage !== undefined && { "error-message": opts.errorMessage }),
       ...(opts.inputDigest  !== undefined && { "input-digest":  opts.inputDigest }),
+      ...(opts.face !== undefined && { face: opts.face }),
       ...(opts.effectKey    !== undefined && { "effect-key":    opts.effectKey }),
       ...(opts.effectOf     !== undefined && { "effect-of":     opts.effectOf }),
       ...(opts.refusal      !== undefined && { refusal:         opts.refusal }),
