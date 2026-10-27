@@ -1,62 +1,54 @@
 {
   "kind": "constructive-grammar",
-  "genome": {},
   "source": {
-    "origin": "experiment-zero authored grammar, derived from declared brutalist vocabulary",
+    "origin": "Experiment Zero authored brutalist grammar; reuse concepts, not copied external geometry",
     "authority": "proposal"
   },
-  "steps": [
-    {
-      "key": "root",
-      "op": "root-box",
-      "center": [
-        0,
-        0,
-        1
-      ],
-      "size": [
-        7,
-        7,
-        2
-      ],
-      "slot": "mass/root"
-    },
-    {
-      "key": "core",
-      "op": "box",
-      "center": [
-        0,
-        0,
-        2.8
-      ],
-      "size": [
-        3.5,
-        4,
-        2
-      ],
-      "parents": [
-        "root"
-      ],
-      "slot": "brutalist/core",
-      "role": "primary"
-    },
-    {
-      "key": "roof",
-      "op": "box",
-      "center": [
-        1,
-        0,
-        3.8
-      ],
-      "size": [
-        5,
-        4,
-        1
-      ],
-      "parents": [
-        "core"
-      ],
-      "slot": "brutalist/cantilever"
-    }
-  ]
+  "growth_program": {
+    "nodes": [
+      {
+        "key": "root",
+        "op": "foundation",
+        "size": [
+          7,
+          7,
+          2
+        ]
+      },
+      {
+        "key": "central_core",
+        "op": "spawn",
+        "parent": "root",
+        "face": "up",
+        "size": [
+          3.5,
+          4,
+          1.8
+        ]
+      },
+      {
+        "key": "offset_block",
+        "op": "spawn",
+        "parent": "central_core",
+        "face": "east",
+        "size": [
+          2.2,
+          2.4,
+          1.4
+        ]
+      },
+      {
+        "key": "upper_tiers",
+        "op": "split",
+        "parent": "root",
+        "face": "up",
+        "size": [
+          1.1,
+          1.1,
+          0.8
+        ],
+        "repeats": 2
+      }
+    ]
+  }
 }

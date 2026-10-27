@@ -5,12 +5,13 @@ constrain provisional visual fitness, never CAD truth or survey authority.
 """
 from __future__ import annotations
 from pathlib import Path
+from dataclasses import replace
 from PIL import Image
 import json
 import numpy as np
 
 from .intent_seed import SeedBundle, IntentContract, GrowthContext
-from .seed_adapters import compose_adapters
+from .seed_adapters import compose_adapters, proxy_growth_program
 from .developmental import GrowthNode, GrowthProgram, compile_growth, mutate_growth, crossover_growth
 from .intent_evolution import (QualityArchive, ScoredCandidate, structural_descriptor,
                                fair_auditions, fixed_inspection_cameras,
@@ -39,31 +40,33 @@ def initial_program(adapters):
     proxy=types.get("geometry-proxy")
     grammar=types.get("constructive-grammar")
     if proxy:
-        tiers=proxy.program["tiers"]
-        first=tiers[0]
-        nodes=[GrowthNode("root","foundation",size=(first["width"],first["depth"],first["height"]))]
-        prev="root"
-        for i,tier in enumerate(tiers[1:],1):
-            key=f"tier_{i}"
-            nodes.append(GrowthNode(key,"spawn",parent=prev,face="up",
-                size=(tier["width"],tier["depth"],tier["height"]),
-                offset=tuple(tier["offset"])))
-            prev=key
+        nodes=list(proxy_growth_program(proxy.program).nodes)
     elif grammar:
         size=grammar.program["steps"][0]["size"]
         nodes=[GrowthNode("root","foundation",size=tuple(size))]
     else:
         nodes=[GrowthNode("root","foundation",size=(3,3,7))]
     if grammar:
-        prev="root"
-        for i,step in enumerate(grammar.program["steps"][1:],1):
-            if step["op"]!="box":
-                continue
-            key=f"grammar_{i}"
-            face="east" if "cantilever" in str(step.get("slot","")) else "up"
-            nodes.append(GrowthNode(key,"spawn",parent=prev,face=face,
-                                     size=tuple(step["size"])))
-            prev=key
+        if "growth_program" in grammar.program:
+            authored=GrowthProgram.from_dict(grammar.program["growth_program"])
+            if not proxy:
+                nodes=list(authored.nodes)
+            else:
+                mapping={authored.nodes[0].key:"root"}
+                mapping.update({n.key:"grammar_"+n.key for n in authored.nodes[1:]})
+                for node in authored.nodes[1:]:
+                    nodes.append(replace(node,key=mapping[node.key],
+                        parent=mapping.get(node.parent),
+                        target=mapping.get(node.target)))
+        else:
+            prev="root"
+            for i,step in enumerate(grammar.program["steps"][1:],1):
+                if step["op"]!="box":
+                    continue
+                key=f"grammar_{i}"
+                nodes.append(GrowthNode(key,"spawn",parent=prev,
+                    face=step.get("grow_face","up"),size=tuple(step["size"])))
+                prev=key
     if len(nodes)==1:
         nodes.append(GrowthNode("crown","spawn",parent="root",face="up",size=(1.7,1.7,1.3)))
     return GrowthProgram(tuple(nodes))

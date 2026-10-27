@@ -15,6 +15,7 @@ from .intent_seed import SeedBundle, SeedEntry, IntentContract, normalize_locati
 from .location_stack import Element, Relation
 from .grammar import grow_program
 from .solid import SolidAssembly, faceted_loft
+from .developmental import GrowthNode, GrowthProgram, compile_growth
 
 
 @dataclass(frozen=True)
@@ -24,9 +25,11 @@ class SeedAdapter:
 
     def build(self):
         if self.seed.kind == "constructive-grammar":
+            if "growth_program" in self.program:
+                return compile_growth(GrowthProgram.from_dict(self.program["growth_program"])).assembly
             return grow_program(self.program["steps"],self.program.get("genome",{}))
         if self.seed.kind == "geometry-proxy":
-            return _build_proxy(self.program)
+            return compile_growth(proxy_growth_program(self.program)).assembly
         if self.seed.kind == "image-group":
             return _build_image_hypothesis(self.seed.locator)
         raise ValueError("Unknown seed capability")
@@ -94,10 +97,16 @@ def image_group(path):
 
 def constructive_grammar(path):
     path,data=_declared_json(path)
-    if data.get("kind")!="constructive-grammar" or not isinstance(data.get("steps"),list):
-        raise ValueError("Constructive grammar needs executable typed steps")
-    if not data["steps"] or not isinstance(data.get("genome",{}),dict):
-        raise ValueError("Nonempty rules and bounded genome required")
+    if data.get("kind")!="constructive-grammar":
+        raise ValueError("Not a constructive grammar seed")
+    typed="growth_program" in data
+    legacy="steps" in data
+    if typed==legacy:
+        raise ValueError("Declare exactly one executable grammar representation")
+    if typed:
+        GrowthProgram.from_dict(data["growth_program"])
+    elif not isinstance(data["steps"],list) or not data["steps"] or not isinstance(data.get("genome",{}),dict):
+        raise ValueError("Nonempty typed construction steps and genome required")
     return SeedAdapter(SeedEntry.from_file("constructive-grammar",path),data)
 
 
@@ -108,6 +117,36 @@ def ziggurat_proxy(path):
     if len(data["tiers"])<2 or len(data["tiers"])>32:
         raise ValueError("Proxy tiers must be bounded and nontrivial")
     return SeedAdapter(SeedEntry.from_file("geometry-proxy",path),data)
+
+
+def proxy_growth_program(program):
+    """Build a typed, heritable hypothesis from authored proxy data."""
+    tiers=program["tiers"]
+    root=tiers[0]
+    nodes=[GrowthNode("root","foundation",
+                      size=(root["width"],root["depth"],root["height"]))]
+    previous="root"
+    for i,tier in enumerate(tiers[1:],1):
+        name=f"tier_{i}"
+        nodes.append(GrowthNode(name,"spawn",parent=previous,face="up",
+            size=(tier["width"],tier["depth"],tier["height"]),
+            offset=tuple(tier["offset"])))
+        previous=name
+    if "court" in program:
+        court=program["court"]
+        if set(court)!={"size","offset"}:
+            raise ValueError("Authored court recess needs size and offset")
+        nodes.append(GrowthNode("court_recess","carve",parent="root",
+                     target="root",size=tuple(court["size"]),
+                     offset=tuple(court["offset"])))
+    if "gate" in program:
+        gate=program["gate"]
+        if set(gate)!={"size","face","offset"}:
+            raise ValueError("Authored exterior gate needs size, face and offset")
+        nodes.append(GrowthNode("exterior_gate","carve",parent="root",
+                     target="root",size=tuple(gate["size"]),
+                     face=gate["face"],offset=tuple(gate["offset"])))
+    return GrowthProgram(tuple(nodes))
 
 
 def _build_proxy(program):

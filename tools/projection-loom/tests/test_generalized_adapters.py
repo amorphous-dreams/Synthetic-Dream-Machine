@@ -78,3 +78,30 @@ def test_order_does_not_change_scene_identity(tmp_path):
     b=compose_adapters(a,contract(),audit=False)
     c=compose_adapters(tuple(reversed(a)),contract(),audit=False)
     assert b.location.to_dict()==c.location.to_dict()
+
+
+def test_typed_grammar_and_proxy_voids_are_real_native_constructions(tmp_path):
+    from projection_loom.seed_adapters import constructive_grammar, ziggurat_proxy, proxy_growth_program
+    import json
+    p=tmp_path/"typed_grammar.json"
+    p.write_text(json.dumps({"kind":"constructive-grammar",
+      "growth_program":{"nodes":[
+      {"key":"root","op":"foundation","size":[7,7,2]},
+      {"key":"core","op":"spawn","parent":"root","face":"up","size":[3,3,1.5]},
+      {"key":"side","op":"spawn","parent":"core","face":"east","size":[1.6,1.4,1.2]}]}}))
+    adapter=constructive_grammar(p)
+    build=adapter.build()
+    assert build.audit(join=True)["valid"]
+    q=tmp_path/"authored_proxy.json"
+    q.write_text(json.dumps({"kind":"geometry-proxy",
+      "tiers":[{"width":8,"depth":8,"height":2,"offset":[0,0]},
+               {"width":5,"depth":5,"height":1.4,"offset":[0,0]}],
+      "court":{"size":[1.2,1.2,.7],"offset":[0,0]},
+      "gate":{"size":[.8,.8,1],"face":"east","offset":[0,0]}}))
+    z=ziggurat_proxy(q)
+    result=z.build()
+    audit=result.audit(join=True)
+    assert audit["valid"] and audit["union_valid"]
+    assert len(result.voids.voids)==2
+    assert "exterior_gate" in result.voids.voids
+    assert proxy_growth_program(z.program).identity
