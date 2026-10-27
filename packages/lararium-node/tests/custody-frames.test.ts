@@ -44,7 +44,7 @@ import { custodyFrameHandler, CUSTODY_LINE } from "../src/custody-frames.js";
 import { CustodyRowUnavailable, type CustodyHolder, type HolderProof, type HolderUnlock } from "../src/custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "../src/face-bundle-cut.js";
 import { runSealedAct } from "../src/sealed-acts.js";
-import { loadActivePersonaIndex, setWornFaceInSession } from "../src/node-vessel-identity.js";
+import { loadActivePersonaIndex, setWornFaceInSession, wornFaceOrdinal } from "../src/node-vessel-identity.js";
 import { FaceRouteAbsent, gatherFaceRoute, parkFaceRoute, seatFaceRoute } from "../src/face-route.js";
 
 const RIGHT = "frames-test-passphrase-right";
@@ -454,7 +454,7 @@ describe("the face-route frame", () => {
 });
 
 describe("the unlock frame names the worn face", () => {
-  test("U1 — an unlock that opens and names a face wears it for the session; CONTROL: an unlock naming none wears nothing; a bad index refuses before the holder hears", async () => {
+  test("U1 — an unlock that opens and names a face wears it for the session; CONTROL: a bad index refuses before the holder hears, and wears nothing", async () => {
     setWornFaceInSession(undefined);
     const h = harness();
     await h.send({ ...unlockFrame(RIGHT), face: 2 }).answer;
@@ -462,7 +462,9 @@ describe("the unlock frame names the worn face", () => {
     setWornFaceInSession(undefined);
     const bad = await harness().send({ ...unlockFrame(RIGHT), face: -1 }).answer;
     expect(bad).toMatchObject({ status: "error", refusal: { reason: "bad-custody-frame" } });
-    expect(await loadActivePersonaIndex().catch(() => undefined)).toBeUndefined();
+    // The session's own choice, not `loadActivePersonaIndex`: that reader also infers the one face standing open, so
+    // it answers whatever an earlier vector founded in the ambient root, and it refuses outside a scratch root.
+    expect(wornFaceOrdinal()).toBeUndefined();
     setWornFaceInSession(undefined);
   });
 });
