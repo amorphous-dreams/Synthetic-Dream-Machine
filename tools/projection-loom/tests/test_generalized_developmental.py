@@ -104,3 +104,14 @@ def test_occupancy_is_advisory_not_a_cad_gate():
     assert w["scope"].startswith("conservative")
     assert w["placements"]
     assert all(x["status"]=="AABB-overlap-unverified" for x in w["overlaps"])
+
+
+def test_true_multi_node_graft_retains_donor_subtree_and_native_gate(tmp_path):
+    parent=program()
+    inherited=crossover_growth(parent,parent,context(tmp_path),
+                               epoch=3,child=7,donor_root="terrace")
+    assert len(inherited.nodes)==len(parent.nodes)+2
+    assert inherited.nodes[-2].key=="graft_3_7"
+    assert inherited.nodes[-1].parent=="graft_3_7"
+    assert inherited.identity != parent.identity
+    assert compile_growth(inherited).audit()["union_valid"]

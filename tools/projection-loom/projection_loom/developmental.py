@@ -340,20 +340,45 @@ def mutate_growth(program:GrowthProgram,context:GrowthContext,*,epoch,child,
     return GrowthProgram(tuple(current))
 
 
-def crossover_growth(left:GrowthProgram,right:GrowthProgram,context:GrowthContext,*,epoch,child):
-    """A donor subtree graft requires explicit boundary rebinding.
+def crossover_growth(left:GrowthProgram,right:GrowthProgram,context:GrowthContext,*,
+                     epoch,child,donor_root=None):
+    """Graft an entire typed donor subtree, rebinding its external dependencies.
 
-    Preserve target topology and graft a donor *leaf* onto a valid parent;
-    collision/conflict remains subject to native CAD admission.
+    A child may inherit multiple donor descendants including bridges/voids.
+    No source evidence is rewritten: only an inherited proposed program changes.
+    Native validation remains a separate hard gate after mutation.
     """
     rng=random.Random(context.substream_seed("crossover",epoch,child))
-    parents=[n for n in left.nodes if n.op!="carve"]
-    donor=[n for n in right.nodes[1:] if n.op in ("spawn","split")]
-    if not donor or len(left.nodes)>=MAX_NODES:
+    allowed=[n for n in right.nodes[1:] if n.op in ("spawn","split")]
+    if not allowed or len(left.nodes)>=MAX_NODES:
         return left
-    p=rng.choice(parents)
-    chosen=rng.choice(donor)
-    name=f"graft_{epoch}_{child}"
-    if name in {n.key for n in left.nodes}:
-        raise ValueError("Crossover needs unique graft slot")
-    return GrowthProgram((*left.nodes,replace(chosen,key=name,parent=p.key,repeats=1)))
+    if donor_root is not None:
+        roots=[n for n in allowed if n.key==donor_root]
+        if not roots:
+            raise ValueError("Requested donor subtree root is not structural")
+        chosen=roots[0]
+    else:
+        chosen=rng.choice(allowed)
+    growing={chosen.key}
+    inherited=[]
+    for candidate in right.nodes:
+        if candidate.key==chosen.key or (candidate.parent in growing and
+                                           candidate.op!="foundation"):
+            growing.add(candidate.key)
+            inherited.append(candidate)
+    if len(left.nodes)+sum(x.repeats for x in inherited)>MAX_NODES:
+        return left
+    parents=[n for n in left.nodes if n.op!="carve"]
+    attach=rng.choice(parents)
+    prefix=f"graft_{epoch}_{child}"
+    names={node.key:(prefix if node.key==chosen.key else
+                     prefix+"_"+node.key) for node in inherited}
+    if set(names.values()) & {node.key for node in left.nodes}:
+        raise ValueError("Graft collides with existing program identity")
+    grafted=[]
+    for node in inherited:
+        rebound_parent=attach.key if node.key==chosen.key else names.get(node.parent,attach.key)
+        rebound_target=names.get(node.target,attach.key) if node.target else None
+        grafted.append(replace(node,key=names[node.key],parent=rebound_parent,
+                               target=rebound_target))
+    return GrowthProgram((*left.nodes,*grafted))
