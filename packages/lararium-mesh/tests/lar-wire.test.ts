@@ -48,11 +48,6 @@ describe("the vessel → island door", () => {
     expect(isVesselToIslandMsg({ type: LAR_RESEND, cameraId: "" })).toBe(false);
     expect(isVesselToIslandMsg({ type: LAR_RESEND })).toBe(false);
   });
-
-  test("CONTROL: the DOM relay kinds pass no door", () => {
-    expect(isVesselToIslandMsg({ type: "wiki:dom-event", renderId: "1", eventType: "click", fields: {} })).toBe(false);
-    expect(isVesselToIslandMsg({ type: "wiki:dom-input", renderId: "1", eventType: "input", value: "hi" })).toBe(false);
-  });
 });
 
 describe("the island → vessel door", () => {

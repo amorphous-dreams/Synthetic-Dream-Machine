@@ -45,7 +45,9 @@
 #   HOUSEHOLD_PROJECT   compose project name (default lares-household-https)
 #   HOUSEHOLD_TLS_PORT  loopback port the terminator publishes (default 5471; 5400-5499)
 #   HOUSEHOLD_PORT      loopback port the vessel publishes (default 5470; 5400-5499)
-#   HOUSEHOLD_IMAGE     the product image (default lares-surface:local; built when the tag stands absent)
+#   HOUSEHOLD_IMAGE     the product image. Unset, the witness builds lares-surface:local from THIS tree on every run (the
+#                       layer cache makes an unchanged tree cheap), so a stale local tag never meets newer code. Set, the
+#                       witness reads that image as given, and builds it from the tree only when the tag stands absent.
 #   HOUSEHOLD_TOOLS     the staging tools the test door mounts (default this checkout's tools/)
 #   HOUSEHOLD_PEBBLE_IMAGE / HOUSEHOLD_CHALLTESTSRV_IMAGE   the test authority (defaults pinned below)
 set -eu
@@ -56,6 +58,8 @@ PROJECT=${HOUSEHOLD_PROJECT:-lares-household-https}
 TLS_PORT=${HOUSEHOLD_TLS_PORT:-5471}
 PORT=${HOUSEHOLD_PORT:-5470}
 IMAGE=${HOUSEHOLD_IMAGE:-lares-surface:local}
+BUILD_FROM_TREE=yes
+[ -z "${HOUSEHOLD_IMAGE:-}" ] || BUILD_FROM_TREE=
 TOOLS=${HOUSEHOLD_TOOLS:-$ROOT/tools}
 PEBBLE_IMAGE=${HOUSEHOLD_PEBBLE_IMAGE:-ghcr.io/letsencrypt/pebble:2.10.1}
 CHALLTESTSRV_IMAGE=${HOUSEHOLD_CHALLTESTSRV_IMAGE:-ghcr.io/letsencrypt/pebble-challtestsrv:2.10.1}
@@ -103,7 +107,7 @@ if [ -n "$(docker ps -a -q --filter "label=com.docker.compose.project=$PROJECT" 
    || [ -n "$(docker network ls -q --filter "label=com.docker.compose.project=$PROJECT" 2>/dev/null)" ]; then
   printf 'household-https-witness: project %s already stands; pick another HOUSEHOLD_PROJECT\n' "$PROJECT" >&2; exit 2
 fi
-if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+if [ -n "$BUILD_FROM_TREE" ] || ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
   docker build -f "$ROOT/Dockerfile" --target serve -t "$IMAGE" "$ROOT"
 fi
 

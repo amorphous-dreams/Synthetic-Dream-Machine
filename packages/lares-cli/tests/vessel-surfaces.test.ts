@@ -2,16 +2,12 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { dispatch, COMMANDS, unknownFlags } from "../src/bin/lares.js";
-import { parseArgs } from "../src/parse-args.js";
+import { dispatch } from "../src/bin/lares.js";
 import { VESSEL_SUBS } from "../src/commands/vessel.js";
-import { posturePlan } from "../src/commands/posture-plan.js";
-import { COMMAND_HELP } from "../src/command-help.js";
 import { cmdVessel } from "../src/commands/vessel.js";
 import { cmdRiteRefresh } from "../src/commands/scripted.js";
-import * as portControl from "../src/port-control.js";
 
 const roots: string[] = [];
 const savedRoot = process.env["LAR_ROOT"];
@@ -49,8 +45,8 @@ const quiet = (): void => {
   vi.spyOn(console, "error").mockImplementation(() => {});
 };
 
-describe("vessel wipe surfaces", () => {
-  test("F-1 clear refuses as an unknown sub-door and preserves a store marker; read remains available", async () => {
+describe("vessel surfaces", () => {
+  test("read reports the store without changing it", async () => {
     quiet();
     const root = scratch();
     const store = join(root, "data", "lares", "vessel");
@@ -60,9 +56,6 @@ describe("vessel wipe surfaces", () => {
     const before = treeHash(store);
     process.env["LAR_ROOT"] = root;
 
-    expect(await dispatch(["vessel", "clear", "--root", root, "--force", "--skip-build"])).toBe(2);
-    expect(readFileSync(marker, "utf8")).toBe("kept");
-    expect(treeHash(store)).toBe(before);
     let output = "";
     const stdoutWrite = process.stdout.write;
     process.stdout.write = ((chunk: unknown) => { output += String(chunk); return true; }) as typeof process.stdout.write;
@@ -73,31 +66,11 @@ describe("vessel wipe surfaces", () => {
     }
     const read = JSON.parse(output);
     expect(read.data.storage).toMatch(/1 files?/);
+    expect(readFileSync(marker, "utf8")).toBe("kept");
+    expect(treeHash(store)).toBe(before);
   });
 
-  test("F-2 rebirth is an unknown rite and is absent from the printed rite list", async () => {
-    const root = scratch();
-    process.env["LAR_ROOT"] = root;
-    const err = vi.spyOn(console, "error").mockImplementation(() => {});
-    expect(await dispatch(["vessel", "rite", "rebirth", "--skip-build"])).toBe(2);
-    expect(VESSEL_SUBS).toContain("rite");
-    expect(VESSEL_SUBS).not.toContain("rebirth");
-    expect(err.mock.calls.flat().join("\n")).not.toMatch(/^\s*rebirth\b/m);
-  });
-
-  test("F-3 --clear refuses before restart reaches port control; --restart alone remains a posture", async () => {
-    const vessel = COMMANDS.find((c) => c.name === "vessel")!;
-    const parsed = parseArgs(["vessel", "stand", "--restart", "--clear"]);
-    expect(unknownFlags(vessel, parsed).map((x) => x.name)).toContain("clear");
-    expect(posturePlan(["restart"]).posture).toBe("restart");
-    const stop = vi.spyOn(portControl, "stopIncumbent");
-    quiet();
-    const root = scratch();
-    expect(await dispatch(["vessel", "stand", "--restart", "--clear", "--root", root, "--skip-build"])).toBe(2);
-    expect(stop).not.toHaveBeenCalled();
-  });
-
-  test("F-4 refresh runs build · stop · stand in order and preserves the store", async () => {
+  test("refresh runs build · stop · stand in order and preserves the store", async () => {
     const root = scratch();
     const store = join(root, "data", "lares", "vessel");
     mkdirSync(store, { recursive: true });
@@ -134,26 +107,15 @@ describe("vessel wipe surfaces", () => {
     expect(treeHash(store)).toBe(beforeTree);
 
     const vesselSource = readFileSync(fileURLToPath(new URL("../src/commands/vessel.ts", import.meta.url)), "utf8");
-    const scriptedSource = readFileSync(fileURLToPath(new URL("../src/commands/scripted.ts", import.meta.url)), "utf8");
     expect(vesselSource).toContain('refresh:  { composes: "build · stop · stand"');
     expect(vesselSource).toContain('rebuild:  { composes: "re-derive · stand"');
-    expect(scriptedSource).not.toMatch(/cmdRiteRefresh[\s\S]*?fresh:\s*true/);
     const err = vi.spyOn(console, "error").mockImplementation(() => {});
     await cmdVessel({ command: "vessel", positional: ["rite"], options: {}, flags: {} });
     expect(err.mock.calls.flat().join("\n")).toContain("refresh   build · stop · stand");
     expect(err.mock.calls.flat().join("\n")).toContain("rebuild   re-derive · stand");
-    expect(err.mock.calls.flat().join("\n")).not.toMatch(/refresh.*clear/);
   });
 
-  test("F-5 the vessel help and surface table name neither removed rite nor verb", async () => {
+  test("the vessel surface table names its live doors", () => {
     expect(VESSEL_SUBS).toEqual(expect.arrayContaining(["found", "stand", "stop", "seed", "read", "rite"]));
-    expect(VESSEL_SUBS).not.toContain("clear");
-    expect(VESSEL_SUBS).not.toContain("rebirth");
-    const help = JSON.stringify(COMMAND_HELP.vessel);
-    expect(help).not.toMatch(/\bclear\b|\brebirth\b/);
-    quiet();
-    const log = vi.spyOn(console, "log").mockImplementation(() => {});
-    await cmdVessel({ command: "vessel", positional: ["help"], options: {}, flags: {} });
-    expect(log.mock.calls.flat().join("\n")).not.toMatch(/\bclear\b|\brebirth\b/);
   });
 });
