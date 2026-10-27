@@ -4,14 +4,14 @@
  * A dial reaches only the gate it pinned. This vessel makes ONE `hearthPinIndex` at boot and hands it to the relay
  * dial and to the flow reader; no module holds a second. The index holds what a full `GateBundlePin` carrier hands
  * it: the sovereign pin and floor pins a joined face's fleet join carried inside the root's signature, and the flow's
- * floor pin a floor card carries by hand. A HEX64 key stands for no pin.
+ * floor pin CLAIM a floor card carries by hand against an anchor conveyed apart from it. A HEX64 key stands for no pin.
  *
  * NAMED: `hearthNameOf` files a hearth by its URL's origin (the page is handed no other true name for it). What the
  * vessel presents at a gate composes in `browser-face-presentation`; this file reads no custody.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-gate-pins
  */
-import { hearthPinIndex, readHearthFloorPins, type GateBundlePin, type HearthFloorCard, type HearthPinIndex, type LarWSClientOptions } from "@lararium/mesh";
+import { fileHearthFloorCard, hearthPinIndex, readHearthFloorPins, type FloorAnchor, type FloorCardFiling, type GateBundlePin, type HearthFloorCard, type HearthPinIndex, type LarWSClientOptions } from "@lararium/mesh";
 
 export type BrowserFacePresentation = LarWSClientOptions["presentation"];
 
@@ -75,11 +75,13 @@ export function dialDeadlines(ms = 15_000): { draw(lapse: () => void): { cancel(
 }
 
 /**
- * File the flow's floor pin a floor card carried, under the relay's name: the floor tier on the flow route alone, so it
- * seats no face. Where the index already holds another pin at that place (the signed set a joined face's fleet join
- * carried), the index keeps what it held. Without a relay nothing files. Answers whether the index took it.
+ * File the flow's floor pin CLAIM a floor card carried, under the relay's name, against the anchor conveyed apart from the card
+ * (`fileHearthFloorCard`): the floor tier on the flow route alone, so it seats no face. The card verifies whole before it files:
+ * an unanchored card, a forged claim, a head its rows cannot fold and another place's claim each refuse by name. KEL descent
+ * orders it against what the index holds: a descendant replaces, a card at a known older head refuses `rollback` and the newer
+ * head keeps serving, and a fork holds the last accepted pin. Without a relay nothing files.
  */
-export function fileFloorCardPin(index: HearthPinIndex, relayUrl: string | null | undefined, card: HearthFloorCard | null): boolean {
-  if (!relayUrl || card === null) return false;
-  return index.put(hearthNameOf(relayUrl), card.pin);
+export function fileFloorCard(index: HearthPinIndex, relayUrl: string | null | undefined, card: HearthFloorCard | null, anchor: FloorAnchor | null | undefined): FloorCardFiling {
+  if (!relayUrl) return { filed: false, refusal: "index-refused" };
+  return fileHearthFloorCard(index, hearthNameOf(relayUrl), card, anchor);
 }

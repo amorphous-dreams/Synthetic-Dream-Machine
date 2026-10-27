@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { BrowserConnectionSnapshot, BrowserConnectionState } from "@lararium/browser";
-import { connectionData, connectionPresentation, defaultReadFace, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl } from "../src/live-status.js";
+import { connectionData, connectionPresentation, defaultReadFace, floorAnchorOf, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl } from "../src/live-status.js";
 
 describe("served-origin crossing", () => {
   test("the read face carries the page origin including its actual port", () => {
@@ -54,7 +54,7 @@ describe("served-origin crossing", () => {
 });
 
 describe("the floor card the arrival URL carries", () => {
-  const card = { pin: { tier: "floor", nexus: "6e", route: "/flow", transportKey: "aa", signingKey: "bb" }, publisher: "cc" } as const;
+  const card = { claim: { kind: "place-floor-pin", aid: "aa".repeat(32), seq: 0, head: "bb".repeat(32), pin: { tier: "floor", nexus: "6e", route: "/flow", transportKey: "aa", signingKey: "bb" }, sig: "cc".repeat(64) }, kel: [] } as never;
   const read = (text: string) => (text === "Y2FyZA" ? card : null);
 
   test("CONTROL: a card in the fragment reaches the one reader, and reads back", () => {
@@ -118,5 +118,22 @@ describe("an ?flow= naming another hearth says what the browser reads", () => {
     expect(flowElsewhereNote("http://node:5440", relay)).toBeNull();
     expect(flowElsewhereNote(null, relay)).toBeNull();
     expect(flowElsewhereNote("not a url", relay)).toContain("only its own hearth's flow");
+  });
+});
+
+describe("the place anchor conveyed apart from the floor card", () => {
+  const AID = "ab".repeat(32);
+
+  test("CONTROL: an #anchor= in the fragment is a deliberate transfer; the card beside it adds nothing to it", () => {
+    expect(floorAnchorOf(`#anchor=${AID}`)).toEqual({ aid: AID, via: "transfer" });
+    expect(floorAnchorOf(`#floor=Y2FyZA&anchor=${AID}`)).toEqual({ aid: AID, via: "transfer" });
+    expect(floorAnchorOf("#floor=Y2FyZA")).toBeNull();                          // the card alone never anchors
+  });
+
+  test("a kept anchor (an earlier transfer or an authenticated admit) anchors the next arrival; a torn one reads none", () => {
+    expect(floorAnchorOf("", { aid: AID, via: "admit" })).toEqual({ aid: AID, via: "admit" });
+    expect(floorAnchorOf("#anchor=zz", null)).toBeNull();
+    expect(floorAnchorOf("#anchor=abc", { aid: "short", via: "transfer" })).toBeNull();
+    expect(floorAnchorOf(`#anchor=${AID}`, { aid: "cd".repeat(32), via: "admit" })).toEqual({ aid: AID, via: "transfer" });   // a fresh transfer wins
   });
 });

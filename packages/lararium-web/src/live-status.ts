@@ -1,5 +1,5 @@
 import type { BrowserConnectionSnapshot, BrowserConnectionState } from "@lararium/browser";
-import type { HearthFloorCard } from "@lararium/mesh";
+import type { FloorAnchor, HearthFloorCard } from "@lararium/mesh";
 
 export interface ServedLocation {
   readonly origin: string;
@@ -18,9 +18,9 @@ export function sameOriginRelayUrl(location: Pick<ServedLocation, "protocol" | "
 }
 
 /**
- * The hearth's floor card the arrival URL carries in its fragment (`#floor=<card>`), which never reaches a server: the
- * flow's floor pin and the key its snapshot is signed under, read by the mesh's one reader (`readHearthFloorCard`). A torn
- * card reads none.
+ * The hearth's floor card the arrival URL carries in its fragment (`#floor=<card>`), which never reaches a server: the place's
+ * signed floor pin claim for the flow route and the KEL rows that fold to its head, read by the mesh's one reader
+ * (`readHearthFloorCard`). A torn card reads none. The card never anchors itself (`floorAnchorOf`).
  */
 export function floorCardOf(
   hash: string,
@@ -28,6 +28,17 @@ export function floorCardOf(
 ): { readonly text: string; readonly card: HearthFloorCard | null } | null {
   const text = new URLSearchParams(hash.replace(/^#/, "")).get("floor");
   return text ? { text, card: read(text) } : null;
+}
+
+/**
+ * The place AID conveyed APART from the card (W14 first contact): a deliberate person-to-person transfer in the fragment
+ * (`#anchor=<aid>`, the AID the hearth's banner prints on its own line), or the one this browser kept from an earlier transfer or
+ * an authenticated admit (`kept`). The card in the same fragment carries no weight toward it. Only a 64-hex AID reads; else null.
+ */
+export function floorAnchorOf(hash: string, kept?: { readonly aid: string; readonly via: "admit" | "transfer" | "genesis" } | null): FloorAnchor | null {
+  const carried = new URLSearchParams(hash.replace(/^#/, "")).get("anchor");
+  if (carried !== null && /^[0-9a-f]{64}$/.test(carried)) return { aid: carried, via: "transfer" };
+  return kept && /^[0-9a-f]{64}$/.test(kept.aid) ? { aid: kept.aid, via: kept.via } : null;
 }
 
 /** The relay a page dials: the `?relay=` its URL names (the hearth's banner prints it), or none for a pure local boot. */

@@ -195,8 +195,9 @@ import { gateGrantRing }                         from "./gate-rings.js";
 import { readFaceJoinRecord }                    from "./fleet-join-custody.js";
 import { gateMemoryRows }                        from "./gate-memory-rows.js";
 import { custodyGateDoor }                       from "./custody-seat.js";
-import { vesselFloorKeyDoor }                    from "./node-vessel-identity.js";
+import { vesselFloorKeyDoor, loadPlaceKelChain } from "./node-vessel-identity.js";
 import { hearthFloorPins }                       from "./hearth-sovereign-pin.js";
+import { hearthFloorProof }                      from "./hearth-floor-claims.js";
 import { readKeptHearthFloorPins }               from "./hearth-floor-pin-store.js";
 import type { FlowGateArgs, FlowReadGate }  from "./flow-read-face.js";
 import {
@@ -711,7 +712,7 @@ async function prepareNodeBootOn(
   // THE FLOOR PIN SET (house ruling "The admit's gate pin": a floor route's full pin travels through an authenticated
   // relation): each sovereign session hears, at open, the floor pins this
   // hearth stands at the Nexus that seated it, the same pins the floor gates below derive (`hearthFloorPins`).
-  const gateSync = gateSyncServer({ floorPins: async (nexus) => hearthFloorPins(nexus, await vesselFloorKeyDoor()) });
+  const gateSync = gateSyncServer({ floorPins: async (nexus) => hearthFloorPins(nexus, await vesselFloorKeyDoor()), floorProof: hearthFloorProof });
   const syncSessions = gateSessionRegistry((channel, session) => gateSync.onOpen(channel, session));
   const gateServer = faceGateServer({
     onRefuse: (path, refusal) => console.warn(`[lar-gate] an upgrade on ${path.slice(0, 24)}… refused before any 101 (${refusal})`),
@@ -1493,7 +1494,8 @@ async function prepareNodeBootOn(
     openBoard:   (url) => carriedBoards.open(url, "board:carriage-contracts"),
     ...(placeClass === "herm" ? {
       ownFloorPin: async (nexus: string) => flowFloorPinAt(nexus, await vesselFloorKeyDoor()),
-      layStatement: async (url, statement) => { layStatementOn(await materializeSharedLarDoc(repo, url, "board:carriage-contracts"), statement); },
+      ownPlaceChain: () => loadPlaceKelChain(),
+      layStatement: async (url, statement, kel) => { layStatementOn(await materializeSharedLarDoc(repo, url, "board:carriage-contracts"), statement, kel); },
     } : {
       facePresentation: async (pin) => {
         const composed = await composeDialPresentation({ sealHome, pin, personaGroup: wornGateFace()?.personaGroup ?? null, ...carriageSessions });

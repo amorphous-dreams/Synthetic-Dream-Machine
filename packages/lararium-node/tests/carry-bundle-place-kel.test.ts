@@ -45,7 +45,7 @@ async function setup() {
   writeNexusDoc(larSealHome(), charter);
   const seal = await runNexusCarryFor({ sealHome: larSealHome() });
   at(hearth);
-  const carry = await direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, floorPin: JSON.stringify(seal.floorPin) });
+  const carry = await direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, floorPin: JSON.stringify({ floorPin: seal.floorPin, placeKel: seal.placeKel }) });
   return { seal, bundle: carry.carryBundle as CarryBundle, boardUrl: carry.boardUrl };
 }
 async function head(aid: string) {
@@ -78,7 +78,7 @@ describe("a carry bundle carries verified place descent", () => {
       const { foundingRoster } = await import("@lararium/mesh");
       return carryBundleFrom({ aid: bundle.aid, nym: seal.nym, board: board.doc(), roster: foundingRoster(readNexusDoc(larSealHome())) });
     });
-    expect(issued?.placeKel).toHaveLength(2);
+    expect(issued?.placeKel).toHaveLength(3);                  // the herm's own inception, beside the two rows written here
     at(herm);
     await direct(takeCarryBundle)({ raw: JSON.stringify({ ...bundle, placeKel: [start.event] }), ownVesselKey: seal.nym });
     const base = await head(start.aid);

@@ -13,7 +13,10 @@
  *   · THE FLOOR PIN SET (house ruling "The admit's gate pin", carrier (a)): a SOVEREIGN session hears, once at open, one
  *     "session" message of kind hearth/floor-pins carrying the floor pins at the Nexus its gate seated it under / RED: a
  *     floor-tier session hears none; a session with no Nexus hears none; a provider that throws or yields nothing sends
- *     nothing and the session stands.
+ *     nothing and the session stands;
+ *   · THE CLAIMS BESIDE THE SET (W14): where the vessel stands a place KEL (`floorProof`), the message body carries the floor
+ *     pin claims and the KEL rows beside the pins, so a connected reader re-files a rotated hearth's pin live / RED: a proof
+ *     that throws or yields nothing sends the bare set, and the session stands.
  */
 import { describe, expect, test } from "vitest";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
@@ -149,5 +152,21 @@ describe("the gate sync server", () => {
     expect(asked).toEqual(["n", "n", "throws", "elsewhere"]);
     expect(server.wss.clients.size).toBe(6);
     server.close();
+  });
+
+  test("THE CLAIMS BESIDE THE SET: a proof rides beside the pins; a proof that throws or yields nothing sends the bare set", async () => {
+    const PIN = { tier: "floor", route: "/flow", nexus: "6e", signingKey: "aa".repeat(32), noiseKey: "bb".repeat(32) } as unknown as GateBundlePin;
+    const PROOF = { claims: [{ kind: "place-floor-pin", aid: "cc".repeat(32), seq: 1, head: "dd".repeat(32), pin: PIN, sig: "ee".repeat(64) }], kel: [] } as never;
+    const read = (c: ReturnType<typeof fakeChannel>) => c.sent.filter((m) => m.kind === "session").map((m) => JSON.parse(new TextDecoder().decode(m.bytes)));
+    const withProof = gateSyncServer({ floorPins: () => [PIN], floorProof: async () => PROOF });
+    const a = fakeChannel(); withProof.onOpen(a.channel, session); await turn(); await turn();
+    expect(read(a)).toEqual([{ type: "lar:session", kind: HEARTH_FLOOR_PINS_SESSION_KIND, body: { pins: [PIN], claims: PROOF.claims, kel: [] } }]);
+    for (const floorProof of [async () => null, async () => { throw new Error("no place KEL"); }]) {
+      const bare = gateSyncServer({ floorPins: () => [PIN], floorProof });
+      const c = fakeChannel(); bare.onOpen(c.channel, session); await turn(); await turn();
+      expect(read(c)).toEqual([{ type: "lar:session", kind: HEARTH_FLOOR_PINS_SESSION_KIND, body: { pins: [PIN] } }]);
+      expect(c.channel.state).toBe("open");
+    }
+    withProof.close();
   });
 });

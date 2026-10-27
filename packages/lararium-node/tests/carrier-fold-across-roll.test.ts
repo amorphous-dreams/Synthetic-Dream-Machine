@@ -70,7 +70,7 @@ async function land(carries: readonly Carry[]): Promise<void> {
   at(roots.hearth);
   await ownedStore(larDataDir(), async (repo) => {
     for (const c of carries) {
-      await runNexusContract({ action: "carry", nym: c.nym, carrierSig: c.carrierSig, floorPin: JSON.stringify(c.floorPin), sealHome: larSealHome(), repo });
+      await runNexusContract({ action: "carry", nym: c.nym, carrierSig: c.carrierSig, floorPin: JSON.stringify({ floorPin: c.floorPin, placeKel: c.placeKel }), sealHome: larSealHome(), repo });
     }
   });
 }

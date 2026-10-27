@@ -28,7 +28,7 @@ import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./ph
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 import { LAR_WHOLE_VALUE_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, readHearthFloorCard, type GenesisSeed, type MeshPeer } from "@lararium/mesh";
 import { createProjectionSink } from "./projection-sink.js";
-import { defaultReadFace, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
+import { defaultReadFace, floorAnchorOf, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
 // The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
 // (node-parity). Boot imports this plain-data seed alone — no Automerge binary.
@@ -216,6 +216,22 @@ function takeStashedAdmit(): DeviceAdmitPayload | null {
   return payload;
 }
 
+/**
+ * The place AID a person handed across apart from the floor card, kept per origin so the next arrival anchors without handing it
+ * again. localStorage holds a per-viewer convenience: a private window or blocked storage reads none, and the card then refuses
+ * `place-unanchored` until the AID is handed again.
+ */
+const FLOOR_ANCHOR_KEY = "lares:floor-anchor";
+function keptFloorAnchor(): { readonly aid: string; readonly via: "transfer" } | null {
+  try {
+    const aid = localStorage.getItem(`${FLOOR_ANCHOR_KEY}:${location.origin}`);
+    return aid && /^[0-9a-f]{64}$/.test(aid) ? { aid, via: "transfer" } : null;
+  } catch { return null; }
+}
+function keepFloorAnchor(anchor: { readonly aid: string }): void {
+  try { localStorage.setItem(`${FLOOR_ANCHOR_KEY}:${location.origin}`, anchor.aid); } catch { /* nothing kept */ }
+}
+
 /** The fleet-join file a paste carries, by its `kind`: an offer to request against, an answer to land, or neither. */
 function fleetJoinFileOf(text: string): { readonly kind: "fleet-join-offer" | "fleet-join-answer"; readonly value: unknown } | null {
   let value: unknown;
@@ -341,6 +357,10 @@ async function bootVessel(): Promise<void> {
   const relayUrl = resolveRelayUrl(relayParams);
   // #floor=<card> → the hearth's flow floor card, carried by hand off its banner: what a device at the floor reads under.
   const floor = floorCardOf(location.hash, readHearthFloorCard);
+  // #anchor=<aid> → the place AID handed across apart from the card (a deliberate transfer), kept for the next arrival; the card
+  // alone never anchors, so without one the card files nothing and says so.
+  const floorAnchor = floorAnchorOf(location.hash, keptFloorAnchor());
+  if (floorAnchor?.via === "transfer") keepFloorAnchor(floorAnchor);
   // The fleet-join landing stashes the admit it carried; this boot takes it and the vessel opens on it.
   const admit = pendingAdmit ?? takeStashedAdmit();
   pendingAdmit = admit;
@@ -350,6 +370,7 @@ async function bootVessel(): Promise<void> {
   if (relayUrl) {
     console.log(`[vessel] CROSSING → ${relayUrl}`);
     if (floor && floor.card === null) console.warn("[vessel] the floor card this URL carries does not read: open the URL the hearth's banner prints");
+    else if (floor && !floorAnchor) console.warn("[vessel] the floor card carries no weight alone: hand the place AID the hearth's banner prints beside it (#anchor=<aid>)");
   } else {
     console.log(
       "[vessel] PURE LOCAL BOOT — no node vessel dialled.\n" +
@@ -393,6 +414,7 @@ async function bootVessel(): Promise<void> {
       onControlResult: (_surface, result) => { projectionSink.applyResult(result); },
       ...(relayUrl ? { relayUrl } : {}),
       ...(floor ? { floorCard: floor.text } : {}),
+      ...(floorAnchor ? { floorAnchor } : {}),
       ...(admit ? { admit } : {}),
       ...(meshLeaf ? { meshLeaf } : {}),
     });

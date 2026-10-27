@@ -21,9 +21,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   carriageDocUrl, carriageEntriesFromBoard, filePlaceFloorPins, writeCarriageEntry, foldCarrierSet, foundingRoster, hearthPinIndex, materializeSharedLarDoc,
-  placeFloorPinsFromBoard, FLOW_SOCKET_ROUTE, type LarDoc, type PlaceFloorPinStatement,
+  placeFloorPinsFromBoard, placeKelRowsFromBoard, verifyPlaceKel, FLOW_SOCKET_ROUTE, type LarDoc, type PlaceFloorPinStatement,
 } from "@lararium/mesh";
-import { generateOrLoadVesselIdentity, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
+import { generateOrLoadVesselIdentity, loadPlaceAid, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { runNexusCarryFor, runNexusContract, NexusContractError } from "../src/commands/nexus-contract.js";
 import { takeCarryBundle, CarryBundleError, type CarryBundle } from "../src/carry-bundle.js";
@@ -81,7 +81,7 @@ async function readOwn(): Promise<{ carried: string[]; filed: readonly string[] 
       const index = hearthPinIndex();
       const doc = await open(carriageDocUrl(r.island), "board:carriage-contracts");
       const carriers = await foldCarrierSet(carriageEntriesFromBoard(doc), r.roster);
-      const read = filePlaceFloorPins(index, placeFloorPinsFromBoard(doc), { nexusHex: Buffer.from(r.aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, carriers });
+      const read = filePlaceFloorPins(index, placeFloorPinsFromBoard(doc), { nexusHex: Buffer.from(r.aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, kelRows: placeKelRowsFromBoard(doc), standing: { via: "carrier", carriers } });
       filed.push(...read.filed);
     }
     return { carried: readings.filter((r) => r.via === "carrier-seal").map((r) => r.aid), filed };
@@ -92,12 +92,13 @@ describe("a herm's explicit join: carry-for → carry --floor-pin → carry-take
   it("CONTROL: the whole join stands the herm's gate at that Nexus, and its floor pin files under its key", async () => {
     const { aid } = await standBoth();
     const seal = await runNexusCarryFor({ sealHome: larSealHome() });
-    expect(seal.floorPin?.placeKey).toBe(seal.nym);
+    expect(verifyPlaceKel(seal.placeKel).ok && (verifyPlaceKel(seal.placeKel) as { signerKey: string }).signerKey).toBe(seal.nym);
+    expect(seal.floorPin?.aid).toBe(await loadPlaceAid());
     // RED before the take: holding the charter alone stands nothing.
     expect((await readOwn()).carried).toEqual([]);
 
     at(hearthRoot);
-    const carry = await direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, floorPin: JSON.stringify(seal.floorPin) });
+    const carry = await direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, floorPin: JSON.stringify({ floorPin: seal.floorPin, placeKel: seal.placeKel }) });
     expect(carry.carrierHeld).toBe(true);
     expect(carry.carryBundle?.contract.nym).toBe(seal.nym);
     expect(carry.carryBundle?.floorPins).toHaveLength(1);
@@ -106,13 +107,13 @@ describe("a herm's explicit join: carry-for → carry --floor-pin → carry-take
       const doc = (await materializeSharedLarDoc(repo, carry.boardUrl as never, "board:carriage-contracts")).doc();
       const roster = foundingRoster(readNexusDoc(larSealHome()));
       return filePlaceFloorPins(hearthPinIndex(), placeFloorPinsFromBoard(doc), {
-        nexusHex: Buffer.from(aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, carriers: await foldCarrierSet(carriageEntriesFromBoard(doc), roster),
+        nexusHex: Buffer.from(aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, kelRows: placeKelRowsFromBoard(doc), standing: { via: "carrier", carriers: await foldCarrierSet(carriageEntriesFromBoard(doc), roster) },
       });
     })).filed).toEqual([seal.nym]);
 
     at(hermRoot);
     const taken = await direct(takeCarryBundle)({ raw: JSON.stringify(carry.carryBundle), ownVesselKey: seal.nym });
-    expect(taken).toMatchObject({ aid, nym: seal.nym, floorPins: [seal.nym] });
+    expect(taken).toMatchObject({ aid, nym: seal.nym, floorPins: [seal.floorPin!.aid] });
     const own = await readOwn();
     expect(own.carried).toEqual([aid]);
     expect(own.filed).toEqual([seal.nym]);
@@ -126,10 +127,14 @@ describe("a herm's explicit join: carry-for → carry --floor-pin → carry-take
     const other = await runNexusCarryFor({ sealHome: larSealHome() });   // the hearth's own vessel key: another place
     const forged: PlaceFloorPinStatement = { ...pin, sig: pin.sig.replace(/^./, (c) => (c === "0" ? "1" : "0")) };
     const elsewhere: PlaceFloorPinStatement = { ...pin, pin: { ...pin.pin, nexus: Buffer.from("nexus-elsewhere", "utf8").toString("hex") } };
-    for (const bad of [forged, elsewhere, other.floorPin!]) {
-      await expect(direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, floorPin: JSON.stringify(bad) }))
+    // The claim of another place, signed over the same pin by a head whose signer is not the carry's nym.
+    const wrapped = (floorPin: unknown, placeKel: unknown) => JSON.stringify({ floorPin, placeKel });
+    for (const bad of [wrapped(forged, seal.placeKel), wrapped(elsewhere, seal.placeKel), wrapped(other.floorPin, other.placeKel), wrapped(pin, other.placeKel), wrapped(pin, []), JSON.stringify({ floorPin: pin }), "{}"]) {
+      await expect(direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, floorPin: bad }))
         .rejects.toBeInstanceOf(NexusContractError);
     }
+    // A carry with no claim at all lands nothing: the claim is required, not optional.
+    await expect(direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig })).rejects.toBeInstanceOf(NexusContractError);
     const listed = await ownedStore(larDataDir(), async (repo) => {
       const url = carriageDocUrl(nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: larSealHome() }));
       const doc = (await materializeSharedLarDoc(repo, url as never, "board:carriage-contracts")).doc();
@@ -144,8 +149,8 @@ describe("a herm's explicit join: carry-for → carry --floor-pin → carry-take
     at(hearthRoot);
     const other = await runNexusCarryFor({ sealHome: larSealHome() });
     // The herm's own carry first: its bundle then names no other place, so what lands of `other` lands off the refused take alone.
-    const carryOwn = await direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, floorPin: JSON.stringify(seal.floorPin) });
-    const carryOther = await direct(runNexusContract)({ action: "carry", nym: other.nym, carrierSig: other.carrierSig, floorPin: JSON.stringify(other.floorPin) });
+    const carryOwn = await direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, floorPin: JSON.stringify({ floorPin: seal.floorPin, placeKel: seal.placeKel }) });
+    const carryOther = await direct(runNexusContract)({ action: "carry", nym: other.nym, carrierSig: other.carrierSig, floorPin: JSON.stringify({ floorPin: other.floorPin, placeKel: other.placeKel }) });
     at(hermRoot);
     await expect(direct(takeCarryBundle)({ raw: JSON.stringify(carryOther.carryBundle), ownVesselKey: seal.nym })).rejects.toBeInstanceOf(CarryBundleError);
     const own = carryOwn.carryBundle as CarryBundle;
@@ -164,7 +169,7 @@ describe("a herm's explicit join: carry-for → carry --floor-pin → carry-take
     await standBoth();
     const seal = await runNexusCarryFor({ sealHome: larSealHome() });
     at(hearthRoot);
-    const carry = await direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, floorPin: JSON.stringify(seal.floorPin) });
+    const carry = await direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, floorPin: JSON.stringify({ floorPin: seal.floorPin, placeKel: seal.placeKel }) });
     const closed = await direct(runNexusContract)({ action: "uncarry", nym: seal.nym });
     const uncarry = await ownedStore(larDataDir(), async (repo) =>
       carriageEntriesFromBoard((await materializeSharedLarDoc(repo, closed.boardUrl as never, "board:carriage-contracts")).doc()).find((e) => e.action === "uncarry")!);

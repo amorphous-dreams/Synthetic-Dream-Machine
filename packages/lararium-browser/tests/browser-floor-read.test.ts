@@ -71,7 +71,12 @@ describe("the browser reads the floor and verifies every step", () => {
     const c = await oneSeatCharter(1, 0);
     expect(await readHearthFloor({ baseUrl: "http://h", nexusPin: null })).toMatchObject({ ok: false, reason: "no-nexus" });
     expect(await readHearthFloor({ baseUrl: "http://h", nexusPin: pinOf(c.aid), fetchFn: (async () => new Response("route unavailable", { status: 404 })) as typeof fetch })).toMatchObject({ ok: false, reason: "porch-silent" });
-    expect(await readHearthFloor({ baseUrl: "http://h", nexusPin: pinOf(c.aid), fetchFn: (async () => { throw new Error("offline"); }) as typeof fetch })).toMatchObject({ ok: false, reason: "porch-silent", detail: "offline" });
+    expect(await readHearthFloor({ baseUrl: "http://h", nexusPin: pinOf(c.aid), fetchFn: (async () => { throw new Error("offline"); }) as typeof fetch })).toMatchObject({ ok: false, reason: "porch-silent", detail: "offline; no floor pin claim held: nothing synced yet" });
+    // An offline answer names the head the page last accepted: "as of my last sync".
+    const held = { aid: "ab".repeat(32), seq: 2, head: "cd".repeat(32), lineage: [] as string[] };
+    const named = await readHearthFloor({ baseUrl: "http://h", nexusPin: pinOf(c.aid), held, fetchFn: (async () => { throw new Error("offline"); }) as typeof fetch });
+    expect(named).toMatchObject({ ok: false, reason: "porch-silent" });
+    expect(named.ok ? "" : named.detail).toContain("as of my last sync: place abababababab… at KEL seq 2");
   });
 
   test("RED: a lineage whose genesis bytes differ from the AID the card holds refuses before any blob is fetched", async () => {

@@ -43,6 +43,7 @@ import { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders, t
 import type { MountManifest } from "@lararium/mesh";
 import { bootFaultReport }                 from "./boot-fault.js";
 import { standAs, FLOW_SOCKET_ROUTE, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText } from "@lararium/mesh";
+import { hearthFloorProof } from "./hearth-floor-claims.js";
 import { randomBytes } from "node:crypto";
 import {
   standRaiseDoor, leaseEpochOnBoard, verifyNymSignature, placeCarriedNexuses, unionReadings,
@@ -727,15 +728,21 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   // gate at a Nexus, so its URLs carry no card.
   const gateIdentity = await loadVesselIdentity();
   console.log(`[lararium] gate key: ${gateIdentity.verifyingKey}`);
-  const floorCard = await (async (): Promise<string | null> => {
+  // THE CARD carries the place's signed floor pin claim at the head of its own KEL, and the KEL rows that fold to that head. The
+  // card never anchors itself: the place AID prints on its own line, to hand across apart from the URL (a deliberate transfer).
+  const floorCardPack = await (async (): Promise<{ text: string; aid: string } | null> => {
     try {
       const pin = stoodFloorPins(larSealHome(), await vesselFloorKeyDoor()).find((p) => p.route === HEARTH_FLOOR_CARD_ROUTE);
-      return pin ? hearthFloorCardText({ pin, publisher: gateIdentity.verifyingKey }) : null;
+      if (!pin) return null;
+      const proof = await hearthFloorProof([pin]);
+      return proof ? { text: hearthFloorCardText({ claim: proof.claims[0]!, kel: [...proof.kel] }), aid: proof.claims[0]!.aid } : null;
     } catch (err) {
       if (!(err instanceof NoStoodNexus)) console.log(`[lararium] floor card: none (${err instanceof Error ? err.message : String(err)})`);
       return null;
     }
   })();
+  const floorCard = floorCardPack?.text ?? null;
+  if (floorCardPack) console.log(`[lararium] floor anchor: ${floorCardPack.aid}   (hand it to a device beside the card, apart from the URL: #anchor=<aid>; the card never anchors itself)`);
   console.log("[lararium] browser crossing — open one of these on the device that crosses; it stands at the floor:");
   const crossings = reachFaces.map((face, i) => ({ face, composition: originCompositions[i]! }));
   for (const line of crossingBannerLines("lararium", crossings, floorCard)) console.log(`[lararium]   ${line}`);

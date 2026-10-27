@@ -275,7 +275,8 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "nexus-contract-open": (args) => answer("nexus-contract-open", async () => ({
       ...(await runNexusContractOpen({
         action: args["action"] as CarriageAction, nym: need("nexus-contract-open", args, "nym"), sealHome, repo,
-        ...opt("contractSig", str(args["contractSig"])), ...opt("aid", str(args["aid"])),
+        ...opt("contractSig", str(args["contractSig"])), ...opt("carrierSig", str(args["carrierSig"])), ...opt("aid", str(args["aid"])),
+        ...opt("floorPin", str(args["floorPin"])),
       })),
     })),
     "nexus-contract-partial": (args) => answer("nexus-contract-partial", async () => {

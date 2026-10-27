@@ -31,29 +31,30 @@ export function writePlaceKelEvent(draft: LarDoc, aid: string, event: PlaceKelEv
   draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(event) }, "place-kel");
 }
 
-/** Every event-shaped payload filed under `aid`, unread. A torn payload files nothing. */
-export function placeKelEventsFromBoard(doc: LarDoc | undefined | null, aid: string): unknown[] {
+/** The most KEL rows one board read takes, and the longest payload one row may carry: a lawful event is under a kilobyte. */
+export const PLACE_KEL_BOARD_ROWS = 4096;
+export const PLACE_KEL_ROW_CHARS = 2048;
+
+/** Read the rows under `prefix` in key order, bounded at the board: a payload past the byte bound is noise, and no more than the row bound parse. */
+function boundedRows(doc: LarDoc | undefined | null, prefix: string): unknown[] {
   const out: unknown[] = [];
-  const prefix = `${PLACE_KEL_PREFIX}${aid}/`;
-  for (const [title, record] of Object.entries(doc?.tiddlers ?? {})) {
-    if (!title.startsWith(prefix)) continue;
-    const text = tiddlerText(record);
-    if (text === null) continue;
+  for (const title of Object.keys(doc?.tiddlers ?? {}).filter((t) => t.startsWith(prefix)).sort()) {
+    if (out.length >= PLACE_KEL_BOARD_ROWS) break;
+    const text = tiddlerText(doc!.tiddlers[title]);
+    if (text === null || text.length > PLACE_KEL_ROW_CHARS) continue;
     try { out.push(JSON.parse(text) as unknown); } catch { /* a torn row files nothing */ }
   }
   return out;
 }
 
-/** Every parseable place KEL payload on the board, across all inception AIDs. The carry reader verifies each chain. */
+/** Every event-shaped payload filed under `aid`, unread and bounded. A torn payload files nothing. */
+export function placeKelEventsFromBoard(doc: LarDoc | undefined | null, aid: string): unknown[] {
+  return boundedRows(doc, `${PLACE_KEL_PREFIX}${aid}/`);
+}
+
+/** Every parseable place KEL payload on the board, across all inception AIDs, bounded. The carry reader verifies each chain. */
 export function placeKelRowsFromBoard(doc: LarDoc | undefined | null): unknown[] {
-  const out: unknown[] = [];
-  for (const [title, record] of Object.entries(doc?.tiddlers ?? {})) {
-    if (!title.startsWith(PLACE_KEL_PREFIX)) continue;
-    const text = tiddlerText(record);
-    if (text === null) continue;
-    try { out.push(JSON.parse(text) as unknown); } catch { /* a torn row carries no payload */ }
-  }
-  return out;
+  return boundedRows(doc, PLACE_KEL_PREFIX);
 }
 
 /**

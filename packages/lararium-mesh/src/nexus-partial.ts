@@ -3,7 +3,8 @@
  * kapae, the roll anchor and a realm's edge roll anchor (kapae#/edge-hands, kahu#/nexus-scale).
  *
  * A two-seat Nexus holds its seats in two vaults, so no vault signs a quorum act whole. One seat signs, the act
- * crosses as a PARTIAL file, and the other seat cosigns. Each act keeps its OWN canonical image and its own
+ * crosses as a PARTIAL file, and the other seat cosigns. A CARRY crosses with the place's floor pin claim and the place KEL
+ * rows that fold to its head: the claim files only with the counted act, never beside a partial that falls short of the quorum. Each act keeps its OWN canonical image and its own
  * signing domain: an admit and a revoke ride the carriage entry, a kapae rides the antigen entry, and a roll
  * anchor rides the anchor, and an edge roll anchor rides its own anchor under its own domain, one partial for
  * each realm board. None casts into another, and none casts into an edge act. The verdicts come from the
@@ -45,6 +46,7 @@
 import {
   CARRIAGE_ENTRY_DOMAIN, CARRIAGE_ROLL_ANCHOR_DOMAIN, carriageEntryActCid, carriageEntryBytes, carriageEntryCounts,
   admitCarriageCommit, readAdmitOpening, rollAnchorBytes, rollAnchorCid, rollAnchorCounts, rollAnchorParents, verifyCarriageConsent,
+  verifyCarrierContractAtHead,
   type AdmitOpening, type CarriageEntry, type RollAnchor,
 } from "./carriage-registry.js";
 import {
@@ -60,6 +62,10 @@ import type { PartialVerdict } from "./edge-partial.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { readFrontierCarry, type FrontierCarry } from "./frontier-carry.js";
 import { NEXUS_AID_PATTERN } from "./wax-stamp.js";
+import { FLOW_SOCKET_ROUTE } from "./flow-read-client.js";
+import { foldClaimHead, readPlaceFloorPin, type PlaceFloorPinStatement } from "./place-floor-pin.js";
+import { decodePlaceKelEvent, type PlaceKelEvent } from "./vessel-kel.js";
+import { utf8Bytes } from "./crypto.js";
 
 /** The envelope's own tag. It signs nothing: a partial's integrity rides its act's id and signatures. */
 export const NEXUS_PARTIAL_KIND = "nexus-act-partial" as const;
@@ -75,6 +81,8 @@ export type NexusPartialAct =
   /** An admit may carry the OPENING of its carriage commitment beside it: the partial crosses between the founders'
    *  vaults by hand, so whichever vault lands the act can hand the subject its bundle. The board never holds it. */
   | { readonly family: "admit" | "revoke"; readonly entry: CarriageEntry; readonly opening?: AdmitOpening }
+  /** A carry crosses with the place's floor pin claim and the KEL rows that fold to its head. */
+  | { readonly family: "carry"; readonly entry: CarriageEntry; readonly claim: PlaceFloorPinStatement; readonly kel: readonly PlaceKelEvent[] }
   | { readonly family: "kapae"; readonly entry: KapaeAntigenEntry }
   | { readonly family: "roll-anchor"; readonly anchor: RollAnchor }
   | { readonly family: "edge-roll-anchor"; readonly anchor: EdgeRollAnchor; readonly frontier?: FrontierCarry };
@@ -148,11 +156,13 @@ function readSignatures(v: unknown): QuorumSignature[] | null {
   return out;
 }
 
-function readCarriage(v: unknown, family: "admit" | "revoke"): CarriageEntry | null {
+function readCarriage(v: unknown, family: "admit" | "revoke" | "carry"): CarriageEntry | null {
   const e = record(v);
   const keys = family === "admit"
     ? ["kind", "nym", "action", "parents", "sealEpochCid", "signatures", "contractSig", ...(e && "carriageCommit" in e ? ["carriageCommit"] : [])]
-    : ["kind", "nym", "action", "parents", "sealEpochCid", "signatures"];
+    : family === "carry"
+      ? ["kind", "nym", "action", "parents", "sealEpochCid", "signatures", "contractSig"]
+      : ["kind", "nym", "action", "parents", "sealEpochCid", "signatures"];
   if (!e || !exactKeys(e, keys) || e["kind"] !== CARRIAGE_ENTRY_DOMAIN || e["action"] !== family) return null;
   if (typeof e["nym"] !== "string" || !HEX64.test(e["nym"]) || !sortedSet(e["parents"], HEX64)) return null;
   if (typeof e["sealEpochCid"] !== "string" || e["sealEpochCid"].length === 0) return null;
@@ -163,6 +173,7 @@ function readCarriage(v: unknown, family: "admit" | "revoke"): CarriageEntry | n
   if (family === "revoke") return entry;
   const contract = readSignatures([e["contractSig"]]);
   if (!contract || contract[0]!.signer !== entry.nym) return null;
+  if (family === "carry") return { ...entry, contractSig: contract[0]! };
   if (!("carriageCommit" in e)) return { ...entry, contractSig: contract[0]! };
   const commit = e["carriageCommit"];
   return typeof commit === "string" && HEX64.test(commit) ? { ...entry, contractSig: contract[0]!, carriageCommit: commit } : null;
@@ -213,6 +224,8 @@ function readEdgeAnchor(v: unknown): EdgeRollAnchor | null {
  * another shape, an act that fails its own image, or a subject that names another nym or other epochs.
  * Signatures read as shapes here; the judge counts them against a roster.
  */
+const utf8Hex = (text: string): string => Array.from(utf8Bytes(text), (b) => b.toString(16).padStart(2, "0")).join("");
+
 export function readNexusActPartial(parsed: unknown): NexusActPartial | null {
   const p = record(parsed);
   if (!p || !exactKeys(p, ["kind", "aid", "subject", "act"]) || p["kind"] !== NEXUS_PARTIAL_KIND) return null;
@@ -230,6 +243,21 @@ export function readNexusActPartial(parsed: unknown): NexusActPartial | null {
     if (opened && (opening === null || !("carriageCommit" in entry) || admitCarriageCommit(opening) !== entry.carriageCommit)) return null;
     const act = (opening ? { family, entry, opening } : { family, entry }) as NexusPartialAct;
     return { kind: NEXUS_PARTIAL_KIND, aid: p["aid"], subject: { kind: "nym", nym: entry.nym }, act };
+  }
+  if (family === "carry") {
+    if (!exactKeys(a, ["family", "entry", "claim", "kel"]) || !exactKeys(s, ["kind", "nym"]) || s["kind"] !== "nym") return null;
+    const entry = readCarriage(a["entry"], "carry");
+    if (!entry || s["nym"] !== entry.nym) return null;
+    const kelRaw = a["kel"];
+    if (!Array.isArray(kelRaw) || kelRaw.length === 0 || kelRaw.length > 16) return null;
+    const kel: PlaceKelEvent[] = [];
+    for (const raw of kelRaw) { const event = decodePlaceKelEvent(raw); if (event === null) return null; kel.push(event); }
+    // The claim reads whole at its exact shape and names a pin at THIS Nexus's flow route; the judge reads it against the place.
+    const claim = a["claim"];
+    const shaped = readPlaceFloorPin(claim, { nexusHex: utf8Hex(p["aid"]), route: FLOW_SOCKET_ROUTE, kelRows: kel, standing: { via: "carrier", carriers: new Set([entry.nym]) } });
+    if ("refusal" in shaped) return null;
+    return { kind: NEXUS_PARTIAL_KIND, aid: p["aid"], subject: { kind: "nym", nym: entry.nym },
+      act: { family: "carry", entry, claim: claim as PlaceFloorPinStatement, kel } };
   }
   if (family === "roll-anchor") {
     if (!exactKeys(a, ["family", "anchor"]) || !exactKeys(s, ["kind", "closes", "opens"]) || s["kind"] !== "roll") return null;
@@ -300,7 +328,8 @@ async function lineOf(act: Exclude<NexusPartialAct, AnchorAct>, reader: NexusPar
     }
   } else {
     for (const e of reader.board.carriage) {
-      if (e.nym !== act.entry.nym || (e.action !== "admit" && e.action !== "revoke") || !(await carriageEntryCounts(e, reader.head))) continue;
+      const relation: readonly string[] = act.family === "carry" ? ["carry", "uncarry"] : ["admit", "revoke"];
+      if (e.nym !== act.entry.nym || !relation.includes(e.action) || !(await carriageEntryCounts(e, reader.head))) continue;
       nodes.set(carriageEntryActCid(e), e.parents);
     }
   }
@@ -390,6 +419,15 @@ export async function judgeNexusActPartial(parsed: unknown, reader: NexusPartial
   if (actEpoch(act) !== reader.head.sealEpochCid) return { verdict: "stale", signed: [], why: "the act names an epoch other than this vessel's charter head" };
   if (act.family === "admit" && !(await verifyCarriageConsent({ nym: act.entry.nym, sealEpochCid: act.entry.sealEpochCid, contractSig: act.entry.contractSig!.sig }))) {
     return { verdict: "invalid", signed: [], why: "the admit carries no contract-in its operator signed for this epoch" };
+  }
+  if (act.family === "carry") {
+    // The carrier seal proves itself AT THE HEAD the claim names, and the claim reads for this place at this Nexus: the signer the
+    // KEL seats there is the nym the quorum counts. A claim that does not read, or a seal an older signer made, files nothing.
+    const folded = foldClaimHead(act.kel, act.claim.aid, act.claim.head);
+    if (!folded.ok) return { verdict: "invalid", signed: [], why: "the carry's floor pin claim names a head its KEL rows do not fold to" };
+    if (!verifyCarrierContractAtHead({ nym: act.entry.nym, sealEpochCid: act.entry.sealEpochCid, sig: act.entry.contractSig!.sig }, folded.head)) {
+      return { verdict: "invalid", signed: [], why: "the carrier seal does not verify under the signer the place KEL seats at the claim's head" };
+    }
   }
   const signed = nexusPartialSeatsSigned(act, reader.head);
   if (signed.length === 0) return { verdict: "invalid", signed, why: "no seat of the head roster signed these bytes" };

@@ -24,7 +24,7 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import {
-  composeVessel, dialEntryToRecord, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, hearthPinIndex, memoryBackedWithdrawals,
+  composeVessel, dialEntryToRecord, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, hearthPinIndex, filePlaceFloorPins, placeFloorPinsFromBoard, placeKelRowsFromBoard, memoryBackedWithdrawals,
   FLOW_SOCKET_ROUTE, pullAndVerifyFlow, CARRIAGE_PIN_ABSENT,
   type CapModule, type CarriageEntry, type HearthPinIndex, type LarDoc, type MeshPalaceDoc,
 } from "@lararium/mesh";
@@ -32,6 +32,7 @@ import { mountFlowMapReadFace } from "../src/flow-read-face.js";
 import { carriageCap, CAP, type MeshPalaceComponent } from "../src/node-caps.js";
 import { vesselGate } from "../src/vessel-gates.js";
 import { gateReadingsFor, layStatementOn, vesselCarriagePull } from "../src/herm-carriage.js";
+import { foundPlace } from "../../lararium-mesh/tests/place-claim-fixture.js";
 import { ownPlacePosture } from "../src/socket-sorter.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 import { dialer, realDeadlines, AUDIENCE } from "./flow-floor-rig.js";
@@ -107,7 +108,8 @@ async function stand(h: Herm, w: World, readings: () => Promise<readonly Carried
     placeClass: "herm", ownPlaceKey: h.key, sign: h.sign, readings, ownNexus: () => null,
     openBoard: async () => board.doc,
     ownFloorPin: async (nexus) => deriveGateBundle(floorGateRoot(door), new TextEncoder().encode(nexus), floorRoute(FLOW_SOCKET_ROUTE)).pin,
-    layStatement: async (_url, statement) => { layStatementOn(board.handle, statement); },
+    ownPlaceChain: async () => foundPlace(6, h.seed).chain,
+    layStatement: async (_url, statement, kel) => { layStatementOn(board.handle, statement, kel); },
     pins, audience: AUDIENCE, deadlines: realDeadlines(1_500), dialSocket: dialer,
   });
   const meshpalace: CapModule = { id: CAP.meshpalace, build: () => ({ handle } as MeshPalaceComponent) };
@@ -225,14 +227,13 @@ describe("the herm relay and carriage peering, gate-native, at one explicit Nexu
     expect(forced.pointer).toBeUndefined();
   }, 30_000);
 
-  /** relay two's pin as the last hop's index filed it off the board. */
+  /** relay two's pin as the last hop's index filed it off the board: the claims through the one fold, with the board's KEL rows and counted carriers. */
   function lastHopPin() {
     const pins = hearthPinIndex();
-    for (const raw of Object.values(board.doc.tiddlers)) {
-      const text = (raw as { tiddler?: { text?: string } }).tiddler?.text;
-      const parsed = text ? JSON.parse(text) as { placeKey?: string; pin?: unknown } : null;
-      if (parsed?.placeKey === relayTwo.key) pins.put(relayTwo.key, parsed.pin);
-    }
+    const carriers = new Set(acts.map((act) => act.nym));
+    filePlaceFloorPins(pins, placeFloorPinsFromBoard(board.doc), {
+      nexusHex: w.pin.nexus, route: FLOW_SOCKET_ROUTE, kelRows: placeKelRowsFromBoard(board.doc), standing: { via: "carrier", carriers },
+    });
     return pins.get({ hearth: relayTwo.key, nexus: w.pin.nexus, route: FLOW_SOCKET_ROUTE, tier: "floor" });
   }
 
