@@ -8,6 +8,7 @@ on:
       - 'tools/projection-loom/projection_loom/seed_adapters.py'
       - 'tools/projection-loom/projection_loom/developmental.py'
       - 'tools/projection-loom/projection_loom/intent_evolution.py'
+      - 'tools/projection-loom/projection_loom/generalized_campaign.py'
       - 'tools/projection-loom/experiments/zero/**'
       - 'tools/projection-loom/tests/test_generalized_*.py'
   workflow_dispatch:
@@ -32,3 +33,19 @@ jobs:
           python -m pip install --no-deps -e .
           python -m pip check
       - run: python -m pytest -q tests/test_generalized_*.py
+      - name: Seven independent and composed seed cohorts (one OODA-HA journal each)
+        run: |
+          python -m projection_loom.generalized_campaign \
+            --inputs experiments/zero/inputs \
+            --out out/generalized-experiment-zero \
+            --epochs 3 --offspring 4 --exact-budget 4 --finalists 2 \
+            | tee generalized-matrix.log
+      - name: Preserve all exact cohorts, source/native receipts, refusals and previews
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generalized-experiment-zero
+          path: |
+            tools/projection-loom/out/generalized-experiment-zero/
+            tools/projection-loom/generalized-matrix.log
+          retention-days: 60

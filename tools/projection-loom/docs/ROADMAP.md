@@ -42,10 +42,10 @@ compatibility requirement in early alpha. All rows below carry
 | L-14 | D / fairness | Structural novelty and quality-diversity niches, with reserved exact auditions per active grammar/operator | Newly born construction rules receive measurable exact/native trial opportunities rather than solely source-fit rankings | **Wave D code implemented pending CI; complete hosted campaign still requires Wave E.**
 | L-15 | D / replay | Independent keyed RNG substreams per source+rule+genome+epoch; deterministic mutation, module execution and resume | Worker order, scheduling and replay leave logical descendants/receipts invariant; future forks remain explicit | **Wave D code implemented pending CI; complete hosted campaign still requires Wave E.**
 | L-16 | D / cameras | Seed/frame-frozen multi-camera contact sheets; independent source-view scores; visual inspection budgets | Presentation-only shot dressing cannot change native geometry or lineage; synthetic views never pose as source images | **Wave D code implemented pending CI; complete hosted campaign still requires Wave E.**
-| L-17 | E / preregister | Seven seed matrix cohorts with matched budgets: I, B, Z, IB, IZ, BZ, IBZ | Source/intent hashes, constrained objectives, null cases and decision boundaries registered before any epoch |
-| L-18 | E / crucible | Standalone capability audits + full-location integration; metamorphic perturbations and equal-budget controls | All matrix cases run the same helm/gates; source-relative wins and architectural novelty separately measured |
-| L-19 | E / review | Operator-facing galleries: source-group comparisons, six/extra orthos, sockets, routes, failures and constructive ancestry | Reviewer sees which seed/rule produced each body; no pet-name or aesthetic winner auto-promoted |
-| L-20 | E / aftermath | Remove obsolete fixed-genome/fixture couplings, update guidebook, handoff, research/memes and CI after verified replacement | No shadow controller, no old compatibility scaffold, no misleading repo-head status; archived failures remain attributable |
+| L-17 | E / preregister | Seven seed matrix cohorts with matched budgets: I, B, Z, IB, IZ, BZ, IBZ | Source/intent hashes, constrained objectives, null cases and decision boundaries registered before any epoch | **Wave E implemented; exact-head seven-cohort CI pending.**
+| L-18 | E / crucible | Standalone capability audits + full-location integration; metamorphic perturbations and equal-budget controls | All matrix cases run the same helm/gates; source-relative wins and architectural novelty separately measured | **Wave E implemented; exact-head seven-cohort CI pending.**
+| L-19 | E / review | Operator-facing galleries: source-group comparisons, six/extra orthos, sockets, routes, failures and constructive ancestry | Reviewer sees which seed/rule produced each body; no pet-name or aesthetic winner auto-promoted | **Wave E implemented; exact-head seven-cohort CI pending.**
+| L-20 | E / aftermath | Remove obsolete fixed-genome/fixture couplings, update guidebook, handoff, research/memes and CI after verified replacement | No shadow controller, no old compatibility scaffold, no misleading repo-head status; archived failures remain attributable | **Wave E subject-neutral engine and experiment isolation implemented; legacy fixed-genome scrubbing still requires evidence.**
 
 **Athenaion-derived non-negotiable test cases:**
 
@@ -92,6 +92,12 @@ Added typed finite `GrowthProgram` with variable-length foundation/spawn/split/b
 ### Wave D checkpoint · 2026-10-27
 
 Added image-authorized, precision-sensitive IoU/Tversky and contour terms, six seed-frozen inspection cameras with synthetic-only non-source views, bounded behavioral quality-diversity archive and fair coverage by structural emitter. Existing keyed `GrowthContext` RNG secures worker-order reproducibility. The image-only full-resolution scorer refuses source mask resize at final evaluation. These primitives require a single-helm execution and seven-cohort exact-head receipts before declaring a full experiment (Wave E).
+
+### Wave E checkpoint · 2026-10-27
+
+The generic developmental seven-seed crucible now enters the **existing** OODAHAJournal. Each cohort preregisters its seed digests/intent/budgets; all candidate Acts construct native BRep, and every failure and observation is persisted. A quality-diversity archive preserves structural niches across epochs. Finalists score against the original native-resolution image where one exists, while image-free runs carry no invented IoU. The same frozen synthetic six views inspect each candidate; no automatic architectural/canonical promotion occurs.
+
+The dedicated generalized CI workflow now runs all seven cohorts for three epochs and retains artifacts. Candidate programs live under generic machinery, with inputs in `experiments/zero/`. The fixed legacy alpha runner remains for historical witnesses; no backward compatibility requirement compels preserving it indefinitely. Verify exact-head CI and native campaign receipts before asserting L-17..L-20 completely accomplished.
 
 ## Source-head closing checkpoint · historical records preserved
 

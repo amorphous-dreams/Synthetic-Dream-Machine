@@ -30,7 +30,6 @@ def source_fit(reference,candidate,*,false_positive_cost=1.6):
     tversky=tp/max(1,tp+false_positive_cost*fp+fn)
     dr=distance_transform_edt(~r)
     dc=distance_transform_edt(~c) if c.any() else np.full(c.shape,1e3)
-    contour_r=r & (~np.pad(r[1:-1,1:-1],1,constant_values=False) if False else r)
     from scipy.ndimage import binary_erosion
     boundary_r=r&~binary_erosion(r)
     boundary_c=c&~binary_erosion(c)

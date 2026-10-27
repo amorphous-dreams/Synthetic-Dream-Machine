@@ -137,7 +137,7 @@ def _sites(part):
         "north":((cx,bb.ymax,cz),(0,1,0),(bb.xlen,bb.zlen)),
         "south":((cx,bb.ymin,cz),(0,-1,0),(bb.xlen,bb.zlen)),
     }
-    return {face:GrowthSite(part.name+"/"+face,part.name,face,*details)
+    return {part.name+"/"+face:GrowthSite(part.name+"/"+face,part.name,face,*details)
             for face,details in entries.items()}
 
 
