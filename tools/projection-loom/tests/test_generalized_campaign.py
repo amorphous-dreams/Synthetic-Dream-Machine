@@ -3,7 +3,7 @@ from PIL import Image, ImageDraw
 from pathlib import Path
 import pytest
 
-from projection_loom.generalized_campaign import COHORTS,run_matrix,run_cohort
+from experiments.zero.run import COHORTS,run_matrix,run_fixture_cohort as run_cohort
 
 def fixture(tmp_path):
     root=tmp_path/"inputs"
@@ -39,6 +39,9 @@ def test_matrix_uses_one_helm_and_replays_idempotently(tmp_path):
     assert (out/"matrix.json").read_bytes()==before
     assert first["cohorts"]["B"]["finalists"][0]["full_source"] is None
     assert first["cohorts"]["I"]["finalists"][0]["full_source"] is not None
+    for cohort,summary in first["cohorts"].items():
+        for finalist in summary["finalists"]:
+            assert (out/cohort/"finalists"/finalist["id"]/"six_view.png").is_file()
 
 def test_output_forks_on_changed_intent(tmp_path):
     root=fixture(tmp_path);out=tmp_path/"experiment"
@@ -53,3 +56,13 @@ def test_generic_engine_never_imports_necrospire_builder():
         source=inspect.getsource(module)
         assert "from examples.necrospire" not in source
         assert "import examples.necrospire" not in source
+
+
+def test_engine_package_has_no_experiment_zero_dependency():
+    import inspect
+    from projection_loom import generalized_campaign
+    code=inspect.getsource(generalized_campaign)
+    assert "experiments.zero" not in code
+    assert "image_group/manifest.json" not in code
+    assert "ziggurat_proxy/proxy.json" not in code
+    assert "COHORTS=" not in code

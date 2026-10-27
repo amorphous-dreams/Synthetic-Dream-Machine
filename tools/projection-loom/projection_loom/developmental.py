@@ -97,7 +97,20 @@ class GrowthProgram:
 
     @property
     def identity(self):
-        return canonical_json_sha256([n.as_dict() for n in self.nodes])
+        """Semantic program digest independent of arbitrary technical handles.
+
+        Order and typed parent/target edges have meaning; labels do not.
+        This is a canonical address for an isomorphism class, not a name ledger.
+        """
+        addresses={n.key:i for i,n in enumerate(self.nodes)}
+        canonical=[]
+        for node in self.nodes:
+            canonical.append({
+                "op":node.op,"face":node.face,"size":node.size,
+                "offset":node.offset,"repeats":node.repeats,
+                "parent":addresses.get(node.parent),
+                "target":addresses.get(node.target)})
+        return canonical_json_sha256(canonical)
 
     @classmethod
     def from_dict(cls,data):
@@ -119,6 +132,9 @@ class GrowthSite:
     normal: tuple[int,int,int]
     capacity: tuple[float,float]
     authority: str = "proposed-placement"
+    site_kind: str = "bearing-proposal"
+    clearance_certification: str = "none"
+    frame_kind: str = "local3d"
 
     def __post_init__(self):
         if self.face not in FACES or min(self.capacity)<=0:
@@ -229,6 +245,35 @@ def compile_growth(program:GrowthProgram,*,overlap=.20,native_audit=True):
     result=DevelopmentResult(a,sites,tuple(relationship),program.identity)
     if native_audit:result.audit()
     return result
+
+
+def spatial_occupancy_witness(result:DevelopmentResult):
+    """AABB footprint overlap testimony, not a BRep/contact/route verdict."""
+    rows=[]
+    parts=result.assembly.parts
+    names=sorted(parts)
+    for name in names:
+        bb=parts[name].solid.BoundingBox()
+        rows.append({"part":name,"xy":[float(bb.xmin),float(bb.ymin),
+                                      float(bb.xmax),float(bb.ymax)],
+                     "z":[float(bb.zmin),float(bb.zmax)]})
+    overlaps=[]
+    for i,part in enumerate(rows):
+        a=parts[part["part"]]
+        for other in rows[i+1:]:
+            b=parts[other["part"]]
+            width=min(part["xy"][2],other["xy"][2])-max(part["xy"][0],other["xy"][0])
+            depth=min(part["xy"][3],other["xy"][3])-max(part["xy"][1],other["xy"][1])
+            height=min(part["z"][1],other["z"][1])-max(part["z"][0],other["z"][0])
+            if min(width,depth,height)>0:
+                overlaps.append({"a":a.name,"b":b.name,
+                    "volume_bound":float(width*depth*height),
+                    "declared_support":b.name in a.parents or a.name in b.parents,
+                    "status":"AABB-overlap-unverified"})
+    return {"schema":"projection-loom/spatial-occupancy-proposal",
+            "coordinate_frame":"local3d",
+            "scope":"conservative axis-aligned bounds; never CAD collision proof",
+            "placements":rows,"overlaps":overlaps}
 
 
 def mutate_growth(program:GrowthProgram,context:GrowthContext,*,epoch,child,

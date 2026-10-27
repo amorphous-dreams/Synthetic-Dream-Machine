@@ -84,3 +84,23 @@ def test_bridges_and_exterior_cuts_have_native_witnesses():
     assert audit["union_valid"] and audit["valid"]
     assert "opening" in result.assembly.voids.voids
     assert any(rel[1]=="bridges" for rel in result.relationships)
+
+
+def test_renamed_technical_handles_preserve_semantic_genome():
+    first=program()
+    second=GrowthProgram((
+        GrowthNode("a","foundation",size=(8,8,2)),
+        GrowthNode("b","spawn",parent="a",face="up",size=(5,5,1.6)),
+        GrowthNode("c","spawn",parent="b",face="up",size=(2.4,2.4,3))))
+    assert first.identity==second.identity
+    a=compile_growth(first).assembly.material_solid()
+    b=compile_growth(second).assembly.material_solid()
+    assert abs(a.Volume()-b.Volume())<1e-6
+
+def test_occupancy_is_advisory_not_a_cad_gate():
+    from projection_loom.developmental import spatial_occupancy_witness
+    r=compile_growth(program())
+    w=spatial_occupancy_witness(r)
+    assert w["scope"].startswith("conservative")
+    assert w["placements"]
+    assert all(x["status"]=="AABB-overlap-unverified" for x in w["overlaps"])

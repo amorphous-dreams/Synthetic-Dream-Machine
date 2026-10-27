@@ -1,4 +1,4 @@
-"""Seven combinations of three experiment seeds, under the existing OODAHAJournal.
+"""Subject-neutral seed composition under the existing OODAHAJournal.
 
 This coordinates developmental rules through the only phase helm; source images
 constrain provisional visual fitness, never CAD truth or survey authority.
@@ -6,24 +6,17 @@ constrain provisional visual fitness, never CAD truth or survey authority.
 from __future__ import annotations
 from pathlib import Path
 from PIL import Image
-import argparse
 import json
 import numpy as np
 
 from .intent_seed import SeedBundle, IntentContract, GrowthContext
-from .seed_adapters import load_adapters, compose_adapters
+from .seed_adapters import compose_adapters
 from .developmental import GrowthNode, GrowthProgram, compile_growth, mutate_growth, crossover_growth
 from .intent_evolution import (QualityArchive, ScoredCandidate, structural_descriptor,
                                fair_auditions, fixed_inspection_cameras,
                                observe_candidate, multi_fidelity_audit)
 from .fractal_ooda_ha import OODAHAJournal
 from .provenance_encoding import canonical_json_sha256
-
-COHORTS={
-    "I":("image",), "B":("brutalist",), "Z":("ziggurat",),
-    "IB":("image","brutalist"), "IZ":("image","ziggurat"),
-    "BZ":("brutalist","ziggurat"), "IBZ":("image","brutalist","ziggurat"),
-}
 
 def save_once(path,payload):
     path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
@@ -34,14 +27,6 @@ def save_once(path,payload):
         return
     tmp=path.with_name(path.name+".pending")
     tmp.write_text(content,encoding="utf8");tmp.replace(path)
-
-
-def adapters_for(inputs,types):
-    root=Path(inputs)
-    return load_adapters(
-        image_manifest=root/"image_group/manifest.json" if "image" in types else None,
-        grammar_path=root/"brutalist_grammar/grammar.json" if "brutalist" in types else None,
-        proxy_path=root/"ziggurat_proxy/proxy.json" if "ziggurat" in types else None)
 
 
 def initial_program(adapters):
@@ -157,16 +142,19 @@ def restore_archive(epoch_file,archive):
     return rows
 
 
-def run_cohort(inputs,types,out,*,epochs=3,offspring=4,exact_budget=4,finalists=2,seed=41):
+def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
+               exact_budget=4,finalists=2,seed=41):
+    """Run any typed seed bundle without naming experiment fixtures.
+
+    The fixed five-phase journal remains the only execution controller.
+    """
     if not (1<=epochs<=12 and 1<=offspring<=24 and
             1<=exact_budget<=offspring and 1<=finalists<=12):
         raise ValueError("Unbounded campaign request")
-    adapters=adapters_for(inputs,types)
-    contract=IntentContract("experiment-zero-"+"-".join(types),
-        "grow alternative inhabitable places",
-        ("native-validity","structural-novelty") if "image" not in types else
-        ("native-validity","source-silhouette","structural-novelty"),
-        budgets=(("epochs",epochs),("exact",exact_budget),("offspring",offspring)))
+    adapters=tuple(adapters)
+    types=tuple(sorted({a.seed.kind for a in adapters}))
+    if not isinstance(contract,IntentContract):
+        raise ValueError("An explicit intent contract is required")
     scene=compose_adapters(adapters,contract)
     scene.audit()
     seeds=SeedBundle(tuple(a.seed for a in adapters))
@@ -180,7 +168,7 @@ def run_cohort(inputs,types,out,*,epochs=3,offspring=4,exact_budget=4,finalists=
         "run_id":context.run_id,"seeds":seeds.manifest(),"intent":contract.identity,
         "initial_program":initial.to_dict(),"types":list(types),
         "epochs":epochs,"offspring":offspring,"exact_budget":exact_budget,
-        "source_camera_authority":"provisional" if "image" in types else "none"}
+        "source_camera_authority":"provisional" if "image-group" in types else "none"}
     save_once(out/"pre_registration.json",manifest)
     if (out/"summary.json").exists():
         return json.loads((out/"summary.json").read_text(encoding="utf8"))
@@ -250,6 +238,9 @@ def run_cohort(inputs,types,out,*,epochs=3,offspring=4,exact_budget=4,finalists=
         if alpha is not None:
             size=(alpha.shape[1],alpha.shape[0])
             witness["full_source"]=multi_fidelity_audit(build,cameras,alpha,final=size)
+        from .gallery_artifacts import finalist_gallery
+        witness["gallery"]=finalist_gallery(
+            build,cameras,out/"finalists"/parent.id,alpha=alpha)
         save_once(out/"finalists"/(parent.id+".json"),witness)
         winners.append({"id":parent.id,"full_source":witness["full_source"]})
     summary={"schema":"projection-loom/developmental-campaign-summary",
@@ -270,34 +261,3 @@ def run_cohort(inputs,types,out,*,epochs=3,offspring=4,exact_budget=4,finalists=
     return summary
 
 
-def run_matrix(inputs,out,*,epochs=3,offspring=4,exact_budget=4,finalists=2):
-    root=Path(out);results={}
-    for label,types in COHORTS.items():
-        results[label]=run_cohort(inputs,types,root/label,epochs=epochs,
-                        offspring=offspring,exact_budget=exact_budget,
-                        finalists=finalists)
-    summary={"schema":"projection-loom/seven-cohort-crucible",
-             "cohorts":results,
-             "passed":all(x["native_valid"]>0 for x in results.values())}
-    save_once(root/"matrix.json",summary)
-    if not summary["passed"]:raise RuntimeError("A seed failed all native admissions")
-    return summary
-
-
-def main(argv=None):
-    p=argparse.ArgumentParser()
-    p.add_argument("--inputs",required=True)
-    p.add_argument("--out",required=True)
-    p.add_argument("--epochs",type=int,default=3)
-    p.add_argument("--offspring",type=int,default=4)
-    p.add_argument("--exact-budget",type=int,default=4)
-    p.add_argument("--finalists",type=int,default=2)
-    a=p.parse_args(argv)
-    r=run_matrix(a.inputs,a.out,epochs=a.epochs,offspring=a.offspring,
-                 exact_budget=a.exact_budget,finalists=a.finalists)
-    print(json.dumps({k:{"native_valid":v["native_valid"],"niches":v["niches"]}
-                      for k,v in r["cohorts"].items()},indent=2))
-
-
-if __name__=="__main__":
-    main()

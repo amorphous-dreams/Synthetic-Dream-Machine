@@ -35,7 +35,7 @@ jobs:
       - run: python -m pytest -q tests/test_generalized_*.py
       - name: Seven independent and composed seed cohorts (one OODA-HA journal each)
         run: |
-          python -m projection_loom.generalized_campaign \
+          python -m experiments.zero.run \
             --inputs experiments/zero/inputs \
             --out out/generalized-experiment-zero \
             --epochs 3 --offspring 4 --exact-budget 4 --finalists 2 \
