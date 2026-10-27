@@ -62,7 +62,7 @@ them, it does not re-implement them.
 
 | # | Participation | Protocol | Source |
 |---|---|---|---|
-| 1 | ''Identity'' | keyhive / did:key — keypair + self-certifying ContactCard | [[operator-peer|lar:///ha.ka.ba/lararium/mesh/operator-peer#/actor-parity]] (light leaf identity) |
+| 1 | ''Identity'' | a public place key and floor card; each selected face holds its own atom-keyed Keyhive identity | [[operator-peer|lar:///ha.ka.ba/lararium/mesh/operator-peer#/actor-parity]] (light leaf identity) |
 | 2 | ''Replica'' | Automerge Repo = own log + own storage scope; no global now | [[causal-island|lar:///ha.ka.ba/lararium/mesh/causal-island#/substrate-not-sovereignty]] |
 | 3 | ''Peering'' | NetworkAdapter + inbound-access policy as a ''capability'' | leaf-presentation and ed25519-door; sharePolicy |
 | 4 | ''Recipe + residency'' | CompositeStore bag-cascade + residency tiers | [[causal-island|lar:///ha.ka.ba/lararium/mesh/causal-island]], residency-tiers, disk-projection |
@@ -167,6 +167,6 @@ argument. What stays open sits one level out: a live-daemon exercise of the full
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/island-protocol">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
 
-<<^ code="&#x0003;">>ni:///sha-256;FTiIiTw0IWMTmrek0V29WWeodB3CI-P-4br6t6NYS8M
+<<^ code="&#x0003;">>ni:///sha-256;ZSKHJIwxsJaxFO830uYMcZtoWdI865OQ0Nn8RAhU6Z8
 
 <<^ code="&#x0004;" -> to="?">>

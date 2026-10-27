@@ -340,7 +340,7 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 !! OWED ~ what the code holds, and what stays unproven
 
-''What stands in code'': the leaf identity loads the vessel's seed and ContactCard (`packages/lararium-node/src/leaf-identity.ts`); the auth wire binds a presentation to the vessel key (`packages/lararium-mesh/src/auth-wire.ts`); the node gate sends `lar:challenge` before any proof (`packages/lararium-node/src/daemon-auth-gate.ts`); the PersonaGroup ring looks up grants by vessel key, and its own-hand path skips the check (`packages/lararium-mesh/src/persona-group-ring.ts`); the sibling proof sends a device edge inside its sealed box (`packages/lararium-mesh/src/leaf-peer-proof.ts`).
+''What stands in code'': the leaf identity presents the selected face's atom and card (`packages/lararium-node/src/leaf-identity.ts`); the faceless vessel presents only its public place card and pin; the node gate sends `lar:challenge` before any proof (`packages/lararium-node/src/daemon-auth-gate.ts`); the PersonaGroup ring looks up grants by the selected face, and its own-hand path skips the check (`packages/lararium-mesh/src/persona-group-ring.ts`); the sibling proof sends a device edge inside its sealed box (`packages/lararium-mesh/src/leaf-peer-proof.ts`).
 
 ''What stands specified in code.'' Each names a module and its vectors, and no production path calls any of them, so none reads as built (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures#/wiring-an-unreached-module">>). Each stays out of its package's barrel until its caller lands.
 
@@ -398,6 +398,6 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AXEIdYsqV0En_5_gfnvelWlgl0ansrF8yxMOvlOPl0s
+<<^ code="&#x0003;">>ni:///sha-256;HoOVJIhlP9nitV6MJv7ZBkpE22n42XNTW6G9DH9DpWM
 
 <<^ code="&#x0004;" -> to="?">>
