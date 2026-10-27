@@ -332,9 +332,9 @@ describe("the herm — the floor of the lararium cap stack", () => {
     // it, and the herm takes the bundle onto its own replica. The running herm refolds, and its floor gate stands there.
     const signed = run(["nexus", "carry-for", "--json"]);
     expect(signed.code, `the herm signed no carrier seal:\n${signed.said}`).toBe(0);
-    const seal = (signed.json?.["data"] ?? {}) as { nym?: string; carrierSig?: string; floorPin?: unknown };
+    const seal = (signed.json?.["data"] ?? {}) as { nym?: string; carrierSig?: string; floorPin?: unknown; placeKel?: unknown };
     expect(seal.floorPin, "carry-for signed no floor pin at the hearth's Nexus").toBeTruthy();
-    writeFileSync(join(courier, "floor-pin.json"), JSON.stringify(seal.floorPin));
+    writeFileSync(join(courier, "floor-pin.json"), JSON.stringify({ floorPin: seal.floorPin, placeKel: seal.placeKel }));
     const carried = await hearth.cli(["nexus", "carry", seal.nym!, "--carrier", seal.carrierSig!, "--floor-pin", join(courier, "floor-pin.json"), "--json"]);
     expect(carried.code, `the hearth's quorum refused the carry:\n${carried.stdout.slice(-400)}\n${carried.stderr.slice(-400)}`).toBe(0);
     const bundle = (carried.json?.["data"] as { carryBundle?: unknown } | undefined)?.carryBundle;

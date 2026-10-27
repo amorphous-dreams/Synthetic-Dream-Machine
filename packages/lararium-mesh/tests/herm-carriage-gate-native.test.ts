@@ -14,8 +14,9 @@ import { channelSessionTable, type GateSessionChannel } from "../src/gate-sessio
 import { buildFlowPointer, exportFlowSnapshot } from "../src/flow-substrate.js";
 import { FLOW_POINTER_FRAME, FLOW_SOCKET_ROUTE, pullAndVerifyFlow, type PlaceFlowPresentation } from "../src/flow-read-client.js";
 import {
-  filePlaceFloorPins, placeArmFor, placeFloorPinKey, placeFloorPinsFromBoard, readPlaceFloorPin, signPlaceFloorPin, writePlaceFloorPin,
+  filePlaceFloorPins, placeArmFor, placeFloorPinKey, placeFloorPinsFromBoard, readPlaceFloorPin, writePlaceFloorPin,
 } from "../src/place-floor-pin.js";
+import { claimAt, forgedClaim, foundPlace, rowsOf, type TestPlace } from "./place-claim-fixture.js";
 import { CARRIAGE_PIN_ABSENT, gateNativeCarriagePull } from "../src/carriage-pull.js";
 import { carriageEntriesFromBoard, writeCarriageEntry } from "../src/carriage-board.js";
 import type { LarDoc } from "../src/base-doc.js";
@@ -39,7 +40,9 @@ async function herm(w: World, serve: (send: () => void) => void = (send) => send
     });
   }));
   const key = hex(await ed25519.getPublicKeyAsync(HERM_SEED));
-  return { gate, key, served, sign: (image: Uint8Array) => ed25519.signAsync(image, HERM_SEED) };
+  // The herm is a PLACE: its KEL seats the vessel key as the inception signer, and its claim names that head.
+  const kel = foundPlace(3, HERM_SEED);
+  return { gate, key, served, kel, sign: (image: Uint8Array) => ed25519.signAsync(image, HERM_SEED) };
 }
 
 const asPlace = (pl: Place, arm: Place["arm"] | null = pl.arm): PlaceFlowPresentation => ({ kind: "place", placeKey: pl.key, sign: pl.sign, arm });
@@ -119,21 +122,22 @@ describe("the faceless reader at a herm's floor gate", () => {
 });
 
 describe("the herm's floor pin, carried signed", () => {
-  const at = (w: World, carriers: Iterable<string>) => ({ nexusHex: w.pin.nexus, route: FLOW_SOCKET_ROUTE, carriers: new Set(carriers) });
+  const at = (w: World, h: { kel: TestPlace }, carriers: Iterable<string>) =>
+    ({ nexusHex: w.pin.nexus, route: FLOW_SOCKET_ROUTE, kelRows: rowsOf(h.kel), standing: { via: "carrier" as const, carriers: new Set(carriers) } });
 
-  test("CONTROL: the herm's own statement files its pin for a reader whose replica counts the herm as carrier", async () => {
+  test("CONTROL: the herm's own claim files its pin for a reader whose replica counts the herm as carrier", async () => {
     const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
     const h = await herm(w);
-    const statement = await signPlaceFloorPin({ placeKey: h.key, pin: w.pin, sign: h.sign });
-    const read = readPlaceFloorPin(JSON.parse(JSON.stringify(statement)), at(w, [h.key]));
-    expect(read).toEqual({ placeKey: h.key, pin: w.pin });
+    const statement = await claimAt(h.kel, w.pin);
+    const read = readPlaceFloorPin(JSON.parse(JSON.stringify(statement)), at(w, h, [h.key]));
+    expect(read).toMatchObject({ signerKey: h.key, pin: w.pin, aid: h.kel.aid, seq: 0 });
   });
 
   test("RED: an announcement never authenticates its own first pin — a herm the reader's Nexus does not carry files nothing", async () => {
     const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
     const h = await herm(w);
-    const statement = await signPlaceFloorPin({ placeKey: h.key, pin: w.pin, sign: h.sign });
-    expect(readPlaceFloorPin(statement, at(w, []))).toEqual({ refusal: "place-uncarried" });
+    const statement = await claimAt(h.kel, w.pin);
+    expect(readPlaceFloorPin(statement, at(w, h, []))).toEqual({ refusal: "place-uncarried" });
   });
 
   test("RED: a pin signed by any other key, or standing at another Nexus or tier, files nothing", async () => {
@@ -142,27 +146,27 @@ describe("the herm's floor pin, carried signed", () => {
     const sovereign = await world({ route: "/ws" });
     const h = await herm(w);
     const forger = Uint8Array.from({ length: 32 }, (_, i) => 99 - i);
-    const forged = await signPlaceFloorPin({ placeKey: h.key, pin: w.pin, sign: (image) => ed25519.signAsync(image, forger) });
-    expect(readPlaceFloorPin(forged, at(w, [h.key]))).toEqual({ refusal: "signature-refused" });
-    const elsewhere = await signPlaceFloorPin({ placeKey: h.key, pin: other.pin, sign: h.sign });
-    expect(readPlaceFloorPin(elsewhere, at(w, [h.key]))).toEqual({ refusal: "pin-other-nexus" });
-    const notFloor = await signPlaceFloorPin({ placeKey: h.key, pin: sovereign.pin, sign: h.sign });
-    expect(readPlaceFloorPin(notFloor, { ...at(w, [h.key]), nexusHex: sovereign.pin.nexus })).toEqual({ refusal: "pin-not-floor" });
-    // CONTROL beside them: the honest statement still files.
-    const honest = await signPlaceFloorPin({ placeKey: h.key, pin: w.pin, sign: h.sign });
-    expect("pin" in readPlaceFloorPin(honest, at(w, [h.key]))).toBe(true);
+    const forged = await forgedClaim(h.kel, w.pin, forger);
+    expect(readPlaceFloorPin(forged, at(w, h, [h.key]))).toEqual({ refusal: "signature-refused" });
+    const elsewhere = await claimAt(h.kel, other.pin);
+    expect(readPlaceFloorPin(elsewhere, at(w, h, [h.key]))).toEqual({ refusal: "pin-other-nexus" });
+    const notFloor = await forgedClaim(h.kel, sovereign.pin, HERM_SEED);
+    expect(readPlaceFloorPin(notFloor, { ...at(w, h, [h.key]), nexusHex: sovereign.pin.nexus })).toEqual({ refusal: "pin-not-floor" });
+    // CONTROL beside them: the honest claim still files.
+    const honest = await claimAt(h.kel, w.pin);
+    expect("pin" in readPlaceFloorPin(honest, at(w, h, [h.key]))).toBe(true);
   });
 
-  test("the statement rides the carriage board as a sidecar the act extractor never reads, and files from it", async () => {
+  test("the claim rides the carriage board as a sidecar the act extractor never reads, and files from it", async () => {
     const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
     const h = await herm(w);
     const doc: LarDoc = { tiddlers: {} } as LarDoc;
-    const statement = await signPlaceFloorPin({ placeKey: h.key, pin: w.pin, sign: h.sign });
+    const statement = await claimAt(h.kel, w.pin);
     writePlaceFloorPin(doc, statement);
-    expect(Object.keys(doc.tiddlers)).toEqual([placeFloorPinKey(h.key)]);
+    expect(Object.keys(doc.tiddlers)).toEqual([placeFloorPinKey(statement)]);
     expect(carriageEntriesFromBoard(doc)).toEqual([]);
     const pins = hearthPinIndex();
-    const filed = filePlaceFloorPins(pins, placeFloorPinsFromBoard(doc), at(w, [h.key]));
+    const filed = filePlaceFloorPins(pins, placeFloorPinsFromBoard(doc), at(w, h, [h.key]));
     expect(filed.filed).toEqual([h.key]);
     expect(pins.get({ hearth: h.key, nexus: w.pin.nexus, route: FLOW_SOCKET_ROUTE, tier: "floor" })).toEqual(w.pin);
   });
@@ -218,14 +222,14 @@ describe("the gate-native carriage pull", () => {
     const reader = await place(w, "relay herm");
     const board: LarDoc = { tiddlers: {} } as LarDoc;
     writeCarriageEntry(board, reader.contract);
-    writePlaceFloorPin(board, await signPlaceFloorPin({ placeKey: h.key, pin: w.pin, sign: h.sign }));
+    writePlaceFloorPin(board, await claimAt(h.kel, w.pin));
     const pins = hearthPinIndex();
     const urls: string[] = [];
     const asked: string[] = [];
     const pullFlow = gateNativeCarriagePull({
       pins,
       nexuses: () => [elsewhere.nexus, w.nexus, w.nexus],
-      refresh: async () => { filePlaceFloorPins(pins, placeFloorPinsFromBoard(board), { nexusHex: w.pin.nexus, route: FLOW_SOCKET_ROUTE, carriers: new Set([h.key]) }); },
+      refresh: async () => { filePlaceFloorPins(pins, placeFloorPinsFromBoard(board), { nexusHex: w.pin.nexus, route: FLOW_SOCKET_ROUTE, kelRows: rowsOf(h.kel), standing: { via: "carrier", carriers: new Set([h.key]) } }); },
       presentationFor: async (nexus) => {
         asked.push(nexus);
         const arm = await placeArmFor(carriageEntriesFromBoard(board), w.held!.roster, reader.key);

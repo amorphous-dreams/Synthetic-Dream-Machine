@@ -36,6 +36,10 @@ let hearth: LarInstance | null = null;
 let browser: Browser | null = null;
 let scratch = "";
 let bannerUrl = "";
+/** The place AID the banner prints on its own line, to hand across apart from the URL (the card never anchors itself). */
+let bannerAnchor = "";
+/** The banner URL with the anchor a person handed across beside the card (`#floor=<card>&anchor=<aid>`). */
+const anchoredUrl = (): string => `${bannerUrl}&anchor=${bannerAnchor}`;
 const contexts: BrowserContext[] = [];
 const consoles = new Map<Page, string[]>();
 
@@ -130,7 +134,8 @@ beforeAll(async () => {
   const deadline = performance.now() + WAIT;
   for (;;) {
     bannerUrl = /^\[lararium\] {3}(https?:\/\/\S+) {3}\(/m.exec(hearth.bootLog())?.[1] ?? "";
-    if (bannerUrl || performance.now() > deadline) break;
+    bannerAnchor = /^\[lararium\] floor anchor: ([0-9a-f]{64}) /m.exec(hearth.bootLog())?.[1] ?? "";
+    if ((bannerUrl && bannerAnchor) || performance.now() > deadline) break;
     await new Promise((r) => setTimeout(r, 250));
   }
   browser = await chromium.launch({ headless: true, ...(process.env["LAR_CHROMIUM"] ? { executablePath: process.env["LAR_CHROMIUM"] } : {}) });
@@ -154,6 +159,16 @@ describe("a browser device at the floor, then under a joined face", () => {
     expect(url.searchParams.get("relay")).toMatch(/^wss?:\/\/.+\/ws$/);
     expect(url.searchParams.has("gate")).toBe(false);
     expect(new URLSearchParams(url.hash.slice(1)).get("floor")).toMatch(/^[A-Za-z0-9_-]+$/);
+    // The card never anchors itself: the place AID rides its own banner line, and the URL carries none.
+    expect(new URLSearchParams(url.hash.slice(1)).has("anchor")).toBe(false);
+    expect(bannerAnchor, hearth?.bootLog().slice(-2000)).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  test("F1b — RED: a device handed the card with NO anchor reads no Nexus off it; CONTROL: F4 reads the floor once the anchor is handed", async () => {
+    const device = await freshDevice();
+    await device.goto(bannerUrl);
+    await awaitLive(device);
+    expect(await floorOutcome(device), tail(device)).toMatch(/no-nexus/);
   });
 
   let faceless: Page | null = null;
@@ -161,7 +176,7 @@ describe("a browser device at the floor, then under a joined face", () => {
   test("F2 — a fresh device boots faceless at the floor and names it", async () => {
     await hearth!.cli(["nexus", "posture", "private"]);
     faceless = await freshDevice();
-    await faceless.goto(bannerUrl);
+    await faceless.goto(anchoredUrl());
     await awaitLive(faceless);
     const at = await awaitStanding(faceless, "floor");
     expect(at.standing, `${at.text}\n${tail(faceless)}`).toBe("floor");
@@ -178,7 +193,7 @@ describe("a browser device at the floor, then under a joined face", () => {
   test("F4 — after the cabal releases the floor, a fresh faceless device reads it off the porch and verifies it whole, at a private Nexus", async () => {
     await releaseGenesisFloor();
     const device = await freshDevice();
-    await device.goto(bannerUrl);
+    await device.goto(anchoredUrl());
     await awaitLive(device);
     expect(await floorOutcome(device), tail(device)).toBe("verified");
     // The floor reaches no face's documents: no sovereign session stands for a faceless device.

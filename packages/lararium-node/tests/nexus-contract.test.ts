@@ -155,7 +155,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
 
     // The place signs its own carrier seal with its VESSEL key (this vessel stands in for the place).
     const seal  = await runNexusCarryFor({ sealHome: sealHome() });
-    const carry = await direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, sealHome: sealHome() });
+    const carry = await direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, floorPin: JSON.stringify({ floorPin: seal.floorPin, placeKel: seal.placeKel }), sealHome: sealHome() });
     expect(carry.carrierHeld).toBe(true);
     expect(carry.memberHeld).toBe(false);
 

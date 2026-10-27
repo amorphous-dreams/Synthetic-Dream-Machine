@@ -13,7 +13,8 @@
  *   · closing the socket closes the channel; a send to a closed socket drops, as a ws send to a closed peer does;
  *   · THE FLOOR PIN SET (house ruling "Floor pins", carrier (a)): a SOVEREIGN session hears, once at open, one sealed
  *     "session" message of kind `hearth/floor-pins` whose body is the floor pins this hearth stands at the Nexus that
- *     seated it (`floorPins`). The verified crossing is the authenticated relation the dialer files them under. A floor
+ *     seated it (`floorPins`), with the place's floor pin claims and KEL rows beside them where it stands a KEL (`floorProof`). The
+ *     verified crossing is the authenticated relation the dialer files them under. A floor
  *     session, a session naming no Nexus, an empty set or a provider that fails sends nothing; the session stands.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/gate-sync-server
@@ -21,7 +22,7 @@
 import { EventEmitter } from "node:events";
 import {
   HEARTH_FLOOR_PINS_SESSION_KIND, hearthFloorPinsBody, mkLarSessionMsg,
-  type GateBundlePin, type GateSession, type GateSessionChannel,
+  type GateBundlePin, type GateSession, type GateSessionChannel, type HearthFloorProof,
 } from "@lararium/mesh";
 
 const OPEN = 1;
@@ -56,6 +57,8 @@ export interface GateSyncServerOptions {
   readonly onSession?: (socket: GateSyncSocket, body: unknown) => void;
   /** The floor pins this hearth stands at `nexus` (the AID text), sent to each sovereign session at open. */
   readonly floorPins?: (nexus: string) => readonly GateBundlePin[] | Promise<readonly GateBundlePin[]>;
+  /** The floor pin CLAIMS for those pins and the place KEL rows that fold to their head, sent beside the set (null sends the set bare). */
+  readonly floorProof?: (pins: readonly GateBundlePin[]) => Promise<HearthFloorProof | null>;
 }
 
 function toBytes(data: ArrayBuffer | Uint8Array): Uint8Array {
@@ -113,7 +116,10 @@ export function gateSyncServer(opts: GateSyncServerOptions = {}): GateSyncServer
     let pins: readonly GateBundlePin[];
     try { pins = await provider(nexus); } catch { return; }
     if (!Array.isArray(pins) || pins.length === 0 || channel.state !== "open") return;
-    const bytes = new TextEncoder().encode(JSON.stringify(mkLarSessionMsg(HEARTH_FLOOR_PINS_SESSION_KIND, hearthFloorPinsBody(pins))));
+    let proof: HearthFloorProof | null = null;
+    try { proof = opts.floorProof ? await opts.floorProof(pins) : null; } catch { proof = null; }
+    if (channel.state !== "open") return;
+    const bytes = new TextEncoder().encode(JSON.stringify(mkLarSessionMsg(HEARTH_FLOOR_PINS_SESSION_KIND, hearthFloorPinsBody(pins, proof ?? undefined))));
     try { channel.send("session", bytes); } catch { /* a channel that ended takes nothing */ }
   };
 

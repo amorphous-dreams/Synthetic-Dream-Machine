@@ -39,14 +39,14 @@ import {
   climbNexusBoards, carryPersonaKelUpTheGradient,
   readLedgeredEdgeBoard, fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, raisesSeenThrough, type EdgeReading,
   type CapModule,
-  type LarDoc, type LarariumVesselOptions, type VesselResult, type HearthPinIndex,
+  type LarDoc, type LarariumVesselOptions, type VesselResult, type HearthPinIndex, type FloorAnchor,
   type VesselBootstrap, type VesselCoreAssembly, type GateBundlePin, type DeviceDelegationTiddler,
   type GenesisSeed, type IslandMsg_Manifest,
   takeInvite, popInvite, hex,
   type WalkRecord, type CarryOutcome,
   readHearthFloorCard,
 }                                            from "@lararium/mesh";
-import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloorCardPin, fileOwnHearthPins, hearthNameOf, flowNexusFor } from "./browser-gate-pins.js";
+import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloorCard, fileOwnHearthPins, hearthNameOf, flowNexusFor } from "./browser-gate-pins.js";
 import { readHearthFloor, type HearthFloorRead } from "./browser-floor-read.js";
 import { composeBrowserFacePresentation } from "./browser-face-presentation.js";
 import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
@@ -225,12 +225,18 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    */
   relayDial?: { readonly pins: HearthPinIndex; readonly nexus?: string; readonly presentation: BrowserFacePresentation };
   /**
-   * The hearth's oracle floor card the arrival URL carried (`#floor=`, `hearthFloorCardText`): the oracle's floor pin and
-   * the key its snapshot is signed under, carried by the person's own hand off the hearth's banner. A device standing at
-   * the floor reads the oracle under it, faceless; the card seats no face and opens no sovereign gate. A torn card files
-   * nothing and says so.
+   * The hearth's oracle floor card the arrival URL carried (`#floor=`, `hearthFloorCardText`): the place's signed floor pin
+   * claim for the flow route and the KEL rows that fold to its head, carried by the person's own hand off the hearth's banner. A
+   * device standing at the floor reads the oracle under it, faceless; the card seats no face and opens no sovereign gate. A torn
+   * card files nothing and says so, and the card NEVER anchors itself: it files only against `floorAnchor`.
    */
   floorCard?: string;
+  /**
+   * The place AID conveyed apart from the card (W14 first contact): the founder's own genesis, an authenticated admit, or a
+   * deliberate person-to-person transfer. Without it the card refuses by name (`place-unanchored`); with another place's AID the
+   * card refuses the same way.
+   */
+  floorAnchor?: FloorAnchor;
   /**
    * The pinned relay addresses of the HERMS this vessel's PersonaGroup siblings meet through
    * (`ws://host:port#<gate key hex>`, two or more under distinct gate keys for tolerance) — leaf kind 3, a fleet in which no
@@ -479,7 +485,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     idbName = "lares:vessel", displayName, onPhase, placeFoundingCard,
     genesisSeed,
     genesisCasBaseUrl,
-    daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onFrame, onControlResult, onCoherence, relayUrl, relayDial, floorCard,
+    daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onFrame, onControlResult, onCoherence, relayUrl, relayDial, floorCard, floorAnchor,
     meshLeaf, admit, walkInvite, siblingHerms,
   } = opts;
   const emit = (p: LarOpenPhase) => onPhase?.(p);
@@ -812,11 +818,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   fileOwnHearthPins(gatePins, relayUrl, social);
   // THE FLOOR CARD the arrival URL carried files the oracle's floor pin beside them, at the floor tier alone: a device
   // with no face joined reads what the floor offers under it, and a pin the signed set already holds stays as it stood.
-  const carriedCard = floorCard === undefined ? null : readHearthFloorCard(floorCard);
-  if (floorCard !== undefined && carriedCard === null) console.warn("[lararium-browser] the floor card this URL carries does not read: no floor pin files from it");
-  else if (carriedCard !== null && !fileFloorCardPin(gatePins, relayUrl, carriedCard) && relayUrl) {
-    console.warn("[lararium-browser] the floor card names another oracle floor pin than the one this face's fleet join carried: the signed one stands");
-  }
+  const readCard = floorCard === undefined ? null : readHearthFloorCard(floorCard);
+  if (floorCard !== undefined && readCard === null) console.warn("[lararium-browser] the floor card this URL carries does not read: no floor pin files from it");
+  const cardFiling = readCard === null ? null : fileFloorCard(gatePins, relayUrl, readCard, floorAnchor ?? null);
+  if (cardFiling !== null && !cardFiling.filed) console.warn(`[lararium-browser] the floor card files nothing (${cardFiling.refusal}${cardFiling.refusal === "place-unanchored" ? ": hand the place AID the banner prints beside the card" : cardFiling.held ? `; the newer head ${cardFiling.held.slice(0, 12)}… stands` : ""})`);
+  // The Nexus the card's pin names, where its claim filed: the one trust line the floor read stands on (`readFloor`).
+  const carriedCard = cardFiling !== null && cardFiling.filed && readCard !== null ? { pin: cardFiling.reading.pin, publisher: cardFiling.publisher } : null;
   // THE SOVEREIGN PIN this hearth's dial knocks with: the full pin filed for the relay's hearth at the Nexus the joined
   // face's fleet join names. Its signing key names the gate a verified crossing proves.
   const sovereignNexus = relayDial?.nexus ?? social.hearthGatePin?.nexus ?? (walk ? hex(new TextEncoder().encode(walk.nexusAid)) : null);
@@ -1909,9 +1916,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // The floor reads off the hearth's PORCH, and this vessel verifies it whole (`browser-floor-read`): the Nexus AID is the one
     // trust line the floor card (or the admit) carries, the epoch lineage re-derives from it, and no pin or presentation rides.
     // The Nexus OF THE HEARTH READ: the relay's own where `baseUrl` is the relay's hearth, and none elsewhere.
-    readFloor: (baseUrl: string): Promise<HearthFloorRead> => readHearthFloor({
-      baseUrl, nexusPin: flowNexusFor(baseUrl, { relayUrl, nexus: sovereignNexus ?? carriedCard?.pin.nexus ?? null }),
-    }),
+    readFloor: (baseUrl: string): Promise<HearthFloorRead> => {
+      const nexusPin = flowNexusFor(baseUrl, { relayUrl, nexus: sovereignNexus ?? carriedCard?.pin.nexus ?? null });
+      // An offline answer names the head it holds: the claim this page last filed for the flow route, "as of my last sync".
+      const held = relayUrl && nexusPin ? gatePins.standingOf({ hearth: hearthNameOf(relayUrl), nexus: nexusPin, route: "/flow", tier: "floor" }) : null;
+      return readHearthFloor({ baseUrl, nexusPin, ...(held ? { held } : {}) });
+    },
     // The return leg routes each event to the surface that painted its target; the active pointer plays no
     // part, so a switch between the person's act and its arrival never moves the event to another island.
     sendControlEvent: returnLeg.sendControlEvent,
