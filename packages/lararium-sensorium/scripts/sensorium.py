@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+import math
 import os
 import tempfile
 
@@ -365,11 +366,26 @@ def set_stream_ephemeral(root: str, ephemeral: bool) -> str:
             raise ValueError(f"stream manifest at {path!r} cannot carry a lifecycle transition: {exc}") from exc
         if not isinstance(manifest, dict):
             raise ValueError(f"stream manifest at {path!r} must hold an object")
+        previous_ephemeral = manifest.get("ephemeral")
         manifest["ephemeral"] = ephemeral
+        if manifest.get("lifecycle") != "tombstone" and (
+                previous_ephemeral != ephemeral or "lifecycle" not in manifest):
+            manifest["lifecycle"] = _derive_stream_lifecycle(
+                ephemeral, manifest.get("persistencePolicy", {}).get("halfLife"))
         _atomic_json_write(path, manifest)
         return path
     finally:
         release_lock(lock)
+
+
+def _derive_stream_lifecycle(ephemeral: bool, half_life: "float | None") -> str:
+    """Mirror lararium-mesh/src/sensorium-lifecycle.ts::deriveLifecycle at mint time."""
+    if ephemeral:
+        return "pioneer"
+    if isinstance(half_life, (int, float)) and not isinstance(half_life, bool) \
+            and math.isfinite(half_life) and half_life > 0:
+        return "hardening"
+    return "durable"
 
 
 def _write_stream_manifest_unlocked(paths: SensoriumPaths, *, name: str, lar: str, order: OrderCap,
@@ -428,6 +444,8 @@ def _write_stream_manifest_unlocked(paths: SensoriumPaths, *, name: str, lar: st
         "bands": manifest.get("bands", {"grain": "membership", "computed": "capture"}),
         "coupling": manifest.get("coupling", {"children": []}),
         "ephemeral": ephemeral,
+        "lifecycle": manifest.get("lifecycle") or _derive_stream_lifecycle(
+            ephemeral, manifest.get("persistencePolicy", {}).get("halfLife")),
         "created": created or island_local_now(millis=True, z=True),
     })
     if apertures:
