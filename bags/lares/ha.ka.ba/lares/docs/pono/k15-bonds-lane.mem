@@ -30,7 +30,7 @@ Road :208 (operator, 2026-10-19) rules that custody and identity read by capabil
 
 * The place mints no Keyhive identity. `foundThePlace` seeds the daemon document and the hearth true-name tiddler alone; it takes no seed and returns no card, archive or identifier. `mintPlaceCard`, `placeCardIsOf` and the node `place-card` module leave the package.
 * Each PersonaGroup keeps one Keyhive identity, keyed by its face atom, with its veil archive. The daemon boots that provider and no other (`boot-daemon-keyhive`, `operator-daemon-behavior`).
-* A faceless vessel (a bare herm, a floor-only node) boots no Keyhive. Its daemon serves public reads and binds its slot documents with no Keyhive registration (`face-reach` reads `vessel-only`, and the lift moves them under a face at the seat); every verb that needs a face answers the `waking-floor` refusal that names the lift. The carriage presents the public place card and pin.
+* A faceless vessel (a bare herm, a floor-only node) boots no Keyhive. Its daemon serves public reads and binds its slot documents with no Keyhive registration (`face-reach` reads `vessel-only`, and the lift moves them under a face at the seat, the lit face naming the floor's public label); every verb that needs a face answers the `waking-floor` refusal that names the lift. The carriage presents the public place card and pin.
 * Every face operation signs or opens by the selected face's atom: the dial, join, device edge countersign, enrolment request, sibling channel, daemon asks, group-secret open, internal asks and `lares meme promote --face N`. A vessel that wears several faces names one; ambiguity and no face refuse by name.
 * The scoped place signer (`placeSignerFromSeed`, five framed duties) is the only holder of the place seed outside the key-file doors. The node reaches it through `vesselPlaceSignerDoor`; the floor children ride `vesselFloorKeyDoor`.
 
@@ -57,6 +57,6 @@ No CRDT document survives until X0, so re-genesis replaces migration. The node r
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ybfkJLH3OPclYCVjrG25Y5SgzLihUQ5Ms43rNuYISa4
+<<^ code="&#x0003;">>ni:///sha-256;WHOQvhgZ-NIR0_VHPS7NqNBcsIa1xetO0RDs1KMWy3A
 
 <<^ code="&#x0004;" -> to="?">>
