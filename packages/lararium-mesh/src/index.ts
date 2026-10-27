@@ -366,19 +366,26 @@ export { CHANNEL_CLOSE_REASONS, GateChannelClosed, seatedChannel, dialedChannel,
 export type { ChannelSocket, ChannelCloseReason, GateChannelBounds, GateSessionChannel, SeatedChannel } from "./gate-session-channel.js";
 // THE FLOOR PIN SET, named here by its callers: the node's sync gate server sends it on a verified sovereign session, the
 // client adapter files it, and the fleet-join answer carries it signed (house ruling "The admit's gate pin").
-export { HEARTH_FLOOR_PINS_SESSION_KIND, HEARTH_FLOOR_PIN_BOUND, readHearthFloorPins, hearthFloorPinsBody, readHearthFloorPinsBody, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, readHearthFloorCard } from "./hearth-floor-pins.js";
-export type { HearthFloorCard } from "./hearth-floor-pins.js";
+export {
+  HEARTH_FLOOR_PINS_SESSION_KIND, HEARTH_FLOOR_PIN_BOUND, FLOOR_CARD_KEL_BOUND, readHearthFloorPins, hearthFloorPinsBody, readHearthFloorPinsBody,
+  readHearthFloorProofBody, fileSessionClaims, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, readHearthFloorCard, verifyHearthFloorCard,
+  fileHearthFloorCard, lastSyncNote,
+} from "./hearth-floor-pins.js";
+export type { ClaimDoor, HearthFloorCard, HearthFloorProof, FloorAnchor, VerifiedFloorCard, FloorCardFiling } from "./hearth-floor-pins.js";
 export {
   PLACE_FLOOR_PIN_KIND, PLACE_FLOOR_PIN_PREFIX, PLACE_FLOOR_PIN_REFUSALS, placeFloorPinImage, signPlaceFloorPin, readPlaceFloorPin,
-  placeFloorPinKey, writePlaceFloorPin, placeFloorPinsFromBoard, filePlaceFloorPins, placeArmFor,
-  type PlaceFloorPinStatement, type PlaceFloorPinRefusal,
+  placeFloorPinKey, writePlaceFloorPin, placeFloorPinsFromBoard, filePlaceFloorPins, placeArmFor, foldClaimHead,
+  type PlaceFloorPinStatement, type PlaceFloorPinRefusal, type PlaceFloorPinReading, type ClaimReadAt, type ClaimStanding,
+  type ClaimHeadReading, type ClaimFilingReport, type ClaimIndex,
 } from "./place-floor-pin.js";
 export { gateNativeCarriagePull, CARRIAGE_PIN_ABSENT, type GateNativeCarriagePullDeps } from "./carriage-pull.js";
 export { SOVEREIGN_SYNC_ROUTE, ADMIT_GATE_PIN_REFUSALS, readAdmitGatePin, readAdmitGatePinAt, admitGatePinDigest, dialPinKeyOf, hearthPinIndex } from "./admit-gate-pin.js";
 // The session table a dialer keeps for the sessions it opened (`dialSessions`), and the binding each rides.
 export { SessionTable, sessionBinding } from "./session-contract.js";
 export type { SessionBinding } from "./session-contract.js";
-export type { AdmitGatePinRefusal, DialPinKey, HearthPinIndex } from "./admit-gate-pin.js";
+export type {
+  AdmitGatePinRefusal, DialPinKey, HearthPinIndex, PlaceClaimStand, PlaceClaimFiling, PlaceClaimFork, PlaceKelForkNote,
+} from "./admit-gate-pin.js";
 export {
   FLOOR_ANNOUNCEMENT_VERSION, FLOOR_ANNOUNCE_ROUTE, FLOOR_STANDINGS, FLOOR_ANNOUNCEMENT_REFUSALS, FloorAnnouncementRefused,
   gateAnnouncementImage, signFloorAnnouncement, readFloorAnnouncement,

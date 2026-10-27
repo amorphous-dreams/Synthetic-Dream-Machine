@@ -9,7 +9,7 @@
  *       A's leaf a member, and neither vault ever held the other's seat.
  *   V2  RED: nothing signs or lands on a partial the judge refuses: the same act again (`replay`), a revoke A opened
  *       before its own board held the admit (`stale`), a partial under another Nexus, a torn file, a partial its own
- *       vault cannot advance, and a carry; the board B holds keeps its count through every refusal.
+ *       vault cannot advance, and an uncarry; the board B holds keeps its count through every refusal.
  *   V3  RED: the board moves while B's seat signs (a handshake inside the signer lands another act for the same
  *       nym first): the act B just cosigned reads stale at the write, and nothing lands.
  *   V6  RED: the board moves while A's seat signs an open (the handshake lands the completed admit first): the
@@ -186,14 +186,14 @@ describe("a two-founder Nexus contracts across its two vaults", () => {
     const foreign = { ...courier(opened.partial), aid: `nexus-${"cd".repeat(32)}` };
     expect(await refusal(runNexusContractPartial({ partial: foreign, sealHome: larSealHome(), repo: B.repo }))).toMatch(/holds no charter/);
     // A torn file reads as no partial.
-    expect(await refusal(runNexusContractPartial({ partial: { ...courier(opened.partial), extra: 1 }, sealHome: larSealHome(), repo: B.repo }))).toMatch(/reads as no admit or revoke partial/);
+    expect(await refusal(runNexusContractPartial({ partial: { ...courier(opened.partial), extra: 1 }, sealHome: larSealHome(), repo: B.repo }))).toMatch(/reads as no admit, revoke or carry partial/);
     // A kapae partial reads well at its own family, and the contract door still takes it as no admit or revoke.
     const ban = { kind: KAPAE_ANTIGEN_DOMAIN, nym: leaf.verifyingKey, action: "kapae", actCid: "", parents: [], sealEpochCid: opened.partial.act.family === "admit" ? opened.partial.act.entry.sealEpochCid : "",
       signatures: [{ signer: "ab".repeat(32), sig: "cd".repeat(64) }] } as KapaeAntigenEntry;
     const kapae = nexusActPartial(aid, { family: "kapae", entry: { ...ban, actCid: antigenActCid(ban) } });
-    expect(await refusal(runNexusContractPartial({ partial: courier(kapae), sealHome: larSealHome(), repo: B.repo }))).toMatch(/reads as no admit or revoke partial/);
-    // A carry crosses no vaults as a partial.
-    expect(await refusal(runNexusContractOpen({ action: "carry", nym: leaf.verifyingKey, carrierSig: "00".repeat(64), sealHome: larSealHome(), repo: B.repo, aid }))).toMatch(/crosses no vaults/);
+    expect(await refusal(runNexusContractPartial({ partial: courier(kapae), sealHome: larSealHome(), repo: B.repo }))).toMatch(/reads as no admit, revoke or carry partial/);
+    // An uncarry crosses no vaults as a partial (a carry does, with its claim: `nexus-carry-two-vault`).
+    expect(await refusal(runNexusContractOpen({ action: "uncarry", nym: leaf.verifyingKey, sealHome: larSealHome(), repo: B.repo, aid }))).toMatch(/crosses no vaults/);
     expect(await boardCount(B, aid)).toBe(held);
   });
 

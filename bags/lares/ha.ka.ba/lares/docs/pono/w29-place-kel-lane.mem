@@ -51,7 +51,7 @@ The floor trust chain orders its pin claims by place-KEL descent, so the place K
 # ''Built ~ the genesis paths.'' Node `runInit`, the hearth founding, the herm's cold kindle (`bulb-kindle.test`) and both cofounders' places each mint the armed chain through the real founding door.
 # ''Built ~ the rotate door.'' `lares vessel rotate` (`commands/rotate-place.ts`) reads the old card on a terminal, prints and reads back the replacement through the same port, refuses beside a standing vessel, and leaves reconcile of a cut-short stage to the node (`vessel-rotate-door.test`).
 # ''Built ~ the fold bound.'' `foldPlaceKel` drops foreign and unsigned rows before any digest walk, caps the signed rows it walks at `PLACE_KEL_ROWS_PER_AID`, and carries at most `PLACE_KEL_FORK_EVIDENCE` competing successors from the first fork seq.
-# ''Owed ~ the readers by head.'' The four duty verifiers verify under the key a caller passes; the floor pin claim lane (W14 to W16) resolves each duty's signer through `verifyPlaceDutyAtHead`. Names that key a place by its inception key follow the head when that lane lands.
+# ''Built ~ the readers by head.'' The floor pin claim lane (`w14-floor-pin-lane`) resolves the claim's signer, and the carrier seal at every landing door, through `verifyPlaceDutyAtHead`; a carry names the signer at the head, so a rotated place is carried again under its new key.
 # ''Owed ~ the gate place finish.'' `gate-exchange.ts` already frames its image and did not move.
 # ''Owed ~ K15's bonds.'' The vessel-wide Keyhive Individual and place card, the bare place leaf, the relay key, daemon auth, device and face work, internal asks and `lares meme` signing stay on the seed census as named K15 exceptions.
 
@@ -68,6 +68,6 @@ The floor trust chain orders its pin claims by place-KEL descent, so the place K
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SXrJG-r3Lxj6MuNDIdbj5m5-q4HqbAWCDg9sJM0LD8w
+<<^ code="&#x0003;">>ni:///sha-256;ZkhKklI3M7TzicFaPQ5MbVo1N7VpAySKoTYslprHN9k
 
 <<^ code="&#x0004;" -> to="?">>

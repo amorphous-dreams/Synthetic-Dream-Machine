@@ -11,12 +11,14 @@
  * It records NO acceptance. The browser's running floor stays the genesis floor it booted on; a face accepts a release by a
  * person's own act (W26 slice 5, the face's D row), on top of this read.
  *
- * WHAT STAYS OPEN. The AID itself rides the same-origin trust line, and nothing here proves the card's freshness: the signed
- * floor card (`W14`), the pin's causal position (`W15`) and the carry-floor convergence (`W16`) stay owed.
+ * WHERE THE AID COMES FROM. The Nexus the page reads under is the one a VERIFIED floor pin claim names (the card's claim,
+ * anchored apart from the card and folded to its KEL head) or the one an admit made it a member of: no unsigned card
+ * names it. A porch that answers nothing reads "as of my last sync" when the pair index holds a claim for the hearth: the head
+ * it last accepted (`lastSyncNote`).
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-slices
  */
-import { NEXUS_AID_PATTERN, nexusAidOfPin, readFloorAnswer, type FloorRead } from "@lararium/mesh";
+import { NEXUS_AID_PATTERN, lastSyncNote, nexusAidOfPin, readFloorAnswer, type FloorRead, type PlaceClaimStand } from "@lararium/mesh";
 
 export type HearthFloorRead =
   | FloorRead
@@ -44,6 +46,8 @@ export async function readHearthFloor(args: {
   readonly baseUrl:   string;
   readonly nexusPin:  string | null | undefined;
   readonly fetchFn?:  typeof fetch;
+  /** The claim head the page last accepted for this hearth's flow route; an offline answer names it. */
+  readonly held?:     PlaceClaimStand | null;
 }): Promise<HearthFloorRead> {
   const nexus = floorNexusOf(args.nexusPin);
   const origin = porchOriginOf(args.baseUrl);
@@ -54,10 +58,10 @@ export async function readHearthFloor(args: {
   let answer: unknown;
   try {
     const res = await doFetch(`${origin}/floor/${nexus}`);
-    if (!res.ok) return { ok: false, reason: "porch-silent", detail: `the porch answered ${res.status}`, refused: [] };
+    if (!res.ok) return { ok: false, reason: "porch-silent", detail: `the porch answered ${res.status}; ${lastSyncNote(args.held ?? null)}`, refused: [] };
     answer = await res.json();
   } catch (err) {
-    return { ok: false, reason: "porch-silent", detail: err instanceof Error ? err.message : String(err), refused: [] };
+    return { ok: false, reason: "porch-silent", detail: `${err instanceof Error ? err.message : String(err)}; ${lastSyncNote(args.held ?? null)}`, refused: [] };
   }
   return readFloorAnswer({
     nexus, answer,

@@ -13,10 +13,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   carriageDocUrl, carriageEntriesFromBoard, filePlaceFloorPins, foldCarrierSet, foundingRoster, hearthPinIndex, materializeSharedLarDoc,
-  placeFloorPinsFromBoard, signCarriageQuorum, signCarrierContract, carriageEntryCounts, carriageEntryActCid, FLOW_SOCKET_ROUTE, type LarDoc,
+  placeFloorPinsFromBoard, placeKelRowsFromBoard, signCarriageQuorum, signCarrierContract, carriageEntryCounts, carriageEntryActCid, FLOW_SOCKET_ROUTE, type LarDoc,
   ed25519SignerFromSeed, epochSeats, rollAnchorCounts, rollAnchorsFromBoard, signRollAnchor,
 } from "@lararium/mesh";
-import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselSigningSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
+import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPlaceAid, loadVesselSigningSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { runNexusCarryFor, runNexusContract } from "../src/commands/nexus-contract.js";
 import { takeCarryBundle, type CarryBundle } from "../src/carry-bundle.js";
@@ -57,7 +57,7 @@ async function filedHere(): Promise<readonly string[]> {
       const doc = await open(carriageDocUrl(r.island), "board:carriage-contracts");
       const carriers = await foldCarrierSet(carriageEntriesFromBoard(doc), r.roster);
       filed.push(...filePlaceFloorPins(hearthPinIndex(), placeFloorPinsFromBoard(doc),
-        { nexusHex: Buffer.from(r.aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, carriers }).filed);
+        { nexusHex: Buffer.from(r.aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, kelRows: placeKelRowsFromBoard(doc), standing: { via: "carrier", carriers } }).filed);
     }
     return filed;
   });
@@ -82,7 +82,7 @@ async function carryBoth(rolled = false): Promise<{ herm: string; reader: string
     seals[who] = await runNexusCarryFor({ sealHome: larSealHome() });
     at(roots.hearth);
     const s = seals[who]!;
-    bundles[who] = (await direct(runNexusContract)({ action: "carry", nym: s.nym, carrierSig: s.carrierSig, floorPin: JSON.stringify(s.floorPin) })).carryBundle as CarryBundle;
+    bundles[who] = (await direct(runNexusContract)({ action: "carry", nym: s.nym, carrierSig: s.carrierSig, floorPin: JSON.stringify({ floorPin: s.floorPin, placeKel: s.placeKel }) })).carryBundle as CarryBundle;
     if (rolled) {
       at(roots[who]);
       await direct(takeCarryBundle)({ raw: JSON.stringify(bundles[who]), ownVesselKey: s.nym });
@@ -237,7 +237,7 @@ describe("a carry bundle carries the counted carries of the places whose floor p
     expect(readerBundle.floorPins).toHaveLength(2);
     at(roots.reader);
     const taken = await direct(takeCarryBundle)({ raw: JSON.stringify(readerBundle), ownVesselKey: reader });
-    expect([...taken.floorPins].sort()).toEqual([herm, reader].sort());
+    expect([...taken.floorPins].sort()).toEqual((readerBundle.floorPins as Array<{ aid: string }>).map((s) => s.aid).sort());
     expect([...(await filedHere())].sort()).toEqual([herm, reader].sort());
   }, 60_000);
 
@@ -246,7 +246,7 @@ describe("a carry bundle carries the counted carries of the places whose floor p
     const stripped = { ...readerBundle, peers: [] };
     at(roots.reader);
     const taken = await direct(takeCarryBundle)({ raw: JSON.stringify(stripped), ownVesselKey: reader });
-    expect(taken.floorPins).toEqual([reader]);
+    expect(taken.floorPins).toEqual([await loadPlaceAid()]);
     expect(await filedHere()).not.toContain(herm);
   }, 60_000);
 });

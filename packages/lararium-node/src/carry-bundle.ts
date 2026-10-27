@@ -1,6 +1,6 @@
 /**
  * carry-bundle — a herm's EXPLICIT JOIN, carried by hand: the quorum's counted `carry` over the herm's own vessel key, its
- * counted causal past, and the place floor-pin statements the issuing hearth's board carries. The herm's take writes them
+ * counted causal past, and the place floor pin claims (with the place KEL rows that fold to their heads) the issuing hearth's board carries. The herm's take writes them
  * onto its OWN replica of that Nexus's carriage board, so its own fold counts it carried there (`placeCarriedNexuses`,
  * `via: "carrier-seal"`) and its floor gate stands at that Nexus and only there (lar:///ha.ka.ba/lararium/node/herm-carriage#/where).
  *
@@ -10,7 +10,8 @@
  * WHAT IT HOLDS — public bytes only:
  *   · `contract`  — the quorum-signed `carry` naming the herm's vessel key (the board's carry head for it);
  *   · `lineage`   — that act's counted causal past (`placeArmFor`);
- *   · `floorPins` — every place floor-pin statement the hearth's board carried at the write, the herm's own among them;
+ *   · `floorPins` — every place floor pin claim the hearth's board carried at the write, the herm's own among them;
+ *   · `placeKel`  — the place KEL rows the board carried, so a claim folds to its head on the taker's replica;
  *   · `peers`     — the counted `carry`/`uncarry` acts of every OTHER place on that board, so the taker's own replica counts
  *                   the places whose statements ride beside them (a reader that syncs no board files their pins off these).
  *
@@ -108,7 +109,7 @@ export interface CarryTakeResult {
   readonly nym:        string;
   readonly carryCid:   string;
   readonly lineage:    number;
-  /** The place keys whose floor-pin statements landed on this vessel's replica. */
+  /** The place AIDs whose floor pin claims landed on this vessel's replica. */
   readonly floorPins:  readonly string[];
   readonly boardUrl:   string;
 }
@@ -181,12 +182,14 @@ export async function takeCarryBundle(opts: {
   }
   const carriers = await foldCarrierSet(union, roster, ancestry);
   const nexusHex = Buffer.from(aid, "utf8").toString("hex");
-  const landing: PlaceFloorPinStatement[] = [];
-  for (const raw of floorPins) {
-    const read = readPlaceFloorPin(raw, { nexusHex, route: FLOW_SOCKET_ROUTE, carriers });
-    if (!("refusal" in read)) landing.push(raw as PlaceFloorPinStatement);
-  }
   const kel = landingPlaceKel(placeKel);
+  const kelRows = kel.map((row) => row.event);
+  const landing: PlaceFloorPinStatement[] = [];
+  const landed: string[] = [];
+  for (const raw of floorPins) {
+    const read = readPlaceFloorPin(raw, { nexusHex, route: FLOW_SOCKET_ROUTE, kelRows, standing: { via: "carrier", carriers } });
+    if (!("refusal" in read)) { landing.push(raw as PlaceFloorPinStatement); landed.push(read.aid); }
+  }
   handle.change((d) => {
     for (const anchor of landingAnchors) writeRollAnchor(d, anchor);
     for (const act of [...acts, ...peers]) writeCarriageEntry(d, act);
@@ -194,5 +197,5 @@ export async function takeCarryBundle(opts: {
     for (const row of kel) writePlaceKelEvent(d, row.aid, row.event);
   });
   await opts.repo.flush().catch(() => { /* best effort */ });
-  return { aid, nym: own, carryCid: carriageEntryActCid(contract), lineage: lineage.length, floorPins: landing.map((s) => s.placeKey), boardUrl };
+  return { aid, nym: own, carryCid: carriageEntryActCid(contract), lineage: lineage.length, floorPins: [...new Set(landed)].sort(), boardUrl };
 }
