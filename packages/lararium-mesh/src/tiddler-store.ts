@@ -247,6 +247,9 @@ export interface LarTiddlerStore {
     options?:   LarWriteOptions,
   ): Promise<void>;
 
+  /** A family reaches subscribers before its writeFamily promise settles. */
+  readonly notifiesSynchronously?: true;
+
   /**
    * HARD-remove a title (delete the record so `get` returns null = ABSENT),
    * distinct from `tombstone`'s kāpae hide. Absent FALLS THROUGH the cascade to

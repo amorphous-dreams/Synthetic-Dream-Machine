@@ -125,6 +125,7 @@ function _tombstoneRecord(title: string): LarTiddlerRecord {
 }
 
 export class AutomergeDocStore implements LarTiddlerStore {
+  readonly notifiesSynchronously = true;
   protected readonly handle: DocHandle<LarDoc>;
   readonly provider: MemeProvider;
   readonly bagId: string | undefined;
