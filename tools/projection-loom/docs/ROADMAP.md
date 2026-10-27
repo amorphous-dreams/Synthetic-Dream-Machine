@@ -4,6 +4,78 @@
 **Base / Lares boot ref:** `feature/green-jello-dinosaur-5`.
 **Source of truth:** real Git ancestry, source-bound native witnesses and CI jobs. This document marks provisional completion and blockers, not house law or Operator promotion. Refresh run status on re-entry.
 
+## Operator hard reference · Athenaion and input-agnostic Loom backlog (2026-10-27)
+
+The Operator designated [Athenaion](https://github.com/Leonxlnx/athenaion)
+a **hard external research reference**, pinned to upstream commit
+[9b8bd23b39c458a50fb1201037360047781c45b5](https://github.com/Leonxlnx/athenaion/tree/9b8bd23b39c458a50fb1201037360047781c45b5)
+(MIT, copyright 2026 Leon Lin). Read
+[the source-investigated comparison](research/athenaion-hard-reference.md)
+and the branch-local meme
+`lar:///ha.ka.ba/lares/api/projection-loom-athenaion`
+before changing generalization, location composition or render review.
+Hard reference means required comparison and attributed design influence;
+not vendor adoption, Elyncia canon, CAD proof or a dependency pin for CI.
+
+**Decision:** Generalize the Loom, not Experiment Zero. Three independent
+Experiment Zero inputs—**image-group**, **brutalist grammar**, and
+**ziggurat-proxy**—must each function alone, then in pairs and together
+without any special case inside the one OODA-HA controller. No backwards
+compatibility requirement in early alpha. All rows below carry
+**PROPOSED / NOT YET IMPLEMENTED** status until tested at an exact commit.
+
+| ID | Wave | Work, grounded dependency | Done when / independent witness |
+| --- | --- | --- | --- |
+| L-01 | A / contract | Define immutable `SeedBundle`, `SeedEntry`, `IntentContract`, `GrowthContext`; source/capability claims retain original authority | Same intent and equivalent seed order normalize to the same semantic contract; changed source/intent changes the digest |
+| L-02 | A / identity | Content-addressed source, grammar and proxy assets; hermetic run fingerprint and idempotent entry | Repeated admission/replay cannot duplicate authoritative source, location, pet-name or completed receipts |
+| L-03 | A / place | Make `LocationStack` the normalized location substrate with frame graph, proposed sites, registrations and dependencies | No Necrospire labels required; independent frames/conflicts remain explicit |
+| L-04 | A / isolation | Separate machinery packages from `experiments/zero/` subjects and code; keep the same OODA-HA helm | Generic engine imports no Experiment Zero builder, seed bytes, fixed-family names or source-size constants |
+| L-05 | B / image-group | Multi-image seed adapter with independently sourced images, grouped RGB/alpha channels, landmarks, camera observations and measured/provisional registration | Distinct images produce independent source identities; channels of one artwork do not; bad pose claims fail visibly |
+| L-06 | B / brutalist | Reusable grammar adapter for pinned nosycat-derived modular construction, license and producer/consumer operator contracts | Grammar alone produces native-admitted structures without any reference image or Necrospire builder |
+| L-07 | B / ziggurat | Explicit authored proxy adapter with stepped tiers, cores, courtyards, voids and semantic sockets | Proxy alone develops further geometry with proposal authority; fiction never becomes inferred dimensions |
+| L-08 | B / composition | Compose inputs alone, in all three pairs and as a triple; bind relationships without overwriting per-input authority | Seven explicit seed matrix cases plus source/conflicting-frame refusals have retained receipts |
+| L-09 | C / growth | Bounded typed developmental program supporting spawn, split, attach, bridge, subtract and repeat | Variable-length structures appear; descendants inherit rule trees, not only fixed scalar offsets |
+| L-10 | C / sites | Semantic site producers and consumers: supporting ledges, sockets, attachment affordances, terrain/structure occupation zones | One grown terrace creates usable sites for another generator; collision/footprint/clearance witnesses stay distinct |
+| L-11 | C / ancestry | Structure-aware mutation/crossover and source-bound grammar lineages | Reparent/duplicate/add/delete rule subtrees survive regrowth with independent program ancestry |
+| L-12 | C / native | Multi-body constructive compilation, native BRep contact and void gates, spatial routes | Every body validates its own native truth; separate terrain/water/surfaces never claim a scene-wide fused solid |
+| L-13 | D / objectives | Intent-conditioned metrics: only warranted image evidence receives IoU; add boundaries and region-specific error; grammar/proxy use their own measures | Image-free cohort has no fabricated image fitness; camera/landmark uncertainties remain surfaced |
+| L-14 | D / fairness | Structural novelty and quality-diversity niches, with reserved exact auditions per active grammar/operator | Newly born construction rules receive measurable exact/native trial opportunities rather than solely source-fit rankings |
+| L-15 | D / replay | Independent keyed RNG substreams per source+rule+genome+epoch; deterministic mutation, module execution and resume | Worker order, scheduling and replay leave logical descendants/receipts invariant; future forks remain explicit |
+| L-16 | D / cameras | Seed/frame-frozen multi-camera contact sheets; independent source-view scores; visual inspection budgets | Presentation-only shot dressing cannot change native geometry or lineage; synthetic views never pose as source images |
+| L-17 | E / preregister | Seven seed matrix cohorts with matched budgets: I, B, Z, IB, IZ, BZ, IBZ | Source/intent hashes, constrained objectives, null cases and decision boundaries registered before any epoch |
+| L-18 | E / crucible | Standalone capability audits + full-location integration; metamorphic perturbations and equal-budget controls | All matrix cases run the same helm/gates; source-relative wins and architectural novelty separately measured |
+| L-19 | E / review | Operator-facing galleries: source-group comparisons, six/extra orthos, sockets, routes, failures and constructive ancestry | Reviewer sees which seed/rule produced each body; no pet-name or aesthetic winner auto-promoted |
+| L-20 | E / aftermath | Remove obsolete fixed-genome/fixture couplings, update guidebook, handoff, research/memes and CI after verified replacement | No shadow controller, no old compatibility scaffold, no misleading repo-head status; archived failures remain attributable |
+
+**Athenaion-derived non-negotiable test cases:**
+
+1. `src/world/layout.js` suggests one shared place authority: when a
+   foundation moves, its dependent stair, terrace, support and decoration must
+   follow through typed relations rather than duplicate literal coordinates.
+2. `src/core/engine.js`, `src/arch/build.js` and
+   `src/core/footprints.js` demonstrate slot producers and footprint
+   consumers: adapt *typed spatial affordances*, not untyped mutable dictionaries.
+   Visual footprint exclusion MUST NOT count as native CAD overlap or walkability.
+3. `docs/COMPOSITION.md` provides camera/landmark reasoning across nine
+   references: treat every source image and pose claim independently, retain
+   contradictions, and preserve one world geometry through every construction
+   evidence camera.
+4. `docs/CONTRACT.md` and `tools/render.mjs` pair isolated
+   module audition with all-scene render, shared budgets and comparison sheets:
+   test both local and complete compositions before declaring a feature done.
+5. Athenaion's `engine.onShot` demonstrates a useful visual technique
+   but a danger to native provenance. Per-shot decorative visibility may vary;
+   any constructive change MUST fork an explicitly identified candidate and
+   rerun its BRep/void/source truth gates.
+6. Its labeled RNG and serialized GPU render harness motivate deterministic
+   per-rule RNG substreams and a bounded render queue, while the existing
+   OODA-HA controller remains the sole lineage and choice authority.
+
+**Critical path:** L-01..04 → L-05..08 → L-09..12 → L-13..16 → L-17..20.
+Iterate locally within each wave, record native refusals as evidence rather
+than software regressions, and commit/push at the operator-approved work
+boundary. The reference alone changes no candidate or architectural canon.
+
 ## Source-head closing checkpoint · historical records preserved
 
 On source-head `8a073aac` (three-parent historical integration), dedicated CAD [#40429724371](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429724371), evergreen [#40429719118](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719118), and alpha coevolution [#40429719057](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719057) passed. Repo-wide [#40429719100](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719100) and held-out [#40429719007](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719007) were queued; parallel CAD [#40429719027](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719027) was running at inspection. Re-query these before deciding whether the full head passed. `_activation_switches(recipe)` now shields CAD-only OODA-HA while preserving Architectural Birth activation funnels. Both historical experimental merge parents remain attributable but inert; no pet-name or lineage promotion follows from ancestry alone. For a concise new-session re-entry, read [BRANCHED_SESSION_HANDOFF](BRANCHED_SESSION_HANDOFF.md).

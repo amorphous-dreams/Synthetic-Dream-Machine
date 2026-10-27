@@ -199,11 +199,12 @@ this procedural runtime Aftermath reviews the evolving location's outcome.
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-ooda-ha">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-hybrid">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-reference-ci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-athenaion">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-poc0">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rpqAknBDOrbE5pA_s6wI9Ajj1solpkLQAM4Q6FGSc-o
+<<^ code="&#x0003;">>ni:///sha-256;CrgzMr_PJUwivqbS0QoeJD5NcQsG91yEC0jeWr_QfMA
 
 <<^ code="&#x0004;" -> to="?">>

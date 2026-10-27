@@ -1,3 +1,20 @@
+## 2026-10-27 · Operator hard reference and generalization backlog (docs-only)
+
+Athenaion (`Leonxlnx/athenaion`) was researched and pinned at
+`9b8bd23b39c458a50fb1201037360047781c45b5` as an Operator-designated hard **consultation** reference,
+not canonical Elyncia architecture or a CAD fitness witness. The evidence
+memo `lar:///ha.ka.ba/lares/api/projection-loom-athenaion` and
+[research comparison](research/athenaion-hard-reference.md) distinguish
+scene-wide layout, semantic slots, occupancy, camera fits and module
+comparison from the Loom's stricter native geometry and ancestry claims.
+
+The [ROADMAP](ROADMAP.md) now holds 20 concrete proposed items across five
+OODA-HA waves: seed/intent split; three independent image-group, brutalist
+and ziggurat-proxy adapters; developmental growth and typed sites;
+intent-aware reproducible evolution; and seven-case Experiment Zero. No
+new implementation or generative result follows from this docs-only entry.
+Check the exact PR head and CI before claiming any later engineering verdict.
+
 ## Source-head closing checkpoint · historical records preserved
 
 On source-head `8a073aac` (three-parent historical integration), dedicated CAD [#40429724371](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429724371), evergreen [#40429719118](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719118), and alpha coevolution [#40429719057](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719057) passed. Repo-wide [#40429719100](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719100) and held-out [#40429719007](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719007) were queued; parallel CAD [#40429719027](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719027) was running at inspection. Re-query these before deciding whether the full head passed. `_activation_switches(recipe)` now shields CAD-only OODA-HA while preserving Architectural Birth activation funnels. Both historical experimental merge parents remain attributable but inert; no pet-name or lineage promotion follows from ancestry alone. For a concise new-session re-entry, read [BRANCHED_SESSION_HANDOFF](BRANCHED_SESSION_HANDOFF.md).
