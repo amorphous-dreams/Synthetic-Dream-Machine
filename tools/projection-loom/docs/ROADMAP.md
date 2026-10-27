@@ -26,10 +26,10 @@ compatibility requirement in early alpha. All rows below carry
 
 | ID | Wave | Work, grounded dependency | Done when / independent witness |
 | --- | --- | --- | --- |
-| L-01 | A / contract | Define immutable `SeedBundle`, `SeedEntry`, `IntentContract`, `GrowthContext`; source/capability claims retain original authority | Same intent and equivalent seed order normalize to the same semantic contract; changed source/intent changes the digest |
-| L-02 | A / identity | Content-addressed source, grammar and proxy assets; hermetic run fingerprint and idempotent entry | Repeated admission/replay cannot duplicate authoritative source, location, pet-name or completed receipts |
-| L-03 | A / place | Make `LocationStack` the normalized location substrate with frame graph, proposed sites, registrations and dependencies | No Necrospire labels required; independent frames/conflicts remain explicit |
-| L-04 | A / isolation | Separate machinery packages from `experiments/zero/` subjects and code; keep the same OODA-HA helm | Generic engine imports no Experiment Zero builder, seed bytes, fixed-family names or source-size constants |
+| L-01 | A / contract | Define immutable `SeedBundle`, `SeedEntry`, `IntentContract`, `GrowthContext`; source/capability claims retain original authority | Same intent and equivalent seed order normalize to the same semantic contract; changed source/intent changes the digest | **Wave A implemented at pending SHA; tests require exact-head CI.** 
+| L-02 | A / identity | Content-addressed source, grammar and proxy assets; hermetic run fingerprint and idempotent entry | Repeated admission/replay cannot duplicate authoritative source, location, pet-name or completed receipts | **Wave A implemented at pending SHA; tests require exact-head CI.** 
+| L-03 | A / place | Make `LocationStack` the normalized location substrate with frame graph, proposed sites, registrations and dependencies | No Necrospire labels required; independent frames/conflicts remain explicit | **Wave A implemented at pending SHA; tests require exact-head CI.** 
+| L-04 | A / isolation | Separate machinery packages from `experiments/zero/` subjects and code; keep the same OODA-HA helm | Generic engine imports no Experiment Zero builder, seed bytes, fixed-family names or source-size constants | **Wave A contract boundary implemented; existing legacy pipelines retained pending integration migration.** 
 | L-05 | B / image-group | Multi-image seed adapter with independently sourced images, grouped RGB/alpha channels, landmarks, camera observations and measured/provisional registration | Distinct images produce independent source identities; channels of one artwork do not; bad pose claims fail visibly |
 | L-06 | B / brutalist | Reusable grammar adapter for pinned nosycat-derived modular construction, license and producer/consumer operator contracts | Grammar alone produces native-admitted structures without any reference image or Necrospire builder |
 | L-07 | B / ziggurat | Explicit authored proxy adapter with stepped tiers, cores, courtyards, voids and semantic sockets | Proxy alone develops further geometry with proposal authority; fiction never becomes inferred dimensions |
@@ -75,6 +75,11 @@ compatibility requirement in early alpha. All rows below carry
 Iterate locally within each wave, record native refusals as evidence rather
 than software regressions, and commit/push at the operator-approved work
 boundary. The reference alone changes no candidate or architectural canon.
+
+
+### Wave A checkpoint · 2026-10-27
+
+Implemented `intent_seed.py`: immutable source/intent/context, independent content digests, canonical source sorting, run fingerprints, independent keyed RNG, file-byte preflight and a bridge to existing `LocationStack`. Original RGB+alpha channels group under one source entity. Added regression tests and a dedicated generalized-machina workflow. **Not yet full engine decoupling**: existing alpha builders remain until Wave C completes; do not mark L-04 fully delivered before the helm runs independent seeds. CI status must be checked at this wave's exact SHA.
 
 ## Source-head closing checkpoint · historical records preserved
 
