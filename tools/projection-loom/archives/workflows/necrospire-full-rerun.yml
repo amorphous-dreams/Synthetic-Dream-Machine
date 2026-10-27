@@ -1,0 +1,135 @@
+name: Necrospire PoC 0 full compound rerun
+
+on:
+  push:
+    branches:
+      - experiment/necrospire-rerun-20261024-035fb47f
+    paths:
+      - .github/workflows/necrospire-full-rerun.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: necrospire-full-rerun-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  full-necrospire:
+    name: Three-epoch Necrospire OODA-HA full experiment
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    env:
+      RUN_ROOT: out/necrospire-rerun-20261024-035fb47f
+      SOURCE_HEAD: 035fb47f93e3170d38d2168de41ea955bac20f20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - name: Install exact direct modeling dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+      - name: Verify native source bytes and canonical Loom
+        run: |
+          python -m pip check
+          python -m compileall -q projection_loom scripts
+          python scripts/check_architecture.py
+          python scripts/check_env.py | tee out-necrospire-environment.json
+          python -m pip freeze > out-necrospire-dependencies.txt
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          root = Path('examples/necrospire')
+          project = json.loads((root/'project.json').read_text())
+          recipe = json.loads((root/'hybrid/recipe.json').read_text())
+          source = root / project['reference']
+          actual = hashlib.sha256(source.read_bytes()).hexdigest()
+          expected = recipe['source_hashes']['image']
+          print(json.dumps({'source':str(source),'sha256':actual,'recipe_source_sha256':expected,'recipe_sha256':recipe['sha256'],'source_rgba_bytes':(root/'source_rgba.png').stat().st_size},indent=2))
+          assert actual == expected, 'Original alpha mask does not match recipe provenance'
+          PY
+      - name: Run the complete three-epoch Necrospire compound OODA-HA experiment
+        run: |
+          python -m projection_loom ooda-run \
+            --project examples/necrospire/project.json \
+            --capability-recipe examples/necrospire/hybrid/recipe.json \
+            --out "$RUN_ROOT" --control full-speed \
+            --passes 3 --candidates 4 --exact-budget 3 --detail-budget 3 \
+            --seed 41 --score-size 128 192 --finalists 3
+      - name: Re-audit the source-bound epochs and gallery
+        run: |
+          python scripts/check_compound_epoch.py --out "$RUN_ROOT" | tee out-necrospire-audit.json
+          python -m projection_loom ooda-status --session "$RUN_ROOT/session.json" > out-necrospire-status.json
+          python - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          root = Path(os.environ['RUN_ROOT'])
+          session = json.loads((root/'session.json').read_text())
+          gallery = json.loads((root/'finalists/gallery.json').read_text())
+          passes = []
+          for n in range(1,4):
+              data = json.loads((root/f'epoch_{n:03d}.json').read_text())
+              scored = []
+              for pid, result in data['results'].items():
+                  if result.get('state') == 'scored':
+                      scored.append({'id':pid,'combined_loss':result.get('combined_loss'),
+                                     'silhouette_iou':1-result.get('losses',{}).get('silhouette',1),
+                                     'niche':result.get('niche')})
+              passes.append({'epoch':n,
+                             'candidate_states':{pid:row.get('state') for pid,row in data['results'].items()},
+                             'scored':sorted(scored,key=lambda x:x['combined_loss'])})
+          audit = json.loads(Path('out-necrospire-audit.json').read_text())
+          report = {
+              'schema':'necrospire-full-rerun-report/v1',
+              'source_commit':os.environ['SOURCE_HEAD'],
+              'workflow_commit':os.environ['GITHUB_SHA'],
+              'recipe_sha256':gallery['recipe_sha256'],
+              'location':gallery['location'],
+              'evidence_state':gallery['evidence_state'],
+              'cad_mesh_union_verified':gallery['cad_mesh_union_verified'],
+              'parameters':{'passes':3,'exploratory_candidates':4,'exact_budget':3,'detail_budget':3,
+                            'seed':41,'score_size':[128,192],'finalists_requested':3,'control':'full-speed'},
+              'session_status':session['status'],
+              'ooda_loops':len(session['loops']),
+              'audit':audit,
+              'epochs':passes,
+              'finalists_actual':gallery['actual_count'],
+              'finalists':gallery['finalists'],
+              'artifacts':{'gallery':str(root/'finalists/gallery.json'),
+                           'contact_sheet':str(root/'finalists/contact_sheet.png')},
+          }
+          (root/'rerun-summary.json').write_text(json.dumps(report,indent=2,allow_nan=False)+'\n')
+          print(json.dumps({'status':report['session_status'],'loops':report['ooda_loops'],
+                            'epochs':len(passes),'finalists':report['finalists_actual'],
+                            'best_iou':max((row['silhouette_iou'] for p in passes for row in p['scored']), default=None),
+                            'recipe_sha256':report['recipe_sha256'],
+                            'gallery':report['artifacts']['gallery']},indent=2))
+          assert session['status']=='completed'
+          assert session['current_epoch']==3
+          assert 2<=gallery['actual_count']<=3
+          assert gallery['cad_mesh_union_verified'] is False
+          PY
+      - name: Publish original witness receipts and regenerated outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: necrospire-full-three-epoch-rerun-035fb47f
+          path: |
+            tools/projection-loom/out/necrospire-rerun-20261024-035fb47f/**
+            tools/projection-loom/out-necrospire-audit.json
+            tools/projection-loom/out-necrospire-status.json
+            tools/projection-loom/out-necrospire-environment.json
+            tools/projection-loom/out-necrospire-dependencies.txt
+          retention-days: 30
+          if-no-files-found: warn

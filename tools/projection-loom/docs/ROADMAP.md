@@ -4,6 +4,26 @@
 **Base / Lares boot ref:** `feature/green-jello-dinosaur-5`.
 **Source of truth:** real Git ancestry, source-bound native witnesses and CI jobs. This document marks provisional completion and blockers, not house law or Operator promotion. Refresh run status on re-entry.
 
+## Historical experiments consolidated by ancestry
+
+Two divergent research branches join the Loom's Git ancestry through
+an explicit multi-parent merge:
+
+- `experiment/necrospire-rerun-20261024-035fb47f` at
+  `c0ba2a96113cac56e5dcd14fb7bf878eb2eee9cd`:
+  its obsolete rerun/snapshot Actions are inert archive references.
+- `feature/necrospire-two-epoch-orthos-20261025` at
+  `a5b4e385be701cb657f90047dba4a112a71f8539`:
+  source-bound native orthographic images, the render script and
+  manifests remain attributable under `examples/necrospire/lineages/`.
+  The old self-pushing workflow is archived, not active.
+
+Other inspected Loom-related branches are strict ancestors of the
+working branch. **Merging a record is not promoting a candidate**:
+no historical experiment was added to the active OODA-HA archive,
+no source identity was revised and no pet-name was granted. Confirm
+same-head CI after this integration before asserting verification.
+
 ## OODA-HA recovery · recipe-free CAD and heritable architecture
 
 Working ancestor `9a3c90a9` includes Architectural Birth feature
