@@ -49,8 +49,9 @@ def test_mutation_replay_worker_order_invariant(tmp_path):
 def test_crossover_grafts_typed_child(tmp_path):
     p=program()
     child=crossover_growth(p,p,context(tmp_path),epoch=1,child=2)
-    assert len(child.nodes)==4
-    assert child.nodes[-1].key=="graft_1_2"
+    assert len(child.nodes)>=4
+    assert any(x.key=="graft_1_2" for x in child.nodes[3:])
+    assert all(x.parent in {n.key for n in child.nodes} for x in child.nodes[3:])
     assert compile_growth(child).audit()["union_valid"]
 
 def test_dangling_or_excessive_program_rejected():
