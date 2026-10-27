@@ -104,10 +104,15 @@ The operator ruled on 2026-10-26 to close open work before the founding bake. Th
 
 * ''`projection-input-leg.test.ts` (road `F8`).'' It guards `wiki:dom-event` and `wiki:dom-input` as unclaimed. It belongs to D2's tw5 projection test surface; it burns when D2 lands.
 * ''The CLI unknown-command list and the keyhive cabal names (road `W20`).'' The unknown-command refusal is generic and tests with a nonsense control; no named cabal guard remains outside the held modules (`ceremony-core.ts`, `keyhive-provider.ts`, `boot-daemon-keyhive.ts`, K15).
-* ''Bundle four.'' `G6` (outside the two vessel files) follows.
+* ''Bundle four stands unbuilt, and the porch rests.'' Codex credits ran out and the operator called a rest on 2026-10-27, so a fresh crew takes it. Four items, each with its ruling and its first reading:
+** ''`G6` outside the two vessel files.'' Stale prose, back-compat wording and tolerant readers in `nexus-seal-seed.ts`, `seed-wrap-prf.ts`, `ingest-core.ts`, `lar-uris.ts` and `mesh-palace.ts`; `open-node-vessel.ts` and `open-browser-vessel.ts` wait for K15; `cleanup-days.ts` stays unlocated. Instrument: `node tools/evergreen-boundary.mjs` and its EXCEPTIONS (each names its owner). Check each file against the live lanes before editing.
+** ''Road (iv), ruled 2026-10-27.'' On a quorum-membership change, derive from the board records which admits and offices leaned on a departed signer and surface that impact set for review as information. Nothing cascades; a quorum revokes by name on the deny board. Canon: `lamplighters.mem` near line 205 and `kahu.mem` lines 431 to 437. First read: the board readers, the seat-change and roll path, where a departed signer is known, and where a reviewer reads the set (a CLI command, a verb or a field on an existing status). Size it before building; write a lane brief if it passes a bundle.
+** ''Loans keyed by CID, ruled 2026-10-27.'' A loan keys by CID and keeps its holder and tier, once it carries a causal expiry counted in rolls or epochs (`blob-carriage#/proposed-law` counts a grace in realm rolls). `effect-record.ts` lists `loan` TTL-pending; `residency-model.mem` line 154 defines the loan. The expiry comes first, and a clock never decides it. Write a lane brief if the expiry design passes a bundle.
+** ''`/cas` order, ruled 2026-10-27.'' The body lands and verifies before the public index names it. `bulb-read-face.ts` serves `/cas` after `publicCas.isPublic(cid)`. First read: every writer that lands a body and names it in the public index (`publicCas`, `content-handle.ts`, `bodyIndexBagUri`, which has no production producer today), then where the ordering is enforced and a red test that names a CID before its body verified.
+* ''Also left.'' `G8` pack-PIN recursion and the `assertBodyIndexTier` caller (it arrives with the cad body-index writer); `F8`'s `projection-input-leg.test.ts` guard (D2 burns it); the K15-held `W20` names; the cold-boot grace (K15 bonds); the parallel-draft alert (hands room); the `kahu.mem` and `lamplighters.mem` sweep on `G19` (needs the operator's cadence-share intent); the `harness-image-law` and flush-bench instruments stay as built.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;a3leqXI9h9efDiI8NgJA-0WQ14T1ARDn5q04aWqRl-Q
+<<^ code="&#x0003;">>ni:///sha-256;mvAgx4SsgA7DSDJ1Z6hPYW96dZz0K34Sg41KwLygAlQ
 
 <<^ code="&#x0004;" -> to="?">>
