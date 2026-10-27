@@ -76,4 +76,23 @@ describe("lares intent over a founded face", () => {
     const after = (await row("intent-show", {})) as { rows: Array<{ id: string; status: string }> };
     expect(after.rows.find((r) => r.id === id)!.status).toBe("void");
   }, 240_000);
+
+  test("RED: a malformed grant refuses before any write; CONTROL: the persona root grants a far agent and revokes it by cid, and show lists each status", async () => {
+    const agent = "ab".repeat(32), cite = `roster:${"c".repeat(64)}`;
+    const policy = { kind: "closed-args", args: { x: { type: "integer" } } };
+    const before = ((await row("intent-show", { action: "delegations" })) as { delegations: unknown[] }).delegations;
+    expect(before).toEqual([]);
+    for (const bad of [{ agent, prefix: "*", policy, until: cite }, { agent, prefix: "MOVE", policy: { kind: "open", args: {} }, until: cite }, { agent, prefix: "MOVE", policy }]) {
+      expect(JSON.stringify(await row("intent-root", { action: "delegate", ...bad }))).toMatch(/delegation|refused/);
+    }
+    expect(((await row("intent-show", { action: "delegations" })) as { delegations: unknown[] }).delegations).toEqual([]);
+    const granted = (await row("intent-root", { action: "delegate", agent, prefix: "MOVE", policy, until: cite })) as { cid: string };
+    expect(granted.cid).toMatch(/^[0-9a-f]{64}$/);
+    const listed = (await row("intent-show", { action: "delegations" })) as { delegations: Array<{ cid: string; agent: string; prefix: string; status: string }> };
+    expect(listed.delegations).toEqual([expect.objectContaining({ cid: granted.cid, agent, prefix: "MOVE", status: "live" })]);
+    const revoked = (await row("intent-root", { action: "delegate-revoke", target: granted.cid })) as { cid: string };
+    const after = (await row("intent-show", {})) as { delegations: Array<{ cid: string; status: string; revokedBy: string | null }> };
+    expect(after.delegations).toEqual([expect.objectContaining({ cid: granted.cid, status: "revoked", revokedBy: revoked.cid })]);
+    expect(JSON.stringify([granted, listed, revoked, after])).not.toMatch(/seed|secret/i);
+  }, 240_000);
 });

@@ -106,4 +106,38 @@ describe("agent delegation fold", () => {
     expect(renewed.delegations[0]!.status).toBe("live");
     expect(mayAct(renewed, f.id, f.device.key)).toEqual({ act: true });
   });
+
+  test("RED: the status precedence holds (revoked over lapsed, closed over awaiting) and an unheld until stays open; CONTROL: each status reads alone", async () => {
+    const f = await fixture(), next = await who(5), cite = "d".repeat(64), other = "e".repeat(64);
+    const rolled = makeHandLineage([{ epoch: 0, signers: [f.root.key], threshold: 1 }, { epoch: 1, signers: [next.key], threshold: 1 }])!;
+    const status = (records: SignedIntentEntry[], opts: Parameters<typeof f.fold>[1] = {}) => f.fold(records, opts).delegations.map((d) => d.status);
+    const lapsedOnly = await f.grant(f.root, f.agent.key, { until: { roster: cite } });
+    expect(status([lapsedOnly], { lineage: rolled })).toEqual(["lapsed"]);
+    const revokeLapsed = await buildDelegationRevoke({ group: "face", signer: f.root, epoch: 0, delegation: intentEntryCid(lapsedOnly) });
+    expect(status([lapsedOnly, revokeLapsed], { lineage: rolled })).toEqual(["revoked"]);
+    const both = await buildDelegation({ group: "face", signer: f.root, epoch: 0, agent: f.agent.key, prefix: "MOVE", policy, bound: { asOf: { roster: other }, until: { roster: cite } }, nonce: "both" });
+    expect(status([both], { rosterCids: [cite] })).toEqual(["closed"]);
+    expect(status([both], { rosterCids: [other] })).toEqual(["live"]);
+    expect(status([both], { rosterCids: [] })).toEqual(["awaiting"]);
+    const call = await f.call(both);
+    expect(mayAct(f.fold([both, call], { rosterCids: [other] }), f.id, f.device.key)).toEqual({ act: true });
+    expect(mayAct(f.fold([both, call], { rosterCids: [] }), f.id, f.device.key)).toEqual({ act: false, reason: "unknown-frontier" });
+  });
+
+  test("RED: a retired root's revoke of a retired grant leaves the grant void either way; CONTROL: the refused list reads the same in every arrival order", async () => {
+    const f = await fixture(), next = await who(5);
+    const rolled = makeHandLineage([{ epoch: 0, signers: [f.root.key], threshold: 1 }, { epoch: 1, signers: [next.key], threshold: 1 }])!;
+    const grant = await f.grant(), call = await f.call(grant);
+    const revoke = await buildDelegationRevoke({ group: "face", signer: f.root, epoch: 0, delegation: intentEntryCid(grant) });
+    const bad = await f.call(grant, f.other), stray = await buildDelegationRevoke({ group: "face", signer: f.other, epoch: 0, delegation: intentEntryCid(grant) });
+    const states = new Set<string>(), views = new Set<string>();
+    for (const order of permutations([grant, call, revoke, bad, stray])) {
+      const view = f.fold(order, { lineage: rolled });
+      states.add(`${view.intents[0]!.voidCause}`);
+      views.add(JSON.stringify([view.refused, view.delegations, view.intents.map((i) => i.id)]));
+    }
+    expect([...states]).toEqual(["delegation-revoked"]);
+    expect(views.size).toBe(1);
+    expect(f.fold([grant, call, bad, stray], { lineage: rolled }).refused.length).toBeGreaterThan(0);
+  });
 });

@@ -206,6 +206,7 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
     states.push({ id, issuer, verb: body.verb as string, class: classification.class, fenced: classification.class === "single-effect" || !!classification.fenced, audience, bound, status, voidCause, agent, asks: ownAsks,
       answer, claim, claims: ownClaims, slots, voidAfterAct: voidCause ? ownOutcomes : [], outOfAudience });
   }
+  refused.sort((a, b) => a.refusal.localeCompare(b.refusal));
   return { intents: states, delegations, refused, strayAnswers, standing: input.standing, holdsCapability: input.holdsCapability ?? (() => false), face: input.face };
 }
 

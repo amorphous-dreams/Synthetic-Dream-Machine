@@ -48,4 +48,24 @@ describe("intent delegation image", () => {
     expect((await buildAgentIntent(ready)).body.delegation).toBe(ready.delegation);
     expect(IntentRefusal.name).toBe("IntentRefusal");
   });
+
+  test("RED: prototype-sensitive argument names, odd integers and slash lookalikes refuse; CONTROL: a nested slash prefix and a plain argument pass", async () => {
+    const root = await who(1), agent = await who(2);
+    for (const name of ["__proto__", "constructor", "prototype"]) {
+      expect(validDelegationPolicy({ kind: "closed-args", args: { [name]: { type: "string" } } })).toBe(false);
+      expect(argsWithinPolicy(policy, JSON.parse(`{"${name}":"a","title":"a"}`))).toBe(false);
+    }
+    const counted = { kind: "closed-args" as const, args: { count: { type: "integer" as const } } };
+    expect(argsWithinPolicy(counted, { count: 3 })).toBe(true);
+    for (const bad of [-0, Number.NaN, Number.MAX_SAFE_INTEGER + 1, 1.5, [1], "1"]) expect(argsWithinPolicy(counted, { count: bad })).toBe(false);
+    expect(argsWithinPolicy(counted, [])).toBe(false);
+    expect(argsWithinPolicy(counted, Object.create({ count: 1 }))).toBe(false);
+    for (const prefix of ["MOVE//x", "/MOVE", "MOVE/", "MOVE/*", "MOVE /x"]) await expect(buildDelegation({ group: "face", signer: root, epoch: 0, agent: agent.key, prefix, policy, bound, nonce: "n" })).rejects.toMatchObject({ name: "delegation-shape" });
+    const nested = await buildDelegation({ group: "face", signer: root, epoch: 0, agent: agent.key, prefix: "MOVE/x", policy, bound, nonce: "n" });
+    expect(readIntentEntry(nested, { group: "face", authorize: () => true }).ok).toBe(true);
+    expect(verbInPrefix("MOVE/x", "MOVE/x")).toBe(true);
+    expect(verbInPrefix("MOVE/x", "MOVE/x/y")).toBe(true);
+    expect(verbInPrefix("MOVE/x", "MOVE/xy")).toBe(false);
+    expect(verbInPrefix("MOVE/x", "MOVE")).toBe(false);
+  });
 });
