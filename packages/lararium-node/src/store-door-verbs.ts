@@ -222,10 +222,12 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...opt("every", args["every"] === true ? true : undefined),
       ...opt("voidAt", str(args["voidAt"])), ...opt("through", str(args["through"])),
       ...opt("executor", str(args["executor"])), ...opt("deny", args["deny"] === true ? true : undefined),
+      ...opt("agent", str(args["agent"])), ...opt("prefix", str(args["prefix"])), ...opt("policy", args["policy"]),
+      ...opt("asOf", str(args["asOf"])), ...opt("until", str(args["until"])),
     });
   return {
     "intent-issue": (args) => answer("intent-issue", () => intent("issue", args)),
-    "intent-show": (args) => answer("intent-show", () => intent("show", args)),
+    "intent-show": (args) => answer("intent-show", () => intent(args["action"] === "delegations" ? "delegations" : "show", args)),
     "intent-ask": (args) => answer("intent-ask", () => intent("ask", args)),
     "intent-answer": (args) => answer("intent-answer", () => intent("answer", args)),
     "intent-steer": (args) => answer("intent-steer", () => {
@@ -235,7 +237,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     }),
     "intent-root": (args) => answer("intent-root", () => {
       const action = args["action"];
-      if (action !== "cancel" && action !== "supersede" && action !== "release-root") throw new IntentRefused("root-action-malformed");
+      if (action !== "cancel" && action !== "supersede" && action !== "release-root" && action !== "delegate" && action !== "delegate-revoke") throw new IntentRefused("root-action-malformed");
       return intent(action, args);
     }),
     "nexus-kapae": (args) => answer("nexus-kapae", async () => {

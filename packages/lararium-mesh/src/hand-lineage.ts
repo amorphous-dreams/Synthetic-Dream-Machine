@@ -74,6 +74,11 @@ export function currentSignerOf(lineage: HandLineage | null | undefined): (write
   return (writer) => seated.has(writer);
 }
 
+/** Whether `epoch` names the lineage's CURRENT epoch: a grant a root signed stands only while the root epoch it names still heads the lineage. */
+export function isCurrentEpoch(lineage: HandLineage, epoch: unknown): boolean {
+  return typeof epoch === "number" && epoch === currentRoster(lineage).epoch;
+}
+
 /** Whether `signer` sits in the roster of `epoch`: the op-key a signed act names stands under that epoch's keys. */
 export function signsAtEpoch(lineage: HandLineage, epoch: unknown, signer: string): boolean {
   return rosterAt(lineage, epoch)?.signers.includes(signer.toLowerCase()) === true;

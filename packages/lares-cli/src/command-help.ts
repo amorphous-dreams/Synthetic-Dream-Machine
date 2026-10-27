@@ -41,7 +41,7 @@ export interface CommandHelp {
 
 export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   intent: {
-    usage: "usage: lares intent issue|show|ask|answer|claim|takeover|release|cancel|supersede|release-root [verb-or-id] [--face N]",
+    usage: "usage: lares intent issue|show|ask|answer|claim|takeover|release|cancel|supersede|release-root|delegate|delegate-revoke|delegations [verb-or-id] [--face N]",
     synopsis: "Read and write one face's signed intent plane. Name --face N on every invocation when this vessel holds several faces; a sole face resolves itself.",
     examples: [
       "lares intent issue face-join --face 1 --to <atom> --args '{}'",
@@ -50,7 +50,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares intent answer <ask-cid> --face 1 --executor <atom>",
       "lares intent cancel <intent-id> --face 1",
     ],
-    flags: ["--face N   face index", "--to <atom> | --prefer <atoms> | --class <capability> | --every   audience", "--args <json>   issue arguments", "--nonce <text>   invocation nonce", "--void-at <act-cid> | --through <act-cid>   causal bounds", "--executor <atom> [--deny]   answer", "--json   structured show"],
+    flags: ["--face N   face index", "--to <atom> | --prefer <atoms> | --class <capability> | --every   audience", "--args <json>   issue arguments", "--nonce <text>   invocation nonce", "--void-at <act-cid> | --through <act-cid>   causal bounds", "--agent <key> --prefix <verb> --policy <json> --as-of <cite> | --until <cite>   delegation", "--executor <atom> [--deny]   answer", "--json   structured show"],
   },
   nexus: {
     usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | carry-take | posture | kahuli | publish | realm-bag | realm-bags | offering | promote | cabal | release>",

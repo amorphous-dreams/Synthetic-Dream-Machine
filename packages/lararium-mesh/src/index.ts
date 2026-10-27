@@ -79,6 +79,7 @@ export * from "./intent-verbs.js";
 export * from "./intent-read.js";
 export * from "./intent-view.js";
 export * from "./intent-issue.js";
+export * from "./intent-delegation.js";
 export * from "./intent-rubric.js";
 export * from "./lease-advance.js";
 export * from "./charter-hand-lineage.js";

@@ -2,13 +2,13 @@
 import { randomBytes } from "node:crypto";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  buildAnswer, buildAsks, buildCancel, buildClaim, buildIntent, buildSupersede, buildTakeover,
+  buildAnswer, buildAsks, buildCancel, buildClaim, buildDelegation, buildDelegationRevoke, buildIntent, buildSupersede, buildTakeover,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceAtomKeyFromSeed, faceIntentVerbs,
   faceRecordsOf, intentEntryCid, intentEntryRecordsOfGroup, intentId, intentPaneModel,
   readIntentEntry,
   deviceEdgeId, fleetEdgeAuthority, fleetEdgeBoardDocUrl, fleetRaiseCids, readFleetFrontier, readFrontierPins, FLEET_HAND,
   personaBagIdFor, personaSiblingBagIds, readIntentPlane, signIntentEntry, writeIntentEntry,
-  type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
+  type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
 } from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { listAnchoredPersonas, loadIdentityAnchors } from "../identity-anchors.js";
@@ -38,12 +38,17 @@ export function intentAudience(input: { to?: string; prefer?: string; class?: st
   if (input.class) return { mode: "class", capability: input.class };
   return { mode: "every" };
 }
+export function intentDelegationCite(raw: string): DelegationCite {
+  const match = /^(roster|frontier|control):([0-9a-f]{64})$/.exec(raw);
+  if (!match) throw new IntentRefused("delegation-cite-malformed");
+  return { [match[1]!]: match[2]! } as DelegationCite;
+}
 
 export interface IntentCommandOptions {
   readonly repo: Repo;
   readonly catalogUrl?: string;
   readonly face?: number;
-  readonly action: "issue" | "show" | "ask" | "answer" | "claim" | "takeover" | "release" | "cancel" | "supersede" | "release-root";
+  readonly action: "issue" | "show" | "ask" | "answer" | "claim" | "takeover" | "release" | "cancel" | "supersede" | "release-root" | "delegate" | "delegate-revoke" | "delegations";
   readonly target?: string;
   readonly verb?: string;
   readonly args?: unknown;
@@ -56,6 +61,11 @@ export interface IntentCommandOptions {
   readonly through?: string;
   readonly executor?: string;
   readonly deny?: boolean;
+  readonly agent?: string;
+  readonly prefix?: string;
+  readonly policy?: unknown;
+  readonly asOf?: string;
+  readonly until?: string;
 }
 
 export async function runIntentCommand(opts: IntentCommandOptions): Promise<Record<string, unknown>> {
@@ -85,6 +95,7 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
   const records = intentEntryRecordsOfGroup(plane.doc(), group);
   const verbs = faceIntentVerbs();
   let standing: (key: string) => "stands" | "aside" | "unknown" = () => "unknown";
+  let heldFrontiers: ReadonlySet<string> = new Set();
   try {
     const fleetRoot = groupRoot(anchors);
     const board = await readVesselEdgeBoard({ repo: opts.repo, scope: fleetRoot, kind: "fleet",
@@ -92,24 +103,28 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
       authorityFor: fleetEdgeAuthority(fleetRoot) });
     const frontier = readFleetFrontier({ fleetRoot, board: board.handle.doc(), lineage: face.lineage,
       seenRaises: fleetRaiseCids(board.counted.acts), pinned: readFrontierPins(board.ledger.doc(), fleetRoot)[FLEET_HAND] ?? null });
-    if (frontier.status === "known") standing = (key) => {
-      const verdict = board.readings.get(deviceEdgeId(fleetRoot, key));
-      return verdict?.stands === true ? "aside" : verdict && verdict.raiseCids.length > 0 ? "unknown" : "stands";
-    };
+    if (frontier.status === "known") {
+      heldFrontiers = new Set([frontier.asOf[FLEET_HAND]?.cid].filter((cid): cid is string => cid !== undefined));
+      standing = (key) => {
+        const verdict = board.readings.get(deviceEdgeId(fleetRoot, key));
+        return verdict?.stands === true ? "aside" : verdict && verdict.raiseCids.length > 0 ? "unknown" : "stands";
+      };
+    }
   } catch { /* A board that cannot verify leaves standing unknown. */ }
   const view = () => readIntentPlane({
-    group, records, verbs,
+    group, records, verbs, heldFrontiers,
     face: { devices: projection.devices, rosterCids: projection.cids,
       admittedAt: new Map(projection.admissions.map(({ deviceKey, cid }) => [deviceKey, cid])), lineage: face.lineage },
     standing,
   });
-  if (opts.action === "show") {
+  if (opts.action === "show" || opts.action === "delegations") {
     const reading = view(), pane = intentPaneModel(reading);
+    if (opts.action === "delegations") return { delegations: reading.delegations };
     return { rows: opts.target ? pane.rows.filter((r) => r.id === opts.target) : pane.rows,
       outcomes: reading.intents.flatMap((state) => state.slots.flatMap((slot) => [slot.winner, ...slot.duplicates].filter((r) => r !== null)
         .map((r) => ({ cause: state.id, signer: r!.entry.signer, winner: slot.winner === r, result: r!.entry.body["result"] })))),
       strayAnswers: reading.strayAnswers.map((r) => r.cid), refused: reading.refused,
-      standing: standing(atom.key) };
+      standing: standing(atom.key), delegations: reading.delegations };
   }
   const target = opts.target;
   const intentNamedBy = (name: string): string => {
@@ -176,8 +191,8 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
         entry = await signIntentEntry({ group, entry: "release", intent: state.id, claim: state.claim.cid, refs: [state.claim.cid] }, signer);
         break;
       }
-      case "cancel": case "supersede": case "release-root": {
-        if (!target) throw new IntentRefused("intent-id-absent");
+      case "cancel": case "supersede": case "release-root": case "delegate": case "delegate-revoke": {
+        if (opts.action !== "delegate" && !target) throw new IntentRefused("intent-id-absent");
         let seed: Uint8Array;
         try { seed = await loadPersonaGroupRootSeed(index); }
         catch { throw new IntentRefused("root-absent: ask the root's hearth with `lares intent ask <intent-id>`"); }
@@ -185,10 +200,20 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
         if (!face.currentSigner(key)) throw new IntentRefused("root-rotated: ask the root's hearth with `lares intent ask <intent-id>`");
         const rootSigner = { key, sign: ed25519SignerFromSeed(seed) };
         const epoch = face.lineage[face.lineage.length - 1]!.epoch;
-        const intent = intentNamedBy(target);
-        entry = opts.action === "cancel" ? await buildCancel({ group, signer: rootSigner, intent, epoch })
-          : opts.action === "supersede" ? await buildSupersede({ group, signer: rootSigner, intent, epoch })
-          : await signIntentEntry({ group, entry: "release", intent, epoch, refs: [] }, rootSigner);
+        if (opts.action === "delegate") {
+          if (!opts.agent || !opts.prefix || opts.policy === undefined) throw new IntentRefused("delegation-shape");
+          let policy: DelegationPolicy;
+          try { policy = (typeof opts.policy === "string" ? JSON.parse(opts.policy) : opts.policy) as DelegationPolicy; }
+          catch { throw new IntentRefused("delegation-shape"); }
+          entry = await buildDelegation({ group, signer: rootSigner, epoch, agent: opts.agent, prefix: opts.prefix, policy,
+            bound: { ...(opts.asOf ? { asOf: intentDelegationCite(opts.asOf) } : {}), ...(opts.until ? { until: intentDelegationCite(opts.until) } : {}) }, nonce: opts.nonce ?? randomBytes(16).toString("hex") });
+        } else if (opts.action === "delegate-revoke") entry = await buildDelegationRevoke({ group, signer: rootSigner, epoch, delegation: target! });
+        else {
+          const intent = intentNamedBy(target!);
+          entry = opts.action === "cancel" ? await buildCancel({ group, signer: rootSigner, intent, epoch })
+            : opts.action === "supersede" ? await buildSupersede({ group, signer: rootSigner, intent, epoch })
+            : await signIntentEntry({ group, entry: "release", intent, epoch, refs: [] }, rootSigner);
+        }
         break;
       }
     }
