@@ -1,0 +1,69 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/d2-port-lane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/d2-port-lane.mem"
+l-space   = "adjacent"
+role      = "the D2 close lane's kit: the record port reaches a page: the port lease, the page transport, the lends, the real witnesses, listener timing, the retired port's settled write, the clockless hand gate and mount epoch, the info tier, the same-id resend, the widget-tree parity witness and the incremental document frequency"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/d2-port-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/d2-port-lane"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! D2 close ~ the record port reaches a page
+
+Order (controller, 2026-10-26): the lane runs in slot two, after I1 (the intent plane, PR #99). The operator ruled the same day to close as much open work as possible before the bake and founding, so D2 closes whole: every row of the port contract's #/owed stands built or stands ruled out of the lane by name (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract">>). The D3 glass engine follows as its own lane on a port a page can now reach (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">> D3).
+
+The worker half stood since PR #87: the port log, the wire, the island handler, one island to one face, the bounds. No page reached it, because the composer lent nothing and the holder dropped port replies by name. This lane builds the road and closes the rows beside it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-slices>>
+
+!! The ten rows, each built red first with its control
+
+# ''The port lease and the lends ~ BUILT.'' `port-lease.ts` (mesh) keeps the pure table and the placement door. A binding that opens a `portId` owns it: another binding's open, close, ack, ask, write or presence under that id refuses `port-owned` and posts nothing to the island. `port:lease{portId, grant}` and `port:gone{portId}` ride vessel to island only; a page placement of either refuses `port-kind-refused`. A `PortGrant` names the proven face's stable subject id, the transport-bound actor, `edits`, the explicit `bags`, `admin`, the tiers of the cids the vessel will answer, and a snapshot of the Kahu facts. No policy, or a policy that answers null, refuses `port-not-granted`; a grant that changes re-sends the lease before the next open, write or ask, and a revoked grant posts `port:gone`. The pool wraps the door (`placePort`, `closePortBinding`, `portPolicy`, `onPortMessage`, `onPortDrop`) and routes a reply to the lease holder or drops it as `no-port-lease`. In the island, `hasPortLease` (tw5) owns the grants and lends `faceOf`, `actorOf`, `mayEdit`, `bagGrant`, `verbCap`, `casTierOf`, `kahuReach` and `authority` from them; an open with no lease resets `lagged` and holds nothing, `port:gone` calls `transportGone`, and a close forgets the grant. The browser shared holder wraps the same door, scoped by house and bound by session id, so a second tab cannot act under another tab's port.
+# ''The page transport ~ BUILT.'' `openBrowserVessel` and `openNodeVessel` take `portPolicy` and `onPortMessage` and hand their pool a read-only default grant (the worn PersonaGroup id, or the place key where the vessel stands faceless): a page opens and reads, and every write, verb, invoke and `cas` ask refuses by the contract's own names until a policy lends more. Each vessel result carries `ports.place(surface, binding, msg)` and `ports.close(binding)`. `makePortTransport` (web) mints one binding per page, sends through those doors, delivers replies for its binding once, and reports a refused placement to its caller and its listeners. The real island kernel on a real pool proves the road: a binding opens, receives the snapshot, is refused a write under a read-only grant, writes under an edit grant, hears the echo naming `causedBy:[txId]` once before `port:written` once, and a second binding's close under the same id refuses `port-owned` (`port-page-real-island.test.ts`).
+# ''The real witnesses ~ BUILT.'' The retained-render staleness runs over a real `bootTestWiki` refresh (`record-port-real-render.test.ts`); the commit-boundary drift runs over a real Automerge handle that faults between two families and resumes only the unapplied one on the same `txId` (`record-port-real-fault.test.ts`). Each mock red stays as its control.
+# ''Listener timing ~ BUILT.'' The census reads every class that offers `writeFamily` as a composite layer: `AutomergeDocStore` and the tests' atomic memory layer declare `notifiesSynchronously`; `MemoryTiddlerStore` has no `writeFamily` and refuses `non-atomic-layer`; a nested `CompositeStore` declares nothing and refuses. `CompositeStore.precheckFamily` refuses an atomic destination without the marker as `late-notifying-layer` before any family lands. A real Automerge echo carries the `txId`; a foreign write carries `causedBy:[]`.
+# ''The retired port's settled write ~ BUILT.'' A write whose port retired still records its outcome in the ledger and posts nothing to the dead port, so the actor's in-flight slot frees and its table entry becomes evictable by a causal rule (the write's own settling), never a timer. A same-id resend replays the original answer. A write cut short by a retiring port counts its unreached families failed, and a resend resumes them.
+# ''The clockless debt ~ BUILT.'' `HandGate` flushes a title's coalesced marks at the next store family boundary, at the next act, at the eighth coalesced mark (`COALESCE_CAP`) or at teardown; `ShoreTimers` and the adaptor's `timers` parameter are gone. The adaptor crosses a boundary after a landed family and at the start of a discrete act, and the wiki behavior crosses one before every `lar:control-event`, `lar:resend`, `wiki:place-verb` and `port:` message. The camera's `mountEpoch` mints from a boot nonce (random, 32 bits) and a rising counter (20 bits, `mount-epoch-exhausted` past it). A throwing clock spy over both paths proves neither reads a clock (`hand-gate-clockless.test.ts`, `tw5-projection-epoch.test.ts`).
+# ''`$:/info/browser/*` ~ BUILT.'' The tier-local filter names `$:/state`, `$:/temp`, `$:/status` and `$:/info/browser` as titles and as prefixes; the handler tests pin the write refusal (`local-title`) and the silent change path (`record-port-info-browser.test.ts`), and `$:/info/other/*` still travels.
+# ''The same-id resend ~ BUILT.'' The page keeps each reliable act whole with its mount epoch and attempt count, and resends the same `eventId` at a fresh frame under the same epoch, at the next act (first, in order) and at a re-arm of the doors, up to three attempts. An epoch change ends the old epoch's acts with `stale-target` beside their targets; the attempt bound ends them with `binding-unavailable`; the unload hold lifts as entries end. The island's answer ring replays the original result and applies the act once (`projection-sink-resend.test.ts`, `tw5-projection-answer-replay.test.ts`).
+# ''The tree-sitter parity witness ~ BUILT.'' The in-VM `resolveWidgetTree` and the tree-sitter fold reduce the same specimens to their shared ahu slots and block loulou targets and agree (`widget-tree-tree-sitter-parity.test.ts`). The witness found and pins two divergences it does not cure: the host fold reads the spaced `<<~ ahu #x >>` and the legacy `#slot` spelling that the in-VM reader takes as no slot (the writer emits neither), and the in-VM reader lifts a loulou sigil mid-line where the host fold keeps the line whole.
+# ''The whole-corpus fold ~ BUILT.'' The composite corpus reader keeps `title -> shingle set` and `shingle -> document count`, diffs a changed title's two sets, and re-derives only the form values a changed shingle or a moved stop threshold touches. A seeded 200-step add, edit and delete run compares the incremental planes with a cold fold after every step. Measured on 2,000 synthetic tiddlers (`scripts/measure-coherence-refold.ts`, median of seven after warm-up): one edit's refold took 1186.7 ms whole and 21.2 ms incremental, and the composite's whole `entries()` read took 1.0 ms.
+
+<<~/ahu>>
+
+<<~ ahu #/what-stands-beside>>
+
+!! What stands beside the lane
+
+* ''The grant belongs to D4.'' The default policy is read-only. The actor manifest and its signed grants name who may edit, invoke and run verbs; until D4 lends a policy, a production page reads and every other act refuses by name. The witnesses lend a policy of their own.
+* ''The page boot.'' `main.ts` stays outside the lane: it passes `onPortMessage` into `openBrowserVessel`, builds `makePortTransport({ doors: result.ports, surface })` once the vessel returns, and has the callback deliver to the transport for its binding. The controller places that patch with the D3 glass lane, which is the first caller.
+* ''The hand gate's tail.'' After a title's last mark the entry rests until the next boundary, act, cap or teardown; a blur or reload reaches an act through the control-event signal. The pacing law changed with the clock: marks gather while no boundary crosses and leave when the store lands a family, so a burst inside one dispatch turn leaves as one write.
+* ''Two spellings stay divergent by the alpha line.'' The in-VM reader does not take the legacy or spaced ahu spellings; the witness pins the gap.
+* ''The plugin bundle moved'' (the incremental fold and the projection's mint ride in it); `genesis/unbaked.json` names the new bytes, and the next labelled GENESIS RE-BAKE carries them.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;O7v2wdJwZfTymuAIIvq6NsRKNG3uYovauITRbqGKiqg
+
+<<^ code="&#x0004;" -> to="?">>
