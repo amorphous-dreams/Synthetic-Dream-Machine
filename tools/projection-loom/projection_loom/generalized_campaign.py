@@ -42,7 +42,9 @@ def initial_program(adapters):
     if proxy:
         nodes=list(proxy_growth_program(proxy.program).nodes)
     elif grammar:
-        size=grammar.program["steps"][0]["size"]
+        size=(grammar.program["growth_program"]["nodes"][0]["size"]
+              if "growth_program" in grammar.program else
+              grammar.program["steps"][0]["size"])
         nodes=[GrowthNode("root","foundation",size=tuple(size))]
     else:
         nodes=[GrowthNode("root","foundation",size=(3,3,7))]

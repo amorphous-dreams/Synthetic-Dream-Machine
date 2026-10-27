@@ -66,3 +66,12 @@ def test_engine_package_has_no_experiment_zero_dependency():
     assert "image_group/manifest.json" not in code
     assert "ziggurat_proxy/proxy.json" not in code
     assert "COHORTS=" not in code
+
+
+def test_actual_zero_typed_fixture_matrix_is_live(tmp_path):
+    from experiments.zero.run import run_matrix
+    inputs=Path(__file__).resolve().parents[1]/"experiments"/"zero"/"inputs"
+    result=run_matrix(inputs,tmp_path/"zero",epochs=1,offspring=2,exact_budget=2,finalists=1)
+    assert result["passed"] and len(result["cohorts"])==7
+    assert all(x["native_valid"]>0 for x in result["cohorts"].values())
+    assert (tmp_path/"zero"/"IBZ"/"finalists").is_dir()
