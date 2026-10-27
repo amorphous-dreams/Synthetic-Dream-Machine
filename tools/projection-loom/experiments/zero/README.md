@@ -15,7 +15,7 @@ stored under one run identity. Image-free cohorts cannot receive invented IoU.
 
 Run from tools/projection-loom:
 ```bash
-python -m projection_loom.generalized_campaign \
+python -m experiments.zero.run \
   --inputs experiments/zero/inputs \
   --out out/generalized-experiment-zero \
   --epochs 3 --offspring 4 --exact-budget 4 --finalists 2

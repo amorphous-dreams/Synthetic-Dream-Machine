@@ -7,6 +7,52 @@ and [OBLIQUE_SEED](OBLIQUE_SEED.md). Project canon lives in branch-current
 `bags/`; this document describes measured machinery and design possibilities,
 not promoted Lares law.
 
+## Re-entry · Generalized Projection Loom, five implementation waves
+
+**Read by exact PR head, not by historical summaries.** The Operator-approved
+Wave A–E work is committed as `6ef72ecb`, `d4e4cf7b`,
+`b9572b35`, `458154b8`, `bacc374a`, with fixes at `40a14b19`,
+fixture isolation at `5a2e8876`, and a typed brutalist/ziggurat input update
+at `0db84c74`. The first seven-cohort full native study passed on
+`40a14b19` ([#40578661646](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40578661646)):
+32 targeted tests, 84 exact auditions and 79 CAD-valid descendants.
+`5a2e8876` also passed dedicated generalized CI after moving the
+seven-case fixture matrix outside the machina. The typed fixture passed 37 targeted tests and 71/84 native auditions in
+[#40580691545](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40580691545).
+Subtree-crossover at `db5cb295` requires its own exact-head CI read.
+
+**New executable seams:** `projection_loom/intent_seed.py` normalizes
+immutable seed/intent evidence; `seed_adapters.py` handles independently
+authored images, grammar and proxy; `developmental.py` compiles typed
+variable-length growth programs to native solids and semantic sites;
+`intent_evolution.py` supplies source-conditioned fitness, synthetic
+orthographic and quality-diversity observations; `generalized_campaign.py`
+reuses `OODAHAJournal` for any typed adapters+intent; the fixed example
+matrix alone lives at `experiments/zero/run.py`; `gallery_artifacts.py`
+exports inspectable six-view/source comparisons. Unrelated bodies remain
+separately audited within one location, not fused into a fake global solid.
+
+Run from `tools/projection-loom/`:
+
+```bash
+python -m pytest -q tests/test_generalized_*.py
+python -m experiments.zero.run --inputs experiments/zero/inputs \
+  --out out/generalized-experiment-zero --epochs 3 \
+  --offspring 4 --exact-budget 4 --finalists 2
+```
+
+Original RGB/alpha count as one source; other views need actual independent
+registered observations. The current source fit uses a provisional camera.
+The image-free cohorts receive no invented IoU. Native BRep/void validity
+does not imply structural safety or fully surveyed/inhabitable geometry.
+No automatic canonical architecture, pet-name, or o-takiage occurs.
+
+**Open refinement contracts:** see status column L-01..L-20 in
+[ROADMAP](ROADMAP.md); richer crossover, external multi-image registration,
+held-out A/B, activation-specific audition fairness, and old-path removal
+need further exact native evidence. Do not relabel a green subset as all
+acceptance clauses satisfied.
+
 ## Source-head closing checkpoint · historical records preserved
 
 On source-head `8a073aac` (three-parent historical integration), dedicated CAD [#40429724371](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429724371), evergreen [#40429719118](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719118), and alpha coevolution [#40429719057](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719057) passed. Repo-wide [#40429719100](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719100) and held-out [#40429719007](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719007) were queued; parallel CAD [#40429719027](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40429719027) was running at inspection. Re-query these before deciding whether the full head passed. `_activation_switches(recipe)` now shields CAD-only OODA-HA while preserving Architectural Birth activation funnels. Both historical experimental merge parents remain attributable but inert; no pet-name or lineage promotion follows from ancestry alone. For a concise new-session re-entry, read [BRANCHED_SESSION_HANDOFF](BRANCHED_SESSION_HANDOFF.md).
