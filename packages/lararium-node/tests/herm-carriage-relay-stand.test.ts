@@ -5,7 +5,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import { RELAY_GATE_INFO, CARRIAGE_CARRIER_DOMAIN, carrierContractBytes, hex, mintPlaceInception, placeSignerFromSeed, verifyPlaceDutyAtHead,
+import { CARRIAGE_CARRIER_DOMAIN, carrierContractBytes, hex, mintPlaceInception, placeSignerFromSeed, verifyPlaceDutyAtHead,
   provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, attestAndRotate, httpPersonaKelDropHerm,
   depositPersonaKelChain, pullPersonaKelSuccessors } from "@lararium/mesh";
 import { startCarriageRelay } from "../src/carriage-relay.js";
@@ -22,6 +22,9 @@ afterEach(() => {
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
 });
 
+/** The label a thief keys an HMAC of the place seed under, to guess a derived relay key: and must not reach the relay's pin. */
+const OLD_RELAY_DERIVATION_TAG = "relay-gate";
+
 describe("relay service S row", () => {
   test("thief: place and face seeds cannot reconstruct the random pin; restart retains it", async () => {
     home();
@@ -29,7 +32,7 @@ describe("relay service S row", () => {
     process.env.LAR_HERM_RELAY_SEED = "aa".repeat(32);
     try {
       const first = openRelayGateSeed();
-      const oldDerivation = new Uint8Array(createHmac("sha256", RELAY_GATE_INFO).update(place).digest());
+      const oldDerivation = new Uint8Array(createHmac("sha256", OLD_RELAY_DERIVATION_TAG).update(place).digest());
       expect(hex(first)).not.toBe(hex(oldDerivation));
       expect(hex(first)).not.toBe(hex(place));
       expect(hex(first)).not.toBe(hex(atom));
