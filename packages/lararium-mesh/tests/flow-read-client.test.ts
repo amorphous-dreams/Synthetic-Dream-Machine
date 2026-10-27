@@ -1,3 +1,4 @@
+import { placeSignerFromSeed } from "../src/place-signer.js";
 /**
  * flow-read-client — peers prove first at the FLOOR gate, then the reader rule runs.
  *
@@ -21,7 +22,7 @@ const enc = (text: string): Uint8Array => new TextEncoder().encode(text);
 
 async function publish(seed = SEED, text = "the constitution"): Promise<{ snap: FlowSnapshot; ptr: FlowPointer }> {
   const snap = await exportFlowSnapshot(A.from({ tiddlers: { flow: { text } } }));
-  return { snap, ptr: await buildFlowPointer({ snapshot: snap, parents: [], signerSeed: seed }) };
+  return { snap, ptr: await buildFlowPointer({ snapshot: snap, parents: [], signer: placeSignerFromSeed(seed) }) };
 }
 
 interface Face {

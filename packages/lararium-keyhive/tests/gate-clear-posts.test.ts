@@ -27,7 +27,7 @@ beforeAll(async () => {
   verifyingKey = (await probe.whoami()).replace(/^0x/, "");
   await probe.dispose();
   ceremony = await runFoundingCeremony({
-    repo, vesselSeed: seed, vesselVerifyingKey: verifyingKey, vesselDisplayName: "Gate witness",
+    repo, vesselSeed: seed, placeVerifyingKey: verifyingKey, vesselDisplayName: "Gate witness",
     binding: { mode: "self-stood", signerSeed: seed }, hearthTrueName: "", nexusPubkey: verifyingKey,
   });
   const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(verifyingKey), "board:persona-kel");
@@ -61,7 +61,7 @@ function island(options: { floor?: boolean; epoch?: number; dyad?: "clear" | "as
   const post = vi.fn();
   const ctx = { composite, repo, recipe: { wikiSlug: "daemon" }, handles: new Map(), post };
   const daemonAuth = {
-    seed, vesselVerifyingKey: verifyingKey, registerBags: [DAEMON_BAG_ID], archiveOpens: false,
+    placeVerifyingKey: verifyingKey, registerBags: [DAEMON_BAG_ID], archiveOpens: false,
     ...(options.floor ? {} : {
       personaGroupId: ceremony.personaGroupId, meshCabalDocIdHex: ceremony.meshCabalDocIdHex,
       signerDid: ceremony.signerDid, personaKel: kel, deviceEdge: ceremony.founderEdge,

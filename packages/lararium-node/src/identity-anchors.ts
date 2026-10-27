@@ -1,30 +1,10 @@
 /**
- * identity-anchors — the identity home's four sealed rows of one family: each face's sentinel anchors, the roster
- * of anchored faces, the vessel's own keyhive archive, and each face's veil archive.
- *
- * ── WHAT RESTS HERE ─────────────────────────────────────────────────────────────────────────────
- * The founding ceremony mints the PersonaGroup / MeshCabal sentinel ids off keyhive's CSPRNG, unreproducible from
- * any seed, and a keyhive Archive carries the prekey secrets and the group key agreement state a creator needs to
- * seat a member or seal a chunk. Both rest in the identity home beside the vessel's keys, outside the store a
- * re-found wipes, so a face survives its substrate.
- *
- * ── EVERY ROW RESTS SEALED UNDER THE VESSEL KEY ─────────────────────────────────────────────────
- * Each row reads and writes through the custody seat (`custody-seat`), and so through the one sealed writer. No
- * function here takes a key or a passphrase, and none writes a file by its own hand. At the floor (no key held)
- * every reader and writer refuses `CustodyLocked`; a row that stands and does not open refuses
- * `CustodyRowUnavailable`. `null` means one thing only: nothing stands at the row's path.
- *
- * ── A VEIL ARCHIVE BELONGS TO ONE FACE ──────────────────────────────────────────────────────────
- * Each face's veil identity keeps its own archive at `veil-archive-g<group digest>.bin`. The seal binds the row's name, so one
- * face's archive carried to another face's path opens for nobody.
- *
- * ── TWO ROWS, ONE COMMIT POINT ──────────────────────────────────────────────────────────────────
- * Anchoring a face writes its anchors row, then the roster. The roster's line commits the act: an anchors row no
- * roster line names stands unlisted until the same act runs again and records it.
+ * identity-anchors — each face's sealed anchors and veil archive.
+ * The face custody row names its PersonaGroup, and the face index lets a floor count
+ * faces without opening their private rows. A face archive holds its own prekeys.
  */
 
 import { mkdirSync, statSync } from "node:fs";
-import { join } from "node:path";
 import { faceFilePathSync, readFaceIndexSync } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
 import { readIdentityAnchors, type AnchorStore, type IdentityAnchors } from "@lararium/mesh";
@@ -116,14 +96,6 @@ export function listFaceOrdinals(): number[] {
   return out;
 }
 
-/** The vessel's own keyhive Archive row. */
-const ARCHIVE_FILE = "place-archive.bin";
-
-/** The keyhive Archive carrier path. The carrier table spells its row through it. */
-export function archivePath(): string {
-  return join(larIdentityDir(), ARCHIVE_FILE);
-}
-
 /** The veil archive family's filename law: one row per PersonaGroup. */
 export const VEIL_ARCHIVE_FILE = /^veil-archive-g([0-9a-f]{64})\.bin$/;
 
@@ -135,21 +107,6 @@ export function veilArchiveFile(personaGroup: string): string {
 /** One face's veil archive path. */
 export function veilArchivePath(personaGroup: string): string {
   return faceFilePathSync(larIdentityDir(), { group: personaGroupDigest(personaGroup) }, veilArchiveFile(personaGroup));
-}
-
-/**
- * Seal the vessel's own keyhive Archive (the membership and capability state, the prekey secrets, the contact
- * card). The restore path lives in keyhive-provider; this supplies the bytes a composition reads back. A newer
- * full archive supersedes an older one.
- */
-export async function persistIdentityArchive(bytes: Uint8Array): Promise<void> {
-  mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
-  await writeCustodyRow("identity", ARCHIVE_FILE, bytes);
-}
-
-/** The vessel's keyhive Archive, or null when none stands. */
-export function loadIdentityArchive(): Promise<Uint8Array | null> {
-  return readCustodyRow("identity", ARCHIVE_FILE);
 }
 
 /** Seal ONE face's veil archive: the group creator's prekeys and key agreement state survive a boot, or material

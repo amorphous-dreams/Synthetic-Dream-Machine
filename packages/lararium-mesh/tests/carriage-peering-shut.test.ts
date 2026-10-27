@@ -23,8 +23,8 @@ async function stand(deps: Partial<Parameters<typeof carriageCap>[0]>): Promise<
 }
 
 describe("carriage peering", () => {
-  test("SHUT: with no pullFlow (even with an identity handed in) nothing is pulled, and the shut is named", async () => {
-    const s = await stand({ identity: { contactCard: "c", peerPubKey: "p", sign: () => "s" } as never });
+  test("SHUT: with no pullFlow nothing is pulled, and the shut is named", async () => {
+    const s = await stand({});
     expect(await s.pullOnce()).toBe(0);
     expect(s.logs.some((l) => l.includes("carriage-peering-shut"))).toBe(true);
     await s.dispose();

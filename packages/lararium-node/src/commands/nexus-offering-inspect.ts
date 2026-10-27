@@ -111,7 +111,7 @@ export async function runNexusInspectOffering(
   let board: { doc(): LarDoc | undefined };
   try {
     board = await resolveBootDoc<LarDoc>(repo, boardUrl, {
-      tideline: "hearth-private", label: "board:crossroads", expectPresent: true,
+      tideline: "hearth-private", label: "board:crossroads",
     });
   } catch {
     throw new NexusOfferingInspectError(`offering ${opts.offeringCid} is not present on the local Crossroads board`);

@@ -17,7 +17,7 @@
  * it by CID (`floor-release`), served at the porch (`floor-answer-face`).
  *
  * THE PUBLISHER'S KEY IS NOT THE GATE'S. The floor bundle derives from the floor key; the pointer is signed by the
- * vessel seed, and a reader names that publisher key out of band (`pullAndVerifyFlow` `verifyingKey`).
+ * scoped place signer, and a reader names that publisher key out of band (`pullAndVerifyFlow` `verifyingKey`).
  *
  * Write-refusal is by construction: the face only sends, the bytes are named by their own hash, and there is
  * no sync session. On each flow-doc change the face re-exports the snapshot and publishes a fresh causal
@@ -43,7 +43,7 @@ import {
 } from "@lararium/mesh";
 import {
   buildFlowPointer, flowPointerId, verifyFlowPointer, snapshotPublicFlowMap,
-  type FlowSnapshot, type FlowPointer, type LarDoc,
+  type FlowSnapshot, type FlowPointer, type LarDoc, type PlaceSigner,
 } from "@lararium/mesh";
 
 /** Persists the local causal head and exact publication so restart preserves the causal closure. */
@@ -99,20 +99,20 @@ export interface FlowGateArgs {
 
 /**
  * Mount the read-face on a running HTTP server's upgrade path, exporting from the oracle handle and
- * signing pointers with the vessel's seed. Idempotent in effect — re-exports only when the served doc's
+ * signing pointers with the scoped place signer. Idempotent in effect — re-exports only when the served doc's
  * content hash actually changes.
  */
 export async function mountFlowReadFace(args: FlowGateArgs & {
   readonly oracleHandle: DocHandle<unknown>;
-  /** The VESSEL seed — it signs the pointer. Its key is the publisher's, never the floor gate's. */
-  readonly signerSeed:   Uint8Array;
+  /** The scoped place signer; its key is the publisher's, never the floor gate's. */
+  readonly signer:       PlaceSigner;
   readonly storageDir:   string;
   readonly onLog?:       (line: string) => void;
   /** The export shore — REQUIRED, so no caller serves a raw document by omission. The FLOW-map serve passes
    *  `snapshotPublicFlowMap`, so ONLY the public projection ever crosses the wire. */
   readonly exportSnapshot: (doc: unknown) => Promise<FlowSnapshot>;
 }): Promise<FlowFloorFace> {
-  const { httpServer, oracleHandle, signerSeed, storageDir, onLog } = args;
+  const { httpServer, oracleHandle, signer, storageDir, onLog } = args;
   const lingerMs = args.lingerMs ?? FLOW_LINGER_MS;
   const exportSnapshot = args.exportSnapshot;
   if (typeof exportSnapshot !== "function") throw new Error("flow read-face: exportSnapshot is required; no raw document serves by omission");
@@ -147,7 +147,7 @@ export async function mountFlowReadFace(args: FlowGateArgs & {
       }
     }
     const parents = persisted.headIds;
-    const ptr = await buildFlowPointer({ snapshot: snap, parents, signerSeed });
+    const ptr = await buildFlowPointer({ snapshot: snap, parents, signer });
     snapshot = snap;
     pointer  = ptr;
     if (changed) {
@@ -245,14 +245,14 @@ export async function mountFlowReadFace(args: FlowGateArgs & {
  */
 export function mountFlowMapReadFace(args: FlowGateArgs & {
   readonly meshPalaceHandle: DocHandle<unknown>;
-  readonly signerSeed:       Uint8Array;
+  readonly signer:           PlaceSigner;
   readonly storageDir:       string;
   readonly onLog?:           (line: string) => void;
 }): Promise<FlowFloorFace> {
   return mountFlowReadFace({
     httpServer:     args.httpServer,
     oracleHandle:   args.meshPalaceHandle,
-    signerSeed:     args.signerSeed,
+    signer:         args.signer,
     storageDir:     args.storageDir,
     gates:          args.gates,
     ...(args.lingerMs !== undefined ? { lingerMs: args.lingerMs } : {}),

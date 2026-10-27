@@ -1,3 +1,4 @@
+import { placeSignerFromSeed } from "@lararium/mesh";
 /**
  * node-cap-stack — the node #has-cap-stack wiring, witnessed in isolation (no genesis/TW5 needed).
  *
@@ -83,7 +84,7 @@ describe("read-face cap — structurally bound to the FLOW-map it serves", () =>
   test("REFUSES to boot without the meshpalace cap (mandatory dep, loud)", async () => {
     const stack: CapModule[] = [
       { id: CAP.substrate, build: () => ({}) },
-      flowMapReadFaceCap({ httpServer: {} as never, signerSeed: new Uint8Array(32), storageDir: "/tmp/herm-noop", authShore: () => { throw new Error("unreached"); } }),
+      flowMapReadFaceCap({ httpServer: {} as never, signer: placeSignerFromSeed(new Uint8Array(32)), storageDir: "/tmp/herm-noop", authShore: () => { throw new Error("unreached"); } }),
     ];
     await expect(composeVessel(stack)).rejects.toThrow(/refuses to boot.*requires "meshpalace"/);
   });
@@ -92,7 +93,7 @@ describe("read-face cap — structurally bound to the FLOW-map it serves", () =>
     const stack: CapModule[] = [
       { id: CAP.substrate, build: () => ({}) },
       { id: CAP.meshpalace, build: () => ({ handle: {} }) },
-      flowMapReadFaceCap({ httpServer: {} as never, signerSeed: new Uint8Array(32), storageDir: "/tmp/herm-noop", authShore: () => { throw new Error("unreached"); } }),
+      flowMapReadFaceCap({ httpServer: {} as never, signer: placeSignerFromSeed(new Uint8Array(32)), storageDir: "/tmp/herm-noop", authShore: () => { throw new Error("unreached"); } }),
     ];
     await expect(composeVessel(stack)).rejects.toThrow(/refuses to boot.*requires "daemon"/);
   });

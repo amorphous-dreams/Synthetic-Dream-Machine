@@ -43,8 +43,13 @@ describe("openBrowserVessel and the store lock when the boot throws", () => {
     // The Repo's store open never settles, so that Repo cannot flush or close; the vessel's own key store is refused on
     // a later tick, so the boot dies after the Repo stood. (A Repo whose store REFUSED closes cleanly: it is the
     // open that never answers that cannot come down.)
+    // The boot reads the vessel's key store through the page's real engine until its Repo opens its own store; every key-store open after that is refused.
+    const realEngine = globalThis.indexedDB;
+    let repoStood = false;
     const refusingEngine = {
-      open: (name: string) => {
+      open: (name: string, version?: number) => {
+        if (name.endsWith(":repo")) repoStood = true;
+        else if (!repoStood) return realEngine.open(name, version);
         const req: { error: DOMException; onerror?: (() => void) | null } = { error: new DOMException("no engine", "UnknownError") };
         if (!name.endsWith(":repo")) setTimeout(() => req.onerror?.(), 0);
         return req;

@@ -13,7 +13,7 @@ describe("one random atom founds the face", () => {
     const atomSeed = mintFaceAtomSeed();
     const placeKey = await key(vesselSeed);
     const place = await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" });
-    const face = await foundTheFace({ repo, daemonHandle: place.daemonHandle, vesselSeed, vesselVerifyingKey: placeKey,
+    const face = await foundTheFace({ repo, daemonHandle: place.daemonHandle, vesselSeed, placeVerifyingKey: placeKey,
       vesselDisplayName: "place", binding: { mode: "self-stood", signerSeed: rootSeed }, hearthTrueName: "hearth",
       nexusPubkey: placeKey, atomSeed });
     const atom = faceAtomKeyFromSeed(atomSeed, face.personaGroupId);
@@ -41,7 +41,7 @@ describe("one random atom founds the face", () => {
     const atomSeed = mintFaceAtomSeed();
     const placeKey = await key(vesselSeed);
     const place = await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" });
-    const input = { repo, daemonHandle: place.daemonHandle, vesselSeed, vesselVerifyingKey: placeKey,
+    const input = { repo, daemonHandle: place.daemonHandle, vesselSeed, placeVerifyingKey: placeKey,
       vesselDisplayName: "place", binding: { mode: "self-stood" as const, signerSeed: rootSeed }, hearthTrueName: "hearth",
       nexusPubkey: placeKey, atomSeed };
     const original = place.daemonHandle.change.bind(place.daemonHandle);
@@ -65,7 +65,7 @@ describe("one random atom founds the face", () => {
     const atomSeed = mintFaceAtomSeed();
     const placeKey = await key(vesselSeed);
     const place = await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" });
-    await foundTheFace({ repo, daemonHandle: place.daemonHandle, vesselVerifyingKey: placeKey,
+    await foundTheFace({ repo, daemonHandle: place.daemonHandle, placeVerifyingKey: placeKey,
       vesselDisplayName: "place", binding: { mode: "self-stood", signerSeed: rootSeed }, hearthTrueName: "hearth",
       nexusPubkey: placeKey, atomSeed });
     const atomKey = faceAtomKeyFromSeed(atomSeed, "founding").key;

@@ -23,7 +23,6 @@ import {
   routingSlots, routingSlotToRecord, hyperbolicDistance, radialCoordinate, type Coord, type RoutingSlot,
 } from "./mesh-palace.js";
 import type { FlowPullResult } from "./flow-read-client.js";
-import type { LeafIdentity } from "./leaf-presentation.js";
 import { plainRecord, sameStoredRecord, type StoredTiddlers } from "./stored-value.js";
 import type { LarDoc } from "./base-doc.js";
 import type { VesselCoreAssembly } from "./open-vessel-core.js";
@@ -36,6 +35,8 @@ import { storedRecord } from "./stored-record.js";
  * so the value, not the symbol, carries the match. node-caps' `CAP` object folds these in.
  */
 export const CARRIAGE_CAP = { meshpalace: "meshpalace", carriage: "carriage" } as const;
+/** Leaf-only local jitter, minted once for this process; it authenticates nothing. */
+const LOCAL_CADENCE_KEY = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
 
 /** The substrate cap-id this carriage depends on — a WIRE-STRING. Matches tw5's `CORE_CAP.substrate` by
  *  VALUE (mesh can't import CORE_CAP — circular). cap-ids are handshake strings, matched by value. */
@@ -92,9 +93,9 @@ const PHI_INV = 0.6180339887498949;
  * JITTER randomizes each interval's realization (the secret phase — a predictable phase is the exploit,
  * not the rate). Constants PROVISIONAL/seeded, awaiting the mesh's live witness (the canon's open fork).
  */
-export function incommensurablePullMs(seedHex: string, baseMs: number, rand: () => number): number {
+export function incommensurablePullMs(cadenceKey: string, baseMs: number, rand: () => number): number {
   let h = 2166136261 >>> 0;
-  for (let i = 0; i < seedHex.length; i++) h = Math.imul(h ^ seedHex.charCodeAt(i), 16777619) >>> 0;
+  for (let i = 0; i < cadenceKey.length; i++) h = Math.imul(h ^ cadenceKey.charCodeAt(i), 16777619) >>> 0;
   const factor = 0.7 + ((h * PHI_INV) % 1) * 0.6;   // per-node incommensurable mean-multiplier ~[0.7,1.3]
   const jitter = 0.75 + rand() * 0.5;               // renewal realization ~[0.75,1.25] (the secret phase)
   return Math.max(250, Math.round(baseMs * factor * jitter));
@@ -271,9 +272,9 @@ export function meshSelfSeed(self: MeshSelf): readonly DialEntry[] {
  *  gate pin a sealed dial needs, so this cap dials nothing of its own: the bare route ships SHUT by name
  *  ("carriage-peering-shut", the shut-routes house ruling, stable-founding-road #/rulings). A caller that holds a
  *  gate-native pull (`carriage-pull`) hands it as `pullFlow`; a carriage handed none pulls nothing — it still stands
- *  its own map. Nothing here reads `identity`; the type keeps it for the composer that passes it. */
+ *  its own map. */
 export function carriageCap(deps: {
-  peers: readonly MeshPeer[]; pullIntervalMs?: number; nodeSeedHex?: string; identity?: LeafIdentity;
+  peers: readonly MeshPeer[]; pullIntervalMs?: number; /** Public place id, never seed material. */ cadenceKey?: string;
   pullFlow?: (peer: string, gatePubKey: string) => Promise<FlowPullResult<MeshPalaceDoc>>;
   selfEndpoint?: string; maxFanout?: number; selfCoord?: Coord; selfBearing?: string; onLog?: (line: string) => void;
 }): CapModule {
@@ -347,7 +348,7 @@ export function carriageCap(deps: {
       // FFZ axis-2: self-reschedule on a per-node INCOMMENSURABLE, renewal-randomized cadence (never a
       // global fixed interval — the herd is the single point of failure). Each interval is drawn fresh.
       const baseMs = deps.pullIntervalMs ?? 30_000;
-      const seed = deps.nodeSeedHex ?? "leaf";
+      const seed = deps.cadenceKey ?? LOCAL_CADENCE_KEY;
       let stopped = false;
       let timer: ReturnType<typeof setTimeout> | undefined;
       // CRASH-HARDENING: this is a bare fire-and-forget boundary (a setTimeout callback / build-time
@@ -400,9 +401,8 @@ export function carriageStack(deps: {
   repo:            Repo;
   residency?:      BagStowage;
   self?:           MeshSelf;
-  nodeSeedHex:     string;
-  /** Read no more (the old pull is shut); kept so existing call sites compile. */
-  identity?:       LeafIdentity;
+  /** Public place id, never seed material; a leaf without one uses process-local randomness. */
+  cadenceKey?:     string;
   /** A gate-native pull of a peer's public FLOW-map. Absent → the carriage pulls nothing ("carriage-peering-shut"). */
   pullFlow?:     (peer: string, gatePubKey: string) => Promise<FlowPullResult<MeshPalaceDoc>>;
   pullIntervalMs?: number;
@@ -417,8 +417,7 @@ export function carriageStack(deps: {
     }),
     carriageCap({
       peers:       self?.peers ?? [],
-      nodeSeedHex: deps.nodeSeedHex,   // the node-id seeds this vessel's incommensurable cadence
-      ...(deps.identity ? { identity: deps.identity } : {}),
+      ...(deps.cadenceKey ? { cadenceKey: deps.cadenceKey } : {}),
       ...(deps.pullFlow ? { pullFlow: deps.pullFlow } : {}),
       ...(deps.pullIntervalMs !== undefined ? { pullIntervalMs: deps.pullIntervalMs } : {}),
       ...(self ? {

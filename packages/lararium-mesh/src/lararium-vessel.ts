@@ -10,6 +10,7 @@ export type LarOpenPhase =
   | "boot"           // factory called; repo not yet open
   | "repo-open"      // Repo + adapters initialized
   | "catalog-ready"  // catalog DocHandle resolved
+  | "bootstrap-kept" // founding bootstrap persisted before genesis opens
   | "island-ready"   // island (system bag) resolved — may arrive async
   | "wiki-ready"     // wiki DocHandle resolved
   | "draft-ready"    // wiki-drafts DocHandle resolved

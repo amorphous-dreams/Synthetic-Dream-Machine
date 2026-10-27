@@ -1,3 +1,4 @@
+import { placeSeed } from "./browser-place-seed.fixture.js";
 /**
  * browser-place-kel.test.ts — the leaf's place KEL over REAL IndexedDB + WebCrypto.
  *
@@ -14,7 +15,7 @@ import {
   PlaceFoundingCardUnread, coldKeyCode, mintPlaceRotation, mintColdKey, placeSignerFromSeed, type PlaceKelEvent, type RandomProvider,
 } from "@lararium/mesh";
 import {
-  foundBrowserPlaceKel, generateOrLoadBrowserVesselIdentity, loadBrowserPlaceKel, loadBrowserSigningSeed, readBrowserPlaceHead,
+  foundBrowserPlaceKel, generateOrLoadBrowserVesselIdentity, loadBrowserPlaceKel, readBrowserPlaceHead,
   openVesselIdb, idbGet,
 } from "../src/browser-vessel-identity.js";
 
@@ -58,7 +59,7 @@ describe("the browser place KEL", () => {
     const armed = await loadBrowserPlaceKel(name);
     expect(armed?.ok).toBe(true);
     if (!armed?.ok) return;
-    const device = await loadBrowserSigningSeed(name);
+    const device = await placeSeed(name);
     expect(armed.seq).toBe(0);
     expect(armed.signerKey).toBe(placeSignerFromSeed(device).key);
     expect(armed.nextDigest).toMatch(/^[0-9a-f]{64}$/);

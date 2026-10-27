@@ -1,3 +1,4 @@
+import { placeSignerFromSeed } from "@lararium/mesh";
 /**
  * carriage-cap — the composable Herm's carriage: pull a source's public FLOW-map, merge it into the
  * meshpalace doc the cap was wired to, so the Herm CARRIES (and re-serves) what it cannot author. The
@@ -27,7 +28,7 @@ async function standSource(handle: Parameters<typeof mountFlowMapReadFace>[0]["m
   const server = createServer();
   const port = await listen(server);
   const rig = floorGates(["nexus-a.synthetic"], { posture: "open" });
-  const face = await mountFlowMapReadFace({ httpServer: server, meshPalaceHandle: handle, signerSeed: SEED_A, storageDir: tmp(dir), gates: rig.gates });
+  const face = await mountFlowMapReadFace({ httpServer: server, meshPalaceHandle: handle, signer: placeSignerFromSeed(SEED_A), storageDir: tmp(dir), gates: rig.gates });
   const w = rig.worlds[0]!;
   const p = await presenter(w, "carrying herm");
   return { server, port, face, w, p, pullFlow: flowPuller<MeshPalaceDoc>(w, p, { arm: null }) };

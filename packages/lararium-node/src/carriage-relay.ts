@@ -20,8 +20,6 @@
  * Meme: lar:///ha.ka.ba/lararium/node/carriage-relay
  */
 
-import { RELAY_GATE_INFO } from "@lararium/mesh";
-import { createHmac } from "node:crypto";
 import * as ed from "@noble/ed25519";
 import { hex, type MembershipEnvelope } from "@lararium/mesh";
 import {
@@ -35,45 +33,12 @@ import { makeBagTracker, type BagTracker } from "./bag-tracker.js";
 export interface CarriageRelay {
   /** The bound port the members dial (`ws://<host>:<port>`). */
   readonly port: number;
-  /** The relay's gate verifying-key hex — a dialing hearth binds its proof-of-possession to THIS key (out-of-band,
-   *  never trusted from the wire). An operator hands it to a hearth alongside the `ws://` URL so it dials the RIGHT
-   *  crossroads. STABLE across restarts because the gate seed is (the Herm's own key / a configured seed). */
+  /** The durable relay row's verifying key, handed to dialing hearths with the URL. */
   readonly gatePubKey: string;
   /** The `cid → holders` hint index the Nexus discovers sealed bodies through (secret-free, plaintext-blind). */
   readonly tracker: BagTracker;
   /** Tear the transport down (closes the WS server + every peer socket). */
   close(): Promise<void>;
-}
-
-/** Domain separation for the relay gate. The house's rule, stated where it binds: an HKDF/HMAC `info`
- *  IS the separation, so two purposes never share key bytes however convenient the sharing looks.
- *  Node's own HMAC rather than a bundled one — this module starts a WS server and is node-only by
- *  construction, so reaching for the platform adds no dependency to carry. */
-const RELAY_GATE_DOMAIN = RELAY_GATE_INFO;
-
-/**
- * Resolve the relay's gate seed the way a vessel boot does: a configured 32-byte hex seed when one rides the config,
- * else a DOMAIN-SEPARATED derivation from the vessel's own identity seed. Deterministic in BOTH arms — the same
- * inputs yield the same gate key across restarts, so a family's hearths keep dialing the same crossroads (NEVER a
- * fresh random per boot). The one shore the boot's relay-standing gate reads for its seed.
- *
- * ── WHY A DERIVATION AND NOT THE SEED ITSELF ────────────────────────────────────────────────────
- * Returning `vesselSeed` unchanged would make a Herm's relay gate key its vessel identity key — the same Ed25519
- * pair signing device delegations and board writes, published to every hearth that dials the crossroads. Nothing
- * would leak (Ed25519 over domain-separated messages is safe under key reuse), and two costs would still land:
- *
- *   · IT WOULD LINK TWO TRUST DOMAINS PERMANENTLY. The transport identity and the vessel identity would be one
- *     correlatable key, which is exactly the join the veil model spends its whole design preventing.
- *   · IT WOULD BREAK THE HOUSE'S OWN CRYPTO RULE. One key, two purposes, no `info` between them.
- *
- * The runbook says the gate key "derives from this Herm's OWN identity", and the derivation matches the words.
- *
- * HMAC-SHA256 yields exactly the 32 bytes an Ed25519 seed takes, and the same domain-tagged-MAC shape
- * `persona-scope` uses one level down, so the house carries ONE separation idiom rather than a second one.
- */
-export function resolveRelayGateSeed(vesselSeed: Uint8Array, seedHex?: string | null): Uint8Array {
-  if (seedHex && seedHex.length > 0) return Uint8Array.from(Buffer.from(seedHex, "hex"));
-  return new Uint8Array(createHmac("sha256", RELAY_GATE_DOMAIN).update(vesselSeed).digest());
 }
 
 /**

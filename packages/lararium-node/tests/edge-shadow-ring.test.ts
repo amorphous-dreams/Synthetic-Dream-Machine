@@ -32,8 +32,8 @@ import { runCabalJoin } from "../src/commands/cabal-join.js";
 import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
 import { runEdgeSeatMarks } from "../src/commands/edge-seats.js";
 import { signSeatRoll, ed25519SignerFromSeed } from "@lararium/mesh";
-import { loadVesselSigningSeed } from "../src/node-vessel-identity.js";
 import { makeEdgeShadowRing, type EdgeShadowRing } from "../src/edge-shadow-ring.js";
+import { floorShadowRing } from "../src/floor-fleet-lanes.js";
 import { makeGateSorter } from "../src/socket-sorter.js";
 import { gateShadowRing } from "../src/gate-shadow-ring.js";
 import { selfSlotShareDecision } from "../src/self-slot-share.js";
@@ -134,6 +134,30 @@ async function withRing<T>(
 }
 
 describe("the ring fails closed until its first fold lands", () => {
+  it("a floor composition stays shut, then the selected face folds its fleet on the same store", async () => {
+    const selected = await wornAtomKey();
+    const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
+    await ownedStore(larDataDir(), async (repo) => {
+      const common = {
+        repo, sealHome: larSealHome(), charterRealm: () => null,
+        vesselKeyOfPeer: () => null, realmNymOfPeer: () => null,
+      };
+      const floor = floorShadowRing(makeEdgeShadowRing({ ...common, vesselKey: () => "", fleetRoots: () => [] }), (p) => p === "sibling");
+      expect(floor.fold()).toBeNull();
+      expect(floor.deviceAside(selected)).toBe(true);
+      expect(floor.aside("sibling")).toBe(true);
+      await floor.refold();
+      expect(floor.deviceAside(selected)).toBe(true); // floor remains shut after folding
+      floor.dispose();
+
+      const face = makeEdgeShadowRing({ ...common, vesselKey: () => selected, fleetRoots: () => [fleetRoot] });
+      expect(face.fold()).toBeNull();
+      const fold = await face.refold();
+      expect(fold.fleets.map((f) => f.fleetRoot)).toContain(fleetRoot);
+      expect(face.fold()).not.toBeNull();
+      face.dispose();
+    });
+  });
   it("★ before any fold every device reads aside, every member reads aside, and nobody stands ★", async () => {
     const phone = await nymOf(51);
     await withRing({ p: { vessel: phone, nym: phone } }, async (ring) => {

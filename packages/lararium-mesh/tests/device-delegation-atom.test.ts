@@ -8,6 +8,7 @@ import { hex } from "../src/crypto.js";
 const rootSeed = new Uint8Array(32).fill(31);
 const atomSeed = new Uint8Array(32).fill(32);
 const otherSeed = new Uint8Array(32).fill(33);
+const placeSeed = new Uint8Array(32).fill(34);
 const key = (seed: Uint8Array) => hex(edCurve.getPublicKey(seed));
 const rootDid = didFromVerifyingKey(key(rootSeed));
 const sign = (seed: Uint8Array) => async (bytes: Uint8Array) => hex(await ed.signAsync(bytes, seed));
@@ -31,6 +32,17 @@ describe("an atom countersigns its own delegation", () => {
     const full = await countersignDeviceDelegation(half, sign(atomSeed));
     expect(await verifyDeviceDelegation({ ...full, signature: "0".repeat(128) }, rootDid)).toMatchObject({ ok: false, reason: "atom countersignature mismatch" });
     expect(await verifyDeviceDelegation({ ...full, hearthTrueName: "elsewhere" }, rootDid)).toMatchObject({ ok: false });
+  });
+
+  it("the place seed cannot countersign A's edge; A signs and face B and no-face refuse", async () => {
+    const half = await buildDeviceDelegationRootHalf({ personaRootSeed: rootSeed, deviceVerifyingKey: key(atomSeed), hearthTrueName: "hearth", boundEpoch: 0 });
+    const selected = await countersignDeviceDelegation(half, sign(atomSeed));
+    expect(await verifyDeviceDelegation(selected, rootDid)).toMatchObject({ ok: true });
+    for (const thief of [placeSeed, otherSeed]) {
+      const edge = await countersignDeviceDelegation(half, sign(thief));
+      expect(await verifyDeviceDelegation(edge, rootDid)).toMatchObject({ ok: false, reason: "atom countersignature mismatch" });
+    }
+    expect(await verifyDeviceDelegation(half as DeviceDelegationTiddler, rootDid)).toMatchObject({ ok: false, reason: "atom countersignature missing" });
   });
 
   it("verifies the two signatures and binds the root signature into the atom proof", async () => {

@@ -24,6 +24,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { hex, hexToBytes } from "../src/crypto.js";
+import { ed25519SignerFromSeed } from "../src/ed25519-door.js";
 import { sealToRecipient, openFromSender } from "../src/sealed-box.js";
 import {
   proveLeafPeerAsInitiator, proveLeafPeerAsResponder, startLeafPeerProof, answerLeafPeerProof,
@@ -143,6 +144,18 @@ describe("leaf ↔ leaf proof inside one PersonaGroup, over a relay", () => {
     const z = await leaf(SEEDS.deviceZ, SEEDS.opA, [inception], { root: SEEDS.opA, device: SEEDS.deviceY });  // signs as Z, shows Y's edge
     const { a } = await exchange(x, z);
     expect(a).toEqual({ ok: false, reason: "the device key did not sign this exchange" });
+  });
+
+  test("RED: the place seed cannot sign a selected sibling's exchange; its atom can", async () => {
+    const { inception } = await founded();
+    const x = await leaf(SEEDS.deviceX, SEEDS.opA, [inception]);
+    const y = await leaf(SEEDS.deviceY, SEEDS.opA, [inception]);
+    expect((await exchange(x, y)).a).toMatchObject({ ok: true, peerKey: y.deviceKey });
+    const placeSeed = new Uint8Array(32).fill(97);
+    const thief = { ...y, sign: ed25519SignerFromSeed(placeSeed) };
+    expect((await exchange(x, thief)).a).toMatchObject({ ok: false, reason: "the device key did not sign this exchange" });
+    const faceB = await leaf(SEEDS.deviceZ, SEEDS.opA, [inception]);
+    expect((await exchange(x, { ...y, sign: faceB.sign })).a).toMatchObject({ ok: false, reason: "the device key did not sign this exchange" });
   });
 
   test("RED: a leaf whose edge the KEL rolled past is refused; the edge the rotation re-enrolled licenses", async () => {

@@ -1,3 +1,4 @@
+import { placeSignerFromSeed } from "../src/place-signer.js";
 /**
  * ed25519-door-families.test — every verifier in the mesh package reads through the one strict door.
  *
@@ -144,7 +145,7 @@ bothHands("witness edge (verifyWitnessSig)", async (hand) =>
 
 describe("flow pointer (verifyFlowPointer)", () => {
   // The builder derives its key from a seed, so the forgery re-derives the act cid over the identity key by hand.
-  const pointer = async () => buildFlowPointer({ snapshot: await exportFlowSnapshot(A.from({ tiddlers: {} })), parents: [], signerSeed: seed(1) });
+  const pointer = async () => buildFlowPointer({ snapshot: await exportFlowSnapshot(A.from({ tiddlers: {} })), parents: [], signer: placeSignerFromSeed(seed(1)) });
   test("CONTROL: a built pointer verifies", async () => { expect(await verifyFlowPointer(await pointer())).toEqual({ ok: true }); });
   test("nobody signs for a small-order publisher", async () => {
     const p = await pointer();

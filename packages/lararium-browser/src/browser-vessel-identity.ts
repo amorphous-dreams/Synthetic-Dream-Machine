@@ -8,7 +8,7 @@
  *
  * Key material rests only in the origin's IndexedDB under `<idbName>` / "keystore": in the clear until a slot
  * binds, sealed under the vessel key once one does (`browser-custody.ts`). The page that opens the vessel hands
- * the opened seed and Archive to its daemon island's manifest, so a lock drops this page's unlock alone.
+ * the selected face atom and its veil Archive to its daemon island's manifest, so a lock drops this page's unlock alone.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-vessel-identity
  */
@@ -335,7 +335,7 @@ export async function readBrowserPlaceHead(
  * Load the operator's 32-byte Ed25519 signing seed from IDB.
  * Throws when no keypair exists — call generateOrLoadBrowserVesselIdentity first.
  */
-export async function loadBrowserSigningSeed(idbName = "lares:vessel"): Promise<Uint8Array> {
+async function loadBrowserSigningSeed(idbName = "lares:vessel"): Promise<Uint8Array> {
   const existing = await idbKeypairStore(idbName).load();
   if (!existing) {
     throw new Error("[browser-vessel-identity] no keypair in IDB — call generateOrLoadBrowserVesselIdentity first");
@@ -346,7 +346,7 @@ export async function loadBrowserSigningSeed(idbName = "lares:vessel"): Promise<
 // ── PersonaGroup root custody — the IDB-backed PersonaVault (over @lararium/mesh) ────────────────
 //
 // The browser twin of the node fs vault (node-vessel-identity: makeNodeFsPersonaVault). Two DISTINCT
-// capabilities, never two planes (#has-stack): the device key above signs AS THIS VESSEL (its own leaf);
+// capabilities, never two planes (#has-stack): the device key above arms the place KEL;
 // the PersonaGroup root here is the operator-root that SIGNS the device-delegation edges granting
 // membership. PLURALITY PONO at the identity layer — a human wears a SET of personas, so the vault holds
 // a SET of roots keyed by handle-index, WEARS one at a time, and MAY switch.

@@ -52,7 +52,7 @@ async function found(binding: Parameters<typeof runFoundingCeremony>[0]["binding
   const placeKey = await pubOf(PLACE_SEED);
   return runFoundingCeremony({ repo,
     vesselSeed: PLACE_SEED,
-    vesselVerifyingKey: placeKey,
+    placeVerifyingKey: placeKey,
     vesselDisplayName: "herm",
     binding,
     hearthTrueName: HEARTH,

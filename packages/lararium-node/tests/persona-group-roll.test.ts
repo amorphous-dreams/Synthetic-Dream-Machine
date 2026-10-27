@@ -34,7 +34,7 @@ async function foundAndSeat() {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = hex(await ed25519.getPublicKeyAsync(FOUNDER_SEED));
   const f = await runFoundingCeremony({
-    repo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: verifyingKey, vesselDisplayName: "The Roll Test Hearth",
+    repo, vesselSeed: FOUNDER_SEED, placeVerifyingKey: verifyingKey, vesselDisplayName: "The Roll Test Hearth",
     binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: verifyingKey,
   });
   const handle = await repo.find(f.daemonUrl as AutomergeUrl);

@@ -73,13 +73,12 @@ runSovereignWorker((manifest) => {
     ...(dyadOnVessel ? { dyadReading: dyadOnVessel } : {}),
     // THE KAHU PREDICATE'S BOARD: this vessel's charter and the admission acts its carriage board carries, read at
     // ACCESS through the island's own repo. Every write door into system canon asks it (kahu-canon-reach).
-    kahuCabal:      (ctx: IslandContext) => () => readKahuCabalBoard(ctx.repo, larSealHome(), manifest.daemonAuth?.vesselVerifyingKey),
+    kahuCabal:      (ctx: IslandContext) => () => readKahuCabalBoard(ctx.repo, larSealHome(), manifest.daemonAuth?.placeVerifyingKey),
     // THE SEALED STORE'S SHORE: the content-key holder stands in this island, beside its Keyhive identities, over
     // the vessel's own `sealed/`, `cad/` and cleartext-local tiers. An island with no directory of its own gets
     // none, and its `sealed-*` verbs refuse by name.
     ...(islandStorageDir !== null ? { sealedStore: nodeSealedStoreShore(islandStorageDir) } : {}),
     ...(sealOnVessel ? {
-      persistArchive:     (bytes: Uint8Array) => sealOnVessel("archive", bytes),
       persistVeilArchive: (bytes: Uint8Array) => sealOnVessel("veil", bytes),
     } : {}),
     // A person's answers at this island's disk shore: the same door a wiki island stands (`claimShoreVerb`),

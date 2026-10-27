@@ -35,7 +35,7 @@ function island(): { worker: Worker; said: Array<Record<string, unknown>>; ask(m
   };
 }
 
-const custodyAsk = (requestId: string) => ({ type: "custody:write", requestId, carrier: "archive", bytes: new Uint8Array([7, 7, 7]) });
+const custodyAsk = (requestId: string) => ({ type: "custody:write", requestId, carrier: "veil", bytes: new Uint8Array([7, 7, 7]) });
 const restAsk = (requestId: string) => ({ type: "doc:rest", requestId, documentIds: ["doc-a"] });
 const casAsk = (requestId: string) => ({ type: "cas:want", requestId, cid: "sha256:" + "ab".repeat(32) });
 
@@ -60,7 +60,7 @@ describe("the vessel's doors answer by island class", () => {
     const daemon = island();
     nodeWorkerHandle(daemon.worker, { island: "daemon" });
     await daemon.ask(custodyAsk("d1"));
-    expect(sealed).toEqual([["archive", new Uint8Array([7, 7, 7])]]);
+    expect(sealed).toEqual([["veil", new Uint8Array([7, 7, 7])]]);
     expect(daemon.said.map((m) => [m["type"], m["requestId"], m["written"]])).toEqual([["custody:written", "d1", true]]);
   });
 

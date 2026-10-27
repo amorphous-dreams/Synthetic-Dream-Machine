@@ -25,7 +25,7 @@ import {
   personaMultitudeView, renameOwnPersona,
   DeterministicFederationGate, federationShareDecision, shareConfigOf, type FederationGate,
   GatedSyncLeg, oneWayDocumentsGate,
-  LarWSClientAdapter, type LeafIdentity,
+  LarWSClientAdapter,
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
   leaseEpochPrefix, tiddlerText, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
   BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeHostFacets, type WikiActivationCap,
@@ -81,14 +81,14 @@ import {
 import { keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "./browser-face-anchor.js";
 import { keepBrowserFaceAtomSeed, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
 import {
-  loadBrowserKeyhiveArchive, loadBrowserVeilArchive, oldShapeVeilRow, requireBrowserKeyhiveArchive, saveBrowserKeyhiveArchive, saveBrowserVeilArchive,
+  loadBrowserVeilArchive, oldShapeVeilRow, refuseLegacyBrowserArchive, saveBrowserVeilArchive,
 } from "./browser-keyhive-archive.js";
 import { vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import type { LarOpenPhase, PlaceFoundingCard } from "@lararium/mesh";
 import { readWornPersonaMount }              from "@lararium/mesh";
 import {
-  generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed,
+  generateOrLoadBrowserVesselIdentity,
   generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, wearBrowserPersona,
   listBrowserPersonaRoots, loadBrowserActivePersona,
   makeBrowserIdbPersonaVault, makeBrowserPersonaPetnameStore,
@@ -554,6 +554,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     if (!fleetShadows || fleetShadows.frontier.status !== "known") return true;   // widening waits on the fleet's signed frontier
     return fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, key))?.stands === true;
   };
+  // Refuse retired identity rows before Repo construction can initialize its IndexedDB store.
+  await oldShapeVeilRow(idbName);
+  await refuseLegacyBrowserArchive(idbName);
   const repo = new Repo({
     storage:     new IndexedDBStorageAdapter(`${idbName}:repo`),
     // The verdict seats on announce AND access (the announce-only lie the node measured in
@@ -571,7 +574,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
 
   // ── Keypair (WebCrypto substrate) + founding (the personaGroup capability) ───
   const vesselIdentity = await generateOrLoadBrowserVesselIdentity(idbName, displayName, placeFoundingCard ? { placeFoundingCard } : {});
-  const vesselSeed     = await loadBrowserSigningSeed(idbName);
   const vesselVerifyingKey      = vesselIdentity.verifyingKey;
 
   // ── THE ISLAND THIS LEAF STANDS IN — the SAME mesh ruling the node composes ──────────────────────────
@@ -667,9 +669,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     realmId:      null,   // a leaf keeps no seal home → no charter → no realm to re-announce
   });
 
-  // A STORE THAT KEYS A VEIL ROW BY HANDLE INDEX refuses by name before any face restores:
-  // no migration stands, and the operator re-founds.
-  await oldShapeVeilRow(idbName);
   const bootKeys = await readBootKeys(idbName);
   const bootKeyWrites: BootKeyWrites = {};
   let bootstrap = bootKeys.bootstrap;
@@ -677,10 +676,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // can admit that key — so the admit ALWAYS arrives at a vessel that already founded its own group. The
   // anon founding is not a competing state; it is the FLOOR the admit lifts the vessel from. Gating the
   // admit behind `!bootstrap` therefore ignores every admit that will ever arrive.
-  // A FOUNDED VESSEL STANDS ONLY OVER ITS ARCHIVE. A bootstrap with no Archive beside it names a vessel whose
-  // individual could seal nothing into what it created; the boot refuses by row name before anything composes.
-  // An admit replaces the bootstrap and writes the row itself, so it passes.
-  if (bootstrap && !admit) await requireBrowserKeyhiveArchive(idbName);
+  // A face keeps its own atom and veil Archive. Admission may replace the bootstrap and writes the joined
+  // face's Archive before the new bootstrap lands.
   if (admit) {
     // JOIN. The founder's root already signed this vessel's edge, so the ceremony here ADOPTS a binding
     // rather than minting one: `runApplyAdmitPayload` seeds this vessel's OWN sovereign social docs and
@@ -690,26 +687,17 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // The payload arrived as DATA — carried, never fetched — so this path runs with no network, no clock
     // and no server, which is also what makes it a pure function of its bytes and therefore testable.
     // It fails closed on a missing binding field: a half-bound daemon doc is the confused-deputy hole.
-    const keptArchive = await loadBrowserKeyhiveArchive(idbName);
     // THE JOINEE'S ATOM: the random seed this browser holds for the face it joins (minted here, or the one a fleet-join
     // request already sealed in the face's own row). The edge the root signed delegates to its key, and the atom
     // countersigns its own half; this browser's device seed signs none of it.
     const atomSeed = await standBrowserFaceAtomSeed(idbName, admit.personaGroupId);
     let a: Awaited<ReturnType<typeof runApplyAdmitPayload>>;
-    let placeArchive: Uint8Array;
     try {
-      // The veil-archive row rests by handle index and the atom by PersonaGroup, so the row at h0 may hold another face's
-      // Archive (a browser that founded solo as A, now admitted into B). B's hive restores only from an Archive that
+      // The veil-archive row and atom both rest by PersonaGroup. B's hive restores only from an Archive that
       // belongs to B's atom; any other offers it nothing.
       const rowAtomArchive = await loadBrowserVeilArchive(idbName, admit.personaGroupId);
       const keptAtomArchive = rowAtomArchive && await archiveIsOf(atomSeed, rowAtomArchive) ? rowAtomArchive : undefined;
-      const place = await foundThePlace({
-        repo, vesselSeed, hearthTrueName: admit.hearthTrueName,
-        // AN ADMIT OVER A KEPT ARCHIVE RESTORES FROM IT. The vessel founded on its own before any admit could reach it, so
-        // an Archive already rests here; the individual stands again from it.
-        ...(keptArchive ? { archiveBytes: keptArchive } : {}),
-      });
-      placeArchive = place.archive;
+      const place = await foundThePlace({ repo, hearthTrueName: admit.hearthTrueName });
       a = await runApplyAdmitPayload({
         repo,
         daemonHandle:       place.daemonHandle,
@@ -722,9 +710,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         ...(keptAtomArchive ? { archiveBytes: keptAtomArchive } : {}),
       });
     } finally { atomSeed.fill(0); }
-    // The Archives rest before the bootstrap that names this admit: a boot that finds the bootstrap finds them. The
-    // place's rests in the vessel row and the atom's in the face's veil row.
-    await saveBrowserKeyhiveArchive(idbName, placeArchive);
+    // The face Archive rests before the bootstrap that names this admit.
     await saveBrowserVeilArchive(idbName, admit.personaGroupId, a.archive);
     // THE SEALED ANCHOR: admission writes it (sync never does), keeping the frontier this device already knew.
     {
@@ -757,8 +743,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     bootKeyWrites.bootstrap = bootstrap;
   } else if (!bootstrap) {
     // FOUND. No admit — the vessel raises its own PersonaGroup and founds its FIRST persona (never the
-    // self-signed floor). The two-key atom: the DEVICE key (vesselSeed) inits keyhive as the Individual;
-    // a DISTINCT PersonaGroup ROOT signs the device-delegation edge. Mint that root founder-side (root-on-
+    // self-signed floor). The face atom seeds Keyhive; a DISTINCT PersonaGroup ROOT signs the
+    // device-delegation edge. Mint that root founder-side (root-on-
     // founder), load its seed as the signer, and WEAR it — mirroring node's `lares vessel found` (init.ts: mint
     // generateOrLoadPersonaGroupRoot → loadPersonaGroupRootSeed → runFoundingCeremony{signerSeed}).
     // A ROOT MINTS ONLY OVER A SLOT: a keystore with no slot asks this tab's person to bind one first, and a boot
@@ -774,11 +760,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     const signerSeed = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX);
     await wearBrowserPersona(idbName, FOUNDING_PERSONA_INDEX);   // the selector points at the founded root
     const f = await runFoundingCeremony({
-      repo, vesselSeed,
-      vesselVerifyingKey: vesselIdentity.verifyingKey,
+      repo,
+      placeVerifyingKey: vesselIdentity.verifyingKey,
       vesselDisplayName:  displayName ?? "Browser Operator",
       // The persona-root SIGNS (signerDid == the root DID, DISTINCT from deviceDid). The self-signed anon
-      // (signerSeed == vesselSeed) survives ONLY as an explicit named floor tier, never the default.
+      // The root signer stays distinct from the place KEL seed.
       binding: { mode: "self-stood", signerSeed },
       hearthTrueName: "",          // hearth-agnostic: an anon is not yet bound to a place; it binds on upgrade
       // The island this leaf stands in keys the KEL board. A FOUNDING leaf dials no anchor, so this resolves to
@@ -787,17 +773,15 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     });
     // THE FACE'S ATOM RESTS BEFORE ITS BOOTSTRAP: the founding minted a random seed, and the face's own custody row keeps it.
     try { await keepBrowserFaceAtomSeed(idbName, f.personaGroupId, f.atomSeed); } finally { f.atomSeed.fill(0); }
-    // THE FOUNDING'S ARCHIVES REST BEFORE ITS BOOTSTRAP. The ceremony's providers left with the act; the key
-    // agreement state of what they created lives in these bytes alone. Veil first, then the vessel's own, then
-    // (later, with the boot keys) the bootstrap that commits the founding: a founding that stops before its
-    // bootstrap runs again whole and replaces both rows.
+    // THE FACE ARCHIVE RESTS BEFORE ITS BOOTSTRAP. The ceremony's provider left with the act; the key
+    // agreement state of what it created lives in these bytes. A founding that stops before its
+    // bootstrap runs again and replaces the row.
     await saveBrowserVeilArchive(idbName, f.personaGroupId, f.veilArchive);
     // THE SEALED ANCHOR: founding writes it (sync never does).
     await keepBrowserFaceAnchor(idbName, mintFaceAnchor({
       personaGroup: f.personaGroupId, personaKelPrefix: f.personaKelPrefix,
       personaRootDid: f.founderEdge.personaRootDid, edge: f.founderEdge, leaseEpoch: 0,
     }));
-    await saveBrowserKeyhiveArchive(idbName, f.archive);
     bootstrap = {
       identitiesUrl: f.identitiesUrl, circlesUrl: f.circlesUrl, sessionsUrl: f.sessionsUrl, intentsUrl: f.intentsUrl, daemonUrl: f.daemonUrl, personaUrl: f.personaUrl, personaBagId: f.personaBagId,
       personaPlanes: [{ personaGroupId: f.personaGroupId, url: f.personaUrl }],
@@ -809,7 +793,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     bootKeyWrites.bootstrap = bootstrap;
   }
   const social = bootstrap;   // narrowed (defined past this point)
-  // A pin chooses which gate to knock; the local contact card supplies peer proof. Name the missing
+  // A pin chooses which gate to knock; the selected face atom's card supplies face peer proof. Name the missing
   // proof here instead of leaving the page pinned while no adapter can stand.
   // THE PINS THE ADMIT CARRIED are filed in the ONE pair index under the hearth's name (the origin of the relay url: the
   // admit carries no other true name for it): the sovereign pin, and the floor pins at its Nexus the signed answer carried
@@ -836,13 +820,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   const faceJoined = relayDial !== undefined || Boolean(social.hearthGatePin);
   const composed = relayDial !== undefined
     ? { presentation: relayDial.presentation }
-    : relayHeld !== null && social.personaGroupId
+    : faceJoined && relayHeld !== null && social.personaGroupId
       ? await composeBrowserFacePresentation({ idbName, pin: relayHeld, personaGroup: social.personaGroupId })
       : null;
   const facePresentation: BrowserFacePresentation | null = composed !== null && "presentation" in composed ? composed.presentation : null;
   const presentationRefusal = composed !== null && "refusal" in composed ? `${composed.refusal}${composed.detail ? `: ${composed.detail}` : ""}` : null;
   const connectionState = createBrowserConnectionState(crossingStandingOf({
-    relayUrl, faceJoined, pinnedGateKey: relayHeld?.signingKey ?? null, presentationRefusal, hasContactCard: Boolean(social.contactCard),
+    relayUrl, faceJoined, pinnedGateKey: relayHeld?.signingKey ?? null, presentationRefusal, hasContactCard: faceJoined && Boolean(social.contactCard),
   }));
   // THE OWN-HEARTH CROSSING: the pinned gate names the hearth whose admit this vessel carries. Such a leaf
   // takes that hearth's base canon (`hearth-canon`); every other crossing reads the public boards alone.
@@ -864,17 +848,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // The oracle doc as this boot holds it: the recipe reader reads a system wiki's default recipe off it. Null
   // until genesis loads.
   let oracleAtBoot: DocHandle<LarDoc> | null = null;
-  // THE PROOF THIS VESSEL CARRIES TO A PEER'S ORACLE. Peers prove first: an oracle map crosses only a socket
-  // whose dialer passed the peer's gate, so the carriage and the page's reader prove this vessel's own key and
-  // founding card there. The seed stays inside this closure. No card cached → nothing to prove with.
-  // The proof a browser carries is its FACE's: the atom signs it, and the card is the atom's. The device seed signs none.
-  const flowAtomSeed = social.contactCard ? await requireBrowserFaceAtomSeed(idbName, social.personaGroupId) : null;
-  const flowAtom = flowAtomSeed ? faceAtomKeyFromSeed(flowAtomSeed, social.personaGroupId) : null;
-  flowAtomSeed?.fill(0);
-  const flowProof: LeafIdentity | undefined = social.contactCard && flowAtom
-    ? { arm: "face", contactCard: social.contactCard, peerPubKey: flowAtom.key, sign: flowAtom.sign }
-    : undefined;
-
   // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ────────────────
   // The SAME observation node's `openDaemon` makes, through the same platform-blind door
   // (`vesselDyads`, mesh): the ceremony-minted slots are the only source, and a face standing
@@ -1080,8 +1053,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // this vessel carries-in and is never dial-able (the endpoint-absent leaf↔full tier).
     return [...carriageStack({
       repo, residency, self: leaf,
-      nodeSeedHex: vesselVerifyingKey,   // the per-vessel cadence seed (browser-safe hex string, no Buffer)
-      ...(flowProof ? { identity: flowProof } : {}),
+      cadenceKey: vesselVerifyingKey,   // public place id steers this vessel's pull cadence
       onLog: (l) => console.log(`[lararium-browser] ${l}`),
     })];
   })() : [];
@@ -1117,6 +1089,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // call, isomorphic with the node loadOrMaterializeOracle.
       loadGenesis: async () => {
         await writeBootKeys(idbName, bootKeyWrites);
+        emit("bootstrap-kept");
         const islandHandle = await materializeGenesisIsland(repo, genesisSeed, "browser-genesis");
         oracleAtBoot = islandHandle;
         if (ownHearth) {
@@ -1195,8 +1168,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         assembly.catalogHandle.change((doc) => { doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle" }, "vessel-boot"); });
       };
       // The planes register AFTER the face proof below, and only the ones a proof vouched for.
-      // The worker boots on the WORN persona's binding. The two-key atom: `seed` is the DEVICE key —
-      // it inits keyhive as the Individual, and NEVER derives the persona-root — while `signerDid` +
+      // The worker boots on the WORN persona's binding. The face atom seeds its Keyhive Individual;
+      // the place KEL seed never derives the persona-root. `signerDid` +
       // `deviceEdge` carry the WORN PersonaGroup root's founder-signed binding (the Binding Gate pins
       // that root). The selector chooses WHICH root, and `readWornPersonaMount` is what reads it —
       // over the PersonaVault both vessel classes implement, so the node and browser boots cannot drift
@@ -1331,13 +1304,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           held.stood.push({ what: "the face documents join", down: () => joining.stop() });
         }
       }
-      const standingArchive = await requireBrowserKeyhiveArchive(idbName);
       const daemonAuth = {
-        seed: vesselSeed, vesselVerifyingKey: vesselIdentity.verifyingKey,
-        // THE VESSEL'S OWN ARCHIVE, as its founding or its admit left it in the keystore. The island's keyhive
-        // restores from it and then replays the cap events, so this individual still seals into every
-        // document it created.
-        archiveBytes: standingArchive,
+        placeVerifyingKey: vesselIdentity.verifyingKey,
         // A BROWSER VESSEL HOLDS NO SEALED IDENTITY HOME, so the archive-write door's reading is
         // vacuously open here: no seal stands that could hold it shut.
         // It stays INERT regardless: this entry injects no `persistArchive`/`persistVeilArchive`, so

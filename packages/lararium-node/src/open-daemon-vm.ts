@@ -113,7 +113,7 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     repo, daemonUrl as AutomergeUrl,
     // A caller reaching @daemon by url holds it from the bootstrap, so absence reads as a flush in
     // flight rather than as an absent doc, and earns the grace before it gets believed.
-    { tideline: "hearth-private", label: "@daemon", expectPresent: true },
+    { tideline: "hearth-private", label: "@daemon", settled: () => repo.flush() },
   );
   // ── Persona doc handle (same strategy) — the one VM tends both bags ──────────
   // A plane this replica already HOLDS (a joinee's admit landed it, or a sync delivered it) is read where it stands: the

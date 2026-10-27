@@ -9,18 +9,18 @@
  * Meme: lar:///ha.ka.ba/lararium/node/hearth-floor-claims
  */
 import {
-  ed25519SignerFromSeed, hexToBytes, signPlaceFloorPin, verifyPlaceKel,
+  hexToBytes, signPlaceFloorPin, verifyPlaceKel, PLACE_FLOOR_PIN_DOMAIN,
   type GateBundlePin, type HearthFloorProof, type PlaceFloorPinStatement, type PlaceKelEvent,
 } from "@lararium/mesh";
-import { loadPlaceKelChain, loadVesselSigningSeed } from "./node-vessel-identity.js";
+import { loadPlaceKelChain, vesselPlaceSignerDoor } from "./node-vessel-identity.js";
 
 /** Claim each pin at the place KEL's head; null where the place has no KEL that reads. */
 export async function hearthFloorProof(pins: readonly GateBundlePin[]): Promise<HearthFloorProof | null> {
   const chain = await loadPlaceKelChain();
   const at = verifyPlaceKel(chain);
   if (!at.ok) return null;
-  const signer = ed25519SignerFromSeed(await loadVesselSigningSeed());
+  const signer = await vesselPlaceSignerDoor();
   const claims: PlaceFloorPinStatement[] = [];
-  for (const pin of pins) claims.push(await signPlaceFloorPin({ at, pin, sign: async (image) => hexToBytes(await signer(image)) }));
+  for (const pin of pins) claims.push(await signPlaceFloorPin({ at, pin, sign: async (image) => hexToBytes(await signer.signFloor(PLACE_FLOOR_PIN_DOMAIN, image)) }));
   return { claims, kel: chain as readonly PlaceKelEvent[] };
 }

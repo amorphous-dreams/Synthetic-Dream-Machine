@@ -35,8 +35,7 @@ import {
   raisesSeenThrough, signSeatRoll, type LarDoc, type SeatRoll,
 } from "@lararium/mesh";
 import {
-  generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPersonaGroupRootVerifyingKey, loadVesselSigningSeed,
-  loadVesselVerifyingKey,
+  generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPersonaGroupRootVerifyingKey,   loadVesselVerifyingKey,
 } from "../src/node-vessel-identity.js";
 import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, type EdgeSeatFacts } from "../src/commands/edge-seats.js";

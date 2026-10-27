@@ -101,7 +101,7 @@ export function setCustodyWriteDoor(door: CustodyWriteDoor | null): void { custo
 /** Answer one `custody:write` ask through the door standing now. */
 export async function answerCustodyWrite(ask: Pick<IslandMsg_CustodyWrite, "requestId" | "carrier" | "bytes">): Promise<IslandMsg_CustodyWritten> {
   const base = { type: "custody:written" as const, requestId: ask.requestId };
-  if ((ask.carrier !== "archive" && ask.carrier !== "veil") || !(ask.bytes instanceof Uint8Array)) {
+  if (ask.carrier !== "veil" || !(ask.bytes instanceof Uint8Array)) {
     return { ...base, written: false, why: "bad custody write ask" };
   }
   const door = custodyWriteDoor;
