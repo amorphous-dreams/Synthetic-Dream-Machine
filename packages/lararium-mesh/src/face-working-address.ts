@@ -41,7 +41,8 @@ export function faceWorkingDocUrl(secret: Uint8Array, wikiId: string, kind: Wiki
   if (!(secret instanceof Uint8Array) || secret.length !== 32) throw new FaceWorkingAddressRefusal("secret-malformed");
   if (typeof wikiId !== "string" || wikiId.length === 0) throw new FaceWorkingAddressRefusal("wiki-malformed");
   if (!WIKI_SLOT_KINDS.includes(kind)) throw new FaceWorkingAddressRefusal("kind-unknown");
-  const binId = hmac(sha256, secret, addressImage(wikiId, kind)).slice(0, 16) as BinaryDocumentId;
+  // Two vessels of one face may spell one wiki id in two Unicode forms; the address reads the canonical composition.
+  const binId = hmac(sha256, secret, addressImage(wikiId.normalize("NFC"), kind)).slice(0, 16) as BinaryDocumentId;
   return stringifyAutomergeUrl({ documentId: binId });
 }
 

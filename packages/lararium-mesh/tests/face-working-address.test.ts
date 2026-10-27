@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { load, merge, save } from "@automerge/automerge";
-import { Repo } from "@automerge/automerge-repo";
+import { Repo, parseAutomergeUrl } from "@automerge/automerge-repo";
 import type { SessionFace } from "../src/session-contract.js";
 import {
   FaceWorkingAddressRefusal, faceWorkingDocUrl, faceWorkingGenesis,
@@ -20,9 +20,18 @@ const reason = (value: unknown, name: string) => {
 };
 
 describe("face working address", () => {
-  test("fixed derivation vector, computed by this implementation", () => {
-    expect(faceWorkingDocUrl(a(), "w", "working")).toBe("automerge:2JgKxRR9seatCZiAWnEiVEJmC7JS");
+  test("fixed derivation vector, calculated apart from this implementation", () => {
+    // Python: hmac.new(bytes([7])*32, image, sha256).digest()[:16].hex() over image = for each of
+    // "lar:///ha.ka.ba/lares/domain/face-working-address", "w", "working": 4-byte big-endian length + UTF-8 bytes.
+    const url = faceWorkingDocUrl(a(), "w", "working");
+    expect(Buffer.from(parseAutomergeUrl(url).binaryDocumentId).toString("hex")).toBe("5da81759a361c81e3ea0a54f56f1cbdd");
+    expect(url).toBe("automerge:2JgKxRR9seatCZiAWnEiVEJmC7JS");
     expect(faceWorkingGenesis()).toEqual(emptyLarDoc());
+  });
+
+  test("two Unicode spellings of one wiki id derive one address, and distinct ids stay distinct", () => {
+    expect(faceWorkingDocUrl(a(), "caf\u00e9", "working")).toBe(faceWorkingDocUrl(a(), "cafe\u0301", "working"));
+    expect(faceWorkingDocUrl(a(), "cafe", "working")).not.toBe(faceWorkingDocUrl(a(), "caf\u00e9", "working"));
   });
 
   test("one face reopens one address, across fresh resolvers and recipe fingerprints", async () => {
