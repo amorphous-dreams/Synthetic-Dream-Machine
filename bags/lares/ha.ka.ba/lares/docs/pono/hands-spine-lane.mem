@@ -1,0 +1,81 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/hands-spine-lane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/hands-spine-lane.mem"
+l-space   = "adjacent"
+role      = "the hands room's first lane, the session spine: a socket binds an owner epoch, a session id, a generation, a verified face and a fixed hand profile; a receipt rests under the face's proof subject and settles on disk before a terminal answer leaves; a face's working document sits at a face-secret address; the live switch and the openers' session hunks follow K15 bonds"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/hands-spine-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/hands-spine-lane"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! The hands-spine lane ~ the session carries the hand
+
+The hands room covers how a person, a session and an agent act in the house. Founding bakes habits along with bytes, so the session layer lands before the bake. This lane comes first of five, because every later hands lane stands on it (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract">>): the scoped surfaces and holder, the hands and authorship, intent and effects, and the relay each take a session, a face and a receipt as given.
+
+<<~/ahu>>
+
+<<~ ahu #/the-model>>
+
+!! The model (settled)
+
+* ''The session carries the hand.'' A session wears the face and the vessel wears none. Every hand that reaches a vessel opens a session; the door carries and the hand authorizes. Node and browser share the model.
+* ''One session, one (face, Nexus)'' (a house ruling the operator MAY overturn). A session's proof subject and its effective recipe bind one PersonaGroup at one Nexus. A face that stands at a second Nexus opens a second session with its own proof and recipe. No implicit multi-Nexus face session exists, and the face type holds no second Nexus field.
+* ''The binding.'' A socket or port binds the owner epoch, the session id, the generation, a verified face reference (the face's proof subject) and a fixed hand profile. A copied socket refuses `unbound-session`, a wrong face `wrong-face` and a stale generation `stale-generation`.
+* ''The receipt.'' A durable outcome rests under the face's proof subject plus the input digest. `requestedBy` reads as display text and leaves the digest. A later session of the same face reads the receipt; another face reads `unknown`.
+* ''The working layer.'' One working document per (face, wiki, slot kind) at an address derived from the face's address secret.
+* ''The switch.'' `persona wear` switches the caller's live session in place through the five-step fence; no vessel selector persists.
+
+<<~/ahu>>
+
+<<~ ahu #/the-slices>>
+
+!! The slices, each built with its red, its control and its known positive
+
+# ''Contract and binding ~ BUILT.'' `SessionTable.checkBound` checks a bound message in one order (malformed, stale owner epoch, unknown session, unbound session, stale generation, wrong face, not live) and `bound` answers the five parts. The verb carries `face` through the place-verb path (`VerbPlacement`, `daemon:place-verb`, `Verb.face`), and `verbInputDigest` digests `{verb, args, face, effectKey}`. The node seat (`uds-channel.ts`) serves line-delimited session frames on a persistent socket beside the one-shot maintenance frame: `session:open` through the explicit `UdsSessionDoor` seam, `session:call`, `session:close`. The seat answers each socket's frames in arrival order, hands the worker the supplier's presenter and the face's proof subject and never the frame's `requestedBy`, and ends a session with its socket.
+# ''The receipt ~ BUILT.'' `faceScopedId` namespaces a face's request ids and effect keys under a hash of its proof subject, so two faces never collide, a cancel by one never abandons another's id, and the effect index never serves one face another's effect. The outcome and the receipt fact stamp the face and the action. `session:receipt` and `session:cancel` answer a `SessionReceipt` (request id, action, face, state with `pending` and `unknown` said in words, owner epoch, boot epoch and fence, and the durable receipt); `renderSessionReceipt` prints those lines and no clock. F5: a terminal `session:result` and a terminal receipt leave only after `settleDurably` reads the daemon document's heads, flushes the Repo and names the document url, the heads and the owner epoch (`DurabilityReceipt`). The fact ring's eviction keeps the face and the action. `openLocalSession` (lares-cli) carries calls, receipt reads, cancels and close over one bound socket and sends no `requestedBy`.
+# ''The working layer ~ BUILT.'' `faceWorkingDocUrl` derives the address as HMAC-SHA256 under the face's 32-byte address secret over a length-prefixed image of `FACE_WORKING_ADDRESS_DOMAIN`, the wiki id and the slot kind; the recipe's fingerprint never enters it. `resolveFaceWorkingSlot` refuses `no-address-secret`, `address-not-derived`, `secret-malformed`, `wiki-malformed` and `kind-unknown`, and zero-fills the secret it read. `materializeFaceWorkingDoc` finds or materializes the blank pinned document (`faceWorkingGenesis`) under the derived id, so two offline vessels of one face converge.
+# ''The switch and the openers ~ HELD.'' The session hunks of both vessel openers, the CLI `persona` callers and the second joined face merge K15 bonds' opener and selected-atom hunks once K15 lands (the face supplier and the signer fill the `UdsSessionDoor` seam, and the compose sites move from `resolveSlotDoc` to `resolveFaceWorkingSlot`). The lane holds that slice rather than ship an interim.
+
+<<~/ahu>>
+
+<<~ ahu #/the-seam>>
+
+!! The adapter seam
+
+The face supplier and the signer stand behind `UdsSessionDoor.open({ faceRef, hand })`, which answers a `UdsSessionSupply` (the `SessionFace`, the hand's profile, the presenter the worker verifies capabilities against, the facet labels). A face hint grants nothing: the supplier verifies afresh at every open. With no door the seat answers `session:open` with `no-session-door`, so a faceless vessel serves the maintenance frame alone.
+
+<<~/ahu>>
+
+<<~ ahu #/reds>>
+
+!! Reds, with their controls
+
+* A copied socket, a wrong face and a stale generation each refuse by name and reach no worker; the same-face session and a sibling session keep acting (`uds-session-socket.test.ts`, `session-contract-bound.test.ts`).
+* Pipelined frames answer in order, a close queues behind the call in flight, and a vanished socket ends its own session (`uds-session-pipeline.test.ts`).
+* A cross-face receipt read and cancel reveal nothing; a forged `requestedBy` attributes to the verified face; one id under two faces collides nowhere; a later same-face session recovers its receipt after the caller exits and across a restart; a terminal answer waits on the flush (`uds-session-receipts.test.ts`).
+* A wrong-face working address opens nothing; the same face reopens its slot; two faces on one vessel keep separate documents; two offline vessels of one face merge (`face-working-address.test.ts`).
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k15-bonds-lane">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;W8IG2hBqj5TL5VZR7zox99WT0KFpEhaGMh_w0FKoKYI
+
+<<^ code="&#x0004;" -> to="?">>
