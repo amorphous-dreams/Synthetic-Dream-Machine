@@ -1,76 +1,63 @@
 /**
- * H2 — `afterRoll` (open-node-vessel.ts) is awaited, serialized and truthful, never fire-and-forget.
+ * H2 — the after-roll refold is awaited, serialized and truthful, never fire-and-forget.
  *
- * `afterRoll` is a closure local to `openNodeVessel` (no full boot runs cheaply in a unit test), so
- * this proof reads the real source and asserts the SHAPE the episkopos's H2 cure demands, each assertion load-bearing
- * against a specific regression this iteration measured in production —
- *   · the old `void (async () => { try { … } catch {} })()` IIFE (the fire-and-forget this cure
- *     retires — the reason `represented`/`refolded` always read false) must be GONE;
- *   · `afterRoll` must declare `Promise<boolean>`, so F2's `onRolled` (widened to
- *     `boolean | void | Promise<boolean | void>`) can read a truthful answer;
- *   · the three refold stages must sit in THREE separate `try` blocks (a fault in
- *     `realmPlane.refresh` must not skip `reverdict`/`representIfMoved` — the single-`try` bug);
- *   · every caller (`onRolled`, the nexus dial-out's `onReconnect`) must AWAIT it, not fire it into the void.
+ * G15: the chain stands in `src/after-roll-chain.ts` and these vectors RUN it (the order, the three-way `try` split
+ * and the truthful return are also proved in `after-roll-chain.test.ts`); no assertion reads the vessel's source
+ * shape for the chain itself. What stays a source fact is WIRING: the vessel builds its chain from the module, and
+ * every caller awaits the answer.
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
+import { createAfterRoll } from "../src/after-roll-chain.js";
 
 const SRC = readFileSync(new URL("../src/open-node-vessel.ts", import.meta.url), "utf8");
 
-/** The `afterRoll` definition's own body — from its declaration to the closing `};` of the
- *  function assigned to it, read as one block so every assertion below reads THIS region alone. */
-function afterRollBody(): string {
-  const start = SRC.indexOf("const afterRoll = (nexusAid?: string)");
-  expect(start, "open-node-vessel.ts must declare `const afterRoll = (nexusAid?: string)`").toBeGreaterThan(-1);
-  const end = SRC.indexOf("\n  };", start);
-  expect(end, "afterRoll's definition must close with `};`").toBeGreaterThan(start);
-  return SRC.slice(start, end);
-}
-
-describe("★ H2 — afterRoll is Promise<boolean>, serialized, and never fire-and-forget ★", () => {
-  test("★ the old fire-and-forget IIFE is GONE — no `void (async () => …)()` wraps the refold ★", () => {
-    const body = afterRollBody();
-    expect(body, "the void-IIFE pattern that made represented/refolded always read false must not return").not.toMatch(/void\s*\(\s*async/);
+describe("★ H2 — the roll answers Promise<boolean> from a pass that began AFTER it landed ★", () => {
+  test("★ the answer arrives only after the refold finished — never fire-and-forget ★", async () => {
+    let refolded = false;
+    const roll = createAfterRoll({
+      refoldAntigen: async () => { await Promise.resolve(); await Promise.resolve(); refolded = true; },
+      refoldMembership: async () => {},
+      reverdict: () => {},
+      representIfMoved: async () => {},
+      log: () => {},
+    });
+    const answer = await roll("nexus-a");
+    expect(refolded, "the answer left before the refold ran: represented/refolded would read false").toBe(true);
+    expect(answer).toBe(true);
   });
 
-  test("afterRoll's own signature declares Promise<boolean>", () => {
-    expect(SRC).toMatch(/const afterRoll = \(nexusAid\?: string\): Promise<boolean>/);
+  test("★ SERIALIZED — a second roll waits on the running pass and runs its OWN full pass after ★", async () => {
+    const events: string[] = [];
+    let release!: () => void;
+    const parked = new Promise<void>((r) => { release = r; });
+    let n = 0;
+    const roll = createAfterRoll({
+      refoldAntigen: async () => { const me = ++n; events.push(`start${me}`); if (me === 1) await parked; events.push(`end${me}`); },
+      refoldMembership: async () => {},
+      reverdict: () => {},
+      log: () => {},
+    });
+    const first = roll("a");
+    const second = roll("a");
+    release();
+    await Promise.all([first, second]);
+    expect(events).toEqual(["start1", "end1", "start2", "end2"]);
+  });
+});
+
+describe("the vessel wires the module, and every caller AWAITS the answer", () => {
+  test("the vessel builds its chain from the module and keeps no closure chain of its own", () => {
+    expect(SRC).toMatch(/import \{ createAfterRoll \} from "\.\/after-roll-chain\.js";/);
+    expect(SRC).toMatch(/createAfterRoll\(\{/);
+    expect(SRC, "the chain variable moved into the module").not.toMatch(/let afterRollChain/);
+    expect(SRC, "the void-IIFE pattern that made represented/refolded always read false must not return").not.toMatch(/void\s*\(\s*async\s*\(\)\s*=>\s*\{\s*try/);
   });
 
-  test("★ SERIALIZED — one in-flight chain variable both reads and reassigns through .then(...) ★", () => {
-    expect(SRC, "a chain variable must stand outside afterRoll, reassigned via .then on every call").toMatch(/let afterRollChain: Promise<boolean>/);
-    const body = afterRollBody();
-    expect(body).toMatch(/afterRollChain\s*=\s*afterRollChain\.then\(/);
-    expect(body).toMatch(/return afterRollChain;/);
-  });
-
-  test("★ the single try SPLIT in three — a realm-plane fault must not skip reverdict or representIfMoved ★", () => {
-    const body = afterRollBody();
-    const tryBlocks = body.match(/\btry\s*{/g) ?? [];
-    expect(tryBlocks.length, "antigen/membership, realmPlane.refresh, and representIfMoved each need their OWN try").toBeGreaterThanOrEqual(3);
-    // reverdict() must stand UNGUARDED between the realm-plane try and the representIfMoved try —
-    // never inside either one, or a fault in either neighbor would skip it again.
-    const reverdictIdx = body.indexOf("reverdict();");
-    expect(reverdictIdx, "reverdict() must run unconditionally between the two later stages").toBeGreaterThan(-1);
-    const before = body.slice(0, reverdictIdx);
-    const openTrys = (before.match(/\btry\s*{/g) ?? []).length;
-    const closedCatches = (before.match(/}\s*catch/g) ?? []).length;
-    expect(openTrys, "reverdict() must sit OUTSIDE any try block (every try before it already closed)").toBe(closedCatches);
-  });
-
-  test("★ the return answers ONE question — representIfMoved ran without throwing ★", () => {
-    const body = afterRollBody();
-    const lastTryIdx = body.lastIndexOf("try {");
-    const tail = body.slice(lastTryIdx);
-    expect(tail, "the FINAL try block must call representIfMoved and return true on success").toMatch(/representIfMoved\?\.\(\)[\s\S]{0,40}return true;/);
-    expect(tail, "the FINAL catch must return false, never rethrow and never return true").toMatch(/catch[\s\S]{0,220}return false;/);
-  });
-
-  test("★ every caller AWAITS afterRoll — onRolled (store-door-verbs) and the nexus dial-out's onReconnect ★", () => {
-    expect(SRC, "the door table must hand afterRoll straight to onRolled, which F2's rows now await").toMatch(/onRolled:\s*afterRoll,/);
-    const onReconnectSites = SRC.match(/onReconnect:\s*async \(\) => \{ await afterRoll\(\); \},/g) ?? [];
-    expect(onReconnectSites.length, "the nexus dial-out's onReconnect, the one onReconnect site, awaits afterRoll").toBe(1);
-    // No onReconnect may still fire it unawaited (`async () => afterRoll(),` with no inner await/braces).
+  test("the door table hands afterRoll straight to onRolled, and the one onReconnect site awaits it", () => {
+    expect(SRC).toMatch(/onRolled:\s*afterRoll,/);
+    const sites = SRC.match(/onReconnect:\s*async \(\) => \{ await afterRoll\(\); \},/g) ?? [];
+    expect(sites.length).toBe(1);
     expect(SRC).not.toMatch(/onReconnect:\s*async \(\) => afterRoll\(\),/);
   });
 });

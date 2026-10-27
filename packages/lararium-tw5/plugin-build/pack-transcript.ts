@@ -26,7 +26,7 @@ export const PACK_TRANSCRIPT_FORMAT = "lararium-tw5-pack-transcript/v2";
 export interface PackTranscript {
   format: typeof PACK_TRANSCRIPT_FORMAT;
   generatedBy: string;
-  /** Stable repo-relative path to the TW5 binary used. */
+  /** Logical repo-relative path of the TW5 binary the build read (see tw5-bin-path.ts). */
   tw5BinPath: string;
   /** Version string from tiddlywiki's package.json. */
   tw5PackageVersion: string;
