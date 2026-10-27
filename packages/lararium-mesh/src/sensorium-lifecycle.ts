@@ -16,9 +16,9 @@
  * durable  — the climax state; commitment has become hard-to-reverse (the Mempalace stands here).
  * tombstone — retired with recorded grounds (MUSTIE); no byte-delete (causal-islands: move-not-delete).
  *
- * THE DECLARED FIELD: a manifest carries its `lifecycle`, and a declared value outside the ladder
- * refuses. A manifest from the Python writer declares `ephemeral` and no `lifecycle`; the TS builder
- * and reader derive the state from `ephemeral`+`halfLife` ({@link deriveLifecycle}) when none stands.
+ * THE DECLARED FIELD: both writers put `lifecycle` in every manifest. The TS builder and Python writer
+ * derive the mint-time state from `ephemeral`+`halfLife` ({@link deriveLifecycle}); a reader refuses
+ * a missing or unknown state. A judged tombstone remains declared until un-retire.
  *
  * THE REDUCER ({@link nextLifecycle}) is PURE — (state, evidence) → next state. A `reconcile` runs it and
  * writes only on change. The SIGNAL that feeds `survivorAge` (real recall-traffic over the hardening
@@ -44,7 +44,7 @@ export function isLifecycleState(value: unknown): value is SensoriumLifecycleSta
 }
 
 /**
- * DERIVE a lifecycle from the manifest's `ephemeral`+`halfLife` when none is declared. The rule, ephemeral winning as the strongest exploratory signal:
+ * DERIVE the mint-time lifecycle from `ephemeral`+`halfLife`. The rule, ephemeral winning as the strongest exploratory signal:
  *   - `ephemeral === true`               → pioneer   (the exploratory scratch, whatever its halfLife)
  *   - a FINITE positive `halfLife`       → hardening (a maturing standing that still cools)
  *   - else (halfLife null / absent)      → durable   (append-only-witness authority; never cools)

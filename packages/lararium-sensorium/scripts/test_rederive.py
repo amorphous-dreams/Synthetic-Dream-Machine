@@ -6,7 +6,7 @@ import rederive as rd
 
 
 def test_rederive_bands_refuses_an_undeclared_projector(tmp_path):
-    (tmp_path / "manifest.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "manifest.json").write_text('{"lifecycle":"durable"}', encoding="utf-8")
     import pytest
     with pytest.raises(SystemExit, match="no supported order projector"):
         rd.rederive_bands(str(tmp_path))
@@ -14,7 +14,7 @@ def test_rederive_bands_refuses_an_undeclared_projector(tmp_path):
 
 def test_rederive_bands_selects_order_not_earned_apertures(monkeypatch, tmp_path):
     (tmp_path / "manifest.json").write_text(
-        '{"order":{"projector":"stream","basis":"observed:connection-sequence"},'
+        '{"lifecycle":"durable","order":{"projector":"stream","basis":"observed:connection-sequence"},'
         '"apertures":{"beat":"worldline-dag"}}', encoding="utf-8")
     monkeypatch.setattr("bands.analyze_sensorium", lambda _root, **_opts: ([{"cid": "a"}], {"note": "ok"}))
     out = rd.rederive_bands(str(tmp_path))
@@ -24,7 +24,7 @@ def test_rederive_bands_selects_order_not_earned_apertures(monkeypatch, tmp_path
 
 def test_stream_rederive_requires_one_causal_island(monkeypatch, tmp_path):
     (tmp_path / "manifest.json").write_text(
-        '{"order":{"projector":"stream","basis":"observed:connection-sequence"}}', encoding="utf-8")
+        '{"lifecycle":"durable","order":{"projector":"stream","basis":"observed:connection-sequence"}}', encoding="utf-8")
     seen = {}
     def analyze(_root, **opts):
         seen.update(opts)
@@ -81,7 +81,7 @@ def test_stream_plane_rederive_refuses_to_fuse_independent_sources(tmp_path, mon
         ("b", "two", {"source_file": "mudlet:conn-b", "chunk_index": 0}),
     ])
     (tmp_path / "bed" / "manifest.json").write_text(
-        '{"order":{"projector":"stream","basis":"observed:connection-sequence"}}', encoding="utf-8")
+        '{"lifecycle":"durable","order":{"projector":"stream","basis":"observed:connection-sequence"}}', encoding="utf-8")
     monkeypatch.setattr("plane_fanout.compose_text_planes", lambda *args, **kwargs: [])
 
     with pytest.raises(SystemExit, match="independent causal islands"):
