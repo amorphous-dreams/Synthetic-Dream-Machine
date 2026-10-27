@@ -172,6 +172,18 @@ jobs:
         run: |
           echo "COMPOSE_PROJECT_NAME=held-${{ matrix.cell }}" >> "$GITHUB_ENV"
           echo "MESH_PROJECT=held-${{ matrix.cell }}" >> "$GITHUB_ENV"
+      - name: Name the Playwright version (the engine cache key)
+        if: matrix.driver == 'browser-weld'
+        id: pw-version
+        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      # A CDN stall once held a runner for 20 and for 48 minutes. The engine directory restores by the pinned
+      # Playwright version; a bump re-downloads. The install below still runs for the system libraries.
+      - name: Cache the Playwright engines (chromium)
+        if: matrix.driver == 'browser-weld'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-chromium
       - name: Install Playwright Chromium
         if: matrix.driver == 'browser-weld'
         run: pnpm exec playwright install --with-deps chromium

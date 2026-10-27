@@ -189,6 +189,18 @@ jobs:
       # the venv that holds mempalace, never a bare `pytest`.
       # Keep the package verdict visible if the independent Python suite fails.
       # The holder gates package tests that exercise its real subprocess.
+      - name: Name the Playwright version (the engine cache key)
+        if: ${{ !cancelled() && steps.holder.outcome == 'success' }}
+        id: pw-version
+        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      # A CDN stall once held a runner for 20 and for 48 minutes. The engine directory restores by the pinned
+      # Playwright version; a bump re-downloads. The install below still runs for the system libraries.
+      - name: Cache the Playwright engines (chromium firefox webkit)
+        if: ${{ !cancelled() && steps.holder.outcome == 'success' }}
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-chromium-firefox-webkit
       - name: Install Playwright engines (browser-vessel suite, three engines)
         if: ${{ !cancelled() && steps.holder.outcome == 'success' }}
         id: browser
@@ -228,6 +240,16 @@ jobs:
         run: pnpm --filter @lararium/tw5 build:tw5-vendor
       - name: Build
         run: pnpm build
+      - name: Name the Playwright version (the engine cache key)
+        id: pw-version
+        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      # A CDN stall once held a runner for 20 and for 48 minutes. The engine directory restores by the pinned
+      # Playwright version; a bump re-downloads. The install below still runs for the system libraries.
+      - name: Cache the Playwright engines (chromium)
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-chromium
       - name: Install the Chromium engine
         run: pnpm exec playwright install --with-deps chromium
       - name: Run the floor crossing under a scratch home
@@ -425,6 +447,16 @@ jobs:
         run: node tools/stamp-build.mjs .
       - name: Point dist-plugin at the committed standalone artifact
         run: cp packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.tid packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid
+      - name: Name the Playwright version (the engine cache key)
+        id: pw-version
+        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      # A CDN stall once held a runner for 20 and for 48 minutes. The engine directory restores by the pinned
+      # Playwright version; a bump re-downloads. The install below still runs for the system libraries.
+      - name: Cache the Playwright engines (chromium)
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-chromium
       - name: Install Playwright Chromium (standalone single-file suite)
         run: pnpm exec playwright install --with-deps chromium
       # ONE VERSION, ONE PLACE. The tarball caches by the pinned version; a bump re-packs.
