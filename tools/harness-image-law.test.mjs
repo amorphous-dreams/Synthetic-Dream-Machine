@@ -18,6 +18,38 @@ const EXCEPTIONS = new Map([
   ["browser-b", "Playwright supplies Chromium; the image-filled code volume mounts read-only"],
 ]);
 
+function inspectBrowserQa(text) {
+  const qa = blocks(text, 0, "services").find((service) => service.name === "qa")?.text ?? "";
+  const errors = [];
+  if (!qa) return ["qa: service absent"];
+  if (!/^\s*image:\s*\$\{BROWSER_CI_HARNESS_IMAGE:/m.test(qa)) errors.push("qa: harness image absent");
+  if (!/^\s*build:\s*\n\s*context:\s*\.\s*\n\s*dockerfile:\s*Dockerfile\s*\n\s*target:\s*browser-harness\s*$/m.test(qa)) errors.push("qa: browser-harness target absent");
+  const sources = [...qa.matchAll(/^\s*source:\s*["']?([^"'\n]+?)["']?\s*$/gm)].map((m) => m[1].trim());
+  const shortSources = [...qa.matchAll(/^\s*-\s*["']?([^:"'\n]+):\//gm)].map((m) => m[1].trim());
+  if ([...sources, ...shortSources].some((source) => source === "." || source === "./" || resolve(ROOT, source) === ROOT))
+    errors.push("qa: repository bind is forbidden");
+  if (/^\s*working_dir:\s*\/repo\s*$/m.test(qa)) errors.push("qa: old repository workdir");
+  return errors;
+}
+
+test("CONTROL: the old QA shape fails the image and repository bind law", () => {
+  const old = `services:\n  qa:\n    image: mcr.microsoft.com/playwright:v1.64.0-noble\n    working_dir: /repo\n    volumes:\n      - type: bind\n        source: .\n        target: /repo\n        read_only: true\n`;
+  assert.deepEqual(inspectBrowserQa(old), ["qa: harness image absent", "qa: browser-harness target absent", "qa: repository bind is forbidden", "qa: old repository workdir"]);
+  assert.ok(inspectBrowserQa(old.replace("source: .", `source: ${ROOT}`)).includes("qa: repository bind is forbidden"));
+});
+
+test("the QA runner builds the pinned harness and never binds the repository", () => {
+  const compose = readFileSync(join(ROOT, "docker-compose.browser-ci.yml"), "utf8");
+  assert.deepEqual(inspectBrowserQa(compose), []);
+  const dockerfile = readFileSync(join(ROOT, "Dockerfile"), "utf8");
+  const target = dockerfile.slice(dockerfile.indexOf("FROM mcr.microsoft.com/playwright:v1.64.0-noble AS browser-harness"));
+  assert.ok(target.length > 0 && target.startsWith("FROM"), "the browser-harness target stands in the Dockerfile");
+  assert.match(target, /FROM mcr\.microsoft\.com\/playwright:v1\.64\.0-noble AS browser-harness/);
+  for (const path of ["tools/browser-ci-smoke.mjs", "tools/browser-ci-join.mjs", "packages/lararium-web/tests/live-wiki.mjs", "browser-test-custody.js"])
+    assert.ok(target.includes(path), `${path} absent from browser-harness target`);
+  assert.match(target, /COPY --from=build .*browser-test-custody\.js/);
+});
+
 function fileList() {
   if (!process.env.HARNESS_LAW_FILE_LIST) return FILES.map((f) => join(ROOT, f));
   return JSON.parse(readFileSync(process.env.HARNESS_LAW_FILE_LIST, "utf8")).map((f) => resolve(ROOT, f));

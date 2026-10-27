@@ -22,6 +22,7 @@ async function run(argv, env = {}) {
 printf '%s\\n' "$*" >> "$CALL_LOG"
 case "$*" in
   *"ps -a -q"*) [ "$STAND" = "yes" ] && echo cid123 ;;
+  *"image inspect"*) [ "$QA_IMAGE" = "yes" ] || exit 1 ;;
   *"ps -q"*) echo cid123 ;;
   *"unlock-test-custody.mjs"*) echo '{"op":"unlock","reading":"opens","held":true}'; exit "\${DOOR_RC:-0}" ;;
   *"printenv LAR_PORT"*) echo 4321 ;;
@@ -92,7 +93,16 @@ test("qa runs the command in the disposable runner; no argv carries the Docker s
   const r = await run(["qa", "node", "x.mjs"]);
   assert.equal(r.status, 0);
   assert.match(r.calls, /--profile qa run --rm -T (-e [\w=/]+ )*qa node x\.mjs/);
+  assert.match(r.calls, /image inspect lares-browser-harness:local/);
+  assert.match(r.calls, /build qa/);
   for (const v of [["up"], ["down"], ["qa", "true"]]) assert.doesNotMatch((await run(v)).calls, /docker\.sock/);
+});
+
+test("qa reuses an existing harness image and honors its separate tag", async () => {
+  const r = await run(["qa", "true"], { QA_IMAGE: "yes", BROWSER_CI_HARNESS_IMAGE: "qa-other:local" });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.calls, /image inspect qa-other:local/);
+  assert.doesNotMatch(r.calls, /build qa/);
 });
 
 test("every verb honors BROWSER_CI_PROJECT; the default project is lares-browser-ci", async () => {
@@ -213,6 +223,10 @@ test("the qa runner shares the node's network namespace and dials it by localhos
   const yml = await readFile(join(ROOT, "docker-compose.browser-ci.yml"), "utf8");
   const qa = yml.slice(yml.search(/^  qa:/m), yml.search(/^volumes:/m));
   assert.match(qa, /^    network_mode: "service:lares"$/m);
+  assert.match(qa, /^    image: \$\{BROWSER_CI_HARNESS_IMAGE:-lares-browser-harness:local\}$/m);
+  assert.match(qa, /^      target: browser-harness$/m);
+  assert.match(qa, /^    working_dir: \/app$/m);
+  assert.doesNotMatch(qa, /source: \.(?:\s|$)|target: \/repo/);
   assert.match(qa, /^      LARES_URL: http:\/\/localhost:4321$/m);
   assert.doesNotMatch(qa, /^    networks:/m);
   assert.doesNotMatch(qa, /lares:4321/);
