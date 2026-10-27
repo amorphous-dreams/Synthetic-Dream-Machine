@@ -82,7 +82,7 @@ The operator ruled on 2026-10-26 to close open work before the founding bake. Th
 * The sensorium conftest exempts `ANONYMIZED_TELEMETRY` as the third-party one-shot the mempalace package stamps on first import. Whichever test imported it first used to carry the blame.
 
 !!! Stays, with its reason
-* ''`G20` the cold-boot `unavailable` reading.'' The per-source map reads as follows. `findWithProgress` (automerge-repo 2.6.0-alpha.5, `DocumentQuery`) answers `unavailable` once no source is pending and the handle holds no data, and the state carries a `sources` map (`storage`, `automerge-sync`). A hearth-private doc has no peer to wait on, so `unavailable` reads terminal; the one case it misreads is a write this vessel has issued and not yet rested. `boot-resolver.ts` covers that case with a two-second grace on a monotonic clock. A clock decides there, which the house law forbids, and the cure is the writer's own event: the caller names the flush it owes (`repo.flush([id])`) and the resolver asks again after it settles. The production caller that needs it is `open-node-vessel.ts` (`readDaemonDoc`), K15's file, so the grace stands until that hunk passes the flush. Lean: add an optional `settled` promise to `resolveBootDoc`, drop `UNAVAILABLE_GRACE_MS` when K15 lands the call.
+* ''`G20` the cold-boot `unavailable` reading.'' The per-source map reads as follows. `findWithProgress` (automerge-repo 2.6.0-alpha.5, `DocumentQuery`) answers `unavailable` once no source is pending and the handle holds no data, and the state carries a `sources` map (`storage`, `automerge-sync`). A hearth-private doc has no peer to wait on, so `unavailable` reads terminal; the one case it misreads is a write this vessel has issued and not yet rested. `boot-resolver.ts` covers that case with a two-second grace on a monotonic clock. A clock decides there, which the house law forbids, and the cure is the writer's own event: the caller names the flush it owes (`repo.flush([id])`) and the resolver asks again after it settles. The production caller that needs it is `open-node-vessel.ts` (`readDaemonDoc`), K15's file, and `K15`'s bonds (PR #106) built that cure: `resolveBootDoc` takes an optional `settled`, `readDaemonDoc` passes the Repo's flush, and `UNAVAILABLE_GRACE_MS` retired.
 * ''`G8` pack-PIN recursion and the `assertBodyIndexTier` caller.'' Pack-PIN recursion stays unbuilt (`blob-carriage#/proposed-law`); the tier caller arrives with the cad body-index writer, since `bodyIndexBagUri` has no producer.
 
 <<~/ahu>>
@@ -113,6 +113,6 @@ The operator ruled on 2026-10-26 to close open work before the founding bake. Th
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mvAgx4SsgA7DSDJ1Z6hPYW96dZz0K34Sg41KwLygAlQ
+<<^ code="&#x0003;">>ni:///sha-256;MayaxAFV8-4Paped7bvPM02k_7YkMikfmjCtovEPnIg
 
 <<^ code="&#x0004;" -> to="?">>
