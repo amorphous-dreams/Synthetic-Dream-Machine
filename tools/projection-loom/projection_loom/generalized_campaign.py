@@ -42,37 +42,18 @@ def initial_program(adapters):
     if proxy:
         nodes=list(proxy_growth_program(proxy.program).nodes)
     elif grammar:
-        size=(grammar.program["growth_program"]["nodes"][0]["size"]
-              if "growth_program" in grammar.program else
-              grammar.program["steps"][0]["size"])
-        nodes=[GrowthNode("root","foundation",size=tuple(size))]
+        nodes=list(GrowthProgram.from_dict(grammar.program["growth_program"]).nodes)
     else:
-        # The original picture drives native shape hypotheses. The result
-        # remains a proposal in arbitrary units with a provisional camera.
         first=sorted((a for a in adapters if a.seed.kind=="image-group"),
                      key=lambda a:a.seed.identity)[0]
         nodes=list(image_growth_program(first.seed).nodes)
-    if grammar:
-        if "growth_program" in grammar.program:
-            authored=GrowthProgram.from_dict(grammar.program["growth_program"])
-            if not proxy:
-                nodes=list(authored.nodes)
-            else:
-                mapping={authored.nodes[0].key:"root"}
-                mapping.update({n.key:"grammar_"+n.key for n in authored.nodes[1:]})
-                for node in authored.nodes[1:]:
-                    nodes.append(replace(node,key=mapping[node.key],
-                        parent=mapping.get(node.parent),
-                        target=mapping.get(node.target)))
-        else:
-            prev="root"
-            for i,step in enumerate(grammar.program["steps"][1:],1):
-                if step["op"]!="box":
-                    continue
-                key=f"grammar_{i}"
-                nodes.append(GrowthNode(key,"spawn",parent=prev,
-                    face=step.get("grow_face","up"),size=tuple(step["size"])))
-                prev=key
+    if grammar and proxy:
+        authored=GrowthProgram.from_dict(grammar.program["growth_program"])
+        mapping={authored.nodes[0].key:"root"}
+        mapping.update({n.key:"grammar_"+n.key for n in authored.nodes[1:]})
+        for node in authored.nodes[1:]:
+            nodes.append(replace(node,key=mapping[node.key],
+                parent=mapping.get(node.parent),target=mapping.get(node.target)))
     if len(nodes)==1:
         nodes.append(GrowthNode("crown","spawn",parent="root",face="up",size=(1.7,1.7,1.3)))
     return GrowthProgram(tuple(nodes))

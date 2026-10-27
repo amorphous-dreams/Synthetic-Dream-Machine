@@ -17,10 +17,10 @@ def fixture(tmp_path):
         "kind":"image-group","views":[{"rgba":"original.png",
                                         "alpha":"alpha.png","registration":"provisional"}]}))
     (root/"brutalist_grammar"/"grammar.json").write_text(json.dumps({
-        "kind":"constructive-grammar","genome":{},"steps":[
-            {"key":"root","op":"root-box","size":[7,7,2],"center":[0,0,1]},
-            {"key":"tower","op":"box","size":[3,3,2],"center":[0,0,2.8],
-             "parents":["root"],"slot":"core"}]}))
+        "kind":"constructive-grammar","growth_program":{"nodes":[
+            {"key":"root","op":"foundation","size":[7,7,2]},
+            {"key":"tower","op":"spawn","parent":"root","face":"up",
+             "size":[3,3,2]}]}}))
     (root/"ziggurat_proxy"/"proxy.json").write_text(json.dumps({
         "kind":"geometry-proxy","tiers":[
             {"width":8,"depth":8,"height":2,"offset":[0,0]},

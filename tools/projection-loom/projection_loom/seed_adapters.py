@@ -13,7 +13,6 @@ from PIL import Image
 
 from .intent_seed import SeedBundle, SeedEntry, IntentContract, normalize_location
 from .location_stack import Element, Relation
-from .grammar import grow_program
 from .solid import SolidAssembly, faceted_loft
 from .developmental import GrowthNode, GrowthProgram, compile_growth
 
@@ -25,9 +24,7 @@ class SeedAdapter:
 
     def build(self):
         if self.seed.kind == "constructive-grammar":
-            if "growth_program" in self.program:
-                return compile_growth(GrowthProgram.from_dict(self.program["growth_program"])).assembly
-            return grow_program(self.program["steps"],self.program.get("genome",{}))
+            return compile_growth(GrowthProgram.from_dict(self.program["growth_program"])).assembly
         if self.seed.kind == "geometry-proxy":
             return compile_growth(proxy_growth_program(self.program)).assembly
         if self.seed.kind == "image-group":
@@ -99,14 +96,9 @@ def constructive_grammar(path):
     path,data=_declared_json(path)
     if data.get("kind")!="constructive-grammar":
         raise ValueError("Not a constructive grammar seed")
-    typed="growth_program" in data
-    legacy="steps" in data
-    if typed==legacy:
-        raise ValueError("Declare exactly one executable grammar representation")
-    if typed:
-        GrowthProgram.from_dict(data["growth_program"])
-    elif not isinstance(data["steps"],list) or not data["steps"] or not isinstance(data.get("genome",{}),dict):
-        raise ValueError("Nonempty typed construction steps and genome required")
+    if "growth_program" not in data or "steps" in data:
+        raise ValueError("Use only the typed developmental grammar")
+    GrowthProgram.from_dict(data["growth_program"])
     return SeedAdapter(SeedEntry.from_file("constructive-grammar",path),data)
 
 
@@ -147,29 +139,6 @@ def proxy_growth_program(program):
                      target="root",size=tuple(gate["size"]),
                      face=gate["face"],offset=tuple(gate["offset"])))
     return GrowthProgram(tuple(nodes))
-
-
-def _build_proxy(program):
-    a=SolidAssembly(overlap_ratio=.006)
-    prev=None
-    for idx,tier in enumerate(program["tiers"]):
-        if set(tier)!={"width","depth","height","offset"}:
-            raise ValueError("Tier needs explicit extents and offset")
-        width,depth,height=map(float,(tier["width"],tier["depth"],tier["height"]))
-        offset=tier["offset"]
-        if len(offset)!=2 or not all(math.isfinite(float(x)) for x in offset):
-            raise ValueError("Bad ziggurat tier offset")
-        if min(width,depth,height)<=0 or not all(map(math.isfinite,(width,depth,height))):
-            raise ValueError("Proxy extents must be positive and finite")
-        base_z=(a.parts[prev].solid.BoundingBox().zmax-.12 if prev else 0.)
-        z=base_z+height/2
-        name=f"tier-{idx:03d}"
-        a.add_box(name,(float(offset[0]),float(offset[1]),z),
-                  (width,depth,height),parents=() if prev is None else (prev,),
-                  role="foundation" if prev is None else "primary",
-                  slot=f"tier/{idx:03d}")
-        prev=name
-    return a
 
 
 def image_growth_program(seed:SeedEntry):

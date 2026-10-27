@@ -18,14 +18,13 @@ def sample(tmp_path):
         "kind":"image-group","views":[{"rgba":"image.png","alpha":"alpha.png",
                                         "registration":"provisional","camera":"oblique"}]}))
     (p/"brutalist.json").write_text(json.dumps({
-        "kind":"constructive-grammar","genome":{},
-        "steps":[
-            {"key":"root","op":"root-box","center":[0,0,1.],"size":[6,6,2]},
-            {"key":"core","op":"box","center":[0,0,2.8],"size":[3,3,2],
-             "parents":["root"],"role":"primary","slot":"brutalist/core"},
-            {"key":"cantilever","op":"box","center":[1,0,3.6],"size":[4,3,1],
-             "parents":["core"],"slot":"brutalist/cantilever"},
-        ]}))
+        "kind":"constructive-grammar",
+        "growth_program":{"nodes":[
+            {"key":"root","op":"foundation","size":[6,6,2]},
+            {"key":"core","op":"spawn","parent":"root","face":"up","size":[3,3,2]},
+            {"key":"cantilever","op":"spawn","parent":"core","face":"east",
+             "size":[2,2,1.5]}
+        ]}}))
     (p/"ziggurat.json").write_text(json.dumps({
         "kind":"geometry-proxy","tiers":[
         {"width":8,"depth":8,"height":2,"offset":[0,0]},
@@ -136,3 +135,12 @@ def test_wide_image_makes_multiple_lateral_sites(tmp_path):
     program=image_growth_program(SeedEntry.from_file("image-group",tmp_path/"wide.png"))
     assert {n.face for n in program.nodes if n.face}=={"east","west"}
     assert compile_growth(program).audit()["union_valid"]
+
+
+def test_retired_scalar_step_grammar_refuses_in_evergreen_alpha(tmp_path):
+    from projection_loom.seed_adapters import constructive_grammar
+    p=tmp_path/"obsolete.json"
+    p.write_text(json.dumps({"kind":"constructive-grammar",
+                             "steps":[{"op":"root-box","key":"root"}]}))
+    with pytest.raises(ValueError,match="only the typed"):
+        constructive_grammar(p)
