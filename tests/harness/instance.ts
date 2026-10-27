@@ -571,7 +571,7 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
       // A Herm holds no face by class (`personaSlotCeiling("herm") === 0`), so it enters a Nexus by the
       // CARRIER relation and never the member one: A's charter crosses by `seal export`/`seal import`, the
       // place signs "I carry for this Nexus" with its OWN vessel key (`nexus carry-for` — no persona read),
-      // and A's quorum seats that seal (`nexus carry <key> --carrier <hex>`). The Herm dials no hearth;
+      // and A's quorum seats that seal with the place's floor pin claim (`nexus carry <key> --carrier <hex> --floor-pin <file>`). The Herm dials no hearth;
       // A mints a user book and registers it at PUBLIC, the tier the carrier leg reads.
       beforeB: async (A) => {
         const exp = await A.cli(["nexus", "seal", "export", "--no-json"]);
@@ -588,7 +588,10 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
         const nym = typeof cf["nym"] === "string" ? cf["nym"] : "";
         const sig = typeof cf["carrierSig"] === "string" ? cf["carrierSig"] : "";
         if (!nym || !sig) throw new Error(`fleet: carry-for minted no seal\n${carryFor.stdout}\n${carryFor.stderr.slice(-600)}`);
-        const carry = await A.cli(["nexus", "carry", nym, "--carrier", sig, "--json"]);
+        // The carry lands WITH the place's floor pin claim and the KEL rows that fold to its head (W14): the file `carry-for` printed.
+        const claimFile = join(herm.root, "floor-pin.json");
+        writeFileSync(claimFile, JSON.stringify({ floorPin: cf["floorPin"], placeKel: cf["placeKel"] }), "utf8");
+        const carry = await A.cli(["nexus", "carry", nym, "--carrier", sig, "--floor-pin", claimFile, "--json"]);
         crossing.push(`A nexus carry ${nym.slice(0, 12)}… → ${carry.code}: ${carry.stdout.trim().slice(0, 160)}`);
         if (carry.code !== 0) throw new Error(`fleet: A refused the carrier seal (${carry.code})\n${carry.stderr.slice(-600)}`);
         // `nexus carry` runs as a `nexus-contract` door row against A's standing vessel, which fires the SAME

@@ -8,35 +8,38 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/place-floor-pin.mem"
 l-space     = "lararium"
 mana        = 14
-role        = "invariant law: a PLACE's floor pin, carried where a reader already holds the Nexus that carries the place, and the place's own presentation at that Nexus's floor gates. The quorum's act authenticates the key; the key authenticates the pin. A reader files a statement only when it reads whole at floor tier, at the Nexus and route asked, its signature verifies under the place key, and the reader's OWN held root counts a carry for that key. The statement rides the carriage board as a sidecar any replica writer may carry and none can forge. Under the house ruling \"The admit's gate pin\"."
+role        = "invariant law: the FLOOR PIN CLAIM. A place claims this exact gate pin at one head of its own KEL (place AID, seq, event digest, Nexus, tier, route), signed through its scoped signer under the place floor pin duty, and the reader resolves the signer at the named head. KEL descent orders the pin: a descendant claim replaces, a known ancestor refuses, a fork surfaces, arrival order selects nothing. The place's standing is a counted carry of the signer at the head, or an anchor conveyed apart from the card. Under the house ruling \"The admit's gate pin\"."
 source-file = "packages/lararium-mesh/src/place-floor-pin.ts"
 status      = "draft"
-status-why  = "lane reading, unruled 2026-10-16: the statement a place signs over its floor pin and the carry relation a reader files it under; the statement's causal position and the index's replace door are owed"
+status-why  = "lane reading, W14 to W16 built: the claim, its head, its two standings and the index's descent order; the sovereign tier's pins follow their own custody relation and a place-KEL claim never orders them"
 title       = "lar:///ha.ka.ba/lararium/mesh/place-floor-pin"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/place-floor-pin"
-written     = "2026-10-16"
+written     = "2026-10-26"
 ```
 
 <<~ ahu #/head>>
 
-! The place floor pin ~ a pin the quorum's act vouches for
+! The floor pin claim ~ a pin the place's KEL vouches for
 
 A floor route takes its pin only through an authenticated relation or a carried signed pin set, and an
-announcement never authenticates its own first pin (house ruling "The admit's gate pin"). A herm's floor pin
-derives from its floor key, which no seat holds, so no seat can mint it. The relation that vouches for it is
-the one the Nexus already published: the quorum's counted `carry` over the herm's vessel key.
+announcement never authenticates its own first pin (house ruling "The admit's gate pin"). A place's floor pin
+derives from its floor key, which no seat holds, so no seat can mint it. The place claims it itself: this exact
+pin, at one head of its own KEL, signed by the signer the KEL seats there. One relation carries the name
+''floor pin claim'' (never "standing", which names realm standing, nor "position", which names causal coordinates).
 
 <<~/ahu>>
 
-<<~ ahu #/the-statement>>
+<<~ ahu #/the-claim>>
 
-!! The statement ~ one per place per Nexus
+!! The claim ~ one per route per head
 
-The place signs `{ kind, placeKey, nexus, route, tier, digest }` over the pin it stands at that Nexus, with
-the key the quorum's act names (`PLACE_FLOOR_PIN_DOMAIN`, registered in `domains`, apart from every other seal). It rides
-the Nexus's carriage board under a sidecar key apart from the acts (`PLACE_FLOOR_PIN_PREFIX`), which the act
-extractor skips. Any replica writer may carry it; none can forge it.
+The place signs `{ kind, aid, seq, head, nexus, route, tier, digest }` (`PLACE_FLOOR_PIN_DOMAIN`, framed
+`u32 len(D) ‖ D ‖ preimage`; no sixth domain) with the signer its KEL seats at `head`. The Nexus AID anchors the
+carrying relation and never signs as the place. The claim names NO release head: W26's release tracks floor
+CONTENT, the claim tracks the place's KEY STATE, and nothing signs a release pointer into pin succession. It rides
+the Nexus's carriage board under a sidecar key apart from the acts (`PLACE_FLOOR_PIN_PREFIX`, keyed by the AID, the
+head and the pin's digest), beside the place's KEL rows (`place-kel-board`). Any replica writer may carry it; none can forge it.
 
 <<~/ahu>>
 
@@ -46,13 +49,40 @@ extractor skips. Any replica writer may carry it; none can forge it.
 
 `readPlaceFloorPin` refuses by name, never throws, and files only when all of these hold:
 
-# the statement reads whole and its pin reads whole (`readGateBundlePin`), at FLOOR tier, at the Nexus the
-reader asked, on the route asked;
-# the signature verifies under `placeKey` over this exact image;
-# LAST, the relation: the reader's OWN held root of that Nexus counts a `carry` for `placeKey`.
+# the claim reads whole and its pin reads whole (`readGateBundlePin`), at FLOOR tier, at the Nexus the reader asked, on the route asked;
+# the reader's KEL rows fold to the named head (`foldClaimHead`: a walk from the head digest to the inception that is the AID, every digest, sequence, reveal and cold signature verified), on no forked branch (`head-unreadable`, `kel-forked`);
+# the signer the KEL seats AT THAT HEAD signed this exact image (`verifyPlaceDutyAtHead`): an older signer after a rotation, and a forger, refuse `signature-refused`;
+# LAST, the standing: the signer at the head is a counted `carry` of the reader's OWN held root (`place-uncarried`), or the AID is the anchor the reader was handed apart from the card (`place-unanchored`).
 
-A key the reader's replica does not count authenticates nothing (`place-uncarried`). The index it files into
-is the pair index (`admit-gate-pin`), keyed (place key, Nexus hex, route, tier).
+A card alone never anchors. Three conveyances stand: the founder's own genesis, an authenticated admit (a claim set a sovereign
+crossing carried, whose first claim adopts the AID), and a deliberate person-to-person transfer (`#anchor=<aid>`).
+
+<<~/ahu>>
+
+<<~ ahu #/descent>>
+
+!! KEL descent orders the pin
+
+The pair index (`admit-gate-pin`) takes a claim with the lineage the reader folded (`fileClaim`) and folds its claims as a SET:
+a descendant claim replaces; a known ancestor refuses `rollback` (and stays as ancestry evidence); two claims at one head, a
+sibling rotation and another AID at one key surface as a fork and the index serves the settled ancestor, or nothing where none
+is held; so no arrival order selects. A key rides its claims once a claim has filed: an unclaimed pin matches what is served or files
+nothing. A rotated place serves under its new signer's name only, so the superseded key answers nothing. An offline reader holds its
+last accepted head and says "as of my last sync" (`lastSyncNote`). Node and browser run this one fold. Floor-route keys derive from
+the place floor key, tier, Nexus and route (`gate-bundle`), so a pin changes on its route only when the place key rotates: no
+per-route successor log. The SOVEREIGN tier's pins follow custody-key changes by their own signed relation; a place-KEL claim never
+orders them and the index refuses one by name (`claim-moves-no-sovereign-pin`).
+
+<<~/ahu>>
+
+<<~ ahu #/the-carry>>
+
+!! The carry lands the claim
+
+A carry crosses vaults as a PARTIAL with its claim and the KEL rows that fold to its head (`nexus-partial`, family `carry`). The claim
+files ONLY with the counted act, in one write: a partial below the quorum exposes no pin. The judge reads the claim for the named
+place at this Nexus, and the carrier seal verifies under the signer the KEL seats at the claim's head (`verifyCarrierContractAtHead`).
+The herm carries the claim opaque. A rotated place is carried again under its new signer.
 
 <<~/ahu>>
 
@@ -65,17 +95,6 @@ act of that relation in its causal past as the lineage the gate's reader walks (
 `verifyPresentedCarry`). The head is the counted `carry` no other counted act of this place descends from; a
 counted `uncarry` that descends from it leaves the place with no arm to present. A lineage past
 `PLACE_LINEAGE_BOUND` presents nothing.
-
-<<~/ahu>>
-
-<<~ ahu #/owed>>
-
-!! Owed
-
-The statement carries no causal position, and the pair index holds no replace by design: an older valid
-statement can stand in for a newer one after a floor-key rotation until the index drops. Owed as one piece:
-a position on the statement (the carrying roster's `sealEpochCid` and the place's own pin generation) and a
-causal replace door on the index that reads it.
 
 <<~/ahu>>
 
@@ -92,6 +111,6 @@ causal replace door on the index that reads it.
 <<~ loulou "lar:///ha.ka.ba/lararium/node/herm-carriage">>
 <<~ loulou "lar:///ha.ka.ba/lararium/node/carry-bundle">>
 
-<<^ code="&#x0003;">>ni:///sha-256;Agk-y5AZS4M9jWNyqW6abeCu7_u2GBmH1SQx3aHvzO4
+<<^ code="&#x0003;">>ni:///sha-256;_dY274kkElzHHyrEbXUwyPfc2iWzBe8OhdMys8FiewA
 
 <<^ code="&#x0004;" -> to="?">>

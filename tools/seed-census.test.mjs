@@ -46,7 +46,7 @@ test('comments carry no consumer', () => {
 test('the exact named entry set covers the real source corpus', () => {
   const result = census(REPO);
   assert.ok(result.files > 0);
-  assert.equal(result.findings.length, 55);
+  assert.equal(result.findings.length, 57);
   assert.deepEqual(result.open, []);
   assert.deepEqual(result.stale, []);
   assert.deepEqual(result.used, ENTRIES.map(e => e.count));
@@ -69,6 +69,7 @@ test('the exact named entry set covers the real source corpus', () => {
     'allowed:packages/lararium-mesh/src/index.ts:floorKeyDoor:1',
     'allowed:packages/lararium-mesh/src/place-signer.ts:placeSignerFromSeed:1',
     'allowed:packages/lararium-node/src/commands/nexus-contract.ts:loadVesselSigningSeed:2',
+    'allowed:packages/lararium-node/src/hearth-floor-claims.ts:loadVesselSigningSeed:2',
     'allowed:packages/lararium-node/src/index.ts:loadVesselSigningSeed:1',
     'allowed:packages/lararium-node/src/node-vessel-identity.ts:floorKeyDoor:2',
     'allowed:packages/lararium-node/src/node-vessel-identity.ts:loadVesselSigningSeed:1',

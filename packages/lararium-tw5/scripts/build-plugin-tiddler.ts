@@ -46,6 +46,7 @@ import {
   resolveTw5Version,
   writePackTranscript,
 } from "../plugin-build/pack-transcript.js";
+import { resolveTw5BinLogicalPath, tw5BinMismatch } from "../plugin-build/tw5-bin-path.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT       = path.resolve(__dirname, "..");
@@ -64,14 +65,15 @@ const PLUGIN_TITLE_TW5 = "$:/plugins/lares/memetic-wikitext";
 // to the workspace link, no .pnpm path guessing. tiddlywiki.js carries a `#!/usr/bin/env node` shebang.
 const TW5_BIN = createRequire(import.meta.url).resolve("tiddlywiki/tiddlywiki.js");
 
-// THE ATTESTED PATH IS THE LOGICAL SUBMODULE LOCATION, NEVER `TW5_BIN`'S OWN REALPATH (L6). Node's
-// module resolution follows symlinks, so `TW5_BIN` names wherever the `TiddlyWiki5` submodule's real
-// bytes happen to sit on THIS disk — a checkout whose submodule resolves through a symlink elsewhere
-// (a scratch worktree, say) re-bakes a DIFFERENT `tw5BinPath`, and with it a different
-// `packTranscriptSha256`/`actorSeed`, from a checkout whose submodule sits in-tree directly, even
-// though both pack the IDENTICAL commit. The transcript records the submodule's logical, repo-relative
-// location instead — the one fact every checkout of this tree agrees on regardless of symlinks.
-const TW5_BIN_LOGICAL = path.join(REPO_ROOT, "TiddlyWiki5", "tiddlywiki.js");
+// THE ATTESTED PATH IS THE LOGICAL PATH OF THE BINARY THE BUILD READ (L6, G15). Node's module resolution follows
+// symlinks, so `TW5_BIN` names wherever the `TiddlyWiki5` submodule's real bytes sit on THIS disk; recording it
+// raw would re-bake a different `packTranscriptSha256`/`actorSeed` for two checkouts of one commit. Recording a
+// constant would attest the submodule even when the build read another binary. `resolveTw5BinLogicalPath`
+// expresses the REAL file the build ran under the repo (the submodule's own logical location when it sits in the
+// submodule's tree), so checkouts reading one binary agree and a build that read a different one records it.
+const TW5_BIN_LOGICAL = resolveTw5BinLogicalPath({ resolvedBin: TW5_BIN, repoRoot: REPO_ROOT });
+const TW5_BIN_MISMATCH = tw5BinMismatch(TW5_BIN_LOGICAL);
+if (TW5_BIN_MISMATCH) console.warn(`[plugin-build] WARNING: ${TW5_BIN_MISMATCH}`);
 
 /** sha256 — local alias to sha256HexSync from @lararium/mesh (build-time only). */
 const sha256 = sha256HexSync;
@@ -191,7 +193,7 @@ async function main(): Promise<void> {
   writePackTranscript(transcriptAbsPath, {
     format: PACK_TRANSCRIPT_FORMAT,
     generatedBy: "packages/lararium-tw5/scripts/build-plugin-tiddler.ts",
-    tw5BinPath: path.relative(REPO_ROOT, TW5_BIN_LOGICAL),
+    tw5BinPath: TW5_BIN_LOGICAL,
     tw5PackageVersion: tw5Version,
     // Replace ephemeral temp path with stable placeholder — content proved by inputRootSha256.
     packArgs: packArgs.map((a) => a.startsWith("++") ? "++{tmpInput}" : a),
