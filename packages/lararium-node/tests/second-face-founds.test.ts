@@ -55,7 +55,7 @@ async function foundFace(
   const face = await foundTheFace({ repo,
     daemonHandle,
     vesselSeed:         VESSEL_SEED,
-    vesselVerifyingKey: verifyingKey,
+    placeVerifyingKey: verifyingKey,
     vesselDisplayName:  "Multitude Shrine",
     binding:            { mode: "self-stood", signerSeed },
     hearthTrueName:     "",

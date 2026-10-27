@@ -45,7 +45,7 @@ import {
   // ── the lifted carriage machinery, now mesh-floor (re-exported below) ──
   CARRIAGE_CAP,
   carriageStack, type MeshSelf, type MeshPalaceComponent,
-  type LeafIdentity, type MeshPalaceDoc, type FlowPullResult,
+  type MeshPalaceDoc, type FlowPullResult, type PlaceSigner,
 } from "@lararium/mesh";
 import {
   composeCoreVessel, substrateCap, daemonCap, CORE_CAP,
@@ -88,7 +88,7 @@ export const CAP = {
  *  (the disclosure shore at the wire). Requires substrate + meshpalace (the doc it projects) + daemon. Disposes
  *  the face, its gates and their sessions. */
 export function flowMapReadFaceCap(deps: {
-  httpServer: Server; signerSeed: Uint8Array; storageDir: string; dispatcher?: HttpFaceDispatcher; onLog?: (line: string) => void;
+  httpServer: Server; signer: PlaceSigner; storageDir: string; dispatcher?: HttpFaceDispatcher; onLog?: (line: string) => void;
   /** The floor gates the face stands, one per Nexus, each seating through the face's own table. */
   gates:     FlowGateArgs["gates"];
 }): CapModule {
@@ -99,7 +99,7 @@ export function flowMapReadFaceCap(deps: {
       return mountFlowMapReadFace({
         httpServer:       deps.httpServer,
         meshPalaceHandle: mp.handle,
-        signerSeed:       deps.signerSeed,
+        signer:           deps.signer,
         storageDir:       deps.storageDir,
         gates:            deps.gates,
         ...(deps.dispatcher ? { dispatcher: deps.dispatcher } : {}),
@@ -146,7 +146,7 @@ export interface HermStackDeps extends DaemonCapDeps {
   readonly repo:           Repo;
   readonly residency?:     BagStowage;
   readonly httpServer:     Server;
-  readonly signerSeed:     Uint8Array;
+  readonly signer:         PlaceSigner;
   readonly storageDir:     string;
   readonly dispatcher?:    HttpFaceDispatcher;
   /** This Herm's mesh standing — derived once via deriveMeshSelf. Present → it self-announces, self-peers,
@@ -154,8 +154,6 @@ export interface HermStackDeps extends DaemonCapDeps {
   readonly meshSelf?:      MeshSelf;
   /** The flow's floor gates the read-face stands, one per Nexus this Herm stands in. */
   readonly flowGates:    FlowGateArgs["gates"];
-  /** The identity this Herm's carriage proves at each peer's gate. Absent → it carries in nothing. */
-  readonly identity?:      LeafIdentity;
   /** The gate-native pull of a peer's public FLOW-map (`gateNativeCarriagePull`): one floor dial per (peer, Nexus) at the pin
    *  this Herm's boards carried, presenting its own carriage contract. Absent → the carriage pulls nothing ("carriage-peering-shut"). */
   readonly pullFlow?:    (peer: string, publisherKey: string) => Promise<FlowPullResult<MeshPalaceDoc>>;
@@ -199,16 +197,15 @@ export async function composeHerm(d: HermStackDeps): Promise<ComposedHerm> {
     // one. That is what a crossroads IS before anyone passes.
     ...carriageStack({
       repo:        d.repo,
-      nodeSeedHex: Buffer.from(d.signerSeed).toString("hex"),
+      ...(d.meshSelf?.gatePubKey ? { cadenceKey: d.meshSelf.gatePubKey } : {}),
       ...(d.residency ? { residency: d.residency } : {}),
       ...(d.meshSelf ? { self: d.meshSelf } : {}),
-      ...(d.identity ? { identity: d.identity } : {}),
       ...(d.pullFlow ? { pullFlow: d.pullFlow } : {}),
       ...(d.pullIntervalMs !== undefined ? { pullIntervalMs: d.pullIntervalMs } : {}),
       ...(d.onLog ? { onLog: d.onLog } : {}),
     }),
     flowMapReadFaceCap({
-      httpServer: d.httpServer, signerSeed: d.signerSeed, storageDir: d.storageDir, gates: d.flowGates,
+      httpServer: d.httpServer, signer: d.signer, storageDir: d.storageDir, gates: d.flowGates,
       ...(d.dispatcher ? { dispatcher: d.dispatcher } : {}),
       ...(d.onLog ? { onLog: d.onLog } : {}),
     }),

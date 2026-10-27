@@ -26,7 +26,9 @@ import { join } from "node:path";
 import { KeyhiveProvider, InMemoryEventStore, foundCabalRealm, openDwelling, dwellersHolding } from "@lararium/keyhive";
 import { MEMBERSHIP_BROADCAST, type MembershipChannel } from "@lararium/mesh";
 import { FileMembershipChannel } from "../src/file-membership-channel.js";
-import { loadVesselSigningSeed, generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
+import { loadIdentityAnchors } from "../src/identity-anchors.js";
+import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
+import { resolveFace } from "../src/face-selector.js";
 import { PresentVerifier, memberKey, signPresent, type SwarmAdmit } from "./swarm-present.js";
 
 const envOf = (k: string, d = ""): string => process.env[k] ?? d;
@@ -39,13 +41,14 @@ const REALM_URI = envOf("LAR_SWARM_REALM", "lar:///crossroads.cabal.gathers/dock
 const ROOT = envOf("LAR_SWARM_ROOT");   // a founded .lararium dataDir → use its REAL identity (else a test key)
 const TRANSPORT = `file ${DIR}`;
 
-/** This vessel's seed: its REAL founded identity (loadVesselSigningSeed) when LAR_SWARM_ROOT
- *  points at a `lares vessel found`-founded dataDir; a deterministic test byte otherwise. */
+/** A selected face atom for a founded root; deterministic test bytes for a synthetic swarm. */
 async function loadSeed(): Promise<Uint8Array> {
   if (ROOT) {
-    await generateOrLoadVesselIdentity();   // mint this vessel's identity if absent (idempotent, = lares vessel found's mint)
-    const seed = await loadVesselSigningSeed();
-    console.log(`[swarm-node] using FOUNDED vessel identity from ${ROOT}`);
+    const anchors = await loadIdentityAnchors(await resolveFace());
+    if (!anchors) throw new Error("swarm-node: selected face holds no anchors");
+    const seed = await loadFaceAtomOfGroup(anchors.personaGroupId);
+    if (!seed) throw new Error("swarm-node: selected face holds no atom");
+    console.log(`[swarm-node] using selected face atom from ${ROOT}`);
     return seed;
   }
   return new Uint8Array(32).fill(SEED);

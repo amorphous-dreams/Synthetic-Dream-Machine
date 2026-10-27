@@ -25,7 +25,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { RESERVE_TRANSITION_DOMAIN, canonicalJsonBytes, hex, readFckCarrier, sealRollBytes } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
 import { handleBookFile } from "../src/node-circle-store.js";
-import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPersonaGroupRootSeed, loadVesselSigningSeed, setWornFaceInSession } from "../src/node-vessel-identity.js";
+import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPersonaGroupRootSeed, vesselPlaceSignerDoor, setWornFaceInSession } from "../src/node-vessel-identity.js";
 import { LABEL_ARG_LIMIT, SEALED_ACTS, SEALED_ACT_NAMES, SIGN_IMAGE_LIMIT, SNAPSHOT_ARG_LIMIT, SealedActRefused, runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
 import { handleRowPath } from "./face-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
@@ -135,7 +135,8 @@ describe("the sealed-act table", () => {
     await vessel("acts-t4");
     await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
-    const seeds = [hex(await loadPersonaGroupRootSeed(0)), hex(await loadVesselSigningSeed())];
+    const seeds = [hex(await loadPersonaGroupRootSeed(0))];
+    expect((await vesselPlaceSignerDoor()).key).toMatch(/^[0-9a-f]{64}$/);
     expect(seeds.every((s) => s.length === 64)).toBe(true);
     await runSealedAct("petname.set", { handleIndex: 0, petname: "the-first-face" }, ctx);
     await runSealedAct("declaration.set", { handleIndex: 0, declaration: { handle: "Synthetic", seat: true, chair: "first chair" } }, ctx);

@@ -31,13 +31,13 @@ function readerPull() {
       import("../packages/lararium-node/dist/src/hearth-gate-pins.js"),
     ]);
     const ownPlaceKey = (await ident.loadVesselVerifyingKey()).toLowerCase();
-    const signer = mesh.ed25519SignerFromSeed(await ident.loadVesselSigningSeed());
+    const signer = await ident.vesselPlaceSignerDoor();
     const index = mesh.hearthPinIndex();
     return (peer, publisherKey) => store.ownedStore(paths.larDataDir(), async (repo) => {
       const open = async (url, label) => (await mesh.materializeSharedLarDoc(repo, url, label)).doc();
       const pull = herm.vesselCarriagePull({
         placeClass: "herm", ownPlaceKey,
-        sign: async (image) => mesh.hexToBytes(await signer(image)),
+        sign: async (image) => mesh.hexToBytes(await signer.signFloor(mesh.carriageFloorDutyOf(image), image)),
         readings: () => raise.placeCarriedNexuses({ sealHome: paths.larSealHome(), ownVesselKey: ownPlaceKey, open }),
         ownNexus: () => null,
         openBoard: (url) => open(url, "board:carriage-contracts"),

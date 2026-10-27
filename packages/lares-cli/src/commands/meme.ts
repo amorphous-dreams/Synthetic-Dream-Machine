@@ -12,7 +12,7 @@
  *   project <file.mem> --to md [--dialect CommonMark|GFM|kramdown-rfc2629]   — RFC 7764 variant; CommonMark default
  *   project <file.mem> --to md [--tongue <bcp47>]   — weave sigil head names through their tongue's primary mirror; canonical default
  *   project --to md --check <file.md | dir>   — prove currency by re-projection alone; writes nothing
- *   promote <docs/…/x.mem> [--dest-bag <lar:uri>] [--corpus <glob>]
+ *   promote <docs/…/x.mem> [--face N] [--dest-bag <lar:uri>] [--corpus <glob>]
  *
  * A VERB DECLARES ITS SEAT. `normalize` · `check` · `project --to md` over a file run LOCAL — they open a
  * path, read its bytes, and (normalize, project) write bytes back: no daemon, no store, no cap gate, no
@@ -90,8 +90,8 @@ import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { projectSubmission, PROFILES, profileOf, recordedTargetOf, resolveWeaveTarget, type WeaveProfile } from "@lararium/tw5/weave";
 import { readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle } from "@lararium/tw5";
 import { verifyBcc, verdict, classifyPostEot, stampCarrier } from "@lararium/memetic-frame";
-import { newChangeId, ed25519SignerFromSeed } from "@lararium/mesh";
-import { loadVesselSigningSeed, loadVesselVerifyingKey, runPromoteCheckBytes } from "@lararium/node";
+import { newChangeId } from "@lararium/mesh";
+import { faceSigningSeat, listFaceOrdinals, runPromoteCheckBytes } from "@lararium/node";
 import { vesselDid, larSealHome } from "../env.js";
 import { containerArgs } from "../container-target.js";
 import { runVerb, verbFailure } from "../verb-call.js";
@@ -1062,7 +1062,7 @@ function projectMdCheck(args: ParsedArgs): number {
  */
 async function memePromote(args: ParsedArgs): Promise<number> {
   const file = args.positional[1];
-  if (!file) throw new UsageError("lares meme promote <…/x.mem> [--approval <approval.json>] [--from-bag <b>] [--dest-bag <b>] — name the carrier to cross");
+  if (!file) throw new UsageError("lares meme promote <…/x.mem> [--face N] [--approval <approval.json>] [--from-bag <b>] [--dest-bag <b>] — name the carrier to cross");
   const root = process.cwd();
   const destBag = typeof args.options["dest-bag"] === "string" ? args.options["dest-bag"].trim() : undefined;
   const fromBag = typeof args.options["from-bag"] === "string" ? args.options["from-bag"].trim() : undefined;
@@ -1077,8 +1077,15 @@ async function memePromote(args: ParsedArgs): Promise<number> {
     return exitFor("verb-error");
   }
 
-  const did     = await vesselDid();
-  const seedKey = await loadVesselVerifyingKey();
+  const rawFace = args.options["face"];
+  if (args.flags["face"] !== undefined || (rawFace !== undefined && (typeof rawFace !== "string" || !/^(?:0|[1-9][0-9]*)$/.test(rawFace)))) {
+    throw new UsageError("face-malformed: --face N names a whole handle index");
+  }
+  if (typeof rawFace === "string" && !Number.isSafeInteger(Number(rawFace))) throw new UsageError("face-malformed: --face N names a safe handle index");
+  if (rawFace === undefined && listFaceOrdinals().length > 1) throw new UsageError("face-not-named: this vessel holds several faces; name the signing face with --face N");
+  const atom = await faceSigningSeat(typeof rawFace === "string" ? Number(rawFace) : undefined);
+  const seedKey = atom.key;
+  const did = `0x${atom.key}`;
   // The record's title, read once for the CAP REHEARSAL — the crossing re-reads the carrier for itself, and
   // a rehearsal needs a title to name. An unreadable carrier falls through to the crossing's own refusal.
   const abs   = isAbsolute(file) ? file : join(root, file);
@@ -1114,7 +1121,7 @@ async function memePromote(args: ParsedArgs): Promise<number> {
       const r = await summonMove(m, false);
       return r.ok ? { ok: true, moved: 1 } : { ok: false, reason: r.reason };
     },
-    sign: ed25519SignerFromSeed(await loadVesselSigningSeed()),
+    sign: atom.sign,
     verifyApproval: (candidate, bytes) => runPromoteCheckBytes({ approval: candidate, bytes, sealHome: larSealHome(), ...(args.options["nexus"] ? { aid: args.options["nexus"] } : {}) }),
   };
 

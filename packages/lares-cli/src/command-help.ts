@@ -384,7 +384,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares meme check bags/**/*.mem                         # CI / pre-commit: drift exits 1",
       "lares meme project note.mem --to md --out ./out        # the submission pair, clock-free",
       "lares meme project --to md --check bags/…/submissions   # every pair on the shelf re-projects clean",
-      "lares meme promote bags/…/docs/pono/x.mem              # the canon crossing, receipt beside the carrier",
+      "lares meme promote bags/…/docs/pono/x.mem --face 0     # the selected face signs the canon crossing",
       "lares meme promote x.mem --dest-bag lar:///ha.ka.ba/bags/crossroads --approval a.json  # publish for the Nexus: the seats approved these bytes",
     ],
     flags: [

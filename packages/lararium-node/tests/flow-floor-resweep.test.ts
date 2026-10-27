@@ -1,3 +1,4 @@
+import { placeSignerFromSeed } from "@lararium/mesh";
 /**
  * flow-floor-resweep — the flow face's floor gates follow the Nexuses this vessel stands in, at every refold, as the
  * sync gates do (`mountFlowReadFace`'s `gates.onMoved`).
@@ -71,7 +72,7 @@ async function stand(initial: readonly string[]) {
     return out;
   }, { onMoved: (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; } });
   const dispatcher = recordingDispatcher();
-  const face = await mountFlowMapReadFace({ httpServer: server, meshPalaceHandle: handle, signerSeed: SEED, storageDir: dir, gates, dispatcher });
+  const face = await mountFlowMapReadFace({ httpServer: server, meshPalaceHandle: handle, signer: placeSignerFromSeed(SEED), storageDir: dir, gates, dispatcher });
   entry.face = face;
   return {
     face, dispatcher, worlds, listeners,

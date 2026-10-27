@@ -2,11 +2,12 @@ import { cpSync, mkdtempSync, readFileSync, rmSync, unlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
-import { CARRIAGE_CARRIER_DOMAIN, FACE_CHECKPOINT_INFO, PLACE_SIGNER_DOMAINS, faceAtomKeyFromSeed, placeSignerFromSeed, readFckCarrier } from "@lararium/mesh";
+import { CARRIAGE_CARRIER_DOMAIN, FACE_CHECKPOINT_INFO, PLACE_SIGNER_DOMAINS, faceAtomKeyFromSeed, verifyEd25519, readFckCarrier } from "@lararium/mesh";
+import { faceSigningSeat } from "../src/face-signing-seat.js";
 import { runFoundTheFace } from "../src/commands/init.js";
 import { faceAtomGroupFile, loadFaceAtomOfGroup } from "../src/face-atom-store.js";
 import { loadLeafIdentity } from "../src/leaf-identity.js";
-import { loadVesselSigningSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
+import { vesselPlaceSignerDoor, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { groupRowPath } from "./face-paths.js";
 import { larIdentityDir, larDataDir } from "../src/vessel-paths.js";
@@ -41,15 +42,24 @@ describe("the atom boots the face", () => {
     const seed = (await loadFaceAtomOfGroup(group))!;
     const atom = faceAtomKeyFromSeed(seed, group);
     const placeKey = await loadVesselVerifyingKey();
-    const presenter = await loadLeafIdentity("face", { handleIndex: 0, personaGroupId: group });
+    const presenter = await loadLeafIdentity({ handleIndex: 0, personaGroupId: group });
     expect(presenter.arm).toBe("face");
     expect(presenter.peerPubKey).toBe(atom.key);
     expect(presenter.peerPubKey).not.toBe(placeKey);
-    const floor = placeSignerFromSeed(await loadVesselSigningSeed());
+    const floor = await vesselPlaceSignerDoor();
     expect(PLACE_SIGNER_DOMAINS).toContain(CARRIAGE_CARRIER_DOMAIN);
     expect(PLACE_SIGNER_DOMAINS).not.toContain(FACE_CHECKPOINT_INFO);
     await expect(floor.signFloor(FACE_CHECKPOINT_INFO, new TextEncoder().encode(FACE_CHECKPOINT_INFO))).rejects.toThrow(/no floor duty/);
   }, 180_000);
+
+  test("RED: a place-key meme signature cannot verify for the face; CONTROL: the selected atom can", async () => {
+    const selected = await faceSigningSeat(0);
+    const placeKey = await loadVesselVerifyingKey();
+    const image = new TextEncoder().encode("meme-promotion-face-relation");
+    const floor = await vesselPlaceSignerDoor();
+    await expect(floor.signFloor("meme-promotion-face-relation", image)).rejects.toThrow(/no floor duty/);
+    expect(verifyEd25519(await selected.sign(image), image, selected.key)).toBe(true);
+  });
 
   test("the atom row is face-key sealed and a locked custody seat opens none", async () => {
     const row = groupRowPath(group, faceAtomGroupFile(group));
@@ -63,8 +73,8 @@ describe("the atom boots the face", () => {
 
   test("a worn face with no atom refuses by name; the row present opens", async () => {
     const row = groupRowPath(group, faceAtomGroupFile(group));
-    expect(await loadLeafIdentity("face", { handleIndex: 0, personaGroupId: group })).toMatchObject({ arm: "face" });
+    expect(await loadLeafIdentity({ handleIndex: 0, personaGroupId: group })).toMatchObject({ arm: "face" });
     unlinkSync(row);
-    await expect(loadLeafIdentity("face", { handleIndex: 0, personaGroupId: group })).rejects.toThrow("this face holds no atom; re-found or re-admit it");
+    await expect(loadLeafIdentity({ handleIndex: 0, personaGroupId: group })).rejects.toThrow("this face holds no atom; re-found or re-admit it");
   }, 180_000);
 });

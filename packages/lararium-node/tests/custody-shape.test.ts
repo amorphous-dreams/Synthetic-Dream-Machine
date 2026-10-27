@@ -87,13 +87,13 @@ describe("readCustodyShape — the custody shape refusal reads before any write"
       sow(homes, {
         "identity/.vessel-key.json": "{}",
         "identity/s-slots.bin": "slots",
-        "identity/place-archive.bin": otherSchemeBytes("kh"),
+        [`identity/faces/${"ab".repeat(16)}/veil-archive-g${"cd".repeat(32)}.bin`]: otherSchemeBytes("kh"),
       });
       for (const r of [reading, { sealed: () => true }]) {
         const shape = readCustodyShape(homes, r);
         expect(shape.kind).toBe("occupied");
         if (shape.kind === "occupied") {
-          expect(shape.offenders).toEqual([{ home: "identity", file: "place-archive.bin", row: "place-archive", reason: "unknown-envelope" }]);
+          expect(shape.offenders).toEqual([{ home: "identity", file: `faces/${"ab".repeat(16)}/veil-archive-g${"cd".repeat(32)}.bin`, row: "veil-archive", reason: "unknown-envelope" }]);
         }
       }
     } finally { rmSync(root, { recursive: true, force: true }); }
@@ -145,7 +145,6 @@ describe("readCustodyShape — the custody shape refusal reads before any write"
       sow(homes, {
         "identity/.vessel-key.json": "{}",
         "identity/.vessel-kel.json": "{}",
-        "identity/.vessel-card.json": "{}",
         "nexus/founding-roster.mem": "charter",
         "nexus/nexus/carriage-admit/AID1.json": "{}",
       });

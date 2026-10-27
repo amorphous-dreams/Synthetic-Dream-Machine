@@ -9,7 +9,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { ACTION_VERBS, isVerbRefusal } from "@lararium/mesh";
-import { operatorDaemonOptions } from "../src/operator-daemon-behavior.js";
+import { makeOperatorDaemonBehavior, operatorDaemonOptions } from "../src/operator-daemon-behavior.js";
 import { VerbTable } from "@lararium/tw5";
 
 const fakeCtx = () => ({
@@ -23,7 +23,7 @@ const fakeCtx = () => ({
 
 const manifest = (face: boolean) => ({
   daemonAuth: {
-    vesselVerifyingKey: "a".repeat(64),
+    placeVerifyingKey: "a".repeat(64),
     registerBags: [],
     ...(face ? { personaGroupId: "ab".repeat(16) } : {}),
   },
@@ -44,6 +44,12 @@ const verbCtx = () => ({
 }) as never;
 
 describe("the faceless floor refuses content verbs by name", () => {
+  test("RED: a faceless daemon composes no Keyhive verifier; CONTROL: its public read stays registered", async () => {
+    const opts = operatorDaemonOptions(manifest(false));
+    const verifier = await opts.verifierFactory!(fakeCtx());
+    expect(await verifier.verify({ presenter: "public", bagUrl: "lar:///daemon", access: "read" })).toMatchObject({ ok: false, reason: expect.stringContaining("waking-floor") });
+    expect(wire(false).get("where")).toBeTypeOf("function");
+  });
   test("V1 — every ACTION verb refuses with the lift and reaches no cap", async () => {
     const registry = wire(false);
     capCalls.length = 0;
@@ -82,6 +88,25 @@ describe("the faceless floor refuses content verbs by name", () => {
     for (const v of ["where", "resolve", "list-wikis", "open-wiki", "meme-get"]) {
       expect(registry.get(v), v).toBeTypeOf("function");
     }
+  });
+
+  test("a public resolve read runs at the floor without asking Keyhive", async () => {
+    const registry = new VerbTable();
+    const ctx = {
+      repo: {} as never, catalogUrl: "automerge:fakeCatalog", oracleUrl: "automerge:fakeOracle",
+      tw5: {} as never, post: () => {},
+      composite: {
+        resolveAll: async () => [],
+        listKapaeBags: async () => [],
+        resolveLayered: async () => null,
+      },
+    } as never;
+    operatorDaemonOptions(manifest(false)).wireWorkerVerbs?.(registry, ctx);
+    const read = await registry.get("resolve")!({ tiddler: "lar:///public" }, {
+      ...verbCtx(),
+      cap: async () => { throw new Error("public read asked Keyhive"); },
+    } as never);
+    expect(read).toMatchObject({ tiddler: "lar:///public", manifestations: [], winningBag: null });
   });
 
   test("control — with a face, CREATE is the real reactor, not the floor's refusal", async () => {

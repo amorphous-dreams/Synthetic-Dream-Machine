@@ -43,7 +43,7 @@ import {
   makeNodeFsPersonaVault, loadActivePersonaIndex, wearPersona,
   makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, makeNodePublicHandleStore,
   generateOrLoadVesselIdentity, VesselKeyMintRefused, VesselInceptionRefused,
-  setWornFaceInSession, loadVesselIdentity, loadVesselVerifyingKey, loadVesselSigningSeed, vesselFloorKeyDoor,
+  setWornFaceInSession, loadVesselIdentity, loadVesselVerifyingKey, vesselPlaceSignerDoor, vesselFloorKeyDoor,
 } from "../src/node-vessel-identity.js";
 import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
@@ -469,7 +469,7 @@ describe("sealed vessel identity family", () => {
     const doors: ReadonlyArray<readonly [string, () => Promise<unknown>]> = [
       ["the boot's identity read", () => loadVesselIdentity()],
       ["the public key", () => loadVesselVerifyingKey()],
-      ["the signing seed", () => loadVesselSigningSeed()],
+      ["the scoped place signer", () => vesselPlaceSignerDoor()],
       ["the floor key's derive door", async () => (await vesselFloorKeyDoor()).derive(GATE_FLOOR_BUNDLE_INFO)],
     ];
     // control: over the intact inception every door answers
@@ -497,7 +497,7 @@ describe("sealed vessel identity family", () => {
       ["the found act's load", () => mintVessel()],
       ["the boot's identity read", () => loadVesselIdentity()],
       ["the public key", () => loadVesselVerifyingKey()],
-      ["the signing seed", () => loadVesselSigningSeed()],
+      ["the scoped place signer", () => vesselPlaceSignerDoor()],
       ["the floor key's derive door", async () => (await vesselFloorKeyDoor()).derive(GATE_FLOOR_BUNDLE_INFO)],
     ];
     for (const [what, door] of doors) await expect(door(), what).resolves.toBeDefined();          // control

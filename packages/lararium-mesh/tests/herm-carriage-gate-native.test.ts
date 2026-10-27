@@ -1,3 +1,4 @@
+import { placeSignerFromSeed } from "../src/place-signer.js";
 /**
  * herm-carriage-gate-native — carriage peering and the herm-to-herm relay of the public map, reopened gate-native.
  *
@@ -30,7 +31,7 @@ const enc = (text: string): Uint8Array => new TextEncoder().encode(text);
 /** The herm: a floor gate at `w`'s Nexus serving one FLOW map signed by its vessel key, as the node face serves it. */
 async function herm(w: World, serve: (send: () => void) => void = (send) => send()) {
   const snap = await exportFlowSnapshot(A.from({ tiddlers: { "dial/node-alpha": { text: "lar:///ha.ka.ba/@flow/node/alpha" } } }));
-  const ptr = await buildFlowPointer({ snapshot: snap, parents: [], signerSeed: HERM_SEED });
+  const ptr = await buildFlowPointer({ snapshot: snap, parents: [], signer: placeSignerFromSeed(HERM_SEED) });
   const served = { count: 0 };
   const gate = gateOver(w, channelSessionTable((channel: GateSessionChannel) => {
     served.count++;

@@ -32,6 +32,7 @@ const pubOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPub
 const seed  = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const FOUNDER_SEED = seed(60);
 const JOINEE_SEED  = seed(160);
+const JOINEE_PLACE_SEED = seed(161);
 const BAG = "lar:///ha.ka.ba/bags/catalog/handle-shared";
 
 /** Boot a live keyhive over a founded/admitted daemon doc, the way a real vessel boots. */
@@ -51,15 +52,15 @@ async function bootOver(repo: Repo, daemonUrl: string, s: Uint8Array, verifyingK
   const lease = await readLeaseFrontier(composite, pg.groupId);
   if (lease.kind !== "epoch") throw new Error(`fixture: lease frontier unavailable (${lease.why})`);
   return bootDaemonKeyhive({
-    seed: s, eventStore: new DaemonEventStore({ daemon: composite }),
-    vesselVerifyingKey: verifyingKey,
+    atomSeed: s, eventStore: new DaemonEventStore({ daemon: composite }),
+    placeVerifyingKey: verifyingKey,
     faceVerifyingKey: (deviceEdge as { deviceVerifyingKey: string }).deviceVerifyingKey,
     personaGroupId: pg.groupId, meshCabalDocIdHex: mesh,
     registerBags: [DAEMON_BAG_ID], signerDid, personaKel: { prefix: personaKelPrefix, chain },
     deviceEdge: deviceEdge as never, expectedEpoch: lease.n,
     faceAnchor: mintFaceAnchor({ personaGroup: pg.groupId, personaKelPrefix,
       personaRootDid: (deviceEdge as { personaRootDid: string }).personaRootDid, edge: deviceEdge, leaseEpoch: lease.n }),
-    ...(archiveBytes ? { archiveBytes } : {}),
+    ...(archiveBytes ? { veilArchiveBytes: archiveBytes } : {}),
   });
 }
 
@@ -67,11 +68,11 @@ describe("two vessels bind under one Handle", () => {
   test("the joinee joins the founder's PersonaGroup and reads its shared content — real ceremony + boot", async () => {
     const founderRepo = new Repo({ sharePolicy: async () => true });
     const founderKey = await pubOf(FOUNDER_SEED);
-    const cer = await runFoundingCeremony({ repo: founderRepo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: founderKey,
+    const cer = await runFoundingCeremony({ repo: founderRepo, atomSeed: seed(61), placeVerifyingKey: founderKey,
       vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: founderKey,
     });
     const pg = { groupId: cer.personaGroupId };
-    const { keyhive: founder } = await bootOver(founderRepo, cer.daemonUrl, FOUNDER_SEED, founderKey, pg, cer.meshCabalDocIdHex, cer.signerDid, cer.personaKelPrefix, cer.founderEdge);
+    const { keyhive: founder } = await bootOver(founderRepo, cer.daemonUrl, cer.atomSeed, founderKey, pg, cer.meshCabalDocIdHex, cer.signerDid, cer.personaKelPrefix, cer.founderEdge, cer.veilArchive);
     // Snapshot the founder's KEL chain — the admit payload carries it so the joinee seeds its LOCAL board.
     const founderKelBoard = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(founderKey), "board:persona-kel");
     const founderKelChain = personaKelChainForPrefix(founderKelBoard.doc(), cer.personaKelPrefix)!;
@@ -82,6 +83,7 @@ describe("two vessels bind under one Handle", () => {
     const joineeCard = await joineeGen.contactCard();
     const joineeArchive = await joineeGen.exportArchive();
     const joineeKey = await pubOf(JOINEE_SEED);
+    const joineePlaceKey = await pubOf(JOINEE_PLACE_SEED);
 
     // Founder registers the shared bag, then mints the joinee into the PersonaGroup + packs the content.
     const { docId } = await founder.registerBag(BAG);
@@ -106,11 +108,11 @@ describe("two vessels bind under one Handle", () => {
     // Joinee applies the payload (writes the membership to its own daemon doc), then BOOTS restoring its Archive.
     const joineeRepo = new Repo({ sharePolicy: async () => true });
     const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo), atomSeed: JOINEE_SEED,
-      vesselDisplayName: "Joinee", payload, nexusPubkey: joineeKey,
+      vesselDisplayName: "Joinee", payload, nexusPubkey: joineePlaceKey,
     });
-    const { keyhive: joineePlace } = await bootOver(joineeRepo, applied.daemonUrl, JOINEE_SEED, joineeKey,
+    const { keyhive: joineePlace } = await bootOver(joineeRepo, applied.daemonUrl, JOINEE_SEED, joineePlaceKey,
       { groupId: payload.personaGroupId }, payload.meshCabalDocIdHex,
-      payload.signerDid, payload.personaKelPrefix, applied.deviceEdge);
+      payload.signerDid, payload.personaKelPrefix, applied.deviceEdge, joineeArchive);
     const joineeHandle = await joineeRepo.find<LarDoc>(applied.daemonUrl as AutomergeUrl);
     const joinee = new KeyhiveProvider();
     await joinee.init({ seed: JOINEE_SEED, eventStore: await replayCapEvents(joineeHandle as never), archiveBytes: joineeArchive });

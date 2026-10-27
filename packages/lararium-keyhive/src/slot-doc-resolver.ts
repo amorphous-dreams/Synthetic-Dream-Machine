@@ -41,7 +41,8 @@ export interface SlotDocResolverArgs {
   readonly repo: SlotDocRepo;
   /** The daemon-bag composite — binding records live here. */
   readonly daemonStore: CompositeStore;
-  readonly keyhive: CapabilityProvider;
+  /** Absent at the faceless floor: a floor document carries no Keyhive registration. */
+  readonly keyhive?: CapabilityProvider;
   /** The user registry — floor docs and user wikis' canon urls. Null when the vessel holds no catalog grant. */
   readonly catalog: CatalogAccessor | null;
   /** The vessel DID, the one spelling (`didFromVerifyingKey`) — the floor key derives from it. */
@@ -104,7 +105,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
   const binding = async (kind: Exclude<WikiSlotKind, "temp">, fingerprint: string, recipeTrace: RecipeTrace): Promise<SlotDoc> => {
     const r = await resolveOrMintBinding({
       kind: PREFIX_OF[kind].kind, prefix: PREFIX_OF[kind].prefix, fingerprint, recipeTrace,
-      repo: args.repo, daemonStore: args.daemonStore, keyhive: args.keyhive,
+      repo: args.repo, daemonStore: args.daemonStore, ...(args.keyhive ? { keyhive: args.keyhive } : {}),
       ...(args.personaGroupId ? { personaGroupId: args.personaGroupId } : {}),
       ...(args.faceDoor ? { faceDoor: args.faceDoor } : {}),
       ...(args.faceSeated ? { faceSeated: args.faceSeated } : {}),

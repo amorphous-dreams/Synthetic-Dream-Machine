@@ -341,7 +341,7 @@ export const FACE_BUNDLE_MEMORY_INFO = mint("face-bundle-memory");
 /** A PARTY'S OWN LOG VIEW of one face: the head a guardian, a seated chair or a sibling device holds for that
  *  face's key history, signed by the party's own key. A restored face stands provisional until one agrees. */
 export const FACE_LOG_VIEW_DOMAIN = mint("face-log-view");
-/** The relay gate's seed derivation — the crossroads transport identity, never the vessel's own. */
+/** The relay-gate domain marker retained for the no-derivation regression proof. */
 export const RELAY_GATE_INFO = frozen("relay-gate");
 /** The per-shrine KNOCK's key: a gate answers an upgrade only on the path an HMAC under SHA-256(this name ‖ its
  *  gate key) derives (`gate-knock`), so a dialer that pinned no gate key reaches no gate. A derivation, never a

@@ -267,7 +267,7 @@ describe("the hearth's door — kept where a joinee always reads it", () => {
     const atomSeed = new Uint8Array(32).fill(83), joineeAtom = new Uint8Array(32).fill(72);
     const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: HEARTH });
     const face = await foundTheFace({
-      repo: founderRepo, daemonHandle: founder.daemonHandle, vesselVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
+      repo: founderRepo, daemonHandle: founder.daemonHandle, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
       binding: { mode: "self-stood", signerSeed }, hearthTrueName: HEARTH, nexusPubkey: key(founderSeed), atomSeed,
     });
     const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(key(founderSeed)), "board:persona-kel");

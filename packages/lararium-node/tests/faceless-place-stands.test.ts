@@ -36,7 +36,7 @@ const fakeCtx = () => ({
 
 const manifest = (face: boolean) => ({
   daemonAuth: {
-    vesselVerifyingKey: "a".repeat(64),
+    placeVerifyingKey: "a".repeat(64),
     registerBags: [],
     ...(face ? { personaGroupId: "ab".repeat(16) } : {}),
   },

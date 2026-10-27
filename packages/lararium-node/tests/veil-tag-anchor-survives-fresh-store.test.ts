@@ -11,7 +11,7 @@ const pubOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPub
 async function lightAFace(repo: Repo, verifyingKey: string, atomSeed: Uint8Array) {
   const place = await foundThePlace({ repo, vesselSeed: SEED, hearthTrueName: "" });
   const face = await foundTheFace({ repo, daemonHandle: place.daemonHandle,
-    atomSeed, vesselVerifyingKey: verifyingKey, vesselDisplayName: "Repave Shrine",
+    atomSeed, placeVerifyingKey: verifyingKey, vesselDisplayName: "Repave Shrine",
     binding: { mode: "self-stood", signerSeed: SEED }, hearthTrueName: "", nexusPubkey: verifyingKey,
   });
   return faceAtomKeyFromSeed(atomSeed, face.personaGroupId).key;

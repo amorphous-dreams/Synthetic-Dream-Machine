@@ -40,25 +40,17 @@ export function makeFaceBagDoor({ face, groupId, ledger }: { face: CapabilityPro
 }
 
 /**
- * A bag answers to the provider that minted it: the face's own bags to the face's atom provider, the vessel's ground
- * (the daemon bag, the oracle plane) to the place's. A session over the local channel presents as the mounted face's
- * atom (`presenterFor`), and the device it wears holds the place too, so on a ground bag the mounted atom reads as the
- * place's own hand, and only on the LOCAL channel: the atom key rides public in device edges and grant records, so a
- * synced summons that claims it borrows nothing. No other presenter borrows it either: a stranger's DID reaches the
- * verifier unchanged and finds no grant.
+ * A face bag answers through the selected atom provider. The public place key grants no
+ * Keyhive hand; an equal atom and place key marks a torn mount and refuses.
  */
-export function faceOwnerVerifier({ vessel, face, mount }: {
-  vessel: KeyhiveProvider;
-  face: KeyhiveProvider | null;
-  mount?: { readonly atomKey: string; readonly placeKey: string };
+export function faceOwnerVerifier({ face, mount }: {
+  face: KeyhiveProvider;
+  mount: { readonly atomKey: string; readonly placeKey: string };
 }): CapabilityVerifier {
   const bare = (did: string): string => did.trim().toLowerCase().replace(/^0x/, "");
   return {
     async verify(args) {
-      if (!face || !face.docIdOfBag(args.bagUrl)) {
-        if (mount && args.channel === "local" && bare(args.presenter) === bare(mount.atomKey)) return vessel.verify({ ...args, presenter: `0x${bare(mount.placeKey)}` });
-        return vessel.verify(args);
-      }
+      if (bare(mount.atomKey) === bare(mount.placeKey)) throw new Error("[face-owner] face atom equals the public place key");
       return face.verify(args);
     },
   };

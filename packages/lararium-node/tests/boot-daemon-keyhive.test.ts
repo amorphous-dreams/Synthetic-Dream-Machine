@@ -24,12 +24,14 @@ import {
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, enrolmentDigestOf, personaEventCidOf,
   mintFaceAnchor,
+  ed25519SignerFromSeed, deviceAtomProofBytes,
 } from "@lararium/mesh";
 import {
-  KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremony,
+  KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, FacelessKeyhiveRefused, LegacyFaceSignatureRefused, runFoundingCeremony,
   type BootDaemonKeyhiveInput } from "@lararium/keyhive";
 
 const SEED = new Uint8Array(32).fill(7);
+const ATOM_SEED = new Uint8Array(32).fill(8);
 
 interface Founded {
   verifyingKey: string;
@@ -51,8 +53,8 @@ beforeAll(async () => {
   await probe.dispose();
 
   // Found a real operator into the in-memory repo (host pre-spawn step).
-  const cer = await runFoundingCeremony({ repo, vesselSeed: SEED,
-    vesselVerifyingKey: verifyingKey,
+  const cer = await runFoundingCeremony({ repo, atomSeed: ATOM_SEED,
+    placeVerifyingKey: verifyingKey,
     vesselDisplayName:  "Test Operator",
     binding: { mode: "self-stood", signerSeed: SEED },          // self-signed (signerDid == deviceDid) for the test founder
     hearthTrueName: "",         // hearth-agnostic in the unit test
@@ -73,10 +75,11 @@ beforeAll(async () => {
 
   const eventStore = new DaemonEventStore({ daemon: composite });
   founded = {
-    verifyingKey, eventStore,
+    verifyingKey: cer.founderEdge.deviceVerifyingKey, eventStore,
     bootArgs: {
-      seed: SEED, eventStore,
-      vesselVerifyingKey:  verifyingKey,
+      atomSeed: ATOM_SEED, eventStore,
+      placeVerifyingKey: verifyingKey,
+      veilArchiveBytes: cer.veilArchive,
       personaGroupId:   cer.personaGroupId,
       meshCabalDocIdHex:     cer.meshCabalDocIdHex,
       registerBags:          [DAEMON_BAG_ID],
@@ -91,6 +94,35 @@ beforeAll(async () => {
 });
 
 describe("bootDaemonKeyhive", () => {
+  test("RED: a faceless place refuses by name; CONTROL: its selected face atom boots", async () => {
+    await expect(bootDaemonKeyhive({ eventStore: founded.eventStore, registerBags: [] })).rejects.toThrow(FacelessKeyhiveRefused);
+    const lit = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
+    expect(lit.did.endsWith(founded.verifyingKey)).toBe(true);
+    await lit.keyhive.dispose();
+  });
+
+  test("RED: the place seed cannot pass Gate A for the face; CONTROL: its atom can", async () => {
+    await expect(bootDaemonKeyhive({ ...founded.bootArgs, atomSeed: SEED, veilArchiveBytes: undefined, expectedEpoch: 0 })).rejects.toThrow(/Gate A.*atom/);
+    const lit = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
+    expect(lit.did.endsWith(founded.verifyingKey)).toBe(true);
+    await lit.keyhive.dispose();
+  });
+
+  test("RED: a face edge countersigned by the place key refuses by name; CONTROL: the atom edge boots", async () => {
+    const edge = founded.bootArgs.deviceEdge!;
+    const old = { ...edge, atomSignature: await ed25519SignerFromSeed(SEED)(deviceAtomProofBytes(edge)) };
+    await expect(bootDaemonKeyhive({ ...founded.bootArgs, deviceEdge: old, expectedEpoch: 0 })).rejects.toThrow(LegacyFaceSignatureRefused);
+    const lit = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
+    await lit.keyhive.dispose();
+  });
+  test("RED: face B cannot countersign A's edge; CONTROL: A's atom clears the Binding Gate", async () => {
+    const edge = founded.bootArgs.deviceEdge!;
+    const otherAtom = new Uint8Array(32).fill(9);
+    const other = { ...edge, atomSignature: await ed25519SignerFromSeed(otherAtom)(deviceAtomProofBytes(edge)) };
+    await expect(bootDaemonKeyhive({ ...founded.bootArgs, deviceEdge: other, expectedEpoch: 0 })).rejects.toThrow(/Binding Gate|Face anchor/);
+    const lit = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
+    await lit.keyhive.dispose();
+  });
   test("clears Gate A + the Binding Gate, registers the daemon bag, and verifies operator admin", async () => {
     const { keyhive, did } = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
 
@@ -139,7 +171,7 @@ describe("bootDaemonKeyhive", () => {
 
   test("HALTs on identity drift (Gate A)", async () => {
     await expect(bootDaemonKeyhive({
-      ...founded.bootArgs, vesselVerifyingKey: "deadbeefdeadbeef",
+      ...founded.bootArgs, faceVerifyingKey: "deadbeefdeadbeef",
     })).rejects.toThrow(/Gate A/);
   });
 
