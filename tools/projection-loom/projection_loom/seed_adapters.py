@@ -172,6 +172,63 @@ def _build_proxy(program):
     return a
 
 
+def image_growth_program(seed:SeedEntry):
+    """Infer *provisional* bounded massing from the alpha of any RGBA subject.
+
+    The foreground bands influence genuine native geometry, not merely the
+    silhouette score. This creates no camera calibration, real scale, or hidden
+    three-dimensional observations. It is an intentionally weak hypothesis,
+    appropriate when the seed supplies only one visual viewpoint.
+    """
+    if seed.kind!="image-group":
+        raise ValueError("Image-growth inference needs original image evidence")
+    with Image.open(seed.locator) as original:
+        if original.mode!="RGBA":
+            raise ValueError("Original image must carry RGBA")
+        a=original.getchannel("A").point(lambda v:255 if v>96 else 0)
+        bbox=a.getbbox()
+        if bbox is None:
+            raise ValueError("No foreground in original image")
+        x0,y0,x1,y1=bbox
+        width=max(1,x1-x0); height=max(1,y1-y0)
+        aspect=width/height
+        if aspect>1.25:
+            # Wide site: grow horizontal locations on one supporting foundation.
+            root_w=min(10.,max(3.5,aspect*3.))
+            root=GrowthNode("root","foundation",size=(root_w,3.,1.5))
+            nodes=[root]
+            for face in ("east","west"):
+                nodes.append(GrowthNode("site_"+face,"spawn",parent="root",
+                    face=face,size=(1.6,2.2,1.4)))
+            return GrowthProgram(tuple(nodes))
+        bands=[]
+        for j in range(4):
+            low=y1-round((j+1)*height/4)
+            high=y1-round(j*height/4)
+            box=a.crop((x0,low,x1,high)).getbbox()
+            if box is None:
+                continue
+            left,right=box[0],box[2]
+            bands.append((max(.9,min(6.,4.5*(right-left)/width)),
+                          3.0*((left+right)/2-width/2)/width))
+    if not bands:
+        raise ValueError("Source had no usable architectural foreground")
+    nodes=[]
+    previous=None
+    previous_center=0.
+    for index,(width,center) in enumerate(bands):
+        key="root" if index==0 else f"mass_{index:02d}"
+        if previous is None:
+            nodes.append(GrowthNode(key,"foundation",size=(width,2.4,1.7)))
+        else:
+            nodes.append(GrowthNode(key,"spawn",parent=previous,face="up",
+                size=(width,2.4,1.6),
+                offset=(round(center-previous_center,5),0.)))
+        previous=key
+        previous_center=center
+    return GrowthProgram(tuple(nodes))
+
+
 def _build_image_hypothesis(path):
     """Explicitly provisional native starting mass, never inverse metric survey."""
     with Image.open(path) as img:

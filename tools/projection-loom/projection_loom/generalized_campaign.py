@@ -11,7 +11,7 @@ import json
 import numpy as np
 
 from .intent_seed import SeedBundle, IntentContract, GrowthContext
-from .seed_adapters import compose_adapters, proxy_growth_program
+from .seed_adapters import compose_adapters, proxy_growth_program, image_growth_program
 from .developmental import GrowthNode, GrowthProgram, compile_growth, mutate_growth, crossover_growth
 from .intent_evolution import (QualityArchive, ScoredCandidate, structural_descriptor,
                                fair_auditions, fixed_inspection_cameras,
@@ -47,7 +47,11 @@ def initial_program(adapters):
               grammar.program["steps"][0]["size"])
         nodes=[GrowthNode("root","foundation",size=tuple(size))]
     else:
-        nodes=[GrowthNode("root","foundation",size=(3,3,7))]
+        # The original picture drives native shape hypotheses. The result
+        # remains a proposal in arbitrary units with a provisional camera.
+        first=sorted((a for a in adapters if a.seed.kind=="image-group"),
+                     key=lambda a:a.seed.identity)[0]
+        nodes=list(image_growth_program(first.seed).nodes)
     if grammar:
         if "growth_program" in grammar.program:
             authored=GrowthProgram.from_dict(grammar.program["growth_program"])

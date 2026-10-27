@@ -105,3 +105,34 @@ def test_typed_grammar_and_proxy_voids_are_real_native_constructions(tmp_path):
     assert len(result.voids.voids)==2
     assert "exterior_gate" in result.voids.voids
     assert proxy_growth_program(z.program).identity
+
+
+def test_image_foreground_changes_native_proposal_not_only_fitness(tmp_path):
+    from projection_loom.seed_adapters import image_growth_program
+    from projection_loom.developmental import compile_growth
+    from projection_loom.intent_seed import SeedEntry
+    a=Image.new("RGBA",(64,96),(0,0,0,0))
+    b=Image.new("RGBA",(64,96),(0,0,0,0))
+    from PIL import ImageDraw
+    ImageDraw.Draw(a).polygon([(32,7),(20,72),(28,92),(37,92),(44,72)],
+                               fill=(140,120,100,255))
+    ImageDraw.Draw(b).polygon([(9,11),(53,11),(52,75),(29,83),(15,92)],
+                               fill=(140,120,100,255))
+    a.save(tmp_path/"a.png");b.save(tmp_path/"b.png")
+    p=image_growth_program(SeedEntry.from_file("image-group",tmp_path/"a.png"))
+    q=image_growth_program(SeedEntry.from_file("image-group",tmp_path/"b.png"))
+    assert p.identity!=q.identity
+    assert compile_growth(p).audit()["valid"]
+    assert compile_growth(q).audit()["valid"]
+
+def test_wide_image_makes_multiple_lateral_sites(tmp_path):
+    from projection_loom.seed_adapters import image_growth_program
+    from projection_loom.intent_seed import SeedEntry
+    from projection_loom.developmental import compile_growth
+    picture=Image.new("RGBA",(128,64),(0,0,0,0))
+    from PIL import ImageDraw
+    ImageDraw.Draw(picture).rectangle((2,10,122,52),fill=(255,255,255,255))
+    picture.save(tmp_path/"wide.png")
+    program=image_growth_program(SeedEntry.from_file("image-group",tmp_path/"wide.png"))
+    assert {n.face for n in program.nodes if n.face}=={"east","west"}
+    assert compile_growth(program).audit()["union_valid"]
