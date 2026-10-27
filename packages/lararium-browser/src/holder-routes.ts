@@ -10,8 +10,8 @@ export const HOLDER_ROUTES = {
   "daemon:worldline-trajectory-result": "reply",
   "daemon:resolve-binding-result": "reply",
 
-  // The record port streams records to the binding that opened the port. The holder keeps no port lease until the
-  // composer lends one, so a port message drops by name (`no-port-lease`) and never reaches another binding.
+  // The record port streams records to the tab whose session holds its lease.
+  // A reply without a lease drops by name (`no-port-lease`).
   "port:snapshot": "port",
   "port:changes": "port",
   "port:reset": "port",

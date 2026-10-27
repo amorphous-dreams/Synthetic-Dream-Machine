@@ -59,7 +59,8 @@ import { makeRealmPlane, type RealmPlanesHolder } from "./realm-plane.js";
 import { noteVesselRealm, readVesselRealms } from "./edge-board.js";
 import { makeEdgeShadowRing, type EdgeShadowRing } from "./edge-shadow-ring.js";
 import { floorShadowRing } from "./floor-fleet-lanes.js";
-import type { WikiActivationCap } from "@lararium/mesh";
+import type { WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
+import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, type LeafIdentity } from "@lararium/mesh";
@@ -316,6 +317,8 @@ export type NodeOpenPhase = LarOpenPhase;
 export type AskedStanding = "lararium" | "herm";
 
 export interface NodeVesselOptions extends LarariumVesselOptions {
+  portPolicy?: PortPolicy;
+  onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   storageDir: string;
   wss:        WebSocketServer;
   catalogUrl?: string | null;
@@ -483,6 +486,7 @@ async function standDown(stood: Stood): Promise<void> {
 }
 
 export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonVmCore> {
+  ports: { place(surface: string, binding: string, msg: unknown): PortPlacement; close(binding: string): void };
   /** Started event bus — ingress rings registered; tick loop running at 20 Hz (node substrate). */
   eventBus:  LarEventBusImpl;
   /** Stop the N-accumulator tick loop (call on graceful shutdown). */
@@ -3135,6 +3139,9 @@ async function prepareNodeBootOn(
     const casDir = casDirForStorage(storageDir);
     vmManager = new VesselIslandPool({
       mainRepo:    repo,
+      // D4 lends the actor grant; this vessel opens a read-only port until then.
+      portPolicy: opts.portPolicy ?? ((binding, islandKey) => ({ faceId: wornGateFace()?.personaGroup ?? islandKey, actor: binding, edits: false, bags: [], admin: false })),
+      ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
       storageRoot: storageDir,
       // A co-located node wiki island resolves its keyhive grants in the SAME synchronous-WASM
       // slot-resolution the daemon island runs (and on the same machine). A one-time keyhive
@@ -3384,6 +3391,11 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     activeWikiId: p.slotActiveWikiId(),
     activeWikiSource: p.activeWikiSource(),
     pool: result.pool, repo: p.repo,
+    ports: {
+      place: (surface, binding, msg) => surface === "daemon" || !result.pool.has(surface)
+        ? { ok: false, reason: "surface-unknown" } : result.pool.placePort(surface, binding, msg),
+      close: (binding) => result.pool.closePortBinding(binding),
+    },
     store: result.assembly.composite,
     daemon: p.daemonVm(),
     wikiDocUrl:       result.wikiHandle.url,

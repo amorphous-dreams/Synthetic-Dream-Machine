@@ -31,6 +31,19 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
     repo = null;
   });
 
+  test("port policy crosses the browser pool door; no policy stays closed", async () => {
+    const open = { type: "port:open", portId: "p", wikiUri: WIKI_A, actor: "page", width: "full", maxRecordBytes: 4096, maxBatchBytes: 8192 };
+    const mount = { coreHash: null, recipe: { wikiSlug: "test" }, grants: { islandUrl: "automerge:fixture-lararium-url" } };
+    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
+    await pool.mountWiki(WIKI_A, mount);
+    expect(pool.placePort(WIKI_A, "page", open)).toEqual({ ok: false, reason: "port-not-granted" });
+    await pool.disposeAll();
+    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS,
+      portPolicy: (binding) => ({ faceId: "face", actor: binding, edits: false, bags: [], admin: false }) });
+    await pool.mountWiki(WIKI_A, mount);
+    expect(pool.placePort(WIKI_A, "page", open)).toEqual({ ok: true }); // control: a read-only port opens
+  });
+
   test("mountWiki registers island; has() and size reflect it", async () => {
     repo = new Repo({ sharePolicy: async () => true });
     pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });

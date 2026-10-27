@@ -36,6 +36,7 @@ import type { LockHost } from "./vessel-lock.js";
 import { defaultCryptoProvider } from "@lararium/mesh/crypto";
 import { validateSessionEnvelope, type SessionEnvelope } from "@lararium/mesh/session-contract";
 import { deviceEdgeDigest, verifyHolderSessionProof, type DeviceDelegationTiddler } from "@lararium/mesh/holder-session-proof";
+import { makePortDoor, type PortPolicy } from "@lararium/mesh/port-lease";
 import { HOLDER_ROUTES } from "./holder-routes.js";
 import { TAB_REQUESTS } from "./holder-admission.js";
 
@@ -128,6 +129,7 @@ export interface SharedHolderCoreOptions {
   /** A sealing ask waits because no ready tab of its face stands. */
   readonly onWait?:     (kind: "seal-awaits-session", personaGroup: string, messageType: string) => void;
   readonly onDrop?: (kind: string, reason: string) => void;
+  readonly portPolicy?: PortPolicy;
   /** Watch a minted session until its tab releases its lifetime lock. */
   readonly watchSession?: (sessionId: string, onDead: () => void) => void;
   /** Start the queued watch once the tab has opened under its held lock. */
@@ -210,6 +212,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
   const onDrop = opts.onDrop ?? ((kind: string, reason: string) => {
     console.warn(`[shared-holder] dropped ${kind}: ${reason}`);
   });
+  const door = makePortDoor({ ...(opts.portPolicy ? { policy: opts.portPolicy } : {}), post: (scope, msg) => houses.get(scope)?.island?.post(msg) });
   const deliver = (port: HolderPort, message: WireMessage): void => {
     const state = portStates.get(port);
     if (state) port.postMessage({ ...message, ...state.envelope });
@@ -244,6 +247,8 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     house.state = "ended";
     house.endClosed();
     if (!house.cleared) house.endServing(new Error(cause ?? "house ended before its gate cleared"));
+    for (const port of house.ports) { const state = portStates.get(port); if (state) door.closeBinding(state.envelope.sessionId); }
+    door.releaseScope(house.key);
     if (houses.get(house.key) === house) houses.delete(house.key);
     for (const stop of house.unlisten.splice(0)) stop();
     house.island?.terminate();
@@ -317,7 +322,12 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       deliver(house.owner, msg);
       return;
     }
-    if (route === "port") { onDrop(msg.type, "no-port-lease"); return; }   // the port lease waits on the composer
+    if (route === "port") {
+      const binding = typeof msg.portId === "string" ? door.holderOf(house.key, msg.portId) : undefined;
+      const port = binding ? sessions.get(binding) : undefined;
+      if (!port || !ports.has(port)) { onDrop(msg.type, "no-port-lease"); return; }
+      deliver(port, msg); return;
+    }
     if (route === "camera") {
       const cameraId = msg.cameraId;
       if (typeof cameraId !== "string") { onDrop(msg.type, "missing-camera-id"); return; }
@@ -494,6 +504,12 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       house.cameras.set(msg.cameraId, port);
     }
     const { ownerEpoch: _epoch, sessionId: _session, generation: _generation, ...islandMessage } = msg;
+    if (msg.type.startsWith("port:")) {
+      const state = portStates.get(port);
+      const placed = door.place(house.key, state?.envelope.sessionId ?? "", islandMessage);
+      if (!placed.ok) refuse(port, placed.reason, msg.type);
+      return;
+    }
     let forwarded: unknown = islandMessage;
     if (TAB_REQUESTS.has(msg.type) && typeof msg.requestId === "string") {
       const holderId = `${requestNamespace}:${++nextRequest}`;
@@ -522,7 +538,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       ended.add(port);
       ports.delete(port);
       const state = portStates.get(port);
-      if (state) { sessions.delete(state.envelope.sessionId); opts.forgetSession?.(state.envelope.sessionId); }
+      if (state) { door.closeBinding(state.envelope.sessionId); sessions.delete(state.envelope.sessionId); opts.forgetSession?.(state.envelope.sessionId); }
       portStates.delete(port);
       const house = state?.house;
       if (!house || house.state === "ended") return;
