@@ -131,8 +131,8 @@ describe("agent delegation fold", () => {
     const revoke = await buildDelegationRevoke({ group: "face", signer: f.root, epoch: 0, delegation: intentEntryCid(grant) });
     const bad = await f.call(grant, f.other), stray = await buildDelegationRevoke({ group: "face", signer: f.other, epoch: 0, delegation: intentEntryCid(grant) });
     const states = new Set<string>(), views = new Set<string>();
-    for (const order of permutations([grant, call, revoke, bad, stray])) {
-      const view = f.fold(order, { lineage: rolled });
+    for (const order of permutations([grant, call, revoke, bad])) {
+      const view = f.fold([...order, stray], { lineage: rolled });
       states.add(`${view.intents[0]!.voidCause}`);
       views.add(JSON.stringify([view.refused, view.delegations, view.intents.map((i) => i.id)]));
     }
