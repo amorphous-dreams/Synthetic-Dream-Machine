@@ -48,6 +48,8 @@ export interface SlotDocResolverArgs {
   /** The vessel DID, the one spelling (`didFromVerifyingKey`) — the floor key derives from it. */
   readonly vesselDid: () => string | Promise<string>;
   readonly mintedByHex: () => string;
+  /** The labels the faceless floor gave its documents, so a lit face lifts them (`anon-lift`). */
+  readonly floorMinter?: () => { readonly mintedByHex: string; readonly vesselDid: string };
   readonly personaGroupId?: string | undefined;
   /** Read the veil seat without taking a grant. */
   readonly faceSeated?: () => Promise<boolean>;
@@ -191,6 +193,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       return liftVesselOnlyIntoFace({
         repo: args.repo as unknown as LiftRepo, daemonStore: args.daemonStore, catalog: args.catalog, faceDoor: args.faceDoor,
         mintedByHex: args.mintedByHex(), vesselDid: String(await args.vesselDid()),
+        ...(args.floorMinter ? { floor: args.floorMinter() } : {}),
         traceOf: async (slug) => {
           const url = await args.catalog?.urlOf(wikiBagUri(slug)).catch(() => null);
           if (!url) return null;

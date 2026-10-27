@@ -283,6 +283,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null,
       vesselDid: () => didFromVerifyingKey(mintedByHex),
       mintedByHex: () => mintedByHex,
+      floorMinter: () => ({ mintedByHex: daemonAuth.placeVerifyingKey, vesselDid: didFromVerifyingKey(daemonAuth.placeVerifyingKey) }),
       ...(daemonAuth.personaGroupId ? { personaGroupId: daemonAuth.personaGroupId } : {}),
       ...(faceDoor() ? { faceDoor: faceDoor()! } : {}),
       faceSeated: async () => faceSeat ? faceSeat.seated() : !!(kh && daemonAuth.personaGroupId && await kh.knowsAgent(daemonAuth.personaGroupId)),
