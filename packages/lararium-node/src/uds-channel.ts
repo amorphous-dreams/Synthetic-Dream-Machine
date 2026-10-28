@@ -864,15 +864,32 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     return { requestId, state: fact?.state === "committed" ? "committed" : "unknown" };
   };
 
+  /**
+   * The outcomes of acts that RAN while the ledger failed to record them, by face-scoped id: a retry or a receipt under
+   * that id records the outcome again and, until a record stands, reads it from here, never `pending`. Held in this
+   * process alone: the acts' answers never rest, and a fault here is rare enough to hold no bound but the faults.
+   */
+  const unrecorded = new Map<string, { readonly status: "done" | "error"; readonly digest: string; readonly action: string }>();
+
   const sessionReceipt = async (requestId: string, face: string): Promise<SessionReceipt> => {
     const scoped = faceScopedId(face, requestId);
+    const owed = unrecorded.get(scoped);
+    if (owed) {
+      try {
+        await ledger.observeOutcome(scoped, owed.status, owed.digest, 0, face, owed.action);
+        unrecorded.delete(scoped);
+      } catch (error) {
+        log(`receipt-fact ledger still fails to record act ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
     const found = await ledger.get(scoped);
     const fact = found === "torn" || found?.face !== face ? null : found;
     const event = await composite.get(`${OUTCOME_URI_PREFIX}${scoped}`);
     const fields = event && !event.meta?.deleted ? event.tiddler as Record<string, unknown> : null;
     const outcome = fields?.["face"] === face ? await readOutcomeFor(scoped) : null;
     const status = outcome?.["status"] === "done" || outcome?.["status"] === "error" ? outcome["status"] : undefined;
-    const state = fact?.state === "evicted" ? "evicted" : status ?? (fact?.state === "committed" ? "pending" : fact?.state ?? "unknown");
+    const ran = unrecorded.get(scoped)?.status;
+    const state = fact?.state === "evicted" ? "evicted" : status ?? (fact?.state === "committed" ? ran ?? "pending" : fact?.state ?? "unknown");
     const terminal = state === "done" || state === "error" || state === "interrupted" || state === "evicted";
     const durable = terminal ? await settleDurably() : undefined;
     return { requestId, action: fact?.action ?? (typeof fields?.["verb"] === "string" && fields["face"] === face ? fields["verb"] : "unknown"),
@@ -1068,7 +1085,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
    * A RETRY UNDER ONE requestId READS THE RECEIPT OF THE ACT THAT RAN under it, whatever arguments it carries: an act
    * runs once per id, and its answer, which rode the first socket alone, never survives a hang-up.
    * The act counts as work the seat waits out on close. A ledger that fails before the run answers `session-fault`
-   * (nothing ran); an act that throws once running answers its own error, `act-faulted`, and its receipt reads error.
+   * (nothing ran); an act that throws once running answers its own error, `act-faulted`, and its receipt reads error; a
+   * ledger that fails to record the outcome after the run answers `act-faulted` with the receipt, which reads the act's
+   * own outcome, as a retry under the same id does.
    */
   const actOn = async (sock: Socket, state: NonNullable<ReturnType<typeof sessionSockets.get>>, face: string,
     frame: Record<string, unknown>, requestId: string | undefined): Promise<void> => {
@@ -1111,7 +1130,17 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         log(`session act ${name} faulted for ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
         answer = { status: "error", reason: "act-faulted" };
       }
-      await ledger.observeOutcome(scoped, answer["status"] === "error" ? "error" : "done", digest, 0, face, action);
+      const status = answer["status"] === "error" ? "error" : "done";
+      try {
+        await ledger.observeOutcome(scoped, status, digest, 0, face, action);
+      } catch (error) {
+        // THE ACT RAN: a ledger that fails to record its outcome answers act-faulted with the receipt, never session-fault
+        // (which says nothing ran). The outcome stays owed in this process, so a retry under the id reads it.
+        log(`receipt-fact ledger failed to record act ${requestId} after it ran: ${error instanceof Error ? error.message : String(error)}`);
+        unrecorded.set(scoped, { status, digest, action });
+        return sessionReply(sock, { kind: "session:act-result", requestId, answer: { status: "error", reason: "act-faulted" },
+          receipt: await sessionReceipt(requestId, face) });
+      }
       sessionReply(sock, { kind: "session:act-result", requestId, answer });
     } finally {
       arbitrating -= 1;

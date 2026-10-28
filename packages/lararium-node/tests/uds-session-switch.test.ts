@@ -429,6 +429,27 @@ describe("UDS session switch", () => {
       expect(await a.ask({ op: "session:call", ...envA, requestId: "after", verb: "load", args: {} })).toMatchObject({ kind: "session:result", status: "done" });
     } finally { await v.done(); }
   });
+  test("RED: a ledger that fails to record an act's outcome after it ran answers act-faulted with the receipt, never session-fault, and a retry reads the outcome, never pending", async () => {
+    let ran: unknown[] = [];
+    let tripped = false;
+    // The flush faults once, and only once the act has run: the outcome's record is what fails.
+    const v = await stand("session-act-unrecorded", { failFlush: () => (!tripped && ran.length > 0 ? (tripped = true) : false) });
+    ran = v.ran;
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      const reply = await a.ask({ op: "session:act", ...envA, requestId: "ran", act: "host.roll", args: {} });
+      expect(tripped, "the fault struck after the run").toBe(true);
+      expect(reply).toMatchObject({ kind: "session:act-result", requestId: "ran", answer: { status: "error", reason: "act-faulted" },
+        receipt: { action: "act:host.roll", face: "proof-a", state: "done" } });
+      expect(JSON.stringify(reply).includes("secret/path"), "the fault's text stays off the wire").toBe(false);
+      // The retry under the same id reads the outcome and never runs the act twice.
+      expect(await a.ask({ op: "session:act", ...envA, requestId: "ran", act: "host.roll", args: {} }))
+        .toMatchObject({ kind: "session:receipt", requestId: "ran", receipt: { state: "done" } });
+      expect(await a.ask({ op: "session:receipt", ...envA, requestId: "ran" })).toMatchObject({ receipt: { state: "done" } });
+      expect(v.ran).toHaveLength(1);
+    } finally { await v.done(); }
+  });
   test("CONTROL (it stands on the parent too): a ledger that fails before an act runs answers session-fault and runs nothing", async () => {
     let failing = false;
     const v = await stand("session-act-ledger", { failFlush: () => failing });
