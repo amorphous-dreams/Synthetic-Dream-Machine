@@ -14,6 +14,10 @@
  *   L7  RED: a working document the floor wrote before any face rests by the PLACE's key; at the join it lifts into the
  *       face's DERIVED working address (its secret, the wiki's slug), and the place's key stands empty. CONTROL: a vessel
  *       with a face from its founding never writes the place's key.
+ *   L9  RED: a burn that faults in the working floor's lift leaves the place's key marked (`lifted-from`); the rerun burns
+ *       the floor document and takes the key out last, and nothing stands orphaned.
+ *   L10 RED: a seated face with no address secret: the lift refuses `no-address-secret` before its first step and changes
+ *       nothing (no binding, no burn, no registration). CONTROL: L7, the same lift with the secret, moves.
  *   L8  RED: a draft the faceless floor bound under the public place label lifts under the face that lights later (the lit face names the floor's label).
  *       CONTROL: without that name the same record stays at the floor.
  *   N1  RED: a vessel-only document never reaches a peer (no cap names it, so the share verdict denies); CONTROL: the lifted face
@@ -133,7 +137,7 @@ describe("the anon-veil lift on join", () => {
     const a = await newFace(v, joined);
     const lit = (named: boolean) => makeSlotDocResolver({
       repo: v.repo as never, daemonStore: v.daemon, keyhive: v.kh, catalog, vesselDid: () => DID, mintedByHex: () => MINTED_BY,
-      personaGroupId: a.face.group, faceSeated: async () => true, faceDoor: a.face.door,
+      personaGroupId: a.face.group, faceSeated: async () => true, faceDoor: a.face.door, faceAddressSecret: async () => SECRET(),
       ...(named ? { floorMinter: () => ({ mintedByHex: PLACE_KEY, vesselDid: PLACE_DID }) } : {}),
     });
     expect((await lit(false).liftFloor()).moved, "control: without the floor's label nothing lifts").toEqual([]);
@@ -252,6 +256,60 @@ describe("the anon-veil lift on join", () => {
     expect(a.minted, "the face's document registers under its cap stack").toContain(derived);
     // A second pass moves nothing.
     expect((await resolver.liftFloor()).moved).toEqual([]);
+  });
+
+  test("L9 — a burn that faults in the working floor's lift leaves the place's key marked, and the rerun burns it and takes the key out last", async () => {
+    const v = await vessel();
+    const joined = { on: false };
+    const a = await newFace(v, joined);
+    const catalog = makeCatalogAccessor(v.repo, v.catalogUrl);
+    const { workingUrl } = await resolverFor(v, a.face).bindings(v.fp, { wikiDocId: v.wikiUrl, libraryBagDocIds: [] }, "garden");
+    await write(v, workingUrl, "Saved", "working layer");
+    joined.on = true;
+    let faulted = false;
+    const faulting = {
+      create: v.repo.create.bind(v.repo), find: v.repo.find.bind(v.repo), flush: v.repo.flush.bind(v.repo),
+      delete: (url: string) => {
+        if (url === workingUrl && !faulted) { faulted = true; throw new Error("the disk faulted"); }
+        return v.repo.delete(url as never);
+      },
+    };
+    await expect(resolverFor(v, a.face, faulting).liftFloor()).rejects.toThrow(/the disk faulted/);
+    const key = wikiWorkingFloorKey("garden", PLACE);
+    const marked = await catalog.recordOf(key);
+    expect(marked, "the place's key stands until the burn finishes").not.toBeNull();
+    expect(plainField(marked!, "lifted-from"), "the key carries the lift's mark before the burn").toBeTruthy();
+    expect(await opens(v, workingUrl)).toBe(true);
+    const rerun = await resolverFor(v, a.face).liftFloor();
+    expect(rerun.finished, "the rerun finishes the interrupted burn").toContain(key);
+    expect(rerun.moved, "and moves nothing a second time").not.toContain(key);
+    expect(await opens(v, workingUrl), "the floor document burned").toBe(false);
+    expect(await catalog.urlOf(key), "the place's key leaves last").toBeNull();
+    const derived = faceWorkingDocUrl(SECRET(), "garden", "working");
+    expect(await textOf(v, derived, "Saved")).toBe("working layer");
+    expect((await resolverFor(v, a.face).liftFloor()).finished, "nothing stands orphaned for a third pass").toEqual([]);
+  });
+
+  test("L10 — a seated face with no address secret: the lift refuses no-address-secret before its first step and changes nothing", async () => {
+    const v = await vessel();
+    const joined = { on: false };
+    const a = await newFace(v, joined);
+    const catalog = makeCatalogAccessor(v.repo, v.catalogUrl);
+    const { workingUrl, draftUrl } = await resolverFor(v, a.face).bindings(v.fp, { wikiDocId: v.wikiUrl, libraryBagDocIds: [] }, "garden");
+    await write(v, draftUrl, "Draft", "floor draft");
+    joined.on = true;
+    const secretless = makeSlotDocResolver({
+      repo: v.repo as never, daemonStore: v.daemon, keyhive: v.kh, catalog, vesselDid: () => DID, mintedByHex: () => MINTED_BY,
+      placeAid: () => PLACE, faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(v.repo, url as never, label),
+      personaGroupId: a.face.group, faceSeated: async () => true, faceDoor: a.face.door, faceAddressSecret: async () => null,
+    });
+    await expect(secretless.liftFloor()).rejects.toMatchObject({ name: "WorkingSlotRefusal", reason: "no-address-secret" });
+    expect(a.minted, "no document registered under the face").toEqual([]);
+    expect(await bindingOf(v, draftKey(v)), "the draft binding never wrote").toBeUndefined();
+    expect(await floorRecord(v), "the draft floor stands").not.toBeNull();
+    expect(await catalog.urlOf(wikiWorkingFloorKey("garden", PLACE)), "the place's working key stands").toBe(workingUrl);
+    expect(await opens(v, draftUrl)).toBe(true);
+    expect(await opens(v, workingUrl)).toBe(true);
   });
 
   test("L7 CONTROL — a vessel with a face from its founding never writes the place's key", async () => {

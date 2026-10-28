@@ -270,6 +270,11 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       if (!args.faceDoor || !args.personaGroupId || !(await seated())) return { moved: [], finished: [] };   // no seat, nothing to lift into
       const repo = args.repo as unknown as Partial<LiftRepo>;
       if (typeof repo.find !== "function" || typeof repo.delete !== "function") throw new Error("slot-doc: the lift needs a repo that finds and deletes documents");
+      // THE SECRET STANDS FIRST: the face's address secret must stand before the lift's first step, or the lift refuses by
+      // name and changes nothing (no draft moves ahead of a working floor that cannot derive its address).
+      const secret = (await args.faceAddressSecret?.()) ?? null;
+      if (!secret) throw new WorkingSlotRefusal("no-address-secret", "the seated face holds no address secret here, so the lift changes nothing");
+      secret.fill(0);
       return liftVesselOnlyIntoFace({
         repo: args.repo as unknown as LiftRepo, daemonStore: args.daemonStore, catalog: args.catalog, faceDoor: args.faceDoor,
         mintedByHex: args.mintedByHex(), vesselDid: String(await args.vesselDid()),
