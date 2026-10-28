@@ -14,6 +14,7 @@ on:
       - 'tools/projection-loom/projection_loom/incremental_graph.py'
       - 'tools/projection-loom/projection_loom/editor_proposals.py'
       - 'tools/projection-loom/projection_loom/regulative_growth.py'
+      - 'tools/projection-loom/projection_loom/hephaestus_crucible.py'
       - 'tools/projection-loom/blender/**'
       - 'tools/projection-loom/scripts/real_blender_witness.py'
       - 'tools/projection-loom/projection_loom/contracts/**'
@@ -82,7 +83,16 @@ jobs:
           python -m pip install --no-deps -e .
           python -m pip check
       - name: Headless real OpenUSD and native STEP reimport
-        run: python -m pytest -q tests/test_hephaestus_usd.py tests/test_hephaestus_editor.py
+        run: python -m pytest -q tests/test_hephaestus_usd.py tests/test_hephaestus_editor.py tests/test_hephaestus_crucible.py
+      - name: Independent subject native + OpenUSD + causal adversarial crucible
+        run: python -m projection_loom.hephaestus_crucible --out out/hephaestus-crucible
+      - name: Retain falsifiable crucible evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hephaestus-crucible
+          path: tools/projection-loom/out/hephaestus-crucible/
+          retention-days: 60
 
   blender-real-editor:
     runs-on: ubuntu-24.04

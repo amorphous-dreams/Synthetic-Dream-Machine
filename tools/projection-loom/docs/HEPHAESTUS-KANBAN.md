@@ -123,3 +123,15 @@ At head `57c683d9`, the `usd-interchange` job **passed**: real OpenUSD stages an
 ## Blender application witness failure at `a0bc227a`
 
 The `blender-real-editor` job installed actual Blender 4.0.2 but could not find its `LOOM_BLENDER_IMPORT` marker. The Blender subprocess exited zero without the marker, demonstrating that its process exit alone is insufficient evidence. The witness now includes Blender stdout on missing-marker failure; D-B remains REVIEW/BLOCKED until the underlying import error is attributed and repaired.
+
+## OODA-HA Wave F · held-out cross-representation adversarial run (2026-10-28)
+
+**Observe:** A scene can appear correct while a stale editor overwrites history or STEP assets are altered after emission. The original seven seed combinations alone do not independently demonstrate a second architectural subject or a re-entry edit loop.
+
+**Orient:** Create a held-out coastal conservatory with two independently authored assemblies, distinct from Experiment Zero's original Necrospire and image/grammar/proxy inputs.
+
+**Decide:** Exercise real native CAD admission, USD layer composition, STEP re-import, semantic ID preservation, editor-neutral accepted relocation, regenerating CAD evidence, selective *planned* invalidation, stale concurrent edit refusal and tampered STEP asset refusal in one reproducible run.
+
+**Act:** `python -m projection_loom.hephaestus_crucible --out ...` produces inspectable source/regenerated bundles, original and new causal ground, rejected tamper copy and a separate `crucible.json` outcome. CI retains all artifacts. The previous seven-cohort experiment remains a separate mandatory lane.
+
+**Aftermath:** This is the new held-out F-02/F-04 test slice, **not** full F acceptance: no actual Unreal Editor, no multi-camera calibration, no demonstrated native incremental cache reuse, no robust cross-tool variant writeback and no repository-wide cleanup. Every status requires exact-head CI.
