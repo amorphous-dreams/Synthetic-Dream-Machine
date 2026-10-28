@@ -79,3 +79,7 @@
 **Act:** Add `scene-invalidation --before ... --after ...`; test moved/modified one-assembly inputs, preserved independent assemblies, deterministic order, cycle and missing-source refusal. The full OODA-HA journal remains the only helm.
 
 **Aftermath:** C-03 selective invalidation *planning* is implemented; actual selective CAD rebuild/cache reuse, interrupted replay and concurrent full editor reconciliation are **not yet witnessed**. Mark full Wave C incomplete.
+
+## CI correction · distinct native USD test environments
+
+At head `57c683d9`, the `usd-interchange` job **passed**: real OpenUSD stages and STEP reimports completed. The generic `contracts` lane passed 50 tests but failed four USD-only tests because it did not install `pxr`. That was a CI test-lane ownership error, not a demonstrated native interchange failure. The generalized/relational/incremental tests now run in `contracts`; four real USD/STEP tests run in `usd-interchange` with pinned `usd-core==26.11`. Re-run at the correction's exact head.
