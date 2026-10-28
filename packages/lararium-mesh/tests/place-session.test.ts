@@ -86,6 +86,28 @@ describe("the place anchor", () => {
     expect(readSessionCertificate({ ...asNexus, vesselFaceKey: a.key })).not.toHaveProperty("read");
   });
 
+  test("RED: the place rotates between a frame's check and the signature: the signer reads the place's head at each sign, refuses anchor-moved and drops; a read that fails refuses anchor-unread and keeps the signer", async () => {
+    const a = await atom(7);
+    let head: string | Error = PLACE.head;
+    const target = preparePlaceFace({ personaGroup: GROUP, atomKey: a.key, place: PLACE, signAsAtom: a.sign,
+      anchorHead: async () => { if (head instanceof Error) throw head; return head; } });
+    if (!("face" in target)) throw new Error(target.refusal);
+    const table = new SessionTable("owner-epoch-place");
+    const binding = sessionBinding("socket");
+    const open = table.open(binding, target.face, "verb");
+    if (!open.ok) throw new Error(open.refusal);
+    const minted = await target.mint({ table, binding, session: open.session });
+    if (!("signer" in minted)) throw new Error(minted.refusal);
+    expect(await minted.signer.sign("act", PAYLOAD)).toHaveProperty("signature");      // CONTROL: the head stands
+    head = new Error("the place KEL reads torn");
+    expect(await minted.signer.sign("act", PAYLOAD)).toEqual({ refusal: "anchor-unread" });
+    expect(minted.signer.dropped).toBe(false);
+    head = PLACE.head;
+    expect(await minted.signer.sign("act", PAYLOAD)).toHaveProperty("signature");      // the read recovers; the signer serves
+    head = "b".repeat(64);                                                                // the place rotates mid-verb
+    expect(await minted.signer.sign("act", PAYLOAD)).toEqual({ refusal: "anchor-moved" });
+    expect(minted.signer.dropped).toBe(true);
+  });
   test("RED: a closed session's signer drops at its next sign; a seat's signer signs no authority", async () => {
     const { target, table, binding, session } = await opened();
     const minted = await target.mint({ table, binding, session });

@@ -318,14 +318,18 @@ export interface PlaceFaceTarget {
 export function preparePlaceFace(args: {
   personaGroup: unknown; atomKey: unknown; place: unknown;
   signAsAtom: (image: Uint8Array) => Promise<string>; random?: RandomProvider;
+  /** Where the place's head stands now: the signer reads it at each signature against the head this face bound. */
+  anchorHead?: () => Promise<string>;
 }): PlaceFaceTarget | { readonly refusal: PlaceFaceRefusalName } {
   const supplied = supplyPlaceFace(args);
   if (!("face" in supplied)) return supplied;
+  const bound = (args.place as { head: string }).head;
   return Object.freeze({
     face: supplied.face, scope: supplied.scope,
     mint: (at: { readonly table: SessionTable; readonly binding: SessionBinding; readonly session: Session }) => mintPlaceSessionSigner({
       table: at.table, binding: at.binding, session: at.session, scope: supplied.scope, signAsAtom: args.signAsAtom,
       ...(args.random ? { random: args.random } : {}),
+      ...(args.anchorHead ? { anchor: { bound, headNow: args.anchorHead } } : {}),
     }),
   });
 }

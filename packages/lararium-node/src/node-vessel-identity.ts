@@ -53,7 +53,7 @@
 import { createPrivateKey, createPublicKey, generateKeyPairSync, hkdfSync } from "node:crypto";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync, renameSync, openSync, writeSync, fsyncSync, closeSync, unlinkSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync, renameSync, openSync, writeSync, fsyncSync, closeSync, unlinkSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { faceFileNames } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
@@ -332,6 +332,28 @@ export async function loadPlaceReading(): Promise<{ readonly place: string; read
   const hint = await readLocalOperatorHint();
   const reading = verifiedPlaceChain(placeFiles(hint.login).kel);
   return { place: reading.aid, seq: reading.seq, head: reading.headDigest };
+}
+/**
+ * A STANDING DOOR'S READ OF ITS PLACE: the login reads once, at the first read, so the KEL file a door watches is the
+ * one its vessel stood on (a later change of git config never moves the anchor). Each read stats that KEL and verifies
+ * it only once its bytes moved (inode, size, times), so a frame spawns no process and re-verifies no unchanged KEL;
+ * a staged rotation reconciles first. A read that fails throws, and the caller refuses that frame `anchor-unread`.
+ */
+export function placeReadingWatch(): () => Promise<{ readonly place: string; readonly seq: number; readonly head: string }> {
+  let files: ReturnType<typeof placeFiles> | null = null;
+  let login: string | null = null;
+  let kept: { readonly stamp: string; readonly reading: { readonly place: string; readonly seq: number; readonly head: string } } | null = null;
+  return async () => {
+    if (files === null) { login = (await readLocalOperatorHint()).login; files = placeFiles(login); }
+    const at = files;
+    if (existsSync(at.stage)) await exclusiveCustody(async () => reconcileFiles(at, login));
+    const st = statSync(at.kel);
+    const stamp = `${st.ino}:${st.size}:${st.mtimeMs}:${st.ctimeMs}`;
+    if (kept?.stamp === stamp) return kept.reading;
+    const read = verifiedPlaceChain(at.kel);
+    kept = { stamp, reading: Object.freeze({ place: read.aid, seq: read.seq, head: read.headDigest }) };
+    return kept.reading;
+  };
 }
 export async function loadPlaceAid(): Promise<string> {
   await reconcilePlaceRotation();

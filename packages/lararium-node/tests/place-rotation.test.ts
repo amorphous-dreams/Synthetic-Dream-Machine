@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { canonicalJson, coldKeyFromSeed, mintColdKey, mintPlaceRotation, placeSignerFromSeed, type RandomProvider } from "@lararium/mesh";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { foundDirect } from "./found-route.js";
-import { loadPlaceKelChain, vesselPlaceSignerDoor, loadVesselVerifyingKey, reconcilePlaceRotation, rotatePlace } from "../src/node-vessel-identity.js";
+import { loadPlaceKelChain, loadPlaceReading, placeReadingWatch, vesselPlaceSignerDoor, loadVesselVerifyingKey, reconcilePlaceRotation, rotatePlace } from "../src/node-vessel-identity.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
 
 vi.setConfig({ testTimeout: 240_000 });
@@ -38,6 +38,33 @@ describe("place rotation", () => {
       expect(two.seq).toBe(2);
       expect((await loadPlaceKelChain()).length).toBe(3);
     });
+  });
+
+  test("RED: a standing door's place reading keys on the KEL's bytes: unchanged, it re-verifies nothing; a git config change moves no anchor; a rotation moves the head", async () => {
+    const r = root(); let card = new Uint8Array();
+    const gitConfig = join(r, "gitconfig");
+    writeFileSync(gitConfig, "[user]\n\temail = first.login@example.invalid\n");
+    const prior = process.env["GIT_CONFIG_GLOBAL"];
+    process.env["GIT_CONFIG_GLOBAL"] = gitConfig;
+    try {
+      await withLarRoot(r, async () => {
+        await foundDirect({ ...at(r), entropy: entropy(1), placeFoundingCard: { readBack: async (c) => { card = new Uint8Array(c.seed); } } });
+        const watch = placeReadingWatch();
+        const first = await watch();
+        expect(first).toEqual(await loadPlaceReading());
+        expect(await watch()).toBe(first);                                    // the same reading: the unchanged KEL verified once
+        // The operator's git config moves: a fresh read now looks for another login's KEL; the door's anchor stands.
+        writeFileSync(gitConfig, "[user]\n\temail = another.login@example.invalid\n");
+        await expect(loadPlaceReading()).rejects.toThrow();                   // CONTROL: the per-call read moved with git config
+        expect(await watch()).toBe(first);
+        writeFileSync(gitConfig, "[user]\n\temail = first.login@example.invalid\n");
+        await rotatePlace({ card, entropy: entropy(90), placeFoundingCard: { readBack: async () => {} } });
+        const rotated = await watch();
+        expect(rotated.place).toBe(first.place);
+        expect(rotated.seq).toBe(first.seq + 1);
+        expect(rotated.head).not.toBe(first.head);                           // the rotation moved the head the door reads
+      });
+    } finally { if (prior === undefined) delete process.env["GIT_CONFIG_GLOBAL"]; else process.env["GIT_CONFIG_GLOBAL"] = prior; }
   });
 
   test("wrong card and failed replacement read-back leave the head and both files whole", async () => {

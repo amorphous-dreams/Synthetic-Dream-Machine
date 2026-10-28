@@ -32,7 +32,7 @@ import { CustodyLocked } from "./custody-holder.js";
 import { composeFaceTarget } from "./dial-presentation.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
-import { loadPlaceReading } from "./node-vessel-identity.js";
+import { placeReadingWatch } from "./node-vessel-identity.js";
 import type { SessionAnchor, UdsSessionDoor } from "./uds-channel.js";
 
 /** The ports the door reads; a vector replaces them, a vessel takes the defaults. */
@@ -65,9 +65,11 @@ export function nodeSessionDoor(ports: NodeSessionDoorPorts): UdsSessionDoor {
   const groupOfFace = ports.groupOfFace ?? (async (face: number) => (await loadIdentityAnchors(face))?.personaGroupId ?? null);
   const atomOfGroup = ports.atomOfGroup ?? loadFaceAtomOfGroup;
   const targetOf = ports.targetOf ?? ((at) => composeFaceTarget(at));
-  const placeOf = ports.placeOf ?? loadPlaceReading;
-  // THE PLACE ANCHOR NAMES ITS HEAD: each check reads the place KEL afresh, so a rotation of the place moves the anchor and
-  // ends the place's sessions `anchor-moved`; a read that fails throws, and the seat refuses that frame `anchor-unread`.
+  const placeOf = ports.placeOf ?? placeReadingWatch();
+  // THE PLACE ANCHOR NAMES ITS HEAD: each check reads where the place KEL stands (a stat, and a verify only once its bytes
+  // moved), so a rotation of the place moves the anchor and ends the place's sessions `anchor-moved`; a read that fails
+  // throws, and the seat refuses that frame `anchor-unread`. The signer reads the same head at each signature, so a
+  // rotation mid-verb refuses `anchor-moved` there too.
   const placeAnchor = async (): Promise<SessionAnchor> => {
     const place = await placeOf();
     return { kind: "place", aid: place.place, head: place.head };
@@ -91,7 +93,7 @@ export function nodeSessionDoor(ports: NodeSessionDoorPorts): UdsSessionDoor {
     if (pin === null) {
       // THE PLACE ANCHOR: the face's atom presented to its own vessel; no Nexus admits it.
       const place = await placeOf();
-      const target = preparePlaceFace({ personaGroup: group, atomKey, place, signAsAtom: async (image) => {
+      const target = preparePlaceFace({ personaGroup: group, atomKey, place, anchorHead: async () => (await placeOf()).head, signAsAtom: async (image) => {
         const again = await atomOfGroup(group);
         if (again === null) throw new Error("the face's atom row went between the open and the mint");
         try { return await signAsFaceAtom(again, image); } finally { again.fill(0); }

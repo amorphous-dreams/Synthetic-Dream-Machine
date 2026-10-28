@@ -56,6 +56,8 @@ export const SESSION_SIGNER_REFUSALS = [
   "purpose-unknown",
   "purpose-beyond-profile",     // the profile never signs under this purpose
   "payload-malformed",
+  "anchor-moved",               // the place's head moved past the one the session bound; the signer drops
+  "anchor-unread",              // the place's head read failed; this signature waits, and the signer stands
 ] as const;
 export type SessionSignerRefusalName = (typeof SESSION_SIGNER_REFUSALS)[number];
 export interface SessionSignerRefusal { readonly refusal: SessionSignerRefusalName; readonly cause?: FaceProofRefusal }
@@ -252,23 +254,42 @@ export async function openSignedSession(args: {
 // session key alone.
 
 /** One place session's signer. Built by `mintPlaceSessionSigner` alone. */
+/** The place head a session bound, and the read of where the place stands now (it throws where the read fails). */
+export interface PlaceAnchorWatch {
+  readonly bound:   string;
+  readonly headNow: () => Promise<string>;
+}
+
 export class PlaceSessionSigner {
   readonly certificate: PlaceSessionCertificate;
   readonly binding:     SessionSignerBinding;
   readonly #table:      SessionTable;
   readonly #port:       SessionBinding;
   readonly #secret:     Uint8Array;
+  readonly #anchor:     PlaceAnchorWatch | undefined;
   #dropped = false;
 
   /** @internal `mintPlaceSessionSigner` builds the one signer a place session holds. */
-  constructor(lock: symbol, certificate: PlaceSessionCertificate, binding: SessionSignerBinding, table: SessionTable, port: SessionBinding, secret: Uint8Array) {
+  constructor(lock: symbol, certificate: PlaceSessionCertificate, binding: SessionSignerBinding, table: SessionTable, port: SessionBinding, secret: Uint8Array,
+    anchor?: PlaceAnchorWatch) {
     if (lock !== MINT) throw new TypeError("session-signer: a place signer mints through mintPlaceSessionSigner alone");
     this.certificate = certificate;
     this.binding = Object.freeze({ ...binding });
     this.#table = table;
     this.#port = port;
     this.#secret = secret;
+    this.#anchor = anchor;
     Object.freeze(this);
+  }
+
+  /** Where the place stands against the head the session bound: null while it stands there. */
+  async #anchorMoved(): Promise<"anchor-moved" | "anchor-unread" | null> {
+    if (!this.#anchor) return null;
+    let head: string;
+    try { head = await this.#anchor.headNow(); } catch { return "anchor-unread"; }
+    if (head === this.#anchor.bound) return null;
+    this.drop();
+    return "anchor-moved";
   }
 
   get dropped(): boolean { return this.#dropped; }
@@ -288,11 +309,17 @@ export class PlaceSessionSigner {
     if (!isPlaceSigningPurpose(purpose)) return { refusal: "purpose-unknown" };
     if (!profileSigns(this.binding.profile, purpose)) return { refusal: "purpose-beyond-profile" };
     if (!(payload instanceof Uint8Array)) return { refusal: "payload-malformed" };
+    // THE PLACE'S HEAD READS AT THE SIGNATURE, before it and after it: a rotation between a frame's check and this
+    // signature refuses `anchor-moved` and drops, so no signature leaves under a head the place has left.
+    const before = await this.#anchorMoved();
+    if (before !== null) return { refusal: before };
     const image = placeSessionSignatureImage(purpose, this.certificate.scope, this.certificate.sessionKey, payload);
     const signature = hex(await ed25519.signAsync(image, this.#secret)) as Signature;
     if (this.#dropped) return { refusal: "signer-dropped" };
     const after = standing(this.#table, this.#port, this.binding);
     if (!own(after, "record")) { if (after.gone) this.drop(); return { refusal: after.refusal }; }
+    const moved = await this.#anchorMoved();
+    if (moved !== null) return { refusal: moved };
     const reading = readPlaceSessionSignature(this.certificate, purpose, payload, signature);
     return own(reading, "read") ? { signature } : { refusal: "signer-dropped", cause: reading };
   }
@@ -306,6 +333,8 @@ export class PlaceSessionSigner {
 export async function mintPlaceSessionSigner(args: {
   table: SessionTable; binding: SessionBinding; session: unknown; scope: unknown;
   signAsAtom: (image: Uint8Array) => Promise<string>; random?: RandomProvider;
+  /** The head the session bound and how to read the place's head now: each signature reads it (`anchor-moved`). */
+  anchor?: PlaceAnchorWatch;
 }): Promise<{ readonly signer: PlaceSessionSigner } | SessionSignerRefusal> {
   if (!(args.table instanceof SessionTable)) return { refusal: "table-foreign" };
   const named = readSession(args.session);
@@ -335,7 +364,7 @@ export async function mintPlaceSessionSigner(args: {
     }
     const binding = { sessionId: record.sessionId, ownerEpoch: record.ownerEpoch, generation: record.generation, profile: record.profile };
     kept = true;
-    return { signer: new PlaceSessionSigner(MINT, certificate.read, binding, args.table, args.binding, secret) };
+    return { signer: new PlaceSessionSigner(MINT, certificate.read, binding, args.table, args.binding, secret, args.anchor) };
   } finally {
     if (!kept) secret.fill(0);
   }

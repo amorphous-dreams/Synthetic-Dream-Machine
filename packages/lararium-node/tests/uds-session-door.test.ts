@@ -116,6 +116,25 @@ describe("the node session door", () => {
     expect(readPlaceSessionCertificate(certificate)).toMatchObject({ read: { scope: { atomKey, place: PLACE.place } } });
   });
 
+  test("RED: the place rotates between a frame's check and the signature: the door's place signer reads the head again and refuses anchor-moved", async () => {
+    const group = "0x0a1b2c3d4e5f6071";
+    let place = PLACE;
+    const { d } = door({ pin: () => null, groupOfFace: async () => group, atomOfGroup: async () => seedOf(0), placeOf: async () => place });
+    const a = await d.open({ faceRef: "h0", hand: "cli" });
+    if (!a.ok) throw new Error(a.refusal);
+    const table = new SessionTable("owner");
+    const binding = sessionBinding("socket");
+    const opened = table.open(binding, a.supply.face, a.supply.profile);
+    if (!opened.ok) throw new Error(opened.refusal);
+    const minted = await a.supply.mint({ table, binding, session: opened.session });
+    if (!minted.ok) throw new Error(minted.refusal);
+    const signer = minted.signer as unknown as { sign: (purpose: string, payload: Uint8Array) => Promise<unknown>; dropped: boolean };
+    expect(await signer.sign("act", new Uint8Array([1]))).toHaveProperty("signature");     // CONTROL: the head stands
+    place = { ...PLACE, seq: 3, head: "d".repeat(64) };                                   // the frame checked; the place rotates
+    expect(await signer.sign("act", new Uint8Array([1]))).toEqual({ refusal: "anchor-moved" });
+    expect(signer.dropped).toBe(true);
+  });
+
   test("the door answers where the vessel stands: the dialed Nexus while a pin stands, its place once none does", async () => {
     let pin: GateBundlePin | null = PIN;
     const { d } = door({ pin: () => pin });
