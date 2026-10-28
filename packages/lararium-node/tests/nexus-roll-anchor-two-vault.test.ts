@@ -58,7 +58,7 @@ import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fi
 import { restEvery, restingRepo, type RestingRepo } from "./resting-repo.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { chairKey, chairSeed, seatChairs } from "./seat-fixture.js";
-import { seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
+import { seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
 import { makeEdgeShadowRing } from "../src/edge-shadow-ring.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
@@ -293,7 +293,7 @@ describe("a two-founder Nexus anchors its roll across its two vaults", () => {
     let actCid = "";
     for (const v of vaults) {
       at(v);
-      const vesselKey = await wornAtomKey();
+      const vesselKey = await actingAtomKey();
       const genesisEpoch = readNexusDoc(larSealHome())!.sealLineage![0]!.epochCid;
       const act = await signEdgeKapae({ edgeId: edgeByte.toString(16).padStart(2, "0").repeat(32), raised: true, hand: "quorum", parents: [], epochCid: genesisEpoch }, signers);
       actCid = act.actCid;
@@ -314,7 +314,7 @@ describe("a two-founder Nexus anchors its roll across its two vaults", () => {
   };
   const ringFrontierAt = async (v: Vault) => {
     at(v);
-    const key = await wornAtomKey();
+    const key = await actingAtomKey();
     const ring = makeEdgeShadowRing({ repo: v.repo, vesselKey: () => key, sealHome: larSealHome(),
       fleetRoots: () => [], charterRealm: () => REALM,
       vesselKeyOfPeer: () => null, realmNymOfPeer: () => null });

@@ -61,7 +61,7 @@ lares nexus — the Nexus relation doors: charter ceremony, admission, carriage,
   rite <petname>                            the pet-named procedures — \`cabal\` seats the founding quorum, \`kahuli\` overturns a ratchet tier
   kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition
   realm-bag <bag-uri>                       register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT);
-                                            the WORN face's key for this Nexus seals it (\`lares persona wear N\` first)
+                                            the acting face's key for this Nexus seals it (--face N, else the one face standing open)
             [--realm <id>]                  the realm the act lands in: a cabal realm (64 hex) or the charter-derived realm (the default)
             [--join]                        ASK to keep a bag another hand keeps — the record waits on each standing steward
             [--cosign [--with <key>]]       consent as a named steward to a record that waits on this hand;

@@ -45,7 +45,7 @@
 import type { Socket } from "node:net";
 import type { Credential, SlotSpec } from "@lararium/mesh";
 import { parkFaceRoute } from "./face-route.js";
-import { setWornFaceInSession, sovereignStands, wornFaceOrdinal } from "./node-vessel-identity.js";
+import { mountedFaceOrdinal, setMountedFace, sovereignStands } from "./node-vessel-identity.js";
 import { listFaceOrdinals } from "./identity-anchors.js";
 import { CustodyLocked, CustodyRowUnavailable, type CustodyHolder, type HolderUnlock } from "./custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
@@ -174,7 +174,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
   /**
    * ONE TYPED CREDENTIAL, TRIED WHERE IT IS NAMED. The node key (S) opens alone; a face opens by its own tree: the face the
    * frame names, or every face (`all`), or (naming none) the vessel's one face. A vessel holding several faces and told none refuses
-   * `face-not-named`, so a credential never opens a sibling by luck. The composition stands sovereign when S and the worn face
+   * `face-not-named`, so a credential never opens a sibling by luck. The composition stands sovereign when S and the mounted face
    * both stand open (a place with no face needs S alone).
    */
   const unlock = async (credentials: readonly Credential[], sel: { readonly face?: number; readonly all?: boolean }): Promise<CustodyAnswer> => {
@@ -185,7 +185,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
     }
     const freshly = u.reading === "opens";
     const openBefore = new Set(holder.unlockedFaces());
-    const wornBefore = wornFaceOrdinal();
+    const mountedBefore = mountedFaceOrdinal();
     // A second unlock that names no face finds the key held and the composition standing: nothing to open, nothing to compose.
     if (!freshly && sel.face === undefined && sel.all !== true) return { op: "unlock", ...u, standing: deps.standing() };
     const standing = listFaceOrdinals();
@@ -194,27 +194,28 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
       deps.onLog(`unlock: ${reading}`);
       return { op: "unlock", reading, ...detail, standing: deps.standing() };
     };
-    let worn: number | undefined = sel.face;
+    let mounted: number | undefined = sel.face;
     if (sel.all) {
       const readings = await holder.unlockFaces(credentials);
       const opened = readings.filter((r) => r.reading === "opens" || r.reading === "already-unlocked").map((r) => (r as { ordinal: number }).ordinal);
       if (standing.length > 0 && opened.length === 0) return refuseFaces("face-refused", { faces: readings.map((r) => r.reading) });
-      if (worn === undefined && opened.length === 1) worn = opened[0];
+      if (mounted === undefined && opened.length === 1) mounted = opened[0];
     } else if (sel.face !== undefined) {
       const r = await holder.unlockFace({ ordinal: sel.face }, credentials);
       if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: sel.face, faceReading: r.reading });
     } else if (standing.length === 1) {
-      worn = standing[0]!;
-      const r = await holder.unlockFace({ ordinal: worn }, credentials);
-      if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: worn, faceReading: r.reading });
+      mounted = standing[0]!;
+      const r = await holder.unlockFace({ ordinal: mounted }, credentials);
+      if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: mounted, faceReading: r.reading });
     } else if (standing.length > 1) {
       return refuseFaces("face-not-named", { faces: standing });
     }
-    deps.onLog(`unlocked: slot ${u.reading === "opens" ? u.slot : "(held)"} opened the node key${worn !== undefined ? `; face h${worn} open` : ""}`);
-    // The unlock NAMES the face this vessel wears for the life of the unlock: session state, never a pointer at rest.
-    if (worn !== undefined) setWornFaceInSession(worn);
-    // An unlock over a held key that opens no new face and changes no worn face stands nothing new.
-    if (!freshly && holder.unlockedFaces().every((f) => openBefore.has(f)) && (worn === undefined || worn === wornBefore)) {
+    deps.onLog(`unlocked: slot ${u.reading === "opens" ? u.slot : "(held)"} opened the node key${mounted !== undefined ? `; face h${mounted} open` : ""}`);
+    // The unlock NAMES the face the composition MOUNTS for the life of the unlock: the composition's own state, never a pointer at
+    // rest, and never a face a command defaults to (a command names `--face N`, or resolves the one face standing open).
+    if (mounted !== undefined) setMountedFace(mounted);
+    // An unlock over a held key that opens no new face and changes no mounted face stands nothing new.
+    if (!freshly && holder.unlockedFaces().every((f) => openBefore.has(f)) && (mounted === undefined || mounted === mountedBefore)) {
       return { op: "unlock", ...u, standing: deps.standing() };
     }
     const stood = await deps.recompose(true);
@@ -229,17 +230,17 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
   };
 
   /**
-   * `lock --face N`: one face drops its key. The worn face's lock stands the vessel back at the floor through the same gate the
+   * `lock --face N`: one face drops its key. The mounted face's lock stands the vessel back at the floor through the same gate the
    * unlock reads (`sovereignStands`); a sibling's lock leaves the sovereign composition standing.
    */
   const lockFaceOf = async (ordinal: number): Promise<CustodyAnswer> => {
     const named = await holder.faceStanding({ ordinal });
     if (named === null) return { op: "lock", locked: true, was: "locked", face: ordinal, standing: deps.standing() };
     const wasOpen = named.unlocked;
-    const wasWorn = sovereignStands();
+    const wasMounted = sovereignStands();
     await holder.lockFace(named.fcid);
     deps.onLog(`locked: face h${ordinal} key dropped`);
-    if (wasOpen && wasWorn && !sovereignStands()) {
+    if (wasOpen && wasMounted && !sovereignStands()) {
       const stood = await deps.recompose(true);
       return { op: "lock", locked: true, was: "unlocked", face: ordinal, ...stood };
     }

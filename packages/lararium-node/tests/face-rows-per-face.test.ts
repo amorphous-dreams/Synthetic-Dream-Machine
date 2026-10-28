@@ -1,19 +1,20 @@
 /**
  * K15 Wave D, slice 2: the roster family and the recognition book rest one row per face. A locked face lists by its public
- * index alone; the worn face is session state; each face's handle-book sits in its own row.
+ * index alone; a command names the face it acts as and no choice rests on disk; each face's handle-book sits in its own row.
  */
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import { HandleBook } from "@lararium/mesh";
-import { generateOrLoadPersonaGroupRoot, listPersonaRoots, loadActivePersonaIndex, makeNodePersonaPetnameStore, setWornFaceInSession, wearPersona } from "../src/node-vessel-identity.js";
+import { generateOrLoadPersonaGroupRoot, listPersonaRoots, makeNodePersonaPetnameStore } from "../src/node-vessel-identity.js";
+import { FaceNotNamed, resolveFace } from "../src/face-selector.js";
 import { loadNodeHandleBook, saveNodeHandleBook, handleBookFile } from "../src/node-circle-store.js";
 import { listFaceOrdinals } from "../src/identity-anchors.js";
 import { faceDir } from "../src/face-index.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 let seat: SeatedScratchCustody | null = null;
-afterEach(async () => { setWornFaceInSession(undefined); await seat?.drop(); seat = null; });
+afterEach(async () => { await seat?.drop(); seat = null; });
 
 async function twoFaces() {
   seat = await seatScratchCustody("per-face");
@@ -47,16 +48,14 @@ describe("the roster family rests one row per face", () => {
   });
 });
 
-describe("the worn face is session state", () => {
-  test("wearing writes no file; with two faces open and no choice nothing is worn; one open face is worn", async () => {
+describe("the acting face is named per command", () => {
+  test("naming writes no file; with two faces open and none named the command refuses by name; one open face resolves", async () => {
     const { seat: s, second } = await twoFaces();
-    expect(await loadActivePersonaIndex()).toBeUndefined();
-    await wearPersona(1);
-    expect(await loadActivePersonaIndex()).toBe(1);
+    await expect(resolveFace()).rejects.toThrow(FaceNotNamed);
+    expect(await resolveFace(1)).toBe(1);
     expect(readdirSync(s.homes.identity).some((n) => n.startsWith(".active-persona"))).toBe(false);
-    setWornFaceInSession(undefined);
     await s.holder.lockFace(second);
-    expect(await loadActivePersonaIndex()).toBe(0);           // exactly one face stands open
+    expect(await resolveFace()).toBe(0);                      // exactly one face stands open
   });
 });
 

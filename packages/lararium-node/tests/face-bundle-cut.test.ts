@@ -7,7 +7,7 @@
  *       edge, no key group id, no seat claim, no chair label, no vessel-face key.   control: the rows do hold them
  *   C3  the table's bundle column and the cut's extractors name the same rows; a row the column names with no
  *       extractor refuses the cut.
- *   C4  each refusal, by name: face-not-held, face-not-worn (another face worn; no face worn; no composition),
+ *   C4  each refusal, by name: face-not-held, face-not-worn (another face mounted; no face mounted; no composition),
  *       own-edge-shadowed (read at the entry: no row opens, no island ask leaves), key-history-unread (none; a
  *       history that fails to verify; a history under another prefix), memory-unavailable (no island; an island
  *       that refuses), and the island's own shadow refusal.
@@ -98,13 +98,13 @@ beforeEach(async () => {
 });
 afterEach(async () => { await seat.drop(); });
 
-/** A composition's lend, as a standing vessel wearing face `worn` would hand it. `asked` keeps what reached the island. */
-function door(over: Partial<BackupDoor> & { worn?: number | null } = {}): { door: BackupDoor; asked: Uint8Array[] } {
+/** A composition's lend, as a standing vessel mounting face `mounted` would hand it. `asked` keeps what reached the island. */
+function door(over: Partial<BackupDoor> & { mounted?: number | null } = {}): { door: BackupDoor; asked: Uint8Array[] } {
   const asked: Uint8Array[] = [];
   return {
     asked,
     door: {
-      wornFace: () => (over.worn === undefined ? 0 : over.worn),
+      wornFace: () => (over.mounted === undefined ? 0 : over.mounted),
       ownEdgeShadowed: over.ownEdgeShadowed ?? (async () => false),
       cutMemory: over.cutMemory === undefined
         ? async (to) => {
@@ -168,7 +168,7 @@ describe("a cut carries one face's standing section and its memory section", () 
     expect(text.includes("the gardener")).toBe(true);
     const otherKey = mintBundleKey();
     const kel1 = [mintPersonaInception(`0x${keys.face1}`, "cd".repeat(32))];
-    const other = await cutFaceBundle({ face: 1, bundleKey: otherKey, door: door({ worn: 1, kel: async () => kel1 }).door });
+    const other = await cutFaceBundle({ face: 1, bundleKey: otherKey, door: door({ mounted: 1, kel: async () => kel1 }).door });
     const otherText = opened(other.sealedBody, otherKey).text;
     for (const word of [otherSeed, "PETNAME-OF-FACE-ONE", "HANDLE-OF-FACE-ONE", hex(secretOf(5)), "LABEL-OF-FACE-ONE"]) expect(otherText.includes(word)).toBe(true);
     expect(otherText.includes("the gardener")).toBe(false);
@@ -217,11 +217,11 @@ describe("a cut refuses by name, and a refused cut seals nothing", () => {
     expect(await refusalOf(cutFaceBundle({ face: 7, bundleKey: mintBundleKey(), door: door().door }))).toBe("face-not-held");
   });
 
-  test("C4 — a face the vessel does not wear refuses `face-not-worn`: another face worn, no face worn, no composition", async () => {
-    expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: door({ worn: 1 }).door }))).toBe("face-not-worn");
-    expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: door({ worn: null }).door }))).toBe("face-not-worn");
+  test("C4 — a face the composition does not mount refuses `face-not-worn`: another face mounted, no face mounted, no composition", async () => {
+    expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: door({ mounted: 1 }).door }))).toBe("face-not-worn");
+    expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: door({ mounted: null }).door }))).toBe("face-not-worn");
     expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: null }))).toBe("face-not-worn");
-    // CONTROL: worn, the same cut answers.
+    // CONTROL: mounted, the same cut answers.
     expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: door().door }))).toBe("ANSWERED");
   });
 

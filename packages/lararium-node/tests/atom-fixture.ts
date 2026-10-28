@@ -1,7 +1,7 @@
 import { faceAtomKeyFromSeed, type FaceAtomKey } from "@lararium/mesh";
 import "./found-route.js";
 import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
-import { loadActivePersonaIndex } from "../src/node-vessel-identity.js";
+import { resolveFace } from "../src/face-selector.js";
 import { loadFaceAtom, standFaceAtom } from "../src/face-atom-store.js";
 import { loadIdentityAnchors, persistIdentityAnchors } from "../src/identity-anchors.js";
 
@@ -30,7 +30,7 @@ export async function atomKeyOf(handleIndex = 0): Promise<string> {
   return faceAtomKeyFromSeed(await atomSeedOf(handleIndex), anchors.personaGroupId).key;
 }
 
-/** The atom key of the face the vessel wears now. */
-export async function wornAtomKey(): Promise<string> {
-  return atomKeyOf((await loadActivePersonaIndex()) ?? 0);
+/** The atom key of the face a command acts as: `face`, else the one face standing open. */
+export async function actingAtomKey(face?: number): Promise<string> {
+  return atomKeyOf(await resolveFace(face));
 }

@@ -4,7 +4,7 @@
  *
  *   · an IN-PROCESS island peer (no WS socket) — a house member — shares FREELY (empty relay ring);
  *   · a SIBLING (proven over the sibling channel, under the peer id its proven device key derives) — a device of
- *     the worn face's PersonaGroup — holds STANDING, never the house: the sibling gate alone decides it (the face's
+ *     the mounted face's PersonaGroup — holds STANDING, never the house: the sibling gate alone decides it (the face's
  *     own planes and the public boards; never the @daemon, never another face's planes). It decides FIRST; an id a
  *     WS socket also holds denies;
  *   · a SAME-OPERATOR WS peer — a face the gate read admitted, with its PersonaGroup's grant and no fleet shadow —
@@ -45,7 +45,7 @@ const NO_RELAY_PEERS: ReadonlySet<string> = new Set<string>();
 export interface SelfSlotShareInput {
   /** True for a WS peer (an outside carrier); false for an in-process island peer (a house member). */
   readonly hasWsSocket: boolean;
-  /** True for a peer id the SIBLING CHANNEL proved — a device of the worn face's PersonaGroup. It holds standing,
+  /** True for a peer id the SIBLING CHANNEL proved — a device of the mounted face's PersonaGroup. It holds standing,
    *  never the house: only `siblingGate` decides what reaches it, and an id a WS socket also holds denies. */
   readonly sibling?: boolean;
   /** The sibling gate — the PersonaGroup ring's sibling path over the public boards. Null denies every doc. */

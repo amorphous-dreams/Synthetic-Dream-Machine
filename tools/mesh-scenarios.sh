@@ -371,7 +371,7 @@ carry_place() {
 
 # ── THE FOUNDER ADMITS ITS OWN FACE (stable-founding-road, the two-root witness T3: "each founder consents with its own
 # per-Nexus leaf and opens its own admit") ────────────────────────────────────────────────────────────────────────
-# A hearth reads a herm by presenting its worn face with the admit it took for that Nexus (`herm-carriage`, "what a reader
+# A hearth reads a herm by presenting the face it acts as with the admit it took for that Nexus (`herm-carriage`, "what a reader
 # presents"); a herm answers any proven peer that knocked (operator ruling "A herm answers the knock"). A's founder face
 # holds no admit at A's own Nexus until A's quorum admits it, so A consents with its own leaf, admits it, and takes the
 # bundle, the same three doors B walks in `contract_ab`.
@@ -623,12 +623,9 @@ run_open_relation() {
   local REALM; REALM=$(printf 'f%.0s' $(seq 1 64))
   local okc=1
   $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"unfed"' || okc=0
-  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
-  $COMPOSE exec -T lararium-a $LARES cabal feed  --realm "$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES cabal feed --face 0 --realm "$REALM" >/dev/null 2>&1
   $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"visit"' || okc=0
-  $COMPOSE exec -T lararium-a $LARES persona wear 1 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
-  $COMPOSE exec -T lararium-a $LARES cabal feed  --realm "$REALM" >/dev/null 2>&1
-  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES cabal feed --face 1 --realm "$REALM" >/dev/null 2>&1
   $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"many-faces"' || okc=0
   if [ "$okc" -eq 1 ]; then ok; else
     bad "the OPEN posture moved what the realm reads"
@@ -665,8 +662,7 @@ run_crossing() {
     bad "a hearth never answered"; clear_all; return; fi
 
   step "A feeds a realm — VISIT, while the phase stays SEED"
-  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
-  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES cabal feed --face 0 --realm "$REALM" >/dev/null 2>&1
   if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"visit"' \
      && $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
   else bad "feeding a realm moved the phase, or did not register"; fi
@@ -739,12 +735,9 @@ run_open() {
   local REALM; REALM=$(printf 'e%.0s' $(seq 1 64))
   local okc=1
   $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"unfed"' || okc=0
-  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
-  $COMPOSE exec -T lararium-a $LARES cabal feed  --realm "$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES cabal feed --face 0 --realm "$REALM" >/dev/null 2>&1
   $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"visit"' || okc=0
-  $COMPOSE exec -T lararium-a $LARES persona wear 1 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
-  $COMPOSE exec -T lararium-a $LARES cabal feed  --realm "$REALM" >/dev/null 2>&1
-  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES cabal feed --face 1 --realm "$REALM" >/dev/null 2>&1
   $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"many-faces"' || okc=0
   if [ "$okc" -eq 1 ]; then ok; else
     bad "the OPEN posture moved what the realm reads"
@@ -781,10 +774,8 @@ run_realm() {
   fi
 
   step "ONE face feeds — a VISIT, and depth changes nothing"
-  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
-  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" >/dev/null 2>&1
-  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
-  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES cabal feed --face 0 --realm "$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES cabal feed --face 0 --realm "$REALM" >/dev/null 2>&1
   if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 \
      | grep -q '"standing":"visit"'; then ok; else bad "one face twice did not read as a visit"; fi
 
@@ -792,9 +783,7 @@ run_realm() {
   # and not a second hand; naming it belonging would manufacture the reciprocity the model requires
   # be earned.
   step "a SECOND face feeds — MANY-FACES, and never belonging"
-  $COMPOSE exec -T lararium-a $LARES persona wear 1 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
-  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" >/dev/null 2>&1
-  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES cabal feed --face 1 --realm "$REALM" >/dev/null 2>&1
   local CLK
   CLK=$($COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1)
   if printf '%s' "$CLK" | grep -q '"standing":"many-faces"' \
@@ -993,8 +982,7 @@ run_realm_crossing() {
   else bad "B's immune surface folded somebody else's admits"; fi
 
   step "A feeds her own face — a VISIT on A's side"
-  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
-  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES cabal feed --face 0 --realm "$REALM" >/dev/null 2>&1
   if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 \
      | grep -q '"standing":"visit"'; then ok; else bad "A's own offering did not read as a visit"; fi
 
@@ -1002,15 +990,12 @@ run_realm_crossing() {
   # reached the only way this system can reach it — two faces of ONE operator. The cross-operator
   # walk below measures whether it could ever be reached the other way, and it cannot yet.
   step "A's SECOND face feeds — MANY-FACES under a standing relation"
-  $COMPOSE exec -T lararium-a $LARES persona wear 1 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
-  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" >/dev/null 2>&1
-  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES cabal feed --face 1 --realm "$REALM" >/dev/null 2>&1
   if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 \
      | grep -q '"standing":"many-faces"'; then ok; else bad "two faces did not read as many-faces"; fi
 
   step "B feeds HER face, on her own contracted vessel"
-  $COMPOSE exec -T lararium-b $LARES persona wear 0 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
-  if $COMPOSE exec -T lararium-b $LARES cabal feed --realm "$REALM" >/dev/null 2>&1; then ok
+  if $COMPOSE exec -T lararium-b $LARES cabal feed --face 0 --realm "$REALM" >/dev/null 2>&1; then ok
   else bad "B could not feed"; fi
 
   # THE MEASUREMENT THIS SCENARIO EXISTS FOR. Three faces have now fed one realm — two of A's and one
@@ -1120,15 +1105,12 @@ run_quorum_realm() {
     fi
 
     step "under $label one face feeds — a VISIT"
-    $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
-    $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$realm" >/dev/null 2>&1
+    $COMPOSE exec -T lararium-a $LARES cabal feed --face 0 --realm "$realm" >/dev/null 2>&1
     if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$realm" --json 2>&1 | grep -q '"standing":"visit"'; then ok
     else bad "one face did not read as a visit under $label"; fi
 
     step "under $label a second face feeds — MANY-FACES"
-    $COMPOSE exec -T lararium-a $LARES persona wear 1 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
-    $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$realm" >/dev/null 2>&1
-    $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1
+    $COMPOSE exec -T lararium-a $LARES cabal feed --face 1 --realm "$realm" >/dev/null 2>&1
     if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$realm" --json 2>&1 | grep -q '"standing":"many-faces"'; then ok
     else bad "two faces did not read as many-faces under $label"; fi
   }
@@ -1255,21 +1237,21 @@ run_meme() {
   if [ -n "$RA" ] && [ "$RA" = "$RB" ]; then ok
   else bad "the two sides name different realm docs"; printf '      A: %s\n      B: %s\n' "$RA" "$RB"; fi
 
-  # EACH HAND SEALS WITH THE KEY HER WORN FACE PRESENTS. A hearth that wears no face refuses to keep a realm bag
-  # (`no-face-worn`), so both hearths wear face zero before either one seals a record of this realm.
-  step "both hearths wear face zero — a keeping hand seals under its worn face"
-  local WEAR_A WEAR_B
-  WEAR_A=$($COMPOSE exec -T lararium-a $LARES persona wear 0 --json 2>&1)
-  WEAR_B=$($COMPOSE exec -T lararium-b $LARES persona wear 0 --json 2>&1)
-  if printf '%s' "$WEAR_A" | grep -q '"active":0' && printf '%s' "$WEAR_B" | grep -q '"active":0'; then ok
+  # EACH HAND SEALS WITH THE KEY THE FACE IT NAMES PRESENTS. A vessel wears no face between commands: each realm-bag act
+  # below names face zero (`--face 0`), so face zero must stand open on both hearths before either one seals a record.
+  step "both hearths hold face zero open — a keeping hand seals under the face it names"
+  local FACES_A FACES_B
+  FACES_A=$($COMPOSE exec -T lararium-a $LARES persona list --json 2>&1)
+  FACES_B=$($COMPOSE exec -T lararium-b $LARES persona list --json 2>&1)
+  if printf '%s' "$FACES_A" | grep -q '"handleIndex":0' && printf '%s' "$FACES_B" | grep -q '"handleIndex":0'; then ok
   else
-    bad "a hearth did not wear face zero"
-    printf '      A wears: %s\n      B wears: %s\n' "$(printf '%s' "$WEAR_A" | tail -1 | cut -c1-200)" "$(printf '%s' "$WEAR_B" | tail -1 | cut -c1-200)"
+    bad "a hearth does not hold face zero open"
+    printf '      A holds: %s\n      B holds: %s\n' "$(printf '%s' "$FACES_A" | tail -1 | cut -c1-200)" "$(printf '%s' "$FACES_B" | tail -1 | cut -c1-200)"
   fi
 
   step "A registers her book on the realm — steward-signed, read at CONTRACT"
   local REG
-  REG=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag "$BOOK" --json 2>&1)
+  REG=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag "$BOOK" --face 0 --json 2>&1)
   if printf '%s' "$REG" | grep -q '"readTier":"contract"'; then ok
   else bad "the registration refused"; printf '%s\n' "$REG" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
 
@@ -1343,8 +1325,8 @@ run_meme() {
   else bad "B's projection refused"; printf '%s\n' "$PJ" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
 
   # THE STEWARD WRITE PATH. The read cap is CONTRACT (every contracted member); the write cap is the NAMED
-  # STEWARDS' SET. A NAME ENTERS A RECORD BY ITS OWN HAND FIRST: B asks from her own vessel (`--join`), her worn
-  # face sealing a record that names the standing steward and herself; the record is n-of-n, so it counts
+  # STEWARDS' SET. A NAME ENTERS A RECORD BY ITS OWN HAND FIRST: B asks from her own vessel (`--join`), the face
+  # she names sealing a record that names the standing steward and herself; the record is n-of-n, so it counts
   # nothing until A consents on hers (`--cosign`). B's `meme put --bag <book>` then resolves the REALM doc
   # rather than refusing.
   step "B edits on the base she read, promotes; A gets the new slot"
@@ -1354,13 +1336,13 @@ run_meme() {
   # CONTROL: before she asks, B's put refuses — a member at the read tier writes nothing.
   if $COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag "$BOOK" --realm "$AID_A" --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1 | grep -q '"ok":true'; then
     bad "B's put --bag <book> LANDED BEFORE she asked — the read tier must refuse a placement"; clear_all; return; fi
-  ASK=$($COMPOSE exec -T lararium-b $LARES nexus realm-bag "$BOOK" --join --realm "$AID_A" --json 2>&1)
+  ASK=$($COMPOSE exec -T lararium-b $LARES nexus realm-bag "$BOOK" --face 0 --join --realm "$AID_A" --json 2>&1)
   # THE RECORD CROSSES BEFORE EACH NEXT HAND CAN ACT ON IT. B's ask rides the realm doc to A, and A's consent
   # rides it back; neither vessel reads the other's seal before the doc syncs. So each next act repeats until
   # the realm answers it or its budget ends (the budget only bounds the wait; the verb's own answer decides).
   local until_ms=$((SECONDS + 90))
   while :; do
-    COSIGN=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag "$BOOK" --cosign --json 2>&1)
+    COSIGN=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag "$BOOK" --face 0 --cosign --json 2>&1)
     if printf '%s' "$COSIGN" | grep -q '"ok":true' || [ "$SECONDS" -ge "$until_ms" ]; then break; fi
     sleep 3
   done
@@ -1493,8 +1475,7 @@ run_climb() {
     if up_and_answering lararium-a; then ok; else bad "a hearth did not survive a bounce"; fi
   else bad "the hearth's first boot did not read its seed charter (AID '${AID}')"; fi
 
-  step "the face is WORN and USED — a carrier lands under it"
-  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1
+  step "the face STANDS and is USED — a carrier lands under it"
   $COMPOSE exec -T lararium-a sh -c "printf '<<^ code=\"&#x0001;\" from=\"?\" -> to=\"$URI\">>\n<<^ code=\"&#x0002;\">>\n\n\`\`\`toml meta\nuri-path = \"t.climb.witness/one\"\n\`\`\`\n\n<<^ code=\"&#x0003;\">>\n\n<<^ code=\"&#x0004;\" -> to=\"?\">>\n' > /tmp/climb.mem" 2>/dev/null
   if $COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe lares --file /tmp/climb.mem --json 2>&1 \
      | grep -q '"ok":true'; then ok; else bad "the face wrote nothing — the roll has no inception to strand"; fi

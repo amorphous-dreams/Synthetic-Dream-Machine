@@ -218,7 +218,7 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   expect(await said(restoreFaceBundle({ sealedBody: a.cut.sealedBody, bundleKey, withRepo }))).toBe("face-already-held");
 
   // ── ANOTHER IDENTITY REFUSES ────────────────────────────────────────────────────────────────────────────────
-  // A second face, cut on a vessel of its own, meets the vessel that wears the restored face.
+  // A second face, cut on a vessel of its own, meets the vessel that mounts the restored face.
   await foundVessel("c");
   const otherKey = mintBundleKey();
   const other = await withRepo(async (repo) => {
@@ -227,7 +227,7 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   });
   expect(other.face.verifyingKey).not.toBe(rootKey);
   await leave();
-  // Back on vessel B, which wears the restored face.
+  // Back on vessel B, which mounts the restored face.
   process.env["LAR_ROOT"] = roots.find((r) => r.includes("lar-rehearsal-b-"))!;
   const { openTestCustody } = await import("./found-route.js");
   await openTestCustody();

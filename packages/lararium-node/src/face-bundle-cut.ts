@@ -16,7 +16,7 @@
  * The cut reads its vessel's own edge shadow ONCE, at its entry, and refuses under it before any row opens
  * (`own-edge-shadowed`). The island's holder takes that one reading inside the ask the vessel signs and reads none
  * of its own. The cut then refuses, by name: a face this vessel holds no root for (`face-not-held`); a face the
- * standing vessel does not wear, since its island counts keys for the worn face alone (`face-not-worn`); a board
+ * standing vessel does not wear, since its island counts keys for the mounted face alone (`face-not-worn`); a board
  * that holds no whole key history for the face (`key-history-unread`); and an island with no content-key holder
  * (`memory-unavailable`). A cut that refuses seals nothing and answers nothing but the name.
  *
@@ -52,7 +52,7 @@ export class BackupRefused extends Error {
 export interface BackupDoor {
   /** The face this composition wears, by handle-index: the one its island counts keys for. Null where no face stands lit. */
   readonly wornFace: () => number | null;
-  /** This vessel's own reading of its edge on the worn face's fleet: true under its own shadow. */
+  /** This vessel's own reading of its edge on the mounted face's fleet: true under its own shadow. */
   readonly ownEdgeShadowed: () => Promise<boolean>;
   /**
    * Ask the daemon island for the memory section, sealed to `to`, as part of a cut that already read this
@@ -161,8 +161,8 @@ export async function cutFaceBundle(args: { readonly face: number; readonly bund
   const worn = door?.wornFace() ?? null;
   if (door === null || worn !== face) {
     throw new BackupRefused("face-not-worn", worn === null
-      ? `this vessel stands wearing no face, so no island counts keys for h${face}: wear it (\`lares persona wear ${face}\`), stand the vessel again, unlock, and cut`
-      : `this vessel wears h${worn}, so its island counts no key for h${face}: wear it (\`lares persona wear ${face}\`), stand the vessel again, unlock, and cut`);
+      ? `this vessel's composition mounts no face, so no island counts keys for h${face}: mount it (\`lares vault unlock --face ${face}\`) on a standing vessel, and cut`
+      : `this vessel's composition mounts h${worn}, so its island counts no key for h${face}: mount it (\`lares vault unlock --face ${face}\`) on a standing vessel, and cut`);
   }
   if (door.cutMemory === null) throw new BackupRefused("memory-unavailable", "no daemon island stands in this vessel, so no content-key holder answers the memory section");
 

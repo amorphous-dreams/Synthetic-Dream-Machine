@@ -26,7 +26,9 @@ import {
   type KahuQuorumSeats, type LarDoc,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
-import { loadWornFaceAtomKey } from "../face-atom-store.js";
+import { loadFaceAtomKey } from "../face-atom-store.js";
+import { unlockedFaceOrdinals } from "../custody-seat.js";
+import { CustodyLocked } from "../custody-holder.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { readVesselEdgeBoard, realmNexusIn } from "../edge-board.js";
 import { primaryNexusAid } from "../carried-set.js";
@@ -60,16 +62,23 @@ export async function runEdgeRollAnchors(opts: {
   readonly openedEpoch: SealEpoch;
   readonly repo:     Repo;
 }): Promise<readonly EdgeRollAnchorLanded[]> {
-  const vesselKey = await loadWornFaceAtomKey().catch(() => "");
-  if (!vesselKey) return [];                                     // a face with no atom keeps no ledger: nothing to anchor
+  // EVERY OPEN FACE'S LEDGER. Each face keeps its own edge ledger under its atom key, and a roll may strand a realm any
+  // of them stands under; a face with no atom keeps no ledger. A realm two ledgers name anchors once.
   const repo = opts.repo;
-  const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(vesselKey), "ledger:edge");
-  // A board with no quorum act in this vessel's ledger carries nothing a roll could strand (a fleet's board
-  // holds holder acts alone).
   // The roll belongs to the charter at `sealHome`: a realm standing under any other Nexus takes no anchor from it.
   const rolling = primaryNexusAid(opts.sealHome);
   if (rolling === null) return [];
-  const realms = edgeRollAnchorRealms(ledger.doc(), rolling);
+  const ledgered = new Map<string, { readonly key: string; readonly ledger: Awaited<ReturnType<typeof materializeSharedLarDoc>> }>();   // realm -> the ledger that names it
+  // A locked seat opens no face, so no ledger reads: the roll anchors nothing, as a faceless vessel does.
+  const open = await unlockedFaceOrdinals().catch((e: unknown) => { if (e instanceof CustodyLocked) return [] as number[]; throw e; });
+  for (const face of open) {
+    const key = await loadFaceAtomKey(face).catch(() => "");
+    if (!key) continue;                                          // a face with no atom keeps no ledger: nothing to anchor
+    const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(key), "ledger:edge");
+    // A board with no quorum act in a ledger carries nothing a roll could strand (a fleet's board holds holder acts alone).
+    for (const realm of edgeRollAnchorRealms(ledger.doc(), rolling)) if (!ledgered.has(realm)) ledgered.set(realm, { key, ledger });
+  }
+  const realms = [...ledgered.keys()].sort();
   if (realms.length === 0) return [];
 
   const selected = await selectHeldQuorumSigners(opts.opened, (held, k) => new EdgeRollAnchorError(
@@ -88,7 +97,7 @@ export async function runEdgeRollAnchors(opts: {
       const boardUrl = realmEdgeBoardDocUrl(realm);
       // Count under the CLOSING charter: the roll has yet to write its new head, so the lineage still ends there.
       const read = await readVesselEdgeBoard({
-        repo, scope: realm, kind: "realm", boardUrl, label: "board:edge-kapae", vesselKey,
+        repo, scope: realm, kind: "realm", boardUrl, label: "board:edge-kapae", vesselKey: ledgered.get(realm)!.key,
         authorityFor: () => ({ quorum: true }),
         charter: { scope: realm, head: opts.closing, sealLineage },
       });
@@ -104,7 +113,7 @@ export async function runEdgeRollAnchors(opts: {
         counted: realmRaiseCids(read.counted.acts),
         signers: selected.map((s) => ({ key: s.verifyingKey, sign: s.sign })) });
       read.handle.change((d) => { writeEdgeRollAnchor(d, anchor); registerRealmFrontierInto(d, head); });
-      ledger.change((d) => { keepInLedger(d, realm, { acts: [], anchors: [anchor] }); });
+      ledgered.get(realm)!.ledger.change((d) => { keepInLedger(d, realm, { acts: [], anchors: [anchor] }); });
       landed.push({ realm, anchorCid: edgeRollAnchorCid(anchor), parents, boardUrl });
     }
     await repo.flush();

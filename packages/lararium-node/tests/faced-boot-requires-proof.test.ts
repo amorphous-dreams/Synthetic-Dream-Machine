@@ -1,5 +1,5 @@
 /**
- * faced-boot-requires-proof — a boot that wears a sealed face anchor cannot skip its proof by leaving the persona plane out of
+ * faced-boot-requires-proof — a boot that mounts a sealed face anchor cannot skip its proof by leaving the persona plane out of
  * the bootstrap. A source weld over both composers (the boot itself needs a founded vessel; the face-boot-proof mesh tests carry
  * the behaviour): the proof block stands under the anchor alone, names the missing plane by refusal, hands the device edge to
  * the proof, and pins the verified head back into the anchor. CONTROL: the proof block still calls `proveFaceFromLog`.
@@ -38,8 +38,8 @@ describe("a faced boot proves its face", () => {
       expect(src).toMatch(/provenPlanes\.get\(plane\.personaGroupId\) === plane\.url\) registerInCatalog\(/);
       const proofAt = src.indexOf("proveFaceFromLog({");
       const registerAt = src.indexOf("provenPlanes.get(plane.personaGroupId) === plane.url");
-      expect(proofAt, "CONTROL: the worn proof stands").toBeGreaterThan(0);
-      expect(registerAt, "the registration follows the worn face's proof").toBeGreaterThan(proofAt);
+      expect(proofAt, "CONTROL: the mounted face's proof stands").toBeGreaterThan(0);
+      expect(registerAt, "the registration follows the mounted face's proof").toBeGreaterThan(proofAt);
     });
   }
 
@@ -58,7 +58,7 @@ describe("a faced boot proves its face", () => {
     }
   });
 
-  test("RED: the worn face's gates, same-operator views and Kahu mount read sealed custody's group, never the bootstrap's group text, and the views and gates wait for the proof", () => {
+  test("RED: the mounted face's gates, same-operator views and Kahu mount read sealed custody's group, never the bootstrap's group text, and the views and gates wait for the proof", () => {
     const src = read("lararium-node/src/open-node-vessel.ts");
     expect(src).toContain("const custodyGroup: string | null = wornMount?.personaGroupId");
     expect(src).toContain("faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,");
@@ -68,7 +68,7 @@ describe("a faced boot proves its face", () => {
     expect(src).toContain("wornFaceProven = true;");
   });
 
-  test("RED: the browser mounts the plane its proof checked and authorizes only proven planes; the node registers its worn group's four and no face's by list", () => {
+  test("RED: the browser mounts the plane its proof checked and authorizes only proven planes; the node registers its mounted group's four and no face's by list", () => {
     const browser = read("lararium-browser/src/open-browser-vessel.ts");
     expect(browser).toContain("{ personaUrl: provenWornPlaneUrl, personaBagId: personaBagIdFor(wornGroup) }");
     expect(browser).toContain("fleets: [...provenPlanes.keys()].map(");

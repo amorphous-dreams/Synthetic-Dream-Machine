@@ -1,7 +1,7 @@
 /**
  * nexus-client-dial — the vessel's CLIENT dial-out leg (Socket A, cleartext CRDT). A node answers sync on its
  * sovereign face gates (`ListeningWSServerAdapter` over `gate-sync-server`); when a peer sync URL rides the config,
- * the live vessel mounts a `LarWSClientAdapter` — presenting the worn face at the peer's PINNED gate — onto its
+ * the live vessel mounts a `LarWSClientAdapter` — presenting the mounted face at the peer's PINNED gate — onto its
  * running Automerge `Repo`, so it DIALS a peer node's `/ws` and syncs. The dial socket is the `ws` client
  * (`nodeDialSocket`), which holds the payload cap on the wire. This is the SAME-OPERATOR device path: a second device whose key sits in
  * the founder's PersonaGroup dials in, the peer's gate vouches it `same-operator`, and full private sync

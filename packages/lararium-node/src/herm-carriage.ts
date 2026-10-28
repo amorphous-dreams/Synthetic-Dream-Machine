@@ -15,7 +15,7 @@
  *     its own replica counts the signer at the head as a carrier, and KEL descent orders the claims it files
  *     (`place-floor-pin`, `admit-gate-pin`). A herm that rotated its place is carried again under its new signer.
  *   · WHAT A READER PRESENTS (lar:///ha.ka.ba/lararium/mesh/carriage-pull#/what-it-presents). A place carried at that Nexus presents the quorum's
- *     counted head-epoch `carry` over its own key (the place arm, class `contracted`); a lararium otherwise presents its worn face with
+ *     counted head-epoch `carry` over its own key (the place arm, class `contracted`); a lararium otherwise presents its mounted face with
  *     the admit it took for that Nexus. Nothing composed, nothing dialed.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/herm-carriage
@@ -55,7 +55,7 @@ export interface VesselCarriagePullDeps {
   readonly ownPlaceChain?: () => Promise<readonly PlaceKelEvent[]>;
   /** A herm only: lay its signed claim and its KEL rows on its own replica of the board at `url` (written once; again when moved). */
   readonly layStatement?: (url: AutomergeUrl, statement: PlaceFloorPinStatement, kel: readonly PlaceKelEvent[]) => Promise<void>;
-  /** A lararium only: the worn face's presentation at the Nexus `pin` names, or null. */
+  /** A lararium only: the mounted face's presentation at the Nexus `pin` names, or null. */
   readonly facePresentation?: (pin: GateBundlePin) => Promise<FacePresentation | null>;
   readonly pins:        HearthPinIndex;
   readonly audience:    string;

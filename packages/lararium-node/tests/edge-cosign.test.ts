@@ -10,7 +10,7 @@ import {
   edgeKapaeActsFromBoard, foldEdgeReadings, countEdgeActs, hex,
   charterHandLineage, readRealmFrontier, realmRaiseCids,
 } from "@lararium/mesh";
-import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, wearPersona } from "../src/node-vessel-identity.js";
+import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
@@ -21,7 +21,7 @@ import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "../src/commands/
 import { chairKey, chairSeed, seatChairs } from "./seat-fixture.js";
 import { ed25519SignerFromSeed, nexusAidOf } from "@lararium/mesh";
 import { foundRealmFrontier } from "./realm-frontier-fixture.js";
-import { seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
+import { seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
 import { makeEdgeShadowRing } from "../src/edge-shadow-ring.js";
 
 let genesis: ReturnType<typeof heldCharter> | null = null;
@@ -39,7 +39,7 @@ async function stand(index: number, seatIndex: number, keys: string[]) {
   await generateOrLoadPersonaGroupRoot(seatIndex); await seedFaceAtom(seatIndex);
   await seatChairs([seatIndex]);
   await generateOrLoadPersonaGroupRoot(8); await seedFaceAtom(8);
-  await generateOrLoadPersonaGroupRoot(0); await wearPersona(0);   // three faces held: the vessel wears the one these vectors act as
+  await generateOrLoadPersonaGroupRoot(0);   // three faces held
   writeNexusDoc(larSealHome(), genesis!.doc());
   await ownedStore(larDataDir(), async (repo) => {
     const daemon = await import("@lararium/mesh").then((m) => m.seedDaemonDoc(repo));
@@ -82,12 +82,12 @@ afterEach(async () => {
 
 /** A person's confirmed cosign: the confirmation names the very act the partial carries. */
 const cosign = (repo: Repo, p: unknown) =>
-  runEdgeCosign({ partial: p, sealHome: larSealHome(), repo, confirmActCid: (p as { act?: { actCid?: string } } | null)?.act?.actCid ?? "none" });
+  runEdgeCosign({ partial: p, face: 0, sealHome: larSealHome(), repo, confirmActCid: (p as { act?: { actCid?: string } } | null)?.act?.actCid ?? "none" });
 
 async function partial(index: number, raised = true) {
   process.env["LAR_ROOT"] = roots[index]!;
   const sealHome = larSealHome();
-  return withRepo(index, (repo) => runEdgePartial({ realm: REALM, member: MEMBER, raised, sealHome, repo }));
+  return withRepo(index, (repo) => runEdgePartial({ realm: REALM, member: MEMBER, raised, sealHome, repo, face: 0 }));
 }
 
 async function board(index: number) {
@@ -112,7 +112,7 @@ async function frontier(index: number) {
 
 async function ringFrontier(index: number) {
   return withRepo(index, async (repo) => {
-    const vesselKey = await wornAtomKey();
+    const vesselKey = await actingAtomKey(0);
     const ring = makeEdgeShadowRing({ repo, vesselKey: () => vesselKey, sealHome: larSealHome(),
       fleetRoots: () => [], charterRealm: () => REALM,
       vesselKeyOfPeer: () => null, realmNymOfPeer: () => null });
@@ -161,9 +161,9 @@ describe("the cross-vessel quorum cosign door", () => {
     expect(landed.landed).toBe(true); expect(landed.added).toEqual([chairB]);
     // CONTROL: on a realm B pinned under its own primary Nexus, the same act answers to no charter there.
     const other = "ab".repeat(32);
-    await withRepo(1, async (repo) => noteVesselRealm(repo, await wornAtomKey(), other, primaryNexusAid(larSealHome())!));
+    await withRepo(1, async (repo) => noteVesselRealm(repo, await actingAtomKey(0), other, primaryNexusAid(larSealHome())!));
     process.env["LAR_ROOT"] = roots[0]!;
-    const elsewhere = await withRepo(0, (repo) => runEdgePartial({ realm: other, member: MEMBER, raised: true, sealHome: larSealHome(), repo }));
+    const elsewhere = await withRepo(0, (repo) => runEdgePartial({ realm: other, member: MEMBER, raised: true, face: 0, sealHome: larSealHome(), repo }));
     await expect(withRepo(1, (repo) => cosign(repo, elsewhere.partial))).rejects.toThrow(/realm-under-another-nexus/);
   });
 
@@ -177,7 +177,7 @@ describe("the cross-vessel quorum cosign door", () => {
   it("a board move after opening makes the carried frontier stale before a seat signs or lands", async () => {
     const waiting = await partial(0);
     process.env["LAR_ROOT"] = roots[0]!;
-    const other = await withRepo(0, (repo) => runEdgePartial({ realm: REALM, member: "cd".repeat(32), raised: true,
+    const other = await withRepo(0, (repo) => runEdgePartial({ realm: REALM, member: "cd".repeat(32), raised: true, face: 0,
       sealHome: larSealHome(), repo }));
     await withRepo(1, (repo) => cosign(repo, other.partial));
     const before = (await board(1)).acts.map((a) => a.actCid);
@@ -278,18 +278,18 @@ describe("the cross-vessel quorum cosign door", () => {
   });
   it("a read with no confirmation signs nothing and writes nothing", async () => {
     const a = await partial(0);
-    const read = await withRepo(1, (repo) => runEdgeCosign({ partial: JSON.parse(JSON.stringify(a.partial)), sealHome: larSealHome(), repo }));
+    const read = await withRepo(1, (repo) => runEdgeCosign({ partial: JSON.parse(JSON.stringify(a.partial)), face: 0, sealHome: larSealHome(), repo }));
     expect(read).toMatchObject({ would: "cosign", landed: false, added: [], subject: { kind: "member", member: MEMBER }, raised: true });
     expect(read.partial.act.signatures).toHaveLength(1);
     expect((await board(1)).acts).toEqual([]);
     // CONTROL: the confirmed call signs and lands, and a whole act read on the first vessel reads as landable.
     const done = await withRepo(1, (repo) => cosign(repo, JSON.parse(JSON.stringify(a.partial))));
     expect(done.landed).toBe(true);
-    const whole = await withRepo(0, (repo) => runEdgeCosign({ partial: JSON.parse(JSON.stringify(done.partial)), sealHome: larSealHome(), repo }));
+    const whole = await withRepo(0, (repo) => runEdgeCosign({ partial: JSON.parse(JSON.stringify(done.partial)), face: 0, sealHome: larSealHome(), repo }));
     expect(whole).toMatchObject({ would: "land", landed: false });
     expect((await board(0)).acts).toEqual([]);
     // A confirmation that names another act refuses: the partial changed between the read and the signature.
-    await expect(withRepo(0, (repo) => runEdgeCosign({ partial: JSON.parse(JSON.stringify(done.partial)), sealHome: larSealHome(), repo, confirmActCid: "0".repeat(64) })))
+    await expect(withRepo(0, (repo) => runEdgeCosign({ partial: JSON.parse(JSON.stringify(done.partial)), face: 0, sealHome: larSealHome(), repo, confirmActCid: "0".repeat(64) })))
       .rejects.toThrow(/differs from the act the confirmation names/);
     expect((await board(0)).acts).toEqual([]);
   });

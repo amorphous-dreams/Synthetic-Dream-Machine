@@ -25,7 +25,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { RESERVE_TRANSITION_DOMAIN, canonicalJsonBytes, hex, readFckCarrier, sealRollBytes } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
 import { handleBookFile } from "../src/node-circle-store.js";
-import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPersonaGroupRootSeed, vesselPlaceSignerDoor, setWornFaceInSession } from "../src/node-vessel-identity.js";
+import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPersonaGroupRootSeed, vesselPlaceSignerDoor, setMountedFace } from "../src/node-vessel-identity.js";
 import { LABEL_ARG_LIMIT, SEALED_ACTS, SEALED_ACT_NAMES, SIGN_IMAGE_LIMIT, SNAPSHOT_ARG_LIMIT, SealedActRefused, runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
 import { handleRowPath } from "./face-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
@@ -36,7 +36,7 @@ vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 const ctx: SealedActContext = { kelHead: null, personaSelves: null, walk: null, hosting: null, backup: null };
 const drops: SeatedScratchCustody[] = [];
 async function vessel(label: string): Promise<SeatedScratchCustody> {
-  setWornFaceInSession(undefined);
+  setMountedFace(undefined);
   const c = await seatScratchCustody(label);
   drops.push(c);
   return c;
@@ -106,7 +106,7 @@ describe("the sealed-act table", () => {
     await vessel("acts-t3");
     const root = await generateOrLoadPersonaGroupRoot(0);
     const roots = await runSealedAct("persona.roots", {}, ctx);
-    expect(roots).toEqual({ roots: [{ handleIndex: 0, verifyingKey: root.verifyingKey }], active: 0, orphans: [] });
+    expect(roots).toEqual({ roots: [{ handleIndex: 0, verifyingKey: root.verifyingKey }], orphans: [] });
     const [seat] = (await seatChairs([0])).keys as [string];
     const sign = (args: Record<string, unknown>) => runSealedAct("seal.sign", { seat, ...args }, ctx) as Promise<{ signer: string; sig: string }>;
     // A WELL-FORMED ROLL SIGNS ONLY UNDER A CHARTER THAT LICENSES IT (`seal-ceremony.test.ts` walks the license).
@@ -126,10 +126,10 @@ describe("the sealed-act table", () => {
     for (const [why, args] of foreign) expect(await reasonOf(sign(args)), why).toBe("act-refused");
     expect(await reasonOf(sign({ image: hex(roll), note: "what stood observed" }))).toBe("bad-args");   // the roll row takes no note
     expect(await reasonOf(runSealedAct("seal.sign", { seat: root.verifyingKey.toLowerCase(), image: hex(roll) }, ctx))).toBe("act-refused");   // a root holds no seat row
-    // RED: wearing retired. A vessel wears no face between commands, so the act refuses by name and points at `--face N`.
-    const worn = await runSealedAct("persona.wear", { handleIndex: 0 }, ctx).catch((e: unknown) => e);
-    expect(worn).toMatchObject({ reason: "act-refused", message: expect.stringContaining("persona-wear-retired") });
-    expect((worn as Error).message).toContain("--face N");
+    // A vessel wears no face between commands: the wearing act stands no more, and a command's face resolves by name.
+    expect(await reasonOf(runSealedAct("persona.wear", { handleIndex: 0 }, ctx))).toBe("unknown-act");
+    expect(await runSealedAct("face.resolve", { face: 0 }, ctx)).toEqual({ face: 0 });
+    expect((await runSealedAct("persona.roots", {}, ctx))).not.toHaveProperty("active");
   });
 
   test("T4 — no act hands out a seed", async () => {

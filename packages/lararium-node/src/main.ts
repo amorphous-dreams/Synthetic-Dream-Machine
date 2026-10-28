@@ -448,7 +448,7 @@ async function main(): Promise<void> {
       hosting: composition?.hosting ?? null, backup: composition?.backup ?? null,
     }),
     // A BACKUP'S CUT RUNS HERE TOO, against the same seated holder, once the frame's own route proves: the
-    // standing composition lends it the worn face, its own edge's shadow, the island's memory section and the
+    // standing composition lends it the mounted face, its own edge's shadow, the island's memory section and the
     // board's key history (custody#/the-cut).
     backup: (face, bundleKey) => cutFaceBundle({ face, bundleKey, door: composition?.backup ?? null }),
     standing: () => composition?.standing ?? "recomposing",

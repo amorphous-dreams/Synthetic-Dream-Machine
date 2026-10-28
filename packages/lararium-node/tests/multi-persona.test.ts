@@ -1,13 +1,13 @@
 /**
  * multi-persona.test — Plurality Pono at the identity layer (#63).
  *
- * A human contains multitudes; a vessel may HOLD a SET of persona-roots (one per handle-index) and WEAR
- * one at a time. This proves the generalization stands AND that a one-persona vessel behaves byte-identically
+ * A human contains multitudes; a vessel may HOLD a SET of persona-roots (one per handle-index); each command
+ * names the face it acts as, and the unlock names the one face the composition mounts. This proves the generalization stands AND that a one-persona vessel behaves byte-identically
  * to today (back-compat): the founding persona (index 0) spells with NO `-h` suffix and needs no selector file.
  *
  * Custody-by-TYPE survives: each persona-root is the vessel's OWN sovereign secret (a distinct ed25519 key),
- * so N roots widen the self-surface, never a held-principal honeypot — and wearing a persona whose root the
- * vessel does not hold is refused (the custody wall in mask form). Recovery splits PER persona-root.
+ * so N roots widen the self-surface, never a held-principal honeypot — and mounting a face whose root the
+ * vessel does not hold stands no composition (the custody wall in mask form). Recovery splits PER persona-root.
  */
 import { faceRowNames, handleRowPath } from "./face-paths.js";
 import { afterEach, beforeEach, describe, test, expect } from "vitest";
@@ -18,9 +18,10 @@ import * as ed25519 from "@noble/ed25519";
 import { assembleQuorum, reconstructFromQuorum, decodeShareBytes, type RecoveryShare } from "@lararium/mesh";
 import {
   generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed,
-  loadActivePersonaIndex, wearPersona, personaRootExists, listPersonaRoots,
-  setWornFaceInSession,
+  personaRootExists, listPersonaRoots,
+  setMountedFace, sovereignStands,
 } from "../src/node-vessel-identity.js";
+import { FaceNotNamed, resolveFace } from "../src/face-selector.js";
 import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, type IdentityAnchors } from "../src/identity-anchors.js";
 import { readWornPersonaMount } from "../src/worn-mount.js";
 import type { DeviceDelegationTiddler, LarDid } from "@lararium/mesh";
@@ -71,7 +72,7 @@ describe("multi-persona-per-vessel (#63)", () => {
   let seated: Awaited<ReturnType<typeof seatScratchCustody>>;
   const dataDir = () => root;   // identityDir ignores it — the store resolves under XDG state
   beforeEach(async () => {
-    setWornFaceInSession(undefined);
+    setMountedFace(undefined);
     root = mkdtempSync(join(tmpdir(), "lares-multipersona-"));
     setEnv("LAR_ROOT", undefined);
     setEnv("XDG_STATE_HOME", join(root, "state"));
@@ -79,12 +80,13 @@ describe("multi-persona-per-vessel (#63)", () => {
     seated = await seatScratchCustody("multi-persona");
   });
   afterEach(async () => {
+    setMountedFace(undefined);
     await seated.drop();
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
     rmSync(root, { recursive: true, force: true });
   });
 
-  test("UNIFORM keying — the founding persona spells `-h0`, its mint records the explicit roster, session infers the sole unlocked face", async () => {
+  test("UNIFORM keying — the founding persona spells `-h0`, its mint records the explicit roster, a command resolves the sole unlocked face", async () => {
     const founding = await generateOrLoadPersonaGroupRoot();   // default index 0
     expect(founding.created).toBe(true);
 
@@ -96,9 +98,9 @@ describe("multi-persona-per-vessel (#63)", () => {
     // The roster is the store's OWN explicit written record (no dir-scan), and the mint recorded index 0.
     expect(await listPersonaRoots()).toEqual([0]);
 
-    // No selector row lands; the sole unlocked face is worn by session inference.
+    // No selector row lands; a command naming no face resolves the sole unlocked one.
     expect(existsSync(join(idDir, ".active-persona.json")) || readdirSync(idDir).some((f) => f.startsWith(".active-persona"))).toBe(false);
-    expect(await loadActivePersonaIndex()).toBe(0);
+    expect(await resolveFace()).toBe(0);
   });
 
   test("a vessel HOLDS two distinct persona-roots (multitude-of-one), each its own sovereign key", async () => {
@@ -122,23 +124,25 @@ describe("multi-persona-per-vessel (#63)", () => {
     expect(await listPersonaRoots()).toEqual([0, 1]);
   });
 
-  test("WEAR a mask — switch the active persona, and it survives (persisted outside the wipe)", async () => {
+  test("NAME a mask — with two faces open a command names its face, and the mount moves no command", async () => {
     await generateOrLoadPersonaGroupRoot(0);
     await generateOrLoadPersonaGroupRoot(1);
 
-    expect(await loadActivePersonaIndex()).toBeUndefined();   // nothing worn yet — no inference
-    await wearPersona(1);
-    expect(await loadActivePersonaIndex()).toBe(1);   // the mask is on
-    await wearPersona(0);
-    expect(await loadActivePersonaIndex()).toBe(0);   // and off again — the house beneath unchanged
+    await expect(resolveFace()).rejects.toBeInstanceOf(FaceNotNamed);   // two open, none named — no inference
+    expect(await resolveFace(1)).toBe(1);   // the mask the command names
+    expect(await resolveFace(0)).toBe(0);   // and the other — the house beneath unchanged
+    setMountedFace(1);                      // the composition's mount is not a command's choice
+    await expect(resolveFace()).rejects.toBeInstanceOf(FaceNotNamed);
   });
 
-  test("custody wall in mask form — cannot WEAR a persona whose root the vessel does not hold", async () => {
+  test("custody wall in mask form — a mount naming a face whose root the vessel does not hold stands no composition", async () => {
     await generateOrLoadPersonaGroupRoot(0);
     expect(await personaRootExists(7)).toBe(false);
-    await expect(wearPersona(7)).rejects.toThrow(/no persona-root held/);
-    // The custody guard reads uniformly — index 0 wears only because its root was just minted (held).
-    await expect(wearPersona(0)).resolves.toBeUndefined();
+    setMountedFace(7);
+    expect(sovereignStands()).toBe(false);
+    // The custody guard reads uniformly — index 0 stands only because its root was just minted (held).
+    setMountedFace(0);
+    expect(sovereignStands()).toBe(true);
   });
 
   test("handle-index guard rejects out-of-range indices (SLIP-0010 hardened ceiling)", async () => {
@@ -177,32 +181,32 @@ describe("multi-persona-per-vessel (#63)", () => {
   });
 
   /**
-   * THE WEAR-REBOOT MOUNT-SWITCH. `persona wear N` moves ONLY the selector pointer; the daemon doc's singular
-   * pins were written by the FOUNDING face and never move again. So a reboot after a wear re-mounted h0
-   * whatever the operator had put on — while the CLI told them "restart the node to sign as it". The switched
+   * THE UNLOCK MOUNT-SWITCH. `lares vault unlock --face N` names the face the composition mounts; the daemon doc's
+   * singular pins were written by the FOUNDING face and never move again. So a boot mounting a non-founding face must
+   * re-pin from that face's own material, never come up on h0's pins whatever face the unlock named. The switched
    * face's material lives in its OWN anchors, persisted at founding: signer DID, persona-KEL prefix, and the
    * SIGNED device edge, all public re-pin material.
    */
-  describe("the wear-reboot mount-switch — a reboot mounts the face the operator WORE", () => {
-    test("★ a worn NON-founding persona resolves ITS OWN mount material from anchors-hN ★", async () => {
+  describe("the unlock mount-switch — a boot mounts the face the unlock NAMED", () => {
+    test("★ a mounted NON-founding persona resolves ITS OWN mount material from anchors-hN ★", async () => {
       await generateOrLoadPersonaGroupRoot(0);
       await generateOrLoadPersonaGroupRoot(1);
       await persistIdentityAnchors(anchorsFor(1, true), 1);
-      await wearPersona(1);
+      setMountedFace(1);
 
-      const worn = await readWornPersonaMount(dataDir());
-      expect(worn?.handleIndex).toBe(1);
-      expect(worn?.signerDid).toBe("0xdid1");
-      expect(worn?.personaKelPrefix).toBe("EKEL1");
-      expect(worn?.personaGroupId, "the switched face's OWN group, not h0's").toBe("aa1");
-      expect(worn?.meshCabalDocIdHex).toBe("bb1");
-      expect(worn?.deviceEdge.kind).toBe("device-delegation");
+      const mounted = await readWornPersonaMount(dataDir());
+      expect(mounted?.handleIndex).toBe(1);
+      expect(mounted?.signerDid).toBe("0xdid1");
+      expect(mounted?.personaKelPrefix).toBe("EKEL1");
+      expect(mounted?.personaGroupId, "the switched face's OWN group, not h0's").toBe("aa1");
+      expect(mounted?.meshCabalDocIdHex).toBe("bb1");
+      expect(mounted?.deviceEdge.kind).toBe("device-delegation");
     });
 
     test("CONTROL — the FOUNDING face resolves NO switch: the daemon-doc pins already name h0", async () => {
       await generateOrLoadPersonaGroupRoot(0);
       await persistIdentityAnchors(anchorsFor(0, true), 0);
-      await wearPersona(0);
+      setMountedFace(0);
       expect(await readWornPersonaMount(dataDir()), "h0 needs no re-pin — the pins are already its own").toBeNull();
     });
 
@@ -210,11 +214,11 @@ describe("multi-persona-per-vessel (#63)", () => {
       await generateOrLoadPersonaGroupRoot(0);
       await generateOrLoadPersonaGroupRoot(1);
       await persistIdentityAnchors(anchorsFor(1, false), 1);   // doc-ids only — no signer, prefix or edge
-      await wearPersona(1);
+      setMountedFace(1);
       expect(await readWornPersonaMount(dataDir()), "a half-anchor never re-pins a mount").toBeNull();
     });
 
-    test("CONTROL — wearing nothing resolves no switch (the selector is unset)", async () => {
+    test("CONTROL — naming no face resolves no switch (the sole face h0 mounts)", async () => {
       await generateOrLoadPersonaGroupRoot(0);
       expect(await readWornPersonaMount(dataDir())).toBeNull();
     });

@@ -65,7 +65,8 @@ import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { sealedAct } from "../sealed-act-door.js";
-import { sealHand, inceptHand, heldSeats, armGenesisSeats, armRollSeats, retireSeats, readBackStandsIn, readPersonaRoots } from "../sealed-rows.js";
+import { actingFace, FaceOptionMalformed } from "../face-option.js";
+import { sealHand, inceptHand, heldSeats, armGenesisSeats, armRollSeats, retireSeats, readBackStandsIn } from "../sealed-rows.js";
 import { canPromptSecret, promptLine, promptSecret } from "../prompt-secret.js";
 import { CardReadBackRefused, readBack as printAndReadBack, type ColdCard } from "../cold-card-readback.js";
 
@@ -969,17 +970,13 @@ function readReleaseAddresses(path: string | undefined): ReleaseManifestAddresse
   return { image: String(m["image"]?.["digest"] ?? ""), genesis: cidV1Sha256FromHex(seed), engine: String(m["engine"]?.["cid"] ?? ""), grammar: String(m["grammar"]?.["cid"] ?? "") };
 }
 
-/** The face whose seat stands: `--face <i>`, else the face this vessel wears. */
+/** The face whose seat stands: `--face <i>`, else the one face standing open; several and none named refuse by name. */
 async function foundingFace(args: ParsedArgs): Promise<number> {
-  const raw = args.options["face"];
-  if (raw !== undefined) {
-    const n = Number(raw);
-    if (!Number.isSafeInteger(n) || n < 0) throw new UsageError(`--face expects a handle-index, got "${raw}"`);
-    return n;
+  try { return await actingFace(args); }
+  catch (err) {
+    if (err instanceof FaceOptionMalformed || err instanceof SealedActRefused) throw new UsageError(err.message);
+    throw err;
   }
-  const worn = (await readPersonaRoots()).active;
-  if (worn === null) throw new UsageError("no face stands worn — name the face whose seat stands: --face <i>, or `lares persona wear <i>` first");
-  return worn;
 }
 
 /** A fingerprint typed as heard: `--heard <fp>`, else asked on the terminal. */

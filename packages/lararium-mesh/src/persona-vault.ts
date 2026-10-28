@@ -36,12 +36,16 @@ import type { AnchorStore } from "./anchor-store.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { RecoveryShareStore } from "./recovery-keel-core.js";
 
-/** How a runtime persists WHICH persona the vessel currently wears (one pointer, never a root). */
+/**
+ * WHICH persona a vessel's composition mounts (one pointer, never a root). A browser tab keeps the pointer it wore; a
+ * node keeps none (`save` absent): its composition mounts the face its unlock named, and no command reads that as a
+ * default face.
+ */
 export interface ActivePersonaStore {
-  /** The worn handle-index, or undefined when the vessel wears none yet (no inference from an empty home). */
+  /** The mounted handle-index, or undefined when the vessel mounts none yet (no inference from an empty home). */
   load(): Promise<number | undefined>;
-  /** Persist the worn handle-index — moves only the pointer, never a root. */
-  save(handleIndex: number): Promise<void>;
+  /** Persist the worn handle-index — moves only the pointer, never a root. Absent where the vessel keeps no pointer. */
+  save?(handleIndex: number): Promise<void>;
 }
 
 /**
@@ -197,6 +201,7 @@ export async function wearPersona(vault: PersonaVault, handleIndex: number): Pro
       `(custody-by-type: sign only as a persona whose sovereign secret this vessel carries)`,
     );
   }
+  if (!vault.selector.save) throw new Error("[persona-vault] this vessel keeps no worn pointer: a command names its face (--face N)");
   await vault.selector.save(handleIndex);
 }
 

@@ -6,8 +6,8 @@
  * and that record travels: the realm doc crosses to every member, and the `@crossroads` announce names
  * `keptBy` in public. So whatever key seals here gets published.
  *
- * THE ONE SIGNER. This door hands out the key the vessel's WORN face presents to the Nexus the realm stands
- * under (`mintWornNexusLeaf`), and nothing else. No option names a persona index, no roster order picks a face,
+ * THE ONE SIGNER. This door hands out the key the vessel's acting face presents to the Nexus the realm stands
+ * under (`mintFaceNexusLeaf`), and nothing else. No option names a persona index, no roster order picks a face,
  * and no arm reaches a root: a vessel that wears no face refuses by name until its operator wears one.
  *
  * THE GUARD. Every signer passes `stewardGuard` before it seals, here and again inside the realm plane. The
@@ -18,7 +18,7 @@
  * WHAT THE DOOR CANNOT READ, AND THE ORDER THAT ANSWERS IT. A vessel cannot class a key that belongs to
  * somebody else, and no roster of face keys stands anywhere to ask (the carriage board records carriage, never
  * belonging). So a name enters a realm record BY ITS OWN HAND FIRST: a hand that would keep a bag another hand
- * keeps asks from its own vessel (`join`), sealing with its own worn face, and each standing steward consents
+ * keeps asks from its own vessel (`join`), sealing with its own acting face, and each standing steward consents
  * (`cosign`). A keeping hand may name a steward (`stewards`) only where that name already sealed a record of
  * this realm (else `steward-name-unproven`), and never by this vessel's own root or vessel key.
  *
@@ -37,9 +37,10 @@ import {
   CABAL_REALM_RE, realmStewardMap,
   type CapTier, type HeldKeys, type LarDoc, type RealmBagFoldOptions, type StewardSigner,
 } from "@lararium/mesh";
-import { heldNexusLeaves, mintWornNexusLeaf } from "./nexus-leaf.js";
+import { heldNexusLeaves, mintFaceNexusLeaf } from "./nexus-leaf.js";
 import { loadNodeHandleBook } from "./node-circle-store.js";
 import { unlockedFaceOrdinals } from "./custody-seat.js";
+import { FaceNotNamed } from "./face-selector.js";
 import {
   listPersonaRoots, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
 } from "./node-vessel-identity.js";
@@ -53,18 +54,18 @@ export type RealmDoorPlanes = RealmPlaneHolder & Partial<Pick<RealmPlanesHolder,
 
 /** What the door reads of this vessel's own keys. A test hands a fake; the standing vessel reads its vault. */
 export interface StewardVault {
-  /** The key the WORN face presents to the Nexus `nexusAid`, with its signing seed, minted at random where none
-   *  stands: a seal presents the face there. Null when this vessel wears no face, or holds no root for the worn
-   *  index. */
-  wornLeaf(nexusAid: string): Promise<{ readonly verifyingKey: string; readonly seed: Uint8Array } | null>;
+  /** The key the acting face (`face`, else the one face standing open) presents to the Nexus `nexusAid`, with its
+   *  signing seed, minted at random where none stands: a seal presents the face there. Null when this vessel holds no
+   *  root for that face; several faces and none named refuse by name. */
+  faceLeaf(nexusAid: string, face?: number): Promise<{ readonly verifyingKey: string; readonly seed: Uint8Array } | null>;
   /** This vessel's own keys by class; `nexusScopedKeys` holds its held personas' keys AT `nexusAid`. */
   heldKeys(nexusAid: string): Promise<HeldKeys>;
 }
 
-/** The node vault's reading: the worn face's key at the Nexus, and every key class this vessel can name. */
+/** The node vault's reading: the acting face's key at the Nexus, and every key class this vessel can name. */
 export const nodeStewardVault: StewardVault = {
-  async wornLeaf(nexusAid) {
-    const leaf = await mintWornNexusLeaf(nexusAid);
+  async faceLeaf(nexusAid, face) {
+    const leaf = await mintFaceNexusLeaf(nexusAid, face);
     return leaf ? { verifyingKey: leaf.verifyingKey.toLowerCase(), seed: leaf.seed } : null;
   },
   async heldKeys(nexusAid) {
@@ -106,6 +107,7 @@ export function nodeHandleBookReading(): RealmBagFoldOptions {
  *  roster) never lets a signer through on a guess, and never reads as a vessel that wears no face. */
 async function readVault<T>(what: string, read: () => Promise<T>): Promise<T> {
   try { return await read(); } catch (err) {
+    if (err instanceof FaceNotNamed) throw new StewardRefused("face-not-named", err.message);
     throw new StewardRefused("steward-key-unreadable", `this vessel's ${what} would not read: ${(err as Error)?.message ?? String(err)}`);
   }
 }
@@ -133,12 +135,13 @@ export function stewardGuard(vault: StewardVault = nodeStewardVault): StewardGua
 }
 
 /**
- * The signer the worn face presents in a realm under `nexusAid`. Refuses `no-face-worn` when the vessel wears
- * none. The signer passes the guard before it leaves this door.
+ * The signer the acting face (`face`, else the one face standing open) presents in a realm under `nexusAid`. Refuses
+ * `face-not-named` when several faces stand and none was named, `face-root-absent` when this vessel holds no root for
+ * the face. The signer passes the guard before it leaves this door.
  */
-export async function wornStewardSigner(nexusAid: string, vault: StewardVault = nodeStewardVault): Promise<StewardSigner> {
-  const leaf = await readVault("worn face", () => vault.wornLeaf(nexusAid));
-  if (!leaf) throw new StewardRefused("no-face-worn", "wear a face with `lares persona wear N` before keeping a realm bag");
+export async function faceStewardSigner(nexusAid: string, vault: StewardVault = nodeStewardVault, face?: number): Promise<StewardSigner> {
+  const leaf = await readVault("acting face", () => vault.faceLeaf(nexusAid, face));
+  if (!leaf) throw new StewardRefused("face-root-absent", "this vessel holds no root for the face it acts as: name a face it founded (--face N)");
   const signer: StewardSigner = { signer: leaf.verifyingKey.toLowerCase(), sign: ed25519SignerFromSeed(leaf.seed) };
   await stewardGuard(vault)(signer, nexusAid);
   return signer;
@@ -162,7 +165,7 @@ const normalizedName = (name: string): string => name.trim().toLowerCase().repla
 /**
  * THE VERB `realm-bag`: register a bag this vessel's steward keeps; or (`join: true`) ask to keep a bag
  * another hand keeps; or (`cosign: true`, with `with: <name>` where several proposals wait) consent to a
- * proposal that names this vessel's steward. The worn face's key seals, whatever the arguments say. `stewards` names the hands a registration PROPOSES: each must
+ * proposal that names this vessel's steward. The acting face's key seals, whatever the arguments say. `stewards` names the hands a registration PROPOSES: each must
  * read a steward class, must not read as this vessel's own root or vessel key, and must already have sealed
  * a record of this realm.
  */
@@ -212,7 +215,7 @@ export async function runRealmBag(opts: {
       throw new StewardRefused("steward-name-unproven", `"${name}" sealed nothing in this realm, so no hand but its own may write it here — that hand asks to keep the bag from its own vessel (\`lares nexus realm-bag <bag> --join\`), and each standing steward consents (\`--cosign\`)`);
     }
   }
-  const signer = await wornStewardSigner(aid, vault);
+  const signer = await faceStewardSigner(aid, vault, typeof args["face"] === "number" && Number.isSafeInteger(args["face"]) && (args["face"] as number) >= 0 ? args["face"] as number : undefined);
   const tier = typeof args["tier"] === "string" ? args["tier"] as CapTier : undefined;
   const expiry = Number.isFinite(args["expiry"]) ? Number(args["expiry"]) : undefined;
   const charters = typeof args["charters"] === "object" && args["charters"] !== null ? args["charters"] as Record<string, string> : undefined;

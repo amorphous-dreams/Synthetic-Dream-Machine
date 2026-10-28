@@ -96,7 +96,7 @@ export async function standKahuCanon(opts: {
 }
 
 /**
- * THE CANON WAITS FOR THE PROOF. The keel mounts the Kahu canon during assembly, before the worn face's proof runs (the proof needs the
+ * THE CANON WAITS FOR THE PROOF. The keel mounts the Kahu canon during assembly, before the mounted face's proof runs (the proof needs the
  * KEL board and the daemon doc that stand later), so the mount itself cannot wait. Everything that could TOUCH the mounted documents
  * does: no verb is wired until the daemon opens, no mirror writes until then, and a peer's sync of a canon document is denied here until
  * the proof passes, for a vessel that owes a face proof (sealed custody names a face). A vessel with no face owes none.

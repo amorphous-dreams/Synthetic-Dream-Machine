@@ -27,7 +27,7 @@
  *   edge-seat-facts · edge-seat-marks            the key side's facts and marks (`commands/edge-seats`)
  *   edge-partial · edge-cosign                   a quorum edge act between seats on separate vessels (`commands/edge-cosign`)
  *   cabal-vouch · cabal-join                     the vouch board (`commands/cabal-vouch`, `commands/cabal-join`)
- *   cabal-face                                   the worn face's key in one realm (`commands/cabal-face`)
+ *   cabal-face                                   the acting face's key in one realm (`commands/cabal-face`)
  *   fleet-join-offer · fleet-join-answer         the root holder's half of the fleet-join door (`commands/fleet-join`)
  *   handle-publish · handle-burn · handle-rotate · handle-attest
  *                                                the WHO board (`commands/handle`)
@@ -401,7 +401,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
         raised: args["raised"] !== false, sealHome, repo,
         ...opt("edgeId", str(args["edgeId"])), ...opt("member", str(args["member"])), ...opt("device", str(args["device"])),
         ...(args["hand"] === "quorum" ? { hand: "quorum" as const } : {}), ...opt("realm", str(args["realm"])),
-        ...opt("handleIndex", int(args["handleIndex"])), ...opt("nexusAid", str(args["nexusAid"])), ...opt("parents", strs(args["parents"])),
+        ...opt("handleIndex", int(args["handleIndex"])), ...opt("face", int(args["face"])), ...opt("nexusAid", str(args["nexusAid"])), ...opt("parents", strs(args["parents"])),
       })),
     })),
     // THE KEY SIDE OF A REMOVAL, the vessel's two short acts around the island's `seat-duties` verb (kapae#/keys).
@@ -429,29 +429,29 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...(await runEdgePartial({
         realm: str(args["realm"]) ?? "", raised: args["raised"] !== false, sealHome, repo,
         ...opt("member", str(args["member"])), ...opt("voucher", str(args["voucher"])), ...opt("joiner", str(args["joiner"])),
-        ...opt("nexusAid", str(args["nexusAid"])),
+        ...opt("nexusAid", str(args["nexusAid"])), ...opt("face", int(args["face"])),
       })),
     })),
     "edge-cosign": (args) => answer("edge-cosign", async () => ({
-      ...(await runEdgeCosign({ partial: args["partial"], sealHome, repo, ...opt("confirmActCid", str(args["confirmActCid"])) })),
+      ...(await runEdgeCosign({ partial: args["partial"], sealHome, repo, ...opt("confirmActCid", str(args["confirmActCid"])), ...opt("face", int(args["face"])) })),
     })),
     "cabal-vouch": (args) => answer("cabal-vouch", async () => ({
       ...(await runCabalVouch({
         joiner: str(args["joiner"]) ?? "", realm: str(args["realm"]) ?? "", sealHome, repo,
-        ...opt("nexusAid", str(args["nexusAid"])),
+        ...opt("nexusAid", str(args["nexusAid"])), ...opt("face", int(args["face"])),
       })),
     })),
-    // THE WORN FACE'S KEY IN A REALM: `present` stands the face there (mints its key, notes the realm under its
+    // THE ACTING FACE'S KEY IN A REALM: `present` stands the face there (mints its key, notes the realm under its
     // Nexus); a read mints nothing (`commands/cabal-face`).
     "cabal-face": (args) => answer("cabal-face", async () => ({
       ...(await runCabalFace({
         realm: str(args["realm"]) ?? "", present: args["present"] === true, sealHome, repo,
-        ...opt("nexusAid", str(args["nexusAid"])),
+        ...opt("nexusAid", str(args["nexusAid"])), ...opt("face", int(args["face"])),
       })),
     })),
     "cabal-join": (args) => answer("cabal-join", async () => ({
       ...(await runCabalJoin({
-        realm: str(args["realm"]) ?? "", applicant: str(args["applicant"]) ?? "", sealHome, repo,
+        realm: str(args["realm"]) ?? "", applicant: str(args["applicant"]) ?? "", sealHome, repo, ...opt("face", int(args["face"])),
         ...opt("maxVouchesPerVoucher", int(args["maxVouchesPerVoucher"])),
         ...(args["bundle"] === undefined ? {} : { bundle: args["bundle"] }),
       })),

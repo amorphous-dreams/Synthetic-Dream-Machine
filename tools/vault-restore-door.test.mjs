@@ -1,9 +1,9 @@
 // vault-restore-door — one face's RESTORE, driven live against the BUILT tree, end to end: a scratch vessel the
 // built `lares` founded lights a face and cuts its bundle; its whole root gets destroyed; a second scratch vessel,
-// founded fresh, restores through its standing custody door, stands again, and wears the face at a NEW seat.
+// founded fresh, restores through its standing custody door, stands again, and opens the face at a NEW seat.
 //
 //   R1  the restore lands through the standing vessel's `act` frame: the face stands under the SAME root and fixed
-//       prefix, and the vessel that stands again WEARS it lit (it cuts that face's bundle from its own seat).
+//       prefix, and the vessel that stands again opens it lit (it cuts that face's bundle from its own seat).
 //   R2  the root's seed and the bundle's key rest in no clear file under the restored vessel's root.
 //                                                              control: the opened body does carry the seed
 //   R3  a second restore over the face refuses `face-already-held`; a locked vessel refuses `custody-locked`; a
@@ -142,14 +142,12 @@ test("a face cut on one vessel restores onto a fresh one through its custody doo
     const second = await restoreTestCustody(rootB, { file: bundle });
     assert.equal(second.answer.reason, "face-already-held", JSON.stringify(second.answer));
 
-    // ── THE VESSEL STANDS AGAIN and wears the restored face at its own seat ────────────────────────────────────
+    // ── THE VESSEL STANDS AGAIN and opens the restored face at its own seat ────────────────────────────────────
     await vessel.stop();
-    const worn = spawnSync(process.execPath, [cli, "persona", "wear", "1"], { cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: rootB } });
-    assert.equal(worn.status, 0, `the hearth wears the restored face: ${worn.stderr}`);
-    vessel = await standUnlocked(rootB, 1);   // the unlock NAMES the face worn: nothing at rest remembers a choice
+    vessel = await standUnlocked(rootB, 1);   // the unlock NAMES the face it opens: nothing at rest remembers a choice
     const again = join(outDir, "gardener-from-b.bundle");
     const recut = await backupTestCustody(rootB, { face: 1, out: again });
-    assert.equal(recut.ok, true, `the restored vessel wears the face lit, and cuts it from its own seat: ${JSON.stringify(recut)}`);
+    assert.equal(recut.ok, true, `the restored vessel holds the face lit, and cuts it from its own seat: ${JSON.stringify(recut)}`);
     const b = openBody(again);
     assert.equal(b.body.root.verifyingKey, a.body.root.verifyingKey, "the same root");
     assert.equal(b.body.root.signingKey, a.body.root.signingKey);
@@ -175,7 +173,7 @@ test("a face cut on one vessel restores onto a fresh one through its custody doo
     assert.ok(custody.rows.some((r) => r.row === "persona-root" && r.reading === "sealed"), "CONTROL: the reading names the restored root's own row");
     assert.equal(custody.rows.some((r) => r.row === "restore-pending"), false, "the restore's commit row left once the face stood lit");
 
-    // ── R4: another face's bundle meets the vessel that wears this one ─────────────────────────────────────────
+    // ── R4: another face's bundle meets the vessel that holds this one ─────────────────────────────────────────
     const rootC = stageFounded("c", "the potter");
     roots.push(rootC);
     vessel = await standUnlocked(rootC);

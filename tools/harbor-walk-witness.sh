@@ -2,8 +2,8 @@
 # harbor-walk-witness — the container vessel's first walk, through the host shim alone (tools/lares-container.sh).
 #
 #   LEG 1  the hearth before `up`: found --hearth (the Stable founding act: the place, persona zero, its seed charter,
-#          the face) → persona wear → up → unlock. The vessel boots once and rests at the floor holding no key; the
-#          unlock composes it in place as a Lararium wearing the face, with its working layer attached, and the
+#          the face) → up → unlock. The vessel boots once and rests at the floor holding no key; the unlock names
+#          face zero and composes the vessel in place as a Lararium mounting it, with its working layer attached, and the
 #          workspace mount receives a projected carrier.
 #   LEG 2  a place lifted to a hearth after `up`: found → up → unlock (a faceless vessel stands as a herm) → a face
 #          refuses on a place with no seed charter → stop → found --hearth over the standing place → up. The lifted
@@ -93,7 +93,6 @@ not_contains 'live — wiki-less wayfarer' 'live — wiki:' || { printf 'harbor-
 printf '── leg 1: a face before up\n'
 new_scratch
 lares found --hearth --name ci-face
-lares persona wear 0
 lares up
 floor=$(boot_log)
 refused=$(lares persona list --json 2>&1 || :)
@@ -105,7 +104,7 @@ opened=$(unlock_staged 2>&1 || :)
 result 'leg 1: the unlock opens the key onto a hearth'          contains "$opened" '"standing":"hearth"'
 personas=$(lares persona list --json)
 log=$(boot_log)
-result 'leg 1: the vessel wears face zero'                      contains "$personas" '"active":0'
+result 'leg 1: the unlock opens face zero'                      contains "$personas" '"handleIndex":0'
 result 'leg 1: the unlocked boot stands as a Lararium'          contains "$log" 'live — wiki:'
 result 'leg 1: the working layer attaches'                      contains "$log" 'working layer attached'
 result 'leg 1: the unlock restarted no container'               test "$before" = "$(started_at)"

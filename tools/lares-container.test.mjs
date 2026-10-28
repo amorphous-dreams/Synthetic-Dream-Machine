@@ -210,7 +210,7 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: a standing check that fails after a verb landed exits non-zero and says so`, async () => {
-    const r = await run(shim, ["persona", "wear", "0"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_RC: "1" } });
+    const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_RC: "1" } });
     assert.equal(r.status, 1);
     assert.match(r.stderr, /the standing check after it answered no verdict/);
     assert.doesNotMatch(r.calls, /restart lares/);
@@ -218,7 +218,7 @@ for (const [name, shim] of shims) {
 
   test(`${name}: a standing check that exits zero and names no verdict never passes as "no lift"`, async () => {
     for (const answer of ["", "not json", '{"data":{}}', '{"data":{"standing":{"act":"dance"}}}']) {
-      const r = await run(shim, ["persona", "wear", "0"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: answer } });
+      const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: answer } });
       assert.equal(r.status, 1, JSON.stringify(answer));
       assert.match(r.stderr, /answered no verdict/);
     }

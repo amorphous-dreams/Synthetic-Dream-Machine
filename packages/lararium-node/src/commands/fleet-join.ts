@@ -69,7 +69,7 @@ import { runDeviceAdmit } from "./device-admit.js";
 import { runInit } from "./init.js";
 import { resolveFace, FaceNotNamed } from "../face-selector.js";
 
-/** The face index a caller named, read whole (a non-negative integer, or a refusal by name); an unnamed face resolves as every command's does: the worn face, else the sole face, else a refusal that lists them. Never a silent `h0`. */
+/** The face index a caller named, read whole (a non-negative integer, or a refusal by name); an unnamed face resolves as every command's does: the acting face, else the sole face, else a refusal that lists them. Never a silent `h0`. */
 async function faceIndex(face: number | undefined): Promise<number> {
   if (face === undefined) {
     try { return await resolveFace(); } catch (e) { if (e instanceof FaceNotNamed) throw new FleetJoinRefused("face-malformed", e.message); throw e; }
@@ -167,7 +167,7 @@ async function householdNamed<T>(work: () => Promise<T>): Promise<T> {
 
 /**
  * The root holder's offer: the face, its root key, a fresh nonce, and the scopes the face stands at. `face` names
- * the persona index the join serves (`--face`; unnamed, the worn face, else the sole face); the index stays local to this vessel and
+ * the persona index the join serves (`--face`; unnamed, the one face standing open); the index stays local to this vessel and
  * never rides the offer, which names the face by its PersonaGroup and root key.
  */
 export async function runFleetJoinOffer(opts: { readonly sealHome: string; readonly face?: number }): Promise<FleetJoinOffer> {

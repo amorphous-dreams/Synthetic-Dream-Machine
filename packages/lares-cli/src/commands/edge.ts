@@ -21,6 +21,7 @@
  * dropped everywhere it matters.
  */
 
+import { faceOption } from "../face-option.js";
 import { readFileSync } from "node:fs";
 import { EdgeKapaeError, EdgeSeatError, EdgeCosignError, type EdgeKapaeResult, type EdgeSeatFacts, type EdgePartialResult, type EdgeCosignResult } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
@@ -113,7 +114,7 @@ async function cmdPartial(args: ParsedArgs, raised: boolean): Promise<number> {
   try {
     const r = (await storeVerb("edge-partial", {
       realm, raised, ...(member !== undefined ? { member } : {}), ...(voucher !== undefined ? { voucher } : {}), ...(joiner !== undefined ? { joiner } : {}),
-      ...(nexusAid !== undefined ? { nexusAid } : {}),
+      ...(nexusAid !== undefined ? { nexusAid } : {}), ...faceOption(args),
     }, EdgeCosignError)).output as unknown as EdgePartialResult;
     console.log(`PARTIAL — ${r.signed.length} of ${r.threshold} seats signed; the act counts for nothing until the threshold meets`);
     console.log(`  gesture:  ${raised ? "raise (set aside)" : "lower (re-admit)"} over ${subjectLine(r.partial.subject)}`);
@@ -150,7 +151,7 @@ async function cmdCosign(args: ParsedArgs): Promise<number> {
   catch { console.error("refused: the input must hold ONE JSON partial and nothing else"); return 1; }
   const confirmActCid = args.options["act"];
   try {
-    const r = (await storeVerb("edge-cosign", { partial, ...(confirmActCid !== undefined ? { confirmActCid } : {}) }, EdgeCosignError)).output as unknown as EdgeCosignResult;
+    const r = (await storeVerb("edge-cosign", { partial, ...(confirmActCid !== undefined ? { confirmActCid } : {}), ...faceOption(args) }, EdgeCosignError)).output as unknown as EdgeCosignResult;
     console.log(r.would !== undefined
       ? `READ — ${r.signed.length} of ${r.threshold} seats signed; this call signed nothing and landed nothing`
       : r.landed
@@ -207,7 +208,7 @@ export async function cmdEdge(args: ParsedArgs): Promise<number> {
       raised: verb === "kapae",
       ...(edgeId !== undefined ? { edgeId } : {}), ...(member !== undefined ? { member } : {}), ...(device !== undefined ? { device } : {}),
       ...(realm !== undefined ? { realm } : {}), ...(quorum ? { hand: "quorum" } : {}),
-      ...(handleIndex !== undefined ? { handleIndex } : {}), ...(nexusAid !== undefined ? { nexusAid } : {}),
+      ...(handleIndex !== undefined ? { handleIndex } : {}), ...(nexusAid !== undefined ? { nexusAid } : {}), ...faceOption(args),
     }, EdgeKapaeError)).output as unknown as EdgeKapaeResult;
     // THE HEADLINE REPORTS STANDING, never the gesture: a lower may land while a raise it never cited still
     // stands beside it, and "stands again" would then tell a person the opposite of what every reader reads.
