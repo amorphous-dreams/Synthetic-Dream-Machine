@@ -24,7 +24,7 @@ import { readFileSync } from "node:fs";
 import { NexusContractError, SealedActRefused, type NexusRollAnchorPartialResult } from "@lararium/node";
 import { readNexusActPartial } from "@lararium/mesh";
 import { sealedAct } from "../sealed-act-door.js";
-import { storeVerb, storeFailure } from "../store-door.js";
+import { storeVerb, storeFailure, proveFaceSession } from "../store-door.js";
 import { faceOption } from "../face-option.js";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -34,7 +34,7 @@ const ANCHOR_USAGE = "usage: lares nexus seal anchor [--nexus <aid>] [--edge] [-
 const refuseAnchor = (msg: string): Error => new NexusContractError(msg);
 
 type EdgeStanding = { readonly realm: string; readonly state: "anchored" | "owed"; readonly anchorCid?: string };
-type AnchorAnswer = NexusRollAnchorPartialResult & { readonly realm?: string; readonly edgeAnchors?: readonly EdgeStanding[]; readonly edgeFace?: "no-face-open" | "face-not-named" };
+type AnchorAnswer = NexusRollAnchorPartialResult & { readonly realm?: string; readonly edgeAnchors?: readonly EdgeStanding[]; readonly edgeFace?: string };
 type EdgeOpened = { readonly realm: string; readonly partial: NexusRollAnchorPartialResult["partial"]; readonly verdict: string; readonly signed: readonly string[] };
 
 /** Report one anchor step: the verdict here, the seats signed, where the file landed, and the anchor once it lands. */
@@ -61,6 +61,7 @@ function emitAnchor(args: ParsedArgs, step: string, r: AnchorAnswer, written: Pa
         if (r.edgeAnchors?.some((e) => e.state === "owed")) console.log("  realm edges: some anchors stay owed here (`lares nexus seal anchor --edge --out <partial>`)");
         if (r.edgeFace === "no-face-open") console.log("  realm edges: no face stands open, so none read here (`--face N` once one opens)");
         if (r.edgeFace === "face-not-named") console.log("  realm edges: several faces stand open and none was named, so none read here (`--face N`)");
+        if (r.edgeFace !== undefined && r.edgeFace !== "no-face-open" && r.edgeFace !== "face-not-named") console.log(`  realm edges: the face refused its read (${r.edgeFace}); the carriage stands landed (\`--face N\` once it opens)`);
       } else {
         console.log("  next:        carry the partial to the vault that holds another seat (`lares nexus seal anchor --from <partial> --out <file>`)");
       }
@@ -150,11 +151,19 @@ export async function cmdSealAnchor(args: ParsedArgs): Promise<number> {
       r = (await storeVerb("nexus-roll-anchor-edge-partial", { partial, face }, NexusContractError)).output as unknown as AnchorAnswer;
     } else {
       const face = await reportFace(args);
+      // The reporting face's session opens before the carriage lands: a face that cannot open one refuses here, by
+      // the vessel's own name, with nothing landed.
+      if (typeof face === "number") await proveFaceSession(face);
       r = (await storeVerb("nexus-roll-anchor-partial", { partial }, NexusContractError)).output as unknown as AnchorAnswer;
       if (typeof face !== "number") r = { ...r, edgeFace: face };
       else {
-        const standing = (await storeVerb("nexus-roll-anchor-edge-standing", { ...(read ? { aid: read.aid } : {}), face }, NexusContractError)).output;
-        r = { ...r, edgeAnchors: (standing["edgeAnchors"] ?? []) as readonly EdgeStanding[] };
+        // THE CARRIAGE STANDS LANDED: a face that locked after the preflight costs the report alone, by its own name.
+        try {
+          const standing = (await storeVerb("nexus-roll-anchor-edge-standing", { ...(read ? { aid: read.aid } : {}), face }, NexusContractError)).output;
+          r = { ...r, edgeAnchors: (standing["edgeAnchors"] ?? []) as readonly EdgeStanding[] };
+        } catch (err) {
+          r = { ...r, edgeFace: storeFailure(err, "edge-standing-refused").code };
+        }
       }
     }
     return emitAnchor(args, step, r, out !== undefined ? writePartialFile(out, r.partial) : null);

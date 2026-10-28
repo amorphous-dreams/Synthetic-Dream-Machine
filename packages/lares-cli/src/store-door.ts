@@ -69,6 +69,24 @@ async function invokeInSession(
   }
 }
 
+/**
+ * PROVE A FACE'S SESSION OPENS on a running vessel, before an act of several steps writes its first: open a session of
+ * the face, then close it, riding nothing on it. A refusal throws `RoutedVerbRefused` under the vessel's own name
+ * (`storeFailure` reads it), so the act refuses with nothing written. With no vessel standing it proves nothing and
+ * answers: each row then runs here, and a later step's refusal names itself.
+ */
+export async function proveFaceSession(face: number): Promise<void> {
+  if (!(await udsAlive())) return;
+  let session: Awaited<ReturnType<typeof openLocalSession>>;
+  try { session = await openLocalSession({ faceRef: `h${face}`, hand: "cli" }); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) return;
+    if (e instanceof SessionRefused) throw new RoutedVerbRefused(e.message, e.refusal);
+    throw e;
+  }
+  await session.close().catch(() => { /* the socket already went */ });
+}
+
 /** Where a routed door ran: inside the standing vessel, or in this process. */
 export type StoreDoorVia = "daemon" | "direct";
 
