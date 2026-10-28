@@ -19,6 +19,7 @@ import { storeDoorDirect } from "../src/store-door-verbs.js";
 import { larBootstrapPath, larSealHome } from "../src/vessel-paths.js";
 import { resolveIntentRelayFace } from "../src/intent-relay-face.js";
 import { loadIntentFace } from "../src/commands/intent.js";
+import * as intentLoader from "../src/commands/intent.js";
 import * as relayKeys from "../src/intent-relay-key-store.js";
 import { intentRelayKeyOrMint } from "../src/intent-relay-key-store.js";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
@@ -133,5 +134,36 @@ test("RED: key rotation between public-key read and signing cannot produce an un
       expect(control.status).toBe("admitted");
       if (control.status === "admitted") expect(readIntentAdmission(control.receipt, { group }).ok).toBe(true);
     } finally { sign.mockRestore(); }
+  }); });
+}, 240_000);
+
+
+test("RED: held face reloads changed KEL after signing; CONTROL: unchanged face admits", async () => {
+  const seed = new Uint8Array(32).fill(73), agent = { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
+  const grant = await row("intent-root", { action: "delegate", agent: agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1, 2] } } }, until: `roster:${"f".repeat(64)}` }) as { cid: string };
+  const make = (x: number) => buildAgentIntent({ group, signer: agent, delegation: grant.cid, verb: "MOVE", args: { x }, nonce: "", audience: { mode: "every" }, verbs: faceIntentVerbs() });
+  await withLarRoot(ROOT, async () => { await openTestCustody(); await intentRelayKeyOrMint(); await ownedStore(storage, async repo => {
+    const loaded = await loadIntentFace(repo, catalogUrl, { group }), face = await resolveIntentRelayFace(group, { repo, catalogUrl });
+    if (!face) throw Error("held face missing");
+    let changed = false, resume!: () => void, started!: () => void;
+    const gate = new Promise<void>(r => { resume = r; }), entered = new Promise<void>(r => { started = r; });
+    const originalLoad = intentLoader.loadIntentFace, originalSign = relayKeys.signAsIntentRelay;
+    // The loader seam models a changed, no longer verifiable KEL snapshot after sync.
+    const loader = vi.spyOn(intentLoader, "loadIntentFace").mockImplementation(async (...args) => {
+      const fresh = await originalLoad(...args);
+      return changed ? { ...fresh, kelChain: [] } : fresh;
+    });
+    const sign = vi.spyOn(relayKeys, "signAsIntentRelay").mockImplementationOnce(async bytes => { started(); await gate; return originalSign(bytes); });
+    try {
+      const entry = await make(1), beforeEntries = intentEntryRecordsOfGroup(loaded.plane.doc(), group).length, beforeReceipts = intentAdmissionRecordsOfGroup(loaded.plane.doc(), group).length;
+      const pending = face.admit(entry);
+      await entered; changed = true; resume();
+      expect((await pending).status).toBe("refused");
+      expect(loader.mock.calls.length).toBeGreaterThan(1);
+      expect(intentEntryRecordsOfGroup(loaded.plane.doc(), group)).toHaveLength(beforeEntries);
+      expect(intentAdmissionRecordsOfGroup(loaded.plane.doc(), group)).toHaveLength(beforeReceipts);
+      changed = false;
+      expect((await face.admit(await make(2))).status).toBe("admitted");
+    } finally { sign.mockRestore(); loader.mockRestore(); }
   }); });
 }, 240_000);

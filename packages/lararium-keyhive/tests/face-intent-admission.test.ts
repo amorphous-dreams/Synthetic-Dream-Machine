@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { actCid, buildAgentIntent, buildDelegation, buildIntent, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, fixtureIntentVerbs, intentEntryCid, intentEntryRecordsOfGroup, intentId, mayAct, readFace, mintPersonaInception, signPersonaAct, writeIntentEntry, type DocHandle, type LarDoc } from "@lararium/mesh";
+import { actCid, buildAgentIntent, buildDelegation, buildDelegationRevoke, deriveSelfRecoveryKey, sealKeySetHash, hexToBytes, mintPersonaRotation, personaRotationSigningBytes, buildIntent, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, fixtureIntentVerbs, intentEntryCid, intentEntryRecordsOfGroup, intentId, mayAct, readFace, mintPersonaInception, signPersonaAct, writeIntentEntry, type DocHandle, type LarDoc } from "@lararium/mesh";
 import { intentAdmissionCid, intentAdmissionRecordsOfGroup, writeIntentAdmission } from "../../lararium-mesh/src/intent-admission.js";
 import { admitAgentEntry, makeFaceIntentDoor, makeFaceIntentReader } from "../src/face-intent-door.js";
 
@@ -11,7 +11,8 @@ const plane = () => {
 };
 const fixture = async () => {
   const root = await who(9), d1 = await who(1), d2 = await who(2), agent = await who(3), relay = await who(4), relay2 = await who(5), group = "face-a";
-  const inception = mintPersonaInception(`0x${root.key}`, "recovery"), log = [] as Awaited<ReturnType<typeof signPersonaAct>>[];
+  const recovery = await deriveSelfRecoveryKey(new Uint8Array(32).fill(9));
+  const inception = mintPersonaInception(`0x${root.key}`, sealKeySetHash([recovery.verifyingKey], 1)), log = [] as Awaited<ReturnType<typeof signPersonaAct>>[];
   for (const [act, fields] of [["founding", { personaKelPrefix: inception.prefix, rootCommitment: "root" }], ["admission", { deviceKey: d1.key }], ["admission", { deviceKey: d2.key }]] as const) {
     const head = log.at(-1);
     log.push(await signPersonaAct(head ? { seq: head.body.seq, cid: actCid(head.body) } : null, { group, act, epoch: 0, fields }, root));
@@ -21,7 +22,7 @@ const fixture = async () => {
   const grant = await buildDelegation({ group, signer: root, epoch: 0, agent: agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1] } } }, bound: { until: { roster: "a".repeat(64) } }, nonce: "grant" });
   const entry = await buildAgentIntent({ group, signer: agent, delegation: intentEntryCid(grant), verb: "MOVE", args: { x: 1 }, nonce: "", audience: { mode: "every" }, verbs });
   const id = intentId({ issuer: agent.key, verb: "MOVE", args: { x: 1 }, nonce: "" });
-  return { root, d1, d2, agent, relay, relay2, group, shared, ports, grant, entry, id, verbs };
+  return { root, d1, d2, agent, relay, relay2, group, shared, ports, grant, entry, id, verbs, log, inception, recovery };
 };
 afterEach(() => vi.restoreAllMocks());
 
@@ -104,9 +105,19 @@ test("RED: foreign verifiedFace cannot override the supplied chain; CONTROL: the
   const ports = { ...f.ports, personaRecords: () => log, verifiedFace: foreignReading };
   expect((await admitAgentEntry(ports, entry, f.relay)).status).toBe("refused");
   expect(f.shared.change).not.toHaveBeenCalled();
+  const effectPlane = plane();
+  effectPlane.handle.change(d => { writeIntentEntry(d, grant); writeIntentEntry(d, entry); });
   const effect = vi.fn(async () => ({}));
-  await makeFaceIntentDoor({ ...ports, atom: f.d1, effects: new Map([["MOVE", effect]]), log: () => {} }).heed();
+  let genuine = false;
+  const effectPorts = { ...ports, personaRecords: () => genuine ? f.log : log, plane: effectPlane.handle, atom: f.d1, effects: new Map([["MOVE", effect]]), log: () => {} };
+  const door = makeFaceIntentDoor(effectPorts);
+  await door.heed();
   expect(effect).not.toHaveBeenCalled();
+  const genuineEntry = await buildAgentIntent({ group: f.group, signer: f.agent, delegation: intentEntryCid(f.grant), verb: "MOVE", args: { x: 1 }, nonce: "", audience: { mode: "every" }, verbs: f.verbs });
+  effectPlane.handle.change(d => { writeIntentEntry(d, f.grant); writeIntentEntry(d, genuineEntry); });
+  genuine = true;
+  await door.heed();
+  expect(effect).toHaveBeenCalledTimes(1);
   f.shared.handle.change(d => writeIntentEntry(d, f.grant));
   expect((await admitAgentEntry({ ...f.ports, verifiedFace: readFace(f.ports.kelChain)! }, f.entry, f.relay)).status).toBe("admitted");
 });
@@ -138,4 +149,50 @@ test.each([false, true])("RED: signing-gap merge rechecks entry and own receipt 
   if (own && result.status !== "refused") expect(result.receipt).toEqual(prior.receipt);
   const control = plane(); control.handle.change(d => writeIntentEntry(d, f.grant));
   expect((await admitAgentEntry({ ...f.ports, plane: control.handle }, f.entry, f.relay)).status).toBe("admitted");
+});
+
+
+test.each(["roster", "rotation"] as const)("RED: signing gap refreshes %s authority; CONTROL: unchanged authority admits", async kind => {
+  const f = await fixture();
+  const head = f.log.at(-1)!;
+  const closing = await signPersonaAct({ seq: head.body.seq, cid: actCid(head.body) }, { group: f.group, act: "admission", epoch: 0, fields: { deviceKey: (await who(8)).key } }, f.root);
+  const grant = kind === "roster" ? await buildDelegation({ group: f.group, signer: f.root, epoch: 0, agent: f.agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1] } } }, bound: { until: { roster: actCid(closing.body) } }, nonce: "closing" }) : f.grant;
+  const entry = await buildAgentIntent({ group: f.group, signer: f.agent, delegation: intentEntryCid(grant), verb: "MOVE", args: { x: 1 }, nonce: "", audience: { mode: "every" }, verbs: f.verbs });
+  const freshKey = `0x${(await who(10)).key}`;
+  const sig = await ed25519SignerFromSeed(hexToBytes(f.recovery.signingKey))(personaRotationSigningBytes(f.inception, freshKey));
+  const rotation = await mintPersonaRotation({ head: f.inception, freshOpKeyDid: freshKey, recoveryRoster: [f.recovery.verifyingKey], recoveryThreshold: 1, rotationSigs: [{ signer: f.recovery.verifyingKey, sig }] });
+  if (!rotation.ok) throw Error(rotation.reason);
+  f.shared.handle.change(d => writeIntentEntry(d, grant)); f.shared.change.mockClear();
+  let merged = false, resume!: () => void, started!: () => void;
+  const gate = new Promise<void>(r => { resume = r; }), entered = new Promise<void>(r => { started = r; });
+  const ports = { ...f.ports, personaRecords: () => merged && kind === "roster" ? [...f.log, closing] : f.log,
+    get kelChain() { return merged && kind === "rotation" ? [f.inception, rotation.event] : [f.inception]; } };
+  const pending = admitAgentEntry(ports, entry, { ...f.relay, sign: async bytes => { started(); await gate; return f.relay.sign(bytes); } });
+  await entered; merged = true; resume();
+  expect(await pending).toEqual({ status: "refused", refusal: kind === "roster" ? "delegation-closed" : "entry-refused" });
+  expect(f.shared.change).not.toHaveBeenCalled();
+  expect(intentEntryRecordsOfGroup(f.shared.doc, f.group)).toHaveLength(1);
+  expect(intentAdmissionRecordsOfGroup(f.shared.doc, f.group)).toHaveLength(0);
+  const control = plane(); control.handle.change(d => writeIntentEntry(d, grant));
+  expect((await admitAgentEntry({ ...f.ports, plane: control.handle }, entry, f.relay)).status).toBe("admitted");
+});
+
+test.each([true, false])("RED: merged own receipt rechecks revocation (revoke=%s); CONTROL: no revoke returns prior receipt", async revoke => {
+  const f = await fixture(); f.shared.handle.change(d => writeIntentEntry(d, f.grant));
+  const other = plane(); other.handle.change(d => writeIntentEntry(d, f.grant));
+  const prior = await admitAgentEntry({ ...f.ports, plane: other.handle }, f.entry, f.relay);
+  if (prior.status !== "admitted") throw Error("fixture refused");
+  const revocation = await buildDelegationRevoke({ group: f.group, signer: f.root, epoch: 0, delegation: intentEntryCid(f.grant) });
+  let resume!: () => void, started!: () => void;
+  const gate = new Promise<void>(r => { resume = r; }), entered = new Promise<void>(r => { started = r; });
+  const pending = admitAgentEntry(f.ports, f.entry, { ...f.relay, sign: async bytes => { started(); await gate; return f.relay.sign(bytes); } });
+  await entered;
+  f.shared.handle.change(d => { writeIntentEntry(d, f.entry); writeIntentAdmission(d, prior.receipt as Parameters<typeof writeIntentAdmission>[1]); if (revoke) writeIntentEntry(d, revocation); });
+  f.shared.change.mockClear(); resume();
+  const result = await pending;
+  if (revoke) expect(result).toEqual({ status: "refused", refusal: "delegation-revoked" });
+  else expect(result).toEqual({ status: "duplicate", receipt: prior.receipt });
+  expect(f.shared.change).not.toHaveBeenCalled();
+  expect(intentEntryRecordsOfGroup(f.shared.doc, f.group)).toHaveLength(revoke ? 3 : 2);
+  expect(intentAdmissionRecordsOfGroup(f.shared.doc, f.group)).toHaveLength(1);
 });
