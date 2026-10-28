@@ -155,11 +155,11 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 
 /** The door's rows, by name — each command's routed call names exactly one of these. */
 export const STORE_DOOR_VERBS = [
-  "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-anchor-edge-open", "nexus-roll-prior-anchor", "nexus-members-list",
+  "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-prior-anchor", "nexus-members-list",
   "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release",
   "nexus-posture", "nexus-admit-take", "nexus-carry-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
-  "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-partial",
+  "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor-edge", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-edge-partial", "nexus-roll-anchor-edge-standing",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-lease", "persona-kel-head",
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
@@ -175,7 +175,7 @@ export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
  */
 export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>([
   "edge-kapae", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
-  "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-partial",
+  "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor-edge", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-edge-partial", "nexus-roll-anchor-edge-standing",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-lease", "nexus-publish", "raise-sign",
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
 ]);
@@ -311,15 +311,24 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       if (r.landed) await awaitOnRolled(deps.onRolled?.());
       return { ...r };
     }),
+    // A ROLL ANCHORS BY AUTHORITY. The carriage anchor is the place's act: the new quorum's seats sign it, and it rides the
+    // maintenance frame as a place row. Each realm edge anchor of the same roll is a face act, written in one face's
+    // ledger, so it rides a session of that face (`nexus-roll-anchor-edge`).
     "nexus-roll-anchor": (args) => answer("nexus-roll-anchor", async () => {
       const closing = args["closing"] as KahuQuorumSeats, opened = args["opened"] as KahuQuorumSeats;
-      // THE FACE FIRST: the roll's edge anchors act as one face, so the face resolves (or refuses) before the carriage anchor writes.
-      const face = await rollAnchorFace(int(args["face"]));
       const r = await runNexusRollAnchor({ sealHome, repo, closing, opened });
-      // The same roll anchors every realm edge board the acting face's ledger keeps quorum acts for (kapae#/rolls).
-      const edgeAnchors = await runEdgeRollAnchors({ sealHome, repo, closing, opened, openedEpoch: args["epoch"] as SealEpoch, ...opt("face", face) });
       await awaitOnRolled(deps.onRolled?.());
-      return { ...r, edgeAnchors };
+      return { ...r };
+    }),
+    // The roll's realm edge anchors, as the face named, else the one standing open. With no face open the step answers
+    // `no-face-open` by name and writes nothing; several open with none named refuse FaceNotNamed before any write.
+    "nexus-roll-anchor-edge": (args) => answer("nexus-roll-anchor-edge", async () => {
+      const closing = args["closing"] as KahuQuorumSeats, opened = args["opened"] as KahuQuorumSeats;
+      const face = await rollAnchorFace(int(args["face"]));
+      if (face === undefined) return { outcome: "no-face-open", edgeAnchors: [] };
+      // The roll anchors every realm edge board the acting face's ledger keeps quorum acts for (kapae#/rolls).
+      const edgeAnchors = await runEdgeRollAnchors({ sealHome, repo, closing, opened, openedEpoch: args["epoch"] as SealEpoch, face });
+      return { outcome: "anchored", face, edgeAnchors };
     }),
     // THE TWO-VAULT ROLL ANCHOR (kapae#/rolls): both vaults hold the rolled head; the anchor's partial crosses after it.
     "nexus-roll-anchor-open": (args) => answer("nexus-roll-anchor-open", async () => ({
@@ -329,16 +338,29 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "nexus-roll-anchor-edge-open": (args) => answer("nexus-roll-anchor-edge-open", async () => ({
       partials: await runEdgeRollAnchorOpen({ sealHome, repo, ...opt("aid", str(args["aid"])), ...opt("face", int(args["face"])) }),
     })),
-    // One door takes either family of the roll's anchors: a partial routes by its own family, and the answer names
-    // where each realm's edge anchor stands on this vessel.
+    // Each family of the roll's partials takes its own row: the carriage family acts as the place, the edge family as a face.
     "nexus-roll-anchor-partial": (args) => answer("nexus-roll-anchor-partial", async () => {
-      const read = readNexusActPartial(args["partial"]);
-      const edge = read?.act.family === "edge-roll-anchor";
-      const face = opt("face", int(args["face"]));
-      const r = edge ? await runEdgeRollAnchorPartial({ partial: args["partial"], sealHome, repo, ...face }) : await runNexusRollAnchorPartial({ partial: args["partial"], sealHome, repo });
+      if (readNexusActPartial(args["partial"])?.act.family === "edge-roll-anchor") {
+        throw new NexusContractError("this partial carries a realm edge anchor, a face's act: take it with the edge row (`nexus-roll-anchor-edge-partial`)");
+      }
+      const r = await runNexusRollAnchorPartial({ partial: args["partial"], sealHome, repo });
       if (r.landed) await awaitOnRolled(deps.onRolled?.());
-      return { ...r, edgeAnchors: await runEdgeRollAnchorStanding({ sealHome, repo, ...(read ? { aid: read.aid } : {}), ...face }) };
+      return { ...r };
     }),
+    "nexus-roll-anchor-edge-partial": (args) => answer("nexus-roll-anchor-edge-partial", async () => {
+      const read = readNexusActPartial(args["partial"]);
+      if (read?.act.family !== "edge-roll-anchor") {
+        throw new NexusContractError("this partial carries no realm edge anchor: take it with the place's row (`nexus-roll-anchor-partial`)");
+      }
+      const face = opt("face", int(args["face"]));
+      const r = await runEdgeRollAnchorPartial({ partial: args["partial"], sealHome, repo, ...face });
+      if (r.landed) await awaitOnRolled(deps.onRolled?.());
+      return { ...r, edgeAnchors: await runEdgeRollAnchorStanding({ sealHome, repo, aid: read.aid, ...face }) };
+    }),
+    // Where each realm's edge anchor of the standing roll stands in one face's ledger: a read as that face.
+    "nexus-roll-anchor-edge-standing": (args) => answer("nexus-roll-anchor-edge-standing", async () => ({
+      edgeAnchors: await runEdgeRollAnchorStanding({ sealHome, repo, ...opt("aid", str(args["aid"])), ...opt("face", int(args["face"])) }),
+    })),
     // A ROLL WAITS ON ITS PRIOR ANCHOR (operator ruling 2026-10-15): the roll's open asks here before any card reads.
     "nexus-roll-prior-anchor": (args) => answer("nexus-roll-prior-anchor", async () => ({
       ...(await runNexusRollPriorAnchorCheck({ sealHome, repo, ...opt("aid", str(args["aid"])) })),

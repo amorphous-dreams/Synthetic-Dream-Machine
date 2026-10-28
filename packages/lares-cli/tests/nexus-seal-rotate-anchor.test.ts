@@ -7,7 +7,12 @@
  *     still stands at the closing head; afterwards the board holds the anchor that opens the new head;
  *   · an anchor that cannot be signed, or does not count (the `nexus-roll-anchor` door row refusing with
  *     `NexusContractError`), refuses the rotate and leaves the charter byte-identical;
- *   · CONTROL: any other fault in the anchor step throws through, and still writes no head.
+ *   · CONTROL: any other fault in the anchor step throws through, and still writes no head;
+ *   · RED: on a running vessel with no face open, the roll splits by authority: the carriage anchor (the place's
+ *     act) lands, the realm edge step (a face's act) answers `no-face-open` by name, and the head lands whole. The
+ *     running vessel stands in at the two seams the command reaches it by: `face.resolve` answers what its custody
+ *     door answers (`orNone` → null, else a refusal), and a face row that names no face refuses as the vessel's store
+ *     door does when it resolves none.
  *
  * The anchor step runs the real door row (`storeVerb("nexus-roll-anchor", …)`, direct-held since no vessel
  * stands in this test) unless a test injects a fault in its place. The row itself — not the module-level
@@ -26,6 +31,24 @@ const anchorStep = vi.hoisted(() => ({
   charterDepthAtAnchor: [] as number[],
 }));
 
+/** A running vessel with no face open, as the command meets it: rows and acts it routes, by name. */
+const faceless = vi.hoisted(() => ({ up: false, rows: [] as string[] }));
+
+vi.mock("../src/sealed-act-door.js", async (importOriginal) => {
+  const real = await importOriginal<typeof import("../src/sealed-act-door.js")>();
+  return {
+    ...real,
+    sealedAct: async (act: string, args: Record<string, unknown> = {}) => {
+      if (faceless.up && act === "face.resolve") {
+        if (args["orNone"] === true) return { face: null };
+        const { SealedActRefused } = await import("@lararium/node");
+        throw new SealedActRefused("act-refused", "this vessel holds no face open");
+      }
+      return real.sealedAct(act as never, args);
+    },
+  };
+});
+
 vi.mock("../src/store-door.js", async (importOriginal) => {
   const real = await importOriginal<typeof import("../src/store-door.js")>();
   return {
@@ -34,6 +57,11 @@ vi.mock("../src/store-door.js", async (importOriginal) => {
       verb: Parameters<typeof real.storeVerb>[0], args: Parameters<typeof real.storeVerb>[1],
       Refusal?: Parameters<typeof real.storeVerb>[2],
     ) => {
+      if (faceless.up) {
+        faceless.rows.push(verb);
+        const { STORE_DOOR_FACE_ROWS, SealedActRefused } = await import("@lararium/node");
+        if (STORE_DOOR_FACE_ROWS.has(verb) && args["face"] === undefined) throw new SealedActRefused("act-refused", "this vessel holds no face open");
+      }
       if (verb === "nexus-roll-anchor") {
         const { readNexusDoc } = await import("@lararium/node");
         const { larSealHome } = await import("../src/env.js");
@@ -73,6 +101,8 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     anchorStep.fault = null;
     anchorStep.skipLanding = false;
     anchorStep.charterDepthAtAnchor = [];
+    faceless.up = false;
+    faceless.rows = [];
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
@@ -176,5 +206,19 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     expect(JSON.stringify(r.out)).toMatch(/prior-roll-unanchored/);
     expect(readFileSync(path).equals(before)).toBe(true);
     expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(depth);
+  });
+
+  test("RED — a running vessel with no face open rolls whole: the place's carriage anchor lands, and the edge step answers no-face-open", async () => {
+    await seatedGenesis();
+    faceless.up = true;
+    const r = await rite.rotate();
+    expect(r.code, JSON.stringify(r.out)).toBe(0);
+    expect(anchorStep.charterDepthAtAnchor).toEqual([1]);                  // the carriage anchor ran at the closing head …
+    const data = r.out["data"] as { rollAnchor: unknown; edgeAnchor: unknown; chainDepth: number };
+    expect(data.rollAnchor).not.toBeNull();                                  // … and landed
+    expect(data.edgeAnchor).toEqual({ outcome: "no-face-open" });            // the face step named why it wrote nothing
+    expect(data.chainDepth).toBe(2);                                         // no half roll: the head landed
+    expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(2);
+    expect(faceless.rows).not.toContain("nexus-roll-anchor-edge");           // no face row ran without a face
   });
 });

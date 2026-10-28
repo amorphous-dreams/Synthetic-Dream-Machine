@@ -30,7 +30,7 @@ import { runCabalFace } from "../src/commands/cabal-face.js";
 import { FaceNotNamed } from "../src/face-selector.js";
 import { edgeLedgerDocUrl, keptFromLedger } from "@lararium/mesh";
 import { direct } from "./direct-store.js";
-import { storeDoorDirect } from "../src/store-door-verbs.js";
+import { storeDoorDirect, STORE_DOOR_FACE_ROWS } from "../src/store-door-verbs.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
@@ -244,7 +244,7 @@ describe("two faces open and none named: no door picks a face", () => {
     });
     expect(other).toEqual({ anchors: [], kept: [] });                       // the face that did not act keeps its ledger as it stood
   });
-  it("RED — the seal roll's store row resolves its face before any write: two faces open and none named refuse, and no carriage anchor or edge anchor lands; named, both land", async () => {
+  it("RED — the seal roll anchors by authority: the carriage anchor is the place's row and lands with no face; the edge row resolves its face before any write, two open and none named refuse, and named, the face's realm anchor lands", async () => {
     const { opened, openedEpoch } = await seatCharter();
     const closing = foundingRoster(readNexusDoc(larSealHome()));
     await direct(runCabalVouch)({ face: 0, joiner: await nymOf(13), realm: REALM });
@@ -253,16 +253,20 @@ describe("two faces open and none named: no door picks a face", () => {
       const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey().catch(() => ""), sealHome: larSealHome() });
       return rollAnchorsFromBoard((await materializeSharedLarDoc(repo, carriageDocUrl(island), "board:carriage-contracts")).doc()).length;
     });
-    const row = (args: Record<string, unknown>) => storeDoorDirect("nexus-roll-anchor", { closing, opened, epoch: openedEpoch, ...args }, { sealHome: larSealHome() });
-    const refused = await row({});
-    expect(refused).toMatchObject({ refusal: "nexus-roll-anchor-refused" });
+    const roll = { closing, opened, epoch: openedEpoch };
+    expect(STORE_DOOR_FACE_ROWS.has("nexus-roll-anchor")).toBe(false);       // the carriage anchor acts as the place
+    expect(STORE_DOOR_FACE_ROWS.has("nexus-roll-anchor-edge")).toBe(true);    // its realm edge anchors act as a face
+    const place = await storeDoorDirect("nexus-roll-anchor", { ...roll }, { sealHome: larSealHome() });
+    expect(place["refused"]).toBeUndefined();
+    expect(await carriageAnchors()).toBe(1);                                // the place's anchor landed, no face asked
+    const edge = (args: Record<string, unknown>) => storeDoorDirect("nexus-roll-anchor-edge", { ...roll, ...args }, { sealHome: larSealHome() });
+    const refused = await edge({});
+    expect(refused).toMatchObject({ refusal: "nexus-roll-anchor-edge-refused" });
     expect(String(refused["refused"])).toMatch(/name the face/);
-    expect(await carriageAnchors()).toBe(0);                                // the carriage anchor never landed
-    expect((await edgeBoard()).anchors).toEqual([]);
-    // CONTROL: named, the carriage anchor and the named face's realm anchor land.
-    const landed = await row({ face: 0 });
-    expect(landed["refused"]).toBeUndefined();
-    expect(await carriageAnchors()).toBe(1);
+    expect((await edgeBoard()).anchors).toEqual([]);                        // no edge anchor landed
+    // CONTROL: named, the named face's realm anchor lands.
+    const landed = await edge({ face: 0 });
+    expect(landed).toMatchObject({ outcome: "anchored", face: 0 });
     expect((await edgeBoard()).anchors).toHaveLength(1);
   });
 });

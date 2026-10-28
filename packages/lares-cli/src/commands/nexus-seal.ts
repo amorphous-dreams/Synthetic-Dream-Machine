@@ -589,7 +589,8 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   // A ROLL WAITS ON ITS PRIOR ANCHOR (operator ruling 2026-10-15): the head's own roll stands anchored before any
   // card reads, so no roll stacks over a step its readers cannot carry across a removal.
   // THE FACE THE ROLL ACTS AS, before any card reads: the roll's realm edge anchors land in that face's ledger alone,
-  // and two faces open with none named refuse here (`--face N`), so nothing lands and then refuses.
+  // two faces open with none named refuse here (`--face N`), so nothing lands and then refuses, and no face open
+  // reads as null: the place's carriage anchor still lands, and the edge step answers `no-face-open`.
   const named = faceOption(args);
   let resolved: number | null;
   try { resolved = named.face ?? (await sealedAct<{ face: number | null }>("face.resolve", { orNone: true })).face; }
@@ -647,11 +648,19 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   // opens off its own argument (`opened`), and finds their keys among this vessel's rows.
   const closing = foundingRoster(doc);
   const opened: KahuQuorumSeats = { keys: seatedKeys, threshold, sealEpochCid };
+  // THE ROLL ANCHORS BY AUTHORITY: the carriage anchor is the place's act (a place row); the realm edge anchors are the
+  // acting face's act (a face row, on a session of that face), and with no face open that step answers `no-face-open`.
   let anchored: NexusRollAnchorResult | null = null;
+  let edgeAnchor: { readonly outcome: "no-face-open" } | { readonly outcome: "anchored"; readonly face: number; readonly anchors: unknown } | null = null;
   if (closing.sealEpochCid.length > 0) {
     try {
-      const { output } = await storeVerb("nexus-roll-anchor", { closing, opened, epoch: result.epoch, ...rollFace }, NexusContractError);
+      const { output } = await storeVerb("nexus-roll-anchor", { closing, opened, epoch: result.epoch }, NexusContractError);
       anchored = output as unknown as NexusRollAnchorResult;
+      if (rollFace.face === undefined) edgeAnchor = { outcome: "no-face-open" };
+      else {
+        const { output: edge } = await storeVerb("nexus-roll-anchor-edge", { closing, opened, epoch: result.epoch, face: rollFace.face }, NexusContractError);
+        edgeAnchor = edge["outcome"] === "no-face-open" ? { outcome: "no-face-open" } : { outcome: "anchored", face: rollFace.face, anchors: edge["edgeAnchors"] ?? [] };
+      }
     } catch (err) {
       if (!(err instanceof NexusContractError)) throw err;
       for (const card of cards) card.seed.fill(0);
@@ -682,6 +691,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
       chainDepth: sealLineage.length, rotationArmed: armed,
       quorumSeated: foundingQuorumSeated(next),
       rollAnchor: anchored ? { cid: anchored.anchorCid, parents: anchored.parents.length } : null,
+      edgeAnchor,
       retiredSeatKeys: left.retired, seatKeysKeptForCrossing: left.keptForCrossing, cards: printed,
     },
     human: () => {
@@ -692,6 +702,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
       console.log(anchored
         ? `  anchor:     ${anchored.anchorCid.slice(0, 16)}… over ${anchored.parents.length} board head(s) — admits in its past carry to the new head`
         : `  anchor:     none — the closing head rooted no roster, so no admit stood to carry`);
+      if (edgeAnchor?.outcome === "no-face-open") console.log("  realm edges: no face stands open, so no face's realm edge anchors moved (`lares nexus seal anchor --edge --face N` once one opens)");
       console.log(`  seat keys:  ${left.retired} of the closing head retired${left.keptForCrossing > 0 ? `; ${left.keptForCrossing} kept until the open crossing seals` : ""}`);
       console.log(`  rotation:   ${armed ? "ARMED (each chair's next key rests on its card alone)" : "UNARMED"}`);
     },
