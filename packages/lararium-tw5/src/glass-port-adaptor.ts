@@ -218,6 +218,11 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
     ...(opts.fields ? { fields: opts.fields } : {}), ...(opts.localFilter ? { localFilter: opts.localFilter } : {}) });
   transport.send({ type: "port:presence", portId, actorKey: opts.actor, beat: 0 });
   return {
+    resendPending() {
+      for (const [txId, tx] of pending) transport.send({ type: "port:write", portId, txId,
+        records: [{ title: tx.title, fields: tx.record.fields,
+          ...(tx.record.deleted ? { tombstone: true } : {}) }] });
+    },
     onLanded(listener: (change: Change) => void) { landedListeners.add(listener); return () => landedListeners.delete(listener); },
     onPeerEdit(listener: (change: Change) => void) { peerListeners.add(listener); return () => peerListeners.delete(listener); },
     onPresence(listener: (presence: Extract<PortIslandToVesselMsg, { type: "port:presence" }>) => void) {
