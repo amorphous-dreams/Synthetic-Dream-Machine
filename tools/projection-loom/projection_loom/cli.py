@@ -67,6 +67,16 @@ def main(argv=None):
     p.add_argument('--out', type=Path, required=True)
     p=commands.add_parser('scene-variants-validate', help='Inspect portable USD alternatives')
     p.add_argument('--comparison', type=Path, required=True)
+    p=commands.add_parser('location-init',help='Bind independent source/frame inventory to native causal scene')
+    p.add_argument('--inventory',type=Path,required=True)
+    p.add_argument('--declaration',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('location-edit',help='Fork a source-bound OODA-HA native edit island')
+    p.add_argument('--workspace',type=Path,required=True)
+    p.add_argument('--proposal',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('location-verify',help='Reaudit source, causal and native location evidence')
+    p.add_argument('--workspace',type=Path,required=True)
     p=commands.add_parser('wide-epoch',help='Resumable staged constructive epochs')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
@@ -355,6 +365,20 @@ def main(argv=None):
         else:
             result = validate_variants(args.comparison)
         print(json.dumps(result, indent=2))
+        return result
+    if args.command in ('location-init','location-edit','location-verify'):
+        from .location_workspace import create_workspace, edit_workspace, verify_workspace
+        if args.command=='location-init':
+            from .location_stack import LocationStack
+            inventory=LocationStack.load(args.inventory)
+            declaration=json.loads(args.declaration.read_text(encoding='utf8'))
+            result=create_workspace(inventory,declaration,args.out)
+        elif args.command=='location-edit':
+            proposal=json.loads(args.proposal.read_text(encoding='utf8'))
+            result=edit_workspace(args.workspace,proposal,args.out)
+        else:
+            result=verify_workspace(args.workspace)
+        print(json.dumps(result,indent=2))
         return result
     if args.command=='fracture-pattern':
         from .fracture_patterns import export_pattern
