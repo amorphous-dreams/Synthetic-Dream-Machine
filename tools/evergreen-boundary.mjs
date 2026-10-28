@@ -22,7 +22,8 @@
 //   canon-history   — in live canon (`bags/*/…/{api,mesh,browser}/**/*.mem`, never a record carrier under `docs/`), a
 //                     word that narrates the house's past (used to, formerly, legacy, no longer, retired, earlier shape…);
 //   canon-dated-history — in the same corpus, a verb of history (landed, burned, retired, cured, …) within 40 characters
-//                     of an ISO date: a line that dates the canon's making. A date that names an operator ruling reads nothing.
+//                     of an ISO date: a line that dates the canon's making. A date with a ruling or correction marker
+//                     (`RULED`, `ruled`, `ruling`, `CORRECTION`, `CORRECTED`) within 40 characters carries provenance and reads nothing.
 // A class whose corpus reads no file fails the run; each class carries a planted red and a lawful control in the self-test.
 //
 // NAMED EXCEPTIONS. Each names its rule, its file, a substring of the line it allows (never a line number), how many
@@ -65,7 +66,6 @@ export const EXCEPTIONS = [
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Evergreen, with no old shapes", reason: "This law line names the history words it bans." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "lives for one commit", reason: "This law line states the one-commit refusal it permits." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Recursive o-takiage", reason: "This law line names the retired-name lists it bans." },
-  { rule: "canon-dated-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Recursive o-takiage", reason: "The date names the operator ruling this law line states; the burned names it governs stay its subject." },
 ];
 const REPO = fileURLToPath(new URL("../", import.meta.url));
 const SOURCE = /\.(?:ts|mts|cts|js|mjs|cjs|sh|py)$/;
@@ -74,7 +74,7 @@ const WITNESS_FILES = new Set([
 ]); // The witness carries its own planted patterns.
 const NARRATION = /\b(?:used to|previously|formerly|legacy|no longer|back-compat|backcompat|backward compat|deprecated|historically|the fix|the old|was (?:renamed|moved|replaced)|once (?:sat|lived|stood))\b/i;
 // A comment that names the lane, wave or slice that built a line narrates its making; the code states what IS.
-const LANE_NARRATION = /\b(?:Wave [A-D]|[Ss]lice \d+|this lane)\b/;
+const LANE_NARRATION = /\b(?:Wave [A-D]|[Ss]lice \d+|[Tt]his lane)\b/;
 const FORMAT = /(?:[a-z][\w.-]*|\})\/v(?:\d+|\$\{[^}]+\})(?![\w.])/;
 const VERSION_CONST = /\b[A-Z][A-Z0-9_]*VERSION\s*=\s*(?:0x[\da-fA-F]+|\d)/;
 const CLOCK = /(?:\bDate\.now\s*\(\s*\)|\bnew\s+Date\s*\()/;
@@ -171,15 +171,29 @@ export function scanUpgradeText(rel, text) {
 }
 
 // A verb of the house's history within 40 characters of an ISO date: a line that dates a landing, a burn or a cure
-// narrates the making of the canon. A date that names an operator ruling (`RULED`, `ruling`) reads no verb here.
+// narrates the making of the canon. THE MARKER EXEMPTION: a date with a ruling or correction marker within 40
+// characters of it (`PROVENANCE_MARK`: `RULED`, `ruled`, `ruling`, `CORRECTION`, `CORRECTED`) dates a decision or a
+// correction, which is provenance, so it reads nothing whatever verb sits beside it. Each date reads alone: a marker
+// near one date never covers another date on the same line.
 const HISTORY_VERB = "(?:landed|burned|burnt|retired|removed|died|cured|shipped|renamed|replaced|dropped|deleted|collapsed|was|were|went|became)";
-const ISO_DATE = "20\\d\\d-\\d\\d(?:-\\d\\d)?";
-const DATED_HISTORY = new RegExp(`\\b${HISTORY_VERB}\\b.{0,40}${ISO_DATE}|${ISO_DATE}.{0,40}\\b${HISTORY_VERB}\\b`, "i");
+const ISO_DATE = /20\d\d-\d\d(?:-\d\d)?/g;
+const VERB_BEFORE = new RegExp(`\\b${HISTORY_VERB}\\b.{0,40}$`, "i");
+const VERB_AFTER = new RegExp(`^.{0,40}\\b${HISTORY_VERB}\\b`, "i");
+const PROVENANCE_MARK = /\b(?:RULED|[Rr]uled|[Rr]uling|CORRECTION|CORRECTED)\b/;
+/** Whether one line dates a piece of the house's history: some date with a history verb beside it and no marker. */
+export function datesHistory(raw) {
+  for (const m of raw.matchAll(ISO_DATE)) {
+    const start = m.index, end = start + m[0].length;
+    const verb = VERB_BEFORE.test(raw.slice(Math.max(0, start - 60), start)) || VERB_AFTER.test(raw.slice(end, end + 60));
+    if (verb && !PROVENANCE_MARK.test(raw.slice(Math.max(0, start - 40), end + 40))) return true;
+  }
+  return false;
+}
 /** Live canon lines that date a piece of the house's history. */
 export function scanCanonDatedText(rel, text) {
   const findings = [];
   text.split(/\r?\n/).forEach((raw, index) => {
-    if (DATED_HISTORY.test(raw)) findings.push({ rule: "canon-dated-history", file: rel, line: index + 1, text: raw.trim() });
+    if (datesHistory(raw)) findings.push({ rule: "canon-dated-history", file: rel, line: index + 1, text: raw.trim() });
   });
   return findings;
 }

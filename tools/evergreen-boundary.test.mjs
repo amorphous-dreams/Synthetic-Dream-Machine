@@ -153,7 +153,7 @@ test("E14 a class whose corpus holds no file reads blind", () => {
   assert.deepEqual(blindClasses(["packages/x/tests/a.test.ts", "packages/x/src/a.ts", "bags/lares/ha.ka.ba/lares/api/a.mem"]), []);
 });
 test("E15 a comment that names its lane, wave or slice is narration; the lowercase domain words are not", () => {
-  for (const body of ["// Wave C swaps the face in here.", "/* the seed (slice 2: genesis is data) */", "// since this lane touches only one file", "// Slice 5 lands the act."]) {
+  for (const body of ["// Wave C swaps the face in here.", "/* the seed (slice 2: genesis is data) */", "// since this lane touches only one file", "// Slice 5 lands the act.", "// This lane runs the e2e sets alone."]) {
     assert.equal(scanText("a.ts", body).filter(f => f.rule === "narration").length, 1, body);
   }
   const r = one("// Wave B carries the holder.\nconst x = 1;"); assert.equal(r.status, 1); assert.match(r.stdout, /narration +packages\/example\/src\/a\.ts:1/);
@@ -173,13 +173,24 @@ test("E16 workflow, Dockerfile and compose comments join the narration corpus; t
   assert.deepEqual(scanConfigText("ci.yml", "      # The engine directory restores by the pinned version.\n        key: a#used to\n"), []);
   const c = fixture({ ".github/workflows/ci.yml": "jobs:\n  # The test job runs every suite.\n  test:\n" }); assert.equal(c.status, 0, c.stdout + c.stderr);
 });
-test("E17 canon-dated-history: a history verb beside an ISO date reads in live canon; a dated ruling and a record carrier do not", () => {
+test("E17 canon-dated-history: a history verb beside an ISO date reads in live canon; a ruling or correction marker beside the date and a record carrier do not", () => {
   for (const body of ["The engine landed 2026-07-02.", "(collisions removed 2026-06-04)", "the attribute form retired 2026-06-12.", "2026-09-18: the fork was cured."]) {
     assert.equal(scanCanonDatedText("a.mem", body).length, 1, body);
   }
   const r = canon("A line.\nThe engine landed 2026-07-02.\n"); assert.equal(r.status, 1); assert.match(r.stdout, /canon-dated-history +bags\/lares\/ha\.ka\.ba\/lares\/api\/pono\/a\.mem:2/);
-  // CONTROL: an operator ruling's date, a date far from any history verb, and a record carrier under docs/ read nothing.
-  assert.deepEqual(scanCanonDatedText("a.mem", "RULED WHOLE (operator, 2026-09-18). The lease holds its own causal clock and never reads a wall."), []);
+  // THE MARKER EXEMPTION. A date beside a ruling or correction marker (`RULED`, `ruling`, `CORRECTION`, `CORRECTED`)
+  // carries provenance, so it reads nothing even where a history verb sits beside it; the same line without the
+  // marker reads red. A date far from any history verb, and a record carrier under docs/, read nothing.
+  for (const marked of ["RULED (2026-11-02): the old door was retired.", "''Recursive o-takiage'' (operator ruling, 2026-10-16). A witness that catches burned names lives one commit.",
+    "CORRECTION (neg-entropy swarm 2026-06-23): the earlier claim was wrong.", "CORRECTED 2026-08-09 against the code, replacing an over-claim that was wrong."]) {
+    assert.deepEqual(scanCanonDatedText("a.mem", marked), [], marked);
+  }
+  for (const bare of ["On 2026-11-02 the old door was retired.", "(swarm 2026-06-23): the earlier claim was wrong."]) {
+    assert.equal(scanCanonDatedText("a.mem", bare).length, 1, bare);
+  }
+  // A marker near ONE date never covers a second, unmarked date on the same line.
+  assert.equal(scanCanonDatedText("a.mem", "RULED (2026-09-18). Elsewhere the engine landed 2026-07-02.").length, 1);
+  assert.deepEqual(scanCanonDatedText("a.mem", "The lease holds its own causal clock (2026-09-18) and never reads a wall."), []);
   const c = canon("The identity model stands RULED (operator, 2026-06-24).\n"); assert.equal(c.status, 0, c.stdout + c.stderr); assert.match(c.stdout, /canon-dated-history 0\/0/);
   const record = fixture({ "bags/lares/ha.ka.ba/lares/docs/pono/a.mem": "The engine landed 2026-07-02.\n", "tools/a.mjs": "const x = 1;" });
   assert.equal(record.status, 0, record.stdout + record.stderr);
