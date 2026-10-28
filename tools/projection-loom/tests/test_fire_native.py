@@ -178,7 +178,7 @@ def test_fire_native_replay_tolerates_only_cad_roundoff_not_semantic_change():
     from projection_loom.fire_geometry import verify_native_rule_replay
     base = fixture()
     witness = base.relation_witness(location="necrospire")
-    plan = resolve_proposal(example(witness, "bridges", "bridge-between"), witness)
+    plan = resolve_proposal(example(witness, "bears", "bearing-column"), witness)
     native = audition_plan(plan, base, location="necrospire")["results"][0]
     assert native["state"] == "native-admitted"
     roundoff = deepcopy(native)

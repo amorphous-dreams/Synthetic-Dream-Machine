@@ -247,3 +247,7 @@ The ledger now follows executable evidence rather than its initial proposed-only
 ## Evergreen loop · semantic-source-to-editor binding (2026-10-28)
 
 **✶ Observe:** Reconciliation checked ID inventory but not whether the relational ground's program evidence or transform matched the bundle's native declaration; seeding a pre-placed assembly began from a zero matrix. **⏿ Orient:** A semantic ID points to an authored construction history, not just a matching string or USD prim. **◇ Decide:** Bind every ground entity to its declared program digest, construct kind and exact authored placement, and initialize nonzero placements as attributed causal transform events. **▶ Act:** Add adversarial same-name/wrong-program tests and a nonzero-initial-placement edit/replay witness. **↺ Aftermath:** Editor pose and native source correspondence now have an explicit fail-closed check; this does not confer physical survey authority.
+
+## Native Fire fixture correction (2026-10-28)
+
+The new micro-roundoff test initially asked a bridge proposal that failed native admission on its existing small fixture. The established `bearing-column` relation succeeds on that native fixture. Use that admitted geometry to test replay tolerance and keep structural/coordinate tampering as separate refusals. The new test cannot infer admission from a merely syntactically valid proposal.
