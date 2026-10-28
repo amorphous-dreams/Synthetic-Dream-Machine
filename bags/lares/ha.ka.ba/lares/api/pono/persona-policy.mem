@@ -43,7 +43,7 @@ The multi-persona identity core (persona-circle: a human as a private Circle of 
 
 ''The human keeps many faces and many Handles across many cabals.'' Faces and Handles relate many-to-many with cabals; one current personal Handle belongs to each PersonaGroup, and a renamed face rotates its Handle. A collective quorum Handle stays separate and speaks only for its chartered acts. No root or switch notice joins face names.
 
-The wall stays custody-by-TYPE: acting as a face ''REQUIRES that this vessel HOLD its sovereign root'' — you sign only as a self whose secret you carry. The node reads it at the mount (`sovereignStands`); the browser at `wearPersona` (persona-vault).
+The wall stays custody-by-TYPE: acting as a face ''REQUIRES that this vessel HOLD its sovereign root'' — you sign only as a self whose secret you carry. The node reads it where a face signs: `loadPersonaGroupRootSeed` refuses `no persona-root` at the signing site, while the mount (`sovereignStands`) reads custody alone, so a joinee's face mounts and signs no root act; the browser reads it at `wearPersona` (persona-vault).
 
 <<~/ahu>>
 
@@ -265,6 +265,6 @@ So the mesh ''declines to build the SIN even to defend itself''. It could bind p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1d0F1n8Zp3x_1YxM5ZmqVpKTYBISq_rFeaCyB2wLGkY
+<<^ code="&#x0003;">>ni:///sha-256;UZGf8AtTWC4JTMWBS5seRXvRyqcBrkmezq5a27UhbM8
 
 <<^ code="&#x0004;" -> to="?">>
