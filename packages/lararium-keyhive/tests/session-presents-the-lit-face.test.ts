@@ -28,6 +28,13 @@ describe("presenterFor", () => {
   test("CONTROL: a synced summons borrows nothing from the local channel", () => {
     expect(presenterFor({ invocation: ask(`0x${PLACE}`), local: false, auth: lit })).toBe(`0x${PLACE}`);
   });
+  test("a lit joined group may be named, and a dropped group refuses", () => {
+    const groups = new Set(["group-x", "group-y"]);
+    const auth = { ...lit, holds: (group: string) => groups.has(group) };
+    expect(presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-y" }), local: true, auth })).toBe(`0x${ATOM}`);
+    groups.delete("group-y");
+    expect(() => presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-y" }), local: true, auth })).toThrow("wear group-y first");
+  });
   test("CONTROL: a verb naming another face refuses by name; the mounted face or none presents", () => {
     expect(() => presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-y" }), local: true, auth: lit }))
       .toThrow("this vessel wears group-x; name it or wear group-y first");
