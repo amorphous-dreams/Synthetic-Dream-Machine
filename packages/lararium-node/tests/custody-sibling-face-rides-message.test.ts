@@ -59,3 +59,10 @@ test("the sibling key stays open until its provider drops", async () => {
   finish(); await pending;
   expect(h.open.has("1")).toBe(false);
 });
+test("a sibling lock whose provider drop refuses leaves the key open and answers no lock", async () => {
+  setMountedFace(0); const h = harness(); h.open.add("1");
+  h.dropFace.mockRejectedValueOnce(new Error("island faulted"));
+  const answer = await h.send({ op: "lock", face: 1 });
+  expect(answer).not.toMatchObject({ locked: true });
+  expect(h.open.has("1")).toBe(true);
+});

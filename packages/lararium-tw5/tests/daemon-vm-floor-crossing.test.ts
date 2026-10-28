@@ -94,3 +94,19 @@ test("face drop waits for the island acknowledgement", async () => {
     await pending; expect(settled).toBe(true);
   } finally { core.dispose(); ports.forEach((port) => port.close()); await repo.shutdown(); }
 });
+
+test("a face change asked after the island ended rejects at once", async () => {
+  const repo = new Repo({ sharePolicy: async () => true });
+  const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+  const ports: MessagePort[] = [];
+  const host: DaemonVmHost = {
+    spawnWorker: () => ({ post: () => {}, listen: () => () => {}, onError: () => () => {}, terminate: () => {} }),
+    newSyncChannel: () => { const { port1, port2 } = new MessageChannel(); ports.push(port1, port2); return { mainPort: port1 as IslandMsg_Manifest["syncPort"], syncPort: port2 as IslandMsg_Manifest["syncPort"] }; },
+  };
+  const core = openDaemonVmCore(host, { repo, daemonHandle, recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null, workerScriptUrl: new URL("file:///unused"), eaSilenceMs: 2 ** 30 });
+  core.workerEa.catch(() => {});
+  try {
+    core.dispose();
+    await expect(core.dropFace("abc")).rejects.toThrow("disposed");
+  } finally { ports.forEach((port) => port.close()); await repo.shutdown(); }
+});

@@ -30,6 +30,7 @@ test("system canon admin takes only the mounted face's Kahu hand", async () => {
     expect(siblingVerify).not.toHaveBeenCalled();
     expect(await verifier.verify({ presenter: `0x${a.daemonAuth.atom.key}`, bagUrl: BAG_IDS.lares, access: "admin", channel: "local" }))
       .toMatchObject({ ok: false, reason: expect.stringContaining("system canon takes a hand in the Kahu cabal") });
+    await expect(verifier.kahuReach!(BAG_IDS.lares, "wiki-act", `0x${atom.key}`)).rejects.toThrow("a sibling face holds none here");
     expect(await verifier.verify({ presenter: `0x${atom.key}`, bagUrl: B_BAG, access: "read", channel: "local" }))
       .toMatchObject({ ok: true });
   } finally {

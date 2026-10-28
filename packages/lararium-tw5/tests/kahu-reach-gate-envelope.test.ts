@@ -71,3 +71,10 @@ describe("the gate refuses a routed envelope that names system canon, from a han
       .rejects.toMatchObject({ reason: "kahu-reach" });
   });
 });
+
+test("the gate hands the presenter to the verifier's Kahu predicate", async () => {
+  const seen: unknown[][] = [];
+  const verifier: CapabilityVerifier = { verify: async () => ({ ok: true }), kahuReach: async (...args: unknown[]) => { seen.push(args); } };
+  await gateRoutedVerb(verb({ verb: "MOVE", args: { "from-bag": "lar:///ha.ka.ba/wikis/lares/working", "to-bag": BAG_IDS.lares } }), verifier, "sibling-atom", true);
+  expect(seen).toEqual([[BAG_IDS.lares, "MOVE", "sibling-atom"]]);
+});
