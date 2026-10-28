@@ -51,14 +51,14 @@ def main():
             return result.stdout
         import_log = invoke("import", "--bundle", original, "--blend", app, "--operator-note")
         if "LOOM_BLENDER_IMPORT" not in import_log:
-            raise RuntimeError("Blender import receipt absent")
+            raise RuntimeError("Blender import receipt absent; raw stdout:\n" + import_log[-12000:])
         proposal = work / "proposal.json"
         capture_log = invoke("capture", "--bundle", original, "--ground", work / "ground.json",
                              "--blend", app, "--proposal", proposal,
                              "--test-move", "east:3,0,0",
                              "--actor", "blender-automated-test")
         if "LOOM_BLENDER_PROPOSAL" not in capture_log:
-            raise RuntimeError("Blender edit proposal absent")
+            raise RuntimeError("Blender edit proposal absent; raw stdout:\n" + capture_log[-12000:])
         edit = json.loads(proposal.read_text(encoding="utf8"))
         if edit["edits"] != [{"entity_id": "east", "kind": "translate",
                              "delta": [3.0, 0.0, 0.0]}]:

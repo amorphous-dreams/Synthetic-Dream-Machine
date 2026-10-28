@@ -119,3 +119,7 @@ At head `57c683d9`, the `usd-interchange` job **passed**: real OpenUSD stages an
 **Act:** `regulative-control --growth ... --fill ... --out ...` runs one exact native audition for fixed and one for locally regulated programs through the existing five-phase `OODAHAJournal`, retaining activation, validity and errors. Held-out subjects include a vertical terrace and horizontal coastal jetty.
 
 **Aftermath:** Native regulative capability and matched controls require exact-head CI. This does not close E-01 through E-08: structural crossover fairness, matched source-conditioned multi-camera fitness, multiple generations, environment sensing beyond local site capacity, and operator-steered evolution remain open. No automatic winner promoted.
+
+## Blender application witness failure at `a0bc227a`
+
+The `blender-real-editor` job installed actual Blender 4.0.2 but could not find its `LOOM_BLENDER_IMPORT` marker. The Blender subprocess exited zero without the marker, demonstrating that its process exit alone is insufficient evidence. The witness now includes Blender stdout on missing-marker failure; D-B remains REVIEW/BLOCKED until the underlying import error is attributed and repaired.
