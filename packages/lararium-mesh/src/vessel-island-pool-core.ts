@@ -60,6 +60,8 @@ import { facetsOfSurfaceRecipe, resolvedSlotsOf, type SurfaceRecipe } from "./su
 import { ORACLE_BAG } from "./wiki-recipe.js";
 import { verifyCidBytes } from "./cas-transit.js";
 import { answerRestWithHeads } from "./rest-with-heads.js";
+import { makePortDoor, type PortPlacement, type PortPolicy } from "./port-lease.js";
+import { isPortKind, type PortIslandToVesselMsg } from "./record-port.js";
 import type { IslandGrants, IslandMsg_DocRest, IslandMsg_ViewCatalog, IslandMsg_ViewContent, IslandMsg_ViewSettle } from "./island-protocol.js";
 
 // ── Slots — two-state thermal axis (wela/anu) + orthogonal pin flag ──────────
@@ -242,6 +244,9 @@ export interface VesselRestState { readonly asked: number; readonly rested: numb
 
 export interface VesselIslandPoolCoreOptions {
   host: VesselIslandHost;
+  portPolicy?: PortPolicy;
+  onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
+  onPortDrop?: (islandKey: string, type: string, reason: "no-port-lease") => void;
   /** Vessel main Repo — each island's mainPort wires to it for CRDT sync. */
   mainRepo?: Repo | null;
   /** Held disk-write capability — bag → mirror configs this pool MAY project. */
@@ -335,6 +340,9 @@ export class VesselIslandPoolCore {
   private readonly _resolvePluginCids: VesselIslandPoolCoreOptions["resolvePluginCids"];
   private readonly _onEa:           ((wikiId: string) => void) | null;
   private readonly _readContent:    VesselIslandPoolCoreOptions["readContent"] | null;
+  private readonly _portDoor: ReturnType<typeof makePortDoor>;
+  private readonly _onPortMessage: VesselIslandPoolCoreOptions["onPortMessage"];
+  private readonly _onPortDrop: VesselIslandPoolCoreOptions["onPortDrop"];
   private readonly _pendingWikiVerbs = new Map<string, {
     /** The island the call went to: a lease that drops rejects every call still parked on it. */
     key:     string;
@@ -375,6 +383,13 @@ export class VesselIslandPoolCore {
     this._resolvePluginCids = opts.resolvePluginCids;
     this._onEa            = opts.onEa ?? null;
     this._readContent     = opts.readContent ?? null;
+    this._portDoor = makePortDoor({ ...(opts.portPolicy ? { policy: opts.portPolicy } : {}),
+      post: (scope, msg) => {
+        const slot = this._slots.get(scope);
+        if (slot?.temperature === "wela" && !slot.closing) slot.worker.post(msg);
+      } });
+    this._onPortMessage = opts.onPortMessage;
+    this._onPortDrop = opts.onPortDrop;
     this._mountSilenceMs       = opts.mountSilenceMs ?? HANDSHAKE_TIMEOUT_MS;
     this._mountStallMs         = opts.mountStallMs ?? 3 * this._mountSilenceMs;
     this._maxMountFailures     = opts.maxMountFailures ?? MAX_MOUNT_FAILURES;
@@ -781,6 +796,7 @@ export class VesselIslandPoolCore {
     // The island takes no placement from here on: a verb placed after its settle would write past what
     // `settled` vouches for.
     workerSlot.closing = true;
+    this._portDoor.releaseScope(wikiId);
     // ONLY A SETTLE THIS TEARDOWN DRAWS COUNTS. An island that settled earlier and wrote again leaves here
     // unsettled unless it asks afresh, so `settled` never vouches for a write the owner may lack.
     if (workerSlot.surface) {
@@ -885,6 +901,14 @@ export class VesselIslandPoolCore {
     if (typeof slot === "string") return;
     slot.worker.post(event);
   }
+
+  placePort(key: string, binding: string, msg: unknown, session?: PlacingSession): PortPlacement {
+    const slot = this._placeable(key, session);
+    if (typeof slot === "string") return { ok: false, reason: slot };
+    return this._portDoor.place(key, binding, msg);
+  }
+
+  closePortBinding(binding: string): void { this._portDoor.closeBinding(binding); }
 
   /** Ask the island to paint one camera whole: it mints a fresh mount epoch and emits every key on `lar:frame`.
    *  A surface switch and a late attach ask this. The same drop-honest fire-and-forget as placeControlEvent. */
@@ -1042,6 +1066,13 @@ export class VesselIslandPoolCore {
     // cannot stack waiters on the owner by asking for heads that never arrive.
     worker.listen((raw: unknown) => {
       if (!isIslandToVesselMsg(raw)) return;
+      if (isPortKind(raw.type)) {
+        const msg = raw as PortIslandToVesselMsg;
+        const holder = this._portDoor.holderOf(wikiId, msg.portId);
+        if (holder && this._onPortMessage) this._onPortMessage(holder, wikiId, msg);
+        else this._onPortDrop?.(wikiId, msg.type, "no-port-lease");
+        return;
+      }
       // THE VIEW'S TWO ASKED GATES. A catalog name and a content address answer from the island's own view;
       // an island that stands under no view draws the refusal `view-absent`, never another island's answer.
       if (raw.type === "view:catalog") {
@@ -1119,6 +1150,7 @@ export class VesselIslandPoolCore {
       }
     });
     worker.onError((err) => {
+      this._portDoor.releaseScope(wikiId);
       console.error(`[vessel-pool] island error for ${wikiId}:`, err);
     });
   }

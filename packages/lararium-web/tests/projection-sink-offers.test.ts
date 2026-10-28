@@ -19,7 +19,7 @@ function mount(opts: { addressBar?: boolean } = {}) {
   document.body.appendChild(host);
   const sink = createProjectionSink(host, opts);
   const sent: LarMsg_ControlEvent[] = [];
-  sink.arm({ sendControlEvent: (_surface, ev) => { sent.push(ev); } });
+  sink.arm({ sendControlEvent: (_surface, ev) => { if (!sent.some((prior) => prior.eventId === ev.eventId)) sent.push(ev); } });
   const root = host.shadowRoot!;
   const pane = (): HTMLElement => root.querySelector<HTMLElement>(".lar-projection")!;
   const q = <T extends Element = HTMLElement>(sel: string): T => { const n = pane().querySelector<T>(sel); if (!n) throw new Error(`no ${sel}`); return n; };

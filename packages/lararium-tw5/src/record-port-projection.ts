@@ -17,7 +17,7 @@ const SKINNY = new Set(["tags", "modified", "type", "caption"]);
 
 export function localFilter(title: string): boolean {
   return title === "$:/StoryList" || title === "$:/HistoryList" ||
-    ["$:/state/", "$:/temp/", "$:/status/", "$:/info/browser/"].some(prefix => title.startsWith(prefix));
+    ["$:/state", "$:/temp", "$:/status", "$:/info/browser"].some(prefix => title === prefix || title.startsWith(`${prefix}/`));
 }
 
 export function projectRecord(record: PortRecord, shape: PortShape): ProjectedRecord {

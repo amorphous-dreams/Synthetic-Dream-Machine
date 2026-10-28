@@ -697,11 +697,12 @@ describe("record port handler", () => {
     await r.close();
   });
 
-  test("default makeWikiBehavior refuses write by name; CONTROL: server-granted handler writes", async () => {
+  test("default makeWikiBehavior refuses an unleased open; CONTROL: server-granted handler writes", async () => {
     const defaultPort = await rig({}, makeWikiBehavior());
     await defaultPort.send(openMsg());
     await defaultPort.send(writeMsg("default", "Denied"));
-    expect(ofType(defaultPort.messages, "port:written").at(-1)).toMatchObject({ status: "refused", reason: "edits-not-granted" });
+    expect(ofType(defaultPort.messages, "port:reset").at(-1)).toMatchObject({ reason: "lagged" });
+    expect(ofType(defaultPort.messages, "port:written")).toHaveLength(0);
     expect(await defaultPort.composite.get("Denied")).toBeNull();
     await defaultPort.close();
     const granted = await rig();
@@ -1028,12 +1029,13 @@ describe("record port handler", () => {
     await r.close();
   });
 
-  test("default makeWikiBehavior composition refuses invoke with no-authority", async () => {
+  test("default makeWikiBehavior composition holds no unleased invoke", async () => {
     const behavior = makeWikiBehavior();
     const r = await rig({}, behavior);
     await r.send(openMsg());
     await r.send(askMsg("invoke", { renderCursor: "x", affordanceId: "a0" }));
-    expect(ofType(r.messages, "port:answer").at(-1)?.reason).toBe("no-authority");
+    expect(ofType(r.messages, "port:reset").at(-1)?.reason).toBe("lagged");
+    expect(ofType(r.messages, "port:answer")).toHaveLength(0);
     await r.close();
   });
 
@@ -1303,6 +1305,85 @@ describe("record port handler", () => {
     await r.send(askMsg("invoke", { renderCursor: result.renderCursor, affordanceId }));
     expect(ofType(r.messages, "port:answer").at(-1)?.reason).toBe("stale-cursor");
     expect(r.invoked).toBe(1);
+    await r.close();
+  });
+
+  test("port-retired-settled-write-frees-its-slot; CONTROL: a live write answers applied", async () => {
+    const cap = hasRecordPort({ mayEdit: () => true, maxActors: 1 });
+    const r = await rig({}, cap);
+    await r.send(openMsg());
+    let retire = true;
+    let writes = 0;
+    const unsubscribe = r.store.subscribe(change => {
+      if (change.title === "Retired") {
+        writes++;
+      }
+      if (retire && change.title === "Retired") {
+        retire = false;
+        cap.onSignal?.("port:close", { type: "port:close", portId: "p" }, r.ctx);
+      }
+    });
+    await r.send(writeMsg("retired", "Retired"));
+    expect(await r.store.get("Retired")).not.toBeNull();
+    expect(ofType(r.messages, "port:written").filter(message => message.txId === "retired")).toHaveLength(0);
+    await r.send(openMsg());
+    await r.send(writeMsg("retired", "Retired"));
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "retired", status: "applied" });
+    expect(writes).toBe(1);
+    await r.send(writeMsg("live", "Live"));
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "live", status: "applied" });
+    await r.send({ type: "port:close", portId: "p" });
+    await r.send(openMsg("new-actor"));
+    await r.send({ ...writeMsg("new", "New"), portId: "new-actor" });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "new", status: "applied" });
+    unsubscribe();
+    await r.close();
+  });
+
+  test("port-retired-settled-write-actor-is-evictable; CONTROL: a live actor stays", async () => {
+    const cap = hasRecordPort({ mayEdit: () => true, maxActors: 1 });
+    const r = await rig({}, cap);
+    await r.send(openMsg());
+    const unsubscribe = r.store.subscribe(change => {
+      if (change.title === "Retired") cap.onSignal?.("port:close", { type: "port:close", portId: "p" }, r.ctx);
+    });
+    await r.send(writeMsg("retired", "Retired"));
+    expect(await r.store.get("Retired")).not.toBeNull();
+    // The actor never resends; its settled write holds no slot, so a new actor takes the only table entry.
+    await r.send(openMsg("q"));
+    await r.send({ ...writeMsg("q-tx", "Q"), portId: "q" });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "q-tx", status: "applied" });
+    // CONTROL: a live actor's entry stays, so a third opener meets the full table.
+    await r.send(openMsg("third"));
+    await r.send({ ...writeMsg("third-tx", "Third"), portId: "third" });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "third-tx", status: "refused", reason: "actor-table-full" });
+    unsubscribe();
+    await r.close();
+  });
+
+  test("port-never-resending-actor-cannot-starve-the-window; CONTROL: the next live write answers", async () => {
+    const cap = hasRecordPort({ mayEdit: () => true, maxActors: 1 });
+    const r = await rig({}, cap);
+    let retire = true;
+    const unsubscribe = r.store.subscribe(change => {
+      if (retire && change.title.startsWith("Retire-"))
+        cap.onSignal?.("port:close", { type: "port:close", portId: "p" }, r.ctx);
+    });
+    for (let index = 0; index < 129; index++) {
+      await r.send(openMsg());
+      await r.send(writeMsg(`tx-${index}`, `Retire-${index}`));
+      expect(await r.store.get(`Retire-${index}`)).not.toBeNull();
+    }
+    retire = false;
+    await r.send(openMsg());
+    await r.send(writeMsg("after-window", "AfterWindow"));
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "after-window", status: "applied" });
+    expect(await r.store.get("AfterWindow")).not.toBeNull();
+    await r.send({ type: "port:close", portId: "p" });
+    await r.send(openMsg("fresh"));
+    await r.send({ ...writeMsg("fresh-tx", "Fresh"), portId: "fresh" });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "fresh-tx", status: "applied" });
+    unsubscribe();
     await r.close();
   });
 });

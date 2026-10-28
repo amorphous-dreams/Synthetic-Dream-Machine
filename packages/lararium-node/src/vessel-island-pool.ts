@@ -19,7 +19,9 @@ import {
   type LarIslandToVesselMsg,
   type IslandStorageConfig,
   type WikiRecipe,
+  type PortIslandToVesselMsg,
 } from "@lararium/mesh";
+import type { PortPolicy } from "@lararium/mesh/port-lease";
 import { fetchThroughCasDoor, nodeNewSyncChannel, nodeSpawnSessionWorker, nodeSpawnWikiWorker } from "./worker-handle.js";
 import { casDirFromIslandStorageDir, readCasBlobFromFs } from "./node-cas.js";
 
@@ -54,6 +56,9 @@ export interface VesselIslandPoolOptions {
   onEa?: (wikiId: string) => void;
   /** Vessel Automerge Repo — each island's mainPort wires to it for CRDT sync. */
   mainRepo?: Repo;
+  portPolicy?: PortPolicy;
+  onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
+  onPortDrop?: (islandKey: string, type: string, reason: "no-port-lease") => void;
   /** Root dir for island-owned NodeFS storage partitions; absent = memory-only. */
   storageRoot?: string;
   /** R3/M6 — resolve a mount's OWN recipe into its final pluginCids (the boot-set floor UNION its
@@ -95,6 +100,9 @@ export class VesselIslandPool extends VesselIslandPoolCore {
       diskMirrorGrant: options.diskMirrorGrant ?? [],
       resolvePluginCids: options.resolvePluginCids,
       ...(options.onWorkerEvent ? { onWorkerEvent: options.onWorkerEvent } : {}),
+      ...(options.portPolicy ? { portPolicy: options.portPolicy } : {}),
+      ...(options.onPortMessage ? { onPortMessage: options.onPortMessage } : {}),
+      ...(options.onPortDrop ? { onPortDrop: options.onPortDrop } : {}),
       ...(options.onEa ? { onEa: options.onEa } : {}),
       ...(options.mountSilenceMs       !== undefined ? { mountSilenceMs:       options.mountSilenceMs }       : {}),
       ...(options.mountStallMs         !== undefined ? { mountStallMs:         options.mountStallMs }         : {}),

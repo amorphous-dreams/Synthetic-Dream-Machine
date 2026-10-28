@@ -143,6 +143,18 @@ describe("VesselIslandPool — island lifecycle", () => {
     expect(changes.events[0]!.payload.tiddlerCount).toBeGreaterThanOrEqual(1);
   });
 
+  test("port policy crosses the node pool door; no policy stays closed", async () => {
+    const open = { type: "port:open", portId: "p", wikiUri: WIKI_ID, actor: "page", width: "full", maxRecordBytes: 4096, maxBatchBytes: 8192 };
+    pool = new VesselIslandPool({ workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
+    await pool.mountWiki(WIKI_ID, spec(null));
+    expect(pool.placePort(WIKI_ID, "page", open)).toEqual({ ok: false, reason: "port-not-granted" });
+    await pool.disposeAll();
+    pool = new VesselIslandPool({ workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS,
+      portPolicy: (binding) => ({ faceId: "face", actor: binding, edits: false, bags: [], admin: false }) });
+    await pool.mountWiki(WIKI_ID, spec(null));
+    expect(pool.placePort(WIKI_ID, "page", open)).toEqual({ ok: true }); // control: a read-only port opens
+  });
+
   test("unmountWiki moves slot to cold; coldSince returns a MONOTONIC timestamp", async () => {
     pool = new VesselIslandPool({ workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
 

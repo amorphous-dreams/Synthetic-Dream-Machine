@@ -1,7 +1,7 @@
 /**
  * Shared rig for the wiki-shore draft-road, cross-bag and returning-hand vectors: a real TiddlyWiki
  * through `test-wiki.ts`, real `AutomergeDocStore`s over a real automerge-repo `Repo`, a `CompositeStore`
- * with a read-only canon layer plus writable working and draft layers, and `ManualTimers`.
+ * with a read-only canon layer plus writable working and draft layers, and `ManualBoundary`.
  *
  * Every composite store call is recorded SYNCHRONOUSLY at the call, so a vector reads what the shore
  * issued in a given turn, with the exact `base` argument and the bag.
@@ -15,7 +15,6 @@ import {
 import { plainEntries } from "@lararium/mesh";
 import { IslandAdaptor } from "../src/island-adaptor.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
-import type { ShoreTimers } from "../src/hand-gate.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { bootTestWiki } from "./test-wiki.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
@@ -44,19 +43,11 @@ export const turns = async (n = 8): Promise<void> => { for (let i = 0; i < n; i+
 /** Resolves after the wiki's own `change` dispatch (TiddlyWiki dispatches on `process.nextTick`, FIFO). */
 export const afterDispatch = (): Promise<void> => new Promise<void>((resolve) => process.nextTick(resolve));
 
-export class ManualTimers implements ShoreTimers {
-  private id = 0;
-  readonly tasks = new Map<number, { fn: () => void; ms: number }>();
-  setTimer(fn: () => void, ms: number): number { const id = ++this.id; this.tasks.set(id, { fn, ms }); return id; }
-  clearTimer(handle: unknown): void { this.tasks.delete(handle as number); }
-  armed(): number { return this.tasks.size; }
-  fire(ms: number): void {
-    const found = [...this.tasks].find(([, task]) => task.ms === ms);
-    if (!found) throw new Error(`no ${ms}ms timer is armed`);
-    this.tasks.delete(found[0]);
-    found[1].fn();
-  }
-  fireAll(ms: number): void { while ([...this.tasks.values()].some((task) => task.ms === ms)) this.fire(ms); }
+export class ManualBoundary {
+  private adaptor: IslandAdaptor | null = null;
+  bind(adaptor: IslandAdaptor): void { this.adaptor = adaptor; }
+  pending(): number { return this.adaptor?.pendingTitles().length ?? 0; }
+  fire(): void { if (!this.adaptor) throw new Error("boundary has no adaptor"); void this.adaptor.boundary().catch(() => {}); }
 }
 
 export interface StoreCall {
@@ -69,7 +60,7 @@ export interface StoreCall {
 
 export interface RigOptions {
   readonly instanceId?: string;
-  readonly timers?: ShoreTimers;
+  readonly boundary?: ManualBoundary;
   readonly yieldHost?: () => Promise<void>;
   /** Whether the canon layer accepts writes (default: it does not). */
   readonly canonWritable?: boolean;
@@ -139,7 +130,8 @@ export async function shoreRig(opts: RigOptions = {}) {
     return tombstoneInBag(bag, title, origin, options);
   });
 
-  const adaptor = new IslandAdaptor(engine, composite, instanceId, opts.timers);
+  const adaptor = new IslandAdaptor(engine, composite, instanceId);
+  opts.boundary?.bind(adaptor);
   adaptor.installLandingQueue(opts.yieldHost);
   const arrivals: string[] = [];
   const onUriChanged = adaptor.onUriChanged.bind(adaptor);
