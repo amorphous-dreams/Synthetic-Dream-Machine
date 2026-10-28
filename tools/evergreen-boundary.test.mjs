@@ -16,7 +16,7 @@ function fixture(files, extra = []) {
       mkdirSync(join(root, rel, ".."), { recursive: true });
       writeFileSync(join(root, rel), body);
     }
-    return spawnSync(process.execPath, [cli, "--root", root, "--ceilings", "version=0,clock=0,narration=0,retired-test=0,upgrade-delete=0,canon-history=0,canon-dated-history=0", "--no-exceptions", ...extra], { encoding: "utf8" });
+    return spawnSync(process.execPath, [cli, "--root", root, "--ceilings", "version=0,clock=0,narration=0,old-shape=0,retired-test=0,upgrade-delete=0,canon-history=0,canon-dated-history=0", "--no-exceptions", ...extra], { encoding: "utf8" });
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
 const one = (body) => fixture({ "packages/example/src/a.ts": body });
@@ -27,6 +27,15 @@ test("E1 CONTROL: lawful source reads files and no findings", () => {
   assert.match(r.stdout, /\[evergreen-boundary\] [1-9]\d* file\(s\) read/);
   assert.deepEqual(scanText("a.ts", "// This holder waits.\nconst started = Date.now();"), []);
   assert.deepEqual(scanText("a.ts", 'const word = "schemaVersion"; const sample = "Date.now() > deadline";'), []);
+});
+test("E1b old-shape names and readings fail while current refusals read clean", () => {
+  for (const body of ['class LegacyXRefused extends Error {}', 'const reading = "old-shape";', 'const reading = "old-shape-inception";', '// retired spelling refuses here']) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "old-shape").length, 1, body);
+    const red = one(body); assert.equal(red.status, 1); assert.match(red.stdout, /old-shape +packages\/example\/src\/a\.ts:1/);
+  }
+  const lawful = 'class FacelessKeyhiveRefused extends Error {}\nconst reading = "face-locked";';
+  assert.equal(scanText("a.ts", lawful).filter(f => f.rule === "old-shape").length, 0);
+  const green = one(lawful); assert.equal(green.status, 0, green.stdout + green.stderr);
 });
 test("E2 schema field is a version finding", () => {
   const body = "const record = { schemaVersion: 1 };";
@@ -149,7 +158,7 @@ test("E13 canon-history: a history word in live canon reads; present canon and a
 });
 test("E14 a class whose corpus holds no file reads blind", () => {
   assert.deepEqual(blindClasses(["tools/a.mjs", "packages/x/src/a.ts"]), ["retired-test", "canon-history", "canon-dated-history"]);
-  assert.deepEqual(blindClasses([]), ["retired-test", "upgrade-delete", "canon-history", "canon-dated-history"]);
+  assert.deepEqual(blindClasses([]), ["old-shape", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history"]);
   assert.deepEqual(blindClasses(["packages/x/tests/a.test.ts", "packages/x/src/a.ts", "bags/lares/ha.ka.ba/lares/api/a.mem"]), []);
 });
 test("E15 a comment that names its lane, wave or slice is narration; the lowercase domain words are not", () => {

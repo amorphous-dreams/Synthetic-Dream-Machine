@@ -447,7 +447,6 @@ describe("sealed vessel identity family", () => {
       ["an inception of another key", foreign, "names-another-key"],
       ["a signature that fails", Buffer.from(JSON.stringify([{ ...parsed, sig: readKel(foreign).sig }])), "signature-fails"],
       ["an unarmed inception", Buffer.from(JSON.stringify([{ ...parsed, next: undefined }])), "unarmed"],
-      ["an old-shape inception", Buffer.from(JSON.stringify([{ t: "icp", k: [parsed.key], sig: parsed.sig }])), "old-shape"],
     ];
     for (const [what, planted, reading] of cases) {
       if (planted === null) rmSync(at(".vessel-kel.json"));

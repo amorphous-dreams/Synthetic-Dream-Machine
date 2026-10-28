@@ -83,21 +83,6 @@ describe("clean turn — harvests whole", () => {
   });
 });
 
-describe("a suspension does not read as a close", () => {
-  // Deliberately writes the RETIRED `feedback=` spelling (operator ruling retired it to `ooda-ha=`)
-  // — a month of real turns still carry it, and the reader tolerates both.
-  const turn = `<<~ lares aim from=lar:///a.b.c/x -> to=lar:///d.e.f/y>>
-Lares (Council): ->◇ the fork belongs to the operator.
-<<~ set hud="yield" drift-ward="! · take it to contact · ↻ L-Prime" feedback="closed 0↺ -> open 1φ @◇:fork.depends-on.operator-budget">>
-<<~ lares yield from=lar:///d.e.f/y -> to=?>>`;
-  const h = harvestTurnGradient(turn);
-
-  test("zero closed with one hanging reads OPEN, never closed (retired `feedback=` key tolerates)", () => {
-    expect(aftermathClosed(h)).toBe(false);
-    expect(closingPanel(h)!.keys["feedback"]).toContain("open 1φ @◇");
-  });
-});
-
 describe("the current `ooda-ha=` key reads the same suspension", () => {
   const turn = `<<~ lares aim from=lar:///a.b.c/x -> to=lar:///d.e.f/y>>
 Lares (Council): ->◇ the fork belongs to the operator.
@@ -177,35 +162,5 @@ describe("empty input", () => {
     expect(h.recordRaw).toBe(true);
     expect(h.standing).toBe(0);
     expect(h.driftFlags).toContain("empty");
-  });
-});
-
-describe("a turn from before the gauges became panel keys", () => {
-  // A CORPUS STATES ONE GRAMMAR; A READER TOLERATES EVERY GRAMMAR IT WILL MEET. Transcripts carry
-  // whatever shape was standing when they were written, and refusing one reads a gauged turn as
-  // ungauged — a silence no downstream reader can tell from a turn that skipped the instrument.
-  const PRE_PANEL = `<<~ lares aim from=lar://mara:operator@crossroads/operator.weighs.deps -> to=lar://compita:agent@crossroads/council.options.cuts>>
-<<~ hud Aperture(11) OODA-HA(9)>>
-<<~ ward * L-Prime>>
-
-Lares (Council): two libraries, both viable. <<~ confidence Synthesis 11/20>> the fork holds.
-
-<<~ oracle ↯11 ⁂ ⚃ (4) ✲⬡◈⟁>>
-<<~ ward ! · ↻ L-Prime>>
-<<~ lares yield from=lar://compita:agent@crossroads/council.fork.named -> to=?>>`;
-
-  const h = harvestTurnGradient(PRE_PANEL);
-
-  test("the retired heads still classify as sigils, in turn order", () => {
-    expect(h.sigils.map((s) => s.head)).toEqual(["hud", "ward", "confidence", "oracle", "ward"]);
-  });
-
-  test("none of it reads as water", () => {
-    expect(h.waterCount).toBe(0);
-  });
-
-  test("the turn stands clear of the floor, never at it", () => {
-    expect(h.standing).toBeGreaterThan(HARVEST_FLOOR);
-    expect(h.recordRaw).toBe(false);
   });
 });

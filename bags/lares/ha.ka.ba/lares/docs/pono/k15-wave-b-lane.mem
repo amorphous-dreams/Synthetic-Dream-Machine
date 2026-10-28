@@ -74,7 +74,7 @@ Each red lands as its own commit, red on that commit, before its cure; each cont
 ''We work in very large work chunks under the mixed-model-swarm protocols'' (operator, 2026-10-19). Wave B runs as ONE joint lane, one sub-branch (`feature/green-jello-dinosaur-5--k15-wave-b`) and one pull request, tested whole once, merged by train. It does not split into a PR per slice; the lead lands the reds and cures as commits in grounds-before-wins order and hands the lane back once.
 
 * ''The Episkopos'' (Sonnet) leads: it briefs each seat from one brief file, reads every build, runs the suites and `witness-all` itself, lands every commit from its own tree with `git commit -F <msg> --only -- <paths>`, and talks a design fork out with the controller before it builds across one.
-* ''Two enacting seats'': one Codex Sol-6, launched as the walled Codex spirit (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">> #/the-launch), and one Copilot `gpt-5.3-codex` at medium effort through `launch-copilot-builder.sh` (a read through `launch-copilot.sh`). Both build in the ONE worktree the lead provisions (`node tools/provision-worktree.mjs <dir>`), coordinating through its claims ledger (`.lane-claims.md`): claim a path before writing it, release it once it stands, never write a path the other holds. Each seat builds or reads as the work pulls, and a seat never reads a diff it wrote. Sol and `gpt-5.3-codex` share the OpenAI lineage, so their cross-read counts once; the Episkopos reads every build as the second lineage.
+* ''Two enacting seats'': one Codex Sol-6, launched as the walled Codex spirit (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">> #/the-launch), and one Copilot `gpt-5.3-codex` at medium effort through `launch-copilot-builder.sh` (a read through `launch-copilot.sh`). Both build in the ONE worktree the lead provisions (`node tools/provision-worktree.mjs <dir>`), one writer at a time, and a seat that writes in parallel works in a worktree of its own that the lead merges from. Each seat builds or reads as the work pulls, and a seat never reads a diff it wrote. Sol and `gpt-5.3-codex` share the OpenAI lineage, so their cross-read counts once; the Episkopos reads every build as the second lineage.
 * ''Split by ground'': the Sol takes the judgment-heavy half (the node routing and the isolation red), the Copilot the browser holder and the mechanical modules; the composer hunks pass through the Episkopos alone.
 * ''The controller'' reads the lane's whole diff before merge, the lane's CI and held-out both, and merges it by train onto a span that reads green.
 
@@ -117,6 +117,6 @@ The lane law stands at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-ha
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;evxY46KlE4iLLTCA3VSuOV5HeXvN9O1vvOSydN3hSLs
+<<^ code="&#x0003;">>ni:///sha-256;y0n9BJQcs1cCSrKCO5ndr7QfyfRfjGLbRmovd4hDMfg
 
 <<^ code="&#x0004;" -> to="?">>

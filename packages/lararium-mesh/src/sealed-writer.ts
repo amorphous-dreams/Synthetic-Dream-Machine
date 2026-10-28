@@ -10,7 +10,7 @@
  *     a process still holding a tree key a rotation retired writes nothing, an absent carrier included.
  *  2. THE KEY OPENS WHAT STANDS. A carrier accepts a write only when nothing stands there, or when the tree key opens the
  *     sealed bytes; every other reading refuses with its own name (`s-envelope.ts`): `key-fails`, `torn`,
- *     `unopenable`, `old-shape`, `bare`.
+ *     `unopenable`, `bare`.
  *
  * A wrong passphrase opens no tree key, so it reaches no write at all; a tree key the tree does not commit to replaces nothing.
  *
@@ -117,9 +117,6 @@ const SAYS: Record<RefusedReading, string> = {
   unopenable:
     "it carries a seal this build cannot frame (a damaged magic, or another scheme of the house family), and a write " +
     "would destroy ciphertext that a repair could still recover; copy the carrier aside first",
-  "old-shape":
-    "it opens with the LARK frame, which no custody of this house writes and no unlock opens; the fresh-start runbook " +
-    "(stable-founding-road #/fresh-start) answers it",
   bare:
     "cleartext stands there, and this writer replaces only bytes the tree key sealed",
 };
@@ -158,7 +155,7 @@ export class CensusRefusal extends Error {
 export interface StandingCarrier { readonly carrier: SealedCarrier; readonly reading: Exclude<SCarrierReading, "absent"> }
 
 /**
- * A founding or a write over a store this custody never sealed: a carrier stands (cleartext, a LARK
+ * A founding or a write over a store this custody never sealed: a carrier stands (cleartext, an unframed
  * envelope, or a seal no tree commits to) and no slot tree does. Nothing was written. `standing` names the listed
  * carriers met; `unlisted` the paths that bear the tree key seal's magic yet no listed carrier names.
  */
@@ -198,7 +195,7 @@ async function refuseOccupiedStore<C extends SealedCarrier>(io: Pick<CustodyIo, 
     if (scope && !scope(path)) continue;
     if (path === treePath || isSidecar(path) || named.has(path)) continue;
     const reading = seal.read(await io.read(path));
-    if (reading === "sealed" || reading === "torn" || reading === "old-shape") unlisted.push(path);
+    if (reading === "sealed" || reading === "torn") unlisted.push(path);
   }
   if (standing.length > 0 || unlisted.length > 0) throw new OccupiedStoreRefusal(standing, unlisted.sort(), treePath);
 }

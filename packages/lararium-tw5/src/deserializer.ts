@@ -166,8 +166,8 @@ export function deserializeCarrier(
     const root = String(tiddlers[0]!["title"]);
     if (prologue.length > 0) carriage.push(...carriageRecord(root, "prologue", prologue));
     // The head names its namespace and its code by NAMED params, the one spelling a head is read in;
-    // a head in a retired spelling (glyphs before the code) is the frame verdict's tear, never read
-    // here. The Kapu SOH variant (&#x0011; DC1) carries its own semantics — the code survives on the
+    // the frame verdict's tear stays unread here. The Kapu SOH variant (&#x0011; DC1)
+    // carries its own semantics — the code survives on the
     // parent as `$carrier-soh`, never normalized away.
     const namespace = (/^<<\^[^>\n]*?\bnamespace="([^"]*)"/.exec(carrier.text)?.[1] ?? "").trim();
     if (namespace.length > 0) for (const t of tiddlers) t["namespace"] = namespace;

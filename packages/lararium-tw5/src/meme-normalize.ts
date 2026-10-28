@@ -340,8 +340,8 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
 
   // ── 0. The declaration ────────────────────────────────────────────────────
   //
-  // ONE DECLARATION, minted by the frame writer. A carrier holding a shorter or older one is a retired
-  // spelling — the frame verdict's tear — and no gesture rewrites it in silence. ABSENCE RAISES NOTHING
+  // ONE DECLARATION, minted by the frame writer. A malformed declaration reads as the frame verdict's
+  // tear, and no gesture rewrites it in silence. ABSENCE RAISES NOTHING
   // HERE: whether a `.mem` on disk must carry a declaration at all is the doctype witness's question,
   // and normalize also runs over fragments and authoring drafts that legitimately carry no head.
 
@@ -353,7 +353,7 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
   const soh = [...seat.text.matchAll(new RegExp(SOH_OPENER_RE.source, "g"))].find((m) => !inMask(sohMask, m.index!));
   if (soh) {
     // ONE SPELLING READS: the named-param head. A head carrying its namespace as bare glyphs in front of
-    // the control entity is a retired spelling — the frame verdict's tear — and this door never lifts it.
+    // the control entity reads as the frame verdict's tear, and this door never lifts it.
     const code = soh[2]!;
     const have = soh[3] ?? "";
     // Canonical opener: the control head, the code param, then the namespace param where the meta

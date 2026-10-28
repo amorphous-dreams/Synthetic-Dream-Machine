@@ -23,9 +23,6 @@ describe("place KEL", () => {
     const first = mintPlaceInception({ signerSeed: seed(1), coldVerifyingKey: key(2) });
     expect(verifyPlaceKel([first.event]).ok).toBe(true);
     expect(refusal([{ kind: VESSEL_KEL_DOMAIN, t: "icp", seq: 0, key: key(1), sig: first.event.sig }])).toBe("unarmed-inception");
-    const old = { t: "icp", k: [key(1)], sig: first.event.sig };
-    expect(decodePlaceKelEvent(old)).toBeNull();
-    expect(refusal([old])).toBe("old-shape-inception");
   });
 
   it("refuses wrong card, reused commitment and reused signer", () => {
