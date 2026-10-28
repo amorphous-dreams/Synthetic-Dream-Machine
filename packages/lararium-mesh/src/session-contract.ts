@@ -208,7 +208,9 @@ export type SessionMessage =
   | (SessionSurfaceEnvelope & { readonly kind: typeof LAR_CONTROL_EVENT; readonly event: LarMsg_ControlEvent })
   | (SessionSurfaceEnvelope & { readonly kind: typeof LAR_CONTROL_RESULT } & Omit<LarMsg_ControlResult, "type">)
   | (SessionRequestEnvelope & { readonly kind: "session:switch"; readonly expectedGeneration: number; readonly faceRef: string })
-  | (SessionRequestEnvelope & { readonly kind: "session:switch-result"; readonly outcome: string })
+  // The result names the session's generation and face after the fence: `switched` one generation on, or
+  // `unchanged` where the target named the face the session already wore.
+  | (SessionRequestEnvelope & { readonly kind: "session:switch-result"; readonly outcome: "switched" | "unchanged"; readonly faceRef: string })
   | (SessionEnvelope & { readonly kind: "session:revoke"; readonly reason: string })
   | (SessionEnvelope & { readonly kind: "session:close"; readonly cause: string })
   | (SessionEnvelope & { readonly kind: "session:closed" });

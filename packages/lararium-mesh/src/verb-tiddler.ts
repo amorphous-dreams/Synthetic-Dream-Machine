@@ -50,6 +50,7 @@ import {
 import { sha256Hex, canonicalJsonBytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
 import { formatDigest } from "./agile-digest.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
+import type { SwitchIntent, SwitchOutcome } from "./session-switch.js";
 
 // ── URI prefixes ───────────────────────────────────────────────────────────
 
@@ -117,16 +118,21 @@ export async function taskContentId(
 /** Durable per-request fact tiddlers — `<daemon bag>/receipts/<requestId>`. */
 export const RECEIPT_FACT_URI_PREFIX = `${DAEMON_BAG_ID}/receipts/`;
 
+/** Vessel-private switch acts, beside the receipt facts: `<daemon bag>/switch-acts/<act id>/<phase>`. An act names a
+ *  causal position and two faces, and never a session id (lar:///ha.ka.ba/lares/api/pono/session-contract#/the-owner). */
+export const SWITCH_ACT_URI_PREFIX = `${DAEMON_BAG_ID}/switch-acts/`;
+
 /** Durable ward audits: `<daemon bag>/ledger/ward/<id>`. */
 export const WARD_AUDIT_URI_PREFIX = `${DAEMON_BAG_ID}/ledger/ward/`;
 
 /**
- * True for a title whose record never projects to disk: a receipt fact, a verb summons, a ward audit.
+ * True for a title whose record never projects to disk: a receipt fact, a switch act, a verb summons, a ward audit.
  * The makers stamp such a record `disk-projection: "no"`; no file for it ever comes from the projector,
  * so a file standing at its address counts as foreign.
  */
 export function neverProjects(title: string): boolean {
   return title.startsWith(RECEIPT_FACT_URI_PREFIX)
+    || title.startsWith(SWITCH_ACT_URI_PREFIX)
     || title.startsWith(SUMMONS_URI_PREFIX)
     || title.startsWith(WARD_AUDIT_URI_PREFIX);
 }
@@ -233,6 +239,26 @@ export function buildReceiptFact(fact: ReceiptFact): LarTiddlerRecord {
       ...(fact.terminal    !== undefined && { terminal:       fact.terminal }),
       ...("bootEpoch" in fact && fact.bootEpoch !== undefined && { "boot-epoch":   String(fact.bootEpoch) }),
       ...("outcomeBytes" in fact && { "outcome-bytes": String(fact.outcomeBytes) }),
+    },
+    meta: { authority: "lares-daemon-channel" },
+  };
+}
+
+/** The record one phase of a switch act rests as: the intent before the fence, the outcome after the commit. */
+export function buildSwitchAct(act: SwitchIntent | SwitchOutcome): LarTiddlerRecord {
+  const phase = "outcome" in act ? "outcome" : "intent";
+  return {
+    tiddler: {
+      title:             `${SWITCH_ACT_URI_PREFIX}${act.actId}/${phase}`,
+      "act-id":          act.actId,
+      phase,
+      "owner-epoch":     act.ownerEpoch,
+      generation:        String(act.generation),
+      outgoing:          act.outgoing,
+      incoming:          act.incoming,
+      "disk-projection": "no",
+      ...("outcome" in act && { outcome: act.outcome }),
+      ...("outcome" in act && act.refusal !== undefined && { refusal: act.refusal }),
     },
     meta: { authority: "lares-daemon-channel" },
   };

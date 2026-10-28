@@ -49,9 +49,9 @@ import {
   RECEIPT_FACT_URI_PREFIX, RECEIPT_RING_DEFAULT, RECEIPT_RING_BYTES_DEFAULT, buildReceiptFact, parseReceiptFact, outcomeBytesOf,
   verbInputDigest, SessionTable, sessionBinding, type SessionBinding,
   faceScopedId, type SessionReceipt, type DurabilityReceipt,
-  type ReceiptFact, type ReceiptFactDraft,
+  type ReceiptFact, type ReceiptFactDraft, buildSwitchAct, switchSession,
 } from "@lararium/mesh";
-import type { CapabilityProfile, Hand, SessionFace } from "@lararium/mesh/session-contract";
+import type { CapabilityProfile, Hand, Session, SessionFace } from "@lararium/mesh/session-contract";
 // The adaptive-timeout SERVO (fail on a GRADIENT, never a cliff): a per-verb wait that GROWS with the
 // observed durations and clamps FLOOR..CEIL. The machine-code work stays Python; this is the
 // coordinator's PATIENCE, servo'd so a long-but-honest verb (a big-session capture, a refresh queued
@@ -103,12 +103,24 @@ export interface UdsChannelOptions {
   readonly onLog?: (line: string) => void;
 }
 
-/** The face supplier verifies the hint at each open and answers the worker's presenter. */
+/** The one signer a session holds; the seat drops it at a close and at a switch's fence. */
+export interface UdsSessionSigner {
+  readonly dropped: boolean;
+  drop(): void;
+}
+/**
+ * The face supplier verifies the hint at each open and at each switch's preflight, and answers an immutable
+ * description: the face, the hand's profile, the worker's presenter, the facet labels, and the mint of the signer.
+ * Answering mounts nothing and mints no key; `mint` runs once the owner's table holds the session live at the
+ * generation it signs for.
+ */
 export interface UdsSessionSupply {
   readonly face: SessionFace;
   readonly profile: CapabilityProfile;
   readonly presenter: string;
   readonly caps?: readonly string[];
+  readonly mint: (at: { readonly table: SessionTable; readonly binding: SessionBinding; readonly session: Session }) =>
+    Promise<{ readonly ok: true; readonly signer: UdsSessionSigner } | { readonly ok: false; readonly refusal: string }>;
 }
 export interface UdsSessionDoor {
   open(ask: { faceRef: string; hand: Hand }): Promise<{ ok: true; supply: UdsSessionSupply } | { ok: false; refusal: string }>;
@@ -855,7 +867,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const inFlight = new Set<Socket>();
   const table = new SessionTable(ownerEpoch);
   let closing = false;
-  const sessionSockets = new Map<Socket, { binding: SessionBinding; sessionId?: string; supply?: UdsSessionSupply }>();
+  const sessionSockets = new Map<Socket, { binding: SessionBinding; sessionId?: string; hand?: Hand; supply?: UdsSessionSupply; signer?: UdsSessionSigner }>();
   const sessionTurns = new Map<Socket, Promise<void>>();
   const sessionReply = (sock: Socket, answer: Record<string, unknown>): void => {
     try { sock.write(JSON.stringify(answer) + "\n"); } catch { /* gone */ }
@@ -869,6 +881,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       sessionSockets.set(sock, state);
       sock.once("close", () => {
         if (state?.sessionId) table.close(state.sessionId);
+        state?.signer?.drop();
         sessionSockets.delete(sock);
         sessionTurns.delete(sock);
       });
@@ -891,19 +904,32 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       if (!supplied.ok) return sessionRefuse(sock, supplied.refusal, requestId);
       const opened = table.open(state.binding, supplied.supply.face, supplied.supply.profile, supplied.supply.caps ?? []);
       if (!opened.ok) return sessionRefuse(sock, opened.refusal, requestId);
+      // NO MESSAGE ROUTES TO A SESSION THAT HOLDS A FACE AND NO SIGNER: a mint that refuses closes the session it opened.
+      const minted = await supplied.supply.mint({ table, binding: state.binding, session: opened.session })
+        .catch((error: unknown) => ({ ok: false as const, refusal: `mint-failed: ${error instanceof Error ? error.message : String(error)}` }));
+      if (!minted.ok || closing || sock.destroyed) {
+        table.close(opened.session.sessionId);
+        if (minted.ok) minted.signer.drop();
+        return minted.ok ? undefined : sessionRefuse(sock, minted.refusal, requestId);
+      }
       state.sessionId = opened.session.sessionId;
+      state.hand = frame["hand"] as Hand;
       state.supply = supplied.supply;
+      state.signer = minted.signer;
       sessionReply(sock, { kind: "session:opened", requestId, ownerEpoch: opened.session.ownerEpoch,
         sessionId: opened.session.sessionId, generation: opened.session.generation,
         faceRef: opened.session.face.proofSubject, caps: opened.session.caps });
       return;
     }
+    if (frame["op"] === "session:switch") return switchOn(sock, state, frame, requestId);
     if (frame["op"] !== "session:call" && frame["op"] !== "session:close" &&
         frame["op"] !== "session:receipt" && frame["op"] !== "session:cancel") return sessionRefuse(sock, "unknown-op", requestId);
     const checked = table.checkBound(frame, state.binding);
     if (!checked.ok) return sessionRefuse(sock, checked.refusal, requestId);
     if (frame["op"] === "session:close") {
       table.close(checked.session.sessionId);
+      state.signer?.drop();
+      delete state.signer;
       delete state.sessionId;
       sessionReply(sock, { kind: "session:closed" });
       sock.end();
@@ -931,6 +957,63 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         ...(typeof frame["timeoutMs"] === "number" && { timeoutMs: frame["timeoutMs"] }) }, sock, requestId,
         () => { sock.off("close", closed); resolve(); });
     });
+  };
+  /**
+   * `session:switch`: the five-step fence over THIS socket's session (`switchSession`). The frame carries the
+   * envelope, `expectedGeneration` (the generation it leaves) and `faceRef`, the target face's hint, which the door
+   * verifies afresh as the preflight. The intent and the outcome rest as vessel-private switch acts beside the
+   * receipt facts and flush before the step after them. A switch that cannot commit closes this session and its
+   * socket; the caller opens afresh.
+   */
+  const writeSwitchAct = async (act: Parameters<typeof buildSwitchAct>[0]): Promise<void> => {
+    await composite.put(buildSwitchAct(act), { kind: "lares-verb", requestId: act.actId });
+    await opts.repo.flush();
+  };
+  const switchOn = async (sock: Socket, state: NonNullable<ReturnType<typeof sessionSockets.get>>,
+    frame: Record<string, unknown>, requestId: string | undefined): Promise<void> => {
+    const hint = frame["faceRef"];
+    if (!requestId || typeof hint !== "string" || !hint || frame["expectedGeneration"] !== frame["generation"]) {
+      return sessionRefuse(sock, "malformed-message", requestId);
+    }
+    if (!opts.sessions || !state.hand) return sessionRefuse(sock, state.hand ? "no-session-door" : "unknown-session", requestId);
+    const door = opts.sessions;
+    const hand = state.hand;
+    let next: UdsSessionSupply | undefined;
+    let signer: UdsSessionSigner | undefined;
+    const result = await switchSession({
+      table, binding: state.binding,
+      envelope: { ownerEpoch: frame["ownerEpoch"] as string, sessionId: frame["sessionId"] as string, generation: frame["generation"] as number },
+      preflight: async () => {
+        const supplied = await door.open({ faceRef: hint, hand });
+        return supplied.ok ? { ok: true, target: { face: supplied.supply.face, profile: supplied.supply.profile, supply: supplied.supply } } : supplied;
+      },
+      writeIntent: writeSwitchAct,
+      fence: async () => { state.signer?.drop(); delete state.signer; delete state.supply; },
+      commit: async (session, target) => {
+        if (closing || sock.destroyed) return { ok: false, refusal: "socket-gone" };
+        const minted = await target.supply.mint({ table, binding: state.binding, session });
+        if (!minted.ok) return minted;
+        next = target.supply;
+        signer = minted.signer;
+        return { ok: true };
+      },
+      writeOutcome: writeSwitchAct,
+    });
+    if (!result.ok) {
+      if (!result.closed) return sessionRefuse(sock, result.refusal, requestId);
+      signer?.drop();
+      state.signer?.drop();
+      delete state.signer;
+      delete state.supply;
+      delete state.sessionId;
+      sessionReply(sock, { kind: "session:refused", requestId, refusal: result.refusal, closed: true });
+      sock.end();
+      return;
+    }
+    if (next && signer) { state.supply = next; state.signer = signer; }
+    sessionReply(sock, { kind: "session:switch-result", requestId, outcome: result.switched ? "switched" : "unchanged",
+      ownerEpoch: result.session.ownerEpoch, sessionId: result.session.sessionId, generation: result.session.generation,
+      faceRef: result.session.face.proofSubject });
   };
   const queueSession = (parsed: unknown, sock: Socket): void => {
     sessionState(sock);
@@ -1085,6 +1168,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       closing = true;
       for (const [sock, state] of sessionSockets) {
         if (state.sessionId) table.close(state.sessionId);
+        state.signer?.drop();
         sock.end();
       }
       if (!idle()) await new Promise<void>((resolve) => { drained = resolve; });

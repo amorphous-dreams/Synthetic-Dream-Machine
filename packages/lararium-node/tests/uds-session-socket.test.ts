@@ -9,6 +9,9 @@ import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, conclude
 import { startUdsChannel, type UdsSessionDoor } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
 
+/** The fixture door's mint: a signer the seat can drop, holding no key. */
+const fixtureMint = async () => ({ ok: true as const, signer: { dropped: false, drop() { (this as { dropped: boolean }).dropped = true; } } });
+
 const face = (name: string): SessionFace => ({
   personaGroup: `group-${name}`, proofSubject: `proof-${name}`, admitRef: `admit-${name}`,
   causalRevision: `revision-${name}`,
@@ -61,7 +64,7 @@ describe("UDS session socket", () => {
     const claim = await claimStore(dir, { holder: "vessel" });
     const placed: Array<{ requestedBy: string; face?: string; requestId: string }> = [];
     const door: UdsSessionDoor = { open: async ({ faceRef }) => ({ ok: true, supply: {
-      face: face(faceRef === "hint-b" ? "b" : "a"), profile: "seat", presenter: `verified-${faceRef}`, caps: ["load"],
+      face: face(faceRef === "hint-b" ? "b" : "a"), profile: "seat", presenter: `verified-${faceRef}`, caps: ["load"], mint: fixtureMint,
     } }) };
     const start = (sessions?: UdsSessionDoor) => startUdsChannel({
       daemonHandle, composite, claim, repo, ...(sessions && { sessions }),

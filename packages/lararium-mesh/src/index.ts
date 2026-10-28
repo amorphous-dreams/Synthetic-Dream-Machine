@@ -385,6 +385,8 @@ export { gateNativeCarriagePull, CARRIAGE_PIN_ABSENT, type GateNativeCarriagePul
 export { SOVEREIGN_SYNC_ROUTE, ADMIT_GATE_PIN_REFUSALS, readAdmitGatePin, readAdmitGatePinAt, admitGatePinDigest, dialPinKeyOf, hearthPinIndex } from "./admit-gate-pin.js";
 // The session table a dialer keeps for the sessions it opened (`dialSessions`), and the binding each rides.
 export { SessionTable, sessionBinding } from "./session-contract.js";
+// The five-step fence that switches one session's face in place (the node's session socket, the browser holder).
+export { switchSession, type SessionSwitchPorts, type SessionSwitchResult, type SessionSwitchTarget, type SwitchIntent, type SwitchOutcome } from "./session-switch.js";
 export type { SessionBinding } from "./session-contract.js";
 export type {
   AdmitGatePinRefusal, DialPinKey, HearthPinIndex, PlaceClaimStand, PlaceClaimFiling, PlaceClaimFork, PlaceKelForkNote,

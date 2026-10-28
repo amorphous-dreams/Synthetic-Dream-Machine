@@ -10,6 +10,9 @@ import type { SessionFace } from "@lararium/mesh/session-contract";
 import { makeUdsSeat, serveUdsFront, type UdsSessionDoor } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
 
+/** The fixture door's mint: a signer the seat can drop, holding no key. */
+const fixtureMint = async () => ({ ok: true as const, signer: { dropped: false, drop() { (this as { dropped: boolean }).dropped = true; } } });
+
 const face = (name: string): SessionFace => ({ personaGroup: `group-${name}`, proofSubject: `proof-${name}`,
   admitRef: `admit-${name}`, causalRevision: `revision-${name}`,
   planes: { persona: `persona-${name}`, circles: `circles-${name}`, identities: `identities-${name}`,
@@ -69,7 +72,7 @@ describe("face bound session receipts", () => {
     const dir = mkdtempSync(join(tmpdir(), "uds-session-receipts-"));
     let claim = await claimStore(dir, { holder: "vessel" });
     const door: UdsSessionDoor = { open: async ({ faceRef }) => ({ ok: true, supply: {
-      face: face(faceRef), profile: "seat", presenter: `verified-${faceRef}`, caps: ["load"] } }) };
+      face: face(faceRef), profile: "seat", presenter: `verified-${faceRef}`, caps: ["load"], mint: fixtureMint } }) };
     const placed: Array<{ requestId: string; requestedBy: string; face?: string; effectKey?: string }> = [];
     const effects = new Map<string, string>();
     let releaseHold: (() => void) | undefined;
@@ -188,7 +191,7 @@ describe("face bound session receipts", () => {
     const dir = mkdtempSync(join(tmpdir(), "uds-session-evict-"));
     const claim = await claimStore(dir, { holder: "vessel" });
     const door: UdsSessionDoor = { open: async ({ faceRef }) => ({ ok: true, supply: {
-      face: face(faceRef), profile: "seat", presenter: `verified-${faceRef}` } }) };
+      face: face(faceRef), profile: "seat", presenter: `verified-${faceRef}`, mint: fixtureMint } }) };
     const front = serveUdsFront({ claim });
     front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo, sessions: door, ring: 1,
       placeVerb: (o) => {

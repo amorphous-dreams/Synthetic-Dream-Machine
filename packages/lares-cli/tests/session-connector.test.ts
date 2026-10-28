@@ -11,6 +11,9 @@ import { claimStore } from "@lararium/node";
 import { makeUdsSeat, serveUdsFront } from "../../lararium-node/src/uds-channel.js";
 import { openLocalSession, SessionRefused } from "../src/session-connector.js";
 
+/** The fixture door's mint: a signer the seat can drop, holding no key. */
+const fixtureMint = async () => ({ ok: true as const, signer: { dropped: false, drop() { (this as { dropped: boolean }).dropped = true; } } });
+
 describe("local session connector", () => {
   test("refusal names the vessel; a bound call and later same-face receipt survive a client close", async () => {
     const repo = new Repo({ sharePolicy: async () => true });
@@ -29,7 +32,7 @@ describe("local session connector", () => {
     front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo,
       sessions: { open: async ({ faceRef }) => faceRef === "refuse"
         ? { ok: false, refusal: "face-unverified" }
-        : { ok: true, supply: { face, profile: "seat", presenter: "verified-a" } } },
+        : { ok: true, supply: { face, profile: "seat", presenter: "verified-a", mint: fixtureMint } } },
       placeVerb: (o) => {
         const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", requestedBy: o.requestedBy,
           ...(o.face !== undefined && { face: o.face }), cause: "worker", batchMode: "best-effort",
