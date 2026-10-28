@@ -961,6 +961,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         registry.register("bag-compact", makeCompactBagReactor({ repo: ctx.repo, catalog, post: ctx.post }));
         registry.register("rotate-recipe", makeRotateRecipeReactor({ repo: ctx.repo, catalog, post: ctx.post }));
       }
+      // THE CONTENT FENCE. These verbs run on the MOUNTED face's resources (its content keys, its provider and ledger for a
+      // mint) whichever face's provider cleared the verify, so a presenter that is another face refuses by name until each
+      // face holds its own content-key seat and mint (OWED, k19-hive-lane#/the-slices).
+      registry.guard(["sealed-seal", "sealed-open", "sealed-reading", "sealed-choose-head", "CREATE", "init-wiki"], (verb, context) => {
+        if (!daemonAuth.atom || context.presenter === undefined) return;
+        if (bareKey(context.presenter) !== bareKey(daemonAuth.atom.key)) {
+          throw new VerbRefusal("content-mounted-only", `[daemon] ${verb}: this verb runs on the mounted face's content keys and mint; a sibling face's session holds none here.`);
+        }
+      });
     },
     onHostMessage: (msg, ctx) => {
       const change = faceChanges.then(async () => {
