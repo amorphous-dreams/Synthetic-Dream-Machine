@@ -111,6 +111,7 @@ def fit_registration(image, calibration):
     report = {"schema": SCHEMA, "image_sha256": image_sha,
               "calibration_sha256": sha256(calibration.read_bytes()).hexdigest(),
               "anchor_sha256": sha256(anchor_path.read_bytes()).hexdigest(),
+              "control_file": str(anchor_path),
               "camera": {"intrinsics": K.tolist(), "rotation": rotation.tolist(),
                          "translation": tvec.reshape((3,)).tolist(),
                          "size": [width, height]},

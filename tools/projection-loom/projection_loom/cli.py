@@ -103,6 +103,11 @@ def main(argv=None):
     p.add_argument('--ground',type=Path,required=True)
     p.add_argument('--bundle',type=Path,required=True)
     p.add_argument('--proposal',type=Path,required=True)
+    p=commands.add_parser('registered-inventory',
+                          help='Admit independent measured image/camera/survey sources into one location')
+    p.add_argument('--image-group',type=Path,required=True)
+    p.add_argument('--location',required=True)
+    p.add_argument('--out',type=Path,required=True)
     p=commands.add_parser('wide-epoch',help='Resumable staged constructive epochs')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
@@ -435,6 +440,19 @@ def main(argv=None):
         else:
             document=json.loads(args.proposal.read_text(encoding='utf8'))
             result=verify_support_proposal(document,ground,args.bundle)
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command=='registered-inventory':
+        from .seed_adapters import image_group
+        from .registered_inventory import registered_location_inventory
+        from .generalized_campaign import save_once
+        stack=registered_location_inventory(image_group(args.image_group),args.location)
+        save_once(args.out,stack.to_dict())
+        result={'schema':'projection-loom/registered-location-inventory',
+                'location':stack.location_id,
+                'verified_source_registrations':len(stack.registrations),
+                'source_inventory_sha256':stack.to_dict()['snapshot_sha256'],
+                'external_survey_certification':False}
         print(json.dumps(result,indent=2))
         return result
     if args.command=='fracture-pattern':
