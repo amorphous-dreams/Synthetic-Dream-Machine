@@ -37,7 +37,8 @@ The crew lines that bind a running lane stand at <<~ loulou "lar:///ha.ka.ba/lar
 | ''Controller'' | Claude Opus | the session's seat: rulings relayed, every lane's brief, a careful read of every chunk's diff before it merges, every merge train, the canon lines | lands a chunk it has not read |
 | ''Episkopos'' (lane lead) | Claude Sonnet | the lane's brief, ground and crew, its landing onto its lane branch, its review verdicts | hands its landing to another spirit |
 | ''Terra'' (builder) | Codex `gpt-6.1-terra`, medium effort | every build brief, walled with `-s workspace-write` | commits, pushes, or touches git |
-| ''Sol'' (reader, reviewer, deep-thinker) | Codex `gpt-6.1-sol`, high effort, read-only | the read of each slice before it pushes, the aftermath sweep, the deep question | builds, commits, pushes, or touches git |
+| ''Luna'' (reader, sweeper) | Codex `gpt-6-luna`, medium effort, read-only | the read of each slice before it pushes, the aftermath sweep | builds, commits, pushes, or touches git |
+| ''Sol'' (deep-thinker, on a named ask) | Codex `gpt-6.1-sol`, high effort, read-only | a deep question or design read the Episkopos names in its hand-back; never a default seat, since it spends fast | builds, commits, pushes, or touches git |
 | ''Copilot seat'' | Copilot `gpt-5.3-codex`, medium effort | reads, scouts and sweeps | commits, pushes, or reads a diff it wrote |
 | ''Fresh reader'' | a lineage that built nothing in the piece, read-only | an adversarial read of a whole lane before its train, findings ranked with `file:line` | sees the builder's conclusions first |
 | ''Research pair'' | two seats woken apart | the code read and the field read of one question, each claim marked MEASURED or LEAD, then traded | shares a conclusion with its twin before the trade |
@@ -48,7 +49,7 @@ The crew lines that bind a running lane stand at <<~ loulou "lar:///ha.ka.ba/lar
 
 !! The shapes ~ how a crew stands
 
-* ''The work swarm.'' A lane runs a Sonnet Episkopos with enacting seats: the Terra builds, the Sol reads and reviews, the Copilot seat reads, scouts and sweeps. A Copilot build costs several times a Copilot read against a fixed monthly allowance, so builds go to the Terra. Terra, Sol and `gpt-5.3-codex` share the OpenAI lineage, so their cross-read counts once, and the Episkopos reads every build as the second lineage. A seat never reads a diff it wrote.
+* ''The work swarm.'' A lane runs a Sonnet Episkopos with enacting seats: the Terra builds, the Luna reads and sweeps, a Sol joins only for a named deep question, and the Copilot seat reads the batch's Aftermath. A Copilot build costs several times a Copilot read against a fixed monthly allowance, so builds go to the Terra. Terra, Luna, Sol and `gpt-5.3-codex` share the OpenAI lineage, so their cross-read counts once, and the Episkopos reads every build as the second lineage. A seat never reads a diff it wrote.
 * ''The build pair.'' The building seats share ONE worktree the lead provisions, with ONE writer at a time, so their work composes as it lands. A seat that needs to write in parallel works in a worktree of its own, and the lead merges from it. The lead pulls the work by diff, reads it and lands it.
 * ''A short lineage keeps its seat.'' When the operator names a lineage short, its seats pass to another lineage's models of the same capability, and the lens law still sorts who reads whom; the operator names the shortfall's end the same way. Where Codex stands absent, a lane runs an Opus Episkopos with an Opus and a Sonnet spirit trading builder, reviewer and sweeper masks.
 * ''Crew law.'' Seven refinements bind every lane (operator, 2026-10-28):
@@ -153,7 +154,7 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 !! The launch ~ one brief file, any lineage
 
 * ''A brief stands as a file'' that names the mask, the ground, the ruling it enacts, the house style and the handback shape.
-* ''The walled Codex seat'': `cd <dir> && TMPDIR=<dir>/.tmp TMPPREFIX=<dir>/.tmp/zsh codex exec -m gpt-6.1-terra -c model_reasoning_effort=medium -s workspace-write -c sandbox_workspace_write.exclude_slash_tmp=true -c sandbox_workspace_write.exclude_tmpdir_env_var=true --skip-git-repo-check -C <dir> -o <dir>/final.md "<brief>" < /dev/null`, in the background. A builder (`gpt-6.1-terra`, medium effort) runs `-C <worktree> --add-dir <dir>`; a reader (`gpt-6.1-sol`, high effort, `-s read-only`) runs `-C <dir>` over an empty directory and reads the repo from there. The walls keep `/tmp` and every other worktree unwritable, the seat's temp files live inside its own directory, and `workspace-write` keeps `gh` reachable where `read-only` reaches no network.
+* ''The walled Codex seat'': `cd <dir> && TMPDIR=<dir>/.tmp TMPPREFIX=<dir>/.tmp/zsh codex exec -m gpt-6.1-terra -c model_reasoning_effort=medium -s workspace-write -c sandbox_workspace_write.exclude_slash_tmp=true -c sandbox_workspace_write.exclude_tmpdir_env_var=true --skip-git-repo-check -C <dir> -o <dir>/final.md "<brief>" < /dev/null`, in the background. A builder (`gpt-6.1-terra`, medium effort) runs `-C <worktree> --add-dir <dir>`; a reader (`gpt-6-luna`, medium effort, `-s read-only`) runs `-C <dir>` over an empty directory and reads the repo from there. The walls keep `/tmp` and every other worktree unwritable, the seat's temp files live inside its own directory, and `workspace-write` keeps `gh` reachable where `read-only` reaches no network.
 * ''Every seat keeps its rollout.'' No Codex seat launches with `--ephemeral`: an ephemeral run writes no rollout and goes uncounted, and a seat cut short continues by its session id (`codex exec resume <id> -m <model> -c model_reasoning_effort=<level>`), and the lead's resume sheet records that id beside the seat's directory, model, effort and head. Each seat's `-C` directory sits under the lane's own scratch directory, since the spend script finds the lane from the rollout's cwd.
 * ''Web search rides before `exec`'' (`codex --search exec …`) on this host's CLI, and only where the brief asks for the field.
 * ''`codex exec` stands as the shell seat.'' `codex mcp-server` left the CLI upstream; `codex mcp` connects tools to Codex and never serves Codex as a tool.
@@ -192,6 +193,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-A-TuYpbhu4rcop29pYeH7ANWHiqX2zj5u34ye2TXjk
+<<^ code="&#x0003;">>ni:///sha-256;RGAzIj279-Tjfjg7v5P_fB7l4X0cLt4SIl7CqdVMRv4
 
 <<^ code="&#x0004;" -> to="?">>
