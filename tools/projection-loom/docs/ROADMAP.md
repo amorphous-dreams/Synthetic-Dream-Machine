@@ -1,5 +1,34 @@
 # Projection Loom · AI Fire / Art Sigils Roadmap
 
+## 2026-10-28 · Hephaestus executable ground (PR #84, verify current head)
+
+The focused implementation ledger is [HEPHAESTUS-KANBAN](HEPHAESTUS-KANBAN.md).
+This work adds `ground-init`, `ground-apply`, `ground-inspect`,
+`scene-package`, `scene-validate`, `scene-invalidation`,
+`scene-variants`, `scene-variants-validate`, `editor-seed`,
+`editor-apply`, and `regulative-control` to the existing single
+`projection-loom` CLI. The held-out `projection_loom.hephaestus_crucible`
+exercises an independent coastal subject. `scripts/real_blender_witness.py`
+runs an actual Blender USD import / supported rigid translation / causal
+reconciliation / native STEP regeneration / reload. Its success has been
+independently witnessed on Blender 4.5.15, but later exact-head verdicts must
+still be checked.
+
+Use `python scripts/hephaestus_census.py --out out/hephaestus-census.json`
+to inspect static import/consumer relationships before replacing live alpha
+modules. This is explicitly **not** dynamic-call coverage.
+
+**Boundary:** OpenUSD is composition/presentation, not semantic identity;
+the relational event graph is not a duplicate native CAD engine; selective
+native cache hits preserve digested previous evidence, not a fabrication of
+new construction. Blender supports a bounded whole-assembly translation
+workflow, not arbitrary mesh inverse genetics. Unreal Editor integration,
+surveyed multiview source scoring, complete replacement of `LocationStack`
+ownership, full operator-steered quality-diversity and adversarial distributed
+replay remain **unfinished**. No automatic canonical or artistic promotion.
+The PR is not to be merged implicitly.
+
+
 **Historical evidence checkpoint:** `46721eca` (not a globally current release state). **Working branch:** `feature/green-jello-dinosaur-5--projection-loom`, PR [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84).
 **Base / Lares boot ref:** `feature/green-jello-dinosaur-5`.
 **Source of truth:** real Git ancestry, source-bound native witnesses and CI jobs. This document marks provisional completion and blockers, not house law or Operator promotion. Refresh run status on re-entry.

@@ -191,3 +191,13 @@ At exact official Blender head `fe0a4b42`, the real USD import, transform captur
 ## Blender full native/editor artifacts retained (2026-10-28)
 
 The Blender test now accepts `--out out/hephaestus-blender`, keeping the imported `.blend` file, editor-originated `proposal.json`, semantic ground, source scene, regenerated scene/STEP/ground, and reloaded `.blend` along with `blender-witness.json`. The generalized workflow uploads this entire evidence package even when the job fails. Native operation without `--out` still uses a disposable scratch tree. Nothing is declared editor-witnessed until the actual Blender job passes at its exact commit.
+
+## OODA-HA R-02 · source-level responsibility census
+
+**Observe:** The prior handoff listed modules needing consumer graphs, and direct rewrite permission could otherwise break currently reachable callers.
+
+**Orient:** Static module imports provide a falsifiable, bounded first consumer map. They do not detect dynamic imports, registry hooks, runtime editor plugins or native dependency edges.
+
+**Decide/Act:** `scripts/hephaestus_census.py` classifies the eight legacy focus modules RETAIN / EXTRACT / REWRITE with separate responsibility statements, pinning source digests and direct package import consumers, and inventories seven added grounds. It runs in the general contract lane and uploads the JSON report.
+
+**Aftermath:** R-02's static source census is implemented; dynamic call-site audits and full module migration are explicitly not declared complete. GUIDEBOOK/HANDOFF/ROADMAP now distinguish executable capability from unfinished Hephaestus contracts.

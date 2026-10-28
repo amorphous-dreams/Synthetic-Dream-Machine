@@ -22,6 +22,7 @@ on:
       - 'tools/projection-loom/projection_loom/cli.py'
       - 'tools/projection-loom/tests/test_hephaestus_*.py'
       - 'tools/projection-loom/tests/test_capability_producer.py'
+      - 'tools/projection-loom/scripts/hephaestus_census.py'
       - 'tools/projection-loom/pyproject.toml'
       - 'tools/projection-loom/experiments/zero/**'
       - 'tools/projection-loom/tests/test_generalized_*.py'
@@ -46,8 +47,17 @@ jobs:
           python -m pip install -r requirements-ci.txt
           python -m pip install --no-deps -e .
           python -m pip check
-      - run: python -m pytest -q tests/test_generalized_*.py tests/test_hephaestus_relational.py tests/test_hephaestus_incremental.py tests/test_hephaestus_regulative.py tests/test_capability_producer.py
+      - run: python -m pytest -q tests/test_generalized_*.py tests/test_hephaestus_relational.py tests/test_hephaestus_incremental.py tests/test_hephaestus_regulative.py tests/test_capability_producer.py tests/test_hephaestus_census.py
       - run: python scripts/check_architecture.py
+      - name: Source import/capability responsibility census
+        run: python scripts/hephaestus_census.py --out out/hephaestus-census.json
+      - name: Preserve module consumer graph
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hephaestus-module-census
+          path: tools/projection-loom/out/hephaestus-census.json
+          retention-days: 60
       - name: Seven independent and composed seed cohorts (one OODA-HA journal each)
         run: |
           set -o pipefail
