@@ -45,6 +45,10 @@
  *       frame, and the command opens no key session. A vessel's refusal of a roll reads as the hosting door's own
  *       refusal (exit code and words).
  *                                 control: the roll's act frame holds its Nexus and its cap, and nothing else
+ *   D12 RED: A FACE'S HANDLE BOOK RIDES A SESSION OF THAT FACE. `handle-book.load` and `handle-book.save` read and write
+ *       one face's book, so each rides `session:act` on a session of the face it names, and the custody door's own
+ *       act frame refuses either `face-act-rides-a-session`.
+ *                                 control: the book a load answers is the book the save sends back
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -64,7 +68,7 @@ import { OfflineCustodyRefused, seatOfflineCustody, TEST_ROUTE_PASSPHRASE, TEST_
 import { sealedActVia } from "../src/sealed-act-door.js";
 import { sendCustodyFrame } from "../src/custody-door.js";
 import { carryOwnName, clearOwnName, makeFleetDeclarationStore, makeFleetPetnameStore, readFleetSelves } from "../src/daemon-persona-store.js";
-import { sealedDeclarationStore, sealedPetnameStore } from "../src/sealed-rows.js";
+import { loadHandleBook, saveHandleBook, sealedDeclarationStore, sealedPetnameStore } from "../src/sealed-rows.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
@@ -481,5 +485,26 @@ describe("a command beside a standing vessel", () => {
     expect(refused.out + refused.err).toContain("wears no face");
     expect(JSON.parse((refused.out + "\n" + refused.err).trim().split("\n").filter((l) => l.startsWith("{")).at(-1)!)).toMatchObject({ ok: false, error: { code: "refused" } });
     await refusing.down();
+  });
+
+  test("D12 — a face's handle book rides a session of that face, never the custody door's own frame", async () => {
+    await stage();
+    const SNAPSHOT = { era: 1, records: [] };
+    const vessel = await standVessel({ unlocked: true, table: (act) => (act === "handle-book.load" ? { snapshot: SNAPSHOT } : {}) });
+    const book = await loadHandleBook(1);
+    await saveHandleBook(1, book);
+    const frames = actFrames(vessel.frames);
+    expect(frames.map((f) => [f["op"], f["act"]])).toEqual([["session:act", "handle-book.load"], ["session:act", "handle-book.save"]]);
+    expect(vessel.sessions).toEqual(["h1", "h1"]);                                          // each rode a session of face 1
+    expect(frames[0]!["args"]).toEqual({ face: 1 });
+    expect(frames[1]!["args"]).toEqual({ face: 1, snapshot: book.snapshot() });           // CONTROL: the book loaded is the book saved
+    // RED: the custody door's own act frame refuses either act; nothing ran.
+    const ran = vessel.acts.length;
+    for (const act of ["handle-book.load", "handle-book.save"]) {
+      expect(await sendCustodyFrame({ op: "act", act, args: { face: 1 } }))
+        .toMatchObject({ op: "act", status: "error", refusal: { reason: "face-act-rides-a-session" } });
+    }
+    expect(vessel.acts.length).toBe(ran);
+    await vessel.down();
   });
 });

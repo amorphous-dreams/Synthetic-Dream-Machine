@@ -399,12 +399,12 @@ async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
  *                         its own process holds no island, and refuses by name
  */
 /**
- * THE ACTS THAT ACT AS A FACE: each signs or writes under one face's key, so on a running vessel each rides a session of
+ * THE ACTS THAT ACT AS A FACE: each signs, reads or writes as one face (its key, or its handle book), so on a running vessel each rides a session of
  * that face (`session:act`) and its receipt binds to the face; the custody door's own `act` frame refuses them
  * `face-act-rides-a-session`. `face.resolve` stays at the custody door: it reads which face a command acts as and signs
  * nothing, and cannot ride the session it chooses. Every other act acts as the place under a human unlock.
  */
-export const SESSION_ACTS: ReadonlySet<string> = new Set(["persona.reissue", "walk.take", "host.roll"]);
+export const SESSION_ACTS: ReadonlySet<string> = new Set(["persona.reissue", "walk.take", "host.roll", "handle-book.load", "handle-book.save"]);
 
 export const SEALED_ACTS = Object.freeze({
   "persona.roots": act({}, async () => {

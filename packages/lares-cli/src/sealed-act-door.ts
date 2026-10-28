@@ -14,7 +14,8 @@
  * carries either. This module logs nothing it sends or receives.
  *
  * ── AN ACT THAT ACTS AS A FACE ──────────────────────────────────────────────────────────────────
- * `persona.reissue`, `walk.take` and `host.roll` sign or write under one face's key (`SESSION_ACTS`), so on a running
+ * `persona.reissue`, `walk.take` and `host.roll` sign or write under one face's key, and `handle-book.load` and
+ * `handle-book.save` read and write one face's handle book (`SESSION_ACTS`), so on a running
  * vessel each rides a session of that face (`session:act`): the vessel binds the session's face to the act, and the
  * receipt it leaves names the act and the face alone, never an argument or the answer.
  *
