@@ -41,6 +41,11 @@ def main(argv=None):
     p.add_argument('--out', type=Path, required=True)
     p=commands.add_parser('ground-inspect', help='Inspect causal frontier and semantic entities')
     p.add_argument('--ground', type=Path, required=True)
+    p=commands.add_parser('scene-package', help='Export accepted native geometry as portable OpenUSD and STEP')
+    p.add_argument('--declaration', type=Path, required=True)
+    p.add_argument('--out', type=Path, required=True)
+    p=commands.add_parser('scene-validate', help='Audit portable scene and STEP evidence')
+    p.add_argument('--bundle', type=Path, required=True)
     p=commands.add_parser('wide-epoch',help='Resumable staged constructive epochs')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
@@ -281,6 +286,15 @@ def main(argv=None):
                 result = receipt
             else:
                 result = ground.snapshot()
+        print(json.dumps(result, indent=2))
+        return result
+    if args.command in ('scene-package', 'scene-validate'):
+        from .scene_usd import package_scene, validate_scene
+        if args.command == 'scene-package':
+            declared = json.loads(args.declaration.read_text(encoding='utf8'))
+            result = package_scene(declared, args.out)
+        else:
+            result = validate_scene(args.bundle)
         print(json.dumps(result, indent=2))
         return result
     if args.command=='fracture-pattern':

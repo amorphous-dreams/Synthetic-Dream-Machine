@@ -10,6 +10,7 @@ on:
       - 'tools/projection-loom/projection_loom/intent_evolution.py'
       - 'tools/projection-loom/projection_loom/generalized_campaign.py'
       - 'tools/projection-loom/projection_loom/relational_ground.py'
+      - 'tools/projection-loom/projection_loom/scene_usd.py'
       - 'tools/projection-loom/projection_loom/contracts/**'
       - 'tools/projection-loom/projection_loom/cli.py'
       - 'tools/projection-loom/tests/test_hephaestus_*.py'
@@ -56,3 +57,24 @@ jobs:
             tools/projection-loom/out/generalized-experiment-zero/
             tools/projection-loom/generalized-matrix.log
           retention-days: 60
+
+  usd-interchange:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - run: |
+          python -m pip install -r requirements-ci.txt
+          python -m pip install usd-core==26.11
+          python -m pip install --no-deps -e .
+          python -m pip check
+      - name: Headless real OpenUSD and native STEP reimport
+        run: python -m pytest -q tests/test_hephaestus_usd.py

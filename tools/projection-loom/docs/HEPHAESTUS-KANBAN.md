@@ -53,3 +53,17 @@
 **Aftermath:** This is a **complete standalone causal-edit contract**, but not closure of Wave A or C: existing generalized campaign and `LocationStack` still need integration/migration; no claim that edits regenerate native CAD yet. Hosted tests and architecture check must pass at exact commit before witness status changes. Blender/Unreal must not be inferred from this CLI.
 
 **Wave R check:** Initial replay-safety commit `599d247e` passed dedicated generalization and Experiment Zero Actions. Other CI jobs were not uniformly completed when examined.
+
+## OODA-HA Wave B · portable native scene interchange (2026-10-28)
+
+**Observe:** USD is a composed representation of evidence, not a causal ledger or CAD validator. PyPI publishes `usd-core==26.11` for CPython 3.12/Linux; this is a **declared CI input**, not a previous executable witness.
+
+**Orient:** Native CadQuery/OpenCascade shapes can be audited then tessellated into USD, while STEP re-import independently checks geometric claims. Neither STEP nor a tessellated prim preserves the Loom's semantic history without explicit bindings.
+
+**Decide:** Author the OpenUSD layer stack with generated geometry beneath an operator-presentation layer, explicit Z-up and user-declared meters per model unit, and custom semantic ID bindings. Maintain portable relative sublayers and content hashes. Keep separate exact STEP receipts per assembly.
+
+**Act:** Add `scene-package --declaration ... --out ...` and `scene-validate --bundle ...`, via the existing CLI. Create and reopen actual USD stages and STEP files; compare native volumes/bounds/solid count, refuse missing or tampered assets, permit relocation. Exercise an independent two-assembly village fixture rather than Necrospire assumptions.
+
+**Aftermath:** The scene-package vertical capability is implemented but **awaits exact-head USD CI**. This is not full Wave B: Blender and Unreal open/import witnesses, scene variant selection and direct editor writeback remain incomplete. No standalone claim of engineered load safety, metric survey, or editor operation.
+
+**Sources:** [OpenUSD stage authoring](https://openusd.org/release/tut_helloworld.html); [USD stage metrics](https://openusd.org/release/user_guides/schemas/usdGeom/overview.html); [usd-core on PyPI](https://pypi.org/project/usd-core/26.11/).
