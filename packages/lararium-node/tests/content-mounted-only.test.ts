@@ -26,8 +26,8 @@ test("a content verb refuses a presenter that is not the mounted face, by name",
   teardown.push(() => { void kh.dispose?.(); });
   const registry = new VerbTable();
   opts.wireWorkerVerbs!(registry, a.ctx);
-  const ctxOf = (presenter: string) => ({ daemon: {} as never, invocation: { requestId: "r1", args: {} } as never, cap: async () => ({ ok: true }), presenter }) as never;
-  const call = (verb: string, presenter: string, args: Record<string, unknown>) =>
+  const ctxOf = (presenter?: string) => ({ daemon: {} as never, invocation: { requestId: "r1", args: {} } as never, cap: async () => ({ ok: true }), ...(presenter === undefined ? {} : { presenter }) }) as never;
+  const call = (verb: string, presenter: string | undefined, args: Record<string, unknown>) =>
     Promise.resolve().then(() => registry.get(verb)!(args, ctxOf(presenter))).then(() => null, (e: { reason?: string }) => e);
   const sibling = `0x${b.daemonAuth.atom.key}`;
   const mounted = `0x${a.daemonAuth.atom.key}`;
@@ -39,6 +39,8 @@ test("a content verb refuses a presenter that is not the mounted face, by name",
   for (const [verb, a2] of [["sealed-seal", args.sealed], ["sealed-open", args.sealed], ["CREATE", args.create], ["init-wiki", args.wiki], ...stood.map((v) => [v, args.sealed] as const)] as const) {
     expect(registry.has(verb), verb).toBe(true);
     expect(await call(verb, sibling, a2), verb).toMatchObject({ reason: "content-mounted-only" });
+    // The fence fails closed: a call that names no presenter refuses too.
+    expect(await call(verb, undefined, a2), `${verb} no presenter`).toMatchObject({ reason: "content-mounted-only" });
     // CONTROL: the mounted face's call passes the fence (it may refuse for another reason).
     expect(await call(verb, mounted, a2), `${verb} mounted`).not.toMatchObject({ reason: "content-mounted-only" });
   }
