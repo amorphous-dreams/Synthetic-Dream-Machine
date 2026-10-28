@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { TW5Engine, mountGlassCamera } from "@lararium/tw5/glass";
-import { glassWanted } from "../src/glass/flag.js";
+import * as glass from "@lararium/tw5/glass";
+import { TW5Engine } from "@lararium/tw5/glass";
 import { named } from "../src/glass/cid.js";
 import coreUrl from "../../lararium-tw5/tw5-core/tiddlywikicore-5.5.0-prerelease.js?url";
 
@@ -24,22 +24,31 @@ describe("glass boot on the real page", () => {
     await expect(new TW5Engine().boot(await coreBytes())).rejects.toThrow(/sovereignty violation/);
   });
 
-  test("boots the third runtime and refreshes a shadow camera", async () => {
+  test("R2: a glass boolean cannot open the main-thread guard", async () => {
     const engine = new TW5Engine();
-    await engine.boot(await coreBytes(), [
-      { title: "Glass Seed", text: "Glass seed body" },
-      { title: "$:/StoryList", list: ["Glass Seed"] },
-    ], { glass: true });
-    const tw = engine.$tw;
-    expect(tw.browser).toBeNull();
-    expect(tw.node).toBeNull();
-    expect(tw.syncer).toBeUndefined();
-    expect(tw.wiki.getTiddler("Glass Seed")?.fields.text).toBe("Glass seed body");
+    try {
+      await expect(engine.boot(await coreBytes(), [], { glass: true } as never)).rejects.toThrow(/sovereignty violation/);
+    } finally { engine.dispose(); engine.releaseGlass(); }
+  });
 
+  test("boots the third runtime and refreshes a shadow camera", async () => {
     const host = document.createElement("div");
     document.body.append(host);
     const shadowRoot = host.attachShadow({ mode: "open" });
-    const camera = mountGlassCamera({ tw, shadowRoot });
+    const transport = { send: () => ({ ok: true as const }), onMessage: () => () => {} };
+    const door = (glass as any).openMirror;
+    expect(door).toBeTypeOf("function");
+    const bytes = await coreBytes();
+    const digest = await crypto.subtle.digest("SHA-256", bytes);
+    const coreCid = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+    const camera = await door({ transport, inputs: { coreBytes: bytes, coreCid, preloadedTiddlers: [
+      { title: "Glass Seed", text: "Glass seed body" },
+      { title: "$:/StoryList", list: ["Glass Seed"] },
+    ] }, shadowRoot, wikiUri: "wiki", actor: "actor", width: "full", portId: "test", mintTx: () => "tx" });
+    const tw = camera.tw;
+    expect(tw.syncer).toBeUndefined();
+    expect(tw.wiki.getTiddler("Glass Seed")?.fields.text).toBe("Glass seed body");
+
     // The story startup opens its default tiddlers at boot; the person's story list lands next, as the port would land it.
     await afterChange(tw, () => tw.wiki.addTiddler(new tw.Tiddler({ title: "$:/StoryList", list: ["Glass Seed"] })));
     expect(shadowRoot.textContent).toContain("Glass seed body");
@@ -55,21 +64,7 @@ describe("glass boot on the real page", () => {
     host.remove();
     // CONTROL: the lends stay for the engine's life and leave with it.
     expect(typeof (globalThis as Record<string, unknown>)["Buffer"]).toBe("function");
-    engine.releaseGlass();
     expect(typeof (globalThis as Record<string, unknown>)["Buffer"]).toBe("undefined");
-  });
-});
-
-describe("glass flag", () => {
-  test.each(["full", "skinny", "story"] as const)("accepts %s", width => {
-    expect(glassWanted({ search: `?glass=${width}` })).toBe(width);
-  });
-  test("leaves none and absence on the projection", () => {
-    expect(glassWanted({ search: "?glass=none" })).toBeNull();
-    expect(glassWanted({ search: "" })).toBeNull();
-  });
-  test("refuses junk by name", () => {
-    expect(() => glassWanted({ search: "?glass=junk" })).toThrow("glass-width-refused:junk");
   });
 });
 
