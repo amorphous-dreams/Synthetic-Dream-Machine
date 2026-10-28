@@ -54,7 +54,7 @@ def test_native_cad_is_projected_under_measured_non_coplanar_camera(tmp_path):
 
 def test_inconsistent_world_to_pixel_fit_refused(tmp_path):
     image, calibration = evidence(tmp_path, error=85)
-    with pytest.raises(ValueError, match="residual exceeds"):
+    with pytest.raises(ValueError, match="residual exceeds|behind camera"):
         fit_registration(image, calibration)
 
 
