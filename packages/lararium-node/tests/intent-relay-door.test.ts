@@ -1,3 +1,9 @@
+import { createServer } from "node:http";
+import { WebSocket } from "ws";
+import { wsDialSocket, type WsLike } from "../../lararium-mesh/src/ws-dial-socket.js";
+import { faceGateServer } from "../src/face-gate-server.js";
+import { gateKnock } from "../../lararium-mesh/src/gate-bundle.js";
+import { NOISE_MAX_MESSAGE_BYTES } from "../../lararium-mesh/src/noise-ik.js";
 import { describe, expect, test } from "vitest";
 import { deriveGateBundle, sovereignGateRoot, custodyRootDoor, sovereignRoute, utf8Bytes, dialIntentRelay, INTENT_RELAY_ROUTE, type SignedIntentEntry } from "@lararium/mesh";
 import { makeIntentRelayGate } from "../src/intent-relay-door.js";
@@ -73,5 +79,42 @@ describe("the relay gate", () => {
       pair.secretKey.fill(0); secret.fill(0); other.drop();
     }
     b.drop();
+  });
+});
+
+
+describe("live relay frame bound", () => {
+  test("RED: an oversized sealed frame closes before admission; CONTROL: a maximum relay submission passes", async () => {
+    const b = bundle(), server = faceGateServer(), http = createServer();
+    let effects = 0;
+    const gate = makeIntentRelayGate({ bundle: b, group, ring: { admits: async () => true }, admit: async () => { effects++; return { status: "admitted", receipt: {} }; }, deadlines: handDeadlines() });
+    server.stand({ gate, pin: b.pin });
+    http.on("upgrade", (req, socket, head) => { if (!server.handleUpgrade(req, socket, head)) socket.destroy(); });
+    await new Promise<void>((resolve) => http.listen(0, "127.0.0.1", resolve));
+    const port = (http.address() as { port: number }).port;
+    const send = async (oversized: boolean) => {
+      const pair = noiseKeyPair(new Uint8Array(32).fill(7));
+      const dial = noiseInitiate({ prologue: gatePrologue(b.pin), s: pair, rs: hexToBytes(b.pin.transportKey) });
+      const socket = wsDialSocket(`ws://127.0.0.1:${port}${b.pin.route}`, (url, protocols) => new WebSocket(url, protocols, { perMessageDeflate: false }) as unknown as WsLike);
+      try {
+        await socket.open({ knock: gateKnock(b.pin), message1: dial.message1 });
+        const message2 = await socket.recv();
+        if (!message2) throw Error("no handshake");
+        const transport = dial.readMessage2(message2).transport;
+        const prefix = '{"submit":{"padding":"', suffix = '"}}';
+        const plain = new TextEncoder().encode(prefix + "x".repeat(NOISE_MAX_MESSAGE_BYTES - 17 - prefix.length - suffix.length) + suffix);
+        const sealed = transport.send.seal(plain);
+        expect(sealed.length).toBe(NOISE_MAX_MESSAGE_BYTES - 1);
+        socket.send(oversized ? Uint8Array.from([...sealed, 0, 0]) : sealed);
+        const answer = await socket.recv();
+        return answer === null ? null : transport.receive.open(answer);
+      } finally { socket.close(); pair.secretKey.fill(0); }
+    };
+    try {
+      expect(await send(false)).not.toBeNull();
+      expect(effects).toBe(1);
+      expect(await send(true)).toBeNull();
+      expect(effects).toBe(1);
+    } finally { server.close(); await new Promise<void>((resolve) => http.close(() => resolve())); b.drop(); }
   });
 });

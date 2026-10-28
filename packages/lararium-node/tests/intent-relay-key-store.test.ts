@@ -1,3 +1,5 @@
+import { readSCarrier, splitSFrame } from "@lararium/mesh";
+import { openColdCustodyRow } from "../src/custody-seat.js";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { createPublicKey, verify } from "node:crypto";
@@ -26,7 +28,18 @@ describe("the intent-admission service's cold S row", () => {
       expect(verifies(first.key, await signAsIntentRelay(image))).toBe(true);
       await expect(signAsCadence(first.key, image)).rejects.toMatchObject({ name: "CustodyRowUnavailable" });
       await expect(mintIntentRelayKey()).rejects.toMatchObject({ reading: "names-another-key" });
-      expect(readFileSync(join(seat.homes.identity, INTENT_RELAY_KEY_FILE)).length).toBeGreaterThan(32);
+      const sealed = readFileSync(join(seat.homes.identity, INTENT_RELAY_KEY_FILE));
+      expect(readSCarrier(sealed)).toBe("sealed");
+      const frame = splitSFrame(sealed);
+      expect(frame.nonce).toHaveLength(24);
+      expect(frame.ciphertext).toHaveLength(48);
+      const secret = await openColdCustodyRow("identity", INTENT_RELAY_KEY_FILE, (bytes) => Buffer.from(bytes));
+      expect(secret).toHaveLength(32);
+      expect(sealed.includes(secret)).toBe(false);
+      secret.fill(0);
+      await seat.holder.lock();
+      await expect(openColdCustodyRow("identity", INTENT_RELAY_KEY_FILE, () => true)).rejects.toMatchObject({ name: "CustodyLocked" });
+      await expect(signAsIntentRelay(image)).rejects.toMatchObject({ name: "CustodyLocked" });
       expect(carrierTable().find((row) => row.row === "intent-relay-key")).toMatchObject({ custody: "cold", keyClass: "device-minted", writer: "intent-relay-key-store" });
     } finally { await seat.drop(); }
   });
