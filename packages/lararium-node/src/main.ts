@@ -768,6 +768,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     placeVerb:    (o) => result.daemon.placeVerb(o),
     claim:        floor.storeClaim,
     repo:         result.repo,
+    sessions:     result.sessionDoor,
     ...(receiptRing !== undefined && { ring: receiptRing.count, ringBytes: receiptRing.bytes }),
     onLog: (line) => console.log(`[lararium] ${line}`),
   }));

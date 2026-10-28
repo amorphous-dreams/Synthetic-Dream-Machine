@@ -136,6 +136,9 @@ import { CustodyLocked } from "./custody-holder.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { composeDialPresentation } from "./dial-presentation.js";
+import { nodeSessionDoor } from "./uds-session-door.js";
+import type { UdsSessionDoor } from "./uds-channel.js";
+import type { GateBundlePin } from "@lararium/mesh";
 import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type FlowPullResult } from "@lararium/mesh";
 import { gateReadingsFor, layStatementOn, flowFloorPinAt, vesselCarriagePull } from "./herm-carriage.js";
 import { readKeptAdmitBundles } from "./admit-bundle.js";
@@ -508,6 +511,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
    *  above); `pending` entries carried NO log line at all until this field threaded them out here for
    *  the boot log to name (main.ts). */
   mountManifest: MountManifest;
+  /** The session socket's door: each face this vessel holds opens its own session at the Nexus the vessel dials. */
+  sessionDoor: UdsSessionDoor;
 }
 
 /** A composed Herm (wiki-less): the daemon immune core + a served meshpalace FLOW-map, no pool. */
@@ -574,6 +579,7 @@ interface NodeBootPrep {
   hostingDoor:      HostingDoor;
   /** What this composition lends a backup bundle's cut: the worn face, its own edge's shadow, the island's memory section and the board's key history. */
   backupDoor:      BackupDoor;
+  sessionDoor:     UdsSessionDoor;
   /** This place's scoped five-duty signer at the standing KEL head. */
   placeSigner:    PlaceSigner;
   /** This vessel's own gate key — the node ANCHORS its confederation, so its gate key doubles as the Nexus
@@ -1527,6 +1533,8 @@ async function prepareNodeBootOn(
   // The operator's OWN light leaf identity (cached ContactCard + bare-Ed25519 signer). A missing card (never
   // `lares vessel found`-ed) → skip the dial rather than crash the boot (fail-open to inert; a dial needs a real card).
   let nexusDial: NexusClientDial | null = null;
+  /** The pin the face dial stands at; the session door binds each session to its Nexus. */
+  let dialPinNow: GateBundlePin | null = null;
   // Set when the vessel stands its dial down: a late dial still in flight then stands nothing.
   let dialStoodDown = false;
   // The dial itself fires in `openDaemon`, once the daemon doc is read — the identity it presents carries this vessel's OWN
@@ -2103,6 +2111,7 @@ async function prepareNodeBootOn(
         // The dial's pin is the one `chooseHearthDial` chose with the url.
         const filed = fileHearthPins(gatePins, hd.filings);
         const dialPin = hd.pin;
+        dialPinNow = dialPin;
         const dialNexus = dialPin?.nexus ?? null;
         if (filed > 0) console.log(`[nexus-join] ${filed} gate pin(s) filed (${[...new Set(hd.filings.map((f) => f.hearth))].join(", ")})`);
         // THE PRESENTATION. The face's chain and session, composed from the joined-face proof (or the founder's lazy
@@ -3187,6 +3196,7 @@ async function prepareNodeBootOn(
     // THE CUT'S FOUR READS (custody#/the-cut). Each reads live when a cut asks: the face this composition mounts
     // lit, this vessel's own edge on that face's fleet board (the reading the dyad door serves the island), the
     // island's memory section under the vessel's own signed ask, and the face's key history off the local board.
+    sessionDoor: nodeSessionDoor({ pin: () => dialPinNow, sealHome }),
     backupDoor: {
       wornFace: () => litFace,
       ownEdgeShadowed: async () => {
@@ -3348,6 +3358,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     personaSelves:    p.personaSelves(),
     walkDial:         p.walkDial,
     hostingDoor:      p.hostingDoor,
+    sessionDoor:     p.sessionDoor,
     backupDoor:      p.backupDoor,
     oracleDocUrl:     result.assembly.islandHandle.url,
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,

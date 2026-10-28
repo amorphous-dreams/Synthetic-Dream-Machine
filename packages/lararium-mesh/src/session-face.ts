@@ -44,7 +44,7 @@ import type { RandomProvider } from "./crypto.js";
 import { faceProofSubjectRef, type FaceProofRefusal, type FaceScope, type KeysHeldApart } from "./face-proof-subjects.js";
 import { personaScopedBagIds } from "./persona-scope.js";
 import { validateSessionFace, type Session, type SessionBinding, type SessionFace, type SessionTable } from "./session-contract.js";
-import { openSignedSession, type SessionSigner, type SessionSignerRefusal } from "./session-signer.js";
+import { mintSessionSigner, openSignedSession, type SessionSigner, type SessionSignerRefusal } from "./session-signer.js";
 
 /** The admit a face rides at one Nexus, as its verifier read it. */
 export interface FaceAdmitReading {
@@ -181,6 +181,24 @@ export type JoinedFaceSessionRefusal =
   | { readonly refusal: "session-malformed"; readonly open: string };
 
 /**
+ * Supply the face a joined vessel's session would wear, and open nothing: the chain checked over the vessel's own
+ * certificate, then the face supplied. A switch's preflight reads this, so the target face stands described before the
+ * old generation falls and no key mints for it until the commit (`mintSessionSigner`).
+ */
+export function supplyJoinedFace(args: {
+  admitted: FaceScope; certificate: unknown; memory: WithdrawalMemory; vesselFaceKey: unknown; admit: unknown; grant: unknown;
+}): { readonly face: SessionFace } | Exclude<JoinedFaceSessionRefusal, SessionSignerRefusal | { readonly refusal: "session-malformed" }> {
+  const checked = checkVesselChain({ admitted: args.admitted, certificate: args.certificate, memory: args.memory });
+  if (checked.verdict !== "verified") {
+    if (checked.verdict !== "invalid") return { refusal: "chain-refused", verdict: checked.verdict };
+    return checked.cause === undefined
+      ? { refusal: "chain-refused", verdict: "invalid", cause: checked.refusal }
+      : { refusal: "chain-refused", verdict: "invalid", cause: checked.refusal, proof: checked.cause };
+  }
+  return supplySessionFace({ chain: checked.chain, vesselFaceKey: args.vesselFaceKey, admit: args.admit, grant: args.grant });
+}
+
+/**
  * Open the local session of a vessel that joined its face's fleet, and mint its signer.
  *
  * A JOINED VESSEL CERTIFIES ITS OWN FACE-SCOPED KEY. `certificate` names the certificate the root holder issued
@@ -198,18 +216,38 @@ export async function openJoinedFaceSession(args: {
   admit: unknown; grant: unknown;
   apart: KeysHeldApart; custody: VesselFaceKeyCustody; random?: RandomProvider;
 }): Promise<{ readonly session: Session; readonly signer: SessionSigner } | JoinedFaceSessionRefusal> {
-  const checked = checkVesselChain({ admitted: args.admitted, certificate: args.certificate, memory: args.memory });
-  if (checked.verdict !== "verified") {
-    if (checked.verdict !== "invalid") return { refusal: "chain-refused", verdict: checked.verdict };
-    return checked.cause === undefined
-      ? { refusal: "chain-refused", verdict: "invalid", cause: checked.refusal }
-      : { refusal: "chain-refused", verdict: "invalid", cause: checked.refusal, proof: checked.cause };
-  }
-  const supplied = supplySessionFace({ chain: checked.chain, vesselFaceKey: args.vesselFaceKey, admit: args.admit, grant: args.grant });
+  const supplied = supplyJoinedFace(args);
   if (!("face" in supplied)) return supplied;
   return openSignedSession({
     table: args.table, binding: args.binding, face: supplied.face, profile: args.profile,
     certificate: args.certificate, apart: args.apart, custody: args.custody,
     ...(args.caps ? { caps: args.caps } : {}), ...(args.random ? { random: args.random } : {}),
+  });
+}
+
+/** A joined face described for a session that has not taken it yet: the face, and the mint of its signer. */
+export interface JoinedFaceTarget {
+  readonly face: SessionFace;
+  /** Mint the signer once `table` holds `session` live, on `binding`, wearing this face. */
+  readonly mint: (at: { readonly table: SessionTable; readonly binding: SessionBinding; readonly session: Session }) =>
+    Promise<{ readonly signer: SessionSigner } | SessionSignerRefusal>;
+}
+
+/**
+ * The preflight half of `openJoinedFaceSession`: the face supplied and the signer's mint held for later. Nothing opens
+ * and no key mints until the caller's table holds the session at the generation the signer serves.
+ */
+export function prepareJoinedFace(args: {
+  admitted: FaceScope; certificate: unknown; memory: WithdrawalMemory; vesselFaceKey: unknown; admit: unknown; grant: unknown;
+  apart: KeysHeldApart; custody: VesselFaceKeyCustody; random?: RandomProvider;
+}): JoinedFaceTarget | Exclude<JoinedFaceSessionRefusal, SessionSignerRefusal | { readonly refusal: "session-malformed" }> {
+  const supplied = supplyJoinedFace(args);
+  if (!("face" in supplied)) return supplied;
+  return Object.freeze({
+    face: supplied.face,
+    mint: (at: { readonly table: SessionTable; readonly binding: SessionBinding; readonly session: Session }) => mintSessionSigner({
+      table: at.table, binding: at.binding, session: at.session, certificate: args.certificate, apart: args.apart, custody: args.custody,
+      ...(args.random ? { random: args.random } : {}),
+    }),
   });
 }

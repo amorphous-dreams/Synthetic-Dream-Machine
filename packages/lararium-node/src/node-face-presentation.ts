@@ -15,7 +15,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/node/node-face-presentation
  */
-import { checkVesselChain, foldWithdrawals, openJoinedFaceSession, type FaceScope, type LarWSClientOptions, type PresentationArm } from "@lararium/mesh";
+import { checkVesselChain, foldWithdrawals, openJoinedFaceSession, prepareJoinedFace, type FaceScope, type JoinedFaceTarget, type LarWSClientOptions, type PresentationArm } from "@lararium/mesh";
 import { readFounderFaceProof, type FounderCertificateDoors } from "./founder-self-certificate.js";
 import { readJoinedFaceProof } from "./joined-face-proof.js";
 
@@ -53,4 +53,25 @@ export async function nodeFacePresentation(args: {
   const chain = checkVesselChain({ admitted: args.scope, certificate: proof.certificate, memory: fold.memory });
   if (chain.verdict !== "verified") return { refusal: "chain-refused", detail: chain.verdict };
   return { presentation: { certificate: chain.chain.certificate, signer: opened.signer, arm: args.arm, history: fold.memory } };
+}
+
+/**
+ * The face a session of this vessel would wear at `scope`, and its signer's mint, read through the same proof the
+ * presentation reads (the join record, or the founder's lazy self-certificate). It opens no session and mints no key.
+ */
+export async function nodeFaceTarget(args: {
+  readonly personaGroup: string;
+  readonly scope:        FaceScope;
+  readonly founder:      { readonly face: number } | null;
+  readonly admit:        unknown;
+  readonly doors?:       FounderCertificateDoors;
+}): Promise<{ readonly target: JoinedFaceTarget } | NodeFacePresentationRefusal> {
+  const proof = args.founder === null
+    ? await readJoinedFaceProof({ personaGroup: args.personaGroup, scope: args.scope })
+    : await readFounderFaceProof({ face: args.founder.face, personaGroup: args.personaGroup, scope: args.scope }, args.doors);
+  if (!("grant" in proof)) return { refusal: proof.refusal };
+  const fold = foldWithdrawals(args.scope);
+  if (!("memory" in fold)) return { refusal: "history-unfolded", detail: fold.refusal };
+  const target = prepareJoinedFace({ admitted: args.scope, admit: args.admit, memory: fold.memory, ...proof });
+  return "face" in target ? { target } : { refusal: target.refusal };
 }
