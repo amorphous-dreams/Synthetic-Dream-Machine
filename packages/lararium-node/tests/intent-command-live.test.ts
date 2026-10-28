@@ -95,4 +95,24 @@ describe("lares intent over a founded face", () => {
     expect(after.delegations).toEqual([expect.objectContaining({ cid: granted.cid, status: "revoked", revokedBy: revoked.cid })]);
     expect(JSON.stringify([granted, listed, revoked, after])).not.toMatch(/seed|secret/i);
   }, 240_000);
+
+  test("RED: relay status begins off and disable closes it; CONTROL: enable exposes only public pin and key, rotate changes the public key", async () => {
+    expect(await row("intent-relay-status", { face: "bad" })).toMatchObject({ refusal: "intent-relay-status-refused" });
+    const off = await row("intent-relay-status", {});
+    expect(off).toMatchObject({ enabled: false, path: null, pin: null });
+    const enabled = await row("intent-relay-enable", {});
+    expect(enabled).toMatchObject({ enabled: true, path: expect.stringMatching(/^\/ws\/intent-relay\//), pin: { tier: "sovereign", route: "/ws/intent-relay" }, key: expect.stringMatching(/^[0-9a-f]{64}$/) });
+    const status = await row("intent-relay-status", {});
+    expect(status).toMatchObject({ enabled: true, path: enabled["path"], key: enabled["key"] });
+    const pin = status["pin"] as { nexus: string; transportKey: string; signingKey: string };
+    const publicKeys = new Set([pin.transportKey, pin.signingKey, status["key"], ...(pin.nexus.match(/.{64}/g) ?? [])]);
+    const allHexKeys = JSON.stringify(status).match(/[0-9a-f]{64}/g) ?? [];
+    expect(allHexKeys.length).toBeGreaterThan(0);
+    for (const hex of allHexKeys) expect(publicKeys.has(hex), hex).toBe(true);
+    const rotated = await row("intent-relay-rotate", {});
+    expect(rotated).toMatchObject({ previous: enabled["key"], key: expect.stringMatching(/^[0-9a-f]{64}$/) });
+    expect(rotated["key"]).not.toBe(enabled["key"]);
+    const closed = await row("intent-relay-disable", {});
+    expect(closed).toMatchObject({ enabled: false, path: null, pin: null });
+  }, 240_000);
 });

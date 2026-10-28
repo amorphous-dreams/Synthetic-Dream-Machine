@@ -75,6 +75,7 @@ import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNex
 import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 import { runPersonaLease, PersonaLeaseError } from "./commands/persona-lease.js";
 import { runIntentCommand, IntentRefused, type IntentCommandOptions } from "./commands/intent.js";
+import { runIntentRelayCommand } from "./commands/intent-relay.js";
 import { FaceNotNamed } from "./face-selector.js";
 import { runEdgeRollAnchors, EdgeRollAnchorError } from "./commands/edge-roll-anchor.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
@@ -163,6 +164,7 @@ export const STORE_DOOR_VERBS = [
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-lease", "persona-kel-head",
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
+  "intent-relay-enable", "intent-relay-disable", "intent-relay-status", "intent-relay-rotate",
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
 
@@ -188,6 +190,13 @@ function joinFace(args: Readonly<Record<string, unknown>>): { face?: number } {
   if (args["face"] === undefined) return {};
   const face = int(args["face"]);
   if (face === undefined || face < 0) throw new FleetJoinRefused("face-malformed", `the row's face names no persona index: ${JSON.stringify(args["face"])}.`);
+  return { face };
+}
+
+function relayFace(args: Readonly<Record<string, unknown>>): { face?: number } {
+  if (args["face"] === undefined) return {};
+  const face = int(args["face"]);
+  if (face === undefined || face < 0 || !Number.isSafeInteger(face)) throw new IntentRefused("face-malformed: name a whole persona index");
   return { face };
 }
 
@@ -226,6 +235,10 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...opt("asOf", str(args["asOf"])), ...opt("until", str(args["until"])),
     });
   return {
+    "intent-relay-enable": (args) => answer("intent-relay-enable", async () => { const result = await runIntentRelayCommand({ action: "enable", ...relayFace(args) }); if (deps.onRolled) await awaitOnRolled(deps.onRolled()); return result; }),
+    "intent-relay-disable": (args) => answer("intent-relay-disable", async () => { const result = await runIntentRelayCommand({ action: "disable", ...relayFace(args) }); if (deps.onRolled) await awaitOnRolled(deps.onRolled()); return result; }),
+    "intent-relay-status": (args) => answer("intent-relay-status", () => runIntentRelayCommand({ action: "status", ...relayFace(args) })),
+    "intent-relay-rotate": () => answer("intent-relay-rotate", async () => { const result = await runIntentRelayCommand({ action: "rotate" }); if (deps.onRolled) await awaitOnRolled(deps.onRolled()); return result; }),
     "intent-issue": (args) => answer("intent-issue", () => intent("issue", args)),
     "intent-show": (args) => answer("intent-show", () => intent(args["action"] === "delegations" ? "delegations" : "show", args)),
     "intent-ask": (args) => answer("intent-ask", () => intent("ask", args)),

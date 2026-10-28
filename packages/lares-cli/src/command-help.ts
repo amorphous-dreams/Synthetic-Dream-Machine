@@ -40,6 +40,12 @@ export interface CommandHelp {
 }
 
 export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
+  "intent-relay": {
+    usage: "usage: lares intent-relay enable|disable|status|rotate [--face N] [--json]",
+    synopsis: "Control a face's sealed intent relay and inspect its public pin and admission key.",
+    examples: ["lares intent-relay enable --face 1", "lares intent-relay status --face 1", "lares intent-relay rotate"],
+    flags: ["--face N   face index", "--json   structured output"],
+  },
   intent: {
     usage: "usage: lares intent issue|show|ask|answer|claim|takeover|release|cancel|supersede|release-root|delegate|delegate-revoke|delegations [verb-or-id] [--face N]",
     synopsis: "Read and write one face's signed intent plane. Name --face N on every invocation when this vessel holds several faces; a sole face resolves itself.",

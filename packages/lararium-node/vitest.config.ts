@@ -83,6 +83,7 @@ export const heavy = [
   "tests/same-operator-refold.test.ts",
   "tests/flow-floor-resweep.test.ts",
   "tests/face-gate-server-bounds.test.ts",
+  "tests/intent-relay.test.ts",
   "tests/http-face-integration.test.ts",
   "tests/pronaos-adapter.test.ts",
   "tests/pronaos-composition.test.ts",

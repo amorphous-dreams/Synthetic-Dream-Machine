@@ -22,11 +22,12 @@ const SPEC: ReadonlyArray<readonly [row: string, classes: readonly CustodyPart[]
   ["gate-memory", ["D"], false], ["transition-pending", ["F"], false], ["transitions", ["F"], false],
   ["cofound", ["D"], false], ["outbox-key", ["D"], false], ["sealed-outbox", ["D"], false],
   ["persona-root", ["D"], false], ["face-proof-key", ["D"], false], ["seat-key", ["D"], false],
+  ["intent-relay-key", ["S"], false], ["intent-relay-faces", ["S"], false],
   ["cadence-key", ["D"], false], ["restore-pending", ["D"], false], ["device-share", ["D"], false],
 ];
 
 /** The spec's node S candidates: the only rows that may carry an S part. */
-const S_ROWS = new Set(["vessel-key", "relay-gate-seed", "vessel-rotating", "s-slots", "sk-slots"]);
+const S_ROWS = new Set(["vessel-key", "relay-gate-seed", "vessel-rotating", "s-slots", "sk-slots", "intent-relay-key", "intent-relay-faces"]);
 const JOINTS = new Set(["place-signer", "archive-row-selector"]);
 
 /** Every refusal the census law reads off a table, named; an empty list reads green. */
@@ -40,10 +41,10 @@ function refusals(table: readonly CarrierRow[], spec = SPEC): string[] {
     if (new Set(t.classes).size !== t.classes.length) out.push(`${r.row}: repeats a class`);
     if (t.classes.includes("S")) {
       if (!S_ROWS.has(r.row)) out.push(`${r.row}: S on a row the spec does not name`);
-      if (!t.lead && t.joint === null && r.row !== "relay-gate-seed") out.push(`${r.row}: S row neither LEAD nor joint`);
+      if (!t.lead && t.joint === null && !["relay-gate-seed", "intent-relay-key", "intent-relay-faces"].includes(r.row)) out.push(`${r.row}: S row neither LEAD nor joint`);
     }
     if (t.joint !== null && !JOINTS.has(t.joint)) out.push(`${r.row}: unknown joint ${t.joint}`);
-    if (["hot", "cold", "outbox", "face-hot", "face-cold"].includes(r.custody) && !t.classes.includes("D")) out.push(`${r.row}: ${r.custody} row without a D part`);
+    if (["hot", "cold", "outbox", "face-hot", "face-cold"].includes(r.custody) && !t.classes.includes("D") && !["intent-relay-key", "intent-relay-faces"].includes(r.row)) out.push(`${r.row}: ${r.custody} row without a D part`);
     if (r.custody === "floor-plain" && !t.classes.includes("F")) out.push(`${r.row}: floor-plain row without an F part`);
   }
   const names = table.map((r) => r.row);
@@ -70,8 +71,8 @@ describe("the node custody census (K15 step zero)", () => {
     expect(table.filter((r) => r.target.classes.includes("S")).map((r) => r.row)).toEqual([...S_ROWS]);
   });
 
-  it("gives every hot, cold and outbox row a D part", () => {
-    const sealed = table.filter((r) => ["hot", "cold", "outbox", "face-hot", "face-cold"].includes(r.custody));
+  it("gives every face hot, cold and outbox row a D part", () => {
+    const sealed = table.filter((r) => ["hot", "cold", "outbox", "face-hot", "face-cold"].includes(r.custody) && !["intent-relay-key", "intent-relay-faces"].includes(r.row));
     expect(sealed.length).toBeGreaterThan(20);
     for (const r of sealed) expect(r.target.classes).toContain("D");
   });

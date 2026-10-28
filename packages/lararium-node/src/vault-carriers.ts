@@ -475,6 +475,12 @@ function buildTable(): readonly CarrierRow[] {
     // bundle carries no key of any seat.
     faceRowOf({ row: "seat-key", target: tgt(["D"]), inner: /^seat-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
          writer: "seat-key-store", name: (m) => `seat-key-h${m[1]}-${m[2]}`, face: faceOf }),
+    // Principal: intent-admission service. Opener: intent-relay-key-store alone, through its scoped cold custody door.
+    id({ row: "intent-relay-key", target: tgt(["S"]), match: file("intent-relay-key.bin"), custody: "cold", keyClass: "device-minted",
+         writer: "intent-relay-key-store", holds: (_file, bytes) => bytes.length === 32 }),
+    // An operator's per-face relay switches rest sealed; an absent row leaves every face off. Principal: intent-admission service; opener: intent-relay-ring.
+    id({ row: "intent-relay-faces", target: tgt(["S"]), match: file("intent-relay-faces.json"), custody: "hot", keyClass: null,
+         writer: "intent-relay-ring" }),
     // A hearth's own cadence key and its next key, minted at random on the device for one joint founding
     // (`cadence-key-store`): apart from every root, leaf, seat and serving or floor key. It stays on its vessel.
     faceRowOf({ row: "cadence-key", target: tgt(["D"]), inner: /^cadence-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "device-minted",

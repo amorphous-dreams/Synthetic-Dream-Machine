@@ -80,6 +80,7 @@ export * from "./intent-verbs.js";
 export * from "./intent-read.js";
 export * from "./intent-view.js";
 export * from "./intent-issue.js";
+export * from "./intent-relay-door.js";
 export * from "./intent-delegation.js";
 export * from "./intent-rubric.js";
 export * from "./lease-advance.js";
@@ -419,7 +420,7 @@ export type { DialSocket, FaceDialArgs, FaceDialOutcome, FaceDialRefusal, PlaceD
 export { wsDialSocket } from "./ws-dial-socket.js";
 export type { WsFactory, WsFactoryOptions, WsLike } from "./ws-dial-socket.js";
 // The one Noise bound the node's gate server caps a frame at (`face-gate-server`); the handshake doors stay out.
-export { NOISE_MAX_MESSAGE_BYTES } from "./noise-ik.js";
+export { NOISE_MAX_MESSAGE_BYTES, MIN_MESSAGE1_BYTES, MIN_MESSAGE2_BYTES } from "./noise-ik.js";
 // THE GATE'S MEMORY DOOR, named here by the vessel that answers it over its custody seat (`gate-memory-rows`).
 export { GATE_MEMORY_ROW_MAX_BYTES, storedWithdrawals, GateMemoryRowTorn } from "./gate-withdrawal-store.js";
 export type { GateMemoryRows } from "./gate-withdrawal-store.js";
