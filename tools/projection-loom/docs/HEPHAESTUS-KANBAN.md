@@ -39,3 +39,17 @@
 - F: F-01 through F-08, original seven cohorts and independent fourth subject, adversarial cross-tool witnesses, full cleanup.
 
 **YIN cut:** no shadow OODA controller, universal geometry CRDT, faux CAD union, unsupported camera registration, alpha compatibility facade, or unexecuted editor success claim.
+
+## OODA-HA Wave A/C interface · relational operations (2026-10-28)
+
+**Observe:** Existing `RelationWitness` and `LocationStack` have valid but bounded duties (construction testimony and source catalog); neither represents typed operator editing with explicit causal parents.
+
+**Orient:** Semantic continuity must persist across prim renames, parent motion, support refusal and source/representation changes.
+
+**Decide:** Add a finite typed operation contract under `relational_ground.py`, one immutable event graph with explicit observed frontiers. Keep exact geometry outside it, keep the source catalog as testimony, and refuse stale conflicting edits rather than a global clock or geometry CRDT.
+
+**Act:** `ground-init`, `ground-apply`, `ground-inspect` enter the existing CLI; JSON Schema validates supported operations, parent/child requirements invalidate downstream candidates, and event DAG receipts preserve ancestry. Test a fourth independent village fixture, intentional support severance, concurrent non-conflicting annotations, stale conflicting edits, and representation rename.
+
+**Aftermath:** This is a **complete standalone causal-edit contract**, but not closure of Wave A or C: existing generalized campaign and `LocationStack` still need integration/migration; no claim that edits regenerate native CAD yet. Hosted tests and architecture check must pass at exact commit before witness status changes. Blender/Unreal must not be inferred from this CLI.
+
+**Wave R check:** Initial replay-safety commit `599d247e` passed dedicated generalization and Experiment Zero Actions. Other CI jobs were not uniformly completed when examined.

@@ -32,6 +32,15 @@ def main(argv=None):
             p.add_argument('--slack-fraction',type=float,default=.20,
                            help='fraction of survivors reserved for novel valid phenotypes')
         if name=='epoch-loop':p.add_argument('--passes',type=int,default=5)
+    p=commands.add_parser('ground-init', help='Create an empty causal relational ground')
+    p.add_argument('--location', required=True)
+    p.add_argument('--out', type=Path, required=True)
+    p=commands.add_parser('ground-apply', help='Apply a typed causal edit or refuse conflicts')
+    p.add_argument('--ground', type=Path, required=True)
+    p.add_argument('--edit', type=Path, required=True)
+    p.add_argument('--out', type=Path, required=True)
+    p=commands.add_parser('ground-inspect', help='Inspect causal frontier and semantic entities')
+    p.add_argument('--ground', type=Path, required=True)
     p=commands.add_parser('wide-epoch',help='Resumable staged constructive epochs')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
@@ -257,6 +266,23 @@ def main(argv=None):
                    help='next phase of an active inquiry')
     p.add_argument('--note',help='operator/AI observation, rationale, action or aftermath receipt')
     args=parser.parse_args(argv)
+    if args.command in ('ground-init', 'ground-apply', 'ground-inspect'):
+        from .relational_ground import RelationalGround
+        if args.command == 'ground-init':
+            ground = RelationalGround(args.location)
+            ground.save(args.out)
+            result = ground.to_dict()
+        else:
+            ground = RelationalGround.load(args.ground)
+            if args.command == 'ground-apply':
+                edit = json.loads(args.edit.read_text(encoding='utf8'))
+                ground, receipt = ground.apply(edit)
+                ground.save(args.out)
+                result = receipt
+            else:
+                result = ground.snapshot()
+        print(json.dumps(result, indent=2))
+        return result
     if args.command=='fracture-pattern':
         from .fracture_patterns import export_pattern
         record=export_pattern(args.out,size=tuple(args.size),cells=args.cells,

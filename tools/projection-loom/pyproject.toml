@@ -22,3 +22,6 @@ include = ["projection_loom*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = ["slow: full native CAD, compound rendering and OODA-HA integration"]
+
+[tool.setuptools.package-data]
+projection_loom = ["contracts/*.json"]
