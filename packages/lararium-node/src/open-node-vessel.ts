@@ -196,10 +196,10 @@ import { faceDeviceBook }                        from "./face-device-book.js";
 import { faceFleetViews, bridgeBooks }                from "./face-fleet-view.js";
 import { heldRootHoldings }                      from "./face-root-holdings.js";
 import { gateGrantRing }                         from "./gate-rings.js";
-import { readFaceJoinRecord }                    from "./fleet-join-custody.js";
+import { readFaceJoinRecord, readFaceAddressSecret } from "./fleet-join-custody.js";
 import { gateMemoryRows }                        from "./gate-memory-rows.js";
 import { custodyGateDoor }                       from "./custody-seat.js";
-import { vesselFloorKeyDoor, loadPlaceKelChain } from "./node-vessel-identity.js";
+import { vesselFloorKeyDoor, loadPlaceKelChain, loadPlaceAid } from "./node-vessel-identity.js";
 import { hearthFloorPins }                       from "./hearth-sovereign-pin.js";
 import { hearthFloorProof }                      from "./hearth-floor-claims.js";
 import { readKeptHearthFloorPins }               from "./hearth-floor-pin-store.js";
@@ -1891,6 +1891,13 @@ async function prepareNodeBootOn(
     const atomSeed = sovereign && deviceEdge && personaGroupId ? await loadFaceAtomOfGroup(personaGroupId) : null;
     if (sovereign && deviceEdge && !atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
     activeAtom = atomSeed && personaGroupId ? faceAtomKeyFromSeed(atomSeed, personaGroupId) : null;
+    // THE WORKING SLOT'S TWO READINGS, from main-thread custody: the mounted face's address secret (minted at its
+    // founding; a face standing without one re-founds, and its working slot refuses by name) and the place's own KEL
+    // prefix, by which a faceless floor keys its working documents.
+    const addressSecretBytes = atomSeed && personaGroupId ? await readFaceAddressSecret(personaGroupId) : null;
+    const faceAddressSecret = addressSecretBytes ? Buffer.from(addressSecretBytes).toString("hex") : null;
+    addressSecretBytes?.fill(0);
+    const placeAid = await loadPlaceAid().catch(() => null);
     if (activeAtom && deviceEdge && activeAtom.key !== deviceEdge.deviceVerifyingKey) throw new Error("this face's atom differs from its device edge");
     // ── THE DYAD DOOR (kapae#/reach) ─────────────────────────────────────────────────────────────
     // The daemon island's gates ask what one device's edge reads on the worn fleet's board: the Binding Gate for
@@ -2266,6 +2273,7 @@ async function prepareNodeBootOn(
     const faceLit = activeAtom !== null && atomSeed !== null;
     const daemonAuth = {
       placeVerifyingKey: vesselIdentity.verifyingKey,
+      ...(placeAid ? { placeAid } : {}),
       archiveOpens:         opens,
       ...(activeAtom && atomSeed ? { atom: { seed: Buffer.from(atomSeed).toString("hex"), key: activeAtom.key } } : {}),
       ...(veilArchiveBytes ? { veilArchiveBytes } : {}),
@@ -2275,6 +2283,7 @@ async function prepareNodeBootOn(
       // carries none of the four pins and boots faceless, never as a face whose edge names a key it cannot hold.
       ...(faceLit && personaGroupId ? { personaGroupId } : {}),
       ...(faceLit && standingAnchor ? { faceAnchor: standingAnchor } : {}),
+      ...(faceLit && faceAddressSecret ? { faceAddressSecret } : {}),
       ...(meshCabalDocIdHex      ? { meshCabalDocIdHex }      : {}),
       // Derived, never enumerated — one derivation both vessels share, so the node and the browser
       // cannot drift apart on which bags a cap check can resolve. A wiki slot's bags ride only when a

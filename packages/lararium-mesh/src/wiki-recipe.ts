@@ -100,6 +100,15 @@ export function wikiDraftDocKey(slug: string, placeDid: LarDid): SlotUri {
   return `${wikiUri(slug)}/drafts/${encodeURIComponent(requireLarDid(placeDid, "wikiDraftDocKey"))}`;
 }
 
+/** The catalog registry key of a wiki's working FLOOR doc (`wikis/{slug}/working-floor/{place}`): the working layer a
+ *  vessel writes while no face stands seated, keyed by the PLACE's own identity, its W29 place KEL prefix, never a
+ *  vessel DID or a path. The anon-veil lift carries it under the face's derived address at the join, and the key then
+ *  names nothing. */
+export function wikiWorkingFloorKey(slug: string, placeAid: string): SlotUri {
+  if (typeof placeAid !== "string" || placeAid.length === 0) throw new Error("wikiWorkingFloorKey: the place names no KEL prefix");
+  return `${wikiUri(slug)}/working-floor/${encodeURIComponent(placeAid)}`;
+}
+
 /** Who reaches a slot's doc — the `face-reach` field every binding record carries: `face` when the
  *  doc delegates to the PersonaGroup (fleet-synced), `vessel-only` when it rides the vessel's own
  *  key alone (the floor — a private device so far). */

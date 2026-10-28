@@ -83,7 +83,7 @@ async function standIsland(opts: { daemonLayer?: boolean } = {}) {
   } as never;
   const daemonAuth = {
     atom: { seed: hex(cer.atomSeed), key: cer.founderEdge.deviceVerifyingKey }, veilArchiveBytes: cer.veilArchive,
-    seed: FOUNDER_SEED, placeVerifyingKey: key,
+    seed: FOUNDER_SEED, placeVerifyingKey: key, faceAddressSecret: hex(new Uint8Array(32).fill(74)),
     personaGroupId: cer.personaGroupId,
     meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
     personaKel: { prefix: cer.personaKelPrefix, chain }, deviceEdge: cer.founderEdge, archiveOpens: true,

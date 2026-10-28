@@ -132,7 +132,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
-import { hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, realmStandingDocUrl } from "@lararium/mesh";
+import { hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, realmStandingDocUrl, materializeFaceWorkingDoc } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { readFace } from "@lararium/mesh";
@@ -297,6 +297,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       ...(faceDoor() ? { faceDoor: faceDoor()! } : {}),
       faceSeated: async () => faceSeat ? faceSeat.seated() : !!(kh && daemonAuth.personaGroupId && await kh.knowsAgent(daemonAuth.personaGroupId)),
       seatSettled: async () => { await faceSeat?.settled(); },
+      // THE WORKING SLOT'S PORTS: the mounted face's address secret the manifest carried from main-thread custody (a
+      // fresh copy per read, which the resolver zero-fills), the place's own KEL prefix, and the derived document's door.
+      faceAddressSecret: async () => daemonAuth.faceAddressSecret ? meshHexToBytes(daemonAuth.faceAddressSecret) : null,
+      placeAid: () => daemonAuth.placeAid ?? null,
+      faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(ctx.repo, url as AutomergeUrl, label),
     });
     return slotDocs;
   };

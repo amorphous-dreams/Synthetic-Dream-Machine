@@ -8,7 +8,6 @@ import { FACE_WORKING_ADDRESS_DOMAIN } from "./domains.js";
 import { materializeSharedLarDoc } from "./deterministic-doc.js";
 import { emptyLarDoc, type LarDoc } from "./base-doc.js";
 import { pinnedDoc } from "./pinned-doc.js";
-import type { SessionFace } from "./session-contract.js";
 import { WIKI_SLOT_KINDS, type WikiSlotKind } from "./wiki-recipe.js";
 
 export type FaceWorkingAddressReason =
@@ -47,7 +46,6 @@ export function faceWorkingDocUrl(secret: Uint8Array, wikiId: string, kind: Wiki
 }
 
 export interface FaceWorkingSlotPorts {
-  readonly face: SessionFace;
   readonly wikiId: string;
   readonly kind: WikiSlotKind;
   readonly secret: () => Promise<Uint8Array | null>;

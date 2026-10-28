@@ -42,6 +42,7 @@ import { refuseLegacyPlaceBytes } from "../legacy-place-bytes.js";
 import { faceStandingCustody, openedCustody, seatCustody } from "../custody-seat.js";
 import { personaGroupDigest } from "../persona-group-file.js";
 import { ensureFaceCustodyOfAsk, settleFaceCustody } from "../face-route.js";
+import { mintFaceAddressSecret } from "../fleet-join-custody.js";
 import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, sweepFoundingSeeds, type FoundingAtomAsk } from "../face-atom-store.js";
 import { keepFaceAnchorOfGroup, loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { makeCustodyHolder } from "../custody-holder.js";
@@ -521,6 +522,8 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     if (already) {
       const atomSeed = await loadFaceAtomOfGroup(already);
       if (!atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
+      // A founding that stopped after its atom kept completes its address secret here (minted where none stands).
+      (await mintFaceAddressSecret(already)).fill(0);
       const daemonUrl = packed[DAEMON_BAG_ID]?.text;
       if (!daemonUrl) throw new Error("[lares persona new] the bootstrap names no daemon doc");
       await retireFaceCheckpoint(await opts.repo.find<LarDoc>(daemonUrl as AutomergeUrl), atomSeed);
@@ -535,6 +538,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     if (priorAnchors && packed[personaScopedBagIds(priorAnchors.personaGroupId).identities]?.text) {
       const atomSeed = await loadFaceAtomOfGroup(priorAnchors.personaGroupId);
       if (!atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
+      (await mintFaceAddressSecret(priorAnchors.personaGroupId)).fill(0);
       const daemonUrl = packed[DAEMON_BAG_ID]?.text;
       if (!daemonUrl) throw new Error("[lares persona new] the bootstrap names no daemon doc");
       await retireFaceCheckpoint(await opts.repo.find<LarDoc>(daemonUrl as AutomergeUrl), atomSeed);
@@ -622,6 +626,9 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     ...(mounts ? {} : { mount: false }),
   });
   await settleFaceCustody(askDigest, face.personaGroupId, () => keepAndRetireFoundingSeed(face.personaGroupId, foundingAsk, atomSeed));
+  // THE FACE'S ADDRESS SECRET MINTS AT ITS FOUNDING, beside its atom and behind its custody: its working documents derive
+  // their addresses from it from the first boot, and no later read mints one. A founding that runs again finds it standing.
+  (await mintFaceAddressSecret(face.personaGroupId)).fill(0);
   await keepFaceAnchorOfGroup(mintFaceAnchor({
     personaGroup: face.personaGroupId, personaKelPrefix: face.personaKelPrefix,
     personaRootDid: face.founderEdge.personaRootDid, edge: face.founderEdge, leaseEpoch: 0,

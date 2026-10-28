@@ -253,6 +253,13 @@ export interface IslandMsg_Manifest {
     veilArchiveBytes?: Uint8Array;
     /** Public place key for place checks; the face's atom supplies Keyhive identity. */
     placeVerifyingKey:     string;
+    /** The place's own identity, its W29 place KEL prefix: a faceless floor keys its working documents by it. Absent
+     *  where the vessel founded no place KEL, and then a floor working layer refuses to stand. */
+    placeAid?:             string;
+    /** THE MOUNTED FACE'S ADDRESS SECRET, hex, read from main-thread custody at the manifest's build (the node's
+     *  `face-address-secret` row, the browser's keystore row): the face's working documents derive their addresses from
+     *  it (`faceWorkingDocUrl`). It crosses the worker boundary beside the atom seed, and only with a face lit. */
+    faceAddressSecret?:    string;
     /** The FACE's pins, present only when a face stands. A place founded and never lit carries NONE of
      *  them, and that names the WAKING FLOOR rather than a fault — canon has a vessel boot permissionlessly
      *  on its own key. The worker refuses a TORN face (some pins, not all), so absence buys FEWER CAPS and

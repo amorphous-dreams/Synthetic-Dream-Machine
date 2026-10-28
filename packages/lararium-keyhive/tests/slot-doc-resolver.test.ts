@@ -9,13 +9,17 @@
  *   S3 — THE WELD: the same slug on the same vessel resolves to ONE doc from every call site — the
  *        island's slot grant (`bindings`), the host mount's read (`draft`), `meme put --recipe`'s
  *        store, `prune-stale`'s read, and `wiki init`'s report
- *   S4 — working and personal bind on the vessel's key when unseated and say so
+ *   S4 — personal binds on the vessel's key when unseated, and working rests by the PLACE's key (its W29 place KEL
+ *        prefix) in the catalog; each says so
+ *   S5 — seated, working is the face's DERIVED address under its secret, by slug and kind: no record names it, two
+ *        resolvers of one face find one document, and a face whose secret stands nowhere refuses `no-address-secret`
  */
 import { describe, test, expect } from "vitest";
 import { makeIslandRepo, type Repo } from "@lararium/mesh";
 import {
   CompositeStore, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey, emptyLarDoc,
-  mutableLarRecord, wikiBagUri, wikiDraftDocKey, wikiSlotUri, type LarDoc, type LarTiddlerRecord,
+  mutableLarRecord, wikiBagUri, wikiDraftDocKey, wikiSlotUri, wikiWorkingFloorKey, faceWorkingDocUrl, materializeFaceWorkingDoc,
+  type LarDoc, type LarTiddlerRecord,
 } from "@lararium/mesh";
 import { MemoryTiddlerStore, makeCatalogAccessor, makeInitWikiReactor, makePruneStaleReactor, makeMemePutReactor, type MemeVerbOptions } from "@lararium/tw5";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
@@ -26,7 +30,10 @@ const noopStore = { put: async () => {}, list: async () => [] };
 const VERIFYING_KEY = "ab".repeat(32);
 const DID = didFromVerifyingKey(VERIFYING_KEY);
 
-async function rig(opts: { seated: boolean }): Promise<{ resolver: SlotDocResolver; repo: Repo; catalogUrl: string; daemon: CompositeStore; kh: KeyhiveProvider; wikiUrl: string }> {
+const PLACE = "EplaceSlotResolverSynthetic";
+const SECRET = () => new Uint8Array(32).fill(9);
+
+async function rig(opts: { seated: boolean; secret?: () => Promise<Uint8Array | null> }): Promise<{ resolver: SlotDocResolver; repo: Repo; catalogUrl: string; daemon: CompositeStore; kh: KeyhiveProvider; wikiUrl: string }> {
   const kh = new KeyhiveProvider();
   await kh.init({ seed: new Uint8Array(32).fill(3), eventStore: noopStore });
   const group = await kh.createGroup();
@@ -45,6 +52,9 @@ async function rig(opts: { seated: boolean }): Promise<{ resolver: SlotDocResolv
     personaGroupId: group.groupId,
     faceSeated: async () => opts.seated,
     faceDoor: makeFaceBagDoor({ face: kh, groupId: group.groupId }),
+    faceAddressSecret: opts.secret ?? (async () => SECRET()),
+    placeAid: () => PLACE,
+    faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(repo, url as never, label),
   });
   return { resolver, repo, catalogUrl: catalogHandle.url, daemon, kh, wikiUrl: wikiHandle.url };
 }
@@ -81,13 +91,32 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
     await r.kh.dispose(); await r.repo.shutdown();
   });
 
-  test("S4 — working and personal bind on the vessel's own key when unseated, and say so", async () => {
+  test("S4 — unseated, personal binds on the vessel's own key and working rests by the place's key in the catalog; each says so", async () => {
     const r = await rig({ seated: false });
     for (const kind of ["working", "personal"] as const) {
       const doc = await r.resolver.slotDoc("garden", kind);
       expect(doc?.reach, kind).toBe("vessel-only");
       expect((await r.resolver.slotDoc("garden", kind, { mint: false }))?.url, `${kind} reads back what stands`).toBe(doc?.url);
     }
+    const catalog = makeCatalogAccessor(r.repo, r.catalogUrl);
+    const working = await r.resolver.slotDoc("garden", "working");
+    expect(await catalog.urlOf(wikiWorkingFloorKey("garden", PLACE)), "the working floor rests by the place's KEL prefix").toBe(working?.url);
+    await r.kh.dispose(); await r.repo.shutdown();
+  });
+
+  test("RED S5 — seated, working is the face's derived address: no record names it, a second resolver finds the same, and a face with no secret refuses no-address-secret", async () => {
+    const r = await rig({ seated: true });
+    const doc = await r.resolver.slotDoc("garden", "working");
+    expect(doc).toEqual({ url: faceWorkingDocUrl(SECRET(), "garden", "working"), reach: "face" });
+    const catalog = makeCatalogAccessor(r.repo, r.catalogUrl);
+    expect(await catalog.urlOf(wikiWorkingFloorKey("garden", PLACE)), "a seated face writes no place key").toBeNull();
+    const trace = { wikiDocId: r.wikiUrl, libraryBagDocIds: [] as readonly string[] };
+    expect((await r.resolver.bindings(await computeRecipeFingerprint(trace), trace, "garden")).workingUrl).toBe(doc?.url);
+    // No record names the working document: the address alone finds it.
+    expect((await r.daemon.listVisible()).filter((t) => t.includes("working"))).toEqual([]);
+    const bare = await rig({ seated: true, secret: async () => null });
+    await expect(bare.resolver.slotDoc("garden", "working")).rejects.toMatchObject({ reason: "no-address-secret" });
+    await bare.kh.dispose(); await bare.repo.shutdown();
     await r.kh.dispose(); await r.repo.shutdown();
   });
 

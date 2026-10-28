@@ -57,7 +57,7 @@ import { standingFaceScopes } from "../face-root-holdings.js";
 import { FaceProvisional, refuseWhileProvisional } from "../face-provisional.js";
 import { nodeFaceKeyCustody, nodeVesselFaceKeyCustody, readVesselFaceKeyPublic, storeVesselFaceKey } from "../face-key-custody.js";
 import {
-  clearPendingFleetJoin, keepFaceJoinRecord, keepPendingFleetJoin, listPendingFleetJoinGroups, landFaceAddressSecret, mintFaceAddressSecret, noteIssuedFaceKeys, readFaceAddressSecret,
+  clearPendingFleetJoin, keepFaceJoinRecord, keepPendingFleetJoin, listPendingFleetJoinGroups, landFaceAddressSecret, noteIssuedFaceKeys, readFaceAddressSecret,
   readFaceJoinRecord, readPendingFleetJoin,
 } from "../fleet-join-custody.js";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
@@ -251,7 +251,9 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
     for (const q of request.requests) {
       grants.push({ personaGroup, scope: q.scope, signature: await signHex(faceKeyGrantImage(personaGroup, q.scope), seed) });
     }
-    const secret = await mintFaceAddressSecret(personaGroup);
+    // The secret minted at the face's founding; a face standing without one re-founds (no read mints).
+    const secret = await readFaceAddressSecret(personaGroup);
+    if (secret === null) throw new FleetJoinRefused("no-address-secret", "this face holds no address secret: it was founded before the secret minted at founding, and re-founds.");
     let sealed;
     try { sealed = sealAddressSecret({ secret, request }); } finally { secret.fill(0); }
     const body = {

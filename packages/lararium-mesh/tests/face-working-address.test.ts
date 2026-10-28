@@ -1,17 +1,12 @@
 import { describe, expect, test } from "vitest";
 import { load, merge, save } from "@automerge/automerge";
 import { Repo, parseAutomergeUrl } from "@automerge/automerge-repo";
-import type { SessionFace } from "../src/session-contract.js";
 import {
   FaceWorkingAddressRefusal, faceWorkingDocUrl, faceWorkingGenesis,
   materializeFaceWorkingDoc, resolveFaceWorkingSlot,
 } from "../src/face-working-address.js";
 import { emptyLarDoc, type LarDoc } from "../src/base-doc.js";
 
-const face = (subject: string): SessionFace => ({
-  personaGroup: subject, proofSubject: subject, admitRef: "admit", causalRevision: "revision",
-  planes: { persona: "persona", circles: "circles", identities: "identities", sessions: "sessions", intents: "intents" },
-});
 const a = () => new Uint8Array(32).fill(7);
 const b = () => new Uint8Array(32).fill(8);
 const reason = (value: unknown, name: string) => {
@@ -35,8 +30,8 @@ describe("face working address", () => {
   });
 
   test("one face reopens one address, across fresh resolvers and recipe fingerprints", async () => {
-    const first = await resolveFaceWorkingSlot({ face: face("A"), wikiId: "w", kind: "working", secret: async () => a() });
-    const second = await resolveFaceWorkingSlot({ face: face("A"), wikiId: "w", kind: "working", secret: async () => a() });
+    const first = await resolveFaceWorkingSlot({ wikiId: "w", kind: "working", secret: async () => a() });
+    const second = await resolveFaceWorkingSlot({ wikiId: "w", kind: "working", secret: async () => a() });
     expect(first).toEqual(second);
     expect(first).toEqual({ ok: true, url: faceWorkingDocUrl(a(), "w", "working"), reach: "face" });
     const recipes = [{ fingerprint: "recipe-a", wikiId: "w" }, { fingerprint: "recipe-b", wikiId: "w" }];
@@ -51,7 +46,7 @@ describe("face working address", () => {
     expect(own).not.toBe(claimed);
     const repo = new Repo({ network: [] });
     const before = Object.keys(repo.handles);
-    const result = await resolveFaceWorkingSlot({ face: face("B"), wikiId: "w", kind: "working", secret: async () => b(), claimed });
+    const result = await resolveFaceWorkingSlot({ wikiId: "w", kind: "working", secret: async () => b(), claimed });
     expect(result.ok).toBe(false);
     if (!result.ok) reason(result.refusal, "address-not-derived");
     expect(Object.keys(repo.handles)).toEqual(before);
@@ -61,7 +56,7 @@ describe("face working address", () => {
   test("a leaf without the secret refuses and mints no document", async () => {
     const repo = new Repo({ network: [] });
     const before = Object.keys(repo.handles);
-    const result = await resolveFaceWorkingSlot({ face: face("leaf"), wikiId: "w", kind: "working", secret: async () => null });
+    const result = await resolveFaceWorkingSlot({ wikiId: "w", kind: "working", secret: async () => null });
     expect(result.ok).toBe(false);
     if (!result.ok) reason(result.refusal, "no-address-secret");
     expect(Object.keys(repo.handles)).toEqual(before);
@@ -78,11 +73,11 @@ describe("face working address", () => {
     thrown(() => faceWorkingDocUrl(a(), null as never, "working"), "wiki-malformed");
     thrown(() => faceWorkingDocUrl(a(), "w", "strange" as never), "kind-unknown");
     const secret = a();
-    const resolved = await resolveFaceWorkingSlot({ face: face("A"), wikiId: "w", kind: "working", secret: async () => secret });
+    const resolved = await resolveFaceWorkingSlot({ wikiId: "w", kind: "working", secret: async () => secret });
     expect(resolved.ok).toBe(true);
     expect(secret).toEqual(new Uint8Array(32));
     const malformed = new Uint8Array(31).fill(9);
-    const refused = await resolveFaceWorkingSlot({ face: face("A"), wikiId: "w", kind: "working", secret: async () => malformed });
+    const refused = await resolveFaceWorkingSlot({ wikiId: "w", kind: "working", secret: async () => malformed });
     expect(refused.ok).toBe(false);
     if (!refused.ok) reason(refused.refusal, "secret-malformed");
     expect(malformed).toEqual(new Uint8Array(31));

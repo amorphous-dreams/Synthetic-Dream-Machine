@@ -11,6 +11,7 @@
  * The session proof stands composed here as the sealed store's own vessel vectors compose it; no production path
  * opens a session signer yet.
  */
+import { readFaceAddressSecret } from "../src/fleet-join-custody.js";
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import { join } from "node:path";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
@@ -65,6 +66,9 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
   if (!atomSeed) throw new Error("fixture: this face holds no atom");
   const atom = faceAtomKeyFromSeed(atomSeed, anchors.personaGroupId);
   const veilArchiveBytes = await loadVeilArchive(anchors.personaGroupId);
+  // The face's address secret as the opener reads it from this root's custody: minted at the face's founding.
+  const addressSecret = await readFaceAddressSecret(anchors.personaGroupId);
+  if (!addressSecret) throw new Error("fixture: this face holds no address secret");
 
   const oracle = repo.create<LarDoc>({ schemaVersion: "lar/1", tiddlers: { [DAEMON_BAG_ID]: { tiddler: { title: DAEMON_BAG_ID, text: daemonUrl } } } } as unknown as LarDoc);
   const catalog = repo.create<LarDoc>({ schemaVersion: "lar/1", tiddlers: { [wikiBagUri("daemon")]: { tiddler: { title: wikiBagUri("daemon"), text: daemonUrl } } } } as unknown as LarDoc);
@@ -89,8 +93,10 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
     meshCabalDocIdHex: anchors.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID, ...args.bags], signerDid: anchors.signerDid,
     personaKel: { prefix: anchors.personaKelPrefix, chain: kel }, deviceEdge: anchors.deviceEdge,
     atom: { seed: hex(atomSeed), key: atom.key },
+    faceAddressSecret: hex(addressSecret),
     ...(veilArchiveBytes ? { veilArchiveBytes } : {}),
   };
+  addressSecret.fill(0);
   // The shore stands where a vessel's own island stands it: off the directory of the document the island owns.
   const islandDir = islandStorageDirOf({ ownedDocument: { storage: { type: "nodefs", dir: join(larDataDir(), "daemon-owned") } } })!;
   const opts = operatorDaemonOptions({ daemonAuth } as never, {

@@ -11,7 +11,9 @@
  *   L4  CONTROL: a vessel that never joins keeps its draft at the floor, unmoved.
  *   L5  RED: a draft the vessel never resolves again still sits under the face after the join (the lift is a pass, not a lookup).
  *   L6  RED: a crash between the binding and the burn finishes on the next pass without a second copy.
- *   L7  RED: a vessel-only working binding (daemon bag) moves too, derived by its record and not by a list of kinds.
+ *   L7  RED: a working document the floor wrote before any face rests by the PLACE's key; at the join it lifts into the
+ *       face's DERIVED working address (its secret, the wiki's slug), and the place's key stands empty. CONTROL: a vessel
+ *       with a face from its founding never writes the place's key.
  *   L8  RED: a draft the faceless floor bound under the public place label lifts under the face that lights later (the lit face names the floor's label).
  *       CONTROL: without that name the same record stays at the floor.
  *   N1  RED: a vessel-only document never reaches a peer (no cap names it, so the share verdict denies); CONTROL: the lifted face
@@ -20,8 +22,9 @@
 import { describe, test, expect } from "vitest";
 import { identityShareDecision, makeIslandRepo, type DocumentId, type Repo } from "@lararium/mesh";
 import {
-  CompositeStore, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, WORKING_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey,
-  emptyLarDoc, mutableLarRecord, plainField, storedLarRecord, wikiBagUri, wikiDraftDocKey, type LarDoc, type LarTiddlerRecord,
+  CompositeStore, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey,
+  emptyLarDoc, mutableLarRecord, plainField, storedLarRecord, wikiBagUri, wikiDraftDocKey, wikiWorkingFloorKey,
+  faceWorkingDocUrl, materializeFaceWorkingDoc, type LarDoc, type LarTiddlerRecord,
 } from "@lararium/mesh";
 import { MemoryTiddlerStore, makeCatalogAccessor } from "@lararium/tw5";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
@@ -32,6 +35,8 @@ const noopStore = { put: async () => {}, list: async () => [] };
 const VERIFYING_KEY = "ab".repeat(32);
 const DID = didFromVerifyingKey(VERIFYING_KEY);
 const MINTED_BY = "0x" + "a".repeat(64);
+const PLACE = "EplaceAnonLiftSynthetic";
+const SECRET = () => new Uint8Array(32).fill(5);
 
 interface Vessel { repo: Repo; daemon: CompositeStore; kh: KeyhiveProvider; catalogUrl: string; wikiUrl: string; fp: string }
 
@@ -56,7 +61,8 @@ function resolverFor(v: Vessel, face: { seated: () => boolean; door: FaceBagDoor
     repo: repo as Repo, daemonStore: v.daemon, keyhive: v.kh,
     catalog: makeCatalogAccessor(v.repo, v.catalogUrl),
     vesselDid: () => DID, mintedByHex: () => mintedBy,
-    ...(face ? { personaGroupId: face.group, faceSeated: async () => face.seated(), faceDoor: face.door } : {}),
+    placeAid: () => PLACE, faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(v.repo, url as never, label),
+    ...(face ? { personaGroupId: face.group, faceSeated: async () => face.seated(), faceDoor: face.door, faceAddressSecret: async () => SECRET() } : {}),
   });
 }
 
@@ -226,21 +232,35 @@ describe("the anon-veil lift on join", () => {
     expect(a.minted).toHaveLength(1);
   });
 
-  test("L7 — a vessel-only working binding moves too: derived by its record, not by a list of kinds", async () => {
+  test("L7 — a working document the floor wrote before any face lifts into the face's derived working address, and the place's key stands empty", async () => {
     const v = await vessel();
     const joined = { on: false };
     const a = await newFace(v, joined);
     const resolver = resolverFor(v, a.face);
+    const catalog = makeCatalogAccessor(v.repo, v.catalogUrl);
     const { workingUrl } = await resolver.bindings(v.fp, { wikiDocId: v.wikiUrl, libraryBagDocIds: [] }, "garden");
+    expect(await catalog.urlOf(wikiWorkingFloorKey("garden", PLACE)), "the floor's working document rests by the place's key").toBe(workingUrl);
     await write(v, workingUrl, "Saved", "working layer");
-    expect((await bindingOf(v, `${WORKING_BINDINGS_PREFIX}/${v.fp}`))?.["face-reach"]).toBe("vessel-only");
-    joined.on = true;
-    await resolver.liftFloor();
-    const record = (await bindingOf(v, `${WORKING_BINDINGS_PREFIX}/${v.fp}`))!;
-    expect(record["face-reach"]).toBe("face");
-    expect(record["text"]).not.toBe(workingUrl);
-    expect(await textOf(v, String(record["text"]), "Saved")).toBe("working layer");
-    expect(await opens(v, workingUrl)).toBe(false);
+    joined.on = true;                                                             // the join
+    const lifted = await resolver.liftFloor();
+    expect(lifted.moved).toContain(wikiWorkingFloorKey("garden", PLACE));
+    const derived = faceWorkingDocUrl(SECRET(), "garden", "working");
+    expect((await resolver.slotDoc("garden", "working"))?.url, "the face's slot is its derived address").toBe(derived);
+    expect(await textOf(v, derived, "Saved"), "the face's derived slot holds the floor's content").toBe("working layer");
+    expect(await catalog.urlOf(wikiWorkingFloorKey("garden", PLACE)), "the place's key stands empty").toBeNull();
+    expect(await opens(v, workingUrl), "the floor document burned").toBe(false);
+    expect(a.minted, "the face's document registers under its cap stack").toContain(derived);
+    // A second pass moves nothing.
+    expect((await resolver.liftFloor()).moved).toEqual([]);
+  });
+
+  test("L7 CONTROL — a vessel with a face from its founding never writes the place's key", async () => {
+    const v = await vessel();
+    const a = await newFace(v, { on: true });
+    const resolver = resolverFor(v, a.face);
+    const { workingUrl } = await resolver.bindings(v.fp, { wikiDocId: v.wikiUrl, libraryBagDocIds: [] }, "garden");
+    expect(workingUrl).toBe(faceWorkingDocUrl(SECRET(), "garden", "working"));
+    expect(await makeCatalogAccessor(v.repo, v.catalogUrl).urlOf(wikiWorkingFloorKey("garden", PLACE))).toBeNull();
   });
 });
 
