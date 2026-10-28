@@ -8,14 +8,14 @@
 
 | Wave | Scope | Status | Witness / blocker |
 | --- | --- | --- | --- |
-| R | Re-entry, module census, baseline, replay safety, editor prerequisites | IN PROGRESS | R-04 implementation proposed at this wave; exact-head Actions must run before DONE |
-| A | Persistent semantic identities, typed relations, frames, schemas, independent subject | BACKLOG | Depends on R |
-| B | Portable deterministic OpenUSD, actual CAD meshes and STEP evidence | BACKLOG | Depends on A, verified OpenUSD/editor prerequisites |
-| C | Causal frontiers, safe reconciliation, dependency invalidation, resumable single OODA-HA helm | BACKLOG | Depends on A/B |
-| D-B | Full Blender edit/reconcile/regenerate workflow | BACKLOG | Requires actual Blender runner |
-| D-U | Full Unreal edit/reconcile/regenerate workflow | BLOCKED | Actual Unreal Editor runner/plugin environment unverified |
-| E | Regulative development, controlled experimentation, operator-steered QD | BACKLOG | Requires A/C and editor-originated steering where applicable |
-| F | Cross-subject adversarial crucible and deletion of obsolete alpha paths | BACKLOG | Requires witnessed A-E |
+| R | Re-entry, module census, baseline, replay safety, editor prerequisites | IN PROGRESS | Boot, baseline, replay receipts and static consumer census witnessed; real Unreal prerequisites unverified |
+| A | Persistent semantic identities, typed relations, frames, schemas, independent subject | IN PROGRESS | Relational contract, causal events, typed schema, independent fourth producer witnessed; LocationStack migration incomplete |
+| B | Portable deterministic OpenUSD, actual CAD meshes and STEP evidence | IN PROGRESS | Native OpenUSD/STEP, portable assets and scene variants passed; Unreal consumption and full scene review remain open |
+| C | Causal frontiers, safe reconciliation, dependency invalidation, resumable single OODA-HA helm | IN PROGRESS | Causal conflicts and selective native cache reuse passed; full orchestration/replay migration remains open |
+| D-B | Full Blender edit/reconcile/regenerate workflow | WITNESSED (bounded) | Real Blender 4.5.15 import/translation/capture/native regenerate/reload passed; full interactive modeling vocabulary not claimed |
+| D-U | Full Unreal edit/reconcile/regenerate workflow | BLOCKED | No actual provisioned Unreal Editor + required USD/Python plugins witness |
+| E | Regulative development, controlled experimentation, operator-steered QD | IN PROGRESS | Native local-site matched control, measured audition funnels and multiview abstention; multi-generation QD and registered source cameras open |
+| F | Cross-subject adversarial crucible and deletion of obsolete alpha paths | IN PROGRESS | Seven source cohorts, independent subject and cross-representation refusals passed; end-to-end Unreal and alpha cleanup incomplete |
 
 ## R-04 · Failed replay and immutable receipts
 
@@ -221,3 +221,9 @@ The Blender test now accepts `--out out/hephaestus-blender`, keeping the importe
 ## Multiview exact CI refusal test correction
 
 At `97404e42`, native CAD, OpenUSD and actual Blender lanes passed, and 64 of 65 contract tests passed. The one failure constructed an `IntentContract` with objectives out of the canonical sorted order required since before Hephaestus. The test fixture now honors that existing invariant; source-fitness withholding remains unchanged.
+
+## Master Wave status reconciliation · 2026-10-28
+
+The ledger now follows executable evidence rather than its initial proposed-only states. Exact complete generalized CI **passed** at [`5a15197e`](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40684137949) and [`499c8702`](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40684482023): general/held-out tests, seven Experiment Zero cohorts, actual OpenUSD/STEP interchange, and actual Blender 4.5.15 editor round trip. Later multiview and activation-funnel additions must pass their own exact-head runs; a descendant inherits no automatic green.
+
+**Not-DONE remains deliberate:** full location semantic migration, high-integrity measured multi-camera registration, full evolutionary operator steering/multi-epoch matched scientific trials, interactive arbitrary Blender modeling, actual Unreal Editor execution, final obsolete path cleanup, and complete R–F acceptance. No invented success, no implicit PR merge, no pet-name/canon promotion.
