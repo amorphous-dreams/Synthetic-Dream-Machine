@@ -99,7 +99,7 @@ test("qa runs the command in the disposable runner; no argv carries the Docker s
 
 // THE DEFAULT TAG BUILDS FROM THE TREE EVERY RUN. The harness image bakes the walks (`browser-ci-smoke.mjs`,
 // `live-wiki.mjs`, the join helper, the custody probe), so a default tag left standing from an older tree would
-// run the old walk's bytes against the new code and read its verdict as this tree's. The layer cache keeps an
+// run that tree's walk bytes against this code and read its verdict as this tree's. The layer cache keeps an
 // unchanged tree's build cheap.
 test("qa builds the default harness image from the tree even when a stale tag of it stands, before the run", async () => {
   const r = await run(["qa", "true"], { QA_IMAGE: "yes" });

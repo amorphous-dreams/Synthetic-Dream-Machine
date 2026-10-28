@@ -9,8 +9,8 @@
  *   - Peer DID = hex-encoded Identifier bytes (matches Keyhive.idString)
  *   - Access "read" / "admin" passes through verbatim
  *
- * Bag URL ↔ DocumentId mapping lives in-memory; TODO: persist it as
- * tiddler fields under each cap event so it survives daemon restart.
+ * The bag URL ↔ DocumentId mapping lives in memory here; `registerBagsDurably` (bag-doc-ledger.ts)
+ * persists it through a `BagDocLedger`, so it survives a daemon restart.
  *
  * Caveats (pre-alpha):
  *   - No security audit; not for adversarial multi-peer use

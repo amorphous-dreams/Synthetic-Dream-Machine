@@ -9,7 +9,7 @@
  * to the CID it was fetched by.
  *
  * It records NO acceptance. The browser's running floor stays the genesis floor it booted on; a face accepts a release by a
- * person's own act (W26 slice 5, the face's D row), on top of this read.
+ * person's own act (the face's D row, road `W26`), on top of this read.
  *
  * WHERE THE AID COMES FROM. The Nexus the page reads under is the one a VERIFIED floor pin claim names (the card's claim,
  * anchored apart from the card and folded to its KEL head) or the one an admit made it a member of: no unsigned card

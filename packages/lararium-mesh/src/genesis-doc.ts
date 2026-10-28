@@ -234,14 +234,14 @@ export interface GenesisArtifact {
   /**
    * The PLAIN-DATA genesis seed — the oracle doc's initial state as JSON (no Automerge
    * bytes). The build sink writes it to `seed.json`; the boot MATERIALIZES
-   * the oracle CRDT fresh from it under the deterministic doc id (slice 2). This is
-   * the boot artifact now; the Automerge `bytes` survive only as a test witness.
+   * the oracle CRDT fresh from it under the deterministic doc id. This is
+   * the boot artifact; the Automerge `bytes` serve only as a test witness.
    */
   readonly seed:        GenesisSeed;
 }
 
 // ---------------------------------------------------------------------------
-// The plain-data genesis seed (slice 2: genesis is data, not a baked CRDT)
+// The plain-data genesis seed (genesis is data, not a baked CRDT)
 // ---------------------------------------------------------------------------
 
 export const GENESIS_SEED_FORMAT = "lararium-genesis-seed/v1" as const;
@@ -429,7 +429,7 @@ export function validateGenesisBundleCoherence(
 }
 
 // ---------------------------------------------------------------------------
-// The oracle deterministic doc id (slice 2: materialize-fresh, no shipped binary)
+// The oracle deterministic doc id (materialize-fresh, no shipped binary)
 // ---------------------------------------------------------------------------
 
 /**
