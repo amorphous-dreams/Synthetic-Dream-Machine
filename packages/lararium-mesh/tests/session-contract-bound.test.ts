@@ -48,6 +48,9 @@ describe("bound session envelopes", () => {
     expect(table.checkBound(other, sibling).ok).toBe(true);
     expect(table.advance(a.session.sessionId, 0, face("a")).ok).toBe(true);
     expect(table.checkBound(envelope, own)).toMatchObject({ refusal: "stale-generation" });
+    // The advanced session stays switching until its owner's commit steps it live.
+    expect(table.checkBound({ ...envelope, generation: 1 }, own)).toMatchObject({ refusal: "session-not-live" });
+    table.transition(a.session.sessionId, "live");
     expect(table.checkBound({ ...envelope, generation: 1 }, own).ok).toBe(true);
   });
 });
