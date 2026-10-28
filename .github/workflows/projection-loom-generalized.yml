@@ -18,6 +18,7 @@ on:
       - 'tools/projection-loom/projection_loom/native_support.py'
       - 'tools/projection-loom/projection_loom/source_registration.py'
       - 'tools/projection-loom/projection_loom/registered_inventory.py'
+      - 'tools/projection-loom/projection_loom/hephaestus_holistic.py'
       - 'tools/projection-loom/projection_loom/matched_registered_trial.py'
       - 'tools/projection-loom/projection_loom/fractal_ooda_ha.py'
       - 'tools/projection-loom/projection_loom/evidence_receipts.py'
@@ -106,6 +107,15 @@ jobs:
           python -m pip check
       - name: Headless real OpenUSD and native STEP reimport
         run: python -m pytest -q tests/test_hephaestus_usd.py tests/test_hephaestus_editor.py tests/test_hephaestus_crucible.py tests/test_hephaestus_variants.py tests/test_hephaestus_location_workspace.py tests/test_hephaestus_native_support.py tests/test_hephaestus_support_workspace.py tests/test_hephaestus_registered_inventory.py
+      - name: Independent source/pose, bearing, causal edit and native USD holistic crucible
+        run: python -m pytest -q tests/test_hephaestus_holistic.py --basetemp=out/hephaestus-holistic
+      - name: Retain registered-source and three-stage native location crucible
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hephaestus-holistic-location
+          path: tools/projection-loom/out/hephaestus-holistic/
+          retention-days: 60
       - name: Independent subject native + OpenUSD + causal adversarial crucible
         run: python -m projection_loom.hephaestus_crucible --out out/hephaestus-crucible
       - name: Retain falsifiable crucible evidence

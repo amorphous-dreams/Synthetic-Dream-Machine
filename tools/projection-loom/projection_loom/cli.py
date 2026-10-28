@@ -108,6 +108,15 @@ def main(argv=None):
     p.add_argument('--image-group',type=Path,required=True)
     p.add_argument('--location',required=True)
     p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('full-location-crucible',
+                          help='Source-calibrated native support, causal edit, cache and USD alternatives')
+    p.add_argument('--image-group',type=Path,required=True)
+    p.add_argument('--declaration',type=Path,required=True)
+    p.add_argument('--lower',required=True)
+    p.add_argument('--upper',required=True)
+    p.add_argument('--move',required=True)
+    p.add_argument('--delta',type=float,nargs=3,required=True)
+    p.add_argument('--out',type=Path,required=True)
     p=commands.add_parser('wide-epoch',help='Resumable staged constructive epochs')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
@@ -453,6 +462,13 @@ def main(argv=None):
                 'verified_source_registrations':len(stack.registrations),
                 'source_inventory_sha256':stack.to_dict()['snapshot_sha256'],
                 'external_survey_certification':False}
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command=='full-location-crucible':
+        from .hephaestus_holistic import run_holistic
+        declaration=json.loads(args.declaration.read_text(encoding='utf8'))
+        result=run_holistic(args.image_group,declaration,args.lower,args.upper,
+                            args.move,args.delta,args.out)
         print(json.dumps(result,indent=2))
         return result
     if args.command=='fracture-pattern':
