@@ -132,7 +132,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
-import { hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, realmStandingDocUrl, materializeFaceWorkingDoc } from "@lararium/mesh";
+import { hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isSystemCanonBag, realmStandingDocUrl, materializeFaceWorkingDoc } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { readFace } from "@lararium/mesh";
@@ -402,7 +402,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     // `requestedBy` claim. With a face lit, a local verb that names this place presents as the mounted face's atom;
     // at the floor the place presents as itself and reaches floor acts only. A claim naming any other DID stays that
     // DID, so the verifier judges it as the stranger it is, and a synced summons never borrows the local channel.
-    presenterOf: (invocation, local) => presenterFor({ invocation, local, auth: { ...daemonAuth, holds: (group) => [...providers.values()].some((face) => face.group === group) } }),
+    presenterOf: (invocation, local) => presenterFor({ invocation, local, auth: { ...daemonAuth, holds: (group) => [...providers.values()].some((face) => face.group === group), atomOf: (group) => [...providers.entries()].find(([, face]) => face.group === group)?.[0] ?? null } }),
     // Sovereign-worker data-plane: register the read-only reactors in-worker over the
     // IslandContext composite (verify-then-delegate gate inherited); the residency
     // ACTION reactors register alongside them below.
@@ -1239,7 +1239,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       providers.set(bareKey(daemonAuth.atom!.key), { provider: keyhive, group: daemonAuth.personaGroupId! });
       for (const face of daemonAuth.joinedFaces ?? []) await lightJoinedFace(face, ctx);
       // The Kahu predicate stands in the verifier as well: a verb routed into a wiki island clears its cap HERE.
-      intentVerifier = withKahuReach(
+      const mountedKahuVerifier = withKahuReach(
         { verify: async (args) => {
           const key = bareKey(args.presenter);
           const face = providers.get(key);
@@ -1248,6 +1248,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         } },
         kahuReachOf(ctx),
       );
+      intentVerifier = {
+        ...mountedKahuVerifier,
+        verify: (args) => {
+          if (args.access === "admin" && isSystemCanonBag(args.bagUrl) && bareKey(args.presenter) !== bareKey(daemonAuth.atom!.key)) {
+            return Promise.resolve({ ok: false, reason: "kahu-reach: system canon takes the mounted face's hand; a sibling face holds none here" });
+          }
+          return mountedKahuVerifier.verify(args);
+        },
+      };
       return intentVerifier;
     },
 
@@ -1287,12 +1296,12 @@ const bareKey = (did: string): string => did.trim().toLowerCase().replace(/^0x/,
 
 /**
  * Who one verb presents as (see `presenterOf` in `operatorDaemonOptions`). A verb that names a PersonaGroup must name
- * the mounted face's, or it refuses by name: a session never falls back silently to another face.
+ * a held face's group, or it refuses by name: a session never falls back silently to another face.
  */
 export function presenterFor(input: {
   readonly invocation: { readonly requestedBy: string; readonly args: Readonly<Record<string, unknown>> };
   readonly local: boolean;
-  readonly auth: Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "placeVerifyingKey" | "atom" | "personaGroupId" | "deviceEdge"> & { readonly holds?: (group: string) => boolean };
+  readonly auth: Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "placeVerifyingKey" | "atom" | "personaGroupId" | "deviceEdge"> & { readonly holds?: (group: string) => boolean; readonly atomOf?: (group: string) => string | null };
 }): string {
   const { invocation, local, auth } = input;
   const claim = invocation.requestedBy;
@@ -1302,5 +1311,11 @@ export function presenterFor(input: {
   if (typeof named === "string" && named.length > 0 && named !== auth.personaGroupId && !auth.holds?.(named)) {
     throw new Error(`this vessel wears ${auth.personaGroupId}; name it or wear ${named} first`);
   }
-  return bareKey(claim) === bareKey(auth.placeVerifyingKey) ? `0x${auth.atom!.key}` : claim;
+  if (bareKey(claim) !== bareKey(auth.placeVerifyingKey)) return claim;
+  if (typeof named === "string" && named.length > 0 && named !== auth.personaGroupId) {
+    const atom = auth.atomOf?.(named);
+    if (!atom) throw new Error(`no atom for held group ${named}`);
+    return `0x${bareKey(atom)}`;
+  }
+  return `0x${auth.atom!.key}`;
 }
