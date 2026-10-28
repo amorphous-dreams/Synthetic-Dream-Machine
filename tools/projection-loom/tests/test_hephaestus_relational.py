@@ -181,3 +181,20 @@ def test_replay_rejects_parent_and_operation_frontier_disagreement():
     events[forged_id] = changed
     with pytest.raises(ValueError, match="Causal parent frontier"):
         RelationalGround("replay", events=events)
+
+
+
+def test_rehydration_rejects_forged_merge_of_two_conflicting_causal_islands():
+    g = RelationalGround("merge-test")
+    g = added(g, op("create", "same", (), kind="construct"))
+    left = added(g, op("annotate", "same", g.frontier, note="left"))
+    right = added(g, op("annotate", "same", g.frontier, note="right"))
+    merged = {**left.events, **right.events}
+    with pytest.raises(ValueError, match="Conflicting concurrent edit in replayed"):
+        RelationalGround("merge-test", events=merged)
+    # Distinct branches remain admissible when they address distinct entities.
+    g = added(g, op("create", "other", g.frontier, kind="construct"))
+    a = added(g, op("annotate", "same", g.frontier, note="left"))
+    b = added(g, op("annotate", "other", g.frontier, note="right"))
+    assert len(RelationalGround("merge-test", events={
+        **a.events, **b.events}).frontier) == 2

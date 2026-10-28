@@ -251,3 +251,7 @@ The ledger now follows executable evidence rather than its initial proposed-only
 ## Native Fire fixture correction (2026-10-28)
 
 The new micro-roundoff test initially asked a bridge proposal that failed native admission on its existing small fixture. The established `bearing-column` relation succeeds on that native fixture. Use that admitted geometry to test replay tolerance and keep structural/coordinate tampering as separate refusals. The new test cannot infer admission from a merely syntactically valid proposal.
+
+## Evergreen loop · replayed causal-island merge integrity (2026-10-28)
+
+**✶ Observe:** Live `apply` rejected overlapping unseen edits, but a forged aggregate of two independently accepted sibling event sets could replay in a sorted order without ever applying the same conflict gate. **⏿ Orient:** An event log’s partial order must govern both live entry and deterministic reconstruction. **◇ Decide:** At replay, compare every event's touched scope against prior events not included in its causal ancestors. **▶ Act:** Reject overlapping sibling edits; preserve disjoint sibling events, with explicit two-island rehydration tests. **↺ Aftermath:** This guards internal causal self-consistency, not authenticity of untrusted Git authors or signatures.

@@ -247,6 +247,7 @@ class RelationalGround:
 
     def _project(self):
         entities, links = {}, []
+        admitted = {}
         for event_id, event in self._ordered_events():
             if event_id != _digest({"parents": event["parents"], "operation": event["operation"]}):
                 raise ValueError("Causal event digest mismatch")
@@ -254,9 +255,15 @@ class RelationalGround:
             if event["parents"] != sorted(event["operation"]["frontier"]):
                 raise ValueError("Causal parent frontier and authored operation disagree")
             prestate = {"entities": entities, "relations": links}
-            if event.get("touched") != sorted(self._touches(event["operation"], prestate)):
+            touched = sorted(self._touches(event["operation"], prestate))
+            if event.get("touched") != touched:
                 raise ValueError("Causal dependency scope was tampered with")
+            observed = self._ancestors(event["parents"])
+            for prior_id, prior_touched in admitted.items():
+                if prior_id not in observed and set(touched) & prior_touched:
+                    raise ValueError("Conflicting concurrent edit in replayed causal graph")
             _apply_one(entities, links, event["operation"])
+            admitted[event_id] = set(touched)
         return {"entities": entities, "relations": sorted(links, key=lambda x:
                 (x["parent"], x["child"], x["verb"])), "frontier": list(self.frontier)}
 
