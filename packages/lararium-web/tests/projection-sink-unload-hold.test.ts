@@ -18,7 +18,7 @@ function mount() {
   document.body.appendChild(host);
   const sink: ProjectionSink = createProjectionSink(host);
   const sent: LarMsg_ControlEvent[] = [];
-  sink.arm({ sendControlEvent: (_surface, ev) => { sent.push(ev); } });
+  sink.arm({ sendControlEvent: (_surface, ev) => { if (!sent.some((prior) => prior.eventId === ev.eventId)) sent.push(ev); } });
   const frame: LarSurfaceFrame = {
     type: LAR_FRAME, wikiUri: "lar:///wiki/lares", cameraId: LAR_CAMERA_STORY, mountEpoch: 1,
     keys: [{ key: LAR_KEY_SURFACE, rev: 1, html: `<button class="go" data-lar-rid="5" data-lar-on="click" data-lar-cancel="click" data-lar-bubble="no">go</button>` }],

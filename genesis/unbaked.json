@@ -1,0 +1,10 @@
+{
+  "format": "lararium-genesis-unbaked/v1",
+  "unbaked": [
+    {
+      "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
+      "sha256": "62511f2512d9aeb612a195f38c24d9f07b80dcffbc5231817a7ddf57e5811871",
+      "why": "D2 close: the incremental document frequency rides the bundled wiki-sense fold and the camera mount epoch mints from a boot nonce and a counter; the next labelled GENESIS RE-BAKE carries them"
+    }
+  ]
+}

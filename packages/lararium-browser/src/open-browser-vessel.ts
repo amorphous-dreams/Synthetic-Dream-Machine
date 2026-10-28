@@ -14,6 +14,8 @@
  * (PersonaGroup/admin), not genesis — see project-sovereign-worker-model.
  */
 
+import type { PortIslandToVesselMsg } from "@lararium/mesh";
+import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
@@ -198,6 +200,8 @@ async function writeBootKeys(idbName: string, writes: BootKeyWrites): Promise<vo
 // ── Options / Result ────────────────────────────────────────────────────────────
 
 export interface BrowserVesselOptions extends LarariumVesselOptions {
+  portPolicy?: PortPolicy;
+  onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   idbName?:        string;
   /** The Web Locks host the one-holder-per-store law rides; the platform's own when omitted (the test door). */
   locks?:          LockHost | null;
@@ -365,6 +369,7 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
   readFloor: (baseUrl: string) => Promise<HearthFloorRead>;
   /** Relay a `lar:control-event` to the surface that PAINTED its target, whatever surface stands active. */
   sendControlEvent: (surface: string, ev: LarMsg_ControlEvent) => ReturnLegVerdict;
+  ports: { place(surface: string, binding: string, msg: unknown): PortPlacement; close(binding: string): void };
   /** Ask a surface's island to paint whole under a fresh mount epoch (`lar:resend`). */
   resend: (surface: string) => ReturnLegVerdict;
   /** The uniform pin-selector: flip which VM owns the singleton #projection sink. DAEMON_SURFACE_ID summons the
@@ -942,6 +947,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
 
   // ── Residency MECHANISM (parity with node — a tab has finite memory too) ────
   let vmManager!: BrowserVesselIslandPool;   // set in makePool
+  let portFaceId: string | null = null;
   let wikiActivation!: WikiActivationCap;     // set in makePool — activation-on-reference cap (minimal grant)
   let daemon!:     DaemonVmCore;      // set in openDaemon
   let wikiSense!:  WikiSenseSupervisor;   // set in wireVerbs (post-daemon)
@@ -1270,6 +1276,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // EVERY PLANE FAMILY REGISTERS THROUGH A FACE PROOF, and only after it: the worn face's planes ride the proof above, and a
         // face this boot does not wear registers its persona plane only where its own sealed anchor, the verified KEL and its
         // signed log vouch for that url. A bootstrap entry no proof backs registers nothing.
+        portFaceId = wornGroup;
         provenWornPlaneUrl = wornPlaneUrl;
         provenPlanes.set(wornGroup, wornPlaneUrl);
         for (const plane of social.personaPlanes) {
@@ -1735,6 +1742,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // shared with the daemon VM's own resolution above) and is read fresh per mount.
       vmManager = new BrowserVesselIslandPool({
         mainRepo: repo,
+        // D4 lends the actor grant; this vessel opens a read-only port until then.
+        portPolicy: opts.portPolicy ?? ((binding, islandKey) => ({ faceId: portFaceId ?? islandKey, actor: binding, edits: false, bags: [], admin: false })),
+        ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
         resolvePluginCids: async (recipe) => {
           crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
           return resolveBrowserIslandPluginCids({
@@ -1893,6 +1903,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // The return leg routes each event to the surface that painted its target; the active pointer plays no
     // part, so a switch between the person's act and its arrival never moves the event to another island.
     sendControlEvent: returnLeg.sendControlEvent,
+    ports: {
+      place: (surface, binding, msg) => surface === DAEMON_SURFACE_ID || !vmManager.has(surface)
+        ? { ok: false, reason: "surface-unknown" } : vmManager.placePort(surface, binding, msg),
+      close: (binding) => vmManager.closePortBinding(binding),
+    },
     resend: (surface: string) => returnLeg.resend(surface),
     // The uniform pin-selector: flip the live gate synchronously (mount-then-flip — daemon + the pinned wiki
     // are already mounted), then persist the choice fire-and-forget to bags/daemon/active-wiki (read only at next

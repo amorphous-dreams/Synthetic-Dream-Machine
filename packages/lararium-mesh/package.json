@@ -20,6 +20,10 @@
       "import": "./dist/record-port.js",
       "types": "./dist/record-port.d.ts"
     },
+    "./port-lease": {
+      "import": "./dist/port-lease.js",
+      "types": "./dist/port-lease.d.ts"
+    },
     "./lar-camera": {
       "import": "./dist/lar-camera.js",
       "types": "./dist/lar-camera.d.ts"

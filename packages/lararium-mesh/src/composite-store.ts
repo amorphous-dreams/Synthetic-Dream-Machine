@@ -282,6 +282,9 @@ export class CompositeStore implements LarTiddlerStore {
     if (typeof store.writeFamily !== "function") {
       throw new VerbRefusal("non-atomic-layer", "CompositeStore.precheckFamily: destination cannot write a family atomically");
     }
+    if (store.notifiesSynchronously !== true) {
+      throw new VerbRefusal("late-notifying-layer", "CompositeStore.precheckFamily: destination does not declare synchronous family notifications");
+    }
   }
 
   /** The checks `writeFamily` and `precheckFamily` share, synchronous so a layer's write begins inside the call. */

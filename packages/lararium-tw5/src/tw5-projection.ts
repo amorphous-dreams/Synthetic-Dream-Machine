@@ -133,13 +133,16 @@ export function renderIdCensus(): { nodes: number; scopes: number } {
   return { nodes: ridMap.size, scopes: eventScopes.size };
 }
 
-/** Epochs rise across every mount this worker stands, and start past the wall clock, so a page holding an
- *  epoch from a worker that restarted never matches the new one. */
-let lastEpoch = 0;
-function mintEpoch(): number {
-  lastEpoch = Math.max(lastEpoch + 1, Date.now());
-  return lastEpoch;
+/** One boot owns a random 32-bit prefix and at most 2^20 epochs. */
+export function createEpochMint(): () => number {
+  const nonce = crypto.getRandomValues(new Uint32Array(1))[0]!;
+  let counter = 0;
+  return () => {
+    if (counter >= 0xfffff) throw new RangeError("mount-epoch-exhausted");
+    return nonce * 0x100000 + ++counter;
+  };
 }
+const mintEpoch = createEpochMint();
 
 /** The island protocol's union names the two `lar:` messages once the wire integration lands; until then this
  *  one cast stands as the seam, and nowhere else. */

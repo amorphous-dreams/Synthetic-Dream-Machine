@@ -10,20 +10,20 @@
  */
 import { describe, expect, test } from "vitest";
 import { wikiSkip, skipNote } from "./test-wiki.js";
-import { ManualTimers, afterDispatch, draftBag, peerWrite, shoreRig, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
+import { ManualBoundary, afterDispatch, draftBag, peerWrite, shoreRig, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
 
 const remote = { kind: "crdt-remote", edgeIsland: "seed" } as const;
 const kept = (r: Rig, target: string): Array<Record<string, unknown>> =>
   Object.values(r.doc(draftBag).tiddlers).filter((rec) => !rec.meta?.deleted && rec.tiddler["draft.of"] === target).map((rec) => rec.tiddler as Record<string, unknown>);
 
-async function stage(title: string): Promise<{ r: Rig; timers: ManualTimers }> {
-  const timers = new ManualTimers();
-  const r = await shoreRig({ timers });
+async function stage(title: string): Promise<{ r: Rig; boundary: ManualBoundary }> {
+  const boundary = new ManualBoundary();
+  const r = await shoreRig({ boundary });
   await r.working.put({ tiddler: { title, text: "body", caption: "base caption" } }, remote);
   await turns(16);
   await r.adaptor.armSeedCheckpoint();
   await r.adaptor.landingIdle();
-  return { r, timers };
+  return { r, boundary };
 }
 
 /** The hand rewrites X without its caption: one `addTiddler` of the standing fields less that field. */
@@ -35,12 +35,12 @@ function removeCaption(r: Rig, title: string): void {
 describe.skipIf(wikiSkip)(`a hand's removal meets a peer's edit${skipNote}`, () => {
   test("the peer's value stays live, and the hand's record without the field stands as a kept draft", async () => {
     const x = "lar:///t/removal/meets-edit";
-    const { r, timers } = await stage(x);
+    const { r, boundary } = await stage(x);
     removeCaption(r, x);
     await afterDispatch();
     // The peer's edit of the same field lands while the hand still waits in its window.
     await peerWrite(r, workingBag, [{ tiddler: { title: x, text: "body", caption: "peer caption" } }]);
-    timers.fireAll(400);
+    boundary.fire();
     await turns(32);
     await r.adaptor.landingIdle();
     await turns(16);
@@ -57,11 +57,11 @@ describe.skipIf(wikiSkip)(`a hand's removal meets a peer's edit${skipNote}`, () 
 
   test("CONTROL: the same removal beside a peer's edit of another field lands clean", async () => {
     const x = "lar:///t/removal/clean";
-    const { r, timers } = await stage(x);
+    const { r, boundary } = await stage(x);
     removeCaption(r, x);
     await afterDispatch();
     await peerWrite(r, workingBag, [{ tiddler: { title: x, text: "peer body", caption: "base caption" } }]);
-    timers.fireAll(400);
+    boundary.fire();
     await turns(32);
     await r.adaptor.landingIdle();
     await turns(16);

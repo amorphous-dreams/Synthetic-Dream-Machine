@@ -8,11 +8,10 @@ import { describe, expect, test, vi } from "vitest";
 import { CompositeStore, emptyLarDoc, type LarDoc, wikiBagUri } from "@lararium/mesh";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
-import { HandGate } from "../src/hand-gate.js";
 import { unroutedSaveAlertTitle } from "../src/island-adaptor.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import {
-  Repo, afterDispatch, canonBag, draftBag, ManualTimers, openDraft, peerWrite, remote, saveSequence,
+  Repo, afterDispatch, canonBag, draftBag, ManualBoundary, openDraft, peerWrite, remote, saveSequence,
   shoreRig, storeDeleted, storeText, turns, typeInto, workingBag, type Rig,
 } from "./wiki-shore-rig.js";
 
@@ -20,7 +19,7 @@ const WORKING_POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 const heads = (r: Rig, bag: string): string => JSON.stringify(r.handles[bag]!.heads());
 /** A fresh engine and adaptor over the same docs; the layers replay in `order`, the landing queue draining after each. */
 async function reload(r: Rig, order: ReadonlyArray<"canon" | "working" | "draft">): Promise<Rig> {
-  const again = await shoreRig({ instanceId: "shore-reload", timers: new ManualTimers(), docs: r.saved() });
+  const again = await shoreRig({ instanceId: "shore-reload", boundary: new ManualBoundary(), docs: r.saved() });
   for (const name of order) { again[name].emitInitialReplay(); await again.adaptor.landingIdle(); }
   return again;
 }
@@ -28,8 +27,8 @@ async function reload(r: Rig, order: ReadonlyArray<"canon" | "working" | "draft"
 describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
   test("a delete of a canon-landed title shadows from the working layer, canon untouched, and stays absent across a reload", async () => {
     for (const canonWritable of [false, true]) {
-      const timers = new ManualTimers();
-      const r = await shoreRig({ timers, canonWritable });
+      const boundary = new ManualBoundary();
+      const r = await shoreRig({ boundary, canonWritable });
       const x = `lar:///t/shadow/delete-${canonWritable}`;
       await r.canon.put({ tiddler: { title: x, text: "canon text" } }, remote);
       await turns();
@@ -38,7 +37,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
       const mark = r.calls.length;
       r.wiki.deleteTiddler(x);
       await afterDispatch();
-      timers.fireAll(400);
+      boundary.fire();
       await turns(48);
       const calls = r.calls.slice(mark).filter((c) => c.deletes.includes(x));
       expect(calls, "one tombstone, in the working layer").toHaveLength(1);
@@ -60,8 +59,8 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
   }, 120_000);
 
   test("a write-layer pointer that names a writable canon bag cannot steer a delete into it", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers, canonWritable: true });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary, canonWritable: true });
     const x = "lar:///t/shadow/pointer-names-canon";
     await r.canon.put({ tiddler: { title: x, text: "canon text" } }, remote);
     await r.adaptor.armSeedCheckpoint();
@@ -75,7 +74,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     const mark = r.calls.length;
     r.wiki.deleteTiddler(x);
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(48);
     const calls = r.calls.slice(mark).filter((c) => c.deletes.includes(x));
     expect(calls.map((c) => c.bag)).toEqual([workingBag]);
@@ -88,8 +87,8 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
   }, 120_000);
 
   test("a marked slot child the wiki dropped never rides its root's family beneath the working layer", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers, canonWritable: true });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary, canonWritable: true });
     const root = "lar:///t/shadow/placed-root";
     const child = `${root}#/a`;
     await r.canon.writeFamily([
@@ -109,7 +108,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(root)!.fields, { caption: "edited by hand" }));
     r.wiki.deleteTiddler(child);
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(48);
     const issued = r.calls.slice(mark);
     expect(issued.filter((c) => c.bag === canonBag).flatMap((c) => c.deletes), "no tombstone reaches the canon bag").toEqual([]);
@@ -127,22 +126,22 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
   }, 120_000);
 
   test("a later re-create lands in the working layer over the tombstone and the composition shows it", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const x = "lar:///t/shadow/recreate";
     await r.canon.put({ tiddler: { title: x, text: "canon text" } }, remote);
     await turns();
     await r.adaptor.armSeedCheckpoint();
     r.wiki.deleteTiddler(x);
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(48);
     const tombstoneHeads = r.adaptor.ledger.landedOf(x)!.heads!;
     const canonBefore = heads(r, canonBag);
     const mark = r.calls.length;
     r.wiki.addTiddler(new r.Tiddler({ title: x, text: "re-created" }));
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(48);
     const writes = r.calls.slice(mark).filter((c) => c.puts.includes(x));
     expect(writes).toHaveLength(1);
@@ -158,8 +157,8 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
   }, 120_000);
 
   test("control: a working-layer title tombstones in the working layer at its landed base, and a draft in the draft layer", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const own = "lar:///t/shadow/own";
     const target = "lar:///t/shadow/draft-target";
     await r.working.put({ tiddler: { title: own, text: "own" } }, remote);
@@ -170,7 +169,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     const mark = r.calls.length;
     r.wiki.deleteTiddler(own);
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(32);
     const calls = r.calls.slice(mark).filter((c) => c.deletes.includes(own));
     expect(calls).toHaveLength(1);
@@ -178,7 +177,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     expect(calls[0]!.base).toEqual(ownHeads);
     const d = openDraft(r, target, "typing");
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(32);
     const markDraft = r.calls.length;
     const draftBase = r.adaptor.ledger.landedOf(d)!.heads;
@@ -190,8 +189,8 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
   }, 120_000);
 
   test("a canon wave that changes a shadowed title does not resurrect it; with no shadow the same wave lands", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const shadowed = "lar:///t/shadow/wave-shadowed";
     const open = "lar:///t/shadow/wave-open";
     await r.canon.put({ tiddler: { title: shadowed, text: "canon text" } }, remote);
@@ -200,7 +199,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     await r.adaptor.armSeedCheckpoint();
     r.wiki.deleteTiddler(shadowed);
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(48);
     const mark = r.calls.length;
     await peerWrite(r, canonBag, [{ tiddler: { title: shadowed, text: "canon moved" } }, { tiddler: { title: open, text: "canon moved" } }]);
@@ -215,8 +214,8 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
   }, 120_000);
 
   test("a canon wave under a live working copy-up leaves the copy-up in the wiki", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const x = "lar:///t/shadow/copy-up";
     await r.canon.put({ tiddler: { title: x, text: "canon text" } }, remote);
     await r.working.put({ tiddler: { title: x, text: "copy-up text" } }, remote);
@@ -234,8 +233,8 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
   }, 120_000);
 
   test("a rename whose source lives in canon lands the target in working and shadows the source in the same change", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const x = "lar:///t/shadow/rename-from";
     const y = "lar:///t/shadow/rename-to";
     await r.canon.put({ tiddler: { title: x, text: "canon text" } }, remote);
@@ -244,7 +243,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     const d = openDraft(r, x, "renamed");
     typeInto(r, d, "renamed", { "draft.title": y });
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(32);
     const canonBefore = heads(r, canonBag);
     const working = r.changes(workingBag);
@@ -309,6 +308,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     // A hand's SAVE of the title: the cascade routes through the empty pointer and refuses.
     const saveRefused = refusalRaised();
     wiki.addTiddler(new Tiddler(wiki.getTiddler(x)!.fields, { text: "a hand's edit" }));
+    void adaptor.handsRested().catch(() => {});   // the next act crosses a boundary
     await saveRefused;
     expect(String(wiki.getTiddler(alertTitle)!.fields.text)).toContain("that tiddler holds nothing");
     expect(adaptor.holdsHand(x), "the edit stays owed").toBe(true);
@@ -316,6 +316,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     // The hand's DELETE of the same owed title: the refusal's reason changes and the alert follows it.
     const deleteRefused = refusalRaised();
     wiki.deleteTiddler(x);
+    void adaptor.handsRested().catch(() => {});
     await deleteRefused;
     const alert = String(wiki.getTiddler(alertTitle)!.fields.text);
     expect(alert).toContain("this wiki mounts no working layer");
@@ -332,8 +333,8 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     vi.restoreAllMocks();
 
     // The pointer names the working slot and the composition does not mount it.
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers, noWorking: true });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary, noWorking: true });
     const y = "lar:///t/shadow/unmounted-working";
     await r.canon.put({ tiddler: { title: y, text: "canon text" } }, remote);
     await turns();
@@ -343,7 +344,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     const mark = r.calls.length;
     r.wiki.deleteTiddler(y);
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(32);
     expect(r.calls.slice(mark), "no store call was issued").toEqual([]);
     expect(String(r.wiki.getTiddler(alertTitle)!.fields.text), "the sentence is true for a composition without a working layer").toContain("this wiki mounts no working layer");
@@ -357,8 +358,8 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
 
   test("a hand edit that drops a slot child shadows the orphan from working in the family's own change, canon untouched", async () => {
     for (const canonWritable of [false, true]) {
-      const timers = new ManualTimers();
-      const r = await shoreRig({ timers, canonWritable });
+      const boundary = new ManualBoundary();
+      const r = await shoreRig({ boundary, canonWritable });
       const root = `lar:///t/shadow/orphan-root-${canonWritable}`;
       const kept = `${root}#/a`;
       const orphan = `${root}#/b`;
@@ -373,7 +374,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
       const body = `<<^ code="&#x0001;" from="?" -> to="${root}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${root.slice(7)}"\n\`\`\`\n\n<<~ ahu #/a>>\n\n! body\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
       r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(root)!.fields, { text: body }));
       await afterDispatch();
-      timers.fireAll(400);
+      boundary.fire();
       await turns(48);
       const writes = r.calls.slice(mark).filter((c) => c.puts.includes(root));
       expect(writes, "one family call").toHaveLength(1);

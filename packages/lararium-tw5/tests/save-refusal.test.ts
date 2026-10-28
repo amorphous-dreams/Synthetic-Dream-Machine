@@ -14,7 +14,6 @@
 import { describe, test, expect, beforeAll, vi } from "vitest";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import { IslandAdaptor, unroutedSaveAlertTitle, UnroutedSaveRefusal } from "../src/island-adaptor.js";
-import { HandGate } from "../src/hand-gate.js";
 import { asIslandStore } from "./island-store-double.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -34,7 +33,6 @@ class RecordingStore extends MemoryTiddlerStore {
   }
 }
 
-const settle = (): Promise<void> => new Promise((r) => setTimeout(r, HandGate.TRAILING_MS + 100));
 
 interface Wiki {
   addTiddler(t: unknown): void;
@@ -48,6 +46,9 @@ describe.skipIf(wikiSkip)(`a save with no bag to land in refuses by name${skipNo
   let engine: TW5Engine;
   let store: RecordingStore;
   let adaptor: IslandAdaptor;
+  const settle = async (): Promise<void> => { await adaptor.handsRested().catch(() => {}); };
+  /** A direct save settles at its flush, so the caller crosses a boundary for it. */
+  const saved = (t: unknown): Promise<void> => { const p = adaptor.saveTiddler(t as never); void adaptor.boundary().catch(() => {}); return p; };
   let wiki: Wiki;
   let Tiddler: new (f: Record<string, unknown>) => unknown;
 
@@ -101,8 +102,8 @@ describe.skipIf(wikiSkip)(`a save with no bag to land in refuses by name${skipNo
 
   test("the refusal answers its caller: `saveTiddler` rejects with the named refusal", async () => {
     const tiddler = new Tiddler({ title: "lar:///t/refusal/direct", text: "x" });
-    await expect(adaptor.saveTiddler(tiddler)).rejects.toBeInstanceOf(UnroutedSaveRefusal);
-    await expect(adaptor.saveTiddler(tiddler)).rejects.toThrow(POINTER_BAG);
+    await expect(saved(tiddler)).rejects.toBeInstanceOf(UnroutedSaveRefusal);
+    await expect(saved(tiddler)).rejects.toThrow(POINTER_BAG);
   });
 
   test("the alert rail's own tiddlers raise no alert about themselves", async () => {
@@ -148,7 +149,7 @@ describe.skipIf(wikiSkip)(`a save with no bag to land in refuses by name${skipNo
     await settle();
     store.puts.length = 0;
     const tiddler = new Tiddler({ title: "lar:///t/refusal/withheld", text: "kept out by name" });
-    await expect(adaptor.saveTiddler(tiddler)).resolves.toBeUndefined();
+    await expect(saved(tiddler)).resolves.toBeUndefined();
     await settle();
     expect(store.puts.filter((p) => p.title === "lar:///t/refusal/withheld")).toEqual([]);
     expect(wiki.getTiddlerText(unroutedSaveAlertTitle(POINTER_BAG))).not.toContain("lar:///t/refusal/withheld");

@@ -10,6 +10,7 @@ import { assertStorableTitle } from "@lararium/mesh/lar-uris";
  * stays non-atomic, and the port refuses it by name.
  */
 export class AtomicMemoryStore extends MemoryTiddlerStore {
+  readonly notifiesSynchronously = true;
   constructor(private readonly atomicBag?: string) { super(atomicBag); }
 
   async writeFamily(puts: readonly LarTiddlerRecord[], tombstones: readonly string[], origin: ChangeOrigin, _options?: LarWriteOptions): Promise<void> {

@@ -13,7 +13,7 @@
  */
 
 import type { CompositeStore, CompositeEntry } from "@lararium/mesh";
-import { deriveDocStalk, senseBodyOf, type DocStalk, type WikiSenseDoc } from "./wiki-sense-fold.js";
+import { deriveDocStalk, senseBodyOf, IncrementalCorpusFold, type CorpusFold, type DocStalk, type WikiSenseDoc } from "./wiki-sense-fold.js";
 
 /** The shore ONE perceiver hull consumes — whole-record docs + a change pulse. Read-only. */
 export interface WikiCorpusReader {
@@ -24,6 +24,8 @@ export interface WikiCorpusReader {
   /** OPTIONAL per-title stalk supplier — a reader with its own cache law fills foldCorpus's stalkOf
    *  shore (the composite face memos per title on the body; the VM face rides getCacheForTiddler instead). */
   stalkOf?: (doc: WikiSenseDoc) => DocStalk;
+  /** Persistent document-frequency index for repeated reads. */
+  fold?: (docs: readonly WikiSenseDoc[]) => CorpusFold;
 }
 
 /** Lift ONE composite entry onto the sensed-entity shape — the WHOLE record, pass-through. The one
@@ -46,7 +48,8 @@ export function senseDocOfEntry(e: CompositeEntry): WikiSenseDoc {
  *  lineage and survives an edit, so it never keys derived text. */
 export function compositeCorpusReader(store: CompositeStore): WikiCorpusReader {
   const memo = new Map<string, { body: string; stalk: DocStalk }>();
-  return {
+  const index = new IncrementalCorpusFold();
+  const reader: WikiCorpusReader = {
     async docs(): Promise<readonly WikiSenseDoc[]> {
       const entries = await store.entries();
       const docs = entries.map(senseDocOfEntry);
@@ -64,5 +67,7 @@ export function compositeCorpusReader(store: CompositeStore): WikiCorpusReader {
       memo.set(doc.title, { body, stalk });
       return stalk;
     },
+    fold: (docs) => index.update(docs, reader.stalkOf!),
   };
+  return reader;
 }

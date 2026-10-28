@@ -28,6 +28,7 @@ import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./ph
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 import { LAR_WHOLE_VALUE_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, readHearthFloorCard, type GenesisSeed, type MeshPeer } from "@lararium/mesh";
 import { createProjectionSink } from "./projection-sink.js";
+import { pagePortDelivery, standPagePort } from "./page-port.js";
 import { defaultReadFace, floorAnchorOf, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
 // The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
@@ -412,6 +413,7 @@ async function bootVessel(): Promise<void> {
       onPhase: (p) => { paint(p); projectionSink.setBreath("lares", { phase: p }); },
       onFrame: (frame) => { if (projectionSink.apply(frame) === "painted" && frame.keys.some((key) => key.key === "lar:surface")) reportFirstPaint(); },
       onControlResult: (_surface, result) => { projectionSink.applyResult(result); },
+      onPortMessage: (binding, islandKey, msg) => pagePortDelivery.onPortMessage(binding, islandKey, msg),
       ...(relayUrl ? { relayUrl } : {}),
       ...(floor ? { floorCard: floor.text } : {}),
       ...(floorAnchor ? { floorAnchor } : {}),
@@ -433,6 +435,8 @@ async function bootVessel(): Promise<void> {
     void readFloor(result.readFloor);           // the vessel stands, so it reads and verifies the hearth's floor
     // Arm the interactivity RETURN leg (click and text halves): each event carries its source surface.
     projectionSink.arm({ sendControlEvent: result.sendControlEvent });
+    // The page's port road: one transport over the vessel's port doors; replies reach it for its own binding alone.
+    standPagePort(result.ports, () => projectionSink.surface());
     // The UNIVERSAL summon (the reachability affordance): host chrome overlays EVERY
     // wiki, so this button + chord flips the projection gate to the daemon from any
     // active surface — a pure gate flip (both surfaces already mounted), no reboot.
