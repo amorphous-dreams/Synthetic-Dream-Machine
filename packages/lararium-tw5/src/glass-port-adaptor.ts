@@ -78,16 +78,17 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
     if (fields) delete fields["title"];
     if (record.deleted) {
       omitted.delete(title);
-      tag(title, imageOf(null));
       wiki.deleteTiddler(title);
+      tag(title, imageOf(null));
       landed.set(title, null);
       if (record.seq !== undefined) tombstones.set(title, record.seq);
     } else {
       const missing = record.omitted ?? [];
       for (const key of missing) delete fields![key];
       omitted.set(title, missing);
-      tag(title, imageOf(fields));
       wiki.addTiddler(new Tiddler({ title, ...fields }));
+      // The tag reads the tiddler back as the change listener will: TW5 rewrites tags, lists and dates, so the wire image would never match.
+      tag(title, imageOf(ownFields(wiki, title)));
       landed.set(title, { ...record, fields: { ...fields! }, omitted: [...missing] });
       tombstones.delete(title);
     }
