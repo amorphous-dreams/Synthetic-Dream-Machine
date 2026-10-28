@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 import json
+import shutil
 from pathlib import Path
 
 from .editor_proposals import apply_proposal, seed_editor_ground
@@ -22,6 +23,7 @@ from .location_stack import Element, LocationStack
 from .provenance_encoding import canonical_json_sha256
 from .relational_ground import IDENTITY, RelationalGround
 from .scene_usd import _validate_declaration, package_scene, validate_scene
+from .native_support import native_support, verify_support_proposal
 
 SCHEMA = "projection-loom/location-workspace"
 
@@ -79,6 +81,18 @@ def _check_bindings(inventory, declaration, ground):
     return authored
 
 
+def _verify_native_supports(ground, native_dir):
+    """Every required semantic support must remain supported by exact STEP.
+
+    A native geometric bearing witness is deliberately NOT load certification.
+    The proof is recomputed after every source-bound edit; moving a supported
+    body away cannot silently preserve a stale support claim.
+    """
+    for relation in ground.snapshot()["relations"]:
+        if relation["required"] and relation["verb"] == "supports":
+            native_support(native_dir, relation["parent"], relation["child"])
+
+
 def _session(folder, declaration, ground, source_digest, scene_digest, *, parent=None):
     identity = {"location": declaration["location"],
                 "score_state": "no-calibrated-source-views",
@@ -106,9 +120,13 @@ def _session(folder, declaration, ground, source_digest, scene_digest, *, parent
 
 
 def _manifest(out, inventory, declaration, ground, scene, *, parent=None,
-              proposal=None, reconciliation=None, native_root="scene",
-              declaration_path="declaration.json", ground_path="ground.json"):
+              proposal=None, reconciliation=None, native_support_proposal=None,
+              native_root="scene", declaration_path="declaration.json",
+              ground_path="ground.json"):
+    kind=("native-support" if native_support_proposal is not None
+          else "editor" if proposal is not None else "initial")
     doc = {"schema": SCHEMA, "location": inventory.location_id,
+           "change_kind":kind,
            "parent_workspace_sha256": parent,
            "inventory_sha256": inventory.to_dict()["snapshot_sha256"],
            "ground_sha256": ground.to_dict()["sha256"],
@@ -118,9 +136,15 @@ def _manifest(out, inventory, declaration, ground, scene, *, parent=None,
                      "ground": ground_path, "scene": native_root,
                      "session": "session.json",
                      "proposal": "proposal.json" if proposal is not None else None,
-                     "reconciliation": "revision/reconciliation.json" if reconciliation is not None else None},
+                     "reconciliation": "revision/reconciliation.json" if reconciliation is not None else None,
+                     "native_support_proposal": "native-support-proposal.json"
+                         if native_support_proposal is not None else None,
+                     "support_source_ground": "support-source-ground.json"
+                         if native_support_proposal is not None else None},
            "proposal_sha256": _sha(proposal) if proposal is not None else None,
            "reconciliation_sha256": _sha(reconciliation) if reconciliation is not None else None,
+           "native_support_sha256": _sha(native_support_proposal)
+               if native_support_proposal is not None else None,
            "journal_sha256": _read(out / "session.json")["snapshot_sha256"],
            "source_authority": "independent-inventory; no-calibrated-pose",
            "automatic_promotion": False}
@@ -153,6 +177,7 @@ def create_workspace(inventory: LocationStack, declaration, destination):
     out.mkdir(parents=True)
     try:
         scene = package_scene(declaration, out / "scene")
+        _verify_native_supports(ground, out / "scene")
         save_once(out / "inventory.json", staged.to_dict())
         save_once(out / "declaration.json", declaration)
         ground.save(out / "ground.json")
@@ -178,7 +203,8 @@ def verify_workspace(directory, *, verify_sources=True):
         raise ValueError("A failed workspace cannot replay as complete")
     paths = m["paths"]
     required = {"inventory", "declaration", "ground", "scene", "session",
-                "proposal", "reconciliation"}
+                "proposal", "reconciliation", "native_support_proposal",
+                "support_source_ground"}
     if set(paths) != required:
         raise ValueError("Workspace has unexpected path roles")
     for value in paths.values():
@@ -195,6 +221,9 @@ def verify_workspace(directory, *, verify_sources=True):
     scene = _read(out / paths["scene"] / "manifest.json")
     validate_scene(out / paths["scene"])
     _check_bindings(inventory, declaration, ground)
+    _verify_native_supports(ground, out / paths["scene"])
+    if m["location"] != inventory.location_id:
+        raise ValueError("Workspace manifest location differs from witnessed source")
     if verify_sources:
         inventory.verify_source_bytes()
     if (m["inventory_sha256"] != inventory.to_dict()["snapshot_sha256"]
@@ -217,12 +246,18 @@ def verify_workspace(directory, *, verify_sources=True):
             "frontier": list(ground.frontier),
             "parent": m["parent_workspace_sha256"]})):
         raise ValueError("Workspace OODA-HA session does not identify this causal branch")
-    if m["parent_workspace_sha256"] is None:
-        if m["proposal_sha256"] is not None or m["reconciliation_sha256"] is not None:
-            raise ValueError("Initial workspace cannot invent a reconciliation")
-    else:
-        if paths["proposal"] is None or paths["reconciliation"] is None:
-            raise ValueError("Edited workspace needs proposal and reconciliation receipts")
+    kind=m.get("change_kind")
+    if kind=="initial":
+        if (m["parent_workspace_sha256"] is not None or
+                m["proposal_sha256"] is not None or
+                m["reconciliation_sha256"] is not None or
+                m["native_support_sha256"] is not None):
+            raise ValueError("Initial workspace cannot invent a causal predecessor")
+    elif kind=="editor":
+        if (m["parent_workspace_sha256"] is None or
+                paths["proposal"] is None or paths["reconciliation"] is None or
+                m["native_support_sha256"] is not None):
+            raise ValueError("Editor workspace needs bounded causal proposal receipts")
         proposal, receipt = (_read(out / paths["proposal"]),
                              _read(out / paths["reconciliation"]))
         if _sha(proposal) != m["proposal_sha256"] or _sha(receipt) != m["reconciliation_sha256"]:
@@ -235,6 +270,22 @@ def verify_workspace(directory, *, verify_sources=True):
         if not all(event["event_id"] in ground.events
                    for event in receipt["operations"]):
             raise ValueError("Edited causal events are missing from workspace ground")
+    elif kind=="native-support":
+        if (m["parent_workspace_sha256"] is None or
+                m["proposal_sha256"] is not None or
+                m["reconciliation_sha256"] is not None or
+                paths["native_support_proposal"] is None or
+                paths["support_source_ground"] is None):
+            raise ValueError("Native support workspace requires independent causal source")
+        prior=RelationalGround.load(out / paths["support_source_ground"])
+        proposal=_read(out / paths["native_support_proposal"])
+        if _sha(proposal)!=m["native_support_sha256"]:
+            raise ValueError("Native support proposal receipt changed")
+        verify_support_proposal(proposal, prior, out / paths["scene"])
+        if proposal["next_ground"] != ground.to_dict():
+            raise ValueError("Native support operation differs from current causal ground")
+    else:
+        raise ValueError("Unknown location workspace change kind")
     return {"valid": True, "location": m["location"],
             "entities": len(declaration["assemblies"]),
             "native": "verified-cad-step-usd",
@@ -266,6 +317,7 @@ def edit_workspace(previous, proposal, destination):
         next_ground = RelationalGround.load(out / "revision" / "ground.json")
         next_scene = _read(out / "revision" / "scene" / "manifest.json")
         _check_bindings(inventory, revised, next_ground)
+        _verify_native_supports(next_ground, out / "revision" / "scene")
         _session(out, revised, next_ground, origin["inventory_sha256"],
                  next_scene["sha256"], parent=origin["sha256"])
         report = _manifest(out, inventory, revised, next_ground, next_scene,
@@ -278,4 +330,49 @@ def edit_workspace(previous, proposal, destination):
     except Exception:
         (out / "FAILED").write_text("Incomplete location edit; no success receipt\n",
                                     encoding="utf8")
+        raise
+
+
+
+def support_workspace(previous, proposal, destination):
+    """Fork verified native-bearing support as an immutable causal location.
+
+    This only changes relation ancestry. It revalidates native STEP evidence
+    and reuses the original scene without alleging a new CAD construction.
+    """
+    parent=Path(previous)
+    verify_workspace(parent)
+    original=_read(parent / "manifest.json")
+    prior_paths=original["paths"]
+    inventory=LocationStack.load(parent / prior_paths["inventory"])
+    declaration=_read(parent / prior_paths["declaration"])
+    ground=RelationalGround.load(parent / prior_paths["ground"])
+    scene_dir=parent / prior_paths["scene"]
+    verify_support_proposal(proposal,ground,scene_dir)
+    next_ground=RelationalGround.from_dict(proposal["next_ground"])
+    _check_bindings(inventory,declaration,next_ground)
+    out=Path(destination)
+    if out.exists():
+        raise ValueError("Native support workspace must be a new causal island")
+    out.mkdir(parents=True)
+    try:
+        shutil.copytree(scene_dir,out / "scene")
+        scene=_read(out / "scene" / "manifest.json")
+        if scene["sha256"] != original["scene_sha256"]:
+            raise ValueError("Copied source-bound native scene diverged")
+        save_once(out / "inventory.json",inventory.to_dict())
+        save_once(out / "declaration.json",declaration)
+        ground.save(out / "support-source-ground.json")
+        next_ground.save(out / "ground.json")
+        save_once(out / "native-support-proposal.json",proposal)
+        _verify_native_supports(next_ground,out / "scene")
+        _session(out,declaration,next_ground,original["inventory_sha256"],
+                 scene["sha256"],parent=original["sha256"])
+        result=_manifest(out,inventory,declaration,next_ground,scene,
+                         parent=original["sha256"],native_support_proposal=proposal)
+        verify_workspace(out)
+        return result
+    except Exception:
+        (out / "FAILED").write_text(
+            "Incomplete native support relation; no completed location\n",encoding="utf8")
         raise

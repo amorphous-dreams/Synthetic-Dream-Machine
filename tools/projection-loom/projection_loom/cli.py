@@ -71,6 +71,10 @@ def main(argv=None):
     p.add_argument('--inventory',type=Path,required=True)
     p.add_argument('--declaration',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('location-support',help='Fork a verified native contact into a causal location')
+    p.add_argument('--workspace',type=Path,required=True)
+    p.add_argument('--proposal',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
     p=commands.add_parser('location-edit',help='Fork a source-bound OODA-HA native edit island')
     p.add_argument('--workspace',type=Path,required=True)
     p.add_argument('--proposal',type=Path,required=True)
@@ -388,8 +392,8 @@ def main(argv=None):
             result = validate_variants(args.comparison)
         print(json.dumps(result, indent=2))
         return result
-    if args.command in ('location-init','location-edit','location-verify'):
-        from .location_workspace import create_workspace, edit_workspace, verify_workspace
+    if args.command in ('location-init','location-edit','location-verify','location-support'):
+        from .location_workspace import create_workspace, edit_workspace, verify_workspace, support_workspace
         if args.command=='location-init':
             from .location_stack import LocationStack
             inventory=LocationStack.load(args.inventory)
@@ -398,6 +402,9 @@ def main(argv=None):
         elif args.command=='location-edit':
             proposal=json.loads(args.proposal.read_text(encoding='utf8'))
             result=edit_workspace(args.workspace,proposal,args.out)
+        elif args.command=='location-support':
+            proposal=json.loads(args.proposal.read_text(encoding='utf8'))
+            result=support_workspace(args.workspace,proposal,args.out)
         else:
             result=verify_workspace(args.workspace)
         print(json.dumps(result,indent=2))

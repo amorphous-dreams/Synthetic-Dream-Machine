@@ -104,7 +104,7 @@ jobs:
           python -m pip install --no-deps -e .
           python -m pip check
       - name: Headless real OpenUSD and native STEP reimport
-        run: python -m pytest -q tests/test_hephaestus_usd.py tests/test_hephaestus_editor.py tests/test_hephaestus_crucible.py tests/test_hephaestus_variants.py tests/test_hephaestus_location_workspace.py tests/test_hephaestus_native_support.py
+        run: python -m pytest -q tests/test_hephaestus_usd.py tests/test_hephaestus_editor.py tests/test_hephaestus_crucible.py tests/test_hephaestus_variants.py tests/test_hephaestus_location_workspace.py tests/test_hephaestus_native_support.py tests/test_hephaestus_support_workspace.py
       - name: Independent subject native + OpenUSD + causal adversarial crucible
         run: python -m projection_loom.hephaestus_crucible --out out/hephaestus-crucible
       - name: Retain falsifiable crucible evidence
