@@ -45,6 +45,7 @@ jobs:
   shard:
     name: Shard ${{ matrix.set }} ${{ matrix.shard }}/${{ matrix.count }}
     runs-on: ubuntu-latest
+    timeout-minutes: 50
     strategy:
       # A red shard must never cancel its siblings — the merge gate needs to see ALL FOUR
       # verdicts to tell "one shard failed" apart from "one shard never got to answer".
@@ -112,6 +113,7 @@ jobs:
     # reads as "nothing to report" rather than as the red this lane exists to surface.
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

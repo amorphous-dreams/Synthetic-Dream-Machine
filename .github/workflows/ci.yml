@@ -59,6 +59,7 @@ jobs:
   typecheck:
     name: Typecheck
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -90,6 +91,7 @@ jobs:
   build-freshness:
     name: Build + generated freshness
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -122,6 +124,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 80
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -193,8 +196,8 @@ jobs:
         if: ${{ !cancelled() && steps.holder.outcome == 'success' }}
         id: pw-version
         run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-      # A CDN stall once held a runner for 20 and for 48 minutes. The engine directory restores by the pinned
-      # Playwright version; a bump re-downloads. The install below still runs for the system libraries.
+      # The engine directory restores by the pinned Playwright version; a bump re-downloads. The install below
+      # still runs apt for the system libraries, so it carries its own timeout and a stall there fails fast.
       - name: Cache the Playwright engines (chromium firefox webkit)
         if: ${{ !cancelled() && steps.holder.outcome == 'success' }}
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -204,6 +207,7 @@ jobs:
       - name: Install Playwright engines (browser-vessel suite, three engines)
         if: ${{ !cancelled() && steps.holder.outcome == 'success' }}
         id: browser
+        timeout-minutes: 10
         run: pnpm exec playwright install --with-deps chromium firefox webkit
       # ONE SERIALIZATION, BOTH PLACES. The root `test` script pins `--workspace-concurrency=1`
       # because packages share a build tree and a rendezvous directory; running them in parallel
@@ -243,14 +247,15 @@ jobs:
       - name: Name the Playwright version (the engine cache key)
         id: pw-version
         run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-      # A CDN stall once held a runner for 20 and for 48 minutes. The engine directory restores by the pinned
-      # Playwright version; a bump re-downloads. The install below still runs for the system libraries.
+      # The engine directory restores by the pinned Playwright version; a bump re-downloads. The install below
+      # still runs apt for the system libraries, so it carries its own timeout and a stall there fails fast.
       - name: Cache the Playwright engines (chromium)
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-chromium
       - name: Install the Chromium engine
+        timeout-minutes: 10
         run: pnpm exec playwright install --with-deps chromium
       - name: Run the floor crossing under a scratch home
         run: |
@@ -282,6 +287,7 @@ jobs:
   witnesses:
     name: Witnesses
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -360,6 +366,7 @@ jobs:
   boot-budget:
     name: Boot budget
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -408,6 +415,7 @@ jobs:
   pristine-upstream:
     name: Pristine upstream (stock tiddlywiki from npm)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -450,14 +458,15 @@ jobs:
       - name: Name the Playwright version (the engine cache key)
         id: pw-version
         run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-      # A CDN stall once held a runner for 20 and for 48 minutes. The engine directory restores by the pinned
-      # Playwright version; a bump re-downloads. The install below still runs for the system libraries.
+      # The engine directory restores by the pinned Playwright version; a bump re-downloads. The install below
+      # still runs apt for the system libraries, so it carries its own timeout and a stall there fails fast.
       - name: Cache the Playwright engines (chromium)
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-chromium
       - name: Install Playwright Chromium (standalone single-file suite)
+        timeout-minutes: 10
         run: pnpm exec playwright install --with-deps chromium
       # ONE VERSION, ONE PLACE. The tarball caches by the pinned version; a bump re-packs.
       - name: Cache the published tiddlywiki
@@ -497,6 +506,7 @@ jobs:
   grammar-artifact:
     name: Grammar artifact gates
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
