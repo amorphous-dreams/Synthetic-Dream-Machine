@@ -11,7 +11,7 @@ def test_multi_representation_held_out_crucible(tmp_path):
     assert result["usd_composition_reopened"]
     assert result["stale_edit_refused"]
     assert result["tampered_step_refused"]
-    assert result["actual_cache_reuse"] == 0
+    assert result["actual_cache_reuse"] == 1
     assert result["source_camera_authority"] == "none"
     assert result["automatic_promotion"] is False
     with pytest.raises(ValueError, match="independently new"):

@@ -66,3 +66,34 @@ def test_cli_scene_package_and_validate(tmp_path):
     out = tmp_path / "scene"
     main(["scene-package", "--declaration", str(declaration), "--out", str(out)])
     assert main(["scene-validate", "--bundle", str(out)])["valid"]
+
+def test_native_cache_reuses_verified_unchanged_step_and_usd(tmp_path):
+    from copy import deepcopy
+    original = declared()
+    before = tmp_path / "before"
+    package_scene(original, before)
+    after = deepcopy(original)
+    after["assemblies"][0]["translation"] = [8, 0, 0]
+    output = package_scene(after, tmp_path / "after",
+                           reuse_bundle=before, previous_document=original)
+    assert output["cache"]["reused_entities"] == ["terrace-b"]
+    assert output["cache"]["native_rebuilt_entities"] == ["terrace-a"]
+    assert output["cache"]["actual_native_cache_reuse"] == 1
+    assert validate_scene(tmp_path / "after")["valid"]
+    assert (before / "native/001_terrace_b.step").read_bytes() == (
+        tmp_path / "after" / "native/001_terrace_b.step").read_bytes()
+    with pytest.raises(ValueError, match="source declaration"):
+        package_scene(after, tmp_path / "bad",
+                      reuse_bundle=before, previous_document=after)
+
+
+def test_native_cache_rejects_tampered_prior_bundle(tmp_path):
+    original = declared()
+    before = tmp_path / "before"
+    package_scene(original, before)
+    step = before / "native/000_terrace_a.step"
+    with step.open("ab") as stream:
+        stream.write(b"tampered")
+    with pytest.raises(ValueError, match="digest mismatch"):
+        package_scene(original, tmp_path / "after",
+                      reuse_bundle=before, previous_document=original)

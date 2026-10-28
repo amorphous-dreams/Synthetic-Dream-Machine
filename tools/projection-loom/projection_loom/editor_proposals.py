@@ -100,7 +100,8 @@ def apply_proposal(original, ground, source_bundle, proposal, destination):
         raise ValueError("Regenerated output must be new and immutable")
     dest.mkdir(parents=True)
     try:
-        package = package_scene(revised, dest / "scene")
+        package = package_scene(revised, dest / "scene",
+                                reuse_bundle=source_bundle, previous_document=original)
         next_ground.save(dest / "ground.json")
         (dest / "declaration.json").write_text(json.dumps(revised, indent=2,
                                                          sort_keys=True) + "\n",
@@ -114,8 +115,8 @@ def apply_proposal(original, ground, source_bundle, proposal, destination):
                    "invalidation_plan": {
                        "rebuilt": plan["rebuilt"],
                        "cached_eligible": plan["cached"],
-                       "actual_cache_reuse": 0,
-                       "native_reaudited": len(package["bodies"])},
+                       "actual_cache_reuse": package["cache"]["actual_native_cache_reuse"],
+                       "native_reaudited": package["cache"]["native_reaudited"]},
                    "auto_promotion": False}
         (dest / "reconciliation.json").write_text(json.dumps(outcome, indent=2,
                                                                sort_keys=True) + "\n",

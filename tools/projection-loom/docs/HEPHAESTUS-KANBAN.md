@@ -151,3 +151,15 @@ The `blender-real-editor` job installed actual Blender 4.0.2 but could not find 
 ## Blender 4.0 distro build diagnosis · 2026-10-28
 
 The actual headless Ubuntu 4.0.2 package returned `AttributeError: bpy.ops.wm.usd_import ... could not be found`. It therefore cannot witness our USD editor workflow. It is not an OpenUSD native-core failure; the independently executable USD/STEP job passed. The Blender lane now fetches the official Blender 4.5.15 LTS Linux distribution (released 2026-10-22), checks the publisher's SHA256 manifest and explicitly verifies the USD import operator before calling the real edit-capture/reload witness. The entire editor lane remains unverified until exact-head CI passes.
+
+## OODA-HA C-04 · genuine selective native cache reuse (2026-10-28)
+
+**Observe:** C-03 formerly reported eligible cache nodes but editor edits regenerated every native assembly. That was transparent but wasted work.
+
+**Orient:** A prior scene is reusable only if its entire portable asset manifest passes fresh digest and STEP-native reimport checks, the prior declaration digest matches, authored units/location match, and the per-assembly authored program plus translation are semantically identical.
+
+**Decide:** Skip `compile_growth` and USD tessellation only for completely unchanged native assemblies; copy their previously verified STEP bytes and authored USD prim specs into a newly composed stage. Rebuild changed bodies, independently revalidate the resulting bundle and record exact reused/rebuilt entity IDs. No filesystem timestamp or winner score enters cache authority.
+
+**Act:** `package_scene(..., reuse_bundle=..., previous_document=...)` implements the selective plan and actual reuse; the editor reconciler passes its previous bundle for reuse. New tests verify a two-body scene rebuilds only the moved body, retains independent STEP bytes and rejects tampered/mismatched caches. The independent crucible measures actual avoided native construction.
+
+**Aftermath:** C-04's selective native build caching is implemented but needs exact-head USD CI. Interrupted writes and concurrent editors remain governed separately by source/edit causal frontiers; general distributed build execution is not claimed.

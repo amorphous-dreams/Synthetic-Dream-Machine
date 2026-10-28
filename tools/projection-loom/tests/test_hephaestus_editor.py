@@ -34,8 +34,8 @@ def test_editor_translation_is_reaudited_and_identity_preserved(tmp_path):
                             proposal(manifest, ground),
                             tmp_path / "branch")
     assert result["auto_promotion"] is False
-    assert result["invalidation_plan"]["actual_cache_reuse"] == 0
-    assert result["invalidation_plan"]["native_reaudited"] == 2
+    assert result["invalidation_plan"]["actual_cache_reuse"] == 1
+    assert result["invalidation_plan"]["native_reaudited"] == 1
     assert "cad:east" in result["invalidation_plan"]["rebuilt"]
     assert "cad:west" in result["invalidation_plan"]["cached_eligible"]
     from projection_loom.relational_ground import RelationalGround

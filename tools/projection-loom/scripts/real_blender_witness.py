@@ -65,7 +65,7 @@ def main():
             raise RuntimeError("Captured Blender translation mismatched authored edit")
         destination = work / "regenerated"
         outcome = apply_proposal(document, ground, original, edit, destination)
-        assert outcome["invalidation_plan"]["native_reaudited"] == 2
+        assert outcome["invalidation_plan"]["native_reaudited"] == 1
         assert validate_scene(destination / "scene")["valid"]
         target = work / "reloaded.blend"
         reload_log = invoke("reload", "--bundle", destination / "scene",
@@ -79,7 +79,7 @@ def main():
                           "regenerated_bundle": outcome["new_bundle_sha256"],
                           "retained_operator_note": True,
                           "actor": "blender-automated-test",
-                          "real_editor": True, "exact_cad_reaudited": 2}, indent=2))
+                          "real_editor": True, "exact_cad_reaudited": 1}, indent=2))
 
 
 if __name__ == "__main__":

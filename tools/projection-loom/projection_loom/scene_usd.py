@@ -11,6 +11,7 @@ import json
 import math
 from pathlib import Path
 import re
+import shutil
 
 from .developmental import GrowthProgram, compile_growth
 from .provenance_encoding import canonical_json_sha256
@@ -89,12 +90,37 @@ def _validate_declaration(document):
         GrowthProgram.from_dict(row["growth_program"])
 
 
-def package_scene(document, out):
-    """Construct, audit, export and independently reopen a portable scene."""
+def package_scene(document, out, *, reuse_bundle=None, previous_document=None):
+    """Construct changed native bodies; reuse independently verified unchanged ones.
+
+    Reuse requires the previous source declaration and a complete verified bundle.
+    The generated prim spec and STEP bytes are copied; no scene path, existing
+    filesystem timestamp, or unverifiable summary is accepted as cache proof.
+    """
+
     from pxr import Sdf, Usd, UsdGeom
     import cadquery as cq
 
     _validate_declaration(document)
+    if (reuse_bundle is None) != (previous_document is None):
+        raise ValueError("Cache reuse requires prior bundle and source declaration")
+    prior_manifest = None
+    old_layer = None
+    previous_rows = {}
+    if reuse_bundle is not None:
+        _validate_declaration(previous_document)
+        reuse_bundle = Path(reuse_bundle).resolve()
+        validate_scene(reuse_bundle)
+        prior_manifest = json.loads((reuse_bundle / "manifest.json").read_text(encoding="utf8"))
+        if (prior_manifest["declaration_sha256"] != canonical_json_sha256(previous_document)
+                or previous_document["location"] != document["location"]
+                or float(previous_document["meters_per_unit"]) != float(document["meters_per_unit"])):
+            raise ValueError("Cached scene provenance or coordinate units disagree")
+        previous_rows = {row["entity_id"]: row for row in previous_document["assemblies"]}
+        old_layer = Sdf.Layer.FindOrOpen(str(reuse_bundle / "generated.usda"))
+        if old_layer is None:
+            raise ValueError("Previous USD layer cannot be reopened")
+    old_bodies = {row["entity_id"]: row for row in prior_manifest["bodies"]} if prior_manifest else {}
     out = Path(out)
     if out.exists() and any(out.iterdir()):
         raise ValueError("Scene output must be empty; never overwrite old witnesses")
@@ -106,20 +132,39 @@ def package_scene(document, out):
     generated.SetDefaultPrim(generated.GetPrimAtPath("/Loom"))
     used = []
     bodies = []
+    reused = []
+    built_ids = []
     for index, row in enumerate(sorted(document["assemblies"], key=lambda item: item["entity_id"])):
         entity_id = row["entity_id"]
         program = GrowthProgram.from_dict(row["growth_program"])
+        translation = tuple(float(x) for x in row.get("translation", (0, 0, 0)))
+        named = _prim_name(entity_id)
+        prim_path = "/Loom/" + named
+        step_path = native_dir / f"{index:03d}_{named}.step"
+        old_row = previous_rows.get(entity_id)
+        old_body = old_bodies.get(entity_id)
+        if (old_row is not None and old_body is not None
+                and canonical_json_sha256(old_row) == canonical_json_sha256(row)
+                and old_body["program_sha256"] == program.identity
+                and old_body["prim_path"] == prim_path
+                and old_body.get("translation") == list(translation)):
+            if not Sdf.CopySpec(old_layer, Sdf.Path(prim_path),
+                                generated.GetRootLayer(), Sdf.Path(prim_path)):
+                raise ValueError("Unable to copy verified OpenUSD prim representation")
+            shutil.copyfile(reuse_bundle / old_body["step_path"], step_path)
+            bodies.append({**old_body, "step_path": str(step_path.relative_to(out))})
+            used.append(step_path)
+            reused.append(entity_id)
+            continue
+        built_ids.append(entity_id)
         built = compile_growth(program)
         audit = built.audit()
         if not audit["valid"] or not audit["union_valid"]:
             raise ValueError("Native CAD audit rejected assembly")
-        translation = tuple(float(x) for x in row.get("translation", (0, 0, 0)))
         solid = built.assembly.material_solid().translate(translation)
         mesh = built.assembly.tessellate(union=True)
         if len(mesh.vertices) < 3 or len(mesh.faces) < 1:
             raise ValueError("Accepted CAD yielded empty mesh")
-        named = _prim_name(entity_id)
-        prim_path = "/Loom/" + named
         usd_mesh = UsdGeom.Mesh.Define(generated, prim_path)
         usd_mesh.CreatePointsAttr([tuple(float(p[i]) + translation[i] for i in range(3))
                                    for p in mesh.vertices])
@@ -134,7 +179,6 @@ def package_scene(document, out):
         prim = usd_mesh.GetPrim()
         prim.CreateAttribute("loom:entityId", Sdf.ValueTypeNames.String, custom=True).Set(entity_id)
         prim.CreateAttribute("loom:programSha256", Sdf.ValueTypeNames.String, custom=True).Set(program.identity)
-        step_path = native_dir / f"{index:03d}_{named}.step"
         cq.exporters.export(solid, str(step_path), exportType="STEP")
         imported = cq.importers.importStep(str(step_path)).val()
         step_receipt = _compare_native(solid, imported)
@@ -166,6 +210,10 @@ def package_scene(document, out):
               "stage": "scene.usda", "meters_per_unit": float(document["meters_per_unit"]),
               "up_axis": "Z", "source_pose_authority": "none",
               "engineering_load_certification": False, "operator_promotion": False,
+              "cache": {"prior_bundle_sha256": prior_manifest["sha256"] if prior_manifest else None,
+                        "reused_entities": reused, "native_rebuilt_entities": built_ids,
+                        "actual_native_cache_reuse": len(reused),
+                        "native_reaudited": len(built_ids)},
               "bodies": bodies, "assets": inventory}
     manifest = {**report, "sha256": canonical_json_sha256(report)}
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2,

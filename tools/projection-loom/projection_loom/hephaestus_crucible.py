@@ -98,7 +98,8 @@ def run_crucible(output):
                "stable_semantic_ids": True, "native_step_reimport": True,
                "usd_composition_reopened": True,
                "selective_invalidation_plan": True,
-               "actual_cache_reuse": 0, "stale_edit_refused": stale_refused,
+               "actual_cache_reuse": result["invalidation_plan"]["actual_cache_reuse"],
+               "stale_edit_refused": stale_refused,
                "tampered_step_refused": asset_tamper_refused,
                "source_camera_authority": "none",
                "automatic_promotion": False, "editor_application_witness": "not in this crucible"}
