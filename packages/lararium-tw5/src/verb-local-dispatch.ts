@@ -90,7 +90,7 @@ export async function gateRoutedVerb(invocation: Verb, verifier: CapabilityVerif
     throw new Error(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bagUrl}, access=${access}): ${proof.reason ?? "no grant"}`);
   }
   if (verifier.kahuReach) {
-    for (const bag of routedInnerBags(invocation)) await verifier.kahuReach(bag, invocation.action);
+    for (const bag of routedInnerBags(invocation)) await verifier.kahuReach(bag, invocation.action, presenter);
   }
 }
 

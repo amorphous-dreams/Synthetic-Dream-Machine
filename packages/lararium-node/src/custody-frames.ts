@@ -261,10 +261,11 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     const wasOpen = named.unlocked;
     const wasMounted = sovereignStands();
     if (wasOpen && ordinal !== mountedFaceOrdinal() && deps.dropFace) {
+      // A lock answers locked only once the provider is gone: a refused drop leaves the key open and the answer an error.
       try { await deps.dropFace(ordinal); }
       catch (error) {
-        // Closing the key takes precedence; the provider still needs a drop, with no retry here.
         deps.onLog(`face h${ordinal} provider drop refused: ${String(error)}`);
+        throw new Error(`face h${ordinal} provider drop refused; the key stays open`);
       }
     }
     await holder.lockFace(named.fcid);

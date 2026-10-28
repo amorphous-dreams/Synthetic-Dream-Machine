@@ -421,8 +421,10 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   }
   const facePending = new Map<string, Array<{ resolve: () => void; reject: (error: Error) => void }>>();
   const faceKey = (atomKey: string, op: string) => `${atomKey.toLowerCase().replace(/^0x/, "")}:${op}`;
+  let faceAsksEnded: string | null = null;
   function askFace(atomKey: string, op: "lit" | "dropped", msg: unknown): Promise<void> {
     return new Promise((resolve, reject) => {
+      if (faceAsksEnded !== null) { reject(new Error(faceAsksEnded)); return; }
       const key = faceKey(atomKey, op);
       const queue = facePending.get(key) ?? [];
       queue.push({ resolve, reject }); facePending.set(key, queue);
@@ -431,6 +433,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   }
   // A worker that faults or errors answers nothing further: every ask still pending ends there.
   function failPendingAsks(why: string): void {
+    faceAsksEnded ??= why;
     for (const queue of facePending.values()) for (const ask of queue) ask.reject(new Error(why));
     facePending.clear();
     for (const [id, ask] of [..._pending]) { _pending.delete(id); ask.reject(new Error(why)); }

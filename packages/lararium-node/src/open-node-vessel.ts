@@ -2286,8 +2286,7 @@ async function prepareNodeBootOn(
     }
     const faceLit = activeAtom !== null && atomSeed !== null;
     const workingFloorAnchor = workingFloorAnchorOf({ place: placeAid });
-    // A sibling's planes need their own face proof before registration. Until that proof is
-    // carried here, each sibling receives only the vessel ground.
+    // A sibling's planes need their own face proof before registration; joinedFaceAuth hands each sibling the vessel ground alone.
     const siblingKel = sovereign ? makePersonaKelRingHolder({ repo, nexusPubkey }) : null;
     if (siblingKel) kelHolders.push(siblingKel);
     const siblingPorts: JoinedFaceAuthPorts | null = sovereign && activeAtom && siblingKel ? {
@@ -2297,9 +2296,6 @@ async function prepareNodeBootOn(
       chain: async (prefix) => { await siblingKel.ready; return siblingKel.chainForPrefix(prefix); },
       atomSeed: loadFaceAtomOfGroup, atomKey: (seed, group) => faceAtomKeyFromSeed(seed, group).key,
       addressSecret: readFaceAddressSecret, veilArchive: sovereign.veilArchive,
-      registerBags: () => deriveRegisterBags({ fleets: [],
-        ...(slot ? { wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId] } : {}),
-        ...(kahuCanon.lares || kahuCanon.lararium ? { systemCanon: true } : {}) }),
       log: (line: string) => console.log(`[lararium] ${line}`),
     } : null;
     const joinedFaces = siblingPorts ? await joinedFaceAuth(siblingPorts) : [];

@@ -15,7 +15,7 @@ function fixture() {
     anchor: async () => anchor, chain: async () => chain,
     atomSeed: async () => { const s = new Uint8Array([9]); seeds.push(s); return s; },
     atomKey: () => "ab", addressSecret: async () => new Uint8Array([10]),
-    veilArchive: async () => new Uint8Array([11]), registerBags: () => ["ground", "lar:///ha.ka.ba/wikis/mounted/working", "lar:///ha.ka.ba/lares"],
+    veilArchive: async () => new Uint8Array([11]),
     log: (line) => logs.push(line),
   };
   return { ports, logs, seeds };

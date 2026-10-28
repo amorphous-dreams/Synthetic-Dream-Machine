@@ -1,4 +1,4 @@
-import type { IdentityAnchors, JoinedFaceAuth } from "@lararium/mesh";
+import { deriveRegisterBags, type IdentityAnchors, type JoinedFaceAuth } from "@lararium/mesh";
 
 type FaceAnchor = JoinedFaceAuth["faceAnchor"];
 type Chain = JoinedFaceAuth["personaKel"]["chain"];
@@ -15,11 +15,10 @@ export interface JoinedFaceAuthPorts {
   readonly atomKey: (seed: Uint8Array, group: string) => string;
   readonly addressSecret: (group: string) => Promise<Uint8Array | null>;
   readonly veilArchive: (group: string) => Promise<Uint8Array | null>;
-  readonly registerBags: (group: string) => readonly string[];
   readonly log: (line: string) => void;
 }
 
-/** A torn sibling cannot take the mounted face's boot down. */
+/** A torn sibling cannot take the mounted face's boot down. A sibling receives the vessel ground alone: its planes need their own face proof, and the mounted slot's wiki bags and the system canon belong to the mounted face. */
 export async function joinedFaceAuth(ports: JoinedFaceAuthPorts): Promise<JoinedFaceAuth[]> {
   const result: JoinedFaceAuth[] = [];
   for (const ordinal of ports.ordinals()) {
@@ -43,7 +42,7 @@ export async function joinedFaceAuth(ports: JoinedFaceAuthPorts): Promise<Joined
         personaKel: { prefix: pins.personaKelPrefix, chain }, deviceEdge: pins.deviceEdge, signerDid: pins.signerDid,
         ...(pins.meshCabalDocIdHex ? { meshCabalDocIdHex: pins.meshCabalDocIdHex } : {}),
         ...(secret ? { faceAddressSecret: Buffer.from(secret).toString("hex") } : {}),
-        ...(archive ? { veilArchiveBytes: archive } : {}), registerBags: [...ports.registerBags(group)] });
+        ...(archive ? { veilArchiveBytes: archive } : {}), registerBags: deriveRegisterBags({ fleets: [] }) });
     } catch (e) {
       ports.log(`joined face h${ordinal} skipped: ${e instanceof Error ? e.message : String(e)}`);
     } finally { seed?.fill(0); secret?.fill(0); }
