@@ -29,6 +29,8 @@ import { provisionRecoveryAtFounding } from "../src/recovery-keel.js";
 import { loadRecoveryDeviceShare } from "../src/recovery-share-store.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
 import { seatScratchCustody } from "./custody-seat-fixture.js";
+import { seedFaceAtom } from "./atom-fixture.js";
+import { unlockedFaceOrdinals } from "../src/custody-seat.js";
 
 const saved: Record<string, string | undefined> = {};
 const setEnv = (k: string, v: string | undefined): void => {
@@ -143,6 +145,18 @@ describe("multi-persona-per-vessel (#63)", () => {
     // The custody guard reads uniformly — index 0 stands only because its root was just minted (held).
     setMountedFace(0);
     expect(sovereignStands()).toBe(true);
+  });
+
+  test("custody wall — a face standing open with no root held here (a joinee's) mounts, and no root act signs as it: a root must be held", async () => {
+    await generateOrLoadPersonaGroupRoot(0);
+    await seedFaceAtom(1, "group-joinee");               // a face the vessel joined: atom and anchors, no root
+    expect(await unlockedFaceOrdinals()).toEqual([0, 1]); // the wall below reads the root, never whether the face stands open
+    expect(await personaRootExists(1)).toBe(false);
+    await expect(loadPersonaGroupRootSeed(1)).rejects.toThrow(/no persona-root at h1/);
+    setMountedFace(1);
+    expect(sovereignStands()).toBe(true);                // a joinee mounts its own face: the mount reads custody, never a root
+    // CONTROL: the founded face's root signs.
+    expect(await loadPersonaGroupRootSeed(0)).toHaveLength(32);
   });
 
   test("handle-index guard rejects out-of-range indices (SLIP-0010 hardened ceiling)", async () => {

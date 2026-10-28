@@ -266,6 +266,8 @@ describe("sealed vessel identity family", () => {
     await generateOrLoadPersonaGroupRoot(5);
     setMountedFace(4);                                 // no root held at h4: the composition does not stand
     expect(sovereignStands()).toBe(false);
+    await expect(loadPersonaGroupRootSeed(4)).rejects.toThrow(/no persona-root at h4/);   // a root must be held to sign as it
+    expect(await loadPersonaGroupRootSeed(5)).toHaveLength(32);                            // CONTROL: the held root signs
     expect(existsSync(at(".active-persona.json"))).toBe(false);
     setMountedFace(undefined);
     await generateOrLoadPersonaGroupRoot(4);
