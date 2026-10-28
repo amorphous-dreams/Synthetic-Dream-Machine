@@ -23,9 +23,15 @@ const fixture = async () => {
 
 describe("intent command guards", () => {
   test("two faces demand a named face; control names h1; a sole face resolves", () => {
-    expect(() => resolveIntentFaceIndex(undefined, [0, 1])).toThrow(/FaceNotNamed/);
-    expect(resolveIntentFaceIndex(1, [0, 1])).toBe(1);
-    expect(resolveIntentFaceIndex(undefined, [0])).toBe(0);
+    expect(() => resolveIntentFaceIndex(undefined, [0, 1], [0, 1])).toThrow(/FaceNotNamed/);
+    expect(resolveIntentFaceIndex(1, [0, 1], [0, 1])).toBe(1);
+    expect(resolveIntentFaceIndex(undefined, [0], [0])).toBe(0);
+  });
+
+  test("RED: two faces open and one anchored, none named, refuses FaceNotNamed; control: the one open face unanchored refuses face-not-held", () => {
+    expect(() => resolveIntentFaceIndex(undefined, [0], [0, 1])).toThrow(/FaceNotNamed/);
+    expect(resolveIntentFaceIndex(0, [0], [0, 1])).toBe(0);
+    expect(() => resolveIntentFaceIndex(undefined, [], [1])).toThrow(/face-not-held: h1/);
   });
 
   test("one audience lands pinned; multiple selectors refuse before issue", () => {

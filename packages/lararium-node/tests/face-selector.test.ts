@@ -1,7 +1,7 @@
 /**
  * face-selector — a command acts as the face it names, else the one face standing open; never a silent h0, and never the
  * face the composition mounts. Reds: two faces open and none named refuse by name and list them, the mounted face with them;
- * no face refuses. Controls: a named face wins, one face open resolves it, a vessel's one face resolves even when it is not h0.
+ * two faces open with one anchored refuse alike; no face refuses. Controls: a named face wins, one face open resolves it, a vessel's one face resolves even when it is not h0.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -36,6 +36,12 @@ describe("resolveFace", () => {
     try { await expect(resolveFace()).rejects.toBeInstanceOf(FaceNotNamed); } finally { setMountedFace(undefined); }
     expect(await resolveFace(1)).toBe(1);                // CONTROL: a named face wins
     expect(await resolveFace(0)).toBe(0);
+  });
+  it("RED: two faces open, one holding its anchors, a command naming none still refuses: anchors never pick the face", async () => {
+    for (const i of [0, 1]) await generateOrLoadPersonaGroupRoot(i);
+    await seedFaceAtom(0);                               // h0 alone holds anchors; h1 stands open with none
+    await expect(resolveFace()).rejects.toThrow(/faces h0, h1.* open: name the face .*--face N/);
+    expect(await resolveFace(1)).toBe(1);                // CONTROL: the named face wins, anchored or not
   });
   it("CONTROL: with one of two faces left open, that face resolves", async () => {
     for (const i of [0, 1]) { await generateOrLoadPersonaGroupRoot(i); await seedFaceAtom(i); }

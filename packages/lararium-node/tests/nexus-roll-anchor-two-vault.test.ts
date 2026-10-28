@@ -89,7 +89,8 @@ async function twoVaultCharter(A: Vault, B: Vault) {
   const old = [await chairKey(0), await chairKey(1)];
   const next = [await chairKey(0, 1), await chairKey(1, 1)];
   at(A); await seatChairs([0]); const { hands: aNext } = await seatChairs([0], { generation: 1 });
-  at(B); await seatChairs([1]); const { hands: bNext } = await seatChairs([1], { generation: 1 });
+  // B's one face holds chair 1: a vault with one face resolves it for every door that names none.
+  at(B); await seatChairs([1], { under: 0 }); const { hands: bNext } = await seatChairs([1], { generation: 1, under: 0 });
   const genesis = heldCharter({ keys: old, threshold: 2, successors: { keys: next, threshold: 2 } });
   for (const v of [A, B]) { at(v); writeNexusDoc(larSealHome(), genesis.doc({ labels: ["Kahu A", "Kahu B"] })); }
   // The roll's signatures come by hand here; the two-vault roll circle gathers them in `roll-circle-ceremony.test.ts`.
