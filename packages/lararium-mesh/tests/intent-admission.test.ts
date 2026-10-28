@@ -95,3 +95,24 @@ describe("intent admissions", () => {
     expect(localIntentHeads([f.grant, f.call, outcome])).toEqual([intentEntryCid(f.call), intentEntryCid(outcome)].sort());
   });
 });
+
+
+test.each(["revoked", "closed", "awaiting"] as const)("RED: coincident invocation IDs cannot mask %s grant or its replay; CONTROL: live replay duplicates", async (condition) => {
+  const f = await fixture();
+  const make = async (nonce: string, bad: boolean) => {
+    const grant = await buildDelegation({ group: f.group, signer: f.root, epoch: 0, agent: f.agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1] } } }, bound: bad && condition === "awaiting" ? { asOf: { frontier: "b".repeat(64) } } : { until: { roster: bad && condition === "closed" ? "c".repeat(64) : "a".repeat(64) } }, nonce });
+    const call = await buildAgentIntent({ group: f.group, signer: f.agent, delegation: intentEntryCid(grant), verb: "MOVE", args: { x: 1 }, nonce: "", audience: { mode: "every" }, verbs: f.verbs });
+    return { grant, call };
+  };
+  const live = await make("live", false);
+  let bad = await make("bad", true);
+  for (let i = 0; intentEntryCid(live.call) >= intentEntryCid(bad.call) && i < 100; i++) bad = await make(`bad-${i}`, true);
+  expect(intentEntryCid(live.call) < intentEntryCid(bad.call)).toBe(true);
+  const revoke = condition === "revoked" ? [await buildDelegationRevoke({ group: f.group, signer: f.root, epoch: 0, delegation: intentEntryCid(bad.grant) })] : [];
+  const read = condition === "closed" ? { ...f.read, face: { ...f.face, rosterCids: ["c".repeat(64)] } } : f.read;
+  const records = [live.grant, bad.grant, live.call, ...revoke];
+  const refusal = condition === "revoked" ? "delegation-revoked" : condition === "closed" ? "delegation-closed" : "unknown-frontier";
+  expect(await f.decide(bad.call, records, read)).toEqual({ ok: false, refusal });
+  expect(await f.decide(bad.call, [...records, bad.call], read)).toEqual({ ok: false, refusal });
+  expect(await f.decide(live.call, records, read)).toMatchObject({ ok: true, duplicate: true });
+});

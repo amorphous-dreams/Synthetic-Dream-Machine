@@ -11,14 +11,15 @@ import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildAgentIntent, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, intentEntryRecordsOfGroup, personaBagIdFor, personaSiblingBagIds, PERSONA_GROUP_ID_TIDDLER, type LarDoc } from "@lararium/mesh";
-import { intentAdmissionCid, intentAdmissionRecordsOfGroup } from "../../lararium-mesh/src/intent-admission.js";
+import { buildAgentIntent, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, intentEntryCid, intentEntryRecordsOfGroup, personaBagIdFor, personaSiblingBagIds, PERSONA_GROUP_ID_TIDDLER, type LarDoc } from "@lararium/mesh";
+import { intentAdmissionCid, intentAdmissionRecordsOfGroup, readIntentAdmission } from "../../lararium-mesh/src/intent-admission.js";
 import { runFoundTheFace } from "../src/index.js";
 import { ownedStore } from "../src/owned-store.js";
 import { storeDoorDirect } from "../src/store-door-verbs.js";
 import { larBootstrapPath, larSealHome } from "../src/vessel-paths.js";
 import { resolveIntentRelayFace } from "../src/intent-relay-face.js";
 import { loadIntentFace } from "../src/commands/intent.js";
+import * as relayKeys from "../src/intent-relay-key-store.js";
 import { intentRelayKeyOrMint } from "../src/intent-relay-key-store.js";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { direct } from "./direct-store.js";
@@ -87,3 +88,50 @@ describe("relay admission over a founded face", () => {
     expect(shown.rows[0]!.admissions).toEqual([expect.objectContaining({ cid: expect.any(String), relay: expect.any(String) })]);
   }, 240_000);
 });
+
+
+test("RED: flush failure after append reports fault and retry recovers its receipt; CONTROL: working flush admits", async () => {
+  const seed = new Uint8Array(32).fill(71), agent = { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
+  const grant = await row("intent-root", { action: "delegate", agent: agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1] } } }, until: `roster:${"d".repeat(64)}` }) as { cid: string };
+  const entry = await buildAgentIntent({ group, signer: agent, delegation: grant.cid, verb: "MOVE", args: { x: 1 }, nonce: "flush", audience: { mode: "every" }, verbs: faceIntentVerbs() });
+  await withLarRoot(ROOT, async () => { await openTestCustody(); await intentRelayKeyOrMint(); await ownedStore(storage, async repo => {
+    const loaded = await loadIntentFace(repo, catalogUrl, { group }), face = await resolveIntentRelayFace(group, { repo, catalogUrl });
+    if (!face) throw Error("held face missing");
+    const flush = vi.spyOn(repo, "flush").mockRejectedValueOnce(new Error("flush failed"));
+    try {
+      const failed = await face.admit(entry);
+      const receipts = intentAdmissionRecordsOfGroup(loaded.plane.doc(), group).filter((r: any) => r.body.entry === intentEntryCid(entry));
+      expect(receipts).toHaveLength(1);
+      const retry = await face.admit(entry);
+      expect(failed).toEqual({ status: "fault" });
+      expect(retry.status).toBe("duplicate");
+      if (retry.status === "duplicate") expect(retry.receipt).toEqual(receipts[0]);
+      expect(intentEntryRecordsOfGroup(loaded.plane.doc(), group).filter((r: any) => r.body.entry === "intent" && r.body.nonce === "flush")).toHaveLength(1);
+      expect(intentAdmissionRecordsOfGroup(loaded.plane.doc(), group).filter((r: any) => r.body.entry === intentEntryCid(entry))).toHaveLength(1);
+      const control = await buildAgentIntent({ group, signer: agent, delegation: grant.cid, verb: "MOVE", args: { x: 1 }, nonce: "flush-control", audience: { mode: "every" }, verbs: faceIntentVerbs() });
+      expect((await face.admit(control)).status).toBe("admitted");
+    } finally { flush.mockRestore(); }
+  }); });
+}, 240_000);
+
+test("RED: key rotation between public-key read and signing cannot produce an unverifiable receipt; CONTROL: stable key verifies", async () => {
+  const seed = new Uint8Array(32).fill(72), agent = { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
+  const grant = await row("intent-root", { action: "delegate", agent: agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1] } } }, until: `roster:${"e".repeat(64)}` }) as { cid: string };
+  const make = (nonce: string) => buildAgentIntent({ group, signer: agent, delegation: grant.cid, verb: "MOVE", args: { x: 1 }, nonce, audience: { mode: "every" }, verbs: faceIntentVerbs() });
+  await withLarRoot(ROOT, async () => { await openTestCustody(); await intentRelayKeyOrMint(); await ownedStore(storage, async repo => {
+    const loaded = await loadIntentFace(repo, catalogUrl, { group }), face = await resolveIntentRelayFace(group, { repo, catalogUrl });
+    if (!face) throw Error("held face missing");
+    const original = relayKeys.signAsIntentRelay;
+    const sign = vi.spyOn(relayKeys, "signAsIntentRelay").mockImplementationOnce(async image => { await relayKeys.rotateIntentRelayKey(); return original(image); });
+    try {
+      const entry = await make("rotate"), result = await face.admit(entry);
+      const stored = intentAdmissionRecordsOfGroup(loaded.plane.doc(), group).filter((r: any) => r.body.entry === intentEntryCid(entry));
+      if (result.status === "admitted" || result.status === "duplicate") expect(readIntentAdmission(result.receipt, { group }).ok).toBe(true);
+      for (const receipt of stored) expect(readIntentAdmission(receipt, { group }).ok).toBe(true);
+      sign.mockRestore();
+      const control = await face.admit(await make("rotate-control"));
+      expect(control.status).toBe("admitted");
+      if (control.status === "admitted") expect(readIntentAdmission(control.receipt, { group }).ok).toBe(true);
+    } finally { sign.mockRestore(); }
+  }); });
+}, 240_000);
