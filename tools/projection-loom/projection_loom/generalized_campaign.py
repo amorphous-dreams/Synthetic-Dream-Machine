@@ -330,7 +330,7 @@ def _completed_summary(out, manifest, contract):
 
 
 def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
-               exact_budget=4,finalists=2,seed=41):
+               exact_budget=4,finalists=2,seed=41,source_policy="auto"):
     """Run any typed seed bundle without naming experiment fixtures.
 
     The fixed five-phase journal remains the only execution controller.
@@ -338,6 +338,8 @@ def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
     if not (1<=epochs<=12 and 1<=offspring<=24 and
             1<=exact_budget<=offspring and 1<=finalists<=12):
         raise ValueError("Unbounded campaign request")
+    if source_policy not in ("auto", "withheld"):
+        raise ValueError("Unknown preregistered source scoring policy")
     adapters=tuple(adapters)
     types=tuple(sorted({a.seed.kind for a in adapters}))
     if not isinstance(contract,IntentContract):
@@ -352,16 +354,22 @@ def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
                                ("foundation","spawn","split","bridge","carve")}),seed)
     out=Path(out);out.mkdir(parents=True,exist_ok=True)
     independent_images = [a for a in adapters if a.visual_source]
-    registered=registered_views(adapters)
-    visual_authority = ("landmark-consistent-multiview" if registered and len(registered)>1
+    authenticated_views=registered_views(adapters)  # verify even for control arm
+    registered=(authenticated_views if source_policy=="auto" else None)
+    run_id=(context.run_id if source_policy=="auto" else
+            canonical_json_sha256({"base":context.run_id,"source_policy":source_policy}))
+    visual_authority = ("withheld-controlled-ablation" if source_policy=="withheld" and independent_images
+                        else "landmark-consistent-multiview" if registered and len(registered)>1
                         else "landmark-consistent-single-view" if registered
                         else "withheld-uncalibrated-multiview" if len(independent_images)>1
                         else "provisional" if independent_images else "none")
     manifest={"schema":"projection-loom/experimental-input-cohort",
-        "run_id":context.run_id,"seeds":seeds.manifest(),"intent":contract.identity,
+        "run_id":run_id,"seeds":seeds.manifest(),"intent":contract.identity,
         "initial_program":initial.to_dict(),"types":list(types),
         "epochs":epochs,"offspring":offspring,"exact_budget":exact_budget,
         "source_camera_authority": visual_authority,
+        "source_policy": source_policy,
+        "common_proposal_stream_sha256": context.run_id,
         "independent_source_observations": [a.seed.identity for a in independent_images],
         "registered_source_camera_sha256": [x["registration"]["sha256"] for x in registered or []]}
     save_once(out/"pre_registration.json",manifest)
@@ -369,8 +377,8 @@ def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
         return _completed_summary(out, manifest, contract)
     journal=OODAHAJournal(out/"session.json",identity={
         "location":contract.location,"score_state":manifest["source_camera_authority"],
-        "run":context.run_id},initial={},autonomy=1.)
-    alpha=source_alpha(adapters)
+        "run":run_id},initial={},autonomy=1.)
+    alpha=source_alpha(adapters) if source_policy=="auto" else None
     seed_model=compile_growth(initial)
     cameras=fixed_inspection_cameras(seed_model.assembly.tessellate(union=True))
     archive=QualityArchive()
@@ -382,7 +390,7 @@ def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
             all_epochs.append(restore_archive(output,archive));continue
         eid=f"location/e{epoch:03d}"
         journal.begin(eid,parent="location",scope="epoch",
-                      evidence={"epoch":epoch,"source":context.run_id},parent_phase="act")
+                      evidence={"epoch":epoch,"source":run_id},parent_phase="act")
         journal.transition(eid,"orient",{"source_digest":seeds.identity})
         journal.transition(eid,"decide",{"exact_budget":exact_budget})
         journal.transition(eid,"act",{"instruction":"construct, audit, score"})
@@ -449,7 +457,7 @@ def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
         save_once(out/"finalists"/(parent.id+".json"),witness)
         winners.append({"id":parent.id,"full_source":witness["full_source"]})
     summary={"schema":"projection-loom/developmental-campaign-summary",
-             "run_id":context.run_id,"seeds":list(types),"epochs":epochs,
+             "run_id":run_id,"seeds":list(types),"epochs":epochs,
              "proposals":epochs*offspring,
              "native_attempts":sum(x["attempted"] for x in all_epochs),
              "native_valid":sum(x["valid"] for x in all_epochs),

@@ -77,6 +77,16 @@ def main(argv=None):
     p.add_argument('--out',type=Path,required=True)
     p=commands.add_parser('location-verify',help='Reaudit source, causal and native location evidence')
     p.add_argument('--workspace',type=Path,required=True)
+    p=commands.add_parser('registered-ablation',
+                          help='Two-arm matched multi-generation CAD experiment with independent calibrated source views')
+    p.add_argument('--image-group',type=Path,required=True)
+    p.add_argument('--intent',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--epochs',type=int,default=2)
+    p.add_argument('--offspring',type=int,default=3)
+    p.add_argument('--exact-budget',type=int,default=3)
+    p.add_argument('--finalists',type=int,default=2)
+    p.add_argument('--seed',type=int,default=41)
     p=commands.add_parser('wide-epoch',help='Resumable staged constructive epochs')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
@@ -378,6 +388,21 @@ def main(argv=None):
             result=edit_workspace(args.workspace,proposal,args.out)
         else:
             result=verify_workspace(args.workspace)
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command=='registered-ablation':
+        from .matched_registered_trial import matched_registered_ablation
+        from .seed_adapters import image_group
+        from .intent_seed import IntentContract
+        raw=json.loads(args.intent.read_text(encoding='utf8'))
+        raw['objectives']=tuple(raw['objectives'])
+        raw['invariants']=tuple(raw.get('invariants',()))
+        raw['budgets']=tuple(tuple(row) for row in raw.get('budgets',()))
+        intent=IntentContract(**raw)
+        result=matched_registered_ablation(image_group(args.image_group),intent,args.out,
+                    epochs=args.epochs,offspring=args.offspring,
+                    exact_budget=args.exact_budget,finalists=args.finalists,
+                    seed=args.seed)
         print(json.dumps(result,indent=2))
         return result
     if args.command=='fracture-pattern':
