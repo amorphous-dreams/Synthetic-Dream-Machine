@@ -132,10 +132,11 @@ def test_manifest_refuses_untracked_openusd_sublayer(tmp_path):
     root = tmp_path / "bundle"
     package_scene(declared(), root)
     stage_path = root / "scene.usda"
-    stage_path.write_text(
-        stage_path.read_text().replace(
-            '@presentation.usda@, @generated.usda@',
-            '@presentation.usda@, @generated.usda@, @../outside.usda@'))
+    from pxr import Sdf
+    layer = Sdf.Layer.FindOrOpen(str(stage_path))
+    assert layer is not None
+    layer.subLayerPaths.append("../outside.usda")
+    layer.Save()
     data = json.loads((root / "manifest.json").read_text())
     data["assets"]["scene.usda"] = sha256(stage_path.read_bytes()).hexdigest()
     payload = {k: v for k, v in data.items() if k != "sha256"}
