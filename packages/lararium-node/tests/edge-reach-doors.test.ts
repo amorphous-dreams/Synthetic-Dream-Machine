@@ -223,22 +223,32 @@ describe("two faces open and none named: no door picks a face", () => {
     expect((await direct(runCabalFace)({ face: 0, realm: REALM, present: false })).realm).toBe(REALM);
   });
 
-  it("RED — the roll anchor refuses face-not-named and writes nothing; named, it anchors that face's realms alone and names another face's realm unanchored", async () => {
-    const { opened, openedEpoch } = await seatCharter();
-    const closing = foundingRoster(readNexusDoc(larSealHome()));
+  /** One realm's board anchors, and the anchors the ledger of face `face` keeps for it. */
+  const anchorsOf = (realm: string, face: number) => ownedStore(larDataDir(), async (repo) => {
+    const board = (await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(realm), "board:edge-kapae")).doc();
+    const ledger = (await materializeSharedLarDoc(repo, edgeLedgerDocUrl(await actingAtomKey(face)), "ledger:edge")).doc();
+    return { board: edgeRollAnchorsFromBoard(board).length, kept: keptFromLedger(ledger, realm).anchors.length };
+  });
+  async function twoFacesTwoRealms() {
+    const charter = await seatCharter();
     await direct(runCabalVouch)({ face: 0, joiner: await nymOf(13), realm: REALM });
     await direct(runCabalVouch)({ face: 1, joiner: await nymOf(14), realm: REALM2 });
-    await expect(direct(runEdgeRollAnchors)({ closing, opened, openedEpoch })).rejects.toBeInstanceOf(FaceNotNamed);
-    expect((await edgeBoard()).anchors).toEqual([]);                        // the refusal wrote no board
+    return { ...charter, closing: foundingRoster(readNexusDoc(larSealHome())) };
+  }
+
+  it("RED — named, the roll keeps its anchor in the named face's ledger alone; another face's realm takes its board anchor and that face's ledger stands untouched", async () => {
+    const { closing, opened, openedEpoch } = await twoFacesTwoRealms();
     const result = await direct(runEdgeRollAnchors)({ face: 0, closing, opened, openedEpoch });
-    expect(result.map((r) => [r.state, r.realm])).toEqual([["landed", REALM], ["unanchored", REALM2]]);
-    expect(result[1]).toMatchObject({ state: "unanchored", realm: REALM2, face: 1 });
-    expect((await edgeBoard()).anchors).toHaveLength(1);                    // CONTROL: the named face's realm took its anchor
-    const other = await ownedStore(larDataDir(), async (repo) => {
-      const board = (await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM2), "board:edge-kapae")).doc();
-      const ledger = (await materializeSharedLarDoc(repo, edgeLedgerDocUrl(await actingAtomKey(1)), "ledger:edge")).doc();
-      return { anchors: edgeRollAnchorsFromBoard(board), kept: keptFromLedger(ledger, REALM2).anchors };
-    });
-    expect(other).toEqual({ anchors: [], kept: [] });                       // the face that did not act keeps its ledger as it stood
+    expect(result.map((r) => r.state === "landed" ? [r.realm, r.face, r.keptBy] : [r.state])).toEqual([[REALM, 0, 0], [REALM2, 1, undefined]]);
+    expect(await anchorsOf(REALM, 0)).toEqual({ board: 1, kept: 1 });
+    expect(await anchorsOf(REALM2, 1)).toEqual({ board: 1, kept: 0 });     // the face that did not act keeps its ledger as it stood
+  });
+
+  it("RED — two faces open and none named: the roll strands no realm, and keeps no face's ledger", async () => {
+    const { closing, opened, openedEpoch } = await twoFacesTwoRealms();
+    const result = await direct(runEdgeRollAnchors)({ closing, opened, openedEpoch });
+    expect(result.map((r) => r.state === "landed" ? [r.realm, r.face, r.keptBy] : [r.state])).toEqual([[REALM, 0, undefined], [REALM2, 1, undefined]]);
+    expect(await anchorsOf(REALM, 0)).toEqual({ board: 1, kept: 0 });
+    expect(await anchorsOf(REALM2, 1)).toEqual({ board: 1, kept: 0 });
   });
 });

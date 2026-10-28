@@ -13,10 +13,13 @@
  * face never read takes no anchor from it; a vessel that counted a raise there before the roll keeps
  * counting it by its own ledger's word (`seenAtHead`), and a lift there waits on a hand that reads the board.
  *
- * WHICH FACE. The roll acts as the face the caller named, else the one face standing open; with several open and none
- * named it refuses `FaceNotNamed` before any write. It writes only that face's ledger. A realm another open face's ledger
- * names, and the acting face's does not, answers `unanchored` by name with that face; a face resting locked answers
- * `unanchored` with no realm, since its ledger stays sealed. Nothing drops silently.
+ * WHICH FACE. The board anchor is the charter's act: the new quorum's seat keys sign it, and it lands on every realm board
+ * an open face's ledger names, so a roll strands no realm a face here can read. A face's LEDGER is that face's own: the
+ * roll keeps its anchor in the ledger of the face it acts as (the face named, else the one face standing open) alone, and
+ * reads every other face's ledger without a write (`keptFromLedger`, `readEdgeBoard`). With several faces open and none
+ * named it keeps no ledger; each landed anchor names the face whose ledger named its realm, and `keptBy` the face whose
+ * ledger kept it. A face resting locked answers `unanchored` by its ordinal, since its ledger stays sealed: nothing drops
+ * silently.
  *
  * FAIL CLOSED, before any write: fewer than `opened.threshold` held roots seated in `opened` refuses, and an
  * anchor that does not count under `opened` refuses. The closing keys never sign.
@@ -27,14 +30,13 @@ import type { Repo } from "@automerge/automerge-repo";
 import {
   edgeRollAnchorParents, signEdgeRollAnchor, edgeRollAnchorCounts, edgeRollAnchorCid, writeEdgeRollAnchor,
   charterHandLineage, prepareRealmFrontier, registerRealmFrontierInto, realmRaiseCids, type SealEpoch,
-  keptFromLedger, ledgerScopes, ledgerRealms, keepInLedger, edgeLedgerDocUrl, realmEdgeBoardDocUrl, materializeSharedLarDoc,
+  keptFromLedger, ledgerScopes, ledgerRealms, keepInLedger, readEdgeBoard, edgeLedgerDocUrl, realmEdgeBoardDocUrl, materializeSharedLarDoc,
   type KahuQuorumSeats, type LarDoc,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
 import { loadFaceAtomKey } from "../face-atom-store.js";
 import { unlockedFaceOrdinals } from "../custody-seat.js";
 import { CustodyLocked } from "../custody-holder.js";
-import { resolveFace } from "../face-selector.js";
 import { listFaceOrdinals } from "../identity-anchors.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { readVesselEdgeBoard, realmNexusIn } from "../edge-board.js";
@@ -49,17 +51,17 @@ export interface EdgeRollAnchorLanded {
   readonly anchorCid: string;
   readonly parents:   readonly string[];
   readonly boardUrl:  string;
+  /** The face whose ledger named the realm. */
+  readonly face:      number;
+  /** The face whose ledger kept the anchor: the face the roll acts as, absent where it acts as none. */
+  readonly keptBy?:   number;
 }
 
-/**
- * A realm the roll left unanchored because the acting face does not name it: another open face's ledger names it
- * (`realm` set), or a face rests locked and its ledger cannot be read (`realm` absent).
- */
+/** A face resting locked: its ledger cannot be read, so a realm only it names takes no anchor from this roll. */
 export interface EdgeRollAnchorUnanchored {
   readonly state:  "unanchored";
   readonly face:   number;
-  readonly why:    "another-face" | "face-locked";
-  readonly realm?: string;
+  readonly why:    "face-locked";
 }
 
 export type EdgeRollAnchorOutcome = EdgeRollAnchorLanded | EdgeRollAnchorUnanchored;
@@ -94,27 +96,24 @@ export async function runEdgeRollAnchors(opts: {
   const locked: EdgeRollAnchorUnanchored[] = listFaceOrdinals().filter((f) => !open.includes(f) && f !== opts.face)
     .map((face) => ({ state: "unanchored", face, why: "face-locked" }));
   if (open.length === 0 && opts.face === undefined) return locked;
-  // THE ACTING FACE, resolved before any read or write: several open and none named refuses here.
-  const acting = await resolveFace(opts.face);
+  // THE ACTING FACE keeps the anchor in its own ledger: the face named, else the one face standing open, else none.
+  const acting = opts.face ?? (open.length === 1 ? open[0] : undefined);
   const ledgerOf = async (face: number) => {
-    // A face with no atom keeps no ledger; a named face resting locked refuses by its own name.
+    // A face with no atom keeps no ledger; a named face resting locked refuses by its own name, before any write.
     const key = await loadFaceAtomKey(face).catch((e: unknown) => { if (e instanceof CustodyLocked) throw e; return ""; });
     return key ? { key, ledger: await materializeSharedLarDoc(repo, edgeLedgerDocUrl(key), "ledger:edge") } : null;
   };
-  const own = await ledgerOf(acting);
-  // A board with no quorum act in a ledger carries nothing a roll could strand (a fleet's board holds holder acts alone).
-  const realms = own ? edgeRollAnchorRealms(own.ledger.doc(), rolling) : [];
-  const elsewhere: EdgeRollAnchorUnanchored[] = [];
-  for (const face of open) {
-    if (face === acting) continue;
-    const theirs = await ledgerOf(face);
-    if (!theirs) continue;
-    for (const realm of edgeRollAnchorRealms(theirs.ledger.doc(), rolling)) {
-      if (!realms.includes(realm) && !elsewhere.some((u) => u.realm === realm)) elsewhere.push({ state: "unanchored", face, why: "another-face", realm });
-    }
+  // realm -> the face whose ledger names it (the acting face first) and that ledger.
+  const named = new Map<string, { readonly face: number; readonly key: string; readonly ledger: Awaited<ReturnType<typeof materializeSharedLarDoc>> }>();
+  const faces = acting === undefined ? open : [acting, ...open.filter((f) => f !== acting)];
+  for (const face of faces) {
+    const read = await ledgerOf(face);
+    if (!read) continue;
+    // A board with no quorum act in a ledger carries nothing a roll could strand (a fleet's board holds holder acts alone).
+    for (const realm of edgeRollAnchorRealms(read.ledger.doc(), rolling)) if (!named.has(realm)) named.set(realm, { face, ...read });
   }
-  const unanchored = [...elsewhere, ...locked];
-  if (realms.length === 0 || own === null) return unanchored;
+  const realms = [...named.keys()].sort();
+  if (realms.length === 0) return locked;
 
   const selected = await selectHeldQuorumSigners(opts.opened, (held, k) => new EdgeRollAnchorError(
     `edge roll anchor REFUSED (fail-closed): the vessel holds ${held} seat key(s) the new roster seats, but the anchor ` +
@@ -130,12 +129,18 @@ export async function runEdgeRollAnchors(opts: {
   try {
     for (const realm of realms) {
       const boardUrl = realmEdgeBoardDocUrl(realm);
-      // Count under the CLOSING charter: the roll has yet to write its new head, so the lineage still ends there.
-      const read = await readVesselEdgeBoard({
-        repo, scope: realm, kind: "realm", boardUrl, label: "board:edge-kapae", vesselKey: own.key,
-        authorityFor: () => ({ quorum: true }),
-        charter: { scope: realm, head: opts.closing, sealLineage },
-      });
+      const at = named.get(realm)!;
+      const charter = { scope: realm, head: opts.closing, sealLineage };
+      const authorityFor = () => ({ quorum: true });
+      // Count under the CLOSING charter: the roll has yet to write its new head, so the lineage still ends there. The
+      // acting face's read keeps what counted in its own ledger; another face's ledger reads without a write.
+      const read = at.face === acting
+        ? await readVesselEdgeBoard({ repo, scope: realm, kind: "realm", boardUrl, label: "board:edge-kapae", vesselKey: at.key, authorityFor, charter })
+        : await (async () => {
+          const handle = await materializeSharedLarDoc(repo, boardUrl, "board:edge-kapae");
+          const counted = (await readEdgeBoard({ board: handle.doc(), kept: keptFromLedger(at.ledger.doc(), realm), authorityFor, charter })).counted;
+          return { handle, counted };
+        })();
       const parents = edgeRollAnchorParents(read.counted, opts.closing.sealEpochCid);
       const anchor = await signEdgeRollAnchor({
         scope: realm, prevEpochCid: opts.closing.sealEpochCid, sealEpochCid: opts.opened.sealEpochCid,
@@ -148,11 +153,12 @@ export async function runEdgeRollAnchors(opts: {
         counted: realmRaiseCids(read.counted.acts),
         signers: selected.map((s) => ({ key: s.verifyingKey, sign: s.sign })) });
       read.handle.change((d) => { writeEdgeRollAnchor(d, anchor); registerRealmFrontierInto(d, head); });
-      own.ledger.change((d) => { keepInLedger(d, realm, { acts: [], anchors: [anchor] }); });
-      landed.push({ state: "landed", realm, anchorCid: edgeRollAnchorCid(anchor), parents, boardUrl });
+      if (at.face === acting) at.ledger.change((d) => { keepInLedger(d, realm, { acts: [], anchors: [anchor] }); });
+      landed.push({ state: "landed", realm, anchorCid: edgeRollAnchorCid(anchor), parents, boardUrl, face: at.face,
+        ...(at.face === acting ? { keptBy: acting } : {}) });
     }
     await repo.flush();
-    return [...landed, ...unanchored];
+    return [...landed, ...locked];
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
   }
