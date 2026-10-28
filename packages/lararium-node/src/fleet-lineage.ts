@@ -37,9 +37,14 @@ export async function fleetFaceOf(repo: Repo, fleetRoot: string, islands: readon
   return (await fleetFaceChainOf(repo, fleetRoot, islands, anchor))?.face ?? null;
 }
 
-export async function fleetFaceChainForVessel(repo: Repo, fleetRoot: string, anchor?: FaceAnchor | null) {
+/** The islands this vessel's boot resolves: its own, then those below it. */
+async function vesselIslands(): Promise<string[]> {
   const ownVesselKey = await loadVesselVerifyingKey();
-  return fleetFaceChainOf(repo, fleetRoot, [nodeNexusIsland({ ownVesselKey }), ...nodeNexusIslandsBelow({ ownVesselKey })], anchor);
+  return [nodeNexusIsland({ ownVesselKey }), ...nodeNexusIslandsBelow({ ownVesselKey })];
+}
+
+export async function fleetFaceChainForVessel(repo: Repo, fleetRoot: string, anchor?: FaceAnchor | null) {
+  return fleetFaceChainOf(repo, fleetRoot, await vesselIslands(), anchor);
 }
 
 /** The fleet root's lineage, for the readers that take the roster alone. */
@@ -49,8 +54,7 @@ export async function fleetLineageOf(repo: Repo, fleetRoot: string, islands: rea
 
 /** The same read from a CLI door: the islands are the ones this vessel's boot resolves (the island, then those below it). */
 export async function fleetFaceForVessel(repo: Repo, fleetRoot: string, anchor?: FaceAnchor | null): Promise<FaceReading | null> {
-  const ownVesselKey = await loadVesselVerifyingKey();
-  return fleetFaceOf(repo, fleetRoot, [nodeNexusIsland({ ownVesselKey }), ...nodeNexusIslandsBelow({ ownVesselKey })], anchor);
+  return fleetFaceOf(repo, fleetRoot, await vesselIslands(), anchor);
 }
 
 export async function fleetLineageForVessel(repo: Repo, fleetRoot: string): Promise<HandLineage | null> {
