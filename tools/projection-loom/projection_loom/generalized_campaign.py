@@ -51,36 +51,49 @@ def save_once(path, payload):
 
 
 def initial_program(adapters):
-    """Compose source capabilities into one heritable proposed construction.
+    """Compose adapter-offered developmental capabilities without kind switches.
 
-    A reference image constrains possible appearance, not world coordinates.
-    Proxy and grammar supply proposed constructive operations and tiers.
+    The highest explicit constructive priority supplies the root; other
+    independently authored structural programs enter as named, attributable
+    subtrees. Original image observations remain visual constraints when any
+    constructive program exists. All input source identities remain separate.
     """
-    types={a.seed.kind:a for a in adapters}
-    proxy=types.get("geometry-proxy")
-    grammar=types.get("constructive-grammar")
-    if proxy:
-        nodes=list(proxy_growth_program(proxy.program).nodes)
-    elif grammar:
-        nodes=list(GrowthProgram.from_dict(grammar.program["growth_program"]).nodes)
-    else:
-        first=sorted((a for a in adapters if a.seed.kind=="image-group"),
-                     key=lambda a:a.seed.identity)[0]
-        nodes=list(image_growth_program(first.seed).nodes)
-    if grammar and proxy:
-        authored=GrowthProgram.from_dict(grammar.program["growth_program"])
-        mapping={authored.nodes[0].key:"root"}
-        mapping.update({n.key:"grammar_"+n.key for n in authored.nodes[1:]})
+    offers = sorted(adapters, key=lambda a:(-a.composition_priority, a.seed.identity))
+    if not offers:
+        raise ValueError("No producer capability entered the Loom")
+    foundation = offers[0]
+    nodes = list(foundation.offered_growth().nodes)
+    if nodes[0].key != "root":
+        original_root = nodes[0].key
+        nodes = [replace(n,
+                  key="root" if n.key==original_root else n.key,
+                  parent="root" if n.parent==original_root else n.parent,
+                  target="root" if n.target==original_root else n.target)
+                 for n in nodes]
+    existing = {n.key for n in nodes}
+    for adapter in offers[1:]:
+        if adapter.composition_priority <= 0:
+            continue
+        authored = adapter.offered_growth()
+        prefix = "producer_" + adapter.seed.identity[:12] + "_"
+        mapping = {authored.nodes[0].key: "root"}
+        mapping.update({n.key: prefix + n.key for n in authored.nodes[1:]})
         for node in authored.nodes[1:]:
-            nodes.append(replace(node,key=mapping[node.key],
-                parent=mapping.get(node.parent),target=mapping.get(node.target)))
-    if len(nodes)==1:
-        nodes.append(GrowthNode("crown","spawn",parent="root",face="up",size=(1.7,1.7,1.3)))
+            mapped = replace(node, key=mapping[node.key],
+                             parent=mapping.get(node.parent),
+                             target=mapping.get(node.target))
+            if mapped.key in existing:
+                raise ValueError("Independent producer construction key collision")
+            nodes.append(mapped)
+            existing.add(mapped.key)
+    if len(nodes) == 1:
+        nodes.append(GrowthNode("crown", "spawn", parent="root",
+                               face="up", size=(1.7, 1.7, 1.3)))
     return GrowthProgram(tuple(nodes))
 
 
 def source_alpha(adapters):
-    images=sorted((a for a in adapters if a.seed.kind=="image-group"),
+    images=sorted((a for a in adapters if a.visual_source),
                   key=lambda a:a.seed.identity)
     if not images:
         return None
@@ -247,7 +260,7 @@ def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
         "run_id":context.run_id,"seeds":seeds.manifest(),"intent":contract.identity,
         "initial_program":initial.to_dict(),"types":list(types),
         "epochs":epochs,"offspring":offspring,"exact_budget":exact_budget,
-        "source_camera_authority":"provisional" if "image-group" in types else "none"}
+        "source_camera_authority":"provisional" if any(a.visual_source for a in adapters) else "none"}
     save_once(out/"pre_registration.json",manifest)
     if (out/"summary.json").exists():
         return _completed_summary(out, manifest, contract)

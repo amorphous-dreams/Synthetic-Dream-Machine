@@ -22,14 +22,39 @@ class SeedAdapter:
     seed: SeedEntry
     program: dict | None = None
 
+    def offered_growth(self):
+        """The adapter supplies construction without generic engine kind cases."""
+        if self.program is None:
+            if self.seed.frame_kind != "pixel":
+                raise ValueError("A sourceless producer requires an authored growth program")
+            return image_growth_program(self.seed)
+        if "growth_program" in self.program:
+            return GrowthProgram.from_dict(self.program["growth_program"])
+        if "tiers" in self.program:
+            return proxy_growth_program(self.program)
+        raise ValueError("Unsupported authored producer contract")
+
+    @property
+    def composition_priority(self):
+        """Declared producer capability ordering, not a global scene truth."""
+        if self.program is None:
+            return 0
+        if "composition_priority" in self.program:
+            level = self.program["composition_priority"]
+            if type(level) is not int or not 1 <= level <= 100:
+                raise ValueError("Composition priority must be a bounded integer")
+            return level
+        return 20 if "tiers" in self.program else 10
+
+    @property
+    def visual_source(self):
+        # A pixel observation constrains appearance, never structural evidence.
+        return self.program is None and self.seed.frame_kind == "pixel"
+
     def build(self):
-        if self.seed.kind == "constructive-grammar":
-            return compile_growth(GrowthProgram.from_dict(self.program["growth_program"])).assembly
-        if self.seed.kind == "geometry-proxy":
-            return compile_growth(proxy_growth_program(self.program)).assembly
-        if self.seed.kind == "image-group":
+        if self.visual_source:
             return _build_image_hypothesis(self.seed.locator)
-        raise ValueError("Unknown seed capability")
+        return compile_growth(self.offered_growth()).assembly
 
 
 def _declared_json(path):

@@ -135,3 +135,15 @@ The `blender-real-editor` job installed actual Blender 4.0.2 but could not find 
 **Act:** `python -m projection_loom.hephaestus_crucible --out ...` produces inspectable source/regenerated bundles, original and new causal ground, rejected tamper copy and a separate `crucible.json` outcome. CI retains all artifacts. The previous seven-cohort experiment remains a separate mandatory lane.
 
 **Aftermath:** This is the new held-out F-02/F-04 test slice, **not** full F acceptance: no actual Unreal Editor, no multi-camera calibration, no demonstrated native incremental cache reuse, no robust cross-tool variant writeback and no repository-wide cleanup. Every status requires exact-head CI.
+
+## OODA-HA Wave A-06 · independently authored producer capability (2026-10-28)
+
+**Observe:** The generalized engine previously inferred an initial program by a direct switch on the three Experiment Zero seed kind names. That prevented a truly independent fourth program without modifying generic engine selection.
+
+**Orient:** Source kind identifies testimony, not the implementation capability or scene winner. The adapter knows how it constructs or supplies a visual observation, while the generic engine need only compose its declared growth programs and an explicit bounded constructive priority.
+
+**Decide:** Permit canonical new capability names at the seed substrate with explicit source frame and retained authority; move construction offer behavior into `SeedAdapter.offered_growth()` and `visual_source`. The generic `initial_program` selects offers by an explicit constructive priority and grafts independently sourced subtrees without knowing any producer kinds. Do not infer unregistered cameras.
+
+**Act:** Independent `independent-program` fixture enters through `SeedAdapter(SeedEntry.from_file(...), program)`, and is auditioned as genuine native CAD through the one OODA-HA helm. Preserve the original seven-cohort matrix and verify old native behavior via exact-head CI.
+
+**Aftermath:** This closes the kind-switch *in the generic initial construction path*, but not Wave A's full replacement of `LocationStack` or complete multiview evidence; new adapters still need per-kind validation and composition policies. Exact-head CI remains required.

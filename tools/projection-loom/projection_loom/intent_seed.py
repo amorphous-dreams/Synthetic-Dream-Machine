@@ -15,8 +15,15 @@ import re
 from .provenance_encoding import canonical_json_sha256
 
 _SHA = re.compile(r"^[0-9a-f]{64}$")
-KINDS = frozenset({"image-group", "constructive-grammar", "geometry-proxy"})
+# The generic seed substrate accepts attributed capability names. Named source
+# adapters validate their own payloads and frames; a novel producer does not
+# require an edit to this module's kind-switch.
+_KIND_NAME = re.compile(r"^[a-z][a-z0-9-]{2,63}$")
 AUTHORITIES = frozenset({"source", "proposed"})
+
+
+def _missing_capability_frame(kind):
+    raise ValueError(f"New capability {kind!r} must explicitly name its source frame")
 
 
 def _canonical(value):
@@ -38,8 +45,8 @@ class SeedEntry:
     metadata: tuple[tuple[str, str], ...] = ()
 
     def __post_init__(self):
-        if self.kind not in KINDS or self.authority not in AUTHORITIES:
-            raise ValueError("Unknown seed kind or authority")
+        if not isinstance(self.kind, str) or not _KIND_NAME.fullmatch(self.kind) or self.authority not in AUTHORITIES:
+            raise ValueError("Invalid seed capability name or authority")
         if not _SHA.fullmatch(self.content_sha256):
             raise ValueError("Seed requires a complete content SHA256")
         if not isinstance(self.locator,str) or not self.locator:
@@ -69,7 +76,8 @@ class SeedEntry:
         return cls(kind,sha256(data).hexdigest(),str(p),
                    frame_kind or {"image-group":"pixel",
                                   "constructive-grammar":"none",
-                                  "geometry-proxy":"local3d"}[kind],
+                                  "geometry-proxy":"local3d"}.get(kind)
+                   or _missing_capability_frame(kind),
                    authority or ("source" if kind=="image-group" else "proposed"),
                    tuple(sorted(channels)),tuple(sorted(metadata)))
 
@@ -191,12 +199,12 @@ def normalize_location(seeds:SeedBundle,intent:IntentContract):
             frame=Frame(frame_id,entry.frame_kind,
                         "px" if entry.frame_kind=="pixel" else "model_unit")
             stack.add_frame(frame)
-        source_kind={"image-group":"image_set","constructive-grammar":"text_testimony",
-                     "geometry-proxy":"cad_model"}[entry.kind]
+        source_kind={"pixel":"image_set","none":"text_testimony",
+                     "local3d":"cad_model"}[entry.frame_kind]
         stack.add_source(Source(sid,source_kind,entry.content_sha256,
                                 entry.locator,frame_id,entry.authority))
         stack.add_element(Element("element-"+entry.identity[:24],
-                                  "image_plane" if entry.kind=="image-group" else "unresolved_form",
+                                  "image_plane" if entry.frame_kind=="pixel" else "unresolved_form",
                                   (sid,),(),entry.authority))
     stack.audit()
     return stack
