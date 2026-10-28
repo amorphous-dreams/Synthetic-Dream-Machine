@@ -85,4 +85,16 @@ describe("port lease door", () => {
     expect(table.holder("one", "p")).toBeUndefined();
     expect(table.holder("two", "p")).toBe("B");
   });
+
+  test("port:widen travels the holder's road like any page kind; another binding meets port-owned; CONTROL: an unleased widen refuses", () => {
+    const posted: PortVesselToIslandMsg[] = [];
+    const door = makePortDoor({ policy: () => grant, post: (_scope, msg) => { posted.push(msg); } });
+    const widen = { type: "port:widen", portId: "p", width: "full" };
+    expect(door.place("wiki", "A", widen)).toEqual({ ok: false, reason: "port-unleased" });
+    expect(door.place("wiki", "A", { ...open, width: "skinny" })).toEqual({ ok: true });
+    expect(door.place("wiki", "B", widen)).toEqual({ ok: false, reason: "port-owned" });
+    expect(door.place("wiki", "A", widen)).toEqual({ ok: true });
+    expect(posted.at(-1)).toMatchObject({ type: "port:widen", width: "full" });
+    expect(door.place("wiki", "A", { type: "port:widen", portId: "p", width: "huge" })).toEqual({ ok: false, reason: "port-malformed" });
+  });
 });

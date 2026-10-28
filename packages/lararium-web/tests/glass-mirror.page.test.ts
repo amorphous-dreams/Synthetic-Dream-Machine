@@ -16,8 +16,8 @@ async function fixture(refusal?: string) {
     place(_surface, _binding, raw) {
       const msg = raw as Record<string, any>; messages.push(msg);
       if (refusal && msg.type === "port:open") return { ok: false as const, reason: refusal };
-      if (msg.type === "port:open") queueMicrotask(() => port.deliver({ type: "port:snapshot", portId: msg.portId,
-        snapshotId: "snapshot", i: 1, n: 1, records: [] }));
+      if (msg.type === "port:open" || msg.type === "port:widen") queueMicrotask(() => port.deliver({ type: "port:snapshot", portId: msg.portId,
+        snapshotId: `snapshot-${messages.length}`, i: 1, n: 1, records: [] }));
       return { ok: true as const };
     }, close() {},
   } });
@@ -31,12 +31,13 @@ async function runDefault(search: string) {
   history.replaceState(null, "", `${location.pathname}${search}${location.hash}`);
   try {
     const result = await door()(f.options, f.seams);
-    expect(result).toMatchObject({ kind: "mirror", width: "full" });
-    expect(f.messages.find(m => m.type === "port:open")?.width).toBe("full");
+    expect(result).toMatchObject({ kind: "mirror" });
+    expect(await result.settled).toEqual({ width: "full" });
+    expect(f.messages.find(m => m.type === "port:widen")?.width).toBe("full");
     result.unmount();
   } finally { history.replaceState(null, "", original); f.host.remove(); }
 }
-test("R1 CONTROL: a page with no selector opens full on the wire", async () => { await runDefault(""); });
+test("R1 CONTROL: a page with no selector opens skinny and promotes to full", async () => { await runDefault(""); });
 test.each(["skinny", "none", "junk"])("R1: query glass=%s cannot select a width", async value => { await runDefault(`?glass=${value}`); });
 test("R1: stored glass and width values cannot select a width", async () => {
   const saved = [localStorage, sessionStorage].map(s => [s.getItem("glass"), s.getItem("width")]);
@@ -92,7 +93,7 @@ test("R9: mirror lighting never takes a synchronous OPFS handle", async () => {
   if (original) proto.createSyncAccessHandle = function (...args: unknown[]) { calls++; return original.apply(this, args); };
   try {
     const result = await door()(f.options, f.seams);
-    expect(result).toMatchObject({ kind: "mirror", width: "full" });
-    expect(calls).toBe(0); result.unmount();
+    expect(result).toMatchObject({ kind: "mirror" });
+    await result.settled; expect(calls).toBe(0); result.unmount();
   } finally { if (original) proto.createSyncAccessHandle = original; f.host.remove(); }
 });
