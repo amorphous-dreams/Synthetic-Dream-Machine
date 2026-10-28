@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { scanText, scanAll, scanTestText, scanUpgradeText, scanCanonText, blindClasses, classify, RULES, EXCEPTIONS, CEILINGS } from "./evergreen-boundary.mjs";
+import { scanText, scanAll, scanTestText, scanUpgradeText, scanCanonText, scanCanonDatedText, scanConfigText, isConfigFile, blindClasses, classify, RULES, EXCEPTIONS, CEILINGS } from "./evergreen-boundary.mjs";
 
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const cli = join(repo, "tools/evergreen-boundary.mjs");
@@ -16,7 +16,7 @@ function fixture(files, extra = []) {
       mkdirSync(join(root, rel, ".."), { recursive: true });
       writeFileSync(join(root, rel), body);
     }
-    return spawnSync(process.execPath, [cli, "--root", root, "--ceilings", "version=0,clock=0,narration=0,retired-test=0,upgrade-delete=0,canon-history=0", "--no-exceptions", ...extra], { encoding: "utf8" });
+    return spawnSync(process.execPath, [cli, "--root", root, "--ceilings", "version=0,clock=0,narration=0,retired-test=0,upgrade-delete=0,canon-history=0,canon-dated-history=0", "--no-exceptions", ...extra], { encoding: "utf8" });
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
 const one = (body) => fixture({ "packages/example/src/a.ts": body });
@@ -97,7 +97,7 @@ test("E9 real corpus holds under its ceilings, each rule reads a known positive,
   }
   assert.ok(total > 0 || RULES.every(rule => CEILINGS[rule] === 0), "the tree read no debt under standing ceilings");
   // Each new class reads a known positive in the real tree too, while its ceiling stands above zero.
-  for (const rule of ["retired-test", "upgrade-delete", "canon-history"]) {
+  for (const rule of ["retired-test", "upgrade-delete", "canon-history", "canon-dated-history"]) {
     const [, open] = r.stdout.match(new RegExp(`${rule} (\\d+)/`)) ?? [];
     assert.ok(Number(open) > 0 || CEILINGS[rule] === 0, `${rule} read nothing under a standing ceiling`);
   }
@@ -148,7 +148,39 @@ test("E13 canon-history: a history word in live canon reads; present canon and a
   assert.equal(record.status, 0, record.stdout + record.stderr);
 });
 test("E14 a class whose corpus holds no file reads blind", () => {
-  assert.deepEqual(blindClasses(["tools/a.mjs", "packages/x/src/a.ts"]), ["retired-test", "canon-history"]);
-  assert.deepEqual(blindClasses([]), ["retired-test", "upgrade-delete", "canon-history"]);
+  assert.deepEqual(blindClasses(["tools/a.mjs", "packages/x/src/a.ts"]), ["retired-test", "canon-history", "canon-dated-history"]);
+  assert.deepEqual(blindClasses([]), ["retired-test", "upgrade-delete", "canon-history", "canon-dated-history"]);
   assert.deepEqual(blindClasses(["packages/x/tests/a.test.ts", "packages/x/src/a.ts", "bags/lares/ha.ka.ba/lares/api/a.mem"]), []);
+});
+test("E15 a comment that names its lane, wave or slice is narration; the lowercase domain words are not", () => {
+  for (const body of ["// Wave C swaps the face in here.", "/* the seed (slice 2: genesis is data) */", "// since this lane touches only one file", "// Slice 5 lands the act."]) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "narration").length, 1, body);
+  }
+  const r = one("// Wave B carries the holder.\nconst x = 1;"); assert.equal(r.status, 1); assert.match(r.stdout, /narration +packages\/example\/src\/a\.ts:1/);
+  // CONTROL: a wave of edits, a byte slice and a string that names a lane read nothing.
+  assert.deepEqual(scanText("a.ts", '// a wave a watcher settled; take a slice of the buffer.\nconst s = buf.slice(2);\nconst name = "this lane";'), []);
+});
+test("E16 workflow, Dockerfile and compose comments join the narration corpus; their code does not", () => {
+  assert.equal(isConfigFile(".github/workflows/ci.yml"), true);
+  assert.equal(isConfigFile("docker-compose.surface.yml"), true);
+  assert.equal(isConfigFile("Dockerfile"), true);
+  assert.equal(isConfigFile("Dockerfile.dockerignore"), false);
+  assert.equal(isConfigFile("packages/x/docker-compose.yml"), false);
+  assert.equal(scanConfigText("ci.yml", "      # A CDN stall used to hold a runner.").length, 1);
+  assert.equal(scanConfigText("ci.yml", "    # the red this lane exists to surface").length, 1);
+  const r = fixture({ ".github/workflows/ci.yml": "jobs:\n  # the old job ran here\n  test:\n" }); assert.equal(r.status, 1); assert.match(r.stdout, /narration +\.github\/workflows\/ci\.yml:2/);
+  // CONTROL: a present comment, and a `#` inside a value (an anchor, a color), read nothing.
+  assert.deepEqual(scanConfigText("ci.yml", "      # The engine directory restores by the pinned version.\n        key: a#used to\n"), []);
+  const c = fixture({ ".github/workflows/ci.yml": "jobs:\n  # The test job runs every suite.\n  test:\n" }); assert.equal(c.status, 0, c.stdout + c.stderr);
+});
+test("E17 canon-dated-history: a history verb beside an ISO date reads in live canon; a dated ruling and a record carrier do not", () => {
+  for (const body of ["The engine landed 2026-07-02.", "(collisions removed 2026-06-04)", "the attribute form retired 2026-06-12.", "2026-09-18: the fork was cured."]) {
+    assert.equal(scanCanonDatedText("a.mem", body).length, 1, body);
+  }
+  const r = canon("A line.\nThe engine landed 2026-07-02.\n"); assert.equal(r.status, 1); assert.match(r.stdout, /canon-dated-history +bags\/lares\/ha\.ka\.ba\/lares\/api\/pono\/a\.mem:2/);
+  // CONTROL: an operator ruling's date, a date far from any history verb, and a record carrier under docs/ read nothing.
+  assert.deepEqual(scanCanonDatedText("a.mem", "RULED WHOLE (operator, 2026-09-18). The lease holds its own causal clock and never reads a wall."), []);
+  const c = canon("The identity model stands RULED (operator, 2026-06-24).\n"); assert.equal(c.status, 0, c.stdout + c.stderr); assert.match(c.stdout, /canon-dated-history 0\/0/);
+  const record = fixture({ "bags/lares/ha.ka.ba/lares/docs/pono/a.mem": "The engine landed 2026-07-02.\n", "tools/a.mjs": "const x = 1;" });
+  assert.equal(record.status, 0, record.stdout + record.stderr);
 });

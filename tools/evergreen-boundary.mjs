@@ -8,17 +8,21 @@
 //   clock      — `Date.now()` or `new Date()` flowing on its statement into an id (a template, a concat, a radix
 //                string, an id/nonce/epoch name), a durable record field (a time-named key, quoted or bare, or an
 //                ISO-stamped now), or a validity gate (a comparison or subtraction against the reading);
-//   narration  — a comment that narrates history (used to, previously, legacy, the old, back-compat, …).
+//   narration  — a comment that narrates history (used to, previously, legacy, the old, back-compat, …) or names the
+//                lane, wave or slice that built its line (`Wave C`, `slice 2`, `this lane`); the `#` comments of the
+//                workflows, the Dockerfile and the root compose files join this corpus.
 // It reads lines, not a syntax tree, so a sink split across lines escapes it; false green is the tolerable side.
 //
-// THREE MORE CLASSES hold the places a past shape lingers after its code burns (each over its own corpus):
+// FOUR MORE CLASSES hold the places a past shape lingers after its code burns (each over its own corpus):
 //   retired-test    — in tracked tests, a title or an assertion's comment that names the house's own earlier shape
 //                     (an old-shape refusal, a retired name, spelling, route, command or env, a no-alias claim), and a
 //                     retired-name list;
 //   upgrade-delete  — in `packages/*/src`, an `onupgradeneeded` body that deletes stores or rows (`deleteObjectStore`,
 //                     a row `.delete(`, `.clear(`), since a present schema creates what it holds and carries no deletions;
 //   canon-history   — in live canon (`bags/*/…/{api,mesh,browser}/**/*.mem`, never a record carrier under `docs/`), a
-//                     word that narrates the house's past (used to, formerly, legacy, no longer, retired, earlier shape…).
+//                     word that narrates the house's past (used to, formerly, legacy, no longer, retired, earlier shape…);
+//   canon-dated-history — in the same corpus, a verb of history (landed, burned, retired, cured, …) within 40 characters
+//                     of an ISO date: a line that dates the canon's making. A date that names an operator ruling reads nothing.
 // A class whose corpus reads no file fails the run; each class carries a planted red and a lawful control in the self-test.
 //
 // NAMED EXCEPTIONS. Each names its rule, its file, a substring of the line it allows (never a line number), how many
@@ -30,15 +34,15 @@
 // ceiling fails and names every open finding of that rule; a rule under it passes and asks for the ceiling to come
 // down; a corpus that reads no file fails, since a zero from no reading proves nothing.
 //
-// Usage: node tools/evergreen-boundary.mjs [--list] [--root <dir> --ceilings version=N,clock=N,narration=N,retired-test=N,upgrade-delete=N,canon-history=N --no-exceptions]
+// Usage: node tools/evergreen-boundary.mjs [--list] [--root <dir> --ceilings version=N,clock=N,narration=N,retired-test=N,upgrade-delete=N,canon-history=N,canon-dated-history=N --no-exceptions]
 import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const RULES = ["version", "clock", "narration", "retired-test", "upgrade-delete", "canon-history"];
+export const RULES = ["version", "clock", "narration", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history"];
 /** Today's measured open debt, per rule. RATCHET: each number may only ever come DOWN. */
-export const CEILINGS = { version: 58, clock: 56, narration: 185, "retired-test": 10, "upgrade-delete": 0, "canon-history": 103 };
+export const CEILINGS = { version: 58, clock: 56, narration: 210, "retired-test": 10, "upgrade-delete": 0, "canon-history": 103, "canon-dated-history": 17 };
 export const EXCEPTIONS = [
   { rule: "version", file: "packages/lararium-mesh/src/domains.ts", match: "const frozen =", reason: "The frozen builder preserves live signing domain bytes under the domain registry witness." },
   { rule: "version", file: "packages/lararium-browser/src/browser-vessel-identity.ts", match: "const IDB_VERSION", reason: "IndexedDB's open call takes a numeric version argument; the browser API names it." },
@@ -61,6 +65,7 @@ export const EXCEPTIONS = [
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Evergreen, with no old shapes", reason: "This law line names the history words it bans." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "lives for one commit", reason: "This law line states the one-commit refusal it permits." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Recursive o-takiage", reason: "This law line names the retired-name lists it bans." },
+  { rule: "canon-dated-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Recursive o-takiage", reason: "The date names the operator ruling this law line states; the burned names it governs stay its subject." },
 ];
 const REPO = fileURLToPath(new URL("../", import.meta.url));
 const SOURCE = /\.(?:ts|mts|cts|js|mjs|cjs|sh|py)$/;
@@ -68,6 +73,8 @@ const WITNESS_FILES = new Set([
   "tools/evergreen-boundary.mjs", "tools/evergreen-boundary-witness.sh", "tools/evergreen-boundary.test.mjs",
 ]); // The witness carries its own planted patterns.
 const NARRATION = /\b(?:used to|previously|formerly|legacy|no longer|back-compat|backcompat|backward compat|deprecated|historically|the fix|the old|was (?:renamed|moved|replaced)|once (?:sat|lived|stood))\b/i;
+// A comment that names the lane, wave or slice that built a line narrates its making; the code states what IS.
+const LANE_NARRATION = /\b(?:Wave [A-D]|[Ss]lice \d+|this lane)\b/;
 const FORMAT = /(?:[a-z][\w.-]*|\})\/v(?:\d+|\$\{[^}]+\})(?![\w.])/;
 const VERSION_CONST = /\b[A-Z][A-Z0-9_]*VERSION\s*=\s*(?:0x[\da-fA-F]+|\d)/;
 const CLOCK = /(?:\bDate\.now\s*\(\s*\)|\bnew\s+Date\s*\()/;
@@ -114,7 +121,7 @@ export function scanText(rel, text) {
       else code += c;
     }
     const finding = (rule) => ({ rule, file: rel, line: index + 1, text: raw.trim() });
-    if (NARRATION.test(comments)) add(finding("narration"));
+    if (NARRATION.test(comments) || LANE_NARRATION.test(comments)) add(finding("narration"));
     if (/\.(?:sh|py)$/.test(rel)) { if (clockSink(code)) add(finding("clock")); continue; }
     const literals = code.match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/g) ?? [];
     const names = code.replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/g, "\"\"");
@@ -163,6 +170,20 @@ export function scanUpgradeText(rel, text) {
   return findings;
 }
 
+// A verb of the house's history within 40 characters of an ISO date: a line that dates a landing, a burn or a cure
+// narrates the making of the canon. A date that names an operator ruling (`RULED`, `ruling`) reads no verb here.
+const HISTORY_VERB = "(?:landed|burned|burnt|retired|removed|died|cured|shipped|renamed|replaced|dropped|deleted|collapsed|was|were|went|became)";
+const ISO_DATE = "20\\d\\d-\\d\\d(?:-\\d\\d)?";
+const DATED_HISTORY = new RegExp(`\\b${HISTORY_VERB}\\b.{0,40}${ISO_DATE}|${ISO_DATE}.{0,40}\\b${HISTORY_VERB}\\b`, "i");
+/** Live canon lines that date a piece of the house's history. */
+export function scanCanonDatedText(rel, text) {
+  const findings = [];
+  text.split(/\r?\n/).forEach((raw, index) => {
+    if (DATED_HISTORY.test(raw)) findings.push({ rule: "canon-dated-history", file: rel, line: index + 1, text: raw.trim() });
+  });
+  return findings;
+}
+
 /** Live canon lines that narrate the house's past. */
 export function scanCanonText(rel, text) {
   const findings = [];
@@ -189,6 +210,19 @@ const BUILT = /(?:^|\/)(?:dist|node_modules)\//;
 function eligible(rel) {
   return SOURCE.test(rel) && !BUILT.test(rel) && !WITNESS_FILES.has(rel) && (/^packages\/[^/]+\/src\//.test(rel) || /^tools\//.test(rel));
 }
+/** Workflow, Dockerfile and compose files: their `#` comments join the narration corpus, never the version or clock reads. */
+export function isConfigFile(rel) {
+  return /^\.github\/workflows\/[^/]+\.ya?ml$/.test(rel) || (/^Dockerfile[^/]*$/.test(rel) && !/\.dockerignore$/.test(rel)) || /^docker-compose[^/]*\.ya?ml$/.test(rel);
+}
+/** A config file's narrating comments: a `#` at the line's start or after a space opens the comment. */
+export function scanConfigText(rel, text) {
+  const findings = [];
+  text.split(/\r?\n/).forEach((raw, index) => {
+    const comment = /(?:^|\s)#(.*)$/.exec(raw)?.[1] ?? "";
+    if (NARRATION.test(comment) || LANE_NARRATION.test(comment)) findings.push({ rule: "narration", file: rel, line: index + 1, text: raw.trim() });
+  });
+  return findings;
+}
 /** Tracked tests: package tests, the e2e tree, the tool self-tests and the Python test scripts. */
 function isTestFile(rel) {
   return SOURCE.test(rel) && !BUILT.test(rel) && !WITNESS_FILES.has(rel)
@@ -201,6 +235,7 @@ const CLASSES = {
   "retired-test": { has: isTestFile, scan: scanTestText },
   "upgrade-delete": { has: isUpgradeFile, scan: scanUpgradeText },
   "canon-history": { has: isCanonFile, scan: scanCanonText },
+  "canon-dated-history": { has: isCanonFile, scan: scanCanonDatedText },
 };
 function walkFiles(root, dir = root) {
   const out = [];
@@ -216,6 +251,7 @@ function walkFiles(root, dir = root) {
 export function scanAll(rel, text) {
   return [
     ...(eligible(rel) ? scanText(rel, text) : []),
+    ...(isConfigFile(rel) ? scanConfigText(rel, text) : []),
     ...Object.values(CLASSES).flatMap(c => (c.has(rel) ? c.scan(rel, text) : [])),
   ];
 }
@@ -237,7 +273,7 @@ function main(args) {
   }
   const all = tracked(root, fixture);
   const cap = (rule) => ceilings[rule] ?? 0;
-  const sourceFiles = all.filter(eligible);
+  const sourceFiles = all.filter((rel) => eligible(rel) || isConfigFile(rel));
   const classFiles = Object.fromEntries(Object.entries(CLASSES).map(([rule, c]) => [rule, all.filter(c.has)]));
   const read = (rel) => readFileSync(join(root, rel), "utf8");
   const findings = [...new Set([...sourceFiles, ...Object.values(classFiles).flat()])].flatMap(rel => scanAll(rel, read(rel)));
