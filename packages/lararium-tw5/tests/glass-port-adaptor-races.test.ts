@@ -191,4 +191,17 @@ describe.skipIf(!!wikiSkip)(`glass port ordered races${skipNote}`, () => {
     expect(next.pendingWrites()).toEqual([]);
     expect(g.text("Page")).toBe("local");
   });
+
+  it("a landed record whose fields TW5 normalizes never echoes back as a local edit; CONTROL a real local edit still posts", async () => {
+    const g = await glass();
+    g.snapshot("first", 1, 1, [{ title: "Lesson", seq: 1, fields: { text: "body", tags: "Lesson [[Unit 3]]", modified: "20250101000000000", list: "[[Other Page]] Next" } }]);
+    await g.flush();
+    expect(g.writes()).toEqual([]);
+    g.change({ title: "Lesson", fields: { text: "peer body", tags: "Lesson [[Unit 3]]", modified: "20250102000000000" } });
+    await g.flush();
+    expect(g.writes()).toEqual([]);
+    g.wiki.setTiddler({ title: "Lesson", text: "local edit", tags: "Lesson" });
+    await g.flush();
+    expect(g.writes()).toHaveLength(1);
+  });
 });
