@@ -192,3 +192,23 @@ def test_fire_native_replay_tolerates_only_cad_roundoff_not_semantic_change():
     changed["rule_steps"][0]["parents"].reverse()
     with __import__("pytest").raises(ValueError, match="rule_steps"):
         verify_native_rule_replay(plan, changed, base)
+
+
+
+def test_fire_construction_uses_analytic_brep_bounds_not_preview_triangulation():
+    from types import SimpleNamespace
+    import cadquery as cq
+    from projection_loom.fire_geometry import _bounds
+
+    loft = (cq.Workplane("XY").workplane(offset=0).rect(4, 5)
+            .workplane(offset=8).rect(3, 4).loft().val())
+    part = SimpleNamespace(solid=loft)
+    native_before = _bounds(part)
+    bbox_before = loft.BoundingBox()
+    loft.tessellate(0.16, 0.2)
+    native_after = _bounds(part)
+    bbox_after = loft.BoundingBox()
+    assert native_before == native_after
+    # This witness specifically exercises the OCC tessellation-dependent path.
+    assert bbox_after.xmin < bbox_before.xmin - 0.01
+    assert native_after[0][0] > bbox_after.xmin

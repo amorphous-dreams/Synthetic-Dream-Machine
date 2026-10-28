@@ -17,8 +17,21 @@ from .provenance_encoding import canonical_json_sha256
 
 
 def _bounds(part):
-    bb = part.solid.BoundingBox()
-    return ((bb.xmin,bb.ymin,bb.zmin),(bb.xmax,bb.ymax,bb.zmax))
+    """Analytic BRep extent independent of preview triangulation caches.
+
+    CadQuery's default BoundingBox may expand after tessellation because
+    BRepBndLib.Add uses triangle deflection. A source-bound native operation
+    must not shift when the reviewer renders the same unchanged solid.
+    """
+    from OCP.Bnd import Bnd_Box
+    from OCP.BRepBndLib import BRepBndLib
+    bounds = Bnd_Box()
+    BRepBndLib.AddOptimal_s(part.solid.wrapped, bounds,
+                           False, False)  # no triangulation, no mesh deflection
+    x0, y0, z0, x1, y1, z1 = bounds.Get()
+    if not all(math.isfinite(value) for value in (x0, y0, z0, x1, y1, z1)):
+        raise ValueError("Native Fire source contains nonfinite analytic bounds")
+    return ((x0, y0, z0), (x1, y1, z1))
 
 
 def _center(bounds):
