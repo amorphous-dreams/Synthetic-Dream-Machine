@@ -76,7 +76,7 @@ import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 import { runPersonaLease, PersonaLeaseError } from "./commands/persona-lease.js";
 import { runIntentCommand, IntentRefused, type IntentCommandOptions } from "./commands/intent.js";
 import { FaceNotNamed } from "./face-selector.js";
-import { runEdgeRollAnchors, EdgeRollAnchorError } from "./commands/edge-roll-anchor.js";
+import { runEdgeRollAnchors, rollAnchorFace, EdgeRollAnchorError } from "./commands/edge-roll-anchor.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
 import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "./commands/edge-cosign.js";
 import { runCabalVouch, CabalVouchError } from "./commands/cabal-vouch.js";
@@ -159,7 +159,7 @@ export const STORE_DOOR_VERBS = [
   "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release",
   "nexus-posture", "nexus-admit-take", "nexus-carry-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
-  "fleet-join-offer", "fleet-join-answer",
+  "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-partial",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-lease", "persona-kel-head",
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
@@ -175,18 +175,22 @@ export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
  */
 export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>([
   "edge-kapae", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
-  "fleet-join-offer", "fleet-join-answer",
+  "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-partial",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-lease", "nexus-publish", "raise-sign",
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
 ]);
 
-/** The face a face row names: `face`, else `handleIndex`; undefined where it names none. */
+/**
+ * The face a face row names: `face`, else `handleIndex`; undefined where it names none. The two naming different faces
+ * refuse `face-row-other-face` (`FaceNotNamed`): one choice, never split between two spellings.
+ */
 export function storeRowFace(args: Readonly<Record<string, unknown>>): number | undefined {
-  for (const key of ["face", "handleIndex"] as const) {
-    const v = args[key];
-    if (typeof v === "number" && Number.isSafeInteger(v) && v >= 0) return v;
+  const named = (["face", "handleIndex"] as const).map((key) => args[key])
+    .filter((v): v is number => typeof v === "number" && Number.isSafeInteger(v) && v >= 0);
+  if (named.some((v) => v !== named[0])) {
+    throw new FaceNotNamed(`face-row-other-face: the row names face h${named[0]} and h${named[1]}; name one face`);
   }
-  return undefined;
+  return named[0];
 }
 
 type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, unknown>>;
@@ -309,9 +313,11 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     }),
     "nexus-roll-anchor": (args) => answer("nexus-roll-anchor", async () => {
       const closing = args["closing"] as KahuQuorumSeats, opened = args["opened"] as KahuQuorumSeats;
+      // THE FACE FIRST: the roll's edge anchors act as one face, so the face resolves (or refuses) before the carriage anchor writes.
+      const face = await rollAnchorFace(int(args["face"]));
       const r = await runNexusRollAnchor({ sealHome, repo, closing, opened });
-      // The same roll anchors every realm edge board this vessel keeps quorum acts for (kapae#/rolls).
-      const edgeAnchors = await runEdgeRollAnchors({ sealHome, repo, closing, opened, openedEpoch: args["epoch"] as SealEpoch });
+      // The same roll anchors every realm edge board the acting face's ledger keeps quorum acts for (kapae#/rolls).
+      const edgeAnchors = await runEdgeRollAnchors({ sealHome, repo, closing, opened, openedEpoch: args["epoch"] as SealEpoch, ...opt("face", face) });
       await awaitOnRolled(deps.onRolled?.());
       return { ...r, edgeAnchors };
     }),
@@ -321,16 +327,17 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     })),
     // THE REALM EDGE ANCHORS OF THE SAME ROLL: one partial for each realm board this vessel keeps a quorum act for.
     "nexus-roll-anchor-edge-open": (args) => answer("nexus-roll-anchor-edge-open", async () => ({
-      partials: await runEdgeRollAnchorOpen({ sealHome, repo, ...opt("aid", str(args["aid"])) }),
+      partials: await runEdgeRollAnchorOpen({ sealHome, repo, ...opt("aid", str(args["aid"])), ...opt("face", int(args["face"])) }),
     })),
     // One door takes either family of the roll's anchors: a partial routes by its own family, and the answer names
     // where each realm's edge anchor stands on this vessel.
     "nexus-roll-anchor-partial": (args) => answer("nexus-roll-anchor-partial", async () => {
       const read = readNexusActPartial(args["partial"]);
       const edge = read?.act.family === "edge-roll-anchor";
-      const r = edge ? await runEdgeRollAnchorPartial({ partial: args["partial"], sealHome, repo }) : await runNexusRollAnchorPartial({ partial: args["partial"], sealHome, repo });
+      const face = opt("face", int(args["face"]));
+      const r = edge ? await runEdgeRollAnchorPartial({ partial: args["partial"], sealHome, repo, ...face }) : await runNexusRollAnchorPartial({ partial: args["partial"], sealHome, repo });
       if (r.landed) await awaitOnRolled(deps.onRolled?.());
-      return { ...r, edgeAnchors: await runEdgeRollAnchorStanding({ sealHome, repo, ...(read ? { aid: read.aid } : {}) }) };
+      return { ...r, edgeAnchors: await runEdgeRollAnchorStanding({ sealHome, repo, ...(read ? { aid: read.aid } : {}), ...face }) };
     }),
     // A ROLL WAITS ON ITS PRIOR ANCHOR (operator ruling 2026-10-15): the roll's open asks here before any card reads.
     "nexus-roll-prior-anchor": (args) => answer("nexus-roll-prior-anchor", async () => ({

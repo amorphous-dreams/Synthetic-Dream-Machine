@@ -240,7 +240,7 @@ export { runCabalJoin, CabalJoinError } from "./commands/cabal-join.js";
 export { runCabalFace, CabalFaceError, type CabalFaceResult } from "./commands/cabal-face.js";
 export { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 export type { EdgeKapaeOptions, EdgeKapaeResult } from "./commands/edge-kapae-cmd.js";
-export { runEdgeRollAnchors, EdgeRollAnchorError, type EdgeRollAnchorLanded } from "./commands/edge-roll-anchor.js";
+export { runEdgeRollAnchors, rollAnchorFace, EdgeRollAnchorError, type EdgeRollAnchorLanded, type EdgeRollAnchorUnanchored, type EdgeRollAnchorOutcome } from "./commands/edge-roll-anchor.js";
 export { readVesselEdgeBoard, vesselEdgeCharter, type VesselEdgeBoardRead } from "./edge-board.js";
 export { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError, type EdgeSeatFacts } from "./commands/edge-seats.js";
 export { runEdgePartial, runEdgeCosign, EdgeCosignError, type EdgePartialResult, type EdgeCosignResult } from "./commands/edge-cosign.js";
@@ -494,7 +494,7 @@ export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCi
   readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid,
   GENESIS_ENGINE_CID } from "./genesis-artifact.js";
 export { makeCustodyHolder, CustodyLocked, CustodyRowUnknown, CustodyRowUnavailable, CustodyAdoptRefused, UNLOCK_ATTEMPTS_PER_BOOT } from "./custody-holder.js";
-export { runSealedAct, isSealedActName, SealedActRefused, SEALED_ACTS, SEALED_ACT_NAMES, SIGN_IMAGE_LIMIT, TEXT_ARG_LIMIT, LABEL_ARG_LIMIT, SNAPSHOT_ARG_LIMIT, type SealedActName, type SealedActContext, type SealedActRefusalReason, type PersonaSelvesPlane, type PersonaSelfLine, type PersonaSelfNameKind } from "./sealed-acts.js";
+export { runSealedAct, isSealedActName, SealedActRefused, SEALED_ACTS, SESSION_ACTS, SEALED_ACT_NAMES, SIGN_IMAGE_LIMIT, TEXT_ARG_LIMIT, LABEL_ARG_LIMIT, SNAPSHOT_ARG_LIMIT, type SealedActName, type SealedActContext, type SealedActRefusalReason, type PersonaSelvesPlane, type PersonaSelfLine, type PersonaSelfNameKind } from "./sealed-acts.js";
 export { gateMemoryRows, gateMemoryRowFile, GateMemoryRowRefused } from "./gate-memory-rows.js";
 export { gateGrantFor, gateGrantRing } from "./gate-rings.js";
 export type { GateGrantRing, GateGrantRingReaders, GateRootHolding } from "./gate-rings.js";
@@ -510,5 +510,5 @@ export type { FaceRouteGatherer } from "./face-route.js";
 export type { CustodyHolder, HolderUnlock, RowReading } from "./custody-holder.js";
 export { custodyFrameHandler, isCustodyFrame } from "./custody-frames.js";
 // The verb socket's front, named here for a suite that stands a custody door as the vessel's main thread does.
-export { serveUdsFront, type UdsFront, type UdsSessionDoor, type UdsSessionSupply, type SessionAnchor } from "./uds-channel.js";
+export { serveUdsFront, makeUdsSeat, type UdsFront, type UdsSessionDoor, type UdsSessionSupply, type SessionAnchor } from "./uds-channel.js";
 export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-frames.js";

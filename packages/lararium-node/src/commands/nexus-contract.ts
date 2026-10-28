@@ -852,10 +852,10 @@ interface EdgeRollView {
  * The acting face's atom key names that face's own edge ledger (no board address); empty where the face holds none.
  * Several faces open with none named refuse `FaceNotNamed` by name, never as a face that holds no key.
  */
-const edgeLedgerKey = (): Promise<string> => loadFaceAtomKey().catch((e: unknown) => { if (e instanceof FaceNotNamed) throw e; return ""; });
+const edgeLedgerKey = (face?: number): Promise<string> => loadFaceAtomKey(face).catch((e: unknown) => { if (e instanceof FaceNotNamed) throw e; return ""; });
 
-async function edgeVesselKeyOrRefuse(): Promise<string> {
-  const key = await edgeLedgerKey();
+async function edgeVesselKeyOrRefuse(face?: number): Promise<string> {
+  const key = await edgeLedgerKey(face);
   if (!key) throw new NexusContractError("this vessel surfaces no verifying key — it keeps no ledger to read an edge board against.");
   return key;
 }
@@ -888,12 +888,12 @@ const anchoredAtHead = async (anchors: readonly EdgeRollAnchor[], closing: KahuQ
  * counted anchor for this roll takes no second one. Where this vessel keeps no quorum act for any realm, the list stands
  * empty. A vessel that holds the whole new quorum anchors through `runEdgeRollAnchors`, inside its rotate.
  */
-export async function runEdgeRollAnchorOpen(opts: { readonly sealHome: string; readonly repo: Repo; readonly aid?: string }):
+export async function runEdgeRollAnchorOpen(opts: { readonly sealHome: string; readonly repo: Repo; readonly aid?: string; readonly face?: number }):
   Promise<readonly NexusEdgeRollAnchorPartialResult[]> {
   const home = charterHomeOrRefuse(opts.sealHome, opts.aid);
   const { opened, closing } = rolledRostersOrRefuse(home);
   const aid = nexusAidOrRefuse(home);
-  const vesselKey = await edgeVesselKeyOrRefuse();
+  const vesselKey = await edgeVesselKeyOrRefuse(opts.face);
   const repo = opts.repo;
   const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(vesselKey), "ledger:edge");
   const realms = edgeRollAnchorRealms(ledger.doc(), aid);
@@ -958,7 +958,7 @@ async function edgeAnchorReader(home: string, repo: Repo, vesselKey: string, par
  * A realm whose board this vessel holds none of reads `unavailable`; moved heads read `stale`. Any other verdict
  * refuses by name, and nothing signs or lands.
  */
-export async function runEdgeRollAnchorPartial(opts: { readonly partial: unknown; readonly sealHome: string; readonly repo: Repo }):
+export async function runEdgeRollAnchorPartial(opts: { readonly partial: unknown; readonly sealHome: string; readonly repo: Repo; readonly face?: number }):
   Promise<NexusEdgeRollAnchorPartialResult> {
   const read = readNexusActPartial(opts.partial);
   if (!read || read.act.family !== "edge-roll-anchor") throw new NexusContractError("the file reads as no edge-roll-anchor partial");
@@ -966,7 +966,7 @@ export async function runEdgeRollAnchorPartial(opts: { readonly partial: unknown
   const { opened } = rolledRostersOrRefuse(home);
   const lineage = charterHandLineage(readNexusDoc(home)?.sealLineage ?? []);
   if (!lineage) throw new NexusContractError("the opened charter lineage reads null; no realm head can be signed");
-  const vesselKey = await edgeVesselKeyOrRefuse();
+  const vesselKey = await edgeVesselKeyOrRefuse(opts.face);
   const repo = opts.repo;
   const realm = read.act.anchor.scope;
   try {
@@ -1029,14 +1029,14 @@ export async function runEdgeRollAnchorPartial(opts: { readonly partial: unknown
  * counted anchor for the roll, `owed` while it does not. Only realms this vessel keeps a quorum act for appear. A head
  * that rolled from nothing (a genesis) owes none.
  */
-export async function runEdgeRollAnchorStanding(opts: { readonly sealHome: string; readonly repo: Repo; readonly aid?: string }):
+export async function runEdgeRollAnchorStanding(opts: { readonly sealHome: string; readonly repo: Repo; readonly aid?: string; readonly face?: number }):
   Promise<readonly NexusEdgeRollAnchorStanding[]> {
   const home = charterHomeOrRefuse(opts.sealHome, opts.aid);
   let rosters: ReturnType<typeof rolledRostersOrRefuse>;
   try { rosters = rolledRostersOrRefuse(home); }
   catch (err) { if (err instanceof NexusContractError) return []; throw err; }
   const { opened, closing } = rosters;
-  const vesselKey = await edgeLedgerKey();
+  const vesselKey = await edgeLedgerKey(opts.face);
   if (!vesselKey) return [];
   const ledger = await materializeSharedLarDoc(opts.repo, edgeLedgerDocUrl(vesselKey), "ledger:edge");
   const out: NexusEdgeRollAnchorStanding[] = [];

@@ -65,6 +65,20 @@ export interface EdgeRollAnchorUnanchored {
 export type EdgeRollAnchorOutcome = EdgeRollAnchorLanded | EdgeRollAnchorUnanchored;
 
 /**
+ * The face a roll acts as, read BEFORE the roll writes anything (the carriage anchor included): the face named, which must
+ * open (a named face resting locked refuses `CustodyLocked` by its own name), else the one face standing open, else none
+ * where no face stands open. Several open with none named refuse `FaceNotNamed` here, so nothing lands and then refuses.
+ */
+export async function rollAnchorFace(named?: number): Promise<number | undefined> {
+  if (named !== undefined) {
+    await loadFaceAtomKey(named).catch((e: unknown) => { if (e instanceof CustodyLocked) throw e; return ""; });
+    return named;
+  }
+  const open = await unlockedFaceOrdinals().catch((e: unknown) => { if (e instanceof CustodyLocked) return [] as number[]; throw e; });
+  return open.length === 0 ? undefined : resolveFace(undefined);
+}
+
+/**
  * The realm boards a roll of the Nexus `rolling` anchors: each realm that stands under that Nexus at this vessel,
  * whether its ledger kept a quorum act there or only noted the realm. The roll signs the realm's head under the new
  * epoch for every one, so no realm reads stale-lineage after a roll. Sorted. Another Nexus's roll anchors nothing there.

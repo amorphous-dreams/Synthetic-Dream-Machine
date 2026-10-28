@@ -23,11 +23,12 @@
 import { readFileSync } from "node:fs";
 import { NexusContractError, type NexusRollAnchorPartialResult } from "@lararium/node";
 import { storeVerb, storeFailure } from "../store-door.js";
+import { faceOption } from "../face-option.js";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { partialOutOrRefuse, writePartialFile, type PartialWritten } from "./partial-file.js";
 
-const ANCHOR_USAGE = "usage: lares nexus seal anchor [--nexus <aid>] [--edge] --out <partial> | lares nexus seal anchor --from <partial> [--out <file>]";
+const ANCHOR_USAGE = "usage: lares nexus seal anchor [--nexus <aid>] [--edge] [--face N] --out <partial> | lares nexus seal anchor --from <partial> [--face N] [--out <file>]";
 const refuseAnchor = (msg: string): Error => new NexusContractError(msg);
 
 type EdgeStanding = { readonly realm: string; readonly state: "anchored" | "owed"; readonly anchorCid?: string };
@@ -71,7 +72,7 @@ const edgeOutPath = (out: string, realm: string): string => `${out.replace(/\.js
 async function openEdgeAnchors(args: ParsedArgs, out: string): Promise<number> {
   partialOutOrRefuse(refuseAnchor, out);
   const aid = args.options["nexus"];
-  const { output } = await storeVerb("nexus-roll-anchor-edge-open", aid ? { aid } : {}, NexusContractError);
+  const { output } = await storeVerb("nexus-roll-anchor-edge-open", { ...(aid ? { aid } : {}), ...faceOption(args) }, NexusContractError);
   const opened = (output["partials"] ?? []) as readonly EdgeOpened[];
   const written = opened.map((o) => ({ o, w: writePartialFile(edgeOutPath(out, o.realm), o.partial) }));
   emit(args, {
@@ -109,7 +110,7 @@ export async function cmdSealAnchor(args: ParsedArgs): Promise<number> {
     let partial: unknown;
     try { partial = JSON.parse(readFileSync(from, "utf8")); }
     catch { throw new NexusContractError(`cannot read ${from} as a partial file`); }
-    const { output } = await storeVerb("nexus-roll-anchor-partial", { partial }, NexusContractError);
+    const { output } = await storeVerb("nexus-roll-anchor-partial", { partial, ...faceOption(args) }, NexusContractError);
     const r = output as unknown as AnchorAnswer;
     return emitAnchor(args, step, r, out !== undefined ? writePartialFile(out, r.partial) : null);
   } catch (err) {

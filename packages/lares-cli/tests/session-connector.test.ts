@@ -35,7 +35,7 @@ describe("local session connector", () => {
     front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo, switchActs: { write: async () => {} },
       sessions: { anchorNow: async () => ({ kind: "place" as const, aid: "place-fixture" }), open: async ({ faceRef }) => faceRef === "refuse"
         ? { ok: false, refusal: "face-unverified" }
-        : { ok: true, supply: { face: faceRef === "b" ? faceB : faceRef === "c" ? faceC : face, profile: "seat", presenter: `verified-${faceRef}`,
+        : { ok: true, supply: { face: faceRef === "b" ? faceB : faceRef === "c" ? faceC : face, ordinal: Math.max(0, "abc".indexOf(faceRef.slice(-1))), profile: "seat", presenter: `verified-${faceRef}`,
           anchor: { kind: "place" as const, aid: "place-fixture" }, mint: faceRef === "c" ? async () => ({ ok: false as const, refusal: "dial-refused" }) : fixtureMint } } },
       placeVerb: (o) => {
         placed.push(o);

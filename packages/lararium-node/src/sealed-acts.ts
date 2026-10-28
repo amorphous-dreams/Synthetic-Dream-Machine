@@ -36,6 +36,7 @@
  * Node-main only: a worker never imports this module.
  */
 import { FaceNotNamed, resolveFace } from "./face-selector.js";
+import { unlockedFaceOrdinals } from "./custody-seat.js";
 import {
   HandleBook,
   type HandleBookSnapshot, type PersonaDeclaration,
@@ -397,6 +398,14 @@ async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
  *                         face, hands the section to its daemon island's import door. A command running the act in
  *                         its own process holds no island, and refuses by name
  */
+/**
+ * THE ACTS THAT ACT AS A FACE: each signs or writes under one face's key, so on a running vessel each rides a session of
+ * that face (`session:act`) and its receipt binds to the face; the custody door's own `act` frame refuses them
+ * `face-act-rides-a-session`. `face.resolve` stays at the custody door: it reads which face a command acts as and signs
+ * nothing, and cannot ride the session it chooses. Every other act acts as the place under a human unlock.
+ */
+export const SESSION_ACTS: ReadonlySet<string> = new Set(["persona.reissue", "walk.take", "host.roll"]);
+
 export const SEALED_ACTS = Object.freeze({
   "persona.roots": act({}, async () => {
     const lines = await listPersonaRosterLines();
@@ -407,7 +416,11 @@ export const SEALED_ACTS = Object.freeze({
   }),
   // WHICH FACE A COMMAND ACTS AS: the one it names, else the one face standing open (`face-selector`); several and none
   // named refuse by name. A command's own process asks this; nothing the composition mounts answers it.
-  "face.resolve": act({ face: optional(index) }, async (a) => ({ face: await resolveFace(a.face) })),
+  // `orNone`: a vessel with no face open answers `face: null` (an act that may act as no face, as a seal roll), never a refusal.
+  "face.resolve": act({ face: optional(index), orNone: optional(flag) }, async (a) => {
+    if (a.orNone === true && a.face === undefined && (await unlockedFaceOrdinals()).length === 0) return { face: null };
+    return { face: await resolveFace(a.face) };
+  }),
   // THE SEATS' OWN KEYS (`seal-ceremony`, `seat-key-store`). A chair's keys mint behind this door and never cross
   // it: the arming rows answer public halves, the roster to write and a digest, and the charter's own writer stays
   // with the rite. The retirement row removes only what its licence allows, whatever a caller names.

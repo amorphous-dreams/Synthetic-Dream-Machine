@@ -99,7 +99,7 @@ export function nodeSessionDoor(ports: NodeSessionDoorPorts): UdsSessionDoor {
       } });
       if (!("face" in target)) return { ok: false, refusal: target.refusal };
       return { ok: true, supply: {
-        face: target.face, profile: HAND_PROFILES[hand], presenter, anchor: { kind: "place", aid: place.place },
+        face: target.face, ordinal: face, profile: HAND_PROFILES[hand], presenter, anchor: { kind: "place", aid: place.place },
         mint: async (at) => {
           const minted = await target.mint(at);
           return "signer" in minted ? { ok: true, signer: minted.signer } : { ok: false, refusal: minted.refusal };
@@ -114,7 +114,7 @@ export function nodeSessionDoor(ports: NodeSessionDoorPorts): UdsSessionDoor {
     // The atom presents for the group the hint's anchors name; the proof must be that same group's, or nothing presents.
     if (target.face.personaGroup !== group) return { ok: false, refusal: "face-group-mismatch" };
     return { ok: true, supply: {
-      face: target.face, profile: HAND_PROFILES[hand], presenter, anchor: { kind: "nexus", aid },
+      face: target.face, ordinal: face, profile: HAND_PROFILES[hand], presenter, anchor: { kind: "nexus", aid },
       mint: async (at) => {
         const minted = await target.mint(at);
         return "signer" in minted ? { ok: true, signer: minted.signer } : { ok: false, refusal: minted.refusal };

@@ -113,7 +113,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     const keys = await seatedGenesis();
     const genesis = sealLineageHead(readNexusDoc(larSealHome()))!;
 
-    const r = await rite.rotate();
+    const r = await rite.rotate({ face: "0" });
     expect(r.code).toBe(0);
     expect(anchorStep.charterDepthAtAnchor).toEqual([1]);          // the anchor step ran against the closing head
     const head = sealLineageHead(readNexusDoc(larSealHome()))!;
@@ -131,7 +131,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     const before = readFileSync(path);
 
     anchorStep.fault = () => new NexusContractError("refusing to write: the roll anchor does not count under the new roster (fail-closed).");
-    const r = await rite.rotate();
+    const r = await rite.rotate({ face: "0" });
     expect(r.code).not.toBe(0);
     expect(anchorStep.charterDepthAtAnchor).toEqual([1]);          // the step was reached …
     expect(readFileSync(path).equals(before)).toBe(true);           // … and the charter never moved
@@ -139,7 +139,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
 
     // THE SAME ROLL RUN AGAIN LANDS: the refusal left nothing behind that a second run trips on.
     anchorStep.fault = null;
-    const again = await rite.rotate();
+    const again = await rite.rotate({ face: "0" });
     expect(again.code).toBe(0);
     expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(2);
   });
@@ -150,7 +150,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     const before = readFileSync(path);
 
     anchorStep.fault = () => new Error("the board store faulted");
-    const r = await rite.rotate();
+    const r = await rite.rotate({ face: "0" });
     expect(r.code).not.toBe(0);
     expect(readFileSync(path).equals(before)).toBe(true);
   });
@@ -160,18 +160,18 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     const path = nexusCharterDocPath(larSealHome());
 
     // CONTROL: the single-vault rotate anchors inside itself, so a second rotate over that head opens.
-    expect((await rite.rotate()).code).toBe(0);
+    expect((await rite.rotate({ face: "0" })).code).toBe(0);
     expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(2);
-    expect((await rite.rotate()).code).toBe(0);
+    expect((await rite.rotate({ face: "0" })).code).toBe(0);
     expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(3);
 
     // RED: a head whose roll landed no anchor (the step answered, nothing reached the board) blocks the next roll.
     anchorStep.skipLanding = true;
-    expect((await rite.rotate()).code).toBe(0);
+    expect((await rite.rotate({ face: "0" })).code).toBe(0);
     anchorStep.skipLanding = false;
     const depth = readNexusDoc(larSealHome())!.sealLineage!.length;
     const before = readFileSync(path);
-    const r = await rite.rotate();
+    const r = await rite.rotate({ face: "0" });
     expect(r.code).not.toBe(0);
     expect(JSON.stringify(r.out)).toMatch(/prior-roll-unanchored/);
     expect(readFileSync(path).equals(before)).toBe(true);

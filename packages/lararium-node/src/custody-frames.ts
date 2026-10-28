@@ -49,7 +49,7 @@ import { mountedFaceOrdinal, setMountedFace, sovereignStands } from "./node-vess
 import { listFaceOrdinals } from "./identity-anchors.js";
 import { CustodyLocked, CustodyRowUnavailable, type CustodyHolder, type HolderUnlock } from "./custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
-import { SealedActRefused, isSealedActName } from "./sealed-acts.js";
+import { SESSION_ACTS, SealedActRefused, isSealedActName } from "./sealed-acts.js";
 
 export type CustodyFrame =
   | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number; readonly all?: boolean }
@@ -163,7 +163,15 @@ function slotsOf(v: unknown): readonly SlotSpec[] | null {
  * The custody door's handler, in the shape the socket front's `onFrame` takes: `true` when the frame was a
  * custody frame (answered here, never seen by a verb seat), `false` for every other frame.
  */
-export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, sock: Socket) => boolean {
+/**
+ * The custody door: the socket front's frame handler, and `act`, the door's one chain for an act that rides a session
+ * (`session:act`, `SESSION_ACTS`): the act runs in turn with every unlock, lock and act, and answers as an `act` frame does.
+ */
+export type CustodyDoor = ((parsed: unknown, sock: Socket) => boolean) & {
+  readonly act: (act: string, args: unknown) => Promise<CustodyAnswer>;
+};
+
+export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
   const { holder } = deps;
   let chain: Promise<void> = Promise.resolve();
   let waiting = 0;
@@ -302,7 +310,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
     } finally { bundleKey.fill(0); }
   };
 
-  return (parsed, sock) => {
+  const handler = (parsed: unknown, sock: Socket): boolean => {
     if (!isCustodyFrame(parsed)) return false;
     const op = parsed.op;
     let act: () => Promise<CustodyAnswer>;
@@ -324,6 +332,13 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
       if (stray !== undefined || typeof frame["act"] !== "string") {
         deps.onLog("act: refused (bad-custody-frame)");
         answer(sock, { op, status: "error", errorMessage: "an act frame carries `op`, `act` and `args`, and nothing beside them", refusal: { reason: "bad-custody-frame" } });
+        return true;
+      }
+      // AN ACT THAT ACTS AS A FACE RIDES A SESSION of that face (`session:act`), so its receipt binds to the face; with no
+      // vessel standing the command runs it in its own process.
+      if (SESSION_ACTS.has(frame["act"])) {
+        deps.onLog(`act ${frame["act"]}: refused (face-act-rides-a-session)`);
+        answer(sock, { op, status: "error", errorMessage: `the act "${frame["act"]}" acts as a face: it rides a session of that face`, refusal: { reason: "face-act-rides-a-session" } });
         return true;
       }
       act = runAct(frame["act"], frame["args"]);
@@ -391,4 +406,14 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
     );
     return true;
   };
+  const sessionAct = async (name: string, args: unknown): Promise<CustodyAnswer> => {
+    if (waiting >= CUSTODY_LINE) {
+      return { op: "act", status: "error", errorMessage: `the custody door holds ${CUSTODY_LINE} acts waiting; send this one again once they settle`, refusal: { reason: "custody-door-busy" } };
+    }
+    waiting += 1;
+    const run = chain.then(() => { waiting -= 1; return runAct(name, args)(); });
+    chain = run.then(() => undefined, () => undefined);
+    return run;
+  };
+  return Object.assign(handler, { act: sessionAct });
 }

@@ -14,7 +14,7 @@ import * as ed from "@noble/ed25519";
 import {
   hex, DAEMON_BAG_ID, seedDaemonDoc,
   foundingRoster, memberEdgeId, materializeSharedLarDoc, realmEdgeBoardDocUrl, edgeRollAnchorsFromBoard,
-  edgeKapaeActsFromBoard, charterHandLineage, readRealmFrontier,
+  edgeKapaeActsFromBoard, charterHandLineage, readRealmFrontier, rollAnchorsFromBoard, carriageDocUrl,
 } from "@lararium/mesh";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot,
@@ -30,6 +30,9 @@ import { runCabalFace } from "../src/commands/cabal-face.js";
 import { FaceNotNamed } from "../src/face-selector.js";
 import { edgeLedgerDocUrl, keptFromLedger } from "@lararium/mesh";
 import { direct } from "./direct-store.js";
+import { storeDoorDirect } from "../src/store-door-verbs.js";
+import { nodeNexusIsland } from "../src/nexus-standing.js";
+import { loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
 import { seedFaceAtom } from "./atom-fixture.js";
@@ -240,5 +243,26 @@ describe("two faces open and none named: no door picks a face", () => {
       return { anchors: edgeRollAnchorsFromBoard(board), kept: keptFromLedger(ledger, REALM2).anchors };
     });
     expect(other).toEqual({ anchors: [], kept: [] });                       // the face that did not act keeps its ledger as it stood
+  });
+  it("RED — the seal roll's store row resolves its face before any write: two faces open and none named refuse, and no carriage anchor or edge anchor lands; named, both land", async () => {
+    const { opened, openedEpoch } = await seatCharter();
+    const closing = foundingRoster(readNexusDoc(larSealHome()));
+    await direct(runCabalVouch)({ face: 0, joiner: await nymOf(13), realm: REALM });
+    await direct(runCabalVouch)({ face: 1, joiner: await nymOf(14), realm: REALM2 });
+    const carriageAnchors = () => ownedStore(larDataDir(), async (repo) => {
+      const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey().catch(() => ""), sealHome: larSealHome() });
+      return rollAnchorsFromBoard((await materializeSharedLarDoc(repo, carriageDocUrl(island), "board:carriage-contracts")).doc()).length;
+    });
+    const row = (args: Record<string, unknown>) => storeDoorDirect("nexus-roll-anchor", { closing, opened, epoch: openedEpoch, ...args }, { sealHome: larSealHome() });
+    const refused = await row({});
+    expect(refused).toMatchObject({ refusal: "nexus-roll-anchor-refused" });
+    expect(String(refused["refused"])).toMatch(/name the face/);
+    expect(await carriageAnchors()).toBe(0);                                // the carriage anchor never landed
+    expect((await edgeBoard()).anchors).toEqual([]);
+    // CONTROL: named, the carriage anchor and the named face's realm anchor land.
+    const landed = await row({ face: 0 });
+    expect(landed["refused"]).toBeUndefined();
+    expect(await carriageAnchors()).toBe(1);
+    expect((await edgeBoard()).anchors).toHaveLength(1);
   });
 });

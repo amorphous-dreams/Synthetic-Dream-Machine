@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection, type Socket } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
-import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, type SwitchIntent, type SwitchOutcome, concludeVerb, wikiSlotUri,
+import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, RECEIPT_FACT_URI_PREFIX, type SwitchIntent, type SwitchOutcome, concludeVerb, wikiSlotUri,
   type LarDoc, type SessionFace } from "@lararium/mesh";
 import { startUdsChannel, type SessionAnchor, type UdsSessionDoor } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
@@ -85,7 +85,7 @@ async function stand(label: string, opts: {
     const refusal = opts.refuse?.(faceRef) ?? null;
     if (refusal) return { ok: false, refusal };
     const name = faceRef.replace(/^hint-/, "");
-    return { ok: true, supply: { face: face(name), profile: "seat", presenter: `verified-${faceRef}`,
+    return { ok: true, supply: { face: face(name), ordinal: Math.max(0, "abc".indexOf(faceRef.slice(-1))), profile: "seat", presenter: `verified-${faceRef}`,
       anchor: opts.nexusOf ? { kind: "nexus", aid: opts.nexusOf(faceRef) } : standing(), mint: async ({ session }) => {
       const n = drawn.length;
       if (opts.refuseMint?.(n)) return { ok: false, refusal: "dial-refused" };
@@ -100,7 +100,12 @@ async function stand(label: string, opts: {
     if (opts.failFlush?.()) throw new Error("disk full at /secret/path");
     logged.push(act);
   } };
-  const channel = startUdsChannel({ daemonHandle, composite, claim, repo: flushing, sessions: door, switchActs, sessionVerbs: new Set(["face-row"]),
+  const ran: Array<{ act: string; args: Record<string, unknown> }> = [];
+  const sessionActs = { names: new Set(["host.roll"]), run: async (act: string, args: Record<string, unknown>) => {
+    ran.push({ act, args });
+    return { op: "act", act, result: { epoch: "e".repeat(64) } };
+  } };
+  const channel = startUdsChannel({ daemonHandle, composite, claim, repo: flushing, sessions: door, switchActs, sessionVerbs: new Set(["face-row"]), sessionActs,
     placeVerb: (o) => {
       placed.push(o);
       const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done",
@@ -122,7 +127,7 @@ async function stand(label: string, opts: {
   /** A known write into the composite's working layer, so a watcher proves it hears. */
   const probe = (title: string) => composite.put({ tiddler: { title, text: "probe" } }, { kind: "tw-local", instanceId: "probe" },
     { bag: wikiSlotUri("daemon", "working") });
-  return { placed, drawn, connect, done, watchActs, probe };
+  return { placed, drawn, connect, done, watchActs, probe, ran, composite };
 }
 
 const envOf = (opened: Record<string, unknown>) =>
@@ -336,6 +341,49 @@ describe("UDS session switch", () => {
       const a = await v.connect();
       const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
       expect(await a.ask({ op: "session:call", ...envA, requestId: "on-session", verb: "face-row", args: {} })).toMatchObject({ kind: "session:result", status: "done" });
+    } finally { await v.done(); }
+  });
+  test("RED: a session's face binds the face row it carries: a row naming another face, or face and handleIndex disagreeing, refuses face-row-other-face and nothing runs", async () => {
+    const v = await stand("face-bound");
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));   // the face h0
+      const row = (requestId: string, args: Record<string, unknown>) => a.ask({ op: "session:call", ...envA, requestId, verb: "face-row", args });
+      for (const [id, args] of [["other-face", { face: 1 }], ["other-handle", { handleIndex: 1 }], ["split", { face: 0, handleIndex: 1 }]] as const) {
+        expect(await row(id, args)).toEqual({ kind: "session:refused", requestId: id, refusal: "face-row-other-face" });
+      }
+      expect(v.placed).toEqual([]);                                             // nothing reached the worker
+      // CONTROL: a row naming the session's face, or none, acts as that face under both keys.
+      expect(await row("named", { face: 0 })).toMatchObject({ kind: "session:result", status: "done" });
+      expect(await row("unnamed", { glamour: "x" })).toMatchObject({ kind: "session:result", status: "done" });
+      expect(v.placed.map((p) => (p as { args?: unknown }).args)).toEqual([{ face: 0, handleIndex: 0 }, { glamour: "x", face: 0, handleIndex: 0 }]);
+      // A row of the place carries its arguments as they came.
+      expect(await a.ask({ op: "session:call", ...envA, requestId: "place-row", verb: "load", args: { face: 1 } })).toMatchObject({ kind: "session:result" });
+      expect((v.placed[2] as { args?: unknown }).args).toEqual({ face: 1 });
+    } finally { await v.done(); }
+  });
+  test("RED: a sealed act that acts as a face rides the session as its face, and its receipt names the act and the face alone", async () => {
+    const v = await stand("session-act");
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));   // the face h0
+      const act = (requestId: string, name: string, args: Record<string, unknown>) => a.ask({ op: "session:act", ...envA, requestId, act: name, args });
+      expect(await act("other", "host.roll", { cap: 5, face: 1 })).toEqual({ kind: "session:refused", requestId: "other", refusal: "face-row-other-face" });
+      expect(await act("place", "persona.roots", {})).toEqual({ kind: "session:refused", requestId: "place", refusal: "act-rides-the-custody-door" });
+      expect(v.ran).toEqual([]);
+      // CONTROL: the act runs as the session's face, and answers on this socket alone.
+      expect(await act("roll", "host.roll", { cap: 5 })).toEqual({ kind: "session:act-result", requestId: "roll",
+        answer: { op: "act", act: "host.roll", result: { epoch: "e".repeat(64) } } });
+      expect(v.ran).toEqual([{ act: "host.roll", args: { cap: 5, face: 0 } }]);
+      const receipt = await a.ask({ op: "session:receipt", ...envA, requestId: "roll" });
+      expect(receipt).toMatchObject({ kind: "session:receipt", receipt: { state: "done", face: "proof-a" } });
+      // The receipt fact carries the act and the face, and no argument or answer.
+      const titles = (await v.composite.listVisible()).filter((t) => t.startsWith(RECEIPT_FACT_URI_PREFIX));
+      const facts = (await Promise.all(titles.map((t) => v.composite.get(t)))).filter((r) => r !== null);
+      expect(facts.map((r) => r.tiddler["action"])).toEqual(["act:host.roll"]);
+      const fact = JSON.stringify(facts);
+      expect(fact.includes("cap")).toBe(false);
+      expect(fact.includes("eeee")).toBe(false);
     } finally { await v.done(); }
   });
 });

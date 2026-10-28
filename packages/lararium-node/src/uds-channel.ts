@@ -65,6 +65,14 @@ export interface UdsChannelOptions {
   readonly sessions?: UdsSessionDoor;
   /** Where a session switch's acts rest: the vessel's sealed row (`nodeSwitchActLog`). No log, no switch. */
   readonly switchActs?: SwitchActLog;
+  /**
+   * The sealed acts that act as a face (`SESSION_ACTS`) and the custody door's chain that runs one (`CustodyDoor.act`): a
+   * `session:act` frame binds the session's face to the act and leaves a receipt naming the act and the face alone.
+   */
+  readonly sessionActs?: {
+    readonly names: ReadonlySet<string>;
+    readonly run: (act: string, args: Record<string, unknown>) => Promise<Record<string, unknown>>;
+  };
   /** Verbs that act as a face: the maintenance frame refuses them `face-row-rides-a-session` (`STORE_DOOR_FACE_ROWS`). */
   readonly sessionVerbs?: ReadonlySet<string>;
   /** The daemon's warm daemon doc handle (result.daemon.daemonHandle). */
@@ -122,6 +130,8 @@ export interface UdsSessionSigner {
  */
 export interface UdsSessionSupply {
   readonly face: SessionFace;
+  /** The face's ordinal on this vessel (the hint's `N`): a face row's `face` or `handleIndex` names this face or refuses. */
+  readonly ordinal: number;
   readonly profile: CapabilityProfile;
   readonly presenter: string;
   readonly caps?: readonly string[];
@@ -138,6 +148,15 @@ export interface UdsSessionSupply {
 export type SessionAnchor = { readonly kind: "nexus" | "place"; readonly aid: string };
 const sameAnchor = (a: SessionAnchor | undefined, b: SessionAnchor | undefined): boolean =>
   a !== undefined && b !== undefined && a.kind === b.kind && a.aid === b.aid;
+
+/**
+ * A face row's arguments bound to the session's face: every face-naming key (`face`, `handleIndex`) set to `ordinal`, or
+ * null where a key names another face. A row reads its face by whichever key it takes, so both name the one face.
+ */
+export function faceRowArgs(args: Readonly<Record<string, unknown>>, ordinal: number): Record<string, unknown> | null {
+  for (const key of ["face", "handleIndex"] as const) if (args[key] !== undefined && args[key] !== ordinal) return null;
+  return { ...args, face: ordinal, handleIndex: ordinal };
+}
 
 export interface UdsSessionDoor {
   open(ask: { faceRef: string; hand: Hand }): Promise<{ ok: true; supply: UdsSessionSupply } | { ok: false; refusal: string }>;
@@ -974,7 +993,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       if (table.checkBound(frame, state.binding).ok && await anchorLeft(sock, state, requestId)) return;
       return switchOn(sock, state, frame, requestId);
     }
-    if (frame["op"] !== "session:call" && frame["op"] !== "session:close" &&
+    if (frame["op"] !== "session:call" && frame["op"] !== "session:close" && frame["op"] !== "session:act" &&
         frame["op"] !== "session:receipt" && frame["op"] !== "session:cancel") return sessionRefuse(sock, "unknown-op", requestId);
     const checked = table.checkBound(frame, state.binding);
     if (!checked.ok) return sessionRefuse(sock, checked.refusal, requestId);
@@ -988,6 +1007,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       sock.end();
       return;
     }
+    if (frame["op"] === "session:act") return actOn(sock, state, checked.session.face.proofSubject, frame, requestId);
     if (frame["op"] === "session:receipt" || frame["op"] === "session:cancel") {
       if (!requestId) return sessionRefuse(sock, "malformed-message", requestId);
       const face = checked.session.face.proofSubject;
@@ -1000,11 +1020,19 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         !state.supply || typeof state.supply.presenter !== "string" || !state.supply.presenter) {
       return sessionRefuse(sock, "malformed-message", requestId);
     }
+    // A SESSION'S FACE BINDS THE FACE ROW IT CARRIES: a row that names another face (by `face` or `handleIndex`, or the
+    // two disagreeing) refuses, never overwritten; a row naming none acts as the session's face.
+    let args = frame["args"] as Record<string, unknown>;
+    if (opts.sessionVerbs?.has(frame["verb"])) {
+      const bound = faceRowArgs(args, state.supply.ordinal);
+      if (bound === null) return sessionRefuse(sock, "face-row-other-face", requestId);
+      args = bound;
+    }
     await new Promise<void>((resolve) => {
       const closed = () => resolve();
       sock.once("close", closed);
       const face = checked.session.face.proofSubject;
-      handle({ verb: frame["verb"], args: frame["args"], requestId: faceScopedId(face, requestId),
+      handle({ verb: frame["verb"], args, requestId: faceScopedId(face, requestId),
         requestedBy: state.supply!.presenter, face: checked.session.face.proofSubject,
         ...(typeof frame["effectKey"] === "string" && { effectKey: faceScopedId(face, frame["effectKey"]) }),
         ...(typeof frame["timeoutMs"] === "number" && { timeoutMs: frame["timeoutMs"] }) }, sock, requestId,
@@ -1020,6 +1048,32 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
    * the rest; a switch that cannot commit, or whose socket went, closes this session, and the caller opens afresh.
    * A refusal names a code; the detail stays in this vessel's log.
    */
+  /**
+   * `session:act`: one sealed act that acts as a face, run on the custody door's chain as the session's face. The act's
+   * `face` names the session's face or refuses `face-row-other-face`; naming none, it takes the session's. Its arguments
+   * and its answer ride this socket alone, as a custody frame's do: the receipt it leaves names the act and the face
+   * (its digest covers those two, never an argument), and no outcome body rests anywhere.
+   */
+  const actOn = async (sock: Socket, state: NonNullable<ReturnType<typeof sessionSockets.get>>, face: string,
+    frame: Record<string, unknown>, requestId: string | undefined): Promise<void> => {
+    const name = frame["act"];
+    const given = frame["args"] ?? {};
+    if (!requestId || typeof name !== "string" || !name || !given || typeof given !== "object" || Array.isArray(given) || !state.supply) {
+      return sessionRefuse(sock, "malformed-message", requestId);
+    }
+    if (!opts.sessionActs) return sessionRefuse(sock, "no-session-acts", requestId);
+    if (!opts.sessionActs.names.has(name)) return sessionRefuse(sock, "act-rides-the-custody-door", requestId);
+    const args = given as Record<string, unknown>;
+    if (args["face"] !== undefined && args["face"] !== state.supply.ordinal) return sessionRefuse(sock, "face-row-other-face", requestId);
+    const scoped = faceScopedId(face, requestId);
+    const action = `act:${name}`;
+    const digest = await verbInputDigest({ verb: action, args: {}, face });
+    const verdict = await ledger.arbitrate(scoped, digest, face, action);
+    if (verdict.verdict === "refuse") return sessionRefuse(sock, verdict.reason, requestId);
+    const answer = await opts.sessionActs.run(name, { ...args, face: state.supply.ordinal });
+    await ledger.observeOutcome(scoped, answer["status"] === "error" ? "error" : "done", digest, 0, face, action);
+    sessionReply(sock, { kind: "session:act-result", requestId, answer });
+  };
   // The acts rest in the vessel's own sealed row, never in a document the face's fleet syncs (`switch-act-log`).
   const writeSwitchAct = async (act: SwitchIntent | SwitchOutcome): Promise<void> => {
     if (!opts.switchActs) throw new Error("no switch-act log stands on this seat");
@@ -1235,7 +1289,13 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
             fail(err instanceof Error ? err.message : String(err));
           },
         );
-      })().finally(() => { arbitrating -= 1; if (idle()) drained?.(); }); }));
+      })().catch((error: unknown) => {
+        // THE LEDGER FAILED BEFORE ANY DISPATCH (a flush that rejects mid-arbitration): nothing ran, and the caller
+        // hears a fixed code under its own requestId; the detail stays in this vessel's log.
+        log(`receipt-fact ledger failed for ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
+        if (sessionRequestId !== undefined) { sessionRefuse(sock, "session-fault", sessionRequestId); onSessionReply?.(); }
+        else fail("this vessel could not record the request durably; nothing ran", "ledger-unwritten");
+      }).finally(() => { arbitrating -= 1; if (idle()) drained?.(); }); }));
   };
 
   return {

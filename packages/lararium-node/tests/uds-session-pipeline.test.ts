@@ -65,7 +65,7 @@ describe("UDS session socket, frames in flight", () => {
     const dir = mkdtempSync(join(tmpdir(), "uds-session-pipeline-"));
     const claim = await claimStore(dir, { holder: "vessel" });
     const door: UdsSessionDoor = { anchorNow: async () => ({ kind: "place" as const, aid: "place-fixture" }), open: async ({ faceRef }) => ({ ok: true, supply: {
-      face: face(faceRef), profile: "seat", presenter: `verified-${faceRef}`, anchor: { kind: "place" as const, aid: "place-fixture" }, mint: fixtureMint } }) };
+      face: face(faceRef), ordinal: Math.max(0, "abc".indexOf(faceRef.slice(-1))), profile: "seat", presenter: `verified-${faceRef}`, anchor: { kind: "place" as const, aid: "place-fixture" }, mint: fixtureMint } }) };
     const placed: Array<{ verb: string; requestId: string; requestedBy: string; face?: string }> = [];
     let held: { requestId: string; requestedBy: string; face?: string; verb: string } | undefined;
     let markHeld: (() => void) | undefined;

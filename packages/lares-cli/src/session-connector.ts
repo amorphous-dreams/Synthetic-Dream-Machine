@@ -10,6 +10,11 @@ export class SessionRefused extends Error {
 
 export interface LocalSession {
   call(verb: string, args: Record<string, unknown>, opts?: { requestId?: string; effectKey?: string; timeoutMs?: number }): Promise<Record<string, unknown>>;
+  /**
+   * Run one sealed act that acts as a face (`SESSION_ACTS`) as THIS session's face: the vessel's custody door runs it and
+   * answers as an `act` frame does (`{ op, act, result }` or `{ status: "error", refusal }`).
+   */
+  act(act: string, args: Record<string, unknown>): Promise<Record<string, unknown>>;
   receipt(requestId: string): Promise<SessionReceipt>;
   cancel(requestId: string): Promise<SessionReceipt>;
   /**
@@ -97,6 +102,11 @@ export async function openLocalSession(opts: { faceRef: string; hand?: Hand; dat
       if (answer.kind !== "session:result") throw new Error("malformed session result");
       if (answer.status === "unknown") throw new LocalWaitExpired(verb, timeoutMs, requestId);
       return answer;
+    },
+    async act(act, args) {
+      const answer = await send({ op: "session:act", ...bound(), act, args }, newRequestId());
+      if (answer.kind !== "session:act-result" || !answer.answer || typeof answer.answer !== "object") throw new Error("malformed act result from local channel");
+      return answer.answer as Record<string, unknown>;
     },
     receipt: (requestId) => query("session:receipt", requestId),
     async switch(target) {

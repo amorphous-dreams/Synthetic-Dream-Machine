@@ -217,10 +217,13 @@ export async function storeVerb(
   Refusal: new (message: string) => Error = StoreDoorRefusal,
 ): Promise<{ readonly output: Record<string, unknown>; readonly via: StoreDoorVia }> {
   const daemonUp = await udsAlive();
+  // THE FACE RESOLVES ONCE, here: the session opens on it and the row carries it, so the row never resolves again.
+  const named = STORE_DOOR_FACE_ROWS.has(verb) ? storeRowFace(args) : undefined;
   const face = daemonUp && STORE_DOOR_FACE_ROWS.has(verb)
-    ? storeRowFace(args) ?? (await sealedAct<{ face: number }>("face.resolve", {})).face
+    ? named ?? (await sealedAct<{ face: number }>("face.resolve", {})).face
     : undefined;
-  const r = await throughStoreDoor({ verb, args, daemonUp, ...(face !== undefined ? { face } : {}),
+  const rowArgs = face !== undefined && named === undefined ? { ...args, face } : args;
+  const r = await throughStoreDoor({ verb, args: rowArgs, daemonUp, ...(face !== undefined ? { face } : {}),
     direct: () => storeDoorDirect(verb, args, { sealHome: larSealHome() }) });
   if (typeof r.output["refused"] === "string") {
     const refusal = new Refusal(r.output["refused"]);

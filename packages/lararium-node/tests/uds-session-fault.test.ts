@@ -93,7 +93,7 @@ async function stand(label: string, opts: {
     const refusal = opts.refuse?.(faceRef) ?? null;
     if (refusal) return { ok: false, refusal };
     const name = faceRef.replace(/^hint-/, "");
-    return { ok: true, supply: { face: face(name), profile: "seat", presenter: `verified-${faceRef}`,
+    return { ok: true, supply: { face: face(name), ordinal: Math.max(0, "abc".indexOf(faceRef.slice(-1))), profile: "seat", presenter: `verified-${faceRef}`,
       anchor: opts.nexusOf ? { kind: "nexus", aid: opts.nexusOf(faceRef) } : standing(), mint: async ({ session }) => {
       const n = drawn.length;
       if (opts.refuseMint?.(n)) return { ok: false, refusal: "dial-refused" };
@@ -158,6 +158,25 @@ describe("UDS session fault", () => {
       expect(v.lines.some((l) => l.includes("/secret/path"))).toBe(true);     // the detail rests in the vessel's log alone
       // CONTROL: the same session answers whole once the flush stands.
       expect(await a.ask(call(envA, "call-whole"))).toMatchObject({ kind: "session:result", requestId: "call-whole", status: "done" });
+    } finally { await v.done(); }
+  });
+
+  test("RED: a call whose fact ledger's whole-Repo flush rejects mid-arbitration answers session-fault under its requestId, and nothing runs", async () => {
+    let failing = false;
+    // The fact ledger flushes the whole Repo (no ids) before it answers "run"; that flush rejects here.
+    const v = await stand("ledger", { failFlush: (ids) => failing && ids === undefined });
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      const before = v.placed.length;
+      failing = true;
+      const reply = await a.ask(call(envA, "call-unledgered"));
+      failing = false;
+      expect(reply).toEqual({ kind: "session:refused", requestId: "call-unledgered", refusal: "session-fault" });
+      expect(v.placed.length).toBe(before);                                   // nothing dispatched
+      expect(v.lines.some((l) => l.startsWith("receipt-fact ledger failed") && l.includes("/secret/path"))).toBe(true);
+      // CONTROL: the same session answers whole once the flush stands.
+      expect(await a.ask(call(envA, "call-ledgered"))).toMatchObject({ kind: "session:result", requestId: "call-ledgered", status: "done" });
     } finally { await v.done(); }
   });
 

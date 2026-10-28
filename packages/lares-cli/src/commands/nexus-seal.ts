@@ -65,7 +65,7 @@ import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { sealedAct } from "../sealed-act-door.js";
-import { actingFace, FaceOptionMalformed } from "../face-option.js";
+import { actingFace, faceOption, FaceOptionMalformed } from "../face-option.js";
 import { sealHand, inceptHand, heldSeats, armGenesisSeats, armRollSeats, retireSeats, readBackStandsIn } from "../sealed-rows.js";
 import { canPromptSecret, promptLine, promptSecret } from "../prompt-secret.js";
 import { CardReadBackRefused, readBack as printAndReadBack, type ColdCard } from "../cold-card-readback.js";
@@ -588,6 +588,13 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
 
   // A ROLL WAITS ON ITS PRIOR ANCHOR (operator ruling 2026-10-15): the head's own roll stands anchored before any
   // card reads, so no roll stacks over a step its readers cannot carry across a removal.
+  // THE FACE THE ROLL ACTS AS, before any card reads: the roll's realm edge anchors land in that face's ledger alone,
+  // and two faces open with none named refuse here (`--face N`), so nothing lands and then refuses.
+  const named = faceOption(args);
+  let resolved: number | null;
+  try { resolved = named.face ?? (await sealedAct<{ face: number | null }>("face.resolve", { orNone: true })).face; }
+  catch (err) { if (err instanceof SealedActRefused) throw new UsageError(err.message); throw err; }
+  const rollFace: { face?: number } = resolved === null ? {} : { face: resolved };
   try { await storeVerb("nexus-roll-prior-anchor", {}, NexusContractError); }
   catch (err) {
     if (!(err instanceof NexusContractError)) throw err;
@@ -643,7 +650,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   let anchored: NexusRollAnchorResult | null = null;
   if (closing.sealEpochCid.length > 0) {
     try {
-      const { output } = await storeVerb("nexus-roll-anchor", { closing, opened, epoch: result.epoch }, NexusContractError);
+      const { output } = await storeVerb("nexus-roll-anchor", { closing, opened, epoch: result.epoch, ...rollFace }, NexusContractError);
       anchored = output as unknown as NexusRollAnchorResult;
     } catch (err) {
       if (!(err instanceof NexusContractError)) throw err;
