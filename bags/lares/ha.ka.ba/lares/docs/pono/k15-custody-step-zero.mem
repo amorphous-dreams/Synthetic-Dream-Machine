@@ -120,7 +120,7 @@ The exact `CUSTODY_ROW` alternatives are at `packages/lararium-browser/src/brows
 | `persona-root-roster` | ''D/F split:'' roots, private labels and membership D per face; minimum deliberately public routing F only after leakage review. |
 | `nexus-key/h<N>/*` | ''D:'' that face's private per-Nexus keys; public verification line F if separately represented. |
 | `vessel-face-key/*|*` | ''D:'' the face named by authenticated relation, never inferred from delimiter text alone; add owner lookup/binding. |
-| `fleet-join-secret/*` | ''D:'' target face's address/join secret; add authenticated owner mapping. |
+| `face-address-secret/*` | ''D:'' that face's address secret, the one its working documents' addresses derive from; it rides the face's bundle and a fleet join's answer, and lands under the face's own row; add authenticated owner mapping. |
 | `fleet-join-pending` `fleet-join-custody.ts` | face-hot | ''D:'' one pending join per target face, `fleet-join-pending-g<group digest>.json` in that face (its X25519 secret and request); the joiner founds the face's custody at its request, so a pending join with no face refuses by name. |
 | `walk/*` | ''D/F split, LEAD:'' private face receipt/relationship D; proved blind ciphertext carriage F. |
 
@@ -276,6 +276,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;NgbWYLJsDdwyEy0hLcjx9f_AMIpvjL2mWoIQG6yMc2I
+<<^ code="&#x0003;">>ni:///sha-256;3RU4BnolgC_c_ZeFBcVr_SmCsCw9Cuf5c_4QoUfmFM4
 
 <<^ code="&#x0004;" -> to="?">>
