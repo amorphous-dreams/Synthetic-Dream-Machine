@@ -1,0 +1,61 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/d3-glass-lane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/d3-glass-lane.mem"
+l-space   = "adjacent"
+role      = "the D3 lane's kit: the glass engine on the record port, behind a flag: the port adaptor, the glass boot and mount, the service doors, the multi-tab topology, the draft prompt, the full-width walk and the three-boot width spike"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/d3-glass-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/d3-glass-lane"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! D3 ~ the glass engine and the width spike
+
+Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR #103) and on rest-before-reload (PR #91). It lands only the glass, behind a flag with width none as the honest fallback, and it runs the three-boot spike whose numbers the operator's default-width ruling waits on (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">> D3). The lane never rules the default width; it hands the table back. The `§9` rewording of `packages/AGENTS.md` already stands ruled and worded; the lane leaves it alone.
+
+<<~/ahu>>
+
+<<~ ahu #/the-slices>>
+
+!! The slices, each built red first with its control
+
+# ''G1 ~ the port adaptor.'' A startup module on the glass (`packages/lararium-tw5/src/glass-port-adaptor.ts`), pure over a `$tw`-shaped wiki and a port transport: it binds `$tw.wiki`'s `change`, lands `port:snapshot` and `port:changes` under an origin tag its own listener skips, posts `port:write` with a `txId`, and keeps the write optimistic until `port:written` echoes; no `$tw.syncer`, no `syncadaptor` module. Skinny and story stand as settings of the same adaptor (`width`, `fields`); skinny asks `port:ask{kind: load}` for a body on open. Witnesses: `glass-echo-lands-once`, `glass-skinny-body-loads-on-open`, `glass-peer-edit-presence-reads-aloud`.
+# ''G2 ~ the glass boot and mount.'' The glass boots `TW5Engine` in the page from the same CAS core blob by hash, mounts the page template over `window.document` in a shadow root as the browser's first camera, and reads `pagePort()`. A flag chooses glass or none; none stays the default. `packages/lararium-web/src/glass/`.
+# ''G3 ~ the service doors.'' `lar:service` doors reached from the glass engine's root handlers (`tm-*`), the same kinds D1 ruled, each refused kind named with its alert.
+# ''G4 ~ the multi-tab topology.'' A Web Lock elects the leader; the leader's worker holds the engine; a SharedWorker or BroadcastChannel handshake routes other tabs; a late tab gets a snapshot, never a missed `ready`. Witnesses: `glass-leader-handoff-mid-write`, `glass-late-tab-gets-snapshot`.
+# ''G5 ~ the draft prompt.'' A peer write into an open draft shows the newer-base prompt; a draft is a tiddler like any other.
+# ''G6 ~ the full-width walk.'' The five `isTiddlyWikiFakeDom` sites (`FramedEngine`, storyviews, popup positioning, the toolbar, auto-height) walked once in a real browser inside the shadow root; interaction goldens 1 to 13 at width full with stock TW5 as oracle.
+# ''G7 ~ the three-boot spike.'' One 2,000-tiddler corpus, one loopback port, full, skinny and none (story only if skinny and full split), each measure and threshold the roadmap's D3 Measures states; on this host's browsers and on Node; each phone figure named unmeasured.
+
+<<~/ahu>>
+
+<<~ ahu #/the-fences>>
+
+!! What the lane leaves alone
+
+* The hands spine until PR #108 lands (`session-contract.ts`, `uds-channel.ts`, `uds-session-door.ts`, `session-switch.ts`, `store-door-verbs.ts`, the openers' compose hunks) and I2's `intent-*` files. No opener compose hunk unless the controller hands one; the glass builds it as a named patch.
+* The default width, `§9` of `packages/AGENTS.md`, the road and the changelog.
+* D4's manifest and gate.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/d2-port-lane">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;e_nF3Fx5Cpy9UmUOSEmmQ8alErI5gRB-estNQPM1abk
+
+<<^ code="&#x0004;" -> to="?">>
