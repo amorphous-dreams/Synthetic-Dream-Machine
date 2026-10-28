@@ -167,3 +167,7 @@ The actual headless Ubuntu 4.0.2 package returned `AttributeError: bpy.ops.wm.us
 ## Blender official LTS importer verified; hierarchy ownership repair
 
 The official Blender 4.5.15 SHA-checked build successfully completed its USD import and authored transform capture at prior CI head `ed950da5`. On reload, Blender introduced USD hierarchy/parent empties not tagged with semantic mesh IDs, causing the bridge to incorrectly classify generated representation parents as operator-owned work. The import now tags **all** newly created USD objects with `loom_generated`, while retaining semantic IDs on actual mesh bodies. Reload deletes only tagged generated objects and preserves genuinely operator-owned content such as the deliberately created `OperatorNote`. Exact-head Blender application witness must still pass before claiming D-B integration.
+
+## Native caching exact test correction
+
+On head `616cafcc`, the new USD cache lane passed its positive native reuse and tampered asset witnesses (9/10 passing); the single failure was the negative fixture expecting a different error string than the provenance guard actually emitted. The test now matches the precise provenance/units refusal. Full exact-head revalidation remains necessary.

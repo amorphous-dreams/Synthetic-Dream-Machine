@@ -82,7 +82,7 @@ def test_native_cache_reuses_verified_unchanged_step_and_usd(tmp_path):
     assert validate_scene(tmp_path / "after")["valid"]
     assert (before / "native/001_terrace_b.step").read_bytes() == (
         tmp_path / "after" / "native/001_terrace_b.step").read_bytes()
-    with pytest.raises(ValueError, match="source declaration"):
+    with pytest.raises(ValueError, match="provenance or coordinate units disagree"):
         package_scene(after, tmp_path / "bad",
                       reuse_bundle=before, previous_document=after)
 
