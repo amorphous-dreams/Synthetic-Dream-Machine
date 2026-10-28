@@ -64,9 +64,19 @@ def test_source_causal_native_location_roundtrip_and_idempotent_read(tmp_path):
     assert json.loads((second / "session.json").read_text())["status"] == "completed"
     with pytest.raises(ValueError, match="new causal island"):
         edit_workspace(first, proposal(first), second)
+    # Original external source drift no longer rewrites archived evidence.
     photo.write_bytes(b"new pixels")
+    assert verify_workspace(second)["valid"]
+    import shutil
+    moved = tmp_path / "portable-relocation"
+    shutil.copytree(second,moved)
+    assert verify_workspace(moved)["valid"]
+    source = next(iter(LocationStack.load(moved / "inventory.json").sources.values()))
+    frozen = moved / source.locator
+    assert frozen.is_file()
+    frozen.write_bytes(b"maliciously changed archived testimony")
     with pytest.raises(ValueError, match="Source bytes disagree"):
-        verify_workspace(second)
+        verify_workspace(moved)
 
 
 def test_location_mismatch_unsupported_frame_and_second_structure_authority(tmp_path):

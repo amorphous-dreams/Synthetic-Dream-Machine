@@ -12,6 +12,8 @@ causal source. A crash cannot turn an unfinished directory into success.
 from __future__ import annotations
 
 from copy import deepcopy
+from dataclasses import replace
+from hashlib import sha256
 import json
 import shutil
 from pathlib import Path
@@ -79,6 +81,30 @@ def _check_bindings(inventory, declaration, ground):
         if entity["matrix"] != matrix:
             raise ValueError("Native placement differs from semantic ground")
     return authored
+
+
+def _freeze_sources(inventory, out):
+    """Archive exact local source bytes under digest-addressed relative paths.
+
+    Without this step a CI artifact references the runner's absolute /tmp
+    paths and cannot be independently reopened after relocation.
+    """
+    parent=Path(out)/"sources"
+    parent.mkdir(parents=True,exist_ok=True)
+    for sid, original in list(inventory.sources.items()):
+        source=Path(original.locator)
+        if not source.is_file():
+            raise FileNotFoundError(
+                f"Workspace needs actual local source bytes for {sid}, not an unfetched locator")
+        destination=parent/original.sha256
+        if not destination.exists():
+            shutil.copyfile(source,destination)
+        digest=sha256(destination.read_bytes()).hexdigest()
+        if digest!=original.sha256:
+            raise ValueError(f"Portable source archive bytes disagree with {sid}")
+        inventory.sources[sid]=replace(original,locator="sources/"+original.sha256)
+    if any(v!="matched" for v in inventory.verify_source_bytes(base_dir=out).values()):
+        raise ValueError("Portable workspace cannot claim unfetched source testimony")
 
 
 def _verify_native_supports(ground, native_dir):
@@ -176,6 +202,7 @@ def create_workspace(inventory: LocationStack, declaration, destination):
         raise ValueError("Workspace output must be new and immutable")
     out.mkdir(parents=True)
     try:
+        _freeze_sources(staged,out)
         scene = package_scene(declaration, out / "scene")
         _verify_native_supports(ground, out / "scene")
         save_once(out / "inventory.json", staged.to_dict())
@@ -216,6 +243,9 @@ def verify_workspace(directory, *, verify_sources=True):
         if not (out / path).resolve().is_relative_to(out.resolve()):
             raise ValueError("Workspace reference escapes evidence boundary")
     inventory = LocationStack.load(out / paths["inventory"])
+    for item in inventory.sources.values():
+        if item.locator!="sources/"+item.sha256:
+            raise ValueError("Location source is not a portable content-addressed snapshot")
     declaration = _read(out / paths["declaration"])
     ground = RelationalGround.load(out / paths["ground"])
     scene = _read(out / paths["scene"] / "manifest.json")
@@ -225,7 +255,7 @@ def verify_workspace(directory, *, verify_sources=True):
     if m["location"] != inventory.location_id:
         raise ValueError("Workspace manifest location differs from witnessed source")
     if verify_sources:
-        inventory.verify_source_bytes()
+        inventory.verify_source_bytes(base_dir=out)
     if (m["inventory_sha256"] != inventory.to_dict()["snapshot_sha256"]
             or m["ground_sha256"] != ground.to_dict()["sha256"]
             or m["declaration_sha256"] != _sha(declaration)
@@ -309,6 +339,7 @@ def edit_workspace(previous, proposal, destination):
         raise ValueError("Workspace output must be a new causal island")
     out.mkdir(parents=True)
     try:
+        shutil.copytree(parent / "sources",out / "sources")
         save_once(out / "inventory.json", inventory.to_dict())
         save_once(out / "proposal.json", proposal)
         receipt = apply_proposal(declaration, ground, parent / paths["scene"],
@@ -356,6 +387,7 @@ def support_workspace(previous, proposal, destination):
         raise ValueError("Native support workspace must be a new causal island")
     out.mkdir(parents=True)
     try:
+        shutil.copytree(parent / "sources",out / "sources")
         shutil.copytree(scene_dir,out / "scene")
         scene=_read(out / "scene" / "manifest.json")
         if scene["sha256"] != original["scene_sha256"]:

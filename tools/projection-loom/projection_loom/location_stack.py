@@ -263,7 +263,7 @@ class LocationStack:
             'verified_registrations': sum(r.state == 'verified' for r in self.registrations),
         }
 
-    def verify_source_bytes(self):
+    def verify_source_bytes(self, *, base_dir=None):
         """Check every accessible local source against its declared content hash.
 
         Network locators remain explicitly `unfetched`; neither a URL nor a
@@ -277,6 +277,8 @@ class LocationStack:
                 result[source.id]='unfetched'
                 continue
             path=Path(source.locator)
+            if base_dir is not None and not path.is_absolute():
+                path=Path(base_dir)/path
             if not path.is_file():
                 raise FileNotFoundError(f'Local source missing: {source.id}')
             checksum=sha256()
