@@ -612,3 +612,5 @@ export * from "./face-log-view.js";
 // The one parser of a Nexus seal file's text, platform-blind: the node's disk adapter and a browser leaf's landed
 // fleet-join answer read a charter through it — see `nexus-doc-text`.
 export { parseNexusDoc, readNexusDocFence, nexusDocFenceRe, NEXUS_DOC_FENCES } from "./nexus-doc-text.js";
+
+export * from "./intent-admission.js";

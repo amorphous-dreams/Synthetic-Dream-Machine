@@ -32,8 +32,8 @@ describe("browser agent verification", () => {
   });
 
   test("RED: a planted listener trips the source census; CONTROL: browser sources carry no relay listener", () => {
-    const forbidden = /intent-relay|registerUpgrade|faceGateServer|listen\s*\(/;
-    expect(forbidden.test("registerUpgrade(" )).toBe(true);
+    const forbidden = /intent-relay|registerUpgrade|faceGateServer|createServer\s*\(|WebSocketServer|server\.listen\s*\(/;
+    for (const planted of ["registerUpgrade(", "server.listen(8080)", "new WebSocketServer({})"]) expect(forbidden.test(planted), planted).toBe(true);
     const files = import.meta.glob("../src/**/*.{ts,tsx}", { eager: true, query: "?raw", import: "default" }) as Record<string, string>;
     expect(Object.keys(files).length).toBeGreaterThan(0);
     for (const [name, source] of Object.entries(files)) expect(forbidden.test(source), name).toBe(false);

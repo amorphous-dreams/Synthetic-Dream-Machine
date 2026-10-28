@@ -71,7 +71,7 @@ describe("intent admissions", () => {
     const f = await fixture(), receipt = await f.receipt();
     const plain = readIntentPlane({ ...f.read, records: [f.grant, f.call] });
     const withReceipt = readIntentPlane({ ...f.read, records: [f.grant, f.call], admissions: [receipt] });
-    const strip = (view: typeof withReceipt) => ({ ...view, refusedAdmissions: [], intents: view.intents.map(({ admissions: _admissions, ...state }) => state) });
+    const strip = (view: typeof withReceipt) => ({ ...view, holdsCapability: undefined, refusedAdmissions: [], intents: view.intents.map(({ admissions: _admissions, ...state }) => state) });
     expect(strip(withReceipt)).toEqual(strip(plain));
     expect(mayAct(plain, f.id, f.device.key)).toEqual({ act: true });
     expect(mayAct(withReceipt, f.id, f.device.key)).toEqual({ act: true });

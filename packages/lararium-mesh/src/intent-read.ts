@@ -1,3 +1,4 @@
+import { readIntentAdmission } from "./intent-admission.js";
 /** Pure read of a face's unordered intent entries. No arrival order decides an effect. */
 import { sha256HexBytesSync, utf8Bytes } from "./crypto.js";
 import { isCurrentEpoch, signsAtEpoch, type HandLineage } from "./hand-lineage.js";
@@ -9,6 +10,7 @@ type Standing = "stands" | "aside" | "unknown";
 export interface IntentReadInput {
   readonly group: string;
   readonly records: readonly unknown[];
+  readonly admissions?: readonly unknown[];
   readonly face: { readonly devices: readonly string[]; readonly rosterCids: readonly string[]; readonly admittedAt: ReadonlyMap<string, string>; readonly lineage: HandLineage };
   readonly standing: (atom: string) => Standing;
   readonly holdsCapability?: (atom: string, capability: string) => boolean;
@@ -23,6 +25,7 @@ export interface IntentSlot {
   readonly unknownFrontier: boolean;
 }
 export interface IntentState {
+  readonly admissions: readonly { cid: string; relay: string }[];
   readonly id: string; readonly issuer: string; readonly verb: string; readonly class: IntentVerbClass;
   readonly fenced: boolean;
   readonly audience: IntentAudience; readonly bound: IntentBound | null;
@@ -41,6 +44,7 @@ export interface IntentView {
   readonly intents: readonly IntentState[];
   readonly delegations: readonly { readonly cid: string; readonly agent: string; readonly prefix: string; readonly status: "live" | "revoked" | "closed" | "lapsed" | "awaiting" | "pending-revoke-orphan"; readonly revokedBy: string | null }[];
   readonly refused: readonly { readonly refusal: string }[];
+  readonly refusedAdmissions: readonly { readonly refusal: string }[];
   readonly strayAnswers: readonly IntentRecord[];
   readonly standing: (atom: string) => Standing;
   readonly holdsCapability: (atom: string, capability: string) => boolean;
@@ -60,6 +64,8 @@ const effectiveAnswer = (answers: readonly IntentRecord[]): IntentRecord | "cont
 };
 
 export function readIntentPlane(input: IntentReadInput): IntentView {
+  const admissions = (input.admissions ?? []).map(raw => readIntentAdmission(raw, { group: input.group }));
+  const refusedAdmissions = admissions.filter((r): r is Extract<typeof r, { ok: false }> => !r.ok).map(r => ({ refusal: r.refusal }));
   const devices = new Set(input.face.devices.map((a) => a.toLowerCase()));
   const refused: { refusal: string }[] = [], all = new Map<string, IntentRecord>();
   for (const raw of input.records) {
@@ -203,11 +209,11 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
     }
     const unknown = (agent ? agent.status === "awaiting" : input.standing(issuer) === "unknown") || slots.some((s) => s.unknownFrontier);
     const status = voidCause ? "void" : unknown ? "unknown-frontier" : slots.some((s) => s.winner) ? "answered" : "open";
-    states.push({ id, issuer, verb: body.verb as string, class: classification.class, fenced: classification.class === "single-effect" || !!classification.fenced, audience, bound, status, voidCause, agent, asks: ownAsks,
+    states.push({ admissions: admissions.flatMap(r => r.ok && r.admission.body.entry === source.cid ? [{ cid: r.cid, relay: r.admission.body.relay }] : []).sort((a, b) => a.cid.localeCompare(b.cid)), id, issuer, verb: body.verb as string, class: classification.class, fenced: classification.class === "single-effect" || !!classification.fenced, audience, bound, status, voidCause, agent, asks: ownAsks,
       answer, claim, claims: ownClaims, slots, voidAfterAct: voidCause ? ownOutcomes : [], outOfAudience });
   }
   refused.sort((a, b) => a.refusal.localeCompare(b.refusal));
-  return { intents: states, delegations, refused, strayAnswers, standing: input.standing, holdsCapability: input.holdsCapability ?? (() => false), face: input.face };
+  return { intents: states, delegations, refused, refusedAdmissions, strayAnswers, standing: input.standing, holdsCapability: input.holdsCapability ?? (() => false), face: input.face };
 }
 
 export type MayActReason = "answered" | "void" | "not-audience" | "pinned-elsewhere" | "fenced-by-claim" | "awaiting-answer" | "unknown-frontier" | "atom-aside";

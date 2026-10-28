@@ -4,7 +4,7 @@ import type { Repo } from "@automerge/automerge-repo";
 import {
   buildAnswer, buildAsks, buildCancel, buildClaim, buildDelegation, buildDelegationRevoke, buildIntent, buildSupersede, buildTakeover,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceAtomKeyFromSeed, faceIntentVerbs,
-  faceRecordsOf, intentEntryCid, intentEntryRecordsOfGroup, intentId, intentPaneModel,
+  faceRecordsOf, intentEntryCid, intentEntryRecordsOfGroup, intentAdmissionRecordsOfGroup, intentId, intentPaneModel,
   readIntentEntry,
   deviceEdgeId, fleetEdgeAuthority, fleetEdgeBoardDocUrl, fleetRaiseCids, readFleetFrontier, readFrontierPins, FLEET_HAND,
   personaBagIdFor, personaSiblingBagIds, readIntentPlane, signIntentEntry, writeIntentEntry,
@@ -68,20 +68,26 @@ export interface IntentCommandOptions {
   readonly until?: string;
 }
 
-export async function runIntentCommand(opts: IntentCommandOptions): Promise<Record<string, unknown>> {
-  const index = resolveIntentFaceIndex(opts.face, await listAnchoredPersonas());
+export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined, selector: { index?: number | undefined } | { group: string }) {
+  const held = await listAnchoredPersonas();
+  let named: number | undefined;
+  if ("group" in selector) {
+    for (const candidate of held) if ((await loadIdentityAnchors(candidate))?.personaGroupId === selector.group) { named = candidate; break; }
+    if (named === undefined) throw new IntentRefused("face-not-held");
+  } else named = selector.index;
+  const index = resolveIntentFaceIndex(named, held);
   const anchors = await loadIdentityAnchors(index);
   if (!anchors) throw new IntentRefused(`face-not-held: h${index}`);
   const group = anchors.personaGroupId;
   const anchor = await loadFaceAnchorOfGroup(group);
   if (!anchor) throw new IntentRefused("face-anchor-absent");
-  if (!opts.catalogUrl) throw new IntentRefused("catalog-absent");
+  if (!catalogUrl) throw new IntentRefused("catalog-absent");
   const bag = personaSiblingBagIds(personaBagIdFor(group))?.intents;
   if (!bag) throw new IntentRefused("intent-plane-name-absent");
-  const catalog = makeCatalogAccessor(opts.repo, opts.catalogUrl);
+  const catalog = makeCatalogAccessor(repo, catalogUrl);
   const plane = await catalog.find(bag);
   if (!plane) throw new IntentRefused("intent-plane-unregistered");
-  const face = await fleetFaceForVessel(opts.repo, groupRoot(anchors), anchor);
+  const face = await fleetFaceForVessel(repo, groupRoot(anchors), anchor);
   if (!face) throw new IntentRefused("face-lineage-unreadable");
   const persona = await catalog.find(personaBagIdFor(group));
   const projection = face.project(faceRecordsOf([persona?.doc()], group), group);
@@ -92,13 +98,12 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
   if (!atomSeed) throw new IntentRefused("face-atom-absent");
   const atom = faceAtomKeyFromSeed(atomSeed, group);
   const signer: IntentSigner = { key: atom.key, sign: atom.sign };
-  const records = intentEntryRecordsOfGroup(plane.doc(), group);
   const verbs = faceIntentVerbs();
   let standing: (key: string) => "stands" | "aside" | "unknown" = () => "unknown";
   let heldFrontiers: ReadonlySet<string> = new Set();
   try {
     const fleetRoot = groupRoot(anchors);
-    const board = await readVesselEdgeBoard({ repo: opts.repo, scope: fleetRoot, kind: "fleet",
+    const board = await readVesselEdgeBoard({ repo, scope: fleetRoot, kind: "fleet",
       boardUrl: fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae", vesselKey: atom.key,
       authorityFor: fleetEdgeAuthority(fleetRoot) });
     const frontier = readFleetFrontier({ fleetRoot, board: board.handle.doc(), lineage: face.lineage,
@@ -111,8 +116,15 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
       };
     }
   } catch { /* A board that cannot verify leaves standing unknown. */ }
+  if ("group" in selector && group !== selector.group) throw new IntentRefused("face-not-held");
+  return { group, index, anchors, anchor, face, projection, plane, personaPlane: persona, standing, heldFrontiers, verbs, atom, atomSeed, signer };
+}
+
+export async function runIntentCommand(opts: IntentCommandOptions): Promise<Record<string, unknown>> {
+  const { group, index, anchors, face, projection, plane, standing, heldFrontiers, verbs, atom, atomSeed, signer } = await loadIntentFace(opts.repo, opts.catalogUrl, { index: opts.face });
+  const records = intentEntryRecordsOfGroup(plane.doc(), group);
   const view = () => readIntentPlane({
-    group, records, verbs, heldFrontiers,
+    group, records, verbs, heldFrontiers, admissions: intentAdmissionRecordsOfGroup(plane.doc(), group),
     face: { devices: projection.devices, rosterCids: projection.cids,
       admittedAt: new Map(projection.admissions.map(({ deviceKey, cid }) => [deviceKey, cid])), lineage: face.lineage },
     standing,

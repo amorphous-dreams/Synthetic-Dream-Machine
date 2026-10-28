@@ -3,6 +3,7 @@ import type { IntentView } from "./intent-read.js";
 export interface IntentPaneModel {
   readonly delegations: IntentView["delegations"];
   readonly rows: readonly { readonly id: string; readonly verb: string; readonly status: string; readonly winner: string | null;
+    readonly admissions: IntentView["intents"][number]["admissions"]; readonly admissionCount: number;
     readonly agent: string | null; readonly delegationStatus: string | null;
     readonly winners: readonly string[]; readonly duplicates: readonly string[]; readonly unknownOutcomes: readonly string[]; readonly voidAfterAct: readonly string[];
     readonly unknown: boolean; readonly unknownReason: string | null; readonly outcomeCount: number | "unknown" }[];
@@ -13,7 +14,7 @@ export interface IntentPaneModel {
 }
 export function intentPaneModel(view: IntentView): IntentPaneModel {
   return { rows: view.intents.map((i) => ({ id: i.id, verb: i.verb, status: i.status,
-    agent: i.agent ? i.issuer : null, delegationStatus: i.agent?.status ?? null,
+    admissions: i.admissions, admissionCount: i.admissions.length, agent: i.agent ? i.issuer : null, delegationStatus: i.agent?.status ?? null,
     winner: i.slots.find((s) => s.winner)?.winner?.cid ?? null,
     winners: i.slots.flatMap((s) => s.winner ? [s.winner.cid] : []),
     duplicates: i.slots.flatMap((s) => s.unknownFrontier ? [] : s.duplicates.map((o) => o.cid)),
