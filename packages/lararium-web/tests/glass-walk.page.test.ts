@@ -4,7 +4,7 @@
  * editor's auto-height. Each step reads the page's own DOM; none waits on a clock.
  */
 import { expect, test } from "vitest";
-import { TW5Engine, mountGlassCamera } from "@lararium/tw5/glass";
+import { openMirror } from "@lararium/tw5/glass";
 import coreUrl from "../../lararium-tw5/tw5-core/tiddlywikicore-5.5.0-prerelease.js?url";
 
 async function coreBytes(): Promise<Uint8Array> {
@@ -23,13 +23,15 @@ test("glass-full-width-walk: the framed editor, story scroll, popup layer, toolb
   const errors: string[] = [];
   const onError = (event: ErrorEvent): void => { errors.push(String(event.error?.stack ?? event.message)); };
   window.addEventListener("error", onError);
-  const engine = new TW5Engine();
-  await engine.boot(await coreBytes(), [{ title: "Walk", text: "walk body" }], { glass: true });
-  const tw = engine.$tw as any;
   const host = document.createElement("div");
   document.body.append(host);
   const shadowRoot = host.attachShadow({ mode: "open" });
-  const camera = mountGlassCamera({ tw, shadowRoot });
+  const bytes = await coreBytes();
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  const coreCid = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");
+  const camera = await openMirror({ shadowRoot, inputs: { coreBytes: bytes, coreCid, preloadedTiddlers: [{ title: "Walk", text: "walk body" }] },
+    transport: { send: () => ({ ok: true }), onMessage: () => () => {} }, wikiUri: "wiki", actor: "actor", width: "full", portId: "walk", mintTx: () => crypto.randomUUID() });
+  const tw = camera.tw as any;
   await afterChange(tw, () => tw.wiki.addTiddler(new tw.Tiddler({ title: "$:/StoryList", list: ["Walk"] })));
 
   // Story view and scroller: the edit action scrolls the story through the page scroller.
@@ -60,5 +62,4 @@ test("glass-full-width-walk: the framed editor, story scroll, popup layer, toolb
   expect(tw.pageScroller).toBeUndefined();
   window.removeEventListener("error", onError);
   host.remove();
-  engine.releaseGlass();
 });

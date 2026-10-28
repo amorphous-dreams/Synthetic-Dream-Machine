@@ -22,7 +22,12 @@ export interface GlassPortOptions {
   fields?: string[];
   localFilter?: string[];
   mintTx: () => string;
+  /** Writes a closed predecessor left unsettled; they resend under their own txId, which the island's per-actor ledger applies once. */
+  adopt?: ReadonlyArray<PendingWrite>;
+  /** Landed images a closed predecessor tagged whose wiki change has not fired yet; the successor must not read them as local edits. */
+  inheritTags?: ReadonlyMap<string, readonly string[]>;
 }
+export interface PendingWrite { txId: string; title: string; record: PortWireRecord }
 
 type Change = { title: string; fields: Record<string, string>; deleted?: true };
 type Pending = { before: PortWireRecord | null; title: string; optimistic: string; generation: number;
@@ -43,7 +48,7 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
   const { wiki, Tiddler, transport, portId } = opts;
   const landed = new Map<string, PortWireRecord | null>();
   const omitted = new Map<string, string[]>();
-  const tagged = new Map<string, string[]>();
+  const tagged = new Map<string, string[]>([...(opts.inheritTags ?? [])].map(([title, images]) => [title, [...images]]));
   const pending = new Map<string, Pending>();
   const settled = new Set<string>();
   const loading = new Map<string, { title: string; generation: number; resolve: (text: string | undefined) => void }>();
@@ -221,6 +226,13 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
     width: opts.width, edits: true, presence: true, maxRecordBytes: 65536, maxBatchBytes: 262144,
     ...(opts.fields ? { fields: opts.fields } : {}), ...(opts.localFilter ? { localFilter: opts.localFilter } : {}) });
   transport.send({ type: "port:presence", portId, actorKey: opts.actor, beat: 0 });
+  for (const write of opts.adopt ?? []) {
+    const fields = ownFields(wiki, write.title);
+    pending.set(write.txId, { title: write.title, before: null, optimistic: imageOf(fields), generation: generations.get(write.title) ?? 0,
+      peerGeneration: 0, record: write.record });
+    transport.send({ type: "port:write", portId, txId: write.txId,
+      records: [{ title: write.title, fields: write.record.fields, ...(write.record.deleted ? { tombstone: true } : {}) }] });
+  }
   const loadBody = (title: string): Promise<string | undefined> => {
     if (!omitted.get(title)?.includes("text")) return Promise.resolve(ownFields(wiki, title)?.text);
     const askId = `${portId}:load:${++askNumber}`;
@@ -228,6 +240,8 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
       transport.send({ type: "port:ask", portId, askId, kind: "load", subject: title, fields: ["text"] }); });
   };
   return {
+    tagImages(): ReadonlyMap<string, readonly string[]> { return new Map(tagged); },
+    pendingWrites(): PendingWrite[] { return [...pending].map(([txId, tx]) => ({ txId, title: tx.title, record: tx.record })); },
     resendPending() {
       for (const [txId, tx] of pending) transport.send({ type: "port:write", portId, txId,
         records: [{ title: tx.title, fields: tx.record.fields,

@@ -12,4 +12,15 @@ describe("mirror door source census", () => {
   test("R2: the flag module has burned", () => {
     expect(existsSync(source("../../lararium-web/src/glass/flag.ts"))).toBe(false);
   });
+  // R5: no clock decides anything in the mirror's own code. The pattern proves itself on a planted line first.
+  const clock = /\b(Date\.now|performance\.now|setTimeout|setInterval|requestIdleCallback)\b|new Date\(/;
+  const glassSources = ["../src/glass-mirror.ts", "../src/glass-port-adaptor.ts", "../src/glass-camera.ts", "../src/glass-token.ts",
+    ...["stand", "boot", "cas", "cid", "leader", "tab-bus"].map(name => `../../lararium-web/src/glass/${name}.ts`)];
+  test("R5 CONTROL: the clock pattern catches a planted clock read", () => {
+    expect(clock.test("const t = Date.now();")).toBe(true);
+    expect(clock.test("await new Promise(r => setTimeout(r, 5));")).toBe(true);
+  });
+  test.each(glassSources)("R5: %s reads no clock", file => {
+    expect(readFileSync(source(file), "utf8")).not.toMatch(clock);
+  });
 });

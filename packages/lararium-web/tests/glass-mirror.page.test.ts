@@ -23,7 +23,7 @@ async function fixture(refusal?: string) {
   } });
   // readInputs supplies real core bytes without requiring an OPFS fixture.
   const seams = { readInputs: async () => ({ coreBytes: bytes, coreCid, preloadedTiddlers: [] }) };
-  return { host, port, messages, seams, options: { host, port, coreCid: cid, pluginCids: [], wikiUri: "wiki", actor: "actor" } };
+  return { host, port, messages, seams, options: { host, port, inputs: { coreCid: cid, pluginCids: [] }, wikiUri: "wiki", actor: "actor" } };
 }
 const door = () => { const fn = (stand as any).standMirror; expect(fn).toBeTypeOf("function"); return fn; };
 async function runDefault(search: string) {

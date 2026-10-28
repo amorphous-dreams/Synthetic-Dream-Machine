@@ -57,13 +57,13 @@ describe("glass boot on the real page", () => {
 
     await afterChange(tw, () => tw.wiki.addTiddler(new tw.Tiddler({ title: "Glass Seed", text: "Changed glass body" })));
     expect(shadowRoot.textContent).toContain("Changed glass body");
+    expect(typeof (globalThis as Record<string, unknown>)["Buffer"]).toBe("function");
     camera.unmount();
     expect(shadowRoot.childNodes).toHaveLength(0);
     tw.wiki.addTiddler(new tw.Tiddler({ title: "Glass Seed", text: "After unmount" }));
     expect(shadowRoot.childNodes).toHaveLength(0);
     host.remove();
     // CONTROL: the lends stay for the engine's life and leave with it.
-    expect(typeof (globalThis as Record<string, unknown>)["Buffer"]).toBe("function");
     expect(typeof (globalThis as Record<string, unknown>)["Buffer"]).toBe("undefined");
   });
 });

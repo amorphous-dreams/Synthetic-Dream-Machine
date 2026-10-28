@@ -169,4 +169,26 @@ describe.skipIf(!!wikiSkip)(`glass port ordered races${skipNote}`, () => {
     expect(g.text("Open")).toBe("two");
     expect(g.text("Shut")).toBeUndefined();
   });
+
+  it("a successor adaptor resends an unsettled write under its txId once; CONTROL an adopted write settles", async () => {
+    const g = await glass();
+    g.snapshot("first", 1, 1, [{ title: "Page", fields: { text: "base" }, seq: 1 }]);
+    await g.flush();
+    g.wiki.setTiddler({ title: "Page", text: "local" });
+    await g.flush();
+    const [first] = g.adaptor.pendingWrites();
+    expect(first?.title).toBe("Page");
+    g.adaptor.close();
+    const sent: any[] = [];
+    const listeners = new Set<(msg: any) => void>();
+    const next = makeGlassPortAdaptor({ wiki: g.wiki.wiki, Tiddler: g.wiki.$tw.Tiddler,
+      transport: { send(msg) { sent.push(msg); }, onMessage(listener) { listeners.add(listener); return () => listeners.delete(listener); } },
+      portId: "q", wikiUri: "wiki", actor: "me", width: "skinny", mintTx: () => "unused", adopt: g.adaptor.pendingWrites() });
+    const resent = sent.filter(msg => msg.type === "port:write");
+    expect(resent).toHaveLength(1);
+    expect(resent[0]).toMatchObject({ portId: "q", txId: first!.txId });
+    for (const listener of listeners) listener({ type: "port:written", portId: "q", txId: first!.txId, status: "applied", applied: ["Page"] });
+    expect(next.pendingWrites()).toEqual([]);
+    expect(g.text("Page")).toBe("local");
+  });
 });

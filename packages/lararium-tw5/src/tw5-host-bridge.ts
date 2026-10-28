@@ -1,3 +1,4 @@
+import { MIRROR_TOKEN } from "./glass-token.js";
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 
 import type { TW5Instance } from "./types/tiddlywiki.js";
@@ -432,7 +433,7 @@ function configureIslandRuntime(instance: TW5Instance, engineCid?: string): void
 
 export async function prepareHostBootInstance(
   coreBlob?: TW5CoreBootBlob,
-  options?: { glass?: true },
+  mirrorToken?: symbol,
 ): Promise<{ instance: TW5Instance; isBrowser: boolean; release?: () => void }> {
   const isBrowserMain = typeof window !== "undefined" && typeof document !== "undefined";
   // Distinguish a browser Worker from a Node worker_thread by a POSITIVE browser signal:
@@ -443,7 +444,7 @@ export async function prepareHostBootInstance(
   const isBrowserWorker = !isBrowserMain &&
     typeof (globalThis as Record<string, unknown>)["WorkerGlobalScope"] !== "undefined";
 
-  if (isBrowserMain && !options?.glass) {
+  if (isBrowserMain && mirrorToken !== MIRROR_TOKEN) {
     // §9 sovereignty law: TW5 SHALL NOT instantiate on the main thread.
     // Every TW5Engine lives inside a sovereign Worker. Boot via browser-wiki-worker.ts only.
     throw new Error("TW5Engine: sovereignty violation — TW5 SHALL NOT instantiate on the main thread (§9). Boot TW5 in a Worker only.");
