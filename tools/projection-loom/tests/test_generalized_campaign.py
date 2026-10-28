@@ -75,3 +75,63 @@ def test_actual_zero_typed_fixture_matrix_is_live(tmp_path):
     assert result["passed"] and len(result["cohorts"])==7
     assert all(x["native_valid"]>0 for x in result["cohorts"].values())
     assert (tmp_path/"zero"/"IBZ"/"finalists").is_dir()
+
+def test_operational_error_cannot_replay_as_success(tmp_path, monkeypatch):
+    from projection_loom import generalized_campaign as campaign
+
+    def error_receipt(item, cameras, alpha, out):
+        return {"id": item["id"], "parent": item["parent"],
+                "emitter": item["emitter"],
+                "program": [n.as_dict() for n in item["program"].nodes],
+                "program_sha256": item["program"].identity,
+                "state": "operational-error", "reason": "injected CAD outage",
+                "metrics": {}}
+
+    monkeypatch.setattr(campaign, "evaluate", error_receipt)
+    root = fixture(tmp_path)
+    out = tmp_path / "broken"
+    with pytest.raises(RuntimeError, match="Operational errors"):
+        run_cohort(root, ("brutalist",), out, epochs=1, offspring=1,
+                   exact_budget=1, finalists=1)
+    summary = json.loads((out / "summary.json").read_text())
+    assert summary["status"] == "failed"
+    assert summary["operational_errors"] == 1
+    assert json.loads((out / "session.json").read_text())["status"] == "failed"
+    with pytest.raises(RuntimeError, match="cannot replay as success"):
+        run_cohort(root, ("brutalist",), out, epochs=1, offspring=1,
+                   exact_budget=1, finalists=1)
+
+
+def test_successful_summary_refuses_missing_or_tampered_receipts(tmp_path):
+    root = fixture(tmp_path)
+    out = tmp_path / "complete"
+    opts = dict(epochs=1, offspring=1, exact_budget=1, finalists=1)
+    first = run_cohort(root, ("brutalist",), out, **opts)
+    assert first["status"] == "completed"
+    assert run_cohort(root, ("brutalist",), out, **opts) == first
+    receipt = out / "receipts" / "e00c00.json"
+    original = receipt.read_text()
+    receipt.write_text(original.replace('"native-valid"', '"operational-error"'))
+    with pytest.raises(ValueError, match="missing or inconsistent"):
+        run_cohort(root, ("brutalist",), out, **opts)
+    receipt.write_text(original)
+    (out / "epoch_000.json").unlink()
+    with pytest.raises(FileNotFoundError):
+        run_cohort(root, ("brutalist",), out, **opts)
+
+
+def test_receipt_publication_refuses_competing_writers(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    from projection_loom.generalized_campaign import save_once
+    target = tmp_path / "immutable.json"
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = list(pool.map(lambda _: save_once(target, {"a": 1}), range(32)))
+    assert all(value is None for value in results)
+    assert json.loads(target.read_text()) == {"a": 1}
+    with pytest.raises(ValueError, match="different immutable receipt"):
+        save_once(target, {"a": 2})
+    pending = tmp_path / ".immutable.json.pending-abandoned"
+    pending.write_text("interrupted")
+    assert json.loads(target.read_text()) == {"a": 1}
+    assert not list(tmp_path.glob(".immutable.json.pending-*")) == []
+    assert not list(tmp_path.glob("immutable.json.pending-*"))

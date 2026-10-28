@@ -8,6 +8,8 @@ from pathlib import Path
 from dataclasses import replace
 from PIL import Image
 import json
+import os
+import tempfile
 import numpy as np
 
 from .intent_seed import SeedBundle, IntentContract, GrowthContext
@@ -19,15 +21,33 @@ from .intent_evolution import (QualityArchive, ScoredCandidate, structural_descr
 from .fractal_ooda_ha import OODAHAJournal
 from .provenance_encoding import canonical_json_sha256
 
-def save_once(path,payload):
-    path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
-    content=json.dumps(payload,sort_keys=True,indent=2,allow_nan=False)+"\n"
+def save_once(path, payload):
+    """Publish one immutable JSON receipt without replacing competing writers.
+
+    Unique scratch files and hard-link publication make the final name atomic:
+    a competing writer can create it first, but cannot have it overwritten.
+    A crash may leave a .pending-* scratch file, never a partial final receipt.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    content = json.dumps(payload, sort_keys=True, indent=2, allow_nan=False) + "\n"
     if path.exists():
-        if path.read_text(encoding="utf8")!=content:
+        if path.read_text(encoding="utf8") != content:
             raise ValueError("Replay collides with a different immutable receipt")
         return
-    tmp=path.with_name(path.name+".pending")
-    tmp.write_text(content,encoding="utf8");tmp.replace(path)
+    fd, pending = tempfile.mkstemp(prefix="." + path.name + ".pending-", dir=path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf8") as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        try:
+            os.link(pending, path)
+        except FileExistsError:
+            if path.read_text(encoding="utf8") != content:
+                raise ValueError("Replay collides with a different immutable receipt")
+    finally:
+        Path(pending).unlink(missing_ok=True)
 
 
 def initial_program(adapters):
@@ -122,14 +142,83 @@ def evaluate(item,cameras,alpha,out):
                       "parts":audit["parts"],"joints":audit["joints"]}}
 
 
-def restore_archive(epoch_file,archive):
-    rows=json.loads(Path(epoch_file).read_text(encoding="utf8"))
+def _read_epoch(epoch_file):
+    """Inspect the immutable candidate frontier, not only its elite survivors."""
+    epoch_file = Path(epoch_file)
+    record = json.loads(epoch_file.read_text(encoding="utf8"))
+    if record.get("schema") != "projection-loom/developmental-epoch":
+        raise ValueError("Invalid developmental epoch receipt")
+    rows = record.get("candidates")
+    if not isinstance(rows, list) or record.get("attempted") != len(rows):
+        raise ValueError("Incomplete developmental epoch receipt")
+    ids = set()
+    for row in rows:
+        if row.get("id") in ids or not isinstance(row.get("id"), str):
+            raise ValueError("Repeated or missing candidate identity")
+        ids.add(row["id"])
+        state = row.get("state")
+        if state not in ("native-valid", "native-rejected", "operational-error"):
+            raise ValueError("Unknown candidate receipt state")
+        receipt = epoch_file.parent / "receipts" / (row["id"] + ".json")
+        if not receipt.is_file() or json.loads(receipt.read_text(encoding="utf8")) != row:
+            raise ValueError("Candidate receipt missing or inconsistent with epoch")
+        if state == "operational-error":
+            raise RuntimeError("Replayed epoch contains an operational error")
+    if (record.get("valid") != sum(r["state"] == "native-valid" for r in rows)
+            or record.get("rejected") != sum(r["state"] == "native-rejected" for r in rows)):
+        raise ValueError("Epoch counts disagree with candidate receipts")
+    return record
+
+
+def restore_archive(epoch_file, archive):
+    rows = _read_epoch(epoch_file)
     for row in rows["candidates"]:
-        if row["state"]=="native-valid":
-            program=GrowthProgram.from_dict({"nodes":row["program"]})
-            archive.consider(ScoredCandidate(row["id"],program,True,
-                row["metrics"],structural_descriptor(program),row["parent"]))
+        if row["state"] == "native-valid":
+            program = GrowthProgram.from_dict({"nodes": row["program"]})
+            if program.identity != row["program_sha256"]:
+                raise ValueError("Replayed candidate's program digest changed")
+            archive.consider(ScoredCandidate(row["id"], program, True,
+                row["metrics"], structural_descriptor(program), row["parent"]))
     return rows
+
+
+def _completed_summary(out, manifest, contract):
+    """A summary is only a success if its supporting immutable frontier agrees."""
+    out = Path(out)
+    summary = json.loads((out / "summary.json").read_text(encoding="utf8"))
+    if summary.get("status") != "completed" or summary.get("operational_errors") != 0:
+        raise RuntimeError("Failed or incomplete campaign cannot replay as success")
+    if (summary.get("schema") != "projection-loom/developmental-campaign-summary"
+            or summary.get("run_id") != manifest["run_id"]
+            or summary.get("epochs") != manifest["epochs"]
+            or summary.get("seeds") != manifest["types"]
+            or summary.get("source_authority") != manifest["source_camera_authority"]):
+        raise ValueError("Summary identity does not match preregistration")
+    records = []
+    for epoch in range(manifest["epochs"]):
+        record = _read_epoch(out / f"epoch_{epoch:03d}.json")
+        if record.get("epoch") != epoch:
+            raise ValueError("Epoch sequence disagrees with preregistration")
+        records.append(record)
+    if (summary.get("native_attempts") != sum(r["attempted"] for r in records)
+            or summary.get("native_valid") != sum(r["valid"] for r in records)
+            or summary.get("native_rejected") != sum(r["rejected"] for r in records)
+            or summary.get("proposals") != sum(r["proposed"] for r in records)):
+        raise ValueError("Completed summary counters disagree with immutable epochs")
+    journal = OODAHAJournal(out / "session.json", identity={
+        "location": contract.location,
+        "score_state": manifest["source_camera_authority"],
+        "run": manifest["run_id"]}, initial={}, autonomy=1.)
+    if journal.data.get("status") != "completed":
+        raise RuntimeError("Campaign journal is not completed")
+    for finalist in summary.get("finalists", []):
+        path = out / "finalists" / (finalist["id"] + ".json")
+        if not path.is_file():
+            raise ValueError("Finalist evidence missing from completed run")
+        witness = json.loads(path.read_text(encoding="utf8"))
+        if witness.get("id") != finalist["id"] or witness.get("full_source") != finalist["full_source"]:
+            raise ValueError("Finalist summary and witness disagree")
+    return summary
 
 
 def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
@@ -161,7 +250,7 @@ def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
         "source_camera_authority":"provisional" if "image-group" in types else "none"}
     save_once(out/"pre_registration.json",manifest)
     if (out/"summary.json").exists():
-        return json.loads((out/"summary.json").read_text(encoding="utf8"))
+        return _completed_summary(out, manifest, contract)
     journal=OODAHAJournal(out/"session.json",identity={
         "location":contract.location,"score_state":manifest["source_camera_authority"],
         "run":context.run_id},initial={},autonomy=1.)
@@ -239,14 +328,15 @@ def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
              "native_attempts":sum(x["attempted"] for x in all_epochs),
              "native_valid":sum(x["valid"] for x in all_epochs),
              "native_rejected":sum(x["rejected"] for x in all_epochs),
-             "operational_errors":len(errors),"niches":archive.receipt()["niches"],
+             "operational_errors":len(errors),"status":"failed" if errors else "completed",
+             "niches":archive.receipt()["niches"],
              "finalists":winners,"auto_promotion":False,
              "source_authority":manifest["source_camera_authority"]}
     save_once(out/"summary.json",summary)
     journal.transition("location","aftermath",{
         "valid":summary["native_valid"],"errors":len(errors)})
     journal.transition("location","closed")
-    journal.data["status"]="completed";journal.save()
+    journal.data["status"]="failed" if errors else "completed";journal.save()
     if errors:raise RuntimeError(f"Operational errors: {len(errors)}")
     return summary
 
