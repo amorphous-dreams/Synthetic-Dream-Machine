@@ -75,7 +75,7 @@ def submit_control(session_path, action, *, actor='operator', **parameters):
     if action == 'choose' and (set(parameters) != {'proposal_id'} or not parameters['proposal_id']):
         raise ValueError('Choose requires a proposal_id')
     if action == 'prefer-emitter' and (set(parameters) != {'emitter'} or
-                                      parameters['emitter'] not in ('sobol', 'local', 'topology')):
+                                      parameters['emitter'] not in ('sobol', 'local', 'topology', 'initial', 'mutation', 'crossover')):
         raise ValueError('Select one known proposal emitter')
     if action in ('pause', 'resume', 'review', 'approve-plan') and parameters:
         raise ValueError(f'{action} takes no parameters')

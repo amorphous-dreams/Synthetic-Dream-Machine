@@ -129,7 +129,7 @@ class QualityArchive:
                            for x in self.parents()]}
 
 
-def fair_auditions(candidates,budget):
+def fair_auditions(candidates,budget,*,preferred_emitter=None):
     """Guarantee each represented structural emitter one possible exact seat."""
     if type(budget) is not int or budget<0:
         raise ValueError("Invalid audition budget")
@@ -140,6 +140,13 @@ def fair_auditions(candidates,budget):
     for group in grouped.values():
         group.sort(key=lambda x:(x.get("preview_loss",0),x["id"]))
     order=sorted(grouped)
+    if preferred_emitter is not None:
+        if preferred_emitter not in ('initial','mutation','crossover','topology',
+                                     'sobol','local'):
+            raise ValueError("Unknown structural emitter preference")
+        if preferred_emitter in grouped:
+            order.remove(preferred_emitter)
+            order.insert(0,preferred_emitter)
     result=[]
     while len(result)<budget and any(grouped.values()):
         for emitter in order:

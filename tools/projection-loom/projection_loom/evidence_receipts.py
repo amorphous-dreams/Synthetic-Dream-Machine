@@ -158,7 +158,7 @@ class OperatorPreferenceReceipt:
             valid = (set(args) == {'proposal_id'} and
                      isinstance(args['proposal_id'], str) and bool(args['proposal_id']))
         elif action == 'prefer-emitter':
-            valid = set(args) == {'emitter'} and args['emitter'] in ('sobol', 'local', 'topology')
+            valid = set(args) == {'emitter'} and args['emitter'] in ('sobol', 'local', 'topology', 'initial', 'mutation', 'crossover')
         elif action == 'set-autonomy':
             value = args.get('autonomy')
             valid = (set(args) == {'autonomy'} and type(value) in (int, float)

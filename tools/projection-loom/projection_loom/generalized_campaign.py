@@ -18,7 +18,7 @@ from .developmental import GrowthNode, GrowthProgram, compile_growth, mutate_gro
 from .intent_evolution import (QualityArchive, ScoredCandidate, structural_descriptor,
                                fair_auditions, fixed_inspection_cameras,
                                observe_candidate, multi_fidelity_audit)
-from .fractal_ooda_ha import OODAHAJournal
+from .fractal_ooda_ha import OODAHAJournal, single_runner
 from .provenance_encoding import canonical_json_sha256
 
 def save_once(path, payload):
@@ -329,7 +329,7 @@ def _completed_summary(out, manifest, contract):
     return summary
 
 
-def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
+def _run_cohort_locked(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
                exact_budget=4,finalists=2,seed=41,source_policy="auto"):
     """Run any typed seed bundle without naming experiment fixtures.
 
@@ -385,17 +385,24 @@ def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
     all_epochs=[]
     errors=[]
     for epoch in range(epochs):
+        if not journal.poll():
+            raise RuntimeError("Operator pause or review must resolve before native audition")
         output=out/f"epoch_{epoch:03d}.json"
         if output.exists():
             all_epochs.append(restore_archive(output,archive));continue
         eid=f"location/e{epoch:03d}"
+        held=journal.data["loops"].get(eid)
+        preferred=(held["receipts"]["decide"].get("operator_preferred_emitter")
+                   if held and "decide" in held["receipts"]
+                   else journal.data["policy"].get("preferred_emitter"))
         journal.begin(eid,parent="location",scope="epoch",
                       evidence={"epoch":epoch,"source":run_id},parent_phase="act")
         journal.transition(eid,"orient",{"source_digest":seeds.identity})
-        journal.transition(eid,"decide",{"exact_budget":exact_budget})
+        journal.transition(eid,"decide",{"exact_budget":exact_budget,
+                                        "operator_preferred_emitter":preferred})
         journal.transition(eid,"act",{"instruction":"construct, audit, score"})
         offered=proposals(initial,archive,context,epoch,offspring)
-        seats=fair_auditions(offered,exact_budget)
+        seats=fair_auditions(offered,exact_budget,preferred_emitter=preferred)
         scored=[]
         for item in seats:
             cid=eid+"/"+item["id"]
@@ -476,3 +483,20 @@ def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
     return summary
 
 
+
+
+def run_cohort(adapters, contract: IntentContract, out, *, epochs=3, offspring=4,
+               exact_budget=4, finalists=2, seed=41, source_policy="auto"):
+    """Use the existing single-runner OODA-HA checkpoint for every replay.
+
+    Operator control files may safely request pause/resume or emitter
+    preference at epoch boundaries. Native, source and replay gates remain
+    independent of that soft choice.
+    """
+    out=Path(out)
+    out.mkdir(parents=True,exist_ok=True)
+    with single_runner(out/"session.json"):
+        return _run_cohort_locked(
+            adapters,contract,out,epochs=epochs,offspring=offspring,
+            exact_budget=exact_budget,finalists=finalists,seed=seed,
+            source_policy=source_policy)
