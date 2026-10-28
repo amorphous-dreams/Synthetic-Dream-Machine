@@ -520,7 +520,7 @@ This meme stands ''PROPOSED'' (crucible-before-binding). The stress-swarm ran; t
 folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry keys:
 
 * ''The FS-limit is the substrate's nature'' (kue, security spirit) — a leaked vessel key reads all history it held; the only forward lever is epoch group-key rotation (BeeKEM, future chunks only). Puncturable encryption does NOT retire it (single-holder; refuted by the neg-entropy swarm for a replicated mesh).
-* ''The blast-radius kue is answered by per-vessel-key + delegation + revocation'' — already our lineage (Keyhive/Beelay; p2panda-auth converged independently), NOT by threshold: threshold signing needs a synchronous quorum per signature, which "no global now" forbids. ''Threshold fits only the rare ROOT ceremony'' (Shamir-of-root for admit/rotate/recover, transient reassembly; swaps to FROST/DKG later).
+* ''The blast-radius kue is answered by per-vessel-key + delegation + revocation'' — already our lineage (Keyhive/Beelay; p2panda-auth converged independently), NOT by threshold. CORRECTION (neg-entropy swarm 2026-06-23): the earlier "threshold pays the kue" was wrong — threshold signing needs a synchronous quorum per signature, which "no global now" forbids. ''Threshold fits only the rare ROOT ceremony'' (Shamir-of-root for admit/rotate/recover, transient reassembly; swaps to FROST/DKG later).
 * ''The identity MODEL — RULED (operator, 2026-06-24): Goblins/OCapN capability-is-identity + petnames'' (see #capability-and-petnames). The capability IS the identity; petnames ride the `lar:` l-space regions (stable `ha.ka.ba` / unstable `t1.t2.t3`, ± authority chunk). ''KERI pre-rotation is retained as a sub-lever'' — not the base model, but the tool for rotating the place's //secret root// (the hearth's private face) in the rare root ceremony; it composes under capability-is-identity (rotate the root, keep the capabilities). did:peer's pairwise-root idea folds into unstable petnames.
 * ''Circle vs scale'' — RULED (operator 2026-06-24): no numbered planes survive (nameless `#has`-stacks replace plane-indices, #five-scale); Circles stay orthogonal to the group-scale, never a rung.
 * ''Registry-as-island'' — keep each registry a causal island; resist a global registry re-growing (the web2 smell).
@@ -555,6 +555,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PL7o5TbwE0JtcyilXR1pOu1fP8yjMhn7tx1EKRoKmb0
+<<^ code="&#x0003;">>ni:///sha-256;MDsWRDpycxsavRinMNM2iBemHFuOMbijBe3YjUrODfY
 
 <<^ code="&#x0004;" -> to="?">>
