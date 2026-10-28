@@ -5,13 +5,21 @@ import { LocalWaitExpired, UdsUnreachable, udsSocketPath } from "./local-connect
 
 export class SessionRefused extends Error {
   override readonly name = "SessionRefused";
-  constructor(readonly refusal: string) { super(`local session refused: ${refusal}`); }
+  constructor(readonly refusal: string, readonly closed = false) { super(`local session refused: ${refusal}${closed ? " (the session closed)" : ""}`); }
 }
 
 export interface LocalSession {
   call(verb: string, args: Record<string, unknown>, opts?: { requestId?: string; effectKey?: string; timeoutMs?: number }): Promise<Record<string, unknown>>;
   receipt(requestId: string): Promise<SessionReceipt>;
   cancel(requestId: string): Promise<SessionReceipt>;
+  /**
+   * Switch THIS session to the face `target` hints (`h<N>`), in place: the vessel runs its five-step fence and every
+   * later call speaks under the face it answers. A switch the vessel could not commit closes the session, and the
+   * refusal reads `closed`; the caller opens afresh.
+   */
+  switch(target: string): Promise<{ readonly outcome: "switched" | "unchanged"; readonly faceRef: string; readonly generation: number }>;
+  /** The face this session wears now, as the vessel answered it. */
+  readonly faceRef: string;
   close(): Promise<void>;
 }
 
@@ -42,7 +50,7 @@ export async function openLocalSession(opts: { faceRef: string; hand?: Hand; dat
       const waiter = waiters?.shift();
       if (id !== undefined && waiters?.length === 0) pending.delete(id);
       if (!waiter) continue;
-      if (answer.kind === "session:refused") waiter.reject(new SessionRefused(String(answer.refusal)));
+      if (answer.kind === "session:refused") waiter.reject(new SessionRefused(String(answer.refusal), answer.closed === true));
       else waiter.resolve(answer);
     }
   });
@@ -87,6 +95,15 @@ export async function openLocalSession(opts: { faceRef: string; hand?: Hand; dat
       return answer;
     },
     receipt: (requestId) => query("session:receipt", requestId),
+    async switch(target) {
+      const at = bound();
+      const answer = await send({ op: "session:switch", ...at, expectedGeneration: at.generation, target }, newRequestId());
+      if (answer.kind !== "session:switch-result" || typeof answer.generation !== "number" || typeof answer.faceRef !== "string" ||
+          (answer.outcome !== "switched" && answer.outcome !== "unchanged")) throw new Error("malformed switch result from local channel");
+      envelope = { ...at, generation: answer.generation, faceRef: answer.faceRef };
+      return { outcome: answer.outcome, faceRef: answer.faceRef, generation: answer.generation };
+    },
+    get faceRef() { return bound().faceRef; },
     cancel: (requestId) => query("session:cancel", requestId),
     async close() {
       if (closed) return;
