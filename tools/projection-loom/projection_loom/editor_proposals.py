@@ -30,6 +30,14 @@ def seed_editor_ground(declaration):
                                  "attributes": {"program_sha256": canonical_json_sha256(
                                      row["growth_program"])}}}
         ground, _ = ground.apply(operation)
+        translation = row.get("translation", (0, 0, 0))
+        if any(float(x) != 0 for x in translation):
+            matrix = list(IDENTITY)
+            matrix[3], matrix[7], matrix[11] = [float(x) for x in translation]
+            ground, _ = ground.apply({
+                "kind": "transform", "actor": "loom-authored-proposal",
+                "frontier": list(ground.frontier), "target": row["entity_id"],
+                "payload": {"matrix": matrix, "frame": "local3d"}})
     return ground
 
 
@@ -56,9 +64,22 @@ def validate_proposal(proposal, original, ground, bundle):
         raise ValueError("Authored declaration differs from witnessed scene")
     if ground.location != original["location"]:
         raise ValueError("Editor and ground location differ")
-    expected = {x["entity_id"] for x in original["assemblies"]}
-    if expected != set(ground.snapshot()["entities"]):
+    rows = {x["entity_id"]: x for x in original["assemblies"]}
+    expected = set(rows)
+    entities = ground.snapshot()["entities"]
+    if expected != set(entities):
         raise ValueError("Editor base has mismatched semantic identity inventory")
+    for entity_id, row in rows.items():
+        observed = entities[entity_id]
+        if (observed["kind"] != "construct"
+                or observed["attributes"].get("program_sha256")
+                != canonical_json_sha256(row["growth_program"])):
+            raise ValueError("Editor ground source program identity differs from native declaration")
+        matrix = list(IDENTITY)
+        matrix[3], matrix[7], matrix[11] = [
+            float(x) for x in row.get("translation", (0, 0, 0))]
+        if observed["matrix"] != matrix:
+            raise ValueError("Editor ground transform differs from the native declaration")
     for edit in proposal["edits"]:
         if set(edit) != {"entity_id", "kind", "delta"} or edit["kind"] != "translate":
             raise ValueError("Only rigid assembly translation is currently reversible")

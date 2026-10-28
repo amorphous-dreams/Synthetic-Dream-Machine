@@ -82,5 +82,38 @@ def test_editor_rejects_stale_conflicting_frontier(tmp_path):
     ground, _ = ground.apply({"kind": "transform", "actor": "other-editor",
                              "target": "east", "frontier": list(ground.frontier),
                              "payload": {"matrix": matrix, "frame": "local3d"}})
-    with pytest.raises(ValueError, match="Conflicting concurrent|Stale semantic revision"):
+    with pytest.raises(ValueError, match="Conflicting concurrent|Stale semantic revision|ground transform differs"):
         apply_proposal(original, ground, source, first, tmp_path / "conflict")
+
+
+
+def test_editor_ground_rejects_same_names_with_different_native_program(tmp_path):
+    import json
+    from projection_loom.relational_ground import RelationalGround
+    original = declared()
+    folder = tmp_path / "native"
+    manifest = package_scene(original, folder)
+    mismatched = json.loads(json.dumps(original))
+    mismatched["assemblies"][0]["growth_program"]["nodes"][0]["size"][0] += 1
+    wrong_ground = seed_editor_ground(mismatched)
+    with pytest.raises(ValueError, match="source program identity"):
+        apply_proposal(original, wrong_ground, folder,
+                       proposal(manifest, wrong_ground), tmp_path / "bad")
+    assert not (tmp_path / "bad").exists()
+
+
+def test_nonzero_initial_placement_stays_bound_to_native_source(tmp_path):
+    original = declared()
+    original["assemblies"][0]["translation"] = [3, 4, 0]
+    folder = tmp_path / "original"
+    manifest = package_scene(original, folder)
+    ground = seed_editor_ground(original)
+    assert ground.snapshot()["entities"]["east"]["matrix"][3] == 3
+    assert ground.snapshot()["entities"]["east"]["matrix"][7] == 4
+    outcome = apply_proposal(original, ground, folder,
+                             proposal(manifest, ground, delta=(2, 0, 0)),
+                             tmp_path / "next")
+    from projection_loom.relational_ground import RelationalGround
+    replayed = RelationalGround.load(tmp_path / "next" / "ground.json")
+    assert replayed.snapshot()["entities"]["east"]["matrix"][3] == 5
+    assert outcome["invalidation_plan"]["native_reaudited"] == 1
