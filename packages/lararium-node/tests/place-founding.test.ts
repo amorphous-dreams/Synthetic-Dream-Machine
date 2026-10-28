@@ -68,7 +68,6 @@ describe("place founding", () => {
       const dir = larIdentityDir(); const kel = readdirSync(dir).find((n) => n.startsWith(".vessel-kel"))!;
       const path = join(dir, kel); const good = readFileSync(path);
       for (const [bad, named] of [
-        [[{ t: "icp", k: ["a".repeat(64)], sig: "a".repeat(128) }], "old-shape"],
         [[{ ...JSON.parse(good.toString())[0], next: undefined }], "unarmed"],
         [[mintPlaceInception({ signerSeed: new Uint8Array(32).fill(9), coldVerifyingKey: coldKey }).event], "names-another-key"],
       ] as const) {

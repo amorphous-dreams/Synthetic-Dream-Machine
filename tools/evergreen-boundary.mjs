@@ -11,6 +11,7 @@
 //   narration  — a comment that narrates history (used to, previously, legacy, the old, back-compat, …) or names the
 //                lane, wave or slice that built its line (`Wave C`, `slice 2`, `this lane`); the `#` comments of the
 //                workflows, the Dockerfile and the root compose files join this corpus.
+//   old-shape  — source identifiers, literal readings, or comments that recognize a shape from before a format cut.
 // It reads lines, not a syntax tree, so a sink split across lines escapes it; false green is the tolerable side.
 //
 // FOUR MORE CLASSES hold the places a past shape lingers after its code burns (each over its own corpus):
@@ -35,16 +36,39 @@
 // ceiling fails and names every open finding of that rule; a rule under it passes and asks for the ceiling to come
 // down; a corpus that reads no file fails, since a zero from no reading proves nothing.
 //
-// Usage: node tools/evergreen-boundary.mjs [--list] [--root <dir> --ceilings version=N,clock=N,narration=N,retired-test=N,upgrade-delete=N,canon-history=N,canon-dated-history=N --no-exceptions]
+// Usage: node tools/evergreen-boundary.mjs [--list] [--root <dir> --ceilings version=N,clock=N,narration=N,old-shape=N,retired-test=N,upgrade-delete=N,canon-history=N,canon-dated-history=N --no-exceptions]
 import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const RULES = ["version", "clock", "narration", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history"];
+export const RULES = ["version", "clock", "narration", "old-shape", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history"];
 /** Today's measured open debt, per rule. RATCHET: each number may only ever come DOWN. */
-export const CEILINGS = { version: 58, clock: 56, narration: 186, "retired-test": 10, "upgrade-delete": 0, "canon-history": 99, "canon-dated-history": 1 };
+export const CEILINGS = { version: 58, clock: 56, narration: 181, "old-shape": 0, "retired-test": 6, "upgrade-delete": 0, "canon-history": 99, "canon-dated-history": 1 };
 export const EXCEPTIONS = [
+  { rule: "old-shape", file: "packages/lararium-browser/src/browser-keyhive-archive.ts", match: "export class LegacyBrowserArchiveRefused", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-browser/src/browser-keyhive-archive.ts", match: "export async function refuseLegacyBrowserArchive", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-browser/src/browser-keyhive-archive.ts", match: "if (row) throw new LegacyBrowserArchiveRefused", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-browser/src/browser-keyhive-archive.ts", match: "export async function oldShapeVeilRow", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-browser/src/open-browser-vessel.ts", match: "loadBrowserVeilArchive, oldShapeVeilRow", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-browser/src/open-browser-vessel.ts", match: "await oldShapeVeilRow", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-browser/src/open-browser-vessel.ts", match: "await refuseLegacyBrowserArchive", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-keyhive/src/boot-daemon-keyhive.ts", match: "export class LegacyFaceSignatureRefused", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-keyhive/src/boot-daemon-keyhive.ts", match: "throw new LegacyFaceSignatureRefused", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-keyhive/src/index.ts", match: "FacelessKeyhiveRefused, LegacyFaceSignatureRefused", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-mesh/src/vessel-kel.ts", match: '"old-shape-inception"', reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-node/src/commands/init.ts", match: "import { refuseLegacyPlaceBytes }", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-node/src/commands/init.ts", match: "refuseLegacyPlaceBytes();", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-node/src/index.ts", match: "export { LegacyPlaceBytesRefused, refuseLegacyPlaceBytes }", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-node/src/legacy-place-bytes.ts", match: "export class LegacyPlaceBytesRefused", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-node/src/legacy-place-bytes.ts", match: "export function refuseLegacyPlaceBytes", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-node/src/legacy-place-bytes.ts", match: "throw new LegacyPlaceBytesRefused(\"place-archive\")", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-node/src/legacy-place-bytes.ts", match: "throw new LegacyPlaceBytesRefused(\"vessel-card\")", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-node/src/node-vessel-identity.ts", match: 'readonly reading: "absent" | "malformed" | "old-shape"', reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-node/src/node-vessel-identity.ts", match: 'throw new VesselInceptionRefused(kelFile, "old-shape")', reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-node/src/node-vessel-identity.ts", match: 'reading.refusal === "old-shape-inception"', reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-node/src/open-node-vessel.ts", match: "import { refuseLegacyPlaceBytes }", reason: "owner PR #108 burns it" },
+  { rule: "old-shape", file: "packages/lararium-node/src/open-node-vessel.ts", match: "refuseLegacyPlaceBytes();", reason: "owner PR #108 burns it" },
   { rule: "version", file: "packages/lararium-mesh/src/domains.ts", match: "const frozen =", reason: "The frozen builder preserves live signing domain bytes under the domain registry witness." },
   { rule: "version", file: "packages/lararium-browser/src/browser-vessel-identity.ts", match: "const IDB_VERSION", reason: "IndexedDB's open call takes a numeric version argument; the browser API names it." },
   { rule: "version", file: "packages/lares-cli/src/copilot-wire.ts", match: "interface HooksFile { version?: number;", reason: "The Copilot CLI's hooks file carries its own version key; the upstream tool owns that schema." },
@@ -80,6 +104,9 @@ const VERSION_CONST = /\b[A-Z][A-Z0-9_]*VERSION\s*=\s*(?:0x[\da-fA-F]+|\d)/;
 const CLOCK = /(?:\bDate\.now\s*\(\s*\)|\bnew\s+Date\s*\()/;
 const FIELD = /(?:\b[A-Za-z_$][\w$]*(?:At|Time|time|timestamp|Timestamp|ts|stamp|Stamp|date|Date)|\bts|["'][\w-]*(?:-at|-time|-ts|-stamp|-date|At|Time|timestamp|Timestamp)["'])\s*:/;
 const ID_NAME = /\b(?:[A-Za-z_$][\w$]*)?(?:id|Id|ID|nonce|Nonce|epoch|Epoch)\s*=(?!=)/;
+const OLD_SHAPE_NAME = /\b(?:Legacy\w*Refus\w*|OldShape\w*|oldShape\w*|refuseLegacy\w*)\b/;
+const OLD_SHAPE_LITERAL = /^["']old-shape(?:-inception)?["']$/;
+const OLD_SHAPE_COMMENT = /retired (?:spelling|shape|layout|name)|falls? back to the retired|tolerates every grammar/i;
 
 // `statement` has its string literals blanked, so a clock named inside a string reads nothing; `keyed` keeps them,
 // so a quoted record key (`"requested-at":`) still names its field.
@@ -125,6 +152,7 @@ export function scanText(rel, text) {
     if (/\.(?:sh|py)$/.test(rel)) { if (clockSink(code)) add(finding("clock")); continue; }
     const literals = code.match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/g) ?? [];
     const names = code.replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/g, "\"\"");
+    if (OLD_SHAPE_NAME.test(names) || literals.some(literal => OLD_SHAPE_LITERAL.test(literal)) || OLD_SHAPE_COMMENT.test(comments)) add(finding("old-shape"));
     if (/\bschemaVersion\b/.test(names) || /["']schemaVersion["']\s*:/.test(code) || /\[\s*["']schemaVersion["']\s*\]/.test(code) || /\b(?:version|[A-Za-z_$][\w$]*Version)\s*\??\s*:\s*(?:\d[\d_]*\b|number\b)/.test(names) || VERSION_CONST.test(names) || literals.some(literal => FORMAT.test(literal.slice(1, -1)))) add(finding("version"));
     const clockCode = code.replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, "\"\"");
     if (clockSink(`${carry.clock} ${clockCode}`, `${carry.keyed} ${code}`)) add(finding("clock"));
@@ -246,6 +274,7 @@ function isUpgradeFile(rel) { return /\.(?:ts|mts|js|mjs)$/.test(rel) && !BUILT.
 /** Live canon: a `.mem` under a bag's `api`, `mesh` or `browser` directory; `docs/` and every other directory hold record carriers. */
 function isCanonFile(rel) { return /^bags\/[^/]+\/[^/]+\/[^/]+\/(?:.*\/)?(?:api|mesh|browser)\/(?:.*\/)?[^/]+\.mem$/.test(rel) && !/\/docs\//.test(rel); }
 const CLASSES = {
+  "old-shape": { has: eligible, scan: () => [] },
   "retired-test": { has: isTestFile, scan: scanTestText },
   "upgrade-delete": { has: isUpgradeFile, scan: scanUpgradeText },
   "canon-history": { has: isCanonFile, scan: scanCanonText },

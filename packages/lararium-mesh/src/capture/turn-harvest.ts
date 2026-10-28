@@ -18,9 +18,7 @@
  *
  * FOUR ISLANDS, NOT SEVEN. A turn carries a bearing (`lares aim` / `lares yield`),
  * Voices surfacing in prose, ONE panel sigil whose named keys hold every gauge
- * (`set hud="aim" … aperture= ooda-ha= drift-ward= mode= mood= mu= stance=` — a
- * month of turns still carry the retired `focus=`/`feedback=` spellings, read the
- * same), and
+ * (`set hud="aim" … aperture= ooda-ha= drift-ward= mode= mood= mu= stance=`), and
  * whatever other sigils it fires. The panel is why this reads as four families
  * rather than one per gauge: a reader that scans for a gauge SIGIL finds none
  * and reports a turn that gauged as a turn that did not.
@@ -168,11 +166,7 @@ const KNOWN_VOICES = new Set([
 /**
  * Leading keywords a sigil island may carry.
  *
- * A CORPUS STATES ONE GRAMMAR; A READER TOLERATES EVERY GRAMMAR IT WILL MEET. `bags/` authors its
- * own contents and carries current pono alone. This harvester receives input it never authored — a
- * month of real turns, written under whatever the frame said that week — so a retired head stays
- * readable here. Refusing one would read those turns as turns that fired nothing, and that silence
- * is indistinguishable from a turn that skipped the instrument.
+ * The harvester reads the heads declared by the standing frame.
  */
 const KNOWN_KINDS = new Set([
   // ── THE SHELF'S OWN HEADS ─────────────────────────────────────────────────────────────────────
@@ -196,15 +190,8 @@ const KNOWN_KINDS = new Set([
   // ── AND THE HEADS THE SHELF DECLARES NONE FOR ─────────────────────────────────────────────────
   // `aim` and `yield` name the two words `lares` binds rather than heads of their own.
   "aim", "yield",
-  // Frame words a carrier fires that no tiddler patterns — the reader meets them and must not
-  // report a turn that spoke as a turn that said nothing.
+  // Frame words a carrier fires that no tiddler patterns declare.
   "ahu", "aka", "flows", "holds", "moves", "ranks",
-  // Instruments the frame has since set down. A CORPUS STATES ONE GRAMMAR; A READER TOLERATES EVERY
-  // GRAMMAR IT WILL MEET — a turn written under an earlier frame still harvests here.
-  "hud", "ward", "syad", "confidence",
-  // `focus`/`feedback` RETIRED by operator ruling to `aperture`/`ooda-ha` (2026-10). A month of real
-  // turns still fire the old heads — this reader tolerates both; writers/canon move to the new names.
-  "focus", "feedback",
 ]);
 
 function leadingWord(body: string): string {
@@ -387,15 +374,14 @@ export function closingPanel(h: TurnHarvest): PanelSignal | null {
 
 /**
  * Whether the turn closed a loop — the closing panel's `ooda-ha` tally reads `closed N↺` with N ≥ 1.
- * The key rides as `ooda-ha` under the current frame; a turn still carrying the retired `feedback`
- * key reads the same (the panel keeps whichever one the author fired, never both).
+ * The closing panel carries the `ooda-ha` key.
  *
  * A suspension alone does not close: `closed 0↺ -> open 1φ @◇:reason` reports a turn that ran the loop
  * and hung it, which is the honest reading the tally exists to carry.
  */
 export function aftermathClosed(h: TurnHarvest): boolean {
   const keys = closingPanel(h)?.keys ?? {};
-  const tally = keys["ooda-ha"] ?? keys["feedback"] ?? "";
+  const tally = keys["ooda-ha"] ?? "";
   const m = /closed\s+(\d+)\s*[↺↻]/.exec(tally);
   return m !== null && Number(m[1]) >= 1;
 }

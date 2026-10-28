@@ -595,7 +595,7 @@ export { mintServingKey, SK_LENGTH } from "./serving-key.js";
 export type { ServingKey } from "./serving-key.js";
 export type { TreeKey, TreeKeyOpening } from "./tree-key.js";
 // The tree key's sealed-carrier frame: the magic that names the scheme, with no version byte — see `s-envelope`.
-export { S_SEAL_MAGIC, LARK_MAGIC, S_SEAL_NONCE_LENGTH, S_SEAL_TAG_LENGTH, S_SEAL_MIN_LENGTH, readSCarrier, splitSFrame, joinSFrame } from "./s-envelope.js";
+export { S_SEAL_MAGIC, S_SEAL_NONCE_LENGTH, S_SEAL_TAG_LENGTH, S_SEAL_MIN_LENGTH, readSCarrier, splitSFrame, joinSFrame } from "./s-envelope.js";
 export type { SCarrierReading } from "./s-envelope.js";
 // SLIP-39: the paper pin's encoder, over the house's own GF(256) field ops — see `slip39`.
 export { Slip39Error, decodeShare, encodeShare, generateMnemonics, combineMnemonics, readBackMismatch } from "./slip39.js";

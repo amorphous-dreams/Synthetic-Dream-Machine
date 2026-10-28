@@ -190,7 +190,7 @@ function voiceTokens(v: VoiceSignal): MoveToken[] {
 
 /**
  * A panel: one `hud` token, the ward state its `drift-ward` value leads with, and a phase token per
- * OODA-HA glyph in its `feedback` tally.
+ * OODA-HA glyph in its `ooda-ha` tally.
  *
  * ONE FIRING, THREE READINGS. The gauges stopped being sigils of their own and became named keys, so
  * an emitter per gauge would now read one island three times and place it at one offset three times.
@@ -201,7 +201,7 @@ function panelTokens(p: PanelSignal): MoveToken[] {
   ];
   const state = wardStateForGlyph((p.keys["drift-ward"] ?? "").trim()[0] ?? null);
   if (state) out.push({ kind: "ward", token: state, axisId: `ward:${state}`, offset: p.offset });
-  const tally = p.keys["feedback"] ?? "";
+  const tally = p.keys["ooda-ha"] ?? "";
   for (const phase of OODA_HA_PHASES) {
     if (tally.includes(phase.glyph)) {
       const name = phaseForGlyph(phase.glyph);
