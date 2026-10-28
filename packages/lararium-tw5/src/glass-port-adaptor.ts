@@ -57,6 +57,7 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
   const peerListeners = new Set<(change: Change) => void>();
   const presenceListeners = new Set<(presence: Extract<PortIslandToVesselMsg, { type: "port:presence" }>) => void>();
   const refusedListeners = new Set<(result: { title: string; txId: string; reason: string }) => void>();
+  const opened = new Set<string>();
   let askNumber = 0;
   let closed = false;
   const local = (title: string) => title === "$:/StoryList" || title === "$:/HistoryList" ||
@@ -155,6 +156,9 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
           continue;
         }
         land(entry, true);
+        // A peer record arrives without the body fields a skinny port omits; an opened body loads again so the editor never loses its text.
+        if (entry.deleted) opened.delete(entry.title);
+        else if (opened.has(entry.title) && omitted.get(entry.title)?.includes("text")) void loadBody(entry.title);
       }
       transport.send({ type: "port:ack", portId, cursor: msg.cursor });
     } else if (msg.type === "port:reset") {
@@ -217,6 +221,12 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
     width: opts.width, edits: true, presence: true, maxRecordBytes: 65536, maxBatchBytes: 262144,
     ...(opts.fields ? { fields: opts.fields } : {}), ...(opts.localFilter ? { localFilter: opts.localFilter } : {}) });
   transport.send({ type: "port:presence", portId, actorKey: opts.actor, beat: 0 });
+  const loadBody = (title: string): Promise<string | undefined> => {
+    if (!omitted.get(title)?.includes("text")) return Promise.resolve(ownFields(wiki, title)?.text);
+    const askId = `${portId}:load:${++askNumber}`;
+    return new Promise(resolve => { loading.set(askId, { title, generation: generations.get(title) ?? 0, resolve });
+      transport.send({ type: "port:ask", portId, askId, kind: "load", subject: title, fields: ["text"] }); });
+  };
   return {
     resendPending() {
       for (const [txId, tx] of pending) transport.send({ type: "port:write", portId, txId,
@@ -232,12 +242,8 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
       refusedListeners.add(listener); return () => refusedListeners.delete(listener);
     },
     omittedFields(title: string) { return [...(omitted.get(title) ?? [])]; },
-    openBody(title: string): Promise<string | undefined> {
-      if (!omitted.get(title)?.includes("text")) return Promise.resolve(ownFields(wiki, title)?.text);
-      const askId = `${portId}:load:${++askNumber}`;
-      return new Promise(resolve => { loading.set(askId, { title, generation: generations.get(title) ?? 0, resolve });
-        transport.send({ type: "port:ask", portId, askId, kind: "load", subject: title, fields: ["text"] }); });
-    },
+    openBody(title: string): Promise<string | undefined> { opened.add(title); return loadBody(title); },
+    closeBody(title: string) { opened.delete(title); },
     openDraft(title: string) { return this.openBody(title); },
     postPresence(beat: number, state?: unknown) { transport.send({ type: "port:presence", portId, actorKey: opts.actor, beat, state }); },
     close() { if (closed) return; closed = true; wiki.removeEventListener("change", onChange); unsubscribe();
