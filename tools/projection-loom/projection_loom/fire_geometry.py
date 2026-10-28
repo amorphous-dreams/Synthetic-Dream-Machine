@@ -134,6 +134,40 @@ def _operations(rule, resolved, original):
     raise ValueError("Unregistered Fire implementation")
 
 
+def _fire_step_difference(expected, recorded, *, path="rule_steps"):
+    """Return first material disagreement; ignore only sub-tolerance OCC noise.
+
+    Source body bounds may drift by a few last-place decimals when a CAD
+    kernel recalculates triangulations for previews. Never coerce a string,
+    boolean, list shape or structural key. Exact operations are re-derived
+    from the typed plan and original native geometry before any replay.
+    """
+    if isinstance(expected, dict) and isinstance(recorded, dict):
+        if expected.keys() != recorded.keys():
+            return path + ".keys"
+        for key in expected:
+            diff = _fire_step_difference(expected[key], recorded[key],
+                                         path=path + "." + str(key))
+            if diff:
+                return diff
+        return None
+    if isinstance(expected, list) and isinstance(recorded, list):
+        if len(expected) != len(recorded):
+            return path + ".length"
+        for index, (a, b) in enumerate(zip(expected, recorded)):
+            diff = _fire_step_difference(a, b, path=f"{path}[{index}]")
+            if diff:
+                return diff
+        return None
+    if (type(expected) in (int, float) and type(recorded) in (int, float)
+            and math.isfinite(expected) and math.isfinite(recorded)):
+        if math.isclose(expected, recorded, rel_tol=1e-9, abs_tol=1e-7):
+            return None
+    elif type(expected) is type(recorded) and expected == recorded:
+        return None
+    return path
+
+
 def verify_native_rule_replay(plan, native_result, source_assembly):
     """Re-derive an admitted Fire construction from the typed plan.
 
@@ -151,8 +185,10 @@ def verify_native_rule_replay(plan, native_result, source_assembly):
             native_result.get("implementation")!=chosen["implementation"]):
         raise ValueError("Native Fire result relation changed from typed proposal")
     expected=_operations(chosen,plan["resolved"],source_assembly)
-    if native_result.get("rule_steps")!=expected:
-        raise ValueError("Native Fire staged operations changed from typed proposal")
+    mismatch = _fire_step_difference(expected, native_result.get("rule_steps"))
+    if mismatch is not None:
+        raise ValueError(
+            "Native Fire staged operations changed from typed proposal at " + mismatch)
     return expected
 
 

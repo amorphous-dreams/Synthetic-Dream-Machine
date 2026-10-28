@@ -170,3 +170,25 @@ def test_native_fire_rule_steps_cannot_diverge_from_its_source_plan():
     altered["relation"]="bridges"
     with __import__("pytest").raises(ValueError,match="relation changed"):
         verify_native_rule_replay(plan,altered,base)
+
+
+
+def test_fire_native_replay_tolerates_only_cad_roundoff_not_semantic_change():
+    from copy import deepcopy
+    from projection_loom.fire_geometry import verify_native_rule_replay
+    base = fixture()
+    witness = base.relation_witness(location="necrospire")
+    plan = resolve_proposal(example(witness, "bridges", "bridge-between"), witness)
+    native = audition_plan(plan, base, location="necrospire")["results"][0]
+    assert native["state"] == "native-admitted"
+    roundoff = deepcopy(native)
+    roundoff["rule_steps"][0]["start"][0] += 1e-9
+    assert verify_native_rule_replay(plan, roundoff, base) == native["rule_steps"]
+    changed = deepcopy(native)
+    changed["rule_steps"][0]["start"][0] += 1e-3
+    with __import__("pytest").raises(ValueError, match=r"rule_steps\[0\]\.start\[0\]"):
+        verify_native_rule_replay(plan, changed, base)
+    changed = deepcopy(native)
+    changed["rule_steps"][0]["parents"].reverse()
+    with __import__("pytest").raises(ValueError, match="rule_steps"):
+        verify_native_rule_replay(plan, changed, base)
