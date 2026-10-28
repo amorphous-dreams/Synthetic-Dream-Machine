@@ -38,7 +38,9 @@ class SeedAdapter:
     def composition_priority(self):
         """Declared producer capability ordering, not a global scene truth."""
         if self.program is None:
-            return 0
+            # A declared primary visual observation may seed a provisional
+            # shape; it does not gain verified camera or survey authority.
+            return 1 if ("construction_primary", "true") in self.seed.metadata else 0
         if "composition_priority" in self.program:
             level = self.program["composition_priority"]
             if type(level) is not int or not 1 <= level <= 100:
@@ -79,10 +81,13 @@ def image_group(path):
     if not isinstance(views,list) or not views:
         raise ValueError("At least one independently sourced view required")
     for view in views:
-        allowed={"rgba","alpha","camera","registration","anchors"}
+        allowed={"rgba","alpha","camera","registration","anchors",
+                 "construction_primary"}
         if not isinstance(view,dict) or set(view)-allowed or "rgba" not in view:
             raise ValueError("Invalid image-group view")
         state=view.get("registration","provisional")
+        if type(view.get("construction_primary", False)) is not bool:
+            raise ValueError("Construction primary must be explicit boolean")
         if state not in ("provisional","registered"):
             raise ValueError("Unknown camera registration state")
         if state=="registered" and not view.get("anchors"):
@@ -108,12 +113,17 @@ def image_group(path):
                     raise ValueError("Alpha channel disagrees with original RGBA")
             alpha_hash=sha256(alpha_path.read_bytes()).hexdigest()
         metadata=(("camera",str(view.get("camera","unknown"))),
-                  ("registration",state),("width",str(width)),("height",str(height)))
+                  ("registration",state),
+                  ("construction_primary", "true" if view.get("construction_primary") else "false"),
+                  ("width",str(width)),("height",str(height)))
         entry=SeedEntry("image-group",sha256(raw).hexdigest(),str(image_path),
                         "pixel","source",tuple(sorted((("rgba",sha256(raw).hexdigest()),
                                                          ("alpha",alpha_hash)))),
                         tuple(sorted(metadata)))
         entries.append(SeedAdapter(entry))
+    if sum(("construction_primary", "true") in x.seed.metadata
+           for x in entries) > 1:
+        raise ValueError("Only one provisional construction primary may be selected")
     return tuple(entries)
 
 

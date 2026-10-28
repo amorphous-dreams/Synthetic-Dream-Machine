@@ -201,3 +201,15 @@ The Blender test now accepts `--out out/hephaestus-blender`, keeping the importe
 **Decide/Act:** `scripts/hephaestus_census.py` classifies the eight legacy focus modules RETAIN / EXTRACT / REWRITE with separate responsibility statements, pinning source digests and direct package import consumers, and inventories seven added grounds. It runs in the general contract lane and uploads the JSON report.
 
 **Aftermath:** R-02's static source census is implemented; dynamic call-site audits and full module migration are explicitly not declared complete. GUIDEBOOK/HANDOFF/ROADMAP now distinguish executable capability from unfinished Hephaestus contracts.
+
+## OODA-HA E-05 · independent multiview evidence abstention (2026-10-28)
+
+**Observe:** The former source-fit path sorted independent images and silently selected the first `image-group` for silhouette fitness, despite lacking camera registration or reconstruction.
+
+**Orient:** Multiple images are multiple independent testimony islands. Their distinct image content does not imply a shared metric camera or single coherent image projection. Source-fit must not be invented.
+
+**Decide:** Preserve all source entries and their identities in the preregistration, but withhold automatic fused silhouette scores when multiple sources lack verified executable camera calibration. An image-only experiment needs one explicitly chosen `construction_primary` flag for provisional initial massing; two primaries are refused. A constructive grammar/proxy can still provide a root without choosing a visual source.
+
+**Act:** Source adapters now carry the optional strict boolean `construction_primary`; the generic engine accepts it through capability priority, and multi-image `source_alpha` abstains rather than arbitrarily selecting. Two-image test fixtures verify independent identities, explicit construction source policy, no full-resolution source-fit claim and positive native admission.
+
+**Aftermath:** This is a source-authority refusal/abstention guard, **not calibrated multiview fitness**. Rigid/surveyed camera registration and independently measured residuals remain unresolved E-05 requirements. CI must pass at exact head.

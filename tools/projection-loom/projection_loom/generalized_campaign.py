@@ -59,6 +59,10 @@ def initial_program(adapters):
     constructive program exists. All input source identities remain separate.
     """
     offers = sorted(adapters, key=lambda a:(-a.composition_priority, a.seed.identity))
+    independent_visual = [a for a in offers if a.visual_source]
+    if (len(independent_visual) > 1
+            and all(a.composition_priority <= 0 for a in offers)):
+        raise ValueError("Multiple independent images need a declared provisional construction primary")
     if not offers:
         raise ValueError("No producer capability entered the Loom")
     foundation = offers[0]
@@ -97,7 +101,10 @@ def source_alpha(adapters):
                   key=lambda a:a.seed.identity)
     if not images:
         return None
-    # Multiple images remain independent testimony; don't invent registration.
+    if len(images)>1:
+        # No camera calibration or independent registration residual exists
+        # in this execution contract. Never reward one view as all of them.
+        return None
     with Image.open(images[0].seed.locator) as im:
         return np.asarray(im.getchannel("A"),dtype=np.uint8).copy()
 
@@ -256,11 +263,15 @@ def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
         canonical_json_sha256({"native":"OpenCascade","operators":
                                ("foundation","spawn","split","bridge","carve")}),seed)
     out=Path(out);out.mkdir(parents=True,exist_ok=True)
+    independent_images = [a for a in adapters if a.visual_source]
+    visual_authority = ("withheld-uncalibrated-multiview" if len(independent_images)>1
+                        else "provisional" if independent_images else "none")
     manifest={"schema":"projection-loom/experimental-input-cohort",
         "run_id":context.run_id,"seeds":seeds.manifest(),"intent":contract.identity,
         "initial_program":initial.to_dict(),"types":list(types),
         "epochs":epochs,"offspring":offspring,"exact_budget":exact_budget,
-        "source_camera_authority":"provisional" if any(a.visual_source for a in adapters) else "none"}
+        "source_camera_authority": visual_authority,
+        "independent_source_observations": [a.seed.identity for a in independent_images]}
     save_once(out/"pre_registration.json",manifest)
     if (out/"summary.json").exists():
         return _completed_summary(out, manifest, contract)
