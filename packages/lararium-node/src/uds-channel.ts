@@ -906,7 +906,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       if (!opened.ok) return sessionRefuse(sock, opened.refusal, requestId);
       // NO MESSAGE ROUTES TO A SESSION THAT HOLDS A FACE AND NO SIGNER: a mint that refuses closes the session it opened.
       const minted = await supplied.supply.mint({ table, binding: state.binding, session: opened.session })
-        .catch((error: unknown) => ({ ok: false as const, refusal: `mint-failed: ${error instanceof Error ? error.message : String(error)}` }));
+        .catch((error: unknown) => {
+          log(`session mint failed: ${error instanceof Error ? error.message : String(error)}`);
+          return { ok: false as const, refusal: "mint-failed" };
+        });
       if (!minted.ok || closing || sock.destroyed) {
         table.close(opened.session.sessionId);
         if (minted.ok) minted.signer.drop();
@@ -959,11 +962,13 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     });
   };
   /**
-   * `session:switch`: the five-step fence over THIS socket's session (`switchSession`). The frame carries the
-   * envelope, `expectedGeneration` (the generation it leaves) and `faceRef`, the target face's hint, which the door
-   * verifies afresh as the preflight. The intent and the outcome rest as vessel-private switch acts beside the
-   * receipt facts and flush before the step after them. A switch that cannot commit closes this session and its
-   * socket; the caller opens afresh.
+   * `session:switch`: the five-step fence over THIS socket's session (`switchSession`). The frame rides the bound
+   * envelope (`faceRef` names the face worn now), `expectedGeneration` (the generation it leaves, equal to the
+   * envelope's) and `target`, the target face's hint, which the door verifies afresh as the preflight. The intent and
+   * the outcome rest as vessel-private switch acts beside the receipt facts and flush before the step after them.
+   * The new signer lands on the socket's state the moment it mints, so a socket that goes mid-switch drops it with
+   * the rest; a switch that cannot commit, or whose socket went, closes this session, and the caller opens afresh.
+   * A refusal names a code; the detail stays in this vessel's log.
    */
   const writeSwitchAct = async (act: Parameters<typeof buildSwitchAct>[0]): Promise<void> => {
     await composite.put(buildSwitchAct(act), { kind: "lares-verb", requestId: act.actId });
@@ -971,18 +976,18 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   };
   const switchOn = async (sock: Socket, state: NonNullable<ReturnType<typeof sessionSockets.get>>,
     frame: Record<string, unknown>, requestId: string | undefined): Promise<void> => {
-    const hint = frame["faceRef"];
+    const hint = frame["target"];
     if (!requestId || typeof hint !== "string" || !hint || frame["expectedGeneration"] !== frame["generation"]) {
       return sessionRefuse(sock, "malformed-message", requestId);
     }
     if (!opts.sessions || !state.hand) return sessionRefuse(sock, state.hand ? "no-session-door" : "unknown-session", requestId);
     const door = opts.sessions;
     const hand = state.hand;
-    let next: UdsSessionSupply | undefined;
-    let signer: UdsSessionSigner | undefined;
+    const gone = (): boolean => closing || sock.destroyed || sessionSockets.get(sock) !== state;
     const result = await switchSession({
       table, binding: state.binding,
-      envelope: { ownerEpoch: frame["ownerEpoch"] as string, sessionId: frame["sessionId"] as string, generation: frame["generation"] as number },
+      envelope: { ownerEpoch: frame["ownerEpoch"] as string, sessionId: frame["sessionId"] as string,
+        generation: frame["generation"] as number, faceRef: frame["faceRef"] as string },
       preflight: async () => {
         const supplied = await door.open({ faceRef: hint, hand });
         return supplied.ok ? { ok: true, target: { face: supplied.supply.face, profile: supplied.supply.profile, supply: supplied.supply } } : supplied;
@@ -990,27 +995,33 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       writeIntent: writeSwitchAct,
       fence: async () => { state.signer?.drop(); delete state.signer; delete state.supply; },
       commit: async (session, target) => {
-        if (closing || sock.destroyed) return { ok: false, refusal: "socket-gone" };
+        if (gone()) return { ok: false, refusal: "session-closed" };
         const minted = await target.supply.mint({ table, binding: state.binding, session });
         if (!minted.ok) return minted;
-        next = target.supply;
-        signer = minted.signer;
+        // The socket's state owns the signer from here: its close handler drops it.
+        state.signer = minted.signer;
+        state.supply = target.supply;
+        if (gone()) { minted.signer.drop(); return { ok: false, refusal: "session-closed" }; }
         return { ok: true };
       },
       writeOutcome: writeSwitchAct,
+      log: (line) => log(line),
     });
-    if (!result.ok) {
-      if (!result.closed) return sessionRefuse(sock, result.refusal, requestId);
-      signer?.drop();
-      state.signer?.drop();
-      delete state.signer;
-      delete state.supply;
-      delete state.sessionId;
-      sessionReply(sock, { kind: "session:refused", requestId, refusal: result.refusal, closed: true });
-      sock.end();
-      return;
+    const bound = table.bound(state.binding);
+    if (!result.ok || gone() || bound === null) {
+      if (result.ok || result.closed || bound === null) {
+        state.signer?.drop();
+        delete state.signer;
+        delete state.supply;
+        if (state.sessionId) table.close(state.sessionId);
+        delete state.sessionId;
+        if (gone()) return;
+        sessionReply(sock, { kind: "session:refused", requestId, refusal: result.ok ? "session-closed" : result.refusal, closed: true });
+        sock.end();
+        return;
+      }
+      return sessionRefuse(sock, result.refusal, requestId);
     }
-    if (next && signer) { state.supply = next; state.signer = signer; }
     sessionReply(sock, { kind: "session:switch-result", requestId, outcome: result.switched ? "switched" : "unchanged",
       ownerEpoch: result.session.ownerEpoch, sessionId: result.session.sessionId, generation: result.session.generation,
       faceRef: result.session.face.proofSubject });

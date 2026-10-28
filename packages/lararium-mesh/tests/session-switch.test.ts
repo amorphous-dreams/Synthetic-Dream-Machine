@@ -58,7 +58,7 @@ async function openLive(table: SessionTable, wears: Held): Promise<Live> {
   return { binding, session: opened.session, signer: await mint(table, binding, opened.session, wears), wears };
 }
 
-const envelopeOf = (s: Session) => ({ ownerEpoch: s.ownerEpoch, sessionId: s.sessionId, generation: s.generation });
+const envelopeOf = (s: Session) => ({ ownerEpoch: s.ownerEpoch, sessionId: s.sessionId, generation: s.generation, faceRef: s.face.proofSubject });
 
 /** The owner's ports over one live session: the fence drops its signer, the commit mints the target's. */
 function portsFor(table: SessionTable, live: Live, to: Held, over: Partial<SessionSwitchPorts<SessionSwitchTarget>> = {}) {
@@ -90,17 +90,25 @@ describe("the switch fences one session", () => {
   test("RED: switching one session leaves a sibling session's face, generation, state and signer as they stood", async () => {
     const [a, b] = [await held("switch-a", "aaaa0001aaaa0001"), await held("switch-b", "bbbb0002bbbb0002")];
     const table = new SessionTable("owner-switch");
-    const switching = await openLive(table, a);
     const sibling = await openLive(table, a);
+    const switching = await openLive(table, a);
+    const siblingBefore = table.check(envelopeOf(sibling.session), sibling.binding);
+    const switchingBefore = envelopeOf(switching.session);
     const { ports, steps } = portsFor(table, switching, b);
     const result = await switchSession(ports);
     expect(result).toMatchObject({ ok: true, switched: true, session: { generation: 1, state: "live" } });
     expect(steps).toEqual(["preflight", "intent", "fence", "commit", "outcome"]);
     expect(switching.session.face.proofSubject).toBe(b.face.proofSubject);
-    const siblingNow = table.check(envelopeOf(sibling.session), sibling.binding);
-    expect(siblingNow).toMatchObject({ ok: true, session: { generation: 0, state: "live", face: { proofSubject: a.face.proofSubject } } });
+    // The sibling's record reads byte for byte as it stood, one generation on reads stale, and it still signs.
+    expect(table.check(envelopeOf(sibling.session), sibling.binding)).toEqual(siblingBefore);
+    expect(table.check({ ...envelopeOf(sibling.session), generation: 1 }, sibling.binding)).toEqual({ ok: false, refusal: "stale-generation" });
     expect(await signs(sibling.signer)).toBe("signs");
     expect(table.size).toBe(2);
+    // And the sibling switches on its own afterwards, leaving the first session where its switch left it.
+    const again = portsFor(table, sibling, b);
+    expect(await switchSession(again.ports)).toMatchObject({ ok: true, switched: true, session: { generation: 1 } });
+    expect(table.check(switchingBefore, switching.binding)).toMatchObject({ ok: false, refusal: "stale-generation" });
+    expect(table.check({ ...switchingBefore, generation: 1 }, switching.binding)).toMatchObject({ ok: true, session: { face: { proofSubject: b.face.proofSubject } } });
   });
 
   test("RED: the old generation signs nothing after the switch, frozen calls refuse mid-switch, and the new signer signs", async () => {
@@ -165,6 +173,109 @@ describe("a switch that cannot finish", () => {
     expect(acts).toEqual([]);
     expect(table.check(envelopeOf(live.session), live.binding)).toMatchObject({ ok: true, session: { generation: 0, state: "live" } });
     expect(await signs(live.signer)).toBe("signs");
+  });
+
+  test("a preflight that throws thaws the session and names a code, its detail kept off the wire", async () => {
+    const [a, b] = [await held("throw-a", "aaaa0011aaaa0011"), await held("throw-b", "bbbb0012bbbb0012")];
+    const table = new SessionTable("owner-throw");
+    const live = await openLive(table, a);
+    const logged: string[] = [];
+    const { ports } = portsFor(table, live, b, { preflight: async () => { throw new Error("/secret/path of another face"); }, log: (l) => logged.push(l) });
+    const result = await switchSession(ports);
+    expect(result).toEqual({ ok: false, refusal: "preflight-failed", closed: false });
+    expect(JSON.stringify(result)).not.toContain("secret");
+    expect(logged.join()).toContain("/secret/path");
+    expect(await signs(live.signer)).toBe("signs");
+  });
+
+  test("an intent that never lands thaws the session, its signer whole, and closes the act aborted", async () => {
+    const [a, b] = [await held("intent-a", "aaaa0013aaaa0013"), await held("intent-b", "bbbb0014bbbb0014")];
+    const table = new SessionTable("owner-intent");
+    const live = await openLive(table, a);
+    const { ports, acts } = portsFor(table, live, b, { writeIntent: async () => { throw new Error("flush failed"); } });
+    expect(await switchSession(ports)).toEqual({ ok: false, refusal: "intent-unwritten", closed: false });
+    expect(acts).toEqual([expect.objectContaining({ outcome: "aborted", refusal: "intent-unwritten" })]);
+    expect(table.check(envelopeOf(live.session), live.binding)).toMatchObject({ ok: true, session: { generation: 0 } });
+    expect(await signs(live.signer)).toBe("signs");
+  });
+
+  test("a fence that throws, and an outcome that never lands, each close the session and record it closed", async () => {
+    const [a, b] = [await held("fence-a", "aaaa0015aaaa0015"), await held("fence-b", "bbbb0016bbbb0016")];
+    const table = new SessionTable("owner-fence");
+    const fenced = await openLive(table, a);
+    const f = portsFor(table, fenced, b, { fence: async () => { fenced.signer.drop(); throw new Error("channel stuck"); } });
+    expect(await switchSession(f.ports)).toEqual({ ok: false, refusal: "fence-failed", closed: true });
+    expect(f.acts.map((x) => ("outcome" in x ? `${x.outcome}:${x.refusal}` : "intent"))).toEqual(["intent", "closed:fence-failed"]);
+    expect(table.check(envelopeOf(fenced.session), fenced.binding)).toEqual({ ok: false, refusal: "unknown-session" });
+
+    // A committed switch whose outcome never lands runs on no record: the session closes and its new signer signs nothing.
+    const unrecorded = await openLive(table, a);
+    let outcomes = 0;
+    const o = portsFor(table, unrecorded, b, { writeOutcome: async () => { outcomes++; throw new Error("flush failed"); } });
+    expect(await switchSession(o.ports)).toEqual({ ok: false, refusal: "outcome-unwritten", closed: true });
+    expect(outcomes).toBe(2);
+    expect(await signs(unrecorded.signer)).not.toBe("signs");
+  });
+
+  test("an advance that refuses closes the session; nothing mints for a face the table would not wear", async () => {
+    const a = await held("adv-a", "aaaa0017aaaa0017");
+    const table = new SessionTable("owner-adv");
+    const live = await openLive(table, a);
+    const bad = { ...a.face, proofSubject: "another-subject", root: "synthetic-root" } as unknown as SessionFace;
+    const { ports, steps } = portsFor(table, live, a, { preflight: async () => ({ ok: true, target: { face: bad } }) });
+    expect(await switchSession(ports)).toEqual({ ok: false, refusal: "face-malformed", closed: true });
+    expect(steps).not.toContain("commit");
+  });
+
+  test("two switches of one session at once: the second refuses while the first holds it, and the first lands", async () => {
+    const [a, b, c] = [await held("twice-a", "aaaa0018aaaa0018"), await held("twice-b", "bbbb0019bbbb0019"), await held("twice-c", "cccc001acccc001a")];
+    const table = new SessionTable("owner-twice");
+    const live = await openLive(table, a);
+    const first = portsFor(table, live, b);
+    const second = portsFor(table, live, c);
+    const [r1, r2] = await Promise.all([switchSession(first.ports), switchSession(second.ports)]);
+    expect(r1).toMatchObject({ ok: true, switched: true, session: { generation: 1, face: { proofSubject: b.face.proofSubject } } });
+    expect(r2).toEqual({ ok: false, refusal: "session-not-live", closed: false });
+    expect(second.steps).toEqual([]);
+  });
+
+  test("a call checked while the commit mints finds the session switching, never live without its signer", async () => {
+    const [a, b] = [await held("window-a", "aaaa001baaaa001b"), await held("window-b", "bbbb001cbbbb001c")];
+    const table = new SessionTable("owner-window");
+    const live = await openLive(table, a);
+    let during: string | null = null;
+    const base = portsFor(table, live, b);
+    const { ports } = portsFor(table, live, b, { commit: async (next, target) => {
+      const call = table.checkBound(envelopeOf(next), live.binding);
+      during = call.ok ? "routed" : call.refusal;
+      return base.ports.commit(next, target);
+    } });
+    expect(await switchSession(ports)).toMatchObject({ ok: true, switched: true });
+    expect(during).toBe("session-not-live");
+    expect(await signs(live.signer)).toBe("signs");
+  });
+
+  test("a session the owner closes mid-preflight answers session-closed and throws nothing", async () => {
+    const [a, b] = [await held("gone-a", "aaaa001daaaa001d"), await held("gone-b", "bbbb001ebbbb001e")];
+    const table = new SessionTable("owner-gone");
+    const live = await openLive(table, a);
+    const { ports, acts } = portsFor(table, live, b, { preflight: async () => { table.close(live.session.sessionId); return { ok: false, refusal: "face-locked" }; } });
+    expect(await switchSession(ports)).toEqual({ ok: false, refusal: "session-closed", closed: true });
+    expect(acts).toEqual([]);
+    const again = await openLive(table, a);
+    const mid = portsFor(table, again, b, { fence: async () => { again.signer.drop(); table.close(again.session.sessionId); } });
+    expect(await switchSession(mid.ports)).toEqual({ ok: false, refusal: "session-closed", closed: true });
+    expect(mid.steps).not.toContain("commit");
+    expect(mid.acts.at(-1)).toMatchObject({ outcome: "closed", refusal: "session-closed" });
+  });
+
+  test("a re-admitted face (same subject, another admission) switches: unchanged compares every reference", async () => {
+    const a = await held("readmit-a", "aaaa001faaaa001f");
+    const table = new SessionTable("owner-readmit");
+    const live = await openLive(table, a);
+    const readmitted: Held = { chain: a.chain, face: { ...a.face, admitRef: "admit-again", causalRevision: "revision-again" } };
+    const { ports } = portsFor(table, live, readmitted);
+    expect(await switchSession(ports)).toMatchObject({ ok: true, switched: true, session: { generation: 1, face: { admitRef: "admit-again" } } });
   });
 
   test("a profile the target's hand would change refuses before the intent", async () => {

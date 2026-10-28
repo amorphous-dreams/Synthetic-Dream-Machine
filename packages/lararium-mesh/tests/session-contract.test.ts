@@ -53,6 +53,9 @@ describe("session contract", () => {
     table.transition(session.sessionId, "switching");
     const advanced = table.advance(session.sessionId, 0, face("b"));
     expect(advanced.ok).toBe(true);
+    // The advanced session stays switching until its commit steps it live: no call routes to it before then.
+    expect(table.check(envelope(session.sessionId, "epoch-a", 1), binding)).toEqual({ ok: false, refusal: "session-not-live" });
+    table.transition(session.sessionId, "live");
     expect(table.check(envelope(session.sessionId, "epoch-a", 0), binding)).toEqual({ ok: false, refusal: "stale-generation" });
     expect(table.check(envelope(session.sessionId, "epoch-a", 2), binding)).toEqual({ ok: false, refusal: "stale-generation" });
     expect(table.check(envelope(session.sessionId, "epoch-a", 1), binding).ok).toBe(true);
@@ -75,8 +78,10 @@ describe("session contract", () => {
     expect(table.check(envelope(session.sessionId), binding)).toEqual(switching);
     expect(switching).toEqual({ ok: false, refusal: "session-not-live" });
     const committed = table.advance(session.sessionId, 0, face("b"));
-    expect(committed).toMatchObject({ ok: true, session: { generation: 1, face: face("b"), state: "live" } });
-    // A committed switch spends its generation: the same commit asked again finds a live session and changes nothing.
+    expect(committed).toMatchObject({ ok: true, session: { generation: 1, face: face("b"), state: "switching" } });
+    // An advance spends its generation: the same advance asked again changes nothing, before or after the step live.
+    expect(table.advance(session.sessionId, 0, face("c"))).toEqual({ ok: false, refusal: "stale-generation" });
+    table.transition(session.sessionId, "live");
     expect(table.advance(session.sessionId, 0, face("c"))).toEqual({ ok: false, refusal: "session-not-switching" });
     expect(table.check(envelope(session.sessionId, "epoch-a", 1), binding)).toMatchObject({ ok: true, session: { generation: 1, face: face("b") } });
   });

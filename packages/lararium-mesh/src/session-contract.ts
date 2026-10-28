@@ -207,7 +207,9 @@ export type SessionMessage =
   // service answer), and the holder hands `event` to the contract's reader and to the island unchanged.
   | (SessionSurfaceEnvelope & { readonly kind: typeof LAR_CONTROL_EVENT; readonly event: LarMsg_ControlEvent })
   | (SessionSurfaceEnvelope & { readonly kind: typeof LAR_CONTROL_RESULT } & Omit<LarMsg_ControlResult, "type">)
-  | (SessionRequestEnvelope & { readonly kind: "session:switch"; readonly expectedGeneration: number; readonly faceRef: string })
+  // The switch rides the bound envelope (`faceRef` names the face worn now) and names its target by `target`, a
+  // hint the owner's door verifies afresh.
+  | (SessionRequestEnvelope & { readonly kind: "session:switch"; readonly faceRef: string; readonly expectedGeneration: number; readonly target: string })
   // The result names the session's generation and face after the fence: `switched` one generation on, or
   // `unchanged` where the target named the face the session already wore.
   | (SessionRequestEnvelope & { readonly kind: "session:switch-result"; readonly outcome: "switched" | "unchanged"; readonly faceRef: string })
@@ -339,6 +341,15 @@ export class SessionTable {
     return this.#read(message, binding, true);
   }
 
+  /**
+   * Does the session stand on `binding` at the envelope's generation, `live` or mid-switch? A signer mints against
+   * this: the switch mints the new generation's signer while the session stays `switching`, and that signer signs
+   * nothing until the switch commits the session back to `live`.
+   */
+  held(message: unknown, binding: SessionBinding): SessionCheckResult {
+    return this.#read(message, binding, false, true);
+  }
+
   /** The five references bound to this socket or port, without face planes or root bytes. */
   bound(binding: SessionBinding): SessionBound | null {
     const id = this.#bound.get(binding);
@@ -348,7 +359,7 @@ export class SessionTable {
       generation: session.generation, faceRef: session.face.proofSubject, profile: session.profile });
   }
 
-  #read(message: unknown, binding: SessionBinding, faceBound: boolean): SessionCheckResult {
+  #read(message: unknown, binding: SessionBinding, faceBound: boolean, switching = false): SessionCheckResult {
     const envelope = faceBound ? validateSessionBoundEnvelope(message) : validateSessionEnvelope(message);
     if (!envelope) return { ok: false, refusal: "malformed-message" };
     if (envelope.ownerEpoch !== this.#ownerEpoch) return { ok: false, refusal: "stale-owner-epoch" };
@@ -357,7 +368,7 @@ export class SessionTable {
     if (record.binding !== binding) return { ok: false, refusal: "unbound-session" };
     if (envelope.generation !== record.session.generation) return { ok: false, refusal: "stale-generation" };
     if (faceBound && (envelope as SessionBoundEnvelope).faceRef !== record.session.face.proofSubject) return { ok: false, refusal: "wrong-face" };
-    if (record.session.state !== "live") return { ok: false, refusal: "session-not-live" };
+    if (record.session.state !== "live" && !(switching && record.session.state === "switching")) return { ok: false, refusal: "session-not-live" };
     return { ok: true, session: record.session };
   }
 
@@ -374,8 +385,10 @@ export class SessionTable {
   }
 
   /**
-   * Commit a switch: only from `switching`, only at the expected generation, only onto a lawful face. The
-   * session then wears the new face, live, one generation on. A refusal changes nothing.
+   * Advance a switch: only from `switching`, only at the expected generation, only onto a lawful face. The
+   * session then wears the new face one generation on and STAYS `switching`: no call routes to it until the
+   * switch's commit has minted the new signer and stepped it to `live`, whatever order its owner hands frames in.
+   * A refusal changes nothing.
    */
   advance(sessionId: string, expectedGeneration: number, face: unknown): SessionCheckResult {
     const record = this.#records.get(sessionId);
@@ -384,7 +397,7 @@ export class SessionTable {
     if (expectedGeneration !== record.session.generation) return { ok: false, refusal: "stale-generation" };
     const worn = validateSessionFace(face);
     if (!worn) return { ok: false, refusal: "face-malformed" };
-    record.session = frozenSession({ ...record.session, generation: record.session.generation + 1, face: worn, state: "live" });
+    record.session = frozenSession({ ...record.session, generation: record.session.generation + 1, face: worn });
     return { ok: true, session: record.session };
   }
 

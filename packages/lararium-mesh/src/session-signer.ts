@@ -87,9 +87,10 @@ function readSession(value: unknown): SessionRecord | null {
  * A refusal says whether the session has GONE (closed, moved a generation on, another owner's, another
  * binding's) or merely stands frozen in a state that may return to `live`.
  */
-function standing(table: SessionTable, binding: SessionBinding, at: Pick<SessionSignerBinding, "sessionId" | "ownerEpoch" | "generation">):
+function standing(table: SessionTable, binding: SessionBinding, at: Pick<SessionSignerBinding, "sessionId" | "ownerEpoch" | "generation">, mid = false):
   { readonly record: SessionRecord } | { readonly refusal: "stale-generation" | "session-not-live"; readonly gone: boolean } {
-  const checked = table.check({ ownerEpoch: at.ownerEpoch, sessionId: at.sessionId, generation: at.generation }, binding);
+  const envelope = { ownerEpoch: at.ownerEpoch, sessionId: at.sessionId, generation: at.generation };
+  const checked = mid ? table.held(envelope, binding) : table.check(envelope, binding);
   if (!checked.ok) {
     if (checked.refusal === "stale-generation") return { refusal: "stale-generation", gone: true };
     return { refusal: "session-not-live", gone: checked.refusal !== "session-not-live" };
@@ -176,7 +177,9 @@ export async function mintSessionSigner(args: {
   if (!(args.table instanceof SessionTable)) return { refusal: "table-foreign" };
   const named = readSession(args.session);
   if (named === null) return { refusal: "session-malformed" };
-  const now = standing(args.table, args.binding, named);
+  // A mint reads the session live, or mid-switch at its advanced generation (`SessionTable.held`): the switch's commit
+  // mints before it steps the session live, and the signer signs nothing until then.
+  const now = standing(args.table, args.binding, named, true);
   if (!own(now, "record")) return { refusal: now.refusal };
   const { record } = now;
   const certificate = readCertificate(args.certificate, args.apart);

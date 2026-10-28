@@ -55,7 +55,13 @@ class Peer {
 /** A signer the seat holds, named by the face and the mint that drew it, so a test reads which one dropped. */
 interface Drawn { readonly face: string; readonly n: number; dropped: boolean; drop(): void }
 
-async function stand(label: string, opts: { refuse?: (faceRef: string) => string | null; refuseMint?: (n: number) => boolean } = {}) {
+async function stand(label: string, opts: {
+  refuse?: (faceRef: string) => string | null; refuseMint?: (n: number) => boolean;
+  /** Hold the door's answer for this hint until the test lets it go. */
+  hold?: { hint: string; until: Promise<void> };
+  /** Fail the Repo's flush while this reads true. */
+  failFlush?: () => boolean;
+} = {}) {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
   const workingHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -67,6 +73,7 @@ async function stand(label: string, opts: { refuse?: (faceRef: string) => string
   const placed: Array<{ requestedBy: string; face?: string; requestId: string }> = [];
   const drawn: Drawn[] = [];
   const door: UdsSessionDoor = { open: async ({ faceRef }) => {
+    if (opts.hold && faceRef === opts.hold.hint) await opts.hold.until;
     const refusal = opts.refuse?.(faceRef) ?? null;
     if (refusal) return { ok: false, refusal };
     const name = faceRef.replace(/^hint-/, "");
@@ -78,7 +85,8 @@ async function stand(label: string, opts: { refuse?: (faceRef: string) => string
       return { ok: true, signer };
     } } };
   } };
-  const channel = startUdsChannel({ daemonHandle, composite, claim, repo, sessions: door,
+  const flushing = { flush: (ids?: Parameters<Repo["flush"]>[0]) => (opts.failFlush?.() ? Promise.reject(new Error("disk full at /secret/path")) : repo.flush(ids)) };
+  const channel = startUdsChannel({ daemonHandle, composite, claim, repo: flushing, sessions: door,
     placeVerb: (o) => {
       placed.push(o);
       const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done",
@@ -104,7 +112,7 @@ const envOf = (opened: Record<string, unknown>) =>
   ({ ownerEpoch: opened["ownerEpoch"], sessionId: opened["sessionId"], generation: opened["generation"], faceRef: opened["faceRef"] });
 const call = (env: Record<string, unknown>, requestId: string) => ({ op: "session:call", ...env, requestId, verb: "load", args: {} });
 const switchTo = (env: Record<string, unknown>, faceRef: string, requestId: string) =>
-  ({ op: "session:switch", ...env, faceRef, expectedGeneration: env["generation"], requestId });
+  ({ op: "session:switch", ...env, target: faceRef, expectedGeneration: env["generation"], requestId });
 
 describe("UDS session switch", () => {
   test("RED: a switch advances its own session alone; a sibling socket of the same face keeps its generation, face and signer", async () => {
@@ -179,6 +187,50 @@ describe("UDS session switch", () => {
       expect(await a.ask(switchTo(envA, "hint-b", "dial"))).toMatchObject({ kind: "session:refused", refusal: "dial-refused", closed: true });
       expect(v.drawn[0]!.dropped).toBe(true);
       expect(await b.ask(call(envB, "sibling"))).toMatchObject({ kind: "session:result", status: "done" });
+    } finally { await v.done(); }
+  });
+
+  test("a switch whose expected generation differs from its envelope's refuses malformed and changes nothing", async () => {
+    const v = await stand("expected");
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      expect(await a.ask({ ...switchTo(envA, "hint-b", "skew"), expectedGeneration: 1 })).toMatchObject({ kind: "session:refused", refusal: "malformed-message" });
+      expect(await a.ask(call(envA, "after"))).toMatchObject({ kind: "session:result", status: "done" });
+      expect(v.drawn.map((s) => s.dropped)).toEqual([false]);
+    } finally { await v.done(); }
+  });
+
+  test("a socket that closes mid-switch drops every signer it held and leaves its sibling acting", async () => {
+    let release!: () => void;
+    const until = new Promise<void>((resolve) => { release = resolve; });
+    const v = await stand("mid-close", { hold: { hint: "hint-b", until } });
+    try {
+      const [a, b] = [await v.connect(), await v.connect()];
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      const envB = envOf(await b.ask({ op: "session:open", requestId: "open-b", faceRef: "hint-a", hand: "seat" }));
+      a.sock.write(JSON.stringify(switchTo(envA, "hint-b", "switch-a")) + "\n");
+      await new Promise((resolve) => setImmediate(resolve));
+      a.sock.destroy();
+      await new Promise((resolve) => a.sock.once("close", resolve));
+      release();
+      expect(await b.ask(call(envB, "sibling"))).toMatchObject({ kind: "session:result", status: "done" });
+      expect(v.drawn.filter((s) => !s.dropped).map((s) => s.n)).toEqual([1]);
+    } finally { await v.done(); }
+  });
+
+  test("a flush that fails under the intent thaws the session live, names a code alone, and its signer signs on", async () => {
+    let failing = false;
+    const v = await stand("flush", { failFlush: () => failing });
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      failing = true;
+      const refused = await a.ask(switchTo(envA, "hint-b", "flush"));
+      failing = false;
+      expect(refused).toEqual({ kind: "session:refused", requestId: "flush", refusal: "intent-unwritten" });
+      expect(await a.ask(call(envA, "after"))).toMatchObject({ kind: "session:result", status: "done" });
+      expect(v.drawn.map((s) => s.dropped)).toEqual([false]);
     } finally { await v.done(); }
   });
 });
