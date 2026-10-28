@@ -61,6 +61,7 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 | `sealed-own` `:279-281` | floor-plain | ''F only for proved opaque pointers/marks. LEAD:'' audit names and values for face-linking metadata; any private index dissolves into D. |
 | `sealed-chunk` `:283-285` | floor-plain | ''F carriage:'' Keyhive ciphertext under opaque addresses; its content key and identity remain D. |
 | `gate-root` `:288-289` | hot | ''D:'' the scoped node gate secret serves the place's sovereign gate bundle; it derives no face identity. |
+| `switch-acts` `switch-act-log.ts` | hot | ''D:'' the vessel's own ring of session-switch acts (`identity/switch-acts.json`), sealed under the device key: each act names a causal position and the two faces a session left and took, so it rests on this vessel alone and in no document a face's fleet syncs. The ring keeps the newest 256 acts and never heads with an outcome whose intent left; a malformed row restarts the ring at a `reset` act naming why. |
 | `place-archive` `:290-291` | retired | A stored vessel Individual Archive refuses the boot by name; each PersonaGroup keeps its own veil archive. |
 | `veil-archive` `:292-293` | face-hot | ''D:'' the node rests each face's archive at `veil-archive-g<digest of its PersonaGroup>`, so no free index selects it; its FCK arrives with the K15.6 fence. |
 | `face-atom` `face-atom-store.ts` | face-hot | ''D:'' the face's random atom seed, one per (vessel, PersonaGroup), the device edge's delegate and countersigner and the face's Keyhive Individual. The row's file name carries the SHA-256 digest of its PersonaGroup, so no clear file names a face, and the face-atom custody contract of `@lararium/mesh` (`face-atom-custody.ts`) holds stand, read and keep: absent mints, the same bytes read as a no-op, other bytes refuse as `FaceAtomConflict`. It rests under that face's FCK and never rides a bundle, a wire or a board. |
@@ -78,10 +79,10 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 | `face-address-secret` `fleet-join-custody.ts` | face-hot | ''D:'' the face's fleet address secret rests in that face, `face-address-secret-g<sha256 of its PersonaGroup>.bin`; the name's digest is the group digest the floor index holds. Local unless a defined face recovery route includes it. |
 | `fleet-join-pending` `fleet-join-custody.ts` | face-hot | ''D:'' one pending join per target face, `fleet-join-pending-g<group digest>.json` in that face (its X25519 secret and request); the joiner founds the face's custody at its request, so a pending join with no face refuses by name. |
 | `face-join-record` `fleet-join-custody.ts` | face-hot | ''D:'' the joined face's private record and grants, `face-join-record-g<group digest>.json` in that face. |
-| `handle-book` `node-circle-store.ts` | face-hot | ''D:'' each face keeps its own recognition book in its own row (`.handle-book-h<N>.json`): the nyms it recognised and the private labels it keeps for them. A recognition reads and writes the worn face's book; a vessel wearing none recognises nobody, and a flat `.handle-book.json` reads as an earlier shape (refused by name, with the fresh-start runbook). `bundle: whole` carries the face's book. |
+| `handle-book` `node-circle-store.ts` | face-hot | ''D:'' each face keeps its own recognition book in its own row (`.handle-book-h<N>.json`): the nyms it recognised and the private labels it keeps for them. A recognition reads and writes the book of the face the command acts as (`--face N`, else the one face standing open); a face whose root this vessel does not hold recognises nobody, and a flat `.handle-book.json` reads as an earlier shape (refused by name, with the fresh-start runbook). `bundle: whole` carries the face's book. |
 | `guardian-set` `:337-338` | face-hot | ''D:'' each face's guardian/recovery commitments under that face; its intended local row rides its one-face bundle. Guardians keep their own secret shares. |
 | `face-provisional` `:341-342` | face-hot | ''D:'' local provisional restore state for that face; it does not ride a bundle. |
-| `hosting-state` `hosting-store.ts` | face-hot | ''D:'' the hosting face is the face whose hosting leaf authorizes the service. Its state rests in that face, `hosting-h<N>/<aid digest>/state.json`; the Nexus AID proves no face, so the binding is the face's own directory for that AID (never the floor index), found by directory name across the face directories. The first roll founds it under the face the vessel wears and refuses by name (`HostingFaceAbsent`) where it wears none. |
+| `hosting-state` `hosting-store.ts` | face-hot | ''D:'' the hosting face is the face whose hosting leaf authorizes the service. Its state rests in that face, `hosting-h<N>/<aid digest>/state.json`; the Nexus AID proves no face, so the binding is the face's own directory for that AID (never the floor index), found by directory name across the face directories. The first roll founds it under the face it names (`--face N`), else the one face standing open, and refuses by name (`FaceNotNamed`) where several stand and it named none. |
 | `hosting-spent` `hosting-store.ts` | face-hot | ''D:'' per-face replay and spend authority beside its state, `hosting-h<N>/<aid digest>/spent-*`. |
 | `hosting-carry` `hosting-carry.ts` | face-hot | ''D:'' the hosting face's rhythm records and the guests' sealed ciphertext rest in that face, `hosting-h<N>/<aid digest>/carry/...`; the walker, a different face, owns the inner ciphertext's content key, and no guest key lands at the host. |
 | `walk` `node-walk-store.ts` | face-hot | ''D:'' the walking face owns its private walk record, `walk-h<N>-<gate digest>.json` in that face; a vessel still walks at one hearth (every face's names are read), and the daemon lists only the unlocked faces' walks. |
@@ -98,7 +99,7 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 | `restore-pending` `:394-395` | cold | ''D:'' one target-face restore transaction; split the global file, authenticate its target before staging, and never stage sibling material. |
 | `device-share` `:396-397` | face-cold | ''D:'' face-indexed recovery device share, not a common device share. |
 
-The worn face is SESSION state: no `active-persona` row rests (the person names the face at each unlock, `lares vault unlock --face N`).
+The mounted face is the composition's own state: no `active-persona` row rests (the person names the face the composition mounts at each unlock, `lares vault unlock --face N`), and no command reads it as a default face.
 
 Rows whose class includes ''LEAD'' block byte movement until their payload and owning principal are proved. Current `face` and `bundle` fields describe filename/export selection only (`vault-carriers.ts:119-165`); they never confer cryptographic separation. The existing S-key rotation sweeps all hot/cold rows (`:64-68,477-510`), so K15 replaces it with per-face and named-S rotation.
 
@@ -251,9 +252,9 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 
 ''The face tree'' (`faces/<fcid>/fk-slots.bin`) wraps that face's FCK under the face's routes. The three trees stay independent whatever route they share: a rotation or unbind on one leaves the others opening (`face-s-independence.test.ts`).
 
-''One typed credential per unlock.'' `lares vault unlock` opens S and the face this vessel wears; `--face N` names the face; `--all` tries the credential on every face tree. A vessel holding several faces and told none refuses `face-not-named`. The credential reaches only the trees it fits; a face it does not fit stays shut.
+''One typed credential per unlock.'' `lares vault unlock` opens S and the face the composition mounts; `--face N` names the face; `--all` tries the credential on every face tree. A vessel holding several faces and told none refuses `face-not-named`. The credential reaches only the trees it fits; a face it does not fit stays shut.
 
-''The sovereign gate.'' The daemon composes sovereign when S stands held AND the worn face stands unlocked (a place with no face needs S alone); otherwise the floor composes. `sovereignStands()` reads this as a pure query. `lares vault lock --face N` drops one face; locking the worn face, or locking S, stands the vessel back at the floor through the same gate, and a sibling's lock leaves sovereign standing. The founding sweep of seeds runs under the gate only.
+''The sovereign gate.'' The daemon composes sovereign when S stands held AND the mounted face stands unlocked (a place with no face needs S alone); otherwise the floor composes. `sovereignStands()` reads this as a pure query. `lares vault lock --face N` drops one face; locking the mounted face, or locking S, stands the vessel back at the floor through the same gate, and a sibling's lock leaves sovereign standing. The founding sweep of seeds runs under the gate only.
 
 ''The first founding asks, with nothing preselected:'' whether persona zero's face tree takes the same typed route as the node tree ("one credential then opens both"), answered each time with no default. Either answer leaves the two trees independent.
 
@@ -275,6 +276,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;BMs-_MWDAU1kFpvzlT_yS_yFEuU9SwpmBmuSEVJELU0
+<<^ code="&#x0003;">>ni:///sha-256;NgbWYLJsDdwyEy0hLcjx9f_AMIpvjL2mWoIQG6yMc2I
 
 <<^ code="&#x0004;" -> to="?">>
