@@ -1,7 +1,7 @@
 /**
  * browser-face-atom — the one key a browser vessel meets a face through (K15 step 2c, the browser half).
  *
- * The browser holds no place signer and signs no face act with the device seed. Each face act signs with that
+ * The browser's place signer arms its KEL and signs no face act. Each face act signs with that
  * face's atom, a random seed no other seed derives, and the face's group secret seals to it. The seed rests in the
  * face's own custody row, `face-atom/<PersonaGroup>`, under the slot tree beside the face's other secret rows: a
  * face's secret rows take a slot first, so a vessel with no slot mints no atom. A browser that restores onto a

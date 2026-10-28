@@ -16,7 +16,7 @@ import { makeOperatorDaemonBehavior, operatorDaemonOptions } from "../src/operat
 const working = wikiSlotUri("daemon", "working");
 const daemonBag = wikiBagUri("daemon");
 const manifest = {
-  daemonAuth: { seed: new Uint8Array(32), vesselVerifyingKey: "a".repeat(64), registerBags: [], archiveOpens: false },
+  daemonAuth: { atom: { seed: "00".repeat(32), key: "b".repeat(64) }, placeVerifyingKey: "a".repeat(64), registerBags: [], archiveOpens: false },
 } as never;
 
 function fakeProvider() {

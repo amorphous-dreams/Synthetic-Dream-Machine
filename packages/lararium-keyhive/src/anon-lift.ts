@@ -42,6 +42,8 @@ export interface LiftArgs {
   readonly faceDoor: FaceBagDoor;
   readonly mintedByHex: string;
   readonly vesselDid: string;
+  /** The labels a faceless floor gave its documents (the public place key and its DID): a lit face lifts those too. */
+  readonly floor?: { readonly mintedByHex: string; readonly vesselDid: string };
   /** The binding slot a wiki's draft floor belongs to: its fingerprint and trace, or null where the wiki is unregistered. */
   readonly traceOf: (slug: string) => Promise<{ readonly fingerprint: string; readonly recipeTrace: { readonly wikiDocId: string; readonly libraryBagDocIds: readonly string[] } } | null>;
 }
@@ -53,6 +55,9 @@ const PREFIXES = [
   { prefix: DRAFT_BINDINGS_PREFIX, kind: "draft-binding" },
   { prefix: WORKING_BINDINGS_PREFIX, kind: "working-binding" },
 ] as const;
+
+/** Whether this vessel minted the record: under the lit face's label, or under the floor's public place label. */
+const mintedHere = (args: LiftArgs, by: unknown): boolean => by === args.mintedByHex || (args.floor !== undefined && by === args.floor.mintedByHex);
 
 const digestOf = (text: string): string => sha256HexBytesSync(utf8Bytes(text));
 const originFor = (tag: string): ChangeOrigin => ({ kind: "lares-verb", requestId: `anon-lift-${tag}`.slice(0, 32) });
@@ -133,7 +138,7 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
     if (bagId !== DAEMON_BAG_ID || !PREFIXES.some((p) => title.startsWith(`${p.prefix}/`))) continue;
     const fields = fieldsOf(record);
     const oldUrl = tiddlerText(record);
-    if (!fields || !oldUrl || fields["face-reach"] !== "vessel-only" || fields["minted-by"] !== args.mintedByHex) continue;
+    if (!fields || !oldUrl || fields["face-reach"] !== "vessel-only" || !mintedHere(args, fields["minted-by"])) continue;
     const next = await rehome(args, oldUrl);
     await putBinding(args, title, {
       ...carried(fields), text: next.url, "face-reach": "face", "keyhive-doc-id": next.keyhiveDocId,
@@ -151,12 +156,14 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
   const catalog = args.catalog;
   if (catalog) {
     const handle = await catalog.handle();
-    const mark = `/drafts/${encodeURIComponent(requireLarDid(args.vesselDid, "anon-lift"))}`;
+    const marks = [args.vesselDid, ...(args.floor ? [args.floor.vesselDid] : [])]
+      .map((did) => `/drafts/${encodeURIComponent(requireLarDid(did, "anon-lift"))}`);
     for (const [floorKey, rec] of plainEntries(handle.doc()?.tiddlers)) {
-      if (!floorKey.endsWith(mark)) continue;
+      const mark = marks.find((m) => floorKey.endsWith(m));
+      if (!mark) continue;
       const fields = textFieldsOf(rec.tiddler as Record<string, unknown>);
       const oldUrl = fields["text"] ?? null;
-      if (!oldUrl || fields["face-reach"] !== "vessel-only" || fields["minted-by"] !== args.mintedByHex) continue;
+      if (!oldUrl || fields["face-reach"] !== "vessel-only" || !mintedHere(args, fields["minted-by"])) continue;
       const slug = floorKey.slice(0, -mark.length).replace(/^.*\/wikis\//, "");
       const trace = await args.traceOf(slug);
       if (!trace) continue;

@@ -32,11 +32,11 @@ async function readMembership(provider: KeyhiveProvider, groupId: string, identi
 describe("THE_ROSTER_LAW", () => {
   it("witnesses the place absent and the atoms present on the face roster after a founding, an admit and a fleet join seat", async () => {
     const founderRepo = repo();
-    const founderPlace = await foundThePlace({ repo: founderRepo, vesselSeed: founderVesselSeed, hearthTrueName: "hearth" });
+    const founderPlace = await foundThePlace({ repo: founderRepo, hearthTrueName: "hearth" });
     const face = await foundTheFace({
       repo: founderRepo,
       daemonHandle: founderPlace.daemonHandle,
-      vesselVerifyingKey: key(founderVesselSeed),
+      placeVerifyingKey: key(founderVesselSeed),
       vesselDisplayName: "founder",
       binding: { mode: "self-stood", signerSeed: rootSeed },
       hearthTrueName: "hearth",
@@ -46,10 +46,9 @@ describe("THE_ROSTER_LAW", () => {
 
     const founderFace = await withArchive(founderAtomSeed, face.veilArchive);
     try {
-      await founderFace.receiveContactCard(new TextEncoder().encode(founderPlace.contactCardJson));
       const founderAtomId = await founderFace.vesselIdentifierHex();
       expect(await isGroupMember(founderFace, face.personaGroupId, founderAtomId)).toBe(true);
-      expect(await isGroupMember(founderFace, face.personaGroupId, founderPlace.vesselIdentifierHex)).toBe(false);
+      expect(await isGroupMember(founderFace, face.personaGroupId, `0x${key(founderVesselSeed)}`)).toBe(false);
     } finally {
       await founderFace.dispose();
     }
@@ -72,7 +71,7 @@ describe("THE_ROSTER_LAW", () => {
     });
 
     const joineeRepo = repo();
-    const joineePlace = await foundThePlace({ repo: joineeRepo, vesselSeed: joineeVesselSeed, hearthTrueName: "hearth" });
+    const joineePlace = await foundThePlace({ repo: joineeRepo, hearthTrueName: "hearth" });
     const joinee = await runApplyAdmitPayload({
       repo: joineeRepo,
       daemonHandle: joineePlace.daemonHandle,
@@ -95,20 +94,20 @@ describe("THE_ROSTER_LAW", () => {
       const roster = await seated.groupMembers(face.personaGroupId);
       expect(roster).toContain(founderAtomId);
       expect(roster).toContain(joineeAtomId);
-      expect(roster).not.toContain(founderPlace.vesselIdentifierHex);
-      expect(roster).not.toContain(joineePlace.vesselIdentifierHex);
+      expect(roster).not.toContain(`0x${key(founderVesselSeed)}`);
+      expect(roster).not.toContain(`0x${key(joineeVesselSeed)}`);
     } finally {
       await seated.dispose();
     }
   });
 
-  it("control — planted place member reads present on the face roster", async () => {
+  it("control — the founded atom reads present on its own face roster", async () => {
     const founderRepo = repo();
-    const founderPlace = await foundThePlace({ repo: founderRepo, vesselSeed: founderVesselSeed, hearthTrueName: "hearth" });
+    const founderPlace = await foundThePlace({ repo: founderRepo, hearthTrueName: "hearth" });
     const face = await foundTheFace({
       repo: founderRepo,
       daemonHandle: founderPlace.daemonHandle,
-      vesselVerifyingKey: key(founderVesselSeed),
+      placeVerifyingKey: key(founderVesselSeed),
       vesselDisplayName: "founder",
       binding: { mode: "self-stood", signerSeed: rootSeed },
       hearthTrueName: "hearth",
@@ -118,9 +117,9 @@ describe("THE_ROSTER_LAW", () => {
 
     const founderFace = await withArchive(founderAtomSeed, face.veilArchive);
     try {
-      await founderFace.receiveContactCard(new TextEncoder().encode(founderPlace.contactCardJson));
-      await founderFace.addGroupMember(founderPlace.vesselIdentifierHex, face.personaGroupId);
-      expect(await isGroupMember(founderFace, face.personaGroupId, founderPlace.vesselIdentifierHex)).toBe(true);
+      const atomId = await founderFace.vesselIdentifierHex();
+      expect(await isGroupMember(founderFace, face.personaGroupId, atomId)).toBe(true);
+      expect(await isGroupMember(founderFace, face.personaGroupId, `0x${key(founderVesselSeed)}`)).toBe(false);
     } finally {
       await founderFace.dispose();
     }

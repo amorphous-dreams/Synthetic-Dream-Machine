@@ -16,7 +16,7 @@
 import { describe, expect, test } from "vitest";
 import {
   admitCarriageCommit, custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin, faceKeyGrantImage, fleetJoinAnswerImage, fleetJoinOffer, sealAddressSecret,
-  type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKey,
+  readFleetJoinRequest, type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKey,
 } from "@lararium/mesh";
 import { certificateImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { generateOrLoadBrowserVesselIdentity, openVesselIdb, idbGet, FLEET_JOIN_STORE } from "../src/browser-vessel-identity.js";
@@ -26,6 +26,9 @@ import {
   browserFleetJoinAbandon, browserFleetJoinLand, browserFleetJoinRequest, browserFleetJoinSettle, browserVesselFaceKeyCustody,
 } from "../src/browser-fleet-join.js";
 import { chain, pair, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
+import { readBrowserFaceAtom } from "../src/browser-face-atom.js";
+import { placeSeed } from "./browser-place-seed.fixture.js";
+import { placeSignerFromSeed } from "@lararium/mesh";
 
 const GROUP = "0xb7f1c2a9d4e60381";
 const HEARTH_NEXUS = "nexus-hearth.synthetic";
@@ -94,6 +97,22 @@ describe("the browser's fleet join", () => {
     await expect(browserFleetJoinRequest({ offer: other, idbName: s.idbName })).rejects.toThrow(/join-pending/);
     expect(await browserFleetJoinAbandon(s.idbName)).toBe(true);
     expect(await browserFleetJoinAbandon(s.idbName)).toBe(false);
+  });
+
+  test("the selected face atom signs its fleet request; the place key and another face fail the request reader", async () => {
+    const s = await stage();
+    const request = await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName });
+    const atom = await readBrowserFaceAtom(s.idbName, GROUP);
+    const placeKey = placeSignerFromSeed(await placeSeed(s.idbName)).key;
+    expect(request.atomKey).toBe(atom?.key);
+    expect(request.atomKey).not.toBe(placeKey);
+    expect(readFleetJoinRequest(request, s.offer, [s.offer.rootKey])).not.toHaveProperty("refusal");
+    expect(readFleetJoinRequest({ ...request, atomKey: placeKey }, s.offer, [s.offer.rootKey])).toHaveProperty("refusal");
+    const otherGroup = "0xb7f1c2a9d4e60382";
+    const otherOffer = fleetJoinOffer({ ...s.offer, personaGroup: otherGroup, nonce: "ab".repeat(32) });
+    const otherRequest = await browserFleetJoinRequest({ offer: otherOffer, idbName: s.idbName });
+    expect(otherRequest.atomKey).not.toBe(request.atomKey);
+    expect(readFleetJoinRequest({ ...request, atomKey: otherRequest.atomKey }, s.offer, [s.offer.rootKey])).toHaveProperty("refusal");
   });
 
   test("B2 — the root's answer lands: the admit carries the signed pin, and the secret and record rest here", async () => {

@@ -43,7 +43,7 @@ afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /
 async function standIsland(opts: { daemonLayer?: boolean } = {}) {
   const vesselRepo = new Repo({ sharePolicy: async () => true });
   const key = await pubOf(FOUNDER_SEED);
-  const cer = await runFoundingCeremony({ repo: vesselRepo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: key,
+  const cer = await runFoundingCeremony({ repo: vesselRepo, vesselSeed: FOUNDER_SEED, placeVerifyingKey: key,
     vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: key,
   });
   const kelBoard = await materializeSharedLarDoc(vesselRepo, personaKelBoardDocUrl(key), "board:persona-kel");
@@ -83,7 +83,7 @@ async function standIsland(opts: { daemonLayer?: boolean } = {}) {
   } as never;
   const daemonAuth = {
     atom: { seed: hex(cer.atomSeed), key: cer.founderEdge.deviceVerifyingKey }, veilArchiveBytes: cer.veilArchive,
-    seed: FOUNDER_SEED, vesselVerifyingKey: key,
+    seed: FOUNDER_SEED, placeVerifyingKey: key,
     personaGroupId: cer.personaGroupId,
     meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
     personaKel: { prefix: cer.personaKelPrefix, chain }, deviceEdge: cer.founderEdge, archiveOpens: true,
@@ -152,7 +152,7 @@ describe("the lease frontier reads off the island's own daemon layer", () => {
 
   test("C2 — an edge for a different atom refuses", async () => {
     const { ctx, daemonAuth } = await standIsland();
-    const other = { ...daemonAuth, atom: { seed: hex(OTHER_SEED), key: await pubOf(OTHER_SEED) } };
+    const other = { ...daemonAuth, atom: { seed: hex(OTHER_SEED), key: await pubOf(OTHER_SEED) }, veilArchiveBytes: undefined };
     await expect(boot(other, ctx)).rejects.toThrow(/Binding Gate/);
   }, 60_000);
 

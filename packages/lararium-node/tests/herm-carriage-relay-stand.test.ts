@@ -1,106 +1,122 @@
-/**
- * herm-carriage-relay-stand.test.ts — a Herm STANDS its relay port, and the port opens no WebSocket.
- *
- * The herm's relay port serves persona-KEL drops over plain HTTP and destroys every WebSocket upgrade before any
- * 101. So a member's carry and a stranger's Mu have no socket to ride (their ring laws live in the cas-wire suites),
- * and what this suite proves is the port's standing shore:
- *   · INERT — the EXACT boot gate (`relayPort !== null ? startCarriageRelay : null`) stands nothing when no relay
- *     port rides the config, and a listener when it does;
- *   · SHUT — a dialer at the stood port on its pinned knock never reaches an open socket (the upgrade's silence
- *     is asserted at the relay itself, in herm-relay-port.test);
- *   · STABLE IDENTITY — `resolveRelayGateSeed` yields the SAME gate key across restarts from the Herm's own
- *     identity seed, a DIFFERENT one from a pinned seed hex, and NEVER a fresh random;
- *   · CLEAN TEARDOWN — `close()` stops the crossroads: its port answers nothing afterwards.
- *
- * Gate: lar:///ha.ka.ba/lararium/node/herm-carriage-relay-stand
- */
+/** The relay service owns a random durable gate row, independent of the place and face. */
 import { afterEach, describe, test, expect } from "vitest";
-import { connect } from "node:net";
-import { WebSocket } from "ws";
-import { knockSegment, hex } from "@lararium/mesh";
-import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "../src/carriage-relay.js";
+import { createHmac } from "node:crypto";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import * as ed from "@noble/ed25519";
+import { CARRIAGE_CARRIER_DOMAIN, carrierContractBytes, hex, mintPlaceInception, placeSignerFromSeed, verifyPlaceDutyAtHead,
+  provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, attestAndRotate, httpPersonaKelDropHerm,
+  depositPersonaKelChain, pullPersonaKelSuccessors } from "@lararium/mesh";
+import { startCarriageRelay } from "../src/carriage-relay.js";
+import { openRelayGateSeed, rotateRelayGateSeed, RELAY_GATE_SEED_FILE, RelayGateSeedRefused } from "../src/relay-gate-seed.js";
+import { larIdentityDir } from "../src/vessel-paths.js";
 
-/** The EXACT boot gate: a relay stands ONLY when a port rides the config, on the resolved (stable) gate seed. */
-function bootRelayGate(cfg: {
-  vesselSeed: Uint8Array; relayPort: number | null; gateSeedHex?: string;
-}): Promise<CarriageRelay | null> {
-  const seed = resolveRelayGateSeed(cfg.vesselSeed, cfg.gateSeedHex);
-  return cfg.relayPort !== null && !Number.isNaN(cfg.relayPort)
-    ? startCarriageRelay({ gateSeed: seed, port: cfg.relayPort })
-    : Promise.resolve(null);
+const previous = process.env.LAR_ROOT;
+const roots: string[] = [];
+function home(): string {
+  const root = mkdtempSync(join(tmpdir(), "relay-row-")); roots.push(root); process.env.LAR_ROOT = root; return root;
 }
+afterEach(() => {
+  if (previous === undefined) delete process.env.LAR_ROOT; else process.env.LAR_ROOT = previous;
+  for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
+});
 
-/** Does a WS dial to `url` reach an OPEN socket? A shut route destroys the upgrade, so `error` or `close` answers false. */
-function opens(url: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const ws = new WebSocket(url);
-    const done = (v: boolean) => { try { ws.close(); } catch { /* down */ } resolve(v); };
-    ws.on("open", () => done(true));
-    ws.on("error", () => done(false));
-    ws.on("close", () => done(false));
-    setTimeout(() => done(false), 3000);
+/** The label a thief keys an HMAC of the place seed under, to guess a derived relay key: and must not reach the relay's pin. */
+const OLD_RELAY_DERIVATION_TAG = "relay-gate";
+
+describe("relay service S row", () => {
+  test("thief: place and face seeds cannot reconstruct the random pin; restart retains it", async () => {
+    home();
+    const place = new Uint8Array(32).fill(31), atom = new Uint8Array(32).fill(41);
+    process.env.LAR_HERM_RELAY_SEED = "aa".repeat(32);
+    try {
+      const first = openRelayGateSeed();
+      const oldDerivation = new Uint8Array(createHmac("sha256", OLD_RELAY_DERIVATION_TAG).update(place).digest());
+      expect(hex(first)).not.toBe(hex(oldDerivation));
+      expect(hex(first)).not.toBe(hex(place));
+      expect(hex(first)).not.toBe(hex(atom));
+      expect(hex(first)).not.toBe("aa".repeat(32));
+      const head = mintPlaceInception({ signerSeed: place, coldVerifyingKey: hex(await ed.getPublicKeyAsync(atom)) }).event;
+      const image = carrierContractBytes({ nym: hex(await ed.getPublicKeyAsync(place)), sealEpochCid: "epoch" });
+      const relaySig = await placeSignerFromSeed(first).signFloor(CARRIAGE_CARRIER_DOMAIN, image);
+      expect(verifyPlaceDutyAtHead({ kel: head, domain: CARRIAGE_CARRIER_DOMAIN, image, sig: relaySig })).toBe(false);
+      expect(verifyPlaceDutyAtHead({ kel: head, domain: CARRIAGE_CARRIER_DOMAIN, image,
+        sig: await placeSignerFromSeed(place).signFloor(CARRIAGE_CARRIER_DOMAIN, image) })).toBe(true);
+      const stood = await startCarriageRelay({ gateSeed: first, port: 0 });
+      const pin = stood.gatePubKey;
+      expect(pin).toBe(hex(await ed.getPublicKeyAsync(first)));
+      await stood.close();
+      first.fill(0);
+      const restarted = openRelayGateSeed();
+      expect(hex(await ed.getPublicKeyAsync(restarted))).toBe(pin);
+      restarted.fill(0);
+    } finally { delete process.env.LAR_HERM_RELAY_SEED; }
   });
-}
 
-describe("herm-carriage-relay-stand — a Herm stands its relay port and the port opens no socket; off = inert", () => {
-  let relay: CarriageRelay | null = null;
-  afterEach(async () => { if (relay) { try { await relay.close(); } catch { /* down */ } relay = null; } });
+  test("explicit rotation changes the public pin; malformed row refuses by name", async () => {
+    home();
+    const old = openRelayGateSeed();
+    const oldPin = hex(await ed.getPublicKeyAsync(old));
+    old.fill(0);
+    const newPin = rotateRelayGateSeed();
+    expect(newPin).not.toBe(oldPin);
+    const current = openRelayGateSeed();
+    expect(hex(await ed.getPublicKeyAsync(current))).toBe(newPin);
+    current.fill(0);
+    const path = join(larIdentityDir(), RELAY_GATE_SEED_FILE);
+    expect(readFileSync(path, "utf8")).toMatch(/^[0-9a-f]{64}\n$/);
+    writeFileSync(path, "bad", "utf8");
+    expect(() => openRelayGateSeed()).toThrow(RelayGateSeedRefused);
+    expect(() => rotateRelayGateSeed()).toThrow(RelayGateSeedRefused);
+  });
 
-  test("INERT + SHUT: no port stands nothing; with a port the relay port stands and opens no socket", async () => {
-    const hermSeed = new Uint8Array(32).fill(21);
-    expect(await bootRelayGate({ vesselSeed: hermSeed, relayPort: null })).toBeNull();
-
-    relay = await bootRelayGate({ vesselSeed: hermSeed, relayPort: 0 });
-    expect(relay).not.toBeNull();
-    const url = `ws://127.0.0.1:${relay!.port}/ws/${knockSegment(relay!.gatePubKey, "/ws")}`;
-    expect(await opens(url)).toBe(false);
-  }, 20_000);
-
-  test("STABLE IDENTITY: the resolved gate seed is deterministic — same across restarts, distinct from a pinned seed", async () => {
-    const hermSeed = new Uint8Array(32).fill(31);
-
-    // Two "restarts" from the Herm's own identity seed → the IDENTICAL gate seed (a hearth keeps dialing one key).
-    const restart1 = resolveRelayGateSeed(hermSeed);
-    const restart2 = resolveRelayGateSeed(hermSeed);
-    expect([...restart2]).toEqual([...restart1]);   // stable across restarts — the property that matters
-
-    // A pinned seed hex → a DIFFERENT, still-deterministic key (the operator's out-of-band choice).
-    const pinnedHex = "aa".repeat(32);
-    const pinned1 = resolveRelayGateSeed(hermSeed, pinnedHex);
-    const pinned2 = resolveRelayGateSeed(hermSeed, pinnedHex);
-    expect([...pinned1]).toEqual([...pinned2]);
-    expect([...pinned1]).not.toEqual([...hermSeed]);   // the pin overrides the identity seed
-    expect(hex(pinned1)).toBe(pinnedHex);
-
-    // An empty / absent seed hex falls back to the identity seed — never a fresh random.
-    // ★ AND THE DERIVED SEED IS NOT THE VESSEL'S OWN ★ — an empty/absent pin still DERIVES rather than
-    // passing the identity seed through. These two lines once asserted equality, pinning the flaw: the
-    // relay gate key WAS the vessel identity key, published to every dialing hearth, joining two trust
-    // domains in one correlatable pair. Deterministic still, separated now.
-    expect([...resolveRelayGateSeed(hermSeed, "")]).not.toEqual([...hermSeed]);
-    expect([...resolveRelayGateSeed(hermSeed, undefined)]).not.toEqual([...hermSeed]);
-    expect([...resolveRelayGateSeed(hermSeed, "")]).toEqual([...resolveRelayGateSeed(hermSeed, undefined)]);
-    expect(resolveRelayGateSeed(hermSeed).length).toBe(32);   // an Ed25519 seed's exact width
-
-    // The gate PUBKEY the two restarts announce is therefore identical — the stable-identity guarantee, end to end.
-    const stood1 = await startCarriageRelay({ gateSeed: restart1, port: 0 });
-    const stood2 = await startCarriageRelay({ gateSeed: restart2, port: 0 });
-    try { expect(stood1.gatePubKey).toBe(stood2.gatePubKey); }
-    finally { await stood1.close(); await stood2.close(); }
-  }, 20_000);
-
-  test("CLEAN TEARDOWN: close() stops the crossroads — its port answers nothing afterwards", async () => {
-    const hermSeed = new Uint8Array(32).fill(41);
-    const stood = await bootRelayGate({ vesselSeed: hermSeed, relayPort: 0 });
-    expect(stood).not.toBeNull();
-    const port = stood!.port;
-    const listens = (): Promise<boolean> => new Promise((resolve) => {
-      const sock = connect({ host: "127.0.0.1", port });
-      sock.once("connect", () => { sock.destroy(); resolve(true); });
-      sock.once("error", () => resolve(false));
+  test("the pinned HTTP drop address serves across restart and requires re-pinning after rotation", async () => {
+    home();
+    const key = (b: number) => new Uint8Array(32).fill(b);
+    const pub = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
+    const guardians = [key(61), key(62), key(63)];
+    const guardianKeys = await Promise.all(guardians.map(pub));
+    const start = provisionThresholdRecoveryAtFounding({
+      foundingOpKeyDid: `0x${await pub(key(51))}`,
+      guardians: guardianKeys.map((value, i) => guardianRecoveryRegistrationCard(["mine", "guardian-a", "guardian-b"][i]!, value, null)),
+      recoveryThreshold: 2,
+    }).inception;
+    const rotated = await attestAndRotate({
+      head: start, freshOpKeyDid: `0x${await pub(key(52))}`, guardianRecoveryKeys: guardianKeys, recoveryThreshold: 2,
+      guardianSigners: await Promise.all(guardians.slice(0, 2).map(async (seed) => ({ signer: await pub(seed), sign: async (bytes: Uint8Array) => hex(await ed.signAsync(bytes, seed)) }))),
     });
-    expect(await listens(), "control: the listener stands before close()").toBe(true);
-    await stood!.close();
-    expect(await listens()).toBe(false);
+    if (!rotated.ok) throw new Error(rotated.reason);
+    const journal = join(process.env.LAR_ROOT!, "drops.jsonl");
+    const stand = async () => {
+      const seed = openRelayGateSeed();
+      try { return await startCarriageRelay({ gateSeed: seed, port: 0, dropJournalPath: journal }); }
+      finally { seed.fill(0); }
+    };
+    const first = await stand();
+    const oldPin = first.gatePubKey;
+    const oldAddress = `ws://127.0.0.1:${first.port}#${oldPin}`;
+    expect((await depositPersonaKelChain([start, rotated.event], [httpPersonaKelDropHerm(oldAddress)])).unanswered).toEqual([]);
+    await first.close();
+    const restarted = await stand();
+    try {
+      expect(restarted.gatePubKey).toBe(oldPin);
+      const address = `ws://127.0.0.1:${restarted.port}#${oldPin}`;
+      expect((await pullPersonaKelSuccessors([start], [httpPersonaKelDropHerm(address)])).kel.map((row) => row.eventCid))
+        .toEqual([start.eventCid, rotated.event.eventCid]);
+    } finally { await restarted.close(); }
+    const newPin = rotateRelayGateSeed();
+    const next = await stand();
+    try {
+      expect(next.gatePubKey).toBe(newPin);
+      expect(next.gatePubKey).not.toBe(oldPin);
+      const oldAddressAtNewPort = `ws://127.0.0.1:${next.port}#${oldPin}`;
+      const newAddress = `ws://127.0.0.1:${next.port}#${newPin}`;
+      expect((await pullPersonaKelSuccessors([start], [httpPersonaKelDropHerm(oldAddressAtNewPort)])).kel.map((row) => row.eventCid))
+        .toEqual([start.eventCid]);
+      expect((await depositPersonaKelChain([start, rotated.event], [httpPersonaKelDropHerm(newAddress)])).unanswered).toEqual([]);
+      expect((await pullPersonaKelSuccessors([start], [httpPersonaKelDropHerm(newAddress)])).kel.map((row) => row.eventCid))
+        .toEqual([start.eventCid, rotated.event.eventCid]);
+    } finally { await next.close(); }
   }, 20_000);
 });

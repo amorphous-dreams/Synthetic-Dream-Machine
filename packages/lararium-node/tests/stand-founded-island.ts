@@ -24,7 +24,7 @@ const FOUNDER_SEED = seed(71);
 export async function standFoundedIsland(teardown: Array<() => void>, opts: { composite?: CompositeStore; tw5?: unknown } = {}) {
   const vesselRepo = new Repo({ sharePolicy: async () => true });
   const key = await pubOf(FOUNDER_SEED);
-  const cer = await runFoundingCeremony({ repo: vesselRepo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: key,
+  const cer = await runFoundingCeremony({ repo: vesselRepo, atomSeed: seed(72), placeVerifyingKey: key,
     vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: key,
   });
   const kelBoard = await materializeSharedLarDoc(vesselRepo, personaKelBoardDocUrl(key), "board:persona-kel");
@@ -66,12 +66,12 @@ export async function standFoundedIsland(teardown: Array<() => void>, opts: { co
   const veil = { atom: { seed: hex(cer.atomSeed), key: atom.key }, veilArchiveBytes: cer.veilArchive };
   const daemonAuth = {
     ...veil,
-    seed: FOUNDER_SEED, vesselVerifyingKey: key,
+    placeVerifyingKey: key,
     personaGroupId: cer.personaGroupId,
     meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
     personaKel: { prefix: cer.personaKelPrefix, chain }, deviceEdge: cer.founderEdge, archiveOpens: true,
     faceAnchor: mintFaceAnchor({ personaGroup: cer.personaGroupId, personaKelPrefix: cer.personaKelPrefix,
       personaRootDid: cer.founderEdge.personaRootDid, edge: cer.founderEdge, leaseEpoch: 0 }),
   };
-  return { ctx, daemonAuth, daemonHandle, vesselRepo, veil };
+  return { ctx, daemonAuth, daemonHandle, vesselRepo, veil, placeSeed: Uint8Array.from(FOUNDER_SEED) };
 }

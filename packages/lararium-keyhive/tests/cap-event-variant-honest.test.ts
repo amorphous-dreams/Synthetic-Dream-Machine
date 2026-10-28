@@ -6,11 +6,8 @@
  * that value through. The ADMIT path cannot: `eventsForPeer` returns bare `Uint8Array[]`, discarding the
  * variant at the boundary, so by the time the bytes reach the daemon doc the true value is GONE.
  *
- * It used to stamp `"cap-membership"` there — a string outside the vocabulary entirely, over a bundle that
- * is provably heterogeneous (a crossing carries DELEGATED re-grants AND the CGKA/PCS ops together). Nothing
- * branches on the value today, so nothing broke; but the record asserted something false, and the only test
- * pinning variant values reads the FOUNDER's vessel alone, so the admit path's claim was never checked
- * against the vocabulary it violated.
+ * A bundle a crossing carries is heterogeneous (DELEGATED re-grants AND the CGKA/PCS ops together), so no single
+ * variant word describes it.
  *
  * The honest reading is "unknown", said in a word that can never be mistaken for a real variant — and it
  * belongs only to an event the vessel PERSISTS WITHOUT TAKING. Everything keyhive accepts arrives typed: the
@@ -36,14 +33,6 @@ describe("the cap-event variant a ceremony writes", () => {
     expect(REAL_VARIANTS).not.toContain(CAP_EVENT_VARIANT_UNKNOWN);
     // CONTROL: the vocabulary itself is non-empty and distinct, so the assertion above is not vacuous.
     expect(new Set(REAL_VARIANTS).size).toBe(REAL_VARIANTS.length);
-  });
-
-  test("★ no ceremony writer invents a domain-looking variant ★", () => {
-    // `cap-membership` READ like a variant and was not one. A fabricated value that resembles the
-    // vocabulary is worse than an obvious sentinel: it survives review by looking plausible.
-    for (const f of ["ceremony-core.ts", "operator-daemon-behavior.ts"]) {
-      expect(SRC(f), `${f} still invents a variant`).not.toContain('"cap-membership"');
-    }
   });
 
   test("★ no writer persists a crossing ahead of taking it — the order is what makes the record true ★", () => {

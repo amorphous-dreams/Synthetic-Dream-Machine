@@ -1,0 +1,62 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/k15-bonds-lane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/k15-bonds-lane.mem"
+l-space   = "adjacent"
+role      = "the K15 bonds lane's kit: no seed reaches past the floor. The place mints no Keyhive identity, every face operation signs by the selected face's atom, the relay key is a random relay-only S row, cadence reads a public id, every floor edge signs through the scoped place signer, and the seed census follows renamed carriers"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/k15-bonds-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/k15-bonds-lane"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! K15 bonds ~ no seed reaches past the floor
+
+Road :208 (operator, 2026-10-19) rules that custody and identity read by capability, never by host. The bonds lane builds that ruling for every site that read the one vessel seed: the Keyhive Individual and its ContactCard, the bare leaf, the daemon proof, the sibling, enrolment and group-secret doors, the relay key, the carriage cadence and the floor edges. It runs after Waves C and D and the floor pin claim (PR #100) and before the X0 bake, since these bonds move identity bytes. The custody contract stands in <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k15-custody-step-zero">>.
+
+<<~/ahu>>
+
+<<~ ahu #/the-model>>
+
+!! The model that stands
+
+* The place mints no Keyhive identity. `foundThePlace` seeds the daemon document and the hearth true-name tiddler alone; it takes no seed and returns no card, archive or identifier. `mintPlaceCard`, `placeCardIsOf` and the node `place-card` module leave the package.
+* Each PersonaGroup keeps one Keyhive identity, keyed by its face atom, with its veil archive. The daemon boots that provider and no other (`boot-daemon-keyhive`, `operator-daemon-behavior`).
+* A faceless vessel (a bare herm, a floor-only node) boots no Keyhive. Its daemon serves public reads and binds its slot documents with no Keyhive registration (`face-reach` reads `vessel-only`, and the lift moves them under a face at the seat, the lit face naming the floor's public label); every verb that needs a face answers the `waking-floor` refusal that names the lift. The carriage presents the public place card and pin.
+* Every face operation signs or opens by the selected face's atom: the dial, join, device edge countersign, enrolment request, sibling channel, daemon asks, group-secret open, internal asks and `lares meme promote --face N`. A vessel that wears several faces names one; ambiguity and no face refuse by name.
+* The scoped place signer (`placeSignerFromSeed`, five framed duties) is the only holder of the place seed outside the key-file doors. The node reaches it through `vesselPlaceSignerDoor`; the floor children ride `vesselFloorKeyDoor`.
+
+<<~/ahu>>
+
+<<~ ahu #/the-slices>>
+
+!! The slices, each built with its red and control
+
+# ''Identity bytes.'' The place mints no Keyhive identity. Red: a thief holding the place seed mints, restores or presents no face identity. Control: the selected atom restores its face, face B stays shut, a faceless public card reads.
+# ''Face runtime and wire proofs.'' The daemon, node and browser opens, sibling, enrolment, group-secret, device-edge and `lares meme` take the atom. Red: the place seed signs no dial, edge, enrolment, sibling, daemon ask, group open or meme. Control: the atom of the named face succeeds on each gate; face B and no face refuse by name.
+# ''The relay key.'' A random 32-byte `relay-gate-seed` row rests durably in the identity home under the relay service as its principal and a relay-only opener (`relay-gate-seed.ts`). Rotation is explicit (`lares herm relay-rotate`); the pin re-pins the relay address. No derivation from the place seed, no environment fallback.
+# ''Cadence.'' `nodeSeedHex` left `carriage-caps`; the pull cadence takes a public place id (`cadenceKey`) or fresh local randomness.
+# ''The floor edges.'' The flow pointer, the carrier contract, the floor pin and the floor claims sign through the scoped place signer; the raw seed reaches nothing outside `node-vessel-identity` and `browser-vessel-identity`.
+# ''The transitive census.'' `tools/seed-census.mjs` follows a seed through local renames, same-file parameters and cross-file calls, keeps a counted handoff ledger (empty on the standing tree) and sorts every use of the public place key; a renamed carrier or a public-key fallback on a face relation reads OPEN, and the instrument proves itself on a planted renamed consumer. Every K15 exception burned with its replacement; a K15 row now reads STALE-RULE.
+
+<<~/ahu>>
+
+<<~ ahu #/old-bytes>>
+
+!! Old bytes refuse by name
+
+No CRDT document survives until X0, so re-genesis replaces migration. The node refuses a stored `place-archive.bin` or a `.vessel-card*.json` (`LegacyPlaceBytesRefused`) at boot and at founding; the browser refuses a `keyhive-archive` row before its store opens (`LegacyBrowserArchiveRefused`); a face relation countersigned by the place key refuses `LegacyFaceSignatureRefused`. Each names the fresh-store runbook line.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;WHOQvhgZ-NIR0_VHPS7NqNBcsIa1xetO0RDs1KMWy3A
+
+<<^ code="&#x0004;" -> to="?">>

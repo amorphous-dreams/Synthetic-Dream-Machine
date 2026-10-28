@@ -78,8 +78,8 @@ export interface ResolveBindingArgs {
    * Host-side: `daemonVm.composite`; island-side: the worker's `ctx.composite`.
    */
   readonly daemonStore: CompositeStore;
-  /** Vessel provider for bindings held at the floor. */
-  readonly keyhive: CapabilityProvider;
+  /** The selected face's provider; absent at the faceless floor, where a binding document carries no Keyhive registration. */
+  readonly keyhive?: CapabilityProvider;
   readonly faceDoor?: FaceBagDoor;
   /** Whether the face the vessel pins holds a SEAT the delegating identity can name. Absent → seated. A
    *  joinee admitted by edge alone answers false until a face-join lands its membership events. */
@@ -153,9 +153,9 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
 
   // The provider mapping is process-local, so the binding carries its document ID for reuse.
   const seated = !!(args.personaGroupId && args.faceDoor && await (args.faceSeated?.() ?? Promise.resolve(true)));
-  const { docId: keyhiveDocId } = seated
-    ? await args.faceDoor!.mint(handle.url, "admin")
-    : await args.keyhive.registerBag(handle.url);
+  const keyhiveDocId = seated
+    ? (await args.faceDoor!.mint(handle.url, "admin")).docId
+    : args.keyhive ? (await args.keyhive.registerBag(handle.url)).docId : undefined;
 
   // A seat makes the face the creator. At the floor the vessel creates the document alone.
   // Keyhive's admin grant carries the writable slot until an edit grade is available.
@@ -180,7 +180,7 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
     "recipe-trace": canonicalJson(args.recipeTrace),
     "minted-by":   args.mintedByHex,
     "face-reach":  seated ? "face" : "vessel-only",
-    "keyhive-doc-id": keyhiveDocId,
+    ...(keyhiveDocId !== undefined ? { "keyhive-doc-id": keyhiveDocId } : {}),
   }, "personal-bindings"), originFor(`binding-${args.fingerprint}`), { bag: DAEMON_BAG_ID });
 
   return { url: handle.url, minted: true };

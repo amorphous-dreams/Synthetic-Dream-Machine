@@ -1,3 +1,4 @@
+import { placeSeed } from "./browser-place-seed.fixture.js";
 /**
  * K15 step 2c, the browser half's first act — a browser vessel meets each face through that face's atom, and the
  * atom rests in the face's own custody row.
@@ -21,7 +22,7 @@ import { BrowserCustodyRefused, readKeystoreRow } from "../src/browser-custody.j
 import {
   browserFaceAtom, faceAtomRow, keepBrowserFaceAtomSeed, readBrowserFaceAtom, requireBrowserFaceAtomSeed,
 } from "../src/browser-face-atom.js";
-import { generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed } from "../src/browser-vessel-identity.js";
+import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-identity.js";
 
 const GROUP_A = "group-a";
 const GROUP_B = "group-b";
@@ -57,7 +58,7 @@ describe("the browser's face atom", () => {
   test("A3 — isolation red: the device seed derives no atom and opens no group secret sealed to one; CONTROL: it opens one sealed to its own key", async () => {
     const idbName = await vessel();
     await generateOrLoadBrowserVesselIdentity(idbName, "face-atom fixture");
-    const deviceSeed = await loadBrowserSigningSeed(idbName);
+    const deviceSeed = await placeSeed(idbName);
     const atom = await browserFaceAtom(idbName, GROUP_A);
     const seal = await sealGroupSecret({ opSeed, prefix: "prefix-a", deviceVerifyingKey: atom.key });
     expect(atom.opener.seal(seal)).not.toBeNull();
@@ -66,6 +67,9 @@ describe("the browser's face atom", () => {
     expect(thief.seal(seal)).toBeNull();
     expect(thief.deviceKey).not.toBe(atom.key);
     expect(thief.seal({ ...seal, deviceKey: thief.deviceKey })).toBeNull();
+    const other = await browserFaceAtom(idbName, GROUP_B);
+    expect(other.opener.seal(seal), "face B cannot open A's seal").toBeNull();
+    await expect(requireBrowserFaceAtomSeed(idbName, "no-face")).rejects.toMatchObject({ name: "FaceAtomMissing" });
 
     const own = await sealGroupSecret({ opSeed, prefix: "prefix-a", deviceVerifyingKey: thief.deviceKey });
     expect(thief.seal(own), "CONTROL: sealed to the device key, the device seed opens it").not.toBeNull();

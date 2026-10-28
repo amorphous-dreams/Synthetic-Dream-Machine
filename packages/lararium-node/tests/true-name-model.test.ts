@@ -24,7 +24,7 @@ import {
   loadPersonaGroupRootSeed,
   loadPersonaGroupRootVerifyingKey,
   loadVesselVerifyingKey,
-  loadVesselSigningSeed,
+  vesselPlaceSignerDoor,
 } from "../src/node-vessel-identity.js";
 
 const saved: Record<string, string | undefined> = {};
@@ -59,9 +59,9 @@ describe("the True Name Model — vessel, persona root, and the edge that binds 
     expect(personaRoot.created).toBe(true);
     // The two never share bytes — the persona root derives from its own CSPRNG draw, never the vessel seed.
     expect(personaRoot.verifyingKey).not.toBe(vesselKey);
-    const vesselSeed  = await loadVesselSigningSeed();
+    const placeSigner = await vesselPlaceSignerDoor();
     const personaSeed = await loadPersonaGroupRootSeed();
-    expect(Buffer.from(personaSeed).toString("hex")).not.toBe(Buffer.from(vesselSeed).toString("hex"));
+    expect(Buffer.from(personaSeed).toString("hex")).not.toBe(placeSigner.key);
   });
 
   test("the read-only accessor surfaces the human's face without minting one", async () => {

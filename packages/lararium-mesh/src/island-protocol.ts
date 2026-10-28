@@ -251,10 +251,8 @@ export interface IslandMsg_Manifest {
     /** The veil identity's prior archive — restores its prekeys so material keyed to the veil's card
      *  keeps opening across boots. */
     veilArchiveBytes?: Uint8Array;
-    /** The PLACE's own 32-byte signing seed — this vessel IS the Keyhive Individual it inits. */
-    seed:                  Uint8Array;
-    /** Hex Ed25519 verifying key the keyhive identity MUST resolve to (Gate A) — the VESSEL's, not a human's. */
-    vesselVerifyingKey:    string;
+    /** Public place key for place checks; the face's atom supplies Keyhive identity. */
+    placeVerifyingKey:     string;
     /** The FACE's pins, present only when a face stands. A place founded and never lit carries NONE of
      *  them, and that names the WAKING FLOOR rather than a fault — canon has a vessel boot permissionlessly
      *  on its own key. The worker refuses a TORN face (some pins, not all), so absence buys FEWER CAPS and
@@ -275,31 +273,14 @@ export interface IslandMsg_Manifest {
     personaKel?:           { readonly prefix: string; readonly chain: readonly PersonaKelEvent[] };
     /** This vessel's signed device-delegation edge (root→vessel) — the public, Beelay-free binding. */
     deviceEdge?:           DeviceDelegationTiddler;
-    /** A prior keyhive Archive (from the identity home) — the restore FLOOR keyhive inits from before
-     *  replaying daemon cap-events. Absent on a first boot / a vessel that never persisted one. */
-    archiveBytes?:         Uint8Array;
     /**
-     * THE OUTBOX KEY, opened from its hot row under the vessel key and handed across at unlock, the road the Archive
-     * rides (custody#/the-table, the outbox). The island seals and opens its outbox's parcels under it for the life
+     * THE OUTBOX KEY, opened from its custody row and handed across at unlock. The island seals and opens its outbox's parcels under it for the life
      * of this composition. Absent on a floor composition: the outbox holds shut and every parcel verb refuses.
      */
     outboxKey?:            Uint8Array;
     /**
-     * WHETHER THIS VESSEL'S IDENTITY ARCHIVE OPENS — true only when the composition stands holding the vessel
-     * key (it was handed the sovereign rows), carried
-     * across the worker boundary so the worker's archive-write DOOR can refuse on its OWN reading.
-     *
-     * REQUIRED, and that is the point. A re-seal that exports the sovereign archive on EVERY boot
-     * lands a fresh faceless export over a sealed identity whenever the archive holds shut — and canon rules that a locked vessel signs nothing (waking-floor #/the-shape). The
-     * worker gates on this and reads it `=== true`, so a drifted value fails CLOSED; making the field
-     * REQUIRED makes the compiler, rather than a reviewer, the thing that notices a populator which
-     * answers nothing.
-     *
-     * IT NAMES THE ARCHIVE FACT, NEVER THE CLASS. `standAs` renders a shut archive as `"herm"`, so the
-     * two agree wherever the seal decides the class; they part on a FOUNDING (no face lit, archive
-     * opens) and on an operator-declared `--recipe herm` crossroads, both of which must keep
-     * persisting their own place identity. `personaSlotCeiling("herm") === 0` bars a SEATED persona,
-     * never an archive.
+     * Whether the selected face's veil archive opens. The worker's archive writer requires `true`;
+     * a faceless or locked composition exports no Keyhive identity bytes.
      */
     archiveOpens:          boolean;
   };
@@ -891,7 +872,7 @@ export interface IslandMsg_DocRested {
 }
 
 /** The carriers the custody write door lands: the vessel's own keyhive archive, and the mounted face's veil archive. */
-export type CustodyWriteCarrier = "archive" | "veil";
+export type CustodyWriteCarrier = "veil";
 /**
  * Island → vessel: THE CUSTODY WRITE DOOR's ask. The vessel key rests in the vessel's main thread alone, so an
  * island that holds bytes to seal at rest hands them to the vessel, which seals them under the key it holds and

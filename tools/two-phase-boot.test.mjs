@@ -10,9 +10,9 @@
 //       leaves every private row of the three custody homes byte-identical and mints none.
 //                                                                 control: holding the vessel key and handed the
 //                                                                 seated readers, the composition runs each boot
-//                                                                 reader, reads the archive rows, lands the island's
-//                                                                 archive exports through the custody write door, and
-//                                                                 both archives rest sealed afterward
+//                                                                 reader, reads the face's archive row, lands the island's
+//                                                                 archive export through the custody write door, and
+//                                                                 the archive rests sealed afterward
 //   T3  a boot that refuses frees its store name, whether the refusal lands while the prep stands the Repo or
 //       later while the caps compose.                             control: a standing composition holds the name
 //                                                                 against a second claim
@@ -123,7 +123,7 @@ async function recordingReads(run) {
 }
 
 function counting(readers) {
-  const calls = { wornMount: 0, personaRoots: 0, walkRecords: 0, archive: 0, veilArchive: 0, veil: 0, writeArchive: 0, writeVeilArchive: 0, outboxKey: 0 };
+  const calls = { wornMount: 0, personaRoots: 0, walkRecords: 0, veilArchive: 0, veil: 0, writeVeilArchive: 0, outboxKey: 0 };
   const wrapped = {};
   for (const name of Object.keys(calls)) wrapped[name] = (...a) => { calls[name] += 1; return readers[name](...a); };
   return { calls, readers: wrapped };
@@ -220,29 +220,27 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     const route = [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }];
     assert.equal((await holder.unlock(route)).reading, "opens");
     await holder.unlockFaces(route);
-    const archiveAt = join(homes.identity, "place-archive.bin");
     const faceDirs = readdirSync(join(homes.identity, "faces"));
     const veilAt = faceDirs.map((d) => join(homes.identity, "faces", d)).flatMap((d) => readdirSync(d).map((name) => join(d, name)))
       .find((path) => /\/veil-archive-g[0-9a-f]{64}\.bin$/.test(path));
     assert.ok(veilAt, "T2 control: no veil-archive-g<64 lowercase hex>.bin row stands in a face's directory");
-    const restBefore = { archive: readFileSync(archiveAt), veil: readFileSync(veilAt) };
+    const restBefore = { veil: readFileSync(veilAt) };
     phases.length = 0;
     const first = counting(node.seatedSovereignReaders());
     const sovereignly = await recordingReads(() => open({ floor, sovereign: first.readers }));
     const one = sovereignly.value;
     assert.equal(phases.at(-1), "live", "T1: a composition reaches live on the floor a torn-down one stood on");
     await one.daemon.workerEa;
-    for (const name of ["wornMount", "personaRoots", "walkRecords", "archive", "veilArchive", "writeArchive", "writeVeilArchive", "outboxKey"]) {
+    for (const name of ["wornMount", "personaRoots", "walkRecords", "veilArchive", "writeVeilArchive", "outboxKey"]) {
       assert.ok(first.calls[name] >= 1, `T2 control: the ${name} reader ran (${first.calls[name]})`);
     }
-    // The island's exports landed through the custody write door: both rows moved, and both rest sealed.
-    for (const [name, at] of [["archive", archiveAt], ["veil", veilAt]]) {
+    // The island's export landed through the custody write door: the face's archive row moved and rests sealed.
+    for (const [name, at] of [["veil", veilAt]]) {
       const now = readFileSync(at);
       assert.equal(name === "veil" ? mesh.readFckCarrier(now) : mesh.readSCarrier(now), "sealed", `T2 control: the ${name} archive rests sealed under its key`);
       assert.equal(now.equals(restBefore[name]), false, `T2 control: the island's ${name} export replaced the row`);
     }
-    const rowsRead = new Set(sovereignly.seen.map(privateRow).filter(Boolean));
-    assert.ok(rowsRead.has("place-archive"), `T2 control: the sovereign composition reaches the archive row (reached: ${[...rowsRead].join(", ") || "none"})`);
+    assert.ok(sovereignly.seen.includes(veilAt), `T2 control: the sovereign composition reads the face's archive row (${veilAt})`);
     assert.notEqual(one.repo, zero.repo, "T1: a fresh Repo");
     assert.notEqual(one.daemon, zero.daemon, "T1: a fresh daemon island");
     // A herm stands a gate knock only at a Nexus whose carriage board counts a carry for it (`gateNexuses`), and this

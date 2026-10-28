@@ -1,82 +1,19 @@
 /**
- * archive-floor-write — THE ONE DOOR that lands the sovereign identity archive on disk, and the
- * standing gate that stands ON that door.
- *
- * ══ WHY A DOOR AT ALL ═══════════════════════════════════════════════════════════════════════════
- *
- * The M3 boot re-seal exported the identity archive on EVERY boot, and its own comment named the
- * seam: "seed the on-disk archive FLOOR every boot" — written when only one boot shape existed.
- * A vessel holding no vessel key boots too (`standAs`: every boot rests at the floor), and canon rules
- * what it may do there:
- *
- *   waking-floor #/the-shape:
- *     <<~ has Wake Hold "closed/every-sovereign-act ~ a locked vessel signs nothing">>
- *   waking-floor #/the-breaks:
- *     "The vessel's at-rest state never changes, so a stolen disk still yields nothing of anybody's
- *      person. Storage stays barred; presence stays welcome."
- *
- * Writing a fresh faceless keyhive export over a sealed sovereign archive is the highest-cost write
- * this vessel can perform: the bytes carry the founding DAG, the hydrated membership/capability ring
- * and the PREKEY SECRETS. A floor boot holds none of that and exports an empty one.
- *
- * ══ WHERE THE GATE STANDS — the worker, not the injection site ═══════════════════════════════════
- *
- * `waking-floor` #/the-breaks ① rules the placement:
- *   "A model that fences at the grant and not at the door has moved the check somewhere nobody
- *    performs it."
- *
- * The GRANT is where `node-daemon-island.ts` hands the worker its writers. The DOOR is where the
- * write is performed. So the gate stands HERE, in the worker, and it refuses on its OWN reading:
- * `archiveOpens === true` and nothing else passes, so an absent, undefined, mistyped or
- * class-string standing BARS. A caller cannot buy the write by forgetting to answer.
- *
- * This keeps `operator-daemon-behavior`'s own rule intact — "keyhive stays fs-blind". The gate reads
- * a BOOLEAN FACT the node computed, never a path, never a stat, never the config. It declines to
- * CALL the injected writer; it never learns where the writer writes.
- *
- * ══ WHAT THE GATE READS — the archive fact, not the class ════════════════════════════════════════
- *
- * `standAs(asked, archiveOpens)` renders a shut archive as `"herm"`, so class and archive-fact agree
- * wherever the SEAL decides the class. They part on two boots that MUST keep writing:
- *   · a FOUNDING — no face lit yet, so the class reads `"herm"` while the archive opens freely;
- *   · an operator-declared `--recipe herm` crossroads — a real vessel holding its own place identity.
- * A class gate would stop both from ever persisting their own identity, and the founding is this
- * cure's own CONTROL. What canon bars is a LOCKED vessel signing. `personaSlotCeiling("herm") === 0`
- * bars a SEATED persona root, never an archive. So the door reads the fact the ruling fences.
- *
- * ══ A READING, NEVER A THROW ═════════════════════════════════════════════════════════════════════
- *
- * A barred boot is not an error. It stands, serves the public shelf, holds every sovereign act
- * closed, and says so — `main.ts` already prints the reading's own `why`. This function returns
- * `barred: true` and writes nothing.
- *
- * ══ RAIL B — DECIDE IN THE READING, SURFACE OUT OF IT ════════════════════════════════════════════
- *
- * `graceful-parsing` #/rails: a reading never raises from inside itself. A writer that THROWS (the
- * write guard refusing over an unopenable seal, a full disk, a torn rename) is DECIDED here and
- * returned in `refusals`; the caller surfaces it on the rail it owns. A green boot is not a written
- * archive, so a refusal that reached only `console.warn` reached nobody at 3am.
- *
- * Canon: lar:///ha.ka.ba/lares/api/pono/waking-floor
+ * archive-floor-write — rest the selected face's Keyhive archive through the island's custody door.
+ * A faceless or locked composition exports no identity bytes. The door reports write failures
+ * so the island can surface them without pretending an archive landed.
  */
 
-/** The carriers this door lands. Two files, two writers — a gate proven on one proves nothing of the other. */
-export type ArchiveFloorCarrier = "archive" | "veil";
+export type ArchiveFloorCarrier = "veil";
 
 /**
  * The shore-injected writers. Absent → that carrier simply never persists.
  *
  * ── WHY THE BROWSER SHORE INJECTS NEITHER ─────────────────────────────────────────────────────────
- * The browser shore holds no at-rest seal for self-sovereign secrets, and this door gates on one boolean: the
- * browser entry answers `archiveOpens: true` (no seal stands there that could hold it shut), so a writer
- * injected on that shore would land every boot's export with nothing judging it. The browser therefore keeps
- * the Archive each FOUNDING ACT hands out (its founding, its admit) in its keystore beside the device seed
- * (`browser-keyhive-archive.ts`), written by the act that minted it, and this per-boot door stays without a
- * writer there. Both rows leave the clear together when browser custody wraps the keystore; the writers get
- * injected with that seal, never before it.
+ * The browser shore keeps a face's veil archive in its own custody row at founding or admit.
+ * It injects no per-boot writer until that row has a custody door.
  */
 export interface ArchiveFloorWriters {
-  readonly persistArchive?: (bytes: Uint8Array) => void | Promise<void>;
   readonly persistVeilArchive?: (bytes: Uint8Array) => void | Promise<void>;
 }
 
@@ -97,15 +34,13 @@ export interface ArchiveFloorOutcome {
 
 export interface ArchiveFloorInput {
   /**
-   * Whether THIS vessel's identity archive opens — true only for a composition that holds the vessel key, carried
+   * Whether the selected face's archive opens — true only for a composition that holds the face key, carried
    * across the worker boundary on `daemonAuth`. Typed `unknown` deliberately: the door reads
    * `=== true` and bars everything else, so an omitted or drifted answer fails CLOSED rather than
    * relying on a caller's good manners.
    */
   readonly archiveOpens: unknown;
   readonly writers: ArchiveFloorWriters;
-  /** Materialise the vessel keyhive's archive bytes. NOT called on a barred boot. */
-  readonly exportArchive?: () => Promise<Uint8Array>;
   /** Materialise the veil keyhive's archive bytes. NOT called on a barred boot. */
   readonly exportVeilArchive?: () => Promise<Uint8Array>;
 }
@@ -143,7 +78,6 @@ export async function persistArchiveFloor(input: ArchiveFloorInput): Promise<Arc
   };
 
   await land("veil",    input.writers.persistVeilArchive, input.exportVeilArchive);
-  await land("archive", input.writers.persistArchive,     input.exportArchive);
 
   return { wrote, barred: false, refusals };
 }

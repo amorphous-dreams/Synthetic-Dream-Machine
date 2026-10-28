@@ -1,3 +1,4 @@
+import { placeSignerFromSeed } from "@lararium/mesh";
 /**
  * herm-answers-the-knock.test.ts — A HERM ANSWERS THE KNOCK (operator ruling: siege-resilience "A HERM ANSWERS THE KNOCK";
  * stable-founding-road "A herm answers the knock"). A charterless herm answers ANY proven peer that knocked (`ownPlacePosture`):
@@ -49,7 +50,7 @@ async function stand(placeClass: PlaceClass, charter: NexusDoc | null, nexus = "
   const repo = new Repo({ sharePolicy: async () => true }); repos.push(repo);
   const handle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: { dial: { text: "node/alpha" } } });
   const rig = floorGates([nexus]);
-  const face = await mountFlowReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, gates: rig.gates, dispatcher, exportSnapshot: (doc) => exportFlowSnapshot(doc as never) });
+  const face = await mountFlowReadFace({ httpServer: server, oracleHandle: handle, signer: placeSignerFromSeed(SEED), storageDir, gates: rig.gates, dispatcher, exportSnapshot: (doc) => exportFlowSnapshot(doc as never) });
   faces.push(face);
   // The vessel's real sorter over the vessel's one posture reader.
   const sorter = makeGateSorter({ posture: () => ownPlacePosture(placeClass, charter) });

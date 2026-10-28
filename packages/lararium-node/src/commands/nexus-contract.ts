@@ -58,14 +58,14 @@ import {
   type CountedEdgeBoard, type EdgeRollAnchor,
   type AdmitOpening, type CustodyRootDoor, type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
   type PresentationFinding,
-  signPlaceFloorPin, readPlaceFloorPin, writePlaceFloorPin, hexToBytes, FLOW_SOCKET_ROUTE,
+  signPlaceFloorPin, readPlaceFloorPin, writePlaceFloorPin, hexToBytes, FLOW_SOCKET_ROUTE, CARRIAGE_CARRIER_DOMAIN, PLACE_FLOOR_PIN_DOMAIN,
   foldClaimHead, verifyCarrierContractAtHead, verifyPlaceKel, writePlaceKelEvent, decodePlaceKelEvent,
   type FloorKeyDoor, type PlaceFloorPinStatement, type PlaceKelEvent,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
 import { hearthSovereignPin } from "../hearth-sovereign-pin.js";
 
-import { personaRootExists, loadVesselVerifyingKey, loadVesselSigningSeed, loadPlaceKelChain } from "../node-vessel-identity.js";
+import { personaRootExists, loadVesselVerifyingKey, vesselPlaceSignerDoor, loadPlaceKelChain } from "../node-vessel-identity.js";
 import { loadWornFaceAtomKey } from "../face-atom-store.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
@@ -261,8 +261,8 @@ export async function runNexusCarryFor(opts: {
     throw new NexusContractError("no seated charter epoch to bind carriage to — import the charter (`lares nexus seal import`) first.");
   }
   const nym  = (await loadVesselVerifyingKey()).toLowerCase();
-  const seed = await loadVesselSigningSeed();
-  const sig  = await signCarrierContract(nym, roster.sealEpochCid, ed25519SignerFromSeed(seed));
+  const signer = await vesselPlaceSignerDoor();
+  const sig  = await signCarrierContract(nym, roster.sealEpochCid, (image) => signer.signFloor(CARRIAGE_CARRIER_DOMAIN, image));
   // THE PLACE'S FLOOR PIN CLAIM AT THIS NEXUS: the pin, at the head of the place's own KEL, signed by the signer the KEL seats there
   // (the key the carry will name; `place-floor-pin`). It authenticates nothing on its own: a reader files it only once its
   // own replica counts the carry. The KEL rows that fold to the head ride beside it.
@@ -272,8 +272,7 @@ export async function runNexusCarryFor(opts: {
   let floorPin: PlaceFloorPinStatement | null = null;
   if (aid && head.ok) {
     const pin = flowFloorPinAt(aid, opts.floorDoor ?? await vesselFloorKeyDoor());
-    const signer = ed25519SignerFromSeed(seed);
-    floorPin = await signPlaceFloorPin({ at: head, pin, sign: async (image) => hexToBytes(await signer(image)) });
+    floorPin = await signPlaceFloorPin({ at: head, pin, sign: async (image) => hexToBytes(await signer.signFloor(PLACE_FLOOR_PIN_DOMAIN, image)) });
   }
   return { nym, sealEpochCid: roster.sealEpochCid, carrierSig: sig.sig, floorPin, placeKel };
 }

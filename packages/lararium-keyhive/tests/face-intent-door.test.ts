@@ -60,6 +60,30 @@ const faceOf = async () => {
 };
 
 describe("face intent door stalls and gates", () => {
+  test("the place seed and face B cannot issue A's face-join intent; A's atom can", async () => {
+    const f = await faceOf(), verbs = faceIntentVerbs();
+    const effect = vi.fn(async () => ({ recordCid: "grant" }));
+    const doorFor = (shared: ReturnType<typeof plane>) => makeFaceIntentDoor({
+      group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception],
+      verbs, log: () => {}, atom: f.h1, standing: () => "stands", effects: new Map([["face-join", effect]]),
+    });
+    for (const thief of [await signer(91), f.h2]) {
+      const shared = plane(), door = doorFor(shared);
+      const forged = await buildIntent({
+        group: f.group, signer: { key: f.joinee.key, sign: thief.sign },
+        verb: "face-join", args: { summons: {} }, nonce: thief.key,
+        audience: { mode: "pinned", atom: f.h1.key }, verbs,
+      });
+      shared.handle.change((d) => writeIntentEntry(d, forged));
+      await door.heed();
+      expect(effect).not.toHaveBeenCalled();
+    }
+    const shared = plane(), door = doorFor(shared);
+    await requestFaceJoin({ group: f.group, plane: shared.handle, atom: f.joinee, hearthAtom: f.h1.key, summons: { card: "one" }, verbs });
+    await door.heed();
+    expect(effect).toHaveBeenCalledTimes(1);
+  });
+
   test("RED: an unknown frontier runs no effect and the clock is never read; CONTROL: the same intent acts once the frontier knows", async () => {
     const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs(), effect = vi.fn(async () => ({ recordCid: "grant" }));
     let known = false;
