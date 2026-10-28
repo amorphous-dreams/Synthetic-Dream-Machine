@@ -13,7 +13,7 @@
  *
  * ── A TORN ROW NEVER READS EMPTY ────────────────────────────────────────────────────────────────
  * `readRow` answers `opens`, `absent`, `locked`, or `unavailable` with the sealed reader's own name for what
- * stands (`torn`, `key-fails`, `bare`, `old-shape`, `unopenable`). No caller may mint over `unavailable`.
+ * stands (`torn`, `key-fails`, `bare`, `unopenable`). No caller may mint over `unavailable`.
  *
  * ── THE UNLOCK BOUND ────────────────────────────────────────────────────────────────────────────
  * Any process of the vessel's own user reaches the unlock door. Each credential that opens no slot spends one of

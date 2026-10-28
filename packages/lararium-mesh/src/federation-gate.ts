@@ -594,7 +594,7 @@ export interface ShareVerdictRecord {
 export type ShareVerdictSink = (record: ShareVerdictRecord) => void;
 
 /**
- * THE VERDICT SEATS ON BOTH HOOKS. A legacy `sharePolicy` fills `announce` alone and leaves
+ * THE VERDICT SEATS ON BOTH HOOKS. A policy wired only to `announce` leaves
  * `access: () => true`, so a peer that asks for a doc by id pulls it past a denying policy. Every vessel
  * composes its share decision through this one function; the node's `nodeShareConfig` and the browser's
  * `browserShareConfig` both read it.

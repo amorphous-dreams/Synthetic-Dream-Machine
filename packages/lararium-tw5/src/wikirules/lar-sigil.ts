@@ -293,7 +293,7 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
     delete attrs["__verbatim__"];
     // ── THE NODE THE PARSER ITSELF EMITS ──────────────────────────────────────────────────────────
     // TiddlyWiki parses `<<name …>>` to a TRANSCLUDE carrying `$variable`
-    // (`parseMacroInvocationAsTransclusion`). The legacy `macrocall` widget survives, but it reads its
+    // (`parseMacroInvocationAsTransclusion`). The `macrocall` widget reads its
     // name from `parseTreeNode.name` — a node FIELD — or a `$name` attribute:
     //
     //     this.macroName = this.parseTreeNode.name || this.getAttribute("$name")

@@ -99,12 +99,10 @@ export function decodePlaceKelEvent(input: Uint8Array | unknown): PlaceKelEvent 
     return null;
   } catch { return null; }
 }
-const oldShape = (e: unknown) => own(e) && e.t === "icp" && fields(e, "k,sig,t");
 const signatureOk = (e: PlaceKelEvent) => verifyEd25519(e.sig, canonicalJsonBytes(core(e)), e.t === "icp" ? e.key : e.reveal);
 
 export function verifyPlaceKel(chain: readonly PlaceKelEvent[]): PlaceKelReading {
   if (!Array.isArray(chain) || chain.length === 0) return { ok: false, refusal: "gap" };
-  if (oldShape(chain[0])) return { ok: false, refusal: "old-shape-inception" };
   if (own(chain[0]) && chain[0].t === "icp" && !Object.hasOwn(chain[0], "next")) return { ok: false, refusal: "unarmed-inception" };
   const first = decodePlaceKelEvent(chain[0]);
   if (!first || first.t !== "icp") return { ok: false, refusal: "malformed" };
