@@ -74,3 +74,23 @@ describe("the daemon VM floor crossing", () => {
     }
   });
 });
+
+test("face drop waits for the island acknowledgement", async () => {
+  const repo = new Repo({ sharePolicy: async () => true });
+  const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+  const ports: MessagePort[] = [];
+  const listeners: Array<(msg: any) => void> = [];
+  const host: DaemonVmHost = {
+    spawnWorker: () => ({ post: () => {}, listen: (fn) => { listeners.push(fn); return () => {}; }, onError: () => () => {}, terminate: () => {} }),
+    newSyncChannel: () => { const { port1, port2 } = new MessageChannel(); ports.push(port1, port2); return { mainPort: port1 as IslandMsg_Manifest["syncPort"], syncPort: port2 as IslandMsg_Manifest["syncPort"] }; },
+  };
+  const core = openDaemonVmCore(host, { repo, daemonHandle, recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null, workerScriptUrl: new URL("file:///unused"), eaSilenceMs: 2 ** 30 });
+  core.workerEa.catch(() => {});
+  try {
+    let settled = false;
+    const pending = core.dropFace("abc").then(() => { settled = true; });
+    await Promise.resolve(); expect(settled).toBe(false);
+    for (const listener of listeners) listener({ type: "daemon:face-settled", atomKey: "abc", op: "dropped", ok: true });
+    await pending; expect(settled).toBe(true);
+  } finally { core.dispose(); ports.forEach((port) => port.close()); await repo.shutdown(); }
+});

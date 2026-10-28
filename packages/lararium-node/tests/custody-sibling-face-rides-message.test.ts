@@ -41,3 +41,21 @@ test("changing the mounted face recomposes", async () => {
   await h.send({ op: "unlock", face: 1, credentials: [{ kind: "passphrase", passphrase: "x" }] });
   expect(h.recompose).toHaveBeenCalledWith(true);
 });
+test("reopening the mounted face recomposes after its lock", async () => {
+  setMountedFace(0); const h = harness();
+  await h.send({ op: "lock", face: 0 });
+  h.recompose.mockClear();
+  await h.send({ op: "unlock", face: 0, credentials: [{ kind: "passphrase", passphrase: "x" }] });
+  expect(h.recompose).toHaveBeenCalledWith(true);
+  expect(h.lightFace).not.toHaveBeenCalled();
+});
+test("the sibling key stays open until its provider drops", async () => {
+  setMountedFace(0); const h = harness(); h.open.add("1");
+  let finish!: () => void;
+  h.dropFace.mockImplementation(() => new Promise<void>((resolve) => { finish = resolve; }));
+  const pending = h.send({ op: "lock", face: 1 });
+  await vi.waitFor(() => expect(finish).toBeTypeOf("function"));
+  expect(h.open.has("1")).toBe(true);
+  finish(); await pending;
+  expect(h.open.has("1")).toBe(false);
+});
