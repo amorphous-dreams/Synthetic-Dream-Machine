@@ -1,0 +1,58 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/k19-hive-lane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/k19-hive-lane.mem"
+l-space   = "adjacent"
+role      = "the K19 hive lane's kit: one Keyhive provider per joined face at the daemon, each booted from that face's own hive and routed by the session's face, so a second joined face reads as itself and never as a stranger"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/k19-hive-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/k19-hive-lane"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! K19 hive ~ one provider per joined face
+
+The hands spine (PR #108) makes every face-acting row ride a session of its face. A second joined face's session reaches the daemon, which boots one Keyhive provider (K15's bonds) for the mounted face and judges the second face's atom a stranger: `cabal feed --face 1` answers "no access granted". The operator ruled (2026-10-27) that each joined face gets its own provider at the daemon, routed by the session's face, and that no one verifier judges many faces (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>). This lane stacks on #108's head and lands carrying its commits (operator, 2026-10-28).
+
+<<~/ahu>>
+
+<<~ ahu #/the-ground>>
+
+!! The ground, measured
+
+* ''One provider, one verifier.'' `verifierFactory` in `operator-daemon-behavior` boots `bootDaemonKeyhive` once from `manifest.daemonAuth` (one atom, one device edge, one KEL pin, one anchor) and wraps it in `faceOwnerVerifier`. `presenterFor` refuses a verb that names another PersonaGroup with "this vessel wears <group>; name it or wear <other> first".
+* ''The session names the presenter.'' The node's session door answers the face's atom as the presenter (`uds-session-door`), and the dispatcher hands it to the one verifier as the capability's presenter.
+* ''Isolation holds.'' `two-hives-one-process.probe.test.ts` measured two Keyhive hives in one process apart (2026-10-18), so several face providers may share the daemon island; the daemon event store does not yet scope its cap events by face, so a second hive over it would replay the first's events.
+
+<<~/ahu>>
+
+<<~ ahu #/the-slices>>
+
+!! The slices
+
+* ''Carried first commits'' (hands reads H and I): `restoreFaceBody` refuses `addressSecret: null` from a sealed bundle and the card path names its paper door; the act-faulted reply guards its ledger read; the vault-carriers comment reads the bundle carrying the secret; a red pins the browser opener's anchor choice and that a node never takes the private-nexus branch.
+* ''The red'' (its own commit): a second joined face's session verb at the daemon reads as a stranger.
+* ''The providers'': the daemon holds one provider per joined face, each booted from that face's own hive and its own event scope, and routes each verb to the provider of the session's face. No union verifier. A verb naming a face whose provider is absent refuses by name; a face that locks drops its provider.
+* ''The held-out cells'': realm, realm-crossing, quorum-realm, open and open-relation read green; one runs locally before the push.
+
+<<~/ahu>>
+
+<<~ ahu #/the-research>>
+
+!! The research pair, answered and not built
+
+Whether a council (`K16`) stands as an anchor its members' faces meet: owed to this kit once the providers stand.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;bhZklImFl4dGaGBW7oxPtXbPgtICJebXNKGkQhBEWjM
+
+<<^ code="&#x0004;" -> to="?">>
