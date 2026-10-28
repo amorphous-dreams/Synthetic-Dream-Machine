@@ -187,7 +187,7 @@ export async function stopIncumbent(
     // THE HOLDER, NEVER THE PORT ALONE (H5). `pids.some(pidAlive)` is the unconditional floor: while
     // any signalled pid still answers a signal-0 probe, this never reads "gone", whatever a store
     // check or the port itself says. Past that floor, `holderAlive` (when the caller wired one — the
-    // vessel's own UDS claim) decides; with none wired, this falls back to the old port-free reading.
+    // vessel's own UDS claim) decides; with none wired, the port probe decides.
     const stillHeld = pids.some(pidAlive) || (opts.holderAlive ? await opts.holderAlive(pids) : await probe(port));
     if (!stillHeld) return { stopped: true };
     if (!warned && performance.now() >= graceDeadline) {

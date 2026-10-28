@@ -15,7 +15,6 @@ import {
 } from "../src/sealed-writer.js";
 import { bindSlot, openTreeKey, encodeSlotTree, decodeSlotTree, type SlotTree } from "../src/keyslot.js";
 import { mintTreeKey, treeKeyEquals, type TreeKey } from "../src/tree-key.js";
-import { LARK_MAGIC } from "../src/s-envelope.js";
 
 const text = (s: string): Uint8Array => new TextEncoder().encode(s);
 const str = (b: Uint8Array): string => new TextDecoder().decode(b);
@@ -137,11 +136,9 @@ describe("write", () => {
     expect(io.snapshot()).toEqual(before);
   });
 
-  test("an old-shape (LARK) carrier, a torn one and a bare one each refuse, named apart", async () => {
+  test("a torn carrier and a bare one each refuse, named apart", async () => {
     const { io, treeKey } = await found();
-    const lark = Uint8Array.from([...LARK_MAGIC, 0x01, 0x01, ...new Array(60).fill(7)]);
     const cases: [Uint8Array, string, RegExp][] = [
-      [lark, "old-shape", /fresh-start/],
       [(await io.read(CARRIERS[0]!.path))!.subarray(0, 20), "torn", /backup/],
       [text('{"signingKey":"00"}'), "bare", /cleartext/],
     ];

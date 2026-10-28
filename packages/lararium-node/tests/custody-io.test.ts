@@ -322,7 +322,7 @@ describe("PROOF 1 — rotate, reopen, compare, rename on actual carrier files", 
   });
 });
 
-describe("PROOF 3 — the old-shape refusal fires before any write", () => {
+describe("PROOF 3 — an occupied store refuses before any write", () => {
   test("a standing cleartext pending-enrollment row and no slot tree: the founding refuses as an occupied store, and every byte stands", async () => {
     const io = new FsCustodyIo(homes);
     writeFileSync(join(homes.identity, ".persona-enroll-pending.json"), "{\"cleartext\":true}");

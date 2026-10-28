@@ -17,7 +17,6 @@ import {
   commitSlotTree, writeSealedCarrier, openSealedCarrier, rotateTreeKey, OccupiedStoreRefusal, CustodyRefusal,
   type CustodyIo, type SealedCarrier,
 } from "../src/sealed-writer.js";
-import { LARK_MAGIC } from "../src/s-envelope.js";
 
 const right = { kind: "passphrase", passphrase: "correct horse battery staple" } as const;
 const wrong = { kind: "passphrase", passphrase: "correct horse battery stapler" } as const;
@@ -308,18 +307,6 @@ describe("an occupied store refuses BEFORE any write", () => {
     expect(io.mutations).toEqual([]);
     expect(io.files.has(TREE)).toBe(false);
     expect(new TextDecoder().decode(io.files.get(ROOT.path)!)).toMatch(/cleartext custody root/);
-  });
-
-  test("RED: a frame that opens with LARK refuses as old-shape, and a relation carrier is NAMED among them", async () => {
-    const io = new ScratchIo();
-    io.files.set(KEYRING.path, Uint8Array.from([...LARK_MAGIC, 0x01, 0x02, ...new Array(80).fill(7)]));
-    const treeKey = mintTreeKey();
-    const tree = bindSlot(null, treeKey, { t: 1, pins: [right] });
-    const err = await commitSlotTree({ io, path: TREE, expected: null, treeKey, tree, carriers: [ROOT, KEYRING] }).catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(OccupiedStoreRefusal);
-    expect((err as OccupiedStoreRefusal).standing.map((s) => `${s.carrier.name}:${s.reading}`)).toEqual(["keyring:old-shape"]);
-    expect((err as OccupiedStoreRefusal).message).toMatch(/empty root/);
-    expect(io.mutations).toEqual([]);
   });
 
   test("RED: a sealed file no listed carrier names refuses the founding too (the census law)", async () => {

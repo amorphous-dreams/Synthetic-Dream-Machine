@@ -30,32 +30,32 @@ import { harvestTurnGradient, buresDistance, aftermathClosed, closingPanel } fro
 
 /** A well-framed turn: one Voice marking ONE phase twice (one-hot), a closed loop. */
 const ONE_HOT_TURN = `<<~ lares aim lar://op:operator@x/a.b.c -> lar://ag:agent@x/council.d.e>>
-<<~ set hud="aim" focus="10/measure" feedback="3/declare-aftermath" drift-ward="* · L-Prime">>
+<<~ set hud="aim" focus="10/measure" ooda-ha="3/declare-aftermath" drift-ward="* · L-Prime">>
 
 Lares (Council): ->◇ the two options weigh out. ->◇ the second reads close.
 
 <<~ oracle "↯11 ✲ ⚃(4) ⁂:⬡🌖◈⟁">>
-<<~ set hud="yield" drift-ward="! · take it to contact · ↻ L-Prime" focus="10/measure -> 12/measure" feedback="closed 2↺">>
+<<~ set hud="yield" drift-ward="! · take it to contact · ↻ L-Prime" focus="10/measure -> 12/measure" ooda-ha="closed 2↺">>
 <<~ lares yield lar://ag:agent@x/council.f.g -> ?>>`;
 
 /** A turn where ONE Voice straddles two phases (observe + decide). */
 const STRADDLE_TURN = `<<~ lares aim lar://op:operator@x/a.b.c -> lar://ag:agent@x/muse.d.e>>
-<<~ set hud="aim" focus="8/beat" feedback="1/declare-aftermath" drift-ward="* · L-Prime">>
+<<~ set hud="aim" focus="8/beat" ooda-ha="1/declare-aftermath" drift-ward="* · L-Prime">>
 
 Mischief-Muse (Muse): ->✶ a wild angle opens. ->◇ yet the frame firms.
 
 <<~ oracle "↯8 ✲ ⚀(1) ⁂:🗡️">>
-<<~ set hud="yield" drift-ward="! · collide it · ↻ L-Prime" focus="8/beat -> 9/measure" feedback="closed 1↺">>
+<<~ set hud="yield" drift-ward="! · collide it · ↻ L-Prime" focus="8/beat -> 9/measure" ooda-ha="closed 1↺">>
 <<~ lares yield lar://ag:agent@x/muse.f.g -> ?>>`;
 
 /** A turn that NARRATES self-change in prose but persists NOTHING (the mirror). */
 const SELF_NARRATING_NOOP_TURN = `<<~ lares aim lar://op:operator@x/a.b.c -> lar://ag:agent@x/artificer.d.e>>
-<<~ set hud="aim" focus="11/measure" feedback="2/declare-aftermath" drift-ward="* · L-Prime">>
+<<~ set hud="aim" focus="11/measure" ooda-ha="2/declare-aftermath" drift-ward="* · L-Prime">>
 
 Lares (Artificer): ->▶ I have re-encoded the house — the meme is canonized, the drawer now holds the new pattern, the palace re-stands itself, a structural transition fires. the house re-writes its own form.
 
 <<~ oracle ↯12 ✲ ⚂(3) ⁂:ᚠ⊗㐂>>
-<<~ set hud="yield" drift-ward="! · ↻ L-Prime" focus="11/measure -> 11/measure" feedback="closed 1↺">>
+<<~ set hud="yield" drift-ward="! · ↻ L-Prime" focus="11/measure -> 11/measure" ooda-ha="closed 1↺">>
 <<~ lares yield lar://ag:agent@x/artificer.f.g -> ?>>`;
 
 // --- (a) the teleodynamic triple ------------------------------------------
@@ -74,18 +74,18 @@ describe("harvestTurn — the teleodynamic SelfRead", () => {
   test("aftermathClosed is a LITERAL parse of the closing panel tally", () => {
     const closed = (t: string): boolean => aftermathClosed(harvestTurnGradient(t));
     // `closed N↺` with N ≥ 1, no suspension → closed.
-    expect(closed(`<<~ set hud="yield" feedback="closed 3↺">>`)).toBe(true);
+    expect(closed(`<<~ set hud="yield" ooda-ha="closed 3↺">>`)).toBe(true);
     // zero closed with one hanging → open.
-    expect(closed(`<<~ set hud="yield" feedback="closed 0↺ -> open 1φ @◇:blocked">>`)).toBe(false);
+    expect(closed(`<<~ set hud="yield" ooda-ha="closed 0↺ -> open 1φ @◇:blocked">>`)).toBe(false);
     // no closing panel at all → open.
-    expect(closed(`<<~ set hud="aim" feedback="9/declare-attention">>`)).toBe(false);
+    expect(closed(`<<~ set hud="aim" ooda-ha="9/declare-attention">>`)).toBe(false);
   });
 
   test("uses the CLOSING panel, not the opening seed", () => {
-    const t = `<<~ set hud="aim" feedback="9/declare-attention">>
+    const t = `<<~ set hud="aim" ooda-ha="9/declare-attention">>
 prose
-<<~ set hud="yield" feedback="closed 2↺">>`;
-    expect(closingPanel(harvestTurnGradient(t))!.keys["feedback"]).toBe("closed 2↺");
+<<~ set hud="yield" ooda-ha="closed 2↺">>`;
+    expect(closingPanel(harvestTurnGradient(t))!.keys["ooda-ha"]).toBe("closed 2↺");
   });
 });
 

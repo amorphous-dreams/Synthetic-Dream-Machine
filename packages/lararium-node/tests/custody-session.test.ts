@@ -316,13 +316,11 @@ describe("custodyStatus", () => {
     const control = await custodyStatus({ io, homes });
     expect(control.rows.find((r) => r.row === "vessel-key")).toMatchObject({ reading: "bare", custody: "floor", fault: false });
   });
-  test("RED (sweep): a floor row whose file holds any seal reading — another house seal, a LARK frame — reads as a fault", async () => {
+  test("RED (sweep): a floor row under another house seal reads as a fault", async () => {
     await foundCustody({ io, homes, slots: [TEST_SLOT] });
     const file = join(homes.identity, ".vessel-key.json");
     writeFileSync(file, new TextEncoder().encode("lares-xy-seal\u0001"), { mode: 0o600 });
     expect((await custodyStatus({ io, homes })).rows.find((r) => r.row === "vessel-key")).toMatchObject({ reading: "unopenable", fault: true });
-    writeFileSync(file, Uint8Array.from([0x4c, 0x41, 0x52, 0x4b, 1, 1, ...new Array(60).fill(7)]), { mode: 0o600 });
-    expect((await custodyStatus({ io, homes })).rows.find((r) => r.row === "vessel-key")).toMatchObject({ reading: "old-shape", fault: true });
   });
   test("RED (sweep cure): the sealed store's opaque shelves read their own law, never a seal reading — a note or a chunk that opens with seal-like bytes stands clean", async () => {
     await foundCustody({ io, homes, slots: [TEST_SLOT] });
@@ -330,12 +328,12 @@ describe("custodyStatus", () => {
     const chunks = join(homes.storage, "sealed", "keyhive-chunks", "ab", "cd");
     mkdirSync(own, { recursive: true });
     mkdirSync(join(homes.storage, "sealed", "keyhive-chunks", "ab"), { recursive: true });
-    const note = Uint8Array.from([0x4c, 0x41, 0x52, 0x4b, 9]);
+    const note = new TextEncoder().encode("opaque-note");
     writeFileSync(join(own, `aa.bb.${restDigest(note)}`), note, { mode: 0o600 });
     writeFileSync(chunks, S_SEAL_MAGIC.subarray(0, 5), { mode: 0o600 });
     const s = await custodyStatus({ io, homes });
     const at = (row: string) => s.rows.find((r) => r.row === row);
-    expect(at("sealed-own"), "a LARK-led note stands clean").toMatchObject({ reading: "old-shape", fault: false });
+    expect(at("sealed-own"), "an opaque note stands clean").toMatchObject({ reading: "bare", fault: false });
     expect(at("sealed-chunk"), "a chunk led by seal-like bytes stands clean").toMatchObject({ reading: "torn", fault: false });
   });
   test("an unfounded home reads the tree absent", async () => {
