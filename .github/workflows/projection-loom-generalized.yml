@@ -15,6 +15,7 @@ on:
       - 'tools/projection-loom/projection_loom/incremental_graph.py'
       - 'tools/projection-loom/projection_loom/editor_proposals.py'
       - 'tools/projection-loom/projection_loom/location_workspace.py'
+      - 'tools/projection-loom/projection_loom/native_support.py'
       - 'tools/projection-loom/projection_loom/source_registration.py'
       - 'tools/projection-loom/projection_loom/matched_registered_trial.py'
       - 'tools/projection-loom/projection_loom/fractal_ooda_ha.py'
@@ -103,7 +104,7 @@ jobs:
           python -m pip install --no-deps -e .
           python -m pip check
       - name: Headless real OpenUSD and native STEP reimport
-        run: python -m pytest -q tests/test_hephaestus_usd.py tests/test_hephaestus_editor.py tests/test_hephaestus_crucible.py tests/test_hephaestus_variants.py tests/test_hephaestus_location_workspace.py
+        run: python -m pytest -q tests/test_hephaestus_usd.py tests/test_hephaestus_editor.py tests/test_hephaestus_crucible.py tests/test_hephaestus_variants.py tests/test_hephaestus_location_workspace.py tests/test_hephaestus_native_support.py
       - name: Independent subject native + OpenUSD + causal adversarial crucible
         run: python -m projection_loom.hephaestus_crucible --out out/hephaestus-crucible
       - name: Retain falsifiable crucible evidence

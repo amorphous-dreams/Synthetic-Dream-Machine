@@ -87,6 +87,18 @@ def main(argv=None):
     p.add_argument('--exact-budget',type=int,default=3)
     p.add_argument('--finalists',type=int,default=2)
     p.add_argument('--seed',type=int,default=41)
+    p=commands.add_parser('native-support-propose',
+                          help='Check exact BRep bearing contact and propose typed causal support')
+    p.add_argument('--ground',type=Path,required=True)
+    p.add_argument('--bundle',type=Path,required=True)
+    p.add_argument('--lower',required=True)
+    p.add_argument('--upper',required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('native-support-verify',
+                          help='Recheck geometric contact and replay source-ground relation')
+    p.add_argument('--ground',type=Path,required=True)
+    p.add_argument('--bundle',type=Path,required=True)
+    p.add_argument('--proposal',type=Path,required=True)
     p=commands.add_parser('wide-epoch',help='Resumable staged constructive epochs')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
@@ -403,6 +415,19 @@ def main(argv=None):
                     epochs=args.epochs,offspring=args.offspring,
                     exact_budget=args.exact_budget,finalists=args.finalists,
                     seed=args.seed)
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command in ('native-support-propose','native-support-verify'):
+        from .relational_ground import RelationalGround
+        from .native_support import propose_support,verify_support_proposal
+        from .generalized_campaign import save_once
+        ground=RelationalGround.load(args.ground)
+        if args.command=='native-support-propose':
+            result=propose_support(ground,args.bundle,args.lower,args.upper)
+            save_once(args.out,result)
+        else:
+            document=json.loads(args.proposal.read_text(encoding='utf8'))
+            result=verify_support_proposal(document,ground,args.bundle)
         print(json.dumps(result,indent=2))
         return result
     if args.command=='fracture-pattern':
