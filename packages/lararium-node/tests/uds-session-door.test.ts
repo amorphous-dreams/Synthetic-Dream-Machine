@@ -102,10 +102,10 @@ describe("the node session door", () => {
     const a = await d.open({ faceRef: "h0", hand: "cli" });
     if (!a.ok) throw new Error(a.refusal);
     const atomKey = faceAtomKeyFromSeed(seedOf(0), group).key;
-    expect(a.supply).toMatchObject({ anchor: { kind: "place", aid: PLACE.place }, presenter: `0x${atomKey}`, profile: "verb",
+    expect(a.supply).toMatchObject({ anchor: { kind: "place", aid: PLACE.place, head: PLACE.head }, presenter: `0x${atomKey}`, profile: "verb",
       face: { personaGroup: group, admitRef: `place:${PLACE.place}@${PLACE.head}` } });
     expect(asked).toEqual([]);
-    expect(await d.anchorNow()).toEqual({ kind: "place", aid: PLACE.place });
+    expect(await d.anchorNow()).toEqual({ kind: "place", aid: PLACE.place, head: PLACE.head });
     const table = new SessionTable("owner");
     const binding = sessionBinding("socket");
     const opened = table.open(binding, a.supply.face, a.supply.profile);
@@ -121,7 +121,7 @@ describe("the node session door", () => {
     const { d } = door({ pin: () => pin });
     expect(await d.anchorNow()).toEqual({ kind: "nexus", aid: AID });
     pin = null;
-    expect(await d.anchorNow()).toEqual({ kind: "place", aid: PLACE.place });
+    expect(await d.anchorNow()).toEqual({ kind: "place", aid: PLACE.place, head: PLACE.head });
   });
 
   test("RED: the dial anchor sets only once the vessel's own presentation composed; a refusal or a failed re-dial leaves none (the place anchor)", () => {

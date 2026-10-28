@@ -12,13 +12,23 @@
  *
  * A MALFORMED ROW. A row that opens and holds no list of acts, or a list with an entry that reads as no act (`[null]`), never stops a later switch: the next write sets it aside
  * and starts the ring afresh at a `reset` act naming why, so the loss reads in the row itself. A read of a malformed row
- * refuses by name (`SwitchActRowMalformed`). A row that does not OPEN (a locked seat, a row under another key) refuses
- * by the custody seat's own name, and the switch aborts `intent-unwritten` with that name in the vessel's log.
+ * refuses by name (`SwitchActRowMalformed`).
+ *
+ * A ROW THAT DOES NOT OPEN (torn bytes, a row under another key) never bricks switching either. The custody writer keeps
+ * refusing to overwrite bytes it cannot open, so this module alone sets that one row aside: it moves the bytes,
+ * unchanged, to `set-aside/switch-acts.set-aside-<n>.json` beside the custody homes (outside them, so no census or
+ * rotation reads them as a row, and nothing reads them as acts), and starts a fresh ring at a `reset` act naming the
+ * reading and where the bytes rest. This row only: custody holds no general set-aside door. A LOCKED seat still
+ * refuses by its own name, and the switch aborts `intent-unwritten` with that name in the vessel's log.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/session-contract#/the-owner
  */
 import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh";
+import { existsSync, mkdirSync, renameSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { readCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { CustodyRowUnavailable } from "./custody-holder.js";
+import { larIdentityDir } from "./vessel-paths.js";
 
 export const SWITCH_ACTS_FILE = "switch-acts.json";
 /** How many acts the row keeps, two per switch; the oldest leaves first. */
@@ -60,19 +70,46 @@ export function trimSwitchActs(acts: readonly SwitchActRecord[], ring = SWITCH_A
   return kept;
 }
 
-/** The vessel's sealed switch-act row. A write returns once the row rests sealed. */
-export const nodeSwitchActLog: SwitchActLog = {
-  async write(act) {
-    const record: SwitchActRecord = { ...act, phase: "outcome" in act ? "outcome" : "intent" };
-    await updateCustodyRow("identity", SWITCH_ACTS_FILE, (plaintext) => {
-      let standing: SwitchActRecord[];
+/** Where a row that did not open rests, kept for inspection: beside the custody homes, never inside one. */
+export function switchActsSetAsideDir(): string {
+  return join(dirname(larIdentityDir()), "set-aside");
+}
+
+/** Move the unopenable row's bytes, unchanged, to the next free `switch-acts.set-aside-<n>.json`; answers its name. */
+function setAsideRow(): string {
+  const dir = switchActsSetAsideDir();
+  mkdirSync(dir, { recursive: true, mode: 0o700 });
+  let n = 1;
+  while (existsSync(join(dir, `switch-acts.set-aside-${n}.json`))) n++;
+  const name = `switch-acts.set-aside-${n}.json`;
+  renameSync(join(larIdentityDir(), SWITCH_ACTS_FILE), join(dir, name));
+  return name;
+}
+
+const writeAct = (record: SwitchActRecord, fresh?: SwitchActReset) =>
+  updateCustodyRow("identity", SWITCH_ACTS_FILE, (plaintext) => {
+    let standing: SwitchActRecord[];
+    if (fresh !== undefined) standing = [fresh];
+    else {
       try { standing = parse(plaintext); }
       catch (error) {
         if (!(error instanceof SwitchActRowMalformed)) throw error;
         standing = [{ phase: "reset", reason: error.reason }];
       }
-      return { plaintext: enc.encode(JSON.stringify(trimSwitchActs([...standing, record]))), value: undefined };
-    });
+    }
+    return { plaintext: enc.encode(JSON.stringify(trimSwitchActs([...standing, record]))), value: undefined };
+  });
+
+/** The vessel's sealed switch-act row. A write returns once the row rests sealed. */
+export const nodeSwitchActLog: SwitchActLog = {
+  async write(act) {
+    const record: SwitchActRecord = { ...act, phase: "outcome" in act ? "outcome" : "intent" };
+    try { await writeAct(record); }
+    catch (error) {
+      if (!(error instanceof CustodyRowUnavailable)) throw error;
+      const name = setAsideRow();
+      await writeAct(record, { phase: "reset", reason: `the row did not open (${error.reading}); its bytes rest set aside as ${name}` });
+    }
   },
 };
 

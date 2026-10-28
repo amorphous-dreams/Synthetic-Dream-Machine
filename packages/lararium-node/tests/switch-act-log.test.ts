@@ -2,13 +2,14 @@
  * switch-act-log.test — the vessel's sealed switch-act row: the real sealed write and its read-back, the ring's bound,
  * and a malformed row, which never stops a later switch and reads its loss in the row.
  */
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh";
 import { updateCustodyRow } from "../src/custody-seat.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
-import { nodeSwitchActLog, readSwitchActs, SWITCH_ACT_RING, SWITCH_ACTS_FILE, SwitchActRowMalformed, trimSwitchActs } from "../src/switch-act-log.js";
+import { nodeSwitchActLog, readSwitchActs, SWITCH_ACT_RING, SWITCH_ACTS_FILE, SwitchActRowMalformed, switchActsSetAsideDir, trimSwitchActs } from "../src/switch-act-log.js";
+import { CustodyRowUnavailable } from "../src/custody-holder.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 120_000 });
@@ -67,6 +68,24 @@ describe("the switch-act row", () => {
     }
     // CONTROL: a reset row reads back as a list of acts, and the ring writes on.
     await nodeSwitchActLog.write(outcome(9));
+    expect((await readSwitchActs()).map((a) => a.phase)).toEqual(["reset", "intent", "outcome"]);
+  });
+  test("RED: a row that does not open (torn bytes) never bricks a switch: the next write sets its bytes aside unchanged and starts a fresh ring naming why", async () => {
+    await nodeSwitchActLog.write(intent(1));
+    const path = join(larIdentityDir(), SWITCH_ACTS_FILE);
+    const torn = Buffer.from(readFileSync(path));
+    torn[torn.length - 1] ^= 0xff;                                           // a torn tail: the row no longer opens
+    writeFileSync(path, torn);
+    await expect(readSwitchActs()).rejects.toBeInstanceOf(CustodyRowUnavailable);
+    await nodeSwitchActLog.write(intent(2));
+    const [reset, ...rest] = await readSwitchActs();
+    expect(reset).toMatchObject({ phase: "reset" });
+    expect((reset as { reason: string }).reason).toMatch(/did not open .*switch-acts\.set-aside-1\.json/);
+    expect(rest).toEqual([{ ...intent(2), phase: "intent" }]);
+    // The set-aside bytes stand unchanged, outside every custody home.
+    expect(readFileSync(join(switchActsSetAsideDir(), "switch-acts.set-aside-1.json")).equals(torn)).toBe(true);
+    // CONTROL: the fresh ring writes on.
+    await nodeSwitchActLog.write(outcome(2));
     expect((await readSwitchActs()).map((a) => a.phase)).toEqual(["reset", "intent", "outcome"]);
   });
 });

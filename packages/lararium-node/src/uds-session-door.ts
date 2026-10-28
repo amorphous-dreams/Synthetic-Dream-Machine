@@ -24,7 +24,7 @@
  * Meme: lar:///ha.ka.ba/lararium/node/uds-session-door
  */
 import {
-  faceAtomKeyFromSeed, HANDLE_INDEX_CEILING, nexusAidOfPin, preparePlaceFace, type GateBundlePin, type JoinedFaceTarget, type PlaceReading,
+  faceAtomPublicKey, signAsFaceAtom, HANDLE_INDEX_CEILING, nexusAidOfPin, preparePlaceFace, type GateBundlePin, type JoinedFaceTarget, type PlaceReading,
 } from "@lararium/mesh";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { HAND_PROFILES } from "@lararium/mesh/session-contract";
@@ -66,11 +66,11 @@ export function nodeSessionDoor(ports: NodeSessionDoorPorts): UdsSessionDoor {
   const atomOfGroup = ports.atomOfGroup ?? loadFaceAtomOfGroup;
   const targetOf = ports.targetOf ?? ((at) => composeFaceTarget(at));
   const placeOf = ports.placeOf ?? loadPlaceReading;
-  // The place's prefix holds across a rotation, so one read answers every later anchor check; its head reads afresh at each open.
-  let placeAid: string | null = null;
+  // THE PLACE ANCHOR NAMES ITS HEAD: each check reads the place KEL afresh, so a rotation of the place moves the anchor and
+  // ends the place's sessions `anchor-moved`; a read that fails throws, and the seat refuses that frame `anchor-unread`.
   const placeAnchor = async (): Promise<SessionAnchor> => {
-    placeAid ??= (await placeOf()).place;
-    return { kind: "place", aid: placeAid };
+    const place = await placeOf();
+    return { kind: "place", aid: place.place, head: place.head };
   };
   const anchorNow = async (): Promise<SessionAnchor> => {
     const pin = ports.pin();
@@ -86,20 +86,19 @@ export function nodeSessionDoor(ports: NodeSessionDoorPorts): UdsSessionDoor {
     if (seed === null) return { ok: false, refusal: "face-atom-absent" };
     let presenter: string;
     let atomKey: string;
-    try { atomKey = faceAtomKeyFromSeed(seed, group).key; presenter = `0x${atomKey}`; } finally { seed.fill(0); }
+    try { atomKey = faceAtomPublicKey(seed); presenter = `0x${atomKey}`; } finally { seed.fill(0); }
     const pin = ports.pin();
     if (pin === null) {
       // THE PLACE ANCHOR: the face's atom presented to its own vessel; no Nexus admits it.
       const place = await placeOf();
-      placeAid ??= place.place;
       const target = preparePlaceFace({ personaGroup: group, atomKey, place, signAsAtom: async (image) => {
         const again = await atomOfGroup(group);
         if (again === null) throw new Error("the face's atom row went between the open and the mint");
-        try { return await faceAtomKeyFromSeed(again, group).sign(image); } finally { again.fill(0); }
+        try { return await signAsFaceAtom(again, image); } finally { again.fill(0); }
       } });
       if (!("face" in target)) return { ok: false, refusal: target.refusal };
       return { ok: true, supply: {
-        face: target.face, ordinal: face, profile: HAND_PROFILES[hand], presenter, anchor: { kind: "place", aid: place.place },
+        face: target.face, ordinal: face, profile: HAND_PROFILES[hand], presenter, anchor: { kind: "place", aid: place.place, head: place.head },
         mint: async (at) => {
           const minted = await target.mint(at);
           return "signer" in minted ? { ok: true, signer: minted.signer } : { ok: false, refusal: minted.refusal };

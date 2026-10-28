@@ -145,9 +145,13 @@ export interface UdsSessionSupply {
  * vessel's own place (its W29 place KEL prefix). A session is a meeting between a face and an anchor, held by neither's
  * registry; the vessel's state names the anchor, never its config.
  */
-export type SessionAnchor = { readonly kind: "nexus" | "place"; readonly aid: string };
+export type SessionAnchor =
+  | { readonly kind: "nexus"; readonly aid: string }
+  /** A place anchor binds the place KEL's head as well as its prefix: a rotation of the place ends its sessions. */
+  | { readonly kind: "place"; readonly aid: string; readonly head: string };
 const sameAnchor = (a: SessionAnchor | undefined, b: SessionAnchor | undefined): boolean =>
-  a !== undefined && b !== undefined && a.kind === b.kind && a.aid === b.aid;
+  a !== undefined && b !== undefined && a.kind === b.kind && a.aid === b.aid &&
+  (a.kind === "nexus" || (b.kind === "place" && a.head === b.head));
 
 /**
  * A face row's arguments bound to the session's face: every face-naming key (`face`, `handleIndex`) set to `ordinal`, or
@@ -933,10 +937,15 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
    */
   const anchorLeft = async (sock: Socket, state: NonNullable<ReturnType<typeof sessionSockets.get>>, requestId: string | undefined): Promise<boolean> => {
     if (!opts.sessions || !state.sessionId) return false;
+    // A READ THAT FAILS IS NO MOVE: the frame refuses `anchor-unread` and the session stands for the next frame.
     const now = await opts.sessions.anchorNow().catch((error: unknown) => {
       log(`session anchor read failed: ${error instanceof Error ? error.message : String(error)}`);
-      return undefined;
+      return null;
     });
+    if (now === null) {
+      if (!closing && !sock.destroyed) sessionRefuse(sock, "anchor-unread", requestId);
+      return true;
+    }
     if (sameAnchor(state.anchor, now)) return false;
     state.signer?.drop();
     delete state.signer;

@@ -134,7 +134,7 @@ async function standVessel(opts: { unlocked: boolean; table?: (act: string, args
   return { frames, acts, sessions, down };
 }
 
-const PLACE = { kind: "place" as const, aid: "place-fixture" };
+const PLACE = { kind: "place" as const, aid: "place-fixture", head: "place-head" };
 const sessionFace = (faceRef: string): SessionFace => ({ personaGroup: `group-${faceRef}`, proofSubject: `proof-${faceRef}`, admitRef: `admit-${faceRef}`,
   causalRevision: `revision-${faceRef}`, planes: { persona: `persona-${faceRef}`, circles: `circles-${faceRef}`, identities: `identities-${faceRef}`,
     sessions: `sessions-${faceRef}`, intents: `intents-${faceRef}` } });

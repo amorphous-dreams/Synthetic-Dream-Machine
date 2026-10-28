@@ -271,8 +271,8 @@ const PLACE_PURPOSE_DOMAINS: Readonly<Record<PlaceSigningPurpose, string>> = Obj
 export function isPlaceSigningPurpose(value: unknown): value is PlaceSigningPurpose {
   return typeof value === "string" && (PLACE_SIGNING_PURPOSES as readonly string[]).includes(value);
 }
-/** A place: printable ASCII with no space, as a KEL prefix spells it. */
-const PLACE = /^[\x21-\x7e]{1,256}$/;
+/** A place, in the KEL-prefix alphabet (base64url, with `.`): no `@` or `:`, so the admit reference `place:<place>@<head>` reads one way. */
+const PLACE = /^[A-Za-z0-9_.-]{1,256}$/;
 const placeFields = (scope: PlaceScope): Uint8Array[] => [hexToBytes(scope.atomKey), utf8Bytes(scope.place)];
 
 /** Read a place scope: exact keys, an atom key the door accepts, a place in its one spelling. */

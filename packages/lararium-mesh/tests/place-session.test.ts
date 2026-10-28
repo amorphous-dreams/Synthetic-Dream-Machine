@@ -8,7 +8,7 @@
 import * as ed25519 from "@noble/ed25519";
 import { describe, expect, test } from "vitest";
 import { hex, utf8Bytes } from "../src/crypto.js";
-import { faceProofSubjectRef, readPlaceSessionSignature, type FaceKey, type NexusAid } from "../src/face-proof-subjects.js";
+import { faceProofSubjectRef, readPlaceSessionSignature, readSessionCertificate, readSessionSignature, type FaceKey, type NexusAid } from "../src/face-proof-subjects.js";
 import { SessionTable, sessionBinding } from "../src/session-contract.js";
 import { preparePlaceFace, supplyPlaceFace } from "../src/session-face.js";
 
@@ -53,6 +53,8 @@ describe("the place anchor", () => {
     expect(supplyPlaceFace({ personaGroup: GROUP, atomKey: "00", place: PLACE })).toEqual({ refusal: "atom-malformed" });
     expect(supplyPlaceFace({ personaGroup: GROUP, atomKey: a.key, place: { ...PLACE, seq: -1 } })).toEqual({ refusal: "place-malformed" });
     expect(supplyPlaceFace({ personaGroup: GROUP, atomKey: a.key, place: { place: "has space", seq: 0, head: "h" } })).toEqual({ refusal: "place-malformed" });
+    // The KEL-prefix alphabet alone: an `@` or `:` in a place would let its admit reference alias another (place, head).
+    for (const place of ["Eplace@head", "Eplace:0"]) expect(supplyPlaceFace({ personaGroup: GROUP, atomKey: a.key, place: { ...PLACE, place } })).toEqual({ refusal: "place-malformed" });
   });
 
   test("the atom certifies one session key; the key signs an act behind the table, and no dial finish", async () => {
@@ -66,6 +68,22 @@ describe("the place anchor", () => {
     if (!("signature" in signed)) throw new Error(signed.refusal);
     expect(readPlaceSessionSignature(signer.certificate, "act", PAYLOAD, signed.signature)).toEqual({ read: "act" });
     expect(await signer.sign("finish", PAYLOAD)).toEqual({ refusal: "purpose-unknown" });
+  });
+
+  test("a place image stays apart from every Nexus image: the same atom, the same session key and the place spelled as a Nexus read nothing across the domains", async () => {
+    const { a, target, table, binding, session } = await opened();
+    const minted = await target.mint({ table, binding, session });
+    if (!("signer" in minted)) throw new Error(minted.refusal);
+    const { signer } = minted;
+    const signed = await signer.sign("act", PAYLOAD);
+    if (!("signature" in signed)) throw new Error(signed.refusal);
+    // The same strings under a Nexus session certificate: the act's signature reads under the place domain alone.
+    const asNexus = { scope: { faceKey: a.key, nexus: PLACE.place }, vesselFaceKey: "c".repeat(64), sessionKey: signer.certificate.sessionKey,
+      profile: signer.certificate.profile, signature: signer.certificate.signature } as unknown as Parameters<typeof readSessionSignature>[0];
+    expect(readSessionSignature(asNexus, "act", PAYLOAD, signed.signature)).not.toHaveProperty("read");
+    expect(readPlaceSessionSignature(signer.certificate, "act", PAYLOAD, signed.signature)).toEqual({ read: "act" });   // CONTROL
+    // The atom's certificate over the session key reads as no Nexus session certificate.
+    expect(readSessionCertificate({ ...asNexus, vesselFaceKey: a.key })).not.toHaveProperty("read");
   });
 
   test("RED: a closed session's signer drops at its next sign; a seat's signer signs no authority", async () => {

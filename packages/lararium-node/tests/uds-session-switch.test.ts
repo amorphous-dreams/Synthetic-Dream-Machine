@@ -288,7 +288,7 @@ describe("UDS session switch", () => {
   });
 
   test("RED: a face with no Nexus opens a session at the place anchor, and a command rides it", async () => {
-    const v = await stand("place-anchor", { anchor: () => ({ kind: "place", aid: "place-prefix.synthetic" }) });
+    const v = await stand("place-anchor", { anchor: () => ({ kind: "place", aid: "place-prefix.synthetic", head: "place-head.synthetic" }) });
     try {
       const a = await v.connect();
       const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
@@ -298,7 +298,7 @@ describe("UDS session switch", () => {
   });
 
   test("RED: a session opened at the place anchor refuses anchor-moved once a dial pin moves the vessel to a Nexus; CONTROL: the same face at the anchor it stands at opens again", async () => {
-    let at: SessionAnchor = { kind: "place", aid: "place-prefix.synthetic" };
+    let at: SessionAnchor = { kind: "place", aid: "place-prefix.synthetic", head: "place-head.synthetic" };
     const v = await stand("place-moved", { anchor: () => at });
     try {
       const a = await v.connect();
@@ -324,7 +324,7 @@ describe("UDS session switch", () => {
     try {
       const a = await v.connect();
       const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
-      at = { kind: "place", aid: "place-prefix.synthetic" };
+      at = { kind: "place", aid: "place-prefix.synthetic", head: "place-head.synthetic" };
       expect(await a.ask(switchTo(envA, "hint-c", "switch-after"))).toEqual({ kind: "session:refused", requestId: "switch-after", refusal: "anchor-moved", closed: true });
     } finally { await v.done(); }
   });
@@ -384,6 +384,28 @@ describe("UDS session switch", () => {
       const fact = JSON.stringify(facts);
       expect(fact.includes("cap")).toBe(false);
       expect(fact.includes("eeee")).toBe(false);
+    } finally { await v.done(); }
+  });
+  test("RED: a rotation of the place mid-session ends its session anchor-moved; a read of the place that fails once refuses that frame anchor-unread and the session stands", async () => {
+    let head = "place-head.one";
+    let failOnce = false;
+    const v = await stand("place-rotation", { anchor: () => {
+      if (failOnce) { failOnce = false; throw new Error("the place KEL at /secret/kel reads torn"); }
+      return { kind: "place", aid: "place-prefix.synthetic", head };
+    } });
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      failOnce = true;
+      expect(await a.ask(call(envA, "blip"))).toEqual({ kind: "session:refused", requestId: "blip", refusal: "anchor-unread" });
+      // CONTROL: the read recovers, and the same session serves.
+      expect(await a.ask(call(envA, "after-blip"))).toMatchObject({ kind: "session:result", requestId: "after-blip", status: "done" });
+      head = "place-head.two";                                               // the place rotates
+      expect(await a.ask(call(envA, "rotated"))).toEqual({ kind: "session:refused", requestId: "rotated", refusal: "anchor-moved", closed: true });
+      expect(v.drawn.map((d) => d.dropped)).toEqual([true]);
+      // CONTROL: the same face opens again at the head the place stands at.
+      const b = await v.connect();
+      expect(await b.ask({ op: "session:open", requestId: "open-b", faceRef: "hint-a", hand: "seat" })).toMatchObject({ kind: "session:opened" });
     } finally { await v.done(); }
   });
 });
