@@ -100,7 +100,7 @@ async function stand(label: string, opts: {
     if (opts.failFlush?.()) throw new Error("disk full at /secret/path");
     logged.push(act);
   } };
-  const channel = startUdsChannel({ daemonHandle, composite, claim, repo: flushing, sessions: door, switchActs,
+  const channel = startUdsChannel({ daemonHandle, composite, claim, repo: flushing, sessions: door, switchActs, sessionVerbs: new Set(["face-row"]),
     placeVerb: (o) => {
       placed.push(o);
       const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done",
@@ -321,6 +321,21 @@ describe("UDS session switch", () => {
       const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
       at = { kind: "place", aid: "place-prefix.synthetic" };
       expect(await a.ask(switchTo(envA, "hint-c", "switch-after"))).toEqual({ kind: "session:refused", requestId: "switch-after", refusal: "anchor-moved", closed: true });
+    } finally { await v.done(); }
+  });
+
+  test("RED: a row that acts as a face never rides the maintenance frame; CONTROL: it rides a session, and a row of the place rides the frame", async () => {
+    const v = await stand("face-row");
+    try {
+      const frame = await v.connect();
+      expect(await frame.ask({ verb: "face-row", args: {}, requestedBy: "did:place", requestId: "one-shot" }))
+        .toMatchObject({ status: "error", refusal: { reason: "face-row-rides-a-session" } });
+      expect(v.placed).toEqual([]);
+      const place = await v.connect();
+      expect(await place.ask({ verb: "load", args: {}, requestedBy: "did:place", requestId: "place-row" })).toMatchObject({ status: "done" });
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      expect(await a.ask({ op: "session:call", ...envA, requestId: "on-session", verb: "face-row", args: {} })).toMatchObject({ kind: "session:result", status: "done" });
     } finally { await v.done(); }
   });
 });

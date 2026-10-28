@@ -65,6 +65,8 @@ export interface UdsChannelOptions {
   readonly sessions?: UdsSessionDoor;
   /** Where a session switch's acts rest: the vessel's sealed row (`nodeSwitchActLog`). No log, no switch. */
   readonly switchActs?: SwitchActLog;
+  /** Verbs that act as a face: the maintenance frame refuses them `face-row-rides-a-session` (`STORE_DOOR_FACE_ROWS`). */
+  readonly sessionVerbs?: ReadonlySet<string>;
   /** The daemon's warm daemon doc handle (result.daemon.daemonHandle). */
   readonly daemonHandle: DocHandle<LarDoc>;
   /** The daemon composite with its attached working layer established as default writable. */
@@ -1165,6 +1167,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       delete oneShot.face;
       const inv: Invocation = sessionRequestId === undefined ? oneShot : parsed as Invocation;
       if (!inv.verb || !inv.requestedBy) return fail("verb + requestedBy required");
+      // A ROW THAT ACTS AS A FACE RIDES THAT FACE'S SESSION: the maintenance frame carries no face, so it serves none.
+      if (sessionRequestId === undefined && opts.sessionVerbs?.has(inv.verb)) {
+        return fail(`"${inv.verb}" acts as a face, and rides a session of that face`, "face-row-rides-a-session");
+      }
       const requestId = inv.requestId ?? newRequestId();
       // H1′: DEFER DISPATCH, NOT SYNCHRONOUSLY. A vessel frozen between the caller's write and this
       // read can thaw well after the caller gave up and destroyed its own end — its FIN/RST sits

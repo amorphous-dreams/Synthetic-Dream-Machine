@@ -33,10 +33,10 @@ describe("local session connector", () => {
     const write = vi.spyOn(Socket.prototype, "write");
     const front = serveUdsFront({ claim });
     front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo, switchActs: { write: async () => {} },
-      sessions: { open: async ({ faceRef }) => faceRef === "refuse"
+      sessions: { anchorNow: async () => ({ kind: "place" as const, aid: "place-fixture" }), open: async ({ faceRef }) => faceRef === "refuse"
         ? { ok: false, refusal: "face-unverified" }
         : { ok: true, supply: { face: faceRef === "b" ? faceB : faceRef === "c" ? faceC : face, profile: "seat", presenter: `verified-${faceRef}`,
-          mint: faceRef === "c" ? async () => ({ ok: false as const, refusal: "dial-refused" }) : fixtureMint } } },
+          anchor: { kind: "place" as const, aid: "place-fixture" }, mint: faceRef === "c" ? async () => ({ ok: false as const, refusal: "dial-refused" }) : fixtureMint } } },
       placeVerb: (o) => {
         placed.push(o);
         const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", requestedBy: o.requestedBy,

@@ -166,6 +166,29 @@ export const STORE_DOOR_VERBS = [
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
 
+/**
+ * THE ROWS THAT ACT AS A FACE: each signs, opens or writes under one face's key (its atom, its root, its handle or its
+ * key in a realm), so on a running vessel each rides a session of that face (session-contract#/the-hands) and never
+ * the maintenance frame. A row names its face by `face`, or by `handleIndex` on the handle and persona rows; naming
+ * none, the command resolves the one face standing open. Every other row acts as the place: the Nexus steward's seat
+ * acts, the place's key-side duties, a face's founding, the refold, and reads of what the place holds.
+ */
+export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>([
+  "edge-kapae", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
+  "fleet-join-offer", "fleet-join-answer",
+  "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-lease", "nexus-publish", "raise-sign",
+  "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
+]);
+
+/** The face a face row names: `face`, else `handleIndex`; undefined where it names none. */
+export function storeRowFace(args: Readonly<Record<string, unknown>>): number | undefined {
+  for (const key of ["face", "handleIndex"] as const) {
+    const v = args[key];
+    if (typeof v === "number" && Number.isSafeInteger(v) && v >= 0) return v;
+  }
+  return undefined;
+}
+
 type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, unknown>>;
 
 /** The refusals a row answers as `{ refused }` — every class a command names as a clean refusal. */

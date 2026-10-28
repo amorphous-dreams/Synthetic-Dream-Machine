@@ -11,6 +11,15 @@ vi.mock("../src/local-connector.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/local-connector.js")>();
   return { ...actual, udsAlive: vi.fn(async () => true), whoHolds: vi.fn(async () => null), udsSocketPresent: vi.fn(() => true), invokeLocal: vi.fn() };
 });
+// `handle rotate` acts as a face, so on a running vessel it rides a session of the one face the vessel resolves.
+vi.mock("../src/sealed-act-door.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/sealed-act-door.js")>();
+  return { ...actual, sealedAct: vi.fn(async () => ({ face: 0 })) };
+});
+vi.mock("../src/session-connector.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/session-connector.js")>();
+  return { ...actual, openLocalSession: vi.fn() };
+});
 vi.mock("../src/env.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/env.js")>();
   return { ...actual, vesselDid: vi.fn(async () => "did:test"), larSealHome: vi.fn(() => "/tmp/unused-seal") };
@@ -18,6 +27,7 @@ vi.mock("../src/env.js", async (importOriginal) => {
 
 import { NexusKapaeError, StoreHeld } from "@lararium/node";
 import { invokeLocal, LocalWaitExpired } from "../src/local-connector.js";
+import { openLocalSession } from "../src/session-connector.js";
 import { storeVerb, storeFailure, RoutedVerbRefused, SlowBootTimeout } from "../src/store-door.js";
 import { DaemonUnreachable } from "../src/verb-call.js";
 import { cmdKapae } from "../src/commands/nexus-kapae-cmd.js";
@@ -98,7 +108,8 @@ describe("a command's JSON carries the name", () => {
   });
 
   it("★ a store refusal no command caught leaves the dispatcher as one JSON object, never a throw ★", async () => {
-    vi.mocked(invokeLocal).mockResolvedValue({ status: "error", requestId: "r", errorMessage: "the vessel holds no face", refusal: { reason: "waking-floor" } });
+    const refused = { status: "error", requestId: "r", errorMessage: "the vessel holds no face", refusal: { reason: "waking-floor" } };
+    vi.mocked(openLocalSession).mockResolvedValue({ faceRef: "proof", call: async () => ({ kind: "session:result", ...refused }), close: async () => {} } as never);
     const { code, payload } = await jsonOf(() => dispatch(["handle", "rotate", "--json"]));
     expect(payload.error?.code).toBe("waking-floor");
     expect(code).toBe(2);
