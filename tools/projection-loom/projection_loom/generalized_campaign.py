@@ -134,6 +134,50 @@ def proposals(initial,archive,ctx,epoch,count):
     return result
 
 
+def activation_funnels(offered, selected, scored):
+    """Measure receipt stages; rule presence is not a per-step activation claim."""
+    selected_ids = {x["id"] for x in selected}
+    if len(selected_ids) != len(selected):
+        raise ValueError("Repeated selected candidate identity")
+    receipts = {r["id"]: r for r in scored}
+    if len(receipts) != len(scored) or set(receipts) != selected_ids:
+        raise ValueError("Audition and candidate receipt identities disagree")
+    if len({r["id"] for r in offered}) != len(offered) or not selected_ids <= {
+            item["id"] for item in offered}:
+        raise ValueError("Proposed and auditioned candidate identities disagree")
+
+    def empty():
+        return {"proposed": 0, "attempted": 0, "deferred": 0,
+                "native_valid": 0, "native_rejected": 0, "operational_error": 0}
+
+    emitters, rules = {}, {}
+    for item in offered:
+        cid = item["id"]
+        families = {node.op for node in item["program"].nodes}
+        rows = [emitters.setdefault(item["emitter"], empty())]
+        rows += [rules.setdefault(kind, empty()) for kind in sorted(families)]
+        for counts in rows:
+            counts["proposed"] += 1
+            if cid not in selected_ids:
+                counts["deferred"] += 1
+            else:
+                state = receipts[cid]["state"]
+                if state not in ("native-valid", "native-rejected", "operational-error"):
+                    raise ValueError("Unknown exact audition outcome")
+                counts["attempted"] += 1
+                counts[{"native-valid": "native_valid",
+                        "native-rejected": "native_rejected",
+                        "operational-error": "operational_error"}[state]] += 1
+    for counts in list(emitters.values()) + list(rules.values()):
+        if (counts["attempted"] + counts["deferred"] != counts["proposed"]
+                or counts["native_valid"] + counts["native_rejected"]
+                + counts["operational_error"] != counts["attempted"]):
+            raise AssertionError("Activation funnel does not reconcile")
+    return {"emitters": {k: emitters[k] for k in sorted(emitters)},
+            "declared_rule_presence": {k: rules[k] for k in sorted(rules)},
+            "rule_scope": "candidate-contains-operator; not per-step runtime invocation"}
+
+
 def evaluate(item,cameras,alpha,out):
     program=item["program"]
     result={"id":item["id"],"parent":item["parent"],"emitter":item["emitter"],
@@ -325,6 +369,7 @@ def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
                 "proposed":len(offered),"attempted":len(seats),
                 "valid":sum(x["state"]=="native-valid" for x in scored),
                 "rejected":sum(x["state"]=="native-rejected" for x in scored),
+                "activation_funnels":activation_funnels(offered,seats,scored),
                 "candidates":scored,"archive":archive.receipt()}
         save_once(output,record)
         all_epochs.append(record)
@@ -354,6 +399,7 @@ def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
              "native_rejected":sum(x["rejected"] for x in all_epochs),
              "operational_errors":len(errors),"status":"failed" if errors else "completed",
              "niches":archive.receipt()["niches"],
+             "activation_funnels":[x["activation_funnels"] for x in all_epochs],
              "finalists":winners,"auto_promotion":False,
              "source_authority":manifest["source_camera_authority"]}
     save_once(out/"summary.json",summary)
