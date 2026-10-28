@@ -94,7 +94,7 @@ Read the bound, ask what overload threatens, and the sign falls out.
 * ''Concurrency-limit → SHRINK under load.'' A parallel-worker ceiling: when embed latency rises
   past the no-load baseline × tolerance, ''shrink'' the limit (multiplicative back-off) to shed the
   queue; when headroom holds, probe up (additive). The AIMD dial for the parallel-ingest pool.
-  Engine: `mesh/concurrency-dial.ts` (LANDED 2026-07-02).
+  Engine: `mesh/concurrency-dial.ts`.
 
 * ''Display-bound window → stay FIXED.'' Where the bound's optimum sits structurally at the frame
   clock, the correct self-regulation IS the pin — tuning it adds instability for no gain; overrun
@@ -188,6 +188,6 @@ TS/py shore; the polarity law and the two-loop shape hold identically wherever t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;K3urk6NL0im6D_Ko0gfrp2DHBadVFy1IynWyhcWiid4
+<<^ code="&#x0003;">>ni:///sha-256;-nvhzHn2fFm3oY9wtIRSRC23t3q2rFDDBpF-Hn-NN2E
 
 <<^ code="&#x0004;" -> to="?">>

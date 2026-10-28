@@ -13,7 +13,7 @@
  * `unsettled` (two heads) refuses: the cabal settles a fork before another release builds on it.
  *
  * WHAT IT NEVER DOES. It signs no approval, moves no pin and accepts nothing: a face accepts a release by a person's
- * act (slice 5). A herm carries the answer and signs nothing.
+ * act (road `W26`). A herm carries the answer and signs nothing.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-slices
  */

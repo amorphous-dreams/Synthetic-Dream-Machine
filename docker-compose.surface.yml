@@ -26,7 +26,7 @@
 #                     DECIDES ITS REACH: on this file's bridge network an announcement reaches the containers of this
 #                     compose project and nothing on the household LAN. Reaching the LAN takes host networking
 #                     (`network_mode: host` in an override file: the container then shares the host's interfaces, the
-#                     `ports:` map stops applying and LARES_BIND no longer fences the listener) or a macvlan/ipvlan
+#                     `ports:` map stops applying and LARES_BIND stops fencing the listener) or a macvlan/ipvlan
 #                     attachment (needs a parent interface; the host itself usually cannot reach the container).
 #                     Neither stands on by default. Without multicast, the admit's QR code or `lar:` URI carries
 #                     the address.

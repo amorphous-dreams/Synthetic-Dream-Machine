@@ -133,7 +133,7 @@ A hand MAY add a future debug-only disk projection behind an explicit flag; it M
 
 ''A meme resides on disk as one whole carrier.'' Decomposition lives only between the shore (`memeticWikitextDeserializer`) and the VM; every path back to disk MUST route through the recompose inverse (`expandMemeRefs` / `exportMemeText`). ''Fragment files MUST NOT appear on any surface a human edits'' — a `#ahu`-grain file on disk constitutes a grain leak (a degraded projection), and the round-trip law holds byte-faithful: anything in the operator's source survives.
 
-//Retired to legacy-design-time (the prior intent here — decompose `bags/` into one `.tid` file per tiddler — burned 2026-06-11):// tid-sized files serve the database, never the operator's hands; managing meme-sized thought as tid-swarms makes the exact TW5-community friction that birthed memetic-wikitext. The kupono vectors live in `tests/e2e/carrier-roundtrip.test.ts`.
+''No `bags/` carrier decomposes into one `.tid` file per tiddler.'' Tid-sized files serve the database, never the operator's hands; managing meme-sized thought as tid-swarms makes the exact TW5-community friction that birthed memetic-wikitext. The kupono vectors live in `tests/e2e/carrier-roundtrip.test.ts`.
 
 `wikis/{slug}/` stays memetic-wikitext `.md` on the same law.
 
@@ -225,6 +225,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Z0GSIokB0kLNS7PGEwp6IN0GLLIxYU3aZ12dO9G2eog
+<<^ code="&#x0003;">>ni:///sha-256;qIjJ3HQ6Ctn6J1GX0nVh19H5qSoo2SaQ0pQ_2LPCRvY
 
 <<^ code="&#x0004;" -> to="?">>

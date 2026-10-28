@@ -303,7 +303,7 @@ function assertNotBare(repoRoot) {
  * `findBudgetMs`), watches it with `gh run watch --exit-status`, reads the merge job's own
  * `MERGE-VERIFY` log line as the verdict, deletes the remote branch, and returns
  * `{ ok, shardCounts, totalTests, run }`. Always deletes the branch, even on a red run — a proof
- * branch left standing after a red read is exactly the kind of debris this lane must not leave.
+ * branch left standing after a red read is exactly the kind of debris this tool must not leave.
  */
 export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000, pollMs = 3000 }) {
   assertNotBare(repoRoot);
@@ -316,7 +316,7 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
   const deadline = Date.now() + findBudgetMs;
   while (Date.now() < deadline) {
     // NEVER `--workflow e2e-shards.yml` here: GitHub's API only resolves a workflow BY FILENAME
-    // once that file exists on the repo's default branch, and this lane's whole point is to prove
+    // once that file exists on the repo's default branch, and this tool exists to prove
     // a workflow file that lives only on a throwaway `ci/<lane>` branch. `--branch` + `--event
     // push` finds the same run without that registration — the headSha match right below is what
     // keeps it the ONE run this push triggered, never a stale run of a reused lane name.
@@ -413,9 +413,9 @@ async function cliPush(args, repoRoot) {
   for (const line of result.verdictLines?.length ? result.verdictLines : (result.verdictLine ? [result.verdictLine] : [])) {
     console.log(line);
   }
-  // ONE HALF OF GREEN. This lane runs the e2e sets alone; the package suites, the witness fleet and the tool
+  // ONE HALF OF GREEN. This tool runs the e2e sets alone; the package suites, the witness fleet and the tool
   // self-tests answer only in the full CI workflow, where a newer push cancels a run before it reports.
-  // The head this lane PUSHED, never the checkout's head at print time: other hands commit while the run goes.
+  // The head this tool PUSHED, never the checkout's head at print time: other hands commit while the run goes.
   console.log(`${HALF_VERDICT} ${fullCiBranchOf(repoRoot, result.headSha) ?? "<the branch this head rides>"} --head ${result.headSha.slice(0, 9)}`);
   assertNotBare(repoRoot);
   process.exitCode = result.ok ? 0 : 1;

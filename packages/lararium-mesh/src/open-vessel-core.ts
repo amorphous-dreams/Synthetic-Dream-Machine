@@ -105,7 +105,7 @@ export interface VesselKeel {
 
   /**
    * THE SYSTEM CANON THE SHORE NAMES: the live `lares` and `lararium` document urls this vessel holds, from the Kahu
-   * realm's standing registrations (W26 slice 3). A bag the shore does not name mounts no layer, so a vessel outside the
+   * realm's standing registrations (road `W26`). A bag the shore does not name mounts no layer, so a vessel outside the
    * Kahu cabal holds neither document and reads the floor through `@oracle`. The keel reads no catalog row for either bag.
    * Absent = the shore names none.
    */

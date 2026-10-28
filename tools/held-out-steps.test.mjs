@@ -125,6 +125,30 @@ test("the job timeout cancels a step and its process group; only always() steps 
   assert.ok(r.lines.includes("[held-out] ✓ Teardown"));
 });
 
+// A step's own `timeout-minutes` fails that step, as the runner fails it, and the job goes on to its always() steps
+// as after any failure; the job's cap still cancels. The workflow law gives every engine install such a cap.
+test("a step's own timeout fails that step and the job reads RED, while a step under its cap passes", async () => {
+  const steps = `      - name: Outlives its own cap
+        timeout-minutes: 0.01
+        run: sleep 30 & wait
+      - name: Never reached
+        run: "true"
+      - name: Teardown
+        if: always()
+        run: "true"`;
+  const started = Date.now();
+  const r = await run(fixture(steps), "green");
+  assert.ok(Date.now() - started < 8_000, "the step cap signalled the group at once");
+  assert.equal(r.verdict, "RED", r.lines.join("\n"));
+  assert.equal(r.failed, "Outlives its own cap");
+  assert.ok(r.lines.includes("[held-out] ✗ Outlives its own cap — the step timeout (0.01m)"), r.lines.join("\n"));
+  assert.ok(r.lines.includes("[held-out] skip  Never reached"));
+  assert.ok(r.lines.includes("[held-out] ✓ Teardown"));
+  // CONTROL: a step that ends under its cap reads green.
+  const ok = await run(fixture(`      - name: Ends in time\n        timeout-minutes: 5\n        run: "true"`), "green");
+  assert.equal(ok.verdict, "GREEN", ok.lines.join("\n"));
+});
+
 test("CONTROL: an unknown step key, condition, expression or action throws instead of skipping", async () => {
   assert.throws(() => parseWorkflow(fixture(`      - name: x\n        working-directory: tests\n        run: "true"`)), /working-directory/);
   assert.throws(() => parseWorkflow(fixture(`      - name: x\n        continue-on-error: \${{ matrix.soft }}\n        run: "true"`)), /continue-on-error/);

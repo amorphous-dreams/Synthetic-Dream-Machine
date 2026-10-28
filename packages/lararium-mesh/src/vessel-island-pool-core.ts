@@ -206,7 +206,7 @@ export type DiskMirrorGrant = readonly { bagId: string; mirrorRoot: string; scop
  *    designates that canon AND no literal grant already covers it — so system
  *    wikis (lares/lararium, literal grants) keep their static roots and never
  *    double-project; a system wiki's canon never projects by self-canon at all
- *    (`bags/` projects on the Kahu's vessel alone, W26 slice 3).
+ *    (`bags/` projects on the Kahu's vessel alone, road `W26`).
  *
  *  OCAP-clean: authority stays in the static grant, designation in the synced
  *  recipe, the per-instance bag + subdir resolved here. */
