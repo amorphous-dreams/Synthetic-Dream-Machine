@@ -59,7 +59,7 @@ export const EXCEPTIONS = [
   { rule: "clock", file: "tools/browser-weld/weld.mjs", match: "Date.now() > stop", reason: "The browser probe bounds only its own polling interval." },
   { rule: "clock", file: "tools/e2e-shards.mjs", match: "Date.now() < deadline", reason: "The CI reader bounds only its own search for the run triggered by its push." },
   { rule: "clock", file: "tools/held-out-steps.mjs", match: "const left = deadline - Date.now()", reason: "The runner computes only its own child process timeout." },
-  { rule: "clock", file: "tools/held-out-steps.test.mjs", match: "Date.now() - started <", reason: "The test measures only its own completion time." },
+  { rule: "clock", file: "tools/held-out-steps.test.mjs", match: "Date.now() - started <", count: 2, reason: "The two timeout tests each measure only their own completion time." },
   { rule: "retired-test", file: "packages/lararium-memetic-frame/tests/verdict.test.ts", match: "const retired: Record<string, string> = {", reason: "The frame verdict suite feeds malformed heads that a reader meets as foreign bytes; the record names input bytes." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Build new, then retire.", reason: "This law line names the reserved retired term it governs." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Evergreen, with no old shapes", reason: "This law line names the history words it bans." },
