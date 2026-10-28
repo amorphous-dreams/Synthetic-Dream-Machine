@@ -32,7 +32,11 @@ test("a content verb refuses a presenter that is not the mounted face, by name",
   const sibling = `0x${b.daemonAuth.atom.key}`;
   const mounted = `0x${a.daemonAuth.atom.key}`;
   const args = { sealed: { bag: BAG, text: "x", ref: "" }, create: { bag: BAG, plane: "persona" }, wiki: { slug: "fence" } };
-  for (const [verb, a2] of [["sealed-seal", args.sealed], ["sealed-open", args.sealed], ["CREATE", args.create], ["init-wiki", args.wiki]] as const) {
+  const more = ["sealed-reading", "sealed-choose-head", "sealed-hand-over", "sealed-admit", "sealed-parcels", "sealed-receive", "sealed-serve", "sealed-memory-cut", "sealed-memory-door", "sealed-memory-import", "sealed-rolls", "seat-duties"];
+  const stood = more.filter((verb) => registry.has(verb));
+  // Silent-zero guard: the sweep must find the sealed verbs it names, or it proves nothing.
+  expect(stood.length).toBeGreaterThanOrEqual(8);
+  for (const [verb, a2] of [["sealed-seal", args.sealed], ["sealed-open", args.sealed], ["CREATE", args.create], ["init-wiki", args.wiki], ...stood.map((v) => [v, args.sealed] as const)] as const) {
     expect(registry.has(verb), verb).toBe(true);
     expect(await call(verb, sibling, a2), verb).toMatchObject({ reason: "content-mounted-only" });
     // CONTROL: the mounted face's call passes the fence (it may refuse for another reason).
