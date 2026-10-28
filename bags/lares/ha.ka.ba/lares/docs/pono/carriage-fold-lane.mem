@@ -23,7 +23,7 @@ written   = "2026-10-16"
 
 ! The carriage-fold lane ~ a kit for the session that takes it
 
-''What this lane closes.'' Roadmap row `W18` (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/the-loops): in the held-out herm-mesh cell, all four places join A's Nexus, then the host reader reads relay-2 as `unverified: pin-absent` on every attempt; in the mesh-scenarios nexus cell, `the hearths carry from the herm` fails with `no carriage`. Both cells read red on the work branch since the wire-socket lane merged (PR #44).
+''What this lane closes.'' Roadmap row `W18` (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/o-takiage): in the held-out herm-mesh cell, all four places join A's Nexus, then the host reader reads relay-2 as `unverified: pin-absent` on every attempt; in the mesh-scenarios nexus cell, `the hearths carry from the herm` fails with `no carriage`. Both cells read red on the work branch since the wire-socket lane merged (PR #44).
 
 ''How to start.'' Open a fresh session in the repository and paste:
 
@@ -119,6 +119,6 @@ The controller's session (Lares-Awakens) stays open for a short while after this
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9iaF5zkWFaiAt0BO0Qf4Z5A92J4E3JGB_C-zVQ96Ze8
+<<^ code="&#x0003;">>ni:///sha-256;m-3odTnt_x1kZaxjFXDZVJpYJeDemwMl5ZX08STlH2g
 
 <<^ code="&#x0004;" -> to="?">>
