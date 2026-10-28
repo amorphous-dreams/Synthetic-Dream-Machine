@@ -21,6 +21,7 @@ from .developmental import GrowthNode, GrowthProgram, compile_growth
 class SeedAdapter:
     seed: SeedEntry
     program: dict | None = None
+    registration: dict | None = None
 
     def offered_growth(self):
         """The adapter supplies construction without generic engine kind cases."""
@@ -82,7 +83,7 @@ def image_group(path):
         raise ValueError("At least one independently sourced view required")
     for view in views:
         allowed={"rgba","alpha","camera","registration","anchors",
-                 "construction_primary"}
+                 "construction_primary","calibration"}
         if not isinstance(view,dict) or set(view)-allowed or "rgba" not in view:
             raise ValueError("Invalid image-group view")
         state=view.get("registration","provisional")
@@ -90,8 +91,10 @@ def image_group(path):
             raise ValueError("Construction primary must be explicit boolean")
         if state not in ("provisional","registered"):
             raise ValueError("Unknown camera registration state")
-        if state=="registered" and not view.get("anchors"):
-            raise ValueError("Registered camera needs independent anchor evidence")
+        if state=="registered" and not view.get("calibration"):
+            raise ValueError("Registered camera needs measured calibration evidence")
+        if state!="registered" and view.get("calibration"):
+            raise ValueError("Provisional image cannot import an unverified camera pose")
         image_path=(path.parent/view["rgba"]).resolve(strict=True)
         if not (image_path.is_relative_to(path.parent) or image_path.is_relative_to(Path(__file__).resolve().parents[1])):
             raise ValueError("Image must live inside image-group boundary")
@@ -112,19 +115,55 @@ def image_group(path):
                 if declared.tobytes()!=alpha.tobytes():
                     raise ValueError("Alpha channel disagrees with original RGBA")
             alpha_hash=sha256(alpha_path.read_bytes()).hexdigest()
+        registration=None
+        extra=()
+        if state=="registered":
+            from .source_registration import fit_registration
+            cal_path=(path.parent/view["calibration"]).resolve(strict=True)
+            if not cal_path.is_relative_to(path.parent):
+                raise ValueError("Calibration escapes image-group source boundary")
+            fitted=fit_registration(image_path,cal_path)
+            if view.get("anchors") and set(view["anchors"])!=set(fitted["controls"]):
+                raise ValueError("Camera anchor labels disagree with independent 3D survey")
+            registration={**fitted,"calibration_file":str(cal_path)}
+            extra=(("calibration_sha256",fitted["calibration_sha256"]),
+                   ("anchor_sha256",fitted["anchor_sha256"]))
         metadata=(("camera",str(view.get("camera","unknown"))),
                   ("registration",state),
                   ("construction_primary", "true" if view.get("construction_primary") else "false"),
-                  ("width",str(width)),("height",str(height)))
+                  ("width",str(width)),("height",str(height)))+extra
         entry=SeedEntry("image-group",sha256(raw).hexdigest(),str(image_path),
                         "pixel","source",tuple(sorted((("rgba",sha256(raw).hexdigest()),
                                                          ("alpha",alpha_hash)))),
                         tuple(sorted(metadata)))
-        entries.append(SeedAdapter(entry))
+        entries.append(SeedAdapter(entry,None,registration))
     if sum(("construction_primary", "true") in x.seed.metadata
            for x in entries) > 1:
         raise ValueError("Only one provisional construction primary may be selected")
     return tuple(entries)
+
+
+def registered_views(adapters):
+    """Reverify camera, survey and image bytes on every experimental admission.
+
+    A mixed provisional/registered image group remains unscored as a whole.
+    No synthetic inspection camera stands in for an independent source image.
+    """
+    images=sorted((a for a in adapters if a.visual_source),
+                  key=lambda a:a.seed.identity)
+    if not images or any(a.registration is None for a in images):
+        return None
+    from .source_registration import fit_registration
+    rows=[]
+    for adapter in images:
+        expected=adapter.registration
+        current=fit_registration(adapter.seed.locator,expected["calibration_file"])
+        if current["sha256"]!=expected["sha256"]:
+            raise ValueError("Registered camera calibration changed since source admission")
+        rows.append({"source_id":adapter.seed.identity,
+                     "path":adapter.seed.locator,
+                     "registration":current})
+    return rows
 
 
 def constructive_grammar(path):

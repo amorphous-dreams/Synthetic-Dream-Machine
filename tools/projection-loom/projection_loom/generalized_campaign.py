@@ -13,7 +13,7 @@ import tempfile
 import numpy as np
 
 from .intent_seed import SeedBundle, IntentContract, GrowthContext
-from .seed_adapters import compose_adapters, proxy_growth_program, image_growth_program
+from .seed_adapters import compose_adapters, proxy_growth_program, image_growth_program, registered_views
 from .developmental import GrowthNode, GrowthProgram, compile_growth, mutate_growth, crossover_growth
 from .intent_evolution import (QualityArchive, ScoredCandidate, structural_descriptor,
                                fair_auditions, fixed_inspection_cameras,
@@ -101,9 +101,9 @@ def source_alpha(adapters):
                   key=lambda a:a.seed.identity)
     if not images:
         return None
-    if len(images)>1:
-        # No camera calibration or independent registration residual exists
-        # in this execution contract. Never reward one view as all of them.
+    if len(images)>1 or images[0].registration is not None:
+        # Calibrated sources must use their measured camera, never the
+        # synthetic oblique. Uncalibrated multi-image sources abstain.
         return None
     with Image.open(images[0].seed.locator) as im:
         return np.asarray(im.getchannel("A"),dtype=np.uint8).copy()
@@ -178,7 +178,43 @@ def activation_funnels(offered, selected, scored):
             "rule_scope": "candidate-contains-operator; not per-step runtime invocation"}
 
 
-def evaluate(item,cameras,alpha,out):
+def measured_view_scores(mesh, registered, *, full_resolution=False):
+    """Each independent original image receives its *own* measured projection.
+
+    Preview masks order search; final masks preserve original pixel grids.
+    Synthetic orthos are not scored as source observations.
+    """
+    from .source_registration import registered_silhouette
+    from .intent_evolution import source_fit
+    rows=[]
+    for entry in registered:
+        registration=entry["registration"]
+        w,h=registration["camera"]["size"]
+        if w*h>16_000_000:
+            raise ValueError("Source view exceeds bounded perspective audit budget")
+        if full_resolution:
+            size=(w,h)
+        else:
+            ratio=min(1.,160/w,192/h)
+            size=(max(16,round(w*ratio)),max(16,round(h*ratio)))
+        with Image.open(entry["path"]) as image:
+            if image.mode!="RGBA" or image.size!=(w,h):
+                raise ValueError("Registered original RGBA pixels changed")
+            alpha=image.getchannel("A")
+            if size!=(w,h):
+                alpha=alpha.resize(size,Image.Resampling.BILINEAR)
+            source=np.asarray(alpha,dtype=np.uint8)
+        candidate=registered_silhouette(mesh,registration,size=size)
+        result=source_fit(source,candidate)
+        rows.append({"source_id":entry["source_id"],
+                     "camera_sha256":registration["sha256"],
+                     "camera_residual_px":registration["observed_rms_px"],
+                     "grid":[size[0],size[1]],
+                     "source_fit":result})
+    return rows
+
+
+def evaluate(item,cameras,alpha,out,registered=None):
     program=item["program"]
     result={"id":item["id"],"parent":item["parent"],"emitter":item["emitter"],
             "program":[n.as_dict() for n in program.nodes],
@@ -196,6 +232,14 @@ def evaluate(item,cameras,alpha,out):
             if alpha is not None else None)
     observe=observe_candidate(mesh,cameras,source,size=(128,192))
     metrics=observe["views"]["oblique"].get("source_fit",{})
+    if registered:
+        measured=measured_view_scores(mesh,registered)
+        metrics={"fitness":sum(row["source_fit"]["fitness"] for row in measured)/len(measured),
+                 "registered_view_count":len(measured),
+                 "source_authority":"landmark-consistent-registered-views"}
+        observe["registered_source_views"]=measured
+        observe["camera_authority"]="landmark-consistent-registered"
+        observe["source_observations"]=len(measured)
     image=silhouette(mesh,cameras["oblique"],(128,192))
     p=Path(out)/"previews"/(item["id"]+".png")
     p.parent.mkdir(parents=True,exist_ok=True)
@@ -308,14 +352,18 @@ def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
                                ("foundation","spawn","split","bridge","carve")}),seed)
     out=Path(out);out.mkdir(parents=True,exist_ok=True)
     independent_images = [a for a in adapters if a.visual_source]
-    visual_authority = ("withheld-uncalibrated-multiview" if len(independent_images)>1
+    registered=registered_views(adapters)
+    visual_authority = ("landmark-consistent-multiview" if registered and len(registered)>1
+                        else "landmark-consistent-single-view" if registered
+                        else "withheld-uncalibrated-multiview" if len(independent_images)>1
                         else "provisional" if independent_images else "none")
     manifest={"schema":"projection-loom/experimental-input-cohort",
         "run_id":context.run_id,"seeds":seeds.manifest(),"intent":contract.identity,
         "initial_program":initial.to_dict(),"types":list(types),
         "epochs":epochs,"offspring":offspring,"exact_budget":exact_budget,
         "source_camera_authority": visual_authority,
-        "independent_source_observations": [a.seed.identity for a in independent_images]}
+        "independent_source_observations": [a.seed.identity for a in independent_images],
+        "registered_source_camera_sha256": [x["registration"]["sha256"] for x in registered or []]}
     save_once(out/"pre_registration.json",manifest)
     if (out/"summary.json").exists():
         return _completed_summary(out, manifest, contract)
@@ -354,7 +402,8 @@ def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
                 if result["program_sha256"]!=item["program"].identity:
                     raise ValueError("Candidate replay identity conflict")
             else:
-                result=evaluate(item,cameras,alpha,out)
+                result=(evaluate(item,cameras,alpha,out,registered)
+                        if registered else evaluate(item,cameras,alpha,out))
                 save_once(receipt,result)
             journal.transition(cid,"aftermath",{"state":result["state"]})
             journal.transition(cid,"closed")
@@ -383,7 +432,15 @@ def run_cohort(adapters,contract:IntentContract,out,*,epochs=3,offspring=4,
                  "native":build.audit(),
                  "six_view":observe_candidate(build.assembly.tessellate(union=True),cameras),
                  "full_source":None,"automatic_operator_promotion":False}
-        if alpha is not None:
+        if registered:
+            witness["full_source"]={
+                "registered_source_views":measured_view_scores(
+                    build.assembly.tessellate(union=True),registered,
+                    full_resolution=True),
+                "camera_authority":visual_authority,
+                "source_count":len(registered),
+                "native_valid":True}
+        elif alpha is not None:
             size=(alpha.shape[1],alpha.shape[0])
             witness["full_source"]=multi_fidelity_audit(build,cameras,alpha,final=size)
         from .gallery_artifacts import finalist_gallery
