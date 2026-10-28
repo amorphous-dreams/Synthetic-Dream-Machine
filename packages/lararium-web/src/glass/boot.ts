@@ -11,6 +11,10 @@ export async function bootGlass({ host, inputs, port, wikiUri, actor, width }: {
   const engine = new TW5Engine();
   await engine.boot({ bytes: inputs.coreBytes, sha256: inputs.coreCid }, inputs.preloadedTiddlers, { glass: true });
   const tw = engine.$tw;
+  let adaptor: ReturnType<typeof makeGlassPortAdaptor> | null = null;
+  let camera: ReturnType<typeof mountGlassCamera> | null = null;
+  const teardown = (): void => { camera?.unmount(); adaptor?.close(); engine.dispose(); engine.releaseGlass(); };
+  try {
   const shadowRoot = host.shadowRoot ?? host.attachShadow({ mode: "open" });
   const transport: GlassTransport = {
     send: message => port.send(message),
@@ -18,15 +22,14 @@ export async function bootGlass({ host, inputs, port, wikiUri, actor, width }: {
       if (message.type.startsWith("port:")) listener(message as unknown as Parameters<typeof listener>[0]);
     }),
   };
-  const adaptor = makeGlassPortAdaptor({ wiki: tw.wiki, Tiddler: tw.Tiddler, transport,
+  adaptor = makeGlassPortAdaptor({ wiki: tw.wiki, Tiddler: tw.Tiddler, transport,
     portId: crypto.randomUUID(), wikiUri, actor, width, mintTx: () => crypto.randomUUID() });
-  const camera = mountGlassCamera({ tw, shadowRoot });
+  camera = mountGlassCamera({ tw, shadowRoot });
+  } catch (error) { teardown(); throw error; }
   let mounted = true;
-  return { tw, adaptor, unmount() {
+  return { tw, adaptor: adaptor!, unmount() {
     if (!mounted) return;
     mounted = false;
-    camera.unmount();
-    adaptor.close();
-    engine.dispose();
+    teardown();
   } };
 }

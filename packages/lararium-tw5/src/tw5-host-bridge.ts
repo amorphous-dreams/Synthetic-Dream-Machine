@@ -455,8 +455,8 @@ export async function prepareHostBootInstance(
     const prior = lent.map(name => Object.getOwnPropertyDescriptor(host, name));
     let nextImmediate = 0;
     const immediate = new Map<number, () => void>();
-    // TW5 module bodies resolve `global` by name; lend the page scope only for boot.
-    lendGlobalIfAbsent(host, "global", globalThis);
+    // TW5 module bodies resolve `global` by name; the glass lends an empty record, never the page's own scope.
+    lendGlobalIfAbsent(host, "global", Object.create(null));
     // TW5's module sandbox names `Buffer` bare; an inert constructor keeps `instanceof Buffer` in page tooling callable.
     lendGlobalIfAbsent(host, "Buffer", function Buffer() { /* inert: the glass reads no Node buffers */ });
     // TW5's headless startup probes `process`; the shim holds no page authority.

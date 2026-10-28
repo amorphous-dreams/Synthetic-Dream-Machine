@@ -31,6 +31,8 @@ export function mountGlassCamera({ tw, shadowRoot, template = TW5_ROOT_TEMPLATE,
     if (!mounted) return;
     mounted = false;
     tw.wiki.removeEventListener("change", onChange);
+    widget.removeChildDomNodes?.();
+    styleWidget.removeChildDomNodes?.();
     container.remove();
     style.remove();
     if (tw.rootWidget === root) tw.rootWidget = undefined as never;
