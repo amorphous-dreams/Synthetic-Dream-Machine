@@ -1,5 +1,24 @@
 # Projection Loom · AI Fire / Art Sigils Roadmap
 
+## 2026-10-28 · Aftermath/evergreen all-aperture walk (read exact head)
+
+**Boot:** `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` on `feature/green-jello-dinosaur-5` (verified blob `b68d2034`). **Work branch:** `feature/green-jello-dinosaur-5--projection-loom`, PR #84, unmerged.
+
+**Repository aperture:** The complete `pytest tests` CAD workflow previously omitted `pxr` while the dedicated USD lane installed it. Common `requirements-ci.txt` now pins `usd-core==26.11`; the full-suite runner no longer relies on an accidental test split. Dedicated generalized CI passed at the dependency-parity head.
+
+**Causal aperture:** `relational_ground.py` now checks idempotent duplicate events before unseen-conflict refusals, verifies stored event parents against authored frontier, invalidates transformed native bodies and dependent supports, and refuses conflicting sibling edits even on rehydration. Independent concurrent edits remain accepted. Exact event-author authentication remains outside the event digest's claims.
+
+**Scene/source aperture:** `scene_usd.py` demands every referenced STEP and USD asset appear inside its digest-verified portable inventory; it rejects escaping/unlisted references, unexpected root sublayers and duplicate entity-to-prim records. `editor_proposals.py` binds the causal ground to authored program fingerprints and declared placements, including independently authored nonzero starting placements.
+
+**Kernel / Fire aperture:** A local CadQuery loft demonstrated an ordinary bounding box expanding by 0.25 model units after rendering triangles. `fire_geometry._bounds()` now calls OpenCascade's analytic `BRepBndLib.AddOptimal_s` without tessellation dependence, with a before/after native regression witness. Rule-step structural replay remains strict; tiny finite coordinate roundoff receives only a narrow bound and nontrivial changes remain refusals.
+
+**Acceptance status:** These changes were pushed through code head `aea14cad`. Do **not** equate a pushed head with passing all required Actions: check the full CAD regression, Fire source-bound review, generalized USD/Blender, held-out, and repository CI on the exact current head before closing this aftermath campaign. Prior CI success at another head supplies limited historical evidence.
+
+**Reentry checks** from `tools/projection-loom/`: `python -m pytest -q tests`; `python -m pytest -q tests/test_hephaestus_relational.py tests/test_hephaestus_editor.py tests/test_hephaestus_usd.py tests/test_fire_native.py` (with OpenUSD installed); `python scripts/check_architecture.py`. Inspect `.github/workflows/projection-loom.yml`, `projection-loom-generalized.yml` and `loom-fire-grammar.yml` as independent integration witnesses. Keep OpenUSD as scene transport, native CAD as exact geometry authority, and OODA-HA as the sole decision helm.
+
+**Unclosed:** Actual Unreal Editor execution, calibrated multiview source fitness, complete old-ownership migration, full operation-family activation and operator-steered QD, and complete obsolete alpha-path cleanup. This evergreen walk does not authorize PR merge, pet-name selection, artistic winner promotion or Elyncia canon changes.
+
+
 ## 2026-10-28 · Hephaestus executable ground (PR #84, verify current head)
 
 The focused implementation ledger is [HEPHAESTUS-KANBAN](HEPHAESTUS-KANBAN.md).

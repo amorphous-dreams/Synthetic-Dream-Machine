@@ -1,5 +1,10 @@
 # Projection Loom · Experiment Zero Field Guide
 
+### Kernel-level evergreen boundary (2026-10-28)
+
+The Fire reviewer now derives structural anchors from **analytic native BRep bounds**, not CadQuery's default tessellation-dependent bounding box. Rendering a six-view preview may change triangle caches; it must never move native construction anchors. Full source/native replay must pass independently of successful pictures. The code/test/CI handoff and explicit remaining acceptance gaps live in [HANDOFF](HANDOFF.md) and [HEPHAESTUS-KANBAN](HEPHAESTUS-KANBAN.md).
+
+
 ## 2026-10-28 · Hephaestus executable ground (PR #84, verify current head)
 
 The focused implementation ledger is [HEPHAESTUS-KANBAN](HEPHAESTUS-KANBAN.md).
