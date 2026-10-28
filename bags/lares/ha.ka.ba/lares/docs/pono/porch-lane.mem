@@ -38,7 +38,7 @@ The operator ruled on 2026-10-26 to close open work before the founding bake. Th
 
 !!! The `custody-frames` U1 leak
 * ''The cause.'' U1's control read `loadActivePersonaIndex().catch(() => undefined)`. That reader infers the one face standing open, and it opens the seated custody, which refuses outside a scratch root. Under a real `HOME` the refusal fell into the `catch` and the assertion read green by accident; under a scratch `HOME` or `LAR_ROOT` the custody opened, an earlier vector's face stood open, and the reader answered `0`.
-* ''The cure.'' The control reads the session's own choice (`wornFaceOrdinal()`), the thing the unlock frame sets, and the file reads green under a real `HOME` and under a scratch `HOME` with a scratch `LAR_ROOT`. The test title no longer claims a case it never asserted: an unlock naming no face wears the vessel's one face by the door's own rule.
+* ''The cure.'' The control reads the composition's own choice (`mountedFaceOrdinal()`), the thing the unlock frame sets, and the file reads green under a real `HOME` and under a scratch `HOME` with a scratch `LAR_ROOT`. The test title no longer claims a case it never asserted: an unlock naming no face mounts the vessel's one face by the door's own rule.
 
 !!! Burned-name guards burned
 * `lar-wire.test.ts`: the control that `wiki:dom-event` and `wiki:dom-input` pass no door (road `F8`).
@@ -113,6 +113,6 @@ The operator ruled on 2026-10-26 to close open work before the founding bake. Th
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MayaxAFV8-4Paped7bvPM02k_7YkMikfmjCtovEPnIg
+<<^ code="&#x0003;">>ni:///sha-256;1KfDowQZFSPnT-An21yzTwX66jgSnaRvFenPoR7ujLg
 
 <<^ code="&#x0004;" -> to="?">>
