@@ -64,7 +64,7 @@ So the herms count the carries from their bundles and read every pin, while A's 
 !! The lane ~ branch, crew, crucible
 
 * ''Branch'': `feature/green-jello-dinosaur-5--carriage-fold`, cut from the work branch's head after the controller's settle push. Nothing lands on the work branch directly.
-* ''Crew'' (`mixed-model-swarm#/the-shapes`): the session leads as the Opus Episkopos; the work swarm's Sol and Luna build pair builds in ONE provisioned worktree (operator, 2026-10-18; `mixed-model-swarm#/the-shapes`) (`node tools/provision-worktree.mjs <empty-dir>`), coordinating through `.lane-claims.md`; the Copilot Chao pair (Hodge, Podge, the Spin) and an Opus overwatch read the burst; the lane closes with an o-takiage pass (`mixed-model-swarm#/the-otakiage`).
+* ''Crew'' (`mixed-model-swarm#/the-shapes`): the session leads as the Opus Episkopos; the work swarm's Sol and Luna build pair builds in ONE provisioned worktree (operator, 2026-10-18; `mixed-model-swarm#/the-shapes`) (`node tools/provision-worktree.mjs <empty-dir>`), one writer at a time; the Copilot Chao pair (Hodge, Podge, the Spin) and an Opus overwatch read the burst; the lane closes with an o-takiage pass (`mixed-model-swarm#/the-otakiage`).
 * ''Red first'': the probe above as a red test pinned by the product's own event, never a sleep, a retry or load; a control that bites. Sol's container-order test (below) passes on the base code and stands as a control for the in-process path.
 * ''The crucible'' (`mixed-model-swarm#/the-lanes`): push the lane branch (its CI and held-out run there, and the held-out herm-mesh and nexus cells are this lane's witness), open a pull request into the work branch, answer every comment (a Copilot PR review runs only on the operator's ask), then the controller merges.
 * ''Canon in the same burst'': `W18` leaves the loops when it closes; the handoff's state line and the changelog re-true.
@@ -119,6 +119,6 @@ The controller's session (Lares-Awakens) stays open for a short while after this
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;m-3odTnt_x1kZaxjFXDZVJpYJeDemwMl5ZX08STlH2g
+<<^ code="&#x0003;">>ni:///sha-256;2XPvz3-x5JuQUgssxWYU-FutyWDfmv4ibzUXQ5IyhA8
 
 <<^ code="&#x0004;" -> to="?">>
