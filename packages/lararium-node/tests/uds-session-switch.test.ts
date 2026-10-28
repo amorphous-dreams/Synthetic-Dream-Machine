@@ -61,6 +61,10 @@ async function stand(label: string, opts: {
   hold?: { hint: string; until: Promise<void> };
   /** Fail the Repo's flush while this reads true. */
   failFlush?: () => boolean;
+  /** The door throws for this hint, as a torn row would. */
+  throwOn?: string;
+  /** The Nexus each hint's proof stands at; every proof stands at one Nexus where unnamed. */
+  nexusOf?: (faceRef: string) => string;
 } = {}) {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -74,10 +78,12 @@ async function stand(label: string, opts: {
   const drawn: Drawn[] = [];
   const door: UdsSessionDoor = { open: async ({ faceRef }) => {
     if (opts.hold && faceRef === opts.hold.hint) await opts.hold.until;
+    if (faceRef === opts.throwOn) throw new Error("face abcd1234 rests unopened at /secret/identity");
     const refusal = opts.refuse?.(faceRef) ?? null;
     if (refusal) return { ok: false, refusal };
     const name = faceRef.replace(/^hint-/, "");
-    return { ok: true, supply: { face: face(name), profile: "seat", presenter: `verified-${faceRef}`, mint: async ({ session }) => {
+    return { ok: true, supply: { face: face(name), profile: "seat", presenter: `verified-${faceRef}`,
+      anchor: { kind: "nexus", aid: opts.nexusOf?.(faceRef) ?? "nexus-one.synthetic" }, mint: async ({ session }) => {
       const n = drawn.length;
       if (opts.refuseMint?.(n)) return { ok: false, refusal: "dial-refused" };
       const signer: Drawn = { face: session.face.proofSubject, n, dropped: false, drop() { signer.dropped = true; } };
@@ -110,7 +116,10 @@ async function stand(label: string, opts: {
     const stop = composite.subscribe((change) => { seen.push(change.title); });
     return { seen, stop, acts: () => logged.slice(from) };
   };
-  return { placed, drawn, connect, done, watchActs };
+  /** A known write into the composite's working layer, so a watcher proves it hears. */
+  const probe = (title: string) => composite.put({ tiddler: { title, text: "probe" } }, { kind: "tw-local", instanceId: "probe" },
+    { bag: wikiSlotUri("daemon", "working") });
+  return { placed, drawn, connect, done, watchActs, probe };
 }
 
 const envOf = (opened: Record<string, unknown>) =>
@@ -174,7 +183,11 @@ describe("UDS session switch", () => {
       const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
       const { seen, stop, acts } = v.watchActs();
       await a.ask(switchTo(envA, "hint-b", "switch-a"));
+      // POSITIVE: the watcher hears a known write into the working layer, so its silence about the switch reads true.
+      await v.probe("probe-after-switch");
       stop();
+      expect(seen).toContain("probe-after-switch");
+      seen.splice(seen.indexOf("probe-after-switch"), 1);
       // The daemon's working layer is a face bag its PersonaGroup holds admin over: whatever lands there reaches every
       // device of the outgoing face. A switch act names the incoming face too, so it lands in the vessel's own log alone.
       expect(seen).toEqual([]);
@@ -195,6 +208,30 @@ describe("UDS session switch", () => {
       expect(await a.ask(switchTo(envA, "hint-b", "dial"))).toMatchObject({ kind: "session:refused", refusal: "dial-refused", closed: true });
       expect(v.drawn[0]!.dropped).toBe(true);
       expect(await b.ask(call(envB, "sibling"))).toMatchObject({ kind: "session:result", status: "done" });
+    } finally { await v.done(); }
+  });
+
+  test("RED: a door that throws at open answers a fixed code under the frame's requestId, and no fault text reaches the wire", async () => {
+    const v = await stand("door-throws", { throwOn: "hint-torn" });
+    try {
+      const a = await v.connect();
+      const reply = await a.ask({ op: "session:open", requestId: "open-torn", faceRef: "hint-torn", hand: "seat" });
+      expect(reply).toEqual({ kind: "session:refused", requestId: "open-torn", refusal: "door-failed" });
+      expect(JSON.stringify(reply)).not.toContain("secret");
+      // CONTROL: the same socket opens on a face the door reads.
+      expect(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" })).toMatchObject({ kind: "session:opened", requestId: "open-a" });
+    } finally { await v.done(); }
+  });
+
+  test("RED: one session binds one (face, Nexus): a switch whose proof stands at another Nexus refuses nexus-moved and leaves the session live", async () => {
+    const v = await stand("nexus-moved", { nexusOf: (f) => (f === "hint-far" ? "nexus-two.synthetic" : "nexus-one.synthetic") });
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      expect(await a.ask(switchTo(envA, "hint-far", "far"))).toMatchObject({ kind: "session:refused", requestId: "far", refusal: "nexus-moved" });
+      expect(await a.ask(call(envA, "still-a"))).toMatchObject({ kind: "session:result", status: "done" });
+      // CONTROL: a face proven at the session's own Nexus switches.
+      expect(await a.ask(switchTo(envA, "hint-b", "near"))).toMatchObject({ kind: "session:switch-result", outcome: "switched", generation: 1 });
     } finally { await v.done(); }
   });
 

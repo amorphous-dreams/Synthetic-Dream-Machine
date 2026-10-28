@@ -510,5 +510,5 @@ export type { FaceRouteGatherer } from "./face-route.js";
 export type { CustodyHolder, HolderUnlock, RowReading } from "./custody-holder.js";
 export { custodyFrameHandler, isCustodyFrame } from "./custody-frames.js";
 // The verb socket's front, named here for a suite that stands a custody door as the vessel's main thread does.
-export { serveUdsFront, type UdsFront, type UdsSessionDoor, type UdsSessionSupply } from "./uds-channel.js";
+export { serveUdsFront, type UdsFront, type UdsSessionDoor, type UdsSessionSupply, type SessionAnchor } from "./uds-channel.js";
 export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-frames.js";

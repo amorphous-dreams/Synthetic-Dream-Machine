@@ -76,12 +76,11 @@ export async function composeDialPresentation(args: FaceInputs & DialFaceArgs): 
 /**
  * The face a session at `pin`'s Nexus would wear, described and not yet taken: the same reading the dial makes (the
  * kept admit, the charter's held root, the founder's leaf or the joinee's certificate), ending at the face and its
- * signer's mint (`nodeFaceTarget`) in place of an open. The session socket's door preflights through this.
+ * signer's mint (`nodeFaceTarget`) in place of an open. It writes nothing: the founder's certificate stands from the
+ * dial's presentation. The session socket's door preflights through this.
  */
 export async function composeFaceTarget(args: DialFaceArgs): Promise<{ readonly target: JoinedFaceTarget } | NodeFacePresentationRefusal> {
-  return dialFaceAt(args, (scope, founder, admit) => nodeFaceTarget({
-    personaGroup: args.personaGroup!, scope, founder, admit, ...(args.doors?.founder ? { doors: args.doors.founder } : {}),
-  }));
+  return dialFaceAt(args, (scope, _founder, admit) => nodeFaceTarget({ personaGroup: args.personaGroup!, scope, admit }));
 }
 
 interface DialFaceArgs {

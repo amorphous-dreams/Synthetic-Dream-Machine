@@ -28,6 +28,8 @@ export async function openLocalSession(opts: { faceRef: string; hand?: Hand; dat
   sock.setEncoding("utf8");
   let buffer = "";
   let closed = false;
+  /** The vessel closed this session (a switch it could not commit): later asks refuse here, never wait. */
+  let sessionClosed = false;
   let envelope: { ownerEpoch: string; sessionId: string; generation: number; faceRef: string } | null = null;
   const pending = new Map<string, Array<{ resolve: (answer: Record<string, unknown>) => void; reject: (error: Error) => void }>>();
   const failAll = (error: Error): void => {
@@ -49,6 +51,7 @@ export async function openLocalSession(opts: { faceRef: string; hand?: Hand; dat
       const waiters = id === undefined ? undefined : pending.get(id);
       const waiter = waiters?.shift();
       if (id !== undefined && waiters?.length === 0) pending.delete(id);
+      if (answer.kind === "session:refused" && answer.closed === true) sessionClosed = true;
       if (!waiter) continue;
       if (answer.kind === "session:refused") waiter.reject(new SessionRefused(String(answer.refusal), answer.closed === true));
       else waiter.resolve(answer);
@@ -59,6 +62,7 @@ export async function openLocalSession(opts: { faceRef: string; hand?: Hand; dat
   });
   sock.on("close", () => failAll(new UdsUnreachable("local session socket closed")));
   const send = (frame: Record<string, unknown>, requestId: string): Promise<Record<string, unknown>> => {
+    if (sessionClosed) return Promise.reject(new SessionRefused("session-closed", true));
     if (closed) return Promise.reject(new UdsUnreachable("local session socket closed"));
     return new Promise((resolve, reject) => {
       const waiters = pending.get(requestId) ?? [];

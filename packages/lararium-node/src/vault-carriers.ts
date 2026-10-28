@@ -71,7 +71,6 @@
  * S-sealed file no row names refuses the rotation rather than staying behind under a retired S key.
  */
 
-import { SWITCH_ACTS_FILE } from "./switch-act-log.js";
 import { closeSync, openSync, readdirSync, readSync, statSync, type Dirent } from "node:fs";
 import { basename, join } from "node:path";
 import {
@@ -87,6 +86,7 @@ import { FACE_ANCHOR_GROUP_FILE } from "./face-anchor-store.js";
 import { OUTBOX_KEY_FILE } from "./outbox-key.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
 import { RELAY_GATE_SEED_FILE } from "./relay-gate-seed.js";
+import { SWITCH_ACTS_FILE } from "./switch-act-log.js";
 
 /** The custody classes, closed. */
 export const CUSTODY_CLASSES = ["floor", "floor-plain", "serving", "hot", "cold", "outbox", "face-hot", "face-cold"] as const;
@@ -380,10 +380,10 @@ function buildTable(): readonly CarrierRow[] {
     // The face's own custody label: its fcid and the digest of its PersonaGroup. The holder reads it to check the floor index it unlocked by.
     faceRowOf({ row: "face-owner", target: tgt(["D"]), inner: /face-owner\.bin/, select: () => null, custody: "face-hot", keyClass: null,
          writer: "custody-holder", name: () => "face-owner" }),
-    // These reserved rows have no writer; a vessel holding one still recognises its carrier at unlock.
     // A session switch's acts name two faces together, so they rest on this vessel alone and never in a document.
     id({ row: "switch-acts", target: tgt(["D"]), match: file(SWITCH_ACTS_FILE), custody: "hot", keyClass: null,
          writer: "switch-act-log (the session socket's switch acts)" }),
+    // These reserved rows have no writer; a vessel holding one still recognises its carrier at unlock.
     id({ row: "enroll-pending", target: tgt(["D"], LEAD), match: file(".persona-enroll-pending.json"), custody: "hot", keyClass: "relation",
          writer: "none (reserved carrier)" }),
     id({ row: "grant-pending", target: tgt(["D"], LEAD), match: file(".persona-grant-pending.json"), custody: "hot", keyClass: "relation",

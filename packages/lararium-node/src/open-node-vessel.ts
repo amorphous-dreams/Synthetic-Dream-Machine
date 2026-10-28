@@ -1659,7 +1659,7 @@ async function prepareNodeBootOn(
   stood.push({ what: "the realm plane",       down: () => { realmPlane?.dispose(); } });
   stood.push({ what: "the persona-KEL ring",  down: () => { for (const k of kelHolders.splice(0)) k.dispose(); } });
   stood.push({ what: "the sibling channel",   down: () => { siblings?.disconnect(); } });
-  stood.push({ what: "the client dial",       down: () => { dialStoodDown = true; nexusDial?.stop(); } });
+  stood.push({ what: "the client dial",       down: () => { dialStoodDown = true; dialPinNow = null; nexusDial?.stop(); } });
   stood.push({ what: "the residency sweeper", down: () => { residency.stopSweeper(); } });
   stood.push({ what: "the event bus",         down: () => { (eventBus as LarEventBusImpl | undefined)?.stop(); } });
   stood.push({ what: "the daemon island",     down: async () => { await (daemonVm as DaemonVmCore | undefined)?.shutdown(); } });
@@ -2111,7 +2111,6 @@ async function prepareNodeBootOn(
         // The dial's pin is the one `chooseHearthDial` chose with the url.
         const filed = fileHearthPins(gatePins, hd.filings);
         const dialPin = hd.pin;
-        dialPinNow = dialPin;
         const dialNexus = dialPin?.nexus ?? null;
         if (filed > 0) console.log(`[nexus-join] ${filed} gate pin(s) filed (${[...new Set(hd.filings.map((f) => f.hearth))].join(", ")})`);
         // THE PRESENTATION. The face's chain and session, composed from the joined-face proof (or the founder's lazy
@@ -2128,6 +2127,8 @@ async function prepareNodeBootOn(
         const dialPresentationNow = composed !== null && "presentation" in composed ? composed.presentation : null;
         // The composition awaited: a dial that stood meanwhile, or a vessel that stood down, takes no second adapter.
         if (!live()) return;
+        // The session door proves faces at the pin the vessel dials from here on, once its own presentation composed.
+        dialPinNow = dialPin;
         nexusDial = maybeStartNexusClientDial({
           repo, syncUrl: hd.syncUrl, pins: gatePins, hearth: hearthNameOf(hd.syncUrl!), nexus: dialNexus,
           presentation: dialPresentationNow, deadlines: dialDeadlines(),
@@ -3196,7 +3197,7 @@ async function prepareNodeBootOn(
     // THE CUT'S FOUR READS (custody#/the-cut). Each reads live when a cut asks: the face this composition mounts
     // lit, this vessel's own edge on that face's fleet board (the reading the dyad door serves the island), the
     // island's memory section under the vessel's own signed ask, and the face's key history off the local board.
-    sessionDoor: nodeSessionDoor({ pin: () => dialPinNow, sealHome }),
+    sessionDoor: nodeSessionDoor({ pin: () => dialPinNow, sealHome, onLog: (line) => console.log(`[session] ${line}`) }),
     backupDoor: {
       wornFace: () => litFace,
       ownEdgeShadowed: async () => {

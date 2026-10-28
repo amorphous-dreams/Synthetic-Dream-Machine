@@ -28,13 +28,15 @@ describe("local session connector", () => {
       causalRevision: "revision-a", planes: { persona: "persona-a", circles: "circles-a",
         identities: "identities-a", sessions: "sessions-a", intents: "intents-a" } };
     const faceB: SessionFace = { ...face, personaGroup: "group-b", proofSubject: "proof-b", admitRef: "admit-b" };
+    const faceC: SessionFace = { ...face, personaGroup: "group-c", proofSubject: "proof-c", admitRef: "admit-c" };
     const placed: Array<{ face?: string; requestedBy: string }> = [];
     const write = vi.spyOn(Socket.prototype, "write");
     const front = serveUdsFront({ claim });
-    front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo,
+    front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo, switchActs: { write: async () => {} },
       sessions: { open: async ({ faceRef }) => faceRef === "refuse"
         ? { ok: false, refusal: "face-unverified" }
-        : { ok: true, supply: { face: faceRef === "b" ? faceB : face, profile: "seat", presenter: `verified-${faceRef}`, mint: fixtureMint } } },
+        : { ok: true, supply: { face: faceRef === "b" ? faceB : faceRef === "c" ? faceC : face, profile: "seat", presenter: `verified-${faceRef}`,
+          mint: faceRef === "c" ? async () => ({ ok: false as const, refusal: "dial-refused" }) : fixtureMint } } },
       placeVerb: (o) => {
         placed.push(o);
         const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", requestedBy: o.requestedBy,
@@ -61,6 +63,10 @@ describe("local session connector", () => {
       expect(await two.receipt("call-1")).toMatchObject({ requestId: "call-1", state: "unknown" });
       await expect(two.switch("refuse")).rejects.toMatchObject({ name: "SessionRefused", refusal: "face-unverified", closed: false });
       await two.close();
+      // A switch the vessel could not commit closes the session: the refusal reads closed, and a later ask refuses here.
+      const three = await openLocalSession({ faceRef: "a", dataDir: dir });
+      await expect(three.switch("c")).rejects.toMatchObject({ name: "SessionRefused", refusal: "dial-refused", closed: true });
+      await expect(three.call("load", {}, { requestId: "after-close" })).rejects.toMatchObject({ name: "SessionRefused", refusal: "session-closed", closed: true });
       const raw = write.mock.calls.map((args) => args[0]).filter((value): value is string =>
         typeof value === "string" && value.includes('"op":"session:'));
       expect(raw.length).toBeGreaterThan(0);

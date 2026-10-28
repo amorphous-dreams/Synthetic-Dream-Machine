@@ -123,9 +123,16 @@ export interface UdsSessionSupply {
   readonly profile: CapabilityProfile;
   readonly presenter: string;
   readonly caps?: readonly string[];
+  /** Where the supply's proof was made: the Nexus it stands at. One session binds one (face, anchor). */
+  readonly anchor?: SessionAnchor;
   readonly mint: (at: { readonly table: SessionTable; readonly binding: SessionBinding; readonly session: Session }) =>
     Promise<{ readonly ok: true; readonly signer: UdsSessionSigner } | { readonly ok: false; readonly refusal: string }>;
 }
+/** The place a session's proof stands at. A Nexus today; the shape takes another kind of anchor beside it. */
+export type SessionAnchor = { readonly kind: "nexus"; readonly aid: string };
+const sameAnchor = (a: SessionAnchor | undefined, b: SessionAnchor | undefined): boolean =>
+  a === undefined ? b === undefined : b !== undefined && a.kind === b.kind && a.aid === b.aid;
+
 export interface UdsSessionDoor {
   open(ask: { faceRef: string; hand: Hand }): Promise<{ ok: true; supply: UdsSessionSupply } | { ok: false; refusal: string }>;
 }
@@ -871,7 +878,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const inFlight = new Set<Socket>();
   const table = new SessionTable(ownerEpoch);
   let closing = false;
-  const sessionSockets = new Map<Socket, { binding: SessionBinding; sessionId?: string; hand?: Hand; supply?: UdsSessionSupply; signer?: UdsSessionSigner }>();
+  const sessionSockets = new Map<Socket, { binding: SessionBinding; sessionId?: string; hand?: Hand; anchor?: SessionAnchor; supply?: UdsSessionSupply; signer?: UdsSessionSigner }>();
   const sessionTurns = new Map<Socket, Promise<void>>();
   const sessionReply = (sock: Socket, answer: Record<string, unknown>): void => {
     try { sock.write(JSON.stringify(answer) + "\n"); } catch { /* gone */ }
@@ -903,7 +910,11 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         return sessionRefuse(sock, "malformed-message", requestId);
       }
       if (!opts.sessions) return sessionRefuse(sock, "no-session-door", requestId);
-      const supplied = await opts.sessions.open({ faceRef: frame["faceRef"], hand: frame["hand"] as Hand });
+      const supplied = await opts.sessions.open({ faceRef: frame["faceRef"], hand: frame["hand"] as Hand })
+        .catch((error: unknown) => {
+          log(`session door failed: ${error instanceof Error ? error.message : String(error)}`);
+          return { ok: false as const, refusal: "door-failed" };
+        });
       if (closing || sock.destroyed || sock.writableEnded) return;
       if (!supplied.ok) return sessionRefuse(sock, supplied.refusal, requestId);
       const opened = table.open(state.binding, supplied.supply.face, supplied.supply.profile, supplied.supply.caps ?? []);
@@ -921,6 +932,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       }
       state.sessionId = opened.session.sessionId;
       state.hand = frame["hand"] as Hand;
+      if (supplied.supply.anchor !== undefined) state.anchor = supplied.supply.anchor;
       state.supply = supplied.supply;
       state.signer = minted.signer;
       sessionReply(sock, { kind: "session:opened", requestId, ownerEpoch: opened.session.ownerEpoch,
@@ -996,7 +1008,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         generation: frame["generation"] as number, faceRef: frame["faceRef"] as string },
       preflight: async () => {
         const supplied = await door.open({ faceRef: hint, hand });
-        return supplied.ok ? { ok: true, target: { face: supplied.supply.face, profile: supplied.supply.profile, supply: supplied.supply } } : supplied;
+        if (!supplied.ok) return supplied;
+        // ONE SESSION BINDS ONE (face, Nexus): a proof made at another Nexus than the session's own moves nothing.
+        if (!sameAnchor(state.anchor, supplied.supply.anchor)) return { ok: false, refusal: "nexus-moved" };
+        return { ok: true, target: { face: supplied.supply.face, profile: supplied.supply.profile, supply: supplied.supply } };
       },
       writeIntent: writeSwitchAct,
       fence: async () => { state.signer?.drop(); delete state.signer; delete state.supply; },
@@ -1037,8 +1052,12 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (closing) { sock.end(); return; }
     const prior = sessionTurns.get(sock) ?? Promise.resolve();
     const next = prior.then(() => processSession(parsed, sock));
+    // A fault answers a fixed code under the frame's own requestId, so the caller's waiter matches it; the detail is logged.
+    const requestId = parsed && typeof parsed === "object" && typeof (parsed as Record<string, unknown>)["requestId"] === "string"
+      ? (parsed as Record<string, unknown>)["requestId"] as string : undefined;
     sessionTurns.set(sock, next.catch((error) => {
-      sessionRefuse(sock, error instanceof Error ? error.message : String(error));
+      log(`session frame failed: ${error instanceof Error ? error.message : String(error)}`);
+      sessionRefuse(sock, "session-fault", requestId);
     }));
   };
   let arbitrating = 0;
@@ -1059,7 +1078,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           if (sessionRequestId === undefined) sock.end(line);
           else sock.write(line);
         } catch { /* gone */ }
-      })().catch((error) => sessionRefuse(sock, error instanceof Error ? error.message : String(error), sessionRequestId))
+      })().catch((error) => {
+        log(`session reply failed: ${error instanceof Error ? error.message : String(error)}`);
+        sessionRefuse(sock, "session-fault", sessionRequestId);
+      })
         .finally(() => onSessionReply?.());
     };
     if (!inFlight.has(sock)) {

@@ -254,13 +254,14 @@ describe("a switch that cannot finish", () => {
     expect(await signs(live.signer)).toBe("signs");
   });
 
-  test("a session the owner closes mid-preflight answers session-closed and throws nothing", async () => {
+  test("a session the owner closes mid-preflight, or mid-fence, answers session-closed and throws nothing", async () => {
     const [a, b] = [await held("gone-a", "aaaa001daaaa001d"), await held("gone-b", "bbbb001ebbbb001e")];
     const table = new SessionTable("owner-gone");
     const live = await openLive(table, a);
     const { ports, acts } = portsFor(table, live, b, { preflight: async () => { table.close(live.session.sessionId); return { ok: false, refusal: "face-locked" }; } });
     expect(await switchSession(ports)).toEqual({ ok: false, refusal: "session-closed", closed: true });
     expect(acts).toEqual([]);
+    // MID-FENCE: the owner closes the session while its fence runs; the commit never runs and the act records it closed.
     const again = await openLive(table, a);
     const mid = portsFor(table, again, b, { fence: async () => { again.signer.drop(); table.close(again.session.sessionId); } });
     expect(await switchSession(mid.ports)).toEqual({ ok: false, refusal: "session-closed", closed: true });

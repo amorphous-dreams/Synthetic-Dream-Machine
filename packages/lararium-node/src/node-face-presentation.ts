@@ -56,19 +56,16 @@ export async function nodeFacePresentation(args: {
 }
 
 /**
- * The face a session of this vessel would wear at `scope`, and its signer's mint, read through the same proof the
- * presentation reads (the join record, or the founder's lazy self-certificate). It opens no session and mints no key.
+ * The face a session of this vessel would wear at `scope`, and its signer's mint, read from the face's record alone.
+ * It opens no session, mints no key and writes nothing: a founder's certificate stands from its dial's own presentation
+ * (the lazy self-certificate), and where none stands yet the read refuses by the absent piece.
  */
 export async function nodeFaceTarget(args: {
   readonly personaGroup: string;
   readonly scope:        FaceScope;
-  readonly founder:      { readonly face: number } | null;
   readonly admit:        unknown;
-  readonly doors?:       FounderCertificateDoors;
 }): Promise<{ readonly target: JoinedFaceTarget } | NodeFacePresentationRefusal> {
-  const proof = args.founder === null
-    ? await readJoinedFaceProof({ personaGroup: args.personaGroup, scope: args.scope })
-    : await readFounderFaceProof({ face: args.founder.face, personaGroup: args.personaGroup, scope: args.scope }, args.doors);
+  const proof = await readJoinedFaceProof({ personaGroup: args.personaGroup, scope: args.scope });
   if (!("grant" in proof)) return { refusal: proof.refusal };
   const fold = foldWithdrawals(args.scope);
   if (!("memory" in fold)) return { refusal: "history-unfolded", detail: fold.refusal };
