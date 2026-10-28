@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { TW5Engine, mountGlassCamera } from "@lararium/tw5/glass";
 import { glassWanted } from "../src/glass/flag.js";
-import { readGlassBootInputs } from "../src/glass/cas.js";
+import { named } from "../src/glass/cid.js";
 import coreUrl from "../../lararium-tw5/tw5-core/tiddlywikicore-5.5.0-prerelease.js?url";
 
 async function coreBytes(): Promise<Uint8Array> {
@@ -74,8 +74,9 @@ describe("glass flag", () => {
 });
 
 describe("glass cas names", () => {
-  test("a malformed core or plugin id refuses by name before any read", async () => {
-    await expect(readGlassBootInputs({ coreCid: "not-a-cid", pluginCids: [] })).rejects.toThrow("glass-core-cid-refused:not-a-cid");
-    await expect(readGlassBootInputs({ coreCid: "0".repeat(64), pluginCids: ["../x"] })).rejects.toThrow(/glass-core-cas-miss|glass-plugin-cid-refused/);
+  test("a malformed core or plugin id refuses by name before any read; a hash passes", () => {
+    expect(() => named("core", "not-a-cid")).toThrow("glass-core-cid-refused:not-a-cid");
+    expect(() => named("plugin", "../x")).toThrow("glass-plugin-cid-refused:../x");
+    expect(named("core", "0".repeat(64))).toBe("0".repeat(64));
   });
 });

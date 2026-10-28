@@ -1,5 +1,6 @@
 import { readCasBlobFromOpfs } from "@lararium/browser";
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { named } from "./cid.js";
 import { preloadsFromCasBlob } from "@lararium/tw5/glass";
 
 export interface GlassBootInputs {
@@ -7,12 +8,6 @@ export interface GlassBootInputs {
   preloadedTiddlers: Record<string, unknown>[];
   coreCid: string;
 }
-
-const CID = /^[0-9a-f]{64}$/;
-const named = (kind: string, cid: string): string => {
-  if (!CID.test(cid)) throw new Error(`glass-${kind}-cid-refused:${cid.slice(0, 80)}`);
-  return cid;
-};
 
 /** Read only the named CAS members and witness the core's byte identity. */
 export async function readGlassBootInputs({ coreCid, pluginCids }: {
