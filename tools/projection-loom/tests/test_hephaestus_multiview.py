@@ -41,7 +41,7 @@ def test_held_out_multiview_abstains_from_unverified_source_fit(tmp_path):
     assert program.nodes[0].key == "root"
     contract = IntentContract(
         "held-out-multi-photo", "provisional native hypothesis without camera claims",
-        ("native-validity", "structural-novelty", "source-silhouette"))
+        ("native-validity", "source-silhouette", "structural-novelty"))
     report = run_cohort(adapters, contract, tmp_path / "campaign",
                         epochs=1, offspring=1, exact_budget=1, finalists=1)
     assert report["status"] == "completed"

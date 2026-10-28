@@ -217,3 +217,7 @@ The Blender test now accepts `--out out/hephaestus-blender`, keeping the importe
 ## OODA-HA E-06 · actually observed fairness funnels (2026-10-28)
 
 **Observe:** Emitter-round-robin intent alone could not prove how many exact CAD seats each family received. **Orient:** Proposed, attempted, deferred, native-valid, native-rejected and operational-error states are independently checkable from offered programs, exact audition selection and candidate receipts. **Decide:** Count each emitter and every growth-operation family present in a candidate. These counts do *not* assert a failed candidate executed every rule. **Act:** `activation_funnels` validates candidate identities and state conservation, records per-epoch and campaign summaries and has negative tests for missing, duplicate and unknown outcomes. **Aftermath:** Audition fairness has a concrete witness; guaranteed per-operation runtime activation and equal-budget studies remain open.
+
+## Multiview exact CI refusal test correction
+
+At `97404e42`, native CAD, OpenUSD and actual Blender lanes passed, and 64 of 65 contract tests passed. The one failure constructed an `IntentContract` with objectives out of the canonical sorted order required since before Hephaestus. The test fixture now honors that existing invariant; source-fitness withholding remains unchanged.
