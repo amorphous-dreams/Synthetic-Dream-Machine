@@ -3,7 +3,7 @@ import { makeGlassPortAdaptor } from "../src/glass-port-adaptor.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
 import { pump } from "./record-port-real-rig.js";
 
-async function glass() {
+async function glass(width: "full" | "skinny" = "full") {
   const wiki = await bootTestWiki();
   const sent: any[] = [];
   const listeners = new Set<(msg: any) => void>();
@@ -11,7 +11,7 @@ async function glass() {
   const adaptor = makeGlassPortAdaptor({ wiki: wiki.wiki, Tiddler: wiki.$tw.Tiddler,
     transport: { send(msg) { sent.push(msg); }, onMessage(listener) {
       listeners.add(listener); return () => { listeners.delete(listener); };
-    } }, portId: "p", wikiUri: "wiki", actor: "me", width: "full", mintTx: () => `tx-${++serial}` });
+    } }, portId: "p", wikiUri: "wiki", actor: "me", width, mintTx: () => `tx-${++serial}` });
   const deliver = (msg: any) => { for (const listener of listeners) listener({ portId: "p", ...msg }); };
   const snapshot = (id: string, i: number, n: number, records: any[]) =>
     deliver({ type: "port:snapshot", snapshotId: id, baseCursor: "base", i, n, records });
@@ -149,5 +149,24 @@ describe.skipIf(!!wikiSkip)(`glass port ordered races${skipNote}`, () => {
       result: [{ title: "Idle", fields: { text: "body" }, seq: 1 }] });
     await expect(idle).resolves.toBe("body");
     expect(g.text("Idle")).toBe("body");
+  });
+
+  it("a peer write to an opened skinny body reloads the body; CONTROL a title never opened stays skinny", async () => {
+    const g = await glass("skinny");
+    g.snapshot("s", 1, 1, [{ title: "Open", fields: {}, omitted: ["text"], seq: 1 }, { title: "Shut", fields: {}, omitted: ["text"], seq: 1 }]);
+    await g.flush();
+    const opening = g.adaptor.openBody("Open");
+    const ask = () => g.sent.filter(msg => msg.type === "port:ask");
+    g.deliver({ type: "port:answer", askId: ask()[0].askId, status: "answered", result: [{ title: "Open", fields: { text: "one" }, seq: 1 }] });
+    await opening;
+    expect(g.text("Open")).toBe("one");
+    g.change({ title: "Open", fields: {}, omitted: ["text"], seq: 2 });
+    g.change({ title: "Shut", fields: {}, omitted: ["text"], seq: 3 });
+    await g.flush();
+    expect(ask().map(msg => msg.subject)).toEqual(["Open", "Open"]);
+    g.deliver({ type: "port:answer", askId: ask()[1].askId, status: "answered", result: [{ title: "Open", fields: { text: "two" }, seq: 2 }] });
+    await g.flush();
+    expect(g.text("Open")).toBe("two");
+    expect(g.text("Shut")).toBeUndefined();
   });
 });
