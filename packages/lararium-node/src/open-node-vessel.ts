@@ -133,6 +133,8 @@ import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "./face-anchor-stor
 import { raiseAnchorFromSlots } from "./lease-observation.js";
 import { readFacePersonaRecords } from "./persona-act-store.js";
 import { CustodyLocked } from "./custody-holder.js";
+import { standingCustody } from "./custody-seat.js";
+import { joinedFaceAuth, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { composeDialPresentation } from "./dial-presentation.js";
@@ -164,7 +166,7 @@ import { makeContentPalace, type ContentPalace } from "./sensorium.js";
 import { multiGraphRecall, makeFormSearch, makeStructureSearch }  from "./sensorium-recall.js";
 import { waitHandle, resolveBootDoc } from "./repo-helpers.js";
 import { makeChildProcessDocLoadProbe, quarantineDoc, recoverCleanTail } from "./doc-load-probe.js";
-import { listAnchoredPersonas, loadIdentityAnchors, loadVeilArchive, persistVeilArchive } from "./identity-anchors.js";
+import { listFaceOrdinals, listAnchoredPersonas, loadIdentityAnchors, loadVeilArchive, persistVeilArchive } from "./identity-anchors.js";
 import { openOutboxKey } from "./outbox-key.js";
 import { sweepFoundingSeeds } from "./face-atom-store.js";
 import { readWornPersonaMount } from "./worn-mount.js";
@@ -483,6 +485,8 @@ async function standDown(stood: Stood): Promise<void> {
 }
 
 export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonVmCore> {
+  lightFace: (ordinal: number) => Promise<void>;
+  dropFace: (ordinal: number) => Promise<void>;
   ports: { place(surface: string, binding: string, msg: unknown): PortPlacement; close(binding: string): void };
   /** Started event bus — ingress rings registered; tick loop running at 20 Hz (node substrate). */
   eventBus:  LarEventBusImpl;
@@ -516,6 +520,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
 
 /** A composed Herm (wiki-less): the daemon immune core + a served meshpalace FLOW-map, no pool. */
 export interface NodeHermResult {
+  lightFace: (ordinal: number) => Promise<void>;
+  dropFace: (ordinal: number) => Promise<void>;
   repo:             Repo;
   store:            CompositeStore;
   daemon:           DaemonVmCore;
@@ -615,6 +621,8 @@ interface NodeBootPrep {
    *  shore reads them to follow the realm's PUBLIC books, and the realm plane is the only hand that folds them. */
   realmStanding:    () => Promise<ReadonlyMap<string, RealmBagRegistration>>;
   /** Forward-ref reads — set as the closures run (the same `let vmManager!` pattern, surfaced). */
+  lightFace: (ordinal: number) => Promise<void>;
+  dropFace: (ordinal: number) => Promise<void>;
   daemonVm:         () => DaemonVmCore;
   eventBus:         () => LarEventBusImpl;
   slotActiveWikiId: () => string;
@@ -1545,6 +1553,12 @@ async function prepareNodeBootOn(
   let vmManager!: VesselIslandPool;        // set in makePool
   let wikiActivation!: WikiActivationCap;  // set in makePool — the activation-on-reference cap
   let mailbox!: DurableMailbox;            // set in makePool — the durable park/drain lane (node-only capability)
+  let lightFace: (ordinal: number) => Promise<void> = async () => {};
+  const dropFace = async (ordinal: number) => {
+    const pins = await loadIdentityAnchors(ordinal);
+    if (!pins?.deviceEdge?.deviceVerifyingKey) throw new Error(`face h${ordinal} has no device edge`);
+    daemonVm.dropFace(pins.deviceEdge.deviceVerifyingKey);
+  };
   let daemonVm!:   DaemonVmCore;           // set in openDaemon
   let eventBus!:  LarEventBusImpl;         // set in makePool
   // R3 — the Crossroads board this vessel materializes ONCE (openDaemon), read by every later
@@ -2272,7 +2286,30 @@ async function prepareNodeBootOn(
     }
     const faceLit = activeAtom !== null && atomSeed !== null;
     const workingFloorAnchor = workingFloorAnchorOf({ place: placeAid });
+    // A sibling's planes need their own face proof before registration. Until that proof is
+    // carried here, each sibling receives only the vessel ground.
+    const siblingKel = sovereign ? makePersonaKelRingHolder({ repo, nexusPubkey }) : null;
+    if (siblingKel) kelHolders.push(siblingKel);
+    const siblingPorts: JoinedFaceAuthPorts | null = sovereign && activeAtom && siblingKel ? {
+      ordinals: listFaceOrdinals, mounted: mountedFace,
+      unlocked: async (ordinal) => (await standingCustody()?.faceStanding({ ordinal }))?.unlocked === true,
+      anchors: loadIdentityAnchors, anchor: loadFaceAnchorOfGroup,
+      chain: async (prefix) => { await siblingKel.ready; return siblingKel.chainForPrefix(prefix); },
+      atomSeed: loadFaceAtomOfGroup, atomKey: (seed, group) => faceAtomKeyFromSeed(seed, group).key,
+      addressSecret: readFaceAddressSecret, veilArchive: sovereign.veilArchive,
+      registerBags: () => deriveRegisterBags({ fleets: [],
+        ...(slot ? { wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId] } : {}),
+        ...(kahuCanon.lares || kahuCanon.lararium ? { systemCanon: true } : {}) }),
+      log: (line: string) => console.log(`[lararium] ${line}`),
+    } : null;
+    const joinedFaces = siblingPorts ? await joinedFaceAuth(siblingPorts) : [];
+    lightFace = async (ordinal) => {
+      if (!siblingPorts) throw new Error(`face h${ordinal} cannot light without a mounted face`);
+      const [entry] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal] });
+      if (entry) daemonVm.lightFace(entry);
+    };
     const daemonAuth = {
+      ...(joinedFaces.length ? { joinedFaces } : {}),
       placeVerifyingKey: vesselIdentity.verifyingKey,
       ...(workingFloorAnchor ? { workingFloorAnchor } : {}),
       archiveOpens:         opens,
@@ -3277,6 +3314,7 @@ async function prepareNodeBootOn(
     siblingChannel:   () => siblings?.status() ?? null,
     openDaemon, wireVerbs, afterDaemon,
     realmStanding:    async () => (realmPlane ? await realmPlane.standing() : new Map()),
+    lightFace: (ordinal) => lightFace(ordinal), dropFace,
     daemonVm:         () => daemonVm,
     eventBus:         () => eventBus,
     slotActiveWikiId: () => slotActiveWikiId,
@@ -3363,6 +3401,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     },
     store: result.assembly.composite,
     daemon: p.daemonVm(),
+    lightFace: p.lightFace, dropFace: p.dropFace,
     wikiDocUrl:       result.wikiHandle.url,
     catalogHandleUrl: p.catalogHandle.url,
     daemonDocUrl:     p.daemonDocUrl(),
@@ -3493,6 +3532,7 @@ async function composeNodeHermOn(
     repo:             p.repo,
     store:            herm.assembly.composite,
     daemon:           p.daemonVm(),
+    lightFace: p.lightFace, dropFace: p.dropFace,
     oracleDocUrl:     herm.assembly.islandHandle.url,
     catalogHandleUrl: p.catalogHandle.url,
     larariumDocUrl:   herm.assembly.larariumHandle?.url ?? null,

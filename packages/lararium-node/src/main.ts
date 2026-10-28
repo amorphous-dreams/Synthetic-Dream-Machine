@@ -444,6 +444,8 @@ async function main(): Promise<void> {
   };
   custodyDoor = custodyFrameHandler({
     holder, recompose, testScratch,
+    lightFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.lightFace(ordinal); },
+    dropFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.dropFace(ordinal); },
     // A SEALED ROW'S ACT RUNS HERE, on the main thread, against the one seated holder: the act table decides
     // what it reads and answers, and the standing composition lends it the board it may read a KEL head from.
     runAct: (act, args) => runSealedAct(act, args, {
@@ -504,6 +506,8 @@ interface ComposedAs { readonly standing: ReturnType<typeof standAs>; readonly f
 /** A composition standing on the floor: everything a boot builds past the store's claim and the listening faces. */
 interface StandingComposition {
   readonly standing: "herm" | "hearth";
+  readonly lightFace: (ordinal: number) => Promise<void>;
+  readonly dropFace: (ordinal: number) => Promise<void>;
   /** Stop the PROCESS gracefully: flush, tear down, exit. */
   readonly onSignal: (sig: string) => void;
   /** Tear this composition down and leave the process and its floor standing. */
@@ -674,6 +678,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   };
   return {
     standing: "herm",
+    lightFace: herm.lightFace, dropFace: herm.dropFace,
     onSignal: (sig) => void hermShutdown(sig),
     teardown: async () => { await front.detach(); await herm.teardown(); },
     personaSelves: herm.personaSelves,
@@ -929,6 +934,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   };
   return {
     standing: "hearth",
+    lightFace: result.lightFace, dropFace: result.dropFace,
     onSignal: (sig) => void shutdown(sig),
     teardown: async () => { await front.detach(); await result.teardown(); },
     kelHead: async (prefix) => (await makeLocalPersonaKelHeadAndSeqResolver(result.repo))(prefix),

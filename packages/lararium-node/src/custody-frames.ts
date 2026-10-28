@@ -83,6 +83,8 @@ export interface CustodyFrameDeps {
   readonly holder: CustodyHolder;
   /** Tear the standing composition down and compose again: `sovereign` true with the private rows, false at the floor. */
   readonly recompose: (sovereign: boolean) => Promise<CustodyStanding>;
+  readonly lightFace?: (ordinal: number) => Promise<void>;
+  readonly dropFace?: (ordinal: number) => Promise<void>;
   /** What stands now. */
   readonly standing: () => string;
   /** Whether this vessel's root carries the harness's scratch marker. */
@@ -203,18 +205,22 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       return { op: "unlock", reading, ...detail, standing: deps.standing() };
     };
     let mounted: number | undefined = sel.face;
+    let openedOrdinals: number[] = [];
     if (sel.all) {
       const readings = await holder.unlockFaces(credentials);
       const opened = readings.filter((r) => r.reading === "opens" || r.reading === "already-unlocked").map((r) => (r as { ordinal: number }).ordinal);
+      openedOrdinals = opened;
       if (standing.length > 0 && opened.length === 0) return refuseFaces("face-refused", { faces: readings.map((r) => r.reading) });
-      if (mounted === undefined && opened.length === 1) mounted = opened[0];
+      if (mounted === undefined && mountedBefore === undefined && opened.length === 1) mounted = opened[0];
     } else if (sel.face !== undefined) {
       const r = await holder.unlockFace({ ordinal: sel.face }, credentials);
       if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: sel.face, faceReading: r.reading });
+      openedOrdinals = [sel.face];
     } else if (standing.length === 1) {
       mounted = standing[0]!;
       const r = await holder.unlockFace({ ordinal: mounted }, credentials);
       if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: mounted, faceReading: r.reading });
+      openedOrdinals = [mounted];
     } else if (standing.length > 1) {
       return refuseFaces("face-not-named", { faces: standing });
     }
@@ -225,6 +231,13 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     // An unlock over a held key that opens no new face and changes no mounted face stands nothing new.
     if (!freshly && holder.unlockedFaces().every((f) => openBefore.has(f)) && (mounted === undefined || mounted === mountedBefore)) {
       return { op: "unlock", ...u, standing: deps.standing() };
+    }
+    if (!freshly && mountedBefore !== undefined && (mounted === undefined || mounted === mountedBefore) && deps.lightFace) {
+      for (const ordinal of openedOrdinals) {
+        const face = await holder.faceStanding({ ordinal });
+        if (ordinal !== mountedBefore && face?.unlocked && !openBefore.has(face.fcid)) await deps.lightFace(ordinal);
+      }
+      return { op: "unlock", ...u, standing: deps.standing(), held: true };
     }
     const stood = await deps.recompose(true);
     // A KEY NEVER RESTS OVER A FLOOR. When the composition that should have stood on the key refused, the vessel
@@ -246,6 +259,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     if (named === null) return { op: "lock", locked: true, was: "locked", face: ordinal, standing: deps.standing() };
     const wasOpen = named.unlocked;
     const wasMounted = sovereignStands();
+    if (wasOpen && ordinal !== mountedFaceOrdinal() && deps.dropFace) await deps.dropFace(ordinal);
     await holder.lockFace(named.fcid);
     deps.onLog(`locked: face h${ordinal} key dropped`);
     if (wasOpen && wasMounted && !sovereignStands()) {

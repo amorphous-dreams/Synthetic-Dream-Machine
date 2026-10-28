@@ -34,6 +34,9 @@ import {
   awaitIslandMsg,
   mkManifest,
   mkDaemonPlaceVerb,
+  mkDaemonFaceLit,
+  mkDaemonFaceDrop,
+  type JoinedFaceAuth,
   mkTelemetryPlaceVerb,
   mkStructurepalaceKapae,
   mkDaemonVerbResult,
@@ -220,6 +223,8 @@ export interface DaemonVmCore {
   workerEa:       Promise<void>;
   mountMainVerbs: (registry: VerbTable) => void;
   placeVerb:      (opts: VesselPlaceVerbRequest) => void;
+  lightFace:      (entry: JoinedFaceAuth) => void;
+  dropFace:       (atomKey: string) => void;
   /** FEED one captured turn to the daemon's telemetry capture cap (the nalu). Fire-and-forget.
    *  `frontier` (optional) carries the turn-DAG fork-frontier so a same-session fork derives a
    *  distinct handle; absent on a non-forked turn. */
@@ -703,6 +708,8 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     },
     resolveBinding: (fingerprint, recipeTrace, wikiSlug) =>
       askIsland("binding", (requestId) => mkDaemonResolveBindingRequest({ requestId, fingerprint, recipeTrace, wikiSlug })),
+    lightFace: (entry) => worker.post(mkDaemonFaceLit(entry)),
+    dropFace: (atomKey) => worker.post(mkDaemonFaceDrop(atomKey)),
     placeVerb: (o: VesselPlaceVerbRequest) => {
       worker.post(mkDaemonPlaceVerb({
         verb:        o.verb,
