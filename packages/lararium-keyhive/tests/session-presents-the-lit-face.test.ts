@@ -10,6 +10,7 @@ import { faceOwnerVerifier } from "../src/face-bag-door.js";
 
 const PLACE = "ab".repeat(32);
 const ATOM = "cd".repeat(32);
+const SIBLING = "ef".repeat(32);
 const lit = { placeVerifyingKey: PLACE, atom: { seed: "00".repeat(32), key: ATOM }, personaGroupId: "group-x", deviceEdge: {} as never };
 const floor = { placeVerifyingKey: PLACE };
 const ask = (requestedBy: string, args: Record<string, unknown> = {}) => ({ requestedBy, args });
@@ -30,8 +31,11 @@ describe("presenterFor", () => {
   });
   test("a lit joined group may be named, and a dropped group refuses", () => {
     const groups = new Set(["group-x", "group-y"]);
-    const auth = { ...lit, holds: (group: string) => groups.has(group) };
-    expect(presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-y" }), local: true, auth })).toBe(`0x${ATOM}`);
+    const auth = { ...lit, holds: (group: string) => groups.has(group), atomOf: (group: string) => groups.has(group) ? (group === "group-y" ? SIBLING : ATOM) : null };
+    expect(presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-y" }), local: true, auth })).toBe(`0x${SIBLING}`);
+    expect(presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-x" }), local: true, auth })).toBe(`0x${ATOM}`);
+    expect(presenterFor({ invocation: ask(`0x${PLACE}`), local: true, auth })).toBe(`0x${ATOM}`);
+    expect(() => presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "stranger" }), local: true, auth })).toThrow("wear stranger first");
     groups.delete("group-y");
     expect(() => presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-y" }), local: true, auth })).toThrow("wear group-y first");
   });
