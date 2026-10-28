@@ -48,10 +48,10 @@ describe("the atom-born group", () => {
     // Stand the atom identity exactly as boot will: open the seed, restore the Archive the founding handed
     // out (the creator's key agreement state rests there and nowhere else), hydrate over the daemon doc.
     const veilKh = new KeyhiveProvider();
-    await veilKh.init({ seed: f.atomSeed, eventStore: await replayCapEvents(handle as never), archiveBytes: f.veilArchive });
+    await veilKh.init({ seed: f.atomSeed, eventStore: await replayCapEvents(handle as never, f.personaGroupId), archiveBytes: f.veilArchive });
     await veilKh.hydrateFromEventStore();
     const vesselKh = new KeyhiveProvider();
-    await vesselKh.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never) });
+    await vesselKh.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never, f.personaGroupId) });
     await vesselKh.hydrateFromEventStore();
     const vesselId = await vesselKh.vesselIdentifierHex();
 
@@ -68,7 +68,7 @@ describe("the atom-born group", () => {
 
     // The functional half: the boot-stood veil EXERCISES the creator's authority.
     const guest = new KeyhiveProvider();
-    await guest.init({ seed: new Uint8Array(32).fill(99), eventStore: await replayCapEvents(handle as never) });
+    await guest.init({ seed: new Uint8Array(32).fill(99), eventStore: await replayCapEvents(handle as never, f.personaGroupId) });
     const { id: guestId } = await veilKh.receiveContactCard(await guest.contactCard());
     await veilKh.addGroupMember(guestId, f.personaGroupId);
     const after = await veilKh.groupMembers(f.personaGroupId);
@@ -89,11 +89,11 @@ describe("the atom-born group", () => {
     // (the group's material keys to the prekeys the seated card carried).
     const { f, handle } = await found();
     const seat = new KeyhiveProvider();
-    await seat.init({ seed: f.atomSeed, eventStore: await replayCapEvents(handle as never), archiveBytes: f.veilArchive });
+    await seat.init({ seed: f.atomSeed, eventStore: await replayCapEvents(handle as never, f.personaGroupId), archiveBytes: f.veilArchive });
     await seat.hydrateFromEventStore();
 
     const founderVessel = new KeyhiveProvider();
-    await founderVessel.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never) });
+    await founderVessel.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never, f.personaGroupId) });
     await founderVessel.hydrateFromEventStore();
 
     const JOINEE_SEED = new Uint8Array(32).fill(41);
@@ -133,10 +133,10 @@ describe("the atom-born group", () => {
     // on a veil stood FROM THE ARCHIVE — never a fresh mint whose prekeys match nothing.
     const { f, handle } = await found();
     const seat = new KeyhiveProvider();
-    await seat.init({ seed: f.atomSeed, eventStore: await replayCapEvents(handle as never), archiveBytes: f.veilArchive });
+    await seat.init({ seed: f.atomSeed, eventStore: await replayCapEvents(handle as never, f.personaGroupId), archiveBytes: f.veilArchive });
     await seat.hydrateFromEventStore();
     const founderVessel = new KeyhiveProvider();
-    await founderVessel.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never) });
+    await founderVessel.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never, f.personaGroupId) });
     await founderVessel.hydrateFromEventStore();
 
     // The joinee's FIRST boot: mint the veil, export the archive, present the card, receive content.
@@ -170,9 +170,9 @@ describe("the atom-born group", () => {
   test("★ NO CARRIED EVENT SPELLS THE RAW VESSEL KEY ★", async () => {
     // The byte-level law the host-surface probe measured: whatever a carrier holds, the raw device
     // identifier must not be greppable from the founded face's cap events.
-    const { handle } = await found();
+    const { handle, f } = await found();
     const vesselKh = new KeyhiveProvider();
-    const store = await replayCapEvents(handle as never);
+    const store = await replayCapEvents(handle as never, f.personaGroupId);
     await vesselKh.init({ seed: FOUNDER_SEED, eventStore: store });
     const vesselId = (await vesselKh.vesselIdentifierHex()).replace(/^0x/, "").toLowerCase();
     const events = await store.list();

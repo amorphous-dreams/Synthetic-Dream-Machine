@@ -247,6 +247,7 @@ export interface IslandMsg_Manifest {
    * boundary (operator-confirmed): the daemon island is the authn/z home.
    */
   daemonAuth?: {
+    joinedFaces?: readonly JoinedFaceAuth[];
     /** The mounted face's random atom seed and its verifying key. */
     atom?: { readonly seed: string; readonly key: string };
     /** The veil identity's prior archive — restores its prekeys so material keyed to the veil's card
@@ -294,6 +295,11 @@ export interface IslandMsg_Manifest {
     archiveOpens:          boolean;
   };
 }
+
+/** Authentication material carried by one unlocked joined face. */
+export type JoinedFaceAuth = Required<Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>,
+  "atom" | "personaGroupId" | "faceAnchor" | "personaKel" | "deviceEdge" | "signerDid" | "registerBags">> &
+  Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret">;
 
 /**
  * Cool the wiki slot from `wela` (hot) to `anu` (cold) — teardown; thread
@@ -544,6 +550,13 @@ export interface DaemonMsg_VerbResult {
 }
 
 
+export interface DaemonMsg_FaceLit { type: "daemon:face-lit"; entry: JoinedFaceAuth; }
+export interface DaemonMsg_FaceDrop { type: "daemon:face-drop"; atomKey: string; }
+export const mkDaemonFaceLit = (entry: JoinedFaceAuth): DaemonMsg_FaceLit => ({ type: "daemon:face-lit", entry });
+export const mkDaemonFaceDrop = (atomKey: string): DaemonMsg_FaceDrop => ({ type: "daemon:face-drop", atomKey });
+export const isDaemonFaceLit = (v: VesselToIslandMsg): v is DaemonMsg_FaceLit => v.type === "daemon:face-lit";
+export const isDaemonFaceDrop = (v: VesselToIslandMsg): v is DaemonMsg_FaceDrop => v.type === "daemon:face-drop";
+
 /**
  * PeerClass — the class a gate's sorter answers for an admitted socket, before its verdict; the node
  * sharePolicy reads it to route every document.
@@ -696,6 +709,8 @@ export type VesselToIslandMsg =
   | DaemonMsg_WorldlineCompareRequest
   | DaemonMsg_WorldlineTrajectoryRequest
   | DaemonMsg_VerbResult
+  | DaemonMsg_FaceLit
+  | DaemonMsg_FaceDrop
   | DaemonMsg_ResolveBindingRequest
   | DaemonMsg_EvictResult
   | DaemonMsg_ResidencyOpResult
@@ -1011,7 +1026,7 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (v.type === LAR_CONTROL_EVENT) return readLarControlEvent(v) !== null;
   if (v.type === LAR_RESEND) return readLarResend(v) !== null;
   if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "doc:rested", "custody:written", "view:catalog-result", "view:content-result", "view:settled"] as const)
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "doc:rested", "custody:written", "view:catalog-result", "view:content-result", "view:settled"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 

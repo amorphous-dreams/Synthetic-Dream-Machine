@@ -99,7 +99,7 @@ describe("persona-kel ring — the doors meet every event the board holds", () =
     boot = {
       repo, verifyingKey, prefix: cer.personaKelPrefix,
       args: {
-        atomSeed: cer.atomSeed, veilArchiveBytes: cer.veilArchive, eventStore: new DaemonEventStore({ daemon: composite }), placeVerifyingKey: verifyingKey,
+        atomSeed: cer.atomSeed, veilArchiveBytes: cer.veilArchive, eventStore: new DaemonEventStore({ daemon: composite, face: cer.personaGroupId }), placeVerifyingKey: verifyingKey,
         personaGroupId: cer.personaGroupId,
         faceAnchor: mintFaceAnchor({ personaGroup: cer.personaGroupId, personaKelPrefix: cer.personaKelPrefix,
           personaRootDid: cer.founderEdge.personaRootDid, edge: cer.founderEdge, leaseEpoch: 0 }),

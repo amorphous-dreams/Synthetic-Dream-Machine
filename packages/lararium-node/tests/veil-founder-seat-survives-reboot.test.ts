@@ -42,7 +42,7 @@ describe("the founder's veil seat survives the night", () => {
     // The composite the daemon worker's onEa receives: an AutomergeDocStore layer over the daemon doc.
     const composite = new CompositeStore();
     composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(handle as never, DAEMON_BAG_ID), writable: true });
-    const eventStore = new DaemonEventStore({ daemon: composite });
+    const eventStore = new DaemonEventStore({ daemon: composite, face: f.personaGroupId });
 
     // R1 — event store only (the first daemon boot, no veil archive yet).
     const r1 = new KeyhiveProvider();

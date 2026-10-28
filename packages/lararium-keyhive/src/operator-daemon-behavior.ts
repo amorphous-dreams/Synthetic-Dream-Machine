@@ -31,7 +31,7 @@ import {
 } from "@lararium/tw5";
 import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, leaseEpochPrefix, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
-import type { IslandMsg_Manifest } from "@lararium/mesh";
+import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
 import { boardDyadReader } from "./board-dyad-reader.js";
 import type { DocHandle, LarDoc, AutomergeUrl, CapabilityVerifier, Verb } from "@lararium/mesh";
 
@@ -206,9 +206,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   if (!daemonAuth?.deviceEdge || !daemonAuth.personaGroupId) { gateCleared = true; clearGate(); }
   void gateClear.catch(() => undefined);
   const pendingSeatLedgerFinds = new Map<string, Promise<unknown>>();
-  const dyadReader = (ctx: IslandContext): DyadReader | undefined => readDyadFromBoard
+  const dyadReader = (ctx: IslandContext, face = daemonAuth): DyadReader | undefined => readDyadFromBoard
     ? async (fleetRootDid, deviceVerifyingKey) => {
-      const ownKey = daemonAuth?.atom?.key;
+      const ownKey = face?.atom?.key;
       let seatLedger: LarDoc | undefined;
       if (ownKey) {
         // Read only a ready local roll. A missing roll keeps the lift owing while sync catches up.
@@ -222,7 +222,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       return boardDyadReader(
         ctx.repo, dyadLedger, restDyadLedger, ownKey,
         seatLedger, fleetRootDid.trim().toLowerCase().replace(/^0x/, ""),
-        readFace(daemonAuth?.personaKel?.chain)?.lineage ?? null,
+        readFace(face?.personaKel?.chain)?.lineage ?? null,
       )(fleetRootDid, deviceVerifyingKey);
     }
     : dyadReading;
@@ -234,6 +234,32 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   }
 
   let kh: KeyhiveProvider | null = null;
+  const providers = new Map<string, { provider: KeyhiveProvider; group: string }>();
+  let faceChanges = Promise.resolve();
+  const lightJoinedFace = async (face: JoinedFaceAuth, ctx: IslandContext): Promise<void> => {
+    const key = bareKey(face.atom.key);
+    if (providers.has(key)) return;
+    const lease = await readLeaseUnderFace(ctx.composite, face.personaGroupId, readFace(face.personaKel.chain, face.faceAnchor));
+    const joined = await bootDaemonKeyhive({
+      atomSeed: meshHexToBytes(face.atom.seed), faceVerifyingKey: face.atom.key,
+      eventStore: new DaemonEventStore({ daemon: ctx.composite, face: face.personaGroupId }),
+      placeVerifyingKey: daemonAuth.placeVerifyingKey, personaGroupId: face.personaGroupId,
+      faceAnchor: face.faceAnchor, personaKel: face.personaKel, deviceEdge: face.deviceEdge,
+      signerDid: face.signerDid, ...(face.meshCabalDocIdHex ? { meshCabalDocIdHex: face.meshCabalDocIdHex } : {}),
+      registerBags: face.registerBags.filter(isVesselGround), ledger: daemonBagDocLedger(ctx.composite),
+      ...(lease.kind === "epoch" ? { expectedEpoch: lease.n } : {}),
+      dyad: await requireDyadReader(dyadReader(ctx, { ...daemonAuth, ...face }), "the Binding Gate")(face.deviceEdge.personaRootDid, face.deviceEdge.deviceVerifyingKey),
+      ...(face.veilArchiveBytes ? { veilArchiveBytes: face.veilArchiveBytes } : {}),
+      ...(sealedStore?.chunks ? { chunkRest: sealedStore.chunks } : {}),
+    });
+    try {
+      for (const bag of face.registerBags.filter((bag) => !isVesselGround(bag))) await joined.keyhive.registerBag(bag);
+      providers.set(key, { provider: joined.keyhive, group: face.personaGroupId });
+    } catch (error) {
+      await joined.keyhive.dispose();
+      throw error;
+    }
+  };
   // THE FACELESS FLOOR'S VERIFIER. No Keyhive stands, so no capability delegates to anybody: the place acts on its own
   // ground. A verb the vessel's own presence channel took (`channel: "local"`) clears on a bag this vessel registered at the
   // floor; every other ask, a peer's or one that names a face's bag, answers the waking-floor refusal.
@@ -376,7 +402,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     // `requestedBy` claim. With a face lit, a local verb that names this place presents as the mounted face's atom;
     // at the floor the place presents as itself and reaches floor acts only. A claim naming any other DID stays that
     // DID, so the verifier judges it as the stranger it is, and a synced summons never borrows the local channel.
-    presenterOf: (invocation, local) => presenterFor({ invocation, local, auth: daemonAuth }),
+    presenterOf: (invocation, local) => presenterFor({ invocation, local, auth: { ...daemonAuth, holds: (group) => [...providers.values()].some((face) => face.group === group) } }),
     // Sovereign-worker data-plane: register the read-only reactors in-worker over the
     // IslandContext composite (verify-then-delegate gate inherited); the residency
     // ACTION reactors register alongside them below.
@@ -935,6 +961,21 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         registry.register("rotate-recipe", makeRotateRecipeReactor({ repo: ctx.repo, catalog, post: ctx.post }));
       }
     },
+    onHostMessage: (msg, ctx) => {
+      const change = faceChanges.then(async () => {
+        if (msg.type === "daemon:face-lit") {
+          try { await lightJoinedFace(msg.entry, ctx); }
+          catch (error) { throw new Error(`face ${msg.entry.atom.key} refused: ${String(error)}`); }
+        } else {
+          const key = bareKey(msg.atomKey);
+          if (daemonAuth.atom && key === bareKey(daemonAuth.atom.key)) throw new Error(`mounted face ${key} cannot be dropped`);
+          const face = providers.get(key);
+          if (face) { providers.delete(key); await face.provider.dispose(); }
+        }
+      });
+      faceChanges = change.catch(() => {});
+      return change;
+    },
     verifierFactory: async (ctx: IslandContext) => {
       if (!daemonAuth.atom && !daemonAuth.personaGroupId && !daemonAuth.deviceEdge) {
         return floorVerifier;
@@ -950,7 +991,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       try {
         booted = await bootDaemonKeyhive({
           ...(daemonAuth.atom ? { atomSeed: meshHexToBytes(daemonAuth.atom.seed) } : {}),
-          eventStore:            new DaemonEventStore({ daemon: ctx.composite }),
+          eventStore:            new DaemonEventStore({ daemon: ctx.composite, face: daemonAuth.personaGroupId! }),
           placeVerifyingKey: daemonAuth.placeVerifyingKey,
           ...(daemonAuth.atom ? { faceVerifyingKey: daemonAuth.atom.key } : {}),
           // The face pins ride CONDITIONALLY — the gate runs in full or grants no persona caps at all.
@@ -1076,7 +1117,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           },
           readLease: () => readLeaseEpoch(ctx.composite),
           verify: verifyFaceGrantRecord,
-          ingest: async (record) => { await absorbCapEvents(veil, new DaemonEventStore({ daemon: ctx.composite }), record.capEvents.map(base64ToBytes)); },
+          ingest: async (record) => { await absorbCapEvents(veil, new DaemonEventStore({ daemon: ctx.composite, face: daemonAuth.personaGroupId! }), record.capEvents.map(base64ToBytes)); },
           lift: async () => {
             const lifted = await slotDocsOf(ctx).liftFloor();
             if (lifted.moved.length + lifted.finished.length > 0)
@@ -1195,9 +1236,16 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           }
         }
       }
+      providers.set(bareKey(daemonAuth.atom!.key), { provider: keyhive, group: daemonAuth.personaGroupId! });
+      for (const face of daemonAuth.joinedFaces ?? []) await lightJoinedFace(face, ctx);
       // The Kahu predicate stands in the verifier as well: a verb routed into a wiki island clears its cap HERE.
       intentVerifier = withKahuReach(
-        faceOwnerVerifier({ face: keyhive, mount: { atomKey: daemonAuth.atom!.key, placeKey: daemonAuth.placeVerifyingKey } }),
+        { verify: async (args) => {
+          const key = bareKey(args.presenter);
+          const face = providers.get(key);
+          if (!face) return { ok: false, reason: `no provider for face ${key}` };
+          return faceOwnerVerifier({ face: face.provider, mount: { atomKey: key, placeKey: daemonAuth.placeVerifyingKey } }).verify(args);
+        } },
         kahuReachOf(ctx),
       );
       return intentVerifier;
@@ -1244,14 +1292,14 @@ const bareKey = (did: string): string => did.trim().toLowerCase().replace(/^0x/,
 export function presenterFor(input: {
   readonly invocation: { readonly requestedBy: string; readonly args: Readonly<Record<string, unknown>> };
   readonly local: boolean;
-  readonly auth: Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "placeVerifyingKey" | "atom" | "personaGroupId" | "deviceEdge">;
+  readonly auth: Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "placeVerifyingKey" | "atom" | "personaGroupId" | "deviceEdge"> & { readonly holds?: (group: string) => boolean };
 }): string {
   const { invocation, local, auth } = input;
   const claim = invocation.requestedBy;
   const lit = !!(auth.atom && auth.personaGroupId && auth.deviceEdge);
   if (!local || !lit) return claim;
   const named = invocation.args["personaGroup"];
-  if (typeof named === "string" && named.length > 0 && named !== auth.personaGroupId) {
+  if (typeof named === "string" && named.length > 0 && named !== auth.personaGroupId && !auth.holds?.(named)) {
     throw new Error(`this vessel wears ${auth.personaGroupId}; name it or wear ${named} first`);
   }
   return bareKey(claim) === bareKey(auth.placeVerifyingKey) ? `0x${auth.atom!.key}` : claim;

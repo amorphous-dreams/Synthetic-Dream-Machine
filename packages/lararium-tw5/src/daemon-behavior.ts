@@ -24,6 +24,8 @@ import {
   mkDaemonWorldlineTrajectoryResult,
   type DaemonMsg_PlaceVerb,
   type DaemonMsg_VerbResult,
+  type DaemonMsg_FaceLit,
+  type DaemonMsg_FaceDrop,
   type DaemonMsg_ResolveBindingRequest,
   type DaemonMsg_DeriveSkeletonRequest,
   type DaemonMsg_WorldlineCompareRequest,
@@ -77,6 +79,7 @@ function writeLayerPointerStands(ctx: IslandContext): Promise<void> {
 export interface DaemonBehaviorOptions {
   /** A ready verifier (e.g. tests, or a host-provided one). */
   verifier?: CapabilityVerifier;
+  onHostMessage?: (msg: DaemonMsg_FaceLit | DaemonMsg_FaceDrop, ctx: IslandContext) => Promise<void>;
   /**
    * Projection mount shore — the daemon INHERITS the wiki's render cap (hasProjection). When the worker
    * entry supplies onBoot (mountProjection), the daemon becomes a surfaceable wiki like any other: the user
@@ -231,6 +234,12 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
 
     onSignal(type: string, raw: unknown, ctx: IslandContext): boolean {
       const { tw5, post } = ctx;
+      if (type === "daemon:face-lit" || type === "daemon:face-drop") {
+        void opts.onHostMessage?.(raw as DaemonMsg_FaceLit | DaemonMsg_FaceDrop, ctx).catch((error) => {
+          console.warn(`[daemon] ${type} refused: ${error instanceof Error ? error.message : String(error)}`);
+        });
+        return true;
+      }
       if (type === "daemon:place-verb") {
         const msg = raw as DaemonMsg_PlaceVerb;
         if (tw5) {
