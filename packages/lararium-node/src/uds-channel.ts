@@ -1063,6 +1063,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
    * session's as `face`. Its arguments
    * and its answer ride this socket alone, as a custody frame's do: the receipt it leaves names the act and the face
    * (its digest covers those two, never an argument), and no outcome body rests anywhere.
+   * A RETRY UNDER ONE requestId READS THE RECEIPT OF THE ACT THAT RAN under it, whatever arguments it carries: an act
+   * runs once per id, and its answer, which rode the first socket alone, never survives a hang-up.
+   * The act counts as work the seat waits out on close. A ledger that fails before the run answers `session-fault`
+   * (nothing ran); an act that throws once running answers its own error, `act-faulted`, and its receipt reads error.
    */
   const actOn = async (sock: Socket, state: NonNullable<ReturnType<typeof sessionSockets.get>>, face: string,
     frame: Record<string, unknown>, requestId: string | undefined): Promise<void> => {
@@ -1082,12 +1086,34 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     const bound = args["handleIndex"] !== undefined ? args : { ...args, face: state.supply.ordinal };
     const scoped = faceScopedId(face, requestId);
     const action = `act:${name}`;
-    const digest = await verbInputDigest({ verb: action, args: {}, face });
-    const verdict = await ledger.arbitrate(scoped, digest, face, action);
-    if (verdict.verdict === "refuse") return sessionRefuse(sock, verdict.reason, requestId);
-    const answer = await opts.sessionActs.run(name, bound);
-    await ledger.observeOutcome(scoped, answer["status"] === "error" ? "error" : "done", digest, 0, face, action);
-    sessionReply(sock, { kind: "session:act-result", requestId, answer });
+    const run = opts.sessionActs.run;
+    arbitrating += 1;
+    try {
+      const digest = await verbInputDigest({ verb: action, args: {}, face });
+      let verdict: Awaited<ReturnType<typeof ledger.arbitrate>>;
+      try {
+        verdict = await ledger.arbitrate(scoped, digest, face, action);
+      } catch (error) {
+        log(`receipt-fact ledger failed for act ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
+        return sessionRefuse(sock, "session-fault", requestId);
+      }
+      if (verdict.verdict === "refuse" && verdict.reason === "already-committed") {
+        return sessionReply(sock, { kind: "session:receipt", requestId, receipt: await sessionReceipt(requestId, face) });
+      }
+      if (verdict.verdict === "refuse") return sessionRefuse(sock, verdict.reason, requestId);
+      let answer: Record<string, unknown>;
+      try {
+        answer = await run(name, bound);
+      } catch (error) {
+        log(`session act ${name} faulted for ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
+        answer = { status: "error", reason: "act-faulted" };
+      }
+      await ledger.observeOutcome(scoped, answer["status"] === "error" ? "error" : "done", digest, 0, face, action);
+      sessionReply(sock, { kind: "session:act-result", requestId, answer });
+    } finally {
+      arbitrating -= 1;
+      if (idle()) drained?.();
+    }
   };
   // The acts rest in the vessel's own sealed row, never in a document the face's fleet syncs (`switch-act-log`).
   const writeSwitchAct = async (act: SwitchIntent | SwitchOutcome): Promise<void> => {
@@ -1274,7 +1300,17 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // by the same request id, through `{op:"receipt"}` — never through a second dispatch attempt.
         // `arbitrate` itself writes the `committed` fact and FLUSHES before returning "run" — the
         // durability floor sits BEFORE `runVerb`/`placeVerb` below, never after.
-        const verdict = await ledger.arbitrate(requestId, inputDigest, inv.face, inv.verb, inv.effectKey);
+        let verdict: Awaited<ReturnType<typeof ledger.arbitrate>>;
+        try {
+          verdict = await ledger.arbitrate(requestId, inputDigest, inv.face, inv.verb, inv.effectKey);
+        } catch (error) {
+          // THE LEDGER FAILED BEFORE ANY DISPATCH (a flush that rejects mid-arbitration): nothing ran, and the caller
+          // hears a fixed code under its own requestId; the detail stays in this vessel's log.
+          log(`receipt-fact ledger failed for ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
+          if (sessionRequestId !== undefined) { sessionRefuse(sock, "session-fault", sessionRequestId); onSessionReply?.(); }
+          else fail("this vessel could not record the request durably; nothing ran", "ledger-unwritten");
+          return;
+        }
         if (verdict.verdict === "refuse" && verdict.reason === "already-committed") {
           // A genuine concurrent re-read of an id THIS process already dispatched OR a same-digest
           // dispatch attempt reaching a fact a PRIOR process already drove to `done`/`error` (H1R,
@@ -1305,11 +1341,11 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           },
         );
       })().catch((error: unknown) => {
-        // THE LEDGER FAILED BEFORE ANY DISPATCH (a flush that rejects mid-arbitration): nothing ran, and the caller
-        // hears a fixed code under its own requestId; the detail stays in this vessel's log.
-        log(`receipt-fact ledger failed for ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
+        // A fault before the arbitrate (the digest, or an abandonment's own record) dispatched nothing either; the
+        // caller hears a fixed code under its own requestId, and the detail stays in this vessel's log.
+        log(`invocation ${requestId} faulted before dispatch: ${error instanceof Error ? error.message : String(error)}`);
         if (sessionRequestId !== undefined) { sessionRefuse(sock, "session-fault", sessionRequestId); onSessionReply?.(); }
-        else fail("this vessel could not record the request durably; nothing ran", "ledger-unwritten");
+        else fail("this vessel faulted before dispatch; nothing ran", "ledger-unwritten");
       }).finally(() => { arbitrating -= 1; if (idle()) drained?.(); }); }));
   };
 

@@ -6,7 +6,7 @@ import { createConnection, type Socket } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
 import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, RECEIPT_FACT_URI_PREFIX, type SwitchIntent, type SwitchOutcome, concludeVerb, wikiSlotUri,
   type LarDoc, type SessionFace } from "@lararium/mesh";
-import { startUdsChannel, type SessionAnchor, type UdsSessionDoor } from "../src/uds-channel.js";
+import { makeUdsSeat, serveUdsFront, type SessionAnchor, type UdsSessionDoor } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
 
 /** The fixture door's mint: a signer the seat can drop, holding no key. */
@@ -67,6 +67,10 @@ async function stand(label: string, opts: {
   nexusOf?: (faceRef: string) => string;
   /** Where the vessel stands now; each proof stands there where `nexusOf` names none. */
   anchor?: () => SessionAnchor;
+  /** A sealed act runs only once this lets go. */
+  actHold?: Promise<void>;
+  /** A sealed act throws once running, as a torn custody row would. */
+  actThrows?: boolean;
 } = {}) {
   const standing = (): SessionAnchor => opts.anchor?.() ?? { kind: "nexus", aid: "nexus-one.synthetic" };
   const repo = new Repo({ sharePolicy: async () => true });
@@ -103,16 +107,21 @@ async function stand(label: string, opts: {
   const ran: Array<{ act: string; args: Record<string, unknown> }> = [];
   const sessionActs = { names: new Set(["host.roll", "carriage.accept"]), run: async (act: string, args: Record<string, unknown>) => {
     ran.push({ act, args });
+    if (opts.actHold) await opts.actHold;
+    if (opts.actThrows) throw new Error("the custody row at /secret/row reads torn");
     return { op: "act", act, result: { epoch: "e".repeat(64) } };
   } };
-  const channel = startUdsChannel({ daemonHandle, composite, claim, repo: flushing, sessions: door, switchActs, sessionVerbs: new Set(["face-row"]), sessionActs,
+  // The front and its seat stand apart, so a test can unseat the seat and read what it waits out.
+  const front = serveUdsFront({ claim });
+  const channel = { close: () => front.close(), detach: () => front.detach() };
+  front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo: flushing, sessions: door, switchActs, sessionVerbs: new Set(["face-row"]), sessionActs,
     placeVerb: (o) => {
       placed.push(o);
       const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done",
         requestedBy: o.requestedBy, cause: "test-worker", batchMode: "best-effort", results: { summary: { ok: true } } });
       daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
     },
-  });
+  }));
   const peers: Peer[] = [];
   const connect = async () => { const p = await Peer.connect(claim.socketPath); peers.push(p); return p; };
   const done = async () => { for (const p of peers) p.end(); channel.close(); await claim.release(); rmSync(dir, { recursive: true, force: true }); };
@@ -127,7 +136,7 @@ async function stand(label: string, opts: {
   /** A known write into the composite's working layer, so a watcher proves it hears. */
   const probe = (title: string) => composite.put({ tiddler: { title, text: "probe" } }, { kind: "tw-local", instanceId: "probe" },
     { bag: wikiSlotUri("daemon", "working") });
-  return { placed, drawn, connect, done, watchActs, probe, ran, composite };
+  return { placed, drawn, connect, done, watchActs, probe, ran, composite, channel };
 }
 
 const envOf = (opened: Record<string, unknown>) =>
@@ -388,6 +397,71 @@ describe("UDS session switch", () => {
       expect(JSON.stringify([{ ...facts[0]!.tiddler, args: { cap: 5 } }]).includes("cap")).toBe(true);
       expect(JSON.stringify([{ ...facts[0]!.tiddler, answer: { epoch: "e".repeat(64) } }]).includes("eeee")).toBe(true);
     } finally { await v.done(); }
+  });
+  test("RED: a retried act reads the receipt of the act that ran under its requestId, whatever arguments it carries, and never runs twice", async () => {
+    const v = await stand("session-act-retry");
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      const act = (requestId: string, args: Record<string, unknown>) => a.ask({ op: "session:act", ...envA, requestId, act: "host.roll", args });
+      expect(await act("roll", { cap: 5 })).toMatchObject({ kind: "session:act-result", requestId: "roll" });
+      // The retry, the same arguments or others, answers the first run's receipt; its answer body rode the first reply alone.
+      for (const args of [{ cap: 5 }, { cap: 9 }]) {
+        const retry = await act("roll", args);
+        expect(retry).toMatchObject({ kind: "session:receipt", requestId: "roll", receipt: { action: "act:host.roll", face: "proof-a", state: "done" } });
+        expect(JSON.stringify(retry).includes("eeee")).toBe(false);
+      }
+      expect(v.ran).toEqual([{ act: "host.roll", args: { cap: 5, face: 0 } }]);
+      // CONTROL: a fresh requestId runs the act afresh.
+      expect(await act("roll-2", { cap: 9 })).toMatchObject({ kind: "session:act-result", requestId: "roll-2" });
+      expect(v.ran).toHaveLength(2);
+    } finally { await v.done(); }
+  });
+  test("RED: an act that throws once running answers its own error act-faulted and its receipt reads error; the fault's text stays off the wire", async () => {
+    const v = await stand("session-act-fault", { actThrows: true });
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      const reply = await a.ask({ op: "session:act", ...envA, requestId: "torn", act: "host.roll", args: {} });
+      expect(reply).toEqual({ kind: "session:act-result", requestId: "torn", answer: { status: "error", reason: "act-faulted" } });
+      expect(await a.ask({ op: "session:receipt", ...envA, requestId: "torn" })).toMatchObject({ receipt: { action: "act:host.roll", state: "error" } });
+      // CONTROL: the session stands and answers its next frame.
+      expect(await a.ask({ op: "session:call", ...envA, requestId: "after", verb: "load", args: {} })).toMatchObject({ kind: "session:result", status: "done" });
+    } finally { await v.done(); }
+  });
+  test("CONTROL (it stands on the parent too): a ledger that fails before an act runs answers session-fault and runs nothing", async () => {
+    let failing = false;
+    const v = await stand("session-act-ledger", { failFlush: () => failing });
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      failing = true;
+      expect(await a.ask({ op: "session:act", ...envA, requestId: "unledgered", act: "host.roll", args: {} }))
+        .toEqual({ kind: "session:refused", requestId: "unledgered", refusal: "session-fault" });
+      failing = false;
+      expect(v.ran).toEqual([]);
+      // CONTROL: once the flush stands, the act runs.
+      expect(await a.ask({ op: "session:act", ...envA, requestId: "ledgered", act: "host.roll", args: {} })).toMatchObject({ kind: "session:act-result" });
+      expect(v.ran).toHaveLength(1);
+    } finally { await v.done(); }
+  });
+  test("RED: a seat that closes waits out an act still running", async () => {
+    let letGo!: () => void;
+    const v = await stand("session-act-drain", { actHold: new Promise<void>((resolve) => { letGo = resolve; }) });
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      a.sock.write(JSON.stringify({ op: "session:act", ...envA, requestId: "long", act: "host.roll", args: {} }) + "\n");
+      for (let n = 0; n < 200 && v.ran.length === 0; n++) await new Promise((resolve) => setImmediate(resolve));
+      expect(v.ran).toHaveLength(1);                                         // the act runs, held
+      let closed = false;
+      const closing = v.channel.detach().then(() => { closed = true; });
+      for (let n = 0; n < 20; n++) await new Promise((resolve) => setImmediate(resolve));
+      expect(closed).toBe(false);                                            // the seat waits the act out
+      letGo();
+      await closing;
+      expect(closed).toBe(true);
+    } finally { letGo(); await v.done(); }
   });
   test("RED: an act naming its face by handleIndex binds to the session's face: another face refuses face-row-other-face, and the act carries handleIndex alone", async () => {
     const v = await stand("session-act-handle");
