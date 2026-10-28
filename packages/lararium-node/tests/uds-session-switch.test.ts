@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection, type Socket } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
-import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, SWITCH_ACT_URI_PREFIX, emptyLarDoc, concludeVerb, wikiSlotUri,
+import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, type SwitchIntent, type SwitchOutcome, concludeVerb, wikiSlotUri,
   type LarDoc, type SessionFace } from "@lararium/mesh";
 import { startUdsChannel, type UdsSessionDoor } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
@@ -86,7 +86,12 @@ async function stand(label: string, opts: {
     } } };
   } };
   const flushing = { flush: (ids?: Parameters<Repo["flush"]>[0]) => (opts.failFlush?.() ? Promise.reject(new Error("disk full at /secret/path")) : repo.flush(ids)) };
-  const channel = startUdsChannel({ daemonHandle, composite, claim, repo: flushing, sessions: door,
+  const logged: Array<SwitchIntent | SwitchOutcome> = [];
+  const switchActs = { write: async (act: SwitchIntent | SwitchOutcome) => {
+    if (opts.failFlush?.()) throw new Error("disk full at /secret/path");
+    logged.push(act);
+  } };
+  const channel = startUdsChannel({ daemonHandle, composite, claim, repo: flushing, sessions: door, switchActs,
     placeVerb: (o) => {
       placed.push(o);
       const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done",
@@ -98,12 +103,12 @@ async function stand(label: string, opts: {
   const connect = async () => { const p = await Peer.connect(claim.socketPath); peers.push(p); return p; };
   const done = async () => { for (const p of peers) p.end(); channel.close(); await claim.release(); rmSync(dir, { recursive: true, force: true }); };
   /** Count the switch acts that land from here on. */
+  /** Every write that lands in any layer of the composite from here on, and every act the vessel's log keeps. */
   const watchActs = () => {
-    const seen: Array<Record<string, unknown>> = [];
-    const stop = composite.subscribe((change) => {
-      if (change.title.startsWith(SWITCH_ACT_URI_PREFIX) && change.record) seen.push(change.record.tiddler as Record<string, unknown>);
-    });
-    return { seen, stop };
+    const seen: string[] = [];
+    const from = logged.length;
+    const stop = composite.subscribe((change) => { seen.push(change.title); });
+    return { seen, stop, acts: () => logged.slice(from) };
   };
   return { placed, drawn, connect, done, watchActs };
 }
@@ -158,21 +163,24 @@ describe("UDS session switch", () => {
       acts.stop();
       expect(await a.ask(call(envA, "still"))).toMatchObject({ kind: "session:result", status: "done" });
       expect(v.drawn.map((s) => s.dropped)).toEqual([false]);
-      expect(acts.seen).toEqual([]);
+      expect(acts.acts()).toEqual([]);
     } finally { await v.done(); }
   });
 
-  test("the intent and the outcome rest as switch acts, naming two faces and no session", async () => {
+  test("RED: a switch act lands in no document: no layer of the composite, the face's working layer with it, hears of it", async () => {
     const v = await stand("acts");
     try {
       const a = await v.connect();
       const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
-      const { seen, stop } = v.watchActs();
+      const { seen, stop, acts } = v.watchActs();
       await a.ask(switchTo(envA, "hint-b", "switch-a"));
       stop();
-      expect(seen.map((t) => t["phase"])).toEqual(["intent", "outcome"]);
-      expect(seen[1]).toMatchObject({ outgoing: "proof-a", incoming: "proof-b", generation: "0", outcome: "switched", "disk-projection": "no" });
-      expect(JSON.stringify(seen)).not.toContain(String(envA.sessionId));
+      // The daemon's working layer is a face bag its PersonaGroup holds admin over: whatever lands there reaches every
+      // device of the outgoing face. A switch act names the incoming face too, so it lands in the vessel's own log alone.
+      expect(seen).toEqual([]);
+      expect(acts().map((x) => ("outcome" in x ? x.outcome : "intent"))).toEqual(["intent", "switched"]);
+      expect(acts()[1]).toMatchObject({ outgoing: "proof-a", incoming: "proof-b", generation: 0 });
+      expect(JSON.stringify(acts())).not.toContain(String(envA.sessionId));
     } finally { await v.done(); }
   });
 

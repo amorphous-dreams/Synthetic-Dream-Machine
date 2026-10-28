@@ -49,9 +49,11 @@ import {
   RECEIPT_FACT_URI_PREFIX, RECEIPT_RING_DEFAULT, RECEIPT_RING_BYTES_DEFAULT, buildReceiptFact, parseReceiptFact, outcomeBytesOf,
   verbInputDigest, SessionTable, sessionBinding, type SessionBinding,
   faceScopedId, type SessionReceipt, type DurabilityReceipt,
-  type ReceiptFact, type ReceiptFactDraft, buildSwitchAct, switchSession,
+  type ReceiptFact, type ReceiptFactDraft, switchSession,
 } from "@lararium/mesh";
 import type { CapabilityProfile, Hand, Session, SessionFace } from "@lararium/mesh/session-contract";
+import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh";
+import type { SwitchActLog } from "./switch-act-log.js";
 // The adaptive-timeout SERVO (fail on a GRADIENT, never a cliff): a per-verb wait that GROWS with the
 // observed durations and clamps FLOOR..CEIL. The machine-code work stays Python; this is the
 // coordinator's PATIENCE, servo'd so a long-but-honest verb (a big-session capture, a refresh queued
@@ -61,6 +63,8 @@ import type { StoreClaim } from "./owned-store.js";
 
 export interface UdsChannelOptions {
   readonly sessions?: UdsSessionDoor;
+  /** Where a session switch's acts rest: the vessel's sealed row (`nodeSwitchActLog`). No log, no switch. */
+  readonly switchActs?: SwitchActLog;
   /** The daemon's warm daemon doc handle (result.daemon.daemonHandle). */
   readonly daemonHandle: DocHandle<LarDoc>;
   /** The daemon composite with its attached working layer established as default writable. */
@@ -965,14 +969,15 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
    * `session:switch`: the five-step fence over THIS socket's session (`switchSession`). The frame rides the bound
    * envelope (`faceRef` names the face worn now), `expectedGeneration` (the generation it leaves, equal to the
    * envelope's) and `target`, the target face's hint, which the door verifies afresh as the preflight. The intent and
-   * the outcome rest as vessel-private switch acts beside the receipt facts and flush before the step after them.
+   * the outcome rest in the vessel's sealed switch-act row and land before the step after them.
    * The new signer lands on the socket's state the moment it mints, so a socket that goes mid-switch drops it with
    * the rest; a switch that cannot commit, or whose socket went, closes this session, and the caller opens afresh.
    * A refusal names a code; the detail stays in this vessel's log.
    */
-  const writeSwitchAct = async (act: Parameters<typeof buildSwitchAct>[0]): Promise<void> => {
-    await composite.put(buildSwitchAct(act), { kind: "lares-verb", requestId: act.actId });
-    await opts.repo.flush();
+  // The acts rest in the vessel's own sealed row, never in a document the face's fleet syncs (`switch-act-log`).
+  const writeSwitchAct = async (act: SwitchIntent | SwitchOutcome): Promise<void> => {
+    if (!opts.switchActs) throw new Error("no switch-act log stands on this seat");
+    await opts.switchActs.write(act);
   };
   const switchOn = async (sock: Socket, state: NonNullable<ReturnType<typeof sessionSockets.get>>,
     frame: Record<string, unknown>, requestId: string | undefined): Promise<void> => {
@@ -981,6 +986,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       return sessionRefuse(sock, "malformed-message", requestId);
     }
     if (!opts.sessions || !state.hand) return sessionRefuse(sock, state.hand ? "no-session-door" : "unknown-session", requestId);
+    if (!opts.switchActs) return sessionRefuse(sock, "no-switch-act-log", requestId);
     const door = opts.sessions;
     const hand = state.hand;
     const gone = (): boolean => closing || sock.destroyed || sessionSockets.get(sock) !== state;

@@ -14,7 +14,6 @@ import { SessionTable, sessionBinding, type Session, type SessionBinding, type S
 import { supplySessionFace } from "../src/session-face.js";
 import { mintSessionSigner, type SessionSigner } from "../src/session-signer.js";
 import { switchSession, type SessionSwitchPorts, type SessionSwitchTarget, type SwitchIntent, type SwitchOutcome } from "../src/session-switch.js";
-import { SWITCH_ACT_URI_PREFIX, buildSwitchAct, neverProjects } from "../src/verb-tiddler.js";
 import { chain, type Chain, type Pair } from "./face-proof-fixture.js";
 
 const NEXUS = "nexus-switch.synthetic";
@@ -307,17 +306,5 @@ describe("a switch that cannot finish", () => {
     const { ports, steps } = portsFor(table, live, b, { binding: sessionBinding("socket") });
     expect(await switchSession(ports)).toEqual({ ok: false, refusal: "unbound-session", closed: false });
     expect(steps).toEqual([]);
-  });
-});
-
-describe("the switch act rests beside the receipt facts", () => {
-  test("its two phases rest under the act id, name a position and two faces, carry no session id, and never project", () => {
-    const intent = { actId: "act-9", ownerEpoch: "owner-x", generation: 3, outgoing: "proof-a", incoming: "proof-b" };
-    const a = buildSwitchAct(intent);
-    const o = buildSwitchAct({ ...intent, outcome: "closed", refusal: "dial-refused" });
-    expect(a.tiddler.title).toBe(`${SWITCH_ACT_URI_PREFIX}act-9/intent`);
-    expect(o.tiddler).toMatchObject({ title: `${SWITCH_ACT_URI_PREFIX}act-9/outcome`, outcome: "closed", refusal: "dial-refused", generation: "3" });
-    expect(Object.keys(a.tiddler).some((k) => /session/i.test(k))).toBe(false);
-    expect(neverProjects(a.tiddler.title)).toBe(true);
   });
 });

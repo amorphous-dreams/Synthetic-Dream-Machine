@@ -58,6 +58,7 @@ import { deriveMeshSelf } from "./node-caps.js";
 import { parseMeshPeer } from "@lararium/mesh";
 import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh";
 import { makeUdsSeat, serveUdsFront, type UdsFront } from "./uds-channel.js";
+import { nodeSwitchActLog } from "./switch-act-log.js";
 import type { Socket } from "node:net";
 import { makeCustodyHolder } from "./custody-holder.js";
 import { testScratchNotice } from "./test-scratch-notice.js";
@@ -769,6 +770,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     claim:        floor.storeClaim,
     repo:         result.repo,
     sessions:     result.sessionDoor,
+    switchActs:   nodeSwitchActLog,
     ...(receiptRing !== undefined && { ring: receiptRing.count, ringBytes: receiptRing.bytes }),
     onLog: (line) => console.log(`[lararium] ${line}`),
   }));
