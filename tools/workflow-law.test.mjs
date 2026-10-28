@@ -115,7 +115,7 @@ test("WL2 CONTROL: a planted workflow without the caps reads every breach, and a
     "        run: pnpm exec playwright install --with-deps chromium",
   ].join("\n");
   assert.deepEqual(breaches("lawful.yml", lawful), []);
-  // A cache keyed with no version restores engines a Playwright bump no longer runs: it reads as no cache.
+  // A cache keyed with no version restores engines a Playwright bump does not run: it reads as no cache.
   const unversioned = lawful.replace("key: playwright-${{ runner.os }}-1.0.0-chromium", "key: playwright-${{ runner.os }}-chromium");
   assert.deepEqual(breaches("unversioned.yml", unversioned), ['unversioned.yml: job capped step "Install Playwright" runs before any version-keyed Playwright cache']);
   const fromStep = lawful.replace("key: playwright-${{ runner.os }}-1.0.0-chromium", "key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}-chromium");
