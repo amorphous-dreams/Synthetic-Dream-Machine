@@ -1,6 +1,6 @@
 import type { Repo } from "@automerge/automerge-repo";
 import { faceRecordsOf } from "@lararium/mesh";
-import { admitAgentEntry } from "@lararium/keyhive";
+import { admitAgentEntry, type FaceIntentAdmissionPorts } from "@lararium/keyhive";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
 import { loadIntentFace } from "./commands/intent.js";
 import { intentRelayPublicKey, signAsIntentRelay } from "./intent-relay-key-store.js";
@@ -13,8 +13,11 @@ export async function resolveIntentRelayFace(group: string, ports: { repo: Repo;
   if (!held) return null;
   return { group, admit: async (entry) => {
     try {
-      const loaded = await loadIntentFace(ports.repo, ports.catalogUrl, { group });
-      const result = await admitAgentEntry({ group, plane: loaded.plane, personaRecords: () => faceRecordsOf([loaded.personaPlane?.doc()], group), kelChain: loaded.kelChain, anchor: loaded.anchor, standing: loaded.standing, verbs: loaded.verbs, heldFrontiers: () => loaded.heldFrontiers }, entry, { key: await intentRelayPublicKey(), sign: signAsIntentRelay });
+      const refresh = async (): Promise<FaceIntentAdmissionPorts> => {
+        const loaded = await loadIntentFace(ports.repo, ports.catalogUrl, { group });
+        return { group, plane: loaded.plane, personaRecords: () => faceRecordsOf([loaded.personaPlane?.doc()], group), kelChain: loaded.kelChain, anchor: loaded.anchor, standing: loaded.standing, verbs: loaded.verbs, heldFrontiers: () => loaded.heldFrontiers, refresh };
+      };
+      const result = await admitAgentEntry(await refresh(), entry, { key: await intentRelayPublicKey(), sign: signAsIntentRelay });
       if (result.status !== "refused" && result.status !== "fault") {
         try { await ports.repo.flush(); } catch { return { status: "fault" }; }
       }

@@ -34,7 +34,7 @@ export function receiptFields(result: unknown): Record<string, unknown> {
   return out;
 }
 
-export type FaceIntentAdmissionPorts = Pick<FaceIntentDoorPorts, "group" | "plane" | "personaRecords" | "kelChain" | "anchor" | "standing" | "holdsCapability" | "verbs" | "heldFrontiers">;
+export type FaceIntentAdmissionPorts = Pick<FaceIntentDoorPorts, "group" | "plane" | "personaRecords" | "kelChain" | "anchor" | "standing" | "holdsCapability" | "verbs" | "heldFrontiers"> & { readonly refresh?: () => Promise<FaceIntentAdmissionPorts> };
 export function makeFaceIntentReader(ports: FaceIntentAdmissionPorts) {
   const read = async (): Promise<{ view: IntentView; records: unknown[]; readInput: Omit<IntentReadInput, "records"> }> => {
     const face = readFace(ports.kelChain, ports.anchor);
@@ -58,33 +58,39 @@ export async function admitAgentEntry(ports: FaceIntentAdmissionPorts, raw: unkn
   const prior = admissionQueues.get(ports.plane) ?? Promise.resolve();
   const task = prior.then(async (): Promise<IntentRelayResult> => {
     try {
-      const { records, readInput } = await makeFaceIntentReader(ports).read();
-      const decision = decideAdmission({ group: ports.group, raw, records, read: readInput });
-      if (!decision.ok) return { status: "refused", refusal: decision.refusal };
-      const priorReceipt = (doc: LarDoc | undefined) => {
+      const priorReceipt = (doc: LarDoc | undefined, cid: string) => {
         for (const rawReceipt of intentAdmissionRecordsOfGroup(doc, ports.group)) {
           const found = readIntentAdmission(rawReceipt, { group: ports.group });
-          if (found.ok && found.admission.body.relay === relay.key.toLowerCase() && found.admission.body.entry === decision.cid) return found.admission;
+          if (found.ok && found.admission.body.relay === relay.key.toLowerCase() && found.admission.body.entry === cid) return found.admission;
         }
         return null;
       };
-      const existing = decision.duplicate && priorReceipt(ports.plane.doc());
-      if (existing) return { status: "duplicate", receipt: existing };
-      const receipt = await signIntentAdmission({ group: ports.group, entry: decision.cid, delegation: decision.delegation, heads: localIntentHeads(records) }, relay);
-      if (!readIntentAdmission(receipt, { group: ports.group }).ok) return { status: "refused", refusal: "fault" };
-      const mergedReceipt = priorReceipt(ports.plane.doc());
-      if (mergedReceipt) return { status: "duplicate", receipt: mergedReceipt };
-      let result: IntentRelayResult = { status: "refused", refusal: "fault" };
-      ports.plane.change(draft => {
-        const current = decideAdmission({ group: ports.group, raw: decision.entry, records: intentEntryRecordsOfGroup(draft, ports.group), read: readInput });
-        if (!current.ok) { result = { status: "refused", refusal: current.refusal }; return; }
-        const previous = priorReceipt(draft);
-        if (current.duplicate && previous) { result = { status: "duplicate", receipt: previous }; return; }
-        if (!current.duplicate) writeIntentEntry(draft, current.entry);
-        writeIntentAdmission(draft, receipt);
-        result = { status: current.duplicate ? "duplicate" : "admitted", receipt };
-      });
-      return result;
+      const fingerprint = (read: Omit<IntentReadInput, "records">) => JSON.stringify({ roster: [...read.face.rosterCids].sort(), lineage: read.face.lineage.at(-1), frontiers: [...(read.heldFrontiers ?? [])].sort() });
+      let currentPorts = ports;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const { records, readInput } = await makeFaceIntentReader(currentPorts).read();
+        const decision = decideAdmission({ group: ports.group, raw, records, read: readInput });
+        if (!decision.ok) return { status: "refused", refusal: decision.refusal };
+        const receipt = await signIntentAdmission({ group: ports.group, entry: decision.cid, delegation: decision.delegation, heads: localIntentHeads(records) }, relay);
+        if (!readIntentAdmission(receipt, { group: ports.group }).ok) return { status: "refused", refusal: "fault" };
+        currentPorts = ports.refresh ? await ports.refresh() : ports;
+        if (currentPorts.group !== ports.group || currentPorts.plane !== ports.plane) return { status: "refused", refusal: "fault" };
+        const fresh = await makeFaceIntentReader(currentPorts).read();
+        // The decision below runs synchronously against the plane's current document, so no await separates
+        // the final authority check from the append; a refusal or a duplicate answers without touching the plane.
+        const doc = ports.plane.doc();
+        const current = decideAdmission({ group: ports.group, raw: decision.entry, records: intentEntryRecordsOfGroup(doc, ports.group), read: { ...fresh.readInput, admissions: intentAdmissionRecordsOfGroup(doc, ports.group) } });
+        if (!current.ok) return { status: "refused", refusal: current.refusal };
+        if (fingerprint(readInput) !== fingerprint(fresh.readInput)) continue;
+        const previous = priorReceipt(doc, current.cid);
+        if (current.duplicate && previous) return { status: "duplicate", receipt: previous };
+        ports.plane.change(draft => {
+          if (!current.duplicate) writeIntentEntry(draft, current.entry);
+          writeIntentAdmission(draft, receipt);
+        });
+        return { status: current.duplicate ? "duplicate" : "admitted", receipt };
+      }
+      return { status: "refused", refusal: "fault" };
     } catch { return { status: "refused", refusal: "fault" }; }
   });
   const tail = task.then(() => undefined); admissionQueues.set(ports.plane, tail);
