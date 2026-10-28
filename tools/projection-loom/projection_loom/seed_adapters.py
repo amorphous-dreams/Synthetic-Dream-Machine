@@ -92,7 +92,7 @@ def image_group(path):
         if state not in ("provisional","registered"):
             raise ValueError("Unknown camera registration state")
         if state=="registered" and not view.get("calibration"):
-            raise ValueError("Registered camera needs measured calibration evidence")
+            raise ValueError("Registered camera needs independent measured calibration evidence")
         if state!="registered" and view.get("calibration"):
             raise ValueError("Provisional image cannot import an unverified camera pose")
         image_path=(path.parent/view["rgba"]).resolve(strict=True)
