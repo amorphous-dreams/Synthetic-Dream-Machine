@@ -38,6 +38,8 @@ export async function standMirror(options: {
   let ended = false;
   let stepped = false;
   let greeted = false;
+  let gone = false;                    // a port:gone ends its generation: later messages do not step it
+  const chunks = new Map<string, number>();
   let greeting!: (reason: string | null | "stepped") => void;
   const nextGreeting = () => new Promise<string | null | "stepped">(resolve => { greeting = resolve; });
   let waiting = nextGreeting();
@@ -48,11 +50,11 @@ export async function standMirror(options: {
 
   const end = (event: MirrorEvent) => { if (ended) return; ended = true; mirror?.unmount(); emit(event); };
   const stepDown = (why: string) => {
-    if (ended) return;
+    if (ended || gone) return;
     if (!mirror) { early = why; return; }
     if (stepped) { greeting(why); end({ type: "floor", why }); return; }
     stepped = true; width = "skinny"; generation += 1;
-    greeted = false;
+    greeted = false; chunks.clear();
     const previous = greeting;
     waiting = nextGreeting();
     mirror.reopen({ transport: transportFor(generation), portId: crypto.randomUUID(), width: "skinny" });
@@ -70,15 +72,22 @@ export async function standMirror(options: {
     onMessage(listener) {
       return options.port.onMessage(message => {
         if (mine !== generation || ended || !message.type.startsWith("port:")) return;
+        if (gone) return;
         if (message.type === "port:gone") {
+          gone = true;
           const why = String((message as { reason?: unknown }).reason ?? "port-gone");
           if (greeted) { end({ type: "gone", why }); return; }
           greeting(why); return;
         }
-        if (message.type === "port:snapshot") greeted = true;
         try { listener(message as unknown as Parameters<typeof listener>[0]); }
         catch (error) { if (capacity(error)) { stepDown(`mirror-snapshot-refused:${(error as Error).name}`); return; } throw error; }
-        if (message.type === "port:snapshot" && greeted) greeting(null);
+        // The greeting completes when the whole snapshot has landed, not its first chunk.
+        if (message.type === "port:snapshot") {
+          const { snapshotId, n } = message as unknown as { snapshotId: string; n: number };
+          const seen = (chunks.get(snapshotId) ?? 0) + 1;
+          chunks.set(snapshotId, seen);
+          if (seen >= n) { chunks.delete(snapshotId); greeted = true; greeting(null); }
+        }
       });
     },
   });

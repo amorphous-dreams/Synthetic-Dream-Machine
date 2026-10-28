@@ -9,7 +9,7 @@ describe("mirror door source census", () => {
   test.each(["tw5-vm.ts", "tw5-host-bridge.ts"])("R2: %s drops the glass boolean option", file => {
     expect(readFileSync(source(`../src/${file}`), "utf8")).not.toMatch(/options\?\s*:\s*\{\s*glass/);
   });
-  test("R2: the flag module has burned", () => {
+  test("R2: no URL-selector module remains", () => {
     expect(existsSync(source("../../lararium-web/src/glass/flag.ts"))).toBe(false);
   });
   // R5: no clock decides anything in the mirror's own code. The pattern proves itself on a planted line first.

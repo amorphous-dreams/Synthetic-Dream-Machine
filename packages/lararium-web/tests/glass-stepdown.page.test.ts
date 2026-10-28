@@ -5,7 +5,7 @@ import coreUrl from "../../lararium-tw5/tw5-core/tiddlywikicore-5.5.0-prerelease
 
 const lends = () => Object.fromEntries(["global", "Buffer", "process"].map(k => [k, Object.getOwnPropertyDescriptor(globalThis, k)]));
 /** A vessel stub: each `port:open` answers with one snapshot of one record, after a manual gate when `gate` is set. */
-async function rig(gate?: Promise<void>) {
+async function rig(gate?: Promise<void>, chunks = 1) {
   const bytes = new Uint8Array(await (await fetch(coreUrl)).arrayBuffer());
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   const coreCid = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
@@ -15,8 +15,12 @@ async function rig(gate?: Promise<void>) {
   port = makePortTransport({ surface: () => "surface", mint: () => "binding", doors: {
     place(_surface, _binding, raw) {
       const msg = raw as Record<string, any>; messages.push(msg);
-      if (msg.type === "port:open") void Promise.resolve(gate).then(() => port.deliver({ type: "port:snapshot", portId: msg.portId,
-        snapshotId: `s-${messages.length}`, i: 1, n: 1, records: [{ title: "Landed", fields: { text: "t" }, seq: 1 }] }));
+      const chunk = (i: number) => port.deliver({ type: "port:snapshot", portId: msg.portId, snapshotId: `s-${messages.length}`, i, n: chunks,
+        records: [{ title: `Landed${i}`, fields: { text: "t" }, seq: i }] });
+      if (msg.type === "port:open") {
+        if (chunks === 1) void Promise.resolve(gate).then(() => chunk(1));
+        else { queueMicrotask(() => chunk(1)); void Promise.resolve(gate).then(() => { for (let i = 2; i <= chunks; i++) chunk(i); }); }
+      }
       return { ok: true as const };
     }, close() {},
   } });
@@ -54,7 +58,7 @@ test("R7: a second RangeError at skinny reads the none floor and never opens a t
   try {
     const result = await standMirror(r.options, { ...r.seams, landed: () => { throw new RangeError("capacity"); } });
     expect(r.messages.filter(m => m.type === "port:write")).toEqual([]);   // the half-landed record never echoes back as a local edit
-    expect({ ...result, unmount: undefined }).toEqual({ kind: "floor", width: "none", why: "mirror-snapshot-refused:RangeError" });
+    expect(result).toEqual({ kind: "floor", width: "none", why: "mirror-snapshot-refused:RangeError" });
     expect(r.opens().map(m => m.width)).toEqual(["full", "skinny"]);
     expect(r.host.shadowRoot?.childNodes.length ?? 0).toBe(0); expect(lends()).toEqual(before);
   } finally { r.host.remove(); }
@@ -80,4 +84,31 @@ test("R5: a snapshot that waits on a released gate, not a clock, still opens ful
     expect(await standing).toMatchObject({ kind: "mirror", width: "full" });
     ((await standing) as any).unmount();
   } finally { r.host.remove(); }
+});
+test("a snapshot of two chunks paints only after the second lands", async () => {
+  let release!: () => void; const gate = new Promise<void>(resolve => { release = resolve; });
+  const r = await rig(gate, 2);
+  try {
+    let settled = false;
+    const standing = standMirror(r.options, r.seams).then(result => { settled = true; return result; });
+    for (let turn = 0; turn < 50; turn++) await Promise.resolve();
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));   // a frame of the page, not a wait on time: the first chunk has landed
+    expect(settled).toBe(false);
+    expect(r.host.shadowRoot?.querySelector("div")?.childNodes.length ?? 0).toBe(0);
+    release();
+    const result = await standing;
+    expect(result).toMatchObject({ kind: "mirror", width: "full" });
+    expect(r.host.shadowRoot?.querySelector("div")?.childNodes.length).toBeGreaterThan(0);
+    (result as any).unmount();
+  } finally { r.host.remove(); }
+});
+test("a port:gone before the mirror stands floors with the island's reason; a late capacity error cannot step it", async () => {
+  const r = await rig(undefined, 1);
+  const send = r.port.send;
+  try {
+    r.port.onMessage(message => { if (message.type === "port:snapshot") r.port.deliver({ type: "port:gone", portId: message.portId, reason: "grant-revoked" }); });
+    const result = await standMirror(r.options, { ...r.seams, landed: () => { throw new RangeError("capacity"); } });
+    expect(result).toEqual({ kind: "floor", width: "none", why: "grant-revoked" });
+    expect(r.opens()).toHaveLength(1);
+  } finally { void send; r.host.remove(); }
 });

@@ -20,7 +20,7 @@ function afterChange(tw: { wiki: { addEventListener(t: string, l: () => void): v
 }
 
 describe("glass boot on the real page", () => {
-  test("keeps the unflagged main thread guard", async () => {
+  test("keeps the main thread guard for every caller outside the door", async () => {
     await expect(new TW5Engine().boot(await coreBytes())).rejects.toThrow(/sovereignty violation/);
   });
 

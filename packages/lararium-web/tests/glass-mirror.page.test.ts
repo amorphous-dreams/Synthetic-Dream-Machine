@@ -36,7 +36,7 @@ async function runDefault(search: string) {
     result.unmount();
   } finally { history.replaceState(null, "", original); f.host.remove(); }
 }
-test("R1 CONTROL: an unflagged page opens full on the wire", async () => { await runDefault(""); });
+test("R1 CONTROL: a page with no selector opens full on the wire", async () => { await runDefault(""); });
 test.each(["skinny", "none", "junk"])("R1: query glass=%s cannot select a width", async value => { await runDefault(`?glass=${value}`); });
 test("R1: stored glass and width values cannot select a width", async () => {
   const saved = [localStorage, sessionStorage].map(s => [s.getItem("glass"), s.getItem("width")]);
