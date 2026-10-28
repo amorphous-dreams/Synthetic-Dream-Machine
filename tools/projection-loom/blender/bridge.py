@@ -57,8 +57,14 @@ def _open_bundle(bundle):
     manifest = json.loads((source / "manifest.json").read_text(encoding="utf8"))
     if "bodies" not in manifest or "sha256" not in manifest:
         raise ValueError("Invalid authored Loom scene bundle")
+    prior_names = set(bpy.data.objects.keys())
     if "FINISHED" not in bpy.ops.wm.usd_import(filepath=str(source / "scene.usda")):
         raise RuntimeError("Blender failed to import the composed USD stage")
+    imported = [obj for obj in bpy.data.objects if obj.name not in prior_names]
+    if not imported:
+        raise RuntimeError("Blender USD import created no objects")
+    for obj in imported:
+        obj["loom_generated"] = True  # includes parent empties and USD hierarchy
     _tag(source, manifest)
     return manifest
 
@@ -120,9 +126,12 @@ def _capture(args):
 
 def _reload(args):
     bpy.ops.wm.open_mainfile(filepath=str(Path(args.blend).resolve()))
-    existing = [obj for obj in bpy.data.objects if "loom_entity_id" in obj]
-    old_ids = {obj["loom_entity_id"] for obj in existing}
-    operator_owned = {obj.name for obj in bpy.data.objects if "loom_entity_id" not in obj}
+    old_ids = {obj["loom_entity_id"] for obj in bpy.data.objects
+               if "loom_entity_id" in obj}
+    existing = [obj for obj in bpy.data.objects if obj.get("loom_generated")
+                or "loom_entity_id" in obj]
+    operator_owned = {obj.name for obj in bpy.data.objects
+                      if obj not in existing}
     for obj in existing:
         bpy.data.objects.remove(obj, do_unlink=True)
     manifest = _open_bundle(args.bundle)

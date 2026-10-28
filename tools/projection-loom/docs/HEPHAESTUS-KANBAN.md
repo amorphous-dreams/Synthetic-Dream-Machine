@@ -163,3 +163,7 @@ The actual headless Ubuntu 4.0.2 package returned `AttributeError: bpy.ops.wm.us
 **Act:** `package_scene(..., reuse_bundle=..., previous_document=...)` implements the selective plan and actual reuse; the editor reconciler passes its previous bundle for reuse. New tests verify a two-body scene rebuilds only the moved body, retains independent STEP bytes and rejects tampered/mismatched caches. The independent crucible measures actual avoided native construction.
 
 **Aftermath:** C-04's selective native build caching is implemented but needs exact-head USD CI. Interrupted writes and concurrent editors remain governed separately by source/edit causal frontiers; general distributed build execution is not claimed.
+
+## Blender official LTS importer verified; hierarchy ownership repair
+
+The official Blender 4.5.15 SHA-checked build successfully completed its USD import and authored transform capture at prior CI head `ed950da5`. On reload, Blender introduced USD hierarchy/parent empties not tagged with semantic mesh IDs, causing the bridge to incorrectly classify generated representation parents as operator-owned work. The import now tags **all** newly created USD objects with `loom_generated`, while retaining semantic IDs on actual mesh bodies. Reload deletes only tagged generated objects and preserves genuinely operator-owned content such as the deliberately created `OperatorNote`. Exact-head Blender application witness must still pass before claiming D-B integration.
