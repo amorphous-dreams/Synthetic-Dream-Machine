@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -6,7 +6,7 @@ import { createConnection, type Socket } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
 import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, RECEIPT_FACT_URI_PREFIX, type SwitchIntent, type SwitchOutcome, concludeVerb, wikiSlotUri,
   type LarDoc, type SessionFace } from "@lararium/mesh";
-import { makeUdsSeat, serveUdsFront, type SessionAnchor, type UdsSessionDoor } from "../src/uds-channel.js";
+import { FactLedger, makeUdsSeat, serveUdsFront, type SessionAnchor, type UdsSessionDoor } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
 
 /** The fixture door's mint: a signer the seat can drop, holding no key. */
@@ -449,6 +449,22 @@ describe("UDS session switch", () => {
       expect(await a.ask({ op: "session:receipt", ...envA, requestId: "ran" })).toMatchObject({ receipt: { state: "done" } });
       expect(v.ran).toHaveLength(1);
     } finally { await v.done(); }
+  });
+  test("a faulted act receipt survives a failed ledger read", async () => {
+    const v = await stand("session-act-read-fault");
+    const get = FactLedger.prototype.get;
+    const observe = vi.spyOn(FactLedger.prototype, "observeOutcome").mockRejectedValue(new Error("record failed"));
+    const read = vi.spyOn(FactLedger.prototype, "get").mockImplementation(function (this: FactLedger, id) {
+      if (v.ran.length) return Promise.reject(new Error("read failed"));
+      return get.call(this, id);
+    });
+    try {
+      const a = await v.connect();
+      const env = envOf(await a.ask({ op: "session:open", requestId: "open", faceRef: "hint-a", hand: "seat" }));
+      expect(await a.ask({ op: "session:act", ...env, requestId: "ran", act: "host.roll", args: {} }))
+        .toMatchObject({ kind: "session:act-result", answer: { reason: "act-faulted" }, receipt: { state: "done" } });
+      expect(await a.ask({ op: "session:receipt", ...env, requestId: "ran" })).toMatchObject({ receipt: { state: "done" } });
+    } finally { read.mockRestore(); observe.mockRestore(); await v.done(); }
   });
   test("CONTROL (it stands on the parent too): a ledger that fails before an act runs answers session-fault and runs nothing", async () => {
     let failing = false;
