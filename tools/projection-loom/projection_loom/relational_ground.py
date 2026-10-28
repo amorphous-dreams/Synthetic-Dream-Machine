@@ -160,6 +160,7 @@ def _apply_one(entities, links, operation):
         ent["matrix"] = _matrix(payload["matrix"])
         ent["frame"] = payload["frame"]
         ent["revision"] = _digest({"prior": ent["revision"], "transform": ent["matrix"]})
+        ent["invalidated"] = True  # the changed CAD body itself also needs re-auditing
         for affected in _descendants(entities, links, target):
             entities[affected]["invalidated"] = True
     elif action == "attach":
@@ -172,6 +173,8 @@ def _apply_one(entities, links, operation):
             raise ValueError("Relation is already attached")
         links.append(relation)
         ent["invalidated"] = True  # newly connected geometry must be re-audited
+        for dependent in _descendants(entities, links, target):
+            entities[dependent]["invalidated"] = True
     elif action == "detach":
         parent, verb = payload["parent"], payload.get("verb", "supports")
         matches = [r for r in links if r["child"] == target
@@ -248,6 +251,8 @@ class RelationalGround:
             if event_id != _digest({"parents": event["parents"], "operation": event["operation"]}):
                 raise ValueError("Causal event digest mismatch")
             _check_operation(event["operation"])
+            if event["parents"] != sorted(event["operation"]["frontier"]):
+                raise ValueError("Causal parent frontier and authored operation disagree")
             prestate = {"entities": entities, "relations": links}
             if event.get("touched") != sorted(self._touches(event["operation"], prestate)):
                 raise ValueError("Causal dependency scope was tampered with")
@@ -277,7 +282,7 @@ class RelationalGround:
         for key in ("parent", "old_parent", "new_parent"):
             if key in p:
                 touched.add(p[key])
-        if op["kind"] in ("transform", "remove", "detach", "reparent"):
+        if op["kind"] in ("transform", "attach", "remove", "detach", "reparent"):
             touched.update(_descendants(snapshot["entities"], snapshot["relations"], op["target"]))
         return touched
 
@@ -285,16 +290,18 @@ class RelationalGround:
         _check_operation(operation)
         parents = tuple(sorted(operation["frontier"]))
         observed = self._ancestors(parents)
+        # Idempotence runs before a stale-frontier conflict check: the exact
+        # event may already belong to a newer causal history.
+        op = deepcopy(operation)
+        event_id = _digest({"parents": list(parents), "operation": op})
+        if event_id in self.events:
+            return self, {"event_id": event_id, "outcome": "already-recorded"}
         state = self.snapshot()
         incoming = self._touches(operation, state)
         for eid, event in self.events.items():
             if eid not in observed and incoming & set(event["touched"]):
                 raise ValueError("Conflicting concurrent edit; preserve separate causal branch")
         prospective = deepcopy(self.events)
-        op = deepcopy(operation)
-        event_id = _digest({"parents": list(parents), "operation": op})
-        if event_id in prospective:
-            return self, {"event_id": event_id, "outcome": "already-recorded"}
         entities, relations = deepcopy(state["entities"]), deepcopy(state["relations"])
         _apply_one(entities, relations, op)  # do not publish a partial invalid edit
         prospective[event_id] = {"parents": list(parents), "operation": op,

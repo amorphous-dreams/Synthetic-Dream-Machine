@@ -125,3 +125,59 @@ def test_cli_roundtrip(tmp_path):
     main(["ground-apply", "--ground", str(out), "--edit", str(operation),
           "--out", str(second)])
     assert "foundation" in RelationalGround.load(second).snapshot()["entities"]
+
+
+def test_exact_causal_retry_is_idempotent_even_after_later_compatible_history():
+    g = RelationalGround("retry-safe")
+    create_a = op("create", "a", (), kind="construct")
+    g = added(g, create_a)
+    create_b = op("create", "b", g.frontier, kind="construct")
+    g = added(g, create_b)
+    action = op("annotate", "a", g.frontier, note="operator note")
+    after = added(g, action)
+    # An unrelated sibling operation may arrive after the original edit.
+    after = added(after, op("annotate", "b", g.frontier, note="concurrent note"))
+    unchanged, receipt = after.apply(action)
+    assert receipt["outcome"] == "already-recorded"
+    assert unchanged.to_dict() == after.to_dict()
+    assert len(unchanged.snapshot()["entities"]["a"]["annotations"]) == 1
+
+
+def test_relocated_body_itself_needs_reaudit():
+    g = RelationalGround("structure")
+    g = added(g, op("create", "root", (), kind="construct"))
+    g = added(g, op("create", "child", g.frontier, kind="construct"))
+    g = added(g, op("attach", "child", g.frontier, parent="root"))
+    moved = list(IDENTITY)
+    moved[3] = 10
+    g = added(g, op("transform", "root", g.frontier,
+                    matrix=moved, frame="local3d"))
+    assert g.snapshot()["entities"]["root"]["invalidated"]
+    assert g.snapshot()["entities"]["child"]["invalidated"]
+
+
+def test_new_support_conflicts_with_unseen_descendant_edit():
+    g = RelationalGround("bridge-dependents")
+    for entity in ("a", "b", "leaf"):
+        g = added(g, op("create", entity, g.frontier, kind="construct"))
+    g = added(g, op("attach", "leaf", g.frontier, parent="b"))
+    start = g.frontier
+    annotated = added(g, op("annotate", "leaf", start, note="work began"))
+    with pytest.raises(ValueError, match="Conflicting concurrent"):
+        annotated.apply(op("attach", "b", start, parent="a"))
+
+
+def test_replay_rejects_parent_and_operation_frontier_disagreement():
+    from projection_loom.provenance_encoding import canonical_json_sha256
+    g = RelationalGround("replay")
+    g = added(g, op("create", "a", (), kind="construct"))
+    g = added(g, op("create", "b", g.frontier, kind="construct"))
+    events = json.loads(json.dumps(g.events))
+    last = next(k for k, v in events.items() if v["operation"]["target"] == "b")
+    changed = events.pop(last)
+    changed["parents"] = []
+    forged_id = canonical_json_sha256(
+        {"parents": changed["parents"], "operation": changed["operation"]})
+    events[forged_id] = changed
+    with pytest.raises(ValueError, match="Causal parent frontier"):
+        RelationalGround("replay", events=events)
