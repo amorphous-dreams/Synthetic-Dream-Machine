@@ -46,7 +46,7 @@ import {
 import { custodyFrameHandler } from "../src/custody-frames.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 import { claimStore, type StoreClaim } from "../src/owned-store.js";
-import { SEALED_ACT_NAMES, runSealedAct } from "../src/sealed-acts.js";
+import { SEALED_ACT_NAMES, SESSION_ACTS, runSealedAct } from "../src/sealed-acts.js";
 import { writePersonaSelfName } from "@lararium/tw5";
 import { personaSelvesPlaneOver } from "../src/persona-selves-plane.js";
 import type { PlaneRest } from "../src/sealed-acts.js";
@@ -146,19 +146,22 @@ describe("an act frame and the daemon's document", () => {
       const canary = `ARG-CANARY-${act}-${Math.random().toString(36).slice(2)}`;
       args.set(act, canary);
       const a = await sendLine(v.socketPath, { op: "act", act, args: { petname: canary } });
-      expect(a).toEqual({ op: "act", act, result: { held: answers.get(act) } });          // the caller alone holds the answer
+      // An act that acts as a face rides a session (`session:act`, whose receipt names the act and the face alone): the
+      // custody door's own frame refuses it and runs nothing.
+      if (SESSION_ACTS.has(act)) expect(a).toMatchObject({ op: "act", status: "error", refusal: { reason: "face-act-rides-a-session" } });
+      else expect(a).toEqual({ op: "act", act, result: { held: answers.get(act) } });     // the caller alone holds the answer
     }
     await new Promise((r) => setTimeout(r, 150));                                          // let any late write land
     const afterActs = v.text();
     expect(v.titles().filter((t) => t.startsWith(OUTCOME_URI_PREFIX))).toEqual([]);
     expect(v.titles().filter((t) => t.startsWith(RECEIPT_FACT_URI_PREFIX))).toEqual([]);
-    for (const act of SEALED_ACT_NAMES) {
+    for (const act of SEALED_ACT_NAMES.filter((a) => !SESSION_ACTS.has(a))) {
       expect(afterActs.includes(answers.get(act)!), `the answer of ${act} rests in a document`).toBe(false);
       expect(afterActs.includes(args.get(act)!), `an argument of ${act} rests in a document`).toBe(false);
       expect(afterActs.includes(await digestOf(act, { petname: args.get(act)! })), `a digest of ${act}'s arguments rests in a document`).toBe(false);
       expect(logs.some((l) => l.includes(answers.get(act)!) || l.includes(args.get(act)!))).toBe(false);
     }
-    expect(logs.filter((l) => l.endsWith(": done")).length).toBe(SEALED_ACT_NAMES.length);  // the door named each act it ran
+    expect(logs.filter((l) => l.endsWith(": done")).length).toBe(SEALED_ACT_NAMES.length - SESSION_ACTS.size);  // the door named each act it ran
 
     // CONTROL: the same name and the same arguments, sent as a VERB, leave exactly the two traces the search hunts.
     const act = SEALED_ACT_NAMES[0]!;
