@@ -26,6 +26,9 @@ import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { runCabalJoin } from "../src/commands/cabal-join.js";
 import { runEdgeKapae, EdgeKapaeError } from "../src/commands/edge-kapae-cmd.js";
 import { runEdgeRollAnchors } from "../src/commands/edge-roll-anchor.js";
+import { runCabalFace } from "../src/commands/cabal-face.js";
+import { FaceNotNamed } from "../src/face-selector.js";
+import { edgeLedgerDocUrl, keptFromLedger } from "@lararium/mesh";
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
@@ -164,7 +167,7 @@ describe("a seal roll carries the shadow, and a lift at the new head cites the r
     const beforeRoll = (await edgeBoard()).doc;
 
     const closing = foundingRoster(readNexusDoc(larSealHome()));
-    const landed = await direct(runEdgeRollAnchors)({ closing, opened, openedEpoch });
+    const landed = await direct(runEdgeRollAnchors)({ face: 0, closing, opened, openedEpoch });
     expect(landed.map((a) => [a.realm, a.parents])).toEqual([[REALM, [up.actCid]]]);
     roll();
     const board = await edgeBoard();
@@ -194,15 +197,48 @@ describe("a seal roll carries the shadow, and a lift at the new head cites the r
   it("CONTROL — a vessel that notes no realm anchors nothing; a realm it only vouched in takes an anchor that carries no act and a head under the new epoch", async () => {
     const { opened, openedEpoch, roll } = await seatCharter();
     const closing = foundingRoster(readNexusDoc(larSealHome()));
-    expect(await direct(runEdgeRollAnchors)({ closing, opened, openedEpoch })).toEqual([]);   // no realm noted: nothing to anchor
+    expect(await direct(runEdgeRollAnchors)({ face: 0, closing, opened, openedEpoch })).toEqual([]);   // no realm noted: nothing to anchor
     expect((await edgeBoard()).anchors).toEqual([]);
     const joiner = await nymOf(11);
     const vouch = await direct(runCabalVouch)({ face: 0, joiner, realm: REALM });
     await direct(runEdgeKapae)({ face: 0, edgeId: vouch.edgeId, realm: REALM, raised: true });
     expect((await ringRealm()).holders?.get(vouch.voucherDid)).toMatchObject({ status: "known" });
-    const landed = await direct(runEdgeRollAnchors)({ closing, opened, openedEpoch });
+    const landed = await direct(runEdgeRollAnchors)({ face: 0, closing, opened, openedEpoch });
     expect(landed.map((a) => [a.realm, a.parents])).toEqual([[REALM, []]]);   // a holder's act strands nothing: no parents
     roll();
     expect((await ringRealm()).frontier).toMatchObject({ status: "known" });   // the head stands under the new epoch with no further act
+  });
+});
+
+describe("two faces open and none named: no door picks a face", () => {
+  const REALM2 = "b".repeat(64);
+  it("RED — vouch, join and cabal face refuse face-not-named; CONTROL: each acts once the face is named", async () => {
+    await seatCharter();                                                    // faces 0, 1, 2, 4, 5, 6 stand open
+    const joiner = await nymOf(12);
+    await expect(direct(runCabalVouch)({ joiner, realm: REALM })).rejects.toBeInstanceOf(FaceNotNamed);
+    await expect(direct(runCabalJoin)({ realm: REALM, applicant: joiner })).rejects.toBeInstanceOf(FaceNotNamed);
+    await expect(direct(runCabalFace)({ realm: REALM, present: true })).rejects.toBeInstanceOf(FaceNotNamed);
+    await direct(runCabalVouch)({ face: 0, joiner, realm: REALM });
+    expect((await direct(runCabalJoin)({ face: 0, realm: REALM, applicant: joiner })).admitted).toBe(true);
+    expect((await direct(runCabalFace)({ face: 0, realm: REALM, present: false })).realm).toBe(REALM);
+  });
+
+  it("RED — the roll anchor refuses face-not-named and writes nothing; named, it anchors that face's realms alone and names another face's realm unanchored", async () => {
+    const { opened, openedEpoch } = await seatCharter();
+    const closing = foundingRoster(readNexusDoc(larSealHome()));
+    await direct(runCabalVouch)({ face: 0, joiner: await nymOf(13), realm: REALM });
+    await direct(runCabalVouch)({ face: 1, joiner: await nymOf(14), realm: REALM2 });
+    await expect(direct(runEdgeRollAnchors)({ closing, opened, openedEpoch })).rejects.toBeInstanceOf(FaceNotNamed);
+    expect((await edgeBoard()).anchors).toEqual([]);                        // the refusal wrote no board
+    const result = await direct(runEdgeRollAnchors)({ face: 0, closing, opened, openedEpoch });
+    expect(result.map((r) => [r.state, r.realm])).toEqual([["landed", REALM], ["unanchored", REALM2]]);
+    expect(result[1]).toMatchObject({ state: "unanchored", realm: REALM2, face: 1 });
+    expect((await edgeBoard()).anchors).toHaveLength(1);                    // CONTROL: the named face's realm took its anchor
+    const other = await ownedStore(larDataDir(), async (repo) => {
+      const board = (await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM2), "board:edge-kapae")).doc();
+      const ledger = (await materializeSharedLarDoc(repo, edgeLedgerDocUrl(await actingAtomKey(1)), "ledger:edge")).doc();
+      return { anchors: edgeRollAnchorsFromBoard(board), kept: keptFromLedger(ledger, REALM2).anchors };
+    });
+    expect(other).toEqual({ anchors: [], kept: [] });                       // the face that did not act keeps its ledger as it stood
   });
 });

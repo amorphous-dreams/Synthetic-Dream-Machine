@@ -225,7 +225,7 @@ describe("a realm stands under one Nexus", () => {
     const { foundingRoster } = await import("@lararium/mesh");
     const closing = foundingRoster(primary.doc);
     const opened = await rolling.roll((await seatChairs([0], { generation: 1 })).hands);
-    const anchored = await direct(runEdgeRollAnchors)({ closing, opened: opened.roster, openedEpoch: opened.head });
+    const anchored = await direct(runEdgeRollAnchors)({ face: F, closing, opened: opened.roster, openedEpoch: opened.head });
     expect(anchored.map((a) => a.realm)).toEqual([OTHER_REALM]);
   });
 

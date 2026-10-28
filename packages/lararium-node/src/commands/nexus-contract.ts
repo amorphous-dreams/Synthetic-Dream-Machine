@@ -67,6 +67,7 @@ import { hearthSovereignPin } from "../hearth-sovereign-pin.js";
 
 import { personaRootExists, loadVesselVerifyingKey, vesselPlaceSignerDoor, loadPlaceKelChain } from "../node-vessel-identity.js";
 import { loadFaceAtomKey } from "../face-atom-store.js";
+import { FaceNotNamed } from "../face-selector.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 import { heldNexusLeaves, mintNexusLeaf } from "../nexus-leaf.js";
@@ -847,8 +848,11 @@ interface EdgeRollView {
   readonly anchors: readonly EdgeRollAnchor[];
 }
 
-/** The acting face's atom key names that face's own edge ledger (no board address); empty where the face holds none. */
-const edgeLedgerKey = (): Promise<string> => loadFaceAtomKey().catch(() => "");
+/**
+ * The acting face's atom key names that face's own edge ledger (no board address); empty where the face holds none.
+ * Several faces open with none named refuse `FaceNotNamed` by name, never as a face that holds no key.
+ */
+const edgeLedgerKey = (): Promise<string> => loadFaceAtomKey().catch((e: unknown) => { if (e instanceof FaceNotNamed) throw e; return ""; });
 
 async function edgeVesselKeyOrRefuse(): Promise<string> {
   const key = await edgeLedgerKey();
