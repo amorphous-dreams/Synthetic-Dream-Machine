@@ -86,6 +86,7 @@ export const heavy = [
   "tests/intent-relay.test.ts",
   "tests/intent-relay-door.test.ts",
   "tests/intent-relay-admission.test.ts",
+  "tests/intent-relay-storm.test.ts",
   "tests/http-face-integration.test.ts",
   "tests/pronaos-adapter.test.ts",
   "tests/pronaos-composition.test.ts",
