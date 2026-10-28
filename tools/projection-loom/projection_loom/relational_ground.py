@@ -248,6 +248,9 @@ class RelationalGround:
             if event_id != _digest({"parents": event["parents"], "operation": event["operation"]}):
                 raise ValueError("Causal event digest mismatch")
             _check_operation(event["operation"])
+            prestate = {"entities": entities, "relations": links}
+            if event.get("touched") != sorted(self._touches(event["operation"], prestate)):
+                raise ValueError("Causal dependency scope was tampered with")
             _apply_one(entities, links, event["operation"])
         return {"entities": entities, "relations": sorted(links, key=lambda x:
                 (x["parent"], x["child"], x["verb"])), "frontier": list(self.frontier)}

@@ -4,8 +4,8 @@ import pytest
 from projection_loom.relational_ground import RelationalGround, IDENTITY
 
 
-def op(kind, target, frontier=(), **kw):
-    return {"kind": kind, "target": target, "frontier": list(frontier),
+def op(action, target, frontier=(), **kw):
+    return {"kind": action, "target": target, "frontier": list(frontier),
             "actor": "operator", "payload": kw}
 
 
