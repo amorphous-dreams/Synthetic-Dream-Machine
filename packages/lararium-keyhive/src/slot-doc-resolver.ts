@@ -14,9 +14,10 @@
  *              registry (`wikiDraftDocKey`: `wikis/{slug}/drafts/{did}`, `face-reach: vessel-only`).
  *   working  — seated, the face's DERIVED address (`resolveFaceWorkingSlot` under its address secret, by wiki slug and
  *              kind), materialized as the pinned blank genesis and registered through the face door: two vessels of
- *              one face find one document with no record between them. At the floor, a document keyed by the PLACE's
- *              own identity, its W29 place KEL prefix, in the catalog (`wikiWorkingFloorKey`, `face-reach:
- *              vessel-only`); the anon-veil lift carries it under the face's address at the join. No read mints a
+ *              one face find one document with no record between them. At the floor, a document keyed by the
+ *              floor's own anchor in the catalog (`wikiWorkingFloorKey`, `face-reach: vessel-only`): a node's place
+ *              (its W29 place KEL prefix), a browser leaf's private Nexus of one; the anon-veil lift carries it under
+ *              the face's address at the join. A vessel that holds neither refuses `no-place`. No read mints a
  *              secret: a seated face whose secret stands nowhere refuses `no-address-secret` (it re-founds).
  *   personal — the PersonaGroup × fingerprint binding when seated, the vessel's own when not
  *
@@ -29,7 +30,7 @@ import {
   DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX,
   computeRecipeFingerprint, emptyLarDoc, storedLarRecord, resolveSlotDoc, resolveFaceWorkingSlot, tiddlerText,
   wikiBagUri, wikiDraftDocKey, wikiWorkingFloorKey, requireLarDid,
-  type CompositeStore, type LarDoc, type SlotReach, type WikiSlotKind,
+  type CompositeStore, type WorkingFloorAnchor, type LarDoc, type SlotReach, type WikiSlotKind,
 } from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { CapabilityProvider } from "./capability-provider.js";
@@ -65,8 +66,8 @@ export interface SlotDocResolverArgs {
    * what it reads). Null or absent with a face seated refuses the working slot `no-address-secret`: no read mints one.
    */
   readonly faceAddressSecret?: () => Promise<Uint8Array | null>;
-  /** The place's own identity, its W29 place KEL prefix: the floor's working documents rest keyed by it. */
-  readonly placeAid?: () => string | null | Promise<string | null>;
+  /** The floor's own anchor, read from the vessel (`WorkingFloorAnchor`): the floor's working documents rest keyed by it. */
+  readonly floorAnchor?: () => WorkingFloorAnchor | null | Promise<WorkingFloorAnchor | null>;
   /** Find or materialize the face's working document under its derived address, and rest it. */
   readonly faceWorkingDoc?: (url: string, label: string) => Promise<FaceWorkingHandle>;
 }
@@ -190,13 +191,13 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     }
     return { url, reach: "face" };
   };
-  /** The working FLOOR doc: keyed by the place's own identity in the catalog registry; minted on absent. */
+  /** The working FLOOR doc: keyed by the floor's own anchor in the catalog registry; minted on absent. */
   const workingFloor = async (slug: string, mint: boolean): Promise<string | null> => {
     const catalog = args.catalog;
     if (!catalog) throw new Error(`slot-doc: the working floor for "${slug}" needs the catalog registry, and this vessel holds no catalog grant`);
-    const place = await args.placeAid?.();
-    if (!place) throw new WorkingSlotRefusal("no-place", `the working floor for "${slug}" rests by the place's KEL prefix, and this vessel names none`);
-    const key = wikiWorkingFloorKey(slug, place);
+    const anchor = await args.floorAnchor?.();
+    if (!anchor) throw new WorkingSlotRefusal("no-place", `the working floor for "${slug}" rests by the floor's own anchor, and this vessel holds neither a place KEL nor a private Nexus key`);
+    const key = wikiWorkingFloorKey(slug, anchor);
     const existing = await catalog.urlOf(key);
     if (existing || !mint) return existing;
     const handle = args.repo.create<LarDoc>(emptyLarDoc());
@@ -279,10 +280,10 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
         repo: args.repo as unknown as LiftRepo, daemonStore: args.daemonStore, catalog: args.catalog, faceDoor: args.faceDoor,
         mintedByHex: args.mintedByHex(), vesselDid: String(await args.vesselDid()),
         ...(args.floorMinter ? { floor: args.floorMinter() } : {}),
-        // THE WORKING FLOOR LIFTS TO THE FACE'S DERIVED ADDRESS: by the place's own key, into the document the face's
+        // THE WORKING FLOOR LIFTS TO THE FACE'S DERIVED ADDRESS: by the floor's own anchor, into the document the face's
         // secret names for each wiki.
         working: {
-          place: (await args.placeAid?.()) ?? null,
+          anchor: (await args.floorAnchor?.()) ?? null,
           urlOf: faceWorkingUrl,
           ...(args.faceWorkingDoc ? { open: args.faceWorkingDoc } : {}),
         },

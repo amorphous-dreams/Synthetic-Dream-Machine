@@ -100,13 +100,25 @@ export function wikiDraftDocKey(slug: string, placeDid: LarDid): SlotUri {
   return `${wikiUri(slug)}/drafts/${encodeURIComponent(requireLarDid(placeDid, "wikiDraftDocKey"))}`;
 }
 
-/** The catalog registry key of a wiki's working FLOOR doc (`wikis/{slug}/working-floor/{place}`): the working layer a
- *  vessel writes while no face stands seated, keyed by the PLACE's own identity, its W29 place KEL prefix, never a
- *  vessel DID or a path. The anon-veil lift carries it under the face's derived address at the join, and the key then
- *  names nothing. */
-export function wikiWorkingFloorKey(slug: string, placeAid: string): SlotUri {
-  if (typeof placeAid !== "string" || placeAid.length === 0) throw new Error("wikiWorkingFloorKey: the place names no KEL prefix");
-  return `${wikiUri(slug)}/working-floor/${encodeURIComponent(placeAid)}`;
+/** THE FLOOR'S OWN ANCHOR, read from the vessel and never inferred: on a node its place, the W29 place KEL prefix; on a
+ *  browser leaf, which holds no place KEL, the private Nexus of one it stands as at the floor, the key it resolves its
+ *  shared planes under. A vessel that holds neither names no floor anchor. */
+export type WorkingFloorAnchor =
+  | { readonly kind: "place"; readonly aid: string }
+  | { readonly kind: "private-nexus"; readonly key: string };
+
+/** The path a floor anchor names under a working floor: `place/{aid}` or `private-nexus/{key}`, so the two never collide. */
+export function floorAnchorSegment(anchor: WorkingFloorAnchor): string {
+  const id = anchor.kind === "place" ? anchor.aid : anchor.key;
+  if (typeof id !== "string" || id.length === 0) throw new Error(`floorAnchorSegment: the ${anchor.kind} anchor names nothing`);
+  return `${anchor.kind}/${encodeURIComponent(id)}`;
+}
+
+/** The catalog registry key of a wiki's working FLOOR doc (`wikis/{slug}/working-floor/{kind}/{anchor}`): the working
+ *  layer a vessel writes while no face stands seated, keyed by the floor's own anchor (`WorkingFloorAnchor`), never a vessel DID
+ *  or a path. The anon-veil lift carries it under the face's derived address at the join, and the key then names nothing. */
+export function wikiWorkingFloorKey(slug: string, anchor: WorkingFloorAnchor): SlotUri {
+  return `${wikiUri(slug)}/working-floor/${floorAnchorSegment(anchor)}`;
 }
 
 /** Who reaches a slot's doc — the `face-reach` field every binding record carries: `face` when the

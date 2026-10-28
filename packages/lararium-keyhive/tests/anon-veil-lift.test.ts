@@ -28,7 +28,7 @@ import { identityShareDecision, makeIslandRepo, type DocumentId, type Repo } fro
 import {
   CompositeStore, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey,
   emptyLarDoc, mutableLarRecord, plainField, storedLarRecord, wikiBagUri, wikiDraftDocKey, wikiWorkingFloorKey,
-  faceWorkingDocUrl, materializeFaceWorkingDoc, type LarDoc, type LarTiddlerRecord,
+  faceWorkingDocUrl, materializeFaceWorkingDoc, type LarDoc, type LarTiddlerRecord, type WorkingFloorAnchor,
 } from "@lararium/mesh";
 import { MemoryTiddlerStore, makeCatalogAccessor } from "@lararium/tw5";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
@@ -39,7 +39,9 @@ const noopStore = { put: async () => {}, list: async () => [] };
 const VERIFYING_KEY = "ab".repeat(32);
 const DID = didFromVerifyingKey(VERIFYING_KEY);
 const MINTED_BY = "0x" + "a".repeat(64);
-const PLACE = "EplaceAnonLiftSynthetic";
+const PLACE = { kind: "place", aid: "EplaceAnonLiftSynthetic" } as const;
+/** A browser leaf's floor: no place KEL, the private Nexus of one it stands as (its own key). */
+const LEAF_NEXUS = { kind: "private-nexus", key: VERIFYING_KEY } as const;
 const SECRET = () => new Uint8Array(32).fill(5);
 
 interface Vessel { repo: Repo; daemon: CompositeStore; kh: KeyhiveProvider; catalogUrl: string; wikiUrl: string; fp: string }
@@ -60,12 +62,12 @@ async function vessel(): Promise<Vessel> {
 }
 
 /** A resolver over the vessel for one face (or none): the same repo, daemon bag and catalog every time. */
-function resolverFor(v: Vessel, face: { seated: () => boolean; door: FaceBagDoor; group: string } | null, repo: unknown = v.repo, mintedBy = MINTED_BY): SlotDocResolver {
+function resolverFor(v: Vessel, face: { seated: () => boolean; door: FaceBagDoor; group: string } | null, repo: unknown = v.repo, mintedBy = MINTED_BY, anchor: WorkingFloorAnchor = PLACE): SlotDocResolver {
   return makeSlotDocResolver({
     repo: repo as Repo, daemonStore: v.daemon, keyhive: v.kh,
     catalog: makeCatalogAccessor(v.repo, v.catalogUrl),
     vesselDid: () => DID, mintedByHex: () => mintedBy,
-    placeAid: () => PLACE, faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(v.repo, url as never, label),
+    floorAnchor: () => anchor, faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(v.repo, url as never, label),
     ...(face ? { personaGroupId: face.group, faceSeated: async () => face.seated(), faceDoor: face.door, faceAddressSecret: async () => SECRET() } : {}),
   });
 }
@@ -300,7 +302,7 @@ describe("the anon-veil lift on join", () => {
     joined.on = true;
     const secretless = makeSlotDocResolver({
       repo: v.repo as never, daemonStore: v.daemon, keyhive: v.kh, catalog, vesselDid: () => DID, mintedByHex: () => MINTED_BY,
-      placeAid: () => PLACE, faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(v.repo, url as never, label),
+      floorAnchor: () => PLACE, faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(v.repo, url as never, label),
       personaGroupId: a.face.group, faceSeated: async () => true, faceDoor: a.face.door, faceAddressSecret: async () => null,
     });
     await expect(secretless.liftFloor()).rejects.toMatchObject({ name: "WorkingSlotRefusal", reason: "no-address-secret" });
@@ -310,6 +312,24 @@ describe("the anon-veil lift on join", () => {
     expect(await catalog.urlOf(wikiWorkingFloorKey("garden", PLACE)), "the place's working key stands").toBe(workingUrl);
     expect(await opens(v, draftUrl)).toBe(true);
     expect(await opens(v, workingUrl)).toBe(true);
+  });
+
+  test("RED L11 — a browser leaf at the floor holds no place KEL: its working document rests by the private Nexus of one it stands as, and the join's lift carries it under the face", async () => {
+    const v = await vessel();
+    const joined = { on: false };
+    const a = await newFace(v, joined);
+    const resolver = resolverFor(v, a.face, v.repo, MINTED_BY, LEAF_NEXUS);
+    const catalog = makeCatalogAccessor(v.repo, v.catalogUrl);
+    const { workingUrl } = await resolver.bindings(v.fp, { wikiDocId: v.wikiUrl, libraryBagDocIds: [] }, "garden");
+    expect(await catalog.urlOf(wikiWorkingFloorKey("garden", LEAF_NEXUS)), "the leaf's floor working document rests by its own Nexus key").toBe(workingUrl);
+    await write(v, workingUrl, "Saved", "leaf floor");
+    joined.on = true;                                                             // the join
+    const lifted = await resolver.liftFloor();
+    expect(lifted.moved).toContain(wikiWorkingFloorKey("garden", LEAF_NEXUS));
+    const derived = faceWorkingDocUrl(SECRET(), "garden", "working");
+    expect(await textOf(v, derived, "Saved"), "the face's derived slot holds the leaf floor's content").toBe("leaf floor");
+    expect(await catalog.urlOf(wikiWorkingFloorKey("garden", LEAF_NEXUS)), "the leaf's key stands empty").toBeNull();
+    expect(await opens(v, workingUrl), "the floor document burned").toBe(false);
   });
 
   test("L7 CONTROL — a vessel with a face from its founding never writes the place's key", async () => {

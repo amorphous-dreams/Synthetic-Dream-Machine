@@ -1214,8 +1214,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         throw new Error("this face's atom differs from its device edge; re-found or re-admit it");
       }
       const wornAtomArchive = await loadBrowserVeilArchive(idbName, wornGroup);
-      // THE COMPOSE SITE'S WORKING SLOT: the worn face's address secret from its keystore row, and the place's own KEL prefix
-      // the floor keys its working documents by. The switch between faces stays owed (W4).
+      // THE COMPOSE SITE'S WORKING SLOT: the worn face's address secret from its keystore row, and the floor's own anchor its
+      // working documents key by, read from what this vessel holds: a place KEL where the leaf founded one, else the private
+      // Nexus of one it stands as at the floor (its own key, `nexusStandsAt.ownVesselKey`), which a join never moves. The
+      // switch between faces stays owed (W4).
       const wornAddressSecretBytes = await readBrowserFaceAddressSecret(idbName, wornGroup);
       const wornAddressSecret = wornAddressSecretBytes ? hex(wornAddressSecretBytes) : null;
       wornAddressSecretBytes?.fill(0);
@@ -1332,7 +1334,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // the boot and the seed leaves this closure with the manifest.
         atom: { seed: hex(wornAtomSeed), key: wornAtom.key },
         ...(wornAddressSecret ? { faceAddressSecret: wornAddressSecret } : {}),
-        ...(placeKel?.ok ? { placeAid: placeKel.aid } : {}),
+        workingFloorAnchor: placeKel?.ok
+          ? { kind: "place" as const, aid: placeKel.aid }
+          : { kind: "private-nexus" as const, key: nexusStandsAt.ownVesselKey },
         ...(wornAtomArchive ? { veilArchiveBytes: wornAtomArchive } : {}),
         personaGroupId: wornMount?.personaGroupId   ?? social.personaGroupId,
         faceAnchor,

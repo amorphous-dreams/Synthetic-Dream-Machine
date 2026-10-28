@@ -1892,8 +1892,8 @@ async function prepareNodeBootOn(
     if (sovereign && deviceEdge && !atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
     activeAtom = atomSeed && personaGroupId ? faceAtomKeyFromSeed(atomSeed, personaGroupId) : null;
     // THE WORKING SLOT'S TWO READINGS, from main-thread custody: the mounted face's address secret (minted at its
-    // founding; a face standing without one re-founds, and its working slot refuses by name) and the place's own KEL
-    // prefix, by which a faceless floor keys its working documents.
+    // founding; a face standing without one re-founds, and its working slot refuses by name) and the floor's own anchor, a
+    // node's place KEL prefix, by which a faceless floor keys its working documents.
     const addressSecretBytes = atomSeed && personaGroupId ? await readFaceAddressSecret(personaGroupId) : null;
     const faceAddressSecret = addressSecretBytes ? Buffer.from(addressSecretBytes).toString("hex") : null;
     addressSecretBytes?.fill(0);
@@ -2273,7 +2273,7 @@ async function prepareNodeBootOn(
     const faceLit = activeAtom !== null && atomSeed !== null;
     const daemonAuth = {
       placeVerifyingKey: vesselIdentity.verifyingKey,
-      ...(placeAid ? { placeAid } : {}),
+      ...(placeAid ? { workingFloorAnchor: { kind: "place" as const, aid: placeAid } } : {}),
       archiveOpens:         opens,
       ...(activeAtom && atomSeed ? { atom: { seed: Buffer.from(atomSeed).toString("hex"), key: activeAtom.key } } : {}),
       ...(veilArchiveBytes ? { veilArchiveBytes } : {}),

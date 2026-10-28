@@ -68,7 +68,7 @@ export async function standFoundedIsland(teardown: Array<() => void>, opts: { co
     ...veil,
     placeVerifyingKey: key,
     // The place's KEL prefix and the face's address secret, as the opener reads them from main-thread custody.
-    placeAid: "EplaceFoundedIslandSynthetic", faceAddressSecret: hex(seed(73)),
+    workingFloorAnchor: { kind: "place", aid: "EplaceFoundedIslandSynthetic" }, faceAddressSecret: hex(seed(73)),
     personaGroupId: cer.personaGroupId,
     meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
     personaKel: { prefix: cer.personaKelPrefix, chain }, deviceEdge: cer.founderEdge, archiveOpens: true,

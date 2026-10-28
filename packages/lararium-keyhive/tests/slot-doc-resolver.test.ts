@@ -19,7 +19,7 @@ import { makeIslandRepo, type Repo } from "@lararium/mesh";
 import {
   CompositeStore, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey, emptyLarDoc,
   mutableLarRecord, wikiBagUri, wikiDraftDocKey, wikiSlotUri, wikiWorkingFloorKey, faceWorkingDocUrl, materializeFaceWorkingDoc,
-  type LarDoc, type LarTiddlerRecord,
+  type LarDoc, type LarTiddlerRecord, type WorkingFloorAnchor,
 } from "@lararium/mesh";
 import { MemoryTiddlerStore, makeCatalogAccessor, makeInitWikiReactor, makePruneStaleReactor, makeMemePutReactor, type MemeVerbOptions } from "@lararium/tw5";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
@@ -30,10 +30,12 @@ const noopStore = { put: async () => {}, list: async () => [] };
 const VERIFYING_KEY = "ab".repeat(32);
 const DID = didFromVerifyingKey(VERIFYING_KEY);
 
-const PLACE = "EplaceSlotResolverSynthetic";
+const PLACE = { kind: "place", aid: "EplaceSlotResolverSynthetic" } as const;
+/** A browser leaf's floor: no place KEL, the private Nexus of one it stands as (its own key). */
+const LEAF_NEXUS = { kind: "private-nexus", key: VERIFYING_KEY } as const;
 const SECRET = () => new Uint8Array(32).fill(9);
 
-async function rig(opts: { seated: boolean; secret?: () => Promise<Uint8Array | null> }): Promise<{ resolver: SlotDocResolver; repo: Repo; catalogUrl: string; daemon: CompositeStore; kh: KeyhiveProvider; wikiUrl: string }> {
+async function rig(opts: { seated: boolean; secret?: () => Promise<Uint8Array | null>; anchor?: WorkingFloorAnchor | null }): Promise<{ resolver: SlotDocResolver; repo: Repo; catalogUrl: string; daemon: CompositeStore; kh: KeyhiveProvider; wikiUrl: string }> {
   const kh = new KeyhiveProvider();
   await kh.init({ seed: new Uint8Array(32).fill(3), eventStore: noopStore });
   const group = await kh.createGroup();
@@ -53,7 +55,7 @@ async function rig(opts: { seated: boolean; secret?: () => Promise<Uint8Array | 
     faceSeated: async () => opts.seated,
     faceDoor: makeFaceBagDoor({ face: kh, groupId: group.groupId }),
     faceAddressSecret: opts.secret ?? (async () => SECRET()),
-    placeAid: () => PLACE,
+    floorAnchor: () => (opts.anchor === undefined ? PLACE : opts.anchor),
     faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(repo, url as never, label),
   });
   return { resolver, repo, catalogUrl: catalogHandle.url, daemon, kh, wikiUrl: wikiHandle.url };
@@ -102,6 +104,19 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
     const working = await r.resolver.slotDoc("garden", "working");
     expect(await catalog.urlOf(wikiWorkingFloorKey("garden", PLACE)), "the working floor rests by the place's KEL prefix").toBe(working?.url);
     await r.kh.dispose(); await r.repo.shutdown();
+  });
+
+  test("RED S6 — a browser leaf at the floor holds no place KEL: its working floor rests by the private Nexus of one it stands as; a vessel that holds neither refuses no-place by name", async () => {
+    const leaf = await rig({ seated: false, anchor: LEAF_NEXUS });
+    const working = await leaf.resolver.slotDoc("garden", "working");
+    expect(working?.reach).toBe("vessel-only");
+    const catalog = makeCatalogAccessor(leaf.repo, leaf.catalogUrl);
+    expect(await catalog.urlOf(wikiWorkingFloorKey("garden", LEAF_NEXUS)), "the leaf's working floor rests by its own Nexus key").toBe(working?.url);
+    expect(wikiWorkingFloorKey("garden", LEAF_NEXUS), "a Nexus key and a place prefix never name one key").not.toBe(wikiWorkingFloorKey("garden", { kind: "place", aid: VERIFYING_KEY }));
+    await leaf.kh.dispose(); await leaf.repo.shutdown();
+    const neither = await rig({ seated: false, anchor: null });
+    await expect(neither.resolver.slotDoc("garden", "working")).rejects.toMatchObject({ name: "WorkingSlotRefusal", reason: "no-place" });
+    await neither.kh.dispose(); await neither.repo.shutdown();
   });
 
   test("RED S5 — seated, working is the face's derived address: no record names it, a second resolver finds the same, and a face with no secret refuses no-address-secret", async () => {

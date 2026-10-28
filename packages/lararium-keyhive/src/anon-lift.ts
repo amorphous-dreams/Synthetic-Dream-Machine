@@ -12,14 +12,14 @@
  * ── THE SET IS DERIVED, NEVER LISTED ────────────────────────────────────────────────────────────
  * Every record this vessel minted at the floor and has not yet moved: daemon-bag binding records reading `vessel-only` (personal
  * and draft kinds alike), the catalog's floor draft records keyed by this vessel's DID, and the catalog's floor WORKING
- * records keyed by the place's own identity (its W29 place KEL prefix). Another vessel's records never match (`minted-by`),
+ * records keyed by the floor's own anchor (a node's W29 place KEL prefix, a browser leaf's private Nexus of one). Another vessel's records never match (`minted-by`),
  * and a record that already reads `face` never matches.
  *
  * ── THE WORKING FLOOR GOES TO THE FACE'S DERIVED ADDRESS ────────────────────────────────────────
  * A face's working document has no record: its address derives from the face's secret and the wiki's slug. The lift carries
  * each floor working document's tiddlers into the face's document for that wiki (additively: a title the face's document
- * holds stays), rests it, marks the place's key `lifted-from`, burns the floor document, and takes the key out of the catalog
- * last. The place's key then names nothing. A stop before the mark runs again whole, its carry adding nothing twice; a stop
+ * holds stays), rests it, marks the anchor's key `lifted-from`, burns the floor document, and takes the key out of the catalog
+ * last. The anchor's key then names nothing. A stop before the mark runs again whole, its carry adding nothing twice; a stop
  * after the mark finds the marked key on the next pass, which burns the floor document and removes the key, carrying nothing.
  *
  * ── THE SECRET STANDS FIRST ─────────────────────────────────────────────────────────────────────
@@ -34,7 +34,7 @@
 import {
   DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, canonicalJson, emptyLarDoc,
   mutableLarRecord, tiddlerText, sha256HexBytesSync, utf8Bytes, wikiDraftDocKey, requireLarDid, plainEntries, storedRecord, storedLarRecord,
-  type ChangeOrigin, type CompositeStore, type LarDoc,
+  floorAnchorSegment, type WorkingFloorAnchor, type ChangeOrigin, type CompositeStore, type LarDoc,
 } from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { FaceBagDoor } from "./face-bag-door.js";
@@ -57,9 +57,9 @@ export interface LiftArgs {
   /** The labels a faceless floor gave its documents (the public place key and its DID): a lit face lifts those too. */
   readonly floor?: { readonly mintedByHex: string; readonly vesselDid: string };
   /** The binding slot a wiki's draft floor belongs to: its fingerprint and trace, or null where the wiki is unregistered. */
-  /** The working floor: the place's KEL prefix it rests by, the face's derived address for a slug, and its door. */
+  /** The working floor: the floor's own anchor it rests by, the face's derived address for a slug, and its door. */
   readonly working?: {
-    readonly place: string | null;
+    readonly anchor: WorkingFloorAnchor | null;
     readonly urlOf: (slug: string) => Promise<string>;
     readonly open?: (url: string, label: string) => Promise<{ readonly documentId: string; change(fn: (doc: LarDoc) => void): void }>;
   };
@@ -212,10 +212,10 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
       }, `floor-done-${slug.slice(0, 12)}`);
       moved.push(floorKey);
     }
-    // 4 — the catalog's floor working documents, keyed by the place's own identity.
+    // 4 — the catalog's floor working documents, keyed by the floor's own anchor.
     const working = args.working;
-    if (working?.place && working.open) {
-      const mark = `/working-floor/${encodeURIComponent(working.place)}`;
+    if (working?.anchor && working.open) {
+      const mark = `/working-floor/${floorAnchorSegment(working.anchor)}`;
       for (const [floorKey, rec] of plainEntries(handle.doc()?.tiddlers)) {
         if (!floorKey.endsWith(mark)) continue;
         const fields = textFieldsOf(rec.tiddler as Record<string, unknown>);

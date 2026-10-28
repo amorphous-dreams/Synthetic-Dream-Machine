@@ -298,9 +298,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       faceSeated: async () => faceSeat ? faceSeat.seated() : !!(kh && daemonAuth.personaGroupId && await kh.knowsAgent(daemonAuth.personaGroupId)),
       seatSettled: async () => { await faceSeat?.settled(); },
       // THE WORKING SLOT'S PORTS: the mounted face's address secret the manifest carried from main-thread custody (a
-      // fresh copy per read, which the resolver zero-fills), the place's own KEL prefix, and the derived document's door.
+      // fresh copy per read, which the resolver zero-fills), the floor's own anchor, and the derived document's door.
       faceAddressSecret: async () => daemonAuth.faceAddressSecret ? meshHexToBytes(daemonAuth.faceAddressSecret) : null,
-      placeAid: () => daemonAuth.placeAid ?? null,
+      floorAnchor: () => daemonAuth.workingFloorAnchor ?? null,
       faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(ctx.repo, url as AutomergeUrl, label),
     });
     return slotDocs;
