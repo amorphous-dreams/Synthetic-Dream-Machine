@@ -93,7 +93,7 @@ The face supplier and the signer stand behind `UdsSessionDoor.open({ faceRef, ha
 * ''The roll's edge never halves it'' (read F H1). `seal rotate` proves the acting face's session opens before any card reads (`proveFaceSession`), so a named face that cannot open one refuses the whole roll by the vessel's name with nothing written. The realm edge anchors run after the charter lands and the closing keys retire, and a retire that faults never halves the roll: the edge step and the emit still run, and `retireFault` names it (read G L2); a face that locked after the preflight leaves them `owed` by that refusal's name, and `seal anchor --edge --face N --out <partial>` opens them. The cards' seeds zero and the arming's mints retire on every path where the charter never moved. `seal anchor --from <carriage partial>` proves the reporting face's session before the carriage lands, and a face that locks after it costs the edge report alone.
 * ''A provisional face opens a session'' (read F M4, measured on a real vessel, `face-bundle-restore` R15): a restored face standing provisional and a face the vessel founded each open a session at the place through the production door and mint an atom-certified signer, so `persona.confirm` and `persona.guardian.enrol` ride `session:act`.
 * ''The hand profile gates no face row or act ~ OWED'' to the hands room's profile lane (read E M3). `session:call` and `session:act` check the face and the anchor, never the hand: a `watcher` or `tab` session runs a face row, or `host.roll`, as its face. That lane's profile-verb table closes it; its red: a watcher's session that calls a face row or `host.roll` refuses by its profile, and a seat's session runs it (the control).
-* ''The next lane: a Keyhive provider per joined face'' (operator ruling, 2026-10-27). The daemon routes each session to its face's own provider. Its ground: K15 boots one provider at the daemon, seated for the one selected face, so a second face's session presents an atom that provider does not hold. It takes its own road row and build pair.
+* ''A Keyhive provider per joined face ~ BUILT in K19'' (operator ruling, 2026-10-27; <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k19-hive-lane">>). The daemon holds one provider per unlocked joined face and routes each session's verify by its face's atom, so a second face's session reads as that face and never as a stranger; a sibling's lock and unlock ride `daemon:face-drop` and `daemon:face-lit`.
 
 <<~/ahu>>
 
@@ -106,6 +106,6 @@ The face supplier and the signer stand behind `UdsSessionDoor.open({ faceRef, ha
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Aums5GYA0JY_BIBPWneHZz35dgevtfvJRMp41PinA6M
+<<^ code="&#x0003;">>ni:///sha-256;XNwei_xXT1SIQZZlyHxqXNViU53a9AhHmrH0R2M46-8
 
 <<^ code="&#x0004;" -> to="?">>
