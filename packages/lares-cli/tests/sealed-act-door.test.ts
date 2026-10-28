@@ -49,6 +49,11 @@
  *       one face's book, so each rides `session:act` on a session of the face it names, and the custody door's own
  *       act frame refuses either `face-act-rides-a-session`.
  *                                 control: the book a load answers is the book the save sends back
+ *   D13 RED: EVERY ACT THAT SIGNS, OPENS OR WRITES AS A FACE RIDES A SESSION OF THAT FACE. The acts that name their face
+ *       by `handleIndex` (a crossing's hand and witness, the carriage consent, the first guardians, a restored face's
+ *       confirm, the fleet mirror's carry and clear) ride `session:act` on a session of the face they name, carrying
+ *       `handleIndex` alone; the custody door's own act frame refuses each.
+ *                                 control: an act of the place (`petname.set`) keeps the custody door's frame
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -295,20 +300,22 @@ describe("a command beside a standing vessel", () => {
     await makeFleetDeclarationStore(sealedDeclarationStore()).set(0, { handle: HANDLE, seat: true, chair: "a private chair" });
     await makeFleetPetnameStore(sealedPetnameStore()).clear(0);
     expect(await readFleetSelves()).toEqual({ reached: true, selves: [], rest: "clear" });
-    const frames = vessel.frames as Array<Record<string, unknown>>;
-    // RED: nothing rode a verb. Every frame names `op: "act"`, and none carries a verb, a requester or a request id.
-    for (const frame of frames) {
-      expect(frame["op"]).toBe("act");
-      expect(Object.keys(frame).sort()).toEqual(["act", "args", "op"]);
-    }
+    const all = vessel.frames as Array<Record<string, unknown>>;
+    // RED: nothing rode a verb. Every frame is a session's open or close, or an act: none names a verb or a requester.
+    for (const frame of all) expect(["act", "session:act", "session:open", "session:close"]).toContain(frame["op"]);
+    expect(all.some((f) => "verb" in f)).toBe(false);
+    const frames = actFrames(all);
+    for (const frame of frames.filter((f) => f["op"] === "act")) expect(Object.keys(frame).sort()).toEqual(["act", "args", "op"]);
     expect(frames.map((f) => f["act"])).toEqual(["petname.set", "selves.carry", "declaration.set", "selves.carry", "petname.clear", "selves.clear", "selves.read"]);
+    // The place's sealed rows ride the custody door's frame; a carry or a clear acts as the face, on a session of it.
+    expect(frames.map((f) => f["op"])).toEqual(["act", "session:act", "act", "session:act", "act", "session:act", "act"]);
     const carries = frames.filter((f) => String(f["act"]).startsWith("selves."));
     expect(carries.map((f) => f["args"])).toEqual([{ handleIndex: 0, name: "petname" }, { handleIndex: 0, name: "handle" }, { handleIndex: 0, name: "petname" }, {}]);
     // A MOVE REPORTS WHAT THE PLANE DID: it landed, or the plane kept what it held (a fill over a standing name).
     expect(await carryOwnName(0, "petname")).toEqual({ landed: true });
     expect(await carryOwnName(0, "petname", { fill: true })).toEqual({ landed: false, kept: true });
     expect(await clearOwnName(0, "handle")).toEqual({ landed: true });
-    expect((vessel.frames as Array<Record<string, unknown>>).slice(-3).map((f) => f["args"])).toEqual([
+    expect(actFrames(vessel.frames).slice(-3).map((f) => f["args"])).toEqual([
       { handleIndex: 0, name: "petname" }, { handleIndex: 0, name: "petname", fill: true }, { handleIndex: 0, name: "handle" },
     ]);
     for (const text of [PETNAME, HANDLE, "a private chair"]) expect(JSON.stringify(carries).includes(text)).toBe(false);
@@ -503,6 +510,31 @@ describe("a command beside a standing vessel", () => {
     for (const act of ["handle-book.load", "handle-book.save"]) {
       expect(await sendCustodyFrame({ op: "act", act, args: { face: 1 } }))
         .toMatchObject({ op: "act", status: "error", refusal: { reason: "face-act-rides-a-session" } });
+    }
+    expect(vessel.acts.length).toBe(ran);
+    await vessel.down();
+  });
+
+  test("D13 — every act that signs, opens or writes as a face rides a session of the face it names, and only those", async () => {
+    await stage();
+    const FACE_ACTS: Record<string, Record<string, unknown>> = {
+      "crossing.sign": { handleIndex: 1 }, "crossing.witness": { handleIndex: 1, note: "seen" },
+      "carriage.accept": { handleIndex: 1 }, "persona.guardian.enrol": { handleIndex: 1, offers: "a b", threshold: 1 },
+      "persona.confirm": { handleIndex: 1, view: "v" }, "selves.carry": { handleIndex: 1, name: "petname" },
+      "selves.clear": { handleIndex: 1, name: "petname" },
+    };
+    for (const act of Object.keys(FACE_ACTS)) expect(SESSION_ACTS.has(act), act).toBe(true);
+    const vessel = await standVessel({ unlocked: true, table: () => ({}) });
+    for (const [act, args] of Object.entries(FACE_ACTS)) await sealedActVia(act as never, args);
+    await sealedActVia("petname.set", { handleIndex: 1, petname: "home" });
+    const frames = actFrames(vessel.frames);
+    expect(frames.map((f) => [f["op"], f["act"]])).toEqual([...Object.keys(FACE_ACTS).map((a) => ["session:act", a]), ["act", "petname.set"]]);
+    expect(frames.slice(0, -1).map((f) => f["args"])).toEqual(Object.values(FACE_ACTS));      // handleIndex alone names the face
+    expect(vessel.sessions).toEqual(Object.keys(FACE_ACTS).map(() => "h1"));
+    // RED: the custody door's own act frame refuses each; nothing ran.
+    const ran = vessel.acts.length;
+    for (const [act, args] of Object.entries(FACE_ACTS)) {
+      expect(await sendCustodyFrame({ op: "act", act, args }), act).toMatchObject({ op: "act", status: "error", refusal: { reason: "face-act-rides-a-session" } });
     }
     expect(vessel.acts.length).toBe(ran);
     await vessel.down();

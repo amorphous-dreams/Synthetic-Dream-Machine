@@ -340,6 +340,26 @@ async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
 }
 
 /**
+ * THE ACTS THAT ACT AS A FACE: each signs, reads or writes as one face (its key or root, its handle book, its own
+ * plane), so on a running vessel each rides a session of that face (`session:act`) and its receipt binds to the face;
+ * the custody door's own `act` frame refuses them `face-act-rides-a-session`. Every other act stays at the custody
+ * door, acting as the place under a human unlock (hands-spine-lane#/the-face-acts names each and why):
+ * `face.resolve` chooses the face and cannot ride the session it chooses; the seat, seal, cofound and roll-circle
+ * acts are the charter's seats; petname.* and declaration.* write the place's sealed rows naming its faces (the face's
+ * plane takes a name only by `selves.carry`); the persona reads (`roots`, `guardian.show`, `provisional`, `head`,
+ * `view`) and `selves.read`, `walk.state`, `host.state`, `carriage.readings` and `crossing.state` read and sign
+ * nothing; crossing.open/bind/seal are the charter's rite; `walk.invite` and `host.invite` hand the place's wallet;
+ * and `bundle.restore`/`bundle.import` land a face anew as recovery.
+ */
+export const SESSION_ACTS: ReadonlySet<string> = new Set([
+  // Sign under the face's key or root: its Nexus credential, its walk record, its hosting epoch, its hand and witness in
+  // a crossing, its consent to a Nexus's carriage, its first guardians, and its confirm of its own restored standing.
+  "persona.reissue", "walk.take", "host.roll", "crossing.sign", "crossing.witness", "carriage.accept", "persona.guardian.enrol", "persona.confirm",
+  // Read or write what the face alone keeps: its handle book, and its names on its own persona plane.
+  "handle-book.load", "handle-book.save", "selves.carry", "selves.clear",
+]);
+
+/**
  * THE TABLE. Each row: the arguments it takes, and the act. A row answers what its command prints.
  *
  *   persona.roots         the roster: each held handle-index with its root's public key, and the orphans
@@ -398,13 +418,6 @@ async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
  *                         face, hands the section to its daemon island's import door. A command running the act in
  *                         its own process holds no island, and refuses by name
  */
-/**
- * THE ACTS THAT ACT AS A FACE: each signs, reads or writes as one face (its key, or its handle book), so on a running vessel each rides a session of
- * that face (`session:act`) and its receipt binds to the face; the custody door's own `act` frame refuses them
- * `face-act-rides-a-session`. `face.resolve` stays at the custody door: it reads which face a command acts as and signs
- * nothing, and cannot ride the session it chooses. Every other act acts as the place under a human unlock.
- */
-export const SESSION_ACTS: ReadonlySet<string> = new Set(["persona.reissue", "walk.take", "host.roll", "handle-book.load", "handle-book.save"]);
 
 export const SEALED_ACTS = Object.freeze({
   "persona.roots": act({}, async () => {

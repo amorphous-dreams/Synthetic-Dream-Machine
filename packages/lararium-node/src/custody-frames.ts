@@ -160,10 +160,6 @@ function slotsOf(v: unknown): readonly SlotSpec[] | null {
 }
 
 /**
- * The custody door's handler, in the shape the socket front's `onFrame` takes: `true` when the frame was a
- * custody frame (answered here, never seen by a verb seat), `false` for every other frame.
- */
-/**
  * The custody door: the socket front's frame handler, and `act`, the door's one chain for an act that rides a session
  * (`session:act`, `SESSION_ACTS`): the act runs in turn with every unlock, lock and act, and answers as an `act` frame does.
  */
@@ -171,6 +167,10 @@ export type CustodyDoor = ((parsed: unknown, sock: Socket) => boolean) & {
   readonly act: (act: string, args: unknown) => Promise<CustodyAnswer>;
 };
 
+/**
+ * The custody door's handler, in the shape the socket front's `onFrame` takes: `true` when the frame was a
+ * custody frame (answered here, never seen by a verb seat), `false` for every other frame.
+ */
 export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
   const { holder } = deps;
   let chain: Promise<void> = Promise.resolve();

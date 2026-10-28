@@ -37,10 +37,6 @@ export function mintFaceAtomSeed(): Uint8Array {
   return edCurve.utils.randomSecretKey();
 }
 
-/**
- * The atom a seed stands for under a PersonaGroup label. The key is a function of the seed alone: the same seed
- * under two labels yields one key, so a label never separates keys and a shared input never makes two faces' atoms.
- */
 /** The atom's public key alone, from its seed: no closure keeps a copy of the seed past this call. */
 export function faceAtomPublicKey(seed: Uint8Array): string {
   if (seed.length !== 32) throw new Error("face-atom: a seed is 32 bytes");
@@ -55,6 +51,10 @@ export async function signAsFaceAtom(seed: Uint8Array, bytes: Uint8Array): Promi
   try { return hex(await ed25519.signAsync(bytes, own)); } finally { own.fill(0); }
 }
 
+/**
+ * The atom a seed stands for under a PersonaGroup label. The key is a function of the seed alone: the same seed
+ * under two labels yields one key, so a label never separates keys and a shared input never makes two faces' atoms.
+ */
 export function faceAtomKeyFromSeed(seed: Uint8Array, personaGroup: string): FaceAtomKey {
   if (seed.length !== 32) throw new Error("face-atom: a seed is 32 bytes");
   if (personaGroup.length === 0) throw new Error("face-atom: an atom names its PersonaGroup");

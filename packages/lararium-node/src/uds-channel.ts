@@ -1059,7 +1059,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
    */
   /**
    * `session:act`: one sealed act that acts as a face, run on the custody door's chain as the session's face. The act's
-   * `face` names the session's face or refuses `face-row-other-face`; naming none, it takes the session's. Its arguments
+   * `face` or `handleIndex` names the session's face or refuses `face-row-other-face`; naming none, it takes the
+   * session's as `face`. Its arguments
    * and its answer ride this socket alone, as a custody frame's do: the receipt it leaves names the act and the face
    * (its digest covers those two, never an argument), and no outcome body rests anywhere.
    */
@@ -1073,13 +1074,18 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (!opts.sessionActs) return sessionRefuse(sock, "no-session-acts", requestId);
     if (!opts.sessionActs.names.has(name)) return sessionRefuse(sock, "act-rides-the-custody-door", requestId);
     const args = given as Record<string, unknown>;
-    if (args["face"] !== undefined && args["face"] !== state.supply.ordinal) return sessionRefuse(sock, "face-row-other-face", requestId);
+    // An act names its face by `face` or by `handleIndex`; either naming another face refuses. An act that names none
+    // takes the session's face as `face`; one that names it keeps the key it named, and no other (an act takes only its keys).
+    for (const key of ["face", "handleIndex"] as const) {
+      if (args[key] !== undefined && args[key] !== state.supply.ordinal) return sessionRefuse(sock, "face-row-other-face", requestId);
+    }
+    const bound = args["handleIndex"] !== undefined ? args : { ...args, face: state.supply.ordinal };
     const scoped = faceScopedId(face, requestId);
     const action = `act:${name}`;
     const digest = await verbInputDigest({ verb: action, args: {}, face });
     const verdict = await ledger.arbitrate(scoped, digest, face, action);
     if (verdict.verdict === "refuse") return sessionRefuse(sock, verdict.reason, requestId);
-    const answer = await opts.sessionActs.run(name, { ...args, face: state.supply.ordinal });
+    const answer = await opts.sessionActs.run(name, bound);
     await ledger.observeOutcome(scoped, answer["status"] === "error" ? "error" : "done", digest, 0, face, action);
     sessionReply(sock, { kind: "session:act-result", requestId, answer });
   };

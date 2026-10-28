@@ -14,10 +14,10 @@
  * carries either. This module logs nothing it sends or receives.
  *
  * ── AN ACT THAT ACTS AS A FACE ──────────────────────────────────────────────────────────────────
- * `persona.reissue`, `walk.take` and `host.roll` sign or write under one face's key, and `handle-book.load` and
- * `handle-book.save` read and write one face's handle book (`SESSION_ACTS`), so on a running
- * vessel each rides a session of that face (`session:act`): the vessel binds the session's face to the act, and the
- * receipt it leaves names the act and the face alone, never an argument or the answer.
+ * The acts that sign, read or write as one face (`SESSION_ACTS`: its key or root, its handle book, its own plane),
+ * named by `face` or `handleIndex`, so on a running vessel each rides a session of that face (`session:act`): the
+ * vessel binds the session's face to the act, and the receipt it leaves names the act and the face alone, never an
+ * argument or the answer.
  *
  * ── WHAT A VESSEL'S ANSWER MEANS ────────────────────────────────────────────────────────────────
  *   · an `act` answer with a `result`       the act ran inside the vessel; the result returns to the caller.
@@ -83,7 +83,8 @@ function refusalOf(answer: Readonly<Record<string, unknown>>): Error {
  */
 async function actInSession(act: SealedActName, args: Readonly<Record<string, unknown>>): Promise<Record<string, unknown> | null> {
   if (!(await udsAlive())) return null;
-  const named = args["face"];
+  // An act names its face by `face` or by `handleIndex`; naming none, it acts as the face the vessel resolves.
+  const named = typeof args["handleIndex"] === "number" ? args["handleIndex"] : args["face"];
   const face = typeof named === "number" ? named : (await sealedAct<{ face: number }>("face.resolve", {})).face;
   let session: LocalSession;
   try { session = await openLocalSession({ faceRef: `h${face}`, hand: "cli" }); }
@@ -92,7 +93,7 @@ async function actInSession(act: SealedActName, args: Readonly<Record<string, un
     if (e instanceof SessionRefused) throw new SealedActRefused("act-refused", e.message);
     throw e;
   }
-  try { return await session.act(act, { ...args, face }); }
+  try { return await session.act(act, typeof args["handleIndex"] === "number" ? args : { ...args, face }); }
   catch (e) {
     if (e instanceof SessionRefused) throw new SealedActRefused("act-refused", e.message);
     throw e;

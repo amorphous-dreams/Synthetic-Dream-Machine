@@ -101,7 +101,7 @@ async function stand(label: string, opts: {
     logged.push(act);
   } };
   const ran: Array<{ act: string; args: Record<string, unknown> }> = [];
-  const sessionActs = { names: new Set(["host.roll"]), run: async (act: string, args: Record<string, unknown>) => {
+  const sessionActs = { names: new Set(["host.roll", "carriage.accept"]), run: async (act: string, args: Record<string, unknown>) => {
     ran.push({ act, args });
     return { op: "act", act, result: { epoch: "e".repeat(64) } };
   } };
@@ -384,6 +384,23 @@ describe("UDS session switch", () => {
       const fact = JSON.stringify(facts);
       expect(fact.includes("cap")).toBe(false);
       expect(fact.includes("eeee")).toBe(false);
+      // CONTROL: the same search reads red over a fact that carried the argument or the answer.
+      expect(JSON.stringify([{ ...facts[0]!.tiddler, args: { cap: 5 } }]).includes("cap")).toBe(true);
+      expect(JSON.stringify([{ ...facts[0]!.tiddler, answer: { epoch: "e".repeat(64) } }]).includes("eeee")).toBe(true);
+    } finally { await v.done(); }
+  });
+  test("RED: an act naming its face by handleIndex binds to the session's face: another face refuses face-row-other-face, and the act carries handleIndex alone", async () => {
+    const v = await stand("session-act-handle");
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));   // the face h0
+      const act = (requestId: string, args: Record<string, unknown>) => a.ask({ op: "session:act", ...envA, requestId, act: "carriage.accept", args });
+      expect(await act("other", { handleIndex: 1 })).toEqual({ kind: "session:refused", requestId: "other", refusal: "face-row-other-face" });
+      expect(await act("split", { handleIndex: 0, face: 1 })).toEqual({ kind: "session:refused", requestId: "split", refusal: "face-row-other-face" });
+      expect(v.ran).toEqual([]);
+      // CONTROL: naming the session's face, the act runs with the key it named and no other.
+      expect(await act("own", { handleIndex: 0, aid: "x" })).toMatchObject({ kind: "session:act-result", requestId: "own" });
+      expect(v.ran).toEqual([{ act: "carriage.accept", args: { handleIndex: 0, aid: "x" } }]);
     } finally { await v.done(); }
   });
   test("RED: a rotation of the place mid-session ends its session anchor-moved; a read of the place that fails once refuses that frame anchor-unread and the session stands", async () => {
