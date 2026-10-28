@@ -126,9 +126,10 @@ describe("the sealed-act table", () => {
     for (const [why, args] of foreign) expect(await reasonOf(sign(args)), why).toBe("act-refused");
     expect(await reasonOf(sign({ image: hex(roll), note: "what stood observed" }))).toBe("bad-args");   // the roll row takes no note
     expect(await reasonOf(runSealedAct("seal.sign", { seat: root.verifyingKey.toLowerCase(), image: hex(roll) }, ctx))).toBe("act-refused");   // a root holds no seat row
-    await runSealedAct("persona.wear", { handleIndex: 0 }, ctx);
-    expect((await runSealedAct("persona.roots", {}, ctx))["active"]).toBe(0);
-    await expect(runSealedAct("persona.wear", { handleIndex: 5 }, ctx)).rejects.toThrow();  // wearing needs a held root
+    // RED: wearing retired. A vessel wears no face between commands, so the act refuses by name and points at `--face N`.
+    const worn = await runSealedAct("persona.wear", { handleIndex: 0 }, ctx).catch((e: unknown) => e);
+    expect(worn).toMatchObject({ reason: "act-refused", message: expect.stringContaining("persona-wear-retired") });
+    expect((worn as Error).message).toContain("--face N");
   });
 
   test("T4 — no act hands out a seed", async () => {
@@ -142,7 +143,7 @@ describe("the sealed-act table", () => {
     await runSealedAct("declaration.set", { handleIndex: 0, declaration: { handle: "Synthetic", seat: true, chair: "first chair" } }, ctx);
     const answers: Record<string, unknown> = {};
     const calls: Array<[Parameters<typeof runSealedAct>[0], Record<string, unknown>]> = [
-      ["persona.roots", {}], ["persona.wear", { handleIndex: 0 }],
+      ["persona.roots", {}],
       ["crossing.state", {}],
       ["petname.entries", {}], ["declaration.entries", {}], ["handle-book.load", { face: 0 }],
     ];

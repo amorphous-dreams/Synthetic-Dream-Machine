@@ -447,19 +447,12 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
+/** WEARING RETIRED: a vessel wears no face between commands, so the verb refuses by name and points at `--face N`. */
 async function personaWear(args: ParsedArgs): Promise<number> {
-  const index = parseIndex(args.positional[1]);
-  // The custody wall lives in the core: wearing REQUIRES a held root — an unheld index throws there.
-  await sealedAct("persona.wear", { handleIndex: index });
-  emit(args, {
-    ok: true,
-    data: { active: index },
-    human: () => {
-      console.log(`now wearing persona h${index}.`);
-      console.log(`  reboot-to-switch: the live vessel presents one face per persona — restart the node to sign as it.`);
-    },
-  });
-  return 0;
+  const message = "a vessel wears no face between commands: name the face on the command itself (--face N); with one face standing open, a command resolves it alone.";
+  const failure = { code: "persona-wear-retired", message };
+  emit(args, { ok: false, error: failure, human: () => console.error(`lares persona wear: persona-wear-retired: ${message}`) });
+  return exitFor(failure.code);
 }
 
 async function personaList(args: ParsedArgs): Promise<number> {

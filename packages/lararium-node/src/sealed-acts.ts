@@ -45,7 +45,7 @@ import { abandonRollCircleAct, cardOf, fileRollCircleAct, joinRollCircleAct, ope
 import { NexusContractError, runNexusAcceptCarriage, runNexusRollPriorAnchorCheck } from "./commands/nexus-contract.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "./node-circle-store.js";
 import {
-  listPersonaRosterLines, loadActivePersonaIndex, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, orphanPersonaRoots, wearPersona,
+  listPersonaRosterLines, loadActivePersonaIndex, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, orphanPersonaRoots,
 } from "./node-vessel-identity.js";
 import type { Repo } from "@automerge/automerge-repo";
 import type { BackupDoor } from "./face-bundle-cut.js";
@@ -341,7 +341,7 @@ async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
  * THE TABLE. Each row: the arguments it takes, and the act. A row answers what its command prints.
  *
  *   persona.roots         the roster: each held handle-index with its root's public key, the worn index, the orphans
- *   persona.wear          wear the face at an index this vessel holds a root for
+ *   persona.wear          retired: refuses `persona-wear-retired`, naming `--face N`
  *   seat.held             which of the public keys asked this vessel holds a seat key for: a reading of row names
  *   seat.arm-genesis      give each chair that stands a seat key minted behind this door, and answer the roster;
  *                         the command mints each chair's next key as a card in its own process; it writes no charter
@@ -405,9 +405,9 @@ export const SEALED_ACTS = Object.freeze({
       orphans: await orphanPersonaRoots(),
     };
   }),
-  "persona.wear": act({ handleIndex: index }, async ({ handleIndex }) => {
-    await wearPersona(handleIndex);
-    return { active: handleIndex };
+  // WEARING RETIRED: a vessel wears no face between commands. The row refuses by name for one commit, then burns.
+  "persona.wear": act({ handleIndex: index }, async () => {
+    throw refuse("persona-wear-retired: a vessel wears no face between commands; name the face on the command itself (--face N)");
   }),
   // THE SEATS' OWN KEYS (`seal-ceremony`, `seat-key-store`). A chair's keys mint behind this door and never cross
   // it: the arming rows answer public halves, the roster to write and a digest, and the charter's own writer stays
