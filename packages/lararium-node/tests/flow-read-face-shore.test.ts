@@ -1,3 +1,4 @@
+import { placeSignerFromSeed } from "@lararium/mesh";
 /**
  * flow-read-face-shore — the read-face serves what its export shore projects and nothing else: the rows the
  * projection names, at their live values, as ONE change with no history. A vessel's private keys and the values they
@@ -64,7 +65,7 @@ async function pullFloor(mount: (args: Parameters<typeof mountFlowReadFace>[0]) 
   const logs: string[] = [];
   const rig = floorGates(["nexus-a.synthetic"], { posture: "open" });
   const face = await mount({
-    httpServer: server, oracleHandle: handle as DocHandle<unknown>, signerSeed: SEED, storageDir,
+    httpServer: server, oracleHandle: handle as DocHandle<unknown>, signer: placeSignerFromSeed(SEED), storageDir,
     gates: rig.gates, onLog: (l) => logs.push(l),
     exportSnapshot: undefined as never,
   });

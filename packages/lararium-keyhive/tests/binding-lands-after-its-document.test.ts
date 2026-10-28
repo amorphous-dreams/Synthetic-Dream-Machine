@@ -104,4 +104,18 @@ describe("binding lands after its document", () => {
     await resolveOrMintBinding({ ...ok.args, repo: restingMinter(ok.args.repo, async () => {}) });
     expect(ok.records.has(`${prefix}/${fingerprint}`)).toBe(true);
   });
+
+  test("V-floor — a faceless floor binds its document with no Keyhive and records no Keyhive document id", async () => {
+    const h = harness();
+    const { keyhive: _none, faceDoor: _door, personaGroupId: _group, faceSeated: _seated, ...floorArgs } = h.args;
+    await expect(resolveOrMintBinding(floorArgs)).resolves.toEqual({ url: "automerge:minted", minted: true });
+    expect(h.calls).toEqual(["create", "put(mint record)", "flush([doc-1])", "put(binding)"]);
+    const record = h.records.get(`${prefix}/${fingerprint}`)!;
+    expect(record.tiddler["face-reach"]).toBe("vessel-only");
+    expect(record.tiddler["keyhive-doc-id"]).toBeUndefined();
+    // CONTROL: the seated face registers its document and records the id.
+    const seated = harness();
+    await resolveOrMintBinding(seated.args);
+    expect(seated.records.get(`${prefix}/${fingerprint}`)!.tiddler["keyhive-doc-id"]).toBe("kh-1");
+  });
 });

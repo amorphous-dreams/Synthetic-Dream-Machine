@@ -1,3 +1,4 @@
+import { placeSignerFromSeed } from "@lararium/mesh";
 /**
  * flow-map-read-face — a Herm serves its FLOW-map to a proven peer over its floor-gated flow socket. The serve →
  * pull → verify round trip and the disclosure shore at the wire (only the coarse public projection crosses; the
@@ -31,7 +32,7 @@ describe("the FLOW-map read-face — a Herm serves the public projection, shore 
     // The gates survive the restart: a Herm's floor pin is its bundle's, not the process's.
     const rig = floorGates(["nexus-a.synthetic"], { posture: "open" });
     const mount = () => mountFlowReadFace({
-      httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, gates: rig.gates, exportSnapshot: (doc) => exportFlowSnapshot(doc as never),
+      httpServer: server, oracleHandle: handle, signer: placeSignerFromSeed(SEED), storageDir, gates: rig.gates, exportSnapshot: (doc) => exportFlowSnapshot(doc as never),
       ...(onLog ? { onLog } : {}),
     });
     let onLog: ((line: string) => void) | null = null;

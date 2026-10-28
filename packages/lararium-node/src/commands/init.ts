@@ -37,18 +37,18 @@ import { readNexusDoc, nexusCharterStands } from "../nexus-doc.js";
 import { admittedJoineeIsland } from "../nexus-standing.js";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import { listPersonaRoots } from "../node-vessel-identity.js";
-import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, loadIdentityArchive, persistIdentityArchive, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../identity-anchors.js";
+import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../identity-anchors.js";
+import { refuseLegacyPlaceBytes } from "../legacy-place-bytes.js";
 import { faceStandingCustody, openedCustody, seatCustody } from "../custody-seat.js";
 import { personaGroupDigest } from "../persona-group-file.js";
 import { ensureFaceCustodyOfAsk, settleFaceCustody } from "../face-route.js";
-import { ensurePlaceCard } from "../place-card.js";
 import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, sweepFoundingSeeds, type FoundingAtomAsk } from "../face-atom-store.js";
 import { keepFaceAnchorOfGroup, loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { makeCustodyHolder } from "../custody-holder.js";
 import { loadRecoveryDeviceShare } from "../recovery-share-store.js";
 import { provisionRecoveryAtFounding } from "../recovery-keel.js";
 import {
-  generateOrLoadVesselIdentity, loadVesselSigningSeed, persistVesselCard,
+  generateOrLoadVesselIdentity,
   generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed,
 } from "../node-vessel-identity.js";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
@@ -167,6 +167,7 @@ function readPackedTiddlers(path: string): PackedTiddlers {
 }
 
 export async function runInit(opts: InitOptions): Promise<InitResult> {
+  refuseLegacyPlaceBytes();
   const defaults   = defaultDirs();
   const storageDir = opts.storageDir ?? defaults.storageDir;
   const genesisDir = opts.genesisDir ?? defaults.genesisDir;
@@ -260,14 +261,11 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     // the root→joinee edge (the founder's PersonaGroup root signed it). The joinee writes that
     // binding into its OWN daemon doc and boots through its Binding Gate — no Beelay, no cap events.
     const payload = opts.admitPayload;
-    // A JOINEE FOUNDS NO PLACE, so its admit supplies the BINDING and this supplies the SELF: the place card, minted from this
-    // vessel's own seed, so no landing path reaches a place-arm presentation cardless or on another seed's card.
-    await ensurePlaceCard();
+    // The admit supplies the binding; the joinee's selected face atom supplies its own Keyhive card.
     if (payload.kind !== "device-admit/v1") {
       throw new Error(`[lares fleet join land] unexpected payload kind: ${payload.kind}`);
     }
-    // The joinee's OWN seed — the admit supplies the BINDING; the vessel supplies the SELF. The ceremony
-    // mints this vessel's self-certifying ContactCard from it, and a cardless vessel cannot speak at a gate.
+    // The ceremony mints the selected face's card from its atom; the public place key remains an equality guard.
     const mountedGroup = existsSync(bootstrap) ? readPackedTiddlers(bootstrap)[PERSONA_GROUP_ID_TIDDLER]?.text : undefined;
     const landsBeside = Boolean(mountedGroup && mountedGroup !== payload.personaGroupId);
     const anchored = landsBeside ? await listAnchoredPersonas() : [];
@@ -351,10 +349,8 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     // the edge, so nothing waits on a later ceremony here.
     // THE PIN NAMES THE DIAL: the hearth's sync url + gate key, and the document the admit named, land beside the
     // sentinel ids, so the boot dials the hearth by that pin (hearth-dial-pin.ts). A payload naming no dial pins none.
-    // The joinee's self-certifying ContactCard rests in its identity home as the atom's archive: the card derives
-    // from the archive's prekey secrets beside the membership this vessel absorbed, as a founder's does. The
-    // daemon's nexus-join dial-out reads it from there, and a cardless vessel never speaks at a gate. A stand
-    // that restores from the archive presents the same card the hearth admitted.
+    // The joinee's face Archive rests under its own atom. Its card carries that face's prekeys and membership;
+    // a faceless vessel presents only the public place floor card and pin.
     await persistVeilArchive(archive, payload.personaGroupId);
     // A joined vessel persists the SAME anchors from the admit payload — its identity home
     // now backstops the veiled Handle exactly as the founder's does.
@@ -396,20 +392,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
   // The FACE lands later, by an operator act: `lares persona new 0 --name '<label>'` runs `runFoundTheFace`
   // below. A hearth whose operator stands right here types two commands instead of one, and a crossroads
   // never types the second at all.
-  const vesselSeed = await loadVesselSigningSeed();
-
-  // A PLACE FOUNDED AGAIN KEEPS ITS ARCHIVE. An archive already at rest (a re-seed over a kept identity) holds the
-  // prekey secrets behind the vessel's card and everything the vessel individual created; the founding provider
-  // restores from it, so the archive written back below still carries all of it. A row that stands and does not
-  // open refuses here, before anything lands.
-  const standingArchive = await loadIdentityArchive();
-  const place = await foundThePlace({ repo, vesselSeed, hearthTrueName, ...(standingArchive ? { archiveBytes: standingArchive } : {}) });
-
-  // Cache the vessel's ContactCard for the light leaf-identity path — a CLI/agent
-  // re-presents it on every peer handshake without booting keyhive (OP-AP5).
-  await persistVesselCard(place.contactCardJson);
-  // The vessel's own keyhive archive rests sealed from this act on: the prekey secrets behind that card.
-  await persistIdentityArchive(place.archive);
+  const place = await foundThePlace({ repo, hearthTrueName });
 
   // THE FLUSH COMES FIRST, and the catalog pointer already carries the reason: a pointer written
   // after its referent is durable can be stale; one written BEFORE can be a LIE. Automerge saves ride
@@ -612,7 +595,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     daemonHandle,
     atomSeed,
     askDigest: foundingAskDigest(foundingAsk),
-    vesselVerifyingKey: vesselIdentity.verifyingKey,
+    placeVerifyingKey: vesselIdentity.verifyingKey,
     vesselDisplayName:  vesselIdentity.displayName ?? "operator",
     binding: { mode: "self-stood", signerSeed },
     hearthTrueName,

@@ -19,6 +19,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { larBootstrapPath } from "./vessel-paths.js";
+import { refuseLegacyPlaceBytes } from "./legacy-place-bytes.js";
 import { createAfterRoll } from "./after-roll-chain.js";
 import { join }                         from "path";
 import type { Server }                  from "node:http";
@@ -50,7 +51,7 @@ import {
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
   faceAtomKeyFromSeed, type FaceAtomKey,
-  placeSignerFromSeed, carriageFloorDutyOf,
+  carriageFloorDutyOf, type PlaceSigner,
   genesisCasCidsFromOracle, provenVesselKeyOf,
   wikiSlugOfBag,
 }                                       from "@lararium/mesh";
@@ -64,7 +65,7 @@ import type { WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
-import { realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, type LeafIdentity } from "@lararium/mesh";
+import { realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
   ACTIVE_WIKI_URI,
@@ -123,10 +124,10 @@ import { readNexusDoc } from "./nexus-doc.js";
 import { makeSealedPlaneRegistry } from "./plane-seal.js";
 import { cadSealDir, registerSealedCarrier } from "./seal-carrier-federation.js";
 import { makeBagTracker } from "./bag-tracker.js";
-import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "./carriage-relay.js";
+import { startCarriageRelay, type CarriageRelay } from "./carriage-relay.js";
+import { openRelayGateSeed } from "./relay-gate-seed.js";
 import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-dial.js";
 import { nodeDialSocket } from "./node-dial-socket.js";
-import { loadLeafIdentity } from "./leaf-identity.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "./face-anchor-store.js";
 import { raiseAnchorFromSlots } from "./lease-observation.js";
@@ -161,7 +162,7 @@ import { makeContentPalace, type ContentPalace } from "./sensorium.js";
 import { multiGraphRecall, makeFormSearch, makeStructureSearch }  from "./sensorium-recall.js";
 import { waitHandle, resolveBootDoc } from "./repo-helpers.js";
 import { makeChildProcessDocLoadProbe, quarantineDoc, recoverCleanTail } from "./doc-load-probe.js";
-import { listAnchoredPersonas, loadIdentityAnchors, loadIdentityArchive, loadVeilArchive, persistIdentityArchive, persistVeilArchive } from "./identity-anchors.js";
+import { listAnchoredPersonas, loadIdentityAnchors, loadVeilArchive, persistVeilArchive } from "./identity-anchors.js";
 import { openOutboxKey } from "./outbox-key.js";
 import { sweepFoundingSeeds } from "./face-atom-store.js";
 import { readWornPersonaMount } from "./worn-mount.js";
@@ -183,7 +184,7 @@ import {
   makeVesselResidency, type VesselResidency,
   replayPinsFromDaemonDoc,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
-import { loadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootVerifyingKey, listPersonaRoots, sovereignStands } from "./node-vessel-identity.js";
+import { loadVesselIdentity, vesselPlaceSignerDoor, loadPersonaGroupRootVerifyingKey, listPersonaRoots, sovereignStands } from "./node-vessel-identity.js";
 import { socketsNoLongerHeld, ownPlacePosture, sameOperatorStands, seatedDeviceKey, type PlaceClass, type SeatedPresenter } from "./socket-sorter.js";
 import { faceGateServer, gateSessionRegistry, timerGateDeadlines } from "./face-gate-server.js";
 import { gateSyncServer, type GateSyncSocket }    from "./gate-sync-server.js";
@@ -342,10 +343,6 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
    *  WebSocket upgrade meets silence. The port the relay BINDS (0 → an OS-assigned free port; a Pi deployment pins a
    *  stable one). ABSENT (and `LAR_HERM_RELAY_PORT` unset) → NO relay port stands (provably inert). */
   standCarriageRelayPort?: number;
-  /** The relay's gate seed hex (32 bytes) — its PUBLIC half is the key a sibling's pinned relay address names.
-   *  ABSENT → derived from the vessel's OWN identity seed (stable across restarts, so a pinned address keeps its
-   *  key). NEVER a fresh random per boot. Only read when `standCarriageRelayPort` (or its env) is set. */
-  standCarriageRelayGateSeedHex?: string;
   /** The peer node's `/ws` URL (Socket A, cleartext CRDT) this vessel DIALS to sync — the same-operator device
    *  breath. ABSENT → NO client adapter mounts, NO dial, zero change (provably inert). */
   joinSyncUrl?: string;
@@ -408,12 +405,8 @@ export interface SovereignReaders {
   readonly wornMount: (storageDir: string) => ReturnType<typeof readWornPersonaMount>;
   readonly personaRoots: () => ReturnType<typeof listPersonaRoots>;
   readonly walkRecords: () => ReturnType<typeof listWalkRecords>;
-  /** The vessel's own keyhive archive, or null when none stands. A row that stands and does not open throws. */
-  readonly archive: () => Promise<Uint8Array | null>;
   /** One face's veil archive, or null when none stands. */
   readonly veilArchive: (personaGroup: string) => Promise<Uint8Array | null>;
-  /** Seal the vessel's keyhive archive at rest. */
-  readonly writeArchive: (bytes: Uint8Array) => Promise<void>;
   /** Seal one face's veil archive at rest. */
   readonly writeVeilArchive: (bytes: Uint8Array, personaGroup: string) => Promise<void>;
   /** The vessel's outbox key, minted into its hot row on the first ask and opened on every later one (`outbox-key`). */
@@ -423,8 +416,8 @@ export interface SovereignReaders {
 /** The sovereign rows, read and written through the custody seated in this process (`custody-seat`). */
 export function seatedSovereignReaders(): SovereignReaders {
   return { wornMount: (dir: string) => readWornPersonaMount(dir, { refuse: "throw" }), personaRoots: listPersonaRoots, walkRecords: listWalkRecords,
-    archive: loadIdentityArchive, veilArchive: loadVeilArchive,
-    writeArchive: persistIdentityArchive, writeVeilArchive: persistVeilArchive, outboxKey: openOutboxKey };
+    veilArchive: loadVeilArchive,
+    writeVeilArchive: persistVeilArchive, outboxKey: openOutboxKey };
 }
 
 /**
@@ -581,9 +574,8 @@ interface NodeBootPrep {
   hostingDoor:      HostingDoor;
   /** What this composition lends a backup bundle's cut: the worn face, its own edge's shadow, the island's memory section and the board's key history. */
   backupDoor:      BackupDoor;
-  /** This PLACE's own 32-byte signing seed — the substrate key, never the human's. The two-key atom keeps it
-   *  distinct from the persona root a device-delegation edge signs under (`device-delegation.vesselSeed`). */
-  vesselSeed:     Uint8Array;
+  /** This place's scoped five-duty signer at the standing KEL head. */
+  placeSigner:    PlaceSigner;
   /** This vessel's own gate key — the node ANCHORS its confederation, so its gate key doubles as the Nexus
    *  key its admitted browser leaves resolve. Every per-Nexus board (WHO, KEL, antigen) scopes to it. */
   nexusPubkey:      string;
@@ -632,6 +624,7 @@ interface NodeBootPrep {
  * verbs, pool, after-hooks). NO sequencing here — `composeLararium`/`composeHerm` wire the order.
  */
 async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass): Promise<NodeBootPrep> {
+  refuseLegacyPlaceBytes();
   if (opts.floor && opts.floor.storageDir !== opts.storageDir) {
     throw new Error("[lararium] the floor handed to this composition holds another store");
   }
@@ -986,7 +979,7 @@ async function prepareNodeBootOn(
   // ── Operator identity (node-held) ──────────────────────────────────────────
   // Load-only: a boot mints no key. A vessel with no key file refuses here by name and points at the founding.
   const vesselIdentity = await loadVesselIdentity();
-  const vesselSeed     = await loadVesselSigningSeed();
+  const placeSigner    = await vesselPlaceSignerDoor();
 
   // ── The #59 antigen ring — STOOD now the island this vessel stands in is resolved ─────────────
   // The board keys on the ISLAND (`nexusPubkey` below), never on this vessel: the deterministic
@@ -1204,10 +1197,9 @@ async function prepareNodeBootOn(
   let litFace: number | null = null;
   let activeAtom: FaceAtomKey | null = null;
   const builtRing = makeEdgeShadowRing({
-    repo, vesselKey: () => {
-      if (sovereign && wornFleetRoot && !activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
-      return activeAtom?.key ?? vesselIdentity.verifyingKey;
-    }, sealHome,
+    // The ring folds once before the mounted face loads. An empty key carries no face
+    // authority; the mounted atom triggers a fresh fold after custody opens.
+    repo, vesselKey: () => activeAtom?.key ?? "", sealHome,
     fleetRoots: async () => {
       const roots = new Set<string>();
       if (wornFleetRoot) roots.add(wornFleetRoot);
@@ -1276,7 +1268,8 @@ async function prepareNodeBootOn(
   const shadowRing: EdgeShadowRing = sovereign ? builtRing : floorShadowRing(builtRing, (peerId) => Boolean(siblings?.provenKeyOf(peerId as PeerId)));
   edgeShadows = shadowRing;
   stood.push({ what: "the edge shadow ring", down: () => shadowRing.dispose() });
-  await shadowRing.refold();
+  // Before custody selects a face the ring has no face ledger to read. Its null fold
+  // closes every face gate; the selected atom starts the first fold below.
   // ── THE FACE GATES ─────────────────────────────────────────────────────────────────────────────
   // One gate per (Nexus, route), every one assembled from the same readers (`vessel-gates`): the held root of its
   // own Nexus, the D4 shadow ring, the PersonaGroup grant ring, the one sorter over that Nexus's posture, and the
@@ -1423,17 +1416,18 @@ async function prepareNodeBootOn(
   // ── THE HERM RELAY PORT — INERT until a relay port rides the config ─────────────────────────────────────────
   // Siblings of a PersonaGroup pin it (`ws://<host>:<port>#<gate key>`) and leave persona-KEL drops there over plain
   // HTTP; every WebSocket upgrade meets silence, so no envelope crosses it. It reads NO plaintext and holds NO read-cap /
-  // content key / roster (carry ⊥ read ⊥ contract). Its gate seed derives from the vessel's OWN identity seed (or a
-  // configured seed) — STABLE across restarts, NEVER fresh-random, so a pinned address keeps its key. It stands apart
+  // content key / roster (carry ⊥ read ⊥ contract). Its random S row stays stable across restart. It stands apart
   // from the Automerge `/ws` relay (Socket A, cleartext CRDT). ABSENT the port → this branch never runs and no port opens.
   const relayPortRaw = opts.standCarriageRelayPort ?? process.env["LAR_HERM_RELAY_PORT"];
   const relayPort = relayPortRaw !== undefined && relayPortRaw !== "" ? Number(relayPortRaw) : null;
-  const relayGateSeed = resolveRelayGateSeed(vesselSeed, opts.standCarriageRelayGateSeedHex ?? process.env["LAR_HERM_RELAY_SEED"]);
   // The herm's sight of a sibling channel stays transient: the vessel hands the relay no frame observer, so carried
   // frames are routed and forgotten. A witness of that sight stands its own relay and passes its own observer.
-  const carriageRelay: CarriageRelay | null = relayPort !== null && !Number.isNaN(relayPort)
-    ? await startCarriageRelay({ gateSeed: relayGateSeed, port: relayPort, dropJournalPath: join(storageDir, "persona-kel-drops.jsonl") })
-    : null;
+  const carriageRelay: CarriageRelay | null = await (async () => {
+    if (relayPort === null || Number.isNaN(relayPort)) return null;
+    const gateSeed = openRelayGateSeed();
+    try { return await startCarriageRelay({ gateSeed, port: relayPort, dropJournalPath: join(storageDir, "persona-kel-drops.jsonl") }); }
+    finally { gateSeed.fill(0); }
+  })();
   if (carriageRelay) {
     console.log(`[carriage] crossroads relay standing — dial ws://<host>:${carriageRelay.port}#${carriageRelay.gatePubKey}`);
   }
@@ -1484,7 +1478,7 @@ async function prepareNodeBootOn(
   //   · WHAT IT PRESENTS: a place's counted `carry` at that Nexus where its own key stands carried (a herm: the place arm,
   //     `place-floor-pin`); otherwise the worn face with the admit it took for that Nexus. Nothing composed, nothing dialed.
   const carriageSessions = opts.dialSessions ?? { table: new SessionTable(`carriage-${globalThis.crypto.randomUUID()}`), binding: sessionBinding("socket"), profile: "face" as const };
-  const carriageSign = placeSignerFromSeed(vesselSeed);
+  const carriageSign = placeSigner;
   const carriagePull = vesselCarriagePull<MeshPalaceDoc>({
     placeClass,
     ownPlaceKey: vesselIdentity.verifyingKey,
@@ -1666,9 +1660,9 @@ async function prepareNodeBootOn(
   // Read the daemon doc (idempotent re-resolve; openDaemonVm finds the same handle).
   const readDaemonDoc = async (): Promise<DocHandle<LarDoc>> =>
     resolveBootDoc<LarDoc>(repo, bootstrap.daemonUrl as AutomergeUrl,
-      // THE BOOTSTRAP NAMES THIS DOC, so an absence here reads as a write still landing rather than as
-      // a doc nobody wrote — a founding seeds it moments earlier in this same process.
-      { tideline: "hearth-private", label: "@daemon", expectPresent: true });
+      // THE BOOTSTRAP NAMES THIS DOC, so an `unavailable` here waits for this vessel's own flush rather than reading as
+      // a doc nobody wrote: a founding seeds it moments earlier in this same process.
+      { tideline: "hearth-private", label: "@daemon", settled: () => repo.flush() });
 
   const keel: VesselOrchestration<VesselIslandPool>["keel"] = {
     repo,
@@ -1806,8 +1800,15 @@ async function prepareNodeBootOn(
     // THE KAHU REALM'S LIVE CANON: the documents the cabal's registrations name, held only where the board carries a
     // counted admission for this vessel's group. A vessel outside the cabal names none and reads the floor.
     systemCanon: async () => {
+      // Core assembly asks before the daemon mount loads. The sealed custody
+      // selection already names the face; open that atom before any face board read.
+      if (custodyGroup && !activeAtom) {
+        const seed = await loadFaceAtomOfGroup(custodyGroup);
+        if (!seed) throw new Error("face-not-named: system canon needs the selected face atom");
+        activeAtom = faceAtomKeyFromSeed(seed, custodyGroup);
+      }
       kahuCanon = await standKahuCanon({
-        repo, sealHome, vesselKey: vesselIdentity.verifyingKey,
+        repo, sealHome, vesselKey: activeAtom?.key ?? "",
         personaGroupId: custodyGroup,   // sealed custody names the face; the composition tears down whole if its proof later refuses
       });
       return kahuCanon;
@@ -1891,10 +1892,8 @@ async function prepareNodeBootOn(
     // board's change left the reading dark waits on the next fold, never on a clock, and a fold that fails
     // answers `aside`. The door stands with this composition and drops at its teardown.
     const edgeFleetRoot = deviceEdge?.personaRootDid?.trim().toLowerCase().replace(/^0x/, "") ?? null;
-    if (edgeFleetRoot && edgeFleetRoot !== wornFleetRoot) {
-      wornFleetRoot = edgeFleetRoot;
-      await shadowRing.refold();
-    }
+    if (edgeFleetRoot) wornFleetRoot = edgeFleetRoot;
+    if (activeAtom) await shadowRing.refold();
     setDyadDoor(async (fleetRoot, deviceKey) => {
       // A fold a board's move overtook publishes nothing, so the door asks again; three folds each overtaken
       // leave the reading dark, and a dark reading answers `aside`.
@@ -2215,32 +2214,13 @@ async function prepareNodeBootOn(
       registerInCatalog(wornFace.sessions,   bootstrap.sessionsUrl);
       registerInCatalog(wornFace.intents,    bootstrap.intentsUrl);
     }
-    // M3 — node-main reads the persisted keyhive Archive from the identity home and passes it into the
-    // worker (same custody boundary the 32-byte seed already crosses). keyhive inits from it as the
-    // restore FLOOR, then replays daemon cap-events on top — a torn daemon doc restores instead of orphaning.
-    // THE WAKING FLOOR (#60, superseding the boot-gate throw): when the config marks sealing expected and no
-    // passphrase rides the environment, the archive stays SHUT and this daemon stands WITHOUT it. Throwing
-    // here would have made the floor a lie — the boot announces that it stands faceless and carrying, then
-    // the same condition killed it one frame later. `daemonAuth` already treats the archive as optional, so
-    // standing without it costs nothing structurally: keyhive loses its restore FLOOR and replays cap-events
-    // alone, which is exactly a vessel that has lost its CAPS and kept its FLOOR.
-    //
-    // Reading rather than asserting is the ruling itself (canon: waking-floor). Nothing is lowered — a
-    // vessel that cannot open simply never rose, and an operator supplying the key raises it.
-    //
-    // ONE READING, READ ONCE, CARRIED WHOLE. The same fact that decides whether this boot may READ
-    // the archive decides whether it may WRITE one, so it rides into the worker on `daemonAuth`
-    // rather than being re-derived there: the worker's archive-write door refuses on it (`=== true`,
-    // fail-closed), which is the DOOR rather than the grant — `node-daemon-island` injects the
-    // writers, and a gate there would leave every other route into the worker unchecked
-    // (waking-floor #/the-breaks ①). Reading it twice would let the two readings drift apart mid-boot.
+    // The selected face's custody standing decides whether its veil archive may leave this
+    // composition and whether the island may rest a later export through the same door.
     const opens = sovereign !== null;
     // THE MOUNTED FACE'S OWN ROWS. Each face keeps its veil archive under its own PersonaGroup; the face this
     // composition mounts (the worn one, else the founding face) names which row the veil restores from and which
-    // row the island's export lands in. The veil's key derives HERE, from the sealed custody root: the island
-    // receives it derived and holds no root.
+    // row the island's export lands in. The island receives only that face's atom and archive.
     litFace = sovereign && deviceEdge ? mountedFace : null;
-    const archiveBytes = sovereign ? await sovereign.archive() : null;
     const veilArchiveBytes = sovereign && activeAtom && personaGroupId ? await sovereign.veilArchive(personaGroupId) : null;
     // THE OUTBOX KEY rides to the island the way the Archive does: opened here under the vessel key this thread holds,
     // and never at the floor, where the island's outbox holds shut (custody#/the-table, the outbox).
@@ -2256,9 +2236,8 @@ async function prepareNodeBootOn(
     // exports reach the sealed writer here, under the key this thread holds. At the floor no door stands, so an
     // island's ask answers unwritten.
     if (sovereign) {
-      setCustodyWriteDoor((carrier, bytes) => carrier === "archive"
-        ? sovereign.writeArchive(bytes)
-        : personaGroupId ? sovereign.writeVeilArchive(bytes, personaGroupId) : Promise.reject(new Error("the mounted face names no PersonaGroup")));
+      setCustodyWriteDoor((_carrier, bytes) => personaGroupId
+        ? sovereign.writeVeilArchive(bytes, personaGroupId) : Promise.reject(new Error("face-not-named: the mounted face names no PersonaGroup")));
       stood.push({ what: "the custody write door", down: () => setCustodyWriteDoor(null) });
     }
     // THE ANCHOR THE DAEMON STANDS ON ALREADY CARRIES THE VERIFIED LEASE: this runs before `daemonAuth` snapshots `standingAnchor`, so the
@@ -2273,8 +2252,7 @@ async function prepareNodeBootOn(
     }
     const faceLit = activeAtom !== null && atomSeed !== null;
     const daemonAuth = {
-      seed:                 vesselSeed,
-      vesselVerifyingKey: vesselIdentity.verifyingKey,
+      placeVerifyingKey: vesselIdentity.verifyingKey,
       archiveOpens:         opens,
       ...(activeAtom && atomSeed ? { atom: { seed: Buffer.from(atomSeed).toString("hex"), key: activeAtom.key } } : {}),
       ...(veilArchiveBytes ? { veilArchiveBytes } : {}),
@@ -2305,7 +2283,6 @@ async function prepareNodeBootOn(
         ? { personaKel: { prefix: personaKelPrefix, chain: personaKelChain } }
         : {}),
       ...(faceLit && deviceEdge ? { deviceEdge } : {}),
-      ...(archiveBytes ? { archiveBytes } : {}),
       ...(outboxKey ? { outboxKey } : {}),
     };
     // R3 — the daemon VM resolves its plugins through the SAME selector + CAS path every wiki
@@ -2852,7 +2829,8 @@ async function prepareNodeBootOn(
       const resource = typeof args["resource"] === "string" ? (args["resource"] as string) : "";
       if (!resource) throw new Error("nexus-rekey: `resource` required (the lease resource id to roll)");
       const named = typeof args["nexus"] === "string" ? args["nexus"] as string : undefined;
-      const charter = await leaseCharterOf({ repo, vesselKey: activeAtom?.key ?? vesselIdentity.verifyingKey, sealHome, resource,
+      if (!activeAtom) throw new Error("face-not-named: nexus-rekey needs a selected face atom");
+      const charter = await leaseCharterOf({ repo, vesselKey: activeAtom.key, sealHome, resource,
         ...(named ? { named } : {}) });
       const held = await selectHeldQuorumSigners(charter.roster, (count, threshold) =>
         new Error(`nexus-rekey: seats-not-held: ${count} of ${threshold} charter seats held`));
@@ -3185,7 +3163,7 @@ async function prepareNodeBootOn(
   };
 
   return {
-    repo, storeClaim, catalogHandle, vesselSeed, nexusPubkey, floorGates, carriagePull, wornFace: wornGateFace,
+    repo, storeClaim, catalogHandle, placeSigner, nexusPubkey, floorGates, carriagePull, wornFace: wornGateFace,
     vesselGateKey:   vesselIdentity.verifyingKey,
     daemonDocUrl:    () => bootstrap?.daemonUrl ?? "",
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
@@ -3284,20 +3262,6 @@ async function prepareNodeBootOn(
 }
 
 /**
- * The identity this vessel's carriage proves at each peer's gate: the vessel's own key and the ContactCard
- * its founding cached. A vessel with no cached card proves nothing, so its carriage carries in nothing —
- * named once here, never a throw that takes the boot with it.
- */
-async function carriageIdentity(tag: string, arm: "face" | "place", face?: { face: number; personaGroup: string }): Promise<LeafIdentity | undefined> {
-  try {
-    return await loadLeafIdentity(arm, face ? { handleIndex: face.face, personaGroupId: face.personaGroup } : undefined);
-  } catch (e) {
-    console.log(`[${tag}] carriage holds no identity to prove at a peer's gate (${e instanceof Error ? e.message : String(e)})`);
-    return undefined;
-  }
-}
-
-/**
  * Open the FULL node Lararium — composeLararium's #has-cap-stack runs the shared keel sequence
  * (substrate → wiki-slot → daemon → verbs → wiki → pool → daemon-first ea-gate → primary-wiki mount
  * → live). Behaviour stays identical to the pre-cap-stack boot; the only change is the composed wrap.
@@ -3317,12 +3281,10 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
   // A Lararium is a hearth that is ALSO a first-class mesh-node: when self-announce params are supplied,
   // it composes the carriage (meshpalace + carriage) ALONGSIDE the wiki-full core — it carries + navigates
   // the FLOW-map for its own routing (carry-without-reserve; no second read-face, no conflict over the oracle doc).
-  const identity = opts.meshSelf ? await carriageIdentity("lararium", p.wornFace() ? "face" : "place", p.wornFace() ?? undefined) : undefined;
   const carriageCaps = opts.meshSelf ? carriageStack({
     repo:        p.repo,
     self:        { ...opts.meshSelf, gatePubKey: p.vesselGateKey },
-    nodeSeedHex: Buffer.from(p.vesselSeed).toString("hex"),
-    ...(identity ? { identity } : {}),
+    cadenceKey: p.vesselGateKey,
     pullFlow:  p.carriagePull,
     ...(p.residency ? { residency: p.residency } : {}),
     onLog: (l) => console.log(`[lararium] ${l}`),
@@ -3435,7 +3397,6 @@ async function composeNodeHermOn(
   // BANS (the antigen ring rides its carriage), so reading the WHO plane completes the pair: it recognises
   // the presenters those bans name. The cap cannot betray the asymmetry, because it holds no card to publish.
   const hermCrossroads = await materializeSharedLarDoc(p.repo, crossroadsDocUrl(p.nexusPubkey), "board:crossroads");
-  const identity = await carriageIdentity("herm", "place");
   const herm = await composeHerm({
     extraCaps: [whoFaceCap({
       repo: p.repo, crossroadsHandle: hermCrossroads, nexusPubkey: p.nexusPubkey, residency: p.residency,
@@ -3448,12 +3409,11 @@ async function composeNodeHermOn(
     residency:   p.residency,
     httpServer:  opts.httpServer,
     ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}),
-    signerSeed:  p.vesselSeed,
+    signer:      p.placeSigner,
     storageDir:  opts.storageDir,
     flowGates: p.floorGates,
     pullFlow:  p.carriagePull,
     ...(opts.meshSelf ? { meshSelf: { ...opts.meshSelf, gatePubKey: p.vesselGateKey } } : {}),
-    ...(identity ? { identity } : {}),
     ...(opts.pullIntervalMs !== undefined ? { pullIntervalMs: opts.pullIntervalMs } : {}),
     // Serve the HELD bulb by cid over the public floor (the OPEN path) — present only when the genesis stands.
     ...(p.bulb ? { bulb: p.bulb } : {}),

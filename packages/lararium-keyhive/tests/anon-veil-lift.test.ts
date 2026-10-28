@@ -12,6 +12,8 @@
  *   L5  RED: a draft the vessel never resolves again still sits under the face after the join (the lift is a pass, not a lookup).
  *   L6  RED: a crash between the binding and the burn finishes on the next pass without a second copy.
  *   L7  RED: a vessel-only working binding (daemon bag) moves too, derived by its record and not by a list of kinds.
+ *   L8  RED: a draft the faceless floor bound under the public place label lifts under the face that lights later (the lit face names the floor's label).
+ *       CONTROL: without that name the same record stays at the floor.
  *   N1  RED: a vessel-only document never reaches a peer (no cap names it, so the share verdict denies); CONTROL: the lifted face
  *       document is registered under the face and the same verdict allows it.
  */
@@ -108,6 +110,31 @@ describe("the anon-veil lift on join", () => {
     expect(await opens(v, anon.url), "the old document no longer opens from the repo's storage").toBe(false);
     expect(await bindingOf(v, draftKey(v))).toMatchObject({ text: after.url, "face-reach": "face" });
     expect((await bindingOf(v, draftKey(v)))?.["lifted-from-url"], "the burn finished").toBeUndefined();
+  });
+
+  test("L8 — a draft bound at the faceless floor under the public place label lifts under the face that lights later (control: unnamed, it stays)", async () => {
+    const PLACE_KEY = "cd".repeat(32);
+    const PLACE_DID = didFromVerifyingKey(PLACE_KEY);
+    const v = await vessel();
+    const catalog = makeCatalogAccessor(v.repo, v.catalogUrl);
+    // THE FLOOR: no face, no Keyhive, the public place key labels what it binds.
+    const floor = makeSlotDocResolver({ repo: v.repo as never, daemonStore: v.daemon, catalog, vesselDid: () => PLACE_DID, mintedByHex: () => PLACE_KEY });
+    const bound = await floor.draft("garden");
+    expect(bound.reach).toBe("vessel-only");
+    await write(v, bound.url, "Draft", "FLOOR-DRAFT");
+    // THE FACE LIGHTS: its own atom labels new material and it names the floor's label.
+    const joined = { on: true };
+    const a = await newFace(v, joined);
+    const lit = (named: boolean) => makeSlotDocResolver({
+      repo: v.repo as never, daemonStore: v.daemon, keyhive: v.kh, catalog, vesselDid: () => DID, mintedByHex: () => MINTED_BY,
+      personaGroupId: a.face.group, faceSeated: async () => true, faceDoor: a.face.door,
+      ...(named ? { floorMinter: () => ({ mintedByHex: PLACE_KEY, vesselDid: PLACE_DID }) } : {}),
+    });
+    expect((await lit(false).liftFloor()).moved, "control: without the floor's label nothing lifts").toEqual([]);
+    expect((await lit(true).liftFloor()).moved.length).toBeGreaterThanOrEqual(1);
+    const after = await lit(true).draft("garden");
+    expect(after.reach).toBe("face");
+    expect(await textOf(v, after.url, "Draft")).toBe("FLOOR-DRAFT");
   });
 
   test("L2 — a second pass, a replayed join and a second face's join lift nothing twice", async () => {

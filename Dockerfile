@@ -7,6 +7,7 @@
 #   build        — compile the Node runtime dependency graph + Vite web surface
 #   serve        — the product image: daemon + CLI + genesis + web; state and corpus arrive as mounts
 #   mcp-runtime  — minimal stdio MCP server
+#   browser-harness — pinned Chromium walk scripts and built custody probe
 #
 # Auth env vars (all optional — graceful fallback to local-dev):
 #   GITHUB_CLIENT_ID      GitHub OAuth App client id (web flow for browser users)
@@ -213,3 +214,13 @@ COPY packages/lararium-sensorium/scripts/trial_intake.py ./
 RUN mkdir -p /handoff /state
 USER 65532:65532
 ENTRYPOINT ["python", "trial_intake.py"]
+
+# The disposable QA runner owns the exact walk bytes it executes. The official
+# image supplies Chromium; npm installs only the pinned client these walks import.
+FROM mcr.microsoft.com/playwright:v1.64.0-noble AS browser-harness
+WORKDIR /app
+RUN printf '{"private":true,"type":"module"}\n' > package.json
+RUN npm install --no-save --no-package-lock --ignore-scripts playwright@1.64.0
+COPY tools/browser-ci-smoke.mjs tools/browser-ci-join.mjs ./tools/
+COPY packages/lararium-web/tests/live-wiki.mjs ./packages/lararium-web/tests/
+COPY --from=build /app/packages/lararium-node/dist/probes/browser-test-custody.js ./packages/lararium-node/dist/probes/browser-test-custody.js

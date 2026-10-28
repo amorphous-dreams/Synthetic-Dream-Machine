@@ -43,14 +43,15 @@ The face identifier in this document means a stable, canonical PersonaGroup iden
 This table covers every `buildTable()` row in `packages/lararium-node/src/vault-carriers.ts:236-398`. “Current” names the code's custody class. “Owner / target” is the K15 contract. Where the source only names a filename, ''LEAD'' requires a payload and caller audit before the classification can be implemented. There is no implicit S catchall.
 
 | Current row and code line | Current | Owner / target and required cut |
-| `vessel-key` `:240-242` | floor | ''S, OPEN JOINT:'' private place signing seed owned by this node. Its public verifying key belongs in F. The signer options appear below; it is never a custody S key or face ancestor. `node-vessel-identity.ts:429-442,451-487` proves the private seed is read from disk and used at the floor door. |
+| `vessel-key` `:240-242` | floor | ''S:'' private place signing seed owned by this node. Its public verifying key belongs in F. The scoped signer grants five framed floor duties; it is never a custody S key or face ancestor. `node-vessel-identity.ts:429-442,451-487` proves the private seed is read from disk and used at the floor door. |
+| `relay-gate-seed` | floor | S: random durable relay service key; the relay-only opener serves the handshake, and explicit rotation requires hearth address re-pinning. |
 | `vessel-kel` `:243-245` | floor | ''F:'' public armed chain (inception and rotations), node place principal. |
 | `vessel-rotating` | floor | ''S:'' the staged replacement signer and its signed rotation, present only between a rotation's stage and publish. |
-| `s-slots` `:246-248` | floor | ''D/S split:'' the node S tree wraps one random S key and seals `gate-root` and `place-archive` alone. Each face has its own FCK tree, and no face FCK wraps under a node key. |
+| `s-slots` `:246-248` | floor | ''D/S split:'' the node S tree wraps one random S key and seals `gate-root` alone. Each face has its own FCK tree, and no face FCK wraps under a node key. |
 | `sk-slots` `:249-251` | floor | ''S conditional, node:'' retire current S-key-to-SK wrapping. No serving row exists today (`:12-14`). A future serving payload gets its own named S key and boot rule before this tree survives. |
 | `fk-slots` `face-custody.ts` | floor | ''D (the face's own tree):'' one tree per face at `faces/<fcid>/fk-slots.bin`, wrapping that face's random custody key under each human route that face asked for. No S key wraps it and no sibling face's route opens it; the face's rows and this tree rest in one directory, so a bundle or a removal moves them together. |
 | `face-index` `face-index.ts` | floor-plain | ''F:'' the one floor row that names the faces a node can unlock before any face opens: the count of faces (tombstones included), each group's digest, each founding ask's digest and each random directory name, and no other byte. It routes and never decides; see #/the-floor-index. |
-| `vessel-card` `:254-256` | floor-plain | ''F:'' public node contact card. |
+| `vessel-card` `:254-256` | retired | A stored Keyhive place ContactCard refuses the boot by name; the public place founding card and KEL remain F. |
 | `charter` `:257-259` | floor-plain | ''F:'' signed public founding charter. |
 | `carried-charter` `:260-262` | floor-plain | ''F:'' signed public carried charter. |
 | `carriage-consent` `:263-265` | floor-plain | ''F:'' public consent/pin as the row comment defines it. |
@@ -59,10 +60,10 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 | `sealed-rest` `:275-277` | floor-plain | ''F carriage:'' sealed lockboxes, signed records and indexes remain opaque transport; cryptographic content ownership stays with the relevant face's Keyhive/content-key seat. The row is not an FCK escrow. |
 | `sealed-own` `:279-281` | floor-plain | ''F only for proved opaque pointers/marks. LEAD:'' audit names and values for face-linking metadata; any private index dissolves into D. |
 | `sealed-chunk` `:283-285` | floor-plain | ''F carriage:'' Keyhive ciphertext under opaque addresses; its content key and identity remain D. |
-| `custody-root` `:288-289` | hot | ''D:'' partition any face-bearing derivation/root by PersonaGroup. ''LEAD:'' prove every remaining use; a node-only secret may enter S only as a separately named row, never by retaining this generic root. |
-| `keyhive-archive` `:290-291` | hot | ''D:'' split the vessel archive into one identity/archive per PersonaGroup, with no identity above them (`stable-founding-road.mem:203,459`). Node archive row selection is an OPEN JOINT below. |
+| `gate-root` `:288-289` | hot | ''D:'' the scoped node gate secret serves the place's sovereign gate bundle; it derives no face identity. |
+| `place-archive` `:290-291` | retired | A stored vessel Individual Archive refuses the boot by name; each PersonaGroup keeps its own veil archive. |
 | `veil-archive` `:292-293` | face-hot | ''D:'' the node rests each face's archive at `veil-archive-g<digest of its PersonaGroup>`, so no free index selects it; its FCK arrives with the K15.6 fence. |
-| `face-atom` `face-atom-store.ts` | face-hot | ''D:'' the face's random atom seed, one per (vessel, PersonaGroup), the device edge's delegate and countersigner and the face's Keyhive Individual. The row's file name carries the SHA-256 digest of its PersonaGroup, so no clear file names a face, and the face-atom custody contract of `@lararium/mesh` (`face-atom-custody.ts`) holds stand, read and keep: absent mints, the same bytes read as a no-op, other bytes refuse as `FaceAtomConflict`. It rests under the vessel key until the K15.6 fence moves it under that face's FCK; it never rides a bundle, a wire or a board. |
+| `face-atom` `face-atom-store.ts` | face-hot | ''D:'' the face's random atom seed, one per (vessel, PersonaGroup), the device edge's delegate and countersigner and the face's Keyhive Individual. The row's file name carries the SHA-256 digest of its PersonaGroup, so no clear file names a face, and the face-atom custody contract of `@lararium/mesh` (`face-atom-custody.ts`) holds stand, read and keep: absent mints, the same bytes read as a no-op, other bytes refuse as `FaceAtomConflict`. It rests under that face's FCK and never rides a bundle, a wire or a board. |
 | `face-atom-ask` `face-atom-store.ts` | face-hot | ''D:'' the seed a founding rests before its PersonaGroup exists, named by the digest of the founding's own ask (hearth true name, binding mode, mount flag and compartment); the group row keeps the seed once the group stands and the ask row retires with the bootstrap entry. Same key class and fence as `face-atom`; it never rides a bundle. |
 | `face-owner` `custody-holder.ts` | face-hot | ''D:'' the face's own label, sealed under its custody key: its custody id and the digest of its PersonaGroup. After a face unlocks, the holder compares this row with the floor index entry and refuses by name on a mismatch before it seats anything. Never rides a bundle. |
 | `enroll-pending` `:295-296` | hot, reserved | ''D, LEAD:'' if materialized, bind each pending enrolment to its target face; reject a row with no target. There is no current writer. |
@@ -111,9 +112,9 @@ Rows whose class includes ''LEAD'' block byte movement until their payload and o
 The exact `CUSTODY_ROW` alternatives are at `packages/lararium-browser/src/browser-custody.ts:54-68`. They currently share one `custody-slots` tree and one page-held S key for sealed writes (`:2-12,95,386-402`). `catalog-url` is explicitly outside that matcher and public (`:5-13`). The target has no browser S key and no browser S.
 
 | Current `CUSTODY_ROW` alternative | Target class, principal and split |
-| `vessel-key` | ''F/D split:'' public vessel contact/routing material F; any face identity seed D by its PersonaGroup. Retire the browser common private device seed and S key. ''LEAD:'' audit consumers of current seed before deletion. |
-| `keyhive-archive` | ''D:'' one Keyhive archive per PersonaGroup, with no vessel-level face registry; split current whole archive. |
-| `veil-archive-g<digest>` | ''D:'' the node rests each face's veil archive under the SHA-256 digest of its PersonaGroup, so the row names its face by construction; the browser's `veil-archive-h<N>` stays index-keyed until its per-face social planes stand. |
+| `vessel-key` | ''F and place KEL seed:'' the public verifying key routes the browser vessel; its private seed signs the place KEL alone and grants no face identity. |
+| `keyhive-archive` | ''Retired:'' a clear or sealed vessel Individual Archive refuses browser boot by name; the selected face keeps its own `veil-archive-g<PersonaGroup>` row. |
+| `veil-archive-g<PersonaGroup>` | ''D:'' the browser rests the face atom's Archive under its PersonaGroup; the node rests the corresponding row under a digest of that name. |
 | `persona-root-h<N>` | ''D:'' that PersonaGroup root. |
 | `persona-root-roster` | ''D/F split:'' roots, private labels and membership D per face; minimum deliberately public routing F only after leakage review. |
 | `nexus-key/h<N>/*` | ''D:'' that face's private per-Nexus keys; public verification line F if separately represented. |
@@ -122,7 +123,7 @@ The exact `CUSTODY_ROW` alternatives are at `packages/lararium-browser/src/brows
 | `fleet-join-pending` `fleet-join-custody.ts` | face-hot | ''D:'' one pending join per target face, `fleet-join-pending-g<group digest>.json` in that face (its X25519 secret and request); the joiner founds the face's custody at its request, so a pending join with no face refuses by name. |
 | `walk/*` | ''D/F split, LEAD:'' private face receipt/relationship D; proved blind ciphertext carriage F. |
 
-The browser's clear-before-slot allowance for `vessel-key`, `keyhive-archive`, and `veil-archive-h<N>` (`browser-custody.ts:390-395`) does not apply to target D. Every face secret needs its own slot tree before first persistence, including first fleet join (`stable-founding-road.mem:200`). `tm-clear-password` currently clears the common tree and rows (`browser-custody.ts:34-39,613-650`); target clear/removal acts name one face and cannot clear another.
+The browser's clear-before-slot allowance for `vessel-key` and `veil-archive-g<PersonaGroup>` (`browser-custody.ts:writeKeystoreRowHeld`) does not apply to target D. Every face secret needs its own slot tree before first persistence, including first fleet join (`stable-founding-road.mem:200`). `tm-clear-password` currently clears the common tree and rows (`browser-custody.ts:34-39,613-650`); target clear/removal acts name one face and cannot clear another.
 
 <<~/ahu>>
 
@@ -138,7 +139,10 @@ Add this row beside the key table at `bags/lararium/ha.ka.ba/lararium/mesh/seale
 
 The per-face slot tree carries wrapped FCK, slot identifiers and nonsecret KDF parameters; it cannot embed a sibling wrapper. Bind/unbind/rotation prove the standing FCK and affect that tree and that face's rows alone. The bundle contains only intended wrapped recovery routes, not a bare FCK or guardian-held secret shares. A passkey/PRF slot stands only after its derivation is measured on target devices (`browser-custody.ts:41-43`). Last browser tab/session close drops bare face keys and returns to F (`stable-founding-road.mem:199,202`); an installed app or worker does not extend authority.
 
-''Node S register.'' The present private place signing seed is a named candidate S, with the two unresolved treatments below (`vault-carriers.ts:240-242`; `node-vessel-identity.ts:429-442`). The existing SK tree has *zero* serving payload rows (`vault-carriers.ts:12-14,249-251`), so SK is not a justification for a common unlock. Future ember serving rows enter S only with their own row names, principal, opener and restart rule. No browser, phone, installed web app, tablet, CLI, MCP, watcher or probe owns S (`stable-founding-road.mem:207`). A container inherits the node's actual S set and cannot create one by packaging.
+''Relay service S row.'' `relay-gate-seed.hex` rests under the identity home as a random 32-byte floor seed. The relay service owns it; `openRelayGateSeed` alone opens it for the relay handshake. `rotateRelayGateSeed` replaces it and hands back the new public pin for hearth re-pinning after restart. It grants no place signer duty, face opening, daemon authority or content read.
+
+''Node S register.'' The node's named place signing row opens through `vesselPlaceSignerDoor`: `proveStandingKey` holds the private seed to the KEL head, and the door lends only five framed floor duties. `vesselFloorKeyDoor` alone lends registered floor children. The random `relay-gate-seed` row belongs to the relay service, opens only by `openRelayGateSeed`, and rotates by explicit `rotateRelayGateSeed`; its public address pin changes and hearths re-pin. Neither row is a face ancestor or a custody S key. The SK tree has zero serving payload rows. A container inherits these named rows and mints no separate service authority.
+
 
 <<~/ahu>>
 
@@ -220,9 +224,9 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 : ''Owner: the node, not a face.'' The bundle keys the hearth's gate at a Nexus: the node's seat in that Nexus, apart from any PersonaGroup. It is a NODE-ONLY service secret and enters S as the separately named row `gate-root` (the custody root renamed for what it derives). It is never retained as a generic root, and no face derivation hangs from it.
 : ''Stands:'' `gate-root` rests under the node's S key (the node route), and a derivation under any other domain refuses by name at the door.
 
-; The vessel's Keyhive archive (`keyhive-archive`)
-: ''Owner: the place, not a face.'' The archive is minted at the place card (`ensurePlaceCard`, `init`) from the vessel's own seed before any face stands; a faceless or joinee place holds one. It carries the place Individual's membership and prekey secrets and its contact card. It is a NODE-ONLY secret and enters S as the separately named row `place-archive`. Each face's own archive already rests per PersonaGroup as `veil-archive-g<digest>` (D, ''face-hot'').
-: ''No identity above the faces.'' The place Individual signs no face's act and holds no face's key; the daemon island restores each face's own veil from that face's FCK row.
+; The face's Keyhive archive
+: ''Owner: the selected face.'' Its atom mints one Keyhive Individual; its veil archive rests per PersonaGroup as `veil-archive-g<digest>` (D, ''face-hot''). A faceless place mints no Keyhive identity or archive.
+: ''No identity above the faces.'' The daemon island restores only the selected face's veil from that face's FCK row.
 
 <<~/ahu>>
 
@@ -239,7 +243,7 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 
 !!! The node tree, the serving tree and the unlock (slice 3)
 
-''The node (S) tree'' is the slot tree `s-slots.bin` wrapping one random S key. It seals exactly two rows: `gate-root` (`gate-root.bin`) and the place archive (`place-archive.bin`). No D row, no face key and no serving key rests under it. The seal frame names it `lares-s-seal`.
+''The node (S) tree'' is the slot tree `s-slots.bin` wrapping one random S key. It seals the `gate-root` row (`gate-root.bin`). No face key, archive or serving key rests under it. The seal frame names it `lares-s-seal`.
 
 ''The tree bytes'' (S, serving and face trees alike, one keyslot shape): a plain JSON tree carries `keyCheck` (the keyed check of the one key its slots wrap) and `slots`, each slot `id`, `t`, `pins` and `wrappedKey`; the check derives under the domain `tree-key-check` and each slot wrap under `slot-wrap`; an S-sealed carrier opens with the magic `lares-s-seal`. These names land before the founding bake, so no earlier spelling is read anywhere.
 
@@ -271,6 +275,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;JnpXDVAfjP7ClQzRaJphATeebs7y5UUxSaXWE2tMII0
+<<^ code="&#x0003;">>ni:///sha-256;BMs-_MWDAU1kFpvzlT_yS_yFEuU9SwpmBmuSEVJELU0
 
 <<^ code="&#x0004;" -> to="?">>

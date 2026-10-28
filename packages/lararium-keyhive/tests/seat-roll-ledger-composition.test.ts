@@ -32,7 +32,7 @@ describe("the island reads the vessel's seat-roll ledger", () => {
       await fx.register(board, [up.actCid]);
       const privateLedger = repo.create(emptyLarDoc());
       const daemonAuth = {
-        seed: new Uint8Array(32).fill(124), vesselVerifyingKey: own, archiveOpens: false, registerBags: [],
+        placeVerifyingKey: own, archiveOpens: false, registerBags: [],
         personaGroupId: "group", atom: { seed: "00".repeat(32), key: own },
         deviceEdge: { personaRootDid: root, deviceVerifyingKey: peer },
         personaKel: { prefix: fx.prefix, chain: fx.chain },
@@ -86,7 +86,7 @@ describe("the island reads the vessel's seat-roll ledger", () => {
       if (rolled) ledger.change((draft) => markRaiseRolled(draft, root, up.actCid, { edgeId: deviceEdgeId(root, peer), how: "gone" }));
       const islandLedger = privateRepo.create(emptyLarDoc());
       const daemonAuth = {
-        seed: new Uint8Array(32).fill(114), vesselVerifyingKey: own, archiveOpens: false, registerBags: [],
+        placeVerifyingKey: own, archiveOpens: false, registerBags: [],
         personaGroupId: "group", atom: { seed: "00".repeat(32), key: own },
         deviceEdge: { personaRootDid: root, deviceVerifyingKey: peer },
         personaKel: { prefix: fx.prefix, chain: fx.chain },

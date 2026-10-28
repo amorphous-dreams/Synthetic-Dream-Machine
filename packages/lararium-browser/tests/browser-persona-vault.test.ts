@@ -20,7 +20,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { runFoundingCeremony } from "@lararium/keyhive";
 import { faceAtomKeyFromSeed } from "@lararium/mesh";
 import {
-  generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed,
+  generateOrLoadBrowserVesselIdentity,
   generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed,
   wearBrowserPersona, loadBrowserActivePersona, listBrowserPersonaRoots,
   browserPersonaRootExists, browserJoineePersonaIndex,
@@ -117,10 +117,9 @@ describe("the True Name Model — the founding mints a DISTINCT persona-root as 
     const name = idb();
     repo = new Repo({ sharePolicy: async () => true });
 
-    // The exact subsequence open-browser-vessel runs on FOUND: device key inits keyhive; a distinct
+    // The exact subsequence open-browser-vessel runs on FOUND: the face atom inits Keyhive; a distinct
     // persona-root signs the edge; the vessel wears the founded root.
     const device = await generateOrLoadBrowserVesselIdentity(name, "Test Operator");
-    const vesselSeed = await loadBrowserSigningSeed(name);
     await bindSyntheticBrowserCustodySlot(name);
     const root = await generateOrLoadBrowserPersonaRoot(name, 0);
     const signerSeed = await loadBrowserPersonaRootSeed(name, 0);
@@ -128,8 +127,7 @@ describe("the True Name Model — the founding mints a DISTINCT persona-root as 
 
     const f = await runFoundingCeremony({
       repo,
-      vesselSeed,
-      vesselVerifyingKey: device.verifyingKey,
+      placeVerifyingKey: device.verifyingKey,
       vesselDisplayName: "Test Operator",
       binding: { mode: "self-stood", signerSeed },
       hearthTrueName: "",
@@ -155,13 +153,12 @@ describe("the True Name Model — the founding mints a DISTINCT persona-root as 
     repo = new Repo({ sharePolicy: async () => true });
 
     const device = await generateOrLoadBrowserVesselIdentity(name, "Op");
-    const vesselSeed = await loadBrowserSigningSeed(name);
     await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0);
     const signer0 = await loadBrowserPersonaRootSeed(name, 0);
     await wearBrowserPersona(name, 0);
     await runFoundingCeremony({
-      repo, vesselSeed, vesselVerifyingKey: device.verifyingKey,
+      repo, placeVerifyingKey: device.verifyingKey,
       vesselDisplayName: "Op", binding: { mode: "self-stood", signerSeed: signer0 }, hearthTrueName: "", nexusPubkey: device.verifyingKey,
     });
 
@@ -232,7 +229,7 @@ describe("the worn mount over the browser IDB vault", () => {
   const anchorsFor = (n: number, withMount: boolean): IdentityAnchors => ({
     personaGroupId: `aa${n}`, meshCabalDocIdHex: `bb${n}`,
     // A FULL MOUNT IS FOUR PINS. The veil tag joined the set: a face's founder-veil derives from
-  // (vesselSeed × tag) and the tag mints fresh per founding, so mounting a face without its own tag would
+  // (place seed × tag) and the tag mints fresh per founding, so mounting a face without its own tag would
   // leave the FOUNDING face's veil standing over it. Both vessel classes read one law, so both fixtures
   // carry four — this file is the browser twin of lararium-node's multi-persona fixture.
   ...(withMount ? { signerDid: `0xdid${n}`, personaKelPrefix: `EKEL${n}`, deviceEdge: edgeFor(`0xdid${n}`), veilTag: `veil-h${n}` } : {}),

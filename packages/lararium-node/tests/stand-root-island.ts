@@ -25,8 +25,8 @@ import { chain, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js"
 import { readFileSync } from "node:fs";
 import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
 import { requireFaceAnchorOfGroup } from "../src/face-anchor-store.js";
-import { loadIdentityAnchors, loadIdentityArchive, loadVeilArchive, persistIdentityArchive, persistVeilArchive } from "../src/identity-anchors.js";
-import { loadVesselSigningSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
+import { loadIdentityAnchors, loadVeilArchive, persistVeilArchive } from "../src/identity-anchors.js";
+import { loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readLocalPersonaKelChain } from "../src/local-persona-kel.js";
 import { islandStorageDirOf, nodeSealedStoreShore } from "../src/sealed-store-island.js";
 import { larBootstrapPath, larDataDir } from "../src/vessel-paths.js";
@@ -59,14 +59,12 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
   const plugin = JSON.parse(readFileSync(larBootstrapPath(), "utf8")) as { text?: string };
   const daemonUrl = (JSON.parse(plugin.text ?? '{"tiddlers":{}}') as { tiddlers?: Record<string, { text?: string }> }).tiddlers?.[DAEMON_BAG_ID]?.text;
   if (!daemonUrl) throw new Error("fixture: the root's bootstrap names no daemon document");
-  const seed = await loadVesselSigningSeed();
   const vesselKey = await loadVesselVerifyingKey();
   const kel = await readLocalPersonaKelChain(repo, anchors.personaKelPrefix);
   const atomSeed = await loadFaceAtomOfGroup(anchors.personaGroupId);
   if (!atomSeed) throw new Error("fixture: this face holds no atom");
   const atom = faceAtomKeyFromSeed(atomSeed, anchors.personaGroupId);
   const veilArchiveBytes = await loadVeilArchive(anchors.personaGroupId);
-  const archiveBytes = await loadIdentityArchive();
 
   const oracle = repo.create<LarDoc>({ schemaVersion: "lar/1", tiddlers: { [DAEMON_BAG_ID]: { tiddler: { title: DAEMON_BAG_ID, text: daemonUrl } } } } as unknown as LarDoc);
   const catalog = repo.create<LarDoc>({ schemaVersion: "lar/1", tiddlers: { [wikiBagUri("daemon")]: { tiddler: { title: wikiBagUri("daemon"), text: daemonUrl } } } } as unknown as LarDoc);
@@ -85,13 +83,13 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
     recipe: { wikiSlug: "daemon" },
   } as never;
   const daemonAuth = {
-    seed, vesselVerifyingKey: vesselKey, archiveOpens: true,
+    placeVerifyingKey: vesselKey, archiveOpens: true,
     personaGroupId: anchors.personaGroupId,
     faceAnchor: await requireFaceAnchorOfGroup(anchors.personaGroupId),
     meshCabalDocIdHex: anchors.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID, ...args.bags], signerDid: anchors.signerDid,
     personaKel: { prefix: anchors.personaKelPrefix, chain: kel }, deviceEdge: anchors.deviceEdge,
     atom: { seed: hex(atomSeed), key: atom.key },
-    ...(veilArchiveBytes ? { veilArchiveBytes } : {}), ...(archiveBytes ? { archiveBytes } : {}),
+    ...(veilArchiveBytes ? { veilArchiveBytes } : {}),
   };
   // The shore stands where a vessel's own island stands it: off the directory of the document the island owns.
   const islandDir = islandStorageDirOf({ ownedDocument: { storage: { type: "nodefs", dir: join(larDataDir(), "daemon-owned") } } })!;
@@ -99,7 +97,6 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
     dyadReading: () => (args.dyad ? args.dyad() : "clear"), sealedStore: nodeSealedStoreShore(islandDir),
     // The island's Archives rest where a vessel rests them: sealed rows under this root's own custody. A wrap
     // rests the wrapping identity's Archive first, so an island that stands again opens what it wrapped.
-    persistArchive: (bytes: Uint8Array) => persistIdentityArchive(bytes),
     persistVeilArchive: (bytes: Uint8Array) => persistVeilArchive(bytes, anchors.personaGroupId),
     ...(args.sessionProof ? { sessionProof: args.sessionProof } : {}),
   });

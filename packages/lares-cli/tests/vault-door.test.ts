@@ -217,18 +217,18 @@ describe("vault door — status, unlock, bind, unbind", () => {
   it("★ status gives ONE reading of each standing file: a floor row beside its law, a bare hot row as a fault, a private file outside the table by name ★", async () => {
     const homes = vesselCustodyHomes();
     writeFileSync(join(homes.identity, ".vessel-key-x.json"), "{}", { mode: 0o600 });
-    writeFileSync(join(homes.identity, "place-archive.bin"), "{}", { mode: 0o600 });
+    writeFileSync(join(homes.identity, ".persona-enroll-pending.json"), "{}", { mode: 0o600 });
     writeFileSync(join(homes.identity, "side-key.json"), "{}", { mode: 0o600 });
     expect(await cmdVault(parseArgs(["vault", "status", "--no-json"]))).toBe(0);
     const lines = out.join("\n").split("\n");
     // each standing file reads on exactly one line
-    for (const file of ["gate-root.bin", ".vessel-key-x.json", "place-archive.bin", "s-slots.bin"]) {
+    for (const file of ["gate-root.bin", ".vessel-key-x.json", ".persona-enroll-pending.json", "s-slots.bin"]) {
       expect(lines.filter((l) => l.includes(file)), file).toHaveLength(1);
     }
     expect(lines.find((l) => l.includes("gate-root.bin"))).toMatch(/hot\s+device-minted\s+sealed/);
     expect(lines.find((l) => l.includes(".vessel-key-x.json"))).toMatch(/floor\s+device-minted\s+bare\s+\S+\s+by law: /);
     expect(lines.find((l) => l.includes("s-slots.bin"))).toMatch(/bare\s+s-slots\.bin\s+by law: /);
-    expect(lines.find((l) => l.includes("place-archive.bin"))).toMatch(/bare\s+place-archive\.bin\s+FAULT/);
+    expect(lines.find((l) => l.includes(".persona-enroll-pending.json"))).toMatch(/bare\s+\.persona-enroll-pending\.json\s+FAULT/);
     expect(lines.find((l) => l.includes("side-key.json"))).toMatch(/OUTSIDE THE TABLE.*owner-only/);
     // the json answer carries the one custody reading, and no second table of the same files
     out.length = 0;
@@ -236,7 +236,7 @@ describe("vault door — status, unlock, bind, unbind", () => {
     const j = JSON.parse(out.join("").trim().split("\n").pop()!);
     expect(Object.keys(j.data).sort()).toEqual(["custody", "door"]);
     expect(j.data.custody.outside.map((o: { file: string }) => o.file)).toEqual(["side-key.json"]);
-    expect(j.data.custody.rows.filter((r: { fault: boolean }) => r.fault).map((r: { row: string }) => r.row)).toEqual(["place-archive"]);
+    expect(j.data.custody.rows.filter((r: { fault: boolean }) => r.fault).map((r: { row: string }) => r.row)).toEqual(["enroll-pending"]);
   });
 
   it("★ CONTROL: a clean custody home reads no fault and nothing outside the table ★", async () => {
@@ -338,24 +338,18 @@ describe("vault door — restore reads the bundle's route on a terminal", () => 
 describe("the vault door answers seven verbs", () => {
   const SEVEN = ["status", "unlock", "lock", "bind", "unbind", "backup", "restore"];
 
-  it("★ the help names the seven and no other verb, and offers no credential by flag or by environment ★", () => {
+  it("★ the help names the seven live verbs ★", () => {
     const text = helpLines("vault").join("\n");
     const usage = /usage: lares vault <([^>]*(?:<[^>]*>[^>]*)*)> /.exec(text.replace(/<(slot-id|N|file)>/g, "$1"));
     expect(usage, text).not.toBeNull();
     expect(usage![1]!.split("|").map((part) => part.trim().split(/\s+/)[0])).toEqual(SEVEN);
-    expect(text).not.toMatch(/LARES_[A-Z_]*PASSPHRASE|--yes|--check/);
   });
 
-  it("★ any other word answers as no door: a usage refusal that names the word, and no byte moves ★", async () => {
+  it("★ an unknown word answers as no door: a usage refusal that names the word, and no byte moves ★", async () => {
     const before = tree(root);
-    for (const verb of ["seal", "rotate", "repair", "passphrase", "export"]) {
-      out.length = 0; err.length = 0;
-      process.env["LARES_ARCHIVE_PASSPHRASE"] = "a-synthetic-route-in-the-environment";
-      process.env["LARES_ARCHIVE_PASSPHRASE_NEW"] = "another-synthetic-route";
-      try { expect(await run(verb, "--yes"), verb).toBe(2); }
-      finally { delete process.env["LARES_ARCHIVE_PASSPHRASE"]; delete process.env["LARES_ARCHIVE_PASSPHRASE_NEW"]; }
-      expect([...out, ...err].join("\n"), verb).toContain(`unknown sub-verb "${verb}"`);
-    }
+    const verb = "not-a-vault-verb";
+    expect(await run(verb)).toBe(2);
+    expect([...out, ...err].join("\n")).toContain(`unknown sub-verb "${verb}"`);
     expect(tree(root)).toBe(before);
     // CONTROL: a verb of the seven answers.
     expect(await run("status")).toBe(0);

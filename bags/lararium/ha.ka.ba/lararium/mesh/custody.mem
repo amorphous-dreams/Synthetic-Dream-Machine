@@ -88,7 +88,7 @@ A private file the floor never reads rides `hot`: the seal costs it nothing, and
 | `s-slots` | `floor` | the slot tree wraps the vessel key under each human route, so the key it wraps cannot seal it |
 | `sk-slots` | `floor` | the serving tree wraps SK under the vessel key's entry and each ember slot, so the key it wraps cannot seal it, and a raise reads it before any key opens (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/the-serving-key">>) |
 | `sk-rotation-owed` | `floor` | a deny-only mark in the serving tree: any counted removal sets it, and while it stands the serving tree refuses every ask, until the SK rotation at a human unlock clears it. It holds no secret, and a raise must read it with no key open |
-| `vessel-card` | `floor-plain` | a contact card holds public keys alone, and the vessel hands it to every peer it meets |
+| `relay-gate-seed` | `floor` | a herm stands its relay before any person unlocks, so its random relay-only gate seed (principal: the relay service) rests outside every key; it signs no floor duty and opens no face |
 | `charter`, `carried-charter` | `floor-plain` | the floor's gate reads each charter before any key opens, and a charter stands public and signed |
 | `carriage-consent`, `carriage-admit` | `floor-plain` | the floor reads a kept consent and an admit pin before any key opens; each names a charter, a reach and a gate's public key, and holds no secret |
 | `nexus-key-line` | `floor-plain` | a key hand-over names two public keys and both their signatures, and it stands public on the Nexus's carriage board |
@@ -350,6 +350,6 @@ Every refusal of a restore lands before the commit row, so before any row moves.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eoO1yk1R4KSrgvPHsv7j0VNtPNgKc4y9QaqhhC62H3g
+<<^ code="&#x0003;">>ni:///sha-256;nzLXP_mXcpzDsCgQpEeCO1tIHCUOtFXKXg3ZztbGsuk
 
 <<^ code="&#x0004;" -> to="?">>

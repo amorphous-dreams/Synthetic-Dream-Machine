@@ -31,7 +31,7 @@ describe("the founder's veil seat survives the night", () => {
   test("★ knowsAgent(the founding PersonaGroup) holds through every reboot shape ★", async () => {
     const repo = new Repo({ sharePolicy: async () => true });
     const verifyingKey = await pubOf(FOUNDER_SEED);
-    const f = await runFoundingCeremony({ repo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: verifyingKey,
+    const f = await runFoundingCeremony({ repo, vesselSeed: FOUNDER_SEED, placeVerifyingKey: verifyingKey,
       vesselDisplayName: "Reboot Shrine",
       binding: { mode: "self-stood", signerSeed: FOUNDER_SEED },
       hearthTrueName: "", nexusPubkey: verifyingKey,

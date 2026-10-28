@@ -2,10 +2,10 @@
  * browser-custody — the browser keystore's slot tree wraps the device seed, Keyhive Archives and persona roots.
  *
  * ── WHAT RESTS WHERE ─────────────────────────────────────────────────────────────────────────────
- * The vessel's IndexedDB `keystore` keeps three kinds of custody row: `vessel-key` (the device seed and its public
- * half), `keyhive-archive` (the vessel individual's Archive) and `veil-archive-g<PersonaGroup>` (a face's creator-veil
- * Archive), plus persona roots, per-Nexus keys, face keys, fleet-join secrets and pending joins, and walk records.
- * The device seed and Archives may stand clear before a slot binds; the face's secret rows require a slot.
+ * The vessel's IndexedDB `keystore` keeps `vessel-key` (the place KEL seed and its public half),
+ * `veil-archive-g<PersonaGroup>` (a face's creator-veil Archive), persona roots, per-Nexus keys,
+ * face keys, fleet-join secrets and pending joins, and walk records.
+ * The place seed and veil Archives may stand clear before a slot binds; the face's other secret rows require a slot.
  * Once a slot binds, the mesh slot tree rests
  * at `custody-slots` (plain bytes: ids, salts, nonces and wrapped bytes, nothing a route does not open), and each
  * custody row R rests sealed under the vessel key at `sealed/R`, its AEAD binding the carrier name
@@ -58,7 +58,7 @@ export const SEALED_ROW_PREFIX = "sealed/";
 export const KEYSTORE_CARRIER_PREFIX = "browser-keystore/";
 
 const DEVICE_SEED_ROW = "vessel-key";
-const CUSTODY_ROW = /^(?:vessel-key|keyhive-archive|veil-archive-g.+|persona-root-h\d+|persona-root-roster|nexus-key\/h\d+\/.+|vessel-face-key\/[^|]+\|[^|]+|face-atom\/.+|face-anchor\/.+|fleet-join-secret\/.+|fleet-join-pending\/.+|walk\/.+)$/;
+const CUSTODY_ROW = /^(?:vessel-key|veil-archive-g.+|persona-root-h\d+|persona-root-roster|nexus-key\/h\d+\/.+|vessel-face-key\/[^|]+\|[^|]+|face-atom\/.+|face-anchor\/.+|fleet-join-secret\/.+|fleet-join-pending\/.+|walk\/.+)$/;
 
 /** Is `row` one the slot tree wraps: the device seed, an Archive, or one of a face's secret rows. */
 export function isCustodyRow(row: string): boolean { return CUSTODY_ROW.test(row); }
@@ -404,7 +404,7 @@ async function writeKeystoreRowHeld(idbName: string, row: string, value: unknown
       if (st.sealed !== undefined) throw new BrowserCustodyRefused("torn-without-tree", idbName, row);
       // House reading under the operator's delegation, 2026-10-18: a face's secret rows take a slot first.
       // A ruling that permits clear face secrets before a slot flips this gate.
-      if (!/^(?:vessel-key|keyhive-archive|veil-archive-g.+)$/.test(row)) throw new BrowserCustodyRefused("no-custody-slot", idbName, row);
+      if (!/^(?:vessel-key|veil-archive-g.+)$/.test(row)) throw new BrowserCustodyRefused("no-custody-slot", idbName, row);
       return putClearWhileNoTree(idbName, row, value);
     }
     treeOrRefuse(idbName, st.tree, row);

@@ -57,43 +57,26 @@ const SCALE_PATIENCE_MS: Record<MeshScale, number> = {
  * to keep failing usefully. `LAR_HEARTH_READY_MS` moves it for a constrained host without a rebuild.
  */
 /**
- * How long a hearth-private `unavailable` waits before it gets believed.
- *
- * Short on purpose. It buys a local write the moment it needs to become visible, and costs a doc
- * nobody wrote far less than the full hearth budget.
- */
-const UNAVAILABLE_GRACE_MS = 2_000;
-
-/**
  * May this `unavailable` be believed yet?
  *
  * A hearth-private doc never crosses the tideline, so the library answering `unavailable` reads as a
- * terminal answer — no peer will ever supply it. That holds for a doc nobody wrote and fails for a doc
- * THIS VESSEL JUST WROTE: a founding seeds the daemon doc, writes a bootstrap, initialises a wasm
- * module, and asks for the doc back, and an in-flight local write looks exactly like an absent one at
- * the moment of asking.
- *
- * Measured: a hearth died on that reading for the very doc id it had just seeded, on an idle machine
- * with no peers — and a wider deadline could not touch it, because the terminal path never reaches the
- * deadline.
- *
- * So a first sighting buys a grace and a persistent one gets believed — but ONLY where the caller says
- * it expects the doc to be there. A caller that mints on absence treats absence as ordinary and pays
- * nothing for it. A mesh-shared `unavailable` was never terminal and stays that way: the mesh may
- * still deliver.
+ * terminal answer: no peer will ever supply it. That holds for a doc nobody wrote and fails for a doc
+ * THIS VESSEL JUST WROTE, because an in-flight local write looks exactly like an absent one at the
+ * moment of asking. The writer knows when its write rests, so the caller that reads back its own write
+ * hands that event as `settled`, and the first `unavailable` waits for exactly it: the product's own
+ * causal event, never a clock. A caller that names no pending write of its own gets the terminal answer
+ * at once; absence is ordinary for it. A mesh-shared `unavailable` was never terminal and stays that way:
+ * the mesh may still deliver.
  */
 export function unavailableVerdict(
-  at: { tideline: Tideline; sinceFirstMs: number; expectPresent?: boolean },
+  at: { tideline: Tideline; awaitingOwnWrite: boolean },
 ): "wait" | "terminal" {
   if (at.tideline !== "hearth-private") return "wait";
-  // A CALLER THAT EXPECTS ABSENCE PAYS NOTHING FOR IT. `materializeSharedLarDoc` mints a blank board
-  // when none stands, so absence rides its ordinary path — charging it a flush grace would slow every
-  // first mint to buy a moment it never needs. Only a caller reading back state it just wrote waits.
-  if (at.expectPresent !== true) return "terminal";
-  // A clock that ran backwards has not aged the sighting; treat it as freshly seen rather than expired.
-  if (!Number.isFinite(at.sinceFirstMs) || at.sinceFirstMs < 0) return "wait";
-  return at.sinceFirstMs >= UNAVAILABLE_GRACE_MS ? "terminal" : "wait";
+  return at.awaitingOwnWrite ? "wait" : "terminal";
 }
+
+/** The event that this vessel's own pending write has rested: a promise, or a thunk that makes one on first need. */
+export type OwnWriteSettled = Promise<unknown> | (() => Promise<unknown>);
 
 export function hearthReadyMs(): number {
   const raw = Number(globalThis.process?.env?.["LAR_HEARTH_READY_MS"]);
@@ -170,16 +153,16 @@ export function bootFaultVerdict(
 // DocHandle return — only mesh-shared consumers narrow the union.
 export function resolveBootDoc<T>(
   repo: Repo, url: AutomergeUrl,
-  opts: { tideline: "hearth-private"; label: string; scale?: MeshScale; expectPresent?: boolean },
+  opts: { tideline: "hearth-private"; label: string; scale?: MeshScale; settled?: OwnWriteSettled },
 ): Promise<DocHandle<T>>;
 export function resolveBootDoc<T>(
   repo: Repo, url: AutomergeUrl,
-  opts: { tideline: "mesh-shared"; label: string; scale?: MeshScale; expectPresent?: boolean },
+  opts: { tideline: "mesh-shared"; label: string; scale?: MeshScale; settled?: OwnWriteSettled },
 ): Promise<DocHandle<T> | StillJoining>;
 export async function resolveBootDoc<T>(
   repo: Repo,
   url: AutomergeUrl,
-  opts: { tideline: Tideline; label: string; scale?: MeshScale; expectPresent?: boolean },
+  opts: { tideline: Tideline; label: string; scale?: MeshScale; settled?: OwnWriteSettled },
 ): Promise<DocHandle<T> | StillJoining> {
   const scale = opts.scale ?? "dreamnet";
   const q = repo.findWithProgress<T>(url);
@@ -194,7 +177,7 @@ export async function resolveBootDoc<T>(
   let terminal = false;
   const handle = await new Promise<DocHandle<T> | null>((resolve) => {
     let settled = false;
-    let firstUnavailableAt: number | undefined;
+    let askedAgain = false;
     const finish = (h: DocHandle<T> | null) => { if (!settled) { settled = true; resolve(h); } };
     const unsub = q.subscribe((s) => {
       if (s.state === "ready") { unsub(); finish(s.handle); return; }
@@ -202,26 +185,26 @@ export async function resolveBootDoc<T>(
       // answer (no peer will ever carry it), so fail FAST on the signal, not the backstop.
       // mesh-shared keeps waiting: UNAVAILABLE there is transient (the mesh may still deliver).
       if (opts.tideline === "hearth-private" && (s.state === "unavailable" || s.state === "failed")) {
-        // A FIRST SIGHTING BUYS A GRACE. `failed` gets believed at once — the library reports a fault
-        // rather than an absence — but `unavailable` on a doc this vessel may have only just written
-        // needs the moment a flush takes, and the two are indistinguishable when asked.
+        // `failed` gets believed at once: the library reports a fault rather than an absence.
         if (s.state === "failed") { terminal = true; unsub(); finish(null); return; }
-        // This door's own patience since its FIRST sighting of "unavailable" — a local liveness
-        // grace, never a safety verdict — so it reads a monotonic clock. An adversarial or
-        // operator wall-clock set-back/set-forward must change neither how long the grace
-        // actually ran nor when it reads spent.
-        firstUnavailableAt ??= performance.now();
-        if (unavailableVerdict({ tideline: opts.tideline, expectPresent: opts.expectPresent === true,
-                                 sinceFirstMs: performance.now() - firstUnavailableAt }) === "terminal") {
-          terminal = true;   // the library ANSWERED, and kept answering — distinct from patience expiring
+        // `unavailable` on a doc this vessel may have only just written waits for that write's own flush, once.
+        if (askedAgain) return;   // the flush is the awaited event; a repeated sighting changes nothing
+        const awaiting = opts.settled !== undefined;
+        if (unavailableVerdict({ tideline: opts.tideline, awaitingOwnWrite: awaiting }) === "terminal") {
+          terminal = true;   // the library ANSWERED, and nothing of ours is still landing
           unsub(); finish(null);
           return;
         }
-        // Re-ask after the grace: a subscription that already said its piece may never speak again.
-        setTimeout(() => {
+        askedAgain = true;
+        const flushed = typeof opts.settled === "function" ? opts.settled() : opts.settled!;
+        // After the flush, ask again: a subscription that already said its piece may never speak again.
+        const again = (): void => {
           if (settled) return;
-          terminal = true; unsub(); finish(null);
-        }, UNAVAILABLE_GRACE_MS);
+          repo.findWithProgress<T>(url).whenReady()
+            .then((h) => { unsub(); finish(h as DocHandle<T>); })
+            .catch(() => { terminal = true; unsub(); finish(null); });
+        };
+        flushed.then(again, again);
       }
     });
     q.whenReady().then((h) => { unsub(); finish(h as DocHandle<T>); }).catch(() => { /* settled via subscribe/timeout */ });

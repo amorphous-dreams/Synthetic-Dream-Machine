@@ -31,7 +31,7 @@ import { cutFaceBundle, type BackupDoor } from "../src/face-bundle-cut.js";
 import { ImportRefused, RestoreRefused, importFaceBundleMemory, restoreFaceBundle } from "../src/face-bundle-restore.js";
 import { loadIdentityAnchors } from "../src/identity-anchors.js";
 import { IslandVerbRefused } from "../src/island-verb-ask.js";
-import { listPersonaRosterLines, loadVesselSigningSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
+import { listPersonaRosterLines, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readVerifiedCasBlobFromFs, casDirForStorage } from "../src/node-cas.js";
 import { ownedStore } from "../src/owned-store.js";
 import { readLocalPersonaKelChain } from "../src/local-persona-kel.js";
@@ -129,7 +129,7 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   const rootKey = (await listPersonaRosterLines())[0]!.verifyingKey;
   const anchorsA = (await loadIdentityAnchors(0))!;
   const oldSeats = [
-    await identityOf(await loadVesselSigningSeed()),
+    await loadVesselVerifyingKey(),
     await identityOf((await loadFaceAtomOfGroup(anchorsA.personaGroupId))!),
   ];
   const vesselKeyA = await loadVesselVerifyingKey();
@@ -167,7 +167,7 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   expect(carried.length).toBeGreaterThanOrEqual(4);
   const stood = await Promise.all(carried.map(identityOf));
   // CONTROL: the hunt finds a seat where one stands (the vessel's own seed stands as an old seat).
-  expect(oldSeats).toContain(await identityOf(await loadVesselSigningSeed()));
+  expect(oldSeats).toContain(await loadVesselVerifyingKey());
   expect(stood.filter((id) => oldSeats.includes(id))).toEqual([]);
   // No word of the vessel's own seat rides the body: its place key, atom seed, group or device edge.
   const text = JSON.stringify(body).toLowerCase();

@@ -103,7 +103,7 @@ export function asksOf() {
   return [
     { door: "fetch",   msg: { type: "cas:want", requestId: "probe-fetch", cid: "bafkprobe" } },
     { door: "rest",    msg: { type: "doc:rest", requestId: "probe-rest", documentIds: ["probe-document"] } },
-    { door: "custody", msg: { type: "custody:write", requestId: "probe-custody", carrier: "archive", bytes: new Uint8Array([1]) } },
+    { door: "custody", msg: { type: "custody:write", requestId: "probe-custody", carrier: "veil", bytes: new Uint8Array([1]) } },
     { door: "dyad",    msg: { type: "dyad:ask", requestId: "probe-dyad", fleetRoot: "probe-fleet", deviceKey: "probe-device" } },
   ];
 }

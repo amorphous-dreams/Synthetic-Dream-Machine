@@ -16,7 +16,7 @@ import { afterEach, describe, expect, test } from "vitest";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { operatorDaemonOptions, SealedStoreUnavailable } from "@lararium/keyhive/operator-daemon-behavior";
+import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import { announceSeatRoll, type SessionProof } from "@lararium/keyhive";
 import { hex, isVerbRefusal, mintOutboxKey, openOutboxParcel, readKeyParcel, readsAsOutboxSeal, restDigest, sha256HexBytesSync, utf8Bytes, type OutboxKey, type RecordSigner, type SeatRoll } from "@lararium/mesh";
 import { VerbTable } from "@lararium/tw5";
@@ -127,7 +127,7 @@ describe("a private body seals on a real founded vessel, end to end", () => {
     expect((reading["foundings"] as { heads: string[] }[]).map((f) => f.heads)).toEqual([[sealed["keyVersion"]]]);
   }, 120_000);
 
-  test("A LOCKED VESSEL REFUSES BY NAME AND READS NOTHING: an island with no Keyhive standing answers `SealedStoreUnavailable`, and no body lands", async () => {
+  test("A LOCKED VESSEL REFUSES BY NAME AND READS NOTHING: an island with no face provider answers waking-floor, and no body lands", async () => {
     const root = scratch();
     const st = await standFoundedIsland(teardown);
     const session = await proof();
@@ -138,8 +138,8 @@ describe("a private body seals on a real founded vessel, end to end", () => {
     const locked = await stand(st, root, { session, boot: false });   // the floor: nothing unlocked, no identity stands
     for (const [verb, args] of [["sealed-open", { bag: BAG, ref: sealed["ref"] }], ["sealed-seal", { bag: BAG, text: "x" }], ["sealed-reading", { bag: BAG }], ["sealed-hand-over", { bag: BAG, reader: "ab".repeat(32) }], ["sealed-serve", {}], ["sealed-rolls", { rolls: [] }]] as const) {
       const err = await locked.run(verb, args as never).catch((e: unknown) => e);
-      expect(err, verb).toBeInstanceOf(SealedStoreUnavailable);
-      expect(String((err as Error).message), verb).toMatch(/lares vault unlock/);
+      expect(isVerbRefusal(err), verb).toBe(true);
+      expect((err as { reason: string }).reason, verb).toBe("waking-floor");
     }
     expect(tree(casDirForStorage(root)).length).toBe(before);       // it read nothing
   }, 120_000);

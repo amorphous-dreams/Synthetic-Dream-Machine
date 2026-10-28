@@ -16,7 +16,7 @@ describe("atom admit re-entry", () => {
     const founderRepo = repo();
     const place = await foundThePlace({ repo: founderRepo, vesselSeed, hearthTrueName: "hearth" });
     const face = await foundTheFace({ repo: founderRepo, daemonHandle: place.daemonHandle, vesselSeed,
-      vesselVerifyingKey: key(vesselSeed), vesselDisplayName: "founder", binding: { mode: "self-stood", signerSeed: rootSeed },
+      placeVerifyingKey: key(vesselSeed), vesselDisplayName: "founder", binding: { mode: "self-stood", signerSeed: rootSeed },
       hearthTrueName: "hearth", nexusPubkey: key(vesselSeed), atomSeed });
     const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(key(vesselSeed)), "board:persona-kel");
     const chain = personaKelChainForPrefix(board.doc(), face.personaKelPrefix);
@@ -29,7 +29,7 @@ describe("atom admit re-entry", () => {
     expect(await verifyDeviceDelegation(payload.deviceEdge as DeviceDelegationTiddler, payload.signerDid)).toMatchObject({ ok: false, reason: "atom countersignature missing" });
     const joineeRepo = repo();
     const daemonHandle = seedDaemonDoc(joineeRepo);
-    const input = { repo: joineeRepo, daemonHandle, vesselSeed: joineeVesselSeed, vesselVerifyingKey: key(joineeVesselSeed),
+    const input = { repo: joineeRepo, daemonHandle, vesselSeed: joineeVesselSeed, placeVerifyingKey: key(joineeVesselSeed),
       atomSeed: joineeAtomSeed, vesselDisplayName: "joinee", payload, nexusPubkey: key(joineeVesselSeed),
       };
     const original = daemonHandle.change.bind(daemonHandle);

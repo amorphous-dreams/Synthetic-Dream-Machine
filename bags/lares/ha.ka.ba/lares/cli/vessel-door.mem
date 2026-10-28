@@ -11,7 +11,7 @@ mana       = 15
 manao      = 15
 manaoio    = 14
 namespace  = "&#x2299;"
-role       = "The vessel door carries four primitives and one read, the card, wire, and rite sub-doors, the founding · refresh · rebuild rites, retired spellings that refuse, and the witnesses that verify the surface."
+role       = "The vessel door carries four primitives and one read, the wire and rite sub-doors, the founding · refresh · rebuild rites, retired spellings that refuse, and the witnesses that verify the surface."
 status-why = "the door stands, the compositions ride it as rites, every caller moved and every collapsed spelling refuses; walked by the founding and contract witnesses and the founding rehearsal harness"
 tags       = ["api/pono/meme", "lararium/api/lares-lararium-binding", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/cli/vessel-door"
@@ -93,7 +93,7 @@ Every substrate motion in this CLI composes from these, and no composition earns
 presence, storage size, port, seal state, personas, quorum).
 
 `build` compiles the workspace and stamps its source digest inside `rite refresh`; it names no vessel door.
-`stand` carries `--foreground`, `--with-web`, `--restart`, `--observe`, `--install`, and `--init` postures. The sub-doors `card`, `wire`, `rotate`, and `rite` print the ContactCard, point machine AI surfaces at the vessel, rotate the place's online signer by its founding card (it reads the old card and reads the replacement card back, and refuses beside a standing vessel), and run the named compositions. The sub-door `unbound` lists the documents this vessel minted that no binding names, through the daemon's own read; it removes nothing. `lares fleet join` carries a new vessel into one face's fleet.
+`stand` carries `--foreground`, `--with-web`, `--restart`, `--observe`, `--install`, and `--init` postures. The sub-doors `wire`, `rotate`, and `rite` point machine AI surfaces at the vessel, rotate the place's online signer by its founding card (it reads the old card and reads the replacement card back, and refuses beside a standing vessel), and run the named compositions. A faceless vessel presents its public place floor card and pin; each face holds its own Keyhive identity by atom. The sub-door `unbound` lists the documents this vessel minted that no binding names, through the daemon's own read; it removes nothing. `lares fleet join` carries a new vessel into one face's fleet.
 
 ''What a stand's `ok` answers.'' `ok` reads true where the vessel stands and no organ a hand installed stands broken. The memory library keeps its own door (`lares mempalace install`) and never rides a founding, so a machine that holds none of it reads `mempalace: absent` beside a true `ok`: an absent optional organ never reads as a failed stand. A half-installed library reads `incomplete` and fails the reading (one half of the library standing without the other, or a source directory that holds files and lacks its entry), and a node that fails to answer fails the stand whatever the library says (`packages/lares-cli/src/integration-check.ts`, `mempalaceStanding`, `standOk`; `packages/lares-cli/tests/stand-ok-reads-the-vessel.test.ts`).
 
@@ -268,6 +268,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rGnazyHvHvmerv9zaPHIz0bimP_k6ZQ8ZNMAo5pDWdo
+<<^ code="&#x0003;">>ni:///sha-256;wJ-UrWXUKwbrA1Vp-3M4KEp8mEjfl6xtQ5KlZ0ae0UA
 
 <<^ code="&#x0004;" -> to="?">>

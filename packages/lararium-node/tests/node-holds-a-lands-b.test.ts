@@ -66,7 +66,7 @@ async function founderForB() {
   const place = await foundThePlace({ repo: founderRepo, vesselSeed, hearthTrueName });
   const face = await foundTheFace({
     repo: founderRepo, daemonHandle: place.daemonHandle,
-    vesselVerifyingKey: founderKey, vesselDisplayName: "founder B",
+    placeVerifyingKey: founderKey, vesselDisplayName: "founder B",
     binding: { mode: "self-stood", signerSeed }, hearthTrueName,
     nexusPubkey: founderKey, atomSeed,
   });

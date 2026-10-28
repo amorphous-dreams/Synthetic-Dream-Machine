@@ -23,7 +23,7 @@ async function founderAndJoinee() {
   const atomSeed = new Uint8Array(32).fill(83), joineeAtom = new Uint8Array(32).fill(84);
   const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" });
   const face = await foundTheFace({
-    repo: founderRepo, daemonHandle: founder.daemonHandle, vesselVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
+    repo: founderRepo, daemonHandle: founder.daemonHandle, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
     binding: { mode: "self-stood", signerSeed }, hearthTrueName: "hearth", nexusPubkey: key(founderSeed), atomSeed,
   });
   const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(key(founderSeed)), "board:persona-kel");

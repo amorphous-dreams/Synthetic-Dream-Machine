@@ -26,14 +26,14 @@
  * See lar:///ha.ka.ba/lares/docs/federation and api/pono/has-stack-ontology.
  *
  * Storage law — identity lives beside the runtime store:
- *   the keypair + card persist to `<lares>/identity` (`larIdentityDir`), in the XDG data
+ *   the place keypair persists to `<lares>/identity` (`larIdentityDir`), in the XDG data
  *   home BESIDE — never inside — the runtime `<lares>/vessel` store. No storage operation
  *   can reach it (they rmSync the substrate store, never the home that holds it). This realizes the
  *   law below (the key MUST NOT sit inside an Automerge doc storage path) and the
  *   keypair-wipe lesson: a destructive storage verb cannot reach identity.
  *
- * Custody law — the FLOOR reads the vessel key, its inception and its card, and nothing else here:
- *   the vessel keypair, the inception and the ContactCard rest in the clear (mode 0o600), since a vessel stands and
+ * Custody law — the FLOOR reads the public place key and inception, and presents the public floor card and pin:
+ *   the place keypair and inception rest in the clear (mode 0o600), since a vessel stands and
  *   answers its public name before any person unlocks it. Every other row this module writes rests sealed under
  *   the vessel key and passes through the custody seat: the persona roster, the selector, the three name maps
  *   (hot) and each persona root (cold). The persona section below states that law.
@@ -79,6 +79,7 @@ import {
   GATE_BUNDLE_INFO,
   floorKeyDoor,
   type FloorKeyDoor,
+  placeSignerFromSeed, type PlaceSigner,
 } from "@lararium/mesh";
 import { readBackStandsIn } from "./seal-ceremony.js";
 import { nodeAnchorStore } from "./identity-anchors.js";
@@ -91,7 +92,7 @@ import {
 
 /**
  * The identity dir — the ONE resolver, `<lares>/identity` (`larIdentityDir`), in the XDG
- * data home beside the `<lares>/vessel` store; the key + card + anchors are separate from vessel
+ * data home beside the `<lares>/vessel` store; the place key + face anchors are separate from vessel
  * documents and unreachable by store operations. An empty home re-derives a fresh device key — no migration arm, no legacy spelling.
  *
  * TAKES NO `dataDir`: this resolver answers off `LAR_ROOT`/XDG env vars alone (`larIdentityDir`), never
@@ -510,44 +511,7 @@ export async function loadVesselVerifyingKey(): Promise<string> {
   return raw.verifyingKey;
 }
 
-function cardFileName(login: string | null): string {
-  return login ? `.vessel-card-${login}.json` : ".vessel-card.json";
-}
-
-/**
- * Persist the operator's pre-minted Keyhive ContactCard JSON beside the keypair
- * (mode 0o600). The founding ceremony mints it once; a short-lived LEAF actor
- * (CLI run / agent turn) re-presents this cached card on every peer handshake
- * WITHOUT booting keyhive — the light-identity path (operator-peer #actor-parity
- * OP-AP5). The card carries no expiry/nonce, so the cache never goes stale; proof
- * freshness rides the per-challenge nonce, never the card.
- */
-export async function persistVesselCard(contactCardJson: string): Promise<void> {
-  const idDir = identityDir();
-  mkdirSync(idDir, { recursive: true });
-  const hint     = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
-  const cardFile = join(idDir, cardFileName(hint.login));
-  writeFileSync(cardFile, contactCardJson, { mode: 0o600, encoding: "utf8" });
-  chmodSync(cardFile, 0o600);
-  console.log(`[vessel-identity] persisted ContactCard${hint.login ? ` for ${hint.login}` : ""}`);
-}
-
-/**
- * Load the operator's cached ContactCard JSON. Throws when absent — the caller
- * must run `lares vessel found` (which mints + persists it during the founding ceremony).
- */
-export async function loadVesselCard(): Promise<string> {
-  const hint     = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
-  const cardFile = join(identityDir(), cardFileName(hint.login));
-  if (!existsSync(cardFile)) {
-    throw new Error(
-      `[vessel-identity] no ContactCard at ${cardFile} — run \`lares vessel found\` (it mints the card during the founding ceremony)`,
-    );
-  }
-  return readFileSync(cardFile, "utf8");
-}
-
-export async function loadVesselSigningSeed(): Promise<Uint8Array> {
+async function loadVesselSigningSeed(): Promise<Uint8Array> {
   await reconcilePlaceRotation();
   const hint    = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
   const keyFile = join(identityDir(), keyFileName(hint.login));
@@ -562,6 +526,13 @@ export async function loadVesselSigningSeed(): Promise<Uint8Array> {
   }
   proveStandingKey(join(identityDir(), kelFileName(hint.login)), raw);
   return signingSeedFromHex(raw.signingKey);
+}
+
+/** Open only the five framed place duties after proving the key at the current KEL head. */
+export async function vesselPlaceSignerDoor(): Promise<PlaceSigner> {
+  const seed = await loadVesselSigningSeed();
+  try { return placeSignerFromSeed(seed); }
+  finally { seed.fill(0); }
 }
 
 /** The floor key's door refused: a name the registry never declared, or a child that belongs to the sealed custody root. */

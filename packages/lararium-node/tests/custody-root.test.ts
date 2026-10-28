@@ -19,7 +19,6 @@ import {
   CUSTODY_ROOT_BYTES, CustodyRootRefused, custodyDerive, custodyRootCarrier, custodyRootFromBytes, custodyRootPath,
   isCustodyRoot, mintCustodyRoot, openCustodyRootCarrier, sealCustodyRoot, type CustodyRoot,
 } from "../src/custody-root.js";
-import { resolveRelayGateSeed } from "../src/carriage-relay.js";
 import { carrierTable, sSealedCarriers, sSlotsPath } from "../src/vault-carriers.js";
 import { ScratchCustodyIo, scratchHomes } from "./custody-io-fixture.js";
 
@@ -169,7 +168,6 @@ describe("the custody root and atom stay separate", { timeout: 30_000 }, () => {
 
   test("WELD — the floor key's derivations stand unchanged", async () => {
     expect(hex(await ed.getPublicKeyAsync(FIXED_FLOOR))).toBe("29acbae141bccaf0b22e1a94d34d0bc7361e526d0bfe12c89794bc9322966dd7");
-    expect(hex(resolveRelayGateSeed(FIXED_FLOOR))).toBe("505791b3116befe81caf6109602ba6b1a836af328cd887d4c3a97587181c83fa");
     expect(groupSecretOpenerFromSeed(FIXED_FLOOR).deviceKey).toBe("29acbae141bccaf0b22e1a94d34d0bc7361e526d0bfe12c89794bc9322966dd7");
   });
 });

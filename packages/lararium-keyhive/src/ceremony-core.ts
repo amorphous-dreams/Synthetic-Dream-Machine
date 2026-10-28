@@ -8,15 +8,15 @@
  *
  * The four vessel-specific shores the caller provides:
  *   repo         — Automerge Repo backed by any StorageAdapter
- *   vesselSeed — the PLACE's own 32-byte Ed25519 seed, from any secure store
- *   (founding ceremony also needs verifyingKey + displayName for identity tiddler)
+ *   face atom  — the selected PersonaGroup's own Keyhive identity seed
+ *   public place key — binds the face to the place without minting a place Individual
  *
  * The result types carry all minted data; the caller decides where to persist
  * the bootstrap artifact (disk, IndexedDB, stdout, etc.).
  *
  * Identity lattice produced by runFoundingCeremony:
- *   Vessel Individual (from seed)
- *     └─▶ PersonaGroup, a Keyhive GROUP (the Binding Gate proves the vessel at boot; a seat's revocation rolls
+ *   Face atom Individual
+ *     └─▶ PersonaGroup, a Keyhive GROUP (the Binding Gate proves the atom at boot; a seat's revocation rolls
  *         the key of every bag the group reaches)
  *              └─▶ MeshCabal sentinel Document (Gate C: cabal membership, owed at canon access, never at boot)
  *
@@ -24,8 +24,8 @@
  * the carriage contract adds co-operators. The MeshCabal grows; this path never re-runs.
  *
  * The TRUE NAME MODEL the ceremony enacts — two DISTINCT keys, one signed edge:
- *   · `vesselSeed` carries the PLACE's own key — minted per-install,
- *     never copied to another vessel. It mints the Vessel Individual and inits Keyhive.
+ *   · the public place key names the PLACE; it never inits Keyhive.
+ *   · the face atom seed mints the face's Keyhive Individual.
  *   · `binding` carries the PERSONA ROOT's authority — the HUMAN's side. A SELF-STOOD binding holds
  *     that root's seed, which ONLY signs and never inits Keyhive; a CONTRACTED binding holds no seed
  *     at all, carrying instead an edge some other operator already signed.
@@ -35,7 +35,7 @@
  *     seals its PersonaGroup secret to D's key (`persona-group-secret`), the secret D's sibling
  *     proofs run on.
  * `runDeviceAdmitEdge` carries the same shape outward: the founder's root signs a joinee's
- * OWN vessel key into the PersonaGroup, so no seed ever crosses the wire. A single key
+ * OWN face atom into the PersonaGroup, so no seed ever crosses the wire. A single key
  * copied across vessels would present one collector to every verifier and link every self —
  * the split is what the veil rests on. See lar:///ha.ka.ba/lares/docs/federation.
  *
@@ -68,6 +68,7 @@ import {
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
 import { buildCeremonyTiddlers, webDigest, hex as hexEncode, plainEntries, storedRecord, tiddlerText, type StoredTiddlers } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
+import { FacelessKeyhiveRefused } from "./boot-daemon-keyhive.js";
 import { InMemoryEventStore } from "./event-store.js";
 import { capEventTitle, absorbCapEvents } from "./daemon-event-store.js";
 import type { DeviceAdmitPayload } from "./index.js";
@@ -113,7 +114,7 @@ async function checkpointId(seed: Uint8Array): Promise<string> {
  * How a founding binds its device to its hearth — the two modes, made explicit rather than inferred.
  *
  * SELF-STOOD carries a seed that SIGNS: the vessel builds its own device-delegation and seats a fresh
- * persona-KEL inception. It never inits Keyhive with that seed (the per-vessel key stays the Individual).
+ * persona-KEL inception. It never inits Keyhive with that seed; the face atom stands as Individual.
  *
  * CONTRACTED carries no seed at all. A trusted operator, already contracted with the kahu, signed the edge
  * on THEIR vessel; this one carries the edge, the pinned identifier prefix, and the operator's KEL chain.
@@ -141,10 +142,8 @@ export type FoundingBinding =
 
 export interface FoundingCeremonyInput {
   repo:                Repo;
-  /** The PER-VESSEL device signing seed — inits Keyhive (this vessel IS the Individual). */
-  vesselSeed:        Uint8Array;
-  /** Hex-encoded verifying key of the place. */
-  vesselVerifyingKey: string;
+  /** The PUBLIC place key; never a face identity. */
+  placeVerifyingKey: string;
   /** Display name for the device identity tiddler. */
   vesselDisplayName:  string;
   /** HOW this founding binds its device — the two modes `vessel-standing` names. REQUIRED: every
@@ -187,8 +186,6 @@ export interface FoundingCeremonyResult {
   founderEdge:           DeviceDelegationTiddler;
   /** The atom seed handed to the shore for custody. */
   atomSeed:              Uint8Array;
-  /** The vessel's own keyhive Archive as the place founding left it. RAW SECRET material; the shore keeps it. */
-  archive:               Uint8Array;
   /** The creator-veil's keyhive Archive (see `FaceFoundingResult.veilArchive`). */
   veilArchive:           Uint8Array;
 }
@@ -219,14 +216,8 @@ export interface FoundingCeremonyResult {
 /** What a place-founding needs: a key, a name, and the hearth it stands at. No persona anywhere. */
 export interface PlaceFoundingInput {
   repo:               Repo;
-  /** The PER-VESSEL device signing seed — inits Keyhive (this vessel IS the Individual). */
-  vesselSeed:         Uint8Array;
   /** The hearth true-name (engine content-CID) this place stands at. */
   hearthTrueName:     string;
-  /** The vessel's own keyhive Archive when one already rests on this shore (a place founded again over a kept
-   *  identity). Present, the vessel individual RESTORES from it, so the archive this founding hands back still
-   *  carries every prekey secret and all the state the kept one held. Absent: a first founding. */
-  archiveBytes?:      Uint8Array;
 }
 
 export interface PlaceFoundingResult {
@@ -235,35 +226,19 @@ export interface PlaceFoundingResult {
   /** That island's live handle. `seedDaemonDoc` CREATES, so a face-founding must be handed this one
    *  rather than seeding again — a second call would stand a second daemon doc and orphan the first. */
   daemonHandle:         ReturnType<typeof seedDaemonDoc>;
-  /** This vessel's own Keyhive agent — the Place DID's identifier. */
-  vesselIdentifierHex:  string;
-  /** The self-certifying ContactCard the light leaf-identity path re-presents (OP-AP5). */
-  contactCardJson:      string;
-  /** The vessel's own keyhive Archive as this founding left it: the prekey secrets behind the card above and the
-   *  key agreement state of what it created. RAW SECRET material; the shore seals it at rest, and every later act
-   *  that re-stands this individual restores from it. */
-  archive:              Uint8Array;
 }
 
 /**
- * Found the PLACE — the daemon bag, the vessel's own Keyhive individual, and the hearth it stands at.
+ * Found the PLACE — the daemon bag and the hearth it stands at.
  *
  * Everything here stands on the vessel's own key and asks nobody. A vessel founded to this point
  * carries, serves the public shelf, and holds every sovereign act closed: the waking floor, reached
  * by founding rather than by falling.
  */
 export async function foundThePlace(input: PlaceFoundingInput): Promise<PlaceFoundingResult> {
-  const { repo, vesselSeed, hearthTrueName } = input;
+  const { repo, hearthTrueName } = input;
 
   const daemonHandle = seedDaemonDoc(repo);
-
-  const keyhive = new KeyhiveProvider();
-  const store   = new InMemoryEventStore();
-  await keyhive.init({ seed: vesselSeed, eventStore: store, ...(input.archiveBytes ? { archiveBytes: input.archiveBytes } : {}) });
-
-  const vesselIdentifierHex = await keyhive.vesselIdentifierHex();
-
-  await flushCapEvents(store, daemonHandle);
 
   daemonHandle.change((doc) => {
     doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER] = storedRecord({
@@ -272,47 +247,10 @@ export async function foundThePlace(input: PlaceFoundingInput): Promise<PlaceFou
     });
   });
 
-  const contactCardJson = new TextDecoder().decode(await keyhive.contactCard());
-  // THE ARCHIVE LEAVES BEFORE THE PROVIDER DOES. The card above names prekeys whose secrets live in this provider
-  // alone; disposed with no archive taken, the vessel's next stand mints other prekeys under the same card's name.
-  const archive = await keyhive.exportArchive();
-  await keyhive.dispose();
-
   return {
     daemonUrl: daemonHandle.url as string,
     daemonHandle,
-    vesselIdentifierHex,
-    contactCardJson,
-    archive,
   };
-}
-
-/**
- * The vessel's own self-certifying Keyhive ContactCard, minted from THE VESSEL'S OWN SEED and nothing else: the place card.
- * `foundThePlace` mints it at a place founding; a joinee node, which founds no place, mints it here so it never reaches a
- * place-arm presentation cardless. The archive leaves with the card (it holds the prekey secrets the card names).
- */
-export async function mintPlaceCard(input: { readonly vesselSeed: Uint8Array; readonly archiveBytes?: Uint8Array }): Promise<{ readonly contactCardJson: string; readonly archive: Uint8Array; readonly vesselIdentifierHex: string }> {
-  const keyhive = new KeyhiveProvider();
-  await keyhive.init({ seed: input.vesselSeed, eventStore: new InMemoryEventStore(), ...(input.archiveBytes ? { archiveBytes: input.archiveBytes } : {}) });
-  try {
-    return {
-      vesselIdentifierHex: await keyhive.vesselIdentifierHex(),
-      contactCardJson: new TextDecoder().decode(await keyhive.contactCard()),
-      archive: await keyhive.exportArchive(),
-    };
-  } finally { await keyhive.dispose(); }
-}
-
-/** Does this card name the individual whose verifying key is `vesselKeyHex`? Read through a throwaway provider, never trusted from the JSON. */
-export async function placeCardIsOf(contactCardJson: string, vesselKeyHex: string): Promise<boolean> {
-  const reader = new KeyhiveProvider();
-  await reader.init({ seed: new Uint8Array(32).fill(1), eventStore: new InMemoryEventStore() });
-  try {
-    const { id } = await reader.receiveContactCard(new TextEncoder().encode(contactCardJson));
-    return String(id).toLowerCase().replace(/^0x/, "").endsWith(vesselKeyHex.toLowerCase().replace(/^0x/, ""));
-  } catch { return false; }
-  finally { await reader.dispose(); }
 }
 
 /**
@@ -329,7 +267,7 @@ export interface FaceFoundingInput {
   repo:               Repo;
   /** The daemon handle the place-founding stood. The face writes its pins into the SAME island. */
   daemonHandle:       ReturnType<typeof seedDaemonDoc>;
-  vesselVerifyingKey: string;
+  placeVerifyingKey: string;
   vesselDisplayName:  string;
   /** The random atom seed held for this PersonaGroup. */
   atomSeed?:          Uint8Array;
@@ -485,10 +423,10 @@ async function landFaceGenesis(input: { repo: Repo; binding: FoundingBinding; at
  * its place runs exactly the code the founding ran.
  */
 export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundingResult> {
-  const { repo, daemonHandle, vesselDisplayName, vesselVerifyingKey } = input;
+  const { repo, daemonHandle, vesselDisplayName, placeVerifyingKey } = input;
   const atomSeed = input.atomSeed ?? mintFaceAtomSeed();
   const atom = faceAtomKeyFromSeed(atomSeed, "founding");
-  if (atom.key === vesselVerifyingKey.toLowerCase()) throw new Error("[founding] the place key cannot stand as a face atom");
+  if (atom.key === placeVerifyingKey.toLowerCase()) throw new Error("[founding] the place key cannot stand as a face atom");
   const foundingScope = JSON.stringify([input.hearthTrueName, input.binding.mode, input.binding.mode === "contracted" ? input.binding.personaKelPrefix : null, input.mount !== false, ...(input.askDigest === undefined ? [] : [input.askDigest])]);
   const prior = await readFaceCheckpoint(daemonHandle, atomSeed, foundingScope);
   if (prior) {
@@ -668,7 +606,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
 
   // THE VEIL'S ARCHIVE LEAVES BEFORE ITS PROVIDER DOES. The veil created the group and the cabal in this act; the
   // key agreement state that lets it seat a member or seal a chunk lives in its provider alone. The vessel's own
-  // provider created nothing here, so its archive stays the one its place founding handed out.
+  // The face provider carries the atom's archive and contact card together.
   const contactCardJson = new TextDecoder().decode(await veilKeyhive.contactCard());
   const veilArchive = await veilKeyhive.exportArchive();
   await veilKeyhive.dispose();
@@ -772,13 +710,12 @@ export async function runFoundingCeremony(
 ): Promise<FoundingCeremonyResult> {
   const place = await foundThePlace({
     repo:           input.repo,
-    vesselSeed:     input.vesselSeed,
     hearthTrueName: input.hearthTrueName,
   });
   const face = await foundTheFace({
     repo:               input.repo,
     daemonHandle:       place.daemonHandle,
-    vesselVerifyingKey: input.vesselVerifyingKey,
+    placeVerifyingKey: input.placeVerifyingKey,
     vesselDisplayName:  input.vesselDisplayName,
     binding:            input.binding,
     hearthTrueName:     input.hearthTrueName,
@@ -787,7 +724,6 @@ export async function runFoundingCeremony(
   });
   return {
     daemonUrl:       place.daemonUrl,
-    archive:         place.archive,
     ...face,
   };
 }
@@ -975,6 +911,7 @@ export async function runApplyAdmitPayload(
   input: ApplyAdmitInput,
 ): Promise<ApplyAdmitResult> {
   const { repo, vesselDisplayName, payload, atomSeed, daemonHandle } = input;
+  if (!(atomSeed instanceof Uint8Array) || atomSeed.length !== 32) throw new FacelessKeyhiveRefused();
   const atom = faceAtomKeyFromSeed(atomSeed, payload.personaGroupId);
   const mount = input.mount !== false;
   const applyScope = JSON.stringify([payload.deviceEdge, payload.personaKelPrefix, payload.hearthTrueName, payload.personaGroupId, mount]);

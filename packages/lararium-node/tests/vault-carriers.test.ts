@@ -67,14 +67,13 @@ const FCID = "cd".repeat(16);
 /** A home holding one file per row the table names, spelled the way each writer spells it. */
 const SOWN: Record<string, string> = {
   "identity/.vessel-key-joshua.json":           "{}",
+  "identity/relay-gate-seed.hex": "ab".repeat(32) + "\n",
   "identity/.vessel-kel-joshua.json":           "{}",
   "identity/.vessel-rotating-joshua.json":    "{}",
-  "identity/.vessel-card-joshua.json":          "{}",
   "identity/s-slots.bin":                      "slots",
   "identity/sk-slots.bin":                      "serving",
   "identity/gate-root.bin":                  "root",
   [`identity/faces/${FCID}/outbox-key-h0.bin`]: "x",
-  "identity/place-archive.bin":               "x",
   [`identity/faces/${FCID}/veil-archive-g${"a".repeat(64)}.bin`]: "x",
   [`identity/faces/${FCID}/face-atom-g${"a".repeat(64)}.bin`]: "x",
   [`identity/faces/${FCID}/face-anchor-g${"a".repeat(64)}.json`]: "x",
@@ -125,14 +124,14 @@ const SOWN: Record<string, string> = {
 
 /** The ruled class of every row (refound K7, K12, K15 and the custody plan's hot and cold lists). */
 const RULED: Record<string, CustodyClass> = {
-  "vessel-key": "floor", "vessel-kel": "floor", "vessel-rotating": "floor", "s-slots": "floor", "sk-slots": "floor",
-  "vessel-card": "floor-plain", "charter": "floor-plain", "carried-charter": "floor-plain",
+  "vessel-key": "floor", "relay-gate-seed": "floor", "vessel-kel": "floor", "vessel-rotating": "floor", "s-slots": "floor", "sk-slots": "floor",
+  "charter": "floor-plain", "carried-charter": "floor-plain",
   "carriage-consent": "floor-plain", "carriage-admit": "floor-plain", "nexus-key-line": "floor-plain",
   // The sealed store's rests hold no secret in the clear, and a blind carrier may hold every one (sealed-store#/the-store).
   "sealed-rest": "floor-plain", "sealed-own": "floor-plain", "sealed-chunk": "floor-plain",
   // The outbox's parcels rest under the outbox key, which its face key seals in a face-hot row.
   "sealed-outbox": "outbox", "outbox-key": "face-hot",
-  "gate-root": "hot", "place-archive": "hot", "veil-archive": "face-hot", "face-anchor": "face-hot", "face-atom": "face-hot", "face-atom-ask": "face-hot", "face-owner": "face-hot",
+  "gate-root": "hot", "veil-archive": "face-hot", "face-anchor": "face-hot", "face-atom": "face-hot", "face-atom-ask": "face-hot", "face-owner": "face-hot",
   "fk-slots": "floor", "face-index": "floor-plain",
   "enroll-pending": "hot", "grant-pending": "hot", "guardian-set": "face-hot", "admissions": "hot", "anchors": "face-hot",
   "persona-roster": "face-hot", "persona-petnames": "face-hot", "persona-declarations": "face-hot",
@@ -201,7 +200,6 @@ describe("the carrier table", () => {
       expect(at("seal", "transitions.json")).toMatchObject({ row: "transitions", custody: "floor-plain" });
       expect(at("identity", `faces/${FCID}/cofound-h0-${"5a".repeat(32)}.json`)).toMatchObject({ row: "cofound", custody: "face-hot", face: 0 });
       expect(at("identity", `faces/${FCID}/cadence-key-h0-${"7c".repeat(16)}.bin`)).toMatchObject({ row: "cadence-key", custody: "face-cold", face: 0, keyClass: "device-minted" });
-      expect(at("identity", "place-archive.bin")).toMatchObject({ row: "place-archive", face: "vessel", bare: null });
       expect(at("identity", `faces/${FCID}/veil-archive-g${"a".repeat(64)}.bin`)).toMatchObject({ row: "veil-archive", face: `group:${"a".repeat(64)}`, bare: null });
       expect(at("identity", `faces/${FCID}/face-atom-g${"a".repeat(64)}.bin`)).toMatchObject({ row: "face-atom", face: `group:${"a".repeat(64)}`, bare: null });
       expect(at("identity", `faces/${FCID}/face-atom-ask-${"b".repeat(64)}.bin`)).toMatchObject({ row: "face-atom-ask", face: `fcid:${FCID}`, bare: null });
@@ -293,7 +291,7 @@ describe("the S key rotation reads its carriers from the table", { timeout: 30_0
   test("every hot and cold carrier standing names its S-sealed carrier by home and file; plain rows stay out", async () => {
     const v = await founded();
     try {
-      sow(v.homes, { "identity/.vessel-key-joshua.json": "{}", "identity/.vessel-card-joshua.json": "{}", "vessel/sealed/lockbox/aa.bb": "x" });
+      sow(v.homes, { "identity/.vessel-key-joshua.json": "{}", "vessel/sealed/lockbox/aa.bb": "x" });
       const carriers = sSealedCarriers(v.homes);
       expect(carriers.map((c) => c.name).sort()).toEqual(v.sealed.map((c) => c.name).sort());
       expect(carriers.some((c) => c.name.includes("/hosting-h"))).toBe(false); // hosting belongs to a face key

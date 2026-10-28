@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { canonicalJson, coldKeyFromSeed, mintColdKey, mintPlaceRotation, placeSignerFromSeed, type RandomProvider } from "@lararium/mesh";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { foundDirect } from "./found-route.js";
-import { loadPlaceKelChain, loadVesselSigningSeed, loadVesselVerifyingKey, reconcilePlaceRotation, rotatePlace } from "../src/node-vessel-identity.js";
+import { loadPlaceKelChain, vesselPlaceSignerDoor, loadVesselVerifyingKey, reconcilePlaceRotation, rotatePlace } from "../src/node-vessel-identity.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
 
 vi.setConfig({ testTimeout: 240_000 });
@@ -27,13 +27,13 @@ describe("place rotation", () => {
     const r = root(); let card = new Uint8Array();
     await withLarRoot(r, async () => {
       await foundDirect({ ...at(r), entropy: entropy(1), placeFoundingCard: { readBack: async (c) => { card = new Uint8Array(c.seed); } } });
-      const old = await loadVesselSigningSeed();
+      const old = (await vesselPlaceSignerDoor()).key;
       let next = new Uint8Array();
       const one = await rotatePlace({ card, entropy: entropy(90), placeFoundingCard: { readBack: async (c) => { next = new Uint8Array(c.seed); } } });
       expect(one.seq).toBe(1);
       expect((await loadPlaceKelChain()).length).toBe(2);
       expect(await loadVesselVerifyingKey()).toBe(one.event.key);
-      expect(await loadVesselSigningSeed()).not.toEqual(old);
+      expect((await vesselPlaceSignerDoor()).key).not.toEqual(old);
       const two = await rotatePlace({ card: next, entropy: entropy(180), placeFoundingCard: { readBack: async () => {} } });
       expect(two.seq).toBe(2);
       expect((await loadPlaceKelChain()).length).toBe(3);

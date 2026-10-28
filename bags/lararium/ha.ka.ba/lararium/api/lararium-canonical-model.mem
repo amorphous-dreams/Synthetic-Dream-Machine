@@ -143,8 +143,7 @@ mesh ← tw5 ← keyhive, one-way. No platform code in mesh or in a shared tw5 f
 We define "a vessel" as a composition (a recipe), not a platform fork. The seven sovereign pieces,
 each a protocol the vessel composes rather than re-implements:
 
-# ''Identity'' — keyhive / did:key; keypair + self-certifying ContactCard (leaf: cached
-   card + bare-Ed25519 signer, no keyhive — the engine boots only on the relay).
+# ''Identity'' — the public place key and floor card carry the faceless vessel; each selected face holds its own Keyhive identity by atom.
 # ''Replica'' — Automerge Repo = own log + own storage scope.
 # ''Peering'' — NetworkAdapter + inbound-access as a CAPABILITY piece (relay: V3 gate;
    browser: admit same-origin/in-process — a legitimate asymmetry, never an open default).
@@ -284,6 +283,6 @@ Read order once held: noosphere-boot → THIS → (open-vessel · causal-island 
 seeded by the boot, enacted per turn, corrected by degree, decaying untended; the memory-palace that
 captures its FORM beside the verbatim CONTENT stands at [[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]].
 
-<<^ code="&#x0003;">>ni:///sha-256;gg9_fzoVjOLiruzsK2I31OQpq9itQYbkUfrurmOojXM
+<<^ code="&#x0003;">>ni:///sha-256;d8xmq_-dL2JPvBqRN4Ed52djXQ9vtkJEp1qDDQWblZ4
 
 <<^ code="&#x0004;" -> to="?">>
