@@ -147,3 +147,7 @@ The `blender-real-editor` job installed actual Blender 4.0.2 but could not find 
 **Act:** Independent `independent-program` fixture enters through `SeedAdapter(SeedEntry.from_file(...), program)`, and is auditioned as genuine native CAD through the one OODA-HA helm. Preserve the original seven-cohort matrix and verify old native behavior via exact-head CI.
 
 **Aftermath:** This closes the kind-switch *in the generic initial construction path*, but not Wave A's full replacement of `LocationStack` or complete multiview evidence; new adapters still need per-kind validation and composition policies. Exact-head CI remains required.
+
+## Blender 4.0 distro build diagnosis · 2026-10-28
+
+The actual headless Ubuntu 4.0.2 package returned `AttributeError: bpy.ops.wm.usd_import ... could not be found`. It therefore cannot witness our USD editor workflow. It is not an OpenUSD native-core failure; the independently executable USD/STEP job passed. The Blender lane now fetches the official Blender 4.5.15 LTS Linux distribution (released 2026-10-22), checks the publisher's SHA256 manifest and explicitly verifies the USD import operator before calling the real edit-capture/reload witness. The entire editor lane remains unverified until exact-head CI passes.

@@ -46,7 +46,7 @@ def main():
             command = [blender, "-b", "-noaudio", "--python", str(script), "--", *map(str, args)]
             result = subprocess.run(command, check=False, stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT, text=True, timeout=240)
-            if result.returncode:
+            if result.returncode or "Traceback (most recent call last):" in result.stdout:
                 raise RuntimeError(f"Blender step failed {result.returncode}:\n" + result.stdout[-12000:])
             return result.stdout
         import_log = invoke("import", "--bundle", original, "--blend", app, "--operator-note")

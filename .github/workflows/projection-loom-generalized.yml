@@ -113,10 +113,23 @@ jobs:
           python -m pip install usd-core==26.11
           python -m pip install --no-deps -e .
           python -m pip check
-      - name: Install actual Blender with USD import support
+      - name: Install official USD-enabled Blender 4.5 LTS (digest-checked)
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq blender
+          set -euo pipefail
+          curl -fL --retry 3 -o blender-linux.tar.xz \
+            https://download.blender.org/release/Blender4.5/blender-4.5.15-linux-x64.tar.xz
+          curl -fL --retry 3 -o blender-checksums.sha256 \
+            https://download.blender.org/release/Blender4.5/blender-4.5.15.sha256
+          grep 'blender-4.5.15-linux-x64.tar.xz' blender-checksums.sha256 \
+            | sed 's/blender-4.5.15-linux-x64.tar.xz/blender-linux.tar.xz/' > blender-linux.sha256
+          test -s blender-linux.sha256
+          sha256sum -c blender-linux.sha256
+          tar -xJf blender-linux.tar.xz
+          echo "$PWD/blender-4.5.15-linux-x64" >> "$GITHUB_PATH"
+      - name: Check official Blender contains USD import operator
+        run: |
           blender --version
+          blender -b -noaudio --python-expr "import bpy; assert hasattr(bpy.ops.wm, 'usd_import'), 'Official Blender build lacks USD import'"
+
       - name: Import, capture authored transform, re-audit CAD/STEP, and reload preserving operator work
         run: python scripts/real_blender_witness.py
