@@ -13,8 +13,6 @@
  *  · `torn`       — the house magic over a frame too short to hold them, or a file cut inside the magic itself (its
  *                   bytes a proper prefix of the magic). The bytes never framed, so no key is at fault; the route
  *                   out is a backup, never a re-typed credential.
- *  · `old-shape`  — the four bytes `LARK` lead the file. No custody of this house writes that frame and no
- *                   reader here opens it; the fresh-start runbook answers it, and no write here replaces it.
  *  · `unopenable` — a seal stands that this build cannot frame: the house magic with damaged bytes, or another
  *                   scheme of the house family (`lares-…`) at any length. No key can be judged against it, so none
  *                   may replace it.
@@ -26,8 +24,6 @@
 
 /** The magic that names the tree key seal scheme. */
 export const S_SEAL_MAGIC: Uint8Array = new TextEncoder().encode("lares-s-seal");
-/** The four bytes a frame of the `old-shape` reading opens with ("LARK"). The house writes no such frame and opens none. */
-export const LARK_MAGIC: Uint8Array = Uint8Array.from([0x4c, 0x41, 0x52, 0x4b]);
 /** The house family prefix: a magic that opens with it names a house seal scheme, known to this build or not. */
 const HOUSE_FAMILY_PREFIX = new TextEncoder().encode("lares-");
 /** XChaCha20-Poly1305 nonce and tag widths. */
@@ -38,7 +34,7 @@ export const S_SEAL_MIN_LENGTH = S_SEAL_MAGIC.length + S_SEAL_NONCE_LENGTH + S_S
 /** A damaged magic still testifies to a house seal while at most this many of its bytes differ. */
 const DAMAGED_MAGIC_TOLERANCE = 3;
 
-export type SCarrierReading = "absent" | "sealed" | "torn" | "old-shape" | "unopenable" | "bare";
+export type SCarrierReading = "absent" | "sealed" | "torn" | "unopenable" | "bare";
 
 const startsWith = (bytes: Uint8Array, prefix: Uint8Array): boolean =>
   bytes.length >= prefix.length && prefix.every((b, i) => bytes[i] === b);
@@ -58,7 +54,6 @@ export function readSCarrier(bytes: Uint8Array | null): SCarrierReading {
   if (bytes === null) return "absent";
   if (startsWith(bytes, S_SEAL_MAGIC)) return bytes.length >= S_SEAL_MIN_LENGTH ? "sealed" : "torn";
   if (cutInsideMagic(bytes)) return "torn";
-  if (startsWith(bytes, LARK_MAGIC)) return "old-shape";
   if (startsWith(bytes, HOUSE_FAMILY_PREFIX)) return "unopenable";
   if (bytes.length >= S_SEAL_MIN_LENGTH && magicDistance(bytes) <= DAMAGED_MAGIC_TOLERANCE) return "unopenable";
   return "bare";

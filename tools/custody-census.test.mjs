@@ -34,7 +34,7 @@ test("C1 — a clean reading names nothing", () => {
 });
 
 test("C2 — a serving, hot or cold row that reads anything but sealed reads unsealed", () => {
-  for (const reading of ["bare", "torn", "old-shape", "unopenable"]) {
+  for (const reading of ["bare", "torn", "unopenable"]) {
     for (const custody of ["serving", "hot", "cold", "face-hot", "face-cold"]) {
       const c = clean();
       c.rows[0] = row({ custody, reading, fault: true });

@@ -1,15 +1,14 @@
 /**
  * s-envelope.test — a sealed carrier names its scheme by its magic, carries no version byte, and every reading a
- * writer must keep apart stays apart: absent · sealed · torn · old-shape · unopenable · bare.
+ * writer must keep apart stays apart: absent · sealed · torn · unopenable · bare.
  *
  * The shredder this closes: a reader that folds "sealed, but not in a frame I decode" into "not sealed" lets a
- * writer replace ciphertext it never opened. A flipped magic byte, a carrier that opens with `LARK`,
- * and a future scheme in the house family all read as something a write must not replace.
+ * writer replace ciphertext it never opened. A flipped magic byte and a future scheme in the house
+ * family both read as something a write must not replace.
  */
 import { describe, test, expect } from "vitest";
 import { readSCarrier, S_SEAL_MAGIC, S_SEAL_MIN_LENGTH } from "../src/s-envelope.js";
 import { mintTreeKey, sealUnderS, openUnderS } from "../src/tree-key.js";
-import { LARK_MAGIC } from "../src/s-envelope.js";
 import { ALL_DOMAINS, DOMAIN_ROOT, VESSEL_KEL_DOMAIN, PLACE_NEXT_KEY_DOMAIN, SLOT_WRAP_INFO } from "../src/domains.js";
 
 const text = (s: string): Uint8Array => new TextEncoder().encode(s);
@@ -57,14 +56,6 @@ describe("the readings stay apart", () => {
     const future = Uint8Array.from(sealed);
     future.set(text("lares-xy-seal"), 0);
     expect(readSCarrier(future)).toBe("unopenable");
-  });
-
-  test("RED: a carrier that opens with LARK reads old-shape, whatever its version byte", () => {
-    const lark = Uint8Array.from([...LARK_MAGIC, 0x01, 0x01, ...new Array(60).fill(7)]);
-    expect(readSCarrier(lark)).toBe("old-shape");
-    const v2 = Uint8Array.from(lark);
-    v2[4] = 0x02;
-    expect(readSCarrier(v2)).toBe("old-shape");
   });
 
   test("the house magic over a frame too short to hold a nonce and a tag reads torn, never a wrong key", () => {

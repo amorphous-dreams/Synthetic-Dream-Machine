@@ -2,13 +2,13 @@
  * A face carrier has one fixed frame: magic, a 24-byte nonce, and ciphertext with a 16-byte tag.
  * A house seal under another magic remains occupied and cannot enter the face writer as cleartext.
  */
-import { LARK_MAGIC, S_SEAL_MAGIC } from "./s-envelope.js";
+import { S_SEAL_MAGIC } from "./s-envelope.js";
 
 export const FCK_SEAL_MAGIC = new TextEncoder().encode("lares-fck-seal");
 export const FCK_SEAL_NONCE_LENGTH = 24;
 export const FCK_SEAL_TAG_LENGTH = 16;
 export const FCK_SEAL_MIN_LENGTH = FCK_SEAL_MAGIC.length + FCK_SEAL_NONCE_LENGTH + FCK_SEAL_TAG_LENGTH;
-export type FckCarrierReading = "absent" | "sealed" | "torn" | "old-shape" | "unopenable" | "bare";
+export type FckCarrierReading = "absent" | "sealed" | "torn" | "unopenable" | "bare";
 
 const family = new TextEncoder().encode("lares-");
 const starts = (b: Uint8Array, p: Uint8Array): boolean => b.length >= p.length && p.every((v, i) => b[i] === v);
@@ -20,7 +20,6 @@ export function readFckCarrier(bytes: Uint8Array | null): FckCarrierReading {
   if (starts(bytes, FCK_SEAL_MAGIC)) return bytes.length >= FCK_SEAL_MIN_LENGTH ? "sealed" : "torn";
   if (starts(bytes, S_SEAL_MAGIC)) return "unopenable";
   if (prefix(bytes, FCK_SEAL_MAGIC)) return "torn";
-  if (starts(bytes, LARK_MAGIC)) return "old-shape";
   if (starts(bytes, family)) return "unopenable";
   if (bytes.length >= FCK_SEAL_MIN_LENGTH) {
     let distance = 0;
