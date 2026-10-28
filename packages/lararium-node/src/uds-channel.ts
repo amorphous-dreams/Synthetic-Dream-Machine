@@ -123,18 +123,24 @@ export interface UdsSessionSupply {
   readonly profile: CapabilityProfile;
   readonly presenter: string;
   readonly caps?: readonly string[];
-  /** Where the supply's proof was made: the Nexus it stands at. One session binds one (face, anchor). */
-  readonly anchor?: SessionAnchor;
+  /** Where the supply's proof was made: the Nexus it stands at, or the vessel's own place. One session binds one (face, anchor). */
+  readonly anchor: SessionAnchor;
   readonly mint: (at: { readonly table: SessionTable; readonly binding: SessionBinding; readonly session: Session }) =>
     Promise<{ readonly ok: true; readonly signer: UdsSessionSigner } | { readonly ok: false; readonly refusal: string }>;
 }
-/** The place a session's proof stands at. A Nexus today; the shape takes another kind of anchor beside it. */
-export type SessionAnchor = { readonly kind: "nexus"; readonly aid: string };
+/**
+ * Where a session's proof stands: the Nexus the vessel dials (its AID), or, for a vessel standing with no Nexus, the
+ * vessel's own place (its W29 place KEL prefix). A session is a meeting between a face and an anchor, held by neither's
+ * registry; the vessel's state names the anchor, never its config.
+ */
+export type SessionAnchor = { readonly kind: "nexus" | "place"; readonly aid: string };
 const sameAnchor = (a: SessionAnchor | undefined, b: SessionAnchor | undefined): boolean =>
-  a === undefined ? b === undefined : b !== undefined && a.kind === b.kind && a.aid === b.aid;
+  a !== undefined && b !== undefined && a.kind === b.kind && a.aid === b.aid;
 
 export interface UdsSessionDoor {
   open(ask: { faceRef: string; hand: Hand }): Promise<{ ok: true; supply: UdsSessionSupply } | { ok: false; refusal: string }>;
+  /** Where the vessel stands now. A session whose anchor the vessel left refuses `anchor-moved` at its next frame. */
+  anchorNow(): Promise<SessionAnchor>;
 }
 
 interface Invocation {
@@ -899,6 +905,28 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     }
     return state;
   };
+  /**
+   * THE ANCHOR HOLDS OR THE SESSION ENDS: a vessel that left a bound session's anchor (a dial pin stood, moved or fell)
+   * serves it nothing more. The session closes, its signer drops, and the caller opens afresh at the anchor the vessel
+   * stands at now. Answers whether it ended the session.
+   */
+  const anchorLeft = async (sock: Socket, state: NonNullable<ReturnType<typeof sessionSockets.get>>, requestId: string | undefined): Promise<boolean> => {
+    if (!opts.sessions || !state.sessionId) return false;
+    const now = await opts.sessions.anchorNow().catch((error: unknown) => {
+      log(`session anchor read failed: ${error instanceof Error ? error.message : String(error)}`);
+      return undefined;
+    });
+    if (sameAnchor(state.anchor, now)) return false;
+    state.signer?.drop();
+    delete state.signer;
+    delete state.supply;
+    table.close(state.sessionId);
+    delete state.sessionId;
+    if (closing || sock.destroyed) return true;
+    sessionReply(sock, { kind: "session:refused", ...(requestId !== undefined && { requestId }), refusal: "anchor-moved", closed: true });
+    sock.end();
+    return true;
+  };
   const processSession = async (parsed: unknown, sock: Socket): Promise<void> => {
     const frame = parsed && typeof parsed === "object" ? parsed as Record<string, unknown> : {};
     const state = sessionState(sock);
@@ -932,7 +960,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       }
       state.sessionId = opened.session.sessionId;
       state.hand = frame["hand"] as Hand;
-      if (supplied.supply.anchor !== undefined) state.anchor = supplied.supply.anchor;
+      state.anchor = supplied.supply.anchor;
       state.supply = supplied.supply;
       state.signer = minted.signer;
       sessionReply(sock, { kind: "session:opened", requestId, ownerEpoch: opened.session.ownerEpoch,
@@ -940,11 +968,15 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         faceRef: opened.session.face.proofSubject, caps: opened.session.caps });
       return;
     }
-    if (frame["op"] === "session:switch") return switchOn(sock, state, frame, requestId);
+    if (frame["op"] === "session:switch") {
+      if (table.checkBound(frame, state.binding).ok && await anchorLeft(sock, state, requestId)) return;
+      return switchOn(sock, state, frame, requestId);
+    }
     if (frame["op"] !== "session:call" && frame["op"] !== "session:close" &&
         frame["op"] !== "session:receipt" && frame["op"] !== "session:cancel") return sessionRefuse(sock, "unknown-op", requestId);
     const checked = table.checkBound(frame, state.binding);
     if (!checked.ok) return sessionRefuse(sock, checked.refusal, requestId);
+    if (frame["op"] !== "session:close" && await anchorLeft(sock, state, requestId)) return;
     if (frame["op"] === "session:close") {
       table.close(checked.session.sessionId);
       state.signer?.drop();
@@ -1009,8 +1041,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       preflight: async () => {
         const supplied = await door.open({ faceRef: hint, hand });
         if (!supplied.ok) return supplied;
-        // ONE SESSION BINDS ONE (face, Nexus): a proof made at another Nexus than the session's own moves nothing.
-        if (!sameAnchor(state.anchor, supplied.supply.anchor)) return { ok: false, refusal: "nexus-moved" };
+        // ONE SESSION BINDS ONE (face, anchor): a proof made at another anchor than the session's own moves nothing.
+        if (!sameAnchor(state.anchor, supplied.supply.anchor)) return { ok: false, refusal: "anchor-moved" };
         return { ok: true, target: { face: supplied.supply.face, profile: supplied.supply.profile, supply: supplied.supply } };
       },
       writeIntent: writeSwitchAct,

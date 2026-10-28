@@ -63,8 +63,8 @@ describe("UDS session socket", () => {
     const dir = mkdtempSync(join(tmpdir(), "uds-session-"));
     const claim = await claimStore(dir, { holder: "vessel" });
     const placed: Array<{ requestedBy: string; face?: string; requestId: string }> = [];
-    const door: UdsSessionDoor = { open: async ({ faceRef }) => ({ ok: true, supply: {
-      face: face(faceRef === "hint-b" ? "b" : "a"), profile: "seat", presenter: `verified-${faceRef}`, caps: ["load"], mint: fixtureMint,
+    const door: UdsSessionDoor = { anchorNow: async () => ({ kind: "place" as const, aid: "place-fixture" }), open: async ({ faceRef }) => ({ ok: true, supply: {
+      face: face(faceRef === "hint-b" ? "b" : "a"), profile: "seat", presenter: `verified-${faceRef}`, anchor: { kind: "place" as const, aid: "place-fixture" }, caps: ["load"], mint: fixtureMint,
     } }) };
     const start = (sessions?: UdsSessionDoor) => startUdsChannel({
       daemonHandle, composite, claim, repo, ...(sessions && { sessions }),

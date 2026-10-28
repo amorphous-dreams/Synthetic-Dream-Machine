@@ -71,8 +71,8 @@ describe("face bound session receipts", () => {
     composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(workingHandle, wikiSlotUri("daemon", "working")), writable: true });
     const dir = mkdtempSync(join(tmpdir(), "uds-session-receipts-"));
     let claim = await claimStore(dir, { holder: "vessel" });
-    const door: UdsSessionDoor = { open: async ({ faceRef }) => ({ ok: true, supply: {
-      face: face(faceRef), profile: "seat", presenter: `verified-${faceRef}`, caps: ["load"], mint: fixtureMint } }) };
+    const door: UdsSessionDoor = { anchorNow: async () => ({ kind: "place" as const, aid: "place-fixture" }), open: async ({ faceRef }) => ({ ok: true, supply: {
+      face: face(faceRef), profile: "seat", presenter: `verified-${faceRef}`, anchor: { kind: "place" as const, aid: "place-fixture" }, caps: ["load"], mint: fixtureMint } }) };
     const placed: Array<{ requestId: string; requestedBy: string; face?: string; effectKey?: string }> = [];
     const effects = new Map<string, string>();
     let releaseHold: (() => void) | undefined;
@@ -190,8 +190,8 @@ describe("face bound session receipts", () => {
     composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(workingHandle, wikiSlotUri("daemon", "working")), writable: true });
     const dir = mkdtempSync(join(tmpdir(), "uds-session-evict-"));
     const claim = await claimStore(dir, { holder: "vessel" });
-    const door: UdsSessionDoor = { open: async ({ faceRef }) => ({ ok: true, supply: {
-      face: face(faceRef), profile: "seat", presenter: `verified-${faceRef}`, mint: fixtureMint } }) };
+    const door: UdsSessionDoor = { anchorNow: async () => ({ kind: "place" as const, aid: "place-fixture" }), open: async ({ faceRef }) => ({ ok: true, supply: {
+      face: face(faceRef), profile: "seat", presenter: `verified-${faceRef}`, anchor: { kind: "place" as const, aid: "place-fixture" }, mint: fixtureMint } }) };
     const front = serveUdsFront({ claim });
     front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo, sessions: door, ring: 1,
       placeVerb: (o) => {

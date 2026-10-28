@@ -6,7 +6,7 @@ import { createConnection, type Socket } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
 import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, type SwitchIntent, type SwitchOutcome, concludeVerb, wikiSlotUri,
   type LarDoc, type SessionFace } from "@lararium/mesh";
-import { startUdsChannel, type UdsSessionDoor } from "../src/uds-channel.js";
+import { startUdsChannel, type SessionAnchor, type UdsSessionDoor } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
 
 /** The fixture door's mint: a signer the seat can drop, holding no key. */
@@ -65,7 +65,10 @@ async function stand(label: string, opts: {
   throwOn?: string;
   /** The Nexus each hint's proof stands at; every proof stands at one Nexus where unnamed. */
   nexusOf?: (faceRef: string) => string;
+  /** Where the vessel stands now; each proof stands there where `nexusOf` names none. */
+  anchor?: () => SessionAnchor;
 } = {}) {
+  const standing = (): SessionAnchor => opts.anchor?.() ?? { kind: "nexus", aid: "nexus-one.synthetic" };
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
   const workingHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -76,14 +79,14 @@ async function stand(label: string, opts: {
   const claim = await claimStore(dir, { holder: "vessel" });
   const placed: Array<{ requestedBy: string; face?: string; requestId: string }> = [];
   const drawn: Drawn[] = [];
-  const door: UdsSessionDoor = { open: async ({ faceRef }) => {
+  const door: UdsSessionDoor = { anchorNow: async () => standing(), open: async ({ faceRef }) => {
     if (opts.hold && faceRef === opts.hold.hint) await opts.hold.until;
     if (faceRef === opts.throwOn) throw new Error("face abcd1234 rests unopened at /secret/identity");
     const refusal = opts.refuse?.(faceRef) ?? null;
     if (refusal) return { ok: false, refusal };
     const name = faceRef.replace(/^hint-/, "");
     return { ok: true, supply: { face: face(name), profile: "seat", presenter: `verified-${faceRef}`,
-      anchor: { kind: "nexus", aid: opts.nexusOf?.(faceRef) ?? "nexus-one.synthetic" }, mint: async ({ session }) => {
+      anchor: opts.nexusOf ? { kind: "nexus", aid: opts.nexusOf(faceRef) } : standing(), mint: async ({ session }) => {
       const n = drawn.length;
       if (opts.refuseMint?.(n)) return { ok: false, refusal: "dial-refused" };
       const signer: Drawn = { face: session.face.proofSubject, n, dropped: false, drop() { signer.dropped = true; } };
@@ -223,12 +226,12 @@ describe("UDS session switch", () => {
     } finally { await v.done(); }
   });
 
-  test("RED: one session binds one (face, Nexus): a switch whose proof stands at another Nexus refuses nexus-moved and leaves the session live", async () => {
-    const v = await stand("nexus-moved", { nexusOf: (f) => (f === "hint-far" ? "nexus-two.synthetic" : "nexus-one.synthetic") });
+  test("RED: one session binds one (face, anchor): a switch whose proof stands at another Nexus refuses anchor-moved and leaves the session live", async () => {
+    const v = await stand("anchor-moved", { nexusOf: (f) => (f === "hint-far" ? "nexus-two.synthetic" : "nexus-one.synthetic") });
     try {
       const a = await v.connect();
       const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
-      expect(await a.ask(switchTo(envA, "hint-far", "far"))).toMatchObject({ kind: "session:refused", requestId: "far", refusal: "nexus-moved" });
+      expect(await a.ask(switchTo(envA, "hint-far", "far"))).toMatchObject({ kind: "session:refused", requestId: "far", refusal: "anchor-moved" });
       expect(await a.ask(call(envA, "still-a"))).toMatchObject({ kind: "session:result", status: "done" });
       // CONTROL: a face proven at the session's own Nexus switches.
       expect(await a.ask(switchTo(envA, "hint-b", "near"))).toMatchObject({ kind: "session:switch-result", outcome: "switched", generation: 1 });
@@ -276,6 +279,48 @@ describe("UDS session switch", () => {
       expect(refused).toEqual({ kind: "session:refused", requestId: "flush", refusal: "intent-unwritten" });
       expect(await a.ask(call(envA, "after"))).toMatchObject({ kind: "session:result", status: "done" });
       expect(v.drawn.map((s) => s.dropped)).toEqual([false]);
+    } finally { await v.done(); }
+  });
+
+  test("RED: a face with no Nexus opens a session at the place anchor, and a command rides it", async () => {
+    const v = await stand("place-anchor", { anchor: () => ({ kind: "place", aid: "place-prefix.synthetic" }) });
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      expect(await a.ask(call(envA, "rides"))).toMatchObject({ kind: "session:result", requestId: "rides", status: "done" });
+      expect(v.placed.map((p) => p.requestedBy)).toEqual(["verified-hint-a"]);
+    } finally { await v.done(); }
+  });
+
+  test("RED: a session opened at the place anchor refuses anchor-moved once a dial pin moves the vessel to a Nexus; CONTROL: the same face at the anchor it stands at opens again", async () => {
+    let at: SessionAnchor = { kind: "place", aid: "place-prefix.synthetic" };
+    const v = await stand("place-moved", { anchor: () => at });
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      // CONTROL first: a second open of the same face at the same anchor opens cleanly beside it.
+      const b = await v.connect();
+      const envB = envOf(await b.ask({ op: "session:open", requestId: "open-b", faceRef: "hint-a", hand: "seat" }));
+      expect(await b.ask(call(envB, "same-anchor"))).toMatchObject({ kind: "session:result", status: "done" });
+      at = { kind: "nexus", aid: "nexus-one.synthetic" };
+      expect(await a.ask(call(envA, "after-pin"))).toEqual({ kind: "session:refused", requestId: "after-pin", refusal: "anchor-moved", closed: true });
+      expect(v.drawn[0]!.dropped).toBe(true);
+      expect(v.placed.map((p) => p.requestId)).not.toContain(expect.stringContaining("after-pin"));
+      // The same face opens afresh at the anchor the vessel stands at now.
+      const c = await v.connect();
+      const envC = envOf(await c.ask({ op: "session:open", requestId: "open-c", faceRef: "hint-a", hand: "seat" }));
+      expect(await c.ask(call(envC, "at-nexus"))).toMatchObject({ kind: "session:result", status: "done" });
+    } finally { await v.done(); }
+  });
+
+  test("RED: a failed re-dial leaves the vessel at its place anchor, and a session opened at the old Nexus refuses anchor-moved", async () => {
+    let at: SessionAnchor = { kind: "nexus", aid: "nexus-one.synthetic" };
+    const v = await stand("redial-failed", { anchor: () => at });
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      at = { kind: "place", aid: "place-prefix.synthetic" };
+      expect(await a.ask(switchTo(envA, "hint-c", "switch-after"))).toEqual({ kind: "session:refused", requestId: "switch-after", refusal: "anchor-moved", closed: true });
     } finally { await v.done(); }
   });
 });

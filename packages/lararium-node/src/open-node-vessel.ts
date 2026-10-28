@@ -136,9 +136,8 @@ import { CustodyLocked } from "./custody-holder.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { composeDialPresentation } from "./dial-presentation.js";
-import { nodeSessionDoor } from "./uds-session-door.js";
+import { dialAnchorCell, nodeSessionDoor } from "./uds-session-door.js";
 import type { UdsSessionDoor } from "./uds-channel.js";
-import type { GateBundlePin } from "@lararium/mesh";
 import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type FlowPullResult } from "@lararium/mesh";
 import { gateReadingsFor, layStatementOn, flowFloorPinAt, vesselCarriagePull } from "./herm-carriage.js";
 import { readKeptAdmitBundles } from "./admit-bundle.js";
@@ -1533,8 +1532,8 @@ async function prepareNodeBootOn(
   // The operator's OWN light leaf identity (cached ContactCard + bare-Ed25519 signer). A missing card (never
   // `lares vessel found`-ed) → skip the dial rather than crash the boot (fail-open to inert; a dial needs a real card).
   let nexusDial: NexusClientDial | null = null;
-  /** The pin the face dial stands at; the session door binds each session to its Nexus. */
-  let dialPinNow: GateBundlePin | null = null;
+  /** The pin the face dial stands at, once its own presentation composed there; none means the place anchor. */
+  const dialAnchor = dialAnchorCell();
   // Set when the vessel stands its dial down: a late dial still in flight then stands nothing.
   let dialStoodDown = false;
   // The dial itself fires in `openDaemon`, once the daemon doc is read — the identity it presents carries this vessel's OWN
@@ -1659,7 +1658,7 @@ async function prepareNodeBootOn(
   stood.push({ what: "the realm plane",       down: () => { realmPlane?.dispose(); } });
   stood.push({ what: "the persona-KEL ring",  down: () => { for (const k of kelHolders.splice(0)) k.dispose(); } });
   stood.push({ what: "the sibling channel",   down: () => { siblings?.disconnect(); } });
-  stood.push({ what: "the client dial",       down: () => { dialStoodDown = true; dialPinNow = null; nexusDial?.stop(); } });
+  stood.push({ what: "the client dial",       down: () => { dialStoodDown = true; dialAnchor.clear(); nexusDial?.stop(); } });
   stood.push({ what: "the residency sweeper", down: () => { residency.stopSweeper(); } });
   stood.push({ what: "the event bus",         down: () => { (eventBus as LarEventBusImpl | undefined)?.stop(); } });
   stood.push({ what: "the daemon island",     down: async () => { await (daemonVm as DaemonVmCore | undefined)?.shutdown(); } });
@@ -2127,8 +2126,10 @@ async function prepareNodeBootOn(
         const dialPresentationNow = composed !== null && "presentation" in composed ? composed.presentation : null;
         // The composition awaited: a dial that stood meanwhile, or a vessel that stood down, takes no second adapter.
         if (!live()) return;
-        // The session door proves faces at the pin the vessel dials from here on, once its own presentation composed.
-        dialPinNow = dialPin;
+        // THE ANCHOR FOLLOWS THE DIAL'S OWN PRESENTATION (session-contract#/the-hands): the session door proves faces at
+        // this pin only once the vessel's own face composed there; a refusal leaves no pin, and the vessel's sessions
+        // anchor at its own place.
+        dialAnchor.composed(dialPin, dialPresentationNow);
         nexusDial = maybeStartNexusClientDial({
           repo, syncUrl: hd.syncUrl, pins: gatePins, hearth: hearthNameOf(hd.syncUrl!), nexus: dialNexus,
           presentation: dialPresentationNow, deadlines: dialDeadlines(),
@@ -2146,6 +2147,8 @@ async function prepareNodeBootOn(
         }); }
         catch { /* an adapter without the event names no hearth — the realm leg simply never opens that lane */ }
       } catch (e) {
+        // A re-dial that failed keeps no pin from before it: the vessel stands at its place anchor.
+        dialAnchor.clear();
         console.log(`[nexus-join] dial-out skipped: ${e instanceof Error ? e.message : String(e)}`);
       }
     };
@@ -3197,7 +3200,7 @@ async function prepareNodeBootOn(
     // THE CUT'S FOUR READS (custody#/the-cut). Each reads live when a cut asks: the face this composition mounts
     // lit, this vessel's own edge on that face's fleet board (the reading the dyad door serves the island), the
     // island's memory section under the vessel's own signed ask, and the face's key history off the local board.
-    sessionDoor: nodeSessionDoor({ pin: () => dialPinNow, sealHome, onLog: (line) => console.log(`[session] ${line}`) }),
+    sessionDoor: nodeSessionDoor({ pin: dialAnchor.pin, sealHome, onLog: (line) => console.log(`[session] ${line}`) }),
     backupDoor: {
       wornFace: () => litFace,
       ownEdgeShadowed: async () => {

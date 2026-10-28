@@ -3,34 +3,44 @@
  * every open and at every switch's preflight.
  *
  * A caller names a face by its ordinal hint, `h<N>`. The hint grants nothing: the door reads the face's PersonaGroup
- * from its own anchors, the face's K15 atom from its custody row (a locked face's row refuses), and the face's proof
- * at the Nexus of the vessel's current dial pin through the dial's own reading (`composeFaceTarget`). One session
- * binds one (face, Nexus): the door binds the one Nexus the vessel dials, and a hint that names a Nexus
- * (`h<N>@<aid>`) waits on a second Nexus.
+ * from its own anchors and the face's K15 atom from its custody row (a locked face's row refuses).
+ *
+ * A SESSION IS A MEETING BETWEEN A FACE AND AN ANCHOR, held by neither's registry (session-contract#/the-hands). The
+ * anchor follows the vessel's state, never its config: a dial pin standing (set once the vessel's own presentation
+ * composed there) anchors the session at that Nexus, where the door reads the face's proof through the dial's own
+ * reading (`composeFaceTarget`); no pin standing anchors it at the vessel's own place, its W29 place KEL prefix, where
+ * the face proves itself by its atom presented to its own vessel and no Nexus admits it (`preparePlaceFace`). A hint
+ * that names a Nexus (`h<N>@<aid>`) waits on a vessel that dials a second Nexus.
  *
  * The door reads and writes nothing: a founder's certificate stands from the dial's own presentation, and a face whose
- * certificate does not stand yet refuses by the absent piece. The supply names the Nexus its proof was made at (its
- * anchor), so a later switch whose proof stands at another Nexus refuses `nexus-moved`. The proven face's PersonaGroup
- * must be the hinted face's, or the door refuses `face-group-mismatch`.
+ * certificate does not stand yet refuses by the absent piece. Each supply names its anchor; `anchorNow` answers where
+ * the vessel stands, so the seat refuses `anchor-moved` to a session whose anchor the vessel left. The proven face's
+ * PersonaGroup must be the hinted face's, or the door refuses `face-group-mismatch`.
  *
  * The supply it answers mounts nothing and mints no key. Its presenter names the face's atom, the key the daemon judges
- * that face's verbs by; its mint draws the session's signer once the owner's table holds the session live.
+ * that face's verbs by; its mint draws the session's signer once the owner's table holds the session live. At a place
+ * the atom signs that signer's certificate, read afresh from custody at the mint and overwritten after.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/uds-session-door
  */
-import { faceAtomKeyFromSeed, HANDLE_INDEX_CEILING, nexusAidOfPin, type GateBundlePin, type JoinedFaceTarget } from "@lararium/mesh";
+import {
+  faceAtomKeyFromSeed, HANDLE_INDEX_CEILING, nexusAidOfPin, preparePlaceFace, type GateBundlePin, type JoinedFaceTarget, type PlaceReading,
+} from "@lararium/mesh";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { HAND_PROFILES } from "@lararium/mesh/session-contract";
 import { CustodyLocked } from "./custody-holder.js";
 import { composeFaceTarget } from "./dial-presentation.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
-import type { UdsSessionDoor } from "./uds-channel.js";
+import { loadPlaceReading } from "./node-vessel-identity.js";
+import type { SessionAnchor, UdsSessionDoor } from "./uds-channel.js";
 
 /** The ports the door reads; a vector replaces them, a vessel takes the defaults. */
 export interface NodeSessionDoorPorts {
-  /** The pin of the Nexus this vessel dials now, or null where it dials none. */
+  /** The pin of the Nexus this vessel dials now (its own presentation composed there), or null: the place anchor. */
   readonly pin:          () => GateBundlePin | null;
+  /** This vessel's own place, read from its verified place KEL. */
+  readonly placeOf?:     () => Promise<PlaceReading>;
   readonly sealHome:     string;
   /** Where a fault's detail goes; the wire carries its code alone. */
   readonly onLog?:       (line: string) => void;
@@ -55,15 +65,47 @@ export function nodeSessionDoor(ports: NodeSessionDoorPorts): UdsSessionDoor {
   const groupOfFace = ports.groupOfFace ?? (async (face: number) => (await loadIdentityAnchors(face))?.personaGroupId ?? null);
   const atomOfGroup = ports.atomOfGroup ?? loadFaceAtomOfGroup;
   const targetOf = ports.targetOf ?? ((at) => composeFaceTarget(at));
+  const placeOf = ports.placeOf ?? loadPlaceReading;
+  // The place's prefix holds across a rotation, so one read answers every later anchor check; its head reads afresh at each open.
+  let placeAid: string | null = null;
+  const placeAnchor = async (): Promise<SessionAnchor> => {
+    placeAid ??= (await placeOf()).place;
+    return { kind: "place", aid: placeAid };
+  };
+  const anchorNow = async (): Promise<SessionAnchor> => {
+    const pin = ports.pin();
+    if (pin === null) return placeAnchor();
+    const aid = nexusAidOfPin(pin);
+    if (aid === null) throw new Error("the dial pin names no readable Nexus");
+    return { kind: "nexus", aid };
+  };
   const open = async (face: number, hand: Hand): Promise<DoorAnswer> => {
     const group = await groupOfFace(face);
     if (group === null) return { ok: false, refusal: "face-absent" };
     const seed = await atomOfGroup(group);
     if (seed === null) return { ok: false, refusal: "face-atom-absent" };
     let presenter: string;
-    try { presenter = `0x${faceAtomKeyFromSeed(seed, group).key}`; } finally { seed.fill(0); }
+    let atomKey: string;
+    try { atomKey = faceAtomKeyFromSeed(seed, group).key; presenter = `0x${atomKey}`; } finally { seed.fill(0); }
     const pin = ports.pin();
-    if (pin === null) return { ok: false, refusal: "no-dial-pin" };
+    if (pin === null) {
+      // THE PLACE ANCHOR: the face's atom presented to its own vessel; no Nexus admits it.
+      const place = await placeOf();
+      placeAid ??= place.place;
+      const target = preparePlaceFace({ personaGroup: group, atomKey, place, signAsAtom: async (image) => {
+        const again = await atomOfGroup(group);
+        if (again === null) throw new Error("the face's atom row went between the open and the mint");
+        try { return await faceAtomKeyFromSeed(again, group).sign(image); } finally { again.fill(0); }
+      } });
+      if (!("face" in target)) return { ok: false, refusal: target.refusal };
+      return { ok: true, supply: {
+        face: target.face, profile: HAND_PROFILES[hand], presenter, anchor: { kind: "place", aid: place.place },
+        mint: async (at) => {
+          const minted = await target.mint(at);
+          return "signer" in minted ? { ok: true, signer: minted.signer } : { ok: false, refusal: minted.refusal };
+        },
+      } };
+    }
     const aid = nexusAidOfPin(pin);
     if (aid === null) return { ok: false, refusal: "pin-nexus-unreadable" };
     const read = await targetOf({ sealHome: ports.sealHome, pin, personaGroup: group });
@@ -80,6 +122,7 @@ export function nodeSessionDoor(ports: NodeSessionDoorPorts): UdsSessionDoor {
     } };
   };
   return {
+    anchorNow,
     async open({ faceRef, hand }: { faceRef: string; hand: Hand }) {
       const face = readFaceHint(faceRef);
       if (face === null) return { ok: false, refusal: "face-hint-malformed" };
@@ -92,4 +135,22 @@ export function nodeSessionDoor(ports: NodeSessionDoorPorts): UdsSessionDoor {
       }
     },
   };
+}
+
+/**
+ * Where the vessel's dial stands, as the session door reads it: the pin is set only once the vessel's own presentation
+ * composed at it, and a refused composition, a failed re-dial or a dial stood down leaves none, so the vessel's
+ * sessions anchor at its own place.
+ */
+export function dialAnchorCell(): {
+  readonly pin: () => GateBundlePin | null;
+  readonly composed: (pin: GateBundlePin | null, presentation: unknown) => void;
+  readonly clear: () => void;
+} {
+  let pin: GateBundlePin | null = null;
+  return Object.freeze({
+    pin: () => pin,
+    composed: (at: GateBundlePin | null, presentation: unknown) => { pin = presentation === null || presentation === undefined ? null : at; },
+    clear: () => { pin = null; },
+  });
 }

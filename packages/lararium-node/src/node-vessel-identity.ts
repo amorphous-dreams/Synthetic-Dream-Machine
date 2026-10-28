@@ -325,6 +325,13 @@ export async function loadPlaceKelChain(): Promise<readonly PlaceKelEvent[]> {
   const hint = await readLocalOperatorHint();
   return verifiedPlaceChain(placeFiles(hint.login).kel).chain;
 }
+/** Where this vessel's place stands: its W29 KEL prefix and the head of its verified KEL. A place-anchored session meets it here. */
+export async function loadPlaceReading(): Promise<{ readonly place: string; readonly seq: number; readonly head: string }> {
+  await reconcilePlaceRotation();
+  const hint = await readLocalOperatorHint();
+  const reading = verifiedPlaceChain(placeFiles(hint.login).kel);
+  return { place: reading.aid, seq: reading.seq, head: reading.headDigest };
+}
 export async function loadPlaceAid(): Promise<string> {
   await reconcilePlaceRotation();
   const hint = await readLocalOperatorHint();
