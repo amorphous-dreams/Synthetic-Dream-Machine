@@ -1488,7 +1488,7 @@ run_climb() {
   for i in 1 2; do
     $COMPOSE exec -T lararium-a $LARES persona new "$i" --name "kahu-$i" --handle "Kahu $i" --seat >/dev/null 2>&1 || true
   done
-  $COMPOSE exec -T lararium-a $LARES nexus seal rotate --cold-key "$CARD" --threshold 2 >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES nexus seal rotate --face 0 --cold-key "$CARD" --threshold 2 >/dev/null 2>&1
   HEAD=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 \
          | grep -oE '"sealEpochCid":"(nexus|epoch)-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
   if [ -n "$CARD" ] && [ -n "$HEAD" ] && [ "$HEAD" != "$AID" ]; then ok

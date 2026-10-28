@@ -80,10 +80,7 @@ beforeAll(async () => {
     // kept here as harness setup rather than production behavior.
     riteA: async (source, rootA) => {
       await growStagedQuorum(source, rootA, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
-      // Publishing signs in a held persona's name, and an unset selector refuses rather than choosing h0:
-      // the source wears its founding face explicitly before its daemon reads it.
-      const wear = await source(["persona", "wear", "0"]);
-      if (wear.code !== 0) throw new Error(`source: persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
+      // Publishing signs in a held persona's name, and with several faces open the publish names its founding face.
       // The publish door opens the source's store directly, so it runs here, while NO daemon holds that
       // store (the single-owner law): a write beside a live holder lands on disk the holder never reads,
       // and the source's daemon would carry a board without the gift.

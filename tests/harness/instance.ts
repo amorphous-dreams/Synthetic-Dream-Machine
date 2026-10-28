@@ -293,7 +293,9 @@ export async function growStagedQuorum(cli: (args: readonly string[]) => Promise
     i += 1;
   }
   const chairs = handles.length + 1;
-  const roll = await cli(["nexus", "seal", "rotate", "--cold-key", code, "--threshold", String(Math.floor(chairs / 2) + 1), "--json"]);
+  // The founding face (persona zero, the seed chair's holder) acts the roll: several faces stand open now, and a command
+  // acts as the face it names.
+  const roll = await cli(["nexus", "seal", "rotate", "--face", "0", "--cold-key", code, "--threshold", String(Math.floor(chairs / 2) + 1), "--json"]);
   if (roll.code !== 0) throw new Error(`seal rotate failed (${roll.code})\n${roll.stdout.slice(-400)}\n${roll.stderr.slice(-800)}`);
   const next = ((roll.json?.["data"] ?? {}) as { cards?: Array<{ code?: string }> }).cards?.map((c) => c.code ?? "").filter((c) => c.length > 0) ?? [];
   hearthCards.set(root, next.join(","));
@@ -560,9 +562,6 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
       tag: `${tag}fleet`,
       daemonEnv: { LAR_HERM_SHORE: hermShore },
       riteA: async (cliA, rootA) => {
-        // A registers a realm bag below, and a steward seals with the face she WEARS (`realm-steward`).
-        const wear = await cliA(["persona", "wear", "0"]);
-        if (wear.code !== 0) throw new Error(`A: persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
         // The seed charter grows to three chairs by the roll its founding armed; its AID stays A's hearth.
         await growStagedQuorum(cliA, rootA, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
       },
@@ -604,7 +603,7 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
         crossing.push(`A wiki init ${bookSlug} → ${minted.code}: ${minted.stdout.trim().slice(0, 200)}`);
         if (minted.code !== 0) throw new Error(`fleet: A minted no user book ${bookSlug} (${minted.code})\n${minted.stderr.slice(-600)}`);
         // The book registers at PUBLIC — the tier the carrier leg reads, and the only one it reads.
-        const reg = await A.cli(["nexus", "realm-bag", bookSlug, "--tier", "public", "--json"]);
+        const reg = await A.cli(["nexus", "realm-bag", bookSlug, "--face", "0", "--tier", "public", "--json"]);
         crossing.push(`A nexus realm-bag ${bookSlug} --tier public → ${reg.code}: ${reg.stdout.trim().slice(0, 200)}`);
         if (reg.code !== 0) throw new Error(`fleet: A registered no public book ${bookSlug} (${reg.code})\n${reg.stderr.slice(-600)}`);
       },
