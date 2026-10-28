@@ -78,7 +78,9 @@ def test_location_mismatch_unsupported_frame_and_second_structure_authority(tmp_
     stack.add_frame(Frame("second", "local3d", "m"))
     with pytest.raises(ValueError, match="unambiguous authored"):
         create_workspace(stack, declaration, tmp_path / "ambiguous")
-    stack, declaration, _ = fixture(tmp_path / "different")
+    different = tmp_path / "different"
+    different.mkdir()
+    stack, declaration, _ = fixture(different)
     # Test source cannot silently add second CAD ownership path.
     stack.add_element(Element("east", "cad_body", body_token="east"))
     with pytest.raises(ValueError, match="already owns"):
