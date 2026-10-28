@@ -57,4 +57,16 @@ describe("the switch-act row", () => {
     await nodeSwitchActLog.write(outcome(7));
     expect((await readSwitchActs()).map((a) => a.phase)).toEqual(["reset", "intent", "outcome"]);
   });
+
+  test("RED: a list whose entries are no acts ([null], a bare number, an unknown phase) reads malformed, and the next write resets the ring", async () => {
+    for (const bytes of ["[null]", "[3]", '[{"phase":"wear"}]']) {
+      await updateCustodyRow("identity", SWITCH_ACTS_FILE, () => ({ plaintext: new TextEncoder().encode(bytes), value: undefined }));
+      await expect(readSwitchActs()).rejects.toBeInstanceOf(SwitchActRowMalformed);
+      await nodeSwitchActLog.write(intent(9));
+      expect(await readSwitchActs()).toEqual([{ phase: "reset", reason: "it holds an entry that reads as no switch act" }, { ...intent(9), phase: "intent" }]);
+    }
+    // CONTROL: a reset row reads back as a list of acts, and the ring writes on.
+    await nodeSwitchActLog.write(outcome(9));
+    expect((await readSwitchActs()).map((a) => a.phase)).toEqual(["reset", "intent", "outcome"]);
+  });
 });

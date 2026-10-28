@@ -10,7 +10,7 @@
  * oldest first: a switch reads none of them back, and an audit reads what stands. A trim never leaves an outcome at
  * the head whose intent left, so the oldest act standing is an intent.
  *
- * A MALFORMED ROW. A row that opens and holds no list of acts never stops a later switch: the next write sets it aside
+ * A MALFORMED ROW. A row that opens and holds no list of acts, or a list with an entry that reads as no act (`[null]`), never stops a later switch: the next write sets it aside
  * and starts the ring afresh at a `reset` act naming why, so the loss reads in the row itself. A read of a malformed row
  * refuses by name (`SwitchActRowMalformed`). A row that does not OPEN (a locked seat, a row under another key) refuses
  * by the custody seat's own name, and the switch aborts `intent-unwritten` with that name in the vessel's log.
@@ -46,6 +46,10 @@ const parse = (bytes: Uint8Array | null): SwitchActRecord[] => {
   let read: unknown;
   try { read = JSON.parse(dec.decode(bytes)); } catch { throw new SwitchActRowMalformed("its bytes read no JSON"); }
   if (!Array.isArray(read)) throw new SwitchActRowMalformed("it holds no list");
+  const PHASES: readonly unknown[] = ["intent", "outcome", "reset"];
+  if (!read.every((a: unknown) => typeof a === "object" && a !== null && PHASES.includes((a as { phase?: unknown }).phase))) {
+    throw new SwitchActRowMalformed("it holds an entry that reads as no switch act");
+  }
   return read as SwitchActRecord[];
 };
 
