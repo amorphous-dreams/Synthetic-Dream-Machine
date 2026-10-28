@@ -34,9 +34,10 @@ import * as ed25519 from "@noble/ed25519";
 import { defaultCryptoProvider, hex, type RandomProvider } from "./crypto.js";
 import type { VesselFaceKeyCustody } from "./face-authority.js";
 import {
-  faceProofSubjectRef, isSessionSigningPurpose, own, profileSigns, readCertificate, readSessionCertificate,
-  readSessionSignature, sessionCertificateImage, sessionSignatureImage,
-  type FaceProofRefusal, type KeysHeldApart, type SessionCertificate, type SessionKey, type Signature,
+  faceProofSubjectRef, isPlaceSigningPurpose, isSessionSigningPurpose, own, placeProofSubjectRef, placeSessionCertificateImage,
+  placeSessionSignatureImage, profileSigns, readCertificate, readPlaceScope, readPlaceSessionCertificate, readPlaceSessionSignature,
+  readSessionCertificate, readSessionSignature, sessionCertificateImage, sessionSignatureImage,
+  type FaceProofRefusal, type KeysHeldApart, type PlaceSessionCertificate, type SessionCertificate, type SessionKey, type Signature,
 } from "./face-proof-subjects.js";
 import {
   SessionTable, isCapabilityProfile, validateSessionFace,
@@ -239,5 +240,103 @@ export async function openSignedSession(args: {
     return { session: opened.session, signer: minted.signer };
   } finally {
     if (!kept) args.table.close(opened.session.sessionId);
+  }
+}
+
+// ── THE PLACE-ANCHORED SIGNER ─────────────────────────────────────────────────────────────────────
+//
+// A vessel standing with no Nexus anchors its sessions at its own place (session-contract#/the-hands). There the
+// face proves itself by its atom presented to its own vessel: the atom signs one session key's certificate at the
+// mint, and the session key signs from then on, behind the same table gate as a Nexus session's signer. The atom's
+// secret never rides the signer: the caller's `signAsAtom` signs the one certificate image and the signer keeps the
+// session key alone.
+
+/** One place session's signer. Built by `mintPlaceSessionSigner` alone. */
+export class PlaceSessionSigner {
+  readonly certificate: PlaceSessionCertificate;
+  readonly binding:     SessionSignerBinding;
+  readonly #table:      SessionTable;
+  readonly #port:       SessionBinding;
+  readonly #secret:     Uint8Array;
+  #dropped = false;
+
+  /** @internal `mintPlaceSessionSigner` builds the one signer a place session holds. */
+  constructor(lock: symbol, certificate: PlaceSessionCertificate, binding: SessionSignerBinding, table: SessionTable, port: SessionBinding, secret: Uint8Array) {
+    if (lock !== MINT) throw new TypeError("session-signer: a place signer mints through mintPlaceSessionSigner alone");
+    this.certificate = certificate;
+    this.binding = Object.freeze({ ...binding });
+    this.#table = table;
+    this.#port = port;
+    this.#secret = secret;
+    Object.freeze(this);
+  }
+
+  get dropped(): boolean { return this.#dropped; }
+
+  drop(): void {
+    this.#secret.fill(0);
+    this.#dropped = true;
+  }
+
+  /** Sign `payload` under `purpose` while the owner's table holds this session live, as `SessionSigner.sign` does. */
+  async sign(purpose: unknown, payload: unknown): Promise<{ readonly signature: Signature } | SessionSignerRefusal> {
+    if (this.#dropped) return { refusal: "signer-dropped" };
+    const now = standing(this.#table, this.#port, this.binding);
+    if (!own(now, "record")) { if (now.gone) this.drop(); return { refusal: now.refusal }; }
+    if (now.record.profile !== this.binding.profile) { this.drop(); return { refusal: "session-not-live" }; }
+    if (now.record.proofSubject !== placeProofSubjectRef(this.certificate.scope)) { this.drop(); return { refusal: "session-other-face" }; }
+    if (!isPlaceSigningPurpose(purpose)) return { refusal: "purpose-unknown" };
+    if (!profileSigns(this.binding.profile, purpose)) return { refusal: "purpose-beyond-profile" };
+    if (!(payload instanceof Uint8Array)) return { refusal: "payload-malformed" };
+    const image = placeSessionSignatureImage(purpose, this.certificate.scope, this.certificate.sessionKey, payload);
+    const signature = hex(await ed25519.signAsync(image, this.#secret)) as Signature;
+    if (this.#dropped) return { refusal: "signer-dropped" };
+    const after = standing(this.#table, this.#port, this.binding);
+    if (!own(after, "record")) { if (after.gone) this.drop(); return { refusal: after.refusal }; }
+    const reading = readPlaceSessionSignature(this.certificate, purpose, payload, signature);
+    return own(reading, "read") ? { signature } : { refusal: "signer-dropped", cause: reading };
+  }
+}
+
+/**
+ * Mint the signer one live place session holds. `scope` names the face's atom key and the vessel's place; the
+ * session's worn face must name that scope's proof subject. `signAsAtom` signs the certificate image with the face's
+ * atom and answers its hex; a signature under another key refuses `custody-astray`.
+ */
+export async function mintPlaceSessionSigner(args: {
+  table: SessionTable; binding: SessionBinding; session: unknown; scope: unknown;
+  signAsAtom: (image: Uint8Array) => Promise<string>; random?: RandomProvider;
+}): Promise<{ readonly signer: PlaceSessionSigner } | SessionSignerRefusal> {
+  if (!(args.table instanceof SessionTable)) return { refusal: "table-foreign" };
+  const named = readSession(args.session);
+  if (named === null) return { refusal: "session-malformed" };
+  const now = standing(args.table, args.binding, named, true);
+  if (!own(now, "record")) return { refusal: now.refusal };
+  const { record } = now;
+  const scope = readPlaceScope(args.scope);
+  if (!own(scope, "read")) return { refusal: "certificate-refused", cause: scope };
+  if (record.proofSubject !== placeProofSubjectRef(scope.read)) return { refusal: "session-other-face" };
+
+  const drawn = new Uint8Array(32);
+  let secret: Uint8Array;
+  try {
+    (args.random ?? defaultCryptoProvider).getRandomValues(drawn);
+    secret = Uint8Array.from(drawn);
+  } finally {
+    drawn.fill(0);
+  }
+  let kept = false;
+  try {
+    const sessionKey = hex(await ed25519.getPublicKeyAsync(secret)) as SessionKey;
+    const signed = await args.signAsAtom(placeSessionCertificateImage(scope.read, sessionKey, record.profile));
+    const certificate = readPlaceSessionCertificate({ scope: scope.read, sessionKey, profile: record.profile, signature: typeof signed === "string" ? signed : "" });
+    if (!own(certificate, "read")) {
+      return { refusal: certificate.refusal === "signature-refused" ? "custody-astray" : "certificate-refused", cause: certificate };
+    }
+    const binding = { sessionId: record.sessionId, ownerEpoch: record.ownerEpoch, generation: record.generation, profile: record.profile };
+    kept = true;
+    return { signer: new PlaceSessionSigner(MINT, certificate.read, binding, args.table, args.binding, secret) };
+  } finally {
+    if (!kept) secret.fill(0);
   }
 }

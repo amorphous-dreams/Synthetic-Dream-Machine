@@ -351,6 +351,9 @@ export * from "./fleet-join.js";
 // THE JOINED VESSEL'S SESSION, named here by its first caller: the node's joined-face proof (`joined-face-proof`)
 // hands it the vessel's own certificate, grant, key and custody door. The session table stays private to the mesh.
 export { openJoinedFaceSession, prepareJoinedFace, type JoinedFaceTarget } from "./session-face.js";
+export { preparePlaceFace, supplyPlaceFace, type PlaceFaceTarget, type PlaceReading } from "./session-face.js";
+export { placeProofSubjectRef, readPlaceSessionCertificate, readPlaceSessionSignature, type PlaceScope, type PlaceSessionCertificate } from "./face-proof-subjects.js";
+export { PlaceSessionSigner } from "./session-signer.js";
 export type { JoinedFaceSessionRefusal, FaceGrantReading } from "./session-face.js";
 // THE GATE'S TWO ROOT DOORS, named here by the seats that mint them: the vessel identity mints the floor key's
 // door and the custody seat the custody root's. The bundle itself joins the barrel below, with the gate.

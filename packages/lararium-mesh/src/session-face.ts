@@ -41,10 +41,12 @@ import {
   type FaceChainRefusal, type VerifiedVesselChain, type VesselFaceKeyCustody, type WithdrawalMemory,
 } from "./face-authority.js";
 import type { RandomProvider } from "./crypto.js";
-import { faceProofSubjectRef, type FaceProofRefusal, type FaceScope, type KeysHeldApart } from "./face-proof-subjects.js";
+import { faceProofSubjectRef, own, placeProofSubjectRef, readPlaceScope, type FaceProofRefusal, type FaceScope, type KeysHeldApart, type PlaceScope } from "./face-proof-subjects.js";
 import { personaScopedBagIds } from "./persona-scope.js";
 import { validateSessionFace, type Session, type SessionBinding, type SessionFace, type SessionTable } from "./session-contract.js";
-import { mintSessionSigner, openSignedSession, type SessionSigner, type SessionSignerRefusal } from "./session-signer.js";
+import {
+  mintPlaceSessionSigner, mintSessionSigner, openSignedSession, type PlaceSessionSigner, type SessionSigner, type SessionSignerRefusal,
+} from "./session-signer.js";
 
 /** The admit a face rides at one Nexus, as its verifier read it. */
 export interface FaceAdmitReading {
@@ -247,6 +249,82 @@ export function prepareJoinedFace(args: {
     face: supplied.face,
     mint: (at: { readonly table: SessionTable; readonly binding: SessionBinding; readonly session: Session }) => mintSessionSigner({
       table: at.table, binding: at.binding, session: at.session, certificate: args.certificate, apart: args.apart, custody: args.custody,
+      ...(args.random ? { random: args.random } : {}),
+    }),
+  });
+}
+
+// ── THE PLACE ANCHOR ──────────────────────────────────────────────────────────────────────────────
+//
+// A session is a meeting between a face and an anchor, held by neither's registry (session-contract#/the-hands). A
+// vessel standing with no Nexus anchors its sessions at its own place: the face presents its atom to its own vessel,
+// and no Nexus admits it. So a place face carries no admit and no grant: its proof subject names the atom and the
+// place, its admit reference names the place's KEL head the face met it at, and its revision names that head's
+// position. A rotation of the place moves the revision; a dial pin moves the anchor itself (`anchor-moved`).
+
+/** Where the vessel's place stood when the face met it: its W29 KEL prefix, and the head of its KEL. */
+export interface PlaceReading {
+  readonly place: string;
+  readonly seq:   number;
+  readonly head:  string;
+}
+export const PLACE_FACE_REFUSALS = ["group-malformed", "atom-malformed", "place-malformed"] as const;
+export type PlaceFaceRefusalName = (typeof PLACE_FACE_REFUSALS)[number];
+
+/**
+ * Supply the face a place-anchored session wears: the PersonaGroup, the face's atom key, and the vessel's own place.
+ * Pure: no key, no I/O. The caller owes the reads (the atom from its custody row, the place from its verified KEL).
+ */
+export function supplyPlaceFace(input: { personaGroup: unknown; atomKey: unknown; place: unknown }):
+  { readonly face: SessionFace; readonly scope: PlaceScope } | { readonly refusal: PlaceFaceRefusalName } {
+  let taken: { personaGroup: unknown; atomKey: unknown; place: unknown };
+  try { taken = { personaGroup: input.personaGroup, atomKey: input.atomKey, place: input.place }; }
+  catch { return { refusal: "group-malformed" }; }
+  if (typeof taken.personaGroup !== "string" || !PERSONA_GROUP.test(taken.personaGroup)) return { refusal: "group-malformed" };
+  const reading = readPlaceReading(taken.place);
+  if (reading === null) return { refusal: "place-malformed" };
+  const scope = readPlaceScope({ atomKey: taken.atomKey, place: reading.place });
+  if (!own(scope, "read")) return { refusal: scope.refusal === "key-refused" ? "atom-malformed" : "place-malformed" };
+  const face = validateSessionFace({
+    personaGroup:   taken.personaGroup,
+    proofSubject:   placeProofSubjectRef(scope.read),
+    admitRef:       `place:${reading.place}@${reading.head}`,
+    causalRevision: `place:${reading.seq}:${reading.head}`,
+    planes:         personaScopedBagIds(taken.personaGroup),
+  });
+  if (face === null) throw new Error("session-face: the supplied place face fails the session contract's own reader");
+  return { face, scope: scope.read };
+}
+
+function readPlaceReading(value: unknown): PlaceReading | null {
+  try {
+    if (typeof value !== "object" || value === null) return null;
+    const [place, seq, head] = [field(value, "place"), field(value, "seq"), field(value, "head")];
+    if (!reference(place) || !reference(head)) return null;
+    if (typeof seq !== "number" || !Number.isSafeInteger(seq) || seq < 0) return null;
+    return { place, seq, head };
+  } catch { return null; }
+}
+
+/** A place face described for a session that has not taken it yet: the face, its scope, and the mint of its signer. */
+export interface PlaceFaceTarget {
+  readonly face:  SessionFace;
+  readonly scope: PlaceScope;
+  readonly mint: (at: { readonly table: SessionTable; readonly binding: SessionBinding; readonly session: Session }) =>
+    Promise<{ readonly signer: PlaceSessionSigner } | SessionSignerRefusal>;
+}
+
+/** The preflight half of a place session: the face supplied, and the atom's certificate held for the mint. */
+export function preparePlaceFace(args: {
+  personaGroup: unknown; atomKey: unknown; place: unknown;
+  signAsAtom: (image: Uint8Array) => Promise<string>; random?: RandomProvider;
+}): PlaceFaceTarget | { readonly refusal: PlaceFaceRefusalName } {
+  const supplied = supplyPlaceFace(args);
+  if (!("face" in supplied)) return supplied;
+  return Object.freeze({
+    face: supplied.face, scope: supplied.scope,
+    mint: (at: { readonly table: SessionTable; readonly binding: SessionBinding; readonly session: Session }) => mintPlaceSessionSigner({
+      table: at.table, binding: at.binding, session: at.session, scope: supplied.scope, signAsAtom: args.signAsAtom,
       ...(args.random ? { random: args.random } : {}),
     }),
   });
