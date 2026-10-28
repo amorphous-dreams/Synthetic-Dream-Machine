@@ -13,7 +13,7 @@ import { checkVesselChain, foldWithdrawals, type VesselFaceKeyCustody } from "..
 import { SessionTable, sessionBinding, type Session, type SessionBinding, type SessionFace } from "../src/session-contract.js";
 import { supplySessionFace } from "../src/session-face.js";
 import { mintSessionSigner, type SessionSigner } from "../src/session-signer.js";
-import { switchSession, type SessionSwitchPorts, type SessionSwitchTarget, type SwitchIntent, type SwitchOutcome } from "../src/session-switch.js";
+import { switchSession, SwitchActsSetAsideFull, type SessionSwitchPorts, type SessionSwitchTarget, type SwitchIntent, type SwitchOutcome } from "../src/session-switch.js";
 import { chain, type Chain, type Pair } from "./face-proof-fixture.js";
 
 const NEXUS = "nexus-switch.synthetic";
@@ -194,6 +194,16 @@ describe("a switch that cannot finish", () => {
     const { ports, acts } = portsFor(table, live, b, { writeIntent: async () => { throw new Error("flush failed"); } });
     expect(await switchSession(ports)).toEqual({ ok: false, refusal: "intent-unwritten", closed: false });
     expect(acts).toEqual([expect.objectContaining({ outcome: "aborted", refusal: "intent-unwritten" })]);
+    expect(table.check(envelopeOf(live.session), live.binding)).toMatchObject({ ok: true, session: { generation: 0 } });
+    expect(await signs(live.signer)).toBe("signs");
+  });
+
+  test("an intent the act store refuses past its set-aside cap refuses by that name, and the session thaws whole", async () => {
+    const [a, b] = [await held("full-a", "aaaa0019aaaa0019"), await held("full-b", "bbbb001abbbb001a")];
+    const table = new SessionTable("owner-full");
+    const live = await openLive(table, a);
+    const { ports } = portsFor(table, live, b, { writeIntent: async () => { throw new SwitchActsSetAsideFull(8); } });
+    expect(await switchSession(ports)).toEqual({ ok: false, refusal: "switch-acts-set-aside-full", closed: false });
     expect(table.check(envelopeOf(live.session), live.binding)).toMatchObject({ ok: true, session: { generation: 0 } });
     expect(await signs(live.signer)).toBe("signs");
   });

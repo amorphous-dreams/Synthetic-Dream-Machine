@@ -59,7 +59,18 @@ export interface SwitchOutcome extends SwitchIntent {
 /** The refusals a switch names beyond the table's own. */
 export const SESSION_SWITCH_REFUSALS = [
   "preflight-failed", "profile-changed", "intent-unwritten", "fence-failed", "commit-failed", "outcome-unwritten", "session-closed",
+  "switch-acts-set-aside-full",
 ] as const;
+
+/**
+ * The switch-act store kept every row it could not open as long as its cap allows, and keeps the rest: the intent
+ * cannot rest, and the switch refuses by this name, never by deleting what an operator may still read.
+ */
+export class SwitchActsSetAsideFull extends Error {
+  override readonly name = "SwitchActsSetAsideFull";
+  readonly refusal = "switch-acts-set-aside-full" as const;
+  constructor(readonly cap: number) { super(`the switch-act row does not open, and ${cap} set-aside rows already stand: an operator reads and clears them before the next switch`); }
+}
 
 export interface SessionSwitchPorts<T extends SessionSwitchTarget> {
   readonly table:    SessionTable;
@@ -136,8 +147,9 @@ export async function switchSession<T extends SessionSwitchTarget>(ports: Sessio
   try { await ports.writeIntent(intent); }
   catch (error) {
     log("intent", error);
-    await closeAct("aborted", "intent-unwritten");
-    return thaw("intent-unwritten");
+    const refusal = error instanceof SwitchActsSetAsideFull ? error.refusal : "intent-unwritten";
+    await closeAct("aborted", refusal);
+    return thaw(refusal);
   }
 
   // From the fence on, the outgoing generation has fallen: a fault closes the session and records what stood.

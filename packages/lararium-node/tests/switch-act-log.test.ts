@@ -2,13 +2,14 @@
  * switch-act-log.test — the vessel's sealed switch-act row: the real sealed write and its read-back, the ring's bound,
  * and a malformed row, which never stops a later switch and reads its loss in the row.
  */
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh";
 import { updateCustodyRow } from "../src/custody-seat.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
-import { nodeSwitchActLog, readSwitchActs, SWITCH_ACT_RING, SWITCH_ACTS_FILE, SwitchActRowMalformed, switchActsSetAsideDir, trimSwitchActs } from "../src/switch-act-log.js";
+import { nodeSwitchActLog, readSwitchActs, SWITCH_ACT_RING, SWITCH_ACTS_FILE, SWITCH_ACTS_SET_ASIDE_CAP, SwitchActRowMalformed, switchActsSetAsideDir, trimSwitchActs } from "../src/switch-act-log.js";
+import { SwitchActsSetAsideFull } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "../src/custody-holder.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
@@ -87,5 +88,41 @@ describe("the switch-act row", () => {
     // CONTROL: the fresh ring writes on.
     await nodeSwitchActLog.write(outcome(2));
     expect((await readSwitchActs()).map((a) => a.phase)).toEqual(["reset", "intent", "outcome"]);
+  });
+
+  /** Tear the row's tail, so it no longer opens; answers the torn bytes. */
+  const tear = (): Buffer => {
+    const path = join(larIdentityDir(), SWITCH_ACTS_FILE);
+    const torn = Buffer.from(readFileSync(path));
+    torn[torn.length - 1] ^= 0xff;
+    writeFileSync(path, torn);
+    return torn;
+  };
+  test("RED: two switches writing at once over a torn row lose no intent: one set-aside, one reset, both intents", async () => {
+    await nodeSwitchActLog.write(intent(1));
+    const torn = tear();
+    await Promise.all([nodeSwitchActLog.write(intent(2)), nodeSwitchActLog.write(intent(3))]);
+    const acts = await readSwitchActs();
+    expect(acts.map((a) => a.phase)).toEqual(["reset", "intent", "intent"]);
+    expect(acts.slice(1).map((a) => ("actId" in a ? a.actId : null)).sort()).toEqual(["act-2", "act-3"]);
+    expect(readdirSync(switchActsSetAsideDir())).toEqual(["switch-acts.set-aside-1.json"]);   // the fresh ring was never set aside
+    expect(readFileSync(join(switchActsSetAsideDir(), "switch-acts.set-aside-1.json")).equals(torn)).toBe(true);
+  });
+  test("RED: the set-aside holds at most its cap: past it a switch refuses switch-acts-set-aside-full by name, and no set-aside or the row moves", async () => {
+    expect(SWITCH_ACTS_SET_ASIDE_CAP).toBe(8);
+    await nodeSwitchActLog.write(intent(1));
+    const dir = switchActsSetAsideDir();
+    mkdirSync(dir, { recursive: true });
+    for (let n = 1; n < SWITCH_ACTS_SET_ASIDE_CAP; n++) writeFileSync(join(dir, `switch-acts.set-aside-${n}.json`), `kept-${n}`);
+    tear();
+    await nodeSwitchActLog.write(intent(2));                                   // CONTROL: the eighth set-aside still lands
+    expect(readdirSync(dir)).toHaveLength(SWITCH_ACTS_SET_ASIDE_CAP);
+    const torn = tear();
+    const refused = await nodeSwitchActLog.write(intent(3)).catch((e: unknown) => e);
+    expect(refused).toBeInstanceOf(SwitchActsSetAsideFull);
+    expect((refused as SwitchActsSetAsideFull).refusal).toBe("switch-acts-set-aside-full");
+    expect(readdirSync(dir)).toHaveLength(SWITCH_ACTS_SET_ASIDE_CAP);         // the ninth never landed, and none was deleted
+    for (let n = 1; n < SWITCH_ACTS_SET_ASIDE_CAP; n++) expect(readFileSync(join(dir, `switch-acts.set-aside-${n}.json`), "utf8")).toBe(`kept-${n}`);
+    expect(readFileSync(join(larIdentityDir(), SWITCH_ACTS_FILE)).equals(torn)).toBe(true);   // the row stands as it was
   });
 });

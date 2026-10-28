@@ -18,12 +18,15 @@
  * refusing to overwrite bytes it cannot open, so this module alone sets that one row aside: it moves the bytes,
  * unchanged, to `set-aside/switch-acts.set-aside-<n>.json` beside the custody homes (outside them, so no census or
  * rotation reads them as a row, and nothing reads them as acts), and starts a fresh ring at a `reset` act naming the
- * reading and where the bytes rest. This row only: custody holds no general set-aside door. A LOCKED seat still
+ * reading and where the bytes rest. Writes take turns on the row in this process, and a writer re-reads the row before
+ * it moves anything, so a fresh ring is never set aside. At most SWITCH_ACTS_SET_ASIDE_CAP rows rest set aside: past it
+ * a switch refuses `switch-acts-set-aside-full` by name and nothing is deleted. This row only: custody holds no general
+ * set-aside door. A LOCKED seat still
  * refuses by its own name, and the switch aborts `intent-unwritten` with that name in the vessel's log.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/session-contract#/the-owner
  */
-import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh";
+import { SwitchActsSetAsideFull, type SwitchIntent, type SwitchOutcome } from "@lararium/mesh";
 import { existsSync, mkdirSync, renameSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { readCustodyRow, updateCustodyRow } from "./custody-seat.js";
@@ -33,6 +36,8 @@ import { larIdentityDir } from "./vessel-paths.js";
 export const SWITCH_ACTS_FILE = "switch-acts.json";
 /** How many acts the row keeps, two per switch; the oldest leaves first. */
 export const SWITCH_ACT_RING = 256;
+/** How many unopenable rows rest set aside at most: past it a switch refuses `switch-acts-set-aside-full`, and none is deleted. */
+export const SWITCH_ACTS_SET_ASIDE_CAP = 8;
 
 /** The act that opens a ring set over a malformed row. */
 export interface SwitchActReset { readonly phase: "reset"; readonly reason: string }
@@ -75,12 +80,16 @@ export function switchActsSetAsideDir(): string {
   return join(dirname(larIdentityDir()), "set-aside");
 }
 
-/** Move the unopenable row's bytes, unchanged, to the next free `switch-acts.set-aside-<n>.json`; answers its name. */
+/**
+ * Move the unopenable row's bytes, unchanged, to the next free `switch-acts.set-aside-<n>.json`; answers its name. Past
+ * the cap it moves nothing and refuses `SwitchActsSetAsideFull`.
+ */
 function setAsideRow(): string {
   const dir = switchActsSetAsideDir();
   mkdirSync(dir, { recursive: true, mode: 0o700 });
   let n = 1;
-  while (existsSync(join(dir, `switch-acts.set-aside-${n}.json`))) n++;
+  while (n <= SWITCH_ACTS_SET_ASIDE_CAP && existsSync(join(dir, `switch-acts.set-aside-${n}.json`))) n++;
+  if (n > SWITCH_ACTS_SET_ASIDE_CAP) throw new SwitchActsSetAsideFull(SWITCH_ACTS_SET_ASIDE_CAP);
   const name = `switch-acts.set-aside-${n}.json`;
   renameSync(join(larIdentityDir(), SWITCH_ACTS_FILE), join(dir, name));
   return name;
@@ -100,16 +109,31 @@ const writeAct = (record: SwitchActRecord, fresh?: SwitchActReset) =>
     return { plaintext: enc.encode(JSON.stringify(trimSwitchActs([...standing, record]))), value: undefined };
   });
 
+/** Whether the row opens now: a writer before this one may have set it aside and started a fresh ring. */
+async function rowOpens(): Promise<boolean> {
+  try { await readCustodyRow("identity", SWITCH_ACTS_FILE); return true; }
+  catch (error) { if (error instanceof CustodyRowUnavailable) return false; throw error; }
+}
+
+/** One write at a time on this row in this process: a set-aside never moves a ring a writer before it just started. */
+let turn: Promise<unknown> = Promise.resolve();
+
 /** The vessel's sealed switch-act row. A write returns once the row rests sealed. */
 export const nodeSwitchActLog: SwitchActLog = {
-  async write(act) {
+  write(act) {
     const record: SwitchActRecord = { ...act, phase: "outcome" in act ? "outcome" : "intent" };
-    try { await writeAct(record); }
-    catch (error) {
-      if (!(error instanceof CustodyRowUnavailable)) throw error;
-      const name = setAsideRow();
-      await writeAct(record, { phase: "reset", reason: `the row did not open (${error.reading}); its bytes rest set aside as ${name}` });
-    }
+    const run = turn.then(async () => {
+      try { await writeAct(record); }
+      catch (error) {
+        if (!(error instanceof CustodyRowUnavailable)) throw error;
+        // RE-READ BEFORE ANY RENAME: the row moves aside only while it still does not open.
+        if (await rowOpens()) { await writeAct(record); return; }
+        const name = setAsideRow();
+        await writeAct(record, { phase: "reset", reason: `the row did not open (${error.reading}); its bytes rest set aside as ${name}` });
+      }
+    });
+    turn = run.catch(() => { /* the next write takes its own turn */ });
+    return run;
   },
 };
 
