@@ -350,6 +350,16 @@ async function retireSpent(keys: readonly string[]): Promise<{ readonly retired:
   return { retired: said.retired.length, keptForCrossing: said.kept.filter((k) => k.why === "crossing-open").length };
 }
 
+/**
+ * Retire the keys a charter that already moved left behind. The charter stands either way, so a fault here never
+ * aborts the act: it answers no key retired and the fault's NAME (`retire-faulted` where it names none), the keys stay
+ * held, and the act's later steps and its emit still run.
+ */
+async function retireAfterCharter(keys: readonly string[]): Promise<{ readonly retired: number; readonly keptForCrossing: number; readonly fault: string | null }> {
+  try { return { ...(await retireSpent(keys)), fault: null }; }
+  catch (err) { return { retired: 0, keptForCrossing: 0, fault: storeFailure(err, "retire-faulted").code }; }
+}
+
 async function sealSeat(args: ParsedArgs): Promise<number> {
   const sealHome = larSealHome();
   // A TORN CHARTER MUST NOT READ AS AN ABSENT ONE. `readNexusDoc` answers null for both, which suits every
@@ -397,7 +407,7 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
   const { sealLineage: _priorLineage, ...dials } = doc;
   const path = writeNexusDoc(sealHome, { ...dials, ...next });
   // THE CHARTER STANDS; the seat keys an earlier seat left behind retire now, and never before the write.
-  const left = await retireSpent(spent);
+  const left = await retireAfterCharter(spent);
   const quorum = foundingQuorumSeated(next);
   const armed = headArmed(genesis);
 
@@ -405,7 +415,7 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
     ok: true,
     data: {
       path, threshold: next.threshold, sealEpochCid, quorumSeated: quorum,
-      rotationArmed: armed, retiredSeatKeys: left.retired, cards: printed,
+      rotationArmed: armed, retiredSeatKeys: left.retired, retireFault: left.fault, cards: printed,
       kahu: kahu.map((k) => ({ chairLabel: k.chairLabel, seated: Boolean(k.verifyingKey), verifyingKey: k.verifyingKey,
         fingerprint: k.verifyingKey ? seatFingerprint(k.verifyingKey) : null })),
     },
@@ -672,8 +682,9 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
     const path = writeNexusDoc(sealHome, { ...doc, ...next });
     charterMoved = true;
     // THE ROLLED CHARTER STANDS; the closing head's seat keys retire now, and never before the write. A crossing
-    // that stands open keeps them until its seal: the outgoing hands still owe it their marks.
-    const left = await retireSpent(spent);
+    // that stands open keeps them until its seal: the outgoing hands still owe it their marks. A retire that faults
+    // here never halves the roll: the edge step and the emit still run, and the fault reads by name.
+    const left = await retireAfterCharter(spent);
     const armed = headArmed(result.epoch);
     // THE REALM EDGE ANCHORS FOLLOW THE CHARTER, and never abort a roll that stands: no face open answers
     // `no-face-open`; a face whose session or row refuses here (it locked after the preflight) leaves the edge
@@ -701,7 +712,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
         quorumSeated: foundingQuorumSeated(next),
         rollAnchor: anchored ? { cid: anchored.anchorCid, parents: anchored.parents.length } : null,
         edgeAnchor,
-        retiredSeatKeys: left.retired, seatKeysKeptForCrossing: left.keptForCrossing, cards: printed,
+        retiredSeatKeys: left.retired, seatKeysKeptForCrossing: left.keptForCrossing, retireFault: left.fault, cards: printed,
       },
       human: () => {
         console.log(`nexus seal ROTATED → chain depth ${sealLineage.length} → ${path}`);
@@ -713,7 +724,9 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
           : `  anchor:     none — the closing head rooted no roster, so no admit stood to carry`);
         if (edgeAnchor?.outcome === "owed") console.log(`  realm edges: OWED (${edgeAnchor.reason}): the head stands; \`lares nexus seal anchor --edge --face ${edgeAnchor.face} --out <partial>\` opens them`);
         if (edgeAnchor?.outcome === "no-face-open") console.log("  realm edges: no face stands open, so no face's realm edge anchors moved (`lares nexus seal anchor --edge --face N` once one opens)");
-        console.log(`  seat keys:  ${left.retired} of the closing head retired${left.keptForCrossing > 0 ? `; ${left.keptForCrossing} kept until the open crossing seals` : ""}`);
+        console.log(left.fault !== null
+          ? `  seat keys:  the closing head's keys stay held: their retire faulted (${left.fault}); the head stands`
+          : `  seat keys:  ${left.retired} of the closing head retired${left.keptForCrossing > 0 ? `; ${left.keptForCrossing} kept until the open crossing seals` : ""}`);
         console.log(`  rotation:   ${armed ? "ARMED (each chair's next key rests on its card alone)" : "UNARMED"}`);
       },
     });

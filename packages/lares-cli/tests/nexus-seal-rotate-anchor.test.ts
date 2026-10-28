@@ -37,6 +37,20 @@ const faceless = vi.hoisted(() => ({ up: false, rows: [] as string[] }));
 /** A face that rests locked: at the session preflight, or only once the edge step reaches it (it locked after). */
 const locking = vi.hoisted(() => ({ atPreflight: null as number | null, atEdge: false, proved: [] as number[] }));
 
+/** The retire step faults once the charter has moved: the closing head's keys stay held, and the roll still stands. */
+const retiring = vi.hoisted(() => ({ faultNext: false, calls: 0 }));
+vi.mock("../src/sealed-rows.js", async (importOriginal) => {
+  const real = await importOriginal<typeof import("../src/sealed-rows.js")>();
+  return {
+    ...real,
+    retireSeats: async (...args: Parameters<typeof real.retireSeats>) => {
+      retiring.calls += 1;
+      if (retiring.faultNext) { retiring.faultNext = false; throw new Error("the seat rows at /secret/rows read torn"); }
+      return real.retireSeats(...args);
+    },
+  };
+});
+
 vi.mock("../src/sealed-act-door.js", async (importOriginal) => {
   const real = await importOriginal<typeof import("../src/sealed-act-door.js")>();
   return {
@@ -114,6 +128,8 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     locking.atPreflight = null;
     locking.atEdge = false;
     locking.proved = [];
+    retiring.faultNext = false;
+    retiring.calls = 0;
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
@@ -260,5 +276,24 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     expect(data.chainDepth).toBe(2);
     expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(2);
     expect(data.retiredSeatKeys).toBeGreaterThan(0);
+  });
+
+  test("RED — a retire that throws after the charter moved still runs the edge step and the emit, and names the fault: the roll stands", async () => {
+    await seatedGenesis();
+    retiring.faultNext = true;
+    const r = await rite.rotate({ face: "0" });
+    expect(retiring.faultNext, "the retire step ran and faulted").toBe(false);
+    expect(r.code, JSON.stringify(r.out)).toBe(0);
+    const data = r.out["data"] as { edgeAnchor: { outcome: string }; chainDepth: number; retiredSeatKeys: number; retireFault: string | null };
+    expect(data.chainDepth).toBe(2);
+    expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(2);
+    expect(data.edgeAnchor.outcome, "the edge step still ran").toBe("anchored");
+    expect(data.retiredSeatKeys).toBe(0);
+    expect(data.retireFault, "the fault reads by name").toBe("retire-faulted");
+    expect(JSON.stringify(r.out).includes("/secret/rows"), "the fault's text names no path").toBe(false);
+    // CONTROL: the next roll's retire runs clean and reports no fault.
+    const again = await rite.rotate({ face: "0" });
+    expect(again.code, JSON.stringify(again.out)).toBe(0);
+    expect((again.out["data"] as { retireFault: string | null }).retireFault).toBeNull();
   });
 });
