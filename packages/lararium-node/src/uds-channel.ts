@@ -1059,8 +1059,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
    */
   /**
    * `session:act`: one sealed act that acts as a face, run on the custody door's chain as the session's face. The act's
-   * `face` or `handleIndex` names the session's face or refuses `face-row-other-face`; naming none, it takes the
-   * session's as `face`. Its arguments
+   * `face` or `handleIndex` names the session's face or refuses `face-row-other-face`. An act keyed by `face` that names
+   * none takes the session's as `face`; an act keyed by `handleIndex` alone (crossing.sign and .witness, carriage.accept,
+   * persona.guardian.enrol, persona.confirm, selves.carry and .clear) names it by that key, and naming none refuses
+   * `bad-args` at the act's own reading, which takes no `face`. Its arguments
    * and its answer ride this socket alone, as a custody frame's do: the receipt it leaves names the act and the face
    * (its digest covers those two, never an argument), and no outcome body rests anywhere.
    * A RETRY UNDER ONE requestId READS THE RECEIPT OF THE ACT THAT RAN under it, whatever arguments it carries: an act
@@ -1079,7 +1081,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (!opts.sessionActs.names.has(name)) return sessionRefuse(sock, "act-rides-the-custody-door", requestId);
     const args = given as Record<string, unknown>;
     // An act names its face by `face` or by `handleIndex`; either naming another face refuses. An act that names none
-    // takes the session's face as `face`; one that names it keeps the key it named, and no other (an act takes only its keys).
+    // gets the session's face as `face`, which an act keyed by `handleIndex` alone refuses `bad-args`; one that names it
+    // keeps the key it named, and no other (an act takes only its keys).
     for (const key of ["face", "handleIndex"] as const) {
       if (args[key] !== undefined && args[key] !== state.supply.ordinal) return sessionRefuse(sock, "face-row-other-face", requestId);
     }

@@ -346,9 +346,9 @@ async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
  * door, acting as the place under a human unlock (hands-spine-lane#/watch names each and why):
  * `face.resolve` chooses the face and cannot ride the session it chooses; the seat, seal, cofound and roll-circle
  * acts are the charter's seats; petname.* and declaration.* write the place's sealed rows naming its faces (the face's
- * plane takes a name only by `selves.carry`); the persona reads (`roots`, `guardian.show`, `provisional`, `head`,
- * `view`) and `selves.read`, `walk.state`, `host.state`, `carriage.readings` and `crossing.state` read and sign
- * nothing; crossing.open/bind/seal are the charter's rite; `walk.invite` and `host.invite` hand the place's wallet;
+ * plane takes a name only by `selves.carry`); the persona reads (`roots`, `guardian.show`, `provisional`, `head`) and
+ * `selves.read`, `walk.state`, `host.state`, `carriage.readings` and `crossing.state` sign no face's key, and
+ * `persona.view` signs as a held chair (a seat key), never as a face; crossing.open/bind/seal are the charter's rite; `walk.invite` and `host.invite` hand the place's wallet;
  * and `bundle.restore`/`bundle.import` land a face anew as recovery.
  */
 export const SESSION_ACTS: ReadonlySet<string> = new Set([

@@ -73,6 +73,8 @@ import { FsCustodyIo } from "../src/custody-io.js";
 import { unlockCustody } from "../src/custody-session.js";
 import { openFaceTree } from "../src/face-custody.js";
 import { FIXTURE_PASSPHRASE, seatScratchCustody } from "./custody-seat-fixture.js";
+import { nodeSessionDoor } from "../src/uds-session-door.js";
+import { SessionTable, sessionBinding } from "@lararium/mesh";
 
 vi.setConfig({ testTimeout: 600_000, hookTimeout: 600_000 });
 
@@ -645,6 +647,36 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     await writeCustodyRow("identity", guardianSetFile(1), new TextEncoder().encode(JSON.stringify({ prefix: a.prefix, ...a.body.guardianSet })));
     expect((await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo })).guardianSet).toBe("held");
   });
+  test("R15 — a restored face standing provisional, and a face this vessel founded, each open a session at the place through the production door, so persona.confirm and the guardian enrolment ride it", async () => {
+    const a = await cutOnDestroyedVessel("a");
+    await foundVessel("b");
+    await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo });
+    expect(await readProvisionalMark(1)).not.toBeNull();                       // h1 stands provisional
+    expect(await readProvisionalMark(0)).toBeNull();                           // h0, founded here, stands whole
+    // The production door with its real ports: the face's anchors, its atom row, the place KEL. No dial pin stands, so
+    // each session anchors at this vessel's own place.
+    const door = nodeSessionDoor({ pin: () => null, sealHome: larSealHome() });
+    const anchor = await door.anchorNow();
+    expect(anchor.kind).toBe("place");
+    for (const face of [0, 1]) {
+      const opened = await door.open({ faceRef: `h${face}`, hand: "cli" });
+      if (!opened.ok) throw new Error(`h${face} refused: ${opened.refusal}`);
+      const group = (await loadIdentityAnchors(face))!.personaGroupId;
+      const atomKey = faceAtomKeyFromSeed((await loadFaceAtomOfGroup(group))!, group).key;
+      expect(opened.supply).toMatchObject({ ordinal: face, presenter: `0x${atomKey}`, anchor, face: { personaGroup: group } });
+      // The atom certifies the session's signer once the table holds the session live.
+      const table = new SessionTable("owner");
+      const binding = sessionBinding(`socket-${face}`);
+      const live = table.open(binding, opened.supply.face, opened.supply.profile);
+      if (!live.ok) throw new Error(live.refusal);
+      const minted = await opened.supply.mint({ table, binding, session: live.session });
+      expect(minted.ok, `h${face} mints its signer`).toBe(true);
+      if (minted.ok) minted.signer.drop();
+    }
+    // CONTROL: a face this vessel does not hold refuses by name.
+    expect(await door.open({ faceRef: "h2", hand: "cli" })).toEqual({ ok: false, refusal: "face-absent" });
+  });
+
   test("R11 — a restored face stands provisional until a party's own view agrees with its head", async () => {
     const a = await cutOnDestroyedVessel("a", "the gardener", 3, 1);
     const { guardians, kel } = a.enrolled!;

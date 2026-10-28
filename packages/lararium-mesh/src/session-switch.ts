@@ -69,7 +69,9 @@ export const SESSION_SWITCH_REFUSALS = [
 export class SwitchActsSetAsideFull extends Error {
   override readonly name = "SwitchActsSetAsideFull";
   readonly refusal = "switch-acts-set-aside-full" as const;
-  constructor(readonly cap: number) { super(`the switch-act row does not open, and ${cap} set-aside rows already stand: an operator reads and clears them before the next switch`); }
+  constructor(readonly cap: number, readonly dir: string) {
+    super(`the switch-act row does not open, and ${cap} set-aside rows already stand in ${dir}: an operator reads and clears them before the next switch`);
+  }
 }
 
 export interface SessionSwitchPorts<T extends SessionSwitchTarget> {
@@ -140,9 +142,11 @@ export async function switchSession<T extends SessionSwitchTarget>(ports: Sessio
     actId: (ports.mintActId ?? (() => defaultCryptoProvider.randomUUID()))(), ownerEpoch: old.ownerEpoch,
     generation: old.generation, outgoing: old.face.proofSubject, incoming: target.face.proofSubject,
   });
+  // An outcome its row refuses (the same refusal the intent met, past the set-aside cap) rests in the vessel's log by
+  // name: the act, the outcome, its refusal and why the row took none of it.
   const closeAct = async (outcome: SwitchOutcome["outcome"], refusal: string): Promise<void> => {
     try { await ports.writeOutcome(Object.freeze({ ...intent, outcome, refusal })); }
-    catch (error) { log("outcome", error); }
+    catch (error) { log(`outcome unrecorded in its row: act ${intent.actId} ${outcome} (${refusal})`, error); }
   };
   try { await ports.writeIntent(intent); }
   catch (error) {

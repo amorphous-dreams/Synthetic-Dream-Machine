@@ -89,7 +89,7 @@ function setAsideRow(): string {
   mkdirSync(dir, { recursive: true, mode: 0o700 });
   let n = 1;
   while (n <= SWITCH_ACTS_SET_ASIDE_CAP && existsSync(join(dir, `switch-acts.set-aside-${n}.json`))) n++;
-  if (n > SWITCH_ACTS_SET_ASIDE_CAP) throw new SwitchActsSetAsideFull(SWITCH_ACTS_SET_ASIDE_CAP);
+  if (n > SWITCH_ACTS_SET_ASIDE_CAP) throw new SwitchActsSetAsideFull(SWITCH_ACTS_SET_ASIDE_CAP, dir);
   const name = `switch-acts.set-aside-${n}.json`;
   renameSync(join(larIdentityDir(), SWITCH_ACTS_FILE), join(dir, name));
   return name;

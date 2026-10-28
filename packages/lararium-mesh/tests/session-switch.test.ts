@@ -202,8 +202,13 @@ describe("a switch that cannot finish", () => {
     const [a, b] = [await held("full-a", "aaaa0019aaaa0019"), await held("full-b", "bbbb001abbbb001a")];
     const table = new SessionTable("owner-full");
     const live = await openLive(table, a);
-    const { ports } = portsFor(table, live, b, { writeIntent: async () => { throw new SwitchActsSetAsideFull(8); } });
+    const lines: string[] = [];
+    const full = () => new SwitchActsSetAsideFull(8, "/vessel/set-aside");
+    const { ports } = portsFor(table, live, b, { writeIntent: async () => { throw full(); }, writeOutcome: async () => { throw full(); },
+      log: (line) => { lines.push(line); } });
     expect(await switchSession(ports)).toEqual({ ok: false, refusal: "switch-acts-set-aside-full", closed: false });
+    // RED: the aborted outcome its row refused rests in the vessel's log by name, and the refusal names where the set-aside rests.
+    expect(lines.some((l) => l.includes("act act-1 aborted (switch-acts-set-aside-full)") && l.includes("/vessel/set-aside"))).toBe(true);
     expect(table.check(envelopeOf(live.session), live.binding)).toMatchObject({ ok: true, session: { generation: 0 } });
     expect(await signs(live.signer)).toBe("signs");
   });

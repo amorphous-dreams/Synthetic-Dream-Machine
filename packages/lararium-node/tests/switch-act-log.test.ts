@@ -11,7 +11,10 @@ import { larIdentityDir } from "../src/vessel-paths.js";
 import { nodeSwitchActLog, readSwitchActs, SWITCH_ACT_RING, SWITCH_ACTS_FILE, SWITCH_ACTS_SET_ASIDE_CAP, SwitchActRowMalformed, switchActsSetAsideDir, trimSwitchActs } from "../src/switch-act-log.js";
 import { SwitchActsSetAsideFull } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "../src/custody-holder.js";
-import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import { seatScratchCustody, FIXTURE_PASSPHRASE, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import { rotateCustody } from "../src/custody-session.js";
+import { makeCustodyHolder } from "../src/custody-holder.js";
+import { seatCustody } from "../src/custody-seat.js";
 
 vi.setConfig({ testTimeout: 120_000 });
 
@@ -108,6 +111,17 @@ describe("the switch-act row", () => {
     expect(readdirSync(switchActsSetAsideDir())).toEqual(["switch-acts.set-aside-1.json"]);   // the fresh ring was never set aside
     expect(readFileSync(join(switchActsSetAsideDir(), "switch-acts.set-aside-1.json")).equals(torn)).toBe(true);
   });
+  test("CONTROL (it holds on the parent: the row rides the carrier table): a node-key rotation re-seals the switch-act row with every carrier, so the next switch writes on the ring and sets nothing aside", async () => {
+    await nodeSwitchActLog.write(intent(1));
+    const rotated = await rotateCustody({ io: c.io, homes: c.homes, oldTreeKey: c.treeKey, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
+    // A holder over the new key alone, as the vessel stands after the rotation.
+    const fresh = makeCustodyHolder({ io: c.io, homes: c.homes });
+    await fresh.adopt(rotated.treeKey);
+    seatCustody(fresh);
+    await nodeSwitchActLog.write(outcome(1));
+    expect((await readSwitchActs()).map((a) => a.phase)).toEqual(["intent", "outcome"]);
+    expect(existsSync(switchActsSetAsideDir())).toBe(false);
+  });
   test("RED: the set-aside holds at most its cap: past it a switch refuses switch-acts-set-aside-full by name, and no set-aside or the row moves", async () => {
     expect(SWITCH_ACTS_SET_ASIDE_CAP).toBe(8);
     await nodeSwitchActLog.write(intent(1));
@@ -121,6 +135,7 @@ describe("the switch-act row", () => {
     const refused = await nodeSwitchActLog.write(intent(3)).catch((e: unknown) => e);
     expect(refused).toBeInstanceOf(SwitchActsSetAsideFull);
     expect((refused as SwitchActsSetAsideFull).refusal).toBe("switch-acts-set-aside-full");
+    expect((refused as SwitchActsSetAsideFull).message).toContain(dir);           // the refusal names where the set-aside rests
     expect(readdirSync(dir)).toHaveLength(SWITCH_ACTS_SET_ASIDE_CAP);         // the ninth never landed, and none was deleted
     for (let n = 1; n < SWITCH_ACTS_SET_ASIDE_CAP; n++) expect(readFileSync(join(dir, `switch-acts.set-aside-${n}.json`), "utf8")).toBe(`kept-${n}`);
     expect(readFileSync(join(larIdentityDir(), SWITCH_ACTS_FILE)).equals(torn)).toBe(true);   // the row stands as it was
