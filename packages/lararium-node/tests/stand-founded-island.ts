@@ -17,15 +17,15 @@ import * as ed25519 from "@noble/ed25519";
 
 const pubOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
 const seed  = (n: number): Uint8Array => new Uint8Array(32).fill(n);
-const FOUNDER_SEED = seed(71);
 
 /** Found a face, then stand the island the way an owned-document vessel does: a main repo that DENIES the
  *  daemon doc, an oracle registry that names it anyway, and the daemon doc reaching the composite as a layer. */
-export async function standFoundedIsland(teardown: Array<() => void>, opts: { composite?: CompositeStore; tw5?: unknown } = {}) {
+export async function standFoundedIsland(teardown: Array<() => void>, opts: { composite?: CompositeStore; tw5?: unknown; seedOffset?: number } = {}) {
   const vesselRepo = new Repo({ sharePolicy: async () => true });
-  const key = await pubOf(FOUNDER_SEED);
-  const cer = await runFoundingCeremony({ repo: vesselRepo, atomSeed: seed(72), placeVerifyingKey: key,
-    vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: key,
+  const founderSeed = seed(71 + (opts.seedOffset ?? 0));
+  const key = await pubOf(founderSeed);
+  const cer = await runFoundingCeremony({ repo: vesselRepo, atomSeed: seed(72 + (opts.seedOffset ?? 0)), placeVerifyingKey: key,
+    vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: founderSeed }, hearthTrueName: "", nexusPubkey: key,
   });
   const kelBoard = await materializeSharedLarDoc(vesselRepo, personaKelBoardDocUrl(key), "board:persona-kel");
   const chain = personaKelChainForPrefix(kelBoard.doc(), cer.personaKelPrefix);
@@ -75,5 +75,5 @@ export async function standFoundedIsland(teardown: Array<() => void>, opts: { co
     faceAnchor: mintFaceAnchor({ personaGroup: cer.personaGroupId, personaKelPrefix: cer.personaKelPrefix,
       personaRootDid: cer.founderEdge.personaRootDid, edge: cer.founderEdge, leaseEpoch: 0 }),
   };
-  return { ctx, daemonAuth, daemonHandle, vesselRepo, veil, placeSeed: Uint8Array.from(FOUNDER_SEED) };
+  return { ctx, daemonAuth, daemonHandle, vesselRepo, veil, placeSeed: Uint8Array.from(founderSeed) };
 }
