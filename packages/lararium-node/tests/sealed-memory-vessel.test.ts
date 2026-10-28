@@ -62,7 +62,7 @@ async function stand(over: { dyad?: () => "clear" | "aside" } = {}) {
     const signed = ask ? { ask: await signMemoryAsk({ requestId: ask.requestId ?? requestId, act: ask.act, facts: ask.facts, sign: ask.sign ?? vesselSign }) } : {};
     return registry.get(verb)!({ ...args, ...signed }, { daemon: {} as never, invocation: { requestId } as never, cap: async () => ({ ok: true }) } as never) as Promise<Record<string, unknown>>;
   };
-  return { run, registry, vesselSign };
+  return { run, registry, vesselSign, placeSeed: st.placeSeed };
 }
 const refusal = async (p: Promise<unknown>): Promise<string> => {
   const e = await p.then(() => null, (err: unknown) => err);
@@ -119,12 +119,13 @@ describe("a memory section leaves and enters a real founded vessel's island seal
   }, 120_000);
 
   test("THE ISLAND ANSWERS ITS OWN VESSEL ALONE: no ask, another key's ask, another request's ask and another act's ask each refuse", async () => {
-    const { run, registry, vesselSign } = await stand();
+    const { run, registry, vesselSign, placeSeed } = await stand();
     await run("sealed-seal", { bag: BAG, text: "a private note" });
     const to = hex(mintMemoryKeypair().public);
     const stranger = ed25519SignerFromSeed(new Uint8Array(32).fill(3));
     expect(await refusal(run("sealed-memory-cut", { to }))).toBe("memory-ask-unlicensed");
     expect(await refusal(run("sealed-memory-cut", { to }, { act: "cut", facts: { to }, sign: stranger }))).toBe("memory-ask-unlicensed");
+    expect(await refusal(run("sealed-memory-cut", { to }, { act: "cut", facts: { to }, sign: ed25519SignerFromSeed(placeSeed) }))).toBe("memory-ask-unlicensed");
     expect(await refusal(run("sealed-memory-cut", { to }, { act: "cut", facts: { to }, requestId: "another-request" }))).toBe("memory-ask-unlicensed");
     expect(await refusal(run("sealed-memory-cut", { to }, { act: "door", facts: { to } }))).toBe("memory-ask-unlicensed");
     // The signature binds the recipient: an ask signed for one key draws no section for another.

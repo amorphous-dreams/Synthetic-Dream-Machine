@@ -176,7 +176,7 @@ export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";
 export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc } from "./doc-load-probe.js";
 export { precheckDocStore, docStorePath } from "./store-integrity.js";
-export { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, listFaceOrdinals, persistIdentityArchive, loadIdentityArchive, persistVeilArchive, loadVeilArchive, archivePath, veilArchivePath, veilArchiveFile, type IdentityAnchors } from "./identity-anchors.js";
+export { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, listFaceOrdinals, persistVeilArchive, loadVeilArchive, veilArchivePath, veilArchiveFile, type IdentityAnchors } from "./identity-anchors.js";
 
 export type { DaemonVmOptions } from "./open-daemon-vm.js";
 export type { NodeVesselOptions, NodeVesselResult, NodeHermResult, NodeFloor, SovereignReaders, NodeOpenPhase } from "./open-node-vessel.js";
@@ -284,9 +284,11 @@ export {
 } from "./cas-wire.js";
 export type { CasWireServerDeps, CasWireFetch } from "./cas-wire.js";
 
-export { loadVesselVerifyingKey, loadVesselSigningSeed, loadVesselCard, persistVesselCard, vesselFloorKeyDoor, FloorKeyDoorRefused, loadPlaceKelChain, loadPlaceAid } from "./node-vessel-identity.js";
+export { loadVesselVerifyingKey, vesselPlaceSignerDoor, vesselFloorKeyDoor, FloorKeyDoorRefused, loadPlaceKelChain, loadPlaceAid } from "./node-vessel-identity.js";
+export { rotateRelayGateSeed, openRelayGateSeed, RelayGateSeedRefused } from "./relay-gate-seed.js";
 export { rotatePlace, reconcilePlaceRotation } from "./place-rotation.js";
-export { PlaceCardRefused, ensurePlaceCard, requirePlaceCardOfOwnSeed } from "./place-card.js";
+export { LegacyPlaceBytesRefused, refuseLegacyPlaceBytes } from "./legacy-place-bytes.js";
+export { faceSigningSeat, FaceSigningRefused } from "./face-signing-seat.js";
 // The reach-face helpers — every http origin a vessel answers on + the ws:// dial each yields. Re-used by the
 // `lares herm` stand-up verb to print the carriage crossroads' dial URLs (host from the face, the relay's own port).
 export {

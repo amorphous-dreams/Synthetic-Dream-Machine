@@ -30,7 +30,7 @@ async function found() {
   const verifyingKey = await pubOf(FOUNDER_SEED);
   const f = await runFoundingCeremony({ repo,
     vesselSeed:         FOUNDER_SEED,
-    vesselVerifyingKey: verifyingKey,
+    placeVerifyingKey: verifyingKey,
     vesselDisplayName:  "The Strandbeest Shrine",
     binding: { mode: "self-stood", signerSeed: FOUNDER_SEED },
     hearthTrueName:       "",

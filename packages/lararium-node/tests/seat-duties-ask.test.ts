@@ -37,6 +37,7 @@ import { seedFaceAtom } from "./atom-fixture.js";
 
 const VESSEL_SEED = new Uint8Array(32).fill(41);
 const OTHER_SEED = new Uint8Array(32).fill(42);
+const PLACE_SEED = new Uint8Array(32).fill(43);
 const FACTS = { fleetRoot: "ab".repeat(32), acts: [{ kind: "a-synthetic-act", n: 1 }], rolled: ["cd".repeat(32)] };
 const pub = async (seed: Uint8Array): Promise<string> => hex(await ed.getPublicKeyAsync(seed));
 
@@ -79,6 +80,8 @@ describe("who may ask the island's seat-duties verb", () => {
     // A proof another key made, over this very request and these very facts.
     const foreign = await signSeatDutiesAsk({ requestId: sent.requestId, facts: FACTS, sign: ed25519SignerFromSeed(OTHER_SEED) });
     expect(check({ ask: foreign })).toMatch(/proof does not hold under the vessel's key/);
+    const place = await signSeatDutiesAsk({ requestId: sent.requestId, facts: FACTS, sign: ed25519SignerFromSeed(PLACE_SEED) });
+    expect(check({ ask: place })).toMatch(/proof does not hold under the vessel's key/);
     // The true proof, replayed under another request id.
     expect(check({ requestId: "another-request" })).toMatch(/proof does not hold/);
     expect(check({ requestId: "" })).toMatch(/names no request/);
@@ -93,12 +96,12 @@ describe("who may ask the island's seat-duties verb", () => {
     const packages = join(fileURLToPath(new URL(".", import.meta.url)), "..", "..");
     const behavior = readFileSync(join(packages, "lararium-keyhive", "src", "operator-daemon-behavior.ts"), "utf8");
     const registrations = behavior.split('registry.register("seat-duties"').length - 1;
-    expect(registrations).toBe(1);
+    expect(registrations).toBe(2); // face handler and the faceless waking-floor refusal
     const body = behavior.slice(behavior.indexOf('registry.register("seat-duties"'), behavior.indexOf('faceJoinEffect = async'));
     const at = (needle: string): number => { const i = body.indexOf(needle); expect(i, needle).toBeGreaterThan(-1); return i; };
     const check = at("seatDutiesAskRefusal(");
     expect(at("if (unlicensed) throw")).toBeGreaterThan(check);
-    for (const later of ["veilKh", "daemonAuth.deviceEdge", "as FleetSeatFacts", "answerFleetSeatDuties("]) expect(at(later), later).toBeGreaterThan(at("if (unlicensed) throw"));
+    for (const later of ["daemonAuth.deviceEdge", "as FleetSeatFacts", "answerFleetSeatDuties("]) expect(at(later), later).toBeGreaterThan(at("if (unlicensed) throw"));
     expect(body).toContain("context.invocation.requestId");                         // the proof binds the island's own reading of the request
     // ONE ROAD: across every package's source, the verb's name gets placed (named beside its arguments, or handed
     // to a verb call) by the main thread's asker alone. The island's own answers echo the name and place nothing.

@@ -13,7 +13,7 @@ import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-index
 export function startIsland(scope?: BrowserIslandScope): void {
 runBrowserSovereignWorker((manifest) => {
   // Same-origin writes are accepted within one custody context: api/pono/session-contract.mem #/the-trust-line.
-  const key = manifest.daemonAuth?.atom?.key ?? manifest.daemonAuth?.vesselVerifyingKey;
+  const key = manifest.daemonAuth?.atom?.key;
   const ledgerRepo = key ? new Repo({ storage: new IndexedDBStorageAdapter(`lares:island-edge-ledger:${key}`) }) : null;
   const dyadLedger = key && ledgerRepo ? materializeSharedLarDoc(ledgerRepo, edgeLedgerDocUrl(key), "ledger:edge") : undefined;
   return makeOperatorDaemonBehavior(manifest, {

@@ -1,3 +1,4 @@
+import { CARRIAGE_CARRIER_DOMAIN } from "@lararium/mesh";
 /**
  * carry-bundle-carries-peers.test.ts — a place carried LAST (a reader that runs no daemon and syncs no board) files the
  * floor pin of a herm the same quorum carried EARLIER, off the counted carry its own bundle hands it; and never the pin
@@ -16,7 +17,7 @@ import {
   placeFloorPinsFromBoard, placeKelRowsFromBoard, signCarriageQuorum, signCarrierContract, carriageEntryCounts, carriageEntryActCid, FLOW_SOCKET_ROUTE, type LarDoc,
   ed25519SignerFromSeed, epochSeats, rollAnchorCounts, rollAnchorsFromBoard, signRollAnchor,
 } from "@lararium/mesh";
-import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPlaceAid, loadVesselSigningSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
+import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPlaceAid, vesselPlaceSignerDoor, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { runNexusCarryFor, runNexusContract } from "../src/commands/nexus-contract.js";
 import { takeCarryBundle, type CarryBundle } from "../src/carry-bundle.js";
@@ -131,7 +132,7 @@ describe("a carry bundle carries the counted carries of the places whose floor p
     writeNexusDoc(larSealHome(), charter);
     const stranger = await runNexusCarryFor({ sealHome: larSealHome() });
     const contractSig = await signCarrierContract(stranger.nym, closed!.epochCid,
-      ed25519SignerFromSeed(await loadVesselSigningSeed()));
+      async (image) => (await vesselPlaceSignerDoor()).signFloor(CARRIAGE_CARRIER_DOMAIN, image));
     const closedHands = await Promise.all([0, 1].map(async (face) => ({
       signer: await chairKey(face), sign: ed25519SignerFromSeed(chairSeed(face)),
     })));

@@ -22,6 +22,7 @@ async function run(argv, env = {}) {
 printf '%s\\n' "$*" >> "$CALL_LOG"
 case "$*" in
   *"ps -a -q"*) [ "$STAND" = "yes" ] && echo cid123 ;;
+  *"image inspect"*) [ "$QA_IMAGE" = "yes" ] || exit 1 ;;
   *"ps -q"*) echo cid123 ;;
   *"unlock-test-custody.mjs"*) echo '{"op":"unlock","reading":"opens","held":true}'; exit "\${DOOR_RC:-0}" ;;
   *"printenv LAR_PORT"*) echo 4321 ;;
@@ -92,7 +93,59 @@ test("qa runs the command in the disposable runner; no argv carries the Docker s
   const r = await run(["qa", "node", "x.mjs"]);
   assert.equal(r.status, 0);
   assert.match(r.calls, /--profile qa run --rm -T (-e [\w=/]+ )*qa node x\.mjs/);
+  assert.match(r.calls, /build qa/);
   for (const v of [["up"], ["down"], ["qa", "true"]]) assert.doesNotMatch((await run(v)).calls, /docker\.sock/);
+});
+
+// THE DEFAULT TAG BUILDS FROM THE TREE EVERY RUN. The harness image bakes the walks (`browser-ci-smoke.mjs`,
+// `live-wiki.mjs`, the join helper, the custody probe), so a default tag left standing from an older tree would
+// run an older tree's walk bytes against this code and read its verdict as this tree's. The layer cache keeps an
+// unchanged tree's build cheap.
+test("qa builds the default harness image from the tree even when a stale tag of it stands, before the run", async () => {
+  const r = await run(["qa", "true"], { QA_IMAGE: "yes" });
+  assert.equal(r.status, 0, r.stderr);
+  const lines = r.calls.split("\n");
+  const built = lines.findIndex((l) => /build qa$/.test(l));
+  const ran = lines.findIndex((l) => /--profile qa run --rm/.test(l));
+  assert.ok(built >= 0, "the default tag builds qa from the tree");
+  assert.ok(ran > built, "the build precedes the run");
+});
+
+test("qa reads a named harness image as given, and builds it only when that tag stands absent", async () => {
+  const given = await run(["qa", "true"], { QA_IMAGE: "yes", BROWSER_CI_HARNESS_IMAGE: "qa-other:local" });
+  assert.equal(given.status, 0, given.stderr);
+  assert.match(given.calls, /image inspect qa-other:local/);
+  assert.doesNotMatch(given.calls, /build qa/);
+  const absent = await run(["qa", "true"], { BROWSER_CI_HARNESS_IMAGE: "qa-other:local" });
+  assert.equal(absent.status, 0, absent.stderr);
+  assert.match(absent.calls, /build qa/);
+});
+
+// The two witnesses that bake a surface image hold the same law; a text pin keeps a later edit from
+// returning either to the absent-only build.
+const IMAGE_LAW = [
+  ["tools/household-https-witness.sh", "HOUSEHOLD_IMAGE"],
+  ["tools/harbor-walk-witness.sh", "HARBOR_IMAGE"],
+];
+
+export function buildsFromTree(text, variable) {
+  const set = /^BUILD_FROM_TREE=yes$/m.test(text);
+  const cleared = new RegExp(`^\\[ -z "\\$\\{${variable}:-\\}" \\] \\|\\| BUILD_FROM_TREE=$`, "m").test(text);
+  const gated = /if \[ -n "\$BUILD_FROM_TREE" \] \|\| ! docker image inspect/.test(text);
+  return set && cleared && gated;
+}
+
+test("the surface witnesses build their image from the tree unless their image variable names one", async () => {
+  for (const [file, variable] of IMAGE_LAW) {
+    assert.ok(buildsFromTree(await readFile(join(ROOT, file), "utf8"), variable), file);
+  }
+});
+
+test("CONTROL: a planted witness with the absent-only build fails the image law", () => {
+  const planted = 'IMAGE=${HARBOR_IMAGE:-lares-surface:local}\nif ! docker image inspect "$IMAGE" >/dev/null 2>&1; then\n  build\nfi\n';
+  assert.equal(buildsFromTree(planted, "HARBOR_IMAGE"), false);
+  const lawful = 'BUILD_FROM_TREE=yes\n[ -z "${HARBOR_IMAGE:-}" ] || BUILD_FROM_TREE=\nif [ -n "$BUILD_FROM_TREE" ] || ! docker image inspect "$IMAGE" >/dev/null 2>&1; then\n';
+  assert.equal(buildsFromTree(lawful, "HARBOR_IMAGE"), true);
 });
 
 test("every verb honors BROWSER_CI_PROJECT; the default project is lares-browser-ci", async () => {
@@ -213,6 +266,10 @@ test("the qa runner shares the node's network namespace and dials it by localhos
   const yml = await readFile(join(ROOT, "docker-compose.browser-ci.yml"), "utf8");
   const qa = yml.slice(yml.search(/^  qa:/m), yml.search(/^volumes:/m));
   assert.match(qa, /^    network_mode: "service:lares"$/m);
+  assert.match(qa, /^    image: \$\{BROWSER_CI_HARNESS_IMAGE:-lares-browser-harness:local\}$/m);
+  assert.match(qa, /^      target: browser-harness$/m);
+  assert.match(qa, /^    working_dir: \/app$/m);
+  assert.doesNotMatch(qa, /source: \.(?:\s|$)|target: \/repo/);
   assert.match(qa, /^      LARES_URL: http:\/\/localhost:4321$/m);
   assert.doesNotMatch(qa, /^    networks:/m);
   assert.doesNotMatch(qa, /lares:4321/);

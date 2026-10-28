@@ -7,15 +7,15 @@
 import { describe, expect, test } from "vitest";
 import { WaveLanding } from "../src/wave-landing.js";
 import { wikiSkip, skipNote } from "./test-wiki.js";
-import { afterDispatch, ManualTimers, remote, shoreRig, storeDeleted, storeText, turns, workingBag } from "./wiki-shore-rig.js";
+import { afterDispatch, ManualBoundary, remote, shoreRig, storeDeleted, storeText, turns, workingBag } from "./wiki-shore-rig.js";
 
 const edit = (r: Awaited<ReturnType<typeof shoreRig>>, title: string, text: string): void =>
   r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(title)!.fields, { text }));
 
 describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
   test("a refused store write raises an alert, stays owed, arms no timer and clears when a later write lands", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const x = "lar:///t/fault/refused-write";
     await r.working.put({ tiddler: { title: x, text: "landed" } }, remote);
     await turns();
@@ -24,7 +24,7 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
     r.failures.family = new Error("disk full");
     edit(r, x, "edit one");
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(16);
     const raised = r.wiki.getTiddler(alert);
     expect(raised, "the alert stands on the rail").toBeDefined();
@@ -33,13 +33,13 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
     expect(String(raised!.fields.text)).toContain(workingBag);
     expect(String(raised!.fields.text)).toContain("disk full");
     expect(r.adaptor.holdsHand(x), "the title stays owed").toBe(true);
-    expect(timers.armed(), "no retry timer is armed").toBe(0);
+    expect(boundary.pending(), "no retry boundary is pending").toBe(0);
     expect(storeText(r, workingBag, x)).toBe("landed");
 
     r.failures.family = null;
     edit(r, x, "edit two");
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(24);
     expect(storeText(r, workingBag, x)).toBe("edit two");
     expect(r.wiki.getTiddler(alert), "the acknowledged write clears the alert").toBeUndefined();
@@ -48,7 +48,7 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
     const control = "lar:///t/fault/refused-write-control";
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "fine" }));
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(16);
     expect(storeText(r, workingBag, control)).toBe("fine");
     expect(r.wiki.getTiddler(`$:/temp/lares/alert/unsaved/${control}`)).toBeUndefined();
@@ -56,8 +56,8 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
   }, 120_000);
 
   test("a flush queued behind a failed one still tries", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const x = "lar:///t/fault/queued-flush";
     await r.working.put({ tiddler: { title: x, text: "landed" } }, remote);
     await turns();
@@ -67,11 +67,11 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
     r.failures.gate = new Promise<void>((resolve) => { open = resolve; });
     edit(r, x, "edit one");
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(4);
     edit(r, x, "edit two");
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(4);
     r.failures.family = null;
     open();
@@ -82,8 +82,8 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
   }, 120_000);
 
   test("a hand delete of a title from a read-only layer shadows it from the working layer and raises no alert", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const floor = "lar:///t/fault/floor-record";
     const own = "lar:///t/fault/own-record";
     await r.canon.put({ tiddler: { title: floor, text: "oracle record" } }, remote);
@@ -93,7 +93,7 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
     const mark = r.calls.length;
     r.wiki.deleteTiddler(floor);
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(24);
     expect(r.calls.slice(mark).map((c) => [c.bag, c.deletes])).toEqual([[workingBag, [floor]]]);
     expect(storeDeleted(r, workingBag, floor)).toBe(true);
@@ -102,7 +102,7 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
 
     r.wiki.deleteTiddler(own);
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(24);
     expect(r.calls.slice(mark).filter((c) => c.deletes.includes(own)), "a working-layer title tombstones where it lives").toHaveLength(1);
     expect(storeDeleted(r, workingBag, own)).toBe(true);
@@ -111,8 +111,8 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
   }, 120_000);
 
   test("a hand whose change has not dispatched meets the bridge when teardown awaits the wiki's dispatch", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const x = "lar:///t/fault/undispatched-hand";
     const dispatched = "lar:///t/fault/dispatched-hand";
     await r.working.put({ tiddler: { title: x, text: "landed" } }, remote);
@@ -131,8 +131,8 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
   }, 120_000);
 
   test("a landed own write leaves no hand standing, and a stopped landing queue reads empty", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const x = "lar:///t/fault/landed-write";
     await r.working.put({ tiddler: { title: x, text: "landed" } }, remote);
     await turns();
@@ -140,7 +140,7 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
     edit(r, x, "edited");
     await afterDispatch();
     expect(r.adaptor.holdsHand(x)).toBe(true);
-    timers.fireAll(400);
+    boundary.fire();
     await turns(24);
     expect(r.adaptor.holdsHand(x), "the own wave's landing settles the account").toBe(false);
     await r.stop();

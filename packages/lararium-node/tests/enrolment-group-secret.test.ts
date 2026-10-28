@@ -11,7 +11,7 @@
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import * as ed25519 from "@noble/ed25519";
-import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload } from "@lararium/keyhive";
+import { FacelessKeyhiveRefused, runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload } from "@lararium/keyhive";
 import {
   hex, personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix, groupSecretSealTitle,
   groupSecretOpenerFromSeed, personaGroupSecret, verifyGroupSecretSeal, sealGroupSecret, seedDaemonDoc, tiddlerText, type LarDoc,
@@ -20,6 +20,7 @@ import {
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
 const JOINEE_SEED  = new Uint8Array(32).fill(11);
+const JOINEE_PLACE_SEED = new Uint8Array(32).fill(12);
 const OTHER_SEED   = new Uint8Array(32).fill(13);
 const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));
 
@@ -31,7 +32,7 @@ async function restedSeal(repo: Repo, daemonUrl: string, group: string): Promise
 async function founded() {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
-  const f = await runFoundingCeremony({ repo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: verifyingKey, vesselDisplayName: "founder",
+  const f = await runFoundingCeremony({ repo, atomSeed: new Uint8Array(32).fill(8), placeVerifyingKey: verifyingKey, vesselDisplayName: "founder",
     binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: verifyingKey,
   });
   const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(verifyingKey), "board:persona-kel");
@@ -50,10 +51,10 @@ async function admitFor(founder: Awaited<ReturnType<typeof founded>>, joineeKey:
   });
 }
 
-const apply = async (payload: Awaited<ReturnType<typeof runDeviceAdmitEdge>>) => {
+const apply = async (payload: Awaited<ReturnType<typeof runDeviceAdmitEdge>>, atomSeed: Uint8Array = JOINEE_SEED) => {
   const repo = new Repo({ sharePolicy: async () => true });
-  const joineeKey = await pubOf(JOINEE_SEED);
-  const applied = await runApplyAdmitPayload({ repo, daemonHandle: seedDaemonDoc(repo), atomSeed: JOINEE_SEED, vesselDisplayName: "joinee", payload, nexusPubkey: joineeKey });
+  const joineeKey = await pubOf(JOINEE_PLACE_SEED);
+  const applied = await runApplyAdmitPayload({ repo, daemonHandle: seedDaemonDoc(repo), atomSeed, vesselDisplayName: "joinee", payload, nexusPubkey: joineeKey });
   return { repo, applied };
 };
 
@@ -65,6 +66,7 @@ describe("every enrolment delivers the PersonaGroup secret beside the edge", () 
     expect(rested).toEqual(f.groupSecretSeal);
     const secret = personaGroupSecret(FOUNDER_SEED, f.personaKelPrefix);
     expect(groupSecretOpenerFromSeed(f.atomSeed).seal(f.groupSecretSeal)).toEqual(secret);
+    expect(groupSecretOpenerFromSeed(FOUNDER_SEED).seal(f.groupSecretSeal)).toBeNull();
     expect(groupSecretOpenerFromSeed(JOINEE_SEED).seal(f.groupSecretSeal)).toBeNull();
   });
 
@@ -83,5 +85,12 @@ describe("every enrolment delivers the PersonaGroup secret beside the edge", () 
     await expect(apply({ ...payload, groupSecretSeal: undefined as never })).rejects.toThrow(/no PersonaGroup secret sealed to this device/);
     const elsewhere = await sealGroupSecret({ opSeed: FOUNDER_SEED, prefix: founder.f.personaKelPrefix, deviceVerifyingKey: await pubOf(OTHER_SEED) });
     await expect(apply({ ...payload, groupSecretSeal: elsewhere })).rejects.toThrow(/no PersonaGroup secret sealed to this device/);
+  });
+  test("a faceless joinee cannot open the group's seal or apply its admit", async () => {
+    const founder = await founded();
+    const payload = await admitFor(founder, await pubOf(JOINEE_SEED));
+    const control = await apply(payload);
+    expect(control.applied.deviceEdge.deviceVerifyingKey).toBe(await pubOf(JOINEE_SEED));
+    await expect(apply(payload, new Uint8Array(0))).rejects.toThrow(FacelessKeyhiveRefused);
   });
 });

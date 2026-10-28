@@ -19,11 +19,10 @@
  * existing channel) rides a separate, node-side module.
  */
 
-import { frameFloorDuty } from "./place-signer.js";
+import { frameFloorDuty, type PlaceSigner } from "./place-signer.js";
 import { FLOW_POINTER_DOMAIN } from "./domains.js";
-import * as ed25519 from "@noble/ed25519";
 import { save, getHeads, type Doc } from "@automerge/automerge";
-import { hex, sha256Hex, utf8Bytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
+import { sha256Hex, utf8Bytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 
 export { FLOW_POINTER_DOMAIN } from "./domains.js";
@@ -114,10 +113,10 @@ export async function flowPointerId(
 export async function buildFlowPointer(args: {
   readonly snapshot: FlowSnapshot;
   readonly parents:  readonly string[];
-  /** 32-byte ed25519 seed (the publisher's signing key — operator/node). */
-  readonly signerSeed: Uint8Array;
+  /** The scoped place signer at the publisher's KEL head. */
+  readonly signer: PlaceSigner;
 }): Promise<FlowPointer> {
-  const pub    = hex(await ed25519.getPublicKeyAsync(args.signerSeed));
+  const pub = args.signer.key;
   const base = {
     cid:     args.snapshot.cid,
     heads:   canonicalHeads(args.snapshot.heads),
@@ -126,7 +125,7 @@ export async function buildFlowPointer(args: {
   };
   const actCid = await sha256Hex(utf8Bytes(pointerIdentityString({ ...base, actCid: "" })), defaultCryptoProvider);
   const fields: Omit<FlowPointer, "sig"> = { ...base, actCid };
-  const sig = hex(await ed25519.signAsync(flowPointerSigningImage(fields), args.signerSeed));
+  const sig = await args.signer.signFloor(FLOW_POINTER_DOMAIN, flowPointerSigningImage(fields));
   return { ...fields, sig };
 }
 

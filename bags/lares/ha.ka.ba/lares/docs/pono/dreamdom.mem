@@ -49,7 +49,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom"
 
 !!! Two waists, two grains
 
-''Store↔engine, at record grain.'' Whole tiddlers travel, keyed by title, with explicit tombstones and monotone cursors. The engine reads the composite store and writes back through TW5's own `change` listener: the outbound bridge skips the foam the landing ledger just landed, the HandGate paces writes (400 ms trailing, 2 s cap), and the in-wiki `bag-paths` cascade routes each title by kind. Every TW5 engine already emits one batched change set per tick with a per-title `changeCount`. A write carries a `txId` and gets an answer; an echo returns under `causedBy: [txId]` and the originating adaptor drops it. ''No syncer stands between'' (#/the-rejected).
+''Store↔engine, at record grain.'' Whole tiddlers travel, keyed by title, with explicit tombstones and monotone cursors. The engine reads the composite store and writes back through TW5's own `change` listener: the outbound bridge skips the foam the landing ledger just landed, the HandGate gathers a title's marks and flushes them at the next store family boundary or act, eight coalesced marks at most, and the in-wiki `bag-paths` cascade routes each title by kind. Every TW5 engine already emits one batched change set per tick with a per-title `changeCount`. A write carries a `txId` and gets an answer; an echo returns under `causedBy: [txId]` and the originating adaptor drops it. ''No syncer stands between'' (#/the-rejected).
 
 ''Engine↔projection, at keyed rendered-frame grain.'' A camera's surface divides into keys; each key carries its ''whole rendered state'' with its own monotone revision, declared at mount by the camera (#/the-ruling). Inside each key the transclusions stand resolved (`kahea` followed live, `aka` kept frozen, per `render-pipeline#/render-posture`) and the key's affordances ride inside it: the acts its widgets would fire, as handles. A Story River keys by tiddler frame with the river's order and membership as keys of their own; a canvas keys by shape; a Mudlet pane keys by the key it declared. TW5's own `refresh(changedTiddlers)` maps record changes to dirty widgets, so the widget tree answers "which keys changed" without any diff of a document. ''A sink beside the engine therefore emits whole keys, never DOM edits.''
 
@@ -611,6 +611,6 @@ The DreamDOM's founding story: every later DreamDOM ruling answers to these seve
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;isKH7bjNspJwB3hhxeR1ywtt3MP59wbiKevMmVIidaQ
+<<^ code="&#x0003;">>ni:///sha-256;Gd16iBaE4IQi5jaCPzQZMiew1bPqRFo2Ow9VVVGarUI
 
 <<^ code="&#x0004;" -> to="?">>

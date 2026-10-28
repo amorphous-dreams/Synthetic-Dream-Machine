@@ -24,7 +24,7 @@ async function foundedFace() {
   const repo = new Repo({ sharePolicy: async () => true });
   const treeKey = hex(await ed.getPublicKeyAsync(SEED));
   const place = await foundThePlace({ repo, vesselSeed: SEED, hearthTrueName: "" });
-  await foundTheFace({ repo, daemonHandle: place.daemonHandle, vesselSeed: SEED, vesselVerifyingKey: treeKey,
+  await foundTheFace({ repo, daemonHandle: place.daemonHandle, vesselSeed: SEED, placeVerifyingKey: treeKey,
     vesselDisplayName: "Island Witness",
     binding: { mode: "self-stood", signerSeed: new Uint8Array(32).fill(1) },
     hearthTrueName: "", nexusPubkey: treeKey,

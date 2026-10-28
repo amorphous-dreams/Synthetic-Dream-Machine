@@ -1,3 +1,4 @@
+import { placeSignerFromSeed } from "@lararium/mesh";
 /**
  * flow-floor-gate — the flow read face's server half on the floor gate (the flow converts where browser boot
  * reads it: the shut-routes house ruling). A reader dials the floor gate its pair index pins at (hearth, Nexus, "/flow",
@@ -61,7 +62,7 @@ async function stand(nexuses: readonly string[], opts: { lingerMs?: number } = {
   const entry: { server: Server; face: FlowFloorFace | null; dir: string } = { server, face: null, dir };
   opened.push(entry);
   const face = await mountFlowMapReadFace({
-    httpServer: server, meshPalaceHandle: handle, signerSeed: SEED, storageDir: dir,
+    httpServer: server, meshPalaceHandle: handle, signer: placeSignerFromSeed(SEED), storageDir: dir,
     ...(opts.lingerMs !== undefined ? { lingerMs: opts.lingerMs } : {}),
     gates: async (sessions) => {
       for (const nexus of nexuses) worlds.push(await world({ nexus, tier: "floor", route: FLOW_SOCKET_ROUTE, sessions }));

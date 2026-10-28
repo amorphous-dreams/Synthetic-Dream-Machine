@@ -71,7 +71,7 @@ async function founderForSecondFace() {
   const face = await foundTheFace({
     repo: founderRepo,
     daemonHandle: place.daemonHandle,
-    vesselVerifyingKey: founderKey,
+    placeVerifyingKey: founderKey,
     vesselDisplayName: "founder B",
     binding: { mode: "self-stood", signerSeed },
     hearthTrueName,

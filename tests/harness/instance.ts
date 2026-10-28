@@ -167,7 +167,7 @@ function runCli(env: Record<string, string>, args: readonly string[]): Promise<C
 /**
  * A herm relay port the rig stands, PINNED: its gate seed chosen here, so the relay's address carries its gate key
  * in its fragment (`ws://127.0.0.1:<port>#<gate key>`), the address a sibling pins. The herm takes the seed as
- * `LAR_HERM_RELAY_SEED`.
+ * test-only direct relay standing.
  */
 export async function pinnedCarriageRelay(port: number): Promise<{ readonly url: string; readonly seedHex: string; readonly gatePubKey: string }> {
   const seed = new Uint8Array(randomBytes(32));
@@ -534,7 +534,6 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
   const tag = opts.tag ? `${opts.tag}-` : "";
   const bookSlug = opts.bookSlug;
   const [portHerm, portRelay] = await Promise.all([freePort(), freePort()]);
-  const relay     = await pinnedCarriageRelay(portRelay);
   const hermShore = `http://127.0.0.1:${portHerm}`;
   const stood: LarInstance[] = [];
   let pairRef: StagedJoinee | null = null;
@@ -543,7 +542,7 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
     if (pairRef) { await pairRef.stop(); pairRef = null; }
     for (const v of stood.reverse()) await v.stop();
   };
-  const hermEnv = { LAR_RECIPE: "herm", LAR_HERM_RELAY_PORT: String(portRelay), LAR_HERM_RELAY_SEED: relay.seedHex };
+  const hermEnv = { LAR_RECIPE: "herm", LAR_HERM_RELAY_PORT: String(portRelay) };
   const hermFound = async (cli: (a: readonly string[]) => Promise<CliResult>, root: string): Promise<void> => {
     const found = await cli(["vessel", "found", "--root", root, "--skip-build"]);
     if (found.code !== 0) throw new Error(`herm: founding failed (${found.code})\n${found.stderr.slice(-800)}`);
@@ -711,7 +710,7 @@ export async function joinedFaceCard(pair: Pick<StagedJoinee, "rootB">): Promise
     try {
       const anchors = await loadIdentityAnchors(0);
       if (!anchors) throw new Error("joinedFaceCard: B holds no anchors for face 0");
-      return (await loadLeafIdentity("face", { handleIndex: 0, personaGroupId: anchors.personaGroupId })).contactCard;
+      return (await loadLeafIdentity({ handleIndex: 0, personaGroupId: anchors.personaGroupId })).contactCard;
     } finally { await seat.drop(); }
   });
 }

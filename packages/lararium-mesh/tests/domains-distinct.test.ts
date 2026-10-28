@@ -15,9 +15,9 @@ const ROOT = `${DOMAIN_ROOT}/`;
 
 /** The frozen set, sha256 over its sorted `EXPORT=string` rows. A move here re-keys live
  *  signatures and seals — it never reads as a refactor; only a deliberate retirement re-measures it. */
-const FROZEN_COUNT = 33;
-// W26 slice 4 retired `oracle-pointer` (34 → 33): the weld below is the 34-row hash (e30193af…) minus that one row, re-measured.
-const FROZEN_WELD = "0252fa0a96374c652601129b29af2ba0817a8eda761bd173eb5be7f2ec93befc";
+const FROZEN_COUNT = 32;
+// The relay-gate row left with the relay's derivation (33 → 32): the weld below is the 33-row hash (0252fa0a…) minus that one row, re-measured.
+const FROZEN_WELD = "3bbe945afa16e964704400c4cad06d07d3cf5a32b36468cc60088504703a0cdb";
 
 describe("the domain registry", () => {
   const named = Object.entries(domains).filter(([k, v]) => typeof v === "string" && /_(INFO|DOMAIN)$/.test(k) && k !== "DOMAIN_ROOT") as [string, string][];

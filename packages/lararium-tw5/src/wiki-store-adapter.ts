@@ -25,7 +25,7 @@ import type { CompositeStore, CompositeEntry, ChangeOrigin } from "@lararium/mes
 import { consistencyRadius, type ConsistencyRadius, type ComparisonStalk, type PlaneRestriction } from "@lararium/mesh";
 import { CompositeStore as CompositeStoreCtor } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "./memory-store.js";
-import { foldCorpus, corpusPlanes } from "./wiki-sense-fold.js";
+import { foldCorpus, corpusPlanes, type CorpusFold } from "./wiki-sense-fold.js";
 import { compositeCorpusReader, senseDocOfEntry, type WikiCorpusReader } from "./wiki-corpus-reader.js";
 import type { DocStalk, WikiSenseDoc } from "./wiki-sense-fold.js";
 
@@ -64,7 +64,11 @@ export function projectWikiSensorium(entries: readonly CompositeEntry[]): WikiSe
 
 /** The same projection over already-lifted docs, with an optional per-title stalk supplier (a warm refold). */
 export function projectWikiSensoriumOfDocs(docs: readonly WikiSenseDoc[], stalkOf?: (doc: WikiSenseDoc) => DocStalk): WikiSensoriumSnapshot {
-  const fold = foldCorpus(docs, stalkOf);
+  return projectWikiSensoriumOfFold(foldCorpus(docs, stalkOf));
+}
+
+/** Project a fold whose document frequencies may come from a persistent corpus reader. */
+export function projectWikiSensoriumOfFold(fold: CorpusFold): WikiSensoriumSnapshot {
   const { stalk, restrictions } = corpusPlanes(fold);
   const structureVal = restrictions[0]!.value;
   const formVal = restrictions[1]!.value;
@@ -93,7 +97,10 @@ export class WikiStoreAdapter {
 
   /** The causal-stamped snapshot projection over the island's OWN resolved surface. */
   async snapshot(): Promise<WikiSensoriumSnapshot> {
-    return projectWikiSensoriumOfDocs(await this.reader.docs(), this.reader.stalkOf);
+    const docs = await this.reader.docs();
+    return this.reader.fold
+      ? projectWikiSensoriumOfFold(this.reader.fold(docs))
+      : projectWikiSensoriumOfDocs(docs, this.reader.stalkOf);
   }
 
   /** The Robinson li-radius over the engineered structure⊥form stalk — the wiki-sensorium's read. */

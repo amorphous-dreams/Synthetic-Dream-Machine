@@ -5,7 +5,7 @@
  * Stage 1 of the isomorphic-vessel epic moves authn/z off the host and into the
  * daemon island. This function is the heart of that move, extracted PURE (no
  * worker, no platform API) so it unit-tests in-process. The daemon island's
- * `onEa` calls it with the seed (delivered via the manifest) and the daemon
+ * `onEa` calls it with the selected face atom (delivered via the manifest) and the daemon
  * CompositeStore (the cap-event EventStore backing); the host never boots
  * keyhive at all (keyhive cannot double-boot — `generateDocument` mints a fresh
  * CSPRNG doc-id each call, so two instances diverge).
@@ -21,17 +21,17 @@
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import { registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import type { CapabilityProviderInitOpts, ProviderChunkRest } from "./capability-provider.js";
-import { checkFacePins, leaseEpochUnderAnchor, verifyEdgeAgainstPersonaKel, type FaceAnchor, type DeviceDelegationTiddler, type EdgeStanding, type PersonaKelEvent } from "@lararium/mesh";
+import { checkFacePins, leaseEpochUnderAnchor, verifyEdgeAgainstPersonaKel, verifyEd25519, deviceAtomProofBytes, type FaceAnchor, type DeviceDelegationTiddler, type EdgeStanding, type PersonaKelEvent } from "@lararium/mesh";
 
 export interface BootDaemonKeyhiveInput {
-  /** 32-byte operator signing seed (delivered to the worker via the manifest). */
-  readonly seed: Uint8Array;
+  /** The selected face's 32-byte atom seed. */
+  readonly atomSeed?: Uint8Array;
   /** Cap-event store — DaemonEventStore over the daemon CompositeStore in-island. */
   readonly eventStore: CapabilityProviderInitOpts["eventStore"];
-  /** Hex Ed25519 verifying key the keyhive identity MUST resolve to (Gate A). */
-  readonly vesselVerifyingKey: string;
-  /** The mounted face atom that the device edge delegates to. */
+  /** The mounted face atom that Gate A and the device edge must name. */
   readonly faceVerifyingKey?: string;
+  /** Public place key, used only to reject an old place-signed face edge. */
+  readonly placeVerifyingKey?: string;
   /** The face's PersonaGroup id (a Keyhive group's), the affiliation layer's membership subject. ABSENT names a
    *  vessel at the WAKING FLOOR — see `face` below. */
   readonly personaGroupId?: string;
@@ -73,7 +73,7 @@ export interface BootDaemonKeyhiveInput {
   /** OPTIONAL prior-identity Archive (a previous `exportArchive()`), persisted encrypted-at-rest. A joinee
    *  admitted into a PersonaGroup restores from it so its prekeys match the card the founder minted-to —
    *  without it, a fresh boot regenerates prekeys and the shared content reads "Key not found". */
-  readonly archiveBytes?: Uint8Array;
+  readonly veilArchiveBytes?: Uint8Array;
   /** Durable rest for the Keyhive chunks this identity tracks per bag (`KeyhiveProvider` `chunkRest`). Absent:
    *  they rest in memory alone, and a restart finds none. */
   readonly chunkRest?: ProviderChunkRest;
@@ -90,18 +90,41 @@ export interface BootDaemonKeyhiveResult {
   readonly unreadable: string | null;
 }
 
+export class FacelessKeyhiveRefused extends Error {
+  constructor() {
+    super("[daemon-keyhive] waking-floor: lightAFace before asking for a Keyhive identity");
+    this.name = "FacelessKeyhiveRefused";
+  }
+}
+
+export class LegacyFaceSignatureRefused extends Error {
+  constructor() {
+    super("[daemon-keyhive] face relation carries a retired place-key signature; re-found this vessel from a fresh store");
+    this.name = "LegacyFaceSignatureRefused";
+  }
+}
+
 /**
- * Boot keyhive from the operator seed, re-hydrate cap state from the daemon doc,
+ * Boot keyhive from the selected face atom, re-hydrate cap state from the daemon doc,
  * clear the three sovereignty gates, and register the operator's writable bags.
  *
  * Throws (HALT) on any gate failure — the daemon island must post `fault` so the
  * vessel never declares itself live with a diverged or unauthorized identity.
  */
 export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<BootDaemonKeyhiveResult> {
+  const facePins = [input.personaGroupId, input.signerDid, input.personaKel, input.deviceEdge];
+  const facesHeld = facePins.filter((p) => p !== undefined).length;
+  if (facesHeld === 0 && !input.atomSeed && !input.faceVerifyingKey) throw new FacelessKeyhiveRefused();
+  if (facesHeld > 0 && !input.faceAnchor) {
+    throw new Error("[daemon-keyhive] Face anchor: anchor-missing; re-found the face");
+  }
+  if (facesHeld !== facePins.length || !input.atomSeed || !input.faceVerifyingKey) {
+    throw new Error("[daemon-keyhive] the face this vessel pins reads TORN — re-found the face");
+  }
   const keyhive = new KeyhiveProvider();
   await keyhive.init({
-    seed: input.seed, eventStore: input.eventStore,
-    ...(input.archiveBytes ? { archiveBytes: input.archiveBytes } : {}),
+    seed: input.atomSeed, eventStore: input.eventStore,
+    ...(input.veilArchiveBytes ? { archiveBytes: input.veilArchiveBytes } : {}),
     ...(input.chunkRest ? { chunkRest: input.chunkRest } : {}),
   });
 
@@ -112,31 +135,24 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   const did = await keyhive.whoami();
 
   // ── DOES A FACE STAND HERE? ────────────────────────────────────────────────────────────────
-  // A place founded without a face (`lares vessel found`, no `persona new 0`) carries no persona pins
-  // at all, and canon says it still stands: the Herm "boots permissionlessly on its own key… it asks no
-  // blessing to exist" (identity-classes#herm-establishment).
+  // A place founded without a face carries no Keyhive Individual. This direct boot call refuses by name;
+  // the daemon behavior supplies a floor verifier for public reads without calling this function.
   //
   // THE GATE NEVER SOFTENS. It runs in FULL or the vessel carries no persona caps — absence of a face is
   // not a weaker check, it is FEWER CAPS. That is what keeps the confused-deputy / PCD cure intact: you
   // cannot skip the Binding Gate by deleting the edge, because deleting the edge deletes the authority
   // the gate would have granted. A HALF face refuses outright — a vessel holding some pins and not others
   // has a torn founding, and guessing which half to trust is exactly the deputy confusion.
-  const facePins = [input.personaGroupId, input.signerDid, input.personaKel, input.deviceEdge];
-  const facesHeld = facePins.filter((p) => p !== undefined).length;
-  if (facesHeld > 0 && !input.faceAnchor) {
-    throw new Error("[daemon-keyhive] Face anchor: anchor-missing; re-found the face");
-  }
-  if (facesHeld > 0 && facesHeld < facePins.length) {
-    throw new Error("[daemon-keyhive] the face this vessel pins reads TORN — some persona pins stand and others do not. Re-found the face (`lares persona new 0`) rather than booting on half of one.");
-  }
-  const facelessFloor = facesHeld === 0;
-
-  // Gate A — keyhive identity MUST match the operator's persisted verifying key.
-  if (!did.endsWith(input.vesselVerifyingKey)) {
+  // Gate A binds the provider to the selected atom, never the public place key.
+  if (!did.toLowerCase().endsWith(input.faceVerifyingKey.toLowerCase())) {
     throw new Error(
       `[daemon-keyhive] Gate A: identity drift — whoami=${did.slice(0, 18)}… ` +
-      `does not match verifyingKey=${input.vesselVerifyingKey.slice(0, 16)}…`,
+      `does not match atom=${input.faceVerifyingKey.slice(0, 16)}…`,
     );
+  }
+  if (input.placeVerifyingKey && input.deviceEdge &&
+      verifyEd25519(input.deviceEdge.atomSignature, deviceAtomProofBytes(input.deviceEdge), input.placeVerifyingKey)) {
+    throw new LegacyFaceSignatureRefused();
   }
 
   // THE BINDING GATE — the canon identity path, now on the PERSONA-KEL PIN (the continuity anchor). The
@@ -147,7 +163,7 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   // encrypted-graph walk. FAIL-CLOSED and HALT on: a chain whose genesis prefix mismatches the pin (a
   // mis-threaded log), an unreachable / broken / below-quorum head, or an edge that does not chain to the head.
   let unreadable: string | null = null;
-  if (!facelessFloor) {
+  {
   const { prefix, chain } = input.personaKel!;
   if (chain.length === 0 || chain[0]!.prefix !== prefix) {
     throw new Error(`[daemon-keyhive] Binding Gate: persona-KEL pin/chain mismatch — the local chain does not head the pinned identifier ${prefix.slice(0, 20)}…`);

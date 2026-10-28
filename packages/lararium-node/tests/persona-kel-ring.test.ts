@@ -78,6 +78,7 @@ async function ringOver(events: readonly PersonaKelEvent[]): Promise<PersonaKelR
 
 describe("persona-kel ring — the doors meet every event the board holds", () => {
   const SEED = new Uint8Array(32).fill(7);
+  const ATOM_SEED = new Uint8Array(32).fill(8);
   let boot: { repo: Repo; verifyingKey: string; prefix: string; args: Parameters<typeof bootDaemonKeyhive>[0] };
 
   beforeAll(async () => {
@@ -87,7 +88,7 @@ describe("persona-kel ring — the doors meet every event the board holds", () =
     const did = await probe.whoami();
     const verifyingKey = did.startsWith("0x") ? did.slice(2) : did;
     await probe.dispose();
-    const cer = await runFoundingCeremony({ repo, vesselSeed: SEED, vesselVerifyingKey: verifyingKey, vesselDisplayName: "Ring Operator",
+    const cer = await runFoundingCeremony({ repo, atomSeed: ATOM_SEED, placeVerifyingKey: verifyingKey, vesselDisplayName: "Ring Operator",
       binding: { mode: "self-stood", signerSeed: SEED }, hearthTrueName: "", nexusPubkey: verifyingKey,
     });
     const daemonHandle = await repo.find<LarDoc>(cer.daemonUrl as AutomergeUrl);
@@ -98,7 +99,7 @@ describe("persona-kel ring — the doors meet every event the board holds", () =
     boot = {
       repo, verifyingKey, prefix: cer.personaKelPrefix,
       args: {
-        seed: SEED, eventStore: new DaemonEventStore({ daemon: composite }), vesselVerifyingKey: verifyingKey,
+        atomSeed: cer.atomSeed, veilArchiveBytes: cer.veilArchive, eventStore: new DaemonEventStore({ daemon: composite }), placeVerifyingKey: verifyingKey,
         personaGroupId: cer.personaGroupId,
         faceAnchor: mintFaceAnchor({ personaGroup: cer.personaGroupId, personaKelPrefix: cer.personaKelPrefix,
           personaRootDid: cer.founderEdge.personaRootDid, edge: cer.founderEdge, leaseEpoch: 0 }),

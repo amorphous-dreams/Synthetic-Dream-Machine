@@ -10,8 +10,8 @@
 #           alone mounts the repo's tools/ directory read-only at /app/tools; the product image stays free of the
 #           test door.
 #   lares   the standing node from the product image, with the surface file's split roots. Loopback only.
-#   qa      disposable Chromium runner (the official Playwright image, pinned to the version package.json pins).
-#           The repo rides read-only at /repo and /tmp is a writable tmpfs profile dir. The runner SHARES THE
+#   qa      disposable Chromium runner from the browser-harness target, with pinned Playwright and walk bytes
+#           in its image. /tmp is a writable tmpfs profile dir. The runner SHARES THE
 #           NODE'S NETWORK NAMESPACE (`network_mode: service:lares`), so `localhost` inside it names the node:
 #           Chromium reads http://localhost:4321 as a secure context by the localhost exemption, and Web Locks and
 #           crypto.subtle exist. A service-name origin (http://lares:4321) reads isSecureContext=false and no
@@ -89,20 +89,20 @@ services:
       start_period: 10s
 
   qa:
-    image: mcr.microsoft.com/playwright:v1.64.0-noble
+    image: ${BROWSER_CI_HARNESS_IMAGE:-lares-browser-harness:local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: browser-harness
     profiles: [qa]
     network_mode: "service:lares"
     depends_on: [lares]
     user: pwuser
-    working_dir: /repo
+    working_dir: /app
     environment:
       LARES_URL: http://localhost:4321
       HOME: /tmp/home
     volumes:
-      - type: bind
-        source: .
-        target: /repo
-        read_only: true
       # The join exchange (browser-ci.sh qa-join): a host-made directory the runner and host trade join files through.
       - type: bind
         source: ${BROWSER_CI_EXCHANGE_DIR:-/var/empty}

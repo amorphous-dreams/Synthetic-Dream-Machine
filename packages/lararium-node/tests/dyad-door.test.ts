@@ -128,13 +128,13 @@ describe("the dyad door", () => {
     // presence first: an ordering over an absent call passes vacuously
     expect((src.match(/^\s*setDyadDoor\(async \(fleetRoot, deviceKey\) => \{$/gm) ?? []).length).toBe(1);
     expect((src.match(/daemonVm = await openDaemonVm\(/g) ?? []).length).toBe(1);
-    const fold = src.indexOf("wornFleetRoot = edgeFleetRoot;\n      await shadowRing.refold();");
+    const fold = src.indexOf("if (activeAtom) await shadowRing.refold();");
     const door = src.indexOf("setDyadDoor(async (fleetRoot, deviceKey) => {");
     const boot = src.indexOf("daemonVm = await openDaemonVm(");
     expect(fold).toBeGreaterThan(0);
     expect(fold).toBeLessThan(door);
     expect(door).toBeLessThan(boot);
-    // the ring folds the worn fleet at every standing, the floor included
+    // the ring folds the worn fleet once a face's atom stands; the faceless floor names no fleet
     expect(src).toMatch(/if \(wornFleetRoot\) roots\.add\(wornFleetRoot\);/);
     // the door answers off the ring, waits on a fold where the reading went dark, and drops at teardown
     expect(src).toMatch(/return shadowRing\.deviceStanding\(fleetRoot, deviceKey\);/);

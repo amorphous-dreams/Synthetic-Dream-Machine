@@ -12,6 +12,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import * as mesh from "../packages/lararium-mesh/dist/index.js";
 import { CARRIAGE_PIN_ABSENT } from "../packages/lararium-mesh/dist/index.js";
 import { actOf, dialsOf, pointerAdvanced, pullHop } from "./herm-mesh-reader.mjs";
 
@@ -20,7 +21,7 @@ const SEED = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
 /** A pointer from the real builder over a content address standing for one published state. */
 async function publish(text, parents = []) {
   const cid = Buffer.from(text.padEnd(32, ".")).toString("hex").slice(0, 64);
-  return buildFlowPointer({ snapshot: { cid, heads: [cid], bytes: new Uint8Array() }, parents, signerSeed: SEED });
+  return buildFlowPointer({ snapshot: { cid, heads: [cid], bytes: new Uint8Array() }, parents, signer: mesh.placeSignerFromSeed(SEED) });
 }
 
 test("a re-published act reads as advanced (the known positive)", async () => {

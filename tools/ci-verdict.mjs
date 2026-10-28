@@ -19,8 +19,8 @@
  *
  * ── THE THIRD READING: THE HELD-OUT DRIVERS ─────────────────────────────────────────────────────
  * The CI workflow and the e2e shards raise no container mesh and no browser weld; those drivers ride
- * `.github/workflows/held-out.yml`. A head they never measured used to read "green" here, because this reader
- * looked at the CI workflow alone. So it prints a third reading under the same three words: the held-out run
+ * `.github/workflows/held-out.yml`. A reader of the CI workflow alone would read "green" for a head those drivers
+ * never measured, so this one prints a third reading under the same three words: the held-out run
  * that names this head, or else the newest one the branch holds, with that run's head, how many commits behind
  * the asked head it stands, and each driver's result. No held-out run on the branch reads `unread`. The third
  * reading SAYS and never blocks: the exit code follows the CI workflow's reading alone.

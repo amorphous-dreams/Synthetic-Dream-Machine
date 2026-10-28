@@ -26,7 +26,7 @@
 #                                           (`worn`), the wiki slug, the wiki document the mount resolves (`wikiDoc`) and
 #                                           every document registered under the slug, the recipe URI and its bag stack in
 #                                           order, and the registered bag URIs
-#   browser-ci.sh qa <cmd…>                 run <cmd> in the disposable Chromium runner (repo at /repo; the runner shares the node's network, node at http://localhost:4321);
+#   browser-ci.sh qa <cmd…>                 run <cmd> from the disposable Chromium runner's image (it shares the node's network, node at http://localhost:4321);
 #                                           LARES_URL, BROWSER_CI_* and LIVE_WIKI_* from the caller's env ride through
 #   browser-ci.sh qa-join <cmd…>            `qa`, plus the JOIN EXCHANGE below: the host carries the node's half of each
 #                                           browser profile's fleet join
@@ -53,6 +53,7 @@
 #   BROWSER_CI_PROJECT  compose project name (default lares-browser-ci); containers, network and volumes derive from it
 #   BROWSER_CI_PORT     loopback port the node publishes (default 5401; the browser swarm's range is 5400-5499)
 #   BROWSER_CI_IMAGE    the node image tag (default lares-browser-ci:local); builders in separate worktrees each name their own
+#   BROWSER_CI_HARNESS_IMAGE the QA image tag (default lares-browser-harness:local, built from the tree each qa run); a named tag reads as given, built only when absent
 # Two surfaces with distinct values share no container, network, volume or image tag. Give each builder its own.
 # BROWSER_CI_WIKI overrides the wiki slug that `recipe` and `get` address (default: the node's one live wiki).
 #
@@ -309,6 +310,11 @@ case "$verb" in
         */live-wiki.mjs|live-wiki.mjs) walk_document_preflight; break ;;
       esac
     done
+    # The default tag builds from the tree every run (the image bakes the walks, so a stale tag would run old walk
+    # bytes; the layer cache keeps an unchanged tree cheap). A named tag reads as given and builds only when absent.
+    if [ -z "${BROWSER_CI_HARNESS_IMAGE:-}" ] || ! docker image inspect "$BROWSER_CI_HARNESS_IMAGE" >/dev/null 2>&1; then
+      compose build qa
+    fi
     # Pass-through: the caller's LARES_URL, BROWSER_CI_* and LIVE_WIKI_* variables reach the runner by name.
     envargs=""
     for name in $(env | sed -n 's/^\(LARES_URL\|BROWSER_CI_[A-Za-z0-9_]*\|LIVE_WIKI_[A-Za-z0-9_]*\)=.*/\1/p'); do

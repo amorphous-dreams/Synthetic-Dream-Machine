@@ -43,7 +43,6 @@ import { posturePlan, posturePlanNotice } from "./posture-plan.js";
 import { cmdSeed }     from "./seed.js";
 import { cmdRead, cmdStop } from "./read.js";
 import { cmdWire } from "./wire.js";
-import { cmdVesselCard } from "./vessel-card.js";
 import { cmdRotatePlace } from "./rotate-place.js";
 import { cmdStandForeground, cmdStandWithWeb, cmdRestart, cmdRiteRebuild, cmdRiteRefresh } from "./scripted.js";
 import { vesselDid } from "../env.js";
@@ -172,9 +171,6 @@ const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Su
     return 0;
   } },
   found: { summary: "mint the vessel identity, persona root, social planes and bootstrap (idempotent)", run: (a) => cmdFound(under(a)) },
-  // THE HANDOFF ARTIFACT. A second operator cannot enter a relation with this vessel until she holds
-  // its card; the founding mints one and nothing surfaced it.
-  card: { summary: "print this vessel's ContactCard — the artifact another operator needs to relate to it", run: cmdVesselCard },
   rotate: { summary: "rotate the place's online signer by its founding card — reads the card, prints and reads back the replacement", run: (a) => cmdRotatePlace(under(a)) },
   stand: { summary: "bring the daemon up and report — [--foreground] [--with-web] [--restart]", run: standVessel },
   // THE ONE VESSEL VERB THAT REACHES OUTSIDE THE ROOT. Standing stays inside `LAR_ROOT`; wiring

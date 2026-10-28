@@ -31,7 +31,7 @@ import { FsCustodyIo } from "../src/custody-io.js";
 import { CustodyLocked, makeCustodyHolder, type CustodyHolder } from "../src/custody-holder.js";
 import { CustodyRootRefused } from "../src/custody-root.js";
 import { custodyGateDoor, seatCustody } from "../src/custody-seat.js";
-import { FloorKeyDoorRefused, generateOrLoadVesselIdentity, loadVesselSigningSeed, vesselFloorKeyDoor } from "../src/node-vessel-identity.js";
+import { FloorKeyDoorRefused, generateOrLoadVesselIdentity, vesselPlaceSignerDoor, vesselFloorKeyDoor } from "../src/node-vessel-identity.js";
 import { vesselCustodyHomes } from "../src/vault-carriers.js";
 
 const repoRoot = resolve(new URL(".", import.meta.url).pathname, "../../..");
@@ -157,9 +157,9 @@ describe("a gate bundle over a staged custody", { timeout: 180_000 }, () => {
     expect(Buffer.from(one).equals(Buffer.from(two))).toBe(true);
     one.fill(0);                                                             // the caller overwrites what it received …
     expect(Buffer.from(door.derive(GATE_FLOOR_BUNDLE_INFO)).equals(Buffer.from(two))).toBe(true);   // … and the next call answers whole
-    const seed = await loadVesselSigningSeed();
-    expect(seed.length).toBe(32);                                            // CONTROL: the comparison below reads a real key
-    expect(Buffer.from(two).equals(Buffer.from(seed))).toBe(false);
+    const signer = await vesselPlaceSignerDoor();
+    expect(signer.key).toMatch(/^[0-9a-f]{64}$/); // CONTROL: the proved place signer stands
+    expect(Buffer.from(two).toString("hex")).not.toBe(signer.key);
     expect(() => door.derive("lar:///ha.ka.ba/api/v0.1/pono/no-such-name")).toThrow(FloorKeyDoorRefused);
     expect(() => door.derive(GATE_BUNDLE_INFO)).toThrow(FloorKeyDoorRefused);
   });

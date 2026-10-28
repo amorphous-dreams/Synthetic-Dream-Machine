@@ -12,6 +12,8 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract
  */
+import type { CapTier } from "./cap-tier.js";
+import type { KahuReachFacts } from "./kahu-canon-reach.js";
 
 // ── Kinds on the wire ────────────────────────────────────────────
 
@@ -21,18 +23,33 @@ export const PORT_ASK      = "port:ask";
 export const PORT_PRESENCE = "port:presence";
 export const PORT_CLOSE    = "port:close";
 export const PORT_ACK      = "port:ack";
+export const PORT_LEASE    = "port:lease";
+export const PORT_GONE     = "port:gone";
 export const PORT_SNAPSHOT = "port:snapshot";
 export const PORT_CHANGES  = "port:changes";
 export const PORT_RESET    = "port:reset";
 export const PORT_WRITTEN  = "port:written";
 export const PORT_ANSWER   = "port:answer";
 
-export type PortVesselKind = typeof PORT_OPEN | typeof PORT_WRITE | typeof PORT_ASK | typeof PORT_PRESENCE | typeof PORT_CLOSE | typeof PORT_ACK;
+export type PortVesselKind = typeof PORT_OPEN | typeof PORT_WRITE | typeof PORT_ASK | typeof PORT_PRESENCE | typeof PORT_CLOSE | typeof PORT_ACK | typeof PORT_LEASE | typeof PORT_GONE;
 export type PortIslandKind = typeof PORT_SNAPSHOT | typeof PORT_CHANGES | typeof PORT_RESET | typeof PORT_WRITTEN | typeof PORT_ANSWER | typeof PORT_PRESENCE;
 
 export type PortWidthName = "full" | "skinny" | "story" | "none";
 export type PortAskKind = "filter" | "render" | "load" | "verb" | "cas" | "invoke";
 export type PortRenderForm = "html" | "text" | "blocks" | "label-html";
+
+export interface PortGrant {
+  readonly faceId: string;
+  readonly actor: string;
+  readonly edits: boolean;
+  readonly bags: readonly string[];
+  readonly admin: boolean;
+  readonly casTier?: Readonly<Record<string, CapTier>>;
+  readonly kahu?: KahuReachFacts | null;
+}
+
+export interface PortMsg_Lease { type: typeof PORT_LEASE; portId: string; grant: PortGrant }
+export interface PortMsg_Gone { type: typeof PORT_GONE; portId: string }
 
 /** A record as the port carries it: fields at the width, the fields left unprojected named in `omitted`. */
 export interface PortWireRecord {
@@ -147,7 +164,7 @@ export interface PortMsg_Answer {
   result?: unknown;
 }
 
-export type PortVesselToIslandMsg = PortMsg_Open | PortMsg_Write | PortMsg_Ask | PortMsg_Presence | PortMsg_Close | PortMsg_Ack;
+export type PortVesselToIslandMsg = PortMsg_Open | PortMsg_Write | PortMsg_Ask | PortMsg_Presence | PortMsg_Close | PortMsg_Ack | PortMsg_Lease | PortMsg_Gone;
 export type PortIslandToVesselMsg = PortMsg_Snapshot | PortMsg_Changes | PortMsg_Reset | PortMsg_Written | PortMsg_Answer | PortMsg_Presence;
 
 // ── Readers ─────────────────────────────────────────────────────
@@ -169,6 +186,19 @@ const WIDTHS: ReadonlySet<string> = new Set<PortWidthName>(["full", "skinny", "s
 const ASKS: ReadonlySet<string> = new Set<PortAskKind>(["filter", "render", "load", "verb", "cas", "invoke"]);
 const FORMS: ReadonlySet<string> = new Set<PortRenderForm>(["html", "text", "blocks", "label-html"]);
 const RESETS: ReadonlySet<string> = new Set(["island-restarted", "compacted", "shape-changed", "lagged"]);
+const TIERS: ReadonlySet<string> = new Set(["veil", "personagroup", "contract", "public"]);
+const isKahu = (v: unknown): v is KahuReachFacts => {
+  if (!isRecord(v) || !isName(v["group"]) || !isName(v["nexus"]) || typeof v["sentinelMember"] !== "boolean"
+    || !isRecord(v["roster"]) || !Array.isArray(v["acts"])) return false;
+  const roster = v["roster"];
+  return isNames(roster["keys"], 64) && isCount(roster["threshold"]) && isName(roster["sealEpochCid"]);
+};
+
+const isGrant = (v: unknown): v is PortGrant => isRecord(v) && isName(v["faceId"]) && isName(v["actor"])
+  && typeof v["edits"] === "boolean" && isNames(v["bags"], 256) && typeof v["admin"] === "boolean"
+  && (v["casTier"] === undefined || (isRecord(v["casTier"]) && Object.keys(v["casTier"]).length <= 4096
+    && Object.values(v["casTier"]).every(tier => typeof tier === "string" && TIERS.has(tier))))
+  && (v["kahu"] === undefined || v["kahu"] === null || isKahu(v["kahu"]));
 
 /** True for a kind the port owns, in either direction. */
 export function isPortKind(type: string): boolean {
@@ -184,6 +214,10 @@ export function readPortVesselMsg(v: unknown): PortVesselToIslandMsg | null {
   if (!isRecord(v) || typeof v["type"] !== "string" || !isName(v["portId"])) return null;
   if (!boundedBytes(v, 17 * 1024 * 1024)) return null;
   switch (v["type"]) {
+    case PORT_LEASE:
+      return isGrant(v["grant"]) ? v as unknown as PortMsg_Lease : null;
+    case PORT_GONE:
+      return v as unknown as PortMsg_Gone;
     case PORT_OPEN:
       if (!isName(v["wikiUri"]) || !isName(v["actor"]) || typeof v["width"] !== "string" || !WIDTHS.has(v["width"])) return null;
       if (v["since"] !== undefined && !isName(v["since"])) return null;
@@ -276,3 +310,5 @@ export const mkPortReset = (m: Omit<PortMsg_Reset, "type">): PortMsg_Reset => ({
 export const mkPortWritten = (m: Omit<PortMsg_Written, "type">): PortMsg_Written => ({ type: PORT_WRITTEN, ...m });
 export const mkPortAnswer = (m: Omit<PortMsg_Answer, "type">): PortMsg_Answer => ({ type: PORT_ANSWER, ...m });
 export const mkPortPresence = (m: Omit<PortMsg_Presence, "type">): PortMsg_Presence => ({ type: PORT_PRESENCE, ...m });
+export const mkPortLease = (m: Omit<PortMsg_Lease, "type">): PortMsg_Lease => ({ type: PORT_LEASE, ...m });
+export const mkPortGone = (m: Omit<PortMsg_Gone, "type">): PortMsg_Gone => ({ type: PORT_GONE, ...m });

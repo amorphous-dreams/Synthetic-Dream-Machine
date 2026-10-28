@@ -26,6 +26,7 @@ describe("the sealed face anchor gates daemon boot", () => {
       personaKel: foreign.daemonAuth.personaKel,
       deviceEdge: foreign.daemonAuth.deviceEdge,
       atom: foreign.daemonAuth.atom,
+      veilArchiveBytes: foreign.daemonAuth.veilArchiveBytes,
     })).rejects.toThrow(/Face anchor: group/);
   });
 

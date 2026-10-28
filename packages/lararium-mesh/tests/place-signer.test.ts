@@ -21,13 +21,17 @@ const images: Record<string, Uint8Array> = {
 
 describe("framed floor duties", () => {
   it("signs and verifies all five maker images", async () => {
-    const pointer = await buildFlowPointer({ snapshot: { cid: "aa".repeat(32), heads: [], bytes: new Uint8Array() }, parents: [], signerSeed: seed(1) });
+    const pointer = await buildFlowPointer({ snapshot: { cid: "aa".repeat(32), heads: [], bytes: new Uint8Array() }, parents: [], signer: placeSignerFromSeed(seed(1)) });
     const made = { ...images, [FLOW_POINTER_DOMAIN]: flowPointerSigningImage(pointer) };
+    const head = mintPlaceInception({ signerSeed: seed(1), coldVerifyingKey: key(2) }).event;
     for (const domain of PLACE_SIGNER_DOMAINS) {
       const image = made[domain]!;
       expect(floorDutyOf(image)).toBe(domain);
       const sig = await signer.signFloor(domain, image);
       expect(verifyPlaceDuty({ domain, image, sig, signerKey: signer.key })).toBe(true);
+      expect(verifyPlaceDutyAtHead({ kel: head, domain, image, sig })).toBe(true);
+      const faceSig = await placeSignerFromSeed(seed(9)).signFloor(domain, image);
+      expect(verifyPlaceDutyAtHead({ kel: head, domain, image, sig: faceSig })).toBe(false);
     }
   });
   it("refuses a sixth duty, old unframed image, nested frame and cross-duty replay", async () => {

@@ -145,7 +145,7 @@ Later that day the hearth-wiki itself boots with one dead module. The island kee
 | `breath` and `ea` from every island; the stall budget | stands (D0 floor) | — |
 | `lar-loading-plate`, `setBreath(surface, {phase, progress})`, the plate's faulted state with the `fatal:` line and cure | D1 (the sink builder's lane) | the island's `fault` relayed to the page |
 | `lar:daemon` mounted as a camera; whole-surface key, `lar:style`, `lar:membership` | D1 | ruling 1 above |
-| `lar:resend` and epochs on summon and switch; the per-surface last-frame cache; the flush before switch | D1 (row `D5` of the roadmap) | questions 7 and 10 |
+| `lar:resend` and epochs on summon and switch; the per-surface last-frame cache; the flush before switch | D1 (built) | questions 7 and 10 |
 | `lar:service` `route` and `open-surface` from the island root-services module; `page-action-unavailable` and `$:/temp/lares/alert/refused/<kind>` | D1 | `dreamdom#/open-rulings` 9 |
 | the projection form's `lar-field`; alert detail in `lar-disclosure`; the //beside// menu in `lar-popover` | D1 | `page-controls` probes |
 | breath, custody, residency records pushed into the daemon's temp; mirrored boot faults | D1 beside, through a patch to the owning vessel lanes | questions 3 and 6 |
@@ -174,6 +174,6 @@ Later that day the hearth-wiki itself boots with one dead module. The island kee
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CphGQCHPVPZcRJCVi5Z22s1_P_dimQQj35-R8nuK0mg
+<<^ code="&#x0003;">>ni:///sha-256;VcKmf4truwl-msIST3WnHZufQ3jNhGYSflfKD-Uei8E
 
 <<^ code="&#x0004;" -> to="?">>

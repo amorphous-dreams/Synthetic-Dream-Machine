@@ -99,7 +99,7 @@ written           = "2026-10-22"
 * `port:ask{kind: "invoke"}` names an `affordanceId` and a `renderCursor`; it carries no action string and no identity claim. The island obtains the session's ''proven face'' (what the holder verified) from a server-held lookup the composer lends (`faceOf(portId)`), never from the message. The island retains the port's latest render mount; invoke fires the recorded listener of the affordance the render offered, and an `affordanceId` the render never offered refuses `unknown-affordance`.
 * The gate runs an injected `authority(req)` verifier, which refuses by default (`no-authority`, answered before the proven-face check). Order: authority, then `renderCursor` freshness, then the fire; the authority check runs immediately before the fire, never cached from the render. The render cursor goes stale on any later shared log entry and on any later change event of the engine's own wiki (a refresh can replace the offered nodes without a log entry), since the island tracks no per-render dependency set (conservative, and sound for transclusions). A non-admin never learns freshness. `worker-trust` retires for the port's invoke path.
 * A signed-grant digest belongs to D4's actor manifest, outside this lane.
-* Reds: `non-admin-invoke-refused`, `ask-invoke-stale-cursor-refused`, `invoke-authority-rechecked-at-run`. Controls: an admin invokes once; the default production composition, which has no wiring until the composer patch lands after Wave C, refuses a port invoke by name (`no-authority`), so the gate never reads open through a missing wiring.
+* Reds: `non-admin-invoke-refused`, `ask-invoke-stale-cursor-refused`, `invoke-authority-rechecked-at-run`. Controls: an admin invokes once; the default production composition lends a read-only grant, so a port invoke refuses by name (`not-admin`; with no lease at all the open itself resets), and the gate never reads open through a missing wiring.
 
 <<~/ahu>>
 
@@ -107,8 +107,8 @@ written           = "2026-10-22"
 
 !! The `verb` and `cas` asks ~ island-local, both fail closed
 
-* ''`verb`'' names a registered ACTION verb, its `args` and its `titles` as targets. It rides the same proven-face gate as `invoke` (`faceOf`, then `authority`, `no-authority` by default) with no render cursor, and its reactors meet bag grants only through a `verbCap(face, portId)` the composer lends (absent, every bag-grant check refuses `no-verb-cap`), and runs on a verb table the port cap builds for itself with `kahuReachClearedAtGate` unset. Every verb that lands bytes in a system canon bag therefore asks the Kahu predicate itself, and a missing `kahuReach` lend reads as a stranger and refuses. The routed-envelope path of `wiki:place-verb` stays as it stands.
-* ''`cas`'' answers from the island's own `resolveByCid`, re-hashing the bytes against the cid (`cas-corrupt` on a mismatch). The composer lends `casTierOf(cid)`: only a `public` body answers. An unknown tier refuses `cas-tier-unknown`, a veil or personagroup body `cas-private`, a contract body `cas-contract`, and none of those reads a byte. Without the lend, `cas` refuses by name; so the composer wiring row covers `casTierOf` and `kahuReach` beside `faceOf`, `mayEdit` and `authority`.
+* ''`verb`'' names a registered ACTION verb, its `args` and its `titles` as targets. It rides the same proven-face gate as `invoke` (`faceOf`, then `authority`, `no-authority` by default) with no render cursor, and its reactors meet bag grants only through a `verbCap(face, portId)` the island lends from the port's grant (the grant's bags, and `admin` for more than a read; absent, every bag-grant check refuses `no-verb-cap`), and runs on a verb table the port cap builds for itself with `kahuReachClearedAtGate` unset. Every verb that lands bytes in a system canon bag therefore asks the Kahu predicate itself, and a missing `kahuReach` lend reads as a stranger and refuses. The routed-envelope path of `wiki:place-verb` stays as it stands.
+* ''`cas`'' answers from the island's own `resolveByCid`, re-hashing the bytes against the cid (`cas-corrupt` on a mismatch). The island lends `casTierOf(cid)` from the tiers the vessel's grant names: only a `public` body answers. An unknown tier refuses `cas-tier-unknown`, a veil or personagroup body `cas-private`, a contract body `cas-contract`, and none of those reads a byte. Without the lend, `cas` refuses by name; so the grant carries the tiers and the Kahu facts beside the face, the actor, the edit right, the bags and the admin right.
 * Reds: see the handler tests `port-verb-*` and `port-cas-*`.
 
 <<~/ahu>>
@@ -120,7 +120,7 @@ written           = "2026-10-22"
 A lost answer repairs by one law on every path: the sender resends the ''same id'' a bounded number of times within a live epoch; the receiver treats the resend idempotently and replays its original answer; the loop ends on an answer or on an epoch change. No timer decides when to resend or when to stop: the sender resends at its next causal boundary (a reconnect, a fresh frame, the next act) and the bound counts attempts.
 
 * The port's `txId` retry (#/write) follows it: the ledger replays the original `port:written`.
-* The camera's page-control resend follows it as an owed row, outside this lane: `projection-sink.ts` `relay` sends once and never re-sends the pending `eventId`; the cure resends that `eventId` within the mount epoch, and the island's answer ring replays the answer.
+* The camera's page-control resend follows it: `projection-sink.ts` holds each pending reliable act whole and resends the same `eventId` at a fresh frame under the same mount epoch, at the next act (first, in order) and at a re-arm of the doors, three attempts at most; an epoch change ends the loop with `stale-target` beside the target, the bound ends it with `binding-unavailable`, and the island's answer ring replays the answer.
 
 <<~/ahu>>
 
@@ -144,22 +144,26 @@ The proven-face verifier of #/invoke gates the port's invoke. Kahu reach admissi
 
 <<~ ahu #/owed>>
 
-!! Owed beside the port ~ rows outside this lane's build
+!! Beside the port ~ what stands built, and what stays owed
 
-* ''Composer wiring.'' The composer lends `faceOf(portId)`, `mayEdit(portId, actor)`, `bagGrant(portId, actor, bag)`, `actorOf(portId)` (a port write into system canon also needs `kahuReach`), `verbCap(face, portId)`, `casTierOf(cid)`, `kahuReach` and an `authority` verifier at the port cap, calls `transportGone(portId)` on channel close, and the holder keeps a port lease so port messages reach the binding that opened the port (today they drop by name, `no-port-lease`).
-* ''Mock witnesses.'' The retained-render staleness red uses a mock wiki that refreshes on the change event; a witness over a real `bootTestWiki` refresh stays owed. The commit-boundary drift red holds a mock bag, not a real store fault.
-* ''Listener timing.'' The causedBy attribution rests on synchronous store notification (the memory and Automerge layers keep it, and a mesh test pins the composite's). A layer that notifies after `writeFamily` settles would lose a write's `causedBy`; the layers beyond those two stay unread.
+The D2 close lane built the road a page takes to the port and closed the rows that stood owed beside it (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/d2-port-lane">>). What stands:
+
+* ''Composer wiring and the port lease.'' The vessel's pool keeps the port lease (`port-lease.ts`): the binding that opens a `portId` owns it, another binding's open, close, ack, ask, write or presence under it refuses `port-owned`, and a reply with no lease drops by name (`no-port-lease`). The pool sends the island `port:lease{portId, grant}` ahead of each open, write and ask (a page can never send one: `port-kind-refused`) and `port:gone{portId}` when the transport ends; the island's `hasPortLease` lends `faceOf(portId)`, `mayEdit`, `bagGrant`, `actorOf`, `verbCap`, `casTierOf`, `kahuReach` and `authority` from the grant and calls `transportGone(portId)` on `port:gone`. An open with no lease resets `lagged` and holds nothing. The browser shared holder wraps the same door. The default vessel policy grants a read-only port; the actor manifest and its grants belong to D4.
+* ''The page transport.'' `ports.place(surface, binding, msg)` and `ports.close(binding)` on each vessel result, and `makePortTransport` on the page, carry one binding's port messages through the lease; a live island proves one write lands once and echoes once under `causedBy`.
+* ''Real witnesses.'' The retained-render staleness runs over a real `bootTestWiki` refresh and the commit-boundary drift over a real Automerge fault; each mock stays as its control.
+* ''Listener timing.'' An atomic layer declares `notifiesSynchronously` or the port refuses it `late-notifying-layer` before any family lands. `AutomergeDocStore` and the tests' atomic memory layer declare it and keep `causedBy`.
+* ''A retired port's landed write.'' The write's own settling records its outcome in the ledger and frees the in-flight slot and the actor entry, whether or not the port still stands; a resend replays the original answer.
+* ''Clockless debt.'' `HandGate` flushes at the next store family boundary, the next act, the eighth coalesced mark or teardown; the camera `mountEpoch` mints from a boot nonce and a rising counter.
+* ''`$:/info/browser/*`.'' The tier-local filter names it, and the bare `$:/state`, `$:/temp`, `$:/status` and `$:/info/browser` titles, and the handler tests pin the write refusal and the silent change path.
+* ''D1's same-id resend.'' The page resends a pending `eventId` at the next causal boundary within its mount epoch, three attempts at most, and the island's answer ring replays the answer.
+* ''Tree-sitter parity witness for `resolveWidgetTree`.'' The in-VM widget tree and the tree-sitter fold agree on the shared ahu slots and block loulou targets; the two divergences the witness found (the spaced and legacy ahu spellings, and the mid-line loulou sigil) stand pinned.
+
+What stays owed, each by name:
+
 * ''A flaky neighbour.'' `wiki-shore-draft-road` T2 failed once under full-suite load and passed alone and in repeats; it stays on the house flake list, untraced.
 * ''Read scope, ruled.'' Snapshot, changes, `load`, `filter` and `render` read the world the island's camera already paints to its one face, so the port ships with no `bagRead` lend: an island that serves readers of more than one authority needs a per-bag read lend before it opens a port to the second. The port holds the line: once the composer lends `faceOf`, an open must name a proven face with a stable string `id` (the verifier's subject, never the whole proof, which may rotate): the port remembers the first `id` and answers an open under another id, or under a lookup that throws or names no id, with a reset and holds nothing (`port-one-island-one-face`, `port-face-key-is-the-stable-id`). Every later message, and every delivery or answer that resumes after an await, re-reads the face: unless the id still equals the one the open proved, an ask or write is refused `face-changed` and the port retires, so a moved face reads, answers and acts under nothing: presence fan-out checks each recipient, and each bag-grant check a verb reactor makes re-reads the face. A reactor already past its last grant check when the face moves still finishes, since the island cannot cancel it mid-effect; that residue stays owed to the actor gate (`port-face-must-hold-for-every-ask-and-write`). The island keeps its first face for its whole life: a second face reuses a rebuilt island, since the wiki it serves may still carry the first face's records.
-* ''Port ownership.'' A `portId` names a port inside one island; the holder's port lease must carry which binding admitted it, so another binding cannot open, close, ack or ask under that id. Until the lease lands the holder drops port replies by name and no second binding hears them.
 * ''Control traffic.'' Presence and ack carry no per-port rate bound; the holder's lease and transport own that budget.
-* ''A retired port's landed write.'' When a port retires after a family landed, the ledger keeps the transaction unanswered until the same actor resends it; an actor that never resends holds one slot of the bounded in-flight window and its actor-table entry, which eviction skips. A cleanup of settled writes with no resend stays owed.
 * ''D4's actor gate covers the `lar:act` path.'' Camera clicks reach TW5 widget listeners through `tw5-projection` and bypass `wiki-behavior`; the port's gate covers `port:ask{invoke}` alone.
-* ''Clockless debt in `hand-gate.ts`.'' The 400 ms trailing write and the 2 s cap decide by wall clock. Causal replacement: flush at the next store family boundary or the next act, and cap by a count of coalesced changes.
-* ''Clockless debt in `tw5-projection.ts`.'' The camera `mountEpoch` mints from `Date.now()`. Causal replacement: a per-island boot nonce plus a rising counter.
-* ''`$:/info/browser/*`.'' No tier path handles it yet; the `localFilter` core names it and the tier tests pin it.
-* ''D1's same-id resend.'' The camera's page controls resend a pending `eventId` after a lost answer, under #/retry-law.
-* ''Tree-sitter parity witness for `resolveWidgetTree`.'' The in-VM `MemeAst` feeds the pass; a witness comparing it with the tree-sitter fold follows.
 
 <<~/ahu>>
 
@@ -169,9 +173,10 @@ The proven-face verifier of #/invoke gates the port's invoke. Kahu reach admissi
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-field-scout">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-scout">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/d2-port-lane">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;03sUwV-iBGNhjbv5QHOImG_5WjCvhI2yHTChoLJJ2b4
+<<^ code="&#x0003;">>ni:///sha-256;bZpfR-vf-_AnXRGZd5EW1Qi7PNWEnde-c6iKuYZpQTQ
 
 <<^ code="&#x0004;" -> to="?">>

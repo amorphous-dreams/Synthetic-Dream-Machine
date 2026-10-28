@@ -9,7 +9,7 @@ import {
 } from "@lararium/mesh";
 import { ownedStore } from "../src/owned-store.js";
 import {
-  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, loadVesselSigningSeed,
+  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey,
   loadPersonaGroupRootVerifyingKey,
 } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";

@@ -1,3 +1,4 @@
+import { placeSignerFromSeed } from "@lararium/mesh";
 /**
  * flow-closed-door.test.ts — the herm flow keeps silence (pronaos#/the-rung-ladder).
  *
@@ -80,7 +81,7 @@ describe("the flow face keeps silence", () => {
     const handle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: { held: { text: "the map" } } });
     const rig = floorGates(["nexus-a.synthetic"], { posture: "open" });
     const face = await mountFlowReadFace({
-      httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, gates: rig.gates, dispatcher, exportSnapshot: (doc) => exportFlowSnapshot(doc as never),
+      httpServer: server, oracleHandle: handle, signer: placeSignerFromSeed(SEED), storageDir, gates: rig.gates, dispatcher, exportSnapshot: (doc) => exportFlowSnapshot(doc as never),
     });
     const origin = await listen(server);
     const w = rig.worlds[0]!;
@@ -129,7 +130,7 @@ describe("the flow face keeps silence", () => {
     const repo = new Repo({ sharePolicy: async () => true });
     const handle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: { held: { text: "the map" } } });
     const rig = floorGates(["nexus-a.synthetic"]);            // a PRIVATE Nexus: the world's default posture
-    const face = await mountFlowReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, gates: rig.gates, dispatcher, exportSnapshot: (doc) => exportFlowSnapshot(doc as never) });
+    const face = await mountFlowReadFace({ httpServer: server, oracleHandle: handle, signer: placeSignerFromSeed(SEED), storageDir, gates: rig.gates, dispatcher, exportSnapshot: (doc) => exportFlowSnapshot(doc as never) });
     const origin = await listen(server);
     const w = rig.worlds[0]!;
     const p = await presenter(w, "reader");

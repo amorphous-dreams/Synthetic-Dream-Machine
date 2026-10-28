@@ -82,7 +82,7 @@ The wall stays custody-by-TYPE: wearing a persona ''REQUIRES that this vessel HO
 The code as it stands cracks against the ruling in three places (read 2026-10-11, nothing run):
 
 # ''One vessel-wide selector.'' `wearPersona` (`packages/lararium-mesh/src/persona-vault.ts`) moves one active pointer; the node and browser boots each resolve ONE worn face, and `persona wear` asks for a reboot.
-# ''The gate proof names the VESSEL.'' The leaf identity loads the vessel seed and ContactCard (`packages/lararium-node/src/leaf-identity.ts`), and the auth wire proves the vessel key and binds the admit to it (`packages/lararium-mesh/src/auth-wire.ts`). Two sessions of one vessel that wear different faces correlate at any gate both dial.
+# ''The gate proof names the VESSEL.'' The leaf identity presents a selected face's atom and card at a face gate; the place carries only its public floor card and pin while faceless. Each face holds its own Keyhive identity by atom.
 # ''The holder broadcasts.'' The shared holder forwards every island message to every tab (`packages/lararium-browser/src/shared-holder-core.ts`), and the PersonaGroup ring's own-hand path skips the grant check (`packages/lararium-mesh/src/persona-group-ring.ts`), so plane names separate bags without authorizing sessions.
 
 ''A per-Nexus wire key alone does not close crack 2.'' It removes the vessel's cross-Nexus link (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/two-maps">>) and leaves two faces of one vessel on the SAME Nexus sharing it; per-dial transport keys serve the sibling channel, never the gate proof. The gate owes a face-scoped proof subject.
@@ -265,6 +265,6 @@ So the mesh ''declines to build the SIN even to defend itself''. It could bind p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8Ix-ibBk7x10B0p37tyieDcUXyE8_L_CbL2K-h00DU4
+<<^ code="&#x0003;">>ni:///sha-256;37ti0QSxeRB-qIM5hXzEZIZtOvu4Rmat92Db9kuHafA
 
 <<^ code="&#x0004;" -> to="?">>

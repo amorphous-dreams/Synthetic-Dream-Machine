@@ -7,8 +7,8 @@
  * INBOUND. The landed ledger records each wave's absolute result. WaveLanding meets queued waves with
  * unsent hands before the synchronous engine applier receives a change. A landed record also teaches the draft book.
  *
- * OUTBOUND, THE PER-TITLE PATH. A mark names a TITLE. HandGate paces the mark with a trailing window and a
- * non-resetting cap, and what leaves at the flush is the title's state in the wiki at that flush. A state
+ * OUTBOUND, THE PER-TITLE PATH. A mark names a TITLE. HandGate coalesces until a boundary or count cap; what leaves at the flush is the title's
+ * state in the wiki at that flush. A state
  * equal to the landed value with nothing sent since leaves nothing; a title the store never saw and the
  * wiki does not hold raises no tombstone; a state that differs from a write still in flight leaves after
  * it. A value handed in that the wiki does not hold (`saveTiddler` with a free-standing tiddler) is the one
@@ -78,7 +78,7 @@ import type { LaresTw5Extension } from "./types/lares-globals.js";
 import { splitBodyTiddler, quoteblockFence } from "./deserializer.js";
 import { LandedLedger, same, sameWithStamp } from "./landed-ledger.js";
 import { WaveLanding } from "./wave-landing.js";
-import { HandGate, type ShoreTimers } from "./hand-gate.js";
+import { HandGate } from "./hand-gate.js";
 import {
   DRAFT_BASE_BAG, DRAFT_BASE_HEADS, contentKey, draftBaseFields, readDraftBase, sameHeads, withoutDraftBase,
   type DraftBase, type DraftEntry,
@@ -230,10 +230,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     private readonly tw5:   TW5Engine,
     private readonly store: IslandStore,
     readonly instanceId:    string,
-    timers?: ShoreTimers,
   ) {
-    const timerPort = timers && typeof timers.setTimer === "function" && typeof timers.clearTimer === "function" ? timers : undefined;
-    this.gate = new HandGate(timerPort);
+    this.gate = new HandGate();
   }
 
   /**
@@ -282,12 +280,15 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   landingIdle(): Promise<void> { return this.landing?.idle() ?? Promise.resolve(); }
 
+  /** Flush hands marked before this island boundary. */
+  boundary(): Promise<void> { return this.gate.boundary(); }
+  pendingTitles(): string[] { return this.gate.titles(); }
+
   /**
    * Resolves once every hand the wiki raised before this call rests in the store. The wiki's own pending
    * `change` dispatch runs first, so every edit made so far has marked its title; each marked title then leaves
-   * at once, since the pacing gate's timers decide when a hand leaves in service and never whether a caller
-   * waits for them; and the flushes, acts and parallel-draft persistence those start run to their end. A
-   * fault in a flush rejects the call. A test or a teardown asks this in place of waiting out the pacing window.
+   * at once, and the flushes, acts and parallel-draft persistence those start run to their end. A
+   * fault in a flush rejects the call. A test or a teardown asks this to rest every hand already marked.
    */
   async handsRested(): Promise<void> {
     await this.awaitWikiDispatch();
@@ -392,6 +393,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.handBase.delete(title);
     this.unlanded.delete(title);
     if (applies) this.lastWriteBag.delete(title);
+    void this.boundary().catch(() => {});
   }
 
   /**
@@ -726,12 +728,12 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   async stop(): Promise<void> {
     while (this.acts.size) await Promise.allSettled([...this.acts]);
     await this.landing?.stop();
-    const marked = new Set([...this.pendingHand, ...this.gate.titles()]);
+    const gated = new Set(this.gate.titles());
+    const marked = new Set([...this.pendingHand, ...gated]);
+    await this.gate.flushAll().catch(() => {});
     await Promise.all([...marked].map(async (title) => {
-      try {
-        if (this.gate.has(title)) await this.gate.flush(title);
-        else if (!this.activeFlushCounts.has(title)) await this._flushHand(title);
-      }
+      if (gated.has(title) || this.activeFlushCounts.has(title)) return;
+      try { await this._flushHand(title); }
       catch (error) { this.failedAtTeardown.set(title, error); }
     }));
     while (this.flushes.size || this.acts.size || this.surfacings.size) {
@@ -1057,6 +1059,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const wiki = this.tw5.$tw.wiki;
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
     const taken = this.gate.consume(members);
+    void this.boundary().catch(() => {});
     for (const member of members) { this.pendingHand.add(member); this.handed.delete(member); }
 
     interface Group { bag: string; base: readonly string[] | undefined; puts: LarTiddlerRecord[]; deletes: string[]; titles: string[]; from?: { bag: string; heads: readonly string[] } }
@@ -1200,7 +1203,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   // ---------------------------------------------------------------------------
 
   /**
-   * The hand at `title` leaves at once, skipping the gate's timers. Answers whether THIS flush's own
+   * The hand at `title` leaves at once, crossing the gate. Answers whether THIS flush's own
    * write was acknowledged by the store: writes of one title never overlap, and a flush queued behind
    * this one cannot finish before this await resumes, so the title's last finished flush is this one.
    */

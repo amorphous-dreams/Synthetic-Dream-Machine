@@ -94,17 +94,13 @@ describe.skipIf(wikiSkip)(`the projection cap's door${skipNote}`, () => {
   afterEach(() => { s?.stop(); s = undefined; });
   const cap = hasProjection();
 
-  test("RED: the cap CLAIMS lar:control-event and lar:resend, and the old dom kinds no longer — CONTROL: a foreign kind stays unclaimed", async () => {
+  test("RED: the cap CLAIMS lar:control-event and lar:resend — CONTROL: a foreign kind stays unclaimed", async () => {
     s = await mountSurface(FIELD, [{ title: T("field"), text: "" }]);
     expect(cap.onSignal!(LAR_CONTROL_EVENT, s.event("field", { kind: "lar:sense", action: "lar:sense", wholeValue: "hi", localRev: 1 }), s.ctx)).toBe(true);
     expect(cap.onSignal!(LAR_RESEND, mkLarResend(), s.ctx)).toBe(true);
-    const rid = s.rid("field");
-    // The old DOM relay shapes, spelled out by hand since no factory mints them: the cap leaves them unclaimed.
-    expect(cap.onSignal!("wiki:dom-input", { type: "wiki:dom-input", renderId: rid, eventType: "input", value: "old road" }, s.ctx)).toBe(false);
-    expect(cap.onSignal!("wiki:dom-event", { type: "wiki:dom-event", renderId: rid, eventType: "click", fields: { button: 0 } }, s.ctx)).toBe(false);
     expect(cap.onSignal!("daemon:place-verb", {}, s.ctx)).toBe(false);
     await s.flush();
-    expect(text(s, T("field")), "the lar:control-event landed and the old road wrote nothing").toBe("hi");
+    expect(text(s, T("field")), "the lar:control-event landed").toBe("hi");
   }, 120_000);
 
   test("RED: a malformed or over-bound control event reaching the cap DROPS — claimed, never dispatched; CONTROL: the well-formed twin lands", async () => {

@@ -1,3 +1,4 @@
+import { placeSignerFromSeed } from "@lararium/mesh";
 /**
  * herm-carriage-relay.test.ts — CARRIAGE PEERING AND THE HERM RELAY OF THE PUBLIC MAP, gate-native (the shut-routes house ruling, stable-founding-road #/rulings: "an explicit Nexus opens the herm relay"; each shut route "flips on a proven gate-native caller").
  *
@@ -86,7 +87,7 @@ async function stand(h: Herm, w: World, readings: () => Promise<readonly Carried
   const dir = mkdtempSync(join(tmpdir(), `herm-relay-${h.label}-`)); dirs.push(dir);
   const refusals: string[] = [];
   const face = await mountFlowMapReadFace({
-    httpServer: server, meshPalaceHandle: handle, signerSeed: h.seed, storageDir: dir,
+    httpServer: server, meshPalaceHandle: handle, signer: placeSignerFromSeed(h.seed), storageDir: dir,
     gates: async (sessions) => gateReadingsFor("herm", await readings()).map((r) => {
       const bundle = deriveGateBundle(floorGateRoot(door), new TextEncoder().encode(r.aid), floorRoute(FLOW_SOCKET_ROUTE));
       return {

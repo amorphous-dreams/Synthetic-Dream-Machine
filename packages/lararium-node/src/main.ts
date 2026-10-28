@@ -60,6 +60,7 @@ import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh";
 import { makeUdsSeat, serveUdsFront, type UdsFront } from "./uds-channel.js";
 import type { Socket } from "node:net";
 import { makeCustodyHolder } from "./custody-holder.js";
+import { testScratchNotice } from "./test-scratch-notice.js";
 import { seatCustody } from "./custody-seat.js";
 import { custodyFrameHandler } from "./custody-frames.js";
 import { runSealedAct, type PersonaSelvesPlane, type SealedActContext } from "./sealed-acts.js";
@@ -74,7 +75,7 @@ import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
 import { larDataDir }                   from "./vessel-paths.js";
 import { join } from "path";
-import { existsSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
+import { mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
 import { mountReachFaceWatch, reachFaceBootNotice } from "./reach-face-watch.js";
 import { loadLaresConfig, originDeclaration, hermWaymarkDeclared } from "./lares-config.js";
@@ -147,9 +148,6 @@ function parseArgs(): { port: number; storageDir: string; genesisDir: string; wi
  * reader can tell a live marker from one a killed process left behind. Best-effort throughout: a
  * vessel that cannot write this still serves, and a caller that finds nothing simply learns nothing.
  */
-/** The marker a test harness writes at a root it staged (`tools/test-scratch-marker.mjs`). */
-const TEST_SCRATCH_MARKER = ".lar-test-scratch";
-
 const standingDropArmed = new Set<string>();
 function publishStanding(storageDir: string, standing: string, faceLit: boolean): void {
   const uid = process.getuid?.() ?? 0;
@@ -197,9 +195,8 @@ function logPendingPlanes(prefix: string, manifest: MountManifest): void {
 }
 
 /** The `receipts.ring {ratePerMin, horizonDays, burst, bytesPerOutcome}` shape an operator may override in
- *  `~/.lares/config.json` (D1, P2.5 iter 4) — read loosely here rather than widening
- *  `LaresConfig`'s own interface, since this lane touches only `uds-channel.ts` and this one
- *  pass-through site in `main.ts`. The first three dials size the ring's count, and `bytesPerOutcome` the mean
+ *  `~/.lares/config.json` — read loosely here rather than widening `LaresConfig`'s own
+ *  interface, so this one pass-through site in `main.ts` carries it to `uds-channel.ts`. The first three dials size the ring's count, and `bytesPerOutcome` the mean
  *  weight a kept outcome may take, so one block sets both bounds. Absent entirely → `startUdsChannel`'s own
  *  defaults (`RECEIPT_RING_DEFAULT`, `RECEIPT_RING_BYTES_DEFAULT`). */
 interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly ratePerMin?: number; readonly horizonDays?: number; readonly burst?: number; readonly bytesPerOutcome?: number } } }
@@ -342,10 +339,9 @@ async function main(): Promise<void> {
   // THE ONE SEAT. Every sealed row this process reads or writes reaches the holder through it, and the seat
   // carries no opener: the key arrives on the custody door alone, and a row asked for at the floor refuses.
   seatCustody(holder);
-  const testScratch = existsSync(join(rootDir, TEST_SCRATCH_MARKER));
-  if (testScratch) {
-    console.log(`[lararium] TEST SCRATCH ROOT — ${rootDir} carries ${TEST_SCRATCH_MARKER}: a harness staged this vessel and its custody opens under the PUBLISHED test route. Never a vessel anyone keeps.`);
-  }
+  const scratchNotice = testScratchNotice(rootDir);
+  const testScratch = scratchNotice !== null;
+  if (scratchNotice) console.log(scratchNotice);
   // Late-bound: the door's acts recompose, and the recomposition closes over what `main` builds below.
   let custodyDoor: ((parsed: unknown, sock: Socket) => boolean) | null = null;
   const front = serveUdsFront({ claim: floor.storeClaim, onFrame: (parsed, sock) => custodyDoor?.(parsed, sock) ?? false });

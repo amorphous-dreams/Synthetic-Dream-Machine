@@ -79,12 +79,13 @@ import {
   type CustodyIo, type KeyClass, type SealedCarrier, type SlotSpec, type SlotTree, type TreeKey,
 } from "@lararium/mesh";
 import { custodyRootPath } from "./custody-root.js";
-import { archivePath, VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
+import { VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
 import { FACE_ATOM_GROUP_FILE, FACE_ATOM_ASK_FILE } from "./face-atom-store.js";
 import { FACES_DIR, FACE_INDEX_FILE } from "./face-index.js";
 import { FACE_ANCHOR_GROUP_FILE } from "./face-anchor-store.js";
 import { OUTBOX_KEY_FILE } from "./outbox-key.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
+import { RELAY_GATE_SEED_FILE } from "./relay-gate-seed.js";
 
 /** The custody classes, closed. */
 export const CUSTODY_CLASSES = ["floor", "floor-plain", "serving", "hot", "cold", "outbox", "face-hot", "face-cold"] as const;
@@ -308,6 +309,9 @@ function buildTable(): readonly CarrierRow[] {
     id({ row: "vessel-key", target: tgt(["S"], LEAD, "place-signer"), match: loginKeyed("vessel-key"), custody: "floor", keyClass: "device-minted",
          writer: "node-vessel-identity (founding)",
          bare: "the floor signs with it before any person unlocks, so no vessel key may stand between a boot and it" }),
+    id({ row: "relay-gate-seed", target: tgt(["S"]), match: file(RELAY_GATE_SEED_FILE), custody: "floor", keyClass: "device-minted",
+         writer: "relay-gate-seed (relay standing and explicit rotation)", holds: (_file, bytes) => /^[0-9a-f]{64}\n?$/.test(Buffer.from(bytes).toString("utf8")),
+         bare: "the relay service stands before a person unlocks; its random gate seed grants only the relay handshake" }),
     id({ row: "vessel-kel", target: tgt(["F"]), match: loginKeyed("vessel-kel"), custody: "floor", keyClass: null,
          writer: "node-vessel-identity (founding and rotation)",
          bare: "the place KEL names the online signer and its next cold commitment; every standing-key load verifies its head" }),
@@ -329,9 +333,6 @@ function buildTable(): readonly CarrierRow[] {
     id({ row: "face-index", target: tgt(["F"]), match: file(FACE_INDEX_FILE), custody: "floor-plain", keyClass: null,
          writer: "face-index",
          bare: "the node names the faces it can unlock before any face opens; the index holds the count of faces, each group's digest, each founding ask's digest and each random directory name, and no other byte" }),
-    id({ row: "vessel-card", target: tgt(["F"]), match: loginKeyed("vessel-card"), custody: "floor-plain", keyClass: null,
-         writer: "node-vessel-identity (founding)",
-         bare: "a contact card holds public keys alone, and the vessel hands it to every peer it meets" }),
     row({ row: "charter", target: tgt(["F"]), home: "seal", under: "", match: file("founding-roster.mem"), custody: "floor-plain",
           keyClass: null, writer: "nexus seal",
           bare: "the floor's gate reads the charter before any key opens, and a charter stands public and signed" }),
@@ -365,8 +366,6 @@ function buildTable(): readonly CarrierRow[] {
     // ── hot: sealed under the S key, opened at unlock ─────────────────────────────────────────────
     id({ row: "gate-root", target: tgt(["D"], LEAD), match: exact(custodyRootPath()), custody: "hot", keyClass: "device-minted",
          writer: "custody-root (founding)" }),
-    id({ row: "place-archive", target: tgt(["D"], LEAD, "archive-row-selector"), match: exact(archivePath()), custody: "hot", keyClass: "device-minted",
-         writer: "identity-anchors" }),
     faceRowOf({ row: "veil-archive", target: tgt(["D"], LEAD, "archive-row-selector"), inner: VEIL_ARCHIVE_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "identity-anchors", name: (m) => `veil-archive-g${m[1]}`, face: (m) => `group:${m[1]}` }),
     // A group digest owns this local atom row; bundles leave its seed on this vessel.

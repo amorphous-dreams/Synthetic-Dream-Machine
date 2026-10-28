@@ -13,7 +13,7 @@ const islandKinds = [
   "port:snapshot", "port:changes", "port:reset", "port:written", "port:answer", "port:presence",
 ] as const satisfies readonly IslandToVesselMsg["type"][];
 
-function harness() {
+function harness(grant = false) {
   const islandListeners = new Set<(message: unknown) => void>();
   const islandPosts: unknown[] = [];
   const drops: Array<{ kind: string; reason: string }> = [];
@@ -34,6 +34,7 @@ function harness() {
       return island;
     },
     onDrop: (kind, reason) => drops.push({ kind, reason }),
+    ...(grant ? { portPolicy: (binding: string) => ({ faceId: "face:T", actor: binding, edits: true, bags: [], admin: false }) } : {}),
   });
   const port = fakePort;
   const face = faceFixture("face:T");
@@ -203,6 +204,62 @@ describe("shared holder routing keeps every island answer on its binding", () =>
     h.fromIsland({ type: "port:changes", portId: "p1", cursor: "n.x.1", entries: [] });
     for (const port of [a, b]) expect(port.received.some((m) => (m as { type?: string }).type === "port:changes")).toBe(false);
     expect(h.drops).toEqual(expect.arrayContaining([{ kind: "port:changes", reason: "no-port-lease" }]));
+  });
+
+
+  const open = { type: "port:open", portId: "p1", wikiUri: "wiki", width: "full", actor: "page", maxRecordBytes: 1000, maxBatchBytes: 10000 };
+
+  test("no policy refuses a port open and leaves the island untouched", async () => {
+    const h = harness(); const a = h.port(); await h.core.connect(a.endpoint); await h.admit(a);
+    a.send(open);
+    expect(a.received.at(-1)).toMatchObject({ kind: "holder:refused", cause: "port-not-granted" });
+    expect(h.islandPosts).toHaveLength(0);
+  });
+
+  test("second tab cannot act under another port lease; owner close still places", async () => {
+    const h = harness(true); const a = h.port(); const b = h.port();
+    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint); await h.admit(a); await h.admit(b);
+    a.send(open);
+    const before = h.islandPosts.length;
+    b.send({ type: "port:close", portId: "p1" });
+    b.send(open);
+    expect(h.islandPosts).toHaveLength(before);
+    expect(b.received.filter((m) => (m as { kind?: string }).kind === "holder:refused"))
+      .toEqual([expect.objectContaining({ cause: "port-owned" }), expect.objectContaining({ cause: "port-owned" })]);
+    a.send({ type: "port:close", portId: "p1" });
+    expect(h.islandPosts.at(-1)).toMatchObject({ type: "port:close", portId: "p1" });
+  });
+
+  test("a tab cannot forge a vessel lease; the holder posts its own before open", async () => {
+    const h = harness(true); const a = h.port(); await h.core.connect(a.endpoint); await h.admit(a);
+    a.send({ type: "port:lease", portId: "p1", grant: {} });
+    expect(a.received.at(-1)).toMatchObject({ kind: "holder:refused", cause: "port-kind-refused" });
+    expect(h.islandPosts).toHaveLength(0);
+    a.send(open);
+    expect(h.islandPosts.map((msg) => (msg as { type: string }).type)).toEqual(["port:lease", "port:open"]);
+  });
+
+  test("snapshot and changes reach only the tab holding their lease", async () => {
+    const h = harness(true); const a = h.port(); const b = h.port();
+    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint); await h.admit(a); await h.admit(b);
+    a.send(open);
+    h.fromIsland({ type: "port:snapshot", portId: "p1", cursor: "n.x.0", records: [] });
+    h.fromIsland({ type: "port:changes", portId: "p1", cursor: "n.x.1", entries: [] });
+    expect(a.received.filter((m) => ["port:snapshot", "port:changes"].includes((m as { type?: string }).type ?? "")))
+      .toEqual([expect.objectContaining({ type: "port:snapshot", ...a.envelope() }), expect.objectContaining({ type: "port:changes", ...a.envelope() })]);
+    expect(b.received.some((m) => ["port:snapshot", "port:changes"].includes((m as { type?: string }).type ?? ""))).toBe(false);
+  });
+
+  test("disconnect posts gone for a tab's lease and frees its reply route", async () => {
+    const h = harness(true); const a = h.port(); const b = h.port();
+    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint); await h.admit(a); await h.admit(b);
+    a.send(open);
+    h.core.disconnect(a.endpoint);
+    expect(h.islandPosts.at(-1)).toMatchObject({ type: "port:gone", portId: "p1" });
+    h.fromIsland({ type: "port:changes", portId: "p1", cursor: "n.x.1", entries: [] });
+    expect(h.drops).toContainEqual({ kind: "port:changes", reason: "no-port-lease" });
+    b.send(open);
+    expect(h.islandPosts.at(-1)).toMatchObject({ type: "port:open", portId: "p1" });
   });
 
   test("the port that stands the island owns its boot: `ready` before any manifest reaches it alone", async () => {

@@ -33,7 +33,6 @@ import path from "node:path";
 import { bootTestWiki, wikiSkip, skipNote, REPO } from "./test-wiki.js";
 import { CompositeStore } from "@lararium/mesh";
 import { IslandAdaptor } from "../src/island-adaptor.js";
-import { HandGate } from "../src/hand-gate.js";
 import { asIslandStore } from "./island-store-double.js";
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "../src/bag-cascade.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -196,7 +195,7 @@ describe.skipIf(wikiSkip)(`routing totality — the adaptor persists what it rou
 
   test("★ a plain-titled tiddler a hand saves reaches the store ★", async () => {
     const { adaptor, store } = rig();
-    await adaptor.saveTiddler({ fields: { title: "Shopping List", text: "kalo, poi" } });
+    await Promise.all([adaptor.saveTiddler({ fields: { title: "Shopping List", text: "kalo, poi" } }), adaptor.boundary()]);
     expect(await store.get("Shopping List"), "the save was dropped — nothing persisted").not.toBeNull();
   });
 
@@ -214,7 +213,7 @@ describe.skipIf(wikiSkip)(`routing totality — the adaptor persists what it rou
       ["notes.md",         "text/x-markdown",         "# heading"],
       ["Plain",            "text/vnd.tiddlywiki",     "an ordinary tiddler"],
     ] as const) {
-      await adaptor.saveTiddler({ fields: { title, type, text } });
+      await Promise.all([adaptor.saveTiddler({ fields: { title, type, text } }), adaptor.boundary()]);
       const rec = await store.get(title);
       expect(rec, `${type} did not persist`).not.toBeNull();
       expect(rec?.tiddler["type"], `${type} lost its type in the round trip`).toBe(type);
@@ -224,11 +223,11 @@ describe.skipIf(wikiSkip)(`routing totality — the adaptor persists what it rou
 
   test("deleting a plain-titled tiddler tombstones it", async () => {
     const { adaptor, store } = rig();
-    await adaptor.saveTiddler({ fields: { title: "Shopping List", text: "kalo" } });
+    await Promise.all([adaptor.saveTiddler({ fields: { title: "Shopping List", text: "kalo" } }), adaptor.boundary()]);
     const seen: string[] = [];
     const orig = store.tombstone.bind(store);
     store.tombstone = async (t, o) => { seen.push(t); return orig(t, o); };
-    await adaptor.deleteTiddler("Shopping List");
+    await Promise.all([adaptor.deleteTiddler("Shopping List"), adaptor.boundary()]);
     expect(seen, "the delete was dropped — the tiddler resurrects on the next boot").toContain("Shopping List");
   });
 });
@@ -280,20 +279,20 @@ describe.skipIf(wikiSkip)(`routing totality — a delete lands where the save la
 
   test("★ deleting a plain-titled tiddler tombstones it in WORKING, never in temp ★", async () => {
     const { adaptor, stores } = rig();
-    await adaptor.saveTiddler({ fields: { title: "Shopping List", text: "kalo" } });
-    await new Promise((r) => setTimeout(r, HandGate.TRAILING_MS + 50));
+    await Promise.all([adaptor.saveTiddler({ fields: { title: "Shopping List", text: "kalo" } }), adaptor.boundary()]);
+    await adaptor.boundary();
     expect(await stores.working.get("Shopping List"), "the save missed working").not.toBeNull();
-    await adaptor.deleteTiddler("Shopping List");
+    await Promise.all([adaptor.deleteTiddler("Shopping List"), adaptor.boundary()]);
     expect(await tombstoned(stores.working, "Shopping List"), "the tombstone missed the bag the save landed in — it resurrects at the next boot").toBe(true);
     expect(await tombstoned(stores.temp, "Shopping List"), "the tombstone fell into the volatile temp store").toBe(false);
   });
 
   test("CONTROL: a $:/temp/* delete still lands in temp", async () => {
     const { adaptor, stores } = rig();
-    await adaptor.saveTiddler({ fields: { title: "$:/temp/scratch", text: "x" } });
-    await new Promise((r) => setTimeout(r, HandGate.TRAILING_MS + 50));
+    await Promise.all([adaptor.saveTiddler({ fields: { title: "$:/temp/scratch", text: "x" } }), adaptor.boundary()]);
+    await adaptor.boundary();
     expect(await stores.temp.get("$:/temp/scratch"), "the volatile save missed temp").not.toBeNull();
-    await adaptor.deleteTiddler("$:/temp/scratch");
+    await Promise.all([adaptor.deleteTiddler("$:/temp/scratch"), adaptor.boundary()]);
     expect(await tombstoned(stores.temp, "$:/temp/scratch")).toBe(true);
     expect(await tombstoned(stores.working, "$:/temp/scratch")).toBe(false);
   });
