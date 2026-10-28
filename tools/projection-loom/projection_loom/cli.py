@@ -49,6 +49,15 @@ def main(argv=None):
     p=commands.add_parser('scene-invalidation', help='Compare selective native/scene rebuild dependencies')
     p.add_argument('--before', type=Path, required=True, help='prior authored scene declaration')
     p.add_argument('--after', type=Path, required=True, help='new authored scene declaration')
+    p=commands.add_parser('editor-seed', help='Bind authored scene assemblies to persistent causal entities')
+    p.add_argument('--declaration', type=Path, required=True)
+    p.add_argument('--out', type=Path, required=True)
+    p=commands.add_parser('editor-apply', help='Reconcile typed edit and regenerate native scene')
+    p.add_argument('--declaration', type=Path, required=True)
+    p.add_argument('--ground', type=Path, required=True)
+    p.add_argument('--bundle', type=Path, required=True)
+    p.add_argument('--proposal', type=Path, required=True)
+    p.add_argument('--out', type=Path, required=True)
     p=commands.add_parser('wide-epoch',help='Resumable staged constructive epochs')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
@@ -305,6 +314,21 @@ def main(argv=None):
         old = graph_for_scene(json.loads(args.before.read_text(encoding='utf8')))
         new = graph_for_scene(json.loads(args.after.read_text(encoding='utf8')))
         result = new.compare(old)
+        print(json.dumps(result, indent=2))
+        return result
+    if args.command in ('editor-seed', 'editor-apply'):
+        from .editor_proposals import seed_editor_ground, apply_proposal
+        declaration = json.loads(args.declaration.read_text(encoding='utf8'))
+        if args.command == 'editor-seed':
+            ground = seed_editor_ground(declaration)
+            ground.save(args.out)
+            result = {'location': ground.location, 'frontier': list(ground.frontier),
+                      'entities': sorted(ground.snapshot()['entities'])}
+        else:
+            from .relational_ground import RelationalGround
+            ground = RelationalGround.load(args.ground)
+            proposal = json.loads(args.proposal.read_text(encoding='utf8'))
+            result = apply_proposal(declaration, ground, args.bundle, proposal, args.out)
         print(json.dumps(result, indent=2))
         return result
     if args.command=='fracture-pattern':

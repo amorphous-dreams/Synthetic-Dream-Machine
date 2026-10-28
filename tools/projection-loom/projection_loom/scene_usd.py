@@ -70,8 +70,14 @@ def _validate_declaration(document):
     ids = set()
     paths = set()
     for row in rows:
-        if set(row) != {"entity_id", "growth_program"}:
-            raise ValueError("Each assembly needs exactly a semantic ID and a native program")
+        if set(row) - {"entity_id", "growth_program", "translation"} or (
+                "entity_id" not in row or "growth_program" not in row):
+            raise ValueError("Each assembly needs a semantic ID and native program")
+        translation = row.get("translation", [0, 0, 0])
+        if (not isinstance(translation, (tuple, list)) or len(translation) != 3
+                or any(type(x) not in (int, float) or not math.isfinite(x)
+                       for x in translation)):
+            raise ValueError("Rigid assembly translation must be finite local coordinates")
         identifier = row["entity_id"]
         if not isinstance(identifier, str) or not identifier or identifier in ids:
             raise ValueError("Ambiguous or missing semantic entity ID")
@@ -107,20 +113,22 @@ def package_scene(document, out):
         audit = built.audit()
         if not audit["valid"] or not audit["union_valid"]:
             raise ValueError("Native CAD audit rejected assembly")
-        solid = built.assembly.material_solid()
+        translation = tuple(float(x) for x in row.get("translation", (0, 0, 0)))
+        solid = built.assembly.material_solid().translate(translation)
         mesh = built.assembly.tessellate(union=True)
         if len(mesh.vertices) < 3 or len(mesh.faces) < 1:
             raise ValueError("Accepted CAD yielded empty mesh")
         named = _prim_name(entity_id)
         prim_path = "/Loom/" + named
         usd_mesh = UsdGeom.Mesh.Define(generated, prim_path)
-        usd_mesh.CreatePointsAttr([tuple(float(v) for v in p) for p in mesh.vertices])
+        usd_mesh.CreatePointsAttr([tuple(float(p[i]) + translation[i] for i in range(3))
+                                   for p in mesh.vertices])
         usd_mesh.CreateFaceVertexCountsAttr([3] * len(mesh.faces))
         usd_mesh.CreateFaceVertexIndicesAttr([int(k) for tri in mesh.faces for k in tri])
         usd_mesh.CreateSubdivisionSchemeAttr(UsdGeom.Tokens.none)
-        xs = [float(v[0]) for v in mesh.vertices]
-        ys = [float(v[1]) for v in mesh.vertices]
-        zs = [float(v[2]) for v in mesh.vertices]
+        xs = [float(v[0]) + translation[0] for v in mesh.vertices]
+        ys = [float(v[1]) + translation[1] for v in mesh.vertices]
+        zs = [float(v[2]) + translation[2] for v in mesh.vertices]
         usd_mesh.CreateExtentAttr([(min(xs), min(ys), min(zs)),
                                    (max(xs), max(ys), max(zs))])
         prim = usd_mesh.GetPrim()
@@ -131,6 +139,7 @@ def package_scene(document, out):
         imported = cq.importers.importStep(str(step_path)).val()
         step_receipt = _compare_native(solid, imported)
         bodies.append({"entity_id": entity_id, "prim_path": prim_path,
+                       "translation": list(translation),
                        "program_sha256": program.identity,
                        "geometry_scope": "accepted-CAD-tessellation",
                        "step_path": str(step_path.relative_to(out)),

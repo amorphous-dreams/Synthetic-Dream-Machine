@@ -83,3 +83,15 @@
 ## CI correction · distinct native USD test environments
 
 At head `57c683d9`, the `usd-interchange` job **passed**: real OpenUSD stages and STEP reimports completed. The generic `contracts` lane passed 50 tests but failed four USD-only tests because it did not install `pxr`. That was a CI test-lane ownership error, not a demonstrated native interchange failure. The generalized/relational/incremental tests now run in `contracts`; four real USD/STEP tests run in `usd-interchange` with pinned `usd-core==26.11`. Re-run at the correction's exact head.
+
+## OODA-HA Wave D-00 · editor-neutral causal proposals (2026-10-28)
+
+**Observe:** USD prim transforms are presentation; ordinary mesh-topology editing cannot be assumed reversible into authored CAD growth.
+
+**Orient:** A supported rigid translation of an independently authored assembly can be expressed as a semantic operation without guessing an inverse developmental genome.
+
+**Decide:** Bind native scene declarations to explicit semantic IDs via `editor-seed`, then take one actor-attributed, source-bundle-pinned, observed-frontier proposal through the existing relational ground. Reject unknown ids, stale conflicting frontiers, and arbitrary mesh topology. Move exact CAD, rerun its native audit, re-export/reimport STEP, and compose a new USD bundle; preserve old evidence and branch ancestry.
+
+**Act:** `editor-apply` accepts supported editor-neutral proposals and writes `ground.json`, `declaration.json`, `scene/` and `reconciliation.json` only after native regeneration. Actual native cache reuse is **zero**; an invalidation *plan* cannot be counted as avoided CAD work. The supported operation is whole-assembly translation, not parent-relative structural repair.
+
+**Aftermath:** A real headless edit/reconcile/regenerate path is implemented and must pass CI. This does **not** close D-B or D-U: Blender and Unreal application-side writeback are not yet witnessed, and presentation retention across editor reload remains open.

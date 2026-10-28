@@ -119,7 +119,9 @@ def graph_for_scene(document):
         step_id = "step:" + identifier
         usd_id = "usd:" + identifier
         products.extend((
-            Product(source_id, "growth-program", program.identity),
+            Product(source_id, "growth-program-and-placement",
+                    canonical_json_sha256({"program": program.identity,
+                                           "translation": row.get("translation", [0, 0, 0])})),
             Product(cad_id, "native-solid-audit", canonical_json_sha256("native-CAD"),
                     (source_id,)),
             Product(step_id, "STEP-transport", canonical_json_sha256("STEP-export"),
