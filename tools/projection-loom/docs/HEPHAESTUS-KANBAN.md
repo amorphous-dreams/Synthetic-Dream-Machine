@@ -107,3 +107,15 @@ At head `57c683d9`, the `usd-interchange` job **passed**: real OpenUSD stages an
 **Act:** Add dedicated `blender-real-editor` CI job; install actual Blender on Ubuntu and execute the full path. No bpy mock, proxy renderer or fake editor report.
 
 **Aftermath:** Until that workflow passes at its exact SHA, Blender support remains REVIEW, not DONE. Even when it passes, the verified edit vocabulary is intentionally limited to rigid translation; arbitrary mesh edits, rotations, physically checked support reparenting and full interactive UI review remain unsupported. Unreal remains BLOCKED without an actual editor runner.
+
+## OODA-HA Wave E · bounded native site responsiveness (2026-10-28)
+
+**Observe:** The developmental program already records parent/face sites measured from CAD bounding extents. Structural support and load safety remain distinct.
+
+**Orient:** Changing a support's extents should alter dependent proposed child size without global coordinates or an independent evolutionary controller. We can test that claim under the same CAD budget as a fixed-program control.
+
+**Decide:** Use `regulative_growth.regulate` to compile the current prefix, read the actual semantic support-site capacity and bound the child width/depth/height along its face. Refuse ambiguous parent sites and unbounded parameters. Keep unsupported rotations, load checks, and source views out of the score.
+
+**Act:** `regulative-control --growth ... --fill ... --out ...` runs one exact native audition for fixed and one for locally regulated programs through the existing five-phase `OODAHAJournal`, retaining activation, validity and errors. Held-out subjects include a vertical terrace and horizontal coastal jetty.
+
+**Aftermath:** Native regulative capability and matched controls require exact-head CI. This does not close E-01 through E-08: structural crossover fairness, matched source-conditioned multi-camera fitness, multiple generations, environment sensing beyond local site capacity, and operator-steered evolution remain open. No automatic winner promoted.

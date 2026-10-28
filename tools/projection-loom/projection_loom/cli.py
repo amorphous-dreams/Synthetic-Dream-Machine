@@ -58,6 +58,10 @@ def main(argv=None):
     p.add_argument('--bundle', type=Path, required=True)
     p.add_argument('--proposal', type=Path, required=True)
     p.add_argument('--out', type=Path, required=True)
+    p=commands.add_parser('regulative-control', help='Matched native fixed-vs-site-responsive OODA-HA trial')
+    p.add_argument('--growth', type=Path, required=True)
+    p.add_argument('--fill', type=float, default=.52)
+    p.add_argument('--out', type=Path, required=True)
     p=commands.add_parser('wide-epoch',help='Resumable staged constructive epochs')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
@@ -329,6 +333,13 @@ def main(argv=None):
             ground = RelationalGround.load(args.ground)
             proposal = json.loads(args.proposal.read_text(encoding='utf8'))
             result = apply_proposal(declaration, ground, args.bundle, proposal, args.out)
+        print(json.dumps(result, indent=2))
+        return result
+    if args.command == 'regulative-control':
+        from .regulative_growth import matched_trial
+        from .developmental import GrowthProgram
+        growth = GrowthProgram.from_dict(json.loads(args.growth.read_text(encoding='utf8')))
+        result = matched_trial(growth, args.out, fill=args.fill)
         print(json.dumps(result, indent=2))
         return result
     if args.command=='fracture-pattern':

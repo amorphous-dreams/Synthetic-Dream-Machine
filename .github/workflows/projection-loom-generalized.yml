@@ -13,6 +13,7 @@ on:
       - 'tools/projection-loom/projection_loom/scene_usd.py'
       - 'tools/projection-loom/projection_loom/incremental_graph.py'
       - 'tools/projection-loom/projection_loom/editor_proposals.py'
+      - 'tools/projection-loom/projection_loom/regulative_growth.py'
       - 'tools/projection-loom/blender/**'
       - 'tools/projection-loom/scripts/real_blender_witness.py'
       - 'tools/projection-loom/projection_loom/contracts/**'
@@ -42,7 +43,7 @@ jobs:
           python -m pip install -r requirements-ci.txt
           python -m pip install --no-deps -e .
           python -m pip check
-      - run: python -m pytest -q tests/test_generalized_*.py tests/test_hephaestus_relational.py tests/test_hephaestus_incremental.py
+      - run: python -m pytest -q tests/test_generalized_*.py tests/test_hephaestus_relational.py tests/test_hephaestus_incremental.py tests/test_hephaestus_regulative.py
       - run: python scripts/check_architecture.py
       - name: Seven independent and composed seed cohorts (one OODA-HA journal each)
         run: |
