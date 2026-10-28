@@ -444,7 +444,7 @@ Open the wiki; the StoryList syncs to your other devices because each layer hold
 
 <<~ ahu #/questions>>
 
-!! Questions — one ledger (collisions removed 2026-06-04)
+!! Questions — one ledger
 
 This unified ledger renumbers once; every in-body cross-reference resolves here.
 
@@ -497,6 +497,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;da1jQkB-mU8ipvHSg_jQrDHNHWlZoOD2hD1II1kM0ok
+<<^ code="&#x0003;">>ni:///sha-256;-nvkGsRK2UfWy7R7RYlA_cW_1zxNDjNvP5S4FKprUb0
 
 <<^ code="&#x0004;" -> to="?">>

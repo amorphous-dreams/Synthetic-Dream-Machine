@@ -31,7 +31,7 @@ uri-path  = "ha.ka.ba/lararium/api/mempalace-integration"
 
 ''Alpha destination — the two-reader strangler fig.'' The Memory Sensorium gradually takes the Lararium memory read route as each source slice earns custody, coverage, retrieval and recovery witnesses. The upstream guest remains a required independent comparator in this operator's alpha development, while its installation and store remain optional for later end users. Both readers shall consume every discoverable existing AI–operator conversation and new conversations on each supported host and harness. A bounded fixture tests a slice; it never narrows the destination. Missing or inaccessible history receives a named gap or unknown at a declared horizon, not a silent completeness claim. The guest mines vanilla from the same inventoried source evidence and keeps its own projection, config and lifecycle; the owned Sensorium keeps typed occurrences, source-backed relations and derived readings. Neither reader repairs the other's missed source by borrowing its answer.
 
-''October 2026 upstream reset.'' The pinned submodule now names upstream `develop` at `d9bf01e` on local branch `dev/sdm-upstream-base`. The earlier `dev/sdm-integration` merge at `1798186` remains available as history, not as the runtime dependency. Its extra daemon, NDJSON adapter, lazy embedder, search-hit metadata and test changes carry no implicit authority into this branch. A capability returns only after a fresh contract and a witness against the pinned upstream API. The three temporary pause checks in upstream hook scripts were removed after preserving their patch; the Lararium's own hook pause path remains a separate concern.
+''The upstream base.'' The pinned submodule names upstream `develop` at `d9bf01e` on local branch `dev/sdm-upstream-base`. The `dev/sdm-integration` merge at `1798186` stands outside the runtime dependency: its extra daemon, NDJSON adapter, lazy embedder, search-hit metadata and test changes carry no implicit authority into this branch. A capability returns only after a fresh contract and a witness against the pinned upstream API. The upstream hook scripts carry no pause check (their patch rests preserved); the Lararium's own hook pause path stays a separate concern.
 
 Three memory registers continue to pull against one another: the verbatim journey in the owned Sensorium, curated `CLAUDE.md` / `MEMORY.md` / `AGENTS.md` conclusions, and the lararium quine's domain canon. Recall may compare them and surface conflict; no register silently overwrites another. The fuller relation stands at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-memory">>.
 
@@ -218,6 +218,6 @@ CloudEvents [source plus id](https://github.com/cloudevents/spec/blob/v1.0.2/clo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lWMi79h6ZmozWjptRPH7NF8MQ123J7COHQeF6mCGZQk
+<<^ code="&#x0003;">>ni:///sha-256;fXeTX1tkM76kdCeu9QmmLVLLVz71Wy1lJI5dKNueK8U
 
 <<^ code="&#x0004;" -> to="?">>
