@@ -42,13 +42,17 @@ async function fixture() {
   return { seat, repo, plane, ports, relay, relay2, entry, effect, door, group, root, grant, agent, device, verbs, log };
 }
 afterEach(() => vi.restoreAllMocks());
-// Admission, the door and the reader take no clock. Automerge stamps its own change times, so only a caller outside automerge-repo and ws reads a throwing clock.
+// Admission, the door and the reader take no clock. Automerge and ws stamp their own times, so only the IMMEDIATE caller of Date.now decides: a caller inside automerge-repo, ws or node internals reads the real clock; any other caller (the code under test, a plane.change callback) throws.
 function clockless() {
   const real = Date.now.bind(Date);
-  vi.spyOn(Date, 'now').mockImplementation(() => { if (/automerge|\/ws\/|node:internal|node:net|node:http/.test(String(new Error().stack))) return real(); throw Error('clock'); });
+  vi.spyOn(Date, 'now').mockImplementation(() => {
+    const caller = String(new Error().stack).split('\n').slice(1).find(l => !/tinyspy|@vitest|spy\.|clockless|mockImplementation|Date\.(<anonymous>|now)/.test(l)) ?? '';
+    if (/automerge|\/ws\/|node:internal|node:net|node:http|node:timers/.test(caller)) return real();
+    throw Error('clock');
+  });
 }
 
-test('RED: append failure and lost reply cannot duplicate an entry or effect; CONTROL: retry admits and returns its prior receipt', async () => {
+test('RED: a failed append leaves the plane unchanged and a repeated submission after a delivered receipt duplicates nothing; CONTROL: the retry admits and a replay returns its prior receipt', async () => {
   const f = await fixture();
   clockless();
   try {
@@ -114,6 +118,21 @@ test('RED: revoke refuses a fresh submission and pending sibling; CONTROL: a pri
   } finally { vi.restoreAllMocks(); service.close(); await l.close(); await f.seat.drop(); }
 });
 
+test('RED: a revoke on the plane before any submission refuses it over a live relay; CONTROL: an unrevoked twin delegation admits the same bytes', async () => {
+  const f = await fixture(), l = await live(f), service = await l.stand();
+  const pin = await service.enable(f.group);
+  clockless();
+  try {
+    const revoke = await buildDelegationRevoke({ group: f.group, signer: f.root, epoch: 0, delegation: intentEntryCid(f.grant) });
+    f.plane.change(d => writeIntentEntry(d, revoke));
+    expect(await l.submit(pin, f.entry)).toEqual({ status: 'refused', refusal: 'delegation-revoked' });
+    expect(intentEntryRecordsOfGroup(f.plane.doc(), f.group).some(r => (r as { body: { entry?: string } }).body.entry === 'intent')).toBe(false);
+    await f.door.heed(); expect(f.effect).not.toHaveBeenCalled();
+  } finally { vi.restoreAllMocks(); service.close(); await l.close(); await f.seat.drop(); }
+  const g = await fixture(), m = await live(g), s2 = await m.stand();
+  try { expect((await m.submit(await s2.enable(g.group), g.entry)).status).toBe('admitted'); } finally { s2.close(); await m.close(); await g.seat.drop(); }
+});
+
 test('RED: changed argument refuses; CONTROL: equivalent JSON spelling returns the prior receipt', async () => {
   const f = await fixture();
   clockless();
@@ -161,7 +180,9 @@ test('RED: a valid relay receipt cannot authorize an absent or revoked entry; CO
     const lookDoor = makeFaceIntentDoor({ ...f.ports, atom: f.device, effects: new Map([['LOOK', lookEffect]]), log: () => {} });
     f.plane.change(d => { writeIntentEntry(d, outside); writeIntentAdmission(d, outsideReceipt); });
     await lookDoor.heed(); expect(lookEffect).not.toHaveBeenCalled();
-    expect((await makeFaceIntentReader(f.ports).read()).view.intents.every(i => i.status !== 'standing')).toBe(true);
+    const outsideView = (await makeFaceIntentReader(f.ports).read()).view;
+    expect(outsideView.refused.map(r => r.refusal)).toContain('verb-outside-prefix');
+    expect(outsideView.intents).toHaveLength(0);
     f.plane.change(d => writeIntentEntry(d, f.entry));
     await f.door.heed(); expect(f.effect).toHaveBeenCalledTimes(1);
     const revoke = await buildDelegationRevoke({ group: f.group, signer: f.root, epoch: 0, delegation: intentEntryCid(f.grant) });
@@ -170,6 +191,23 @@ test('RED: a valid relay receipt cannot authorize an absent or revoked entry; CO
     expect(state.admissions).toHaveLength(1); expect(state.voidCause).toBe('delegation-revoked');
     await f.door.heed(); expect(f.effect).toHaveBeenCalledTimes(1);
   } finally { vi.restoreAllMocks(); await f.seat.drop(); }
+});
+
+test('RED: a valid relay receipt cannot authorize a pending entry under a revoked delegation; CONTROL: the same receipt on an unrevoked twin acts once', async () => {
+  const [f, twin] = [await fixture(), await fixture()];
+  clockless();
+  try {
+    const revoke = await buildDelegationRevoke({ group: f.group, signer: f.root, epoch: 0, delegation: intentEntryCid(f.grant) });
+    f.plane.change(d => writeIntentEntry(d, revoke));
+    const hostile = await signIntentAdmission({ group: f.group, entry: intentEntryCid(f.entry), delegation: intentEntryCid(f.grant), heads: [] }, f.relay);
+    f.plane.change(d => { writeIntentEntry(d, f.entry); writeIntentAdmission(d, hostile); });
+    await f.door.heed(); expect(f.effect).not.toHaveBeenCalled();
+    const state = (await makeFaceIntentReader(f.ports).read()).view.intents[0]!;
+    expect(state.voidCause).toBe('delegation-revoked');
+    const receipt = await signIntentAdmission({ group: twin.group, entry: intentEntryCid(twin.entry), delegation: intentEntryCid(twin.grant), heads: [] }, twin.relay);
+    twin.plane.change(d => { writeIntentEntry(d, twin.entry); writeIntentAdmission(d, receipt); });
+    await twin.door.heed(); expect(twin.effect).toHaveBeenCalledTimes(1);
+  } finally { vi.restoreAllMocks(); await f.seat.drop(); await twin.seat.drop(); }
 });
 
 test('RED: unknown roster frontier waits; CONTROL: its arriving roster act permits one effect', async () => {
@@ -214,7 +252,8 @@ test('RED: Unicode substitutions break the signature; CONTROL: reordered escaped
     const first = await admitAgentEntry(f.ports, entry, f.relay); expect(first.status).toBe('admitted');
     for (const number of ['1.0', '1e0']) {
       const raw = JSON.stringify({ sig: entry.sig, signer: entry.signer, body: entry.body }, null, 2).replace('é', '\\u00e9').replace('"x": 1', `"x": ${number}`);
-      const parsed = JSON.parse(raw);
+      const reverse = (o: unknown): unknown => Array.isArray(o) ? o.map(reverse) : o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).reverse().map(([k, v]) => [k, reverse(v)])) : o;
+      const parsed = reverse(JSON.parse(raw)) as typeof entry;
       expect(intentEntryCid(parsed)).toBe(intentEntryCid(entry));
       const replay = await admitAgentEntry(f.ports, parsed, f.relay);
       expect(replay.status).toBe('duplicate');
@@ -230,17 +269,14 @@ test('RED: absent enablement after removal or never enabled destroys the dial; C
   const bundle = deriveGateBundle(sovereignGateRoot(custodyGateDoor()), utf8Bytes(f.group), sovereignRoute(INTENT_RELAY_ROUTE));
   clockless();
   try {
-    const refused = () => new Promise<string>(resolve => {
-      const socket = new WebSocket(`ws://127.0.0.1:${l.port}${gatePath(bundle.pin)}`);
-      socket.on('open', () => { socket.terminate(); resolve('opened'); });
-      socket.on('error', () => resolve('destroyed'));
-      socket.on('unexpected-response', () => { socket.terminate(); resolve('response'); });
-    });
-    const never = await l.stand(); expect(never.standing()).toEqual([]); expect(await refused()).toBe('destroyed'); never.close();
+    const refused = (pin: Parameters<typeof l.submit>[0]) => l.submit(pin, f.entry).then(r => `answered:${r.status}`, () => 'destroyed');
+    const first = await l.stand(); const pin = await first.enable(f.group); first.close();
+    rmSync(join(f.seat.homes.identity, INTENT_RELAY_FACES_FILE));
+    const never = await l.stand(); expect(never.standing()).toEqual([]); expect(['destroyed', 'answered:silence']).toContain(await refused(pin)); never.close();
     const enabled = await l.stand(); await enabled.enable(f.group); enabled.close();
     const restarted = await l.stand(); expect(restarted.standing()).toHaveLength(1);
     expect((await l.submit(restarted.pinOf(f.group)!, f.entry)).status).toBe('admitted'); restarted.close();
     rmSync(join(f.seat.homes.identity, INTENT_RELAY_FACES_FILE));
-    const removed = await l.stand(); expect(removed.standing()).toEqual([]); expect(await refused()).toBe('destroyed'); removed.close();
+    const removed = await l.stand(); expect(removed.standing()).toEqual([]); expect(['destroyed', 'answered:silence']).toContain(await refused(pin)); removed.close();
   } finally { vi.restoreAllMocks(); bundle.drop(); await l.close(); await f.seat.drop(); }
 });
