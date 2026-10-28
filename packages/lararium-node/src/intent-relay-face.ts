@@ -14,8 +14,10 @@ export async function resolveIntentRelayFace(group: string, ports: { repo: Repo;
   return { group, admit: async (entry) => {
     try {
       const loaded = await loadIntentFace(ports.repo, ports.catalogUrl, { group });
-      const result = await admitAgentEntry({ group, plane: loaded.plane, personaRecords: () => faceRecordsOf([loaded.personaPlane?.doc()], group), kelChain: [], verifiedFace: loaded.face, anchor: loaded.anchor, standing: loaded.standing, verbs: loaded.verbs, heldFrontiers: () => loaded.heldFrontiers }, entry, { key: await intentRelayPublicKey(), sign: signAsIntentRelay });
-      if (result.status !== "refused") await ports.repo.flush();
+      const result = await admitAgentEntry({ group, plane: loaded.plane, personaRecords: () => faceRecordsOf([loaded.personaPlane?.doc()], group), kelChain: loaded.kelChain, anchor: loaded.anchor, standing: loaded.standing, verbs: loaded.verbs, heldFrontiers: () => loaded.heldFrontiers }, entry, { key: await intentRelayPublicKey(), sign: signAsIntentRelay });
+      if (result.status !== "refused" && result.status !== "fault") {
+        try { await ports.repo.flush(); } catch { return { status: "fault" }; }
+      }
       return result;
     } catch { return { status: "refused", refusal: "fault" }; }
   } };

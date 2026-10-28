@@ -33,13 +33,18 @@ export function writeIntentAdmission(draft: LarDoc, admission: SignedIntentAdmis
 export function intentAdmissionRecordsOfGroup(doc: LarDoc | undefined | null, group: string): unknown[] { const prefix = `${INTENT_ADMISSION_PREFIX}${encodeURIComponent(group)}/`, out: unknown[] = []; for (const [key, record] of Object.entries(doc?.tiddlers ?? {})) { if (!key.startsWith(prefix)) continue; const text = tiddlerText(record); if (text !== null) try { out.push(JSON.parse(text)); } catch { /* torn carriage */ } } return out; }
 export function localIntentHeads(records: readonly unknown[]): readonly string[] { const all = new Map<string, SignedIntentEntry>(); for (const raw of records) { if (!obj(raw) || !obj(raw.body) || typeof raw.body.group !== "string") continue; const r = readIntentEntry(raw, { group: raw.body.group, authorize: () => true }); if (r.ok) all.set(r.cid, r.entry); } const refs = new Set([...all.values()].flatMap(e => [...e.body.refs])); return [...all.keys()].filter(cid => !refs.has(cid)).sort(); }
 export function decideAdmission(input: { readonly group: string; readonly raw: unknown; readonly read: Omit<IntentReadInput, "records">; readonly records: readonly unknown[] }): { ok: true; entry: SignedIntentEntry; cid: string; delegation: string; duplicate: boolean } | { ok: false; refusal: IntentRelayRefusal } {
+  if (obj(input.raw) && typeof input.raw.signer === "string" && input.raw.signer !== input.raw.signer.toLowerCase()) return { ok: false, refusal: "entry-refused" };
   const r = readIntentEntry(input.raw, { group: input.group, authorize: () => true });
   if (!r.ok) return { ok: false, refusal: r.refusal === "group" ? "group" : ["shape", "domain", "unknown-entry"].includes(r.refusal) ? "malformed" : "entry-refused" };
   if (r.entry.body.entry !== "intent" || typeof r.entry.body.delegation !== "string") return { ok: false, refusal: "entry-refused" };
-  const before = readIntentPlane({ ...input.read, records: input.records }), after = readIntentPlane({ ...input.read, records: [...input.records, r.entry] });
+  const id = intentId(r.entry.body as unknown as Parameters<typeof intentId>[0]);
+  const others = input.records.filter(raw => {
+    const entry = readIntentEntry(raw, { group: input.group, authorize: () => true });
+    return !entry.ok || entry.entry.body.entry !== "intent" || intentId(entry.entry.body as unknown as Parameters<typeof intentId>[0]) !== id;
+  });
+  const before = readIntentPlane({ ...input.read, records: others }), after = readIntentPlane({ ...input.read, records: [...others, r.entry] });
   const counts = new Map<string, number>(); for (const x of before.refused) counts.set(x.refusal, (counts.get(x.refusal) ?? 0) + 1);
   for (const x of after.refused) { const n = counts.get(x.refusal) ?? 0; if (n) counts.set(x.refusal, n - 1); else return { ok: false, refusal: (["delegation-unknown", "agent-key", "verb-outside-prefix", "args-outside-policy"].includes(x.refusal) ? x.refusal : "entry-refused") as IntentRelayRefusal }; }
-  const id = intentId(r.entry.body as unknown as Parameters<typeof intentId>[0]);
   const status = after.intents.find(i => i.id === id)?.agent?.status;
   if (status !== "live") return { ok: false, refusal: status === "revoked" ? "delegation-revoked" : status === "closed" ? "delegation-closed" : status === "awaiting" ? "unknown-frontier" : "entry-refused" };
   const duplicate = input.records.some(raw => { const e = readIntentEntry(raw, { group: input.group, authorize: () => true }); return e.ok && e.cid === r.cid; });

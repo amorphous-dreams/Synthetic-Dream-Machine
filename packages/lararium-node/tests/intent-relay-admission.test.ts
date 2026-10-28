@@ -92,8 +92,8 @@ describe("relay admission over a founded face", () => {
 
 test("RED: flush failure after append reports fault and retry recovers its receipt; CONTROL: working flush admits", async () => {
   const seed = new Uint8Array(32).fill(71), agent = { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
-  const grant = await row("intent-root", { action: "delegate", agent: agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1] } } }, until: `roster:${"d".repeat(64)}` }) as { cid: string };
-  const entry = await buildAgentIntent({ group, signer: agent, delegation: grant.cid, verb: "MOVE", args: { x: 1 }, nonce: "flush", audience: { mode: "every" }, verbs: faceIntentVerbs() });
+  const grant = await row("intent-root", { action: "delegate", agent: agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1, 2] } } }, until: `roster:${"d".repeat(64)}` }) as { cid: string };
+  const entry = await buildAgentIntent({ group, signer: agent, delegation: grant.cid, verb: "MOVE", args: { x: 1 }, nonce: "", audience: { mode: "every" }, verbs: faceIntentVerbs() });
   await withLarRoot(ROOT, async () => { await openTestCustody(); await intentRelayKeyOrMint(); await ownedStore(storage, async repo => {
     const loaded = await loadIntentFace(repo, catalogUrl, { group }), face = await resolveIntentRelayFace(group, { repo, catalogUrl });
     if (!face) throw Error("held face missing");
@@ -106,9 +106,9 @@ test("RED: flush failure after append reports fault and retry recovers its recei
       expect(failed).toEqual({ status: "fault" });
       expect(retry.status).toBe("duplicate");
       if (retry.status === "duplicate") expect(retry.receipt).toEqual(receipts[0]);
-      expect(intentEntryRecordsOfGroup(loaded.plane.doc(), group).filter((r: any) => r.body.entry === "intent" && r.body.nonce === "flush")).toHaveLength(1);
+      expect(intentEntryRecordsOfGroup(loaded.plane.doc(), group).filter((r: any) => r.body.entry === "intent" && r.body.issuer === agent.key && r.body.args.x === 1)).toHaveLength(1);
       expect(intentAdmissionRecordsOfGroup(loaded.plane.doc(), group).filter((r: any) => r.body.entry === intentEntryCid(entry))).toHaveLength(1);
-      const control = await buildAgentIntent({ group, signer: agent, delegation: grant.cid, verb: "MOVE", args: { x: 1 }, nonce: "flush-control", audience: { mode: "every" }, verbs: faceIntentVerbs() });
+      const control = await buildAgentIntent({ group, signer: agent, delegation: grant.cid, verb: "MOVE", args: { x: 2 }, nonce: "", audience: { mode: "every" }, verbs: faceIntentVerbs() });
       expect((await face.admit(control)).status).toBe("admitted");
     } finally { flush.mockRestore(); }
   }); });
@@ -116,20 +116,20 @@ test("RED: flush failure after append reports fault and retry recovers its recei
 
 test("RED: key rotation between public-key read and signing cannot produce an unverifiable receipt; CONTROL: stable key verifies", async () => {
   const seed = new Uint8Array(32).fill(72), agent = { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
-  const grant = await row("intent-root", { action: "delegate", agent: agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1] } } }, until: `roster:${"e".repeat(64)}` }) as { cid: string };
-  const make = (nonce: string) => buildAgentIntent({ group, signer: agent, delegation: grant.cid, verb: "MOVE", args: { x: 1 }, nonce, audience: { mode: "every" }, verbs: faceIntentVerbs() });
+  const grant = await row("intent-root", { action: "delegate", agent: agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1, 2] } } }, until: `roster:${"e".repeat(64)}` }) as { cid: string };
+  const make = (x: number) => buildAgentIntent({ group, signer: agent, delegation: grant.cid, verb: "MOVE", args: { x }, nonce: "", audience: { mode: "every" }, verbs: faceIntentVerbs() });
   await withLarRoot(ROOT, async () => { await openTestCustody(); await intentRelayKeyOrMint(); await ownedStore(storage, async repo => {
     const loaded = await loadIntentFace(repo, catalogUrl, { group }), face = await resolveIntentRelayFace(group, { repo, catalogUrl });
     if (!face) throw Error("held face missing");
     const original = relayKeys.signAsIntentRelay;
     const sign = vi.spyOn(relayKeys, "signAsIntentRelay").mockImplementationOnce(async image => { await relayKeys.rotateIntentRelayKey(); return original(image); });
     try {
-      const entry = await make("rotate"), result = await face.admit(entry);
+      const entry = await make(1), result = await face.admit(entry);
       const stored = intentAdmissionRecordsOfGroup(loaded.plane.doc(), group).filter((r: any) => r.body.entry === intentEntryCid(entry));
       if (result.status === "admitted" || result.status === "duplicate") expect(readIntentAdmission(result.receipt, { group }).ok).toBe(true);
       for (const receipt of stored) expect(readIntentAdmission(receipt, { group }).ok).toBe(true);
       sign.mockRestore();
-      const control = await face.admit(await make("rotate-control"));
+      const control = await face.admit(await make(2));
       expect(control.status).toBe("admitted");
       if (control.status === "admitted") expect(readIntentAdmission(control.receipt, { group }).ok).toBe(true);
     } finally { sign.mockRestore(); }

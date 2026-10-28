@@ -17,7 +17,7 @@ import { loadVeilArchive } from "../identity-anchors.js";
 import { loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";
 import { loadPersonaGroupRootSeed } from "../node-vessel-identity.js";
-import { fleetFaceForVessel } from "../fleet-lineage.js";
+import { fleetFaceChainForVessel } from "../fleet-lineage.js";
 import { FaceNotNamed } from "../face-selector.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
 
@@ -87,8 +87,9 @@ export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined,
   const catalog = makeCatalogAccessor(repo, catalogUrl);
   const plane = await catalog.find(bag);
   if (!plane) throw new IntentRefused("intent-plane-unregistered");
-  const face = await fleetFaceForVessel(repo, groupRoot(anchors), anchor);
-  if (!face) throw new IntentRefused("face-lineage-unreadable");
+  const faceSource = await fleetFaceChainForVessel(repo, groupRoot(anchors), anchor);
+  if (!faceSource) throw new IntentRefused("face-lineage-unreadable");
+  const { face, chain: kelChain } = faceSource;
   const persona = await catalog.find(personaBagIdFor(group));
   const projection = face.project(faceRecordsOf([persona?.doc()], group), group);
   if (!projection.founded || projection.fork) throw new IntentRefused("face-log-unreadable");
@@ -117,7 +118,7 @@ export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined,
     }
   } catch { /* A board that cannot verify leaves standing unknown. */ }
   if ("group" in selector && group !== selector.group) throw new IntentRefused("face-not-held");
-  return { group, index, anchors, anchor, face, projection, plane, personaPlane: persona, standing, heldFrontiers, verbs, atom, atomSeed, signer };
+  return { group, index, anchors, anchor, face, kelChain, projection, plane, personaPlane: persona, standing, heldFrontiers, verbs, atom, atomSeed, signer };
 }
 
 export async function runIntentCommand(opts: IntentCommandOptions): Promise<Record<string, unknown>> {

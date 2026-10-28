@@ -7,7 +7,7 @@
  * stands unknown.
  */
 import type { Repo } from "@automerge/automerge-repo";
-import { materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, readFace, type FaceAnchor, type FaceReading, type HandLineage } from "@lararium/mesh";
+import { materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, readFace, type FaceAnchor, type FaceReading, type HandLineage, type PersonaKelEvent } from "@lararium/mesh";
 import { CustodyLocked } from "./custody-holder.js";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
 import { nodeNexusIsland, nodeNexusIslandsBelow } from "./nexus-standing.js";
@@ -15,7 +15,7 @@ import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 
 const bare = (root: string): string => root.trim().toLowerCase().replace(/^0x/, "");
 
-export async function fleetFaceOf(repo: Repo, fleetRoot: string, islands: readonly string[], anchor?: FaceAnchor | null): Promise<FaceReading | null> {
+export async function fleetFaceChainOf(repo: Repo, fleetRoot: string, islands: readonly string[], anchor?: FaceAnchor | null): Promise<{ face: FaceReading; chain: readonly PersonaKelEvent[] } | null> {
   let prefix: string | null = null;
   try {
     for (const index of await listAnchoredPersonas()) {
@@ -28,9 +28,18 @@ export async function fleetFaceOf(repo: Repo, fleetRoot: string, islands: readon
     const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(island), "board:persona-kel");
     const chain = personaKelChainForPrefix(board.doc(), prefix);
     const face = readFace(chain, anchor);
-    if (face) return face;
+    if (face && chain) return { face, chain };
   }
   return null;
+}
+
+export async function fleetFaceOf(repo: Repo, fleetRoot: string, islands: readonly string[], anchor?: FaceAnchor | null): Promise<FaceReading | null> {
+  return (await fleetFaceChainOf(repo, fleetRoot, islands, anchor))?.face ?? null;
+}
+
+export async function fleetFaceChainForVessel(repo: Repo, fleetRoot: string, anchor?: FaceAnchor | null) {
+  const ownVesselKey = await loadVesselVerifyingKey();
+  return fleetFaceChainOf(repo, fleetRoot, [nodeNexusIsland({ ownVesselKey }), ...nodeNexusIslandsBelow({ ownVesselKey })], anchor);
 }
 
 /** The fleet root's lineage, for the readers that take the roster alone. */

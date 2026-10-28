@@ -11,7 +11,8 @@ export const INTENT_RELAY_REFUSALS = ["malformed", "face-off", "entry-refused", 
 export type IntentRelayRefusal = (typeof INTENT_RELAY_REFUSALS)[number];
 export type IntentRelayResult =
   | { readonly status: "admitted" | "duplicate"; readonly receipt: unknown }
-  | { readonly status: "refused"; readonly refusal: IntentRelayRefusal };
+  | { readonly status: "refused"; readonly refusal: IntentRelayRefusal }
+  | { readonly status: "fault" };
 
 const plain = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v) && Object.getPrototypeOf(v) === Object.prototype;
 const same = (a: Uint8Array, b: Uint8Array): boolean => a.length === b.length && a.every((x, i) => x === b[i]);
@@ -38,6 +39,7 @@ export function readIntentRelayResult(bytes: Uint8Array): IntentRelayResult | nu
   if (!outer || Object.keys(outer).length !== 1 || !plain(outer.result)) return null;
   const result = outer.result;
   if ((result.status === "admitted" || result.status === "duplicate") && Object.keys(result).length === 2 && Object.hasOwn(result, "receipt")) return result as IntentRelayResult;
+  if (result.status === "fault" && Object.keys(result).length === 1) return { status: "fault" };
   if (result.status === "refused" && Object.keys(result).length === 2 && INTENT_RELAY_REFUSALS.includes(result.refusal as IntentRelayRefusal)) return result as IntentRelayResult;
   return null;
 }
