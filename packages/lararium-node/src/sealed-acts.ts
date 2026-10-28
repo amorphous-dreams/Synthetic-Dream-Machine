@@ -343,7 +343,7 @@ async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
  * THE ACTS THAT ACT AS A FACE: each signs, reads or writes as one face (its key or root, its handle book, its own
  * plane), so on a running vessel each rides a session of that face (`session:act`) and its receipt binds to the face;
  * the custody door's own `act` frame refuses them `face-act-rides-a-session`. Every other act stays at the custody
- * door, acting as the place under a human unlock (hands-spine-lane#/the-face-acts names each and why):
+ * door, acting as the place under a human unlock (hands-spine-lane#/watch names each and why):
  * `face.resolve` chooses the face and cannot ride the session it chooses; the seat, seal, cofound and roll-circle
  * acts are the charter's seats; petname.* and declaration.* write the place's sealed rows naming its faces (the face's
  * plane takes a name only by `selves.carry`); the persona reads (`roots`, `guardian.show`, `provisional`, `head`,
