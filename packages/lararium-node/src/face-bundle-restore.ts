@@ -15,7 +15,9 @@
  *                  records, the guardian set, the root and its roster line. Each lands only where nothing stands or where the same bytes stand.
  *   5  RE-ADMIT    the carried key history seats on this vessel's own board and the face lights under this
  *                  vessel's own veil: a fresh key group, the same fixed prefix, a device edge the root signs for
- *                  this vessel's key. The pending row leaves once the face stands lit.
+ *                  this vessel's key, and the face's own address secret, landed from the bundle and never minted
+ *                  (a body that names none refuses `no-address-secret` before any write). The pending row leaves
+ *                  once the face stands lit.
  *
  * ── THE KEY HISTORY CHECK ───────────────────────────────────────────────────────────────────────
  * The root must derive the bundle's own inception, and the carried log must verify whole from it. Then every event
@@ -81,7 +83,7 @@ import { larBootstrapPath } from "./vessel-paths.js";
 export const RESTORE_REFUSALS = [
   "bundle-refused", "bundle-inconsistent", "root-superseded", "face-already-held", "restore-pending", "place-unfounded",
   "founding-face-unlit", "no-hearth", "index-held", "roster-names-another-key", "orphan-names-another-key", "row-conflict",
-  "guardian-key-serves-another-face", "hearth-stands",
+  "guardian-key-serves-another-face", "hearth-stands", "no-address-secret",
 ] as const;
 export type RestoreRefusal = (typeof RESTORE_REFUSALS)[number];
 
@@ -346,6 +348,11 @@ export async function restoreFaceBody(args: {
   readonly founding?: () => Promise<void>;
 }): Promise<FaceBundleRestored> {
   const { body } = args;
+  // THE ADDRESS SECRET RIDES THE BUNDLE: a restore lands the face's own, so its working documents follow it here, and
+  // never mints a fresh one. A body that names none refuses by name; paper names null, and lands none.
+  if (body.addressSecret === undefined) {
+    refuse("no-address-secret", "the bundle carries no address secret for the face, so the restored face could find none of its working documents: cut the bundle again on a vessel that wears the face. Nothing moved.");
+  }
   const { signerDid, recoveryCommit } = await consistent(body);
 
   let pending = await readPending();
@@ -384,7 +391,11 @@ export async function restoreFaceBody(args: {
     // group, a device edge the root signs for this vessel's key. A face that already stands lit reads so and moves nothing.
     await seatLocalPersonaKelChain(repo, pending.body.kel);
     if (args.founding) await args.founding();
-    const lit = await runFoundTheFace({ repo, handleIndex: pending.target, ...(args.genesisDir ? { genesisDir: args.genesisDir } : {}) });
+    const carried = pending.body.addressSecret ? Uint8Array.from(Buffer.from(pending.body.addressSecret, "hex")) : null;
+    let lit: Awaited<ReturnType<typeof runFoundTheFace>>;
+    try {
+      lit = await runFoundTheFace({ repo, handleIndex: pending.target, addressSecret: carried, ...(args.genesisDir ? { genesisDir: args.genesisDir } : {}) });
+    } finally { carried?.fill(0); }
     if (!lit.alreadyStood && lit.personaKelPrefix !== pending.body.anchors.personaKelPrefix) {
       throw new Error(`face-bundle-restore: the face lit under prefix ${lit.personaKelPrefix}, and the bundle carried ${pending.body.anchors.personaKelPrefix}; the pending row stays for a person to read`);
     }

@@ -160,7 +160,7 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   const pair = bundleMemoryKeypair(bundleKey);
   const entries = openMemorySection(Uint8Array.from(Buffer.from(body.memory.section, "base64")), pair.secret)!;
   const carried: Uint8Array[] = [
-    hexToBytes(body.root.signingKey), ...body.faceProofKeys.map((k) => hexToBytes(k.secret)), Uint8Array.from(bundleKey), Uint8Array.from(pair.secret),
+    hexToBytes(body.root.signingKey), ...body.faceProofKeys.map((k) => hexToBytes(k.secret)), hexToBytes(body.addressSecret!), Uint8Array.from(bundleKey), Uint8Array.from(pair.secret),
     ...entries.map((e) => Uint8Array.from(e.key)),
   ];
   expect(entries).toHaveLength(1);
