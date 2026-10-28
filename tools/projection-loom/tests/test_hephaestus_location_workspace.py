@@ -128,3 +128,34 @@ def test_failed_workspace_never_looks_completed(tmp_path):
     assert not (output / "manifest.json").exists()
     with pytest.raises(FileNotFoundError):
         verify_workspace(output)
+
+
+
+def test_editor_workspace_keeps_tamper_evident_parent_manifest(tmp_path):
+    stack, declaration, _ = fixture(tmp_path)
+    first = tmp_path / "original"
+    original = create_workspace(stack, declaration, first)
+    changed = tmp_path / "changed"
+    edit_workspace(first, proposal(first), changed)
+    document = json.loads((changed / "parent-manifest.json").read_text())
+    assert document["sha256"] == original["sha256"]
+    assert verify_workspace(changed)["valid"]
+    document["scene_sha256"] = "0" * 64
+    (changed / "parent-manifest.json").write_text(json.dumps(document))
+    with pytest.raises(ValueError, match="Causal parent manifest changed"):
+        verify_workspace(changed)
+
+
+
+def test_source_snapshot_symlink_cannot_escape_bundle_even_with_matching_bytes(tmp_path):
+    stack, declaration, _ = fixture(tmp_path)
+    folder = tmp_path / "archive"
+    create_workspace(stack, declaration, folder)
+    source = next(iter(LocationStack.load(folder / "inventory.json").sources.values()))
+    stored = folder / source.locator
+    external = tmp_path / "same-bytes-outside"
+    external.write_bytes(stored.read_bytes())
+    stored.unlink()
+    stored.symlink_to(external)
+    with pytest.raises(ValueError, match="snapshot escaped"):
+        verify_workspace(folder)

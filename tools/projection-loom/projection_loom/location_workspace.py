@@ -161,6 +161,7 @@ def _manifest(out, inventory, declaration, ground, scene, *, parent=None,
            "paths": {"inventory": "inventory.json", "declaration": declaration_path,
                      "ground": ground_path, "scene": native_root,
                      "session": "session.json",
+                     "parent_manifest": "parent-manifest.json" if parent else None,
                      "proposal": "proposal.json" if proposal is not None else None,
                      "reconciliation": "revision/reconciliation.json" if reconciliation is not None else None,
                      "native_support_proposal": "native-support-proposal.json"
@@ -230,8 +231,8 @@ def verify_workspace(directory, *, verify_sources=True):
         raise ValueError("A failed workspace cannot replay as complete")
     paths = m["paths"]
     required = {"inventory", "declaration", "ground", "scene", "session",
-                "proposal", "reconciliation", "native_support_proposal",
-                "support_source_ground"}
+                "parent_manifest", "proposal", "reconciliation",
+                "native_support_proposal", "support_source_ground"}
     if set(paths) != required:
         raise ValueError("Workspace has unexpected path roles")
     for value in paths.values():
@@ -246,6 +247,8 @@ def verify_workspace(directory, *, verify_sources=True):
     for item in inventory.sources.values():
         if item.locator!="sources/"+item.sha256:
             raise ValueError("Location source is not a portable content-addressed snapshot")
+        if not (out / item.locator).resolve().is_relative_to(out.resolve()):
+            raise ValueError("Location source snapshot escaped the portable workspace")
     declaration = _read(out / paths["declaration"])
     ground = RelationalGround.load(out / paths["ground"])
     scene = _read(out / paths["scene"] / "manifest.json")
@@ -276,6 +279,20 @@ def verify_workspace(directory, *, verify_sources=True):
             "frontier": list(ground.frontier),
             "parent": m["parent_workspace_sha256"]})):
         raise ValueError("Workspace OODA-HA session does not identify this causal branch")
+    if m["parent_workspace_sha256"] is None:
+        if paths["parent_manifest"] is not None:
+            raise ValueError("Initial workspace cannot invent a predecessor manifest")
+        parent_manifest=None
+    else:
+        if paths["parent_manifest"] is None:
+            raise ValueError("Causal fork is missing its independent parent manifest")
+        parent_manifest=_read(out / paths["parent_manifest"])
+        unsigned={k:v for k,v in parent_manifest.items() if k!="sha256"}
+        if (parent_manifest.get("sha256")!=_sha(unsigned)
+                or parent_manifest.get("sha256")!=m["parent_workspace_sha256"]
+                or parent_manifest.get("location")!=m["location"]
+                or parent_manifest.get("inventory_sha256")!=m["inventory_sha256"]):
+            raise ValueError("Causal parent manifest changed or mismatches the source location")
     kind=m.get("change_kind")
     if kind=="initial":
         if (m["parent_workspace_sha256"] is not None or
@@ -293,7 +310,8 @@ def verify_workspace(directory, *, verify_sources=True):
         if _sha(proposal) != m["proposal_sha256"] or _sha(receipt) != m["reconciliation_sha256"]:
             raise ValueError("Workspace edit/reconciliation receipt changed")
         if (receipt["new_bundle_sha256"] != m["scene_sha256"]
-                or receipt["origin_bundle_sha256"] != proposal["bundle_sha256"]
+                or receipt["origin_bundle_sha256"] != parent_manifest["scene_sha256"]
+                or parent_manifest["scene_sha256"] != proposal["bundle_sha256"]
                 or receipt["actor"] != proposal["actor"]
                 or receipt["editor"] != proposal["editor"]):
             raise ValueError("Workspace edit and native regeneration disagree")
@@ -311,6 +329,9 @@ def verify_workspace(directory, *, verify_sources=True):
         proposal=_read(out / paths["native_support_proposal"])
         if _sha(proposal)!=m["native_support_sha256"]:
             raise ValueError("Native support proposal receipt changed")
+        if (proposal["native_contact"]["scene_sha256"]!=parent_manifest["scene_sha256"]
+                or m["scene_sha256"]!=parent_manifest["scene_sha256"]):
+            raise ValueError("Native support ancestry requires one unchanged source-bound scene")
         verify_support_proposal(proposal, prior, out / paths["scene"])
         if proposal["next_ground"] != ground.to_dict():
             raise ValueError("Native support operation differs from current causal ground")
@@ -340,6 +361,7 @@ def edit_workspace(previous, proposal, destination):
     out.mkdir(parents=True)
     try:
         shutil.copytree(parent / "sources",out / "sources")
+        save_once(out / "parent-manifest.json", origin)
         save_once(out / "inventory.json", inventory.to_dict())
         save_once(out / "proposal.json", proposal)
         receipt = apply_proposal(declaration, ground, parent / paths["scene"],
@@ -388,6 +410,7 @@ def support_workspace(previous, proposal, destination):
     out.mkdir(parents=True)
     try:
         shutil.copytree(parent / "sources",out / "sources")
+        save_once(out / "parent-manifest.json", original)
         shutil.copytree(scene_dir,out / "scene")
         scene=_read(out / "scene" / "manifest.json")
         if scene["sha256"] != original["scene_sha256"]:
