@@ -1,4 +1,5 @@
-import { digestsEqual, formatDigest, hex, SHA256_ALGO } from "@lararium/mesh";
+import { digestsEqual, formatDigest, SHA256_ALGO } from "@lararium/mesh/agile-digest";
+import { hex } from "@lararium/mesh/crypto";
 import { parsePonoLevel } from "./pono-level.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 

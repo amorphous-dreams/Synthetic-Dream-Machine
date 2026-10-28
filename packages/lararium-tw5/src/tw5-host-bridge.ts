@@ -1,4 +1,4 @@
-import { sha256HexBytesSync } from "@lararium/mesh";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 
 import type { TW5Instance } from "./types/tiddlywiki.js";
 
@@ -333,14 +333,16 @@ function loadTiddlyWikiFromBlob(
   const priorTw      = Object.getOwnPropertyDescriptor(g, "$tw");
   const priorLoad    = g["_load"];
   const priorWindowDescriptor = Object.getOwnPropertyDescriptor(g, "window");
-  const removeWindowAccessor = (): void => restoreGlobal(g, "window", priorWindowDescriptor);
+  // A page's own `window` cannot be redefined; the glass keeps it and the bundle's `window` parameter still carries the lend.
+  const lendsWindow = priorWindowDescriptor?.configurable !== false;
+  const removeWindowAccessor = (): void => { if (lendsWindow) restoreGlobal(g, "window", priorWindowDescriptor); };
   const windowLend = makeScopedWindowLend(removeWindowAccessor);
   const priorRequire = Object.getOwnPropertyDescriptor(g, "require");
   let twFromBlob: unknown;
   try {
     // The bundle gets the lend's two names (`LENT_WINDOW_NAMES`). It never receives the worker global or a
     // browser surface; the global accessor disappears at the first write of the crypto initialization.
-    Object.defineProperty(g, "window", { configurable: true, get: () => windowLend });
+    if (lendsWindow) Object.defineProperty(g, "window", { configurable: true, get: () => windowLend });
     lendGlobal(g, "require", requireShim);
     lendGlobal(g, "$tw", env.preSeedTw);
     // Evaluate with CommonJS-shaped `exports` so the standalone TW5 core (the
@@ -430,7 +432,8 @@ function configureIslandRuntime(instance: TW5Instance, engineCid?: string): void
 
 export async function prepareHostBootInstance(
   coreBlob?: TW5CoreBootBlob,
-): Promise<{ instance: TW5Instance; isBrowser: boolean }> {
+  options?: { glass?: true },
+): Promise<{ instance: TW5Instance; isBrowser: boolean; release?: () => void }> {
   const isBrowserMain = typeof window !== "undefined" && typeof document !== "undefined";
   // Distinguish a browser Worker from a Node worker_thread by a POSITIVE browser signal:
   // `WorkerGlobalScope` exists in every browser worker context (dedicated/module/shared)
@@ -440,10 +443,44 @@ export async function prepareHostBootInstance(
   const isBrowserWorker = !isBrowserMain &&
     typeof (globalThis as Record<string, unknown>)["WorkerGlobalScope"] !== "undefined";
 
-  if (isBrowserMain) {
+  if (isBrowserMain && !options?.glass) {
     // §9 sovereignty law: TW5 SHALL NOT instantiate on the main thread.
     // Every TW5Engine lives inside a sovereign Worker. Boot via browser-wiki-worker.ts only.
     throw new Error("TW5Engine: sovereignty violation — TW5 SHALL NOT instantiate on the main thread (§9). Boot TW5 in a Worker only.");
+  }
+
+  if (isBrowserMain) {
+    const host = globalThis as Record<string, unknown>;
+    const lent = ["global", "Buffer", "process", "setImmediate", "clearImmediate"] as const;
+    const prior = lent.map(name => Object.getOwnPropertyDescriptor(host, name));
+    let nextImmediate = 0;
+    const immediate = new Map<number, () => void>();
+    // TW5 module bodies resolve `global` by name; lend the page scope only for boot.
+    lendGlobalIfAbsent(host, "global", globalThis);
+    // TW5's module sandbox names `Buffer` bare; an inert constructor keeps `instanceof Buffer` in page tooling callable.
+    lendGlobalIfAbsent(host, "Buffer", function Buffer() { /* inert: the glass reads no Node buffers */ });
+    // TW5's headless startup probes `process`; the shim holds no page authority.
+    lendGlobalIfAbsent(host, "process", makeBrowserProcessShim());
+    // TW5's headless nextTick may call `setImmediate` while booting.
+    lendGlobalIfAbsent(host, "setImmediate", (fn: (...a: unknown[]) => void, ...args: unknown[]) => {
+      const id = ++nextImmediate;
+      immediate.set(id, () => fn(...args));
+      queueMicrotask(() => { const run = immediate.get(id); immediate.delete(id); run?.(); });
+      return id;
+    });
+    // TW5 may cancel that boot-time immediate by its matching name.
+    lendGlobalIfAbsent(host, "clearImmediate", (id: number) => { immediate.delete(id); });
+    const release = () => lent.forEach((name, i) => restoreGlobal(host, name, prior[i]));
+    try {
+      const instance = loadTiddlyWikiFromBlob(coreBlob, makeBrowserWorkerBootEnv()).TiddlyWiki() as TW5Instance;
+      configureIslandRuntime(instance, coreBlob ? sha256HexBytesSync(coreBlob.bytes) : undefined);
+      // A later widget refresh uses the page's microtask queue after the boot lends leave.
+      instance.utils.nextTick = (callback: () => void) => queueMicrotask(callback);
+      return { instance, isBrowser: true, release };
+    } catch (error) {
+      release();
+      throw error;
+    }
   }
 
   if (isBrowserWorker) {

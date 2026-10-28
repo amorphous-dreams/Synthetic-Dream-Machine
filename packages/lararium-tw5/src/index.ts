@@ -39,6 +39,9 @@ export {
 export type { ActiveWikiSelectionSource } from "./active-wiki.js";
 export type { CameraMount } from "./tw5-camera.js";
 export { mountCamera } from "./tw5-camera.js";
+export { mountGlassCamera } from "./glass-camera.js";
+export { makeGlassPortAdaptor } from "./glass-port-adaptor.js";
+export { preloadsFromCasBlob } from "./cas-preloads.js";
 export { mountProjection, dispatchLarControlEvent, resendLarCamera } from "./tw5-projection.js";
 export {
   mountCoherenceProjection,
