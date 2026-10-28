@@ -66,10 +66,11 @@ export async function standMirror(options: {
   const waiting = new Promise<string | null>(resolve => { greeting = resolve; });
   const listeners = new Set<(event: MirrorEvent) => void>();
   const emit = (event: MirrorEvent) => { for (const listener of listeners) listener(event); };
+  let endedWhy = "";
   let early: string | null = null;     // a capacity error that landed before the door returned
   let mirror: Awaited<ReturnType<typeof bootGlass>> | null = null;
 
-  const end = (event: MirrorEvent & { why: string }) => { if (ended) return; ended = true; mirror?.unmount(); settle({ width: "none", why: event.why }); emit(event); };
+  const end = (event: MirrorEvent & { why: string }) => { if (ended) return; ended = true; endedWhy = event.why; mirror?.unmount(); settle({ width: "none", why: event.why }); emit(event); };
   const stepDown = (why: string) => {
     if (ended || gone) return;
     if (!mirror) { early = why; return; }
@@ -129,6 +130,7 @@ export async function standMirror(options: {
   try {
     mirror = await bootGlass({ ...options, shadowRoot, inputs, width: "skinny", transport: transportFor(0),
       seams: { ...seams, ...(landed ? { landed } : {}) }, deferPaint: true });
+    if (ended) { mirror.unmount(); return floor(endedWhy); }   // a port:gone landed before the door returned
     if (early !== null) stepDown(early);
     const reason = await waiting;
     if (reason !== null) { mirror.unmount(); return floor(reason); }
@@ -140,7 +142,12 @@ export async function standMirror(options: {
     // The record stands from the moment full begins until full has landed: a boot that dies between leaves it behind.
     remember(store => store.setItem(MIRROR_EVIDENCE_KEY, crypto.randomUUID()));
     promoting = true;
-    mirror.adaptor.widen("full");
+    const sent = mirror.adaptor.widen("full") as { ok?: boolean; reason?: string } | undefined;
+    if (sent && sent.ok === false) {
+      // The widen never reached the island: the tab stays at skinny and says why; nothing began, so no record stands.
+      promoting = false; remember(store => store.removeItem(MIRROR_EVIDENCE_KEY));
+      settle({ width: "skinny", why: sent.reason ?? "widen-refused" });
+    }
   }
   return {
     kind: "mirror" as const,

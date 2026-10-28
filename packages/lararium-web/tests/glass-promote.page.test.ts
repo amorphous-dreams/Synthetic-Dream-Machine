@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, test } from "vitest";
 import { standMirror } from "../src/glass/stand.js";
-import { forgetEvidence, rig } from "./glass-rig.js";
+import { forgetEvidence, lends, rig } from "./glass-rig.js";
 
 const KEY = "mirror:began";
 const clear = () => { try { sessionStorage.removeItem(KEY); localStorage.removeItem(KEY); sessionStorage.removeItem("width"); } catch { /* storage may be blocked */ } };
@@ -20,12 +20,12 @@ test("skinny paints first, then one widen row on the same port promotes to full"
   } finally { r.host.remove(); }
 });
 test("the evidence record stands while full lands and clears once full has landed", async () => {
-  const r = await rig(); let during: string | null = "unread";
+  const r = await rig(); let during: string | null = null;
   r.onPlace(msg => { if (msg.type === "port:widen") during = sessionStorage.getItem(KEY); });
   try {
     const result = await standMirror(r.options, r.seams) as any;
     await result.settled;
-    expect(during).not.toBeNull();
+    expect(during).toEqual(expect.any(String));
     expect(sessionStorage.getItem(KEY)).toBeNull();
     result.unmount();
   } finally { r.host.remove(); }
@@ -62,5 +62,28 @@ test("the mirror names the wait for the port's greeting, and a snapshot ends it"
     const result = await standing as any;
     expect(states).toEqual([{ kind: "waiting", for: "greeting" }]);   // nothing else announces a wait
     result.unmount();
+  } finally { r.host.remove(); }
+});
+test("a widen the port refuses leaves the tab at skinny with the reason named and no record behind", async () => {
+  const r = await rig({ refuseWiden: "port-not-granted" });
+  try {
+    const result = await standMirror(r.options, r.seams) as any;
+    expect(result.kind).toBe("mirror");
+    expect(await result.settled).toEqual({ width: "skinny", why: "port-not-granted" });
+    expect(sessionStorage.getItem(KEY)).toBeNull();
+    result.unmount();
+  } finally { r.host.remove(); }
+});
+test("a port:gone and snapshot that land before the door returns leave no engine behind", async () => {
+  const before = lends(); const r = await rig();
+  try {
+    // Both arrive inside the open's own send, before the door has returned.
+    r.onPlace(msg => { if (msg.type === "port:open") {
+      r.port.deliver({ type: "port:snapshot", portId: msg.portId, snapshotId: "early", i: 1, n: 1, records: [] });
+      r.port.deliver({ type: "port:gone", portId: msg.portId, reason: "grant-revoked" });
+    } });
+    const result = await standMirror(r.options, r.seams);
+    expect(result).toEqual({ kind: "floor", width: "none", why: "grant-revoked" });
+    expect(r.widens()).toHaveLength(0); expect(lends()).toEqual(before);
   } finally { r.host.remove(); }
 });
