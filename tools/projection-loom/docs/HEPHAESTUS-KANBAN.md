@@ -67,3 +67,15 @@
 **Aftermath:** The scene-package vertical capability is implemented but **awaits exact-head USD CI**. This is not full Wave B: Blender and Unreal open/import witnesses, scene variant selection and direct editor writeback remain incomplete. No standalone claim of engineered load safety, metric survey, or editor operation.
 
 **Sources:** [OpenUSD stage authoring](https://openusd.org/release/tut_helloworld.html); [USD stage metrics](https://openusd.org/release/user_guides/schemas/usdGeom/overview.html); [usd-core on PyPI](https://pypi.org/project/usd-core/26.11/).
+
+## OODA-HA Wave C · dependency-sensitive rebuild planning (2026-10-28)
+
+**Observe:** Full scene repackaging is more expensive than renewing the affected dependencies, but treating unchanged file existence as freshness risks stale native claims.
+
+**Orient:** A plan can prove invalidation reachability, not the correctness of any cached CAD body. Identity and source/program digests must remain separate.
+
+**Decide:** Add a pure, finite, deterministic dependency graph (source/program → native CAD audit → STEP/mesh → composed USD, and separate operator presentation), not an alternate five-phase execution controller.
+
+**Act:** Add `scene-invalidation --before ... --after ...`; test moved/modified one-assembly inputs, preserved independent assemblies, deterministic order, cycle and missing-source refusal. The full OODA-HA journal remains the only helm.
+
+**Aftermath:** C-03 selective invalidation *planning* is implemented; actual selective CAD rebuild/cache reuse, interrupted replay and concurrent full editor reconciliation are **not yet witnessed**. Mark full Wave C incomplete.

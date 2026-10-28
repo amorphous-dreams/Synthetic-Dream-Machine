@@ -46,6 +46,9 @@ def main(argv=None):
     p.add_argument('--out', type=Path, required=True)
     p=commands.add_parser('scene-validate', help='Audit portable scene and STEP evidence')
     p.add_argument('--bundle', type=Path, required=True)
+    p=commands.add_parser('scene-invalidation', help='Compare selective native/scene rebuild dependencies')
+    p.add_argument('--before', type=Path, required=True, help='prior authored scene declaration')
+    p.add_argument('--after', type=Path, required=True, help='new authored scene declaration')
     p=commands.add_parser('wide-epoch',help='Resumable staged constructive epochs')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
@@ -295,6 +298,13 @@ def main(argv=None):
             result = package_scene(declared, args.out)
         else:
             result = validate_scene(args.bundle)
+        print(json.dumps(result, indent=2))
+        return result
+    if args.command == 'scene-invalidation':
+        from .incremental_graph import graph_for_scene
+        old = graph_for_scene(json.loads(args.before.read_text(encoding='utf8')))
+        new = graph_for_scene(json.loads(args.after.read_text(encoding='utf8')))
+        result = new.compare(old)
         print(json.dumps(result, indent=2))
         return result
     if args.command=='fracture-pattern':
