@@ -142,10 +142,10 @@ reaction-roles = ["listenable", "subscribable", "observes", "throttles", "deboun
 
 <<~ ahu #/yin-collapse-target>>
 
-!! Yin-Collapse — Completed (2026-05-15)
+!! Yin-Collapse
 
-`ReactionEngine` (TS inline dispatch class) removed. The TW5 wiki IS the reactive engine.
-The yin-collapse is not provisional — it landed and shipped. `reaction-router.ts` is
+No `ReactionEngine` (TS inline dispatch class) stands. The TW5 wiki IS the reactive engine.
+The yin-collapse holds as the architecture, never as a provisional step. `reaction-router.ts` is
 the target architecture, not a bridge to it.
 
 !!! What shipped
@@ -210,6 +210,6 @@ The reaction dispatch layer runs as a ''Scope-1'' CRDT-wave surface under the tw
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;62nleymhqoZiW9IcJ0R4LiHnhyk3VQS975wR5IEOUMQ
+<<^ code="&#x0003;">>ni:///sha-256;NKHhdOrdfmjjqX6XaCxR69Ud0v68R_yW4U2Cnffyxpw
 
 <<^ code="&#x0004;" -> to="?">>

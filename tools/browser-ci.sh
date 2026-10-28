@@ -54,7 +54,7 @@
 #   BROWSER_CI_PROJECT  compose project name (default lares-browser-ci); containers, network and volumes derive from it
 #   BROWSER_CI_PORT     loopback port the node publishes (default 5401; the browser swarm's range is 5400-5499)
 #   BROWSER_CI_IMAGE    the node image tag (default lares-browser-ci:local); builders in separate worktrees each name their own
-#   BROWSER_CI_HARNESS_IMAGE the QA image tag (default lares-browser-harness:local); builders in separate worktrees each name their own
+#   BROWSER_CI_HARNESS_IMAGE the QA image tag (default lares-browser-harness:local, built from the tree each qa run); a named tag reads as given, built only when absent
 # Two surfaces with distinct values share no container, network, volume or image tag. Give each builder its own.
 # BROWSER_CI_WIKI overrides the wiki slug that `recipe` and `get` address (default: the node's one live wiki).
 #
@@ -309,8 +309,9 @@ case "$verb" in
         */live-wiki.mjs|live-wiki.mjs) walk_document_preflight; break ;;
       esac
     done
-    # Compose run uses an existing tag; build the walk image when it has not been made yet.
-    if ! docker image inspect "${BROWSER_CI_HARNESS_IMAGE:-lares-browser-harness:local}" >/dev/null 2>&1; then
+    # The default tag builds from the tree every run (the image bakes the walks, so a stale tag would run old walk
+    # bytes; the layer cache keeps an unchanged tree cheap). A named tag reads as given and builds only when absent.
+    if [ -z "${BROWSER_CI_HARNESS_IMAGE:-}" ] || ! docker image inspect "$BROWSER_CI_HARNESS_IMAGE" >/dev/null 2>&1; then
       compose build qa
     fi
     # Pass-through: the caller's LARES_URL, BROWSER_CI_* and LIVE_WIKI_* variables reach the runner by name.

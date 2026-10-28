@@ -16,7 +16,7 @@
  *     keel mounts exactly what this returns; no catalog row names a system bag any more.
  *
  * THE GROUP SEAM. The group is named by `kahuRealmGroup` and the steward's face by `kahuRealmHandleIndex`: persona zero
- * today. Wave C swaps the Kahu face in at these two accessors alone; the registrations key on the Nexus AID, so no data
+ * for now. The Kahu face's own group (road `P21`) swaps in at these two accessors alone; the registrations key on the Nexus AID, so no data
  * moves (`w26-floor-lane#/the-seam-owed-to-wave-c`).
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-slices
@@ -33,7 +33,7 @@ import { NexusCabalError, cabalCore, readKahuCabalBoard } from "./commands/nexus
 /** The system bags the Kahu cabal keeps live. */
 export const KAHU_REALM_BAGS: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
 
-/** THE ONE ACCESSOR for the face whose per-Nexus key stewards the Kahu realm. Pairs with `kahuRealmGroup`; Wave C swaps both. */
+/** THE ONE ACCESSOR for the face whose per-Nexus key stewards the Kahu realm. Pairs with `kahuRealmGroup`; road `P21` swaps both. */
 export function kahuRealmHandleIndex(): number { return 0; }
 
 /** The live documents a vessel holds, by bag; a field stays absent where this vessel holds none. */

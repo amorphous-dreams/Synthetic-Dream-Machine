@@ -18,7 +18,7 @@ name: E2E shards
 # its shards: one push, one e2e verdict.
 #
 # ONE BUILD PER SHARD. A single build shared across runners would need its own artifact-transfer
-# job this lane does not carry; four independent builds cost more CPU-minutes but no coordination,
+# job this workflow does not carry; four independent builds cost more CPU-minutes but no coordination,
 # and the repo is public, so Linux minutes bill to net $0 against the org's usage.
 
 on:
@@ -45,6 +45,7 @@ jobs:
   shard:
     name: Shard ${{ matrix.set }} ${{ matrix.shard }}/${{ matrix.count }}
     runs-on: ubuntu-latest
+    timeout-minutes: 50
     strategy:
       # A red shard must never cancel its siblings — the merge gate needs to see ALL FOUR
       # verdicts to tell "one shard failed" apart from "one shard never got to answer".
@@ -109,9 +110,10 @@ jobs:
     needs: shard
     # Runs whatever the shards answered — a job gated on `needs.shard.result == 'success'` would
     # let one red shard SKIP the merge gate instead of failing it, and a skipped required check
-    # reads as "nothing to report" rather than as the red this lane exists to surface.
+    # reads as "nothing to report" rather than as the red this gate exists to surface.
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -144,7 +146,7 @@ jobs:
           find artifacts -name 'blob-*.json' -exec cp {} merged-blobs/ \; 2>/dev/null || true
       - name: vitest --merge-reports (the documented sharded-report merge flow)
         working-directory: tests
-        # `--merge-reports` reads previously recorded blobs and reports; it runs no test file
+        # `--merge-reports` reads the recorded blobs and reports; it runs no test file
         # itself. It stays its own step, separate from the merge gate below, because vitest's own
         # merge reads SILENT ZERO when blobs are missing (exit 0, "no tests") — the gate step
         # names that loudly instead of trusting this command's exit code.

@@ -170,11 +170,9 @@ Selection rules:
 
 <<~ ahu #/reaction-engine-removal>>
 
-!! ReactionEngine Removal
+!! Reaction dispatch
 
-`ReactionEngine` (TS class, inline dispatch) was removed in the yin-collapse sprint (2026-05-15).
-
-The dispatch surface it owned collapsed into:
+No `ReactionEngine` TS class (inline dispatch) stands. Two surfaces carry dispatch:
 * `reaction-router.ts` TW5 startup module — nalu-driven dispatch (production path)
 * `ReactionGraph` in `reaction-graph.ts` — routing table and test dispatch surface
 
@@ -196,6 +194,6 @@ See: `lar:///ha.ka.ba/lares/api/pono/nalu#/yin-collapse-law`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5JYz2_UeRk7P-SHyfQQXUODQk8cqqwPH_p5yzXLlDEQ
+<<^ code="&#x0003;">>ni:///sha-256;tjEuCkLRwVLiycDc6k_gPha8IXCqzgziJzl8bc1MW4s
 
 <<^ code="&#x0004;" -> to="?">>

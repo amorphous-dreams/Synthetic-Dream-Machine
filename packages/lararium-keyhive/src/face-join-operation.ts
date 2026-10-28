@@ -59,7 +59,7 @@ async function runOne(input: FaceJoinOperationInput): Promise<Record<string, unk
 
   /**
    * The serial of the grant standing at `title`, counted only when the record is this face's own: the joinee's kit reads
-   * records with `verifyFaceGrantRecord`, and so does this lane. A record that fails it (a member's forgery, another
+   * records with `verifyFaceGrantRecord`, and so does this operation. A record that fails it (a member's forgery, another
    * face's, one at the wrong title, a stale edge) reads as serial 0 with its bytes, and a fresh issue supersedes it.
    */
   const standingSerial = async (title: string, joineeAgentIdHex: string): Promise<{ serial: number; text: string | null }> => {

@@ -6,7 +6,7 @@
  * mines). The shape: one Map of tails, no timers, no config — the lane's pace derives
  * entirely from each mine's own completion.
  *
- * Scope (honest): this lane serializes within ONE process. Cross-process serialization
+ * Scope (honest): the mine lane serializes within ONE process. Cross-process serialization
  * already rides the palace lock + the shared busy-retry (mine-retry.ts) and mempalace's own
  * write-daemon queue — the lane keeps a process from racing ITSELF into that lock (the
  * lock-retry storm). SYNC spawns (execFileSync callers: subagent-mine, telemetry-writeback,

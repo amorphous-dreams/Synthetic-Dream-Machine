@@ -7,7 +7,8 @@
 //   - a step's `if:` decides, with an implicit `success()` unless it names a status function;
 //   - a `run:` step runs under the runner's shell line (`bash -e`, or `bash --noprofile --norc -eo pipefail`
 //     for `shell: bash`), and the lines it appends to `$GITHUB_ENV` reach every later step;
-//   - the job's `timeout-minutes` cancels the job, and only `always()` steps run after that;
+//   - the job's `timeout-minutes` cancels the job, and only `always()` steps run after that; a step's own
+//     `timeout-minutes` fails that step, and the job goes on as after any failure;
 //   - a `uses:` step maps onto the local fact it guarantees: the checkout holds its submodules at their recorded
 //     commits, pnpm and node stand at the declared majors, an upload copies a non-empty directory into the
 //     evidence root, and a download copies it back out (so the image job's upload feeds a cell's download);
@@ -35,7 +36,7 @@ import { fileURLToPath } from "node:url";
 import { cellMatrix } from "./held-out-cells.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const STEP_KEYS = new Set(["name", "id", "if", "run", "uses", "shell", "with", "continue-on-error"]);
+const STEP_KEYS = new Set(["name", "id", "if", "run", "uses", "shell", "with", "continue-on-error", "timeout-minutes"]);
 // The workflow-level and job-level keys this reader reads or that change nothing it runs. Any other key, such as a
 // job's `defaults:` (a different shell line), `services:` (sidecar containers) or `container:` (a different
 // image), changes how the runner runs every step, so it throws rather than reading as absent.
@@ -426,11 +427,17 @@ export async function runJob(wf, driver, { cwd = ROOT, env = process.env, log = 
       writeFileSync(envFile, "");
       writeFileSync(outFile, "");
       // After a cancel, an always() step runs on its own bounded clock, as the runner grants it.
-      const stepDeadline = state === "cancelled" ? Date.now() + 10 * 60_000 : deadline;
+      const jobBound = state === "cancelled" ? Date.now() + 10 * 60_000 : deadline;
+      // A step's own cap bounds it inside the job's; the runner fails a step that outlives its own cap.
+      const stepMinutes = step["timeout-minutes"] === undefined ? null : Number(expand(step["timeout-minutes"], { ...ctx, env: { ...ctx.env, ...jobEnv } }));
+      if (stepMinutes !== null && !(stepMinutes > 0)) throw new Error(`held-out-steps: step "${label}" timeout-minutes "${step["timeout-minutes"]}" has no local reading`);
+      const ownBound = stepMinutes === null ? Infinity : Date.now() + stepMinutes * 60_000;
+      const stepDeadline = Math.min(jobBound, ownBound);
       const r = await runShell(step.shell, file, { cwd, env: { ...jobEnv, GITHUB_ENV: envFile, GITHUB_OUTPUT: outFile }, deadline: stepDeadline });
       jobEnv = { ...jobEnv, ...readEnvFile(readFileSync(envFile, "utf8")) };
-      if (r.timedOut && state === "success") { state = "cancelled"; failed ??= label; log(`[held-out] ✗ ${label} — the job timeout (${minutes}m) cancelled it`); continue; }
-      if (r.code !== 0) fault = `exit ${r.code}`;
+      if (r.timedOut && ownBound < jobBound) fault = `the step timeout (${stepMinutes}m)`;
+      else if (r.timedOut && state === "success") { state = "cancelled"; failed ??= label; log(`[held-out] ✗ ${label} — the job timeout (${minutes}m) cancelled it`); continue; }
+      else if (r.code !== 0) fault = `exit ${r.code}`;
     }
     if (fault && step.continueOnError) {
       // The runner records the fault and lets the job go on as if the step had passed.

@@ -24,7 +24,7 @@
  *
  * WHAT IT NEVER DECIDES. It holds no key, reads no clock and keeps no store; signers arrive injected, the board
  * arrives as a doc, the manifest's bytes arrive from the caller's CAS. Which release a face ACCEPTS stays a person's
- * act (slice 5): this module answers only which releases COUNT and where the chain stands.
+ * act (road `W26`): this module answers only which releases COUNT and where the chain stands.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-slices
  */

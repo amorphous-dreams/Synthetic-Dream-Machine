@@ -35,8 +35,9 @@
  * Custody law — the FLOOR reads the public place key and inception, and presents the public floor card and pin:
  *   the place keypair and inception rest in the clear (mode 0o600), since a vessel stands and
  *   answers its public name before any person unlocks it. Every other row this module writes rests sealed under
- *   the vessel key and passes through the custody seat: the persona roster, the selector, the three name maps
- *   (hot) and each persona root (cold). The persona section below states that law.
+ *   the vessel key and passes through the custody seat: the persona roster, the three name maps (hot) and each
+ *   persona root (cold). The worn face lives in session memory and rests in no row. The persona section below states
+ *   that law.
  *
  * Key file naming (inside the identity dir):
  *   git email configured:  .vessel-key-{email-slug}.json
@@ -600,11 +601,11 @@ export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
 // ROOT-ON-FOUNDER: `generateOrLoadPersonaGroupRoot` mints founder-side only; a joinee holds the founder's public
 // DID + a signed edge at admit, so its roster reads empty. UNIFORM KEYING — every persona-root spells `-h${N}`.
 //
-// ── AT REST: SIX ROWS, ONE CUSTODY BOUNDARY ────────────────────────────────────────────────────
+// ── AT REST: FIVE ROWS, ONE CUSTODY BOUNDARY ───────────────────────────────────────────────────
 // Every row of this family rests sealed under the vessel key and passes through the custody seat
 // (`custody-seat`): the one sealed writer on the way down, the sealed open on the way up.
-//   HOT (read while the vessel stays unlocked): the persona ROSTER, the active-persona selector, the private
-//       pet-name map, the declaration map, the published-face record.
+//   HOT (read while the vessel stays unlocked): the persona ROSTER, the private pet-name map, the declaration
+//       map, the published-face record. The worn face lives in session memory (`wornInSession`), never a row.
 //   COLD (opened for one act, then dropped): each persona ROOT (`…-h<N>.json`).
 // At the floor every door here refuses `CustodyLocked`. A hot row with nothing at its path reads as holding
 // nothing (no root, no mounted face, no label), which states a fact about a vessel that never wrote it. A row that

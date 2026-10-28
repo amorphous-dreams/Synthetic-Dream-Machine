@@ -197,9 +197,8 @@ function logPendingPlanes(prefix: string, manifest: MountManifest): void {
 }
 
 /** The `receipts.ring {ratePerMin, horizonDays, burst, bytesPerOutcome}` shape an operator may override in
- *  `~/.lares/config.json` (D1, P2.5 iter 4) — read loosely here rather than widening
- *  `LaresConfig`'s own interface, since this lane touches only `uds-channel.ts` and this one
- *  pass-through site in `main.ts`. The first three dials size the ring's count, and `bytesPerOutcome` the mean
+ *  `~/.lares/config.json` — read loosely here rather than widening `LaresConfig`'s own
+ *  interface, so this one pass-through site in `main.ts` carries it to `uds-channel.ts`. The first three dials size the ring's count, and `bytesPerOutcome` the mean
  *  weight a kept outcome may take, so one block sets both bounds. Absent entirely → `startUdsChannel`'s own
  *  defaults (`RECEIPT_RING_DEFAULT`, `RECEIPT_RING_BYTES_DEFAULT`). */
 interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly ratePerMin?: number; readonly horizonDays?: number; readonly burst?: number; readonly bytesPerOutcome?: number } } }

@@ -14,7 +14,7 @@
  * missing source reads as a stranger, never as a pass.
  *
  * THE GROUP SEAM. `kahuRealmGroup` is the one accessor that names the PersonaGroup holding a Nexus's Kahu realm.
- * Today it reads persona zero's group; Wave C's Kahu-face group swaps in at this function alone, with no data
+ * It reads persona zero's group; the Kahu face's own group (road `P21`) swaps in at this function alone, with no data
  * move, since the realm's storage never keys on the group (`lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane`
  * #/the-seam-owed-to-wave-c).
  *
@@ -40,8 +40,8 @@ export function isSystemCanonBag(bag: string): boolean {
 
 /**
  * THE ONE ACCESSOR for the group that holds a Nexus's Kahu realm. A PersonaGroup id spells `0x` + 64 hex; the
- * cabal's acts key on the bare 64 hex. Persona zero's group holds the realm today; Wave C swaps the Kahu face's
- * group in HERE, and no storage key moves.
+ * cabal's acts key on the bare 64 hex. Persona zero's group holds the realm; the Kahu face's own group (road `P21`)
+ * swaps in HERE, and no storage key moves.
  */
 export function kahuRealmGroup(personaGroupId: string): string {
   const bare = personaGroupId.trim().toLowerCase().replace(/^0x/, "");

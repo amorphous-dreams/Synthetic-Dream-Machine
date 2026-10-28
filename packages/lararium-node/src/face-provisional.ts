@@ -25,7 +25,7 @@
  *
  * ── WHERE NO PARTY ANSWERS ──────────────────────────────────────────────────────────────────────
  * The guardians' recovery path answers, under the impersonation quorum (a rotation the guardians sign), and never the
- * local read alone. The guardians' rotation carries that path (stable-founding-road#/the-loops); this module names
+ * local read alone. The guardians' rotation carries that path (road `K18`, stable-founding-road#/stride-1-spine); this module names
  * it and builds none.
  *
  * Node-main only. Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-restore

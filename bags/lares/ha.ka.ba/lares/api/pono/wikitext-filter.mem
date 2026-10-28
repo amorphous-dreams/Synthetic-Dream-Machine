@@ -65,7 +65,7 @@ engine coerces to string for comparison unless the key type permits numeric rang
 
 !!! `stack:has[X]` — worn-component query (the has-stack law)
 
-Queries the carrier's worn components: relative names qualify against each carrier's own bag scope. The retired `edge:` operator's successor (typed-edge attributes died 2026-06-12; relations that DO something ride wire entities — `api/pono/wire`).
+Queries the carrier's worn components: relative names qualify against each carrier's own bag scope. No typed-edge attribute stands: relations that DO something ride wire entities (`api/pono/wire`).
 
 ```text
 [stack[]]                                 a carrier's qualified worn components
@@ -227,6 +227,6 @@ Systematic find-replace for authors migrating TW5 content:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oRYdo3tffEZ51_oc7Dz_cgwrtym7MshQDZ-xb0Qf5bM
+<<^ code="&#x0003;">>ni:///sha-256;Sp5sf5ELoPtrrDt2FQzGlLRVeO0mD5XOcv4eFPQzVds
 
 <<^ code="&#x0004;" -> to="?">>

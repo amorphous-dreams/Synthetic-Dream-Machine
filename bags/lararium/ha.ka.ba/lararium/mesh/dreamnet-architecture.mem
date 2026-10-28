@@ -284,7 +284,7 @@ Every bag declares its sealing posture as self-describing, tighten-only data ove
 
 !! The Nexus-Keying Spine — boards key on the charter, never on a vessel
 
-''RULED WHOLE and CURED, 2026-09-18.'' A per-Nexus board once keyed on a Nexus-carrying vessel's OWN verifying key — which satisfies one operator's own fleet and silently ''splits the island across two contracted operators'', because each resolves a board only it can see (`packages/lararium-mesh/src/nexus-identity.ts:9-16`, quote license). The cure: ''a Nexus holds no key, so no vessel's key may name it.'' The ruling landed at `91ce09afb` (`the-island.names.no-vessel`, 2026-09-13) and `c6cfe5b8d` (2026-09-03, //"one crossroads serves ONE Nexus… no confederation-wide floor exists, by design"//, <<~ loulou "lar:///ha.ka.ba/lararium/docs/crossroads">> #/open), and the source itself declares closure at `packages/lararium-node/src/open-node-vessel.ts:2272-2277` — quote license: //"THE FORK THIS ONCE NAMED STANDS RULED AND CURED… `p.nexusPubkey` now resolves through `nexusIdentity`."//
+''RULED WHOLE (2026-09-18).'' A per-Nexus board keyed on a Nexus-carrying vessel's OWN verifying key satisfies one operator's own fleet and silently ''splits the island across two contracted operators'', because each resolves a board only it can see (`packages/lararium-mesh/src/nexus-identity.ts:9-16`, quote license). The ruling: ''a Nexus holds no key, so no vessel's key may name it.'' It stands in code at `91ce09afb` (`the-island.names.no-vessel`) and `c6cfe5b8d` (//"one crossroads serves ONE Nexus… no confederation-wide floor exists, by design"//, <<~ loulou "lar:///ha.ka.ba/lararium/docs/crossroads">> #/open), and the source itself declares closure at `packages/lararium-node/src/open-node-vessel.ts:2272-2277` — quote license: //"THE FORK THIS ONCE NAMED STANDS RULED AND CURED… `p.nexusPubkey` now resolves through `nexusIdentity`."//
 
 !!! The name — a KERI AID
 
@@ -302,9 +302,9 @@ The Nexus AID (`nexus-…`, `sealEpochCidOf` at genesis, read by `nexusAidOf`) c
 
 `nexusIdentity()` resolves in exactly this order (`nexus-identity.ts:138-186`): ''explicit scope'' (a caller that already knows its island) ?? ''charter genesis'' (a readable Nexus AID, refusing TORN if the genesis is present but unreadable) ?? ''anchor'' (the gate key of a confederation this vessel dials, refusing TORN if an admission record stands but the key is malformed) ?? ''own'' (the vessel's own key, as a private nexus of one). A charter always outranks an anchor because "it names a relation this vessel consented to, where an anchor names only a relay it reaches" (`nexus-identity.ts:152-154`), and neither can outrank a term that structurally cannot exist for a leaf vessel (`nexus-identity.ts:27-36`).
 
-!!! What landed, 2026-09-18
+!!! Where the board reads
 
-The A1 sweep wired all 12 CLI-verb board-read sites through `nodeNexusIsland({ ownVesselKey })` rather than a raw vessel key, mirroring the internal `device-admit/v1` edge mint's board reading (`0b085461c`, red-first, WELD sweep 8→10 green); a 13th site (`runNexusMembersList`'s `carriageDocUrl`) stays per-vessel BY DESIGN (own board only, the carry-split registry). Behind it, `ac9a645ba` cured a real product gap the board-keying fork exposed once measured: the only KEL-chain migration (`carryPersonaKelUpTheGradient`) ran only at daemon boot, so a store-direct sequence (`persona new 0` then `nexus rite quorum` with no restart) left `admitBoardIsland` reading a charter-island board nothing had written. The cure carries ''ON READ'' at the internal device-edge seam, reusing the boot's own idempotent climb.
+All 12 CLI-verb board-read sites route through `nodeNexusIsland({ ownVesselKey })` rather than a raw vessel key, mirroring the internal `device-admit/v1` edge mint's board reading (`0b085461c`); a 13th site (`runNexusMembersList`'s `carriageDocUrl`) stays per-vessel BY DESIGN (own board only, the carry-split registry). The KEL-chain climb (`carryPersonaKelUpTheGradient`) runs at daemon boot and ''ON READ'' at the internal device-edge seam (`ac9a645ba`), reusing the boot's own idempotent climb, so a store-direct sequence (`persona new 0` then `nexus rite quorum` with no restart) finds `admitBoardIsland` reading a board the charter island holds.
 
 <<~/ahu>>
 
@@ -581,7 +581,7 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 !! Settled vs Unbuilt
 
-''SETTLED.'' The board-keying fork stands ''RULED WHOLE and CURED'' (2026-09-18) (#/the-nexus-keying-spine, `91ce09afb`+`c6cfe5b8d`; source declares closure at `open-node-vessel.ts:2272-2277`). The A1 sweep wired all 12 CLI-verb board reads through `nodeNexusIsland` (`0b085461c`). Device-admit carries on read, so a store-direct rite-then-admit sequence never strands a board mid-climb (`ac9a645ba`+`fadd667f0`). ''`heraldry.mem`'s dated order note (#/plan) (2026-09-13) names this fork "owed to the operator"; the ruling closed it the same evening, so a reader carries that note as history, never as open''.
+''SETTLED.'' The board-keying fork stands ''RULED WHOLE'' (2026-09-18) (#/the-nexus-keying-spine, `91ce09afb`+`c6cfe5b8d`; source declares closure at `open-node-vessel.ts:2272-2277`). All 12 CLI-verb board reads route through `nodeNexusIsland` (`0b085461c`). Device-admit carries on read, so a store-direct rite-then-admit sequence never strands a board mid-climb (`ac9a645ba`+`fadd667f0`). ''`heraldry.mem`'s order note (#/plan) names this fork "owed to the operator"; the ruling closes it, so a reader carries that note as a record, never as open''.
 
 The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side door stands: `open-node-vessel.ts` `resolveCidThroughDoor` → `node-cas.ts` `hermCasTransitFromEnv` → `makeCidResolver` (`tests/herm-cas-transit.test.ts` and `tests/herm-reshares-public-blob.test.ts` hold it green). The Herm's own public read face (`bulb-read-face.ts`) serves local bytes only, synchronously, with no fetch-and-write-through, and `composeCasTransits` (`node-cas.ts`) has no caller in `packages/*/src` (`W22` names that wiring owed).
 
@@ -639,6 +639,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;K2qBaJBJtMd9-30ShGtXFSkDY8ELGVH1hbJIHoO2VK8
+<<^ code="&#x0003;">>ni:///sha-256;jFCUr6DAlaLciu5Xy3ThcuuCTS69URudk4QMRoMYea8
 
 <<^ code="&#x0004;" -> to="?">>

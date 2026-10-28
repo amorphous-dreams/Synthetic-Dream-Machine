@@ -45,7 +45,7 @@ A wire that merely //points// stays a `loulou`; embedding stays `aka`/`kahea`; c
 
 !! Wire Law
 
-# ''One wire, one entity.'' A wire exists as one `lar:` addressed record carrying `from` and `to` (each a `lar:` URI or `URI#socket`). It MUST NOT exist as an attribute on a line of prose — the corpus-wide attribute-edge form retired 2026-06-12.
+# ''One wire, one entity.'' A wire exists as one `lar:` addressed record carrying `from` and `to` (each a `lar:` URI or `URI#socket`). It MUST NOT exist as an attribute on a line of prose.
 # ''Semantics worn, never typed-in-place.'' A wire wears its family as a stack component — `wires/dataflow`, `wires/message`, `wires/control`, `wires/constraint`, `wires/observe` ride as //examples, not an enum// (has-stack clause 4: open minting, ladder-judged). The family definition meme carries the meaning; the wire record carries only endpoints and fields.
 # ''The four concerns stay independent'' (inherited whole from the prior edge law): `traversal` (how a query moves) · `propagation` (how invalidation fires) · arity (family-declared, has-stack clause 5) · lifecycle. They ride as ''fields'' on the wire record and MUST NOT collapse into each other.
 # ''Lifecycle = template · instance · trace.'' A template wire carries slots and defaults; an instance binds real endpoints; a ''trace'' records a firing, failure, or event — each its own entity, so the event history merges and federates like any record.
@@ -89,6 +89,6 @@ Co-projection applied to wires: the operator's mind originates; the carrier body
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CQu4mtN1O_hA4yIfR1JJG5rG_Gl2Dsz9Qcy_GL6rRjY
+<<^ code="&#x0003;">>ni:///sha-256;HUnRwvT93YjONq0Ma4T5U291fNpp6L4YJrkfjzViUl0
 
 <<^ code="&#x0004;" -> to="?">>
