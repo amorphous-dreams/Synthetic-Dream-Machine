@@ -11,6 +11,7 @@ on:
       - 'tools/projection-loom/projection_loom/generalized_campaign.py'
       - 'tools/projection-loom/projection_loom/relational_ground.py'
       - 'tools/projection-loom/projection_loom/scene_usd.py'
+      - 'tools/projection-loom/projection_loom/scene_variants.py'
       - 'tools/projection-loom/projection_loom/incremental_graph.py'
       - 'tools/projection-loom/projection_loom/editor_proposals.py'
       - 'tools/projection-loom/projection_loom/regulative_growth.py'
@@ -84,7 +85,7 @@ jobs:
           python -m pip install --no-deps -e .
           python -m pip check
       - name: Headless real OpenUSD and native STEP reimport
-        run: python -m pytest -q tests/test_hephaestus_usd.py tests/test_hephaestus_editor.py tests/test_hephaestus_crucible.py
+        run: python -m pytest -q tests/test_hephaestus_usd.py tests/test_hephaestus_editor.py tests/test_hephaestus_crucible.py tests/test_hephaestus_variants.py
       - name: Independent subject native + OpenUSD + causal adversarial crucible
         run: python -m projection_loom.hephaestus_crucible --out out/hephaestus-crucible
       - name: Retain falsifiable crucible evidence

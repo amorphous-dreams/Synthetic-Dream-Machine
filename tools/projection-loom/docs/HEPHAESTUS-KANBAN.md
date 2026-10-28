@@ -171,3 +171,15 @@ The official Blender 4.5.15 SHA-checked build successfully completed its USD imp
 ## Native caching exact test correction
 
 On head `616cafcc`, the new USD cache lane passed its positive native reuse and tampered asset witnesses (9/10 passing); the single failure was the negative fixture expecting a different error string than the provenance guard actually emitted. The test now matches the precise provenance/units refusal. Full exact-head revalidation remains necessary.
+
+## OODA-HA B-06 · actual USD candidate variants (2026-10-28)
+
+**Observe:** Independent alternatives must not be confused with a globally promoted scene, and the per-bundle exact native/STEP receipts must survive choosing a different visible alternative.
+
+**Orient:** OpenUSD variant sets select a authored scene composition, not a causal merge or developmental genome.
+
+**Decide:** Copy each previously validated portable scene bundle under its own package directory, build `/Candidate` with a real USD `candidate` variant set referencing each original `/Loom` scene by relative path, preserve original bundle digests and refuse incompatible model units or location identities.
+
+**Act:** `scene-variants --specification ... --out ...` and `scene-variants-validate --comparison ...` provide production CLI. Real OpenUSD tests select both alternatives, revalidate native STEP witnesses, relocate the entire directory and refuse changed underlying assets.
+
+**Aftermath:** B-06 candidate variants are implemented awaiting exact-head USD CI. No automatic operator preference, winner, variant promotion or causal merge. Interactive camera controls and Unreal variants remain separate unmet integration claims.

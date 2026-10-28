@@ -62,6 +62,11 @@ def main(argv=None):
     p.add_argument('--growth', type=Path, required=True)
     p.add_argument('--fill', type=float, default=.52)
     p.add_argument('--out', type=Path, required=True)
+    p=commands.add_parser('scene-variants', help='Compose independently witnessed USD candidate alternatives')
+    p.add_argument('--specification', type=Path, required=True)
+    p.add_argument('--out', type=Path, required=True)
+    p=commands.add_parser('scene-variants-validate', help='Inspect portable USD alternatives')
+    p.add_argument('--comparison', type=Path, required=True)
     p=commands.add_parser('wide-epoch',help='Resumable staged constructive epochs')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
@@ -340,6 +345,15 @@ def main(argv=None):
         from .developmental import GrowthProgram
         growth = GrowthProgram.from_dict(json.loads(args.growth.read_text(encoding='utf8')))
         result = matched_trial(growth, args.out, fill=args.fill)
+        print(json.dumps(result, indent=2))
+        return result
+    if args.command in ('scene-variants', 'scene-variants-validate'):
+        from .scene_variants import build_variants, validate_variants
+        if args.command == 'scene-variants':
+            declared = json.loads(args.specification.read_text(encoding='utf8'))
+            result = build_variants(declared, args.out)
+        else:
+            result = validate_variants(args.comparison)
         print(json.dumps(result, indent=2))
         return result
     if args.command=='fracture-pattern':
