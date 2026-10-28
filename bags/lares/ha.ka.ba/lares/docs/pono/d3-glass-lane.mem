@@ -29,7 +29,7 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 !! The slices, each built red first with its control
 
 # ''G1 ~ the port adaptor ~ BUILT.'' A startup module on the glass (`packages/lararium-tw5/src/glass-port-adaptor.ts`), pure over a `$tw`-shaped wiki and a port transport: it binds `$tw.wiki`'s `change`, lands `port:snapshot` and `port:changes` under an origin tag its own listener skips, posts `port:write` with a `txId`, and keeps the write optimistic until `port:written` echoes; no `$tw.syncer`, no `syncadaptor` module. Skinny and story stand as settings of the same adaptor (`width`, `fields`); skinny asks `port:ask{kind: load}` for a body on open. Witnesses: `glass-echo-lands-once`, `glass-skinny-body-loads-on-open`, `glass-peer-edit-presence-reads-aloud`.
-# ''G2 ~ the glass boot and mount ~ BUILT.'' The glass boots `TW5Engine` in the page from the same CAS core blob by hash, mounts the page template over `window.document` in a shadow root as the browser's first camera, through the private mirror door over the explicitly supplied port binding. Full opens first; named failures leave the none floor. `packages/lararium-web/src/glass/`.
+# ''G2 ~ the glass boot and mount ~ BUILT.'' The glass boots `TW5Engine` in the page from the same CAS core blob by hash, mounts the page template over `window.document` in a shadow root as the browser's first camera, through the private mirror door over the explicitly supplied port binding. Skinny opens and paints first, then promotes to full; named failures leave the none floor. `packages/lararium-web/src/glass/`.
 # ''G3 ~ the service doors ~ PART.'' `lar:service` doors reached from the glass engine's root handlers (`tm-*`), the same kinds D1 ruled, each refused kind named with its alert.
 # ''G4 ~ the multi-tab topology ~ BUILT.'' A Web Lock elects the leader; the leader's worker holds the engine; a SharedWorker or BroadcastChannel handshake routes other tabs; a late tab gets a snapshot, never a missed `ready`. Witnesses: `glass-leader-handoff-mid-write`, `glass-late-tab-gets-snapshot`.
 # ''G5 ~ the draft prompt ~ BUILT.'' A peer write into an open draft shows the newer-base prompt; a draft is a tiddler like any other.
@@ -45,7 +45,8 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 * ''G3'': the camera builds the scroller, popup layer and focus handler; the `tm-modal`, `tm-notify`, clipboard, download, route and open-surface doors, and `main.ts` calling `standMirror`, stand owed.
 * ''G6'': one walk witness runs the framed editor, story scroll, popup layer, toolbar and auto-height in Chromium and Firefox; WebKit refuses on this host for want of two system libraries. Interaction goldens 1 to 13 at width full against stock TW5 stand owed.
 * ''G7'': the harness runs at N=1 on one host; stock and full keystroke columns, the none page columns, the synchronous ask and the verb census stand unmeasured, and so does every phone figure.
-* ''Mirror door'': skinny-first promotion and the per-tab died-before-paint record await their own slice.
+* ''Mirror door'': `main.ts` calling `standMirror` and the vessel's `mirrorInputs` hunk await K19 landing; the PR waits on them.
+* ''Promotion order'': skinny paints first and one `port:widen` row promotes it to full; the per-tab `mirror:began` record in `sessionStorage` holds a tab at skinny when a full boot never finished; the order retires on the measured landing cure, not on a date.
 * ''Full-width landing cost'': a 2,000-tiddler snapshot lands in tens of seconds at width full; the cure waits on its own slice.
 
 <<~/ahu>>
@@ -68,6 +69,6 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ereo8Y1FtFccyG6oqsPjHmpEs3NxzA_W5yo4Hw2FYJI
+<<^ code="&#x0003;">>ni:///sha-256;TY9DdK4bzsgMN1Qk3N19zsnHjP58l2oN9LJt7hfXKB8
 
 <<^ code="&#x0004;" -> to="?">>

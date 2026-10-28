@@ -1,4 +1,6 @@
-import { expect, test } from "vitest";
+import { afterEach, beforeEach, expect, test } from "vitest";
+import { forgetEvidence } from "./glass-rig.js";
+beforeEach(forgetEvidence); afterEach(forgetEvidence);
 import * as stand from "../src/glass/stand.js";
 import { makePortTransport } from "../src/port-transport.js";
 import coreUrl from "../../lararium-tw5/tw5-core/tiddlywikicore-5.5.0-prerelease.js?url";

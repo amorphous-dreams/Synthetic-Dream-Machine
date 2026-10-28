@@ -75,6 +75,7 @@ written           = "2026-10-22"
 
 * A tombstone stands as a log entry `{title, deleted: true, seq}`. Retention counts entries (4096 per actor, a dial), plus the snapshot pin of #/snapshot. Open ports pin nothing.
 * A subscriber behind the floor receives `port:reset{reason: "compacted", floorSeq}`. A projection acknowledges applied changes with `port:ack{cursor}`; the island counts the bytes it posted since the last ack, and a port whose unacknowledged backlog passes a byte budget (a dial, default 1 MiB) stops receiving changes and receives one `port:reset{reason: "lagged"}`, then waits for a reopen. An ack counts only up to the highest cursor the island posted to that port; a claim beyond it clears nothing.
+* A holder widens an open port in place with `port:widen{portId, width}`. The door carries it on the holder's road like `port:ack`: another binding meets `port-owned`, an unleased port `port-unleased`, an unknown width `port-malformed`. The island answers a wider width with a fresh snapshot (a new `snapshotId`) on the same port, lease and actor ledger, and later changes arrive at the wider shape; a width that is not wider, or a port not open, changes nothing.
 * A skinny record carries `omitted: [fields]`, the fields that exist and went unprojected. A field in neither `fields` nor `omitted` stands deleted. A `load` answer carries `seq`; the larger `seq` wins, so a stale load never overwrites a newer record.
 * Reds: `port-tombstone-then-compaction-resets`, `port-skinny-omitted-vs-deleted`, `port-skinny-then-load`, `port-load-stale-never-overwrites`. Control: a tombstone inside retention reaches a lagging-but-in-range subscriber as a delete.
 
@@ -177,6 +178,6 @@ What stays owed, each by name:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bZpfR-vf-_AnXRGZd5EW1Qi7PNWEnde-c6iKuYZpQTQ
+<<^ code="&#x0003;">>ni:///sha-256;PIm3X2XafgVWQjE7Ly0OR4eYKNU1Nyod7W7uDIX5F-8
 
 <<^ code="&#x0004;" -> to="?">>

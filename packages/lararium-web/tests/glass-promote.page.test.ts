@@ -1,10 +1,10 @@
-import { afterEach, expect, test } from "vitest";
+import { afterEach, beforeEach, expect, test } from "vitest";
 import { standMirror } from "../src/glass/stand.js";
-import { rig } from "./glass-rig.js";
+import { forgetEvidence, rig } from "./glass-rig.js";
 
 const KEY = "mirror:began";
 const clear = () => { try { sessionStorage.removeItem(KEY); localStorage.removeItem(KEY); sessionStorage.removeItem("width"); } catch { /* storage may be blocked */ } };
-afterEach(clear);
+beforeEach(forgetEvidence); afterEach(() => { forgetEvidence(); clear(); });
 
 test("skinny paints first, then one widen row on the same port promotes to full", async () => {
   const r = await rig();

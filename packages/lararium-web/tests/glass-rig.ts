@@ -33,3 +33,6 @@ export async function rig(options: { gate?: Promise<void>; chunks?: number } = {
   return { host, port, messages, seams, options: options2, onPlace: (watcher: (msg: Record<string, any>) => void) => { placed.push(watcher); },
     opens: () => messages.filter(m => m.type === "port:open"), widens: () => messages.filter(m => m.type === "port:widen") };
 }
+
+/** A test starts from a tab with no evidence record: an earlier test's step-down leaves one behind, as a real boot would. */
+export const forgetEvidence = (): void => { try { sessionStorage.removeItem("mirror:began"); } catch { /* storage may be blocked */ } };

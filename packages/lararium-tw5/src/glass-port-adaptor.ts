@@ -240,6 +240,8 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
       transport.send({ type: "port:ask", portId, askId, kind: "load", subject: title, fields: ["text"] }); });
   };
   return {
+    /** Ask the island to widen this open port in place; its fresh snapshot lands through the same listener. */
+    widen(next: GlassPortOptions["width"]) { if (closed) return; opts.width = next; transport.send({ type: "port:widen", portId, width: next }); },
     tagImages(): ReadonlyMap<string, readonly string[]> { return new Map(tagged); },
     pendingWrites(): PendingWrite[] { return [...pending].map(([txId, tx]) => ({ txId, title: tx.title, record: tx.record })); },
     resendPending() {

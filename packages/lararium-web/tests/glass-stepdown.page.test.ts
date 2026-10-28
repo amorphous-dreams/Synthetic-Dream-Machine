@@ -1,6 +1,8 @@
-import { expect, test } from "vitest";
+import { afterEach, beforeEach, expect, test } from "vitest";
 import { standMirror } from "../src/glass/stand.js";
-import { lends, rig } from "./glass-rig.js";
+import { forgetEvidence, lends, rig } from "./glass-rig.js";
+
+beforeEach(forgetEvidence); afterEach(forgetEvidence);
 
 /** Throws a RangeError from the landing path once per listed width, in order, then lands quietly. */
 const capacityAt = (...widths: string[]) => { const queue = [...widths]; return (_change: { title: string }, width: string) => {
