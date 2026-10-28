@@ -138,8 +138,10 @@ def _reload(args):
     new_ids = {body["entity_id"] for body in manifest["bodies"]}
     if old_ids != new_ids:
         raise RuntimeError("Reload changed authored semantic identity inventory")
-    if not operator_owned <= set(bpy.data.objects):
-        raise RuntimeError("Reload discarded operator-owned Blender objects")
+    remaining_names = set(bpy.data.objects.keys())
+    if not operator_owned <= remaining_names:
+        raise RuntimeError("Reload discarded operator-owned Blender objects: " +
+                           repr(sorted(operator_owned - remaining_names)))
     bpy.ops.wm.save_as_mainfile(filepath=str(Path(args.out).resolve()))
     print("LOOM_BLENDER_RELOAD " + json.dumps({"preserved_operator_objects":
                                                sorted(operator_owned), "entities": len(new_ids)}))

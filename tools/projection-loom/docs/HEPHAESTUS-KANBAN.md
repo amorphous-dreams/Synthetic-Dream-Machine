@@ -183,3 +183,7 @@ On head `616cafcc`, the new USD cache lane passed its positive native reuse and 
 **Act:** `scene-variants --specification ... --out ...` and `scene-variants-validate --comparison ...` provide production CLI. Real OpenUSD tests select both alternatives, revalidate native STEP witnesses, relocate the entire directory and refuse changed underlying assets.
 
 **Aftermath:** B-06 candidate variants are implemented awaiting exact-head USD CI. No automatic operator preference, winner, variant promotion or causal merge. Interactive camera controls and Unreal variants remain separate unmet integration claims.
+
+## Blender operator-object assertion correction
+
+At exact official Blender head `fe0a4b42`, the real USD import, transform capture and regenerated native USD import reached the preservation assertion; it compared `set[str]` with `set[bpy.types.Object]`, a guaranteed type mismatch. The assertion now compares `set[str]` to `bpy.data.objects.keys()`, with a concrete missing-name report. Exact-head editor CI must verify real operator-owned objects survive reimport.
