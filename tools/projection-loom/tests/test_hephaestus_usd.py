@@ -97,3 +97,51 @@ def test_native_cache_rejects_tampered_prior_bundle(tmp_path):
     with pytest.raises(ValueError, match="digest mismatch"):
         package_scene(original, tmp_path / "after",
                       reuse_bundle=before, previous_document=original)
+
+
+
+def test_manifest_digest_rewrite_cannot_add_unwitnessed_step_or_stage(tmp_path):
+    from projection_loom.provenance_encoding import canonical_json_sha256
+    root = tmp_path / "bundle"
+    package_scene(declared(), root)
+    path = root / "manifest.json"
+    original = json.loads(path.read_text())
+
+    def forged(patch):
+        manifest = json.loads(json.dumps(original))
+        patch(manifest)
+        payload = {k: value for k, value in manifest.items() if k != "sha256"}
+        manifest["sha256"] = canonical_json_sha256(payload)
+        path.write_text(json.dumps(manifest))
+    forged(lambda doc: doc["bodies"][0].update(
+        step_path="../../not-witnessed.step"))
+    with pytest.raises(ValueError, match="STEP must live|inventory"):
+        validate_scene(root)
+    forged(lambda doc: doc.update(stage="invisible.usda"))
+    with pytest.raises(ValueError, match="Unexpected root stage path"):
+        validate_scene(root)
+    forged(lambda doc: doc["bodies"].append(
+        json.loads(json.dumps(doc["bodies"][0]))))
+    with pytest.raises(ValueError, match="Duplicate semantic body"):
+        validate_scene(root)
+
+
+def test_manifest_refuses_untracked_openusd_sublayer(tmp_path):
+    from projection_loom.provenance_encoding import canonical_json_sha256
+    from hashlib import sha256
+    root = tmp_path / "bundle"
+    package_scene(declared(), root)
+    stage_path = root / "scene.usda"
+    stage_path.write_text(
+        stage_path.read_text().replace(
+            '@presentation.usda@, @generated.usda@',
+            '@presentation.usda@, @generated.usda@, @../outside.usda@'))
+    data = json.loads((root / "manifest.json").read_text())
+    data["assets"]["scene.usda"] = sha256(stage_path.read_bytes()).hexdigest()
+    payload = {k: v for k, v in data.items() if k != "sha256"}
+    data["sha256"] = canonical_json_sha256(payload)
+    (root / "manifest.json").write_text(json.dumps(data))
+    # If the format changes, the test should fail rather than silently pass.
+    assert "@../outside.usda@" in stage_path.read_text()
+    with pytest.raises(ValueError, match="Unaccounted OpenUSD sublayer"):
+        validate_scene(root)

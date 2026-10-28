@@ -234,21 +234,50 @@ def validate_scene(directory):
         raise ValueError("Scene manifest is missing or tampered")
     stage_path = doc["stage"]
     assets = doc["assets"]
-    for name, digest in assets.items():
-        p = (out / name).resolve()
-        if not p.is_relative_to(out.resolve()) or not p.is_file():
+    if not isinstance(assets, dict) or not assets:
+        raise ValueError("Portable bundle needs a nonempty asset inventory")
+    origin = out.resolve()
+
+    def listed_asset(name):
+        if not isinstance(name, str) or name not in assets:
+            raise ValueError("Scene reference absent from verified asset inventory")
+        candidate = Path(name)
+        if candidate.is_absolute() or not candidate.parts or ".." in candidate.parts:
+            raise ValueError("Scene reference escapes portable bundle")
+        path = (out / candidate).resolve()
+        if not path.is_relative_to(origin) or not path.is_file():
             raise ValueError("Bundle asset is missing or escaped its boundary")
+        return path
+
+    for name, digest in assets.items():
+        if not isinstance(digest, str) or len(digest) != 64:
+            raise ValueError("Invalid bundle asset digest")
+        p = listed_asset(name)
         if _digest_file(p) != digest:
             raise ValueError("Portable bundle asset digest mismatch")
-    stage = Usd.Stage.Open(str(out / stage_path))
+    if stage_path != "scene.usda":
+        raise ValueError("Unexpected root stage path")
+    stage = Usd.Stage.Open(str(listed_asset(stage_path)))
     if not stage:
         raise ValueError("OpenUSD stage could not be reopened")
+    if stage.GetRootLayer().subLayerPaths != ["presentation.usda", "generated.usda"]:
+        raise ValueError("Unaccounted OpenUSD sublayer reference")
+    listed_asset("presentation.usda")
+    listed_asset("generated.usda")
     if UsdGeom.GetStageUpAxis(stage) != UsdGeom.Tokens.z:
         raise ValueError("Stage up-axis changed")
     if abs(UsdGeom.GetStageMetersPerUnit(stage) - doc["meters_per_unit"]) > 1e-12:
         raise ValueError("Stage units changed")
     expected = set()
+    entity_ids = set()
     for record in doc["bodies"]:
+        if record["entity_id"] in entity_ids or record["prim_path"] in expected:
+            raise ValueError("Duplicate semantic body or USD prim path")
+        entity_ids.add(record["entity_id"])
+        step_path = record["step_path"]
+        if not isinstance(step_path, str) or Path(step_path).parts[:1] != ("native",):
+            raise ValueError("STEP must live in the witnessed native asset directory")
+        native_step = listed_asset(step_path)
         prim = stage.GetPrimAtPath(record["prim_path"])
         if not prim or not prim.IsA(UsdGeom.Mesh):
             raise ValueError("Accepted CAD representation missing in composed stage")
@@ -257,7 +286,7 @@ def validate_scene(directory):
         if prim.GetAttribute("loom:programSha256").Get() != record["program_sha256"]:
             raise ValueError("Program ancestry binding changed")
         expected.add(record["prim_path"])
-        imported = cq.importers.importStep(str(out / record["step_path"])).val()
+        imported = cq.importers.importStep(str(native_step)).val()
         info = record["step_reimport"]
         if not imported.isValid() or len(imported.Solids()) != info["solids"]:
             raise ValueError("STEP re-import cannot verify native solid")
