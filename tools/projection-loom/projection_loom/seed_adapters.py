@@ -162,7 +162,7 @@ def registered_views(adapters):
             raise ValueError("Registered camera calibration changed since source admission")
         rows.append({"source_id":adapter.seed.identity,
                      "path":adapter.seed.locator,
-                     "registration":current})
+                     "registration":{**current,"calibration_file":expected["calibration_file"]}})
     return rows
 
 
