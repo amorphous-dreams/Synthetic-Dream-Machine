@@ -869,6 +869,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
    * that id records the outcome again and, until a record stands, reads it from here, never `pending`. Held in this
    * process alone: the acts' answers never rest, and a fault here is rare enough to hold no bound but the faults.
    */
+  // Only faults enter this map, and those faults bound its size.
   const unrecorded = new Map<string, { readonly status: "done" | "error"; readonly digest: string; readonly action: string }>();
 
   const sessionReceipt = async (requestId: string, face: string): Promise<SessionReceipt> => {
@@ -882,17 +883,19 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         log(`receipt-fact ledger still fails to record act ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
-    const found = await ledger.get(scoped);
+    let found: Awaited<ReturnType<typeof ledger.get>> = null;
+    try { found = await ledger.get(scoped); }
+    catch (error) { log(`receipt-fact ledger failed to read act ${requestId}: ${error instanceof Error ? error.message : String(error)}`); }
     const fact = found === "torn" || found?.face !== face ? null : found;
     const event = await composite.get(`${OUTCOME_URI_PREFIX}${scoped}`);
     const fields = event && !event.meta?.deleted ? event.tiddler as Record<string, unknown> : null;
     const outcome = fields?.["face"] === face ? await readOutcomeFor(scoped) : null;
     const status = outcome?.["status"] === "done" || outcome?.["status"] === "error" ? outcome["status"] : undefined;
     const ran = unrecorded.get(scoped)?.status;
-    const state = fact?.state === "evicted" ? "evicted" : status ?? (fact?.state === "committed" ? ran ?? "pending" : fact?.state ?? "unknown");
+    const state = fact?.state === "evicted" ? "evicted" : status ?? (fact?.state === "committed" ? ran ?? "pending" : fact?.state ?? ran ?? "unknown");
     const terminal = state === "done" || state === "error" || state === "interrupted" || state === "evicted";
     const durable = terminal ? await settleDurably() : undefined;
-    return { requestId, action: fact?.action ?? (typeof fields?.["verb"] === "string" && fields["face"] === face ? fields["verb"] : "unknown"),
+    return { requestId, action: fact?.action ?? owed?.action ?? (typeof fields?.["verb"] === "string" && fields["face"] === face ? fields["verb"] : "unknown"),
       face, state,
       ...(outcome && (state === "done" || state === "error") && { outcome: { ...outcome, requestId } }),
       position: { ownerEpoch, bootEpoch: fact && "bootEpoch" in fact && fact.bootEpoch !== undefined ? fact.bootEpoch : claim.bootEpoch,

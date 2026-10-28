@@ -65,7 +65,7 @@ import type { WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
-import { realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding } from "@lararium/mesh";
+import { workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
   ACTIVE_WIKI_URI,
@@ -2271,9 +2271,10 @@ async function prepareNodeBootOn(
       if (raised !== standingAnchor) { await keepFaceAnchorOfGroup(raised); standingAnchor = raised; }
     }
     const faceLit = activeAtom !== null && atomSeed !== null;
+    const workingFloorAnchor = workingFloorAnchorOf({ place: placeAid });
     const daemonAuth = {
       placeVerifyingKey: vesselIdentity.verifyingKey,
-      ...(placeAid ? { workingFloorAnchor: { kind: "place" as const, aid: placeAid } } : {}),
+      ...(workingFloorAnchor ? { workingFloorAnchor } : {}),
       archiveOpens:         opens,
       ...(activeAtom && atomSeed ? { atom: { seed: Buffer.from(atomSeed).toString("hex"), key: activeAtom.key } } : {}),
       ...(veilArchiveBytes ? { veilArchiveBytes } : {}),

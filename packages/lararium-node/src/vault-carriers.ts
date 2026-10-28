@@ -407,8 +407,8 @@ function buildTable(): readonly CarrierRow[] {
     faceRowOf({ row: "vessel-face-key", target: tgt(["D"]), inner: /^vessel-face-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: "device-minted",
          writer: "face-key-custody", name: (m) => `vessel-face-key-h${m[1]}-${m[2]}`, face: faceOf }),
     // One face's address secret (`fleet-join-custody`): minted once on the root holder, carried to each joined
-    // vessel by the fleet-join door alone. Its file names a digest of the face's PersonaGroup. No rotation
-    // regenerates it, and no bundle body carries it: it stays on its vessels.
+    // vessel by the fleet-join door. Its file names a digest of the face's PersonaGroup. A bundle carries it whole;
+    // a paper restore carries none, through the fromPaper door.
     faceRowOf({ row: "face-address-secret", target: tgt(["D"]), inner: /^face-address-secret-g([0-9a-f]{64})\.bin$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",
          writer: "fleet-join-custody", name: (m) => `face-address-secret-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "whole" }),
     // A joining vessel's half-done fleet join (`fleet-join-custody`): its request and the X25519 secret its

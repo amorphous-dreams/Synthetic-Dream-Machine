@@ -107,6 +107,13 @@ export type WorkingFloorAnchor =
   | { readonly kind: "place"; readonly aid: string }
   | { readonly kind: "private-nexus"; readonly key: string };
 
+/** Select the anchor supplied by the vessel. */
+export function workingFloorAnchorOf(reading: { readonly place?: string | null; readonly privateNexusKey?: string | null }): WorkingFloorAnchor | undefined {
+  if (reading.place) return { kind: "place", aid: reading.place };
+  if (reading.privateNexusKey) return { kind: "private-nexus", key: reading.privateNexusKey };
+  return undefined;
+}
+
 /** The path a floor anchor names under a working floor: `place/{aid}` or `private-nexus/{key}`, so the two never collide. */
 export function floorAnchorSegment(anchor: WorkingFloorAnchor): string {
   const id = anchor.kind === "place" ? anchor.aid : anchor.key;

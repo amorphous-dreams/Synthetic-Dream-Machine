@@ -151,5 +151,5 @@ export async function restoreFaceFromCards(args: {
   readonly withRepo: <T>(act: (repo: Repo) => Promise<T>) => Promise<T>;
 }): Promise<FaceBundleRestored> {
   const body = await buildCardBody({ cards: args.cards, face: args.face, as: args.as });
-  return restoreFaceBody({ body, as: args.as, withRepo: args.withRepo });
+  return restoreFaceBody({ body, as: args.as, withRepo: args.withRepo, fromPaper: true });
 }

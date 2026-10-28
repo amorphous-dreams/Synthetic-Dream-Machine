@@ -85,7 +85,7 @@ import { keepBrowserFaceAtomSeed, mintBrowserFaceAddressSecret, readBrowserFaceA
 import {
   loadBrowserVeilArchive, oldShapeVeilRow, refuseLegacyBrowserArchive, saveBrowserVeilArchive,
 } from "./browser-keyhive-archive.js";
-import { vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
+import { workingFloorAnchorOf, vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import type { LarOpenPhase, PlaceFoundingCard } from "@lararium/mesh";
 import { readWornPersonaMount }              from "@lararium/mesh";
@@ -1321,6 +1321,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           held.stood.push({ what: "the face documents join", down: () => joining.stop() });
         }
       }
+      const workingFloorAnchor = workingFloorAnchorOf({ place: placeKel?.ok ? placeKel.aid : null, privateNexusKey: nexusStandsAt.ownVesselKey });
       const daemonAuth = {
         placeVerifyingKey: vesselIdentity.verifyingKey,
         // A BROWSER VESSEL HOLDS NO SEALED IDENTITY HOME, so the archive-write door's reading is
@@ -1334,9 +1335,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // the boot and the seed leaves this closure with the manifest.
         atom: { seed: hex(wornAtomSeed), key: wornAtom.key },
         ...(wornAddressSecret ? { faceAddressSecret: wornAddressSecret } : {}),
-        workingFloorAnchor: placeKel?.ok
-          ? { kind: "place" as const, aid: placeKel.aid }
-          : { kind: "private-nexus" as const, key: nexusStandsAt.ownVesselKey },
+        ...(workingFloorAnchor ? { workingFloorAnchor } : {}),
         ...(wornAtomArchive ? { veilArchiveBytes: wornAtomArchive } : {}),
         personaGroupId: wornMount?.personaGroupId   ?? social.personaGroupId,
         faceAnchor,
