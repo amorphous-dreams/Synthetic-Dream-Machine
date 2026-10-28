@@ -13,6 +13,8 @@ on:
       - 'tools/projection-loom/projection_loom/scene_usd.py'
       - 'tools/projection-loom/projection_loom/incremental_graph.py'
       - 'tools/projection-loom/projection_loom/editor_proposals.py'
+      - 'tools/projection-loom/blender/**'
+      - 'tools/projection-loom/scripts/real_blender_witness.py'
       - 'tools/projection-loom/projection_loom/contracts/**'
       - 'tools/projection-loom/projection_loom/cli.py'
       - 'tools/projection-loom/tests/test_hephaestus_*.py'
@@ -80,3 +82,29 @@ jobs:
           python -m pip check
       - name: Headless real OpenUSD and native STEP reimport
         run: python -m pytest -q tests/test_hephaestus_usd.py tests/test_hephaestus_editor.py
+
+  blender-real-editor:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - run: |
+          python -m pip install -r requirements-ci.txt
+          python -m pip install usd-core==26.11
+          python -m pip install --no-deps -e .
+          python -m pip check
+      - name: Install actual Blender with USD import support
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq blender
+          blender --version
+      - name: Import, capture authored transform, re-audit CAD/STEP, and reload preserving operator work
+        run: python scripts/real_blender_witness.py

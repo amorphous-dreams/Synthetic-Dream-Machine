@@ -95,3 +95,15 @@ At head `57c683d9`, the `usd-interchange` job **passed**: real OpenUSD stages an
 **Act:** `editor-apply` accepts supported editor-neutral proposals and writes `ground.json`, `declaration.json`, `scene/` and `reconciliation.json` only after native regeneration. Actual native cache reuse is **zero**; an invalidation *plan* cannot be counted as avoided CAD work. The supported operation is whole-assembly translation, not parent-relative structural repair.
 
 **Aftermath:** A real headless edit/reconcile/regenerate path is implemented and must pass CI. This does **not** close D-B or D-U: Blender and Unreal application-side writeback are not yet witnessed, and presentation retention across editor reload remains open.
+
+## OODA-HA D-B · actual Blender-side contract and headless witness (2026-10-28)
+
+**Observe:** `bpy.ops.wm.usd_import` is Blender Editor's actual USD import interface, but generated mesh topology and object names alone must not become causal identity.
+
+**Orient:** Bind imported objects to semantic identities using the native bundle's explicit prim-map receipt, then keep that custom semantic ID through object rename. Mesh local-vertex/index digests expose unsupported hand modeling. Matrix checks refuse scale, shear and rotation; only local whole-assembly translation is supported.
+
+**Decide:** Bridge real Blender scenes using `blender/bridge.py` with import/capture/reload verbs. An independent `scripts/real_blender_witness.py` runs Blender in background mode, creates a deliberate test move, submits the attributed proposal through the native reconciler, then reloads the regenerated bundle while retaining an operator-owned Blender note.
+
+**Act:** Add dedicated `blender-real-editor` CI job; install actual Blender on Ubuntu and execute the full path. No bpy mock, proxy renderer or fake editor report.
+
+**Aftermath:** Until that workflow passes at its exact SHA, Blender support remains REVIEW, not DONE. Even when it passes, the verified edit vocabulary is intentionally limited to rigid translation; arbitrary mesh edits, rotations, physically checked support reparenting and full interactive UI review remain unsupported. Unreal remains BLOCKED without an actual editor runner.
