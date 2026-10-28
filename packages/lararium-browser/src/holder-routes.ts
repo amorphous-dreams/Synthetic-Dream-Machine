@@ -33,6 +33,7 @@ export const HOLDER_ROUTES = {
   "event": "owner",
   "daemon:delegate-verb": "owner",
   "daemon:evict-request": "owner",
+  "daemon:face-settled": "owner",
   "daemon:residency-op": "owner",
   "daemon:wiki-alert": "owner",
   "cas:want": "owner",

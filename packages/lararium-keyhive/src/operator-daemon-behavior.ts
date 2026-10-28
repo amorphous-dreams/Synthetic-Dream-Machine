@@ -235,6 +235,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
 
   let kh: KeyhiveProvider | null = null;
   const providers = new Map<string, { provider: KeyhiveProvider; group: string }>();
+  const inFlight = new Map<KeyhiveProvider, Set<Promise<unknown>>>();
   let faceChanges = Promise.resolve();
   const lightJoinedFace = async (face: JoinedFaceAuth, ctx: IslandContext): Promise<void> => {
     const key = bareKey(face.atom.key);
@@ -246,7 +247,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       placeVerifyingKey: daemonAuth.placeVerifyingKey, personaGroupId: face.personaGroupId,
       faceAnchor: face.faceAnchor, personaKel: face.personaKel, deviceEdge: face.deviceEdge,
       signerDid: face.signerDid, ...(face.meshCabalDocIdHex ? { meshCabalDocIdHex: face.meshCabalDocIdHex } : {}),
-      registerBags: face.registerBags.filter(isVesselGround), ledger: daemonBagDocLedger(ctx.composite),
+      registerBags: face.registerBags.filter(isVesselGround), ledger: daemonBagDocLedger(ctx.composite, face.personaGroupId),
       ...(lease.kind === "epoch" ? { expectedEpoch: lease.n } : {}),
       dyad: await requireDyadReader(dyadReader(ctx, { ...daemonAuth, ...face }), "the Binding Gate")(face.deviceEdge.personaRootDid, face.deviceEdge.deviceVerifyingKey),
       ...(face.veilArchiveBytes ? { veilArchiveBytes: face.veilArchiveBytes } : {}),
@@ -356,7 +357,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       store.markSyncComplete();
       // Keyhive gates this slot by its lar: URI; register the working doc and grant the seated face its reach.
       if (faceDoor() && await kh!.knowsAgent(daemonAuth.personaGroupId!)) await faceDoor()!.mint(working, "admin");
-      else if (kh) await registerBagsDurably({ provider: kh, bags: [working], ledger: daemonBagDocLedger(ctx.composite) });
+      else if (kh) await registerBagsDurably({ provider: kh, bags: [working], ledger: daemonBagDocLedger(ctx.composite, daemonAuth.personaGroupId) });
       else floorBags.add(working);
       const temp = wikiSlotUri(slug, "temp");
       if (ctx.composite.hasWritableBag(temp)) {
@@ -970,7 +971,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           const key = bareKey(msg.atomKey);
           if (daemonAuth.atom && key === bareKey(daemonAuth.atom.key)) throw new Error(`mounted face ${key} cannot be dropped`);
           const face = providers.get(key);
-          if (face) { providers.delete(key); await face.provider.dispose(); }
+          if (face) {
+            providers.delete(key);
+            await Promise.allSettled([...(inFlight.get(face.provider) ?? [])]);
+            await face.provider.dispose();
+          }
         }
       });
       faceChanges = change.catch(() => {});
@@ -999,7 +1004,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           ...(daemonAuth.faceAnchor ? { faceAnchor: daemonAuth.faceAnchor } : {}),
           ...(daemonAuth.meshCabalDocIdHex      ? { meshCabalDocIdHex:      daemonAuth.meshCabalDocIdHex }      : {}),
           registerBags:          daemonAuth.atom ? daemonAuth.registerBags.filter(isVesselGround) : daemonAuth.registerBags,
-          ledger:                daemonBagDocLedger(ctx.composite),
+          ledger:                daemonBagDocLedger(ctx.composite, daemonAuth.personaGroupId),
           ...(daemonAuth.signerDid  ? { signerDid:  daemonAuth.signerDid }  : {}),
           ...(daemonAuth.personaKel ? { personaKel: daemonAuth.personaKel } : {}),
           ...(daemonAuth.deviceEdge ? { deviceEdge: daemonAuth.deviceEdge } : {}),
@@ -1237,14 +1242,20 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         }
       }
       providers.set(bareKey(daemonAuth.atom!.key), { provider: keyhive, group: daemonAuth.personaGroupId! });
-      for (const face of daemonAuth.joinedFaces ?? []) await lightJoinedFace(face, ctx);
+      for (const face of daemonAuth.joinedFaces ?? []) {
+        try { await lightJoinedFace(face, ctx); }
+        catch (error) { console.warn(`[daemon] face ${face.atom.key} refused: ${String(error)}`); }
+      }
       // The Kahu predicate stands in the verifier as well: a verb routed into a wiki island clears its cap HERE.
       const mountedKahuVerifier = withKahuReach(
         { verify: async (args) => {
           const key = bareKey(args.presenter);
           const face = providers.get(key);
           if (!face) return { ok: false, reason: `no provider for face ${key}` };
-          return faceOwnerVerifier({ face: face.provider, mount: { atomKey: key, placeKey: daemonAuth.placeVerifyingKey } }).verify(args);
+          const pending = faceOwnerVerifier({ face: face.provider, mount: { atomKey: key, placeKey: daemonAuth.placeVerifyingKey } }).verify(args);
+          const active = inFlight.get(face.provider) ?? new Set<Promise<unknown>>();
+          active.add(pending); inFlight.set(face.provider, active);
+          try { return await pending; } finally { active.delete(pending); if (!active.size) inFlight.delete(face.provider); }
         } },
         kahuReachOf(ctx),
       );

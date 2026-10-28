@@ -235,9 +235,16 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
     onSignal(type: string, raw: unknown, ctx: IslandContext): boolean {
       const { tw5, post } = ctx;
       if (type === "daemon:face-lit" || type === "daemon:face-drop") {
-        void opts.onHostMessage?.(raw as DaemonMsg_FaceLit | DaemonMsg_FaceDrop, ctx).catch((error) => {
-          console.warn(`[daemon] ${type} refused: ${error instanceof Error ? error.message : String(error)}`);
-        });
+        const msg = raw as DaemonMsg_FaceLit | DaemonMsg_FaceDrop;
+        const atomKey = msg.type === "daemon:face-lit" ? msg.entry.atom.key : msg.atomKey;
+        const op = msg.type === "daemon:face-lit" ? "lit" : "dropped";
+        void Promise.resolve().then(() => {
+          if (!opts.onHostMessage) throw new Error("face handler unavailable");
+          return opts.onHostMessage(msg, ctx);
+        }).then(
+          () => post({ type: "daemon:face-settled", atomKey, op, ok: true }),
+          (error) => post({ type: "daemon:face-settled", atomKey, op, ok: false, reason: error instanceof Error ? error.message : String(error) }),
+        );
         return true;
       }
       if (type === "daemon:place-verb") {

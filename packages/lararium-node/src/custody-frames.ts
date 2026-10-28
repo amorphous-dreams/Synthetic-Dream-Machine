@@ -196,6 +196,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     const freshly = u.reading === "opens";
     const openBefore = new Set(holder.unlockedFaces());
     const mountedBefore = mountedFaceOrdinal();
+    const mountedWasOpen = mountedBefore !== undefined && (await holder.faceStanding({ ordinal: mountedBefore }))?.unlocked === true;
     // A second unlock that names no face finds the key held and the composition standing: nothing to open, nothing to compose.
     if (!freshly && sel.face === undefined && sel.all !== true) return { op: "unlock", ...u, standing: deps.standing() };
     const standing = listFaceOrdinals();
@@ -232,7 +233,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     if (!freshly && holder.unlockedFaces().every((f) => openBefore.has(f)) && (mounted === undefined || mounted === mountedBefore)) {
       return { op: "unlock", ...u, standing: deps.standing() };
     }
-    if (!freshly && mountedBefore !== undefined && (mounted === undefined || mounted === mountedBefore) && deps.lightFace) {
+    if (!freshly && mountedWasOpen && mountedBefore !== undefined && (mounted === undefined || mounted === mountedBefore) && deps.lightFace) {
       for (const ordinal of openedOrdinals) {
         const face = await holder.faceStanding({ ordinal });
         if (ordinal !== mountedBefore && face?.unlocked && !openBefore.has(face.fcid)) await deps.lightFace(ordinal);
@@ -259,7 +260,13 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     if (named === null) return { op: "lock", locked: true, was: "locked", face: ordinal, standing: deps.standing() };
     const wasOpen = named.unlocked;
     const wasMounted = sovereignStands();
-    if (wasOpen && ordinal !== mountedFaceOrdinal() && deps.dropFace) await deps.dropFace(ordinal);
+    if (wasOpen && ordinal !== mountedFaceOrdinal() && deps.dropFace) {
+      try { await deps.dropFace(ordinal); }
+      catch (error) {
+        // Closing the key takes precedence; the provider still needs a drop, with no retry here.
+        deps.onLog(`face h${ordinal} provider drop refused: ${String(error)}`);
+      }
+    }
     await holder.lockFace(named.fcid);
     deps.onLog(`locked: face h${ordinal} key dropped`);
     if (wasOpen && wasMounted && !sovereignStands()) {

@@ -550,6 +550,10 @@ export interface DaemonMsg_VerbResult {
 }
 
 
+export interface DaemonMsg_FaceSettled { type: "daemon:face-settled"; atomKey: string; op: "lit" | "dropped"; ok: boolean; reason?: string; }
+export const mkDaemonFaceSettled = (atomKey: string, op: "lit" | "dropped", ok: boolean, reason?: string): DaemonMsg_FaceSettled => ({ type: "daemon:face-settled", atomKey, op, ok, ...(reason === undefined ? {} : { reason }) });
+export const isDaemonFaceSettled = (v: IslandToVesselMsg): v is DaemonMsg_FaceSettled => v.type === "daemon:face-settled";
+
 export interface DaemonMsg_FaceLit { type: "daemon:face-lit"; entry: JoinedFaceAuth; }
 export interface DaemonMsg_FaceDrop { type: "daemon:face-drop"; atomKey: string; }
 export const mkDaemonFaceLit = (entry: JoinedFaceAuth): DaemonMsg_FaceLit => ({ type: "daemon:face-lit", entry });
@@ -992,6 +996,7 @@ export type IslandToVesselMsg =
   | IslandMsg_GateClear
   | IslandMsg_GateRefused
   | WikiMsg_VerbResult
+  | DaemonMsg_FaceSettled
   | DaemonMsg_DelegateVerb
   | DaemonMsg_DeriveSkeletonResult
   | DaemonMsg_WorldlineCompareResult
@@ -1034,11 +1039,15 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (!_hasType(v)) return false;
   // The camera's answers read whole at the vessel's door too: a frame whose key paints from two payloads, a
   // refusal that names no reason, a host door the house never named, each vanishes before any handler.
+  if (v.type === "daemon:face-settled") {
+    const msg = v as Record<string, unknown>;
+    return typeof msg.atomKey === "string" && (msg.op === "lit" || msg.op === "dropped") && typeof msg.ok === "boolean" && (msg.reason === undefined || typeof msg.reason === "string");
+  }
   if (v.type === LAR_FRAME) return readLarFrame(v) !== null;
   if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
   if (v.type === LAR_SERVICE) return readLarService(v) !== null;
   if (isPortKind(v.type)) return readPortIslandMsg(v) !== null;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
     v.type as Exclude<IslandToVesselMsg["type"], LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }

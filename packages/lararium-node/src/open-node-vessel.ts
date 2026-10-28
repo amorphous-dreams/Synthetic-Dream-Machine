@@ -1557,7 +1557,7 @@ async function prepareNodeBootOn(
   const dropFace = async (ordinal: number) => {
     const pins = await loadIdentityAnchors(ordinal);
     if (!pins?.deviceEdge?.deviceVerifyingKey) throw new Error(`face h${ordinal} has no device edge`);
-    daemonVm.dropFace(pins.deviceEdge.deviceVerifyingKey);
+    await daemonVm.dropFace(pins.deviceEdge.deviceVerifyingKey);
   };
   let daemonVm!:   DaemonVmCore;           // set in openDaemon
   let eventBus!:  LarEventBusImpl;         // set in makePool
@@ -2306,7 +2306,7 @@ async function prepareNodeBootOn(
     lightFace = async (ordinal) => {
       if (!siblingPorts) throw new Error(`face h${ordinal} cannot light without a mounted face`);
       const [entry] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal] });
-      if (entry) daemonVm.lightFace(entry);
+      if (entry) await daemonVm.lightFace(entry);
     };
     const daemonAuth = {
       ...(joinedFaces.length ? { joinedFaces } : {}),
