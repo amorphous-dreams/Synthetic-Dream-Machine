@@ -133,4 +133,11 @@ jobs:
           blender -b -noaudio --python-expr "import bpy; assert hasattr(bpy.ops.wm, 'usd_import'), 'Official Blender build lacks USD import'"
 
       - name: Import, capture authored transform, re-audit CAD/STEP, and reload preserving operator work
-        run: python scripts/real_blender_witness.py
+        run: python scripts/real_blender_witness.py --out out/hephaestus-blender
+      - name: Retain actual Blender scene, edit proposal, regeneration and refusal evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hephaestus-blender-real-editor
+          path: tools/projection-loom/out/hephaestus-blender/
+          retention-days: 60

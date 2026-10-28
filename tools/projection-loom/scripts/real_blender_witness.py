@@ -6,6 +6,8 @@ Blender topology/rotation changes at the application boundary.
 """
 from __future__ import annotations
 
+import argparse
+from contextlib import ExitStack
 import json
 import os
 from pathlib import Path
@@ -18,13 +20,24 @@ from projection_loom.scene_usd import package_scene, validate_scene
 from projection_loom.editor_proposals import seed_editor_ground, apply_proposal
 
 
-def main():
+def main(argv=None):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out", type=Path,
+                        help="persistent evidence directory for CI and operator review")
+    args = parser.parse_args(argv)
     blender = shutil.which("blender")
     if not blender:
         raise SystemExit("Blender binary absent; editor witness BLOCKED")
     script = Path(__file__).resolve().parents[1] / "blender" / "bridge.py"
-    with tempfile.TemporaryDirectory(prefix="loom-blender-witness-") as temp:
-        work = Path(temp)
+    with ExitStack() as cleanup:
+        if args.out is None:
+            work = Path(cleanup.enter_context(
+                tempfile.TemporaryDirectory(prefix="loom-blender-witness-")))
+        else:
+            work = args.out.resolve()
+            if work.exists():
+                raise ValueError("Blender evidence output must be new and immutable")
+            work.mkdir(parents=True)
         document = {"schema": "projection-loom/scene-declaration",
                     "location": "held-out-blender-village",
                     "meters_per_unit": 1.0,
@@ -72,14 +85,17 @@ def main():
                             "--blend", app, "--out", target)
         if "OperatorNote" not in reload_log or not target.is_file():
             raise RuntimeError("Blender operator-owned scene work was not preserved")
-        print(json.dumps({"schema": "projection-loom/blender-native-editor-witness",
-                          "blender_executable": blender,
+        report = {"schema": "projection-loom/blender-native-editor-witness",
+                  "blender_executable": blender,
                           "editor": "Blender",
                           "source_bundle": manifest["sha256"],
                           "regenerated_bundle": outcome["new_bundle_sha256"],
                           "retained_operator_note": True,
                           "actor": "blender-automated-test",
-                          "real_editor": True, "exact_cad_reaudited": 1}, indent=2))
+                          "real_editor": True, "exact_cad_reaudited": 1}
+        (work / "blender-witness.json").write_text(
+            json.dumps(report, sort_keys=True, indent=2) + "\n", encoding="utf8")
+        print(json.dumps(report, indent=2))
 
 
 if __name__ == "__main__":

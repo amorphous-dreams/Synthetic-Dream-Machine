@@ -187,3 +187,7 @@ On head `616cafcc`, the new USD cache lane passed its positive native reuse and 
 ## Blender operator-object assertion correction
 
 At exact official Blender head `fe0a4b42`, the real USD import, transform capture and regenerated native USD import reached the preservation assertion; it compared `set[str]` with `set[bpy.types.Object]`, a guaranteed type mismatch. The assertion now compares `set[str]` to `bpy.data.objects.keys()`, with a concrete missing-name report. Exact-head editor CI must verify real operator-owned objects survive reimport.
+
+## Blender full native/editor artifacts retained (2026-10-28)
+
+The Blender test now accepts `--out out/hephaestus-blender`, keeping the imported `.blend` file, editor-originated `proposal.json`, semantic ground, source scene, regenerated scene/STEP/ground, and reloaded `.blend` along with `blender-witness.json`. The generalized workflow uploads this entire evidence package even when the job fails. Native operation without `--out` still uses a disposable scratch tree. Nothing is declared editor-witnessed until the actual Blender job passes at its exact commit.
