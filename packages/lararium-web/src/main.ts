@@ -404,6 +404,7 @@ async function bootVessel(): Promise<void> {
     }
     // The mirror stands once the first frame names the surface the page shows; the vessel result does not exist until the open returns.
     let mirrorTrigger: (() => void) | null = null;
+    let mirrorShownSync: (() => void) | null = null;
     const result = await openBrowserVessel({
       askCustody,
       hostId: "elyncia-browser",
@@ -414,7 +415,7 @@ async function bootVessel(): Promise<void> {
       ...(sharedHolderUrl ? { sharedHolderUrl } : {}),
       workerScriptUrl,
       onPhase: (p) => { paint(p); projectionSink.setBreath("lares", { phase: p }); },
-      onFrame: (frame) => { if (projectionSink.apply(frame) === "painted" && frame.keys.some((key) => key.key === "lar:surface")) { reportFirstPaint(); mirrorTrigger?.(); } },
+      onFrame: (frame) => { if (projectionSink.apply(frame) === "painted" && frame.keys.some((key) => key.key === "lar:surface")) { reportFirstPaint(); mirrorTrigger?.(); } mirrorShownSync?.(); },
       onControlResult: (_surface, result) => { projectionSink.applyResult(result); },
       onPortMessage: (binding, islandKey, msg) => pagePortDelivery.onPortMessage(binding, islandKey, msg),
       ...(relayUrl ? { relayUrl } : {}),
@@ -445,6 +446,13 @@ async function bootVessel(): Promise<void> {
     // The mirror: unprivileged, fed by this binding alone, booted from the inputs the vessel names for the shown surface.
     // A floor leaves the none projection beneath exactly as it stands; the host element carries the outcome in `data-lar-mirror`.
     let mirrorStanding = false;
+    // The person reads the mirror only while the surface it serves is the surface shown: a summon of another surface (the daemon) shows the floor, and the way back shows the mirror again.
+    mirrorShownSync = () => {
+      const host = $("mirror");
+      const word = host.getAttribute("data-lar-mirror");
+      const standing = word === "skinny" || word === "full";
+      host.setAttribute("data-lar-shown", standing && mirrorSurface !== null && projectionSink.surface() === mirrorSurface ? "mirror" : "floor");
+    };
     mirrorTrigger = () => {
       const shown = projectionSink.surface();
       if (mirrorStanding || shown === null) return;
@@ -465,7 +473,7 @@ async function bootVessel(): Promise<void> {
     // wiki, so this button + chord flips the projection gate to the daemon from any
     // active surface — a pure gate flip (both surfaces already mounted), no reboot.
     // Distinct from the daemon-scoped $:/temp/lares/surface toggle inside the widget.
-    const summon = (): void => { projectionSink.awaitSurface(DAEMON_SURFACE_ID); result.setActiveSurface(DAEMON_SURFACE_ID); };
+    const summon = (): void => { projectionSink.awaitSurface(DAEMON_SURFACE_ID); result.setActiveSurface(DAEMON_SURFACE_ID); mirrorShownSync?.(); };
     const summonBtn = document.getElementById("summon-daemon") as HTMLButtonElement | null;
     if (summonBtn) { summonBtn.disabled = false; summonBtn.addEventListener("click", summon); }
     window.addEventListener("keydown", (e) => {

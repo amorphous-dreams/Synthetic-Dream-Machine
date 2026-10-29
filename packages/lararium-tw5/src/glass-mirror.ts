@@ -20,7 +20,7 @@ const nameOf = (error: unknown): string => error instanceof Error ? error.name :
  * through that port alone. `deferPaint` leaves the camera unmounted until `paint()` runs, so a caller can
  * wait for the port's first snapshot before it paints.
  */
-export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddler" | "adopt" | "inheritTags"> & {
+export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddler" | "adopt" | "inheritTags" | "inheritDeferred"> & {
   inputs: { coreBytes: Uint8Array; coreCid: string; preloadedTiddlers: Record<string, unknown>[] };
   shadowRoot: ShadowRoot;
   deferPaint?: boolean;
@@ -55,8 +55,9 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
       reopen(next: { transport: GlassPortOptions["transport"]; portId: string; width: GlassPortOptions["width"] }) {
         const adopt = adaptor!.pendingWrites();
         const inheritTags = adaptor!.tagImages();
+        const inheritDeferred = adaptor!.deferredTitles();
         adaptor!.close();
-        adaptor = makeGlassPortAdaptor({ ...options, ...next, wiki: tw.wiki, Tiddler: tw.Tiddler, adopt, inheritTags });
+        adaptor = makeGlassPortAdaptor({ ...options, ...next, wiki: tw.wiki, Tiddler: tw.Tiddler, adopt, inheritTags, inheritDeferred });
         if (seams.landed) adaptor.onLanded(seams.landed);
         if (seams.refused) adaptor.onRefused(seams.refused);
         return adaptor;

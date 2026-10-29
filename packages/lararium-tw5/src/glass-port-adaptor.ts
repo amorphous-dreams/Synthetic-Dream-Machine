@@ -26,6 +26,8 @@ export interface GlassPortOptions {
   adopt?: ReadonlyArray<PendingWrite>;
   /** Landed images a closed predecessor tagged whose wiki change has not fired yet; the successor must not read them as local edits. */
   inheritTags?: ReadonlyMap<string, readonly string[]>;
+  /** Titles whose later edits waited behind a write the predecessor sent; the successor sends them once that write answers. */
+  inheritDeferred?: readonly string[];
 }
 export interface PendingWrite { txId: string; title: string; record: PortWireRecord }
 
@@ -58,7 +60,7 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
   const snapshots = new Map<string, { n: number; chunks: Map<number, PortWireRecord[]> }>();
   const resetTitles = new Set<string>();
   const repost = new Set<string>();
-  const deferred = new Set<string>();
+  const deferred = new Set<string>(opts.inheritDeferred ?? []);
   const landedListeners = new Set<(change: Change) => void>();
   const peerListeners = new Set<(change: Change) => void>();
   const presenceListeners = new Set<(presence: Extract<PortIslandToVesselMsg, { type: "port:presence" }>) => void>();
@@ -180,6 +182,11 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
           }
           continue;
         }
+        if (deferred.has(entry.title)) {
+          // The person's later typing waits behind a write in flight: the peer's record updates what the port holds, never the tiddler on screen, and the follow-up write carries the person's text.
+          landed.set(entry.title, entry.deleted ? null : { ...entry, fields: { ...(landed.get(entry.title)?.fields ?? {}), ...entry.fields } });
+          continue;
+        }
         land(entry, true);
         // A peer record arrives without the body fields a skinny port omits; an opened body loads again so the editor never loses its text.
         if (entry.deleted) opened.delete(entry.title);
@@ -263,6 +270,7 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
   return {
     /** Ask the island to widen this open port in place; its fresh snapshot lands through the same listener. */
     widen(next: GlassPortOptions["width"]): unknown { if (closed) return undefined; opts.width = next; widening = true; return transport.send({ type: "port:widen", portId, width: next }); },
+    deferredTitles(): string[] { return [...deferred]; },
     tagImages(): ReadonlyMap<string, readonly string[]> { return new Map(tagged); },
     pendingWrites(): PendingWrite[] { return [...pending].map(([txId, tx]) => ({ txId, title: tx.title, record: tx.record })); },
     resendPending() {
