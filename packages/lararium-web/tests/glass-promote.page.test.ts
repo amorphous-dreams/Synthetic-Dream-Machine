@@ -63,7 +63,7 @@ test("the mirror names the wait for the port's greeting, and a snapshot ends it"
     expect(states).toEqual([{ kind: "waiting", for: "greeting" }]);
     release();
     const result = await standing as any;
-    expect(states).toEqual([{ kind: "waiting", for: "greeting" }]);   // nothing else announces a wait
+    expect(states.filter((state: any) => state.for === "greeting")).toEqual([{ kind: "waiting", for: "greeting" }]);   // one greeting wait, named once
     result.unmount();
   } finally { r.host.remove(); }
 });
@@ -178,6 +178,7 @@ test("a widen the island leaves unanswered names the promotion wait instead of s
     expect(result.width).toBe("skinny");
     result.unmount();
   } finally { quiet.host.remove(); }
+  forgetEvidence();   // the quiet boot left its began-record, as a promotion that never finished does
   const loud = await rig(); const heard: any[] = [];
   try {
     const result = await standMirror({ ...loud.options, onState: state => heard.push(state) }, loud.seams) as any;

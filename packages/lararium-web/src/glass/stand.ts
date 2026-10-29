@@ -16,7 +16,7 @@ export type MirrorEvent =
   | { type: "gone"; why: string }
   | { type: "floor"; why: string };
 /** A state a caller can show while the mirror lights; no timer ends or raises one. */
-export type MirrorState = { kind: "waiting"; for: "greeting" } | { kind: "evidence-unavailable"; why: string }
+export type MirrorState = { kind: "waiting"; for: "greeting" | "promotion" } | { kind: "evidence-unavailable"; why: string }
   | { kind: "write-refused"; title: string; reason: string };
 /** How the boot's promotion ended: full landed, skinny held or stepped to, or the none floor. */
 export type MirrorSettled = { width: "full" | "skinny" | "none"; why?: string };
@@ -182,7 +182,7 @@ export async function standMirror(options: {
       // The widen never reached the island: the tab stays at skinny and says why; nothing began, so no record stands.
       promoting = false; remember(store => store.removeItem(evidenceKey));
       settle({ width: "skinny", why: sent.reason ?? "widen-refused" });
-    }
+    } else options.onState?.({ kind: "waiting", for: "promotion" });   // the island answers a widen with a snapshot or with nothing; the wait has a name either way
   }
   return {
     kind: "mirror" as const,

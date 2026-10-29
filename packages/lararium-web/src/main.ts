@@ -30,6 +30,7 @@ import { LAR_WHOLE_VALUE_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, readHear
 import { createProjectionSink } from "./projection-sink.js";
 import { pagePortDelivery, standPagePort } from "./page-port.js";
 import { standPageMirror } from "./page-mirror.js";
+import { serveFollowers } from "./glass/tab-bus.js";
 import { defaultReadFace, floorAnchorOf, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
 // The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
@@ -405,6 +406,7 @@ async function bootVessel(): Promise<void> {
     // The mirror stands once the first frame names the surface the page shows; the vessel result does not exist until the open returns.
     let mirrorTrigger: (() => void) | null = null;
     let mirrorShownSync: (() => void) | null = null;
+    let followerServe: ReturnType<typeof serveFollowers> | null = null;
     const result = await openBrowserVessel({
       askCustody,
       hostId: "elyncia-browser",
@@ -417,7 +419,7 @@ async function bootVessel(): Promise<void> {
       onPhase: (p) => { paint(p); projectionSink.setBreath("lares", { phase: p }); },
       onFrame: (frame) => { if (projectionSink.apply(frame) === "painted" && frame.keys.some((key) => key.key === "lar:surface")) { reportFirstPaint(); mirrorTrigger?.(); } mirrorShownSync?.(); },
       onControlResult: (_surface, result) => { projectionSink.applyResult(result); },
-      onPortMessage: (binding, islandKey, msg) => pagePortDelivery.onPortMessage(binding, islandKey, msg),
+      onPortMessage: (binding, islandKey, msg) => { if (binding.startsWith("tab:")) followerServe?.onPortMessage(binding, islandKey, msg); else pagePortDelivery.onPortMessage(binding, islandKey, msg); },
       ...(relayUrl ? { relayUrl } : {}),
       ...(floor ? { floorCard: floor.text } : {}),
       ...(floorAnchor ? { floorAnchor } : {}),
@@ -469,6 +471,13 @@ async function bootVessel(): Promise<void> {
         .catch((err: unknown) => console.warn("[mirror] stand refused:", err));
     };
     mirrorTrigger();
+    // THE TOPOLOGY'S LEADER HALF: the tab that holds the vessel serves the other tabs of this origin over a BroadcastChannel. It binds
+    // the surface itself (the one the mirror stands on) and ignores a follower frame's own surface value.
+    if (typeof BroadcastChannel !== "undefined") {
+      const bus = new BroadcastChannel(`lararium-mirror:${location.origin}`);
+      followerServe = serveFollowers(bus, result.ports, () => mirrorSurface);
+      window.addEventListener("pagehide", () => { followerServe?.close(); bus.close(); });
+    }
     // The UNIVERSAL summon (the reachability affordance): host chrome overlays EVERY
     // wiki, so this button + chord flips the projection gate to the daemon from any
     // active surface — a pure gate flip (both surfaces already mounted), no reboot.

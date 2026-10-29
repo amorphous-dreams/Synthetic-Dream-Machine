@@ -12,7 +12,7 @@ describe("mirror door source census", () => {
   test("R2: no URL-selector module remains", () => {
     expect(existsSync(source("../../lararium-web/src/glass/flag.ts"))).toBe(false);
   });
-  // R5: no clock decides anything in the mirror's own code. The pattern proves itself on a planted line first.
+  // R5: no clock decides anything in the mirror's own code. `requestAnimationFrame` is a frame signal (the browser says a frame ran), not a clock: no duration or deadline rides on it. The pattern proves itself on a planted line first.
   const clock = /\b(Date\.now|performance\.now|setTimeout|setInterval|requestIdleCallback)\b|new Date\(/;
   const glassSources = ["../src/glass-mirror.ts", "../src/glass-port-adaptor.ts", "../src/glass-camera.ts", "../src/glass-token.ts",
     ...["stand", "boot", "cas", "cid", "leader", "tab-bus"].map(name => `../../lararium-web/src/glass/${name}.ts`)];

@@ -63,21 +63,31 @@ export function makeFollowerDoors(bus: TabBus, tabId: string) {
   } satisfies PortTransportDoors & Record<string, unknown>;
 }
 
-/** The leader owns the real port bindings and returns each reply to its tab. */
-export function serveFollowers(bus: TabBus, leaderDoors: PortTransportDoors) {
+/**
+ * The leader owns the real port bindings and returns each reply to its tab. The leader alone names the surface a follower's port
+ * serves (`surface()`): a frame's own surface value is ignored, so a follower can open a port on no other wiki and never on the
+ * daemon. A tab that never said hello opens nothing, and with no surface to bind nothing places.
+ */
+export function serveFollowers(bus: TabBus, leaderDoors: PortTransportDoors, surface: () => string | null) {
   const bindings = new Map<string, { tab: string; binding: string }>();
+  const greeted = new Set<string>();
   const onMessage = (event: MessageEvent) => {
     const item = frame(event.data);
     if (!item) return;
     if (item.kind === "hello" && typeof item.nonce === "string") {
+      greeted.add(item.tab);
       bus.postMessage({ kind: "ready", tab: item.tab, nonce: item.nonce });
-    } else if (item.kind === "port-up" && typeof item.binding === "string" && typeof item.surface === "string") {
+    } else if (item.kind === "port-up" && typeof item.binding === "string") {
+      if (!greeted.has(item.tab)) return;
       const name = `tab:${item.tab}:${item.binding}`;
-      bindings.set(name, { tab: item.tab, binding: item.binding });
       if (item.msg && typeof item.msg === "object" && (item.msg as { type?: string }).type === "port:close") {
-        leaderDoors.close(name);
-        bindings.delete(name);
-      } else leaderDoors.place(item.surface, name, item.msg);
+        if (bindings.has(name)) { leaderDoors.close(name); bindings.delete(name); }
+        return;
+      }
+      const bound = surface();
+      if (bound === null) return;
+      bindings.set(name, { tab: item.tab, binding: item.binding });
+      leaderDoors.place(bound, name, item.msg);
     }
   };
   bus.addEventListener("message", onMessage);
