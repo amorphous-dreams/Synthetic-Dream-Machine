@@ -117,6 +117,16 @@ def main(argv=None):
     p.add_argument('--move',required=True)
     p.add_argument('--delta',type=float,nargs=3,required=True)
     p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('registered-replicates',
+                          help='Run repeated paired registered versus source-withheld native campaigns')
+    p.add_argument('--image-group',type=Path,required=True)
+    p.add_argument('--intent',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--seeds',type=int,nargs='+',default=[41,73,101])
+    p.add_argument('--epochs',type=int,default=2)
+    p.add_argument('--offspring',type=int,default=2)
+    p.add_argument('--exact-budget',type=int,default=2)
+    p.add_argument('--finalists',type=int,default=1)
     p=commands.add_parser('wide-epoch',help='Resumable staged constructive epochs')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
@@ -469,6 +479,21 @@ def main(argv=None):
         declaration=json.loads(args.declaration.read_text(encoding='utf8'))
         result=run_holistic(args.image_group,declaration,args.lower,args.upper,
                             args.move,args.delta,args.out)
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command=='registered-replicates':
+        from .matched_registered_trial import matched_registered_replicates
+        from .seed_adapters import image_group
+        from .intent_seed import IntentContract
+        raw=json.loads(args.intent.read_text(encoding='utf8'))
+        raw['objectives']=tuple(raw['objectives'])
+        raw['invariants']=tuple(raw.get('invariants',()))
+        raw['budgets']=tuple(tuple(row) for row in raw.get('budgets',()))
+        intent=IntentContract(**raw)
+        result=matched_registered_replicates(
+            image_group(args.image_group),intent,args.out,
+            seeds=tuple(args.seeds),epochs=args.epochs,offspring=args.offspring,
+            exact_budget=args.exact_budget,finalists=args.finalists)
         print(json.dumps(result,indent=2))
         return result
     if args.command=='fracture-pattern':

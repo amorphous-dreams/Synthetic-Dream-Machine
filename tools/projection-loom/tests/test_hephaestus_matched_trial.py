@@ -53,3 +53,27 @@ def test_unregistered_or_modified_camera_cannot_enter_matched_evolution(tmp_path
     cal.write_text(json.dumps(record))
     with pytest.raises(ValueError, match="calibration changed"):
         matched_registered_ablation(adapters, intent, tmp_path / "altered")
+
+
+
+def test_repeated_blind_source_audit_scores_both_selected_arms_without_leak(tmp_path):
+    from projection_loom.matched_registered_trial import matched_registered_replicates
+    adapters, intent = _inputs(tmp_path)
+    site = tmp_path / "replicates"
+    report = matched_registered_replicates(
+        adapters, intent, site, seeds=(73, 91), epochs=2, offspring=2,
+        exact_budget=2, finalists=1)
+    assert report["replicate_count"] == 2
+    assert report["operator_winner"] is None
+    assert report["observed_min_delta"] <= report["descriptive_mean_delta"] <= report["observed_max_delta"]
+    for row in report["trials"]:
+        assert row["native_auditions"] == {"withheld": 4, "measured": 4}
+        assert len(row["per_arm_post_selection"]["withheld"][0]["registered_source_views"]) == 2
+        assert len(row["per_arm_post_selection"]["measured"][0]["registered_source_views"]) == 2
+        withheld = site / f"seed-{row['seed']}" / "withheld"
+        for winner in json.loads((withheld / "summary.json").read_text())["finalists"]:
+            assert json.loads((withheld / "finalists" / (winner["id"] + ".json")).read_text())["full_source"] is None
+    assert matched_registered_replicates(
+        adapters, intent, site, seeds=(73, 91), epochs=2, offspring=2,
+        exact_budget=2, finalists=1) == report
+    assert not report["automatic_promotion"]

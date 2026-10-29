@@ -9,7 +9,8 @@ significance from one trial.
 from __future__ import annotations
 import json
 from pathlib import Path
-from .generalized_campaign import run_cohort, save_once
+from .generalized_campaign import run_cohort, save_once, measured_view_scores
+from .developmental import GrowthProgram, compile_growth
 from .intent_seed import IntentContract, SeedBundle
 from .seed_adapters import registered_views
 from .provenance_encoding import canonical_json_sha256
@@ -96,6 +97,38 @@ def matched_registered_ablation(adapters, intent, out, *, epochs=2,
         if any(v is None or len(v["registered_source_views"]) != len(registered)
                for v in measured_source):
             raise ValueError("Measured arm lacks original-resolution independent source witnesses")
+        # Evaluate *both* selected finalist sets against the exact same source
+        # cameras only after selection; control never saw these fitness values.
+        blind = {}
+        for arm, root, summary in (
+                ("withheld", control_root, control),
+                ("measured", measured_root, measured)):
+            ancestry = {}
+            for epoch in range(epochs):
+                for candidate in _read_epoch(root, epoch)["candidates"]:
+                    ancestry[candidate["id"]] = candidate
+            audits = []
+            for winner in summary["finalists"]:
+                candidate = ancestry[winner["id"]]
+                program = GrowthProgram.from_dict({"nodes": candidate["program"]})
+                if program.identity != candidate["program_sha256"]:
+                    raise ValueError("Post-selection candidate genome identity changed")
+                build = compile_growth(program)
+                if not build.audit()["valid"]:
+                    raise ValueError("Post-selection native candidate was not valid")
+                views = measured_view_scores(
+                    build.assembly.tessellate(union=True),
+                    registered, full_resolution=True)
+                audits.append({"candidate_id": winner["id"],
+                               "program_sha256": candidate["program_sha256"],
+                               "registered_source_views": views,
+                               "mean_source_fitness": sum(
+                                   v["source_fit"]["fitness"] for v in views)/len(views)})
+            if not audits:
+                raise ValueError("Post-selection audit needs one native-valid finalist per arm")
+            blind[arm] = audits
+        measured_mean = sum(r["mean_source_fitness"] for r in blind["measured"])/len(blind["measured"])
+        withheld_mean = sum(r["mean_source_fitness"] for r in blind["withheld"])/len(blind["withheld"])
         result = {"schema": SCHEMA, "pre_registration_sha256": canonical_json_sha256(declared),
                   "arms": {"withheld": control["run_id"], "measured": measured["run_id"]},
                   "same_first_epoch_native_candidates": True,
@@ -105,6 +138,8 @@ def matched_registered_ablation(adapters, intent, out, *, epochs=2,
                   "measured_full_source_fitness": [
                       [view["source_fit"]["fitness"] for view in final["registered_source_views"]]
                       for final in measured_source],
+                  "post_selection_blind_source_audit": blind,
+                  "post_selection_mean_source_delta": measured_mean-withheld_mean,
                   "inference_scope": "descriptive controlled contrast; no significance or external survey certification",
                   "automatic_promotion": False, "operator_winner": None}
         save_once(site / "comparison.json", result)
@@ -113,3 +148,63 @@ def matched_registered_ablation(adapters, intent, out, *, epochs=2,
             "Matched experiment failed; no completed comparison claim\n", encoding="utf8")
         raise
     return result
+
+
+
+def matched_registered_replicates(adapters, intent, out, *, seeds=(41,73,101),
+                                  epochs=2, offspring=2, exact_budget=2,
+                                  finalists=1):
+    """Repeated matched trials; per-seed paired outcomes, no p-value by fiat."""
+    if (not isinstance(seeds, (list, tuple)) or not 2 <= len(seeds) <= 8
+            or any(type(seed) is not int or seed < 0 or seed > 2**31
+                   for seed in seeds) or len(set(seeds)) != len(seeds)):
+        raise ValueError("Two to eight unique bounded integer random seeds required")
+    adapters = tuple(adapters)
+    registered = registered_views(adapters)
+    if registered is None or len(registered) < 2:
+        raise ValueError("Repeated trials require independent registered source views")
+    site = Path(out)
+    if site.exists():
+        if (site / "FAILED").exists():
+            raise ValueError("Failed repeated experiment cannot become a success")
+        if not (site / "pre_registration.json").exists():
+            raise ValueError("Existing repeated experiment is not a verified output")
+    site.mkdir(parents=True, exist_ok=True)
+    prereg = {"schema": "projection-loom/registered-repeated-trial",
+              "source_ids": [a.seed.identity for a in adapters],
+              "registered_camera_sha256s": [r["registration"]["sha256"] for r in registered],
+              "intent": intent.identity, "seeds": list(seeds),
+              "epochs": epochs, "offspring": offspring,
+              "exact_budget": exact_budget, "finalists": finalists,
+              "evaluation": "independent full-pixel post-selection audit of both arms",
+              "automatic_promotion": False}
+    save_once(site / "pre_registration.json", prereg)
+    try:
+        rows = []
+        for seed in seeds:
+            report = matched_registered_ablation(
+                adapters, intent, site / f"seed-{seed}",
+                epochs=epochs, offspring=offspring,
+                exact_budget=exact_budget, finalists=finalists, seed=seed)
+            rows.append({"seed": seed,
+                         "comparison_sha256": canonical_json_sha256(report),
+                         "per_arm_post_selection": report["post_selection_blind_source_audit"],
+                         "source_fitness_delta": report["post_selection_mean_source_delta"],
+                         "native_auditions": {
+                             arm: sum(epoch[arm]["attempted"] for epoch in report["epochs"])
+                             for arm in ("withheld","measured")}})
+        deltas = [r["source_fitness_delta"] for r in rows]
+        result = {"schema": "projection-loom/registered-repeated-trial",
+                  "pre_registration_sha256": canonical_json_sha256(prereg),
+                  "trials": rows, "replicate_count": len(rows),
+                  "descriptive_mean_delta": sum(deltas)/len(deltas),
+                  "observed_min_delta": min(deltas),
+                  "observed_max_delta": max(deltas),
+                  "inference_scope": "descriptive across fixed held-out seeds; no statistical significance or external survey certificate",
+                  "operator_winner": None, "automatic_promotion": False}
+        save_once(site / "summary.json", result)
+        return result
+    except Exception:
+        (site / "FAILED").write_text(
+            "Incomplete repeated registered trial; no success receipt\n", encoding="utf8")
+        raise
