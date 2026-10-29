@@ -142,6 +142,8 @@ The house names four standings a device may hold: a ''full vessel'' (islands, CA
 | ''Mudlet 5.0'' | a ''probe'' and a ''leaf behind a node'' — never a vessel | transport: telnet only ("Mudlet does not yet support Websockets", wiki 2020-03-27, unchanged in the 5.0 notes); HTTPS verbs (`getHTTP` … `customHTTP`, `downloadFile`) outbound only | a Lua object-model guest (`wiki-layer-ontology.mem:249`) that reads a projection over HTTP from a node's bulb read-face (`tiddler-carriage.mem:80`) and writes through a node-held verb door; 5.0's keychain-held reconnect token rhymes with a device key it never mints itself |
 | ''Unreal 5.6–5.8 / UE6'' | a ''guest island over a host bridge''; with Pixel Streaming 2, a ''camera'' whose vessel sits on the streaming server | Pixel Streaming 2's internal WebRTC layer (UE 5.5+) — the browser sees a video + a data channel, the vessel runs server-side | the ECS mapping "slot-for-slot" (`vessel-caps.mem:62`); a Verse/SceneGraph guest at UE6 (Early Access "end of 2027"); until then the C++/Blueprint 5.x host with WebSocket/HTTP plugins the scout did not read (inference, unverified) |
 
+''Vessel setups, and where the mirror meets them.'' A browser stands the person's mirror (an unprivileged camera fed by one port binding) in front of ''some'' vessel; which vessel is a setup, one of many, and never a rule about the browser. (1) A browser on a node's own box takes a ''port onto the node's vessel'': the node's islands serve the port, the browser holds no island of its own. (2) A ''user'' class cap-stack gets no node infrastructure at all: it stands an ''anon-device-browser-vessel'' (the island in the tab) or a ''fleet of equivalent vessels'' (the same face worn on several devices, each holding the island its own device can carry). In every setup the mirror reads its width from what its own boot measured and its authority from the grant the vessel posts for the port; neither moves with the setup. The shipped setup for the width measures is (2): the island in the tab.
+
 <<~/ahu>>
 
 <<~ ahu #/pattern-integrity-rhymes>>
@@ -240,6 +242,6 @@ Owed measurements: owner-kill, one-tab lock fallback, long background, PRF deriv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;S0jgZ2Y3CL_sKYDpUXo6aSe6iegzDukNElMrBkAgZA8
+<<^ code="&#x0003;">>ni:///sha-256;rbtwEsJdA0kIgKY0MhQoTNG6HJVaSKt0osx9hzgvOFc
 
 <<^ code="&#x0004;" -> to="?">>

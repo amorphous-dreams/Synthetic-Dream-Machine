@@ -38,6 +38,18 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 
 <<~/ahu>>
 
+<<~ ahu #/the-visible-mirror>>
+
+!! The visible mirror, the person's choice and the vessel setups (operator, 2026-10-28)
+
+* ''The mirror is the surface.'' The person reads and edits through the mirror wherever it stands (`#mirror`, `data-lar-shown="mirror"`); the worker-rendered view stays beneath as the named floor, shown again only when the mirror tears down. The vessel lends its own wiki page the right to edit the default bag as the worn face (`pagePortGrant`; the daemon surface keeps a read-only port). A port write answers once its documents rest, as a save act's result did; the page holds its leave while a mirror write waits; a title keeps one write in flight with the latest text behind it.
+* ''ONE mirror step, then teardown.'' Full takes one step to skinny on a named failure, a caught capacity error; a failure past it tears the mirror down to the floor. `port:gone` closes it. A test pins the count.
+* ''Two crash records, both per tab and per wiki, both evidence and never a flag.'' `mirror:began:<wiki>` stands from the widen to full's first painted frame; `mirror:full-standing:<wiki>` stands from that frame to `pagehide` (a back-forward restore writes it again). A boot that finds either holds skinny and names why (`full-promotion-unfinished`, `full-ended-without-pagehide`). A store that throws names `evidence-unavailable`.
+* ''One pattern for boot, width and caps.'' The boot measures capacity and sets the width. The vessel's grant sets authority. A face intent sets experience. No one of the three picks another's value. A person's lighter choice (reduced chrome, a calmer story) is an ''experience'' carried as a face intent, worded for the person and never `skinny`; however a person customizes TW5, the width stays what the boot measured. No setting, URL value or stored value selects a width, and a census test holds the glass sources to the two evidence keys.
+* ''Vessel setups.'' A browser on a node's own box takes a port onto the node's vessel, one setup of many; a ''user'' class cap-stack gets no node infrastructure and stands an anon-device-browser-vessel or a fleet of equivalent vessels (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">> #/device-seats). The mirror reads the same in each.
+
+<<~/ahu>>
+
 <<~ ahu #/owed>>
 
 !! What stands owed
@@ -69,6 +81,6 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jAFjyLv3IEvMsxvb5Vq8eYWwvjix1XdDha0D1lv7A7g
+<<^ code="&#x0003;">>ni:///sha-256;XRJLZ_xMLTb1ddxLpIzsYVRTMvosS7XHhS970eBMKEE
 
 <<^ code="&#x0004;" -> to="?">>
