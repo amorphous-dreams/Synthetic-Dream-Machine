@@ -128,7 +128,7 @@ Operator, 2026-10-28: the old shapes and shape gates are design-time crud that t
 ** ''`/cas` verifies the body before the index names it, ruled 2026-10-27'' (the road's `G20`, #/stride-2-floor). The body lands and verifies before the public index names it. `bulb-read-face.ts` serves `/cas` after `publicCas.isPublic(cid)`. First read: every writer that lands a body and names it in the public index (`publicCas`, `content-handle.ts`, `bodyIndexBagUri`, which has no production producer today), then where the ordering is enforced and a red test that names a CID before its body verified.
 * ''Also left.'' `G8` pack-PIN recursion and the `assertBodyIndexTier` caller (it arrives with the cad body-index writer); the K15-held `W20` names; the parallel-draft alert (hands room); the `kahu.mem` and `lamplighters.mem` sweep on `G19` (needs the operator's cadence-share intent); the `harness-image-law` and flush-bench instruments stay as built.
 * ''Held out of bundle five, each for its owner.''
-** The 54 e2e vectors that open with `if (lar.mode !== "staged") return;` read green in `live` mode having asserted nothing. A `skipIf` swap would read them SKIPPED; it collides with the hands lane and the I2 e2e additions, so the controller surfaces it to the operator.
+** The staged-only e2e vectors read SKIPPED outside staged mode, never green (PR #113): 43 test bodies under `describe.skipIf(!stagedTarget)`, and `tools/e2e-harness-law.test.mjs` reads red on the vacuous guard. Its scanner's gaps stay owed: a guard after a first statement, a multi-line `if`, `test.each` forms.
 ** The `Legacy*` refusals that the hands spine's files call (#/bundle-six, the fenced remainder) stand until PR #108 lands.
 ** `ingest-tolerant.ts` stays: it skips a torn cap event, a live fault, and names no retired shape.
 ** The one-shot corpus tools (`quote-named-params.mjs`, `quote-positionals.mjs`, `ranks-to-scale.mjs`, `photocopies-to-has.mjs`, `render-verify.mjs`, `bounded-reach-consistency.mjs`, `mesh-found-lararium.sh`) have no workflow caller, and none reads confirmed dead: `ranks-to-scale.mjs` still meets one `<<~ranks` carrier (`agent-worldline.mem`), `carrier-files.test.ts` names `photocopies-to-has.mjs`, and the quote, render and bounded-reach tools serve as repair or design instruments. Each burns after a reader confirms its target gone.
@@ -138,6 +138,6 @@ Operator, 2026-10-28: the old shapes and shape gates are design-time crud that t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Z7WrCdj0q9CZNaGKYM0UdkvbU5LK2ZZYqzicCdDcpeY
+<<^ code="&#x0003;">>ni:///sha-256;dCexSwzzDhKXaZiDa1j_ynFguKb_oJfFcQNy9C5j9A0
 
 <<^ code="&#x0004;" -> to="?">>
