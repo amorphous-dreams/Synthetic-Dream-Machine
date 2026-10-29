@@ -198,4 +198,22 @@ describe("the relay service keeps its stands owned", () => {
       expect(r.server.paths()).toEqual([]);
     }
   });
+
+  test("RED: a locked face's route closes on the refresh the lock sets off and a dial refuses; CONTROL: the other face's relay keeps admitting", async () => {
+    seat = await seatScratchCustody("relay-lock");
+    const r = await rig();
+    await intentRelayKeyOrMint(); await enableIntentRelayFace(group); await enableIntentRelayFace(second);
+    let locked = false;
+    const admit = async () => ({ status: "admitted" as const, receipt: { signature: await signAsIntentRelay(image) } });
+    const service = await standIntentRelay({ gateServer: r.server, rootDoor: custodyGateDoor(), deadlines: r.deadlines, faces: async (g) => g === second && locked ? null : { group: g, admit }, log: (m) => r.log.push(m) });
+    const pinOne = service.pinOf(group)!, pinTwo = service.pinOf(second)!;
+    const dial = (pin: typeof pinOne) => dialIntentRelay({ pin, entry, socket: wsDialSocket(`${r.base}${pin.route}`, (url, protocols) => new WebSocket(url, protocols, { perMessageDeflate: false }) as unknown as WsLike) });
+    expect((await dial(pinTwo)).status).toBe("admitted");
+    locked = true;
+    await service.refresh();
+    expect(service.standing().map((s) => s.group)).toEqual([group]);
+    expect(await dial(pinTwo).then((x) => x.status, () => "refused")).not.toBe("admitted");
+    expect((await dial(pinOne)).status).toBe("admitted");
+    service.close();
+  });
 });

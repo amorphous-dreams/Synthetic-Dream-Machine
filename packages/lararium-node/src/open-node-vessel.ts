@@ -1570,6 +1570,8 @@ async function prepareNodeBootOn(
     const pins = await loadIdentityAnchors(ordinal);
     if (!pins?.deviceEdge?.deviceVerifyingKey) throw new Error(`face h${ordinal} has no device edge`);
     await daemonVm.dropFace(pins.deviceEdge.deviceVerifyingKey);
+    // The lock closes the face's relay route at once; the next gate sweep would leave it standing.
+    await intentRelay?.refresh();
   };
   let daemonVm!:   DaemonVmCore;           // set in openDaemon
   let eventBus!:  LarEventBusImpl;         // set in makePool
@@ -2315,6 +2317,7 @@ async function prepareNodeBootOn(
       if (!siblingPorts) throw new Error(`face h${ordinal} cannot light without a mounted face`);
       const [entry] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal] });
       if (entry) await daemonVm.lightFace(entry);
+      await intentRelay?.refresh();
     };
     const daemonAuth = {
       ...(joinedFaces.length ? { joinedFaces } : {}),

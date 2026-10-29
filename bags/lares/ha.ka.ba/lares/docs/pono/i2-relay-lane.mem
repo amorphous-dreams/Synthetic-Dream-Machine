@@ -47,7 +47,7 @@ The carrier (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-intent-plane#/the-f
 # ''Ring, relay custody, door ~ BUILT.'' The key store, the ring, the gate and `standIntentRelay`. Reds: a face never enabled stands no path, an oversized sealed frame is refused through a live `ws` dial, the at-rest row decodes to a sealed format with no plaintext key (`intent-relay-ring.test.ts`, `intent-relay-key-store.test.ts`, `intent-relay-door.test.ts`, `intent-relay.test.ts`).
 # ''Admission and the independent readers ~ BUILT.'' `decideAdmission`, `admitAgentEntry`, `makeFaceIntentReader`, `loadIntentFace` and the real `resolveIntentRelayFace`, which flushes the repo before it returns a receipt. Reds: a foreign face, a signing gap, a flush failure after the append, a key rotation between key read and signing, an uppercase outer signer, a roster or KEL change learned while signing, a merged own receipt beside a revoke (`intent-admission.test.ts`, `face-intent-admission.test.ts`, `intent-relay-admission.test.ts`, `intent-agent-verify.test.ts`).
 # ''The storm ~ BUILT.'' `intent-relay-storm.test.ts` runs twelve cases over real planes, the real custody key and live `ws` dials: a revoke before and after admission, a sleeper that merges a revoke, a failed append, two racing relays, a hostile receipt for an absent, revoked or out-of-prefix entry, an unknown frontier that advances, one agent key on two faces, canonical-JSON and Unicode substitution, and a restart that stands nothing without its enablement row. Each case pairs a CONTROL, and the throwing clock judges only the immediate caller of `Date.now`.
-# ''The opener wires the relay ~ BUILT.'' `standSyncGates` stands `standIntentRelay` beside the sync gates, refreshes it at each gate sweep and closes it on teardown. Red: the opener census fails on the commit before the wiring. The durable-reopen witness opens a real `Repo` over `DurableNodeFSStorageAdapter`, admits through `resolveIntentRelayFace`, drops the repo, reopens it and finds one entry and the same receipt, and a retry returns `duplicate`; a flush that throws answers `fault` and its receipt never returns to the caller (`intent-relay-wired.test.ts`).
+# ''The opener wires the relay ~ BUILT.'' `standSyncGates` stands `standIntentRelay` beside the sync gates, refreshes it at each gate sweep and closes it on teardown; K19's `dropFace` and `lightFace` refresh it at once, so a locked sibling's route closes with the lock and a lit one stands again (the census reds first; the service test keeps the other face admitting). Red: the opener census fails on the commit before the wiring. The durable-reopen witness opens a real `Repo` over `DurableNodeFSStorageAdapter`, admits through `resolveIntentRelayFace`, drops the repo, reopens it and finds one entry and the same receipt, and a retry returns `duplicate`; a flush that throws answers `fault` and its receipt never returns to the caller (`intent-relay-wired.test.ts`).
 
 <<~/ahu>>
 
@@ -58,12 +58,12 @@ The carrier (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-intent-plane#/the-f
 The hands spine's session files, K15's seed, identity, custody and carriage-key code, K19's per-face providers, the porch and `GATE_FRAME` stay untouched. The relay never writes a session table, an agent never receives an atom or a session, and the lane carries no clock: every read and admission passes with a throwing `Date.now`. The lost-reply case proves a repeated submission after a delivered receipt duplicates nothing and the durable-reopen case proves a flushed receipt survives a reopened repo; a relay killed with its reply in flight, and a storage write that fails partway, stay unwitnessed.
 
 !!! Owed
-* The sibling lock and unlock of K19 (`daemon:face-lit`, `daemon:face-drop`) refresh no relay route; the route follows the next gate sweep.
 * A K19 sibling whose intents plane the catalog has never registered enables its relay and then refuses every submission `intent-plane-unregistered`.
-* `resolveIntentRelayFace` enumerates every anchored face without isolating a malformed sibling's row.
+* `resolveIntentRelayFace` enumerates every anchored face without isolating a malformed sibling's row, so one malformed row can suppress a healthy face's relay.
+* Watch: eight node-suite files that touch face rows and the roster family failed in the lane builder's own environment while the span read green on CI and held-out at `fccac2f1b`; they name that environment, not the span or this lane.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9oxQpqSY8r6ygIyoRRoA945loQYROwtyz0LbvT11H_Q
+<<^ code="&#x0003;">>ni:///sha-256;LzAbUtd_T3Vhysej3GVQ1L67vlzXnrPVC4YYrc118Eo
 
 <<^ code="&#x0004;" -> to="?">>
