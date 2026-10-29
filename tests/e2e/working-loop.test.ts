@@ -18,7 +18,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, targetInstance, type LarInstance } from "../harness/instance.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const BOOT_MEME = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
@@ -52,9 +52,8 @@ async function awaitCarrier(dir: string, want: boolean, timeoutMs = 45_000): Pro
 beforeAll(async () => { lar = await targetInstance(); }, 120_000);
 afterAll(async () => { await lar.stop(); });
 
-describe("working→canon live loop (island-local, --in-wiki)", () => {
+describe.skipIf(!stagedTarget)("working→canon live loop (island-local, --in-wiki)", () => {
   test("W1 — LOAD --to working --in-wiki projects to wikis/ (the live write layer)", async () => {
-    if (lar.mode !== "staged") return;
     const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", WORKING, "--in-wiki", "--yes", "--json"]);
     expect(r.json?.["ok"], `LOAD --to working --in-wiki failed: ${JSON.stringify(r.json)}`).toBe(true);
     expect(await awaitCarrier(join(lar.root, "wikis"), true), "carrier did not project under wikis/").toBe(true);
@@ -63,7 +62,6 @@ describe("working→canon live loop (island-local, --in-wiki)", () => {
   }, 90_000);
 
   test("W2 — MOVE working→lares canon --in-wiki (promotion) publishes to bags/lares + retracts wikis/", async () => {
-    if (lar.mode !== "staged") return;
     const r = await lar.cli(["act", "MOVE", "--title", BOOT_URI, "--from", WORKING, "--to", LARES, "--in-wiki", "--yes", "--json"]);
     expect(r.json?.["ok"], `MOVE working→lares canon --in-wiki failed: ${JSON.stringify(r.json)}`).toBe(true);
     expect(await awaitCarrier(join(lar.root, "bags/lares"), true), "carrier did not publish to bags/lares (canon)").toBe(true);

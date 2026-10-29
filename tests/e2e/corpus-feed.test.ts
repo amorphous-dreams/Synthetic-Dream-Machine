@@ -18,7 +18,7 @@ import { matchCarrierHead } from "../../packages/lararium-memetic-frame/src/head
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { execSync } from "node:child_process";
-import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, targetInstance, type LarInstance } from "../harness/instance.js";
 import { memeticWikitextDeserializer, expandMemeRefs } from "../../packages/lararium-tw5/src/deserializer.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
@@ -150,7 +150,7 @@ async function awaitStableMirror(root: string, expected: ReadonlySet<string>, ca
 // generous on purpose; a corpus-scale witness that must be run alone at a stopwatch is no witness.
 beforeAll(async () => {
   lar = await targetInstance();
-  if (lar.mode !== "staged") return;        // mutating, corpus-scale — staged only
+  if (!stagedTarget) return;   // mutating, corpus-scale — staged only
   const at = Date.now();
   const r = await lar.cli(["act", "LOAD", "--source-uri", CORPUS, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
   loadOk = r.json?.["ok"] === true;
@@ -161,15 +161,13 @@ beforeAll(async () => {
 }, 600_000);
 afterAll(async () => { await lar.stop(); });
 
-describe("corpus feed — the whole hearth in one gesture (staged witness)", () => {
+describe.skipIf(!stagedTarget)("corpus feed — the whole hearth in one gesture (staged witness)", () => {
   test("F1 — the directory-batch LOAD lands", () => {
-    if (lar.mode !== "staged") return;
     expect(loadOk).toBe(true);
     expect(loadCount).toBeGreaterThan(189);   // records ≥ carriers (children ride along)
   });
 
   test("F2 — group routing at scale: one file per carrier root, no fragments", async () => {
-    if (lar.mode !== "staged") return;
     const roots = expectedRoots();
     const { files, measure } = await awaitStableMirror(lar.root, roots);
     // The projector's own diagnostic: each window of a second or longer between the last change event and
@@ -198,7 +196,6 @@ describe("corpus feed — the whole hearth in one gesture (staged witness)", () 
   }, 360_000);
 
   test("F3 — the boot meme projects content-whole (iam framing normalizes once)", async () => {
-    if (lar.mode !== "staged") return;
     const projected = join(lar.root, "wikis/lares", BOOT_PROJ);
     expect(existsSync(projected)).toBe(true);
     const metaFence = /```toml meta\n[\s\S]*?```\n/g;
@@ -210,7 +207,6 @@ describe("corpus feed — the whole hearth in one gesture (staged witness)", () 
   });
 
   test("F4 — pipeline idempotence: re-feeding a projection leaves it byte-stable", async () => {
-    if (lar.mode !== "staged") return;
     const projected = join(lar.root, "wikis/lares", BOOT_PROJ);
     const before = readFileSync(projected, "utf8");
     const r = await lar.cli(["act", "LOAD", "--source-uri", projected, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
