@@ -83,7 +83,7 @@ import {
 import { keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "./browser-face-anchor.js";
 import { keepBrowserFaceAtomSeed, mintBrowserFaceAddressSecret, readBrowserFaceAddressSecret, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
 import {
-  loadBrowserVeilArchive, oldShapeVeilRow, refuseLegacyBrowserArchive, saveBrowserVeilArchive,
+  loadBrowserVeilArchive, saveBrowserVeilArchive,
 } from "./browser-keyhive-archive.js";
 import { workingFloorAnchorOf, vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
@@ -561,9 +561,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     if (!fleetShadows || fleetShadows.frontier.status !== "known") return true;   // widening waits on the fleet's signed frontier
     return fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, key))?.stands === true;
   };
-  // Refuse retired identity rows before Repo construction can initialize its IndexedDB store.
-  await oldShapeVeilRow(idbName);
-  await refuseLegacyBrowserArchive(idbName);
   const repo = new Repo({
     storage:     new IndexedDBStorageAdapter(`${idbName}:repo`),
     // The verdict seats on announce AND access (the announce-only lie the node measured in

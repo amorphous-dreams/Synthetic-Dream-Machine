@@ -325,6 +325,31 @@ describe("an occupied store refuses BEFORE any write", () => {
     expect(io.mutations).toEqual([]);
   });
 
+  // LARK-led bytes carry no reading of their own: they read bare, as any file that is not this house's frame does.
+  const LARK = Uint8Array.from([0x4c, 0x41, 0x52, 0x4b, 1, 2, 3, 4, 5, 6, 7, 8]);
+
+  test("RED: LARK-led bytes at a listed carrier read bare, refuse the founding, and the store sees no mutation", async () => {
+    const io = new ScratchIo();
+    io.files.set(ROOT.path, LARK);
+    const treeKey = mintTreeKey();
+    const err = await commitSlotTree({ io, path: TREE, expected: null, treeKey, tree: bindSlot(null, treeKey, { t: 1, pins: [right] }), carriers: [ROOT, KEYRING] })
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(OccupiedStoreRefusal);
+    expect((err as OccupiedStoreRefusal).standing).toEqual([{ carrier: ROOT, reading: "bare" }]);
+    expect(io.mutations).toEqual([]);
+    expect(Buffer.from(io.files.get(ROOT.path)!).equals(Buffer.from(LARK))).toBe(true);
+  });
+
+  test("LAW: a bare file at a path no listed carrier names does not block a founding; only a file bearing the seal's magic does", async () => {
+    const io = new ScratchIo();
+    io.files.set("/scratch/foreign.bin", LARK);
+    io.files.set("/scratch/notes.txt", text("not custody's"));
+    const treeKey = mintTreeKey();
+    await commitSlotTree({ io, path: TREE, expected: null, treeKey, tree: bindSlot(null, treeKey, { t: 1, pins: [right] }), carriers: [ROOT, KEYRING] });
+    expect(io.files.has(TREE)).toBe(true);
+    expect(Buffer.from(io.files.get("/scratch/foreign.bin")!).equals(Buffer.from(LARK))).toBe(true);
+  }, 30_000);
+
   test("CONTROL: a clean store founds, and a founded tree commits a bind with carriers standing (not a founding)", async () => {
     const io = new ScratchIo();
     const treeKey = mintTreeKey();

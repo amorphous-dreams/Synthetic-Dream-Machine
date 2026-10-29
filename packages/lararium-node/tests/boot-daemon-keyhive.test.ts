@@ -27,7 +27,7 @@ import {
   ed25519SignerFromSeed, deviceAtomProofBytes,
 } from "@lararium/mesh";
 import {
-  KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, FacelessKeyhiveRefused, LegacyFaceSignatureRefused, runFoundingCeremony,
+  KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, FacelessKeyhiveRefused, runFoundingCeremony,
   type BootDaemonKeyhiveInput } from "@lararium/keyhive";
 
 const SEED = new Uint8Array(32).fill(7);
@@ -108,10 +108,10 @@ describe("bootDaemonKeyhive", () => {
     await lit.keyhive.dispose();
   });
 
-  test("RED: a face edge countersigned by the place key refuses by name; CONTROL: the atom edge boots", async () => {
+  test("RED: a face edge countersigned by the place key stops at the Binding Gate; CONTROL: the atom edge boots", async () => {
     const edge = founded.bootArgs.deviceEdge!;
     const old = { ...edge, atomSignature: await ed25519SignerFromSeed(SEED)(deviceAtomProofBytes(edge)) };
-    await expect(bootDaemonKeyhive({ ...founded.bootArgs, deviceEdge: old, expectedEpoch: 0 })).rejects.toThrow(LegacyFaceSignatureRefused);
+    await expect(bootDaemonKeyhive({ ...founded.bootArgs, deviceEdge: old, expectedEpoch: 0 })).rejects.toThrow(/Binding Gate|Face anchor/);
     const lit = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
     await lit.keyhive.dispose();
   });
