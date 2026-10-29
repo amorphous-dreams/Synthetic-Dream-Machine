@@ -168,3 +168,21 @@ test("CONTROL: another wiki's standing record holds nothing for this wiki", asyn
     result.unmount();
   } finally { sessionStorage.removeItem("mirror:full-standing:other-wiki"); r.host.remove(); }
 });
+
+test("a widen the island leaves unanswered names the promotion wait instead of stranding promoting; CONTROL: an answered widen names none", async () => {
+  const quiet = await rig({ swallowWiden: true }); const states: any[] = [];
+  try {
+    const result = await standMirror({ ...quiet.options, onState: state => states.push(state) }, quiet.seams) as any;
+    for (let turn = 0; turn < 50; turn++) await Promise.resolve();
+    expect(states).toContainEqual({ kind: "waiting", for: "promotion" });
+    expect(result.width).toBe("skinny");
+    result.unmount();
+  } finally { quiet.host.remove(); }
+  const loud = await rig(); const heard: any[] = [];
+  try {
+    const result = await standMirror({ ...loud.options, onState: state => heard.push(state) }, loud.seams) as any;
+    await result.settled;
+    expect(heard.filter(state => state.for === "promotion")).toEqual([{ kind: "waiting", for: "promotion" }]);   // named while it waited, once, then the answer ends it
+    result.unmount();
+  } finally { loud.host.remove(); }
+});
