@@ -63,7 +63,7 @@ test("the mirror names the wait for the port's greeting, and a snapshot ends it"
     expect(states).toEqual([{ kind: "waiting", for: "greeting" }]);
     release();
     const result = await standing as any;
-    expect(states).toEqual([{ kind: "waiting", for: "greeting" }]);   // nothing else announces a wait
+    expect(states.filter((state: any) => state.for === "greeting")).toEqual([{ kind: "waiting", for: "greeting" }]);   // one greeting wait, named once
     result.unmount();
   } finally { r.host.remove(); }
 });
@@ -118,4 +118,72 @@ test("CONTROL: storage that works names no evidence state", async () => {
     expect(states.filter(state => state.kind === "evidence-unavailable")).toEqual([]);
     result.unmount();
   } finally { r.host.remove(); }
+});
+
+const STANDING = "mirror:full-standing:wiki";
+const afterPaint = () => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+test("the second record stands from full's first paint and clears on pagehide", async () => {
+  const r = await rig();
+  try {
+    const result = await standMirror(r.options, r.seams) as any;
+    await result.settled;
+    expect(sessionStorage.getItem(STANDING)).toBeNull();                       // full has landed, not yet painted
+    await afterPaint();
+    expect(sessionStorage.getItem(STANDING)).not.toBeNull();                   // a frame painted full: the page stands
+    window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: false }));
+    expect(sessionStorage.getItem(STANDING)).toBeNull();                       // an orderly leave clears it
+    result.unmount();
+  } finally { r.host.remove(); }
+});
+test("a page that came back from the back-forward cache stands again, and an unmount clears the record", async () => {
+  const r = await rig();
+  try {
+    const result = await standMirror(r.options, r.seams) as any;
+    await result.settled; await afterPaint();
+    window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
+    expect(sessionStorage.getItem(STANDING)).toBeNull();
+    window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+    expect(sessionStorage.getItem(STANDING)).not.toBeNull();
+    result.unmount();
+    expect(sessionStorage.getItem(STANDING)).toBeNull();
+  } finally { r.host.remove(); }
+});
+test("a full page that ended without a pagehide holds the next boot of this wiki at skinny, as evidence and never a flag", async () => {
+  sessionStorage.setItem(STANDING, "left-by-a-full-page-that-died");
+  const r = await rig();
+  try {
+    const result = await standMirror(r.options, r.seams) as any;
+    expect(await result.settled).toEqual({ width: "skinny", why: "full-ended-without-pagehide" });
+    expect(r.widens()).toHaveLength(0);
+    expect(sessionStorage.getItem(STANDING)).toBe("left-by-a-full-page-that-died");
+    result.unmount();
+  } finally { r.host.remove(); }
+});
+test("CONTROL: another wiki's standing record holds nothing for this wiki", async () => {
+  sessionStorage.setItem("mirror:full-standing:other-wiki", "elsewhere");
+  const r = await rig();
+  try {
+    const result = await standMirror(r.options, r.seams) as any;
+    expect(await result.settled).toEqual({ width: "full" });
+    result.unmount();
+  } finally { sessionStorage.removeItem("mirror:full-standing:other-wiki"); r.host.remove(); }
+});
+
+test("a widen the island leaves unanswered names the promotion wait instead of stranding promoting; CONTROL: an answered widen names none", async () => {
+  const quiet = await rig({ swallowWiden: true }); const states: any[] = [];
+  try {
+    const result = await standMirror({ ...quiet.options, onState: state => states.push(state) }, quiet.seams) as any;
+    for (let turn = 0; turn < 50; turn++) await Promise.resolve();
+    expect(states).toContainEqual({ kind: "waiting", for: "promotion" });
+    expect(result.width).toBe("skinny");
+    result.unmount();
+  } finally { quiet.host.remove(); }
+  forgetEvidence();   // the quiet boot left its began-record, as a promotion that never finished does
+  const loud = await rig(); const heard: any[] = [];
+  try {
+    const result = await standMirror({ ...loud.options, onState: state => heard.push(state) }, loud.seams) as any;
+    await result.settled;
+    expect(heard.filter(state => state.for === "promotion")).toEqual([{ kind: "waiting", for: "promotion" }]);   // named while it waited, once, then the answer ends it
+    result.unmount();
+  } finally { loud.host.remove(); }
 });

@@ -6,7 +6,7 @@ export const lends = () => Object.fromEntries(["global", "Buffer", "process"].ma
  * A vessel stub. Each `port:open` and each `port:widen` answers with a snapshot of `chunks` chunks on the portId it names.
  * The first chunk of an open answers at once; the rest wait on `gate` when one stands (a released promise, never a clock).
  */
-export async function rig(options: { gate?: Promise<void>; chunks?: number; refuseWiden?: string } = {}) {
+export async function rig(options: { gate?: Promise<void>; chunks?: number; refuseWiden?: string; swallowWiden?: boolean } = {}) {
   const chunks = options.chunks ?? 1;
   const bytes = new Uint8Array(await (await fetch(coreUrl)).arrayBuffer());
   const digest = await crypto.subtle.digest("SHA-256", bytes);
@@ -25,6 +25,7 @@ export async function rig(options: { gate?: Promise<void>; chunks?: number; refu
         if (chunks === 1) void Promise.resolve(options.gate).then(() => chunk(1));
         else { queueMicrotask(() => chunk(1)); void Promise.resolve(options.gate).then(() => { for (let i = 2; i <= chunks; i++) chunk(i); }); }
       } else if (msg.type === "port:widen" && options.refuseWiden) return { ok: false as const, reason: options.refuseWiden };
+      else if (msg.type === "port:widen" && options.swallowWiden) return { ok: true as const };
       else if (msg.type === "port:widen") queueMicrotask(() => { for (let i = 1; i <= chunks; i++) chunk(i); });
       return { ok: true as const };
     }, close() {},
@@ -36,4 +37,4 @@ export async function rig(options: { gate?: Promise<void>; chunks?: number; refu
 }
 
 /** A test starts from a tab with no evidence record: an earlier test's step-down leaves one behind, as a real boot would. */
-export const forgetEvidence = (): void => { try { sessionStorage.removeItem("mirror:began:wiki"); sessionStorage.removeItem("mirror:began:lares"); } catch { /* storage may be blocked */ } };
+export const forgetEvidence = (): void => { try { sessionStorage.removeItem("mirror:began:wiki"); sessionStorage.removeItem("mirror:full-standing:wiki"); sessionStorage.removeItem("mirror:began:lares"); } catch { /* storage may be blocked */ } };

@@ -8,6 +8,8 @@ export interface MirrorSeams {
   bootEngine?: () => void | Promise<void>; paint?: () => void;
   /** Runs on each record an adaptor of this mirror lands; the listener stands before the port's first message can arrive. */
   landed?: (change: { title: string }) => void;
+  /** Runs when the island refuses a write the mirror sent: the person's edit did not stand. */
+  refused?: (result: { title: string; txId: string; reason: string }) => void;
 }
 type Adaptor = ReturnType<typeof makeGlassPortAdaptor>;
 const nameOf = (error: unknown): string => error instanceof Error ? error.name : "Error";
@@ -18,7 +20,7 @@ const nameOf = (error: unknown): string => error instanceof Error ? error.name :
  * through that port alone. `deferPaint` leaves the camera unmounted until `paint()` runs, so a caller can
  * wait for the port's first snapshot before it paints.
  */
-export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddler" | "adopt" | "inheritTags"> & {
+export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddler" | "adopt" | "inheritTags" | "inheritDeferred"> & {
   inputs: { coreBytes: Uint8Array; coreCid: string; preloadedTiddlers: Record<string, unknown>[] };
   shadowRoot: ShadowRoot;
   deferPaint?: boolean;
@@ -45,6 +47,7 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
     const tw = engine.$tw;
     adaptor = makeGlassPortAdaptor({ ...options, wiki: tw.wiki, Tiddler: tw.Tiddler });
     if (seams.landed) adaptor.onLanded(seams.landed);
+    if (seams.refused) adaptor.onRefused(seams.refused);
     if (!options.deferPaint) paint();
     return {
       tw, get adaptor() { return adaptor!; }, paint, unmount,
@@ -52,9 +55,11 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
       reopen(next: { transport: GlassPortOptions["transport"]; portId: string; width: GlassPortOptions["width"] }) {
         const adopt = adaptor!.pendingWrites();
         const inheritTags = adaptor!.tagImages();
+        const inheritDeferred = adaptor!.deferredTitles();
         adaptor!.close();
-        adaptor = makeGlassPortAdaptor({ ...options, ...next, wiki: tw.wiki, Tiddler: tw.Tiddler, adopt, inheritTags });
+        adaptor = makeGlassPortAdaptor({ ...options, ...next, wiki: tw.wiki, Tiddler: tw.Tiddler, adopt, inheritTags, inheritDeferred });
         if (seams.landed) adaptor.onLanded(seams.landed);
+        if (seams.refused) adaptor.onRefused(seams.refused);
         return adaptor;
       },
     };

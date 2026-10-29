@@ -16,12 +16,16 @@ export type MirrorEvent =
   | { type: "gone"; why: string }
   | { type: "floor"; why: string };
 /** A state a caller can show while the mirror lights; no timer ends or raises one. */
-export type MirrorState = { kind: "waiting"; for: "greeting" } | { kind: "evidence-unavailable"; why: string };
+export type MirrorState = { kind: "waiting"; for: "greeting" | "promotion" } | { kind: "evidence-unavailable"; why: string }
+  | { kind: "write-refused"; title: string; reason: string };
 /** How the boot's promotion ended: full landed, skinny held or stepped to, or the none floor. */
 export type MirrorSettled = { width: "full" | "skinny" | "none"; why?: string };
 /** The per-tab record, one per wiki: a promotion to full began and its first full paint has not happened. It records an event and never a width. */
 export const MIRROR_EVIDENCE_KEY = "mirror:began";
 export const mirrorEvidenceKey = (wikiUri: string): string => `${MIRROR_EVIDENCE_KEY}:${wikiUri}`;
+/** The second per-tab record: a full page stands (written at full's first paint, cleared on `pagehide`). A boot that finds it knows the last full page ended without a leave: the jetsam shape. */
+export const MIRROR_STANDING_KEY = "mirror:full-standing";
+export const mirrorStandingKey = (wikiUri: string): string => `${MIRROR_STANDING_KEY}:${wikiUri}`;
 const floor = (why: string) => ({ kind: "floor" as const, width: "none" as const, why });
 const capacity = (error: unknown): boolean => error instanceof Error && (error.name === "RangeError" || error.name === "QuotaExceededError");
 const reasonOf = (error: unknown): string => error instanceof Error ? error.message : String(error);
@@ -54,8 +58,13 @@ export async function standMirror(options: {
     try { if (evidence) act(evidence); else throw Object.assign(new Error("no-session-storage"), { name: "NoSessionStorage" }); }
     catch (error) { if (!named) { named = true; options.onState?.({ kind: "evidence-unavailable", why: error instanceof Error ? error.name : "unavailable" }); } }
   };
+  const standingKey = mirrorStandingKey(options.wikiUri);
   let held = false;
-  remember(store => { held = store.getItem(evidenceKey) !== null; });
+  let heldWhy = "full-promotion-unfinished";
+  remember(store => {
+    if (store.getItem(evidenceKey) !== null) held = true;
+    else if (store.getItem(standingKey) !== null) { held = true; heldWhy = "full-ended-without-pagehide"; }
+  });
 
   let generation = 0;
   let width: "full" | "skinny" = "skinny";
@@ -77,13 +86,23 @@ export async function standMirror(options: {
   let early: string | null = null;     // a capacity error that landed before the door returned
   let mirror: Awaited<ReturnType<typeof bootGlass>> | null = null;
 
-  const end = (event: MirrorEvent & { why: string }) => { if (ended) return; ended = true; endedWhy = event.why; mirror?.unmount(); settle({ width: "none", why: event.why }); emit(event); };
+  // The standing record follows the page's own leave: `pagehide` clears it, a back-forward restore (`pageshow` persisted) writes it again.
+  let standingOn = false;
+  const onHide = (): void => { remember(store => store.removeItem(standingKey)); };
+  const onShow = (event: Event): void => { if ((event as PageTransitionEvent).persisted && standingOn && !ended) remember(store => store.setItem(standingKey, crypto.randomUUID())); };
+  const standing = (on: boolean): void => {
+    if (on === standingOn) return;
+    standingOn = on;
+    if (on) { remember(store => store.setItem(standingKey, crypto.randomUUID())); window.addEventListener("pagehide", onHide); window.addEventListener("pageshow", onShow); }
+    else { remember(store => store.removeItem(standingKey)); window.removeEventListener("pagehide", onHide); window.removeEventListener("pageshow", onShow); }
+  };
+  const end = (event: MirrorEvent & { why: string }) => { if (ended) return; ended = true; standing(false); endedWhy = event.why; mirror?.unmount(); settle({ width: "none", why: event.why }); emit(event); };
   const stepDown = (why: string) => {
     if (ended || gone) return;
     if (!mirror) { early = why; return; }
     // Skinny is the lowest width the mirror holds: a failure there, or after the one step, reads the none floor.
     if (stepped || (!promoting && width === "skinny")) { greeting(why); end({ type: "floor", why }); return; }
-    stepped = true; stepReason = why; width = "skinny"; promoting = false; generation += 1;
+    stepped = true; stepReason = why; width = "skinny"; promoting = false; generation += 1; standing(false);
     chunks.clear();
     mirror.reopen({ transport: transportFor(generation), portId: crypto.randomUUID(), width: "skinny" });
     emit({ type: "stepped", width: "skinny", why });
@@ -129,7 +148,9 @@ export async function standMirror(options: {
             // The frame acknowledges a refreshed tree; whether the host shows is the page's affair.
             const landedIn = mine;
             requestAnimationFrame(() => requestAnimationFrame(() => {
-              if (!ended && landedIn === generation && width === "full") remember(store => store.removeItem(evidenceKey));
+              if (ended || landedIn !== generation || width !== "full") return;
+              remember(store => store.removeItem(evidenceKey));
+              standing(true);
             }));
           } else if (stepped) settle({ width: "skinny", why: stepReason });
         }
@@ -138,11 +159,12 @@ export async function standMirror(options: {
     };
   };
   const { landed: probe, ...mirrorSeams } = seams;   // the probe takes the width too; the door's seam takes the change alone
+  const refused = (result: { title: string; reason: string }): void => options.onState?.({ kind: "write-refused", title: result.title, reason: result.reason });
   const landed = probe ? (change: { title: string }) => probe(change, promoting || width === "full" ? "full" : "skinny") : undefined;
 
   try {
     mirror = await bootGlass({ ...options, shadowRoot, inputs, width: "skinny", transport: transportFor(0),
-      seams: { ...mirrorSeams, ...(landed ? { landed } : {}) }, deferPaint: true });
+      seams: { ...mirrorSeams, ...(landed ? { landed } : {}), refused }, deferPaint: true });
     if (ended) { mirror.unmount(); return floor(endedWhy); }   // a port:gone landed before the door returned
     if (early !== null) stepDown(early);
     const reason = await waiting;
@@ -150,7 +172,7 @@ export async function standMirror(options: {
     mirror.paint();
   } catch (error) { mirror?.unmount(); return floor(reasonOf(error)); }
 
-  if (held) settle({ width: "skinny", why: "full-promotion-unfinished" });
+  if (held) settle({ width: "skinny", why: heldWhy });
   else {
     // The record stands from the moment full begins until full has landed: a boot that dies between leaves it behind.
     remember(store => store.setItem(evidenceKey, crypto.randomUUID()));
@@ -160,13 +182,19 @@ export async function standMirror(options: {
       // The widen never reached the island: the tab stays at skinny and says why; nothing began, so no record stands.
       promoting = false; remember(store => store.removeItem(evidenceKey));
       settle({ width: "skinny", why: sent.reason ?? "widen-refused" });
-    }
+    } else options.onState?.({ kind: "waiting", for: "promotion" });   // the island answers a widen with a snapshot or with nothing; the wait has a name either way
   }
   return {
     kind: "mirror" as const,
     get width() { return width; },
     settled,
-    unmount() { if (!ended) { ended = true; mirror!.unmount(); settle({ width: "none", why: "unmounted" }); } },
+    /** The mirror's engine, for the page's own reads (its goldens, its tooling); the person's edits cross the port, never this handle. */
+    get tw() { return mirror!.tw; },
+    /** How many writes the mirror sent and holds no answer for: the page holds its leave while this reads above zero. */
+    pending: () => (ended ? 0 : mirror!.adaptor.pendingWrites().length),
+    /** Send every unanswered write again under its own txId: the road to a new leader re-opened. An island that saw the txId applies it once; a vessel the hand-off re-opened holds a fresh ledger (named in the kit, owed to D4). */
+    resendPending() { if (!ended) mirror!.adaptor.resendPending(); },
+    unmount() { if (!ended) { ended = true; standing(false); mirror!.unmount(); settle({ width: "none", why: "unmounted" }); } },
     onEvent(listener: (event: MirrorEvent) => void) { listeners.add(listener); return () => listeners.delete(listener); },
   };
 }

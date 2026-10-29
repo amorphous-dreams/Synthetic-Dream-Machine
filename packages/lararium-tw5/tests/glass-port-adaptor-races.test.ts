@@ -113,8 +113,11 @@ describe.skipIf(!!wikiSkip)(`glass port ordered races${skipNote}`, () => {
     g.snapshot("one", 1, 1, [{ title: "Page", fields: { text: "base" }, seq: 1 }]); await g.flush();
     g.wiki.setTiddler({ title: "Page", text: "first" }); await g.flush();
     g.wiki.setTiddler({ title: "Page", text: "second" }); await g.flush();
-    const [first, second] = g.writes();
+    const [first] = g.writes();
+    expect(g.writes()).toHaveLength(1);                                       // "second" waits behind the write in flight
     g.deliver({ type: "port:written", txId: first.txId, status: "applied", applied: ["Page"], failed: [] });
+    await g.flush();
+    const second = g.writes()[1];                                             // and goes out as its own write once the first answers
     g.deliver({ type: "port:written", txId: second.txId, status: "refused", applied: [], failed: ["Page"] });
     expect(g.text("Page")).toBe("first");
     g.wiki.setTiddler({ title: "Page", text: "third" }); await g.flush();
@@ -203,5 +206,71 @@ describe.skipIf(!!wikiSkip)(`glass port ordered races${skipNote}`, () => {
     g.wiki.setTiddler({ title: "Lesson", text: "local edit", tags: "Lesson" });
     await g.flush();
     expect(g.writes()).toHaveLength(1);
+  });
+
+  it("a widen's snapshot keeps a title written after the open; CONTROL a plain snapshot still drops an absent title", async () => {
+    const g = await glass("skinny");
+    g.snapshot("first", 1, 1, [{ title: "Base", fields: { text: "base" }, seq: 1 }]);
+    await g.flush();
+    g.wiki.setTiddler({ title: "Draft of 'New'", text: "typed" });
+    await g.flush();
+    const write = g.writes()[0];
+    g.deliver({ type: "port:written", txId: write.txId, status: "applied", applied: ["Draft of 'New'"], failed: [] });
+    await g.flush();
+    g.adaptor.widen("full");
+    g.snapshot("widened", 1, 1, [{ title: "Base", fields: { text: "base", tags: "x" }, seq: 1 }]);   // taken before the draft landed
+    await g.flush();
+    expect(g.text("Draft of 'New'")).toBe("typed");
+    expect(g.wiki.wiki.getTiddler("Base")?.fields.tags).toBeTruthy();
+    g.snapshot("plain", 1, 1, [{ title: "Base", fields: { text: "base", tags: "x" }, seq: 2 }]);
+    await g.flush();
+    expect(g.text("Draft of 'New'")).toBeUndefined();   // CONTROL: an ordinary snapshot is the whole truth and drops it
+  });
+
+  it("keystrokes on one title send one write at a time and the next carries the latest text; CONTROL another title sends at once", async () => {
+    const g = await glass();
+    g.snapshot("first", 1, 1, [{ title: "Page", fields: { text: "base" }, seq: 1 }]);
+    await g.flush();
+    for (const text of ["a", "ab", "abc"]) { g.wiki.setTiddler({ title: "Page", text }); await g.flush(); }
+    expect(g.writes()).toHaveLength(1);                                      // the later keystrokes wait behind the write in flight
+    g.wiki.setTiddler({ title: "Other", text: "elsewhere" }); await g.flush();
+    expect(g.writes()).toHaveLength(2);                                      // CONTROL: another title is not held
+    g.deliver({ type: "port:written", txId: g.writes()[0].txId, status: "applied", applied: ["Page"], failed: [] });
+    await g.flush();
+    const page = g.writes().filter(w => w.records[0].title === "Page");
+    expect(page).toHaveLength(2);
+    expect(page[1].records[0].fields.text).toBe("abc");                      // the follow-up carries the latest text, once
+    expect(g.text("Page")).toBe("abc");
+  });
+
+  it("a peer landing on a title with a deferred local edit leaves the edit standing and the follow-up carries it", async () => {
+    const g = await glass();
+    g.snapshot("first", 1, 1, [{ title: "Page", fields: { text: "base" }, seq: 1 }]);
+    await g.flush();
+    g.wiki.setTiddler({ title: "Page", text: "mine" }); await g.flush();
+    g.wiki.setTiddler({ title: "Page", text: "mine, more" }); await g.flush();           // deferred behind the first write
+    g.change({ title: "Page", fields: { text: "peer" } }); await g.flush();
+    expect(g.text("Page")).toBe("mine, more");                                           // the peer did not stomp the person's typing
+    g.deliver({ type: "port:written", txId: g.writes()[0].txId, status: "applied", applied: ["Page"], failed: [] });
+    await g.flush();
+    const sent = g.writes().filter(w => w.records[0].title === "Page");
+    expect(sent.at(-1).records[0].fields.text).toBe("mine, more");
+  });
+  it("a step-down successor sends the edit that waited behind an adopted write", async () => {
+    const g = await glass();
+    g.snapshot("first", 1, 1, [{ title: "Page", fields: { text: "base" }, seq: 1 }]);
+    await g.flush();
+    g.wiki.setTiddler({ title: "Page", text: "one" }); await g.flush();
+    g.wiki.setTiddler({ title: "Page", text: "one two" }); await g.flush();             // deferred
+    const sent: any[] = []; const listeners = new Set<(msg: any) => void>();
+    g.adaptor.close();
+    const next = makeGlassPortAdaptor({ wiki: g.wiki.wiki, Tiddler: g.wiki.$tw.Tiddler,
+      transport: { send(msg) { sent.push(msg); }, onMessage(l) { listeners.add(l); return () => listeners.delete(l); } },
+      portId: "q", wikiUri: "wiki", actor: "me", width: "skinny", mintTx: () => `next-${sent.length}`,
+      adopt: g.adaptor.pendingWrites(), inheritDeferred: g.adaptor.deferredTitles() });
+    const adopted = sent.find(m => m.type === "port:write");
+    for (const l of listeners) l({ type: "port:written", portId: "q", txId: adopted.txId, status: "applied", applied: ["Page"], failed: [] });
+    expect(sent.filter(m => m.type === "port:write").at(-1).records[0].fields.text).toBe("one two");
+    expect(next.pendingWrites().length).toBe(1);
   });
 });

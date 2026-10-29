@@ -126,6 +126,14 @@ beforeAll(async () => {
   browser = await chromium.launch({ headless: true, ...(process.env["LAR_CHROMIUM"] ? { executablePath: process.env["LAR_CHROMIUM"] } : {}) });
   context = await browser.newContext();
   await armTestCustody(context, "golden-whole-road");
+  // These goldens walk the worker-rendered view, the named floor beneath the mirror: the page shows the mirror, so every page here shows the floor.
+  await context.addInitScript(() => {
+    document.addEventListener("DOMContentLoaded", () => {
+      const style = document.createElement("style");
+      style.textContent = "#mirror{display:none !important} #projection{display:block !important}";
+      document.head.append(style);
+    });
+  });
   // The external href reaches no network: the click's browser default opens a tab, and the tab loads nothing.
   await context.route(/^https?:\/\/example\.test\//, (route) => route.fulfill({ status: 200, contentType: "text/html", body: "<title>outside</title>" }));
   context.on("page", (p) => { opened.push(p); });

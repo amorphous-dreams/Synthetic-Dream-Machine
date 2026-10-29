@@ -99,3 +99,4 @@ test("R9: mirror lighting never takes a synchronous OPFS handle", async () => {
     await result.settled; expect(calls).toBe(0); result.unmount();
   } finally { if (original) proto.createSyncAccessHandle = original; f.host.remove(); }
 });
+

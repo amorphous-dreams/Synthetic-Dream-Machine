@@ -14,6 +14,7 @@
  * (PersonaGroup/admin), not genesis — see project-sovereign-worker-model.
  */
 
+import { pagePortGrant } from "./page-port-grant.js";
 import type { PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
@@ -1755,7 +1756,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       vmManager = new BrowserVesselIslandPool({
         mainRepo: repo,
         // D4 lends the actor grant; this vessel opens a read-only port until then.
-        portPolicy: opts.portPolicy ?? ((binding, islandKey) => ({ faceId: portFaceId ?? islandKey, actor: binding, edits: false, bags: [], admin: false })),
+        portPolicy: opts.portPolicy ?? ((binding, islandKey) => pagePortGrant({ binding, islandKey, faceId: portFaceId, daemonKey: DAEMON_SURFACE_ID })),
         ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
         resolvePluginCids: async (recipe) => {
           crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
