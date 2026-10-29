@@ -137,11 +137,12 @@ export async function standMirror(options: {
     },
     };
   };
-  const landed = seams.landed ? (change: { title: string }) => seams.landed!(change, promoting || width === "full" ? "full" : "skinny") : undefined;
+  const { landed: probe, ...mirrorSeams } = seams;   // the probe takes the width too; the door's seam takes the change alone
+  const landed = probe ? (change: { title: string }) => probe(change, promoting || width === "full" ? "full" : "skinny") : undefined;
 
   try {
     mirror = await bootGlass({ ...options, shadowRoot, inputs, width: "skinny", transport: transportFor(0),
-      seams: { ...seams, ...(landed ? { landed } : {}) }, deferPaint: true });
+      seams: { ...mirrorSeams, ...(landed ? { landed } : {}) }, deferPaint: true });
     if (ended) { mirror.unmount(); return floor(endedWhy); }   // a port:gone landed before the door returned
     if (early !== null) stepDown(early);
     const reason = await waiting;
