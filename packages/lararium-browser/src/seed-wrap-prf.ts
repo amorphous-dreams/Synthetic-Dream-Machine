@@ -1,11 +1,12 @@
 /**
- * seed-wrap-prf — THE PERSONA-ROOT SEED WRAPPED AT REST UNDER A PASSKEY PRF, OPT-IN, BESIDE THE CLEARTEXT
+ * seed-wrap-prf — THE PERSONA-ROOT SEED WRAPPED UNDER A PASSKEY PRF, OPT-IN, BESIDE THE SLOT TREE
  * FINDING (basket-one #/the-phone-seat, ruled 2026-09-11: "PRF wraps beside and never mints, a synced passkey
  * counts as a cloud, every key names its class").
  *
  * ── WHAT THIS IS ─────────────────────────────────────────────────────────────────────────────────
- * The persona-root seed sits CLEARTEXT on disk in every engine (project_browser_key_custody: persona roots
- * cannot go opaque — SLIP-0010 wants the parent key as bytes). WebAuthn PRF hands the page 32 bytes bound to
+ * A persona root cannot go opaque (SLIP-0010 wants the parent key as bytes), so it rests as bytes SEALED in the
+ * browser's slot tree once a slot binds (`browser-custody.ts`; only the place seed and veil Archives may stand
+ * clear before a slot). The slot tree builds passphrase and paper pins alone. WebAuthn PRF hands the page 32 bytes bound to
  * a credential and gated on presence (Safari 26.4+ · Chrome 132+ · Firefox 139+, device-capabilities-2026).
  * Those bytes never become a key of the house — they WRAP the seed: HKDF-SHA256(prf, salt, info) → AES-256-GCM.
  * Unwrapping needs the passkey present again. The mint stays the mint; the wrap rides beside it.
@@ -23,7 +24,7 @@
  * witness there reads it.
  *
  * ── THE FLOOR ────────────────────────────────────────────────────────────────────────────────────
- * No PRF on the host → `detectPrf` reads `{ available: false, why }` and nothing wraps. The cleartext path
+ * No PRF on the host → `detectPrf` reads `{ available: false, why }` and nothing wraps. The slot tree's seal
  * stays exactly as it stands. A refusal removes a cap from the declaration; it never becomes a throw.
  *
  * Pure: every platform reading rides in as `PrfHost`; the crypto is WebCrypto (`crypto.subtle`), isomorphic.
