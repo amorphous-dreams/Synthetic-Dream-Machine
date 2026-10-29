@@ -117,3 +117,39 @@ def test_nonzero_initial_placement_stays_bound_to_native_source(tmp_path):
     replayed = RelationalGround.load(tmp_path / "next" / "ground.json")
     assert replayed.snapshot()["entities"]["east"]["matrix"][3] == 5
     assert outcome["invalidation_plan"]["native_reaudited"] == 1
+
+
+def test_atomic_two_body_editor_batch_has_serial_frontier_and_independent_replay(tmp_path):
+    original = declared()
+    source = tmp_path / "source-two"
+    manifest = package_scene(original, source)
+    ground = seed_editor_ground(original)
+    request = proposal(manifest, ground)
+    request["edits"].append({"kind": "translate", "entity_id": "west",
+                              "delta": [-3, 2, 0]})
+    receipt = apply_proposal(original, ground, source, request, tmp_path / "both")
+    from projection_loom.relational_ground import RelationalGround
+    changed = RelationalGround.load(tmp_path / "both" / "ground.json")
+    assert changed.snapshot()["entities"]["east"]["matrix"][3] == 4
+    assert changed.snapshot()["entities"]["west"]["matrix"][7] == 2
+    assert len(receipt["operations"]) == 2
+    assert receipt["invalidation_plan"]["native_reaudited"] == 2
+    batch = receipt["causal_batch"]
+    assert batch["operations"][1]["frontier"] == [batch["receipts"][0]["event_id"]]
+    assert ground.verify_batch(batch).to_dict() == changed.to_dict()
+
+
+def test_editor_atomic_batch_does_not_publish_partial_invalid_operation(tmp_path):
+    original = declared()
+    source = tmp_path / "source-failed-two"
+    manifest = package_scene(original, source)
+    ground = seed_editor_ground(original)
+    request = proposal(manifest, ground)
+    request["edits"].append({"kind": "translate", "entity_id": "unknown",
+                              "delta": [2, 0, 0]})
+    destination = tmp_path / "refused-atomic"
+    with pytest.raises(ValueError, match="unknown semantic entity"):
+        apply_proposal(original, ground, source, request, destination)
+    assert not destination.exists()
+    assert ground.snapshot()["entities"]["east"]["matrix"][3] == 0
+

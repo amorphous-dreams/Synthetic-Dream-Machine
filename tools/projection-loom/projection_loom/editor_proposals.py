@@ -42,8 +42,9 @@ def seed_editor_ground(declaration):
 
 
 def validate_proposal(proposal, original, ground, bundle):
-    if set(proposal) != {"schema", "editor", "actor", "bundle_sha256",
-                         "observed_frontier", "edits"}:
+    required = {"schema", "editor", "actor", "bundle_sha256",
+                "observed_frontier", "edits"}
+    if set(proposal) not in (required, required | {"transaction"}):
         raise ValueError("Editor proposal requires exact fields")
     if proposal["schema"] != "projection-loom/editor-proposal":
         raise ValueError("Unsupported editor proposal schema")
@@ -54,8 +55,13 @@ def validate_proposal(proposal, original, ground, bundle):
     if (not isinstance(proposal["observed_frontier"], list)
             or not all(isinstance(x, str) for x in proposal["observed_frontier"])):
         raise ValueError("A causal observed frontier is required")
-    if not isinstance(proposal["edits"], list) or not proposal["edits"]:
-        raise ValueError("At least one supported edit required")
+    if not isinstance(proposal["edits"], list) or not 1 <= len(proposal["edits"]) <= 32:
+        raise ValueError("One to 32 supported edits required")
+    transaction = proposal.get("transaction", "independent")
+    if transaction not in ("independent", "support-group"):
+        raise ValueError("Unsupported structural transaction mode")
+    if list(proposal["observed_frontier"]) != list(ground.frontier):
+        raise ValueError("Editor transaction requires current causal frontier")
     if len({x.get("entity_id") for x in proposal["edits"]}) != len(proposal["edits"]):
         raise ValueError("Repeated edit target requires its own causal turn")
     if proposal["bundle_sha256"] != bundle["sha256"]:
@@ -81,7 +87,7 @@ def validate_proposal(proposal, original, ground, bundle):
         if observed["matrix"] != matrix:
             raise ValueError("Editor ground transform differs from the native declaration")
     for edit in proposal["edits"]:
-        if set(edit) != {"entity_id", "kind", "delta"} or edit["kind"] != "translate":
+        if not isinstance(edit, dict) or set(edit) != {"entity_id", "kind", "delta"} or edit["kind"] != "translate":
             raise ValueError("Only rigid assembly translation is currently reversible")
         if edit["entity_id"] not in expected:
             raise ValueError("Edit targets unknown semantic entity")
@@ -89,6 +95,32 @@ def validate_proposal(proposal, original, ground, bundle):
         if (not isinstance(delta, (list, tuple)) or len(delta) != 3
                 or any(type(x) not in (int, float) or not math.isfinite(x) for x in delta)):
             raise ValueError("Translation proposal must contain three finite deltas")
+    if transaction == "support-group":
+        movement = {edit["entity_id"]: tuple(float(x) for x in edit["delta"])
+                    for edit in proposal["edits"]}
+        if len(movement) < 2:
+            raise ValueError("Support group needs at least two members")
+        required_links = [r for r in ground.snapshot()["relations"]
+                          if r["required"] and r["verb"] == "supports"]
+        bonded = [r for r in required_links
+                  if r["parent"] in movement and r["child"] in movement]
+        if not bonded:
+            raise ValueError("Support group needs a witnessed required support relation")
+        for relation in required_links:
+            if relation["parent"] in movement:
+                if relation["child"] not in movement:
+                    raise ValueError("Support-group move must include all required dependents")
+                if movement[relation["parent"]] != movement[relation["child"]]:
+                    raise ValueError("Support-group members must share an exact rigid delta")
+        seen = {next(iter(movement))}
+        while True:
+            grown = seen | {x for r in bonded for x in (r["parent"], r["child"])
+                            if r["parent"] in seen or r["child"] in seen}
+            if grown == seen:
+                break
+            seen = grown
+        if seen != set(movement):
+            raise ValueError("Support group must form one connected required bearing component")
 
 
 def apply_proposal(original, ground, source_bundle, proposal, destination):
@@ -98,23 +130,21 @@ def apply_proposal(original, ground, source_bundle, proposal, destination):
     validate_scene(source_bundle)
     validate_proposal(proposal, original, ground, observed)
     revised = deepcopy(original)
-    next_ground = ground
-    records = []
     before_graph = graph_for_scene(original)
-    for edit in proposal["edits"]:
-        row = next(r for r in revised["assemblies"] if r["entity_id"] == edit["entity_id"])
+    actions = []
+    for item in sorted(proposal["edits"], key=lambda row: row["entity_id"]):
+        row = next(r for r in revised["assemblies"] if r["entity_id"] == item["entity_id"])
         old = [float(x) for x in row.get("translation", (0, 0, 0))]
-        new = [old[i] + float(edit["delta"][i]) for i in range(3)]
+        new = [old[i] + float(item["delta"][i]) for i in range(3)]
         row["translation"] = new
         matrix = list(IDENTITY)
         matrix[3], matrix[7], matrix[11] = new
-        action = {"kind": "transform", "actor": proposal["actor"],
-                  "target": edit["entity_id"],
-                  "frontier": list(proposal["observed_frontier"]),
-                  "expected_revision": next_ground.snapshot()["entities"][edit["entity_id"]]["revision"],
-                  "payload": {"matrix": matrix, "frame": "local3d"}}
-        next_ground, receipt = next_ground.apply(action)
-        records.append(receipt)
+        actions.append({"kind": "transform", "actor": proposal["actor"],
+                        "target": item["entity_id"],
+                        "payload": {"matrix": matrix, "frame": "local3d"}})
+    next_ground, batch = ground.apply_batch(
+        actions, observed_frontier=proposal["observed_frontier"])
+    records = batch["receipts"]
     plan = graph_for_scene(revised).compare(before_graph)
     dest = Path(destination)
     if dest.exists():
@@ -133,6 +163,8 @@ def apply_proposal(original, ground, source_bundle, proposal, destination):
                    "editor": proposal["editor"],
                    "actor": proposal["actor"],
                    "operations": records,
+                   "causal_batch": batch,
+                   "transaction_mode": proposal.get("transaction", "independent"),
                    "invalidation_plan": {
                        "rebuilt": plan["rebuilt"],
                        "cached_eligible": plan["cached"],

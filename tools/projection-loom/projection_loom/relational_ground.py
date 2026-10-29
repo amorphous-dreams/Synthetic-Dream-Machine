@@ -319,6 +319,62 @@ class RelationalGround:
                          "invalidated": sorted(k for k, v in revised.snapshot()["entities"].items()
                                                if v["invalidated"])}
 
+
+    def apply_batch(self, actions, *, observed_frontier):
+        """Atomically stage a bounded, serially causal group of typed operations.
+
+        Each action supplies actor, kind, target, and payload; this method
+        derives the later frontier and fresh revision rather than permitting
+        siblings to masquerade as one committed editor transaction.
+        """
+        if (not isinstance(observed_frontier, (tuple, list)) or
+                list(observed_frontier) != list(self.frontier)):
+            raise ValueError("Transaction requires the exact current causal frontier")
+        if not isinstance(actions, (tuple, list)) or not 1 <= len(actions) <= 32:
+            raise ValueError("Causal transaction requires one to 32 finite actions")
+        staged = self
+        operations, receipts = [], []
+        for action in actions:
+            if not isinstance(action, dict) or set(action) != {
+                    "kind", "target", "actor", "payload"}:
+                raise ValueError("Transaction action must declare exact typed fields")
+            op = deepcopy(action)
+            op["frontier"] = list(staged.frontier)
+            current = staged.snapshot()["entities"].get(op["target"])
+            if current is not None:
+                op["expected_revision"] = current["revision"]
+            staged, receipt = staged.apply(op)
+            if receipt["outcome"] != "accepted":
+                raise ValueError("Repeated causal event inside new transaction")
+            operations.append(op)
+            receipts.append(receipt)
+        core = {"schema": "projection-loom/causal-batch",
+                "source_ground_sha256": self.to_dict()["sha256"],
+                "source_frontier": list(observed_frontier),
+                "operations": operations, "receipts": receipts,
+                "result_ground_sha256": staged.to_dict()["sha256"]}
+        return staged, {**core, "sha256": _digest(core)}
+
+    def verify_batch(self, batch):
+        """Recreate a complete transaction from independent original ancestry."""
+        if not isinstance(batch, dict):
+            raise ValueError("Causal batch must be an explicit receipt")
+        core = {k: v for k, v in batch.items() if k != "sha256"}
+        if batch.get("sha256") != _digest(core):
+            raise ValueError("Causal batch digest changed")
+        if (core.get("schema") != "projection-loom/causal-batch"
+                or core.get("source_ground_sha256") != self.to_dict()["sha256"]):
+            raise ValueError("Causal batch source has changed")
+        actions = []
+        for operation in core["operations"]:
+            actions.append({k: operation[k] for k in (
+                "kind", "target", "actor", "payload")})
+        derived, witness = self.apply_batch(
+            actions, observed_frontier=core["source_frontier"])
+        if witness != batch:
+            raise ValueError("Causal transaction is not exactly replayable")
+        return derived
+
     def to_dict(self):
         document = {"schema": SCHEMA, "location": self.location,
                     "events": self.events, "frontier": list(self.frontier)}

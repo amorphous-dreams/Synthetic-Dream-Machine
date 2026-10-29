@@ -198,3 +198,27 @@ def test_rehydration_rejects_forged_merge_of_two_conflicting_causal_islands():
     b = added(g, op("annotate", "other", g.frontier, note="right"))
     assert len(RelationalGround("merge-test", events={
         **a.events, **b.events}).frontier) == 2
+
+
+def test_causal_batch_replays_all_or_none_and_detects_forged_middle_edit():
+    from copy import deepcopy
+    ground = RelationalGround("batch-replay")
+    for name in ("north", "south"):
+        ground = added(ground, op("create", name, ground.frontier, kind="construct"))
+    actions = [{"kind": "annotate", "target": name, "actor": "operator",
+                "payload": {"note": "one group"}} for name in ("north", "south")]
+    changed, batch = ground.apply_batch(actions, observed_frontier=list(ground.frontier))
+    assert ground.verify_batch(batch).to_dict() == changed.to_dict()
+    assert len(changed.frontier) == 1
+    assert len(ground.frontier) == 1
+    tampered = deepcopy(batch)
+    tampered["operations"][1]["payload"]["note"] = "forged"
+    with pytest.raises(ValueError, match="digest changed"):
+        ground.verify_batch(tampered)
+    with pytest.raises(ValueError, match="exact current causal frontier"):
+        ground.apply_batch(actions, observed_frontier=[])
+    with pytest.raises(ValueError, match="exact typed fields"):
+        ground.apply_batch([{"kind": "annotate", "target": "north",
+                            "actor": "operator", "payload": {"note": "hi"},
+                            "frontier": list(ground.frontier)}],
+                           observed_frontier=list(ground.frontier))
