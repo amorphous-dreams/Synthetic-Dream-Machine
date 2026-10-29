@@ -45,7 +45,7 @@ export type { EventStore, EventRecord } from "./event-store.js";
 export { DaemonEventStore, capEventTitle } from "./daemon-event-store.js";
 export type { DaemonEventStoreOptions } from "./daemon-event-store.js";
 
-export { bootDaemonKeyhive, FacelessKeyhiveRefused, LegacyFaceSignatureRefused } from "./boot-daemon-keyhive.js";
+export { bootDaemonKeyhive, FacelessKeyhiveRefused } from "./boot-daemon-keyhive.js";
 export type { BootDaemonKeyhiveInput, BootDaemonKeyhiveResult } from "./boot-daemon-keyhive.js";
 // THE ONE ROAD a daemon island reads its lease frontier by — its own daemon layer, two verdicts never merged.
 export { readLeaseFrontier, daemonLayerOf } from "./lease-frontier.js";

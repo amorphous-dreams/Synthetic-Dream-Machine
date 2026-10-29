@@ -6,8 +6,7 @@ import { placeSeed } from "./browser-place-seed.fixture.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { openVesselIdb, idbGet, idbKeys, idbPut } from "../src/browser-vessel-identity.js";
 import { browserFaceAtom, requireBrowserFaceAtomSeed } from "../src/browser-face-atom.js";
-import { vesselLockName } from "../src/vessel-lock.js";
-import { BrowserArchiveRowUnreadable, LegacyBrowserArchiveRefused, loadBrowserVeilArchive, refuseLegacyBrowserArchive, saveBrowserVeilArchive } from "../src/browser-keyhive-archive.js";
+import { BrowserArchiveRowUnreadable, loadBrowserVeilArchive, saveBrowserVeilArchive } from "../src/browser-keyhive-archive.js";
 
 async function foundHalted(): Promise<{ idbName: string; group: string }> {
   const idbName = `browser-archive-${crypto.randomUUID()}`;
@@ -48,37 +47,6 @@ describe("the browser keeps only a face Archive", () => {
     await expect(other.init({ seed: await requireBrowserFaceAtomSeed(idbName, "other-face"), eventStore: new InMemoryEventStore(), archiveBytes: archive }))
       .rejects.toBeInstanceOf(ArchiveIdentityMismatch);
     await expect(requireBrowserFaceAtomSeed(idbName, "no-face")).rejects.toMatchObject({ name: "FaceAtomMissing" });
-  });
-
-  test("a planted clear or sealed old row refuses boot by name with the fresh-store instruction", async () => {
-    for (const row of ["keyhive-archive", "sealed/keyhive-archive"]) {
-      const { idbName } = await foundHalted();
-      await refuseLegacyBrowserArchive(idbName); // control: the fresh founding passes
-      await navigator.locks.request(vesselLockName(idbName), { steal: true }, async () => { /* release the halted boot */ });
-      const db = await openVesselIdb(idbName);
-      try { await idbPut(db, "keystore", row, new Uint8Array([1, 2, 3])); } finally { db.close(); }
-      const beforeDatabases = await indexedDB.databases();
-      const before = await openVesselIdb(idbName);
-      const beforeRows = await idbKeys(before, "keystore");
-      before.close();
-      await expect(refuseLegacyBrowserArchive(idbName)).rejects.toMatchObject({ name: "LegacyBrowserArchiveRefused", row });
-      await expect(openBrowserVessel({ idbName } as BrowserVesselOptions)).rejects.toThrow(LegacyBrowserArchiveRefused);
-      expect(await indexedDB.databases()).toEqual(beforeDatabases); // Repo storage never opens
-      const after = await openVesselIdb(idbName);
-      expect(await idbKeys(after, "keystore")).toEqual(beforeRows);
-      after.close();
-      await expect(refuseLegacyBrowserArchive(idbName)).rejects.toThrow(/re-found this vessel from a fresh store/);
-    }
-  });
-
-  test("a planted old row refuses the browser founding entrance before Repo storage opens", async () => {
-    const idbName = `browser-old-founding-${crypto.randomUUID()}`;
-    await bindSyntheticBrowserCustodySlot(idbName);
-    const db = await openVesselIdb(idbName);
-    try { await idbPut(db, "keystore", "keyhive-archive", new Uint8Array([7])); } finally { db.close(); }
-    const beforeDatabases = await indexedDB.databases();
-    await expect(openBrowserVessel({ idbName } as BrowserVesselOptions)).rejects.toBeInstanceOf(LegacyBrowserArchiveRefused);
-    expect(await indexedDB.databases()).toEqual(beforeDatabases);
   });
 
   test("a torn veil row refuses by row name, and an empty replacement leaves its bytes", async () => {

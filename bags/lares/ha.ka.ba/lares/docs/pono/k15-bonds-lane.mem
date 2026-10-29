@@ -53,10 +53,10 @@ Road :208 (operator, 2026-10-19) rules that custody and identity read by capabil
 
 !! Old bytes refuse by name
 
-No CRDT document survives until X0, so re-genesis replaces migration. The node refuses a stored `place-archive.bin` or a `.vessel-card*.json` (`LegacyPlaceBytesRefused`) at boot and at founding; the browser refuses a `keyhive-archive` row before its store opens (`LegacyBrowserArchiveRefused`); a face relation countersigned by the place key refuses `LegacyFaceSignatureRefused`. Each names the fresh-store runbook line.
+No CRDT document survives until X0, so re-genesis replaces migration. The node, the browser and the face boot recognise no store from before the cut: bytes of a retired shape fall to the generic `bare`, `malformed` or Binding Gate readings, and a cut re-founds from a fresh store.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WHOQvhgZ-NIR0_VHPS7NqNBcsIa1xetO0RDs1KMWy3A
+<<^ code="&#x0003;">>ni:///sha-256;MbvTPpz1SYH2nzHp3_95uRSkswMmsq3AsZr3kyKWz6k
 
 <<^ code="&#x0004;" -> to="?">>

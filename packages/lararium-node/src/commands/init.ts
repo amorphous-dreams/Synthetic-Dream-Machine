@@ -38,7 +38,6 @@ import { admittedJoineeIsland } from "../nexus-standing.js";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import { listPersonaRoots } from "../node-vessel-identity.js";
 import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../identity-anchors.js";
-import { refuseLegacyPlaceBytes } from "../legacy-place-bytes.js";
 import { faceStandingCustody, openedCustody, seatCustody } from "../custody-seat.js";
 import { personaGroupDigest } from "../persona-group-file.js";
 import { ensureFaceCustodyOfAsk, settleFaceCustody } from "../face-route.js";
@@ -168,7 +167,6 @@ function readPackedTiddlers(path: string): PackedTiddlers {
 }
 
 export async function runInit(opts: InitOptions): Promise<InitResult> {
-  refuseLegacyPlaceBytes();
   const defaults   = defaultDirs();
   const storageDir = opts.storageDir ?? defaults.storageDir;
   const genesisDir = opts.genesisDir ?? defaults.genesisDir;

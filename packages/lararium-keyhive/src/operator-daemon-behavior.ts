@@ -56,7 +56,7 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
   /** `restDocuments` — the rest door. This island's Repo may keep no store for a slot document it mints; the
    *  host injects the ask that resolves once the vessel's own store holds the named documents durably. Present →
    *  every slot mint waits on it before its binding lands. Absent → the island's own Repo flush stands alone. */
-  restDocuments?: (documentIds: readonly string[], gateClear?: Promise<void>) => Promise<void>;
+  restDocuments?: (documentIds: readonly string[], gateClear?: Promise<void>, heads?: Record<string, string[]>) => Promise<void>;
   /** `bagTier` — the SAME inversion for the crossing gate's tier reader: keyhive stays fs-blind, so
    *  NODE injects the reader over its hearth bag manifests. Threaded into the ACTION verb handlers,
    *  where `crossingDirection` prices a transfer by direction. Absent (a browser vessel, tests) →
@@ -132,7 +132,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
-import { hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isSystemCanonBag, realmStandingDocUrl, materializeFaceWorkingDoc } from "@lararium/mesh";
+import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isSystemCanonBag, realmStandingDocUrl, materializeFaceWorkingDoc } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { readFace } from "@lararium/mesh";
@@ -155,6 +155,16 @@ import { unboundMints, restingMinter } from "./resolve-binding.js";
 import { kahuReachSourceOf, withKahuReach } from "./kahu-reach-source.js";
 
 /** A daemon boot cannot stand without the daemon wiki's working layer. */
+/** The heads this island's Repo holds of each named document: the rest ask names them, so the vessel's copy must come to hold every one before it answers. */
+function islandHeadsOf(repo: { readonly handles: Readonly<Record<string, { doc(): unknown } | undefined>> }, ids: readonly string[]): Record<string, string[]> {
+  const heads: Record<string, string[]> = {};
+  for (const id of ids) {
+    const handle = repo.handles[id];
+    if (handle) heads[id] = replicaHeads(handle);
+  }
+  return heads;
+}
+
 export class WorkingLayerAttachRefusal extends Error {
   constructor(slot: string, cause: unknown) {
     const detail = cause instanceof Error ? cause.message : String(cause);
@@ -244,7 +254,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     const joined = await bootDaemonKeyhive({
       atomSeed: meshHexToBytes(face.atom.seed), faceVerifyingKey: face.atom.key,
       eventStore: new DaemonEventStore({ daemon: ctx.composite, face: face.personaGroupId }),
-      placeVerifyingKey: daemonAuth.placeVerifyingKey, personaGroupId: face.personaGroupId,
+      personaGroupId: face.personaGroupId,
       faceAnchor: face.faceAnchor, personaKel: face.personaKel, deviceEdge: face.deviceEdge,
       signerDid: face.signerDid, ...(face.meshCabalDocIdHex ? { meshCabalDocIdHex: face.meshCabalDocIdHex } : {}),
       registerBags: face.registerBags.filter(isVesselGround), ledger: daemonBagDocLedger(ctx.composite, face.personaGroupId),
@@ -314,7 +324,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     if (slotDocs) return slotDocs;
     slotDocs = makeSlotDocResolver({
       repo: restDocuments ? restingMinter(ctx.repo, (ids) => restDocuments(ids,
-        gateCleared ? undefined : gateClear)) : ctx.repo,
+        gateCleared ? undefined : gateClear, islandHeadsOf(ctx.repo, ids))) : ctx.repo,
       daemonStore: ctx.composite, ...(kh ? { keyhive: kh } : {}),
       catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null,
       vesselDid: () => didFromVerifyingKey(mintedByHex),
@@ -1007,7 +1017,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         booted = await bootDaemonKeyhive({
           ...(daemonAuth.atom ? { atomSeed: meshHexToBytes(daemonAuth.atom.seed) } : {}),
           eventStore:            new DaemonEventStore({ daemon: ctx.composite, face: daemonAuth.personaGroupId! }),
-          placeVerifyingKey: daemonAuth.placeVerifyingKey,
           ...(daemonAuth.atom ? { faceVerifyingKey: daemonAuth.atom.key } : {}),
           // The face pins ride CONDITIONALLY — the gate runs in full or grants no persona caps at all.
           ...(daemonAuth.personaGroupId   ? { personaGroupId:   daemonAuth.personaGroupId }   : {}),

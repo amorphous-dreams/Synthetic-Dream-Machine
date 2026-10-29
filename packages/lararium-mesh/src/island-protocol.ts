@@ -38,11 +38,13 @@
 *                  `browser-repo-in-island.test.ts` test 2 (browser pool, docUrl non-null path).
  *      When this law holds, two vessels sharing a bag converge without any explicit sync call —
  *      the archipelago forms the moment the AutomergeUrl crosses the boundary.
- *   9. TW5 SHALL NOT instantiate on the main thread. Every `TW5Engine` lives inside a sovereign
- *      Worker (Node `worker_threads`, browser `Web Worker`, future WASM/UE5 runtimes).
- *      The main thread holds `DocHandle` references and `CompositeStore` layers; it does not
- *      hold or reference `TW5Engine`. Any code that calls `bootTw5()` or instantiates
- *      `TW5Engine` outside a Worker constitutes a sovereignty violation.
+ *   9. No sovereign VM and no key on a surface. A page never stands as a vessel: it holds a
+ *      surface with a port onto one. Every sovereign `TW5Engine` lives inside a Worker (Node
+ *      `worker_threads`, browser `Web Worker`, future WASM/UE5 runtimes). The main thread holds
+ *      `DocHandle` references and `CompositeStore` layers; it does not hold or reference a
+ *      sovereign `TW5Engine`. Any code that calls `bootTw5()` or instantiates `TW5Engine`
+ *      outside a Worker constitutes a sovereignty violation, save the page mirror: a camera
+ *      booted through its one private door, fed by the port alone, holding no truth and no key.
  *      Boot sites (all inside Workers): `node-daemon-island.ts` (Node daemon),
  *      `node-wiki-island.ts` (Node wiki), `browser-wiki-worker.ts` (browser wiki),
  *      `browser-daemon-island.ts` (browser daemon). Main-thread entry files carry no TW5 import.
