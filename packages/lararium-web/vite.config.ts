@@ -65,15 +65,16 @@ function emitPronaosArtifactRecord(): Plugin {
       routes.length = 0;
       for (const output of Object.values(bundle)) {
         const file = output.fileName;
-        const source = output.type === "asset" ? output.source : output.code;
         if (!/^assets\/.+\.(?:m?js|css|wasm)$/.test(file)) continue;
         const contentType = file.endsWith(".css") ? "text/css" : file.endsWith(".wasm") ? "application/wasm" : "application/javascript";
-        routes.push({ path: `/${file}`, file, contentType, cache: "immutable", sha256: digest(source) });
+        // The digest reads the bytes on disk at close: Vite's import analysis rewrites a chunk that holds a dynamic import after this hook.
+        routes.push({ path: `/${file}`, file, contentType, cache: "immutable", sha256: "" });
       }
     },
     closeBundle() {
       // Vite writes the HTML/public copy after generateBundle; these are the
       // two known non-Rollup files, never a directory enumeration.
+      for (const route of routes) if (route.sha256 === "") route.sha256 = digest(readFileSync(resolve(import.meta.dirname, "dist", route.file)));
       const index = resolve(import.meta.dirname, "dist/index.html");
       if (existsSync(index)) routes.push({ path: "/", file: "index.html", contentType: "text/html; charset=utf-8", cache: "no-store", sha256: digest(readFileSync(index)) });
       const manifest = resolve(import.meta.dirname, "dist/manifest.webmanifest");

@@ -70,7 +70,10 @@
         .row { flex-direction: column; gap: 0; }
         .row .k { min-width: 0; font-size: 0.8rem; }
       }
-    </style>
+        #mirror { display: none; }
+    #mirror[data-lar-mirror="skinny"], #mirror[data-lar-mirror="full"] { display: block; }
+    #mirror[data-lar-mirror="skinny"] ~ #projection, #mirror[data-lar-mirror="full"] ~ #projection { display: none; }
+  </style>
   </head>
   <body>
     <main>
@@ -121,6 +124,7 @@
         <h2>projection — the live wiki
           <button id="summon-daemon" type="button" title="Summon the @daemon working surface (Ctrl+Shift+D)" disabled>☰ @daemon</button>
         </h2>
+        <div id="mirror"></div>
         <div id="projection"></div>
       </section>
     </main>

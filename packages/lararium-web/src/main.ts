@@ -29,6 +29,7 @@ import type { DeviceAdmitPayload } from "@lararium/keyhive";
 import { LAR_WHOLE_VALUE_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, readHearthFloorCard, type GenesisSeed, type MeshPeer } from "@lararium/mesh";
 import { createProjectionSink } from "./projection-sink.js";
 import { pagePortDelivery, standPagePort } from "./page-port.js";
+import { standPageMirror } from "./page-mirror.js";
 import { defaultReadFace, floorAnchorOf, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
 // The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
@@ -401,6 +402,8 @@ async function bootVessel(): Promise<void> {
       offerBootRetry();
       return;
     }
+    // The mirror stands once the first frame names the surface the page shows; the vessel result does not exist until the open returns.
+    let mirrorTrigger: (() => void) | null = null;
     const result = await openBrowserVessel({
       askCustody,
       hostId: "elyncia-browser",
@@ -411,7 +414,7 @@ async function bootVessel(): Promise<void> {
       ...(sharedHolderUrl ? { sharedHolderUrl } : {}),
       workerScriptUrl,
       onPhase: (p) => { paint(p); projectionSink.setBreath("lares", { phase: p }); },
-      onFrame: (frame) => { if (projectionSink.apply(frame) === "painted" && frame.keys.some((key) => key.key === "lar:surface")) reportFirstPaint(); },
+      onFrame: (frame) => { if (projectionSink.apply(frame) === "painted" && frame.keys.some((key) => key.key === "lar:surface")) { reportFirstPaint(); mirrorTrigger?.(); } },
       onControlResult: (_surface, result) => { projectionSink.applyResult(result); },
       onPortMessage: (binding, islandKey, msg) => pagePortDelivery.onPortMessage(binding, islandKey, msg),
       ...(relayUrl ? { relayUrl } : {}),
@@ -436,7 +439,19 @@ async function bootVessel(): Promise<void> {
     // Arm the interactivity RETURN leg (click and text halves): each event carries its source surface.
     projectionSink.arm({ sendControlEvent: result.sendControlEvent });
     // The page's port road: one transport over the vessel's port doors; replies reach it for its own binding alone.
-    standPagePort(result.ports, () => projectionSink.surface());
+    const pageBinding = standPagePort(result.ports, () => projectionSink.surface());
+    // The mirror: unprivileged, fed by this binding alone, booted from the inputs the vessel names for the shown surface.
+    // A floor leaves the none projection beneath exactly as it stands; the host element carries the outcome in `data-lar-mirror`.
+    let mirrorStanding = false;
+    mirrorTrigger = () => {
+      if (mirrorStanding || projectionSink.surface() === null) return;
+      mirrorStanding = true;
+      void standPageMirror({ port: pageBinding, host: $("mirror"), actor: did, surface: () => projectionSink.surface(),
+        mirrorInputs: result.mirrorInputs, onState: (state) => console.warn(`[mirror] ${state.kind}`, state) })
+        .then((stood) => { if (stood.kind === "floor") console.warn(`[mirror] the none projection stays: ${stood.why}`); })
+        .catch((err: unknown) => console.warn("[mirror] stand refused:", err));
+    };
+    mirrorTrigger();
     // The UNIVERSAL summon (the reachability affordance): host chrome overlays EVERY
     // wiki, so this button + chord flips the projection gate to the daemon from any
     // active surface — a pure gate flip (both surfaces already mounted), no reboot.

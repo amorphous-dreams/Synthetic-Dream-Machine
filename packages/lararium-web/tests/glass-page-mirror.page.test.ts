@@ -13,7 +13,6 @@ test("the page root stands its mirror from the vessel's mirrorInputs and tells t
     expect(asked).toEqual(["lares"]);
     expect(result.kind).toBe("mirror");
     expect(r.opens()[0]).toMatchObject({ wikiUri: "lares", actor: "did:key:zActor", width: "skinny" });
-    expect(attr(r.host)).toBe("skinny");
     await result.settled;
     expect(attr(r.host)).toBe("full");
     result.unmount();

@@ -16,11 +16,12 @@ export type MirrorEvent =
   | { type: "gone"; why: string }
   | { type: "floor"; why: string };
 /** A state a caller can show while the mirror lights; no timer ends or raises one. */
-export type MirrorState = { kind: "waiting"; for: "greeting" };
+export type MirrorState = { kind: "waiting"; for: "greeting" } | { kind: "evidence-unavailable"; why: string };
 /** How the boot's promotion ended: full landed, skinny held or stepped to, or the none floor. */
 export type MirrorSettled = { width: "full" | "skinny" | "none"; why?: string };
-/** The one per-tab record: a full boot began and has not finished. It records an event and never a width. */
+/** The per-tab record, one per wiki: a promotion to full began and its first full paint has not happened. It records an event and never a width. */
 export const MIRROR_EVIDENCE_KEY = "mirror:began";
+export const mirrorEvidenceKey = (wikiUri: string): string => `${MIRROR_EVIDENCE_KEY}:${wikiUri}`;
 const floor = (why: string) => ({ kind: "floor" as const, width: "none" as const, why });
 const capacity = (error: unknown): boolean => error instanceof Error && (error.name === "RangeError" || error.name === "QuotaExceededError");
 const reasonOf = (error: unknown): string => error instanceof Error ? error.message : String(error);
@@ -46,9 +47,15 @@ export async function standMirror(options: {
   catch (error) { return floor(reasonOf(error)); }
 
   const evidence = options.evidence ?? tabStorage();
-  const remember = (act: (store: Evidence) => void): void => { try { if (evidence) act(evidence); } catch { /* storage may be blocked */ } };
+  const evidenceKey = mirrorEvidenceKey(options.wikiUri);
+  let named = false;
+  // A store that throws (blocked, full, denied) cannot hold the record, so the tab says so once and goes on; it never swallows the loss.
+  const remember = (act: (store: Evidence) => void): void => {
+    try { if (evidence) act(evidence); else throw Object.assign(new Error("no-session-storage"), { name: "NoSessionStorage" }); }
+    catch (error) { if (!named) { named = true; options.onState?.({ kind: "evidence-unavailable", why: error instanceof Error ? error.name : "unavailable" }); } }
+  };
   let held = false;
-  remember(store => { held = store.getItem(MIRROR_EVIDENCE_KEY) !== null; });
+  remember(store => { held = store.getItem(evidenceKey) !== null; });
 
   let generation = 0;
   let width: "full" | "skinny" = "skinny";
@@ -117,8 +124,12 @@ export async function standMirror(options: {
           if (!greeted) { greeted = true; greeting(null); }
           else if (promoting) {
             promoting = false; width = "full";
-            remember(store => store.removeItem(MIRROR_EVIDENCE_KEY));
             settle({ width: "full" }); emit({ type: "promoted", width: "full" });
+            // The record clears when a frame has painted full, not when its snapshot lands: a death between the two leaves it.
+            const landedIn = mine;
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+              if (!ended && landedIn === generation && width === "full") remember(store => store.removeItem(evidenceKey));
+            }));
           } else if (stepped) settle({ width: "skinny", why: stepReason });
         }
       });
@@ -137,15 +148,15 @@ export async function standMirror(options: {
     mirror.paint();
   } catch (error) { mirror?.unmount(); return floor(reasonOf(error)); }
 
-  if (held) settle({ width: "skinny", why: "full-boot-did-not-paint" });
+  if (held) settle({ width: "skinny", why: "full-promotion-unfinished" });
   else {
     // The record stands from the moment full begins until full has landed: a boot that dies between leaves it behind.
-    remember(store => store.setItem(MIRROR_EVIDENCE_KEY, crypto.randomUUID()));
+    remember(store => store.setItem(evidenceKey, crypto.randomUUID()));
     promoting = true;
     const sent = mirror.adaptor.widen("full") as { ok?: boolean; reason?: string } | undefined;
     if (sent && sent.ok === false) {
       // The widen never reached the island: the tab stays at skinny and says why; nothing began, so no record stands.
-      promoting = false; remember(store => store.removeItem(MIRROR_EVIDENCE_KEY));
+      promoting = false; remember(store => store.removeItem(evidenceKey));
       settle({ width: "skinny", why: sent.reason ?? "widen-refused" });
     }
   }

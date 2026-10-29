@@ -954,6 +954,18 @@ export class VesselIslandPoolCore {
     return slot?.temperature === "anu" ? slot.cooledAt : null;
   }
 
+  /**
+   * The engine inputs a mounted wiki's mirror reads: the core hash its island boots from and the plugin CIDs its own
+   * recipe resolves to, the same two the island's manifest carries. Null when the wiki has no retained mount, no core
+   * hash (pre-CAS), or a recipe whose plugins refuse: the mirror never guesses an input.
+   */
+  async mountInputsOf(wikiId: string): Promise<{ readonly coreCid: string; readonly pluginCids: readonly string[] } | null> {
+    const held = this._mountSpecs.get(wikiId);
+    if (!held || !held.spec.coreHash) return null;
+    const resolved = await this._resolvePluginCids(held.spec.recipe);
+    return resolved.ok ? { coreCid: held.spec.coreHash, pluginCids: resolved.pluginCids } : null;
+  }
+
   has(wikiId: string): boolean {
     return this._slots.get(wikiId)?.temperature === "wela";
   }
