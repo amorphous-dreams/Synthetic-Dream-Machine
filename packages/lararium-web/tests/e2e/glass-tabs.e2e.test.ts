@@ -50,7 +50,7 @@ const frames = (page: Page) => page.evaluate(() => document.querySelector("#mirr
 const watch = (page: Page, tag: string) => { page.on("console", (m) => logs.push(`[${tag}] ${m.text()}`)); page.on("pageerror", (e) => logs.push(`[${tag}][pageerror] ${e.message}`)); };
 
 describe("two tabs on one origin", () => {
-  test("the second tab follows the first and stands its own mirror at full; the follower leads once the first tab closes", async () => {
+  test("the second tab follows the first with its own mirror at full; the follower leads once the first tab closes, and a third tab follows it", async () => {
     expect(url, "the hearth printed its URL").toMatch(/^https?:/);
     const context = await browser!.newContext();
     await armTestCustody(context, "glass-tabs-1");
