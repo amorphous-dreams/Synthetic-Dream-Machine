@@ -223,4 +223,20 @@ describe.skipIf(!!wikiSkip)(`glass port ordered races${skipNote}`, () => {
     await g.flush();
     expect(g.text("Draft of 'New'")).toBeUndefined();   // CONTROL: an ordinary snapshot is the whole truth and drops it
   });
+
+  it("keystrokes on one title send one write at a time and the next carries the latest text; CONTROL another title sends at once", async () => {
+    const g = await glass();
+    g.snapshot("first", 1, 1, [{ title: "Page", fields: { text: "base" }, seq: 1 }]);
+    await g.flush();
+    for (const text of ["a", "ab", "abc"]) { g.wiki.setTiddler({ title: "Page", text }); await g.flush(); }
+    expect(g.writes()).toHaveLength(1);                                      // the later keystrokes wait behind the write in flight
+    g.wiki.setTiddler({ title: "Other", text: "elsewhere" }); await g.flush();
+    expect(g.writes()).toHaveLength(2);                                      // CONTROL: another title is not held
+    g.deliver({ type: "port:written", txId: g.writes()[0].txId, status: "applied", applied: ["Page"], failed: [] });
+    await g.flush();
+    const page = g.writes().filter(w => w.records[0].title === "Page");
+    expect(page).toHaveLength(2);
+    expect(page[1].records[0].fields.text).toBe("abc");                      // the follow-up carries the latest text, once
+    expect(g.text("Page")).toBe("abc");
+  });
 });
