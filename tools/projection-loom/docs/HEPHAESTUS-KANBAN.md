@@ -1,5 +1,18 @@
 # Loom of Hephaestus · OODA-HA executable kanban
 
+## Current wave-scout reconciliation · 2026-10-29
+
+This is the **live pre-docs-code-head checkpoint**; earlier sections remain dated engineering testimony. PR #84 is open/unmerged at code `f0e9895cce9865944df1ff804043442a59cc3342` before this documentation commit. [Dedicated generalized #40935354730](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40935354730) and [CAD/evidence #40935354748](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40935354748) / [#40935362710](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40935362710) completed successfully; [repo CI #40935355080](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40935355080) and [held-out #40935354819](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40935354819) were in progress at last read. Inspect them again; the previous ledger's 'registered cameras open' and 'complete native multi-generation control open' descriptions are now **historical**, not current.
+
+- **A / C:** Immutable source-bound location admission, parent manifest, single causal event frontier, supported editor fork, exact support fork, source archiving and replay are **implemented and witnessed** in the dedicated jobs. Full legacy-consumer convergence and atomically related multi-entity structural edits are **in progress / not done**.
+- **B / D-B:** Independent STEP/CAD/OpenUSD and a real Blender rigid-translation round trip are **witnessed within their bounded vocabulary**. Arbitrary mesh inverse-genome editing and application-wide interactive coverage remain **unverified**.
+- **E:** Independent noncoplanar world-control PnP camera registration, per-view native source silhouettes, original-resolution finalist audits, two-arm matched multi-generation control and OODA-HA emitter preference steering are **implemented and dedicated-CI witnessed**. External survey certification, repeated held-out seeds and statistical interpretation remain **open**.
+- **F:** Independently registered source → location → exact native bearing → causal edit → selective STEP reuse → USD variant crucible is **dedicated-CI witnessed**. `native_support.py` now measures actual horizontal planar BRep face-area intersections, rejecting corner tangency even when AABBs overlap. No load certification or automatic artistic winner follows. Repo-wide held-out acceptance, Unreal and obsolete-alpha cleanup remain open.
+- **D-U:** **BLOCKED** on actual Unreal Editor + USD/Python application runner. A USD export or Blender success is not an Unreal witness.
+
+**Next decision gate:** N0 (same-head repo-wide + held-out acceptance), then **N1** (one transactional causal/semantic location owner) → **N2** (supported structural-group movement through native contact and real Blender) → **N3** (repeated-source comparisons and operator attribution) → **N4** (Unreal setup and verified alpha retirement). N1 and N2 are the highest-leverage engineering path. See the front of [ROADMAP](ROADMAP.md) for concrete tests, dependencies, stop conditions and refusal boundaries. These are scouted, **not implemented**.
+
+
 **Authority:** Operator approval for engineering work on PR #84. Do not merge the PR, promote a candidate or alter Elyncia canon. This is a work log; it does not supersede source-bound evidence.
 
 **Re-entry:** read `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` from `feature/green-jello-dinosaur-5`, then inspect the *current* head of `feature/green-jello-dinosaur-5--projection-loom`. Base before this campaign: `050538e688487145f0ef187c219800a87334c7da`.
