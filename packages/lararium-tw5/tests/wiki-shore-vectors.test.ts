@@ -68,12 +68,12 @@ async function rig(boundary?: ManualBoundary, yieldHost?: () => Promise<void>) {
   const adaptor = new IslandAdaptor(engine, composite, "shore-vector");
   boundary?.bind(adaptor);
   adaptor.installLandingQueue(yieldHost);
-  // THE STORE'S CHANGE REACHES AN OBSERVER BESIDE THE SHORE: every title a change or a changeset names lands here as
-  // the store raises it, so a vector waits on the arrival itself and never on a pause after the write.
+  // THE STORE'S CHANGE REACHES AN OBSERVER BESIDE THE SHORE: every title a changeset names lands here as
+  // the store closes it (the changeset follows its URI changes, so the change is whole when it arrives), so a vector waits on the arrival itself and never on a pause after the write.
   const arrivals: string[] = [];
   const hearers = new Set<() => void>();
   const heard = (titles: readonly string[]): void => { arrivals.push(...titles); for (const hearer of [...hearers]) hearer(); };
-  composite.addProjection({ onUriChanged: (change) => heard([change.title]), onChangeset: (changes) => heard(changes.map((change) => change.title)) });
+  composite.addProjection({ onUriChanged: () => {}, onChangeset: (changes) => heard(changes.map((change) => change.title)) });
   adaptor.start();
   const save = vi.spyOn(adaptor, "saveTiddler");
   const unbridge = bridgeWikiToAdaptor(engine, adaptor);
@@ -967,8 +967,9 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     const boundary = new ManualBoundary();
     const r = await rig(boundary);
     const title = "lar:///t/shore/H12-revert";
+    const seedMark = r.arrivals.length;
     await r.working.put({ tiddler: { title, text: "a" } }, remote);
-    await turns();
+    await r.hearSince(seedMark, [title]);
     await r.adaptor.armSeedCheckpoint();
     const control = `${title}-control`;
     const writes: string[] = [];
@@ -1038,8 +1039,9 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     const boundary = new ManualBoundary();
     const r = await rig(boundary);
     const title = "lar:///t/shore/H12-restore";
+    const seedMark = r.arrivals.length;
     await r.working.put({ tiddler: { title, text: "keep", tags: ["same"] } }, remote);
-    await turns();
+    await r.hearSince(seedMark, [title]);
     await r.adaptor.armSeedCheckpoint();
     const control = `${title}-control`;
     const fields = (r.wiki.getTiddler(title) as { getFieldStrings(): Record<string, string> }).getFieldStrings();
@@ -1119,9 +1121,14 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await r.adaptor.armSeedCheckpoint();
     const heads = r.workingHandle.heads();
     const removeLazy = installLazyResolver(r.engine, async (requested) => requested === cid ? new TextEncoder().encode(body) : null);
+    // The wiki's own change event for the title is the fattening arriving; the body is the resolver's answer.
+    const fattened = new Promise<void>((resolve) => {
+      (r.wiki as unknown as { addEventListener(name: string, fn: (changes: Record<string, unknown>) => void): void })
+        .addEventListener("change", (changes) => { if (Object.hasOwn(changes, title)) resolve(); });
+    });
     (r.wiki as unknown as { dispatchEvent(name: string, title: string): void }).dispatchEvent("lazyLoad", title);
-    await turns();
-    await turns();
+    await fattened;
+    await r.adaptor.landingIdle();
     expect((r.wiki.getTiddler(title) as { fields: Record<string, unknown> }).fields.text).toBe(body);
     expect(r.save).toHaveBeenCalledTimes(0);
     expect(r.workingHandle.heads()).toEqual(heads);
