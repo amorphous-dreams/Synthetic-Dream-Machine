@@ -60,9 +60,9 @@ async function stand(over: { dyad?: () => "clear" | "aside" } = {}) {
   const run = async (verb: string, args: Record<string, unknown>, ask?: { act: MemoryAct; facts: unknown; sign?: (bytes: Uint8Array) => Promise<string>; requestId?: string }) => {
     const requestId = `r${++n}`;
     const signed = ask ? { ask: await signMemoryAsk({ requestId: ask.requestId ?? requestId, act: ask.act, facts: ask.facts, sign: ask.sign ?? vesselSign }) } : {};
-    return registry.get(verb)!({ ...args, ...signed }, { daemon: {} as never, invocation: { requestId } as never, cap: async () => ({ ok: true }) } as never) as Promise<Record<string, unknown>>;
+    return registry.get(verb)!({ ...args, ...signed }, { daemon: {} as never, invocation: { requestId } as never, cap: async () => ({ ok: true }), presenter: `0x${st.daemonAuth.atom.key}` } as never) as Promise<Record<string, unknown>>;
   };
-  return { run, registry, vesselSign, placeSeed: st.placeSeed };
+  return { run, registry, vesselSign, placeSeed: st.placeSeed, presenter: `0x${st.daemonAuth.atom.key}` };
 }
 const refusal = async (p: Promise<unknown>): Promise<string> => {
   const e = await p.then(() => null, (err: unknown) => err);
@@ -119,7 +119,7 @@ describe("a memory section leaves and enters a real founded vessel's island seal
   }, 120_000);
 
   test("THE ISLAND ANSWERS ITS OWN VESSEL ALONE: no ask, another key's ask, another request's ask and another act's ask each refuse", async () => {
-    const { run, registry, vesselSign, placeSeed } = await stand();
+    const { run, registry, vesselSign, placeSeed, presenter } = await stand();
     await run("sealed-seal", { bag: BAG, text: "a private note" });
     const to = hex(mintMemoryKeypair().public);
     const stranger = ed25519SignerFromSeed(new Uint8Array(32).fill(3));
@@ -136,7 +136,7 @@ describe("a memory section leaves and enters a real founded vessel's island seal
     expect(typeof (await run("sealed-memory-cut", { to }, { act: "cut", facts: { to } }))["section"]).toBe("string");
     // ONE SIGNED ASK RUNS ONCE: the same signed invocation, placed again under its own request id, refuses.
     const signed = { to, ask: await signMemoryAsk({ requestId: "replayed", act: "cut", facts: { to }, sign: vesselSign }) };
-    const place = () => registry.get("sealed-memory-cut")!(signed, { daemon: {} as never, invocation: { requestId: "replayed" } as never, cap: async () => ({ ok: true }) } as never);
+    const place = () => registry.get("sealed-memory-cut")!(signed, { daemon: {} as never, invocation: { requestId: "replayed" } as never, cap: async () => ({ ok: true }), presenter } as never);
     expect(typeof ((await place()) as Record<string, unknown>)["section"]).toBe("string");
     expect(await refusal(Promise.resolve().then(place))).toBe("memory-ask-spent");
   }, 120_000);

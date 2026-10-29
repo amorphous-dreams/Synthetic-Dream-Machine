@@ -3,8 +3,9 @@
 #
 #   browser-ci.sh up                        build, found a hearth through the test door (`vessel found --hearth`: the place,
 #                                           its seed charter, one synthetic face), stand the node, open its key through the
-#                                           test door, name the face (`persona new 0`) and WEAR it (`persona wear 0`),
-#                                           restart so the vessel stands as a Lararium, wait healthy, open its key again.
+#                                           test door, name the face (`persona new 0`), restart so the vessel stands as a
+#                                           Lararium, wait healthy, open its key again (the test door's unlock names h0,
+#                                           so the boot mounts the named face).
 #                                           Refuses by name when the port already answers or the project already stands.
 #   browser-ci.sh restart                   restart the node container WITHOUT removing its volumes; wait healthy; open its key
 #   browser-ci.sh join offer                `lares fleet join offer` inside the node (it rides the store door, so it runs
@@ -22,8 +23,8 @@
 #                                           `lares meme get`, JSON on stdout (the text rides in data.text). Default reads
 #                                           AS the mounted wiki (`--recipe <slug>`)
 #   browser-ci.sh info                      one JSON object for the host QA driver: origin (qa and host views), relay URL,
-#                                           gate public key (the node's `[lararium] gate key:` boot line), the worn face
-#                                           (`worn`), the wiki slug, the wiki document the mount resolves (`wikiDoc`) and
+#                                           gate public key (the node's `[lararium] gate key:` boot line), the founding
+#                                           face h0 the unlock mounts (`face`), the wiki slug, the wiki document the mount resolves (`wikiDoc`) and
 #                                           every document registered under the slug, the recipe URI and its bag stack in
 #                                           order, and the registered bag URIs
 #   browser-ci.sh qa <cmd…>                 run <cmd> from the disposable Chromium runner's image (it shares the node's network, node at http://localhost:4321);
@@ -154,8 +155,7 @@ case "$verb" in
     compose up -d --wait lares
     unlock
     lares persona new 0 --name "$FACE"
-    # The face stands WORN: `persona wear` records the worn index and the restart below puts the vessel on it.
-    lares persona wear 0
+    # The face stands named; the restart below re-stands the vessel, and its unlock mounts h0 (the test door names it).
     compose restart lares
     compose up -d --wait lares
     unlock ;;
@@ -268,7 +268,7 @@ case "$verb" in
     node -e '
       const e = process.env;
       const faces = JSON.parse(e.INFO_FACES).data.personas;
-      const face = faces.find((p) => p.active) || faces[0] || null;
+      const face = faces.find((p) => p.handleIndex === 0) || faces[0] || null;
       const host = "http://127.0.0.1:" + e.INFO_PORT;
       const ws = (o) => o.replace(/^http/, "ws") + "/ws";
       const reply = JSON.parse(e.INFO_WIKIS);
@@ -289,8 +289,7 @@ case "$verb" in
         origin: { qa: e.INFO_ORIGIN_QA, host },
         relay: { qa: ws(e.INFO_ORIGIN_QA), host: ws(host) },
         gateKey: e.INFO_GATE,
-        face: face && { name: face.petname, handleIndex: face.handleIndex, worn: face.active === true, verifyingKey: e.INFO_KEY },
-        worn: face ? face.active === true : false,
+        face: face && { name: face.petname, handleIndex: face.handleIndex, verifyingKey: e.INFO_KEY },
         wiki: e.INFO_SLUG,
         wikiDoc: { url: mounted.doc, kind: mounted.kind, bag: mounted.bag },
         wikiDocsRegistered: mine.map((d) => ({ url: d.doc, kind: d.kind })),

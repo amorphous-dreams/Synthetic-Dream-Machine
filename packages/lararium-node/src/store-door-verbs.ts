@@ -27,7 +27,7 @@
  *   edge-seat-facts · edge-seat-marks            the key side's facts and marks (`commands/edge-seats`)
  *   edge-partial · edge-cosign                   a quorum edge act between seats on separate vessels (`commands/edge-cosign`)
  *   cabal-vouch · cabal-join                     the vouch board (`commands/cabal-vouch`, `commands/cabal-join`)
- *   cabal-face                                   the worn face's key in one realm (`commands/cabal-face`)
+ *   cabal-face                                   the acting face's key in one realm (`commands/cabal-face`)
  *   fleet-join-offer · fleet-join-answer         the root holder's half of the fleet-join door (`commands/fleet-join`)
  *   handle-publish · handle-burn · handle-rotate · handle-attest
  *                                                the WHO board (`commands/handle`)
@@ -76,7 +76,7 @@ import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 import { runPersonaLease, PersonaLeaseError } from "./commands/persona-lease.js";
 import { runIntentCommand, IntentRefused, type IntentCommandOptions } from "./commands/intent.js";
 import { FaceNotNamed } from "./face-selector.js";
-import { runEdgeRollAnchors, EdgeRollAnchorError } from "./commands/edge-roll-anchor.js";
+import { runEdgeRollAnchors, rollAnchorFace, EdgeRollAnchorError } from "./commands/edge-roll-anchor.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
 import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "./commands/edge-cosign.js";
 import { runCabalVouch, CabalVouchError } from "./commands/cabal-vouch.js";
@@ -155,16 +155,43 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 
 /** The door's rows, by name — each command's routed call names exactly one of these. */
 export const STORE_DOOR_VERBS = [
-  "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-anchor-edge-open", "nexus-roll-prior-anchor", "nexus-members-list",
+  "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-prior-anchor", "nexus-members-list",
   "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release",
   "nexus-posture", "nexus-admit-take", "nexus-carry-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
-  "fleet-join-offer", "fleet-join-answer",
+  "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor-edge", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-edge-partial", "nexus-roll-anchor-edge-standing",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-lease", "persona-kel-head",
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
+
+/**
+ * THE ROWS THAT ACT AS A FACE: each signs, opens or writes under one face's key (its atom, its root, its handle or its
+ * key in a realm), so on a running vessel each rides a session of that face (session-contract#/the-hands) and never
+ * the maintenance frame. A row names its face by `face`, or by `handleIndex` on the handle and persona rows; naming
+ * none, the command resolves the one face standing open. Every other row acts as the place: the Nexus steward's seat
+ * acts, the place's key-side duties, a face's founding, the refold, and reads of what the place holds.
+ */
+export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>([
+  "edge-kapae", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
+  "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor-edge", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-edge-partial", "nexus-roll-anchor-edge-standing",
+  "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-lease", "nexus-publish", "raise-sign",
+  "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
+]);
+
+/**
+ * The face a face row names: `face`, else `handleIndex`; undefined where it names none. The two naming different faces
+ * refuse `face-row-other-face` (`FaceNotNamed`): one choice, never split between two spellings.
+ */
+export function storeRowFace(args: Readonly<Record<string, unknown>>): number | undefined {
+  const named = (["face", "handleIndex"] as const).map((key) => args[key])
+    .filter((v): v is number => typeof v === "number" && Number.isSafeInteger(v) && v >= 0);
+  if (named.some((v) => v !== named[0])) {
+    throw new FaceNotNamed(`face-row-other-face: the row names face h${named[0]} and h${named[1]}; name one face`);
+  }
+  return named[0];
+}
 
 type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, unknown>>;
 
@@ -284,13 +311,24 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       if (r.landed) await awaitOnRolled(deps.onRolled?.());
       return { ...r };
     }),
+    // A ROLL ANCHORS BY AUTHORITY. The carriage anchor is the place's act: the new quorum's seats sign it, and it rides the
+    // maintenance frame as a place row. Each realm edge anchor of the same roll is a face act, written in one face's
+    // ledger, so it rides a session of that face (`nexus-roll-anchor-edge`).
     "nexus-roll-anchor": (args) => answer("nexus-roll-anchor", async () => {
       const closing = args["closing"] as KahuQuorumSeats, opened = args["opened"] as KahuQuorumSeats;
       const r = await runNexusRollAnchor({ sealHome, repo, closing, opened });
-      // The same roll anchors every realm edge board this vessel keeps quorum acts for (kapae#/rolls).
-      const edgeAnchors = await runEdgeRollAnchors({ sealHome, repo, closing, opened, openedEpoch: args["epoch"] as SealEpoch });
       await awaitOnRolled(deps.onRolled?.());
-      return { ...r, edgeAnchors };
+      return { ...r };
+    }),
+    // The roll's realm edge anchors, as the face named, else the one standing open. With no face open the step answers
+    // `no-face-open` by name and writes nothing; several open with none named refuse FaceNotNamed before any write.
+    "nexus-roll-anchor-edge": (args) => answer("nexus-roll-anchor-edge", async () => {
+      const closing = args["closing"] as KahuQuorumSeats, opened = args["opened"] as KahuQuorumSeats;
+      const face = await rollAnchorFace(int(args["face"]));
+      if (face === undefined) return { outcome: "no-face-open", edgeAnchors: [] };
+      // The roll anchors every realm edge board the acting face's ledger keeps quorum acts for (kapae#/rolls).
+      const edgeAnchors = await runEdgeRollAnchors({ sealHome, repo, closing, opened, openedEpoch: args["epoch"] as SealEpoch, face });
+      return { outcome: "anchored", face, edgeAnchors };
     }),
     // THE TWO-VAULT ROLL ANCHOR (kapae#/rolls): both vaults hold the rolled head; the anchor's partial crosses after it.
     "nexus-roll-anchor-open": (args) => answer("nexus-roll-anchor-open", async () => ({
@@ -298,17 +336,31 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     })),
     // THE REALM EDGE ANCHORS OF THE SAME ROLL: one partial for each realm board this vessel keeps a quorum act for.
     "nexus-roll-anchor-edge-open": (args) => answer("nexus-roll-anchor-edge-open", async () => ({
-      partials: await runEdgeRollAnchorOpen({ sealHome, repo, ...opt("aid", str(args["aid"])) }),
+      partials: await runEdgeRollAnchorOpen({ sealHome, repo, ...opt("aid", str(args["aid"])), ...opt("face", int(args["face"])) }),
     })),
-    // One door takes either family of the roll's anchors: a partial routes by its own family, and the answer names
-    // where each realm's edge anchor stands on this vessel.
+    // Each family of the roll's partials takes its own row: the carriage family acts as the place, the edge family as a face.
     "nexus-roll-anchor-partial": (args) => answer("nexus-roll-anchor-partial", async () => {
-      const read = readNexusActPartial(args["partial"]);
-      const edge = read?.act.family === "edge-roll-anchor";
-      const r = edge ? await runEdgeRollAnchorPartial({ partial: args["partial"], sealHome, repo }) : await runNexusRollAnchorPartial({ partial: args["partial"], sealHome, repo });
+      if (readNexusActPartial(args["partial"])?.act.family === "edge-roll-anchor") {
+        throw new NexusContractError("this partial carries a realm edge anchor, a face's act: take it with the edge row (`nexus-roll-anchor-edge-partial`)");
+      }
+      const r = await runNexusRollAnchorPartial({ partial: args["partial"], sealHome, repo });
       if (r.landed) await awaitOnRolled(deps.onRolled?.());
-      return { ...r, edgeAnchors: await runEdgeRollAnchorStanding({ sealHome, repo, ...(read ? { aid: read.aid } : {}) }) };
+      return { ...r };
     }),
+    "nexus-roll-anchor-edge-partial": (args) => answer("nexus-roll-anchor-edge-partial", async () => {
+      const read = readNexusActPartial(args["partial"]);
+      if (read?.act.family !== "edge-roll-anchor") {
+        throw new NexusContractError("this partial carries no realm edge anchor: take it with the place's row (`nexus-roll-anchor-partial`)");
+      }
+      const face = opt("face", int(args["face"]));
+      const r = await runEdgeRollAnchorPartial({ partial: args["partial"], sealHome, repo, ...face });
+      if (r.landed) await awaitOnRolled(deps.onRolled?.());
+      return { ...r, edgeAnchors: await runEdgeRollAnchorStanding({ sealHome, repo, aid: read.aid, ...face }) };
+    }),
+    // Where each realm's edge anchor of the standing roll stands in one face's ledger: a read as that face.
+    "nexus-roll-anchor-edge-standing": (args) => answer("nexus-roll-anchor-edge-standing", async () => ({
+      edgeAnchors: await runEdgeRollAnchorStanding({ sealHome, repo, ...opt("aid", str(args["aid"])), ...opt("face", int(args["face"])) }),
+    })),
     // A ROLL WAITS ON ITS PRIOR ANCHOR (operator ruling 2026-10-15): the roll's open asks here before any card reads.
     "nexus-roll-prior-anchor": (args) => answer("nexus-roll-prior-anchor", async () => ({
       ...(await runNexusRollPriorAnchorCheck({ sealHome, repo, ...opt("aid", str(args["aid"])) })),
@@ -401,7 +453,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
         raised: args["raised"] !== false, sealHome, repo,
         ...opt("edgeId", str(args["edgeId"])), ...opt("member", str(args["member"])), ...opt("device", str(args["device"])),
         ...(args["hand"] === "quorum" ? { hand: "quorum" as const } : {}), ...opt("realm", str(args["realm"])),
-        ...opt("handleIndex", int(args["handleIndex"])), ...opt("nexusAid", str(args["nexusAid"])), ...opt("parents", strs(args["parents"])),
+        ...opt("handleIndex", int(args["handleIndex"])), ...opt("face", int(args["face"])), ...opt("nexusAid", str(args["nexusAid"])), ...opt("parents", strs(args["parents"])),
       })),
     })),
     // THE KEY SIDE OF A REMOVAL, the vessel's two short acts around the island's `seat-duties` verb (kapae#/keys).
@@ -429,29 +481,29 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...(await runEdgePartial({
         realm: str(args["realm"]) ?? "", raised: args["raised"] !== false, sealHome, repo,
         ...opt("member", str(args["member"])), ...opt("voucher", str(args["voucher"])), ...opt("joiner", str(args["joiner"])),
-        ...opt("nexusAid", str(args["nexusAid"])),
+        ...opt("nexusAid", str(args["nexusAid"])), ...opt("face", int(args["face"])),
       })),
     })),
     "edge-cosign": (args) => answer("edge-cosign", async () => ({
-      ...(await runEdgeCosign({ partial: args["partial"], sealHome, repo, ...opt("confirmActCid", str(args["confirmActCid"])) })),
+      ...(await runEdgeCosign({ partial: args["partial"], sealHome, repo, ...opt("confirmActCid", str(args["confirmActCid"])), ...opt("face", int(args["face"])) })),
     })),
     "cabal-vouch": (args) => answer("cabal-vouch", async () => ({
       ...(await runCabalVouch({
         joiner: str(args["joiner"]) ?? "", realm: str(args["realm"]) ?? "", sealHome, repo,
-        ...opt("nexusAid", str(args["nexusAid"])),
+        ...opt("nexusAid", str(args["nexusAid"])), ...opt("face", int(args["face"])),
       })),
     })),
-    // THE WORN FACE'S KEY IN A REALM: `present` stands the face there (mints its key, notes the realm under its
+    // THE ACTING FACE'S KEY IN A REALM: `present` stands the face there (mints its key, notes the realm under its
     // Nexus); a read mints nothing (`commands/cabal-face`).
     "cabal-face": (args) => answer("cabal-face", async () => ({
       ...(await runCabalFace({
         realm: str(args["realm"]) ?? "", present: args["present"] === true, sealHome, repo,
-        ...opt("nexusAid", str(args["nexusAid"])),
+        ...opt("nexusAid", str(args["nexusAid"])), ...opt("face", int(args["face"])),
       })),
     })),
     "cabal-join": (args) => answer("cabal-join", async () => ({
       ...(await runCabalJoin({
-        realm: str(args["realm"]) ?? "", applicant: str(args["applicant"]) ?? "", sealHome, repo,
+        realm: str(args["realm"]) ?? "", applicant: str(args["applicant"]) ?? "", sealHome, repo, ...opt("face", int(args["face"])),
         ...opt("maxVouchesPerVoucher", int(args["maxVouchesPerVoucher"])),
         ...(args["bundle"] === undefined ? {} : { bundle: args["bundle"] }),
       })),

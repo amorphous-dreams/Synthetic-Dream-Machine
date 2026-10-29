@@ -160,7 +160,7 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   const pair = bundleMemoryKeypair(bundleKey);
   const entries = openMemorySection(Uint8Array.from(Buffer.from(body.memory.section, "base64")), pair.secret)!;
   const carried: Uint8Array[] = [
-    hexToBytes(body.root.signingKey), ...body.faceProofKeys.map((k) => hexToBytes(k.secret)), Uint8Array.from(bundleKey), Uint8Array.from(pair.secret),
+    hexToBytes(body.root.signingKey), ...body.faceProofKeys.map((k) => hexToBytes(k.secret)), hexToBytes(body.addressSecret!), Uint8Array.from(bundleKey), Uint8Array.from(pair.secret),
     ...entries.map((e) => Uint8Array.from(e.key)),
   ];
   expect(entries).toHaveLength(1);
@@ -218,7 +218,7 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   expect(await said(restoreFaceBundle({ sealedBody: a.cut.sealedBody, bundleKey, withRepo }))).toBe("face-already-held");
 
   // ── ANOTHER IDENTITY REFUSES ────────────────────────────────────────────────────────────────────────────────
-  // A second face, cut on a vessel of its own, meets the vessel that wears the restored face.
+  // A second face, cut on a vessel of its own, meets the vessel that mounts the restored face.
   await foundVessel("c");
   const otherKey = mintBundleKey();
   const other = await withRepo(async (repo) => {
@@ -227,7 +227,7 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   });
   expect(other.face.verifyingKey).not.toBe(rootKey);
   await leave();
-  // Back on vessel B, which wears the restored face.
+  // Back on vessel B, which mounts the restored face.
   process.env["LAR_ROOT"] = roots.find((r) => r.includes("lar-rehearsal-b-"))!;
   const { openTestCustody } = await import("./found-route.js");
   await openTestCustody();

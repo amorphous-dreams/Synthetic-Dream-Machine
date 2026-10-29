@@ -44,7 +44,7 @@ import { makeSeatSettler, raisesOwed, type SeatDutiesAnswer, type SeatSettler } 
 import { IslandAskAbandoned, IslandVerbRefused, askIslandVerb } from "../src/island-verb-ask.js";
 import { larSealHome } from "../src/vessel-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
-import { atomKeyOf, atomSeedOf, seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
+import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
 
 const bare = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");

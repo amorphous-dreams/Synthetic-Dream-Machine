@@ -62,8 +62,6 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
   beforeAll(async () => {
     A = await openStaged({ tag: "realms", port: await freePort(), found: async (cli, root) => {
       await foundStagedHearth(cli, root, "club-keeper");
-      const wear = await cli(["persona", "wear", "0"]);
-      if (wear.code !== 0) throw new Error(`persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
       await growStagedQuorum(cli, root, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
     } });
     if (!(await awaitRendezvous(A))) throw new Error(`the vessel reached live but bound no rendezvous:\n${A.bootLog().slice(-800)}`);
@@ -98,7 +96,7 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
   }, 60_000);
 
   test("★ a bag registered in realm R lists in R and in no other realm ★", async () => {
-    const reg = await A!.cli(["nexus", "realm-bag", "ford", "--realm", REALM_R, "--json"]);
+    const reg = await A!.cli(["nexus", "realm-bag", "ford", "--face", "0", "--realm", REALM_R, "--json"]);
     console.error(`realm-select MEASURE register in R: ${said(reg).trim().slice(0, 300)}`);
     expect(reg.json?.["ok"], said(reg)).toBe(true);
     expect(dataOf(reg)["realm"]).toBe(REALM_R);
@@ -134,7 +132,7 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
   }, 120_000);
 
   test("③ CONTROL: with no realm named, a verb routes to the charter-derived realm, and each realm keeps its own record", async () => {
-    const reg = await A!.cli(["nexus", "realm-bag", "ford", "--json"]);
+    const reg = await A!.cli(["nexus", "realm-bag", "ford", "--face", "0", "--json"]);
     expect(reg.json?.["ok"], said(reg)).toBe(true);
     expect(dataOf(reg)["realm"]).toBe(charterRealm);
     expect(userBagsOf(await A!.cli(["nexus", "realm-bags", "--realm", charterRealm, "--json"]))).toEqual([LARES_BAG]);
@@ -145,7 +143,7 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
     expect(rows.every((row) => typeof row["realm"] === "string")).toBe(true);
     expect(rows.map((row) => row["bag"])).toEqual([LARES_BAG, LARES_BAG]);
     // A name that reads as no realm refuses by name.
-    const bad = await A!.cli(["nexus", "realm-bag", "ford", "--realm", "not-a-realm", "--json"]);
+    const bad = await A!.cli(["nexus", "realm-bag", "ford", "--face", "0", "--realm", "not-a-realm", "--json"]);
     expect(bad.json?.["ok"], said(bad)).toBe(false);
     expect(said(bad)).toContain("realm-unreadable");
   }, 120_000);

@@ -57,13 +57,14 @@ import { faceStands } from "./commands/init.js";
 import { deriveMeshSelf } from "./node-caps.js";
 import { parseMeshPeer } from "@lararium/mesh";
 import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh";
-import { makeUdsSeat, serveUdsFront, type UdsFront } from "./uds-channel.js";
-import type { Socket } from "node:net";
+import { makeUdsSeat, serveUdsFront, type UdsChannelOptions, type UdsFront } from "./uds-channel.js";
+import { nodeSwitchActLog } from "./switch-act-log.js";
+import { STORE_DOOR_FACE_ROWS } from "./store-door-verbs.js";
 import { makeCustodyHolder } from "./custody-holder.js";
 import { testScratchNotice } from "./test-scratch-notice.js";
 import { seatCustody } from "./custody-seat.js";
-import { custodyFrameHandler } from "./custody-frames.js";
-import { runSealedAct, type PersonaSelvesPlane, type SealedActContext } from "./sealed-acts.js";
+import { custodyFrameHandler, type CustodyDoor } from "./custody-frames.js";
+import { SESSION_ACTS, runSealedAct, type PersonaSelvesPlane, type SealedActContext } from "./sealed-acts.js";
 import { cutFaceBundle, type BackupDoor } from "./face-bundle-cut.js";
 import { makeLocalPersonaKelHeadAndSeqResolver } from "./local-persona-kel.js";
 import { FsCustodyIo } from "./custody-io.js";
@@ -343,7 +344,7 @@ async function main(): Promise<void> {
   const testScratch = scratchNotice !== null;
   if (scratchNotice) console.log(scratchNotice);
   // Late-bound: the door's acts recompose, and the recomposition closes over what `main` builds below.
-  let custodyDoor: ((parsed: unknown, sock: Socket) => boolean) | null = null;
+  let custodyDoor: CustodyDoor | null = null;
   const front = serveUdsFront({ claim: floor.storeClaim, onFrame: (parsed, sock) => custodyDoor?.(parsed, sock) ?? false });
 
   // ── THE BASE COURSE — every vessel stands as a Herm, and the hearth is what it LIFTS to ──────────────
@@ -384,6 +385,10 @@ async function main(): Promise<void> {
     askedStanding, wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
     reachFaces, originCompositions, receiptRing, readinessState, readinessFace, pronaos, floor, front,
     lanSocket: () => lanSocket,
+    // THE ACTS THAT ACT AS A FACE ride a session and run on the custody door's one chain (`session:act`).
+    sessionActs: { names: SESSION_ACTS, run: async (act, args) => custodyDoor
+      ? { ...(await custodyDoor.act(act, args)) }
+      : { op: "act", status: "error", errorMessage: "this vessel's custody door runs no acts", refusal: { reason: "acts-unavailable" } } },
   };
   const composeStanding = (sovereign: SovereignReaders | null): Promise<StandingComposition> => {
     const lit = faceStands();
@@ -439,6 +444,8 @@ async function main(): Promise<void> {
   };
   custodyDoor = custodyFrameHandler({
     holder, recompose, testScratch,
+    lightFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.lightFace(ordinal); },
+    dropFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.dropFace(ordinal); },
     // A SEALED ROW'S ACT RUNS HERE, on the main thread, against the one seated holder: the act table decides
     // what it reads and answers, and the standing composition lends it the board it may read a KEL head from.
     runAct: (act, args) => runSealedAct(act, args, {
@@ -446,7 +453,7 @@ async function main(): Promise<void> {
       hosting: composition?.hosting ?? null, backup: composition?.backup ?? null,
     }),
     // A BACKUP'S CUT RUNS HERE TOO, against the same seated holder, once the frame's own route proves: the
-    // standing composition lends it the worn face, its own edge's shadow, the island's memory section and the
+    // standing composition lends it the mounted face, its own edge's shadow, the island's memory section and the
     // board's key history (custody#/the-cut).
     backup: (face, bundleKey) => cutFaceBundle({ face, bundleKey, door: composition?.backup ?? null }),
     standing: () => composition?.standing ?? "recomposing",
@@ -489,6 +496,8 @@ interface BootContext {
   /** The verb socket's front: it holds callers while no composition sits. */
   readonly front: UdsFront;
   readonly lanSocket: () => LanDatagramSocket | null;
+  /** The sealed acts that ride a session, and the custody door's chain that runs one. */
+  readonly sessionActs: NonNullable<UdsChannelOptions["sessionActs"]>;
 }
 
 /** One composition's own reading of what it stands as, taken when it composes. */
@@ -497,6 +506,8 @@ interface ComposedAs { readonly standing: ReturnType<typeof standAs>; readonly f
 /** A composition standing on the floor: everything a boot builds past the store's claim and the listening faces. */
 interface StandingComposition {
   readonly standing: "herm" | "hearth";
+  readonly lightFace: (ordinal: number) => Promise<void>;
+  readonly dropFace: (ordinal: number) => Promise<void>;
   /** Stop the PROCESS gracefully: flush, tear down, exit. */
   readonly onSignal: (sig: string) => void;
   /** Tear this composition down and leave the process and its floor standing. */
@@ -667,6 +678,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   };
   return {
     standing: "herm",
+    lightFace: herm.lightFace, dropFace: herm.dropFace,
     onSignal: (sig) => void hermShutdown(sig),
     teardown: async () => { await front.detach(); await herm.teardown(); },
     personaSelves: herm.personaSelves,
@@ -680,7 +692,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
 async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: SovereignReaders | null): Promise<StandingComposition> {
   const { wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
           reachFaces, originCompositions, receiptRing, readinessState, readinessFace, pronaos, floor, front, lanSocket,
-          standing, faceLit } = ctx;
+          standing, faceLit, sessionActs } = ctx;
 
   // Only an asked lararium lifts to the hearth, and an asked lararium composed its origins before listen.
   if (originCompositions === null) throw new Error("[lararium] a hearth stood without its composed origins");
@@ -767,6 +779,10 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     placeVerb:    (o) => result.daemon.placeVerb(o),
     claim:        floor.storeClaim,
     repo:         result.repo,
+    sessions:     result.sessionDoor,
+    switchActs:   nodeSwitchActLog,
+    sessionVerbs: STORE_DOOR_FACE_ROWS,
+    sessionActs,
     ...(receiptRing !== undefined && { ring: receiptRing.count, ringBytes: receiptRing.bytes }),
     onLog: (line) => console.log(`[lararium] ${line}`),
   }));
@@ -918,6 +934,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   };
   return {
     standing: "hearth",
+    lightFace: result.lightFace, dropFace: result.dropFace,
     onSignal: (sig) => void shutdown(sig),
     teardown: async () => { await front.detach(); await result.teardown(); },
     kelHead: async (prefix) => (await makeLocalPersonaKelHeadAndSeqResolver(result.repo))(prefix),

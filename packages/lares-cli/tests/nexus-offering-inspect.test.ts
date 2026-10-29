@@ -6,7 +6,7 @@ import { cmdNexus } from "../src/commands/nexus.js";
 import { cmdVessel } from "../src/commands/vessel.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { sha256HexBytesSync } from "@lararium/mesh";
-import { generateOrLoadPersonaGroupRoot, wearPersona } from "@lararium/node";
+import { generateOrLoadPersonaGroupRoot } from "@lararium/node";
 import { runNexusPublishPlugins, ownedStore } from "@lararium/node";
 import { larDataDir } from "@lararium/node";
 
@@ -55,7 +55,6 @@ async function stand(): Promise<void> {
   writeFileSync(join(root, ".lar-test-scratch"), "");   // a staged root: the place card's read-back stands in
   await cmdVessel({ command: "vessel", positional: ["found"], options: {}, flags: { json: true } });
   await generateOrLoadPersonaGroupRoot(0);
-  await wearPersona(0);
 }
 
 describe("lares nexus offering inspect — CLI boundary", () => {

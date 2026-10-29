@@ -91,6 +91,7 @@ const SOWN: Record<string, string> = {
   [`identity/faces/${FCID}/face-address-secret-g${"5e".repeat(32)}.bin`]: "x",
   [`identity/faces/${FCID}/fleet-join-pending-g${"6e".repeat(32)}.json`]: "{}",
   [`identity/faces/${FCID}/face-join-record-g${"6f".repeat(32)}.json`]: "{}",
+  "identity/switch-acts.json":                 "[]",
   "identity/.persona-enroll-pending.json":      "{}",
   "identity/.persona-grant-pending.json":       "{}",
   "identity/.persona-admissions.json":          "{}",
@@ -133,7 +134,8 @@ const RULED: Record<string, CustodyClass> = {
   "sealed-outbox": "outbox", "outbox-key": "face-hot",
   "gate-root": "hot", "veil-archive": "face-hot", "face-anchor": "face-hot", "face-atom": "face-hot", "face-atom-ask": "face-hot", "face-owner": "face-hot",
   "fk-slots": "floor", "face-index": "floor-plain",
-  "enroll-pending": "hot", "grant-pending": "hot", "guardian-set": "face-hot", "admissions": "hot", "anchors": "face-hot",
+  // A session switch's acts name two faces together, so they rest sealed on this vessel and in no document.
+  "switch-acts": "hot", "enroll-pending": "hot", "grant-pending": "hot", "guardian-set": "face-hot", "admissions": "hot", "anchors": "face-hot",
   "persona-roster": "face-hot", "persona-petnames": "face-hot", "persona-declarations": "face-hot",
   "public-handles": "face-hot", "handle-book": "face-hot",
   "hosting-state": "face-hot", "hosting-spent": "face-hot", "hosting-carry": "face-hot", "walk": "face-hot", "gate-memory": "face-hot",

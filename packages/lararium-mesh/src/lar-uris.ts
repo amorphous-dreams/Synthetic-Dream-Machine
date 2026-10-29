@@ -585,9 +585,6 @@ export const PERSONA_KEL_PREFIX_TIDDLER     = `${PERSONA_NAMESPACE}/binding/pers
 // Canon: lar:///ha.ka.ba/lararium/api/personal-slot#/core-claim
 export const PERSONAL_BINDINGS_PREFIX = `${PERSONA_NAMESPACE}/personal-bindings`;
 export const DRAFT_BINDINGS_PREFIX    = `${PERSONA_NAMESPACE}/draft-bindings`;
-// working binds like personal (PersonaGroup×fingerprint, cross-device) — the
-// SAVED live write layer; normal edits route here, canon publishes on promotion.
-export const WORKING_BINDINGS_PREFIX  = `${PERSONA_NAMESPACE}/working-bindings`;
 
 // ── Well-known bag slot IDs ────────────────────────────────────────────────
 // Six root docs (two planes) + in-memory leaves.

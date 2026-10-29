@@ -8,7 +8,7 @@
  * V7 THE FLOOR CLOSES EVERY DOOR, the vessel key's mint among them. Control: an existing vessel key loads at the floor.
  * V8 THE VESSEL MINT ARMS THE KEL. It lands the key and its armed inception, which names that key and commits the
  *    digest of a cold next key, with no clock and no version; no next-key seed stands on disk. Control: a second call reads both files unchanged.
- * V9 WEAR REQUIRES A HELD ROOT. Control: a held root wears in session, and a cleared choice leaves two unlocked faces unworn.
+ * V9 A MOUNT REQUIRES A HELD ROOT. Control: a held root mounts at the unlock's choice, a command never reads that choice, and a cleared choice leaves two unlocked faces unmounted.
  * V10 THREE MAPS SEAL AND ROUND-TRIP. Control: entries sort and absent clears leave a readable row.
  * V11 TAMPER PROBE RETIRES THE SEATED KEY. Control: the new tree key opens every row whole.
  * V12 TWO HOLDERS SHARE ONE TREE. Control: both pet-name updates and the raced root mint remain whole.
@@ -40,11 +40,12 @@ import {
 import {
   generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey,
   listPersonaRoots, listPersonaRosterLines, personaRootExists, orphanPersonaRoots,
-  makeNodeFsPersonaVault, loadActivePersonaIndex, wearPersona,
+  makeNodeFsPersonaVault, setMountedFace, sovereignStands,
   makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, makeNodePublicHandleStore,
   generateOrLoadVesselIdentity, VesselKeyMintRefused, VesselInceptionRefused,
-  setWornFaceInSession, loadVesselIdentity, loadVesselVerifyingKey, vesselPlaceSignerDoor, vesselFloorKeyDoor,
+  loadVesselIdentity, loadVesselVerifyingKey, vesselPlaceSignerDoor, vesselFloorKeyDoor,
 } from "../src/node-vessel-identity.js";
+import { FaceNotNamed, resolveFace } from "../src/face-selector.js";
 import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { rotateCustody } from "../src/custody-session.js";
@@ -89,11 +90,11 @@ beforeEach(async () => {
   configHome = mkdtempSync(join(tmpdir(), "synthetic-git-config-"));
   process.env.HOME = configHome; process.env.XDG_CONFIG_HOME = configHome; process.env.GIT_CONFIG_GLOBAL = "/dev/null";
   c = await seatScratchCustody("vessel-identity");
-  setWornFaceInSession(undefined);
+  setMountedFace(undefined);
 });
 afterEach(async () => {
   await c.drop();
-  setWornFaceInSession(undefined);
+  setMountedFace(undefined);
   if (priorHome === undefined) delete process.env.HOME; else process.env.HOME = priorHome;
   if (priorXdg === undefined) delete process.env.XDG_CONFIG_HOME; else process.env.XDG_CONFIG_HOME = priorXdg;
   if (priorGlobal === undefined) delete process.env.GIT_CONFIG_GLOBAL; else process.env.GIT_CONFIG_GLOBAL = priorGlobal;
@@ -160,7 +161,7 @@ describe("sealed vessel identity family", () => {
 
   test("V4 absent face rows read empty", async () => {
     expect(await listPersonaRoots()).toEqual([]);
-    expect(await loadActivePersonaIndex()).toBeUndefined();
+    expect(await (await makeNodeFsPersonaVault()).selector.load()).toBeUndefined();
     const pets = await makeNodePersonaPetnameStore(); const decl = await makeNodePersonaDeclarationStore(); const handles = await makeNodePublicHandleStore();
     expect(await pets.get(0)).toBeUndefined(); expect(await pets.entries()).toEqual([]);
     expect(await decl.get(0)).toBeUndefined(); expect(await decl.entries()).toEqual([]);
@@ -168,7 +169,7 @@ describe("sealed vessel identity family", () => {
   });
 
   test("V5 all standing rows refuse tampered, truncated, and bare bytes at every door", async () => {
-    await generateOrLoadPersonaGroupRoot(0); await wearPersona(0);
+    await generateOrLoadPersonaGroupRoot(0);
     const pets = await makeNodePersonaPetnameStore(); const decl = await makeNodePersonaDeclarationStore(); const handles = await makeNodePublicHandleStore();
     await pets.set(0, "private-label"); await decl.set(0, { handle: "declared" }); await handles.save({ handleIndex: 0, contextIndex: 0, nym: "public-nym", glamour: "G", heads: [] });
     const rows = [
@@ -231,7 +232,7 @@ describe("sealed vessel identity family", () => {
   });
 
   test("V7 the custody floor closes every identity door", async () => {
-    const doors = [() => listPersonaRoots(), () => listPersonaRosterLines(), () => personaRootExists(0), () => loadPersonaGroupRootVerifyingKey(0), () => loadPersonaGroupRootSeed(0), () => generateOrLoadPersonaGroupRoot(0), () => loadActivePersonaIndex(), () => wearPersona(0), async () => (await makeNodePersonaPetnameStore()).entries(), async () => (await makeNodePersonaDeclarationStore()).entries(), async () => (await makeNodePublicHandleStore()).list()];
+    const doors = [() => listPersonaRoots(), () => listPersonaRosterLines(), () => personaRootExists(0), () => loadPersonaGroupRootVerifyingKey(0), () => loadPersonaGroupRootSeed(0), () => generateOrLoadPersonaGroupRoot(0), () => resolveFace(), async () => (await makeNodePersonaPetnameStore()).entries(), async () => (await makeNodePersonaDeclarationStore()).entries(), async () => (await makeNodePublicHandleStore()).list()];
     await c.holder.lock();
     for (const door of doors) await expect(Promise.resolve().then(door)).rejects.toThrow(CustodyLocked);
     await expect(mintVessel()).rejects.toThrow(VesselKeyMintRefused);
@@ -260,15 +261,24 @@ describe("sealed vessel identity family", () => {
     expect(read(".vessel-kel.json").equals(kel)).toBe(true); expect(read(".vessel-key.json").equals(key)).toBe(true);
   });
 
-  test("V9 wear requires a committed persona root", async () => {
-    await expect(wearPersona(4)).rejects.toThrow(/cannot wear persona/);
+  test("V9 a mount requires a committed persona root", async () => {
+    const mounted = async () => (await makeNodeFsPersonaVault()).selector.load();
+    await generateOrLoadPersonaGroupRoot(5);
+    setMountedFace(4);                                 // no root held at h4: the composition does not stand
+    expect(sovereignStands()).toBe(false);
+    await expect(loadPersonaGroupRootSeed(4)).rejects.toThrow(/no persona-root at h4/);   // a root must be held to sign as it
+    expect(await loadPersonaGroupRootSeed(5)).toHaveLength(32);                            // CONTROL: the held root signs
     expect(existsSync(at(".active-persona.json"))).toBe(false);
-    await generateOrLoadPersonaGroupRoot(4); await generateOrLoadPersonaGroupRoot(5);
-    expect(await loadActivePersonaIndex()).toBeUndefined();
-    await wearPersona(4);
-    expect(await loadActivePersonaIndex()).toBe(4);
-    setWornFaceInSession(undefined);
-    expect(await loadActivePersonaIndex()).toBeUndefined();
+    setMountedFace(undefined);
+    await generateOrLoadPersonaGroupRoot(4);
+    expect(await mounted()).toBeUndefined();
+    setMountedFace(4);
+    expect(await mounted()).toBe(4);
+    expect(sovereignStands()).toBe(true);
+    await expect(resolveFace()).rejects.toBeInstanceOf(FaceNotNamed);   // a command never reads the mount
+    setMountedFace(undefined);
+    expect(await mounted()).toBeUndefined();
+    expect(sovereignStands()).toBe(false);
   });
 
   test("V10 each face's three maps seal, sort, and clear", async () => {
@@ -292,8 +302,8 @@ describe("sealed vessel identity family", () => {
     expect(await handles.load(1)).toEqual({ handleIndex: 1, contextIndex: 0, nym: "nym-1", glamour: "G", heads: [] });
   });
 
-  test("V11 S key rotation leaves face rows sealed under their own keys and the worn choice stays in session", async () => {
-    await generateOrLoadPersonaGroupRoot(0); await wearPersona(0);
+  test("V11 S key rotation leaves face rows sealed under their own keys and the sole open face still resolves", async () => {
+    await generateOrLoadPersonaGroupRoot(0);
     const pets = await makeNodePersonaPetnameStore(); await pets.set(0, "private");
     const faceFiles = [rootFile(0), rosterFile(0), petFile(0)];
     const faceBefore = faceFiles.map(read);
@@ -301,12 +311,11 @@ describe("sealed vessel identity family", () => {
     faceFiles.forEach((file, i) => expect(read(file).equals(faceBefore[i]!), `${file} keeps its face seal through S key rotation`).toBe(true));
     expect(await listPersonaRoots()).toEqual([0]);
     expect(await pets.get(0)).toBe("private");
-    expect(await loadActivePersonaIndex()).toBe(0);
+    expect(await resolveFace()).toBe(0);
     expect((await cold<{ verifyingKey: string }>(rootFile(0))).verifyingKey).toMatch(HEX);
     const fresh = makeCustodyHolder({ io: c.io, homes: c.homes }); await fresh.adopt(rotated.treeKey);
     await fresh.unlockFaces([{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]); seatCustody(fresh);
-    setWornFaceInSession(undefined);
-    expect(await listPersonaRoots()).toEqual([0]); expect(await loadActivePersonaIndex()).toBe(0);
+    expect(await listPersonaRoots()).toEqual([0]); expect(await resolveFace()).toBe(0);
     expect(await pets.get(0)).toBe("private"); expect(await loadPersonaGroupRootSeed(0)).toHaveLength(32);
     await fresh.lock(); seatCustody(c.holder);
   });

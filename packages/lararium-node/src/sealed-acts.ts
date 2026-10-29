@@ -35,6 +35,8 @@
  *
  * Node-main only: a worker never imports this module.
  */
+import { FaceNotNamed, resolveFace } from "./face-selector.js";
+import { unlockedFaceOrdinals } from "./custody-seat.js";
 import {
   HandleBook,
   type HandleBookSnapshot, type PersonaDeclaration,
@@ -45,7 +47,7 @@ import { abandonRollCircleAct, cardOf, fileRollCircleAct, joinRollCircleAct, ope
 import { NexusContractError, runNexusAcceptCarriage, runNexusRollPriorAnchorCheck } from "./commands/nexus-contract.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "./node-circle-store.js";
 import {
-  listPersonaRosterLines, loadActivePersonaIndex, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, orphanPersonaRoots, wearPersona,
+  listPersonaRosterLines, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, orphanPersonaRoots,
 } from "./node-vessel-identity.js";
 import type { Repo } from "@automerge/automerge-repo";
 import type { BackupDoor } from "./face-bundle-cut.js";
@@ -338,10 +340,30 @@ async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
 }
 
 /**
+ * THE ACTS THAT ACT AS A FACE: each signs, reads or writes as one face (its key or root, its handle book, its own
+ * plane), so on a running vessel each rides a session of that face (`session:act`) and its receipt binds to the face;
+ * the custody door's own `act` frame refuses them `face-act-rides-a-session`. Every other act stays at the custody
+ * door, acting as the place under a human unlock (hands-spine-lane#/watch names each and why):
+ * `face.resolve` chooses the face and cannot ride the session it chooses; the seat, seal, cofound and roll-circle
+ * acts are the charter's seats; petname.* and declaration.* write the place's sealed rows naming its faces (the face's
+ * plane takes a name only by `selves.carry`); the persona reads (`roots`, `guardian.show`, `provisional`, `head`) and
+ * `selves.read`, `walk.state`, `host.state`, `carriage.readings` and `crossing.state` sign no face's key, and
+ * `persona.view` signs as a held chair (a seat key), never as a face; crossing.open/bind/seal are the charter's rite; `walk.invite` and `host.invite` hand the place's wallet;
+ * and `bundle.restore`/`bundle.import` land a face anew as recovery.
+ */
+export const SESSION_ACTS: ReadonlySet<string> = new Set([
+  // Sign under the face's key or root: its Nexus credential, its walk record, its hosting epoch, its hand and witness in
+  // a crossing, its consent to a Nexus's carriage, its first guardians, and its confirm of its own restored standing.
+  "persona.reissue", "walk.take", "host.roll", "crossing.sign", "crossing.witness", "carriage.accept", "persona.guardian.enrol", "persona.confirm",
+  // Read or write what the face alone keeps: its handle book, and its names on its own persona plane.
+  "handle-book.load", "handle-book.save", "selves.carry", "selves.clear",
+]);
+
+/**
  * THE TABLE. Each row: the arguments it takes, and the act. A row answers what its command prints.
  *
- *   persona.roots         the roster: each held handle-index with its root's public key, the worn index, the orphans
- *   persona.wear          wear the face at an index this vessel holds a root for
+ *   persona.roots         the roster: each held handle-index with its root's public key, and the orphans
+ *   face.resolve          the face a command acts as: the one named, else the one face standing open
  *   seat.held             which of the public keys asked this vessel holds a seat key for: a reading of row names
  *   seat.arm-genesis      give each chair that stands a seat key minted behind this door, and answer the roster;
  *                         the command mints each chair's next key as a card in its own process; it writes no charter
@@ -396,18 +418,21 @@ async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
  *                         face, hands the section to its daemon island's import door. A command running the act in
  *                         its own process holds no island, and refuses by name
  */
+
 export const SEALED_ACTS = Object.freeze({
   "persona.roots": act({}, async () => {
     const lines = await listPersonaRosterLines();
     return {
       roots: lines.map((l) => ({ handleIndex: l.handleIndex, verifyingKey: l.verifyingKey })),
-      active: (await loadActivePersonaIndex()) ?? null,
       orphans: await orphanPersonaRoots(),
     };
   }),
-  "persona.wear": act({ handleIndex: index }, async ({ handleIndex }) => {
-    await wearPersona(handleIndex);
-    return { active: handleIndex };
+  // WHICH FACE A COMMAND ACTS AS: the one it names, else the one face standing open (`face-selector`); several and none
+  // named refuse by name. A command's own process asks this; nothing the composition mounts answers it.
+  // `orNone`: a vessel with no face open answers `face: null` (an act that may act as no face, as a seal roll), never a refusal.
+  "face.resolve": act({ face: optional(index), orNone: optional(flag) }, async (a) => {
+    if (a.orNone === true && a.face === undefined && (await unlockedFaceOrdinals()).length === 0) return { face: null };
+    return { face: await resolveFace(a.face) };
   }),
   // THE SEATS' OWN KEYS (`seal-ceremony`, `seat-key-store`). A chair's keys mint behind this door and never cross
   // it: the arming rows answer public halves, the roster to write and a digest, and the charter's own writer stays
@@ -551,9 +576,9 @@ export const SEALED_ACTS = Object.freeze({
   // rests sealed (`node-walk-store`) and its three acts ride this door: a carried invite as a verb's argument, or
   // an invite as a verb's outcome, would rest in the daemon's document in the clear.
   "walk.state": act({}, async () => ({ walks: (await runWalkState()).map((w) => ({ ...w })) })),
-  "walk.take": act({ carried: text }, async (a, ctx) => {
+  "walk.take": act({ carried: text, face: optional(index) }, async (a, ctx) => {
     const dialGate = ctx.walk?.dialGate()?.toLowerCase() ?? null;
-    const taken = await walkOrRefuse(runWalkTake({ carried: a.carried, dialGate }));
+    const taken = await walkOrRefuse(runWalkTake({ carried: a.carried, dialGate, ...(a.face !== undefined ? { face: a.face } : {}) }));
     // A fresh invite for the hearth this vessel's walk dial stands to re-presents at once.
     const represent = taken.gatePubKey === dialGate ? (ctx.walk?.represent ?? null) : null;
     if (represent) await represent();
@@ -565,11 +590,12 @@ export const SEALED_ACTS = Object.freeze({
   // `hosting-carry`), so its three doors ride this door: a bearer invite as a verb's outcome would rest in the
   // daemon's document in the clear. A roll lands its act on the store the composition lends, and tells it so.
   "host.state": act({}, async () => ({ nexuses: (await runHostState({ sealHome: larSealHome() })).map((n) => ({ ...n })) })),
-  "host.roll": act({ nexusAid: optional(text), cap: optional(count) }, async (a, ctx) => {
+  "host.roll": act({ nexusAid: optional(text), cap: optional(count), face: optional(index) }, async (a, ctx) => {
     const store = ctx.hosting;
     if (!store) throw refuse("no store stands here to land a hosting act on");
     const rolled = await hostOrRefuse(store.withRepo((repo) => runHostRoll({
       sealHome: larSealHome(), repo, ...(a.nexusAid !== undefined ? { nexusAid: a.nexusAid } : {}), ...(a.cap !== undefined ? { cap: a.cap } : {}),
+      ...(a.face !== undefined ? { face: a.face } : {}),
     })));
     await store.rolled(rolled.nexusAid);
     return { ...rolled };
@@ -582,11 +608,11 @@ export const SEALED_ACTS = Object.freeze({
 
   // THE FACE'S KEY AT ONE NEXUS. The key rests sealed and cold, and the re-issue lands its signed hand-over on the
   // Nexus's carriage board through the store the composition lends; the answer names public keys alone.
-  "persona.reissue": act({ nexusAid: optional(text) }, async (a, ctx) => {
+  "persona.reissue": act({ nexusAid: optional(text), face: optional(index) }, async (a, ctx) => {
     const store = ctx.hosting;
     if (!store) throw refuse("no store stands here to land a hand-over on");
     return { ...(await reissueOrRefuse(store.withRepo((repo) => runNexusKeyReissue({
-      sealHome: larSealHome(), repo, ...(a.nexusAid !== undefined ? { nexusAid: a.nexusAid } : {}),
+      sealHome: larSealHome(), repo, ...(a.nexusAid !== undefined ? { nexusAid: a.nexusAid } : {}), ...(a.face !== undefined ? { face: a.face } : {}),
     })))) };
   }),
 
@@ -704,6 +730,11 @@ export async function runSealedAct(name: unknown, rawArgs: unknown, ctx: SealedA
   const row: ActRow = SEALED_ACTS[name];
   const args = readArgs(name, row.shape, rawArgs);
   // A RESTORED FACE that still stands provisional refuses every authority-changing act by one name, from any row.
+  // An act that resolves no face among several refuses by that name too: the command names one (`--face N`).
   try { return await row.run(args as never, ctx); }
-  catch (err) { if (err instanceof FaceProvisional) throw new SealedActRefused("face-provisional", err.message); throw err; }
+  catch (err) {
+    if (err instanceof FaceProvisional) throw new SealedActRefused("face-provisional", err.message);
+    if (err instanceof FaceNotNamed) throw refuse(err.message);
+    throw err;
+  }
 }

@@ -17,7 +17,7 @@ import { makeCustodyHolder, seatFaceAutoFounder, type CustodyHolder } from "../s
 import { seatCustody, unseatCustody } from "../src/custody-seat.js";
 import { seatFaceRoute } from "../src/face-route.js";
 import { vesselCustodyHomes, type CustodyHomes } from "../src/vault-carriers.js";
-import { setWornFaceInSession } from "../src/node-vessel-identity.js";
+import { setMountedFace } from "../src/node-vessel-identity.js";
 
 /** The synthetic route every fixture custody founds under. */
 export const FIXTURE_PASSPHRASE = "fixture-custody-passphrase";
@@ -63,9 +63,9 @@ export async function seatScratchCustody(label = "seat"): Promise<SeatedScratchC
 /** A scratch custody with its founding face standing unlocked for hosting's first write. */
 export async function seatHostingCustody(label = "hosting"): Promise<SeatedScratchCustody> {
   const c = await seatScratchCustody(label);
-  setWornFaceInSession(undefined);
+  setMountedFace(undefined);
   await c.holder.foundFace({ ordinal: 0, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
-  return { ...c, async drop() { setWornFaceInSession(undefined); await c.drop(); } };
+  return { ...c, async drop() { setMountedFace(undefined); await c.drop(); } };
 }
 
 /**

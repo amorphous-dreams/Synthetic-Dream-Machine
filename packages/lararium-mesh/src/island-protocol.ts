@@ -60,6 +60,7 @@
 
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { FaceAnchor } from "./face-anchor.js";
+import type { WorkingFloorAnchor } from "./wiki-recipe.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 import type { WorldlineEdgeTriple, WorldlineEdgeClose } from "./worldline-edge.js";
 import type { SparseFormVector } from "./worldline-trajectory.js";
@@ -246,6 +247,7 @@ export interface IslandMsg_Manifest {
    * boundary (operator-confirmed): the daemon island is the authn/z home.
    */
   daemonAuth?: {
+    joinedFaces?: readonly JoinedFaceAuth[];
     /** The mounted face's random atom seed and its verifying key. */
     atom?: { readonly seed: string; readonly key: string };
     /** The veil identity's prior archive — restores its prekeys so material keyed to the veil's card
@@ -253,6 +255,14 @@ export interface IslandMsg_Manifest {
     veilArchiveBytes?: Uint8Array;
     /** Public place key for place checks; the face's atom supplies Keyhive identity. */
     placeVerifyingKey:     string;
+    /** THE FLOOR'S OWN ANCHOR, read by the opener from what the vessel holds (`WorkingFloorAnchor`): a node's place KEL prefix,
+     *  or a browser leaf's private Nexus of one. A faceless floor keys its working documents by it. Absent only where the
+     *  vessel holds neither, and then a floor working layer refuses `no-place`. */
+    workingFloorAnchor?:   WorkingFloorAnchor;
+    /** THE MOUNTED FACE'S ADDRESS SECRET, hex, read from main-thread custody at the manifest's build (the node's
+     *  `face-address-secret` row, the browser's keystore row): the face's working documents derive their addresses from
+     *  it (`faceWorkingDocUrl`). It crosses the worker boundary beside the atom seed, and only with a face lit. */
+    faceAddressSecret?:    string;
     /** The FACE's pins, present only when a face stands. A place founded and never lit carries NONE of
      *  them, and that names the WAKING FLOOR rather than a fault — canon has a vessel boot permissionlessly
      *  on its own key. The worker refuses a TORN face (some pins, not all), so absence buys FEWER CAPS and
@@ -285,6 +295,11 @@ export interface IslandMsg_Manifest {
     archiveOpens:          boolean;
   };
 }
+
+/** Authentication material carried by one unlocked joined face. */
+export type JoinedFaceAuth = Required<Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>,
+  "atom" | "personaGroupId" | "faceAnchor" | "personaKel" | "deviceEdge" | "signerDid" | "registerBags">> &
+  Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret">;
 
 /**
  * Cool the wiki slot from `wela` (hot) to `anu` (cold) — teardown; thread
@@ -337,6 +352,7 @@ export interface DaemonMsg_PlaceVerb {
   verb: string;
   args: Record<string, unknown>;
   requestedBy: string;
+  face?: string;
   targets?: string[];
   batchMode?: string;
   requestId?: string;
@@ -534,6 +550,17 @@ export interface DaemonMsg_VerbResult {
 }
 
 
+export interface DaemonMsg_FaceSettled { type: "daemon:face-settled"; atomKey: string; op: "lit" | "dropped"; ok: boolean; reason?: string; }
+export const mkDaemonFaceSettled = (atomKey: string, op: "lit" | "dropped", ok: boolean, reason?: string): DaemonMsg_FaceSettled => ({ type: "daemon:face-settled", atomKey, op, ok, ...(reason === undefined ? {} : { reason }) });
+export const isDaemonFaceSettled = (v: IslandToVesselMsg): v is DaemonMsg_FaceSettled => v.type === "daemon:face-settled";
+
+export interface DaemonMsg_FaceLit { type: "daemon:face-lit"; entry: JoinedFaceAuth; }
+export interface DaemonMsg_FaceDrop { type: "daemon:face-drop"; atomKey: string; }
+export const mkDaemonFaceLit = (entry: JoinedFaceAuth): DaemonMsg_FaceLit => ({ type: "daemon:face-lit", entry });
+export const mkDaemonFaceDrop = (atomKey: string): DaemonMsg_FaceDrop => ({ type: "daemon:face-drop", atomKey });
+export const isDaemonFaceLit = (v: VesselToIslandMsg): v is DaemonMsg_FaceLit => v.type === "daemon:face-lit";
+export const isDaemonFaceDrop = (v: VesselToIslandMsg): v is DaemonMsg_FaceDrop => v.type === "daemon:face-drop";
+
 /**
  * PeerClass — the class a gate's sorter answers for an admitted socket, before its verdict; the node
  * sharePolicy reads it to route every document.
@@ -686,6 +713,8 @@ export type VesselToIslandMsg =
   | DaemonMsg_WorldlineCompareRequest
   | DaemonMsg_WorldlineTrajectoryRequest
   | DaemonMsg_VerbResult
+  | DaemonMsg_FaceLit
+  | DaemonMsg_FaceDrop
   | DaemonMsg_ResolveBindingRequest
   | DaemonMsg_EvictResult
   | DaemonMsg_ResidencyOpResult
@@ -967,6 +996,7 @@ export type IslandToVesselMsg =
   | IslandMsg_GateClear
   | IslandMsg_GateRefused
   | WikiMsg_VerbResult
+  | DaemonMsg_FaceSettled
   | DaemonMsg_DelegateVerb
   | DaemonMsg_DeriveSkeletonResult
   | DaemonMsg_WorldlineCompareResult
@@ -1001,7 +1031,7 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (v.type === LAR_CONTROL_EVENT) return readLarControlEvent(v) !== null;
   if (v.type === LAR_RESEND) return readLarResend(v) !== null;
   if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "doc:rested", "custody:written", "view:catalog-result", "view:content-result", "view:settled"] as const)
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "doc:rested", "custody:written", "view:catalog-result", "view:content-result", "view:settled"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 
@@ -1009,11 +1039,15 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (!_hasType(v)) return false;
   // The camera's answers read whole at the vessel's door too: a frame whose key paints from two payloads, a
   // refusal that names no reason, a host door the house never named, each vanishes before any handler.
+  if (v.type === "daemon:face-settled") {
+    const msg = v as Record<string, unknown>;
+    return typeof msg.atomKey === "string" && (msg.op === "lit" || msg.op === "dropped") && typeof msg.ok === "boolean" && (msg.reason === undefined || typeof msg.reason === "string");
+  }
   if (v.type === LAR_FRAME) return readLarFrame(v) !== null;
   if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
   if (v.type === LAR_SERVICE) return readLarService(v) !== null;
   if (isPortKind(v.type)) return readPortIslandMsg(v) !== null;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
     v.type as Exclude<IslandToVesselMsg["type"], LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }
@@ -1098,6 +1132,7 @@ export function mkDaemonPlaceVerb(opts: {
   verb: string;
   args: Record<string, unknown>;
   requestedBy: string;
+  face?: string;
   targets?: string[];
   batchMode?: string;
   requestId?: string;
@@ -1117,6 +1152,7 @@ export function mkDaemonPlaceVerb(opts: {
   if (opts.fromUri)          msg.fromUri    = opts.fromUri;
   if (opts.listenable)       msg.listenable = opts.listenable;
   if (opts.effectKey)        msg.effectKey  = opts.effectKey;
+  if (opts.face)             msg.face       = opts.face;
   return msg;
 }
 

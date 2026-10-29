@@ -45,6 +45,15 @@
  *       frame, and the command opens no key session. A vessel's refusal of a roll reads as the hosting door's own
  *       refusal (exit code and words).
  *                                 control: the roll's act frame holds its Nexus and its cap, and nothing else
+ *   D12 RED: A FACE'S HANDLE BOOK RIDES A SESSION OF THAT FACE. `handle-book.load` and `handle-book.save` read and write
+ *       one face's book, so each rides `session:act` on a session of the face it names, and the custody door's own
+ *       act frame refuses either `face-act-rides-a-session`.
+ *                                 control: the book a load answers is the book the save sends back
+ *   D13 RED: EVERY ACT THAT SIGNS, OPENS OR WRITES AS A FACE RIDES A SESSION OF THAT FACE. The acts that name their face
+ *       by `handleIndex` (a crossing's hand and witness, the carriage consent, the first guardians, a restored face's
+ *       confirm, the fleet mirror's carry and clear) ride `session:act` on a session of the face they name, carrying
+ *       `handleIndex` alone; the custody door's own act frame refuses each.
+ *                                 control: an act of the place (`petname.set`) keeps the custody door's frame
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -53,15 +62,18 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   CustodyLocked, CustodyRowUnavailable, FsCustodyIo, SEALED_ACT_NAMES, SealedActRefused, claimStore, custodyFrameHandler, foundCustody,
-  larDataDir, larSealHome, loadIdentityAnchors, makeCustodyHolder, persistIdentityAnchors, readNexusDoc, seatCustody, seatedCustody, serveUdsFront,
+  larDataDir, larSealHome, loadIdentityAnchors, makeCustodyHolder, makeUdsSeat, persistIdentityAnchors, readNexusDoc, SESSION_ACTS, seatCustody, seatedCustody, serveUdsFront,
   vesselCustodyHomes, type CustodyHolder,
 } from "@lararium/node";
-import { foundingRoster } from "@lararium/mesh";
+import { foundingRoster, AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, wikiSlotUri, type LarDoc } from "@lararium/mesh";
+import type { SessionFace } from "@lararium/mesh/session-contract";
+import { Repo } from "../../lararium-node/node_modules/@automerge/automerge-repo/dist/index.js";
 import { dispatch } from "../src/bin/lares.js";
 import { OfflineCustodyRefused, seatOfflineCustody, TEST_ROUTE_PASSPHRASE, TEST_SCRATCH_MARKER } from "../src/offline-custody.js";
 import { sealedActVia } from "../src/sealed-act-door.js";
+import { sendCustodyFrame } from "../src/custody-door.js";
 import { carryOwnName, clearOwnName, makeFleetDeclarationStore, makeFleetPetnameStore, readFleetSelves } from "../src/daemon-persona-store.js";
-import { sealedDeclarationStore, sealedPetnameStore } from "../src/sealed-rows.js";
+import { loadHandleBook, saveHandleBook, sealedDeclarationStore, sealedPetnameStore } from "../src/sealed-rows.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
@@ -96,16 +108,49 @@ async function standVessel(opts: { unlocked: boolean; table?: (act: string, args
   const holder = { isUnlocked: () => opts.unlocked, openedSlot: () => (opts.unlocked ? "slot-1" : null), attemptsLeft: () => 3, unlockedFaces: () => [] } as unknown as CustodyHolder;
   const door = custodyFrameHandler({
     holder, testScratch: true, standing: () => "hearth", recompose: async () => ({ standing: "hearth" }), onLog: () => {},
-    runAct: async (act, args) => { acts.push(act); return (opts.table ?? answers)(act, args); },
+    runAct: async (act, args) => {
+      acts.push(act);
+      const answered = (opts.table ?? answers)(act, args);
+      // The stand-in resolves its one face, h0, where its table names none.
+      return act === "face.resolve" && answered["face"] === undefined ? { face: 0 } : answered;
+    },
   });
   mkdirSync(larDataDir(), { recursive: true });
   const claim = await claimStore(larDataDir(), { holder: "vessel" });
   const front = serveUdsFront({ claim, onFrame: (parsed: unknown, sock: Socket) => { frames.push(parsed); return door(parsed, sock); } });
+  // THE SESSION SEAT: an act that acts as a face (`SESSION_ACTS`) rides a session of face `h<N>`, and the seat runs it
+  // on the same custody door's chain. `frames` keeps each `session:act` frame; `sessions` the faces sessions opened on.
+  const sessions: string[] = [];
+  const repo = new Repo({ sharePolicy: async () => true });
+  const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+  const workingHandle = repo.create<LarDoc>(emptyLarDoc());
+  const composite = new CompositeStore();
+  composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
+  composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(workingHandle, wikiSlotUri("daemon", "working")), writable: true });
+  const seat = makeUdsSeat({ daemonHandle, composite, claim, repo, placeVerb: () => {},
+    sessionActs: { names: SESSION_ACTS, run: async (act, args) => ({ ...(await door.act(act, args)) }) },
+    sessions: { anchorNow: async () => PLACE, open: async ({ faceRef }) => {
+      const ordinal = Number(/^h(\d+)$/.exec(faceRef)?.[1] ?? NaN);
+      if (!Number.isSafeInteger(ordinal)) return { ok: false, refusal: "face-hint-malformed" };
+      sessions.push(faceRef);
+      return { ok: true, supply: { face: sessionFace(faceRef), ordinal, profile: "seat", presenter: `verified-${faceRef}`, anchor: PLACE,
+        mint: async () => ({ ok: true as const, signer: { dropped: false, drop() { /* holds no key */ } } }) } };
+    } } });
+  front.attach({ ...seat, handleSessionFrame: (parsed: unknown, sock: Socket) => { frames.push(parsed); seat.handleSessionFrame!(parsed, sock); } });
   for (let i = 0; i < 200 && !existsSync(claim.socketPath); i++) await new Promise((r) => setTimeout(r, 10));
   const down = async (): Promise<void> => { front.close(); await claim.release(); };
   downs.push(down);
-  return { frames, acts, down };
+  return { frames, acts, sessions, down };
 }
+
+const PLACE = { kind: "place" as const, aid: "place-fixture", head: "place-head" };
+const sessionFace = (faceRef: string): SessionFace => ({ personaGroup: `group-${faceRef}`, proofSubject: `proof-${faceRef}`, admitRef: `admit-${faceRef}`,
+  causalRevision: `revision-${faceRef}`, planes: { persona: `persona-${faceRef}`, circles: `circles-${faceRef}`, identities: `identities-${faceRef}`,
+    sessions: `sessions-${faceRef}`, intents: `intents-${faceRef}` } });
+/** The frames a command sent, the session's own envelope set aside: the custody door's `act` frames and each `session:act`. */
+const actFrames = (frames: readonly unknown[]): Array<Record<string, unknown>> => (frames as Array<Record<string, unknown>>)
+  .filter((f) => f["op"] === "act" || f["op"] === "session:act")
+  .map((f) => (f["op"] === "act" ? f : { op: f["op"], act: f["act"], args: f["args"] }));
 
 /** What the stand-in vessel answers: one face, named and worn. */
 function answers(act: string): Record<string, unknown> {
@@ -197,19 +242,22 @@ describe("a command beside a standing vessel", () => {
 
     const vessel = await standVessel({ unlocked: true, table: (act) => {
       if (act === "persona.roots") throw new CustodyRowUnavailable("identity", ".persona-roster.json", "torn");
-      if (act === "persona.wear") throw new SealedActRefused("act-refused", "this vessel holds no persona root there");
+      if (act === "face.resolve") throw new SealedActRefused("act-refused", "this vessel holds no persona root there");
       if (act === "persona.reissue") throw new Error("a plain fault");
       return { ran: act };
     } });
     const torn = await sealedActVia("persona.roots").catch((e: unknown) => e);
     expect(torn).toBeInstanceOf(CustodyRowUnavailable);
     expect(torn).toMatchObject({ home: "identity", file: ".persona-roster.json", reading: "torn" });
-    const refused = await sealedActVia("persona.wear", { handleIndex: 4 }).catch((e: unknown) => e);
+    const refused = await sealedActVia("face.resolve", { face: 4 }).catch((e: unknown) => e);
     expect(refused).toBeInstanceOf(SealedActRefused);
     expect(refused).toMatchObject({ reason: "act-refused", message: "this vessel holds no persona root there" });
-    await expect(sealedActVia("persona.reissue")).rejects.toThrow("a plain fault");
+    await expect(sealedActVia("persona.reissue", { face: 0 })).rejects.toThrow("a plain fault");
     expect(await sealedActVia("petname.entries")).toEqual({ result: { ran: "petname.entries" }, via: "vessel" });   // CONTROL
-    for (const frame of vessel.frames) expect(Object.keys(frame as object).sort()).toEqual(["act", "args", "op"]);
+    for (const frame of actFrames(vessel.frames)) expect(Object.keys(frame).sort()).toEqual(["act", "args", "op"]);
+    // AN ACT THAT ACTS AS A FACE rode a session of the face the vessel resolved, never the custody door's own frame.
+    expect(vessel.sessions).toEqual(["h0"]);
+    expect(actFrames(vessel.frames).filter((f) => f["act"] === "persona.reissue")).toEqual([{ op: "session:act", act: "persona.reissue", args: { face: 0 } }]);
   });
 
   test("D4 — a command that holds the store for one act answers no custody door: the act runs here", async () => {
@@ -252,20 +300,22 @@ describe("a command beside a standing vessel", () => {
     await makeFleetDeclarationStore(sealedDeclarationStore()).set(0, { handle: HANDLE, seat: true, chair: "a private chair" });
     await makeFleetPetnameStore(sealedPetnameStore()).clear(0);
     expect(await readFleetSelves()).toEqual({ reached: true, selves: [], rest: "clear" });
-    const frames = vessel.frames as Array<Record<string, unknown>>;
-    // RED: nothing rode a verb. Every frame names `op: "act"`, and none carries a verb, a requester or a request id.
-    for (const frame of frames) {
-      expect(frame["op"]).toBe("act");
-      expect(Object.keys(frame).sort()).toEqual(["act", "args", "op"]);
-    }
+    const all = vessel.frames as Array<Record<string, unknown>>;
+    // RED: nothing rode a verb. Every frame is a session's open or close, or an act: none names a verb or a requester.
+    for (const frame of all) expect(["act", "session:act", "session:open", "session:close"]).toContain(frame["op"]);
+    expect(all.some((f) => "verb" in f)).toBe(false);
+    const frames = actFrames(all);
+    for (const frame of frames.filter((f) => f["op"] === "act")) expect(Object.keys(frame).sort()).toEqual(["act", "args", "op"]);
     expect(frames.map((f) => f["act"])).toEqual(["petname.set", "selves.carry", "declaration.set", "selves.carry", "petname.clear", "selves.clear", "selves.read"]);
+    // The place's sealed rows ride the custody door's frame; a carry or a clear acts as the face, on a session of it.
+    expect(frames.map((f) => f["op"])).toEqual(["act", "session:act", "act", "session:act", "act", "session:act", "act"]);
     const carries = frames.filter((f) => String(f["act"]).startsWith("selves."));
     expect(carries.map((f) => f["args"])).toEqual([{ handleIndex: 0, name: "petname" }, { handleIndex: 0, name: "handle" }, { handleIndex: 0, name: "petname" }, {}]);
     // A MOVE REPORTS WHAT THE PLANE DID: it landed, or the plane kept what it held (a fill over a standing name).
     expect(await carryOwnName(0, "petname")).toEqual({ landed: true });
     expect(await carryOwnName(0, "petname", { fill: true })).toEqual({ landed: false, kept: true });
     expect(await clearOwnName(0, "handle")).toEqual({ landed: true });
-    expect((vessel.frames as Array<Record<string, unknown>>).slice(-3).map((f) => f["args"])).toEqual([
+    expect(actFrames(vessel.frames).slice(-3).map((f) => f["args"])).toEqual([
       { handleIndex: 0, name: "petname" }, { handleIndex: 0, name: "petname", fill: true }, { handleIndex: 0, name: "handle" },
     ]);
     for (const text of [PETNAME, HANDLE, "a private chair"]) expect(JSON.stringify(carries).includes(text)).toBe(false);
@@ -383,11 +433,12 @@ describe("a command beside a standing vessel", () => {
     const take = await run(["walk", "take", CARRIED, "--json"]);
     const invite = await run(["walk", "invite", "--json"]);
     for (const r of [state, take, invite]) expect(r.code, r.out + r.err).toBe(0);
-    const frames = vessel.frames as Array<Record<string, unknown>>;
+    const frames = actFrames(vessel.frames);
     for (const frame of frames) expect(Object.keys(frame).sort()).toEqual(["act", "args", "op"]);   // no verb, requester or request id
-    expect(frames.map((f) => f["act"])).toEqual(["walk.state", "walk.take", "walk.invite"]);
-    expect(frames[1]!["args"]).toEqual({ carried: CARRIED });                                       // CONTROL: the take's own frame holds it
-    expect(JSON.stringify([frames[0], frames[2]]).includes("lar-invite:")).toBe(false);
+    // The take acts as a face: it resolves the face at the custody door and rides a session of it.
+    expect(frames.map((f) => [f["op"], f["act"]])).toEqual([["act", "walk.state"], ["act", "face.resolve"], ["session:act", "walk.take"], ["act", "walk.invite"]]);
+    expect(frames[2]!["args"]).toEqual({ carried: CARRIED, face: 0 });                              // CONTROL: the take's own frame holds it
+    expect(JSON.stringify([frames[0], frames[1], frames[3]]).includes("lar-invite:")).toBe(false);
     expect(seatedCustody()?.isUnlocked() ?? false, "the command's own seat stays locked").toBe(false);
     expect(JSON.parse(take.out.trim().split("\n").at(-1)!)).toMatchObject({ ok: true, data: { dialing: "now", via: "daemon" } });
     expect(JSON.parse(invite.out.trim().split("\n").at(-1)!)).toMatchObject({ ok: true, data: { invite: HANDED, via: "daemon" } });
@@ -416,16 +467,22 @@ describe("a command beside a standing vessel", () => {
     const roll = await run(["host", "roll", "--nexus", AID, "--cap", "5", "--json"]);
     const invite = await run(["host", "invite", "--relay", "ws://a-synthetic-hearth/ws", "--json"]);
     for (const r of [state, roll, invite]) expect(r.code, r.out + r.err).toBe(0);
-    const frames = vessel.frames as Array<Record<string, unknown>>;
+    const frames = actFrames(vessel.frames);
     for (const frame of frames) expect(Object.keys(frame).sort()).toEqual(["act", "args", "op"]);   // no verb, requester or request id
-    expect(frames.map((f) => f["act"])).toEqual(["host.state", "host.roll", "host.invite"]);
-    expect(frames[1]!["args"]).toEqual({ nexusAid: AID, cap: 5 });                                  // CONTROL: the roll's own frame
-    expect(frames[2]!["args"]).toEqual({ relay: "ws://a-synthetic-hearth/ws" });
+    // The roll acts as a face: it resolves the face at the custody door and rides a session of it.
+    expect(frames.map((f) => [f["op"], f["act"]])).toEqual([["act", "host.state"], ["act", "face.resolve"], ["session:act", "host.roll"], ["act", "host.invite"]]);
+    expect(frames[2]!["args"]).toEqual({ nexusAid: AID, cap: 5, face: 0 });                         // CONTROL: the roll's own frame
+    expect(frames[3]!["args"]).toEqual({ relay: "ws://a-synthetic-hearth/ws" });
     expect(JSON.stringify(frames).includes("lar-invite:")).toBe(false);
     expect(seatedCustody()?.isUnlocked() ?? false, "the command's own seat stays locked").toBe(false);
     expect(JSON.parse(state.out.trim().split("\n").at(-1)!)).toMatchObject({ ok: true, data: { nexuses: [{ nexusAid: AID, redeemed: 2 }], via: "daemon" } });
     expect(JSON.parse(roll.out.trim().split("\n").at(-1)!)).toMatchObject({ ok: true, data: { epoch: "f".repeat(64), cap: 5, via: "daemon" } });
     expect(JSON.parse(invite.out.trim().split("\n").at(-1)!)).toMatchObject({ ok: true, data: { invite: MINTED, via: "daemon" } });
+    // RED: the custody door's own act frame refuses an act that acts as a face; it rides a session, and nothing ran.
+    const ran = vessel.acts.length;
+    expect(await sendCustodyFrame({ op: "act", act: "host.roll", args: { cap: 5 } }))
+      .toMatchObject({ op: "act", status: "error", refusal: { reason: "face-act-rides-a-session" } });
+    expect(vessel.acts.length).toBe(ran);
     await vessel.down();
 
     // A vessel's refusal of a roll crosses as the hosting door's own refusal.
@@ -435,5 +492,51 @@ describe("a command beside a standing vessel", () => {
     expect(refused.out + refused.err).toContain("wears no face");
     expect(JSON.parse((refused.out + "\n" + refused.err).trim().split("\n").filter((l) => l.startsWith("{")).at(-1)!)).toMatchObject({ ok: false, error: { code: "refused" } });
     await refusing.down();
+  });
+
+  test("D12 — a face's handle book rides a session of that face, never the custody door's own frame", async () => {
+    await stage();
+    const SNAPSHOT = { era: 1, records: [] };
+    const vessel = await standVessel({ unlocked: true, table: (act) => (act === "handle-book.load" ? { snapshot: SNAPSHOT } : {}) });
+    const book = await loadHandleBook(1);
+    await saveHandleBook(1, book);
+    const frames = actFrames(vessel.frames);
+    expect(frames.map((f) => [f["op"], f["act"]])).toEqual([["session:act", "handle-book.load"], ["session:act", "handle-book.save"]]);
+    expect(vessel.sessions).toEqual(["h1", "h1"]);                                          // each rode a session of face 1
+    expect(frames[0]!["args"]).toEqual({ face: 1 });
+    expect(frames[1]!["args"]).toEqual({ face: 1, snapshot: book.snapshot() });           // CONTROL: the book loaded is the book saved
+    // RED: the custody door's own act frame refuses either act; nothing ran.
+    const ran = vessel.acts.length;
+    for (const act of ["handle-book.load", "handle-book.save"]) {
+      expect(await sendCustodyFrame({ op: "act", act, args: { face: 1 } }))
+        .toMatchObject({ op: "act", status: "error", refusal: { reason: "face-act-rides-a-session" } });
+    }
+    expect(vessel.acts.length).toBe(ran);
+    await vessel.down();
+  });
+
+  test("D13 — every act that signs, opens or writes as a face rides a session of the face it names, and only those", async () => {
+    await stage();
+    const FACE_ACTS: Record<string, Record<string, unknown>> = {
+      "crossing.sign": { handleIndex: 1 }, "crossing.witness": { handleIndex: 1, note: "seen" },
+      "carriage.accept": { handleIndex: 1 }, "persona.guardian.enrol": { handleIndex: 1, offers: "a b", threshold: 1 },
+      "persona.confirm": { handleIndex: 1, view: "v" }, "selves.carry": { handleIndex: 1, name: "petname" },
+      "selves.clear": { handleIndex: 1, name: "petname" },
+    };
+    for (const act of Object.keys(FACE_ACTS)) expect(SESSION_ACTS.has(act), act).toBe(true);
+    const vessel = await standVessel({ unlocked: true, table: () => ({}) });
+    for (const [act, args] of Object.entries(FACE_ACTS)) await sealedActVia(act as never, args);
+    await sealedActVia("petname.set", { handleIndex: 1, petname: "home" });
+    const frames = actFrames(vessel.frames);
+    expect(frames.map((f) => [f["op"], f["act"]])).toEqual([...Object.keys(FACE_ACTS).map((a) => ["session:act", a]), ["act", "petname.set"]]);
+    expect(frames.slice(0, -1).map((f) => f["args"])).toEqual(Object.values(FACE_ACTS));      // handleIndex alone names the face
+    expect(vessel.sessions).toEqual(Object.keys(FACE_ACTS).map(() => "h1"));
+    // RED: the custody door's own act frame refuses each; nothing ran.
+    const ran = vessel.acts.length;
+    for (const [act, args] of Object.entries(FACE_ACTS)) {
+      expect(await sendCustodyFrame({ op: "act", act, args }), act).toMatchObject({ op: "act", status: "error", refusal: { reason: "face-act-rides-a-session" } });
+    }
+    expect(vessel.acts.length).toBe(ran);
+    await vessel.down();
   });
 });

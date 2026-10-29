@@ -81,11 +81,11 @@ import {
   type WideningRead,
 } from "@lararium/mesh";
 import { keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "./browser-face-anchor.js";
-import { keepBrowserFaceAtomSeed, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
+import { keepBrowserFaceAtomSeed, mintBrowserFaceAddressSecret, readBrowserFaceAddressSecret, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
 import {
   loadBrowserVeilArchive, oldShapeVeilRow, refuseLegacyBrowserArchive, saveBrowserVeilArchive,
 } from "./browser-keyhive-archive.js";
-import { vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
+import { workingFloorAnchorOf, vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import type { LarOpenPhase, PlaceFoundingCard } from "@lararium/mesh";
 import { readWornPersonaMount }              from "@lararium/mesh";
@@ -94,7 +94,7 @@ import {
   generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, wearBrowserPersona,
   listBrowserPersonaRoots, loadBrowserActivePersona,
   makeBrowserIdbPersonaVault, makeBrowserPersonaPetnameStore,
-  openVesselIdb, idbGet, idbPut,
+  openVesselIdb, idbGet, idbPut, loadBrowserPlaceKel,
 }                                            from "./browser-vessel-identity.js";
 import type { BrowserVesselIdentity }        from "./browser-vessel-identity.js";
 import { personaPanelStateArgs }             from "./persona-panel-state.js";
@@ -778,6 +778,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     });
     // THE FACE'S ATOM RESTS BEFORE ITS BOOTSTRAP: the founding minted a random seed, and the face's own custody row keeps it.
     try { await keepBrowserFaceAtomSeed(idbName, f.personaGroupId, f.atomSeed); } finally { f.atomSeed.fill(0); }
+    // THE FACE'S ADDRESS SECRET MINTS BESIDE ITS ATOM, so its working documents derive their addresses from the first boot.
+    await mintBrowserFaceAddressSecret(idbName, f.personaGroupId);
     // THE FACE ARCHIVE RESTS BEFORE ITS BOOTSTRAP. The ceremony's provider left with the act; the key
     // agreement state of what it created lives in these bytes. A founding that stops before its
     // bootstrap runs again and replaces the row.
@@ -1212,6 +1214,14 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         throw new Error("this face's atom differs from its device edge; re-found or re-admit it");
       }
       const wornAtomArchive = await loadBrowserVeilArchive(idbName, wornGroup);
+      // THE COMPOSE SITE'S WORKING SLOT: the worn face's address secret from its keystore row, and the floor's own anchor its
+      // working documents key by, read from what this vessel holds: a place KEL where the leaf founded one, else the private
+      // Nexus of one it stands as at the floor (its own key, `nexusStandsAt.ownVesselKey`), which a join never moves. The
+      // switch between faces stays owed (W4).
+      const wornAddressSecretBytes = await readBrowserFaceAddressSecret(idbName, wornGroup);
+      const wornAddressSecret = wornAddressSecretBytes ? hex(wornAddressSecretBytes) : null;
+      wornAddressSecretBytes?.fill(0);
+      const placeKel = await loadBrowserPlaceKel(idbName).catch(() => null);
       const faceAnchor = await requireBrowserFaceAnchor(idbName, wornGroup);
       const personaKelPrefix = wornMount?.personaKelPrefix ?? social.personaKelPrefix;
       // THE PERSONA-KEL PIN — the continuity anchor the Binding Gate walks. Read the pinned identifier's
@@ -1311,6 +1321,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           held.stood.push({ what: "the face documents join", down: () => joining.stop() });
         }
       }
+      const workingFloorAnchor = workingFloorAnchorOf({ place: placeKel?.ok ? placeKel.aid : null, privateNexusKey: nexusStandsAt.ownVesselKey });
       const daemonAuth = {
         placeVerifyingKey: vesselIdentity.verifyingKey,
         // A BROWSER VESSEL HOLDS NO SEALED IDENTITY HOME, so the archive-write door's reading is
@@ -1323,6 +1334,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // THE ATOM rides to the island as the face's own Individual: hex seed and its key. The island holds it for
         // the boot and the seed leaves this closure with the manifest.
         atom: { seed: hex(wornAtomSeed), key: wornAtom.key },
+        ...(wornAddressSecret ? { faceAddressSecret: wornAddressSecret } : {}),
+        ...(workingFloorAnchor ? { workingFloorAnchor } : {}),
         ...(wornAtomArchive ? { veilArchiveBytes: wornAtomArchive } : {}),
         personaGroupId: wornMount?.personaGroupId   ?? social.personaGroupId,
         faceAnchor,

@@ -136,7 +136,7 @@ describe("lares nexus seal cold rehearse", () => {
   test("R3 — RED: a spent card answers no rolled head; the rolled head's cards do", async () => {
     await stand();
     const genesis = cards(await rite.seat());
-    const rolled = await rite.rotate();
+    const rolled = await rite.rotate({ face: "0" });
     expect(rolled.code).toBe(0);
     const spent = await run(rehearse({ "cold-key": genesis[0]! }));
     expect(spent.out.error.code).toBe("cold-card-answers-no-digest");

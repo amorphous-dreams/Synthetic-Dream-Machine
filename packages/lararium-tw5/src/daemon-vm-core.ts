@@ -34,6 +34,9 @@ import {
   awaitIslandMsg,
   mkManifest,
   mkDaemonPlaceVerb,
+  mkDaemonFaceLit,
+  mkDaemonFaceDrop,
+  type JoinedFaceAuth,
   mkTelemetryPlaceVerb,
   mkStructurepalaceKapae,
   mkDaemonVerbResult,
@@ -193,6 +196,8 @@ export interface VesselPlaceVerbRequest {
   verb:         string;
   args:         Record<string, unknown>;
   requestedBy?: string;
+  /** The verified face's proof subject; a session seat supplies `requestedBy` from its verified presenter. */
+  face?:        string;
   requestId?:   string;
   targets?:     readonly string[];
   batchMode?:   string;
@@ -218,6 +223,8 @@ export interface DaemonVmCore {
   workerEa:       Promise<void>;
   mountMainVerbs: (registry: VerbTable) => void;
   placeVerb:      (opts: VesselPlaceVerbRequest) => void;
+  lightFace:      (entry: JoinedFaceAuth) => Promise<void>;
+  dropFace:       (atomKey: string) => Promise<void>;
   /** FEED one captured turn to the daemon's telemetry capture cap (the nalu). Fire-and-forget.
    *  `frontier` (optional) carries the turn-DAG fork-frontier so a same-session fork derives a
    *  distinct handle; absent on a non-forked turn. */
@@ -412,8 +419,23 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       worker.post(makeMsg(requestId));
     });
   }
+  const facePending = new Map<string, Array<{ resolve: () => void; reject: (error: Error) => void }>>();
+  const faceKey = (atomKey: string, op: string) => `${atomKey.toLowerCase().replace(/^0x/, "")}:${op}`;
+  let faceAsksEnded: string | null = null;
+  function askFace(atomKey: string, op: "lit" | "dropped", msg: unknown): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (faceAsksEnded !== null) { reject(new Error(faceAsksEnded)); return; }
+      const key = faceKey(atomKey, op);
+      const queue = facePending.get(key) ?? [];
+      queue.push({ resolve, reject }); facePending.set(key, queue);
+      try { worker.post(msg); } catch (error) { queue.pop(); if (!queue.length) facePending.delete(key); reject(error); }
+    });
+  }
   // A worker that faults or errors answers nothing further: every ask still pending ends there.
   function failPendingAsks(why: string): void {
+    faceAsksEnded ??= why;
+    for (const queue of facePending.values()) for (const ask of queue) ask.reject(new Error(why));
+    facePending.clear();
     for (const [id, ask] of [..._pending]) { _pending.delete(id); ask.reject(new Error(why)); }
   }
   worker.listen((msg) => {
@@ -463,6 +485,14 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     if (result) { _controlResultHandler?.(result); return; }
     if (!isIslandToVesselMsg(raw)) return;
 
+    if (raw.type === "daemon:face-settled") {
+      const key = faceKey(raw.atomKey, raw.op);
+      const queue = facePending.get(key);
+      const ask = queue?.shift();
+      if (queue && !queue.length) facePending.delete(key);
+      if (ask) { if (raw.ok) ask.resolve(); else ask.reject(new Error(raw.reason ?? "face change refused")); }
+      return;
+    }
     if (raw.type === "event") {
       const ev = raw as IslandMsg_Event;
       // Verb OUT-path: a verb-carrying verse-event from the daemon's own surface
@@ -701,6 +731,8 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     },
     resolveBinding: (fingerprint, recipeTrace, wikiSlug) =>
       askIsland("binding", (requestId) => mkDaemonResolveBindingRequest({ requestId, fingerprint, recipeTrace, wikiSlug })),
+    lightFace: (entry) => askFace(entry.atom.key, "lit", mkDaemonFaceLit(entry)),
+    dropFace: (atomKey) => askFace(atomKey, "dropped", mkDaemonFaceDrop(atomKey)),
     placeVerb: (o: VesselPlaceVerbRequest) => {
       worker.post(mkDaemonPlaceVerb({
         verb:        o.verb,
@@ -712,6 +744,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         ...(o.fromUri         ? { fromUri: o.fromUri } : {}),
         ...(o.listenable      ? { listenable: o.listenable } : {}),
         ...(o.effectKey       ? { effectKey: o.effectKey } : {}),
+        ...(o.face            ? { face: o.face } : {}),
       }));
     },
     placeTelemetry: (turnText: string, sourceFile: string, frontier?: readonly string[], turnKey?: string, chunkIndex?: number) => {
@@ -785,10 +818,12 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       retireFirstCrossing(false);
       retireReplayCrossing?.();
       retireReplayCrossing = undefined;
+      failPendingAsks("the island shut down");
       worker.terminate();
       return { acked };
     })()),
     dispose: () => {
+      failPendingAsks("the island was disposed");
       // A hard stop runs no handshake: a shutdown asked afterward reads that no island acked, and one
       // that stands waiting ends now, unacked.
       _down ??= Promise.resolve({ acked: false });

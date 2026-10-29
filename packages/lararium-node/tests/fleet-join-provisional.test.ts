@@ -56,7 +56,7 @@ vi.mock("../src/commands/device-admit.js", () => ({
 }));
 vi.mock("../src/commands/init.js", () => ({ runInit: vi.fn() }));
 vi.mock("../src/fleet-join-custody.js", () => ({
-  mintFaceAddressSecret: async () => { seam.secret(); return new Uint8Array(32); },
+  readFaceAddressSecret: async () => { seam.secret(); return new Uint8Array(32); },
   noteIssuedFaceKeys: async () => { seam.issued(); },
 }));
 vi.mock("@noble/ed25519", () => ({ signAsync: async () => new Uint8Array(64) }));

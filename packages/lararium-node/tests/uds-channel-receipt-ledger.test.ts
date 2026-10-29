@@ -300,7 +300,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       // outcome-prefix subscription, which mints a fresh fact seeded with the WORKER's own
       // stamped digest (the worker's `verbInputDigest` formula, computed independently here to
       // model a remote peer doing the same).
-      const workerDigest = await verbInputDigest({ verb, args, requestedBy });
+      const workerDigest = await verbInputDigest({ verb, args });
       const outcome = concludeVerb({
         requestId, verb, status: "done", requestedBy, cause: "remote-summons", batchMode: "best-effort",
         results: { summary: { ok: true } }, inputDigest: workerDigest,

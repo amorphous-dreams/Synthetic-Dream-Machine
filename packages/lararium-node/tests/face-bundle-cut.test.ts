@@ -7,7 +7,7 @@
  *       edge, no key group id, no seat claim, no chair label, no vessel-face key.   control: the rows do hold them
  *   C3  the table's bundle column and the cut's extractors name the same rows; a row the column names with no
  *       extractor refuses the cut.
- *   C4  each refusal, by name: face-not-held, face-not-worn (another face worn; no face worn; no composition),
+ *   C4  each refusal, by name: face-not-held, face-not-worn (another face mounted; no face mounted; no composition),
  *       own-edge-shadowed (read at the entry: no row opens, no island ask leaves), key-history-unread (none; a
  *       history that fails to verify; a history under another prefix), memory-unavailable (no island; an island
  *       that refuses), and the island's own shadow refusal.
@@ -36,7 +36,8 @@ import {
 } from "../src/node-vessel-identity.js";
 import * as carriers from "../src/vault-carriers.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
-import { writeCustodyRow } from "../src/custody-seat.js";
+import { removeCustodyRow, writeCustodyRow } from "../src/custody-seat.js";
+import { faceAddressSecretFile, landFaceAddressSecret } from "../src/fleet-join-custody.js";
 import { guardianSetFile } from "../src/guardian-enrolment.js";
 
 vi.setConfig({ testTimeout: 180_000 });
@@ -54,6 +55,9 @@ async function cardOf(fill: number, glamour: string): Promise<HandleCard> {
   return signHandleCard({ nym: chain[0]!.prefix, chain, glamour, parents: [], standing: null, fleetProof: null }, (b) => ed.signAsync(b, seed).then(hex));
 }
 
+/** Synthetic PersonaGroup ids, in the lower hex a group id reads as. */
+const GROUP0 = "0a".repeat(32);
+const GROUP1 = "1b".repeat(32);
 let seat: SeatedScratchCustody;
 let keys: { face0: string; face1: string };
 let kel0: PersonaKelEvent[];
@@ -64,17 +68,19 @@ beforeEach(async () => {
   keys = { face0: r0.verifyingKey, face1: r1.verifyingKey };
   kel0 = [mintPersonaInception(`0x${keys.face0}`, "ab".repeat(32))];
   const kel1 = [mintPersonaInception(`0x${keys.face1}`, "cd".repeat(32))];
-  await ensureFaceCustodyOfGroup("GROUP-DOC-OF-FACE-ZERO");
-  await ensureFaceCustodyOfGroup("GROUP-DOC-OF-FACE-ONE");
-  await keepFaceAtom("GROUP-DOC-OF-FACE-ZERO", secretOf(21));
-  await keepFaceAtom("GROUP-DOC-OF-FACE-ONE", secretOf(22));
+  await ensureFaceCustodyOfGroup(GROUP0);
+  await ensureFaceCustodyOfGroup(GROUP1);
+  await keepFaceAtom(GROUP0, secretOf(21));
+  await keepFaceAtom(GROUP1, secretOf(22));
+  await landFaceAddressSecret(GROUP0, secretOf(31));
+  await landFaceAddressSecret(GROUP1, secretOf(32));
   await persistIdentityAnchors({
-    personaGroupId: "GROUP-DOC-OF-FACE-ZERO", meshCabalDocIdHex: "CABAL-DOC-OF-FACE-ZERO",
+    personaGroupId: GROUP0, meshCabalDocIdHex: "CABAL-DOC-OF-FACE-ZERO",
     signerDid: `0x${keys.face0}`, personaKelPrefix: kel0[0]!.prefix,
     deviceEdge: { title: "DEVICE-EDGE-OF-FACE-ZERO" } as never,
   }, 0);
   await persistIdentityAnchors({
-    personaGroupId: "GROUP-DOC-OF-FACE-ONE", meshCabalDocIdHex: "CABAL-DOC-OF-FACE-ONE",
+    personaGroupId: GROUP1, meshCabalDocIdHex: "CABAL-DOC-OF-FACE-ONE",
     signerDid: `0x${keys.face1}`, personaKelPrefix: kel1[0]!.prefix,
   }, 1);
   const petnames = await makeNodePersonaPetnameStore();
@@ -98,13 +104,13 @@ beforeEach(async () => {
 });
 afterEach(async () => { await seat.drop(); });
 
-/** A composition's lend, as a standing vessel wearing face `worn` would hand it. `asked` keeps what reached the island. */
-function door(over: Partial<BackupDoor> & { worn?: number | null } = {}): { door: BackupDoor; asked: Uint8Array[] } {
+/** A composition's lend, as a standing vessel mounting face `mounted` would hand it. `asked` keeps what reached the island. */
+function door(over: Partial<BackupDoor> & { mounted?: number | null } = {}): { door: BackupDoor; asked: Uint8Array[] } {
   const asked: Uint8Array[] = [];
   return {
     asked,
     door: {
-      wornFace: () => (over.worn === undefined ? 0 : over.worn),
+      wornFace: () => (over.mounted === undefined ? 0 : over.mounted),
       ownEdgeShadowed: over.ownEdgeShadowed ?? (async () => false),
       cutMemory: over.cutMemory === undefined
         ? async (to) => {
@@ -148,6 +154,7 @@ describe("a cut carries one face's standing section and its memory section", () 
     expect(cut.face).toEqual({ handleIndex: 0, verifyingKey: keys.face0 });
     expect(cut.carries).toEqual({ keyEvents: 1, faceProofKeys: 1, handleBookRecords: 1, petname: true, handle: true, guardians: 0 });
     expect(body.guardianSet, "a one-of-one face carries no guardian set").toBeNull();
+    expect(body.addressSecret, "the face's address secret rides, so its working documents follow it").toBe(hex(secretOf(31)));
     // Another bundle's key opens nothing.
     expect(openFaceBundleBody(cut.sealedBody, mintBundleKey())).toBeNull();
   });
@@ -160,7 +167,7 @@ describe("a cut carries one face's standing section and its memory section", () 
     const strangers = [
       otherSeed, keys.face1, "PETNAME-OF-FACE-ONE", "HANDLE-OF-FACE-ONE", hex(secretOf(5)), "FRIEND-OF-ONE", "LABEL-OF-FACE-ONE",
       "UNTAGGED-FRIEND", "LABEL-OF-NOBODY",
-      hex(secretOf(21)), hex(secretOf(22)), "DEVICE-EDGE-OF-FACE-ZERO", "GROUP-DOC-OF-FACE-ZERO", "CABAL-DOC-OF-FACE-ZERO", "GROUP-AGENT-OF-FACE-ZERO",
+      hex(secretOf(21)), hex(secretOf(22)), hex(secretOf(32)), "DEVICE-EDGE-OF-FACE-ZERO", GROUP0, "CABAL-DOC-OF-FACE-ZERO", "GROUP-AGENT-OF-FACE-ZERO",
       "CHAIR-OF-FACE-ZERO", "\"seat\"", hex(secretOf(9)), hex(seat.treeKey),
     ];
     for (const word of strangers) expect(text.includes(word), `the body carries ${word.slice(0, 24)}`).toBe(false);
@@ -168,9 +175,9 @@ describe("a cut carries one face's standing section and its memory section", () 
     expect(text.includes("the gardener")).toBe(true);
     const otherKey = mintBundleKey();
     const kel1 = [mintPersonaInception(`0x${keys.face1}`, "cd".repeat(32))];
-    const other = await cutFaceBundle({ face: 1, bundleKey: otherKey, door: door({ worn: 1, kel: async () => kel1 }).door });
+    const other = await cutFaceBundle({ face: 1, bundleKey: otherKey, door: door({ mounted: 1, kel: async () => kel1 }).door });
     const otherText = opened(other.sealedBody, otherKey).text;
-    for (const word of [otherSeed, "PETNAME-OF-FACE-ONE", "HANDLE-OF-FACE-ONE", hex(secretOf(5)), "LABEL-OF-FACE-ONE"]) expect(otherText.includes(word)).toBe(true);
+    for (const word of [otherSeed, "PETNAME-OF-FACE-ONE", "HANDLE-OF-FACE-ONE", hex(secretOf(5)), hex(secretOf(32)), "LABEL-OF-FACE-ONE"]) expect(otherText.includes(word)).toBe(true);
     expect(otherText.includes("the gardener")).toBe(false);
   });
 
@@ -190,11 +197,11 @@ describe("a cut carries one face's standing section and its memory section", () 
 describe("the table picks the rows a bundle carries", () => {
   test("C3 — the bundle column and the cut's extractors name the same rows", () => {
     expect([...BUNDLE_EXTRACTOR_ROWS].sort()).toEqual(carriers.bundleRows().map((r) => r.row).sort());
-    // The law's table (custody#/the-table): three rows ride whole, five ride as one face's lines, the rest stay.
+    // The law's table (custody#/the-table): five rows ride whole, four ride as one face's lines, the rest stay.
     const by = (t: string): string[] => carriers.bundleRows().filter((r) => r.bundle === t).map((r) => r.row).sort();
-    expect(by("whole")).toEqual(["face-proof-key", "guardian-set", "handle-book", "persona-root"]);
+    expect(by("whole")).toEqual(["face-address-secret", "face-proof-key", "guardian-set", "handle-book", "persona-root"]);
     expect(by("lines")).toEqual(["anchors", "persona-declarations", "persona-petnames", "persona-roster"]);
-    for (const stays of ["face-atom", "veil-archive", "vessel-face-key", "gate-memory", "device-share", "public-handles", "restore-pending", "gate-root", "seat-key", "face-address-secret", "fleet-join-pending", "face-join-record"]) {
+    for (const stays of ["face-atom", "veil-archive", "vessel-face-key", "gate-memory", "device-share", "public-handles", "restore-pending", "gate-root", "seat-key", "fleet-join-pending", "face-join-record"]) {
       expect(carriers.carrierTable().find((r) => r.row === stays)?.bundle, stays).toBe("stays");
     }
   });
@@ -210,18 +217,28 @@ describe("the table picks the rows a bundle carries", () => {
 
 describe("a cut refuses by name, and a refused cut seals nothing", () => {
   test("C4 — the refusal names stand closed", () => {
-    expect([...CUT_REFUSALS]).toEqual(["face-not-held", "face-not-worn", "own-edge-shadowed", "key-history-unread", "memory-unavailable"]);
+    expect([...CUT_REFUSALS]).toEqual(["face-not-held", "face-not-worn", "own-edge-shadowed", "key-history-unread", "memory-unavailable", "no-address-secret"]);
+  });
+
+  test("C4 — a face whose address secret stands nowhere here refuses `no-address-secret`, before any island ask", async () => {
+    await removeCustodyRow("identity", faceAddressSecretFile(GROUP0));
+    const lend = door();
+    expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: lend.door }))).toBe("no-address-secret");
+    expect(lend.asked).toEqual([]);
+    // CONTROL: the secret landed again, the same cut answers.
+    await landFaceAddressSecret(GROUP0, secretOf(31));
+    expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: door().door }))).toBe("ANSWERED");
   });
 
   test("C4 — a face this vessel holds no root for refuses `face-not-held`", async () => {
     expect(await refusalOf(cutFaceBundle({ face: 7, bundleKey: mintBundleKey(), door: door().door }))).toBe("face-not-held");
   });
 
-  test("C4 — a face the vessel does not wear refuses `face-not-worn`: another face worn, no face worn, no composition", async () => {
-    expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: door({ worn: 1 }).door }))).toBe("face-not-worn");
-    expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: door({ worn: null }).door }))).toBe("face-not-worn");
+  test("C4 — a face the composition does not mount refuses `face-not-worn`: another face mounted, no face mounted, no composition", async () => {
+    expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: door({ mounted: 1 }).door }))).toBe("face-not-worn");
+    expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: door({ mounted: null }).door }))).toBe("face-not-worn");
     expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: null }))).toBe("face-not-worn");
-    // CONTROL: worn, the same cut answers.
+    // CONTROL: mounted, the same cut answers.
     expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: door().door }))).toBe("ANSWERED");
   });
 

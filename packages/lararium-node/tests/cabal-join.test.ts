@@ -17,7 +17,6 @@ import * as ed from "@noble/ed25519";
 import { hex, hexToBytes, signCabalInvite, writeVouch, realmVouchBoardDocUrl, materializeSharedLarDoc, DEFAULT_JOIN_POLICY, DAEMON_BAG_ID, seedDaemonDoc } from "@lararium/mesh";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey,
-  wearPersona,
 } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
@@ -29,7 +28,7 @@ import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
 import { direct } from "./direct-store.js";
 import { fixtureKey } from "./fixture-keys.js";
 import { seatChairs } from "./seat-fixture.js";
-import { seatOwnCharter, wear } from "./worn-face-fixture.js";
+import { seatOwnCharter, presentFace } from "./acting-face-fixture.js";
 import { seedFaceAtom } from "./atom-fixture.js";
 
 let root: string;
@@ -69,9 +68,9 @@ beforeEach(async () => {
   await generateOrLoadPersonaGroupRoot();
   await seedFaceAtom(0);
   await seedDaemonBootstrap();
-  // The realm stands under this vessel's own charter, and the worn face's key there vouches.
+  // The realm stands under this vessel's own charter, and the acting face's key there vouches.
   await seatOwnCharter([0]);
-  face = await wear(0);
+  face = await presentFace(0);
 });
 let face: string;
 afterEach(async () => {
@@ -134,7 +133,6 @@ describe("cabal join — the crossing, and what it refuses", () => {
       await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
       await generateOrLoadPersonaGroupRoot(0);
       await seedFaceAtom(0);
-      await wearPersona(0);
       writeNexusDoc(larSealHome(), charter!);
       await seedDaemonBootstrap();
       const withoutHeads = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, invite: vouched.bundle.invite });
@@ -162,7 +160,6 @@ describe("cabal join — the crossing, and what it refuses", () => {
       await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
       await generateOrLoadPersonaGroupRoot(0);
       await seedFaceAtom(0);
-      await wearPersona(0);
       writeNexusDoc(larSealHome(), charter!);
       await seedDaemonBootstrap();
       const stripped = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, bundle: { ...vouched.bundle, acts: [] } });

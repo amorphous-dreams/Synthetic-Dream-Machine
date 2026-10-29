@@ -168,25 +168,25 @@ The Ostrom principles above still hold ''unchanged'' under the cut; they govern 
 * ''A registration widens who reads a book and never narrows it.'' Whatever the vessel already carries to every peer, its public and infrastructure planes, stays carried once a realm registers it.
 * ''The daemon island reads its own vessel's verdict.'' The plane folds each realm's standing registrations and rests the verdict on the vessel's own plane; the island reads that and folds nothing. A Nexus the vessel leaves takes every realm's pins and verdict along, a stand that fails leaves none, and a verdict with no doc pin beside it answers nothing.
 
-''OWED.'' A cabal realm's documents cross between two operators only once the realm's member consult answers for a peer, and that consult reads the node's root map, which nothing fills. The vouch door and the member edge name the key a worn face presents to the Nexus. The consult still waits on two things: a socket that proves that key per Nexus (the wire train's face-scoped proof subject), and how a seat-holder's face stands in a realm once chairs sign with seat keys (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/what-the-code-holds">>).
+''OWED.'' A cabal realm's documents cross between two operators only once the realm's member consult answers for a peer, and that consult reads the node's root map, which nothing fills. The vouch door and the member edge name the key an acting face presents to the Nexus. The consult still waits on two things: a socket that proves that key per Nexus (the wire train's face-scoped proof subject), and how a seat-holder's face stands in a realm once chairs sign with seat keys (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/what-the-code-holds">>).
 
 <<~/ahu>>
 
 <<~ ahu #/the-steward-signer>>
 
-!! The steward signer ~ the worn face or a quorum Handle, never the root
+!! The steward signer ~ the acting face or a quorum Handle, never the root
 
 > ''Operator ruling.'' A scoped face signs acts that belong to one person; a transparent quorum Handle signs acts the collective owns; the root never appears publicly. A human wears many faces and many public Handles, each in many cabals, and signs a steward edge with the face or Handle worn in that cabal.
 
 ''A realm record publishes whatever key it names.'' A realm-bag registration names its stewards in `keptBy`. The realm doc crosses to every member, and the `@crossroads` announce names `keptBy` on the public plane. So a steward's name reads one of two classes and nothing else:
 
 |! class |! the name |! the seal |
-| ''face'' | the key the steward's worn face presents at the Nexus the realm stands under | that key signs the record's own bytes |
+| ''face'' | the key the steward's acting face presents at the Nexus the realm stands under | that key signs the record's own bytes |
 | ''Handle'' | the Handle's stable prefix | the Handle's head key signs an image that binds the prefix, the chain's head event and the record's digest, under a domain of its own; the seal carries the chain |
 
-* ''One door picks the key.'' A vessel's steward door hands out the key its worn face presents to that Nexus, and nothing else (`packages/lararium-node/src/realm-steward.ts`). A vessel that wears no face refuses by name. No option names a persona index, and no roster order picks a face.
+* ''One door picks the key.'' A vessel's steward door hands out the key its acting face presents to that Nexus, and nothing else (`packages/lararium-node/src/realm-steward.ts`). The acting face reads as the face the act names, else the one face standing open; several faces open with none named refuse `face-not-named`, and a face whose root this vessel does not hold refuses `face-root-absent`. No option names a persona index, and no roster order picks a face.
 * ''A guard stands before every seal.'' The door and the realm plane each read the signer's key against the vessel's own keys. A persona root, a vessel key, a key the vessel cannot class and a vault that will not read each refuse by name.
-* ''A name enters a record by its own hand first.'' No vessel can class a key that belongs to another hand, and no roster of face keys stands to ask: the carriage board records carriage, never belonging. So a hand that would keep a bag another hand keeps ASKS from its own vessel, sealing with its own worn face a record that names the standing stewards and itself; each standing steward then consents with her own. A keeping hand names another steward only where that name already sealed a record of the realm.
+* ''A name enters a record by its own hand first.'' No vessel can class a key that belongs to another hand, and no roster of face keys stands to ask: the carriage board records carriage, never belonging. So a hand that would keep a bag another hand keeps ASKS from its own vessel, sealing with its own acting face a record that names the standing stewards and itself; each standing steward then consents with her own. A keeping hand names another steward only where that name already sealed a record of the realm.
 * ''Consent widens who keeps a book and never moves the book.'' A standing steward's co-sign seals only a record that keeps the standing registration's doc, tier, charters and lease and widens its steward set. Where several different asks wait, and where no registration stands to hold an ask to, she names the hand she consents with.
 * ''A counted record carries its stewards' seals and no other key.'' The fold reads each seal under the exact name the record keeps, once (`packages/lararium-mesh/src/steward-seal.ts`). A face seal never counts for a Handle's name, and a Handle seal never counts for a key.
 * ''A record still short of a seal rests under a key of its own'', so an ask never unseats the registration that stands.
@@ -303,6 +303,6 @@ The honest wall, kept lit: ''"valid trace to lineage L" reads as a hard crypto f
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/multi-fractal">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 
-<<^ code="&#x0003;">>ni:///sha-256;jHWVG0gXiWW1UJ5FP0X34WlWwQL-xD1c8_fPzu5gSxM
+<<^ code="&#x0003;">>ni:///sha-256;ThjmOSpFUMv3u1KBMcHMQFxAGTE_Tw8PWGvdP4DL87A
 
 <<^ code="&#x0004;" -> to="?">>

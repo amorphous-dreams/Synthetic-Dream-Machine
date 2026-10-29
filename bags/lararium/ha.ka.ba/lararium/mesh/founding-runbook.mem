@@ -123,7 +123,7 @@ The harbor witness gives each leg fresh scratch state and workspace, chooses its
 HARBOR_PROJECT=founding-rehearsal tools/harbor-walk-witness.sh
 ```
 
-''See'': `PASS` lines for both legs: the hearth founded before `up` (`found --hearth`, then `persona wear 0`, then `up`), the floor that holds no key, the unlock that composes a Lararium wearing the face, workspace projection, a place lifted to a hearth after `up` (a face refuses on a place with no seed charter; `found --hearth` lifts it once the vessel stops), and a final `PASS harbor walk`.
+''See'': `PASS` lines for both legs: the hearth founded before `up` (`found --hearth`, then `up`, the founding face standing open), the floor that holds no key, the unlock that composes a Lararium wearing the face, workspace projection, a place lifted to a hearth after `up` (a face refuses on a place with no seed charter; `found --hearth` lifts it once the vessel stops), and a final `PASS harbor walk`.
 
 ''Proves'': the shim routes a TTY-safe founding, persona, and corpus walk through the image under review. This rehearsal creates no keeper state.
 
@@ -142,7 +142,6 @@ One act founds the hearth, before `up`: `found --hearth`. Under ONE human route,
 ```sh
 tools/lares-container.sh found --hearth --name 'operator-one' --chair 'first-chair'
 tools/lares-container.sh persona new 0 --name 'operator-one' --handle 'Operator One'
-tools/lares-container.sh persona wear 0
 tools/lares-container.sh up
 tools/lares-container.sh vessel seed --apply --yes
 tools/lares-container.sh vessel read
@@ -375,6 +374,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pxv_c0scqXVgYXXaMi1729Ezc43pbUJLgTw2px2Zh_k
+<<^ code="&#x0003;">>ni:///sha-256;ZR2oElVql0DdVbyW4kZmT1z2O_ENILx3pUsumd4ARjg
 
 <<^ code="&#x0004;" -> to="?">>

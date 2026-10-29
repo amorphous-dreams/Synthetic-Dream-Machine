@@ -12,8 +12,14 @@
  *
  *   draft    — face binding when seated; else the FLOOR doc keyed by the vessel DID in the catalog
  *              registry (`wikiDraftDocKey`: `wikis/{slug}/drafts/{did}`, `face-reach: vessel-only`).
- *   working  — the face mints when seated; the vessel mints at the floor
- *   personal — the same ownership choice as working
+ *   working  — seated, the face's DERIVED address (`resolveFaceWorkingSlot` under its address secret, by wiki slug and
+ *              kind), materialized as the pinned blank genesis and registered through the face door: two vessels of
+ *              one face find one document with no record between them. At the floor, a document keyed by the
+ *              floor's own anchor in the catalog (`wikiWorkingFloorKey`, `face-reach: vessel-only`): a node's place
+ *              (its W29 place KEL prefix), a browser leaf's private Nexus of one; the anon-veil lift carries it under
+ *              the face's address at the join. A vessel that holds neither refuses `no-place`. No read mints a
+ *              secret: a seated face whose secret stands nowhere refuses `no-address-secret` (it re-founds).
+ *   personal — the PersonaGroup × fingerprint binding when seated, the vessel's own when not
  *
  * Lives in @lararium/keyhive because the mint sequence needs keyhive (`registerBag` + `delegate`).
  *
@@ -21,10 +27,10 @@
  */
 
 import {
-  DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, WORKING_BINDINGS_PREFIX,
-  computeRecipeFingerprint, emptyLarDoc, storedLarRecord, resolveSlotDoc, tiddlerText,
-  wikiBagUri, wikiDraftDocKey, requireLarDid,
-  type CompositeStore, type LarDoc, type SlotReach, type WikiSlotKind,
+  DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX,
+  computeRecipeFingerprint, emptyLarDoc, storedLarRecord, resolveSlotDoc, resolveFaceWorkingSlot, tiddlerText,
+  wikiBagUri, wikiDraftDocKey, wikiWorkingFloorKey, requireLarDid,
+  type CompositeStore, type WorkingFloorAnchor, type LarDoc, type SlotReach, type WikiSlotKind,
 } from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { CapabilityProvider } from "./capability-provider.js";
@@ -55,6 +61,27 @@ export interface SlotDocResolverArgs {
   readonly faceSeated?: () => Promise<boolean>;
   readonly seatSettled?: () => Promise<void>;
   readonly faceDoor?: FaceBagDoor;
+  /**
+   * THE SEATED FACE'S ADDRESS SECRET, served from main-thread custody (a fresh copy per call; the resolver zero-fills
+   * what it reads). Null or absent with a face seated refuses the working slot `no-address-secret`: no read mints one.
+   */
+  readonly faceAddressSecret?: () => Promise<Uint8Array | null>;
+  /** The floor's own anchor, read from the vessel (`WorkingFloorAnchor`): the floor's working documents rest keyed by it. */
+  readonly floorAnchor?: () => WorkingFloorAnchor | null | Promise<WorkingFloorAnchor | null>;
+  /** Find or materialize the face's working document under its derived address, and rest it. */
+  readonly faceWorkingDoc?: (url: string, label: string) => Promise<FaceWorkingHandle>;
+}
+
+/** The face's working document as the resolver and the lift touch it. */
+export interface FaceWorkingHandle {
+  readonly documentId: string;
+  change(fn: (doc: LarDoc) => void): void;
+}
+
+/** A seated face's working slot cannot derive its address. */
+export class WorkingSlotRefusal extends Error {
+  override readonly name = "WorkingSlotRefusal";
+  constructor(readonly reason: string, detail: string) { super(`working slot: ${reason}: ${detail}`); }
 }
 
 export interface SlotDoc {
@@ -75,9 +102,8 @@ export interface SlotDocResolver {
 
 type RecipeTrace = { readonly wikiDocId: string; readonly libraryBagDocIds: readonly string[] };
 
-const PREFIX_OF: Record<Exclude<WikiSlotKind, "temp">, { prefix: string; kind: BindingKind }> = {
+const PREFIX_OF: Record<"draft" | "personal", { prefix: string; kind: BindingKind }> = {
   draft:    { prefix: DRAFT_BINDINGS_PREFIX,    kind: "draft-binding" },
-  working:  { prefix: WORKING_BINDINGS_PREFIX,  kind: "working-binding" },
   personal: { prefix: PERSONAL_BINDINGS_PREFIX, kind: "personal-binding" },
 };
 
@@ -101,10 +127,10 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     return url;
   };
 
-  const bindingKey = (kind: Exclude<WikiSlotKind, "temp">, fingerprint: string): string => `${PREFIX_OF[kind].prefix}/${fingerprint}`;
+  const bindingKey = (kind: "draft" | "personal", fingerprint: string): string => `${PREFIX_OF[kind].prefix}/${fingerprint}`;
 
   /** The PersonaGroup × fingerprint binding (mint-on-absent) — vessel-key when unseated. */
-  const binding = async (kind: Exclude<WikiSlotKind, "temp">, fingerprint: string, recipeTrace: RecipeTrace): Promise<SlotDoc> => {
+  const binding = async (kind: "draft" | "personal", fingerprint: string, recipeTrace: RecipeTrace): Promise<SlotDoc> => {
     const r = await resolveOrMintBinding({
       kind: PREFIX_OF[kind].kind, prefix: PREFIX_OF[kind].prefix, fingerprint, recipeTrace,
       repo: args.repo, daemonStore: args.daemonStore, ...(args.keyhive ? { keyhive: args.keyhive } : {}),
@@ -141,6 +167,59 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     return handle.url;
   };
 
+  /** The face's derived working address for `slug`; refuses where the seated face's secret stands nowhere. */
+  const faceWorkingUrl = async (slug: string): Promise<string> => {
+    const secret = args.faceAddressSecret;
+    if (!secret) throw new WorkingSlotRefusal("no-address-secret", "this vessel serves no address secret for the seated face");
+    const r = await resolveFaceWorkingSlot({ wikiId: slug, kind: "working", secret });
+    if (!r.ok) {
+      throw new WorkingSlotRefusal(r.refusal.reason, r.refusal.reason === "no-address-secret"
+        ? "the seated face holds no address secret here: a face founded before the secret minted at its founding re-founds"
+        : r.refusal.message);
+    }
+    return r.url;
+  };
+  /** The face's documents this resolver registered, so one process registers each once. */
+  const registered = new Set<string>();
+  const faceWorking = async (slug: string, mint: boolean): Promise<SlotDoc> => {
+    const url = await faceWorkingUrl(slug);
+    if (mint) {
+      if (!args.faceWorkingDoc) throw new WorkingSlotRefusal("no-working-door", "this resolver cannot materialize a derived document");
+      const handle = await args.faceWorkingDoc(url, slug);
+      await args.repo.flush([handle.documentId]);
+      if (args.faceDoor && !registered.has(url)) { await args.faceDoor.mint(url, "admin"); registered.add(url); }
+    }
+    return { url, reach: "face" };
+  };
+  /** The working FLOOR doc: keyed by the floor's own anchor in the catalog registry; minted on absent. */
+  const workingFloor = async (slug: string, mint: boolean): Promise<string | null> => {
+    const catalog = args.catalog;
+    if (!catalog) throw new Error(`slot-doc: the working floor for "${slug}" needs the catalog registry, and this vessel holds no catalog grant`);
+    const anchor = await args.floorAnchor?.();
+    if (!anchor) throw new WorkingSlotRefusal("no-place", `the working floor for "${slug}" rests by the floor's own anchor, and this vessel holds neither a place KEL nor a private Nexus key`);
+    const key = wikiWorkingFloorKey(slug, anchor);
+    const existing = await catalog.urlOf(key);
+    if (existing || !mint) return existing;
+    const handle = args.repo.create<LarDoc>(emptyLarDoc());
+    await handle.whenReady?.();
+    await args.repo.flush([handle.documentId]);
+    const catalogHandle = await catalog.handle();
+    catalogHandle.change((doc) => {
+      doc.tiddlers[key] = storedLarRecord(key, {
+        text: handle.url,
+        kind: "oracle",
+        "face-reach": "vessel-only",
+        "minted-by": args.mintedByHex(),
+      }, "slot-doc:working-floor");
+    });
+    return handle.url;
+  };
+  const workingDoc = async (slug: string, mint: boolean): Promise<SlotDoc | null> => {
+    if (await seated()) return faceWorking(slug, mint);
+    const url = await workingFloor(slug, mint);
+    return url ? { url, reach: "vessel-only" } : null;
+  };
+
   const draftDoc = async (slug: string, fingerprint: string, recipeTrace: RecipeTrace): Promise<SlotDoc> =>
     resolveSlotDoc({
       seated,
@@ -159,6 +238,8 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     await args.seatSettled?.();
     if (kind === "temp") return null;
     const mint = opts?.mint ?? true;
+    // The working kind derives from the face and the wiki's slug, never from the recipe's trace.
+    if (kind === "working") return workingDoc(slug, mint);
     const { fingerprint, recipeTrace } = await traceOf(slug);
     if (kind === "draft") {
       if (mint) return draftDoc(slug, fingerprint, recipeTrace);
@@ -181,7 +262,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       mounted.set(slug, { fingerprint, recipeTrace });
       const personal = await binding("personal", fingerprint, recipeTrace);
       const draft    = await draftDoc(slug, fingerprint, recipeTrace);
-      const working  = await binding("working", fingerprint, recipeTrace);
+      const working  = (await workingDoc(slug, true))!;
       return { personalUrl: personal.url, draftUrl: draft.url, workingUrl: working.url };
     },
     slotDoc,
@@ -190,10 +271,22 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       if (!args.faceDoor || !args.personaGroupId || !(await seated())) return { moved: [], finished: [] };   // no seat, nothing to lift into
       const repo = args.repo as unknown as Partial<LiftRepo>;
       if (typeof repo.find !== "function" || typeof repo.delete !== "function") throw new Error("slot-doc: the lift needs a repo that finds and deletes documents");
+      // THE SECRET STANDS FIRST: the face's address secret must stand before the lift's first step, or the lift refuses by
+      // name and changes nothing (no draft moves ahead of a working floor that cannot derive its address).
+      const secret = (await args.faceAddressSecret?.()) ?? null;
+      if (!secret) throw new WorkingSlotRefusal("no-address-secret", "the seated face holds no address secret here, so the lift changes nothing");
+      secret.fill(0);
       return liftVesselOnlyIntoFace({
         repo: args.repo as unknown as LiftRepo, daemonStore: args.daemonStore, catalog: args.catalog, faceDoor: args.faceDoor,
         mintedByHex: args.mintedByHex(), vesselDid: String(await args.vesselDid()),
         ...(args.floorMinter ? { floor: args.floorMinter() } : {}),
+        // THE WORKING FLOOR LIFTS TO THE FACE'S DERIVED ADDRESS: by the floor's own anchor, into the document the face's
+        // secret names for each wiki.
+        working: {
+          anchor: (await args.floorAnchor?.()) ?? null,
+          urlOf: faceWorkingUrl,
+          ...(args.faceWorkingDoc ? { open: args.faceWorkingDoc } : {}),
+        },
         traceOf: async (slug) => {
           const url = await args.catalog?.urlOf(wikiBagUri(slug)).catch(() => null);
           if (!url) return null;

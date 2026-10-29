@@ -40,10 +40,10 @@ import {
   generateOrLoadPersonaGroupRoot,
   generateOrLoadVesselIdentity,
   loadVesselVerifyingKey,
-  wearPersona,
 } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
+import { seedFaceAtom } from "./atom-fixture.js";
 
 let root: string;
 let priorRoot: string | undefined;
@@ -132,7 +132,6 @@ async function seedSignedGift(): Promise<{ readonly dir: string; readonly offero
 async function standPersona(): Promise<void> {
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
-  await wearPersona(0);
 }
 
 describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", () => {
@@ -175,13 +174,17 @@ describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", ()
     expect(result.offering).toEqual(announced);                     // byte-identical to what the gift already carried
   });
 
-  it("refuses without an explicitly worn persona and leaves no board behind", async () => {
+  it("RED: refuses by name when several faces stand and none is named; CONTROL: the face named signs", async () => {
     const source = seedUnsignedSource();
+    seedMinimalGenesis();
     await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
-    await generateOrLoadPersonaGroupRoot(0);
+    for (const face of [0, 1]) { await generateOrLoadPersonaGroupRoot(face); await seedFaceAtom(face); }
 
-    await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() }))
-      .rejects.toBeInstanceOf(NexusPublishError);
+    const unnamed = direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() });
+    await expect(unnamed).rejects.toBeInstanceOf(NexusPublishError);
+    await expect(unnamed).rejects.toThrow(/--face N/);
+    const named = await direct(runNexusPublishPlugins)({ source, storageDir: larDataDir(), handleIndex: 1 });
+    expect(named.blobCount).toBe(1);
   });
 
   it("refuses when the offering source is absent", async () => {

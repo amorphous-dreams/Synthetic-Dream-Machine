@@ -11,7 +11,7 @@
  * of the group N's anchors name. A vessel that holds several faces therefore tells no face's fleet about
  * another face. The read answers each plane's own face alone.
  *
- * WHAT CROSSES A PORT. The daemon island mounts the worn face's plane, so that plane's own document syncs
+ * WHAT CROSSES A PORT. The daemon island mounts the mounted face's plane, so that plane's own document syncs
  * between this Repo and the island's, as the plane itself. No message beside that document carries a name.
  *
  * The stamp beside each name orders two concurrent renames of that one field on a face's own vessels, and it

@@ -27,7 +27,7 @@ import {
   type NexusDoc, type LarDoc, type GenesisSeed,
 } from "@lararium/mesh";
 import {
-  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, wearPersona, loadVesselVerifyingKey, loadPersonaGroupRootVerifyingKey,
+  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, loadPersonaGroupRootVerifyingKey,
   loadPersonaGroupRootSeed,
 } from "../src/node-vessel-identity.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
@@ -61,7 +61,7 @@ afterEach(async () => {
 const verify = (bytes: Uint8Array, sigHex: string, did: string) =>
   ed.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(did)).catch(() => false);
 
-/** Seat a 2-of-3 charter whose kahu are this vessel's own held roots, wear h0, and seed a minimal,
+/** Seat a 2-of-3 charter whose kahu are this vessel's own held roots (each act names h0), and seed a minimal,
  *  READABLE genesis (M-d: an absent genesis now refuses `boot-set-unknown` rather than failing
  *  open, so `nexus-publish`'s own writer test needs one; harmless for the other three writers). */
 async function seatVessel(root: string): Promise<void> {
@@ -85,8 +85,7 @@ async function seatVessel(root: string): Promise<void> {
   const charter = heldCharter({ keys, threshold: 2 });
   const doc: NexusDoc = charter.doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
   writeNexusDoc(sealHome(), doc);
-  await wearPersona(0);
-  // The worn face's key at this Nexus mints HERE, before a twin copies the root: a vouch signs with it, and the
+  // Face 0's key at this Nexus mints HERE, before a twin copies the root: a vouch signs with it, and the
   // twin and the original sign one act only while both hold the same random key.
   await mintNexusLeaf(0, nexusAidOf(doc)!);
   // §2.1 — `cabal-vouch`'s `resolveBoundEpoch` reads the social bootstrap for a daemon doc URL
@@ -159,13 +158,13 @@ const WRITERS: readonly Writer[] = [
     carries: (doc, id) => antigenEntriesFromBoard(doc).some((e) => e.actCid === id),
   },
   {
-    verb: "edge-kapae", args: { edgeId: "e".repeat(64), raised: true },
+    verb: "edge-kapae", args: { edgeId: "e".repeat(64), raised: true, handleIndex: 0 },
     board: (_island, fleetRoot) => fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
     id: (o) => String(o["actCid"]),
     carries: (doc, id) => edgeKapaeActsFromBoard(doc).some((a) => a.actCid === id),
   },
   {
-    verb: "cabal-vouch", args: { joiner: JOINER, realm: REALM },
+    verb: "cabal-vouch", args: { joiner: JOINER, realm: REALM, face: 0 },
     board: () => realmVouchBoardDocUrl(REALM), label: "board:vouch-registry",
     // A vouch reports no content id of its own; its signature over the invite bytes names it.
     id: () => "",
@@ -174,7 +173,7 @@ const WRITERS: readonly Writer[] = [
   {
     // `args.source` is filled in per-test (below) once `base` exists — the WRITERS table is built at
     // module scope, before any test's own scratch dir.
-    verb: "nexus-publish", args: {},
+    verb: "nexus-publish", args: { handleIndex: 0 },
     board: (i) => crossroadsDocUrl(i), label: "board:crossroads",
     id: (o) => String(o["offeringCid"]),
     carries: (doc, id) => offeringAnnouncesFromDoc(doc).some((a) => a.offeringCid === id),
@@ -300,7 +299,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
     await seatVessel(root);
     const doc = readNexusDoc(sealHome())!;
     const aidP = nexusAidOf(doc)!;
-    // The held persona's OWN per-Nexus leaf (h0, the face `seatVessel` wears) — the multitude-of-one self-admit
+    // The held persona's OWN per-Nexus leaf (h0, the face these acts name) — the multitude-of-one self-admit
     // `runNexusContract` mints in production, built here with the same pure mesh signers it uses.
     const leaf = await mintNexusLeaf(0, aidP);
     const sign = (seedBytes: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seedBytes).then(hex);

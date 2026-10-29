@@ -13,7 +13,8 @@
  *                                                  the one string to carry; nothing about it is kept here
  *
  * Without `--nexus` a door acts on this hearth's own charter. A hearth hosts only in a Nexus it carries, and
- * only as the face this vessel wears.
+ * only as one face: the face that holds its hosting there, else (at the first roll) `--face N`, else the one face
+ * standing open.
  *
  * THE CUSTODY DOOR. The hosting state, its spend rows and its carriage rest sealed under the vessel key, so each
  * door here sends one `act` frame (`host.state`, `host.roll`, `host.invite`): an invite as a verb's outcome would
@@ -24,6 +25,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
+import { faceOption } from "../face-option.js";
 import { HostRefusal, SealedActRefused } from "@lararium/node";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
@@ -93,7 +95,7 @@ async function hostRoll(args: ParsedArgs): Promise<number> {
   }
   try {
     const nexusAid = nexusOf(args);
-    const vargs = { ...(nexusAid ? { nexusAid } : {}), ...(cap !== undefined ? { cap } : {}) };
+    const vargs = { ...(nexusAid ? { nexusAid } : {}), ...(cap !== undefined ? { cap } : {}), ...faceOption(args) };
     const { output: r, via } = await hostDoor("host.roll", vargs);
     emit(args, {
       ok: true,

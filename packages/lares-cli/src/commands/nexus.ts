@@ -37,6 +37,7 @@
  * GOVERNING A REALM ⊥ GOVERNING THE METAL (operator ruling). This door is the metal.
  */
 
+import { faceOption } from "../face-option.js";
 import { readFileSync } from "node:fs";
 import {
   runNexusCarryFor, NexusContractError, SealedActRefused,
@@ -105,12 +106,12 @@ const NEXUS_RITES: Readonly<Record<string, { readonly composes: string; readonly
 /**
  * `lares nexus realm-bag <bag-uri>` — register a bag this vessel's steward keeps on the realm's shared CRDT
  * (realm-bag-brief). The bag's doc is the one this vessel names for the URI; the record
- * rides the seal of the key this vessel's WORN face presents to the realm's Nexus (`lares persona wear N`
- * first), never a persona root; @crossroads carries only that the bag exists and who keeps it.
+ * rides the seal of the key the acting face (`--face N`, else the one face standing open) presents to the realm's
+ * Nexus, never a persona root; @crossroads carries only that the bag exists and who keeps it.
  * A contracted member reads it through `meme get --bag <slug>`; the stewards alone write.
  *
  * A name enters a record by its own hand first. `--join` ASKS to keep a bag another hand keeps: this vessel's
- * worn face seals a record that names the standing stewards and itself. `--cosign` CONSENTS to a record that
+ * acting face seals a record that names the standing stewards and itself. `--cosign` CONSENTS to a record that
  * names this vessel's steward. `--steward <key>` names a hand that already sealed a record of this realm.
  *
  * A verb names its realm. `--realm <id>` names a cabal realm (64 hex) or the charter-derived realm; with none
@@ -119,7 +120,7 @@ const NEXUS_RITES: Readonly<Record<string, { readonly composes: string; readonly
 async function cmdRealmBag(args: ParsedArgs): Promise<number> {
   const bag = args.positional[1];
   if (!bag) { console.error("usage: lares nexus realm-bag <bag-uri> [--realm <id>] [--join | --cosign [--with <key>]] [--steward <key>…] [--tier <t>] [--expiry <rolls>] [--charter <key>=<realm-id>]"); return 2; }
-  // `--steward` names a keeping hand by the key her worn face presents to this Nexus, and the vessel refuses a
+  // `--steward` names a keeping hand by the key her acting face presents to this Nexus, and the vessel refuses a
   // key that sealed nothing in this realm: a hand that would keep the bag asks from her own vessel (`--join`).
   // The record is n-of-n: it counts nothing until every hand it names has sealed it.
   const stewards = (args.options["steward"] ?? "").split(",")
@@ -142,7 +143,7 @@ async function cmdRealmBag(args: ParsedArgs): Promise<number> {
   try {
     const r = await runVerb("realm-bag", {
       bag: bag.startsWith("lar:") ? bag : `lar:///ha.ka.ba/bags/${bag}`, stewards, cosign, join,
-      ...(withName ? { with: withName } : {}),
+      ...(withName ? { with: withName } : {}), ...faceOption(args),
       ...(realm ? { realm } : {}),
       ...(tier ? { tier } : {}),
       ...(expiry === undefined || !Number.isFinite(expiry) ? {} : { expiry }),

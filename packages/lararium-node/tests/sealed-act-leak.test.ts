@@ -46,7 +46,7 @@ import {
 import { custodyFrameHandler } from "../src/custody-frames.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 import { claimStore, type StoreClaim } from "../src/owned-store.js";
-import { SEALED_ACT_NAMES, runSealedAct } from "../src/sealed-acts.js";
+import { SEALED_ACT_NAMES, SESSION_ACTS, runSealedAct } from "../src/sealed-acts.js";
 import { writePersonaSelfName } from "@lararium/tw5";
 import { personaSelvesPlaneOver } from "../src/persona-selves-plane.js";
 import type { PlaneRest } from "../src/sealed-acts.js";
@@ -122,7 +122,7 @@ async function stand(door: (parsed: unknown, sock: Socket) => boolean, rest: Pla
 
 /** The digest a receipt fact keeps for a verb's arguments (the worker's own formula). */
 const digestOf = (verb: string, args: Record<string, unknown>): Promise<string> =>
-  verbInputDigest({ verb, args, requestedBy: "did:key:leak-test" });
+  verbInputDigest({ verb, args });
 
 const unlockedHolder = { isUnlocked: () => true, openedSlot: () => "slot-1", attemptsLeft: () => 3 } as unknown as CustodyHolder;
 const drops: Array<() => Promise<void>> = [];
@@ -146,19 +146,22 @@ describe("an act frame and the daemon's document", () => {
       const canary = `ARG-CANARY-${act}-${Math.random().toString(36).slice(2)}`;
       args.set(act, canary);
       const a = await sendLine(v.socketPath, { op: "act", act, args: { petname: canary } });
-      expect(a).toEqual({ op: "act", act, result: { held: answers.get(act) } });          // the caller alone holds the answer
+      // An act that acts as a face rides a session (`session:act`, whose receipt names the act and the face alone): the
+      // custody door's own frame refuses it and runs nothing.
+      if (SESSION_ACTS.has(act)) expect(a).toMatchObject({ op: "act", status: "error", refusal: { reason: "face-act-rides-a-session" } });
+      else expect(a).toEqual({ op: "act", act, result: { held: answers.get(act) } });     // the caller alone holds the answer
     }
     await new Promise((r) => setTimeout(r, 150));                                          // let any late write land
     const afterActs = v.text();
     expect(v.titles().filter((t) => t.startsWith(OUTCOME_URI_PREFIX))).toEqual([]);
     expect(v.titles().filter((t) => t.startsWith(RECEIPT_FACT_URI_PREFIX))).toEqual([]);
-    for (const act of SEALED_ACT_NAMES) {
+    for (const act of SEALED_ACT_NAMES.filter((a) => !SESSION_ACTS.has(a))) {
       expect(afterActs.includes(answers.get(act)!), `the answer of ${act} rests in a document`).toBe(false);
       expect(afterActs.includes(args.get(act)!), `an argument of ${act} rests in a document`).toBe(false);
       expect(afterActs.includes(await digestOf(act, { petname: args.get(act)! })), `a digest of ${act}'s arguments rests in a document`).toBe(false);
       expect(logs.some((l) => l.includes(answers.get(act)!) || l.includes(args.get(act)!))).toBe(false);
     }
-    expect(logs.filter((l) => l.endsWith(": done")).length).toBe(SEALED_ACT_NAMES.length);  // the door named each act it ran
+    expect(logs.filter((l) => l.endsWith(": done")).length).toBe(SEALED_ACT_NAMES.length - SESSION_ACTS.size);  // the door named each act it ran
 
     // CONTROL: the same name and the same arguments, sent as a VERB, leave exactly the two traces the search hunts.
     const act = SEALED_ACT_NAMES[0]!;
@@ -222,12 +225,13 @@ describe("an act frame and the daemon's document", () => {
     for (const stream of ["log", "error", "warn", "info"] as const) vi.spyOn(console, stream).mockImplementation((...a: unknown[]) => { printed.push(a.map(String).join(" ")); });
     const PETNAME = `the-quiet-compartment-${Math.random().toString(36).slice(2)}`;
     const HANDLE = `The Lindwyrm ${Math.random().toString(36).slice(2)}`;
-    const carryPetname = { op: "act", act: "selves.carry", args: { handleIndex: 0, name: "petname" } };
-    const carryHandle = { op: "act", act: "selves.carry", args: { handleIndex: 0, name: "handle" } };
+    // A carry acts as the face (`SESSION_ACTS`): it rides a session of that face, whose seat runs it on this door's chain.
+    const carryPetname = { op: "session:act", act: "selves.carry", args: { handleIndex: 0, name: "petname" } };
+    const carryHandle = { op: "session:act", act: "selves.carry", args: { handleIndex: 0, name: "handle" } };
     await sendLine(v.socketPath, { op: "act", act: "petname.set", args: { handleIndex: 0, petname: PETNAME } });
     await sendLine(v.socketPath, { op: "act", act: "declaration.set", args: { handleIndex: 0, declaration: { handle: HANDLE, seat: true, chair: "a private chair" } } });
-    expect(await sendLine(v.socketPath, carryPetname)).toEqual({ op: "act", act: "selves.carry", result: { carried: true } });
-    expect(await sendLine(v.socketPath, carryHandle)).toEqual({ op: "act", act: "selves.carry", result: { carried: true } });
+    expect(await door.act(carryPetname.act, carryPetname.args)).toEqual({ op: "act", act: "selves.carry", result: { carried: true } });
+    expect(await door.act(carryHandle.act, carryHandle.args)).toEqual({ op: "act", act: "selves.carry", result: { carried: true } });
     // The carry frame names a face and which name: no byte of either name rides it.
     expect(JSON.stringify([carryPetname, carryHandle]).includes(PETNAME)).toBe(false);
     expect(JSON.stringify([carryPetname, carryHandle]).includes(HANDLE)).toBe(false);
@@ -271,7 +275,8 @@ describe("an act frame and the daemon's document", () => {
     });
     v = await stand(door, "sealed");
     drops.push(() => v.down());
-    const act = (name: string, args: Record<string, unknown>) => sendLine(v.socketPath, { op: "act", act: name, args });
+    // The carry acts as the face, so it runs on the door's chain as a session's seat runs it; the place's rows ride the frame.
+    const act = (name: string, args: Record<string, unknown>) => (SESSION_ACTS.has(name) ? door.act(name, args) : sendLine(v.socketPath, { op: "act", act: name, args }));
     const reason = (a: Record<string, unknown>): string => `${(a["refusal"] as { reason?: string } | undefined)?.reason}: ${String(a["errorMessage"])}`;
 
     // A FLEET-MATE'S NAME SURVIVES A VESSEL THAT NEVER HELD IT. Another vessel of face 1 named it on the plane; this
@@ -317,7 +322,8 @@ describe("an act frame and the daemon's document", () => {
     });
     v = await stand(door, "clear");
     drops.push(() => v.down());
-    const act = (name: string, args: Record<string, unknown>) => sendLine(v.socketPath, { op: "act", act: name, args });
+    // The carry acts as the face, so it runs on the door's chain as a session's seat runs it; the place's rows ride the frame.
+    const act = (name: string, args: Record<string, unknown>) => (SESSION_ACTS.has(name) ? door.act(name, args) : sendLine(v.socketPath, { op: "act", act: name, args }));
     const reason = (a: Record<string, unknown>): string => `${(a["refusal"] as { reason?: string } | undefined)?.reason}: ${String(a["errorMessage"])}`;
     const PETNAME = `a-relit-label-${Math.random().toString(36).slice(2)}`;
     const HANDLE = `A Re-lit Handle ${Math.random().toString(36).slice(2)}`;

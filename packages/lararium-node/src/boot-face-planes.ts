@@ -4,7 +4,7 @@
  * A face's planes ride the bootstrap the founding wrote and register in the catalog at boot. A document
  * every holder may rewrite never answers for them: this function takes the bootstrap's tiddlers and the
  * worn PersonaGroup id, and no other source, so no value of the shared oracle can reach a face.
- * The worn face stays a parameter; nothing here reads a vault pointer.
+ * The mounted face stays a parameter; nothing here reads a vault pointer.
  */
 
 import {
@@ -36,7 +36,7 @@ export function bootFacePlanes(
   // would mount a second writable layer over the first.
   const planesFault = personaPlanes.length ? personaPlanesFault(personaPlanes) : null;
   if (planesFault) throw new Error(`[lararium] the PersonaGroup planes this vessel carries do not stand: ${planesFault}`);
-  // The WORN face decides which plane mounts; the bootstrap pin names the founding face where no
+  // The mounted face decides which plane mounts; the bootstrap pin names the founding face where no
   // switch is owed.
   const personaGroupId = wornPersonaGroupId ?? bootstrapTiddlers[PERSONA_GROUP_ID_TIDDLER]?.text ?? null;
   // A vessel standing in compartments but told to wear none it carries halts rather than wearing

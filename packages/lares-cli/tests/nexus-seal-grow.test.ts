@@ -84,7 +84,7 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
     // Arm the succession: the four-key set, pre-committed an epoch ahead.
     const rt3 = await generateOrLoadPersonaGroupRoot(3);
     const fourKeys = [...founders, rt3.verifyingKey];
-    expect((await rite.rotate()).code).toBe(0);
+    expect((await rite.rotate({ face: "0" })).code).toBe(0);
     const fromHead = sealLineageHead(readNexusDoc(larSealHome()))!;
 
     // ── OPEN: capture the standing hands BEFORE anything moves.
@@ -92,7 +92,7 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
 
     // The fourth stands; the succession rotate seats the four (matching the armed pre-commit).
     await stand(["Kahu Freyja"], 3);
-    expect((await rite.rotate()).code).toBe(0);
+    expect((await rite.rotate({ face: "0" })).code).toBe(0);
     const toHead = sealLineageHead(readNexusDoc(larSealHome()))!;
     expect(toHead.epochCid).not.toBe(fromHead.epochCid);
 
@@ -124,9 +124,9 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
   test("★ AN UNSIGNED CROSSING REFUSES TO SEAL — and writes nothing ★", async () => {
     const founders = await stand(KAHU);
     await rite.seat();
-    await rite.rotate();
+    await rite.rotate({ face: "0" });
     expect((await cmdNexus(args(["seal", "grow", "open"])))).toBe(0);
-    await rite.rotate();
+    await rite.rotate({ face: "0" });
     expect((await cmdNexus(args(["seal", "grow", "bind"])))).toBe(0);
 
     expect((await cmdNexus(args(["seal", "grow", "seal"])))).not.toBe(0);

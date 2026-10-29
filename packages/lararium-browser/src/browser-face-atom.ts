@@ -70,3 +70,31 @@ export async function standBrowserFaceAtomSeed(idbName: string, personaGroup: st
 export async function keepBrowserFaceAtomSeed(idbName: string, personaGroup: string, seed: Uint8Array): Promise<void> {
   await keepFaceAtomSeed(browserFaceAtomRows(idbName), personaGroup, seed);
 }
+
+/** The custody row that keeps one face's address secret: its working documents derive their addresses from it. */
+export const faceAddressSecretRow = (personaGroup: string): string => {
+  if (personaGroup.length === 0) throw new Error("[browser-face-atom] an address secret names its PersonaGroup");
+  return `face-address-secret/${personaGroup}`;
+};
+
+/**
+ * THE FACE'S ADDRESS SECRET MINTS AT ITS FOUNDING, beside its atom, under the same slot tree: 32 random bytes where none
+ * stands; a row already standing keeps its bytes. No read mints one, and a joined browser lands the bytes its answer
+ * carried (`browser-fleet-join`).
+ */
+export async function mintBrowserFaceAddressSecret(idbName: string, personaGroup: string): Promise<void> {
+  const row = faceAddressSecretRow(personaGroup);
+  await withCustodyRows(idbName, async (rows) => {
+    const held = await rows.read(row);
+    if (held instanceof Uint8Array && held.length === 32) return;
+    if (held !== undefined) throw new Error("[browser-face-atom] the face's address secret row reads malformed");
+    const fresh = crypto.getRandomValues(new Uint8Array(32));
+    try { await rows.write(row, Uint8Array.from(fresh)); } finally { fresh.fill(0); }
+  });
+}
+
+/** The face's address secret this browser holds (the caller zeroes the copy), or null; a read never mints. */
+export async function readBrowserFaceAddressSecret(idbName: string, personaGroup: string): Promise<Uint8Array | null> {
+  const held = await readKeystoreRow(idbName, faceAddressSecretRow(personaGroup));
+  return held instanceof Uint8Array && held.length === 32 ? Uint8Array.from(held) : null;
+}

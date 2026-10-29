@@ -7,7 +7,12 @@
  *     still stands at the closing head; afterwards the board holds the anchor that opens the new head;
  *   · an anchor that cannot be signed, or does not count (the `nexus-roll-anchor` door row refusing with
  *     `NexusContractError`), refuses the rotate and leaves the charter byte-identical;
- *   · CONTROL: any other fault in the anchor step throws through, and still writes no head.
+ *   · CONTROL: any other fault in the anchor step throws through, and still writes no head;
+ *   · RED: on a running vessel with no face open, the roll splits by authority: the carriage anchor (the place's
+ *     act) lands, the realm edge step (a face's act) answers `no-face-open` by name, and the head lands whole. The
+ *     running vessel stands in at the two seams the command reaches it by: `face.resolve` answers what its custody
+ *     door answers (`orNone` → null, else a refusal), and a face row that names no face refuses as the vessel's store
+ *     door does when it resolves none.
  *
  * The anchor step runs the real door row (`storeVerb("nexus-roll-anchor", …)`, direct-held since no vessel
  * stands in this test) unless a test injects a fault in its place. The row itself — not the module-level
@@ -26,14 +31,59 @@ const anchorStep = vi.hoisted(() => ({
   charterDepthAtAnchor: [] as number[],
 }));
 
+/** A running vessel with no face open, as the command meets it: rows and acts it routes, by name. */
+const faceless = vi.hoisted(() => ({ up: false, rows: [] as string[] }));
+
+/** A face that rests locked: at the session preflight, or only once the edge step reaches it (it locked after). */
+const locking = vi.hoisted(() => ({ atPreflight: null as number | null, atEdge: false, proved: [] as number[] }));
+
+/** The retire step faults once the charter has moved: the closing head's keys stay held, and the roll still stands. */
+const retiring = vi.hoisted(() => ({ faultNext: false, calls: 0 }));
+vi.mock("../src/sealed-rows.js", async (importOriginal) => {
+  const real = await importOriginal<typeof import("../src/sealed-rows.js")>();
+  return {
+    ...real,
+    retireSeats: async (...args: Parameters<typeof real.retireSeats>) => {
+      retiring.calls += 1;
+      if (retiring.faultNext) { retiring.faultNext = false; throw new Error("the seat rows at /secret/rows read torn"); }
+      return real.retireSeats(...args);
+    },
+  };
+});
+
+vi.mock("../src/sealed-act-door.js", async (importOriginal) => {
+  const real = await importOriginal<typeof import("../src/sealed-act-door.js")>();
+  return {
+    ...real,
+    sealedAct: async (act: string, args: Record<string, unknown> = {}) => {
+      if (faceless.up && act === "face.resolve") {
+        if (args["orNone"] === true) return { face: null };
+        const { SealedActRefused } = await import("@lararium/node");
+        throw new SealedActRefused("act-refused", "this vessel holds no face open");
+      }
+      return real.sealedAct(act as never, args);
+    },
+  };
+});
+
 vi.mock("../src/store-door.js", async (importOriginal) => {
   const real = await importOriginal<typeof import("../src/store-door.js")>();
   return {
     ...real,
+    proveFaceSession: async (face: number) => {
+      locking.proved.push(face);
+      if (locking.atPreflight === face) throw new real.RoutedVerbRefused(`local session refused: face-locked`, "face-locked");
+    },
     storeVerb: async (
       verb: Parameters<typeof real.storeVerb>[0], args: Parameters<typeof real.storeVerb>[1],
       Refusal?: Parameters<typeof real.storeVerb>[2],
     ) => {
+      if (faceless.up) {
+        faceless.rows.push(verb);
+        const { STORE_DOOR_FACE_ROWS, SealedActRefused } = await import("@lararium/node");
+        if (STORE_DOOR_FACE_ROWS.has(verb) && args["face"] === undefined) throw new SealedActRefused("act-refused", "this vessel holds no face open");
+      }
+      if (verb === "nexus-roll-anchor-edge" && locking.atEdge) throw new real.RoutedVerbRefused("local session refused: face-locked", "face-locked");
       if (verb === "nexus-roll-anchor") {
         const { readNexusDoc } = await import("@lararium/node");
         const { larSealHome } = await import("../src/env.js");
@@ -73,6 +123,13 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     anchorStep.fault = null;
     anchorStep.skipLanding = false;
     anchorStep.charterDepthAtAnchor = [];
+    faceless.up = false;
+    faceless.rows = [];
+    locking.atPreflight = null;
+    locking.atEdge = false;
+    locking.proved = [];
+    retiring.faultNext = false;
+    retiring.calls = 0;
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
@@ -113,7 +170,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     const keys = await seatedGenesis();
     const genesis = sealLineageHead(readNexusDoc(larSealHome()))!;
 
-    const r = await rite.rotate();
+    const r = await rite.rotate({ face: "0" });
     expect(r.code).toBe(0);
     expect(anchorStep.charterDepthAtAnchor).toEqual([1]);          // the anchor step ran against the closing head
     const head = sealLineageHead(readNexusDoc(larSealHome()))!;
@@ -131,7 +188,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     const before = readFileSync(path);
 
     anchorStep.fault = () => new NexusContractError("refusing to write: the roll anchor does not count under the new roster (fail-closed).");
-    const r = await rite.rotate();
+    const r = await rite.rotate({ face: "0" });
     expect(r.code).not.toBe(0);
     expect(anchorStep.charterDepthAtAnchor).toEqual([1]);          // the step was reached …
     expect(readFileSync(path).equals(before)).toBe(true);           // … and the charter never moved
@@ -139,7 +196,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
 
     // THE SAME ROLL RUN AGAIN LANDS: the refusal left nothing behind that a second run trips on.
     anchorStep.fault = null;
-    const again = await rite.rotate();
+    const again = await rite.rotate({ face: "0" });
     expect(again.code).toBe(0);
     expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(2);
   });
@@ -150,7 +207,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     const before = readFileSync(path);
 
     anchorStep.fault = () => new Error("the board store faulted");
-    const r = await rite.rotate();
+    const r = await rite.rotate({ face: "0" });
     expect(r.code).not.toBe(0);
     expect(readFileSync(path).equals(before)).toBe(true);
   });
@@ -160,21 +217,83 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     const path = nexusCharterDocPath(larSealHome());
 
     // CONTROL: the single-vault rotate anchors inside itself, so a second rotate over that head opens.
-    expect((await rite.rotate()).code).toBe(0);
+    expect((await rite.rotate({ face: "0" })).code).toBe(0);
     expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(2);
-    expect((await rite.rotate()).code).toBe(0);
+    expect((await rite.rotate({ face: "0" })).code).toBe(0);
     expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(3);
 
     // RED: a head whose roll landed no anchor (the step answered, nothing reached the board) blocks the next roll.
     anchorStep.skipLanding = true;
-    expect((await rite.rotate()).code).toBe(0);
+    expect((await rite.rotate({ face: "0" })).code).toBe(0);
     anchorStep.skipLanding = false;
     const depth = readNexusDoc(larSealHome())!.sealLineage!.length;
     const before = readFileSync(path);
-    const r = await rite.rotate();
+    const r = await rite.rotate({ face: "0" });
     expect(r.code).not.toBe(0);
     expect(JSON.stringify(r.out)).toMatch(/prior-roll-unanchored/);
     expect(readFileSync(path).equals(before)).toBe(true);
     expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(depth);
+  });
+
+  test("RED — a running vessel with no face open rolls whole: the place's carriage anchor lands, and the edge step answers no-face-open", async () => {
+    await seatedGenesis();
+    faceless.up = true;
+    const r = await rite.rotate();
+    expect(r.code, JSON.stringify(r.out)).toBe(0);
+    expect(anchorStep.charterDepthAtAnchor).toEqual([1]);                  // the carriage anchor ran at the closing head …
+    const data = r.out["data"] as { rollAnchor: unknown; edgeAnchor: unknown; chainDepth: number };
+    expect(data.rollAnchor).not.toBeNull();                                  // … and landed
+    expect(data.edgeAnchor).toEqual({ outcome: "no-face-open" });            // the face step named why it wrote nothing
+    expect(data.chainDepth).toBe(2);                                         // no half roll: the head landed
+    expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(2);
+    expect(faceless.rows).not.toContain("nexus-roll-anchor-edge");           // no face row ran without a face
+  });
+  test("RED — a named face whose session cannot open refuses the whole roll by the vessel's name before any card reads, and nothing is written", async () => {
+    await seatedGenesis();
+    const path = nexusCharterDocPath(larSealHome());
+    const before = readFileSync(path);
+    locking.atPreflight = 3;
+    const r = await rite.rotate({ face: "3" });
+    expect(r.code).not.toBe(0);
+    expect((r.out["error"] as { code: string }).code).toBe("face-locked");
+    expect(anchorStep.charterDepthAtAnchor).toEqual([]);                    // no anchor step ran
+    expect(readFileSync(path).equals(before)).toBe(true);                    // the charter never moved
+    // CONTROL: the same roll with an open face proves its session and lands.
+    locking.atPreflight = null;
+    const again = await rite.rotate({ face: "0" });
+    expect(again.code, JSON.stringify(again.out)).toBe(0);
+    expect(locking.proved).toEqual([3, 0]);
+  });
+
+  test("RED — a face that locks after the preflight costs the edge anchors alone: the charter lands, the closing keys retire, and the edge reads owed by name", async () => {
+    await seatedGenesis();
+    locking.atEdge = true;
+    const r = await rite.rotate({ face: "0" });
+    expect(r.code, JSON.stringify(r.out)).toBe(0);
+    const data = r.out["data"] as { rollAnchor: unknown; edgeAnchor: unknown; chainDepth: number; retiredSeatKeys: number };
+    expect(data.rollAnchor).not.toBeNull();
+    expect(data.edgeAnchor).toEqual({ outcome: "owed", face: 0, reason: "face-locked" });
+    expect(data.chainDepth).toBe(2);
+    expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(2);
+    expect(data.retiredSeatKeys).toBeGreaterThan(0);
+  });
+
+  test("RED — a retire that throws after the charter moved still runs the edge step and the emit, and names the fault: the roll stands", async () => {
+    await seatedGenesis();
+    retiring.faultNext = true;
+    const r = await rite.rotate({ face: "0" });
+    expect(retiring.faultNext, "the retire step ran and faulted").toBe(false);
+    expect(r.code, JSON.stringify(r.out)).toBe(0);
+    const data = r.out["data"] as { edgeAnchor: { outcome: string }; chainDepth: number; retiredSeatKeys: number; retireFault: string | null };
+    expect(data.chainDepth).toBe(2);
+    expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(2);
+    expect(data.edgeAnchor.outcome, "the edge step still ran").toBe("anchored");
+    expect(data.retiredSeatKeys).toBe(0);
+    expect(data.retireFault, "the fault reads by name").toBe("retire-faulted");
+    expect(JSON.stringify(r.out).includes("/secret/rows"), "the fault's text names no path").toBe(false);
+    // CONTROL: the next roll's retire runs clean and reports no fault.
+    const again = await rite.rotate({ face: "0" });
+    expect(again.code, JSON.stringify(again.out)).toBe(0);
+    expect((again.out["data"] as { retireFault: string | null }).retireFault).toBeNull();
   });
 });

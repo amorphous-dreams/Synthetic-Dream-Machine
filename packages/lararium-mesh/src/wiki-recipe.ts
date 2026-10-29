@@ -100,6 +100,34 @@ export function wikiDraftDocKey(slug: string, placeDid: LarDid): SlotUri {
   return `${wikiUri(slug)}/drafts/${encodeURIComponent(requireLarDid(placeDid, "wikiDraftDocKey"))}`;
 }
 
+/** THE FLOOR'S OWN ANCHOR, read from the vessel and never inferred: on a node its place, the W29 place KEL prefix; on a
+ *  browser leaf, which holds no place KEL, the private Nexus of one it stands as at the floor, the key it resolves its
+ *  shared planes under. A vessel that holds neither names no floor anchor. */
+export type WorkingFloorAnchor =
+  | { readonly kind: "place"; readonly aid: string }
+  | { readonly kind: "private-nexus"; readonly key: string };
+
+/** Select the anchor supplied by the vessel. */
+export function workingFloorAnchorOf(reading: { readonly place?: string | null; readonly privateNexusKey?: string | null }): WorkingFloorAnchor | undefined {
+  if (reading.place) return { kind: "place", aid: reading.place };
+  if (reading.privateNexusKey) return { kind: "private-nexus", key: reading.privateNexusKey };
+  return undefined;
+}
+
+/** The path a floor anchor names under a working floor: `place/{aid}` or `private-nexus/{key}`, so the two never collide. */
+export function floorAnchorSegment(anchor: WorkingFloorAnchor): string {
+  const id = anchor.kind === "place" ? anchor.aid : anchor.key;
+  if (typeof id !== "string" || id.length === 0) throw new Error(`floorAnchorSegment: the ${anchor.kind} anchor names nothing`);
+  return `${anchor.kind}/${encodeURIComponent(id)}`;
+}
+
+/** The catalog registry key of a wiki's working FLOOR doc (`wikis/{slug}/working-floor/{kind}/{anchor}`): the working
+ *  layer a vessel writes while no face stands seated, keyed by the floor's own anchor (`WorkingFloorAnchor`), never a vessel DID
+ *  or a path. The anon-veil lift carries it under the face's derived address at the join, and the key then names nothing. */
+export function wikiWorkingFloorKey(slug: string, anchor: WorkingFloorAnchor): SlotUri {
+  return `${wikiUri(slug)}/working-floor/${floorAnchorSegment(anchor)}`;
+}
+
 /** Who reaches a slot's doc — the `face-reach` field every binding record carries: `face` when the
  *  doc delegates to the PersonaGroup (fleet-synced), `vessel-only` when it rides the vessel's own
  *  key alone (the floor — a private device so far). */
@@ -121,6 +149,7 @@ export interface SlotDocPorts {
  * cap-stack falls to the floor, never reds. A seat that lands later resolves the face doc from then
  * on; the floor stays what it was, a private device's own.
  */
+// The working kind derives through resolveFaceWorkingSlot from the face's address secret.
 export async function resolveSlotDoc(ports: SlotDocPorts): Promise<{ url: string; reach: SlotReach }> {
   const seated = await ports.seated().catch(() => false);
   if (seated) return { url: await ports.faceDoc(), reach: "face" };

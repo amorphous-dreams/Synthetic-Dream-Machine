@@ -37,7 +37,7 @@ export const HANDOFFS = [];
 export const PUBLIC_PLACE_KEY = [
   { file: 'packages/lararium-browser/src/open-browser-vessel.ts', match: 'vesselIdentity.verifyingKey', count: 3, sort: 'place', reason: 'Browser place founding and daemon place check.' },
   { file: 'packages/lararium-browser/src/open-browser-vessel.ts', match: 'vesselVerifyingKey', count: 4, sort: 'place', reason: 'The browser carries its public place name into nexus placement, cadence, and presence.' },
-  { file: 'packages/lararium-keyhive/src/operator-daemon-behavior.ts', match: 'daemonAuth.placeVerifyingKey', count: 4, sort: 'place', reason: 'Daemon boot place check, face-owner mount comparison, the faceless floor\'s document label (public place key), and the floor label a lit face lifts.' },
+  { file: 'packages/lararium-keyhive/src/operator-daemon-behavior.ts', match: 'daemonAuth.placeVerifyingKey', count: 5, sort: 'place', reason: 'Daemon boot place check (the mounted face\'s and each joined face\'s), face-owner mount comparison, the faceless floor\'s document label (public place key), and the floor label a lit face lifts.' },
   { file: 'packages/lararium-node/src/open-node-vessel.ts', match: 'vesselIdentity.verifyingKey', count: 9, sort: 'place', reason: 'Hosting names, carried nexus placement, floor carrier, and daemon place check.' },
   { file: 'packages/lararium-node/src/open-node-vessel.ts', match: 'vesselGateKey', count: 4, sort: 'place', reason: 'Public mesh gate and cadence pin.' },
   { file: 'packages/lararium-node/src/commands/init.ts', match: 'vesselIdentity.verifyingKey', count: 2, sort: 'place', reason: 'Founding passes the public place check and carried placement.' },

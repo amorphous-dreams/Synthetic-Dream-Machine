@@ -30,7 +30,7 @@ import {
   type HandleKelEvent, type HandleAttestation, type HandleClaim,
 } from "@lararium/mesh";
 import { dispatch } from "../src/bin/lares.js";
-import { generateOrLoadPersonaGroupRoot, wearPersona } from "@lararium/node";
+import { generateOrLoadPersonaGroupRoot } from "@lararium/node";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 afterEach(() => vi.restoreAllMocks());
@@ -45,7 +45,7 @@ beforeEach(async () => {
   priorRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;
   custody = await seatScratchCustody();
-  await generateOrLoadPersonaGroupRoot(0); await wearPersona(0);   // each face keeps its own recognition book: a recognition needs a worn face
+  await generateOrLoadPersonaGroupRoot(0);   // each face keeps its own recognition book: a recognition needs a face standing
 });
 afterEach(async () => {
   await custody.drop();

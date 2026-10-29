@@ -24,17 +24,17 @@ async function foundedFace() {
   const repo = new Repo({ sharePolicy: async () => true });
   const treeKey = hex(await ed.getPublicKeyAsync(SEED));
   const place = await foundThePlace({ repo, vesselSeed: SEED, hearthTrueName: "" });
-  await foundTheFace({ repo, daemonHandle: place.daemonHandle, vesselSeed: SEED, placeVerifyingKey: treeKey,
+  const face = await foundTheFace({ repo, daemonHandle: place.daemonHandle, vesselSeed: SEED, placeVerifyingKey: treeKey,
     vesselDisplayName: "Island Witness",
     binding: { mode: "self-stood", signerSeed: new Uint8Array(32).fill(1) },
     hearthTrueName: "", nexusPubkey: treeKey,
   });
-  return { repo, place };
+  return { repo, place, face };
 }
 
 describe("a ceremony-written cap event keeps its causal island", () => {
   test("★ the island reaches the daemon doc, and replays back off it ★", async () => {
-    const { repo, place } = await foundedFace();
+    const { repo, place, face } = await foundedFace();
     const doc = place.daemonHandle.doc() as { tiddlers?: Record<string, { tiddler?: Record<string, string> }> };
     const caps = Object.entries(doc.tiddlers ?? {}).filter(([t]) => t.startsWith(`${DAEMON_BAG_ID}/cap/`));
 
@@ -43,7 +43,7 @@ describe("a ceremony-written cap event keeps its causal island", () => {
     expect(written.length, "an event minted WITH an island keeps it on the way in").toBeGreaterThan(0);
 
     // …and the read half: what the doc holds comes back on the record, not just in the tiddler.
-    const replayed = await (await replayCapEvents(place.daemonHandle)).list();
+    const replayed = await (await replayCapEvents(place.daemonHandle, face.personaGroupId)).list();
     expect(replayed.filter((r) => r.island !== undefined).length,
       "an island in the doc reaches the record").toBe(written.length);
 
@@ -55,8 +55,8 @@ describe("a ceremony-written cap event keeps its causal island", () => {
   }, 120_000);
 
   test("CONTROL — every replayed record still round-trips its bytes and variant", async () => {
-    const { repo, place } = await foundedFace();
-    const replayed = await (await replayCapEvents(place.daemonHandle)).list();
+    const { repo, place, face } = await foundedFace();
+    const replayed = await (await replayCapEvents(place.daemonHandle, face.personaGroupId)).list();
     expect(replayed.length).toBeGreaterThan(0);
     for (const r of replayed) {
       expect(r.bytes.length, "bytes survive — the island change moves no payload").toBeGreaterThan(0);

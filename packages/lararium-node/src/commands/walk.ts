@@ -20,8 +20,8 @@
 
 import { decodeInvite, takeInvite, popInvite } from "@lararium/mesh";
 import { nodeWalkStore, listWalkRecords, WalksElsewhere } from "../node-walk-store.js";
-import { mintWornNexusLeaf } from "../nexus-leaf.js";
-import { loadActivePersonaIndex } from "../node-vessel-identity.js";
+import { mintFaceNexusLeaf } from "../nexus-leaf.js";
+import { resolveFace } from "../face-selector.js";
 
 /** A refusal a walking door names, with nothing written. */
 export class WalkRefusal extends Error {}
@@ -48,12 +48,14 @@ export async function runWalkState(): Promise<readonly WalkReading[]> {
 }
 
 /**
- * Take a carried invite. Refuses — writing nothing — a torn invite, an invite whose Nexus this vessel wears no face
- * in, and an invite for a second hearth beside the one this vessel already walks at or dials (`dialGate`, the gate
+ * Take a carried invite. Refuses — writing nothing — a torn invite, an invite whose Nexus the acting face holds no root
+ * for, and an invite for a second hearth beside the one this vessel already walks at or dials (`dialGate`, the gate
  * key a standing join dial pins).
  */
 export async function runWalkTake(opts: {
   readonly carried: string; readonly dialGate?: string | null;
+  /** The face that walks (`--face N`); absent, the one face standing open. */
+  readonly face?: number;
 }): Promise<{ readonly gatePubKey: string; readonly nexusAid: string; readonly relay: string | null; readonly leaf: string }> {
   const invite = decodeInvite(opts.carried);
   if (!invite) throw new WalkRefusal("that is not a carried invite — it opens on `lar-invite:`");
@@ -66,8 +68,8 @@ export async function runWalkTake(opts: {
   if (dialGate && dialGate !== gate) {
     throw new WalkRefusal(`this vessel's dial stands to the hearth ${dialGate.slice(0, 16)}… — a vessel dials one hearth, and a walk elsewhere waits for one dial per hearth`);
   }
-  const face = await loadActivePersonaIndex();
-  if (face === undefined) throw new WalkRefusal("this vessel wears no face — a walker walks as a person: unlock it on one (`lares vault unlock --face <N>`) first");
+  // A walker walks as a person: the face the act names, else the one face standing open.
+  const face = await resolveFace(opts.face);
   const here = await nodeWalkStore({ face }).read(gate);
   if (here && here.nexusAid.toLowerCase() !== invite.nexusAid.toLowerCase()) {
     throw new WalkRefusal("this vessel walks at that hearth in another Nexus — one walk record serves one hearth in one Nexus, and a second waits for one dial per hearth and Nexus");
@@ -75,8 +77,8 @@ export async function runWalkTake(opts: {
   if (!invite.relay && !here?.relay) {
     throw new WalkRefusal("the invite names no relay to dial — ask its giver for one that carries where the hearth answers");
   }
-  const leaf = await mintWornNexusLeaf(invite.nexusAid);
-  if (!leaf) throw new WalkRefusal("this vessel wears no face — a walker walks as a person: `lares persona wear <N>` first");
+  const leaf = await mintFaceNexusLeaf(invite.nexusAid, face);
+  if (!leaf) throw new WalkRefusal("this vessel holds no root for the face that would walk — a walker walks as a face it founded: name one (--face N)");
   // THE KEEP COMMITS ONE HEARTH. The list above reads before the keep, so two takes for two hearths could each
   // read no other hearth; the store checks again inside the custody hold that seals the row.
   const taken = await takeInvite(nodeWalkStore({ face, oneHearth: true }), opts.carried).catch((err: unknown) => {
