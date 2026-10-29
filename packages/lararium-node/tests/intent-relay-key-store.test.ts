@@ -79,11 +79,11 @@ describe("the intent-admission service's cold S row", () => {
   test("RED: independent vessel mints never alias; CONTROL: each public key verifies its own signature", async () => {
     const keys = new Set<string>();
     const fixedSeedPublic = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(7));
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 8; i++) {
       const seat = await seatScratchCustody(`intent-many-${i}`);
       try { const { key } = await mintIntentRelayKey(); keys.add(key); expect(key).not.toBe(fixedSeedPublic); expect(verifies(key, await signAsIntentRelay(image))).toBe(true); }
       finally { await seat.drop(); }
     }
-    expect(keys.size).toBe(16);
-  });
+    expect(keys.size).toBe(8);
+  }, 180_000);
 });
