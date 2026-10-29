@@ -115,7 +115,7 @@ Operator, 2026-10-28: the old shapes and shape gates are design-time crud that t
 * ''The store-acknowledgement race was the product's.'' A daemon island's `doc:rest` ask rides `parentPort` and outruns the island's sync handshake, so the vessel's `repo.find` of a document the island had just minted read `unavailable` before the Repo had met the island's peer. `DaemonVmCore.syncLegReady()` names the leg the island runs on (the first leg and each manifest-replay leg), the rest door awaits it through a removable teardown subscription, and an `unavailable` after the leg stands still rejects. No clock, no retry loop. The pins are D6 to D8 in `rest-door.test.ts`; the replay probe fixture (`daemon-replay-probe.mjs`) stands for the island and waits on the Repo's own `peer` event the same way.
 * ''The wiki-shore family flaked in the tests.'' They counted host turns after a store write, while the store closes a change with a changeset on a later tick; under load that changeset landed after the next step, re-owed hands and flushed marked ones. The rig's `arrived()` now waits on the changeset event, and `landingIdle()` follows where a landing is wanted. The product holds no race there.
 * ''The 23 fenced old-shape sites burned in one commit with their exceptions'': the browser legacy-archive and old veil-row refusals, the keyhive legacy face-signature refusal (a place-signed edge now stops at the Binding Gate) and the `placeVerifyingKey` input only it read, the node legacy place-bytes refusal, and the `old-shape-inception` member of `PlaceKelRefusal` with its node mappings and the `old-shape` reading. The class stands at 0 with none excepted.
-* ''LARK-led bytes read `bare`, and the tests say so.'' A LARK-led file at a listed carrier refuses a founding and a carrier write as `bare` and leaves the store untouched. The law of the unlisted path: a bare file at a path no listed carrier names does not block a founding, because it is not custody's; only a file bearing the seal's magic (`sealed`, `torn`) does.
+* ''LARK-led bytes read `bare`, and the tests say so.'' A LARK-led file at a listed carrier refuses a founding and a carrier write as `bare` and leaves the store untouched. The law of the unlisted path: a bare file at a path no listed carrier names does not block a founding, because it is not custody's; only a file bearing the seal's magic (`sealed`, `torn`) does. The operator ratified this: custody claims only what it names, per the old-shapes ruling.
 * ''The retired `focus=` and `feedback` spellings stand as nothing'': the harvester fixtures write `aperture=`, a `feedback=` key reads as an unknown key that closes nothing, and a `focus` or `feedback` head reads as water.
 * ''`tools/launch-copilot.mjs` refuses any model id naming fusion'' in both modes: Fusion integration waits until after the founding, and a router with a hidden lineage cannot serve as a named lens.
 
@@ -142,6 +142,6 @@ Operator, 2026-10-28: the old shapes and shape gates are design-time crud that t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FtN228WB8GIXN-XrOdepGzOe3a5XUE7J11Qfm-RYbiY
+<<^ code="&#x0003;">>ni:///sha-256;WPYJJsq8Scwn9ClLjK3leFdalRxF6i9wTjClESGNTE8
 
 <<^ code="&#x0004;" -> to="?">>
