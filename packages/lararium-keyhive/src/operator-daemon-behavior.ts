@@ -961,15 +961,20 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         registry.register("bag-compact", makeCompactBagReactor({ repo: ctx.repo, catalog, post: ctx.post }));
         registry.register("rotate-recipe", makeRotateRecipeReactor({ repo: ctx.repo, catalog, post: ctx.post }));
       }
-      // THE CONTENT FENCE. These verbs run on the MOUNTED face's resources (its content keys, its provider and ledger for a
-      // mint) whichever face's provider cleared the verify, so a presenter that is another face refuses by name until each
-      // face holds its own content-key seat and mint (OWED, k19-hive-lane#/the-slices).
-      registry.guard(["sealed-seal", "sealed-open", "sealed-reading", "sealed-choose-head", "sealed-hand-over", "sealed-admit", "sealed-parcels", "sealed-receive", "sealed-serve", "sealed-memory-cut", "sealed-memory-door", "sealed-memory-import", "sealed-rolls", "seat-duties", "CREATE", "init-wiki"], (verb, context) => {
-        if (!daemonAuth.atom) return;
-        // Fail closed: a call that names no presenter refuses like a sibling's.
-        if (context.presenter === undefined || bareKey(context.presenter) !== bareKey(daemonAuth.atom.key)) {
-          throw new VerbRefusal("content-mounted-only", `[daemon] ${verb}: this verb runs on the mounted face's content keys and mint; a sibling face's session holds none here.`);
-        }
+      // THE CONTENT FENCE DENIES BY DEFAULT. A verb runs on the MOUNTED face's resources (its content keys, its provider,
+      // mint and ledger, its slot documents and catalog) whichever face's provider cleared the verify, so a presenter that
+      // is another face refuses by name before any handler reads. The fence stands before EVERY verb on this table,
+      // registered now or later, except the ones `FACE_NEUTRAL_VERBS` names with their reasons; until each face holds its
+      // own content-key seat and mint (OWED, k19-hive-lane#/the-slices) a sibling's session reaches only those.
+      registry.fence({
+        open: FACE_NEUTRAL_VERBS,
+        check: (verb, context) => {
+          if (!daemonAuth.atom) return;
+          // Fail closed: a call that names no presenter refuses like a sibling's.
+          if (context.presenter === undefined || bareKey(context.presenter) !== bareKey(daemonAuth.atom.key)) {
+            throw new VerbRefusal("content-mounted-only", `[daemon] ${verb}: this verb runs on the mounted face's content keys, mint and documents; a sibling face's session holds none here.`);
+          }
+        },
       });
     },
     onHostMessage: (msg, ctx) => {
@@ -1315,8 +1320,19 @@ export function makeOperatorDaemonBehavior(manifest: IslandMsg_Manifest, extra: 
   return makeDaemonBehavior(operatorDaemonOptions(manifest, extra));
 }
 
+/**
+ * THE CONTENT FENCE'S OPEN LIST: the daemon verbs that touch no mounted face's material, so a sibling face's session
+ * reaches them. Every other verb on the daemon's table refuses a presenter that is not the mounted face
+ * (`content-mounted-only`); a new verb stands fenced until it joins this list with its one-line reason.
+ */
+export const FACE_NEUTRAL_VERBS: Readonly<Record<string, string>> = Object.freeze({
+  "realm-clock": "reads the realm's public lease slots off the vessel's daemon layer; closes over no face's key, provider, mint or slot document",
+});
+
 /** The bare lowercase hex of a DID claim (`0x…` or bare). */
 const bareKey = (did: string): string => did.trim().toLowerCase().replace(/^0x/, "");
+/** True for a claim that names a DID or a bare 32-byte key, false for a label. */
+const namesADid = (claim: string): boolean => /^did:/i.test(claim.trim()) || /^[0-9a-f]{64}$/.test(bareKey(claim));
 
 /**
  * Who one verb presents as (see `presenterOf` in `operatorDaemonOptions`). A verb that names a PersonaGroup must name
@@ -1335,7 +1351,9 @@ export function presenterFor(input: {
   if (typeof named === "string" && named.length > 0 && named !== auth.personaGroupId && !auth.holds?.(named)) {
     throw new Error(`this vessel wears ${auth.personaGroupId}; name it or wear ${named} first`);
   }
-  if (bareKey(claim) !== bareKey(auth.placeVerifyingKey)) return claim;
+  // A claim naming a DID other than the place stays that DID. A claim naming no DID at all is the main thread's own label
+  // for its push (`persona`, `switcher`, `disk-projector`…): the channel carries the authority, so it presents as the place does.
+  if (namesADid(claim) && bareKey(claim) !== bareKey(auth.placeVerifyingKey)) return claim;
   if (typeof named === "string" && named.length > 0 && named !== auth.personaGroupId) {
     const atom = auth.atomOf?.(named);
     if (!atom) throw new Error(`no atom for held group ${named}`);

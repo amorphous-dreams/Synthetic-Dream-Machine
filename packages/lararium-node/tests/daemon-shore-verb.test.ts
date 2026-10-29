@@ -25,10 +25,13 @@ async function stand(shore?: (args: Record<string, unknown>) => Promise<Record<s
   teardown.push(() => { void kh.dispose?.(); });
   const registry = new VerbTable();
   opts.wireWorkerVerbs!(registry, st.ctx);
+  mounted = `0x${st.daemonAuth.atom.key}`;
   return registry;
 }
+// The shore reads the daemon wiki's working layer, the mounted face's own: the content fence admits its presenter alone.
+let mounted = "";
 const invoke = (registry: VerbTable, args: Record<string, unknown>) =>
-  registry.get("shore")!(args, { daemon: {} as never, invocation: { requestId: "shore-1" } as never, cap: async () => ({ ok: true }) } as never) as Promise<Record<string, unknown>>;
+  registry.get("shore")!(args, { daemon: {} as never, invocation: { requestId: "shore-1" } as never, presenter: mounted, cap: async () => ({ ok: true }) } as never) as Promise<Record<string, unknown>>;
 
 describe("the daemon island's shore verb", () => {
   test("with a shore door injected, the daemon registers `shore` and answers through that door with the caller's own arguments", async () => {

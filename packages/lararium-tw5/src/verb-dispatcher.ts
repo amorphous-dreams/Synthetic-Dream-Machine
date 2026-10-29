@@ -136,9 +136,18 @@ export function projectOntoSurface<T>(
     .map((e) => e.item);
 }
 
+/** A table's one fence: what it checks, and the verbs it leaves open, each with its reason. */
+export interface VerbFence {
+  /** Runs before every fenced verb; a throw refuses the verb before its handler reads anything. */
+  readonly check: (verbName: string, context: VerbContext) => void;
+  /** The verbs the check never runs before, each mapped to its one-line reason. */
+  readonly open: Readonly<Record<string, string>>;
+}
+
 export class VerbTable {
   private readonly handlers = new Map<string, VerbReactor>();
   private readonly specs    = new Map<string, VerbSpec>();
+  private fenceOf: VerbFence | null = null;
 
   /**
    * Register a verb, optionally declaring what the surfaces should know about it.
@@ -156,15 +165,27 @@ export class VerbTable {
     if (spec) this.specs.set(verbName, spec);
   }
 
-  /** Wrap each named, registered verb so `check` runs on its context before its handler; a verb not registered stays absent. */
-  guard(verbNames: readonly string[], check: (verbName: string, context: VerbContext) => void): void {
-    for (const verbName of verbNames) {
-      const inner = this.handlers.get(verbName);
-      if (inner) this.handlers.set(verbName, async (args, context) => { check(verbName, context); return inner(args, context); });
-    }
+  /**
+   * THE FENCE DENIES BY DEFAULT. `check` runs on the context of every verb, registered before or after this call,
+   * except the verbs `open` names, each with the reason it touches nothing the fence keeps. A verb nobody named
+   * stands fenced, so a new verb chooses by joining the open list with its reason. One fence per table.
+   */
+  fence(fence: VerbFence): void {
+    if (this.fenceOf) throw new Error("[verb-dispatcher] this table already stands a fence");
+    this.fenceOf = fence;
   }
 
-  get(verbName: string): VerbReactor | undefined { return this.handlers.get(verbName); }
+  /** True when the fence's check runs before this registered verb. */
+  fenced(verbName: string): boolean {
+    return this.fenceOf !== null && this.handlers.has(verbName) && !Object.hasOwn(this.fenceOf.open, verbName);
+  }
+
+  get(verbName: string): VerbReactor | undefined {
+    const inner = this.handlers.get(verbName);
+    const fence = this.fenceOf;
+    if (!inner || !fence || !this.fenced(verbName)) return inner;
+    return async (args, context) => { fence.check(verbName, context); return inner(args, context); };
+  }
   has(verbName: string): boolean { return this.handlers.has(verbName); }
   list(): readonly string[] { return [...this.handlers.keys()].sort(); }
 
