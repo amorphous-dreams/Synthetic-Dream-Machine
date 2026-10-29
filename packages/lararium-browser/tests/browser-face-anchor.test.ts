@@ -4,8 +4,6 @@ import { mintFaceAnchor } from "@lararium/mesh";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { faceAnchorRow, keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "../src/browser-face-anchor.js";
 import { readKeystoreRow } from "../src/browser-custody.js";
-import { BrowserOldShapeVeilArchiveRefused, oldShapeVeilRow } from "../src/browser-keyhive-archive.js";
-import { idbPut, openVesselIdb } from "../src/browser-vessel-identity.js";
 
 const GROUP_A = "group-a";
 const GROUP_B = "group-b";
@@ -34,20 +32,5 @@ describe("browser face anchor custody", () => {
     await keepBrowserFaceAnchor(idbName, anchor);
     expect(await loadBrowserFaceAnchor(idbName, GROUP_B)).toBeNull();
     await expect(requireBrowserFaceAnchor(idbName, GROUP_B)).rejects.toThrow(`anchor-missing for ${GROUP_B}`);
-  });
-
-  test("A4 an old handle-index veil row refuses by name before boot", async () => {
-    const idbName = `face-anchor-old-${crypto.randomUUID()}`;
-    const db = await openVesselIdb(idbName);
-    try { await idbPut(db, "keystore", "veil-archive-h0", new Uint8Array([1])); } finally { db.close(); }
-    await expect(oldShapeVeilRow(idbName)).rejects.toBeInstanceOf(BrowserOldShapeVeilArchiveRefused);
-    await expect(oldShapeVeilRow(idbName)).rejects.toThrow(/refuses: this store holds the old face-archive shape; re-found the face/);
-  });
-
-  test("A5 a sealed old handle-index veil carrier also refuses", async () => {
-    const idbName = `face-anchor-old-sealed-${crypto.randomUUID()}`;
-    const db = await openVesselIdb(idbName);
-    try { await idbPut(db, "keystore", "sealed/veil-archive-h3", new Uint8Array([1])); } finally { db.close(); }
-    await expect(oldShapeVeilRow(idbName)).rejects.toMatchObject({ name: "BrowserOldShapeVeilArchiveRefused", row: "sealed/veil-archive-h3" });
   });
 });

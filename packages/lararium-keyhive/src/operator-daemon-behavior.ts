@@ -244,7 +244,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     const joined = await bootDaemonKeyhive({
       atomSeed: meshHexToBytes(face.atom.seed), faceVerifyingKey: face.atom.key,
       eventStore: new DaemonEventStore({ daemon: ctx.composite, face: face.personaGroupId }),
-      placeVerifyingKey: daemonAuth.placeVerifyingKey, personaGroupId: face.personaGroupId,
+      personaGroupId: face.personaGroupId,
       faceAnchor: face.faceAnchor, personaKel: face.personaKel, deviceEdge: face.deviceEdge,
       signerDid: face.signerDid, ...(face.meshCabalDocIdHex ? { meshCabalDocIdHex: face.meshCabalDocIdHex } : {}),
       registerBags: face.registerBags.filter(isVesselGround), ledger: daemonBagDocLedger(ctx.composite, face.personaGroupId),
@@ -1007,7 +1007,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         booted = await bootDaemonKeyhive({
           ...(daemonAuth.atom ? { atomSeed: meshHexToBytes(daemonAuth.atom.seed) } : {}),
           eventStore:            new DaemonEventStore({ daemon: ctx.composite, face: daemonAuth.personaGroupId! }),
-          placeVerifyingKey: daemonAuth.placeVerifyingKey,
           ...(daemonAuth.atom ? { faceVerifyingKey: daemonAuth.atom.key } : {}),
           // The face pins ride CONDITIONALLY — the gate runs in full or grants no persona caps at all.
           ...(daemonAuth.personaGroupId   ? { personaGroupId:   daemonAuth.personaGroupId }   : {}),
