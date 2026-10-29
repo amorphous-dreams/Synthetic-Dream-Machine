@@ -72,9 +72,13 @@ sub-memes; this carries the keel + the meme map.
    ONLY in capabilities, never in structure. The capability set GROWS — init/PersonaGroup/
    genesis/corpus/residency SHALL become browser-composable. Absent reads not-yet-held,
    never cannot-hold; no `isNode` fork, no permanently-absent slot. ([[open-vessel|lar:///ha.ka.ba/lararium/mesh/open-vessel]])
-# ''No VM on the main thread.'' Every TW5 VM / reaction engine boots in a Worker
-   (worker_threads · DedicatedWorker); the main thread only COORDINATES the pool over
-   MessagePort. ([[project_no_vm_on_main_thread]])
+# ''No sovereign VM and no key on a surface.'' A page never stands as a vessel: every
+   page holds a SURFACE with a port onto a vessel, in every setup (a node's box, an
+   anon-device browser vessel, a fleet). Every sovereign TW5 VM / reaction engine boots in a
+   Worker (worker_threads · DedicatedWorker), and the main thread only COORDINATES the pool
+   over MessagePort. The page mirror (a camera carrying a whole engine, fed by the port alone,
+   holding no truth and no key) honors the law. A browser vessel's opened key lives in its
+   own worker, never in page memory. ([[project_no_vm_on_main_thread]])
 # ''Authority-first sync + verify-then-delegate.'' Capability (Keyhive) syncs before
    content; the relay-law exception holds (pull ≠ read — a relay forwards ciphertext it
    cannot read). The keyholder WORKER verifies BEFORE delegating; authority travels WITH
@@ -283,6 +287,6 @@ Read order once held: noosphere-boot → THIS → (open-vessel · causal-island 
 seeded by the boot, enacted per turn, corrected by degree, decaying untended; the memory-palace that
 captures its FORM beside the verbatim CONTENT stands at [[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]].
 
-<<^ code="&#x0003;">>ni:///sha-256;ObrGExLhtiFugIf3BjX19BvKWA746-n9PncgX380EKA
+<<^ code="&#x0003;">>ni:///sha-256;8gfhaughE2yQ_Hri4WqwJv3Pbt2OXzGuGNVYOOw0BdM
 
 <<^ code="&#x0004;" -> to="?">>
