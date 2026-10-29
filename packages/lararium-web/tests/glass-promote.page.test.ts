@@ -119,3 +119,52 @@ test("CONTROL: storage that works names no evidence state", async () => {
     result.unmount();
   } finally { r.host.remove(); }
 });
+
+const STANDING = "mirror:full-standing:wiki";
+const afterPaint = () => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+test("the second record stands from full's first paint and clears on pagehide", async () => {
+  const r = await rig();
+  try {
+    const result = await standMirror(r.options, r.seams) as any;
+    await result.settled;
+    expect(sessionStorage.getItem(STANDING)).toBeNull();                       // full has landed, not yet painted
+    await afterPaint();
+    expect(sessionStorage.getItem(STANDING)).not.toBeNull();                   // a frame painted full: the page stands
+    window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: false }));
+    expect(sessionStorage.getItem(STANDING)).toBeNull();                       // an orderly leave clears it
+    result.unmount();
+  } finally { r.host.remove(); }
+});
+test("a page that came back from the back-forward cache stands again, and an unmount clears the record", async () => {
+  const r = await rig();
+  try {
+    const result = await standMirror(r.options, r.seams) as any;
+    await result.settled; await afterPaint();
+    window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
+    expect(sessionStorage.getItem(STANDING)).toBeNull();
+    window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+    expect(sessionStorage.getItem(STANDING)).not.toBeNull();
+    result.unmount();
+    expect(sessionStorage.getItem(STANDING)).toBeNull();
+  } finally { r.host.remove(); }
+});
+test("a full page that ended without a pagehide holds the next boot of this wiki at skinny, as evidence and never a flag", async () => {
+  sessionStorage.setItem(STANDING, "left-by-a-full-page-that-died");
+  const r = await rig();
+  try {
+    const result = await standMirror(r.options, r.seams) as any;
+    expect(await result.settled).toEqual({ width: "skinny", why: "full-ended-without-pagehide" });
+    expect(r.widens()).toHaveLength(0);
+    expect(sessionStorage.getItem(STANDING)).toBe("left-by-a-full-page-that-died");
+    result.unmount();
+  } finally { r.host.remove(); }
+});
+test("CONTROL: another wiki's standing record holds nothing for this wiki", async () => {
+  sessionStorage.setItem("mirror:full-standing:other-wiki", "elsewhere");
+  const r = await rig();
+  try {
+    const result = await standMirror(r.options, r.seams) as any;
+    expect(await result.settled).toEqual({ width: "full" });
+    result.unmount();
+  } finally { sessionStorage.removeItem("mirror:full-standing:other-wiki"); r.host.remove(); }
+});

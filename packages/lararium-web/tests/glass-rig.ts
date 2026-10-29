@@ -36,4 +36,4 @@ export async function rig(options: { gate?: Promise<void>; chunks?: number; refu
 }
 
 /** A test starts from a tab with no evidence record: an earlier test's step-down leaves one behind, as a real boot would. */
-export const forgetEvidence = (): void => { try { sessionStorage.removeItem("mirror:began:wiki"); sessionStorage.removeItem("mirror:began:lares"); } catch { /* storage may be blocked */ } };
+export const forgetEvidence = (): void => { try { sessionStorage.removeItem("mirror:began:wiki"); sessionStorage.removeItem("mirror:full-standing:wiki"); sessionStorage.removeItem("mirror:began:lares"); } catch { /* storage may be blocked */ } };
