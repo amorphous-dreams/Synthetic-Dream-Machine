@@ -6,20 +6,23 @@
 import { describe, expect, test, vi } from "vitest";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import {
-  afterDispatch, draftBag, ManualBoundary, openDraft, peerWrite, remote, saveSequence, shoreRig, storeDeleted,
+  afterDispatch, arrived, draftBag, ManualBoundary, openDraft, peerWrite, remote, saveSequence, shoreRig, storeDeleted,
   storeText, turns, workingBag, type Rig,
 } from "./wiki-shore-rig.js";
 
 const seed = async (r: Rig, records: ReadonlyArray<Record<string, unknown>>): Promise<void> => {
+  const before = r.arrivals.length;
   for (const tiddler of records) await r.working.put({ tiddler: tiddler as never }, remote);
-  await turns();
+  await arrived(r, before, records.map((tiddler) => String(tiddler["title"])));
   await r.adaptor.armSeedCheckpoint();
   await r.adaptor.landingIdle();
 };
-const landDraft = async (r: Rig, boundary: ManualBoundary): Promise<void> => {
+/** The boundary leaves the hands; `echoes` names the titles the store takes as a change, and the store's own event for each ends the wait. */
+const landDraft = async (r: Rig, boundary: ManualBoundary, echoes: readonly string[] = []): Promise<void> => {
+  const before = r.arrivals.length;
   await afterDispatch();
   boundary.fire();
-  await turns(24);
+  await arrived(r, before, echoes);
   await r.adaptor.landingIdle();
 };
 
@@ -30,7 +33,7 @@ describe.skipIf(wikiSkip)(`wiki shore residue${skipNote}`, () => {
     const x = "lar:///t/residue/refused-act";
     await seed(r, [{ title: x, text: "landed" }]);
     const d = openDraft(r, x, "hand value");
-    await landDraft(r, boundary);
+    await landDraft(r, boundary, [d]);
     expect(storeText(r, draftBag, d), "the draft reached the store").toBe("hand value");
     r.failures.family = new Error("refused");
     saveSequence(r, d);
@@ -61,7 +64,7 @@ describe.skipIf(wikiSkip)(`wiki shore residue${skipNote}`, () => {
     expect(unlanded.has(x), "no wave will come to clear a mark, so none stands").toBe(false);
     // CONTROL: an acknowledged write stands ahead of the ledger until its wave lands, and the wave clears it.
     r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(control)!.fields, { text: "changed" }));
-    await landDraft(r, boundary);
+    await landDraft(r, boundary, [control]);
     expect(r.changes(workingBag)).toBe(changes + 1);
     expect(unlanded.has(control)).toBe(false);
     expect(r.adaptor.ledger.landedOf(control)!.tiddler).toBe(r.wiki.getTiddler(control));
@@ -76,7 +79,7 @@ describe.skipIf(wikiSkip)(`wiki shore residue${skipNote}`, () => {
     const d1 = openDraft(r, x, "first draft");
     const d2 = "Draft 2 of 'two-drafts'";
     r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(x)!.fields, { title: d2, "draft.of": x, "draft.title": x, text: "second draft" }));
-    await landDraft(r, boundary);
+    await landDraft(r, boundary, [d1, d2]);
     const mark = r.calls.length;
     // One dispatch: the target written from the second draft, both drafts gone.
     r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(d2)!.fields, { title: x, "draft.of": undefined, "draft.title": undefined }));
