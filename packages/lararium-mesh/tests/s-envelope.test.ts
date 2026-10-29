@@ -89,6 +89,7 @@ describe("the readings stay apart", () => {
   test("cleartext JSON reads bare", () => {
     expect(readSCarrier(text(JSON.stringify({ signingKey: "00".repeat(32) })))).toBe("bare");
     expect(readSCarrier(new Uint8Array(0))).toBe("bare");
+    expect(readSCarrier(Uint8Array.from([0x4c, 0x41, 0x52, 0x4b, 0, 0, 0, 0]))).toBe("bare");   // LARK-led bytes carry no reading of their own
   });
 
   test("a tree key that did not seal the bytes reads key-fails", () => {

@@ -17,7 +17,7 @@ export interface PlaceRotation {
   readonly seq: number; readonly prev: string; readonly reveal: string;
   readonly key: string; readonly next: string; readonly sig: string;
 }
-export type PlaceKelRefusal = "unarmed-inception" | "old-shape-inception" | "bad-signature" | "wrong-reveal" |
+export type PlaceKelRefusal = "unarmed-inception" | "bad-signature" | "wrong-reveal" |
   "reused-commitment" | "reused-key" | "gap" | "prev-mismatch" | "aid-mismatch" |
   "seq-mismatch" | "malformed" | "fork" | "rollback" | "too-many-rows";
 /** A chain that verified to its head. */

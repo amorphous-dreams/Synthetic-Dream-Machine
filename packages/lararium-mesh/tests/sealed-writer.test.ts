@@ -141,6 +141,7 @@ describe("write", () => {
     const cases: [Uint8Array, string, RegExp][] = [
       [(await io.read(CARRIERS[0]!.path))!.subarray(0, 20), "torn", /backup/],
       [text('{"signingKey":"00"}'), "bare", /cleartext/],
+      [Uint8Array.from([0x4c, 0x41, 0x52, 0x4b, 9, 9, 9, 9, 9, 9, 9, 9]), "bare", /cleartext/],   // LARK-led bytes read bare
     ];
     for (const [bytes, reading, says] of cases) {
       io.files.set(CARRIERS[0]!.path, bytes);

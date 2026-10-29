@@ -21,7 +21,7 @@
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import { registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import type { CapabilityProviderInitOpts, ProviderChunkRest } from "./capability-provider.js";
-import { checkFacePins, leaseEpochUnderAnchor, verifyEdgeAgainstPersonaKel, verifyEd25519, deviceAtomProofBytes, type FaceAnchor, type DeviceDelegationTiddler, type EdgeStanding, type PersonaKelEvent } from "@lararium/mesh";
+import { checkFacePins, leaseEpochUnderAnchor, verifyEdgeAgainstPersonaKel, type FaceAnchor, type DeviceDelegationTiddler, type EdgeStanding, type PersonaKelEvent } from "@lararium/mesh";
 
 export interface BootDaemonKeyhiveInput {
   /** The selected face's 32-byte atom seed. */
@@ -30,8 +30,6 @@ export interface BootDaemonKeyhiveInput {
   readonly eventStore: CapabilityProviderInitOpts["eventStore"];
   /** The mounted face atom that Gate A and the device edge must name. */
   readonly faceVerifyingKey?: string;
-  /** Public place key, used only to reject an old place-signed face edge. */
-  readonly placeVerifyingKey?: string;
   /** The face's PersonaGroup id (a Keyhive group's), the affiliation layer's membership subject. ABSENT names a
    *  vessel at the WAKING FLOOR — see `face` below. */
   readonly personaGroupId?: string;
@@ -97,13 +95,6 @@ export class FacelessKeyhiveRefused extends Error {
   }
 }
 
-export class LegacyFaceSignatureRefused extends Error {
-  constructor() {
-    super("[daemon-keyhive] face relation carries a retired place-key signature; re-found this vessel from a fresh store");
-    this.name = "LegacyFaceSignatureRefused";
-  }
-}
-
 /**
  * Boot keyhive from the selected face atom, re-hydrate cap state from the daemon doc,
  * clear the three sovereignty gates, and register the operator's writable bags.
@@ -151,11 +142,6 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
       `does not match atom=${input.faceVerifyingKey.slice(0, 16)}…`,
     );
   }
-  if (input.placeVerifyingKey && input.deviceEdge &&
-      verifyEd25519(input.deviceEdge.atomSignature, deviceAtomProofBytes(input.deviceEdge), input.placeVerifyingKey)) {
-    throw new LegacyFaceSignatureRefused();
-  }
-
   // THE BINDING GATE — the canon identity path, now on the PERSONA-KEL PIN (the continuity anchor). The
   // vessel's signed device-delegation edge verifies against the CURRENT head op-key the pinned identifier
   // (`personaKel.prefix`) resolves to on the local KEL replica — the op-key rotates BENEATH a fixed prefix

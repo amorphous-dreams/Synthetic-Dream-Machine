@@ -22,5 +22,6 @@ describe("face frame readings", () => {
     damaged[2] ^= 1;
     expect(readFckCarrier(damaged)).toBe("unopenable");
     expect(readFckCarrier(bytes("plain"))).toBe("bare");
+    expect(readFckCarrier(Uint8Array.from([0x4c, 0x41, 0x52, 0x4b, 0, 0, 0, 0]))).toBe("bare");   // LARK-led bytes carry no reading of their own
   });
 });
