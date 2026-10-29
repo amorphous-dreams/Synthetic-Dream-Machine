@@ -363,21 +363,6 @@ class LocationStack:
             result[source.id]='matched'
         return result
 
-    def audit_cad_bodies(self, assemblies: dict[str, object]):
-        """Check each CAD body separately; no scene-wide Boolean fusion."""
-        validated = []
-        for element in self.elements.values():
-            if element.kind != 'cad_body':
-                continue
-            if element.body_token not in assemblies:
-                raise ValueError(f'Missing live CAD body: {element.body_token}')
-            report = assemblies[element.body_token].audit(join=True)
-            if (not report.get('valid') or not report.get('union_valid')
-                    or report.get('union_solids') != 1):
-                raise ValueError(f'Invalid CAD body: {element.handle}')
-            validated.append(element.handle)
-        return tuple(sorted(validated))
-
     def to_dict(self):
         data = {
             'schema': SCHEMA, 'location_id': self.location_id,

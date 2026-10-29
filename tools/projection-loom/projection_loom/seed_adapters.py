@@ -313,8 +313,20 @@ class SeedScene:
     assemblies: dict
     adapters: tuple
     def audit(self):
-        self.location.audit()
-        return self.location.audit_cad_bodies(self.assemblies)
+        """Validate each live CAD construction independently; never fuse a location."""
+        self.location.audit()  # source/frame/element testimony only
+        validated=[]
+        for element in self.location.elements.values():
+            if element.kind != "cad_body":
+                continue
+            if element.body_token not in self.assemblies:
+                raise ValueError(f"Missing live CAD body: {element.body_token}")
+            report=self.assemblies[element.body_token].audit(join=True)
+            if (not report.get("valid") or not report.get("union_valid")
+                    or report.get("union_solids") != 1):
+                raise ValueError(f"Invalid CAD body: {element.handle}")
+            validated.append(element.handle)
+        return tuple(sorted(validated))
 
 
 def compose_adapters(adapters,intent:IntentContract,*,audit=True):

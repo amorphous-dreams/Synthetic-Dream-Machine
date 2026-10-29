@@ -98,6 +98,7 @@ def test_containment_cycles_rejected_but_other_cycles_allowed():
 
 
 def test_body_validity_audited_per_element_not_globally():
+    from projection_loom.seed_adapters import SeedScene
     class Solid:
         def __init__(self, valid):self.valid=valid
         def audit(self, join=False):
@@ -107,9 +108,9 @@ def test_body_validity_audited_per_element_not_globally():
     l=one_image()
     l.add_element(Element('body-a','cad_body',(),(), 'proposed','A'))
     l.add_element(Element('body-b','cad_body',(),(), 'proposed','B'))
-    assert l.audit_cad_bodies({'A':Solid(True),'B':Solid(True)})==('body-a','body-b')
+    assert SeedScene(l,{'A':Solid(True),'B':Solid(True)},()).audit()==('body-a','body-b')
     with pytest.raises(ValueError,match='body-b'):
-        l.audit_cad_bodies({'A':Solid(True),'B':Solid(False)})
+        SeedScene(l,{'A':Solid(True),'B':Solid(False)},()).audit()
 
 
 def test_snapshot_is_stable_and_includes_source_digests(tmp_path):
@@ -133,13 +134,14 @@ def test_text_note_does_not_invent_a_frame():
 
 
 def test_real_cad_audits_two_disconnected_bodies_without_global_fusion():
+    from projection_loom.seed_adapters import SeedScene
     from projection_loom.solid import SolidAssembly, box
     l = one_image()
     l.add_element(Element('tower-a', 'cad_body', (), (), 'proposed', 'tower-A'))
     l.add_element(Element('tower-b', 'cad_body', (), (), 'proposed', 'tower-B'))
     a = SolidAssembly().add('root-A', box((0, 0, 0), (2, 2, 2)), role='foundation')
     b = SolidAssembly().add('root-B', box((300, 0, 0), (2, 2, 2)), role='foundation')
-    assert l.audit_cad_bodies({'tower-A': a, 'tower-B': b}) == ('tower-a', 'tower-b')
+    assert SeedScene(l,{'tower-A': a, 'tower-B': b},()).audit() == ('tower-a', 'tower-b')
 
 
 def test_snapshot_roundtrip_and_corrupt_snapshot_rejected(tmp_path):
