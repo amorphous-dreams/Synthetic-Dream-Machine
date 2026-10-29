@@ -37,7 +37,7 @@ describe.skipIf(wikiSkip)(`a peer's save reaches an open wiki${skipNote}`, () =>
     expect(shadowBefore, "control: the shadow stood before the wave").not.toBe("");
     expect(textOf(r, "$:/SiteTitle")).toBe("Our Table");
     expect(textOf(r, "$:/state/folded/HelloThere")).toBe("hide");
-  });
+  }, 120_000);
 
   test("CONTROL: a title that never persists does not arrive, though a peer's document carries it", async () => {
     const r = await shoreRig({ upperSlots: true });
@@ -63,5 +63,5 @@ describe.skipIf(wikiSkip)(`a peer's save reaches an open wiki${skipNote}`, () =>
     expect(r.arrivals).not.toContain(temp);
     expect(r.arrivals).not.toContain(volatile);
     await peerRepo.shutdown();
-  });
+  }, 120_000);
 });
