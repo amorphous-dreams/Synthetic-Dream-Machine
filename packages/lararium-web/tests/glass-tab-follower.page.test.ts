@@ -14,12 +14,13 @@ const channel = () => `follower-${crypto.randomUUID()}`;
 const lockName = () => `follower-lock:${crypto.randomUUID()}`;
 const inputs = { coreCid: "c".repeat(64), pluginCids: ["p".repeat(64)] };
 const open = { type: "port:open", portId: "p", wikiUri: "wiki", width: "skinny", actor: "a", maxRecordBytes: 4096, maxBatchBytes: 8192 };
-/** The leader's real doors, recording each placement. */
+/** The leader's real doors, recording each placement; `next(n)` resolves once n more placements have landed (the product's own event, no deadline). */
 function leaderDoors() {
   const placed: Array<{ surface: string; binding: string; msg: Record<string, unknown> }> = [];
-  return { placed, doors: { place(surface: string, binding: string, msg: unknown) { placed.push({ surface, binding, msg: msg as Record<string, unknown> }); return { ok: true as const }; }, close() {} } };
+  const waiters = new Set<() => void>();
+  const next = (n = 1) => { const until = placed.length + n; return new Promise<void>(resolve => { const check = () => { if (placed.length >= until) { waiters.delete(check); resolve(); } }; waiters.add(check); check(); }); };
+  return { placed, next, doors: { place(surface: string, binding: string, msg: unknown) { placed.push({ surface, binding, msg: msg as Record<string, unknown> }); for (const waiter of [...waiters]) waiter(); return { ok: true as const }; }, close() {} } };
 }
-const settle = () => new Promise<void>(resolve => setTimeout(resolve, 30));   // BroadcastChannel delivers on a task; the test waits for that delivery, not for a deadline
 
 test("a hello before the leader lends parks and is answered once it lends; CONTROL a hello after is answered at once", async () => {
   const name = channel(); const leaderBus = new BroadcastChannel(name); const tabBus = new BroadcastChannel(name);
@@ -30,8 +31,8 @@ test("a hello before the leader lends parks and is answered once it lends; CONTR
   const lends: unknown[] = [];
   follower.onLend(value => lends.push(value));
   try {
-    await settle();
-    expect(lends).toEqual([]);                                   // nothing to lend yet: the hello parks, no ready goes out
+    await new Promise<void>(resolve => follower.onParked(resolve));   // the leader took the hello and parked it: the product's own event, no deadline
+    expect(lends).toEqual([]);                                   // nothing to lend yet: no ready went out
     lend = { surface: "wiki", actor: "did:leader", inputs };
     const answered = new Promise<unknown>(resolve => follower.onLend(resolve));
     served.lend();                                               // the leader's surface stands: the parked hello is answered
@@ -54,13 +55,15 @@ test("a widen rewrites the remembered open so a successor opens the port at the 
   let servedB: ReturnType<typeof serveFollowers> | null = null;
   try {
     await new Promise<void>(resolve => follower.onReady(resolve));
+    const twoPlaced = a.next(2);
     follower.place("wiki", "b", open);
     follower.place("wiki", "b", { type: "port:widen", portId: "p", width: "full" });
-    await settle();
+    await twoPlaced;
     expect(a.placed.map(p => p.msg.type)).toEqual(["port:open", "port:widen"]);
     servedA.close();
+    const reopened = b.next();
     servedB = serveFollowers(busB, b.doors, () => lend);        // the successor announces itself; the follower re-hellos and re-opens
-    await settle();
+    await reopened;
     expect(b.placed.map(p => [p.msg.type, p.msg.width])).toEqual([["port:open", "full"]]);
   } finally { follower.dispose(); servedA.close(); servedB?.close(); busA.close(); busB.close(); tabBus.close(); }
 });
@@ -78,15 +81,17 @@ test("a tab that finds the leader lock held follows and leads once it releases; 
     first.serve(a.doors, () => lend);
     const lent = await new Promise<unknown>(resolve => second.follower.onLend(resolve));
     expect(lent).toEqual(lend);
+    const placedOnA = a.next();
     second.follower.place("wiki", "b", open);
-    await settle();
+    await placedOnA;
     expect(a.placed.map(p => [p.binding, p.msg.type])).toEqual([["tab:second:b", "port:open"]]);
     const leads = new Promise<void>(resolve => second.onLead(resolve));
     first.close();                                               // the first tab goes: its lock releases and its serve closes
     await leads;
     expect(second.role).toBe("leader");
+    const placedOnB = b.next();
     second.serve(b.doors, () => lend);                           // the successor serves through a second channel object...
-    await settle();
+    await placedOnB;
     expect(b.placed.map(p => [p.binding, p.msg.type])).toEqual([["tab:second:b", "port:open"]]);   // ...and its own doors re-opened through it
   } finally { second.close(); first.close(); }
 });

@@ -406,7 +406,9 @@ async function bootVessel(): Promise<void> {
     if (topology === null) {
       topology = standTabTopology({ locks: navigator.locks, lockName: `${vesselLockName(VESSEL_IDB)}:leader`,
         channel: () => new BroadcastChannel(`lararium-mirror:${location.origin}`), tabId: crypto.randomUUID() });
-      window.addEventListener("pagehide", () => topology?.close());
+      // Nothing closes at pagehide: the platform releases the leader lock and the store lock together when the page goes, so a
+      // successor never finds the store still held, and a page the cache keeps stays in its place among the tabs.
+      topology.follower.onParked(() => { if (topology?.role === "follower" && followerMirror === null) set("status", "following the vessel tab on this origin; it has not shown its surface yet"); });
       topology.follower.onLend((lend) => { if (topology?.role !== "follower" || followerMirror !== null) return; followerMirror = standFollowerMirror(lend); });
       topology.onLead(() => { void lead(boot); });
       return;
@@ -433,7 +435,14 @@ async function standFollowerMirror(lend: Lend): Promise<void> {
   const stood = await standPageMirror({ port, host, actor: lend.actor, surface: () => lend.surface, mirrorInputs: () => Promise.resolve(lend.inputs),
     onState: (state) => console.warn(`[mirror] ${state.kind}`, state) })
     .catch((err: unknown) => { console.warn("[mirror] the follower's stand refused:", err); return null; });
-  if (stood === null || stood.kind === "floor") { console.warn(`[mirror] the follower stands no mirror: ${stood?.why ?? "refused"}`); return; }
+  if (stood === null || stood.kind === "floor") {
+    // A follower with no mirror has no surface at all (no vessel, no floor projection): it says so, and the next lend (a successor's) tries again.
+    const why = stood?.why ?? "refused";
+    console.warn(`[mirror] the follower stands no mirror: ${why}`);
+    set("status", `following the vessel tab on this origin; this tab's mirror stands none (${why})`, "warn");
+    followerMirror = null;
+    return;
+  }
   doors.onReady(() => stood.resendPending());
 }
 
@@ -565,6 +574,8 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
       row(vesselEl, "seed", seedRestStatus(wrap), wrap ? "ok" : "warn");
     }).catch(() => { /* an unreadable slot reads as cleartext elsewhere; this line stays silent — never a fault */ });
   } catch (e) {
+    // A leader whose vessel refused to open keeps the lead (no other tab could open the store either) and offers the retry; its
+    // followers hear `parked` and wait on its surface.
     set("status", `boot failed: ${e instanceof Error ? e.message : String(e)}`, "err");
     if (!vesselOpened) offerBootRetry();
   }

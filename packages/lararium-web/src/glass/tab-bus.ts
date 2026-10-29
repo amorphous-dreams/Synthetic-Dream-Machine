@@ -34,6 +34,7 @@ export function makeFollowerDoors(bus: TabBus, tabId: string) {
   const listeners = new Set<(binding: string, msg: unknown) => void>();
   const readyListeners = new Set<() => void>();
   const lendListeners = new Set<(lend: Lend) => void>();
+  const parkedListeners = new Set<() => void>();
   let nonce = "";
   let sequence = 0;
   let ready = false;
@@ -54,6 +55,8 @@ export function makeFollowerDoors(bus: TabBus, tabId: string) {
       if (lend) { lent = lend; for (const listener of lendListeners) listener(lend); }
       for (const [binding, open] of opens) bus.postMessage({ kind: "port-up", tab: tabId, binding, surface: open.surface, msg: open.msg });
       for (const listener of readyListeners) listener();
+    } else if (item.kind === "parked" && item.nonce === nonce) {
+      for (const listener of parkedListeners) listener();
     } else if (item.kind === "port-down" && typeof item.binding === "string") {
       for (const listener of listeners) listener(item.binding, item.msg);
     }
@@ -84,6 +87,8 @@ export function makeFollowerDoors(bus: TabBus, tabId: string) {
     /** The leader's last lend, or null before any ready carried one. */
     lent: () => lent,
     onLend(cb: (lend: Lend) => void) { lendListeners.add(cb); if (lent) cb(lent); return () => lendListeners.delete(cb); },
+    /** A leader stands and holds this tab's hello until it can lend: the follower knows it waits on a surface, not on nothing. */
+    onParked(cb: () => void) { parkedListeners.add(cb); return () => parkedListeners.delete(cb); },
     onReady(cb: () => void) { readyListeners.add(cb); return () => readyListeners.delete(cb); },
     onPortMessage(cb: (binding: string, msg: unknown) => void) { listeners.add(cb); return () => listeners.delete(cb); },
     dispose() { bus.removeEventListener("message", onMessage); },
@@ -94,7 +99,9 @@ export function makeFollowerDoors(bus: TabBus, tabId: string) {
  * The leader owns the real port bindings and returns each reply to its tab. The leader alone names the surface a follower's port
  * serves (the lend's `surface`): a frame's own surface value is ignored, so a follower can open a port on no other wiki and never on
  * the daemon. A tab that never said hello opens nothing, and with nothing to lend nothing places. A hello that arrives before the
- * leader can lend parks, and `lend()` answers the parked hellos once it can: a late tab never misses its ready.
+ * leader can lend parks (the tab hears `parked`), and `lend()` answers the parked hellos once it can: a late tab never misses its ready.
+ * The bus is same-origin plumbing and no boundary between tabs: a script of the origin reads every frame; the fences here hold a
+ * buggy tab to its own wiki, never a hostile one.
  */
 export function serveFollowers(bus: TabBus, leaderDoors: PortTransportDoors, lend: () => Lend | null | Promise<Lend | null>) {
   const bindings = new Map<string, { tab: string; binding: string }>();
@@ -105,7 +112,7 @@ export function serveFollowers(bus: TabBus, leaderDoors: PortTransportDoors, len
   const answer = async (tab: string, nonce: string): Promise<void> => {
     const value = await lend();
     if (closed || parked.get(tab) !== nonce) return;    // closed meanwhile, or a newer hello from this tab superseded it
-    if (!value) return;                                  // nothing to lend yet: the hello stays parked for `lend()`
+    if (!value) { bus.postMessage({ kind: "parked", tab, nonce }); return; }   // nothing to lend yet: the hello stays parked for `lend()`, and the tab hears so
     parked.delete(tab);
     bound = value.surface;
     greeted.add(tab);
