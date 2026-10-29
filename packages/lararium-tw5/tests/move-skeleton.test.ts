@@ -47,12 +47,12 @@ function sigilNode(name: string, attrs: Record<string, string>, pos = 0): MemeAs
 
 // The clean worked turn (mirrors turn-harvest.test.ts CLEAN_TURN).
 const CLEAN_TURN = `<<~ lares aim lar://mara:operator@crossroads/operator.weighs.deps -> lar://compita:agent@crossroads/council.options.cuts>>
-<<~ set hud="aim" focus="11/measure" ooda-ha="9/declare-attention" drift-ward="* · a preferred answer already held">>
+<<~ set hud="aim" aperture="11/measure" ooda-ha="9/declare-attention" drift-ward="* · a preferred answer already held">>
 
 Lares (Council): ->◇ two libraries, both viable. the fork holds.
 
 <<~ oracle "↯11 ✲ ⚃(4) ⁂:⬡🌖◈⟁">>
-<<~ set hud="yield" drift-ward="! · the read rides on a source I never opened · ↻ L-Prime" focus="11/measure -> 12/measure" ooda-ha="closed 1↺">>
+<<~ set hud="yield" drift-ward="! · the read rides on a source I never opened · ↻ L-Prime" aperture="11/measure -> 12/measure" ooda-ha="closed 1↺">>
 <<~ lares yield lar://compita:agent@crossroads/council.fork.named -> ?>>`;
 
 function tokensOfKind(stream: readonly MoveToken[], kind: MoveToken["kind"]): MoveToken[] {
