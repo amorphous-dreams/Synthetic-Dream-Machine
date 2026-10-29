@@ -1,3 +1,22 @@
+## ☕ N7 ownership retirement · 2026-10-29 · implemented, awaiting exact-head CI
+
+**Operator authorization:** close the legacy-owner gap in PR #84, including migration, actual deletion of superseded code, and retesting. Base before retirement: `58d0fe292fc9fe1cf9c00382249ef3b3f6f68e9d` (N6 work). Earlier N6 CI at that code head failed **two** source-admission refusals because unregistered `registered_views()` returned `None` and `LocationStack.admit_registered_views` iterated it. Do not claim N6 native acceptance from the successful repo-wide CI alone.
+
+### N7-A · complete source admission migration
+
+`LocationStack.admit_seed_bundle` and `LocationStack.admit_registered_views` now own source/frame admission. The latter explicitly refuses absent registered views as a ValueError; neither provisional source nor failed control gains surveyed authority. Repointed all known call sites in `seed_adapters.py`, `hephaestus_holistic.py`, the CLI, and focused tests. **Deleted** the redundant `projection_loom/registered_inventory.py` module and the old `intent_seed.normalize_location` wrapper. `intent_seed` remains a legitimate typed seed/intent contract, not a second source ledger.
+
+### N7-B · native geometry authority moved out of evidence inventory
+
+**Removed** `LocationStack.audit_cad_bodies` and migrated its verified per-body native audit to `SeedScene.audit` (which invokes the existing CAD assembly's exact audit for each independent body and never fuses unrelated location bodies). `LocationStack.audit` retains only source/frame/representation testimony checks. The test suite's direct CAD cases now target the constructive scene boundary.
+
+### N7-C · removal is executable, not documentation-only
+
+`scripts/hephaestus_census.py` now scans repository Python AST for retired module imports, old seed-normalization calls and native audits on source inventories, and **refuses** the census if any remain. Its existing external consumer census remains report-only, not deletion authority. Retired inventory tests are kept under the canonical `test_hephaestus_location_admission.py` name. Remaining `location_stack`, `intent_seed`, `seed_adapters`, and `generalized_campaign` files are live distinct responsibilities; they must not be deleted merely to reduce file count.
+
+**N7-D · acceptance pending:** run full Loom CAD suite, generalized USD/STEP + actual Blender, seven Experiment Zero inputs, repo-wide CI and held-outs against the exact published head. Never promote results from a prior SHA. No Unreal Editor witness, physical load certificate, automatic artistic winner, pet name, o-takiage, Elyncia canon, or PR merge.
+
+---
 ## N6 Living Location · implementation pushed before hosted CI · 2026-10-29
 
 Operator direction: implement N6-A through N6-E consecutively **before starting hosted CI**. Source branch `feature/green-jello-dinosaur-5--projection-loom`; boot read from `feature/green-jello-dinosaur-5` SHA `b68d2034`. Treat all N6 statuses as **IMPLEMENTED / UNVERIFIED** until the final exact-head Actions finish; do not interpret a commit as a green witness.
