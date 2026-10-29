@@ -183,28 +183,7 @@ class GrowthContext:
         return int(_digest({"run":self.run_id,"path":path})[:16],16)
 
 
-def normalize_location(seeds:SeedBundle,intent:IntentContract):
-    """Convert typed seeds into the existing evidence-first location substrate.
-
-    Projection Loom does not infer camera poses, metric scale, or BRep existence.
-    Repeated calls produce equal snapshots; no mutable global admission ledger.
-    """
-    from .location_stack import LocationStack, Frame, Source, Element
-    stack=LocationStack(intent.location)
-    for entry in seeds.entries:
-        sid="seed-"+entry.identity[:24]
-        frame_id=None
-        if entry.frame_kind!="none":
-            frame_id="frame-"+entry.identity[:24]
-            frame=Frame(frame_id,entry.frame_kind,
-                        "px" if entry.frame_kind=="pixel" else "model_unit")
-            stack.add_frame(frame)
-        source_kind={"pixel":"image_set","none":"text_testimony",
-                     "local3d":"cad_model"}[entry.frame_kind]
-        stack.add_source(Source(sid,source_kind,entry.content_sha256,
-                                entry.locator,frame_id,entry.authority))
-        stack.add_element(Element("element-"+entry.identity[:24],
-                                  "image_plane" if entry.frame_kind=="pixel" else "unresolved_form",
-                                  (sid,),(),entry.authority))
-    stack.audit()
-    return stack
+def normalize_location(seeds: SeedBundle, intent: IntentContract):
+    """Normalize seeds through the sole source/frame admission owner."""
+    from .location_stack import LocationStack
+    return LocationStack.admit_seed_bundle(seeds, intent)

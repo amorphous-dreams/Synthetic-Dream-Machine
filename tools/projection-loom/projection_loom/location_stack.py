@@ -178,6 +178,81 @@ class LocationStack:
         self.relations: list[Relation] = []
         self.registrations: list[RegistrationReceipt] = []
 
+    @classmethod
+    def admit_seed_bundle(cls, seeds, intent):
+        """Admit typed seed testimony under the single LocationStack owner."""
+        """Convert typed seeds into the existing evidence-first location substrate.
+
+        Projection Loom does not infer camera poses, metric scale, or BRep existence.
+        Repeated calls produce equal snapshots; no mutable global admission ledger.
+        """
+        stack=cls(intent.location)
+        for entry in seeds.entries:
+            sid="seed-"+entry.identity[:24]
+            frame_id=None
+            if entry.frame_kind!="none":
+                frame_id="frame-"+entry.identity[:24]
+                frame=Frame(frame_id,entry.frame_kind,
+                            "px" if entry.frame_kind=="pixel" else "model_unit")
+                stack.add_frame(frame)
+            source_kind={"pixel":"image_set","none":"text_testimony",
+                         "local3d":"cad_model"}[entry.frame_kind]
+            stack.add_source(Source(sid,source_kind,entry.content_sha256,
+                                    entry.locator,frame_id,entry.authority))
+            stack.add_element(Element("element-"+entry.identity[:24],
+                                      "image_plane" if entry.frame_kind=="pixel" else "unresolved_form",
+                                      (sid,),(),entry.authority))
+        stack.audit()
+        return stack
+
+    @classmethod
+    def admit_registered_views(cls, rows, location):
+        """Admit independent measured camera/anchor testimony into one inventory."""
+        """One source ledger for all calibrated independent RGBA images and anchors."""
+        rows=list(rows)
+        if not rows or len(rows) < 2:
+            raise ValueError("Independent calibrated multiview location requires two or more cameras")
+        stack=cls(location)
+        stack.add_frame(Frame("authored-local3d", "local3d", "model_unit"))
+        measured_sources={}
+        for item in rows:
+            seed_id=item["source_id"]
+            reg=item["registration"]
+            frame_id="pixel-"+seed_id[:24]
+            frame=Frame(frame_id,"pixel","px")
+            stack.add_frame(frame)
+            image_source_id="source-"+seed_id[:24]
+            stack.add_source(Source.from_file(
+                image_source_id,"single_image",item["path"],frame_id))
+            stack.add_element(Element("observation-"+seed_id[:24],"image_plane",
+                                      witness_ids=(image_source_id,),epistemic="source"))
+            control=Path(reg["control_file"]).resolve(strict=True)
+            control_id="survey-"+reg["anchor_sha256"][:24]
+            if control_id not in measured_sources:
+                measured_sources[control_id]=str(control)
+                stack.add_source(Source.from_file(
+                    control_id,"survey_control",control,"authored-local3d"))
+            elif measured_sources[control_id]!=str(control):
+                raise ValueError("One independent survey digest resolves to conflicting locators")
+            calibration=Path(reg["calibration_file"]).resolve(strict=True)
+            calibration_id="calibration-"+reg["calibration_sha256"][:24]
+            if calibration_id in stack.sources:
+                raise ValueError("Distinct image registrations collided at one camera identity")
+            stack.add_source(Source.from_file(
+                calibration_id,"text_testimony",calibration,None))
+            stack.register(RegistrationReceipt(
+                source_frame=frame_id,target_frame="authored-local3d",
+                method="measured-perspective-PnP",
+                state="verified",
+                anchor_sources=(control_id,calibration_id),
+                residual=float(reg["observed_rms_px"]),
+                residual_units="px"))
+        stack.audit()
+        status=stack.verify_source_bytes()
+        if any(v!="matched" for v in status.values()):
+            raise ValueError("Registered source inventory includes unresolved remote evidence")
+        return stack
+
     def add_frame(self, frame: Frame):
         if frame.id in self.frames:
             raise ValueError(f'Duplicate frame: {frame.id}')
