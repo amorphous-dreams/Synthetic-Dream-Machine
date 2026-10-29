@@ -15,6 +15,7 @@ import {
   originCompositionForFace, flowOriginForFace, crossingBannerLines, assertWaystoneCustody,
   OriginCustodyRefusal, type ReachFace,
 } from "../src/lan-address.js";
+import { pronaosShoreBootNotice } from "../src/pronaos-composition.js";
 
 const FACE: ReachFace = { kind: "lan", host: "192.168.1.42:8080", origin: "http://192.168.1.42:8080" };
 const DECLARED: ReachFace = { kind: "declared", host: "waystone.example", origin: "https://waystone.example" };
@@ -107,5 +108,50 @@ describe("the crossing banner (Web origin + relay + floor card, never a gate key
     expect(crossingBannerLines("lararium", [{ face: DECLARED, composition: lar }], null)).toEqual([
       "https://waystone.example/?relay=wss://waystone.example/ws   (declared)",
     ]);
+  });
+});
+
+describe("the founding walk, W2 — a refused declaration names its cure", () => {
+  // Measured 2026-10-29 on a desk: `lares vessel stand` after `vessel found --hearth` attested
+  // `origin composition refused for http://localhost:18231: [origin composition] Web origin must be declared`
+  // and nothing in the refusal, the stand's note, the runbook or the vessel door named what to declare.
+  // The compose files alone carried `LAR_SAME_ORIGIN: "true"`. A refusal names its declaration, both the
+  // environment variable and the config key, so a person at a terminal cures it from the line itself.
+  test("a lararium with no Web declaration refuses naming LAR_WEB_ORIGIN, origins.web and LAR_SAME_ORIGIN", () => {
+    let message = "";
+    try { originCompositionForFace(FACE, { flowOrigin: "http://flow.local" }, "lararium"); } catch (err) { message = String((err as Error).message); }
+    expect(message).toMatch(/Web origin must be declared/);
+    expect(message).toMatch(/LAR_WEB_ORIGIN/);
+    expect(message).toMatch(/origins\.web/);
+    expect(message).toMatch(/LAR_SAME_ORIGIN/);
+  });
+
+  test("a herm with no read declaration refuses naming LAR_FLOW_ORIGIN, origins.flow and LAR_SAME_ORIGIN", () => {
+    let message = "";
+    try { originCompositionForFace(FACE, {}, "herm"); } catch (err) { message = String((err as Error).message); }
+    expect(message).toMatch(/flow origin must be declared/);
+    expect(message).toMatch(/LAR_FLOW_ORIGIN/);
+    expect(message).toMatch(/origins\.flow/);
+    expect(message).toMatch(/LAR_SAME_ORIGIN/);
+  });
+
+  // CONTROL: a declaration that stands composes as before, with no notice in the way.
+  test("CONTROL: the sameOrigin declaration composes all three surfaces unchanged", () => {
+    expect(originCompositionForFace(DECLARED, { sameOrigin: true }, "lararium").webOrigin).toBe("https://waystone.example");
+  });
+});
+
+describe("the founding walk, W4 — a lararium with no Pronaos shore says so at boot", () => {
+  // Measured 2026-10-29: with the origin declared, the hearth stood and answered `GET /` with 404
+  // `route unavailable`, and its boot log carried no line about the shore it never composed. The browser
+  // leaf of the walk has no page to open until LAR_PRONAOS_WEB_ROOT and LAR_PRONAOS_ARTIFACT_RECORD stand.
+  test("a lararium composing no shore gets a notice naming both declarations; a herm gets none", () => {
+    const lararium = pronaosShoreBootNotice("lararium", null);
+    expect(lararium).toMatch(/LAR_PRONAOS_WEB_ROOT/);
+    expect(lararium).toMatch(/LAR_PRONAOS_ARTIFACT_RECORD/);
+    expect(pronaosShoreBootNotice("herm", null)).toBeNull();
+  });
+  test("CONTROL: a lararium that composed its shore gets no notice", () => {
+    expect(pronaosShoreBootNotice("lararium", { dispose() {} } as never)).toBeNull();
   });
 });
