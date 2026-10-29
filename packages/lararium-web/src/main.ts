@@ -439,16 +439,25 @@ async function bootVessel(): Promise<void> {
     // Arm the interactivity RETURN leg (click and text halves): each event carries its source surface.
     projectionSink.arm({ sendControlEvent: result.sendControlEvent });
     // The page's port road: one transport over the vessel's port doors; replies reach it for its own binding alone.
-    const pageBinding = standPagePort(result.ports, () => projectionSink.surface());
+    // The mirror serves one wiki for its life: the binding's traffic follows the surface it stood on, never the projection's later switches.
+    let mirrorSurface: string | null = null;
+    const pageBinding = standPagePort(result.ports, () => mirrorSurface);
     // The mirror: unprivileged, fed by this binding alone, booted from the inputs the vessel names for the shown surface.
     // A floor leaves the none projection beneath exactly as it stands; the host element carries the outcome in `data-lar-mirror`.
     let mirrorStanding = false;
     mirrorTrigger = () => {
-      if (mirrorStanding || projectionSink.surface() === null) return;
+      const shown = projectionSink.surface();
+      if (mirrorStanding || shown === null) return;
       mirrorStanding = true;
-      void standPageMirror({ port: pageBinding, host: $("mirror"), actor: did, surface: () => projectionSink.surface(),
+      mirrorSurface = shown;
+      void standPageMirror({ port: pageBinding, host: $("mirror"), actor: did, surface: () => mirrorSurface,
         mirrorInputs: result.mirrorInputs, onState: (state) => console.warn(`[mirror] ${state.kind}`, state) })
-        .then((stood) => { if (stood.kind === "floor") console.warn(`[mirror] the none projection stays: ${stood.why}`); })
+        .then((stood) => {
+          if (stood.kind !== "floor") return;
+          console.warn(`[mirror] the none projection stays: ${stood.why}`);
+          // Nothing to mirror yet (the daemon shows, or the vessel names no inputs): the next painted frame asks again.
+          if (stood.why === "mirror-inputs-absent") { mirrorStanding = false; mirrorSurface = null; }
+        })
         .catch((err: unknown) => console.warn("[mirror] stand refused:", err));
     };
     mirrorTrigger();

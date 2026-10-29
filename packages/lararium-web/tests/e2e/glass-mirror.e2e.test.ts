@@ -54,8 +54,9 @@ describe("a founded vessel stands its mirror", () => {
       return state === "full" || state.startsWith("none:") ? state : false;
     }, undefined, { timeout: WAIT }).then((h) => h.jsonValue()).catch(() => "never settled");
     expect(verdict, logs.slice(-40).join("\n")).toBe("full");
-    const painted = await page.evaluate(() => (document.querySelector("#mirror")?.shadowRoot?.querySelector(".tc-story-river, .tc-tiddler-frame, div")?.childElementCount ?? 0));
-    expect(painted).toBeGreaterThan(0);
+    // The shadow root holds TW5's own story river with at least one tiddler frame: the story the surface opened with.
+    const frames = await page.evaluate(() => document.querySelector("#mirror")?.shadowRoot?.querySelectorAll(".tc-story-river .tc-tiddler-frame").length ?? 0);
+    expect(frames).toBeGreaterThan(0);
     await context.close();
   });
 });

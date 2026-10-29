@@ -45,7 +45,7 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 * ''G3'': the camera builds the scroller, popup layer and focus handler; the `tm-modal`, `tm-notify`, clipboard, download, route and open-surface doors, and `main.ts` calling `standMirror`, stand owed.
 * ''G6'': one walk witness runs the framed editor, story scroll, popup layer, toolbar and auto-height in Chromium and Firefox; WebKit refuses on this host for want of two system libraries. Interaction goldens 1 to 13 at width full against stock TW5 stand owed.
 * ''G7'' (spike table, 2026-10-28; 2,000 tiddlers, Chromium on this WSL2 host, one loopback relay, median of three runs; every phone figure UNMEASURED): heap after first paint stock 32.18 / full 35.56 / skinny 21.66 MiB; first paint 836 / 942 / 677 ms; keystroke to paint p95 15.1 / 26.5 / 23.7 ms; skinny cold filter p95 3.3 ms; peer write 32 / 43 ms, in order; hot swap 611 / 179 ms; echo one write, zero re-landings; none bytes per key 63,344 against the 52,429-byte budget (phone unmeasured). Full's memory gate reads +10.5 % over stock (tripwire 150 MiB): PASS on this host. The sync ask, the verb census and the none page controls stand unmeasured.
-* ''Mirror door'': `main.ts` calling `standMirror` and the vessel's `mirrorInputs` hunk await K19 landing; the PR waits on them.
+* ''Mirror door'' BUILT: the pool names a mounted wiki's boot inputs (`mountInputsOf`), the browser vessel result carries `mirrorInputs(surface)`, and `main.ts` stands the mirror through `standPageMirror` once the first frame names the surface (host `#mirror`, outcome in `data-lar-mirror`). The host stays hidden beside the none projection: making the mirror the person's visible surface moves the edit road, the unload hold and the goldens, and waits on the operator. The spike re-run on the shipped setup (the island in the tab, not a remote authority over a loopback relay) stands owed.
 * ''Promotion order'': skinny paints first and one `port:widen` row promotes it to full; the per-tab `mirror:began` record in `sessionStorage` holds a tab at skinny when a full boot never finished; the order retires on the measured landing cure, not on a date.
 * ''Full-width landing cost'' CURED: the 33 s first paint and 106 MiB heap came from an echo storm, not from the adaptor's per-record image or the per-change refresh. A landed record's tag held the wire fields while the change listener read TW5's normalized tiddler (tags, lists and dates rewritten), so every landed record posted itself back as a write (20,227 writes seen); the tag now reads the tiddler back as TW5 holds it. First paint 42,983 to 951 ms, heap 236.34 to 35.56 MiB, writes 20,227 to 102.
 
@@ -69,6 +69,6 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8ELulXNh8G3AQ38z7XXOLcN0pGFMkDrXKaa9qIQVQ6k
+<<^ code="&#x0003;">>ni:///sha-256;jAFjyLv3IEvMsxvb5Vq8eYWwvjix1XdDha0D1lv7A7g
 
 <<^ code="&#x0004;" -> to="?">>

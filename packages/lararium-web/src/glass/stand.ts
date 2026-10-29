@@ -125,7 +125,8 @@ export async function standMirror(options: {
           else if (promoting) {
             promoting = false; width = "full";
             settle({ width: "full" }); emit({ type: "promoted", width: "full" });
-            // The record clears when a frame has painted full, not when its snapshot lands: a death between the two leaves it.
+            // The record clears after a page frame has run over the landed full tree, not when its snapshot lands: a death between the two leaves it.
+            // The frame acknowledges a refreshed tree; whether the host shows is the page's affair.
             const landedIn = mine;
             requestAnimationFrame(() => requestAnimationFrame(() => {
               if (!ended && landedIn === generation && width === "full") remember(store => store.removeItem(evidenceKey));
