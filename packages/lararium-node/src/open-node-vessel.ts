@@ -201,6 +201,8 @@ import { gateGrantRing }                         from "./gate-rings.js";
 import { readFaceJoinRecord, readFaceAddressSecret } from "./fleet-join-custody.js";
 import { gateMemoryRows }                        from "./gate-memory-rows.js";
 import { custodyGateDoor }                       from "./custody-seat.js";
+import { standIntentRelay, type IntentRelayService } from "./intent-relay.js";
+import { resolveIntentRelayFace } from "./intent-relay-face.js";
 import { vesselFloorKeyDoor, loadPlaceKelChain, loadPlaceAid } from "./node-vessel-identity.js";
 import { hearthFloorPins }                       from "./hearth-sovereign-pin.js";
 import { hearthFloorProof }                      from "./hearth-floor-claims.js";
@@ -1403,7 +1405,17 @@ async function prepareNodeBootOn(
     }
     // The book just read again: a binding it no longer holds ends the same-operator session that stood on it.
     sweepSameOperator?.();
+    // THE INTENT RELAY stands beside the sync gates: one route per operator-enabled face, off until a person enables it.
+    // Its admit signs under the relay's own key; the agent holds its own key and never wears a face's session.
+    if (intentRelay === null) {
+      intentRelay = await standIntentRelay({
+        gateServer, ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), rootDoor: custodyGateDoor(), deadlines: timerGateDeadlines(),
+        faces: (group) => resolveIntentRelayFace(group, { repo, catalogUrl: catalogHandle.url }), log: (message) => console.log(message),
+      });
+    } else await intentRelay.refresh();
   };
+  let intentRelay: IntentRelayService | null = null;
+  stood.push({ what: "the intent relay", down: () => { intentRelay?.close(); intentRelay = null; } });
   stood.push({ what: "the sync gates' knocks", down: () => { for (const held of syncStood.values()) held.unstand(); syncStood.clear(); } });
 
   // Read the bulb off the genesis dir — the ALL-PUBLIC seed + CAS a Herm serves so a stranger kindles their OWN
