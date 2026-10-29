@@ -370,6 +370,8 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
   /** Relay a `lar:control-event` to the surface that PAINTED its target, whatever surface stands active. */
   sendControlEvent: (surface: string, ev: LarMsg_ControlEvent) => ReturnLegVerdict;
   ports: { place(surface: string, binding: string, msg: unknown): PortPlacement; close(binding: string): void };
+  /** The core hash and plugin CIDs a mounted wiki surface boots from, for the page's mirror; null for the daemon, an unmounted surface, or inputs the vessel cannot name. */
+  mirrorInputs: (surface: string) => Promise<{ coreCid: string; pluginCids: readonly string[] } | null>;
   /** Ask a surface's island to paint whole under a fresh mount epoch (`lar:resend`). */
   resend: (surface: string) => ReturnLegVerdict;
   /** The uniform pin-selector: flip which VM owns the singleton #projection sink. DAEMON_SURFACE_ID summons the
@@ -1921,6 +1923,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         ? { ok: false, reason: "surface-unknown" } : vmManager.placePort(surface, binding, msg),
       close: (binding) => vmManager.closePortBinding(binding),
     },
+    mirrorInputs: (surface) => surface === DAEMON_SURFACE_ID || !vmManager.has(surface) ? Promise.resolve(null) : vmManager.mountInputsOf(surface),
     resend: (surface: string) => returnLeg.resend(surface),
     // The uniform pin-selector: flip the live gate synchronously (mount-then-flip — daemon + the pinned wiki
     // are already mounted), then persist the choice fire-and-forget to bags/daemon/active-wiki (read only at next

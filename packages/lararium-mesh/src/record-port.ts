@@ -23,6 +23,7 @@ export const PORT_ASK      = "port:ask";
 export const PORT_PRESENCE = "port:presence";
 export const PORT_CLOSE    = "port:close";
 export const PORT_ACK      = "port:ack";
+export const PORT_WIDEN    = "port:widen";
 export const PORT_LEASE    = "port:lease";
 export const PORT_GONE     = "port:gone";
 export const PORT_SNAPSHOT = "port:snapshot";
@@ -31,7 +32,7 @@ export const PORT_RESET    = "port:reset";
 export const PORT_WRITTEN  = "port:written";
 export const PORT_ANSWER   = "port:answer";
 
-export type PortVesselKind = typeof PORT_OPEN | typeof PORT_WRITE | typeof PORT_ASK | typeof PORT_PRESENCE | typeof PORT_CLOSE | typeof PORT_ACK | typeof PORT_LEASE | typeof PORT_GONE;
+export type PortVesselKind = typeof PORT_OPEN | typeof PORT_WRITE | typeof PORT_ASK | typeof PORT_PRESENCE | typeof PORT_CLOSE | typeof PORT_ACK | typeof PORT_WIDEN | typeof PORT_LEASE | typeof PORT_GONE;
 export type PortIslandKind = typeof PORT_SNAPSHOT | typeof PORT_CHANGES | typeof PORT_RESET | typeof PORT_WRITTEN | typeof PORT_ANSWER | typeof PORT_PRESENCE;
 
 export type PortWidthName = "full" | "skinny" | "story" | "none";
@@ -114,6 +115,9 @@ export interface PortMsg_Presence {
   gone?: true;
 }
 
+/** A holder widens its open port in place: the island answers with a fresh snapshot at the wider width on the same port and lease. A width that is not wider changes nothing. */
+export interface PortMsg_Widen { type: typeof PORT_WIDEN; portId: string; width: PortWidthName }
+
 export interface PortMsg_Close {
   type: typeof PORT_CLOSE;
   portId: string;
@@ -164,7 +168,7 @@ export interface PortMsg_Answer {
   result?: unknown;
 }
 
-export type PortVesselToIslandMsg = PortMsg_Open | PortMsg_Write | PortMsg_Ask | PortMsg_Presence | PortMsg_Close | PortMsg_Ack | PortMsg_Lease | PortMsg_Gone;
+export type PortVesselToIslandMsg = PortMsg_Open | PortMsg_Write | PortMsg_Ask | PortMsg_Presence | PortMsg_Close | PortMsg_Ack | PortMsg_Widen | PortMsg_Lease | PortMsg_Gone;
 export type PortIslandToVesselMsg = PortMsg_Snapshot | PortMsg_Changes | PortMsg_Reset | PortMsg_Written | PortMsg_Answer | PortMsg_Presence;
 
 // ── Readers ─────────────────────────────────────────────────────
@@ -261,6 +265,8 @@ export function readPortVesselMsg(v: unknown): PortVesselToIslandMsg | null {
       return v as unknown as PortMsg_Presence;
     case PORT_ACK:
       return isName(v["cursor"]) ? v as unknown as PortMsg_Ack : null;
+    case PORT_WIDEN:
+      return typeof v["width"] === "string" && WIDTHS.has(v["width"]) ? v as unknown as PortMsg_Widen : null;
     case PORT_CLOSE:
       return v as unknown as PortMsg_Close;
     default:

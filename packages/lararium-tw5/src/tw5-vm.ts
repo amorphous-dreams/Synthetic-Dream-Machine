@@ -14,8 +14,8 @@ import type {
   TW5TiddlerInputFields,
   TW5TiddlerFields,
 } from "./types/tiddlywiki.js";
-import type { LarTiddlerRecord } from "@lararium/mesh";
-import { toLarTiddlerRecord } from "@lararium/mesh";
+import type { LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { toLarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import {
   bootWithHostBridge,
   normalizeCoreBootBlob,
@@ -34,6 +34,10 @@ export type { TW5CoreBootBlob } from "./tw5-host-bridge.js";
 export class TW5Engine {
   private _tw: TW5Instance | null = null;
   private _bootPromise: Promise<void> | null = null;
+  private _release: (() => void) | null = null;
+
+  /** Give back the page globals a glass boot lent; a worker or Node engine holds none. */
+  releaseGlass(): void { const release = this._release; this._release = null; release?.(); }
 
   /**
    * Boot the TW5 wiki. Idempotent — multiple calls return the same promise.
@@ -42,22 +46,27 @@ export class TW5Engine {
    * Node:    evaluates the same tiddlywikicore blob with a CommonJS-shaped
    *          wrapper; no node_modules tiddlywiki runtime fallback is allowed.
    */
-  boot(coreBlob?: TW5CoreBootInput, preloadedTiddlers?: Array<Record<string, unknown>>): Promise<void> {
+  boot(coreBlob?: TW5CoreBootInput, preloadedTiddlers?: Array<Record<string, unknown>>, mirrorToken?: symbol): Promise<void> {
     if (this._bootPromise) return this._bootPromise;
     this._bootPromise = (async () => {
       const core = normalizeCoreBootBlob(coreBlob);
       if (core) verifyCoreBootBlob(core);
-      const { instance, isBrowser } = await prepareHostBootInstance(core);
+      const { instance, isBrowser, release } = await prepareHostBootInstance(core, mirrorToken);
 
       const allPreloads = preloadedTiddlers ?? [];
 
       instance.preloadTiddlers = instance.preloadTiddlers ?? [];
       for (const t of allPreloads) instance.preloadTiddlers.push(t as Record<string, unknown>);
 
-      await bootWithHostBridge(instance, isBrowser, async () => {
-        this._tw = instance;
-        await bootTrustedModules(instance);
-      });
+      // The glass keeps its page lends while the engine lives: TW5 executes a module on its first use,
+      // long after boot returns, and that module reads the lent names. `releaseGlass` gives them back.
+      this._release = release ?? null;
+      try {
+        await bootWithHostBridge(instance, isBrowser, async () => {
+          this._tw = instance;
+          await bootTrustedModules(instance);
+        });
+      } catch (error) { this.releaseGlass(); throw error; }
     })();
     return this._bootPromise;
   }

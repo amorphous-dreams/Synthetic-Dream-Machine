@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./glass": {
+      "import": "./dist/glass.js",
+      "types": "./dist/glass.d.ts"
+    },
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"

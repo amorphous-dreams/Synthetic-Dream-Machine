@@ -46,11 +46,12 @@ test("a reply for the transport's own binding reaches its listeners once; CONTRO
 });
 
 test("standPagePort stands one transport over the doors and the module's delivery reaches it for its own binding", async () => {
-  const { pagePort, pagePortDelivery, standPagePort } = await import("../src/page-port.js");
-  expect(pagePort()).toBeNull();
+  const module = await import("../src/page-port.js");
+  const { pagePortDelivery, standPagePort } = module;
+  // The ambient getter burned: the root hands the binding it holds to the mirror explicitly.
+  expect("pagePort" in module).toBe(false);
   const placed: unknown[] = [];
   const transport = standPagePort({ place: (_s, b, m) => { placed.push([b, m]); return { ok: true }; }, close() {} }, () => "wiki");
-  expect(pagePort()).toBe(transport);
   const heard: unknown[] = [];
   transport.onMessage((m) => heard.push(m));
   pagePortDelivery.onPortMessage(transport.binding, "wiki", { type: "port:reset", portId: "p" });

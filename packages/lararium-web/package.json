@@ -17,6 +17,7 @@
     "@automerge/automerge-repo-storage-indexeddb": "2.6.0-alpha.5",
     "@lararium/browser": "workspace:*",
     "@lararium/mesh": "workspace:*",
+    "@lararium/tw5": "workspace:*",
     "idiomorph": "0.8.0"
   },
   "devDependencies": {
