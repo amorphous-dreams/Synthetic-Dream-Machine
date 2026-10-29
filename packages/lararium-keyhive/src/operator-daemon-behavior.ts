@@ -29,7 +29,7 @@ import {
   makeCabalRealmReactors,
   makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, SEED_OFF_DISK,
 } from "@lararium/tw5";
-import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, leaseEpochPrefix, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
+import { ACTION_VERBS, sha256HexBytesSync, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, leaseEpochPrefix, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
 import { boardDyadReader } from "./board-dyad-reader.js";
@@ -237,9 +237,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   const providers = new Map<string, { provider: KeyhiveProvider; group: string }>();
   const inFlight = new Map<KeyhiveProvider, Set<Promise<unknown>>>();
   let faceChanges = Promise.resolve();
+  // What each lit face booted from, by its bare atom key: a later lit message for that key matches it or refuses by name.
+  const litInputs = new Map<string, string>();
   const lightJoinedFace = async (face: JoinedFaceAuth, ctx: IslandContext): Promise<void> => {
     const key = bareKey(face.atom.key);
-    if (providers.has(key)) return;
+    if (providers.has(key)) {
+      if (litInputs.get(key) === faceInputsDigest(face)) return;
+      throw new Error(`face-lit-changed: face ${key} stands lit from other inputs (anchor, KEL, edge, bags or veil); drop it before it lights again`);
+    }
     const lease = await readLeaseUnderFace(ctx.composite, face.personaGroupId, readFace(face.personaKel.chain, face.faceAnchor));
     const joined = await bootDaemonKeyhive({
       atomSeed: meshHexToBytes(face.atom.seed), faceVerifyingKey: face.atom.key,
@@ -256,6 +261,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     try {
       for (const bag of face.registerBags.filter((bag) => !isVesselGround(bag))) await joined.keyhive.registerBag(bag);
       providers.set(key, { provider: joined.keyhive, group: face.personaGroupId });
+      litInputs.set(key, faceInputsDigest(face));
     } catch (error) {
       await joined.keyhive.dispose();
       throw error;
@@ -988,6 +994,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           const face = providers.get(key);
           if (face) {
             providers.delete(key);
+            litInputs.delete(key);
             await Promise.allSettled([...(inFlight.get(face.provider) ?? [])]);
             await face.provider.dispose();
           }
@@ -1257,6 +1264,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         }
       }
       providers.set(bareKey(daemonAuth.atom!.key), { provider: keyhive, group: daemonAuth.personaGroupId! });
+      litInputs.set(bareKey(daemonAuth.atom!.key), faceInputsDigest(daemonAuth));
       for (const face of daemonAuth.joinedFaces ?? []) {
         try { await lightJoinedFace(face, ctx); }
         catch (error) { console.warn(`[daemon] face ${face.atom.key} refused: ${String(error)}`); }
@@ -1334,6 +1342,22 @@ export const FACE_NEUTRAL_VERBS: Readonly<Record<string, string>> = Object.freez
 
 /** The bare lowercase hex of a DID claim (`0x…` or bare). */
 const bareKey = (did: string): string => did.trim().toLowerCase().replace(/^0x/, "");
+/**
+ * One digest of what a face's provider boots from: its atom key, group, anchor, KEL, device edge, signer, cabal, bags,
+ * veil archive and address secret. Byte fields enter as their own digests, so the digest carries no secret.
+ */
+function faceInputsDigest(face: Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "atom" | "personaGroupId" | "faceAnchor" | "personaKel" | "deviceEdge" | "signerDid" | "registerBags" | "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret">): string {
+  const encode = (text: string): Uint8Array => new TextEncoder().encode(text);
+  const fields = {
+    atom: face.atom ? bareKey(face.atom.key) : null, group: face.personaGroupId ?? null, anchor: face.faceAnchor ?? null,
+    kel: face.personaKel ?? null, edge: face.deviceEdge ?? null, signer: face.signerDid ?? null, cabal: face.meshCabalDocIdHex ?? null,
+    bags: face.registerBags,
+    veil: face.veilArchiveBytes ? sha256HexBytesSync(face.veilArchiveBytes) : null,
+    address: face.faceAddressSecret ? sha256HexBytesSync(encode(face.faceAddressSecret)) : null,
+  };
+  return sha256HexBytesSync(encode(JSON.stringify(fields, (_k, v: unknown) => v instanceof Uint8Array ? sha256HexBytesSync(v) : v)));
+}
+
 /** True for a claim that names a DID or a bare 32-byte key, false for a label. */
 const namesADid = (claim: string): boolean => /^did:/i.test(claim.trim()) || /^[0-9a-f]{64}$/.test(bareKey(claim));
 
