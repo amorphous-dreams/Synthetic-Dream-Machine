@@ -14,6 +14,7 @@ import cadquery as cq
 from OCP.Bnd import Bnd_Box
 from OCP.BRepBndLib import BRepBndLib
 from OCP.BRepExtrema import BRepExtrema_DistShapeShape
+from OCP.BRepAlgoAPI import BRepAlgoAPI_Common
 
 from .provenance_encoding import canonical_json_sha256
 from .scene_usd import validate_scene
@@ -29,6 +30,41 @@ def _bounds(shape):
     if not all(math.isfinite(x) for x in values):
         raise ValueError("Native exact BRep bounds are not finite")
     return values
+
+
+
+def _bearing_face_area(lower, upper, lower_bounds, upper_bounds, gap, tolerance):
+    """Measure actual overlapping horizontal STEP faces rather than their AABBs.
+
+    Faces with only point/edge contact contribute zero area. Native analytic
+    BRep intersections, not preview triangulation, decide this evidence.
+    """
+    top = [f for f in lower.Faces()
+           if f.geomType() == "PLANE" and f.normalAt().z >= 0.9999
+           and abs(_bounds(f)[2] - lower_bounds[5]) <= tolerance
+           and abs(_bounds(f)[5] - lower_bounds[5]) <= tolerance]
+    bottom = [f for f in upper.Faces()
+              if f.geomType() == "PLANE" and f.normalAt().z <= -0.9999
+              and abs(_bounds(f)[2] - upper_bounds[2]) <= tolerance
+              and abs(_bounds(f)[5] - upper_bounds[2]) <= tolerance]
+    if not top or not bottom:
+        raise ValueError("Native bearing requires paired horizontal planar support faces")
+    if len(top) * len(bottom) > 1024:
+        raise ValueError("Native bearing face-pair audit exceeds bounded complexity")
+    contact = 0.0
+    for lower_face in top:
+        for upper_face in bottom:
+            aligned_upper = upper_face.translate((0, 0, -gap))
+            intersection = BRepAlgoAPI_Common(
+                lower_face.wrapped, aligned_upper.wrapped)
+            intersection.Build()
+            if not intersection.IsDone():
+                raise ValueError("Native bearing planar intersection failed")
+            shape = cq.Shape.cast(intersection.Shape())
+            contact += sum(face.Area() for face in shape.Faces())
+    if not math.isfinite(contact):
+        raise ValueError("Native bearing face area is nonfinite")
+    return contact
 
 
 def native_support(bundle, lower_id, upper_id, *, tolerance=0.001,
@@ -69,6 +105,9 @@ def native_support(bundle, lower_id, upper_id, *, tolerance=0.001,
         raise ValueError("OpenCascade exact solid distance could not be measured")
     if distance.Value()>tolerance:
         raise ValueError("Native solids do not contact at the bearing plane")
+    contact_area = _bearing_face_area(lower, upper, a, b, gap, tolerance)
+    if contact_area < minimum_contact_area:
+        raise ValueError("Native bearing contact area below required minimum")
     payload={"schema":SCHEMA,"location":manifest["location"],
              "scene_sha256":manifest["sha256"],
              "lower":lower_id,"upper":upper_id,
@@ -77,6 +116,7 @@ def native_support(bundle, lower_id, upper_id, *, tolerance=0.001,
              "native_distance":float(distance.Value()),
              "signed_vertical_gap":float(gap),
              "xy_contact_bound":float(area),
+             "native_contact_area":float(contact_area),
              "tolerance":float(tolerance),
              "minimum_contact_area":float(minimum_contact_area),
              "contact_kind":"native-BRep-geometric-bearing-only",

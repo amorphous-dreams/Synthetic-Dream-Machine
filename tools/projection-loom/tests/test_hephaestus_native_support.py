@@ -26,6 +26,7 @@ def test_true_native_face_bearing_and_causal_relation(tmp_path):
     assert proof["native_distance"] < 1e-5
     assert abs(proof["signed_vertical_gap"]) < 1e-5
     assert proof["xy_contact_bound"] > 8
+    assert proof["native_contact_area"] == pytest.approx(9.0, abs=1e-7)
     assert proof["contact_kind"]=="native-BRep-geometric-bearing-only"
     assert proof["load_certification"] is False
     prior=seed_editor_ground(authored)
@@ -65,3 +66,40 @@ def test_support_replay_refuses_tampered_bundle_and_causal_receipt(tmp_path):
     patch.write_text(patch.read_text()+"\n# unapproved change\n")
     with pytest.raises(ValueError,match="digest mismatch"):
         verify_support_proposal(recorded,original,folder)
+
+
+def test_native_planar_bearing_refuses_corner_tangency_despite_aabb_overlap():
+    """A rotated sole touches a square roof at one vertex: no bearing area."""
+    import cadquery as cq
+    from projection_loom.native_support import _bearing_face_area, _bounds
+    from OCP.BRepExtrema import BRepExtrema_DistShapeShape
+    lower = cq.Workplane("XY").box(5, 5, 2).val()
+    corner = 2.5 + (1.5 * (2**0.5)) / 2
+    # The 45-degree sole has positive AABB overlap at a tangent point.
+    upper = (cq.Workplane("XY").box(3, 3, 1).val()
+             .rotate((0, 0, 0), (0, 0, 1), 45)
+             .translate((corner, corner, 1.5)))
+    a, b = _bounds(lower), _bounds(upper)
+    aabb_area = (min(a[3], b[3]) - max(a[0], b[0])) * (
+        min(a[4], b[4]) - max(a[1], b[1]))
+    distance = BRepExtrema_DistShapeShape(lower.wrapped, upper.wrapped)
+    distance.Perform()
+    assert distance.IsDone() and distance.Value() < 1e-6
+    assert aabb_area > 1
+    actual = _bearing_face_area(lower, upper, a, b, b[2] - a[5], 0.001)
+    assert actual < 0.05
+    # A small genuine diagonal overlap still needs the required face area.
+    overlap = upper.translate((-0.0606601718, -0.0606601718, 0))
+    c = _bounds(overlap)
+    actual_overlap = _bearing_face_area(lower, overlap, a, c, c[2] - a[5], 0.001)
+    assert 0 < actual_overlap < 0.05
+
+
+def test_native_planar_bearing_accepts_bounded_vertical_tolerance():
+    import cadquery as cq
+    from projection_loom.native_support import _bearing_face_area, _bounds
+    lower = cq.Workplane("XY").box(5, 5, 2).val()
+    upper = cq.Workplane("XY").box(3, 3, 1).val().translate((0, 0, 1.5005))
+    a, b = _bounds(lower), _bounds(upper)
+    area = _bearing_face_area(lower, upper, a, b, b[2] - a[5], 0.001)
+    assert area == pytest.approx(9.0, abs=1e-7)
