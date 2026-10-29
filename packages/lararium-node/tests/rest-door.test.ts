@@ -105,9 +105,9 @@ describe("the rest door", () => {
       // The ask posts on a faster road than the owner's sync handshake: the owner's leg has not met the vessel yet.
       let legStands!: () => void;
       const ready = new Promise<void>((resolve) => { legStands = resolve; });
-      const closed = new Promise<void>(() => {});
+      const onClose = (): (() => void) => () => {};
       let outcome: "pending" | "rested" | { fault: string } = "pending";
-      const asking = restInStore(vessel, [handle.documentId as DocumentId], { ready, closed }).then(
+      const asking = restInStore(vessel, [handle.documentId as DocumentId], { ready, onClose }).then(
         () => { outcome = "rested"; },
         (e: unknown) => { outcome = { fault: e instanceof Error ? e.message : String(e) }; },
       );
@@ -137,15 +137,28 @@ describe("the rest door", () => {
       const never = new Promise<void>(() => {});
       const absent = island.create<LarDoc>(emptyLarDoc()).documentId;
       await island.delete(absent);   // the island no longer carries it, and no peer carries it
-      await expect(restInStore(vessel, [absent], { ready, closed: never })).rejects.toThrow(/is unavailable/);
+      await expect(restInStore(vessel, [absent], { ready, onClose: () => () => {} })).rejects.toThrow(/is unavailable/);
       await island.shutdown();
       channel.port1.close(); channel.port2.close();
-      let close!: () => void;
-      const closed = new Promise<void>((resolve) => { close = resolve; });
-      const holding = restInStore(vessel, [absent], { ready: never, closed });
+      const closers = new Set<() => void>();
+      const holding = restInStore(vessel, [absent], { ready: never, onClose: (fn) => { closers.add(fn); return () => { closers.delete(fn); }; } });
       for (let turn = 0; turn < 20; turn++) await new Promise<void>((r) => setImmediate(r));
-      close();
+      for (const close of [...closers]) close();
       await expect(holding).rejects.toThrow(/stood down before the island's sync leg stood/);
+    } finally {
+      await restEvery();
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  test("D8 — a rest that completes leaves no reaction on the door's teardown", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "rest-door-"));
+    try {
+      const repo = restingRepo(dir, { saveDebounceRate: 60_000 });
+      const handle = repo.create<LarDoc>(emptyLarDoc());
+      const closers = new Set<() => void>();
+      const onClose = (fn: () => void): (() => void) => { closers.add(fn); return () => { closers.delete(fn); }; };
+      for (let call = 0; call < 25; call++) await restInStore(repo, [handle.documentId as DocumentId], { ready: Promise.resolve(), onClose });
+      expect(closers.size, "25 completed rests hold no teardown subscription").toBe(0);
     } finally {
       await restEvery();
       rmSync(dir, { recursive: true, force: true });

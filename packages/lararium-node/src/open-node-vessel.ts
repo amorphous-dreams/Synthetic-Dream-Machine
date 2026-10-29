@@ -471,16 +471,20 @@ export async function standNodeFloor(storageDir: string): Promise<NodeFloor> {
  * A document an island just minted reaches this Repo over the island's sync leg alone, and the ask rides a faster
  * road than that leg's handshake. Until the Repo has met the island's peer, `unavailable` says nothing about the
  * island's copy, so the ask waits for `legReady` (the leg standing, the Repo having met its peer) and then reads;
- * an `unavailable` after that is the peers' own answer and rejects. `closed` ends the wait when the vessel stands
+ * an `unavailable` after that is the peers' own answer and rejects. `onClose` (the teardown subscription) ends the wait when the vessel stands
  * down. No timer runs here; the asking island's own patience bounds the wait from its side.
  */
 export async function restInStore(
   repo: Pick<Repo, "find" | "flush">,
   documentIds: readonly string[],
-  leg?: { readonly ready: Promise<void>; readonly closed: Promise<void> },
+  leg?: { readonly ready: Promise<void>; readonly onClose: (fn: () => void) => () => void },
 ): Promise<void> {
   if (leg) {
-    const stood = await Promise.race([leg.ready.then(() => true), leg.closed.then(() => false)]);
+    // The teardown subscription leaves when the wait settles, so a completed ask holds nothing of the door.
+    const stood = await new Promise<boolean>((resolve, reject) => {
+      const off = leg.onClose(() => resolve(false));
+      leg.ready.then(() => { off(); resolve(true); }, (error: unknown) => { off(); reject(error); });
+    });
     if (!stood) throw new Error(`the vessel stood down before the island's sync leg stood (${documentIds.join(", ")})`);
   }
   for (const id of documentIds) await repo.find<LarDoc>(`automerge:${id}` as AutomergeUrl);
@@ -966,10 +970,10 @@ async function prepareNodeBootOn(
   // THE REST DOOR. An island mints a slot document its own Repo keeps no store for; this Repo saves it. The island
   // asks before it records the binding, and the answer waits until the document has reached this Repo and rests
   // in its store — so no binding names a document a hard stop could leave unsaved.
-  let closeRestDoor: () => void = () => {};
-  const restDoorClosed = new Promise<void>((resolve) => { closeRestDoor = resolve; });
-  setRestDoor((documentIds) => restInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), closed: restDoorClosed }));
-  stood.push({ what: "the rest door", down: () => { setRestDoor(null); closeRestDoor(); } });
+  const restDoorClosers = new Set<() => void>();
+  const onRestDoorClose = (fn: () => void): (() => void) => { restDoorClosers.add(fn); return () => { restDoorClosers.delete(fn); }; };
+  setRestDoor((documentIds) => restInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onRestDoorClose }));
+  stood.push({ what: "the rest door", down: () => { setRestDoor(null); for (const close of [...restDoorClosers]) close(); restDoorClosers.clear(); } });
   // The Repo stands down after everything that writes through it: it flushes, then closes its storage and network.
   stood.push({ what: "the Repo", down: async () => { await repo.flush(); await repo.shutdown(); } });
   emit("repo-open");
