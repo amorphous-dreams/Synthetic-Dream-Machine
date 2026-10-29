@@ -463,6 +463,11 @@ export async function standNodeFloor(storageDir: string): Promise<NodeFloor> {
   return { storageDir, storeClaim, release: () => (released ??= storeClaim.release()) };
 }
 
+/** The ask `answerRestWithHeads` reads, built for a document set whose heads the island named. It rides no port. */
+function restAskOf(documentIds: readonly string[], heads: Readonly<Record<string, readonly string[]>>): Parameters<typeof answerRestWithHeads>[1] {
+  return { requestId: "rest-in-store", documentIds: [...documentIds], heads: Object.fromEntries(documentIds.map((id) => [id, [...heads[id]!]])) } as Parameters<typeof answerRestWithHeads>[1];
+}
+
 /**
  * The rest door's whole act: wait until each named document has reached `repo`, then flush them into its store.
  * It resolves only after the store holds every one durably, so an acknowledgment never runs ahead of the save.
@@ -495,7 +500,7 @@ export async function restInStore(
     // that says nothing of the island's copy: the vessel's copy has to come to hold the heads, so the wait rides the
     // handle's own `heads-changed`, never a find that settled before the bytes could arrive.
     for (const id of documentIds) repo.findWithProgress(`automerge:${id}` as AutomergeUrl);
-    const answer = await answerRestWithHeads(repo as unknown as Repo, { type: "doc:rest", requestId: "rest-in-store", documentIds: [...documentIds], heads: Object.fromEntries(documentIds.map((id) => [id, [...heads![id]!]])) }, islandPeer);
+    const answer = await answerRestWithHeads(repo as unknown as Repo, restAskOf(documentIds, heads!), islandPeer);
     if (!answer.rested) throw new Error(answer.why ?? "the vessel's copy did not come to hold the island's heads");
     return;
   }
