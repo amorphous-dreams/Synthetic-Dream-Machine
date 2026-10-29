@@ -65,6 +65,8 @@ export interface VerbContext {
   readonly signal?: AbortSignal;
   /** Who the verb presents as (the capability's presenter); absent where no dispatcher named one. */
   readonly presenter?: string;
+  /** True for a verb the vessel's own presence channel took; absent or false for a synced summons. */
+  readonly local?: boolean;
   readonly cap:   (access: import("@lararium/mesh").CapabilityAccess, bagUrl: string) => Promise<import("@lararium/mesh").CapabilityVerifyResult>;
 }
 
@@ -180,6 +182,11 @@ export class VerbTable {
   /** True when the fence's check runs before this registered verb. */
   fenced(verbName: string): boolean {
     return this.fenceOf !== null && this.handlers.has(verbName) && !Object.hasOwn(this.fenceOf.open, verbName);
+  }
+
+  /** Run the fence's check for a registered verb on a path that answers without its handler (an effect's replay). */
+  admit(verbName: string, context: VerbContext): void {
+    if (this.fenceOf && this.fenced(verbName)) this.fenceOf.check(verbName, context);
   }
 
   get(verbName: string): VerbReactor | undefined {
@@ -322,6 +329,21 @@ export class VerbDispatcher {
    * of it before doing its own read), then replaces the map entry with its own promise before
    * returning — so a third concurrent attempt chains onto THIS one in turn.
    */
+  /**
+   * A replay answers without the handler, so the table's fence asks first: a presenter the fence refuses never reads a
+   * prior attempt's result, and its fresh run concludes refused by the fence's own name.
+   */
+  private replayAdmitted(invocation: Verb): boolean {
+    if (!this.opts.registry.has(invocation.action)) return true;
+    try {
+      this.opts.registry.admit(invocation.action, {
+        daemon: this.opts.daemon, invocation, cap: async () => ({ ok: false, reason: "replay" }),
+        presenter: this.opts.presenterOf?.(invocation) ?? invocation.requestedBy, local: this.opts.localOf?.(invocation) ?? false,
+      });
+      return true;
+    } catch { return false; }
+  }
+
   private dispatchWithEffectDedup(invocation: Verb, signal?: AbortSignal): Promise<void> {
     const effectKey = invocation.effectKey as string;
     const ahead = this.inFlightEffect.get(effectKey);
@@ -357,14 +379,14 @@ export class VerbDispatcher {
         return;
       }
       const priorDigest = String(priorOutcome.tiddler["input-digest"] ?? "");
-      if (priorDigest === inputDigest) {
+      if (priorDigest === inputDigest && this.replayAdmitted(invocation)) {
         const priorResults = JSON.parse(String(priorOutcome.tiddler["results"] ?? "{}")) as Record<string, VerbTargetResult>;
         await copyEffectOutcome(this.opts.daemonVm, this.opts.daemon, invocation, {
           priorRequestId, priorResults, inputDigest,
         });
         return;
       }
-      console.log(`[verb-dispatcher] effect "${effectKey}" reused with a changed digest (request=${invocation.requestId}, prior=${priorRequestId}) — running fresh, no dedup`);
+      if (priorDigest !== inputDigest) console.log(`[verb-dispatcher] effect "${effectKey}" reused with a changed digest (request=${invocation.requestId}, prior=${priorRequestId}) — running fresh, no dedup`);
     }
 
     await dispatchVerb(this.opts.daemonVm, this.opts.daemon, invocation, () => this.runHandler(invocation, signal));

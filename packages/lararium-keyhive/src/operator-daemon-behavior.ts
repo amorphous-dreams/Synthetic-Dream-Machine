@@ -29,7 +29,7 @@ import {
   makeCabalRealmReactors,
   makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, SEED_OFF_DISK,
 } from "@lararium/tw5";
-import { ACTION_VERBS, sha256HexBytesSync, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, leaseEpochPrefix, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
+import { ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, leaseEpochPrefix, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
 import { boardDyadReader } from "./board-dyad-reader.js";
@@ -988,7 +988,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         },
         check: (verb, context) => {
           if (!daemonAuth.atom) return;
-          // Fail closed: a call that names no presenter refuses like a sibling's.
+          // The vessel's own channel pushes its surfaces under labels (`persona`, `disk-projector`…) that name no face: such a
+          // call passes the fence and meets every cap check as the stranger it reads as. Any claim naming a DID other than the
+          // mounted face's, a label off the channel (a synced summons), and a call naming no presenter refuse.
+          if (context.local === true && context.presenter !== undefined && !namesADid(context.presenter)) return;
           if (context.presenter === undefined || bareKey(context.presenter) !== bareKey(daemonAuth.atom.key)) {
             throw new VerbRefusal("content-mounted-only", `[daemon] ${verb}: this verb runs on the mounted face's content keys, mint and documents; a sibling face's session holds none here.`);
           }
@@ -1357,17 +1360,21 @@ const bareKey = (did: string): string => did.trim().toLowerCase().replace(/^0x/,
  */
 function faceInputsDigest(face: Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "atom" | "personaGroupId" | "faceAnchor" | "personaKel" | "deviceEdge" | "signerDid" | "registerBags" | "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret">): string {
   const encode = (text: string): Uint8Array => new TextEncoder().encode(text);
+  // Bytes anywhere enter as their digest; key order and the bag list's order carry no meaning.
+  const plain = (v: unknown): unknown => v instanceof Uint8Array ? sha256HexBytesSync(v)
+    : Array.isArray(v) ? v.map(plain)
+    : v !== null && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, plain(x)])) : v;
   const fields = {
-    atom: face.atom ? bareKey(face.atom.key) : null, group: face.personaGroupId ?? null, anchor: face.faceAnchor ?? null,
-    kel: face.personaKel ?? null, edge: face.deviceEdge ?? null, signer: face.signerDid ?? null, cabal: face.meshCabalDocIdHex ?? null,
-    bags: face.registerBags,
+    atom: face.atom ? bareKey(face.atom.key) : null, group: face.personaGroupId ?? null, anchor: plain(face.faceAnchor ?? null),
+    kel: plain(face.personaKel ?? null), edge: plain(face.deviceEdge ?? null), signer: face.signerDid ?? null, cabal: face.meshCabalDocIdHex ?? null,
+    bags: [...new Set(face.registerBags)].sort(),
     veil: face.veilArchiveBytes ? sha256HexBytesSync(face.veilArchiveBytes) : null,
     address: face.faceAddressSecret ? sha256HexBytesSync(encode(face.faceAddressSecret)) : null,
   };
-  return sha256HexBytesSync(encode(JSON.stringify(fields, (_k, v: unknown) => v instanceof Uint8Array ? sha256HexBytesSync(v) : v)));
+  return sha256HexBytesSync(canonicalJsonBytes(fields));
 }
 
-/** True for a claim that names a DID or a bare 32-byte key, false for a label. */
+/** True for a claim that names a DID or a bare 32-byte key, false for a label that names no face. */
 const namesADid = (claim: string): boolean => /^did:/i.test(claim.trim()) || /^[0-9a-f]{64}$/.test(bareKey(claim));
 
 /**
@@ -1387,9 +1394,7 @@ export function presenterFor(input: {
   if (typeof named === "string" && named.length > 0 && named !== auth.personaGroupId && !auth.holds?.(named)) {
     throw new Error(`this vessel wears ${auth.personaGroupId}; name it or wear ${named} first`);
   }
-  // A claim naming a DID other than the place stays that DID. A claim naming no DID at all is the main thread's own label
-  // for its push (`persona`, `switcher`, `disk-projector`…): the channel carries the authority, so it presents as the place does.
-  if (namesADid(claim) && bareKey(claim) !== bareKey(auth.placeVerifyingKey)) return claim;
+  if (bareKey(claim) !== bareKey(auth.placeVerifyingKey)) return claim;
   if (typeof named === "string" && named.length > 0 && named !== auth.personaGroupId) {
     const atom = auth.atomOf?.(named);
     if (!atom) throw new Error(`no atom for held group ${named}`);

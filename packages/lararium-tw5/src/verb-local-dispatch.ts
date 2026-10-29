@@ -102,6 +102,7 @@ export async function runLocalVerb(invocation: Verb, opts: RunLocalVerbOptions):
   }
 
   const presenter = opts.presenterOf?.(invocation) ?? invocation.requestedBy;
-  const cap = makeCapVerify(opts.verifier, presenter, opts.localOf?.(invocation) ?? false);
-  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, presenter, ...(opts.signal ? { signal: opts.signal } : {}) });
+  const local = opts.localOf?.(invocation) ?? false;
+  const cap = makeCapVerify(opts.verifier, presenter, local);
+  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, presenter, local, ...(opts.signal ? { signal: opts.signal } : {}) });
 }
