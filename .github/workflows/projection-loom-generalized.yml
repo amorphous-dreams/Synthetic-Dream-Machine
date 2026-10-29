@@ -59,7 +59,7 @@ jobs:
           python -m pip install -r requirements-ci.txt
           python -m pip install --no-deps -e .
           python -m pip check
-      - run: python -m pytest -q tests/test_generalized_*.py tests/test_hephaestus_relational.py tests/test_hephaestus_incremental.py tests/test_hephaestus_regulative.py tests/test_capability_producer.py tests/test_hephaestus_census.py tests/test_hephaestus_multiview.py tests/test_hephaestus_funnels.py tests/test_hephaestus_registration.py tests/test_hephaestus_registered_multiview.py tests/test_hephaestus_matched_trial.py tests/test_hephaestus_steering.py
+      - run: python -m pytest -q tests/test_generalized_*.py tests/test_hephaestus_relational.py tests/test_hephaestus_incremental.py tests/test_hephaestus_regulative.py tests/test_capability_producer.py tests/test_hephaestus_census.py tests/test_hephaestus_admission.py tests/test_hephaestus_multiview.py tests/test_hephaestus_funnels.py tests/test_hephaestus_registration.py tests/test_hephaestus_registered_multiview.py tests/test_hephaestus_matched_trial.py tests/test_hephaestus_steering.py
       - run: python scripts/check_architecture.py
       - name: Source import/capability responsibility census
         run: python scripts/hephaestus_census.py --out out/hephaestus-census.json
@@ -106,7 +106,7 @@ jobs:
           python -m pip install --no-deps -e .
           python -m pip check
       - name: Headless real OpenUSD and native STEP reimport
-        run: python -m pytest -q tests/test_hephaestus_usd.py tests/test_hephaestus_editor.py tests/test_hephaestus_crucible.py tests/test_hephaestus_variants.py tests/test_hephaestus_location_workspace.py tests/test_hephaestus_native_support.py tests/test_hephaestus_support_workspace.py tests/test_hephaestus_registered_inventory.py
+        run: python -m pytest -q tests/test_hephaestus_usd.py tests/test_hephaestus_editor.py tests/test_hephaestus_crucible.py tests/test_hephaestus_variants.py tests/test_hephaestus_location_workspace.py tests/test_hephaestus_native_support.py tests/test_hephaestus_support_workspace.py tests/test_hephaestus_location_admission.py tests/test_hephaestus_transfer.py tests/test_hephaestus_transfer_adversarial.py tests/test_hephaestus_location_review.py
       - name: Independent source/pose, bearing, causal edit and native USD holistic crucible
         run: |
           mkdir -p out
