@@ -79,6 +79,15 @@ def main(argv=None):
     p.add_argument('--workspace',type=Path,required=True)
     p.add_argument('--proposal',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('location-review',help='Record an attributed decision about a verified native location')
+    p.add_argument('--workspace',type=Path,required=True)
+    p.add_argument('--actor',required=True)
+    p.add_argument('--decision',choices=('accept','abstain','dissent'),required=True)
+    p.add_argument('--reason',default='')
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('location-review-verify',help='Verify an attributed location review receipt')
+    p.add_argument('--workspace',type=Path,required=True)
+    p.add_argument('--receipt',type=Path,required=True)
     p=commands.add_parser('location-verify',help='Reaudit source, causal and native location evidence')
     p.add_argument('--workspace',type=Path,required=True)
     p=commands.add_parser('registered-ablation',
@@ -423,6 +432,17 @@ def main(argv=None):
         else:
             result = validate_variants(args.comparison)
         print(json.dumps(result, indent=2))
+        return result
+    if args.command in ('location-review','location-review-verify'):
+        from .location_review import review_location, verify_location_review
+        if args.command == 'location-review':
+            result=review_location(args.workspace,actor=args.actor,
+                        decision=args.decision,reason=args.reason,destination=args.out)
+        else:
+            data=json.loads(args.receipt.read_text(encoding='utf8'))
+            result={'valid':verify_location_review(args.workspace,data),
+                    'automatic_promotion':False}
+        print(json.dumps(result,indent=2))
         return result
     if args.command in ('location-init','location-edit','location-verify','location-support'):
         from .location_workspace import create_workspace, edit_workspace, verify_workspace, support_workspace

@@ -166,6 +166,54 @@ def main(argv=None):
             "--blend", group_blend, "--out", group_reloaded)
         if "OperatorNote" not in group_reload or not group_reloaded.is_file():
             raise RuntimeError("Coupled support reload dropped operator-owned objects")
+        # N6: actual Blender translates one dependent into a replacement bearing.
+        # Parent transfer stays explicit operator intent, never inferred from pixels.
+        transfer_doc = {"schema":"projection-loom/scene-declaration",
+                        "location":"held-out-blender-support-transfer",
+                        "meters_per_unit":1.0,"assemblies":[
+                            {"entity_id":"old","growth_program":{"nodes":[
+                                {"key":"root","op":"foundation","size":[4,4,2]}]}},
+                            {"entity_id":"new","translation":[9,0,0],
+                             "growth_program":{"nodes":[
+                                 {"key":"root","op":"foundation","size":[4,4,2]}]}},
+                            {"entity_id":"child","translation":[0,0,2],
+                             "growth_program":{"nodes":[
+                                 {"key":"root","op":"foundation","size":[2,2,1]}]}}]}
+        transfer_inventory = LocationStack(transfer_doc["location"])
+        transfer_inventory.add_frame(Frame("authored", "local3d", "m"))
+        transfer_root=work/"transfer-root"
+        create_workspace(transfer_inventory,transfer_doc,transfer_root)
+        transfer_source=RelationalGround.load(transfer_root/"ground.json")
+        transfer_proof=propose_support(transfer_source,transfer_root/"scene","old","child")
+        transfer_bearing=work/"transfer-bearing"
+        transfer_base=support_workspace(transfer_root,transfer_proof,transfer_bearing)
+        transfer_scene=transfer_bearing/"scene"
+        transfer_blend=work/"transfer.blend"
+        assert "LOOM_BLENDER_IMPORT" in invoke("import","--bundle",transfer_scene,
+                                               "--blend",transfer_blend,"--operator-note")
+        transfer_proposal=work/"transfer-proposal.json"
+        capture=invoke("capture","--bundle",transfer_scene,
+                       "--ground",transfer_bearing/"ground.json",
+                       "--blend",transfer_blend,"--proposal",transfer_proposal,
+                       "--test-move","child:9,0,0","--transaction","support-transfer",
+                       "--support-transfer","child:old:new",
+                       "--actor","blender-transfer-test")
+        assert "LOOM_BLENDER_PROPOSAL" in capture
+        authored=json.loads(transfer_proposal.read_text(encoding="utf8"))
+        assert authored["support_transfers"] == [
+            {"child":"child","old_parent":"old","new_parent":"new"}]
+        transfer_out=work/"transfer-regenerated"
+        transfer_accepted=edit_workspace(transfer_bearing,authored,transfer_out)
+        assert verify_workspace(transfer_out)["valid"]
+        transfer_reloaded=work/"transfer-reloaded.blend"
+        transfer_log=invoke("reload","--bundle",transfer_out/"revision"/"scene",
+                            "--blend",transfer_blend,"--out",transfer_reloaded)
+        assert "OperatorNote" in transfer_log and transfer_reloaded.is_file()
+        from projection_loom.location_review import review_location, verify_location_review
+        reviewed=review_location(transfer_out,actor="operator-review-test",
+                                 decision="abstain",reason="pending aesthetic judgment",
+                                 destination=work/"transfer-review.json")
+        assert verify_location_review(transfer_out,reviewed)
         report = {"schema": "projection-loom/blender-native-editor-witness",
                   "blender_executable": blender,
                           "editor": "Blender",
@@ -182,6 +230,9 @@ def main(argv=None):
                           "coupled_support_native_reaudited": 2,
                           "coupled_support_native_cache_reused": 1,
                           "coupled_support_operator_note_preserved": True,
+                          "transfer_workspace":transfer_accepted["sha256"],
+                          "transfer_operator_note_preserved":True,
+                          "transfer_review_sha256":reviewed["sha256"],
                           "actor": "blender-automated-test",
                           "real_editor": True, "exact_cad_reaudited": 1}
         (work / "blender-witness.json").write_text(

@@ -1,3 +1,15 @@
+## N6 Living Location · implementation pushed before hosted CI · 2026-10-29
+
+Operator direction: implement N6-A through N6-E consecutively **before starting hosted CI**. Source branch `feature/green-jello-dinosaur-5--projection-loom`; boot read from `feature/green-jello-dinosaur-5` SHA `b68d2034`. Treat all N6 statuses as **IMPLEMENTED / UNVERIFIED** until the final exact-head Actions finish; do not interpret a commit as a green witness.
+
+- **N6-A:** move seed and independently registered observation source/frame admission into `LocationStack.admit_seed_bundle` and `LocationStack.admit_registered_views`; keep the respective typed seed and camera decoders, eliminate duplicate inventory constructors, preserve attribution, digests and measured-vs-provisional authority.
+- **N6-B:** `editor_proposals` accepts an explicit `support-transfer` combining a dependent's native translation and required support `reparent` under one serial causal batch. Validate old STEP bearing before movement, regenerate STEP/USD with selective reuse, validate new bearing and all remaining required links, retain complete immutable parent ground and original scene for independent replay.
+- **N6-C:** reject transfers lacking matching authored movements or forged reparent sequences; extend adversarial causal rollback and original/replacement contact verification. Bound verification to exact source- and native-scene content.
+- **N6-D:** actual Blender capture accepts `--transaction support-transfer --support-transfer child:old:new` only as operator-authored intent. A real third Blender import/capture/regenerate/reload case and persisted operator-owned note are part of the hosted witness. `location_review.py` records actor, decision, optional reason (mandatory dissent), native scene and workspace digests, explicitly without winner/canon promotion.
+- **N6-E:** expose `location-review` and `location-review-verify` CLI, retain all existing live alpha consumers pending fresh CI census rather than unsafe wholesale deletion. Dedicated native tests cover new transfer/refusals and review; actual Unreal Editor remains BLOCKED, not substituted with OpenUSD export.
+
+**Acceptance:** after N6-E lands, run the dedicated generalized OpenUSD/STEP/Blender integration, full CAD tests, repo CI and held-out. Reconcile every failing gate on its exact head; no artistic winner, load certification, Elyncia canon promotion, or implicit PR merge. Keep old evidence immutable.
+
 # Loom of Hephaestus · OODA-HA executable kanban
 
 ## N5-B verified implementation checkpoint · 2026-10-29
