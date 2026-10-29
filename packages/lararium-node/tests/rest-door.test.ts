@@ -10,6 +10,10 @@
  *       peer's presence changing nothing, and never on a clock: the document rests when its bytes land.
  *   D7  once the leg stands, a document no peer carries reads unavailable and the ask rejects; a vessel that stands
  *       down ends a hold on a leg that never stands.
+ *   D9  a document the island imports under a derived id the vessel already asked for and read unavailable still rests: the
+ *       door waits for the vessel's copy to hold the heads the island names, and the cached unavailable settles nothing.
+ *       CONTROL: with no earlier ask the same ask rests.
+ *   D10 the heads the island names ride the ask to the vessel's door.
  *   D5  the vessel's own act rests the document in its store before it resolves: a second reader of the same
  *       directory finds the document's bytes the instant the act returns.   control: before the act, it finds none
  */
@@ -18,7 +22,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo, type DocumentId } from "@automerge/automerge-repo";
-import { attachMessageChannelSync, emptyLarDoc, makeIslandRepo, type LarDoc } from "@lararium/mesh";
+import { attachMessageChannelSync, emptyLarDoc, makeIslandRepo, replicaHeads, type LarDoc } from "@lararium/mesh";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import { restInStore } from "../src/open-node-vessel.js";
@@ -163,5 +167,46 @@ describe("the rest door", () => {
       await restEvery();
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+
+  for (const earlierAsk of [true, false]) {
+    test(`D9 — ${earlierAsk ? "an earlier unavailable read of the derived id settles nothing" : "CONTROL: no earlier ask"}; the door waits on the heads the island names`, async () => {
+      const dir = mkdtempSync(join(tmpdir(), "rest-door-"));
+      try {
+        const vessel = restingRepo(dir, { saveDebounceRate: 60_000 });
+        const channel = new MessageChannel();
+        const island = makeIslandRepo({ syncPort: channel.port2 as unknown as MessagePort });
+        let peerId = "";
+        const ready = new Promise<void>((resolve) => {
+          attachMessageChannelSync(vessel, channel.port1 as unknown as MessagePort, (id) => { peerId = id; resolve(); });
+        });
+        await ready;
+        const bytes = (await import("@automerge/automerge")).save((await import("@automerge/automerge")).from({ schemaVersion: "0.1", tiddlers: {} }));
+        const derived = (await import("@automerge/automerge-repo")).generateAutomergeUrl();
+        const id = derived.slice("automerge:".length);
+        if (earlierAsk) {
+          // The vessel asked for the derived id before the island held it: the query settles unavailable and stays cached.
+          await expect(vessel.find(derived)).rejects.toThrow(/is unavailable/);
+        }
+        const handle = island.import<LarDoc>(bytes, { docId: id as never });
+        await handle.whenReady();
+        const heads = { [id]: replicaHeads(handle) };
+        const onClose = (): (() => void) => () => {};
+        await restInStore(vessel, [id as DocumentId], { ready: Promise.resolve(peerId), onClose }, heads);
+        expect((await new DurableNodeFSStorageAdapter(dir).loadRange([id as DocumentId])).length).toBeGreaterThan(0);
+        await island.shutdown();
+        channel.port1.close(); channel.port2.close();
+      } finally {
+        await restEvery();
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+  }
+
+  test("D10 — the heads the island names reach the vessel's door on the wire", async () => {
+    const seen: unknown[] = [];
+    setRestDoor(async (ids, heads) => { seen.push([...ids], heads); });
+    await vesselRestAsker(wired().port)(["doc-a"], undefined, { "doc-a": ["h1", "h2"] });
+    expect(seen).toEqual([["doc-a"], { "doc-a": ["h1", "h2"] }]);
   });
 });

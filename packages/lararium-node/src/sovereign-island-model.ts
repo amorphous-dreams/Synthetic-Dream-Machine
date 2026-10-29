@@ -121,7 +121,7 @@ export function vesselDyadAsker(
  * vessel's Repo saves it. `restOnVessel` posts `doc:rest` and resolves on `doc:rested` with `rested: true`; an
  * unrested answer, or none inside this side's own patience, rejects, so the caller records no pointer.
  */
-export function vesselRestAsker(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }, patienceMs: number = DOC_REST_PATIENCE_MS, gateClear?: Promise<void>): (documentIds: readonly string[], gateForCall?: Promise<void>) => Promise<void> {
+export function vesselRestAsker(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }, patienceMs: number = DOC_REST_PATIENCE_MS, gateClear?: Promise<void>): (documentIds: readonly string[], gateForCall?: Promise<void>, heads?: Record<string, string[]>) => Promise<void> {
   const pending = new Map<string, (answer: IslandMsg_DocRested | null) => void>();
   port.on("message", (raw: unknown) => {
     const m = raw as Partial<IslandMsg_DocRested> | null;
@@ -132,7 +132,7 @@ export function vesselRestAsker(port: { postMessage(msg: unknown): void; on(ev: 
     settle(m as IslandMsg_DocRested);
   });
   let seq = 0;
-  const ask = (documentIds: readonly string[]) => {
+  const ask = (documentIds: readonly string[], heads?: Record<string, string[]>) => {
     let cancel = () => {};
     const promise = new Promise<void>((resolve, reject) => {
       const requestId = `rest-${process.pid}-${++seq}`;
@@ -147,19 +147,19 @@ export function vesselRestAsker(port: { postMessage(msg: unknown): void; on(ev: 
       };
       pending.set(requestId, settleWith);
       cancel = () => { pending.delete(requestId); clearTimeout(timer); };
-      const message: IslandMsg_DocRest = { type: "doc:rest", requestId, documentIds: [...documentIds] };
+      const message: IslandMsg_DocRest = { type: "doc:rest", requestId, documentIds: [...documentIds], ...(heads ? { heads } : {}) };
       port.postMessage(message);
     });
     return { promise, cancel };
   };
-  return async (documentIds, gateForCall) => {
+  return async (documentIds, gateForCall, heads) => {
     const gate = gateForCall ?? gateClear;
-    if (!gate) { await ask(documentIds).promise; return; }
+    if (!gate) { await ask(documentIds, heads).promise; return; }
     // A reply heard during proof remains provisional, including an early refusal.
-    const provisional = ask(documentIds);
+    const provisional = ask(documentIds, heads);
     void provisional.promise.catch(() => undefined);
     try { await gate; } finally { provisional.cancel(); }
-    await ask(documentIds).promise;
+    await ask(documentIds, heads).promise;
   };
 }
 
