@@ -500,6 +500,30 @@ describe("UDS session switch", () => {
       expect(closed).toBe(true);
     } finally { letGo(); await v.done(); }
   });
+  test("RED: a seat that closes waits out an act behind a slow ledger flush, and the test waits on the act's own start; CONTROL: the held act has not run before the flush lets go", async () => {
+    let letGo!: () => void, flushed!: () => void;
+    const v = await stand("session-act-slow-flush", {
+      actHold: new Promise<void>((resolve) => { letGo = resolve; }),
+      flushGate: new Promise<void>((resolve) => { flushed = resolve; }),
+    });
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      a.sock.write(JSON.stringify({ op: "session:act", ...envA, requestId: "long", act: "host.roll", args: {} }) + "\n");
+      for (let n = 0; n < 200; n++) await new Promise((resolve) => setImmediate(resolve));
+      expect(v.ran).toHaveLength(0);                                         // CONTROL: the slow flush holds the act back
+      flushed();
+      await v.ranFirst;                                                      // the act's own start, not a count of turns
+      expect(v.ran).toHaveLength(1);
+      let closed = false;
+      const closing = v.channel.detach().then(() => { closed = true; });
+      for (let n = 0; n < 20; n++) await new Promise((resolve) => setImmediate(resolve));
+      expect(closed).toBe(false);
+      letGo();
+      await closing;
+      expect(closed).toBe(true);
+    } finally { flushed(); letGo(); await v.done(); }
+  });
   test("RED: an act naming its face by handleIndex binds to the session's face: another face refuses face-row-other-face, and the act carries handleIndex alone", async () => {
     const v = await stand("session-act-handle");
     try {
