@@ -168,9 +168,26 @@ export function assertWaystoneCustody(
   if (pronaos.length > 0) throw waystoneRefusal(pronaos.join(", "));
 }
 
+/**
+ * A refused declaration names its cure. The Web and read (flow) origins each ride one environment variable
+ * or one config key, and `sameOrigin` covers both; a person at a terminal reading the boot fault cures it
+ * from the line itself (the Founding Walk, W2: a hearth stood bare on a desk read "Web origin must be
+ * declared" and no carrier named a declaration).
+ */
+const ORIGIN_DECLARATIONS: Readonly<Record<string, { env: string; key: string }>> = {
+  Web:  { env: "LAR_WEB_ORIGIN",  key: "origins.web" },
+  flow: { env: "LAR_FLOW_ORIGIN", key: "origins.flow" },
+};
+
 function explicitOrigin(value: string | null | undefined, label: string): string {
   const origin = value?.trim().replace(/\/+$/, "");
-  if (!origin) throw new Error(`[origin composition] ${label} origin must be declared`);
+  if (!origin) {
+    const declaration = ORIGIN_DECLARATIONS[label];
+    const cure = declaration
+      ? `: set ${declaration.env}=<origin> (or \`${declaration.key}\` in the root's config.json), or LAR_SAME_ORIGIN=true (\`origins.sameOrigin\`) when every surface shares the relay face's origin`
+      : "";
+    throw new Error(`[origin composition] ${label} origin must be declared${cure}`);
+  }
   return origin;
 }
 

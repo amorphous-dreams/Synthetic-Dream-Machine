@@ -80,7 +80,7 @@ import { mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
 import { mountReachFaceWatch, reachFaceBootNotice } from "./reach-face-watch.js";
 import { loadLaresConfig, originDeclaration, hermWaymarkDeclared } from "./lares-config.js";
-import { composePronaosFromEnv } from "./pronaos-composition.js";
+import { composePronaosFromEnv, pronaosShoreBootNotice } from "./pronaos-composition.js";
 import { houseOriginsOf } from "./pronaos-adapter.js";
 import { mountHermWaymark } from "./bulb-read-face.js";
 import { readBulbArtifact } from "./bulb.js";
@@ -289,6 +289,9 @@ async function main(): Promise<void> {
   // standing — so the descriptor refuses a mirror that would share an origin with the house.
   const houseOrigins = houseOriginsOf(reachFaces, originCompositions);
   const pronaos = composePronaosFromEnv({ httpServer, genesisDir, dispatcher, standing: askedStanding, houseOrigins });
+  // NO SHORE EARNS A LOUD NOTICE AT BOOT, as no reach face does: a lararium whose Web origin answers no page says so.
+  const shoreNotice = pronaosShoreBootNotice(askedStanding, pronaos);
+  if (shoreNotice !== null) console.log(`[lararium] ${shoreNotice}`);
   // THE RUNG LADDER (pronaos#/the-rung-ladder). A herm stands SILENT by default: it hands over its bulb by CID and
   // describes nothing. `herm.waymark` in the node config lifts it to the WAYMARK rung — one unsigned descriptor at
   // `/.well-known/lar` naming its bulb CID. The temple's descriptor is the lararium's own Pronaos, so a lararium
