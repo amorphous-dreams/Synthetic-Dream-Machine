@@ -121,12 +121,12 @@ test("B1/B2 — a browser vessel's second and third boot hold every Document's h
     const one = await settled(page);
 
     // CONTROL: a real edit through the page moves a Document's heads.
-    const wiki = page.locator("#projection");
+    const wiki = page.locator("#mirror");
     await wiki.evaluate((host) => (host.shadowRoot!.querySelector('button[title="Create a new tiddler"]') as HTMLElement).click());
     await wiki.locator("input.tc-titlebar").fill("Second Boot Control");
     await wiki.locator("textarea.tc-edit-texteditor-body").fill("the control writes between boots");
     await wiki.locator('button[title="Confirm changes to this tiddler"]').click();
-    await page.waitForFunction(() => document.querySelector("#projection")?.shadowRoot?.querySelector(".lar-projection")?.textContent?.includes("Second Boot Control") ?? false, undefined, { timeout: 30_000 });
+    await page.waitForFunction(() => document.querySelector("#mirror")?.shadowRoot?.querySelector(".lar-mirror")?.textContent?.includes("Second Boot Control") ?? false, undefined, { timeout: 30_000 });
     const edited = await settled(page);
     const moved = [...edited.heads].filter(([k, h]) => one.heads.has(k) && one.heads.get(k) !== h).map(([k]) => k);
     assert.ok(moved.length > 0, "CONTROL: the saved edit moves the heads of a Document the first boot already held");

@@ -33,7 +33,7 @@ let browser: Browser | null = null;
 let scratch = "";
 let url = "";
 const logs: string[] = [];
-const wiki = (p: Page) => p.locator("#projection");
+const wiki = (p: Page) => p.locator("#mirror");
 
 async function awaitLive(p: Page): Promise<void> {
   const row = await p.waitForFunction(() => {
@@ -42,7 +42,7 @@ async function awaitLive(p: Page): Promise<void> {
     return t.startsWith("live") || t.startsWith("boot failed") ? t : false;
   }, undefined, { timeout: WAIT }).then((h) => h.jsonValue()).catch(() => "never live");
   expect(row, `${logs.slice(-60).join("\n")}\n--- hearth ---\n${hearth?.bootLog().slice(-2000)}`).toMatch(/^live/);
-  await p.waitForFunction(() => (document.querySelector("#projection")?.shadowRoot?.querySelector(".lar-projection")?.childElementCount ?? 0) > 0, undefined, { timeout: WAIT });
+  await p.waitForFunction(() => document.querySelector("#mirror")?.getAttribute("data-lar-shown") === "mirror" && (document.querySelector("#mirror")?.shadowRoot?.querySelector(".lar-mirror")?.childElementCount ?? 0) > 0, undefined, { timeout: WAIT });
 }
 
 async function openPage(context: BrowserContext): Promise<Page> {
@@ -66,7 +66,7 @@ async function confirmSettled(p: Page, title: string): Promise<boolean> {
     window.dispatchEvent(leave);
     return leave.defaultPrevented;
   });
-  await p.waitForFunction((sel) => !!document.querySelector("#projection")?.shadowRoot?.querySelector(sel), frameOf(title, false), { timeout: WAIT });
+  await p.waitForFunction((sel) => !!document.querySelector("#mirror")?.shadowRoot?.querySelector(sel), frameOf(title, false), { timeout: WAIT });
   return asksHold;
 }
 
@@ -85,7 +85,7 @@ async function openByTitle(p: Page, title: string): Promise<boolean> {
   await link.waitFor({ timeout: 30_000 }).catch(() => undefined);
   if (await link.count() === 0) return false;
   await link.click();
-  await p.waitForFunction((sel) => !!document.querySelector("#projection")?.shadowRoot?.querySelector(sel), frameOf(title, true), { timeout: 30_000 }).catch(() => undefined);
+  await p.waitForFunction((sel) => !!document.querySelector("#mirror")?.shadowRoot?.querySelector(sel), frameOf(title, true), { timeout: 30_000 }).catch(() => undefined);
   return await paintedBody(p, title) !== null;
 }
 
