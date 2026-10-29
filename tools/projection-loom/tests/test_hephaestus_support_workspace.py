@@ -84,3 +84,78 @@ def test_support_source_replay_rejects_stale_or_mutated_claims(tmp_path):
     receipt.write_text(raw.replace('"upper"', '"alien"', 1))
     with pytest.raises(ValueError, match="receipt changed"):
         verify_workspace(supported)
+
+
+def test_real_support_group_move_reaudits_two_native_bodies_and_reuses_third(tmp_path):
+    from projection_loom.location_stack import Frame, LocationStack
+    from projection_loom.location_workspace import create_workspace
+    inventory = LocationStack("bounded-structural-relocation")
+    inventory.add_frame(Frame("source-local3d", "local3d", "m"))
+    original = {"schema": "projection-loom/scene-declaration",
+                "location": inventory.location_id, "meters_per_unit": 1.0,
+                "assemblies": [
+                    {"entity_id": "lower", "growth_program": {"nodes": [
+                        {"key": "root", "op": "foundation", "size": [5, 5, 2]}]}},
+                    {"entity_id": "upper", "translation": [0, 0, 2],
+                     "growth_program": {"nodes": [
+                        {"key": "root", "op": "foundation", "size": [3, 3, 1]}]}},
+                    {"entity_id": "independent", "translation": [12, 0, 0],
+                     "growth_program": {"nodes": [
+                        {"key": "root", "op": "foundation", "size": [2, 2, 3]}]}}]}
+    first = tmp_path / "original"
+    create_workspace(inventory, original, first)
+    prior = RelationalGround.load(first / "ground.json")
+    relation = propose_support(prior, first / "scene", "lower", "upper")
+    supported = tmp_path / "supported"
+    state = support_workspace(first, relation, supported)
+    ground = RelationalGround.load(supported / "ground.json")
+    request = {"schema": "projection-loom/editor-proposal", "editor": "cli",
+               "actor": "operator-group", "bundle_sha256": state["scene_sha256"],
+               "observed_frontier": list(ground.frontier),
+               "transaction": "support-group",
+               "edits": [{"kind": "translate", "entity_id": "lower",
+                          "delta": [4, 0, 0]},
+                         {"kind": "translate", "entity_id": "upper",
+                          "delta": [4, 0, 0]}]}
+    moved = tmp_path / "moved-group"
+    result = edit_workspace(supported, request, moved)
+    assert result["change_kind"] == "editor"
+    assert verify_workspace(moved)["valid"]
+    audit = json.loads((moved / "revision" / "reconciliation.json").read_text())
+    assert audit["transaction_mode"] == "support-group"
+    assert len(audit["causal_batch"]["operations"]) == 2
+    assert audit["invalidation_plan"]["native_reaudited"] == 2
+    assert audit["invalidation_plan"]["actual_cache_reuse"] == 1
+    next_ground = RelationalGround.load(moved / "revision" / "ground.json")
+    assert next_ground.snapshot()["entities"]["lower"]["matrix"][3] == 4
+    assert next_ground.snapshot()["entities"]["upper"]["matrix"][3] == 4
+    assert next_ground.snapshot()["entities"]["independent"]["matrix"][3] == 12
+    assert verify_workspace(supported)["valid"]
+    clone = json.loads(json.dumps(request))
+    clone["edits"][1]["delta"] = [0, 0, 4]
+    with pytest.raises(ValueError, match="share an exact rigid delta"):
+        edit_workspace(supported, clone, tmp_path / "mismatch")
+    partial = json.loads(json.dumps(request))
+    partial["edits"] = partial["edits"][:1]
+    with pytest.raises(ValueError, match="at least two members"):
+        edit_workspace(supported, partial, tmp_path / "partial")
+    p = moved / "editor-source-ground.json"
+    raw = p.read_text()
+    p.write_text(raw.replace('"construct"', '"observation"', 1))
+    with pytest.raises(ValueError, match="digest"):
+        verify_workspace(moved)
+
+
+def test_support_group_refuses_unconnected_extra_body(tmp_path):
+    parent, _, relation = _entered(tmp_path)
+    supported = tmp_path / "supported"
+    state = support_workspace(parent, relation, supported)
+    ground = RelationalGround.load(supported / "ground.json")
+    request = {"schema": "projection-loom/editor-proposal", "editor": "cli",
+               "actor": "operator", "bundle_sha256": state["scene_sha256"],
+               "observed_frontier": list(ground.frontier),
+               "transaction": "support-group",
+               "edits": [{"kind": "translate", "entity_id": "lower", "delta": [0, 0, 0]},
+                         {"kind": "translate", "entity_id": "upper", "delta": [1, 0, 0]}]}
+    with pytest.raises(ValueError, match="share an exact rigid delta"):
+        edit_workspace(supported, request, tmp_path / "refused")

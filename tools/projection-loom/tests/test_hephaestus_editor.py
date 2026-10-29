@@ -82,7 +82,7 @@ def test_editor_rejects_stale_conflicting_frontier(tmp_path):
     ground, _ = ground.apply({"kind": "transform", "actor": "other-editor",
                              "target": "east", "frontier": list(ground.frontier),
                              "payload": {"matrix": matrix, "frame": "local3d"}})
-    with pytest.raises(ValueError, match="Conflicting concurrent|Stale semantic revision|ground transform differs"):
+    with pytest.raises(ValueError, match="Conflicting concurrent|Stale semantic revision|ground transform differs|current causal frontier"):
         apply_proposal(original, ground, source, first, tmp_path / "conflict")
 
 

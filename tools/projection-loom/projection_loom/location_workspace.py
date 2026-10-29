@@ -164,6 +164,8 @@ def _manifest(out, inventory, declaration, ground, scene, *, parent=None,
                      "parent_manifest": "parent-manifest.json" if parent else None,
                      "proposal": "proposal.json" if proposal is not None else None,
                      "reconciliation": "revision/reconciliation.json" if reconciliation is not None else None,
+                     "editor_source_ground": "editor-source-ground.json"
+                         if proposal is not None else None,
                      "native_support_proposal": "native-support-proposal.json"
                          if native_support_proposal is not None else None,
                      "support_source_ground": "support-source-ground.json"
@@ -232,7 +234,7 @@ def verify_workspace(directory, *, verify_sources=True):
     paths = m["paths"]
     required = {"inventory", "declaration", "ground", "scene", "session",
                 "parent_manifest", "proposal", "reconciliation",
-                "native_support_proposal", "support_source_ground"}
+                "editor_source_ground", "native_support_proposal", "support_source_ground"}
     if set(paths) != required:
         raise ValueError("Workspace has unexpected path roles")
     for value in paths.values():
@@ -303,6 +305,7 @@ def verify_workspace(directory, *, verify_sources=True):
     elif kind=="editor":
         if (m["parent_workspace_sha256"] is None or
                 paths["proposal"] is None or paths["reconciliation"] is None or
+                paths["editor_source_ground"] is None or
                 m["native_support_sha256"] is not None):
             raise ValueError("Editor workspace needs bounded causal proposal receipts")
         proposal, receipt = (_read(out / paths["proposal"]),
@@ -315,9 +318,17 @@ def verify_workspace(directory, *, verify_sources=True):
                 or receipt["actor"] != proposal["actor"]
                 or receipt["editor"] != proposal["editor"]):
             raise ValueError("Workspace edit and native regeneration disagree")
-        if not all(event["event_id"] in ground.events
-                   for event in receipt["operations"]):
-            raise ValueError("Edited causal events are missing from workspace ground")
+        prior=RelationalGround.load(out / paths["editor_source_ground"])
+        if prior.to_dict()["sha256"] != parent_manifest["ground_sha256"]:
+            raise ValueError("Edited source ground is not the authenticated parent ground")
+        batch = receipt.get("causal_batch")
+        if (not isinstance(batch, dict)
+                or receipt["operations"] != batch.get("receipts")
+                or receipt.get("transaction_mode") != proposal.get("transaction", "independent")
+                or batch.get("source_frontier") != proposal["observed_frontier"]):
+            raise ValueError("Editor causal batch differs from authored proposal")
+        if prior.verify_batch(batch).to_dict() != ground.to_dict():
+            raise ValueError("Edited causal ancestry is not independently replayable")
     elif kind=="native-support":
         if (m["parent_workspace_sha256"] is None or
                 m["proposal_sha256"] is not None or
@@ -364,6 +375,7 @@ def edit_workspace(previous, proposal, destination):
         save_once(out / "parent-manifest.json", origin)
         save_once(out / "inventory.json", inventory.to_dict())
         save_once(out / "proposal.json", proposal)
+        ground.save(out / "editor-source-ground.json")
         receipt = apply_proposal(declaration, ground, parent / paths["scene"],
                                  proposal, out / "revision")
         revised = _read(out / "revision" / "declaration.json")
