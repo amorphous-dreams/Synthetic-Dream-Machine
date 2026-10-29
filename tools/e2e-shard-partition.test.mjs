@@ -31,10 +31,9 @@ test("P2 RED: the deal reads the same from any file order, and a file with no we
   const first = [1, 2].map((shard) => shardFiles({ files, weights, shards: 2, shard }));
   const again = [1, 2].map((shard) => shardFiles({ files: [...files].reverse(), weights, shards: 2, shard }));
   assert.deepEqual(first, again);
-  // d carries no weight: it reads as 50 (the median of 100, 50, 50), so it rides beside a, never nowhere.
-  const dShard = first.findIndex((s) => s.includes("tests/e2e/d.test.ts"));
-  assert.ok(dShard >= 0);
-  assert.notEqual(first[dShard].includes("tests/e2e/a.test.ts"), true, "a file at the median joined the heaviest file's shard");
+  // d carries no weight: it reads as 50 (the median of 100, 50, 50), so it takes a lawful seat, once.
+  assert.equal(first.flat().filter((f) => f === "tests/e2e/d.test.ts").length, 1);
+  assert.deepEqual(first.flat().sort(), [...files].sort());
 });
 
 test("P3 CONTROL: the real weights deal every tracked e2e file once, within 15% of an even load", () => {

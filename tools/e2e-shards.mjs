@@ -215,6 +215,30 @@ export function evaluateMergeGate({ shardCount, shardReports, trackedFiles }) {
   return { ok: problems.length === 0, problems, totalTests, executedFileCount: executedFiles.size };
 }
 
+// ── the deal: files to shards by measured weight ─────────────────────────────────────────────────
+
+/**
+ * Which files shard `shard` of `shards` runs. Vitest's own `--shard=k/n` deals files out by a hash of their path, so a
+ * set's heaviest files can all land in one shard (measured: 21.6 min against 11.9 min). This deals them by weight:
+ * heaviest first, each to the lightest shard so far. `weights` maps a file's name under `e2e/` to seconds; a file
+ * with no row weighs the median of the rows, so a new file lands somewhere lawful before anyone measures it.
+ * Pure and order-free: every shard's runner computes the same deal from the same tracked list.
+ */
+export function shardFiles({ files, weights = {}, shards, shard }) {
+  const known = Object.values(weights).filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
+  const median = known.length > 0 ? known[Math.floor(known.length / 2)] : 60;
+  const weigh = (f) => weights[relativeToE2eDir(f)] ?? median;
+  const order = [...files].sort((a, b) => weigh(b) - weigh(a) || (a < b ? -1 : 1));
+  const loads = Array(shards).fill(0);
+  const dealt = Array.from({ length: shards }, () => []);
+  for (const f of order) {
+    const at = loads.indexOf(Math.min(...loads));
+    dealt[at].push(f);
+    loads[at] += weigh(f);
+  }
+  return dealt[shard - 1].sort();
+}
+
 // ── reading the merge job's disk state into the pure law ──────────────────────────────────────────
 
 /**
@@ -273,6 +297,21 @@ function cliMergeVerify(args) {
   for (const problem of verdict.problems) console.error(`MERGE-VERIFY problem: ${problem}`);
 
   process.exitCode = verdict.ok ? 0 : 1;
+}
+
+/** `shard-files --set <name> --shard <k>`: the set's files for shard k, one per line, relative to the set's directory. */
+function cliShardFiles(args) {
+  const repoRoot = resolve(readFlag(args, "--repo-root") ?? ".");
+  const set = E2E_SETS.find((s) => s.name === readFlag(args, "--set"));
+  const shard = Number(readFlag(args, "--shard"));
+  if (!set || !Number.isInteger(shard) || shard < 1 || shard > set.shards) {
+    console.error("usage: e2e-shards.mjs shard-files --set <name> --shard <k> [--repo-root <dir>]");
+    process.exitCode = 1;
+    return;
+  }
+  const weights = JSON.parse(readFileSync(new URL("./e2e-shard-weights.json", import.meta.url), "utf8"))[set.name] ?? {};
+  const files = trackedE2eFiles(repoRoot, set.trackedGlob);
+  for (const f of shardFiles({ files, weights, shards: set.shards, shard })) console.log(f.startsWith(`${set.dir}/`) ? f.slice(set.dir.length + 1) : f);
 }
 
 function readFlag(args, name) {
@@ -427,10 +466,12 @@ async function main() {
   const [sub, ...rest] = process.argv.slice(2);
   const repoRoot = resolve(".");
   if (sub === "merge-verify") { cliMergeVerify(rest); return; }
+  if (sub === "shard-files") { cliShardFiles(rest); return; }
   if (sub === "sets") { for (const set of E2E_SETS) console.log(`${set.name} ${set.dir} ${set.config}`); return; }
   if (sub === "push") { await cliPush(rest, repoRoot); return; }
   console.error("usage: e2e-shards.mjs merge-verify --artifacts-dir <dir> [--repo-root <dir>]");
   console.error("       e2e-shards.mjs push <lane>");
+  console.error("       e2e-shards.mjs shard-files --set <name> --shard <k> [--repo-root <dir>]");
   console.error("       e2e-shards.mjs sets");
   process.exitCode = 1;
 }
