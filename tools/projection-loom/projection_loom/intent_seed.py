@@ -182,8 +182,3 @@ class GrowthContext:
         path=[str(x) for x in semantic_path]
         return int(_digest({"run":self.run_id,"path":path})[:16],16)
 
-
-def normalize_location(seeds: SeedBundle, intent: IntentContract):
-    """Normalize seeds through the sole source/frame admission owner."""
-    from .location_stack import LocationStack
-    return LocationStack.admit_seed_bundle(seeds, intent)

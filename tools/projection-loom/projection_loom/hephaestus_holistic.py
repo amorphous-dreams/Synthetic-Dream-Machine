@@ -11,8 +11,8 @@ import json
 from pathlib import Path
 
 from .generalized_campaign import save_once
-from .seed_adapters import image_group
-from .registered_inventory import registered_location_inventory
+from .seed_adapters import image_group, registered_views
+from .location_stack import LocationStack
 from .location_workspace import (
     create_workspace, edit_workspace, support_workspace, verify_workspace)
 from .native_support import propose_support, native_support
@@ -43,7 +43,7 @@ def run_holistic(image_manifest, declaration, lower, upper, moved, delta, output
     if any(not math.isfinite(float(v)) for v in delta):
         raise ValueError("Crucible translation must be finite")
     adapters=image_group(image_manifest)
-    inventory=registered_location_inventory(adapters,declaration["location"])
+    inventory=LocationStack.admit_registered_views(registered_views(adapters),declaration["location"])
     out=Path(output)
     if out.exists():
         raise ValueError("The held-out crucible needs a new immutable output directory")

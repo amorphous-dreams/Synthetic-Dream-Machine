@@ -3,15 +3,14 @@ import json
 from hashlib import sha256
 import pytest
 from projection_loom.location_stack import LocationStack
-from projection_loom.registered_inventory import registered_location_inventory
-from projection_loom.seed_adapters import image_group
+from projection_loom.seed_adapters import image_group, registered_views
 from projection_loom.location_workspace import create_workspace, verify_workspace
 from test_hephaestus_registered_multiview import evidence
 
 
 def test_registered_observations_become_one_attributable_location(tmp_path):
     adapters=image_group(evidence(tmp_path))
-    stack=registered_location_inventory(adapters,"held-out-multiview-site")
+    stack=LocationStack.admit_registered_views(registered_views(adapters),"held-out-multiview-site")
     assert stack.audit()["verified_registrations"]==2
     assert stack.audit()["sources"]==5  # original RGBA x2, calibration x2, survey x1
     assert stack.audit()["elements"]==2
@@ -36,14 +35,14 @@ def test_registered_observations_become_one_attributable_location(tmp_path):
 
 def test_registered_location_invalidates_on_mutated_survey_source(tmp_path):
     adapters=image_group(evidence(tmp_path))
-    stack=registered_location_inventory(adapters,"measured-village")
+    stack=LocationStack.admit_registered_views(registered_views(adapters),"measured-village")
     survey=next(s for s in stack.sources.values() if s.kind=="survey_control")
     with open(survey.locator,"a",encoding="utf8") as stream:
         stream.write("\n")
     with pytest.raises(ValueError,match="Source bytes disagree"):
         stack.verify_source_bytes()
     with pytest.raises(ValueError,match="calibration changed|Source bytes disagree"):
-        registered_location_inventory(adapters,"measured-village")
+        LocationStack.admit_registered_views(registered_views(adapters),"measured-village")
 
 
 def test_provisional_image_is_never_registered_source_truth(tmp_path):
@@ -55,4 +54,4 @@ def test_provisional_image_is_never_registered_source_truth(tmp_path):
         "kind":"image-group","views":[{"rgba":"other.png"}]}))
     adapters=image_group(manifest)
     with pytest.raises(ValueError,match="two or more"):
-        registered_location_inventory(adapters,"unmeasured-place")
+        LocationStack.admit_registered_views(registered_views(adapters),"unmeasured-place")

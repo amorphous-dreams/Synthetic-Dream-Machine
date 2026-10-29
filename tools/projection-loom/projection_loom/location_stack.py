@@ -180,7 +180,6 @@ class LocationStack:
 
     @classmethod
     def admit_seed_bundle(cls, seeds, intent):
-        """Admit typed seed testimony under the single LocationStack owner."""
         """Convert typed seeds into the existing evidence-first location substrate.
 
         Projection Loom does not infer camera poses, metric scale, or BRep existence.
@@ -207,9 +206,8 @@ class LocationStack:
 
     @classmethod
     def admit_registered_views(cls, rows, location):
-        """Admit independent measured camera/anchor testimony into one inventory."""
-        """One source ledger for all calibrated independent RGBA images and anchors."""
-        rows=list(rows)
+        """Admit independent calibrated image, camera, and anchor testimony."""
+        rows=list(rows) if rows is not None else []
         if not rows or len(rows) < 2:
             raise ValueError("Independent calibrated multiview location requires two or more cameras")
         stack=cls(location)

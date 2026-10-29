@@ -14,10 +14,10 @@ import json
 from pathlib import Path
 
 FOCUS = {
-    "location_stack": ("EXTRACT", "mixed source inventory, frames, relations, registration and native body audits"),
-    "intent_seed": ("REWRITE", "producer-neutral source and intent contracts, retaining original evidence digests"),
-    "seed_adapters": ("EXTRACT", "authored capability decoders and construction proposals behind experiment ownership"),
-    "generalized_campaign": ("REWRITE", "single-helm generic campaign orchestration, replay and evidence ownership"),
+    "location_stack": ("RETAIN", "sole source/frame admission and inventory; geometry and causal authority outside"),
+    "intent_seed": ("RETAIN", "immutable typed seeds, intent contracts and identity; no independent inventory constructor"),
+    "seed_adapters": ("RETAIN", "source decoding and authored growth offers; delegates inventory admission"),
+    "generalized_campaign": ("RETAIN", "single-helm subject-neutral campaign execution and replay; no source ledger"),
     "developmental": ("EXTRACT", "native growth and inherited site logic; replace unstable site addressing"),
     "solid": ("RETAIN", "strict native OpenCascade/CadQuery geometry and independent audits"),
     "fractal_ooda_ha": ("RETAIN", "sole five-phase decision helm, operator controls and journals"),
@@ -34,7 +34,6 @@ NEW = {
     "location_workspace": "single native/source/causal OODA-HA location boundary",
     "native_support": "exact STEP bearing-contact witness, not load certification",
     "source_registration": "independently measured camera reprojection evidence",
-    "registered_inventory": "registered source/frame testimony for native locations",
     "matched_registered_trial": "paired and repeated source-blind native experiments",
     "hephaestus_holistic": "held-out source-to-STEP-to-USD native crucible",
 }

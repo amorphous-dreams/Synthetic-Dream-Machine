@@ -1,7 +1,8 @@
 from hashlib import sha256
 from pathlib import Path
 import pytest
-from projection_loom.intent_seed import SeedEntry, SeedBundle, IntentContract, GrowthContext, normalize_location
+from projection_loom.intent_seed import SeedEntry, SeedBundle, IntentContract, GrowthContext
+from projection_loom.location_stack import LocationStack
 
 def mk(tmp_path,name,kind):
     path=tmp_path/name
@@ -18,8 +19,8 @@ def test_normalizes_same_semantic_source_order(tmp_path):
     z=mk(tmp_path,"proxy.bin","geometry-proxy")
     a,b=SeedBundle((i,g,z)),SeedBundle((z,g,i))
     assert a.identity==b.identity
-    assert normalize_location(a,intent()).to_dict()==normalize_location(b,intent()).to_dict()
-    stack=normalize_location(a,intent())
+    assert LocationStack.admit_seed_bundle(a,intent()).to_dict()==LocationStack.admit_seed_bundle(b,intent()).to_dict()
+    stack=LocationStack.admit_seed_bundle(a,intent())
     assert stack.audit()["sources"]==3
     assert stack.audit()["frames"]==2
     assert all(x.observed_as=="source" for x in stack.sources.values() if x.kind=="image_set")
@@ -58,5 +59,5 @@ def test_one_artwork_two_channels_stays_one_observation(tmp_path):
     channels=(("alpha","1"*64),("rgba","2"*64))
     grouped=SeedEntry(raw.kind,raw.content_sha256,raw.locator,raw.frame_kind,
                       raw.authority,channels)
-    stack=normalize_location(SeedBundle((grouped,)),intent())
+    stack=LocationStack.admit_seed_bundle(SeedBundle((grouped,)),intent())
     assert stack.audit()["sources"]==1

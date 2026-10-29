@@ -17,7 +17,7 @@ on:
       - 'tools/projection-loom/projection_loom/location_workspace.py'
       - 'tools/projection-loom/projection_loom/native_support.py'
       - 'tools/projection-loom/projection_loom/source_registration.py'
-      - 'tools/projection-loom/projection_loom/registered_inventory.py'
+      - 'tools/projection-loom/projection_loom/location_stack.py'
       - 'tools/projection-loom/projection_loom/hephaestus_holistic.py'
       - 'tools/projection-loom/projection_loom/matched_registered_trial.py'
       - 'tools/projection-loom/projection_loom/fractal_ooda_ha.py'

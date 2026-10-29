@@ -11,8 +11,8 @@ import json
 import math
 from PIL import Image
 
-from .intent_seed import SeedBundle, SeedEntry, IntentContract, normalize_location
-from .location_stack import Element, Relation
+from .intent_seed import SeedBundle, SeedEntry, IntentContract
+from .location_stack import Element, Relation, LocationStack
 from .solid import SolidAssembly, faceted_loft
 from .developmental import GrowthNode, GrowthProgram, compile_growth
 
@@ -321,7 +321,7 @@ def compose_adapters(adapters,intent:IntentContract,*,audit=True):
     """Build separate CAD bodies: no forced fusion across image, grammar, proxy."""
     adapters=tuple(adapters)
     bundle=SeedBundle(tuple(a.seed for a in adapters))
-    location=normalize_location(bundle,intent)
+    location=LocationStack.admit_seed_bundle(bundle,intent)
     assemblies={}
     for item in sorted(adapters,key=lambda x:x.seed.identity):
         entry=item.seed

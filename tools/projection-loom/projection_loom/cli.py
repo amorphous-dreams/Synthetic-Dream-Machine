@@ -496,9 +496,10 @@ def main(argv=None):
         return result
     if args.command=='registered-inventory':
         from .seed_adapters import image_group
-        from .registered_inventory import registered_location_inventory
+        from .seed_adapters import registered_views
+        from .location_stack import LocationStack
         from .generalized_campaign import save_once
-        stack=registered_location_inventory(image_group(args.image_group),args.location)
+        stack=LocationStack.admit_registered_views(registered_views(image_group(args.image_group)),args.location)
         save_once(args.out,stack.to_dict())
         result={'schema':'projection-loom/registered-location-inventory',
                 'location':stack.location_id,
