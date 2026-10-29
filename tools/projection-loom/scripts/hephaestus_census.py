@@ -62,8 +62,11 @@ def _read_consumer_imports(path, package_names):
                     result.add(module)
         if isinstance(node, ast.Call):
             fn = node.func
+            # Both importlib.import_module(...) and the directly imported
+            # from-import form are executable, not merely textual references.
             dynamic = ((isinstance(fn, ast.Attribute) and fn.attr == "import_module")
-                       or (isinstance(fn, ast.Name) and fn.id == "__import__"))
+                       or (isinstance(fn, ast.Name) and fn.id in (
+                           "__import__", "import_module")))
             if dynamic:
                 if node.args and isinstance(node.args[0], ast.Constant):
                     name = node.args[0].value
