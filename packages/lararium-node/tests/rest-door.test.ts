@@ -6,6 +6,8 @@
  *   D2  a door that faults answers `rested: false` naming the fault.
  *   D3  the asker rejects when no answer arrives inside its own patience.    control: an answer resolves it
  *   D4  the asker ignores an answer for another request id.
+ *   D6  an ask that reaches the vessel before the island's sync leg has stood waits on that leg's arrival, never
+ *       on a clock: the document rests when its bytes land.                  control: with no leg standing the ask holds
  *   D5  the vessel's own act rests the document in its store before it resolves: a second reader of the same
  *       directory finds the document's bytes the instant the act returns.   control: before the act, it finds none
  */
@@ -14,7 +16,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo, type DocumentId } from "@automerge/automerge-repo";
-import { emptyLarDoc, type LarDoc } from "@lararium/mesh";
+import { attachMessageChannelSync, emptyLarDoc, makeIslandRepo, type LarDoc } from "@lararium/mesh";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import { restInStore } from "../src/open-node-vessel.js";
@@ -81,6 +83,32 @@ describe("the rest door", () => {
       expect(await stored(), "CONTROL: the store holds nothing of the document before the act").toBe(0);
       await restInStore(repo, [handle.documentId as DocumentId]);
       expect(await stored(), "the document rests in the store when the act returns").toBeGreaterThan(0);
+    } finally {
+      await restEvery();
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  test("D6 — an ask that outruns the island's sync leg waits for the leg, then rests the document", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "rest-door-"));
+    try {
+      const vessel = restingRepo(dir, { saveDebounceRate: 60_000 });
+      const channel = new MessageChannel();
+      const island = makeIslandRepo({ syncPort: channel.port2 as unknown as MessagePort });
+      const handle = island.create<LarDoc>(emptyLarDoc());
+      // The ask posts on a faster road than the sync handshake: the vessel holds no leg to the island yet.
+      let outcome: "pending" | "rested" | { fault: string } = "pending";
+      const asking = restInStore(vessel, [handle.documentId as DocumentId]).then(
+        () => { outcome = "rested"; },
+        (e: unknown) => { outcome = { fault: e instanceof Error ? e.message : String(e) }; },
+      );
+      for (let turn = 0; turn < 20; turn++) await new Promise<void>((r) => setImmediate(r));
+      expect(outcome, "with no leg standing the ask holds: it neither rests nor reads the document unavailable").toBe("pending");
+      attachMessageChannelSync(vessel, channel.port1 as unknown as MessagePort);
+      await asking;
+      expect(outcome).toBe("rested");
+      expect((await new DurableNodeFSStorageAdapter(dir).loadRange([handle.documentId])).length).toBeGreaterThan(0);
+      await island.shutdown();
+      channel.port1.close(); channel.port2.close();
     } finally {
       await restEvery();
       rmSync(dir, { recursive: true, force: true });
