@@ -10,6 +10,7 @@ vi.mock("../src/store-door.js", () => ({
 }));
 
 import { cmdIntent } from "../src/commands/intent.js";
+import { cmdIntentRelay } from "../src/commands/intent-relay.js";
 import { parseArgs } from "../src/parse-args.js";
 
 const run = (...argv: string[]) => cmdIntent(parseArgs(["intent", ...argv]));
@@ -41,5 +42,17 @@ describe("intent CLI face", () => {
     seam.output = { rows: [{ id: "one", status: "open", winner: null, duplicates: [], voidAfterAct: [], outcomeCount: 0 }], standing: "stands", strayAnswers: [], refused: [] };
     expect(await run("show", "--face", "0")).toBe(0);
     expect(lines.join("\n")).toMatch(/outcomes=0/);
+  });
+});
+
+describe("intent relay CLI", () => {
+  beforeEach(() => { seam.calls = []; seam.output = { enabled: false, path: null, pin: null }; vi.spyOn(console, "log").mockImplementation(() => {}); vi.spyOn(console, "error").mockImplementation(() => {}); });
+  test("RED: malformed face refuses before the door; CONTROL: enable, status and rotate select their named rows", async () => {
+    expect(await cmdIntentRelay(parseArgs(["intent-relay", "enable", "--face=1.5"]))).toBe(1);
+    expect(seam.calls).toEqual([]);
+    expect(await cmdIntentRelay(parseArgs(["intent-relay", "enable", "--face", "1"]))).toBe(0);
+    expect(await cmdIntentRelay(parseArgs(["intent-relay", "status", "--face", "1"]))).toBe(0);
+    expect(await cmdIntentRelay(parseArgs(["intent-relay", "rotate"]))).toBe(0);
+    expect(seam.calls).toEqual([["intent-relay-enable", { face: 1 }], ["intent-relay-status", { face: 1 }], ["intent-relay-rotate", {}]]);
   });
 });

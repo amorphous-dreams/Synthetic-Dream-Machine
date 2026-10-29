@@ -53,7 +53,13 @@ import {
   GATE_PROTOCOL, NOISE_MAX_MESSAGE_BYTES, channelSessionTable, gateKnock, readGateBundlePin, readGateFlightHeader,
   type FaceGate, type GateBundlePin, type GateChannelBounds, type GateDeadlines, type GateFlightRefusal, type GateOutcome, type GateSeat, type GateSession,
   type GateSessionChannel, type GateSessionTable, type GateSocket,
+  type IntentRelayResult,
 } from "@lararium/mesh";
+
+export type IntentRelayOutcome = { readonly outcome: "relay-answered"; readonly status: IntentRelayResult["status"] };
+export interface StandableGate extends Pick<FaceGate, "preflight" | "pending"> {
+  accept(socket: GateSocket): Promise<GateOutcome | IntentRelayOutcome>;
+}
 
 // ── The gate socket ─────────────────────────────────────────────────────────────────────────────
 
@@ -299,7 +305,7 @@ export interface StoodGate {
 /** Why a claimed upgrade drew no gate, for the vessel's own log. Nothing of it crosses the wire. */
 export type GateUpgradeRefusal = GateFlightRefusal | "server-closed" | "server-full" | "flight-undecrypted";
 
-export interface FaceGateServerOptions {
+export interface FaceGateServerOptions<Outcome extends GateOutcome | IntentRelayOutcome = GateOutcome | IntentRelayOutcome> {
   /** How many frames wait unread per socket before it pauses. */
   readonly queueBound?: number;
   /** How many bytes wait unread per socket before it pauses. */
@@ -309,14 +315,14 @@ export interface FaceGateServerOptions {
   /** How often the server pings each socket (`GATE_SERVER_HEARTBEAT_MS`); one that answered no ping since is cut. */
   readonly heartbeatMs?: number;
   /** What each accepted socket came to, by the path it knocked on. */
-  readonly onOutcome?: (path: string, outcome: GateOutcome) => void;
+  readonly onOutcome?: (path: string, outcome: Outcome) => void;
   /** A claimed upgrade destroyed before any 101, and why. */
   readonly onRefuse?: (path: string, refusal: GateUpgradeRefusal) => void;
 }
 
 export interface FaceGateServer {
   /** Stand `gate` on the path its pin's knock names. A second gate on a path already stood throws. */
-  stand(entry: { readonly gate: FaceGate; readonly pin: GateBundlePin }): StoodGate;
+  stand(entry: { readonly gate: StandableGate; readonly pin: GateBundlePin }): StoodGate;
   /** Claim an upgrade whose pathname names a stood gate; false (the socket untouched) for every other. */
   handleUpgrade(req: IncomingMessage, socket: Duplex, head: Buffer): boolean;
   /** The pathnames stood now. */
@@ -332,7 +338,7 @@ export function gatePath(pin: GateBundlePin): string {
   return `${read.pin.route}/${gateKnock(read.pin)}`;
 }
 
-export function faceGateServer(opts: FaceGateServerOptions = {}): FaceGateServer {
+export function faceGateServer<Outcome extends GateOutcome | IntentRelayOutcome = GateOutcome>(opts: FaceGateServerOptions<Outcome> = {}): FaceGateServer {
   const bound = opts.queueBound ?? GATE_SOCKET_QUEUE_BOUND;
   if (!Number.isInteger(bound) || bound < 1) throw new RangeError("face-gate-server: the queue bound names a count of at least one");
   const byteBound = opts.byteBound ?? GATE_SOCKET_BYTE_BOUND;
@@ -341,7 +347,7 @@ export function faceGateServer(opts: FaceGateServerOptions = {}): FaceGateServer
   if (!Number.isInteger(maxSockets) || maxSockets < 1) throw new RangeError("face-gate-server: the socket bound names a count of at least one");
   const heartbeatMs = opts.heartbeatMs ?? GATE_SERVER_HEARTBEAT_MS;
   if (!Number.isSafeInteger(heartbeatMs) || heartbeatMs < 1 || heartbeatMs > GATE_DEADLINE_MAX_BASE_MS) throw new RangeError("face-gate-server: the heartbeat names a whole number of milliseconds");
-  const gates = new Map<string, { readonly gate: FaceGate; readonly knock: string }>();
+  const gates = new Map<string, { readonly gate: StandableGate; readonly knock: string }>();
   // Paths this server once stood: a knock on one after the close is claimed and destroyed by name.
   const once = new Set<string>();
   const sockets = new Set<WebSocket>();
@@ -413,12 +419,12 @@ export function faceGateServer(opts: FaceGateServerOptions = {}): FaceGateServer
         follow(ws);
         ws.once("close", () => sockets.delete(ws));
         const gateSocket = wsGateSocket(ws as unknown as GateWire, { knock: stood.knock, message1: flight.message1 }, bound, byteBound);
-        let accepting: Promise<GateOutcome>;
+        let accepting: Promise<GateOutcome | IntentRelayOutcome>;
         try { accepting = Promise.resolve(stood.gate.accept(gateSocket)); } catch (error) { accepting = Promise.reject(error); }
         accepting.then((outcome) => {
           // A socket the gate turned away for want of a pending place holds nothing for it: cut it now.
           if (outcome.outcome === "silence" && outcome.reason === "pending-full") gateSocket.cut();
-          try { opts.onOutcome?.(path, outcome); } catch { /* a log never decides */ }
+          try { (opts.onOutcome as ((path: string, outcome: GateOutcome | IntentRelayOutcome) => void) | undefined)?.(path, outcome); } catch { /* a log never decides */ }
         }, () => {
           // A gate whose accept threw reads as silence: its socket is cut, never left open.
           gateSocket.cut();
