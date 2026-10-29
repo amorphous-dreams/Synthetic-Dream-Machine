@@ -96,7 +96,7 @@ Lares (Council): ->◇ the fork belongs to the operator.
   });
 });
 
-describe("the retired spellings stand as nothing", () => {
+describe("a feedback= key and a focus or feedback head carry no panel meaning", () => {
   test("a `feedback=` key reads as a plain unknown key, so a closing panel carrying only it reads OPEN", () => {
     const h = harvestTurnGradient(`<<~ lares aim from=lar:///a.b.c/x -> to=lar:///d.e.f/y>>
 Lares (Council): ->◇ held.
