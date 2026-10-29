@@ -62,6 +62,12 @@ test("L1: a repeated face-lit with changed inputs refuses by name; the same inpu
   await expect(host({ type: "daemon:face-lit", entry: moved(b.daemonAuth) })).rejects.toThrow(/face-lit-changed/);
   await expect(host({ type: "daemon:face-lit", entry: moved(a.daemonAuth) })).rejects.toThrow(/face-lit-changed/);
   await expect(host({ type: "daemon:face-lit", entry: entry(a.daemonAuth) })).resolves.toBeUndefined();
+  // The same inputs in another key order, and the same bags in another order, read as the same face.
+  const two = { ...entry(b.daemonAuth), registerBags: [...b.daemonAuth.registerBags, "lar:///ha.ka.ba/@test/bags/z", "lar:///ha.ka.ba/@test/bags/a"] };
+  await host({ type: "daemon:face-drop", atomKey: b.daemonAuth.atom.key });
+  await host({ type: "daemon:face-lit", entry: two });
+  await expect(host({ type: "daemon:face-lit", entry: { ...two, deviceEdge: Object.fromEntries(Object.entries(two.deviceEdge).reverse()) } })).resolves.toBeUndefined();
+  await expect(host({ type: "daemon:face-lit", entry: { ...two, registerBags: [...two.registerBags].reverse() } })).resolves.toBeUndefined();
   expect(await verifier.verify({ presenter: `0x${b.daemonAuth.atom.key}`, bagUrl: DAEMON_BAG_ID, access: "read", channel: "local" })).toMatchObject({ ok: true });
 });
 

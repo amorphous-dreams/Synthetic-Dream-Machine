@@ -27,9 +27,9 @@ async function standTwoFaces() {
   teardown.push(() => { void kh.dispose?.(); });
   const registry = new VerbTable();
   opts.wireWorkerVerbs!(registry, a.ctx);
-  const ctxOf = (presenter?: string) => ({ daemon: {} as never, invocation: { requestId: "r1", args: {} } as never, cap: async () => ({ ok: true }), ...(presenter === undefined ? {} : { presenter }) }) as never;
-  const call = (verb: string, presenter: string | undefined, args: Record<string, unknown>) =>
-    Promise.resolve().then(() => registry.get(verb)!(args, ctxOf(presenter))).then(() => null, (e: { reason?: string }) => e);
+  const ctxOf = (presenter?: string, local = false) => ({ daemon: {} as never, invocation: { requestId: "r1", args: {} } as never, cap: async () => ({ ok: true }), local, ...(presenter === undefined ? {} : { presenter }) }) as never;
+  const call = (verb: string, presenter: string | undefined, args: Record<string, unknown>, local = false) =>
+    Promise.resolve().then(() => registry.get(verb)!(args, ctxOf(presenter, local))).then(() => null, (e: { reason?: string }) => e);
   return { registry, call, sibling: `0x${b.daemonAuth.atom.key}`, mounted: `0x${a.daemonAuth.atom.key}` };
 }
 
@@ -50,6 +50,18 @@ test("a content verb refuses a presenter that is not the mounted face, by name",
     expect(await call(verb, undefined, a2), `${verb} no presenter`).toMatchObject({ reason: "content-mounted-only" });
     // CONTROL: the mounted face's call passes the fence (it may refuse for another reason).
     expect(await call(verb, mounted, a2), `${verb} mounted`).not.toMatchObject({ reason: "content-mounted-only" });
+    // A sibling's DID on the vessel's own channel refuses too; the channel lends no face.
+    expect(await call(verb, sibling, a2, true), `${verb} local sibling`).toMatchObject({ reason: "content-mounted-only" });
+  }
+});
+
+test("the vessel's own channel pushes under a label that names no face: it passes the fence, and the same label synced refuses", async () => {
+  const { registry, call } = await standTwoFaces();
+  for (const verb of ["switcher-state", "persona-state", "ward-alert", "pin"]) {
+    expect(registry.has(verb), verb).toBe(true);
+    expect(await call(verb, "persona", {}, true), `${verb} local label`).not.toMatchObject({ reason: "content-mounted-only" });
+    expect(await call(verb, "persona", {}, false), `${verb} synced label`).toMatchObject({ reason: "content-mounted-only" });
+    expect(await call(verb, "did:key:z6MkStranger", {}, true), `${verb} local stranger DID`).toMatchObject({ reason: "content-mounted-only" });
   }
 });
 
@@ -66,13 +78,16 @@ test("THE CENSUS: every daemon verb is fenced unless it stands on the named neut
     expect(verbs, `neutral ${verb} registers`).toContain(verb);
     expect(why, `neutral ${verb} reason`).toMatch(/^[^\n]{12,}$/);
   }
+  // Each neutral verb runs WHOLE for the sibling on arguments it accepts: a refusal of any kind reads as a fence.
+  const neutralArgs: Record<string, Record<string, unknown>> = { "realm-clock": { realm: "ab".repeat(32) } };
   const open: string[] = [];
   const unfenced: string[] = [];
   for (const verb of verbs) {
-    const refused = (await call(verb, sibling, {}))?.reason === "content-mounted-only";
-    if (Object.hasOwn(neutral, verb)) { if (refused) open.push(verb); }
-    else if (!refused) unfenced.push(verb);
+    if (Object.hasOwn(neutral, verb)) {
+      const refusal = await call(verb, sibling, neutralArgs[verb] ?? {});
+      if (refusal !== null) open.push(`${verb}: ${String((refusal as { message?: string }).message ?? refusal)}`);
+    } else if ((await call(verb, sibling, {}))?.reason !== "content-mounted-only") unfenced.push(verb);
   }
   expect(unfenced, "verbs neither fenced nor named neutral").toEqual([]);
-  expect(open, "neutral verbs the fence refused").toEqual([]);
+  expect(open, "neutral verbs that refused the sibling").toEqual([]);
 });
