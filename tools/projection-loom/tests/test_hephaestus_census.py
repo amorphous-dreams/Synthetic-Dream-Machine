@@ -52,3 +52,13 @@ def test_live_census_still_refuses_alpha_module_auto_retirement():
     assert "location_workspace" in {x["module"] for x in report["new_ground"]}
     assert "relational_ground" in {x["module"] for x in report["new_ground"]}
     assert all(p["static_consumers"] is not None for p in report["new_ground"])
+
+
+def test_retired_admission_and_native_inventory_owners_have_zero_repository_callers():
+    tool=_tool()
+    root=Path(__file__).resolve().parents[1]
+    assert tool.retired_ownership_references(root)==[]
+    assert tool.census(root)["retired_ownership_references"]==[]
+    from projection_loom.location_stack import LocationStack
+    assert not hasattr(LocationStack, "audit_cad_bodies")
+    assert not (root/"projection_loom"/"registered_inventory.py").exists()

@@ -116,6 +116,56 @@ def executable_consumers(root, names):
     return report
 
 
+def retired_ownership_references(root):
+    """Refuse live imports/calls to superseded admission and CAD audit owners.
+
+    Works over the repository's Python AST rather than guessing from docs.
+    A removed module cannot hide merely because it is absent from 'names'.
+    """
+    root = Path(root)
+    repository = root.parents[1]
+    violations = []
+    ignored = {".git", ".venv", "node_modules", "out", "third_party", "__pycache__"}
+    for path in sorted(repository.rglob("*.py")):
+        if any(part in ignored for part in path.relative_to(repository).parts):
+            continue
+        try:
+            tree = ast.parse(path.read_text(encoding="utf8"), filename=str(path))
+        except (SyntaxError, UnicodeError):
+            # An unparsable caller cannot justify retirement.
+            violations.append({"file": str(path.relative_to(repository)),
+                               "line": 0, "reason": "unparsed-repository-python"})
+            continue
+        for node in ast.walk(tree):
+            reason = None
+            if isinstance(node, ast.Import):
+                if any(alias.name.startswith("projection_loom.registered_inventory")
+                       for alias in node.names):
+                    reason = "retired module import"
+            elif isinstance(node, ast.ImportFrom):
+                module = node.module or ""
+                if module in ("registered_inventory", "projection_loom.registered_inventory"):
+                    reason = "retired module from-import"
+                elif module in ("intent_seed", "projection_loom.intent_seed") and any(
+                        alias.name == "normalize_location" for alias in node.names):
+                    reason = "retired seed inventory constructor"
+            elif isinstance(node, ast.Call):
+                fn = node.func
+                if isinstance(fn, ast.Name) and fn.id == "normalize_location":
+                    reason = "retired seed inventory call"
+                elif isinstance(fn, ast.Attribute) and fn.attr == "audit_cad_bodies":
+                    reason = "native audit on source inventory"
+                elif ((isinstance(fn, ast.Attribute) and fn.attr == "import_module")
+                      or (isinstance(fn, ast.Name) and fn.id in ("__import__", "import_module"))):
+                    if node.args and isinstance(node.args[0], ast.Constant) and (
+                            node.args[0].value == "projection_loom.registered_inventory"):
+                        reason = "retired dynamic module import"
+            if reason:
+                violations.append({"file": str(path.relative_to(repository)),
+                                   "line": node.lineno, "reason": reason})
+    return violations
+
+
 def census(root):
     package = Path(root) / "projection_loom"
     if not package.is_dir():
@@ -158,7 +208,8 @@ def census(root):
               "focus": [],
               "new_ground": [],
               "external_consumers": executable_consumers(root,names),
-              "deletion_authorized": False}
+              "deletion_authorized": False,
+              "retired_ownership_references": retired_ownership_references(root)}
     for name, (decision, responsibility) in sorted(FOCUS.items()):
         file = package / (name + ".py")
         if not file.is_file():
@@ -177,6 +228,9 @@ def census(root):
             "responsibility": responsibility,
             "static_imports": imports.get(name, []),
             "static_consumers": sorted(incoming.get(name, []))})
+    if report["retired_ownership_references"]:
+        raise ValueError("Retired ownership still has live repository callers: " +
+                         repr(report["retired_ownership_references"][:12]))
     return report
 
 
