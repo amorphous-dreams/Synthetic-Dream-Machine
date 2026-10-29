@@ -12,6 +12,7 @@ import { ownedStore } from "../src/owned-store.js";
 import { storeDoorDirect } from "../src/store-door-verbs.js";
 import { larBootstrapPath, larSealHome } from "../src/vessel-paths.js";
 import { resolveIntentRelayFace } from "../src/intent-relay-face.js";
+import * as custodySeat from "../src/custody-seat.js";
 import { loadIntentFace } from "../src/commands/intent.js";
 import { intentRelayKeyOrMint } from "../src/intent-relay-key-store.js";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
@@ -34,6 +35,18 @@ test("RED: the vessel stands, refreshes and closes the intent relay; CONTROL: th
   expect(sweep).toMatch(/resolveIntentRelayFace\s*\(\s*\w+\s*,\s*\{\s*repo\s*,\s*catalogUrl\s*:\s*catalogHandle\.url\s*\}/s);
   expect(sweep).toMatch(/intentRelay\.refresh\s*\(/);
   expect(source).toMatch(/stood\.push\s*\(\s*\{\s*what\s*:\s*["']the intent relay["']\s*,\s*down\s*:[\s\S]*?intentRelay\??\.close\s*\(/);
+});
+
+test("RED: a sibling's lock and light refresh the relay at once; CONTROL: the census finds a planted refresh and the dropFace body", () => {
+  expect(scan("const dropFace = async () => { await intentRelay?.refresh(); };", /intentRelay\??\.refresh\s*\(/)).toBe(true);
+  const dropStart = source.indexOf("const dropFace = async (ordinal: number) =>");
+  expect(dropStart).toBeGreaterThan(-1);
+  const dropBody = source.slice(dropStart, source.indexOf("\n  };", dropStart));
+  expect(dropBody).toMatch(/daemonVm\.dropFace[\s\S]*intentRelay\??\.refresh\s*\(/);
+  const lightStart = source.indexOf("lightFace = async (ordinal) =>");
+  expect(lightStart).toBeGreaterThan(-1);
+  const lightBody = source.slice(lightStart, source.indexOf("\n    };", lightStart));
+  expect(lightBody).toMatch(/daemonVm\.lightFace[\s\S]*intentRelay\??\.refresh\s*\(/);
 });
 
 const ROOT = mkdtempSync(join(tmpdir(), "lar-relay-wired-"));
@@ -117,5 +130,18 @@ test("RED: a killed relay reopens its flushed receipt and retries once; CONTROL:
         expect(effect).toHaveBeenCalledTimes(1);
       } finally { await reopened.repo.shutdown(); await reopened.adapter.close(); }
     } finally { vi.restoreAllMocks(); }
+  });
+}, 240_000);
+
+test("RED: a locked face resolves no relay face; CONTROL: the same face resolves while unlocked", async () => {
+  await withLarRoot(ROOT, async () => {
+    await openTestCustody();
+    const repo = new Repo({ network: [] });
+    try {
+      const open = await resolveIntentRelayFace(group, { repo, catalogUrl });
+      expect(open?.group).toBe(group);
+      const spy = vi.spyOn(custodySeat, "unlockedFaceOrdinals").mockResolvedValue([]);
+      try { expect(await resolveIntentRelayFace(group, { repo, catalogUrl })).toBeNull(); } finally { spy.mockRestore(); }
+    } finally { await repo.shutdown(); }
   });
 }, 240_000);
