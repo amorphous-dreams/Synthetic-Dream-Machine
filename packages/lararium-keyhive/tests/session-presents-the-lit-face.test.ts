@@ -29,6 +29,16 @@ describe("presenterFor", () => {
   test("CONTROL: a synced summons borrows nothing from the local channel", () => {
     expect(presenterFor({ invocation: ask(`0x${PLACE}`), local: false, auth: lit })).toBe(`0x${PLACE}`);
   });
+  test("RED: a local verb whose claim names no DID (the main thread's own label) presents as the lit face's atom", () => {
+    for (const label of ["persona", "switcher", "circle", "wiki-switch", "disk-projector", "projection-confluence", "mailbox"]) {
+      expect(presenterFor({ invocation: ask(label), local: true, auth: lit }), label).toBe(`0x${ATOM}`);
+    }
+    expect(presenterFor({ invocation: ask(`did:key:z6Mk${"a".repeat(40)}`), local: true, auth: lit })).toBe(`did:key:z6Mk${"a".repeat(40)}`);
+  });
+  test("CONTROL: a synced summons's label borrows nothing, and at the floor a label stays itself", () => {
+    expect(presenterFor({ invocation: ask("persona"), local: false, auth: lit })).toBe("persona");
+    expect(presenterFor({ invocation: ask("persona"), local: true, auth: floor })).toBe("persona");
+  });
   test("a lit joined group may be named, and a dropped group refuses", () => {
     const groups = new Set(["group-x", "group-y"]);
     const auth = { ...lit, holds: (group: string) => groups.has(group), atomOf: (group: string) => groups.has(group) ? (group === "group-y" ? SIBLING : ATOM) : null };
