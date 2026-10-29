@@ -143,6 +143,34 @@ describe("VerbDispatcher — redelivered requestId vs. the already-landed outcom
 });
 
 describe("VerbDispatcher — effect dedup (D1)", () => {
+  test("a presenter the table's fence refuses never reads a prior attempt's result through the effect replay; it concludes refused by the fence's name (the mounted control replays)", async () => {
+    const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
+    const daemon = makeDaemon();
+    let runCount = 0;
+    const registry = new VerbTable();
+    registry.register("do-effect", async () => ({ ran: ++runCount, secret: "mounted-only" }));
+    registry.fence({ open: {}, check: (verb, context) => {
+      if (context.presenter !== "did:key:mounted") throw Object.assign(new Error(`${verb}: fenced`), { reason: "content-mounted-only" });
+    } });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry });
+    dispatcher.start();
+    dispatcher.placeVerb({ verb: "do-effect", args: { x: 1 }, requestedBy: "did:key:mounted", requestId: "fence-1", effectKey: "eff-fence" });
+    await settle();
+    expect((await outcomeOf(daemon, "fence-1"))?.fields.status).toBe("done");
+    dispatcher.placeVerb({ verb: "do-effect", args: { x: 1 }, requestedBy: "did:key:sibling", requestId: "fence-2", effectKey: "eff-fence" });
+    await settle();
+    const refused = await outcomeOf(daemon, "fence-2");
+    expect(refused?.fields["effect-of"]).toBeUndefined();
+    expect(refused?.fields.status).toBe("error");
+    expect(JSON.stringify(refused?.results ?? {})).not.toContain("mounted-only");
+    // CONTROL: the mounted presenter under a new attempt replays the effect.
+    dispatcher.placeVerb({ verb: "do-effect", args: { x: 1 }, requestedBy: "did:key:mounted", requestId: "fence-3", effectKey: "eff-fence" });
+    await settle();
+    expect((await outcomeOf(daemon, "fence-3"))?.fields["effect-of"]).toBe("fence-1");
+    expect(runCount).toBe(1);
+    dispatcher.stop();
+  });
+
   test("a second attempt under a NEW requestId with the SAME effectKey answers with effect-of and the handler runs ONCE; a changed digest skips the shortcut and runs fresh", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
     const daemon = makeDaemon();

@@ -29,6 +29,12 @@ describe("presenterFor", () => {
   test("CONTROL: a synced summons borrows nothing from the local channel", () => {
     expect(presenterFor({ invocation: ask(`0x${PLACE}`), local: false, auth: lit })).toBe(`0x${PLACE}`);
   });
+  test("CONTROL: a claim naming no DID (a label) stays the label, local or synced: the channel's label names no face and borrows none", () => {
+    for (const label of ["persona", "switcher", "disk-projector", "projection-confluence", "mailbox"]) {
+      expect(presenterFor({ invocation: ask(label), local: true, auth: lit }), label).toBe(label);
+      expect(presenterFor({ invocation: ask(label), local: false, auth: lit }), label).toBe(label);
+    }
+  });
   test("a lit joined group may be named, and a dropped group refuses", () => {
     const groups = new Set(["group-x", "group-y"]);
     const auth = { ...lit, holds: (group: string) => groups.has(group), atomOf: (group: string) => groups.has(group) ? (group === "group-y" ? SIBLING : ATOM) : null };

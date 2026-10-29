@@ -733,9 +733,16 @@ export interface StagedJoinee {
 }
 
 /** A vessel's lares wiki document url, off its registry at `dataDir`; "" when it holds none. */
-async function laresDocAt(dataDir: string): Promise<string> {
+/** A's lares document off A's own catalog, asked as A's place (the content fence admits the mounted face alone). */
+async function laresDocAt(instance: LarInstance): Promise<string> {
   const { invokeLocal } = await import("../../packages/lares-cli/src/local-connector.js");
-  const wl = await invokeLocal("list-wikis", {}, `0x${"0".repeat(64)}`, { dataDir }) as
+  const { vesselDid } = await import("../../packages/lares-cli/src/env.js");
+  const prior = process.env["LAR_ROOT"];
+  process.env["LAR_ROOT"] = instance.root;
+  let place: string;
+  try { place = await vesselDid(); }
+  finally { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; }
+  const wl = await invokeLocal("list-wikis", {}, place, { dataDir: vesselStorageDir(instance) }) as
     { results?: { summary?: { output?: { wikis?: Array<{ slug: string; automergeUrl: string | null }> } } } };
   return wl.results?.summary?.output?.wikis?.find((w) => w.slug === "lares")?.automergeUrl ?? "";
 }
@@ -782,7 +789,7 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
 
     // A's gate key off A's own log, A's lares doc off A's registry.
     const gateA = await awaitOwnGateKey(A);
-    const laresA = await laresDocAt(vesselStorageDir(A));
+    const laresA = await laresDocAt(A);
     // A answers through its own door, naming the document B asks for, and B lands the answer before it boots.
     const files = fleet!;
     const requestedDoc = (opts.dial ?? "pin+doc") === "pin+doc"

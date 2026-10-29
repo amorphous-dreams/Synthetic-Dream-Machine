@@ -65,6 +65,8 @@ export interface VerbContext {
   readonly signal?: AbortSignal;
   /** Who the verb presents as (the capability's presenter); absent where no dispatcher named one. */
   readonly presenter?: string;
+  /** True for a verb the vessel's own presence channel took; absent or false for a synced summons. */
+  readonly local?: boolean;
   readonly cap:   (access: import("@lararium/mesh").CapabilityAccess, bagUrl: string) => Promise<import("@lararium/mesh").CapabilityVerifyResult>;
 }
 
@@ -136,9 +138,20 @@ export function projectOntoSurface<T>(
     .map((e) => e.item);
 }
 
+/** A table's one fence: what it checks, and the verbs it leaves open, each with its reason. */
+export interface VerbFence {
+  /** Runs before every fenced verb; a throw refuses the verb before its handler reads anything. */
+  readonly check: (verbName: string, context: VerbContext) => void;
+  /** The verbs the check never runs before, each mapped to its one-line reason. */
+  readonly open: Readonly<Record<string, string>>;
+  /** Runs every verb, open or fenced, once past the check: the fence's owner may hold what the verb uses until it settles. */
+  readonly span?: (context: VerbContext, run: () => Promise<Record<string, unknown>>) => Promise<Record<string, unknown>>;
+}
+
 export class VerbTable {
   private readonly handlers = new Map<string, VerbReactor>();
   private readonly specs    = new Map<string, VerbSpec>();
+  private fenceOf: VerbFence | null = null;
 
   /**
    * Register a verb, optionally declaring what the surfaces should know about it.
@@ -156,15 +169,38 @@ export class VerbTable {
     if (spec) this.specs.set(verbName, spec);
   }
 
-  /** Wrap each named, registered verb so `check` runs on its context before its handler; a verb not registered stays absent. */
-  guard(verbNames: readonly string[], check: (verbName: string, context: VerbContext) => void): void {
-    for (const verbName of verbNames) {
-      const inner = this.handlers.get(verbName);
-      if (inner) this.handlers.set(verbName, async (args, context) => { check(verbName, context); return inner(args, context); });
-    }
+  /**
+   * THE FENCE DENIES BY DEFAULT. `check` runs on the context of every verb, registered before or after this call,
+   * except the verbs `open` names, each with the reason it touches nothing the fence keeps. A verb nobody named
+   * stands fenced, so a new verb chooses by joining the open list with its reason. One fence per table.
+   */
+  fence(fence: VerbFence): void {
+    if (this.fenceOf) throw new Error("[verb-dispatcher] this table already stands a fence");
+    this.fenceOf = fence;
   }
 
-  get(verbName: string): VerbReactor | undefined { return this.handlers.get(verbName); }
+  /** True when the fence's check runs before this registered verb. */
+  fenced(verbName: string): boolean {
+    return this.fenceOf !== null && this.handlers.has(verbName) && !Object.hasOwn(this.fenceOf.open, verbName);
+  }
+
+  /** Run the fence's check for a registered verb on a path that answers without its handler (an effect's replay). */
+  admit(verbName: string, context: VerbContext): void {
+    if (this.fenceOf && this.fenced(verbName)) this.fenceOf.check(verbName, context);
+  }
+
+  get(verbName: string): VerbReactor | undefined {
+    const inner = this.handlers.get(verbName);
+    const fence = this.fenceOf;
+    if (!inner || !fence) return inner;
+    const fenced = this.fenced(verbName);
+    const span = fence.span;
+    if (!fenced && !span) return inner;
+    return async (args, context) => {
+      if (fenced) fence.check(verbName, context);
+      return span ? span(context, () => inner(args, context)) : inner(args, context);
+    };
+  }
   has(verbName: string): boolean { return this.handlers.has(verbName); }
   list(): readonly string[] { return [...this.handlers.keys()].sort(); }
 
@@ -293,6 +329,21 @@ export class VerbDispatcher {
    * of it before doing its own read), then replaces the map entry with its own promise before
    * returning — so a third concurrent attempt chains onto THIS one in turn.
    */
+  /**
+   * A replay answers without the handler, so the table's fence asks first: a presenter the fence refuses never reads a
+   * prior attempt's result, and its fresh run concludes refused by the fence's own name.
+   */
+  private replayAdmitted(invocation: Verb): boolean {
+    if (!this.opts.registry.has(invocation.action)) return true;
+    try {
+      this.opts.registry.admit(invocation.action, {
+        daemon: this.opts.daemon, invocation, cap: async () => ({ ok: false, reason: "replay" }),
+        presenter: this.opts.presenterOf?.(invocation) ?? invocation.requestedBy, local: this.opts.localOf?.(invocation) ?? false,
+      });
+      return true;
+    } catch { return false; }
+  }
+
   private dispatchWithEffectDedup(invocation: Verb, signal?: AbortSignal): Promise<void> {
     const effectKey = invocation.effectKey as string;
     const ahead = this.inFlightEffect.get(effectKey);
@@ -328,14 +379,14 @@ export class VerbDispatcher {
         return;
       }
       const priorDigest = String(priorOutcome.tiddler["input-digest"] ?? "");
-      if (priorDigest === inputDigest) {
+      if (priorDigest === inputDigest && this.replayAdmitted(invocation)) {
         const priorResults = JSON.parse(String(priorOutcome.tiddler["results"] ?? "{}")) as Record<string, VerbTargetResult>;
         await copyEffectOutcome(this.opts.daemonVm, this.opts.daemon, invocation, {
           priorRequestId, priorResults, inputDigest,
         });
         return;
       }
-      console.log(`[verb-dispatcher] effect "${effectKey}" reused with a changed digest (request=${invocation.requestId}, prior=${priorRequestId}) — running fresh, no dedup`);
+      if (priorDigest !== inputDigest) console.log(`[verb-dispatcher] effect "${effectKey}" reused with a changed digest (request=${invocation.requestId}, prior=${priorRequestId}) — running fresh, no dedup`);
     }
 
     await dispatchVerb(this.opts.daemonVm, this.opts.daemon, invocation, () => this.runHandler(invocation, signal));
