@@ -248,6 +248,11 @@ def verify_transfer_receipts(proposal, receipt, old_scene, new_scene):
                 for t in sorted(transfers, key=lambda item: item["child"])]
     if actual != expected:
         raise ValueError("Causal reparent actions differ from operator intent")
+    # Each approved transfer must follow the move it depends on. A replayed
+    # relation event without an authored dependent translation is insufficient.
+    moved = {op["target"] for op in actions if op["kind"] == "transform"}
+    if any(row["child"] not in moved for row in transfers):
+        raise ValueError("Support transfer lacks its matching causal movement")
     for requested, pair in zip(transfers, reported):
         if pair.get("transfer") != requested:
             raise ValueError("Native transfer witness differs from authored proposal")
