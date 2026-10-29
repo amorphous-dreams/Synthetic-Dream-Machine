@@ -204,4 +204,23 @@ describe.skipIf(!!wikiSkip)(`glass port ordered races${skipNote}`, () => {
     await g.flush();
     expect(g.writes()).toHaveLength(1);
   });
+
+  it("a widen's snapshot keeps a title written after the open; CONTROL a plain snapshot still drops an absent title", async () => {
+    const g = await glass("skinny");
+    g.snapshot("first", 1, 1, [{ title: "Base", fields: { text: "base" }, seq: 1 }]);
+    await g.flush();
+    g.wiki.setTiddler({ title: "Draft of 'New'", text: "typed" });
+    await g.flush();
+    const write = g.writes()[0];
+    g.deliver({ type: "port:written", txId: write.txId, status: "applied", applied: ["Draft of 'New'"], failed: [] });
+    await g.flush();
+    g.adaptor.widen("full");
+    g.snapshot("widened", 1, 1, [{ title: "Base", fields: { text: "base", tags: "x" }, seq: 1 }]);   // taken before the draft landed
+    await g.flush();
+    expect(g.text("Draft of 'New'")).toBe("typed");
+    expect(g.wiki.wiki.getTiddler("Base")?.fields.tags).toBeTruthy();
+    g.snapshot("plain", 1, 1, [{ title: "Base", fields: { text: "base", tags: "x" }, seq: 2 }]);
+    await g.flush();
+    expect(g.text("Draft of 'New'")).toBeUndefined();   // CONTROL: an ordinary snapshot is the whole truth and drops it
+  });
 });
