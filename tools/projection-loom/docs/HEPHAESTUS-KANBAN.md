@@ -1,5 +1,10 @@
 # Loom of Hephaestus · OODA-HA executable kanban
 
+## N5-B verified implementation checkpoint · 2026-10-29
+
+The real dual-BRep `native-support-reparent` and complete immutable `location-support` handback were committed as `b5084d81` and `0bfa40f8`. [Dedicated generalization #40942043037](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40942043037) is **green across contracts, actual STEP/OpenUSD and actual Blender** at the exact code head. An unchanged native scene may now carry an operator-authored reassignment of required support only if old and new bearing surfaces each independently pass native horizontal planar-face area. The original parent and source bytes remain immutable, child ancestry replays, no second OODA-HA owner was introduced. Full CAD, repository-wide, held-out, old owner migration, actual Unreal and wider real-world source calibration remain open. The [ROADMAP](ROADMAP.md) and [HANDOFF](HANDOFF.md) front sections govern next-wave decisions; the historical ledger remains preserved.
+
+
 ## OODA-HA N1–N4 current acceptance · 2026-10-29
 
 All N1–N4 implementation waves landed in PR #84 through code SHA `533103ea`. The dedicated [generalized CI #40940926706](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40940926706) is **green** for contracts, real STEP/OpenUSD, actual Blender support-group editor and seven independent/cohort witnesses. The first census run failed its direct `import_module` alias fixture; `533103ea` repaired the scanner without weakening its negative test. CAD/evidence, repository CI and held-out checks were **in progress** at last check. The following are **implemented and dedicated-CI witnessed**, not whole-roadmap DONE: atomic causal batch, editor source-ground replay, exact structural group movement, real Blender coupled support capture, repeated source-blind post-selection native audits, and expanded executable consumer census. See front of [ROADMAP](ROADMAP.md) and [HANDOFF](HANDOFF.md) for N5 and exact reentry. D-U remains BLOCKED pending actual Unreal application execution. No automatic canon, winner or merge.
