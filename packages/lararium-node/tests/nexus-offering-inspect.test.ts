@@ -16,7 +16,7 @@ import {
   GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
   type GenesisSeed,
 } from "@lararium/mesh";
-import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, wearPersona } from "../src/node-vessel-identity.js";
+import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
 import { runNexusPublishPlugins } from "../src/commands/nexus-publish.js";
 import { runNexusInspectOffering, NexusOfferingInspectError } from "../src/commands/nexus-offering-inspect.js";
 import { larDataDir } from "../src/vessel-paths.js";
@@ -80,7 +80,6 @@ async function stand(): Promise<void> {
   seedMinimalGenesis();
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
-  await wearPersona(0);
 }
 
 describe("runNexusInspectOffering — bounded local receiver", () => {

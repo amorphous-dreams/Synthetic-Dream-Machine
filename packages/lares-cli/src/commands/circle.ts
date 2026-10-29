@@ -32,7 +32,8 @@ import {
   type HandleCard,
 } from "@lararium/mesh";
 import { parseHandleCardCarriage } from "../handle-carriage.js";
-import { loadHandleBook, saveHandleBook, wornFace, wornFaceKey } from "../sealed-rows.js";
+import { bookFace, faceRootKey, loadHandleBook, saveHandleBook } from "../sealed-rows.js";
+import { actingFace } from "../face-option.js";
 import { makeDaemonCircleStore } from "../daemon-circle-store.js";
 import { vesselDid } from "../env.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
@@ -93,9 +94,9 @@ async function circleAdd(args: ParsedArgs): Promise<number> {
   const card     = cardPath ? readCardFile(cardPath) : undefined;
 
   const circles = makeDaemonCircleStore(await vesselDid());
-  const face    = await wornFace();
+  const face    = await bookFace(await actingFace(args));
   const book    = await loadHandleBook(face);
-  const by      = await wornFaceKey();
+  const by      = await faceRootKey(face);
 
   let result;
   try {
@@ -154,9 +155,9 @@ async function circleCard(args: ParsedArgs): Promise<number> {
   const card = parseHandleCardCarriage(readCarriageArg(raw));
   if (!card) throw new UsageError("no self-certifying HandleCard in the carriage — the card did not arrive (re-carry a `#card=<base64url>` token).");
 
-  const face    = await wornFace();
+  const face    = await bookFace(await actingFace(args));
   const book    = await loadHandleBook(face);
-  const verdict = await book.ingest(card, undefined, await wornFaceKey());
+  const verdict = await book.ingest(card, undefined, await faceRootKey(face));
   if (!verdict.ok) throw new UsageError(`handle-card refused (${verdict.reject}) — the book holds this nym to its own lineage (anti-rollback / anti-fork).`);
   await saveHandleBook(face, book);   // persist the recogniser's memory — the nym is now known, ready to follow
 
@@ -191,7 +192,7 @@ async function circleRemove(args: ParsedArgs): Promise<number> {
 
 async function circleList(args: ParsedArgs): Promise<number> {
   const circles = makeDaemonCircleStore(await vesselDid());
-  const face    = await wornFace();
+  const face    = await bookFace(await actingFace(args));
   const book    = await loadHandleBook(face);
   const to      = typeof args.options["to"] === "string" ? args.options["to"].trim() : "";
   const circleIds = to.length > 0 ? [to] : [...await circles.circles()];

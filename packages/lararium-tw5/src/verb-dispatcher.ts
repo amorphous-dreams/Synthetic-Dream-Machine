@@ -63,6 +63,8 @@ export interface VerbContext {
   readonly daemon: CompositeStore;
   readonly invocation: Verb;
   readonly signal?: AbortSignal;
+  /** Who the verb presents as (the capability's presenter); absent where no dispatcher named one. */
+  readonly presenter?: string;
   readonly cap:   (access: import("@lararium/mesh").CapabilityAccess, bagUrl: string) => Promise<import("@lararium/mesh").CapabilityVerifyResult>;
 }
 
@@ -152,6 +154,14 @@ export class VerbTable {
     }
     this.handlers.set(verbName, handler);
     if (spec) this.specs.set(verbName, spec);
+  }
+
+  /** Wrap each named, registered verb so `check` runs on its context before its handler; a verb not registered stays absent. */
+  guard(verbNames: readonly string[], check: (verbName: string, context: VerbContext) => void): void {
+    for (const verbName of verbNames) {
+      const inner = this.handlers.get(verbName);
+      if (inner) this.handlers.set(verbName, async (args, context) => { check(verbName, context); return inner(args, context); });
+    }
   }
 
   get(verbName: string): VerbReactor | undefined { return this.handlers.get(verbName); }
@@ -295,7 +305,7 @@ export class VerbDispatcher {
 
   private async resolveEffect(invocation: Verb, effectKey: string, signal?: AbortSignal): Promise<void> {
     const inputDigest = await verbInputDigest({
-      verb: invocation.action, args: invocation.args, requestedBy: invocation.requestedBy, effectKey,
+      verb: invocation.action, args: invocation.args, face: invocation.face, effectKey,
     });
 
     const priorFact = await this.opts.daemon.getLive(EFFECT_URI_PREFIX + effectKey);
@@ -363,7 +373,7 @@ export class VerbDispatcher {
             const priorDigest = prior.tiddler["input-digest"];
             if (typeof priorDigest === "string") {
               const redeliveredDigest = await verbInputDigest({
-                verb: invocation.action, args: invocation.args, requestedBy: invocation.requestedBy,
+                verb: invocation.action, args: invocation.args, face: invocation.face,
                 ...(invocation.effectKey !== undefined && { effectKey: invocation.effectKey }),
               });
               if (redeliveredDigest !== priorDigest) {

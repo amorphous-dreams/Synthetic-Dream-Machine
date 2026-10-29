@@ -36,7 +36,7 @@ const SCOPE = { nexusAid: "nexus-test-one", epochCid: "epoch-test-one" };
 const teardown: Array<() => void> = [];
 afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /* best-effort */ } } });
 
-const verbCtx = () => ({ daemon: {} as never, invocation: { requestId: "r1" } as never, cap: async () => ({ ok: true }) }) as never;
+const verbCtx = (presenter: string) => ({ daemon: {} as never, invocation: { requestId: "r1" } as never, cap: async () => ({ ok: true }), presenter }) as never;
 async function proof(): Promise<SessionProof> {
   const c = await chain("sealed-vessel", "nexus-test-one");
   const signer: RecordSigner = {
@@ -73,7 +73,7 @@ async function stand(st: Awaited<ReturnType<typeof standFoundedIsland>>, root: s
   }
   const registry = new VerbTable();
   opts.wireWorkerVerbs!(registry, st.ctx);
-  const run = (verb: string, args: Record<string, unknown>) => registry.get(verb)!(args, verbCtx()) as Promise<Record<string, unknown>>;
+  const run = (verb: string, args: Record<string, unknown>) => registry.get(verb)!(args, verbCtx(`0x${st.daemonAuth.atom.key}`)) as Promise<Record<string, unknown>>;
   return { run, archives, dispose: async () => { await kh?.dispose?.(); } };
 }
 const scratch = (): string => { const dir = mkdtempSync(join(tmpdir(), "sealed-vessel-")); teardown.push(() => rmSync(dir, { recursive: true, force: true })); return dir; };

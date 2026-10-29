@@ -9,7 +9,7 @@
  * group (`loadIdentityAnchors`). Where this vessel holds that face's root it is the face's FOUNDER, and its leaf is that
  * face's own held Nexus key whose admitted key is the admit's nym (`readFounderFaceProof`, the lazy self-certificate). A
  * leaf of ANOTHER face that answers the nym refuses `leaf-other-face`: a grant for group A is never signed with face B's
- * root. Where it holds no root for the worn face it is a JOINEE: it keeps no roster line, so its scope comes from the
+ * root. Where it holds no root for the mounted face it is a JOINEE: it keeps no roster line, so its scope comes from the
  * certificate its join record keeps at the dialed Nexus, whose admitted key must be the admit's nym, and its proof is
  * read as the join left it (`readJoinedFaceProof`). Where no single face names the group (two do, or none) and this vessel
  * holds any face root, it presents nothing (`face-unworn`). Each absence is named: the pin, the kept admit, the charter, the
@@ -22,14 +22,14 @@
  */
 import {
   admittedKeyOf, heldNexusRoot, makeMultiSigQuorumVerifier, nexusAidOfPin, presentedAdmitReader, readFaceScope,
-  type FaceScope, type GateBundlePin,
+  type FaceScope, type GateBundlePin, type JoinedFaceTarget, type PresentationArm,
 } from "@lararium/mesh";
 import { readKeptAdmitBundle } from "./admit-bundle.js";
 import { charterHomeFor, readKeyLine } from "./carried-set.js";
 import { readFaceJoinRecord } from "./fleet-join-custody.js";
 import type { FounderCertificateDoors } from "./founder-self-certificate.js";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
-import { nodeFacePresentation, type NodeFacePresentation, type NodeFacePresentationRefusal } from "./node-face-presentation.js";
+import { nodeFacePresentation, nodeFaceTarget, type NodeFacePresentation, type NodeFacePresentationRefusal } from "./node-face-presentation.js";
 import { heldNexusLeaves, type NexusLeaf } from "./nexus-leaf.js";
 import { loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 import { readNexusDoc } from "./nexus-doc.js";
@@ -66,12 +66,33 @@ const scopeOfCertificate = (certificate: unknown): FaceScope | null => {
   } catch { return null; }
 };
 
-export async function composeDialPresentation(args: FaceInputs & {
+export async function composeDialPresentation(args: FaceInputs & DialFaceArgs): Promise<{ readonly presentation: NodeFacePresentation } | NodeFacePresentationRefusal> {
+  return dialFaceAt(args, (scope, founder, admit, arm) => nodeFacePresentation({
+    personaGroup: args.personaGroup!, scope, founder, table: args.table, binding: args.binding, profile: args.profile, admit, arm,
+    ...(args.doors?.founder ? { doors: args.doors.founder } : {}),
+  }));
+}
+
+/**
+ * The face a session at `pin`'s Nexus would wear, described and not yet taken: the same reading the dial makes (the
+ * kept admit, the charter's held root, the founder's leaf or the joinee's certificate), ending at the face and its
+ * signer's mint (`nodeFaceTarget`) in place of an open. It writes nothing: the founder's certificate stands from the
+ * dial's presentation. The session socket's door preflights through this.
+ */
+export async function composeFaceTarget(args: DialFaceArgs): Promise<{ readonly target: JoinedFaceTarget } | NodeFacePresentationRefusal> {
+  return dialFaceAt(args, (scope, _founder, admit) => nodeFaceTarget({ personaGroup: args.personaGroup!, scope, admit }));
+}
+
+interface DialFaceArgs {
   readonly sealHome:     string;
   readonly pin:          GateBundlePin;
   readonly personaGroup: string | null | undefined;
   readonly doors?:       DialPresentationDoors;
-}): Promise<{ readonly presentation: NodeFacePresentation } | NodeFacePresentationRefusal> {
+}
+
+async function dialFaceAt<R>(args: DialFaceArgs,
+  presentAt: (scope: FaceScope, founder: { readonly face: number } | null, admit: unknown, arm: PresentationArm) => Promise<R | NodeFacePresentationRefusal>,
+): Promise<R | NodeFacePresentationRefusal> {
   const doors = args.doors ?? {};
   const aid = nexusAidOfPin(args.pin);
   if (aid === null) return { refusal: "pin-nexus-unreadable" };
@@ -88,15 +109,12 @@ export async function composeDialPresentation(args: FaceInputs & {
   const nym = kept.admit.nym.toLowerCase();
   const line = readKeyLine(args.sealHome, aid);
   const answers = (key: string): boolean => admittedKeyOf({ nexus: aid, key, carried: line }) === nym;
-  const present = (scope: FaceScope, founder: { readonly face: number } | null) => nodeFacePresentation({
-    personaGroup, scope, founder, table: args.table, binding: args.binding, profile: args.profile, admit, arm,
-    ...(doors.founder ? { doors: doors.founder } : {}),
-  });
+  const present = (scope: FaceScope, founder: { readonly face: number } | null) => presentAt(scope, founder, admit, arm);
 
   const worn = await (doors.faceOfGroup ?? faceOfGroup)(personaGroup);
   const rootHeld = doors.rootHeld ?? (async (face: number) => (await loadPersonaGroupRootVerifyingKey(face)) !== undefined);
   if (worn !== null && await rootHeld(worn)) {
-    // THE FOUNDER: the worn face's own leaf, and no other face's.
+    // THE FOUNDER: the mounted face's own leaf, and no other face's.
     const leaves = await (doors.leaves ?? heldNexusLeaves)(aid);
     try {
       const answering = leaves.filter((l) => answers(l.verifyingKey));

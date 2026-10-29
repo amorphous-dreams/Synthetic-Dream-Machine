@@ -26,7 +26,7 @@ import {
   carryOfPrepared, cosignFrontierCarry, frontierCarryAgrees, frontierCarryStands, landFrontierCarry,
   type EdgeActPartial, type EdgeKapaeVerdict, type EdgePartialSubject, type EdgeSigner, type KahuQuorumSeats, type PartialVerdict,
 } from "@lararium/mesh";
-import { loadWornFaceAtomKey } from "../face-atom-store.js";
+import { loadFaceAtomKey } from "../face-atom-store.js";
 import { heldSeatSigners as heldSeats } from "../held-quorum.js";
 import { actingRealmNexus, nexusOfEpoch, noteVesselRealm, readVesselEdgeBoard, vesselEdgeCharter } from "../edge-board.js";
 import { leaseCharterOf } from "../lease-charter.js";
@@ -49,8 +49,8 @@ async function heldSeatSigners(roster: KahuQuorumSeats, except: ReadonlySet<stri
  * `note` stands the realm under that Nexus in the vessel's own ledger: a door calls it once a seat of its own
  * signed, as every act does; a read, and a refused act, note no Nexus.
  */
-async function readRealm(repo: Repo, realm: string, sealHome: string, named?: string) {
-  const vesselKey = await loadWornFaceAtomKey().catch((e: unknown) => { throw new EdgeCosignError(e instanceof Error ? e.message : String(e)); });
+async function readRealm(repo: Repo, realm: string, sealHome: string, named?: string, face?: number) {
+  const vesselKey = await loadFaceAtomKey(face).catch((e: unknown) => { throw new EdgeCosignError(e instanceof Error ? e.message : String(e)); });
   const aid = await actingRealmNexus({ repo, vesselKey, realm, sealHome, ...(named !== undefined ? { named } : {}), refuse: (message) => new EdgeCosignError(message) });
   const charter = vesselEdgeCharter(realm, sealHome, aid);
   if (!charter) throw new EdgeCosignError("no seated charter of the Nexus this realm stands under stands on this vessel — the quorum hand has no seats to sign with.");
@@ -73,6 +73,8 @@ export interface EdgePartialOptions {
   readonly raised:   boolean;
   /** The Nexus the realm stands under, for this vessel's first act there. Absent → the primary charter's. */
   readonly nexusAid?: string;
+  /** The face whose ledger stands the realm here (`--face N`); absent, the one face standing open. */
+  readonly face?:    number;
   readonly sealHome: string;
   readonly repo:     Repo;
 }
@@ -97,7 +99,7 @@ export async function runEdgePartial(opts: EdgePartialOptions): Promise<EdgePart
   if (subject === null) throw new EdgeCosignError("name ONE relationship in plain keys: --member <key>, or --voucher <key> with --joiner <key>.");
   const edgeId = edgeIdOfSubject(realm, subject);
   if (edgeId === null) throw new EdgeCosignError("the keys that name the relationship read as no 64-hex key.");
-  const { charter, read, note, vesselKey, aid } = await readRealm(opts.repo, realm, opts.sealHome, opts.nexusAid);
+  const { charter, read, note, vesselKey, aid } = await readRealm(opts.repo, realm, opts.sealHome, opts.nexusAid, opts.face);
   const signers = await heldSeatSigners(charter.head);
   if (signers.length === 0) throw new EdgeCosignError("REFUSED: this vessel holds no seat of the charter's quorum, so it signs no part of a quorum act.");
   if (signers.length >= charter.head.threshold) {
@@ -149,7 +151,7 @@ export interface EdgeCosignResult {
  * every read of a board, it keeps what it counted in the vessel's own ledger. THE CONFIRMATION NAMES THE ACT: it
  * carries the act id the read printed, and a partial that holds any other act refuses.
  */
-export async function runEdgeCosign(opts: { readonly partial: unknown; readonly sealHome: string; readonly repo: Repo; readonly confirmActCid?: string }): Promise<EdgeCosignResult> {
+export async function runEdgeCosign(opts: { readonly partial: unknown; readonly sealHome: string; readonly repo: Repo; readonly confirmActCid?: string; readonly face?: number }): Promise<EdgeCosignResult> {
   const partial = readEdgeActPartial(opts.partial);
   if (partial === null) {
     throw new EdgeCosignError("REFUSED (invalid): that text reads as no partial — its act, its realm and its subject must name one edge, and its id must derive from its own bytes.", "invalid");
@@ -157,7 +159,7 @@ export async function runEdgeCosign(opts: { readonly partial: unknown; readonly 
   // THE ACT NAMES ITS EPOCH, and so its Nexus: a vessel that never acted in this realm reads the Nexus off the
   // charter it holds that carries that epoch. A realm already pinned here answers to its pin alone.
   const named = nexusOfEpoch(opts.sealHome, partial.act.epochCid ?? "") ?? undefined;
-  const { charter, read, note, vesselKey, aid } = await readRealm(opts.repo, partial.scope, opts.sealHome, named);
+  const { charter, read, note, vesselKey, aid } = await readRealm(opts.repo, partial.scope, opts.sealHome, named, opts.face);
   const before = await read();
   const first = judgeEdgeActPartial(partial, { charter, counted: before.counted });
   if (first.verdict !== "ready" && first.verdict !== "complete") {

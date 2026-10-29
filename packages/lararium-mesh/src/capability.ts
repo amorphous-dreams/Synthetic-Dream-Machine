@@ -36,5 +36,5 @@ export interface CapabilityVerifier {
    * `wiki-act` envelope carries the real destination and source in `args.args`, where `verify`'s bag derivation
    * never looks). Throws a `kahu-reach` refusal for a system canon bag the hand's cabal does not reach.
    */
-  kahuReach?(bagUrl: string, act: string): Promise<void>;
+  kahuReach?(bagUrl: string, act: string, presenter?: string): Promise<void>;
 }

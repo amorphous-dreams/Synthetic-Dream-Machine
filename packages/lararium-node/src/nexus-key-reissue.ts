@@ -33,7 +33,8 @@ import { charterHomeFor, keepKeyLine, primaryNexusAid } from "./carried-set.js";
 import { keyLineAt } from "./nexus-carriage.js";
 import { readNexusDoc } from "./nexus-doc.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
-import { loadVesselVerifyingKey, makeNodeFsPersonaVault } from "./node-vessel-identity.js";
+import { loadVesselVerifyingKey, personaRootExists } from "./node-vessel-identity.js";
+import { resolveFace } from "./face-selector.js";
 import { refuseWhileProvisional } from "./face-provisional.js";
 
 export class NexusKeyReissueRefused extends Error {}
@@ -51,12 +52,12 @@ export interface NexusKeyReissued {
 }
 
 /**
- * Re-issue the WORN face's key at the Nexus named by `nexusAid` (absent: this vessel's own charter). Refuses where the
- * vessel wears no face, keeps no charter for that Nexus, holds no key there, or holds a key the line already handed
+ * Re-issue the acting face's key (`face`, else the one face standing open) at the Nexus named by `nexusAid` (absent: this
+ * vessel's own charter). Refuses where the vessel holds no root for that face, keeps no charter for that Nexus, holds no key there, or holds a key the line already handed
  * on. `repo` names the store's one holder the hand-over lands on.
  */
 export async function runNexusKeyReissue(opts: {
-  readonly sealHome: string; readonly nexusAid?: string; readonly repo: Repo;
+  readonly sealHome: string; readonly nexusAid?: string; readonly repo: Repo; readonly face?: number;
 }): Promise<NexusKeyReissued> {
   const aid = (opts.nexusAid ?? primaryNexusAid(opts.sealHome) ?? "").trim().toLowerCase();
   if (!aid) throw new NexusKeyReissueRefused("this vessel holds no charter — name the Nexus (--nexus <aid>)");
@@ -64,20 +65,19 @@ export async function runNexusKeyReissue(opts: {
   if (!home || foundingRoster(readNexusDoc(home)).sealEpochCid.length === 0) {
     throw new NexusKeyReissueRefused(`this vessel keeps no seated charter for ${aid.slice(0, 18)}… — its gates read no line here`);
   }
-  const vault = await makeNodeFsPersonaVault();
-  const worn = await vault.selector.load();
-  if (worn === undefined || !(await vault.hasRoot(worn))) {
-    throw new NexusKeyReissueRefused("this vessel wears no face — a face re-issues its own key: `lares persona wear <N>` first");
+  const acting = await resolveFace(opts.face);
+  if (!(await personaRootExists(acting))) {
+    throw new NexusKeyReissueRefused(`this vessel holds no root for h${acting} — a face re-issues its own key: name a face it founded (--face N)`);
   }
   // A re-issue hands the face's standing at a Nexus to a new key: a restored face waits on a party's view first.
-  await refuseWhileProvisional(worn, "a key re-issue at a Nexus");
-  const standing = await readNexusKey(worn, aid);
-  if (standing === null) throw new NexusKeyReissueRefused(`the face at h${worn} holds no key in ${aid.slice(0, 18)}… — nothing to re-issue`);
+  await refuseWhileProvisional(acting, "a key re-issue at a Nexus");
+  const standing = await readNexusKey(acting, aid);
+  if (standing === null) throw new NexusKeyReissueRefused(`the face at h${acting} holds no key in ${aid.slice(0, 18)}… — nothing to re-issue`);
   standing.fill(0);
 
   const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: home });
   const board = await materializeSharedLarDoc(opts.repo, carriageDocUrl(island), "board:carriage-contracts");
-  const keys = await beginNexusKeyReissue(worn, aid);
+  const keys = await beginNexusKeyReissue(acting, aid);
   try {
     const from = nexusKeyPublicOf(keys.from);
     const to = nexusKeyPublicOf(keys.to);
@@ -88,15 +88,15 @@ export async function runNexusKeyReissue(opts: {
     const landed = line.some((r) => r.from === from && r.to === to);
     const admitted = admittedKeyOf({ nexus: aid, key: landed ? to : from, carried: line });
     if (admitted === null) {
-      await abandonNexusKeyReissue(worn, aid, keys.to);
+      await abandonNexusKeyReissue(acting, aid, keys.to);
       throw new NexusKeyReissueRefused("the key this face holds there already handed its standing on, or its line forks — a re-issue starts from the line's head; nothing moved");
     }
     const record = await signNexusKeyHandOver({ nexus: aid, from, to }, ed25519SignerFromSeed(keys.from), ed25519SignerFromSeed(keys.to));
     keepKeyLine(opts.sealHome, aid, record);
     board.change((d) => writeNexusKeyHandOver(d, record));
     await opts.repo.flush();
-    await finishNexusKeyReissue(worn, aid, keys.to);
-    return { nexusAid: aid, handleIndex: worn, from, to, handOver: nexusKeyHandOverId(record), admitted };
+    await finishNexusKeyReissue(acting, aid, keys.to);
+    return { nexusAid: aid, handleIndex: acting, from, to, handOver: nexusKeyHandOverId(record), admitted };
   } finally {
     keys.from.fill(0);
     keys.to.fill(0);

@@ -47,7 +47,8 @@ export interface NotedRealm { readonly realm: string; readonly nexus: string | n
 
 export type StewardRefusal =
   | "no-realm"                 // the plane never stood, or stands in no realm
-  | "no-face-worn"             // this vessel wears no face, or holds no root for the worn index
+  | "face-not-named"           // this vessel stands several faces open and the act named none (--face N)
+  | "face-root-absent"         // this vessel holds no root for the face the act resolves to
   | "steward-key-unreadable"   // this vessel's own keys would not read (a locked vault, a torn roster)
   | "steward-key-class"        // the key reads as anything but this vessel's own per-Nexus face key at this Nexus
   | "steward-name-unreadable"  // a name that reads neither a face key nor a Handle prefix
@@ -92,7 +93,7 @@ export interface RealmPlaneHolder {
    *  `propose` names stewards whose hands have NOT sealed this record — it accretes their names and counts
    *  nothing until each proposed hand co-signs (n-of-n; a named-but-unsigned steward is conscription). A
    *  proposed name must already have sealed a record of this realm, else `steward-name-unproven`.
-   *  Each signer names its steward: the worn face's key at this realm's Nexus, or a quorum Handle's prefix. */
+   *  Each signer names its steward: the acting face's key at this realm's Nexus, or a quorum Handle's prefix. */
   register(input: {
     readonly bagUri: string;
     readonly docUrl: string;
@@ -431,7 +432,7 @@ export function makeRealmPlane(opts: {
           const image = hex(realmBagBytes(rec));
           (groups.get(image) ?? (groups.set(image, []), groups.get(image)!)).push({ rec, sealed: sealedBy.length });
         }
-        if (groups.size === 0) throw new Error(`realm-bag: no standing proposal on the realm doc names this steward for "${bagUri}" — a hand that would keep the bag asks from its own vessel first (\`lares nexus realm-bag <bag> --join\`), and a keeping hand names a steward by the key that steward's worn face presents here (\`--steward <key>\`)`);
+        if (groups.size === 0) throw new Error(`realm-bag: no standing proposal on the realm doc names this steward for "${bagUri}" — a hand that would keep the bag asks from its own vessel first (\`lares nexus realm-bag <bag> --join\`), and a keeping hand names a steward by the key that steward's acting face presents here (\`--steward <key>\`)`);
         // WHERE NO REGISTRATION STANDS, nothing holds a proposal to a book: the signer names the hand it consents
         // with, so one planted proposal never draws a seal from a bare co-sign.
         if (!stands && withName === undefined) {

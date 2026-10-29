@@ -16,9 +16,10 @@
  * The cut reads its vessel's own edge shadow ONCE, at its entry, and refuses under it before any row opens
  * (`own-edge-shadowed`). The island's holder takes that one reading inside the ask the vessel signs and reads none
  * of its own. The cut then refuses, by name: a face this vessel holds no root for (`face-not-held`); a face the
- * standing vessel does not wear, since its island counts keys for the worn face alone (`face-not-worn`); a board
- * that holds no whole key history for the face (`key-history-unread`); and an island with no content-key holder
- * (`memory-unavailable`). A cut that refuses seals nothing and answers nothing but the name.
+ * standing vessel does not wear, since its island counts keys for the mounted face alone (`face-not-worn`); a board
+ * that holds no whole key history for the face (`key-history-unread`); a face whose address secret stands nowhere
+ * here (`no-address-secret`), since its restore could derive none of its working addresses; and an island with no
+ * content-key holder (`memory-unavailable`). A cut that refuses seals nothing and answers nothing but the name.
  *
  * Node-main only: a worker never imports this module.
  * Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-cut
@@ -28,6 +29,7 @@ import {
   type FaceBundleBody, type FaceBundleGuardianSet, type FaceBundleHolding, type PersonaKelEvent,
 } from "@lararium/mesh";
 import { listFaceProofKeys } from "./face-key-custody.js";
+import { readFaceAddressSecret } from "./fleet-join-custody.js";
 import { readGuardianSet } from "./guardian-enrolment.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
 import { IslandVerbRefused } from "./island-verb-ask.js";
@@ -39,7 +41,7 @@ import {
 import { bundleRows } from "./vault-carriers.js";
 
 /** The names a cut refuses under (custody#/the-cut). */
-export const CUT_REFUSALS = ["face-not-held", "face-not-worn", "own-edge-shadowed", "key-history-unread", "memory-unavailable"] as const;
+export const CUT_REFUSALS = ["face-not-held", "face-not-worn", "own-edge-shadowed", "key-history-unread", "memory-unavailable", "no-address-secret"] as const;
 export type CutRefusal = (typeof CUT_REFUSALS)[number];
 
 /** A cut that refuses: nothing sealed, nothing answered but the name. */
@@ -52,7 +54,7 @@ export class BackupRefused extends Error {
 export interface BackupDoor {
   /** The face this composition wears, by handle-index: the one its island counts keys for. Null where no face stands lit. */
   readonly wornFace: () => number | null;
-  /** This vessel's own reading of its edge on the worn face's fleet: true under its own shadow. */
+  /** This vessel's own reading of its edge on the mounted face's fleet: true under its own shadow. */
   readonly ownEdgeShadowed: () => Promise<boolean>;
   /**
    * Ask the daemon island for the memory section, sealed to `to`, as part of a cut that already read this
@@ -124,6 +126,15 @@ const EXTRACTORS: Readonly<Record<string, Extractor>> = {
     const mine = (await loadNodeHandleBook(line.handleIndex)).snapshot();
     parts.handleBook = { records: JSON.parse(JSON.stringify(mine.records)) as Record<string, unknown>[] };
   },
+  // whole: the face's address secret, so the face restored elsewhere derives the working addresses it derives here.
+  "face-address-secret": async (line, parts) => {
+    const group = (await loadIdentityAnchors(line.handleIndex))?.personaGroupId;
+    const secret = group ? await readFaceAddressSecret(group) : null;
+    if (!secret) {
+      throw new BackupRefused("no-address-secret", `the face at h${line.handleIndex} holds no address secret on this vessel, so a restore could derive none of its working addresses; nothing was cut`);
+    }
+    try { parts.addressSecret = hexOf(secret); } finally { secret.fill(0); }
+  },
   // whole: the guardian set this face's typed first enrolment committed. It rides only where the face's key history,
   // as this vessel's board holds it, commits that very set (read after the history below); a record the head does
   // not show stands pending on this vessel and stays.
@@ -161,8 +172,8 @@ export async function cutFaceBundle(args: { readonly face: number; readonly bund
   const worn = door?.wornFace() ?? null;
   if (door === null || worn !== face) {
     throw new BackupRefused("face-not-worn", worn === null
-      ? `this vessel stands wearing no face, so no island counts keys for h${face}: wear it (\`lares persona wear ${face}\`), stand the vessel again, unlock, and cut`
-      : `this vessel wears h${worn}, so its island counts no key for h${face}: wear it (\`lares persona wear ${face}\`), stand the vessel again, unlock, and cut`);
+      ? `this vessel's composition mounts no face, so no island counts keys for h${face}: mount it (\`lares vault unlock --face ${face}\`) on a standing vessel, and cut`
+      : `this vessel's composition mounts h${worn}, so its island counts no key for h${face}: mount it (\`lares vault unlock --face ${face}\`) on a standing vessel, and cut`);
   }
   if (door.cutMemory === null) throw new BackupRefused("memory-unavailable", "no daemon island stands in this vessel, so no content-key holder answers the memory section");
 
@@ -203,6 +214,7 @@ export async function cutFaceBundle(args: { readonly face: number; readonly bund
   const body: FaceBundleBody = {
     root: parts.root!, rosterLine: parts.rosterLine!, anchors: parts.anchors!, kel,
     names: parts.names, faceProofKeys: parts.faceProofKeys ?? [], handleBook: parts.handleBook ?? { records: [] }, guardianSet,
+    addressSecret: parts.addressSecret!,
     memory: { section: memory.section, holds: memory.holds.map((h) => ({ bagId: h.bagId, founding: h.founding, keyVersion: h.keyVersion })) },
   };
   const bytes = faceBundleBodyBytes(body);

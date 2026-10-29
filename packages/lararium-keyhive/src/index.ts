@@ -60,7 +60,7 @@ export { resolveOrMintBinding, unboundMints, restingMinter } from "./resolve-bin
 export type {
   ResolveBindingArgs, ResolveBindingResult, BindingKind, DocMinter,
 } from "./resolve-binding.js";
-export { makeSlotDocResolver } from "./slot-doc-resolver.js";
+export { makeSlotDocResolver, WorkingSlotRefusal } from "./slot-doc-resolver.js";
 export type { SlotDocResolver, SlotDocResolverArgs, SlotDoc, SlotDocRepo } from "./slot-doc-resolver.js";
 
 // makeOperatorDaemonBehavior is NOT re-exported here — it couples to @lararium/tw5

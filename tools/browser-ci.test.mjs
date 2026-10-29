@@ -364,11 +364,11 @@ test("the compose runner mounts the exchange directory, and the node mounts noth
   assert.doesNotMatch(yml.slice(0, yml.search(/^  qa:/m)), /\/exchange/);
 });
 
-test("up wears the synthetic face before the restart that puts the vessel on it", async () => {
+test("up names the synthetic face before the restart that mounts it, and wears no face between commands", async () => {
   const r = await run(["up"]);
   const at = (re) => r.calls.search(re);
-  assert.ok(at(/persona new 0/) >= 0 && at(/persona wear 0/) > at(/persona new 0/));
-  assert.ok(r.calls.lastIndexOf("restart lares") > at(/persona wear 0/));
+  assert.ok(at(/persona new 0/) >= 0 && r.calls.lastIndexOf("restart lares") > at(/persona new 0/));
+  assert.doesNotMatch(r.calls, /persona wear/);
 });
 
 test("CONTROL: info reads the mounted wiki document from a registered JSON system wiki", async () => {

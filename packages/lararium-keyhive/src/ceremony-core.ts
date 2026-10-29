@@ -340,7 +340,7 @@ async function landFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, chec
   const result = checkpoint.result;
   const events = new InMemoryEventStore();
   for (const e of checkpoint.events) await events.put({ hash: e.hash, variant: e.variant, bytes: base64ToBytes(e.bytes), ...(e.island ? { island: e.island } : {}) });
-  await flushCapEvents(events, handle);
+  await flushCapEvents(events, handle, result.personaGroupId);
   handle.change((doc) => {
     writeGroupSecretSeal(doc, result.personaGroupId, result.groupSecretSeal);
   });
@@ -442,7 +442,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const mount = input.mount !== false;
 
   // The atom's Keyhive replays the face's cap events from the daemon document.
-  const store   = await replayCapEvents(daemonHandle);
+  const store   = new InMemoryEventStore();
   const standing = new Set((await store.list()).map((e) => e.hash));
 
   // ── THE GROUP IS BORN UNDER THE ATOM ──────────────────────────────────────────────────────────
@@ -646,11 +646,12 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
 async function flushCapEvents(
   store: InMemoryEventStore,
   daemonHandle: ReturnType<typeof seedDaemonDoc>,
+  face: string,
   authority = "lares-init",
 ): Promise<void> {
   for (const evt of await store.list()) {
     const hash    = hexEncode(await webDigest("SHA-256", evt.bytes));
-    const title   = capEventTitle(hash);
+    const title   = capEventTitle(face, hash);
     daemonHandle.change((doc) => {
       if (!doc.tiddlers[title]) {
         doc.tiddlers[title] = storedRecord({
@@ -658,6 +659,7 @@ async function flushCapEvents(
             title,
             text:        bytesToBase64(evt.bytes),
             tags:        CAP_EVENT_TAG,
+            face,
             variant:     evt.variant,
             hash,
             // CIV-3 — the causal island travels WITH the record. `inSelfSlice` reads an absent island as
@@ -678,6 +680,7 @@ async function flushCapEvents(
 /** Read the daemon doc's cap events back into a fresh store, so a later ceremony resumes the same lattice. */
 export async function replayCapEvents(
   daemonHandle: ReturnType<typeof seedDaemonDoc>,
+  face: string,
 ): Promise<InMemoryEventStore> {
   const store = new InMemoryEventStore();
   const doc   = daemonHandle.doc();
@@ -685,7 +688,7 @@ export async function replayCapEvents(
     if (!title.startsWith(`${DAEMON_BAG_ID}/cap/`)) continue;
     if (rec?.meta?.deleted) continue;
     const fields = rec?.tiddler as Record<string, string> | undefined;
-    if (!fields?.["text"] || !fields["variant"] || !fields["hash"]) continue;
+    if (fields?.["face"] !== face || !fields["text"] || !fields["variant"] || !fields["hash"]) continue;
     await store.put({
       bytes:   base64ToBytes(fields["text"]),
       variant: fields["variant"] as never,
@@ -1143,7 +1146,7 @@ export async function runApplyAdmitPayload(
   // fires the handler above, which stamps the true variant and self-attributes the island — the record is
   // typed because the vessel took the events, never because the founder labelled them.
   if (payload.capEvents?.length) {
-    await flushCapEvents(capStore, daemonHandle, "lares-init-admit");
+    await flushCapEvents(capStore, daemonHandle, payload.personaGroupId, "lares-init-admit");
   }
   return result;
 }

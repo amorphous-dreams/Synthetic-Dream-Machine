@@ -402,6 +402,7 @@ export const FACE_WITHDRAWAL_GENESIS_DOMAIN = mint("face-withdrawal-genesis");
 export const FACE_WITHDRAWN_KEY_DOMAIN = mint("face-withdrawn-key");
 /** The reference a local session carries for its face's proof subject: a digest name. */
 export const FACE_PROOF_SUBJECT_DOMAIN = mint("face-proof-subject");
+export const FACE_WORKING_ADDRESS_DOMAIN = mint("face-working-address");
 /** A SESSION's certificate: the vessel's face-scoped key signs one session key and its hand's profile. */
 export const SESSION_CERTIFICATE_DOMAIN = mint("session-certificate");
 /** What a session signer signs, one name per purpose: the dial's signed FINISH, an ordinary ACT, and an act
@@ -410,6 +411,14 @@ export const SESSION_CERTIFICATE_DOMAIN = mint("session-certificate");
 export const SESSION_FINISH_DOMAIN = mint("session-finish");
 export const SESSION_ACT_DOMAIN = mint("session-act");
 export const SESSION_AUTHORITY_DOMAIN = mint("session-authority");
+/** A PLACE-ANCHORED session (a vessel standing with no Nexus): the reference its face's proof subject names over the
+ *  face's atom and the vessel's own place, the certificate the atom signs over one session key and its profile, and
+ *  what that key signs, one name per purpose. Apart from every Nexus-scoped name, so no image of a place session reads
+ *  as one made at a Nexus. */
+export const PLACE_PROOF_SUBJECT_DOMAIN = mint("place-proof-subject");
+export const PLACE_SESSION_CERTIFICATE_DOMAIN = mint("place-session-certificate");
+export const PLACE_SESSION_ACT_DOMAIN = mint("place-session-act");
+export const PLACE_SESSION_AUTHORITY_DOMAIN = mint("place-session-authority");
 // ── THE FLEET-JOIN DOOR: one face's fleet takes a new vessel of the same human ───────────────────
 // Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain. Three files cross by courier; each signed image
 // and the secret's seal carry their own name.

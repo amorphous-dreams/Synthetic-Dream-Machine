@@ -1,15 +1,20 @@
 import { faceAtomKeyFromSeed, type FaceAtomKey } from "@lararium/mesh";
 import "./found-route.js";
 import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
-import { loadActivePersonaIndex } from "../src/node-vessel-identity.js";
+import { bindFaceCustody, faceStandingCustody } from "../src/custody-seat.js";
+import { personaGroupDigest } from "../src/persona-group-file.js";
+import { resolveFace } from "../src/face-selector.js";
 import { loadFaceAtom, standFaceAtom } from "../src/face-atom-store.js";
 import { loadIdentityAnchors, persistIdentityAnchors } from "../src/identity-anchors.js";
 
 /**
  * Stand one face's custody rows for a test: its random atom seed and its anchors, as a founded face rests them.
- * Call after the vessel's custody and persona root stand.
+ * Call after the vessel's custody and persona root stand. A face RESERVED at `handleIndex` (its root rested before any group)
+ * takes the group, as a founding settles it, so the fixture stands ONE face at that index and never a second one beside it.
  */
 export async function seedFaceAtom(handleIndex = 0, personaGroupId = `group-fixture-h${handleIndex}`): Promise<FaceAtomKey> {
+  const reserved = await faceStandingCustody({ ordinal: handleIndex });
+  if (reserved !== null && reserved.group === null) await bindFaceCustody(reserved.fcid, personaGroupDigest(personaGroupId));
   await ensureFaceCustodyOfGroup(personaGroupId);
   const seed = await standFaceAtom(personaGroupId);
   await persistIdentityAnchors({ personaGroupId, meshCabalDocIdHex: "ab".repeat(32) }, handleIndex);
@@ -30,7 +35,7 @@ export async function atomKeyOf(handleIndex = 0): Promise<string> {
   return faceAtomKeyFromSeed(await atomSeedOf(handleIndex), anchors.personaGroupId).key;
 }
 
-/** The atom key of the face the vessel wears now. */
-export async function wornAtomKey(): Promise<string> {
-  return atomKeyOf((await loadActivePersonaIndex()) ?? 0);
+/** The atom key of the face a command acts as: `face`, else the one face standing open. */
+export async function actingAtomKey(face?: number): Promise<string> {
+  return atomKeyOf(await resolveFace(face));
 }

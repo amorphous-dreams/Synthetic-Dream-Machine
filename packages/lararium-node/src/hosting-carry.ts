@@ -121,7 +121,7 @@ function segment(key: string): string {
 interface Home { readonly face: number; readonly nexusAid: string }
 const guestRowDir = (home: Home, key: string): string => `${hostingRowDir(home.face, home.nexusAid)}/carry/${segment(key)}`;
 const recordFile = (home: Home, key: string): string => `${guestRowDir(home, key)}/record.json`;
-/** The Nexus's carriage home when a face holds its hosting (`create` founds it under the worn face); null where none does. */
+/** The Nexus's carriage home when a face holds its hosting (`create` founds it under the face named, else the one face standing open); null where none does. */
 async function homeOf(nexusAid: string, create: boolean): Promise<Home | null> {
   const face = await hostingFaceOf(nexusAid, create);
   return face === null ? null : { face, nexusAid };

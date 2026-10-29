@@ -43,7 +43,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
   HandleBook, attestAndRotate, faceLogViewLine, signFaceLogView, canonicalJsonBytes, coldKeySeedFromCode, sealKeySetHash, deriveSelfRecoveryKey, faceAtomKeyFromSeed, foldPersonaContests, guardianRecoveryRegistrationCard, hex, mintBundleKey, mintHandleInception, mintPersonaInception, mintVeto,
-  openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, sealMemorySection, signHandleCard,
+  faceWorkingDocUrl, openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, sealMemorySection, signHandleCard,
   type FaceBundleBody, type HandleCard, type HandleKelEvent, type PersonaKelEvent,
 } from "@lararium/mesh";
 import * as init from "../src/commands/init.js";
@@ -55,6 +55,7 @@ import { faceRowNames } from "./face-paths.js";
 import { guardianOffer, guardianSetFile, readGuardianSet, runGuardianEnrolment } from "../src/guardian-enrolment.js";
 import { ConfirmRefused, FaceProvisional, chairLogView, confirmProvisional, readProvisionalMark, refuseWhileProvisional } from "../src/face-provisional.js";
 import { readNexusDoc } from "../src/nexus-doc.js";
+import { readFaceAddressSecret } from "../src/fleet-join-custody.js";
 import { SealedActRefused, runSealedAct } from "../src/sealed-acts.js";
 import { loadIdentityAnchors, persistIdentityAnchors, veilArchivePath } from "../src/identity-anchors.js";
 import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
@@ -73,6 +74,8 @@ import { FsCustodyIo } from "../src/custody-io.js";
 import { unlockCustody } from "../src/custody-session.js";
 import { openFaceTree } from "../src/face-custody.js";
 import { FIXTURE_PASSPHRASE, seatScratchCustody } from "./custody-seat-fixture.js";
+import { nodeSessionDoor } from "../src/uds-session-door.js";
+import { SessionTable, sessionBinding } from "@lararium/mesh";
 
 vi.setConfig({ testTimeout: 600_000, hookTimeout: 600_000 });
 
@@ -122,6 +125,8 @@ async function cardOf(fill: number, glamour: string): Promise<HandleCard> {
 interface Cut {
   readonly sealedBody: Uint8Array; readonly bundleKey: Uint8Array; readonly body: FaceBundleBody;
   readonly rootKey: string; readonly prefix: string; readonly group: string; readonly atomKey: string; readonly vesselKey: string;
+  /** The working address the face derived on A for one wiki, from the address secret A held. */
+  readonly workingUrl: string;
   /** The custody keys of A as A held them, read before A was destroyed: the face's FCK and the node key (S). */
   readonly heldKeys: { readonly fck: Uint8Array; readonly nodeKey: Uint8Array; readonly fcid: string };
   /** Where the face enrolled guardians before the cut: the bundle cut BEFORE that enrolment, each guardian's own half, and A's board after it. */
@@ -190,13 +195,19 @@ async function cutOnDestroyedVessel(label: string, faceLabel = "the gardener", p
   const out: Cut = {
     ...cut, heldKeys, rootKey, prefix: anchors.personaKelPrefix!, group: anchors.personaGroupId,
     atomKey: faceAtomKeyFromSeed((await loadFaceAtomOfGroup(anchors.personaGroupId))!, anchors.personaGroupId).key,
-    vesselKey: await loadVesselVerifyingKey(), ...(enrolled ? { enrolled } : {}),
+    vesselKey: await loadVesselVerifyingKey(), workingUrl: await workingUrlOf(anchors.personaGroupId), ...(enrolled ? { enrolled } : {}),
   };
   // DESTROY THE SCRATCH HOME: nothing of vessel A survives but the bundle in hand.
   await leave();
   rmSync(root, { recursive: true, force: true });
   expect(existsSync(root)).toBe(false);
   return out;
+}
+/** The working address a face derives for the wiki "garden" from the address secret this vessel holds for its group. */
+async function workingUrlOf(group: string): Promise<string> {
+  const secret = await readFaceAddressSecret(group);
+  if (!secret) throw new Error(`no address secret stands for ${group.slice(0, 12)}`);
+  try { return faceWorkingDocUrl(secret, "garden", "working"); } finally { secret.fill(0); }
 }
 /** Seal `body` under a fresh key, as a bundle a cut would carry. */
 function sealed(body: FaceBundleBody): { sealedBody: Uint8Array; bundleKey: Uint8Array } {
@@ -276,6 +287,25 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toBe("face-already-held");
     expect(homeTree()).toBe(before);
     expect(pendingStands()).toBe(false);
+  });
+
+  test("R16 — the bundle carries the face's address secret, so the face restored on B derives the working address it derived on A; CONTROL: a second face derives another; a bundle without the secret refuses no-address-secret before any write", async () => {
+    const a = await cutOnDestroyedVessel("a");
+    const other = await cutOnDestroyedVessel("other", "the potter", 5);
+    expect(other.workingUrl, "CONTROL: a second face derives another working address").not.toBe(a.workingUrl);
+    await foundVessel("b");
+    // A bundle cut without the secret refuses by name, and moves nothing.
+    const before = homeTree();
+    const { addressSecret: _carried, ...bare } = a.body as FaceBundleBody & { addressSecret?: string };
+    expect(await refusalOf(restoreFaceBundle({ ...sealed(bare as FaceBundleBody), as: 1, withRepo }))).toBe("no-address-secret");
+    expect(homeTree()).toBe(before);
+    expect(pendingStands()).toBe(false);
+    // The bundle as cut lands the secret: B derives A's address for the same face, and never mints a fresh one.
+    await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo });
+    const group = (await loadIdentityAnchors(1))!.personaGroupId;
+    expect(group, "a new seat on B").not.toBe(a.group);
+    expect(await workingUrlOf(group), "one face, one working address on every device that wears it").toBe(a.workingUrl);
+    expect(await workingUrlOf((await loadIdentityAnchors(0))!.personaGroupId), "CONTROL: B's own persona zero derives its own").not.toBe(a.workingUrl);
   });
 
   test("R12 — a bundle carries no bare face key and no node key, in any form; the scan proves itself on a planted key first", async () => {
@@ -496,7 +526,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect([...RESTORE_REFUSALS]).toEqual([
       "bundle-refused", "bundle-inconsistent", "root-superseded", "face-already-held", "restore-pending", "place-unfounded",
       "founding-face-unlit", "no-hearth", "index-held", "roster-names-another-key", "orphan-names-another-key", "row-conflict",
-      "guardian-key-serves-another-face", "hearth-stands",
+      "guardian-key-serves-another-face", "hearth-stands", "no-address-secret",
     ]);
   });
 
@@ -645,6 +675,36 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     await writeCustodyRow("identity", guardianSetFile(1), new TextEncoder().encode(JSON.stringify({ prefix: a.prefix, ...a.body.guardianSet })));
     expect((await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo })).guardianSet).toBe("held");
   });
+  test("R15 — a restored face standing provisional, and a face this vessel founded, each open a session at the place through the production door, so persona.confirm and the guardian enrolment ride it", async () => {
+    const a = await cutOnDestroyedVessel("a");
+    await foundVessel("b");
+    await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo });
+    expect(await readProvisionalMark(1)).not.toBeNull();                       // h1 stands provisional
+    expect(await readProvisionalMark(0)).toBeNull();                           // h0, founded here, stands whole
+    // The production door with its real ports: the face's anchors, its atom row, the place KEL. No dial pin stands, so
+    // each session anchors at this vessel's own place.
+    const door = nodeSessionDoor({ pin: () => null, sealHome: larSealHome() });
+    const anchor = await door.anchorNow();
+    expect(anchor.kind).toBe("place");
+    for (const face of [0, 1]) {
+      const opened = await door.open({ faceRef: `h${face}`, hand: "cli" });
+      if (!opened.ok) throw new Error(`h${face} refused: ${opened.refusal}`);
+      const group = (await loadIdentityAnchors(face))!.personaGroupId;
+      const atomKey = faceAtomKeyFromSeed((await loadFaceAtomOfGroup(group))!, group).key;
+      expect(opened.supply).toMatchObject({ ordinal: face, presenter: `0x${atomKey}`, anchor, face: { personaGroup: group } });
+      // The atom certifies the session's signer once the table holds the session live.
+      const table = new SessionTable("owner");
+      const binding = sessionBinding(`socket-${face}`);
+      const live = table.open(binding, opened.supply.face, opened.supply.profile);
+      if (!live.ok) throw new Error(live.refusal);
+      const minted = await opened.supply.mint({ table, binding, session: live.session });
+      expect(minted.ok, `h${face} mints its signer`).toBe(true);
+      if (minted.ok) minted.signer.drop();
+    }
+    // CONTROL: a face this vessel does not hold refuses by name.
+    expect(await door.open({ faceRef: "h2", hand: "cli" })).toEqual({ ok: false, refusal: "face-absent" });
+  });
+
   test("R11 — a restored face stands provisional until a party's own view agrees with its head", async () => {
     const a = await cutOnDestroyedVessel("a", "the gardener", 3, 1);
     const { guardians, kel } = a.enrolled!;

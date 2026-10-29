@@ -128,6 +128,7 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
     ...(input.chunkRest ? { chunkRest: input.chunkRest } : {}),
   });
 
+  try {
   // Re-ingest cap events the founding ceremony (or a prior boot) persisted to
   // the daemon doc — reconstructs the PersonaGroup / MeshCabal sentinels + edges.
   await keyhive.hydrateFromEventStore();
@@ -223,4 +224,8 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   else for (const bagUrl of input.registerBags) await keyhive.registerBag(bagUrl);
 
   return { keyhive, did, unreadable };
+  } catch (error) {
+    try { await keyhive.dispose(); } catch (disposeError) { console.warn(`[daemon-keyhive] disposal failed: ${String(disposeError)}`); }
+    throw error;
+  }
 }

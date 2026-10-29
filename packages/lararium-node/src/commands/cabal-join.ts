@@ -31,7 +31,7 @@ import {
 import { type LarDoc } from "@lararium/mesh";
 import { admitOnLineage, type LineageAdmission } from "../realm-admission.js";
 import { larBootstrapPath } from "../vessel-paths.js";
-import { loadWornFaceAtomKey } from "../face-atom-store.js";
+import { loadFaceAtomKey } from "../face-atom-store.js";
 import { readVesselEdgeBoard, readRealmNexus, vesselEdgeCharter } from "../edge-board.js";
 import { leaseLineageOfNexus } from "../lease-charter.js";
 import { verifyEd25519, cabalInviteBytes } from "@lararium/mesh";
@@ -108,6 +108,8 @@ export interface CabalJoinOptions {
   readonly maxVouchesPerVoucher?: number;
   readonly policy?:   CabalJoinPolicy;
   readonly dials?:    AdmissionDials;
+  /** The face whose ledger the crossing reads (`--face N`); absent, the one face standing open. */
+  readonly face?:     number;
   /** The charter DOC's authority home (the door supplies `larSealHome()`): the seats a quorum act answers to. */
   readonly sealHome:   string;
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
@@ -158,7 +160,7 @@ export async function runCabalJoin(
     throw new CabalJoinError(`the applicant reads as a 64-hex verifying key, got "${opts.applicant}"`);
   }
 
-  const vesselKey = await loadWornFaceAtomKey();
+  const vesselKey = await loadFaceAtomKey(opts.face);
   if (!vesselKey) {
     throw new CabalJoinError("this vessel surfaces no verifying key — no board to read the lineage from.");
   }

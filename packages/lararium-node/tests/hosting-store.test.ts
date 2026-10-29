@@ -32,8 +32,8 @@ import {
   rollHosting, readHostingState, liveEpochs, spendToken, spendMintMarker, redeemedCount, mintedCount,
   DEFAULT_HOSTING_CAP, HostingStateMoved,
 } from "../src/hosting-store.js";
-import { HostingFaceAbsent, hostingDirPath, hostingRowDir } from "../src/hosting-face.js";
-import { setWornFaceInSession } from "../src/node-vessel-identity.js";
+import { hostingDirPath, hostingRowDir } from "../src/hosting-face.js";
+import { FaceNotNamed } from "../src/face-selector.js";
 import { FIXTURE_PASSPHRASE, holdSealsUntilBothArrive, seatHostingCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 const AID  = "nexus-" + "a".repeat(64);
@@ -54,16 +54,14 @@ const spendsOf = async (epoch: string): Promise<string[]> => (await dirFiles()).
 const fileBytes = async (name: string): Promise<Buffer> => readFileSync(join(hostingDirPath(0, AID)!, name));
 
 describe("the roll — two live epochs, nothing older", () => {
-  test("RED: two unlocked faces with none worn refuse a first roll; CONTROL: wearing face 1 binds and seals there", async () => {
+  test("RED: two unlocked faces with none named refuse a first roll; CONTROL: naming face 1 binds and seals there", async () => {
     const c = await custody("host-face-choice");
     const other = await c.holder.foundFace({ ordinal: 1, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
     const first = await c.holder.faceStanding({ ordinal: 0 });
-    setWornFaceInSession(undefined);
-    expect(await refusal(rollHosting({ nexusAid: AID, leafSeed: LEAF }))).toBeInstanceOf(HostingFaceAbsent);
+    expect(await refusal(rollHosting({ nexusAid: AID, leafSeed: LEAF }))).toBeInstanceOf(FaceNotNamed);
     expect(existsSync(hostingDirPath(0, AID)!)).toBe(false);
     expect(existsSync(hostingDirPath(1, AID)!)).toBe(false);
-    setWornFaceInSession(1);
-    const rolled = await rollHosting({ nexusAid: AID, leafSeed: LEAF });
+    const rolled = await rollHosting({ nexusAid: AID, leafSeed: LEAF, face: 1 });
     const row = hostingDirPath(1, AID)!;
     expect(row).toBe(join(c.homes.identity, "faces", other.fcid, ...hostingRowDir(1, AID).split("/")));
     expect(existsSync(join(row, "state.json"))).toBe(true);

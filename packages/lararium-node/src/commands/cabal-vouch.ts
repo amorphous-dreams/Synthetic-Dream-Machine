@@ -12,8 +12,8 @@
  * `admitOnLineage`, which folds this board and prices the applicant. Minting a vouch for someone who never
  * crosses costs the voucher their dilution and buys them nothing — the intended asymmetry.
  *
- * WHOSE HAND VOUCHES. The worn face's key at the Nexus the realm stands under, picked by the steward door
- * (`wornStewardSigner`), never a persona root: a vouch names its voucher in the clear on a board that crosses to
+ * WHOSE HAND VOUCHES. The acting face's key at the Nexus the realm stands under, picked by the steward door
+ * (`faceStewardSigner`), never a persona root: a vouch names its voucher in the clear on a board that crosses to
  * the realm's members, so a root there would name the human's device group (cabal-realm#/the-steward-signer).
  * The realm stands under the Nexus the vessel's own ledger names for it, or, at the vessel's first act there,
  * the one the call names (default the primary charter's), and the ledger keeps that word (kapae#/edge-hands).
@@ -31,14 +31,14 @@ import {
   prepareHolderFrontier, registerHandFrontierInto, realmAdmitBundle, type RealmAdmitBundle,
   type CabalInvite,
 } from "@lararium/mesh";
-import { loadWornFaceAtomKey } from "../face-atom-store.js";
+import { loadFaceAtomKey } from "../face-atom-store.js";
 import { daemonDocUrlFromBootstrap, cabalAdmissionEpoch } from "./cabal-join.js";
 import { actingRealmNexus, noteVesselRealm } from "../edge-board.js";
 import { leaseLineageOfNexus } from "../lease-charter.js";
 import { registerRealmFrontier } from "../realm-frontier-door.js";
 import type { HandLineage } from "@lararium/mesh";
-import { nodeStewardVault, wornStewardSigner, StewardRefused, type StewardVault } from "../realm-steward.js";
-import { wornNexusLeaf } from "../nexus-leaf.js";
+import { nodeStewardVault, faceStewardSigner, StewardRefused, type StewardVault } from "../realm-steward.js";
+import { faceNexusLeaf } from "../nexus-leaf.js";
 import { verifyEd25519 } from "@lararium/mesh";
 
 /** A nym reads valid only at the exact ed25519 verifying-key shape — a stray value never becomes an edge. */
@@ -55,6 +55,8 @@ export interface CabalVouchOptions {
   readonly boundEpoch?: number;
   /** The Nexus the realm stands under, for this vessel's first act there. Absent → the primary charter's. */
   readonly nexusAid?:   string;
+  /** The face that vouches (`--face N`); absent, the one face standing open. */
+  readonly face?:       number;
   /** The charter DOC's authority home (the door supplies `larSealHome()`). */
   readonly sealHome:    string;
   /** What the steward door reads of this vessel's keys; a test hands a fake. Absent → the node vault. */
@@ -64,7 +66,7 @@ export interface CabalVouchOptions {
 }
 
 export interface CabalVouchResult {
-  /** The worn face's key at the realm's Nexus: the key that signed. */
+  /** The acting face's key at the realm's Nexus: the key that signed. */
   readonly voucherDid:  string;
   /** The Nexus the realm stands under at this vessel. */
   readonly nexusAid:    string;
@@ -135,7 +137,7 @@ export async function runCabalVouch(opts: CabalVouchOptions): Promise<CabalVouch
   }
 
   // THE REALM'S NEXUS, and the ledger that keeps it: a vouch stands the vessel in the realm under one Nexus.
-  const vesselKey = await loadWornFaceAtomKey();
+  const vesselKey = await loadFaceAtomKey(opts.face);
   if (!vesselKey) throw new CabalVouchError("this vessel surfaces no verifying key — it keeps no ledger to note the realm in.");
   const nexusAid = await actingRealmNexus({
     repo: opts.repo, vesselKey, realm, sealHome: opts.sealHome,
@@ -144,9 +146,9 @@ export async function runCabalVouch(opts: CabalVouchOptions): Promise<CabalVouch
   // THE FENCE binds through this realm's own Nexus charter; an unreadable lineage mints no guessed epoch.
   const boundEpoch = String(opts.boundEpoch ?? await resolveBoundEpoch(realm, opts.repo, leaseLineageOfNexus(opts.sealHome, nexusAid)));
 
-  // A FACE NEVER VOUCHES FOR ITSELF, and the refusal mints nothing: the key the worn face already holds there
+  // A FACE NEVER VOUCHES FOR ITSELF, and the refusal mints nothing: the key the acting face already holds there
   // answers it, and a key minted below stands fresh, so no joiner named before it can name it.
-  const standing = await wornNexusLeaf(nexusAid);
+  const standing = await faceNexusLeaf(nexusAid, opts.face);
   if (standing && standing.verifyingKey.toLowerCase() === joiner) {
     throw new CabalVouchError("a face cannot vouch for itself — self-boosting is unrepresentable on a lineage.");
   }
@@ -154,7 +156,7 @@ export async function runCabalVouch(opts: CabalVouchOptions): Promise<CabalVouch
   // WHICH FACE VOUCHES: the worn one, by the key it presents at that Nexus. The steward door mints it where none
   // stands (a vouch presents the face there) and passes it through the guard; no option names a persona index.
   let signer;
-  try { signer = await wornStewardSigner(nexusAid, opts.vault ?? nodeStewardVault); }
+  try { signer = await faceStewardSigner(nexusAid, opts.vault ?? nodeStewardVault, opts.face); }
   catch (err) {
     if (err instanceof StewardRefused) throw new CabalVouchError(err.message.replace(/^realm-bag: /, ""));
     throw err;

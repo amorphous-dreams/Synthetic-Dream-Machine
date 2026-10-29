@@ -103,7 +103,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "  rite <petname>                            the pet-named procedures — `cabal` seats the founding quorum, `kahuli` overturns a ratchet tier",
       "  kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition",
       "  realm-bag <bag-uri>                       register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT);",
-      "                                            the WORN face's key for this Nexus seals it (`lares persona wear N` first)",
+      "                                            the acting face's key for this Nexus seals it (--face N, else the one face standing open)",
       "            [--realm <id>]                  the realm the act lands in: a cabal realm (64 hex) or the charter-derived realm (the default)",
       "            [--join]                        ASK to keep a bag another hand keeps — the record waits on each standing steward",
       "            [--cosign [--with <key>]]       consent as a named steward to a record that waits on this hand;",
@@ -281,7 +281,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   walk: {
     usage: "usage: lares walk <take | invite>",
     synopsis:
-      "this vessel's WALKING door. A vessel walks in at another hearth on an invite, as the face it wears: " +
+      "this vessel's WALKING door. A vessel walks in at another hearth on an invite, as one face (`--face N`, else the one face standing open): " +
       "`take` keeps a carried `lar-invite:` string durably, and the vessel's hearth dial walks in on it; " +
       "`invite` hands the newest invite out of the wallet, as one string to carry. Bare `lares walk` reads " +
       "where this vessel walks — the Nexus, its standing there, and its wallet. A vessel walks at one hearth: " +
@@ -289,12 +289,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "ships SHUT by name (the shut-routes house ruling, stable-founding-road #/rulings): the invite is kept, but no hearth gate seats a walk until a live grant reader opens the route.",
     details: [
       "  (none)                  per hearth: the Nexus, whether the invite still waits, the grant held, the wallet count",
-      "  take <lar-invite:…>     keep a carried invite; the hearth dial walks in on it as the worn face",
+      "  take <lar-invite:…> [--face N]   keep a carried invite; the hearth dial walks in on it as that face",
       "  invite                  hand the newest invite out of the wallet",
     ],
     examples: [
-      "lares persona wear 0                     # a walker walks as the face it wears",
-      "lares walk take 'lar-invite:…'           # keep the invite a hearth handed you",
+      "lares walk take 'lar-invite:…' --face 0  # keep the invite a hearth handed you, walking as face 0",
       "lares walk                               # where this vessel walks, and how many invites it holds",
       "lares walk invite                        # one invite to carry to one newcomer",
     ],
@@ -520,7 +519,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares handle burn --from-persona                      # the persona buries the face from above",
     ],
     flags: [
-      "--persona <index>  which persona acts (default: the worn persona, then 0)",
+      "--persona <index>  which persona acts (default: the one face standing open)",
       "--from-persona     (burn) the owning persona buries the face from above, not the seated key",
       "--surface <kind>   (attest) WHICH adapter answers: dns-control · atproto-account · kowloon-actor · loopback-address",
       "--subject <name>   (attest) the foreign name the edge reaches, in that surface's own grammar",
@@ -537,23 +536,22 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   persona: {
-    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | wear <index> | list | sync | reissue [--nexus <aid>] | guardian show <index> | guardian offer --prefix <persona-…> | guardian enrol <index> --threshold <k> <offer>… | guardian view --prefix <persona-…> | provisional <index> | confirm <index> <lar-log-view:…> | view <persona-…> --seat-key <key>>",
+    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | list | sync | reissue [--nexus <aid>] [--face N] | guardian show <index> | guardian offer --prefix <persona-…> | guardian enrol <index> --threshold <k> <offer>… | guardian view --prefix <persona-…> | provisional <index> | confirm <index> <lar-log-view:…> | view <persona-…> --seat-key <key>>",
     synopsis:
       "The PLURALITY-PONO identity multitude. THREE NAMES, THREE JOBS: the private LABEL names a compartment " +
       "to you alone; the declared HANDLE names what a persona answers to OUTWARD (an intent — only " +
       "`lares handle publish` performs the announce); the SEAT stands it for a Kahu chair on this node and " +
-      "needs no Handle and carries a private chair label. `--split-root` opts into recovery shares. `wear` switches the active persona (reboot-to-switch — one face to the " +
-      "mesh). Local-first: a write lands on this node first and rides up when a hearth answers. A joining " +
+      "needs no Handle and carries a private chair label. `--split-root` opts into recovery shares. A vessel wears no face " +
+      "between commands: a command names the face it acts as (`--face N`), or resolves the one face standing open. Local-first: a write lands on this node first and rides up when a hearth answers. A joining " +
       "vessel takes a face by `lares fleet join` and never mints its root here.",
     examples: [
       "lares persona new 0 --name '<label>' --seat [--chair '<chair label>']",
       "lares persona new 1 --name '<label>' --seat [--chair '<chair label>']",
       "lares persona new 2 --name '<label>' --seat [--chair '<chair label>'] [--split-root]",
       "lares nexus seal seat                  # ... the founding sequence closes here",
-      "lares persona wear 1                   # switch the active persona",
-      "lares persona list                     # held indices · active marker · labels · declared Handles",
+      "lares persona list                     # held indices · labels · declared Handles",
       "lares persona sync                     # carry labels + Handles up to the fleet (the persona plane)",
-      "lares persona reissue --nexus <aid>    # the worn face hands its key at that Nexus on to a fresh key",
+      "lares persona reissue --nexus <aid> --face 1   # face 1 hands its key at that Nexus on to a fresh key",
       "lares persona guardian offer --prefix <persona-…>         # a guardian cuts a fresh key for one face",
       "lares persona guardian enrol 0 --threshold 2 <offer> <offer> <offer>   # the face's first guardian set",
       "lares persona provisional 1              # a restored face: the head its restore read, and who could confirm it",
@@ -567,7 +565,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--seat             (new) stand it for a Kahu chair on THIS node (no Handle needed)",
       "--chair <label>    (new) private label for a seat claim; pass with --seat",
       "--split-root       (new) opt into arming the 2-of-3 recovery split",
-      "reissue            the worn face's key at one Nexus hands its standing on to a fresh random key, by a hand-over both keys sign",
+      "reissue            the face's key (--face N, else the one face standing open) at one Nexus hands its standing on to a fresh random key, by a hand-over both keys sign",
       "--nexus <aid>      (reissue) the Nexus; absent, this vessel's own charter",
       "guardian show      the face's prefix, which a guardian's offer names, and the set it holds",
       "guardian offer     a guardian's fresh recovery key for one face: a card it keeps and an offer line it hands over",
@@ -601,13 +599,13 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vault unbind <slot-id> --rotate  # one act: a new vessel key seals every carrier and each staying slot binds over it",
       "lares vault backup --face <N> --out <file>   # cut ONE face's backup bundle, sealed under a route of its own",
       "lares vault restore <file>             # bring a face back from its bundle: a recovery act that takes a NEW seat",
-      "lares vault restore <file> --memory    # land the bundle's content keys on the restored seat (vessel standing, unlocked, wearing the face)",
+      "lares vault restore <file> --memory    # land the bundle's content keys on the restored seat (vessel standing, unlocked on the face)",
       "lares vault restore --cards --face <key|persona-…> --as 1   # rebuild a face's root from two split cards: a root, never memory",
     ],
     flags: [
       "--passphrase|--paper  (bind) which route the new slot carries; (unlock) skip the route question",
       "--rotate           (unbind) mint a new vessel key and re-bind each staying slot; put <slot-id> BEFORE it",
-      "--face <N>         (backup) the handle-index of the face to cut; the standing vessel wears it",
+      "--face <N>         (backup) the handle-index of the face to cut; the standing vessel holds it open",
       "--out <file>       (backup) the bundle file to write; a file already standing there refuses",
       "--as <N>           (restore) the handle-index the face lands at here; absent, the index its bundle named",
       "--memory           (restore) import the bundle's memory section instead of its lineage",
@@ -622,15 +620,15 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares cabal <face | vouch | join | feed | clock>",
     synopsis:
       "The JOIN AXIS — a mutual-hold relation with a cabal-realm, orthogonal to the CARRIAGE contract " +
-      "`nexus contract` writes. ONE KEY ACTS IN A REALM: the key the WORN face presents at the Nexus the realm " +
-      "stands under; no verb here names a persona index, and a person wears the face that acts. A vouch stakes " +
+      "`nexus contract` writes. ONE KEY ACTS IN A REALM: the key the acting face presents at the Nexus the realm " +
+      "stands under; a verb names that face (`--face N`), else the one face standing open acts. A vouch stakes " +
       "that face's OWN standing on one joiner and needs no kahu " +
       "quorum, because it performs no steward act. IT ADMITS NOBODY: the vouch rides as signal-2 on the " +
       "lineage the admission price walks, and the cost lands at the moment of vouching, since a voucher's " +
       "score SPLITS across everyone they vouch for. Re-vouching the same joiner stays ONE edge — re-minting " +
       "never buys out-degree.",
     examples: [
-      "lares cabal face --realm <realm-doc-id>                        # your worn face's key there: the nym a voucher names",
+      "lares cabal face --realm <realm-doc-id> [--face N]             # the face's key there: the nym a voucher names",
       "lares cabal vouch <joiner-nym> --realm <realm-doc-id>          # dilutes you, admits nobody",
       "lares cabal join --realm <realm-doc-id> [--bundle <path|json>] # PRESENT and cross with carried heads",
       "lares cabal feed --realm <realm-doc-id>                        # the OFFERING — roll your lease slot",
@@ -651,7 +649,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "over a party. Scoped under `edge` to mirror `nexus kapae` / `nexus un_kapae` and stay apart from " +
       "them: that pair shadows a PRESENTER at a Nexus, this pair shadows one RELATIONSHIP. TWO HANDS ACT. The " +
       "HOLDER signs with the one key the edge names: a voucher over their own vouch (`--realm`), with the key " +
-      "the worn face presents at the Nexus the realm stands under, or a fleet " +
+      "the acting face (--face N) presents at the Nexus the realm stands under, or a fleet " +
       "root over a device of its fleet (`--device`, on the fleet's own board). The QUORUM (`--quorum`) signs " +
       "with the seats this vessel holds of the charter the realm stands under, at that charter's head epoch: it strikes a vouch, or sets a " +
       "MEMBER's whole relation to a realm aside (`--member`), which holds against a fresh vouch. A lower " +
@@ -686,7 +684,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--member <key>     name a member's whole relation to the realm (the quorum's edge)",
       "--device <key>     name a device's relation to the signing root's fleet",
       "--quorum           sign with this vessel's held seats of the charter's quorum",
-      "--as <root-index>  (--device) which held fleet root signs as the holder (default: the first held one); a realm's holder is the worn face",
+      "--as <root-index>  (--device) which held fleet root signs as the holder (default: the first held one); a realm's holder is the acting face (--face N)",
       "--nexus <aid>      the Nexus the realm stands under, at this vessel's first act there (default: the primary charter's)",
       "--fleet <root>     (settle) one fleet root to settle (default: the root of every face this vessel holds)",
       "--partial          with --quorum: sign with the seats held here and print a partial, landing nothing",

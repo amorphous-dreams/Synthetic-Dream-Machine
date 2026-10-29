@@ -19,7 +19,9 @@
  * ── WHAT THE BODY NAMES ─────────────────────────────────────────────────────────────────────────
  * One face: its root, the roster line that names it, the two fixed names of its anchors, its key event log, its
  * own names, its face proof keys, its own handle-book records, the guardian set its typed first enrolment committed
- * (null where its log commits none) and its memory section. `readFaceBundleBody`
+ * (null where its log commits none), its address secret (the 32 bytes its working documents derive their addresses
+ * from, so a restored face finds the documents it wrote elsewhere; null where a reader built the body from paper,
+ * which carries none) and its memory section. `readFaceBundleBody`
  * reads SHAPE alone and refuses any key it does not name; the restore judges every relation between the parts.
  * The body names no veil key, no vessel key, no seat and no row of another face, and its shape gives none a home.
  *
@@ -114,6 +116,12 @@ export interface FaceBundleBody {
   readonly guardianSet: FaceBundleGuardianSet | null;
   /** The memory section, sealed to the pair this bundle's key derives (base64), and what it holds. */
   readonly memory:     { readonly section: string; readonly holds: readonly FaceBundleHolding[] };
+  /**
+   * The face's address secret, 64 lower hex: every device that wears the face derives its working addresses from it.
+   * Null where the body came from paper (the root cards carry none). Absent, the body reads whole and the restore
+   * refuses it `no-address-secret`: a restore never mints a fresh one.
+   */
+  readonly addressSecret?: string | null;
 }
 
 const HEX64 = /^[0-9a-f]{64}$/;
@@ -157,8 +165,10 @@ function readGuardianSet(v: unknown): FaceBundleGuardianSet | null {
 export function readFaceBundleBody(bytes: Uint8Array): FaceBundleBody | null {
   let raw: unknown;
   try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); } catch { return null; }
-  const top = plain(raw, ["root", "rosterLine", "anchors", "kel", "names", "faceProofKeys", "handleBook", "guardianSet", "memory"]);
+  const top = plain(raw, ["root", "rosterLine", "anchors", "kel", "names", "faceProofKeys", "handleBook", "guardianSet", "memory"], ["addressSecret"]);
   if (!top) return null;
+  const addressSecret = top["addressSecret"];
+  if (addressSecret !== undefined && addressSecret !== null && (typeof addressSecret !== "string" || !HEX64.test(addressSecret))) return null;
   const root = plain(top["root"], ["signingKey", "verifyingKey"]);
   const rosterLine = plain(top["rosterLine"], ["handleIndex", "verifyingKey"]);
   const anchors = plain(top["anchors"], ["signerDid", "personaKelPrefix"]);
@@ -218,6 +228,7 @@ export function readFaceBundleBody(bytes: Uint8Array): FaceBundleBody | null {
     kel,
     names: { ...(names["petname"] !== undefined ? { petname: names["petname"] as string } : {}), ...(names["handle"] !== undefined ? { handle: names["handle"] as string } : {}) },
     faceProofKeys, handleBook: { records }, guardianSet, memory: { section: memory["section"], holds },
+    ...(addressSecret !== undefined ? { addressSecret: addressSecret as string | null } : {}),
   };
   // ONE BODY, ONE SPELLING: the bytes must equal the canonical image of what they parsed to.
   const again = canonicalJsonBytes(top);

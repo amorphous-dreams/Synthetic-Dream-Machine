@@ -36,7 +36,7 @@ import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-
 import { hearthSovereignPin } from "../src/hearth-sovereign-pin.js";
 import { hex, materializeSharedLarDoc, carriageDocUrl, carriageEntriesFromBoard, signCarriageQuorum, writeCarriageEntry, ed25519SignerFromSeed,
   nexusAidOf, signerClass } from "@lararium/mesh";
-import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey, wearPersona,
+import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey,
   listPersonaRoots } from "../src/node-vessel-identity.js";
 
 /** The hands over `keys`: the seat keys this suite names (faces 0-6 across the used generations). */
@@ -916,7 +916,7 @@ describe("a face's key at a Nexus mints at random and re-issues by a signed hand
     expect(second.verifyingKey).not.toBe(first.verifyingKey);
   });
 
-  it("K8c the worn face re-issues: the gate stands the successor under the admitted nym, and the key it handed on proves nothing", async () => {
+  it("K8c the face named re-issues: the gate stands the successor under the admitted nym, and the key it handed on proves nothing", async () => {
     await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
@@ -924,11 +924,10 @@ describe("a face's key at a Nexus mints at random and re-issues by a signed hand
     const joinerNym = await leafOf(3);
     const admitAct = await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
     const old = (await nexusLeafFor(3, aid))!;
-    await wearPersona(3);
     let head = "";
     const { holder, repo, nexusPubkey } = await standHolderAt();
     try {
-      const reissued = await runNexusKeyReissue({ sealHome: sealHome(), nexusAid: aid, repo });
+      const reissued = await runNexusKeyReissue({ sealHome: sealHome(), nexusAid: aid, repo, face: 3 });
       expect(reissued).toMatchObject({ nexusAid: aid, handleIndex: 3, from: joinerNym, admitted: joinerNym });
       const fresh = (await nexusLeafFor(3, aid))!;
       expect(fresh.verifyingKey).toBe(reissued.to);
@@ -941,7 +940,7 @@ describe("a face's key at a Nexus mints at random and re-issues by a signed hand
       expect(holder.leafNymOf("peer-successor")).toBe(joinerNym);                            // the relation keeps its name
       expect(holder.membership.holdsCarriagePeer("peer-handed-on")).toBe(false);
       // A second re-issue starts from the head.
-      const again = await runNexusKeyReissue({ sealHome: sealHome(), nexusAid: aid, repo });
+      const again = await runNexusKeyReissue({ sealHome: sealHome(), nexusAid: aid, repo, face: 3 });
       expect(again.from).toBe(reissued.to);
       expect(again.admitted).toBe(joinerNym);
       head = again.to;
@@ -962,11 +961,10 @@ describe("a face's key at a Nexus mints at random and re-issues by a signed hand
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const aid = nexusAidOf(readNexusDoc(sealHome()))!;
     const joinerNym = await leafOf(3);
-    await wearPersona(3);
     const half = await beginNexusKeyReissue(3, aid);                                         // the process stops here
     expect((await nexusLeafFor(3, aid))!.verifyingKey).toBe(joinerNym);                     // the standing key still signs
     const repo = restingRepo(larDataDir());
-    const resumed = await runNexusKeyReissue({ sealHome: sealHome(), nexusAid: aid, repo });
+    const resumed = await runNexusKeyReissue({ sealHome: sealHome(), nexusAid: aid, repo, face: 3 });
     expect(resumed.to).toBe(nexusKeyPublicOf(half.to));
     // A hand-over from the admitted key to a stranger already stands on the board: the line forks at the next try.
     const stranger = new Uint8Array(32).fill(99);
@@ -975,7 +973,7 @@ describe("a face's key at a Nexus mints at random and re-issues by a signed hand
     const board = await materializeSharedLarDoc(repo, carriageDocUrl(nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: sealHome() })), "board:carriage-contracts");
     board.change((d) => writeNexusKeyHandOver(d, fork));
     const before = (await nexusLeafFor(3, aid))!.verifyingKey;
-    await expect(runNexusKeyReissue({ sealHome: sealHome(), nexusAid: aid, repo })).rejects.toThrow(/already handed its standing on, or its line forks/);
+    await expect(runNexusKeyReissue({ sealHome: sealHome(), nexusAid: aid, repo, face: 3 })).rejects.toThrow(/already handed its standing on, or its line forks/);
     expect((await nexusLeafFor(3, aid))!.verifyingKey).toBe(before);
     await expect(listFaceProofKeys(3)).resolves.toHaveLength(1);                             // no half-done row left behind
   });

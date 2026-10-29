@@ -93,7 +93,9 @@ if [ ! -f "$_bootstrap" ] || [ -n "$_resume" ]; then
         _i=$((_i + 1))
       done
       _chairs=$(printf '%s\n' "$LAR_STAND_KAHU" | tr ',' '\n' | grep -c .)
-      LAR_PEERS= node packages/lares-cli/dist/src/bin/lares.js nexus seal rotate --cold-key "$_card" --threshold $(( _chairs / 2 + 1 )) \
+      # THE ROLL NAMES ITS FACE: three faces stand open now, and a command acts as the face it names (`--face N`). The
+      # founding face, persona zero, holds the seed chair the card arms, so it acts the roll and its realm edge anchors.
+      LAR_PEERS= node packages/lares-cli/dist/src/bin/lares.js nexus seal rotate --face 0 --cold-key "$_card" --threshold $(( _chairs / 2 + 1 )) \
         || echo "[boot] the seed charter did NOT roll (see above) — this hearth tends under its one seed seat"
     fi
   fi

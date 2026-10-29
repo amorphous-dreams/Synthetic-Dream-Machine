@@ -25,7 +25,7 @@
 # ONE STORE DOOR. While a vessel stands the CLI runs by `compose exec`, sharing the daemon's /tmp (the UDS
 # rendezvous), uid and environment. With no vessel standing, one `compose run` of the `offline` service owns the
 # store for that act. So a hearth founds before `up`: `found --hearth --name <label>` (the Stable founding act: the
-# place, persona zero, its seed charter, the face), `persona wear 0`, up. A place standing already lifts the same way,
+# place, persona zero, its seed charter, the face), then up. A place standing already lifts the same way,
 # with the vessel stopped first: the act holds the store.
 #
 # THE HOST HOLDS THE ENGINE. The app gets no docker socket, and the CLI inside never stops or starts the daemon.

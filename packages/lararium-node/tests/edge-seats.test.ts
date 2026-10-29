@@ -17,7 +17,7 @@ import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "../src/commands/edge-seats.js";
 import { assertDyadBinds } from "../src/commands/device-admit.js";
 import { direct } from "./direct-store.js";
-import { atomKeyOf, atomSeedOf, seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
+import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
 
 let root: string;

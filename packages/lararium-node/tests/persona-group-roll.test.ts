@@ -39,10 +39,10 @@ async function foundAndSeat() {
   });
   const handle = await repo.find(f.daemonUrl as AutomergeUrl);
   const veil = new KeyhiveProvider();
-  await veil.init({ seed: f.atomSeed, eventStore: await replayCapEvents(handle as never), archiveBytes: f.veilArchive });
+  await veil.init({ seed: f.atomSeed, eventStore: await replayCapEvents(handle as never, f.personaGroupId), archiveBytes: f.veilArchive });
   await veil.hydrateFromEventStore();
   const vessel = new KeyhiveProvider();
-  await vessel.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never) });
+  await vessel.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never, f.personaGroupId) });
   await vessel.hydrateFromEventStore();
   // A second device of the same face, seated by the production crossing, which also delegates the bag to the group.
   const device = new KeyhiveProvider();

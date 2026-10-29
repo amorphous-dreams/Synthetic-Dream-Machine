@@ -19,16 +19,18 @@ import { loadFaceAtomOfGroup } from "../face-atom-store.js";
 import { loadPersonaGroupRootSeed } from "../node-vessel-identity.js";
 import { fleetFaceChainForVessel } from "../fleet-lineage.js";
 import { FaceNotNamed } from "../face-selector.js";
+import { unlockedFaceOrdinals } from "../custody-seat.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
 
 export class IntentRefused extends Error { override name = "IntentRefused"; }
-export function resolveIntentFaceIndex(named: number | undefined, held: readonly number[]): number {
-  if (named !== undefined) {
-    if (!Number.isSafeInteger(named) || named < 0 || !held.includes(named)) throw new IntentRefused(`face-not-held: h${named}`);
-    return named;
+/** The named face, else the ONE face standing open; `held` (the open faces holding anchors) gates the choice and never makes it. */
+export function resolveIntentFaceIndex(named: number | undefined, held: readonly number[], open: readonly number[]): number {
+  if (named === undefined) {
+    if (open.length !== 1) throw new FaceNotNamed(`FaceNotNamed: name --face N for ${open.map((n) => `h${n}`).join(", ") || "a face this vessel holds"}`);
+    named = open[0]!;
   }
-  if (held.length === 1) return held[0]!;
-  throw new FaceNotNamed(`FaceNotNamed: name --face N for ${held.map((n) => `h${n}`).join(", ") || "a face this vessel holds"}`);
+  if (!Number.isSafeInteger(named) || named < 0 || !held.includes(named)) throw new IntentRefused(`face-not-held: h${named}`);
+  return named;
 }
 export function intentAudience(input: { to?: string; prefer?: string; class?: string; every?: boolean }): IntentAudience {
   const selected = [input.to !== undefined, input.prefer !== undefined, input.class !== undefined, input.every === true].filter(Boolean).length;
@@ -75,7 +77,7 @@ export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined,
     for (const candidate of held) if ((await loadIdentityAnchors(candidate))?.personaGroupId === selector.group) { named = candidate; break; }
     if (named === undefined) throw new IntentRefused("face-not-held");
   } else named = selector.index;
-  const index = resolveIntentFaceIndex(named, held);
+  const index = resolveIntentFaceIndex(named, held, await unlockedFaceOrdinals());
   const anchors = await loadIdentityAnchors(index);
   if (!anchors) throw new IntentRefused(`face-not-held: h${index}`);
   const group = anchors.personaGroupId;

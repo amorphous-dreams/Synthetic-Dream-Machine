@@ -35,7 +35,6 @@ beforeAll(async () => {
     daemonEnv: { LAR_SAME_ORIGIN: "true" },
     riteA: async (source, rootA) => {
       await growStagedQuorum(source, rootA, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
-      await source(["persona", "wear", "0"]);
       const pub = await source(["nexus", "publish", "plugins", "--source", HIGHLIGHT_SOURCE, "--apply", "--face", "0", "--json"]);
       const d = pub.json?.["data"] as { offeringCid?: string; boardUrl?: string; blobCount?: number } | undefined;
       offeringCid = d?.offeringCid ?? "";

@@ -20,11 +20,11 @@
  * ONE face, and its catalog, its wikis (their working, personal and draft slot docs, minted under the daemon's
  * store) and every private bag it registers are that face's (`deriveRegisterBags` already counts the catalog's
  * bags under the worn group alone). The persona-scoped planes are the one thing the vessel tells apart by face.
- * So a session of the WORN face reads its own planes and every other document this vessel holds, save the
+ * So a session of the mounted face reads its own planes and every other document this vessel holds, save the
  * persona-scoped planes of any OTHER face it carries; a session of any other face reads that face's planes
  * alone. O1 replaces the bridge with per-surface facets.
  *
- * Two faces on one vessel thereby read different books: neither reads the other's planes, and only the worn face
+ * Two faces on one vessel thereby read different books: neither reads the other's planes, and only the mounted face
  * reads the vessel's wikis, catalog and bags.
  *
  * Canon: lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings ("Sharing after the gate");
@@ -54,11 +54,11 @@ export function faceFleetFacets(bootstrapTiddlers: BootTiddlers, personaGroup: s
 }
 
 /**
- * The documents the worn face's bridge may read beyond its own view: every document the catalog points at (`automerge:` text) under a
+ * The documents the mounted face's bridge may read beyond its own view: every document the catalog points at (`automerge:` text) under a
  * title that is NOT a face-scoped bag id: the vessel's books (a wiki, a draft, the catalog, the oracle) and the pointers its planes
  * stand on (a realm's doc, its steward, its standing), as document IDs. An ALLOW-LIST: a document the catalog does not point at
  * reads nothing across the bridge, so a foreign face's plane whose catalog row is absent, withheld or face-scoped is shut out by
- * default and never let in by an omission. The worn face's own five planes ride its view.
+ * default and never let in by an omission. The mounted face's own five planes ride its view.
  */
 export function bridgeBooks(catalog: LarDoc | undefined | null): ReadonlySet<string> {
   const out = new Set<string>();
@@ -106,13 +106,13 @@ export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?:
       const facets = tiddlers ? faceFleetFacets(tiddlers, face.personaGroup) : null;
       if (facets === null || facets.documents.length === 0) return;
       const view = new SessionDocumentView({ profile: "face", facets });
-      // The worn face is the caller's (sealed custody's) when it names one; the bootstrap's group text answers only where no caller does.
+      // The mounted face is the caller's (sealed custody's) when it names one; the bootstrap's group text answers only where no caller does.
       const worn = wornGroup ? wornGroup() : (tiddlers?.[PERSONA_GROUP_ID_TIDDLER]?.text ?? null);
       if (worn !== face.personaGroup || tiddlers === null) {
         views.set(peerId, { view, gate: viewFederationGate(view) });
         return;
       }
-      // THE BRIDGE: the worn face reads the vessel's books too: its own view, plus the allow-list the catalog names (`bridgeBooks`).
+      // THE BRIDGE: the mounted face reads the vessel's books too: its own view, plus the allow-list the catalog names (`bridgeBooks`).
       // A caller that names no books opens no bridge, so the default is shut.
       const gate: FederationGate = {
         mayFederate: (documentId: DocumentId) => !view.closed && (view.fetch(String(documentId)).ok || (books?.().has(String(documentId)) ?? false)),
