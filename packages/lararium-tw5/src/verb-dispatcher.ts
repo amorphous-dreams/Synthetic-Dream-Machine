@@ -142,6 +142,8 @@ export interface VerbFence {
   readonly check: (verbName: string, context: VerbContext) => void;
   /** The verbs the check never runs before, each mapped to its one-line reason. */
   readonly open: Readonly<Record<string, string>>;
+  /** Runs every verb, open or fenced, once past the check: the fence's owner may hold what the verb uses until it settles. */
+  readonly span?: (context: VerbContext, run: () => Promise<Record<string, unknown>>) => Promise<Record<string, unknown>>;
 }
 
 export class VerbTable {
@@ -183,8 +185,14 @@ export class VerbTable {
   get(verbName: string): VerbReactor | undefined {
     const inner = this.handlers.get(verbName);
     const fence = this.fenceOf;
-    if (!inner || !fence || !this.fenced(verbName)) return inner;
-    return async (args, context) => { fence.check(verbName, context); return inner(args, context); };
+    if (!inner || !fence) return inner;
+    const fenced = this.fenced(verbName);
+    const span = fence.span;
+    if (!fenced && !span) return inner;
+    return async (args, context) => {
+      if (fenced) fence.check(verbName, context);
+      return span ? span(context, () => inner(args, context)) : inner(args, context);
+    };
   }
   has(verbName: string): boolean { return this.handlers.has(verbName); }
   list(): readonly string[] { return [...this.handlers.keys()].sort(); }

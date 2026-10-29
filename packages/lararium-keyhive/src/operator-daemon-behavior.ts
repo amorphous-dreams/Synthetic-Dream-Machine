@@ -235,7 +235,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
 
   let kh: KeyhiveProvider | null = null;
   const providers = new Map<string, { provider: KeyhiveProvider; group: string }>();
+  // What still holds each face's provider (a verify, or a verb past its verify): a drop disposes only once these settle.
   const inFlight = new Map<KeyhiveProvider, Set<Promise<unknown>>>();
+  const holding = async <T>(provider: KeyhiveProvider, pending: Promise<T>): Promise<T> => {
+    const active = inFlight.get(provider) ?? new Set<Promise<unknown>>();
+    active.add(pending); inFlight.set(provider, active);
+    try { return await pending; } finally { active.delete(pending); if (!active.size) inFlight.delete(provider); }
+  };
   let faceChanges = Promise.resolve();
   // What each lit face booted from, by its bare atom key: a later lit message for that key matches it or refuses by name.
   const litInputs = new Map<string, string>();
@@ -974,6 +980,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // own content-key seat and mint (OWED, k19-hive-lane#/the-slices) a sibling's session reaches only those.
       registry.fence({
         open: FACE_NEUTRAL_VERBS,
+        // A sibling's verb past the fence holds that face's provider until it settles, so its drop waits for it.
+        span: (context, run) => {
+          const key = context.presenter === undefined ? undefined : bareKey(context.presenter);
+          const face = key === undefined || (daemonAuth.atom && key === bareKey(daemonAuth.atom.key)) ? undefined : providers.get(key);
+          return face ? holding(face.provider, run()) : run();
+        },
         check: (verb, context) => {
           if (!daemonAuth.atom) return;
           // Fail closed: a call that names no presenter refuses like a sibling's.
@@ -1275,10 +1287,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           const key = bareKey(args.presenter);
           const face = providers.get(key);
           if (!face) return { ok: false, reason: `no provider for face ${key}` };
-          const pending = faceOwnerVerifier({ face: face.provider, mount: { atomKey: key, placeKey: daemonAuth.placeVerifyingKey } }).verify(args);
-          const active = inFlight.get(face.provider) ?? new Set<Promise<unknown>>();
-          active.add(pending); inFlight.set(face.provider, active);
-          try { return await pending; } finally { active.delete(pending); if (!active.size) inFlight.delete(face.provider); }
+          return holding(face.provider, faceOwnerVerifier({ face: face.provider, mount: { atomKey: key, placeKey: daemonAuth.placeVerifyingKey } }).verify(args));
         } },
         kahuReachOf(ctx),
       );
