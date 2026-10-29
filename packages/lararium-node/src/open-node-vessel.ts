@@ -64,7 +64,7 @@ import type { WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
-import { workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding } from "@lararium/mesh";
+import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
   ACTIVE_WIKI_URI,
@@ -474,17 +474,30 @@ export async function standNodeFloor(storageDir: string): Promise<NodeFloor> {
  * down. No timer runs here; the asking island's own patience bounds the wait from its side.
  */
 export async function restInStore(
-  repo: Pick<Repo, "find" | "flush">,
+  repo: Pick<Repo, "find" | "flush"> & Partial<Pick<Repo, "findWithProgress" | "handles" | "networkSubsystem" | "peers">>,
   documentIds: readonly string[],
-  leg?: { readonly ready: Promise<void>; readonly onClose: (fn: () => void) => () => void },
+  leg?: { readonly ready: Promise<unknown>; readonly onClose: (fn: () => void) => () => void },
+  heads?: Readonly<Record<string, readonly string[]>>,
 ): Promise<void> {
+  let islandPeer: string | undefined;
   if (leg) {
     // The teardown subscription leaves when the wait settles, so a completed ask holds nothing of the door.
-    const stood = await new Promise<boolean>((resolve, reject) => {
-      const off = leg.onClose(() => resolve(false));
-      leg.ready.then(() => { off(); resolve(true); }, (error: unknown) => { off(); reject(error); });
+    const stood = await new Promise<{ peer: unknown } | null>((resolve, reject) => {
+      const off = leg.onClose(() => resolve(null));
+      leg.ready.then((peer) => { off(); resolve({ peer }); }, (error: unknown) => { off(); reject(error); });
     });
-    if (!stood) throw new Error(`the vessel stood down before the island's sync leg stood (${documentIds.join(", ")})`);
+    if (stood === null) throw new Error(`the vessel stood down before the island's sync leg stood (${documentIds.join(", ")})`);
+    if (typeof stood.peer === "string") islandPeer = stood.peer;
+  }
+  const named = heads && documentIds.length > 0 && documentIds.every((id) => (heads[id]?.length ?? 0) > 0);
+  if (named && repo.findWithProgress && repo.handles) {
+    // The island names the heads it holds. A derived id the vessel asked for earlier may stand cached unavailable, and
+    // that says nothing of the island's copy: the vessel's copy has to come to hold the heads, so the wait rides the
+    // handle's own `heads-changed`, never a find that settled before the bytes could arrive.
+    for (const id of documentIds) repo.findWithProgress(`automerge:${id}` as AutomergeUrl);
+    const answer = await answerRestWithHeads(repo as unknown as Repo, { type: "doc:rest", requestId: "rest-in-store", documentIds: [...documentIds], heads: Object.fromEntries(documentIds.map((id) => [id, [...heads![id]!]])) }, islandPeer);
+    if (!answer.rested) throw new Error(answer.why ?? "the vessel's copy did not come to hold the island's heads");
+    return;
   }
   for (const id of documentIds) await repo.find<LarDoc>(`automerge:${id}` as AutomergeUrl);
   await repo.flush(documentIds as DocumentId[]);
@@ -970,7 +983,7 @@ async function prepareNodeBootOn(
   // in its store — so no binding names a document a hard stop could leave unsaved.
   const restDoorClosers = new Set<() => void>();
   const onRestDoorClose = (fn: () => void): (() => void) => { restDoorClosers.add(fn); return () => { restDoorClosers.delete(fn); }; };
-  setRestDoor((documentIds) => restInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onRestDoorClose }));
+  setRestDoor((documentIds, heads) => restInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onRestDoorClose }, heads));
   stood.push({ what: "the rest door", down: () => { setRestDoor(null); for (const close of [...restDoorClosers]) close(); restDoorClosers.clear(); } });
   // The Repo stands down after everything that writes through it: it flushes, then closes its storage and network.
   stood.push({ what: "the Repo", down: async () => { await repo.flush(); await repo.shutdown(); } });

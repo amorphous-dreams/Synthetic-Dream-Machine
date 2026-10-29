@@ -40,7 +40,7 @@ function attachCasDoor(w: Worker): void {
 }
 
 /** The vessel's answer to a worker's `doc:rest` — resolves once every named document rests in the vessel's store. */
-export type RestDoor = (documentIds: readonly string[]) => Promise<void>;
+export type RestDoor = (documentIds: readonly string[], heads?: Readonly<Record<string, readonly string[]>>) => Promise<void>;
 
 // THE REST DOOR, vessel side. A worker's Repo holds no store for the documents it mints beside its own bag: the
 // vessel's Repo saves them. ONE store per vessel, so ONE door, stood with the composition and dropped at its
@@ -51,11 +51,11 @@ let restDoor: RestDoor | null = null;
 export function setRestDoor(door: RestDoor | null): void { restDoor = door; }
 
 /** Answer one `doc:rest` ask through the door standing now. Exported so a test asks it without a worker. */
-export async function answerDocRest(ask: Pick<IslandMsg_DocRest, "requestId" | "documentIds">): Promise<IslandMsg_DocRested> {
+export async function answerDocRest(ask: Pick<IslandMsg_DocRest, "requestId" | "documentIds" | "heads">): Promise<IslandMsg_DocRested> {
   const base = { type: "doc:rested" as const, requestId: ask.requestId };
   const door = restDoor;
   if (!door) return { ...base, rested: false, why: "no rest door stands on this vessel" };
-  try { await door(ask.documentIds); return { ...base, rested: true, proof: { documentIds: [...ask.documentIds] } }; }
+  try { await door(ask.documentIds, ask.heads); return { ...base, rested: true, proof: { documentIds: [...ask.documentIds] } }; }
   catch (e) { return { ...base, rested: false, why: e instanceof Error ? e.message : String(e) }; }
 }
 
@@ -125,7 +125,7 @@ function attachRestDoor(w: Worker): void {
     const m = raw as Partial<IslandMsg_DocRest> | null;
     if (!m || m.type !== "doc:rest" || typeof m.requestId !== "string" || !Array.isArray(m.documentIds)) return;
     if (!m.documentIds.every((id) => typeof id === "string")) return;
-    void answerDocRest({ requestId: m.requestId, documentIds: m.documentIds }).then((reply) => {
+    void answerDocRest({ requestId: m.requestId, documentIds: m.documentIds, ...(m.heads && typeof m.heads === "object" ? { heads: m.heads } : {}) }).then((reply) => {
       try { w.postMessage(reply); } catch { /* the worker went away — nothing to answer */ }
     });
   });

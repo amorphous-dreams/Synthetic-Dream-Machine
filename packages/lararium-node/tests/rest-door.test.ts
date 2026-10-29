@@ -13,6 +13,7 @@
  *   D9  a document the island imports under a derived id the vessel already asked for and read unavailable still rests: the
  *       door waits for the vessel's copy to hold the heads the island names, and the cached unavailable settles nothing.
  *       CONTROL: with no earlier ask the same ask rests.
+ *   D10 the heads the island names ride the ask to the vessel's door.
  *   D5  the vessel's own act rests the document in its store before it resolves: a second reader of the same
  *       directory finds the document's bytes the instant the act returns.   control: before the act, it finds none
  */
@@ -201,4 +202,11 @@ describe("the rest door", () => {
       }
     });
   }
+
+  test("D10 — the heads the island names reach the vessel's door on the wire", async () => {
+    const seen: unknown[] = [];
+    setRestDoor(async (ids, heads) => { seen.push([...ids], heads); });
+    await vesselRestAsker(wired().port)(["doc-a"], undefined, { "doc-a": ["h1", "h2"] });
+    expect(seen).toEqual([["doc-a"], { "doc-a": ["h1", "h2"] }]);
+  });
 });
