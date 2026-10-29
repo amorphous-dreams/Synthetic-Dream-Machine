@@ -67,7 +67,7 @@ export function makePortDoor(opts: { readonly policy?: PortPolicy; readonly post
       if (raw && typeof raw === "object" && "type" in raw) {
         const type = (raw as { type?: unknown }).type;
         if (typeof type === "string" && type.startsWith("port:") &&
-          !["port:open", "port:write", "port:ask", "port:presence", "port:close", "port:ack"].includes(type))
+          !["port:open", "port:write", "port:ask", "port:presence", "port:close", "port:ack", "port:widen"].includes(type))
           return refusal("port-kind-refused");
       }
       const msg = readPortVesselMsg(raw);

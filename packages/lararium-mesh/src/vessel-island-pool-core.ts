@@ -328,6 +328,8 @@ export class VesselIslandPoolCore {
   // later REFERENCE re-mounts it byte-for-byte (Orleans activation-on-reference: the
   // grain identity outlives its physical activation). `ensureWiki` reads this.
   private readonly _mountSpecs = new Map<string, { spec: WikiMountSpec; pinned: boolean }>();
+  /** The core hash and resolved plugin CIDs each wiki island last booted with. */
+  private readonly _bootInputs = new Map<string, { coreCid: string; pluginCids: readonly string[] }>();
   private readonly _host:           VesselIslandHost;
   private readonly _mainRepo:       Repo | null;
   /** The sync peer each wiki island's channel carries, so a rest ask reads a closed channel as a fact. */
@@ -655,6 +657,8 @@ export class VesselIslandPoolCore {
       throw new Error(`[vessel-pool] ${wikiId} plugin resolution refused: ${resolved.error}`);
     }
     const pluginCids = resolved.pluginCids;
+    // The mirror of a wiki island reads the plugin list the island booted with, never a second resolution that an offering change could move.
+    if (!plan.surface && plan.coreHash) this._bootInputs.set(wikiId, { coreCid: plan.coreHash, pluginCids });
 
     // THE FENCE READS BEFORE ANY VIEW ATTACHES. A session that ended or switched while the plugins resolved,
     // or a pool that began to close, opens no channel at all.
@@ -952,6 +956,14 @@ export class VesselIslandPoolCore {
   coldSince(wikiId: string): number | null {
     const slot = this._slots.get(wikiId);
     return slot?.temperature === "anu" ? slot.cooledAt : null;
+  }
+
+  /**
+   * The engine inputs a mounted wiki's mirror reads: the core hash and plugin CIDs its island last booted with, the same two its manifest carried. Null when the wiki has no retained mount, no core
+   * hash (pre-CAS), or a recipe whose plugins refuse: the mirror never guesses an input.
+   */
+  async mountInputsOf(wikiId: string): Promise<{ readonly coreCid: string; readonly pluginCids: readonly string[] } | null> {
+    return this._bootInputs.get(wikiId) ?? null;
   }
 
   has(wikiId: string): boolean {

@@ -124,6 +124,9 @@ function projected(entry: PortEntry, port: OpenPort): PortWireRecord & { seq: nu
     omitted: [...value.omitted], ...(entry.deleted ? { deleted: true as const } : {}), causedBy: [...entry.causedBy] };
 }
 
+/** Wider ports carry more of each record; a widen only moves up this order. */
+const WIDTH_RANK: Record<string, number> = { none: 0, skinny: 1, story: 2, full: 3 };
+
 export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
   const maxActors = opts.maxActors ?? 256;
   if (!Number.isSafeInteger(maxActors) || maxActors < 1) throw new RangeError("maxActors");
@@ -537,6 +540,14 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       if (!type.startsWith("port:")) return false;
       const msg = readPortVesselMsg(raw);
       if (!msg || msg.type !== type) return false;
+      if (msg.type === "port:widen") {
+        // A widen reopens the same port at the wider shape: same portId, same lease, same actor ledger, a fresh snapshot.
+        const held = ports.get(msg.portId);
+        if (!held) return true;
+        if ((WIDTH_RANK[msg.width] ?? 0) <= (WIDTH_RANK[held.open.width] ?? 0)) return true;
+        const { since: _since, ...rest } = held.open;
+        return this.onSignal!("port:open", { ...rest, width: msg.width }, ctx);
+      }
       if (msg.type === "port:open") {
         if (msg.wikiUri !== ctx.wikiUri) return false;
         flush(ctx);
