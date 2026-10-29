@@ -126,7 +126,7 @@ Read from caps rather than from tiers, the landlord and bootstrap worries dissol
 
 !! What a key format buys, MEASURED ~ non-portability, never non-compromise
 
-A browser vessel's clear keystore persists its signing key as a hex seed, so a same-origin read yields raw key material. A bound custody slot seals that seed; the web boot and `open-browser-vessel.ts` still owe the unlock call. The obvious cure — mint the key `extractable: false` and keep only a handle — WORKS, and buys less than its name suggests. Measurement, not reading, grounds both halves (Playwright Chromium 151 + Firefox 153, 2026-08-09).
+Before a slot binds, a browser vessel's keystore holds its place seed (and its veil Archives) clear, the seed as hex, so a same-origin read yields raw key material. A bound custody slot seals that seed with every other custody row; the web boot asks the tab's person for the unlock before the vessel opens, and the opened tree key rests in page memory: the exposure the page-never-a-vessel ruling moves into the vessel's own worker (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings). The obvious cure — mint the key `extractable: false` and keep only a handle — WORKS, and buys less than its name suggests. Measurement, not reading, grounds both halves (Playwright Chromium 151 + Firefox 153, 2026-08-09).
 
 ''IT WORKS.'' An Ed25519 key generated non-extractable structured-clones into IndexedDB, survives a full browser restart, signs afterward, and refuses every export. Ed25519 reached WebCrypto across the field in 2024–25 (Firefox 129, Safari 17, Chrome 137). ''One gap:'' Safari can MAKE an X25519 key and cannot PERSIST one as a CryptoKey — Ed25519 persists there, X25519 does not.
 
@@ -147,7 +147,7 @@ A browser vessel's clear keystore persists its signing key as a hex seed, so a s
 <<~ has KeyClass Device "opaque/YES resurrection/through its own holder's custody slot alone — else re-mint and re-admit cure/a non-extractable handle, or a secret wrapped under the holder's own slots">>
 <<~ has KeyClass PersonaRoot "opaque/STRUCTURALLY-NO resurrection/losing it loses the persona cure/an at-rest seal">>
 
-''Why a persona root cannot go opaque:'' hierarchical derivation feeds the PARENT PRIVATE KEY back in as bytes at every step. A handle can never supply them. So the durable identity keeps needing a seed. Browser custody seals the device seed and Keyhive Archives under a bound passphrase or paper slot; the persona root still persists cleartext outside that tree and still needs its own seal.
+''Why a persona root cannot go opaque:'' hierarchical derivation feeds the PARENT PRIVATE KEY back in as bytes at every step. A handle can never supply them. So the durable identity keeps needing a seed. Browser custody seals the device seed, Keyhive Archives and persona roots under a bound passphrase or paper slot (`browser-custody.ts`); a persona root never rests outside that tree, since the face's secret rows require a slot.
 
 ''The instrument that fits the persona root'' reads as authenticator-derived envelope encryption — a key derived per-authenticator, wrapping one content key, one wrapped copy per device. It suits the root's needs (bytes, and multi-device recovery) and suits the device key's not at all. ''Two keys, two cures, and a design that gives both the same treatment gets one of them wrong.''
 
@@ -199,7 +199,9 @@ A minted key rests in browser storage, and browsers reclaim it. ''WebKit clears 
 
 !!! What the code holds, and what it owes
 
-* The browser's PRF wrap (`packages/lararium-browser/src/seed-wrap-prf.ts`) sits BESIDE the cleartext root and wraps a persona-root seed, never the device signer.
+* Browser persona roots rest SEALED in the slot tree once a slot binds (`packages/lararium-browser/src/browser-custody.ts`); only the place seed and veil Archives may stand clear before a slot.
+* The opened tree key rests in page memory, keyed by vessel. The page-never-a-vessel ruling (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings) moves it into the browser vessel's own worker: OWED.
+* The browser's PRF wrap (`packages/lararium-browser/src/seed-wrap-prf.ts`) wraps a persona-root seed, never the device signer, and stands outside the slot tree.
 * The mesh slot tree (`packages/lararium-mesh/src/keyslot.ts`) builds `passphrase` and `paper` pins alone and refuses any other kind; a passkey slot stands unbuilt.
 * Walk carriage (`packages/lararium-mesh/src/walk-carry.ts`) keeps its receipt and read cap ON the walker's device, and the hearth may reclaim the bytes. It serves as no backup until a locator and a retention promise survive a wipe.
 
@@ -298,6 +300,6 @@ The `https` compose profile supplies a TLS terminator and a split-horizon resolv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;raaR4E_AE-UnPN7YIq5qzkaKl39rLCeYGGpXqb5iWdI
+<<^ code="&#x0003;">>ni:///sha-256;jmP9ydzZHY_C2VRRcRZgAbUumvGZT_Ahk03NYXQHq9c
 
 <<^ code="&#x0004;" -> to="?">>

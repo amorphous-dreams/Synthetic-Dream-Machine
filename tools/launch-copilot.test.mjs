@@ -71,3 +71,13 @@ test("the allowance reads the newest snapshot — KNOWN POSITIVE planted; an emp
   writeFileSync(f, "{}");
   assert.match(allowance(f), /no premium_interactions/);
 });
+
+test("RED: --model fusion refuses by name in both modes; CONTROL: a pinned lens id launches", () => {
+  // Fusion integration waits until after the founding, and a router with a hidden lineage cannot serve as a named lens.
+  for (const mode of ["read", "build"]) {
+    for (const model of ["fusion", "Fusion", "copilot-fusion", "FUSION"]) {
+      assert.throws(() => copilotArgs({ mode, prompt: "x", model, share: "/s.md" }), /fusion/i, `${mode} ${model}`);
+    }
+    assert.ok(copilotArgs({ mode, prompt: "x", model: "gpt-5.3-codex", share: "/s.md" }).includes("gpt-5.3-codex"));
+  }
+});

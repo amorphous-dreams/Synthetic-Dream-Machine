@@ -20,45 +20,11 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-keyhive-archive
  */
 import { readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
-import { idbKeys, openVesselIdb } from "./browser-vessel-identity.js";
-
-/** A vessel-wide Keyhive Archive belongs to a retired store shape. */
-export class LegacyBrowserArchiveRefused extends Error {
-  override readonly name = "LegacyBrowserArchiveRefused";
-  constructor(readonly idbName: string, readonly row: string) {
-    super(`[browser-keyhive-archive] ${row} holds a retired place identity in "${idbName}"; re-found this vessel from a fresh store`);
-  }
-}
-
-/** Refuse old clear or sealed vessel Archive bytes before browser boot composes a face. */
-export async function refuseLegacyBrowserArchive(idbName: string): Promise<void> {
-  const db = await openVesselIdb(idbName);
-  try {
-    const row = (await idbKeys(db, "keystore")).find((key) => key === "keyhive-archive" || key === "sealed/keyhive-archive");
-    if (row) throw new LegacyBrowserArchiveRefused(idbName, row);
-  } finally { db.close(); }
-}
 
 /** The row that keeps one PersonaGroup's creator-veil Archive. */
 export function browserVeilArchiveRow(personaGroup: string): string {
   if (!personaGroup) throw new Error("[browser-keyhive-archive] a veil archive row names its PersonaGroup");
   return `veil-archive-g${personaGroup}`;
-}
-
-/** Old handle-index rows cannot identify the face that owns them. Boot refuses before restoring an Archive. */
-export class BrowserOldShapeVeilArchiveRefused extends Error {
-  override readonly name = "BrowserOldShapeVeilArchiveRefused";
-  constructor(readonly idbName: string, readonly row: string) {
-    super(`[browser-keyhive-archive] refuses: this store holds the old face-archive shape; re-found the face (${row} in "${idbName}")`);
-  }
-}
-
-export async function oldShapeVeilRow(idbName: string): Promise<void> {
-  const db = await openVesselIdb(idbName);
-  try {
-    const row = (await idbKeys(db, "keystore")).find((key) => /^(?:sealed\/)?veil-archive-h\d+$/.test(key));
-    if (row) throw new BrowserOldShapeVeilArchiveRefused(idbName, row);
-  } finally { db.close(); }
 }
 
 /** A row that stands and does not hold Archive bytes. */

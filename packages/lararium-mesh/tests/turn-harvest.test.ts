@@ -96,6 +96,25 @@ Lares (Council): ->◇ the fork belongs to the operator.
   });
 });
 
+describe("a feedback= key and a focus or feedback head carry no panel meaning", () => {
+  test("a `feedback=` key reads as a plain unknown key, so a closing panel carrying only it reads OPEN", () => {
+    const h = harvestTurnGradient(`<<~ lares aim from=lar:///a.b.c/x -> to=lar:///d.e.f/y>>
+Lares (Council): ->◇ held.
+<<~ set hud="yield" drift-ward="! · held · ↻ L-Prime" feedback="closed 1↺">>
+<<~ lares yield from=lar:///d.e.f/y -> to=?>>`);
+    expect(aftermathClosed(h), "the retired key closes nothing").toBe(false);
+    expect(closingPanel(h)!.keys["feedback"]).toBe("closed 1↺");
+  });
+
+  test("a `focus` or `feedback` head reads as water, never as a panel", () => {
+    for (const head of ["focus", "feedback"]) {
+      const h = harvestTurnGradient(`<<~ ${head} note="x">>`);
+      expect(h.panels, `${head} is no panel head`).toHaveLength(0);
+      expect(h.waterCount, `${head} counts as water`).toBeGreaterThan(0);
+    }
+  });
+});
+
 describe("a panel key this reader never heard of still harvests", () => {
   // The key map is carried verbatim, so a key the frame adds costs no parse and loses no signal.
   const h = harvestTurnGradient(`<<~ set hud="aim" mood="wry" tempo="unhurried">>`);

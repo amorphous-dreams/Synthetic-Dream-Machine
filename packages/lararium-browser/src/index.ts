@@ -54,7 +54,7 @@ export type {
 // THE BOOT'S CUSTODY STEP: each tab asks the person for its own unlock, or for a first slot before a face secret mints.
 export { standBrowserCustody } from "./browser-boot-custody.js";
 export type { CustodyAsk, CustodyAnswer, BootCustodyVerdict, StandBrowserCustodyOptions } from "./browser-boot-custody.js";
-// The opt-in PRF wrap of a persona-root seed at rest — beside the cleartext finding, never the mint.
+// The opt-in PRF wrap of a persona-root seed — beside the slot tree's seal, never the mint.
 export { detectPrf, ambientPrfHost, wrapSeed, unwrapSeed, SeedWrapRefused, SEED_WRAP_HKDF_INFO } from "./seed-wrap-prf.js";
 export type { PrfHost, PrfDetection, SeedWrapRecord, SeedWrapKeyClass } from "./seed-wrap-prf.js";
 export type { BrowserVesselIdentity } from "./browser-vessel-identity.js";

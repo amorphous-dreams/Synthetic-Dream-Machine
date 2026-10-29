@@ -224,7 +224,7 @@ export interface DaemonVmCore {
   /** Resolves once the vessel's Repo has met the daemon island's sync peer on the leg the island now runs on. A
    *  document the island mints reaches the vessel's Repo over that leg alone, so a question of the Repo about it
    *  waits on this and never believes an absence before the leg stands. */
-  syncLegReady:   () => Promise<void>;
+  syncLegReady:   () => Promise<string>;
   mountMainVerbs: (registry: VerbTable) => void;
   placeVerb:      (opts: VesselPlaceVerbRequest) => void;
   lightFace:      (entry: JoinedFaceAuth) => Promise<void>;
@@ -397,14 +397,14 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     };
   }
   // The leg the island runs on stands when the vessel's Repo meets its peer; a replacement leg (manifest replay) stands its own.
-  const legStanding = (): { ready: Promise<void>; onPeer: () => void } => {
-    let onPeer!: () => void;
-    const ready = new Promise<void>((resolve) => { onPeer = resolve; });
+  const legStanding = (): { ready: Promise<string>; onPeer: (peerId: string) => void } => {
+    let onPeer!: (peerId: string) => void;
+    const ready = new Promise<string>((resolve) => { onPeer = resolve; });
     return { ready, onPeer };
   };
   const firstLeg = legStanding();
-  let currentLeg: Promise<void> = firstLeg.ready;
-  const detachPrimary = attachMessageChannelSync(repo, mainPort, () => firstLeg.onPeer());
+  let currentLeg: Promise<string> = firstLeg.ready;
+  const detachPrimary = attachMessageChannelSync(repo, mainPort, (peerId) => firstLeg.onPeer(peerId));
   const detachOwned = ownedChannel
     ? attachMessageChannelSync(repo, ownedChannel.mainPort, (peerId) => ownedPeers.add(peerId))
     : undefined;
@@ -675,7 +675,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     let afterPost: (() => void) | undefined;
     if (!first) {
       const leg = legStanding();
-      const detach = attachMessageChannelSync(repo, primary.mainPort, () => leg.onPeer());
+      const detach = attachMessageChannelSync(repo, primary.mainPort, (peerId) => leg.onPeer(peerId));
       const detachOwn = owned ? attachMessageChannelSync(repo, owned.mainPort, (peerId) => ownedPeers.add(peerId)) : undefined;
       const retirePrevious = retireReplayCrossing ?? (() => retireFirstCrossing(true));
       let posted = false;
