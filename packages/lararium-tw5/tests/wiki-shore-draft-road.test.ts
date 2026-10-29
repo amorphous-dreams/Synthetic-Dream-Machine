@@ -16,8 +16,9 @@ import {
 } from "./wiki-shore-rig.js";
 
 const seedRecords = async (r: Rig, records: readonly Record<string, unknown>[]): Promise<void> => {
+  const before = r.arrivals.length;
   for (const tiddler of records) await r.working.put({ tiddler } as LarTiddlerRecord, remote);
-  await turns();
+  await arrived(r, before, records.map((tiddler) => String(tiddler["title"])));
 };
 const touching = (r: Rig, since: number, title: string) => r.calls.slice(since).filter((c) => c.puts.includes(title) || c.deletes.includes(title));
 const textsOf = async (r: Rig, title: string): Promise<string[]> =>
@@ -188,22 +189,24 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
       await r.adaptor.armSeedCheckpoint();
       await r.adaptor.landingIdle();
       expect(r.adaptor.ledger.landedOf(x)).toBeDefined();
+      const yMark = r.arrivals.length;
       await r.working.put({ tiddler: { title: y, text: "landed y" } }, remote);
-      // The base is read once the landing ledger says every queued landing finished, never after a fixed count of turns.
+      // The base is read once the store has raised y and the landing ledger says every queued landing finished.
+      await arrived(r, yMark, [y]);
       await r.adaptor.landingIdle();
-      await turns(2);
       const xBase = r.adaptor.ledger.landedOf(x)!.heads!;
       const yBase = r.adaptor.ledger.landedOf(y)!.heads!;
       expect(yBase).not.toEqual(xBase);
       const d = openDraft(r, x, "hand value");
       typeInto(r, d, "hand value", { "draft.title": y });
+      const draftMark = r.arrivals.length;
       await afterDispatch();
       boundary.fire();
-      await turns(16);
+      await arrived(r, draftMark, [d]);
+      await r.adaptor.landingIdle();
       if (moved) {
         hold = true;
         await peerWrite(r, workingBag, [{ tiddler: { title: y, text: "peer value" } }]);
-        await turns(4);
       }
       const mark = r.calls.length;
       saveSequence(r, d);
@@ -540,6 +543,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     const before = b.arrivals.length;
     b.draftHandle.merge(a.draftHandle);
     await arrived(b, before, [d]);
+    await b.adaptor.landingIdle();
     expect(b.wiki.getTiddler(d)!.fields["draft.title"]).toBe(y);
     const mark = b.calls.length;
     saveSequence(b, d);

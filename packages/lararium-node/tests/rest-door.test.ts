@@ -6,6 +6,10 @@
  *   D2  a door that faults answers `rested: false` naming the fault.
  *   D3  the asker rejects when no answer arrives inside its own patience.    control: an answer resolves it
  *   D4  the asker ignores an answer for another request id.
+ *   D6  an ask that reaches the vessel before the owning island's sync leg has stood waits on that leg, an unrelated
+ *       peer's presence changing nothing, and never on a clock: the document rests when its bytes land.
+ *   D7  once the leg stands, a document no peer carries reads unavailable and the ask rejects; a vessel that stands
+ *       down ends a hold on a leg that never stands.
  *   D5  the vessel's own act rests the document in its store before it resolves: a second reader of the same
  *       directory finds the document's bytes the instant the act returns.   control: before the act, it finds none
  */
@@ -14,7 +18,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo, type DocumentId } from "@automerge/automerge-repo";
-import { emptyLarDoc, type LarDoc } from "@lararium/mesh";
+import { attachMessageChannelSync, emptyLarDoc, makeIslandRepo, type LarDoc } from "@lararium/mesh";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import { restInStore } from "../src/open-node-vessel.js";
@@ -81,6 +85,80 @@ describe("the rest door", () => {
       expect(await stored(), "CONTROL: the store holds nothing of the document before the act").toBe(0);
       await restInStore(repo, [handle.documentId as DocumentId]);
       expect(await stored(), "the document rests in the store when the act returns").toBeGreaterThan(0);
+    } finally {
+      await restEvery();
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  test("D6 — an ask that outruns the island's sync leg waits for that leg, an unrelated peer standing or not, then rests the document", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "rest-door-"));
+    try {
+      const vessel = restingRepo(dir, { saveDebounceRate: 60_000 });
+      const owner = new MessageChannel();
+      const island = makeIslandRepo({ syncPort: owner.port2 as unknown as MessagePort });
+      const handle = island.create<LarDoc>(emptyLarDoc());
+      // Another island's leg stands already: a peer is present, and it is not the owner of the document.
+      const other = new MessageChannel();
+      const otherIsland = makeIslandRepo({ syncPort: other.port2 as unknown as MessagePort });
+      attachMessageChannelSync(vessel, other.port1 as unknown as MessagePort);
+      await new Promise<void>((resolve) => { if (vessel.peers.length > 0) resolve(); else vessel.networkSubsystem.once("peer", () => resolve()); });
+      // The ask posts on a faster road than the owner's sync handshake: the owner's leg has not met the vessel yet.
+      let legStands!: () => void;
+      const ready = new Promise<void>((resolve) => { legStands = resolve; });
+      const onClose = (): (() => void) => () => {};
+      let outcome: "pending" | "rested" | { fault: string } = "pending";
+      const asking = restInStore(vessel, [handle.documentId as DocumentId], { ready, onClose }).then(
+        () => { outcome = "rested"; },
+        (e: unknown) => { outcome = { fault: e instanceof Error ? e.message : String(e) }; },
+      );
+      for (let turn = 0; turn < 20; turn++) await new Promise<void>((r) => setImmediate(r));
+      expect(outcome, "until the owner's leg stands the ask holds: it neither rests nor reads the document unavailable").toBe("pending");
+      attachMessageChannelSync(vessel, owner.port1 as unknown as MessagePort, () => legStands());
+      await asking;
+      expect(outcome).toBe("rested");
+      expect((await new DurableNodeFSStorageAdapter(dir).loadRange([handle.documentId])).length).toBeGreaterThan(0);
+      await island.shutdown(); await otherIsland.shutdown();
+      for (const c of [owner, other]) { c.port1.close(); c.port2.close(); }
+    } finally {
+      await restEvery();
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("D7 — once the leg stands a document no peer carries reads unavailable and the ask rejects; a vessel that stands down ends a hold on a leg that never stands", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "rest-door-"));
+    try {
+      const vessel = restingRepo(dir, { saveDebounceRate: 60_000 });
+      const channel = new MessageChannel();
+      const island = makeIslandRepo({ syncPort: channel.port2 as unknown as MessagePort });
+      let legStands!: () => void;
+      const ready = new Promise<void>((resolve) => { legStands = resolve; });
+      attachMessageChannelSync(vessel, channel.port1 as unknown as MessagePort, () => legStands());
+      const never = new Promise<void>(() => {});
+      const absent = island.create<LarDoc>(emptyLarDoc()).documentId;
+      await island.delete(absent);   // the island no longer carries it, and no peer carries it
+      await expect(restInStore(vessel, [absent], { ready, onClose: () => () => {} })).rejects.toThrow(/is unavailable/);
+      await island.shutdown();
+      channel.port1.close(); channel.port2.close();
+      const closers = new Set<() => void>();
+      const holding = restInStore(vessel, [absent], { ready: never, onClose: (fn) => { closers.add(fn); return () => { closers.delete(fn); }; } });
+      for (let turn = 0; turn < 20; turn++) await new Promise<void>((r) => setImmediate(r));
+      for (const close of [...closers]) close();
+      await expect(holding).rejects.toThrow(/stood down before the island's sync leg stood/);
+    } finally {
+      await restEvery();
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  test("D8 — a rest that completes leaves no reaction on the door's teardown", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "rest-door-"));
+    try {
+      const repo = restingRepo(dir, { saveDebounceRate: 60_000 });
+      const handle = repo.create<LarDoc>(emptyLarDoc());
+      const closers = new Set<() => void>();
+      const onClose = (fn: () => void): (() => void) => { closers.add(fn); return () => { closers.delete(fn); }; };
+      for (let call = 0; call < 25; call++) await restInStore(repo, [handle.documentId as DocumentId], { ready: Promise.resolve(), onClose });
+      expect(closers.size, "25 completed rests hold no teardown subscription").toBe(0);
     } finally {
       await restEvery();
       rmSync(dir, { recursive: true, force: true });

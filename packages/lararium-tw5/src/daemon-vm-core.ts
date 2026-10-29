@@ -221,6 +221,10 @@ export interface DaemonVmCore {
   /** Resolve the worker's daemon binding and mount that exact document as the host default. */
   mountHostWorkingLayer: () => Promise<void>;
   workerEa:       Promise<void>;
+  /** Resolves once the vessel's Repo has met the daemon island's sync peer on the leg the island now runs on. A
+   *  document the island mints reaches the vessel's Repo over that leg alone, so a question of the Repo about it
+   *  waits on this and never believes an absence before the leg stands. */
+  syncLegReady:   () => Promise<void>;
   mountMainVerbs: (registry: VerbTable) => void;
   placeVerb:      (opts: VesselPlaceVerbRequest) => void;
   lightFace:      (entry: JoinedFaceAuth) => Promise<void>;
@@ -392,7 +396,15 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         ? documentId === ownedId : priorShareConfig.access(peerId, documentId),
     };
   }
-  const detachPrimary = attachMessageChannelSync(repo, mainPort);
+  // The leg the island runs on stands when the vessel's Repo meets its peer; a replacement leg (manifest replay) stands its own.
+  const legStanding = (): { ready: Promise<void>; onPeer: () => void } => {
+    let onPeer!: () => void;
+    const ready = new Promise<void>((resolve) => { onPeer = resolve; });
+    return { ready, onPeer };
+  };
+  const firstLeg = legStanding();
+  let currentLeg: Promise<void> = firstLeg.ready;
+  const detachPrimary = attachMessageChannelSync(repo, mainPort, () => firstLeg.onPeer());
   const detachOwned = ownedChannel
     ? attachMessageChannelSync(repo, ownedChannel.mainPort, (peerId) => ownedPeers.add(peerId))
     : undefined;
@@ -662,7 +674,8 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     const owned = first ? ownedChannel : ownedDocument ? host.newOwnedSyncChannel!() : undefined;
     let afterPost: (() => void) | undefined;
     if (!first) {
-      const detach = attachMessageChannelSync(repo, primary.mainPort);
+      const leg = legStanding();
+      const detach = attachMessageChannelSync(repo, primary.mainPort, () => leg.onPeer());
       const detachOwn = owned ? attachMessageChannelSync(repo, owned.mainPort, (peerId) => ownedPeers.add(peerId)) : undefined;
       const retirePrevious = retireReplayCrossing ?? (() => retireFirstCrossing(true));
       let posted = false;
@@ -670,6 +683,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       afterPost = () => {
         if (posted) return;
         posted = true;
+        currentLeg = leg.ready;
         retirePrevious();
         retireReplayCrossing = retireThis;
       };
@@ -726,6 +740,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     mountHostWorkingLayer,
     workerEa,
     worker,
+    syncLegReady: () => currentLeg,
     mountMainVerbs: (registry: VerbTable) => {
       _registry = registry;
     },

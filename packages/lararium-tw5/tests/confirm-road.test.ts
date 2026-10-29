@@ -270,6 +270,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     expect(r.wiki.getTiddler(y)?.fields["text"]).toBe("standing");
 
     await peerWrite(r, workingBag, [{ tiddler: { title: y, text: "a peer wrote this" } } as LarTiddlerRecord]);
+    await r.adaptor.landingIdle();
     expect(r.wiki.getTiddler(y)?.fields["text"]).toBe("a peer wrote this");
     const mark = r.calls.length;
     answer(nav, q.title, "yes");

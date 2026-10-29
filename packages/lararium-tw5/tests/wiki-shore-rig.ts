@@ -133,16 +133,17 @@ export async function shoreRig(opts: RigOptions = {}) {
   const adaptor = new IslandAdaptor(engine, composite, instanceId);
   opts.boundary?.bind(adaptor);
   adaptor.installLandingQueue(opts.yieldHost);
+  // A changeset closes a store change after its URI changes, so a title is heard when its changeset arrives.
   const arrivals: string[] = [];
-  const onUriChanged = adaptor.onUriChanged.bind(adaptor);
-  vi.spyOn(adaptor, "onUriChanged").mockImplementation((change) => { arrivals.push(change.title); onUriChanged(change); });
+  const hearers = new Set<() => void>();
+  const hearArrival = (): void => { for (const hearer of [...hearers]) hearer(); };
   const onChangeset = adaptor.onChangeset.bind(adaptor);
-  vi.spyOn(adaptor, "onChangeset").mockImplementation((changes) => { for (const change of changes) arrivals.push(change.title); onChangeset(changes); });
+  vi.spyOn(adaptor, "onChangeset").mockImplementation((changes) => { for (const change of changes) arrivals.push(change.title); onChangeset(changes); hearArrival(); });
   adaptor.start();
   const unbridge = bridgeWikiToAdaptor(engine, adaptor);
   await turns();
   return {
-    engine, wiki, Tiddler, repo, instanceId, composite, adaptor, unbridge, calls, failures, arrivals, outsideSlots,
+    engine, wiki, Tiddler, repo, instanceId, composite, adaptor, unbridge, calls, failures, arrivals, hearers, outsideSlots,
     canonHandle, workingHandle, draftHandle, personalHandle, canon, working, draft, personal, temp,
     handles: { [canonBag]: canonHandle, [workingBag]: workingHandle, [draftBag]: draftHandle, [personalBag]: personalHandle } as Record<string, typeof canonHandle>,
     saved: () => ({
@@ -173,15 +174,20 @@ export async function peerWrite(r: Rig, bag: string, records: readonly LarTiddle
   await peerRepo.shutdown();
 }
 
-/** Waits (host turns only, no clock) until the shore has heard every title since `before` arrivals. */
+/**
+ * Waits on the store's own event until the shore has heard every title since `before` arrivals. No clock and no turn
+ * count. A caller that wants the landing those arrivals queued asks the adaptor's `landingIdle()` next; a held host
+ * yield keeps the landing parked on purpose. A title the store never raises hangs the wait to the test's own timeout.
+ */
 export async function arrived(r: Rig, before: number, titles: readonly string[]): Promise<void> {
-  // The store delivers a merge through its own debounce; the wait is on the arrival signal, the cap only ends a hang.
-  for (let attempt = 0; attempt < 600; attempt++) {
-    const heard = new Set(r.arrivals.slice(before));
-    if (titles.every((title) => heard.has(title))) { await turns(24); return; }
-    await new Promise<void>((resolve) => setTimeout(resolve, 5));
-  }
-  throw new Error(`the shore never heard ${titles.join(", ")}`);
+  await new Promise<void>((resolve) => {
+    const check = (): void => {
+      const heard = new Set(r.arrivals.slice(before));
+      if (titles.every((title) => heard.has(title))) { r.hearers.delete(check); resolve(); }
+    };
+    r.hearers.add(check);
+    check();
+  });
 }
 
 /** A `change` listener registered after the bridge: records how many store calls stood when the dispatch reached it. */

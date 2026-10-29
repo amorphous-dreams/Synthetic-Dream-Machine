@@ -469,8 +469,26 @@ export async function standNodeFloor(storageDir: string): Promise<NodeFloor> {
 /**
  * The rest door's whole act: wait until each named document has reached `repo`, then flush them into its store.
  * It resolves only after the store holds every one durably, so an acknowledgment never runs ahead of the save.
+ *
+ * A document an island just minted reaches this Repo over the island's sync leg alone, and the ask rides a faster
+ * road than that leg's handshake. Until the Repo has met the island's peer, `unavailable` says nothing about the
+ * island's copy, so the ask waits for `legReady` (the leg standing, the Repo having met its peer) and then reads;
+ * an `unavailable` after that is the peers' own answer and rejects. `onClose` (the teardown subscription) ends the wait when the vessel stands
+ * down. No timer runs here; the asking island's own patience bounds the wait from its side.
  */
-export async function restInStore(repo: Pick<Repo, "find" | "flush">, documentIds: readonly string[]): Promise<void> {
+export async function restInStore(
+  repo: Pick<Repo, "find" | "flush">,
+  documentIds: readonly string[],
+  leg?: { readonly ready: Promise<void>; readonly onClose: (fn: () => void) => () => void },
+): Promise<void> {
+  if (leg) {
+    // The teardown subscription leaves when the wait settles, so a completed ask holds nothing of the door.
+    const stood = await new Promise<boolean>((resolve, reject) => {
+      const off = leg.onClose(() => resolve(false));
+      leg.ready.then(() => { off(); resolve(true); }, (error: unknown) => { off(); reject(error); });
+    });
+    if (!stood) throw new Error(`the vessel stood down before the island's sync leg stood (${documentIds.join(", ")})`);
+  }
   for (const id of documentIds) await repo.find<LarDoc>(`automerge:${id}` as AutomergeUrl);
   await repo.flush(documentIds as DocumentId[]);
 }
@@ -954,8 +972,10 @@ async function prepareNodeBootOn(
   // THE REST DOOR. An island mints a slot document its own Repo keeps no store for; this Repo saves it. The island
   // asks before it records the binding, and the answer waits until the document has reached this Repo and rests
   // in its store — so no binding names a document a hard stop could leave unsaved.
-  setRestDoor((documentIds) => restInStore(repo, documentIds));
-  stood.push({ what: "the rest door", down: () => setRestDoor(null) });
+  const restDoorClosers = new Set<() => void>();
+  const onRestDoorClose = (fn: () => void): (() => void) => { restDoorClosers.add(fn); return () => { restDoorClosers.delete(fn); }; };
+  setRestDoor((documentIds) => restInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onRestDoorClose }));
+  stood.push({ what: "the rest door", down: () => { setRestDoor(null); for (const close of [...restDoorClosers]) close(); restDoorClosers.clear(); } });
   // The Repo stands down after everything that writes through it: it flushes, then closes its storage and network.
   stood.push({ what: "the Repo", down: async () => { await repo.flush(); await repo.shutdown(); } });
   emit("repo-open");
@@ -1574,6 +1594,8 @@ async function prepareNodeBootOn(
     await intentRelay?.refresh();
   };
   let daemonVm!:   DaemonVmCore;           // set in openDaemon
+  let standDaemonVm: () => void = () => {};
+  const daemonVmStood = new Promise<void>((resolve) => { standDaemonVm = resolve; });   // the rest door waits on the island's leg through it
   let eventBus!:  LarEventBusImpl;         // set in makePool
   // R3 — the Crossroads board this vessel materializes ONCE (openDaemon), read by every later
   // per-island plugin-offering resolution (makePool's pool, and the daemon VM's own recipe).
@@ -2400,6 +2422,7 @@ async function prepareNodeBootOn(
       rootDir: corpusRoot,
       guardCrossroadsNexusHandles: nexusStanding.kind !== "charter",
     });
+    standDaemonVm();
     // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ───────────────
     // A cross-operator peer holding a VERIFIED face-join grant on THIS face's plane reaches the face's own
     // planes — and nothing else. The ring WIDENS the self-slot fed gate by that ONE path (`compose` ORs it
