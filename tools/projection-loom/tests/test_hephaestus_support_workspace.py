@@ -159,3 +159,45 @@ def test_support_group_refuses_unconnected_extra_body(tmp_path):
                          {"kind": "translate", "entity_id": "upper", "delta": [1, 0, 0]}]}
     with pytest.raises(ValueError, match="share an exact rigid delta"):
         edit_workspace(supported, request, tmp_path / "refused")
+
+
+
+def test_two_real_bearings_reparent_through_complete_immutable_location(tmp_path):
+    from projection_loom.native_support import propose_reparent
+    inventory=LocationStack("held-out-parent-switch")
+    inventory.add_frame(Frame("physical-local", "local3d", "m"))
+    def part(name,width,translation):
+        return {"entity_id":name,"translation":translation,"growth_program":{
+            "nodes":[{"key":"root","op":"foundation","size":[width,3,2 if name!="bridge" else 1]}]}}
+    document={"schema":"projection-loom/scene-declaration",
+              "location":inventory.location_id,"meters_per_unit":1.,
+              "assemblies":[part("old",3,[-2,0,0]),
+                            part("new",3,[2,0,0]),
+                            part("bridge",5,[0,0,2])]}
+    root=tmp_path/"original"
+    initial=create_workspace(inventory,document,root)
+    ground=RelationalGround.load(root/"ground.json")
+    attached=propose_support(ground,root/"scene","old","bridge")
+    first=tmp_path/"old-bearer"
+    supported=support_workspace(root,attached,first)
+    current=RelationalGround.load(first/"ground.json")
+    switch=propose_reparent(current,first/"scene","old","new","bridge")
+    child=tmp_path/"replacement-bearing"
+    final=support_workspace(first,switch,child)
+    assert final["parent_workspace_sha256"]==supported["sha256"]
+    assert final["scene_sha256"]==supported["scene_sha256"]==initial["scene_sha256"]
+    assert verify_workspace(child)["valid"]
+    new_ground=RelationalGround.load(child/"ground.json")
+    assert {"parent":"new","child":"bridge",
+            "verb":"supports","required":True} in new_ground.snapshot()["relations"]
+    assert {"parent":"old","child":"bridge",
+            "verb":"supports","required":True} not in new_ground.snapshot()["relations"]
+    assert not switch["native_contact"]["load_certification"]
+    with pytest.raises(ValueError,match="new causal island"):
+        support_workspace(first,switch,child)
+    receipt=child/"native-support-proposal.json"
+    data=json.loads(receipt.read_text())
+    data["prior_native_contact"]["native_contact_area"]+=1
+    receipt.write_text(json.dumps(data))
+    with pytest.raises(ValueError,match="receipt changed"):
+        verify_workspace(child)

@@ -98,6 +98,14 @@ def main(argv=None):
     p.add_argument('--lower',required=True)
     p.add_argument('--upper',required=True)
     p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('native-support-reparent',
+                          help='Propose independent dual-contact native support reparent')
+    p.add_argument('--ground',type=Path,required=True)
+    p.add_argument('--bundle',type=Path,required=True)
+    p.add_argument('--old-parent',required=True)
+    p.add_argument('--new-parent',required=True)
+    p.add_argument('--child',required=True)
+    p.add_argument('--out',type=Path,required=True)
     p=commands.add_parser('native-support-verify',
                           help='Recheck geometric contact and replay source-ground relation')
     p.add_argument('--ground',type=Path,required=True)
@@ -448,13 +456,18 @@ def main(argv=None):
                     seed=args.seed)
         print(json.dumps(result,indent=2))
         return result
-    if args.command in ('native-support-propose','native-support-verify'):
+    if args.command in ('native-support-propose','native-support-reparent',
+                           'native-support-verify'):
         from .relational_ground import RelationalGround
-        from .native_support import propose_support,verify_support_proposal
+        from .native_support import propose_support,propose_reparent,verify_support_proposal
         from .generalized_campaign import save_once
         ground=RelationalGround.load(args.ground)
         if args.command=='native-support-propose':
             result=propose_support(ground,args.bundle,args.lower,args.upper)
+            save_once(args.out,result)
+        elif args.command=='native-support-reparent':
+            result=propose_reparent(ground,args.bundle,args.old_parent,
+                                    args.new_parent,args.child)
             save_once(args.out,result)
         else:
             document=json.loads(args.proposal.read_text(encoding='utf8'))
