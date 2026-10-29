@@ -192,6 +192,8 @@ export async function standMirror(options: {
     get tw() { return mirror!.tw; },
     /** How many writes the mirror sent and holds no answer for: the page holds its leave while this reads above zero. */
     pending: () => (ended ? 0 : mirror!.adaptor.pendingWrites().length),
+    /** Send every unanswered write again under its own txId: the road to a new leader re-opened, and the island it reaches applies each once. */
+    resendPending() { if (!ended) mirror!.adaptor.resendPending(); },
     unmount() { if (!ended) { ended = true; standing(false); mirror!.unmount(); settle({ width: "none", why: "unmounted" }); } },
     onEvent(listener: (event: MirrorEvent) => void) { listeners.add(listener); return () => listeners.delete(listener); },
   };

@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import { serveFollowers } from "../src/glass/tab-bus.js";
 
 const channel = () => `fence-${crypto.randomUUID()}`;
+const lend = { surface: "lares", actor: "leader", inputs: { coreCid: "c".repeat(64), pluginCids: [] } };
 const open = { type: "port:open", portId: "p", wikiUri: "wiki", width: "skinny", actor: "a", maxRecordBytes: 4096, maxBatchBytes: 8192 };
 /** The leader's real doors, recording which surface each placement names. */
 function leaderDoors() {
@@ -13,7 +14,7 @@ const settle = () => new Promise<void>(resolve => setTimeout(resolve, 30));   //
 test("a forged follower frame naming the daemon surface opens no port there; the leader binds its own surface", async () => {
   const name = channel(); const leaderBus = new BroadcastChannel(name); const tab = new BroadcastChannel(name);
   const l = leaderDoors();
-  const served = serveFollowers(leaderBus, l.doors, () => "lares");
+  const served = serveFollowers(leaderBus, l.doors, () => lend);
   try {
     tab.postMessage({ kind: "hello", tab: "t1", nonce: "n1" });
     await settle();
@@ -25,7 +26,7 @@ test("a forged follower frame naming the daemon surface opens no port there; the
 test("a port-up from a tab that never said hello places nothing; CONTROL: after hello the same frame places", async () => {
   const name = channel(); const leaderBus = new BroadcastChannel(name); const tab = new BroadcastChannel(name);
   const l = leaderDoors();
-  const served = serveFollowers(leaderBus, l.doors, () => "lares");
+  const served = serveFollowers(leaderBus, l.doors, () => lend);
   try {
     tab.postMessage({ kind: "port-up", tab: "t2", binding: "b", surface: "lares", msg: open });
     await settle();
@@ -35,7 +36,7 @@ test("a port-up from a tab that never said hello places nothing; CONTROL: after 
     expect(l.placed).toHaveLength(1);
   } finally { served.close(); leaderBus.close(); tab.close(); }
 });
-test("no surface to bind (the leader shows none yet) places nothing", async () => {
+test("nothing to lend (the leader shows none yet): the hello parks and nothing places", async () => {
   const name = channel(); const leaderBus = new BroadcastChannel(name); const tab = new BroadcastChannel(name);
   const l = leaderDoors();
   const served = serveFollowers(leaderBus, l.doors, () => null);

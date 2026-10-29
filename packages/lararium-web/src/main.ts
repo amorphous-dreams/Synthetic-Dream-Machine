@@ -3,8 +3,9 @@
  *
  * This package owns page composition and the visible projection edge: it resolves served Worker assets,
  * opens the browser vessel, paints returned frames, and relays named DOM events and bounded input back to
- * the worker island. It does not own TW5 state or run a second engine in the page. Direct web-surface tests
- * remain small; the browser vessel and TW5 seams carry their own focused coverage.
+ * the worker island. It owns no TW5 truth: the one engine it runs in the page is the MIRROR (DreamDOM D3), unprivileged,
+ * holding no keys and no truth, booted through one private door that takes the D2 port binding and fed by that port alone.
+ * Direct web-surface tests remain small; the browser vessel and TW5 seams carry their own focused coverage.
  */
 
 /**
@@ -30,7 +31,9 @@ import { LAR_WHOLE_VALUE_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, readHear
 import { createProjectionSink } from "./projection-sink.js";
 import { pagePortDelivery, standPagePort } from "./page-port.js";
 import { standPageMirror } from "./page-mirror.js";
-import { serveFollowers } from "./glass/tab-bus.js";
+import { standTabTopology } from "./glass/topology.js";
+import type { Lend } from "./glass/tab-bus.js";
+import { makePortTransport } from "./port-transport.js";
 import { defaultReadFace, floorAnchorOf, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
 // The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
@@ -335,6 +338,8 @@ function mountAdmitSurface(verifyingKeyHex: string): void {
 }
 
 let pendingAdmit: DeviceAdmitPayload | null = null;
+/** This tab's place among the origin's tabs: stood once per page, before the first lead or follow. */
+let topology: ReturnType<typeof standTabTopology> | null = null;
 function offerBootRetry(): void {
   if (document.getElementById("retry-unlock")) return;
   const button = document.createElement("button");
@@ -392,6 +397,50 @@ async function bootVessel(): Promise<void> {
         peers: meshParam.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null),
       }
     : undefined;
+  const boot = { paint, relayUrl, floor, floorAnchor, admit, genesisCasBaseUrl, meshLeaf };
+  // THE TAB TOPOLOGY (G4): one tab per origin holds the vessel (the store lock proves one holder); another tab on the same origin
+  // FOLLOWS it over the bus and stands its own mirror from the leader's lend, instead of refusing the vessel by name. The leader
+  // lock queues succession: when the leader's page goes, the next request grants and that tab opens the vessel itself. The shared
+  // holder (`?holder`) is its own topology, every tab a port onto one holder, and takes no election.
+  if (!sharedHolderUrl && typeof BroadcastChannel !== "undefined" && navigator.locks) {
+    if (topology === null) {
+      topology = standTabTopology({ locks: navigator.locks, lockName: `${vesselLockName(VESSEL_IDB)}:leader`,
+        channel: () => new BroadcastChannel(`lararium-mirror:${location.origin}`), tabId: crypto.randomUUID() });
+      window.addEventListener("pagehide", () => topology?.close());
+      topology.follower.onLend((lend) => { if (topology?.role !== "follower" || followerMirror !== null) return; followerMirror = standFollowerMirror(lend); });
+      topology.onLead(() => { void lead(boot); });
+      return;
+    }
+    if (topology.role === "follower") return;   // a retry while following: the lead comes with the lock
+  }
+  await lead(boot);
+}
+
+/** The mirror this tab stood as a follower, if it stood one; a tab that leads after following keeps it. */
+let followerMirror: Promise<void> | null = null;
+/**
+ * A follower's mirror: the same door as the leader's, over this tab's follower doors instead of the vessel's own. The leader's
+ * lend names the surface, the actor and the engine inputs; every reply reaches this one binding alone. When a new leader
+ * answers the doors' hello, the mirror sends its unanswered writes again under their own txIds.
+ */
+async function standFollowerMirror(lend: Lend): Promise<void> {
+  const doors = topology!.follower;
+  const host = $("mirror");
+  host.setAttribute("data-lar-tab", "follower");
+  set("status", "following the vessel tab on this origin");
+  const port = makePortTransport({ doors, surface: () => lend.surface });
+  doors.onPortMessage((binding, msg) => { if (binding === port.binding) port.deliver(msg); });
+  const stood = await standPageMirror({ port, host, actor: lend.actor, surface: () => lend.surface, mirrorInputs: () => Promise.resolve(lend.inputs),
+    onState: (state) => console.warn(`[mirror] ${state.kind}`, state) })
+    .catch((err: unknown) => { console.warn("[mirror] the follower's stand refused:", err); return null; });
+  if (stood === null || stood.kind === "floor") { console.warn(`[mirror] the follower stands no mirror: ${stood?.why ?? "refused"}`); return; }
+  doors.onReady(() => stood.resendPending());
+}
+
+async function lead(boot: { paint: (p: string) => void; relayUrl: string | undefined; floor: ReturnType<typeof floorCardOf>; floorAnchor: ReturnType<typeof floorAnchorOf>;
+  admit: DeviceAdmitPayload | null; genesisCasBaseUrl: string; meshLeaf: { coordSeed: string; peers: MeshPeer[] } | undefined }): Promise<void> {
+  const { paint, relayUrl, floor, floorAnchor, admit, genesisCasBaseUrl, meshLeaf } = boot;
+  $("mirror").setAttribute("data-lar-tab", "leader");
   let vesselOpened = false;
   try {
     // THE BOOT'S CUSTODY STEP, before the vessel opens: a sealed keystore asks this tab's person for its unlock. A boot
@@ -406,7 +455,6 @@ async function bootVessel(): Promise<void> {
     // The mirror stands once the first frame names the surface the page shows; the vessel result does not exist until the open returns.
     let mirrorTrigger: (() => void) | null = null;
     let mirrorShownSync: (() => void) | null = null;
-    let followerServe: ReturnType<typeof serveFollowers> | null = null;
     const result = await openBrowserVessel({
       askCustody,
       hostId: "elyncia-browser",
@@ -419,7 +467,7 @@ async function bootVessel(): Promise<void> {
       onPhase: (p) => { paint(p); projectionSink.setBreath("lares", { phase: p }); },
       onFrame: (frame) => { if (projectionSink.apply(frame) === "painted" && frame.keys.some((key) => key.key === "lar:surface")) { reportFirstPaint(); mirrorTrigger?.(); } mirrorShownSync?.(); },
       onControlResult: (_surface, result) => { projectionSink.applyResult(result); },
-      onPortMessage: (binding, islandKey, msg) => { if (binding.startsWith("tab:")) followerServe?.onPortMessage(binding, islandKey, msg); else pagePortDelivery.onPortMessage(binding, islandKey, msg); },
+      onPortMessage: (binding, islandKey, msg) => { if (binding.startsWith("tab:")) topology?.onPortMessage(binding, islandKey, msg); else pagePortDelivery.onPortMessage(binding, islandKey, msg); },
       ...(relayUrl ? { relayUrl } : {}),
       ...(floor ? { floorCard: floor.text } : {}),
       ...(floorAnchor ? { floorAnchor } : {}),
@@ -460,6 +508,9 @@ async function bootVessel(): Promise<void> {
       if (mirrorStanding || shown === null) return;
       mirrorStanding = true;
       mirrorSurface = shown;
+      topology?.lend();   // the surface stands: the tabs whose hello parked get their ready
+      // A tab that leads after following keeps the mirror it stood as a follower: its doors re-open through this tab's own serve.
+      if (followerMirror !== null) return;
       void standPageMirror({ port: pageBinding, host: $("mirror"), actor: did, surface: () => mirrorSurface,
         mirrorInputs: result.mirrorInputs, onState: (state) => console.warn(`[mirror] ${state.kind}`, state) })
         .then((stood) => {
@@ -470,14 +521,15 @@ async function bootVessel(): Promise<void> {
         })
         .catch((err: unknown) => console.warn("[mirror] stand refused:", err));
     };
+    // THE TOPOLOGY'S LEADER HALF: the tab that holds the vessel serves the other tabs of this origin over the bus. It lends the
+    // surface its mirror stands on, the actor it writes as and the engine inputs the vessel names for that surface; a follower
+    // frame's own surface value is ignored. A hello that arrives before the surface stands parks until `lend()`.
+    topology?.serve(result.ports, async () => {
+      if (mirrorSurface === null) return null;
+      const inputs = await result.mirrorInputs(mirrorSurface);
+      return inputs === null ? null : { surface: mirrorSurface, actor: did, inputs };
+    });
     mirrorTrigger();
-    // THE TOPOLOGY'S LEADER HALF: the tab that holds the vessel serves the other tabs of this origin over a BroadcastChannel. It binds
-    // the surface itself (the one the mirror stands on) and ignores a follower frame's own surface value.
-    if (typeof BroadcastChannel !== "undefined") {
-      const bus = new BroadcastChannel(`lararium-mirror:${location.origin}`);
-      followerServe = serveFollowers(bus, result.ports, () => mirrorSurface);
-      window.addEventListener("pagehide", () => { followerServe?.close(); bus.close(); });
-    }
     // The UNIVERSAL summon (the reachability affordance): host chrome overlays EVERY
     // wiki, so this button + chord flips the projection gate to the daemon from any
     // active surface — a pure gate flip (both surfaces already mounted), no reboot.

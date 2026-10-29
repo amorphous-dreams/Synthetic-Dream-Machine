@@ -33,16 +33,14 @@ test("a hello before the leader lends parks and is answered once it lends; CONTR
     await settle();
     expect(lends).toEqual([]);                                   // nothing to lend yet: the hello parks, no ready goes out
     lend = { surface: "wiki", actor: "did:leader", inputs };
+    const answered = new Promise<unknown>(resolve => follower.onLend(resolve));
     served.lend();                                               // the leader's surface stands: the parked hello is answered
-    await settle();
+    expect(await answered).toEqual({ surface: "wiki", actor: "did:leader", inputs });
     expect(lends).toEqual([{ surface: "wiki", actor: "did:leader", inputs }]);
     expect(follower.lent()).toEqual({ surface: "wiki", actor: "did:leader", inputs });
     const lateBus = new BroadcastChannel(name);
     const late = makeFollowerDoors(lateBus, "late");            // CONTROL: a hello after the lend stands is answered at once
-    const lateLends: unknown[] = [];
-    late.onLend(value => lateLends.push(value));
-    await settle();
-    expect(lateLends).toEqual([{ surface: "wiki", actor: "did:leader", inputs }]);
+    expect(await new Promise<unknown>(resolve => late.onLend(resolve))).toEqual({ surface: "wiki", actor: "did:leader", inputs });
     late.dispose(); lateBus.close();
   } finally { follower.dispose(); served.close(); leaderBus.close(); tabBus.close(); }
 });
