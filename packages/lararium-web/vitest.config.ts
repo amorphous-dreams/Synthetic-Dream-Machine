@@ -62,7 +62,7 @@ export default defineConfig(async () => ({
           name: "golden-whole-road-e2e",
           // The seventh silent loss rides the same project: both files stand a daemon and a real Chromium, so they take
           // the host one file at a time.
-          include: ["tests/e2e/golden-whole-road.e2e.test.ts", "tests/e2e/rest-before-reload.e2e.test.ts", "tests/e2e/glass-mirror.e2e.test.ts"],
+          include: ["tests/e2e/golden-whole-road.e2e.test.ts", "tests/e2e/rest-before-reload.e2e.test.ts", "tests/e2e/glass-mirror.e2e.test.ts", "tests/e2e/glass-tabs.e2e.test.ts"],
           fileParallelism: false,
           environment: "node",
           browser: { enabled: false },
