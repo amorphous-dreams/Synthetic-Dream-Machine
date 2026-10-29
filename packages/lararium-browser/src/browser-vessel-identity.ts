@@ -496,14 +496,15 @@ export async function loadBrowserPersonaRootSeed(idbName = "lares:vessel", handl
   return loadPersonaRootSeed(await makeBrowserIdbPersonaVault(idbName), handleIndex);
 }
 
-/** Read the opt-in PRF wrap standing beside the persona root at `handleIndex`, or undefined (cleartext at rest). */
+/** Read the opt-in PRF wrap standing beside the persona root at `handleIndex`, or undefined (no wrap; the root rests in the slot tree). */
 export async function readBrowserSeedWrap(idbName = "lares:vessel", handleIndex = 0): Promise<SeedWrapRecord | undefined> {
   const db = await openVesselIdb(idbName);
   try { return await idbGet<SeedWrapRecord>(db, SEED_WRAP_STORE, personaRootKey(handleIndex)); } finally { db.close(); }
 }
 
-/** Land a PRF wrap beside the persona root at `handleIndex`. The cleartext root stays where it stands — the wrap
- *  rides beside, never replaces; a status line names the class the record carries. */
+/** Land a PRF wrap beside the persona root at `handleIndex`. The root stays where it rests, sealed in the slot tree
+ *  once a slot binds (`browser-custody.ts`) — the wrap rides beside, never replaces; a status line names the class
+ *  the record carries. */
 export async function writeBrowserSeedWrap(idbName: string, handleIndex: number, wrap: SeedWrapRecord): Promise<void> {
   const db = await openVesselIdb(idbName);
   try { await idbPut(db, SEED_WRAP_STORE, personaRootKey(handleIndex), wrap); } finally { db.close(); }

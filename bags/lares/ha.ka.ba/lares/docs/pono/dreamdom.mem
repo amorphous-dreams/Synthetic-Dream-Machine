@@ -531,7 +531,7 @@ The DreamDOM's founding story: every later DreamDOM ruling answers to these seve
 !! Rulings ~ the operator's, each with the phase it shapes
 
 !!! Ruled, 2026-10-16 (the operator approved the controller's story leans)
-* ''§9 of `packages/AGENTS.md`'' reads "no //truth// on the main thread": a glass engine at full or skinny width renders as a camera and stands lawful (D3).
+* ''§9 of the Island Sovereignty Law'' (`island-protocol`) reads "no //truth// on the main thread": a glass engine at full or skinny width renders as a camera and stands lawful (D3).
 * ''The confirm road's home'' runs per width: per actor in the worker at width none, per tab on the glass engine (D3).
 * ''The actor manifest'' names `sensoria[]` as planes (capture, worldline, structure, form), so a vessel says which sensoria it carries (D4).
 * ''Wake on act'': an act on a sleeping actor parks, the surface shows `waking`, the actor wakes and answers, bounded, and a second act supersedes with a named status (D4).
@@ -549,8 +549,24 @@ The DreamDOM's founding story: every later DreamDOM ruling answers to these seve
 * ''The `core` charter'' (`evaluators-one-or-many#/open-rulings`, 3): `core` holds the drafted operators and sorts strings by code point, locale-free and identical on every host; a locale-aware sort carries the `host-bound` tag.
 * ''Oracle ownership'' (`evaluators-one-or-many#/open-rulings`, 4): an engine-commit bump runs as its own lane that re-pours the goldens, and any diff that changes a result or a parse tree, beyond its format, lands as a hoʻike the operator reads, never a silent re-pour.
 
+!!! Ruled, 2026-10-28 (the mirror, its default and its width; the record stands at `docs/research/dreamdom-capability-default-2026` #/rulings)
+* ''The mirror'' carries full glass: a page-side TW5 engine, unprivileged, fed by the port alone, holding no truth and no key, while every truth stays in the worker island.
+* ''Full by default, never flagged.'' The boot knows the capability by lighting it; the `?glass=` flag and any `{glass:true}` boolean burn, and no setting, URL value or stored value selects a width.
+* ''ONE mirror step, then teardown.'' Full steps once to skinny on a named failure or a caught capacity error; a failure past that step tears the mirror down to the named floor, the worker-rendered view. Two per-tab crash records read as evidence, never as a flag.
+* ''One pattern for boot, width and caps.'' The boot measures capacity and sets the width, the vessel's grant sets authority, a face intent sets experience; a person's lighter choice carries an experience and never a width.
+* ''The mirror becomes the visible surface'' in D3's next slice, with the edit road, the unload hold and the goldens moving onto it.
+
+!!! Ruled, 2026-10-29 (the operator approved the mirror-realm leans: //"Approve your leans"//)
+* ''A page never stands as a vessel.'' Every page holds a surface with a port onto a vessel, in every setup: a browser on a node's own box, an anon-device browser vessel, a fleet of equivalent vessels. §9 of the Island Sovereignty Law reads "no //sovereign VM// and no //key// on a surface", and the mirror, a camera carrying a whole engine and no truth, honors it.
+* ''Mu on the realm menu.'' The same-origin iframe, the sandboxed iframe, the ShadowRealm and a core patch all fall away; people customize TW5 heavily, and an iframe costs them that ease.
+* ''The page mirror boots TW5 in its own browser mode.'' The page-window lends burn by cure: the forge that nulls `$tw.browser` and `$tw.node` serves the worker island alone, and the mirror's boot takes neither the forge nor the lends. TW5's syncer, savers and syncadaptor stay out of its boot, and a person's plugin carrying a syncadaptor (or a saver) refuses at mount by name.
+* ''The surface owns the URL'' through its `route` door; TW5's hash handling stays off and `#:safe` burns (a safe mode, if wanted, rides a face intent).
+* ''Faults go to the alert rail''; TW5's `window.onerror` claim stays uninstalled.
+* ''Modals and notifications paint in the surface's root layer'' (#/the-crossings): `lar-root-services` owns the mirror's doors, since the stock root widget would bypass the Web3-only `http-request` door.
+* ''The browser vessel's opened key lives in its own worker'', never in page memory; the per-tab ask stands, and the shared holder carries no unlock. The unlock ceremony paints where the surface cannot reach (the boundary sits where the person types the secret; its shape stays research).
+* ''The full mirror runs people's plugins only after sealed-store steps 2 and 3 land for the browser store'' (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>). No clear row stands under the full mirror, and the device key rests non-extractable.
+
 !!! Standing open
-# ''The default width of the first surface.'' Rule after the three-boot spike's numbers (glass at full on laptops and skinny on phones, with width none as the lean fallback, stands as the proposal). Blocks the glass default (D3).
 # ''The key grain for the browser camera at width none.'' One whole-surface key until measured, or river frames plus order plus membership. Blocks nothing; D1 measures.
 
 <<~/ahu>>
@@ -611,6 +627,6 @@ The DreamDOM's founding story: every later DreamDOM ruling answers to these seve
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Gd16iBaE4IQi5jaCPzQZMiew1bPqRFo2Ow9VVVGarUI
+<<^ code="&#x0003;">>ni:///sha-256;VJ-6bF8p894eikoDRkx1dVawPPvwptdswMCxVhoTS48
 
 <<^ code="&#x0004;" -> to="?">>

@@ -445,8 +445,9 @@ export async function prepareHostBootInstance(
     typeof (globalThis as Record<string, unknown>)["WorkerGlobalScope"] !== "undefined";
 
   if (isBrowserMain && mirrorToken !== MIRROR_TOKEN) {
-    // §9 sovereignty law: TW5 SHALL NOT instantiate on the main thread.
-    // Every TW5Engine lives inside a sovereign Worker. Boot via browser-wiki-worker.ts only.
+    // §9 sovereignty law: no sovereign VM and no key on a surface. Every sovereign TW5Engine
+    // lives inside a Worker (browser-wiki-worker.ts); the page boots only the mirror, a camera
+    // fed by the port alone, through its private door.
     throw new Error("TW5Engine: sovereignty violation — TW5 SHALL NOT instantiate on the main thread (§9). Boot TW5 in a Worker only.");
   }
 
