@@ -60,6 +60,6 @@ def test_unregistered_source_cannot_enter_holistic_crucible(tmp_path):
     manifest["views"][0]["registration"]="provisional"
     manifest["views"][0].pop("calibration")
     source.write_text(json.dumps(manifest))
-    with pytest.raises(ValueError,match="independent calibrated"):
+    with pytest.raises(ValueError,match="calibrated multiview location requires two or more cameras"):
         run_holistic(source,declaration(),"quay","watch","lighthouse",
                      (3,0,0),tmp_path/"unregistered")
