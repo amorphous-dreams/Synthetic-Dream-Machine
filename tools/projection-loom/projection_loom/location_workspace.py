@@ -18,7 +18,7 @@ import json
 import shutil
 from pathlib import Path
 
-from .editor_proposals import apply_proposal, seed_editor_ground
+from .editor_proposals import apply_proposal, seed_editor_ground, verify_transfer_receipts
 from .fractal_ooda_ha import OODAHAJournal
 from .generalized_campaign import save_once
 from .location_stack import Element, LocationStack
@@ -166,6 +166,9 @@ def _manifest(out, inventory, declaration, ground, scene, *, parent=None,
                      "reconciliation": "revision/reconciliation.json" if reconciliation is not None else None,
                      "editor_source_ground": "editor-source-ground.json"
                          if proposal is not None else None,
+                     "editor_source_scene": "editor-source-scene"
+                         if proposal is not None and proposal.get("transaction") == "support-transfer"
+                         else None,
                      "native_support_proposal": "native-support-proposal.json"
                          if native_support_proposal is not None else None,
                      "support_source_ground": "support-source-ground.json"
@@ -234,7 +237,8 @@ def verify_workspace(directory, *, verify_sources=True):
     paths = m["paths"]
     required = {"inventory", "declaration", "ground", "scene", "session",
                 "parent_manifest", "proposal", "reconciliation",
-                "editor_source_ground", "native_support_proposal", "support_source_ground"}
+                "editor_source_ground", "editor_source_scene",
+                "native_support_proposal", "support_source_ground"}
     if set(paths) != required:
         raise ValueError("Workspace has unexpected path roles")
     for value in paths.values():
@@ -329,6 +333,18 @@ def verify_workspace(directory, *, verify_sources=True):
             raise ValueError("Editor causal batch differs from authored proposal")
         if prior.verify_batch(batch).to_dict() != ground.to_dict():
             raise ValueError("Edited causal ancestry is not independently replayable")
+        if proposal.get("transaction") == "support-transfer":
+            if not paths["editor_source_scene"]:
+                raise ValueError("Transfer requires archived original native STEP scene")
+            old_scene = out / paths["editor_source_scene"]
+            validate_scene(old_scene)
+            archived = _read(old_scene / "manifest.json")
+            if archived["sha256"] != parent_manifest["scene_sha256"]:
+                raise ValueError("Transfer source native scene differs from parent")
+            verify_transfer_receipts(proposal, receipt, old_scene,
+                                     out / paths["scene"])
+        elif paths["editor_source_scene"] is not None or receipt.get("support_transfers"):
+            raise ValueError("Ordinary editor edit cannot claim native transfer proofs")
     elif kind=="native-support":
         if (m["parent_workspace_sha256"] is None or
                 m["proposal_sha256"] is not None or
@@ -376,6 +392,8 @@ def edit_workspace(previous, proposal, destination):
         save_once(out / "inventory.json", inventory.to_dict())
         save_once(out / "proposal.json", proposal)
         ground.save(out / "editor-source-ground.json")
+        if proposal.get("transaction") == "support-transfer":
+            shutil.copytree(parent / paths["scene"], out / "editor-source-scene")
         receipt = apply_proposal(declaration, ground, parent / paths["scene"],
                                  proposal, out / "revision")
         revised = _read(out / "revision" / "declaration.json")

@@ -16,6 +16,7 @@ from .provenance_encoding import canonical_json_sha256
 from .relational_ground import RelationalGround, IDENTITY
 from .scene_usd import package_scene, validate_scene, _validate_declaration
 from .incremental_graph import graph_for_scene
+from .native_support import native_support
 
 
 def seed_editor_ground(declaration):
@@ -44,7 +45,8 @@ def seed_editor_ground(declaration):
 def validate_proposal(proposal, original, ground, bundle):
     required = {"schema", "editor", "actor", "bundle_sha256",
                 "observed_frontier", "edits"}
-    if set(proposal) not in (required, required | {"transaction"}):
+    allowed = required | {"transaction", "support_transfers"}
+    if not required <= set(proposal) or set(proposal) - allowed:
         raise ValueError("Editor proposal requires exact fields")
     if proposal["schema"] != "projection-loom/editor-proposal":
         raise ValueError("Unsupported editor proposal schema")
@@ -58,8 +60,10 @@ def validate_proposal(proposal, original, ground, bundle):
     if not isinstance(proposal["edits"], list) or not 1 <= len(proposal["edits"]) <= 32:
         raise ValueError("One to 32 supported edits required")
     transaction = proposal.get("transaction", "independent")
-    if transaction not in ("independent", "support-group"):
+    if transaction not in ("independent", "support-group", "support-transfer"):
         raise ValueError("Unsupported structural transaction mode")
+    if (transaction == "support-transfer") != ("support_transfers" in proposal):
+        raise ValueError("Support transfers require one explicitly authored transaction")
     if list(proposal["observed_frontier"]) != list(ground.frontier):
         raise ValueError("Editor transaction requires current causal frontier")
     if len({x.get("entity_id") for x in proposal["edits"]}) != len(proposal["edits"]):
@@ -95,6 +99,32 @@ def validate_proposal(proposal, original, ground, bundle):
         if (not isinstance(delta, (list, tuple)) or len(delta) != 3
                 or any(type(x) not in (int, float) or not math.isfinite(x) for x in delta)):
             raise ValueError("Translation proposal must contain three finite deltas")
+    if transaction == "support-transfer":
+        transfers = proposal["support_transfers"]
+        if (not isinstance(transfers, list) or not transfers
+                or len(transfers) + len(proposal["edits"]) > 32):
+            raise ValueError("One to 32 combined structural actions required")
+        snapshot_relations = ground.snapshot()["relations"]
+        edited = {item["entity_id"] for item in proposal["edits"]}
+        children = set()
+        for transfer in transfers:
+            if (not isinstance(transfer, dict) or
+                    set(transfer) != {"child", "old_parent", "new_parent"}):
+                raise ValueError("Support transfer requires exact child and parent IDs")
+            child, old, new = (transfer[x] for x in ("child", "old_parent", "new_parent"))
+            if (any(not isinstance(x, str) for x in (child, old, new))
+                    or len({child, old, new}) != 3 or
+                    not {child, old, new} <= expected or child in children):
+                raise ValueError("Support transfer has invalid or duplicated semantic identities")
+            if child not in edited:
+                raise ValueError("Transferred dependent must have an authored movement")
+            if not any(any(float(v) for v in item["delta"])
+                       for item in proposal["edits"] if item["entity_id"] == child):
+                raise ValueError("Support transfer requires a nonzero dependent movement")
+            if {"parent": old, "child": child, "verb": "supports",
+                "required": True} not in snapshot_relations:
+                raise ValueError("Support transfer requires an existing required bearing")
+            children.add(child)
     if transaction == "support-group":
         movement = {edit["entity_id"]: tuple(float(x) for x in edit["delta"])
                     for edit in proposal["edits"]}
@@ -142,6 +172,15 @@ def apply_proposal(original, ground, source_bundle, proposal, destination):
         actions.append({"kind": "transform", "actor": proposal["actor"],
                         "target": item["entity_id"],
                         "payload": {"matrix": matrix, "frame": "local3d"}})
+    transfers = proposal.get("support_transfers", [])
+    # Old contact MUST come from the immutable source scene, before movement.
+    old_contacts = [native_support(source_bundle, t["old_parent"], t["child"])
+                    for t in transfers]
+    for transfer in sorted(transfers, key=lambda row: row["child"]):
+        actions.append({"kind": "reparent", "actor": proposal["actor"],
+                        "target": transfer["child"],
+                        "payload": {"old_parent": transfer["old_parent"],
+                                    "new_parent": transfer["new_parent"]}})
     next_ground, batch = ground.apply_batch(
         actions, observed_frontier=proposal["observed_frontier"])
     records = batch["receipts"]
@@ -153,6 +192,16 @@ def apply_proposal(original, ground, source_bundle, proposal, destination):
     try:
         package = package_scene(revised, dest / "scene",
                                 reuse_bundle=source_bundle, previous_document=original)
+        contacts = []
+        for transfer, before in zip(transfers, old_contacts):
+            after = native_support(dest / "scene", transfer["new_parent"],
+                                   transfer["child"])
+            contacts.append({"transfer": transfer, "before": before, "after": after})
+        # Every remaining required bearing, not only the transferred one,
+        # must survive on the regenerated STEP solids.
+        for relation in next_ground.snapshot()["relations"]:
+            if relation["verb"] == "supports" and relation["required"]:
+                native_support(dest / "scene", relation["parent"], relation["child"])
         next_ground.save(dest / "ground.json")
         (dest / "declaration.json").write_text(json.dumps(revised, indent=2,
                                                          sort_keys=True) + "\n",
@@ -165,6 +214,7 @@ def apply_proposal(original, ground, source_bundle, proposal, destination):
                    "operations": records,
                    "causal_batch": batch,
                    "transaction_mode": proposal.get("transaction", "independent"),
+                   "support_transfers": contacts,
                    "invalidation_plan": {
                        "rebuilt": plan["rebuilt"],
                        "cached_eligible": plan["cached"],
@@ -180,3 +230,31 @@ def apply_proposal(original, ground, source_bundle, proposal, destination):
                                      encoding="utf8")
         raise
     return outcome
+
+
+def verify_transfer_receipts(proposal, receipt, old_scene, new_scene):
+    """Independent old/new native contact proof with authored batch alignment."""
+    transfers = proposal.get("support_transfers", [])
+    if receipt.get("transaction_mode") != "support-transfer" or not transfers:
+        raise ValueError("Native transfer receipt requires a structural proposal")
+    reported = receipt.get("support_transfers")
+    if not isinstance(reported, list) or len(reported) != len(transfers):
+        raise ValueError("Native transfer proof count differs from operator intent")
+    actions = receipt["causal_batch"]["operations"]
+    actual = [(op["target"], op["payload"].get("old_parent"),
+               op["payload"].get("new_parent")) for op in actions
+              if op["kind"] == "reparent"]
+    expected = [(t["child"], t["old_parent"], t["new_parent"])
+                for t in sorted(transfers, key=lambda item: item["child"])]
+    if actual != expected:
+        raise ValueError("Causal reparent actions differ from operator intent")
+    for requested, pair in zip(transfers, reported):
+        if pair.get("transfer") != requested:
+            raise ValueError("Native transfer witness differs from authored proposal")
+        for scene, parent, witness in (
+                (old_scene, requested["old_parent"], pair["before"]),
+                (new_scene, requested["new_parent"], pair["after"])):
+            expected_contact = native_support(scene, parent, requested["child"])
+            if expected_contact != witness:
+                raise ValueError("Independently reimported bearing contact differs")
+    return True
