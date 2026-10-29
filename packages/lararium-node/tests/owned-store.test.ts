@@ -315,11 +315,13 @@ describe("claimStore — one holder at every instant", () => {
   });
 
   it("CONTROL: a parked caller still inside its own deadline is served once handOver runs", async () => {
-    const claim = await claimStore(dir, { holder: "vessel" });
+    let parkedIt!: () => void;
+    const parkedFirst = new Promise<void>((resolve) => { parkedIt = resolve; });
+    const claim = await claimStore(dir, { holder: "vessel", onPark: () => parkedIt() });
     try {
       let ran = false;
       const asked = ask(socketOf(dir), { verb: "nexus-kapae", requestedBy: "did:test", timeoutMs: 20_000 });
-      await new Promise((r) => setTimeout(r, 10));                 // well short of its 20s deadline
+      await parkedFirst;                                           // the claim's own park event, not a timer
       claim.serve((sock) => {
         ran = true;
         sock.setEncoding("utf8");

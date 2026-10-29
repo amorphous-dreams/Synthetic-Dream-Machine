@@ -83,6 +83,7 @@ export const heavy = [
   "tests/same-operator-refold.test.ts",
   "tests/flow-floor-resweep.test.ts",
   "tests/face-gate-server-bounds.test.ts",
+  "tests/owned-store.test.ts",
   "tests/intent-relay.test.ts",
   "tests/intent-relay-door.test.ts",
   "tests/intent-relay-admission.test.ts",
