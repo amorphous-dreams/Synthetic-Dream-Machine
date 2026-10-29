@@ -122,6 +122,17 @@ def _capture(args):
                 "edits": sorted(edits, key=lambda x: x["entity_id"])}
     if args.transaction != "independent":
         proposal["transaction"] = args.transaction
+    if args.transaction == "support-transfer":
+        if not args.support_transfer:
+            raise RuntimeError("Blender transfer requires explicit operator support intent")
+        transfers = []
+        edited = {item["entity_id"] for item in edits}
+        for triple in args.support_transfer:
+            parts = triple.split(":")
+            if len(parts) != 3 or parts[0] not in edited:
+                raise RuntimeError("Transferred dependent must have captured movement")
+            transfers.append(dict(zip(("child", "old_parent", "new_parent"), parts)))
+        proposal["support_transfers"] = transfers
     Path(args.proposal).write_text(json.dumps(proposal, indent=2) + "\n", encoding="utf8")
     print("LOOM_BLENDER_PROPOSAL " + json.dumps({"edits": len(edits),
                                                  "frontier": ground["frontier"]}))
@@ -163,9 +174,11 @@ def main():
     parser.add_argument("--operator-note", action="store_true")
     parser.add_argument("--test-move", action="append",
                         help="Explicitly simulated move for CI only; repeat for a group")
-    parser.add_argument("--transaction", choices=("independent","support-group"),
+    parser.add_argument("--transaction", choices=("independent","support-group","support-transfer"),
                         default="independent",
                         help="Operator-declared structural transaction, never inferred")
+    parser.add_argument("--support-transfer", action="append",
+                        help="Explicit child:old_parent:new_parent bearing change")
     args = parser.parse_args(arguments)
     if args.action == "import":
         _import(args)
