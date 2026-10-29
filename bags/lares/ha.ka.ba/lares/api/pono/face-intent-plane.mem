@@ -85,13 +85,13 @@ The field holds no leaderless election for "any device of a fleet", and a lease 
 
 !! The far agent ~ an AI that acts from afar
 
-An agent off every device of the face (a cloud sandbox, another machine) never holds an atom: a shared act never makes a shared secret.
+An agent off every device of the face (a cloud sandbox, another machine) never holds an atom: a shared act never makes a shared secret. The agent never wears the face's session either: a session meets one face and one anchor and carries a hand that acts as the face (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>), while the agent acts as itself under a delegation the face signed.
 
-* The agent holds its own key and a narrow delegation from the face: a verb prefix, an argument policy and a causal bound in place of an expiry time.
-* It signs an `intent` and hands it to a ''relay seat'': a vessel of the face with a door off the local socket, opened per face, ring-gated and off by default. The relay verifies the chain and appends the entry carrying the AGENT's signature; it countersigns only its admission.
-* The answering device signs the outcome with its atom, `cause` naming the invocation. A reader verifies agent → delegation → face, invocation → outcome, and atom → device edge → face, and trusts the relay for nothing after admission.
-* A revoked delegation refuses on read, wherever the revocation arrives first; an act admitted before the revocation arrived stays recorded as revoked-after-acting.
-* The relay seat adds a door, so its ring rules and its research land before it builds.
+* The agent holds its own key and a narrow delegation from the face: a verb prefix, an argument policy and a causal bound (`until` or `asOf` naming a signed roster act) in place of an expiry time. The persona root signs the grant at its epoch, and it lives only at the lineage's current root epoch.
+* It signs an `intent` that references its delegation and hands it to a ''relay seat'': a vessel of the face with a door off the local socket on `INTENT_RELAY_ROUTE`, opened per face, ring-gated and off by default, with its enablement resting in a cold row. The relay decides on fresh authority, appends the entry unchanged with the AGENT's signature, and countersigns only its admission, a separate receipt under the relay's own key that lists as provenance and changes no status, `mayAct` or winner.
+* The answering device signs the outcome with its atom, `cause` naming the invocation. A reader on a node or in a browser verifies agent → delegation → face, invocation → outcome, and atom → device edge → face, and trusts the relay for nothing after admission: a receipt under a valid relay key for an absent, revoked or out-of-prefix entry makes nothing act.
+* A revoked delegation refuses on read, wherever the revocation arrives first; a pending sibling voids, and an act admitted before the revocation arrived stays recorded as revoked-after-acting.
+* The kit reads what stands (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/i2-relay-lane">>).
 
 <<~/ahu>>
 
@@ -150,6 +150,6 @@ Row `I1` at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> carri
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yVyYfhWuUuPZSEgSw_YlFoohmlBfMlyGMDXVLHArGHc
+<<^ code="&#x0003;">>ni:///sha-256;pzzL0PH-VfJl2tkuJA-dTwRf0M55W8Yltnl5dIbeNQg
 
 <<^ code="&#x0004;" -> to="?">>
