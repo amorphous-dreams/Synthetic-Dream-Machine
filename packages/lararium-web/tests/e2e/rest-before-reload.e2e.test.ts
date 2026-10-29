@@ -33,7 +33,9 @@ let browser: Browser | null = null;
 let scratch = "";
 let url = "";
 const logs: string[] = [];
-const wiki = (p: Page) => p.locator("#projection");
+const wiki = (p: Page) => p.locator("#mirror");
+/** The mirror edits through TW5's own framed editor: the person types in its iframe. */
+const bodyEditor = (p: Page) => p.frameLocator("#mirror iframe").first().locator("textarea");
 
 async function awaitLive(p: Page): Promise<void> {
   const row = await p.waitForFunction(() => {
@@ -42,7 +44,7 @@ async function awaitLive(p: Page): Promise<void> {
     return t.startsWith("live") || t.startsWith("boot failed") ? t : false;
   }, undefined, { timeout: WAIT }).then((h) => h.jsonValue()).catch(() => "never live");
   expect(row, `${logs.slice(-60).join("\n")}\n--- hearth ---\n${hearth?.bootLog().slice(-2000)}`).toMatch(/^live/);
-  await p.waitForFunction(() => (document.querySelector("#projection")?.shadowRoot?.querySelector(".lar-projection")?.childElementCount ?? 0) > 0, undefined, { timeout: WAIT });
+  await p.waitForFunction(() => document.querySelector("#mirror")?.getAttribute("data-lar-shown") === "mirror" && (document.querySelector("#mirror")?.shadowRoot?.querySelector(".lar-mirror")?.childElementCount ?? 0) > 0, undefined, { timeout: WAIT });
 }
 
 async function openPage(context: BrowserContext): Promise<Page> {
@@ -66,7 +68,7 @@ async function confirmSettled(p: Page, title: string): Promise<boolean> {
     window.dispatchEvent(leave);
     return leave.defaultPrevented;
   });
-  await p.waitForFunction((sel) => !!document.querySelector("#projection")?.shadowRoot?.querySelector(sel), frameOf(title, false), { timeout: WAIT });
+  await p.waitForFunction((sel) => !!document.querySelector("#mirror")?.shadowRoot?.querySelector(sel), frameOf(title, false), { timeout: WAIT });
   return asksHold;
 }
 
@@ -85,7 +87,7 @@ async function openByTitle(p: Page, title: string): Promise<boolean> {
   await link.waitFor({ timeout: 30_000 }).catch(() => undefined);
   if (await link.count() === 0) return false;
   await link.click();
-  await p.waitForFunction((sel) => !!document.querySelector("#projection")?.shadowRoot?.querySelector(sel), frameOf(title, true), { timeout: 30_000 }).catch(() => undefined);
+  await p.waitForFunction((sel) => !!document.querySelector("#mirror")?.shadowRoot?.querySelector(sel), frameOf(title, true), { timeout: 30_000 }).catch(() => undefined);
   return await paintedBody(p, title) !== null;
 }
 
@@ -115,7 +117,7 @@ async function madeAndRested(context: BrowserContext, tag: string): Promise<{ pa
   const title = `Rest ${tag} ${Date.now()}`;
   await wiki(page).evaluate((h) => (h.shadowRoot!.querySelector('button[title="Create a new tiddler"]') as HTMLElement).click());
   await wiki(page).locator("input.tc-titlebar").fill(title);
-  await wiki(page).locator("textarea.tc-edit-texteditor-body").pressSequentially(FIRST, { delay: 5 });
+  await bodyEditor(page).pressSequentially(FIRST, { delay: 5 });
   await confirmSettled(page, title);
   await awaitRested(page, before);
   return { page, title };
@@ -124,7 +126,7 @@ async function madeAndRested(context: BrowserContext, tag: string): Promise<{ pa
 /** Edit the standing tiddler and confirm: the frame leaves edit mode and the page paints the second body. */
 async function editAndConfirm(page: Page, title: string): Promise<boolean> {
   await wiki(page).evaluate((h, t) => (h.shadowRoot!.querySelector(`.tc-tiddler-frame[data-tiddler-title="${t}"] button[title="Edit this tiddler"]`) as HTMLElement).click(), title);
-  const area = wiki(page).locator("textarea.tc-edit-texteditor-body");
+  const area = bodyEditor(page);
   await area.waitFor({ timeout: 30_000 });
   await area.fill("");
   await area.pressSequentially(SECOND, { delay: 5 });

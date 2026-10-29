@@ -9,6 +9,7 @@ export function mountGlassCamera({ tw, shadowRoot, template = TW5_ROOT_TEMPLATE,
   const doc = shadowRoot.ownerDocument;
   const style = doc.createElement("style");
   const container = doc.createElement("div");
+  container.className = "lar-mirror";
   shadowRoot.append(style, container);
   // Setup is one act: a throw anywhere below gives back every assignment made so far.
   const twAny = tw as unknown as Record<string, any>;

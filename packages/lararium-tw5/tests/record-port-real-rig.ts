@@ -9,13 +9,13 @@ export const pump = async () => { for (let i = 0; i < 20; i++) { await Promise.r
 export const open = { type: "port:open", portId: "p", wikiUri: "wiki", actor: "p", width: "full", edits: true,
   presence: false, renders: ["blocks"], maxRecordBytes: 4096, maxBatchBytes: 8192 } as const;
 
-export async function realPort(options: RecordPortOptions = {}, engine?: TW5Engine) {
+export async function realPort(options: RecordPortOptions = {}, engine?: TW5Engine, extra: Partial<IslandContext> = {}) {
   const composite = new CompositeStore();
   const defaultStore = new AtomicMemoryStore("working");
   composite.addLayer({ bagId: "working", store: defaultStore, writable: true });
   const messages: IslandToVesselMsg[] = [];
   const ctx = { wikiUri: "wiki", composite, tw5: engine, handles: new Map(), recipe: { wikiSlug: "wiki" },
-    post: (message: IslandToVesselMsg) => { messages.push(message); } } as unknown as IslandContext;
+    post: (message: IslandToVesselMsg) => { messages.push(message); }, ...extra } as unknown as IslandContext;
   const cap = hasRecordPort({ mayEdit: () => true, bagGrant: () => true, ...options });
   const cleanup = await cap.onEa?.(ctx);
   const send = async (message: { type: string }) => {

@@ -213,7 +213,7 @@ function stagedFileName(login: string | null): string {
 /** A standing vessel key whose own files fail to prove it (its inception, or a seed that derives another key); nothing gets written over either file. */
 export class VesselInceptionRefused extends Error {
   override readonly name = "VesselInceptionRefused";
-  constructor(readonly kelFile: string, readonly reading: "absent" | "malformed" | "old-shape" | "unarmed" | "names-another-key" | "signature-fails" | "seed-names-another-key" | "chain-refused", readonly chainRefusal?: string) {
+  constructor(readonly kelFile: string, readonly reading: "absent" | "malformed" | "unarmed" | "names-another-key" | "signature-fails" | "seed-names-another-key" | "chain-refused", readonly chainRefusal?: string) {
     super(
       `the place KEL at ${kelFile} reads ${reading}${chainRefusal ? `: ${chainRefusal}` : ""}; no standing key gets overwritten`,
     );
@@ -225,11 +225,7 @@ function readPlaceChain(kelFile: string): PlaceKelEvent[] {
   if (!existsSync(kelFile)) throw new VesselInceptionRefused(kelFile, "absent");
   let raw: unknown;
   try { raw = JSON.parse(readFileSync(kelFile, "utf8")); } catch { throw new VesselInceptionRefused(kelFile, "malformed"); }
-  if (!Array.isArray(raw)) {
-    if (raw && typeof raw === "object" && (raw as { t?: unknown }).t === "icp")
-      throw new VesselInceptionRefused(kelFile, "old-shape");
-    throw new VesselInceptionRefused(kelFile, "malformed");
-  }
+  if (!Array.isArray(raw)) throw new VesselInceptionRefused(kelFile, "malformed");
   return raw as PlaceKelEvent[];
 }
 
@@ -237,7 +233,7 @@ function verifiedPlaceChain(kelFile: string) {
   const chain = readPlaceChain(kelFile);
   const reading = verifyPlaceKel(chain);
   if (!reading.ok) {
-    const named = reading.refusal === "old-shape-inception" ? "old-shape" : reading.refusal === "unarmed-inception" ? "unarmed" :
+    const named = reading.refusal === "unarmed-inception" ? "unarmed" :
       reading.refusal === "bad-signature" ? "signature-fails" : reading.refusal === "malformed" ? "malformed" : "chain-refused";
     throw new VesselInceptionRefused(kelFile, named, reading.refusal);
   }

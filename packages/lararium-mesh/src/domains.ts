@@ -226,6 +226,10 @@ export const EDGE_KAPAE_DOMAIN = mint("edge-act");
 export const PERSONA_ACT_DOMAIN = mint("persona-act");
 /** A face's independently signed, content-addressed intent entry. */
 export const INTENT_ENTRY_DOMAIN = mint("intent-entry");
+/** A root's narrow grant to an agent key on the face intent plane. */
+export const INTENT_DELEGATION_DOMAIN = mint("intent-delegation");
+/** A relay signs admission provenance under its own domain. */
+export const INTENT_ADMISSION_DOMAIN = mint("intent-admission");
 /** The COMMITMENT a sealed face anchor keeps to its persona root: the root's DID hashes under this name, so
  *  the anchor names the root without carrying it. */
 export const FACE_ANCHOR_ROOT_DOMAIN = mint("face-anchor-root");

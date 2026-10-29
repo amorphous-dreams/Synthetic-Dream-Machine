@@ -69,6 +69,8 @@ async function stand(label: string, opts: {
   anchor?: () => SessionAnchor;
   /** A sealed act runs only once this lets go. */
   actHold?: Promise<void>;
+  /** The ledger's flush waits on this before it runs, as a slow disk would. */
+  flushGate?: Promise<void>;
   /** A sealed act throws once running, as a torn custody row would. */
   actThrows?: boolean;
 } = {}) {
@@ -98,15 +100,18 @@ async function stand(label: string, opts: {
       return { ok: true, signer };
     } } };
   } };
-  const flushing = { flush: (ids?: Parameters<Repo["flush"]>[0]) => (opts.failFlush?.() ? Promise.reject(new Error("disk full at /secret/path")) : repo.flush(ids)) };
+  const flushing = { flush: async (ids?: Parameters<Repo["flush"]>[0]) => { if (opts.flushGate) await opts.flushGate; if (opts.failFlush?.()) throw new Error("disk full at /secret/path"); return repo.flush(ids); } };
   const logged: Array<SwitchIntent | SwitchOutcome> = [];
   const switchActs = { write: async (act: SwitchIntent | SwitchOutcome) => {
     if (opts.failFlush?.()) throw new Error("disk full at /secret/path");
     logged.push(act);
   } };
   const ran: Array<{ act: string; args: Record<string, unknown> }> = [];
+  let ranStarted!: () => void;
+  const ranFirst = new Promise<void>((resolve) => { ranStarted = resolve; });
   const sessionActs = { names: new Set(["host.roll", "carriage.accept"]), run: async (act: string, args: Record<string, unknown>) => {
     ran.push({ act, args });
+    ranStarted();
     if (opts.actHold) await opts.actHold;
     if (opts.actThrows) throw new Error("the custody row at /secret/row reads torn");
     return { op: "act", act, result: { epoch: "e".repeat(64) } };
@@ -136,7 +141,7 @@ async function stand(label: string, opts: {
   /** A known write into the composite's working layer, so a watcher proves it hears. */
   const probe = (title: string) => composite.put({ tiddler: { title, text: "probe" } }, { kind: "tw-local", instanceId: "probe" },
     { bag: wikiSlotUri("daemon", "working") });
-  return { placed, drawn, connect, done, watchActs, probe, ran, composite, channel };
+  return { placed, drawn, connect, done, watchActs, probe, ran, ranFirst, composite, channel };
 }
 
 const envOf = (opened: Record<string, unknown>) =>
@@ -489,7 +494,7 @@ describe("UDS session switch", () => {
       const a = await v.connect();
       const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
       a.sock.write(JSON.stringify({ op: "session:act", ...envA, requestId: "long", act: "host.roll", args: {} }) + "\n");
-      for (let n = 0; n < 200 && v.ran.length === 0; n++) await new Promise((resolve) => setImmediate(resolve));
+      await v.ranFirst;                                                      // the act's own start
       expect(v.ran).toHaveLength(1);                                         // the act runs, held
       let closed = false;
       const closing = v.channel.detach().then(() => { closed = true; });
@@ -499,6 +504,30 @@ describe("UDS session switch", () => {
       await closing;
       expect(closed).toBe(true);
     } finally { letGo(); await v.done(); }
+  });
+  test("RED: a seat that closes waits out an act behind a slow ledger flush, and the test waits on the act's own start; CONTROL: the held act has not run before the flush lets go", async () => {
+    let letGo!: () => void, flushed!: () => void;
+    const v = await stand("session-act-slow-flush", {
+      actHold: new Promise<void>((resolve) => { letGo = resolve; }),
+      flushGate: new Promise<void>((resolve) => { flushed = resolve; }),
+    });
+    try {
+      const a = await v.connect();
+      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      a.sock.write(JSON.stringify({ op: "session:act", ...envA, requestId: "long", act: "host.roll", args: {} }) + "\n");
+      for (let n = 0; n < 200; n++) await new Promise((resolve) => setImmediate(resolve));
+      expect(v.ran).toHaveLength(0);                                         // CONTROL: the slow flush holds the act back
+      flushed();
+      await v.ranFirst;                                                      // the act's own start, not a count of turns
+      expect(v.ran).toHaveLength(1);
+      let closed = false;
+      const closing = v.channel.detach().then(() => { closed = true; });
+      for (let n = 0; n < 20; n++) await new Promise((resolve) => setImmediate(resolve));
+      expect(closed).toBe(false);
+      letGo();
+      await closing;
+      expect(closed).toBe(true);
+    } finally { flushed(); letGo(); await v.done(); }
   });
   test("RED: an act naming its face by handleIndex binds to the session's face: another face refuses face-row-other-face, and the act carries handleIndex alone", async () => {
     const v = await stand("session-act-handle");

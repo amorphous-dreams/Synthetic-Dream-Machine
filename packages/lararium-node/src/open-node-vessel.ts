@@ -19,7 +19,6 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { larBootstrapPath } from "./vessel-paths.js";
-import { refuseLegacyPlaceBytes } from "./legacy-place-bytes.js";
 import { createAfterRoll } from "./after-roll-chain.js";
 import { join }                         from "path";
 import type { Server }                  from "node:http";
@@ -65,7 +64,7 @@ import type { WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
-import { workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding } from "@lararium/mesh";
+import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
   ACTIVE_WIKI_URI,
@@ -201,6 +200,8 @@ import { gateGrantRing }                         from "./gate-rings.js";
 import { readFaceJoinRecord, readFaceAddressSecret } from "./fleet-join-custody.js";
 import { gateMemoryRows }                        from "./gate-memory-rows.js";
 import { custodyGateDoor }                       from "./custody-seat.js";
+import { standIntentRelay, type IntentRelayService } from "./intent-relay.js";
+import { resolveIntentRelayFace } from "./intent-relay-face.js";
 import { vesselFloorKeyDoor, loadPlaceKelChain, loadPlaceAid } from "./node-vessel-identity.js";
 import { hearthFloorPins }                       from "./hearth-sovereign-pin.js";
 import { hearthFloorProof }                      from "./hearth-floor-claims.js";
@@ -464,6 +465,11 @@ export async function standNodeFloor(storageDir: string): Promise<NodeFloor> {
   return { storageDir, storeClaim, release: () => (released ??= storeClaim.release()) };
 }
 
+/** The ask `answerRestWithHeads` reads, built for a document set whose heads the island named. It rides no port. */
+function restAskOf(documentIds: readonly string[], heads: Readonly<Record<string, readonly string[]>>): Parameters<typeof answerRestWithHeads>[1] {
+  return { requestId: "rest-in-store", documentIds: [...documentIds], heads: Object.fromEntries(documentIds.map((id) => [id, [...heads[id]!]])) } as Parameters<typeof answerRestWithHeads>[1];
+}
+
 /**
  * The rest door's whole act: wait until each named document has reached `repo`, then flush them into its store.
  * It resolves only after the store holds every one durably, so an acknowledgment never runs ahead of the save.
@@ -475,17 +481,30 @@ export async function standNodeFloor(storageDir: string): Promise<NodeFloor> {
  * down. No timer runs here; the asking island's own patience bounds the wait from its side.
  */
 export async function restInStore(
-  repo: Pick<Repo, "find" | "flush">,
+  repo: Pick<Repo, "find" | "flush"> & Partial<Pick<Repo, "findWithProgress" | "handles" | "networkSubsystem" | "peers">>,
   documentIds: readonly string[],
-  leg?: { readonly ready: Promise<void>; readonly onClose: (fn: () => void) => () => void },
+  leg?: { readonly ready: Promise<unknown>; readonly onClose: (fn: () => void) => () => void },
+  heads?: Readonly<Record<string, readonly string[]>>,
 ): Promise<void> {
+  let islandPeer: string | undefined;
   if (leg) {
     // The teardown subscription leaves when the wait settles, so a completed ask holds nothing of the door.
-    const stood = await new Promise<boolean>((resolve, reject) => {
-      const off = leg.onClose(() => resolve(false));
-      leg.ready.then(() => { off(); resolve(true); }, (error: unknown) => { off(); reject(error); });
+    const stood = await new Promise<{ peer: unknown } | null>((resolve, reject) => {
+      const off = leg.onClose(() => resolve(null));
+      leg.ready.then((peer) => { off(); resolve({ peer }); }, (error: unknown) => { off(); reject(error); });
     });
-    if (!stood) throw new Error(`the vessel stood down before the island's sync leg stood (${documentIds.join(", ")})`);
+    if (stood === null) throw new Error(`the vessel stood down before the island's sync leg stood (${documentIds.join(", ")})`);
+    if (typeof stood.peer === "string") islandPeer = stood.peer;
+  }
+  const named = heads && documentIds.length > 0 && documentIds.every((id) => (heads[id]?.length ?? 0) > 0);
+  if (named && repo.findWithProgress && repo.handles) {
+    // The island names the heads it holds. A derived id the vessel asked for earlier may stand cached unavailable, and
+    // that says nothing of the island's copy: the vessel's copy has to come to hold the heads, so the wait rides the
+    // handle's own `heads-changed`, never a find that settled before the bytes could arrive.
+    for (const id of documentIds) repo.findWithProgress(`automerge:${id}` as AutomergeUrl);
+    const answer = await answerRestWithHeads(repo as unknown as Repo, restAskOf(documentIds, heads!), islandPeer);
+    if (!answer.rested) throw new Error(answer.why ?? "the vessel's copy did not come to hold the island's heads");
+    return;
   }
   for (const id of documentIds) await repo.find<LarDoc>(`automerge:${id}` as AutomergeUrl);
   await repo.flush(documentIds as DocumentId[]);
@@ -655,7 +674,6 @@ interface NodeBootPrep {
  * verbs, pool, after-hooks). NO sequencing here — `composeLararium`/`composeHerm` wire the order.
  */
 async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass): Promise<NodeBootPrep> {
-  refuseLegacyPlaceBytes();
   if (opts.floor && opts.floor.storageDir !== opts.storageDir) {
     throw new Error("[lararium] the floor handed to this composition holds another store");
   }
@@ -972,7 +990,7 @@ async function prepareNodeBootOn(
   // in its store — so no binding names a document a hard stop could leave unsaved.
   const restDoorClosers = new Set<() => void>();
   const onRestDoorClose = (fn: () => void): (() => void) => { restDoorClosers.add(fn); return () => { restDoorClosers.delete(fn); }; };
-  setRestDoor((documentIds) => restInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onRestDoorClose }));
+  setRestDoor((documentIds, heads) => restInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onRestDoorClose }, heads));
   stood.push({ what: "the rest door", down: () => { setRestDoor(null); for (const close of [...restDoorClosers]) close(); restDoorClosers.clear(); } });
   // The Repo stands down after everything that writes through it: it flushes, then closes its storage and network.
   stood.push({ what: "the Repo", down: async () => { await repo.flush(); await repo.shutdown(); } });
@@ -1423,7 +1441,17 @@ async function prepareNodeBootOn(
     }
     // The book just read again: a binding it no longer holds ends the same-operator session that stood on it.
     sweepSameOperator?.();
+    // THE INTENT RELAY stands beside the sync gates: one route per operator-enabled face, off until a person enables it.
+    // Its admit signs under the relay's own key; the agent holds its own key and never wears a face's session.
+    if (intentRelay === null) {
+      intentRelay = await standIntentRelay({
+        gateServer, ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), rootDoor: custodyGateDoor(), deadlines: timerGateDeadlines(),
+        faces: (group) => resolveIntentRelayFace(group, { repo, catalogUrl: catalogHandle.url }), log: (message) => console.log(message),
+      });
+    } else await intentRelay.refresh();
   };
+  let intentRelay: IntentRelayService | null = null;
+  stood.push({ what: "the intent relay", down: () => { intentRelay?.close(); intentRelay = null; } });
   stood.push({ what: "the sync gates' knocks", down: () => { for (const held of syncStood.values()) held.unstand(); syncStood.clear(); } });
 
   // Read the bulb off the genesis dir — the ALL-PUBLIC seed + CAS a Herm serves so a stranger kindles their OWN
@@ -1578,6 +1606,8 @@ async function prepareNodeBootOn(
     const pins = await loadIdentityAnchors(ordinal);
     if (!pins?.deviceEdge?.deviceVerifyingKey) throw new Error(`face h${ordinal} has no device edge`);
     await daemonVm.dropFace(pins.deviceEdge.deviceVerifyingKey);
+    // The lock closes the face's relay route at once; the next gate sweep would leave it standing.
+    await intentRelay?.refresh();
   };
   let daemonVm!:   DaemonVmCore;           // set in openDaemon
   let standDaemonVm: () => void = () => {};
@@ -2325,6 +2355,7 @@ async function prepareNodeBootOn(
       if (!siblingPorts) throw new Error(`face h${ordinal} cannot light without a mounted face`);
       const [entry] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal] });
       if (entry) await daemonVm.lightFace(entry);
+      await intentRelay?.refresh();
     };
     const daemonAuth = {
       ...(joinedFaces.length ? { joinedFaces } : {}),

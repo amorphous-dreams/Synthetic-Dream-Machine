@@ -6,6 +6,7 @@ import { makeGlassPortAdaptor } from "../../lararium-tw5/src/glass-port-adaptor.
 const lockName = () => `glass-topology:${crypto.randomUUID()}`;
 const channelName = () => `glass-bus:${crypto.randomUUID()}`;
 const turn = () => new Promise<void>(resolve => queueMicrotask(resolve));
+const lend = { surface: "wiki", actor: "leader", inputs: { coreCid: "c".repeat(64), pluginCids: [] } };
 function leads(election: ReturnType<typeof electLeader>) {
   return new Promise<() => void>(resolve => election.onLeader(resolve));
 }
@@ -100,7 +101,7 @@ describe("glass topology on Web Locks and BroadcastChannel", () => {
     const stub = vessel();
     const election = electLeader({ locks: navigator.locks, name: lockName() });
     const release = await leads(election);
-    const served = serveFollowers(leaderBus, stub.doors);
+    const served = serveFollowers(leaderBus, stub.doors, () => lend);
     stub.attach(served.onPortMessage);
     const early = follower(firstBus, "early");
     await new Promise<void>(resolve => early.doors.onReady(resolve));
@@ -123,11 +124,11 @@ describe("glass topology on Web Locks and BroadcastChannel", () => {
     const lock = lockName();
     const a = electLeader({ locks: navigator.locks, name: lock });
     const releaseA = await leads(a);
-    let served = serveFollowers(busA, stub.doors);
+    let served = serveFollowers(busA, stub.doors, () => lend);
     stub.attach(served.onPortMessage);
     const b = electLeader({ locks: navigator.locks, name: lock });
     const nextLeader = new Promise<void>(resolve => b.onLeader(() => {
-      served = serveFollowers(busB, stub.doors);
+      served = serveFollowers(busB, stub.doors, () => lend);
       stub.attach(served.onPortMessage);
       resolve();
     }));

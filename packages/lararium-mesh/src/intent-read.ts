@@ -1,17 +1,21 @@
+import { readIntentAdmission } from "./intent-admission.js";
 /** Pure read of a face's unordered intent entries. No arrival order decides an effect. */
 import { sha256HexBytesSync, utf8Bytes } from "./crypto.js";
-import { signsAtEpoch, type HandLineage } from "./hand-lineage.js";
+import { isCurrentEpoch, signsAtEpoch, type HandLineage } from "./hand-lineage.js";
 import { intentId, readIntentEntry, type IntentAudience, type IntentBound, type SignedIntentEntry } from "./intent-entry.js";
+import { argsWithinPolicy, verbInPrefix, type DelegationBound, type DelegationCite, type DelegationPolicy } from "./intent-delegation.js";
 import { issueCheck, type IntentVerbClass, type IntentVerbRegistry } from "./intent-verbs.js";
 
 type Standing = "stands" | "aside" | "unknown";
 export interface IntentReadInput {
   readonly group: string;
   readonly records: readonly unknown[];
+  readonly admissions?: readonly unknown[];
   readonly face: { readonly devices: readonly string[]; readonly rosterCids: readonly string[]; readonly admittedAt: ReadonlyMap<string, string>; readonly lineage: HandLineage };
   readonly standing: (atom: string) => Standing;
   readonly holdsCapability?: (atom: string, capability: string) => boolean;
   readonly verbs: IntentVerbRegistry;
+  readonly heldFrontiers?: ReadonlySet<string>;
 }
 export interface IntentRecord { readonly cid: string; readonly entry: SignedIntentEntry }
 export interface IntentSlot {
@@ -21,11 +25,13 @@ export interface IntentSlot {
   readonly unknownFrontier: boolean;
 }
 export interface IntentState {
+  readonly admissions: readonly { cid: string; relay: string }[];
   readonly id: string; readonly issuer: string; readonly verb: string; readonly class: IntentVerbClass;
   readonly fenced: boolean;
   readonly audience: IntentAudience; readonly bound: IntentBound | null;
   readonly status: "open" | "answered" | "void" | "unknown-frontier";
-  readonly voidCause: "superseded" | "cancelled" | "issuer-aside" | "roster-passed" | null;
+  readonly voidCause: "superseded" | "cancelled" | "issuer-aside" | "roster-passed" | "delegation-revoked" | "delegation-closed" | "delegation-lapsed" | null;
+  readonly agent: null | { readonly delegation: string; readonly status: "live" | "revoked" | "closed" | "lapsed" | "awaiting" };
   readonly asks: readonly IntentRecord[];
   readonly answer: IntentRecord | "contested" | null;
   readonly claim: IntentRecord | null;
@@ -36,7 +42,9 @@ export interface IntentState {
 }
 export interface IntentView {
   readonly intents: readonly IntentState[];
+  readonly delegations: readonly { readonly cid: string; readonly agent: string; readonly prefix: string; readonly status: "live" | "revoked" | "closed" | "lapsed" | "awaiting" | "pending-revoke-orphan"; readonly revokedBy: string | null }[];
   readonly refused: readonly { readonly refusal: string }[];
+  readonly refusedAdmissions: readonly { readonly refusal: string }[];
   readonly strayAnswers: readonly IntentRecord[];
   readonly standing: (atom: string) => Standing;
   readonly holdsCapability: (atom: string, capability: string) => boolean;
@@ -56,19 +64,48 @@ const effectiveAnswer = (answers: readonly IntentRecord[]): IntentRecord | "cont
 };
 
 export function readIntentPlane(input: IntentReadInput): IntentView {
+  const admissions = (input.admissions ?? []).map(raw => readIntentAdmission(raw, { group: input.group }));
+  const refusedAdmissions = admissions.filter((r): r is Extract<typeof r, { ok: false }> => !r.ok).map(r => ({ refusal: r.refusal }));
   const devices = new Set(input.face.devices.map((a) => a.toLowerCase()));
   const refused: { refusal: string }[] = [], all = new Map<string, IntentRecord>();
   for (const raw of input.records) {
-    const read = readIntentEntry(raw, { group: input.group, authorize: (signer, body) => devices.has(signer) ||
-      (["release", "cancel", "supersede"].includes(body.entry) && signsAtEpoch(input.face.lineage, body.epoch, signer)) });
+    const read = readIntentEntry(raw, { group: input.group, authorize: (signer, body) =>
+      ["delegate", "delegate-revoke"].includes(body.entry) ? signsAtEpoch(input.face.lineage, body.epoch, signer) :
+        devices.has(signer) || (body.entry === "intent" && body.delegation !== undefined) ||
+        (["release", "cancel", "supersede"].includes(body.entry) && signsAtEpoch(input.face.lineage, body.epoch, signer)) });
     if (!read.ok) { refused.push({ refusal: read.refusal }); continue; }
     all.set(read.cid, { cid: read.cid, entry: read.entry });
   }
   const entries = [...all.values()].sort(sorted);
+  const byKind = (kind: string): IntentRecord[] => entries.filter((r) => r.entry.body.entry === kind);
+  const held = (cite: DelegationCite): boolean => "roster" in cite ? input.face.rosterCids.includes(cite.roster) :
+    "frontier" in cite ? input.heldFrontiers?.has(cite.frontier) === true : all.has(cite.control);
+  const delegates = byKind("delegate"), revokes = byKind("delegate-revoke");
+  const delegationStates = new Map<string, { cid: string; agent: string; prefix: string; status: "live" | "revoked" | "closed" | "lapsed" | "awaiting"; revokedBy: string | null }>();
+  for (const d of delegates) {
+    const b = d.entry.body, bound = b.bound as DelegationBound;
+    const revoker = revokes.find((r) => r.entry.body.delegation === d.cid && (r.entry.body.epoch as number) >= (b.epoch as number));
+    if (revokes.some((r) => r.entry.body.delegation === d.cid && (r.entry.body.epoch as number) < (b.epoch as number))) refused.push({ refusal: "revoke-before-delegation-epoch" });
+    const status = revoker ? "revoked" : !isCurrentEpoch(input.face.lineage, b.epoch) ? "lapsed" : bound.until && held(bound.until) ? "closed" : bound.asOf && !held(bound.asOf) ? "awaiting" : "live";
+    delegationStates.set(d.cid, { cid: d.cid, agent: b.agent as string, prefix: b.prefix as string, status, revokedBy: revoker?.cid ?? null });
+  }
+  const orphans = new Map<string, IntentView["delegations"][number]>();
+  for (const r of revokes) {
+    const cid = r.entry.body.delegation as string;
+    if (!delegationStates.has(cid) && !orphans.has(cid)) orphans.set(cid, { cid, agent: "", prefix: "", status: "pending-revoke-orphan", revokedBy: r.cid });
+  }
+  const delegations: IntentView["delegations"] = [...delegationStates.values(), ...orphans.values()].sort((a, b) => a.cid.localeCompare(b.cid));
   const intents = new Map<string, IntentRecord>();
   for (const r of entries.filter((e) => e.entry.body.entry === "intent")) {
     const b = r.entry.body;
-    if (b.issuer !== r.entry.signer) { refused.push({ refusal: "not-issuer" }); continue; }
+    if (b.delegation !== undefined) {
+      const d = delegationStates.get(b.delegation as string), grant = d && all.get(d.cid)?.entry.body;
+      if (!d || !grant) { refused.push({ refusal: "delegation-unknown" }); continue; }
+      if (r.entry.signer !== d.agent || b.issuer !== r.entry.signer) { refused.push({ refusal: "agent-key" }); continue; }
+      if (!verbInPrefix(d.prefix, b.verb as string)) { refused.push({ refusal: "verb-outside-prefix" }); continue; }
+      if (!argsWithinPolicy(grant.policy as DelegationPolicy, b.args)) { refused.push({ refusal: "args-outside-policy" }); continue; }
+      if (!b.refs.includes(d.cid)) { refused.push({ refusal: "delegation-ref" }); continue; }
+    } else if (b.issuer !== r.entry.signer) { refused.push({ refusal: "not-issuer" }); continue; }
     const check = issueCheck(input.verbs, b.verb as string, b.audience as IntentAudience);
     if (!check.ok) { refused.push({ refusal: check.refusal }); continue; }
     if (check.classification.class === "idempotent" && b.nonce !== "") { refused.push({ refusal: "idempotent-nonce" }); continue; }
@@ -76,7 +113,6 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
     const prior = intents.get(id);
     if (!prior || r.cid < prior.cid) intents.set(id, r);
   }
-  const byKind = (kind: string): IntentRecord[] => entries.filter((r) => r.entry.body.entry === kind);
   const asks = byKind("asks"), answers = byKind("answer"), claims = byKind("claim"), takeovers = byKind("takeover"), releases = byKind("release"), cancels = byKind("cancel"), supersedes = byKind("supersede"), outcomes = byKind("outcome");
   const authorized = (r: IntentRecord, issuer: string, claimant?: string): boolean => {
     if (root(r, input.face.lineage)) return true;
@@ -96,6 +132,8 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
   const states: IntentState[] = [];
   for (const [id, source] of [...intents].sort(([a], [b]) => a.localeCompare(b))) {
     const body = source.entry.body, issuer = body.issuer as string, audience = body.audience as IntentAudience, bound = (body.bound as IntentBound | undefined) ?? null;
+    const delegation = body.delegation === undefined ? null : delegationStates.get(body.delegation as string)!;
+    const agent = delegation ? { delegation: delegation.cid, status: delegation.status } : null;
     const classification = input.verbs.classOfVerb(body.verb as string)!;
     const ownAsks = asks.filter((q) => str(q, "intent") === id);
     const ownAnswers = answers.filter((a) => ownAsks.some((q) => q.cid === field(a, "ask")));
@@ -131,7 +169,10 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
     let voidCause: IntentState["voidCause"] = null;
     if (ownCancels.length) voidCause = "cancelled";
     else if (ownSupersedes.length) voidCause = "superseded";
-    else if (input.standing(issuer) === "aside") voidCause = "issuer-aside";
+    else if (agent?.status === "revoked") voidCause = "delegation-revoked";
+    else if (agent?.status === "closed") voidCause = "delegation-closed";
+    else if (agent?.status === "lapsed") voidCause = "delegation-lapsed";
+    else if (!agent && input.standing(issuer) === "aside") voidCause = "issuer-aside";
     else if (bound?.void && input.face.rosterCids.includes(bound.void)) voidCause = "roster-passed";
     const bySlot = new Map<string, IntentRecord[]>(), outOfAudience: IntentRecord[] = [];
     const executor = answer !== null && answer !== "contested" && field(answer, "verdict") === "approve" ? field(answer, "executor") : null;
@@ -166,12 +207,13 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
       });
       slots.push({ slot, winner: unknownFrontier ? null : list[0] ?? null, duplicates: unknownFrontier ? list : list.slice(1), unknownFrontier });
     }
-    const unknown = input.standing(issuer) === "unknown" || slots.some((s) => s.unknownFrontier);
+    const unknown = (agent ? agent.status === "awaiting" : input.standing(issuer) === "unknown") || slots.some((s) => s.unknownFrontier);
     const status = voidCause ? "void" : unknown ? "unknown-frontier" : slots.some((s) => s.winner) ? "answered" : "open";
-    states.push({ id, issuer, verb: body.verb as string, class: classification.class, fenced: classification.class === "single-effect" || !!classification.fenced, audience, bound, status, voidCause, asks: ownAsks,
+    states.push({ admissions: admissions.flatMap(r => r.ok && r.admission.body.entry === source.cid ? [{ cid: r.cid, relay: r.admission.body.relay }] : []).sort((a, b) => a.cid.localeCompare(b.cid)), id, issuer, verb: body.verb as string, class: classification.class, fenced: classification.class === "single-effect" || !!classification.fenced, audience, bound, status, voidCause, agent, asks: ownAsks,
       answer, claim, claims: ownClaims, slots, voidAfterAct: voidCause ? ownOutcomes : [], outOfAudience });
   }
-  return { intents: states, refused, strayAnswers, standing: input.standing, holdsCapability: input.holdsCapability ?? (() => false), face: input.face };
+  refused.sort((a, b) => a.refusal.localeCompare(b.refusal));
+  return { intents: states, delegations, refused, refusedAdmissions, strayAnswers, standing: input.standing, holdsCapability: input.holdsCapability ?? (() => false), face: input.face };
 }
 
 export type MayActReason = "answered" | "void" | "not-audience" | "pinned-elsewhere" | "fenced-by-claim" | "awaiting-answer" | "unknown-frontier" | "atom-aside";

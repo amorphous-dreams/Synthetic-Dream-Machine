@@ -73,6 +73,8 @@ const SOWN: Record<string, string> = {
   "identity/s-slots.bin":                      "slots",
   "identity/sk-slots.bin":                      "serving",
   "identity/gate-root.bin":                  "root",
+  "identity/intent-relay-key.bin": "k".repeat(32),
+  "identity/intent-relay-faces.json": '{"faces":[]}',
   [`identity/faces/${FCID}/outbox-key-h0.bin`]: "x",
   [`identity/faces/${FCID}/veil-archive-g${"a".repeat(64)}.bin`]: "x",
   [`identity/faces/${FCID}/face-atom-g${"a".repeat(64)}.bin`]: "x",
@@ -149,6 +151,7 @@ const RULED: Record<string, CustodyClass> = {
   "seat-key": "face-cold",
   // A hearth's own cadence key and its next key: they open for one act (kahu#/contract, engine cadence ruling).
   "cadence-key": "face-cold",
+  "intent-relay-key": "cold", "intent-relay-faces": "hot",
   // One joint founding's record: public material and the judged image, read at each joint signature.
   "cofound": "face-hot",
   // A restore's own commit row: one act writes it, one act removes it (custody#/the-restore).
@@ -172,7 +175,7 @@ describe("the carrier table", () => {
     expect(Object.fromEntries(table.map((r) => [r.row, r.custody]))).toEqual(RULED);
     for (const name of ["transition-pending", "transitions"])
       expect(table.find((r) => r.row === name)).toMatchObject({ target: { classes: ["F"] }, custody: "floor-plain", keyClass: null });
-    expect(table.filter((r) => r.custody === "cold")).toEqual([]);
+    expect(table.filter((r) => r.custody === "cold").map((r) => r.row)).toEqual(["intent-relay-key"]);
     expect(new Set(table.map((r) => r.row)).size).toBe(table.length);
     for (const r of table) {
       expect(CUSTODY_CLASSES).toContain(r.custody);

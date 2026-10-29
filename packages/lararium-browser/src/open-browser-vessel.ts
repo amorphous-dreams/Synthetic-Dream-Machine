@@ -14,6 +14,7 @@
  * (PersonaGroup/admin), not genesis — see project-sovereign-worker-model.
  */
 
+import { pagePortGrant } from "./page-port-grant.js";
 import type { PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
@@ -83,7 +84,7 @@ import {
 import { keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "./browser-face-anchor.js";
 import { keepBrowserFaceAtomSeed, mintBrowserFaceAddressSecret, readBrowserFaceAddressSecret, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
 import {
-  loadBrowserVeilArchive, oldShapeVeilRow, refuseLegacyBrowserArchive, saveBrowserVeilArchive,
+  loadBrowserVeilArchive, saveBrowserVeilArchive,
 } from "./browser-keyhive-archive.js";
 import { workingFloorAnchorOf, vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
@@ -561,9 +562,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     if (!fleetShadows || fleetShadows.frontier.status !== "known") return true;   // widening waits on the fleet's signed frontier
     return fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, key))?.stands === true;
   };
-  // Refuse retired identity rows before Repo construction can initialize its IndexedDB store.
-  await oldShapeVeilRow(idbName);
-  await refuseLegacyBrowserArchive(idbName);
   const repo = new Repo({
     storage:     new IndexedDBStorageAdapter(`${idbName}:repo`),
     // The verdict seats on announce AND access (the announce-only lie the node measured in
@@ -1758,7 +1756,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       vmManager = new BrowserVesselIslandPool({
         mainRepo: repo,
         // D4 lends the actor grant; this vessel opens a read-only port until then.
-        portPolicy: opts.portPolicy ?? ((binding, islandKey) => ({ faceId: portFaceId ?? islandKey, actor: binding, edits: false, bags: [], admin: false })),
+        portPolicy: opts.portPolicy ?? ((binding, islandKey) => pagePortGrant({ binding, islandKey, faceId: portFaceId, daemonKey: DAEMON_SURFACE_ID })),
         ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
         resolvePluginCids: async (recipe) => {
           crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");

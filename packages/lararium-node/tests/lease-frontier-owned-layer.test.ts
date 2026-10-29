@@ -135,9 +135,10 @@ describe("the lease frontier reads off the island's own daemon layer", () => {
     operatorDaemonOptions({ daemonAuth } as never, { dyadReading: () => "clear" }).wireWorkerVerbs!(registry, ctx as never);
     const realm = "ab".repeat(32);
     const writer = "cd".repeat(32);
+    // realm-feed writes a writer's slot and stands behind the content fence, so the call presents as the mounted face.
     const call = (verb: string, args: Record<string, unknown>) =>
-      (registry as unknown as { get(n: string): ((a: Record<string, unknown>) => Promise<Record<string, unknown>>) | undefined })
-        .get(verb)!(args);
+      (registry as unknown as { get(n: string): ((a: Record<string, unknown>, c: unknown) => Promise<Record<string, unknown>>) | undefined })
+        .get(verb)!(args, { presenter: `0x${daemonAuth.atom.key}` });
     const fed = await call("realm-feed", { realm, writer });
     expect(fed["epoch"]).toBe(1);
     expect(Object.keys(daemonHandle.doc()!.tiddlers).some((t) => t.includes(realm))).toBe(true);

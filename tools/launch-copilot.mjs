@@ -44,6 +44,8 @@ export function permissionArgs(mode) {
 
 /** The whole copilot argument array for a launch. */
 export function copilotArgs({ mode, prompt, model, effort, share, addDirs = [] }) {
+  // Fusion integration waits until after the founding: a router with a hidden lineage cannot serve as a named lens.
+  if (/fusion/i.test(String(model))) throw new Error(`model "${model}" refused: Fusion integration waits until after the founding, and a router with a hidden lineage cannot serve as a named lens; pin a model id`);
   const args = ["-p", prompt, "--model", model, "--no-ask-user", "--no-auto-update", "--disable-builtin-mcps", "--disallow-temp-dir"];
   if (effort) args.push("--reasoning-effort", effort);
   args.push(...permissionArgs(mode));

@@ -29,7 +29,7 @@ import {
   makeCabalRealmReactors,
   makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, SEED_OFF_DISK,
 } from "@lararium/tw5";
-import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, leaseEpochPrefix, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
+import { ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, leaseEpochPrefix, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
 import { boardDyadReader } from "./board-dyad-reader.js";
@@ -56,7 +56,7 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
   /** `restDocuments` — the rest door. This island's Repo may keep no store for a slot document it mints; the
    *  host injects the ask that resolves once the vessel's own store holds the named documents durably. Present →
    *  every slot mint waits on it before its binding lands. Absent → the island's own Repo flush stands alone. */
-  restDocuments?: (documentIds: readonly string[], gateClear?: Promise<void>) => Promise<void>;
+  restDocuments?: (documentIds: readonly string[], gateClear?: Promise<void>, heads?: Record<string, string[]>) => Promise<void>;
   /** `bagTier` — the SAME inversion for the crossing gate's tier reader: keyhive stays fs-blind, so
    *  NODE injects the reader over its hearth bag manifests. Threaded into the ACTION verb handlers,
    *  where `crossingDirection` prices a transfer by direction. Absent (a browser vessel, tests) →
@@ -132,7 +132,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
-import { hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isSystemCanonBag, realmStandingDocUrl, materializeFaceWorkingDoc } from "@lararium/mesh";
+import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isSystemCanonBag, realmStandingDocUrl, materializeFaceWorkingDoc } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { readFace } from "@lararium/mesh";
@@ -155,6 +155,16 @@ import { unboundMints, restingMinter } from "./resolve-binding.js";
 import { kahuReachSourceOf, withKahuReach } from "./kahu-reach-source.js";
 
 /** A daemon boot cannot stand without the daemon wiki's working layer. */
+/** The heads this island's Repo holds of each named document: the rest ask names them, so the vessel's copy must come to hold every one before it answers. */
+function islandHeadsOf(repo: { readonly handles: Readonly<Record<string, { doc(): unknown } | undefined>> }, ids: readonly string[]): Record<string, string[]> {
+  const heads: Record<string, string[]> = {};
+  for (const id of ids) {
+    const handle = repo.handles[id];
+    if (handle) heads[id] = replicaHeads(handle);
+  }
+  return heads;
+}
+
 export class WorkingLayerAttachRefusal extends Error {
   constructor(slot: string, cause: unknown) {
     const detail = cause instanceof Error ? cause.message : String(cause);
@@ -235,16 +245,27 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
 
   let kh: KeyhiveProvider | null = null;
   const providers = new Map<string, { provider: KeyhiveProvider; group: string }>();
+  // What still holds each face's provider (a verify, or a verb past its verify): a drop disposes only once these settle.
   const inFlight = new Map<KeyhiveProvider, Set<Promise<unknown>>>();
+  const holding = async <T>(provider: KeyhiveProvider, pending: Promise<T>): Promise<T> => {
+    const active = inFlight.get(provider) ?? new Set<Promise<unknown>>();
+    active.add(pending); inFlight.set(provider, active);
+    try { return await pending; } finally { active.delete(pending); if (!active.size) inFlight.delete(provider); }
+  };
   let faceChanges = Promise.resolve();
+  // What each lit face booted from, by its bare atom key: a later lit message for that key matches it or refuses by name.
+  const litInputs = new Map<string, string>();
   const lightJoinedFace = async (face: JoinedFaceAuth, ctx: IslandContext): Promise<void> => {
     const key = bareKey(face.atom.key);
-    if (providers.has(key)) return;
+    if (providers.has(key)) {
+      if (litInputs.get(key) === faceInputsDigest(face)) return;
+      throw new Error(`face-lit-changed: face ${key} stands lit from other inputs (anchor, KEL, edge, bags or veil); drop it before it lights again`);
+    }
     const lease = await readLeaseUnderFace(ctx.composite, face.personaGroupId, readFace(face.personaKel.chain, face.faceAnchor));
     const joined = await bootDaemonKeyhive({
       atomSeed: meshHexToBytes(face.atom.seed), faceVerifyingKey: face.atom.key,
       eventStore: new DaemonEventStore({ daemon: ctx.composite, face: face.personaGroupId }),
-      placeVerifyingKey: daemonAuth.placeVerifyingKey, personaGroupId: face.personaGroupId,
+      personaGroupId: face.personaGroupId,
       faceAnchor: face.faceAnchor, personaKel: face.personaKel, deviceEdge: face.deviceEdge,
       signerDid: face.signerDid, ...(face.meshCabalDocIdHex ? { meshCabalDocIdHex: face.meshCabalDocIdHex } : {}),
       registerBags: face.registerBags.filter(isVesselGround), ledger: daemonBagDocLedger(ctx.composite, face.personaGroupId),
@@ -256,6 +277,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     try {
       for (const bag of face.registerBags.filter((bag) => !isVesselGround(bag))) await joined.keyhive.registerBag(bag);
       providers.set(key, { provider: joined.keyhive, group: face.personaGroupId });
+      litInputs.set(key, faceInputsDigest(face));
     } catch (error) {
       await joined.keyhive.dispose();
       throw error;
@@ -314,7 +336,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     if (slotDocs) return slotDocs;
     slotDocs = makeSlotDocResolver({
       repo: restDocuments ? restingMinter(ctx.repo, (ids) => restDocuments(ids,
-        gateCleared ? undefined : gateClear)) : ctx.repo,
+        gateCleared ? undefined : gateClear, islandHeadsOf(ctx.repo, ids))) : ctx.repo,
       daemonStore: ctx.composite, ...(kh ? { keyhive: kh } : {}),
       catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null,
       vesselDid: () => didFromVerifyingKey(mintedByHex),
@@ -961,15 +983,29 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         registry.register("bag-compact", makeCompactBagReactor({ repo: ctx.repo, catalog, post: ctx.post }));
         registry.register("rotate-recipe", makeRotateRecipeReactor({ repo: ctx.repo, catalog, post: ctx.post }));
       }
-      // THE CONTENT FENCE. These verbs run on the MOUNTED face's resources (its content keys, its provider and ledger for a
-      // mint) whichever face's provider cleared the verify, so a presenter that is another face refuses by name until each
-      // face holds its own content-key seat and mint (OWED, k19-hive-lane#/the-slices).
-      registry.guard(["sealed-seal", "sealed-open", "sealed-reading", "sealed-choose-head", "sealed-hand-over", "sealed-admit", "sealed-parcels", "sealed-receive", "sealed-serve", "sealed-memory-cut", "sealed-memory-door", "sealed-memory-import", "sealed-rolls", "seat-duties", "CREATE", "init-wiki"], (verb, context) => {
-        if (!daemonAuth.atom) return;
-        // Fail closed: a call that names no presenter refuses like a sibling's.
-        if (context.presenter === undefined || bareKey(context.presenter) !== bareKey(daemonAuth.atom.key)) {
-          throw new VerbRefusal("content-mounted-only", `[daemon] ${verb}: this verb runs on the mounted face's content keys and mint; a sibling face's session holds none here.`);
-        }
+      // THE CONTENT FENCE DENIES BY DEFAULT. A verb runs on the MOUNTED face's resources (its content keys, its provider,
+      // mint and ledger, its slot documents and catalog) whichever face's provider cleared the verify, so a presenter that
+      // is another face refuses by name before any handler reads. The fence stands before EVERY verb on this table,
+      // registered now or later, except the ones `FACE_NEUTRAL_VERBS` names with their reasons; until each face holds its
+      // own content-key seat and mint (OWED, k19-hive-lane#/the-slices) a sibling's session reaches only those.
+      registry.fence({
+        open: FACE_NEUTRAL_VERBS,
+        // A sibling's verb past the fence holds that face's provider until it settles, so its drop waits for it.
+        span: (context, run) => {
+          const key = context.presenter === undefined ? undefined : bareKey(context.presenter);
+          const face = key === undefined || (daemonAuth.atom && key === bareKey(daemonAuth.atom.key)) ? undefined : providers.get(key);
+          return face ? holding(face.provider, run()) : run();
+        },
+        check: (verb, context) => {
+          if (!daemonAuth.atom) return;
+          // The vessel's own channel pushes its surfaces under labels (`persona`, `disk-projector`…) that name no face: such a
+          // call passes the fence and meets every cap check as the stranger it reads as. Any claim naming a DID other than the
+          // mounted face's, a label off the channel (a synced summons), and a call naming no presenter refuse.
+          if (context.local === true && context.presenter !== undefined && !namesADid(context.presenter)) return;
+          if (context.presenter === undefined || bareKey(context.presenter) !== bareKey(daemonAuth.atom.key)) {
+            throw new VerbRefusal("content-mounted-only", `[daemon] ${verb}: this verb runs on the mounted face's content keys, mint and documents; a presenter that is not the mounted face holds none here.`);
+          }
+        },
       });
     },
     onHostMessage: (msg, ctx) => {
@@ -983,6 +1019,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           const face = providers.get(key);
           if (face) {
             providers.delete(key);
+            litInputs.delete(key);
             await Promise.allSettled([...(inFlight.get(face.provider) ?? [])]);
             await face.provider.dispose();
           }
@@ -1007,7 +1044,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         booted = await bootDaemonKeyhive({
           ...(daemonAuth.atom ? { atomSeed: meshHexToBytes(daemonAuth.atom.seed) } : {}),
           eventStore:            new DaemonEventStore({ daemon: ctx.composite, face: daemonAuth.personaGroupId! }),
-          placeVerifyingKey: daemonAuth.placeVerifyingKey,
           ...(daemonAuth.atom ? { faceVerifyingKey: daemonAuth.atom.key } : {}),
           // The face pins ride CONDITIONALLY — the gate runs in full or grants no persona caps at all.
           ...(daemonAuth.personaGroupId   ? { personaGroupId:   daemonAuth.personaGroupId }   : {}),
@@ -1252,6 +1288,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         }
       }
       providers.set(bareKey(daemonAuth.atom!.key), { provider: keyhive, group: daemonAuth.personaGroupId! });
+      litInputs.set(bareKey(daemonAuth.atom!.key), faceInputsDigest(daemonAuth));
       for (const face of daemonAuth.joinedFaces ?? []) {
         try { await lightJoinedFace(face, ctx); }
         catch (error) { console.warn(`[daemon] face ${face.atom.key} refused: ${String(error)}`); }
@@ -1262,18 +1299,18 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           const key = bareKey(args.presenter);
           const face = providers.get(key);
           if (!face) return { ok: false, reason: `no provider for face ${key}` };
-          const pending = faceOwnerVerifier({ face: face.provider, mount: { atomKey: key, placeKey: daemonAuth.placeVerifyingKey } }).verify(args);
-          const active = inFlight.get(face.provider) ?? new Set<Promise<unknown>>();
-          active.add(pending); inFlight.set(face.provider, active);
-          try { return await pending; } finally { active.delete(pending); if (!active.size) inFlight.delete(face.provider); }
+          return holding(face.provider, faceOwnerVerifier({ face: face.provider, mount: { atomKey: key, placeKey: daemonAuth.placeVerifyingKey } }).verify(args));
         } },
         kahuReachOf(ctx),
       );
       intentVerifier = {
         ...mountedKahuVerifier,
-        kahuReach: (bagUrl, act, presenter) => presenter !== undefined && bareKey(presenter) !== bareKey(daemonAuth.atom!.key)
-          ? Promise.reject(new VerbRefusal("kahu-reach", "kahu-reach: system canon takes the mounted face's hand; a sibling face holds none here"))
-          : mountedKahuVerifier.kahuReach!(bagUrl, act),
+        // Fail closed, as the content fence does: a call that names no presenter takes no hand.
+        kahuReach: (bagUrl, act, presenter) => presenter === undefined
+          ? Promise.reject(new VerbRefusal("kahu-reach", `kahu-reach: ${act} names no presenter, so it takes no face's hand into system canon`))
+          : bareKey(presenter) !== bareKey(daemonAuth.atom!.key)
+            ? Promise.reject(new VerbRefusal("kahu-reach", "kahu-reach: system canon takes the mounted face's hand; a sibling face holds none here"))
+            : mountedKahuVerifier.kahuReach!(bagUrl, act),
         verify: (args) => {
           if (args.access === "admin" && isSystemCanonBag(args.bagUrl) && bareKey(args.presenter) !== bareKey(daemonAuth.atom!.key)) {
             return Promise.resolve({ ok: false, reason: "kahu-reach: system canon takes the mounted face's hand; a sibling face holds none here" });
@@ -1315,8 +1352,39 @@ export function makeOperatorDaemonBehavior(manifest: IslandMsg_Manifest, extra: 
   return makeDaemonBehavior(operatorDaemonOptions(manifest, extra));
 }
 
+/**
+ * THE CONTENT FENCE'S OPEN LIST: the daemon verbs that touch no mounted face's material, so a sibling face's session
+ * reaches them. Every other verb on the daemon's table refuses a presenter that is not the mounted face
+ * (`content-mounted-only`); a new verb stands fenced until it joins this list with its one-line reason.
+ */
+export const FACE_NEUTRAL_VERBS: Readonly<Record<string, string>> = Object.freeze({
+  "realm-clock": "reads the realm's public lease slots off the vessel's daemon layer; closes over no face's key, provider, mint or slot document",
+});
+
 /** The bare lowercase hex of a DID claim (`0x…` or bare). */
 const bareKey = (did: string): string => did.trim().toLowerCase().replace(/^0x/, "");
+/**
+ * One digest of what a face's provider boots from: its atom key, group, anchor, KEL, device edge, signer, cabal, bags,
+ * veil archive and address secret. Byte fields enter as their own digests, so the digest carries no secret.
+ */
+function faceInputsDigest(face: Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "atom" | "personaGroupId" | "faceAnchor" | "personaKel" | "deviceEdge" | "signerDid" | "registerBags" | "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret">): string {
+  const encode = (text: string): Uint8Array => new TextEncoder().encode(text);
+  // Bytes anywhere enter as their digest; key order and the bag list's order carry no meaning.
+  const plain = (v: unknown): unknown => v instanceof Uint8Array ? sha256HexBytesSync(v)
+    : Array.isArray(v) ? v.map(plain)
+    : v !== null && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, plain(x)])) : v;
+  const fields = {
+    atom: face.atom ? bareKey(face.atom.key) : null, group: face.personaGroupId ?? null, anchor: plain(face.faceAnchor ?? null),
+    kel: plain(face.personaKel ?? null), edge: plain(face.deviceEdge ?? null), signer: face.signerDid ?? null, cabal: face.meshCabalDocIdHex ?? null,
+    bags: [...new Set(face.registerBags)].sort(),
+    veil: face.veilArchiveBytes ? sha256HexBytesSync(face.veilArchiveBytes) : null,
+    address: face.faceAddressSecret ? sha256HexBytesSync(encode(face.faceAddressSecret)) : null,
+  };
+  return sha256HexBytesSync(canonicalJsonBytes(fields));
+}
+
+/** True for a claim that names a DID or a bare 32-byte key, false for a label that names no face. */
+const namesADid = (claim: string): boolean => /^did:/i.test(claim.trim()) || /^[0-9a-f]{64}$/.test(bareKey(claim));
 
 /**
  * Who one verb presents as (see `presenterOf` in `operatorDaemonOptions`). A verb that names a PersonaGroup must name

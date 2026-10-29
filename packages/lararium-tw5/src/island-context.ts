@@ -9,9 +9,9 @@
  * Lives in @lararium/tw5 because TW5Engine is the only non-mesh import —
  * placing it here avoids a circular dependency while keeping it isomorphic.
  *
- * Island Sovereignty Law §9: TW5 SHALL NOT instantiate on the main thread.
- * Every TW5Engine lives inside a sovereign Worker. Behaviors therefore always
- * receive this context from within a Worker — never from a main-thread caller.
+ * Island Sovereignty Law §9: no sovereign VM and no key on a surface. Every
+ * sovereign TW5Engine lives inside a Worker. Behaviors therefore always receive
+ * this context from within a Worker — never from a main-thread caller.
  *
  * Meme: lar:///ha.ka.ba/lararium/tw5/island-context
  */

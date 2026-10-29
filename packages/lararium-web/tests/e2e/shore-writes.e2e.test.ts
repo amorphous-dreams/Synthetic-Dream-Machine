@@ -62,34 +62,21 @@ test("served wiki saves a draft tiddler without worker errors", async () => {
   await page.goto(baseUrl);
   await waitForLivePage();
 
-  const wiki = page.locator("#projection");
+  const wiki = page.locator("#mirror");
   await wiki.evaluate((host) => host.shadowRoot.querySelector('button[title="Create a new tiddler"]').click());
   await wiki.locator("input.tc-titlebar").fill("Shore Write Probe");
-  const bodyEditor = wiki.locator("textarea.tc-edit-texteditor-body");
-  await bodyEditor.evaluate((editor) => {
-    editor.value = "newer local composition — 漢字";
-    editor.dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true, composed: true }));
-    editor.dispatchEvent(new InputEvent("input", {
-      bubbles: true, composed: true, inputType: "insertCompositionText", data: "字", isComposing: true,
-    }));
-    editor.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
-  });
-  // This title edit causes a worker frame while the body field still carries an unfinished composition.
-  // The returned frame must not replace the newer page-side value or relay the composing change.
+  // The mirror's editor is TW5's own framed editor: the person types in its iframe.
+  const bodyEditor = page.frameLocator("#mirror iframe").first().locator("textarea");
+  await bodyEditor.fill("newer local composition — 漢字");
+  // A title edit writes the draft again; the returned echo must not replace the newer text the person typed.
   await wiki.locator("input.tc-titlebar").fill("Shore Write Probe Updated");
   await page.waitForTimeout(80);
   assert.equal(await bodyEditor.inputValue(), "newer local composition — 漢字");
-  await bodyEditor.evaluate((editor) => {
-    editor.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true, composed: true, data: "字" }));
-    editor.dispatchEvent(new InputEvent("input", {
-      bubbles: true, composed: true, inputType: "insertText", data: "", isComposing: false,
-    }));
-  });
 
   // The editor's TW5 save action receives a worker-local view contract, never a global window.
   await wiki.locator('button[title="Confirm changes to this tiddler"]').click();
-  await page.waitForFunction(() => document.querySelector("#projection")?.shadowRoot
-    ?.querySelector(".lar-projection")?.innerText.includes("newer local composition — 漢字") ?? false,
+  await page.waitForFunction(() => document.querySelector("#mirror")?.shadowRoot
+    ?.querySelector(".lar-mirror")?.innerText.includes("newer local composition — 漢字") ?? false,
     undefined, { timeout: 20_000 });
 
   assert.deepEqual(wikiWorkerErrors, [], "the served save walk emits zero [wiki-worker] error lines");
@@ -100,11 +87,11 @@ test("served wiki saves a draft tiddler without worker errors", async () => {
     await page.reload();
     await page.waitForFunction(() => [...document.querySelectorAll("#phases .phase")]
       .some((phase) => phase.textContent === "live"), undefined, { timeout: 60_000 });
-    const reloadedWiki = page.locator("#projection");
+    const reloadedWiki = page.locator("#mirror");
     await reloadedWiki.locator('input[type="search"]').fill("Shore Write Probe");
     await reloadedWiki.locator("button").filter({ hasText: "matches" }).first().click();
     await reloadedWiki.locator(".tc-search-drop-down").waitFor({ state: "visible", timeout: 20_000 });
-    await page.waitForFunction(() => document.querySelector("#projection")?.shadowRoot
+    await page.waitForFunction(() => document.querySelector("#mirror")?.shadowRoot
       ?.querySelector(".tc-search-drop-down")?.innerText.includes("Shore Write Probe") ?? false,
       undefined, { timeout: 20_000 });
   }
@@ -142,6 +129,8 @@ test("a stale render target answers on its originating projected surface", async
   wikiWorkerErrors.length = 0;
   await page.goto(baseUrl);
   await waitForLivePage();
+  // The stale-target walk drives the named floor, the worker-rendered view; the page shows the mirror, so the probe shows the floor.
+  await page.addStyleTag({ content: "#mirror{display:none !important} #projection{display:block !important}" });
   const wiki = page.locator("#projection");
   // The page relays a click only to a node whose `data-lar-on` stamp binds it, and names a node by its render id
   // where no template control id stands on it, so the probe takes such a node.
@@ -163,19 +152,14 @@ test("served wiki opens the TW5 search dropdown without worker errors", async ()
   browserConsole.length = 0;
   await page.goto(baseUrl);
   await waitForLivePage();
-  const wiki = page.locator("#projection");
+  const wiki = page.locator("#mirror");
   await wiki.locator('input[type="search"]').fill("no-such-shore-result");
   await wiki.locator("button").filter({ hasText: "matches" }).first().click();
   const dropdown = wiki.locator(".tc-search-drop-down");
   await dropdown.waitFor({ state: "visible", timeout: 20_000 });
-  const placement = await dropdown.evaluate((element) => ({
-    position: (element as HTMLElement).style.position,
-    top: (element as HTMLElement).style.top,
-    left: (element as HTMLElement).style.left,
-  }));
-  assert.equal(placement.position, "fixed", "the page places the open popup from its click-time geometry");
-  assert.match(placement.top, /^-?\d+(?:\.\d+)?px$/);
-  assert.match(placement.left, /^-?\d+(?:\.\d+)?px$/);
+  // TW5 lays the popup out itself (in flow, beneath the search box): it stands open with a real extent.
+  const placement = await dropdown.evaluate((element) => ({ position: getComputedStyle(element).position, rect: element.getBoundingClientRect().toJSON() }));
+  assert.ok(placement.rect.width > 0 && placement.rect.height > 0, "the open popup has an extent");
   assert.deepEqual(wikiWorkerErrors, [], "the served popup walk emits zero [wiki-worker] error lines");
 });
 
@@ -184,8 +168,9 @@ async function waitForLivePage(target = page): Promise<void> {
     await target.waitForFunction(() => [...document.querySelectorAll("#phases .phase")]
       .some((phase) => phase.textContent === "live"), undefined, { timeout: 20_000 });
     await target.waitForFunction(() => {
-      const pane = document.querySelector("#projection")?.shadowRoot?.querySelector(".lar-projection");
-      return pane !== null && pane !== undefined && pane.childElementCount > 0;
+      const host = document.querySelector("#mirror");
+      const pane = host?.shadowRoot?.querySelector(".lar-mirror");
+      return host?.getAttribute("data-lar-shown") === "mirror" && pane !== null && pane !== undefined && pane.childElementCount > 0;
     }, undefined, { timeout: 20_000 });
   } catch (error) {
     const faults = browserConsole.filter((line) => line.includes("[daemon-island:fault]"));

@@ -12,7 +12,7 @@ describe("mirror door source census", () => {
   test("R2: no URL-selector module remains", () => {
     expect(existsSync(source("../../lararium-web/src/glass/flag.ts"))).toBe(false);
   });
-  // R5: no clock decides anything in the mirror's own code. The pattern proves itself on a planted line first.
+  // R5: no clock decides anything in the mirror's own code. `requestAnimationFrame` is a frame signal (the browser says a frame ran), not a clock: no duration or deadline rides on it. The pattern proves itself on a planted line first.
   const clock = /\b(Date\.now|performance\.now|setTimeout|setInterval|requestIdleCallback)\b|new Date\(/;
   const glassSources = ["../src/glass-mirror.ts", "../src/glass-port-adaptor.ts", "../src/glass-camera.ts", "../src/glass-token.ts",
     ...["stand", "boot", "cas", "cid", "leader", "tab-bus"].map(name => `../../lararium-web/src/glass/${name}.ts`)];
@@ -22,5 +22,19 @@ describe("mirror door source census", () => {
   });
   test.each(glassSources)("R5: %s reads no clock", file => {
     expect(readFileSync(source(file), "utf8")).not.toMatch(clock);
+  });
+  // One pattern for boot, width and caps: no setting, URL value or stored value picks a width. The glass sources read storage only for the two evidence keys.
+  const widthSources = ["stand", "boot", "cas", "cid", "leader", "tab-bus"].map(name => `../../lararium-web/src/glass/${name}.ts`).concat("../../lararium-web/src/page-mirror.ts");
+  test("CONTROL: the width-source pattern catches a planted setting read", () => {
+    expect(/localStorage|location\.search|URLSearchParams/.test("const w = localStorage.getItem('width');")).toBe(true);
+  });
+  test.each(widthSources)("%s reads no local store, query or setting", file => {
+    expect(readFileSync(source(file), "utf8")).not.toMatch(/localStorage|location\.search|URLSearchParams/);
+  });
+  test("stand.ts names storage only through the two evidence keys", () => {
+    const text = readFileSync(source("../../lararium-web/src/glass/stand.ts"), "utf8");
+    const reads = [...text.matchAll(/store\.(?:getItem|setItem|removeItem)\(([^,)]+)/g)].map(match => match[1]);
+    expect(reads.length).toBeGreaterThan(0);
+    for (const key of reads) expect(key).toMatch(/^(evidenceKey|standingKey)$/);
   });
 });

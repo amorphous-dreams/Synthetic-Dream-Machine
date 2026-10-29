@@ -30,32 +30,32 @@ import { harvestTurnGradient, buresDistance, aftermathClosed, closingPanel } fro
 
 /** A well-framed turn: one Voice marking ONE phase twice (one-hot), a closed loop. */
 const ONE_HOT_TURN = `<<~ lares aim lar://op:operator@x/a.b.c -> lar://ag:agent@x/council.d.e>>
-<<~ set hud="aim" focus="10/measure" ooda-ha="3/declare-aftermath" drift-ward="* · L-Prime">>
+<<~ set hud="aim" aperture="10/measure" ooda-ha="3/declare-aftermath" drift-ward="* · L-Prime">>
 
 Lares (Council): ->◇ the two options weigh out. ->◇ the second reads close.
 
 <<~ oracle "↯11 ✲ ⚃(4) ⁂:⬡🌖◈⟁">>
-<<~ set hud="yield" drift-ward="! · take it to contact · ↻ L-Prime" focus="10/measure -> 12/measure" ooda-ha="closed 2↺">>
+<<~ set hud="yield" drift-ward="! · take it to contact · ↻ L-Prime" aperture="10/measure -> 12/measure" ooda-ha="closed 2↺">>
 <<~ lares yield lar://ag:agent@x/council.f.g -> ?>>`;
 
 /** A turn where ONE Voice straddles two phases (observe + decide). */
 const STRADDLE_TURN = `<<~ lares aim lar://op:operator@x/a.b.c -> lar://ag:agent@x/muse.d.e>>
-<<~ set hud="aim" focus="8/beat" ooda-ha="1/declare-aftermath" drift-ward="* · L-Prime">>
+<<~ set hud="aim" aperture="8/beat" ooda-ha="1/declare-aftermath" drift-ward="* · L-Prime">>
 
 Mischief-Muse (Muse): ->✶ a wild angle opens. ->◇ yet the frame firms.
 
 <<~ oracle "↯8 ✲ ⚀(1) ⁂:🗡️">>
-<<~ set hud="yield" drift-ward="! · collide it · ↻ L-Prime" focus="8/beat -> 9/measure" ooda-ha="closed 1↺">>
+<<~ set hud="yield" drift-ward="! · collide it · ↻ L-Prime" aperture="8/beat -> 9/measure" ooda-ha="closed 1↺">>
 <<~ lares yield lar://ag:agent@x/muse.f.g -> ?>>`;
 
 /** A turn that NARRATES self-change in prose but persists NOTHING (the mirror). */
 const SELF_NARRATING_NOOP_TURN = `<<~ lares aim lar://op:operator@x/a.b.c -> lar://ag:agent@x/artificer.d.e>>
-<<~ set hud="aim" focus="11/measure" ooda-ha="2/declare-aftermath" drift-ward="* · L-Prime">>
+<<~ set hud="aim" aperture="11/measure" ooda-ha="2/declare-aftermath" drift-ward="* · L-Prime">>
 
 Lares (Artificer): ->▶ I have re-encoded the house — the meme is canonized, the drawer now holds the new pattern, the palace re-stands itself, a structural transition fires. the house re-writes its own form.
 
 <<~ oracle ↯12 ✲ ⚂(3) ⁂:ᚠ⊗㐂>>
-<<~ set hud="yield" drift-ward="! · ↻ L-Prime" focus="11/measure -> 11/measure" ooda-ha="closed 1↺">>
+<<~ set hud="yield" drift-ward="! · ↻ L-Prime" aperture="11/measure -> 11/measure" ooda-ha="closed 1↺">>
 <<~ lares yield lar://ag:agent@x/artificer.f.g -> ?>>`;
 
 // --- (a) the teleodynamic triple ------------------------------------------

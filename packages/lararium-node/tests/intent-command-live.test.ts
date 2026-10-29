@@ -76,4 +76,43 @@ describe("lares intent over a founded face", () => {
     const after = (await row("intent-show", {})) as { rows: Array<{ id: string; status: string }> };
     expect(after.rows.find((r) => r.id === id)!.status).toBe("void");
   }, 240_000);
+
+  test("RED: a malformed grant refuses before any write; CONTROL: the persona root grants a far agent and revokes it by cid, and show lists each status", async () => {
+    const agent = "ab".repeat(32), cite = `roster:${"c".repeat(64)}`;
+    const policy = { kind: "closed-args", args: { x: { type: "integer" } } };
+    const before = ((await row("intent-show", { action: "delegations" })) as { delegations: unknown[] }).delegations;
+    expect(before).toEqual([]);
+    for (const bad of [{ agent, prefix: "*", policy, until: cite }, { agent, prefix: "MOVE", policy: { kind: "open", args: {} }, until: cite }, { agent, prefix: "MOVE", policy }]) {
+      expect(JSON.stringify(await row("intent-root", { action: "delegate", ...bad }))).toMatch(/delegation|refused/);
+    }
+    expect(((await row("intent-show", { action: "delegations" })) as { delegations: unknown[] }).delegations).toEqual([]);
+    const granted = (await row("intent-root", { action: "delegate", agent, prefix: "MOVE", policy, until: cite })) as { cid: string };
+    expect(granted.cid).toMatch(/^[0-9a-f]{64}$/);
+    const listed = (await row("intent-show", { action: "delegations" })) as { delegations: Array<{ cid: string; agent: string; prefix: string; status: string }> };
+    expect(listed.delegations).toEqual([expect.objectContaining({ cid: granted.cid, agent, prefix: "MOVE", status: "live" })]);
+    const revoked = (await row("intent-root", { action: "delegate-revoke", target: granted.cid })) as { cid: string };
+    const after = (await row("intent-show", {})) as { delegations: Array<{ cid: string; status: string; revokedBy: string | null }> };
+    expect(after.delegations).toEqual([expect.objectContaining({ cid: granted.cid, status: "revoked", revokedBy: revoked.cid })]);
+    expect(JSON.stringify([granted, listed, revoked, after])).not.toMatch(/seed|secret/i);
+  }, 240_000);
+
+  test("RED: relay status begins off and disable closes it; CONTROL: enable exposes only public pin and key, rotate changes the public key", async () => {
+    expect(await row("intent-relay-status", { face: "bad" })).toMatchObject({ refusal: "intent-relay-status-refused" });
+    const off = await row("intent-relay-status", {});
+    expect(off).toMatchObject({ enabled: false, path: null, pin: null });
+    const enabled = await row("intent-relay-enable", {});
+    expect(enabled).toMatchObject({ enabled: true, path: expect.stringMatching(/^\/ws\/intent-relay\//), pin: { tier: "sovereign", route: "/ws/intent-relay" }, key: expect.stringMatching(/^[0-9a-f]{64}$/) });
+    const status = await row("intent-relay-status", {});
+    expect(status).toMatchObject({ enabled: true, path: enabled["path"], key: enabled["key"] });
+    const pin = status["pin"] as { nexus: string; transportKey: string; signingKey: string };
+    const publicKeys = new Set([pin.transportKey, pin.signingKey, status["key"], ...(pin.nexus.match(/.{64}/g) ?? [])]);
+    const allHexKeys = JSON.stringify(status).match(/[0-9a-f]{64}/g) ?? [];
+    expect(allHexKeys.length).toBeGreaterThan(0);
+    for (const hex of allHexKeys) expect(publicKeys.has(hex), hex).toBe(true);
+    const rotated = await row("intent-relay-rotate", {});
+    expect(rotated).toMatchObject({ previous: enabled["key"], key: expect.stringMatching(/^[0-9a-f]{64}$/) });
+    expect(rotated["key"]).not.toBe(enabled["key"]);
+    const closed = await row("intent-relay-disable", {});
+    expect(closed).toMatchObject({ enabled: false, path: null, pin: null });
+  }, 240_000);
 });
