@@ -467,9 +467,34 @@ export async function standNodeFloor(storageDir: string): Promise<NodeFloor> {
 /**
  * The rest door's whole act: wait until each named document has reached `repo`, then flush them into its store.
  * It resolves only after the store holds every one durably, so an acknowledgment never runs ahead of the save.
+ *
+ * A document an island just minted reaches this Repo over the island's sync leg, and the ask rides a faster road
+ * than that leg's handshake. A Repo with no peer standing answers `unavailable` for what it has not been handed
+ * yet, and that answer says nothing about the island's copy, so the ask holds until a peer arrives and reads again.
+ * With a peer standing, `unavailable` is the peers' own answer and rejects. `closed` ends a hold when the vessel
+ * stands down. No timer runs here; the asking island's own patience bounds the wait from its side.
  */
-export async function restInStore(repo: Pick<Repo, "find" | "flush">, documentIds: readonly string[]): Promise<void> {
-  for (const id of documentIds) await repo.find<LarDoc>(`automerge:${id}` as AutomergeUrl);
+export async function restInStore(
+  repo: Pick<Repo, "find" | "flush"> & Partial<Pick<Repo, "peers" | "networkSubsystem">>,
+  documentIds: readonly string[],
+  closed?: Promise<void>,
+): Promise<void> {
+  for (const id of documentIds) {
+    for (;;) {
+      try { await repo.find<LarDoc>(`automerge:${id}` as AutomergeUrl); break; }
+      catch (error) {
+        const unavailable = error instanceof Error && /is unavailable/.test(error.message);
+        const subsystem = repo.networkSubsystem;
+        if (!unavailable || !repo.peers || !subsystem || repo.peers.length > 0) throw error;
+        const arrived = await new Promise<boolean>((resolve) => {
+          const onPeer = (): void => { subsystem.off("peer", onPeer); resolve(true); };
+          subsystem.on("peer", onPeer);
+          void closed?.then(() => { subsystem.off("peer", onPeer); resolve(false); });
+        });
+        if (!arrived) throw error;
+      }
+    }
+  }
   await repo.flush(documentIds as DocumentId[]);
 }
 
@@ -952,8 +977,10 @@ async function prepareNodeBootOn(
   // THE REST DOOR. An island mints a slot document its own Repo keeps no store for; this Repo saves it. The island
   // asks before it records the binding, and the answer waits until the document has reached this Repo and rests
   // in its store — so no binding names a document a hard stop could leave unsaved.
-  setRestDoor((documentIds) => restInStore(repo, documentIds));
-  stood.push({ what: "the rest door", down: () => setRestDoor(null) });
+  let closeRestDoor: () => void = () => {};
+  const restDoorClosed = new Promise<void>((resolve) => { closeRestDoor = resolve; });
+  setRestDoor((documentIds) => restInStore(repo, documentIds, restDoorClosed));
+  stood.push({ what: "the rest door", down: () => { setRestDoor(null); closeRestDoor(); } });
   // The Repo stands down after everything that writes through it: it flushes, then closes its storage and network.
   stood.push({ what: "the Repo", down: async () => { await repo.flush(); await repo.shutdown(); } });
   emit("repo-open");

@@ -8,6 +8,8 @@
  *   D4  the asker ignores an answer for another request id.
  *   D6  an ask that reaches the vessel before the island's sync leg has stood waits on that leg's arrival, never
  *       on a clock: the document rests when its bytes land.                  control: with no leg standing the ask holds
+ *   D7  with a peer standing, a document no peer carries reads unavailable and the ask rejects; a vessel that stands
+ *       down ends a hold on a leg that never arrives.
  *   D5  the vessel's own act rests the document in its store before it resolves: a second reader of the same
  *       directory finds the document's bytes the instant the act returns.   control: before the act, it finds none
  */
@@ -109,6 +111,34 @@ describe("the rest door", () => {
       expect((await new DurableNodeFSStorageAdapter(dir).loadRange([handle.documentId])).length).toBeGreaterThan(0);
       await island.shutdown();
       channel.port1.close(); channel.port2.close();
+    } finally {
+      await restEvery();
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  test("D7 — a peer's own unavailable rejects; a closed door ends a hold on a leg that never stands", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "rest-door-"));
+    try {
+      const vessel = restingRepo(dir, { saveDebounceRate: 60_000 });
+      const channel = new MessageChannel();
+      const island = makeIslandRepo({ syncPort: channel.port2 as unknown as MessagePort });
+      attachMessageChannelSync(vessel, channel.port1 as unknown as MessagePort);
+      await vessel.networkSubsystem.whenReady();
+      await new Promise<void>((resolve) => { if (vessel.peers.length > 0) resolve(); else vessel.networkSubsystem.once("peer", () => resolve()); });
+      const absent = island.create<LarDoc>(emptyLarDoc()).documentId;
+      await island.delete(absent);   // the island no longer carries it, and no peer carries it
+      await expect(restInStore(vessel, [absent])).rejects.toThrow(/is unavailable/);
+      await island.shutdown();
+      channel.port1.close(); channel.port2.close();
+      await restEvery();
+      // A second vessel with no leg ever: the hold ends when the door closes.
+      const lone = restingRepo(mkdtempSync(join(tmpdir(), "rest-door-lone-")), { saveDebounceRate: 60_000 });
+      let close!: () => void;
+      const closed = new Promise<void>((resolve) => { close = resolve; });
+      const holding = restInStore(lone, ["3vfMotcKjpniQsdihA3ffvmCDyK1"], closed);
+      for (let turn = 0; turn < 20; turn++) await new Promise<void>((r) => setImmediate(r));
+      close();
+      await expect(holding).rejects.toThrow(/is unavailable/);
     } finally {
       await restEvery();
       rmSync(dir, { recursive: true, force: true });
