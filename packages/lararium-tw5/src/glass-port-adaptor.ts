@@ -58,6 +58,7 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
   const snapshots = new Map<string, { n: number; chunks: Map<number, PortWireRecord[]> }>();
   const resetTitles = new Set<string>();
   const repost = new Set<string>();
+  const deferred = new Set<string>();
   const landedListeners = new Set<(change: Change) => void>();
   const peerListeners = new Set<(change: Change) => void>();
   const presenceListeners = new Set<(presence: Extract<PortIslandToVesselMsg, { type: "port:presence" }>) => void>();
@@ -65,6 +66,8 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
   const opened = new Set<string>();
   let askNumber = 0;
   let closed = false;
+  // The snapshot that answers a widen widens records the port already carries; a title the person wrote since the open is not in it, and is not dropped.
+  let widening = false;
   const local = (title: string) => title === "$:/StoryList" || title === "$:/HistoryList" ||
     LOCAL.some(prefix => title === prefix || title.startsWith(`${prefix}/`)) ||
     (opts.localFilter ?? []).some(prefix => title.startsWith(prefix));
@@ -117,12 +120,23 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
       if (tags.length) tagged.delete(title);
       const generation = (generations.get(title) ?? 0) + 1;
       generations.set(title, generation);
-      const txId = opts.mintTx();
-      const record: PortWireRecord = { title, fields: fields ?? {}, ...(fields ? {} : { deleted: true as const }) };
-      pending.set(txId, { title, before: landed.get(title) ?? null, optimistic: image, generation,
-        peerGeneration: peerGenerations.get(title) ?? 0, record });
-      transport.send({ type: "port:write", portId, txId, records: [{ title, fields: fields ?? {}, ...(fields ? {} : { tombstone: true }) }] });
+      // One write per title stands in flight: later keystrokes wait behind it and the follow-up carries the latest text.
+      if (optimistic(title)) { deferred.add(title); continue; }
+      sendLocal(title, fields, image, generation);
     }
+  };
+  function sendLocal(title: string, fields: Record<string, string> | null, image: string, generation: number): void {
+    const txId = opts.mintTx();
+    const record: PortWireRecord = { title, fields: fields ?? {}, ...(fields ? {} : { deleted: true as const }) };
+    pending.set(txId, { title, before: landed.get(title) ?? null, optimistic: image, generation,
+      peerGeneration: peerGenerations.get(title) ?? 0, record });
+    transport.send({ type: "port:write", portId, txId, records: [{ title, fields: fields ?? {}, ...(fields ? {} : { tombstone: true }) }] });
+  }
+  /** The edits that waited behind a write now answered go out as one write of the title's current state. */
+  const flushDeferred = (title: string): void => {
+    if (!deferred.delete(title) || closed || optimistic(title)) return;
+    const fields = ownFields(wiki, title);
+    sendLocal(title, fields, imageOf(fields), generations.get(title) ?? 0);
   };
   wiki.addEventListener("change", onChange);
   const onMessage = (msg: PortIslandToVesselMsg) => {
@@ -136,7 +150,8 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
         snapshots.delete(msg.snapshotId);
         const records = Array.from({ length: snapshot.n }, (_, i) => snapshot.chunks.get(i + 1) ?? []).flat();
         const titles = new Set(records.map(record => record.title));
-        for (const title of new Set([...landed.keys(), ...resetTitles])) if (!local(title) && !titles.has(title) && !optimistic(title))
+        const keepAbsent = widening; widening = false;
+        for (const title of new Set([...landed.keys(), ...resetTitles])) if (!keepAbsent && !local(title) && !titles.has(title) && !optimistic(title))
           land({ title, fields: {}, deleted: true });
         resetTitles.clear();
         for (const record of records) {
@@ -199,6 +214,7 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
       } else {
         landed.set(tx.title, tx.record.deleted ? null : tx.record);
       }
+      flushDeferred(tx.title);
     } else if (msg.type === "port:answer") {
       const ask = loading.get(msg.askId);
       if (!ask) return;
@@ -246,7 +262,7 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
   };
   return {
     /** Ask the island to widen this open port in place; its fresh snapshot lands through the same listener. */
-    widen(next: GlassPortOptions["width"]): unknown { if (closed) return undefined; opts.width = next; return transport.send({ type: "port:widen", portId, width: next }); },
+    widen(next: GlassPortOptions["width"]): unknown { if (closed) return undefined; opts.width = next; widening = true; return transport.send({ type: "port:widen", portId, width: next }); },
     tagImages(): ReadonlyMap<string, readonly string[]> { return new Map(tagged); },
     pendingWrites(): PendingWrite[] { return [...pending].map(([txId, tx]) => ({ txId, title: tx.title, record: tx.record })); },
     resendPending() {

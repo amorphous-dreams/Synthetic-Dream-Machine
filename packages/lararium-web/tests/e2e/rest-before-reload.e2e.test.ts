@@ -34,6 +34,8 @@ let scratch = "";
 let url = "";
 const logs: string[] = [];
 const wiki = (p: Page) => p.locator("#mirror");
+/** The mirror edits through TW5's own framed editor: the person types in its iframe. */
+const bodyEditor = (p: Page) => p.frameLocator("#mirror iframe").first().locator("textarea");
 
 async function awaitLive(p: Page): Promise<void> {
   const row = await p.waitForFunction(() => {
@@ -115,7 +117,7 @@ async function madeAndRested(context: BrowserContext, tag: string): Promise<{ pa
   const title = `Rest ${tag} ${Date.now()}`;
   await wiki(page).evaluate((h) => (h.shadowRoot!.querySelector('button[title="Create a new tiddler"]') as HTMLElement).click());
   await wiki(page).locator("input.tc-titlebar").fill(title);
-  await wiki(page).locator("textarea.tc-edit-texteditor-body").pressSequentially(FIRST, { delay: 5 });
+  await bodyEditor(page).pressSequentially(FIRST, { delay: 5 });
   await confirmSettled(page, title);
   await awaitRested(page, before);
   return { page, title };
@@ -124,7 +126,7 @@ async function madeAndRested(context: BrowserContext, tag: string): Promise<{ pa
 /** Edit the standing tiddler and confirm: the frame leaves edit mode and the page paints the second body. */
 async function editAndConfirm(page: Page, title: string): Promise<boolean> {
   await wiki(page).evaluate((h, t) => (h.shadowRoot!.querySelector(`.tc-tiddler-frame[data-tiddler-title="${t}"] button[title="Edit this tiddler"]`) as HTMLElement).click(), title);
-  const area = wiki(page).locator("textarea.tc-edit-texteditor-body");
+  const area = bodyEditor(page);
   await area.waitFor({ timeout: 30_000 });
   await area.fill("");
   await area.pressSequentially(SECOND, { delay: 5 });

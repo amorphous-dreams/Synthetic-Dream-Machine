@@ -16,7 +16,8 @@ export type MirrorEvent =
   | { type: "gone"; why: string }
   | { type: "floor"; why: string };
 /** A state a caller can show while the mirror lights; no timer ends or raises one. */
-export type MirrorState = { kind: "waiting"; for: "greeting" } | { kind: "evidence-unavailable"; why: string };
+export type MirrorState = { kind: "waiting"; for: "greeting" } | { kind: "evidence-unavailable"; why: string }
+  | { kind: "write-refused"; title: string; reason: string };
 /** How the boot's promotion ended: full landed, skinny held or stepped to, or the none floor. */
 export type MirrorSettled = { width: "full" | "skinny" | "none"; why?: string };
 /** The per-tab record, one per wiki: a promotion to full began and its first full paint has not happened. It records an event and never a width. */
@@ -138,11 +139,12 @@ export async function standMirror(options: {
     };
   };
   const { landed: probe, ...mirrorSeams } = seams;   // the probe takes the width too; the door's seam takes the change alone
+  const refused = (result: { title: string; reason: string }): void => options.onState?.({ kind: "write-refused", title: result.title, reason: result.reason });
   const landed = probe ? (change: { title: string }) => probe(change, promoting || width === "full" ? "full" : "skinny") : undefined;
 
   try {
     mirror = await bootGlass({ ...options, shadowRoot, inputs, width: "skinny", transport: transportFor(0),
-      seams: { ...mirrorSeams, ...(landed ? { landed } : {}) }, deferPaint: true });
+      seams: { ...mirrorSeams, ...(landed ? { landed } : {}), refused }, deferPaint: true });
     if (ended) { mirror.unmount(); return floor(endedWhy); }   // a port:gone landed before the door returned
     if (early !== null) stepDown(early);
     const reason = await waiting;
@@ -166,6 +168,10 @@ export async function standMirror(options: {
     kind: "mirror" as const,
     get width() { return width; },
     settled,
+    /** The mirror's engine, for the page's own reads (its goldens, its tooling); the person's edits cross the port, never this handle. */
+    get tw() { return mirror!.tw; },
+    /** How many writes the mirror sent and holds no answer for: the page holds its leave while this reads above zero. */
+    pending: () => (ended ? 0 : mirror!.adaptor.pendingWrites().length),
     unmount() { if (!ended) { ended = true; mirror!.unmount(); settle({ width: "none", why: "unmounted" }); } },
     onEvent(listener: (event: MirrorEvent) => void) { listeners.add(listener); return () => listeners.delete(listener); },
   };

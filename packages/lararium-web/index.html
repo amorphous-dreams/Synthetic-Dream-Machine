@@ -71,7 +71,9 @@
         .row .k { min-width: 0; font-size: 0.8rem; }
       }
         #mirror { display: none; }
-    /* The mirror stands and paints beside the none projection and does not yet take its place: the person's edit road, the unload hold and the goldens still run through the projection until the operator rules the switch. */
+    #mirror[data-lar-shown="mirror"] { display: block; }
+    #mirror[data-lar-shown="mirror"] ~ #projection { display: none; }
+    /* The person reads through the mirror wherever it stands; the worker-rendered view beneath it stays the named floor, shown again only when the mirror steps down to teardown. */
   </style>
   </head>
   <body>

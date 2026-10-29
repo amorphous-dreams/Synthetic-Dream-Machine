@@ -333,6 +333,11 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     if ("refused" in verdict) { answer("refused", [], [], verdict.refused); return; }
     const families = [...new Set(msg.records.map(record => record.bag ?? "(default)"))];
     let familyStarted = false;
+    // THE WRITE'S ANSWER WAITS FOR ITS REST, as a save act's result does: the hold begins in the turn of the dispatch and the
+    // vessel's own word releases it, so a page that holds its leave until `port:written` never leaves ahead of storage.
+    const hold = ctx.rest?.begin();
+    let released = false;
+    const release = (slots: readonly string[] | null): void => { if (!released) { released = true; hold?.done(slots); } };
     try {
       const begun = port.ledger.begin(msg.txId, families, digest);
       if (begun.answer) {
@@ -373,16 +378,19 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
           flush(ctx);
         }
       }
+      release(familyStarted && ctx.rest ? [...ctx.handles.keys()] : null);
+      if (familyStarted && ctx.rest) await ctx.rest.held();
       const result = port.ledger.answer(msg.txId, failed);
       if (result.status === "applied") port.actorState.unanswered.delete(msg.txId);
       flush(ctx);
       answer(result.status, [...result.applied], [...result.failed]);
     } catch (error) {
+      release(null);
       if (!familyStarted && port.ledger.discard(msg.txId)) port.actorState.unanswered.delete(msg.txId);
       const reason = error instanceof Error && "reason" in error && typeof error.reason === "string"
         ? error.reason : error instanceof Error ? error.message : "write-failed";
       answer("refused", [], [], reason);
-    }
+    } finally { release(null); }
   };
   const ask = async (msg: PortMsg_Ask, ctx: IslandContext, port: OpenPort): Promise<void> => {
     const answered = (result: unknown) => { if (faceHolds(port)) ctx.post(mkPortAnswer({ portId: msg.portId, askId: msg.askId, status: "answered", result })); };

@@ -113,8 +113,11 @@ describe.skipIf(!!wikiSkip)(`glass port ordered races${skipNote}`, () => {
     g.snapshot("one", 1, 1, [{ title: "Page", fields: { text: "base" }, seq: 1 }]); await g.flush();
     g.wiki.setTiddler({ title: "Page", text: "first" }); await g.flush();
     g.wiki.setTiddler({ title: "Page", text: "second" }); await g.flush();
-    const [first, second] = g.writes();
+    const [first] = g.writes();
+    expect(g.writes()).toHaveLength(1);                                       // "second" waits behind the write in flight
     g.deliver({ type: "port:written", txId: first.txId, status: "applied", applied: ["Page"], failed: [] });
+    await g.flush();
+    const second = g.writes()[1];                                             // and goes out as its own write once the first answers
     g.deliver({ type: "port:written", txId: second.txId, status: "refused", applied: [], failed: ["Page"] });
     expect(g.text("Page")).toBe("first");
     g.wiki.setTiddler({ title: "Page", text: "third" }); await g.flush();
