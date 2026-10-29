@@ -184,9 +184,9 @@ export async function recoverFoundingSeedFromGroup(
   return matched;
 }
 
-/** The active face's atom key names its local realm and edge ledgers. */
-export async function loadWornFaceAtomKey(): Promise<string> {
-  const index = await resolveFace();
+/** The acting face's atom key (`face`, else the one face standing open) names its local realm and edge ledgers. */
+export async function loadFaceAtomKey(face?: number): Promise<string> {
+  const index = await resolveFace(face);
   const anchors = await loadIdentityAnchors(index);
   if (!anchors) throw new Error("this face holds no atom; re-found or re-admit it");
   const atom = await readFaceAtom(nodeFaceAtomRows, anchors.personaGroupId);

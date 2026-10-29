@@ -1,7 +1,7 @@
 /**
  * cabal-vouch — one hand stakes its own standing, end-to-end through the node.
  *
- * Proven against a real vessel identity, a seated charter and a worn face on a temp LAR_ROOT: the worn face's key
+ * Proven against a real vessel identity, a seated charter and one acting face on a temp LAR_ROOT: the acting face's key
  * at the charter's Nexus signs (never a persona root, cabal-realm#/the-steward-signer); a vouch lands on the
  * board and reads back through the VERIFYING read (the only read that stands), a voucher's out-degree grows
  * with each distinct joiner and NOT with re-minting, and every fail-closed shore refuses before writing.
@@ -23,7 +23,7 @@ import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot,
   loadPersonaGroupRootVerifyingKey,
 } from "../src/node-vessel-identity.js";
-import { seatOwnCharter, wear } from "./worn-face-fixture.js";
+import { seatOwnCharter, presentFace } from "./acting-face-fixture.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { runCabalVouch, CabalVouchError } from "../src/commands/cabal-vouch.js";
 import { direct } from "./direct-store.js";
@@ -47,7 +47,7 @@ beforeEach(async () => {
   await generateOrLoadPersonaGroupRoot(); // the HUMAN's face — the hand that stakes
   await seedFaceAtom(0);
   await seatOwnCharter([0]);              // the Nexus the realm stands under
-  face = await wear(0);                   // the worn face's key there — the key that signs
+  face = await presentFace(0);            // the acting face's key there — the key that signs
 });
 let face: string;
 afterEach(async () => {
@@ -68,7 +68,7 @@ async function boardVouches(realm = REALM) {
 }
 
 describe("runCabalVouch — the vouch lands, verified, and dilutes the hand that made it", () => {
-  it("mints a vouch that reads back through the VERIFYING read, signed by the worn face's key at the realm's Nexus", async () => {
+  it("mints a vouch that reads back through the VERIFYING read, signed by the acting face's key at the realm's Nexus", async () => {
     const r = await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0 });
 
     expect(r.voucherDid).toBe(face);

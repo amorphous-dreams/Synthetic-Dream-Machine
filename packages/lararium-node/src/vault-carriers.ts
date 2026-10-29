@@ -86,6 +86,7 @@ import { FACE_ANCHOR_GROUP_FILE } from "./face-anchor-store.js";
 import { OUTBOX_KEY_FILE } from "./outbox-key.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
 import { RELAY_GATE_SEED_FILE } from "./relay-gate-seed.js";
+import { SWITCH_ACTS_FILE } from "./switch-act-log.js";
 
 /** The custody classes, closed. */
 export const CUSTODY_CLASSES = ["floor", "floor-plain", "serving", "hot", "cold", "outbox", "face-hot", "face-cold"] as const;
@@ -379,6 +380,9 @@ function buildTable(): readonly CarrierRow[] {
     // The face's own custody label: its fcid and the digest of its PersonaGroup. The holder reads it to check the floor index it unlocked by.
     faceRowOf({ row: "face-owner", target: tgt(["D"]), inner: /face-owner\.bin/, select: () => null, custody: "face-hot", keyClass: null,
          writer: "custody-holder", name: () => "face-owner" }),
+    // A session switch's acts name two faces together, so they rest on this vessel alone and never in a document.
+    id({ row: "switch-acts", target: tgt(["D"]), match: file(SWITCH_ACTS_FILE), custody: "hot", keyClass: null,
+         writer: "switch-act-log (the session socket's switch acts)" }),
     // These reserved rows have no writer; a vessel holding one still recognises its carrier at unlock.
     id({ row: "enroll-pending", target: tgt(["D"], LEAD), match: file(".persona-enroll-pending.json"), custody: "hot", keyClass: "relation",
          writer: "none (reserved carrier)" }),
@@ -403,10 +407,10 @@ function buildTable(): readonly CarrierRow[] {
     faceRowOf({ row: "vessel-face-key", target: tgt(["D"]), inner: /^vessel-face-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: "device-minted",
          writer: "face-key-custody", name: (m) => `vessel-face-key-h${m[1]}-${m[2]}`, face: faceOf }),
     // One face's address secret (`fleet-join-custody`): minted once on the root holder, carried to each joined
-    // vessel by the fleet-join door alone. Its file names a digest of the face's PersonaGroup. No rotation
-    // regenerates it, and no bundle body carries it: it stays on its vessels.
+    // vessel by the fleet-join door. Its file names a digest of the face's PersonaGroup. A bundle carries it whole;
+    // a paper restore carries none, through the fromPaper door.
     faceRowOf({ row: "face-address-secret", target: tgt(["D"]), inner: /^face-address-secret-g([0-9a-f]{64})\.bin$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",
-         writer: "fleet-join-custody", name: (m) => `face-address-secret-g${m[1]}`, face: (m) => `group:${m[1]}` }),
+         writer: "fleet-join-custody", name: (m) => `face-address-secret-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "whole" }),
     // A joining vessel's half-done fleet join (`fleet-join-custody`): its request and the X25519 secret its
     // answer seals to. The landing removes it.
     faceRowOf({ row: "fleet-join-pending", target: tgt(["D"]), inner: /^fleet-join-pending-g([0-9a-f]{64})\.json$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",

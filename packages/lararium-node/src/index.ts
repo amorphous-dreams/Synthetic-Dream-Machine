@@ -218,7 +218,7 @@ export type { HostedNexusReading, HostRollResult } from "./commands/host.js";
 export { runWalkState, runWalkTake, runWalkInvite, WalkRefusal } from "./commands/walk.js";
 export type { WalkReading } from "./commands/walk.js";
 // ONE STORE, ONE HOLDER — the door table every store command routes through, and the one direct opener.
-export { storeDoorReactors, storeDoorDirect, STORE_DOOR_VERBS, type StoreDoorVerb, type StoreDoorDeps } from "./store-door-verbs.js";
+export { storeDoorReactors, storeDoorDirect, storeRowFace, STORE_DOOR_FACE_ROWS, STORE_DOOR_VERBS, type StoreDoorVerb, type StoreDoorDeps } from "./store-door-verbs.js";
 export { ownedStore, claimStore, StoreHeld, StoreHeldElsewhere, type StoreClaim, readBootEpoch, bootEpochPath } from "./owned-store.js";
 export { claimName, anchoredName, NameTooLong, NameHeld, NameReaping, type ClaimedName, type ClaimNameOptions } from "./socket-claim.js";
 export { readHearthDialPin } from "./hearth-dial-pin.js";
@@ -240,7 +240,7 @@ export { runCabalJoin, CabalJoinError } from "./commands/cabal-join.js";
 export { runCabalFace, CabalFaceError, type CabalFaceResult } from "./commands/cabal-face.js";
 export { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 export type { EdgeKapaeOptions, EdgeKapaeResult } from "./commands/edge-kapae-cmd.js";
-export { runEdgeRollAnchors, EdgeRollAnchorError, type EdgeRollAnchorLanded } from "./commands/edge-roll-anchor.js";
+export { runEdgeRollAnchors, rollAnchorFace, EdgeRollAnchorError, type EdgeRollAnchorLanded, type EdgeRollAnchorUnanchored, type EdgeRollAnchorOutcome } from "./commands/edge-roll-anchor.js";
 export { readVesselEdgeBoard, vesselEdgeCharter, type VesselEdgeBoardRead } from "./edge-board.js";
 export { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError, type EdgeSeatFacts } from "./commands/edge-seats.js";
 export { runEdgePartial, runEdgeCosign, EdgeCosignError, type EdgePartialResult, type EdgeCosignResult } from "./commands/edge-cosign.js";
@@ -300,7 +300,7 @@ export {
 export { isSerdeSkewFault, bootFaultReport, fatalLine, SERDE_SKEW_EXIT, SERDE_SKEW_CURE } from "./boot-fault.js";
 // The active-persona selector — "put on a mask" at the identity layer (Plurality Pono). The persona-root
 // SET mints/loads the operator-root the `lares persona` door drives (founder-side custody).
-export { loadActivePersonaIndex, setWornFaceInSession, sovereignStands, wearPersona, personaRootExists, listPersonaRoots, listPersonaRosterLines, orphanPersonaRoots, VesselKeyMintRefused, VesselInceptionRefused } from "./node-vessel-identity.js";
+export { setMountedFace, sovereignStands, personaRootExists, listPersonaRoots, listPersonaRosterLines, orphanPersonaRoots, VesselKeyMintRefused, VesselInceptionRefused } from "./node-vessel-identity.js";
 export { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 export type { PersonaGroupRoot, PersonaRosterLine } from "./node-vessel-identity.js";
 // The two-layer pet-names (#64 stage 4): the PRIVATE own-persona label map (fleet-only; never PUBLICLY
@@ -494,7 +494,7 @@ export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCi
   readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid,
   GENESIS_ENGINE_CID } from "./genesis-artifact.js";
 export { makeCustodyHolder, CustodyLocked, CustodyRowUnknown, CustodyRowUnavailable, CustodyAdoptRefused, UNLOCK_ATTEMPTS_PER_BOOT } from "./custody-holder.js";
-export { runSealedAct, isSealedActName, SealedActRefused, SEALED_ACTS, SEALED_ACT_NAMES, SIGN_IMAGE_LIMIT, TEXT_ARG_LIMIT, LABEL_ARG_LIMIT, SNAPSHOT_ARG_LIMIT, type SealedActName, type SealedActContext, type SealedActRefusalReason, type PersonaSelvesPlane, type PersonaSelfLine, type PersonaSelfNameKind } from "./sealed-acts.js";
+export { runSealedAct, isSealedActName, SealedActRefused, SEALED_ACTS, SESSION_ACTS, SEALED_ACT_NAMES, SIGN_IMAGE_LIMIT, TEXT_ARG_LIMIT, LABEL_ARG_LIMIT, SNAPSHOT_ARG_LIMIT, type SealedActName, type SealedActContext, type SealedActRefusalReason, type PersonaSelvesPlane, type PersonaSelfLine, type PersonaSelfNameKind } from "./sealed-acts.js";
 export { gateMemoryRows, gateMemoryRowFile, GateMemoryRowRefused } from "./gate-memory-rows.js";
 export { gateGrantFor, gateGrantRing } from "./gate-rings.js";
 export type { GateGrantRing, GateGrantRingReaders, GateRootHolding } from "./gate-rings.js";
@@ -510,5 +510,5 @@ export type { FaceRouteGatherer } from "./face-route.js";
 export type { CustodyHolder, HolderUnlock, RowReading } from "./custody-holder.js";
 export { custodyFrameHandler, isCustodyFrame } from "./custody-frames.js";
 // The verb socket's front, named here for a suite that stands a custody door as the vessel's main thread does.
-export { serveUdsFront, type UdsFront } from "./uds-channel.js";
+export { serveUdsFront, makeUdsSeat, type UdsFront, type UdsSessionDoor, type UdsSessionSupply, type SessionAnchor } from "./uds-channel.js";
 export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-frames.js";

@@ -7,6 +7,8 @@
  *   P2  a joined vessel presents from its join record and custody row, the founder doors never reached
  *   P3  an absent proof names the piece that is absent, a chain the opener refuses names the opener's refusal, and
  *       neither leaves a session in the table
+ *   P4  RED: a session's target reads and writes nothing: a founder with no certificate standing refuses by the absent
+ *       piece and keeps no record; CONTROL: once the dial's presentation certified it, the target stands
  */
 import { createPrivateKey, createPublicKey } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
@@ -14,7 +16,7 @@ import { SessionTable, sessionBinding } from "../../lararium-mesh/src/session-co
 import type { FaceScope } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { storeFaceProofKey } from "../src/face-key-custody.js";
 import { keepFaceJoinRecord, readFaceJoinRecord } from "../src/fleet-join-custody.js";
-import { nodeFacePresentation } from "../src/node-face-presentation.js";
+import { nodeFacePresentation, nodeFaceTarget } from "../src/node-face-presentation.js";
 import { persistIdentityAnchors } from "../src/identity-anchors.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
@@ -85,5 +87,16 @@ describe("what a node presents at a gate", () => {
     const table = new SessionTable("owner-epoch-no-grant");
     expect(await nodeFacePresentation({ ...base(table), founder: null })).toEqual({ refusal: "grant-absent" });
     expect(table.size).toBe(0);
+  });
+
+  test("P4 — a founder's session target mints no certificate: absent, it refuses by name; the dial's presentation makes it stand", async () => {
+    // Before any dial presented, the face's record holds nothing, and the target writes none.
+    expect(await nodeFaceTarget({ personaGroup: GROUP, scope, admit })).toEqual({ refusal: "join-absent" });
+    expect(await readFaceJoinRecord(GROUP)).toBeNull();
+    // CONTROL: the dial's own presentation certifies the founder; the target then reads that certificate.
+    const dialed = await nodeFacePresentation({ ...base(new SessionTable("owner-epoch-dialed")), founder: { face: 0 }, doors });
+    if (!("presentation" in dialed)) throw new Error(dialed.refusal);
+    const target = await nodeFaceTarget({ personaGroup: GROUP, scope, admit });
+    expect(target).toHaveProperty("target");
   });
 });

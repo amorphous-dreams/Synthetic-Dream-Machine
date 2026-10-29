@@ -25,22 +25,23 @@ export async function registerBagsDurably({ provider, bags, ledger }: {
   }
 }
 
-async function titleFor(bag: string, vessel: boolean): Promise<string> {
+async function titleFor(bag: string, vessel: boolean, face?: string): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(bag));
   const prefix = vessel ? "lar:///ha.ka.ba/keyhive/bag-doc/vessel/" : "lar:///ha.ka.ba/keyhive/bag-doc/";
-  return `${prefix}${hex(new Uint8Array(digest))}`;
+  const scope = face === undefined ? "" : `${hex(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(face)))).slice(0, 24)}/`;
+  return `${prefix}${scope}${hex(new Uint8Array(digest))}`;
 }
 
 const origin: ChangeOrigin = { kind: "lares-verb", requestId: "bag-doc-ledger" };
 
-export function daemonBagDocLedger(composite: CompositeStore): BagDocLedger {
+export function daemonBagDocLedger(composite: CompositeStore, face?: string): BagDocLedger {
   return {
     async get(bag) {
-      const record = await composite.get(await titleFor(bag, true));
+      const record = await composite.get(await titleFor(bag, true, face));
       return record?.meta?.deleted ? null : record?.tiddler?.bag === bag ? record.tiddler.text ?? null : null;
     },
     async put(bag, docId) {
-      await composite.put(mutableLarRecord(await titleFor(bag, true), { text: docId, bag }, "lares-keyhive"), origin, { bag: DAEMON_BAG_ID });
+      await composite.put(mutableLarRecord(await titleFor(bag, true, face), { text: docId, bag }, "lares-keyhive"), origin, { bag: DAEMON_BAG_ID });
     },
   };
 }

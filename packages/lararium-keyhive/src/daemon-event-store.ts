@@ -26,7 +26,7 @@ import {
   CAP_EVENT_TAG, CAP_EVENT_PREKEY_TAG, CAP_EVENT_CGKA_TAG,
   CAP_EVENT_DELEGATION_TAG, CAP_EVENT_REVOCATION_TAG,
 } from "@lararium/mesh";
-import { type ChangeOrigin, type LarTiddlerRecord, toLarTiddlerRecord, hex } from "@lararium/mesh";
+import { type ChangeOrigin, type LarTiddlerRecord, toLarTiddlerRecord, hex, sha256HexBytesSync } from "@lararium/mesh";
 import type { EventStore, EventRecord } from "./event-store.js";
 import { inIslandSlice } from "./event-store.js";
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
@@ -56,8 +56,9 @@ function subTagFor(variant: string): string | null {
 }
 
 /** Title for a cap-event tiddler under the daemon doc. */
-export function capEventTitle(hash: string): string {
-  return `${DAEMON_BAG_ID}/cap/${hash}`;
+export function capEventTitle(face: string, hash: string): string {
+  const scope = sha256HexBytesSync(new TextEncoder().encode(face)).slice(0, 24);
+  return `${DAEMON_BAG_ID}/cap/${scope}/${hash}`;
 }
 
 /** Base64-encode bytes for tiddler `text` storage (tiddler.text is string). */
@@ -73,6 +74,7 @@ async function hashBytes(bytes: Uint8Array): Promise<string> {
 export interface DaemonEventStoreOptions {
   /** Composite store with the daemon bag as its writable layer. */
   readonly daemon: CompositeStore;
+  readonly face: string;
 }
 
 export class DaemonEventStore implements EventStore {
@@ -80,7 +82,7 @@ export class DaemonEventStore implements EventStore {
 
   async put(rec: EventRecord): Promise<void> {
     const hash    = rec.hash || (await hashBytes(rec.bytes));
-    const title   = capEventTitle(hash);
+    const title   = capEventTitle(this.opts.face, hash);
     // Skip de-dup: composite.get is cheap; avoid re-writing identical events.
     const existing = await this.opts.daemon.get(title);
     if (existing && existing.meta?.deleted !== true) return;
@@ -93,6 +95,7 @@ export class DaemonEventStore implements EventStore {
         title,
         text: bytesToBase64(rec.bytes),
         tags,
+        face:       this.opts.face,
         variant:    rec.variant,
         hash,
         "bytes-len": String(rec.bytes.length),
@@ -115,6 +118,7 @@ export class DaemonEventStore implements EventStore {
       const rec = await this.opts.daemon.get(title);
       if (!rec || rec.meta?.deleted) continue;
       const fields = rec.tiddler as Record<string, string>;
+      if (fields["face"] !== this.opts.face) continue;
       const variant = fields["variant"];
       const hash    = fields["hash"];
       const text    = rec.tiddler.text;

@@ -1,8 +1,9 @@
 /**
- * `lares persona {new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | wear <index> | list}` — the
+ * `lares persona {new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | list}` — the
  * operator's door to the
  * PLURALITY-PONO identity multitude. A vessel HOLDS a set of PersonaGroup-roots — one per persona
- * the operator wears (persona-vault) — and WEARS one at a time. This command DRIVES the existing node core;
+ * the operator holds (persona-vault) — and wears none between commands: each command names the face it acts as
+ * (`--face N`), or resolves the one face standing open. This command DRIVES the existing node core;
  * it never re-implements minting, the custody wall, or the pet-name store.
  *
  *   new <index> --name <petname>       mint/load the persona-root at <index> (fail-closed via
@@ -11,8 +12,7 @@
  *                                      publish — only an announce binds a persona to a glamour)
  *              [--seat [--chair <label>]] stand this persona for a Kahu chair on THIS node
  *              [--split-root]          arm its 2-of-3 recovery split
- *   wear <index>                       switch the active persona (one-face-to-mesh; reboot-to-switch)
- *   list                               the private multitude-view — held indices, active marker, labels, Handles
+ *   list                               the private multitude-view — held indices, labels, Handles
  *
  * The pet-name stays PRIVATE (persona-petname: rests sealed, fleet-syncs among the human's own vessels over a
  * persona plane whose rest seals, never PUBLICLY federates); minting a persona announces no public glamour, because only a publicly announced Handle binds
@@ -25,6 +25,7 @@
  * operator-root this vessel holds — a joining vessel takes its face by `lares fleet join`, never mints a root here.
  */
 
+import { faceOption } from "../face-option.js";
 import {
   faceStands, armRecoveryAtFounding, guardianOffer, listFaceOrdinals, CustodyLocked, type FoundFaceResult,
 } from "@lararium/node";
@@ -98,7 +99,6 @@ export async function cmdPersona(args: ParsedArgs): Promise<number> {
   try {
     switch (sub) {
       case "new":   return await personaNew(args);
-      case "wear":  return await personaWear(args);
       case "list":  return await personaList(args);
       case "sync":  return await personaSync(args);
       case "reissue": return await personaReissue(args);
@@ -136,7 +136,7 @@ function fleetStores(): {
 }
 
 /**
- * `lares persona reissue [--nexus <aid>]` — the face this vessel WEARS hands its key at one Nexus on to a fresh key
+ * `lares persona reissue [--nexus <aid>] [--face N]` — the face named (else the one face standing open) hands its key at one Nexus on to a fresh key
  * minted at random. Both keys sign one hand-over; it lands on that Nexus's carriage board, where every gate reads
  * it beside the face's admit, and the old key leaves this vessel. The admit keeps naming the key the Nexus admitted.
  * A compromised key takes the face-key roll instead (a revoke and a fresh admit), never a re-issue.
@@ -144,7 +144,7 @@ function fleetStores(): {
 async function personaReissue(args: ParsedArgs): Promise<number> {
   const raw = args.options["nexus"];
   const nexusAid = typeof raw === "string" && raw.trim().length > 0 ? raw.trim() : undefined;
-  const r = await sealedAct("persona.reissue", nexusAid ? { nexusAid } : {});
+  const r = await sealedAct("persona.reissue", { ...(nexusAid ? { nexusAid } : {}), ...faceOption(args) });
   emit(args, {
     ok: true,
     data: r,
@@ -368,7 +368,8 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   // inception, joins that group to the cabal the place already carries, and MOUNTS. Canon rules each
   // PersonaGroup its OWN individual (persona-policy Ruling 2/2b), so `persona new N` (N>0) founds a full
   // SECOND face — its own group, cabal, planes, persona-KEL and veil — as a register-many compartment
-  // beside the mounted one; it does not mount (wearing it is `persona wear N`, a later act).
+  // beside the mounted one; it does not mount (a command acts as it by `--face N`; the composition mounts it at
+  // `lares vault unlock --face N`).
   //
   // Every added compartment rides beside the founding face, so a vessel with no group refuses them:
   // persona h1 inside no PersonaGroup would mint a root the Binding Gate could never walk to.
@@ -447,40 +448,23 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-async function personaWear(args: ParsedArgs): Promise<number> {
-  const index = parseIndex(args.positional[1]);
-  // The custody wall lives in the core: wearing REQUIRES a held root — an unheld index throws there.
-  await sealedAct("persona.wear", { handleIndex: index });
-  emit(args, {
-    ok: true,
-    data: { active: index },
-    human: () => {
-      console.log(`now wearing persona h${index}.`);
-      console.log(`  reboot-to-switch: the live vessel presents one face per persona — restart the node to sign as it.`);
-    },
-  });
-  return 0;
-}
-
 async function personaList(args: ParsedArgs): Promise<number> {
-  // A LOCKED LIST PRINTS PUBLIC INDICES ONLY: the floor index names the faces that stand here; names, declarations and the worn
-  // face appear once that face unlocks. A vessel with no face standing has nothing to show and refuses naming the unlock.
+  // A LOCKED LIST PRINTS PUBLIC INDICES ONLY: the floor index names the faces that stand here; names and declarations appear once
+  // that face unlocks. A vessel with no face standing has nothing to show and refuses naming the unlock.
   let roster: PersonaRoots;
   try { roster = await readPersonaRoots(); }
   catch (err) {
     if (!(err instanceof CustodyLocked) || listFaceOrdinals().length === 0) throw err;
-    roster = { roots: [], active: null, orphans: [] };
+    roster = { roots: [], orphans: [] };
   }
   const held = roster.roots.map(({ handleIndex }) => handleIndex);
   const lockedFaces = listFaceOrdinals().filter((i) => !held.includes(i));
-  const active = roster.active;
   const orphans = roster.orphans;
   const { petnames, declarations } = fleetStores();
 
   const rows = await Promise.all(
     held.map(async (handleIndex) => ({
       handleIndex,
-      active: handleIndex === active,
       petname: (await ownPersonaPetname(petnames, handleIndex)) ?? null,
       handle: (await declarations.get(handleIndex))?.handle ?? null,
       seat: (await declarations.get(handleIndex))?.seat === true,
@@ -491,7 +475,7 @@ async function personaList(args: ParsedArgs): Promise<number> {
 
   emit(args, {
     ok: true,
-    data: { active: active ?? null, personas: rows, orphans, locked: lockedFaces },
+    data: { personas: rows, orphans, locked: lockedFaces },
     human: () => {
       for (const index of orphans) {
         console.log(`persona root h${index} stands with no roster line (a founding stopped between its two writes) — nothing reads it as held.`);
@@ -506,9 +490,8 @@ async function personaList(args: ParsedArgs): Promise<number> {
       console.log("personas (the private multitude — private label -> declared Handle):");
       for (const r of rows) {
         const declares = `${r.handle ? `  ->  "${r.handle}"` : ""}${r.seat ? ` [stands for a Kahu seat as "${r.chair}"]` : ""}`;
-        console.log(`  ${r.active ? "*" : " "} h${r.handleIndex}  ${r.petname ?? "(unnamed)"}${declares}`);
+        console.log(`  h${r.handleIndex}  ${r.petname ?? "(unnamed)"}${declares}`);
       }
-      console.log(`  (* = active${active === null ? "; none worn yet" : ""})`);
     },
   });
   return 0;

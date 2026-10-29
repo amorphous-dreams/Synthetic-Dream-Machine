@@ -73,7 +73,7 @@ beforeAll(async () => {
   composite.addLayer({ bagId: DAEMON_BAG_ID, store: daemonStore, writable: true });
   daemonStore.markSyncComplete();
 
-  const eventStore = new DaemonEventStore({ daemon: composite });
+  const eventStore = new DaemonEventStore({ daemon: composite, face: cer.personaGroupId });
   founded = {
     verifyingKey: cer.founderEdge.deviceVerifyingKey, eventStore,
     bootArgs: {

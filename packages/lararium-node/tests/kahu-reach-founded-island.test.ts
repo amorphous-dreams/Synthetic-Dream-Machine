@@ -44,7 +44,7 @@ async function boardFor(group: string | null): Promise<KahuCabalBoardReader> {
 async function veilOf(st: Awaited<ReturnType<typeof standFoundedIsland>>): Promise<KeyhiveProvider> {
   const v = new KeyhiveProvider();
   await v.init({
-    seed: hexToBytes(st.veil.atom.seed), eventStore: new DaemonEventStore({ daemon: st.ctx.composite }),
+    seed: hexToBytes(st.veil.atom.seed), eventStore: new DaemonEventStore({ daemon: st.ctx.composite, face: st.daemonAuth.personaGroupId }),
     archiveBytes: st.veil.veilArchiveBytes,
   } as never);
   await v.hydrateFromEventStore();

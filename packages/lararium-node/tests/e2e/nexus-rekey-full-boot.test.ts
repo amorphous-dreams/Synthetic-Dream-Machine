@@ -13,7 +13,7 @@ import { TEST_CUSTODY, TEST_SLOT } from "../found-route.js";
 import { runInit, runFoundTheFace, foundSeedCharter, openNodeVessel, larSealHome, readNexusDoc, writeNexusDoc,
   carriedCharterHome, seatFaceRoute } from "../../dist/src/index.js";
 import { loadVesselVerifyingKey } from "../../dist/src/node-vessel-identity.js";
-import { loadWornFaceAtomKey } from "../../dist/src/face-atom-store.js";
+import { loadFaceAtomKey } from "../../dist/src/face-atom-store.js";
 import { noteVesselRealm } from "../../dist/src/edge-board.js";
 import { askIslandVerb } from "../../dist/src/island-verb-ask.js";
 import { seatedCustody } from "../../dist/src/custody-seat.js";
@@ -60,7 +60,7 @@ describe("nexus-rekey on a booted vessel", () => {
     expect(leaseEpochOnBoard(daemon, primaryAid, lineage)).toBe(1);
 
     const realm = "d7".repeat(32);
-    await withLarRoot(root, async () => noteVesselRealm(vessel!.repo, (await loadWornFaceAtomKey())!, realm, primaryAid));
+    await withLarRoot(root, async () => noteVesselRealm(vessel!.repo, (await loadFaceAtomKey())!, realm, primaryAid));
     expect((await ask(realm))["nexus"]).toBe(primaryAid);
     expect(quorumLeaseEpochOnBoard(daemon.doc(), realm, lineage)).toBe(1);
 

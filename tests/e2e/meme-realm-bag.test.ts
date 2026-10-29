@@ -30,8 +30,8 @@
  * vessel's refresh. B RE-DIALS and presents the leaf admit, its lineage and the leaf's proof over A's
  * challenge — and no root-signed edge (no proof binding a leaf to a root travels on the wire). A's seat
  * verifies the proof and holds the admit against its deny board: B's LEAF enters A's leaf map, which the
- * membership consult reads, while A's ROOT map stays empty. THE STEWARD SIGNER: each operator WEARS her face
- * (`persona wear 0`) before her daemon stands, and the realm record seals with the key that worn face presents
+ * membership consult reads, while A's ROOT map stays empty. THE STEWARD SIGNER: each operator's realm-bag act
+ * names her face (`--face 0`), and the realm record seals with the key that face presents
  * to this Nexus — the very key her contract-in names — so no persona root reaches `keptBy` or the public
  * announce. A NAME ENTERS A RECORD BY ITS OWN HAND FIRST: B ASKS to keep the bag from her own vessel
  * (`realm-bag lares --join`) and A consents (`--cosign`); A naming a key that sealed nothing in the realm
@@ -148,9 +148,6 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
       const treeKeyA = ((face.json?.["data"] ?? {}) as Record<string, unknown>)["verifyingKey"];
       if (typeof treeKeyA === "string") rootNymOf.set("A", treeKeyA.toLowerCase());
-      // A steward seals with the face she WEARS: the realm-bag door refuses a vessel that wears none.
-      const wear = await cliA(["persona", "wear", "0"]);
-      if (wear.code !== 0) throw new Error(`A: persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
       // A FOUNDS THE NEXUS: its seed charter grows to the founding kahu who tend it by the roll its founding armed,
       // all BEFORE the daemon stands.
       await growStagedQuorum(cliA, rootA, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
@@ -164,8 +161,6 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       if (face.code !== 0) throw new Error(`${tag}: face failed (${face.code})\n${face.stderr.slice(-800)}`);
       const treeKey = ((face.json?.["data"] ?? {}) as Record<string, unknown>)["verifyingKey"];
       if (typeof treeKey === "string") rootNymOf.set(tag, treeKey.toLowerCase());
-      const wear = await cli(["persona", "wear", "0"]);
-      if (wear.code !== 0) throw new Error(`${tag}: persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
     };
     // B and C dial A by the pin and address the admit bundle carries (`nexus contract --sync-url`).
     const dialA = { ...wireLog };
@@ -281,7 +276,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   }, 60_000);
 
   test("⑤ A registers her bag on the realm's shared CRDT — steward-signed, read at CONTRACT", async () => {
-    const reg = await A!.cli(["nexus", "realm-bag", "ford", "--json"]);
+    const reg = await A!.cli(["nexus", "realm-bag", "ford", "--face", "0", "--json"]);
     console.error(`meme-realm-bag MEASURE A realm-bag: ${said(reg).trim().slice(0, 300)}`);
     expect(reg.json?.["ok"], said(reg)).toBe(true);
     const data = (reg.json?.["data"] ?? {}) as Record<string, unknown>;
@@ -320,11 +315,11 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
    *  find nothing yet. `--join` reads A's standing registration on B; `--cosign` reads B's ask on A. */
   const pollSteward = async (who: LarInstance, flag: "--join" | "--cosign", ms: number) => {
     const realm = who === A ? [] : ["--realm", realmA];
-    let r = await who.cli(["nexus", "realm-bag", "ford", flag, ...realm, "--json"]);
+    let r = await who.cli(["nexus", "realm-bag", "ford", "--face", "0", flag, ...realm, "--json"]);
     const until = Date.now() + ms;
     while (r.json?.["ok"] !== true && Date.now() < until) {
       await new Promise((res) => setTimeout(res, 4_000));
-      r = await who.cli(["nexus", "realm-bag", "ford", flag, ...realm, "--json"]);
+      r = await who.cli(["nexus", "realm-bag", "ford", "--face", "0", flag, ...realm, "--json"]);
     }
     return r;
   };
@@ -440,7 +435,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   test("⑨a CONTROL: A naming a key that sealed nothing in the realm refuses — no hand but its own writes a name", async () => {
     const stewardB = contractNym.toLowerCase();
     expect(stewardB, "B's per-Nexus key, read off her contract-in").toMatch(/^[0-9a-f]{64}$/);
-    const reg = await A!.cli(["nexus", "realm-bag", "ford", "--steward", stewardB, "--json"]);
+    const reg = await A!.cli(["nexus", "realm-bag", "ford", "--face", "0", "--steward", stewardB, "--json"]);
     expect(reg.json?.["ok"], said(reg)).toBe(false);
     expect(said(reg)).toContain("steward-name-unproven");
     // A's own registration stands untouched by the refusal.

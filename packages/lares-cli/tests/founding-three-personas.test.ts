@@ -92,7 +92,7 @@ describe("a hearth's three founding faces (CLI, real vault + disk)", () => {
       expect(await cmdPersona(personaArgs(["new", String(i)], { name: LABELS[i]!, handle: KAHU[i]! }, { seat: true }))).toBe(0);
     }
   }
-  const roll = (options: Record<string, string> = {}) => cmdNexus(nexusArgs(["seal", "rotate"], { "cold-key": card, ...options }));
+  const roll = (options: Record<string, string> = {}) => cmdNexus(nexusArgs(["seal", "rotate"], { "cold-key": card, face: "0", ...options }));
 
   test("the hearth's persona zero and persona new 1/2 → roster [0,1,2]; the private label and the declared Handle land SEPARATELY", async () => {
     await standThree();

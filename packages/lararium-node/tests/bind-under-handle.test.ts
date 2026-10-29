@@ -52,7 +52,7 @@ async function bootOver(repo: Repo, daemonUrl: string, s: Uint8Array, verifyingK
   const lease = await readLeaseFrontier(composite, pg.groupId);
   if (lease.kind !== "epoch") throw new Error(`fixture: lease frontier unavailable (${lease.why})`);
   return bootDaemonKeyhive({
-    atomSeed: s, eventStore: new DaemonEventStore({ daemon: composite }),
+    atomSeed: s, eventStore: new DaemonEventStore({ daemon: composite, face: pg.groupId }),
     placeVerifyingKey: verifyingKey,
     faceVerifyingKey: (deviceEdge as { deviceVerifyingKey: string }).deviceVerifyingKey,
     personaGroupId: pg.groupId, meshCabalDocIdHex: mesh,
@@ -90,7 +90,7 @@ describe("two vessels bind under one Handle", () => {
     // The seat is the creator atom, restored from its founding archive.
     const daemonHandle = await founderRepo.find(cer.daemonUrl as AutomergeUrl);
     const seat = new KeyhiveProvider();
-    await seat.init({ seed: cer.atomSeed, eventStore: await replayCapEvents(daemonHandle as never), archiveBytes: cer.veilArchive });
+    await seat.init({ seed: cer.atomSeed, eventStore: await replayCapEvents(daemonHandle as never, cer.personaGroupId), archiveBytes: cer.veilArchive });
     await seat.hydrateFromEventStore();
     const bundle = await packPersonaCrossing(founder, joineeCard, pg,
       [{ bagUrl: BAG, docIdHex: docId, plaintext: new TextEncoder().encode("shared under the Handle") }], seat);
@@ -115,7 +115,7 @@ describe("two vessels bind under one Handle", () => {
       payload.signerDid, payload.personaKelPrefix, applied.deviceEdge, joineeArchive);
     const joineeHandle = await joineeRepo.find<LarDoc>(applied.daemonUrl as AutomergeUrl);
     const joinee = new KeyhiveProvider();
-    await joinee.init({ seed: JOINEE_SEED, eventStore: await replayCapEvents(joineeHandle as never), archiveBytes: joineeArchive });
+    await joinee.init({ seed: JOINEE_SEED, eventStore: await replayCapEvents(joineeHandle as never, cer.personaGroupId), archiveBytes: joineeArchive });
     await joinee.hydrateFromEventStore();
 
     // BOUND: the joinee reads the Handle's shared content.

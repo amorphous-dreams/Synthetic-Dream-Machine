@@ -32,7 +32,7 @@ import {
   FLEET_JOIN_STORE, idbGet, idbKeys, openVesselIdb,
 } from "./browser-vessel-identity.js";
 import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
-import { browserFaceAtom } from "./browser-face-atom.js";
+import { browserFaceAtom, faceAddressSecretRow } from "./browser-face-atom.js";
 
 /** A fleet join this browser refused, by name: a mesh reader's refusal, or this door's own. */
 export class BrowserFleetJoinRefused extends Error {
@@ -205,7 +205,7 @@ export async function browserFleetJoinLand(opts: { readonly answer: unknown; rea
   const { answer, addressSecret } = verified;
   const admit = carriedAdmitOfFleetJoin(answer);
   if (isRefusal(admit)) { addressSecret.fill(0); throw new BrowserFleetJoinRefused(admit.refusal, "the answer's device edge does not found this face."); }
-  const secretRow = `fleet-join-secret/${answer.personaGroup}`;
+  const secretRow = faceAddressSecretRow(answer.personaGroup);
   const recordRow = `record:${answer.personaGroup}`;
   try {
     await withCustodyRows(idbName, async (rows) => {

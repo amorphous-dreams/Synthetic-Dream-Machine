@@ -63,7 +63,7 @@ vi.mock("../src/commands/device-admit.js", () => ({
 }));
 vi.mock("../src/commands/init.js", () => ({ runInit: vi.fn() }));
 vi.mock("../src/fleet-join-custody.js", () => ({
-  mintFaceAddressSecret: async (group: string) => { seam.asked.push(["address-secret", group]); return new Uint8Array(32); },
+  readFaceAddressSecret: async (group: string) => { seam.asked.push(["address-secret", group]); return new Uint8Array(32); },
   noteIssuedFaceKeys: async (args: { personaGroup: string; rootKey: string; device: string; certificates: unknown[] }) => {
     seam.asked.push(["issued", [args.personaGroup, args.rootKey, args.device, args.certificates.length]]);
   },

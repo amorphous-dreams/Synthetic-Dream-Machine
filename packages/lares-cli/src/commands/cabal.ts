@@ -1,16 +1,16 @@
 /**
- * `lares cabal <face | vouch | join | feed | clock>` — the doors onto a cabal-realm: name the worn face's key
+ * `lares cabal <face | vouch | join | feed | clock>` — the doors onto a cabal-realm: name the acting face's key
  * there, stake standing on a joiner, cross, make the offering that keeps a realm alive, and read who feeds it.
  *
- * ONE KEY ACTS IN A REALM: the key the WORN face presents at the Nexus the realm stands under
- * (cabal-realm#/the-steward-signer). No verb here names a persona index; a person wears the face that acts
- * (`lares persona wear N`). `--nexus <aid>` names the Nexus at this vessel's first act in a realm; the vessel's
+ * ONE KEY ACTS IN A REALM: the key the acting face presents at the Nexus the realm stands under
+ * (cabal-realm#/the-steward-signer). A verb names the face that acts (`--face N`); naming none, the one face
+ * standing open acts, and several faces standing refuse by name. `--nexus <aid>` names the Nexus at this vessel's first act in a realm; the vessel's
  * own ledger keeps that word, and every later act answers to it.
  *
- * `face --realm <realm-doc-id>` — stand the worn face in the realm and print its key there: the joiner nym a
+ * `face --realm <realm-doc-id>` — stand the acting face (`--face N`, else the one face standing open) in the realm and print its key there: the joiner nym a
  * voucher names.
  *
- * `vouch <joiner-nym> --realm <realm-doc-id>` — the JOIN axis's write side: the worn face stakes its OWN standing
+ * `vouch <joiner-nym> --realm <realm-doc-id>` — the JOIN axis's write side: the acting face stakes its OWN standing
  * on one joiner, onto the realm's vouch board.
  *
  * THE CONTRAST WITH `nexus contract`. Contracting a vessel into carriage needs the kahu quorum AND the
@@ -39,6 +39,7 @@
  * generate identically, so the reading names a local sighting and never a total.
  */
 
+import { faceOption } from "../face-option.js";
 import { readFileSync, existsSync } from "node:fs";
 import { realmStanding } from "@lararium/mesh";
 import {
@@ -87,15 +88,15 @@ function nexusOf(args: ParsedArgs): Record<string, string> {
 }
 
 /**
- * WHICH FACE ACTS — the key the WORN face presents at the Nexus the realm stands under, read by the vessel's own
- * door and never typed by the caller. `present` stands the face there (an act: a feed, a face named to a voucher);
+ * WHICH FACE ACTS — the key the acting face (`--face N`, else the one face standing open) presents at the Nexus the
+ * realm stands under, read by the vessel's own door and never typed by the caller. `present` stands the face there (an act: a feed, a face named to a voucher);
  * without it the door only reads, and a face that holds no key there refuses by name.
  */
 async function actingFace(args: ParsedArgs, realm: string, present: boolean): Promise<CabalFaceResult> {
-  return (await storeVerb("cabal-face", { realm, present, ...nexusOf(args) }, CabalFaceError)).output as unknown as CabalFaceResult;
+  return (await storeVerb("cabal-face", { realm, present, ...nexusOf(args), ...faceOption(args) }, CabalFaceError)).output as unknown as CabalFaceResult;
 }
 
-/** `lares cabal face` — stand the worn face in a realm and print its key there: the nym a voucher names. */
+/** `lares cabal face` — stand the acting face in a realm and print its key there: the nym a voucher names. */
 async function cmdFace(args: ParsedArgs): Promise<number> {
   try {
     const realm = realmOf(args);
@@ -130,7 +131,7 @@ async function realmVerb(verb: string, verbArgs: Record<string, unknown>): Promi
 async function cmdFeed(args: ParsedArgs): Promise<number> {
   try {
     const realm  = realmOf(args);
-    // A FEED PRESENTS THE FACE: the worn face's key at the realm's Nexus, stood there by this act.
+    // A FEED PRESENTS THE FACE: the acting face's key at the realm's Nexus, stood there by this act.
     const writer = (await actingFace(args, realm, true)).face;
     const out = await realmVerb("realm-feed", { realm, writer });
     emit(args, {
@@ -204,10 +205,10 @@ async function cmdVouch(args: ParsedArgs): Promise<number> {
   if (!joiner || !realm) return usage(args, `vouch wants ${!joiner ? "<joiner-nym>" : "--realm <realm-doc-id>"}`);
 
   try {
-    const r = (await storeVerb("cabal-vouch", { joiner, realm, ...nexusOf(args) }, CabalVouchError)).output as unknown as CabalVouchResult & { bundle: unknown };
+    const r = (await storeVerb("cabal-vouch", { joiner, realm, ...nexusOf(args), ...faceOption(args) }, CabalVouchError)).output as unknown as CabalVouchResult & { bundle: unknown };
     emit(args, { ok: true, data: { ...r }, human: () => {
     console.log(r.reMinted ? "RE-VOUCHED (one edge, not two)" : "VOUCHED");
-    console.log(`  voucher:   ${r.voucherDid}  (the worn face's key at ${r.nexusAid.slice(0, 22)}…)`);
+    console.log(`  voucher:   ${r.voucherDid}  (the acting face's key at ${r.nexusAid.slice(0, 22)}…)`);
     console.log(`  joiner:    ${r.joiner}`);
     console.log(`  realm:     ${r.realm}`);
     console.log(`  bound at:  epoch ${r.boundEpoch}  (the fence — the only thing that lapses a vouch)`);
@@ -229,7 +230,7 @@ async function cmdVouch(args: ParsedArgs): Promise<number> {
 async function cmdJoin(args: ParsedArgs): Promise<number> {
   try {
     const realm = realmOf(args);
-    // Names a face outright, else the worn face's key at the realm's Nexus, read and never minted — a steward
+    // Names a face outright, else the acting face's key at the realm's Nexus, read and never minted — a steward
     // reads a crossing for a face they do not hold.
     const applicant = (args.options["applicant"] ?? (await actingFace(args, realm, false)).face).trim().toLowerCase();
     const capRaw = args.options["cap"];
@@ -248,7 +249,7 @@ async function cmdJoin(args: ParsedArgs): Promise<number> {
     const v = (await storeVerb("cabal-join", {
       realm, applicant,
       ...(bundleArg !== undefined ? { bundle } : {}),
-      ...(cap !== undefined ? { maxVouchesPerVoucher: cap } : {}),
+      ...(cap !== undefined ? { maxVouchesPerVoucher: cap } : {}), ...faceOption(args),
     }, CabalJoinError)).output as unknown as CabalJoinResult;
 
     emit(args, {

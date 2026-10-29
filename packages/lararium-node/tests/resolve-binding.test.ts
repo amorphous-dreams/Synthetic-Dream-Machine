@@ -26,7 +26,6 @@ import {
   tiddlerText,
   PERSONAL_BINDINGS_PREFIX,
   DRAFT_BINDINGS_PREFIX,
-  WORKING_BINDINGS_PREFIX,
 } from "@lararium/mesh";
 import type { DocHandle } from "@automerge/automerge-repo";
 import { resolveOrMintBinding, makeFaceBagDoor, type CapabilityProvider, type DelegateArgs } from "@lararium/keyhive";
@@ -209,14 +208,14 @@ describe("resolveOrMintBinding — the faceless floor", () => {
     const result = await resolveOrMintBinding({
       ...commonArgs(repo, daemonStore, provider),
       personaGroupId: undefined,           // the waking floor: no face stands
-      kind: "working-binding", prefix: WORKING_BINDINGS_PREFIX,
+      kind: "personal-binding", prefix: PERSONAL_BINDINGS_PREFIX,
     });
 
     expect(result.minted, "a faceless vessel minted nothing").toBe(true);
     expect(registered, "the doc was never registered, so the vessel holds no admin on it").toEqual([result.url]);
     expect(delegations, "a faceless vessel delegated to somebody — to whom?").toHaveLength(0);
 
-    const key = `${WORKING_BINDINGS_PREFIX}/${FINGERPRINT}`;
+    const key = `${PERSONAL_BINDINGS_PREFIX}/${FINGERPRINT}`;
     expect(tiddlerText(daemonHandle.doc()?.tiddlers?.[key]), "the binding was not recorded, so the next boot re-mints").toBe(result.url);
   });
 
@@ -226,7 +225,7 @@ describe("resolveOrMintBinding — the faceless floor", () => {
     const { daemonStore } = makeDaemonStore(repo);
     const { provider } = makeFakeKeyhive();
     const args = { ...commonArgs(repo, daemonStore, provider), personaGroupId: undefined,
-                   kind: "working-binding" as const, prefix: WORKING_BINDINGS_PREFIX };
+                   kind: "personal-binding" as const, prefix: PERSONAL_BINDINGS_PREFIX };
 
     const first  = await resolveOrMintBinding(args);
     const second = await resolveOrMintBinding(args);
@@ -243,7 +242,7 @@ describe("resolveOrMintBinding — the faceless floor", () => {
     const result = await resolveOrMintBinding({
       ...commonArgs(repo, daemonStore, vessel.provider),
       faceDoor: makeFaceBagDoor({ face: face.provider, groupId: AGENT_HEX }),
-      kind: "working-binding", prefix: WORKING_BINDINGS_PREFIX,
+      kind: "personal-binding", prefix: PERSONAL_BINDINGS_PREFIX,
     });
     expect(vessel.registered).toEqual([]);
     expect(vessel.delegations).toEqual([]);

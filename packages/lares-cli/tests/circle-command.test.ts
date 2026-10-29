@@ -57,7 +57,7 @@ import { cmdCircle } from "../src/commands/circle.js";
 import { larIdentityDir } from "../src/env.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { signHandleCard, ed25519SignerFromSeed, derivePersonaKeypair, signingSeedFromHex, mintHandleInception, readFckCarrier } from "@lararium/mesh";
-import { generateOrLoadPersonaGroupRoot, wearPersona, faceFileNames, faceFilePathSync } from "@lararium/node";
+import { generateOrLoadPersonaGroupRoot, faceFileNames, faceFilePathSync } from "@lararium/node";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 const saved: Record<string, string | undefined> = {};
@@ -91,7 +91,7 @@ function identityFootprint(): string[] {
   const dir = larIdentityDir();
   return existsSync(dir) ? [...readdirSync(dir), ...faceFileNames(dir)].sort() : [];
 }
-/** The worn face's book rests in its own directory (face 0). */
+/** The acting face's book rests in its own directory (face 0). */
 const handBookPath = (): string => faceFilePathSync(larIdentityDir(), { ordinal: 0 }, ".handle-book-h0.json");
 const verbsSent = (): string[] => h.calls.map((c) => c.verb);
 
@@ -111,7 +111,7 @@ describe("lares circle — the follow verb over the circles doc (fleet-synced, t
   });
   // The handle-book rests sealed under the vessel key, so each test stands on a founded custody.
   let custody: ScratchCustody;
-  beforeEach(async () => { custody = await seatScratchCustody(); await generateOrLoadPersonaGroupRoot(0); await wearPersona(0); });
+  beforeEach(async () => { custody = await seatScratchCustody(); await generateOrLoadPersonaGroupRoot(0); });
   afterEach(async () => { await custody.drop(); });
   const openBook = async (): Promise<{ records: Array<{ nym: string; petname?: string }> }> => {
     const row = await custody.holder.readRow("identity", ".handle-book-h0.json");

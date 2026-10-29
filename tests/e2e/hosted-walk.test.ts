@@ -76,11 +76,8 @@ async function standWalker(tag: string, name: string, invite: string): Promise<L
   const root = mkdtempSync(join(stageDir(), `lares-staged-${tag}-`));
   return openStaged({ tag, root, found: async (cli, r) => {
     await foundStagedHearth(cli, r, name);
-    // A walker walks as the face it wears; a vessel that holds one face, unlocked, wears it (the refusal for a vessel wearing none
-    // is pinned in walk-doors, where two faces stand and none is named).
-    const wear = await cli(["persona", "wear", "0"]);
-    if (wear.code !== 0) throw new Error(`${tag}: wear failed (${wear.code})\n${said(wear).slice(-800)}`);
-    const take = await cli(["walk", "take", invite, "--json"]);
+    // A walker walks as the face it names (the refusal for several faces open and none named is pinned in walk-doors).
+    const take = await cli(["walk", "take", invite, "--face", "0", "--json"]);
     if (take.code !== 0) throw new Error(`${tag}: walk take failed (${take.code})\n${said(take).slice(-800)}`);
   } });
 }
@@ -92,8 +89,6 @@ describe.skipIf(gaps.length > 0)("★ the walker route ships SHUT by name beside
     A = await openStaged({ tag: "hostA", port: portA, found: async (cli, root) => {
       await foundStagedHearth(cli, root, "hearth-keeper");
       await growStagedQuorum(cli, root, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
-      const wear = await cli(["persona", "wear", "0"]);
-      if (wear.code !== 0) throw new Error(`A: wear failed (${wear.code})\n${said(wear).slice(-800)}`);
     } });
     if (!(await awaitRendezvous(A))) throw new Error(`A reached live but bound no rendezvous:\n${A.bootLog().slice(-800)}`);
   }, 400_000);
@@ -105,7 +100,7 @@ describe.skipIf(gaps.length > 0)("★ the walker route ships SHUT by name beside
   });
 
   test("① A's roll and invite still run inside A's standing vessel — hosting is not the shut route", async () => {
-    const roll = await A!.cli(["host", "roll", "--json"]);
+    const roll = await A!.cli(["host", "roll", "--face", "0", "--json"]);
     expect(roll.code, said(roll)).toBe(0);
     expect(dataOf(roll)["via"]).toBe("daemon");
     nexusA = String(dataOf(roll)["nexusAid"]);

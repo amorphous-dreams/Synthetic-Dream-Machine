@@ -13,10 +13,9 @@ import {
 import type { ArmedGenesis, ArmedRoll, SeatKept } from "@lararium/node";
 import { sealedAct } from "./sealed-act-door.js";
 
-/** The roster as one read: each held root's index and public key, the worn index, and every orphan root. */
+/** The roster as one read: each held root's index and public key, and every orphan root. */
 export interface PersonaRoots {
   readonly roots:   ReadonlyArray<{ readonly handleIndex: number; readonly verifyingKey: string }>;
-  readonly active:  number | null;
   readonly orphans: readonly number[];
 }
 
@@ -53,34 +52,32 @@ export function sealedDeclarationStore(): PersonaDeclarationStore {
 }
 
 /**
- * The root key of the face this vessel wears, or undefined where it wears none it holds a root for. A recognition
- * made while a face stands worn rests under that face's tag in the handle-book, so that face's backup bundle
- * carries it; made under no worn face, it rests untagged and stays on this vessel.
+ * The root key of face `face`, or undefined where this vessel holds no root for it. A recognition made under a face whose root
+ * stands here rests under that face's tag in the handle-book, so that face's backup bundle carries it; made under a face held
+ * by no root here, it rests untagged and stays on this vessel.
  */
-export async function wornFaceKey(): Promise<string | undefined> {
-  const roster = await readPersonaRoots();
-  return roster.active === null ? undefined : roster.roots.find((r) => r.handleIndex === roster.active)?.verifyingKey;
+export async function faceRootKey(face: number): Promise<string | undefined> {
+  return (await readPersonaRoots()).roots.find((r) => r.handleIndex === face)?.verifyingKey;
 }
 
 /**
- * The handle index of the face this vessel wears, or a refusal by name: each face keeps its own recognition book in its own row,
- * so a recognition reads and writes the worn face's book and a vessel wearing none recognises nobody.
+ * The face whose recognition book a command reads and writes: `face`, refused by name where this vessel holds no root for it.
+ * Each face keeps its own recognition book in its own row.
  */
-export async function wornFace(): Promise<number> {
-  const roster = await readPersonaRoots();
-  if (roster.active === null || !roster.roots.some((r) => r.handleIndex === roster.active)) {
-    throw new Error("recognition keeps its book in the worn face, and this vessel wears none it holds a root for: wear one (`lares persona wear <index>`)");
+export async function bookFace(face: number): Promise<number> {
+  if (!(await readPersonaRoots()).roots.some((r) => r.handleIndex === face)) {
+    throw new Error(`recognition keeps its book in a face whose root this vessel holds, and it holds none at h${face}: name a face it founded (--face N)`);
   }
-  return roster.active;
+  return face;
 }
 
-/** Load the worn face's handle-book: the snapshot crosses the recogniser's own verification on the way in. */
+/** Load a face's handle-book: the snapshot crosses the recogniser's own verification on the way in. */
 export async function loadHandleBook(face: number): Promise<HandleBook> {
   const { snapshot } = await sealedAct<{ snapshot: HandleBookSnapshot }>("handle-book.load", { face });
   return HandleBook.restore(snapshot);
 }
 
-/** Seal the worn face's handle-book as it stands. */
+/** Seal a face's handle-book as it stands. */
 export async function saveHandleBook(face: number, book: HandleBook): Promise<void> {
   await sealedAct("handle-book.save", { face, snapshot: book.snapshot() });
 }

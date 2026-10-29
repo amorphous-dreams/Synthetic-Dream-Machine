@@ -21,17 +21,20 @@
  * the store for the moment of the act (`store-door`). This door holds no reference back into `nexus-seal.ts`.
  */
 import { readFileSync } from "node:fs";
-import { NexusContractError, type NexusRollAnchorPartialResult } from "@lararium/node";
-import { storeVerb, storeFailure } from "../store-door.js";
+import { NexusContractError, SealedActRefused, type NexusRollAnchorPartialResult } from "@lararium/node";
+import { readNexusActPartial } from "@lararium/mesh";
+import { sealedAct } from "../sealed-act-door.js";
+import { storeVerb, storeFailure, proveFaceSession } from "../store-door.js";
+import { faceOption } from "../face-option.js";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { partialOutOrRefuse, writePartialFile, type PartialWritten } from "./partial-file.js";
 
-const ANCHOR_USAGE = "usage: lares nexus seal anchor [--nexus <aid>] [--edge] --out <partial> | lares nexus seal anchor --from <partial> [--out <file>]";
+const ANCHOR_USAGE = "usage: lares nexus seal anchor [--nexus <aid>] [--edge] [--face N] --out <partial> | lares nexus seal anchor --from <partial> [--face N] [--out <file>]";
 const refuseAnchor = (msg: string): Error => new NexusContractError(msg);
 
 type EdgeStanding = { readonly realm: string; readonly state: "anchored" | "owed"; readonly anchorCid?: string };
-type AnchorAnswer = NexusRollAnchorPartialResult & { readonly realm?: string; readonly edgeAnchors?: readonly EdgeStanding[] };
+type AnchorAnswer = NexusRollAnchorPartialResult & { readonly realm?: string; readonly edgeAnchors?: readonly EdgeStanding[]; readonly edgeFace?: string };
 type EdgeOpened = { readonly realm: string; readonly partial: NexusRollAnchorPartialResult["partial"]; readonly verdict: string; readonly signed: readonly string[] };
 
 /** Report one anchor step: the verdict here, the seats signed, where the file landed, and the anchor once it lands. */
@@ -44,6 +47,7 @@ function emitAnchor(args: ParsedArgs, step: string, r: AnchorAnswer, written: Pa
       landed: r.landed ? { anchorCid: r.landed.anchorCid, parents: r.landed.parents, boardUrl: r.landed.boardUrl } : null,
       ...(r.realm ? { realm: r.realm } : {}),
       ...(r.edgeAnchors ? { edgeAnchors: r.edgeAnchors } : {}),
+      ...(r.edgeFace ? { edgeFace: r.edgeFace } : {}),
     },
     human: () => {
       console.log(`nexus seal ${step} → ${r.verdict.toUpperCase()} (${r.signed.length} seat(s) of the new head signed under ${r.partial.aid.slice(0, 22)}…)`);
@@ -55,6 +59,9 @@ function emitAnchor(args: ParsedArgs, step: string, r: AnchorAnswer, written: Pa
         console.log(`  landed:      anchor ${r.landed.anchorCid.slice(0, 16)}… over ${r.landed.parents.length} board head(s); admits in its past carry to the new head`);
         console.log("  next:        carry the partial back, so the other vault lands the same anchor (`lares nexus seal anchor --from <partial>`)");
         if (r.edgeAnchors?.some((e) => e.state === "owed")) console.log("  realm edges: some anchors stay owed here (`lares nexus seal anchor --edge --out <partial>`)");
+        if (r.edgeFace === "no-face-open") console.log("  realm edges: no face stands open, so none read here (`--face N` once one opens)");
+        if (r.edgeFace === "face-not-named") console.log("  realm edges: several faces stand open and none was named, so none read here (`--face N`)");
+        if (r.edgeFace !== undefined && r.edgeFace !== "no-face-open" && r.edgeFace !== "face-not-named") console.log(`  realm edges: the face refused its read (${r.edgeFace}); the carriage stands landed (\`--face N\` once it opens)`);
       } else {
         console.log("  next:        carry the partial to the vault that holds another seat (`lares nexus seal anchor --from <partial> --out <file>`)");
       }
@@ -67,11 +74,35 @@ function emitAnchor(args: ParsedArgs, step: string, r: AnchorAnswer, written: Pa
 /** The path one realm's edge partial lands at: `<stem>-<realm first 12>.json` beside the named `--out`. */
 const edgeOutPath = (out: string, realm: string): string => `${out.replace(/\.json$/, "")}-${realm.slice(0, 12)}.json`;
 
+/**
+ * THE FACE AN EDGE STEP ACTS AS, read before any row runs: the face named, else the one standing open, else null where
+ * no face stands open. Several open with none named refuse here by name (`--face N`).
+ */
+async function edgeFace(args: ParsedArgs): Promise<number | null> {
+  const named = faceOption(args).face;
+  if (named !== undefined) return named;
+  try { return (await sealedAct<{ face: number | null }>("face.resolve", { orNone: true })).face; }
+  catch (err) { if (err instanceof SealedActRefused) throw new NexusContractError(err.message); throw err; }
+}
+
+/** The face a carriage step reports realm edges for: a place act never refuses over the face its report reads. */
+async function reportFace(args: ParsedArgs): Promise<number | "no-face-open" | "face-not-named"> {
+  try { return (await edgeFace(args)) ?? "no-face-open"; }
+  catch (err) { if (err instanceof NexusContractError) return "face-not-named"; throw err; }
+}
+
 /** `--edge --out`: open one partial for each realm edge board this vault keeps a quorum act for. */
 async function openEdgeAnchors(args: ParsedArgs, out: string): Promise<number> {
   partialOutOrRefuse(refuseAnchor, out);
   const aid = args.options["nexus"];
-  const { output } = await storeVerb("nexus-roll-anchor-edge-open", aid ? { aid } : {}, NexusContractError);
+  // A realm edge anchor is a face's act: with no face open it answers `no-face-open` by name and opens nothing.
+  const face = await edgeFace(args);
+  if (face === null) {
+    emit(args, { ok: true, data: { outcome: "no-face-open", realms: [] },
+      human: () => console.log("nexus seal anchor --edge → no face stands open, so no face's realm edge anchors open (`--face N` once one opens)") });
+    return 0;
+  }
+  const { output } = await storeVerb("nexus-roll-anchor-edge-open", { ...(aid ? { aid } : {}), face }, NexusContractError);
   const opened = (output["partials"] ?? []) as readonly EdgeOpened[];
   const written = opened.map((o) => ({ o, w: writePartialFile(edgeOutPath(out, o.realm), o.partial) }));
   emit(args, {
@@ -109,8 +140,32 @@ export async function cmdSealAnchor(args: ParsedArgs): Promise<number> {
     let partial: unknown;
     try { partial = JSON.parse(readFileSync(from, "utf8")); }
     catch { throw new NexusContractError(`cannot read ${from} as a partial file`); }
-    const { output } = await storeVerb("nexus-roll-anchor-partial", { partial }, NexusContractError);
-    const r = output as unknown as AnchorAnswer;
+    // EACH FAMILY RIDES ITS AUTHORITY: a carriage partial is the place's act (a place row); a realm edge partial is a
+    // face's act (a face row), and it refuses `no-face-open` by name where no face stands open to take it. Every face
+    // resolves before any row runs.
+    const read = readNexusActPartial(partial);
+    let r: AnchorAnswer;
+    if (read?.act.family === "edge-roll-anchor") {
+      const face = await edgeFace(args);
+      if (face === null) throw new NexusContractError("no-face-open: a realm edge anchor lands in one face's ledger, and no face stands open here (`--face N` once one opens)");
+      r = (await storeVerb("nexus-roll-anchor-edge-partial", { partial, face }, NexusContractError)).output as unknown as AnchorAnswer;
+    } else {
+      const face = await reportFace(args);
+      // The reporting face's session opens before the carriage lands: a face that cannot open one refuses here, by
+      // the vessel's own name, with nothing landed.
+      if (typeof face === "number") await proveFaceSession(face);
+      r = (await storeVerb("nexus-roll-anchor-partial", { partial }, NexusContractError)).output as unknown as AnchorAnswer;
+      if (typeof face !== "number") r = { ...r, edgeFace: face };
+      else {
+        // THE CARRIAGE STANDS LANDED: a face that locked after the preflight costs the report alone, by its own name.
+        try {
+          const standing = (await storeVerb("nexus-roll-anchor-edge-standing", { ...(read ? { aid: read.aid } : {}), face }, NexusContractError)).output;
+          r = { ...r, edgeAnchors: (standing["edgeAnchors"] ?? []) as readonly EdgeStanding[] };
+        } catch (err) {
+          r = { ...r, edgeFace: storeFailure(err, "edge-standing-refused").code };
+        }
+      }
+    }
     return emitAnchor(args, step, r, out !== undefined ? writePartialFile(out, r.partial) : null);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

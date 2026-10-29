@@ -11,7 +11,9 @@
  * caller names exactly as it names a refusal on the direct path.
  */
 
-import { storeDoorDirect, StoreHeld, type StoreDoorVerb } from "@lararium/node";
+import { storeDoorDirect, storeRowFace, StoreHeld, STORE_DOOR_FACE_ROWS, type StoreDoorVerb } from "@lararium/node";
+import { openLocalSession, SessionRefused } from "./session-connector.js";
+import { sealedAct } from "./sealed-act-door.js";
 import { vesselDid, larSealHome } from "./env.js";
 import { DaemonUnreachable, refusalCode, refusalHint, verbFailure } from "./verb-call.js";
 import { udsAlive, udsSocketPresent, udsSocketPath, whoHolds, invokeLocal, UdsUnreachable, LocalWaitExpired } from "./local-connector.js";
@@ -35,6 +37,54 @@ async function invokeAbortable(
     if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
     throw e;
   }
+}
+
+/**
+ * Run `verb` inside the standing vessel on a session of face `face` (`h<N>`): the session opens, the one call rides it,
+ * and the session closes. The door's own abort closes the session at once, as it ends the maintenance frame's socket.
+ * A session the vessel refuses (a locked face, a face it does not hold, a moved anchor) answers by the vessel's own name.
+ */
+async function invokeInSession(
+  verb: string, args: Record<string, unknown>, face: number,
+  opts: { readonly timeoutMs: number; readonly signal: AbortSignal },
+): Promise<SubmitResult> {
+  if (!udsSocketPresent()) throw new DaemonUnreachable(udsSocketPath());
+  let session: Awaited<ReturnType<typeof openLocalSession>>;
+  try { session = await openLocalSession({ faceRef: `h${face}`, hand: "cli" }); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
+    if (e instanceof SessionRefused) throw new RoutedVerbRefused(e.message, e.refusal);
+    throw e;
+  }
+  const abort = () => { void session.close(); };
+  opts.signal.addEventListener("abort", abort, { once: true });
+  try { return await session.call(verb, args, { timeoutMs: opts.timeoutMs }) as unknown as SubmitResult; }
+  catch (e) {
+    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
+    if (e instanceof SessionRefused) throw new RoutedVerbRefused(e.message, e.refusal);
+    throw e;
+  } finally {
+    opts.signal.removeEventListener("abort", abort);
+    await session.close().catch(() => { /* the socket already went */ });
+  }
+}
+
+/**
+ * PROVE A FACE'S SESSION OPENS on a running vessel, before an act of several steps writes its first: open a session of
+ * the face, then close it, riding nothing on it. A refusal throws `RoutedVerbRefused` under the vessel's own name
+ * (`storeFailure` reads it), so the act refuses with nothing written. With no vessel standing it proves nothing and
+ * answers: each row then runs here, and a later step's refusal names itself.
+ */
+export async function proveFaceSession(face: number): Promise<void> {
+  if (!(await udsAlive())) return;
+  let session: Awaited<ReturnType<typeof openLocalSession>>;
+  try { session = await openLocalSession({ faceRef: `h${face}`, hand: "cli" }); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) return;
+    if (e instanceof SessionRefused) throw new RoutedVerbRefused(e.message, e.refusal);
+    throw e;
+  }
+  await session.close().catch(() => { /* the socket already went */ });
 }
 
 /** Where a routed door ran: inside the standing vessel, or in this process. */
@@ -72,6 +122,8 @@ export async function throughStoreDoor(opts: {
   readonly args:      Record<string, unknown>;
   readonly direct:    () => Record<string, unknown> | Promise<Record<string, unknown>>;
   readonly daemonUp?: boolean;
+  /** The face the verb acts as. Named, the verb rides a session of that face; unnamed, the maintenance frame. */
+  readonly face?:     number;
   /** Test seam — defaults to {@link STORE_DOOR_PHASES}. A real caller never overrides this. */
   readonly phases?:   readonly BootPhase[];
 }): Promise<{ readonly output: Record<string, unknown>; readonly via: StoreDoorVia }> {
@@ -81,7 +133,9 @@ export async function throughStoreDoor(opts: {
     let settled = false;
     let lastMessage = "";
     const controller = new AbortController();
-    const verbPromise = invokeAbortable(opts.verb, opts.args, await vesselDid(), { timeoutMs: totalBudgetMs, signal: controller.signal })
+    const verbPromise = (opts.face !== undefined
+      ? invokeInSession(opts.verb, opts.args, opts.face, { timeoutMs: totalBudgetMs, signal: controller.signal })
+      : invokeAbortable(opts.verb, opts.args, await vesselDid(), { timeoutMs: totalBudgetMs, signal: controller.signal }))
       .finally(() => { settled = true; });
     // RACE the actual verb against a budgeted wait that NAMES the holder — never a flat clock that hangs mute.
     // The waiter never resolves on its own (its `probe` never reads true); it only ever throws `SlowBootTimeout`
@@ -170,13 +224,25 @@ export function storeFailure(err: unknown, fallback = "error"): { readonly code:
  * store for the moment of the act (`storeDoorDirect`). A row's `{ refused }` answer throws as `Refusal`, so the
  * command names it exactly as it names a refusal on either path; the answer comes back as the row's own result,
  * with the door's `verb` echo set aside.
+ *
+ * EVERY ROW THAT ACTS AS A FACE RIDES A SESSION of that face on a running vessel (`STORE_DOOR_FACE_ROWS`): the face
+ * the row names (`face`, else `handleIndex`), else the one face the vessel resolves (`face.resolve`). A row of the
+ * place rides the maintenance frame, and with no vessel standing every row runs here.
  */
 export async function storeVerb(
   verb: StoreDoorVerb,
   args: Record<string, unknown>,
   Refusal: new (message: string) => Error = StoreDoorRefusal,
 ): Promise<{ readonly output: Record<string, unknown>; readonly via: StoreDoorVia }> {
-  const r = await throughStoreDoor({ verb, args, direct: () => storeDoorDirect(verb, args, { sealHome: larSealHome() }) });
+  const daemonUp = await udsAlive();
+  // THE FACE RESOLVES ONCE, here: the session opens on it and the row carries it, so the row never resolves again.
+  const named = STORE_DOOR_FACE_ROWS.has(verb) ? storeRowFace(args) : undefined;
+  const face = daemonUp && STORE_DOOR_FACE_ROWS.has(verb)
+    ? named ?? (await sealedAct<{ face: number }>("face.resolve", {})).face
+    : undefined;
+  const rowArgs = face !== undefined && named === undefined ? { ...args, face } : args;
+  const r = await throughStoreDoor({ verb, args: rowArgs, daemonUp, ...(face !== undefined ? { face } : {}),
+    direct: () => storeDoorDirect(verb, args, { sealHome: larSealHome() }) });
   if (typeof r.output["refused"] === "string") {
     const refusal = new Refusal(r.output["refused"]);
     if (typeof r.output["refusal"] === "string") REFUSAL_NAMES.set(refusal, r.output["refusal"]);

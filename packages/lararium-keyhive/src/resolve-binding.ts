@@ -62,12 +62,12 @@ export function restingMinter(repo: DocMinter, rest: (documentIds: readonly stri
 }
 
 /** The binding kinds — one tiddler `kind` field per slot. */
-export type BindingKind = "personal-binding" | "draft-binding" | "working-binding";
+export type BindingKind = "personal-binding" | "draft-binding";
 
 export interface ResolveBindingArgs {
   /** Tiddler `kind` field value — distinguishes personal / draft / working bindings. */
   readonly kind: BindingKind;
-  /** Daemon tiddler-title prefix (PERSONAL_ | DRAFT_ | WORKING_BINDINGS_PREFIX). */
+  /** Daemon tiddler-title prefix (PERSONAL_ | DRAFT_BINDINGS_PREFIX). */
   readonly prefix: string;
   /** SHA-256 hex from computeRecipeFingerprint — the per-recipe binding key. */
   readonly fingerprint: string;
@@ -209,7 +209,7 @@ export async function unboundMints(daemonStore: CompositeStore): Promise<Array<{
     const kind = fields["binding-kind"];
     const fingerprint = fields.fingerprint;
     const url = fields.text;
-    if ((kind === "personal-binding" || kind === "draft-binding" || kind === "working-binding") && typeof fingerprint === "string" && typeof url === "string") {
+    if ((kind === "personal-binding" || kind === "draft-binding") && typeof fingerprint === "string" && typeof url === "string") {
       const bindingPrefix = title.slice(0, title.indexOf("-minted/"));
       if (bindings.get(`${bindingPrefix}/${fingerprint}`) !== url) unbound.push({ kind, fingerprint, url });
     }

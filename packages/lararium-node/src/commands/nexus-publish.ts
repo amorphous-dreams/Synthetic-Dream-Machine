@@ -47,9 +47,9 @@ import {
   type PluginProvenance,
 } from "@lararium/mesh";
 import { readGenesisCasManifest } from "../genesis-artifact.js";
+import { FaceNotNamed, resolveFace } from "../face-selector.js";
 import { casDirForStorage, writeCasEntriesFs } from "../node-cas.js";
 import {
-  loadActivePersonaIndex,
   loadPersonaGroupRootSeed,
   loadPersonaGroupRootVerifyingKey,
   loadVesselVerifyingKey,
@@ -68,7 +68,7 @@ export interface NexusPublishPluginsOptions {
   readonly source: string;
   /** The genesis directory whose blob ids `boot-set-collision` reads; absent, the vessel's own (`readGenesisSeed`'s default). */
   readonly genesisDir?: string;
-  /** The face that signs the offering: named by the caller, else the face this vessel wears. */
+  /** The face that signs the offering: named by the caller, else the one face standing open. */
   readonly handleIndex?: number;
 }
 
@@ -107,12 +107,11 @@ function sourceBlobPath(sourceDir: string, blob: { readonly sha256: string; read
 export async function runNexusPublishPlugins(
   opts: NexusPublishPluginsOptions,
 ): Promise<NexusPublishPluginsResult> {
-  const handleIndex = opts.handleIndex ?? await loadActivePersonaIndex();
-  if (handleIndex === undefined) {
-    throw new NexusPublishError(
-      "publishing requires a face to sign as — name one (--face N) or unlock the vessel on one (`lares vault unlock --face N`)",
-    );
-  }
+  // The face the act names, else the one face standing open; several and none named refuse by name (--face N).
+  const handleIndex = await resolveFace(opts.handleIndex).catch((e: unknown) => {
+    if (e instanceof FaceNotNamed) throw new NexusPublishError(`publishing requires a face to sign as — ${e.message}`);
+    throw e;
+  });
   if (!(await personaRootExists(handleIndex))) {
     throw new NexusPublishError(
       `the active persona h${handleIndex} is not held by this vessel — publishing refuses without root custody`,

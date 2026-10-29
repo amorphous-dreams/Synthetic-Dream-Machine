@@ -53,7 +53,7 @@
 import { createPrivateKey, createPublicKey, generateKeyPairSync, hkdfSync } from "node:crypto";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync, renameSync, openSync, writeSync, fsyncSync, closeSync, unlinkSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync, renameSync, openSync, writeSync, fsyncSync, closeSync, unlinkSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { faceFileNames } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
@@ -61,8 +61,6 @@ import {
   generateOrLoadKeypair,
   signingSeedFromHex,
   assertHandleIndex,
-  wearPersona as coreWearPersona,
-  loadActivePersona as coreLoadActivePersona,
   type KeypairStore,
   type KeypairCrypto,
   type PersistedKeypair,
@@ -327,6 +325,35 @@ export async function loadPlaceKelChain(): Promise<readonly PlaceKelEvent[]> {
   await reconcilePlaceRotation();
   const hint = await readLocalOperatorHint();
   return verifiedPlaceChain(placeFiles(hint.login).kel).chain;
+}
+/** Where this vessel's place stands: its W29 KEL prefix and the head of its verified KEL. A place-anchored session meets it here. */
+export async function loadPlaceReading(): Promise<{ readonly place: string; readonly seq: number; readonly head: string }> {
+  await reconcilePlaceRotation();
+  const hint = await readLocalOperatorHint();
+  const reading = verifiedPlaceChain(placeFiles(hint.login).kel);
+  return { place: reading.aid, seq: reading.seq, head: reading.headDigest };
+}
+/**
+ * A STANDING DOOR'S READ OF ITS PLACE: the login reads once, at the first read, so the KEL file a door watches is the
+ * one its vessel stood on (a later change of git config never moves the anchor). Each read stats that KEL and verifies
+ * it only once its bytes moved (inode, size, times), so a frame spawns no process and re-verifies no unchanged KEL;
+ * a staged rotation reconciles first. A read that fails throws, and the caller refuses that frame `anchor-unread`.
+ */
+export function placeReadingWatch(): () => Promise<{ readonly place: string; readonly seq: number; readonly head: string }> {
+  let files: ReturnType<typeof placeFiles> | null = null;
+  let login: string | null = null;
+  let kept: { readonly stamp: string; readonly reading: { readonly place: string; readonly seq: number; readonly head: string } } | null = null;
+  return async () => {
+    if (files === null) { login = (await readLocalOperatorHint()).login; files = placeFiles(login); }
+    const at = files;
+    if (existsSync(at.stage)) await exclusiveCustody(async () => reconcileFiles(at, login));
+    const st = statSync(at.kel);
+    const stamp = `${st.ino}:${st.size}:${st.mtimeMs}:${st.ctimeMs}`;
+    if (kept?.stamp === stamp) return kept.reading;
+    const read = verifiedPlaceChain(at.kel);
+    kept = { stamp, reading: Object.freeze({ place: read.aid, seq: read.seq, head: read.headDigest }) };
+    return kept.reading;
+  };
 }
 export async function loadPlaceAid(): Promise<string> {
   await reconcilePlaceRotation();
@@ -603,7 +630,7 @@ export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
 //       map, the published-face record. The worn face lives in session memory (`wornInSession`), never a row.
 //   COLD (opened for one act, then dropped): each persona ROOT (`…-h<N>.json`).
 // At the floor every door here refuses `CustodyLocked`. A hot row with nothing at its path reads as holding
-// nothing (no root, no worn face, no label), which states a fact about a vessel that never wrote it. A row that
+// nothing (no root, no mounted face, no label), which states a fact about a vessel that never wrote it. A row that
 // stands and does not open (torn, bare, another key's) refuses `CustodyRowUnavailable`, and so does one that
 // opens to another shape. No reader folds a refusal to empty, so no act writes over a row it could not read.
 //
@@ -783,18 +810,19 @@ export async function orphanPersonaRootKey(handleIndex: number): Promise<string 
 }
 
 /**
- * The worn face is SESSION STATE, never a pointer at rest. A running vessel wears the face its unlock named; nothing persists a choice
- * across a restart, so the person names the face again at each boot (`lares vault unlock --face N`). With no choice recorded and
- * exactly one face standing unlocked, that face is the one worn.
+ * THE MOUNTED FACE is the composition's own state, never a pointer at rest and never a default face. The unlock names which face
+ * the sovereign composition MOUNTS (`lares vault unlock --face N`); nothing persists that choice across a restart. With no choice
+ * recorded and exactly one face standing unlocked, that face is the one mounted. A command never reads this: it names its face
+ * (`--face N`), or resolves the one face standing open (`face-selector`).
  */
-let wornInSession: number | undefined;
-export function setWornFaceInSession(handleIndex: number | undefined): void { wornInSession = handleIndex; }
+let mountedFace: number | undefined;
+export function setMountedFace(handleIndex: number | undefined): void { mountedFace = handleIndex; }
 
 /**
- * WHETHER THE SOVEREIGN COMPOSITION MAY STAND: the node key (S) held AND the worn face unlocked. A pure query: it reads the
+ * WHETHER THE SOVEREIGN COMPOSITION MAY STAND: the node key (S) held AND the mounted face unlocked. A pure query: it reads the
  * seated holder and the floor index and changes nothing, so a preflight reads the same answer the composition does. A place
- * the floor index names no face for needs S alone; a place with faces and no face worn (none, or several and none chosen) stands
- * at the floor.
+ * the floor index names no face for needs S alone; a place with faces and no face mounted (none, or several and none chosen)
+ * stands at the floor.
  */
 export function sovereignStands(): boolean {
   const holder = standingCustody();
@@ -804,21 +832,21 @@ export function sovereignStands(): boolean {
   if (named.length === 0) return true;
   const open = new Set(holder.unlockedFaces());
   const openOrdinals = named.filter((f) => open.has(f.fcid)).map((f) => f.ordinal);
-  const worn = wornInSession ?? (openOrdinals.length === 1 ? openOrdinals[0] : undefined);
-  return worn !== undefined && openOrdinals.includes(worn);
+  const mounted = mountedFace ?? (openOrdinals.length === 1 ? openOrdinals[0] : undefined);
+  return mounted !== undefined && openOrdinals.includes(mounted);
 }
 
-/** The face this session wears when one stands open, or undefined: the session's choice, else the one face standing open. */
-export function wornFaceOrdinal(): number | undefined { return wornInSession; }
+/** The face the unlock named for the composition to mount, or undefined where it named none. */
+export function mountedFaceOrdinal(): number | undefined { return mountedFace; }
 
-function nodeActivePersonaStore(_login: string | null): ActivePersonaStore {
+/** The composition's mount reader: the face the unlock named, else the one face standing open. It keeps no pointer. */
+function nodeMountedFaceStore(): ActivePersonaStore {
   return {
     async load() {
-      if (wornInSession !== undefined) return wornInSession;
+      if (mountedFace !== undefined) return mountedFace;
       const open = await unlockedFaceOrdinals();
       return open.length === 1 ? open[0] : undefined;   // no inference beyond the one face standing open
     },
-    async save(handleIndex) { wornInSession = handleIndex; },
   };
 }
 
@@ -848,7 +876,7 @@ export async function makeNodeFsPersonaVault(): Promise<PersonaVault> {
     },
     async listRoots() { return (await readRoster(login)).map((l) => l.handleIndex); },
     async hasRoot(handleIndex) { return (await readRosterLine(login, handleIndex)) !== null; },
-    selector: nodeActivePersonaStore(login),
+    selector: nodeMountedFaceStore(),
     anchors:  nodeAnchorStore,
     recovery: nodeRecoveryShareStore,
   };
@@ -924,19 +952,6 @@ export async function loadPersonaGroupRootVerifyingKey(
 export async function personaRootExists(handleIndex: number): Promise<boolean> {
   assertHandleIndex(handleIndex);
   return (await readRosterLine(await loginHint(), handleIndex)) !== null;
-}
-
-/** Load the active-persona handle-index the vessel currently WEARS, or undefined when it wears none yet
- *  (no inference from an empty home — the caller decides any default). */
-export async function loadActivePersonaIndex(): Promise<number | undefined> {
-  return coreLoadActivePersona(await makeNodeFsPersonaVault());
-}
-
-/** WEAR a persona — set the active handle-index ("put on a mask"). The custody-by-TYPE wall (uniform,
- *  no founding special-case): wearing REQUIRES that this vessel HOLD that persona-root. */
-export async function wearPersona(handleIndex: number): Promise<void> {
-  await coreWearPersona(await makeNodeFsPersonaVault(), handleIndex);
-  console.log(`[vessel-identity] wearing persona h${handleIndex}`);
 }
 
 /** The persona ROSTER — every handle-index this vessel HOLDS a root for, ascending, from the explicit

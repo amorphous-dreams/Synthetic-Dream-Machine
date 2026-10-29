@@ -1,0 +1,70 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/k19-hive-lane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/k19-hive-lane.mem"
+l-space   = "adjacent"
+role      = "the K19 hive lane's kit: one Keyhive provider per joined face at the daemon, each booted from that face's own hive and routed by the session's face, so a second joined face reads as itself and never as a stranger"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/k19-hive-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/k19-hive-lane"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! K19 hive ~ one provider per joined face
+
+The hands spine (PR #108) makes every face-acting row ride a session of its face. A second joined face's session reaches the daemon, which boots one Keyhive provider (K15's bonds) for the mounted face and judges the second face's atom a stranger: `cabal feed --face 1` answers "no access granted". The operator ruled (2026-10-27) that each joined face gets its own provider at the daemon, routed by the session's face, and that no one verifier judges many faces (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>). This lane stacks on #108's head and lands carrying its commits (operator, 2026-10-28).
+
+<<~/ahu>>
+
+<<~ ahu #/the-ground>>
+
+!! The ground, measured
+
+* ''One provider, one verifier, before the lane.'' `verifierFactory` in `operator-daemon-behavior` booted `bootDaemonKeyhive` once from `manifest.daemonAuth` (one atom, one device edge, one KEL pin, one anchor) and wrapped it in `faceOwnerVerifier`. `presenterFor` refused a verb that named another PersonaGroup with "this vessel wears <group>; name it or wear <other> first".
+* ''The session names the presenter.'' The node's session door answers the face's atom as the presenter (`uds-session-door`), and the dispatcher hands it to the verifier as the capability's presenter.
+* ''Isolation held.'' `two-hives-one-process.probe.test.ts` measured two Keyhive hives in one process apart (2026-10-18). The daemon event store did not scope its cap events by face, so a second hive over it would have replayed the first's events.
+
+<<~/ahu>>
+
+<<~ ahu #/the-slices>>
+
+!! The slices ~ BUILT
+
+* ''Carried first commits'' (hands reads H and I), built: `restoreFaceBody` refuses `addressSecret: null` from a sealed bundle and the card path names its paper door; the act-faulted reply guards its ledger read; the vault-carriers comment reads the bundle carrying the secret; a red pins the browser opener's anchor choice and that a node never takes the private-nexus branch.
+* ''The red'' (its own commit): a second joined face's session verb at the daemon reads as a stranger.
+* ''The providers'': `daemonAuth.joinedFaces` carries one entry per unlocked joined face. The daemon boots each through the full `bootDaemonKeyhive` gate over a per-face cap-event scope (face A's cap events never replay into face B's hive, either way) and a per-face bag-document ledger (the ledger title carries a digest of the face's PersonaGroup, so one composite keeps each face's bag binding apart). It routes each verify by the presenter's bare atom key. An unknown presenter refuses "no provider for face <key>"; the place key gets no grant; `presenterFor` accepts the joined faces' groups. No union verifier stands, and a boot that fails after `init` disposes its provider.
+* ''Lock and unlock ride causal messages.'' A sibling's lock posts `daemon:face-drop` and its unlock posts `daemon:face-lit` through the custody door, and neither recomposes the island or reads a clock. The island answers each with `daemon:face-settled`, so `lightFace` and `dropFace` resolve only once the island has changed (a fault or shutdown with an ask pending rejects it). A drop waits for the verifies in flight against that provider before it disposes. A refused sibling at boot skips by name and leaves the mounted and healthy faces serving. The node's lock closes the key even where the provider drop refused, and logs it. A locked mounted face that reopens recomposes.
+* ''A sibling presents as itself'' (the readers' two findings): a place claim naming a held sibling group presents that sibling's atom, and a sibling's system-canon admin verify refuses before its provider answers, since a sibling holds no Kahu hand.
+* ''The census'': the dyad-reader census reads the face parameter and both Binding Gate consults; the seed census counts the joined face's boot place check.
+* ''No migration.'' The old unscoped store gets no migration and no refusal: a plain scope change, old shapes burn.
+* ''A sibling holds the vessel ground and no borrowed hand'' (Sol's read): a sibling receives the vessel ground alone (the mounted slot's wiki bags and the system canon stay the mounted face's), the routed gate hands the presenter to the verifier's Kahu predicate so a sibling presenter takes the sibling refusal there too, and a sibling's lock answers locked only once its provider is gone (a refused drop leaves the key open and answers an error).
+* ''The content fence'' (Lares's ruling, 2026-10-28; Sol's read, H2 and M5): the daemon's content verbs run on the mounted face's resources whichever face's provider cleared the verify (`sealed-seal`, `sealed-open`, `sealed-reading` and `sealed-choose-head` use the mounted face's content keys; `sealed-hand-over`, `-admit`, `-parcels`, `-receive`, `-serve`, `-rolls` and the `sealed-memory-*` verbs use the mounted holder or outbox, `seat-duties` the mounted provider, and `CREATE` and `init-wiki` mint through the mounted provider and ledger). `VerbTable.guard` wraps each, and a presenter that is not the mounted face refuses `content-mounted-only` by name. OWED, the next K19 slice: a content-key seat and a mint per face, the end state the fence holds the place for.
+* ''The held-out cells'': the realm cell, reproduced locally on the product image, walks "a SECOND face feeds, MANY-FACES" green; realm-crossing, quorum-realm, open and open-relation run on the CI cells.
+
+<<~/ahu>>
+
+<<~ ahu #/the-research>>
+
+!! The research pair, answered and not built
+
+''A council (`K16`) stands as no anchor; its members' faces meet it through the anchor their sessions already wear.'' Three measured grounds.
+
+* ''An anchor bears an identity; a council bears none.'' A session anchors at the Nexus the vessel dials or, standing alone, at its own place (a place's KEL prefix, or a browser leaf's private Nexus of one), and a later proof at another anchor refuses (`nexus-moved`). The cabal-realm carries no DID of its own ("a Place bears identity"), and the council's hive reads as a Keyhive group with no key of its own (road `#/rulings`, 2026-10-18). Nothing in a council could answer a session's proof, so nothing could pin one.
+* ''A realm stands under one charter.'' A council meeting at one hearth stands under that hearth's seed charter, and one two hearths carry stands under the Nexus they found (cabal-realm, operator ruling 2026-10-18). A member face's session therefore already wears the charter's anchor, and the council appears as a relation the face holds there: the face is a member of a group, and its own provider answers for that membership.
+* ''K19's providers make the pair line up.'' Leilani's two chosen faces each hold their own provider at the daemon (`joinedFaces`), each a member of the council's group through its own identity, and a verify for either routes by that face's atom. No provider spans both, so nothing above the faces appears; the council's group reads as a set of faces and never as an identity a session could meet.
+
+''The consequence for the build.'' `K16` needs no anchor kind beyond the place and the Nexus. A council's cap events ride each member face's own hive, and its realm documents ride the charter's anchor. The question stays open at one joint only: a quorum Handle with a seated key (road `K16`, `#/the-steward-signer`, owed) signs collective acts without reaching a member's hive, and no session wears it, since a session wears a face.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;XytkS9ChwCsArih6oP_ToByXaUqcDKXGhfJZDvxsQVQ
+
+<<^ code="&#x0004;" -> to="?">>

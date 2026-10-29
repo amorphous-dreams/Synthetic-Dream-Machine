@@ -1,4 +1,4 @@
-import { setWornFaceInSession } from "../src/node-vessel-identity.js";
+import { setMountedFace } from "../src/node-vessel-identity.js";
 import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { EventEmitter } from "node:events";
 import { cpSync, mkdtempSync, rmSync } from "node:fs";
@@ -51,6 +51,7 @@ async function withScratchRoot<T>(root: string, act: () => Promise<T>): Promise<
     try {
       return await act();
     } finally {
+      setMountedFace(undefined);
       const holder = seatedCustody();
       if (holder) {
         await holder.lock();
@@ -165,7 +166,7 @@ describe("registerBags at node open names only the mounted face", () => {
         custody: { slots: [] },
       });
 
-      setWornFaceInSession(0);                    // the unlock names the face this vessel wears: A
+      setMountedFace(0);                         // the unlock names the face the composition mounts: A
       const bags = await captureRegisterBags(root);
       assertOneFaceShape(bags, faceA.personaGroupId);
       const set = new Set(bags);

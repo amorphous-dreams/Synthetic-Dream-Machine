@@ -90,7 +90,7 @@ export async function gateRoutedVerb(invocation: Verb, verifier: CapabilityVerif
     throw new Error(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bagUrl}, access=${access}): ${proof.reason ?? "no grant"}`);
   }
   if (verifier.kahuReach) {
-    for (const bag of routedInnerBags(invocation)) await verifier.kahuReach(bag, invocation.action);
+    for (const bag of routedInnerBags(invocation)) await verifier.kahuReach(bag, invocation.action, presenter);
   }
 }
 
@@ -101,6 +101,7 @@ export async function runLocalVerb(invocation: Verb, opts: RunLocalVerbOptions):
     throw new Error(`no handler registered for "${invocation.action}"`);
   }
 
-  const cap = makeCapVerify(opts.verifier, opts.presenterOf?.(invocation) ?? invocation.requestedBy, opts.localOf?.(invocation) ?? false);
-  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, ...(opts.signal ? { signal: opts.signal } : {}) });
+  const presenter = opts.presenterOf?.(invocation) ?? invocation.requestedBy;
+  const cap = makeCapVerify(opts.verifier, presenter, opts.localOf?.(invocation) ?? false);
+  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, presenter, ...(opts.signal ? { signal: opts.signal } : {}) });
 }

@@ -13,6 +13,12 @@
  * receipt. An act's arguments and its answer ride the custody frame alone: no receipt, no outcome, no log line
  * carries either. This module logs nothing it sends or receives.
  *
+ * ── AN ACT THAT ACTS AS A FACE ──────────────────────────────────────────────────────────────────
+ * The acts that sign, read or write as one face (`SESSION_ACTS`: its key or root, its handle book, its own plane),
+ * named by `face` or `handleIndex`, so on a running vessel each rides a session of that face (`session:act`): the
+ * vessel binds the session's face to the act, and the receipt it leaves names the act and the face alone, never an
+ * argument or the answer.
+ *
  * ── WHAT A VESSEL'S ANSWER MEANS ────────────────────────────────────────────────────────────────
  *   · an `act` answer with a `result`       the act ran inside the vessel; the result returns to the caller.
  *   · an `act` answer with a refusal        the same refusal the act throws in process, under its own class:
@@ -22,11 +28,13 @@
  *                                           another command holds the store for one act): the act runs here.
  */
 import {
-  CustodyLocked, CustodyRowUnavailable, SealedActRefused, runSealedAct, readHearthDialPin, larBootstrapPath, ownedStore, larDataDir,
+  CustodyLocked, CustodyRowUnavailable, SealedActRefused, SESSION_ACTS, runSealedAct, readHearthDialPin, larBootstrapPath, ownedStore, larDataDir,
   type SealedActContext, type SealedActName, type SealedActRefusalReason,
 } from "@lararium/node";
 import { sendCustodyFrame } from "./custody-door.js";
 import { storeVerb } from "./store-door.js";
+import { openLocalSession, SessionRefused, type LocalSession } from "./session-connector.js";
+import { UdsUnreachable, udsAlive } from "./local-connector.js";
 
 /** Where an act ran: inside the standing vessel, or in this process. */
 export type SealedActVia = "vessel" | "direct";
@@ -70,11 +78,34 @@ function refusalOf(answer: Readonly<Record<string, unknown>>): Error {
 }
 
 /**
+ * AN ACT THAT ACTS AS A FACE RIDES A SESSION of that face (`SESSION_ACTS`): the face the act names, else the one the vessel
+ * resolves (`face.resolve`, which stays at the custody door). Answers the vessel's answer, or null where no vessel stands.
+ */
+async function actInSession(act: SealedActName, args: Readonly<Record<string, unknown>>): Promise<Record<string, unknown> | null> {
+  if (!(await udsAlive())) return null;
+  // An act names its face by `face` or by `handleIndex`; naming none, it acts as the face the vessel resolves.
+  const named = typeof args["handleIndex"] === "number" ? args["handleIndex"] : args["face"];
+  const face = typeof named === "number" ? named : (await sealedAct<{ face: number }>("face.resolve", {})).face;
+  let session: LocalSession;
+  try { session = await openLocalSession({ faceRef: `h${face}`, hand: "cli" }); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) return null;
+    if (e instanceof SessionRefused) throw new SealedActRefused("act-refused", e.message);
+    throw e;
+  }
+  try { return await session.act(act, typeof args["handleIndex"] === "number" ? args : { ...args, face }); }
+  catch (e) {
+    if (e instanceof SessionRefused) throw new SealedActRefused("act-refused", e.message);
+    throw e;
+  } finally { await session.close().catch(() => { /* the socket already went */ }); }
+}
+
+/**
  * Run one act of the sealed-act table: inside the standing vessel when its custody door answers, in this process
  * otherwise. Answers the act's result and where it ran; a refusal throws under its own class on either path.
  */
 export async function sealedActVia(act: SealedActName, args: Readonly<Record<string, unknown>> = {}): Promise<{ readonly result: Record<string, unknown>; readonly via: SealedActVia }> {
-  const answer = await sendCustodyFrame({ op: "act", act, args });
+  const answer = SESSION_ACTS.has(act) ? await actInSession(act, args) : await sendCustodyFrame({ op: "act", act, args });
   if (answer !== null && answer["op"] === "act") {
     if (answer["status"] === "error") throw refusalOf(answer);
     const result = answer["result"];

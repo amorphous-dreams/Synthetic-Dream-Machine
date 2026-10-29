@@ -192,7 +192,7 @@ for spec in "0:adc-0:Kahu Alpha" "1:adc-1:Kahu Beta" "2:adc-2:Kahu Gamma"; do
 done
 step "A rolls its seed charter to the three chairs (the seed card reveals; the roll prints each chair's card)"
 CARDS=""
-if SEAT=$(as_a nexus seal rotate --cold-key "$SEEDCARD" --threshold 2 --json 2>&1) && printf '%s' "$SEAT" | grep -q '"ok":true'; then
+if SEAT=$(as_a nexus seal rotate --face 0 --cold-key "$SEEDCARD" --threshold 2 --json 2>&1) && printf '%s' "$SEAT" | grep -q '"ok":true'; then
   CARDS=$(printf '%s' "$SEAT" | grep -oE '"code":"[0-9a-f-]+"' | cut -d'"' -f4 | paste -sd, -)
   if [ -n "$CARDS" ]; then ok; else bad "the roll printed no card on a staged root"; fi
 else bad "$(printf '%s' "$SEAT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
@@ -629,7 +629,7 @@ if [ -n "$B_NYM" ] && [ -n "$B_SIG" ] && SC=$(s6_a sign-closing "$B_NYM" "$B_SIG
 else bad "${SC:-no token}"; fi
 
 step "A rotates the charter (the committed reveal)"
-if ROT=$(as_a nexus seal rotate --cold-key "$CARDS" --json 2>&1) && printf '%s' "$ROT" | grep -q '"ok":true'; then ok
+if ROT=$(as_a nexus seal rotate --face 0 --cold-key "$CARDS" --json 2>&1) && printf '%s' "$ROT" | grep -q '"ok":true'; then ok
 else bad "$(printf '%s' "$ROT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
 
 step "the rotate landed a ROLL ANCHOR on A's board"

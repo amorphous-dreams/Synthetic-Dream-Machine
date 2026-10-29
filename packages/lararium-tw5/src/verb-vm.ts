@@ -112,6 +112,9 @@ export interface VerbPlacement {
   readonly verb:        string;
   readonly args:        Record<string, unknown>;
   readonly requestedBy: string;
+  /** The verified face's proof subject: it enters the input digest and attributes the outcome. The seat supplies the
+   *  presenter in `requestedBy`, which the capability gate reads and the digest leaves out. */
+  readonly face?:       string;
   readonly targets?:    string[];
   readonly batchMode?:  BatchMode;
   readonly requestId?:  string;
@@ -159,11 +162,12 @@ export async function writeOutcome(
   const inputDigest = await verbInputDigest({
     verb:        opts.invocation.action,
     args:        opts.invocation.args,
-    requestedBy: opts.invocation.requestedBy,
+    ...(opts.invocation.face !== undefined && { face: opts.invocation.face }),
     ...(opts.invocation.effectKey !== undefined && { effectKey: opts.invocation.effectKey }),
   });
   const outcome = concludeVerb({
     requestId:   opts.invocation.requestId,
+    ...(opts.invocation.face !== undefined && { face: opts.invocation.face }),
     verb:        opts.invocation.action,
     status:      opts.status,
     requestedBy: opts.invocation.requestedBy,
@@ -191,6 +195,7 @@ export async function writeOutcome(
       tiddler: {
         title:          `${EFFECT_URI_PREFIX}${opts.invocation.effectKey}`,
         "effect-key":   opts.invocation.effectKey,
+        ...(opts.invocation.face !== undefined && { face: opts.invocation.face }),
         "request-id":   opts.invocation.requestId,
         "disk-projection": "no",
       },
@@ -215,6 +220,7 @@ export async function copyEffectOutcome(
   const origin = { kind: "lares-verb" as const, requestId: invocation.requestId };
   const outcome = concludeVerb({
     requestId:   invocation.requestId,
+    ...(invocation.face !== undefined && { face: invocation.face }),
     verb:        invocation.action,
     status:      "done",
     requestedBy: invocation.requestedBy,

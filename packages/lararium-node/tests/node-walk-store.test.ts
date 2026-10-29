@@ -34,7 +34,7 @@ import {
 } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
 import { writeCustodyRow } from "../src/custody-seat.js";
-import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, wearPersona, setWornFaceInSession } from "../src/node-vessel-identity.js";
+import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
 import { listWalkRecords, nodeWalkStore, walkRowFile, WalksElsewhere } from "../src/node-walk-store.js";
 import { runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
 import { handleRowPath, faceRowNames } from "./face-paths.js";
@@ -183,7 +183,6 @@ describe("a walk record at rest", () => {
 
   test("W6 — the walk acts keep, answer and re-present through the door's context", async () => {
     await custody("walk-w6");
-    setWornFaceInSession(undefined);
     await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     await generateOrLoadPersonaGroupRoot(1);
@@ -195,22 +194,21 @@ describe("a walk record at rest", () => {
       walk: { dialGate: () => dialGate, represent: dialStands ? async () => { represented += 1; } : null },
     });
     const reason = async (act: Promise<unknown>): Promise<string> => act.then(() => "ran", (e: { reason?: string; message?: string }) => `${e.reason}: ${e.message}`);
-    // A walk door's own refusal crosses as the act's refusal, with its words: no face worn, so nothing lands.
-    expect(await reason(runSealedAct("walk.take", { carried: invite() }, ctx(GATE, true)))).toMatch(/^act-refused: .*wears no face/);
+    // A walk door's own refusal crosses as the act's refusal, with its words: two faces and none named, so nothing lands.
+    expect(await reason(runSealedAct("walk.take", { carried: invite() }, ctx(GATE, true)))).toMatch(/^act-refused: this vessel .*face/);
     expect(await reason(runSealedAct("walk.invite", {}, ctx(null, false)))).toMatch(/^act-refused: .*walks nowhere/);
     expect(represented).toBe(0);
     expect(existsSync(rowPath())).toBe(false);
-    await wearPersona(0);
     // The standing dial pins this hearth: the take re-presents once and says so.
-    expect(await runSealedAct("walk.take", { carried: invite() }, ctx(GATE, true))).toMatchObject({ gatePubKey: GATE, nexusAid: AID, relay: RELAY, dialing: "now" });
+    expect(await runSealedAct("walk.take", { carried: invite(), face: 0 }, ctx(GATE, true))).toMatchObject({ gatePubKey: GATE, nexusAid: AID, relay: RELAY, dialing: "now" });
     expect(represented).toBe(1);
     // No walk dial stands, or no dial at all: the invite waits for the next stand, and nothing re-presents.
-    expect(await runSealedAct("walk.take", { carried: invite() }, ctx(GATE, false))).toMatchObject({ dialing: "next-stand" });
-    expect(await runSealedAct("walk.take", { carried: invite() }, { kelHead: null, personaSelves: null, walk: null })).toMatchObject({ dialing: "next-stand" });
-    expect(await runSealedAct("walk.take", { carried: invite() }, ctx(null, true))).toMatchObject({ dialing: "next-stand" });   // a dial that pins no hearth re-presents nothing
+    expect(await runSealedAct("walk.take", { carried: invite(), face: 0 }, ctx(GATE, false))).toMatchObject({ dialing: "next-stand" });
+    expect(await runSealedAct("walk.take", { carried: invite(), face: 0 }, { kelHead: null, personaSelves: null, walk: null })).toMatchObject({ dialing: "next-stand" });
+    expect(await runSealedAct("walk.take", { carried: invite(), face: 0 }, ctx(null, true))).toMatchObject({ dialing: "next-stand" });   // a dial that pins no hearth re-presents nothing
     expect(represented).toBe(1);
     // A dial pinned elsewhere refuses the take, as the door's own rule says.
-    expect(await reason(runSealedAct("walk.take", { carried: invite() }, ctx(OTHER_GATE, true)))).toMatch(/^act-refused: .*dial stands to the hearth/);
+    expect(await reason(runSealedAct("walk.take", { carried: invite(), face: 0 }, ctx(OTHER_GATE, true)))).toMatch(/^act-refused: .*dial stands to the hearth/);
     expect(await runSealedAct("walk.state", {}, ctx(null, false))).toEqual({ walks: [expect.objectContaining({ gatePubKey: GATE, relay: RELAY, redeeming: true, wallet: 0 })] });
     expect(readFckCarrier(readFileSync(rowPath()))).toBe("sealed");
     // THE HAND-OUT, for real: an empty wallet refuses; two tokens leave as two invites, newest first, each once.
@@ -223,7 +221,7 @@ describe("a walk record at rest", () => {
     expect(decodeInvite(second.invite)).toMatchObject({ token: older });
     expect([first.left, second.left]).toEqual([1, 0]);
     expect(await reason(runSealedAct("walk.invite", {}, ctx(null, false)))).toMatch(/^act-refused: .*holds no invite/);
-    expect(await reason(runSealedAct("walk.take", { carried: invite(), dialGate: GATE }, ctx(null, false)))).toMatch(/^bad-args/);   // the dial rides the context, never the frame
+    expect(await reason(runSealedAct("walk.take", { carried: invite(), face: 0, dialGate: GATE }, ctx(null, false)))).toMatch(/^bad-args/);   // the dial rides the context, never the frame
   });
 
   test("W7 — two hand-outs that start together over one token answer it once", async () => {

@@ -7,13 +7,13 @@ import type { Socket } from "node:net";
 import { afterEach, describe, expect, test } from "vitest";
 import type { SlotSpec } from "@lararium/mesh";
 import { custodyFrameHandler } from "../src/custody-frames.js";
-import { loadActivePersonaIndex, setWornFaceInSession, sovereignStands } from "../src/node-vessel-identity.js";
+import { mountedFaceOrdinal, setMountedFace, sovereignStands } from "../src/node-vessel-identity.js";
 import { FIXTURE_PASSPHRASE, seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 const slot = (passphrase: string): SlotSpec => ({ t: 1, pins: [{ kind: "passphrase", passphrase }] });
 const cred = (passphrase: string) => [{ kind: "passphrase" as const, passphrase }];
 let seat: SeatedScratchCustody | null = null;
-afterEach(async () => { setWornFaceInSession(undefined); await seat?.drop(); seat = null; });
+afterEach(async () => { setMountedFace(undefined); await seat?.drop(); seat = null; });
 
 async function vessel(faceRoutes: readonly string[]) {
   seat = await seatScratchCustody("unlock-per-face");
@@ -34,12 +34,12 @@ async function vessel(faceRoutes: readonly string[]) {
 }
 
 describe("one credential, tried where it is named", () => {
-  test("CONTROL: the S route opens the node key and the one face that route fits; the composition stands and that face is worn", async () => {
+  test("CONTROL: the S route opens the node key and the one face that route fits; the composition stands and mounts that face", async () => {
     const v = await vessel([FIXTURE_PASSPHRASE]);
     const a = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE) });
     expect(a).toMatchObject({ op: "unlock", reading: "opens", held: true });
     expect(v.holder.unlockedFaces()).toEqual([v.fcids[0]]);
-    expect(await loadActivePersonaIndex()).toBe(0);
+    expect(mountedFaceOrdinal()).toBe(0);
     expect(v.composed).toEqual([true]);
   });
 

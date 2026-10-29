@@ -126,7 +126,7 @@ describe("the browser's fleet join", () => {
     expect(answer.certificates[0]!.vesselFaceKey).toBe(request.requests[0]!.vesselFaceKey);
     const db = await openVesselIdb(s.idbName);
     try {
-      expect(Array.from((await readKeystoreRow(s.idbName, `fleet-join-secret/${GROUP}`)) as Uint8Array)).toEqual(Array.from(SECRET));
+      expect(Array.from((await readKeystoreRow(s.idbName, `face-address-secret/${GROUP}`)) as Uint8Array)).toEqual(Array.from(SECRET));
       expect(await idbGet(db, FLEET_JOIN_STORE, `record:${GROUP}`)).toMatchObject({ personaGroup: GROUP, rootKey: s.root.key });
     } finally { db.close(); }
     expect(await pendingOf(s.idbName)).toMatchObject({ landed: true });
@@ -143,7 +143,7 @@ describe("the browser's fleet join", () => {
     expect(await pendingOf(s.idbName)).not.toHaveProperty("landed");
     const bare = await openVesselIdb(s.idbName);
     try {
-      expect(await readKeystoreRow(s.idbName, `fleet-join-secret/${GROUP}`)).toBeUndefined();
+      expect(await readKeystoreRow(s.idbName, `face-address-secret/${GROUP}`)).toBeUndefined();
       expect(await idbGet(bare, FLEET_JOIN_STORE, `record:${GROUP}`)).toBeUndefined();
     } finally { bare.close(); }
     // CONTROL: settling a join whose answer never landed leaves it standing.
@@ -155,7 +155,7 @@ describe("the browser's fleet join", () => {
     await expect(browserFleetJoinLand({ answer: await answerTo(s, request, new Uint8Array(32).fill(9)), idbName: s.idbName }))
       .rejects.toThrow(/secret-other/);
     const db = await openVesselIdb(s.idbName);
-    try { expect(Array.from((await readKeystoreRow(s.idbName, `fleet-join-secret/${GROUP}`)) as Uint8Array)).toEqual(Array.from(SECRET)); } finally { db.close(); }
+    try { expect(Array.from((await readKeystoreRow(s.idbName, `face-address-secret/${GROUP}`)) as Uint8Array)).toEqual(Array.from(SECRET)); } finally { db.close(); }
     expect(await browserFleetJoinSettle(s.idbName)).toBe(true);
     await expect(browserFleetJoinLand({ answer: good, idbName: s.idbName })).rejects.toThrow(/join-absent/);
   });
@@ -192,7 +192,7 @@ describe("the browser's fleet join", () => {
     const db = await openVesselIdb(s.idbName);
     try {
       expect(await idbGet(db, FLEET_JOIN_STORE, `record:${GROUP}`)).toMatchObject({ rootKey: s.root.key });
-      expect(Array.from((await readKeystoreRow(s.idbName, `fleet-join-secret/${GROUP}`)) as Uint8Array)).toEqual(Array.from(SECRET));
+      expect(Array.from((await readKeystoreRow(s.idbName, `face-address-secret/${GROUP}`)) as Uint8Array)).toEqual(Array.from(SECRET));
     } finally { db.close(); }
     expect(await pendingOf(s.idbName)).not.toHaveProperty("landed");
   });

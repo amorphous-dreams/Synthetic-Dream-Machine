@@ -65,7 +65,7 @@ export async function sendCustodyFrame(root, frame) {
 /** The door's whole act, exported so a harness drives it in-process: refuses an unmarked root before any socket opens. */
 export async function unlockTestCustody(root, act = "unlock", face = undefined) {
   const dir = resolve(root);
-  // A staged vessel wears its founding face, h0, for the life of the unlock when it holds one: the unlock NAMES the worn face.
+  // A staged vessel mounts its founding face, h0, for the life of the unlock when it holds one: the unlock NAMES the face the composition mounts.
   if (face === undefined && existsSync(join(dir, "data", "lares", "identity", "face-index.json"))) face = 0;
   refuseUnmarked(dir);
   const frame = act === "lock" ? { op: "lock" }

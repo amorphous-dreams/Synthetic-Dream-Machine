@@ -123,6 +123,13 @@ describe("persona-vault core", () => {
     await expect(wearPersona(v, 7)).rejects.toThrow(/no persona-root held/);
   });
 
+  test("a vessel that keeps no worn pointer (a node: its selector carries no save) refuses a wear, naming --face N", async () => {
+    const v = makeInMemoryVault();
+    await generateOrLoadPersonaRoot(v, memCrypto, 0);
+    const pointerless = { ...v, selector: { load: v.selector.load.bind(v.selector) } };
+    await expect(wearPersona(pointerless, 0)).rejects.toThrow(/--face N/);
+  });
+
   test("handle-index guard rejects out-of-range indices (SLIP-0010 hardened ceiling)", async () => {
     const v = makeInMemoryVault();
     await expect(generateOrLoadPersonaRoot(v, memCrypto, -1)).rejects.toThrow(/out of range/);

@@ -248,6 +248,9 @@ export * from "./meme-provider.js";
 export * from "./reaction-graph.js";
 export * from "./wiki-recipe.js";
 export * from "./verb-tiddler.js";
+export * from "./face-scoped-id.js";
+export * from "./durability-receipt.js";
+export * from "./session-receipt.js";
 export * from "./residency-actions.js";
 export * from "./verb-refusal.js";
 export * from "./content-handle.js";
@@ -347,7 +350,10 @@ export type { VesselFaceCertificate, VesselFaceCertificateRequest, VesselFaceKey
 export * from "./fleet-join.js";
 // THE JOINED VESSEL'S SESSION, named here by its first caller: the node's joined-face proof (`joined-face-proof`)
 // hands it the vessel's own certificate, grant, key and custody door. The session table stays private to the mesh.
-export { openJoinedFaceSession } from "./session-face.js";
+export { openJoinedFaceSession, prepareJoinedFace, type JoinedFaceTarget } from "./session-face.js";
+export { preparePlaceFace, supplyPlaceFace, type PlaceFaceTarget, type PlaceReading } from "./session-face.js";
+export { placeProofSubjectRef, readPlaceSessionCertificate, readPlaceSessionSignature, type PlaceScope, type PlaceSessionCertificate } from "./face-proof-subjects.js";
+export { PlaceSessionSigner, type PlaceAnchorWatch } from "./session-signer.js";
 export type { JoinedFaceSessionRefusal, FaceGrantReading } from "./session-face.js";
 // THE GATE'S TWO ROOT DOORS, named here by the seats that mint them: the vessel identity mints the floor key's
 // door and the custody seat the custody root's. The bundle itself joins the barrel below, with the gate.
@@ -383,6 +389,8 @@ export { gateNativeCarriagePull, CARRIAGE_PIN_ABSENT, type GateNativeCarriagePul
 export { SOVEREIGN_SYNC_ROUTE, ADMIT_GATE_PIN_REFUSALS, readAdmitGatePin, readAdmitGatePinAt, admitGatePinDigest, dialPinKeyOf, hearthPinIndex } from "./admit-gate-pin.js";
 // The session table a dialer keeps for the sessions it opened (`dialSessions`), and the binding each rides.
 export { SessionTable, sessionBinding } from "./session-contract.js";
+// The five-step fence that switches one session's face in place (the node's session socket, the browser holder).
+export { switchSession, SwitchActsSetAsideFull, SESSION_SWITCH_REFUSALS, type SessionSwitchPorts, type SessionSwitchResult, type SessionSwitchTarget, type SwitchIntent, type SwitchOutcome } from "./session-switch.js";
 export type { SessionBinding } from "./session-contract.js";
 export type {
   AdmitGatePinRefusal, DialPinKey, HearthPinIndex, PlaceClaimStand, PlaceClaimFiling, PlaceClaimFork, PlaceKelForkNote,
@@ -451,6 +459,7 @@ export * from "./handle-announce.js";
 export * from "./who-face.js";
 export * from "./who-face-cap.js";
 export * from "./deterministic-doc.js";
+export * from "./face-working-address.js";
 export { pinnedDoc, PINNED_ACTOR } from "./pinned-doc.js";
 export * from "./cabal-realm-clock.js";
 export * from "./realm-bag.js";

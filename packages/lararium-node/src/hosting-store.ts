@@ -151,8 +151,10 @@ export class HostingStateMoved extends Error {
  */
 export async function rollHosting(opts: {
   readonly nexusAid: string; readonly leafSeed: Uint8Array; readonly cap?: number;
+  /** The face the first roll founds the hosting under; absent, the one face standing open. A held hosting keeps its face. */
+  readonly face?: number;
 }): Promise<{ readonly act: HostingAct; readonly state: HostingState; readonly unswept: readonly string[] }> {
-  const face = (await hostingFaceOf(opts.nexusAid, true))!;
+  const face = (await hostingFaceOf(opts.nexusAid, true, opts.face))!;
   const file = stateFile(face, opts.nexusAid);
   const prior = await readHostingState(opts.nexusAid);
   const priorCid = prior ? hostingActCid(prior.current) : null;

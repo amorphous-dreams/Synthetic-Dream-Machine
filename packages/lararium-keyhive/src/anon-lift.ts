@@ -10,9 +10,21 @@
  * an old URL under a face, here or at the next reuse.
  *
  * ── THE SET IS DERIVED, NEVER LISTED ────────────────────────────────────────────────────────────
- * Every record this vessel minted at the floor and has not yet moved: daemon-bag binding records reading `vessel-only` (personal,
- * draft and working kinds alike), and the catalog's floor draft records keyed by this vessel's DID. Another vessel's records
- * never match (`minted-by`), and a record that already reads `face` never matches.
+ * Every record this vessel minted at the floor and has not yet moved: daemon-bag binding records reading `vessel-only` (personal
+ * and draft kinds alike), the catalog's floor draft records keyed by this vessel's DID, and the catalog's floor WORKING
+ * records keyed by the floor's own anchor (a node's W29 place KEL prefix, a browser leaf's private Nexus of one). Another vessel's records never match (`minted-by`),
+ * and a record that already reads `face` never matches.
+ *
+ * ── THE WORKING FLOOR GOES TO THE FACE'S DERIVED ADDRESS ────────────────────────────────────────
+ * A face's working document has no record: its address derives from the face's secret and the wiki's slug. The lift carries
+ * each floor working document's tiddlers into the face's document for that wiki (additively: a title the face's document
+ * holds stays), rests it, marks the anchor's key `lifted-from`, burns the floor document, and takes the key out of the catalog
+ * last. The anchor's key then names nothing. A stop before the mark runs again whole, its carry adding nothing twice; a stop
+ * after the mark finds the marked key on the next pass, which burns the floor document and removes the key, carrying nothing.
+ *
+ * ── THE SECRET STANDS FIRST ─────────────────────────────────────────────────────────────────────
+ * The seated face's address secret must stand before the first step runs (`slot-doc-resolver` preflights it): with none, the
+ * lift refuses `no-address-secret` and changes nothing, so no lift moves its drafts and then halts at the working floor.
  *
  * ── IDEMPOTENT IN D ─────────────────────────────────────────────────────────────────────────────
  * The mark rests with the binding, in the daemon bag: `lifted-from` (a digest of the floor key) and, until the burn finishes,
@@ -20,9 +32,9 @@
  * that finds a binding still holding `lifted-from-url` finishes the burn and moves nothing a second time.
  */
 import {
-  DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, WORKING_BINDINGS_PREFIX, canonicalJson, emptyLarDoc,
-  mutableLarRecord, tiddlerText, sha256HexBytesSync, utf8Bytes, wikiDraftDocKey, requireLarDid, plainEntries, storedRecord,
-  type ChangeOrigin, type CompositeStore, type LarDoc,
+  DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, canonicalJson, emptyLarDoc,
+  mutableLarRecord, tiddlerText, sha256HexBytesSync, utf8Bytes, wikiDraftDocKey, requireLarDid, plainEntries, storedRecord, storedLarRecord,
+  floorAnchorSegment, type WorkingFloorAnchor, type ChangeOrigin, type CompositeStore, type LarDoc,
 } from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { FaceBagDoor } from "./face-bag-door.js";
@@ -45,6 +57,12 @@ export interface LiftArgs {
   /** The labels a faceless floor gave its documents (the public place key and its DID): a lit face lifts those too. */
   readonly floor?: { readonly mintedByHex: string; readonly vesselDid: string };
   /** The binding slot a wiki's draft floor belongs to: its fingerprint and trace, or null where the wiki is unregistered. */
+  /** The working floor: the floor's own anchor it rests by, the face's derived address for a slug, and its door. */
+  readonly working?: {
+    readonly anchor: WorkingFloorAnchor | null;
+    readonly urlOf: (slug: string) => Promise<string>;
+    readonly open?: (url: string, label: string) => Promise<{ readonly documentId: string; change(fn: (doc: LarDoc) => void): void }>;
+  };
   readonly traceOf: (slug: string) => Promise<{ readonly fingerprint: string; readonly recipeTrace: { readonly wikiDocId: string; readonly libraryBagDocIds: readonly string[] } } | null>;
 }
 
@@ -53,7 +71,6 @@ export interface LiftResult { readonly moved: readonly string[]; readonly finish
 const PREFIXES = [
   { prefix: PERSONAL_BINDINGS_PREFIX, kind: "personal-binding" },
   { prefix: DRAFT_BINDINGS_PREFIX, kind: "draft-binding" },
-  { prefix: WORKING_BINDINGS_PREFIX, kind: "working-binding" },
 ] as const;
 
 /** Whether this vessel minted the record: under the lit face's label, or under the floor's public place label. */
@@ -194,6 +211,34 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
         "lifted-from": digestOf(floorKey),
       }, `floor-done-${slug.slice(0, 12)}`);
       moved.push(floorKey);
+    }
+    // 4 — the catalog's floor working documents, keyed by the floor's own anchor.
+    const working = args.working;
+    if (working?.anchor && working.open) {
+      const mark = `/working-floor/${floorAnchorSegment(working.anchor)}`;
+      for (const [floorKey, rec] of plainEntries(handle.doc()?.tiddlers)) {
+        if (!floorKey.endsWith(mark)) continue;
+        const fields = textFieldsOf(rec.tiddler as Record<string, unknown>);
+        const oldUrl = fields["text"] ?? null;
+        if (!oldUrl || fields["face-reach"] !== "vessel-only" || !mintedHere(args, fields["minted-by"])) continue;
+        // A key already marked: a stop interrupted its burn or its removal; finish both, carrying nothing again.
+        const interrupted = typeof fields["lifted-from"] === "string" && fields["lifted-from"] !== "";
+        if (!interrupted) {
+          const slug = floorKey.slice(0, -mark.length).replace(/^.*\/wikis\//, "");
+          const url = await working.urlOf(slug);
+          const into = await working.open(url, slug);
+          carryTiddlers(await readDoc(args.repo, oldUrl), into);
+          await args.repo.flush([into.documentId]);
+          await args.faceDoor.mint(url, "admin");
+          // MARK, BURN, THEN DELETE: the key keeps the lift's mark until the floor document burns.
+          handle.change((doc) => {
+            if (doc.tiddlers[floorKey]) doc.tiddlers[floorKey] = storedLarRecord(floorKey, { ...carried(fields), "lifted-from": digestOf(floorKey) }, "anon-lift:working-floor");
+          });
+        }
+        await burn(args, oldUrl);
+        handle.change((doc) => { delete doc.tiddlers[floorKey]; });
+        (interrupted ? finished : moved).push(floorKey);
+      }
     }
   }
   return { moved, finished };

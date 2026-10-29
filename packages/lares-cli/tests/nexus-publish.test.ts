@@ -20,7 +20,7 @@ import { sha256HexBytesSync } from "@lararium/mesh";
 import { cmdNexus } from "../src/commands/nexus.js";
 import { cmdVessel } from "../src/commands/vessel.js";
 import type { ParsedArgs } from "../src/parse-args.js";
-import { generateOrLoadPersonaGroupRoot, wearPersona } from "@lararium/node";
+import { generateOrLoadPersonaGroupRoot } from "@lararium/node";
 
 // The room each test and hook takes, stated where the file loads: a case founds a vessel, lights a face and seals rows under a derived key, so it runs for seconds. A timeout stated inside a hook reaches no
 // case the runner already collected.
@@ -122,7 +122,6 @@ describe("lares nexus publish — the operator's own collection, apart from the 
     writeFileSync(join(process.env["LAR_ROOT"]!, ".lar-test-scratch"), "");   // a staged root: the place card's read-back stands in
     expect(await cmdVessel({ command: "vessel", positional: ["found"], options: {}, flags: { json: true } })).toBe(0);
     await generateOrLoadPersonaGroupRoot(0);
-    await wearPersona(0);
     out.length = 0;
 
     expect(await cmdNexus(args(["publish", "plugins"], { apply: true, json: true }, { source }))).toBe(0);
