@@ -155,3 +155,47 @@ describe("the per-face relay service", () => {
     service.close();
   });
 });
+
+
+describe("the relay service keeps its stands owned", () => {
+  const second = "c".repeat(64);
+  const facesOf = (...groups: string[]) => async (g: string) => groups.includes(g) ? { group: g, admit: async () => ({ status: "refused" as const, refusal: "fault" as const }) } : null;
+  test("RED: a failed registration for one face stands nothing orphaned and leaves the other face tracked; CONTROL: a working dispatcher stands both", async () => {
+    seat = await seatScratchCustody("relay-owned");
+    const r = await rig();
+    await intentRelayKeyOrMint(); await enableIntentRelayFace(group); await enableIntentRelayFace(second);
+    let calls = 0, broken = true;
+    const dispatcher = { registerUpgrade: () => { if (broken && ++calls === 2) throw new Error("registration failed"); return () => {}; } } as never;
+    const service = await standIntentRelay({ gateServer: r.server, dispatcher, rootDoor: custodyGateDoor(), deadlines: r.deadlines, faces: facesOf(group, second), log: (m) => r.log.push(m) });
+    expect(service.standing().map((s) => s.group)).toEqual([group]);
+    expect(r.server.paths()).toHaveLength(1);
+    broken = false;
+    await service.refresh();
+    expect(service.standing().map((s) => s.group).sort()).toEqual([group, second].sort());
+    expect(r.server.paths()).toHaveLength(2);
+    service.close();
+    expect(r.server.paths()).toEqual([]);
+  });
+
+  test("RED: a close during face resolution leaves no route standing; CONTROL: the same sweep keeps its route when no close arrives", async () => {
+    seat = await seatScratchCustody("relay-close");
+    const r = await rig();
+    await intentRelayKeyOrMint(); await enableIntentRelayFace(group);
+    for (const closeMidway of [false, true]) {
+      let release!: () => void, resolving!: () => void, slow = false;
+      const held = new Promise<void>((resolve) => { release = resolve; });
+      const started = new Promise<void>((resolve) => { resolving = resolve; });
+      const service = await standIntentRelay({ gateServer: r.server, rootDoor: custodyGateDoor(), deadlines: r.deadlines, faces: async (g) => { if (slow) { resolving(); await held; } return facesOf(group)(g); }, log: (m) => r.log.push(m) });
+      expect(r.server.paths()).toHaveLength(1);
+      slow = true;
+      const refreshing = service.refresh();
+      await started;
+      if (closeMidway) service.close();
+      release();
+      await refreshing;
+      expect(r.server.paths()).toHaveLength(closeMidway ? 0 : 1);
+      service.close();
+      expect(r.server.paths()).toEqual([]);
+    }
+  });
+});

@@ -196,3 +196,24 @@ test.each([true, false])("RED: merged own receipt rechecks revocation (revoke=%s
   expect(intentEntryRecordsOfGroup(f.shared.doc, f.group)).toHaveLength(revoke ? 3 : 2);
   expect(intentAdmissionRecordsOfGroup(f.shared.doc, f.group)).toHaveLength(1);
 });
+
+test("RED: a roster act learned while the final read awaits standing still refuses; CONTROL: the same bytes admit when no act arrives", async () => {
+  const f = await fixture();
+  const head = f.log.at(-1)!;
+  const closing = await signPersonaAct({ seq: head.body.seq, cid: actCid(head.body) }, { group: f.group, act: "admission", epoch: 0, fields: { deviceKey: (await who(8)).key } }, f.root);
+  const grant = await buildDelegation({ group: f.group, signer: f.root, epoch: 0, agent: f.agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1] } } }, bound: { until: { roster: actCid(closing.body) } }, nonce: "closing-late" });
+  const entry = await buildAgentIntent({ group: f.group, signer: f.agent, delegation: intentEntryCid(grant), verb: "MOVE", args: { x: 1 }, nonce: "", audience: { mode: "every" }, verbs: f.verbs });
+  const run = async (arrives: boolean) => {
+    const shared = plane(); shared.handle.change(d => writeIntentEntry(d, grant)); shared.change.mockClear();
+    let signed = false, merged = false;
+    const ports = { ...f.ports, plane: shared.handle, personaRecords: () => merged ? [...f.log, closing] : f.log,
+      standing: async () => { if (signed && arrives) merged = true; return "stands" as const; } };
+    const result = await admitAgentEntry(ports, entry, { ...f.relay, sign: async bytes => { const out = await f.relay.sign(bytes); signed = true; return out; } });
+    return { result, shared };
+  };
+  const late = await run(true);
+  expect(late.result).toEqual({ status: "refused", refusal: "delegation-closed" });
+  expect(late.shared.change).not.toHaveBeenCalled();
+  expect(intentAdmissionRecordsOfGroup(late.shared.doc, f.group)).toHaveLength(0);
+  expect((await run(false)).result.status).toBe("admitted");
+});
