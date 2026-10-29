@@ -44,9 +44,11 @@ export function makeFaceIntentReader(ports: FaceIntentAdmissionPorts) {
     for (const atom of new Set([...projection.devices.map((d) => d.toLowerCase()), ...intentEntryRecordsOfGroup(ports.plane.doc(), ports.group).map((r) => String((r as { signer?: unknown })?.signer ?? "").toLowerCase())])) {
       if (atom) standings.set(atom, await ports.standing(atom));
     }
+    // Every await above has settled: the roster, the records and the admissions read from the same synchronous moment.
+    const settled = face.project(ports.personaRecords(), ports.group);
     const records = intentEntryRecordsOfGroup(ports.plane.doc(), ports.group);
     const readInput: Omit<IntentReadInput, "records"> = { group: ports.group, admissions: intentAdmissionRecordsOfGroup(ports.plane.doc(), ports.group),
-      face: faceRosterForIntents(projection, face.lineage), standing: (atom) => standings.get(atom.toLowerCase()) ?? "unknown",
+      face: faceRosterForIntents(settled, face.lineage), standing: (atom) => standings.get(atom.toLowerCase()) ?? "unknown",
       ...(ports.holdsCapability ? { holdsCapability: ports.holdsCapability } : {}), verbs: ports.verbs, ...(ports.heldFrontiers ? { heldFrontiers: ports.heldFrontiers() } : {}) };
     return { view: readIntentPlane({ ...readInput, records }), records, readInput };
   };

@@ -58,18 +58,26 @@ export async function standIntentRelay(ports: {
         let face: IntentRelayFace | null;
         try { face = await ports.faces(group); }
         catch (error) { down(group); ports.log(`[lar-gate] intent relay skipped face ${group}: ${String(error)}`); continue; }
+        if (closed) return;
         if (!face || face.group !== group) { down(group); continue; }
         if (stood.has(group)) continue;
         let bundle: GateBundle;
         try { bundle = deriveGateBundle(sovereignGateRoot(ports.rootDoor), utf8Bytes(group), sovereignRoute(INTENT_RELAY_ROUTE)); }
         catch { if (!floorSaid) { floorSaid = true; ports.log("[lar-gate] intent relay rests shut while vessel custody stays locked"); } continue; }
+        if (closed) { bundle.drop(); return; }
         const gate = makeIntentRelayGate({ bundle, group, ring, admit: face.admit, deadlines: ports.deadlines });
+        let at: StoodGate | null = null;
         try {
-          const at = ports.gateServer.stand({ gate, pin: bundle.pin });
-          const unregister = ports.dispatcher?.registerUpgrade({ name: `intent-relay:${at.path}`, path: at.path, handle: (req, socket, head) => { if (!ports.gateServer.handleUpgrade(req, socket, head)) socket.destroy(); } });
-          stood.set(group, { bundle, at, ...(unregister ? { unregister } : {}) });
-          ports.log(`[lar-gate] intent relay for face ${group.slice(0, 18)}… stands on ${at.path}`);
-        } catch (error) { bundle.drop(); throw error; }
+          at = ports.gateServer.stand({ gate, pin: bundle.pin });
+          const standAt = at;
+          const unregister = ports.dispatcher?.registerUpgrade({ name: `intent-relay:${standAt.path}`, path: standAt.path, handle: (req, socket, head) => { if (!ports.gateServer.handleUpgrade(req, socket, head)) socket.destroy(); } });
+          stood.set(group, { bundle, at: standAt, ...(unregister ? { unregister } : {}) });
+          ports.log(`[lar-gate] intent relay for face ${group.slice(0, 18)}… stands on ${standAt.path}`);
+        } catch (error) {
+          // A stand that fails midway unstands what it opened; the faces already tracked stay owned by the service.
+          at?.unstand(); bundle.drop();
+          ports.log(`[lar-gate] intent relay skipped face ${group}: ${String(error)}`);
+        }
       }
     }
   }
