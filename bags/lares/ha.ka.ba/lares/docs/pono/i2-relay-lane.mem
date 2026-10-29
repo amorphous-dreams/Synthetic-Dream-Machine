@@ -60,10 +60,10 @@ The hands spine's session files, K15's seed, identity, custody and carriage-key 
 !!! Owed
 * A K19 sibling whose intents plane the catalog has never registered enables its relay and then refuses every submission `intent-plane-unregistered`.
 * `resolveIntentRelayFace` enumerates every anchored face without isolating a malformed sibling's row, so one malformed row can suppress a healthy face's relay.
-* Watch: eight node-suite files that touch face rows and the roster family failed in the lane builder's own environment while the span read green on CI and held-out at `fccac2f1b`; they name that environment, not the span or this lane.
+* Watch: eight tests in six node-suite files, all on face rows and the roster family, failed in the lane builder's own environment while the span read green on CI and held-out at `fccac2f1b`; they name that environment, not the span or this lane.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LzAbUtd_T3Vhysej3GVQ1L67vlzXnrPVC4YYrc118Eo
+<<^ code="&#x0003;">>ni:///sha-256;Zw_Zxwm9OoLs5DItrHRCH8kQoaF-7gtSmXhXLFo0rRo
 
 <<^ code="&#x0004;" -> to="?">>
