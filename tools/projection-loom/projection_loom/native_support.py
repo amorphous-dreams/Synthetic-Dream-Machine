@@ -146,6 +146,39 @@ def propose_support(ground:RelationalGround, bundle, lower_id, upper_id, *,
     return {**report,"sha256":canonical_json_sha256(report)}
 
 
+def propose_reparent(ground: RelationalGround, bundle, old_parent, new_parent,
+                     child, *, actor="operator", tolerance=0.001):
+    """Reparent an existing *required* support with two real native face proofs.
+
+    The old relation and both BRep bearing contacts are witnessed before any
+    semantic change. No native geometry or five-phase controller is invented.
+    """
+    manifest=json.loads((Path(bundle)/"manifest.json").read_text(encoding="utf8"))
+    if not isinstance(ground,RelationalGround) or ground.location!=manifest["location"]:
+        raise ValueError("Native location and causal ground must agree")
+    if len({old_parent,new_parent,child}) != 3:
+        raise ValueError("Reparent needs three distinct native semantic entities")
+    links=ground.snapshot()["relations"]
+    required={"parent":old_parent,"child":child,"verb":"supports","required":True}
+    if required not in links:
+        raise ValueError("Reparent requires a currently required original support")
+    old_contact=native_support(bundle,old_parent,child,tolerance=tolerance)
+    new_contact=native_support(bundle,new_parent,child,tolerance=tolerance)
+    operation={"kind":"reparent","actor":actor,"target":child,
+               "frontier":list(ground.frontier),
+               "payload":{"old_parent":old_parent,"new_parent":new_parent}}
+    next_ground,causal=ground.apply(operation)
+    report={"schema":"projection-loom/native-support-proposal",
+            "source_ground_sha256":ground.to_dict()["sha256"],
+            "next_ground":next_ground.to_dict(),
+            "operation_receipt":causal,
+            "prior_native_contact":old_contact,
+            "native_contact":new_contact,
+            "status":"proposed-geometric-reparent-not-load-certified",
+            "operator_promotion":False}
+    return {**report,"sha256":canonical_json_sha256(report)}
+
+
 def verify_support_proposal(document,ground,bundle):
     if not isinstance(ground,RelationalGround):
         raise TypeError("Source semantic ground required")
@@ -167,9 +200,33 @@ def verify_support_proposal(document,ground,bundle):
     if event not in next_ground.events:
         raise ValueError("Native support proposal lacks admitted causal event")
     op=next_ground.events[event]["operation"]
-    if (op["kind"]!="attach" or op["target"]!=contact["upper"]
-            or op["payload"].get("parent")!=contact["lower"]):
-        raise ValueError("Support proposal causal relation differs from native evidence")
+    if op["kind"] == "attach":
+        if (document.get("status")!="proposed-geometric-support-not-load-certified"
+                or "prior_native_contact" in document
+                or op["target"]!=contact["upper"]
+                or op["payload"].get("parent")!=contact["lower"]
+                or op["payload"].get("verb")!="supports"
+                or op["payload"].get("required") is not True):
+            raise ValueError("Support proposal causal relation differs from native evidence")
+    elif op["kind"] == "reparent":
+        prior=document.get("prior_native_contact")
+        if (document.get("status")!="proposed-geometric-reparent-not-load-certified"
+                or not isinstance(prior,dict)
+                or op["target"]!=contact["upper"]
+                or op["payload"].get("new_parent")!=contact["lower"]
+                or op["payload"].get("old_parent")!=prior.get("lower")
+                or prior.get("upper")!=contact["upper"]):
+            raise ValueError("Reparent causal relation differs from native evidence")
+        before=native_support(bundle,prior["lower"],prior["upper"],
+                              tolerance=prior["tolerance"],
+                              minimum_contact_area=prior["minimum_contact_area"])
+        if before!=prior:
+            raise ValueError("Reparent old native support evidence changed")
+        if {"parent":prior["lower"],"child":prior["upper"],
+            "verb":"supports","required":True} not in ground.snapshot()["relations"]:
+            raise ValueError("Reparent lacks exact original required support")
+    else:
+        raise ValueError("Only native support attachment or reparent is supported")
     derived,receipt=ground.apply(op)
     if derived.to_dict()!=next_ground.to_dict() or receipt!=document["operation_receipt"]:
         raise ValueError("Native support proposal did not replay faithfully")

@@ -103,3 +103,54 @@ def test_native_planar_bearing_accepts_bounded_vertical_tolerance():
     a, b = _bounds(lower), _bounds(upper)
     area = _bearing_face_area(lower, upper, a, b, b[2] - a[5], 0.001)
     assert area == pytest.approx(9.0, abs=1e-7)
+
+
+
+def test_native_reparent_requires_independent_old_and_new_bearing_faces(tmp_path):
+    authored={"schema":"projection-loom/scene-declaration",
+             "location":"held-out-two-quays","meters_per_unit":1.,
+             "assemblies":[
+                 {"entity_id":"old","translation":[-2,0,0],
+                  "growth_program":{"nodes":[{"key":"root","op":"foundation",
+                                               "size":[3,3,2]}]}},
+                 {"entity_id":"new","translation":[2,0,0],
+                  "growth_program":{"nodes":[{"key":"root","op":"foundation",
+                                               "size":[3,3,2]}]}},
+                 {"entity_id":"bridge","translation":[0,0,2],
+                  "growth_program":{"nodes":[{"key":"root","op":"foundation",
+                                               "size":[5,3,1]}]}}]}
+    scene=tmp_path/"native"
+    package_scene(authored,scene)
+    ground=seed_editor_ground(authored)
+    attached=propose_support(ground,scene,"old","bridge")
+    from projection_loom.relational_ground import RelationalGround
+    current=RelationalGround.from_dict(attached["next_ground"])
+    from projection_loom.native_support import propose_reparent
+    moved=propose_reparent(current,scene,"old","new","bridge")
+    assert moved["native_contact"]["native_contact_area"] >= 0.05
+    assert moved["prior_native_contact"]["native_contact_area"] >= 0.05
+    assert verify_support_proposal(moved,current,scene)["valid"]
+    next_ground=RelationalGround.from_dict(moved["next_ground"])
+    assert {"parent":"new","child":"bridge",
+            "verb":"supports","required":True} in next_ground.snapshot()["relations"]
+    assert {"parent":"old","child":"bridge",
+            "verb":"supports","required":True} not in next_ground.snapshot()["relations"]
+    with pytest.raises(ValueError,match="currently required original support"):
+        propose_reparent(current,scene,"new","old","bridge")
+    forged=deepcopy(moved)
+    forged["prior_native_contact"]["native_contact_area"] += 1
+    from projection_loom.provenance_encoding import canonical_json_sha256
+    forged["sha256"]=canonical_json_sha256({
+        k:v for k,v in forged.items() if k!="sha256"})
+    with pytest.raises(ValueError,match="old native support evidence changed"):
+        verify_support_proposal(forged,current,scene)
+    # Actual new bearing must be independently present, never a relabeled name.
+    uncontacted=deepcopy(authored)
+    uncontacted["assemblies"][1]["translation"]=[20,0,0]
+    distant=tmp_path/"new-is-absent"
+    package_scene(uncontacted,distant)
+    disconnected=seed_editor_ground(uncontacted)
+    active=RelationalGround.from_dict(propose_support(
+        disconnected,distant,"old","bridge")["next_ground"])
+    with pytest.raises(ValueError,match="footprint overlap"):
+        propose_reparent(active,distant,"old","new","bridge")
