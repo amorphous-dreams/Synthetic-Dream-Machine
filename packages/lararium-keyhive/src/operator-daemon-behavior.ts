@@ -1276,9 +1276,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       );
       intentVerifier = {
         ...mountedKahuVerifier,
-        kahuReach: (bagUrl, act, presenter) => presenter !== undefined && bareKey(presenter) !== bareKey(daemonAuth.atom!.key)
-          ? Promise.reject(new VerbRefusal("kahu-reach", "kahu-reach: system canon takes the mounted face's hand; a sibling face holds none here"))
-          : mountedKahuVerifier.kahuReach!(bagUrl, act),
+        // Fail closed, as the content fence does: a call that names no presenter takes no hand.
+        kahuReach: (bagUrl, act, presenter) => presenter === undefined
+          ? Promise.reject(new VerbRefusal("kahu-reach", `kahu-reach: ${act} names no presenter, so it takes no face's hand into system canon`))
+          : bareKey(presenter) !== bareKey(daemonAuth.atom!.key)
+            ? Promise.reject(new VerbRefusal("kahu-reach", "kahu-reach: system canon takes the mounted face's hand; a sibling face holds none here"))
+            : mountedKahuVerifier.kahuReach!(bagUrl, act),
         verify: (args) => {
           if (args.access === "admin" && isSystemCanonBag(args.bagUrl) && bareKey(args.presenter) !== bareKey(daemonAuth.atom!.key)) {
             return Promise.resolve({ ok: false, reason: "kahu-reach: system canon takes the mounted face's hand; a sibling face holds none here" });
