@@ -1,0 +1,121 @@
+import { Repo } from "@automerge/automerge-repo";
+import { afterAll, beforeAll, expect, test, vi } from "vitest";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { buildAgentIntent, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, faceRecordsOf, intentEntryCid, intentEntryRecordsOfGroup, personaBagIdFor, personaSiblingBagIds, PERSONA_GROUP_ID_TIDDLER, type LarDoc } from "@lararium/mesh";
+import { intentAdmissionCid, intentAdmissionRecordsOfGroup } from "../../lararium-mesh/src/intent-admission.js";
+import { makeFaceIntentDoor } from "../../lararium-keyhive/src/face-intent-door.js";
+import { runFoundTheFace } from "../src/index.js";
+import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
+import { ownedStore } from "../src/owned-store.js";
+import { storeDoorDirect } from "../src/store-door-verbs.js";
+import { larBootstrapPath, larSealHome } from "../src/vessel-paths.js";
+import { resolveIntentRelayFace } from "../src/intent-relay-face.js";
+import { loadIntentFace } from "../src/commands/intent.js";
+import { intentRelayKeyOrMint } from "../src/intent-relay-key-store.js";
+import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
+import { direct } from "./direct-store.js";
+import { foundDirect, openTestCustody, seatSeedCharter } from "./found-route.js";
+
+const source = readFileSync(new URL("../src/open-node-vessel.ts", import.meta.url), "utf8");
+const scan = (text: string, pattern: RegExp) => pattern.test(text);
+
+test("RED: the vessel stands, refreshes and closes the intent relay; CONTROL: the census finds a planted call and standSyncGates", () => {
+  expect(scan("const planted = standIntentRelay({ gateServer });", /\bstandIntentRelay\s*\(/)).toBe(true);
+  expect(scan(source, /\b(?:const|function)\s+standSyncGates\b/)).toBe(true);
+  const start = source.indexOf("const standSyncGates =");
+  const end = source.indexOf("stood.push({ what: \"the sync gates' knocks\"", start);
+  expect(end).toBeGreaterThan(start);
+  const sweep = source.slice(start, end);
+  expect(source).toMatch(/import\s*\{[^}]*\bstandIntentRelay\b[^}]*\}\s*from\s*["'][^"']*intent-relay\.js["']/s);
+  expect(source).toMatch(/import\s*\{[^}]*\bresolveIntentRelayFace\b[^}]*\}\s*from\s*["'][^"']*intent-relay-face\.js["']/s);
+  expect(sweep).toMatch(/standIntentRelay\s*\(\s*\{[^}]*\bgateServer\b[^}]*dispatcher\s*:\s*opts\.dispatcher/s);
+  expect(sweep).toMatch(/resolveIntentRelayFace\s*\(\s*\w+\s*,\s*\{\s*repo\s*,\s*catalogUrl\s*:\s*catalogHandle\.url\s*\}/s);
+  expect(sweep).toMatch(/intentRelay\.refresh\s*\(/);
+  expect(source).toMatch(/stood\.push\s*\(\s*\{\s*what\s*:\s*["']the intent relay["']\s*,\s*down\s*:[\s\S]*?intentRelay\??\.close\s*\(/);
+});
+
+const ROOT = mkdtempSync(join(tmpdir(), "lar-relay-wired-"));
+const storage = join(ROOT, "data", "lares", "vessel"), genesis = join(ROOT, "genesis");
+const builtGenesis = join(new URL("../", import.meta.url).pathname, "..", "..", "genesis");
+let group = "", catalogUrl = "";
+const row = (verb: Parameters<typeof storeDoorDirect>[0], args: Record<string, unknown>) => withLarRoot(ROOT, async () => { await openTestCustody(); return storeDoorDirect(verb, args, { sealHome: larSealHome(), storageDir: storage }); });
+beforeAll(async () => {
+  mkdirSync(storage, { recursive: true }); mkdirSync(genesis, { recursive: true });
+  cpSync(builtGenesis, genesis, { recursive: true, filter: (src) => !src.endsWith("social-bootstrap.json") });
+  await withLarRoot(ROOT, () => foundDirect({ storageDir: storage, genesisDir: genesis }));
+  await withLarRoot(ROOT, () => seatSeedCharter({ name: "relay-wired" }));
+  await withLarRoot(ROOT, () => direct(runFoundTheFace)({ storageDir: storage, genesisDir: genesis }));
+  await withLarRoot(ROOT, async () => {
+    const packed = JSON.parse((JSON.parse(readFileSync(larBootstrapPath(), "utf8")) as { text: string }).text) as { tiddlers: Record<string, { text?: string }> };
+    group = packed.tiddlers[PERSONA_GROUP_ID_TIDDLER]!.text!;
+    const bags = personaSiblingBagIds(personaBagIdFor(group))!;
+    catalogUrl = await ownedStore(storage, async repo => {
+      const catalog = repo.create<LarDoc>({ schemaVersion: "lar/1", tiddlers: {
+        [bags.persona]: { tiddler: { title: bags.persona, text: packed.tiddlers[bags.persona]!.text } },
+        [bags.intents]: { tiddler: { title: bags.intents, text: packed.tiddlers[bags.intents]!.text } },
+      } } as unknown as LarDoc);
+      await repo.flush([catalog.documentId]); return catalog.url as string;
+    });
+    writeFileSync(join(storage, "catalog-url"), catalogUrl, "utf8");
+  });
+}, 240_000);
+afterAll(() => rmSync(ROOT, { recursive: true, force: true }));
+
+// Only the immediate caller decides whether Date.now belongs to the relay or its dependencies.
+function clockless() {
+  const real = Date.now.bind(Date);
+  vi.spyOn(Date, 'now').mockImplementation(() => {
+    const caller = String(new Error().stack).split('\n').slice(1).find(l => !/tinyspy|@vitest|spy\.|clockless|mockImplementation|Date\.(<anonymous>|now)/.test(l)) ?? '';
+    if (/automerge|\/ws\/|node:internal|node:net|node:http|node:timers/.test(caller)) return real();
+    throw Error('clock');
+  });
+}
+
+test("RED: a killed relay reopens its flushed receipt and retries once; CONTROL: a failed flush leaves no receipt on reopen", async () => {
+  const seed = new Uint8Array(32).fill(79), agent = { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
+  const grant = await row("intent-root", { action: "delegate", agent: agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1, 2] } } }, until: `roster:${"d".repeat(64)}` }) as { cid: string };
+  const make = (x: number) => buildAgentIntent({ group, signer: agent, delegation: grant.cid, verb: "MOVE", args: { x }, nonce: "", audience: { mode: "every" }, verbs: faceIntentVerbs() });
+  const failedEntry = await make(1), entry = await make(2);
+  await withLarRoot(ROOT, async () => {
+    await openTestCustody(); await intentRelayKeyOrMint();
+    const open = () => { const adapter = new DurableNodeFSStorageAdapter(storage); return { adapter, repo: new Repo({ storage: adapter, network: [] }) }; };
+    clockless();
+    try {
+      const failed = open();
+      const failedFace = await resolveIntentRelayFace(group, { repo: failed.repo, catalogUrl });
+      if (!failedFace) throw Error("held face missing");
+      vi.spyOn(failed.repo, "flush").mockRejectedValueOnce(Error("flush failed"));
+      expect(await failedFace.admit(failedEntry)).toEqual({ status: "fault" });
+      await failed.adapter.close();
+      const first = open();
+      const before = await loadIntentFace(first.repo, catalogUrl, { group });
+      expect(intentAdmissionRecordsOfGroup(before.plane.doc(), group).filter((r: any) => r.body.entry === intentEntryCid(failedEntry))).toHaveLength(0);
+      expect(intentEntryRecordsOfGroup(before.plane.doc(), group).filter((r: any) => r.body.entry === "intent")).toHaveLength(0);
+      const face = await resolveIntentRelayFace(group, { repo: first.repo, catalogUrl });
+      if (!face) throw Error("held face missing");
+      const admitted = await face.admit(entry);
+      expect(admitted.status).toBe("admitted");
+      if (admitted.status !== "admitted") throw Error("entry not admitted");
+      const receipt = intentAdmissionCid(admitted.receipt as Parameters<typeof intentAdmissionCid>[0]);
+      await first.adapter.close();
+      const reopened = open();
+      try {
+        const loaded = await loadIntentFace(reopened.repo, catalogUrl, { group });
+        expect(intentEntryRecordsOfGroup(loaded.plane.doc(), group).filter((r: any) => r.body.entry === "intent")).toHaveLength(1);
+        expect(intentAdmissionRecordsOfGroup(loaded.plane.doc(), group).map(intentAdmissionCid)).toEqual([receipt]);
+        const fresh = await resolveIntentRelayFace(group, { repo: reopened.repo, catalogUrl });
+        if (!fresh) throw Error("held face missing");
+        const retry = await fresh.admit(entry);
+        expect(retry.status).toBe("duplicate");
+        if (retry.status !== "duplicate") throw Error("retry not duplicate");
+        expect(intentAdmissionCid(retry.receipt as Parameters<typeof intentAdmissionCid>[0])).toBe(receipt);
+        const effect = vi.fn(async () => ({ result: "done" }));
+        const door = makeFaceIntentDoor({ group, plane: loaded.plane, personaRecords: () => faceRecordsOf([loaded.personaPlane?.doc()], group), kelChain: loaded.kelChain, anchor: loaded.anchor, standing: loaded.standing, heldFrontiers: () => loaded.heldFrontiers, verbs: loaded.verbs, atom: loaded.signer, effects: new Map([["MOVE", effect]]), log: () => {} });
+        await door.heed(); await door.heed();
+        expect(effect).toHaveBeenCalledTimes(1);
+      } finally { await reopened.repo.shutdown(); await reopened.adapter.close(); }
+    } finally { vi.restoreAllMocks(); }
+  });
+}, 240_000);
