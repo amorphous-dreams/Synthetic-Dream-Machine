@@ -1,5 +1,34 @@
 # Projection Loom · AI Fire / Art Sigils Roadmap
 
+## Current OODA-HA implementation · 2026-10-29 · exact code head `533103ea`
+
+**Present authority:** PR [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84), working branch `feature/green-jello-dinosaur-5--projection-loom`, base `feature/green-jello-dinosaur-5`; **open/unmerged**. Lares boot fully re-read from the base branch, SHA `b68d2034acadd161692ef0498ea526d03d944a65`. All changes below are code, not Elyncia canon.
+
+**Independent acceptance:** The code-head [generalized input integration #40940926706](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40940926706) passed **contracts**, **real OpenUSD/STEP**, and **real Blender editor**. This includes the coupled support-group editor case, causal replay tests and bounded multi-generation registered-vs-blind repeated experiments. [CAD/evidence #40940926718](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40940926718) / [#40940937947](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40940937947), [repo-wide CI #40940927012](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40940927012) and [held-out #40940926740](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40940926740) were still **running** when last inspected. Recheck every result rather than borrowing the generalized pass as universal green. A docs-only descendant head has separate CI.
+
+### Landed N-waves · implementation versus completion
+
+| Wave | Exact landed behavior | Remaining obligation |
+| --- | --- | --- |
+| **N0 · CI recovery** | Earlier holistic pytest startup, refusal case, evergreen gate and missing census direct import were repaired with adversarial tests; generalized CI passed | Final repo/held-out verdict on one head; no raising test ceilings |
+| **N1 · atomic location transaction** | `RelationalGround.apply_batch/verify_batch` advance exact causal frontiers and revision checks across a bounded 1–32-operation immutable group. `editor_proposals.apply_proposal` uses the batch; child workspaces archive parent and editor-source ground and independently replay batch receipts before accepting native edits | Complete migration of old `LocationStack` / campaign/CLI ownership consumers; expanded long-chain/concurrent edits |
+| **N2 · actual native bearing + Blender** | Explicit `support-group` editor proposal moves a connected set of required native supports under the same bounded rigid delta, refuses incomplete/nonmatching groups, revalidates exact native BRep face-area contact and independently reaudits changed STEP solids, preserving unaffected cache. Actual Blender imports and captures both edited semantic bodies and reloads the group without losing operator-owned objects | Beyond-translation controlled support reparent/rotation; independent safety engineering |
+| **N3 · experimentally matched growth** | `registered-ablation` remains source-blind in its native-only selection; both arms' exact final CAD programs are independently rebuilt and audited under all original registered cameras **after** selection. `registered-replicates` preregisters 2–8 fixed RNG seeds, equal native budgets, paired per-run source-fitness differences and descriptive ranges; no significance or winner fabricated | Independently verified real survey/photographic data, richer operator review and population-scale repeated held-outs |
+| **N4 · alpha ownership/caller audit** | `scripts/hephaestus_census.py` scans package imports plus scripts/tests/experiments/Blender AST, literal dynamic imports, unresolved dynamic-call lines, and workflow command references. CI keeps report artifacts. Old modules are **not auto-deleted** | Inventory all remaining live external consumers, migrate/tests-first, verify actual Unreal Editor runner and remove obsolete paths in fully witnessed waves |
+
+### Next OODA-HA direction, dependency-bound
+
+**N5-A · migration with complete caller witnesses.** Run `python scripts/hephaestus_census.py --out out/hephaestus-census.json`, examine external static and unresolved dynamic references. Choose one high-confidence legacy consumer per wave; redirect to canonical `LocationStack` source frames, `RelationalGround` causal identity and `location_workspace` native OODA-HA boundaries, then remove replaced code. Assert no duplicate source, geometry, or five-phase controller. **Acceptance:** full current consumer set and the required suite pass, with representative source→native→application replay.
+
+**N5-B · atomic native structural reparent.** Add an explicitly authored parent change only after full source-ground and independently reimported STEP proof of both old and new bearing. Revalidate supported descendants and all touched native bodies, refuse mismatched world-frame deltas, cycles, tiny face contacts, stale concurrent edits and crash-before-manifest. Test real Blender within its supported vocabulary. **Acceptance:** complete new relation+geometry+source+native+Blender ancestor proof, not load/occupancy certification.
+
+**N5-C · comparison/operator authority.** Present measured registered source fitness, native validity, changed material, review views, refusal/cost and causal lineage as independently attributable comparison surfaces. Operator can accept, abstain or dissent; the machinery cannot assign pet-name or elevate Elyncia canon. Compare repeated independently surveyed source sets; retain weak statistical conclusions as descriptive unless properly preregistered.
+
+**N5-D · actual Unreal and retirement gates.** Provision a real Unreal Editor with enabled USD/Python tooling and application-side capture/reload, or retain **BLOCKED**; never infer editor success from generated USD. Remove obsolete alpha owners only after live-consumer witnesses and full CI/held-out approval. PR stays open until the Operator separately authorizes merging.
+
+**Hard guards:** one OODA-HA helm, original source bytes and authored frames, immutable parent/event/workspace chain, exact native BRep/STEP authority, OpenUSD as representation only, no universal geometry CRDT, no unverified source registration, no invented load safety, no automatic winner/canon/merge. The earlier chronological sections of this document are kept as dated testimony and may contain superseded "next" language.
+
+
 ## Current OODA-HA bearing · 2026-10-29 · source head `f0e9895c`
 
 > **Read this section first.** Entries below it are retained as dated testimony, not necessarily live backlog status. This is the Projection Loom work branch of [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84), based on `feature/green-jello-dinosaur-5`; **open, unmerged**. Lares boot read in full from the base ref: `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` (`b68d2034acadd161692ef0498ea526d03d944a65`). Consult the head and its exact Actions again on each reentry.
