@@ -99,3 +99,13 @@ test("a port:gone before the mirror stands floors with the island's reason; a la
     expect(r.opens()).toHaveLength(1);
   } finally { r.host.remove(); }
 });
+test("PINNED step count: full steps to skinny once, skinny then tears down, and no third port ever opens", async () => {
+  const r = await rig();
+  try {
+    const result = await standMirror(r.options, { ...r.seams, landed: capacityAt("full", "skinny") }) as any;
+    expect(await result.settled).toEqual({ width: "none", why: "mirror-snapshot-refused:RangeError" });
+    expect(r.opens().map(m => m.width)).toEqual(["skinny", "skinny"]);          // full -> skinny: one step
+    expect(r.host.shadowRoot?.querySelector("div")?.childNodes.length ?? 0).toBe(0);   // skinny -> teardown: the second failure leaves no mounted sink
+    expect(r.opens()).toHaveLength(2);
+  } finally { r.host.remove(); }
+});

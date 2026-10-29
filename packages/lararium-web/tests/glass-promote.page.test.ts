@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, test } from "vitest";
 import { standMirror } from "../src/glass/stand.js";
 import { forgetEvidence, lends, rig } from "./glass-rig.js";
 
-const KEY = "mirror:began";
+const KEY = "mirror:began:wiki";   // keyed by the wiki the mirror serves
 const clear = () => { try { sessionStorage.removeItem(KEY); localStorage.removeItem(KEY); sessionStorage.removeItem("width"); } catch { /* storage may be blocked */ } };
 beforeEach(forgetEvidence); afterEach(() => { forgetEvidence(); clear(); });
 
@@ -19,13 +19,16 @@ test("skinny paints first, then one widen row on the same port promotes to full"
     result.unmount();
   } finally { r.host.remove(); }
 });
-test("the evidence record stands while full lands and clears once full has landed", async () => {
+test("the evidence record stands while full lands and clears once full has painted", async () => {
   const r = await rig(); let during: string | null = null;
   r.onPlace(msg => { if (msg.type === "port:widen") during = sessionStorage.getItem(KEY); });
   try {
     const result = await standMirror(r.options, r.seams) as any;
     await result.settled;
     expect(during).toEqual(expect.any(String));
+    // Full has landed but not yet painted: the record still stands. It clears once a frame has painted full.
+    expect(sessionStorage.getItem(KEY)).not.toBeNull();
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
     expect(sessionStorage.getItem(KEY)).toBeNull();
     result.unmount();
   } finally { r.host.remove(); }
@@ -36,7 +39,7 @@ test("a record from a full boot that never finished holds the tab at skinny and 
   try {
     const result = await standMirror(r.options, r.seams) as any;
     expect(result.kind).toBe("mirror");
-    expect(await result.settled).toEqual({ width: "skinny", why: "full-boot-did-not-paint" });
+    expect(await result.settled).toEqual({ width: "skinny", why: "full-promotion-unfinished" });
     expect(r.widens()).toHaveLength(0);
     expect(sessionStorage.getItem(KEY)).toBe("left-by-a-boot-that-died");
     result.unmount();
@@ -85,5 +88,34 @@ test("a port:gone and snapshot that land before the door returns leave no engine
     const result = await standMirror(r.options, r.seams);
     expect(result).toEqual({ kind: "floor", width: "none", why: "grant-revoked" });
     expect(r.widens()).toHaveLength(0); expect(lends()).toEqual(before);
+  } finally { r.host.remove(); }
+});
+test("a record under another wiki's key holds nothing for this wiki", async () => {
+  sessionStorage.setItem("mirror:began:other-wiki", "left-by-another-wiki");
+  const r = await rig();
+  try {
+    const result = await standMirror(r.options, r.seams) as any;
+    expect(await result.settled).toEqual({ width: "full" });
+    expect(sessionStorage.getItem("mirror:began:other-wiki")).toBe("left-by-another-wiki");
+    result.unmount();
+  } finally { sessionStorage.removeItem("mirror:began:other-wiki"); r.host.remove(); }
+});
+test("storage that refuses a write names evidence-unavailable and the tab still promotes", async () => {
+  const r = await rig(); const states: any[] = [];
+  const denied = { getItem: () => null, setItem: () => { throw new DOMException("denied", "SecurityError"); }, removeItem: () => {} };
+  try {
+    const result = await standMirror({ ...r.options, evidence: denied, onState: state => states.push(state) }, r.seams) as any;
+    expect(await result.settled).toEqual({ width: "full" });
+    expect(states).toContainEqual({ kind: "evidence-unavailable", why: "SecurityError" });
+    result.unmount();
+  } finally { r.host.remove(); }
+});
+test("CONTROL: storage that works names no evidence state", async () => {
+  const r = await rig(); const states: any[] = [];
+  try {
+    const result = await standMirror({ ...r.options, onState: state => states.push(state) }, r.seams) as any;
+    await result.settled;
+    expect(states.filter(state => state.kind === "evidence-unavailable")).toEqual([]);
+    result.unmount();
   } finally { r.host.remove(); }
 });
