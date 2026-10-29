@@ -19,7 +19,10 @@ import tempfile
 from PIL import Image
 from projection_loom.scene_usd import validate_scene
 from projection_loom.location_stack import Frame, Source, Element, LocationStack
-from projection_loom.location_workspace import create_workspace, edit_workspace, verify_workspace
+from projection_loom.location_workspace import (
+    create_workspace, edit_workspace, support_workspace, verify_workspace)
+from projection_loom.native_support import propose_support
+from projection_loom.relational_ground import RelationalGround
 
 
 def main(argv=None):
@@ -106,6 +109,63 @@ def main(argv=None):
                             "--blend", app, "--out", target)
         if "OperatorNote" not in reload_log or not target.is_file():
             raise RuntimeError("Blender operator-owned scene work was not preserved")
+
+        # Second real-application witness: one operator-declared connected
+        # support group moves together; the unedited third solid is reused.
+        group_doc = {"schema": "projection-loom/scene-declaration",
+                     "location": "held-out-blender-coupled-support",
+                     "meters_per_unit": 1.0, "assemblies": [
+                         {"entity_id": "lower", "growth_program": {"nodes": [
+                             {"key": "root", "op": "foundation", "size": [5, 5, 2]}]}},
+                         {"entity_id": "upper", "translation": [0, 0, 2],
+                          "growth_program": {"nodes": [
+                              {"key": "root", "op": "foundation", "size": [3, 3, 1]}]}},
+                         {"entity_id": "independent", "translation": [12, 0, 0],
+                          "growth_program": {"nodes": [
+                              {"key": "root", "op": "foundation", "size": [2, 2, 3]}]}}]}
+        source_inventory = LocationStack(group_doc["location"])
+        source_inventory.add_frame(Frame("authored-local", "local3d", "m"))
+        group_source = work / "group-source"
+        group_before = create_workspace(source_inventory, group_doc, group_source)
+        prior = RelationalGround.load(group_source / "ground.json")
+        bearing = propose_support(prior, group_source / "scene", "lower", "upper")
+        bearing_workspace = work / "group-supported"
+        bearing_manifest = support_workspace(group_source, bearing, bearing_workspace)
+        group_scene = bearing_workspace / "scene"
+        group_blend = work / "group-scene.blend"
+        group_import = invoke("import", "--bundle", group_scene, "--blend",
+                              group_blend, "--operator-note")
+        if "LOOM_BLENDER_IMPORT" not in group_import:
+            raise RuntimeError("Real Blender coupled-support import absent")
+        group_proposal_path = work / "group-proposal.json"
+        group_capture = invoke(
+            "capture", "--bundle", group_scene, "--ground",
+            bearing_workspace / "ground.json", "--blend", group_blend,
+            "--proposal", group_proposal_path,
+            "--test-move", "lower:4,0,0",
+            "--test-move", "upper:4,0,0",
+            "--transaction", "support-group",
+            "--actor", "blender-group-test")
+        if "LOOM_BLENDER_PROPOSAL" not in group_capture:
+            raise RuntimeError("Real Blender coupled-support capture absent")
+        group_proposal = json.loads(group_proposal_path.read_text(encoding="utf8"))
+        assert group_proposal["transaction"] == "support-group"
+        assert [item["entity_id"] for item in group_proposal["edits"]] == ["lower", "upper"]
+        group_destination = work / "group-regenerated"
+        group_after = edit_workspace(bearing_workspace, group_proposal,
+                                     group_destination)
+        assert group_after["parent_workspace_sha256"] == bearing_manifest["sha256"]
+        assert verify_workspace(group_destination)["valid"]
+        group_reconciliation = json.loads(
+            (group_destination / "revision" / "reconciliation.json").read_text())
+        assert group_reconciliation["invalidation_plan"]["native_reaudited"] == 2
+        assert group_reconciliation["invalidation_plan"]["actual_cache_reuse"] == 1
+        group_reloaded = work / "group-reloaded.blend"
+        group_reload = invoke(
+            "reload", "--bundle", group_destination / "revision" / "scene",
+            "--blend", group_blend, "--out", group_reloaded)
+        if "OperatorNote" not in group_reload or not group_reloaded.is_file():
+            raise RuntimeError("Coupled support reload dropped operator-owned objects")
         report = {"schema": "projection-loom/blender-native-editor-witness",
                   "blender_executable": blender,
                           "editor": "Blender",
@@ -116,6 +176,12 @@ def main(argv=None):
                           "workspace_ancestry_verified": True,
                           "source_inventory_preserved": True,
                           "retained_operator_note": True,
+                          "coupled_support_source": group_before["sha256"],
+                          "coupled_support_workspace": bearing_manifest["sha256"],
+                          "coupled_support_regenerated": group_after["sha256"],
+                          "coupled_support_native_reaudited": 2,
+                          "coupled_support_native_cache_reused": 1,
+                          "coupled_support_operator_note_preserved": True,
                           "actor": "blender-automated-test",
                           "real_editor": True, "exact_cad_reaudited": 1}
         (work / "blender-witness.json").write_text(

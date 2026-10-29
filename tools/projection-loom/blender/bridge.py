@@ -89,13 +89,14 @@ def _capture(args):
     if {obj["loom_entity_id"] for obj in objects} != expected:
         raise RuntimeError("Blender scene lost or duplicated semantic identity binding")
     if args.test_move:
-        entity_id, delta_text = args.test_move.split(":", 1)
-        delta = [float(x) for x in delta_text.split(",")]
-        if len(delta) != 3:
-            raise ValueError("Test move needs three deltas")
-        match = next(obj for obj in objects if obj["loom_entity_id"] == entity_id)
-        for i in range(3):
-            match.location[i] += delta[i]
+        for instruction in args.test_move:
+            entity_id, delta_text = instruction.split(":", 1)
+            delta = [float(x) for x in delta_text.split(",")]
+            if len(delta) != 3:
+                raise ValueError("Test move needs three deltas")
+            match = next(obj for obj in objects if obj["loom_entity_id"] == entity_id)
+            for i in range(3):
+                match.location[i] += delta[i]
         bpy.context.view_layer.update()
     edits = []
     for obj in objects:
@@ -119,6 +120,8 @@ def _capture(args):
                 "bundle_sha256": manifest["sha256"],
                 "observed_frontier": ground["frontier"],
                 "edits": sorted(edits, key=lambda x: x["entity_id"])}
+    if args.transaction != "independent":
+        proposal["transaction"] = args.transaction
     Path(args.proposal).write_text(json.dumps(proposal, indent=2) + "\n", encoding="utf8")
     print("LOOM_BLENDER_PROPOSAL " + json.dumps({"edits": len(edits),
                                                  "frontier": ground["frontier"]}))
@@ -158,7 +161,11 @@ def main():
     parser.add_argument("--out")
     parser.add_argument("--actor", default="operator")
     parser.add_argument("--operator-note", action="store_true")
-    parser.add_argument("--test-move", help="Explicitly simulated move for CI only")
+    parser.add_argument("--test-move", action="append",
+                        help="Explicitly simulated move for CI only; repeat for a group")
+    parser.add_argument("--transaction", choices=("independent","support-group"),
+                        default="independent",
+                        help="Operator-declared structural transaction, never inferred")
     args = parser.parse_args(arguments)
     if args.action == "import":
         _import(args)
