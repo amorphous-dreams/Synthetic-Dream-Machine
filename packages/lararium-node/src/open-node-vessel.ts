@@ -19,7 +19,6 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { larBootstrapPath } from "./vessel-paths.js";
-import { refuseLegacyPlaceBytes } from "./legacy-place-bytes.js";
 import { createAfterRoll } from "./after-roll-chain.js";
 import { join }                         from "path";
 import type { Server }                  from "node:http";
@@ -657,7 +656,6 @@ interface NodeBootPrep {
  * verbs, pool, after-hooks). NO sequencing here — `composeLararium`/`composeHerm` wire the order.
  */
 async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass): Promise<NodeBootPrep> {
-  refuseLegacyPlaceBytes();
   if (opts.floor && opts.floor.storageDir !== opts.storageDir) {
     throw new Error("[lararium] the floor handed to this composition holds another store");
   }
