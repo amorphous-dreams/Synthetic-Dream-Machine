@@ -30,10 +30,11 @@ describe("e2e/session-wears-the-lit-face", () => {
     expect(JSON.stringify(got.json)).not.toContain("cap-denied");
   });
 
-  test("S2 CONTROL: a claim naming a stranger's DID presents as that stranger and is refused", async () => {
+  test("S2 CONTROL: a claim naming a stranger's DID presents as that stranger and the content fence refuses it", async () => {
     const stranger = `0x${"11".repeat(32)}`;
     const r = await invokeLocal("meme-get", { uri: URI, recipe: "lares" }, stranger,
       { dataDir: vesselStorageDir(lar), timeoutMs: 60_000 }).catch((e: unknown) => ({ thrown: String(e) }));
-    expect(JSON.stringify(r)).toContain("cap-denied");
+    // The fence refuses before any cap check reads: the stranger is not the mounted face.
+    expect(JSON.stringify(r)).toContain("content-mounted-only");
   }, 90_000);
 });

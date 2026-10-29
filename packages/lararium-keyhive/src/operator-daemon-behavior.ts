@@ -993,7 +993,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // mounted face's, a label off the channel (a synced summons), and a call naming no presenter refuse.
           if (context.local === true && context.presenter !== undefined && !namesADid(context.presenter)) return;
           if (context.presenter === undefined || bareKey(context.presenter) !== bareKey(daemonAuth.atom.key)) {
-            throw new VerbRefusal("content-mounted-only", `[daemon] ${verb}: this verb runs on the mounted face's content keys, mint and documents; a sibling face's session holds none here.`);
+            throw new VerbRefusal("content-mounted-only", `[daemon] ${verb}: this verb runs on the mounted face's content keys, mint and documents; a presenter that is not the mounted face holds none here.`);
           }
         },
       });
