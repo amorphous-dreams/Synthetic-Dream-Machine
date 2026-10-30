@@ -1,5 +1,3 @@
-import { provenPlaneUrls, registerFacePlanesForRelay } from "./face-plane-registration.js";
-import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
 /**
  * openNodeVessel — local-first Node.js vessel factory.
  *
@@ -18,6 +16,8 @@ import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
  * The node vessel holds no semantic privilege. It carries roads, docks, and sync; live VM state lives
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
+import { provenPlaneUrls, registerFacePlanesForRelay } from "./face-plane-registration.js";
+import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { larBootstrapPath } from "./vessel-paths.js";

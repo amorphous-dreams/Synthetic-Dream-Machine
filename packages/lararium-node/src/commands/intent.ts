@@ -1,5 +1,5 @@
-import { CustodyLocked } from "../custody-holder.js";
 /** The node store holder's face-scoped intent door. */
+import { CustodyLocked } from "../custody-holder.js";
 import { randomBytes } from "node:crypto";
 import type { Repo } from "@automerge/automerge-repo";
 import {

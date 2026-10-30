@@ -61,3 +61,18 @@ export function proveFaceFromLog(input: {
   if (input.edge && input.deviceKey !== undefined && projection.edges[input.deviceKey.toLowerCase()] !== edgeBodyDigest(input.edge)) return { ok: false, refusal: { why: "edge" } };
   return { ok: true, projection };
 }
+
+/** The four sibling planes a face carries, each a url or absent. */
+export type ProvenFacePlanes = { circles: string | null; identities: string | null; sessions: string | null; intents: string | null };
+
+/** Of the urls a vessel carries unsealed, only those the face's signed log names stand; a forged intents url voids all. */
+export function provenPlaneUrls(projection: { planes: Readonly<Record<string, string | undefined>> }, urls: ProvenFacePlanes): ProvenFacePlanes | null {
+  if (!urls.intents || projection.planes.intents !== urls.intents) return null;
+  return {
+    circles: urls.circles && projection.planes.circles === urls.circles ? urls.circles : null,
+    identities: urls.identities && projection.planes.identities === urls.identities ? urls.identities : null,
+    sessions: urls.sessions && projection.planes.sessions === urls.sessions ? urls.sessions : null,
+    intents: urls.intents,
+  };
+}
+

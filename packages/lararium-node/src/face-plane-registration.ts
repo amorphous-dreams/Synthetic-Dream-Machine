@@ -1,15 +1,5 @@
-import { personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh";
-
-type FacePlanes = { circles: string | null; identities: string | null; sessions: string | null; intents: string | null };
-export function provenPlaneUrls(projection: { planes: Readonly<Record<string, string | undefined>> }, urls: FacePlanes): FacePlanes | null {
-  if (!urls.intents || projection.planes.intents !== urls.intents) return null;
-  return {
-    circles: urls.circles && projection.planes.circles === urls.circles ? urls.circles : null,
-    identities: urls.identities && projection.planes.identities === urls.identities ? urls.identities : null,
-    sessions: urls.sessions && projection.planes.sessions === urls.sessions ? urls.sessions : null,
-    intents: urls.intents,
-  };
-}
+import { personaBagIdFor, personaSiblingBagIds, type ProvenFacePlanes as FacePlanes } from "@lararium/mesh";
+export { provenPlaneUrls } from "@lararium/mesh";
 
 export async function registerFacePlanesForRelay(ports: {
   group: string;
