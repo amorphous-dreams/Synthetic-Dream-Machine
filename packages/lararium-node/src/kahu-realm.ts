@@ -23,12 +23,14 @@
  */
 import { interpretAsDocumentId, type AutomergeUrl, type Repo } from "@automerge/automerge-repo";
 import {
-  LARARIUM_DOC_URI, LARES_DOC_URI, emptyLarDoc, foldRealmBags, kahuCabalStanding, kahuRealmGroup, materializeSharedLarDoc,
+  LARARIUM_DOC_URI, LARES_DOC_URI, emptyLarDoc, faceAtomKeyFromSeed, foldRealmBags, kahuCabalStanding, kahuRealmGroup, materializeSharedLarDoc,
   realmBagRegistrationCounts, realmDocUrl, signRealmBagRegistration, writeRealmBagRegistration, ed25519SignerFromSeed,
   type LarDoc, type StewardSigner,
 } from "@lararium/mesh";
 import { mintNexusLeaf } from "./nexus-leaf.js";
 import { NexusCabalError, cabalCore, readKahuCabalBoard } from "./commands/nexus-cabal.js";
+import { loadFaceAtomOfGroup } from "./face-atom-store.js";
+import { loadIdentityAnchors } from "./identity-anchors.js";
 
 /** The system bags the Kahu cabal keeps live. */
 export const KAHU_REALM_BAGS: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
@@ -93,6 +95,31 @@ export async function standKahuCanon(opts: {
   const standing = await foldRealmBags(realm.doc(), board.nexus);
   const lares = urlOf(standing, LARES_DOC_URI), lararium = urlOf(standing, LARARIUM_DOC_URI);
   return { ...(lares ? { lares } : {}), ...(lararium ? { lararium } : {}) };
+}
+
+/**
+ * THE CANON DOCUMENTS A HEARTH NAMES TO A JOINEE — `@lares` and `@lararium` by bag title, as the Kahu realm's registry
+ * stands them for the face this hearth wears: the one read the keel mounts them by (`standKahuCanon`). A catalog never
+ * names them (the realm registry owns the system bags; one owner per registry), so a list read off catalog titles named
+ * nothing on every hearth and every joined leaf read "the admit names no hearth canon" (walk R4). They ride the
+ * fleet-join answer's signed carriage, so the joinee's gate widens by exactly these documents. `stand` is a named seam
+ * for a measure; the keel's own reader rides by default.
+ */
+export async function admitCanonDocs(
+  repo: Repo, sealHome: string, personaGroupId: string | null,
+  stand: (opts: { readonly repo: Repo; readonly sealHome: string; readonly vesselKey: string; readonly personaGroupId: string | null }) => Promise<KahuCanonDocs> = standKahuCanon,
+): Promise<Readonly<Record<string, string>>> {
+  if (personaGroupId === null) return {};
+  const seed = await loadFaceAtomOfGroup(personaGroupId).catch(() => null);
+  if (!seed) return {};
+  const vesselKey = faceAtomKeyFromSeed(seed, personaGroupId).key;
+  const docs = await stand({ repo, sealHome, vesselKey, personaGroupId });
+  return { ...(docs.lares ? { [LARES_DOC_URI]: docs.lares } : {}), ...(docs.lararium ? { [LARARIUM_DOC_URI]: docs.lararium } : {}) };
+}
+
+/** The face this hearth wears under sealed custody: the founding face's anchors' group (the composer's own reading); a locked or faceless place names none. */
+export async function hearthCustodyGroup(): Promise<string | null> {
+  return (await loadIdentityAnchors(0).catch(() => null))?.personaGroupId ?? null;
 }
 
 /**

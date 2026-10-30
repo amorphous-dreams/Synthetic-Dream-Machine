@@ -14,7 +14,7 @@
  *     root, so no CLI step stands between.
  *   · ONCE. The bundle is kept at `<sealHome>/nexus/face-admit/<aid>/<nym>.json`, and every later answer reuses it while it
  *     still reads held at the charter, still commits to the pin the gate stands under, and still names the canon the
- *     catalog names now (the pin and the canon ride one signature). A kept bundle that fails any of the three is minted
+ *     realm names now (the pin and the canon ride one signature). A kept bundle that fails any of the three is minted
  *     again whole.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange · lar:///ha.ka.ba/lararium/mesh/membership-doctrine
@@ -29,7 +29,7 @@ import {
 } from "@lararium/mesh";
 import { admitBundlePathFor, isAdmitBundle, type AdmitBundle } from "./admit-bundle.js";
 import { primaryNexusAid } from "./carried-set.js";
-import { admitCanonDocs } from "./commands/device-admit.js";
+import { admitCanonDocs, hearthCustodyGroup } from "./kahu-realm.js";
 import { runNexusContract } from "./commands/nexus-contract.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { hearthSovereignPin } from "./hearth-sovereign-pin.js";
@@ -99,8 +99,8 @@ export async function ensureFaceHouseholdAdmit(opts: {
   const nym = leaf.verifyingKey;
   leaf.seed.fill(0);
   const pinDigest = gateBundleDigest(hearthSovereignPin(aid, opts.gateDoor));
-  // The canon the catalog names now: the same read the contract door signs into a fresh admit's carriage.
-  const canon = opts.catalogUrl ? await admitCanonDocs(opts.repo, opts.catalogUrl) : {};
+  // The canon the realm names now: the same read the contract door signs into a fresh admit's carriage.
+  const canon = await admitCanonDocs(opts.repo, opts.sealHome, await hearthCustodyGroup());
   const path = faceHouseholdAdmitPath(opts.sealHome, aid, nym);
   let kept: unknown = null;
   try { kept = JSON.parse(readFileSync(path, "utf8")); } catch { kept = null; }
