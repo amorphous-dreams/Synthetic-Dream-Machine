@@ -129,3 +129,21 @@ def test_joint_fire_binding_refuses_duplicate_architectural_goal():
             IntentContract("place","Duplicate selection",("bridge",)),
             original(),alternative_ids=("a-first","b-second"),
             source_witness_id="witness-a",authored_by="operator")
+
+
+def test_joint_fire_receipt_rejects_tampered_child_without_accepting_new_source():
+    from projection_loom.fire_spatial import bind_fire_spatial_set,verify_fire_spatial_set
+    doc=plan()
+    core={k:v for k,v in doc.items() if k!="sha256"}
+    core["alternatives"]=[dict(core["alternatives"][0],id="a-first"),
+                          dict(core["alternatives"][0],id="b-second",
+                               relation="ascends",implementation="stair-flight")]
+    plan2={**core,"sha256":canonical_json_sha256(core)}
+    intent=IntentContract("place","Selected joint construction",("route","rise"))
+    receipt=bind_fire_spatial_set(plan2,intent,original(),
+        alternative_ids=("a-first","b-second"),
+        source_witness_id="witness-a",authored_by="operator")
+    altered={**receipt,"individual_bindings":[dict(x) for x in receipt["individual_bindings"]]}
+    altered["individual_bindings"][1]["original_source_witness_id"]="stale"
+    with pytest.raises(ValueError,match="differs"):
+        verify_fire_spatial_set(altered,plan2,intent,original())

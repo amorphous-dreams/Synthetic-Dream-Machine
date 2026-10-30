@@ -1,3 +1,28 @@
+## N9-R1 · Aftermath: one authored selection, several consequences
+
+The typed Fire interface now admits a finite *set* of one to eight explicitly
+selected alternative IDs. Each selected relation independently passes the
+existing original-witness, original-seed, original-location, resolved native
+endpoint and typed dimension guards. A joint `SpatialIntent` binds their
+sorted, duplicate-free conjunction to the original `IntentContract`. The
+receipt keeps **every** child binding, its source witness, the exact Fire
+plan digest, the operator-attributed selection list, and an immutable
+canonical digest. Independent replay recomputes every part, not merely its
+outer checksum.
+
+This gate deliberately does not select all proposed Fire alternatives,
+infer missing names, collapse duplicated relations, or treat a multi-goal
+proposal as a successful native result. Actual exact STEP witnesses may
+refuse a conjunction whose members conflict geometrically. Neither
+selection nor evidence grants artistic virtue, certified human access,
+load safety, pet-names, or Elyncia canon.
+
+Intent consequence: the creative operator may author a whole place in
+one bounded Fire act, but the kernel remains incapable of granting
+authority to unselected prose or to an unmeasured site.
+
+---
+
 ## N9 · Aftermath PF · Remember the paths we did not try
 
 The creative process now records not only the
