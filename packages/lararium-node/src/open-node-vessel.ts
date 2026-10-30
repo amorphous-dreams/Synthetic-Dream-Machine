@@ -1,4 +1,4 @@
-import { registerFacePlanesForRelay } from "./face-plane-registration.js";
+import { provenPlaneUrls, registerFacePlanesForRelay } from "./face-plane-registration.js";
 import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
 /**
  * openNodeVessel — local-first Node.js vessel factory.
@@ -1416,6 +1416,7 @@ async function prepareNodeBootOn(
   // unlocks it).
   const syncStood = new Map<string, { readonly unstand: () => void }>();
   let floorRestSaid = false;
+  let registerRelayPlanes: (() => Promise<void>) | null = null;
   const standSyncGates = async (): Promise<void> => {
     if (!sovereign) {                            // the custody root answers a sovereign composition alone
       if (!floorRestSaid) {
@@ -1445,6 +1446,7 @@ async function prepareNodeBootOn(
     sweepSameOperator?.();
     // THE INTENT RELAY stands beside the sync gates: one route per operator-enabled face, off until a person enables it.
     // Its admit signs under the relay's own key; the agent holds its own key and never wears a face's session.
+    await registerRelayPlanes?.();
     if (intentRelay === null) {
       intentRelay = await standIntentRelay({
         gateServer, ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), rootDoor: custodyGateDoor(), deadlines: timerGateDeadlines(),
@@ -2286,13 +2288,23 @@ async function prepareNodeBootOn(
         if (!chain || chain.length === 0) return null;
         const records = await readFacePersonaRecords(repo, { personaUrl: plane.url, group: plane.personaGroupId, extraDocs: [daemonDoc], heldOnly: true });
         const otherFace = faceBootTiddlers ? bootFacePlanes(faceBootTiddlers, plane.personaGroupId) : null;
-        if (!otherFace?.intentsUrl || !proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url, intents: otherFace.intentsUrl } }).ok) return null;
-        return { circles: otherFace.circlesUrl, identities: otherFace.identitiesUrl, sessions: otherFace.sessionsUrl, intents: otherFace.intentsUrl };
+        if (!otherFace?.intentsUrl) return null;
+        const proof = proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url, intents: otherFace.intentsUrl } });
+        if (!proof.ok) return null;
+        return provenPlaneUrls(proof.projection, { circles: otherFace.circlesUrl, identities: otherFace.identitiesUrl, sessions: otherFace.sessionsUrl, intents: otherFace.intentsUrl });
       } catch (e) { if (!(e instanceof CustodyLocked)) throw e; return null; }
     };
     const proveRelayFace = async (group: string) => {
       const plane = bootstrap.personaPlanes.find((candidate) => candidate.personaGroupId === group);
       return plane ? proveOtherFace(plane) : null;
+    };
+    registerRelayPlanes = async () => {
+      for (const plane of bootstrap.personaPlanes) {
+        if (plane.personaGroupId === personaGroupId) continue;
+        try {
+          await registerFacePlanesForRelay({ group: plane.personaGroupId, relayEnabled: async (g) => (await enabledIntentRelayFaces()).includes(g), prove: () => proveOtherFace(plane), register: registerInCatalog });
+        } catch (error) { console.warn(`[lar-gate] relay planes for ${plane.personaGroupId} did not register: ${error instanceof Error ? error.message : String(error)}`); }
+      }
     };
     for (const plane of bootstrap.personaPlanes) {
       if (plane.personaGroupId === personaGroupId) continue;
