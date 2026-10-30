@@ -172,7 +172,7 @@ import { readWornPersonaMount } from "./worn-mount.js";
 import { openDaemonVm }                    from "./open-daemon-vm.js";
 import { repoPersonaSelvesPlane }          from "./persona-selves-plane.js";
 import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
-import { askIslandMemory, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
+import { askIslandMemory, askIslandVerb, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
 import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
@@ -2915,6 +2915,12 @@ async function prepareNodeBootOn(
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
       // floor's island holds no veil.
       ...(sovereign ? { seatDuties: (facts) => askSeatDutiesAsVessel(facts).answer } : {}),
+      // A feed asks the island's `realm-feed` as the face, from this thread, over the host channel.
+      askIsland: (verb, args, requestedBy, requestId) => {
+        if (!daemonVm) throw new Error("the daemon island does not stand yet");
+        const vm = daemonVm;
+        return askIslandVerb({ daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), verb, args, requestedBy, requestId }).answer;
+      },
     });
     for (const [verb, reactor] of Object.entries(doors)) registry.register(verb, reactor);
 

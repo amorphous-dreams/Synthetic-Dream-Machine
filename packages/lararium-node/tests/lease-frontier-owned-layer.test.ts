@@ -25,7 +25,7 @@ import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavio
 import {
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, leaseEpochSlotUri, wikiBagUri, makeIslandRepo, attachMessageChannelSync,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, type LarDoc,
-  mintFaceAnchor, signLeaseAdvance, ed25519SignerFromSeed, faceAtomPublicKey, signAsFaceAtom, signFaceLeafBond, hexToBytes,
+  mintFaceAnchor, signLeaseAdvance, ed25519SignerFromSeed, faceAtomPublicKey, signAsFaceAtom, signFaceLeafBond, hexToBytes, realmFeedAskImage,
 } from "@lararium/mesh";
 import { VerbTable } from "@lararium/tw5";
 import * as ed25519 from "@noble/ed25519";
@@ -142,9 +142,10 @@ describe("the lease frontier reads off the island's own daemon layer", () => {
       { atom: (b) => signAsFaceAtom(cer0AtomSeed(daemonAuth), b), leaf: (b) => signAsFaceAtom(leafSeed, b) });
     const call = (verb: string, args: Record<string, unknown>) =>
       (registry as unknown as { get(n: string): ((a: Record<string, unknown>, c: unknown) => Promise<Record<string, unknown>>) | undefined })
-        .get(verb)!(args, { presenter: `0x${daemonAuth.atom.key}`, local: true });
-    const fed = await call("realm-feed", { realm, writer, bond });
-    expect(fed["epoch"]).toBe(1);
+        .get(verb)!(args, { presenter: `0x${daemonAuth.atom.key}`, local: true, invocation: { requestId: "v3-feed" } });
+    const askSig = await signAsFaceAtom(cer0AtomSeed(daemonAuth), realmFeedAskImage({ requestId: "v3-feed", realm, writer }));
+    const fed = await call("realm-feed", { realm, writer, bond, askSig });
+    expect(fed["fed"]).toBe(true);
     expect(Object.keys(daemonHandle.doc()!.tiddlers).some((t) => t.includes(realm))).toBe(true);
     const clock = await call("realm-clock", { realm });
     expect(JSON.stringify(clock)).toContain(writer);

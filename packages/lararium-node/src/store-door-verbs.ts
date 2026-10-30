@@ -81,7 +81,7 @@ import { runEdgeRollAnchors, rollAnchorFace, EdgeRollAnchorError } from "./comma
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
 import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "./commands/edge-cosign.js";
 import { runCabalVouch, CabalVouchError } from "./commands/cabal-vouch.js";
-import { runCabalFace, CabalFaceError } from "./commands/cabal-face.js";
+import { runCabalFace, runCabalFeed, CabalFaceError, type AskIslandAsFace } from "./commands/cabal-face.js";
 import { runCabalJoin, CabalJoinError } from "./commands/cabal-join.js";
 import { runFleetJoinAnswer, runFleetJoinOffer, FleetJoinRefused } from "./commands/fleet-join.js";
 import { runHandlePublish, runHandleBurn, runHandleRotate, runHandleAttest } from "./commands/handle.js";
@@ -127,6 +127,8 @@ export interface StoreDoorDeps {
    * island, and a floor's island holds no veil.
    */
   readonly seatDuties?: (facts: { readonly fleetRoot: string; readonly acts: readonly unknown[]; readonly rolled: readonly string[] }) => Promise<Record<string, unknown>>;
+  /** Ask the daemon island one verb as a face from the main thread (a feed's `realm-feed`); absent where no island stands. */
+  readonly askIsland?: AskIslandAsFace;
 }
 
 /** How long a row waits for `onRolled`'s own truthful answer before reporting the refold `"pending"`. The
@@ -159,7 +161,7 @@ export const STORE_DOOR_VERBS = [
   "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-prior-anchor", "nexus-members-list",
   "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release",
   "nexus-posture", "nexus-admit-take", "nexus-carry-take", "seal-home-refold",
-  "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
+  "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "cabal-feed",
   "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor-edge", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-edge-partial", "nexus-roll-anchor-edge-standing",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-lease", "persona-kel-head",
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
@@ -178,7 +180,7 @@ export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
  * of what the place holds.
  */
 export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>([
-  "edge-kapae", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
+  "edge-kapae", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "cabal-feed",
   "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor-edge", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-edge-partial", "nexus-roll-anchor-edge-standing",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-lease", "nexus-publish", "raise-sign",
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
@@ -519,10 +521,17 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     // Nexus); a read mints nothing (`commands/cabal-face`).
     "cabal-face": (args) => answer("cabal-face", async () => ({
       ...(await runCabalFace({
-        realm: str(args["realm"]) ?? "", present: args["present"] === true, ...(args["bond"] === true ? { bond: true } : {}), sealHome, repo,
+        realm: str(args["realm"]) ?? "", present: args["present"] === true, sealHome, repo,
         ...opt("nexusAid", str(args["nexusAid"])), ...opt("face", int(args["face"])),
       })),
     })),
+    // THE FEED, run here as the session's face: the bond and the ask are signed on this thread and ride only its own
+    // placement to the island, never an answer (`commands/cabal-face` runCabalFeed). No vessel standing, no island to feed.
+    "cabal-feed": (args) => answer("cabal-feed", async () => {
+      const face = int(args["face"]);
+      if (!deps.askIsland || face === undefined) throw new CabalFaceError("a feed rides a standing vessel's island, on a session of the face that feeds");
+      return { ...(await runCabalFeed({ realm: str(args["realm"]) ?? "", face, sealHome, repo, askIsland: deps.askIsland, ...opt("nexusAid", str(args["nexusAid"])) })) };
+    }),
     "cabal-join": (args) => answer("cabal-join", async () => ({
       ...(await runCabalJoin({
         realm: str(args["realm"]) ?? "", applicant: str(args["applicant"]) ?? "", sealHome, repo, ...opt("face", int(args["face"])),

@@ -29,10 +29,12 @@ function feedOver() {
 }
 
 describe("realm-feed's writer is bound to the presenter", () => {
-  test("CONTROL: a face's own bond feeds as its own leaf, and the slot lands under that leaf", async () => {
+  test("CONTROL: a face's own bond, with its ask over this request, feeds as its own leaf, and the slot lands under that leaf", async () => {
     const { store, feed } = feedOver();
     const b = await face(2, 3);
-    expect(await feed({ realm: REALM, writer: b.leaf, bond: b.bond }, ctx(b.presenter))).toMatchObject({ verb: "realm-feed", writer: b.leaf, epoch: 1 });
+    const askSig = await signAsFaceAtom(seedOf(2), realmFeedAskImage({ requestId: "own-1", realm: REALM, writer: b.leaf }));
+    const own = { presenter: b.presenter, local: true, invocation: { requestId: "own-1" } } as unknown as VerbContext;
+    expect(await feed({ realm: REALM, writer: b.leaf, bond: b.bond, askSig }, own)).toMatchObject({ verb: "realm-feed", fed: true });
     expect((await store.get(realmFeedSlotUri(REALM, b.leaf)))?.tiddler.text).toBe("1");
   });
 

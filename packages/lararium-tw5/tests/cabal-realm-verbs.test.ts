@@ -14,7 +14,7 @@ import { describe, expect, test } from "vitest";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeCabalRealmReactors } from "../src/cabal-realm-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
-import { DAEMON_BAG_ID, faceAtomPublicKey, realmFeedSlotUri, signAsFaceAtom, signFaceLeafBond } from "@lararium/mesh";
+import { DAEMON_BAG_ID, faceAtomPublicKey, realmFeedAskImage, realmFeedSlotUri, signAsFaceAtom, signFaceLeafBond } from "@lararium/mesh";
 
 const CTX   = {} as VerbContext;
 const REALM = "ab".repeat(32);
@@ -28,15 +28,24 @@ async function faceOf(n: number) {
   const leaf = faceAtomPublicKey(leafSeed);
   const bondFor = (realm: string) => signFaceLeafBond({ atom, leaf, nexusAid: "bafy-test-nexus", realm },
     { atom: (b) => signAsFaceAtom(atomSeed, b), leaf: (b) => signAsFaceAtom(leafSeed, b) });
-  return { leaf, bondFor, ctx: { presenter: `0x${atom}`, local: true } as unknown as VerbContext };
+  let asks = 0;
+  /** One feed's local context and its ask, the atom signing this very request. */
+  const askFor = async (realm: string) => {
+    const requestId = `feed-${n}-${asks++}`;
+    const askSig = await signAsFaceAtom(atomSeed, realmFeedAskImage({ requestId, realm, writer: leaf }));
+    return { askSig, ctx: { presenter: `0x${atom}`, local: true, invocation: { requestId } } as unknown as VerbContext };
+  };
+  return { leaf, bondFor, askFor, ctx: { presenter: `0x${atom}`, local: true } as unknown as VerbContext };
 }
 const A = await faceOf(1);
 const B = await faceOf(2);
 const FACE_A = A.leaf;
 const FACE_B = B.leaf;
 type Face = typeof A;
-const feedAs = async (r: ReturnType<typeof reactorsOver>, realm: string, face: Face) =>
-  r.feed({ realm, writer: face.leaf, bond: await face.bondFor(realm) }, face.ctx);
+const feedAs = async (r: ReturnType<typeof reactorsOver>, realm: string, face: Face) => {
+  const { askSig, ctx } = await face.askFor(realm);
+  return r.feed({ realm, writer: face.leaf, bond: await face.bondFor(realm), askSig }, ctx);
+};
 
 function reactorsOver(store: MemoryTiddlerStore) {
   return makeCabalRealmReactors({ resolveStore: async () => store });
@@ -44,19 +53,21 @@ function reactorsOver(store: MemoryTiddlerStore) {
 const store = (): MemoryTiddlerStore => new MemoryTiddlerStore(DAEMON_BAG_ID);
 
 describe("realm-feed — the offering rolls one writer's own slot", () => {
-  test("a first feed lands epoch 1 and reports itself as first", async () => {
+  test("a first feed lands epoch 1, and its answer names neither the writer nor the epoch", async () => {
     const s = store();
     const r = reactorsOver(s);
-    expect(await feedAs(r, REALM, A)).toMatchObject({
-      verb: "realm-feed", realm: REALM, writer: FACE_A, epoch: 1, priorEffective: 0, first: true, federated: false,
+    expect(await feedAs(r, REALM, A)).toEqual({
+      verb: "realm-feed", realm: REALM, fed: true, federated: false,
     });
     expect((await s.get(realmFeedSlotUri(REALM, FACE_A)))?.tiddler.text).toBe("1");
   });
 
   test("feeding again rolls again — the clock measures how hard a hand feeds, so a repeat SHOULD register", async () => {
-    const r = reactorsOver(store());
+    const s = store();
+    const r = reactorsOver(s);
     await feedAs(r, REALM, A);
-    expect(await feedAs(r, REALM, A)).toMatchObject({ epoch: 2, first: false });
+    await feedAs(r, REALM, A);
+    expect((await s.get(realmFeedSlotUri(REALM, FACE_A)))?.tiddler.text).toBe("2");
   });
 
   test("★ two faces feeding touch DIFFERENT slots — neither roll is ever lost to the other ★", async () => {

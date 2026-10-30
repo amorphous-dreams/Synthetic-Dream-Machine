@@ -352,8 +352,10 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // verbs (verify-then-delegate); main trusts the channel, so no main-side verifier.
   let _registry: VerbTable | null = null;
   // THE FACE EACH SESSION ASK WEARS, booked here as this thread places it: a delegate back from the island reads this
-  // book by its request id, never the presenter the delegate names. Only a channel ask carrying a session's face books.
-  const sessionAsks = new Map<string, SessionWorn>();
+  // book by its request id, never the presenter the delegate names. Only a channel ask carrying a session's face books,
+  // and a booking serves ONE delegate of the verb it booked: the first delegate consumes it, so no later ask reusing the
+  // id (a summons, a replay) wears the face.
+  const sessionAsks = new Map<string, SessionWorn & { readonly verb: string }>();
   // Pool eviction mechanism — set via onEvictRequest() after the pool exists.
   let _evictHandler: ((bagId: string) => Promise<void>) | null = null;
   // Residency-op mechanism — set via onResidencyOp() after the manager exists.
@@ -624,7 +626,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       }
       // A SESSION'S DELEGATE PRESENTS AS ITS BOOKING: the presenter the session door verified, and local (it rode the
       // vessel's own channel). Any other delegate keeps the claim it names and reads non-local.
-      const worn = sessionAsks.get(msg.requestId);
+      const booked = sessionAsks.get(msg.requestId);
+      if (booked) sessionAsks.delete(msg.requestId);
+      const worn: SessionWorn | undefined = booked && booked.verb === msg.verb ? { ordinal: booked.ordinal, presenter: booked.presenter } : undefined;
       const invocationLike = {
         title:       `${DAEMON_BAG_ID}/delegate/${msg.requestId}`,
         requestId:   msg.requestId,
@@ -761,7 +765,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     dropFace: (atomKey) => askFace(atomKey, "dropped", mkDaemonFaceDrop(atomKey)),
     placeVerb: (o: VesselPlaceVerbRequest) => {
       if (o.origin === "channel" && o.face && o.requestId && o.requestedBy && o.ordinal !== undefined && Number.isSafeInteger(o.ordinal) && o.ordinal >= 0) {
-        sessionAsks.set(o.requestId, { ordinal: o.ordinal, presenter: o.requestedBy });
+        sessionAsks.set(o.requestId, { ordinal: o.ordinal, presenter: o.requestedBy, verb: o.verb });
         if (sessionAsks.size > 4096) sessionAsks.delete(sessionAsks.keys().next().value as string);
       }
       worker.post(mkDaemonPlaceVerb({

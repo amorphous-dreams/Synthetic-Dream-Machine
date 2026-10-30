@@ -7,13 +7,15 @@
  * the leaf signs the same image, so neither half lifts alone (`api/pono/identity-enacts-relation` #/identity-as-bond).
  *
  * A reader binds a writer to a presenter only through a bond that verifies whole: the presenter's atom, the writer's
- * leaf, the realm the act names, and both signatures over the one image. The bond rides only the vessel's own channel
- * and never rests in a synced document: published, it would link the face's leaves across Nexuses through the atom.
+ * leaf, the realm the act names, and both signatures over the one image. A bond proves a past signing and never a present
+ * hand, so a feed also carries the atom's signature over its own request (`realmFeedAskImage`). The bond and the ask
+ * stay on the vessel's main thread and ride only its own placement to the island, never an answer or a synced document:
+ * published, they would link the face's leaves across Nexuses through the atom.
  *
  * Platform-blind: rides ./crypto, ./domains and ./ed25519-door alone.
  */
 import { canonicalJsonBytes } from "./crypto.js";
-import { FACE_LEAF_BOND_DOMAIN } from "./domains.js";
+import { FACE_LEAF_BOND_DOMAIN, REALM_FEED_ASK_DOMAIN } from "./domains.js";
 import { acceptEd25519Key, readEd25519 } from "./ed25519-door.js";
 
 /** What a bond names: the face's atom, its leaf key, the Nexus the leaf presents at and the realm it feeds. */
@@ -85,4 +87,15 @@ export function readFaceLeafBond(value: unknown, expect: { readonly presenter: s
   if (!readEd25519(atomSig, image, atom).ok) return { ok: false, reason: "bond-atom-unsigned" };
   if (!readEd25519(leafSig, image, leaf).ok) return { ok: false, reason: "bond-leaf-unsigned" };
   return { ok: true, bond: { atom, leaf, nexusAid, realm, atomSig, leafSig } };
+}
+
+/** The image a face's atom signs to feed one realm as its leaf, under the one request id the feed rides. */
+export function realmFeedAskImage(parts: { readonly requestId: string; readonly realm: string; readonly writer: string }): Uint8Array {
+  return canonicalJsonBytes({ domain: REALM_FEED_ASK_DOMAIN, requestId: parts.requestId, realm: parts.realm.trim().toLowerCase(), writer: bare(parts.writer) });
+}
+
+/** Does `askSig` stand as the bond's atom asking this very request? Never throws. */
+export function readRealmFeedAsk(askSig: unknown, bond: FaceLeafBond, requestId: string): boolean {
+  return typeof askSig === "string" && HEX128.test(askSig) && requestId.length > 0 &&
+    readEd25519(askSig, realmFeedAskImage({ requestId, realm: bond.realm, writer: bond.leaf }), bond.atom).ok;
 }

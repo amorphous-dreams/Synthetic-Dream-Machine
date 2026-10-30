@@ -11,14 +11,16 @@
  * and notes the realm under that Nexus in the vessel's own ledger, as any act there does. Without `present` the
  * door only reads: it mints nothing and notes nothing, and a face that holds no key at that Nexus refuses by name.
  *
- * THE BOND, ASKED. With `bond`, the door also answers the face→leaf bond (`face-leaf-bond`): the face's atom and the leaf
- * both sign one image naming the atom, the leaf, the Nexus and the realm, which a feed carries so the daemon binds its
- * writer to the presenting face. Only a feed asks it, so a bond rides no other answer.
+ * THE FEED STAYS HERE (`runCabalFeed`). A feed rolls the acting face's own leaf slot through the island's `realm-feed`,
+ * carrying the face→leaf bond (`face-leaf-bond`: the atom and the leaf both sign one image naming the atom, the leaf,
+ * the Nexus and the realm) and the atom's ask over that one request. Both are signed and handed to the island here, on
+ * the main thread that holds the keys, and ride no answer: an outcome names its presenter, so an answer naming the leaf
+ * beside it would link the face's leaves across Nexuses through the atom. The feed answers that it fed, and no more.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-steward-signer
  */
 import type { Repo } from "@automerge/automerge-repo";
-import { signAsFaceAtom, signFaceLeafBond, type FaceLeafBond } from "@lararium/mesh";
+import { newRequestId, realmFeedAskImage, signAsFaceAtom, signFaceLeafBond } from "@lararium/mesh";
 import { loadFaceAtom, loadFaceAtomKey } from "../face-atom-store.js";
 import { actingRealmNexus, noteVesselRealm } from "../edge-board.js";
 import { mintFaceNexusLeaf, faceNexusLeaf } from "../nexus-leaf.js";
@@ -34,18 +36,12 @@ export type CabalFaceResult = {
   readonly nexusAid: string;
   /** The acting face's key at that Nexus. */
   readonly face:     string;
-  /** The face whose key it is (its ordinal on this vessel). */
-  readonly ordinal:  number;
-  /** The face→leaf bond, where the call asked it. */
-  readonly bond?:    FaceLeafBond;
 };
 
 export async function runCabalFace(opts: {
   readonly realm:     string;
   readonly nexusAid?: string;
   readonly present:   boolean;
-  /** Answer the face→leaf bond beside the key (a feed's ask). */
-  readonly bond?:     boolean;
   /** The face that acts (`--face N`); absent, the one face standing open. */
   readonly face?:     number;
   readonly sealHome:  string;
@@ -65,16 +61,49 @@ export async function runCabalFace(opts: {
       ? "face-root-absent: this vessel holds no root for the face it acts as — name a face it founded (--face N)"
       : "the acting face presents no key at the Nexus this realm stands under — `lares cabal face --realm <id>` presents it there");
   }
+  leaf.seed.fill(0);
+  if (opts.present) await noteVesselRealm(opts.repo, vesselKey, realm, nexusAid);
+  return { realm, nexusAid, face: leaf.verifyingKey.toLowerCase() };
+}
+
+/** Ask the daemon island one verb as a face, from the main thread: its answer once its outcome lands. */
+export type AskIslandAsFace = (verb: string, args: Record<string, unknown>, requestedBy: string, requestId: string) => Promise<Record<string, unknown>>;
+
+/**
+ * runCabalFeed — the acting face feeds one realm as its own leaf. The face stands at the realm's Nexus (its key minted
+ * there where none stands, the realm noted, as `present` does); its atom signs the bond and the ask over a fresh
+ * request; the island's `realm-feed` rolls the leaf's slot. The answer names the realm and that it fed: never the leaf.
+ */
+export async function runCabalFeed(opts: {
+  readonly realm:     string;
+  readonly nexusAid?: string;
+  /** The face that feeds: the session's face, bound by the store door. */
+  readonly face:      number;
+  readonly sealHome:  string;
+  readonly repo:      Repo;
+  readonly askIsland: AskIslandAsFace;
+}): Promise<{ readonly realm: string; readonly fed: boolean }> {
+  const realm = opts.realm.trim().toLowerCase();
+  if (!HEX64.test(realm)) throw new CabalFaceError(`--realm expects a 64-hex cabal-realm doc id, got "${opts.realm}"`);
+  const atomKey = await loadFaceAtomKey(opts.face);
+  const nexusAid = await actingRealmNexus({
+    repo: opts.repo, vesselKey: atomKey, realm, sealHome: opts.sealHome,
+    ...(opts.nexusAid !== undefined ? { named: opts.nexusAid } : {}), refuse: (m) => new CabalFaceError(m),
+  });
+  const leaf = await mintFaceNexusLeaf(nexusAid, opts.face);
+  if (!leaf) throw new CabalFaceError("face-root-absent: this vessel holds no root for the face it acts as — name a face it founded (--face N)");
+  await noteVesselRealm(opts.repo, atomKey, realm, nexusAid);
+  const writer = leaf.verifyingKey.toLowerCase();
+  const requestId = newRequestId();
+  const atomSeed = await loadFaceAtom(leaf.handleIndex);
+  let args: Record<string, unknown>;
   try {
-    if (opts.present) await noteVesselRealm(opts.repo, vesselKey, realm, nexusAid);
-    const face = leaf.verifyingKey.toLowerCase();
-    if (opts.bond !== true) return { realm, nexusAid, face, ordinal: leaf.handleIndex };
-    const atomSeed = await loadFaceAtom(leaf.handleIndex);
     if (!atomSeed) throw new CabalFaceError("face-atom-absent: the acting face holds no atom here, so it signs no bond for its key");
-    try {
-      const bond = await signFaceLeafBond({ atom: vesselKey, leaf: face, nexusAid, realm },
-        { atom: (bytes) => signAsFaceAtom(atomSeed, bytes), leaf: (bytes) => signAsFaceAtom(leaf.seed, bytes) });
-      return { realm, nexusAid, face, ordinal: leaf.handleIndex, bond };
-    } finally { atomSeed.fill(0); }
-  } finally { leaf.seed.fill(0); }
+    const bond = await signFaceLeafBond({ atom: atomKey, leaf: writer, nexusAid, realm },
+      { atom: (bytes) => signAsFaceAtom(atomSeed, bytes), leaf: (bytes) => signAsFaceAtom(leaf.seed, bytes) });
+    const askSig = await signAsFaceAtom(atomSeed, realmFeedAskImage({ requestId, realm, writer }));
+    args = { realm, writer, bond, askSig };
+  } finally { atomSeed?.fill(0); leaf.seed.fill(0); }
+  const answer = await opts.askIsland("realm-feed", args, `0x${atomKey}`, requestId);
+  return { realm, fed: answer["fed"] === true };
 }
