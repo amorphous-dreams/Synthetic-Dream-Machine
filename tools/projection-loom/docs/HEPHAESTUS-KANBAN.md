@@ -1,3 +1,38 @@
+## ☕ N9 · Complete proposal frontiers / intent aftermath PF · 2026-10-29
+
+**N9-PF** (`25c0f8d3`) records every finite
+place-level offspring proposed during an OODA-HA
+epoch, including the typed genotype of those
+deferred before exact CAD. Each immutable frontier
+stores original source/intent/run identities,
+the independent candidate genome, audition versus
+deferred status, and the bounded exact budget.
+The candidate/native receipts continue to own only
+actually executed auditions.
+
+**Intent aftermath PF:** independent re-entry now
+reconstructs the entire proposal stream from
+the original seed, typed spatial intent and
+earlier admitted distinct structural niches.
+It refuses missing, substituted or altered
+offered candidates even if a deferred proposal
+and its summary digest were both rehashed.
+The operator comparison inventory exposes the
+actual deferred candidate IDs and native-program
+hashes rather than just a deferred count.
+`unattempted`, `native-rejected` and
+`spatial-unverified` therefore remain
+distinct evidentiary states.
+
+This closes an important developmental-science
+gap without inventing source-calibrated cameras,
+physically safe passage, autonomous artistic
+ranking or canon promotion. Every change still
+needs exact-head native STEP/OpenUSD, full CAD,
+real Blender, repo-wide and held-out tests.
+
+---
+
 ## ☕ N9 · Orthogonal native routing / intent aftermath T · 2026-10-29
 
 **N9-T** (`263e4083`) lets one explicitly

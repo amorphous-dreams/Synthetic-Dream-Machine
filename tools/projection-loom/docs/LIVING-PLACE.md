@@ -1,3 +1,25 @@
+## N9 · Aftermath PF · Remember the paths we did not try
+
+The creative process now records not only the
+children selected for expensive native audition
+but all individually proposed alternatives.
+The immutable `frontiers/epoch_NNN.json` includes
+each full typed candidate genome, a stable semantic
+digest, its exact OODA-HA epoch and whether it
+was deferred or attempted. The same seed and
+original intent must reconstruct the same
+proposal stream on independent replay, even
+when an attacker also rewrites a summary digest.
+
+A deferred architectural proposal is testimony
+about an offered idea, **not** a rejected native
+building and not a successful structure. This
+prevents the archive from hiding what finite
+budgets excluded, while protecting the
+operator's authority to choose future studies.
+
+---
+
 ## N9 · Aftermath T · A journey can turn while evidence stays local
 
 A narrated crossing can travel through a named
