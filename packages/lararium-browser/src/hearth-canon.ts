@@ -80,13 +80,16 @@ export function hearthCanonDocIds(named: HearthCanonDocs): ReadonlySet<DocumentI
 export class HearthCanonGate implements FederationGate {
   readonly #outer: FederationGate;
   readonly #canon: ReadonlySet<DocumentId>;
-  readonly #planes: ReadonlySet<DocumentId>;
+  readonly #planes = new Set<DocumentId>();
 
-  /** `planes`: the joined face's own plane documents, by id, which the own-hearth crossing opens beside the canon. */
-  constructor(outer: FederationGate, named: HearthCanonDocs, planes: ReadonlySet<DocumentId> = new Set()) {
+  constructor(outer: FederationGate, named: HearthCanonDocs) {
     this.#outer = outer;
     this.#canon = hearthCanonDocIds(named);
-    this.#planes = planes;
+  }
+
+  /** The joined face's own plane documents, by id, which the own-hearth crossing opens beside the canon once the face proof names them. */
+  admitPlanes(planes: ReadonlySet<DocumentId>): void {
+    for (const id of planes) this.#planes.add(id);
   }
 
   mayFederate(documentId: DocumentId, peerId?: PeerId): boolean | Promise<boolean> {
@@ -96,10 +99,10 @@ export class HearthCanonGate implements FederationGate {
 }
 
 /**
- * THE FACE'S OWN PLANES CROSS AT ITS OWN HEARTH (the Founding Walk, W4, 2026-10-29). The hearth's view federates a
- * same-operator session's five planes (`face-fleet-view`); the leaf's side of that same law is this list: the plane
- * documents the join landed in the leaf's own catalog, which its own-hearth crossing opens so its repo asks the hearth
- * for them. Read as DATA like the canon: a well-formed url each, never a reserved document (the oracle, a board).
+ * THE FACE'S OWN PLANES CROSS AT ITS OWN HEARTH, AS ITS SIGNED LOG NAMES THEM (the Founding Walk, W4). The hearth's view
+ * federates a same-operator session's planes (`face-fleet-view`); the leaf's side of that law is this list. The
+ * bootstrap rests unsealed, so a plane url read from it proves nothing alone: the crossing opens a plane only once the
+ * face proof's projection names it (`provenCrossingPlanes`), and never a reserved document (the oracle, a board).
  */
 export function facePlaneDocIds(planes: readonly unknown[] | undefined, nexusPubkey: string): ReadonlySet<DocumentId> {
   const ids = new Set<DocumentId>();
@@ -115,6 +118,14 @@ export function facePlaneDocIds(planes: readonly unknown[] | undefined, nexusPub
   return ids;
 }
 
+/** Of the plane urls a vessel carries for its worn face, exactly those the face proof's projection names, plane by plane. */
+export function provenCrossingPlanes(
+  projection: { readonly planes: Readonly<Record<string, string | undefined>> },
+  carried: Readonly<Record<string, string | null | undefined>>,
+): readonly string[] {
+  return Object.entries(carried).flatMap(([plane, url]) => (url && projection.planes[plane] === url ? [url] : []));
+}
+
 /**
  * The crossing a vessel stands for, read once from its bootstrap: whether the pinned gate is its own hearth,
  * the canon documents that crossing opens, and the federation gate the relay adapter wears. The gate is null
@@ -128,14 +139,23 @@ export function hearthCrossingOf(at: {
   readonly holdsDeviceEdge:  boolean;
   readonly hearthCanonDocs:  unknown;
   readonly nexusPubkey:      string;
-  /** The joined face's own plane documents (urls) the join landed in this vessel's catalog; the own-hearth crossing opens them. */
-  readonly facePlaneDocs?:   readonly unknown[];
-}): { readonly ownHearth: boolean; readonly hearthCanon: HearthCanonDocs; readonly gate: FederationGate | null } {
+}): {
+  readonly ownHearth: boolean; readonly hearthCanon: HearthCanonDocs; readonly gate: FederationGate | null;
+  /** Open the worn face's proven planes at the own-hearth crossing (`provenCrossingPlanes`); true where the gate widened. */
+  readonly openFacePlanes: (urls: readonly unknown[]) => boolean;
+} {
   const ownHearth = isOwnHearthCrossing(at);
   const hearthCanon: HearthCanonDocs = ownHearth ? admittedCanonDocs(at.hearthCanonDocs, at.nexusPubkey) : {};
-  if (!at.pinnedGatePubKey) return { ownHearth, hearthCanon, gate: null };
+  if (!at.pinnedGatePubKey) return { ownHearth, hearthCanon, gate: null, openFacePlanes: () => false };
   const boards = new DeterministicFederationGate(at.nexusPubkey);
-  return { ownHearth, hearthCanon, gate: ownHearth ? new HearthCanonGate(boards, hearthCanon, facePlaneDocIds(at.facePlaneDocs, at.nexusPubkey)) : boards };
+  if (!ownHearth) return { ownHearth, hearthCanon, gate: boards, openFacePlanes: () => false };
+  const gate = new HearthCanonGate(boards, hearthCanon);
+  const openFacePlanes = (urls: readonly unknown[]): boolean => {
+    const ids = facePlaneDocIds(urls, at.nexusPubkey);
+    gate.admitPlanes(ids);
+    return ids.size > 0;
+  };
+  return { ownHearth, hearthCanon, gate, openFacePlanes };
 }
 
 /** The slice of a vessel catalog handle the seating reads and writes. */
