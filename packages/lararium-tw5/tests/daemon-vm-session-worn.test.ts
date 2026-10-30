@@ -47,10 +47,11 @@ function open() {
   registry.register("probe-context", async (_args, context) => ({ worn: { presenter: context.presenter, local: context.local === true } }));
   core.mountMainVerbs(registry);
   const say = (msg: unknown): void => { for (const l of [...listeners]) l(msg); };
-  const delegate = async (requestId: string, requestedBy: string, verb = "probe-worn"): Promise<unknown> => {
-    say(mkDaemonDelegateVerb({ requestId, verb, args: {}, requestedBy }));
+  const delegate = async (requestId: string, requestedBy: string, verb = "probe-worn", args: Record<string, unknown> = {}): Promise<unknown> => {
+    const from = crossed.length;
+    say(mkDaemonDelegateVerb({ requestId, verb, args, requestedBy }));
     for (let i = 0; i < 50; i++) {
-      const r = crossed.find((m) => (m as { type?: string; requestId?: string }).type === "daemon:verb-result" && (m as { requestId?: string }).requestId === requestId);
+      const r = crossed.slice(from).find((m) => (m as { type?: string; requestId?: string }).type === "daemon:verb-result" && (m as { requestId?: string }).requestId === requestId);
       if (r) { const m = r as { result?: { worn?: unknown }; error?: string }; return m.result ? m.result.worn : m.error; }
       await Promise.resolve();
     }
@@ -96,4 +97,15 @@ test("RED: a booking serves one delegate of the verb it booked: a second delegat
   expect(await delegate("o-1", ATOM_1)).toBeNull();
   core.placeVerb({ origin: "channel", verb: "another-verb", args: {}, requestedBy: ATOM_1, face: "subject-1", requestId: "o-2", ordinal: 1 } as never);
   expect(await delegate("o-2", ATOM_1)).toBeNull();
+});
+
+test("RED (Sol's delta read): a booking lends its face only to the very args it booked, and none once its ask concluded; CONTROL: the booked args wear it", async () => {
+  const { core, delegate } = open();
+  core.placeVerb({ origin: "channel", verb: "probe-worn", args: { x: 1 }, requestedBy: ATOM_1, face: "subject-1", requestId: "a-1", ordinal: 1 } as never);
+  expect(await delegate("a-1", ATOM_1, "probe-worn", { x: 2 })).toBeNull();
+  core.placeVerb({ origin: "channel", verb: "probe-worn", args: { x: 1 }, requestedBy: ATOM_1, face: "subject-1", requestId: "a-2", ordinal: 1 } as never);
+  expect(await delegate("a-2", ATOM_1, "probe-worn", { x: 1 })).toEqual({ ordinal: 1, presenter: ATOM_1 });
+  core.placeVerb({ origin: "channel", verb: "probe-worn", args: {}, requestedBy: ATOM_1, face: "subject-1", requestId: "a-3", ordinal: 1 } as never);
+  (core as unknown as { retireAsk(id: string): void }).retireAsk("a-3");
+  expect(await delegate("a-3", ATOM_1)).toBeNull();
 });
