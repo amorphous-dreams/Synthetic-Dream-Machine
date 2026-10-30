@@ -60,7 +60,7 @@ The boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>) seats by
 
 * The seat's writes and reads ride the reality-tunnel doors (<<~ loulou "lar:///ha.ka.ba/lares/cli/reality-tunnel">>): `lares repo read` reads every law the seat holds, and `tools/repo-tunnel-witness.sh` runs it with a `--control` that MUST read a linkless checkout red.
 * `lares repo tend` and `lares home tend` write the seat, and converge: a second pass writes nothing. `lares repo verify` and `lares home verify` read what the hosts loaded.
-* `tools/repo-tunnel-staged.sh` runs from `.githooks/pre-commit` over what the commit carries (`lares repo read --staged`), so a seed staged ahead of its scouts never lands.
+* `tools/repo-tunnel-staged.sh` runs from `.githooks/pre-commit` over what the commit carries (`lares repo read --staged`) whenever the commit stages one of the seat's own paths (the carrier, its seed, each checkout item's file, read from the staged carrier), so a seed staged ahead of its scouts never lands; a commit that stages none of them needs no build.
 * `packages/lares-cli/tests/reality-tunnel.test.ts` plants each red against scratch clones and homes.
 
 <<~/ahu>>
@@ -80,6 +80,6 @@ The boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>) seats by
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OXIAI_fJ1K2j56olFJYbM84__C6ff-bh6HVOA7ROfy0
+<<^ code="&#x0003;">>ni:///sha-256;SOCD9VpeFPyzBorUEgaDoePdS_J8aLFBCdm2zv2JPoA
 
 <<^ code="&#x0004;" -> to="?">>

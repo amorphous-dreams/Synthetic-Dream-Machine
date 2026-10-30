@@ -497,6 +497,49 @@ describe("the pre-commit gate cannot be staged away", () => {
   });
 });
 
+describe("the staged gate asks for a build only when a commit stages the seat", () => {
+  /** A scratch repo carrying the real carrier and gate, its staged paths named, read with no CLI built. */
+  function gate(stage: readonly string[]): { code: number; err: string } {
+    const root = mkdtempSync(join(dir, "gate-"));
+    execFileSync("git", ["init", "-q", root]);
+    mkdirSync(join(root, "tools"), { recursive: true });
+    writeFileSync(join(root, "tools/repo-tunnel-staged.sh"), readFileSync(join(REPO, "tools/repo-tunnel-staged.sh"), "utf8"), { mode: 0o755 });
+    mkdirSync(join(root, dirname(CARRIER)), { recursive: true });
+    writeFileSync(join(root, CARRIER), readFileSync(join(REPO, CARRIER), "utf8"));
+    execFileSync("git", ["-C", root, "add", CARRIER]);
+    execFileSync("git", ["-C", root, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--no-verify", "-m", "carrier"]);
+    for (const f of stage) {
+      mkdirSync(join(root, dirname(f)), { recursive: true });
+      writeFileSync(join(root, f), `${f}\n`);
+      execFileSync("git", ["-C", root, "add", f]);
+    }
+    try {
+      execFileSync(join(root, "tools/repo-tunnel-staged.sh"), { cwd: root, stdio: "pipe", env: { ...process.env, LARES_BIN: join(root, "no-such-cli.js") } });
+      return { code: 0, err: "" };
+    } catch (e) {
+      const x = e as { status?: number; stderr?: Buffer };
+      return { code: x.status ?? -1, err: String(x.stderr ?? "") };
+    }
+  }
+
+  it("a commit that stages none of the seat's paths passes without a build", () => {
+    expect(gate(["docs/notes.md", "packages/x/src/y.ts"]).code).toBe(0);
+  });
+
+  it.each([["CLAUDE.md"], [declared(REPO).seed], [".claude/agents/Explore.md"], ["AGENTS.override.md"]])(
+    "a commit that stages %s refuses without a build, naming the build", (f) => {
+      const r = gate([f]);
+      expect(r.code).toBe(1);
+      expect(r.err).toMatch(/no built CLI/);
+    });
+
+  it("CONTROL: a commit that edits the carrier itself refuses without a build", () => {
+    const r = gate([CARRIER]);
+    expect(r.code).toBe(1);
+    expect(r.err).toMatch(/no built CLI/);
+  });
+});
+
 describe("the lock holds on any path length", () => {
   it("a target path longer than a socket name allows still locks and releases", async () => {
     const deep = join(dir, "a".repeat(60), "b".repeat(60), "ledger");
