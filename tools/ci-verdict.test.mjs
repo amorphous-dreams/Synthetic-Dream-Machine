@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DRIVERS } from "./held-out-cells.mjs";
-import { MERGE_JOB, driverOf, exitOf, failing, heldOutDrivers, heldOutUnreadable, readHeldOut, readVerdict, render, renderHeldOut } from "./ci-verdict.mjs";
+import { MERGE_JOB, classifyFailure, driverOf, exitOf, failing, heldOutDrivers, heldOutUnreadable, jobMinutes, main, readHeldOut, readVerdict, render, renderHeldOut, renderJobMinutes } from "./ci-verdict.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const { runs, views, heldOutRuns, heldOutViews } = JSON.parse(readFileSync(join(HERE, "ci-verdict.fixture.json"), "utf8"));
@@ -220,12 +220,6 @@ test("GREEN: an unfolded run on the head reads green only with every driver gree
 });
 
 test("the third reading says and never blocks: the door's exit code follows the CI reading alone", () => {
-  const src = readFileSync(join(HERE, "ci-verdict.mjs"), "utf8");
-  assert.match(src, /return exitOf\(v\.state\);/);
-  assert.doesNotMatch(src, /exitOf\(heldOut/);
-  assert.match(src, /\.\.\.render\(v\), \.\.\.renderHeldOut\(heldOut\)/, "the door stopped printing the third reading");
-  // A held-out lookup that fails reads unread and leaves the exit code where the CI reading put it.
-  assert.match(src, /\} catch \(err\) \{\n\s+heldOut = heldOutUnreadable\(head, /);
   const dark = heldOutUnreadable("0".repeat(40), "gh: no such workflow");
   assert.equal(dark.state, "unread");
   assert.match(renderHeldOut(dark).join("\n"), /held-out: UNREAD for 000000000 — the held-out runs could not be read \(gh: no such workflow\)[\s\S]*UNREAD never reads as green/);
@@ -285,4 +279,150 @@ test("the shard lane names a run whose verdict it could not read, and the comman
   assert.ok(Number(WATCH_INTERVAL_S) >= 30, "a watch that looks more often than every half minute spends the shared API budget");
   assert.match(watch, /"run", "watch", String\(runId\), "--exit-status", "--interval", WATCH_INTERVAL_S\]/);
   assert.match(watch, /catch \(err\) \{[\s\S]*throw new Error\(`\$\{unreadVerdict\(runId\)\}/, "a failed read of the run stopped naming the run as unread");
+});
+
+// ── B3: the three-state verdict, --wait, and the job-minutes line ─────────────────────────────────────────────
+const T0 = "2026-10-30T10:00:00Z", T1 = "2026-10-30T10:06:00Z";
+const SHA = "a".repeat(40);
+const mkRun = (o = {}) => ({ databaseId: 11, headSha: SHA, status: "completed", conclusion: "success", createdAt: T0, url: "https://example/run/11", ...o });
+const mkHeld = (o = {}) => mkRun({ databaseId: 22, url: "https://example/run/22", ...o });
+const mkJob = (name, startedAt, completedAt, o = {}) => ({ name, status: "completed", conclusion: "success", startedAt, completedAt, steps: [], ...o });
+const heldGreenView = () => ({ jobs: [...DRIVERS.map((d) => mkJob(`Held-out · ${d.driver}`, T0, T1)), mkJob(MERGE_JOB, T0, T1)] });
+const bad502 = () => Object.assign(new Error("Command failed: gh run list"), { stderr: "HTTP 502: Bad Gateway (https://api.github.com/repos/x/actions/runs)" });
+
+/** A scripted `gh`/`git`: each key's value is data, an Error, or a function of that key's call count (1-based). */
+function fake(table) {
+  const n = {}, calls = [];
+  const sh = (cmd, args) => {
+    calls.push([cmd, ...args]);
+    let key;
+    if (cmd === "git") key = args.includes("--abbrev-ref") ? "branch" : "rev";
+    else if (args[1] === "list") key = `${args[args.indexOf("--workflow") + 1] === "CI" ? "runs" : "heldRuns"}${args.includes("--commit") ? "AtSha" : ""}`;
+    else key = `view:${args[2]}`;
+    n[key] = (n[key] ?? 0) + 1;
+    const v = table[key];
+    if (v === undefined) throw Object.assign(new Error(`unscripted ${key}`), { stderr: `no such ${key}` });
+    const r = typeof v === "function" ? v(n[key]) : v;
+    if (r instanceof Error) throw r;
+    return typeof r === "string" ? r : JSON.stringify(r);
+  };
+  return { sh, calls, n };
+}
+const door = async (table, extra = []) => {
+  const f = fake({ rev: SHA, ...table });
+  const out = [], err = [], slept = [];
+  const code = await main(["--branch", "topic", "--head", SHA, ...extra], { sh: f.sh, sleep: async (ms) => { slept.push(ms); }, log: (l) => out.push(l), err: (l) => err.push(l) });
+  return { code, out: out.join("\n"), err: err.join("\n"), slept, ...f };
+};
+const GREEN_TABLE = () => ({ runs: [mkRun()], "view:11": { jobs: [mkJob("Test", T0, T1)] }, heldRuns: [mkHeld()], "view:22": heldGreenView() });
+
+test("CONTROL: a recorded green CI and green held-out exit 0, and print the job-minutes line beside the CI reading", async () => {
+  const r = await door(GREEN_TABLE());
+  assert.equal(r.code, 0, r.out + r.err);
+  assert.match(r.out, /ci-verdict: GREEN/);
+  assert.match(r.out, /held-out: GREEN/);
+  assert.match(r.out, /^job-minutes: 6\.0 \(critical path 6\.0 min\)$/m);
+  assert.deepEqual(r.slept, []);
+});
+
+test("classifyFailure: a 5xx, a timeout and a dropped network read UNREADABLE; a missing gh and an unknown branch are hard", () => {
+  for (const e of [bad502(), Object.assign(new Error("x"), { stderr: "HTTP 503 Service Unavailable" }), Object.assign(new Error("spawnSync gh ETIMEDOUT"), { code: "ETIMEDOUT" }),
+    Object.assign(new Error("x"), { killed: true, signal: "SIGTERM" }), Object.assign(new Error("x"), { stderr: 'Post "https://api.github.com/graphql": dial tcp: lookup api.github.com: no such host' }),
+    Object.assign(new Error("x"), { stderr: "error connecting to api.github.com: could not resolve host" }), Object.assign(new Error("x"), { stderr: "HTTP 429: API rate limit exceeded" })]) {
+    assert.equal(classifyFailure(e), "unreadable", String(e.stderr ?? e.message));
+  }
+  for (const e of [Object.assign(new Error("spawnSync gh ENOENT"), { code: "ENOENT" }), Object.assign(new Error("x"), { stderr: "HTTP 404: Not Found" }), Object.assign(new Error("x"), { stderr: "no such branch" })]) {
+    assert.equal(classifyFailure(e), "hard", String(e.stderr ?? e.message));
+  }
+  assert.equal(exitOf("unreadable"), 4);
+  assert.ok(![0, 1, 2, 3].includes(exitOf("unreadable")), "UNREADABLE owns its exit code");
+});
+
+test("RED: a recorded 502 then green returns green after one wait", async () => {
+  const r = await door({ ...GREEN_TABLE(), runs: (n) => (n === 1 ? bad502() : [mkRun()]) });
+  assert.equal(r.code, 0, r.out + r.err);
+  assert.equal(r.slept.length, 1);
+  assert.equal(r.slept[0], 30000, "the default interval is thirty seconds");
+});
+
+test("RED: a 502 forever exits UNREADABLE (its own code), never RED and never GREEN", async () => {
+  const r = await door({ ...GREEN_TABLE(), runs: bad502 });
+  assert.equal(r.code, 4, r.out + r.err);
+  assert.match(r.out, /ci-verdict: UNREADABLE for aaaaaaaaa/);
+  assert.doesNotMatch(r.out, /ci-verdict: (RED|GREEN)/);
+  assert.equal(r.slept.length, 6, "six reads again, then it says so");
+  const wait = await door({ ...GREEN_TABLE(), runs: bad502 }, ["--wait"]);
+  assert.equal(wait.code, 4, "under --wait the same bounded wait ends in UNREADABLE");
+});
+
+test("RED: a run whose jobs endpoint stays 502 falls back to that run's own conclusion at the exact sha", async () => {
+  const jobs502 = () => Object.assign(new Error("x"), { stderr: "HTTP 502: Bad Gateway (https://api.github.com/repos/x/actions/runs/11/jobs)" });
+  const g = await door({ runs: [mkRun()], "view:11": jobs502, heldRuns: [mkHeld()], "view:22": jobs502 });
+  assert.equal(g.code, 0, g.out + g.err);
+  assert.match(g.out, /ci-verdict: GREEN[^\n]*run conclusion only/);
+  assert.match(g.out, /held-out: GREEN[^\n]*run conclusion only/);
+  assert.match(g.out, /^job-minutes: unread \(the run's jobs endpoint stayed unreadable\)$/m);
+  const red = await door({ runs: [mkRun({ conclusion: "failure" })], "view:11": jobs502, heldRuns: [mkHeld()], "view:22": heldGreenView() });
+  assert.equal(red.code, 1, "a failure conclusion still reads RED with its jobs unread");
+  const live = await door({ runs: [mkRun({ status: "in_progress", conclusion: null })], "view:11": jobs502, heldRuns: [mkHeld()], "view:22": heldGreenView() });
+  assert.equal(live.code, 2, "a run still running reads unread, not green");
+});
+
+test("a head the branch list's window misses is asked for by sha (`gh run list --commit`)", async () => {
+  const r = await door({ ...GREEN_TABLE(), runs: [mkRun({ headSha: "b".repeat(40), databaseId: 99 })], runsAtSha: [mkRun()], heldRuns: [], heldRunsAtSha: [mkHeld()] });
+  assert.equal(r.code, 0, r.out + r.err);
+  assert.ok(r.calls.some((c) => c.includes("--commit") && c.includes(SHA)));
+});
+
+test("RED: --wait returns once neither reading is unread: unread, unread, green returns green on the third read", async () => {
+  const r = await door({ ...GREEN_TABLE(), runs: (n) => (n < 3 ? [mkRun({ status: "in_progress", conclusion: null })] : [mkRun()]) }, ["--wait", "--interval", "7"]);
+  assert.equal(r.code, 0, r.out + r.err);
+  assert.equal(r.n.runs, 3);
+  assert.deepEqual(r.slept, [7000, 7000]);
+});
+
+test("RED: without --wait an unread head exits 2 at once; a cancelled-clean run keeps --wait waiting", async () => {
+  const once = await door({ ...GREEN_TABLE(), runs: [mkRun({ status: "in_progress", conclusion: null })] });
+  assert.equal(once.code, 2);
+  assert.equal(once.n.runs, 1);
+  const w = await door({ ...GREEN_TABLE(), runs: (n) => (n === 1 ? [mkRun({ conclusion: "cancelled" })] : [mkRun()]) }, ["--wait"]);
+  assert.equal(w.code, 0);
+  assert.equal(w.n.runs, 2, "the cancelled-clean run measured nothing, so the wait read again");
+});
+
+test("RED: --wait also waits for a held-out run that does not name the head yet", async () => {
+  const r = await door({ ...GREEN_TABLE(), heldRuns: (n) => (n < 3 ? [] : [mkHeld()]) }, ["--wait"]);
+  assert.equal(r.code, 0, r.out + r.err);
+  assert.equal(r.n.heldRuns, 3);
+});
+
+test("job-minutes: a recorded jobs JSON sums to the figure by hand; critical path is the run's first start to last end", () => {
+  const view = { jobs: [
+    mkJob("Test", "2026-10-30T10:00:00Z", "2026-10-30T10:10:00Z"),            // 10
+    mkJob("Witnesses", "2026-10-30T10:00:30Z", "2026-10-30T10:04:30Z"),       // 4
+    mkJob("Lint", "2026-10-30T10:10:00Z", "2026-10-30T10:12:30Z"),            // 2.5
+    mkJob("Skipped", "0001-01-01T00:00:00Z", "0001-01-01T00:00:00Z", { conclusion: "skipped" }),
+  ] };
+  const jm = jobMinutes(view);
+  assert.equal(jm.partial, false);
+  assert.equal(jm.minutes, 16.5);
+  assert.equal(jm.criticalMin, 12.5);
+  assert.equal(renderJobMinutes(jm), "job-minutes: 16.5 (critical path 12.5 min)");
+});
+
+test("job-minutes: a job with no completion reads PARTIAL, never a smaller number", () => {
+  const view = { jobs: [mkJob("Test", T0, T1), mkJob("Slow", T0, null, { status: "in_progress", conclusion: null })] };
+  const jm = jobMinutes(view);
+  assert.equal(jm.partial, true);
+  const line = renderJobMinutes(jm);
+  assert.match(line, /^job-minutes: partial /);
+  assert.doesNotMatch(line, /^job-minutes: \d/);
+  assert.equal(renderJobMinutes(jobMinutes(undefined)).startsWith("job-minutes: unread"), true);
+});
+
+test("the door still exits 3 when gh is absent, and 3 for a hard read failure (not UNREADABLE)", async () => {
+  const r = await door({ ...GREEN_TABLE(), runs: () => Object.assign(new Error("x"), { stderr: "HTTP 404: Not Found" }) });
+  assert.equal(r.code, 3);
+  assert.match(r.err, /ci-verdict: could not read/);
+  assert.deepEqual(r.slept, [], "a hard failure never waits");
 });
