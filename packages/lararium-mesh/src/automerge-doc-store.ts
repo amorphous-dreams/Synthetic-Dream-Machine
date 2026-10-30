@@ -27,7 +27,7 @@
 
 import { assertStorableTitle } from "./title-law.js";
 import { decodeHeads, encodeHeads, type DocHandle } from "@automerge/automerge-repo";
-import { decodeChange, getChangesSince, hasHeads } from "@automerge/automerge";
+import { decodeChange, getChangesSince, getConflicts, hasHeads } from "@automerge/automerge";
 import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin, LarRemoveOptions } from "./tiddler-store.js";
 import { holdsOnly } from "./tiddler-store.js";
 import type { MemeProjection } from "./meme-provider.js";
@@ -415,7 +415,11 @@ export class AutomergeDocStore implements LarTiddlerStore {
       for (const record of moved) {
         const title = record.tiddler.title;
         const existing = tiddlers[title];
-        if (existing) _mergeRecord(existing, record);
+        // A WRITE OVER A WHOLE-RECORD CONFLICT (two hands created this title) settles it whole, as a field write settles
+        // a field conflict: the concurrent record rode to the draft readers when it merged (`parallel-drafts`).
+        if (existing && Object.keys(getConflicts(tiddlers, title) ?? {}).length > 1) {
+          tiddlers[title] = storedRecord({ tiddler: record.tiddler, ...(record.meta !== undefined ? { meta: record.meta } : {}) }) as unknown as MutableLarTiddlerRecord;
+        } else if (existing) _mergeRecord(existing, record);
         else {
           // A based create states its liveness, so a concurrent delete of the title reads as a conflict.
           const meta = based ? { ...(record.meta ?? {}), deleted: record.meta?.deleted === true } : record.meta;
@@ -505,7 +509,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
       const tiddlers = doc.tiddlers as unknown as Record<string, MutableLarTiddlerRecord>;
       // THE TEST AND THE REMOVAL SHARE ONE CHANGE: no write lands between them.
       // A title holding a concurrent value the live one hides (a parallel draft, field or whole record) stays: removing
-      // it would retract that value unlanded. It leaves at the pass after a write settles it.
+      // it would retract that value unlanded. It leaves at the pass after a write settles it (field or whole record).
       if (options?.only && (!holdsOnly(tiddlers[title] as unknown as LarTiddlerRecord | undefined, options.only)
         || this.parallelDrafts(title).length > 0)) { removed = false; return; }
       delete tiddlers[title];
