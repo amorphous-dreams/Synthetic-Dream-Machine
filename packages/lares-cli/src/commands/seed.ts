@@ -82,9 +82,10 @@ export function discoverHoldings(bagsDir: string): Array<{ holding: string; sour
  * THE NAMED ROAD (W27: a write lands on a working layer, and canon takes it by promotion). A LOAD into a canon
  * bag refuses `load-into-canon` and names this road, and the seed walks it as any hand would, through the one
  * public act gesture: CREATE the bag (idempotent), LOAD onto the wiki's working layer (the act mounts that wiki),
- * then MOVE each title the island's LOAD answer named from the working layer into canon. The MOVE grain reads
- * per title because that is the grain the verb table spells; the titles come from the island's own answer,
- * never from a second read of the disk. No founding door stands: the rite's seed and the daily seed walk one road.
+ * then MOVE each family root among the titles the gesture sent from the working layer into canon (a root's
+ * family, `root/…` and `root#…`, rides its MOVE). The MOVE grain reads per title because that is the grain the verb
+ * table spells; the titles come from the gesture's one read of the disk (the island's answer rides bounded past
+ * the outcome cap and can list no holding), never from a second read. No founding door stands: the rite's seed and the daily seed walk one road.
  */
 export async function seedHolding(
   args: ParsedArgs,
@@ -121,16 +122,18 @@ export async function seedHolding(
     });
     if (createCode !== 0) return { ...h, gesture: "load", exitCode: createCode };
   }
-  // The island's LOAD answer names the titles it landed; the seed hears them here and promotes each.
-  let landed: string[] = [];
+  // THE TITLES THE GESTURE SENT name what the seed promotes: the island's answer rides bounded past the outcome cap
+  // (`verb-vm` AUDIT_ARRAY_CAP), so it can confirm a count and never list a holding; the carriers' own address
+  // titles come from the gesture's one read of the disk, and a family's root carries its members on its MOVE.
+  let sent: readonly string[] = [];
   const loadCode = await cmdAct({
     command: "act",
     positional: ["LOAD"],
     options: { ...args.options, "source-uri": h.source, to: working },
     flags,
-  }, (data) => { if (Array.isArray(data["titles"])) landed = data["titles"].filter((t): t is string => typeof t === "string"); });
+  }, (_data, titles) => { sent = titles; });
   if (loadCode !== 0 || !args.flags["apply"]) return { ...h, gesture: "load", exitCode: loadCode };
-  for (const title of landed) {
+  for (const title of familyRoots(sent)) {
     const moveCode = await cmdAct({
       command: "act",
       positional: ["MOVE"],
@@ -140,6 +143,15 @@ export async function seedHolding(
     if (moveCode !== 0) return { ...h, gesture: "load", exitCode: moveCode };
   }
   return { ...h, gesture: "load", exitCode: 0 };
+}
+
+/**
+ * The titles a MOVE names: each family's root alone, since a MOVE of a root carries its family with it (the verb's
+ * own rule, `groupOf`: the root, `root#…` and `root/…`); a title no sent title stands above moves by its own name.
+ */
+export function familyRoots(titles: readonly string[]): string[] {
+  const sent = [...new Set(titles)].sort();
+  return sent.filter((t) => !sent.some((r) => r !== t && (t.startsWith(`${r}/`) || t.startsWith(`${r}#`))));
 }
 
 /** The working layer of the wiki a canon bag opens as (W27: every bag opens as its own wiki). */

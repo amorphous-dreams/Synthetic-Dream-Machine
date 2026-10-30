@@ -77,15 +77,19 @@ function receiptToResult(r: ReceiptAnswer): SubmitResult | undefined {
  */
 function addressTitleForLoad(source: string, file: string, toBag: string): string {
   const parts = resolve(file).split(sep);
+  // The FIRST plane segment whose interior reads as an address wins: a holding's files sit at
+  // `bags/<holding>/ha.ka.ba/bags/<holding>/…`, and the inner `bags` names no interior of its own.
   for (const plane of ["bags", "wikis"]) {
-    const i = parts.lastIndexOf(plane);
-    if (i >= 0 && i + 2 < parts.length) {
+    for (let i = parts.indexOf(plane); i >= 0; i = parts.indexOf(plane, i + 1)) {
+      if (i + 2 >= parts.length) continue;
       const interior = parts.slice(i + 2).join("/").replace(/\.[^/.]+$/, "");
       if (/^\w+\.\w+\.\w+\//.test(interior)) return `lar:///${interior}`;
     }
   }
   const rel = relative(source, file).split(sep).join("/").replace(/\.[^/.]+$/, "");
-  const base = toBag.replace(/\/+$/, "");
+  // A record's address lives under its BAG; a wiki slot (`wikis/<slug>/working`) is where it rests, never its name.
+  const slug = wikiSlugOfBag(toBag);
+  const base = (slug && /\/wikis\//.test(toBag) ? `lar:///ha.ka.ba/bags/${slug}` : toBag).replace(/\/+$/, "");
   return rel ? `${base}/${rel}` : base;
 }
 
@@ -227,10 +231,12 @@ async function actRepack(args: ParsedArgs): Promise<number> {
 }
 
 /**
- * `heard` hands an in-process caller (the seed) the island's own answer for a landed act (the emitted `data`:
- * a LOAD's `titles`, a dry run's `wouldLand`), beside the exit code the CLI face returns. CLI parsing never supplies it.
+ * `heard` hands an in-process caller (the seed) the island's own answer for a landed act (the emitted `data`; an
+ * array past the outcome cap rides bounded, `verb-vm`'s `boundedArrayCount`) and, for a LOAD, the address titles of
+ * the carriers this gesture SENT (its one read of the disk), beside the exit code the CLI face returns. CLI parsing
+ * never supplies it.
  */
-export async function cmdAct(args: ParsedArgs, heard?: (data: Record<string, unknown>) => void): Promise<number> {
+export async function cmdAct(args: ParsedArgs, heard?: (data: Record<string, unknown>, sent: readonly string[]) => void): Promise<number> {
   const verbRaw = args.positional[0];
   if (!verbRaw) { printUsage(); return 2; }
   if (verbRaw === "REPACK") return await actRepack(args);
@@ -248,6 +254,7 @@ export async function cmdAct(args: ParsedArgs, heard?: (data: Record<string, unk
   // Build the kebab-case args bag per residency-actions encoding.
   const actionArgs: Record<string, unknown> = {};
   let carrierCount = 0;
+  let sentTitles: string[] = [];
   // `changeId` is EVERY verb's own CHANGE nonce (H7/M10) — the identity of the logical change an
   // operator intends, told apart from `requestId` (a fresh dispatch attempt) below. ADD/COPY/MOVE
   // and LOAD already ride it on the wire as part of `actionArgs` (it names which Work moves where);
@@ -390,6 +397,7 @@ export async function cmdAct(args: ParsedArgs, heard?: (data: Record<string, unk
       if (carriers.length > 0) {
         actionArgs["carriers"] = carriers;
         carrierCount = carriers.length;
+        sentTitles = carriers.map((c) => c.title);
       }
     } catch {
       // Honesty at the gesture: a non-resolving local path probably means a
@@ -590,7 +598,7 @@ export async function cmdAct(args: ParsedArgs, heard?: (data: Record<string, unk
   // already landed" distinct from "I just landed it".
   const effectOf = result.effectOf;
   const data = { verb, ...summary, audit: auditUri, changeId, ...(effectOf !== undefined ? { effectOf } : {}) };
-  heard?.(data);
+  heard?.(data, sentTitles);
   emit(args, {
     ok: true,
     requestId: result.requestId,
