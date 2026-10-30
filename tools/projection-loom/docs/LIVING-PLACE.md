@@ -1,3 +1,25 @@
+## N9 · Aftermath G · The roof makes room for the rising path
+
+One place can hold the verbs `shelters` and `ascends`
+without fusing their evidence. The generator proposes a
+finite canopy offset when an authored ascending run
+starts from the same covered floor. That offset enters
+the native genome and its causal ancestry, then faces
+independent STEP roof-planar overlap and stair tread
+contact, shared-width and headroom checks. Both
+spatial goals must survive before native acceptance.
+A visually compelling canopy cannot overrule
+a blocked step, and a valid rise cannot excuse a
+false overhead cover.
+
+This remains a geometric design proposal. No load,
+building-code, weatherproofing, occupancy or other
+physical safety certificate follows from a passed
+construction recipe. The operator may later choose
+or dissent on a built form through explicit review.
+
+---
+
 ## N9 · Aftermath M · Variation follows the verb
 
 A heritable place now varies what a relationship **does**:

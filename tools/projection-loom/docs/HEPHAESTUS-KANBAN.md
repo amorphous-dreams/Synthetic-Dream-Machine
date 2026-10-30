@@ -1,3 +1,36 @@
+## ☕ N9 · Combined-place intent and aftermath G · 2026-10-29
+
+**N9-G** (`95ac67a7`) joins `ascend` and `shelter`
+on ONE source-grounded architectural location. When an
+authored ascending run shares the floor named by a
+new shelter proposal, the canopy constructor shifts
+its horizontal cover away from the first tread,
+using only the explicitly known ascending axis and
+the floor's original native dimensions. No source
+camera, physical stability inference or visual
+heuristic authorizes this proposed spatial adjustment.
+
+**Intent aftermath G:** independently reimported STEP
+must witness BOTH the ordered rising native side-face
+contacts and the overhead planar cover, each through
+its separate native contact/clearance method.
+One failed goal prevents joint admission, even when
+another goal produces valid geometry. Regression tests
+make an out-of-place canopy fail while the stair
+still passes. An entire admitted candidate retains
+one OODA-HA study and immutable causal/native
+workspace with both goal receipts.
+
+This joined architectural place makes intent-sensitive
+composition observable, not merely pairwise scoring.
+Future study must develop richer support structures,
+non-axis route grammar and operator-reviewed materials,
+then verify any engineering claims independently.
+No artistic winner, survey claim, safety certification,
+pet-name, o-takiage or canon follows.
+
+---
+
 ## ☕ N9 · CI aftermath syntax recovery · 2026-10-29
 
 The first full CAD runner against `e1987bb4` refused before
