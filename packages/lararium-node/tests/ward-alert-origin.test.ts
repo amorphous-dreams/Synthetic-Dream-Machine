@@ -22,3 +22,10 @@ describe("R3: the island's host code stamps its own events channel", () => {
     expect(hostEvent("lar:///w", "confluence:conflict", { verb: "ward-alert", origin: "surface" }).payload).toMatchObject({ origin: "channel" });
   });
 });
+
+describe("R3: the projector's bag-projected journal event is host code too (CI e2e, slice 4)", () => {
+  test("RED: bagProjectedEvent names channel, so journal-append reaches the daemon local", async () => {
+    const { bagProjectedEvent } = await import("../src/journal-append-gate.js");
+    expect(bagProjectedEvent("lar:///w", { bagId: "lar:///b", path: "/x" }).payload).toMatchObject({ verb: "journal-append", origin: "channel" });
+  });
+});
