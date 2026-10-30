@@ -47,22 +47,17 @@ export function kahuRealmHandleIndex(): number { return 0; }
 export interface KahuCanonDocs { readonly lares?: AutomergeUrl; readonly lararium?: AutomergeUrl }
 
 /**
- * THE KAHU DOCUMENT OF A BAG DERIVES FROM THE STEWARD'S OWN LEAF: a MAC under the steward's per-Nexus seed over the
- * Nexus and the bag seeds its id. Every genuine seal the steward makes for a bag names this one document, so a seal
- * carries no freshness to lose (an older seal replayed, a kept copy from an old seal home and a founding retry over a
- * wiped registry all name it), and no other hand can compute it before the registration publishes it, so no peer
- * pre-seeds the canon a founding adopts. Its address reads public once registered, as any registered document's does.
+ * THE FOUNDING MINTS A KAHU BAG'S DOCUMENT AT THE STEWARD'S OWN DERIVATION: a MAC under the steward's per-Nexus seed over
+ * the Nexus and the bag seeds its id. No other hand can compute it before the registration publishes it, so no peer
+ * pre-seeds the canon a founding adopts; one leaf mints one document per bag, so a founding retry under that leaf
+ * re-registers the same document. Only the founding computes it: a reader stands what the steward sealed (the
+ * registration and the kept copy), so a reader needs no steward secret beyond the seal it checks.
  */
 export async function kahuBagDocUrl(nexus: string, bagUri: string): Promise<AutomergeUrl> {
   const leaf = await mintNexusLeaf(kahuRealmHandleIndex(), nexus);
   try {
     return deterministicDocUrl(`kahu-doc:${createHmac("sha256", leaf.seed).update(`kahu-doc|${nexus}|${bagUri}`).digest("hex")}`);
   } finally { leaf.seed.fill(0); }
-}
-
-/** Each Kahu bag's derived document at this Nexus. */
-async function kahuBagDocs(nexus: string): Promise<ReadonlyMap<string, AutomergeUrl>> {
-  return new Map(await Promise.all(KAHU_REALM_BAGS.map(async (bag) => [bag, await kahuBagDocUrl(nexus, bag)] as const)));
 }
 
 const urlOf = (docs: ReadonlyMap<string, { readonly docUrl: string }>, bag: string): AutomergeUrl | undefined =>
@@ -85,25 +80,23 @@ function keepRegistration(sealHome: string, rec: RealmBagRegistration): void {
   atomicWriteFileSync(path, JSON.stringify(rec, null, 2));
 }
 /** The hearth's kept registration for a bag, where it reads whole and verifies as the steward's own seal over this Nexus and bag; else none. */
-async function keptRegistration(sealHome: string, nexus: string, bagUri: string, steward: string, docUrl: string): Promise<RealmBagRegistration | null> {
+async function keptRegistration(sealHome: string, nexus: string, bagUri: string, steward: string): Promise<RealmBagRegistration | null> {
   const path = keptRegistrationPath(sealHome, nexus, bagUri);
   if (!existsSync(path)) return null;
   let text: string;
   try { text = readFileSync(path, "utf8"); } catch { return null; }
   const rec = parseRealmBagRegistration(text);
-  if (!rec || rec.realmId !== nexus || rec.bagUri !== bagUri || rec.docUrl !== docUrl) return null;
+  if (!rec || rec.realmId !== nexus || rec.bagUri !== bagUri) return null;
   if (rec.keptBy.length !== 1 || rec.keptBy[0]!.toLowerCase() !== steward) return null;
   return (await realmBagRegistrationCounts(rec, nexus)) ? rec : null;
 }
 
-/** The registry's rows for each Kahu bag sealed by EXACTLY the hearth's Kahu steward over the bag's derived document, counted at this Nexus. */
-async function stewardRows(
-  doc: LarDoc | undefined | null, nexus: string, steward: string, docs: ReadonlyMap<string, AutomergeUrl>,
-): Promise<ReadonlyMap<string, readonly RealmBagRegistration[]>> {
+/** The registry's rows for each Kahu bag sealed by EXACTLY the hearth's Kahu steward and counted at this Nexus. */
+async function stewardRows(doc: LarDoc | undefined | null, nexus: string, steward: string): Promise<ReadonlyMap<string, readonly RealmBagRegistration[]>> {
   const rows = new Map<string, RealmBagRegistration[]>();
   for (const rec of realmBagRegistrationsFromDoc(doc)) {
     if (rec.keptBy.length !== 1 || rec.keptBy[0]!.toLowerCase() !== steward) continue;
-    if (!KAHU_REALM_BAGS.includes(rec.bagUri) || rec.docUrl !== docs.get(rec.bagUri)) continue;
+    if (!KAHU_REALM_BAGS.includes(rec.bagUri)) continue;
     if (!(await realmBagRegistrationCounts(rec, nexus))) continue;
     rows.set(rec.bagUri, [...(rows.get(rec.bagUri) ?? []), rec]);
   }
@@ -111,23 +104,23 @@ async function stewardRows(
 }
 
 /**
- * THE KAHU CANON STANDS ON ONE STEWARD AND ONE DERIVED DOCUMENT. `foldRealmBags` verifies every self-named steward's seal
+ * THE KAHU CANON STANDS ON ONE STEWARD AND ITS SEAL. `foldRealmBags` verifies every self-named steward's seal
  * and never that the hand holds the hearth's canon, so the Kahu canon counts only registrations sealed by EXACTLY the
- * hearth's Kahu steward (one owner per registry; kahu.mem: kept by that one name) over the bag's derived document
- * (`kahuBagDocUrl`): a row naming any other document reads as nothing, whoever sealed it. The registration the hearth
- * KEEPS stands first where it verifies, and lands on the registry again where no row there carries it; a bag the hearth
- * keeps none for stands on the steward's counted row and is kept from then on. A kept file stands only where it verifies.
+ * hearth's Kahu steward (one owner per registry; kahu.mem: kept by that one name). The registration the hearth KEEPS
+ * stands first where it verifies, and lands on the registry again where no row there carries it; a bag the hearth keeps
+ * none for stands on the steward's one counted document and is kept from then on, and the steward's seals over two
+ * documents stand none (`equivocal`). A kept file stands only where it verifies. No reader recomputes the founding's
+ * derivation: one leaf mints one document per bag, so the steward's seals name one document.
  */
 async function standKahuRegistrations(
   realm: { doc(): LarDoc | undefined; change(fn: (d: LarDoc) => void): void }, sealHome: string, nexus: string, steward: string,
-): Promise<{ readonly standing: ReadonlyMap<string, RealmBagRegistration>; readonly restored: readonly string[] }> {
-  const docs = await kahuBagDocs(nexus);
-  const rows = await stewardRows(realm.doc(), nexus, steward, docs);
+): Promise<{ readonly standing: ReadonlyMap<string, RealmBagRegistration>; readonly restored: readonly string[]; readonly equivocal: readonly string[] }> {
+  const rows = await stewardRows(realm.doc(), nexus, steward);
   const standing = new Map<string, RealmBagRegistration>();
-  const restored: string[] = [];
+  const restored: string[] = [], equivocal: string[] = [];
   for (const bagUri of KAHU_REALM_BAGS) {
     const onRegistry = rows.get(bagUri) ?? [];
-    const kept = await keptRegistration(sealHome, nexus, bagUri, steward, docs.get(bagUri)!);
+    const kept = await keptRegistration(sealHome, nexus, bagUri, steward);
     if (kept) {
       standing.set(bagUri, kept);
       const bytes = canonicalJson(kept);
@@ -137,11 +130,12 @@ async function standKahuRegistrations(
       }
       continue;
     }
-    if (new Set(onRegistry.map((rec) => rec.docUrl)).size !== 1) continue;
+    if (new Set(onRegistry.map((rec) => rec.docUrl)).size > 1) { equivocal.push(bagUri); continue; }
+    if (onRegistry.length === 0) continue;
     keepRegistration(sealHome, onRegistry[0]!);
     standing.set(bagUri, onRegistry[0]!);
   }
-  return { standing, restored };
+  return { standing, restored, equivocal };
 }
 
 /**
@@ -156,7 +150,12 @@ export async function landKahuRealm(opts: {
   const core = await cabalCore(opts.repo, opts.sealHome, undefined);
   const realm = await materializeSharedLarDoc(opts.repo, realmDocUrl(core.nexus), "realm");
   const steward = await kahuSteward(core.nexus);
-  const { standing, restored } = await standKahuRegistrations(realm, opts.sealHome, core.nexus, steward);
+  const { standing, restored, equivocal } = await standKahuRegistrations(realm, opts.sealHome, core.nexus, steward);
+  // AN EQUIVOCAL REGISTRY IS NO ABSENCE: the steward's own seals naming two documents for a bag, with no kept copy to
+  // pin one, refuse the founding rather than mint a replacement canon over them.
+  if (equivocal.length > 0) {
+    throw new NexusCabalError(`the Kahu realm's registry holds the steward's seals over two documents for ${equivocal.join(", ")}, and this hearth keeps no registration to pin one; restore the kept registration (<sealHome>/nexus/kahu-realm/) before founding again`);
+  }
   const registered: string[] = [...restored];
   let signer: StewardSigner | null = null;
   for (const bagUri of KAHU_REALM_BAGS) {

@@ -266,7 +266,7 @@ export interface LarTiddlerStore {
    * from absent" (residency-model anti-pattern #3). Audit lives in the ledger.
    * With `only`, the title leaves only while it still holds a live record whose fields equal `only`'s and no
    * concurrent value beside it, read and removed in one synchronous change: a record another hand wrote, deleted or
-   * wrote concurrently since stays as it stands.
+   * wrote concurrently since stays as it stands until it is settled.
    */
   remove(title: string, origin: ChangeOrigin, options?: LarRemoveOptions): Promise<void>;
 
