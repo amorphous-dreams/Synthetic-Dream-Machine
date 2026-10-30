@@ -1,3 +1,24 @@
+## Active recovery · remaining work by intent
+
+1. **Evidence integrity:** re-prove native study replay, compare exact
+   JSON field differences, retain source/goal tamper refusals, and establish
+   exact-head CI across CAD, OpenUSD/STEP, Blender, general and held-out gates.
+2. **Feature / aftermath:** compound intent studies now compare full aims,
+   leave-one-out counterfactuals, and each independently authored singleton
+   when three or four goals appear. Test constructive consequences without
+   assigning an artistic winner or an inferred architectural interaction.
+3. **Feature / aftermath:** right-angle studies now check both independent
+   native witness identities, alongside unique genotypes, preserving the
+   explicitly authored bend alternatives.
+4. **Next feature frontier:** unify place study orchestration under the same
+   five-phase OODA-HA authority, then mature compound spatial grammar,
+   meaningful operator whole-place galleries and cross-seed held-out assays.
+
+The planned later steps remain open, not delivered by this repair campaign.
+No backwards-compatibility layer or application release ordinal follows.
+
+---
+
 ## N9 · Intent aftermath · Two genuine alternative routes retain their own testimony
 
 The `place-orthogonal-study` and companion verifier now create

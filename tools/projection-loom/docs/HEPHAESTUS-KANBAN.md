@@ -1,3 +1,19 @@
+## Recovery wave log · 2026-10-29 PDT
+
+- **Feature:** growth-node construction receipts now emit JSON-native vectors
+  and preserve exact digest semantics; independent round-trip regressions.
+- **Intent aftermath:** immutable replay now reports the first divergent
+  field, retaining hard refusal and checks on changed source identities.
+- **Feature:** compound native ablation adds each singleton control for
+  three/four-goal studies, preserving the original full and leave-one-out arms.
+- **Intent aftermath:** matched orthogonal studies explicitly check distinct
+  native arm testimony, not just distinct source-genome hashes.
+- **Acceptance open:** previous head `e76ec5b3` failed 7/641 CAD tests
+  and the generalized native job. New head requires exact-head GitHub Actions.
+  No CI green claim, no automatic winner, no promotion, no PR merge.
+
+---
+
 ## N9 · Intent aftermath · Two genuine alternative routes retain their own testimony
 
 The `place-orthogonal-study` and companion verifier now create

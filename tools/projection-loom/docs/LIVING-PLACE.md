@@ -1,3 +1,23 @@
+## Current N9 replay and matched-intent boundary
+
+A growth-node serializes native parameters as JSON arrays at the authoritative
+source, so preregistration does not silently change its representation after
+immutable publication. Digest inputs retain the same JSON numeric content.
+Independent replay remains strict; diagnostics name the first unequal field,
+not a waiver of that difference. Native STEP reimport still decides every
+construction witness.
+
+Compound authorial counterfactuals preserve the complete aim, all leave-one-out
+arms and, for three/four goals, each single-goal control. This observes
+standalone versus combined constructive affordances without interpreting
+success as aesthetic improvement or automatically inferring causal synergy.
+Right-angle alternatives retain independently matched source and native
+proofs and a distinct-native-witness comparison, never a selected winner.
+
+These additions need exact-head CI; prior failures remain historical evidence.
+
+---
+
 ## N9 · Intent aftermath · Two genuine alternative routes retain their own testimony
 
 The `place-orthogonal-study` and companion verifier now create

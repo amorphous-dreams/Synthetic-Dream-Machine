@@ -1,3 +1,21 @@
+## Active recovery campaign · exact-head acceptance pending
+
+The N9 constructive architecture now carries unpublished-then-landed repairs to
+JSON-native growth-node receipts, field-local immutable replay diagnostics,
+compound single-goal counterfactual arms, and independent native-evidence
+comparison for both operator-permitted right-angle routes. The preceding
+head `e76ec5b3` had **7 failed / 634 passed** in CAD CI, with failures in
+compound and orthogonal study re-entry. This campaign addresses the shared
+serialized tuple/list mismatch at its source without relaxing any audit gate.
+
+The new code MUST earn all exact-head workflows after publication. Neither
+staging a Git object nor passing an older head constitutes acceptance. Keep
+source/geometry/Fire/operator authority distinct; no PR merge or artistic
+promotion follows. Use the current branch SHA and Actions results, not this
+snapshot, for the next verdict.
+
+---
+
 ## N9 · Intent aftermath · Two genuine alternative routes retain their own testimony
 
 The `place-orthogonal-study` and companion verifier now create
