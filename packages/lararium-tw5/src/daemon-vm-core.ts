@@ -622,22 +622,24 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         }));
         return;
       }
+      // A SESSION'S DELEGATE PRESENTS AS ITS BOOKING: the presenter the session door verified, and local (it rode the
+      // vessel's own channel). Any other delegate keeps the claim it names and reads non-local.
+      const worn = sessionAsks.get(msg.requestId);
       const invocationLike = {
         title:       `${DAEMON_BAG_ID}/delegate/${msg.requestId}`,
         requestId:   msg.requestId,
         action:      msg.verb,
         args:        msg.args,
-        requestedBy: msg.requestedBy,
+        requestedBy: worn?.presenter ?? msg.requestedBy,
         requestedAt: new Date().toISOString(),
         targets:     msg.targets ?? [],
         batchMode:   (msg.batchMode ?? "best-effort") as BatchMode,
         status:      "pending" as const,
       };
-      const worn = sessionAsks.get(msg.requestId);
       runLocalVerb(invocationLike, {
         daemon:   composite,
         registry: _registry,
-        ...(worn ? { wornOf: () => worn } : {}),
+        ...(worn ? { wornOf: () => worn, localOf: () => true } : {}),
       }).then((result) => {
         worker.post(mkDaemonVerbResult({ requestId: msg.requestId, result }));
       }).catch((err: unknown) => {
