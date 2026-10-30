@@ -4,9 +4,9 @@
  * A promotion's retract removes a title only while it still holds the record that landed (`LarRemoveOptions.only`).
  * Automerge keeps every concurrent write of a title: the visible value is one of them, and the rest stand as conflicts
  * the next write settles. A title whose visible fields equal the landed record but which holds a concurrent value
- * stays, so the concurrent value is never removed unlanded; the title leaves at the pass after a write settles it. A
- * write settles a field conflict at the field and a whole-record conflict (two hands created one title) whole; the
- * concurrent value rode to the draft readers when it merged (`parallel-drafts`: the reading wiki keeps it).
+ * stays, so the concurrent value is never removed unlanded. A write to a conflicted field settles that field (the
+ * parallel-drafts law); a whole-record conflict (two hands created one title) waits for an explicit resolution, since an
+ * ordinary edit is no consent to drop the other hand's record.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/automerge-doc-store
  */
@@ -44,22 +44,18 @@ describe("a conditional remove over a conflicted title", () => {
     expect(await store.get(T)).toBeNull();
   });
 
-  test("a title two hands created concurrently stays under a conditional remove; a write settles it whole, then it leaves", async () => {
+  test("a title two hands created concurrently stays under a conditional remove, and an ordinary write never settles it", async () => {
     const { repo, here, store, other } = await twoHands();
     const there = repo.clone<LarDoc>(here);
-    const surfaced: number[] = [];
-    store.onParallelDrafts((change) => { surfaced.push(change.drafts.length); });
     await store.put(rec("v1"), hand);
     await other(there).put(rec("v2"), hand);
     here.merge(there);
-    expect(surfaced.length, "the merge surfaced the concurrent record to the draft readers").toBeGreaterThan(0);
     await store.remove(T, hand, { only: (await store.get(T))! });
     expect(await store.get(T)).not.toBeNull();
-
-    // A write over a whole-record conflict settles it whole (the concurrent record already rode to the draft readers).
-    await store.put(rec("settled"), hand);
-    expect(store.parallelDrafts(T), "the write settled the whole-record conflict").toHaveLength(0);
+    // An edit is no consent to drop the other hand's record: the conflict stands for an explicit resolution.
+    await store.put(rec("an ordinary edit"), hand);
+    expect(store.parallelDrafts(T).length, "the other hand's record stays reachable as a draft").toBeGreaterThan(0);
     await store.remove(T, hand, { only: (await store.get(T))! });
-    expect(await store.get(T)).toBeNull();
+    expect(await store.get(T)).not.toBeNull();
   });
 });

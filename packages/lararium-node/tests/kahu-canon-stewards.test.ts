@@ -20,9 +20,11 @@
  *       deletion of its row restores it.
  *   S6  RED: a kept file that does not verify (another document under the steward's name, or torn bytes) never lands
  *       on the registry and never throws the read.
- *   S7  each Kahu bag's document DERIVES from the steward's own per-Nexus leaf over the Nexus and the bag (`kahuBagDocUrl`),
- *       so every genuine steward seal names one document: an older seal over another document, alone on the registry with
- *       no kept copy, stands for nothing, and a founding retry registers the derived document again.
+ *   S7  RED: the founding MINTS each Kahu bag's document at the steward's own derivation (`kahuBagDocUrl`), and a reader
+ *       resolves the steward's sealed registration and kept copy as sealed, never recomputing that derivation (a reader
+ *       needs no steward secret beyond the seal it checks).
+ *   S9  RED: a founding retry over the steward's own rows naming two documents (no kept copy) refuses by name and
+ *       registers nothing: an equivocal registry is no absence to mint a replacement canon over.
  *   S8  RED: no peer can compute that document before the steward publishes it: a document pre-seeded at the address a
  *       peer CAN compute from the Nexus and the bag never becomes the canon a founding retry registers.
  */
@@ -32,7 +34,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   LARARIUM_DOC_URI, LARES_DOC_URI, deterministicDocUrl, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc, foldRealmBags, materializeSharedLarDoc,
-  realmBagKey, realmDocUrl, signRealmBagRegistration, writeRealmBagRegistration, type LarDoc, type RealmBagRegistration, type StewardSigner,
+  realmBagKey, realmBagProposalKey, realmDocUrl, signRealmBagRegistration, writeRealmBagRegistration, type LarDoc, type RealmBagRegistration, type StewardSigner,
 } from "@lararium/mesh";
 import { kahuBagDocUrl, landKahuRealm, standKahuCanon } from "../src/kahu-realm.js";
 
@@ -174,19 +176,48 @@ describe("the Kahu canon reads only its charter's steward", () => {
     });
   });
 
-  test("S7 — the Kahu documents derive from the Nexus: a lone older seal names nothing, and a founding retry mints no replacement", async () => {
-    await scene(async ({ repo, aid, sealHome, realm, genuine, stand, keptPath }) => {
-      const derived = await kahuBagDocUrl(aid, LARES_DOC_URI);
-      expect(genuine.docUrl, "the founding registered the derived document").toBe(derived);
+  test("S7 — a reader resolves the steward's registration and kept copy as sealed, never recomputing the founding's derivation", async () => {
+    await scene(async ({ repo, aid, realm, genuine, stand, keptPath, rowOf }) => {
+      expect(genuine.docUrl, "the founding minted at the steward's derivation").toBe(await kahuBagDocUrl(aid, LARES_DOC_URI));
       const leaf = await mintNexusLeaf(0, aid);
       const steward: StewardSigner = { signer: leaf.verifyingKey.toLowerCase(), sign: ed25519SignerFromSeed(leaf.seed) };
-      const older = await signRealmBagRegistration({ realmId: aid, bagUri: LARES_DOC_URI, docUrl: await freshDoc(repo), readTier: "contract" }, [steward]);
-      rmSync(keptPath(LARES_DOC_URI));
-      realm.change((d) => writeRealmBagRegistration(d, older, steward.signer, true));
-      expect((await stand()).lares, "a lone seal over another document stands for nothing").not.toBe(older.docUrl);
-      const landed = await landKahuRealm({ repo, sealHome });
-      expect(landed.docs.lares, "the retry registers the derived document").toBe(derived);
-      expect((await stand()).lares).toBe(derived);
+      const kept = readFileSync(keptPath(LARES_DOC_URI), "utf8");
+      // A registration the steward sealed over a document this leaf would not derive (a founding from another leaf's
+      // derivation, restored): the seal and the kept copy name it, and that is what a reader stands.
+      const sealed = await signRealmBagRegistration({ realmId: aid, bagUri: LARES_DOC_URI, docUrl: await freshDoc(repo), readTier: "contract" }, [steward]);
+      try {
+        writeFileSync(keptPath(LARES_DOC_URI), JSON.stringify(sealed));
+        realm.change((d) => writeRealmBagRegistration(d, sealed, steward.signer, true));
+        expect((await stand()).lares, "the sealed registration stands as sealed").toBe(sealed.docUrl);
+      } finally {
+        writeFileSync(keptPath(LARES_DOC_URI), kept);
+        realm.change((d) => writeRealmBagRegistration(d, genuine, steward.signer, true));
+      }
+      expect((await stand()).lares).toBe(genuine.docUrl);
+      expect(rowOf(LARES_DOC_URI, steward.signer)).toMatchObject({ docUrl: genuine.docUrl });
+    });
+  });
+
+  test("S9 — a founding retry over the steward's own rows naming two documents refuses and mints nothing", async () => {
+    await scene(async ({ repo, aid, sealHome, realm, genuine, keptPath }) => {
+      const leaf = await mintNexusLeaf(0, aid);
+      const steward: StewardSigner = { signer: leaf.verifyingKey.toLowerCase(), sign: ed25519SignerFromSeed(leaf.seed) };
+      const kept = readFileSync(keptPath(LARES_DOC_URI), "utf8");
+      const other = await signRealmBagRegistration({ realmId: aid, bagUri: LARES_DOC_URI, docUrl: await freshDoc(repo), readTier: "contract" }, [steward]);
+      const before = Object.keys(realm.doc()?.tiddlers ?? {}).length;
+      try {
+        rmSync(keptPath(LARES_DOC_URI));
+        // The genuine seal stands beside the steward's other one (under the proposal key; no row key binds a payload).
+        realm.change((d) => {
+          writeRealmBagRegistration(d, other, steward.signer, true);
+          d.tiddlers[realmBagProposalKey(LARES_DOC_URI, steward.signer)] = { tiddler: { title: realmBagProposalKey(LARES_DOC_URI, steward.signer), text: JSON.stringify(genuine) } } as never;
+        });
+        await expect(landKahuRealm({ repo, sealHome }), "an equivocal steward registry is no absence to mint over").rejects.toThrow(/two documents|equivoc/);
+        expect(Object.keys(realm.doc()?.tiddlers ?? {}).length, "the refusal registers nothing").toBe(before + 1);
+      } finally {
+        writeFileSync(keptPath(LARES_DOC_URI), kept);
+        realm.change((d) => { delete d.tiddlers[realmBagProposalKey(LARES_DOC_URI, steward.signer)]; writeRealmBagRegistration(d, genuine, steward.signer, true); });
+      }
     });
   });
 
