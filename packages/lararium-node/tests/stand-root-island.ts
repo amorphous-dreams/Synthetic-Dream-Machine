@@ -115,7 +115,7 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
     async run(verb, verbArgs, ask) {
       const requestId = `root-island-${atom.key.slice(0, 8)}-${++n}`;
       const signed = ask ? { ask: await signMemoryAsk({ requestId, act: ask.act, facts: ask.facts, sign: vesselSign }) } : {};
-      return registry.get(verb)!({ ...verbArgs, ...signed }, { daemon: {} as never, invocation: { requestId } as never, cap: async () => ({ ok: true }), presenter: `0x${atom.key}` } as never) as Promise<Record<string, unknown>>;
+      return registry.get(verb)!({ ...verbArgs, ...signed }, { daemon: {} as never, invocation: { requestId } as never, cap: async () => ({ ok: true }), presenter: `0x${atom.key}`, local: true } as never) as Promise<Record<string, unknown>>;
     },
     async down() { await kh.dispose?.(); detach(); port1.close(); port2.close(); },
   };
