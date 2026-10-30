@@ -53,7 +53,7 @@ def _html_board(report):
                       reason+"</article>")
     deferred="".join("<li>"+h(row["candidate_id"])+" (epoch "+
                      str(row["epoch"])+")</li>" for row in report["deferred"])
-    return """<!doctype html>
+    return ("""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Projection Loom · Place evidence review</title>
@@ -80,7 +80,7 @@ Deferred: """+str(len(report["deferred"]))+"""</p>
 <h2>Unattempted proposals</h2><ul>"""+deferred+"""</ul>
 <footer>Every viewed alternative retains its source and refusal testimony.
 Images present geometry; they do not author it.</footer></body></html>
-"""
+""")
 
 
 def render_place_board(campaign, destination):
