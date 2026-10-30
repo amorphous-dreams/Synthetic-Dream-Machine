@@ -177,8 +177,12 @@ def _verify_place_frontiers(path,pre,summary,spatial,resolved):
             offered.append((f"p{epoch:03d}c{i:03d}",candidate))
         loop=f"location/place-{epoch:03d}"
         decision=journal.data["loops"][loop]["receipts"]["decide"]
+        observe=journal.data["loops"][loop]["receipts"]["observe"]
+        if observe.get("construction_obligations_sha256")!=pre["construction_obligations"]["sha256"]:
+            raise ValueError("Epoch Observe lost the original compositional intent")
         if (decision["exact_budget"]!=pre["exact_budget"]
-                or decision["explicit_goal"]!=pre["spatial_intent_sha256"]):
+                or decision["explicit_goal"]!=pre["spatial_intent_sha256"]
+                or decision.get("construction_obligations_sha256")!=pre["construction_obligations"]["sha256"]):
             raise ValueError("Operator steering altered authored native budget or original spatial goal")
         preferred=decision.get("operator_preferred_emitter")
         seats=select_place_auditions(offered,pre["exact_budget"],preferred,epoch=epoch)
@@ -194,6 +198,12 @@ def _verify_place_frontiers(path,pre,summary,spatial,resolved):
         for (identifier,candidate),row in zip(seats,attempted):
             if row["genome_sha256"]!=candidate.identity or row["epoch"]!=epoch:
                 raise ValueError("Audited native child differs from offered developmental genome")
+            child_id=loop+"/"+identifier
+            child_observe=journal.data["loops"][child_id]["receipts"]["observe"]
+            if (child_observe.get("place-genome")!=candidate.identity
+                    or child_observe.get("construction_obligations_sha256")
+                    !=pre["construction_obligations"]["sha256"]):
+                raise ValueError("Candidate Observe lost its source or original obligations")
             if row["status"]=="admitted":
                 niche=tuple(row["niche"])
                 if niche not in niches:
@@ -392,10 +402,12 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
             if selected_preference not in (None,"initial","mutation"):
                 raise ValueError("Operator preferred emitter unavailable at living-place aperture")
             open_child(journal,loop,parent="location",scope="epoch",
-                       evidence={"genome":genome.identity,"spatial":spatial.identity},
+                       evidence={"genome":genome.identity,"spatial":spatial.identity,
+                                 "construction_obligations_sha256":construction_plan["sha256"]},
                        orient={"source":pre["original_inventory_sha256"]},
                        decide={"exact_budget":exact_budget,
                                "explicit_goal":spatial.identity,
+                               "construction_obligations_sha256":construction_plan["sha256"],
                                "operator_preferred_emitter":selected_preference},
                        act={"native":"independent-STEP"})
             offered=[]
@@ -412,7 +424,8 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
             for i,(identifier,candidate) in enumerate(seats):
                 loopid=loop+"/"+identifier
                 open_child(journal,loopid,parent=loop,scope="candidate",
-                           evidence={"place-genome":candidate.identity},
+                           evidence={"place-genome":candidate.identity,
+                                     "construction_obligations_sha256":construction_plan["sha256"]},
                            orient={"source":pre["original_inventory_sha256"]},
                            decide={"gate":"native-then-spatial"},
                            act={"candidate":identifier})
