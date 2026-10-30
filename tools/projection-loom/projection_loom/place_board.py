@@ -41,9 +41,15 @@ def _html_board(report):
                  if item["six_view"] else "")
         reason=("<p class='refusal'>"+h(item["reason"])+"</p>"
                 if item["reason"] else "")
-        goals="<p class='metrics'>"+h(metrics)+"</p>"
+        lines=[]
+        for goal in item["goal_consequences"]:
+            lines.append("<li>"+h(goal["kind"]+" ("+goal["subject"]+" → "+
+                         goal["object"]+")")+": "+h(goal["status"])+
+                         (" — "+h(goal["reason"]) if goal["reason"] else "")+"</li>")
+        consequences="<ul>"+"".join(lines)+"</ul>"
         blocks.append("<article><header><strong>"+label+"</strong>"
-                      +" <small>"+state+"</small></header>"+picture+goals+
+                      +" <small>"+state+"</small></header>"+picture+
+                      "<p class='metrics'>"+h(metrics)+"</p>"+consequences+
                       reason+"</article>")
     deferred="".join("<li>"+h(row["candidate_id"])+" (epoch "+
                      str(row["epoch"])+")</li>" for row in report["deferred"])
@@ -67,7 +73,8 @@ a{color:#b8d9e9}footer{margin-top:2rem;color:#b6c4cc}
 <aside><p>Independent native STEP receipts and synthetic fixed-camera
 illustrations. No automatic artistic winner, structural load certification,
 survey pose or canon promotion.</p></aside>
-<p>Location: """+h(report["location"])+""" · Admitted: """+str(report["admitted"])+""" ·
+<p>Location: """+h(report["location"])+""" · Source evidence: """+
+h(report["source_evidence_scope"])+""" · Admitted: """+str(report["admitted"])+""" ·
 Deferred: """+str(len(report["deferred"]))+"""</p>
 <section>"""+ "".join(blocks)+"""</section>
 <h2>Unattempted proposals</h2><ul>"""+deferred+"""</ul>
@@ -93,7 +100,16 @@ def render_place_board(campaign, destination):
             if (image["native_scene_sha256"]!=
                     (candidate["native_scene"] or {}).get("scene_sha256")):
                 raise ValueError("Operator image diverges from independently verified STEP")
+            goal_evidence=candidate["final_goal_evidence"] or candidate["original_goal_evidence"]
+            consequences=([{"kind":item["goal"]["kind"],
+                            "subject":item["goal"]["subject"],
+                            "object":item["goal"]["object"],
+                            "status":item["status"],
+                            "reason":item.get("reason")}
+                           for item in goal_evidence["goals"]]
+                          if goal_evidence else [])
             rows.append({
+                "goal_consequences":consequences,
                 "candidate_id":candidate["candidate_id"],
                 "epoch":candidate["epoch"],
                 "status":candidate["status"],
@@ -139,7 +155,12 @@ def verify_place_board(campaign,board):
         raise ValueError("Operator board HTML changed")
     for row in receipt["candidates"]:
         if row["six_view"]:
-            picture=root/row["six_view"]
+            relative=Path(row["six_view"])
+            if (relative.is_absolute() or len(relative.parts)!=2
+                    or relative.parts[0]!="gallery"
+                    or relative.name!=row["candidate_id"]+"_six_view.png"):
+                raise ValueError("Operator board image path diverged from verified candidate")
+            picture=root/relative
             if not picture.is_file() or sha256(picture.read_bytes()).hexdigest()!=row["image_sha256"]:
                 raise ValueError("Operator board image changed")
     with tempfile.TemporaryDirectory(prefix="loom-operator-board-") as td:
