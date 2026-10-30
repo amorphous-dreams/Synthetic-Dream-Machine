@@ -192,3 +192,31 @@ def test_incomplete_native_campaign_stays_failed_after_single_runner_unlock(tmp_
         run_place_campaign(*inputs,out,epochs=1,offspring=1,exact_budget=1)
     assert (out/"FAILED").exists()
     assert not (tmp_path/".incomplete.session.runlock").exists()
+
+def test_relational_emitter_deferral_is_explicit_and_replayable(tmp_path):
+    import json
+    data=setup()
+    root=tmp_path/"relational"
+    report=run_place_campaign(*data,root,epochs=2,offspring=2,exact_budget=1,
+                              prefer_emitter="relational-recombination")
+    assert verify_place_campaign(root)==report
+    front=json.loads((root/"frontiers"/"epoch_001.json").read_text())
+    assert front["operator_preferred_emitter"]=="relational-recombination"
+    assert all(row["emitter_receipt"]["candidate_genome_sha256"]==row["genome_sha256"]
+               for row in front["offered"])
+    assert any(row["emitter_receipt"]["recombination_deferral"]
+               for row in front["offered"])
+    assert all(not row["emitter_receipt"]["operator_accepted"] for row in front["offered"])
+
+
+def test_study_replay_refuses_forged_emitter_parentage(tmp_path):
+    import json
+    data=setup()
+    root=tmp_path/"genetic"
+    run_place_campaign(*data,root,epochs=1,offspring=1,exact_budget=1)
+    path=root/"frontiers"/"epoch_000.json"
+    front=json.loads(path.read_text())
+    front["offered"][0]["emitter_receipt"]["emitter"]="relational-recombination"
+    path.write_text(json.dumps(front))
+    with pytest.raises(ValueError,match="frontier diverged"):
+        verify_place_campaign(root)
