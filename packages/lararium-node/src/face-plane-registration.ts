@@ -19,6 +19,8 @@ export async function registerFacePlanesForRelay(ports: {
 }): Promise<string[]> {
   try { if (!await ports.relayEnabled(ports.group)) return []; } catch { return []; }
   const planes = await ports.prove(ports.group);
+  // The proof awaits: a relay disabled meanwhile registers nothing (the ring is read again at the commit boundary).
+  try { if (!await ports.relayEnabled(ports.group)) return []; } catch { return []; }
   const ids = personaSiblingBagIds(personaBagIdFor(ports.group));
   if (!planes || !ids) return [];
   const registered: string[] = [];
