@@ -369,7 +369,7 @@ test("RED: a run whose jobs endpoint stays 502 falls back to that run's own conc
 });
 
 test("a head the branch list's window misses is asked for by sha (`gh run list --commit`)", async () => {
-  const r = await door({ ...GREEN_TABLE(), runs: [mkRun({ headSha: "b".repeat(40), databaseId: 99 })], runsAtSha: [mkRun()], heldRuns: [], heldRunsAtSha: [mkHeld()] });
+  const r = await door({ ...GREEN_TABLE(), runs: [mkRun({ headSha: "b".repeat(40), databaseId: 99 })], "view:99": { jobs: [] }, runsAtSha: [mkRun()], heldRuns: [], heldRunsAtSha: [mkHeld()] });
   assert.equal(r.code, 0, r.out + r.err);
   assert.ok(r.calls.some((c) => c.includes("--commit") && c.includes(SHA)));
 });
@@ -391,7 +391,7 @@ test("RED: without --wait an unread head exits 2 at once; a cancelled-clean run 
 });
 
 test("RED: --wait also waits for a held-out run that does not name the head yet", async () => {
-  const r = await door({ ...GREEN_TABLE(), heldRuns: (n) => (n < 3 ? [] : [mkHeld()]) }, ["--wait"]);
+  const r = await door({ ...GREEN_TABLE(), heldRuns: (n) => (n < 3 ? [] : [mkHeld()]), heldRunsAtSha: [] }, ["--wait"]);
   assert.equal(r.code, 0, r.out + r.err);
   assert.equal(r.n.heldRuns, 3);
 });
