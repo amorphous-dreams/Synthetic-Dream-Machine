@@ -51,6 +51,9 @@ import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesse
 import { mintNexusLeaf } from "../src/nexus-leaf.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { storeDoorReactors } from "../src/store-door-verbs.js";
+
+/** A face row rides a session of its face: each vault's one face, h0, as main books it. */
+const WORN0 = { worn: { ordinal: 0, presenter: `0x${"00".repeat(32)}` } } as never;
 import { runSealedAct, SealedActRefused, type SealedActContext } from "../src/sealed-acts.js";
 import { heldSeatKey } from "../src/seat-key-store.js";
 import { larDataDir, larSealHome } from "../src/vessel-paths.js";
@@ -231,7 +234,7 @@ describe("a two-founder Nexus anchors its roll across its two vaults", () => {
     expect(again["refusal"]).toBe("nexus-roll-anchor-partial-refused");
     expect(String(again["refused"])).toMatch(/reads replay/);
     // No realm edge board holds a quorum act here, so no edge anchor stands owed.
-    expect((await rows(B)["nexus-roll-anchor-edge-standing"]({}, {} as never))["edgeAnchors"]).toEqual([]);
+    expect((await rows(B)["nexus-roll-anchor-edge-standing"]({}, WORN0))["edgeAnchors"]).toEqual([]);
     const landed = await rows(A)["nexus-roll-anchor-partial"]({ partial: courier(cosigned["partial"]) }, {} as never);
     expect(landed["verdict"]).toBe("complete");
     // A board that holds the counted anchor opens no second one, and no seat signs.
@@ -396,21 +399,21 @@ describe("a two-founder Nexus anchors its roll across its two vaults", () => {
     const carriage = await rows(A)["nexus-roll-anchor-open"]({}, {} as never);
     // The carriage partial answers as it stood, and says which realms still owe an anchor.
     expect(carriage["verdict"]).toBe("ready");
-    const edge = await rows(A)["nexus-roll-anchor-edge-open"]({}, {} as never) as { partials: Array<{ realm: string; verdict: string }> };
+    const edge = await rows(A)["nexus-roll-anchor-edge-open"]({}, WORN0) as { partials: Array<{ realm: string; verdict: string }> };
     expect(edge.partials.map((p) => [p.realm, p.verdict])).toEqual([[REALM, "ready"]]);
     // Each row takes its own family alone, and refuses the other by name with nothing landed.
     expect(await rows(B)["nexus-roll-anchor-partial"]({ partial: courier((edge.partials[0] as any).partial) }, {} as never)).toMatchObject({ refusal: "nexus-roll-anchor-partial-refused" });
-    expect(await rows(B)["nexus-roll-anchor-edge-partial"]({ partial: courier(carriage["partial"]) }, {} as never)).toMatchObject({ refusal: "nexus-roll-anchor-edge-partial-refused" });
-    const step = await rows(B)["nexus-roll-anchor-edge-partial"]({ partial: courier((edge.partials[0] as any).partial) }, {} as never);
+    expect(await rows(B)["nexus-roll-anchor-edge-partial"]({ partial: courier(carriage["partial"]) }, WORN0)).toMatchObject({ refusal: "nexus-roll-anchor-edge-partial-refused" });
+    const step = await rows(B)["nexus-roll-anchor-edge-partial"]({ partial: courier((edge.partials[0] as any).partial) }, WORN0);
     expect(step["verdict"]).toBe("complete");
     expect(step["edgeAnchors"]).toEqual([{ realm: REALM, state: "anchored", anchorCid: (step["landed"] as any).anchorCid }]);
     // The carriage step on B reports the realm as anchored there, and A's own standing still owes it.
     const cosigned = await rows(B)["nexus-roll-anchor-partial"]({ partial: courier(carriage["partial"]) }, {} as never);
     expect(cosigned["edgeAnchors"]).toBeUndefined();                       // the place's row reads no face's ledger
-    expect((await rows(B)["nexus-roll-anchor-edge-standing"]({}, {} as never))["edgeAnchors"])
+    expect((await rows(B)["nexus-roll-anchor-edge-standing"]({}, WORN0))["edgeAnchors"])
       .toEqual([{ realm: REALM, state: "anchored", anchorCid: (step["landed"] as any).anchorCid }]);
     await rows(A)["nexus-roll-anchor-partial"]({ partial: courier(cosigned["partial"]) }, {} as never);
-    expect((await rows(A)["nexus-roll-anchor-edge-standing"]({}, {} as never))["edgeAnchors"]).toEqual([{ realm: REALM, state: "owed" }]);
+    expect((await rows(A)["nexus-roll-anchor-edge-standing"]({}, WORN0))["edgeAnchors"]).toEqual([{ realm: REALM, state: "owed" }]);
     expect(first).toHaveLength(64);
   });
 });
