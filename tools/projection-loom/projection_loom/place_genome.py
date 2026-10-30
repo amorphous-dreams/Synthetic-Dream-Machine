@@ -474,10 +474,13 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
             size=tuple(dimension)),)),tuple(placement))
         bodies.append(deck)
         routes.append(Walkway(goal.subject,name,goal.object))
-    return PlaceGenome(tuple(sorted(bodies,key=lambda x:x.entity_id)),
+    result=PlaceGenome(tuple(sorted(bodies,key=lambda x:x.entity_id)),
                        tuple(sorted(routes,key=lambda w:(w.source,w.deck,w.destination))),
                        tuple(sorted(ascents,key=lambda a:(a.source,a.steps,a.destination))),
                        tuple(sorted(bearings,key=lambda b:(b.lower,b.column,b.upper))))
+    from .place_source_seal import seal_constructive_growth
+    seal_constructive_growth(genome,result)
+    return result
 
 def unique_walkway_chain(genome:PlaceGenome,subject,destination,*,max_hops=8):
     """Return the one declared directed route, or refuse unresolved choices."""

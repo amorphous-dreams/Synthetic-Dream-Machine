@@ -233,6 +233,10 @@ def verify_place_campaign(path):
     from .place_obligations import plan_spatial_obligations
     if pre.get("construction_obligations")!=plan_spatial_obligations(genome,intent):
         raise ValueError("Campaign construction obligations diverged from authored source")
+    from .place_source_seal import seal_constructive_growth
+    constructed=PlaceGenome.from_dict(pre["intent_constructed_genome"])
+    if pre.get("source_preserving_growth")!=seal_constructive_growth(genome,constructed):
+        raise ValueError("Campaign intent growth rewrote or lost original source declarations")
     if (PlaceGenome.from_dict(pre["intent_constructed_genome"]).identity
             !=pre["intent_constructed_genome_sha256"]
             or propose_from_spatial_intent(genome,intent).identity
@@ -324,6 +328,7 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
     out=Path(out)
     from .place_genome import propose_from_spatial_intent
     from .place_obligations import plan_spatial_obligations
+    from .place_source_seal import seal_constructive_growth
     construction_plan=plan_spatial_obligations(genome,spatial)
     resolved=propose_from_spatial_intent(genome,spatial)
     pre={"schema":"projection-loom/place-preregistration",
@@ -338,6 +343,7 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
                                   if source_status else "authored-construction-no-external-sources"),
          "original_genome":genome.to_dict(),"original_genome_sha256":genome.identity,
          "construction_obligations":construction_plan,
+         "source_preserving_growth":seal_constructive_growth(genome,resolved),
          "intent_constructed_genome":resolved.to_dict(),
          "intent_constructed_genome_sha256":resolved.identity,
          "epochs":epochs,"offspring":offspring,"exact_budget":exact_budget,"seed":seed,

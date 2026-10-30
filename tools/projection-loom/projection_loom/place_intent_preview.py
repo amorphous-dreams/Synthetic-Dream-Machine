@@ -19,23 +19,15 @@ def preview_place_intent(intent,spatial,genome):
     from .place_obligations import plan_spatial_obligations
     obligation_plan=plan_spatial_obligations(genome,spatial)
     constructed=propose_from_spatial_intent(genome,spatial)
+    from .place_source_seal import seal_constructive_growth
+    source_seal=seal_constructive_growth(genome,constructed)
     original={row.entity_id:row for row in genome.bodies}
     proposed={row.entity_id:row for row in constructed.bodies}
-    if (not set(original)<=set(proposed)
-            or any(proposed[name]!=row for name,row in original.items())):
-        raise ValueError("Intent constructor must never rewrite original native bodies")
     additions=[{"entity_id":name,
                 "growth_program_sha256":proposed[name].program.identity,
                 "placement":list(proposed[name].translation)}
-               for name in sorted(set(proposed)-set(original))]
-    def added(current,previous):
-        old={canonical_json_sha256(x.to_dict()) for x in previous}
-        if not old<={canonical_json_sha256(x.to_dict()) for x in current}:
-            raise ValueError("New intent cannot silently erase originally authored relations")
-        return [x.to_dict() for x in current if canonical_json_sha256(x.to_dict()) not in old]
-    relations={"walkways":added(constructed.walkways,genome.walkways),
-               "ascents":added(constructed.ascents,genome.ascents),
-               "bearings":added(constructed.bearings,genome.bearings)}
+               for name in source_seal["generated_body_ids"]]
+    relations=source_seal["added_relations"]
     goals=[{"kind":g.kind,"subject":g.subject,"object":g.object,
             "status":"native-audition-required"} for g in spatial.goals]
     body={"schema":"projection-loom/intent-construction-preview",
@@ -49,6 +41,7 @@ def preview_place_intent(intent,spatial,genome):
           "added_native_bodies":additions,"added_relations":relations,
           "goal_hypotheses":goals,
           "construction_obligations":obligation_plan,
+          "source_preserving_growth":source_seal,
           "source_survey_certification":False,
           "native_audition_completed":False,
           "physical_safety_certification":False,
