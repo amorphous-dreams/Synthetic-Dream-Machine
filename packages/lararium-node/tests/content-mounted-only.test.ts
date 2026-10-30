@@ -47,6 +47,16 @@ test("a routed wiki-act crosses the same presenter fence before routing", async 
   // RED today: the routed path checks only capabilities and skips the table's fence.
   await expect((dispatcher as any).runHandler(invocation(sibling))).rejects.toMatchObject({ reason: "content-mounted-only" });
   expect(routed).toEqual([mounted]);
+  // A face row that addresses no wiki acts on the session's own face (the store door reads the face it names), so a
+  // sibling's session routes it: the held-out realm cells feed a second face this way (CI held-out on 64b2018e0).
+  const faceRow = { requestId: "row", title: "t", action: "cabal-face", requestedBy: sibling, args: { realm: "ab".repeat(32), present: true } };
+  await expect((dispatcher as any).runHandler(faceRow)).resolves.toEqual({});
+  expect(routed).toEqual([mounted, sibling]);
+  // A synced ask (not local) routes nothing, even one that claims the mounted face's own atom (Sol's read, slice 4).
+  const synced = new VerbDispatcher({ daemon: composite, registry, localOf: () => false, verifier: { verify: async () => ({ ok: true }) },
+    routeFn: async (invocation) => { routed.push(invocation.requestedBy); return {}; } } as never);
+  await expect((synced as any).runHandler({ ...faceRow, requestId: "row-synced", requestedBy: mounted })).rejects.toMatchObject({ reason: "content-mounted-only" });
+  expect(routed).toEqual([mounted, sibling]);
 });
 
 const SEALED = ["sealed-seal", "sealed-open", "sealed-reading", "sealed-choose-head", "sealed-hand-over", "sealed-admit", "sealed-parcels", "sealed-receive", "sealed-serve", "sealed-memory-cut", "sealed-memory-door", "sealed-memory-import", "sealed-rolls", "seat-duties"];
