@@ -37,6 +37,6 @@ describe("LOAD lands on a wiki working layer", () => {
   test("no door passes a LOAD into canon: a founding-seed key beside the args changes nothing", async () => {
     // W3 (Lares, 2026-10-29, wikis-first): the rite's seed walks the named road too; the key the rite once passed is no key.
     const r = reactor();
-    await expect(r.load(args(CANON, { "seed-door": "founding" }), r.context)).rejects.toThrow(/load-into-canon.*MOVE --title/);
+    await expect(r.load(args(CANON, { "seed-door": "founding" }), r.context)).rejects.toThrow(/load-into-canon.*MOVE --from lar:\/\/\/ha\.ka\.ba\/wikis\/probe-book\/working --to lar:\/\/\/ha\.ka\.ba\/bags\/probe-book$/);
   });
 });

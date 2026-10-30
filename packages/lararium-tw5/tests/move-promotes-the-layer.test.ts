@@ -69,14 +69,15 @@ describe("a title-less MOVE promotes the whole working layer", () => {
     const r = await rig();
     const preview = await r.run({ "dry-run": true }) as { dryRun: boolean; wouldLand: string[] };
     expect(preview.dryRun).toBe(true);
-    expect([...preview.wouldLand].sort()).toEqual([...FAMILIES].sort());
+    // The projection names every title and the two residency ledger rows (one per bag) the act would write.
+    expect([...preview.wouldLand].filter((t) => !/\/ledger\/residency\//.test(t)).sort()).toEqual([...FAMILIES].sort());
     expect(await r.holds(canonBag)).toEqual([]);
     expect(await r.holds(workingBag)).toEqual(FAMILIES);
   });
 
   test("L3 — a layer MOVE onto its own bag refuses by name; an empty layer answers zero", async () => {
     const r = await rig();
-    await expect(r.run({ "to-bag": workingBag })).rejects.toThrow(/moves? .*onto itself|within one bag|never moves a title onto itself/i);
+    await expect(r.run({ "to-bag": workingBag })).rejects.toThrow(/--from and --to both name .*a move needs two bags/);
     expect(await r.holds(workingBag)).toEqual(FAMILIES);
     const empty = await rig([]);
     expect(await empty.run({})).toMatchObject({ moved: 0 });

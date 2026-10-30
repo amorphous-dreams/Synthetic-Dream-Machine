@@ -460,10 +460,10 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     }
 
     // W27: a write lands on a working layer, and canon takes it by promotion. No door passes a LOAD into canon;
-    // the seed walks this road too. The refusal names the road at the grain the verb table spells (a MOVE per title).
+    // the seed walks this road too. The refusal names the road: a title-less MOVE promotes the whole working layer.
     if (action.verb === "LOAD" && /^lar:\/\/\/ha\.ka\.ba\/bags\/[^/]+$/.test(action.toBag)) {
       const slug = action.toBag.slice(action.toBag.lastIndexOf("/") + 1);
-      throw new VerbRefusal("load-into-canon", `load-into-canon: LOAD --to lar:///ha.ka.ba/wikis/${slug}/working, then MOVE --title <t> --from lar:///ha.ka.ba/wikis/${slug}/working --to lar:///ha.ka.ba/bags/${slug} for each landed title`);
+      throw new VerbRefusal("load-into-canon", `load-into-canon: LOAD --to lar:///ha.ka.ba/wikis/${slug}/working, then MOVE --from lar:///ha.ka.ba/wikis/${slug}/working --to lar:///ha.ka.ba/bags/${slug}`);
     }
     // INGEST returns disk edits through the shore's own hash gate; this LOAD door does not govern it.
 
@@ -1613,7 +1613,8 @@ function groupOf(titles: readonly string[], root: string): string[] {
 async function executeMove(action: MoveAction, access: BagAccess): Promise<Record<string, unknown>> {
   const o = origin(action);
   // A bag never moves a title onto itself: landing and then retracting in one bag would delete the title.
-  if (action.fromBag === action.toBag) throw new MoveWithinOneBagRefusal(action.title, action.fromBag);
+  if (action.fromBag === action.toBag) throw new MoveWithinOneBagRefusal(action.title ?? "(the whole layer)", action.fromBag);
+  if (action.title === undefined) return executeLayerMove(action, access, o);
   const rootRecord = await readFromBag(access, action.fromBag, action.title);
   if (rootRecord?.meta?.deleted) {
     // THE TOMBSTONE ROAD. The source record stands as a tombstone, so the move carries the delete down.
@@ -1683,6 +1684,26 @@ async function executeMove(action: MoveAction, access: BagAccess): Promise<Recor
     moved++;
   }
   return { title: action.title, fromBag: action.fromBag, toBag: action.toBag, changeId: action.changeId, moved };
+}
+
+/**
+ * THE LAYER MOVE: a MOVE naming the two bags and no title promotes the WHOLE source layer, every live title it holds,
+ * into the target in one act (W27: a write lands on a working layer, and canon takes it by promotion). A seed that
+ * LOADed a holding onto a wiki's working layer cannot name what landed (the answer rides bounded; a memetic record
+ * takes its name from its head), so promotion names the layer, never a list. Order as the titled road keeps it: every
+ * title lands first, then each retracts (hard-remove, never a tombstone, so canon shows through below). The answer
+ * names the bags and the count; the titles ride the effect records and the dry run's projection, never a list here.
+ */
+async function executeLayerMove(action: MoveAction, access: BagAccess, o: ChangeOrigin): Promise<Record<string, unknown>> {
+  const titles = (await listLiveTitlesInBag(access, action.fromBag)).filter((t) => !isEffectRecordUri(t));
+  for (const t of titles) {
+    const source = await readFromBag(access, action.fromBag, t);
+    if (!source) continue;
+    await landInBag(access, action.toBag, source, lineageOf(source, action.changeId), o);
+  }
+  let moved = 0;
+  for (const t of titles) { await removeIn(access, action.fromBag, t, o); moved++; }
+  return { fromBag: action.fromBag, toBag: action.toBag, changeId: action.changeId, moved };
 }
 
 export class TombstoneTargetHoldsNothingRefusal extends Error {

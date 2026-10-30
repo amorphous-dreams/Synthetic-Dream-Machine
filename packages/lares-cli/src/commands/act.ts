@@ -99,6 +99,7 @@ function printUsage(): void {
   console.error(`  VERB ∈ { ${ACTION_VERBS.join(", ")}, REPACK }`);
   console.error("");
   console.error("  ADD / COPY / MOVE  --title <t> --from <bag> --to <bag> [--change-id <id>]");
+  console.error("  MOVE of a layer    --from <bag> --to <bag>   moves every live title the source holds (promotion)");
   console.error("  MOVE of a tombstone  --title <t> --from <bag> [--to <bag>] [--shadow]");
   console.error("                     carries the delete down into a bag that holds the title; with no --to the");
   console.error("                     holders print as candidates; --shadow hides the title from a bag that holds none");
@@ -230,13 +231,7 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-/**
- * `heard` hands an in-process caller (the seed) the island's own answer for a landed act (the emitted `data`; an
- * array past the outcome cap rides bounded, `verb-vm`'s `boundedArrayCount`) and, for a LOAD, the address titles of
- * the carriers this gesture SENT (its one read of the disk), beside the exit code the CLI face returns. CLI parsing
- * never supplies it.
- */
-export async function cmdAct(args: ParsedArgs, heard?: (data: Record<string, unknown>, sent: readonly string[]) => void): Promise<number> {
+export async function cmdAct(args: ParsedArgs): Promise<number> {
   const verbRaw = args.positional[0];
   if (!verbRaw) { printUsage(); return 2; }
   if (verbRaw === "REPACK") return await actRepack(args);
@@ -254,7 +249,6 @@ export async function cmdAct(args: ParsedArgs, heard?: (data: Record<string, unk
   // Build the kebab-case args bag per residency-actions encoding.
   const actionArgs: Record<string, unknown> = {};
   let carrierCount = 0;
-  let sentTitles: string[] = [];
   // `changeId` is EVERY verb's own CHANGE nonce (H7/M10) — the identity of the logical change an
   // operator intends, told apart from `requestId` (a fresh dispatch attempt) below. ADD/COPY/MOVE
   // and LOAD already ride it on the wire as part of `actionArgs` (it names which Work moves where);
@@ -272,15 +266,21 @@ export async function cmdAct(args: ParsedArgs, heard?: (data: Record<string, unk
     const fromBag  = args.options["from"];
     const toBag    = args.options["to"];
     changeId = args.options["change-id"] ?? newChangeId();
-    if (!title || !fromBag || (verb !== "MOVE" && !toBag)) {
-      console.error(`lares act ${verb}: --title, --from, --to all required`);
+    // A MOVE naming --from and --to and no --title promotes the WHOLE source layer (every live title) in one act.
+    const layerMove = verb === "MOVE" && !title && !!fromBag && !!toBag;
+    if (!layerMove && (!title || !fromBag || (verb !== "MOVE" && !toBag))) {
+      console.error(verb === "MOVE" ? "lares act MOVE: --title, --from, --to (or --from and --to alone to move the whole layer) required" : `lares act ${verb}: --title, --from, --to all required`);
+      return 2;
+    }
+    if (layerMove && args.flags["shadow"]) {
+      console.error("lares act MOVE: --shadow names one tombstoned title; a layer move names none");
       return 2;
     }
     if (verb !== "MOVE" && args.flags["shadow"]) {
       console.error(`lares act ${verb}: --shadow rides a MOVE of a tombstone alone`);
       return 2;
     }
-    if (verb === "MOVE" && !toBag) {
+    if (verb === "MOVE" && !toBag && title) {
       try {
         const did = await vesselDid();
         const where = await runVerb("where", { tiddler: title }, did);
@@ -298,7 +298,7 @@ export async function cmdAct(args: ParsedArgs, heard?: (data: Record<string, unk
       }
       return 2;
     }
-    actionArgs["title"]      = title;
+    if (title) actionArgs["title"] = title;
     actionArgs["from-bag"]   = fromBag;
     actionArgs["to-bag"]     = toBag;
     actionArgs["change-id"]  = changeId;
@@ -397,7 +397,6 @@ export async function cmdAct(args: ParsedArgs, heard?: (data: Record<string, unk
       if (carriers.length > 0) {
         actionArgs["carriers"] = carriers;
         carrierCount = carriers.length;
-        sentTitles = carriers.map((c) => c.title);
       }
     } catch {
       // Honesty at the gesture: a non-resolving local path probably means a
@@ -598,7 +597,6 @@ export async function cmdAct(args: ParsedArgs, heard?: (data: Record<string, unk
   // already landed" distinct from "I just landed it".
   const effectOf = result.effectOf;
   const data = { verb, ...summary, audit: auditUri, changeId, ...(effectOf !== undefined ? { effectOf } : {}) };
-  heard?.(data, sentTitles);
   emit(args, {
     ok: true,
     requestId: result.requestId,
