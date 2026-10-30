@@ -1,3 +1,27 @@
+## N9 · Aftermath S2 · Explicit purpose, two different native births
+
+An attributable `shelter(floor, roof)` goal now constructs one missing
+roof as an independent native body only when the floor already belongs
+to the authored local3d place. It derives finite cover dimensions and
+an overhead height from the original simple foundation genome. An
+already-authored roof never gets silently replaced or moved. The
+native cover witness—not the generated dimensions alone—decides
+admission and independent replay.
+
+A matched, source-constant test gives the SAME two grounded site bodies
+a `shelter` goal or a `connect` goal. One constructs a separately
+audited canopy; the other constructs a native crossing. Both face their
+own independent exact STEP witness. Thus the aim now affects what
+gets born, rather than merely assigning a label to unchanged boxes.
+
+Such generated cover remains a **proposal without support columns**;
+it does not certify that a canopy can stand or protect anyone. An
+operator must authorize the authored goal, later choose an artistic
+candidate, and independently substantiate structure or atmosphere.
+An absent roof name never becomes observed original-source testimony.
+
+---
+
 ## N9 · Aftermath A · A stepped rise does not certify stairs
 
 An operator-authored `AscentRun` lists distinct rising STEP tread entities

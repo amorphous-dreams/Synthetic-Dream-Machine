@@ -84,3 +84,21 @@ def test_canopy_intent_does_not_replace_an_existing_native_roof():
     from projection_loom.place_genome import propose_from_spatial_intent
     genome,goal=fixture(roof_x=20)
     assert propose_from_spatial_intent(genome,goal)==genome
+
+def test_same_original_site_intents_make_different_native_construction_claims(tmp_path):
+    from projection_loom.place_genome import propose_from_spatial_intent
+    from projection_loom.intent_seed import IntentContract
+    floor=next(x for x in fixture()[0].bodies if x.entity_id=="floor")
+    other=PlaceBody("other",floor.program,(15,0,0))
+    original=PlaceGenome((floor,other))
+    intent=IntentContract("covered-place","Choose a native relation",("cover","crossing"))
+    shelter=SpatialIntent(intent.identity,(SpatialGoal("shelter","floor","roof"),),"operator")
+    crossing=SpatialIntent(intent.identity,(SpatialGoal("connect","floor","other"),),"operator")
+    roof=propose_from_spatial_intent(original,shelter)
+    bridge=propose_from_spatial_intent(original,crossing)
+    assert roof.identity!=bridge.identity
+    assert {body.entity_id for body in roof.bodies}!={body.entity_id for body in bridge.bodies}
+    for name,genome,spatial in (("roof",roof,shelter),("bridge",bridge,crossing)):
+        package_scene(genome.declaration("covered-place"),tmp_path/name)
+        result=assess_place(tmp_path/name,genome,spatial)
+        assert result["all_declared_goals_witnessed"],result
