@@ -405,8 +405,15 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
                     horizontal=[upper.translation[j]-floor.translation[j] for j in (0,1)]
                     axis=0 if abs(horizontal[0])>=abs(horizontal[1]) else 1
                     sign=1 if horizontal[axis]>0 else -1
+                    # Never push the authored floor-centred refuge core
+                    # beyond the independently proposed roof footprint.
+                    # The STEP core/obstruction test still decides admission.
+                    cover_span=max(root.size[axis]+1.,goal.min_width*2.)
+                    core_margin=goal.min_width/2+.125
+                    displacement=min(root.size[axis]/2+.1,
+                                     max(0.,cover_span/2-core_margin))
                     roof_position[axis]=round(
-                        roof_position[axis]-sign*(root.size[axis]/2+.1),6)
+                        roof_position[axis]-sign*displacement,6)
                     break
             roof=PlaceBody(goal.object,GrowthProgram((GrowthNode("root","foundation",
                 size=(round(max(root.size[0]+1.,goal.min_width*2),6),

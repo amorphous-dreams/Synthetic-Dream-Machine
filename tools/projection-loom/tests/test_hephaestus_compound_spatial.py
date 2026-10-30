@@ -60,3 +60,16 @@ def test_one_failed_goal_prevents_fake_joint_acceptance(tmp_path):
     assert not evidence["all_declared_goals_witnessed"]
     assert evidence["goals"][0]["status"]=="geometric-ascent-proposal"
     assert evidence["goals"][1]["status"]=="unverified"
+
+def test_compound_roof_keeps_authored_central_refuge_core_covered():
+    original,_,spatial=combined()
+    generated=propose_from_spatial_intent(original,spatial)
+    floor=next(b for b in generated.bodies if b.entity_id=="begin")
+    roof=next(b for b in generated.bodies if b.entity_id=="roof")
+    width=next(g.min_width for g in spatial.goals if g.kind=="shelter")
+    span=roof.program.nodes[0].size[0]
+    left=roof.translation[0]-span/2
+    right=roof.translation[0]+span/2
+    assert left<=floor.translation[0]-width/2
+    assert right>=floor.translation[0]+width/2
+    assert roof.translation[0]<floor.translation[0]  # protects ascent side
