@@ -28,6 +28,28 @@ def _preregister(genome,spatial,location,corner_id):
             "automatic_selection":False,"source_camera_certification":False}
 
 
+def witnessed_route_layout(genome, native):
+    """Describe constructed layout only after independent native STEP witness.
+
+    Scene and receipt hashes do not establish distinct architecture.
+    This descriptor cannot certify full shape non-isomorphism or access.
+    """
+    if not native["all_declared_goals_witnessed"]:
+        return None
+    goals=native["goals"]
+    if len(goals)!=1 or goals[0]["status"]!="geometric-route-proposal":
+        raise ValueError("Matched right-angle study requires a native route witness")
+    proof=goals[0]["proof"]
+    segments=proof.get("segments",[proof])
+    return {"body_placements":[{"translation":list(b.translation),
+                                "root_size":list(b.program.nodes[0].size)}
+                               for b in genome.bodies],
+            "ordered_route_axes":[p["principal_axis"] for p in segments],
+            "observed_segment_widths":[p["route_width_lower_bound"] for p in segments],
+            "observed_segment_rises":[p["deck_to_endpoint_step_upper_bound"] for p in segments],
+            "hops":len(segments)}
+
+
 def verify_orthogonal_study(study,genome,spatial,*,location,corner_id):
     root=Path(study)
     pre=_read(root/"preregistration.json")
@@ -47,17 +69,20 @@ def verify_orthogonal_study(study,genome,spatial,*,location,corner_id):
         if receipt["status"]!=("native-route-witnessed" if native[
                 "all_declared_goals_witnessed"] else "spatial-unverified"):
             raise ValueError("Matched bend receipt misstates native geometric witness")
+        if receipt.get("witnessed_route_layout") != witnessed_route_layout(created,native):
+            raise ValueError("Matched route layout differs from independent native construction")
         actual.append(receipt)
     if (report["preregistration_sha256"]!=canonical_json_sha256(pre)
             or report["arms"]!=actual or report["same_original_native_site"] is not True
             or report["automatic_selection"] is not False
             or report["physical_safety_certification"] is not False):
         raise ValueError("Matched bend study changed its provenance or authority")
-    # Reconcile the comparison against the two independently imported
-    # native arm receipts, not merely the parent genome identities.
-    if report.get("distinct_native_arm_witnesses") != (len({
-            canonical_json_sha256(row["native_evidence"]) for row in actual})==len(actual)):
-        raise ValueError("Matched bend comparison misstates independent native evidence")
+    # Distinct scene IDs do not prove distinct measured routes.
+    layouts=[row["witnessed_route_layout"] for row in actual]
+    distinct=(all(x is not None for x in layouts)
+              and len({canonical_json_sha256(x) for x in layouts})==len(layouts))
+    if report.get("distinct_witnessed_route_layouts") is not distinct:
+        raise ValueError("Distinct witnessed route layouts misreported")
     return report
 
 
@@ -85,6 +110,7 @@ def run_orthogonal_study(genome:PlaceGenome,spatial:SpatialIntent,out,*,
                  "status":"native-route-witnessed" if evidence[
                      "all_declared_goals_witnessed"] else "spatial-unverified",
                  "native_evidence":evidence,
+                 "witnessed_route_layout":witnessed_route_layout(child,evidence),
                  "artistic_winner":None,"automatic_promotion":False}
             save_once(folder/"receipt.json",row)
             outcomes.append(row)
@@ -94,7 +120,10 @@ def run_orthogonal_study(genome:PlaceGenome,spatial:SpatialIntent,out,*,
                 "native_attempts":len(outcomes),
                 "native_budget_per_arm":1,
                 "two_distinct_genomes":outcomes[0]["result_genome_sha256"]!=outcomes[1]["result_genome_sha256"],
-                "distinct_native_arm_witnesses":len({canonical_json_sha256(row["native_evidence"]) for row in outcomes})==len(outcomes),
+                "distinct_witnessed_route_layouts":(
+                    all(row["witnessed_route_layout"] is not None for row in outcomes)
+                    and len({canonical_json_sha256(row["witnessed_route_layout"])
+                             for row in outcomes})==len(outcomes)),
                 "arms":outcomes,"automatic_selection":False,
                 "physical_safety_certification":False}
         save_once(root/"summary.json",report)
