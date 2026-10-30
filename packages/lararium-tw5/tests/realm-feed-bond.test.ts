@@ -5,7 +5,7 @@
  * names a presenter it cannot back, so it feeds nothing, bond or no bond.
  */
 import { describe, expect, test } from "vitest";
-import { DAEMON_BAG_ID, faceAtomPublicKey, realmFeedSlotUri, signAsFaceAtom, signFaceLeafBond } from "@lararium/mesh";
+import { DAEMON_BAG_ID, faceAtomPublicKey, realmFeedAskImage, realmFeedSlotUri, signAsFaceAtom, signFaceLeafBond } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeCabalRealmReactors } from "../src/cabal-realm-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -58,5 +58,41 @@ describe("realm-feed's writer is bound to the presenter", () => {
     const b = await face(2, 3);
     await expect(feed({ realm: REALM, writer: b.leaf, bond: b.bond }, ctx(b.presenter, false))).rejects.toThrow(/realm-feed-not-local/);
     await expect(feed({ realm: REALM, writer: b.leaf, bond: b.bond }, { local: true } as unknown as VerbContext)).rejects.toThrow(/writer-not-presenter/);
+  });
+});
+
+/** Sol's read: a bond proves a past signing, never a present hand, so each feed carries the atom's signature over its own ask. */
+describe("realm-feed takes a fresh ask from the face, and answers nothing that pairs the face with its leaf", () => {
+  const atomSeed = seedOf(7);
+  const leafSeed = seedOf(8);
+  async function asked(requestId: string, writer?: string) {
+    const atom = faceAtomPublicKey(atomSeed);
+    const leaf = faceAtomPublicKey(leafSeed);
+    const bond = await signFaceLeafBond({ atom, leaf, nexusAid: "bafy-nexus", realm: REALM }, { atom: signer(atomSeed), leaf: signer(leafSeed) });
+    const askSig = await signAsFaceAtom(atomSeed, realmFeedAskImage({ requestId, realm: REALM, writer: leaf }));
+    const context = { presenter: `0x${atom}`, local: true, invocation: { requestId } } as unknown as VerbContext;
+    return { leaf, args: { realm: REALM, writer: writer ?? leaf, bond, askSig }, context };
+  }
+
+  test("RED: a whole bond with no ask signed over this request refuses feed-ask-unsigned; CONTROL: the ask signed for it feeds", async () => {
+    const { store, feed } = feedOver();
+    const a = await asked("req-1");
+    const { askSig: _drop, ...replayed } = a.args;
+    await expect(feed(replayed, a.context)).rejects.toThrow(/feed-ask-unsigned/);
+    // An ask signed for another request, replayed under this one.
+    const other = await asked("req-0");
+    await expect(feed({ ...a.args, askSig: other.args.askSig }, a.context)).rejects.toThrow(/feed-ask-unsigned/);
+    expect(await store.get(realmFeedSlotUri(REALM, a.leaf))).toBeFalsy();
+    await feed(a.args, a.context);
+    expect((await store.get(realmFeedSlotUri(REALM, a.leaf)))?.tiddler.text).toBe("1");
+  });
+
+  test("RED: the answer names neither the writer nor the epoch; a 0x writer lands under the bond's own leaf", async () => {
+    const { store, feed } = feedOver();
+    const a = await asked("req-2", `0x${faceAtomPublicKey(leafSeed)}`);
+    const out = await feed(a.args, a.context);
+    expect(out).toEqual({ verb: "realm-feed", realm: REALM, fed: true, federated: false });
+    expect((await store.get(realmFeedSlotUri(REALM, a.leaf)))?.tiddler.text).toBe("1");
+    expect(await store.get(realmFeedSlotUri(REALM, `0x${a.leaf}`))).toBeFalsy();
   });
 });

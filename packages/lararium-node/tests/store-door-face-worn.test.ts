@@ -74,3 +74,10 @@ test("RED: the relay rows that read a face are face rows: another face refuses, 
   }
   expect(STORE_DOOR_FACE_ROWS.has("intent-relay-rotate")).toBe(false);
 });
+
+test("RED: the feed is a face row on main (the bond and the ask never leave it); CONTROL: cabal-face answers no bond", async () => {
+  const rows = door();
+  expect(STORE_DOOR_FACE_ROWS.has("cabal-feed" as never)).toBe(true);
+  expect(await (rows as Record<string, (a: unknown, c: unknown) => Promise<unknown>>)["cabal-feed"]!({ realm: "ab".repeat(32) }, ctxOf()))
+    .toMatchObject({ refused: expect.stringMatching(/face-row-rides-a-session/) });
+});

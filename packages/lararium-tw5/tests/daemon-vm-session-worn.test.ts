@@ -88,3 +88,12 @@ function openWithContext() {
   const { core, delegate } = open();
   return { core, delegateContext: (requestId: string, requestedBy: string) => delegate(requestId, requestedBy, "probe-context") };
 }
+
+test("RED: a booking serves one delegate of the verb it booked: a second delegate under its id, or another verb, wears none", async () => {
+  const { core, delegate } = open();
+  core.placeVerb({ origin: "channel", verb: "probe-worn", args: {}, requestedBy: ATOM_1, face: "subject-1", requestId: "o-1", ordinal: 1 } as never);
+  expect(await delegate("o-1", ATOM_1)).toEqual({ ordinal: 1, presenter: ATOM_1 });
+  expect(await delegate("o-1", ATOM_1)).toBeNull();
+  core.placeVerb({ origin: "channel", verb: "another-verb", args: {}, requestedBy: ATOM_1, face: "subject-1", requestId: "o-2", ordinal: 1 } as never);
+  expect(await delegate("o-2", ATOM_1)).toBeNull();
+});
