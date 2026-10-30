@@ -75,3 +75,22 @@ describe("a SharedWorker with a late runtime", () => {
     expect(greeting).toEqual({ type: "ready" });
   }, 20_000);
 });
+
+test("RED: a holder that fails to start refuses each buffered and later port by name; CONTROL: a started holder is never refused", async () => {
+  const { refuseBufferedPorts } = await import("../src/connect-buffer.js");
+  const posted: unknown[] = [];
+  const port = (name: string) => ({ postMessage: (message: unknown) => { posted.push([name, message]); } });
+  const buffer = makeConnectBuffer<ReturnType<typeof port>>();
+  buffer.accept(port("a"));
+  refuseBufferedPorts(buffer, "lares:vessel", new Error("island module exports no startIsland(scope)"));
+  buffer.accept(port("b"));
+  expect(posted).toEqual([
+    ["a", { kind: "holder:refused", storeName: "lares:vessel", cause: "holder-unavailable: island module exports no startIsland(scope)" }],
+    ["b", { kind: "holder:refused", storeName: "lares:vessel", cause: "holder-unavailable: island module exports no startIsland(scope)" }],
+  ]);
+  const started = makeConnectBuffer<ReturnType<typeof port>>(), seen: string[] = [];
+  started.accept(port("c"));
+  started.open(() => seen.push("served"));
+  expect(seen).toEqual(["served"]);
+  expect(posted).toHaveLength(2);
+});
