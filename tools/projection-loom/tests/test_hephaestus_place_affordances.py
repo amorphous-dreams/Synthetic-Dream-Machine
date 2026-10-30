@@ -44,3 +44,13 @@ def test_unknown_kind_remains_unverified_even_if_scene_has_a_bridge(tmp_path):
     report=assess_place(tmp_path/"scene",genome,other)
     assert not report["all_declared_goals_witnessed"]
     assert report["goals"][0]["status"]=="unverified"
+
+def test_native_affordance_cannot_replay_from_tampered_witness(tmp_path):
+    genome,goal=fixture()
+    package_scene(genome.declaration("two-heights"),tmp_path/"scene")
+    from projection_loom.place_affordances import verify_place_affordances
+    report=assess_place(tmp_path/"scene",genome,goal)
+    assert verify_place_affordances(tmp_path/"scene",genome,goal,report)
+    report["goals"][0]["proof"]["native_clearance_obstructions"]=9
+    with pytest.raises(ValueError,match="differ from native"):
+        verify_place_affordances(tmp_path/"scene",genome,goal,report)

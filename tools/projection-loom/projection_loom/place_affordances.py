@@ -118,3 +118,10 @@ def assess_place(bundle,genome:PlaceGenome,spatial:SpatialIntent,*,headroom=1.8)
             "all_declared_goals_witnessed":all(
                 r["status"]=="geometric-route-proposal" for r in outcomes),
             "goals":outcomes,"automatic_promotion":False}
+
+def verify_place_affordances(bundle,genome,spatial,record):
+    """Independent re-import, re-computation and comparison before handback."""
+    expected=assess_place(bundle,genome,spatial)
+    if record!=expected:
+        raise ValueError("Recorded architectural affordances differ from native evidence")
+    return True
