@@ -34,7 +34,8 @@ export interface PendingWrite { txId: string; title: string; record: PortWireRec
 type Change = { title: string; fields: Record<string, string>; deleted?: true };
 type Pending = { before: PortWireRecord | null; title: string; optimistic: string; generation: number;
   peerGeneration: number; record: PortWireRecord; echoed?: true };
-const LOCAL = ["$:/state", "$:/temp", "$:/status", "$:/info/browser"];
+// `$:/info/*` is what this page knows of itself (its URL, its browser, its mode): a session fact, never a record the port carries.
+const LOCAL = ["$:/state", "$:/temp", "$:/status", "$:/info"];
 const ownFields = (wiki: GlassWiki, title: string): Record<string, string> | null => {
   const tiddler = wiki.getTiddler(title);
   if (!tiddler) return null;

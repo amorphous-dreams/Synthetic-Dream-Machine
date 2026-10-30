@@ -266,7 +266,7 @@ export function makeScopedWindowLend(onSjclWrite: () => void): Record<string, un
 interface HeadlessBootEnv {
   resolveBuiltin: (id: string) => unknown;
   preSeedTw:      Record<string, unknown>;
-  processArg:     unknown;
+  processArg?:    unknown;
 }
 
 async function makeNodeBootEnv(): Promise<HeadlessBootEnv> {
@@ -307,6 +307,13 @@ function makeBrowserWorkerBootEnv(): HeadlessBootEnv {
   };
 }
 
+function makePageBootEnv(): HeadlessBootEnv {
+  return {
+    resolveBuiltin: (id) => { throw new Error(`TW5 page boot refused require(${id})`); },
+    preSeedTw: { boot: { suppressBoot: true, disabledStartupModules: ["story", "rootwidget", "render", "password", "favicon", "windows"] }, node: null },
+  };
+}
+
 /**
  * The ONE headless boot flow: evaluate the content-addressed core blob with a
  * CommonJS-shaped env composed from `env`, leaving the island's own `$tw` on
@@ -335,7 +342,8 @@ function loadTiddlyWikiFromBlob(
   const priorLoad    = g["_load"];
   const priorWindowDescriptor = Object.getOwnPropertyDescriptor(g, "window");
   // A page's own `window` cannot be redefined; the glass keeps it and the bundle's `window` parameter still carries the lend.
-  const lendsWindow = priorWindowDescriptor?.configurable !== false;
+  const page = typeof document !== "undefined" && typeof window !== "undefined";
+  const lendsWindow = !page && priorWindowDescriptor?.configurable !== false;
   const removeWindowAccessor = (): void => { if (lendsWindow) restoreGlobal(g, "window", priorWindowDescriptor); };
   const windowLend = makeScopedWindowLend(removeWindowAccessor);
   const priorRequire = Object.getOwnPropertyDescriptor(g, "require");
@@ -351,7 +359,7 @@ function loadTiddlyWikiFromBlob(
     // the bytes come from the content-addressed LarariumDoc blob, not a package.
     const source   = new TextDecoder().decode(new Uint8Array(coreBlob.bytes));
     const evaluate = new Function("exports", "module", "require", "window", "process", source);
-    evaluate(exportsShim, moduleShim, requireShim, windowLend, env.processArg);
+    evaluate(exportsShim, moduleShim, requireShim, page ? window : windowLend, env.processArg);
     twFromBlob = g["$tw"];
     if (twFromBlob && typeof twFromBlob === "object") {
       const tw = twFromBlob as Record<string, unknown>;
@@ -420,6 +428,11 @@ function configureIslandRuntime(instance: TW5Instance, engineCid?: string): void
   // Headless surfaces and continues — the island never aborts the worker on a boot warning — and
   // raises the fault on the wiki's alert rail where one stands, so a surface paints it and a
   // person reads an island that booted with a dead module as that, never as a green one.
+  lendAlertRailError(instance);
+}
+
+function lendAlertRailError(instance: TW5Instance): void {
+  const tw = instance as unknown as Record<string, any>;
   let faults = 0;
   if (tw.utils) tw.utils.error = (err: unknown): void => {
     const text = err instanceof Error ? (err.stack ?? err.message) : String(err);
@@ -453,33 +466,39 @@ export async function prepareHostBootInstance(
 
   if (isBrowserMain) {
     const host = globalThis as Record<string, unknown>;
-    const lent = ["global", "Buffer", "process", "setImmediate", "clearImmediate"] as const;
-    const prior = lent.map(name => Object.getOwnPropertyDescriptor(host, name));
-    let nextImmediate = 0;
-    const immediate = new Map<number, () => void>();
-    // TW5 module bodies resolve `global` by name; the glass lends an empty record, never the page's own scope.
-    lendGlobalIfAbsent(host, "global", Object.create(null));
-    // TW5's module sandbox names `Buffer` bare; an inert constructor keeps `instanceof Buffer` in page tooling callable.
-    lendGlobalIfAbsent(host, "Buffer", function Buffer() { /* inert: the glass reads no Node buffers */ });
-    // TW5's headless startup probes `process`; the shim holds no page authority.
-    lendGlobalIfAbsent(host, "process", makeBrowserProcessShim());
-    // TW5's headless nextTick may call `setImmediate` while booting.
-    lendGlobalIfAbsent(host, "setImmediate", (fn: (...a: unknown[]) => void, ...args: unknown[]) => {
-      const id = ++nextImmediate;
-      immediate.set(id, () => fn(...args));
-      queueMicrotask(() => { const run = immediate.get(id); immediate.delete(id); run?.(); });
-      return id;
-    });
-    // TW5 may cancel that boot-time immediate by its matching name.
-    lendGlobalIfAbsent(host, "clearImmediate", (id: number) => { immediate.delete(id); });
-    const release = () => lent.forEach((name, i) => restoreGlobal(host, name, prior[i]));
+    const priorTw = Object.getOwnPropertyDescriptor(host, "$tw");
+    const priorError = window.onerror;
+    const priorUnload = window.onbeforeunload;
+    const release = () => restoreGlobal(host, "$tw", priorTw);
     try {
-      const instance = loadTiddlyWikiFromBlob(coreBlob, makeBrowserWorkerBootEnv()).TiddlyWiki() as TW5Instance;
-      configureIslandRuntime(instance, coreBlob ? sha256HexBytesSync(coreBlob.bytes) : undefined);
-      // A later widget refresh uses the page's microtask queue after the boot lends leave.
-      instance.utils.nextTick = (callback: () => void) => queueMicrotask(callback);
+      let instance: TW5Instance;
+      try { instance = loadTiddlyWikiFromBlob(coreBlob, makePageBootEnv()).TiddlyWiki() as TW5Instance; }
+      finally { window.onerror = priorError; }
+      lendGlobal(host, "$tw", instance);
+      const tw = instance as unknown as Record<string, any>;
+      tw.boot.tasks.trapErrors = false;
+      lendAlertRailError(instance);
+      // The core's utils module reads a bare `process` for its tick and the boot's `applyMethods` reinstalls it over ours (F1); the
+      // page lends no `process`, so the tick stays the page's own microtask queue through every apply.
+      const microtaskTick = (callback: () => void) => queueMicrotask(callback);
+      instance.utils.nextTick = microtaskTick;
+      const applyMethods = tw.modules.applyMethods.bind(tw.modules);
+      tw.modules.applyMethods = (type: string, target: unknown) => { const applied = applyMethods(type, target); if (type === "utils") tw.utils.nextTick = microtaskTick; return applied; };
+      // A startup module that throws lands on the alert rail and the boot goes on (stock's window.onerror form stays uninstalled):
+      // the task left the queue before it ran, so the next call takes the next task.
+      const nextTask = tw.boot.executeNextStartupTask.bind(tw.boot);
+      tw.boot.executeNextStartupTask = (callback: unknown) => { try { return nextTask(callback); } catch (error) { tw.utils.error(error); return tw.boot.executeNextStartupTask(callback); } };
+      tw.__larPageAfterBoot = () => {
+        tw.utils.nextTick = microtaskTick;
+        window.onbeforeunload = priorUnload;
+        tw.passwordPrompt?.promptWrapper?.remove();
+        tw.passwordPrompt = { createPrompt: () => tw.wiki.addTiddler(new tw.Tiddler({ title: "$:/temp/lares/alert/refused/password", tags: ["$:/tags/Alert"], text: "Password prompt refused" })) };
+        delete host.sjcl;
+      };
       return { instance, isBrowser: true, release };
     } catch (error) {
+      window.onbeforeunload = priorUnload;
+      delete host.sjcl;
       release();
       throw error;
     }
@@ -544,7 +563,8 @@ export async function bootWithHostBridge(
     const hostGlobal = globalThis as Record<string, unknown>;
     const savedRequire = Object.getOwnPropertyDescriptor(hostGlobal, "require");
     const savedModule  = Object.getOwnPropertyDescriptor(hostGlobal, "module");
-    const browserRequire = isBrowser
+    const page = typeof window !== "undefined" && typeof document !== "undefined";
+    const browserRequire = isBrowser && !page
       ? (id: string): Record<string, unknown> => {
           const hostShim = (instance as unknown as Record<string, unknown>)["__larariumRequireShim"] as
             ((name: string) => Record<string, unknown>) | undefined;
@@ -567,6 +587,7 @@ export async function bootWithHostBridge(
     }
 
     instance.boot.boot(() => {
+      (instance as unknown as Record<string, any>).__larPageAfterBoot?.();
       restoreStdout?.();
       if (browserRequire || !isBrowser) restoreGlobal(hostGlobal, "require", savedRequire);
       if (!isBrowser) restoreGlobal(hostGlobal, "module", savedModule);
