@@ -66,3 +66,49 @@ def verify_fire_spatial(binding,plan,intent,genome):
     if binding!=recreated:
         raise ValueError("Fire-to-place bridge changed its source-bound selection")
     return True
+
+
+def bind_fire_spatial_set(plan,intent,genome,*,alternative_ids,source_witness_id,
+                          authored_by,seed_sha256=None):
+    """Explicit conjunction of selected Fire alternatives, never an implicit winner."""
+    if (not isinstance(alternative_ids,(tuple,list)) or not 1<=len(alternative_ids)<=8
+            or any(not isinstance(x,str) or not x for x in alternative_ids)
+            or len(set(alternative_ids))!=len(alternative_ids)
+            or list(alternative_ids)!=sorted(alternative_ids)):
+        raise ValueError("Multi-goal Fire selection requires 1..8 unique sorted IDs")
+    children=[bind_fire_spatial(plan,intent,genome,alternative_id=identifier,
+               source_witness_id=source_witness_id,authored_by=authored_by,
+               seed_sha256=seed_sha256) for identifier in alternative_ids]
+    goals=tuple(sorted((goal for child in children for goal in
+        SpatialIntent.from_dict(child["spatial_intent"]).goals),
+        key=lambda g:(g.kind,g.subject,g.object)))
+    if len(set((g.kind,g.subject,g.object) for g in goals))!=len(goals):
+        raise ValueError("Selected Fire alternatives duplicate one native spatial goal")
+    joined=SpatialIntent(intent.identity,goals,authored_by)
+    body={"schema":"projection-loom/fire-spatial-set",
+          "spatial_intent":joined.to_dict(),"spatial_intent_sha256":joined.identity,
+          "fire_plan_sha256":children[0]["fire_plan_sha256"],
+          "selected_alternative_ids":list(alternative_ids),
+          "individual_bindings":children,
+          "original_source_witness_id":source_witness_id,
+          "source_seed_sha256":seed_sha256,
+          "automatic_selection":False,"automatic_promotion":False,
+          "claim_scope":"explicit-joint-native-spatial-proposals-only"}
+    return {**body,"sha256":canonical_json_sha256(body)}
+
+
+def verify_fire_spatial_set(binding,plan,intent,genome):
+    fields={"schema","spatial_intent","spatial_intent_sha256","fire_plan_sha256",
+            "selected_alternative_ids","individual_bindings",
+            "original_source_witness_id","source_seed_sha256",
+            "automatic_selection","automatic_promotion","claim_scope","sha256"}
+    if not isinstance(binding,dict) or set(binding)!=fields:
+        raise ValueError("Multi-goal Fire record requires exact immutable fields")
+    expected=bind_fire_spatial_set(plan,intent,genome,
+        alternative_ids=binding["selected_alternative_ids"],
+        source_witness_id=binding["original_source_witness_id"],
+        seed_sha256=binding["source_seed_sha256"],
+        authored_by=binding["spatial_intent"]["authored_by"])
+    if binding!=expected:
+        raise ValueError("Multi-goal Fire record differs from original selected evidence")
+    return True

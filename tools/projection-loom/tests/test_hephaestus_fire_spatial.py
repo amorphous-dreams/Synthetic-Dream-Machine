@@ -88,3 +88,44 @@ def test_fire_cannot_misbind_a_cover_as_an_ascent():
         bind_fire_spatial(plan("covers","stair-flight"),intent,original(),
              alternative_id="join-1",source_witness_id="witness-a",
              authored_by="operator")
+
+
+def test_fire_explicit_two_relation_selection_replays_single_intent():
+    from projection_loom.fire_spatial import bind_fire_spatial_set,verify_fire_spatial_set
+    native=original()
+    roof=PlaceBody("roof",native.bodies[0].program,(0,0,4))
+    native=PlaceGenome(tuple(sorted((*native.bodies,roof),key=lambda x:x.entity_id)))
+    document=plan()
+    doc={k:v for k,v in document.items() if k!="sha256"}
+    doc["resolved"]={"a":"west","b":"east","c":"roof"}
+    doc["alternatives"]=[{"id":"a-bridge","relation":"bridges",
+        "implementation":"bridge-between","subject":"a","object":"b"},
+        {"id":"b-cover","relation":"covers",
+        "implementation":"overhead-canopy","subject":"a","object":"c"}]
+    doc={**doc,"sha256":canonical_json_sha256(doc)}
+    intent=IntentContract("place","Join two architectural relations",("crossing","cover"))
+    record=bind_fire_spatial_set(doc,intent,native,
+        alternative_ids=("a-bridge","b-cover"),source_witness_id="witness-a",
+        authored_by="operator")
+    assert [g["kind"] for g in record["spatial_intent"]["goals"]]==["connect","shelter"]
+    assert verify_fire_spatial_set(record,doc,intent,native)
+    assert len(propose_from_spatial_intent(native,SpatialIntent.from_dict(
+        record["spatial_intent"])).walkways)==1
+    assert not record["automatic_selection"] and not record["automatic_promotion"]
+    changed=dict(record,selected_alternative_ids=["b-cover","a-bridge"])
+    with pytest.raises(ValueError,match="sorted"):
+        verify_fire_spatial_set(changed,doc,intent,native)
+
+
+def test_joint_fire_binding_refuses_duplicate_architectural_goal():
+    from projection_loom.fire_spatial import bind_fire_spatial_set
+    base=plan()
+    body={k:v for k,v in base.items() if k!="sha256"}
+    body["alternatives"]=[dict(body["alternatives"][0],id="a-first"),
+                           dict(body["alternatives"][0],id="b-second")]
+    document={**body,"sha256":canonical_json_sha256(body)}
+    with pytest.raises(ValueError,match="duplicate"):
+        bind_fire_spatial_set(document,
+            IntentContract("place","Duplicate selection",("bridge",)),
+            original(),alternative_ids=("a-first","b-second"),
+            source_witness_id="witness-a",authored_by="operator")
