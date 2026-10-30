@@ -1,0 +1,340 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/cli/intent">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/cli/intent.mem"
+l-space   = "adjacent"
+role      = "the radius law and the operator's declared intent: what the checkout and every operator home on the device hold, read by `lares repo` and `lares home`"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/cli/intent"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/cli/intent"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! Intent ~ one door per radius, one declared intent beneath them
+
+An operator's machine holds what the operator declares, through one door per RADIUS: `lares repo` for the checkout, `lares home` for every operator home the device carries, `lares vessel` for `LAR_ROOT` alone. The doors read, tend, verify and undo; the intent they converge on stands here as data, and the engine's kinds (link, owned file, JSON key, floor, TOML table, lifted line) stand in code (`packages/lares-cli/src/intent/`).
+
+<<~/ahu>>
+
+<<~ ahu #/the-radius-law>>
+
+!! The radius law
+
+* ''One invocation writes one radius.'' `repo` writes the checkout it runs in; `home` writes the operator's homes; `vessel` writes `LAR_ROOT`. A composition rides as a rite of one door and composes that door's radius alone.
+* ''Observing never mutates.'' `read` and `verify` write nothing outside the ledger's own read; `tend` alone writes.
+* ''Two diffs.'' `read` answers, per item, the live bytes against intent (what `tend` would do) and the live bytes against what the house last wrote there (a hand touched it).
+* ''Foreign bytes refuse.'' A target the house does not own (a file that lacks its marker, JSON or TOML that does not parse, a regular file where a link belongs) refuses with exit 3; `--force` takes it, and the ledger keeps its prior bytes.
+* ''Every write records a generation'': each target's prior bytes and the hash of what the write left. `undo` restores a generation and records the restore, for both radii. The home ledger rests in the home's own state (`$XDG_STATE_HOME/lares/intent/home`); the repo ledger rests in the checkout's git dir.
+* ''The memory guard never lowers.'' Each harness's retention rises to its maximum and no door lowers it: the conversation store seeds the operator's memory.
+* ''The exit contract'': 0 aligned · 1 drift · 2 usage · 3 foreign bytes refused · 4 a host stands but a piece an item needs does not. An absent host reads as absent and leaves the exit alone.
+* ''Verify reads what the host loaded.'' A file on disk proves nothing about a session; `verify` reads the load log the Claude hook keeps, and `--probe` asks Codex and Copilot what they hold.
+
+<<~/ahu>>
+
+<<~ ahu #/the-intent>>
+
+!! The declared intent
+
+Each item names its radius, its host, its kind and the target it keeps. `{repo}` reads the checkout, `{clone}` the main clone a worktree belongs to, `{seed}` the boot seed's path. A home item names `homes = "all"` to reach every home on the device, or reaches the native home alone.
+
+```toml intent
+seed = "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem"
+
+# ── the checkout ────────────────────────────────────────────────────────────────────────────────
+
+[[repo]]
+id = "claude.seed-link"
+host = "claude"
+kind = "seed-link"
+file = ".claude/noosphere-boot"
+what = "the seed reaches CLAUDE.md's import by a name an import loads"
+
+[[repo]]
+id = "codex.seed-link"
+host = "codex"
+kind = "seed-link"
+file = "AGENTS.override.md"
+what = "Codex reads the seed in place of AGENTS.md"
+
+[[repo]]
+id = "claude.seed-import"
+host = "claude"
+kind = "head-import"
+file = "CLAUDE.md"
+line = "@.claude/noosphere-boot"
+render = "@.claude/noosphere-boot\n\n## Claude Adapter Surface\n\n- Keep this file thin.\n- Add only Claude-specific customizations here.\n"
+what = "CLAUDE.md opens with the seed's import, and Copilot reads the seed through it"
+
+[[repo]]
+id = "agents.seedless"
+host = "copilot"
+kind = "seedless"
+file = "AGENTS.md"
+render = "## Agents Adapter Surface\n\n- Keep this file thin.\n- Copilot and VS Code read this file; Codex reads `AGENTS.override.md`, the boot seed, in its place. CLAUDE.md's import seats the seed for Copilot, so this file stays seedless.\n"
+what = "AGENTS.md carries no seed: Copilot reads it beside CLAUDE.md"
+
+[[repo]]
+id = "copilot.seedless"
+host = "copilot"
+kind = "seedless"
+file = "copilot-instructions.md"
+render = "## Copilot Adapter Surface\n\n- Keep this file thin.\n- CLAUDE.md's import seats the boot seed for Copilot, so this file stays seedless.\n"
+what = "the root Copilot instructions carry no seed"
+
+[[repo]]
+id = "copilot.github-seedless"
+host = "copilot"
+kind = "seedless"
+file = ".github/copilot-instructions.md"
+render = "## Copilot Adapter Surface\n\n- Keep this file thin.\n- CLAUDE.md's import seats the boot seed for Copilot, so this file stays seedless.\n"
+what = "Copilot's repository instructions carry no seed"
+
+[[repo]]
+id = "codex.doc-cap"
+host = "codex"
+kind = "toml-top-floor"
+file = ".codex/config.toml"
+key = "project_doc_max_bytes"
+floor = 65536
+what = "Codex's project-doc budget holds the seed whole (its default cuts the tail without a word)"
+
+[[repo]]
+id = "claude.rule-exclude"
+host = "claude"
+kind = "json-includes"
+file = ".claude/settings.json"
+key = "claudeMdExcludes"
+value = "**/.claude/rules/lares-seed-seat.md"
+what = "inside the clone a session seats its own tree's seed, never the operator rule's beside it"
+
+[[repo]]
+id = "claude.scout-explore"
+host = "claude"
+kind = "scout"
+file = ".claude/agents/Explore.md"
+name = "Explore"
+model = "sonnet"
+description = "Read-only search agent for broad fan-out searches — when answering means sweeping many files, directories, or naming conventions and you only need the conclusion, not the file dumps. It reads excerpts rather than whole files, so it locates code; it doesn't review or audit it. Specify search breadth: \"medium\" for moderate exploration, \"very thorough\" for multiple locations and naming conventions."
+mask = "You wake as `Explore: Lares (Tasked Spirit)`, the house above standing whole. The mask carries one move: locate. Sweep the files, directories and naming conventions the brief names, read excerpts rather than whole files, and hand back the conclusion with `path:line` grounds and the breadth you covered. You read and report; you never write, edit or spawn."
+what = "the Explore scout, which reads no CLAUDE.md, carries the seed under its mask"
+
+[[repo]]
+id = "claude.scout-plan"
+host = "claude"
+kind = "scout"
+file = ".claude/agents/Plan.md"
+name = "Plan"
+model = "inherit"
+description = "Software architect agent for designing implementation plans. Use this when you need to plan the implementation strategy for a task. Returns step-by-step plans, identifies critical files, and considers architectural trade-offs."
+mask = "You wake as `Plan: Lares (Tasked Spirit)`, the house above standing whole. The mask carries one move: design the path. Read the ground the brief names, then hand back a step-by-step plan that names the critical files, the trade-offs weighed and the reds each step owes first. You read and design; you never write, edit or spawn."
+what = "the Plan scout, which reads no CLAUDE.md, carries the seed under its mask"
+
+# ── every operator home ─────────────────────────────────────────────────────────────────────────
+
+[[home]]
+id = "claude.retain"
+host = "claude"
+homes = "all"
+kind = "json-floor"
+file = ".claude/settings.json"
+key = "cleanupPeriodDays"
+floor = 99999
+what = "Claude keeps every session file: the conversation store seeds the operator's memory"
+
+[[home]]
+id = "claude.wake-hook"
+host = "claude"
+kind = "claude-hook"
+file = ".claude/settings.json"
+event = "SessionStart"
+script = "packages/lares-cli/.claude-plugin/hooks/lares-wake-hook.mjs"
+runner = "node"
+timeout = 15
+what = "a Claude session wakes the house and reads the homes' drift at turn 1"
+
+[[home]]
+id = "claude.loads-hook"
+host = "claude"
+kind = "claude-hook"
+file = ".claude/settings.json"
+event = "InstructionsLoaded"
+script = "packages/lares-cli/.claude-plugin/hooks/lares-loads-hook.mjs"
+runner = "node"
+timeout = 10
+what = "every instruction file a Claude session loads lands in the load log `verify` reads"
+
+[[home]]
+id = "claude.ingest-stop"
+host = "claude"
+kind = "claude-hook"
+file = ".claude/settings.json"
+event = "Stop"
+script = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh"
+runner = "bash"
+timeout = 30
+what = "a turn's verbatim memory keeps on Stop"
+
+[[home]]
+id = "claude.ingest-end"
+host = "claude"
+kind = "claude-hook"
+file = ".claude/settings.json"
+event = "SessionEnd"
+script = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh"
+runner = "bash"
+timeout = 60
+what = "a session's verbatim memory keeps on SessionEnd"
+
+[[home]]
+id = "claude.mcp-seat"
+host = "claude"
+kind = "claude-mcp"
+file = ".claude.json"
+what = "Claude reaches memory through the lares seat"
+
+[[home]]
+id = "claude.seed-rule"
+host = "claude"
+kind = "seed-rule"
+file = ".claude/rules/lares-seed-seat.md"
+what = "a Claude session anywhere on the device stands the house from the main clone's seed"
+
+[[home]]
+id = "claude.home-seedless"
+host = "claude"
+kind = "seedless"
+file = ".claude/CLAUDE.md"
+what = "the operator's own CLAUDE.md carries no seed pointer; the rule seats it"
+
+[[home]]
+id = "codex.mcp-seat"
+host = "codex"
+kind = "toml-mcp"
+file = ".codex/config.toml"
+what = "Codex reaches memory through the lares seat"
+
+[[home]]
+id = "codex.ingest-stop"
+host = "codex"
+kind = "toml-hook"
+file = ".codex/config.toml"
+event = "Stop"
+script = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh"
+timeout = 60
+what = "a Codex turn's verbatim memory keeps on Stop"
+
+[[home]]
+id = "codex.retain"
+host = "codex"
+kind = "toml-table-key"
+file = ".codex/config.toml"
+table = "history"
+key = "persistence"
+value = "save-all"
+what = "Codex saves all history"
+
+[[home]]
+id = "codex.retain-uncapped"
+host = "codex"
+kind = "toml-table-unset"
+file = ".codex/config.toml"
+table = "history"
+key = "max_bytes"
+what = "no byte cap trims Codex's history"
+
+[[home]]
+id = "codex.home-seedless"
+host = "codex"
+kind = "seedless"
+file = ".codex/AGENTS.md"
+what = "Codex's home carries no seed: inside the clone the repo seats it, and a home seed would load twice"
+
+[[home]]
+id = "copilot.mcp-seat"
+host = "copilot"
+kind = "json-mcp"
+file = ".copilot/mcp-config.json"
+path = ["mcpServers", "lares"]
+shape = "copilot"
+what = "Copilot reaches memory through the lares seat"
+
+[[home]]
+id = "copilot.ingest-end"
+host = "copilot"
+kind = "copilot-hook"
+file = ".copilot/hooks/lares.json"
+event = "sessionEnd"
+script = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh"
+timeout = 60
+what = "a Copilot session's verbatim memory keeps on sessionEnd"
+
+[[home]]
+id = "copilot.retain"
+host = "copilot"
+kind = "json-set"
+file = ".copilot/settings.json"
+key = "commandHistoryMaxSize"
+value = 1000
+what = "Copilot keeps its largest prompt history (1000 caps it; a larger value falls back to 50)"
+
+[[home]]
+id = "copilot.home-seedless"
+host = "copilot"
+kind = "seedless"
+file = ".copilot/copilot-instructions.md"
+what = "Copilot's home carries no seed: inside the clone CLAUDE.md's include seats it"
+
+[[home]]
+id = "vscode.mcp-seat"
+host = "vscode"
+kind = "json-mcp"
+roots = [".vscode-server/data/User", ".vscode-server-insiders/data/User", ".config/Code/User", ".config/Code - Insiders/User"]
+file = "mcp.json"
+path = ["servers", "lares"]
+shape = "vscode"
+what = "every VS Code root present reaches memory through the lares seat"
+
+[[home]]
+id = "bin.lares"
+host = "bin"
+kind = "bin-link"
+file = ".local/bin/lares"
+target = "packages/lares-cli/bin/lares.mjs"
+what = "`lares` answers on the operator's path"
+```
+
+<<~/ahu>>
+
+<<~ ahu #/the-proofs>>
+
+!! The proofs
+
+* `packages/lares-cli/tests/intent-*.test.ts` plant each kind's red against scratch homes and clones: a second `tend` writes nothing, foreign bytes refuse, `undo` restores, the floor never lowers.
+* `tools/repo-intent-witness.sh` reads the checkout through `lares repo read`; `.githooks/pre-commit` refuses a commit whose index `lares repo read --staged` reads off intent.
+* A witness reads this carrier's intent fence parsing whole, so a carrier the engine cannot read reds before any door goes blind.
+
+<<~/ahu>>
+
+<<~ ahu #/the-research>>
+
+!! Open research ~ each row names its instrument
+
+* ''A Windows-side seed seat.'' A Claude session on the Windows profile would import the seed across `\\wsl.localhost\…`; the guard reaches that profile today, the seat does not. A `/context` probe from a Windows-side session measures it.
+* ''Native Windows on the path.'' The `bin.lares` item links a POSIX path and reads absent on native Windows; a `.cmd`/`.ps1` owned-file item and a native probe settle it.
+* ''Compaction beyond Claude.'' The load log reads a Claude compact (`load_reason = "compact"`); Codex and Copilot carry their instructions as context a compact may summarize. A hash probe after each host's compact.
+* ''VS Code agent mode and Copilot's cloud surfaces.'' Whether each reads CLAUDE.md's include, and whether code review cuts an instruction file short; a probe for the seed's final hash on each.
+* ''Seats outside the clone for Codex and Copilot.'' Each loads a home file beside the project's with no exclude, so their homes stay seedless; the row opens again when a host offers an exclude or a per-directory scope.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;8d_HDGVuEI7pnR4OzeEKZtmsPXVR1c3jW4uSmPPANzs
+
+<<^ code="&#x0004;" -> to="?">>

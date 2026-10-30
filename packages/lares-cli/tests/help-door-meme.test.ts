@@ -199,14 +199,14 @@ describe("★ `--help --meme` reaches the wiki through the meme rail ★", () =>
     expect(text).toContain("lares vessel --help --meme");
   });
 
-  test("a SUB-DOOR carries its own entry — `vessel wire --help` renders the wire door, not the vessel one", async () => {
+  test("a SUB-DOOR carries its own entry — `vessel rite --help` renders the rite door, not the vessel one", async () => {
     const { dispatch } = await import("../src/bin/lares.js");
     const out: string[] = [];
     vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { out.push(a.map(String).join(" ")); });
     vi.spyOn(console, "error").mockImplementation(() => {});
-    expect(await dispatch(["vessel", "wire", "--help"])).toBe(0);
+    expect(await dispatch(["vessel", "rite", "--help"])).toBe(0);
     const text = out.join("\n");
-    expect(text).toMatch(/^usage: lares vessel wire/m);
-    expect(text, "the sub-door's own flags reach the reader").toContain("--copilot");
+    expect(text).toMatch(/^usage: lares vessel rite/m);
+    expect(text, "the sub-door's own petnames reach the reader").toContain("refresh");
   });
 });

@@ -3,7 +3,7 @@ name: Plan
 description: "Software architect agent for designing implementation plans. Use this when you need to plan the implementation strategy for a task. Returns step-by-step plans, identifies critical files, and considers architectural trade-offs."
 disallowedTools: Agent, Edit, Write, NotebookEdit, ExitPlanMode, Artifact, ArtifactComments, ArtifactData
 model: inherit
-# projected by tools/seed-seat.mjs from bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem (sha256 085d6a84fceb4b3a8331ef9cb606cb16e251c130bd3e4c99d4250aef4bb55543); the seed is the source
+# projected by lares repo tend from bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem (sha256 085d6a84fceb4b3a8331ef9cb606cb16e251c130bd3e4c99d4250aef4bb55543); the seed is the source
 ---
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 

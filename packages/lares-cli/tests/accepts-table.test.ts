@@ -40,7 +40,7 @@ const HANDLER_FILE: Readonly<Record<string, string>> = {
   vessel: "commands/vessel", herm: "commands/herm", host: "commands/host-cmd", walk: "commands/walk-cmd",
   act: "commands/act", ingest: "commands/ingest", watch: "commands/watch", shore: "commands/shore", draft: "commands/draft",
   receipt: "commands/receipt-cmd", cancel: "commands/receipt-cmd", events: "commands/events", meme: "commands/meme", bag: "commands/bag",
-  wiki: "commands/wiki", "cleanup-days": "commands/cleanup-days", sense: "commands/sense", flow: "commands/flow-run",
+  wiki: "commands/wiki", repo: "commands/intent-door", home: "commands/intent-door", sense: "commands/sense", flow: "commands/flow-run",
   "wing-of": "commands/wing-of", mempalace: "commands/mempalace", hooks: "commands/hooks",
   sensorium: "commands/sensorium", "test-quine": "commands/scripted", vault: "commands/vault",
   library: "commands/library", persona: "commands/persona", circle: "commands/circle", cabal: "commands/cabal",
@@ -88,9 +88,6 @@ function listAfter(source: string, anchor: string, close: string): string[] {
  * gets its list named here before it passes.
  */
 const COMPUTED_READS: Readonly<Record<string, { readonly sites: number; readonly names: () => string[] }>> = {
-  // `SURFACES.filter((s) => args.flags[s] === true)`: the harness surfaces a stand or a wire may name.
-  "commands/stand":  { sites: 1, names: () => listAfter(code(resolve(SRC, "commands/wire.ts")), "export const SURFACES = [", "]") },
-  "commands/wire":   { sites: 1, names: () => listAfter(code(resolve(SRC, "commands/wire.ts")), "export const SURFACES = [", "]") },
   // `reading(name)` reads `args.options[name]` and `name in args.flags` over the three sibling readings of `check`.
   "commands/meme":   { sites: 2, names: () => listAfter(code(resolve(SRC, "commands/meme.ts")), "const reading = (name: ", ")") },
   // `filterKeys.some((k) => args.options[k] …)` and the loop that copies each filter into the verb's args.
@@ -181,7 +178,6 @@ describe("the accepts rows track the handlers", () => {
       if (file === "commands/vessel") { expect(row.names()).toEqual([]); continue; }
       expect(row.names().length, `${file}: the list its computed read walks reads empty`).toBeGreaterThan(1);
     }
-    expect(COMPUTED_READS["commands/stand"]!.names()).toEqual(expect.arrayContaining(["claude", "codex"]));
     expect(COMPUTED_READS["commands/meme"]!.names().sort()).toEqual(["edges", "gradient", "sitting"]);
     // KNOWN POSITIVE: the scan reads each computed spelling, and a literal read reads as none.
     for (const spelled of ["args.flags[s] === true", "args.options[name]", "name in args.flags", "a.flags[k]"]) {

@@ -2,7 +2,7 @@
   "name": "@lares/cli",
   "version": "0.1.0",
   "private": true,
-  "description": "Lares operator CLI — lares vessel found, lares act (Residency Model ACTION verbs), lares wiki, lares bag, lares meme, … One entry point for every operator-facing ceremony.",
+  "description": "Lares operator CLI \u2014 lares vessel found, lares act (Residency Model ACTION verbs), lares wiki, lares bag, lares meme, \u2026 One entry point for every operator-facing ceremony.",
   "type": "module",
   "bin": {
     "lares": "./bin/lares.mjs"
@@ -15,13 +15,14 @@
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json"
   },
   "dependencies": {
-    "@noble/ed25519": "3.2.0",
     "@lararium/memetic-frame": "workspace:*",
     "@lararium/mempalace": "workspace:*",
     "@lararium/mesh": "workspace:*",
     "@lararium/node": "workspace:*",
     "@lararium/sensorium": "workspace:*",
-    "@lararium/tw5": "workspace:*"
+    "@lararium/tw5": "workspace:*",
+    "@noble/ed25519": "3.2.0",
+    "smol-toml": "1.9.0"
   },
   "devDependencies": {
     "tsx": "4.23.15",

@@ -56,7 +56,7 @@ run_gate meme-check-staged.sh
 code1=$?
 run_gate submission-currency-staged.sh
 code2=$?
-run_gate seed-seat-staged.sh
+run_gate repo-intent-staged.sh
 code3=$?
 [ "$code1" -ne 0 ] && exit "$code1"
 [ "$code2" -ne 0 ] && exit "$code2"

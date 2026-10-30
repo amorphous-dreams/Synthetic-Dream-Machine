@@ -4,13 +4,13 @@
  * emits a live-delta hydration frame for the waking session.
  *
  * IT CARRIES TWO CAPABILITIES, AND `--observe` WITHHOLDS THE SECOND. Observing reports what stands and
- * touches nothing; standing brings a node up, founds a vessel, wires the AI surfaces. An unattended
+ * touches nothing; standing brings a node up and founds a vessel. An unattended
  * caller — a session hook, a cron, anything that only wants a reading — holds the first alone, so
  * looking never decides what stands.
  *
- * FOUNDING STANDS THE VESSEL AND NOTHING ELSE (operator ruling). The mempalace library and
- * the sensorium organs keep their own doors (`lares mempalace install`, `lares sense setup`), so a
- * founding stays isolated to the vessel root. A stand still REPORTS what stands, because naming a missing
+ * STANDING WRITES `LAR_ROOT` AND NOTHING ELSE (the radius law, lar:///ha.ka.ba/lares/cli/intent). The
+ * mempalace library and the sensorium organs keep their own doors (`lares mempalace install`, `lares sense
+ * setup`), and every operator home rides `lares home`, so a founding stays inside the vessel root. A stand still REPORTS what stands, because naming a missing
  * tool serves the operator and installing one behind them does not.
  *
  * The static CLAUDE.md @-import carries the canonical seed; this frame carries
@@ -34,7 +34,6 @@ import { summaryOutput } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
 import { checkMempalaceIntegration, standOk } from "../integration-check.js";
 import { foundIfAbsent, type FoundStep } from "../standup.js";
-import { tendSurfaces, SURFACES } from "./wire.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
@@ -116,23 +115,20 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
   const root = larRoot();
   const bootstrap = larBootstrapPath();
 
-  // 1. Found-if-absent (the whole shebang) under --install; else just report the cheap check.
+  // 1. Found-if-absent (the whole shebang) under --init; else just report the cheap check.
   //    Each step is a no-op when its artifact is present; genesis is never rebuilt; the
-  //    keypair is never wiped; --install never passes --force.
+  //    keypair is never wiped; --init never passes --force.
   // TWO CAPABILITIES RIDE HERE, AND A CALLER MAY HOLD ONLY THE FIRST.
   //   observe — report what stands. It carries no side effects, so it runs safely unattended.
-  //   stand   — bring the node up, found a vessel, wire the AI surfaces. ACTS, every one.
+  //   stand   — bring the node up and found a vessel. ACTS, every one, inside LAR_ROOT.
   // Fused, they let a caller asking "what stands right now" CHANGE what stands: merely looking started a
   // daemon. `--observe` withholds the acting half ENTIRELY and OUTRANKS every acting flag rather than
   // sitting beside them, so no flag further down an argv can talk a reading into an act.
   const observeOnly = args.flags["observe"] === true;
 
   let founding: FoundStep[] | undefined;
-  // The full standup runs under --init / --install (found a first vessel).
-  // All idempotent. `--install` founds a vessel that holds none; `--init` does that AND wires
-  // every AI surface (below). Two flags, two reaches.
-  const doStandup = !observeOnly &&
-    (args.flags["init"] === true || args.flags["install"] === true);
+  // `--init` founds a vessel where the root holds none; every step stays idempotent.
+  const doStandup = !observeOnly && args.flags["init"] === true;
   if (doStandup) founding = await foundIfAbsent(args, { root, bootstrap });
 
   // A REFUSED FOUNDING ENDS THE STAND. `cmdFound` printed the refusal by name; carrying on would wake a daemon over a
@@ -164,22 +160,6 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
   // The CHECK stays here and stays cheap: a wake still REPORTS what stands, because reporting a missing
   // tool serves the operator and installing one behind their back does not.
   const integration = checkMempalaceIntegration();
-
-  // 1b. THE AI-SURFACE SEATS, AND THE ONE PLACE STANDING LEAVES LAR_ROOT.
-  //     Every harness reaches the memory sensorium through the same lares seat, and each wire converges
-  //     on the RESOLVED spawn — aligned passes untouched, drifted RE-AIMS, absent gets written — so
-  //     running them again is how a stale seat heals rather than a waste. A seat aimed at a moved
-  //     holder script otherwise stays shut while its wire reports success.
-  //
-  //     `lares vessel wire` is the door for this alone, and it names the reach the way a verb should.
-  //     These flags stand beside it for the caller who wants a founding and its wiring in one breath.
-  const initAll = !observeOnly && args.flags["init"] === true;
-  const named = SURFACES.filter((s) => args.flags[s] === true);
-  // A founding wires every surface; a single flag wires that one. The repo's own adapters ride the
-  // whole-house pass alone — naming one harness says nothing about where this checkout points.
-  const wanted = initAll ? SURFACES : (observeOnly ? [] : named);
-  const wires = wanted.length > 0 ? await tendSurfaces(wanted, initAll) : undefined;
-  const { claude, codex, copilot, vscode, adapters } = wires ?? {};
 
   // 2. Ensure the node is up — attach if healthy, start detached if down. NOT a restart.
   // "Up" for the CLI means the UDS verb socket answers — the CLI reaches the daemon there
@@ -412,11 +392,6 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       mempalace: { ok: integration.ok, standing: integration.standing, checks: integration.checks },
       ...(founding !== undefined ? { founding } : {}),
       ...(foundingHint !== undefined ? { foundingHint } : {}),
-      ...(claude !== undefined ? { claude } : {}),
-      ...(codex !== undefined ? { codex } : {}),
-      ...(adapters !== undefined ? { adapters } : {}),
-      ...(copilot !== undefined ? { copilot } : {}),
-      ...(vscode !== undefined ? { vscode } : {}),
       root,
       bootstrap: existsSync(bootstrap) ? "present" : "absent",
       timestamp: new Date().toISOString(),
@@ -440,32 +415,12 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
         console.log("    → lares sense setup          the sovereign sensorium organs");
       }
       if (founding !== undefined) {
-        console.log("  founding (--install):");
+        console.log("  founding (--init):");
         for (const s of founding) console.log(`    ${s.action.padEnd(6)} ${s.step}: ${s.detail}`);
       }
       if (foundingHint !== undefined) {
         console.log("  next — stand the founding kahu quorum:");
         for (const h of foundingHint) console.log(`    → ${h}`);
-      }
-      if (claude !== undefined) {
-        console.log(`  claude (--claude): ${claude.changed ? "wired" : "already wired"}${claude.backedUp ? " (settings.json backed up)" : ""}`);
-        for (const s of claude.steps) console.log(`    ${s.action.padEnd(8)} ${s.item}: ${s.detail}`);
-      }
-      if (adapters !== undefined) {
-        console.log("  repo adapters:");
-        for (const a of adapters) console.log(`    ${a.action.padEnd(8)} ${a.item}: ${a.detail}`);
-      }
-      if (codex !== undefined) {
-        console.log(`  codex (--codex): ${codex.changed ? "wired" : "already wired / nothing to do"}`);
-        for (const s of codex.steps) console.log(`    ${s.action.padEnd(8)} ${s.item}: ${s.detail}`);
-      }
-      if (copilot !== undefined) {
-        console.log(`  copilot (--copilot): ${copilot.changed ? "wired" : "already wired / nothing to do"}`);
-        for (const s of copilot.steps) console.log(`    ${s.action.padEnd(8)} ${s.item}: ${s.detail}`);
-      }
-      if (vscode !== undefined) {
-        console.log(`  vscode (--vscode): ${vscode.changed ? "wired" : "already wired / nothing to do"}`);
-        for (const s of vscode.steps) console.log(`    ${s.action.padEnd(8)} ${s.item}: ${s.detail}`);
       }
       console.log(`  root:        ${root}`);
       console.log(`  bootstrap:   ${existsSync(bootstrap) ? "present" : "absent"}`);

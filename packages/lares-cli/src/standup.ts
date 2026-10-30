@@ -1,13 +1,12 @@
 /**
- * found — the idempotent founding orchestration behind `lares vessel stand --install`.
+ * found — the idempotent founding orchestration behind `lares vessel stand --init`.
  *
  * Stands up the vessel from a (mostly) fresh pull — node build, social-plane init,
- * genesis, then the global `lares` link — by COMPOSING the existing commands, each
- * FOUND-IF-ABSENT and a NO-OP-IF-PRESENT. Running it twice is a pure no-op.
+ * genesis — by COMPOSING the existing commands, each FOUND-IF-ABSENT and a
+ * NO-OP-IF-PRESENT. Running it twice is a pure no-op.
  *
- * Reach law: the founding runs before anything reaches outside LAR_ROOT. A refused
- * or failed init returns before genesis and before the link, so a refusal leaves
- * HOME untouched. The mempalace sidecar is no part of a founding; its door is
+ * Reach law: a founding writes `LAR_ROOT` and nothing else. The operator's homes,
+ * `lares` on the path among them, ride `lares home`; the mempalace sidecar rides
  * `lares mempalace install`.
  *
  * Safety law (identity and founding stay separate):
@@ -16,7 +15,7 @@
  *  - `lares vessel found` self-guards on the bootstrap (skips the ceremony if present);
  *  - genesis is BUILD-IF-ABSENT ONLY — a rebuild can shift the CID and diverge a
  *    founded identity, so a rebuild stays a separate operation, never
- *    a stand. `--install` never passes `--force`.
+ *    a stand. `--init` never passes `--force`.
  */
 
 import { existsSync } from "node:fs";
@@ -25,7 +24,6 @@ import { repoRoot } from "@lararium/mesh/node";
 import { runCommand } from "./spawn.js";
 import { cmdFound } from "./commands/found.js";
 import { cmdBake } from "./commands/scripted.js";
-import { linkLaresGlobal } from "./link-bin.js";
 import type { ParsedArgs } from "./parse-args.js";
 
 const NODE_DIST_MAIN = join(repoRoot, "packages", "lararium-node", "dist", "src", "main.js");
@@ -108,14 +106,6 @@ export async function foundIfAbsent(args: ParsedArgs, ctx: FoundContext): Promis
   } else {
     const code = await cmdBake(args);
     steps.push({ step: "genesis", action: code === 0 ? "ran" : "failed", detail: code === 0 ? "build-genesis (founded)" : `build-genesis exited ${code}` });
-  }
-
-  // 4. Global link — make `lares` runnable from anywhere (symlink into a user bin on Unix, a .cmd shim
-  //    on Windows). It reaches HOME, so it runs last: only a vessel that stands earns it. Idempotent;
-  //    non-fatal.
-  {
-    const r = linkLaresGlobal();
-    steps.push({ step: "link", action: r.ok ? "ran" : "failed", detail: r.detail });
   }
 
   return steps;

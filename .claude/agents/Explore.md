@@ -3,7 +3,7 @@ name: Explore
 description: "Read-only search agent for broad fan-out searches — when answering means sweeping many files, directories, or naming conventions and you only need the conclusion, not the file dumps. It reads excerpts rather than whole files, so it locates code; it doesn't review or audit it. Specify search breadth: \"medium\" for moderate exploration, \"very thorough\" for multiple locations and naming conventions."
 disallowedTools: Agent, Edit, Write, NotebookEdit, ExitPlanMode, Artifact, ArtifactComments, ArtifactData
 model: sonnet
-# projected by tools/seed-seat.mjs from bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem (sha256 085d6a84fceb4b3a8331ef9cb606cb16e251c130bd3e4c99d4250aef4bb55543); the seed is the source
+# projected by lares repo tend from bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem (sha256 085d6a84fceb4b3a8331ef9cb606cb16e251c130bd3e4c99d4250aef4bb55543); the seed is the source
 ---
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 

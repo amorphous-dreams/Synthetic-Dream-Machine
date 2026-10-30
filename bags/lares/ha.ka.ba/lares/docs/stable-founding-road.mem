@@ -61,7 +61,7 @@ its own carrier, and this carrier points there.
 
 !!! Steps
 # `export LAR_ROOT=~/.lares-scratch/<lane>/root` before any in-tree boot or any `lares` command that touches the store. `LAR_ROOT` moves the store, the bags root and every projection mirror root; `LAR_BAGS` alone moves only the bags root, and the projection still writes the tracked `bags/` and `wikis/`. A staged e2e vessel takes its own scratch `LAR_ROOT` and no global `LAR_BAGS`. One `lares meme normalize|check` reads files and needs only a scratch `LAR_BAGS`.
-# `LAR_ROOT` leaves these homes where they stand: `~/.mempalace` (the destructive `mempalace repave` among its readers), `~/.venv`, `~/.local/bin`, and the harness homes `~/.claude`, `~/.codex`, `~/.copilot`. A `vessel stand --codex` under a scratch root still writes the operator's real harness home.
+# `LAR_ROOT` leaves these homes where they stand: `~/.mempalace` (the destructive `mempalace repave` among its readers), `~/.venv`, `~/.local/bin`, and the harness homes `~/.claude`, `~/.codex`, `~/.copilot`. `lares home` writes those homes under any `LAR_ROOT`, so a lane never runs `lares home tend`; `lares vessel` writes the scratch root alone.
 # Build: `pnpm install --frozen-lockfile` only where a lead approved an install, then `pnpm -r build`, then `pnpm --filter @lararium/tw5 build:tw5-vendor` (the TW5 core blob that `head-parity` and the plugin smoke need), then `node tools/stamp-build.mjs`. A fresh `git worktree` holds empty submodules; populate them before building there.
 # ''A founding wants a human route on a TTY.'' With no TTY it refuses `CredentialTtyRefusal`, and no flag or environment variable carries a credential. A harness founds through the test door: `tools/test-scratch-marker.mjs` stages the root, `tools/seed-test-custody.mjs` names the published test route, then `lares vessel found --skip-build`; `tools/unlock-test-custody.mjs` opens a marked scratch root. An agent may read vessel state and hand the operator the next founding command as text; the operator performs each founding and custody act.
 # ''Every boot rests at the floor.'' A verb that needs sovereign state refuses at a standing floor and names `lares vault unlock`. A harness that reads the first `gate key:` line of a log reads the carriage relay's key where a relay stands.
@@ -914,6 +914,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qzsWT72kn-oUJk7VQK3_XvwPJqyZmjh04IBmPtpEAMg
+<<^ code="&#x0003;">>ni:///sha-256;yzAGYwEsqnJ6BLeFkVn_iiolKKNjlp5MoqCt-COMZgU
 
 <<^ code="&#x0004;" -> to="?">>

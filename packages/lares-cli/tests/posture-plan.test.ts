@@ -50,9 +50,9 @@ describe("posture-plan — a dropped flag names itself", () => {
   it("★ `--with-web` drops the most, and says the most ★", () => {
     // It reads its args not at all, so even `--port` goes. A person aiming a second vessel at
     // another port with `--with-web` gets 8080 and no word about it.
-    const p = posturePlan(["with-web", "init", "claude"]);
+    const p = posturePlan(["with-web", "init", "port"]);
     expect(p.posture).toBe("with-web");
-    expect(p.dropped).toEqual(expect.arrayContaining(["init", "claude"]));
+    expect(p.dropped).toEqual(expect.arrayContaining(["init", "port"]));
   });
 
   it("a flag the posture reads never counts as dropped", () => {

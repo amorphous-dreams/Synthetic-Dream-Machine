@@ -131,7 +131,7 @@ A ''browser'' vessel meets one more gate before any of this — the ''secure-con
 
 !! The Windows Surface
 
-A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the same `lares vessel stand --install` and `lares fleet join`, with these surface notes:
+A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the same `lares vessel stand --init` and `lares fleet join`, with these surface notes:
 
 * ''`lares` global'' — `--install` writes a `lares.cmd` shim beside the bin (on Unix it symlinks into `~/.local/bin`). Add that directory to PATH so `lares` runs bare. The link step stays self-contained — it does not depend on `pnpm setup`/`PNPM_HOME`.
 * ''Python'' — the integration check resolves `python3` → `python` → `py`, so the check finds Windows' `python`/`py`.
@@ -149,6 +149,6 @@ A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the sam
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uymsbajcrmSqCUVTPwipUddRtyJFdL2dmLw0_gpsPQI
+<<^ code="&#x0003;">>ni:///sha-256;uWCtWTLZYcP6l65f3DdNSstXsCcwF94kZdj7UT2SefU
 
 <<^ code="&#x0004;" -> to="?">>

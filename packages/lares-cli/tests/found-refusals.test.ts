@@ -1,6 +1,6 @@
 /**
  * found-refusals — a refused founding tells the truth at the door: the store's shape is read BEFORE any route is asked,
- * every refusal leads its line by name with no stack, and `vessel stand --install` carries a refused founding's exit code.
+ * every refusal leads its line by name with no stack, and `vessel stand --init` carries a refused founding's exit code.
  * Real files under a scratch LAR_ROOT; the only fake is the route gatherer's count.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -71,19 +71,19 @@ describe("vessel found — the store's shape is read before any route is asked",
   });
 });
 
-describe("vessel stand --install — a refused founding ends the stand non-zero", () => {
+describe("vessel stand --init — a refused founding ends the stand non-zero", () => {
   it("★ exits 1 naming FoundingRefused, starts nothing; CONTROL: --observe never founds and exits 0 ★", async () => {
     vi.resetModules();
     const found = vi.fn(async () => [{ step: "init", action: "failed", detail: "init exited 1" }]);
     vi.doMock("../src/standup.js", () => ({ foundIfAbsent: found }));
     const { cmdStand } = await import("../src/commands/stand.js");
-    expect(await cmdStand(parseArgs(["vessel", "stand", "--install", "--no-json"]))).toBe(1);
+    expect(await cmdStand(parseArgs(["vessel", "stand", "--init", "--no-json"]))).toBe(1);
     expect(found).toHaveBeenCalledTimes(1);
     expect(err.join("\n")).toMatch(/lares vessel stand: FoundingRefused: init exited 1/);
 
     const json: string[] = [];
     vi.spyOn(process.stdout, "write").mockImplementation((c) => { json.push(String(c)); return true; });
-    expect(await cmdStand(parseArgs(["vessel", "stand", "--install", "--json"]))).toBe(1);
+    expect(await cmdStand(parseArgs(["vessel", "stand", "--init", "--json"]))).toBe(1);
     expect(JSON.parse(json.join("").trim().split("\n").pop()!).error.code).toBe("FoundingRefused");
 
     found.mockClear();

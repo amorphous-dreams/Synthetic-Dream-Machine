@@ -484,7 +484,7 @@ async function personaList(args: ParsedArgs): Promise<number> {
       for (const index of lockedFaces) console.log(`  h${index}  (locked — open it with \`lares vault unlock --face ${index}\`)`);
       if (rows.length === 0 && lockedFaces.length > 0) return;
       if (rows.length === 0) {
-        console.log("no personas held — stand the founder with `lares vessel stand --install`, then name each persona and add a seat claim with `--seat` (no --handle needed).");
+        console.log("no personas held — stand the founder with `lares vessel stand --init`, then name each persona and add a seat claim with `--seat` (no --handle needed).");
         return;
       }
       console.log("personas (the private multitude — private label -> declared Handle):");
