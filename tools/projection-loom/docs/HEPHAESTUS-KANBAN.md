@@ -1,3 +1,35 @@
+## ☕ N9 · intent-born structure / paired aftermath · 2026-10-29
+
+**N9-S2** (`0817b369`) constructs a missing finite canopy from a
+typed, attributable `shelter(floor, roof)` intent, only over a
+known simple native foundation. It never alters an already
+authored roof. **Intent aftermath S2** (`e6d4e6f3`) witnesses
+different native STEP construction for the same original bodies
+under `shelter` versus `connect`.
+
+**N9-A3** (`64772204`) constructs a bounded set of independent
+rising native treads from two authored different-elevation sites.
+It requires an axis-aligned finite run and a maximum rise budget,
+and emits an explicit ordered `AscentRun`; exact native side
+contacts and headroom remain independent proof gates.
+**Intent aftermath A3** tests a source-constant shelter/ascent
+contrast: born architecture changes with authored purpose,
+not from a silently inferred motif.
+
+Remaining feature work: multiphase site morphology beyond
+single-root foundation sites; generalized sloping/turning
+circulation (not claiming accessible stairs); richer artifact
+presentation; eliminating duplicated orchestration between
+place-campaign and generalized developmental campaign while
+retaining one OODA-HA journal. An actual Unreal Editor application
+witness, source-measured photographic views, physical load and
+human safety remain not established.
+
+N9 acceptance depends on exact-head CAD/STEP/Blender, repository
+CI and held-out; do not transfer N8's green CI verdict.
+
+---
+
 ## ☕ N9 · Shelter / ascent, paired feature and intent-aftermath · 2026-10-29
 
 From verified N8 baseline `bdbf1ea2`, two construction-evidence

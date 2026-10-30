@@ -90,3 +90,20 @@ def test_intent_refuses_a_diagonal_ascending_shortcut():
     source=PlaceGenome(tuple(sorted((lower,shifted),key=lambda x:x.entity_id)))
     with pytest.raises(ValueError,match="aligned horizontal"):
         propose_from_spatial_intent(source,goal)
+
+def test_same_native_sites_yield_distinct_shelter_and_ascent_births(tmp_path):
+    from projection_loom.place_genome import propose_from_spatial_intent
+    from projection_loom.intent_seed import IntentContract
+    authored,earlier=stair()
+    lower=next(x for x in authored.bodies if x.entity_id=="begin")
+    upper=next(x for x in authored.bodies if x.entity_id=="summit")
+    original=PlaceGenome(tuple(sorted((lower,upper),key=lambda x:x.entity_id)))
+    intent=IntentContract("stairsite","Choose a spatial meaning",("rise","cover"))
+    ascent=SpatialIntent(intent.identity,earlier.goals,"operator")
+    cover=SpatialIntent(intent.identity,(SpatialGoal("shelter","begin","roof"),),"operator")
+    for path,goal in (("stair",ascent),("roof",cover)):
+        constructed=propose_from_spatial_intent(original,goal)
+        package_scene(constructed.declaration(intent.location),tmp_path/path)
+        evidence=assess_place(tmp_path/path,constructed,goal)
+        assert evidence["all_declared_goals_witnessed"],evidence
+    assert propose_from_spatial_intent(original,ascent).identity!=propose_from_spatial_intent(original,cover).identity

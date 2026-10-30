@@ -1,3 +1,30 @@
+## N9 · Aftermath A3 · Intention now causes an ascending structure
+
+An explicit `ascend(lower, upper)` goal now constructs the missing
+interstitial native `PlaceBody` treads **only** between two already
+authored, single-foundation endpoints with measured but unequal top
+elevations. The finite step budget follows the authored maximum rise;
+the available horizontal run determines the planar tread length, and
+the opposite axis retains the authored transverse width. Every
+generated tread keeps a separate GrowthProgram and STEP provenance.
+The constructor refuses diagonal, underbounded and ungrounded
+endpoints before making any claim.
+
+The independent `native_ascent_run` witness—not the synthesizer—
+reimports every native STEP, audits exact paired side-face intersection,
+monotonic top rise, shared width and empty tread headroom, then
+rehydrates from the candidate's immutable source-bound workspace.
+The same two source bodies under `shelter` versus `ascend`
+now lead to different native births under equal authorial authority.
+
+A staircase proposal has no load, handrail, accessibility, occupancy,
+user-experience or source survey certification. Source evidence does
+not follow from fictional author intent. An operator may retain,
+reject, or continue a native witness but not retroactively grant
+physical safety merely by accepting an artistic version.
+
+---
+
 ## N9 · Aftermath S2 · Explicit purpose, two different native births
 
 An attributable `shelter(floor, roof)` goal now constructs one missing
