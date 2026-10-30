@@ -88,6 +88,63 @@ def observed_place_descriptor(genome:PlaceGenome,affordances):
 
 
 
+def _place_frontier(epoch,offered,pre):
+    body={"schema":"projection-loom/place-proposal-frontier",
+          "epoch":epoch,"run_id":pre["run_id"],
+          "spatial_intent_sha256":pre["spatial_intent_sha256"],
+          "original_inventory_sha256":pre["original_inventory_sha256"],
+          "exact_budget":pre["exact_budget"],
+          "offered":[{"candidate_id":identifier,
+                      "genome_sha256":candidate.identity,
+                      "genome":candidate.to_dict(),
+                      "audition":"attempted" if i<pre["exact_budget"] else "deferred"}
+                     for i,(identifier,candidate) in enumerate(offered)]}
+    return json.loads(json.dumps(body,sort_keys=True,allow_nan=False))
+
+
+def _verify_place_frontiers(path,pre,summary,spatial,resolved):
+    """Reconstruct every offered genome, even those never sent to STEP.
+
+    Neither a mutated deferred receipt nor a freshly rehashed summary may
+    substitute for the original deterministic proposal stream.
+    """
+    archive=[]
+    niches=set()
+    digests=[]
+    total=0
+    for epoch in range(pre["epochs"]):
+        offered=[]
+        for i in range(pre["offspring"]):
+            parent=archive[i%len(archive)] if archive else resolved
+            candidate=(parent if epoch==0 and i==0 else parent.vary_spatial(
+                spatial,pre["seed"]+epoch*10007+i*137+1,count=1))
+            offered.append((f"p{epoch:03d}c{i:03d}",candidate))
+        expected=_place_frontier(epoch,offered,pre)
+        actual=_read(path/"frontiers"/f"epoch_{epoch:03d}.json")
+        if actual!=expected:
+            raise ValueError("Native place proposal frontier diverged from original intent and source seed")
+        digests.append(canonical_json_sha256(expected))
+        attempted=summary["candidates"][total:total+pre["exact_budget"]]
+        if ([row["candidate_id"] for row in attempted] !=
+                [name for name,_ in offered[:pre["exact_budget"]]]):
+            raise ValueError("Audition frontier omits or substitutes a candidate")
+        for (identifier,candidate),row in zip(offered[:pre["exact_budget"]],attempted):
+            if row["genome_sha256"]!=candidate.identity or row["epoch"]!=epoch:
+                raise ValueError("Audited native child differs from offered developmental genome")
+            if row["status"]=="admitted":
+                niche=tuple(row["niche"])
+                if niche not in niches:
+                    niches.add(niche)
+                    archive.append(candidate)
+        total+=len(attempted)
+    if (total!=summary["attempted"] or
+            summary.get("frontier_sha256")!=digests or
+            summary["offered"]!=pre["epochs"]*pre["offspring"] or
+            summary["deferred"]!=pre["epochs"]*(pre["offspring"]-pre["exact_budget"])):
+        raise ValueError("Native proposed/deferred frontier counters or digest changed")
+    return True
+
+
 def verify_place_campaign(path):
     path=Path(path)
     pre=_read(path/"pre_registration.json")
@@ -138,6 +195,8 @@ def verify_place_campaign(path):
             expected_descriptor=observed_place_descriptor(current,row["affordances"])
             if row.get("descriptor")!=expected_descriptor or row.get("niche")!=expected_descriptor["niche"]:
                 raise ValueError("Native-observed place descriptor or niche changed")
+    _verify_place_frontiers(path,pre,summary,intent,
+                            PlaceGenome.from_dict(pre["intent_constructed_genome"]))
     if summary["admitted"]!=sum(x["status"]=="admitted" for x in summary["candidates"]):
         raise ValueError("Location archive admission count changed")
     if summary["spatial_niches"]!=len({tuple(x["niche"]) for x in summary["candidates"]
@@ -218,6 +277,7 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
     archive=[]
     niches=set()
     all_records=[]
+    frontier_sha256=[]
     try:
         for epoch in range(epochs):
             loop=f"location/place-{epoch:03d}"
@@ -235,6 +295,9 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
                 candidate=(parent if epoch==0 and i==0 else parent.vary_spatial(
                     spatial,seed+epoch*10007+i*137+1,count=1))
                 offered.append((f"p{epoch:03d}c{i:03d}",candidate))
+            frontier=_place_frontier(epoch,offered,pre)
+            save_once(out/"frontiers"/f"epoch_{epoch:03d}.json",frontier)
+            frontier_sha256.append(canonical_json_sha256(frontier))
             for i,(identifier,candidate) in enumerate(offered[:exact_budget]):
                 loopid=loop+"/"+identifier
                 open_child(journal,loopid,parent=loop,scope="candidate",
@@ -296,6 +359,7 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
                  "run_id":pre["run_id"],"candidates":all_records,
                  "offered":epochs*offspring,"attempted":len(all_records),
                  "deferred":epochs*(offspring-exact_budget),
+                 "frontier_sha256":frontier_sha256,
                  "admitted":sum(r["status"]=="admitted" for r in all_records),
                  "distinct_admitted_genomes":len({r["genome_sha256"] for r in all_records
                                             if r["status"]=="admitted"}),

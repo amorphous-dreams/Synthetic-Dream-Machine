@@ -52,13 +52,20 @@ def place_comparison(campaign,destination):
             if entry["final_goal_evidence"]["native_scene_sha256"]!=native["sha256"]:
                 raise ValueError("Compared spatial evidence points to another native scene")
         items.append(entry)
+    deferred=[{"epoch":e,"candidate_id":row["candidate_id"],
+               "genome_sha256":row["genome_sha256"]}
+              for e in range(pre["epochs"])
+              for row in _load(root/"frontiers"/f"epoch_{e:03d}.json")["offered"]
+              if row["audition"]=="deferred"]
     body={"schema":"projection-loom/place-comparison",
           "pre_registration_sha256":summary["pre_registration_sha256"],
           "location":pre["location"],"spatial_intent_sha256":pre["spatial_intent_sha256"],
           "source_evidence_scope":pre["source_evidence_scope"],
           "native_attempts":summary["attempted"],"deferred_attempts":summary["deferred"],
           "admitted":summary["admitted"],"spatial_niches":summary["spatial_niches"],
-          "candidates":items,"automatic_ranking":False,
+          "candidates":items,"deferred_proposals":deferred,
+          "frontier_sha256":summary["frontier_sha256"],
+          "automatic_ranking":False,
           "automatic_artist_winner":False,"automatic_promotion":False}
     record={**body,"sha256":canonical_json_sha256(body)}
     save_once(destination,record)
