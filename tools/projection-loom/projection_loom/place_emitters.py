@@ -28,13 +28,16 @@ def generated_components(source, parent):
     return sorted({tuple(sorted(v)) for v in groups.values()})
 
 
-def _cross_parent(source, archive, spatial):
+def _cross_parent(source, archive, spatial, *, seed, epoch, index):
     if len(archive)<2:
         return None,"two distinct native-admitted parents have not appeared"
     # Only native admitted parents enter the archive, and their own source
     # ancestry remains explicit. No inferred consent for artistic promotion.
     left,right=archive[-2:]
     a,b=left["genome"],right["genome"]
+    from re import fullmatch
+    if any(not fullmatch(r"[0-9a-f]{64}",p.get("workspace_sha256","")) for p in (left,right)):
+        return None,"parent lacks independently witnessed native workspace identity"
     if a.identity==b.identity:
         return None,"both admitted parents contain identical native genomes"
     try:
@@ -43,8 +46,10 @@ def _cross_parent(source, archive, spatial):
         possibilities=[(x,y) for x in lc for y in rc if not set(x)&set(y)]
         if not possibilities:
             return None,"parents hold no disjoint closed generated regions"
-        # Stable source-dependent order; not a scoring or winner selection.
-        selected=sorted(possibilities,key=lambda pair:(pair[0],pair[1]))[0]
+        # Explore multiple compatible regions without ranking artistic quality.
+        options=sorted(possibilities,key=lambda pair:(pair[0],pair[1]))
+        selection_index=(seed+epoch*10007+index*137)%len(options)
+        selected=options[selection_index]
         record=recombine_place_regions(source,a,b,spatial,
                         left_generated=list(selected[0]),
                         right_generated=list(selected[1]))
@@ -53,6 +58,10 @@ def _cross_parent(source, archive, spatial):
     ancestry={"left_candidate_id":left["candidate_id"],
               "right_candidate_id":right["candidate_id"],
               "left_genome_sha256":a.identity,"right_genome_sha256":b.identity,
+              "left_native_workspace_sha256":left["workspace_sha256"],
+              "right_native_workspace_sha256":right["workspace_sha256"],
+              "eligible_region_pair_count":len(options),
+              "sampled_pair_index":selection_index,
               "left_region":list(selected[0]),"right_region":list(selected[1]),
               "recombination_sha256":record["sha256"],
               "automatic_operator_acceptance":False}
@@ -75,7 +84,7 @@ def emit_place_child(original,resolved,archive,spatial,*,epoch,index,offspring,s
         # Every later epoch offers one cross-parent region opportunity, without
         # inventing a second controller or exceeding the original audition budget.
         breeding=(epoch>0 and index==offspring-1)
-        proposal,refusal=_cross_parent(original,archive,spatial) if breeding else (None,None)
+        proposal,refusal=_cross_parent(original,archive,spatial,seed=seed,epoch=epoch,index=index) if breeding else (None,None)
         if proposal is None:
             parent=archive[index%len(archive)] if archive else {
                 "genome":resolved,"candidate_id":"authored-intent"}
