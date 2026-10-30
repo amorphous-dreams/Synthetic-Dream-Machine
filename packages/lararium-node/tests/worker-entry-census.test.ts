@@ -136,6 +136,9 @@ test("RED: the scanner reads execution order, not text; CONTROL: honest entries 
   expect(violation("starter.worker.ts", 'startIsland();\nawait boot();', ["startIsland"])).toBeNull();
   expect(violation("late-starter.worker.ts", 'await boot();\nstartIsland();', ["startIsland"])).toBe("late-starter.worker.ts");
   expect(violation("unnamed-starter.worker.ts", 'startIsland();', [])).toBe("unnamed-starter.worker.ts: no listener");
+  // The listener registers after its own arguments evaluate: an await inside them delays registration.
+  expect(violation("arg-await.worker.ts", 'self.addEventListener("message", await makeHandler());')).toBe("arg-await.worker.ts");
+  expect(violation("await-wrapped.worker.ts", 'await self.addEventListener("message", () => {});')).toBeNull();
   // CONTROL: the plain top-level listener before an await stands.
   expect(violation("honest.worker.ts", 'self.addEventListener("message", () => {});\nawait boot();')).toBeNull();
 });
