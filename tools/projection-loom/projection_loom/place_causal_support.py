@@ -83,7 +83,7 @@ def materialize_crossing_support(source,genome,spatial,destination,*,actor):
 def verify_crossing_support(source,genome,spatial,destination):
     source=Path(source);out=Path(destination)
     record=_json(out/"receipt.json")
-    if (out/"FAILED").exists()
+    if ((out/"FAILED").exists()
             or record.get("schema")!="projection-loom/native-bridge-causal-binding"
             or record.get("scope")!="two-independent-native-horizontal-bearing-relations"
             or record.get("automatic_promotion") is not False
