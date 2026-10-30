@@ -1,3 +1,30 @@
+## N9-CB3/4 · Intent aftermath: two native facts, two causal events
+
+A grounded column joins floor and roof by **two native contacts**.
+The previously refused one-event shortcut remains refused.
+`place-bearing-chain` now opens two sequential, immutable
+`support_workspace` children: first `floor supports column`,
+then `column supports roof`. Every event carries a real
+pre-event independently reimported STEP contact proof, a
+causal parent frontier, an attributed operator event and a
+derived workspace receipt. The source parent remains unchanged.
+
+`place-bearing-chain-verify` rehydrates both child workspaces,
+reimports their *pre-event* native STEP from the appropriate
+workspace, confirms the required semantic `supports` edge,
+checks the event actor and native contact digest, and
+refuses modified receipts or shifted ancestry. Comparing a
+post-event scene SHA to a pre-event proof would invent an
+identity, so the verifier follows the actual causal shoreline.
+
+The chain proves local geometric contact only; it does not
+claim a structural assembly can bear the roof's weight,
+resist wind, meet building codes, remain stable, or support
+people. The operator still holds both architectural intent
+and any real-world safety decision.
+
+---
+
 ## N9-BC · Intent aftermath: the bearing verb can construct a column
 
 For two aligned and independently authored source solids with an

@@ -1,3 +1,30 @@
+## ☕ N9 · Native column causal completion · build/aftermath waves · 2026-10-29
+
+**N9-BC3** (`8aa4ac29`) creates an independent
+two-event native/causal support chain from one operator
+approved `BearingRun`: lower body → column, column
+→ overhead body. Both operations flow through the
+existing exact native `propose_support` and immutable
+`support_workspace` APIs, never a second controller.
+
+**Intent aftermath BC3** (`fa943ef0`) aligns each
+revalidated bearing SHA to its own PRE-event workspace
+rather than comparing source/destination scene hashes.
+**N9-BC4** (`5895e01d`) exposes the
+`place-bearing-chain` and `place-bearing-chain-verify`
+CLI and independent two-event adversarial tests. No
+load safety, artwork winner, source survey authority,
+pet-name, o-takiage, canon promotion or PR merge.
+
+The original N9 direct-bearing CLI remains distinct.
+Exact-head contracts, CAD/STEP, real Blender, repo CI
+and held-out checks must finish before declaring this
+new code accepted. A prior syntax regression in
+`place_bearing_causal.py` was corrected in
+`9d491557`; do not reuse earlier red acceptance.
+
+---
+
 ## ☕ N9 · Intent-grown native column and CI syntax recovery · 2026-10-29
 
 **N9-BC1** (`d71656a0`) adds explicit heritable
