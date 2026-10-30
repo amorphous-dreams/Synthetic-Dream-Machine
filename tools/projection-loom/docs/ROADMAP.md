@@ -1,3 +1,45 @@
+## ☕ N8 · Whole-machina feature/intent cycles IV–V + CI recovery · 2026-10-29
+
+Following the initial `c356a551` N8 push, the existing integration workflows
+reported **RED** at exact head:
+- Contracts job: 93 passed, two failed. Existing `place-review` CLI
+  collided with the new candidate-review command, and a negative test
+  expected a more precise exact-schema refusal.
+- OpenUSD/STEP job: 48 passed, three failed. The same CLI collision and
+  synthetic location studies lacking an explicitly authored `local3d` frame
+  prevented native workspace admission. No CAD constraints were weakened.
+- Full CAD, repository CI, held-out: inspect their exact verdicts separately.
+
+**N8-G** (`4be2884a`) binds a `connect` intent to an ACTUAL new native
+walkway genome between two authored equal-height root sites; the original
+source and candidate genomes retain separate digests. **N8-H**
+(`6e0c447f`) extends that witnessed construction to either x or y axis.
+Diagonal or uneven-height paths refuse as unsupported rather than fabricating
+a human-traversable connection.
+
+**Intent aftermath IV** (`3f47fd3d`) compares the same bodies under
+`connect` versus unimplemented `shelter`: a real new body and two
+bearing relations arise only for the supported goal. **N8-I**
+(`fb551145`) adds `place-continue`, requiring an explicitly operator
+accepted, unique, independently verified prior candidate; it archives a
+complete native parent workspace and attributed review, and forks the next
+OODA-HA place study without automatic preference. **Intent aftermath V**
+(`f9b0b721`) tests actual inherited native ancestry and tamper refusal.
+
+**Recovery** (`eb5da305`, `6cba4ddd`): the previous
+`place-review` Fire passage/section CLI retains its existing name; the new
+review command takes `place-candidate-review`. Missing-schema error messages
+now explain exact typed fields. Native place studies must receive **exactly
+one explicitly authored local3d frame**; synthetic trials now supply one.
+No camera, scale, load or operator-approval evidence is invented.
+
+**Status:** commits prepared in a sequential chain; await publication
+and fresh exact-head CAD, generalized STEP/USD/real Blender, repository and
+held-out gates. The initially red N8 head cannot be declared accepted even
+if unrelated jobs passed. Unreal Editor remains blocked. No merge or canon.
+
+---
+
 ## ☕ N8 · The Place That Grows · 2026-10-29 · implementation in acceptance
 
 Operator-directed iterative feature/intent-after-math:
