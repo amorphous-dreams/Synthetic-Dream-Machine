@@ -67,3 +67,26 @@ test("--lock-path names the lock: LARES_BATTERY_LOCK wins; otherwise the PASSWD 
   assert.equal(r.stdout.trim(), join(userInfo().homedir, ".lares-scratch", ".battery.lock"));
   assert.ok(!r.stdout.includes(scratchHome), "a $HOME-relative lock would give each lead its own lock");
 });
+
+test("RED: a relative LARES_BATTERY_LOCK refuses (exit 64) since two working directories would pick two locks", () => {
+  const d = dir(); const marker = join(d, "ran");
+  const r = spawnSync("bash", [BATTERY, "touch", marker], { encoding: "utf8", cwd: d, env: { ...process.env, LARES_BATTERY_LOCK: ".battery.lock" } });
+  assert.equal(r.status, 64);
+  assert.match(r.stderr, /absolute/);
+  assert.ok(!existsSync(marker));
+});
+
+test("RED: a failed passwd lookup refuses (exit 64) and never falls back to /root", () => {
+  const d = dir(); const bin = join(d, "bin"); mkdirSync(bin);
+  writeFileSync(join(bin, "getent"), "#!/bin/sh\nexit 2\n", { mode: 0o755 });
+  const r = spawnSync("bash", [BATTERY, "--lock-path"], { encoding: "utf8", env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, LARES_BATTERY_LOCK: "" } });
+  assert.equal(r.status, 64);
+  assert.ok(!r.stdout.includes("/root"));
+});
+
+test("RED: the wrapped command's stderr reaches us (the lock open's silencing is scoped to the open)", () => {
+  const d = dir();
+  const r = spawnSync("bash", [BATTERY, "bash", "-c", "echo diagnosis >&2; exit 7"], { encoding: "utf8", env: { ...process.env, LARES_BATTERY_LOCK: join(d, "lock") } });
+  assert.equal(r.status, 7);
+  assert.match(r.stderr, /diagnosis/);
+});

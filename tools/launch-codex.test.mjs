@@ -1,11 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
+import { mkdtempSync, mkdirSync, readFileSync, realpathSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir, userInfo } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { appendSeatLaw, distFresh, preflight, readPool, realHome, run, seatArgs, seatLaw } from "./launch-codex.mjs";
+import { appendSeatLaw, distFresh, mainCheckout, preflight, readPool, realHome, realReaders, run, seatArgs, seatLaw } from "./launch-codex.mjs";
 import { globalStampPath, packageStampPath, sourceDigest } from "./stamp-build.mjs";
 
 const TOOL = fileURLToPath(new URL("./launch-codex.mjs", import.meta.url));
@@ -230,4 +230,48 @@ test("RED: a brief that carries only a forged or partial SEAT LAW heading gets t
   assert.ok(!forged.includes("TODO"), "the forged section is replaced");
   assert.ok(forged.includes("## Notes\nkeep me"), "the sections around it stay");
   assert.equal(appendSeatLaw(forged, law), forged);
+});
+
+test("RED: the main checkout is the git common dir's parent, from a linked worktree too; CONTROL: a plain repo is its own main", () => {
+  const base = mkdtempSync(join(tmpdir(), "main-co-"));
+  const main = join(base, "main"), linked = join(base, "linked");
+  const git = (...a) => execFileSync("git", ["-C", main, "-c", "user.name=t", "-c", "user.email=t@t", ...a], { stdio: "ignore" });
+  mkdirSync(main); git("init", "-q"); git("commit", "-q", "--allow-empty", "-m", "x"); git("worktree", "add", "-q", linked);
+  assert.equal(mainCheckout(main), realpathSync(main));
+  assert.equal(mainCheckout(linked), realpathSync(main), "a lane worktree's launcher still guards the REAL main checkout");
+  const plain = join(base, "plain"); mkdirSync(plain);
+  assert.equal(mainCheckout(plain), plain, "no git: the tree itself");
+  assert.equal(realReaders(base, linked).repo, realpathSync(main));
+});
+
+test("RED: the pool reads the NEWEST rollout alone; an older rollout's record never authorizes a launch", () => {
+  const home = mkdtempSync(join(tmpdir(), "rollouts-"));
+  const dir = join(home, ".codex", "sessions", "2026", "10", "30"); mkdirSync(dir, { recursive: true });
+  const old = join(dir, "rollout-old.jsonl"), fresh = join(dir, "rollout-new.jsonl");
+  writeFileSync(old, rate(60) + "\n"); writeFileSync(fresh, '{"type":"session_meta"}\n');
+  utimesSync(old, 1000, 1000); utimesSync(fresh, 2000, 2000);
+  assert.equal(readPool(realReaders(home).rolloutLines()), null, "newest has no record: unreadable, not the older 60%");
+  writeFileSync(fresh, rate(70) + "\n");
+  assert.equal(readPool(realReaders(home).rolloutLines()).used, 70, "CONTROL: the newest record answers");
+});
+
+test("RED: a relative --worktree is resolved once; spawn carries the absolute path that preflight checked", () => {
+  const w = world();
+  const spawned = [];
+  const prev = process.cwd();
+  try {
+    process.chdir(join(w.home, ".lares-scratch", "lane"));
+    assert.equal(run(["--mode", "build", "--model", "gpt-6.1-terra", "--effort", "high", "--seat-dir", w.seatDir, "--worktree", "wt"], { readers: w.readers, spawn: (c, a) => { spawned.push(a); return { pid: 1 }; }, log() {}, err() {} }), 0);
+  } finally { process.chdir(prev); }
+  const a = spawned[0];
+  assert.equal(a[a.indexOf("-C") + 1], realpathSync(w.wt));
+});
+
+test("RED: the seat law heading is exact: LAWFUL is no law, two blocks collapse to one, a placeholder is replaced", () => {
+  const law = seatLaw(readFileSync(CANON, "utf8"));
+  const lawful = appendSeatLaw("# b\n## SEAT LAWFUL\nx\n", law);
+  assert.ok(lawful.includes("## SEAT LAWFUL") && lawful.includes(law));
+  const twice = appendSeatLaw(`# b\n\n${law}\n${law}`, law);
+  assert.equal(twice.match(/^## SEAT LAW \(/gm).length, 1);
+  assert.ok(twice.includes(law));
 });
