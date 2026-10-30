@@ -23,6 +23,7 @@ on:
       - 'tools/projection-loom/projection_loom/place_affordances.py'
       - 'tools/projection-loom/projection_loom/place_shelter.py'
       - 'tools/projection-loom/projection_loom/place_ascent.py'
+      - 'tools/projection-loom/projection_loom/place_matched_trial.py'
       - 'tools/projection-loom/projection_loom/place_campaign.py'
       - 'tools/projection-loom/projection_loom/constructive_phases.py'
       - 'tools/projection-loom/projection_loom/fire_spatial.py'
@@ -120,7 +121,16 @@ jobs:
           python -m pip install --no-deps -e .
           python -m pip check
       - name: Headless real OpenUSD and native STEP reimport
-        run: python -m pytest -q tests/test_hephaestus_usd.py tests/test_hephaestus_editor.py tests/test_hephaestus_crucible.py tests/test_hephaestus_variants.py tests/test_hephaestus_location_workspace.py tests/test_hephaestus_native_support.py tests/test_hephaestus_support_workspace.py tests/test_hephaestus_location_admission.py tests/test_hephaestus_transfer.py tests/test_hephaestus_transfer_adversarial.py tests/test_hephaestus_location_review.py tests/test_hephaestus_place_affordances.py tests/test_hephaestus_place_campaign.py tests/test_hephaestus_intent_contrast.py tests/test_hephaestus_place_comparison.py tests/test_hephaestus_place_gallery.py tests/test_hephaestus_place_shelter.py tests/test_hephaestus_place_ascent.py
+        run: python -m pytest -q tests/test_hephaestus_usd.py tests/test_hephaestus_editor.py tests/test_hephaestus_crucible.py tests/test_hephaestus_variants.py tests/test_hephaestus_location_workspace.py tests/test_hephaestus_native_support.py tests/test_hephaestus_support_workspace.py tests/test_hephaestus_location_admission.py tests/test_hephaestus_transfer.py tests/test_hephaestus_transfer_adversarial.py tests/test_hephaestus_location_review.py tests/test_hephaestus_place_affordances.py tests/test_hephaestus_place_campaign.py tests/test_hephaestus_intent_contrast.py tests/test_hephaestus_place_comparison.py tests/test_hephaestus_place_gallery.py tests/test_hephaestus_place_shelter.py tests/test_hephaestus_place_ascent.py tests/test_hephaestus_place_matched_trial.py
+      - name: N9 source-fixed repeated shelter/ascent developmental trial
+        run: python -m projection_loom.place_matched_trial --out out/n9-matched-site --epochs 2
+      - name: Retain native N9 paired developmental workspaces and receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: n9-matched-native-spatial-development
+          path: tools/projection-loom/out/n9-matched-site/
+          retention-days: 60
       - name: N8 matched native intent-change experiment
         run: python -m projection_loom.place_intent_contrast --out out/n8-intent-contrast
       - name: Retain matched N8 native intent experiment receipts
