@@ -87,8 +87,11 @@ jobs:
           LAR_ROOT: ${{ runner.temp }}/lar-root-${{ matrix.set }}-${{ matrix.shard }}
         run: |
           mkdir -p "$LAR_ROOT"
-          npx vitest run --config "${{ matrix.config }}" \
-            --shard="${{ matrix.shard }}/${{ matrix.count }}" \
+          # THE DEAL IS BY MEASURED WEIGHT, never vitest's path hash: `tools/e2e-shards.mjs shard-files` reads
+          # `tools/e2e-shard-weights.json`, and the merge gate still reads every tracked file run exactly once.
+          mapfile -t files < <(node "$GITHUB_WORKSPACE/tools/e2e-shards.mjs" shard-files --set "${{ matrix.set }}" --shard "${{ matrix.shard }}" --repo-root "$GITHUB_WORKSPACE")
+          test "${#files[@]}" -gt 0
+          npx vitest run --config "${{ matrix.config }}" "${files[@]}" \
             --reporter=blob --reporter=json \
             --outputFile.json=".vitest/blob/report-shard-${{ matrix.set }}-${{ matrix.shard }}.json"
         timeout-minutes: 45

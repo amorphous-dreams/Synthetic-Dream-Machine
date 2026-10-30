@@ -28,8 +28,31 @@ declare -A HELD_OUT=(
   [witness-all]="this script"
 )
 
+# Witnesses heavy enough to run in a CI cell of their own (`tools/ci-cells.mjs` names the cell of each). A bare run
+# still runs them all; `--except-apart` leaves them to their cells, and `--only <name>` runs exactly one of them.
+APART=(contract-witness)
+
+mode=all
+only=""
+list=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --list) list=1 ;;
+    --except-apart) mode=except ;;
+    --only) mode=only; only="${2:-}"; shift ;;
+    *) echo "witness-all: unknown argument $1" >&2; exit 2 ;;
+  esac
+  shift
+done
+is_apart() { local a; for a in "${APART[@]}"; do [ "$a" = "$1" ] && return 0; done; return 1; }
+if [ "$mode" = only ] && ! is_apart "$only"; then
+  echo "witness-all: --only names '$only', which is no apart witness (${APART[*]})" >&2
+  exit 2
+fi
+
 status=0
 held=()
+apart_skipped=()
 order=()
 declare -A exit_of=()
 declare -A seen=()
@@ -37,6 +60,11 @@ for path in tools/*witness*.sh; do
   w="$(basename "$path" .sh)"
   seen[$w]=1
   if [ -n "${HELD_OUT[$w]:-}" ]; then held+=("$w — ${HELD_OUT[$w]}"); continue; fi
+  case "$mode" in
+    except) is_apart "$w" && { apart_skipped+=("$w"); continue; } ;;
+    only) [ "$w" = "$only" ] || continue ;;
+  esac
+  if [ "$list" -eq 1 ]; then echo "$w"; continue; fi
   echo "── $w ──"
   "$path"
   rc=$?
@@ -52,7 +80,14 @@ for w in "${!HELD_OUT[@]}"; do
   [ -f "tools/$w.sh" ] && held+=("$w — ${HELD_OUT[$w]}")
 done
 
-if [ "${#held[@]}" -gt 0 ]; then
+[ "$list" -eq 1 ] && exit 0
+
+if [ "$mode" = except ] && [ "${#apart_skipped[@]}" -gt 0 ]; then
+  echo "── run apart, in cells of their own ──"
+  printf '  %s\n' "${apart_skipped[@]}"
+fi
+
+if [ "$mode" != only ] && [ "${#held[@]}" -gt 0 ]; then
   echo "── held out of this run ──"
   printf '  %s\n' "${held[@]}"
 fi
