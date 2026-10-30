@@ -30,10 +30,19 @@ def observed_place_descriptor(genome:PlaceGenome,affordances):
             or not affordances.get("all_declared_goals_witnessed")):
         raise ValueError("Native route descriptor needs an admitted exact affordance witness")
     routes=[]
+    cover=[]
     for item in affordances["goals"]:
+        proof=item["proof"]
+        if item["status"]=="geometric-shelter-proposal":
+            if (not proof or proof.get("intrusions")!=0
+                    or not proof.get("native_planar_cover_area",0)>0):
+                raise ValueError("Overhead cover lacks independent native planar proof")
+            cover.append({"area":proof["native_planar_cover_area"],
+                          "width":proof["minimum_cover_width"],
+                          "headroom":proof["headroom_height"]})
+            continue
         if item["status"]!="geometric-route-proposal":
             raise ValueError("Only fully witnessed goals enter observed morphology")
-        proof=item["proof"]
         segments=proof.get("segments",[proof])
         if not segments or any(not x.get("bearing_sha256") or
                                x.get("native_clearance_obstructions")!=0
@@ -42,15 +51,20 @@ def observed_place_descriptor(genome:PlaceGenome,affordances):
         routes.append({"hops":len(segments),
                        "width":min(x["route_width_lower_bound"] for x in segments),
                        "axes":sorted(set(x["principal_axis"] for x in segments))})
-    width=min(x["width"] for x in routes)
-    hops=max(x["hops"] for x in routes)
+    widths=[x["width"] for x in routes]+[x["width"] for x in cover]
+    width=min(widths)
+    hops=max((x["hops"] for x in routes),default=0)
     axis_count=len(set(axis for route in routes for axis in route["axes"]))
     niche=(min(8,len(genome.walkways)),min(8,hops),min(8,int(width*2)),
-           min(2,axis_count))
+           min(2,axis_count),min(8,len(cover)))
     return {"schema":"projection-loom/observed-place-morphology",
             "native_scene_sha256":affordances["native_scene_sha256"],
             "body_count":len(genome.bodies),"walkway_count":len(genome.walkways),
-            "goals":routes,"route_width_lower_bound":width,
+            "goals":routes,"native_overhead_cover":cover,
+            "shelter_witness_count":len(cover),
+            "route_width_lower_bound":(min(x["width"] for x in routes)
+                                     if routes else None),
+            "minimum_spatial_width":width,
             "max_native_route_hops":hops,"distinct_axes":axis_count,
             "niche":list(niche),"architectural_fitness_claim":None,
             "artistic_fitness_claim":None}

@@ -1,3 +1,24 @@
+## N9 · Aftermath S · Shelter without invented human occupancy
+
+A `SpatialGoal(shelter, floor, roof)` can now request a bounded **native
+overhead-cover hypothesis**. Independently reimported STEP top and underside
+planar faces must overlap, the actual floor centre must lie under the roof,
+the headroom gap must satisfy a bounded envelope, and any third solid
+intruding into the proposed interior refuses admission. Both STEP byte
+hashes and the complete native scene digest accompany the proof.
+
+This does **not** witness enclosure, weather resistance, structural load,
+human occupancy, egress or aesthetics. `shelter` admits only
+`geometric-shelter-proposal`, never the earlier route status. The
+morphology archive now keeps cover footprint/headroom separate from
+route hops and axes, and shelter-only genomes can mutate constituent
+native bodies without inventing fictional walkways. A route claim never
+comes from an overhead roof witness.
+
+Full native and generalized tests remain required on the new exact head.
+
+---
+
 # N8 · The Place That Grows · source and intent boundaries
 
 This contract records a design intention, not a language model runtime.

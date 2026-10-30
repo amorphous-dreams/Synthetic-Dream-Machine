@@ -114,7 +114,10 @@ class PlaceGenome:
         bodies=list(self.bodies)
         choices=sorted({w.deck for w in self.walkways})
         if not choices:
-            raise ValueError("No declared walkway to vary")
+            # A sheltered or otherwise disconnected location still retains
+            # individual constructive bodies that can be mutated without
+            # inventing a fake causal walkway.
+            choices=sorted(b.entity_id for b in bodies)
         for _ in range(count):
             target=rng.choice(choices)
             i=next(i for i,b in enumerate(bodies) if b.entity_id==target)

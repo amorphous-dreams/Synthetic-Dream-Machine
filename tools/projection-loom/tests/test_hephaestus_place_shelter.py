@@ -38,3 +38,21 @@ def test_offset_crushed_or_obstructed_roof_never_becomes_shelter(tmp_path,settin
     result=assess_place(tmp_path/"scene",genome,goal)
     assert not result["all_declared_goals_witnessed"]
     assert result["goals"][0]["proof"] is None
+
+def test_shelter_campaign_inherits_native_cover_without_pretending_route(tmp_path):
+    from projection_loom.place_campaign import run_place_campaign,observed_place_descriptor
+    from projection_loom.intent_seed import IntentContract
+    from projection_loom.location_stack import LocationStack,Frame
+    genome,spatial=fixture()
+    intent=IntentContract("covered-place","An overhead refuge",("overhead-cover",))
+    spatial=SpatialIntent(intent.identity,spatial.goals,"operator")
+    source=LocationStack(intent.location)
+    source.add_frame(Frame("authored-local","local3d","model_unit"))
+    result=run_place_campaign(source,intent,spatial,genome,tmp_path/"study",
+                              epochs=2,offspring=1,exact_budget=1,seed=17)
+    assert result["admitted"]>=1
+    first=next(x for x in result["candidates"] if x["status"]=="admitted")
+    described=observed_place_descriptor(genome,first["affordances"])
+    assert described["shelter_witness_count"]==1
+    assert described["max_native_route_hops"]==0
+    assert described["artistic_fitness_claim"] is None
