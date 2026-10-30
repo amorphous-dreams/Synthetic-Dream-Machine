@@ -1,3 +1,45 @@
+## ☕ N9 · Shelter / ascent, paired feature and intent-aftermath · 2026-10-29
+
+From verified N8 baseline `bdbf1ea2`, two construction-evidence
+features and two aftermath passes extend the living-place affordance
+types without creating a parallel OODA-HA helm.
+
+**N9-S** (`b408a149`): typed `shelter` gets an exact native horizontal
+cover hypothesis. Independent STEP roof/floor faces, planar intersection
+area, floor centre overhead cover, bounded headroom, and absence of
+intruding third-party solids control its admission. No weatherproofing,
+human occupancy, loads, or architectural virtue follows.
+
+**Intent aftermath S** (`cb2dac89`): preserve cover width/area and
+headroom in native morphology, separately from routes; allow
+disconnected-but-native bodies to vary without fictional walkways.
+
+**N9-A** (`fe5d5adc`, `6fa26e2d`): a typed `AscentRun`
+lists explicit, ordered rising native tread bodies. Each STEP side
+face must meet the next with positive exact BRep area, strictly
+ascending within authored maximum rise and minimum transverse width,
+plus native headroom. An inferred stack or bounds-only encounter
+cannot prove a staircase.
+
+**Intent aftermath A** (`6cdaffd6`): record rise and riser
+morphology independently; forbid inference of accessible stairs,
+safety or survey truth. Native scene, generational, journal and
+operator review authorities remain separate.
+
+**Acceptance:** these commits require exact-head CI for the N9
+shelter/ascent, previously passing N8 generalized workflow,
+repo-wide tests, full CAD and held-out. No native geometric proof
+grants load/occupancy safety or automatic artistic victory.
+An actual Unreal Editor witness and generic non-axis path
+remains unavailable. PR #84 remains unmerged.
+
+Next wave: intent-conditioned construction for sheltered courtyards
+and stepped transitions, plus a shared orchestration seam and
+falsifiable source-conditioned comparisons, rather than more
+cosmetic morphology scoring.
+
+---
+
 ## ☕ N8 · Place ecology / intent aftermath XV · 2026-10-29
 
 **N8-Q** (`305176eb`) replaces first-deck offset bins with
