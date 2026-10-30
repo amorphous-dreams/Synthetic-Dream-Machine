@@ -1,7 +1,8 @@
 #!/usr/bin/env sh
-# pre-commit — the staged `.mem` carriers must carry a block check that covers their body, and a staged
-# submission source/pair must still re-project current. Two gates, run in sequence: `exec` on the first
-# would end the hook there and the second would never fire, so each runs and its exit is kept.
+# pre-commit — the staged `.mem` carriers must carry a block check that covers their body, a staged
+# submission source/pair must still re-project current, and a staged seed must still seat every Claude
+# door. The gates run in sequence: `exec` on the first would end the hook there and the rest would never
+# fire, so each runs and its exit is kept.
 # Enable once per clone:  git config core.hooksPath .githooks
 #
 # A gate belongs to the tree that carries it. A worktree checked out from a branch that predates a gate
@@ -55,5 +56,8 @@ run_gate meme-check-staged.sh
 code1=$?
 run_gate submission-currency-staged.sh
 code2=$?
+run_gate seed-seat-staged.sh
+code3=$?
 [ "$code1" -ne 0 ] && exit "$code1"
-exit "$code2"
+[ "$code2" -ne 0 ] && exit "$code2"
+exit "$code3"
