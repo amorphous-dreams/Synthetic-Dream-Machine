@@ -2,9 +2,9 @@
  * face-seat-summons — A JOINED, UNSEATED LEAF SUMMONS ITS OWN SEAT (the Founding Walk, W4; ruled 2026-10-29 from
  * "join = intent; idempotent": the person's `fleet join` IS the intent, so the leaf carrying it out starts nothing new).
  *
- * Measured before the cure: a browser leaf joined face h0, crossed, was sorted same-operator, read its face's planes, and
- * logged `pinned, not yet seated — bindings mint vessel-only until a face-join lands` forever: nothing in the browser issued
- * the face-join summons, and a node joinee needed a hand step (`lares intent issue face-join`).
+ * The leaf that carries the summons is the one the join seats: a browser leaf that joined, crossed, was sorted
+ * same-operator and reads its face's planes issues the face-join summons itself, so no node joinee needs a hand step
+ * (`lares intent issue face-join`) and no leaf rests `pinned, not yet seated`.
  *
  * Reds: an unseated leaf holding its card and a standing edge, with a founding hearth admitted on the persona log and no
  * standing summons of its own, issues EXACTLY ONE summons pinned to that hearth. CONTROLS: a seated leaf issues none; a
@@ -12,7 +12,7 @@
  * (kapae'd) or unknown issues none; a leaf with no card, no edge or no admitted hearth issues none.
  */
 import { describe, expect, test } from "vitest";
-import { faceIntentVerbs, intentEntryRecordsOfGroup, type DocHandle, type LarDoc } from "@lararium/mesh";
+import { faceIntentVerbs, intentEntryRecordsOfGroup, intentId, type DocHandle, type LarDoc } from "@lararium/mesh";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
 import { makeSeatSummons, standingOfReading } from "../src/face-seat-summons.js";
 
@@ -101,7 +101,7 @@ describe("a joined, unseated leaf summons its own seat", () => {
 
   test("RED (Sol): a standing summons pinned ELSEWHERE is no standing summons: one pinned to the hearth issues beside it", async () => {
     const f = await fixture();
-    // A summons this atom issued earlier, pinned to a hand that is not the founding hearth (a mispin before the cure).
+    // A summons this atom issued, pinned to a hand that is not the founding hearth (a mispin).
     const { requestFaceJoin } = await import("../src/face-intent-door.js");
     await requestFaceJoin({ group: GROUP, plane: f.shared.handle, atom: f.atom, hearthAtom: "99".repeat(32), summons: { contactCard: "{}", deviceEdge: { deviceVerifyingKey: f.atom.key, personaRootDid: "0x" + "cd".repeat(32) } as never }, verbs: faceIntentVerbs() });
     expect(f.entries()).toHaveLength(1);
@@ -109,6 +109,26 @@ describe("a joined, unseated leaf summons its own seat", () => {
     const pins = (f.entries() as { body: { entry: string; audience?: { atom?: string } } }[]).filter((e) => e.body.entry === "intent").map((e) => e.body.audience?.atom);
     expect(pins).toContain(HEARTH_KEY);
     expect(await f.summons.summon()).toBe("standing");
+  });
+
+  test("RED (Sol): a summons pinned to the hearth beside a mispinned one, over the SAME card and edge, folds as its own intent", async () => {
+    const f = await fixture();
+    const { requestFaceJoin } = await import("../src/face-intent-door.js");
+    // The same bytes the leaf's own summons carries: its card and its edge; only the pin differs.
+    const summons = { contactCard: '{"card":"j"}', deviceEdge: { ...edge, deviceVerifyingKey: f.atom.key } };
+    await requestFaceJoin({ group: GROUP, plane: f.shared.handle, atom: f.atom, hearthAtom: "99".repeat(32), summons, verbs: faceIntentVerbs() });
+    expect(await f.summons.summon()).toBe("issued");
+    const ids = (f.entries() as { body: { entry: string; issuer: string; verb: string; args: unknown; nonce: string } }[])
+      .filter((e) => e.body.entry === "intent").map((e) => intentId(e.body));
+    expect(ids, "the intent fold keeps one record per id, so the two must differ").toHaveLength(2);
+    expect(new Set(ids).size).toBe(2);
+    // A second boot over the same pin keeps ONE intent id (the join stays idempotent).
+    const again = await fixture();
+    await requestFaceJoin({ group: GROUP, plane: again.shared.handle, atom: again.atom, hearthAtom: HEARTH_KEY, summons, verbs: faceIntentVerbs() });
+    await requestFaceJoin({ group: GROUP, plane: again.shared.handle, atom: again.atom, hearthAtom: HEARTH_KEY, summons, verbs: faceIntentVerbs() });
+    const twice = (again.entries() as { body: { entry: string; issuer: string; verb: string; args: unknown; nonce: string } }[])
+      .filter((e) => e.body.entry === "intent").map((e) => intentId(e.body));
+    expect(new Set(twice).size, "the same pin and bytes name one intent").toBe(1);
   });
 
   test("RED (Sol): a device that RETURNED after a lift, or still OWES its roll, stands for the summons; aside and unknown do not", () => {
