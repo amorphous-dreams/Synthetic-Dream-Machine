@@ -289,8 +289,10 @@ def verify_place_campaign(path):
     journal=OODAHAJournal(path/"session.json",identity={
         "location":pre["location"],"score_state":"spatial-proposal-native-only",
         "run":pre["run_id"]},initial={},autonomy=1.)
-    if journal.data["status"]!="completed":
-        raise ValueError("Generative location's OODA-HA loop did not complete")
+    from .constructive_phases import audit_closed_constructive_helm
+    audit_closed_constructive_helm(journal,candidate_ids=[
+        "location/place-"+f"{row['epoch']:03d}"+"/"+row["candidate_id"]
+        for row in summary["candidates"]])
     return summary
 
 
