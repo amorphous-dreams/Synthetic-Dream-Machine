@@ -16,17 +16,18 @@
  * reports a LOCAL SIGHTING: a maintainer whose roll has not synced reads as absent, and a realm nobody here
  * has synced reads as unfed. Under no-global-now those two generate identically.
  *
- * WHOSE HAND FEEDS. The writer rides as the persona-root DID the operator named — a FACE feeds a realm, not a
- * device, so adding vessels never inflates a standing. The honest bound: this daemon cannot re-verify from its
- * side that the caller custodies that root (the vault sits on the CLI's side of the sock), so the writer names
- * WHICH of the operator's own faces fed and never makes a claim about a stranger. A human running several of
- * their own faces at one realm reads as the Sybil-of-one the plane already prices socially, never in crypto.
+ * WHOSE HAND FEEDS. The writer rides as the face's leaf key at the realm's Nexus — a FACE feeds a realm, not a
+ * device, so adding vessels never inflates a standing. The feed binds that writer to the presenter through the
+ * face→leaf bond (`face-leaf-bond`): the presenting face's atom and the leaf both signed one image naming this realm,
+ * so a face feeds as its own leaf and no other. Only an ask that arrived local (a session, the vessel's own channel)
+ * presents a face here; a synced summons names a presenter it cannot back, so it feeds nothing. A human running
+ * several of their own faces at one realm reads as the Sybil-of-one the plane already prices socially, never in crypto.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
  */
 
 import {
-  realmLeaseSlotsFromBoard, realmFeedWrite, realmFeedSlotValue, cabalRealmMaintenanceProvenance,
+  realmLeaseSlotsFromBoard, realmFeedWrite, realmFeedSlotValue, cabalRealmMaintenanceProvenance, readFaceLeafBond, VerbRefusal,
   type LarTiddlerStore, type LarTiddlerRecord, type LarDoc,
 } from "@lararium/mesh";
 import { storedRecord, type StoredTiddlers } from "@lararium/mesh";
@@ -75,10 +76,15 @@ async function leaseSlotsOf(store: LarTiddlerStore, realm: string): Promise<Map<
  * enough hands fed.
  */
 export function makeRealmFeedReactor(opts: CabalRealmVerbOptions): VerbReactor {
-  return async (args) => {
+  return async (args, context) => {
     const realm  = realmArg(args, "realm-feed");
     const writer = typeof args["writer"] === "string" ? (args["writer"] as string).trim().toLowerCase() : "";
     if (!writer) throw new Error("realm-feed: `writer` is required — a realm is fed by a named face, never anonymously");
+    if (context?.local !== true) throw new VerbRefusal("realm-feed-not-local", "realm-feed-not-local: a synced summons presents no face here, so it feeds no realm");
+    // THE WRITER RIDES THE BOND: the presenter's atom and the writer's leaf both signed it for this realm.
+    const bond = context.presenter === undefined ? { ok: false as const, reason: "bond-not-presenter" as const }
+      : readFaceLeafBond(args["bond"], { presenter: context.presenter, writer, realm });
+    if (!bond.ok) throw new VerbRefusal("writer-not-presenter", `writer-not-presenter: realm-feed's writer is bound to the presenter by its face→leaf bond (${bond.reason})`);
 
     const store = await opts.resolveStore();
     const slots = await leaseSlotsOf(store, realm);

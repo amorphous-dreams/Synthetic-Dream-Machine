@@ -46,7 +46,7 @@ import {
   CabalVouchError, CabalJoinError, CabalFaceError,
   type CabalVouchResult, type CabalJoinResult, type CabalFaceResult,
 } from "@lararium/node";
-import { storeVerb, storeFailure } from "../store-door.js";
+import { sessionVerb, storeVerb, storeFailure } from "../store-door.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
@@ -92,8 +92,8 @@ function nexusOf(args: ParsedArgs): Record<string, string> {
  * realm stands under, read by the vessel's own door and never typed by the caller. `present` stands the face there (an act: a feed, a face named to a voucher);
  * without it the door only reads, and a face that holds no key there refuses by name.
  */
-async function actingFace(args: ParsedArgs, realm: string, present: boolean): Promise<CabalFaceResult> {
-  return (await storeVerb("cabal-face", { realm, present, ...nexusOf(args), ...faceOption(args) }, CabalFaceError)).output as unknown as CabalFaceResult;
+async function actingFace(args: ParsedArgs, realm: string, present: boolean, bond = false): Promise<CabalFaceResult> {
+  return (await storeVerb("cabal-face", { realm, present, ...(bond ? { bond: true } : {}), ...nexusOf(args), ...faceOption(args) }, CabalFaceError)).output as unknown as CabalFaceResult;
 }
 
 /** `lares cabal face` — stand the acting face in a realm and print its key there: the nym a voucher names. */
@@ -131,9 +131,13 @@ async function realmVerb(verb: string, verbArgs: Record<string, unknown>): Promi
 async function cmdFeed(args: ParsedArgs): Promise<number> {
   try {
     const realm  = realmOf(args);
-    // A FEED PRESENTS THE FACE: the acting face's key at the realm's Nexus, stood there by this act.
-    const writer = (await actingFace(args, realm, true)).face;
-    const out = await realmVerb("realm-feed", { realm, writer });
+    // A FEED PRESENTS THE FACE: the acting face's key at the realm's Nexus, stood there by this act, rides a session
+    // of that face with the bond its atom and its key both signed, so the daemon binds the writer to the presenter.
+    const acting = await actingFace(args, realm, true, true);
+    const writer = acting.face;
+    const fed = await sessionVerb("realm-feed", { realm, writer, bond: acting.bond }, acting.ordinal);
+    if (fed.status === "error") throw new Error(fed.errorMessage ?? "realm-feed failed");
+    const out = summaryOutput(fed) ?? {};
     emit(args, {
       ok: true,
       data: out,

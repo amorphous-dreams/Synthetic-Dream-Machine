@@ -11,10 +11,15 @@
  * and notes the realm under that Nexus in the vessel's own ledger, as any act there does. Without `present` the
  * door only reads: it mints nothing and notes nothing, and a face that holds no key at that Nexus refuses by name.
  *
+ * THE BOND, ASKED. With `bond`, the door also answers the face→leaf bond (`face-leaf-bond`): the face's atom and the leaf
+ * both sign one image naming the atom, the leaf, the Nexus and the realm, which a feed carries so the daemon binds its
+ * writer to the presenting face. Only a feed asks it, so a bond rides no other answer.
+ *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-steward-signer
  */
 import type { Repo } from "@automerge/automerge-repo";
-import { loadFaceAtomKey } from "../face-atom-store.js";
+import { signAsFaceAtom, signFaceLeafBond, type FaceLeafBond } from "@lararium/mesh";
+import { loadFaceAtom, loadFaceAtomKey } from "../face-atom-store.js";
 import { actingRealmNexus, noteVesselRealm } from "../edge-board.js";
 import { mintFaceNexusLeaf, faceNexusLeaf } from "../nexus-leaf.js";
 
@@ -29,12 +34,18 @@ export type CabalFaceResult = {
   readonly nexusAid: string;
   /** The acting face's key at that Nexus. */
   readonly face:     string;
+  /** The face whose key it is (its ordinal on this vessel). */
+  readonly ordinal:  number;
+  /** The face→leaf bond, where the call asked it. */
+  readonly bond?:    FaceLeafBond;
 };
 
 export async function runCabalFace(opts: {
   readonly realm:     string;
   readonly nexusAid?: string;
   readonly present:   boolean;
+  /** Answer the face→leaf bond beside the key (a feed's ask). */
+  readonly bond?:     boolean;
   /** The face that acts (`--face N`); absent, the one face standing open. */
   readonly face?:     number;
   readonly sealHome:  string;
@@ -54,6 +65,16 @@ export async function runCabalFace(opts: {
       ? "face-root-absent: this vessel holds no root for the face it acts as — name a face it founded (--face N)"
       : "the acting face presents no key at the Nexus this realm stands under — `lares cabal face --realm <id>` presents it there");
   }
-  if (opts.present) await noteVesselRealm(opts.repo, vesselKey, realm, nexusAid);
-  return { realm, nexusAid, face: leaf.verifyingKey.toLowerCase() };
+  try {
+    if (opts.present) await noteVesselRealm(opts.repo, vesselKey, realm, nexusAid);
+    const face = leaf.verifyingKey.toLowerCase();
+    if (opts.bond !== true) return { realm, nexusAid, face, ordinal: leaf.handleIndex };
+    const atomSeed = await loadFaceAtom(leaf.handleIndex);
+    if (!atomSeed) throw new CabalFaceError("face-atom-absent: the acting face holds no atom here, so it signs no bond for its key");
+    try {
+      const bond = await signFaceLeafBond({ atom: vesselKey, leaf: face, nexusAid, realm },
+        { atom: (bytes) => signAsFaceAtom(atomSeed, bytes), leaf: (bytes) => signAsFaceAtom(leaf.seed, bytes) });
+      return { realm, nexusAid, face, ordinal: leaf.handleIndex, bond };
+    } finally { atomSeed.fill(0); }
+  } finally { leaf.seed.fill(0); }
 }

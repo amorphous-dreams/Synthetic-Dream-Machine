@@ -70,6 +70,15 @@ async function invokeInSession(
 }
 
 /**
+ * Run one daemon verb on a session of face `face` on the standing vessel: the verb presents as that face, so a verb
+ * that binds its act to the presenter (a realm feed) reads the face itself. With no vessel standing it refuses
+ * `daemon-unreachable`, as every daemon verb does.
+ */
+export async function sessionVerb(verb: string, args: Record<string, unknown>, face: number, timeoutMs = 60_000): Promise<SubmitResult> {
+  return invokeInSession(verb, args, face, { timeoutMs, signal: new AbortController().signal });
+}
+
+/**
  * PROVE A FACE'S SESSION OPENS on a running vessel, before an act of several steps writes its first: open a session of
  * the face, then close it, riding nothing on it. A refusal throws `RoutedVerbRefused` under the vessel's own name
  * (`storeFailure` reads it), so the act refuses with nothing written. With no vessel standing it proves nothing and
