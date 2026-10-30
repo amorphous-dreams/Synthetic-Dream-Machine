@@ -85,10 +85,11 @@ export function seatLaw(canonText) {
   return `## SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)\n${bullets.join("\n")}\n`;
 }
 
-/** The brief with the law once: a brief already carrying the section returns unchanged. */
+/** The brief carrying the canon law exactly once: a section by that heading that differs from the law is replaced, never trusted. */
 export function appendSeatLaw(brief, law) {
-  if (/^## SEAT LAW/m.test(brief)) return brief;
-  return `${brief}${brief.endsWith("\n") ? "" : "\n"}\n${law}`;
+  if (brief.includes(law) && brief.match(/^## SEAT LAW/gm).length === 1) return brief;
+  const kept = brief.replace(/^## SEAT LAW[^\n]*\n[\s\S]*?(?=^## |(?![\s\S]))/gm, "");
+  return `${kept}${kept.endsWith("\n") ? "" : "\n"}\n${law}`;
 }
 
 function newestRolloutLines(home) {
@@ -127,8 +128,10 @@ const real = (p) => { try { return realpathSync(p); } catch { return resolve(p);
 
 /** Throws a refusal naming why a seat must not start; else returns `{ pool }` (the pool summary line). */
 export function preflight({ mode, model, seatDir, worktree }, readers) {
-  const scratch = join(readers.realHome, ".lares-scratch");
-  const rel = resolve(seatDir).startsWith(`${scratch}/`) ? resolve(seatDir).slice(scratch.length + 1).split("/") : [];
+  // The REAL paths decide: a symlinked seat dir that leaves the lane reads as outside it.
+  const scratch = real(join(readers.realHome, ".lares-scratch"));
+  const there = real(seatDir);
+  const rel = there.startsWith(`${scratch}/`) ? there.slice(scratch.length + 1).split("/") : [];
   if (rel.length < 2) throw refuse(`seat dir must sit under ${scratch}/<lane>/ (the spend tally reads the lane from it): ${seatDir}`);
   if (!existsSync(join(seatDir, "brief.md"))) throw refuse(`no ${join(seatDir, "brief.md")}`);
   if (!MODES.includes(mode)) throw refuse("mode must be build, read or research");
@@ -163,7 +166,7 @@ function parse(argv) {
 export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err = console.error } = {}) {
   let o;
   try { o = parse(argv); } catch (e) { err(`[launch-codex] ${e.message}`); return 2; }
-  const seatDir = resolve(o.seatDir);
+  const seatDir = real(o.seatDir);
   try {
     readers ??= realReaders();
     const { pool } = preflight({ ...o, seatDir }, readers);
