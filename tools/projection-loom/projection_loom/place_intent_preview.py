@@ -16,6 +16,8 @@ def preview_place_intent(intent,spatial,genome):
     if not isinstance(genome,PlaceGenome):
         raise ValueError("Preview requires an original native location genome")
     spatial.bind(intent)
+    from .place_obligations import plan_spatial_obligations
+    obligation_plan=plan_spatial_obligations(genome,spatial)
     constructed=propose_from_spatial_intent(genome,spatial)
     original={row.entity_id:row for row in genome.bodies}
     proposed={row.entity_id:row for row in constructed.bodies}
@@ -46,6 +48,7 @@ def preview_place_intent(intent,spatial,genome):
           "preserved_original_bodies":sorted(original),
           "added_native_bodies":additions,"added_relations":relations,
           "goal_hypotheses":goals,
+          "construction_obligations":obligation_plan,
           "source_survey_certification":False,
           "native_audition_completed":False,
           "physical_safety_certification":False,

@@ -230,6 +230,9 @@ def verify_place_campaign(path):
     if intent.identity!=pre["spatial_intent_sha256"] or genome.identity!=pre["original_genome_sha256"]:
         raise ValueError("Campaign original sources or intent changed")
     from .place_genome import propose_from_spatial_intent
+    from .place_obligations import plan_spatial_obligations
+    if pre.get("construction_obligations")!=plan_spatial_obligations(genome,intent):
+        raise ValueError("Campaign construction obligations diverged from authored source")
     if (PlaceGenome.from_dict(pre["intent_constructed_genome"]).identity
             !=pre["intent_constructed_genome_sha256"]
             or propose_from_spatial_intent(genome,intent).identity
@@ -320,6 +323,8 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
         raise ValueError("Original source bytes no longer match the authored location inventory")
     out=Path(out)
     from .place_genome import propose_from_spatial_intent
+    from .place_obligations import plan_spatial_obligations
+    construction_plan=plan_spatial_obligations(genome,spatial)
     resolved=propose_from_spatial_intent(genome,spatial)
     pre={"schema":"projection-loom/place-preregistration",
          "location":intent.location,"intent_sha256":intent.identity,
@@ -332,6 +337,7 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
          "source_evidence_scope":("original-file-bytes-matched-no-survey-certificate"
                                   if source_status else "authored-construction-no-external-sources"),
          "original_genome":genome.to_dict(),"original_genome_sha256":genome.identity,
+         "construction_obligations":construction_plan,
          "intent_constructed_genome":resolved.to_dict(),
          "intent_constructed_genome_sha256":resolved.identity,
          "epochs":epochs,"offspring":offspring,"exact_budget":exact_budget,"seed":seed,

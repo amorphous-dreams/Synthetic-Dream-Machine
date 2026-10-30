@@ -285,11 +285,13 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
     routes=list(genome.walkways)
     ascents=list(genome.ascents)
     bearings=list(genome.bearings)
-    # An end-to-end goal may be satisfied by an authored, uniquely
-    # connected orthogonal sequence. Construct its direct supported
-    # segments BEFORE attempting a diagonal shortcut.
-    def _intention_order(item):
-        _,goal=item
+    from .place_obligations import plan_spatial_obligations
+    # Interpret once under the shared attributed dependency graph. The
+    # original index survives reordering and still identifies grown bodies.
+    plan=plan_spatial_obligations(genome,spatial)
+    for row in plan["ordered_goals"]:
+        i=row["goal_index"]
+        goal=spatial.goals[i]
         if goal.kind=="bear":
             return 2  # Shelter births a declared roof before bearing interpretation.
         if goal.kind!="connect":
