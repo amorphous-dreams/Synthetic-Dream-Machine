@@ -86,3 +86,22 @@ cryptographically authenticate its human author.
 The native corridor uses a bounded axis-aligned agent envelope; no formula
 silently turns that witness into building-code accessibility or physical
 load-bearing certification. Equal camera/source testimonies survive unchanged.
+
+## N8 · Aftermath V · Operator acceptance changes subsequent ancestry
+
+The new `place-continue` CLI only accepts an immutable, attributable
+`location_review` with decision `accept`, tied to exactly one admitted
+prior candidate. An `abstain`, `dissent`, missing candidate, tampered
+source, or stale review refuses before new generation. The new study copies
+its previously audited native parent and review as independently rehydratable
+evidence, then inherits its original construction genome and runs it through
+the SAME OODA-HA journal class as any other place campaign. The original
+generation and review remain unchanged. The lineage type explicitly states
+`attributed-study-lineage`, not an editor causal reparent, engineering
+load review, artistic winner, or mythic pet-name decision.
+
+A source inventory may still require access to the original source files
+when continuing a lineage: absent bytes cause a refusal, never an
+unacknowledged upgrade in source authority. The copied parent workspace
+preserves the earlier source archive and verifies its own claims; it does
+not magically authenticate the source creator or repair missing sensors.

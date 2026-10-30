@@ -79,6 +79,9 @@ def test_accepted_operator_place_continues_with_archived_source_and_native_paren
     assert summary["admitted"]>=1
     assert (second/"parent-native-workspace"/"manifest.json").exists()
     assert verify_place_campaign(second)==summary
+    (second/"parent-native-workspace"/"manifest.json").write_text("{}")
+    with pytest.raises(ValueError):
+        verify_place_campaign(second)
 
 def test_abstention_cannot_be_reinterpreted_as_operator_selection(tmp_path):
     from projection_loom.place_campaign import continue_place_campaign,review_place_candidate

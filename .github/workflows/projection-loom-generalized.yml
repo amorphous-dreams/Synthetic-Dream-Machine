@@ -122,6 +122,8 @@ jobs:
           path: |
             tools/projection-loom/out/n8-two-heights/
             tools/projection-loom/out/n8-operator-review.json
+            tools/projection-loom/out/n8-fixture-acceptance.json
+            tools/projection-loom/out/n8-successor/
             tools/projection-loom/out/n8-two-heights-report.json
           retention-days: 60
       - name: Independent source/pose, bearing, causal edit and native USD holistic crucible

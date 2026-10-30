@@ -10,7 +10,8 @@ from projection_loom.intent_seed import IntentContract
 from projection_loom.location_stack import LocationStack
 from projection_loom.spatial_intent import SpatialIntent,SpatialGoal
 from projection_loom.place_genome import PlaceGenome,PlaceBody,Walkway
-from projection_loom.place_campaign import run_place_campaign,review_place_candidate,verify_place_campaign
+from projection_loom.place_campaign import (run_place_campaign, review_place_candidate,
+                                            verify_place_campaign, continue_place_campaign)
 from projection_loom.generalized_campaign import save_once
 
 
@@ -39,9 +40,20 @@ def main(argv=None):
     if choice["review"]["automatic_canon_promotion"] or choice["automatic_next_epoch"]:
         raise AssertionError("Crucible wrongly promoted native architecture")
     verify_place_campaign(a.out)
+    # A separate explicit fixture acceptance tests heredity; the abstention
+    # above remains preserved, not silently converted into permission.
+    accepted=a.out.parent/"n8-fixture-acceptance.json"
+    review_place_candidate(a.out,retained,actor="test-operator",decision="accept",
+                           reason="Fixture-only lineage acceptance",
+                           destination=accepted)
+    successor=continue_place_campaign(a.out,accepted,intent,spatial,
+              a.out.parent/"n8-successor",epochs=1,offspring=1,exact_budget=1,seed=73)
+    if not successor["admitted"] or not verify_place_campaign(a.out.parent/"n8-successor"):
+        raise AssertionError("Reviewed native successor failed re-entry")
     report={"schema":"projection-loom/n8-two-heights-witness",
             "admitted":summary["admitted"],"niches":summary["spatial_niches"],
             "candidate":retained,"review_sha256":choice["review"]["sha256"],
+            "explicit_accepted_successor":successor["run_id"],
             "unreal_witness":False,"load_certification":False,
             "operator_artistic_winner":False}
     save_once(a.out.parent/"n8-two-heights-report.json",report)
