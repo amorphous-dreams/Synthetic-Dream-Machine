@@ -23,6 +23,8 @@ def test_two_native_alternatives_preserve_complete_goals_and_separate_choices(tm
     result=run_compound_route_study(original,aim,path,
                                     location="compound-place",goal_index=0,corner_id="bend")
     assert result["native_attempts"]==2
+    assert len(result["authored_goal_contrasts"])==2
+    assert all(not x["automatic_operator_choice"] for x in result["authored_goal_contrasts"])
     assert len(result["arms"])==2
     assert all(len(row["goal_statuses"])==2 for row in result["arms"])
     assert result["arms"][0]["result_genome_sha256"]!=result["arms"][1]["result_genome_sha256"]
@@ -57,3 +59,16 @@ def test_compound_bend_native_cli_uses_original_typed_sources(tmp_path):
     assert result["native_attempts"]==2
     assert main(["place-compound-routes-verify",*source,
                  "--study",str(out)])==result
+
+def test_compound_summary_cannot_reassign_failure_to_another_goal(tmp_path):
+    original,aim=inputs()
+    path=tmp_path/"study"
+    run_compound_route_study(original,aim,path,
+                             location="compound-place",goal_index=0,corner_id="bend")
+    file=path/"summary.json"
+    row=json.loads(file.read_text())
+    row["authored_goal_contrasts"][0]["goal_index"]=1
+    file.write_text(json.dumps(row))
+    with pytest.raises(ValueError,match="alternatives or refusal census"):
+        verify_compound_route_study(original,aim,path,
+                              location="compound-place",goal_index=0,corner_id="bend")

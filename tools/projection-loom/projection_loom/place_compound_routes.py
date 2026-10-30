@@ -58,6 +58,22 @@ def _read(path):
     return json.loads(Path(path).read_text(encoding="utf8"))
 
 
+def _arm_receipt(proposed,child,spatial,selected,native,turn):
+    """One constructor for operator-facing evidence and independent replay."""
+    if len(native["goals"])!=len(spatial.goals) or [x["goal"] for x in native["goals"]] != [
+            goal.to_dict() for goal in spatial.goals]:
+        raise ValueError("A compound native audition omitted or substituted an authored goal")
+    return {"turn":turn,"proposal_sha256":proposed["sha256"],
+            "result_genome_sha256":child.identity,
+            "state":("native-all-goals-witnessed" if native[
+                "all_declared_goals_witnessed"] else "spatial-unverified"),
+            "native_evidence":native,
+            "goal_statuses":[{"goal":g["goal"],"status":g["status"]}
+                              for g in native["goals"]],
+            "witnessed_route":_observation(child,spatial,selected,native),
+            "automatic_artistic_winner":False}
+
+
 def _arm(root,genome,spatial,pre,turn):
     receipt=_read(root/turn/"receipt.json")
     proposed=compose_operator_route(genome,spatial,goal_index=pre[
@@ -65,16 +81,7 @@ def _arm(root,genome,spatial,pre,turn):
     child=PlaceGenome.from_dict(proposed["proposed_genome"])
     native=assess_place(root/turn/"scene",child,spatial)
     verify_place_affordances(root/turn/"scene",child,spatial,native)
-    body={"turn":turn,"proposal_sha256":proposed["sha256"],
-          "result_genome_sha256":child.identity,
-          "state":("native-all-goals-witnessed" if native[
-              "all_declared_goals_witnessed"] else "spatial-unverified"),
-          "native_evidence":native,
-          "goal_statuses":[{"goal":g["goal"],"status":g["status"]}
-                            for g in native["goals"]],
-          "witnessed_route":_observation(child,spatial,pre[
-              "selected_connect_goal_index"],native),
-          "automatic_artistic_winner":False}
+    body=_arm_receipt(proposed,child,spatial,pre["selected_connect_goal_index"],native,turn)
     if receipt!=body:
         raise ValueError("Compound route arm differs from original operator and native STEP evidence")
     return body
@@ -86,8 +93,21 @@ def _summary(pre,arms):
                  if k!="native_scene_sha256"} for x in observed]
     distinct=(all(x is not None for x in descriptors)
               and len({canonical_json_sha256(x) for x in descriptors})==len(descriptors))
+    # Contrasts concern witnessed goal statuses. The route layout comparison
+    # separately measures the selected crossing: hash or scene identity does
+    # not count as a new architectural relation.
+    contrasts=[]
+    for i,goal in enumerate(pre["spatial_intent"]["goals"]):
+        states=[row["goal_statuses"][i]["status"] for row in arms]
+        if any(row["goal_statuses"][i]["goal"]!=goal for row in arms):
+            raise ValueError("Compound result lost authored goal attribution")
+        contrasts.append({"goal_index":i,"goal_sha256":canonical_json_sha256(goal),
+                          "statuses":states,
+                          "observed_status_differs":len(set(states))>1,
+                          "automatic_operator_choice":False})
     body={"schema":"projection-loom/matched-compound-route-result",
           "preregistration_sha256":canonical_json_sha256(pre),
+          "authored_goal_contrasts":contrasts,
           "arms":arms,"native_attempts":len(arms),
           "distinct_witnessed_route_layouts":distinct,
           "all_goals_witnessed_in_both_arms":all(
@@ -122,15 +142,7 @@ def run_compound_route_study(genome,spatial,out,*,location,goal_index,corner_id)
             child=PlaceGenome.from_dict(proposed["proposed_genome"])
             package_scene(child.declaration(location),root/turn/"scene")
             evidence=assess_place(root/turn/"scene",child,spatial)
-            body={"turn":turn,"proposal_sha256":proposed["sha256"],
-                  "result_genome_sha256":child.identity,
-                  "state":("native-all-goals-witnessed" if evidence[
-                      "all_declared_goals_witnessed"] else "spatial-unverified"),
-                  "native_evidence":evidence,
-                  "goal_statuses":[{"goal":g["goal"],"status":g["status"]}
-                                   for g in evidence["goals"]],
-                  "witnessed_route":_observation(child,spatial,goal_index,evidence),
-                  "automatic_artistic_winner":False}
+            body=_arm_receipt(proposed,child,spatial,goal_index,evidence,turn)
             save_once(root/turn/"receipt.json",body)
         arms=[_arm(root,genome,spatial,pre,turn) for turn in TURNS]
         save_once(root/"summary.json",_summary(pre,arms))
