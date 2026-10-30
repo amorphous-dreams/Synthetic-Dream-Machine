@@ -18,7 +18,7 @@ import {
   type CompositeStore,
   type Verb,
 } from "@lararium/mesh";
-import type { VerbReactor, VerbTable } from "./verb-dispatcher.js";
+import type { SessionWorn, VerbReactor, VerbTable } from "./verb-dispatcher.js";
 
 export type CapVerify = (access: CapabilityAccess, bagUrl: string) => Promise<CapabilityVerifyResult>;
 
@@ -30,6 +30,8 @@ export interface RunLocalVerbOptions {
   readonly presenterOf?: (invocation: Verb) => string;
   /** True for a verb the vessel's own presence channel took. */
   readonly localOf?: (invocation: Verb) => boolean;
+  /** The face a session wore for this ask, as the vessel's main thread booked it; absent where none. */
+  readonly wornOf?: (invocation: Verb) => SessionWorn | undefined;
 }
 
 export function makeCapVerify(verifier: CapabilityVerifier | undefined, requestedBy: string, local = false): CapVerify {
@@ -134,5 +136,6 @@ export async function runLocalVerb(invocation: Verb, opts: RunLocalVerbOptions):
   const presenter = opts.presenterOf?.(invocation) ?? invocation.requestedBy;
   const local = opts.localOf?.(invocation) ?? false;
   const cap = makeCapVerify(opts.verifier, presenter, local);
-  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, presenter, local, ...(opts.signal ? { signal: opts.signal } : {}) });
+  const worn = opts.wornOf?.(invocation);
+  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, presenter, local, ...(worn ? { worn } : {}), ...(opts.signal ? { signal: opts.signal } : {}) });
 }

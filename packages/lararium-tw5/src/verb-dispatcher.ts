@@ -67,8 +67,17 @@ export interface VerbContext {
   readonly presenter?: string;
   /** True for a verb the vessel's own presence channel took; absent or false for a synced summons. */
   readonly local?: boolean;
+  /**
+   * The face a session wore, as the vessel's main thread booked it when it placed the ask: the face's ordinal on this
+   * vessel and the presenter the session door verified. Absent for every ask that rode no session; never read off a
+   * delegate, a payload or a tiddler.
+   */
+  readonly worn?: SessionWorn;
   readonly cap:   (access: import("@lararium/mesh").CapabilityAccess, bagUrl: string) => Promise<import("@lararium/mesh").CapabilityVerifyResult>;
 }
+
+/** What a session wore: its face's ordinal on this vessel and the presenter its door verified. */
+export interface SessionWorn { readonly ordinal: number; readonly presenter: string }
 
 export type VerbReactor = (
   args:    Readonly<Record<string, unknown>>,

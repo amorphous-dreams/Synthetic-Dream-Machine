@@ -76,7 +76,7 @@ import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 import { runPersonaLease, PersonaLeaseError } from "./commands/persona-lease.js";
 import { runIntentCommand, IntentRefused, type IntentCommandOptions } from "./commands/intent.js";
 import { runIntentRelayCommand } from "./commands/intent-relay.js";
-import { FaceNotNamed } from "./face-selector.js";
+import { FaceNotNamed, faceRowArgs } from "./face-selector.js";
 import { runEdgeRollAnchors, rollAnchorFace, EdgeRollAnchorError } from "./commands/edge-roll-anchor.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
 import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "./commands/edge-cosign.js";
@@ -172,14 +172,17 @@ export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
  * THE ROWS THAT ACT AS A FACE: each signs, opens or writes under one face's key (its atom, its root, its handle or its
  * key in a realm), so on a running vessel each rides a session of that face (session-contract#/the-hands) and never
  * the maintenance frame. A row names its face by `face`, or by `handleIndex` on the handle and persona rows; naming
- * none, the command resolves the one face standing open. Every other row acts as the place: the Nexus steward's seat
- * acts, the place's key-side duties, a face's founding, the refold, and reads of what the place holds.
+ * none, the command resolves the one face standing open. A row that reads a face acts as that face, wherever it sits
+ * (the relay rows that enable, disable or read one face's relay). Every other row acts as the place: the Nexus
+ * steward's seat acts, the place's key-side duties, a face's founding, the relay key's rotation, the refold, and reads
+ * of what the place holds.
  */
 export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>([
   "edge-kapae", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
   "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor-edge", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-edge-partial", "nexus-roll-anchor-edge-standing",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-lease", "nexus-publish", "raise-sign",
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
+  "intent-relay-enable", "intent-relay-disable", "intent-relay-status",
 ]);
 
 /**
@@ -197,12 +200,16 @@ export function storeRowFace(args: Readonly<Record<string, unknown>>): number | 
 
 type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, unknown>>;
 
+/** A face row that wore no session, or named a face its session did not wear. */
+export class FaceRowRefused extends Error {}
+
 /** The refusals a row answers as `{ refused }` — every class a command names as a clean refusal. */
 const REFUSALS = [
   NexusKapaeError, NexusContractError, EdgeKapaeError, PersonaLeaseError, FaceNotNamed, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError, CabalFaceError,
   NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError, FleetJoinRefused, NexusCabalError,
   CarryBundleError,
   IntentRefused,
+  FaceRowRefused,
 ] as const;
 
 const str = (v: unknown): string | undefined => (typeof v === "string" && v.length > 0 ? v : undefined);
@@ -512,7 +519,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     // Nexus); a read mints nothing (`commands/cabal-face`).
     "cabal-face": (args) => answer("cabal-face", async () => ({
       ...(await runCabalFace({
-        realm: str(args["realm"]) ?? "", present: args["present"] === true, sealHome, repo,
+        realm: str(args["realm"]) ?? "", present: args["present"] === true, ...(args["bond"] === true ? { bond: true } : {}), sealHome, repo,
         ...opt("nexusAid", str(args["nexusAid"])), ...opt("face", int(args["face"])),
       })),
     })),
@@ -577,9 +584,28 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
   };
 }
 
-/** The door's reactors over a running vessel, by verb. */
+/**
+ * The door's reactors over a running vessel, by verb. EACH FACE ROW ACTS AS THE FACE ITS SESSION WORE: the vessel's main
+ * thread booked that face (its ordinal, beside the presenter the session door verified) when it placed the ask, and the
+ * row reads it from `worn` alone. A row naming another face (by `face` or `handleIndex`) refuses `face-row-other-face`;
+ * a face row that rode no session (a surface act, host code, a synced summons) refuses `face-row-rides-a-session`.
+ * Every row naming none acts as the worn face, so no row falls back to the one face open or to face 0.
+ */
 export function storeDoorReactors(deps: StoreDoorDeps): Record<StoreDoorVerb, VerbReactor> {
-  return storeDoorRows(deps);
+  const rows = storeDoorRows(deps);
+  const bound = { ...rows } as Record<StoreDoorVerb, VerbReactor>;
+  for (const verb of STORE_DOOR_FACE_ROWS) {
+    const row = rows[verb];
+    bound[verb] = (args, context) => answer(verb, async () => {
+      const worn = context.worn;
+      if (!worn) throw new FaceRowRefused(`face-row-rides-a-session: "${verb}" acts as a face, and rides a session of that face`);
+      const named = faceRowArgs(args, worn.ordinal);
+      if (named === null) throw new FaceRowRefused(`face-row-other-face: this session wears face h${worn.ordinal}; "${verb}" names another`);
+      const { verb: _echo, ...output } = await row(named);
+      return output;
+    });
+  }
+  return bound;
 }
 
 /**

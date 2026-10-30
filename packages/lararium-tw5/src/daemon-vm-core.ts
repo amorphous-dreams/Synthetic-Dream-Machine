@@ -81,7 +81,7 @@ import {
   type IslandMsg_TeardownAck,
 } from "@lararium/mesh";
 import { runLocalVerb } from "./verb-local-dispatch.js";
-import type { VerbTable } from "./verb-dispatcher.js";
+import type { SessionWorn, VerbTable } from "./verb-dispatcher.js";
 import type { MoveSkeleton, ConstructiconAxis } from "./form-layer/index.js";
 
 /** The in-VM query-derive result the recall verb round-trips for — the move-skeleton (FULL functor,
@@ -199,6 +199,8 @@ export interface VesselPlaceVerbRequest {
   requestedBy?: string;
   /** The verified face's proof subject; a session seat supplies `requestedBy` from its verified presenter. */
   face?:        string;
+  /** The session's face on this vessel (its ordinal), beside `face`; a session seat alone supplies it. */
+  ordinal?:     number;
   requestId?:   string;
   targets?:     readonly string[];
   batchMode?:   string;
@@ -349,6 +351,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // Mutable delegation config — set via mountMainVerbs(). The worker gates routed
   // verbs (verify-then-delegate); main trusts the channel, so no main-side verifier.
   let _registry: VerbTable | null = null;
+  // THE FACE EACH SESSION ASK WEARS, booked here as this thread places it: a delegate back from the island reads this
+  // book by its request id, never the presenter the delegate names. Only a channel ask carrying a session's face books.
+  const sessionAsks = new Map<string, SessionWorn>();
   // Pool eviction mechanism — set via onEvictRequest() after the pool exists.
   let _evictHandler: ((bagId: string) => Promise<void>) | null = null;
   // Residency-op mechanism — set via onResidencyOp() after the manager exists.
@@ -628,9 +633,11 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         batchMode:   (msg.batchMode ?? "best-effort") as BatchMode,
         status:      "pending" as const,
       };
+      const worn = sessionAsks.get(msg.requestId);
       runLocalVerb(invocationLike, {
         daemon:   composite,
         registry: _registry,
+        ...(worn ? { wornOf: () => worn } : {}),
       }).then((result) => {
         worker.post(mkDaemonVerbResult({ requestId: msg.requestId, result }));
       }).catch((err: unknown) => {
@@ -751,6 +758,10 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     lightFace: (entry) => askFace(entry.atom.key, "lit", mkDaemonFaceLit(entry)),
     dropFace: (atomKey) => askFace(atomKey, "dropped", mkDaemonFaceDrop(atomKey)),
     placeVerb: (o: VesselPlaceVerbRequest) => {
+      if (o.origin === "channel" && o.face && o.requestId && o.requestedBy && o.ordinal !== undefined && Number.isSafeInteger(o.ordinal) && o.ordinal >= 0) {
+        sessionAsks.set(o.requestId, { ordinal: o.ordinal, presenter: o.requestedBy });
+        if (sessionAsks.size > 4096) sessionAsks.delete(sessionAsks.keys().next().value as string);
+      }
       worker.post(mkDaemonPlaceVerb({
         origin:      o.origin,
         verb:        o.verb,

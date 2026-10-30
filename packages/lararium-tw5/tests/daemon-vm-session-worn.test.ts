@@ -50,7 +50,7 @@ function open() {
     say(mkDaemonDelegateVerb({ requestId, verb: "probe-worn", args: {}, requestedBy }));
     for (let i = 0; i < 50; i++) {
       const r = crossed.find((m) => (m as { type?: string; requestId?: string }).type === "daemon:verb-result" && (m as { requestId?: string }).requestId === requestId);
-      if (r) return (r as { result?: { worn?: unknown }; error?: string }).result?.worn ?? (r as { error?: string }).error;
+      if (r) { const m = r as { result?: { worn?: unknown }; error?: string }; return m.result ? m.result.worn : m.error; }
       await Promise.resolve();
     }
     throw new Error(`no verb-result for ${requestId}`);

@@ -17,3 +17,12 @@ export async function resolveFace(named?: number): Promise<number> {
   if (open.length === 0) throw new FaceNotNamed("this vessel holds no face: found one with `lares persona new`");
   throw new FaceNotNamed(`this vessel stands faces ${open.map((i) => `h${i}`).join(", ")} open: name the face the command acts as (--face N)`);
 }
+
+/**
+ * A face row's arguments bound to the session's face: every face-naming key (`face`, `handleIndex`) set to `ordinal`, or
+ * null where a key names another face. A row reads its face by whichever key it takes, so both name the one face.
+ */
+export function faceRowArgs(args: Readonly<Record<string, unknown>>, ordinal: number): Record<string, unknown> | null {
+  for (const key of ["face", "handleIndex"] as const) if (args[key] !== undefined && args[key] !== ordinal) return null;
+  return { ...args, face: ordinal, handleIndex: ordinal };
+}
