@@ -14,6 +14,14 @@
     "./browser-daemon-island": {
       "import": "./dist/browser-daemon-island.js"
     },
+    "./connect-buffer": {
+      "import": "./dist/connect-buffer.js",
+      "types": "./dist/connect-buffer.d.ts"
+    },
+    "./shared-holder-start": {
+      "import": "./dist/shared-holder-start.js",
+      "types": "./dist/shared-holder-start.d.ts"
+    },
     "./shared-holder-worker": {
       "import": "./dist/shared-holder.worker.js"
     }

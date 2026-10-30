@@ -565,5 +565,5 @@ test("ci.yml takes its e2e verdict from the shard workflow, and runs no unsharde
   assert.equal(group(ci), "ci");
   assert.equal(group(shards), "e2e-shards", "caller and callee sharing one concurrency group wait on each other");
   // CONTROL: the comment filter left the workflow's real commands in place.
-  assert.match(code, /pnpm test\b/);
+  assert.match(code, /ci-cells\.mjs run-test/);
 });

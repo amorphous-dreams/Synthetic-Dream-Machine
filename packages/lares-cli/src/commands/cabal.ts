@@ -130,18 +130,17 @@ async function realmVerb(verb: string, verbArgs: Record<string, unknown>): Promi
  */
 async function cmdFeed(args: ParsedArgs): Promise<number> {
   try {
-    const realm  = realmOf(args);
-    // A FEED PRESENTS THE FACE: the acting face's key at the realm's Nexus, stood there by this act.
-    const writer = (await actingFace(args, realm, true)).face;
-    const out = await realmVerb("realm-feed", { realm, writer });
+    const realm = realmOf(args);
+    // A FEED ACTS AS THE FACE: the store door's feed row runs on a session of the face, stands its key at the realm's
+    // Nexus and rolls that key's slot. Its bond and its ask stay on the vessel, so the answer names no key: `lares cabal
+    // face` prints the key, and `lares cabal clock` reads the slots.
+    const out = (await storeVerb("cabal-feed", { realm, ...nexusOf(args), ...faceOption(args) }, CabalFaceError)).output;
     emit(args, {
       ok: true,
       data: out,
       human: () => {
-        console.log(out["first"] === true ? "FED (your first offering to this realm)" : "FED");
+        console.log("FED");
         console.log(`  realm:  ${realm}`);
-        console.log(`  face:   ${writer}`);
-        console.log(`  epoch:  ${out["priorEffective"]} -> ${out["epoch"]}`);
         console.log(`  (the roll counts the slots THIS replica has synced — a peer may hold deeper ones)`);
       },
     });

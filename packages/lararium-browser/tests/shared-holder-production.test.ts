@@ -30,7 +30,10 @@ function urls(id: string) {
 }
 
 // Attachment itself answers which engine can run the real peer path; no expected failure can pass before that path.
-const probe = await attachSharedHolder({ holderUrl: urls(crypto.randomUUID()).holderUrl, houseName: await houseName("probe", crypto.randomUUID()), signal: AbortSignal.timeout(5_000) });
+// A holder that fails to start now refuses its port by name (holder-unavailable) rather than staying silent: an engine whose dev
+// worker cannot run the island module reads as one that cannot attach, and the peer-path tests skip as they did.
+const probe = await attachSharedHolder({ holderUrl: urls(crypto.randomUUID()).holderUrl, houseName: await houseName("probe", crypto.randomUUID()), signal: AbortSignal.timeout(5_000) })
+  .catch((error: unknown) => { if (String((error as { refusal?: { cause?: string } })?.refusal?.cause ?? (error as Error)?.message).includes("holder-unavailable")) return { kind: "floor" as const, why: `the shared holder refused to start: ${(error as Error).message}` }; throw error; });
 const canAttach = probe.kind === "attached";
 if (probe.kind === "attached") probe.port.close();
 
@@ -68,7 +71,7 @@ describe("production shared holder lifecycle", () => {
   // A module graph that cannot greet reports its engine and cause through the floor witness.
   test.skipIf(canAttach)("Firefox module graph: floor engine names why the holder is unavailable before a peer session", () => {
     expect(probe.kind).toBe("floor");
-    if (probe.kind === "floor") expect(probe.why, "the floor names its cause").toMatch(/^the shared holder worker raised an error or was cancelled before it greeted|^SharedWorker refused/);
+    if (probe.kind === "floor") expect(probe.why, "the floor names its cause").toMatch(/^the shared holder worker raised an error or was cancelled before it greeted|^SharedWorker refused|^the shared holder refused to start: .*holder-unavailable/);
   });
 
   test.skipIf(!canAttach)("Firefox module graph: closing the last tab port releases the island lock and house database", async () => {

@@ -57,7 +57,7 @@ import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, E
 import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
-import { runLocalVerb, gateRoutedVerb } from "./verb-local-dispatch.js";
+import { runLocalVerb, gateRoutedVerb, makeCapVerify, routedAddressesWiki } from "./verb-local-dispatch.js";
 
 export interface VerbContext {
   readonly daemon: CompositeStore;
@@ -67,8 +67,17 @@ export interface VerbContext {
   readonly presenter?: string;
   /** True for a verb the vessel's own presence channel took; absent or false for a synced summons. */
   readonly local?: boolean;
+  /**
+   * The face a session wore, as the vessel's main thread booked it when it placed the ask: the face's ordinal on this
+   * vessel and the presenter the session door verified. Absent for every ask that rode no session; never read off a
+   * delegate, a payload or a tiddler.
+   */
+  readonly worn?: SessionWorn;
   readonly cap:   (access: import("@lararium/mesh").CapabilityAccess, bagUrl: string) => Promise<import("@lararium/mesh").CapabilityVerifyResult>;
 }
+
+/** What a session wore: its face's ordinal on this vessel and the presenter its door verified. */
+export interface SessionWorn { readonly ordinal: number; readonly presenter: string }
 
 export type VerbReactor = (
   args:    Readonly<Record<string, unknown>>,
@@ -189,6 +198,10 @@ export class VerbTable {
     if (this.fenceOf && this.fenced(verbName)) this.fenceOf.check(verbName, context);
   }
 
+  admitRouted(verbName: string, context: VerbContext): void {
+    if (this.fenceOf && !Object.hasOwn(this.fenceOf.open, verbName)) this.fenceOf.check(verbName, context);
+  }
+
   get(verbName: string): VerbReactor | undefined {
     const inner = this.handlers.get(verbName);
     const fence = this.fenceOf;
@@ -301,6 +314,13 @@ export class VerbDispatcher {
       });
     }
     if (this.opts.routeFn) {
+      const presenter = this.opts.presenterOf?.(invocation) ?? invocation.requestedBy;
+      const local = this.opts.localOf?.(invocation) === true;
+      // A wiki-addressing envelope meets the fence by its presenter. Any other routed ask that did not arrive local (a
+      // synced summons, content) names no presenter that can wear a face here, so the fence reads it as naming none.
+      if (routedAddressesWiki(invocation) || !local) {
+        this.opts.registry.admitRouted(invocation.action, { daemon: this.opts.daemon, invocation, ...(local ? { presenter } : {}), local, cap: makeCapVerify(this.opts.verifier, presenter, local) });
+      }
       // Verify-then-delegate: the keyholder worker gates the cap BEFORE
       // routing to main; main then trusts the worker→main channel as the
       // capability (project_verification_placement). Enforced only when a
@@ -334,11 +354,14 @@ export class VerbDispatcher {
    * prior attempt's result, and its fresh run concludes refused by the fence's own name.
    */
   private replayAdmitted(invocation: Verb): boolean {
-    if (!this.opts.registry.has(invocation.action)) return true;
     try {
-      this.opts.registry.admit(invocation.action, {
-        daemon: this.opts.daemon, invocation, cap: async () => ({ ok: false, reason: "replay" }),
-        presenter: this.opts.presenterOf?.(invocation) ?? invocation.requestedBy, local: this.opts.localOf?.(invocation) ?? false,
+      const local = this.opts.localOf?.(invocation) ?? false;
+      const presenter = this.opts.presenterOf?.(invocation) ?? invocation.requestedBy;
+      const registered = this.opts.registry.has(invocation.action);
+      if (!registered && local && !routedAddressesWiki(invocation)) return true;
+      const named = registered || local ? { presenter } : {};
+      this.opts.registry[registered ? "admit" : "admitRouted"](invocation.action, {
+        daemon: this.opts.daemon, invocation, cap: async () => ({ ok: false, reason: "replay" }), ...named, local,
       });
       return true;
     } catch { return false; }
@@ -431,6 +454,8 @@ export class VerbDispatcher {
                 console.warn(`[verb-dispatcher] requestId "${invocation.requestId}" (verb "${invocation.action}") redelivered with a changed input digest against its already-landed outcome — skipping re-execution, not re-deriving`);
               }
             }
+            // The redelivery leaves the VM as a concluded verb does, so no stamp rides a standing invocation.
+            removeVerb(this.opts.daemonVm, invocation.title);
             return undefined;
           }
           // Effect dedup (D1): a distinct requestId naming the SAME effect skips the

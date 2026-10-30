@@ -60,7 +60,7 @@ async function stand(over: { dyad?: () => "clear" | "aside" } = {}) {
   const run = async (verb: string, args: Record<string, unknown>, ask?: { act: MemoryAct; facts: unknown; sign?: (bytes: Uint8Array) => Promise<string>; requestId?: string }) => {
     const requestId = `r${++n}`;
     const signed = ask ? { ask: await signMemoryAsk({ requestId: ask.requestId ?? requestId, act: ask.act, facts: ask.facts, sign: ask.sign ?? vesselSign }) } : {};
-    return registry.get(verb)!({ ...args, ...signed }, { daemon: {} as never, invocation: { requestId } as never, cap: async () => ({ ok: true }), presenter: `0x${st.daemonAuth.atom.key}` } as never) as Promise<Record<string, unknown>>;
+    return registry.get(verb)!({ ...args, ...signed }, { daemon: {} as never, invocation: { requestId } as never, cap: async () => ({ ok: true }), presenter: `0x${st.daemonAuth.atom.key}`, local: true } as never) as Promise<Record<string, unknown>>;
   };
   return { run, registry, vesselSign, placeSeed: st.placeSeed, presenter: `0x${st.daemonAuth.atom.key}` };
 }
@@ -136,7 +136,7 @@ describe("a memory section leaves and enters a real founded vessel's island seal
     expect(typeof (await run("sealed-memory-cut", { to }, { act: "cut", facts: { to } }))["section"]).toBe("string");
     // ONE SIGNED ASK RUNS ONCE: the same signed invocation, placed again under its own request id, refuses.
     const signed = { to, ask: await signMemoryAsk({ requestId: "replayed", act: "cut", facts: { to }, sign: vesselSign }) };
-    const place = () => registry.get("sealed-memory-cut")!(signed, { daemon: {} as never, invocation: { requestId: "replayed" } as never, cap: async () => ({ ok: true }), presenter } as never);
+    const place = () => registry.get("sealed-memory-cut")!(signed, { daemon: {} as never, invocation: { requestId: "replayed" } as never, cap: async () => ({ ok: true }), presenter, local: true } as never);
     expect(typeof ((await place()) as Record<string, unknown>)["section"]).toBe("string");
     expect(await refusal(Promise.resolve().then(place))).toBe("memory-ask-spent");
   }, 120_000);

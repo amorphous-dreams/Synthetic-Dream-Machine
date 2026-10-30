@@ -1,4 +1,5 @@
 /** The node store holder's face-scoped intent door. */
+import { CustodyLocked } from "../custody-holder.js";
 import { randomBytes } from "node:crypto";
 import type { Repo } from "@automerge/automerge-repo";
 import {
@@ -74,7 +75,10 @@ export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined,
   const held = await listAnchoredPersonas();
   let named: number | undefined;
   if ("group" in selector) {
-    for (const candidate of held) if ((await loadIdentityAnchors(candidate))?.personaGroupId === selector.group) { named = candidate; break; }
+    for (const candidate of held) {
+      try { if ((await loadIdentityAnchors(candidate))?.personaGroupId === selector.group) { named = candidate; break; } }
+      catch (error) { if (error instanceof CustodyLocked) throw error; }
+    }
     if (named === undefined) throw new IntentRefused("face-not-held");
   } else named = selector.index;
   const index = resolveIntentFaceIndex(named, held, await unlockedFaceOrdinals());

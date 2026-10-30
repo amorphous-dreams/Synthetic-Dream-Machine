@@ -21,6 +21,7 @@
  */
 
 import {
+  canonicalJson,
   DAEMON_BAG_ID,
   NoWorkingLayerRefusal,
   WorkingDocumentUnavailableRefusal,
@@ -81,7 +82,7 @@ import {
   type IslandMsg_TeardownAck,
 } from "@lararium/mesh";
 import { runLocalVerb } from "./verb-local-dispatch.js";
-import type { VerbTable } from "./verb-dispatcher.js";
+import type { SessionWorn, VerbTable } from "./verb-dispatcher.js";
 import type { MoveSkeleton, ConstructiconAxis } from "./form-layer/index.js";
 
 /** The in-VM query-derive result the recall verb round-trips for — the move-skeleton (FULL functor,
@@ -193,11 +194,14 @@ export interface DaemonVmCoreOptions {
 
 /** Unified placeVerb request — union of node + browser fields. */
 export interface VesselPlaceVerbRequest {
+  origin: "channel" | "surface" | "content";
   verb:         string;
   args:         Record<string, unknown>;
   requestedBy?: string;
   /** The verified face's proof subject; a session seat supplies `requestedBy` from its verified presenter. */
   face?:        string;
+  /** The session's face on this vessel (its ordinal), beside `face`; a session seat alone supplies it. */
+  ordinal?:     number;
   requestId?:   string;
   targets?:     readonly string[];
   batchMode?:   string;
@@ -227,6 +231,8 @@ export interface DaemonVmCore {
   syncLegReady:   () => Promise<string>;
   mountMainVerbs: (registry: VerbTable) => void;
   placeVerb:      (opts: VesselPlaceVerbRequest) => void;
+  /** The ask under this id concluded (its outcome landed, or its caller left): a booking for it lends nothing more. */
+  retireAsk:      (requestId: string) => void;
   lightFace:      (entry: JoinedFaceAuth) => Promise<void>;
   dropFace:       (atomKey: string) => Promise<void>;
   /** FEED one captured turn to the daemon's telemetry capture cap (the nalu). Fire-and-forget.
@@ -334,7 +340,7 @@ export interface DaemonVmCore {
    * vessel wires this to placeVerb, re-entering the dispatcher's verify-then-delegate gate so the verb runs
    * on the main registry (e.g. wiki-switch). Absent → daemon-origin verbs are silently dropped.
    */
-  onVerbEvent: (fn: (e: { verb: string; args: Record<string, unknown>; fromUri?: string; listenable?: string }) => void) => void;
+  onVerbEvent: (fn: (e: { verb: string; args: Record<string, unknown>; origin: "channel" | "surface" | "content"; fromUri?: string; listenable?: string }) => void) => void;
 }
 
 /** The marker a hard `dispose` hands a teardown handshake that stands waiting. */
@@ -348,6 +354,13 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // Mutable delegation config — set via mountMainVerbs(). The worker gates routed
   // verbs (verify-then-delegate); main trusts the channel, so no main-side verifier.
   let _registry: VerbTable | null = null;
+  // THE FACE EACH SESSION ASK WEARS, booked here as this thread places it: a delegate back from the island reads this
+  // book by its request id, never the presenter the delegate names. Only a channel ask carrying a session's face books,
+  // and a booking serves ONE delegate of the verb it booked: the first delegate consumes it, so no later ask reusing the
+  // id (a summons, a replay) wears the face.
+  const sessionAsks = new Map<string, SessionWorn & { readonly act: string }>();
+  // A booking names the exact act its session placed: its verb and its args, so no other invocation under the id wears it.
+  const actOf = (verb: string, args: unknown): string => canonicalJson([verb, JSON.parse(JSON.stringify(args ?? {}))]);
   // Pool eviction mechanism — set via onEvictRequest() after the pool exists.
   let _evictHandler: ((bagId: string) => Promise<void>) | null = null;
   // Residency-op mechanism — set via onResidencyOp() after the manager exists.
@@ -362,7 +375,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   let _down: Promise<{ acked: boolean }> | null = null;
   /** Ends a handshake that stands waiting; set while one waits, null otherwise. */
   let _cutDown: (() => void) | null = null;
-  let _verbEventHandler: ((e: { verb: string; args: Record<string, unknown>; fromUri?: string; listenable?: string }) => void) | null = null;
+  let _verbEventHandler: ((e: { verb: string; args: Record<string, unknown>; origin: "channel" | "surface" | "content"; fromUri?: string; listenable?: string }) => void) | null = null;
 
   // ── Vessel composite (cap-event + receipt writes) ──────────────────────────
   const composite  = new CompositeStore();
@@ -516,6 +529,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         const fromUri = typeof ev.payload["fromUri"] === "string" ? (ev.payload["fromUri"] as string) : undefined;
         _verbEventHandler({
           verb,
+          origin: ev.payload["origin"] === "channel" || ev.payload["origin"] === "surface" ? ev.payload["origin"] : "content",
           args:      verbArgsFromPayload(ev.payload),
           ...(fromUri ? { fromUri } : {}),
           listenable: ev.listenable,
@@ -615,12 +629,17 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         }));
         return;
       }
+      // A SESSION'S DELEGATE PRESENTS AS ITS BOOKING: the presenter the session door verified, and local (it rode the
+      // vessel's own channel). Any other delegate keeps the claim it names and reads non-local.
+      const booked = sessionAsks.get(msg.requestId);
+      if (booked) sessionAsks.delete(msg.requestId);
+      const worn: SessionWorn | undefined = booked && booked.act === actOf(msg.verb, msg.args) ? { ordinal: booked.ordinal, presenter: booked.presenter } : undefined;
       const invocationLike = {
         title:       `${DAEMON_BAG_ID}/delegate/${msg.requestId}`,
         requestId:   msg.requestId,
         action:      msg.verb,
         args:        msg.args,
-        requestedBy: msg.requestedBy,
+        requestedBy: worn?.presenter ?? msg.requestedBy,
         requestedAt: new Date().toISOString(),
         targets:     msg.targets ?? [],
         batchMode:   (msg.batchMode ?? "best-effort") as BatchMode,
@@ -629,6 +648,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       runLocalVerb(invocationLike, {
         daemon:   composite,
         registry: _registry,
+        ...(worn ? { wornOf: () => worn, localOf: () => true } : {}),
       }).then((result) => {
         worker.post(mkDaemonVerbResult({ requestId: msg.requestId, result }));
       }).catch((err: unknown) => {
@@ -748,8 +768,14 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       askIsland("binding", (requestId) => mkDaemonResolveBindingRequest({ requestId, fingerprint, recipeTrace, wikiSlug })),
     lightFace: (entry) => askFace(entry.atom.key, "lit", mkDaemonFaceLit(entry)),
     dropFace: (atomKey) => askFace(atomKey, "dropped", mkDaemonFaceDrop(atomKey)),
+    retireAsk: (requestId: string) => { sessionAsks.delete(requestId); },
     placeVerb: (o: VesselPlaceVerbRequest) => {
+      if (o.origin === "channel" && o.face && o.requestId && o.requestedBy && o.ordinal !== undefined && Number.isSafeInteger(o.ordinal) && o.ordinal >= 0) {
+        sessionAsks.set(o.requestId, { ordinal: o.ordinal, presenter: o.requestedBy, act: actOf(o.verb, o.args) });
+        if (sessionAsks.size > 4096) sessionAsks.delete(sessionAsks.keys().next().value as string);
+      }
       worker.post(mkDaemonPlaceVerb({
+        origin:      o.origin,
         verb:        o.verb,
         args:        o.args,
         requestedBy: o.requestedBy ?? "vessel",
@@ -799,7 +825,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     onControlResult: (fn: (result: LarMsg_ControlResult) => void) => {
       _controlResultHandler = fn;
     },
-    onVerbEvent: (fn: (e: { verb: string; args: Record<string, unknown>; fromUri?: string; listenable?: string }) => void) => {
+    onVerbEvent: (fn: (e: { verb: string; args: Record<string, unknown>; origin: "channel" | "surface" | "content"; fromUri?: string; listenable?: string }) => void) => {
       _verbEventHandler = fn;
     },
     sendControlEvent: (ev: LarMsg_ControlEvent) => worker.post(ev),

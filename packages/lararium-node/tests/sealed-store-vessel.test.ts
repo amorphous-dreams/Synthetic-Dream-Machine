@@ -36,7 +36,7 @@ const SCOPE = { nexusAid: "nexus-test-one", epochCid: "epoch-test-one" };
 const teardown: Array<() => void> = [];
 afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /* best-effort */ } } });
 
-const verbCtx = (presenter: string) => ({ daemon: {} as never, invocation: { requestId: "r1" } as never, cap: async () => ({ ok: true }), presenter }) as never;
+const verbCtx = (presenter: string) => ({ daemon: {} as never, invocation: { requestId: "r1" } as never, cap: async () => ({ ok: true }), presenter, local: true }) as never;
 async function proof(): Promise<SessionProof> {
   const c = await chain("sealed-vessel", "nexus-test-one");
   const signer: RecordSigner = {

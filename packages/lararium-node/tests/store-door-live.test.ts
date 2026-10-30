@@ -203,7 +203,8 @@ describe("the store door — a writer reaches the standing vessel's live peers",
         await materializeSharedLarDoc(live, boardUrl as AutomergeUrl, w.label);
         await materializeSharedLarDoc(peer, boardUrl as AutomergeUrl, w.label);
         const doors = storeDoorReactors({ storageDir: larDataDir(), sealHome: sealHome(), repo: live });
-        liveOut = await doors[w.verb](args, {} as never);
+        // A face row rides a session of its face: this vessel's one face, h0.
+        liveOut = await doors[w.verb](args, { worn: { ordinal: 0, presenter: `0x${"00".repeat(32)}` } } as never);
         expect(liveOut["refused"], String(liveOut["refused"])).toBeUndefined();
         const url = String(liveOut["boardUrl"]);
         expect(url).toBe(boardUrl);

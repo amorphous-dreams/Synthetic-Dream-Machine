@@ -147,7 +147,7 @@ export type { IslandCap, CapTeardown } from "./island-caps.js";
 export { hasCapture, TELEMETRY_FRAME } from "./capture/has-capture.js";
 export type { CaptureCapOptions } from "./capture/has-capture.js";
 export { VerbDispatcher, VerbTable, VERB_SURFACE, projectOntoSurface } from "./verb-dispatcher.js";
-export type { VerbContext, VerbReactor, VerbDispatcherOptions, VerbSpec, VerbFence, SurfaceDeclared } from "./verb-dispatcher.js";
+export type { VerbContext, VerbReactor, VerbDispatcherOptions, VerbSpec, VerbFence, SurfaceDeclared, SessionWorn } from "./verb-dispatcher.js";
 export { heedSummons } from "./verb-summons.js";
 export type { SummonsRequest, SummonsRelayOptions } from "./verb-summons.js";
 export { runLocalVerb, makeCapVerify } from "./verb-local-dispatch.js";
@@ -292,3 +292,5 @@ export {
   checkCarrierLifecycle,
 } from "./carrier-lifecycle.js";
 export type { CarrierLifecycle, LifecycleStage } from "./carrier-lifecycle.js";
+
+export { placedAskIsLocal } from "./daemon-behavior.js";

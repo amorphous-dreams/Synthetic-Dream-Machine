@@ -100,6 +100,7 @@ const ridMap = new Map<string, RidNode>();
 
 /** One mounted story camera: the roots it paints, the ids it painted, and its epoch, senses and answers. */
 interface CameraScope {
+  readonly wiki: any;
   readonly rest?: RestDoor;
   readonly wikiUri: string;
   readonly cameraId: string;
@@ -585,6 +586,21 @@ function writeChoice(el: RidNode, keys: readonly string[]): void {
  * still answers.
  */
 export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_ControlResult | null {
+  const wiki = scopeFor(ev)?.wiki;
+  if (!wiki) return dispatchLarControlEventInner(ev);
+  const original = wiki.addTiddler;
+  const stamps: Map<string, unknown> = wiki.__larSurfaceWrites ??= new Map();
+  wiki.addTiddler = function(tiddler: any) {
+    const result = original.call(this, tiddler);
+    const title = tiddler?.fields?.title ?? tiddler?.title;
+    // Only a title the reaction router reads (`lar:`) takes a stamp, so every stamp meets the router that consumes it.
+    if (typeof title === "string" && title.startsWith("lar:")) stamps.set(title, wiki.getTiddler(title));
+    return result;
+  };
+  try { return dispatchLarControlEventInner(ev); } finally { wiki.addTiddler = original; }
+}
+
+function dispatchLarControlEventInner(ev: LarMsg_ControlEvent): LarMsg_ControlResult | null {
   const scope = scopeFor(ev);
   const target = ev.renderId ?? ev.controlId ?? ev.affordanceId ?? "";
   const answer: Answer = (status, reason, want) => {
@@ -909,7 +925,7 @@ export function mountProjection(ctx: IslandContext): () => void {
   let lastCss: string | undefined;
   let whole = true;
   const scope: CameraScope = {
-    wikiUri: ctx.wikiUri, cameraId: LAR_CAMERA_STORY, popupRoot, roots: [storyContainer, layerContainer, popupRoot],
+    wiki: tw.wiki, wikiUri: ctx.wikiUri, cameraId: LAR_CAMERA_STORY, popupRoot, roots: [storyContainer, layerContainer, popupRoot],
     renderIds: new Set(), liveIds: new Set(), controlIds: new Map(),
     mountEpoch: mintEpoch(), sensed: new Map(), answers: new Map(), services: new Set(LAR_SURFACE_DEFAULT_SERVICES),
     ...(ctx.rest ? { rest: ctx.rest } : {}),

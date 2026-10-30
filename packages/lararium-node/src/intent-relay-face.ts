@@ -4,12 +4,16 @@ import { admitAgentEntry, type FaceIntentAdmissionPorts } from "@lararium/keyhiv
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
 import { loadIntentFace } from "./commands/intent.js";
 import { intentRelayPublicKey, signAsIntentRelay } from "./intent-relay-key-store.js";
+import { CustodyLocked } from "./custody-holder.js";
 import type { IntentRelayFace } from "./intent-relay.js";
 
 export async function resolveIntentRelayFace(group: string, ports: { repo: Repo; catalogUrl: string }): Promise<IntentRelayFace | null> {
   const indexes = await listAnchoredPersonas();
   let held = false;
-  for (const index of indexes) if ((await loadIdentityAnchors(index))?.personaGroupId === group) { held = true; break; }
+  for (const index of indexes) {
+    try { if ((await loadIdentityAnchors(index))?.personaGroupId === group) { held = true; break; } }
+    catch (error) { if (error instanceof CustodyLocked) throw error; }
+  }
   if (!held) return null;
   return { group, admit: async (entry) => {
     try {

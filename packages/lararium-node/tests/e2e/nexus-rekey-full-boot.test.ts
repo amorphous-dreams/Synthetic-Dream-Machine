@@ -31,7 +31,7 @@ afterAll(async () => { if (vessel) await withLarRoot(root, () => vessel!.teardow
 
 const ask = async (resource: string) => {
   const vm = vessel!.daemon;
-  return withLarRoot(root, async () => askIslandVerb({ daemonHandle: vm.daemonHandle, placeVerb: vm.placeVerb,
+  return withLarRoot(root, async () => askIslandVerb({ daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }),
     verb: "nexus-rekey", args: { resource }, requestedBy: `0x${await loadVesselVerifyingKey()}`, requestId: `rekey-${++call}` }).answer);
 };
 

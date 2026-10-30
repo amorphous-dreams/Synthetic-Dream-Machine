@@ -607,8 +607,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           registry.register("circle-list",    lightAFace("circle-list"));
         }
 
-        // The CABAL-REALM verbs over the daemon bag, where the per-writer lease slots live. `realm-feed` rolls THIS
-        // writer's own slot — the offering a realm lives by; `realm-clock` reads every slot back and reports
+        // The CABAL-REALM verbs over the daemon bag, where the per-writer lease slots live. `realm-feed` rolls the
+        // presenter's own leaf slot, its writer bound through the face→leaf bond — the offering a realm lives by; `realm-clock` reads every slot back and reports
         // who feeds and how deep, VERDICT-FREE (what spread counts as capture stays the operator's
         // calibration, and mechanizing it here would recreate the root a realm exists without).
         // The slots live in the island's OWN daemon layer — the composite holds it on every platform, and under
@@ -1003,7 +1003,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // call passes the fence and meets every cap check as the stranger it reads as. Any claim naming a DID other than the
           // mounted face's, a label off the channel (a synced summons), and a call naming no presenter refuse.
           if (context.local === true && context.presenter !== undefined && !namesADid(context.presenter)) return;
-          if (context.presenter === undefined || bareKey(context.presenter) !== bareKey(daemonAuth.atom.key)) {
+          // Only the vessel's own channel or a person's surface act wears the mounted face: an unsigned synced claim that
+          // names the mounted atom stays a claim and refuses like any other.
+          if (context.local !== true || context.presenter === undefined || bareKey(context.presenter) !== bareKey(daemonAuth.atom.key)) {
             throw new VerbRefusal("content-mounted-only", `[daemon] ${verb}: this verb runs on the mounted face's content keys, mint and documents; a presenter that is not the mounted face holds none here.`);
           }
         },
@@ -1381,6 +1383,7 @@ export function makeOperatorDaemonBehavior(manifest: IslandMsg_Manifest, extra: 
  */
 export const FACE_NEUTRAL_VERBS: Readonly<Record<string, string>> = Object.freeze({
   "realm-clock": "reads the realm's public lease slots off the vessel's daemon layer; closes over no face's key, provider, mint or slot document",
+  "realm-feed": "rolls the presenter's own leaf slot on the vessel's daemon layer, its writer bound to the presenter by the face→leaf bond; closes over no face's key, provider, mint or slot document",
 });
 
 /** The bare lowercase hex of a DID claim (`0x…` or bare). */

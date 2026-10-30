@@ -46,7 +46,7 @@ import type { IslandCap } from "./island-caps.js";
 import type { IslandContext, IslandBehavior } from "./island-context.js";
 import type { RunnableHulls } from "@lararium/mesh";
 import { seedDaemonProtocol } from "./daemon-protocol-seed.js";
-import { wikiSlotUri } from "@lararium/mesh";
+import { canonicalJson, wikiSlotUri, VERB_URI_PREFIX } from "@lararium/mesh";
 
 const WRITE_LAYER_POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 
@@ -145,8 +145,8 @@ export interface DaemonBehaviorOptions {
 
 export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBehavior {
   let _dispatcher: VerbDispatcher | null = null;
-  /** The requests that came in over the vessel's own presence channel, kept to a bound. */
-  const localAsks = new Set<string>();
+  /** The requests that came in over the vessel's own presence channel or a surface leg, while each one stands. */
+  const localAsks = makeLocalAskBook();
 
   const _pendingDelegations = new Map<string, {
     resolve: (result: Record<string, unknown>) => void;
@@ -195,10 +195,13 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         registry,
         routeFn:  (invocation) => _routeToMain(invocation, post),
         ...(verifier ? { verifier } : {}),
-        ...(opts.presenterOf ? { presenterOf: (inv: Verb) => opts.presenterOf!(inv, localAsks.has(inv.requestId)) } : {}),
-        localOf: (inv: Verb) => localAsks.has(inv.requestId),
+        ...(opts.presenterOf ? { presenterOf: (inv: Verb) => opts.presenterOf!(inv, localAsks.has(inv)) } : {}),
+        localOf: (inv: Verb) => localAsks.has(inv),
       });
       _dispatcher.start();
+      // A local id serves its own invocation alone: it retires once the verb concludes and its tiddler leaves the VM.
+      const onVerbsChange = (changes: Record<string, { deleted?: boolean }>) => localAsks.onWikiChange(changes);
+      tw5.$tw.wiki.addEventListener("change", onVerbsChange);
       // The daemon's OWN verb OUT-path (the twin of the pool island-kernel's wiring):
       // a projected switcher click writes a verb-carrying summon tiddler, whose
       // reaction-router fires a tm-verse-event. Forward it to main as an IslandMsg_Event
@@ -206,7 +209,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
       // main registry, e.g. wiki-switch). Without this, daemon-origin verbs never leave
       // the worker (projection frames reach main, but verse-events had no bridge).
       const cancelVerse = tw5.onVerseEvent({
-        handleVerseEvent: (uri: string, listenable: string, verb?: string, fromUri?: string, args?: Record<string, unknown>) => {
+        handleVerseEvent: (uri: string, listenable: string, verb?: string, fromUri?: string, args?: Record<string, unknown>, origin?: "surface" | "content") => {
           // The reaction-router already gates on the `lares-dispatch` marker, so ONLY a
           // genuine summon reaches here (the verb machinery's own invocation/outcome
           // writes never carry the marker → router-inert, the marker alone gating this
@@ -218,6 +221,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
             listenable,
             payload: {
               uri,
+              origin: origin ?? "content",
               ...(verb    !== undefined ? { verb }    : {}),
               ...(fromUri !== undefined ? { fromUri } : {}),
               ...(args    !== undefined ? { [LARES_VERB_ARGS_WIRE_FIELD]: JSON.stringify(args) } : {}),
@@ -262,8 +266,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
             ...(msg.effectKey ? { effectKey:  msg.effectKey             } : {}),
             ...(msg.face      ? { face:       msg.face                  } : {}),
           });
-          localAsks.add(placed);
-          if (localAsks.size > 4096) localAsks.delete(localAsks.values().next().value as string);
+          if (placedAskIsLocal(msg)) localAsks.add({ requestId: placed, action: msg.verb, args: msg.args, requestedBy: msg.requestedBy });
         }
         return true;
       }
@@ -399,3 +402,32 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
     }),
   ]);
 }
+
+/** One placed ask, as the local book reads it: its id and the act it names. */
+export interface LocalAsk { readonly requestId: string; readonly action: string; readonly args: unknown; readonly requestedBy: string }
+
+/**
+ * THE LOCAL ASKS, each the exact invocation the vessel's channel or a surface leg placed, standing only while it does
+ * (Sol's reads): an id lends locality only to the act placed under it (its verb, its args, its claim), and retires once
+ * its verb tiddler leaves the VM, so a summons reusing or overwriting an id reads as the synced claim it is. Kept to a
+ * bound; an evicted id reads non-local, which refuses rather than lends.
+ */
+export function makeLocalAskBook(bound = 4096): {
+  add(ask: LocalAsk): void;
+  has(ask: LocalAsk): boolean;
+  onWikiChange(changes: Record<string, { deleted?: boolean }>): void;
+} {
+  const acts = new Map<string, string>();
+  const actOf = (ask: LocalAsk): string => canonicalJson([ask.action, JSON.parse(JSON.stringify(ask.args ?? {})), ask.requestedBy]);
+  return {
+    add: (ask) => { acts.delete(ask.requestId); acts.set(ask.requestId, actOf(ask)); if (acts.size > bound) acts.delete(acts.keys().next().value as string); },
+    has: (ask) => acts.get(ask.requestId) === actOf(ask),
+    onWikiChange: (changes) => {
+      for (const [title, change] of Object.entries(changes)) {
+        if (change?.deleted && title.startsWith(VERB_URI_PREFIX)) acts.delete(title.slice(VERB_URI_PREFIX.length));
+      }
+    },
+  };
+}
+
+export function placedAskIsLocal(msg: Pick<DaemonMsg_PlaceVerb, "origin">): boolean { return msg.origin === "channel" || msg.origin === "surface"; }

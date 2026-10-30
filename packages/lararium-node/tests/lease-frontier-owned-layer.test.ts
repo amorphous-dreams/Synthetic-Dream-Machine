@@ -25,7 +25,7 @@ import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavio
 import {
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, leaseEpochSlotUri, wikiBagUri, makeIslandRepo, attachMessageChannelSync,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, type LarDoc,
-  mintFaceAnchor, signLeaseAdvance, ed25519SignerFromSeed,
+  mintFaceAnchor, signLeaseAdvance, ed25519SignerFromSeed, faceAtomPublicKey, signAsFaceAtom, signFaceLeafBond, hexToBytes, realmFeedAskImage,
 } from "@lararium/mesh";
 import { VerbTable } from "@lararium/tw5";
 import * as ed25519 from "@noble/ed25519";
@@ -102,6 +102,7 @@ async function standIsland(opts: { daemonLayer?: boolean } = {}) {
   return { ctx, daemonAuth, daemonHandle, writeSlot, writeUnsignedSlot, chain };
 }
 
+const cer0AtomSeed = (auth: { atom: { seed: string } }): Uint8Array => hexToBytes(auth.atom.seed);
 const boot = async (daemonAuth: unknown, ctx: unknown) => {
   const opts = operatorDaemonOptions({ daemonAuth } as never, { dyadReading: () => "clear" });
   const kh = await opts.verifierFactory!(ctx as never);
@@ -134,13 +135,17 @@ describe("the lease frontier reads off the island's own daemon layer", () => {
     const registry = new VerbTable();
     operatorDaemonOptions({ daemonAuth } as never, { dyadReading: () => "clear" }).wireWorkerVerbs!(registry, ctx as never);
     const realm = "ab".repeat(32);
-    const writer = "cd".repeat(32);
-    // realm-feed writes a writer's slot and stands behind the content fence, so the call presents as the mounted face.
+    // realm-feed writes the mounted face's own leaf slot, its writer bound to the presenter through the face's bond.
+    const leafSeed = new Uint8Array(32).fill(91);
+    const writer = faceAtomPublicKey(leafSeed);
+    const bond = await signFaceLeafBond({ atom: daemonAuth.atom.key, leaf: writer, nexusAid: "bafy-lease-nexus", realm },
+      { atom: (b) => signAsFaceAtom(cer0AtomSeed(daemonAuth), b), leaf: (b) => signAsFaceAtom(leafSeed, b) });
     const call = (verb: string, args: Record<string, unknown>) =>
       (registry as unknown as { get(n: string): ((a: Record<string, unknown>, c: unknown) => Promise<Record<string, unknown>>) | undefined })
-        .get(verb)!(args, { presenter: `0x${daemonAuth.atom.key}` });
-    const fed = await call("realm-feed", { realm, writer });
-    expect(fed["epoch"]).toBe(1);
+        .get(verb)!(args, { presenter: `0x${daemonAuth.atom.key}`, local: true, invocation: { requestId: "v3-feed" } });
+    const askSig = await signAsFaceAtom(cer0AtomSeed(daemonAuth), realmFeedAskImage({ requestId: "v3-feed", realm, writer }));
+    const fed = await call("realm-feed", { realm, writer, bond, askSig });
+    expect(fed["fed"]).toBe(true);
     expect(Object.keys(daemonHandle.doc()!.tiddlers).some((t) => t.includes(realm))).toBe(true);
     const clock = await call("realm-clock", { realm });
     expect(JSON.stringify(clock)).toContain(writer);

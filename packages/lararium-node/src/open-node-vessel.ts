@@ -16,6 +16,8 @@
  * The node vessel holds no semantic privilege. It carries roads, docks, and sync; live VM state lives
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
+import { provenPlaneUrls, registerFacePlanesForRelay } from "./face-plane-registration.js";
+import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { larBootstrapPath } from "./vessel-paths.js";
@@ -39,7 +41,7 @@ import {
   emptyLarDoc, storedLarRecord, tiddlerText, plainRecord, plainRecordOrNull,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, recipeHostFacets,
   DAEMON_BAG_ID,
-  BAG_IDS, slugFromUri, verbArgsFromPayload, registerCrossroadsPointer,
+  BAG_IDS, slugFromUri, islandEventAsk, registerCrossroadsPointer,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl,
   type RealmBagRegistration, MEMORY_CUT_SHADOW_READ,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
@@ -172,7 +174,7 @@ import { readWornPersonaMount } from "./worn-mount.js";
 import { openDaemonVm }                    from "./open-daemon-vm.js";
 import { repoPersonaSelvesPlane }          from "./persona-selves-plane.js";
 import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
-import { askIslandMemory, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
+import { askIslandMemory, askIslandVerb, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
 import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
@@ -1286,7 +1288,7 @@ async function prepareNodeBootOn(
     if (!daemonVm) throw new Error("the daemon island does not stand yet");
     const vm = daemonVm;
     return askSeatDuties({
-      daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb(o), facts,
+      daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), facts,
       vesselKey: activeAtom?.key ?? "", sign: (image) => {
         if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
         return activeAtom.sign(image);
@@ -1416,6 +1418,7 @@ async function prepareNodeBootOn(
   // unlocks it).
   const syncStood = new Map<string, { readonly unstand: () => void }>();
   let floorRestSaid = false;
+  let registerRelayPlanes: (() => Promise<void>) | null = null;
   const standSyncGates = async (): Promise<void> => {
     if (!sovereign) {                            // the custody root answers a sovereign composition alone
       if (!floorRestSaid) {
@@ -1445,6 +1448,7 @@ async function prepareNodeBootOn(
     sweepSameOperator?.();
     // THE INTENT RELAY stands beside the sync gates: one route per operator-enabled face, off until a person enables it.
     // Its admit signs under the relay's own key; the agent holds its own key and never wears a face's session.
+    await registerRelayPlanes?.();
     if (intentRelay === null) {
       intentRelay = await standIntentRelay({
         gateServer, ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), rootDoor: custodyGateDoor(), deadlines: timerGateDeadlines(),
@@ -2016,6 +2020,7 @@ async function prepareNodeBootOn(
     let personaKelChain: ReturnType<ReturnType<typeof makePersonaKelRingHolder>["chainForPrefix"]> = null;
     // THE PLANES A BOOT MAY REGISTER: only a plane a face proof vouched for (`provenPlanes`, declared with the boot's state above).
     let wornFaceProved = false;
+    let wornFaceProjection: Parameters<typeof provenPlaneUrls>[0] | null = null;
     if (personaKelPrefix) {
       // ── THE CLIMB'S CARRY — run BEFORE the gate walks ────────────────────────────────────────
       // A founding seats this inception on the board keyed by the island resolved AT THAT MOMENT, which
@@ -2050,6 +2055,7 @@ async function prepareNodeBootOn(
           planes: { persona: bootstrap.personaUrl, identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl, intents: bootstrap.intentsUrl } });
         if (!proof.ok) throw new Error(`[lararium] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
         wornFaceProved = true;
+        wornFaceProjection = proof.projection;
         wornFaceProven = true;
         provenPlanes.set(personaGroupId, bootstrap.personaUrl);
         // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
@@ -2277,19 +2283,39 @@ async function prepareNodeBootOn(
     // EVERY PLANE FAMILY REGISTERS THROUGH A FACE PROOF: a face this boot does not wear registers its persona plane only where its
     // own sealed anchor, the verified KEL and its signed log vouch for that url (`proveFaceFromLog`, no device seat to prove);
     // a bootstrap entry no proof backs registers nothing.
-    for (const plane of bootstrap.personaPlanes) {
-      if (plane.personaGroupId === personaGroupId) continue;
+    const proveOtherFace = async (plane: (typeof bootstrap.personaPlanes)[number]) => {
       try {
         const other = await loadFaceAnchorOfGroup(plane.personaGroupId);
-        if (!other) continue;
+        if (!other) return null;
         const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
         const chain = personaKelChainForPrefix(board.doc(), other.personaKelPrefix);
-        if (!chain || chain.length === 0) continue;
+        if (!chain || chain.length === 0) return null;
         const records = await readFacePersonaRecords(repo, { personaUrl: plane.url, group: plane.personaGroupId, extraDocs: [daemonDoc], heldOnly: true });
         const otherFace = faceBootTiddlers ? bootFacePlanes(faceBootTiddlers, plane.personaGroupId) : null;
-        if (!otherFace?.intentsUrl) continue;
-        if (proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url, intents: otherFace?.intentsUrl } }).ok) provenPlanes.set(plane.personaGroupId, plane.url);
-      } catch (e) { if (!(e instanceof CustodyLocked)) throw e; }
+        if (!otherFace?.intentsUrl) return null;
+        const proof = proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url, intents: otherFace.intentsUrl } });
+        if (!proof.ok) return null;
+        return provenPlaneUrls(proof.projection, { circles: otherFace.circlesUrl, identities: otherFace.identitiesUrl, sessions: otherFace.sessionsUrl, intents: otherFace.intentsUrl });
+      } catch (e) { if (!(e instanceof CustodyLocked)) throw e; return null; }
+    };
+    const proveRelayFace = async (group: string) => {
+      const plane = bootstrap.personaPlanes.find((candidate) => candidate.personaGroupId === group);
+      return plane ? proveOtherFace(plane) : null;
+    };
+    registerRelayPlanes = async () => {
+      for (const plane of bootstrap.personaPlanes) {
+        if (plane.personaGroupId === personaGroupId) continue;
+        try {
+          await registerFacePlanesForRelay({ group: plane.personaGroupId, relayEnabled: async (g) => (await enabledIntentRelayFaces()).includes(g), prove: () => proveOtherFace(plane), register: registerInCatalog });
+        } catch (error) { console.warn(`[lar-gate] relay planes for ${plane.personaGroupId} did not register: ${error instanceof Error ? error.message : String(error)}`); }
+      }
+    };
+    for (const plane of bootstrap.personaPlanes) {
+      if (plane.personaGroupId === personaGroupId) continue;
+      if (await proveOtherFace(plane)) {
+        provenPlanes.set(plane.personaGroupId, plane.url);
+        await registerFacePlanesForRelay({ group: plane.personaGroupId, relayEnabled: async (g) => (await enabledIntentRelayFaces()).includes(g), prove: proveRelayFace, register: registerInCatalog });
+      }
     }
     for (const plane of bootstrap.personaPlanes) {
       if (provenPlanes.get(plane.personaGroupId) === plane.url) registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url);
@@ -2297,10 +2323,10 @@ async function prepareNodeBootOn(
     // The mounted face's siblings ride the bootstrap under their own derived names; register them beside a PROVEN mounted face.
     const wornFace = wornFaceProved && bootstrap.personaBagId ? personaSiblingBagIds(bootstrap.personaBagId) : null;
     if (wornFace) {
-      registerInCatalog(wornFace.circles,    bootstrap.circlesUrl);
-      registerInCatalog(wornFace.identities, bootstrap.identitiesUrl);
-      registerInCatalog(wornFace.sessions,   bootstrap.sessionsUrl);
-      registerInCatalog(wornFace.intents,    bootstrap.intentsUrl);
+      // The bootstrap file rests in cleartext, so a url read from it proves nothing alone: each sibling registers only as the
+      // face's signed log names it (a sessions url no act names, as on a joined device, stays out of the catalog).
+      const named = wornFaceProjection ? provenPlaneUrls(wornFaceProjection, { circles: bootstrap.circlesUrl ?? null, identities: bootstrap.identitiesUrl ?? null, sessions: bootstrap.sessionsUrl ?? null, intents: bootstrap.intentsUrl ?? null }) : null;
+      if (named) for (const key of ["circles", "identities", "sessions", "intents"] as const) { const url = named[key]; if (url) registerInCatalog(wornFace[key], url); }
     }
     // The selected face's custody standing decides whether its veil archive may leave this
     // composition and whether the island may rest a later export through the same door.
@@ -2356,7 +2382,11 @@ async function prepareNodeBootOn(
     lightFace = async (ordinal) => {
       if (!siblingPorts) throw new Error(`face h${ordinal} cannot light without a mounted face`);
       const [entry] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal] });
-      if (entry) await daemonVm.lightFace(entry);
+      if (entry) {
+        await daemonVm.lightFace(entry);
+        const group = (await loadIdentityAnchors(ordinal))?.personaGroupId;
+        if (group) await registerFacePlanesForRelay({ group, relayEnabled: async (g) => (await enabledIntentRelayFaces()).includes(g), prove: proveRelayFace, register: registerInCatalog });
+      }
       await intentRelay?.refresh();
     };
     const daemonAuth = {
@@ -2917,6 +2947,12 @@ async function prepareNodeBootOn(
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
       // floor's island holds no veil.
       ...(sovereign ? { seatDuties: (facts) => askSeatDutiesAsVessel(facts).answer } : {}),
+      // A feed asks the island's `realm-feed` as the face, from this thread, over the host channel.
+      askIsland: (verb, args, requestedBy, requestId) => {
+        if (!daemonVm) throw new Error("the daemon island does not stand yet");
+        const vm = daemonVm;
+        return askIslandVerb({ daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), verb, args, requestedBy, requestId }).answer;
+      },
     });
     for (const [verb, reactor] of Object.entries(doors)) registry.register(verb, reactor);
 
@@ -3129,16 +3165,8 @@ async function prepareNodeBootOn(
     eventBus.subscribe<{ wikiId: string; listenable: string; payload: Record<string, string | number | boolean> }>(
       "worker.event",
       ({ listenable, payload }) => {
-        const verb    = typeof payload["verb"]    === "string" ? payload["verb"]    : undefined;
-        const fromUri = typeof payload["fromUri"] === "string" ? payload["fromUri"] : undefined;
-        if (!verb) return;
-        daemonVm.placeVerb({
-          verb,
-          args:        verbArgsFromPayload(payload),   // structured args off the `verb-args` JSON (#48)
-          requestedBy: typeof payload["requestedBy"] === "string" ? payload["requestedBy"] : listenable,
-          listenable,
-          ...(fromUri ? { fromUri } : {}),
-        });
+        const ask = islandEventAsk(listenable, payload);
+        if (ask) daemonVm.placeVerb(ask);
       },
     );
   };
@@ -3317,7 +3345,7 @@ async function prepareNodeBootOn(
         return async (to: Uint8Array) => {
           // The cut read this vessel's shadow at its entry; the ask says so, and the holder reads none of its own.
           const out = await askIslandMemory({
-            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb(o), act: "cut",
+            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), act: "cut",
             facts: { to: Buffer.from(to).toString("hex"), shadow: MEMORY_CUT_SHADOW_READ },
             vesselKey: activeAtom?.key ?? "", sign: (image) => {
               if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
@@ -3337,7 +3365,7 @@ async function prepareNodeBootOn(
         const vm = daemonVm;
         return async () => {
           const out = await askIslandMemory({
-            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb(o), act: "door", facts: {},
+            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), act: "door", facts: {},
             vesselKey: activeAtom?.key ?? "", sign: (image) => {
               if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
               return activeAtom.sign(image);
@@ -3352,7 +3380,7 @@ async function prepareNodeBootOn(
         const vm = daemonVm;
         return async (section: string, sealedSecret: string) => {
           const out = await askIslandMemory({
-            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb(o), act: "import", facts: { section, secret: sealedSecret },
+            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), act: "import", facts: { section, secret: sealedSecret },
             vesselKey: activeAtom?.key ?? "", sign: (image) => {
               if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
               return activeAtom.sign(image);

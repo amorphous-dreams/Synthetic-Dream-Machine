@@ -120,11 +120,26 @@ jobs:
           fi
           echo "Generated artifacts are fresh."
 
-  # ─── test (all package suites) ─────────────────────────────────────────────
-  test:
-    name: Test
+  # ─── test (all package suites, as cells) ───────────────────────────────────
+  # EACH CELL IS A SLICE OF THE SUITES ON A RUNNER OF ITS OWN, and the slowest cell sets the wall clock. The slices are
+  # the table `TEST_CELLS` in tools/ci-cells.mjs: node in one cell (sharding it costs more run time than it saves; see TEST_CELLS), the other
+  # packages grouped into two cells by weight. FEW CELLS: every cell repeats checkout, install and build, and the lanes share one capped
+  # runner pool, so total job-minutes decides, with each run's critical path held near the slowest e2e shard. Every cell is self-contained (its own checkout, install, build, holder venv and engines) and uploads
+  # one JSON report per package; the reports double as the per-file timings that name the slowest files. The job
+  # named `Test` below is the gate: it fails closed on any missing, empty, red or unexpected cell.
+  test-cells:
+    name: Test cell ${{ matrix.cell }}
     runs-on: ubuntu-latest
-    timeout-minutes: 100
+    timeout-minutes: 60
+    strategy:
+      # A red cell must never cancel its siblings: the gate needs every cell's answer to tell one red
+      # from one that never got to answer.
+      fail-fast: false
+      matrix:
+        include:
+          - cell: node
+          - cell: web-cli
+          - cell: mesh-tw5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -209,13 +224,52 @@ jobs:
         id: browser
         timeout-minutes: 10
         run: pnpm exec playwright install --with-deps chromium firefox webkit
-      # ONE SERIALIZATION, BOTH PLACES. The root `test` script pins `--workspace-concurrency=1`
-      # because packages share a build tree and a rendezvous directory; running them in parallel
-      # measures a different repository than the one an operator measures locally, and its flakes
-      # are unreproducible by construction.
-      - name: Run all package suites
+      # ONE SERIALIZATION INSIDE A CELL. The cell runs its packages one after another because packages share a
+      # build tree and a rendezvous directory; running them in parallel measures a different repository than the
+      # one an operator measures locally. Parallelism lives between cells, each with a tree of its own.
+      - name: Run this cell's package suites
         if: ${{ !cancelled() && steps.holder.outcome == 'success' && steps.browser.outcome == 'success' }}
-        run: pnpm test
+        run: node tools/ci-cells.mjs run-test "${{ matrix.cell }}" --out "$RUNNER_TEMP/cell"
+      - name: Upload this cell's JSON reports (always, even on a red cell)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-cell-${{ matrix.cell }}
+          path: ${{ runner.temp }}/cell/
+          retention-days: 14
+          # A cell that crashed before writing a report uploads nothing, and the gate names it missing.
+          if-no-files-found: warn
+
+  test:
+    name: Test
+    needs: test-cells
+    # Runs whatever the cells answered: a gate skipped by one red cell would read as nothing to report.
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Download every cell's reports (one subdirectory per cell)
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: test-cell-*
+          path: artifacts
+        continue-on-error: true
+      - name: Gate — fails closed on any missing, empty, red or unexpected cell
+        if: always()
+        run: node tools/ci-cells.mjs verify-tests --artifacts-dir artifacts
+      - name: Gate — every cell job itself succeeded
+        if: always()
+        env:
+          CELLS_RESULT: ${{ needs.test-cells.result }}
+        run: |
+          if [ "$CELLS_RESULT" != "success" ]; then
+            echo "::error::the test cells ended $CELLS_RESULT, not success"
+            exit 1
+          fi
 
   # ─── the browser floor crossing (W23) ───────────────────────────────────────────
   # A real Chromium on the page a staged hearth serves, crossing that hearth's gates
@@ -284,10 +338,20 @@ jobs:
   # its reason under `── held out of this run ──`, so the skip is named IN THIS JOB'S LOG rather
   # than in a comment nobody reads; the step below fails if that roll call is missing, because a
   # skip that stops announcing itself is the silence these witnesses exist to break.
-  witnesses:
-    name: Witnesses
+  #
+  # THE JOB RUNS AS TWO CELLS (`WITNESS_CELLS` in tools/ci-cells.mjs): the heaviest witness apart, and the rest of the
+  # fleet with the self-tests beside it. The job named `Witnesses` below is the gate over
+  # them and fails closed on any missing, red or unexpected cell log.
+  witness-cells:
+    name: Witness cell ${{ matrix.cell }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - cell: contract-witness
+          - cell: rest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -322,28 +386,52 @@ jobs:
       - name: Build the grammar wasm (ahu-pair-parity reads it)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm --filter ./packages/tree-sitter-memetic-wikitext build:wasm
-      - name: Run every witness (never short-circuits; the worst exit wins)
+      # The cell runs its witnesses through `witness-all`, which never short-circuits: the worst exit wins. The rest
+      # cell's log must carry the held-out roll call, and the gate reads it there: a held-out witness that stops
+      # naming itself has become an unmeasured gate wearing a green check. The self-tests are each
+      # `tools/*.test.mjs`, planting the reds their tool owes against fakes and scratch trees, so they need no docker,
+      # no browser and no standing app; the glob reads the live set, and each joins without a hand edit.
+      - name: Run this cell
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: |
-          set -o pipefail
-          tools/witness-all.sh 2>&1 | tee "$RUNNER_TEMP/witnesses.log"
-      # THE ROLL CALL IS PART OF THE VERDICT. A held-out witness that stops naming itself has become
-      # an unmeasured gate wearing a green check.
-      - name: The held-out witnesses are named in this log
+        run: node tools/ci-cells.mjs run-witness "${{ matrix.cell }}" --out "$RUNNER_TEMP/cell"
+      - name: Upload this cell's log (always, even on a red cell)
         if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: witness-cell-${{ matrix.cell }}
+          path: ${{ runner.temp }}/cell/
+          retention-days: 14
+          if-no-files-found: warn
+
+  witnesses:
+    name: Witnesses
+    needs: witness-cells
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Download every cell's log (one subdirectory per cell)
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: witness-cell-*
+          path: artifacts
+        continue-on-error: true
+      - name: Gate — fails closed on any missing, red or unexpected cell
+        if: always()
+        run: node tools/ci-cells.mjs verify-witnesses --artifacts-dir artifacts
+      - name: Gate — every cell job itself succeeded
+        if: always()
+        env:
+          CELLS_RESULT: ${{ needs.witness-cells.result }}
         run: |
-          if ! grep -q "held out of this run" "$RUNNER_TEMP/witnesses.log"; then
-            echo "::error::the run named no held-out witnesses — the fleet's own roll call went silent"
+          if [ "$CELLS_RESULT" != "success" ]; then
+            echo "::error::the witness cells ended $CELLS_RESULT, not success"
             exit 1
           fi
-          sed -n '/held out of this run/,$p' "$RUNNER_TEMP/witnesses.log"
-      # THE INSTRUMENTS' OWN SELF-TESTS. Each `tools/*.test.mjs` plants the reds its tool owes against fakes
-      # and scratch trees — no docker, no browser, no standing app — and reads the built tree, so it runs
-      # here beside the fleet it keeps honest. The glob reads the live set; each self-test joins without a
-      # hand edit. It runs whatever the fleet answered, so one red cannot hide the other question.
-      - name: Run every tool self-test (tools/*.test.mjs)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: node --test tools/*.test.mjs
 
   # ─── e2e (every e2e set, sharded, behind one merge gate) ───────────────────────────────────
   # ONE E2E VERDICT, AND THE SHARDS GIVE IT. Every e2e set rides the shard matrix of `e2e-shards.yml`
