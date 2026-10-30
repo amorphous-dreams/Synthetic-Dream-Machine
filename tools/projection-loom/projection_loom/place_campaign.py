@@ -110,6 +110,8 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
          "location":intent.location,"intent_sha256":intent.identity,
          "spatial_intent":spatial.to_dict(),"spatial_intent_sha256":spatial.identity,
          "original_inventory_sha256":inventory.to_dict()["snapshot_sha256"],
+         "source_evidence_scope":("original-file-bytes-matched-no-survey-certificate"
+                                  if source_status else "authored-construction-no-external-sources"),
          "original_genome":genome.to_dict(),"original_genome_sha256":genome.identity,
          "intent_constructed_genome":resolved.to_dict(),
          "intent_constructed_genome_sha256":resolved.identity,

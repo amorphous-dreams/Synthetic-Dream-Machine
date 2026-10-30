@@ -105,3 +105,24 @@ when continuing a lineage: absent bytes cause a refusal, never an
 unacknowledged upgrade in source authority. The copied parent workspace
 preserves the earlier source archive and verifies its own claims; it does
 not magically authenticate the source creator or repair missing sensors.
+
+## N8 · Aftermath VII · Evidence authority across source and native archives
+
+Source-poor and original-file-backed campaigns receive different scope labels
+inside the immutable pre-registration. An image-free synthetic geometry input
+does not acquire `image-IoU`, calibrated world scale, or external survey
+authority simply because its STEP bodies pass. A source file backed by exact
+matched original bytes grants **byte testimony**, not its author's credibility,
+physical measurement authority, or a registered camera.
+
+The source-continuity adversarial test changes the external source file AFTER
+the first candidate workspace freezes its content-addressed archive. Reopening
+that candidate still verifies the preserved original testimony. Beginning
+another campaign with the stale original inventory refuses BEFORE new output
+publication. No silent re-hashing or auto-upgrading the changed evidence.
+
+N8 remains an early-alpha bounded generative place study, not a general
+topological theorem or an artistic judge. Each new relation needs its own
+constructive and counterfactual native witnesses. Converging the existing
+generalized campaign and the place campaign's phase orchestration without
+installing a second helm remains an explicit future refactor priority.
