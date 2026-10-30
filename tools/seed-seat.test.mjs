@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { chmodSync, copyFileSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
-  BLOCK_CLOSE, BLOCK_OPEN, LINK, SCOUTS, SEED, faultsOf, importsOf, install, project, projectScout, scoutPath, seedAtTokens, withBlock,
+  CODEX_LINK, LINK, RULE, RULE_EXCLUDE, RULE_OWNER, SCOUTS, SEED, faultsOf, importsOf, install, project, projectScout, scoutPath, seedAtTokens,
 } from "./seed-seat.mjs";
 
 const ROOT = join(import.meta.dirname, "..");
@@ -25,6 +25,10 @@ function seatedClone() {
   writeFileSync(join(dir, "CLAUDE.md"), `@${LINK}\n\n## Claude Adapter Surface\n`);
   mkdirSync(join(dir, ".claude"), { recursive: true });
   symlinkSync("../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem", join(dir, LINK));
+  writeFileSync(join(dir, ".claude/settings.json"), JSON.stringify({ claudeMdExcludes: [RULE_EXCLUDE] }));
+  symlinkSync("bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem", join(dir, CODEX_LINK));
+  mkdirSync(join(dir, ".codex"), { recursive: true });
+  writeFileSync(join(dir, ".codex/config.toml"), "project_doc_max_bytes = 65536\n");
   project(dir);
   return dir;
 }
@@ -118,53 +122,52 @@ test("--index reads what the commit carries, not the working tree", () => {
   assert.match(faultsOf(dir).join("\n"), /Plan\.md: parts/);
 });
 
-test("install seats the region once, leads with it, and keeps the operator's bytes", () => {
+test("install seats the owned rule, and a second run changes nothing", () => {
   const home = mkdtempSync(join(tmpdir(), "seed-seat-home-"));
   const clone = seatedClone();
-  mkdirSync(join(home, ".claude"));
-  writeFileSync(join(home, ".claude/CLAUDE.md"), "my own line\n");
   assert.equal(install({ home, clone }).changed, true);
-  const once = readFileSync(join(home, ".claude/CLAUDE.md"), "utf8");
-  assert.ok(once.startsWith(`${BLOCK_OPEN}\n@${join(clone, LINK)}\n${BLOCK_CLOSE}\n\n`));
-  assert.ok(once.endsWith("my own line\n"));
+  const text = readFileSync(join(home, RULE), "utf8");
+  assert.equal(text, `${RULE_OWNER}\n@${join(clone, LINK)}\n`);
   assert.equal(install({ home, clone }).changed, false);
-  assert.equal(readFileSync(join(home, ".claude/CLAUDE.md"), "utf8"), once);
+  assert.equal(readFileSync(join(home, RULE), "utf8"), text);
 });
 
-test("install re-points the region in place when the clone moves", () => {
+test("install re-points the rule when the clone moves", () => {
   const home = mkdtempSync(join(tmpdir(), "seed-seat-home-"));
   const a = seatedClone();
   const b = seatedClone();
   install({ home, clone: a });
-  install({ home, clone: b });
-  const text = readFileSync(join(home, ".claude/CLAUDE.md"), "utf8");
-  assert.equal(text.split(BLOCK_OPEN).length - 1, 1);
-  assert.ok(text.includes(`@${join(b, LINK)}`) && !text.includes(`@${join(a, LINK)}`));
+  assert.equal(install({ home, clone: b }).changed, true);
+  assert.equal(readFileSync(join(home, RULE), "utf8"), `${RULE_OWNER}\n@${join(b, LINK)}\n`);
 });
 
-test("uninstall lifts the region and leaves the operator's bytes as they stood", () => {
+test("uninstall lifts the rule, and a second uninstall changes nothing", () => {
   const home = mkdtempSync(join(tmpdir(), "seed-seat-home-"));
   const clone = seatedClone();
-  mkdirSync(join(home, ".claude"));
-  writeFileSync(join(home, ".claude/CLAUDE.md"), "my own line\n");
   install({ home, clone });
   assert.equal(install({ home, clone, uninstall: true }).changed, true);
-  assert.equal(readFileSync(join(home, ".claude/CLAUDE.md"), "utf8"), "my own line\n");
+  assert.equal(existsSync(join(home, RULE)), false);
   assert.equal(install({ home, clone, uninstall: true }).changed, false);
 });
 
-test("install into an absent CLAUDE.md writes the region alone", () => {
+test("install and uninstall refuse a same-named rule they never wrote, and leave it whole", () => {
   const home = mkdtempSync(join(tmpdir(), "seed-seat-home-"));
-  const clone = seatedClone();
-  install({ home, clone });
-  assert.equal(readFileSync(join(home, ".claude/CLAUDE.md"), "utf8"), `${BLOCK_OPEN}\n@${join(clone, LINK)}\n${BLOCK_CLOSE}\n`);
+  mkdirSync(join(home, ".claude/rules"), { recursive: true });
+  writeFileSync(join(home, RULE), "the operator's own words\n");
+  assert.throws(() => install({ home, clone: seatedClone() }), /never wrote/);
+  assert.throws(() => install({ home, clone: seatedClone(), uninstall: true }), /never wrote/);
+  assert.equal(readFileSync(join(home, RULE), "utf8"), "the operator's own words\n");
 });
 
-test("install refuses a region it cannot bound, and a clone with no seat", () => {
-  assert.throws(() => withBlock(`${BLOCK_OPEN}\nhalf`, "x"), /bounds one region or none/);
-  assert.throws(() => withBlock(`${BLOCK_CLOSE}\n${BLOCK_OPEN}\n`, "x"), /before the opening one/);
+test("install refuses a clone with no seat", () => {
   const home = mkdtempSync(join(tmpdir(), "seed-seat-home-"));
   assert.throws(() => install({ home, clone: mkdtempSync(join(tmpdir(), "no-seat-")) }), /carries no seat/);
+});
+
+test("a clone whose settings drop the rule's exclude names the double seat", () => {
+  const dir = seatedClone();
+  writeFileSync(join(dir, ".claude/settings.json"), "{}\n");
+  assert.match(faultsOf(dir).join("\n"), /claudeMdExcludes carries no \*\*\/\.claude\/rules\/lares-seed-seat\.md/);
 });
 
 test("the witness reads its own control red", () => {
@@ -203,4 +206,30 @@ test("the staged gate stays silent on a commit that leaves the seat alone", () =
 
 test("the pre-commit hook runs the seat gate", () => {
   assert.match(readFileSync(join(ROOT, ".githooks/pre-commit"), "utf8"), /^run_gate seed-seat-staged\.sh$/m);
+});
+
+test("the Codex link reads as a link to the seed, or names itself", () => {
+  const dir = seatedClone();
+  execFileSync("rm", [join(dir, CODEX_LINK)]);
+  writeFileSync(join(dir, CODEX_LINK), "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
+  assert.match(faultsOf(dir).join("\n"), /AGENTS\.override\.md: a regular file, not a link/);
+});
+
+test("a Codex cap below the seed's bytes names the silent tail cut", () => {
+  const dir = seatedClone();
+  writeFileSync(join(dir, ".codex/config.toml"), "project_doc_max_bytes = 32768\n");
+  assert.match(faultsOf(dir).join("\n"), /project_doc_max_bytes 32768 holds less than the seed's/);
+  writeFileSync(join(dir, ".codex/config.toml"), "");
+  assert.match(faultsOf(dir).join("\n"), /project_doc_max_bytes unset/);
+});
+
+test("AGENTS.md or Copilot's file carrying the seed or a pointer to it names the double seat", () => {
+  for (const surface of ["AGENTS.md", ".github/copilot-instructions.md"]) {
+    const dir = seatedClone();
+    mkdirSync(join(dir, ".github"), { recursive: true });
+    writeFileSync(join(dir, surface), "-> [noosphere-boot.mem](bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem)\n");
+    assert.match(faultsOf(dir).join("\n"), new RegExp(`${surface.replace(/\./g, "\\.")}: carries the seed or a pointer`));
+    writeFileSync(join(dir, surface), SEED_TEXT);
+    assert.match(faultsOf(dir).join("\n"), /carries the seed or a pointer/);
+  }
 });

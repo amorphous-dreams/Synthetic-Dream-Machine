@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # seed-seat-staged — refuse a commit whose seat parts from its seed.
 #
-# A commit that carries the boot seed, a scout, the link or CLAUDE.md lands only while the INDEX still
-# seats the seed: the link stays a link, CLAUDE.md imports it, and each scout carries the staged seed's
-# projection byte for byte. The memegraph writes the seed without a build, so this is the moment that
+# A commit that touches any seat surface (the seed, a link, a scout, a host's instructions or config) lands
+# only while the INDEX still seats the seed: each link stays a link, CLAUDE.md imports it, the Codex cap
+# holds it, and each scout carries the staged seed's projection byte for byte. The memegraph writes the seed without a build, so this is the moment that
 # catches a seed staged ahead of its scouts. FAIL CLOSED: a check that cannot run never passes.
 #
 #   install:  git config core.hooksPath .githooks        (`.githooks/pre-commit` runs this script)
@@ -13,7 +13,7 @@ REPO="$(git rev-parse --show-toplevel)" || exit 1
 cd "$REPO" || exit 1
 
 touched="$(git diff --cached --name-only -- \
-  bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem .claude/noosphere-boot .claude/agents CLAUDE.md)"
+  bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem .claude/noosphere-boot .claude/agents .claude/settings.json CLAUDE.md AGENTS.md AGENTS.override.md .codex/config.toml .github/copilot-instructions.md)"
 [ -z "$touched" ] && exit 0
 
 if ! out="$(node tools/seed-seat.mjs check --index)"; then

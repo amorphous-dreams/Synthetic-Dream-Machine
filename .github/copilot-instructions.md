@@ -1,1 +1,3 @@
-Always load -> [noosphere-boot.mem](bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem)
+## Copilot Adapter Surface
+
+- Keep this file thin and seedless: CLAUDE.md's import seats the boot seed for Copilot.
