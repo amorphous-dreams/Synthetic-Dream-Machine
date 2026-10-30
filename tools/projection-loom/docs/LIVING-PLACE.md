@@ -1,3 +1,24 @@
+## N9 · Aftermath T · A journey can turn while evidence stays local
+
+A narrated crossing can travel through a named
+intermediate place, but each part must still
+*bear* its own native STEP proof. Two explicitly
+authored orthogonal goals may generate separate
+decks; a third end-to-end goal witnesses the
+unique composed path without constructing an
+unsupported diagonal. The native archive and
+the operator see the same causal chain of
+grounded relationships rather than a score
+for a picturesque but unverified shortcut.
+
+The combined path does **not** claim measured
+turning circle, wheelchair access, weather
+safety or engineered stability. Those remain
+unwitnessed even when both horizontal segments
+pass independently.
+
+---
+
 ## N9 · Aftermath G · The roof makes room for the rising path
 
 One place can hold the verbs `shelters` and `ascends`

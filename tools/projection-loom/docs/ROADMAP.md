@@ -1,3 +1,35 @@
+## ☕ N9 · Orthogonal native routing / intent aftermath T · 2026-10-29
+
+**N9-T** (`263e4083`) lets one explicitly
+authored multi-goal spatial intent construct an
+L-shaped two-segment passage from three original,
+named native support sites. Direct, axis-supported
+crossings grow before a diagonal end-to-end
+`connect` request; the latter passes only when
+a UNIQUE directed authored walkway chain already
+exists. Its exact two STEP-bearing contacts per
+segment, bounded headroom and source-grounded
+topology remain independently replayable. A lone
+unbound diagonal still refuses rather than
+generating a speculative beam.
+
+**Intent aftermath T:** this does not suddenly
+certify turning-radius or accessible circulation.
+The relation names an end-to-end topology made
+of two independently measured native straight
+corridors; human turning space, floor safety and
+code compliance require separate proofs.
+A native location must also pass the overall
+OODA-HA/candidate/workspace gate, and the
+visual camera does not earn source authority.
+An ambiguous alternate path still refuses.
+
+No fake 3D spline kernel, autonomous selection,
+Unreal session success, pet-name, load
+certification or Elyncia canon promotion.
+
+---
+
 ## ☕ N9 · Combined-place intent and aftermath G · 2026-10-29
 
 **N9-G** (`95ac67a7`) joins `ascend` and `shelter`
