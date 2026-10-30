@@ -20,7 +20,7 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
 import { existsSync, readdirSync, statSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { targetInstance, unlockStaged, stopChild, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, targetInstance, unlockStaged, stopChild, type LarInstance } from "../harness/instance.js";
 import { promoteLoadedTitles } from "../harness/promote.js";
 import { expectEntry } from "../harness/journal-expect.js";
 
@@ -61,9 +61,8 @@ afterAll(async () => {
   await lar.stop();
 });
 
-describe("minted-canon projection — a user wiki's @{slug} canon reaches bags/{slug}", () => {
+describe.skipIf(!stagedTarget)("minted-canon projection — a user wiki's @{slug} canon reaches bags/{slug}", () => {
   test("mint → activate → reboot → LOAD into @{slug} canon → projects to bags/{slug}", async () => {
-    if (lar.mode !== "staged") return;     // lifecycle-mutating — staged only
 
     // 1) mint a fresh user wiki + 2) set it active for the next boot
     const minted = await lar.cli(["wiki", "init", SLUG, "--json"]);

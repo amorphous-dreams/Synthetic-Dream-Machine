@@ -18,7 +18,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, targetInstance, type LarInstance } from "../harness/instance.js";
 import { projectionDrained, settleWordOver } from "../harness/settle-word.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
@@ -55,7 +55,7 @@ function ingest(extra: string[]): ReturnType<LarInstance["cli"]> {
 
 beforeAll(async () => {
   lar = await targetInstance();
-  if (lar.mode !== "staged") return;
+  if (!stagedTarget) return;
   // Each wiki projects its own tree under `wikis/<slug>/` (the daemon's own rides `wikis/daemon/`), so the
   // scan back into `wikis/lares/working` reads `wikis/lares/` alone — a sibling wiki's tree is never its source.
   wikisDir = join(lar.root, "wikis", "lares");
@@ -67,9 +67,8 @@ beforeAll(async () => {
 }, 120_000);
 afterAll(async () => { await lar.stop(); });
 
-describe("wikis ingest-back — the working write-layer round-trips", () => {
+describe.skipIf(!stagedTarget)("wikis ingest-back — the working write-layer round-trips", () => {
   test("WB1 — a settled wikis/ mirror scans all-unchanged through working", async () => {
-    if (lar.mode !== "staged") return;
     const r = await ingest([]);
     const d = r.json?.["data"] as Record<string, unknown>;
     // the wikis/ carrier derived a URI off the working plane — NOT skipped
@@ -80,7 +79,6 @@ describe("wikis ingest-back — the working write-layer round-trips", () => {
   }, 60_000);
 
   test("WB2 — a disk edit on a wikis/ file ingests back to working in one cycle", async () => {
-    if (lar.mode !== "staged") return;
     const before = readFileSync(projected, "utf8");
     // Bind to the SHAPE of a heading in the dialect the PROJECTION speaks — memetic-wikitext, where `!`
     // opens a heading and `#` opens an ordered list item. Hunting the carrier's markdown `#` here matched
