@@ -4,6 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { FACE_NEUTRAL_VERBS, operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import { VerbDispatcher, VerbTable } from "@lararium/tw5";
+import * as ed25519 from "@noble/ed25519";
+import { hex, hexToBytes, signAsFaceAtom, signFaceLeafBond } from "@lararium/mesh";
 import { standFoundedIsland } from "./stand-founded-island.js";
 import { nodeSealedStoreShore } from "../src/sealed-store-island.js";
 
@@ -30,7 +32,16 @@ async function standTwoFaces() {
   const ctxOf = (presenter?: string, local = false) => ({ daemon: {} as never, invocation: { requestId: "r1", args: {} } as never, cap: async () => ({ ok: true }), local, ...(presenter === undefined ? {} : { presenter }) }) as never;
   const call = (verb: string, presenter: string | undefined, args: Record<string, unknown>, local = false) =>
     Promise.resolve().then(() => registry.get(verb)!(args, ctxOf(presenter, local))).then(() => null, (e: { reason?: string }) => e);
-  return { registry, call, composite: (a.ctx as any).composite, sibling: `0x${b.daemonAuth.atom.key}`, mounted: `0x${a.daemonAuth.atom.key}` };
+  // Each face's bond for its leaf at a realm: its atom signs from the fixture's own seed, a fresh leaf signs beside it.
+  const bondOf = async (auth: any, realm: string) => {
+    const leafSeed = ed25519.utils.randomSecretKey();
+    const leaf = hex(await ed25519.getPublicKeyAsync(leafSeed));
+    const bond = await signFaceLeafBond({ atom: auth.atom.key, leaf, nexusAid: "bafy-fence-nexus", realm },
+      { atom: (bytes) => signAsFaceAtom(hexToBytes(auth.atom.seed), bytes), leaf: async (bytes) => hex(await ed25519.signAsync(bytes, leafSeed)) });
+    return { leaf, bond };
+  };
+  return { registry, call, composite: (a.ctx as any).composite, sibling: `0x${b.daemonAuth.atom.key}`, mounted: `0x${a.daemonAuth.atom.key}`,
+    siblingBond: (realm: string) => bondOf(b.daemonAuth, realm), mountedBond: (realm: string) => bondOf(a.daemonAuth, realm) };
 }
 
 test("a routed wiki-act crosses the same presenter fence before routing", async () => {
@@ -92,7 +103,7 @@ test("the vessel's own channel pushes under a label that names no face: it passe
 });
 
 test("THE CENSUS: every daemon verb is fenced unless it stands on the named neutral list, and a new verb is fenced by default", async () => {
-  const { registry, call, sibling } = await standTwoFaces();
+  const { registry, call, sibling, siblingBond } = await standTwoFaces();
   const neutral: Readonly<Record<string, string>> = FACE_NEUTRAL_VERBS ?? {};
   // A verb registered after the wiring (the intent door's `intent-view` arrives this way) and named nowhere.
   registry.register("planted-unlisted", async () => ({ verb: "planted-unlisted" }));
@@ -105,15 +116,32 @@ test("THE CENSUS: every daemon verb is fenced unless it stands on the named neut
     expect(why, `neutral ${verb} reason`).toMatch(/^[^\n]{12,}$/);
   }
   // Each neutral verb runs WHOLE for the sibling on arguments it accepts: a refusal of any kind reads as a fence.
-  const neutralArgs: Record<string, Record<string, unknown>> = { "realm-clock": { realm: "ab".repeat(32) } };
+  // A sibling's session arrives local, so each neutral verb runs as one.
+  const fed = await siblingBond("ab".repeat(32));
+  const neutralArgs: Record<string, Record<string, unknown>> = {
+    "realm-clock": { realm: "ab".repeat(32) },
+    "realm-feed": { realm: "ab".repeat(32), writer: fed.leaf, bond: fed.bond },
+  };
   const open: string[] = [];
   const unfenced: string[] = [];
   for (const verb of verbs) {
     if (Object.hasOwn(neutral, verb)) {
-      const refusal = await call(verb, sibling, neutralArgs[verb] ?? {});
+      const refusal = await call(verb, sibling, neutralArgs[verb] ?? {}, true);
       if (refusal !== null) open.push(`${verb}: ${String((refusal as { message?: string }).message ?? refusal)}`);
     } else if ((await call(verb, sibling, {}))?.reason !== "content-mounted-only") unfenced.push(verb);
   }
   expect(unfenced, "verbs neither fenced nor named neutral").toEqual([]);
   expect(open, "neutral verbs that refused the sibling").toEqual([]);
+});
+
+test("RED: realm-feed stands neutral, and a sibling feeds as its own leaf through its bond; CONTROL: the mounted face's bond feeds nothing for the sibling", async () => {
+  const { call, sibling, siblingBond, mountedBond } = await standTwoFaces();
+  const realm = "ef".repeat(32);
+  expect(Object.keys(FACE_NEUTRAL_VERBS)).toContain("realm-feed");
+  const own = await siblingBond(realm);
+  expect(await call("realm-feed", sibling, { realm, writer: own.leaf, bond: own.bond }, true)).toBeNull();
+  const theirs = await mountedBond(realm);
+  expect(String((await call("realm-feed", sibling, { realm, writer: theirs.leaf, bond: theirs.bond }, true) as Error)?.message)).toMatch(/writer-not-presenter/);
+  // A synced summons naming the sibling and carrying its whole bond feeds nothing.
+  expect(String((await call("realm-feed", sibling, { realm, writer: own.leaf, bond: own.bond }, false) as Error)?.message)).toMatch(/realm-feed-not-local/);
 });
