@@ -1,3 +1,38 @@
+## ☕ N9-SB · Living canopy / perimeter column and exact causal replay · 2026-10-29
+
+**Feature SB** (`b97ad987`): when the same original floor
+carries explicitly authored `bear` and `shelter` intentions, the
+native column constructor proposes its body within the floor/roof
+overlap but toward a grounded perimeter, leaving room for a
+bounded central clear core. The shelter witness does NOT claim
+an entire room remains empty; it probes a finite square of
+`min_width²` under the canopy with independently reimported
+STEP Boolean obstruction checks. The corresponding receipt
+contains `clear_core_width`, `clear_core_floor_area`, and
+the narrower `horizontal-roof-over-bounded-clear-core-only`
+scope.
+
+**Intent aftermath SB** (`a22ff193`): native tests keep the
+cover and column claims independent, checking two separate
+contact receipts and the separately clear bounded core. This
+also corrects direct-bearing causal replay to use the original
+`propose_support` minimum-contact parameter while retaining
+the separately stricter authored spatial-contact gate. The
+previous red head `74198649` exposed a changed native
+contact digest, not a missing STEP face. No threshold or
+artistic standard was relaxed to conceal the error.
+
+Still requires full exact-head generalized contracts, actual
+STEP/OpenUSD and Blender, CAD, repository CI and held-out
+gates; previous red is not accepted. Open work includes
+multi-goal operator steering, actual non-axis circulation,
+end-to-end behavior on independent held-out sources,
+real Unreal Editor, structural engineering, and gallery
+quality at scene scale. No automatic winner, physical
+safety claim, pet-name, o-takiage, canon or merge.
+
+---
+
 ## ☕ N9 · Native column causal completion · build/aftermath waves · 2026-10-29
 
 **N9-BC3** (`8aa4ac29`) creates an independent
