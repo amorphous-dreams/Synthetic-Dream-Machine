@@ -15,7 +15,7 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { stopChild, targetInstance, unlockStaged, vesselStorageDir, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, stopChild, targetInstance, unlockStaged, vesselStorageDir, type LarInstance } from "../harness/instance.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
@@ -75,9 +75,8 @@ async function readBack(uris: readonly string[]): Promise<Map<string, string>> {
   return out;
 }
 
-describe("vessel reboot — a hearth survives restarting on its own fed store", () => {
+describe.skipIf(!stagedTarget)("vessel reboot — a hearth survives restarting on its own fed store", () => {
   test("boot → feed → stop at once → REBOOT reaches live → every LOADed carrier reads back", async () => {
-    if (lar.mode !== "staged") return;     // lifecycle-mutating — staged only
 
     const fed = await lar.cli(["act", "LOAD", "--source-uri", CORPUS, "--to", LARES_URI, "--yes", "--json"]);
     expect(fed.json?.["ok"]).toBe(true);
