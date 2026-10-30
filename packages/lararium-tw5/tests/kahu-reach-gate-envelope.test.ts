@@ -96,3 +96,39 @@ test.each(["from-bag", "to-bag"])("the routed gate verifies an ordinary inner %s
   const inner = { [field]: field === "from-bag" ? source : destination };
   await expect(gateRoutedVerb(verb({ verb: "MOVE", args: inner }), verifier, "mounted", true)).rejects.toThrow(/capability denied/);
 });
+
+
+describe("Sol's read (slice 4): the gate derives each inner bag's grade from the act it parses", () => {
+  const recording = () => {
+    const seen: Array<[string, string]> = [];
+    const kahu: string[] = [];
+    const verifier: CapabilityVerifier = {
+      verify: async ({ bagUrl, access }) => { seen.push([bagUrl, access]); return { ok: true }; },
+      kahuReach: async (bag) => { kahu.push(bag); },
+    };
+    return { seen, kahu, verifier };
+  };
+  const wikiAct = (inner: Record<string, unknown>, innerVerb: string) =>
+    ({ requestId: "r", title: "t", action: "wiki-act", requestedBy: "mounted", args: { wiki: "home", verb: innerVerb, args: inner } }) as never;
+
+  test("RED: a bag named as both source and destination takes the stronger grade; a MOVE's source is admin", async () => {
+    const B = bagUri("garden");
+    const a = recording();
+    await gateRoutedVerb(wikiAct({ bag: B, "from-bag": B }, "CLEAR"), a.verifier, "mounted", true);
+    expect(a.seen.filter(([bag]) => bag === B).map(([, access]) => access)).toContain("admin");
+    expect(a.seen.some(([bag, access]) => bag === B && access === "read")).toBe(false);
+    const m = recording();
+    await gateRoutedVerb(wikiAct({ "from-bag": B, "to-bag": bagUri("orchard") }, "MOVE"), m.verifier, "mounted", true);
+    expect(m.seen.find(([bag]) => bag === B)?.[1], "a MOVE deletes at its source").toBe("admin");
+  });
+
+  test("RED: a COPY out of canon asks no Kahu hand for its source; a MOVE out of canon does", async () => {
+    const c = recording();
+    await gateRoutedVerb(wikiAct({ "from-bag": BAG_IDS.lares, "to-bag": bagUri("garden") }, "COPY"), c.verifier, "mounted", true);
+    expect(c.kahu).toEqual([]);
+    expect(c.seen.find(([bag]) => bag === BAG_IDS.lares)?.[1], "a copy reads its source").toBe("read");
+    const m = recording();
+    await gateRoutedVerb(wikiAct({ "from-bag": BAG_IDS.lares, "to-bag": bagUri("garden") }, "MOVE"), m.verifier, "mounted", true);
+    expect(m.kahu).toEqual([BAG_IDS.lares]);
+  });
+});

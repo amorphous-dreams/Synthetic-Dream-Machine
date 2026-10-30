@@ -75,8 +75,9 @@ describe.skipIf(wikiSkip)(`R5: every daemon-surface button family keeps its verb
   let surface: Surface | undefined;
   afterEach(() => { surface?.stop(); surface = undefined; });
 
-  for (const family of FAMILIES) {
-    test(`RED: ${family.name} — a click reads surface; the same summon written into the store reads content`, async () => {
+  // One test per button, so each button's red stands on its own (Luna and Sol, slice 4).
+  for (const family of FAMILIES) for (const click of family.clicks) {
+    test(`RED: ${family.name} · ${click.verb} — a click reads surface; the same summon written into the store reads content`, async () => {
       surface = await mountSurface(paneOf(family.specs, family.marker), [...family.specs.map((s) => ({ ...s })), ...family.state]);
       // `custody-clear` asks the person to confirm: the person says yes.
       const tw = (surface.ctx.tw5 as unknown as { $tw: { utils: { confirm?: unknown } } }).$tw;
@@ -86,21 +87,17 @@ describe.skipIf(wikiSkip)(`R5: every daemon-surface button family keeps its verb
       const record = (e: Record<string, unknown>) => events.push(e);
       wiki.addEventListener("tm-verse-event", record);
       try {
-        for (const click of family.clicks) {
-          const renderId = click.attr ? ridOfAttr(htmlOf(surface.last()), click.attr) : undefined;
-          const ev = surface.event(click.cls ?? "", { kind: "lar:act", action: "lar:click", ...(renderId ? { renderId } : {}) });
-          expect(dispatchLarControlEvent(ev), `${click.verb} click applies`).toMatchObject({ status: "applied" });
-          await surface.flush();
-          // Silent-zero guard: the click must reach the router at all before its origin is read.
-          const fired = events.filter((e) => e["verb"] === click.verb);
-          expect(fired.length, `${click.verb} fired from its button`).toBeGreaterThan(0);
-          expect(fired.at(-1), `${click.verb} as a surface act`).toMatchObject({ verb: click.verb, origin: "surface" });
-        }
-        // The same summon, written into the store with no control event under it, reads content.
-        const first = family.clicks[0]!.verb;
-        surface.wiki.addTiddler({ title: `lar:///test/daemon-surface/synced/${first}`, verb: first, "lares-dispatch": "1", "arg-synced": "yes" });
+        const renderId = click.attr ? ridOfAttr(htmlOf(surface.last()), click.attr) : undefined;
+        const ev = surface.event(click.cls ?? "", { kind: "lar:act", action: "lar:click", ...(renderId ? { renderId } : {}) });
+        expect(dispatchLarControlEvent(ev), `${click.verb} click applies`).toMatchObject({ status: "applied" });
         await surface.flush();
-        expect(events.filter((e) => e["verb"] === first).at(-1), `${first} written by the store`).toMatchObject({ verb: first, origin: "content" });
+        // Silent-zero guard: the click must reach the router at all before its origin is read.
+        const fired = events.filter((e) => e["verb"] === click.verb);
+        expect(fired.length, `${click.verb} fired from its button`).toBeGreaterThan(0);
+        expect(fired.at(-1), `${click.verb} as a surface act`).toMatchObject({ verb: click.verb, origin: "surface" });
+        surface.wiki.addTiddler({ title: `lar:///test/daemon-surface/synced/${click.verb}`, verb: click.verb, "lares-dispatch": "1", "arg-synced": "yes" });
+        await surface.flush();
+        expect(events.filter((e) => e["verb"] === click.verb).at(-1), `${click.verb} written by the store`).toMatchObject({ verb: click.verb, origin: "content" });
       } finally { wiki.removeEventListener("tm-verse-event", record); }
     }, 120_000);
   }

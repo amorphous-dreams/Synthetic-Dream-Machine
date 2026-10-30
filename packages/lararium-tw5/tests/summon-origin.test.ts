@@ -55,3 +55,13 @@ test.skipIf(wikiSkip)(`a store write landing beside a click, in the same change 
     expect(events.find((e) => e.verb === "unpin")).toMatchObject({ origin: "content" });
   } finally { wiki.removeEventListener("tm-verse-event", record); }
 }, 120_000);
+
+
+test.skipIf(wikiSkip)(`a click's write the router never reads leaves no stamp behind (Luna and Sol, slice 4)${skipNote}`, async () => {
+  surface = await mountSurface(`<\$button class="plain"><\$action-setfield \$tiddler="$:/temp/plain-write" text="x"/></\$button>`);
+  expect(dispatchLarControlEvent(surface.event("plain", { kind: "lar:act", action: "lar:click" }))).toMatchObject({ status: "applied" });
+  await surface.flush();
+  const stamps = (surface.wiki as unknown as { __larSurfaceWrites?: Map<string, unknown> }).__larSurfaceWrites;
+  // RED today: every title a dispatch writes is stamped, and a title outside `lar:` never reaches the router to consume it.
+  expect(stamps?.has("$:/temp/plain-write") ?? false).toBe(false);
+}, 120_000);

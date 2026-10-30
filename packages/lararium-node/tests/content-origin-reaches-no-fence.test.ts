@@ -35,8 +35,8 @@ test("R4 RED: a content-born summon naming the place key reaches no fenced verb;
   // A fenced verb that runs on the mounted face's mint: `pin` commands main's residency through `ctx.post`.
   const verb = "pin";
   expect(registry.fenced(verb), "the verb under test stands fenced").toBe(true);
-  const run = async (stamp: "content" | "surface") => {
-    const ask = islandEventAsk(place, { verb, uri: "lar:///synced/summon", ...(stamp === "surface" ? { origin: "surface" } : {}) });
+  const run = async (stamp: "content" | "surface", claim = place) => {
+    const ask = islandEventAsk(claim, { verb, uri: "lar:///synced/summon", ...(stamp === "surface" ? { origin: "surface" } : {}) });
     expect(ask).not.toBeNull();
     const local = placedAskIsLocal({ type: "daemon:place-verb", verb, args: ask!.args, requestedBy: ask!.requestedBy, origin: ask!.origin } as never);
     const invocation = { requestId: `r-${stamp}`, action: verb, args: ask!.args, requestedBy: ask!.requestedBy } as never;
@@ -47,6 +47,9 @@ test("R4 RED: a content-born summon naming the place key reaches no fenced verb;
   };
   // The content-born summon presents as the claim it carried (the public place key), synced, and the fence refuses it.
   expect(await run("content")).toMatchObject({ reason: "content-mounted-only" });
+  // RED (Sol's read, slice 4): a content-born summon whose listenable names the MOUNTED face's own atom stays a synced
+  // claim, and an unsigned claim never wears the face it names: the fence admits only the vessel's own channel.
+  expect(await run("content", `0x${a.daemonAuth.atom.key}`)).toMatchObject({ reason: "content-mounted-only" });
   // CONTROL: a person's act over a surface leg reads local and presents as the mounted face.
   expect(await run("surface")).not.toMatchObject({ reason: "content-mounted-only" });
 });
