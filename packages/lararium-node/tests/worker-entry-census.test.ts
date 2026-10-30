@@ -43,7 +43,6 @@ test("RED: worker entries listen before awaiting; CONTROL: the scanner names a l
   // The fixture entries follow the same rule.
   expect(violation("planted.worker.ts", 'await boot(); self.addEventListener("message", () => {});')).toBe("planted.worker.ts");
   const exceptions: Record<string, string> = {
-    "custody-tab.worker.ts": "The custody handshake is converted in round two.",
     "faulting-tab.worker.ts": "This fixture deliberately faults before listening.",
     "late-listener-tab.worker.ts": "This fixture deliberately models a slow module graph.",
     "stub-island.worker.ts": "This module exports an island factory rather than a worker entry.",

@@ -21,3 +21,14 @@ describe("the connect buffer", () => {
     expect(seen).toEqual(["a", "b", "c"]);
   });
 });
+
+describe("a SharedWorker with a late runtime", () => {
+  test("RED (measured: a connect before a late listener is lost); CONTROL: the buffered entry greets a client that connected during its slow start", async () => {
+    const worker = new SharedWorker(new URL("./fixtures/buffered-shared.worker.ts", import.meta.url), { type: "module", name: `buffered-${crypto.randomUUID()}` });
+    const greeting = await new Promise<unknown>((resolve) => {
+      worker.port.addEventListener("message", (event) => resolve(event.data), { once: true });
+      worker.port.start();
+    });
+    expect(greeting).toEqual({ type: "ready" });
+  }, 20_000);
+});

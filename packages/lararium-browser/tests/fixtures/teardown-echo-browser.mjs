@@ -50,3 +50,5 @@ self.addEventListener("message", (e) => {
   }
 
 });
+
+self.postMessage({ type: "ready" });

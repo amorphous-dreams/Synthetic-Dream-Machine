@@ -1,4 +1,5 @@
 /** A house owns this SharedWorker realm and runs its island over a local port. */
+import { makeConnectBuffer } from "./connect-buffer.js";
 import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 import { attachMessageChannelSync } from "@lararium/mesh";
@@ -11,6 +12,11 @@ const sw = globalThis as unknown as {
   navigator?: { locks?: Parameters<typeof makeHolderRuntime>[0]["locks"] };
   addEventListener(type: "connect", cb: (e: MessageEvent) => void): void;
 };
+const buffer = makeConnectBuffer<MessagePort>();
+sw.addEventListener("connect", (event) => {
+  const port = event.ports[0];
+  if (port) buffer.accept(port);
+});
 const params = new URL(sw.location.href).searchParams;
 const lockName = params.get("lock") ?? "lares:vessel:lares:vessel";
 const moduleUrl = params.get("island-module");
@@ -63,9 +69,7 @@ const { core } = makeHolderRuntime({
   },
 });
 
-sw.addEventListener("connect", (event) => {
-  const port = event.ports[0];
-  if (!port) return;
+buffer.open((port) => {
   port.addEventListener("close", () => core.disconnect(port));
   port.addEventListener("messageerror", () => core.disconnect(port));
   void core.connect(port);

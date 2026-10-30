@@ -1,3 +1,5 @@
+import { registerFacePlanesForRelay } from "./face-plane-registration.js";
+import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
 /**
  * openNodeVessel — local-first Node.js vessel factory.
  *
@@ -2275,19 +2277,29 @@ async function prepareNodeBootOn(
     // EVERY PLANE FAMILY REGISTERS THROUGH A FACE PROOF: a face this boot does not wear registers its persona plane only where its
     // own sealed anchor, the verified KEL and its signed log vouch for that url (`proveFaceFromLog`, no device seat to prove);
     // a bootstrap entry no proof backs registers nothing.
-    for (const plane of bootstrap.personaPlanes) {
-      if (plane.personaGroupId === personaGroupId) continue;
+    const proveOtherFace = async (plane: (typeof bootstrap.personaPlanes)[number]) => {
       try {
         const other = await loadFaceAnchorOfGroup(plane.personaGroupId);
-        if (!other) continue;
+        if (!other) return null;
         const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
         const chain = personaKelChainForPrefix(board.doc(), other.personaKelPrefix);
-        if (!chain || chain.length === 0) continue;
+        if (!chain || chain.length === 0) return null;
         const records = await readFacePersonaRecords(repo, { personaUrl: plane.url, group: plane.personaGroupId, extraDocs: [daemonDoc], heldOnly: true });
         const otherFace = faceBootTiddlers ? bootFacePlanes(faceBootTiddlers, plane.personaGroupId) : null;
-        if (!otherFace?.intentsUrl) continue;
-        if (proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url, intents: otherFace?.intentsUrl } }).ok) provenPlanes.set(plane.personaGroupId, plane.url);
-      } catch (e) { if (!(e instanceof CustodyLocked)) throw e; }
+        if (!otherFace?.intentsUrl || !proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url, intents: otherFace.intentsUrl } }).ok) return null;
+        return { circles: otherFace.circlesUrl, identities: otherFace.identitiesUrl, sessions: otherFace.sessionsUrl, intents: otherFace.intentsUrl };
+      } catch (e) { if (!(e instanceof CustodyLocked)) throw e; return null; }
+    };
+    const proveRelayFace = async (group: string) => {
+      const plane = bootstrap.personaPlanes.find((candidate) => candidate.personaGroupId === group);
+      return plane ? proveOtherFace(plane) : null;
+    };
+    for (const plane of bootstrap.personaPlanes) {
+      if (plane.personaGroupId === personaGroupId) continue;
+      if (await proveOtherFace(plane)) {
+        provenPlanes.set(plane.personaGroupId, plane.url);
+        await registerFacePlanesForRelay({ group: plane.personaGroupId, relayEnabled: async (g) => (await enabledIntentRelayFaces()).includes(g), prove: proveRelayFace, register: registerInCatalog });
+      }
     }
     for (const plane of bootstrap.personaPlanes) {
       if (provenPlanes.get(plane.personaGroupId) === plane.url) registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url);
@@ -2354,7 +2366,11 @@ async function prepareNodeBootOn(
     lightFace = async (ordinal) => {
       if (!siblingPorts) throw new Error(`face h${ordinal} cannot light without a mounted face`);
       const [entry] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal] });
-      if (entry) await daemonVm.lightFace(entry);
+      if (entry) {
+        await daemonVm.lightFace(entry);
+        const group = (await loadIdentityAnchors(ordinal))?.personaGroupId;
+        if (group) await registerFacePlanesForRelay({ group, relayEnabled: async (g) => (await enabledIntentRelayFaces()).includes(g), prove: proveRelayFace, register: registerInCatalog });
+      }
       await intentRelay?.refresh();
     };
     const daemonAuth = {
