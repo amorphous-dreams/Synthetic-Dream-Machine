@@ -103,7 +103,7 @@ def test_fire_explicit_two_relation_selection_replays_single_intent():
         {"id":"b-cover","relation":"covers",
         "implementation":"overhead-canopy","subject":"a","object":"c"}]
     doc={**doc,"sha256":canonical_json_sha256(doc)}
-    intent=IntentContract("place","Join two architectural relations",("crossing","cover"))
+    intent=IntentContract("place","Join two architectural relations",("cover","crossing"))
     record=bind_fire_spatial_set(doc,intent,native,
         alternative_ids=("a-bridge","b-cover"),source_witness_id="witness-a",
         authored_by="operator")
@@ -139,7 +139,7 @@ def test_joint_fire_receipt_rejects_tampered_child_without_accepting_new_source(
                           dict(core["alternatives"][0],id="b-second",
                                relation="ascends",implementation="stair-flight")]
     plan2={**core,"sha256":canonical_json_sha256(core)}
-    intent=IntentContract("place","Selected joint construction",("route","rise"))
+    intent=IntentContract("place","Selected joint construction",("rise","route"))
     receipt=bind_fire_spatial_set(plan2,intent,original(),
         alternative_ids=("a-first","b-second"),
         source_witness_id="witness-a",authored_by="operator")
