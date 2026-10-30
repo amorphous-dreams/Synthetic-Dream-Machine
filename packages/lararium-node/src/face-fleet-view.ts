@@ -33,6 +33,7 @@
 import { interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import { PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, isFaceScopedBag, tiddlerText, type LarDoc, type DocumentFacet, type FaceGrantReading, type FederationGate, type SessionDocumentFacets } from "@lararium/mesh";
 import { bootDaemonUrl, bootFacePlanes } from "./boot-face-planes.js";
+import type { KahuCanonDocs } from "./kahu-realm.js";
 
 type BootTiddlers = Readonly<Record<string, { text?: string }>>;
 
@@ -58,16 +59,23 @@ export function faceFleetFacets(bootstrapTiddlers: BootTiddlers, personaGroup: s
  * title that is NOT a face-scoped bag id: the vessel's books (a wiki, a draft, the catalog, the oracle) and the pointers its planes
  * stand on (a realm's doc, its steward, its standing), as document IDs. An ALLOW-LIST: a document the catalog does not point at
  * reads nothing across the bridge, so a foreign face's plane whose catalog row is absent, withheld or face-scoped is shut out by
- * default and never let in by an omission. The mounted face's own five planes ride its view.
+ * default and never let in by an omission. The mounted face's own five planes ride its view. The Kahu canon this vessel
+ * stands (`@lares`, `@lararium`, registered by the realm and never the catalog) rides the bridge as the vessel's books too.
  */
-export function bridgeBooks(catalog: LarDoc | undefined | null): ReadonlySet<string> {
+export function bridgeBooks(catalog: LarDoc | undefined | null, canon: KahuCanonDocs = {}): ReadonlySet<string> {
   const out = new Set<string>();
+  const add = (url: string | null | undefined): void => {
+    if (!url || !url.startsWith("automerge:")) return;
+    try { out.add(interpretAsDocumentId(url as AutomergeUrl)); } catch { /* a malformed url names nothing */ }
+  };
   for (const [title, record] of Object.entries(catalog?.tiddlers ?? {})) {
     if (isFaceScopedBag(title)) continue;
-    const url = tiddlerText(record);
-    if (!url || !url.startsWith("automerge:")) continue;
-    try { out.add(interpretAsDocumentId(url as AutomergeUrl)); } catch { /* a malformed url names nothing */ }
+    add(tiddlerText(record));
   }
+  // THE KAHU CANON IS A BOOK OF THIS VESSEL: the realm registry, never the catalog, names `@lares` and `@lararium` (one
+  // owner per registry), so the bridge reads them off the canon the vessel stood at boot (`standKahuCanon`). Without this a
+  // seated same-operator leaf read every book and none of the canon (walk R4).
+  add(canon.lares); add(canon.lararium);
   return out;
 }
 
