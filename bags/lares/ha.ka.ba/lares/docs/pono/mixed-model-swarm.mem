@@ -11,7 +11,7 @@ mana      = 15
 manao     = 15
 manaoio   = 14
 namespace = "&#x2299;"
-role      = "mixed-model-swarm — how the house works across model lineages: which lineage holds which seat, the shapes a crew takes, the lens law that makes several eyes worth more than one, the Copilot seat and its walls, the lanes and trains, the o-takiage, the fences, the launch, and the provenance each landed line carries"
+role      = "mixed-model-swarm — how the house works across model lineages: which lineage holds which seat, the shapes a crew takes, the seat law every Codex brief carries, the feature unit a PR lands, the tiers each seat draws from, the lens law that makes several eyes worth more than one, the Copilot seat and its walls, the battery, the lanes and trains, the o-takiage, the fences, the launch, the provenance each landed line carries, and the rulings the body rests on"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -30,45 +30,98 @@ The crew lines that bind a running lane stand at <<~ loulou "lar:///ha.ka.ba/lar
 <<~/ahu>>
 
 <<~ ahu #/the-seats>>
-
 !! The seats ~ which lineage holds what
 
 |! Seat |! Lineage |! Holds |! Never |
-| ''Controller'' | Claude Opus | the session's seat: rulings relayed, every lane's brief, a careful read of every chunk's diff before it merges, every merge train, the canon lines | lands a chunk it has not read |
-| ''Episkopos'' (lane lead) | Claude Sonnet | the lane's brief, ground and crew, its landing onto its lane branch, its review verdicts | hands its landing to another spirit |
-| ''Terra'' (builder) | Codex `gpt-6.1-terra`, medium effort | every build brief, walled with `-s workspace-write` | commits, pushes, or touches git |
-| ''Luna'' (reader, sweeper) | Codex `gpt-6-luna`, medium effort, read-only | the read of each slice before it pushes, the aftermath sweep | builds, commits, pushes, or touches git |
-| ''Sol'' (deep-thinker, on a named ask) | Codex `gpt-6.1-sol`, high effort, read-only | a deep question or design read the Episkopos names in its hand-back; never a default seat, since it spends fast | builds, commits, pushes, or touches git |
-| ''Copilot seat'' | Copilot `gpt-5.3-codex`, medium effort | reads, scouts and sweeps | commits, pushes, or reads a diff it wrote |
+| ''Operator'' | the human | rulings, credentials, the operator-only configs (`~/.codex/config.toml`, `~/.claude/settings.json`, `~/.copilot/*`, gh auth), WSL size, every founding and custody act on a TTY, the `--force` on a lane worktree that refuses a plain remove | answers a question canon, a measure or the stories settle |
+| ''Controller'' | Claude Opus | the session's seat: lane briefs, slot fill, the one watcher per seat, a read of every chunk's diff before it lands, the batch land, the road commit behind it, canon | solos a lane; lands a chunk it has not read |
+| ''Lane lead'' (Episkopos, a Wright) | Claude, named per lane (#/the-tiers) | the lane's briefs, the authoring of every red and every judgment slice, every commit in its own worktree on its lane branch, the build before each seat, the batch battery, one push per feature, the short hand-back | pushes the span or `main`; arms a watcher; launches a seat on a stale dist |
+| ''Terra'' (builder) | Codex `gpt-6.1-terra`, medium effort | a mechanical edit over an exact file list and an exact change; typecheck; single-file unit runs that open no socket | commits, builds, opens a socket, writes outside its seat directory and the worktree |
+| ''Luna'' (reader, sweeper) | Codex `gpt-6-luna`, high effort, read-only | the cold read of each batch before its push, the aftermath sweep | builds, commits, reads a diff it wrote |
+| ''Sol'' (deep reader) | Codex `gpt-6.1-sol`, high effort, read-only | the read of every batch head, every caps, custody, crypto, gate or Keyhive slice, a named deep question | builds by default, commits, launches as `gpt-6-sol` |
+| ''Copilot seat'' | Copilot `gpt-5.3-codex`, medium effort | the batch Aftermath read while the legacy allowance lasts | builds, commits, reads a diff it wrote, runs `--model fusion` |
 | ''Fresh reader'' | a lineage that built nothing in the piece, read-only | an adversarial read of a whole lane before its train, findings ranked with `file:line` | sees the builder's conclusions first |
 | ''Research pair'' | two seats woken apart | the code read and the field read of one question, each claim marked MEASURED or LEAD, then traded | shares a conclusion with its twin before the trade |
 
 <<~/ahu>>
 
 <<~ ahu #/the-shapes>>
-
 !! The shapes ~ how a crew stands
 
-* ''The work swarm.'' A lane runs a Sonnet Episkopos with enacting seats: the Terra builds, the Luna reads and sweeps, a Sol joins only for a named deep question, and the Copilot seat reads the batch's Aftermath. A Copilot build costs several times a Copilot read against a fixed monthly allowance, so builds go to the Terra. Terra, Luna, Sol and `gpt-5.3-codex` share the OpenAI lineage, so their cross-read counts once, and the Episkopos reads every build as the second lineage. A seat never reads a diff it wrote.
-* ''The build pair.'' The building seats share ONE worktree the lead provisions, with ONE writer at a time, so their work composes as it lands. A seat that needs to write in parallel works in a worktree of its own, and the lead merges from it. The lead pulls the work by diff, reads it and lands it.
-* ''A short lineage keeps its seat.'' When the operator names a lineage short, its seats pass to another lineage's models of the same capability, and the lens law still sorts who reads whom; the operator names the shortfall's end the same way. Where Codex stands absent, a lane runs an Opus Episkopos with an Opus and a Sonnet spirit trading builder, reviewer and sweeper masks.
-* ''Crew law.'' Seven refinements bind every lane (operator, 2026-10-28):
-** A controller ruling on behavior carries a measure (a grep, one test it ran) or arrives marked LEAN; the lane verifies before building and pushes back with evidence when the code says otherwise.
-** A slice lands as its own PR once its plan stands built and read; a finding that widens scope goes to the next slice's brief, never into the slice in flight.
-** The red lands as its own commit before the fix commit, so a reader sees the red's sha fail on its parent; a red written after its fix names that and carries a proof run against the parent.
-** Before each push the lane runs ONE e2e file locally that exercises the surface it touched and names it in the hand-back; the whole e2e set runs on CI shards only.
-** A reader's findings go straight to the builder's Episkopos; the controller reads the copy and rules only on forks (design, scope, law).
+* ''The work swarm.'' A lane runs one lead with the smallest crew that finishes the slice: Terra on file-listed edits, Luna and Sol reading, the Copilot seat reading the batch's Aftermath. Terra, Luna, Sol and `gpt-5.3-codex` share the OpenAI lineage, so their cross-read counts once; the lead reads every build as the second lineage, and the controller reads every chunk. A seat never reads a diff it wrote.
+* ''The build pair.'' The building seats share ONE worktree the lead provisions, with ONE writer at a time, so their work composes as it lands. A seat that writes in parallel works in a worktree of its own, and the lead merges from it.
+* ''A short lineage keeps its seat.'' When the operator names a lineage short, its seats pass to another lineage's models of the same capability, and the lens law still sorts who reads whom. Where Codex stands absent, a lane runs an Opus lead who authors the code, with a Sonnet helper taking listed edits and a Sonnet or Opus spirit reading and sweeping.
+* ''Crew law.'' Every lane keeps these:
+** A controller ruling on behavior carries a measure (a grep, one test it ran) or arrives marked LEAN; the lane verifies before building and pushes back with evidence.
+** The lead authors every red and every judgment slice; Terra receives an exact file list and an exact change. After one thin pass on judgment work, the lead weighs a Sol seat before a second Terra brief.
+** The red lands as its own commit before its fix, so a reader sees the red's sha fail on its parent; the commit message quotes the failure, and a control ships beside it. A red written after its fix names that and carries a proof run against the parent. Phase seats wrap this order: reds seat, the lead commits and proves the red, fix seat, the lead commits.
+** A seat whose run fails, gets cancelled or misses its red lands nothing; the lead discards its partial diff by name.
+** After a reader's findings the builder revises ONCE; a second round of the same findings goes to the lead, then the controller.
+** A reader's findings go straight to the builder's lead; the controller reads the copy and rules only on forks (design, scope, law), settled by <<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">> #/forks.
 ** One writer per worktree; no claims ledger.
-** Spend reads from what each tool writes, never from a seat's own word: the controller runs `python3 /home/joshu/.lares-scratch/controller/spend.py --lane <lane> [--since <date>]`, which tallies Claude subagent transcripts, Codex rollouts and Copilot run logs. A hand-back names its seats and their models; the numbers come from the script.
+** The controller arms ONE watcher per seat (`until [ -f <seat>/final.md ]`, in the harness's background mode); a lead hands back once its seat launches and the controller's watcher wakes it. Leads and seats arm none. The lead keeps `resume.md` current at each commit and before each launch, and the controller sweeps a landed lane's watchers by pid.
+** A lead hands back ONCE, short: one `<<~ status "…">>` line, the head (full sha), the CI and held-out readings on it, the story and the walk that proved it, the rulings taken from canon each with its source, and the true operator asks each with a lean. A failed or discarded seat gets a leg line (directory, model, effort, mode, attempts, outcome). Spend numbers come from the controller's `spend.py`, never a seat's word.
+** Spend reads from what each tool writes: Claude subagent transcripts, Codex rollouts, the Copilot run log's `Requests N Premium` line. A Copilot log with no such line reads UNMETERED, never zero; the Codex pool holds a 20% weekly floor read from the newest rollout. `spend.py` serves the controller alone and binds no lane.
 * ''Observe pair.'' Before a phase designs anything, one seat cold-reads the as-built with `file:line`, and a second, woken apart and handed the framing alone, reads the field. Their handbacks collide in orient.
 * ''The Chao of a review'' (<<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>). Two reads over one question wear the Chao's two faces, and the review resolves to three:
 ** ''Hodge'' carries Yang and Ha, the Aneristic face: what holds its shape. It reads what the work states as standing (each claim, name and contract) against the source, and finds the line that does not hold.
 ** ''Podge'' carries Yin and Ka, the Eristic face: what moves. It reads what the work does under change (the race, the other caller, the epoch that rolls, the case left out, the control that never bites).
 ** ''Spin'' carries Ba. Each face reads alone first; then the pair trades: each takes the other's findings, confirms or refutes each against the source, and reads the other's ground for what its own face missed. Orthogonal findings both stand; tensioned ones get measured, never voted; a finding one face alone raised stays a lead.
-* ''Overwatch.'' The Opus controller reads every crew's handback and every chunk's diff before it merges, and names each finding it would block on. Work that moves a fact between processes or threads (a writer and its readers, a composer and its islands, a verb and its route) always takes the controller's own read of the crossing, since a module's own reads catch its contract and miss its crossings.
-* ''The battery runs at the wave's end, on the shards.'' A wave writes every red and its control as it builds, since a red names the specification, and runs nothing between its fixes. At its end it runs locally only what CI cannot: the build, and each red's proof against its base (the red files alone over the pre-cure tree). It pushes once, and CI carries the battery: the lane CI runs every package suite, the witnesses and the tool self-tests; `node tools/e2e-shards.mjs push <lane>` spreads both e2e sets across shards; held-out runs its cells. The wave reads every verdict, cures what reads red, pushes again only once no run flies, and hands back when CI and held-out read green.
-* ''The fresh read and the train.'' A lane's handback takes a fresh reader's whole-lane read before it merges; a HOLD sends the findings back as the next launch, up to five launches, with the uncertainties talked out between them. The controller then merges ready lanes in trains (#/the-lanes).
+* ''Overwatch.'' The controller reads every crew's handback and every chunk's diff before it lands, and names each finding it would block on. Work that moves a fact between processes or threads (a writer and its readers, a composer and its islands, a verb and its route) takes the controller's own read of the crossing, since a module's own reads catch its contract and miss its crossings.
+* ''The fresh read and the train.'' A lane's handback takes a fresh reader's whole-lane read before the batch lands; a HOLD sends the findings back as the next launch, up to five launches, with the uncertainties talked out between them. The controller then lands ready lanes in batches (#/the-lanes).
 
+<<~/ahu>>
+
+<<~ ahu #/the-seat-law>>
+!! The seat law ~ the brief section every Codex seat carries
+
+The launcher preflights each Codex seat and appends the bullets below to its brief. It refuses a model missing from Codex's models cache, `gpt-6-sol`, a pool at or under the 20% weekly floor, a pool line unreadable twice (never read as zero), a seat directory outside `~/.lares-scratch/<lane>/`, a build seat on the main checkout, and a build seat over a stale dist. It logs each attempt.
+
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* Write `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+<<~/ahu>>
+
+<<~ ahu #/the-feature-unit>>
+!! The feature unit ~ a PR lands one whole capability
+
+# ''A PR lands one capability'': a story a person carries out end to end, on every vessel class it names, its security fence complete. Slices live inside the PR as red and fix pairs, each read by the lead and the batch's Luna read; a slice never opens a PR alone.
+# ''Three units ship alone, fast'': a cure for a span fault that blocks other lanes; a porch hygiene bundle; a ground change later features build on, whole at its own layer with no stub and no deferred caller.
+# ''A hole in the capability stays in the PR.'' A gap that makes the story fail or leaves its fence open gets cured before the land. Only a finding that widens scope past the story goes to the next feature's brief. The Aftermath read, and for a security-class feature the Sol read, land before the push.
+# ''Split by capability, never by layer and never by the hole the next slice closes.'' A feature that outruns what one lead carries across two working sessions, or one writer per worktree, splits into two capabilities, each a whole story.
+# ''One push per feature, plus cure pushes.'' The lead pushes the lane branch once the story stands built, its reds proven, its battery green and its Luna read done; it pushes again only to cure a red. It merges the span once, right before that push, where a conflict or a non-land span commit asks.
+# ''A span fault stops the queue once.'' A red the span carries goes at once to ONE cure lane. Queued lanes push, rerun and re-merge nothing until the cure lands; then each merges once and pushes once. A failed job reruns ONCE as a flake candidate; a second red on the same test names a fault.
+# ''A feature waits on its dependency unbuilt, or stacks.'' A feature that needs another lane's land starts after that land, or stacks on that lane's branch and lands in the same batch. It never builds ahead and rests while the span moves.
+# ''Done means the story walks.'' The hand-back names the story and the one walk that proves it: the one e2e file, or a live stand where a vessel class carries it. A capability no walk proves stands "specified", never built (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">> #/wiring-an-unreached-module).
+# ''The record rides with the capability'': each feature PR hands the controller its changelog bullet and road-row text; the lane edits neither file.
+<<~/ahu>>
+
+<<~ ahu #/the-tiers>>
+!! The tiers ~ each seat draws the tier that serves it
+
+* ''Controller'': Opus 5.5, high effort, refreshing its context at each batch boundary. Fable takes a named ruling Opus at max visibly missed.
+* ''Lane lead'': Sonnet 5.5 with the one-hour subagent cache by default; Opus 5.5 for a seam, custody or security lane, the reason written in the brief. A lead retires at its PR's land and a fresh seat resumes from a cold brief.
+* ''Fable as a burst'': a Fable lead takes a named integration-judgment bottleneck when all four hold: the lead authors the code; one lane-day at most; no wait past an hour (on a longer wait it writes a brief, hands back and retires); the weekly Fable pool holds room. Fable never stands as a lane's standing lead.
+* ''Builder'': Terra 6.1 medium on file-listed edits alone. A `gpt-6.1-sol` build seat answers a named ask. No Opus or Fable builder seat.
+* ''Reader'': Luna high reads every batch. Sol 6.1 high reads every batch head and every caps, custody, crypto, gate or Keyhive slice. A fresh Claude reader serves where the read needs house canon; Fable cold-reads only a spec with open forks that an expensive builder will inherit.
+* ''Researcher'': Fable for parallel web collides, Opus for repo-grounded research, Sonnet for audits and sweeps, Codex Sol with `--search` for one question.
+* ''General-purpose subagents'' run Sonnet unless the roster names Opus or Fable.
+
+The measures behind each placement stand at <<~ loulou "lar:///ha.ka.ba/lares/docs/research/model-tiers-2026">>.
+<<~/ahu>>
+
+<<~ ahu #/the-battery>>
+!! The battery ~ the local run and the verdict
+
+* ''CI and held-out on the lane head make the verdict.'' The lane's local battery reads what it touched, in this order: `pnpm build`; each red's proof against its parent; `node tools/evergreen-boundary.mjs`; `bash tools/witness-all.sh`; `tools/typecheck-witness.sh`; the touched packages' whole suites (`lararium-mesh` always) under a scratch `HOME` and a scratch `LAR_ROOT` with `LAR_BAGS` unset; `node --test` over the touched tools; ONE e2e file that exercises the touched surface, named in the hand-back.
+* ''CI carries the rest'': the whole e2e sets and every other suite, and reads the witness fleet again as the verdict.
+* ''One heavy battery at a time on the box.'' The lead runs it through the battery lock, which refuses (exit 64) where the lock cannot open and never runs unlocked.
+* ''A red that clears with no edit names shared state'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">> #/red-first).
 <<~/ahu>>
 
 <<~ ahu #/the-lens-law>>
@@ -92,16 +145,17 @@ GitHub Copilot reaches models the Codex budget never spends. Nothing the house g
 
 !!! Its uses
 |! Use |! Model |! When |
-| ''the swarm's reading seat'' | `gpt-5.3-codex`, medium effort | every lane: reads, scouts, sweeps |
+| ''the batch's Aftermath reader'' | `gpt-5.3-codex`, medium effort | while the legacy allowance lasts; a fresh same-family Claude reader serves after |
 | a deeper single read | a higher-multiplier model | where the seats split on a load-bearing finding, the operator hearing the reason first |
 | ''Copilot code review'' of a pull request | GitHub's PR reviewer | only when the operator asks for one by name |
 A premium request counts per prompt, never per tool call.
 
 !!! Its fences
-# ''One launcher'', `tools/launch-copilot.mjs read|build`, its walls pinned by `tools/launch-copilot.test.mjs`. Both modes run with no URL, no built-in MCP server (the GitHub server reaches the network and writes), no system temp directory, no prompt and no auto-update, stdin closed and `COPILOT_ALLOW_ALL` dropped; a seat whose working directory sits in the system temp directory refuses, since the temp wall blinds it there. The seat's handback, log and share land in its seat directory.
+# ''One launcher'', `tools/launch-copilot.mjs read|build`, its walls pinned by `tools/launch-copilot.test.mjs`. Both modes run with no URL, no built-in MCP server (the GitHub server reaches the network and writes), no system temp directory, no prompt and no auto-update, stdin closed and `COPILOT_ALLOW_ALL` dropped; a seat whose working directory sits in the system temp directory refuses, since the temp wall blinds it there; `--model fusion` refuses. The seat's handback, log and share land in its seat directory.
 # ''Read-only when it reads'' (`read`): every write, commit and push tool denied; git and file reads alone.
 # ''Walled when it builds'' (`build`, where a build must go to Copilot): file writes in the lane's build worktree alone, `npx vitest` and `npx tsc` there; every git write, push, network fetch, `rm`, `mv`, `npm` and `pnpm` denied; it refuses the main checkout, a directory that holds no worktree, and a missing or in-checkout `LAR_ROOT`, refuses `--add-dir`, and drops any `LAR_BAGS`. A launch never widens these walls (no `shell(bash)`, no `shell(env)`, never `--allow-all-*` or `--yolo`).
 # ''No laundering.'' A step this session's safety check refused never travels to Copilot, since routing a refused step through a second permission system counts as a retry.
+# ''Spend reads from the run log's `Requests N Premium` line''; the entitlement cache reads last-known.
 # ''Overage off.'' The allowance empties and stops; it resets on the first of each month and carries nothing over.
 # ''No cloud agent.'' A cloud agent opens branches and pull requests under its own hand: outward-facing, and a second writer.
 # ''Its config carries the house'': `~/.copilot/copilot-instructions.md` loads the boot seed, and `~/.copilot/hooks/lares.json` stands.
@@ -109,13 +163,16 @@ A premium request counts per prompt, never per tool call.
 <<~/ahu>>
 
 <<~ ahu #/the-lanes>>
+!! The lanes ~ a sub-branch, a pull request, a batch
 
-!! The lanes ~ a sub-branch, a pull request, a train
-
-* ''A lane opens its own sub-branch'' of the work branch, `feature/green-jello-dinosaur-5--<lane>`, cut from the span's head as it reads green; nothing lands on the work branch directly.
-* ''A lane hands back on green'': its battery reads green on its own CI and held-out (#/the-shapes, the battery), its pull request opens into the work branch, and its fresh read follows.
-* ''A Copilot PR review runs only on the operator's ask.''
-* ''The controller merges in trains'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">> #/state): it reads the span's own head green first, merges ready lanes onto one scratch head, runs one crucible over the combined tree (the shared packages' suites, both whole e2e sets, `tools/witness-all.sh`), places canon, and pushes the span once, through a gate that refuses while any run flies.
+* ''A lane opens its own sub-branch'' of the work branch, `feature/green-jello-dinosaur-5--<lane>`, cut from the span's head as it reads green. The lead commits there, in its own provisioned worktree, after `pnpm build`, with `git commit -F <msg> --only -- <paths>`; a subject reads `lar:///ha.ka.ba/<pkg-or-bag>/<area>/<w1.w2.w3> — summary`; a `Co-Authored-By` names each lineage that wrote lines, then the session line.
+* ''A lane pushes its own branch'' once per feature (#/the-feature-unit), and never the span or `main`.
+* ''A lane hands back on green'': its battery (#/the-battery), CI and held-out read green on its head, its pull request opens into the work branch, and its fresh read precedes the land. A Copilot PR review runs only on the operator's ask.
+* ''A lane worktree'' counts toward five at most; the train holds the sixth. Worktrees and scratch roots live under `~/.lares-scratch/<lane>/`, never `/tmp`; a provision reads `df` first and stops under 60G free on C:. A lane may hold a second worktree, each with one writer, when two features on its path build in parallel. Free slots fill from the road's order without asking.
+* ''The controller lands in batches'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">> #/state). A batch forms once two or more features read green; a lone green feature drains as a batch of one when no other lane has a feature nearing green, and a span-fault cure or shared ground other lanes build on lands at once. One train reads every green lane merged over the span as it stands: the shared packages' suites, `tools/witness-all.sh`, evergreen and the tallies (a suite log with no "Test Files" line reads red; a dirty tree reads red); each lane's CI carried the e2e. The land writes one commit per lane, chained, each with the train's merge tree, so the span's last tree equals the train's tree. The span pushes only while no run flies on it, and the land cancels the CI runs its lane-branch pushes start. A lane on an older base lands when the span moved only by lands since (subjects carrying ` — merge PR #N`).
+* ''Road commits'' (road rows, o-takiage moves, changelog bullets, `#/state`) ride behind a batch, never between queued lands.
+* ''After each land'' the build cache caps at 15GB (`docker builder prune -f --max-used-space 15GB`); no image or system prune without the operator's word.
+* ''Job-minutes make the CI currency'': every CI change reports total job-minutes beside the critical path, and the fewest, fullest cells win while the critical path stays at or under the slowest e2e shard.
 
 <<~/ahu>>
 
@@ -131,7 +188,8 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 # ''Testimony stays.'' A testimony carrier, a dated scout and a dated crossing row keep their words; the house re-trues their frame, never their body.
 # ''A witness that catches burned names burns itself'' once it reads green over the tree.
 # ''Roadmaps move what stands finished'' onto their own o-takiage shelf, verbatim, and keep only what stays owed on the road.
-# ''Scratch returns too.'' A seat's worktree leaves only after a census proves every file it holds landed; plain `git worktree remove`, never `--force`; a worktree that initialized submodules waits for the operator's hand.
+# ''Owed items travel first.'' A road row that names nothing still owed moves to `#/o-takiage`; an item owed for another row moves to that row before the move.
+# ''Scratch returns too.'' A lane worktree leaves after a census proves every file it holds landed, by a plain `git worktree remove`; one that refuses plain removal waits for the operator's hand. The land script force-removes the train worktree it made, once it has proven the final tree equals the pushed span tree.
 
 <<~/ahu>>
 
@@ -139,35 +197,29 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 !! The fences ~ every lineage keeps them
 
-* ''One writer per lane.'' Seats of any lineage write only inside their own worktree; the Episkopos alone lands, from its own tree, with `git commit -F <msg> --only -- <paths>`.
+* ''One writer per lane.'' Seats of any lineage write only inside their own worktree; the lead alone commits, from its own tree.
 * ''A refused command stops that step'' for every lineage alike: never retried, reshaped, split, moved to another tool, or handed to another seat (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">> #/the-lane-law).
 * ''Every brief carries the git lines'': no `git stash` in any form, no `--no-verify`, no `.git/config`, no git write from a seat; `git config core.bare` reads `false` before and after.
 * ''A build reads its own tree'': a provisioned checkout whose links resolve inside it.
 * ''A process stops by its own pid'' or through the harness's task stop, never by a command-line pattern that matches the shell running it. Watchers too: a watcher reads a file by its modification time, never `pgrep -f`.
-* ''The disk carries; the seat re-reads.'' A spirit runs outside its overseer's budget, so an outage (a rate limit, a crash, a compaction) stops the watcher and never the work: the spirit finishes its brief and its handback lands on disk unread, its build dirty in the worktree. The Episkopos writes its resume sheet at each commit and before each spirit launch, naming the spirit's directory and `out.md`, so a re-awakened seat reads what the spirit left and never mistakes it for stray work.
-* ''A shard run reads the head it names.'' `node tools/e2e-shards.mjs push <lane>` pushes the HEAD of the checkout it runs from, so it runs from the lane's own worktree, and the run's `headSha` reads before its colour.
+* ''The disk carries; the seat re-reads.'' A spirit runs outside its overseer's budget, so an outage (a rate limit, a crash, a compaction) stops the watcher and never the work: the spirit finishes its brief and its handback lands on disk unread, its build dirty in the worktree. The lead's resume sheet (named in the crew law) names the spirit's directory and `out.md`, so a re-awakened seat reads what the spirit left and never mistakes it for stray work.
+* ''A bisect reads the head it names.'' `node tools/e2e-shards.mjs push <lane>` serves a bisect and pushes the HEAD of the checkout it runs from, so it runs from the lane's own worktree, and the run's `headSha` reads before its colour. The lane's verdict reads off its branch's CI and held-out.
 
 <<~/ahu>>
 
 <<~ ahu #/the-launch>>
-
 !! The launch ~ one brief file, any lineage
 
 * ''A brief stands as a file'' that names the mask, the ground, the ruling it enacts, the house style and the handback shape.
-* ''The walled Codex seat'': `cd <dir> && TMPDIR=<dir>/.tmp TMPPREFIX=<dir>/.tmp/zsh codex exec -m gpt-6.1-terra -c model_reasoning_effort=medium -s workspace-write -c sandbox_workspace_write.exclude_slash_tmp=true -c sandbox_workspace_write.exclude_tmpdir_env_var=true --skip-git-repo-check -C <dir> -o <dir>/final.md "<brief>" < /dev/null`, in the background. A builder (`gpt-6.1-terra`, medium effort) runs `-C <worktree> --add-dir <dir>`; a reader (`gpt-6-luna`, medium effort, `-s read-only`) runs `-C <dir>` over an empty directory and reads the repo from there. The walls keep `/tmp` and every other worktree unwritable, the seat's temp files live inside its own directory, and `workspace-write` keeps `gh` reachable where `read-only` reaches no network.
-* ''Every seat keeps its rollout.'' No Codex seat launches with `--ephemeral`: an ephemeral run writes no rollout and goes uncounted, and a seat cut short continues by its session id (`codex exec resume <id> -m <model> -c model_reasoning_effort=<level>`), and the lead's resume sheet records that id beside the seat's directory, model, effort and head. Each seat's `-C` directory sits under the lane's own scratch directory, since the spend script finds the lane from the rollout's cwd.
-* ''Web search rides before `exec`'' (`codex --search exec …`) on this host's CLI, and only where the brief asks for the field.
+* ''One launcher per Codex seat'' takes the seat directory, the model, the effort and a mode: `build` (workspace-write, network off, both tmp excludes, `-C <worktree> --add-dir <seat>`), `read` (`-s read-only -C <seat>` over an empty directory, reading the repo from there) or `research` (`codex --search exec …` ahead of `exec`, networked, only where the brief asks for the field). Every mode carries `-c approval_policy="never"` and the seat law (#/the-seat-law). Each seat's directory sits under the lane's scratch directory, since the spend script finds the lane from the rollout's cwd.
+* ''A seat that needs a CI log'' receives the excerpt as a file.
+* ''A cut-short seat continues by its session id'' through the launcher's resume mode, which carries the same preflight and walls and names the model again; the lead's resume sheet records that id beside the seat's directory, model, effort and head.
 * ''`codex exec` stands as the shell seat.'' `codex mcp-server` left the CLI upstream; `codex mcp` connects tools to Codex and never serves Codex as a tool.
-* ''Stdin closes'' on every background Codex launch (`< /dev/null`), or `codex exec` waits for input and never starts.
-* ''The handback and `-o` never share a file'': the brief names `out.md`, `-o` names `final.md`, and a wave trades only once its handback's word count reads whole.
-* ''A walled seat builds and never runs suites'': vitest, pnpm and tsx each break behind the walls, so the seat builds modules and writes reds and controls, and the lead runs the build and the red proofs.
 * ''A tw5 edit leaves its dist stale'': the lead builds tw5 before keyhive and stamps it before any run, or the dist guard refuses.
 * ''A moved plugin source runs `witness-all`'', since genesis-parity reads DRIFT until `genesis/unbaked.json` declares the new sha or a labelled re-bake lands.
-* ''A Codex resume names its model again'' (`-c model=<id>`), since a resume takes the config's default.
 * ''A Copilot read names its target'': the branch, its head sha and the pull request, read through `git show <branch>:<path>` or the lane's own worktree, never the main tree. A paired read runs each face alone, then hands each its twin's handback.
 * ''A seat that cannot write its out file'' hands back on stdout; the launcher's log keeps it.
-* ''The lead's own watch wakes it.'' A spirit's finish reaches its lead only through a watch the lead arms in the harness's background mode (`until [ -f <seat>/final.md ]`), never a watcher the spirit leaves behind; where a lead pauses on its own spirits, the controller arms that watch and messages the lead on the finish.
-* ''Owed probes'' (Sol's read of OpenAI's Codex docs, 2026-10-25, <<~ loulou "lar:///ha.ka.ba/lares/docs/research/codex-controller-2026">>): a `--json` event stream ending on `turn.completed` as the watch's signal, `--output-schema` for a mechanical status beside `out.md`, a reader with command network off where its brief needs none, permission profiles in place of the flag list, and a matched A/B across Sol, a newer Sol and Luna; each lands here once measured on this host.
+* ''Owed probes'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/research/codex-controller-2026">>): a `--json` event stream ending on `turn.completed` as the watch's signal, `--output-schema` for a mechanical status beside `out.md`, permission profiles in place of the flag list, and a matched A/B across Sol, a newer Sol and Luna; each lands here once measured on this host.
 
 <<~/ahu>>
 
@@ -175,10 +227,26 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 !! Provenance ~ each landed line names its hands
 
-* A commit carries a `Co-Authored-By` trailer for each lineage whose work it lands: the Episkopos's own, `Codex <model>` for a Codex seat, `GitHub Copilot <model>` for a Copilot seat's work, and the session line.
+* A commit carries a `Co-Authored-By` trailer for each lineage whose work it lands: the lead's own, `Codex <model>` for a Codex seat, `GitHub Copilot <model>` for a Copilot seat's work, and the session line.
 * A handback the house keeps lands verbatim as a testimony carrier, so no relaying hand rewrites it.
 * Each lineage's own transcript rests where its harness keeps it; the capture plane reads them read-only (<<~ loulou "lar:///ha.ka.ba/lararium/api/capture-annotation-model">>, <<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">>).
 
+<<~/ahu>>
+
+<<~ ahu #/rulings>>
+!! Rulings ~ the operator's words the body rests on
+
+# 2026-10-16, 2026-10-19: Terra, Luna, Sol and `gpt-5.3-codex` share one lineage and count once; the lead reads every build as the second lineage.
+# 2026-10-20: the battery runs once at the wave's end and CI carries the rest; 2026-10-24: the whole e2e sets run on cloud shards only.
+# 2026-10-28: seven refinements bind every lane (measure or LEAN, red before fix, one e2e file locally, findings straight to the builder's lead, one writer per worktree, deterministic spend); `gpt-6-sol` never launches; Luna reads at high; no Opus builder by default; the Codex pool keeps a 20% weekly floor; "Shift the default Codex crew to Episkopos + Terra + Luna."
+# 2026-10-28, Fusion: "defer integrating Fusion until after founding, I think we can sit 'inspired' by it, but we remain in control of our worn workflows per the causal-island law (inversion-of-control)."
+# 2026-10-29: Fable overwatch and batch lands; the test-architecture YIN narrows the local battery and groups compatible slices into one batch.
+# 2026-10-30, working contracts: the launcher carries the seat law; the lead authors judgment work; the controller owns the one watcher per seat; the hand-back runs short; lands batch with road commits behind; job-minutes make the CI currency.
+# 2026-10-30, cleanup (operator's words, recorded in the controller's memory `project_wsl_vhd_disk_law.md`): "The script based cleanup reads pono, that's enforced by the script."
+# 2026-10-30, Sol (operator's words, recorded in the controller's memory `feedback_mixed_model_swarm.md`): "Approve Sol on every batch head".
+# 2026-10-30, feature unit: a PR lands one whole capability a person uses end to end.
+# 2026-10-30, battery: the local battery always carries `node tools/evergreen-boundary.mjs` and `bash tools/witness-all.sh`; only the heavy package suites narrow.
+# 2026-10-30, tiers: Fable serves as a burst, Sonnet leads by default, general-purpose subagents run Sonnet unless the roster names otherwise.
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -190,9 +258,10 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/capture-annotation-model">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/research/model-tiers-2026">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RGAzIj279-Tjfjg7v5P_fB7l4X0cLt4SIl7CqdVMRv4
+<<^ code="&#x0003;">>ni:///sha-256;95Sd06SsNjR8U6lgYHPKc2I04MBzw9SYTA-r06khvLg
 
 <<^ code="&#x0004;" -> to="?">>

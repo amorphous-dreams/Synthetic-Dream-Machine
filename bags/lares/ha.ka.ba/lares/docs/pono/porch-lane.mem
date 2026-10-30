@@ -109,7 +109,7 @@ Operator, 2026-10-28: the old shapes and shape gates are design-time crud that t
 !!! Closed
 * ''The free recognisers burn.'' The `LARK` old-shape readings of the S and FCK envelopes, the sealed writer's refusal of them, the KEL `old-shape-inception` producer, and the capture cell's retired `feedback` spelling (`build-patch.ts`, `turn-harvest.ts`, and `move-skeleton.ts`, which the census missed) leave source. Those bytes fall to the generic `bare`, `torn` or `malformed` readings, which stay. The tests that proved only the old shapes burn; every wrong-key, torn, bare and foreign-family test stays.
 * ''`tools/evergreen-boundary.mjs` reads a fifth class, `old-shape`'': a `Legacy*Refus*` or `OldShape*` identifier, the `"old-shape"` literal, and a comment that names a retired shape. Its ceiling reads 0 and no exception stands.
-* ''The roster'' (the Terra builds, the Sol reads) and the crew law's seven refinements stand in `mixed-model-swarm`.
+* ''The roster and the crew law'' stand in `mixed-model-swarm`.
 
 !!! Slice two ~ closed
 * ''The store-acknowledgement race was the product's.'' A daemon island's `doc:rest` ask rides `parentPort` and outruns the island's sync handshake, so the vessel's `repo.find` of a document the island had just minted read `unavailable` before the Repo had met the island's peer. `DaemonVmCore.syncLegReady()` names the leg the island runs on (the first leg and each manifest-replay leg), the rest door awaits it through a removable teardown subscription, and an `unavailable` after the leg stands still rejects. No clock, no retry loop. The pins are D6 to D8 in `rest-door.test.ts`; the replay probe fixture (`daemon-replay-probe.mjs`) stands for the island and waits on the Repo's own `peer` event the same way.
@@ -142,6 +142,6 @@ Operator, 2026-10-28: the old shapes and shape gates are design-time crud that t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;arSOlRM4Pw15D-UexupcwS9AN-AYH0NhE5A1PCg7Un4
+<<^ code="&#x0003;">>ni:///sha-256;1c6-NxRuce1NmWlUPoexLW4jR0Xr-MHuOatZgm3XngQ
 
 <<^ code="&#x0004;" -> to="?">>

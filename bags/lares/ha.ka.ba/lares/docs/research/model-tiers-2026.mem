@@ -1,0 +1,97 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/model-tiers-2026">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+l-space   = "lares"
+role      = "field research on model-tier placement (2026-10-30): what each Claude and Codex tier cost and yielded across one lane-day with three Fable lane leads beside Opus and Sonnet leads, collided with the providers' positioning and published orchestration studies, and the placement each tier's nature earns"
+status    = "research; read 2026-10-30; leans run LEAN-verify until a second lane-day reads; `mixed-model-swarm#/the-tiers` carries the placement as law"
+tags      = ["research", "models", "swarm", "economics", "tiers", "fable"]
+file-path = "bags/lares/ha.ka.ba/lares/docs/research/model-tiers-2026.mem"
+title     = "lar:///ha.ka.ba/lares/docs/research/model-tiers-2026"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/research/model-tiers-2026"
+```
+
+<<~ ahu #/head>>
+
+! Model tiers, 2026 ~ each tier where its nature serves the whole
+
+A read-only scout measured 115 Claude subagent transcripts (2026-10-17 to 2026-10-30), the day's Codex seats, the span's merged PRs and the lane branches, then collided the measures with the providers' pages and published orchestration studies. Marks: ''SOURCED'' cites a page and the date fetched; ''MEASURED'' names the script or field read from this machine (transcript `message.model` and `usage` deduplicated per message id, `spend.py`, seat `final.md`, `git log` committer time); ''REASONED'' marks judgment; ''UNVERIFIED'' marks an aggregator's claim this crew traced to no primary page. "API-eq $" prices tokens at public API rates to weigh seats against each other; neither plan meters in those units. One lane-day stands behind each seat, so every lean here runs LEAN-verify.
+
+<<~/ahu>>
+
+<<~ ahu #/the-field>>
+
+!! What the providers say
+
+Anthropic places Opus 5.5 first: "start with Claude Opus 5.5 for most workloads. Use Claude Fable 5.1 for demanding reasoning and long-horizon agentic work, or when your evals on Claude Opus 5.5 at higher effort still fall short" (SOURCED, https://platform.claude.com/docs/en/models/overview, 2026-10-29). Fable 5.1 bills $10 / $50 with cache hits at 0.025x input ($0.25), against Opus 5.5 at $4 / $20 with hits at 0.05x ($0.20) and Sonnet 5.5 at $2 / $10 with hits at $0.10 (SOURCED, https://platform.claude.com/docs/en/about-claude/pricing, 2026-10-29): a seat that mostly re-reads its cache pays about 1.25x Opus on Fable, a seat that writes and speaks pays 2.5x. Max carries "a separate weekly limit for Fable" beside the shared limits (SOURCED, https://support.claude.com/en/articles/11145838, 2026-10-29). Aggregators copy a Fable 5.1 launch table against Opus 5, never Opus 5.5 (UNVERIFIED); no public number shows Fable 5.1 above Opus 5.5 on agentic coding (REASONED).
+
+OpenAI points complex builds at Astra and then Sol 6.1 ("Near-Astra performance for complex work at a lower cost"), positions Terra for "clear writing, visual understanding, and computer use", and Luna for "focused, high-volume tasks, including summarization, extraction, and focused coding", started at High (SOURCED, https://learn.chatgpt.com/docs/models, 2026-10-29). Prices per million, input / cached / output: Sol 6.1 2 / 0.10 / 10; Terra 6.1 1 / 0.05 / 5; Luna 0.10 / 0.01 / 0.50 (SOURCED, https://developers.openai.com/api/docs/pricing, 2026-10-29).
+
+Orchestration studies: an Opus lead over Sonnet subagents beat a single Opus by 90.2% on research, token use explained 80% of variance, and "most coding tasks involve fewer truly parallelizable tasks than research" (SOURCED, https://www.anthropic.com/engineering/multi-agent-research-system, 2026-10-29). An Opus advisor consulted by a Sonnet executor raised SWE-bench Multilingual 2.7 points at 11.9% lower cost, the advisor speaking 400 to 700 tokens (SOURCED, https://claude.com/blog/the-advisor-strategy, 2026-10-29). Across 180 configurations, multi-agent variants lowered strictly sequential planning by 39 to 70% and gained up to about 81% on parallel work under central coordination (SOURCED, https://research.google/blog/towards-a-science-of-scaling-agent-systems-when-and-why-agent-systems-work/, 2026-10-29).
+
+<<~/ahu>>
+
+<<~ ahu #/what-this-crew-measured>>
+
+!! What this crew measured
+
+''Narration stays small at every tier.'' Visible text makes under 3% of output tokens in every group; hidden adaptive thinking makes about 58 to 69% and tool inputs about 30 to 35% (MEASURED, chars/4 estimate against `usage.output_tokens`). Fable leads speak 22 text characters per tool call against Opus 10 and Sonnet 3, yet that text costs 0.8% of their output. Fable batches: 1.52 tool calls per API call as lead and 6.48 as a web scout, against about 1.0 for Opus and Sonnet (MEASURED).
+
+''The one-hour subagent cache works.'' Sonnet lead cache write:read fell from 0.079 to 0.010 and writes fell from 64% to 22% of Sonnet lead cost (MEASURED; E1 of `model-roster-2026` reads PASS on the API meter, the plan meter unread). Every large cache rewrite followed an idle gap over one hour; idle rewrites made about a third of three standing Fable leads' bill (MEASURED).
+
+''Fable paid in bursts, not in waits.'' Two standing Fable leads (17 to 19 hours) ran $6.2 and $8.6 API-eq per commit; a fresh Fable lead from a cold brief ran 1.6 hours, 19 commits, 8 reds, $2.1 per commit, no rewrite, and its live stand measured four faults and cured three (MEASURED). An Opus lead ran $2.4, a Sonnet lead on a listable lane $1.1, Sonnet leads on hygiene lanes $0.9 per commit; the Fable lanes held the most integration-dense rows, so cost per commit flatters the listed lanes (REASONED). The same tokens priced at Opus rates cost 0.50 to 0.57 of their Fable bill (MEASURED).
+
+''Terra yields on lists.'' Twenty-one Terra build seats: 11 full, 5 partial, 5 empty, about $2.5 API-eq for the day; 6 of 6 full on listed census slices, 0 of 3 on integration slices (MEASURED, seat `final.md`). Yield tracks the slice, not the lead's tier (REASONED).
+
+''Reads carry the truth cheapest.'' Five of five finished Sol 6.1 high reads carried a HIGH or BLOCKER the lead acted on, about $1 API-eq each; among them a steward fault that poisoned a canon carrier. Ten Luna high reads cost about $0.18 in all and carried a blocker, a HIGH, and the MED that led to the second real SharedWorker race (MEASURED, seat `final.md` and `controller/plan.md`).
+
+''The controller re-reads itself.'' The Opus main session ran about $76 API-eq on the day, 18% of Claude spend, 79% of it cache reads of its own long context (MEASURED).
+
+<<~/ahu>>
+
+<<~ ahu #/the-placement>>
+!! The placement ~ what each seat takes, in order
+
+# Seat the controller on Opus 5.5 at high effort; refresh its context at each batch land. Take Fable only for a named ruling Opus at max visibly missed.
+# Lead a listable lane with a Sonnet 5.5 subagent on the one-hour cache. Move to Opus for a seam, custody or security lane.
+# Summon a Fable 5.1 lead as a burst, only when all four hold: a named integration-judgment bottleneck; the lead authors the code; one lane-day at most with no wait past an hour (a brief, then a fresh seat); the weekly Fable pool holds room.
+# Build with Codex `gpt-6.1-terra` at medium on file-listed edits. Author judgment slices at the lead. Weigh a `gpt-6.1-sol` build seat once E2 reads. Seat no Opus or Fable builder.
+# Read every batch with Codex `gpt-6-luna` at high. Move to a fresh Claude reader where the read needs house canon.
+# Read every batch head, and every caps, custody, crypto, gate or Keyhive slice, with Codex `gpt-6.1-sol` at high; a fresh Opus subagent serves where Sol cannot.
+# Cold-read a spec with open forks that an expensive builder will inherit with Fable 5.1; take Opus otherwise.
+# Research with Fable for parallel web collides, Opus for repo-grounded questions, Codex Sol with `--search` for one question; Sonnet serves audits and sweeps.
+
+A walled Codex seat writes and stops; the lead commits at each red and fix boundary. A Codex seat beats a Claude helper on every read, every listed build and one-question research; a Claude helper wins where the work needs house canon, SendMessage continuity, a commit, the battery lock, or a browser.
+<<~/ahu>>
+
+<<~ ahu #/stories>>
+
+!! Two stories
+
+''Gaia-2026.'' A clinic co-op's household Nexus owes passkey recovery before the rainy season. A Sonnet lead, Terra on the listed files, Luna on every slice and Sol on the custody batch carry it. A nurse's face then fails to seat across two clinics where three processes disagree on the realm steward; Terra returns inspection-only twice. One fresh Fable lead takes the knot by its own hand in one sitting and retires into a brief once the walk stands live. The co-op pays the Fable price once, for the knot.
+
+''Elyncia-5492.'' A wright-guild seats a great-wright over a whole season's re-binding; he waits by the press for apprentices who return blank pages and re-reads the archive after every wait. By spring the guild rules: summon the great-wright for a knot, let him cut it by hand and leave a brief; the guild-master stays the guild-master; the slow lantern-reader reads every binding, since she caught a poisoned folio at each one. Whether her yield holds once the easy faults are gone stays for E3.
+
+<<~/ahu>>
+
+<<~ ahu #/open>>
+
+!! Open
+
+# Whether a Sol 6.1 read at every batch head fits the Codex pool: about 0.6% of the week per read, about 13% a week at three batches a day.
+# Whether the Max weekly percent per lane-day fell with the one-hour cache (E1's plan-meter half).
+# Whether a Sol 6.1 build seat lands judgment slices that Terra leaves empty (E2).
+# Whether Sol's high-finding yield holds across a second lane-day (E3).
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/research/model-roster-2026">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
+
+<<^ code="&#x0003;">>ni:///sha-256;Ny4Od7Joz7--P0pi3uFo8aQarfS7EYAETW2tkLuZIBY
+
+<<^ code="&#x0004;" -> to="?">>

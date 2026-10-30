@@ -8,7 +8,7 @@ cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem"
 hydrate   = true
 l-space   = "stable"
-role      = "working procedures — the standing law for any hand that tests, wires or measures in this tree: red-first test design in eight moves, the ladder for wiring a module that stands designed, tested and unreached, the instruments that read green while they report something false, the traps this tree paid for, and the working agreements that bind every spirit"
+role      = "working procedures — the standing law for any hand that tests, wires or measures in this tree: red-first test design in eight moves, the ladder for wiring a module that stands designed, tested and unreached, the instruments that read green while they report something false, how a fork settles, the working agreements that bind every spirit, and the rulings they rest on"
 title     = "lar:///ha.ka.ba/lares/api/pono/working-procedures"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/working-procedures"
@@ -46,7 +46,7 @@ land as ONE settlement.
 "Vector first, fix second" names a discipline that fails silently when run loosely. Run it as eight
 ordered moves; a skipped move turns the whole thing into decoration.
 
-# ''Write the vector before the cure.'' The vector names the hole. A vector written after the cure tests the cure's shape, never the hole's.
+# ''Write the vector before the cure.'' The vector names the hole. A vector written after the cure tests the cure's shape, never the hole's. The vector lands as its own commit ahead of the cure, so a reader sees its sha fail on the parent; a vector written after its cure names that and carries a proof run against the parent.
 # ''Watch it fail, and READ the failure text.'' A vector that passes on its first run measured nothing: the hole never existed, or the vector misses it. Both readings demand work before any cure gets written.
 # ''Check the red fails for the stated reason.'' Read the message, never the colour. A vector that reds on a typo, a missing fixture or an unrelated throw looks identical to one that reds on the defect.
 # ''Run the nonsense control.'' Feed the gate something that MUST fail: a nonsense verb, a mangled digest, an address nothing holds. A control that passes proves the gate reads nothing, and a green from that gate carries no information.
@@ -131,7 +131,7 @@ Collide each before trusting it.
 * ''`witness-all`'s last line misleads; capture `$?`.'' The held-out roster prints after the per-witness runs, and a pipe's status belongs to its last stage.
 * ''A shard-green head holds half a verdict.'' The shard lane runs the e2e sets alone; the package suites, the witness fleet and the tool self-tests answer only in the full CI workflow, and a newer push cancels that workflow's run before it reports. A cancelled run measured nothing. Read the head with `node tools/ci-verdict.mjs --head <sha> --branch <branch>`: it answers green, red or unread, and unread never reads as green.
 * ''`LAR_ROOT` alone isolates every XDG home''; it leaves `~/.mempalace` (the destructive `mempalace repave` among its readers), `~/.venv`, `~/.local/bin` and the harness homes untouched. Never touch `~/.local/share/lares`, and never read the passphrase file.
-* ''Check `pgrep -af vitest` and `pgrep -af witness` before a run that stages vessels''; bisect a red in a worktree, never by guessing. A lone red that clears standalone names suspect shared state before it names a defect.
+* ''Heavy runs take the battery lock'' (`mixed-model-swarm#/the-battery`); bisect a red in a worktree, never by guessing. A lone red that clears standalone names suspect shared state before it names a defect, and a failed job reruns once as a flake candidate; a second red on the same test names a fault.
 
 !!! Characters and renames
 * ''Weld test before any rename'': grep the signing domains first, since a rename that moves a signing domain changes bytes every peer verifies.
@@ -169,11 +169,37 @@ The house proves a zero with a known positive: an instrument that reads nothing 
 * ''Build new, then retire.'' A retired term stays reserved and never gets reused for a changed thing (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme#/retirement">>).
 * ''Mechanism at choke-points, policy in cascades.'' A capability stands as a manifest grant, never as a flag a cascade can set.
 * ''Prove by witness, never by assertion.'' A change that crosses a vessel proves itself against a staged vessel; a failing vector NAMES a hole.
-* ''Early alpha, until a third human'' (operator ruling, 2026-10-16). Shapes get tried and thrown away freely while one or two operators hold the mesh, since that takes only minimal coordination. Once a third human's data and habits enter it, and in any stable federated mesh, human-scale flows and persistence become the primary design attractors. The road's fence (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>) reads the same line.
-* ''Evergreen, with no old shapes'' (operator ruling, 2026-10-16). No migration door, no shim, and no detecting or warning about an old shape: old shapes stand as rejected experiments. Code, comments, logs, help text and test names state what IS, with no history words (//retired//, //no longer//, //now//, //legacy//, //pre-cutover//). Git carries the ashes, and o-takiage reaches code as much as carriers.
-* ''A refusal of the house's own earlier shape lives for one commit'' (operator ruling, 2026-10-25). The commit that moves a shape may refuse the earlier spelling by name; the next commit burns that refusal, its name list and the tests that pin the retired name. A check that also guards a live invariant (forged, foreign, occupied or malformed bytes) keeps the invariant in present tense, with present tests, and loses only the historical name.
-* ''Recursive o-takiage'' (operator ruling, 2026-10-16). A witness that catches burned names, or a list of retired names inside a test, lives only as scaffolding: build it, run it green, then burn it in the lane's final aftermath commit. No standing retired-names witness; a standing list keeps dead names and their l-space alive.
+* ''Early alpha, until a third human.'' Shapes get tried and thrown away freely while one or two operators hold the mesh, since that takes only minimal coordination. Once a third human's data and habits enter it, and in any stable federated mesh, human-scale flows and persistence become the primary design attractors. The road's fence (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>) reads the same line.
+* ''Evergreen, with no old shapes.'' No migration door, no shim, and no detecting or warning about an old shape: old shapes stand as rejected experiments. Code, comments, logs, help text and test names state what IS, with no history words (//retired//, //no longer//, //now//, //legacy//, //pre-cutover//). Git carries the ashes, and o-takiage reaches code as much as carriers.
+* ''A refusal of the house's own earlier shape lives for one commit.'' The commit that moves a shape may refuse the earlier spelling by name; the next commit burns that refusal, its name list and the tests that pin the retired name. A check that also guards a live invariant (forged, foreign, occupied or malformed bytes) keeps the invariant in present tense, with present tests, and loses only the historical name.
+* ''Recursive o-takiage.'' A witness that catches burned names, or a list of retired names inside a test, lives only as scaffolding: build it, run it green, then burn it in the lane's final aftermath commit. No standing retired-names witness; a standing list keeps dead names and their l-space alive.
 * ''A burr gets taken when it appears'', or it gets a line with its wake condition in the roadmap (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>).
+
+<<~/ahu>>
+
+<<~ ahu #/forks>>
+
+!! Forks ~ how a fork settles
+
+A fork leaves this ladder at the first rung that holds:
+# Canon and the operator's recorded rulings.
+# A measure: a grep, a red, one run.
+# A Gaia-2026 story and an Elyncia-5492 story.
+# A reader YIN/YANG round of two traded waves, then a second round.
+
+A fork that survives both rounds reaches the operator once, in the body, with options and a lean, never as a turn-end slot. A settled fork lands as a house ruling with its source.
+
+Straight to the operator, at once: a classifier refusal; a destroy-class act past the ruled; anything needing the operator's hand (settings, a by-hand patch, a credential); a question whose answer changes who holds authority, custody at rest or identity bytes, or spends what no re-founding restores.
+
+<<~/ahu>>
+
+<<~ ahu #/rulings>>
+
+!! Rulings ~ the operator's words the agreements rest on
+
+# 2026-10-16: early alpha until a third human; evergreen with no old shapes; recursive o-takiage.
+# 2026-10-25: the commit that moves a shape may refuse the old spelling by name; the next commit burns that refusal.
+# 2026-10-14, 2026-10-30: forks settle down the ladder of #/forks.
 
 <<~/ahu>>
 
@@ -188,6 +214,6 @@ The house proves a zero with a known positive: an instrument that reads nothing 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;n-PdT7RKx6uCA92PUUyECH5wbE7lxap0_pl_Z4FbtP8
+<<^ code="&#x0003;">>ni:///sha-256;ip7smQmZaff-mZIYmqxqXVCUxs7iKEVy08AWuUPhoEg
 
 <<^ code="&#x0004;" -> to="?">>
