@@ -66,8 +66,12 @@ class GrowthNode:
             raise ValueError("Carve requires a declared host")
 
     def as_dict(self):
-        return {key:getattr(self,key) for key in
-                ("key","op","parent","face","size","offset","target","repeats")}
+        # JSON-native values at the origin keep immutable and reread
+        # preregistrations identical without changing their content hashes.
+        return {"key":self.key,"op":self.op,"parent":self.parent,
+                "face":self.face,"size":list(self.size),
+                "offset":list(self.offset),"target":self.target,
+                "repeats":self.repeats}
 
 
 @dataclass(frozen=True)
