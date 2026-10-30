@@ -295,9 +295,11 @@ function fake(table) {
   const n = {}, calls = [];
   const sh = (cmd, args) => {
     calls.push([cmd, ...args]);
+    if (calls.length > 400) throw Object.assign(new Error("runaway vigil"), { stderr: "runaway vigil: the test stopped a wait that never ends" });
     let key;
     if (cmd === "git") key = args.includes("--abbrev-ref") ? "branch" : "rev";
     else if (args[1] === "list") key = `${args[args.indexOf("--workflow") + 1] === "CI" ? "runs" : "heldRuns"}${args.includes("--commit") ? "AtSha" : ""}`;
+    else if (args[0] === "api") key = "branchApi";
     else key = `view:${args[2]}`;
     n[key] = (n[key] ?? 0) + 1;
     const v = table[key];
@@ -425,4 +427,33 @@ test("the door still exits 3 when gh is absent, and 3 for a hard read failure (n
   assert.equal(r.code, 3);
   assert.match(r.err, /ci-verdict: could not read/);
   assert.deepEqual(r.slept, [], "a hard failure never waits");
+});
+
+// ── Luna and Sol read the verdict door ───────────────────────────────────────────────────────────────────────
+test("RED: an explicit HTTP status decides before any word: a 404 that mentions `timeout` is hard; transport failures GitHub words differently are unreadable", () => {
+  assert.equal(classifyFailure(Object.assign(new Error("x"), { stderr: "HTTP 404: workflow timeout.yml not found" })), "hard");
+  assert.equal(classifyFailure(Object.assign(new Error("x"), { stderr: "HTTP 503: Service Unavailable" })), "unreadable");
+  assert.equal(classifyFailure(Object.assign(new Error("x"), { stderr: "error connecting to api.github.com\ncheck your internet connection or https://githubstatus.com" })), "unreadable");
+  assert.equal(classifyFailure(Object.assign(new Error("x"), { stderr: "unexpected EOF" })), "unreadable");
+  assert.equal(classifyFailure(Object.assign(new Error("x"), { stderr: "HTTP 401: Bad credentials" })), "hard");
+});
+
+test("RED: a branch that holds no run is checked for existence: a 404 is a hard read (3), never a vigil with no end", async () => {
+  const gone = () => Object.assign(new Error("x"), { stderr: "HTTP 404: Branch not found" });
+  const r = await door({ runs: [], runsAtSha: [], branchApi: gone, heldRuns: [], heldRunsAtSha: [] }, ["--wait"]);
+  assert.equal(r.code, 3, r.out + r.err);
+  assert.deepEqual(r.slept, []);
+  const real = await door({ runs: [], runsAtSha: [], branchApi: "topic", heldRuns: [], heldRunsAtSha: [] });
+  assert.equal(real.code, 2, "a real branch with no run yet reads unread");
+});
+
+test("RED: --wait never ends in success over a held-out reading it could not read: UNREADABLE exits 4, a hard held-out failure exits 3; without --wait the third reading still only says", async () => {
+  const dark = { ...GREEN_TABLE(), heldRuns: bad502, heldRunsAtSha: bad502 };
+  const w = await door(dark, ["--wait"]);
+  assert.equal(w.code, 4, w.out + w.err);
+  assert.match(w.out, /held-out: UNREADABLE/);
+  const plain = await door(dark);
+  assert.equal(plain.code, 0, "the exit follows the CI reading alone outside a vigil");
+  const hard = { ...GREEN_TABLE(), heldRuns: () => Object.assign(new Error("x"), { stderr: "HTTP 404: Not Found" }) };
+  assert.equal((await door(hard, ["--wait"])).code, 3);
 });

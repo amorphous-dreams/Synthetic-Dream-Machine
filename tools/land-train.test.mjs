@@ -8,7 +8,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  diskRefusal, landTrain, parseSpec, readSuiteLog, runsToCancel, sharedPackages, spanPushRefusal, worktreeCapRefusal,
+  ACTIVE_STATUSES, activeRuns, diskRefusal, ghEnv, landTrain, parseSpec, readSuiteLog, repoOfRemote, runsToCancel, sharedPackages, spanPushRefusal, verdictWords, worktreeCapRefusal,
 } from "./land-train.mjs";
 
 const SPAN = "feature/span";
@@ -52,6 +52,8 @@ test("the span takes a push only while no run flies on it; landed lanes' unfinis
   assert.equal(spanPushRefusal([{ status: "completed" }]), null);
   assert.match(spanPushRefusal([{ status: "completed" }, { status: "in_progress" }]), /1 run\(s\) still in flight/);
   assert.deepEqual(runsToCancel([{ databaseId: 1, status: "completed" }, { databaseId: 2, status: "queued" }, { databaseId: 3, status: "in_progress" }]), [2, 3]);
+  // RED: cancel follows the pushed sha, never the branch: the lane's NEXT feature (another head) keeps its runs.
+  assert.deepEqual(runsToCancel([{ databaseId: 2, status: "queued", headSha: "L" }, { databaseId: 3, status: "in_progress", headSha: "H2" }], "L"), [2]);
 });
 
 // ── the flow over a real scratch origin ──────────────────────────────────────────────────────────────────────
@@ -88,7 +90,7 @@ function opsOf(w, over = {}) {
     disk: () => ({ cGb: 100, rootGb: 100 }),
     houseWorktrees: () => 1,
     spanRuns: () => [],
-    cancelRuns: async (branch) => { calls.cancelled.push(branch); return [1]; },
+    cancelRuns: async (branch, sha) => { calls.cancelled.push(branch); calls.cancelShas = [...(calls.cancelShas ?? []), sha]; return [1]; },
     readMsg: (p) => (existsSync(p) ? readFileSync(p, "utf8") : ""),
     removeWorktree: (wt) => { calls.removed.push(wt); sh(w.work, "worktree", "remove", "--force", wt); },
     sleep: async () => {},
@@ -347,4 +349,107 @@ test("the main checkout must stand on the span, or the land refuses 2 before pus
   assert.equal(r.code, 2);
   assert.match(r.out, /NOT ON THE SPAN/);
   assert.equal(originRef(w, SPAN), w.base);
+});
+
+// ── Luna and Sol read the land tool ──────────────────────────────────────────────────────────────────────────
+test("RED: a local span ahead of origin's refuses (2) before any push; CONTROL: a local span behind fast-forwards", async () => {
+  const w = world(["a"]);
+  w.commit(w.work, "local-only.txt", "x\n", "an unpublished local commit");
+  const r = await run(w, {}, {}, ["a"]);
+  assert.equal(r.code, 2, r.out);
+  assert.match(r.out, /NOT AT ORIGIN'S SPAN HEAD/);
+  assert.equal(originRef(w, `${SPAN}--a`), w.heads.a, "no lane branch moved");
+});
+
+test("RED: the span pushes FIRST under an expected-head lease; a writer that moved the span during the train refuses the land and no lane branch moves", async () => {
+  const w = world();
+  const r = await run(w, {
+    train: async ({ name, lanes, span }) => {
+      const wt = join(w.dir, `wt-${name}`);
+      sh(w.work, "worktree", "add", "-q", "--detach", wt, `origin/${span}`);
+      for (const l of lanes) sh(wt, "-c", "user.name=T", "-c", "user.email=t@t", "merge", "--no-ff", "--no-edit", "-q", `origin/${span}--${l.suffix}`);
+      // Another writer advances the span while the train runs (a push from a second clone).
+      const other = join(w.dir, "other"); sh(w.dir, "clone", "-q", w.origin, other);
+      sh(other, "config", "user.name", "O"); sh(other, "config", "user.email", "o@o"); w.commit(other, "other.txt", "o\n", "another writer"); sh(other, "push", "-q", "origin", SPAN);
+      return { state: "green", worktree: wt, head: sh(wt, "rev-parse", "HEAD") };
+    },
+  });
+  assert.equal(r.code, 6, r.out);
+  assert.match(r.out, /SPAN MOVED DURING THE TRAIN|SPAN PUSH REFUSED/);
+  assert.equal(originRef(w, `${SPAN}--a`), w.heads.a, "a refused span leaves every lane branch where it stood");
+  assert.equal(originRef(w, `${SPAN}--b`), w.heads.b);
+});
+
+test("the in-flight gate stands before any ref moves; a lane branch whose lease fails after the span landed warns and does not undo the land", async () => {
+  const w = world();
+  let atGate;
+  const r = await run(w, {
+    spanRuns: () => { atGate = [originRef(w, SPAN), originRef(w, `${SPAN}--a`), originRef(w, `${SPAN}--b`)]; return []; },
+    train: async ({ name, lanes, span }) => {
+      const wt = join(w.dir, `wt-${name}`);
+      sh(w.work, "worktree", "add", "-q", "--detach", wt, `origin/${span}`);
+      for (const l of lanes) sh(wt, "-c", "user.name=T", "-c", "user.email=t@t", "merge", "--no-ff", "--no-edit", "-q", `origin/${span}--${l.suffix}`);
+      // Lane b's author pushes a new commit after the train read its head: the lane branch's lease will fail.
+      sh(w.work, "checkout", "-q", `${SPAN}--b`); w.commit(w.work, "b2.txt", "b2\n", "lane b moved on"); sh(w.work, "push", "-q", "origin", `${SPAN}--b`); sh(w.work, "checkout", "-q", SPAN);
+      return { state: "green", worktree: wt, head: sh(wt, "rev-parse", "HEAD") };
+    },
+  });
+  assert.deepEqual(atGate, [w.base, w.heads.a, w.heads.b], "nothing had moved when the gate read");
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /LANE BRANCH NOT MOVED: b/);
+  assert.notEqual(originRef(w, SPAN), w.base, "the span landed");
+});
+
+test("RED: the TRAIN needs the current span head GREEN (the shell's SPAN NOT GREEN); UNREADABLE there exits 10; the direct land does not ask", async () => {
+  const w = world(["a"]);
+  w.commit(w.work, "ahead.txt", "a\n", "span ahead — merge PR #0: an earlier land"); sh(w.work, "push", "-q", "origin", SPAN);
+  const spanHead = originRef(w, SPAN);
+  const red = await run(w, { verdict: async (b, sha) => (b === SPAN && sha === spanHead ? { ci: "red", heldOut: "green" } : { ci: "green", heldOut: "green" }) }, {}, ["a"]);
+  assert.equal(red.code, 5, red.out); assert.match(red.out, /SPAN NOT GREEN/); assert.equal(red.calls.train, 0);
+  const dark = await run(w, { verdict: async (b, sha) => (b === SPAN && sha === spanHead ? { ci: "unreadable", heldOut: "unreadable" } : { ci: "green", heldOut: "green" }) }, {}, ["a"]);
+  assert.equal(dark.code, 10, dark.out);
+});
+
+test("RED: landed lanes' runs cancel by the pushed land sha, not by branch", async () => {
+  const w = world();
+  const r = await run(w, {});
+  assert.equal(r.code, 0, r.out);
+  const lands = sh(w.work, "rev-list", "--first-parent", "-2", SPAN).split("\n");
+  assert.deepEqual([...r.calls.cancelShas].sort(), [...lands].sort());
+});
+
+test("RED: a train name that climbs out of scratch refuses (2)", async () => {
+  const w = world(["a"]);
+  const { ops } = opsOf(w); ops.log = () => {};
+  for (const bad of ["../../tmp/pwn", "a/b", "", ".hidden"]) {
+    assert.equal((await landTrain({ name: bad, base: w.base, specs: specsOf(w, ["a"]), span: SPAN, cwd: w.work }, ops)).code, 2, bad);
+  }
+});
+
+test("RED: the in-flight gate asks every active status, not the newest five", () => {
+  const asked = [];
+  const gh = (args) => { asked.push(args[args.indexOf("--status") + 1]); return args[args.indexOf("--status") + 1] === "in_progress" ? [{ status: "in_progress" }] : []; };
+  const runs = activeRuns(gh, "span");
+  assert.deepEqual(asked, ACTIVE_STATUSES);
+  assert.ok(ACTIVE_STATUSES.includes("queued") && ACTIVE_STATUSES.includes("in_progress") && ACTIVE_STATUSES.includes("waiting") && ACTIVE_STATUSES.includes("pending") && ACTIVE_STATUSES.includes("requested"));
+  assert.equal(runs.length, 1);
+});
+
+test("RED: every gh call binds to the repo origin names, under the passwd home (a GH_REPO or scratch HOME elsewhere changes nothing)", () => {
+  assert.equal(repoOfRemote("git@github.com:amorphous-dreams/Synthetic-Dream-Machine.git"), "amorphous-dreams/Synthetic-Dream-Machine");
+  assert.equal(repoOfRemote("https://github.com/amorphous-dreams/Synthetic-Dream-Machine"), "amorphous-dreams/Synthetic-Dream-Machine");
+  assert.equal(repoOfRemote("https://github.com/o/r.git/"), "o/r");
+  assert.throws(() => repoOfRemote("/local/path"), /GitHub/);
+  const e = ghEnv({ GH_REPO: "other/fork", HOME: "/scratch/home", PATH: "/bin" }, "/home/real", "o/r");
+  assert.equal(e.GH_REPO, "o/r");
+  assert.equal(e.HOME, "/home/real");
+  assert.equal(e.PATH, "/bin");
+});
+
+test("RED: the verdict adapter reads the child's exit code: 4 with no words is UNREADABLE both, never unread", () => {
+  assert.deepEqual(verdictWords("", 4), { ci: "unreadable", heldOut: "unreadable" });
+  assert.deepEqual(verdictWords("ci-verdict: UNREADABLE for aaaaaaaaa — x\nheld-out: UNREADABLE for aaaaaaaaa — y\n", 4), { ci: "unreadable", heldOut: "unreadable" });
+  assert.deepEqual(verdictWords("ci-verdict: GREEN for a\nheld-out: GREEN for a\n", 0), { ci: "green", heldOut: "green" });
+  assert.deepEqual(verdictWords("ci-verdict: branch ci-verdict: GREEN\nci-verdict: RED for a — x\nheld-out: UNREAD for a", 1), { ci: "red", heldOut: "unread" });
+  assert.deepEqual(verdictWords("", 3), { ci: "unread", heldOut: "unread" });
 });
