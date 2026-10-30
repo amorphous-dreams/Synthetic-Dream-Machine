@@ -33,6 +33,47 @@ def _arms(spatial):
     return names
 
 
+def goal_contrasts(spatial, records):
+    """Attribute constructive consequences to each original authored goal.
+
+    Compare the complete aim with the same goal alone (and the control
+    omitting it). A contrast records observed status, never aesthetic or
+    architectural synergy, causal certainty or automatic choice.
+    """
+    if len(records)!=len(_arms(spatial)):
+        raise ValueError("Compound contrast needs the complete original arm set")
+    rows=dict((row["arm_id"],row) for row in records)
+    if len(rows)!=len(records) or set(rows)!={name for name,_ in _arms(spatial)}:
+        raise ValueError("Compound contrast lost an original attributed arm")
+    def witness(arm,goal):
+        row=rows[arm]
+        evidence=row["native_evidence"]
+        if evidence is None:
+            return "not-natively-audited"
+        matches=[item["status"] for item in evidence["goals"]
+                 if item["goal"]==goal.to_dict()]
+        if len(matches)!=1:
+            raise ValueError("Compound goal evidence does not match the attributed arm")
+        return matches[0]
+    out=[]
+    n=len(spatial.goals)
+    for i,goal in enumerate(spatial.goals):
+        alone=f"only-{i:02d}" if n>2 else f"without-{1-i:02d}"
+        full=witness("full",goal)
+        individual=witness(alone,goal)
+        out.append({"goal_sha256":canonical_json_sha256(goal.to_dict()),
+                    "full_arm":"full",
+                    "single_goal_arm":alone,
+                    "without_goal_arm":f"without-{i:02d}",
+                    "full_native_status":full,
+                    "single_native_status":individual,
+                    "without_goal_state":rows[f"without-{i:02d}"]["state"],
+                    "observed_status_differs":full!=individual,
+                    "causal_synergy_certified":False,
+                    "automatic_operator_selection":False})
+    return out
+
+
 def _manifest(intent,spatial,genome):
     return {"schema":"projection-loom/matched-compound-intent-preregistration",
             "location":intent.location,"intent_sha256":intent.identity,
@@ -89,6 +130,8 @@ def verify_compound_intent_study(root,intent,spatial,genome):
                                   else "spatial-unverified"):
                     raise ValueError("Study arm status diverged from native witness")
         expected.append(row)
+    if receipt.get("intent_goal_contrasts")!=goal_contrasts(spatial,expected):
+        raise ValueError("Compound contrasts diverged from independent native arm witnesses")
     if receipt["arms"]!=expected or receipt["native_attempts"]!=sum(
             x["native_evidence"] is not None for x in expected):
         raise ValueError("Compound study summary changed its native outcomes")
@@ -143,7 +186,8 @@ def run_compound_intent_study(intent:IntentContract,spatial:SpatialIntent,
                 "same_original_native_genome":True,
                 "native_budget_per_arm":1,
                 "native_attempts":sum(x["native_evidence"] is not None for x in records),
-                "arms":records,"automatic_artistic_winner":False,
+                "arms":records,"intent_goal_contrasts":goal_contrasts(spatial,records),
+                "automatic_artistic_winner":False,
                 "automatic_promotion":False}
         save_once(root/"summary.json",report)
         return verify_compound_intent_study(root,intent,spatial,genome)
