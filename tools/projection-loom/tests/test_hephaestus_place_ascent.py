@@ -55,3 +55,38 @@ def test_ascent_campaign_records_native_treads_not_implicit_walkway(tmp_path):
     assert native["descriptor"]["ascent_witness_count"]==1
     assert native["descriptor"]["max_native_route_hops"]==0
     assert native["descriptor"]["native_ascent_risers"][0]["risers"]==3
+
+def test_intent_generates_measurable_interstitial_stair_treads(tmp_path):
+    from projection_loom.place_genome import propose_from_spatial_intent
+    from projection_loom.intent_seed import IntentContract
+    from projection_loom.location_stack import LocationStack,Frame
+    from projection_loom.place_campaign import run_place_campaign
+    authored,old=stair()
+    lower=next(x for x in authored.bodies if x.entity_id=="begin")
+    upper=next(x for x in authored.bodies if x.entity_id=="summit")
+    source=PlaceGenome(tuple(sorted((lower,upper),key=lambda x:x.entity_id)))
+    intent=IntentContract("stairsite","Grow a measured ascent",("rise",))
+    spatial=SpatialIntent(intent.identity,old.goals,"operator")
+    created=propose_from_spatial_intent(source,spatial)
+    assert len(created.ascents)==1 and len(created.ascents[0].steps)>=1
+    assert len(created.bodies)>2
+    assert propose_from_spatial_intent(created,spatial)==created
+    package_scene(created.declaration("stairsite"),tmp_path/"native")
+    witness=assess_place(tmp_path/"native",created,spatial)
+    assert witness["all_declared_goals_witnessed"],witness
+    inventory=LocationStack("stairsite")
+    inventory.add_frame(Frame("authored-local","local3d","model_unit"))
+    campaign=run_place_campaign(inventory,intent,spatial,source,tmp_path/"study",
+                               epochs=1,offspring=1,exact_budget=1)
+    assert campaign["admitted"]==1
+
+
+def test_intent_refuses_a_diagonal_ascending_shortcut():
+    from projection_loom.place_genome import propose_from_spatial_intent
+    authored,goal=stair()
+    lower=next(x for x in authored.bodies if x.entity_id=="begin")
+    upper=next(x for x in authored.bodies if x.entity_id=="summit")
+    shifted=PlaceBody("summit",upper.program,(9,1,0))
+    source=PlaceGenome(tuple(sorted((lower,shifted),key=lambda x:x.entity_id)))
+    with pytest.raises(ValueError,match="aligned horizontal"):
+        propose_from_spatial_intent(source,goal)

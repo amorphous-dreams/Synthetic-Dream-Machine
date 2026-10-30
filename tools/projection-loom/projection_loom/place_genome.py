@@ -183,7 +183,61 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
         raise ValueError("Spatial construction requires typed inputs")
     bodies=list(genome.bodies)
     routes=list(genome.walkways)
+    ascents=list(genome.ascents)
     for i,goal in enumerate(spatial.goals):
+        if goal.kind=="ascend":
+            if any(a.source==goal.subject and a.destination==goal.object
+                   for a in ascents):
+                continue  # Preserve previously authored native path.
+            known={b.entity_id:b for b in bodies}
+            if goal.subject not in known or goal.object not in known:
+                raise ValueError("Intent-grown ascent requires two original named native endpoints")
+            lower,upper=known[goal.subject],known[goal.object]
+            if (len(lower.program.nodes)!=1 or len(upper.program.nodes)!=1
+                    or lower.program.nodes[0].op!="foundation"
+                    or upper.program.nodes[0].op!="foundation"):
+                raise ValueError("Intent-grown stair requires two simple original foundation sites")
+            ap,bp=lower.program.nodes[0].size,upper.program.nodes[0].size
+            top0=lower.translation[2]+ap[2]
+            top1=upper.translation[2]+bp[2]
+            rise=top1-top0
+            if rise<=.001:
+                raise ValueError("Ascend requires a higher destination native top face")
+            from math import ceil
+            intervals=max(2,ceil(rise/goal.max_step))
+            if intervals>9 or len(bodies)+intervals-1>16:
+                raise ValueError("Bounded stair generation cannot satisfy authored rise")
+            horizontal=[upper.translation[j]-lower.translation[j] for j in (0,1)]
+            axis=0 if abs(horizontal[0])>=abs(horizontal[1]) else 1
+            other=1-axis
+            if abs(horizontal[other])>1e-7:
+                raise ValueError("Constructive ascent needs aligned horizontal site centers")
+            sign=1 if horizontal[axis]>0 else -1
+            spacing=(abs(horizontal[axis])-(ap[axis]+bp[axis])/2)/(intervals-1)
+            width=min(ap[other],bp[other])
+            if sign==0 or spacing<.5 or width<goal.min_width:
+                raise ValueError("Native staircase lacks sufficient ordered horizontal run")
+            bottom_z=min(lower.translation[2],upper.translation[2])
+            names=[]
+            for j in range(1,intervals):
+                name=f"intent_tread_{i:03d}_{j:02d}"
+                if name in known:
+                    raise ValueError("Intent tread name collides with authored native body")
+                along=(lower.translation[axis]+sign*(
+                    ap[axis]/2+spacing/2+(j-1)*spacing))
+                position=[lower.translation[0],lower.translation[1],bottom_z]
+                position[axis]=round(along,6)
+                h=round(top0+rise*j/intervals-bottom_z,6)
+                if h<=0:
+                    raise ValueError("Constructive rising native tread has nonpositive height")
+                dimensions=[spacing,spacing,h]
+                dimensions[other]=width
+                tread=PlaceBody(name,GrowthProgram((GrowthNode(
+                    "root","foundation",size=tuple(dimensions)),)),tuple(position))
+                bodies.append(tread)
+                names.append(name)
+            ascents.append(AscentRun(goal.subject,tuple(names),goal.object))
+            continue
         if goal.kind=="shelter":
             known={b.entity_id:b for b in bodies}
             if goal.object in known:
@@ -247,7 +301,7 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
         routes.append(Walkway(goal.subject,name,goal.object))
     return PlaceGenome(tuple(sorted(bodies,key=lambda x:x.entity_id)),
                        tuple(sorted(routes,key=lambda w:(w.source,w.deck,w.destination))),
-                       genome.ascents)
+                       tuple(sorted(ascents,key=lambda a:(a.source,a.steps,a.destination))))
 
 def unique_walkway_chain(genome:PlaceGenome,subject,destination,*,max_hops=8):
     """Return the one declared directed route, or refuse unresolved choices."""
