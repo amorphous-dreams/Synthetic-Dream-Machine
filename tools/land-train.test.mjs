@@ -4,7 +4,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -81,15 +81,15 @@ const specsOf = (w, only = w.lanes) => only.map((s, i) => `${s}:${100 + i}:${w.h
 /** The injected ops: network, disk and the train are stand-ins; git is real. */
 function opsOf(w, over = {}) {
   const calls = { train: 0, cancelled: [], verdicts: [], removed: [] };
-  const git = (args, o = {}) => sh(o.cwd ?? w.work, ...args);
+  const git = (args, o = {}) => execFileSync("git", args, { cwd: o.cwd ?? w.work, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, ...o.env } }).trim();
   const ops = {
     git,
     verdict: async (branch, sha) => { calls.verdicts.push([branch, sha]); return { ci: "green", heldOut: "green" }; },
     disk: () => ({ cGb: 100, rootGb: 100 }),
     houseWorktrees: () => 1,
-    inFlight: () => 0,
+    spanRuns: () => [],
     cancelRuns: async (branch) => { calls.cancelled.push(branch); return [1]; },
-    readMsg: (p) => (existsSync(p) ? "x" : ""),
+    readMsg: (p) => (existsSync(p) ? readFileSync(p, "utf8") : ""),
     removeWorktree: (wt) => { calls.removed.push(wt); sh(w.work, "worktree", "remove", "--force", wt); },
     sleep: async () => {},
     env: {},
@@ -255,22 +255,21 @@ test("RED: a train chain whose merge order breaks refuses (5); a final tree diff
   assert.equal(originRef(w2, SPAN), w2.base);
 });
 
-test("RED: a failed final-tree check leaves the train worktree standing (K9)", async () => {
+test("RED: a refused chain leaves the train worktree standing (K9): the worktree goes only after the checks pass", async () => {
   const w = world(["a"]);
+  w.commit(w.work, "ahead.txt", "a\n", "span ahead — merge PR #0: an earlier land"); sh(w.work, "push", "-q", "origin", SPAN);
   const r = await run(w, {
     train: async ({ name, lanes, span }) => {
       const wt = join(w.dir, `wt-${name}`);
       sh(w.work, "worktree", "add", "-q", "--detach", wt, `origin/${span}`);
       sh(wt, "-c", "user.name=T", "-c", "user.email=t@t", "merge", "--no-ff", "--no-edit", "-q", `origin/${span}--${lanes[0].suffix}`);
-      // The train head carries a tree the lane's merge does not: a commit on top that edits a file.
-      writeFileSync(join(wt, "README"), "edited after the merge\n"); sh(wt, "add", "-A"); sh(wt, "-c", "user.name=T", "-c", "user.email=t@t", "commit", "-q", "--amend", "--no-edit");
+      writeFileSync(join(wt, "extra.txt"), "x"); sh(wt, "add", "-A"); sh(wt, "-c", "user.name=T", "-c", "user.email=t@t", "commit", "-q", "-m", "after the last merge");
       return { state: "green", worktree: wt, head: sh(wt, "rev-parse", "HEAD") };
     },
   }, {}, ["a"]);
-  // amending the merge keeps one merge commit whose tree IS the train tree, so this is the chain-vs-head case below the final check;
-  // the worktree must stand on any code-5 exit.
-  assert.notEqual(r.code, 0);
+  assert.equal(r.code, 5, r.out);
   assert.equal(r.calls.removed.length, 0, "a refusal never removes the worktree");
+  assert.ok(existsSync(join(w.dir, "wt-t1")));
 });
 
 test("RED: a conflict reads exit 4 and cleans the train's worktree; a red train reads 5; a provision/build failure reads 7; none pushes", async () => {
@@ -296,7 +295,7 @@ test("RED: the disk floor and the worktree cap refuse (6) before the train", asy
 
 test("RED: the span push waits on no run in flight, checked BEFORE any lane branch moves", async () => {
   const w = world();
-  const r = await run(w, { inFlight: () => 2 });
+  const r = await run(w, { spanRuns: () => [{ status: "in_progress" }, { status: "queued" }] });
   assert.equal(r.code, 6, r.out);
   assert.match(r.out, /2 run\(s\) still in flight/);
   assert.equal(originRef(w, `${SPAN}--a`), w.heads.a, "no lane branch moved");
