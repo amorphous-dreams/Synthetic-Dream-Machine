@@ -53,13 +53,19 @@ def assess_place(bundle,genome:PlaceGenome,spatial:SpatialIntent,*,headroom=1.8)
             continue
         route=routes[0]
         a,b,d=(bounds[x] for x in (route.source,route.destination,route.deck))
-        ac=(a[0]+a[3])/2
-        bc=(b[0]+b[3])/2
-        if ac>=bc or d[0]>ac or d[3]<bc:
-            entry["reason"]="Deck fails to span named endpoints along the supported eastward corridor"
+        centers=tuple(((v[0]+v[3])/2,(v[1]+v[4])/2) for v in (a,b))
+        differences=(centers[1][0]-centers[0][0],centers[1][1]-centers[0][1])
+        axis=0 if abs(differences[0])>=abs(differences[1]) else 1
+        other=1-axis
+        low_main=min(centers[0][axis],centers[1][axis])
+        high_main=max(centers[0][axis],centers[1][axis])
+        if (abs(differences[other])>1e-7 or high_main-low_main<=1
+                or d[axis]>low_main or d[axis+3]<high_main):
+            entry["reason"]="Deck fails to span an axis-aligned, independently authored corridor"
             outcomes.append(entry)
             continue
-        shared_y=max(a[1],b[1],d[1]),min(a[4],b[4],d[4])
+        shared_y=(max(a[other],b[other],d[other]),
+                  min(a[other+3],b[other+3],d[other+3]))
         width=shared_y[1]-shared_y[0]
         rise=max(abs(d[5]-a[5]),abs(d[5]-b[5]))
         if width<goal.min_width or rise>goal.max_step:
@@ -73,13 +79,14 @@ def assess_place(bundle,genome:PlaceGenome,spatial:SpatialIntent,*,headroom=1.8)
             entry["reason"]="Independent native deck bearings refused: "+str(exc)
             outcomes.append(entry)
             continue
-        cy=(shared_y[0]+shared_y[1])/2
-        cx=(ac+bc)/2
-        length=bc-ac
-        # Keep finite headroom strictly above the deck top. STEP solids,
-        # not preview meshes, decide intersecting obstructing material.
-        corridor=cq.Workplane("XY").box(length,goal.min_width,headroom).translate(
-            (cx,cy,d[5]+headroom/2+0.002)).val()
+        mid=[0.,0.,d[5]+headroom/2+0.002]
+        mid[axis]=(low_main+high_main)/2
+        mid[other]=(shared_y[0]+shared_y[1])/2
+        shape=[goal.min_width,goal.min_width,headroom]
+        shape[axis]=high_main-low_main
+        # Native STEP faces and Boolean solids determine clearance; this
+        # limited witness makes no claim for diagonal or sloped traversal.
+        corridor=cq.Workplane("XY").box(*shape).translate(tuple(mid)).val()
         blocked=[]
         for key,body in solids.items():
             if key==route.deck:
@@ -106,6 +113,7 @@ def assess_place(bundle,genome:PlaceGenome,spatial:SpatialIntent,*,headroom=1.8)
                "route_width_lower_bound":float(width),
                "deck_to_endpoint_step_upper_bound":float(rise),
                "agent_headroom":float(headroom),
+               "principal_axis":("x" if axis==0 else "y"),
                "native_clearance_obstructions":0,
                "scope":"native-BRep-contact-and-axis-aligned-agent-corridor-only",
                "load_certification":False,"accessibility_certification":False}

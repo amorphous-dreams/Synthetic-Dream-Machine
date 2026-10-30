@@ -54,3 +54,16 @@ def test_native_affordance_cannot_replay_from_tampered_witness(tmp_path):
     report["goals"][0]["proof"]["native_clearance_obstructions"]=9
     with pytest.raises(ValueError,match="differ from native"):
         verify_place_affordances(tmp_path/"scene",genome,goal,report)
+
+def test_north_south_native_bridge_uses_same_independent_contact_gate(tmp_path):
+    from projection_loom.place_genome import propose_from_spatial_intent
+    genome,goal=fixture()
+    north=PlaceBody("north",genome.bodies[1].program,(0,10,0))
+    south=PlaceBody("south",genome.bodies[2].program,(0,0,0))
+    pair=PlaceGenome((north,south))
+    intent=SpatialIntent(goal.intent_sha256,(SpatialGoal("connect","south","north"),),"operator")
+    proposed=propose_from_spatial_intent(pair,intent)
+    package_scene(proposed.declaration("two-heights"),tmp_path/"ns")
+    evidence=assess_place(tmp_path/"ns",proposed,intent)
+    assert evidence["all_declared_goals_witnessed"]
+    assert evidence["goals"][0]["proof"]["principal_axis"]=="y"

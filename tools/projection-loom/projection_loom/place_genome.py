@@ -138,7 +138,7 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
 
     This narrow constructor consumes an AUTHORED `connect` relationship,
     not prose or imagery. It handles only two single-foundation bodies on
-    equal elevated planes, with finite positive 2D overlap in their y bands.
+    equal elevated planes along one horizontal axis with finite cross-width.
     More complex location configurations remain explicit future work.
     """
     from .spatial_intent import SpatialIntent
@@ -163,19 +163,28 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
         x0,y0,z0=a.translation
         x1,y1,z1=b.translation
         p,q=a.program.nodes[0].size,b.program.nodes[0].size
-        if x1<=x0+1 or abs((z0+p[2])-(z1+q[2]))>1e-7:
-            raise ValueError("Authored crossing currently needs eastward equally elevated supports")
-        low=max(y0-p[1]/2,y1-q[1]/2)
-        high=min(y0+p[1]/2,y1+q[1]/2)
+        delta=(x1-x0,y1-y0)
+        axis=0 if abs(delta[0])>=abs(delta[1]) else 1
+        other=1-axis
+        if (abs(delta[other])>1e-7 or abs(delta[axis])<=1
+                or abs((z0+p[2])-(z1+q[2]))>1e-7):
+            raise ValueError("Authored crossing currently needs one axis-aligned equally elevated support pair")
+        centers=((x0,y0),(x1,y1))
+        low=max(centers[0][other]-p[other]/2,centers[1][other]-q[other]/2)
+        high=min(centers[0][other]+p[other]/2,centers[1][other]+q[other]/2)
         if high-low<goal.min_width or .5>goal.max_step:
             raise ValueError("Authored crossing lacks width or allowed step height")
         name=f"intent_deck_{i:03d}"
         if name in found:
             raise ValueError("Spatial construction would overwrite an existing entity")
-        span=round(x1-x0+min(p[0],q[0]),6)
+        dimension=[0.,0.,.5]
+        dimension[axis]=round(abs(delta[axis])+min(p[axis],q[axis]),6)
+        dimension[other]=round(min(2.,high-low),6)
+        placement=[0.,0.,round(z0+p[2],6)]
+        placement[axis]=round((centers[0][axis]+centers[1][axis])/2,6)
+        placement[other]=round((low+high)/2,6)
         deck=PlaceBody(name,GrowthProgram((GrowthNode("root","foundation",
-            size=(span,round(min(2.,high-low),6),.5)),)),
-            (round((x0+x1)/2,6),round((low+high)/2,6),round(z0+p[2],6)))
+            size=tuple(dimension)),)),tuple(placement))
         bodies.append(deck)
         routes.append(Walkway(goal.subject,name,goal.object))
     return PlaceGenome(tuple(sorted(bodies,key=lambda x:x.entity_id)),
