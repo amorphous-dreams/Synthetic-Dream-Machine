@@ -7,7 +7,7 @@ import argparse
 from pathlib import Path
 from projection_loom.developmental import GrowthNode, GrowthProgram
 from projection_loom.intent_seed import IntentContract
-from projection_loom.location_stack import LocationStack
+from projection_loom.location_stack import LocationStack, Frame
 from projection_loom.spatial_intent import SpatialIntent,SpatialGoal
 from projection_loom.place_genome import PlaceGenome,PlaceBody,Walkway
 from projection_loom.place_campaign import (run_place_campaign, review_place_candidate,
@@ -29,6 +29,7 @@ def main(argv=None):
                           ("authored-route","source-honesty"))
     spatial=SpatialIntent(intent.identity,(SpatialGoal("connect","west","east",.8,1.1),),"fire-and-operator")
     source=LocationStack(intent.location)
+    source.add_frame(Frame("authored-local","local3d","model_unit"))
     summary=run_place_campaign(source,intent,spatial,original,a.out,
                                epochs=2,offspring=3,exact_budget=2,seed=41)
     if not summary["admitted"]:

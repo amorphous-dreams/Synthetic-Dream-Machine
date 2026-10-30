@@ -3,7 +3,7 @@ import pytest
 from projection_loom.place_campaign import run_place_campaign, verify_place_campaign
 from projection_loom.developmental import GrowthNode,GrowthProgram
 from projection_loom.intent_seed import IntentContract
-from projection_loom.location_stack import LocationStack
+from projection_loom.location_stack import LocationStack, Frame
 from projection_loom.spatial_intent import SpatialGoal,SpatialIntent
 from projection_loom.place_genome import PlaceGenome,PlaceBody,Walkway
 
@@ -16,7 +16,9 @@ def setup():
                        (Walkway("west","deck","east"),))
     intent=IntentContract("place-study","Cross between the heights",("crossing",))
     goal=SpatialIntent(intent.identity,(SpatialGoal("connect","west","east"),),"operator")
-    return LocationStack("place-study"),intent,goal,genome
+    inventory=LocationStack("place-study")
+    inventory.add_frame(Frame("authored-local","local3d","model_unit"))
+    return inventory,intent,goal,genome
 
 def test_spatial_campaign_has_native_locations_and_exact_ooda_ha_reentry(tmp_path):
     inputs=setup()
@@ -94,3 +96,10 @@ def test_abstention_cannot_be_reinterpreted_as_operator_selection(tmp_path):
     with pytest.raises(ValueError,match="operator-accepted"):
         continue_place_campaign(first,review,data[1],data[2],tmp_path/"forbidden",
                                 epochs=1,offspring=1,exact_budget=1)
+
+def test_source_free_implicit_frame_cannot_claim_native_location(tmp_path):
+    _,intent,goal,genome=setup()
+    with pytest.raises(ValueError,match="explicitly authored local3d"):
+        run_place_campaign(LocationStack(intent.location),intent,goal,genome,
+                           tmp_path/"no-frame",epochs=1,offspring=1,exact_budget=1)
+    assert not (tmp_path/"no-frame").exists()

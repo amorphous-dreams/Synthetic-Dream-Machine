@@ -97,6 +97,9 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
             or type(seed) is not int):
         raise ValueError("Bounded matched location experiment budgets required")
     inventory.audit()
+    local=[f for f in inventory.frames.values() if f.kind=="local3d"]
+    if len(local)!=1:
+        raise ValueError("Location campaign requires exactly one explicitly authored local3d frame")
     inventory.verify_source_bytes()
     out=Path(out)
     from .place_genome import propose_from_spatial_intent
