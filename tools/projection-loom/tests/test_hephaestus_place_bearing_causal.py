@@ -40,3 +40,16 @@ def test_native_bearing_gap_refuses_before_causal_workspace_is_created(tmp_path)
         materialize_bearing_support(source,genome,spatial,tmp_path/"forbidden",
                                      actor="operator")
     assert not (tmp_path/"forbidden").exists()
+
+
+def test_causal_bearing_cli_emits_attributed_replayable_native_workspace(tmp_path):
+    from projection_loom.cli import main
+    source,genome,spatial=original(tmp_path)
+    (tmp_path/"genome.json").write_text(json.dumps(genome.to_dict()))
+    (tmp_path/"spatial.json").write_text(json.dumps(spatial.to_dict()))
+    args=["--workspace",str(source),"--genome",str(tmp_path/"genome.json"),
+          "--spatial",str(tmp_path/"spatial.json")]
+    out=tmp_path/"materialized"
+    created=main(["place-bearing-support",*args,"--actor","operator","--out",str(out)])
+    assert not created["load_certification"]
+    assert main(["place-bearing-support-verify",*args,"--causal",str(out)])==created

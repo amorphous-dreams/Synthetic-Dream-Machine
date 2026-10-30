@@ -157,6 +157,17 @@ def main(argv=None):
     p.add_argument('--exact-budget',type=int,default=2)
     p.add_argument('--seed',type=int,default=41)
     p.add_argument('--amendment',type=Path)
+    p=commands.add_parser('place-bearing-support',help='Turn one exact native bearing into a causal support workspace')
+    p.add_argument('--workspace',type=Path,required=True)
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--actor',required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('place-bearing-support-verify',help='Revalidate one exact causal bearing and operator event')
+    p.add_argument('--workspace',type=Path,required=True)
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--causal',type=Path,required=True)
     p=commands.add_parser('place-causal-support',help='Fork independently witnessed deck bearings into native causal location ancestry')
     p.add_argument('--workspace',type=Path,required=True)
     p.add_argument('--genome',type=Path,required=True)
@@ -521,6 +532,19 @@ def main(argv=None):
         else:
             result = validate_variants(args.comparison)
         print(json.dumps(result, indent=2))
+        return result
+    if args.command in ('place-bearing-support','place-bearing-support-verify'):
+        from .place_bearing_causal import materialize_bearing_support,verify_bearing_support
+        from .place_genome import PlaceGenome
+        from .spatial_intent import SpatialIntent
+        genotype=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
+        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        if args.command=='place-bearing-support':
+            result=materialize_bearing_support(args.workspace,genotype,spatial,
+                                               args.out,actor=args.actor)
+        else:
+            result=verify_bearing_support(args.workspace,genotype,spatial,args.causal)
+        print(json.dumps(result,indent=2))
         return result
     if args.command in ('place-causal-support','place-causal-support-verify'):
         from .place_causal_support import materialize_crossing_support,verify_crossing_support
