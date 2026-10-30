@@ -1,0 +1,6 @@
+{
+  "title": "$:/plugins/test/library",
+  "type": "application/json",
+  "plugin-type": "plugin",
+  "text": "{\"tiddlers\": {\"$:/plugins/test/library/module.js\": {\"title\": \"$:/plugins/test/library/module.js\", \"type\": \"application/javascript\", \"module-type\": \"library\", \"text\": \"exports.name='x';\"}}}"
+}

@@ -1,12 +1,13 @@
 import { makePortTransport } from "../src/port-transport.js";
 import coreUrl from "../../lararium-tw5/tw5-core/tiddlywikicore-5.5.0-prerelease.js?url";
+import housePlugin from "../../lararium-tw5/plugins/lares-memetic-wikitext.json";
 
 export const lends = () => Object.fromEntries(["global", "Buffer", "process"].map(k => [k, Object.getOwnPropertyDescriptor(globalThis, k)]));
 /**
  * A vessel stub. Each `port:open` and each `port:widen` answers with a snapshot of `chunks` chunks on the portId it names.
  * The first chunk of an open answers at once; the rest wait on `gate` when one stands (a released promise, never a clock).
  */
-export async function rig(options: { gate?: Promise<void>; chunks?: number; refuseWiden?: string; swallowWiden?: boolean } = {}) {
+export async function rig(options: { gate?: Promise<void>; chunks?: number; refuseWiden?: string; swallowWiden?: boolean; sealedRest?: boolean } = {}) {
   const chunks = options.chunks ?? 1;
   const bytes = new Uint8Array(await (await fetch(coreUrl)).arrayBuffer());
   const digest = await crypto.subtle.digest("SHA-256", bytes);
@@ -30,7 +31,8 @@ export async function rig(options: { gate?: Promise<void>; chunks?: number; refu
       return { ok: true as const };
     }, close() {},
   } });
-  const seams = { readInputs: async () => ({ coreBytes: bytes, coreCid, preloadedTiddlers: [] }) };
+  // The house plugin rides as the vessel's own preload (the page's pluginCids carry it); `sealedRest` is the vessel's word, false unless a test stands for a sealed vessel.
+  const seams = { readInputs: async () => ({ coreBytes: bytes, coreCid, preloadedTiddlers: [housePlugin as Record<string, unknown>], sealedRest: options.sealedRest === true }) };
   const options2 = { host, port, inputs: { coreCid: "0".repeat(64), pluginCids: [] }, wikiUri: "wiki", actor: "actor" };
   return { host, port, messages, seams, options: options2, onPlace: (watcher: (msg: Record<string, any>) => void) => { placed.push(watcher); },
     opens: () => messages.filter(m => m.type === "port:open"), widens: () => messages.filter(m => m.type === "port:widen") };
