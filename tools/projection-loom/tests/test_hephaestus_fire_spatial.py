@@ -147,3 +147,45 @@ def test_joint_fire_receipt_rejects_tampered_child_without_accepting_new_source(
     altered["individual_bindings"][1]["original_source_witness_id"]="stale"
     with pytest.raises(ValueError,match="differs"):
         verify_fire_spatial_set(altered,plan2,intent,original())
+
+
+def test_cli_joint_fire_goals_are_direct_place_run_inputs(tmp_path):
+    import json
+    from projection_loom.cli import main
+    native=original()
+    roof=PlaceBody("roof",native.bodies[0].program,(0,0,4))
+    native=PlaceGenome(tuple(sorted((*native.bodies,roof),key=lambda x:x.entity_id)))
+    base=plan()
+    core={k:v for k,v in base.items() if k!="sha256"}
+    core["resolved"]={"a":"west","b":"east","c":"roof"}
+    core["alternatives"]=[
+        {"id":"a-bridge","relation":"bridges","implementation":"bridge-between",
+         "subject":"a","object":"b"},
+        {"id":"b-cover","relation":"covers","implementation":"overhead-canopy",
+         "subject":"a","object":"c"}]
+    authored={**core,"sha256":canonical_json_sha256(core)}
+    contract=IntentContract("place","Joint Fire-authorized purpose",("bridge","cover"))
+    payload={"location":contract.location,"aim":contract.aim,
+             "objectives":list(contract.objectives),
+             "invariants":list(contract.invariants),
+             "budgets":[list(p) for p in contract.budgets]}
+    for name,content in (("plan",authored),("genome",native.to_dict()),
+                         ("intent",payload)):
+        (tmp_path/(name+".json")).write_text(json.dumps(content))
+    args=["--plan",str(tmp_path/"plan.json"),"--intent",str(tmp_path/"intent.json"),
+          "--genome",str(tmp_path/"genome.json")]
+    receipt=tmp_path/"joint.json"
+    spatial=tmp_path/"spatial.json"
+    result=main(["fire-place-bind-set",*args,
+                 "--alternatives","a-bridge","b-cover","--witness-id","witness-a",
+                 "--actor","operator","--out",str(receipt),
+                 "--spatial-out",str(spatial)])
+    assert SpatialIntent.from_dict(json.loads(spatial.read_text())).identity==result[
+        "spatial_intent_sha256"]
+    assert main(["fire-place-verify-set",*args,
+                 "--binding",str(receipt)])["valid"]
+    with pytest.raises(ValueError,match="unique sorted"):
+        main(["fire-place-bind-set",*args,
+              "--alternatives","b-cover","a-bridge","--witness-id","witness-a",
+              "--actor","operator","--out",str(tmp_path/"nope.json"),
+              "--spatial-out",str(tmp_path/"nope-spatial.json")])

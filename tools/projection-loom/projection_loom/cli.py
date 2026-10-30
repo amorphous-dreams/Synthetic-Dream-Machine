@@ -109,6 +109,21 @@ def main(argv=None):
     p.add_argument('--actor',required=True)
     p.add_argument('--seed-sha256')
     p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('fire-place-bind-set',help='Bind explicitly selected Fire alternatives as one spatial intent')
+    p.add_argument('--plan',type=Path,required=True)
+    p.add_argument('--intent',type=Path,required=True)
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--alternatives',nargs='+',required=True)
+    p.add_argument('--witness-id',required=True)
+    p.add_argument('--actor',required=True)
+    p.add_argument('--seed-sha256')
+    p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--spatial-out',type=Path,required=True)
+    p=commands.add_parser('fire-place-verify-set',help='Independently rebind each selected Fire alternative')
+    p.add_argument('--binding',type=Path,required=True)
+    p.add_argument('--plan',type=Path,required=True)
+    p.add_argument('--intent',type=Path,required=True)
+    p.add_argument('--genome',type=Path,required=True)
     p=commands.add_parser('fire-place-verify',help='Independently verify original Fire/intent/native binding')
     p.add_argument('--binding',type=Path,required=True)
     p.add_argument('--plan',type=Path,required=True)
@@ -529,6 +544,33 @@ def main(argv=None):
             result={'valid':verify_place_comparison(args.campaign,
                 json.loads(args.receipt.read_text(encoding='utf8'))),
                 'automatic_promotion':False}
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command in ('fire-place-bind-set','fire-place-verify-set'):
+        from .fire_spatial import bind_fire_spatial_set,verify_fire_spatial_set
+        from .intent_seed import IntentContract
+        from .place_genome import PlaceGenome
+        from .generalized_campaign import save_once
+        raw=json.loads(args.intent.read_text(encoding='utf8'))
+        if set(raw)!={'location','aim','objectives','invariants','budgets'}:
+            raise ValueError('Fire joint contract requires exact authored fields')
+        intent=IntentContract(raw['location'],raw['aim'],tuple(raw['objectives']),
+                tuple(raw['invariants']),tuple(tuple(x) for x in raw['budgets']))
+        genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
+        plan=json.loads(args.plan.read_text(encoding='utf8'))
+        if args.command=='fire-place-bind-set':
+            if args.out==args.spatial_out:
+                raise ValueError('Original selected Fire receipt and machine intent need separate files')
+            result=bind_fire_spatial_set(plan,intent,genome,
+                alternative_ids=tuple(args.alternatives),
+                source_witness_id=args.witness_id,authored_by=args.actor,
+                seed_sha256=args.seed_sha256)
+            save_once(args.out,result)
+            save_once(args.spatial_out,result['spatial_intent'])
+        else:
+            original=json.loads(args.binding.read_text(encoding='utf8'))
+            result={'valid':verify_fire_spatial_set(original,plan,intent,genome),
+                    'automatic_selection':False,'automatic_promotion':False}
         print(json.dumps(result,indent=2))
         return result
     if args.command in ('fire-place-bind','fire-place-verify'):
