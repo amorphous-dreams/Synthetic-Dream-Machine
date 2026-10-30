@@ -47,3 +47,21 @@ def test_recombination_requires_exact_generated_regions_and_parent_binding():
     row["left_parent_sha256"]="0"*64
     with pytest.raises(ValueError,match="no longer follows"):
         verify_place_recombination(original,left,right,spatial,row)
+
+def test_partial_inheritance_of_two_hop_native_route_is_refused():
+    from projection_loom.place_orthogonal_route import propose_orthogonal_route
+    original,_,right,_=seed()
+    bodies=list(original.bodies)
+    bodies[0]=PlaceBody("east",bodies[0].program,(10,10,0))
+    source=PlaceGenome(tuple(bodies))
+    connect=SpatialGoal("connect","west","east")
+    cover=SpatialGoal("shelter","refuge","roof")
+    aims=SpatialIntent("a"*64,(connect,cover),"operator")
+    left=propose_orthogonal_route(source,
+              SpatialIntent("a"*64,(connect,),"operator"),
+              turn="x-then-y",corner_id="bend")
+    right=propose_from_spatial_intent(source,
+              SpatialIntent("a"*64,(cover,),"operator"))
+    with pytest.raises(ValueError,match="sever"):
+        recombine_place_regions(source,left,right,aims,
+              left_generated=["bend"],right_generated=["roof"])

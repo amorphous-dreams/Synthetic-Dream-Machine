@@ -61,6 +61,8 @@ def verify_recombined_native(root,original,left,right,spatial,*,
             (root/"preregistration.json").read_text(encoding="utf8"))!=pre:
         raise ValueError("Native recombinant preregistration changed its original parent sources or choice")
     child=PlaceGenome.from_dict(proposal["child_genome"])
+    if json.loads((root/"child_genome.json").read_text(encoding="utf8"))!=child.to_dict():
+        raise ValueError("Native recombinant child genotype no longer matches its parent sources")
     expected=_native_row(root,child,spatial,proposal,pre)
     if json.loads((root/"receipt.json").read_text(encoding="utf8"))!=expected:
         raise ValueError("Recombinant child native STEP or spatial proof changed")

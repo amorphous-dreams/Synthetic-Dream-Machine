@@ -29,3 +29,16 @@ def test_recombined_native_refuses_forged_parental_success(tmp_path):
     path.write_text(json.dumps(record))
     with pytest.raises(ValueError,match="native STEP or spatial proof changed"):
         verify_recombined_native(root,original,left,right,aim,**opts)
+
+def test_recombined_genome_file_cannot_be_rewritten_after_audition(tmp_path):
+    original,left,right,aim=seed()
+    root=tmp_path/"child"
+    opts={"location":"recombined-place","left_generated":["intent_deck_000"],
+          "right_generated":["roof"]}
+    run_recombined_native(original,left,right,aim,root,**opts)
+    path=root/"child_genome.json"
+    written=json.loads(path.read_text())
+    written["bodies"][-1]["translation"][0]+=1
+    path.write_text(json.dumps(written))
+    with pytest.raises(ValueError,match="child genotype"):
+        verify_recombined_native(root,original,left,right,aim,**opts)
