@@ -20,9 +20,11 @@
  *       deletion of its row restores it.
  *   S6  RED: a kept file that does not verify (another document under the steward's name, or torn bytes) never lands
  *       on the registry and never throws the read.
- *   S7  RED: each Kahu bag's document DERIVES from the Nexus and the bag (`kahuBagDocUrl`), so every genuine steward seal
- *       names one document: an older seal over another document, alone on the registry with no kept copy, stands for
- *       nothing, and a founding retry registers the derived document again, never a fresh replacement.
+ *   S7  each Kahu bag's document DERIVES from the steward's own per-Nexus leaf over the Nexus and the bag (`kahuBagDocUrl`),
+ *       so every genuine steward seal names one document: an older seal over another document, alone on the registry with
+ *       no kept copy, stands for nothing, and a founding retry registers the derived document again.
+ *   S8  RED: no peer can compute that document before the steward publishes it: a document pre-seeded at the address a
+ *       peer CAN compute from the Nexus and the bag never becomes the canon a founding retry registers.
  */
 import { afterAll, describe, expect, test, vi } from "vitest";
 import { cpSync, existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -32,10 +34,10 @@ import {
   LARARIUM_DOC_URI, LARES_DOC_URI, deterministicDocUrl, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc, foldRealmBags, materializeSharedLarDoc,
   realmBagKey, realmDocUrl, signRealmBagRegistration, writeRealmBagRegistration, type LarDoc, type RealmBagRegistration, type StewardSigner,
 } from "@lararium/mesh";
-import { landKahuRealm, standKahuCanon } from "../src/kahu-realm.js";
+import { kahuBagDocUrl, landKahuRealm, standKahuCanon } from "../src/kahu-realm.js";
 
-/** The derived Kahu document: one per (Nexus, bag), seeded as the realm doc is (`realmDocUrl`). */
-const kahuBagDocUrl = (nexus: string, bag: string): string => deterministicDocUrl(`${bag}#${nexus}`);
+/** The address any peer that knows the Nexus can compute for a bag (the realm doc's own seeding). */
+const publicDocUrl = (nexus: string, bag: string): string => deterministicDocUrl(`${bag}#${nexus}`);
 import { readNexusDoc } from "../src/nexus-doc.js";
 import { mintNexusLeaf } from "../src/nexus-leaf.js";
 import { loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
@@ -174,7 +176,8 @@ describe("the Kahu canon reads only its charter's steward", () => {
 
   test("S7 — the Kahu documents derive from the Nexus: a lone older seal names nothing, and a founding retry mints no replacement", async () => {
     await scene(async ({ repo, aid, sealHome, realm, genuine, stand, keptPath }) => {
-      expect(genuine.docUrl, "the founding registered the derived document").toBe(kahuBagDocUrl(aid, LARES_DOC_URI));
+      const derived = await kahuBagDocUrl(aid, LARES_DOC_URI);
+      expect(genuine.docUrl, "the founding registered the derived document").toBe(derived);
       const leaf = await mintNexusLeaf(0, aid);
       const steward: StewardSigner = { signer: leaf.verifyingKey.toLowerCase(), sign: ed25519SignerFromSeed(leaf.seed) };
       const older = await signRealmBagRegistration({ realmId: aid, bagUri: LARES_DOC_URI, docUrl: await freshDoc(repo), readTier: "contract" }, [steward]);
@@ -182,8 +185,22 @@ describe("the Kahu canon reads only its charter's steward", () => {
       realm.change((d) => writeRealmBagRegistration(d, older, steward.signer, true));
       expect((await stand()).lares, "a lone seal over another document stands for nothing").not.toBe(older.docUrl);
       const landed = await landKahuRealm({ repo, sealHome });
-      expect(landed.docs.lares, "the retry registers the derived document").toBe(kahuBagDocUrl(aid, LARES_DOC_URI));
-      expect((await stand()).lares).toBe(kahuBagDocUrl(aid, LARES_DOC_URI));
+      expect(landed.docs.lares, "the retry registers the derived document").toBe(derived);
+      expect((await stand()).lares).toBe(derived);
+    });
+  });
+
+  test("S8 — a document pre-seeded at the address a peer can compute never becomes the canon", async () => {
+    await scene(async ({ repo, aid, sealHome, realm, genuine, stand, keptPath }) => {
+      const HOSTILE = "lar:///ha.ka.ba/lares/hostile";
+      const squat = await materializeSharedLarDoc(repo, publicDocUrl(aid, LARES_DOC_URI) as never, "squat");
+      squat.change((d) => { d.tiddlers[HOSTILE] = { tiddler: { title: HOSTILE, text: "placed by a peer" } } as never; });
+      rmSync(keptPath(LARES_DOC_URI));
+      realm.change((d) => { delete d.tiddlers[realmBagKey(LARES_DOC_URI, genuine.keptBy[0]!)]; });
+      const landed = await landKahuRealm({ repo, sealHome });
+      expect(landed.docs.lares, "the canon is not the peer-computable document").not.toBe(publicDocUrl(aid, LARES_DOC_URI));
+      expect((await repo.find<LarDoc>(landed.docs.lares)).doc()?.tiddlers?.[HOSTILE], "no peer-placed record mounts as canon").toBeUndefined();
+      expect((await stand()).lares).toBe(landed.docs.lares);
     });
   });
 });
