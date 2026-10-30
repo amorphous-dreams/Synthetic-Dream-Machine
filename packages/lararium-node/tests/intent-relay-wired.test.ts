@@ -151,7 +151,7 @@ test("RED: a locked face resolves no relay face; CONTROL: the same face resolves
 test("RED: a broken sibling anchor does not hide a healthy relay face; CONTROL: healthy rows resolve and an unknown group does not", async () => {
   await withLarRoot(ROOT, async () => {
     await openTestCustody();
-    const repo = new Repo({ network: [] });
+    const adapter = new DurableNodeFSStorageAdapter(storage), repo = new Repo({ storage: adapter, network: [] });
     try {
       const indexes = await identityAnchors.listAnchoredPersonas();
       const realLoad = identityAnchors.loadIdentityAnchors;
@@ -166,7 +166,7 @@ test("RED: a broken sibling anchor does not hide a healthy relay face; CONTROL: 
       expect(face?.group).toBe(group);
       // The admission handler loads the face again: a malformed sibling row must not turn every admission into a fault.
       expect(await face?.admit({})).not.toEqual({ status: "refused", refusal: "fault" });
-    } finally { vi.restoreAllMocks(); await repo.shutdown(); }
+    } finally { vi.restoreAllMocks(); await repo.shutdown(); await adapter.close(); }
   });
 }, 240_000);
 
