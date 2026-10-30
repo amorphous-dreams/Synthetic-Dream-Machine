@@ -12,7 +12,7 @@ import {
 } from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { listAnchoredPersonas, loadIdentityAnchors } from "../identity-anchors.js";
-import { KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
+import { KeyhiveProvider, InMemoryEventStore, faceJoinNonce } from "@lararium/keyhive";
 import { loadVeilArchive } from "../identity-anchors.js";
 import { loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";
@@ -165,7 +165,7 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
         let args = opts.args, nonce = opts.nonce, audience: IntentAudience;
         if (opts.verb === "face-join") {
           // A joinee asks the face's founding hearth to seat it: the request carries this vessel's own ContactCard and complete
-          // device edge, pins the hearth, and takes the joinee's atom key as nonce so a replay keeps one intent id.
+          // device edge, pins the hearth, and takes the face-join nonce (the atom and the pin) so a replay keeps one intent id.
           const hearth = projection.admissions[0]?.deviceKey;
           if (!named && !hearth) throw new IntentRefused("hearth-absent: the face's log names no founding hearth; name one with --to");
           audience = named ? intentAudience(opts) : { mode: "pinned", atom: hearth! };
@@ -182,7 +182,7 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
             try { contactCard = new TextDecoder().decode(await khp.contactCard()); } finally { await khp.dispose(); }
             args = { summons: { contactCard, deviceEdge: anchors.deviceEdge } };
           }
-          nonce ??= atom.key;
+          nonce ??= faceJoinNonce(atom.key, audience);
         } else audience = intentAudience(opts);
         entry = await buildIntent({ group, signer, verb: opts.verb, args: args ?? {}, nonce: nonce ?? randomBytes(16).toString("hex"), audience, bound, verbs });
         break;

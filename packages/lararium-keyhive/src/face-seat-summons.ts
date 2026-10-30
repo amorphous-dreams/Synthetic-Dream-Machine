@@ -3,8 +3,8 @@
  *
  * The person's `fleet join` is the intent ("join = intent; idempotent", ruled 2026-10-29 on the Founding Walk, W4): once the
  * join landed, the leaf's daemon island carries that act out by issuing the one `face-join` summons on the face's intents
- * plane, pinned to the founding hearth, which answers through its intent door (`faceJoinEffect`). Before this, nothing in
- * a browser leaf issued the summons, and a node joinee needed a hand step (`lares intent issue face-join`).
+ * plane, pinned to the founding hearth, which answers through its intent door (`faceJoinEffect`). A browser leaf and a node
+ * joinee carry it out alike, with no hand step (`lares intent issue face-join` stays the person's own road).
  *
  * The binds, each a named answer and never a write:
  *   · `seated`    — the veil already knows the group: nothing to summon;
@@ -60,8 +60,8 @@ export function standingOfReading(reading: "clear" | "aside" | "owing" | "return
 
 /**
  * A summons of `issuer` that still stands: open or answered, never void, never one the hearth refused, and pinned to
- * `hearth` where one is named: a summons pinned elsewhere (a mispin before this reading) stands for nothing, so the
- * leaf issues one pinned right beside it; the hearth refuses the mispinned one by its own fence.
+ * `hearth` where one is named: a summons pinned elsewhere stands for nothing, so the leaf issues one pinned right beside
+ * it as its own intent (`faceJoinNonce`); the hearth refuses the mispinned one by its own fence.
  */
 export function standingOwnSummons(view: IntentView, issuer: string, hearth?: string): boolean {
   const own = issuer.toLowerCase();
