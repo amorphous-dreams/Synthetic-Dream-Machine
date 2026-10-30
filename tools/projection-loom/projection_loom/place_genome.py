@@ -259,7 +259,7 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
         if goal.kind=="ascend":
             if any(a.source==goal.subject and a.destination==goal.object
                    for a in ascents):
-                continue  # Preserve previously authored native path.
+                continue  # Respect the operator's declared native path.
             known={b.entity_id:b for b in bodies}
             if goal.subject not in known or goal.object not in known:
                 raise ValueError("Intent-grown ascent requires two original named native endpoints")
