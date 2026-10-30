@@ -83,7 +83,11 @@ def materialize_crossing_support(source,genome,spatial,destination,*,actor):
 def verify_crossing_support(source,genome,spatial,destination):
     source=Path(source);out=Path(destination)
     record=_json(out/"receipt.json")
-    if (out/"FAILED").exists() or record["schema"]!="projection-loom/native-bridge-causal-binding":
+    if (out/"FAILED").exists()
+            or record.get("schema")!="projection-loom/native-bridge-causal-binding"
+            or record.get("scope")!="two-independent-native-horizontal-bearing-relations"
+            or record.get("automatic_promotion") is not False
+            or record.get("load_certification") is not False):
         raise ValueError("Incomplete or unknown causal bridge receipt")
     body={k:v for k,v in record.items() if k!="sha256"}
     if record["sha256"]!=canonical_json_sha256(body):
@@ -115,6 +119,14 @@ def verify_crossing_support(source,genome,spatial,destination):
                   "verb":"supports","required":True}
         if required not in relation.snapshot()["relations"]:
             raise ValueError("Native bridge lacks its independently attached causal support")
+        proposal=_json(workspace/manifest["paths"]["native_support_proposal"])
+        link=record["links"][number-1]
+        event=proposal["operation_receipt"]["event_id"]
+        if (event!=link["event_id"]
+                or proposal["native_contact"]["sha256"]!=link["native_contact_sha256"]
+                or event not in relation.events
+                or relation.events[event]["operation"]["actor"]!=record["actor_attribution"]):
+            raise ValueError("Causal support actor, event or native contact receipt changed")
         last=verified["workspace_sha256"]
     if last!=record["final_workspace_sha256"]:
         raise ValueError("Final native causal workspace changed")

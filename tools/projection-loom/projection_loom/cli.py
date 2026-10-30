@@ -134,6 +134,17 @@ def main(argv=None):
     p.add_argument('--offspring',type=int,default=3)
     p.add_argument('--exact-budget',type=int,default=2)
     p.add_argument('--seed',type=int,default=41)
+    p=commands.add_parser('place-causal-support',help='Fork independently witnessed deck bearings into native causal location ancestry')
+    p.add_argument('--workspace',type=Path,required=True)
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--actor',required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('place-causal-support-verify',help='Reaudit both exact native deck bearing ancestry receipts')
+    p.add_argument('--workspace',type=Path,required=True)
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--causal',type=Path,required=True)
     p=commands.add_parser('place-gallery',help='Render six synthetic orthographic views from independently verified STEP locations')
     p.add_argument('--campaign',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
@@ -487,6 +498,19 @@ def main(argv=None):
         else:
             result = validate_variants(args.comparison)
         print(json.dumps(result, indent=2))
+        return result
+    if args.command in ('place-causal-support','place-causal-support-verify'):
+        from .place_causal_support import materialize_crossing_support,verify_crossing_support
+        from .place_genome import PlaceGenome
+        from .spatial_intent import SpatialIntent
+        genotype=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
+        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        if args.command=='place-causal-support':
+            result=materialize_crossing_support(args.workspace,genotype,spatial,
+                                                args.out,actor=args.actor)
+        else:
+            result=verify_crossing_support(args.workspace,genotype,spatial,args.causal)
+        print(json.dumps(result,indent=2))
         return result
     if args.command in ('place-gallery','place-gallery-verify'):
         from .place_gallery import render_place_gallery,verify_place_gallery

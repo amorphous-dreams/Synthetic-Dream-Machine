@@ -1,3 +1,27 @@
+## N9 · Aftermath C · Two real supports, two causal islands
+
+A single positively witnessed horizontal deck can now produce
+two separate **native-support causal forks**. The source
+workspace remains unchanged. For each parent/deck pair,
+`propose_support` independently recomputes exact planar
+STEP contact; `support_workspace` forks a new immutable
+workspace with the verified required `supports` relation
+in the existing `RelationalGround`. The second fork
+descends from the first rather than editing the source
+scene or inventing an asynchronous graph.
+
+`place-causal-support` and its independent verifier
+check exact scene/genome/intent digests, original and
+parent workspace ancestry, each native contact SHA,
+the actual attributed causal event, and the two
+required support links. Shelter and ascent hypotheses
+cannot borrow these horizontal face certifications.
+A relation supports a *geometric deck contact*, not
+an engineered load capacity, accessible bridge,
+automatic operator promotion or Elyncia canon.
+
+---
+
 ## N9 · Aftermath B · Two truths across the editor seam
 
 The real Blender import/capture/regenerate/reload scenario now
