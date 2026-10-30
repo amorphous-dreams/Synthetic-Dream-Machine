@@ -48,7 +48,7 @@ def _observation(genome,spatial,selected,native):
     return {"ordered_route_axes":[s["principal_axis"] for s in segments],
             "segment_width_lower_bounds":[s["route_width_lower_bound"] for s in segments],
             "hops":len(segments),
-            "native_scene_sha256":native["scene_sha256"],
+            "native_scene_sha256":native["native_scene_sha256"],
             "body_placements":[{"entity_id":b.entity_id,
                                 "translation":list(b.translation)}
                                for b in genome.bodies]}

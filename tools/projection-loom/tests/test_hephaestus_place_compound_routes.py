@@ -44,3 +44,16 @@ def test_native_comparison_rejects_forged_other_goal_or_turn(tmp_path):
     with pytest.raises(ValueError,match="differs"):
         verify_compound_route_study(original,aim,path,
                               location="compound-place",goal_index=0,corner_id="bend")
+
+def test_compound_bend_native_cli_uses_original_typed_sources(tmp_path):
+    from projection_loom.cli import main
+    site,aim=inputs()
+    (tmp_path/"site.json").write_text(json.dumps(site.to_dict()))
+    (tmp_path/"aim.json").write_text(json.dumps(aim.to_dict()))
+    source=["--genome",str(tmp_path/"site.json"),"--spatial",str(tmp_path/"aim.json"),
+            "--location","compound-place","--goal-index","0","--corner-id","bend"]
+    out=tmp_path/"cli-study"
+    result=main(["place-compound-routes",*source,"--out",str(out)])
+    assert result["native_attempts"]==2
+    assert main(["place-compound-routes-verify",*source,
+                 "--study",str(out)])==result

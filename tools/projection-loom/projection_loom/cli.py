@@ -161,6 +161,20 @@ def main(argv=None):
     p.add_argument('--genome',type=Path,required=True)
     p.add_argument('--spatial',type=Path,required=True)
     p.add_argument('--receipt',type=Path,required=True)
+    p=commands.add_parser('place-compound-routes',help='Audit both named bends under every authored spatial goal through real STEP')
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--goal-index',type=int,required=True)
+    p.add_argument('--corner-id',required=True)
+    p.add_argument('--location',required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('place-compound-routes-verify',help='Reaudit full-goal native witnesses for both attributed bends')
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--goal-index',type=int,required=True)
+    p.add_argument('--corner-id',required=True)
+    p.add_argument('--location',required=True)
+    p.add_argument('--study',type=Path,required=True)
     p=commands.add_parser('place-orthogonal-study',help='Compare two explicitly chosen native right-angle routes')
     p.add_argument('--genome',type=Path,required=True)
     p.add_argument('--spatial',type=Path,required=True)
@@ -718,6 +732,20 @@ def main(argv=None):
             result={'valid':verify_composed_operator_route(genome,spatial,
                 json.loads(args.receipt.read_text(encoding='utf8'))),
                     'automatic_promotion':False}
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command in ('place-compound-routes','place-compound-routes-verify'):
+        from .place_compound_routes import run_compound_route_study,verify_compound_route_study
+        from .place_genome import PlaceGenome
+        from .spatial_intent import SpatialIntent
+        genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
+        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        options={'location':args.location,'goal_index':args.goal_index,
+                 'corner_id':args.corner_id}
+        if args.command=='place-compound-routes':
+            result=run_compound_route_study(genome,spatial,args.out,**options)
+        else:
+            result=verify_compound_route_study(genome,spatial,args.study,**options)
         print(json.dumps(result,indent=2))
         return result
     if args.command in ('place-orthogonal-study','place-orthogonal-study-verify'):
