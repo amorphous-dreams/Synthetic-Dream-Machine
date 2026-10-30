@@ -38,3 +38,20 @@ def test_broken_or_excessive_native_steps_refuse_ascent(tmp_path,params):
     package_scene(genome.declaration("stairsite"),tmp_path/"scene")
     result=assess_place(tmp_path/"scene",genome,intent)
     assert not result["all_declared_goals_witnessed"]
+
+def test_ascent_campaign_records_native_treads_not_implicit_walkway(tmp_path):
+    from projection_loom.place_campaign import run_place_campaign,observed_place_descriptor
+    from projection_loom.intent_seed import IntentContract
+    from projection_loom.location_stack import LocationStack,Frame
+    genome,old=stair()
+    intent=IntentContract("stairsite","Rise between authored native elevations",("ascent",))
+    goal=SpatialIntent(intent.identity,old.goals,"operator")
+    inventory=LocationStack(intent.location)
+    inventory.add_frame(Frame("author-local","local3d","model_unit"))
+    summary=run_place_campaign(inventory,intent,goal,genome,tmp_path/"study",
+                               epochs=1,offspring=1,exact_budget=1)
+    assert summary["admitted"]==1
+    native=summary["candidates"][0]
+    assert native["descriptor"]["ascent_witness_count"]==1
+    assert native["descriptor"]["max_native_route_hops"]==0
+    assert native["descriptor"]["native_ascent_risers"][0]["risers"]==3

@@ -1,3 +1,27 @@
+## N9 · Aftermath A · A stepped rise does not certify stairs
+
+An operator-authored `AscentRun` lists distinct rising STEP tread entities
+in order. The native ascent witness requires each successive pair to meet
+along a **real planar BRep side face** with positive shared area, climb
+strictly upward by no more than the authored maximum step, preserve a bounded
+crosswise width, and leave empty native headroom over intermediate treads.
+Edge proximity alone cannot pass without exact face intersection.
+
+`geometric-ascent-proposal` records step-by-step native hashes, face-contact
+areas, rise measurements and a no-automatic-promotion boundary. The same
+generator/causal-workspace/observer rechecks the actual STEP scene at admission
+and at replay. This geometric testimony DOES NOT establish accessible stairs,
+run/rise compliance, stable load capacity, safety rails, source survey
+authenticity, or a human route. Native ascent remains operator-authored
+construction for now, not text-generated stairs.
+
+The place phenotype descriptor now preserves ascent witness count, measured
+riser heights and transverse width separately from covered refuge and
+horizontal route families. A positive witness cannot turn one family into
+another, and no scalar spatial complexity selects an artistic winner.
+
+---
+
 ## N9 · Aftermath S · Shelter without invented human occupancy
 
 A `SpatialGoal(shelter, floor, roof)` can now request a bounded **native
