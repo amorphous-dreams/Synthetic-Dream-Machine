@@ -41,10 +41,28 @@ describe("passkey pins", () => {
     expect(() => bindSlot(null, key, { t: 1, pins: [passphrase, passkey(), passkey()] })).toThrow(/duplicate-route/);
     expect(bindSlot(null, key, { t: 1, pins: [passphrase, passkey(), passkey(Uint8Array.of(99))] }).slots[0]!.pins).toHaveLength(3);
   });
-  test("keyslot-passkey-alone-refuses", () => {
+  test("keyslot-passkey-alone-refuses: the TREE never holds a passkey as its only route", () => {
     const key = mintTreeKey();
     expect(() => bindSlot(null, key, { t: 1, pins: [passkey()] })).toThrow(/passkey-alone-refused/);
+    // CONTROL: a passkey slot of its own binds beside a standing passphrase slot (the daily route beside the recovery route).
+    const withPassphrase = bindSlot(null, key, { t: 1, pins: [passphrase] });
+    const both = bindSlot(withPassphrase, key, { t: 1, pins: [passkey()] });
+    expect(both.slots).toHaveLength(2);
+    expect(opens(both, key, [credential()])).toBe(true);
+    expect(opens(both, key, [passphrase])).toBe(true);
+    // CONTROL: the two routes in one slot bind too.
     expect(bindSlot(null, key, { t: 1, pins: [passphrase, passkey()] }).slots).toHaveLength(1);
+  });
+  test("keyslot-passkey-known-answer: a fixed output, salt, slot id, nonce and tree key wrap to one fixed ciphertext", () => {
+    // A deterministic rng stands for the slot id, the pin nonces and the tree key; the wrapped share is then a known answer.
+    let counter = 0;
+    const rng = { getRandomValues: <T extends ArrayBufferView>(view: T): T => { const bytes = new Uint8Array(view.buffer, view.byteOffset, view.byteLength); for (let i = 0; i < bytes.length; i++) bytes[i] = (counter++ * 7 + 3) & 255; return view; } };
+    const key = mintTreeKey(rng);
+    const tree = bindSlot(null, key, { t: 1, pins: [passphrase, passkey()] }, rng);
+    const pin = tree.slots[0]!.pins[1]! as { kind: "passkey"; nonce: string; wrapped: string };
+    expect(pin.kind).toBe("passkey");
+    expect(`${tree.slots[0]!.id}:${pin.nonce}:${pin.wrapped}`).toMatchInlineSnapshot(`"e3eaf1f8ff060d141b222930373e454c:4b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ec:decd493dfd957508207d639dcbaec839e8d476b62743b97fd00cfd16e0969e3e6816b47a7110587c42e641104a6f1a71a8"`);
+    expect(opens(tree, key, [credential()])).toBe(true);
   });
   test("keyslot-passkey-moved-share-does-not-open", () => {
     const { tree, key } = bind(); const slot = tree.slots[0]!; const pin = slot.pins[1]!;

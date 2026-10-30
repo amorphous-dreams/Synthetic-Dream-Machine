@@ -444,7 +444,7 @@ export function withCustodyRows<T>(idbName: string, body: (rows: CustodyRowsAct)
 
 export type BrowserCustodyStatus =
   | { readonly reading: "clear" }
-  | { readonly reading: "sealed"; readonly unlocked: boolean; readonly slots: readonly { readonly id: string; readonly t: number; readonly kinds: readonly ("passphrase" | "paper")[] }[] }
+  | { readonly reading: "sealed"; readonly unlocked: boolean; readonly slots: readonly { readonly id: string; readonly t: number; readonly kinds: readonly ("passphrase" | "paper" | "passkey")[] }[] }
   | { readonly reading: "unreadable"; readonly why: string };
 
 /** What the keystore's custody reads as: clear, sealed (and whether this page holds an unlock), or unreadable. */
