@@ -1,3 +1,28 @@
+## N9 · Intent aftermath · Operator sees the birth before CAD
+
+`place-intent-preview` now reconstructs the SAME bounded, typed
+architectural construction proposal used by the native place runner.
+It records the original `IntentContract` and `SpatialIntent`
+digests, all original independent body handles, the exact proposed
+genome digest, newly born native body programs and placements, and
+added support/walkway/ascent relations. It refuses any constructor
+that rewrites or deletes original authored bodies or relations.
+
+This operation deliberately stops **before** STEP: every declared goal
+retains status `native-audition-required`. The receipt cannot certify
+contact, structural load, accessible circulation, independent source
+measurements, an artistic winner or canon. The corresponding
+`place-intent-preview-verify` reconstructs the proposal from unchanged
+source inputs rather than trusting a copy of the proposed JSON.
+
+This closes the pre-audition operator review seam without adding a
+text-to-CAD daemon or a competing phase controller. The registered
+Fire/Art Sigil authority remains with the operator's explicit
+interpretation; the actual OODA-HA session and native geometry still
+decide independent construction acceptance.
+
+---
+
 ## N9-SB · Intent aftermath: perimeter contact preserves a central refuge core
 
 One `bear` goal can produce a physically grounded *contact geometry*:
