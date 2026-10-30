@@ -122,6 +122,13 @@ class PlaceGenome:
             nodes=list(body.program.nodes)
             root=nodes[0]
             factor=round(rng.uniform(.82,1.18),6)
-            nodes[0]=replace(root,size=(root.size[0],max(0.5,round(root.size[1]*factor,6)),root.size[2]))
-            bodies[i]=replace(body,program=GrowthProgram(tuple(nodes)))
+            if rng.choice(("width","lane"))=="width":
+                nodes[0]=replace(root,size=(root.size[0],
+                                  max(0.5,round(root.size[1]*factor,6)),root.size[2]))
+                bodies[i]=replace(body,program=GrowthProgram(tuple(nodes)))
+            else:
+                offset=round(rng.uniform(-0.55,0.55),6)
+                place=(body.translation[0],round(body.translation[1]+offset,6),
+                       body.translation[2])
+                bodies[i]=replace(body,translation=place)
         return PlaceGenome(tuple(bodies),self.walkways)

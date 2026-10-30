@@ -40,3 +40,27 @@ Every N8 claim requires exact-head CI; no new pet-name, canon promotion,
 Unreal Editor success, physical certification or implicit PR merge follows.
 
 Experiment anchor: `tests/test_hephaestus_place_affordances.py`.
+
+## N8 · Aftermath II · Source to generation without a shadow controller
+
+The current campaign runner calls the existing `OODAHAJournal`; it does not
+install a model interpreter, new five-phase authority, or one-run camera score.
+An `IntentContract` authorizes the run identity, a separately authored spatial
+binding constrains construction, and each accepted `PlaceGenome` regrows from
+its own immutable program into a source/causal/native `location_workspace`.
+The inherited place contains independent solids, not one bogus global union.
+
+`spatial_niches` and individually attributed candidate receipts preserve
+several geometrically distinct interpretations. Morphology does not grant
+truth: every descendant independently undergoes exact STEP bearings and
+bounded corridor headroom. A candidate that lacks a complete spatial witness
+keeps `spatial-unverified` status instead of receiving a visual-loss penalty
+or claiming native failure. An unattempted proposal remains deferred under
+finite budget rather than falsely rejected. The operator chooses what to
+retain; a niche does not select an artistic winner.
+
+Known limits: native route witness currently implements one eastward walkway
+and an axis-aligned agent envelope. The inherited construction grammar still
+uses `foundation/spawn/split/bridge/carve` within each body. The study does
+not infer unobserved real-world scale, certified accessibility, load,
+human experience, or survey truth. A review or export cannot promote canon.

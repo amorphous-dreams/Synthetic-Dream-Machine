@@ -51,6 +51,9 @@ def verify_place_campaign(path):
             verify_place_affordances(workspace/"scene",current,intent,row["affordances"])
     if summary["admitted"]!=sum(x["status"]=="admitted" for x in summary["candidates"]):
         raise ValueError("Location archive admission count changed")
+    if summary["spatial_niches"]!=len({tuple(x["niche"]) for x in summary["candidates"]
+                                      if x["status"]=="admitted"}):
+        raise ValueError("Spatial morphology archive diverged")
     journal=OODAHAJournal(path/"session.json",identity={
         "location":pre["location"],"score_state":"spatial-proposal-native-only",
         "run":pre["run_id"]},initial={},autonomy=1.)
@@ -97,6 +100,7 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
         "location":intent.location,"score_state":"spatial-proposal-native-only",
         "run":pre["run_id"]},initial={},autonomy=1.)
     archive=[]
+    niches=set()
     all_records=[]
     try:
         for epoch in range(epochs):
@@ -138,8 +142,17 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
                                                  folder/"workspace")
                         row["status"]="admitted"
                         row["workspace_sha256"]=witness["sha256"]
-                        archive.append({"genome":candidate,"candidate_id":identifier,
-                                        "witness":evidence})
+                        # Preserve morphology/route niches rather than treating
+                        # every native-valid variation as an automatic elite.
+                        width=evidence["goals"][0]["proof"]["route_width_lower_bound"]
+                        deck_id=candidate.walkways[0].deck
+                        deck=next(body for body in candidate.bodies if body.entity_id==deck_id)
+                        niche=(int(width*2),int((deck.translation[1]+4)*2))
+                        row["niche"]=list(niche)
+                        if niche not in niches:
+                            niches.add(niche)
+                            archive.append({"genome":candidate,"candidate_id":identifier,
+                                            "witness":evidence})
                     else:
                         row["status"]="spatial-unverified"
                         row["reason"]="Original goal lacks full native affordance evidence"
@@ -161,6 +174,7 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
                  "admitted":sum(r["status"]=="admitted" for r in all_records),
                  "distinct_admitted_genomes":len({r["genome_sha256"] for r in all_records
                                             if r["status"]=="admitted"}),
+                 "spatial_niches":len(niches),
                  "operator_winner":None,"automatic_promotion":False}
         save_once(out/"summary.json",summary)
         journal.transition("location","aftermath",{"admitted":summary["admitted"]})
