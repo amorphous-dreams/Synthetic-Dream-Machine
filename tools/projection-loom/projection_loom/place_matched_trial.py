@@ -94,7 +94,7 @@ def verify_matched_architecture(out):
         seen.add(key)
         folder=root/f"seed-{row['seed']}"/row["arm"]
         summary=verify_place_campaign(folder)
-        pre=__import__("json").loads((folder/"pre_registration.json").read_text(encoding="utf8"))
+        pre=json.loads((folder/"pre_registration.json").read_text(encoding="utf8"))
         if (pre["original_genome_sha256"]!=report["original_genome_sha256"]
                 or row["original_genome_sha256"]!=report["original_genome_sha256"]
                 or pre["original_inventory_sha256"]!=report["source_inventory_sha256"]
@@ -103,7 +103,8 @@ def verify_matched_architecture(out):
                 or pre["offspring"]!=report["offspring"]
                 or pre["exact_budget"]!=report["exact_budget"]
                 or pre["spatial_intent_sha256"]!=row["spatial_intent_sha256"]
-                or pre["spatial_intent"]["goals"][0]["kind"]!=row["arm"]):
+                or pre["spatial_intent"]["goals"][0]["kind"]!={
+                    "ascent":"ascend","shelter":"shelter"}[row["arm"]]):
             raise ValueError("Matched original source, goal or native budget was replaced")
         first=next((x for x in summary["candidates"] if x["status"]=="admitted"),None)
         if (first is None or first["genome_sha256"]!=row["native_candidate_sha256"]
