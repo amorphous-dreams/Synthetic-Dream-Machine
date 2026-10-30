@@ -128,3 +128,15 @@ def test_immutable_grammar_source_survives_external_modification_without_promoti
         run_place_campaign(inventory,intent,goal,genome,tmp_path/"corrupt-followup",
                            epochs=1,offspring=1,exact_budget=1)
     assert not (tmp_path/"corrupt-followup").exists()
+
+def test_two_native_builds_keep_distinct_digest_bound_receipts(tmp_path):
+    import json
+    inputs=setup()
+    target=tmp_path/"double-build"
+    report=run_place_campaign(*inputs,target,epochs=1,offspring=1,exact_budget=1)
+    item=report["candidates"][0]
+    assert item["status"]=="admitted"
+    assert item["initial_affordances"]["all_declared_goals_witnessed"]
+    assert item["affordances"]["native_scene_sha256"]==json.loads(
+        (target/"candidates"/item["candidate_id"]/"workspace"/"scene"/"manifest.json").read_text())["sha256"]
+    assert verify_place_campaign(target)==report

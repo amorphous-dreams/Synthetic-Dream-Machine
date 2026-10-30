@@ -61,12 +61,15 @@ def verify_place_campaign(path):
         if receipt!=row or receipt["genome_sha256"]!=PlaceGenome.from_dict(
                 _read(folder/"genome.json")).identity:
             raise ValueError("Candidate ancestry or immutable receipt changed")
+        current=PlaceGenome.from_dict(_read(folder/"genome.json"))
+        first=row.get("initial_affordances")
+        if first is not None:
+            verify_place_affordances(folder/"scene",current,intent,first)
         if row["status"]=="admitted":
             workspace=folder/"workspace"
             verified=verify_workspace(workspace)
             if verified["workspace_sha256"]!=row["workspace_sha256"]:
                 raise ValueError("Location native workspace changed")
-            current=PlaceGenome.from_dict(_read(folder/"genome.json"))
             assert intent.identity==pre["spatial_intent_sha256"]
             verify_place_affordances(workspace/"scene",current,intent,row["affordances"])
     if summary["admitted"]!=sum(x["status"]=="admitted" for x in summary["candidates"]):
@@ -174,16 +177,27 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
                 save_once(folder/"genome.json",candidate.to_dict())
                 row={"candidate_id":identifier,"genome_sha256":candidate.identity,
                      "epoch":epoch,"status":"native-rejected","affordances":None,
-                     "workspace_sha256":None,"reason":None}
+                     "workspace_sha256":None,"reason":None,
+                     "initial_affordances":None}
                 try:
                     package_scene(candidate.declaration(intent.location),folder/"scene")
                     evidence=assess_place(folder/"scene",candidate,spatial)
+                    row["initial_affordances"]=evidence
                     row["affordances"]=evidence
                     if evidence["all_declared_goals_witnessed"]:
-                        # Each admitted offspring becomes an independently
-                        # rehydratable source/causal/native location.
+                        # The rebuilt immutable workspace has its OWN source
+                        # scene digest. Re-audit that actual STEP; do not
+                        # transplant the rehearsal scene's content identity.
                         witness=create_workspace(inventory,candidate.declaration(intent.location),
                                                  folder/"workspace")
+                        final_evidence=assess_place(folder/"workspace"/"scene",
+                                                    candidate,spatial)
+                        if not final_evidence["all_declared_goals_witnessed"]:
+                            raise ValueError("Rebuilt native workspace no longer witnesses authored intent")
+                        if [x["status"] for x in final_evidence["goals"]] != [
+                                x["status"] for x in evidence["goals"]]:
+                            raise ValueError("Native source and immutable workspace disagree on spatial status")
+                        row["affordances"]=final_evidence
                         row["status"]="admitted"
                         row["workspace_sha256"]=witness["sha256"]
                         # Preserve morphology/route niches rather than treating
