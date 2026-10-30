@@ -41,6 +41,17 @@ def _html_board(report):
                  if item["six_view"] else "")
         reason=("<p class='refusal'>"+h(item["reason"])+"</p>"
                 if item["reason"] else "")
+        emission=item["emitter_receipt"]
+        parents=[]
+        for ancestry in emission["ancestors"]:
+            if "left_candidate_id" in ancestry:
+                parents.extend((ancestry["left_candidate_id"],ancestry["right_candidate_id"]))
+            else:
+                parents.append(ancestry["candidate_id"])
+        lineage=("<p class='lineage'>Emitter: "+h(emission["emitter"])+
+                 (" · Native parent candidates: "+h(", ".join(parents)) if parents else "")+
+                 (" · Deferred breeding: "+h(emission["recombination_deferral"])
+                  if emission["recombination_deferral"] else "")+"</p>")
         lines=[]
         for goal in item["goal_consequences"]:
             lines.append("<li>"+h(goal["kind"]+" ("+goal["subject"]+" → "+
@@ -49,10 +60,13 @@ def _html_board(report):
         consequences="<ul>"+"".join(lines)+"</ul>"
         blocks.append("<article><header><strong>"+label+"</strong>"
                       +" <small>"+state+"</small></header>"+picture+
-                      "<p class='metrics'>"+h(metrics)+"</p>"+consequences+
+                      "<p class='metrics'>"+h(metrics)+"</p>"+lineage+consequences+
                       reason+"</article>")
     deferred="".join("<li>"+h(row["candidate_id"])+" (epoch "+
-                     str(row["epoch"])+")</li>" for row in report["deferred"])
+                     str(row["epoch"])+") · "+h(row["emitter_receipt"]["emitter"])+
+                     (" · "+h(row["emitter_receipt"]["recombination_deferral"])
+                      if row["emitter_receipt"]["recombination_deferral"] else "")+
+                     "</li>" for row in report["deferred"])
     return ("""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -114,6 +128,7 @@ def render_place_board(campaign, destination):
                 "epoch":candidate["epoch"],
                 "status":candidate["status"],
                 "genome_sha256":candidate["genome_sha256"],
+                "emitter_receipt":candidate["emitter_receipt"],
                 "body_count":candidate["body_count"],
                 "observed_spatial_descriptor":candidate["observed_spatial_descriptor"],
                 "reason":candidate["reason"],
@@ -129,6 +144,7 @@ def render_place_board(campaign, destination):
               "camera_sha256":gallery["camera_sha256"],
               "admitted":comparison["admitted"],
               "deferred":comparison["deferred_proposals"],
+              "relational_emissions":comparison["relational_emissions"],
               "candidates":rows,
               "illustrations_as_source":False,
               "automatic_artistic_winner":False,

@@ -11,6 +11,9 @@ def test_comparison_reopens_native_finalists_and_keeps_operator_choice_free(tmp_
     run_place_campaign(*data,root,epochs=1,offspring=2,exact_budget=2,seed=23)
     receipt=place_comparison(root,tmp_path/"comparison.json")
     assert len(receipt["candidates"])==2
+    assert all(item["emitter_receipt"]["candidate_genome_sha256"]==item["genome_sha256"]
+               for item in receipt["candidates"])
+    assert receipt["relational_emissions"]["all_offered"]==2
     assert not receipt["automatic_ranking"] and not receipt["automatic_artist_winner"]
     assert receipt["admitted"]>=1
     for item in receipt["candidates"]:

@@ -27,6 +27,7 @@ def place_comparison(campaign,destination):
         folder=root/"candidates"/row["candidate_id"]
         entry={"candidate_id":row["candidate_id"],"status":row["status"],
                "genome_sha256":row["genome_sha256"],
+               "emitter_receipt":row["emitter_receipt"],
                "epoch":row["epoch"],"native_workspace_sha256":row["workspace_sha256"],
                "original_goal_evidence":row["initial_affordances"],
                "final_goal_evidence":row["affordances"],
@@ -53,7 +54,8 @@ def place_comparison(campaign,destination):
                 raise ValueError("Compared spatial evidence points to another native scene")
         items.append(entry)
     deferred=[{"epoch":e,"candidate_id":row["candidate_id"],
-               "genome_sha256":row["genome_sha256"]}
+               "genome_sha256":row["genome_sha256"],
+               "emitter_receipt":row["emitter_receipt"]}
               for e in range(pre["epochs"])
               for row in _load(root/"frontiers"/f"epoch_{e:03d}.json")["offered"]
               if row["audition"]=="deferred"]
@@ -65,6 +67,7 @@ def place_comparison(campaign,destination):
           "admitted":summary["admitted"],"spatial_niches":summary["spatial_niches"],
           "candidates":items,"deferred_proposals":deferred,
           "frontier_sha256":summary["frontier_sha256"],
+          "relational_emissions":summary["relational_emissions"],
           "automatic_ranking":False,
           "automatic_artist_winner":False,"automatic_promotion":False}
     record={**body,"sha256":canonical_json_sha256(body)}

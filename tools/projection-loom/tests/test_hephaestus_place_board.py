@@ -16,6 +16,9 @@ def test_review_board_from_real_source_bound_native_place(tmp_path):
     assert result["candidates"][0]["six_view"]
     assert result["candidates"][0]["native_scene"]["native_step"]
     assert result["candidates"][0]["goal_consequences"][0]["kind"]=="connect"
+    assert result["candidates"][0]["emitter_receipt"]["emitter"]=="initial"
+    assert result["relational_emissions"]["native_attempts"]==1
+    assert "Emitter: initial" in (board/"board.html").read_text()
     assert "Source evidence" in (board/"board.html").read_text()
     assert "geometric-route-proposal" in (board/"board.html").read_text()
     assert "No automatic artistic winner" in (board/"board.html").read_text()
