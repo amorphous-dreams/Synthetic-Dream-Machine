@@ -75,7 +75,8 @@ export function makeSeatSummons(ports: SeatSummonsPorts): { summon(): Promise<Se
     if (!hearth) return "no-hearth";
     const card = await ports.contactCard();
     if (!card) return "no-card";
-    const summons: FaceJoinSummons = { kind: "face-join/v1", contactCard: new TextDecoder().decode(card), deviceEdge: edge };
+    // The summons as the node CLI sends it (`intent.ts`): the card and the edge; the hearth reads no kind off it.
+    const summons: Omit<FaceJoinSummons, "kind"> = { contactCard: new TextDecoder().decode(card), deviceEdge: edge };
     const id = await requestFaceJoin({ group: ports.group, plane: ports.plane, atom: ports.atom, hearthAtom: hearth, summons, verbs: ports.verbs });
     // The line names the intent alone: no key, public or not, rides a log.
     ports.log(`the seat summons issued (${id.slice(0, 12)}…), pinned to the founding hearth`);
