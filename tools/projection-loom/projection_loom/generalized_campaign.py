@@ -19,6 +19,7 @@ from .intent_evolution import (QualityArchive, ScoredCandidate, structural_descr
                                fair_auditions, fixed_inspection_cameras,
                                observe_candidate, multi_fidelity_audit)
 from .fractal_ooda_ha import OODAHAJournal, single_runner
+from .constructive_phases import open_child,close_child
 from .provenance_encoding import canonical_json_sha256
 
 def save_once(path, payload):
@@ -395,22 +396,22 @@ def _run_cohort_locked(adapters,contract:IntentContract,out,*,epochs=3,offspring
         preferred=(held["receipts"]["decide"].get("operator_preferred_emitter")
                    if held and "decide" in held["receipts"]
                    else journal.data["policy"].get("preferred_emitter"))
-        journal.begin(eid,parent="location",scope="epoch",
-                      evidence={"epoch":epoch,"source":run_id},parent_phase="act")
-        journal.transition(eid,"orient",{"source_digest":seeds.identity})
-        journal.transition(eid,"decide",{"exact_budget":exact_budget,
-                                        "operator_preferred_emitter":preferred})
-        journal.transition(eid,"act",{"instruction":"construct, audit, score"})
+        open_child(journal,eid,parent="location",scope="epoch",
+                   evidence={"epoch":epoch,"source":run_id},
+                   orient={"source_digest":seeds.identity},
+                   decide={"exact_budget":exact_budget,
+                           "operator_preferred_emitter":preferred},
+                   act={"instruction":"construct, audit, score"})
         offered=proposals(initial,archive,context,epoch,offspring)
         seats=fair_auditions(offered,exact_budget,preferred_emitter=preferred)
         scored=[]
         for item in seats:
             cid=eid+"/"+item["id"]
-            journal.begin(cid,parent=eid,scope="candidate",
-                          evidence={"program":item["program"].identity},parent_phase="act")
-            journal.transition(cid,"orient",{"kernel":"native"})
-            journal.transition(cid,"decide",{"gate":"strict BRep before score"})
-            journal.transition(cid,"act",{"candidate":item["id"]})
+            open_child(journal,cid,parent=eid,scope="candidate",
+                       evidence={"program":item["program"].identity},
+                       orient={"kernel":"native"},
+                       decide={"gate":"strict BRep before score"},
+                       act={"candidate":item["id"]})
             receipt=out/"receipts"/(item["id"]+".json")
             if receipt.exists():
                 result=json.loads(receipt.read_text(encoding="utf8"))
@@ -420,8 +421,7 @@ def _run_cohort_locked(adapters,contract:IntentContract,out,*,epochs=3,offspring
                 result=(evaluate(item,cameras,alpha,out,registered)
                         if registered else evaluate(item,cameras,alpha,out))
                 save_once(receipt,result)
-            journal.transition(cid,"aftermath",{"state":result["state"]})
-            journal.transition(cid,"closed")
+            close_child(journal,cid,aftermath={"state":result["state"]})
             scored.append(result)
             if result["state"]=="native-valid":
                 prog=GrowthProgram.from_dict({"nodes":result["program"]})
@@ -437,9 +437,8 @@ def _run_cohort_locked(adapters,contract:IntentContract,out,*,epochs=3,offspring
                 "candidates":scored,"archive":archive.receipt()}
         save_once(output,record)
         all_epochs.append(record)
-        journal.transition(eid,"aftermath",{"valid":record["valid"],
+        close_child(journal,eid,aftermath={"valid":record["valid"],
                                            "rejected":record["rejected"]})
-        journal.transition(eid,"closed")
     winners=[]
     for parent in archive.parents()[:finalists]:
         build=compile_growth(parent.program)

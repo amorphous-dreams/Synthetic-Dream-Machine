@@ -18,6 +18,7 @@ from .scene_usd import package_scene
 from .location_workspace import create_workspace, verify_workspace
 from .generalized_campaign import save_once
 from .fractal_ooda_ha import OODAHAJournal
+from .constructive_phases import open_child,close_child
 from .provenance_encoding import canonical_json_sha256
 
 
@@ -220,13 +221,14 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
     try:
         for epoch in range(epochs):
             loop=f"location/place-{epoch:03d}"
-            journal.begin(loop,parent="location",scope="epoch",
-                          evidence={"genome":genome.identity,"spatial":spatial.identity},
-                          parent_phase="act")
-            journal.transition(loop,"orient",{"source":pre["original_inventory_sha256"]})
-            journal.transition(loop,"decide",{"exact_budget":exact_budget,
-                                              "explicit_goal":spatial.identity})
-            journal.transition(loop,"act",{"native":"independent-STEP"})
+            if not journal.poll():
+                raise RuntimeError("Operator pause or review must resolve before native place audition")
+            open_child(journal,loop,parent="location",scope="epoch",
+                       evidence={"genome":genome.identity,"spatial":spatial.identity},
+                       orient={"source":pre["original_inventory_sha256"]},
+                       decide={"exact_budget":exact_budget,
+                               "explicit_goal":spatial.identity},
+                       act={"native":"independent-STEP"})
             offered=[]
             for i in range(offspring):
                 parent=(archive[i%len(archive)]["genome"] if archive else genome)
@@ -235,11 +237,11 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
                 offered.append((f"p{epoch:03d}c{i:03d}",candidate))
             for i,(identifier,candidate) in enumerate(offered[:exact_budget]):
                 loopid=loop+"/"+identifier
-                journal.begin(loopid,parent=loop,scope="candidate",
-                              evidence={"place-genome":candidate.identity},parent_phase="act")
-                journal.transition(loopid,"orient",{"source":pre["original_inventory_sha256"]})
-                journal.transition(loopid,"decide",{"gate":"native-then-spatial"})
-                journal.transition(loopid,"act",{"candidate":identifier})
+                open_child(journal,loopid,parent=loop,scope="candidate",
+                           evidence={"place-genome":candidate.identity},
+                           orient={"source":pre["original_inventory_sha256"]},
+                           decide={"gate":"native-then-spatial"},
+                           act={"candidate":identifier})
                 folder=out/"candidates"/identifier
                 folder.mkdir(parents=True)
                 save_once(folder/"genome.json",candidate.to_dict())
@@ -285,12 +287,10 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
                     row["reason"]=str(exc)
                 save_once(folder/"receipt.json",row)
                 all_records.append(row)
-                journal.transition(loopid,"aftermath",{"status":row["status"]})
-                journal.transition(loopid,"closed")
-            journal.transition(loop,"aftermath",{"admitted":sum(
+                close_child(journal,loopid,aftermath={"status":row["status"]})
+            close_child(journal,loop,aftermath={"admitted":sum(
                 r["status"]=="admitted" and r["epoch"]==epoch for r in all_records),
                 "deferred":offspring-exact_budget})
-            journal.transition(loop,"closed")
         summary={"schema":"projection-loom/place-development-summary",
                  "pre_registration_sha256":canonical_json_sha256(pre),
                  "run_id":pre["run_id"],"candidates":all_records,
