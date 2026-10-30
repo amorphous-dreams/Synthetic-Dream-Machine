@@ -113,3 +113,122 @@ def verify_bearing_support(source,genome,spatial,destination):
             or proposed["native_contact"]["sha256"]!=receipt["native_contact_sha256"]):
         raise ValueError("Materialized bearing event or operator attribution changed")
     return receipt
+
+
+def materialize_bearing_chain(source,genome,spatial,destination,*,actor):
+    """Operator-initiated pair of independent native/causal contact events."""
+    if not isinstance(actor,str) or not actor.strip():
+        raise ValueError("Native column ancestry requires an attributed operator")
+    if not isinstance(genome,PlaceGenome) or not isinstance(spatial,SpatialIntent):
+        raise ValueError("Native column ancestry requires typed original construction")
+    if len(spatial.goals)!=1 or spatial.goals[0].kind!="bear":
+        raise ValueError("Two-step native support needs one original bearing goal")
+    goal=spatial.goals[0]
+    chain=[b for b in genome.bearings
+           if b.lower==goal.subject and b.upper==goal.object]
+    if len(chain)!=1:
+        raise ValueError("Native column must declare exactly one bounded bearing chain")
+    original=Path(source)
+    first=verify_workspace(original)
+    original_manifest=_read(original/"manifest.json")
+    native=original/original_manifest["paths"]["scene"]
+    evidence=assess_place(native,genome,spatial)
+    if (not evidence["all_declared_goals_witnessed"]
+            or evidence["goals"][0]["proof"]["contact_count"]!=2):
+        raise ValueError("Both original native bearing contacts must be independently proven")
+    src_pairs=((chain[0].lower,chain[0].column),
+               (chain[0].column,chain[0].upper))
+    output=Path(destination)
+    if output.exists():
+        raise ValueError("Native column causal handback must use fresh immutable destination")
+    output.mkdir(parents=True)
+    current=original
+    events=[]
+    try:
+        for idx,(lower,upper) in enumerate(src_pairs,1):
+            manifest=_read(current/"manifest.json")
+            scene=current/manifest["paths"]["scene"]
+            ground=RelationalGround.load(current/manifest["paths"]["ground"])
+            proposal=propose_support(ground,scene,lower,upper,actor=actor)
+            target=output/f"support-{idx}"
+            result=support_workspace(current,proposal,target)
+            events.append({"lower":lower,"upper":upper,
+                           "native_contact_sha256":proposal["native_contact"]["sha256"],
+                           "event_id":proposal["operation_receipt"]["event_id"],
+                           "workspace_sha256":result["sha256"]})
+            current=target
+        final=verify_workspace(current)
+        body={"schema":"projection-loom/native-column-causal-chain",
+              "source_workspace_sha256":first["workspace_sha256"],
+              "source_genome_sha256":genome.identity,
+              "spatial_intent_sha256":spatial.identity,
+              "source_native_scene_sha256":evidence["native_scene_sha256"],
+              "actor_attribution":actor,"events":events,
+              "final_workspace_sha256":final["workspace_sha256"],
+              "load_certification":False,"automatic_promotion":False,
+              "claim_scope":"two-independent-native-column-support-events"}
+        receipt={**body,"sha256":canonical_json_sha256(body)}
+        save_once(output/"receipt.json",receipt)
+        return verify_bearing_chain(original,genome,spatial,output)
+    except Exception:
+        (output/"FAILED").write_text("Native column causal chain incomplete\n",encoding="utf8")
+        raise
+
+
+def verify_bearing_chain(source,genome,spatial,destination):
+    original=Path(source);out=Path(destination)
+    report=_read(out/"receipt.json")
+    if ((out/"FAILED").exists()
+            or report.get("schema")!="projection-loom/native-column-causal-chain"
+            or report.get("load_certification") is not False
+            or report.get("automatic_promotion") is not False
+            or report.get("claim_scope")!="two-independent-native-column-support-events"
+            or canonical_json_sha256({k:v for k,v in report.items() if k!="sha256"})
+               !=report.get("sha256")):
+        raise ValueError("Invalid or altered native column causal receipt")
+    if not isinstance(genome,PlaceGenome) or not isinstance(spatial,SpatialIntent):
+        raise ValueError("Original typed native column construction required")
+    if len(spatial.goals)!=1 or spatial.goals[0].kind!="bear":
+        raise ValueError("Native column must keep its unique original bearing goal")
+    goal=spatial.goals[0]
+    matching=[b for b in genome.bearings
+              if b.lower==goal.subject and b.upper==goal.object]
+    if len(matching)!=1 or len(report["events"])!=2:
+        raise ValueError("Native column causal chain lost its two original links")
+    pair=((matching[0].lower,matching[0].column),
+          (matching[0].column,matching[0].upper))
+    first=verify_workspace(original)
+    meta=_read(original/"manifest.json")
+    native=original/meta["paths"]["scene"]
+    evidence=assess_place(native,genome,spatial)
+    if (first["workspace_sha256"]!=report["source_workspace_sha256"]
+            or genome.identity!=report["source_genome_sha256"]
+            or spatial.identity!=report["spatial_intent_sha256"]
+            or not evidence["all_declared_goals_witnessed"]
+            or evidence["native_scene_sha256"]!=report["source_native_scene_sha256"]):
+        raise ValueError("Original native column evidence diverges")
+    prior=first["workspace_sha256"]
+    for idx,(lower,upper) in enumerate(pair,1):
+        path=out/f"support-{idx}"
+        audited=verify_workspace(path)
+        info=_read(path/"manifest.json")
+        row=report["events"][idx-1]
+        scene=path/info["paths"]["scene"]
+        bearing=native_support(scene,lower,upper)
+        ground=RelationalGround.load(path/info["paths"]["ground"])
+        expected={"parent":lower,"child":upper,"verb":"supports","required":True}
+        proposal=_read(path/info["paths"]["native_support_proposal"])
+        event=proposal["operation_receipt"]["event_id"]
+        if (info["parent_workspace_sha256"]!=prior
+                or audited["workspace_sha256"]!=row["workspace_sha256"]
+                or row["lower"]!=lower or row["upper"]!=upper
+                or bearing["sha256"]!=row["native_contact_sha256"]
+                or proposal["native_contact"]["sha256"]!=row["native_contact_sha256"]
+                or event!=row["event_id"] or event not in ground.events
+                or ground.events[event]["operation"]["actor"]!=report["actor_attribution"]
+                or expected not in ground.snapshot()["relations"]):
+            raise ValueError("Native column event, face contact or causal frontier changed")
+        prior=audited["workspace_sha256"]
+    if prior!=report["final_workspace_sha256"]:
+        raise ValueError("Native column final causal evidence changed")
+    return report
