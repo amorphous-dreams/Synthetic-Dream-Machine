@@ -20,16 +20,22 @@
  *       deletion of its row restores it.
  *   S6  RED: a kept file that does not verify (another document under the steward's name, or torn bytes) never lands
  *       on the registry and never throws the read.
+ *   S7  RED: each Kahu bag's document DERIVES from the Nexus and the bag (`kahuBagDocUrl`), so every genuine steward seal
+ *       names one document: an older seal over another document, alone on the registry with no kept copy, stands for
+ *       nothing, and a founding retry registers the derived document again, never a fresh replacement.
  */
 import { afterAll, describe, expect, test, vi } from "vitest";
 import { cpSync, existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  LARARIUM_DOC_URI, LARES_DOC_URI, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc, foldRealmBags, materializeSharedLarDoc,
+  LARARIUM_DOC_URI, LARES_DOC_URI, deterministicDocUrl, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc, foldRealmBags, materializeSharedLarDoc,
   realmBagKey, realmDocUrl, signRealmBagRegistration, writeRealmBagRegistration, type LarDoc, type RealmBagRegistration, type StewardSigner,
 } from "@lararium/mesh";
-import { standKahuCanon } from "../src/kahu-realm.js";
+import { landKahuRealm, standKahuCanon } from "../src/kahu-realm.js";
+
+/** The derived Kahu document: one per (Nexus, bag), seeded as the realm doc is (`realmDocUrl`). */
+const kahuBagDocUrl = (nexus: string, bag: string): string => deterministicDocUrl(`${bag}#${nexus}`);
 import { readNexusDoc } from "../src/nexus-doc.js";
 import { mintNexusLeaf } from "../src/nexus-leaf.js";
 import { loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
@@ -165,4 +171,20 @@ describe("the Kahu canon reads only its charter's steward", () => {
       }
     });
   });
+
+  test("S7 — the Kahu documents derive from the Nexus: a lone older seal names nothing, and a founding retry mints no replacement", async () => {
+    await scene(async ({ repo, aid, sealHome, realm, genuine, stand, keptPath }) => {
+      expect(genuine.docUrl, "the founding registered the derived document").toBe(kahuBagDocUrl(aid, LARES_DOC_URI));
+      const leaf = await mintNexusLeaf(0, aid);
+      const steward: StewardSigner = { signer: leaf.verifyingKey.toLowerCase(), sign: ed25519SignerFromSeed(leaf.seed) };
+      const older = await signRealmBagRegistration({ realmId: aid, bagUri: LARES_DOC_URI, docUrl: await freshDoc(repo), readTier: "contract" }, [steward]);
+      rmSync(keptPath(LARES_DOC_URI));
+      realm.change((d) => writeRealmBagRegistration(d, older, steward.signer, true));
+      expect((await stand()).lares, "a lone seal over another document stands for nothing").not.toBe(older.docUrl);
+      const landed = await landKahuRealm({ repo, sealHome });
+      expect(landed.docs.lares, "the retry registers the derived document").toBe(kahuBagDocUrl(aid, LARES_DOC_URI));
+      expect((await stand()).lares).toBe(kahuBagDocUrl(aid, LARES_DOC_URI));
+    });
+  });
 });
+
