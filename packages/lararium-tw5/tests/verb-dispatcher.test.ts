@@ -143,6 +143,30 @@ describe("VerbDispatcher — redelivered requestId vs. the already-landed outcom
 });
 
 describe("VerbDispatcher — effect dedup (D1)", () => {
+  test("RED (Sol's read, slice 4): a ROUTED verb's replay asks the routed admission too; a refused presenter never reads the prior result", async () => {
+    const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
+    const daemon = makeDaemon();
+    let routed = 0;
+    const registry = new VerbTable();
+    registry.fence({ open: {}, check: (verb, context) => {
+      if (context.presenter !== "did:key:mounted") throw Object.assign(new Error(`${verb}: fenced`), { reason: "content-mounted-only" });
+    } });
+    // Both attempts arrive over the vessel's own channel and address a wiki, so the fence reads their presenters.
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry, localOf: () => true, routeFn: async () => ({ routed: ++routed, secret: "mounted-only" }) });
+    dispatcher.start();
+    dispatcher.placeVerb({ verb: "wiki-act", args: { wiki: "home" }, requestedBy: "did:key:mounted", requestId: "route-1", effectKey: "eff-route" });
+    await settle();
+    expect((await outcomeOf(daemon, "route-1"))?.fields.status).toBe("done");
+    dispatcher.placeVerb({ verb: "wiki-act", args: { wiki: "home" }, requestedBy: "did:key:sibling", requestId: "route-2", effectKey: "eff-route" });
+    await settle();
+    const refused = await outcomeOf(daemon, "route-2");
+    expect(refused?.fields["effect-of"]).toBeUndefined();
+    expect(refused?.fields.status).toBe("error");
+    expect(JSON.stringify(refused?.results ?? {})).not.toContain("mounted-only");
+    expect(routed).toBe(1);
+    dispatcher.stop();
+  });
+
   test("a presenter the table's fence refuses never reads a prior attempt's result through the effect replay; it concludes refused by the fence's name (the mounted control replays)", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
     const daemon = makeDaemon();

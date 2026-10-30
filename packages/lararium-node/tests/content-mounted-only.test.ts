@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { FACE_NEUTRAL_VERBS, operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
-import { VerbTable } from "@lararium/tw5";
+import { VerbDispatcher, VerbTable } from "@lararium/tw5";
 import { standFoundedIsland } from "./stand-founded-island.js";
 import { nodeSealedStoreShore } from "../src/sealed-store-island.js";
 
@@ -30,8 +30,34 @@ async function standTwoFaces() {
   const ctxOf = (presenter?: string, local = false) => ({ daemon: {} as never, invocation: { requestId: "r1", args: {} } as never, cap: async () => ({ ok: true }), local, ...(presenter === undefined ? {} : { presenter }) }) as never;
   const call = (verb: string, presenter: string | undefined, args: Record<string, unknown>, local = false) =>
     Promise.resolve().then(() => registry.get(verb)!(args, ctxOf(presenter, local))).then(() => null, (e: { reason?: string }) => e);
-  return { registry, call, sibling: `0x${b.daemonAuth.atom.key}`, mounted: `0x${a.daemonAuth.atom.key}` };
+  return { registry, call, composite: (a.ctx as any).composite, sibling: `0x${b.daemonAuth.atom.key}`, mounted: `0x${a.daemonAuth.atom.key}` };
 }
+
+test("a routed wiki-act crosses the same presenter fence before routing", async () => {
+  const { registry, composite, sibling, mounted } = await standTwoFaces();
+  const routed: string[] = [];
+  // Both asks arrive over the vessel's own channel: the fence reads the presenter, not the channel, for a sibling's DID.
+  const dispatcher = new VerbDispatcher({ daemon: composite, registry, localOf: () => true, verifier: { verify: async () => ({ ok: true }) },
+    routeFn: async (invocation) => { routed.push(invocation.requestedBy); return {}; } } as never);
+  const invocation = (requestedBy: string) => ({ requestId: requestedBy, title: "t", action: "wiki-act", requestedBy,
+    args: { wiki: "home", verb: "CLEAR", args: { bag: "lar:///ha.ka.ba/wikis/home/working" } } });
+  // CONTROL: a mounted presenter reaches main.
+  await expect((dispatcher as any).runHandler(invocation(mounted))).resolves.toEqual({});
+  expect(routed).toEqual([mounted]);
+  // RED today: the routed path checks only capabilities and skips the table's fence.
+  await expect((dispatcher as any).runHandler(invocation(sibling))).rejects.toMatchObject({ reason: "content-mounted-only" });
+  expect(routed).toEqual([mounted]);
+  // A face row that addresses no wiki acts on the session's own face (the store door reads the face it names), so a
+  // sibling's session routes it: the held-out realm cells feed a second face this way (CI held-out on 64b2018e0).
+  const faceRow = { requestId: "row", title: "t", action: "cabal-face", requestedBy: sibling, args: { realm: "ab".repeat(32), present: true } };
+  await expect((dispatcher as any).runHandler(faceRow)).resolves.toEqual({});
+  expect(routed).toEqual([mounted, sibling]);
+  // A synced ask (not local) routes nothing, even one that claims the mounted face's own atom (Sol's read, slice 4).
+  const synced = new VerbDispatcher({ daemon: composite, registry, localOf: () => false, verifier: { verify: async () => ({ ok: true }) },
+    routeFn: async (invocation) => { routed.push(invocation.requestedBy); return {}; } } as never);
+  await expect((synced as any).runHandler({ ...faceRow, requestId: "row-synced", requestedBy: mounted })).rejects.toMatchObject({ reason: "content-mounted-only" });
+  expect(routed).toEqual([mounted, sibling]);
+});
 
 const SEALED = ["sealed-seal", "sealed-open", "sealed-reading", "sealed-choose-head", "sealed-hand-over", "sealed-admit", "sealed-parcels", "sealed-receive", "sealed-serve", "sealed-memory-cut", "sealed-memory-door", "sealed-memory-import", "sealed-rolls", "seat-duties"];
 // The verbs that close over the mounted face's mint, slot documents or catalog (Aftermath M1 on PR #110).
@@ -49,7 +75,7 @@ test("a content verb refuses a presenter that is not the mounted face, by name",
     // The fence fails closed: a call that names no presenter refuses too.
     expect(await call(verb, undefined, a2), `${verb} no presenter`).toMatchObject({ reason: "content-mounted-only" });
     // CONTROL: the mounted face's call passes the fence (it may refuse for another reason).
-    expect(await call(verb, mounted, a2), `${verb} mounted`).not.toMatchObject({ reason: "content-mounted-only" });
+    expect(await call(verb, mounted, a2, true), `${verb} mounted`).not.toMatchObject({ reason: "content-mounted-only" });
     // A sibling's DID on the vessel's own channel refuses too; the channel lends no face.
     expect(await call(verb, sibling, a2, true), `${verb} local sibling`).toMatchObject({ reason: "content-mounted-only" });
   }

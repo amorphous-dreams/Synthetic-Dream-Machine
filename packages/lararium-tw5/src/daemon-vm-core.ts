@@ -193,6 +193,7 @@ export interface DaemonVmCoreOptions {
 
 /** Unified placeVerb request — union of node + browser fields. */
 export interface VesselPlaceVerbRequest {
+  origin: "channel" | "surface" | "content";
   verb:         string;
   args:         Record<string, unknown>;
   requestedBy?: string;
@@ -334,7 +335,7 @@ export interface DaemonVmCore {
    * vessel wires this to placeVerb, re-entering the dispatcher's verify-then-delegate gate so the verb runs
    * on the main registry (e.g. wiki-switch). Absent → daemon-origin verbs are silently dropped.
    */
-  onVerbEvent: (fn: (e: { verb: string; args: Record<string, unknown>; fromUri?: string; listenable?: string }) => void) => void;
+  onVerbEvent: (fn: (e: { verb: string; args: Record<string, unknown>; origin: "channel" | "surface" | "content"; fromUri?: string; listenable?: string }) => void) => void;
 }
 
 /** The marker a hard `dispose` hands a teardown handshake that stands waiting. */
@@ -362,7 +363,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   let _down: Promise<{ acked: boolean }> | null = null;
   /** Ends a handshake that stands waiting; set while one waits, null otherwise. */
   let _cutDown: (() => void) | null = null;
-  let _verbEventHandler: ((e: { verb: string; args: Record<string, unknown>; fromUri?: string; listenable?: string }) => void) | null = null;
+  let _verbEventHandler: ((e: { verb: string; args: Record<string, unknown>; origin: "channel" | "surface" | "content"; fromUri?: string; listenable?: string }) => void) | null = null;
 
   // ── Vessel composite (cap-event + receipt writes) ──────────────────────────
   const composite  = new CompositeStore();
@@ -516,6 +517,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         const fromUri = typeof ev.payload["fromUri"] === "string" ? (ev.payload["fromUri"] as string) : undefined;
         _verbEventHandler({
           verb,
+          origin: ev.payload["origin"] === "channel" || ev.payload["origin"] === "surface" ? ev.payload["origin"] : "content",
           args:      verbArgsFromPayload(ev.payload),
           ...(fromUri ? { fromUri } : {}),
           listenable: ev.listenable,
@@ -750,6 +752,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     dropFace: (atomKey) => askFace(atomKey, "dropped", mkDaemonFaceDrop(atomKey)),
     placeVerb: (o: VesselPlaceVerbRequest) => {
       worker.post(mkDaemonPlaceVerb({
+        origin:      o.origin,
         verb:        o.verb,
         args:        o.args,
         requestedBy: o.requestedBy ?? "vessel",
@@ -799,7 +802,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     onControlResult: (fn: (result: LarMsg_ControlResult) => void) => {
       _controlResultHandler = fn;
     },
-    onVerbEvent: (fn: (e: { verb: string; args: Record<string, unknown>; fromUri?: string; listenable?: string }) => void) => {
+    onVerbEvent: (fn: (e: { verb: string; args: Record<string, unknown>; origin: "channel" | "surface" | "content"; fromUri?: string; listenable?: string }) => void) => {
       _verbEventHandler = fn;
     },
     sendControlEvent: (ev: LarMsg_ControlEvent) => worker.post(ev),

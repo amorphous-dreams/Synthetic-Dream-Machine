@@ -25,6 +25,10 @@ import { larProjectionDir } from "./vessel-paths.js";
 import { SHORE_VERB, answerShore } from "./shore-verb.js";
 import { bagProjectedEvent } from "./journal-append-gate.js";
 
+export function hostEvent(wikiUri: string, listenable: string, payload: Record<string, string | number | boolean>) {
+  return { type: "event" as const, wikiUri, listenable, payload: { ...payload, origin: "channel" as const } };
+}
+
 /** The projector this island mounted, while it stands. One island runs per worker, so one seat suffices. */
 let mountedProjector: LarDiskProjector | null = null;
 
@@ -146,12 +150,7 @@ export function mountDiskProjection(
   // Disk-ward refusal → the daemon VM (the generic worker.event → placeVerb
   // bridge routes any event whose payload carries `verb`). The daemon audits
   // it durably and injects a $:/tags/Alert into the operator's pinned VM.
-  onRefusal: (info) => ctx.post({
-    type: "event",
-    wikiUri: ctx.wikiUri,
-    listenable: "disk-ward:refused",
-    payload: { verb: "ward-alert", requestedBy: "disk-ward", bagId: info.bagId, uri: info.uri, reason: info.reason },
-  }),
+  onRefusal: (info) => ctx.post(hostEvent(ctx.wikiUri, "disk-ward:refused", { verb: "ward-alert", requestedBy: "disk-ward", bagId: info.bagId, uri: info.uri, reason: info.reason })),
   // The Confluence's projecting leg read a STANDOFF — disk and records both moved past the
   // merge base, so the projector stood down and the divergence must reach the operator
   // (the ruling: conflict-surfacing in BOTH legs). ONE RAIL, NOT A SECOND: it rides the
@@ -159,35 +158,15 @@ export function mountDiskProjection(
   // generalized for (the M3 archive-floor write files here too) — and `wardKind` names the
   // mechanism that actually stood down, so an operator is never sent to the disk ward for
   // a conflict. The wire `kind`/`cause` stay Rail A's transport names, per that ruling.
-  onConflict: (info) => ctx.post({
-    type: "event",
-    wikiUri: ctx.wikiUri,
-    listenable: "confluence:conflict",
-    payload: { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: info.reason, standoff: info.standoff },
-  }),
+  onConflict: (info) => ctx.post(hostEvent(ctx.wikiUri, "confluence:conflict", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: info.reason, standoff: info.standoff })),
   // The standoff the projector surfaced stands resolved: the same rail carries its key with `resolved`,
   // and the alert that key raised clears. No audit row rides a resolution.
-  onConflictResolved: (info) => ctx.post({
-    type: "event",
-    wikiUri: ctx.wikiUri,
-    listenable: "confluence:resolved",
-    payload: { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: "resolved", standoff: info.standoff, resolved: true },
-  }),
+  onConflictResolved: (info) => ctx.post(hostEvent(ctx.wikiUri, "confluence:resolved", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: "resolved", standoff: info.standoff, resolved: true })),
   // A file vanished from the path its base names: the projector wrote nothing back and tombstoned nothing.
   // ONE ALERT PER BAG names the count and rides the same rail under its own ward kind; the set's key names
   // the audit row and the live alert, and the set's end clears it.
-  onPendingRemoval: (info) => ctx.post({
-    type: "event",
-    wikiUri: ctx.wikiUri,
-    listenable: "confluence:pending-removal",
-    payload: { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "pending-removal", bagId: info.bagId, uri: info.uris[0] ?? "(none)", reason: info.reason, standoff: info.key },
-  }),
-  onPendingRemovalResolved: (info) => ctx.post({
-    type: "event",
-    wikiUri: ctx.wikiUri,
-    listenable: "confluence:pending-removal-resolved",
-    payload: { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "pending-removal", bagId: info.bagId, uri: "(none)", reason: "resolved", standoff: info.key, resolved: true },
-  }),
+  onPendingRemoval: (info) => ctx.post(hostEvent(ctx.wikiUri, "confluence:pending-removal", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "pending-removal", bagId: info.bagId, uri: info.uris[0] ?? "(none)", reason: info.reason, standoff: info.key })),
+  onPendingRemovalResolved: (info) => ctx.post(hostEvent(ctx.wikiUri, "confluence:pending-removal-resolved", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "pending-removal", bagId: info.bagId, uri: "(none)", reason: "resolved", standoff: info.key, resolved: true })),
   // THE `remove` ANSWER'S DELETE DOOR: a hand's delete of the carrier root in this island's wiki. The wiki
   // shore carries it like any hand delete: its adaptor routes the tombstone (the working layer, shadowing
   // canon) and removes the slot children.

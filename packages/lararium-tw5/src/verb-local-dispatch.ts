@@ -71,9 +71,20 @@ export function routedInnerBags(invocation: Verb): string[] {
   const bags: string[] = [];
   for (const k of ["to-bag", "from-bag", "bag", "toBag", "fromBag"]) {
     const v = a[k];
-    if (typeof v === "string" && isSystemCanonBag(v) && !bags.includes(v)) bags.push(v);
+    if (typeof v === "string" && !bags.includes(v)) bags.push(v);
   }
   return bags;
+}
+
+/**
+ * True for a routed envelope that addresses a wiki (`wiki-act` names its wiki and carries its act inside `args.args`):
+ * main acts on that wiki's bags under worker trust, so the table's fence asks first. A face row addresses no wiki;
+ * the store door acts on the face its session wears, so a sibling's session routes it.
+ */
+export function routedAddressesWiki(invocation: Verb): boolean {
+  const a = invocation.args as Record<string, unknown>;
+  const inner = a["args"];
+  return typeof a["wiki"] === "string" || (inner !== null && typeof inner === "object" && !Array.isArray(inner));
 }
 
 /**
@@ -89,8 +100,27 @@ export async function gateRoutedVerb(invocation: Verb, verifier: CapabilityVerif
   if (!proof.ok) {
     throw new Error(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bagUrl}, access=${access}): ${proof.reason ?? "no grant"}`);
   }
+  // Every inner bag clears its own cap, its grade read off the act the envelope carries: only a COPY reads its source
+  // (a copy out of canon stays open to a reader); a MOVE deletes at its source, and any other act takes the outer
+  // access. A bag named twice takes the stronger grade.
+  const outer = invocation.args as Record<string, unknown>;
+  const innerArgs = outer["args"];
+  const innerVerb = typeof outer["verb"] === "string" ? (outer["verb"] as string).toUpperCase() : "";
+  const readOnly = new Set<string>();
+  if (innerVerb === "COPY" && innerArgs !== null && typeof innerArgs === "object" && !Array.isArray(innerArgs)) {
+    const a = innerArgs as Record<string, unknown>;
+    const elsewhere = new Set(["to-bag", "bag", "toBag"].map((k) => a[k]).filter((v): v is string => typeof v === "string"));
+    for (const k of ["from-bag", "fromBag"]) { const v = a[k]; if (typeof v === "string" && !elsewhere.has(v)) readOnly.add(v); }
+  }
+  for (const bag of routedInnerBags(invocation)) {
+    if (bag === bagUrl) continue;
+    const need: CapabilityAccess = readOnly.has(bag) ? "read" : access;
+    const inner = await verifier.verify({ presenter, bagUrl: bag, access: need, ...(local ? { channel: "local" as const } : {}) });
+    if (!inner.ok) throw new Error(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bag}, access=${need}): ${inner.reason ?? "no grant"}`);
+  }
   if (verifier.kahuReach) {
-    for (const bag of routedInnerBags(invocation)) await verifier.kahuReach(bag, invocation.action, presenter);
+    // System canon takes the Kahu hand wherever the act writes or deletes; a COPY's read-only source asks none.
+    for (const bag of routedInnerBags(invocation)) if (isSystemCanonBag(bag) && !readOnly.has(bag)) await verifier.kahuReach(bag, invocation.action, presenter);
   }
 }
 

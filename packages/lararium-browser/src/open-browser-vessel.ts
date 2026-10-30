@@ -31,7 +31,7 @@ import {
   LarWSClientAdapter,
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
   leaseEpochPrefix, tiddlerText, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
-  BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeHostFacets, type WikiActivationCap,
+  BAG_IDS, slugFromUri, islandEventAsk, bagStackFromRec, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf, type MeshPeer,
   materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, registerCrossroadsPointer,
@@ -982,7 +982,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     const inRecipe = new Set(recipe);
     const availableBags = [BAG_IDS.lares, BAG_IDS.lararium, BAG_IDS.crossroads]
       .filter((b) => !inRecipe.has(b));
-    void daemon.placeVerb({
+    void daemon.placeVerb({ origin: "channel",
       verb: "switcher-state",
       args: {
         active:        active.join(" "),
@@ -1008,7 +1008,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     const view     = await personaMultitudeView(vault, petnames);   // no publicView → private-only
     const active   = await loadBrowserActivePersona(idbName);
     const custody  = await readBrowserCustody(idbName);
-    void daemon.placeVerb({
+    void daemon.placeVerb({ origin: "channel",
       verb:        "persona-state",
       args:        { ...personaPanelStateArgs(view, active), custody: custody.reading, custodyClears: CLEAR_CUSTODY_CLEARS },
       requestedBy: "persona",
@@ -1023,7 +1023,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // book co-moves onto the circles doc (the open fork). Fired on a follow/unfollow + daemon summon; fire-and-forget.
   const pushCircleState = (circleId = CIRCLE_PANEL_DEFAULT): void => {
     if (!daemon) return;
-    void daemon.placeVerb({ verb: "circle-list", args: { circle: circleId }, requestedBy: "circle" });
+    void daemon.placeVerb({ origin: "channel", verb: "circle-list", args: { circle: circleId }, requestedBy: "circle" });
   };
   // The ONE residency collector + pool-wiring, composed through the SHARED factory (both vessels
   // call it). Browser advertises the MINIMAL grant (a small live-wiki set + one rotatable pin
@@ -1537,7 +1537,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         const active = await wikiActivation.ensureActive(slug);
         if (active) {
           activeSurfaceId = slug;   // flip the projection gate to the now-live wiki
-          void daemon.placeVerb({ verb: "open-wiki", args: { slug }, requestedBy: "wiki-switch" });
+          void daemon.placeVerb({ origin: "channel", verb: "open-wiki", args: { slug }, requestedBy: "wiki-switch" });
           pushSwitcherState();      // reflect the new surface into the daemon widget
         }
         return { verb: "wiki-switch", slug, active, held: [...wikiActivation.held()] };
@@ -1802,14 +1802,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             wikiSense.acceptFrame(_id, msg.payload);
             return;
           }
-          const verb    = typeof msg.payload["verb"]    === "string" ? msg.payload["verb"]    : undefined;
-          const fromUri = typeof msg.payload["fromUri"] === "string" ? msg.payload["fromUri"] : undefined;
-          if (!verb) return;
-          daemon.placeVerb({
-            verb, args: verbArgsFromPayload(msg.payload),   // structured args off the `verb-args` JSON (#48)
-            requestedBy: typeof msg.payload["requestedBy"] === "string" ? msg.payload["requestedBy"] : msg.listenable,
-            listenable: msg.listenable, ...(fromUri ? { fromUri } : {}),
-          });
+          const ask = islandEventAsk(msg.listenable, msg.payload);
+          if (ask) daemon.placeVerb(ask);
         },
         ...(workerScriptUrl ? { workerScriptUrl } : {}),
       });
@@ -1849,8 +1843,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const DAEMON_SURFACE_VERBS_LIVE = true;   // #48 loop-safe dispatch — live
       if (DAEMON_SURFACE_VERBS_LIVE) {
         daemon.onVerbEvent((e) => {
-          void daemon.placeVerb({
-            verb: e.verb, args: e.args, requestedBy: "daemon-surface",
+          void daemon.placeVerb({ 
+            verb: e.verb, args: e.args, requestedBy: "daemon-surface", origin: e.origin,
             ...(e.fromUri ? { fromUri: e.fromUri } : {}),
             ...(e.listenable ? { listenable: e.listenable } : {}),
           });
@@ -1931,7 +1925,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       activeSurfaceId = surfaceId;
       // Its frames dropped at the gate until now: ask it to paint whole under a fresh epoch.
       if (moved) returnLeg.resend(surfaceId);
-      void daemon.placeVerb({
+      void daemon.placeVerb({ origin: "channel",
         verb: "open-wiki",
         args: { slug: surfaceId },
         requestedBy: "summon",

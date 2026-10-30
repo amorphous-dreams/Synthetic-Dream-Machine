@@ -87,7 +87,7 @@ export interface UdsChannelOptions {
    * this channel awaits via `daemonHandle`. For a session call, the seat supplies
    * `requestedBy` from the verified presenter and `face` from the verified proof subject.
    */
-  readonly placeVerb: (o: { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; face?: string; effectKey?: string }) => void;
+  readonly placeVerb: (o: { origin: "channel"; verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; face?: string; effectKey?: string }) => void;
   /** The vessel's claim on its store — the rendezvous socket (`/tmp/lares-<uid>/<digest>.sock`) both sides derive. */
   readonly claim: StoreClaim & { readonly holder: "vessel" };
   /**
@@ -822,6 +822,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   // (the remote-peer transport) would be a pointless content-bloating round-trip.
   const runVerb = async (inv: Invocation, requestId: string): Promise<Record<string, unknown>> => {
     opts.placeVerb({
+      origin: "channel",
       verb:        inv.verb,
       args:        inv.args ?? {},
       requestedBy: inv.requestedBy,
