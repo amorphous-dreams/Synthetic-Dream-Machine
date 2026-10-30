@@ -2018,6 +2018,7 @@ async function prepareNodeBootOn(
     let personaKelChain: ReturnType<ReturnType<typeof makePersonaKelRingHolder>["chainForPrefix"]> = null;
     // THE PLANES A BOOT MAY REGISTER: only a plane a face proof vouched for (`provenPlanes`, declared with the boot's state above).
     let wornFaceProved = false;
+    let wornFaceProjection: Parameters<typeof provenPlaneUrls>[0] | null = null;
     if (personaKelPrefix) {
       // ── THE CLIMB'S CARRY — run BEFORE the gate walks ────────────────────────────────────────
       // A founding seats this inception on the board keyed by the island resolved AT THAT MOMENT, which
@@ -2052,6 +2053,7 @@ async function prepareNodeBootOn(
           planes: { persona: bootstrap.personaUrl, identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl, intents: bootstrap.intentsUrl } });
         if (!proof.ok) throw new Error(`[lararium] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
         wornFaceProved = true;
+        wornFaceProjection = proof.projection;
         wornFaceProven = true;
         provenPlanes.set(personaGroupId, bootstrap.personaUrl);
         // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
@@ -2319,10 +2321,10 @@ async function prepareNodeBootOn(
     // The mounted face's siblings ride the bootstrap under their own derived names; register them beside a PROVEN mounted face.
     const wornFace = wornFaceProved && bootstrap.personaBagId ? personaSiblingBagIds(bootstrap.personaBagId) : null;
     if (wornFace) {
-      registerInCatalog(wornFace.circles,    bootstrap.circlesUrl);
-      registerInCatalog(wornFace.identities, bootstrap.identitiesUrl);
-      registerInCatalog(wornFace.sessions,   bootstrap.sessionsUrl);
-      registerInCatalog(wornFace.intents,    bootstrap.intentsUrl);
+      // The bootstrap file rests in cleartext, so a url read from it proves nothing alone: each sibling registers only as the
+      // face's signed log names it (a sessions url no act names, as on a joined device, stays out of the catalog).
+      const named = wornFaceProjection ? provenPlaneUrls(wornFaceProjection, { circles: bootstrap.circlesUrl ?? null, identities: bootstrap.identitiesUrl ?? null, sessions: bootstrap.sessionsUrl ?? null, intents: bootstrap.intentsUrl ?? null }) : null;
+      if (named) for (const key of ["circles", "identities", "sessions", "intents"] as const) { const url = named[key]; if (url) registerInCatalog(wornFace[key], url); }
     }
     // The selected face's custody standing decides whether its veil archive may leave this
     // composition and whether the island may rest a later export through the same door.
