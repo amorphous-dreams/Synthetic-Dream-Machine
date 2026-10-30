@@ -17,7 +17,7 @@ from .place_affordances import assess_place, verify_place_affordances
 from .scene_usd import package_scene
 from .location_workspace import create_workspace, verify_workspace
 from .generalized_campaign import save_once
-from .fractal_ooda_ha import OODAHAJournal
+from .fractal_ooda_ha import OODAHAJournal, single_runner
 from .constructive_phases import open_child,close_child
 from .provenance_encoding import canonical_json_sha256
 
@@ -151,7 +151,7 @@ def verify_place_campaign(path):
     return summary
 
 
-def run_place_campaign(inventory:LocationStack,intent:IntentContract,
+def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
                        spatial:SpatialIntent,genome:PlaceGenome,out,*,
                        epochs=2,offspring=3,exact_budget=2,seed=41,
                        predecessor=None):
@@ -311,6 +311,24 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
         (out/"FAILED").write_text("Incomplete living-place campaign; not an accepted study\n",
                                  encoding="utf8")
         raise
+
+def run_place_campaign(inventory:LocationStack,intent:IntentContract,
+                       spatial:SpatialIntent,genome:PlaceGenome,out,*,
+                       epochs=2,offspring=3,exact_budget=2,seed=41,
+                       predecessor=None):
+    """Use the existing single-runner lease for native location sessions.
+
+    A sibling lock protects the not-yet-created immutable output directory;
+    creating that output early would violate the first-publication rule.
+    """
+    out=Path(out)
+    out.parent.mkdir(parents=True,exist_ok=True)
+    lock=out.parent/("."+out.name+".session.json")
+    with single_runner(lock):
+        return _run_place_campaign_locked(
+            inventory,intent,spatial,genome,out,epochs=epochs,offspring=offspring,
+            exact_budget=exact_budget,seed=seed,predecessor=predecessor)
+
 
 def review_place_candidate(campaign,candidate_id,*,actor,decision,reason,destination):
     """Explicit operator choice references a real audited location candidate."""

@@ -168,3 +168,17 @@ def test_tampered_spatial_niche_cannot_promote_an_artistically_unrelated_elite(t
     receipt.write_text(json.dumps(doctored))
     with pytest.raises(ValueError):
         verify_place_campaign(study)
+
+def test_native_place_runner_uses_same_single_runner_lease_as_generalized(tmp_path):
+    from projection_loom.fractal_ooda_ha import single_runner
+    inputs=setup()
+    dest=tmp_path/"concurrent-place"
+    sibling=tmp_path/".concurrent-place.session.json"
+    with single_runner(sibling):
+        with pytest.raises(RuntimeError,match="already has a runner"):
+            run_place_campaign(*inputs,dest,epochs=1,offspring=1,exact_budget=1)
+    assert not dest.exists()
+    report=run_place_campaign(*inputs,dest,epochs=1,offspring=1,exact_budget=1)
+    assert report["admitted"]==1
+    assert run_place_campaign(*inputs,dest,epochs=1,offspring=1,exact_budget=1)==report
+    assert not (tmp_path/".concurrent-place.session.runlock").exists()
