@@ -454,6 +454,8 @@ export class VerbDispatcher {
                 console.warn(`[verb-dispatcher] requestId "${invocation.requestId}" (verb "${invocation.action}") redelivered with a changed input digest against its already-landed outcome — skipping re-execution, not re-deriving`);
               }
             }
+            // The redelivery leaves the VM as a concluded verb does, so no stamp rides a standing invocation.
+            removeVerb(this.opts.daemonVm, invocation.title);
             return undefined;
           }
           // Effect dedup (D1): a distinct requestId naming the SAME effect skips the

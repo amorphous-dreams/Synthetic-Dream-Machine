@@ -780,6 +780,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     daemonHandle: result.daemon.daemonHandle,
     composite:    result.daemon.composite,
     placeVerb:    (o) => result.daemon.placeVerb(o),
+    retireAsk:    (requestId) => result.daemon.retireAsk(requestId),
     claim:        floor.storeClaim,
     repo:         result.repo,
     sessions:     result.sessionDoor,

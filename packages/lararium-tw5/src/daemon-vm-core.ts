@@ -21,6 +21,7 @@
  */
 
 import {
+  canonicalJson,
   DAEMON_BAG_ID,
   NoWorkingLayerRefusal,
   WorkingDocumentUnavailableRefusal,
@@ -230,6 +231,8 @@ export interface DaemonVmCore {
   syncLegReady:   () => Promise<string>;
   mountMainVerbs: (registry: VerbTable) => void;
   placeVerb:      (opts: VesselPlaceVerbRequest) => void;
+  /** The ask under this id concluded (its outcome landed, or its caller left): a booking for it lends nothing more. */
+  retireAsk:      (requestId: string) => void;
   lightFace:      (entry: JoinedFaceAuth) => Promise<void>;
   dropFace:       (atomKey: string) => Promise<void>;
   /** FEED one captured turn to the daemon's telemetry capture cap (the nalu). Fire-and-forget.
@@ -355,7 +358,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // book by its request id, never the presenter the delegate names. Only a channel ask carrying a session's face books,
   // and a booking serves ONE delegate of the verb it booked: the first delegate consumes it, so no later ask reusing the
   // id (a summons, a replay) wears the face.
-  const sessionAsks = new Map<string, SessionWorn & { readonly verb: string }>();
+  const sessionAsks = new Map<string, SessionWorn & { readonly act: string }>();
+  // A booking names the exact act its session placed: its verb and its args, so no other invocation under the id wears it.
+  const actOf = (verb: string, args: unknown): string => canonicalJson([verb, JSON.parse(JSON.stringify(args ?? {}))]);
   // Pool eviction mechanism — set via onEvictRequest() after the pool exists.
   let _evictHandler: ((bagId: string) => Promise<void>) | null = null;
   // Residency-op mechanism — set via onResidencyOp() after the manager exists.
@@ -628,7 +633,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       // vessel's own channel). Any other delegate keeps the claim it names and reads non-local.
       const booked = sessionAsks.get(msg.requestId);
       if (booked) sessionAsks.delete(msg.requestId);
-      const worn: SessionWorn | undefined = booked && booked.verb === msg.verb ? { ordinal: booked.ordinal, presenter: booked.presenter } : undefined;
+      const worn: SessionWorn | undefined = booked && booked.act === actOf(msg.verb, msg.args) ? { ordinal: booked.ordinal, presenter: booked.presenter } : undefined;
       const invocationLike = {
         title:       `${DAEMON_BAG_ID}/delegate/${msg.requestId}`,
         requestId:   msg.requestId,
@@ -763,9 +768,10 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       askIsland("binding", (requestId) => mkDaemonResolveBindingRequest({ requestId, fingerprint, recipeTrace, wikiSlug })),
     lightFace: (entry) => askFace(entry.atom.key, "lit", mkDaemonFaceLit(entry)),
     dropFace: (atomKey) => askFace(atomKey, "dropped", mkDaemonFaceDrop(atomKey)),
+    retireAsk: (requestId: string) => { sessionAsks.delete(requestId); },
     placeVerb: (o: VesselPlaceVerbRequest) => {
       if (o.origin === "channel" && o.face && o.requestId && o.requestedBy && o.ordinal !== undefined && Number.isSafeInteger(o.ordinal) && o.ordinal >= 0) {
-        sessionAsks.set(o.requestId, { ordinal: o.ordinal, presenter: o.requestedBy, verb: o.verb });
+        sessionAsks.set(o.requestId, { ordinal: o.ordinal, presenter: o.requestedBy, act: actOf(o.verb, o.args) });
         if (sessionAsks.size > 4096) sessionAsks.delete(sessionAsks.keys().next().value as string);
       }
       worker.post(mkDaemonPlaceVerb({

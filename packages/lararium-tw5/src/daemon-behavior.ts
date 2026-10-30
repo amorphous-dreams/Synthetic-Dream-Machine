@@ -46,7 +46,7 @@ import type { IslandCap } from "./island-caps.js";
 import type { IslandContext, IslandBehavior } from "./island-context.js";
 import type { RunnableHulls } from "@lararium/mesh";
 import { seedDaemonProtocol } from "./daemon-protocol-seed.js";
-import { wikiSlotUri, VERB_URI_PREFIX } from "@lararium/mesh";
+import { canonicalJson, wikiSlotUri, VERB_URI_PREFIX } from "@lararium/mesh";
 
 const WRITE_LAYER_POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 
@@ -195,8 +195,8 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         registry,
         routeFn:  (invocation) => _routeToMain(invocation, post),
         ...(verifier ? { verifier } : {}),
-        ...(opts.presenterOf ? { presenterOf: (inv: Verb) => opts.presenterOf!(inv, localAsks.has(inv.requestId)) } : {}),
-        localOf: (inv: Verb) => localAsks.has(inv.requestId),
+        ...(opts.presenterOf ? { presenterOf: (inv: Verb) => opts.presenterOf!(inv, localAsks.has(inv)) } : {}),
+        localOf: (inv: Verb) => localAsks.has(inv),
       });
       _dispatcher.start();
       // A local id serves its own invocation alone: it retires once the verb concludes and its tiddler leaves the VM.
@@ -266,7 +266,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
             ...(msg.effectKey ? { effectKey:  msg.effectKey             } : {}),
             ...(msg.face      ? { face:       msg.face                  } : {}),
           });
-          if (placedAskIsLocal(msg)) localAsks.add(placed);
+          if (placedAskIsLocal(msg)) localAsks.add({ requestId: placed, action: msg.verb, args: msg.args, requestedBy: msg.requestedBy });
         }
         return true;
       }
@@ -403,23 +403,28 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
   ]);
 }
 
+/** One placed ask, as the local book reads it: its id and the act it names. */
+export interface LocalAsk { readonly requestId: string; readonly action: string; readonly args: unknown; readonly requestedBy: string }
+
 /**
- * THE LOCAL ASKS, by request id, each standing only while its invocation does (Sol's read): an id retires once its verb
- * tiddler leaves the VM, so a later summons reusing it reads as the synced claim it is. Kept to a bound; an evicted id
- * reads non-local, which refuses rather than lends.
+ * THE LOCAL ASKS, each the exact invocation the vessel's channel or a surface leg placed, standing only while it does
+ * (Sol's reads): an id lends locality only to the act placed under it (its verb, its args, its claim), and retires once
+ * its verb tiddler leaves the VM, so a summons reusing or overwriting an id reads as the synced claim it is. Kept to a
+ * bound; an evicted id reads non-local, which refuses rather than lends.
  */
 export function makeLocalAskBook(bound = 4096): {
-  add(requestId: string): void;
-  has(requestId: string): boolean;
+  add(ask: LocalAsk): void;
+  has(ask: LocalAsk): boolean;
   onWikiChange(changes: Record<string, { deleted?: boolean }>): void;
 } {
-  const ids = new Set<string>();
+  const acts = new Map<string, string>();
+  const actOf = (ask: LocalAsk): string => canonicalJson([ask.action, JSON.parse(JSON.stringify(ask.args ?? {})), ask.requestedBy]);
   return {
-    add: (requestId) => { ids.add(requestId); if (ids.size > bound) ids.delete(ids.values().next().value as string); },
-    has: (requestId) => ids.has(requestId),
+    add: (ask) => { acts.delete(ask.requestId); acts.set(ask.requestId, actOf(ask)); if (acts.size > bound) acts.delete(acts.keys().next().value as string); },
+    has: (ask) => acts.get(ask.requestId) === actOf(ask),
     onWikiChange: (changes) => {
       for (const [title, change] of Object.entries(changes)) {
-        if (change?.deleted && title.startsWith(VERB_URI_PREFIX)) ids.delete(title.slice(VERB_URI_PREFIX.length));
+        if (change?.deleted && title.startsWith(VERB_URI_PREFIX)) acts.delete(title.slice(VERB_URI_PREFIX.length));
       }
     },
   };

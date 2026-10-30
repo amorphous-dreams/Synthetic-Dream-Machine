@@ -89,6 +89,8 @@ export interface UdsChannelOptions {
    * `requestedBy` from the verified presenter and `face` from the verified proof subject.
    */
   readonly placeVerb: (o: { origin: "channel"; verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; face?: string; ordinal?: number; effectKey?: string }) => void;
+  /** The ask under this id concluded here (its outcome read, or its wait ended): main's booking for it retires. */
+  readonly retireAsk?: (requestId: string) => void;
   /** The vessel's claim on its store — the rendezvous socket (`/tmp/lares-<uid>/<digest>.sock`) both sides derive. */
   readonly claim: StoreClaim & { readonly holder: "vessel" };
   /**
@@ -827,7 +829,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       ...(inv.face !== undefined && inv.ordinal !== undefined && { ordinal: inv.ordinal }),
       ...(inv.effectKey !== undefined && { effectKey: inv.effectKey }),
     });
-    return awaitOutcome(inv.verb, requestId, inv.timeoutMs);
+    try { return await awaitOutcome(inv.verb, requestId, inv.timeoutMs); }
+    finally { opts.retireAsk?.(requestId); }
   };
 
   /** Answer a `{op:"receipt"}` query (H1, now durable) — a READ, built from the fact ledger plus
