@@ -1,3 +1,34 @@
+## ☕ N9 · Exact-head recovery (source fidelity) · 2026-10-29
+
+First staged multi-goal Fire head `a150ae6d` reported 111
+passing contract tests and two invalid test fixtures: objectives
+`("crossing","cover")` and `("route","rise")` violated the
+existing, deliberate `IntentContract` sorted-unique field law.
+`0dd0db49` repairs test inputs; neither source contract nor
+the authority check changed.
+
+Whole-repository CI at `27ddfd8e` showed one over-budget
+historical narration hit (200 of permitted 199). Comparing
+new source comments since the last green baseline found an added
+`place_genome.py` comment about a "previously authored" path.
+`b02fd480` expresses the real operator-path invariant in the
+present tense; no ceiling was raised, no test excepted. The
+newest hosted CI must confirm the count drops.
+
+Operator amendments `b0895eb6`, `0a1ca226` and
+`17791257` require separate, attributable direction changes
+after accepting a native place. The prior and successor
+preregistration include enough original intent for independent
+replay and native reaudition. One accepted parent does NOT grant
+approval to every later artistic intention.
+
+**Acceptance:** all new exact-head integration, full CAD,
+repository CI and held-out statuses remain independent gates.
+No PR merge, canon promotion, safety certification or automatic
+winner.
+
+---
+
 ## ☕ N9 · Operator intent amendment, build/aftermath cycles R3–R4 · 2026-10-29
 
 **Feature R3:** `place_amendment.py` introduces digest-bound
