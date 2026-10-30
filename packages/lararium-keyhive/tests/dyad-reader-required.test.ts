@@ -24,6 +24,7 @@ describe("the island's dyad consults take a reader or refuse", () => {
     expect(() => requireDyadReader(undefined, "the join gate")).toThrow(/the join gate/);
     expect(() => requireDyadReader(undefined, "the Binding Gate")).toThrow(/the Binding Gate/);
     expect(() => requireDyadReader(undefined, "the content-key seat")).toThrow(/the content-key seat/);
+    expect(() => requireDyadReader(undefined, "the seat summons")).toThrow(/the seat summons/);
   });
 
   test("R2 both consults pass through the guard and none defaults to clear", () => {
@@ -36,6 +37,8 @@ describe("the island's dyad consults take a reader or refuse", () => {
     expect((code.match(/requireDyadReader\(dyadReader\(ctx(?:, \{ \.\.\.daemonAuth, \.\.\.face \})?\), "the Binding Gate"\)\(/g) ?? []).length).toBe(2);
     // The intent door reads a device's standing through the same guard: an island with no reader stalls it as unknown, never as clear.
     expect((code.match(/requireDyadReader\(dyadReader\(ctx\), "the intent door"\)\(/g) ?? []).length).toBe(1);
+    // The seat summons (the joinee's half of the intent door) reads its OWN edge's standing through the same guard: never a summons from an edge set aside.
+    expect((code.match(/requireDyadReader\(dyadReader\(ctx\), "the seat summons"\)\(/g) ?? []).length).toBe(1);
     // The content-key seat reads a seat's standing and its own shadow through the same guard.
     expect((code.match(/requireDyadReader\(dyadReader\(ctx\), "the content-key seat"\)\(/g) ?? []).length).toBe(2);
     expect(code).not.toMatch(/dyadReading\s*\?(?!:)/);     // no ternary over the reader: no optional consult, no default

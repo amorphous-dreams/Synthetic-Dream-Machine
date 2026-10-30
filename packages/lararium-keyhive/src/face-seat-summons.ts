@@ -77,7 +77,8 @@ export function makeSeatSummons(ports: SeatSummonsPorts): { summon(): Promise<Se
     if (!card) return "no-card";
     const summons: FaceJoinSummons = { kind: "face-join/v1", contactCard: new TextDecoder().decode(card), deviceEdge: edge };
     const id = await requestFaceJoin({ group: ports.group, plane: ports.plane, atom: ports.atom, hearthAtom: hearth, summons, verbs: ports.verbs });
-    ports.log(`the seat summons issued (${id.slice(0, 12)}…), pinned to the founding hearth ${hearth.slice(0, 12)}…`);
+    // The line names the intent alone: no key, public or not, rides a log.
+    ports.log(`the seat summons issued (${id.slice(0, 12)}…), pinned to the founding hearth`);
     return "issued";
   };
   // One pass at a time: a wake during a pass waits for it, and reads the plane the pass wrote.

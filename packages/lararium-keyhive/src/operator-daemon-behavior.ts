@@ -120,7 +120,7 @@ export type DyadReader = (fleetRootDid: string, deviceVerifyingKey: string) => i
  * The dyad's reader a gate asks through, or a refusal by name. A gate that binds or seats a device reads that
  * device's standing first; with no reader composed it cannot read one, and it never reads the absence as `clear`.
  */
-export function requireDyadReader(reader: DyadReader | undefined, gate: "the Binding Gate" | "the join gate" | "the content-key seat" | "the intent door"): DyadReader {
+export function requireDyadReader(reader: DyadReader | undefined, gate: "the Binding Gate" | "the join gate" | "the content-key seat" | "the intent door" | "the seat summons"): DyadReader {
   if (!reader) {
     throw new Error(
       `[daemon] DyadReaderAbsent: ${gate} reads a device's standing off the vessel's own fold of its fleet board, and this island ` +
@@ -1251,7 +1251,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               contactCard: async () => { try { return await veil.contactCard(); } catch { return null; } },
               deviceEdge: edge,
               standing: async (device) => {
-                const reading = await requireDyadReader(dyadReader(ctx), "the intent door")(edge.personaRootDid, device);
+                const reading = await requireDyadReader(dyadReader(ctx), "the seat summons")(edge.personaRootDid, device);
                 return reading === "clear" ? "stands" : reading === "aside" ? "aside" : "unknown";
               },
               personaRecords: () => faceRecordsOf([personaPlane.doc()], group),
