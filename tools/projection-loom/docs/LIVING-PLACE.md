@@ -1,3 +1,28 @@
+## N9-B · Intent aftermath: contact carries a verb, not a load certificate
+
+Fire's existing `bears/bearing-column` relation now binds a typed
+`SpatialGoal(bear,lower,upper)` **only when both native entities
+already exist**. The independently reimported STEP witness recomputes
+actual horizontal planar BRep contact, positive contact area, finite
+native distance, original geometry hashes and the original source
+scene identity. A noncontacting upper body refuses.
+
+`geometric-bearing-proposal` appears separately from a horizontal
+route, a covered courtyard or an ascent. The living-place archive
+counts witnessed native bearings and their contact areas as morphology,
+not as artistic merit or engineering strength. The Fire binding names
+a declared relation and retains its own attribution; it cannot
+cause an ungrounded support column to appear from language alone.
+Future native construction of columns requires a separately bounded
+constructive program and independent proof.
+
+Neither the original crossing, bearing, shelter nor stair proof
+certifies structural capacity, occupant safety, zoning, accessibility,
+human comfort, source survey truth or creative meaning. Operator
+acceptance and canon promotion remain separate decisions.
+
+---
+
 ## N9-R3/R4 · Intent aftermath: accepting stones does not approve a future aim
 
 A native location's **accepted review** approves the operator's chosen
