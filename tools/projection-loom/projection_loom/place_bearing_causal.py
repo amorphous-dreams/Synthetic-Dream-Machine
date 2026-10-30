@@ -71,7 +71,7 @@ def materialize_bearing_support(source,genome,spatial,destination,*,actor):
 def verify_bearing_support(source,genome,spatial,destination):
     src=Path(source);out=Path(destination)
     receipt=_read(out/"receipt.json")
-    if (out/"FAILED").exists() or receipt.get("schema")!=(
+    if ((out/"FAILED").exists() or receipt.get("schema")!=(
             "projection-loom/native-bearing-causal-binding")
             or receipt.get("load_certification") is not False
             or receipt.get("automatic_promotion") is not False):
