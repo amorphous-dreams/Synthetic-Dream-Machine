@@ -77,7 +77,7 @@ export interface Command {
   /**
    * Every option and flag NAME a handler beneath this command reads (global ones — see GLOBAL_FLAGS — stand
    * once, outside every row). The dispatcher refuses any other name BEFORE the handler runs: a flag nobody
-   * reads never vanishes while the act runs without it. `tests/accepts-table.test.ts` walks the handlers'
+   * reads never vanishes while the act runs without it. `tests/laws/accepts-track-the-handlers.law.test.ts` walks the handlers'
    * source and reds when one reads a name this row omits, so the row cannot drift from the code.
    */
   readonly accepts:     readonly string[];

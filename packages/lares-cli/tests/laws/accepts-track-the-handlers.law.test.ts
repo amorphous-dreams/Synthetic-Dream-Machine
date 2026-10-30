@@ -1,4 +1,9 @@
 /**
+ * L2 · A DECLARATION AGREES WITH WHAT THE DOOR ANSWERS: every command's accepts row names exactly the flags its handler reads.
+ *
+ * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws
+ */
+/**
  * THE `accepts` ROWS CANNOT DRIFT FROM THE HANDLERS.
  *
  * Each command's row in bin/lares.ts names every flag a handler beneath it reads. This test walks the
@@ -29,11 +34,11 @@ import { readFileSync, existsSync, mkdtempSync, rmSync, writeFileSync } from "no
 import { tmpdir } from "node:os";
 import { dirname, join, resolve, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { COMMANDS, GLOBAL_FLAGS, unknownFlags } from "../src/bin/lares.js";
-import { BOOLEAN_FLAGS } from "../src/parse-args.js";
-import { posturePlan } from "../src/commands/posture-plan.js";
+import { COMMANDS, GLOBAL_FLAGS, unknownFlags } from "../../src/bin/lares.js";
+import { BOOLEAN_FLAGS } from "../../src/parse-args.js";
+import { posturePlan } from "../../src/commands/posture-plan.js";
 
-const SRC = resolve(dirname(fileURLToPath(import.meta.url)), "../src");
+const SRC = resolve(dirname(fileURLToPath(import.meta.url)), "../../src");
 
 /** Which file each command's handler lives in (the `import` the table row names). */
 const HANDLER_FILE: Readonly<Record<string, string>> = {

@@ -1,4 +1,9 @@
 /**
+ * L2 · A DECLARATION AGREES WITH WHAT THE DOOR ANSWERS: every help registry key names a live door.
+ *
+ * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws
+ */
+/**
  * THE HELP REGISTRY NAMES ONLY COMMANDS THAT EXIST.
  *
  * The registry is SPARSE by design — a command without an entry renders its dispatch summary — so a
@@ -9,8 +14,8 @@
  * The vessel collapse left exactly two behind (`status`, `wake`), which is how this test came to exist.
  */
 import { describe, test, expect } from "vitest";
-import { COMMAND_HELP } from "../src/command-help.js";
-import { COMMAND_NAMES } from "../src/bin/lares.js";
+import { COMMAND_HELP } from "../../src/command-help.js";
+import { COMMAND_NAMES } from "../../src/bin/lares.js";
 
 describe("the per-command help registry", () => {
   test("★ every entry names a command that answers ★", () => {

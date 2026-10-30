@@ -1,4 +1,9 @@
 /**
+ * L2 · A DECLARATION AGREES WITH WHAT THE DOOR ANSWERS: every projection of the command surface agrees with the live command table.
+ *
+ * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws
+ */
+/**
  * surface-projection — one command table, many faces, and the signing hand that stays human.
  *
  * A second surface keeping a second catalogue drifts from the plane it claims to expose, and the drift stays
@@ -11,7 +16,7 @@
  * declaration added no gate a human has to pass.
  */
 import { describe, test, expect } from "vitest";
-import { projectCommands, COMMAND_NAMES } from "../src/bin/lares.js";
+import { projectCommands, COMMAND_NAMES } from "../../src/bin/lares.js";
 
 describe("the table projects onto surfaces it declares", () => {
   test("the CLI surface carries the whole command set — no human lost a verb to this", () => {
