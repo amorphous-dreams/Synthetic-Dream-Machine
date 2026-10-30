@@ -12,6 +12,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { EXIT, Ledger, exitOf, read, tend, undo, type External, type Item } from "../src/reality-tunnel/engine.js";
 import { windowsProfile } from "../src/reality-tunnel/homes.js";
+import { radiusLock } from "../src/reality-tunnel/lock.js";
 import { indexReader } from "../src/commands/tunnel-door.js";
 import {
   claudeHook, headLine, jsonFloor, tomlHookForeign, jsonForeign, jsonIncludes, jsonSet, namesSeed, seedless, tomlHook, tomlMcpServer,
@@ -512,5 +513,15 @@ describe("the pre-commit gate cannot be staged away", () => {
     writeFileSync(join(root, "x.txt"), "x");
     execFileSync("git", ["-C", root, "add", "x.txt"]);
     expect(String(execFileSync(join(root, ".githooks/pre-commit"), { cwd: root, encoding: "utf8" }))).toContain("repo-tunnel-staged.sh — that gate does not apply here");
+  });
+});
+
+describe("the lock holds on any path length", () => {
+  it("a target path longer than a socket name allows still locks and releases", async () => {
+    const deep = join(dir, "a".repeat(60), "b".repeat(60), "ledger");
+    const held = await radiusLock(deep);
+    await held.release();
+    const again = await radiusLock(deep);
+    await again.release();
   });
 });

@@ -6,14 +6,25 @@
  * reuse nor a namespace split (a container, WSL beside Windows) can lie about a holder.
  */
 import { claimName, NameHeld } from "@lararium/node";
+import { createHash } from "node:crypto";
 import { mkdirSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Locker } from "./engine.js";
 
+/**
+ * The socket a lock claims: a short name under the temp dir, keyed by the target it guards. A Unix
+ * socket name caps near 108 bytes, and a checkout's path plus a ledger dir plus the claim's suffix
+ * overflows it on a deep runner path; the hash keeps every lock the same short length.
+ */
+export const lockSocket = (lockPath: string): string =>
+  join(tmpdir(), `lares-lock-${createHash("sha256").update(lockPath).digest("hex").slice(0, 16)}`);
+
 export async function acquireLock(lockPath: string): Promise<{ release(): Promise<void> }> {
   const refuse = (): NameHeld => new NameHeld(`${lockPath} held by another writer; retry shortly`);
+  const socket = lockSocket(lockPath);
   for (let i = 0; i < 50; i++) {
-    try { return await claimName(lockPath, { refuse }); }
+    try { return await claimName(socket, { refuse }); }
     catch (err) {
       if (!(err instanceof NameHeld)) throw err;
       // An async backoff never blocks the main thread (no Atomics.wait / SharedArrayBuffer).
