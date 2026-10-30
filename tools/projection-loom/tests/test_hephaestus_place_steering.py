@@ -30,3 +30,23 @@ def test_shared_unimplemented_emitter_must_not_silently_claim_steering():
         select_place_auditions(offered,1,"sobol")
     assert select_place_auditions(offered,1,"mutation",epoch=0)==[("next","b")]
     assert select_place_auditions(offered,1,"initial",epoch=0)==[("first","a")]
+
+def test_forged_preferred_frontier_order_fails_independent_replay(tmp_path):
+    import json
+    original,intent,spatial,genome=setup()
+    root=tmp_path/"native"
+    result=run_place_campaign(original,intent,spatial,genome,root,
+                              epochs=1,offspring=2,exact_budget=1,seed=17,
+                              prefer_emitter="mutation")
+    location=root/"frontiers"/"epoch_000.json"
+    forged=json.loads(location.read_text())
+    assert forged["audition_order"]==["p000c001"]
+    forged["audition_order"]=["p000c000"]
+    location.write_text(json.dumps(forged))
+    with pytest.raises(ValueError,match="proposal frontier diverged"):
+        verify_place_campaign(root)
+
+
+def test_empty_emitter_list_retains_initial_as_unadorned_default():
+    assert select_place_auditions([("first","a"),("next","b")],1,None,
+                                  epoch=0)==[("first","a")]

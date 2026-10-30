@@ -1,3 +1,33 @@
+## N9 · Intent aftermath · Bounded auditions under the existing OODA-HA helm
+
+The place campaign now receives an explicit
+`--prefer-emitter=initial|mutation` request. The active
+`OODAHAJournal` may override that request through an operator
+control at its safe epoch boundary. The existing journal records
+the effective choice in its `decide` receipt; the bounded
+frontier retains **all** offered children and marks exactly which
+ones received the limited native audition budget. Replay independently
+reconstructs all offers, the effective reviewed preference and exact
+attempted order before trusting an admission or rejection.
+
+Only `initial` and `mutation` currently have place-level
+constructive emitters. An unsupported shared emitter name raises a
+typed refusal rather than pretending to steer topology. Initial
+preference remains the default and leaves previous no-preference
+selection unchanged. An explicit mutation preference may select
+a different child's independent native BRep audition, but never
+relaxes solid/contact/clearance limits, steals deferred proposal
+testimony, or assigns an artistic winner. The new replay test
+refuses tampered audition-order records.
+
+The same preference now travels through explicit
+`place-continue` studies, but continuation STILL requires
+prior independent review acceptance and source-causal ancestry.
+This implements steering within the **one** journal rather than
+a shadow control process.
+
+---
+
 ## N9 · Intent aftermath · Operator sees the birth before CAD
 
 `place-intent-preview` now reconstructs the SAME bounded, typed

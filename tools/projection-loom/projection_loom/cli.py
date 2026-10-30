@@ -739,7 +739,7 @@ def main(argv=None):
                 SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8'))),
                 args.out,epochs=args.epochs,offspring=args.offspring,
                 exact_budget=args.exact_budget,seed=args.seed,
-                amendment=amendment)
+                amendment=amendment,prefer_emitter=args.prefer_emitter)
         elif args.command == 'place-verify':
             result=verify_place_campaign(args.campaign)
         else:
