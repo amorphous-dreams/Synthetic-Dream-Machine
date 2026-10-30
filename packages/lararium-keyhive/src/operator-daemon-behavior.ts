@@ -144,7 +144,7 @@ import { FACE_GRANT_PREFIX, verifyFaceGrantRecord, type FaceGrantRecord } from "
 import { makeFaceSeat, makeGroupDocListener, type GroupDocHandle } from "./face-seat.js";
 import { runFaceJoinOperation } from "./face-join-operation.js";
 import { makeFaceIntentDoor } from "./face-intent-door.js";
-import { makeSeatSummons } from "./face-seat-summons.js";
+import { makeSeatSummons, standingOfReading } from "./face-seat-summons.js";
 import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
 import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
@@ -1215,10 +1215,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const door = makeFaceIntentDoor({
               group, atom: { key: atom.key, sign: atom.sign }, plane, personaRecords: () => faceRecordsOf([personaPlane.doc()], group),
               kelChain: daemonAuth.personaKel!.chain, anchor: daemonAuth.faceAnchor ?? null,
-              standing: async (device) => {
-                const reading = await requireDyadReader(dyadReader(ctx), "the intent door")(edge.personaRootDid, device);
-                return reading === "clear" ? "stands" : reading === "aside" ? "aside" : "unknown";
-              },
+              standing: async (device) => standingOfReading(await requireDyadReader(dyadReader(ctx), "the intent door")(edge.personaRootDid, device)),
               verbs: faceIntentVerbs(), effects: new Map([["face-join", faceJoinVia]]),
               runDeclaredEffect: async (verb, args, at) => {
                 const table = intentRegistry, verifier = intentVerifier;
@@ -1250,11 +1247,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               seated: () => veil.knowsAgent(group),
               contactCard: async () => { try { return await veil.contactCard(); } catch { return null; } },
               deviceEdge: edge,
-              standing: async (device) => {
-                const reading = await requireDyadReader(dyadReader(ctx), "the seat summons")(edge.personaRootDid, device);
-                return reading === "clear" ? "stands" : reading === "aside" ? "aside" : "unknown";
-              },
-              personaRecords: () => faceRecordsOf([personaPlane.doc()], group),
+              standing: async (device) => standingOfReading(await requireDyadReader(dyadReader(ctx), "the seat summons")(edge.personaRootDid, device)),
+              // THE VERIFIED PROJECTION names the founding hearth: the face's lineage reads the log, never a raw plane record.
+              projection: () => readFace(daemonAuth.personaKel!.chain, daemonAuth.faceAnchor ?? null)?.project(faceRecordsOf([personaPlane.doc()], group) as never, group) ?? null,
               view: async () => (await door.describe()).view,
               log: (message) => console.log(`[daemon] ${message}`),
             });

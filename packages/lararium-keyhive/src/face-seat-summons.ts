@@ -35,30 +35,38 @@ export interface SeatSummonsPorts {
   readonly deviceEdge: DeviceDelegationTiddler | null;
   /** The dyad's reading of this vessel's own edge: never summon from an edge set aside. */
   readonly standing: (device: string) => Promise<"stands" | "aside" | "unknown">;
-  /** The persona log's records: the earliest admission names the founding hearth the summons pins. */
-  readonly personaRecords: () => readonly unknown[];
+  /** The VERIFIED face projection (`readFace(...).project(...)`): its first admission names the founding hearth the
+   *  summons pins. Never a raw plane record: a plane writer could insert an unsigned admission ahead of every signed one. */
+  readonly projection: () => { readonly admissions: readonly { readonly deviceKey: string }[] } | null;
   /** The intents plane as read: a standing summons of this atom means no second one. */
   readonly view: () => Promise<IntentView>;
   readonly log: (message: string) => void;
 }
 
-/** The device key of the earliest admission act on a persona log, or null. Read as data; the hearth door judges the rest. */
-export function firstAdmittedDevice(records: readonly unknown[]): string | null {
-  let first: { seq: number; deviceKey: string } | null = null;
-  for (const raw of records) {
-    // A signed persona act: `body.act`, `body.seq`, and its fields flat on the body (`persona-act.ts` projects them so).
-    const body = (raw as { body?: { act?: unknown; seq?: unknown; deviceKey?: unknown } } | null)?.body;
-    if (!body || body.act !== "admission" || typeof body.deviceKey !== "string") continue;
-    const seq = typeof body.seq === "number" ? body.seq : Number.MAX_SAFE_INTEGER;
-    if (first === null || seq < first.seq) first = { seq, deviceKey: body.deviceKey };
-  }
-  return first?.deviceKey ?? null;
+/** The founding hearth the verified projection names: its first admission's device key, or null. */
+export function foundingHearthOf(projection: { readonly admissions: readonly { readonly deviceKey: string }[] } | null): string | null {
+  const first = projection?.admissions[0]?.deviceKey;
+  return typeof first === "string" && first.length > 0 ? first : null;
 }
 
-/** A summons of `issuer` that still stands: open or answered, never void, and never one the hearth refused. */
-export function standingOwnSummons(view: IntentView, issuer: string): boolean {
+/**
+ * What an edge standing means for a summons or an intent: a device whose edge reads clear STANDS; so does one that
+ * RETURNED after a lift or still OWES its roll (the join itself seats a returned device afresh and rolls an owed seat,
+ * `face-join.ts`; the standing check never bars it from asking); a device set aside reads ASIDE; the rest UNKNOWN.
+ */
+export function standingOfReading(reading: "clear" | "aside" | "owing" | "returned" | "unknown"): "stands" | "aside" | "unknown" {
+  return reading === "clear" || reading === "returned" || reading === "owing" ? "stands" : reading === "aside" ? "aside" : "unknown";
+}
+
+/**
+ * A summons of `issuer` that still stands: open or answered, never void, never one the hearth refused, and pinned to
+ * `hearth` where one is named: a summons pinned elsewhere (a mispin before this reading) stands for nothing, so the
+ * leaf issues one pinned right beside it; the hearth refuses the mispinned one by its own fence.
+ */
+export function standingOwnSummons(view: IntentView, issuer: string, hearth?: string): boolean {
   const own = issuer.toLowerCase();
   return view.intents.some((state) => state.verb === "face-join" && state.issuer.toLowerCase() === own && state.status !== "void"
+    && (hearth === undefined || (state.audience.mode === "pinned" && state.audience.atom.toLowerCase() === hearth.toLowerCase()))
     && !state.slots.some((slot) => (slot.winner?.entry.body["result"] as { admitted?: unknown } | undefined)?.admitted === false));
 }
 
@@ -70,9 +78,9 @@ export function makeSeatSummons(ports: SeatSummonsPorts): { summon(): Promise<Se
     if (!edge) return "no-edge";
     const standing = await ports.standing(edge.deviceVerifyingKey);
     if (standing !== "stands") return standing;
-    if (standingOwnSummons(await ports.view(), ports.atom.key)) return "standing";
-    const hearth = firstAdmittedDevice(ports.personaRecords());
+    const hearth = foundingHearthOf(ports.projection());
     if (!hearth) return "no-hearth";
+    if (standingOwnSummons(await ports.view(), ports.atom.key, hearth)) return "standing";
     const card = await ports.contactCard();
     if (!card) return "no-card";
     // The summons as the node CLI sends it (`intent.ts`): the card and the edge; the hearth reads no kind off it.
