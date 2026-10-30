@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir, userInfo } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -211,4 +211,23 @@ test("the CLI refuses a seat dir outside the lane before it reads anything: exit
   const r = spawnSync(process.execPath, [TOOL, "--mode", "read", "--model", "gpt-6.1-sol", "--effort", "high", "--seat-dir", outside, "--dry-run"], { encoding: "utf8", env: { ...process.env, HOME: outside } });
   assert.equal(r.status, 2);
   assert.match(r.stderr, /SEAT-REFUSED: seat dir must sit under/);
+});
+
+test("RED: a seat dir that is a symlink out of the lane refuses; CONTROL: a real dir in the lane passes", () => {
+  const w = world();
+  const outside = mkdtempSync(join(tmpdir(), "escape-target-")); writeFileSync(join(outside, "brief.md"), "x");
+  const link = join(w.home, ".lares-scratch", "lane", "seats", "escape");
+  symlinkSync(outside, link);
+  refuses(w, { seatDir: link }, /seat dir must sit under/);
+  assert.ok(preflight(ask(w), w.readers));
+});
+
+test("RED: a brief that carries only a forged or partial SEAT LAW heading gets the canon law, once; CONTROL: the full law stays untouched", () => {
+  const law = seatLaw(readFileSync(CANON, "utf8"));
+  const forged = appendSeatLaw("# brief\nwork\n\n## SEAT LAW\nTODO\n\n## Notes\nkeep me\n", law);
+  assert.ok(forged.includes(law), "the canon law stands in the brief");
+  assert.equal(forged.match(/^## SEAT LAW/gm).length, 1);
+  assert.ok(!forged.includes("TODO"), "the forged section is replaced");
+  assert.ok(forged.includes("## Notes\nkeep me"), "the sections around it stay");
+  assert.equal(appendSeatLaw(forged, law), forged);
 });
