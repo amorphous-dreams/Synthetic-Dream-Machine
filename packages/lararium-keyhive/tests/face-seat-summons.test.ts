@@ -15,7 +15,6 @@ import { describe, expect, test } from "vitest";
 import { faceIntentVerbs, intentEntryRecordsOfGroup, type DocHandle, type LarDoc } from "@lararium/mesh";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
 import { makeSeatSummons, firstAdmittedDevice } from "../src/face-seat-summons.js";
-import { makeFaceIntentReader } from "../src/face-intent-door.js";
 
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const plane = () => {
@@ -29,12 +28,13 @@ const edge = { deviceVerifyingKey: "", personaRootDid: "0x" + "cd".repeat(32) } 
 
 async function fixture(over: Partial<{ seated: boolean; card: boolean; edge: boolean; standing: "stands" | "aside" | "unknown"; hearth: boolean }> = {}) {
   const o = { seated: false, card: true, edge: true, standing: "stands" as const, hearth: true, ...over };
-  const atom = { key: await ed25519VerifyingKeyFromSeed(seedOf(106)), sign: ed25519SignerFromSeed(seedOf(106)) };
+  const signer = ed25519SignerFromSeed(seedOf(106));
+  const atom = { key: await ed25519VerifyingKeyFromSeed(seedOf(106)), sign: async (bytes: Uint8Array) => { const sig = await signer(bytes); return typeof sig === "string" ? sig : Array.from(sig, (b) => b.toString(16).padStart(2, "0")).join(""); } };
   const shared = plane(), verbs = faceIntentVerbs();
   let seated = o.seated;
   const calls = { cards: 0 };
   const log: string[] = [];
-  const records = o.hearth ? [{ body: { act: "admission", seq: 1, fields: { deviceKey: HEARTH_KEY } } }] : [];
+  const records = o.hearth ? [{ body: { act: "admission", seq: 1, deviceKey: HEARTH_KEY } }] : [];
   const summons = makeSeatSummons({
     group: GROUP, atom, plane: shared.handle, verbs,
     seated: async () => seated,
@@ -42,7 +42,9 @@ async function fixture(over: Partial<{ seated: boolean; card: boolean; edge: boo
     deviceEdge: o.edge ? { ...edge, deviceVerifyingKey: atom.key } : null,
     standing: async () => o.standing,
     personaRecords: () => records,
-    view: async () => (await makeFaceIntentReader({ group: GROUP, plane: shared.handle, atom, personaRecords: () => [], kelChain: [], standing: async () => "stands", verbs, log: () => {} } as never).read()).view,
+    // The view as the plane's own entries fold it (the door's reader needs a verified lineage this fixture holds none of).
+    view: async () => ({ intents: (intentEntryRecordsOfGroup(shared.doc, GROUP) as { body: { entry: string; issuer: string; verb: string; nonce: string } }[])
+      .filter((r) => r.body.entry === "intent").map((r) => ({ id: r.body.nonce, issuer: r.body.issuer, verb: r.body.verb, status: "open", slots: [] })) }) as never,
     log: (m) => { log.push(m); },
   });
   return { summons, shared, atom, log, calls, seat: () => { seated = true; }, entries: () => intentEntryRecordsOfGroup(shared.doc, GROUP) };
@@ -87,8 +89,8 @@ describe("a joined, unseated leaf summons its own seat", () => {
   });
 
   test("firstAdmittedDevice reads the earliest admission act and nothing malformed", () => {
-    expect(firstAdmittedDevice([{ body: { act: "admission", seq: 3, fields: { deviceKey: "b" } } }, { body: { act: "admission", seq: 1, fields: { deviceKey: "a" } } }, { body: { act: "founding", seq: 0 } }, null, "x"])).toBe("a");
-    expect(firstAdmittedDevice([{ body: { act: "admission", seq: 1, fields: { deviceKey: 7 } } }])).toBeNull();
+    expect(firstAdmittedDevice([{ body: { act: "admission", seq: 3, deviceKey: "b" } }, { body: { act: "admission", seq: 1, deviceKey: "a" } }, { body: { act: "founding", seq: 0 } }, null, "x"])).toBe("a");
+    expect(firstAdmittedDevice([{ body: { act: "admission", seq: 1, deviceKey: 7 } }])).toBeNull();
     expect(firstAdmittedDevice([])).toBeNull();
   });
 });
