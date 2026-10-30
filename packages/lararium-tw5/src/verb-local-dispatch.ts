@@ -77,6 +77,17 @@ export function routedInnerBags(invocation: Verb): string[] {
 }
 
 /**
+ * True for a routed envelope that addresses a wiki (`wiki-act` names its wiki and carries its act inside `args.args`):
+ * main acts on that wiki's bags under worker trust, so the table's fence asks first. A face row addresses no wiki;
+ * the store door acts on the face its session wears, so a sibling's session routes it.
+ */
+export function routedAddressesWiki(invocation: Verb): boolean {
+  const a = invocation.args as Record<string, unknown>;
+  const inner = a["args"];
+  return typeof a["wiki"] === "string" || (inner !== null && typeof inner === "object" && !Array.isArray(inner));
+}
+
+/**
  * THE ROUTED VERB'S GATE, the one place the keyholder island clears a verb before main (and a wiki island behind it)
  * trusts it: the cap `deriveRoutedCap` names, then — for a verifier that carries the Kahu predicate — the predicate for
  * every system canon bag the envelope names inside its args. A refusal throws and the verb is never routed. The wiki

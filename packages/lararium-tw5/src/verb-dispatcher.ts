@@ -57,7 +57,7 @@ import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, E
 import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
-import { runLocalVerb, gateRoutedVerb, makeCapVerify } from "./verb-local-dispatch.js";
+import { runLocalVerb, gateRoutedVerb, makeCapVerify, routedAddressesWiki } from "./verb-local-dispatch.js";
 
 export interface VerbContext {
   readonly daemon: CompositeStore;
@@ -307,7 +307,11 @@ export class VerbDispatcher {
     if (this.opts.routeFn) {
       const presenter = this.opts.presenterOf?.(invocation) ?? invocation.requestedBy;
       const local = this.opts.localOf?.(invocation) === true;
-      this.opts.registry.admitRouted(invocation.action, { daemon: this.opts.daemon, invocation, presenter, local, cap: makeCapVerify(this.opts.verifier, presenter, local) });
+      // A wiki-addressing envelope meets the fence by its presenter. Any other routed ask that did not arrive local (a
+      // synced summons, content) names no presenter that can wear a face here, so the fence reads it as naming none.
+      if (routedAddressesWiki(invocation) || !local) {
+        this.opts.registry.admitRouted(invocation.action, { daemon: this.opts.daemon, invocation, ...(local ? { presenter } : {}), local, cap: makeCapVerify(this.opts.verifier, presenter, local) });
+      }
       // Verify-then-delegate: the keyholder worker gates the cap BEFORE
       // routing to main; main then trusts the worker→main channel as the
       // capability (project_verification_placement). Enforced only when a
@@ -342,10 +346,13 @@ export class VerbDispatcher {
    */
   private replayAdmitted(invocation: Verb): boolean {
     try {
-      const admit = this.opts.registry.has(invocation.action) ? "admit" : "admitRouted";
-      this.opts.registry[admit](invocation.action, {
-        daemon: this.opts.daemon, invocation, cap: async () => ({ ok: false, reason: "replay" }),
-        presenter: this.opts.presenterOf?.(invocation) ?? invocation.requestedBy, local: this.opts.localOf?.(invocation) ?? false,
+      const local = this.opts.localOf?.(invocation) ?? false;
+      const presenter = this.opts.presenterOf?.(invocation) ?? invocation.requestedBy;
+      const registered = this.opts.registry.has(invocation.action);
+      if (!registered && local && !routedAddressesWiki(invocation)) return true;
+      const named = registered || local ? { presenter } : {};
+      this.opts.registry[registered ? "admit" : "admitRouted"](invocation.action, {
+        daemon: this.opts.daemon, invocation, cap: async () => ({ ok: false, reason: "replay" }), ...named, local,
       });
       return true;
     } catch { return false; }
