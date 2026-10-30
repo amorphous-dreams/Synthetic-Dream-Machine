@@ -100,6 +100,20 @@ def main(argv=None):
     p.add_argument('--exact-budget',type=int,default=3)
     p.add_argument('--finalists',type=int,default=2)
     p.add_argument('--seed',type=int,default=41)
+    p=commands.add_parser('fire-place-bind',help='Bind selected original Fire relation into typed spatial place intent')
+    p.add_argument('--plan',type=Path,required=True)
+    p.add_argument('--intent',type=Path,required=True)
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--alternative',required=True)
+    p.add_argument('--witness-id',required=True)
+    p.add_argument('--actor',required=True)
+    p.add_argument('--seed-sha256')
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('fire-place-verify',help='Independently verify original Fire/intent/native binding')
+    p.add_argument('--binding',type=Path,required=True)
+    p.add_argument('--plan',type=Path,required=True)
+    p.add_argument('--intent',type=Path,required=True)
+    p.add_argument('--genome',type=Path,required=True)
     p=commands.add_parser('place-run',help='Grow source-bound architectural locations under one OODA-HA journal')
     p.add_argument('--inventory',type=Path,required=True)
     p.add_argument('--intent',type=Path,required=True)
@@ -461,6 +475,29 @@ def main(argv=None):
         else:
             result = validate_variants(args.comparison)
         print(json.dumps(result, indent=2))
+        return result
+    if args.command in ('fire-place-bind','fire-place-verify'):
+        from .intent_seed import IntentContract
+        from .place_genome import PlaceGenome
+        from .fire_spatial import bind_fire_spatial,verify_fire_spatial
+        from .generalized_campaign import save_once
+        data=json.loads(args.intent.read_text(encoding='utf8'))
+        if set(data)!={'location','aim','objectives','invariants','budgets'}:
+            raise ValueError('Fire place intent requires exact author-supplied fields')
+        intent=IntentContract(data['location'],data['aim'],tuple(data['objectives']),
+                tuple(data['invariants']),tuple(tuple(x) for x in data['budgets']))
+        genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
+        plan=json.loads(args.plan.read_text(encoding='utf8'))
+        if args.command == 'fire-place-bind':
+            result=bind_fire_spatial(plan,intent,genome,alternative_id=args.alternative,
+                    source_witness_id=args.witness_id,authored_by=args.actor,
+                    seed_sha256=args.seed_sha256)
+            save_once(args.out,result)
+        else:
+            binding=json.loads(args.binding.read_text(encoding='utf8'))
+            result={'valid':verify_fire_spatial(binding,plan,intent,genome),
+                    'automatic_promotion':False}
+        print(json.dumps(result,indent=2))
         return result
     if args.command in ('place-run','place-verify','place-candidate-review','place-continue'):
         from .place_campaign import run_place_campaign,verify_place_campaign,review_place_candidate

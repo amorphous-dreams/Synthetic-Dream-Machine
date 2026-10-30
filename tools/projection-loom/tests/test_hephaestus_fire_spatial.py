@@ -37,3 +37,28 @@ def test_fire_refuses_unsourced_or_unimplemented_language():
         bind_fire_spatial(plan("encircles","ring-around"),intent,original(),
                           alternative_id="join-1",source_witness_id="witness-a",
                           authored_by="operator")
+
+def test_fire_binding_cli_preserves_original_plan_and_refuses_stale_witness(tmp_path):
+    import json
+    from projection_loom.cli import main
+    intent=IntentContract("place","Connect an imagined crossing",("crossing",))
+    inputs={
+        "location":intent.location,"aim":intent.aim,
+        "objectives":list(intent.objectives),"invariants":list(intent.invariants),
+        "budgets":[list(x) for x in intent.budgets]}
+    for n,value in (("intent",inputs),("genome",original().to_dict()),("plan",plan())):
+        (tmp_path/(n+".json")).write_text(json.dumps(value))
+    root=str(tmp_path)
+    binding=tmp_path/"bound.json"
+    common=["--plan",root+"/plan.json","--intent",root+"/intent.json",
+            "--genome",root+"/genome.json"]
+    saved=main(["fire-place-bind",*common,"--alternative","join-1",
+                "--witness-id","witness-a","--actor","operator","--out",str(binding)])
+    assert saved==json.loads(binding.read_text())
+    result=main(["fire-place-verify",*common,"--binding",str(binding)])
+    assert result["valid"] and not result["automatic_promotion"]
+    with pytest.raises(ValueError,match="original"):
+        main(["fire-place-bind",*common,"--alternative","join-1",
+              "--witness-id","forged","--actor","operator",
+              "--out",str(tmp_path/"forged.json")])
+    assert not (tmp_path/"forged.json").exists()
