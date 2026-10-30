@@ -1,8 +1,13 @@
-// Local SharedWorker shim — runs @lararium/browser's shared-holder body: one daemon island per house, a port per
-// tab. The holder starts the daemon island in this realm over a local MessageChannel.
+// Production SharedWorker entry: capture connections synchronously while the holder starts its island.
+import { makeConnectBuffer } from "@lararium/browser/connect-buffer";
 import { registerWorkerErrorRelay } from "./worker-boot.js";
 
 registerWorkerErrorRelay("shared-holder");
 
-void import("@lararium/browser/shared-holder-worker").catch((e) =>
+const buffer = makeConnectBuffer<MessagePort>();
+(self as unknown as SharedWorkerGlobalScope).addEventListener("connect", (event: MessageEvent) => {
+  const port = event.ports[0];
+  if (port) buffer.accept(port);
+});
+void import("@lararium/browser/shared-holder-start").then((m) => m.startHolder(buffer)).catch((e) =>
   console.error("[shared-holder] run-threw", e instanceof Error ? e.stack : String(e)));

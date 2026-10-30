@@ -65,4 +65,13 @@ describe("a SharedWorker with a late runtime", () => {
     });
     expect(greeting).toEqual({ type: "ready" });
   }, 20_000);
+
+  test("RED (the shim's dynamic import is the same gap); CONTROL: a shim entry that listens first greets a client that connected during the slow import", async () => {
+    const worker = new SharedWorker(new URL("./fixtures/shim-shared.worker.ts", import.meta.url), { type: "module", name: `shim-${crypto.randomUUID()}` });
+    const greeting = await new Promise<unknown>((resolve) => {
+      worker.port.addEventListener("message", (event) => resolve(event.data), { once: true });
+      worker.port.start();
+    });
+    expect(greeting).toEqual({ type: "ready" });
+  }, 20_000);
 });
