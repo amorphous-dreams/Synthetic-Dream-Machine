@@ -88,10 +88,33 @@ class AscentRun:
 
 
 @dataclass(frozen=True)
+class BearingRun:
+    """Explicit native vertical contact chain, NOT a load certificate."""
+    lower: str
+    column: str
+    upper: str
+
+    def __post_init__(self):
+        names=(self.lower,self.column,self.upper)
+        if len(set(names))!=3 or any(not isinstance(n,str) or not _NAME.fullmatch(n) for n in names):
+            raise ValueError("Bearing chain needs three distinct named native bodies")
+
+    def to_dict(self):
+        return {"lower":self.lower,"column":self.column,"upper":self.upper}
+
+    @classmethod
+    def from_dict(cls,doc):
+        if not isinstance(doc,dict) or set(doc)!={"lower","column","upper"}:
+            raise ValueError("Bearing chain requires exact native endpoints and column")
+        return cls(**doc)
+
+
+@dataclass(frozen=True)
 class PlaceGenome:
     bodies: tuple[PlaceBody,...]
     walkways: tuple[Walkway,...]=()
     ascents: tuple[AscentRun,...]=()
+    bearings: tuple[BearingRun,...]=()
 
     def __post_init__(self):
         if not 2<=len(self.bodies)<=16 or not all(isinstance(b,PlaceBody) for b in self.bodies):
@@ -113,6 +136,13 @@ class PlaceGenome:
             raise ValueError("Ascent runs must be uniquely sorted")
         if any(not set((a.source,*a.steps,a.destination))<=set(ids) for a in self.ascents):
             raise ValueError("Ascent treads require declared native bodies")
+        if len(self.bearings)>8 or any(not isinstance(b,BearingRun) for b in self.bearings):
+            raise ValueError("Native bearing chains must remain bounded")
+        rows=[(r.lower,r.column,r.upper) for r in self.bearings]
+        if rows!=sorted(set(rows)):
+            raise ValueError("Native bearing chains require unique sorted declarations")
+        if any(not set((r.lower,r.column,r.upper))<=set(ids) for r in self.bearings):
+            raise ValueError("Native bearing chains must resolve all real body handles")
 
     @property
     def identity(self):
@@ -122,15 +152,17 @@ class PlaceGenome:
         return {"schema":"projection-loom/place-genome",
                 "bodies":[b.to_dict() for b in self.bodies],
                 "walkways":[w.to_dict() for w in self.walkways],
-                "ascents":[a.to_dict() for a in self.ascents]}
+                "ascents":[a.to_dict() for a in self.ascents],
+                "bearings":[b.to_dict() for b in self.bearings]}
 
     @classmethod
     def from_dict(cls,doc):
-        if not isinstance(doc,dict) or set(doc)!={"schema","bodies","walkways","ascents"} or doc.get("schema")!="projection-loom/place-genome":
+        if not isinstance(doc,dict) or set(doc)!={"schema","bodies","walkways","ascents","bearings"} or doc.get("schema")!="projection-loom/place-genome":
             raise ValueError("Place genome requires exact typed schema, bodies and walkways")
         return cls(tuple(PlaceBody.from_dict(x) for x in doc["bodies"]),
                    tuple(Walkway.from_dict(x) for x in doc["walkways"]),
-                   tuple(AscentRun.from_dict(x) for x in doc["ascents"]))
+                   tuple(AscentRun.from_dict(x) for x in doc["ascents"]),
+                   tuple(BearingRun.from_dict(x) for x in doc["bearings"]))
 
     def declaration(self,location):
         if not location:
@@ -167,7 +199,7 @@ class PlaceGenome:
                 place=(body.translation[0],round(body.translation[1]+offset,6),
                        body.translation[2])
                 bodies[i]=replace(body,translation=place)
-        return PlaceGenome(tuple(bodies),self.walkways,self.ascents)
+        return PlaceGenome(tuple(bodies),self.walkways,self.ascents,self.bearings)
 
     def vary_spatial(self,spatial,seed,*,count=1):
         """Preserve authored contact topology while mutating goal-relevant form.
@@ -224,7 +256,7 @@ class PlaceGenome:
                     dimensions[dim]=round(max(.5,dimensions[dim]*factor),6)
                 nodes[0]=replace(root,size=tuple(dimensions))
                 updated.append(replace(body,program=GrowthProgram(tuple(nodes))))
-            current=PlaceGenome(tuple(updated),current.walkways,current.ascents)
+            current=PlaceGenome(tuple(updated),current.walkways,current.ascents,current.bearings)
         return current
 
 
@@ -243,11 +275,14 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
     bodies=list(genome.bodies)
     routes=list(genome.walkways)
     ascents=list(genome.ascents)
+    bearings=list(genome.bearings)
     # An end-to-end goal may be satisfied by an authored, uniquely
     # connected orthogonal sequence. Construct its direct supported
     # segments BEFORE attempting a diagonal shortcut.
     def _intention_order(item):
         _,goal=item
+        if goal.kind=="bear":
+            return 2  # Shelter births a declared roof before bearing interpretation.
         if goal.kind!="connect":
             return 0
         known={b.entity_id:b for b in bodies}
@@ -258,6 +293,42 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
             abs(a.translation[1]-b.translation[1]))
         return 1 if all(delta>1e-7 for delta in xy) else 0
     for i,goal in sorted(enumerate(spatial.goals),key=_intention_order):
+        if goal.kind=="bear":
+            if any(b.lower==goal.subject and b.upper==goal.object for b in bearings):
+                continue
+            known={body.entity_id:body for body in bodies}
+            if goal.subject not in known or goal.object not in known:
+                raise ValueError("Native bearing construction needs two grounded endpoints")
+            lower,upper=known[goal.subject],known[goal.object]
+            if (len(lower.program.nodes)!=1 or len(upper.program.nodes)!=1
+                    or lower.program.nodes[0].op!="foundation"
+                    or upper.program.nodes[0].op!="foundation"):
+                raise ValueError("Bearing-column birth requires simple native foundation bodies")
+            lo,hi=lower.program.nodes[0].size,upper.program.nodes[0].size
+            rise=(upper.translation[2]-hi[2]*0)+(0) - (
+                lower.translation[2]+lo[2])
+            if rise<=.05 or rise>8 or len(bodies)>=16:
+                # Touching originals require no invented column. A gap that
+                # exceeds the finite construction envelope stays unresolved.
+                if abs(rise)<=.001:
+                    continue
+                raise ValueError("Native bearing-column gap outside constructive envelope")
+            if (abs(lower.translation[0]-upper.translation[0])>1e-7
+                    or abs(lower.translation[1]-upper.translation[1])>1e-7):
+                raise ValueError("Bearing-column birth requires aligned authored footprints")
+            width=min(lo[0],lo[1],hi[0],hi[1],1.)
+            if width<goal.min_width:
+                raise ValueError("Native column cannot preserve authored transverse contact")
+            name=f"intent_column_{i:03d}"
+            if name in known:
+                raise ValueError("Intent-bearing column already occupies another name")
+            column=PlaceBody(name,GrowthProgram((GrowthNode("root","foundation",
+                size=(round(width,6),round(width,6),round(rise,6))),)),
+                (lower.translation[0],lower.translation[1],
+                 round(lower.translation[2]+lo[2],6)))
+            bodies.append(column)
+            bearings.append(BearingRun(goal.subject,name,goal.object))
+            continue
         if goal.kind=="ascend":
             if any(a.source==goal.subject and a.destination==goal.object
                    for a in ascents):
@@ -387,7 +458,8 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
         routes.append(Walkway(goal.subject,name,goal.object))
     return PlaceGenome(tuple(sorted(bodies,key=lambda x:x.entity_id)),
                        tuple(sorted(routes,key=lambda w:(w.source,w.deck,w.destination))),
-                       tuple(sorted(ascents,key=lambda a:(a.source,a.steps,a.destination))))
+                       tuple(sorted(ascents,key=lambda a:(a.source,a.steps,a.destination))),
+                       tuple(sorted(bearings,key=lambda b:(b.lower,b.column,b.upper))))
 
 def unique_walkway_chain(genome:PlaceGenome,subject,destination,*,max_hops=8):
     """Return the one declared directed route, or refuse unresolved choices."""
