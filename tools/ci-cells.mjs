@@ -24,12 +24,17 @@ import { createWriteStream, existsSync, mkdirSync, readFileSync, readdirSync } f
 import { basename, join, resolve } from "node:path";
 
 const pkg = (name, dir, shard, extra = {}) => ({ name, dir, ...(shard ? { shard } : {}), ...extra });
-const node = (i) => ({ cell: `node-${i}`, packages: [pkg("@lararium/node", "packages/lararium-node", `${i}/2`)] });
 
 /**
  * The package-suite cells. A `shard` of `i/n` runs vitest's own shard; the n rows of one package are the whole package.
  * `vitest: false` marks a suite that writes no vitest JSON report (the TiddlyWiki5 jasmine edition): the cell's own exit
  * answers for it.
+ *
+ * NODE RIDES ONE CELL, NEVER SHARDS. Measured on runs 40977288914 and 40985431558: node's serial run is 841 s, yet two
+ * vitest shards ran 1350 s together and three ran 1437 s. Each shard runs the config's serial `heavy` project beside its
+ * parallel `main` project, and the path hash clusters the heavy files, so a shard's wall clock barely falls with its file
+ * count. Each added shard bought a runner's setup and more run time, and no shorter path than the e2e shards set. The
+ * per-file reports in the `test-cell-node` artifact are the evidence for the later refactor of that config.
  *
  * FEW CELLS, BECAUSE THE RUNNER POOL IS SHARED. Every cell repeats checkout, install, build and engines (60 to 260 seconds
  * measured on run 40977288914), and the lanes of this repository draw on one capped pool, so the number that decides is
@@ -37,7 +42,7 @@ const node = (i) => ({ cell: `node-${i}`, packages: [pkg("@lararium/node", "pack
  * of the serial job (run 40956130282): node 841 · web 390 · cli 171 · mesh 141 · tw5 100 · browser 58 · keyhive 27.
  */
 export const TEST_CELLS = Object.freeze([
-  node(1), node(2),
+  { cell: "node", packages: [pkg("@lararium/node", "packages/lararium-node")] },
   { cell: "web-cli", packages: [
     pkg("@lararium/web", "packages/lararium-web"),
     pkg("@lares/cli", "packages/lares-cli"),

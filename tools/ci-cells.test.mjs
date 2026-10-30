@@ -30,11 +30,11 @@ test("C1 CONTROL: a whole matrix reads green, every cell answering", () => {
 
 test("C2 RED: a cell whose report never arrived refuses by name", () => {
   const reports = allReports();
-  const gone = expectedTestReports().find((r) => r.cell === "node-2");
+  const gone = expectedTestReports().find((r) => r.cell === "mesh-tw5");
   reports.delete(gone.file);
   const v = evaluateTestCells({ reports });
   assert.equal(v.ok, false);
-  assert.match(v.problems.join("\n"), /missing report: cell node-2/);
+  assert.match(v.problems.join("\n"), /missing report: cell mesh-tw5/);
 });
 
 test("C3 RED: a cell that ran zero passing tests, one with a failure, and one with a corrupt report each refuse", () => {
@@ -123,7 +123,7 @@ test("C8 RED: the witness cells split witness-all.sh's roster with none lost and
 });
 
 test("C9 RED: a cell's report name carries its cell and package, and the table keeps every package's script one plain vitest run", () => {
-  assert.equal(testReportName("node-1", { dir: "packages/lararium-node" }), "report-node-1-lararium-node.json");
+  assert.equal(testReportName("node", { dir: "packages/lararium-node" }), "report-node-lararium-node.json");
   for (const c of TEST_CELLS) for (const p of c.packages.filter((q) => q.vitest !== false)) {
     const script = JSON.parse(readFileSync(join(ROOT, p.dir, "package.json"), "utf8")).scripts.test;
     assert.match(script, /^vitest run( --config \S+)?$/, `${p.dir}: its test script is no plain vitest run, so a cell cannot append a shard and a reporter to it`);

@@ -122,8 +122,8 @@ jobs:
 
   # ─── test (all package suites, as cells) ───────────────────────────────────
   # EACH CELL IS A SLICE OF THE SUITES ON A RUNNER OF ITS OWN, and the slowest cell sets the wall clock. The slices are
-  # the table `TEST_CELLS` in tools/ci-cells.mjs: node as two vitest shards, the other packages grouped
-  # into two cells by weight. FEW CELLS: every cell repeats checkout, install and build, and the lanes share one capped
+  # the table `TEST_CELLS` in tools/ci-cells.mjs: node in one cell (sharding it costs more run time than it saves; see TEST_CELLS), the other
+  # packages grouped into two cells by weight. FEW CELLS: every cell repeats checkout, install and build, and the lanes share one capped
   # runner pool, so total job-minutes decides, with each run's critical path held near the slowest e2e shard. Every cell is self-contained (its own checkout, install, build, holder venv and engines) and uploads
   # one JSON report per package; the reports double as the per-file timings that name the slowest files. The job
   # named `Test` below is the gate: it fails closed on any missing, empty, red or unexpected cell.
@@ -137,8 +137,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - cell: node-1
-          - cell: node-2
+          - cell: node
           - cell: web-cli
           - cell: mesh-tw5
     steps:
