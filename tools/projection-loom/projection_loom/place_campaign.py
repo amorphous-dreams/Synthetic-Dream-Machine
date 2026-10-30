@@ -24,6 +24,40 @@ from .provenance_encoding import canonical_json_sha256
 def _read(path):
     return json.loads(Path(path).read_text(encoding="utf8"))
 
+def observed_place_descriptor(genome:PlaceGenome,affordances):
+    """Observed route morphology, not guessed architectural or artistic value."""
+    if (not isinstance(genome,PlaceGenome)
+            or not affordances.get("all_declared_goals_witnessed")):
+        raise ValueError("Native route descriptor needs an admitted exact affordance witness")
+    routes=[]
+    for item in affordances["goals"]:
+        if item["status"]!="geometric-route-proposal":
+            raise ValueError("Only fully witnessed goals enter observed morphology")
+        proof=item["proof"]
+        segments=proof.get("segments",[proof])
+        if not segments or any(not x.get("bearing_sha256") or
+                               x.get("native_clearance_obstructions")!=0
+                               for x in segments):
+            raise ValueError("Native segment evidence missing from spatial descriptor")
+        routes.append({"hops":len(segments),
+                       "width":min(x["route_width_lower_bound"] for x in segments),
+                       "axes":sorted(set(x["principal_axis"] for x in segments))})
+    width=min(x["width"] for x in routes)
+    hops=max(x["hops"] for x in routes)
+    axis_count=len(set(axis for route in routes for axis in route["axes"]))
+    niche=(min(8,len(genome.walkways)),min(8,hops),min(8,int(width*2)),
+           min(2,axis_count))
+    return {"schema":"projection-loom/observed-place-morphology",
+            "native_scene_sha256":affordances["native_scene_sha256"],
+            "body_count":len(genome.bodies),"walkway_count":len(genome.walkways),
+            "goals":routes,"route_width_lower_bound":width,
+            "max_native_route_hops":hops,"distinct_axes":axis_count,
+            "niche":list(niche),"architectural_fitness_claim":None,
+            "artistic_fitness_claim":None}
+
+
+
+
 
 def verify_place_campaign(path):
     path=Path(path)
@@ -205,10 +239,9 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
                         row["workspace_sha256"]=witness["sha256"]
                         # Preserve morphology/route niches rather than treating
                         # every native-valid variation as an automatic elite.
-                        width=evidence["goals"][0]["proof"]["route_width_lower_bound"]
-                        deck_id=candidate.walkways[0].deck
-                        deck=next(body for body in candidate.bodies if body.entity_id==deck_id)
-                        niche=(int(width*2),int((deck.translation[1]+4)*2))
+                        descriptor=observed_place_descriptor(candidate,final_evidence)
+                        niche=tuple(descriptor["niche"])
+                        row["descriptor"]=descriptor
                         row["niche"]=list(niche)
                         if niche not in niches:
                             niches.add(niche)

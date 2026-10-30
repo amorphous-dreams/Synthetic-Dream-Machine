@@ -32,6 +32,7 @@ def place_comparison(campaign,destination):
                "final_goal_evidence":row["affordances"],
                "reason":row["reason"],"native_scene":None,
                "body_count":None,"topology_niche":row.get("niche"),
+               "observed_spatial_descriptor":row.get("descriptor"),
                "load_certification":False}
         if row["status"]=="admitted":
             workspace=folder/"workspace"

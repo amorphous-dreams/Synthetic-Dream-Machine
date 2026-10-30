@@ -140,3 +140,18 @@ def test_two_native_builds_keep_distinct_digest_bound_receipts(tmp_path):
     assert item["affordances"]["native_scene_sha256"]==json.loads(
         (target/"candidates"/item["candidate_id"]/"workspace"/"scene"/"manifest.json").read_text())["sha256"]
     assert verify_place_campaign(target)==report
+
+def test_spatial_archive_uses_observed_route_not_part_count_for_qualities(tmp_path):
+    from projection_loom.place_campaign import observed_place_descriptor
+    original,_,spatial,genome=setup()
+    folder=tmp_path/"observations"
+    summary=run_place_campaign(original,_,spatial,genome,folder,
+                               epochs=1,offspring=1,exact_budget=1)
+    row=summary["candidates"][0]
+    descriptor=observed_place_descriptor(genome,row["affordances"])
+    assert row["descriptor"]==descriptor
+    assert descriptor["max_native_route_hops"]==1
+    assert descriptor["walkway_count"]==1
+    assert descriptor["architectural_fitness_claim"] is None
+    assert descriptor["artistic_fitness_claim"] is None
+    assert summary["spatial_niches"]==1
