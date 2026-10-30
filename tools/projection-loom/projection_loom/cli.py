@@ -240,6 +240,12 @@ def main(argv=None):
     p=commands.add_parser('place-gallery-verify',help='Re-render original shared-camera STEP location gallery')
     p.add_argument('--campaign',type=Path,required=True)
     p.add_argument('--gallery',type=Path,required=True)
+    p=commands.add_parser('place-board',help='Render an immutable whole-place native and visual operator board')
+    p.add_argument('--campaign',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('place-board-verify',help='Recreate and verify original source-bound operator board')
+    p.add_argument('--campaign',type=Path,required=True)
+    p.add_argument('--board',type=Path,required=True)
     p=commands.add_parser('place-compare',help='Publish native evidence for comparable operator review')
     p.add_argument('--campaign',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
@@ -705,6 +711,15 @@ def main(argv=None):
         else:
             result={'valid':verify_place_intent_preview(intent,spatial,genome,
                          json.loads(args.receipt.read_text(encoding='utf8'))),
+                    'automatic_promotion':False}
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command in ('place-board','place-board-verify'):
+        from .place_board import render_place_board,verify_place_board
+        if args.command=='place-board':
+            result=render_place_board(args.campaign,args.out)
+        else:
+            result={'valid':verify_place_board(args.campaign,args.board),
                     'automatic_promotion':False}
         print(json.dumps(result,indent=2))
         return result
