@@ -70,7 +70,7 @@ The boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>) seats by
 !! Open research ~ each row names its instrument
 
 * ''Scout quality across breadths.'' One medium sweep stands measured; thorough sweeps and Plan's designs, each run both ways and judged against the files, widen the sample.
-* ''A linkless checkout.'' Under `core.symlinks=false` each link reads as a path string; the witness names it red, and a Windows probe measures the hosts where one stands.
+* ''A linkless checkout.'' Under `core.symlinks=false` each link reads as a path string, so the import and Codex's override would load the path, never the seed; `lares repo read` and the witness name it red. The clone stands under WSL or another host that links, and the Windows host takes the home radius alone; a Windows probe measures the hosts where a native clone stands, before any founding leans on one.
 * ''Compaction beyond Claude.'' Codex carries its project doc as a contextual message, which a compact may summarize; a hash probe after a Codex compact, and the same for Copilot.
 * ''The seed's own `@` tokens.'' The witness guards them; a grammar call follows only if one ever resolves.
 * ''VS Code agent mode.'' It reads `CLAUDE.md` only under `chat.useClaudeMdFile`, and its include behavior stands unmeasured; a probe for the seed's final hash settles both.
@@ -80,6 +80,6 @@ The boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>) seats by
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SOCD9VpeFPyzBorUEgaDoePdS_J8aLFBCdm2zv2JPoA
+<<^ code="&#x0003;">>ni:///sha-256;x16Fu0mVfR-3KVKiVUhqUSrbZTTEqnEmX3C_FyoXnQo
 
 <<^ code="&#x0004;" -> to="?">>
