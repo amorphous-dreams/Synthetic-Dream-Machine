@@ -162,10 +162,26 @@ test("RED: a broken sibling anchor does not hide a healthy relay face; CONTROL: 
       expect((await resolveIntentRelayFace(group, { repo, catalogUrl }))?.group).toBe(group);
       expect(await resolveIntentRelayFace("no-such-group", { repo, catalogUrl })).toBeNull();
       load.mockImplementation(async (index) => { if (index === 0) throw new Error("broken sibling"); return anchors; });
-      expect((await resolveIntentRelayFace(group, { repo, catalogUrl }))?.group).toBe(group);
+      const face = await resolveIntentRelayFace(group, { repo, catalogUrl });
+      expect(face?.group).toBe(group);
+      // The admission handler loads the face again: a malformed sibling row must not turn every admission into a fault.
+      expect(await face?.admit({})).not.toEqual({ status: "refused", refusal: "fault" });
     } finally { vi.restoreAllMocks(); await repo.shutdown(); }
   });
 }, 240_000);
+
+test("RED: enabling a relay registers a lit sibling's planes at the gate sweep; CONTROL: the census finds a planted call", () => {
+  const registers = /registerRelayPlanes\s*\??\.?\(/;
+  expect(registers.test("await registerRelayPlanes?.();")).toBe(true);
+  const start = source.indexOf("const standSyncGates =");
+  const end = source.indexOf("stood.push({ what: \"the sync gates' knocks\"", start);
+  const sweep = source.slice(start, end);
+  const refresh = sweep.search(/intentRelay\.refresh\s*\(/);
+  const register = sweep.search(registers);
+  expect(refresh).toBeGreaterThan(-1);
+  expect(register).toBeGreaterThan(-1);
+  expect(register).toBeLessThan(refresh);
+});
 
 test("RED: relay-enabled siblings register planes when proven and lit; CONTROL: the census finds planted registration calls", () => {
   const call = /registerFacePlanesForRelay\s*\(\s*\{[\s\S]*?register\s*:\s*registerInCatalog[\s\S]*?\}\s*\)/;

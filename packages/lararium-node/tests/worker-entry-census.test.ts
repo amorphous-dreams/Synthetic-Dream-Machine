@@ -119,3 +119,16 @@ test("RED: derived worker entries listen before awaiting, including synchronous 
   }
   expect(violations).toEqual([]);
 });
+
+test("RED: the scanner reads execution order, not text; CONTROL: honest entries stand", () => {
+  // A brace inside a string within an interpolation must not end it; an await after it still precedes the listener.
+  expect(violation("brace-in-string.worker.ts", '`${"}" + await boot()}`; self.addEventListener("message", () => {});')).toBe("brace-in-string.worker.ts");
+  // A listener named only in a comment inside an interpolation is no listener.
+  expect(violation("comment-listener.worker.ts", 'await boot(); `${/* self.addEventListener("message", f) */ 1}`; self.addEventListener("message", () => {});')).toBe("comment-listener.worker.ts");
+  // A listener inside a function nobody calls does not stand at the top level; the later top-level await leaves it unregistered.
+  expect(violation("uncalled.worker.ts", 'function start() { self.addEventListener("message", () => {}); }\nawait boot();')).toBe("uncalled.worker.ts: no listener");
+  // An await inside a deferred function ahead of the listener runs later and delays nothing.
+  expect(violation("deferred.worker.ts", 'async function later() { await boot(); }\nself.addEventListener("message", () => {});')).toBeNull();
+  // CONTROL: the plain top-level listener before an await stands.
+  expect(violation("honest.worker.ts", 'self.addEventListener("message", () => {});\nawait boot();')).toBeNull();
+});
