@@ -95,7 +95,7 @@ class PlaceGenome:
     @classmethod
     def from_dict(cls,doc):
         if not isinstance(doc,dict) or set(doc)!={"schema","bodies","walkways"} or doc.get("schema")!="projection-loom/place-genome":
-            raise ValueError("Not a typed multi-body construction genome")
+            raise ValueError("Place genome requires exact typed schema, bodies and walkways")
         return cls(tuple(PlaceBody.from_dict(x) for x in doc["bodies"]),
                    tuple(Walkway.from_dict(x) for x in doc["walkways"]))
 

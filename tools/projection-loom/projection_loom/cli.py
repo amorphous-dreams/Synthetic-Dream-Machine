@@ -122,7 +122,7 @@ def main(argv=None):
     p.add_argument('--seed',type=int,default=41)
     p=commands.add_parser('place-verify',help='Re-audit the native source and all candidate aftermath')
     p.add_argument('--campaign',type=Path,required=True)
-    p=commands.add_parser('place-review',help='Write operator-attributed review of one admitted location')
+    p=commands.add_parser('place-candidate-review',help='Write operator-attributed review of one admitted location')
     p.add_argument('--campaign',type=Path,required=True)
     p.add_argument('--candidate',required=True)
     p.add_argument('--actor',required=True)
@@ -462,7 +462,7 @@ def main(argv=None):
             result = validate_variants(args.comparison)
         print(json.dumps(result, indent=2))
         return result
-    if args.command in ('place-run','place-verify','place-review','place-continue'):
+    if args.command in ('place-run','place-verify','place-candidate-review','place-continue'):
         from .place_campaign import run_place_campaign,verify_place_campaign,review_place_candidate
         if args.command == 'place-run':
             from .intent_seed import IntentContract
