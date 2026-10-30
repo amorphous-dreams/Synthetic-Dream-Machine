@@ -3,9 +3,10 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { FACE_NEUTRAL_VERBS, operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
-import { VerbTable } from "@lararium/tw5";
+import { VerbDispatcher, VerbTable } from "@lararium/tw5";
 import { standFoundedIsland } from "./stand-founded-island.js";
 import { nodeSealedStoreShore } from "../src/sealed-store-island.js";
+import { realmFeedSlotUri } from "@lararium/mesh";
 
 vi.setConfig({ testTimeout: 900_000, hookTimeout: 900_000 });
 const teardown: Array<() => void> = [];
@@ -30,8 +31,36 @@ async function standTwoFaces() {
   const ctxOf = (presenter?: string, local = false) => ({ daemon: {} as never, invocation: { requestId: "r1", args: {} } as never, cap: async () => ({ ok: true }), local, ...(presenter === undefined ? {} : { presenter }) }) as never;
   const call = (verb: string, presenter: string | undefined, args: Record<string, unknown>, local = false) =>
     Promise.resolve().then(() => registry.get(verb)!(args, ctxOf(presenter, local))).then(() => null, (e: { reason?: string }) => e);
-  return { registry, call, sibling: `0x${b.daemonAuth.atom.key}`, mounted: `0x${a.daemonAuth.atom.key}` };
+  return { registry, call, composite: (a.ctx as any).composite, sibling: `0x${b.daemonAuth.atom.key}`, mounted: `0x${a.daemonAuth.atom.key}` };
 }
+
+test("a sibling feeds only its own slot through the wired daemon fence", async () => {
+  const { registry, call, composite, sibling, mounted } = await standTwoFaces();
+  const realm = "ab".repeat(32);
+  const own = sibling.replace(/^0x/, "");
+  const other = mounted.replace(/^0x/, "");
+  expect(registry.has("realm-feed")).toBe(true);
+  // RED today: the fence refuses the sibling before its own offering reaches the reactor.
+  expect(await call("realm-feed", sibling, { realm, writer: own })).toBeNull();
+  expect((await composite.get(realmFeedSlotUri(realm, own)))?.tiddler.text).toBe("1");
+  expect(await call("realm-feed", sibling, { realm, writer: other })).toMatchObject({ reason: "writer-not-presenter" });
+  expect(await composite.get(realmFeedSlotUri(realm, other))).toBeNull();
+});
+
+test("a routed wiki-act crosses the same presenter fence before routing", async () => {
+  const { registry, composite, sibling, mounted } = await standTwoFaces();
+  const routed: string[] = [];
+  const dispatcher = new VerbDispatcher({ daemon: composite, registry, verifier: { verify: async () => ({ ok: true }) },
+    routeFn: async (invocation) => { routed.push(invocation.requestedBy); return {}; } } as never);
+  const invocation = (requestedBy: string) => ({ requestId: requestedBy, title: "t", action: "wiki-act", requestedBy,
+    args: { wiki: "home", verb: "CLEAR", args: { bag: "lar:///ha.ka.ba/wikis/home/working" } } });
+  // CONTROL: a mounted presenter reaches main.
+  await expect((dispatcher as any).runHandler(invocation(mounted))).resolves.toEqual({});
+  expect(routed).toEqual([mounted]);
+  // RED today: the routed path checks only capabilities and skips the table's fence.
+  await expect((dispatcher as any).runHandler(invocation(sibling))).rejects.toMatchObject({ reason: "content-mounted-only" });
+  expect(routed).toEqual([mounted]);
+});
 
 const SEALED = ["sealed-seal", "sealed-open", "sealed-reading", "sealed-choose-head", "sealed-hand-over", "sealed-admit", "sealed-parcels", "sealed-receive", "sealed-serve", "sealed-memory-cut", "sealed-memory-door", "sealed-memory-import", "sealed-rolls", "seat-duties"];
 // The verbs that close over the mounted face's mint, slot documents or catalog (Aftermath M1 on PR #110).
@@ -79,7 +108,9 @@ test("THE CENSUS: every daemon verb is fenced unless it stands on the named neut
     expect(why, `neutral ${verb} reason`).toMatch(/^[^\n]{12,}$/);
   }
   // Each neutral verb runs WHOLE for the sibling on arguments it accepts: a refusal of any kind reads as a fence.
-  const neutralArgs: Record<string, Record<string, unknown>> = { "realm-clock": { realm: "ab".repeat(32) } };
+  // RED today: realm-feed remains fenced even when its writer names the presenter.
+  expect(neutral).toHaveProperty("realm-feed");
+  const neutralArgs: Record<string, Record<string, unknown>> = { "realm-clock": { realm: "ab".repeat(32) }, "realm-feed": { realm: "ab".repeat(32), writer: sibling.replace(/^0x/, "") } };
   const open: string[] = [];
   const unfenced: string[] = [];
   for (const verb of verbs) {

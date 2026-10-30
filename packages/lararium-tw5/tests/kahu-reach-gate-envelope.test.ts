@@ -23,8 +23,9 @@ describe("a routed envelope's system bags reach the Kahu gate", () => {
   test("a MOVE names its destination and its source", () => {
     expect(routedInnerBags(verb({ verb: "MOVE", args: { "from-bag": BAG_IDS.lares, "to-bag": BAG_IDS.lararium } }))).toEqual([BAG_IDS.lararium, BAG_IDS.lares]);
   });
-  test("CONTROLS: a user bag, a wiki slot and a flat verb name none", () => {
-    expect(routedInnerBags(verb({ verb: "MOVE", args: { "from-bag": "lar:///ha.ka.ba/wikis/lares/working", "to-bag": bagUri("garden") } }))).toEqual([]);
+  test("ordinary destination and source bags also reach the gate", () => {
+    // RED today: the gate filters out all ordinary bags before checking them.
+    expect(routedInnerBags(verb({ verb: "MOVE", args: { "from-bag": "lar:///ha.ka.ba/wikis/lares/working", "to-bag": bagUri("garden") } }))).toEqual([bagUri("garden"), "lar:///ha.ka.ba/wikis/lares/working"]);
     expect(routedInnerBags(verb({ "to-bag": BAG_IDS.lares }))).toEqual([]);
   });
   test("CONTROL: without the gate flag the action reactor asks itself and refuses a stranger", async () => {
@@ -77,4 +78,21 @@ test("the gate hands the presenter to the verifier's Kahu predicate", async () =
   const verifier: CapabilityVerifier = { verify: async () => ({ ok: true }), kahuReach: async (...args: unknown[]) => { seen.push(args); } };
   await gateRoutedVerb(verb({ verb: "MOVE", args: { "from-bag": "lar:///ha.ka.ba/wikis/lares/working", "to-bag": BAG_IDS.lares } }), verifier, "sibling-atom", true);
   expect(seen).toEqual([[BAG_IDS.lares, "wiki-act", "sibling-atom"]]);
+});
+
+
+test.each(["from-bag", "to-bag"])("the routed gate verifies an ordinary inner %s", async (field) => {
+  const source = "lar:///ha.ka.ba/wikis/home/working";
+  const destination = bagUri("garden");
+  const seen: string[] = [];
+  const verifier: CapabilityVerifier = { verify: async ({ bagUrl }) => {
+    seen.push(bagUrl);
+    return { ok: bagUrl !== source && bagUrl !== destination, reason: "no grant" };
+  } };
+  // CONTROL: an envelope with no denied inner bag routes through the outer cap.
+  await expect(gateRoutedVerb(verb({ verb: "CLEAR", args: {} }), verifier, "mounted", true)).resolves.toBeUndefined();
+  expect(seen.length).toBeGreaterThan(0);
+  // RED today: only the outer cap and system-canon inner bags reach this gate.
+  const inner = { [field]: field === "from-bag" ? source : destination };
+  await expect(gateRoutedVerb(verb({ verb: "MOVE", args: inner }), verifier, "mounted", true)).rejects.toThrow(/capability denied/);
 });
