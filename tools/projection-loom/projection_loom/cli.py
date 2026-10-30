@@ -129,6 +129,16 @@ def main(argv=None):
     p.add_argument('--plan',type=Path,required=True)
     p.add_argument('--intent',type=Path,required=True)
     p.add_argument('--genome',type=Path,required=True)
+    p=commands.add_parser('place-orthogonal-route',help='Propose an explicitly operator-chosen two-leg diagonal crossing')
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--turn',choices=('x-then-y','y-then-x'),required=True)
+    p.add_argument('--corner-id',required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('place-orthogonal-route-verify',help='Reconstruct and verify the original operator-chosen corner')
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--receipt',type=Path,required=True)
     p=commands.add_parser('place-intent-ablate',help='Matched full-goal and leave-one-out native STEP study')
     p.add_argument('--intent',type=Path,required=True)
     p.add_argument('--spatial',type=Path,required=True)
@@ -612,6 +622,23 @@ def main(argv=None):
         else:
             result={'valid':verify_place_gallery(args.campaign,args.gallery),
                     'source_camera_registration':False,'automatic_promotion':False}
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command in ('place-orthogonal-route','place-orthogonal-route-verify'):
+        from .place_genome import PlaceGenome
+        from .spatial_intent import SpatialIntent
+        from .place_orthogonal_route import orthogonal_route_receipt,verify_orthogonal_route_receipt
+        from .generalized_campaign import save_once
+        genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
+        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        if args.command=='place-orthogonal-route':
+            result=orthogonal_route_receipt(genome,spatial,turn=args.turn,
+                                            corner_id=args.corner_id)
+            save_once(args.out,result)
+        else:
+            result={'valid':verify_orthogonal_route_receipt(genome,spatial,
+                  json.loads(args.receipt.read_text(encoding='utf8'))),
+                  'automatic_promotion':False}
         print(json.dumps(result,indent=2))
         return result
     if args.command in ('place-intent-ablate','place-intent-ablate-verify'):
