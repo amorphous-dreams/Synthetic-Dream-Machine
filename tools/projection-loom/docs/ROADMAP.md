@@ -1,3 +1,33 @@
+# Projection Loom · Living roadmap
+
+## Governing intent
+
+Grow source-preserving, independently witnessed architectural possibilities from authored spatial relationships under one OODA-HA helm. Hold YIN's consolidation and Jing-style compose/restrict coherence alongside YANG's constructive breadth and KI's actual cross-context flow. These form a working design lens, not a claim to have implemented the house's general sensorium Jing instrument.
+
+## Current build frontier
+
+- **Composed obligations:** source-bound typed dependencies, deterministic goal order, cycle/competing-producer refusals, and a reversible authorship projection.
+- **Source invariants:** original native bodies and relation declarations remain immutable across new births; forged receipts refuse on replay.
+- **Operator route choice:** selected right-angle crossing may coexist with multiple authored goals; downstream native contact/clearance audits still decide success.
+- **OODA-HA phase receipts:** construction-plan identity crosses epoch Observe/Decide and child Observe; no shadow controller.
+- **Independent source study:** matched same-genome native auditions over image, constructive grammar and geometry proxy inputs, without pretending source content actually conditions geometry.
+- **Already held:** fixed-camera review board, native morphology, counterfactual goal controls, attributed lineage and source workspace verification.
+
+## Open features and acceptance
+
+1. General architectural obligation constraint solving beyond simple dependency planning: backtracking, meaningful constraint repair, multiple alternative sites.
+2. Heritable relationship topology and independent constructive emitter families, including cross-parent compatibility under new STEP trials.
+3. Source-conditioned geometry with **measured** image registration and held-out source transfer, not mere mixed seed intake.
+4. Whole-place human review and real editor round trip through independently witnessed source identities.
+5. Actual exact-head CAD, Blender, repository and held-out CI verdicts on each final published batch; user authorization before merge or artistic promotion.
+
+## Ashes holding ahu
+
+Every prior roadmap item, old acceptance snapshot, rejected proposal and historical campaign record remains verbatim below, with its previous repository blob recorded. No deletion or canon promotion occurs in this holding burn.
+
+<details>
+<summary>Prior ROADMAP.md · original Git blob ea6d12491f1229745af26f4cf36c69a7394441ff (verbatim preserved)</summary>
+
 ## Active constructive-place campaign · source-grounded recovery
 
 The current unpublished-then-published campaign extends the verified
@@ -1923,3 +1953,6 @@ high-resolution results do not retroactively select parents or authorize
 Operator pet-name promotion. At authoring time, the campaign had not yet
 produced hosted results; inspect exact-head workflow receipts and archives
 before calling any offspring successful.
+
+
+</details>

@@ -1,3 +1,29 @@
+# Projection Loom · Living handoff
+
+**Current authority:** PR [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84), branch `feature/green-jello-dinosaur-5--projection-loom`. Always fetch the actual head and finished exact-head workflows; neither this text nor a previously green SHA transfers acceptance. PR remains open until separately authorized.
+
+## Active constructive machinery
+
+Authored `SpatialIntent` now composes through `place_obligations.plan_spatial_obligations`, preserving every goal identity and emitting an ordered dependency proposal. The independently replayed `place_source_seal` records original body/relation preservation. Both enter the pre-native preview, immutable place preregistration, and the existing OODA-HA epoch/candidate receipts. The checks guard source and operator intent, not native geometry or artistic merit.
+
+`place-compose-route` consumes one explicitly selected orthogonal turn and semantic corner, composes that route with the remaining goals and exports a new native PlaceGenome. The proposal requires subsequent STEP audition; it never silently chooses a bend. `place-source-transfer` executes equal-budget native studies on independently attributed image, constructive-grammar and geometry-proxy carriers. It demonstrates intake portability, **not** image-conditioned architecture or photogrammetric registration.
+
+Retained features: native STEP/USD construction and source workspaces; goal-specific shelter, ascent, bearing and connection witnesses; place lineage and morphology; counterfactual studies; frozen six-view evidence board and explicit operator review. No separate OODA-HA controller. No automatic winner, pet-name, o-takiage of source files, Elyncia canon, certified structural safety or Unreal Editor success.
+
+## Operational re-entry
+
+1. Fetch the branch-current Lares boot, this handoff, `LIVING-PLACE.md`, `ROADMAP.md` and actual PR head.
+2. Check syntax/unit/native regressions and exact-head Actions after the next consolidated push; the new waves remain **pending acceptance** until the runs finish.
+3. Treat failing/queued/cancelled workflows as unresolved testimony. Repair causes without weakening STEP/identity/refusal checks.
+4. Resume feature and intent-aftermath pairs: compositional architecture, lineage, independent-source studies, and whole-place operator handbacks. Keep operator promotion distinct from experimentation.
+
+## Ashes holding ahu
+
+Historical handoffs, CI snapshots, design hypotheses and prior wave notes follow verbatim below. They no longer govern current-head acceptance, but remain available for archaeology and reversible recovery. This o-takiage does **not** delete a line, file, legal source, or active canon address.
+
+<details>
+<summary>Prior HANDOFF.md · original Git blob 56fbc4cce0f72312c5bb69cef687c53875ed8ecb (verbatim preserved)</summary>
+
 ## Active constructive-place campaign · source-grounded recovery
 
 The current unpublished-then-published campaign extends the verified
@@ -2466,3 +2492,6 @@ high-resolution results do not retroactively select parents or authorize
 Operator pet-name promotion. At authoring time, the campaign had not yet
 produced hosted results; inspect exact-head workflow receipts and archives
 before calling any offspring successful.
+
+
+</details>

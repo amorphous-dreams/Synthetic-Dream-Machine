@@ -1,3 +1,26 @@
+# Living Place · Current constructive contract
+
+## Author → compose → construct → witness → return
+
+`SpatialIntent` declares individually attributed `connect`, `shelter`, `ascend`, `bear` goals. The compositional obligation graph orders and names them without inventing a source camera, operator choice or geometric evidence. Conflicting native producers and dependency cycles refuse.
+
+`propose_from_spatial_intent` constructs bounded native hypotheses, then `place_source_seal` rejects rewritten original bodies or removed original relations. `place_intent_preview` exposes the obligation plan and source seal before audition. `place_campaign` archives both under immutable preregistration and binds plan identity to the existing OODA-HA phase receipts. Exact STEP import and independent native affordances remain the only acceptance witnesses for the bounded geometry.
+
+An explicitly named turn and corner may enter through `place-compose-route`, composing a two-hop crossing with other supported goals. The selector cannot infer a turn from prose or choose an artistic winner. The resulting genome must undergo native construction and witness.
+
+`place-source-transfer` uses the same source-bound place campaign and finite budgets across independently identified seed carriers. Its negative claims matter: no proven source-conditioned architecture, calibrated survey, physical safety or operator promotion. The existing read-only native review board remains a presentation, never a source.
+
+## Boundaries for further development
+
+Native BRep clearance, contact, shelter and ascent proposals stop below engineering safety, ADA compliance, global geographic scale and aesthetic judgment. More complex graph conflicts, disjoint camera registration, cross-parent topological inheritance and actual Unreal Editor round trips require new independently witnessed mechanisms.
+
+## Ashes holding ahu
+
+Prior design-time intent, provenance constraints, examples, incomplete proposals and test results follow verbatim, preserved as the previously living contract. The burn changes the navigational front door, not the source testimony.
+
+<details>
+<summary>Prior LIVING-PLACE.md · original Git blob facd1f140ec8ffad264a01f366b36b09bd3e89a9 (verbatim preserved)</summary>
+
 ## Active constructive-place campaign · source-grounded recovery
 
 The current unpublished-then-published campaign extends the verified
@@ -997,3 +1020,6 @@ different subjects. No measured floor volume proves the experience
 of sanctuary; no source image can certify a raised bridge's
 engineering; no procedural aesthetic reward should conceal a failed
 native bearing.
+
+
+</details>

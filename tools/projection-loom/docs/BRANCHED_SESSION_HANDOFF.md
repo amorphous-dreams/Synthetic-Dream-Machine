@@ -1,3 +1,20 @@
+# Projection Loom · Re-entry key
+
+**Repository:** `amorphous-dreams/Synthetic-Dream-Machine` · **PR:** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · **Branch:** `feature/green-jello-dinosaur-5--projection-loom`.
+
+Read the full branch-current boot at `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` from `feature/green-jello-dinosaur-5`, then fetch the current PR head, the four living documents and exact-head Actions. Never substitute a prior SHA for the active branch.
+
+**New YIN campaign:** composed spatial-obligation dependency ordering, source-body seal, operator-selected multi-goal orthogonal route, five-phase obligation receipts, and matched independent source-carrier native studies. Read `LIVING-PLACE.md` for the precise authority limits. No application version increments or compatibility shims.
+
+The original source and final artistic judgment remain operator-controlled. No merge, pet-name, Elyncia canon promotion or external-source o-takiage follows from code tests. The new batch must pass its actual exact-head CI.
+
+## Ashes holding ahu
+
+The previous entire handoff remains verbatim below; its historical head and command examples no longer supersede this re-entry key.
+
+<details>
+<summary>Prior BRANCHED_SESSION_HANDOFF.md · original Git blob b69811795c5885c3a9c7181b6d58f9fa2e392413 (verbatim preserved)</summary>
+
 # Projection Loom · evergreen session re-entry
 
 **Repository:** `amorphous-dreams/Synthetic-Dream-Machine`
@@ -31,3 +48,6 @@ Git comparisons against `experiment/loom-evolution-transfer-20261024`, `feature/
 **Open research:** independent RNG substreams, counterfactual birth-active versus same-genome birth-off, genuinely heritable primary spatial rearrangement, and eventual multiple reference images. These remain **unimplemented or unverified**, not completed features.
 
 **Boundary:** no new code, promotion, deletions or o-takiage during this archival handoff. The closing docs-only commit records verified state and leaves the branch ready for fresh re-entry.
+
+
+</details>

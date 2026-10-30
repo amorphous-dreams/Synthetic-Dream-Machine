@@ -1,3 +1,32 @@
+# Hephaestus · Current working board
+
+## Implemented, awaiting final exact-head acceptance
+
+- [x] Compose typed spatial obligations with goal-index dependency witnesses and compose/restrict (local Jing) checks.
+- [x] Seal native original bodies and relations across construction and preview; retain strict tamper refusals.
+- [x] Expose operator-selected multi-goal orthogonal routes without implicit choices.
+- [x] Record obligation identity across the existing five-phase candidate/epoch helm.
+- [x] Match independent source-carrier admission through equal-budget STEP place studies and typed CLI.
+- [x] Preserve source/proposal/evidence/operator boundaries and earlier native gallery, lineage and counterfactual studies.
+
+These checkboxes mean **code staged**, not whole-head CI green. The branch SHA and hosted Actions own the final verdict.
+
+## Work remaining
+
+- [ ] Close red CI at the final published head, including full CAD, generalized USD/STEP, Blender, repository and held-out gates.
+- [ ] Expand constructive constraint resolution and independent goal-composition alternatives with native negative witnesses.
+- [ ] Evolve heritable topology via bounded compatible cross-parent regrowth.
+- [ ] Prove source-conditioned morphology, not merely successful heterogeneous intake.
+- [ ] Deliver independently witnessed real editor round trips and whole-place operator comparison.
+- [ ] Reconcile all stable meme links and any archive moves before a future real retirement burn.
+
+## Ashes holding ahu
+
+The prior kanban chronology, wave receipts, failures and historical checklists follow verbatim. None disappears in this pass.
+
+<details>
+<summary>Prior HEPHAESTUS-KANBAN.md · original Git blob 6fa8fdea4b503f490eafe8cbe2dc01e90b98175f (verbatim preserved)</summary>
+
 ## Active constructive-place campaign · source-grounded recovery
 
 The current unpublished-then-published campaign extends the verified
@@ -1535,3 +1564,6 @@ The first generalized contract run for `9284c1d7` passed 87 tests and failed one
 ## N5-B · native-bearing reparent fully crosses immutable location (2026-10-29)
 
 **✶ Observe:** The new dual-BRep reparent could be verified by `native_support` but still needed a complete location ancestry and CLI handback. **⏿ Orient:** Changing a required parent is an attributable semantic choice within one unchanged STEP scene, not a silent geometry rewrite. **◇ Decide:** Reuse the existing `support_workspace` to fork an immutable child with original source snapshot, full causal parent manifest, prior/new ground, both independent contacts, a single OODA-HA session and exact scene digest. Provide one `native-support-reparent` CLI entrypoint rather than a new controller. **▶ Act:** Positive independent two-quay/bridge end-to-end native location supports old→new replacement and reopens the complete fork; tests refuse repeated destination, altered dual-contact receipts and disconnected new bearing. **↺ Aftermath:** Structural reparenting with unchanged geometry is now implemented; actual editor-guided reparent motion remains separate, and no load safety is inferred. Exact-head suite must pass.
+
+
+</details>
