@@ -1,3 +1,22 @@
+## N9 · Aftermath B · Two truths across the editor seam
+
+The real Blender import/capture/regenerate/reload scenario now
+exercises an authored place with both a physically separate
+canopy and rising native step bodies. The operator's small
+roof translation stays attributable to its editor source;
+the source and regenerated workspaces each keep independent
+manifest hashes. Actual native STEP geometric cover and stair
+contact evidence gets re-observed after the editor change,
+and the operator-owned note stays in the Blender presentation.
+
+OpenUSD carries mesh and scene presentation, while CadQuery/
+OpenCascade and independently imported STEP remain the native
+geometry witnesses. A successful editor operation does not
+grant structural engineering, legitimate camera calibration,
+a pet-name, artistic victory or Elyncia canon.
+
+---
+
 ## N9 · Aftermath X · Two true native outcomes from one starting place
 
 The matched trial now runs the full developmental and native

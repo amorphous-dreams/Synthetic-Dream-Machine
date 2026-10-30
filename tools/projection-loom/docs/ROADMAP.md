@@ -1,3 +1,36 @@
+## ☕ N9 · Real editor and intent aftermath B · 2026-10-29
+
+**N9-B** (`0b6ad36a`) adds a real application-side
+scenario to the already-provisioned official USD-enabled
+Blender 4.5 LTS CI witness. From two source-authored
+native sites and one explicit combined spatial intent,
+the Loom births both an independent overhead canopy
+and a finite rising tread chain. It packages a
+source-bound native/causal OpenUSD and STEP workspace,
+imports it into Blender, captures an operator-attributed
+small roof translation, regenerates and independently
+verifies the edited native scene, recomputes both
+spatial witnesses from the final STEP, and reloads
+while retaining the operator-owned Blender note.
+
+**Intent aftermath B:** a visual editor's manipulation
+does not become structural truth merely because
+the USD mesh looked right. Changed native geometry
+must still preserve separate roof cover and
+ascent proofs, source workspace ancestry, and
+operator-owned objects. The real Blender witness
+records both workspace digests and a no-promotion
+status. This extends N8's existing editor proof,
+not a mock or a replacement CAD engine.
+
+The application witness requires the dedicated
+Blender CI job at the latest SHA before acceptance.
+No actual Unreal Editor success, compliant stairs,
+weatherproof canopy, load certification, artistic
+winner or Elyncia canon promotion follows.
+
+---
+
 ## ☕ N9 · Native developmental trial and intent aftermath X · 2026-10-29
 
 **N9-X** (`6a8c62bf`) adds a source-fixed, paired, repeated
