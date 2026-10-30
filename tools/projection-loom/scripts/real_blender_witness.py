@@ -214,6 +214,70 @@ def main(argv=None):
                                  decision="abstain",reason="pending aesthetic judgment",
                                  destination=work/"transfer-review.json")
         assert verify_location_review(transfer_out,reviewed)
+        # N9: One place embodies two distinct architectural intentions.
+        # Blender's mesh presentation may change a transform, while native
+        # STEP must independently re-witness BOTH spatial relationships.
+        from projection_loom.developmental import GrowthNode, GrowthProgram
+        from projection_loom.place_genome import PlaceGenome, PlaceBody, propose_from_spatial_intent
+        from projection_loom.spatial_intent import SpatialIntent, SpatialGoal
+        from projection_loom.intent_seed import IntentContract
+        from projection_loom.place_affordances import assess_place
+        def _root_body(name,shape,position):
+            return PlaceBody(name,GrowthProgram((GrowthNode(
+                "root","foundation",size=shape),)),position)
+        n9_location="blender-native-interpreted-architecture"
+        n9_source=PlaceGenome((
+            _root_body("begin",(3.,3.,1.),(0.,0.,0.)),
+            _root_body("summit",(3.,3.,2.2),(9.,0.,0.))))
+        n9_intent=IntentContract(n9_location,"A rising passage and shelter",
+                                 ("ascent","cover"))
+        n9_spatial=SpatialIntent(n9_intent.identity,(
+            SpatialGoal("ascend","begin","summit",.9,.6),
+            SpatialGoal("shelter","begin","roof",.9,1.1)), "operator")
+        n9_genome=propose_from_spatial_intent(n9_source,n9_spatial)
+        assert len(n9_genome.ascents)==1 and len(n9_genome.bodies)>=5
+        n9_inventory=LocationStack(n9_location)
+        n9_inventory.add_frame(Frame("authored-local","local3d","m"))
+        n9_root=work/"n9-blender-source"
+        n9_origin=create_workspace(n9_inventory,n9_genome.declaration(n9_location),n9_root)
+        n9_before=assess_place(n9_root/"scene",n9_genome,n9_spatial)
+        if not n9_before["all_declared_goals_witnessed"]:
+            raise RuntimeError("Authored STEP canopy/ascent lack native proof before Blender")
+        n9_blend=work/"n9-interpreted.blend"
+        if "LOOM_BLENDER_IMPORT" not in invoke("import","--bundle",n9_root/"scene",
+                                                "--blend",n9_blend,"--operator-note"):
+            raise RuntimeError("Real Blender refused compound architectural place")
+        n9_edit_path=work/"n9-proposal.json"
+        n9_capture=invoke("capture","--bundle",n9_root/"scene",
+                          "--ground",n9_root/"ground.json","--blend",n9_blend,
+                          "--proposal",n9_edit_path,"--test-move","roof:0.25,0,0",
+                          "--actor","blender-n9-operator")
+        if "LOOM_BLENDER_PROPOSAL" not in n9_capture:
+            raise RuntimeError("Blender did not capture authored canopy movement")
+        n9_edit=json.loads(n9_edit_path.read_text(encoding="utf8"))
+        if n9_edit["edits"] != [{"entity_id":"roof","kind":"translate",
+                                 "delta":[.25,0.,0.]}]:
+            raise RuntimeError("Blender canopy transform was not captured as authored")
+        n9_destination=work/"n9-blender-regenerated"
+        n9_after=edit_workspace(n9_root,n9_edit,n9_destination)
+        if not verify_workspace(n9_destination)["valid"]:
+            raise RuntimeError("N9 native and causal place failed independent rehydration")
+        updated=[]
+        for body in n9_genome.bodies:
+            if body.entity_id=="roof":
+                updated.append(PlaceBody("roof",body.program,
+                               (body.translation[0]+.25,*body.translation[1:])))
+            else:
+                updated.append(body)
+        n9_moved=PlaceGenome(tuple(updated),n9_genome.walkways,n9_genome.ascents)
+        n9_proof=assess_place(n9_destination/"revision"/"scene",n9_moved,n9_spatial)
+        if not n9_proof["all_declared_goals_witnessed"]:
+            raise RuntimeError("Edited canopy lost native shelter or ascent evidence")
+        n9_reloaded=work/"n9-operator-preserved.blend"
+        n9_log=invoke("reload","--bundle",n9_destination/"revision"/"scene",
+                      "--blend",n9_blend,"--out",n9_reloaded)
+        if "OperatorNote" not in n9_log or not n9_reloaded.is_file():
+            raise RuntimeError("N9 regenerated spatial scene lost Blender operator objects")
         report = {"schema": "projection-loom/blender-native-editor-witness",
                   "blender_executable": blender,
                           "editor": "Blender",
@@ -233,6 +297,12 @@ def main(argv=None):
                           "transfer_workspace":transfer_accepted["sha256"],
                           "transfer_operator_note_preserved":True,
                           "transfer_review_sha256":reviewed["sha256"],
+                          "n9_intent_sha256":n9_intent.identity,
+                          "n9_native_spatial_goals":2,
+                          "n9_source_workspace_sha256":n9_origin["sha256"],
+                          "n9_edited_workspace_sha256":n9_after["sha256"],
+                          "n9_operator_note_preserved":True,
+                          "n9_native_spatial_reaudited":True,
                           "actor": "blender-automated-test",
                           "real_editor": True, "exact_cad_reaudited": 1}
         (work / "blender-witness.json").write_text(
