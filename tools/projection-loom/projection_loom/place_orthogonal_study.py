@@ -53,6 +53,11 @@ def verify_orthogonal_study(study,genome,spatial,*,location,corner_id):
             or report["automatic_selection"] is not False
             or report["physical_safety_certification"] is not False):
         raise ValueError("Matched bend study changed its provenance or authority")
+    # Reconcile the comparison against the two independently imported
+    # native arm receipts, not merely the parent genome identities.
+    if report.get("distinct_native_arm_witnesses") != (len({
+            canonical_json_sha256(row["native_evidence"]) for row in actual})==len(actual)):
+        raise ValueError("Matched bend comparison misstates independent native evidence")
     return report
 
 
@@ -89,6 +94,7 @@ def run_orthogonal_study(genome:PlaceGenome,spatial:SpatialIntent,out,*,
                 "native_attempts":len(outcomes),
                 "native_budget_per_arm":1,
                 "two_distinct_genomes":outcomes[0]["result_genome_sha256"]!=outcomes[1]["result_genome_sha256"],
+                "distinct_native_arm_witnesses":len({canonical_json_sha256(row["native_evidence"]) for row in outcomes})==len(outcomes),
                 "arms":outcomes,"automatic_selection":False,
                 "physical_safety_certification":False}
         save_once(root/"summary.json",report)

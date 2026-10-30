@@ -11,6 +11,7 @@ def test_native_two_turn_study_preserves_equal_budget_and_alternatives(tmp_path)
     result=run_orthogonal_study(genome,goal,destination,
                                 location="two-choice-site",corner_id="landing")
     assert result["same_original_native_site"]
+    assert result["distinct_native_arm_witnesses"]
     assert result["two_distinct_genomes"]
     assert result["native_attempts"]==2
     assert all(x["status"]=="native-route-witnessed" for x in result["arms"])
@@ -48,3 +49,17 @@ def test_matched_turn_cli_preserves_original_authorized_native_choices(tmp_path)
     assert record==main(["place-orthogonal-study-verify",*argv,"--study",str(folder)])
     assert record["native_budget_per_arm"]==1
     assert record["two_distinct_genomes"]
+
+
+def test_forged_comparison_cannot_promote_distinctness(tmp_path):
+    genome,goal=site()
+    destination=tmp_path/"turns"
+    run_orthogonal_study(genome,goal,destination,
+                         location="two-choice-site",corner_id="landing")
+    path=destination/"summary.json"
+    row=json.loads(path.read_text())
+    row["distinct_native_arm_witnesses"]=False
+    path.write_text(json.dumps(row))
+    with pytest.raises(ValueError,match="distinct|provenance"):
+        verify_orthogonal_study(destination,genome,goal,
+                                location="two-choice-site",corner_id="landing")
