@@ -77,16 +77,26 @@ def observed_place_descriptor(genome:PlaceGenome,affordances):
             raise ValueError("Native segment evidence missing from spatial descriptor")
         routes.append({"hops":len(segments),
                        "width":min(x["route_width_lower_bound"] for x in segments),
-                       "axes":sorted(set(x["principal_axis"] for x in segments))})
+                       "axes":sorted(set(x["principal_axis"] for x in segments)),
+                       "ordered_axes":[x["principal_axis"] for x in segments],
+                       "segment_widths":[x["route_width_lower_bound"] for x in segments]})
     widths=([x["width"] for x in routes]+[x["width"] for x in cover]
             +[x["width"] for x in ascents]
             +[x["native_contact_area"]**.5 for x in bearings])
     width=min(widths)
     hops=max((x["hops"] for x in routes),default=0)
     axis_count=len(set(axis for route in routes for axis in route["axes"]))
+    # An x-then-y and y-then-x journey have the same axis set and hop
+    # count, yet organize different places. Add route order without
+    # ranking either form. Zero means no witnessed passage.
+    sequences=sorted(tuple(route["ordered_axes"]) for route in routes)
+    first_axis=(0 if not sequences else 1 if sequences[0][0]=="x" else 2)
+    turns=max((sum(a!=b for a,b in zip(route["ordered_axes"],
+                                        route["ordered_axes"][1:]))
+               for route in routes),default=0)
     niche=(min(8,len(genome.walkways)),min(8,hops),min(8,int(width*2)),
            min(2,axis_count),min(8,len(cover)),min(8,len(ascents)),
-           min(8,len(bearings)))
+           min(8,len(bearings)),first_axis,min(8,turns))
     return {"schema":"projection-loom/observed-place-morphology",
             "native_scene_sha256":affordances["native_scene_sha256"],
             "body_count":len(genome.bodies),"walkway_count":len(genome.walkways),
@@ -99,6 +109,8 @@ def observed_place_descriptor(genome:PlaceGenome,affordances):
                                      if routes else None),
             "minimum_spatial_width":width,
             "max_native_route_hops":hops,"distinct_axes":axis_count,
+            "ordered_route_axis_sequences":[list(x) for x in sequences],
+            "max_native_route_turns":turns,
             "niche":list(niche),"architectural_fitness_claim":None,
             "artistic_fitness_claim":None}
 
