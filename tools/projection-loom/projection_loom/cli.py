@@ -100,6 +100,25 @@ def main(argv=None):
     p.add_argument('--exact-budget',type=int,default=3)
     p.add_argument('--finalists',type=int,default=2)
     p.add_argument('--seed',type=int,default=41)
+    p=commands.add_parser('place-run',help='Grow source-bound architectural locations under one OODA-HA journal')
+    p.add_argument('--inventory',type=Path,required=True)
+    p.add_argument('--intent',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--epochs',type=int,default=2)
+    p.add_argument('--offspring',type=int,default=3)
+    p.add_argument('--exact-budget',type=int,default=2)
+    p.add_argument('--seed',type=int,default=41)
+    p=commands.add_parser('place-verify',help='Re-audit the native source and all candidate aftermath')
+    p.add_argument('--campaign',type=Path,required=True)
+    p=commands.add_parser('place-review',help='Write operator-attributed review of one admitted location')
+    p.add_argument('--campaign',type=Path,required=True)
+    p.add_argument('--candidate',required=True)
+    p.add_argument('--actor',required=True)
+    p.add_argument('--decision',choices=('accept','abstain','dissent'),required=True)
+    p.add_argument('--reason',default='')
+    p.add_argument('--out',type=Path,required=True)
     p=commands.add_parser('native-support-propose',
                           help='Check exact BRep bearing contact and propose typed causal support')
     p.add_argument('--ground',type=Path,required=True)
@@ -432,6 +451,31 @@ def main(argv=None):
         else:
             result = validate_variants(args.comparison)
         print(json.dumps(result, indent=2))
+        return result
+    if args.command in ('place-run','place-verify','place-review'):
+        from .place_campaign import run_place_campaign,verify_place_campaign,review_place_candidate
+        if args.command == 'place-run':
+            from .intent_seed import IntentContract
+            from .spatial_intent import SpatialIntent
+            from .place_genome import PlaceGenome
+            from .location_stack import LocationStack
+            intent_data=json.loads(args.intent.read_text(encoding='utf8'))
+            if set(intent_data)!={'location','aim','objectives','invariants','budgets'}:
+                raise ValueError('Place-run IntentContract needs exact author-supplied fields')
+            intent=IntentContract(intent_data['location'],intent_data['aim'],
+                tuple(intent_data['objectives']),tuple(intent_data['invariants']),
+                tuple(tuple(x) for x in intent_data['budgets']))
+            result=run_place_campaign(LocationStack.load(args.inventory),intent,
+                SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8'))),
+                PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8'))),
+                args.out,epochs=args.epochs,offspring=args.offspring,
+                exact_budget=args.exact_budget,seed=args.seed)
+        elif args.command == 'place-verify':
+            result=verify_place_campaign(args.campaign)
+        else:
+            result=review_place_candidate(args.campaign,args.candidate,actor=args.actor,
+                   decision=args.decision,reason=args.reason,destination=args.out)
+        print(json.dumps(result,indent=2))
         return result
     if args.command in ('location-review','location-review-verify'):
         from .location_review import review_location, verify_location_review

@@ -37,3 +37,20 @@ def test_unimplemented_goal_cannot_be_credited_as_built(tmp_path):
                               epochs=1,offspring=1,exact_budget=1)
     assert result["admitted"]==0
     assert result["candidates"][0]["status"]=="spatial-unverified"
+
+def test_review_requires_explicit_operator_choice_and_valid_witness(tmp_path):
+    from projection_loom.place_campaign import review_place_candidate
+    data=setup()
+    out=tmp_path/"reviewable"
+    result=run_place_campaign(*data,out,epochs=1,offspring=1,exact_budget=1)
+    ident=next(row["candidate_id"] for row in result["candidates"]
+               if row["status"]=="admitted")
+    record=review_place_candidate(out,ident,actor="operator",decision="accept",
+             reason="Retain this walkable-corridor proposal for future authored work",
+             destination=tmp_path/"decision.json")
+    assert record["review"]["automatic_canon_promotion"] is False
+    assert record["automatic_next_epoch"] is False
+    assert record["genome_path"].endswith("genome.json")
+    with pytest.raises(ValueError,match="uniquely named"):
+        review_place_candidate(out,"invented",actor="operator",decision="accept",
+             reason="",destination=tmp_path/"wrong.json")

@@ -186,3 +186,20 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
         (out/"FAILED").write_text("Incomplete living-place campaign; not an accepted study\n",
                                  encoding="utf8")
         raise
+
+def review_place_candidate(campaign,candidate_id,*,actor,decision,reason,destination):
+    """Explicit operator choice references a real audited location candidate."""
+    summary=verify_place_campaign(campaign)
+    found=[x for x in summary["candidates"] if x["candidate_id"]==candidate_id]
+    if len(found)!=1 or found[0]["status"]!="admitted":
+        raise ValueError("Only uniquely named, natively admitted place candidates can be reviewed")
+    from .location_review import review_location, verify_location_review
+    workspace=Path(campaign)/"candidates"/candidate_id/"workspace"
+    witness=review_location(workspace,actor=actor,decision=decision,
+                            reason=reason,destination=destination)
+    if not verify_location_review(workspace,witness):
+        raise ValueError("Operator review did not reverify its location")
+    return {"candidate_id":candidate_id,"genome_path":str(
+                Path(campaign)/"candidates"/candidate_id/"genome.json"),
+            "review":witness,"automatic_next_epoch":False,
+            "automatic_promotion":False}
