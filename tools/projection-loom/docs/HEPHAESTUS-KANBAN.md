@@ -1,3 +1,54 @@
+## ☕ N8 · The Place That Grows · 2026-10-29 · implementation in acceptance
+
+Operator-directed iterative feature/intent-after-math:
+- **Feature I:** `spatial_intent.py` introduces independently attributed,
+  digest-bound `SpatialGoal` proposals instead of executing an Art Sigil.
+  A known goal can be interpreted without inventing surveyed scale.
+- **Feature II:** `place_genome.py` holds two-to-sixteen independently compiled
+  source-independent CAD assemblies and bounded walkway endpoints.
+- **Feature III:** `place_affordances.py` tests two **actual imported STEP**
+  bearing surfaces plus a finite, native BRep-tested empty agent headroom
+  corridor. One eastward connecting deck receives a limited geometric witness;
+  `shelter` and `ascend` explicitly abstain pending independent implementations.
+- **Intent aftermath I:** `verify_place_affordances` reimports and independently
+  rechecks recorded native evidence; false corridor receipts fail.
+- **Feature IV:** `place_campaign.py` grows actual multi-body descendants,
+  validates intent before selection, retains full causal/native
+  `location_workspace` witnesses, and emits attributed OODA-HA receipts under
+  the **existing** five-phase `OODAHAJournal`.
+- **Intent aftermath II:** bounded lane and width mutations, niche-preserving
+  parent alternatives, no automatic artistic objective, no fabricated source
+  fitness for image-free material.
+- **Feature V:** `place-run`, `place-verify`, `place-review` CLIs retain
+  the distinction between accepted native geometry and operator selection.
+- **Feature VI:** the dedicated real STEP/OpenUSD lane now runs
+  `scripts/place_intent_crucible.py` and new spatial-intent, genome, route
+  and campaign tests, uploading original and descendant geometry and abstaining
+  operator review receipts. Other experiment-zero cohorts remain active.
+- **Intent aftermath III:** this record preserves authority and re-entry;
+  historical N7 text below carries old pending status even though N7 exact-head
+  CAD, generalized STEP/Blender, repository CI and held-out workflows **all
+  passed** at `1717e72a`.
+
+**Proposed, NOT accepted pending new exact-head Actions:** Three real
+crossing-focused structural waves and three intent-consolidation passes have
+landed on an unpublished commit chain. Run current CI and reproduce any failure
+before declaring acceptance. N8 does not yet implement generic across-surface
+navigation, complete sanctuary grammar, physically certified routes, Unreal
+Editor witness, source-independent camera reconstruction, or full
+artistic-value inference.
+
+**Whole-machina boundary:** Art Sigil invites; current Fire binds an explicit
+spatial hypothesis; one OODA-HA helm coordinates choices; per-body CAD and
+STEP prove limited geometry; scene workspace carries source/causal ancestry;
+review remains operator-attributed. No artistic winner, pet name, o-takiage,
+Elyncia canon, physical safety or PR merge comes from a green run.
+
+See [LIVING-PLACE](LIVING-PLACE.md) for the source of truth and
+`tests/test_hephaestus_place_campaign.py` for the executed vertical slice.
+
+---
+
 ## ☕ N7 ownership retirement · 2026-10-29 · implemented, awaiting exact-head CI
 
 **Operator authorization:** close the legacy-owner gap in PR #84, including migration, actual deletion of superseded code, and retesting. Base before retirement: `58d0fe292fc9fe1cf9c00382249ef3b3f6f68e9d` (N6 work). Earlier N6 CI at that code head failed **two** source-admission refusals because unregistered `registered_views()` returned `None` and `LocationStack.admit_registered_views` iterated it. Do not claim N6 native acceptance from the successful repo-wide CI alone.
