@@ -14,17 +14,24 @@
  *   S2  RED: the genuine row deleted and the sibling's in its place: the canon still reads the charter's own, and the
  *       realm doc holds the genuine row again (the steward restores its own seal).
  *   S3  CONTROL: untouched, `@lararium` reads the registered document; a bag the steward never sealed stands none.
+ *   S4  RED: the steward's OWN seal over another document replayed into its row: the kept registration pins the canon,
+ *       and the registry row reads the kept one again (a valid signature carries no freshness).
+ *   S5  RED: a registration that stood before the hearth kept it is kept at the next standing read, so a later
+ *       deletion of its row restores it.
+ *   S6  RED: a kept file that does not verify (another document under the steward's name, or torn bytes) never lands
+ *       on the registry and never throws the read.
  */
 import { afterAll, describe, expect, test, vi } from "vitest";
-import { cpSync, mkdtempSync, rmSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   LARARIUM_DOC_URI, LARES_DOC_URI, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc, foldRealmBags, materializeSharedLarDoc,
-  realmBagKey, realmDocUrl, signRealmBagRegistration, writeRealmBagRegistration, type LarDoc, type StewardSigner,
+  realmBagKey, realmDocUrl, signRealmBagRegistration, writeRealmBagRegistration, type LarDoc, type RealmBagRegistration, type StewardSigner,
 } from "@lararium/mesh";
 import { standKahuCanon } from "../src/kahu-realm.js";
 import { readNexusDoc } from "../src/nexus-doc.js";
+import { mintNexusLeaf } from "../src/nexus-leaf.js";
 import { loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { ownedStore } from "../src/owned-store.js";
 import { larBootstrapPath, larDataDir, larSealHome } from "../src/vessel-paths.js";
@@ -50,49 +57,112 @@ describe("the Kahu canon reads only its charter's steward", () => {
   const r = mkdtempSync(join(tmpdir(), "lar-kahu-stewards-"));
   cpSync(GENESIS, join(r, "genesis"), { recursive: true, filter: (s) => !s.endsWith("social-bootstrap.json") });
   roots.push(r);
+  let founded: Promise<void> | null = null;
 
-  test("S1/S2/S3 on a real founding", async () => {
-    await withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "data", "lares", "vessel"), genesisDir: join(r, "genesis") }));
+  type Scene = {
+    repo: Parameters<typeof standKahuCanon>[0]["repo"]; aid: string; sealHome: string;
+    realm: Awaited<ReturnType<typeof materializeSharedLarDoc>>;
+    genuine: RealmBagRegistration; lararium: RealmBagRegistration;
+    stand: () => ReturnType<typeof standKahuCanon>;
+    rowOf: (bag: string, steward: string) => { docUrl?: string } | undefined;
+    keptPath: (bag: string) => string;
+  };
+  /** One real founding for the file; each case opens the hearth's store on it and reads the genuine registrations off the kept files. */
+  async function scene(fn: (s: Scene) => Promise<void>): Promise<void> {
+    founded ??= withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "data", "lares", "vessel"), genesisDir: join(r, "genesis") })).then(() => undefined);
+    await founded;
     await withLarRoot(r, async () => {
       const vesselKey = await loadVesselVerifyingKey();
       const sealHome = larSealHome();
       const aid = readNexusDoc(sealHome)!.sealLineage![0]!.epochCid;
-      const stand = (repo: Parameters<typeof standKahuCanon>[0]["repo"]) => standKahuCanon({ repo, sealHome, vesselKey, personaGroupId: groupPin() });
+      const keptPath = (bag: string) => join(sealHome, "nexus", "kahu-realm", aid, `${encodeURIComponent(bag)}.json`);
       await ownedStore(larDataDir(), async (repo) => {
         const realm = await materializeSharedLarDoc(repo, realmDocUrl(aid), "realm");
-        const genuine = (await foldRealmBags(realm.doc(), aid)).get(LARES_DOC_URI)!;
-        const lararium = (await foldRealmBags(realm.doc(), aid)).get(LARARIUM_DOC_URI)!;
-        expect(genuine.keptBy).toHaveLength(1);
-        const before = await stand(repo);
-        expect(before).toEqual({ lares: genuine.docUrl, lararium: lararium.docUrl });   // CONTROL: the registered documents
-
-        // S1: a sibling seals its own registration for @lares, naming another document, beside the genuine row.
-        const hand = await sibling(77);
-        const poison = repo.create<LarDoc>(emptyLarDoc());
-        await poison.whenReady();
-        const rec = await signRealmBagRegistration({ realmId: aid, bagUri: LARES_DOC_URI, docUrl: poison.url, readTier: "contract" }, [hand]);
-        realm.change((d) => writeRealmBagRegistration(d, rec, hand.signer, true));
-        expect((await foldRealmBags(realm.doc(), aid)).get(LARES_DOC_URI), "the plain fold reads two docs under one name as none").toBeUndefined();
-        const beside = await stand(repo);
-        expect(beside.lares, "S1: the canon stays the charter's own beside a sibling's row").toBe(genuine.docUrl);
-        expect(beside.lararium).toBe(lararium.docUrl);
-
-        // S2: the genuine row deleted; the sibling's stands alone on the registry.
-        realm.change((d) => { delete d.tiddlers[realmBagKey(LARES_DOC_URI, genuine.keptBy[0]!)]; });
-        expect((await foldRealmBags(realm.doc(), aid)).get(LARES_DOC_URI)?.docUrl, "the plain fold now reads the sibling's document").toBe(poison.url);
-        const replaced = await stand(repo);
-        expect(replaced.lares, "S2: the canon still reads the charter's own").toBe(genuine.docUrl);
-        const restored = realm.doc()?.tiddlers?.[realmBagKey(LARES_DOC_URI, genuine.keptBy[0]!)];
-        expect(restored, "S2: the steward restored its own row").toBeDefined();
-        expect(JSON.parse((restored as { text?: string; tiddler?: { text?: string } })?.text ?? (restored as { tiddler?: { text?: string } })?.tiddler?.text ?? "{}") as { docUrl?: string }).toMatchObject({ docUrl: genuine.docUrl });
-
-        // S3: a bag the steward never sealed stands none, whatever a sibling writes.
-        const strayDoc = repo.create<LarDoc>(emptyLarDoc());
-        await strayDoc.whenReady();
-        const stray = await signRealmBagRegistration({ realmId: aid, bagUri: "lar:///ha.ka.ba/bags/stray", docUrl: strayDoc.url, readTier: "contract" }, [hand]);
-        realm.change((d) => writeRealmBagRegistration(d, stray, hand.signer, true));
-        expect(await stand(repo)).toEqual({ lares: genuine.docUrl, lararium: lararium.docUrl });
+        // The founding's registration: the kept one where the hearth keeps it, else the registry's fold.
+        const folded = await foldRealmBags(realm.doc(), aid);
+        const founding = (bag: string): RealmBagRegistration =>
+          existsSync(keptPath(bag)) ? JSON.parse(readFileSync(keptPath(bag), "utf8")) as RealmBagRegistration : folded.get(bag)!;
+        const genuine = founding(LARES_DOC_URI), lararium = founding(LARARIUM_DOC_URI);
+        const rowOf = (bag: string, steward: string) => {
+          const row = realm.doc()?.tiddlers?.[realmBagKey(bag, steward)] as { text?: string; tiddler?: { text?: string } } | undefined;
+          return row ? JSON.parse(row.text ?? row.tiddler?.text ?? "{}") as { docUrl?: string } : undefined;
+        };
+        await fn({ repo, aid, sealHome, realm, genuine, lararium, rowOf, keptPath,
+          stand: () => standKahuCanon({ repo, sealHome, vesselKey, personaGroupId: groupPin() }) });
       });
+    });
+  }
+  const freshDoc = async (repo: Scene["repo"]) => { const d = repo.create<LarDoc>(emptyLarDoc()); await d.whenReady(); return d.url; };
+
+  test("S3 — CONTROL: the founding stands the registered documents; a bag the steward never sealed stands none", async () => {
+    await scene(async ({ repo, aid, realm, genuine, lararium, stand }) => {
+      expect(genuine.keptBy).toHaveLength(1);
+      expect(await stand()).toEqual({ lares: genuine.docUrl, lararium: lararium.docUrl });
+      const hand = await sibling(78);
+      const stray = await signRealmBagRegistration({ realmId: aid, bagUri: "lar:///ha.ka.ba/bags/stray", docUrl: await freshDoc(repo), readTier: "contract" }, [hand]);
+      realm.change((d) => writeRealmBagRegistration(d, stray, hand.signer, true));
+      expect(await stand()).toEqual({ lares: genuine.docUrl, lararium: lararium.docUrl });
+    });
+  });
+
+  test("S1 — a sibling-signed registration beside the genuine one leaves the canon the charter's own", async () => {
+    await scene(async ({ repo, aid, realm, genuine, lararium, stand }) => {
+      const hand = await sibling(77);
+      const rec = await signRealmBagRegistration({ realmId: aid, bagUri: LARES_DOC_URI, docUrl: await freshDoc(repo), readTier: "contract" }, [hand]);
+      realm.change((d) => writeRealmBagRegistration(d, rec, hand.signer, true));
+      expect((await foldRealmBags(realm.doc(), aid)).get(LARES_DOC_URI), "the plain fold reads two docs under one name as none").toBeUndefined();
+      expect(await stand()).toEqual({ lares: genuine.docUrl, lararium: lararium.docUrl });
+    });
+  });
+
+  test("S2 — the genuine row deleted and a sibling's in its place: the canon reads the charter's own and the row stands again", async () => {
+    await scene(async ({ repo, aid, realm, genuine, stand, rowOf }) => {
+      const hand = await sibling(79);
+      const rec = await signRealmBagRegistration({ realmId: aid, bagUri: LARES_DOC_URI, docUrl: await freshDoc(repo), readTier: "contract" }, [hand]);
+      realm.change((d) => { writeRealmBagRegistration(d, rec, hand.signer, true); delete d.tiddlers[realmBagKey(LARES_DOC_URI, genuine.keptBy[0]!)]; });
+      expect((await stand()).lares, "the canon still reads the charter's own").toBe(genuine.docUrl);
+      expect(rowOf(LARES_DOC_URI, genuine.keptBy[0]!), "the steward restored its own row").toMatchObject({ docUrl: genuine.docUrl });
+    });
+  });
+
+  test("S4 — the steward's own seal over another document, replayed into its row, never moves the canon", async () => {
+    await scene(async ({ repo, aid, realm, genuine, stand, rowOf }) => {
+      const leaf = await mintNexusLeaf(0, aid);
+      const steward: StewardSigner = { signer: leaf.verifyingKey.toLowerCase(), sign: ed25519SignerFromSeed(leaf.seed) };
+      expect(steward.signer).toBe(genuine.keptBy[0]!.toLowerCase());
+      const older = await signRealmBagRegistration({ realmId: aid, bagUri: LARES_DOC_URI, docUrl: await freshDoc(repo), readTier: "contract" }, [steward]);
+      realm.change((d) => writeRealmBagRegistration(d, older, steward.signer, true));
+      expect((await stand()).lares, "the kept registration pins the canon").toBe(genuine.docUrl);
+      expect(rowOf(LARES_DOC_URI, steward.signer), "the registry row reads the kept registration again").toMatchObject({ docUrl: genuine.docUrl });
+    });
+  });
+
+  test("S5 — a registration that stood before the hearth kept it is kept at the next read, so a deleted row restores", async () => {
+    await scene(async ({ realm, lararium, stand, rowOf, keptPath }) => {
+      rmSync(keptPath(LARARIUM_DOC_URI));
+      expect((await stand()).lararium).toBe(lararium.docUrl);
+      expect(existsSync(keptPath(LARARIUM_DOC_URI)), "the standing read keeps the steward's registration").toBe(true);
+      realm.change((d) => { delete d.tiddlers[realmBagKey(LARARIUM_DOC_URI, lararium.keptBy[0]!)]; });
+      expect((await stand()).lararium, "the deleted row restores from the kept registration").toBe(lararium.docUrl);
+      expect(rowOf(LARARIUM_DOC_URI, lararium.keptBy[0]!)).toMatchObject({ docUrl: lararium.docUrl });
+    });
+  });
+
+  test("S6 — a kept file that does not verify never lands on the registry, and torn bytes never throw the read", async () => {
+    await scene(async ({ repo, realm, genuine, stand, rowOf, keptPath }) => {
+      const kept = readFileSync(keptPath(LARES_DOC_URI), "utf8");
+      const forged = await freshDoc(repo);
+      try {
+        writeFileSync(keptPath(LARES_DOC_URI), JSON.stringify({ ...genuine, docUrl: forged }));
+        realm.change((d) => { delete d.tiddlers[realmBagKey(LARES_DOC_URI, genuine.keptBy[0]!)]; });
+        expect((await stand()).lares, "no forged document stands").toBeUndefined();
+        expect(rowOf(LARES_DOC_URI, genuine.keptBy[0]!)?.docUrl, "the forged registration never reaches the registry").not.toBe(forged);
+        writeFileSync(keptPath(LARES_DOC_URI), "{ torn");
+        await expect(stand(), "torn kept bytes read as no kept registration").resolves.toBeDefined();
+      } finally {
+        writeFileSync(keptPath(LARES_DOC_URI), kept);
+        expect((await stand()).lares, "the genuine kept registration restores the canon").toBe(genuine.docUrl);
+      }
     });
   });
 });
