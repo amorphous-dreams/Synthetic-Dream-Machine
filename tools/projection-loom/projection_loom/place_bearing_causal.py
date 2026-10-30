@@ -91,8 +91,9 @@ def verify_bearing_support(source,genome,spatial,destination):
             or witness["native_scene_sha256"]!=receipt["source_native_scene_sha256"]):
         raise ValueError("Causal bearing lacks matching original native testimony")
     goal=spatial.goals[0]
-    contact=native_support(scene,goal.subject,goal.object,
-                           minimum_contact_area=max(.05,goal.min_width**2/8))
+    # Revalidate the original causal operation using its recorded native
+    # threshold; the separate spatial audit above checks the authored width.
+    contact=native_support(scene,goal.subject,goal.object)
     if (goal.subject!=receipt["lower"] or goal.object!=receipt["upper"]
             or contact["sha256"]!=receipt["native_contact_sha256"]):
         raise ValueError("Materialized causal bearing has changed its native contact")

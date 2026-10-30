@@ -102,3 +102,16 @@ def test_same_original_site_intents_make_different_native_construction_claims(tm
         package_scene(genome.declaration("covered-place"),tmp_path/name)
         result=assess_place(tmp_path/name,genome,spatial)
         assert result["all_declared_goals_witnessed"],result
+
+
+def test_native_shelter_core_uses_explicit_width_not_entire_roof_footprint(tmp_path):
+    genome,goal=fixture()
+    package_scene(genome.declaration("covered-place"),tmp_path/"scene")
+    result=assess_place(tmp_path/"scene",genome,goal)
+    assert result["all_declared_goals_witnessed"]
+    proof=result["goals"][0]["proof"]
+    assert proof["clear_core_width"]==pytest.approx(goal.goals[0].min_width)
+    assert proof["clear_core_floor_area"]==pytest.approx(goal.goals[0].min_width**2)
+    assert proof["native_planar_cover_area"]>proof["clear_core_floor_area"]
+    assert proof["scope"]=="horizontal-roof-over-bounded-clear-core-only"
+    assert not proof["occupancy_certification"]

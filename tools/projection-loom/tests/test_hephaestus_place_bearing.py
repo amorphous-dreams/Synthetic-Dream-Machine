@@ -133,6 +133,6 @@ def test_intent_grows_supported_canopy_without_blocking_center_refuge(tmp_path):
     assert statuses=={"geometric-bearing-proposal","geometric-shelter-proposal"}
     cover=next(x["proof"] for x in evidence["goals"]
                if x["status"]=="geometric-shelter-proposal")
-    assert cover["clear_core_floor_area"]==.64
+    assert cover["clear_core_floor_area"]==pytest.approx(.64)
     assert cover["intrusions"]==0
     assert not cover["load_certification"] and not cover["occupancy_certification"]

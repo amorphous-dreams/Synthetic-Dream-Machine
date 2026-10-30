@@ -1,3 +1,35 @@
+## N9-SB · Intent aftermath: perimeter contact preserves a central refuge core
+
+One `bear` goal can produce a physically grounded *contact geometry*:
+a separate native column attaches the floor to the overhead body through
+two independent BRep faces. A second, simultaneously authored `shelter`
+goal must protect the central region from that column. The constructor
+places the proposed native column toward the overlapping perimeter,
+rather than at the floor's center. This can coexist with a **bounded
+central clear core** measured independently in exact STEP.
+
+The `native_shelter_cover` witness now names exactly what it checks:
+a square central floor area of `min_width × min_width`, a finite
+headroom between top floor and roof underside, positive planar
+cover and no intersecting *other* native solids within the bounded
+core. Material elsewhere beneath the same roof may exist, and the
+receipt explicitly does **not** claim a fully unoccupied room, usable
+doorway, circulation, occupancy, engineered column safety or weather
+protection. The exact core width and area ride the receipt, together
+with the changed scope string. A source-bound witness cannot certify
+more than the coordinates it actually tested.
+
+**CI recovery:** direct one-contact causal support materializes through
+the existing `propose_support` threshold, while the independent
+`SpatialGoal(bear)` still validates its explicitly authored contact
+minimum. The causal replay must recompute the contact with the
+operation's actual original parameters; mismatching thresholds changes
+the receipt digest despite identical native faces. The two proofs
+remain independently required. This fixes a prior red test without
+raising or lowering either threshold.
+
+---
+
 ## N9-CB3/4 · Intent aftermath: two native facts, two causal events
 
 A grounded column joins floor and roof by **two native contacts**.
