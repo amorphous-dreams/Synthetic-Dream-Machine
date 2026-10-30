@@ -25,6 +25,11 @@ def _arms(spatial):
     for index in range(len(spatial.goals)):
         names.append((f"without-{index:02d}",
                       tuple(goal for i,goal in enumerate(spatial.goals) if i!=index)))
+    # Individual-intent controls expose which goals construct without
+    # collaboration. For two goals, leave-one-out already gives both controls.
+    if len(spatial.goals)>2:
+        for index,goal in enumerate(spatial.goals):
+            names.append((f"only-{index:02d}",(goal,)))
     return names
 
 
@@ -39,6 +44,7 @@ def _manifest(intent,spatial,genome):
                      [goal.to_dict() for goal in goals])}
                     for name,goals in _arms(spatial)],
             "native_auditions_per_arm":1,
+            "counterfactual_design":"full-leave-one-out-and-single-goal-controls",
             "source_camera_authority":"none",
             "automatic_artistic_winner":False,
             "automatic_promotion":False}
