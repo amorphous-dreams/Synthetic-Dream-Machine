@@ -44,10 +44,11 @@ function open() {
   cleanups.push(() => repo.shutdown().then(() => {}));
   const registry = new VerbTable();
   registry.register("probe-worn", async (_args, context) => ({ worn: (context as { worn?: unknown }).worn ?? null }));
+  registry.register("probe-context", async (_args, context) => ({ worn: { presenter: context.presenter, local: context.local === true } }));
   core.mountMainVerbs(registry);
   const say = (msg: unknown): void => { for (const l of [...listeners]) l(msg); };
-  const delegate = async (requestId: string, requestedBy: string): Promise<unknown> => {
-    say(mkDaemonDelegateVerb({ requestId, verb: "probe-worn", args: {}, requestedBy }));
+  const delegate = async (requestId: string, requestedBy: string, verb = "probe-worn"): Promise<unknown> => {
+    say(mkDaemonDelegateVerb({ requestId, verb, args: {}, requestedBy }));
     for (let i = 0; i < 50; i++) {
       const r = crossed.find((m) => (m as { type?: string; requestId?: string }).type === "daemon:verb-result" && (m as { requestId?: string }).requestId === requestId);
       if (r) { const m = r as { result?: { worn?: unknown }; error?: string }; return m.result ? m.result.worn : m.error; }
@@ -75,3 +76,15 @@ test("RED: a session's delegated verb reaches main's handler wearing the face ma
   core.placeVerb({ origin: "surface", verb: "probe-worn", args: {}, requestedBy: ATOM_1, face: "subject-1", requestId: "p-1", ordinal: 1 } as never);
   expect(await delegate("p-1", ATOM_1)).toBeNull();
 });
+
+test("RED: a booked session's delegate presents as the booked presenter and reads local; CONTROL: an unbooked delegate keeps its claim and reads non-local", async () => {
+  const { core, delegateContext } = openWithContext();
+  core.placeVerb({ origin: "channel", verb: "probe-context", args: {}, requestedBy: ATOM_1, face: "subject-1", requestId: "c-1", ordinal: 1 } as never);
+  expect(await delegateContext("c-1", ATOM_0)).toEqual({ presenter: ATOM_1, local: true });
+  expect(await delegateContext("c-unbooked", ATOM_0)).toEqual({ presenter: ATOM_0, local: false });
+});
+
+function openWithContext() {
+  const { core, delegate } = open();
+  return { core, delegateContext: (requestId: string, requestedBy: string) => delegate(requestId, requestedBy, "probe-context") };
+}
