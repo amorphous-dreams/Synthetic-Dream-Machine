@@ -1,3 +1,42 @@
+## ☕ N9-R · 2026-10-29 · multi-goal Fire, native composition and intent aftermath
+
+From the audited earlier head `27ddfd8e` (N9 native, STEP/Blender,
+CAD and held-out checks passed; full repository CI had one
+`evergreen-boundary` narration-budget violation), the following
+strictly sequential waves added:
+
+- **N9-R1 feature:** `fire_spatial.bind_fire_spatial_set` binds
+  1..8 operator-selected, sorted, unique alternatives through the
+  existing individual Fire/source/location/native-entity validators.
+  Their conjunction forms one digest-bound `SpatialIntent` while
+  preserving every individual selected alternative and witness.
+- **N9-R1 aftermath:** replays independently selected relations;
+  rejects duplicate material goals, changed ordering, stale
+  original witnesses and altered child bindings.
+- **N9-R2 feature:** `fire-place-bind-set` CLI writes an immutable
+  full provenance record **and** a minimal ready-to-run
+  `SpatialIntent` file; `fire-place-verify-set` independently
+  reconstructs that source-bound selection.
+- **N9-R2 aftermath:** one synthetic, source-constant, two-goal
+  native scene requires its crossing and covered courtyard to
+  separately pass exact reimported STEP audits. One positive
+  relation cannot certify the other.
+
+**Acceptance:** new exact-head generalized contracts, USD/STEP,
+real Blender, CAD, repository CI and held-out checks still need
+execution. Existing CI `Witnesses` at `27ddfd8e` failed the
+independent evergreen-boundary narration ceiling (200 versus 199).
+Do not dismiss this as green or indiscriminately increase the
+budget; identify the added narration in context.
+
+Still open: richer architectural relations, broad cross-input held-out
+intent transfer, operator-staged review beyond the native receipts,
+actual Unreal Editor witness, human load/occupancy/accessibility
+certification, and avoiding an implicit artistic scalar winner.
+No Elyncia canon, pet-name, o-takiage or PR merge.
+
+---
+
 ## ☕ N9 · Complete proposal frontiers / intent aftermath PF · 2026-10-29
 
 **N9-PF** (`25c0f8d3`) records every finite
