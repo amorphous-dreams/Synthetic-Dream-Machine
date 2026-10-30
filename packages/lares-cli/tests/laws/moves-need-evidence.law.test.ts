@@ -138,17 +138,23 @@ describe("L11 · scanSource reports each real carrier as read", () => {
   const uriOf = (stem: string) => `lar:///ha.ka.ba/lares/api/${stem}`;
   const body = (n: number) => `# note ${n}\n\nbody ${n}\n`;
 
-  /** Land `olds` (stem -> content id), then move: drop each old file, write each `news` file. */
-  function scenario(olds: readonly number[], news: readonly number[]) {
+  /** A landed carrier's fate in the wave: it vanishes, stands untouched, or a hand edits it to another content. */
+  type Old = { readonly c: number; readonly fate: "vanish" | "stay" | number };
+
+  /** Land `olds`, then run the wave: each old file meets its fate, each `news` content lands under a fresh name. */
+  function scenario(olds: readonly Old[], news: readonly number[]) {
     const root = mkdtempSync(join(tmpdir(), "l11-scan-"));
     try {
       const dir = join(root, "bags", "@x", "ha.ka.ba", "lares", "api");
       mkdirSync(dir, { recursive: true });
       const src = join(root, "bags", "@x");
       const tree = new SyncedTree(join(root, "synced.json"));
-      olds.forEach((c, i) => writeFileSync(join(dir, `old${i}.md`), body(c)));
+      olds.forEach((o, i) => writeFileSync(join(dir, `old${i}.md`), body(o.c)));
       for (const r of scanSource(root, src, TO, tree)!.rows) tree.set(syncedTreeKey(TO, r.uri), r.file, r.diskHash);
-      olds.forEach((_, i) => rmSync(join(dir, `old${i}.md`)));
+      olds.forEach((o, i) => {
+        if (o.fate === "vanish") rmSync(join(dir, `old${i}.md`));
+        else if (typeof o.fate === "number") writeFileSync(join(dir, `old${i}.md`), body(o.fate));
+      });
       news.forEach((c, i) => writeFileSync(join(dir, `new${i}.md`), body(c)));
       const scan = scanSource(root, src, TO, tree)!;
       return {
@@ -157,27 +163,45 @@ describe("L11 · scanSource reports each real carrier as read", () => {
       };
     } finally { rmSync(root, { recursive: true, force: true }); }
   }
-  const model = (olds: readonly number[], news: readonly number[]) => {
-    const rows = news.map((c, i) => {
-      const from = olds.map((o, j) => [o, j] as const).filter(([o]) => o === c);
-      const ok = count(news, (n) => n === c) === 1 && from.length === 1;
+  /** What the disk holds after the wave for an old carrier, or null when it vanished. */
+  const holds = (o: Old) => (o.fate === "vanish" ? null : o.fate === "stay" ? o.c : o.fate);
+  /**
+   * The model. A standing carrier reads `unchanged`, or `changed` when its bytes moved. A new file renames iff
+   * exactly one carrier of the wave holds its content (the new and changed rows alike), exactly one landed
+   * carrier observed that content, and that carrier vanished: a copy leaves its source standing and lands new.
+   */
+  const model = (olds: readonly Old[], news: readonly number[]) => {
+    const standing = olds.flatMap((o, i) => {
+      const now = holds(o);
+      return now === null ? [] : [[uriOf(`old${i}`), now === o.c ? "unchanged" : "changed", null] as const];
+    });
+    const wave = [...news, ...olds.filter((o) => holds(o) !== null && holds(o) !== o.c).map((o) => holds(o)!)];
+    const arrived = news.map((c, i) => {
+      const from = olds.map((o, j) => [o, j] as const).filter(([o]) => o.c === c);
+      const ok = count(wave, (w) => w === c) === 1 && from.length === 1 && from[0]![0].fate === "vanish";
       return [uriOf(`new${i}`), ok ? "renamed" : "new", ok ? uriOf(`old${from[0]![1]}`) : null] as const;
     });
-    return { rows: rows.sort(), dels: rows.flatMap((r) => (r[2] === null ? [] : [r[2]])).sort() };
+    const rows = [...standing, ...arrived].sort();
+    return { rows, dels: arrived.flatMap((r) => (r[2] === null ? [] : [r[2]])).sort() };
   };
-  const ids = fc.array(fc.integer({ min: 0, max: 3 }), { maxLength: 4 });
+  const content = fc.integer({ min: 0, max: 3 });
+  const olds = fc.array(fc.record({ c: content, fate: fc.oneof(fc.constant<"vanish">("vanish"), fc.constant<"stay">("stay"), content) }), { maxLength: 4 });
+  const news = fc.array(content, { maxLength: 4 });
 
-  test.prop([ids, ids], { numRuns: 15, examples: [
-    [[0], [0]],          // the rename
-    [[0], [0, 0]],       // two arrived files share the vanished carrier's content
-    [[0, 0], [0]],       // two vanished carriers hold it
-    [[0], [1]],          // a different content lands as new
-  ] })("a moved carrier pairs iff its content matches one vanished and one arrived file", (olds, news) => {
-    expect(scenario(olds, news)).toEqual(model(olds, news));
+  test.prop([olds, news], { numRuns: 20, examples: [
+    [[{ c: 0, fate: "vanish" }], [0]],                               // the rename
+    [[{ c: 0, fate: "vanish" }], [0, 0]],                            // two arrived files share the vanished carrier's content
+    [[{ c: 0, fate: "vanish" }, { c: 0, fate: "vanish" }], [0]],     // two vanished carriers held it
+    [[{ c: 0, fate: "vanish" }], [1]],                               // a different content lands as new
+    [[{ c: 0, fate: "vanish" }, { c: 1, fate: 0 }], [0]],            // a standing carrier a hand edited into the vanished bytes: ambiguous, no deletion
+    [[{ c: 0, fate: "stay" }], [0]],                                 // a copy: its source stands, so it lands new
+    [[{ c: 0, fate: 1 }], []],                                       // an edit in place re-lands as changed
+  ] })("a moved carrier pairs iff its content matches one vanished and one arriving carrier", (o, n) => {
+    expect(scenario(o, n)).toEqual(model(o, n));
   });
 
   plain("CONTROL: one moved carrier reads renamed with its source named", () => {
-    const r = scenario([0], [0]);
+    const r = scenario([{ c: 0, fate: "vanish" }], [0]);
     expect(r.dels).toEqual([uriOf("old0")]);
     expect(r.rows).toEqual([[uriOf("new0"), "renamed", uriOf("old0")]]);
   });

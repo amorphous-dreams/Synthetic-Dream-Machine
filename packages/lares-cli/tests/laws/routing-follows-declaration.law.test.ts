@@ -9,7 +9,9 @@
  *   - `meme put|get|delete|list`: every sub -> its declared daemon verb, container riding along
  *
  * `act` mocks only the wire (`runVerb`) and records which verb the command submits: the destination
- * the routing decision chose, with the routing code itself running real.
+ * the routing decision chose, with the routing code itself running real. Every routed act also
+ * carries its title and bags unchanged, inside the wiki-act envelope or bare, so a right reach with
+ * a wrong destination reads red.
  *
  * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws
  */
@@ -65,11 +67,27 @@ function actOn(verb: string, bag: string, extra: { from?: string; flags?: Record
   return { command: "act", positional: [verb], options, flags: { json: true, yes: true, ...extra.flags } } as unknown as ParsedArgs;
 }
 
+/** The bag fields an act's argv names, as its submitted args must carry them. */
+function carriage(verb: string, argv: ParsedArgs): Record<string, unknown> {
+  const o = argv.options;
+  if (verb === "ADD" || verb === "COPY" || verb === "MOVE") return { title: o["title"], "from-bag": o["from"], "to-bag": o["to"] };
+  if (verb === "LOAD") return { "source-uri": o["source-uri"], "to-bag": o["to"] };
+  return { bag: o["bag"] };
+}
+
+/** The verb an act submits, and the args it carries: inside the wiki-act envelope, or bare. */
+function submitted(c: { verb: string; args: Record<string, unknown> }): { verb: string; args: Record<string, unknown> } {
+  return c.verb === WIKI ? { verb: String(c.args["verb"]), args: c.args["args"] as Record<string, unknown> } : c;
+}
+
 async function route(argv: ParsedArgs): Promise<{ verb: string; wiki: unknown; inner: unknown }> {
   calls.length = 0;
   await cmdAct(argv);
   expect(calls, "one submission per act").toHaveLength(1);
   const c = calls[0]!;
+  const sent = submitted(c);
+  expect(sent.verb, "the act's own verb rides").toBe(argv.positional[0]);
+  expect(sent.args, "the act carries its title and bags unchanged").toMatchObject(carriage(sent.verb, argv));
   return { verb: c.verb, wiki: c.args["wiki"], inner: c.args["verb"] };
 }
 
@@ -129,6 +147,15 @@ describe("L8 · act: the destination bag decides the reach, for every ACTION ver
     const wiki = await route(actOn("LOAD", witnessSlot("working")));
     const daemon = await route(actOn("LOAD", CANON));
     expect(wiki.verb).not.toBe(daemon.verb);
+  });
+
+  test("CONTROL: a submission whose bag moved reads off its carriage, inside the envelope and bare", () => {
+    const argv = actOn("MOVE", CANON, { from: witnessSlot("working") });
+    const want = carriage("MOVE", argv);
+    const sent = (bag: string) => ({ title: argv.options["title"], "from-bag": bag, "to-bag": CANON, "change-id": "c" });
+    expect(submitted({ verb: WIKI, args: { verb: "MOVE", args: sent(witnessSlot("working")) } }).args).toMatchObject(want);
+    expect(submitted({ verb: WIKI, args: { verb: "MOVE", args: sent(OTHER_CANON) } }).args).not.toMatchObject(want);
+    expect(submitted({ verb: "CLEAR", args: { bag: OTHER_CANON } }).args).not.toMatchObject(carriage("CLEAR", actOn("CLEAR", CANON)));
   });
 });
 

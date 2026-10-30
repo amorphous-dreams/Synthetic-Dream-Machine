@@ -329,11 +329,12 @@ describe("L12 · a locked vault discloses no private label", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  test.each([["json", { json: true }], ["text", { json: false }]])("persona list (%s) locked withholds the label; unlocked shows it (CONTROL)", async (_mode, flags) => {
+  test.each([["json", { json: true }], ["text", { json: false }]])("persona list (%s) locked withholds the label and still names the public index; unlocked shows it (CONTROL)", async (_mode, flags) => {
     const holder = seatedCustody()!;
     await holder.lock();
     expect(await cmdPersona({ command: "persona", positional: ["list"], options: {}, flags })).toBe(0);
     expect(wire.join("\n")).not.toContain(LABEL);
+    if (flags.json) expect(wire.join("\n")).toContain('"locked":[0]');   // withholding never empties the listing
     wire.length = 0;
     const route = [{ kind: "passphrase" as const, passphrase: PASS }];
     expect((await holder.unlock(route)).reading).toBe("opens");

@@ -31,6 +31,7 @@ A fixed bug leaves a test that guards its one input. A suite of such instances g
 * ''One law, one module'': `packages/lares-cli/tests/laws/<law>.law.test.ts`, its law stated in its header with its anchor here.
 * ''Inputs from the live tables'' (`tests/laws/harness.ts`): the command table, the help registry, the declared verb tables, the reality-tunnel's items. A table-driven law enumerates a finite table whole; a law over an unbounded input (bytes, a JSON or TOML document, an argv) draws generated inputs, with its seeds run first and a failing draw shrunk to its smallest case.
 * ''Seeds'': each literal case a fixed bug left, named for the bug's shape, run beside the generated inputs.
+* ''One seed for every draw'': `tests/laws/fixed-seed.ts` fixes the generators' seed, so a law reads the same on every machine and every run. `LARES_FC_SEED=<n>` names another seed, `LARES_FC_SEED=random` explores, and a failing draw prints the seed that replays it.
 * ''A control'': a known positive (a door that answers, two doors that differ, a writer that writes) the law must tell apart from its zero.
 * ''Behavior at the door'': a law asserts exit, stdout, stderr and the file tree a scratch root holds; a mock that mirrors the implementation proves nothing a law needs.
 
@@ -44,7 +45,7 @@ Census counts read rows (`test.each` counts once) across the suite's 135 files; 
 
 # ''L1 · An unknown door, verb or flag refuses by name, exit 2, before any handler runs'' (62 rows) ~ BUILT: `door-refuses-by-name.law.test.ts`.
 # ''L2 · Every declaration agrees with what the handlers read and expose'': accepts rows, boolean flags, the help registry, dispatch, the generated fixtures, the MCP mirror (111) ~ BUILT for usage spines against their verb tables (`usage-names-the-verbs.law.test.ts`); `accepts-table`, `parse-args`, `surface-projection` and `sense-help-parity` hold the rest and fold in as its modules.
-# ''L3 · Help and refusal render from one source, byte for byte, and lead with a usage spine'' (18) ~ BUILT: `help-is-the-refusal.law.test.ts`, every help key.
+# ''L3 · Help and refusal render from one source, byte for byte, and lead with a usage spine'' (18) ~ BUILT: `help-is-the-refusal.law.test.ts`, through the real dispatcher: every help key's `--help`, and every door whose source refuses through the registry's lines.
 # ''L4 · An act writes its radius alone, and an observing verb writes nothing'' (26, with the founding-root and workspace-import rows) ~ BUILT for the reality-tunnel's read, verify and tend over scratch clones and homes, `vessel read` under a scratch root, and workspace imports (`radius-and-observe.law.test.ts`).
 # ''L5 · A convergent act changes nothing on a second run, and undo restores the recorded prior state exactly'' (26, with the undo rows) ~ BUILT for the reality-tunnel's kinds over generated documents (`reality-tunnel.law.test.ts`).
 # ''L6 · Foreign or changed bytes survive without explicit authorization'' (63) ~ BUILT for the reality-tunnel: a kind never turns parseable bytes unparseable, returns bytes it cannot own as it found them, and changes only the keys it owns.
@@ -77,7 +78,7 @@ Census counts read rows (`test.each` counts once) across the suite's 135 files; 
 
 !! The measure ~ a law's strength reads as the mutants it kills
 
-A green suite proves its cases pass and never proves they could fail. `packages/lares-cli/tests/laws/mutants.json` names mutants, each one decision a law guards broken on purpose, with the law that must kill it; `tools/law-mutants-witness.sh` applies each in turn, reads the laws red against it and green against the source as it stands, and restores the source after every mutant and on an interrupt. A mutant whose find text no longer stands reads STALE, so a refactor that moves the code moves the catalog with it. A mutant that survives names a missing law, generator or control, never a missing literal case: the first survivor named the key-ownership law, the second the floor law.
+A green suite proves its cases pass and never proves they could fail. `packages/lares-cli/tests/laws/mutants.json` names mutants, each one decision a law guards broken on purpose, with the law that must kill it and the law files that guard it; `tools/law-mutants-witness.sh` applies each in turn under `vitest.law-mutants.config.ts`, reads its named files red against it and every named file green against the source as it stands, and restores the source after every mutant and on an interrupt. A mutant that names no law file refuses the run, and a mutant whose find text the source does not hold reads STALE, so a refactor that moves the code moves the catalog with it. A mutant that survives names a missing law, generator or control, never a missing literal case: the first survivor named the key-ownership law, the second the floor law.
 
 Generated laws draw from `fast-check` through `@fast-check/vitest`, the literal cases run first as `examples`, and a failing draw shrinks to its smallest case. On their first runs the generated laws found four faults no literal case reached: a scalar where a table belongs crashed one TOML kind and made another write invalid TOML, a table named like a top-level key made the floor write a duplicate, and the floor's replace reached inside a table. The readiness law found a fifth: a refusal naming the word ready made the vessel reader throw, since the guard read an echoed cause as the house's own claim; the cause now rides quoted, and the guard reads around a quote.
 
@@ -88,7 +89,8 @@ Generated laws draw from `fast-check` through `@fast-check/vitest`, the literal 
 !! The census
 
 * 1000 rows: 581 seeds, 230 repeats of an input their law already holds, 189 controls, 15 orphans.
-* Retired into the laws: 54 literal tests whose exact input a law now covers, two files whole; a test that keeps an assertion no law reaches (a hint's text, a wire's shape) stays until one does.
+* Retired into the laws: 53 literal tests whose exact input a law now covers, two files whole; a test that keeps an assertion no law reaches (a hint's text, a wire's shape) stays until one does.
+* A cold read of each retirement against its law names the guard a retirement drops. Six such guards ride their laws: the scan's edited twin and its copy (L11, its carriers each meeting a fate), CLEAR's wire args (L7, every verb's wire fields), the routed bags (L8, each routed act's carriage), the locked list's public index (L12), and the withheld carriages (L16, each seed held to null). The scripted-wire CLEAR test stays beside L7, since only it reads the bytes the socket carries.
 * Smells: 206 prose-coupled assertions, 196 mocks that mirror the implementation, 100 giant fixtures, 60 source-regex reads, 29 timing waits, 24 tests that cannot fail, 23 that read or write outside a scratch root.
 
 <<~/ahu>>
@@ -102,6 +104,6 @@ Generated laws draw from `fast-check` through `@fast-check/vitest`, the literal 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zbHB8O31eRTbKjFqeJSST9ISAjBly9Hfiw3RHqddLHI
+<<^ code="&#x0003;">>ni:///sha-256;SMTb_rwO522hdan0xr8E_CqRR8OqtS8qRaetqu_yv3Q
 
 <<^ code="&#x0004;" -> to="?">>

@@ -85,8 +85,14 @@ describe("L9 · a named outcome keeps its cause and its exit class", () => {
     });
 
     test("distinct causes in the outcome-unknown family keep distinct codes beside one exit class", () => {
-      const family = ["outcome-unknown", "request-abandoned", "request-interrupted", "retention-gap", "receipt-fact-torn"];
-      expect(new Set(family).size).toBe(family.length);
+      // Each cause made by its own producer: a wait that expired, and the four refusals a vessel names.
+      const family = [
+        verbFailure(new LocalWaitExpired("recall", 1, "req-w")).code,
+        ...["abandoned", "interrupted", "retention-gap", "receipt-fact-torn"].map(refusalCode),
+        ...["abandoned", "interrupted", "retention-gap", "receipt-fact-torn"].map((r) => storeFailure(new RoutedVerbRefused("refused", r)).code),
+      ];
+      expect(new Set(family.slice(0, 5)).size).toBe(5);
+      expect(family.slice(5)).toEqual(family.slice(1, 5));   // the store door names each refusal as the verb door does
       expect(new Set(family.map(exitFor))).toEqual(new Set([6]));
     });
 

@@ -18,7 +18,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { Ledger, read, tend, type Item } from "../../src/reality-tunnel/engine.js";
 import { CARRIER, declared, homeItems, repoItems } from "../../src/reality-tunnel/catalog.js";
-import { verifyLoads } from "../../src/reality-tunnel/verify.js";
+import { loadLogPath, readLoads, verifyLoads } from "../../src/reality-tunnel/verify.js";
 import { VESSEL_SUBS } from "../../src/commands/vessel.js";
 import { TUNNEL_VERBS } from "../../src/commands/tunnel-door.js";
 import { door } from "./harness.js";
@@ -26,9 +26,19 @@ import { door } from "./harness.js";
 const REPO = join(import.meta.dirname, "..", "..", "..", "..");
 const MCP = { command: "/usr/bin/python3", args: ["/clone/lares_mcp.py"], env: { PYTHONPATH: "/clone/mp" } };
 
+// The load log and the home ledger resolve under XDG_STATE_HOME first, so it points into the sandbox:
+// an observer reads only the world the law built, and a write anywhere it can reach shows in the snapshot.
 let sandbox: string;
-beforeEach(() => { sandbox = mkdtempSync(join(tmpdir(), "law-l4-")); });
-afterEach(() => { rmSync(sandbox, { recursive: true, force: true }); });
+let priorState: string | undefined;
+beforeEach(() => {
+  sandbox = mkdtempSync(join(tmpdir(), "law-l4-"));
+  priorState = process.env["XDG_STATE_HOME"];
+  process.env["XDG_STATE_HOME"] = join(sandbox, "state");
+});
+afterEach(() => {
+  if (priorState === undefined) delete process.env["XDG_STATE_HOME"]; else process.env["XDG_STATE_HOME"] = priorState;
+  rmSync(sandbox, { recursive: true, force: true });
+});
 
 /** Every entry under a tree as `path -> kind, mode, bytes or link target`: a change anywhere shows. */
 function snapshot(root: string): Map<string, string> {
@@ -129,6 +139,15 @@ describe("L4 · an observing verb leaves every tree it can reach unchanged", () 
       });
     }
   }
+
+  plain("CONTROL: verify reads the load log under the sandbox's state, never the operator's", async () => {
+    const w = await world(async () => {});
+    const log = loadLogPath(w.h.native);
+    expect(log.startsWith(sandbox)).toBe(true);
+    mkdirSync(dirname(log), { recursive: true });
+    writeFileSync(log, `${JSON.stringify({ session_id: "s", file_path: join(w.repo, "AGENTS.md"), load_reason: "session_start", cwd: w.repo })}\n`);
+    expect(readLoads(w.h.native)).toHaveLength(1);
+  });
 
   plain("the table names the observers this law runs: read and verify each cover both radii", () => {
     expect(OBSERVERS.map(([n]) => n).sort()).toEqual(["home read", "home verify", "repo read", "repo verify"]);

@@ -130,6 +130,11 @@ describe("L16 · the card carriage round-trips verbatim and withholds rather tha
       if (got !== null) expect((got as { kind: unknown }).kind).toBe(HANDLE_CARD_DOMAIN);
     });
 
+  plain.each([[""], ["#card=@@@not-base64@@@"], ["#admit=deadbeef"], ["#card="], ["#admit=" + toToken(SEEDCARD)]])(
+    "seed: an absent, garbled or foreign-key carriage %j withholds (null)", (s) => {
+      expect(parseHandleCardCarriage(s)).toBeNull();
+    });
+
   test.prop([json], { examples: [[null], [[]], [{ kind: "not-a-handle-card" }]] })("a well-formed token over a non-card value decodes to null", (v) => {
     expect(parseHandleCardCarriage(`#card=${toToken(v)}`)).toBeNull();
   });

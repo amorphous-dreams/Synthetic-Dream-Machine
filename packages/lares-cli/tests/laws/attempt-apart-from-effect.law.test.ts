@@ -68,6 +68,19 @@ async function attempt(verb: string, f: Fields): Promise<{ requestId: string; ef
   return { requestId: String(c.opts["requestId"]), effectKey: String(c.opts["effectKey"]) };
 }
 
+/**
+ * The wire args each verb submits, built from its fields. A transfer and a LOAD carry their `change-id`
+ * on the wire (it names which Work moves where); a bag verb and CREATE carry none, so their nonce rides
+ * the CLI alone, folded into the effect key.
+ */
+function wireOf(verb: string, f: Fields): Record<string, unknown> {
+  const cid = f["change-id"] === undefined ? {} : { "change-id": f["change-id"] };
+  if (isTransferVerb(verb)) return { title: f["title"], "from-bag": f["from"], "to-bag": f["to"], ...cid };
+  if (verb === "LOAD") return { "source-uri": f["source-uri"], "to-bag": f["to"], ...cid };
+  if (verb === "CREATE") return { bag: f["bag"], plane: f["plane"] };
+  return { bag: f["bag"] };
+}
+
 /** The law's reading of two attempts at one effect: ids apart, keys together, neither collapsed onto the other. */
 const retryHolds = (a: { requestId: string; effectKey: string }, b: { requestId: string; effectKey: string }): boolean =>
   a.requestId !== b.requestId && a.effectKey === b.effectKey && a.requestId !== a.effectKey && a.effectKey.length > 0;
@@ -127,11 +140,27 @@ describe("L7 · generated", () => {
   });
 });
 
+describe("L7 · the wire carries the verb's fields and no more", () => {
+  test.prop([verbAndFields], { numRuns: 40, examples: [
+    [["CLEAR", { bag: "lar:///test/catalog", "change-id": "cid-clear-split" }]],   // the nonce stays CLI-side
+  ] })("each verb submits exactly its wire fields", async ([verb, f]) => {
+    h.calls.length = 0;
+    await attempt(verb, f);
+    expect(h.calls[0]!.verb).toBe(verb);
+    expect(h.calls[0]!.args).toEqual(wireOf(verb, f));
+  });
+});
+
 describe("L7 · CONTROL", () => {
   plain("a keyer that reuses the request id as the effect key reads red; a keyer that re-mints the key per attempt reads red", () => {
     expect(retryHolds({ requestId: "k", effectKey: "k" }, { requestId: "k", effectKey: "k" })).toBe(false);
     expect(retryHolds({ requestId: "r1", effectKey: "k1" }, { requestId: "r2", effectKey: "k2" })).toBe(false);
     expect(retryHolds({ requestId: "r1", effectKey: "k" }, { requestId: "r1", effectKey: "k" })).toBe(false);
     expect(retryHolds({ requestId: "r1", effectKey: "k" }, { requestId: "r2", effectKey: "k" })).toBe(true);
+  });
+  plain("a CLEAR whose args leak its change-id reads off the wire table", () => {
+    const f = { bag: "lar:///test/catalog", "change-id": "cid-x" };
+    expect({ ...wireOf("CLEAR", f), "change-id": "cid-x" }).not.toEqual(wireOf("CLEAR", f));
+    expect(wireOf("MOVE", { title: "t", from: "a", to: "b", "change-id": "c" })).toEqual({ title: "t", "from-bag": "a", "to-bag": "b", "change-id": "c" });
   });
 });
