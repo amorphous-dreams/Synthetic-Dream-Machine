@@ -17,6 +17,14 @@ uri-path = "ha.ka.ba/lares/api/projection-loom-capability-composition"
 
 <<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
+<<~ ahu #/yin-living>>
+
+!! Current executable relation
+
+The architectural interpretation flows through `spatial_intent.py` → `place_obligations.py` → `place_genome.py` → `place_source_seal.py` → `place_campaign.py` and `place_affordances.py`. `place_composed_route.py` consumes an explicit operator bend; `place_source_transfer.py` tests independent source-carrier intake with equal native budgets. `fractal_ooda_ha.OODAHAJournal` remains the only five-phase authority. `place_board.py` offers read-only native gallery/operator presentation. None of these modules grants source camera registration, safe building certification, or artistic approval. Prior CAD/polygon operator invocation notes remain verbatim at #/ashes.
+
+<<~/ahu>>
+
 <<~ ahu #/entry>>
 ! Identity carries capabilities; one helm carries their becoming
 
@@ -76,26 +84,8 @@ not an OpenCascade face, a mesh vertex, or one compulsory geometry language.
 <<~/ahu>>
 
 <<~ ahu #/executable>>
-!! Active source
 
-`tools/projection-loom/projection_loom/capability_stack.py` registers a
-trusted, versioned DAG of capability operators; `hybrid.py` grows bounded
-CAD-derived meshes and semantic sockets; `fractal_ooda_ha.py` executes the single
-recursive location/epoch/candidate/capability/gallery controller; `epochs.py`
-provides the strict CAD audition. `selection.py` chooses bounded candidate
-auditions and already scored review options; `review.py` regrows native-audited
-CAD/compound previews and their same-construction relation witnesses; and
-`gallery.py` regrows compound finalists during the controller's location
-Aftermath. These renderers MUST NOT independently steer operator choices,
-claim cross-kernel fusion, or turn an output image into source evidence. The original Necrospire RGBA and
-alpha, an under-specified visual witness, remain authoritative reference
-bytes, not a calibrated survey.
-
-Run with `python -m projection_loom ooda-run --project
-examples/necrospire/project.json --capability-recipe
-examples/necrospire/hybrid/recipe.json --control full-speed --passes 3
---candidates 4 --exact-budget 3 --detail-budget 3 --finalists 3
---out out/compound` from `tools/projection-loom/`.
+This historical reading moved to [[ashes|#ashes]] within the same carrier. The original section bytes remain below verbatim. For live work use #/yin-living and the branch-current `HANDOFF.md`.
 
 <<~/ahu>>
 
@@ -123,6 +113,43 @@ A queued or cancelled CI job remains an open verification loop. Only the
 final published branch head may support a GREEN claim after dedicated Loom,
 whole-repository and held-out witnesses all pass; failures invite bisecting
 the stepwise red-first commits, not relaxing native evidence checks.
+
+<<~/ahu>>
+
+<<~ ahu #/ashes>>
+
+!! Holding ashes · operator-called, reversible, no deletion
+
+Original carrier Git blob: `4e2a29756914c00de36e683d54380566ab9160e4`. Its displaced historical sections remain byte-for-byte below; each original section address still stands as a pointer above. Git carries the complete prior carrier. This holding rite promotes no lifecycle change and makes no claim that canon or its inbound links can burn.
+
+!!! Retained historical executable
+
+````text
+<<~ ahu #/executable>>
+!! Active source
+
+`tools/projection-loom/projection_loom/capability_stack.py` registers a
+trusted, versioned DAG of capability operators; `hybrid.py` grows bounded
+CAD-derived meshes and semantic sockets; `fractal_ooda_ha.py` executes the single
+recursive location/epoch/candidate/capability/gallery controller; `epochs.py`
+provides the strict CAD audition. `selection.py` chooses bounded candidate
+auditions and already scored review options; `review.py` regrows native-audited
+CAD/compound previews and their same-construction relation witnesses; and
+`gallery.py` regrows compound finalists during the controller's location
+Aftermath. These renderers MUST NOT independently steer operator choices,
+claim cross-kernel fusion, or turn an output image into source evidence. The original Necrospire RGBA and
+alpha, an under-specified visual witness, remain authoritative reference
+bytes, not a calibrated survey.
+
+Run with `python -m projection_loom ooda-run --project
+examples/necrospire/project.json --capability-recipe
+examples/necrospire/hybrid/recipe.json --control full-speed --passes 3
+--candidates 4 --exact-budget 3 --detail-budget 3 --finalists 3
+--out out/compound` from `tools/projection-loom/`.
+
+<<~/ahu>>
+````
+
 
 <<~/ahu>>
 

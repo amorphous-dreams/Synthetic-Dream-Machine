@@ -20,6 +20,14 @@ uri-path  = "ha.ka.ba/lares/api/projection-loom"
 
 <<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
+<<~ ahu #/yin-living>>
+
+!! Current relational seam · one operational helm
+
+`place_obligations.py` orders authored architectural obligations while refusing conflicting producers and dependency cycles. `place_source_seal.py` refuses silent replacement of original native bodies and relations. `place_campaign.py` binds those receipts to one existing `OODAHAJournal` with independently verified candidate and phase identities. The native STEP/USD evaluator alone tests physical contacts and clearances; the operator alone promotes aesthetic or canonical outcomes. These guards extend, not replace, the existing composite CAD/polygon capability system. Historical helm prose stays retrievable at #/ashes.
+
+<<~/ahu>>
+
 <<~ ahu #/entry>>
 
 ! Projection Loom
@@ -92,24 +100,7 @@ Every emitted render derives from the CAD model. A STEP model or render transpor
 
 <<~ ahu #/procedural-helm>>
 
-!! Executable OODA-HA Helm
-
-A location may run a hierarchy of guarded OODA-HA controllers: one location
-loop, bounded epoch loops, and candidates whose CAD audits execute inside their
-own Act phase. Every loop moves ✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act ->
-↺ Ho'oko / Aftermath -> close; a parent cannot close while children remain.
-
-An adjustable Operator/AI steering policy holds manual, shared, auto-nav, and
-full-speed modes on one continuous autonomy gradient. Every mode accepts
-explicit intervention at safe phase or candidate boundaries. Validated
-previews, relational witnesses, bounded AI suggestions, pet-name/o-takiage
-and lineage choices re-enter through durable operator checkpoints. A control
-cannot bypass source, geometry, registration, or CAD-validity gates.
-
-The default CLI follows scored-policy auto-navigation, not an undocumented LLM
-provider. A separate adviser callback may propose choices, but never invent
-validity. Development Aftermath still reviews OUR code and decisions;
-this procedural runtime Aftermath reviews the evolving location's outcome.
+This historical reading moved to [[ashes|#ashes]] within the same carrier. The original section bytes remain below verbatim. For live work use #/yin-living and the branch-current `HANDOFF.md`.
 
 <<~/ahu>>
 
@@ -187,6 +178,42 @@ this procedural runtime Aftermath reviews the evolving location's outcome.
 ◇ select only candidates whose overlaps and fused solid meet the project's construction requirements
 ▶ grow solid volumes, evolve distinct lineages, verify joints, then cast separate silhouette, line, and light controls
 ↺ carry the chosen construction genome into further epochs without allowing rendered masks or exported meshes to masquerade as structural ancestry
+
+<<~/ahu>>
+
+<<~ ahu #/ashes>>
+
+!! Holding ashes · operator-called, reversible, no deletion
+
+Original carrier Git blob: `a273376f62966bb174a4a0618d60ea86370e9509`. Its displaced historical sections remain byte-for-byte below; each original section address still stands as a pointer above. Git carries the complete prior carrier. This holding rite promotes no lifecycle change and makes no claim that canon or its inbound links can burn.
+
+!!! Retained historical procedural-helm
+
+````text
+<<~ ahu #/procedural-helm>>
+
+!! Executable OODA-HA Helm
+
+A location may run a hierarchy of guarded OODA-HA controllers: one location
+loop, bounded epoch loops, and candidates whose CAD audits execute inside their
+own Act phase. Every loop moves ✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act ->
+↺ Ho'oko / Aftermath -> close; a parent cannot close while children remain.
+
+An adjustable Operator/AI steering policy holds manual, shared, auto-nav, and
+full-speed modes on one continuous autonomy gradient. Every mode accepts
+explicit intervention at safe phase or candidate boundaries. Validated
+previews, relational witnesses, bounded AI suggestions, pet-name/o-takiage
+and lineage choices re-enter through durable operator checkpoints. A control
+cannot bypass source, geometry, registration, or CAD-validity gates.
+
+The default CLI follows scored-policy auto-navigation, not an undocumented LLM
+provider. A separate adviser callback may propose choices, but never invent
+validity. Development Aftermath still reviews OUR code and decisions;
+this procedural runtime Aftermath reviews the evolving location's outcome.
+
+<<~/ahu>>
+````
+
 
 <<~/ahu>>
 
