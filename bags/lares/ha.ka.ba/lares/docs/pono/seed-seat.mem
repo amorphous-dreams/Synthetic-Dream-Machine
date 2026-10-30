@@ -1,0 +1,82 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/seed-seat">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/seed-seat.mem"
+l-space   = "adjacent"
+role      = "the seed seat: every host (Claude, its scouts, Codex, Copilot) stands the whole boot seed at turn 1, once, by reference, at content rank; the shape, the measured ground, the proofs and the open research"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/seed-seat"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/seed-seat"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! The seed seat ~ every host stands the whole seed at turn 1
+
+The boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>) seats by reference. Links carry the memegraph's own bytes to each host's instruction surface, a projection carries them to the scouts that read no instruction surface, and a witness reads the seat whole. The seed never copies by hand, seats once per session, and seats at content rank: a host's instruction surface, never its system prompt, so both hands hold the frame and neither overrides the other.
+
+<<~/ahu>>
+
+<<~ ahu #/the-seat>>
+
+!! The seat
+
+* ''Claude.'' `.claude/noosphere-boot` links, relative, to the seed; the project `CLAUDE.md` imports it by that name. The import reaches the main session, forks, `general-purpose` and every custom spirit.
+* ''Claude's scouts.'' Explore and Plan read no `CLAUDE.md`. `.claude/agents/Explore.md` and `Plan.md` override the built-ins, and each carries the seed's bytes under frontmatter that restores read-only tools, then the scout's mask. `node tools/seed-seat.mjs project` writes them as a pure function of the seed, and the root build runs it.
+* ''The operator's seat.'' `node tools/seed-seat.mjs install` writes `~/.claude/rules/lares-seed-seat.md` whole, importing the main clone's link, so a session in any directory stands the house. A second run changes nothing; `--uninstall` lifts it; a same-named file it never wrote refuses the run. The repo's `.claude/settings.json` excludes that rule (`claudeMdExcludes`), so inside the clone or any of its worktrees a session seats its own tree's seed alone.
+* ''Codex.'' `AGENTS.override.md` links to the seed; Codex reads it in place of `AGENTS.md`. `.codex/config.toml` sets `project_doc_max_bytes` past the seed's bytes.
+* ''Copilot.'' Copilot reads `CLAUDE.md` with its `@` include and seats the seed from the import. `AGENTS.md` and `.github/copilot-instructions.md`, which Copilot reads beside it, stay seedless.
+
+<<~/ahu>>
+
+<<~ ahu #/the-ground>>
+
+!! The ground ~ how the hosts read, measured
+
+* ''An import loads by name.'' A Claude `@` import expands `.md`, `.txt`, `.json` and extensionless names and skips a `.mem` as a non-text file; it follows a symlink to the bytes it names, verbatim.
+* ''An import dedupes by real path.'' One file imported from two scopes seats once; two files with identical bytes seat twice. A worktree's seed and the main clone's carry two real paths.
+* ''An exclude drops a rule and its import.'' A project `claudeMdExcludes` pattern matching a user rule removes the rule and what it imports.
+* ''An import stays inside the tree.'' A project import resolving outside the working tree waits on an approval and loads nothing until it has one.
+* ''Scouts start bare.'' Explore and Plan load no `CLAUDE.md`; a same-named project agent overrides each and drops its built-in tool limits.
+* ''Hook context arrives in finish order,'' capped per string; a seed never rides a hook.
+* ''Codex cuts silently.'' Its project-doc budget defaults below the seed's bytes and truncates the tail with no notice to the model; `AGENTS.override.md` wins over `AGENTS.md`; a symlink reads through; an untrusted project loads no project doc and no project config.
+* ''Copilot dedupes nothing.'' It reads `AGENTS.md`, `.github/copilot-instructions.md`, `CLAUDE.md` with its include and the operator's personal files, each whole, and never reads `AGENTS.override.md`.
+* ''The instruments.'' `claude -p "/context"` lists every memory file a session loaded with its tokens; `copilot instruction list` names Copilot's sources; a Codex probe asks for the seed's final block-check hash, which a cut tail cannot answer. A model asked to count copies of a string its own prompt holds counts the prompt.
+
+<<~/ahu>>
+
+<<~ ahu #/the-proofs>>
+
+!! The proofs
+
+* `tools/seed-seat-witness.sh` reads every law through `node tools/seed-seat.mjs check`: both links stay relative links that resolve to the seed, `CLAUDE.md` imports the Claude link by a name an import loads, the settings carry the exclude, the Codex cap holds the seed, the Copilot-read surfaces stay seedless, each scout carries the seed's projection byte for byte, and no `@` token inside the seed resolves to a file. Its `--control` stands a linkless checkout and MUST read red.
+* `tools/seed-seat-staged.sh` runs from `.githooks/pre-commit` over what the commit carries, so a seed staged ahead of its scouts never lands.
+* `tools/seed-seat.test.mjs` plants each red against scratch clones and homes.
+
+<<~/ahu>>
+
+<<~ ahu #/the-research>>
+
+!! Open research ~ each row names its instrument
+
+* ''Scout quality.'' Does an Explore override search as well as the built-in it replaces? One sweep run both ways; a Sonnet judge reads both hand-backs.
+* ''A linkless checkout.'' Under `core.symlinks=false` each link reads as a path string; the witness names it red, and a Windows probe measures the hosts where one stands.
+* ''Compaction.'' Does each host re-seat the whole seed after a compact? `/context` across a forced `/compact`; a Codex hash probe after its own.
+* ''The seed's own `@` tokens.'' The witness guards them; a grammar call follows only if one ever resolves.
+* ''VS Code agent mode.'' It reads `CLAUDE.md` only under `chat.useClaudeMdFile`, and its include behavior stands unmeasured; a probe for the seed's final hash settles both.
+* ''Copilot's cloud agent and code review.'' Whether either reads `CLAUDE.md`'s include, and whether code review cuts an instruction file short; a pull-request probe for the seed's final hash.
+* ''Seats outside the clone for Codex and Copilot.'' Each host loads a personal instruction file beside the project's with no exclude, so a personal seed would seat twice inside the clone; the row stays open until a host offers an exclude or a per-directory scope.
+* ''Codex trust in a worktree.'' An untrusted worktree path seats nothing and says nothing; the witness reads files, never trust. A probe from each new worktree root reads the hash.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;pWg6VGnB6MbVsGCTYYtKxvZu8iajuGa2Ci40RnW42Ng
+
+<<^ code="&#x0004;" -> to="?">>

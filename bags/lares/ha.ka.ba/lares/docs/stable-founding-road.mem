@@ -41,7 +41,7 @@ its own carrier, and this carrier points there.
 !! Cold start ~ what a cold session reads, runs and obeys
 
 !!! Read, in this order
-# <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>, the boot seed; then this carrier, top to bottom.
+# <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>, the boot seed, which every host seats whole at turn 1 by reference (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seed-seat">>); then this carrier, top to bottom.
 # <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> before the first commit: which session holds which ground, and the commit isolation that guards hands inside one session.
 # <<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">> before the first test or wire: the red-first procedure in eight moves, the ladder for wiring a module that stands unreached, the instruments that read green while they lie, and the working agreements. Before any grammar work, <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/grammar-watch">>.
 # Bring every ruling #/open names to the operator before a lane builds against it.
@@ -816,6 +816,7 @@ Each step names the commits that hold it, as pointers into git.
 * ''Early starts beside the chain'': the node, CLI and tool fixtures funnel of train K.
 * ''Band-ladder residue'': one five-band ladder, the `lar_feedback` output field name. It rides the Sensorium's wait, and a frame inside it may heal at any time.
 * ''The capture lane's era ruling'': #/open.
+* ''The seed seat's open research'': the hosts it seats stand measured; scout quality, compaction, the linkless checkout, VS Code, Copilot's cloud surfaces and the seats outside the clone stand open (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seed-seat#/the-research">>).
 * ''DreamDOM, train D'' (operator ruling, 2026-10-16: DreamDOM names the superset of cameras, every root template over every document sink across the one engine per wiki). The model stands whole in <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>; its phases `D0` to `D7` and rows `D1` to `D17` read in <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>, and this carrier keeps no copy of them. `F8`'s control-event leg rides the roadmap's camera-contract phase.
 * ''Sealed-store step 3'': sealed Repo storage values, hydration checked against the session's face, and the fresh base a from-now admission needs. A face's own names ride its persona plane only once that plane's rest seals, so `lares persona sync` carries nothing until this step lands. It waits on a production session signer (the wire cutover's caller) and on ONE FACE (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>).
 
@@ -913,6 +914,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7OfDuDL7QL7v11lyiTtatxT1lOmOgdBOlRpfsvG_4rM
+<<^ code="&#x0003;">>ni:///sha-256;qzsWT72kn-oUJk7VQK3_XvwPJqyZmjh04IBmPtpEAMg
 
 <<^ code="&#x0004;" -> to="?">>
