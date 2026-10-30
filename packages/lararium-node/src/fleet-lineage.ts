@@ -19,7 +19,10 @@ export async function fleetFaceChainOf(repo: Repo, fleetRoot: string, islands: r
   let prefix: string | null = null;
   try {
     for (const index of await listAnchoredPersonas()) {
-      const anchors = await loadIdentityAnchors(index);
+      // A malformed sibling row leaves its own face unread and no other: only a locked custody ends the walk.
+      let anchors: Awaited<ReturnType<typeof loadIdentityAnchors>>;
+      try { anchors = await loadIdentityAnchors(index); }
+      catch (e) { if (e instanceof CustodyLocked) throw e; continue; }
       if (anchors?.deviceEdge && bare(anchors.deviceEdge.personaRootDid) === bare(fleetRoot)) { prefix = anchors.personaKelPrefix ?? null; break; }
     }
   } catch (e) { if (e instanceof CustodyLocked) return null; throw e; }

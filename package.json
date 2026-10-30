@@ -31,7 +31,9 @@
   "devDependencies": {
     "@lares/cli": "workspace:*",
     "@types/node": "26.6.4",
+    "acorn": "8.17.0",
     "concurrently": "10.0.6",
+    "esbuild": "0.28.1",
     "playwright": "1.64.0",
     "playwright-mcp-wsl": "1.0.0",
     "tsx": "4.23.15",

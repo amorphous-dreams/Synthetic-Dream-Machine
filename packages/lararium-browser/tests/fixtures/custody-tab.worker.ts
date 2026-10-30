@@ -24,3 +24,5 @@ scope.addEventListener("message", (event) => {
     }
   })().catch((e: unknown) => scope.postMessage({ op: msg.op, error: String(e) }));
 });
+
+scope.postMessage({ type: "ready" });

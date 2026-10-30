@@ -13,6 +13,7 @@ import { storeDoorDirect } from "../src/store-door-verbs.js";
 import { larBootstrapPath, larSealHome } from "../src/vessel-paths.js";
 import { resolveIntentRelayFace } from "../src/intent-relay-face.js";
 import * as custodySeat from "../src/custody-seat.js";
+import * as identityAnchors from "../src/identity-anchors.js";
 import { loadIntentFace } from "../src/commands/intent.js";
 import { intentRelayKeyOrMint } from "../src/intent-relay-key-store.js";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
@@ -145,3 +146,54 @@ test("RED: a locked face resolves no relay face; CONTROL: the same face resolves
     } finally { await repo.shutdown(); }
   });
 }, 240_000);
+
+
+test("RED: a broken sibling anchor does not hide a healthy relay face; CONTROL: healthy rows resolve and an unknown group does not", async () => {
+  await withLarRoot(ROOT, async () => {
+    await openTestCustody();
+    const adapter = new DurableNodeFSStorageAdapter(storage), repo = new Repo({ storage: adapter, network: [] });
+    try {
+      const indexes = await identityAnchors.listAnchoredPersonas();
+      const realLoad = identityAnchors.loadIdentityAnchors;
+      const anchors = await realLoad(indexes[0]!);
+      expect(anchors?.personaGroupId).toBe(group);
+      vi.spyOn(identityAnchors, "listAnchoredPersonas").mockResolvedValue([0, 1]);
+      const load = vi.spyOn(identityAnchors, "loadIdentityAnchors").mockImplementation(async () => anchors);
+      expect((await resolveIntentRelayFace(group, { repo, catalogUrl }))?.group).toBe(group);
+      expect(await resolveIntentRelayFace("no-such-group", { repo, catalogUrl })).toBeNull();
+      load.mockImplementation(async (index) => { if (index === 0) throw new Error("broken sibling"); return anchors; });
+      const face = await resolveIntentRelayFace(group, { repo, catalogUrl });
+      expect(face?.group).toBe(group);
+      // The admission handler loads the face again: a malformed sibling row must not turn every admission into a fault.
+      expect(await face?.admit({})).not.toEqual({ status: "refused", refusal: "fault" });
+    } finally { vi.restoreAllMocks(); await repo.shutdown(); await adapter.close(); }
+  });
+}, 240_000);
+
+test("RED: enabling a relay registers a lit sibling's planes at the gate sweep; CONTROL: the census finds a planted call", () => {
+  const registers = /registerRelayPlanes\s*\??\.?\(/;
+  expect(registers.test("await registerRelayPlanes?.();")).toBe(true);
+  const start = source.indexOf("const standSyncGates =");
+  const end = source.indexOf("stood.push({ what: \"the sync gates' knocks\"", start);
+  const sweep = source.slice(start, end);
+  const refresh = sweep.search(/intentRelay\.refresh\s*\(/);
+  const register = sweep.search(registers);
+  expect(refresh).toBeGreaterThan(-1);
+  expect(register).toBeGreaterThan(-1);
+  expect(register).toBeLessThan(refresh);
+});
+
+test("RED: relay-enabled siblings register planes when proven and lit; CONTROL: the census finds planted registration calls", () => {
+  const call = /registerFacePlanesForRelay\s*\(\s*\{[\s\S]*?register\s*:\s*registerInCatalog[\s\S]*?\}\s*\)/;
+  expect(scan("registerFacePlanesForRelay({ group, register: registerInCatalog })", call)).toBe(true);
+  expect(source).toMatch(/import\s*\{[^}]*\bregisterFacePlanesForRelay\b[^}]*\}\s*from\s*["'][^"']*face-plane-registration\.js["']/s);
+  const light = source.indexOf("lightFace = async (ordinal) =>");
+  expect(light).toBeGreaterThan(-1);
+  expect(source.slice(light, source.indexOf("\n    };", light))).toMatch(call);
+  const loop = source.indexOf("for (const plane of bootstrap.personaPlanes)", source.indexOf("const registerInCatalog"));
+  const proven = source.indexOf("provenPlanes.set", loop);
+  const end = source.indexOf("\n    for (const plane of bootstrap.personaPlanes)", proven);
+  expect(proven).toBeGreaterThan(loop);
+  expect(end).toBeGreaterThan(proven);
+  expect(source.slice(proven, end)).toMatch(call);
+});
