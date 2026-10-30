@@ -1,5 +1,5 @@
 /**
- * intent/verify — a file on disk proves nothing about a session; verify reads what the hosts LOADED.
+ * reality-tunnel/verify — a file on disk proves nothing about a session; verify reads what the hosts LOADED.
  *
  * Claude: the `InstructionsLoaded` hook (a home item) appends each instruction file a session loads
  * to the load log. Verify reads the latest session and finds the seed loaded once, by one real path.
@@ -26,7 +26,7 @@ export interface VerifyResult {
 }
 
 export const loadLogPath = (home: string): string =>
-  join(process.env["XDG_STATE_HOME"]?.trim() || join(home, ".local", "state"), "lares", "intent", "loads.jsonl");
+  join(process.env["XDG_STATE_HOME"]?.trim() || join(home, ".local", "state"), "lares", "reality-tunnel", "loads.jsonl");
 
 const real = (p: string): string => { try { return realpathSync(p); } catch { return p; } };
 const isSeed = (p: string): boolean => /noosphere-boot(\.mem)?$/.test(real(p));

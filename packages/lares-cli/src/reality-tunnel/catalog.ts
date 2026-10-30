@@ -1,6 +1,6 @@
 /**
- * intent/catalog — the declared intent, read from canon and resolved against one checkout and one
- * set of homes. The instances stand in lar:///ha.ka.ba/lares/cli/intent (its `toml intent` fence);
+ * reality-tunnel/catalog — the declared reality tunnel, read from canon and resolved against one checkout and one
+ * set of homes. The instances stand in lar:///ha.ka.ba/lares/cli/reality-tunnel (its `toml reality-tunnel` fence);
  * the kinds they name stand in ./kinds.ts. Home items aim every script and link at the MAIN clone,
  * never at a worktree a command happens to run from, so a lane's removal strands no hook.
  */
@@ -17,20 +17,20 @@ import {
 import { homesOf, type Homes } from "./homes.js";
 import { resolveLaresMcp, type LaresMcpCommand } from "../mcp-resolve.js";
 
-export const CARRIER = "bags/lares/ha.ka.ba/lares/cli/intent.mem";
+export const CARRIER = "bags/lares/ha.ka.ba/lares/cli/reality-tunnel.mem";
 export const RULE_MARKER = "<!-- written by lares";
 export const SCOUT_MARKER = "# projected by";
 
 type Spec = Record<string, unknown> & { id: string; host: string; kind: string; file: string; what: string };
 export interface Declared { readonly seed: string; readonly repo: Spec[]; readonly home: Spec[] }
 
-/** The carrier's `toml intent` fence, parsed whole. */
+/** The carrier's `toml reality-tunnel` fence, parsed whole. */
 export function declared(repo: string): Declared {
   const text = readFileSync(join(repo, CARRIER), "utf8");
-  const m = /^```toml intent\n([\s\S]*?)^```/m.exec(text);
-  if (!m) throw new Error(`${CARRIER} carries no \`toml intent\` fence`);
+  const m = /^```toml reality-tunnel\n([\s\S]*?)^```/m.exec(text);
+  if (!m) throw new Error(`${CARRIER} carries no \`toml reality-tunnel\` fence`);
   const d = parseToml(m[1]!) as { seed?: string; repo?: Spec[]; home?: Spec[] };
-  if (typeof d.seed !== "string") throw new Error(`${CARRIER}: the intent names no seed`);
+  if (typeof d.seed !== "string") throw new Error(`${CARRIER}: the tunnel names no seed`);
   return { seed: d.seed, repo: d.repo ?? [], home: d.home ?? [] };
 }
 

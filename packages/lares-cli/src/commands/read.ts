@@ -21,10 +21,10 @@ import { udsAlive } from "../local-connector.js";
 import { existsSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { palaceOrgans, organHealthy, guestMempalaceOrgan, readMemeticWikitextCoupling, runDoctor, formatDoctorReport } from "@lararium/node";
-import { read as readIntent, Ledger } from "../intent/engine.js";
-import { homeItems } from "../intent/catalog.js";
-import { resolveHomes } from "../intent/homes.js";
-import { homeLedgerDir } from "../intent/places.js";
+import { read as readIntent, Ledger } from "../reality-tunnel/engine.js";
+import { homeItems } from "../reality-tunnel/catalog.js";
+import { resolveHomes } from "../reality-tunnel/homes.js";
+import { homeLedgerDir } from "../reality-tunnel/places.js";
 import { emit } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 

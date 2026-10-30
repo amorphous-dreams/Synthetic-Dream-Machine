@@ -1,5 +1,5 @@
 /**
- * intent — one door per radius over one declared intent (lar:///ha.ka.ba/lares/cli/intent). Every
+ * reality tunnel — one door per radius over one declared reality tunnel (lar:///ha.ka.ba/lares/cli/reality-tunnel). Every
  * red plants against a scratch clone or a scratch home; nothing here writes the live tree or a real
  * home.
  */
@@ -10,17 +10,17 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { EXIT, Ledger, exitOf, read, tend, undo, type Item } from "../src/intent/engine.js";
+import { EXIT, Ledger, exitOf, read, tend, undo, type Item } from "../src/reality-tunnel/engine.js";
 import {
   claudeHook, headLine, jsonFloor, tomlHookForeign, jsonForeign, jsonIncludes, jsonSet, namesSeed, seedless, tomlHook, tomlMcpServer,
   tomlTableKey, tomlTableUnset, tomlTopFloor,
-} from "../src/intent/kinds.js";
-import { CARRIER, declared, homeItems, repoItems } from "../src/intent/catalog.js";
-import { finalHash, judgeLoads } from "../src/intent/verify.js";
+} from "../src/reality-tunnel/kinds.js";
+import { CARRIER, declared, homeItems, repoItems } from "../src/reality-tunnel/catalog.js";
+import { finalHash, judgeLoads } from "../src/reality-tunnel/verify.js";
 
 const REPO = join(import.meta.dirname, "..", "..", "..");
 let dir: string;
-beforeEach(() => { dir = mkdtempSync(join(tmpdir(), "intent-")); });
+beforeEach(() => { dir = mkdtempSync(join(tmpdir(), "tunnel-")); });
 afterEach(() => { rmSync(dir, { recursive: true, force: true }); });
 
 const MCP = { command: "/usr/bin/python3", args: ["/clone/lares_mcp.py"], env: { PYTHONPATH: "/clone/mp" } };
@@ -207,7 +207,7 @@ describe("the repo radius", () => {
     expect(read(repoItems(root), l).find((x) => x.id === "claude.scout-plan")!.state).toBe("foreign");
   });
 
-  it("the live tree's checkout holds its intent, read without a write", () => {
+  it("the live tree's checkout holds its reality tunnel, read without a write", () => {
     const rows = read(repoItems(REPO), new Ledger(join(dir, "never-written")));
     expect(rows.filter((r) => r.state !== "aligned")).toEqual([]);
     expect(existsSync(join(dir, "never-written"))).toBe(false);
@@ -307,5 +307,13 @@ describe("the carrier", () => {
     expect(d.home.length).toBeGreaterThan(10);
     expect(() => repoItems(REPO, d)).not.toThrow();
     expect(() => homeItems({ repo: REPO, homes: { native: dir, windows: null }, mcp: null, claudeCli: false }, d)).not.toThrow();
+  });
+});
+
+describe("the brief line", () => {
+  it("prints one line with no terminal, the way the wake hook reads it", () => {
+    const out = execFileSync("node", [join(REPO, "packages/lares-cli/dist/src/bin/lares.js"), "repo", "read", "--brief"], { encoding: "utf8", cwd: REPO });
+    expect(out.trim().split("\n")).toHaveLength(1);
+    expect(out).toMatch(/^reality tunnel: /);
   });
 });

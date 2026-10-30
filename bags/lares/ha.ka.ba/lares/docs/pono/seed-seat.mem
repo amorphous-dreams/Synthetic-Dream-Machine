@@ -58,9 +58,9 @@ The boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>) seats by
 
 !! The proofs
 
-* The seat's writes and reads ride the intent doors (<<~ loulou "lar:///ha.ka.ba/lares/cli/intent">>): `lares repo read` reads every law the seat holds, and `tools/repo-intent-witness.sh` runs it with a `--control` that MUST read a linkless checkout red.
+* The seat's writes and reads ride the reality-tunnel doors (<<~ loulou "lar:///ha.ka.ba/lares/cli/reality-tunnel">>): `lares repo read` reads every law the seat holds, and `tools/repo-tunnel-witness.sh` runs it with a `--control` that MUST read a linkless checkout red.
 * `lares repo tend` and `lares home tend` write the seat, and converge: a second pass writes nothing. `lares repo verify` and `lares home verify` read what the hosts loaded.
-* `tools/repo-intent-staged.sh` runs from `.githooks/pre-commit` over what the commit carries (`lares repo read --staged`), so a seed staged ahead of its scouts never lands.
+* `tools/repo-tunnel-staged.sh` runs from `.githooks/pre-commit` over what the commit carries (`lares repo read --staged`), so a seed staged ahead of its scouts never lands.
 * `tools/seed-seat.test.mjs` plants each red against scratch clones and homes.
 
 <<~/ahu>>
@@ -80,6 +80,6 @@ The boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>) seats by
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rQOUewhbjLBLv9alZeojzADX3BWsZ7FfnigXjHYWebA
+<<^ code="&#x0003;">>ni:///sha-256;dtWwwLy4drom8mdXs2ZEZRR0p6sjwWpTkIeOMoC1m90
 
 <<^ code="&#x0004;" -> to="?">>

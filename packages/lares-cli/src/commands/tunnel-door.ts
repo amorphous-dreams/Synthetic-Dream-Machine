@@ -1,29 +1,29 @@
 /**
- * `lares repo` · `lares home` — one door per radius over one intent engine.
+ * `lares repo` · `lares home` — one door per radius over one reality-tunnel engine.
  *
  * `repo` keeps the checkout it runs in; `home` keeps every operator home the device carries. Each
  * answers the same four verbs, so the two read alike: `read` (both diffs, writes nothing), `tend`
  * (converges; writes only on difference), `verify` (what the hosts report loading), `undo [gen]`
  * (restores a generation). The radius never widens: neither door writes the other's ground.
  *
- * Meme: lar:///ha.ka.ba/lares/cli/intent
+ * Meme: lar:///ha.ka.ba/lares/cli/reality-tunnel
  */
 import { execFileSync } from "node:child_process";
 import { homedir } from "node:os";
 import { createInterface } from "node:readline/promises";
 import { repoRoot } from "@lararium/mesh/node";
-import { EXIT, Ledger, exitOf, read, tend, undo, type Item, type Reader, type Row } from "../intent/engine.js";
-import { homeLedgerDir, repoLedgerDir } from "../intent/places.js";
-import { homeItems, repoItems } from "../intent/catalog.js";
-import { resolveHomes } from "../intent/homes.js";
-import { hostLocker } from "../intent/lock.js";
-import { verifyLoads, type VerifyResult } from "../intent/verify.js";
+import { EXIT, Ledger, exitOf, read, tend, undo, type Item, type Reader, type Row } from "../reality-tunnel/engine.js";
+import { homeLedgerDir, repoLedgerDir } from "../reality-tunnel/places.js";
+import { homeItems, repoItems } from "../reality-tunnel/catalog.js";
+import { resolveHomes } from "../reality-tunnel/homes.js";
+import { hostLocker } from "../reality-tunnel/lock.js";
+import { verifyLoads, type VerifyResult } from "../reality-tunnel/verify.js";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 type Door = "repo" | "home";
-export const INTENT_VERBS = ["read", "tend", "verify", "undo"] as const;
+export const TUNNEL_VERBS = ["read", "tend", "verify", "undo"] as const;
 
 /** The index as a reader: what a commit carries, a link's target from its staged blob. */
 export const indexReader = (repo: string): Reader => ({
@@ -41,7 +41,7 @@ const GLYPH: Record<Row["state"], string> = { aligned: "✓", drift: "~", foreig
 function show(rows: readonly Row[], brief: boolean): void {
   if (brief) {
     const off = rows.filter((r) => r.state === "drift" || r.state === "foreign" || r.state === "unreachable" || r.touched);
-    console.log(off.length === 0 ? "intent: every item holds" : `intent: ${off.length} item(s) off intent — ${off.map((r) => r.id).join(", ")} (lares home read)`);
+    console.log(off.length === 0 ? "reality tunnel: every item holds" : `reality tunnel: ${off.length} item(s) off the tunnel — ${off.map((r) => r.id).join(", ")} (lares home read)`);
     return;
   }
   for (const r of rows) {
@@ -69,9 +69,9 @@ export function itemsFor(door: Door): { items: Item[]; ledger: Ledger; root: str
   return { items: homeItems({ repo: repoRoot, homes: resolveHomes() }), ledger: new Ledger(homeLedgerDir()), root: homedir() };
 }
 
-export async function cmdIntentDoor(door: Door, args: ParsedArgs): Promise<number> {
+export async function cmdTunnelDoor(door: Door, args: ParsedArgs): Promise<number> {
   const verb = args.positional[0];
-  if (args.flags["help"] === true || verb === undefined || !(INTENT_VERBS as readonly string[]).includes(verb)) {
+  if (args.flags["help"] === true || verb === undefined || !(TUNNEL_VERBS as readonly string[]).includes(verb)) {
     return refuseUsage(args, door, helpLines(door));
   }
   if (args.flags["staged"] === true && !(door === "repo" && verb === "read")) {
@@ -84,7 +84,9 @@ export async function cmdIntentDoor(door: Door, args: ParsedArgs): Promise<numbe
     const reader = args.flags["staged"] === true ? indexReader(repoRoot) : undefined;
     const rows = read(items, ledger, reader);
     const code = exitOf(rows);
-    emit(args, { ok: code === 0, data: { radius: door, rows, exit: code }, human: () => show(rows, args.flags["brief"] === true) });
+    // `--brief` is the one line a hook reads, terminal or none: the wake hook calls it with no TTY.
+    if (args.flags["brief"] === true) { show(rows, true); return code; }
+    emit(args, { ok: code === 0, data: { radius: door, rows, exit: code }, human: () => show(rows, false) });
     return code;
   }
 
@@ -123,11 +125,11 @@ export async function cmdIntentDoor(door: Door, args: ParsedArgs): Promise<numbe
 
   const v: VerifyResult = verifyLoads({ door, repo: repoRoot, home: homedir(), probe: args.flags["probe"] === true });
   emit(args, { ok: v.ok, data: { radius: door, ...v }, human: () => {
-    console.log(v.ok ? "verify: every host loads the seed once" : "verify: a host's loads read off intent");
+    console.log(v.ok ? "verify: every host loads the seed once" : "verify: a host's loads read off the tunnel");
     for (const line of v.lines) console.log(`  ${line}`);
   } });
   return v.ok ? EXIT.aligned : EXIT.drift;
 }
 
-export const cmdRepo = (args: ParsedArgs): Promise<number> => cmdIntentDoor("repo", args);
-export const cmdHome = (args: ParsedArgs): Promise<number> => cmdIntentDoor("home", args);
+export const cmdRepo = (args: ParsedArgs): Promise<number> => cmdTunnelDoor("repo", args);
+export const cmdHome = (args: ParsedArgs): Promise<number> => cmdTunnelDoor("home", args);

@@ -759,9 +759,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   repo: {
     usage: "usage: lares repo <read|tend|verify|undo> [--staged] [--force] [--probe] [--json]",
     synopsis:
-      "THE CHECKOUT'S DOOR — this checkout holds its declared intent (lar:///ha.ka.ba/lares/cli/intent): the seed's links " +
+      "THE CHECKOUT'S DOOR — this checkout holds its declared reality tunnel (lar:///ha.ka.ba/lares/cli/reality-tunnel): the seed's links " +
       "and CLAUDE.md's import, the scouts that carry the seed, the files Copilot reads beside CLAUDE.md, Codex's doc cap, the " +
-      "operator rule's exclude. `read` answers both diffs (live against intent, live against what the house last wrote) and " +
+      "operator rule's exclude. `read` answers both diffs (live against the tunnel, live against what the house last wrote) and " +
       "writes nothing; `tend` writes only on difference and records a generation; `verify` reads what the hosts loaded; " +
       "`undo [gen]` restores one. Exit: 0 aligned · 1 drift · 2 usage · 3 foreign bytes refused · 4 a needed piece absent.",
     examples: [
@@ -777,14 +777,14 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--probe        verify by asking each host (spends model calls)",
     ],
     next: ["lares home read", "lares repo verify"],
-    meme: "lar:///ha.ka.ba/lares/cli/intent",
+    meme: "lar:///ha.ka.ba/lares/cli/reality-tunnel",
   },
 
   home: {
     usage: "usage: lares home <read|tend|verify|undo> [--brief] [--force] [--probe] [--yes] [--json]",
     synopsis:
       "THE OPERATOR'S HOMES' DOOR — every home the device carries (the native home, and the Windows profile under WSL) " +
-      "holds its declared intent: each harness's memory guard at its maximum (Claude's cleanupPeriodDays, Codex's saved " +
+      "holds its declared reality tunnel: each harness's memory guard at its maximum (Claude's cleanupPeriodDays, Codex's saved " +
       "history, Copilot's prompt history), the lares MCP seats and hooks aimed at the main clone, the seed rule, `lares` on " +
       "the path. `tend` names every path it will write and asks first (--yes without a terminal). No door lowers a memory " +
       "guard. Exit: 0 aligned · 1 drift · 2 usage · 3 foreign bytes refused · 4 a needed piece absent.",
@@ -796,13 +796,13 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares home undo 3                # restore generation 3",
     ],
     flags: [
-      "--brief        one line: every item holds, or which stand off intent",
+      "--brief        one line: every item holds, or which stand off the tunnel",
       "--force        take bytes the house does not own; the ledger keeps them",
       "--probe        verify by asking each host (spends model calls)",
       "--yes          tend without asking (a terminal-less caller)",
     ],
     next: ["lares home verify", "lares repo read"],
-    meme: "lar:///ha.ka.ba/lares/cli/intent",
+    meme: "lar:///ha.ka.ba/lares/cli/reality-tunnel",
   },
 };
 

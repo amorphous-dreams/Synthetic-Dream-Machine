@@ -1,9 +1,9 @@
 /**
- * intent/engine — an operator's machine converges on declared intent, one radius per invocation.
+ * reality-tunnel/engine — an operator's machine converges on declared reality tunnel, one radius per invocation.
  *
- * Law: lar:///ha.ka.ba/lares/cli/intent. An ITEM declares what one target holds; the target's
+ * Law: lar:///ha.ka.ba/lares/cli/reality-tunnel. An ITEM declares what one target holds; the target's
  * desired bytes are a pure function of its current bytes, every item on one file composing in
- * order. `read` answers two diffs per item, live against intent (what `tend` would do) and live
+ * order. `read` answers two diffs per item, live against the tunnel (what `tend` would do) and live
  * against the bytes the house last wrote (someone touched it). `tend` writes only on difference,
  * refuses bytes it does not own unless forced, and records a GENERATION: each target's prior bytes
  * and the hash of what it wrote. `undo` restores a generation's prior bytes and records that too.
@@ -172,10 +172,10 @@ function rowOf(it: Item, live: Live, touched: boolean): Row {
     if (live.kind === "link") {
       return live.target === it.link
         ? { ...base, state: "aligned", detail: `-> ${it.link}` }
-        : { ...base, state: "drift", detail: `links to ${live.target}; intent names ${it.link}` };
+        : { ...base, state: "drift", detail: `links to ${live.target}; the tunnel names ${it.link}` };
     }
     if (live.kind === "file") return { ...base, state: "foreign", detail: "a regular file stands where the link belongs (a checkout without symlinks writes this shape)" };
-    return { ...base, state: "drift", detail: `absent; intent links it to ${it.link}` };
+    return { ...base, state: "drift", detail: `absent; the tunnel links it to ${it.link}` };
   }
   const cur = live.kind === "file" ? live.bytes : null;
   if (live.kind === "link") return { ...base, state: "foreign", detail: `a link to ${live.target} stands where a file belongs` };

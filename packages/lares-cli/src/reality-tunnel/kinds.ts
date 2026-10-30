@@ -1,9 +1,9 @@
 /**
- * intent/kinds — the transforms an item names. Each is a pure function of a target's current bytes,
- * and each returns the current bytes unchanged once they already hold the intent, so a second
+ * reality-tunnel/kinds — the transforms an item names. Each is a pure function of a target's current bytes,
+ * and each returns the current bytes unchanged once they already hold the tunnel, so a second
  * `tend` writes nothing (f(f(x)) = f(x)).
  *
- * Law: lar:///ha.ka.ba/lares/cli/intent.
+ * Law: lar:///ha.ka.ba/lares/cli/reality-tunnel.
  */
 import { parse as parseToml } from "smol-toml";
 
@@ -149,7 +149,7 @@ export const owned = (content: string, marker: string) => ({
     cur !== null && !cur.includes(marker) ? "carries bytes the house never wrote; it stays as it stands" : null,
 });
 
-// ── TOML (text edits; the parse reads alignment, so a held intent never moves a byte) ──────────
+// ── TOML (text edits; the parse reads alignment, so a held tunnel never moves a byte) ──────────
 
 const tomlTryParse = (cur: string): Json | null => { try { return parseToml(cur) as Json; } catch { return null; } };
 

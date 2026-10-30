@@ -1,26 +1,28 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/cli/intent">>
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/cli/reality-tunnel">>
 <<^ code="&#x0002;">>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/cli/intent.mem"
+file-path = "bags/lares/ha.ka.ba/lares/cli/reality-tunnel.mem"
 l-space   = "adjacent"
-role      = "the radius law and the operator's declared intent: what the checkout and every operator home on the device hold, read by `lares repo` and `lares home`"
+role      = "the radius law and the operator's declared reality tunnel: what the checkout and every operator home on the device hold, read by `lares repo` and `lares home`"
 status    = "draft"
-title     = "lar:///ha.ka.ba/lares/cli/intent"
+title     = "lar:///ha.ka.ba/lares/cli/reality-tunnel"
 type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lares/cli/intent"
+uri-path  = "ha.ka.ba/lares/cli/reality-tunnel"
 ```
 
 <<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 <<~ ahu #/head>>
 
-! Intent ~ one door per radius, one declared intent beneath them
+! Reality tunnel ~ one door per radius, one declared tunnel beneath them
 
-An operator's machine holds what the operator declares, through one door per RADIUS: `lares repo` for the checkout, `lares home` for every operator home the device carries, `lares vessel` for `LAR_ROOT` alone. The doors read, tend, verify and undo; the intent they converge on stands here as data, and the engine's kinds (link, owned file, JSON key, floor, TOML table, lifted line) stand in code (`packages/lares-cli/src/intent/`).
+An operator's machine holds what the operator declares, through one door per RADIUS: `lares repo` for the checkout, `lares home` for every operator home the device carries, `lares vessel` for `LAR_ROOT` alone. The doors read, tend, verify and undo; the tunnel they converge on stands here as data, and the engine's kinds (link, owned file, JSON key, floor, TOML table, lifted line) stand in code (`packages/lares-cli/src/reality-tunnel/`).
+
+''The name.'' The boot seed seeds a reality tunnel (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/set-and-setting">>): the frame a session reads within. This carrier declares the machine's half of that tunnel, the set every host wakes into, and the doors keep the setting true to it. ''Intent'' names the wiki daemon's intent plane, a different relation; the CLI never borrows the word.
 
 <<~/ahu>>
 
@@ -30,22 +32,22 @@ An operator's machine holds what the operator declares, through one door per RAD
 
 * ''One invocation writes one radius.'' `repo` writes the checkout it runs in; `home` writes the operator's homes; `vessel` writes `LAR_ROOT`. A composition rides as a rite of one door and composes that door's radius alone.
 * ''Observing never mutates.'' `read` and `verify` write nothing outside the ledger's own read; `tend` alone writes.
-* ''Two diffs.'' `read` answers, per item, the live bytes against intent (what `tend` would do) and the live bytes against what the house last wrote there (a hand touched it).
+* ''Two diffs.'' `read` answers, per item, the live bytes against the tunnel (what `tend` would do) and the live bytes against what the house last wrote there (a hand touched it).
 * ''Foreign bytes refuse.'' A target the house does not own (a file that lacks its marker, JSON or TOML that does not parse, a regular file where a link belongs) refuses with exit 3; `--force` takes it, and the ledger keeps its prior bytes.
-* ''Every write records a generation'': each target's prior bytes and the hash of what the write left. `undo` restores a generation and records the restore, for both radii. The home ledger rests in the home's own state (`$XDG_STATE_HOME/lares/intent/home`); the repo ledger rests in the checkout's git dir.
+* ''Every write records a generation'': each target's prior bytes and the hash of what the write left. `undo` restores a generation and records the restore, for both radii. The home ledger rests in the home's own state (`$XDG_STATE_HOME/lares/reality-tunnel/home`); the repo ledger rests in the checkout's git dir.
 * ''The memory guard never lowers.'' Each harness's retention rises to its maximum and no door lowers it: the conversation store seeds the operator's memory.
 * ''The exit contract'': 0 aligned · 1 drift · 2 usage · 3 foreign bytes refused · 4 a host stands but a piece an item needs does not. An absent host reads as absent and leaves the exit alone.
 * ''Verify reads what the host loaded.'' A file on disk proves nothing about a session; `verify` reads the load log the Claude hook keeps, and `--probe` asks Codex and Copilot what they hold.
 
 <<~/ahu>>
 
-<<~ ahu #/the-intent>>
+<<~ ahu #/the-tunnel>>
 
-!! The declared intent
+!! The declared tunnel
 
 Each item names its radius, its host, its kind and the target it keeps. `{repo}` reads the checkout, `{clone}` the main clone a worktree belongs to, `{seed}` the boot seed's path. A home item names `homes = "all"` to reach every home on the device, or reaches the native home alone.
 
-```toml intent
+```toml reality-tunnel
 seed = "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem"
 
 # ── the checkout ────────────────────────────────────────────────────────────────────────────────
@@ -317,9 +319,9 @@ what = "`lares` answers on the operator's path"
 
 !! The proofs
 
-* `packages/lares-cli/tests/intent-*.test.ts` plant each kind's red against scratch homes and clones: a second `tend` writes nothing, foreign bytes refuse, `undo` restores, the floor never lowers.
-* `tools/repo-intent-witness.sh` reads the checkout through `lares repo read`; `.githooks/pre-commit` refuses a commit whose index `lares repo read --staged` reads off intent.
-* A witness reads this carrier's intent fence parsing whole, so a carrier the engine cannot read reds before any door goes blind.
+* `packages/lares-cli/tests/reality-tunnel.test.ts` plant each kind's red against scratch homes and clones: a second `tend` writes nothing, foreign bytes refuse, `undo` restores, the floor never lowers.
+* `tools/repo-tunnel-witness.sh` reads the checkout through `lares repo read`; `.githooks/pre-commit` refuses a commit whose index `lares repo read --staged` reads off the tunnel.
+* A witness reads this carrier's reality-tunnel fence parsing whole, so a carrier the engine cannot read reds before any door goes blind.
 
 <<~/ahu>>
 
@@ -335,6 +337,6 @@ what = "`lares` answers on the operator's path"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8d_HDGVuEI7pnR4OzeEKZtmsPXVR1c3jW4uSmPPANzs
+<<^ code="&#x0003;">>ni:///sha-256;APwYrcETGyEYnEjv1QGQscXWeLX9eOhjz5_yG73MZqE
 
 <<^ code="&#x0004;" -> to="?">>

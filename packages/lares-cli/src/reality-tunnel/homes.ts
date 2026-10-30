@@ -1,5 +1,5 @@
 /**
- * intent/homes — every operator home one device carries.
+ * reality-tunnel/homes — every operator home one device carries.
  *
  * One device carries one operator. Under WSL that operator holds two homes, the Linux home and the
  * Windows profile, and a harness may store memory in either; a guard that keeps one leaves the other

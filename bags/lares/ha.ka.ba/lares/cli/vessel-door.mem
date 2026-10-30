@@ -77,7 +77,7 @@ plane with no door has nowhere to put new capability but the top level'' — whi
 grows back wherever the law has not reached, and where to look when it does.
 
 ''The vessel door writes `LAR_ROOT` and nothing else.'' The checkout and the operator's homes are islands of
-their own, each with its door: `lares repo` and `lares home` (<<~ loulou "lar:///ha.ka.ba/lares/cli/intent#/the-radius-law">>).
+their own, each with its door: `lares repo` and `lares home` (<<~ loulou "lar:///ha.ka.ba/lares/cli/reality-tunnel#/the-radius-law">>).
 One invocation writes one radius, and a rite composes its own door's radius alone.
 
 <<~/ahu>>
@@ -274,6 +274,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZnMao5k0VrTiAce2xk_vRZAMI00GrD340WKhEDULYkw
+<<^ code="&#x0003;">>ni:///sha-256;-Aod5L69e_NLuCDrJLSosa-ieg4H0zpJSrTLb7MeVCc
 
 <<^ code="&#x0004;" -> to="?">>

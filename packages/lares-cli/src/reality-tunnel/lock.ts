@@ -1,5 +1,5 @@
 /**
- * intent/lock — the write lock for a target a host shares with its own live writers.
+ * reality-tunnel/lock — the write lock for a target a host shares with its own live writers.
  *
  * Claude's settings carry a logged corruption-under-concurrency fault, and parallel sessions share
  * the file. The lock rides the house's socket claim (`claimName`): no pid is ever read, so neither pid

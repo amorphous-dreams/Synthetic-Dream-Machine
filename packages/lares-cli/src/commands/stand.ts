@@ -8,7 +8,7 @@
  * caller — a session hook, a cron, anything that only wants a reading — holds the first alone, so
  * looking never decides what stands.
  *
- * STANDING WRITES `LAR_ROOT` AND NOTHING ELSE (the radius law, lar:///ha.ka.ba/lares/cli/intent). The
+ * STANDING WRITES `LAR_ROOT` AND NOTHING ELSE (the radius law, lar:///ha.ka.ba/lares/cli/reality-tunnel). The
  * mempalace library and the sensorium organs keep their own doors (`lares mempalace install`, `lares sense
  * setup`), and every operator home rides `lares home`, so a founding stays inside the vessel root. A stand still REPORTS what stands, because naming a missing
  * tool serves the operator and installing one behind them does not.
