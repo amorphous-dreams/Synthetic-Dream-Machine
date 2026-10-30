@@ -1,3 +1,28 @@
+## N9-CB · Intent aftermath: a contact can enter causal ancestry
+
+The `bear` affordance now crosses the **existing** `RelationalGround`
+and `support_workspace` boundary only when the native STEP scene proves
+one independent lower/upper planar BRep contact. The operator supplies
+the actual source workspace, typed place genome, original spatial intent,
+and attributed actor. `materialize_bearing_support` delegates the
+mutation to the already-verified causal workspace owner and writes a
+new immutable child, leaving the original workspace unmodified.
+
+A separate receipt binds the original source workspace, original
+STEP scene, native contact digest, source genome and intent,
+operator-identified event, new causal workspace and its native
+`supports` relation. Independent re-entry recomputes both native
+faces and the causal event, rather than copying a fictional
+semantic graph edge. The new CLI exposes this as
+`place-bearing-support` and `place-bearing-support-verify`.
+
+Even two touching solids cannot establish load capacity, occupancy,
+column sizing, engineer review, artistic merit, or canon. Geometric
+support **contact** and engineered support **safety** retain distinct
+authorities. A source changed after the event must fail revalidation.
+
+---
+
 ## N9-B · Intent aftermath: contact carries a verb, not a load certificate
 
 Fire's existing `bears/bearing-column` relation now binds a typed

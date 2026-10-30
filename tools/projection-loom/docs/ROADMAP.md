@@ -1,3 +1,33 @@
+## ☕ N9 · Bearing/contact and causal handback · build/aftermath waves · 2026-10-29
+
+**N9-B feature** (`71f5aaa5`): typed Fire `bears/bearing-column`
+maps to `SpatialGoal(bear)`; independent STEP contact returns a
+`geometric-bearing-proposal` with original source and native
+contact SHA, never structural load certification. Distinct native
+bearing morphology enters the quality-diversity archive.
+
+**N9 aftermath B** (`7f8c5e2a`): untouched source contact and
+noncontacting refusals receive their own native study tests, separate
+from route, shelter and ascent. Pure contact can never declare
+physical engineering or artistic preference.
+
+**N9-CB feature** (`9d3fb76f`): materialize exactly one
+operator-attributed and independently witnessed native bearing
+through existing `propose_support` / `support_workspace` into
+immutable causal `supports` ancestry.
+**N9-CB2** (`14d18403`) exposes the typed CLI and re-entry test.
+**Intent aftermath CB:** reimport source STEP, reverify causal
+frontier, event identity and attributed actor; inspect all receipts
+with `place-bearing-support-verify`. The operator retains approval.
+
+These waves extend the previous multi-Fire and explicit intent-
+amendment work. All exact-head CAD, generalized integration,
+repo CI, held-out gates remain pending until new Actions verify.
+No automatic winner, Unreal Editor witness, load certificate,
+pet-name, o-takiage, Elyncia canon or PR merge occurred.
+
+---
+
 ## ☕ N9 · Exact-head recovery (source fidelity) · 2026-10-29
 
 First staged multi-goal Fire head `a150ae6d` reported 111
