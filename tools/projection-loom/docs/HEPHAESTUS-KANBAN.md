@@ -1,3 +1,32 @@
+## N9 · Intent aftermath · Two genuine alternative routes retain their own testimony
+
+The `place-orthogonal-study` and companion verifier now create
+a bounded two-arm architectural study from ONE original site,
+ONE attributed `connect` goal, ONE explicit semantic corner
+handle, and exactly one native STEP audition per arm. The first
+arm follows x-then-y, the second y-then-x. Each receives a
+different native PlaceGenome with two independently BRep-tested
+deck contacts and headroom envelopes. The source genotype and
+spatial intent remain unchanged between arms.
+
+The matched study re-imports every arm's actual STEP geometry,
+compares the original preregistration and operator-choice
+semantics, and refuses modified results even if a user edits a
+printed status. It does not rank the alternatives, choose a
+corner for the operator, certify physical safety, or turn a
+rendered projection back into independent source evidence.
+A later operator may choose a candidate through the existing
+native workspace review, not from this scientific result alone.
+
+A diagonal intention here means two deliberate orthogonal
+legs and an authored corner; it does not claim continuous
+curved/rotated CAD construction or an unconstrained diagonal
+bridge. Running the assay does not launch a new OODA-HA
+controller: it supplies falsifiable evidence to the existing
+place campaign's operator review boundary.
+
+---
+
 ## N9 · Intent aftermath · Operator-selected non-axis passage by two native legs
 
 The `place-orthogonal-route` CLI accepts a **single explicit**

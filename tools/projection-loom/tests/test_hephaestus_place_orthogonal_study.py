@@ -34,3 +34,17 @@ def test_forged_bend_witness_refuses_replay(tmp_path):
     with pytest.raises(ValueError,match="diverged"):
         verify_orthogonal_study(destination,genome,goal,
                                 location="two-choice-site",corner_id="landing")
+
+def test_matched_turn_cli_preserves_original_authorized_native_choices(tmp_path):
+    from projection_loom.cli import main
+    genome,goal=site()
+    (tmp_path/"genome.json").write_text(json.dumps(genome.to_dict()))
+    (tmp_path/"spatial.json").write_text(json.dumps(goal.to_dict()))
+    argv=["--genome",str(tmp_path/"genome.json"),
+          "--spatial",str(tmp_path/"spatial.json"),
+          "--location","two-choice-site","--corner-id","landing"]
+    folder=tmp_path/"study"
+    record=main(["place-orthogonal-study",*argv,"--out",str(folder)])
+    assert record==main(["place-orthogonal-study-verify",*argv,"--study",str(folder)])
+    assert record["native_budget_per_arm"]==1
+    assert record["two_distinct_genomes"]
