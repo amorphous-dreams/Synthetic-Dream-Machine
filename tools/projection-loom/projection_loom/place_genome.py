@@ -293,18 +293,6 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
         i=row["goal_index"]
         goal=spatial.goals[i]
         if goal.kind=="bear":
-            return 2  # Shelter births a declared roof before bearing interpretation.
-        if goal.kind!="connect":
-            return 0
-        known={b.entity_id:b for b in bodies}
-        if goal.subject not in known or goal.object not in known:
-            return 1
-        a,b=known[goal.subject],known[goal.object]
-        xy=(abs(a.translation[0]-b.translation[0]),
-            abs(a.translation[1]-b.translation[1]))
-        return 1 if all(delta>1e-7 for delta in xy) else 0
-    for i,goal in sorted(enumerate(spatial.goals),key=_intention_order):
-        if goal.kind=="bear":
             if any(b.lower==goal.subject and b.upper==goal.object for b in bearings):
                 continue
             known={body.entity_id:body for body in bodies}
