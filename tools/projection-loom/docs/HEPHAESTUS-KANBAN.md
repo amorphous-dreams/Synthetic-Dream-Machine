@@ -1,3 +1,37 @@
+## N9 · OODA-HA recovery / intent aftermath · 2026-10-29
+
+Current exact-head `7cdadbfa` generalized integration showed
+**contracts GREEN** but **OpenUSD/STEP and real Blender RED**.
+Both failures share an independent native witness refusal:
+`shelter(begin, roof)` with a simultaneous `ascend(begin, summit)`
+shifted the constructed roof past the original floor-centered
+`min_width` clear-core. OpenUSD/STEP's joint-goal test and Blender's
+pre-editor native gate correctly refused that geometry. No
+revalidation gate should loosen to make the failing candidate pass.
+
+**N9 recovery `b19e97c1`:** a bounded canopy displacement
+preserves the original authored core envelope with an interior
+margin while avoiding the first tread where possible. It does
+not alter geometry on source-defined roofs, native BRep checks,
+STEP digests, or human occupancy exclusions. The regression
+inspects the authored floor/roof core before invoking the native
+two-goal crucible.
+
+**Intent aftermath:** shelter and ascent MUST EACH receive their
+own native proof from the finished source-aligned location.
+The constructed central refuge core derives from an explicitly
+authored minimum width, not full-room occupancy or inferred
+surveys. Exact-head generalized and actual Blender re-testing
+must return green before the fix receives an acceptance label.
+
+Further work continues the one existing OODA-HA journal,
+operator steering, source-bound review and counterfactual
+intention rather than introducing an autonomous hidden helm.
+Unreal Editor, engineered loads, accessible stairs and
+artistic canon remain separate unproven boundaries.
+
+---
+
 ## ☕ N9-SB · Living canopy / perimeter column and exact causal replay · 2026-10-29
 
 **Feature SB** (`b97ad987`): when the same original floor
