@@ -1,3 +1,32 @@
+## ☕ N8 · Native evidence reconciliation · 2026-10-29
+
+Second exact-head integration `b997fb95` reported GREEN contracts and actual
+Blender, but **RED OpenUSD/STEP**: five new place-campaign tests failed
+`Recorded architectural affordances differ from native evidence`.
+The native candidate rehearsal scene and the separately regenerated immutable
+location scene carry **distinct scene content digests** even when the same
+construction and goal survive. The original code compared a rehearsal proof
+against the new, differently addressed artifact. It must not weaken digests or
+claim the two independently built objects share one SHA.
+
+**Recovery `d70fd256`:** each candidate now retains the first exact STEP
+affordance record as `initial_affordances`. After its separately constructed
+immutable `location_workspace` completes, the candidate independently audits
+the final workspace's real STEP scene and stores that authoritative result as
+`affordances`. Re-entry separately verifies BOTH native scenes against their
+own native content digests. The final stage checks the unchanged goal-status
+vector, not equality of unrelated scene identities. Any changed contact,
+goal refusal or native tampering refuses admission. The negative fixture
+exercises the two-build distinction, leaving old archive evidence immutable.
+
+**Status:** implementation-only until the newest published exact-head
+generalized (contracts, native OpenUSD/STEP, real Blender), full CAD,
+repository-wide and held-out jobs return their own verdicts. The previous
+red integration cannot provide acceptance. No Unreal application witness,
+engineered load certificate, pet-name, artwork winner or canon promotion.
+
+---
+
 ## ☕ N8 · 2026-10-29 · feature/intent waves VII–VIII pending exact-head acceptance
 
 **N8-J** (`7586d190`) refuses original evidence bytes that changed
