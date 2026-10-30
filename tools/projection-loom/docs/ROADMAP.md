@@ -1,3 +1,55 @@
+## Active constructive-place campaign · source-grounded recovery
+
+The current unpublished-then-published campaign extends the verified
+N8/N9 constructive path without adding a new controller or application
+release ordinal. A previously red exact-head generalized native job
+reported 133 passed and one failed test at `b08a9228`; the remaining
+failure arose from a forged-comparison assertion's error wording.
+That prior head also passed general repository CI and held-out witnesses.
+**The new implementation head must earn fresh CI acceptance.**
+
+This campaign contributes alternating feature and intent-aftermath waves:
+
+- Native right-angle alternatives now distinguish measured/constructed
+  route layout (body placements, ordered axes, witnessed widths and rises)
+  from mere native scene or evidence hash difference.
+- Compound intent studies compare complete goals, each leave-one-out
+  control and each singleton control for three/four authored goals. The
+  resulting per-goal contrast records actual independently witnessed
+  statuses and rejects forged summaries; it does NOT assert causal
+  synergy or assign architectural fitness.
+- Goal-aware variation now reaches every individually authored multi-hop
+  deck and the generated native bearing column, instead of interpreting
+  a diagonal route as one transverse axis or shifting an authored upper
+  support when a generated column carries the relation.
+- The observed place morphology archive retains ordered route axes and
+  turn counts as bounded, measured niche dimensions, alongside route
+  contacts, widths, shelter, ascent and support evidence.
+- `place-board` builds a self-contained, read-only HTML operator
+  inspection surface beside immutable JSON comparison and six-view
+  native STEP gallery receipts. The board displays goal consequences,
+  source authority and refusals, without selecting an aesthetic winner.
+  `place-board-verify` independently regenerates the board and refuses
+  changed HTML, images, source witnesses or out-of-scope media paths.
+- Place verification audits the existing OODAHAJournal's completed
+  five-phase receipts, event order, parent/child loops and candidate roster.
+  Rehashing a corrupted terminal session does not provide phase proof.
+
+The original authored intent, source and native STEP witnesses retain
+distinct authority. No structural engineering safety, human accessibility,
+surveyor registration, Unreal Editor success, pet-name, Elyncia canon
+promotion, o-takiage or PR merge follows. Distinct route layouts describe
+measurable differences, NOT exhaustive CAD isomorphism or artistic value.
+
+**Remaining open research:** independent-source held-out architectural
+campaigns, larger constructive relation vocabularies, deeper population
+mixing under the single shared helm, robust scene-scale material/lighting
+presentation, tested real Unreal Editor integration, measured
+registration, and genuine structural certification.
+
+---
+
+
 ## Active recovery · remaining work by intent
 
 1. **Evidence integrity:** re-prove native study replay, compare exact

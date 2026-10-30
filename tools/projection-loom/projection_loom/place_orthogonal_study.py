@@ -82,7 +82,7 @@ def verify_orthogonal_study(study,genome,spatial,*,location,corner_id):
     distinct=(all(x is not None for x in layouts)
               and len({canonical_json_sha256(x) for x in layouts})==len(layouts))
     if report.get("distinct_witnessed_route_layouts") is not distinct:
-        raise ValueError("Distinct witnessed route layouts misreported")
+        raise ValueError("distinct witnessed route layouts misreported")
     return report
 
 
