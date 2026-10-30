@@ -1,3 +1,27 @@
+## ☕ N8 · Place ecology / intent aftermath XV · 2026-10-29
+
+**N8-Q** (`305176eb`) replaces first-deck offset bins with
+independently observed native place morphology: route hops, axes,
+minimum clearance width and walkthrough segment count from
+reimported STEP and exact contact/clearance receipts. The
+quality-diversity archive preserves different witnessed spatial
+structures without pretending that morphological complexity
+establishes architectural usefulness or artistic superiority.
+**Intent aftermath XV** independently recomputes the descriptor
+from native receipts during re-entry, including a tampered-niche
+refusal test. The operator comparison index displays these
+scoped, testable quantities; no hidden aesthetic winner.
+
+Prior green native/Blender runs remain evidence for their
+own SHA only. Check the current pushed head, full CAD,
+generalized USD/STEP, actual Blender, repository CI and held-out
+before marking this N8 wave accepted. The current work does not
+claim Unreal execution, real-world survey, load-safe walkways,
+Art Sigil interpretation beyond explicit Fire bindings, pet-name,
+o-takiage, canon or PR merge.
+
+---
+
 ## ☕ N8 · 2026-10-29 · native six-view comparison and intent aftermath XIV
 
 **N8-P** (`36582a80`) adds `place-gallery` /

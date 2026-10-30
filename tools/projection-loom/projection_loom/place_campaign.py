@@ -106,6 +106,9 @@ def verify_place_campaign(path):
                 raise ValueError("Location native workspace changed")
             assert intent.identity==pre["spatial_intent_sha256"]
             verify_place_affordances(workspace/"scene",current,intent,row["affordances"])
+            expected_descriptor=observed_place_descriptor(current,row["affordances"])
+            if row.get("descriptor")!=expected_descriptor or row.get("niche")!=expected_descriptor["niche"]:
+                raise ValueError("Native-observed place descriptor or niche changed")
     if summary["admitted"]!=sum(x["status"]=="admitted" for x in summary["candidates"]):
         raise ValueError("Location archive admission count changed")
     if summary["spatial_niches"]!=len({tuple(x["niche"]) for x in summary["candidates"]

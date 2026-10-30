@@ -155,3 +155,16 @@ def test_spatial_archive_uses_observed_route_not_part_count_for_qualities(tmp_pa
     assert descriptor["architectural_fitness_claim"] is None
     assert descriptor["artistic_fitness_claim"] is None
     assert summary["spatial_niches"]==1
+
+def test_tampered_spatial_niche_cannot_promote_an_artistically_unrelated_elite(tmp_path):
+    import json
+    inputs=setup()
+    study=tmp_path/"native"
+    report=run_place_campaign(*inputs,study,epochs=1,offspring=1,exact_budget=1)
+    item=report["candidates"][0]
+    receipt=study/"candidates"/item["candidate_id"]/"receipt.json"
+    doctored=json.loads(receipt.read_text())
+    doctored["descriptor"]["niche"]=[8,8,8,2]
+    receipt.write_text(json.dumps(doctored))
+    with pytest.raises(ValueError):
+        verify_place_campaign(study)

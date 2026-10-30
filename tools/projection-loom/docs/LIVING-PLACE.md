@@ -231,3 +231,29 @@ aesthetics, materiality, lighting, path usability or structural safety.
 It intentionally does not feed its own output back as evidence for the
 next evolutionary epoch. The current Fire and operator can review native
 programs and choose whether a distinct form deserves another study.
+
+## N8 · Aftermath XV · Archive dimensions describe observed consequences
+
+Place diversity no longer follows the first deck's placement offset
+alone. An admitted place obtains a reproducible native-observed
+`observed_place_descriptor` carrying actual walkway count, number
+of independently witnessed route hops, limiting deck-width witness
+and set of principal horizontal axes. Those quantities identify
+structurally different kinds of places. The descriptor explicitly
+declines to assign `architectural_fitness` or `artistic_fitness`:
+a complicated route should not become preferable just because its
+score counted more deck segments.
+
+The surviving quality-diversity archive uses a bounded phenotype
+niche derived from those *witnessed* dimensions, not arbitrary names.
+Each reopening of a candidate regenerates the exact native
+descriptor against the archived STEP route evidence, refusing a
+doctored niche even when someone has made its candidate receipt
+internally consistent. The spatial index offers these measurements
+for operator comparison without automatic selection.
+
+Native fitness, access, source registration, and poetic read remain
+different subjects. No measured floor volume proves the experience
+of sanctuary; no source image can certify a raised bridge's
+engineering; no procedural aesthetic reward should conceal a failed
+native bearing.
