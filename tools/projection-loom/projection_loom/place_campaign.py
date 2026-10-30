@@ -220,7 +220,8 @@ def _verify_place_frontiers(path,pre,summary,spatial,resolved):
                 niche=tuple(row["niche"])
                 if niche not in niches:
                     niches.add(niche)
-                    archive.append({"genome":candidate,"candidate_id":identifier})
+                    archive.append({"genome":candidate,"candidate_id":identifier,
+                                    "workspace_sha256":row["workspace_sha256"]})
         total+=len(attempted)
     if (total!=summary["attempted"] or
             summary.get("frontier_sha256")!=digests or
@@ -485,6 +486,7 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
                         if niche not in niches:
                             niches.add(niche)
                             archive.append({"genome":candidate,"candidate_id":identifier,
+                                            "workspace_sha256":row["workspace_sha256"],
                                             "witness":evidence})
                     else:
                         row["status"]="spatial-unverified"
