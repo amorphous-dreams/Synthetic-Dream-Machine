@@ -151,12 +151,13 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     registry.fence({ open: {}, check: (verb, context) => {
       if (context.presenter !== "did:key:mounted") throw Object.assign(new Error(`${verb}: fenced`), { reason: "content-mounted-only" });
     } });
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry, routeFn: async () => ({ routed: ++routed, secret: "mounted-only" }) });
+    // Both attempts arrive over the vessel's own channel and address a wiki, so the fence reads their presenters.
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry, localOf: () => true, routeFn: async () => ({ routed: ++routed, secret: "mounted-only" }) });
     dispatcher.start();
-    dispatcher.placeVerb({ verb: "wiki-act", args: { x: 1 }, requestedBy: "did:key:mounted", requestId: "route-1", effectKey: "eff-route" });
+    dispatcher.placeVerb({ verb: "wiki-act", args: { wiki: "home" }, requestedBy: "did:key:mounted", requestId: "route-1", effectKey: "eff-route" });
     await settle();
     expect((await outcomeOf(daemon, "route-1"))?.fields.status).toBe("done");
-    dispatcher.placeVerb({ verb: "wiki-act", args: { x: 1 }, requestedBy: "did:key:sibling", requestId: "route-2", effectKey: "eff-route" });
+    dispatcher.placeVerb({ verb: "wiki-act", args: { wiki: "home" }, requestedBy: "did:key:sibling", requestId: "route-2", effectKey: "eff-route" });
     await settle();
     const refused = await outcomeOf(daemon, "route-2");
     expect(refused?.fields["effect-of"]).toBeUndefined();
