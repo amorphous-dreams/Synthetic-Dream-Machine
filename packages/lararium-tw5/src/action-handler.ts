@@ -43,7 +43,7 @@ import type {
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
   WikiSlotKind,
 } from "@lararium/mesh";
-import { canonicalJson, isSystemCanonBag, plainRecordOrNull, requireKahuReach } from "@lararium/mesh";
+import { isSystemCanonBag, plainRecordOrNull, requireKahuReach } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
@@ -1696,25 +1696,24 @@ async function executeMove(action: MoveAction, access: BagAccess): Promise<Recor
  */
 async function executeLayerMove(action: MoveAction, access: BagAccess, o: ChangeOrigin): Promise<Record<string, unknown>> {
   const titles = (await listLiveTitlesInBag(access, action.fromBag)).filter((t) => !isEffectRecordUri(t));
-  const landed = new Map<string, string>();
-  const land = async (t: string): Promise<boolean> => {
-    const source = await readFromBag(access, action.fromBag, t);
-    if (!source || source.meta?.deleted) return false;
-    await landInBag(access, action.toBag, source, lineageOf(source, action.changeId), o);
-    landed.set(t, canonicalJson(source.tiddler));
-    return true;
-  };
-  for (const t of titles) await land(t);
-  let moved = 0;
+  const landed = new Map<string, LarTiddlerRecord>();
   for (const t of titles) {
-    if (!landed.has(t)) continue;
-    // A WRITE THAT LANDED ON THE LAYER BETWEEN THE LANDING AND THE RETRACTION IS NEVER LOST: the record is read once more
-    // right before it leaves, and a version the landing did not carry lands first (the newer wins; the layer then empties).
-    const now = await readFromBag(access, action.fromBag, t);
-    if (now && !now.meta?.deleted && canonicalJson(now.tiddler) !== landed.get(t)) await land(t);
-    await removeIn(access, action.fromBag, t, o); moved++;
+    const source = await readFromBag(access, action.fromBag, t);
+    if (!source || source.meta?.deleted) continue;
+    await landInBag(access, action.toBag, source, lineageOf(source, action.changeId), o);
+    landed.set(t, source);
   }
-  return { fromBag: action.fromBag, toBag: action.toBag, changeId: action.changeId, moved };
+  // A WRITE THAT LANDS ON THE LAYER AFTER ITS RECORD'S LANDING IS NEVER LOST: each record leaves the layer only while it
+  // still holds the fields that landed (the store tests and removes in one change), so a record another hand wrote or
+  // deleted since stays where it stands, for the next promotion, and the answer counts it kept.
+  const source = await access.write(action.fromBag);
+  if (!source) throw new Error(`action-handler: target bag "${action.fromBag}" unreachable — cannot remove (no silent misroute).`);
+  let moved = 0, kept = 0;
+  for (const [t, record] of landed) {
+    await source.remove(t, o, { only: record });
+    if ((await source.get(t)) === null) moved++; else kept++;
+  }
+  return { fromBag: action.fromBag, toBag: action.toBag, changeId: action.changeId, moved, kept };
 }
 
 export class TombstoneTargetHoldsNothingRefusal extends Error {

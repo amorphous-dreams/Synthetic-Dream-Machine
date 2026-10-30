@@ -21,6 +21,8 @@
  *   - tombstone() marks deletion in live wiki state; no hard delete by default.
  */
 
+import { canonicalJson } from "./crypto.js";
+
 // ---------------------------------------------------------------------------
 // MemeProjection — typed slot for a downstream CRDT integration
 // ---------------------------------------------------------------------------
@@ -171,12 +173,18 @@ export interface LarTiddlerChange {
   readonly bag?:      string;
   /** Heads of the bag document read in the same synchronous stretch as record. */
   readonly heads?:    readonly string[];
-  /**
+    /**
    * On the envelope a WRITE fires: the heads of the change that write made. A plain write sits on
    * top of the doc, so this equals `heads`; a based write (`changeAt`) names its own change alone.
    * The writer's next write of this title takes it as its base.
    */
   readonly writtenAt?: readonly string[];
+}
+
+/** The conditional hard-remove a promotion's retract rides (`LarTiddlerStore.remove`). */
+export interface LarRemoveOptions {
+  /** Remove only while the stored record is live and its fields equal these. */
+  readonly only?: LarTiddlerRecord;
 }
 
 // ---------------------------------------------------------------------------
@@ -256,8 +264,10 @@ export interface LarTiddlerStore {
    * a lower bag (vs kāpae, which shadows it). The retract a MOVE/promotion uses
    * on its source so a lower-bag canonical copy surfaces — "tombstone distinct
    * from absent" (residency-model anti-pattern #3). Audit lives in the ledger.
+   * With `only`, the title leaves only while it still holds a live record whose fields equal `only`'s, read and
+   * removed in one synchronous change: a record another hand wrote or deleted since stays as it stands.
    */
-  remove(title: string, origin: ChangeOrigin): Promise<void>;
+  remove(title: string, origin: ChangeOrigin, options?: LarRemoveOptions): Promise<void>;
 
   /**
    * Subscribe to store changes. Returns an unsubscribe function.
@@ -279,3 +289,9 @@ export interface LarTiddlerStore {
   addProjection?(p: MemeProjection): () => void;
 }
 
+
+/** True where `held` is a live record whose fields equal `only`'s (a conditional remove's test, `LarRemoveOptions`). */
+export function holdsOnly(held: LarTiddlerRecord | null | undefined, only: LarTiddlerRecord): boolean {
+  if (!held || held.meta?.deleted) return false;
+  return canonicalJson(JSON.parse(JSON.stringify(held.tiddler))) === canonicalJson(only.tiddler);
+}

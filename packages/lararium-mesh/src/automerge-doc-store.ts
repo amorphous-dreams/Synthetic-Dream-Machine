@@ -28,7 +28,8 @@
 import { assertStorableTitle } from "./title-law.js";
 import { decodeHeads, encodeHeads, type DocHandle } from "@automerge/automerge-repo";
 import { decodeChange, getChangesSince, hasHeads } from "@automerge/automerge";
-import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin } from "./tiddler-store.js";
+import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin, LarRemoveOptions } from "./tiddler-store.js";
+import { holdsOnly } from "./tiddler-store.js";
 import type { MemeProjection } from "./meme-provider.js";
 import { MemeProvider } from "./meme-provider.js";
 import type { LarDoc } from "./base-doc.js";
@@ -498,11 +499,15 @@ export class AutomergeDocStore implements LarTiddlerStore {
 
   /** HARD-remove: delete the key so `get` returns null (ABSENT — falls through
    *  the cascade), never a kāpae tombstone. The MOVE/promotion source retract. */
-  async remove(title: string, origin: ChangeOrigin): Promise<void> {
+  async remove(title: string, origin: ChangeOrigin, options?: LarRemoveOptions): Promise<void> {
+    let removed = true;
     this.handle.change((doc) => {
       const tiddlers = doc.tiddlers as unknown as Record<string, MutableLarTiddlerRecord>;
+      // THE TEST AND THE REMOVAL SHARE ONE CHANGE: no write lands between them.
+      if (options?.only && !holdsOnly(tiddlers[title] as unknown as LarTiddlerRecord | undefined, options.only)) { removed = false; return; }
       delete tiddlers[title];
     });
+    if (!removed) return;
     // Fire record:null — absence; the adaptor's cross-bag resolution surfaces
     // whatever lower-bag copy now resolves beneath (vs a kāpae stop).
     const heads = this._headsForEnvelope();
