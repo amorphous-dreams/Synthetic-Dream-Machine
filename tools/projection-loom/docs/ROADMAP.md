@@ -1,3 +1,38 @@
+## ☕ N8 · Native intent topology + replay aftermath · 2026-10-29
+
+**N8-L** (`991cf1cb`) grows beyond one bridge: a unique, explicitly authored
+chain of up to eight directional walkway segments can connect distinct
+named sites. Every segment independently reimports STEP and proves its own
+two horizontal planar-face bearings, step envelope and unobstructed finite
+corridor. Alternative chains refuse unapproved path selection; one
+location never pretends to be a globally fused BRep.
+
+**Intent aftermath X** (`d0f366c1`) preserves source-to-destination
+architectural purpose and negative tests against forged segment SHA.
+**N8-M** (`76f24eee`) adds an independently reimported matched
+two-arm experiment: identical three-site original genome and native budget
+but different explicitly authored `connect` intents produce different
+constructive decks. No visual/registered source fitness or automatic
+artistic verdict is asserted.
+
+**Exact-head recovery:** `faafa48b` passed dedicated contracts and
+real Blender but failed five native place tests after fixing the two-build
+receipt bug; newer tests exposed raw Python tuple-vs-JSON list comparison
+during valid replay and one negative test expecting a substituted source
+error. `caa4911b` normalizes in-memory prereregistration to the exact
+stored JSON value before reentry checks, without changing original source
+hashes, native geometry, or receipts. The source-mismatch test now checks
+the EXISTING stronger `Source bytes disagree with hash` refusal. Earlier
+red CI remains red; do not promote it to green.
+
+**Unclosed:** re-test the final published SHA across contracts, full
+CAD, native USD/STEP, real Blender, repo-wide and held-out; actual
+Unreal Editor, generic non-axis routes and ascent/shelter affordance
+implementations remain intentionally blocked/unwitnessed. No operator
+promotion, pet-name or canon updates.
+
+---
+
 ## ☕ N8 · Native evidence reconciliation · 2026-10-29
 
 Second exact-head integration `b997fb95` reported GREEN contracts and actual
