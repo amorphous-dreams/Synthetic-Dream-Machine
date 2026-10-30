@@ -8,7 +8,8 @@ import { fileURLToPath } from "node:url";
 
 const BATTERY = fileURLToPath(new URL("./battery.sh", import.meta.url));
 const dir = () => mkdtempSync(join(tmpdir(), "battery-"));
-const until = async (path, ms = 10000) => { const end = Date.now() + ms; while (!existsSync(path)) { if (Date.now() > end) throw new Error(`timed out on ${path}`); await new Promise((r) => setImmediate(r)); } };
+// Bounded by turns, not by a clock: the handshake file is the signal, the turn count only keeps a broken run from hanging.
+const until = async (path, turns = 4000) => { for (let i = 0; i < turns && !existsSync(path); i++) await new Promise((r) => setTimeout(r, 5)); if (!existsSync(path)) throw new Error(`no handshake at ${path}`); };
 const exited = (child) => new Promise((res) => child.on("exit", (code) => res(code)));
 
 test("CONTROL: a free lock runs the command at once and its output reaches us", () => {

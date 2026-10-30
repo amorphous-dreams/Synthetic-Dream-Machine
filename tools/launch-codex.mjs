@@ -175,7 +175,7 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     const briefPath = join(seatDir, "brief.md");
     const brief = appendSeatLaw(readFileSync(briefPath, "utf8"), law);
     writeFileSync(briefPath, brief);
-    appendFileSync(join(seatDir, "attempts.log"), `attempt ${new Date().toISOString()} model=${o.model} effort=${o.effort} mode=${o.mode}\n`);
+    appendFileSync(join(seatDir, "attempts.log"), `attempt model=${o.model} effort=${o.effort} mode=${o.mode}\n`);
     const fd = openSync(join(seatDir, "run.log"), "w");
     const env = { ...process.env, HOME: readers.realHome, TMPDIR: join(seatDir, ".tmp"), TMPPREFIX: join(seatDir, ".tmp", "zsh") };
     const child = spawn("codex", [...args, brief], { cwd: seatDir, env, detached: true, stdio: ["ignore", fd, fd] });
