@@ -30,7 +30,7 @@ The boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>) seats by
 
 * ''Claude.'' `.claude/noosphere-boot` links, relative, to the seed; the project `CLAUDE.md` imports it by that name. The import reaches the main session, forks, `general-purpose` and every custom spirit.
 * ''Claude's scouts.'' Explore and Plan read no `CLAUDE.md`. `.claude/agents/Explore.md` and `Plan.md` override the built-ins, and each carries the seed's bytes under frontmatter that restores read-only tools, then the scout's mask. `node tools/seed-seat.mjs project` writes them as a pure function of the seed, and the root build runs it.
-* ''The operator's seat.'' `node tools/seed-seat.mjs install` writes `~/.claude/rules/lares-seed-seat.md` whole, importing the main clone's link, so a session in any directory stands the house. A second run changes nothing; `--uninstall` lifts it; a same-named file it never wrote refuses the run. The repo's `.claude/settings.json` excludes that rule (`claudeMdExcludes`), so inside the clone or any of its worktrees a session seats its own tree's seed alone.
+* ''The operator's seat.'' `lares wire` writes `~/.claude/rules/lares-seed-seat.md` whole, importing the main clone's link, so a session in any directory stands the house; a second run changes nothing, and a same-named file it never wrote stands untouched while the step names the refusal. The Codex, Copilot and VS Code homes carry no seed: each loads a home file beside the project's with no exclude, so inside the clone the repo seats them, and `lares wire` lifts a seed line it finds there. The repo's `.claude/settings.json` excludes that rule (`claudeMdExcludes`), so inside the clone or any of its worktrees a session seats its own tree's seed alone.
 * ''Codex.'' `AGENTS.override.md` links to the seed; Codex reads it in place of `AGENTS.md`. `.codex/config.toml` sets `project_doc_max_bytes` past the seed's bytes.
 * ''Copilot.'' Copilot reads `CLAUDE.md` with its `@` include and seats the seed from the import. `AGENTS.md` and `.github/copilot-instructions.md`, which Copilot reads beside it, stay seedless.
 
@@ -59,6 +59,7 @@ The boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>) seats by
 !! The proofs
 
 * `tools/seed-seat-witness.sh` reads every law through `node tools/seed-seat.mjs check`: both links stay relative links that resolve to the seed, `CLAUDE.md` imports the Claude link by a name an import loads, the settings carry the exclude, the Codex cap holds the seed, the Copilot-read surfaces stay seedless, each scout carries the seed's projection byte for byte, and no `@` token inside the seed resolves to a file. Its `--control` stands a linkless checkout and MUST read red.
+* `lares wire` (`packages/lares-cli/src/seed-seat.ts`) tends every write the seat takes, the repo's and each home's, and converges: a second pass writes nothing. A weld test holds it and the check to one set of names.
 * `tools/seed-seat-staged.sh` runs from `.githooks/pre-commit` over what the commit carries, so a seed staged ahead of its scouts never lands.
 * `tools/seed-seat.test.mjs` plants each red against scratch clones and homes.
 
@@ -79,6 +80,6 @@ The boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>) seats by
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ctPn9C9A0xQRTbOX7yyUONO2-s59YAaE9vNyY-eLvh4
+<<^ code="&#x0003;">>ni:///sha-256;jNu5nAOGQquxynDruQGTKOk4tX7iATqiP7wqPd8HfLA
 
 <<^ code="&#x0004;" -> to="?">>

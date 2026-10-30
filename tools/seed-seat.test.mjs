@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
-  CODEX_LINK, LINK, RULE, RULE_EXCLUDE, RULE_OWNER, SCOUTS, SEED, faultsOf, importsOf, install, project, projectScout, scoutPath, seedAtTokens,
+  CODEX_LINK, LINK, RULE_EXCLUDE, SCOUTS, SEED, faultsOf, importsOf, project, projectScout, scoutPath, seedAtTokens,
 } from "./seed-seat.mjs";
 
 const ROOT = join(import.meta.dirname, "..");
@@ -120,48 +120,6 @@ test("--index reads what the commit carries, not the working tree", () => {
   writeFileSync(join(dir, scoutPath(SCOUTS[1])), "unstaged hand edit\n");
   assert.deepEqual(faultsOf(dir, { index: true }), []);
   assert.match(faultsOf(dir).join("\n"), /Plan\.md: parts/);
-});
-
-test("install seats the owned rule, and a second run changes nothing", () => {
-  const home = mkdtempSync(join(tmpdir(), "seed-seat-home-"));
-  const clone = seatedClone();
-  assert.equal(install({ home, clone }).changed, true);
-  const text = readFileSync(join(home, RULE), "utf8");
-  assert.equal(text, `${RULE_OWNER}\n@${join(clone, LINK)}\n`);
-  assert.equal(install({ home, clone }).changed, false);
-  assert.equal(readFileSync(join(home, RULE), "utf8"), text);
-});
-
-test("install re-points the rule when the clone moves", () => {
-  const home = mkdtempSync(join(tmpdir(), "seed-seat-home-"));
-  const a = seatedClone();
-  const b = seatedClone();
-  install({ home, clone: a });
-  assert.equal(install({ home, clone: b }).changed, true);
-  assert.equal(readFileSync(join(home, RULE), "utf8"), `${RULE_OWNER}\n@${join(b, LINK)}\n`);
-});
-
-test("uninstall lifts the rule, and a second uninstall changes nothing", () => {
-  const home = mkdtempSync(join(tmpdir(), "seed-seat-home-"));
-  const clone = seatedClone();
-  install({ home, clone });
-  assert.equal(install({ home, clone, uninstall: true }).changed, true);
-  assert.equal(existsSync(join(home, RULE)), false);
-  assert.equal(install({ home, clone, uninstall: true }).changed, false);
-});
-
-test("install and uninstall refuse a same-named rule they never wrote, and leave it whole", () => {
-  const home = mkdtempSync(join(tmpdir(), "seed-seat-home-"));
-  mkdirSync(join(home, ".claude/rules"), { recursive: true });
-  writeFileSync(join(home, RULE), "the operator's own words\n");
-  assert.throws(() => install({ home, clone: seatedClone() }), /never wrote/);
-  assert.throws(() => install({ home, clone: seatedClone(), uninstall: true }), /never wrote/);
-  assert.equal(readFileSync(join(home, RULE), "utf8"), "the operator's own words\n");
-});
-
-test("install refuses a clone with no seat", () => {
-  const home = mkdtempSync(join(tmpdir(), "seed-seat-home-"));
-  assert.throws(() => install({ home, clone: mkdtempSync(join(tmpdir(), "no-seat-")) }), /carries no seat/);
 });
 
 test("a clone whose settings drop the rule's exclude names the double seat", () => {

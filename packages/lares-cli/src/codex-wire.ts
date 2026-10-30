@@ -1,6 +1,6 @@
 /**
  * codex-wire — `lares vessel stand --codex`: wire the LARES MCP seat (memory through the lares house),
- * the Lares session-ingest hook, and the BOOT POINTER into the OpenAI Codex home (~/.codex/). A harness
+ * and the Lares session-ingest hook into the OpenAI Codex home (~/.codex/). A harness
  * reaches memory through that seat and holds no palace holder of its own: N writers on one Chroma index
  * corrupt it.
  *
@@ -12,11 +12,8 @@
  * the one harness-aware ingest hook serves both. (`Stop` fires at turn scope → the
  * ingest stays idempotent on lar_hv.)
  *
- * ~/.codex/AGENTS.md carries the boot pointer, and Codex reads it at every wake — the CLI and the
- * VS Code extension both, so one file seats the house in both. A POINTER RATHER THAN A COPY: a copied
- * seed is a second seed, and a second seed drifts from the carrier with nothing watching it. The wire
- * REWRITES this file whenever it names anything but the carrier, because a boot pointer aimed at a
- * file that no longer stands fails SILENTLY — the harness wakes, finds nothing, and says nothing.
+ * ~/.codex/AGENTS.md carries no seed. Inside the clone Codex reads the seed through the repo's
+ * `AGENTS.override.md`, and a home seed would load beside it with no exclude (lar:///ha.ka.ba/lares/docs/pono/seed-seat).
  *
  * Node has no TOML writer and the `codex` CLI may be absent, so we APPEND each section
  * to config.toml only when it's not already present (string-checked) — idempotent,
@@ -29,7 +26,7 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 import { repoRoot } from "@lararium/mesh/node";
 import { resolveLaresMcp, type WireAction } from "./mcp-resolve.js";
-import { tendBootPointer, asLink, BOOT_CARRIER } from "./boot-pointer.js";
+import { liftSeedLines } from "./seed-seat.js";
 
 const INGEST_HOOK = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh";
 const LARES_MCP_KEY = "[mcp_servers.lares]";
@@ -95,13 +92,9 @@ export function wireCodexHome(opts: { home?: string } = {}): CodexWireResult {
     steps.push({ item: "Stop", action: "wired", detail: `config.toml [[hooks.Stop]] — ${hookAbs}` });
   }
 
-  // 3. The boot pointer. Codex reads ~/.codex/AGENTS.md at every wake, CLI and VS Code extension alike.
-  const carrierAbs = join(repoRoot, BOOT_CARRIER).replace(/\\/g, "/");
-  if (!existsSync(carrierAbs)) {
-    steps.push({ item: "AGENTS.md", action: "missing-script", detail: `${carrierAbs} not found — the boot pointer would aim at nothing` });
-  } else {
-    steps.push(tendBootPointer(join(dir, "AGENTS.md"), carrierAbs, asLink("-> "), "AGENTS.md"));
-  }
+  // 3. The seed seat. Inside the clone Codex reads the seed through `AGENTS.override.md`; a home
+  // seed would load beside it with no exclude, so ~/.codex/AGENTS.md carries none.
+  steps.push(liftSeedLines(join(dir, "AGENTS.md"), "AGENTS.md"));
 
   if (append.length > 0) {
     toml = (toml.endsWith("\n") || toml === "" ? toml : toml + "\n") + append.join("");

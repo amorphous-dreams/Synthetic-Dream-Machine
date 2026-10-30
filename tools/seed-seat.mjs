@@ -16,21 +16,16 @@
  * stay seedless, each scout matches its projection, and no `@` token in the seed resolves to a file.
  * `--index` reads what a commit carries.
  *
- * ── INSTALL ──────────────────────────────────────────────────────────────────────────────────────
- * Writes `<home>/.claude/rules/lares-seed-seat.md` whole, importing the main clone's link, so a session
- * in any directory stands the house; the repo excludes that rule, so a session inside the clone or a
- * worktree seats its own tree's seed alone. A second run changes nothing, `--uninstall` lifts it, and
- * a same-named file it never wrote refuses the run. The main clone derives from git's common dir.
+ * The operator's home seat and every write the repo's seat takes ride `lares wire`
+ * (packages/lares-cli/src/seed-seat.ts); a test welds the two to one set of names.
  *
  * Usage:  node tools/seed-seat.mjs project [--root <dir>]       write the scouts that differ from the seed
  *         node tools/seed-seat.mjs check [--root <dir>] [--index]  read the seat; exit 1 on a fault
- *         node tools/seed-seat.mjs install [--home <dir>] [--clone <dir>] [--uninstall]
- * Exit:   0 seated · 1 a fault (check) · 2 a refusal or a usage error
+ * Exit:   0 seated · 1 a fault (check) · 2 a usage error
  */
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, realpathSync, unlinkSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
+import { existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, realpathSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -41,11 +36,10 @@ export const IMPORT_LINE = `@${LINK}`;
 export const CODEX_LINK = "AGENTS.override.md";
 export const SEED_LINKS = [LINK, CODEX_LINK];
 /** Copilot reads these beside CLAUDE.md, whose import already seats the seed; a seed here seats it twice. */
-export const SEEDLESS_SURFACES = ["AGENTS.md", ".github/copilot-instructions.md"];
+export const SEEDLESS_SURFACES = ["AGENTS.md", "copilot-instructions.md", ".github/copilot-instructions.md"];
 const SURFACE_WHY = "Copilot reads it beside CLAUDE.md, whose import already seats the seed, and a pointer loads nothing";
 export const RULE = ".claude/rules/lares-seed-seat.md";
 export const RULE_EXCLUDE = `**/${RULE}`;
-export const RULE_OWNER = "<!-- written by tools/seed-seat.mjs install; the seed is the source -->";
 
 /** The names an `@` import expands (measured against the host); any other name loads nothing. */
 export const LOADABLE_EXTENSIONS = new Set(["", ".md", ".txt", ".json"]);
@@ -87,13 +81,9 @@ export function projectScout(seed, scout) {
     `# projected by tools/seed-seat.mjs from ${SEED} (sha256 ${sha256(seed)}); the seed is the source`,
     "---",
     seed.endsWith("\n") ? seed : `${seed}\n`,
-    `<<~ ahu #/the-mask>>`,
-    "",
     `!! ${scout.name} ~ the scout's mask`,
     "",
     scout.mask,
-    "",
-    "<<~/ahu>>",
     "",
   ].join("\n");
 }
@@ -211,32 +201,6 @@ export function project(root) {
   return wrote;
 }
 
-/** The main clone a worktree belongs to: the parent of git's common dir. */
-export function mainClone(from) {
-  const common = execFileSync("git", ["-C", from, "rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8" }).trim();
-  return dirname(common);
-}
-
-export const ruleFor = (clone) => `${RULE_OWNER}\n@${join(clone, LINK)}\n`;
-
-/** Seats (or lifts) the operator's rule; refuses a same-named file it never wrote. */
-export function install({ home = homedir(), clone = mainClone(REPO), uninstall = false } = {}) {
-  const path = join(home, RULE);
-  const before = existsSync(path) ? readFileSync(path, "utf8") : null;
-  if (before !== null && !before.startsWith(RULE_OWNER)) throw new Error(`${path} carries bytes this installer never wrote`);
-  if (uninstall) {
-    if (before === null) return { path, changed: false };
-    unlinkSync(path);
-    return { path, changed: true };
-  }
-  if (!existsSync(join(clone, LINK))) throw new Error(`${join(clone, LINK)} is absent; the clone carries no seat to import`);
-  const want = ruleFor(clone);
-  if (before === want) return { path, changed: false };
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, want);
-  return { path, changed: true };
-}
-
 function flag(args, name) {
   const i = args.indexOf(name);
   return i === -1 ? undefined : args[i + 1];
@@ -257,19 +221,7 @@ function main(argv) {
     console.log("seed-seat: the seat stands");
     return 0;
   }
-  if (verb === "install") {
-    try {
-      const home = flag(args, "--home");
-      const clone = flag(args, "--clone");
-      const r = install({ ...(home && { home: resolve(home) }), ...(clone && { clone: resolve(clone) }), uninstall: args.includes("--uninstall") });
-      console.log(`seed-seat: ${r.changed ? (args.includes("--uninstall") ? "lifted" : "seated") : "unchanged"} ${r.path}`);
-      return 0;
-    } catch (e) {
-      console.error(`seed-seat: REFUSED — ${e.message}`);
-      return 2;
-    }
-  }
-  console.error("usage: seed-seat.mjs project [--root <dir>] | check [--root <dir>] [--index] | install [--home <dir>] [--clone <dir>] [--uninstall]");
+  console.error("usage: seed-seat.mjs project [--root <dir>] | check [--root <dir>] [--index]");
   return 2;
 }
 

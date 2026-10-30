@@ -22,7 +22,7 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 import { repoRoot } from "@lararium/mesh/node";
 import { resolveLaresMcp, type WireAction } from "./mcp-resolve.js";
-import { tendBootPointer, asLink, BOOT_CARRIER } from "./boot-pointer.js";
+import { liftSeedLines } from "./seed-seat.js";
 
 const INGEST_HOOK = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh";
 
@@ -108,15 +108,11 @@ export function wireCopilotHome(opts: { home?: string } = {}): CopilotWireResult
     }
   }
 
-  // The boot pointer. The Copilot CLI reads ~/.copilot/copilot-instructions.md at every wake.
-  const carrierAbs = join(repoRoot, BOOT_CARRIER).replace(/\\/g, "/");
-  if (!existsSync(carrierAbs)) {
-    steps.push({ item: "copilot-instructions.md", action: "missing-script", detail: `${carrierAbs} not found — the boot pointer would aim at nothing` });
-  } else {
-    const step = tendBootPointer(join(dir, "copilot-instructions.md"), carrierAbs, asLink("Always load -> "), "copilot-instructions.md");
-    steps.push(step);
-    if (step.action === "wired") changed = true;
-  }
+  // The seed seat. Inside the clone Copilot reads the seed through CLAUDE.md's include; a home seed
+  // would load beside it with no exclude, so ~/.copilot/copilot-instructions.md carries none.
+  const seat = liftSeedLines(join(dir, "copilot-instructions.md"), "copilot-instructions.md");
+  steps.push(seat);
+  if (seat.action === "wired") changed = true;
 
   return { home: dir, changed, steps };
 }

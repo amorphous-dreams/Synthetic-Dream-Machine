@@ -24,7 +24,7 @@ import { wireClaudeHome, type ClaudeWireResult } from "../claude-wire.js";
 import { wireCodexHome, type CodexWireResult } from "../codex-wire.js";
 import { wireCopilotHome, type CopilotWireResult } from "../copilot-wire.js";
 import { wireVscode, type VscodeWireResult } from "../vscode-wire.js";
-import { tendRepoAdapters, type BootPointerStep } from "../boot-pointer.js";
+import { tendRepoSeat, type SeedSeatStep } from "../seed-seat.js";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -38,7 +38,7 @@ export interface WireReport {
   codex?:    CodexWireResult;
   copilot?:  CopilotWireResult;
   vscode?:   VscodeWireResult;
-  adapters?: BootPointerStep[];
+  adapters?: SeedSeatStep[];
 }
 
 function usage(args: ParsedArgs): number {
@@ -77,7 +77,7 @@ export async function tendSurfaces(
     r.vscode = await attempt(() => wireVscode(),
       (detail) => ({ changed: false, steps: [{ item: "vscode", action: "missing-script", detail }] }));
   }
-  if (tendAdapters) r.adapters = tendRepoAdapters(repoRoot);
+  if (tendAdapters) r.adapters = tendRepoSeat(repoRoot);
   return r;
 }
 

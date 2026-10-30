@@ -16,8 +16,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync } from
 import { join } from "node:path";
 import { homedir } from "node:os";
 import { resolveLaresMcp, type WireAction } from "./mcp-resolve.js";
-import { repoRoot } from "@lararium/mesh/node";
-import { tendBootPointer, BOOT_CARRIER } from "./boot-pointer.js";
+import { liftSeedLines } from "./seed-seat.js";
 
 export interface VscodeWireStep {
   readonly item: string;
@@ -53,30 +52,14 @@ function variantRoots(home: string): Array<{ name: string; dir: string }> {
 }
 
 /**
- * The user-scoped boot pointer.
- *
- * VS Code reads user instructions from HARNESS-AGNOSTIC homes, not from the profile. Its own source
- * table names them: `~/.copilot/instructions` as `copilot-personal` and `~/.claude/rules`, both at
- * `storage:"user"` — so ONE pair of files seats every variant at once, stable and Insiders, remote
- * server and local profile alike. The profile's `prompts` folder held user instructions in an earlier
- * scheme and no longer does; a pointer written there is inert and reports success.
- *
- * The two homes spell their glob differently — `~/.copilot/instructions` takes `applyTo`, the Claude
- * rules folder takes `paths` — so each gets its own rendering, and `**` means every file in both.
+ * VS Code's user instruction homes (`~/.copilot/instructions`, `~/.claude/rules`) carry no seed of
+ * their own: Claude's home seat rides the owned rule `lares wire --claude` writes, and inside the clone
+ * the repo seats every host (lar:///ha.ka.ba/lares/docs/pono/seed-seat). A pointer file left in either
+ * home lifts.
  */
-const INSTRUCTION_HOMES: ReadonlyArray<{ name: string; rel: string; file: string; render: (t: string) => string }> = [
-  {
-    name: "copilot-personal",
-    rel: ".copilot/instructions",
-    file: "lares-boot.instructions.md",
-    render: (t) => `---\napplyTo: '**'\n---\n\n-> [noosphere-boot.mem](${t})\n`,
-  },
-  {
-    name: "claude-rules",
-    rel: ".claude/rules",
-    file: "lares-boot.md",
-    render: (t) => `---\npaths: ['**']\n---\n\n-> [noosphere-boot.mem](${t})\n`,
-  },
+const INSTRUCTION_HOMES: ReadonlyArray<{ name: string; rel: string; file: string }> = [
+  { name: "copilot-personal", rel: ".copilot/instructions", file: "lares-boot.instructions.md" },
+  { name: "claude-rules", rel: ".claude/rules", file: "lares-boot.md" },
 ];
 
 /** Register the LARES MCP seat into every PRESENT VS Code variant's mcp.json, reaping a stale
@@ -91,16 +74,10 @@ export function wireVscode(opts: { home?: string } = {}): VscodeWireResult {
     return { changed: false, steps: [{ item: "mcp:lares", action: "missing-script", detail: "lares_mcp.py / python / sensorium not found — run `lares vessel stand --init`" }] };
   }
 
-  // The boot pointer — two homes, read by every variant.
-  const carrierAbs = join(repoRoot, BOOT_CARRIER).replace(/\\/g, "/");
-  if (!existsSync(carrierAbs)) {
-    steps.push({ item: "boot pointer", action: "missing-script", detail: `${carrierAbs} not found — the pointer would aim at nothing` });
-  } else {
-    for (const h of INSTRUCTION_HOMES) {
-      const step = tendBootPointer(join(home, h.rel, h.file), carrierAbs, h.render, `${h.name}: boot pointer`);
-      steps.push(step);
-      if (step.action === "wired") changed = true;
-    }
+  for (const h of INSTRUCTION_HOMES) {
+    const step = liftSeedLines(join(home, h.rel, h.file), `${h.name}: seed line`);
+    steps.push(step);
+    if (step.action === "wired") changed = true;
   }
 
   let found = 0;

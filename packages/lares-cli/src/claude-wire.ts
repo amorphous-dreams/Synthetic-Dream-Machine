@@ -20,7 +20,7 @@ import { homedir } from "node:os";
 import { repoRoot } from "@lararium/mesh/node";
 import { claimName, NameHeld, type ClaimedName } from "@lararium/node";
 import { resolveLaresMcp } from "./mcp-resolve.js";
-import { tendBootPointer, asInclude, BOOT_CARRIER } from "./boot-pointer.js";
+import { liftSeedLines, mainCloneOf, tendSeatRule } from "./seed-seat.js";
 
 /**
  * Acquire an exclusive write-lock to serialize concurrent writers — Claude's home JSON has a
@@ -257,12 +257,14 @@ function wireUnderLock(settingsPath: string): ClaudeWireResult {
   // Memory reaches the harness through the LARES seat, never a palace holder of the harness's own.
   steps.push(registerLaresMcp());
 
-  // The boot pointer. Claude reads ~/.claude/CLAUDE.md at every wake and expands `@path` as an include.
-  const carrierAbs = join(repoRoot, BOOT_CARRIER).replace(/\\/g, "/");
-  if (!existsSync(carrierAbs)) {
-    steps.push({ item: "CLAUDE.md", action: "missing-script", detail: `${carrierAbs} not found — the boot pointer would aim at nothing` });
-  } else {
-    const step = tendBootPointer(join(dirname(settingsPath), "CLAUDE.md"), carrierAbs, asInclude, "CLAUDE.md");
+  // The seed seat. The operator's home seats the house through one owned rule importing the main
+  // clone's link (lar:///ha.ka.ba/lares/docs/pono/seed-seat); the repo excludes that rule, so inside the
+  // clone a session seats its own tree's seed alone. A seed line in ~/.claude/CLAUDE.md lifts.
+  const claudeHome = dirname(settingsPath);
+  for (const step of [
+    liftSeedLines(join(claudeHome, "CLAUDE.md"), "CLAUDE.md"),
+    tendSeatRule(dirname(claudeHome), mainCloneOf(repoRoot)),
+  ]) {
     steps.push(step);
     if (step.action === "wired") changed = true;
   }
