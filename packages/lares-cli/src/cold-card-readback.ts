@@ -8,7 +8,7 @@
  * JSON answer carries each card's code; anywhere else the answer carries the digest and the confirm phrase alone.
  * Every seed zero-fills before the printer returns.
  */
-import { coldKeyCardLines, coldKeyCode, coldKeyConfirm, coldKeySeedFromCode } from "@lararium/mesh";
+import { COLD_KEY_CARD_DEFAULT_FIELDS, coldKeyCardLines, coldKeyCode, coldKeyConfirm, coldKeySeedFromCode } from "@lararium/mesh";
 import type { ParsedArgs } from "./parse-args.js";
 import { readBackStandsIn } from "./sealed-rows.js";
 import { canPromptSecret, promptSecret } from "./prompt-secret.js";
@@ -40,10 +40,13 @@ export async function readBack(args: ParsedArgs, cards: readonly ColdCard[], gen
         : "the rite prints each chair's cold-key card and asks it back on a terminal; run it on one. Nothing was written.");
     }
     const say = (line: string): void => { process.stdout.write(`${line}\n`); };
+    // A card names the fields its caller holds: a chair whose charter does not stand yet (a joint Nexus at `cofound
+    // open` and `join`, a seat with no inception image) prints the three it holds and no charter line, never a refusal.
+    const fields = charterFingerprint === "" ? (["purpose", "chairLabel", "generation"] as const) : COLD_KEY_CARD_DEFAULT_FIELDS;
     for (const card of cards) {
       if (!json) {
         say(`── cold-key card · ${card.chair} ──`);
-        for (const line of coldKeyCardLines(card.seed, { purpose: "the next key of one chair; it rolls the charter once", chairLabel: card.chair, generation, charterFingerprint })) say(`  ${line}`);
+        for (const line of coldKeyCardLines(card.seed, { purpose: "the next key of one chair; it rolls the charter once", chairLabel: card.chair, generation, charterFingerprint }, fields)) say(`  ${line}`);
       }
       if (standIn) continue;
       for (let tries = 0; ; tries++) {

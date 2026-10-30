@@ -173,12 +173,13 @@ describe("lares nexus seal cofound", () => {
       expect(card.some((l) => /^  charter: /.test(l)), "a fresh joint Nexus holds no charter at open").toBe(false);
       expect(card.filter((l) => /^  (?:[0-9a-f]{4}-){5}[0-9a-f]{4}$/.test(l)).length, "the code prints in rows of six groups").toBeGreaterThan(0);
       expect(card.some((l) => /^  confirm: /.test(l))).toBe(true);
-      expect(opened.said.some((l) => /cofound offer → /.test(l))).toBe(true);
+      // The answer names the offer: as the human lines on a TTY, as the JSON answer where stdout is no TTY (this runner).
+      expect(opened.said.some((l) => /cofound offer → /.test(l)) || opened.out["data"]?.["path"] === offerPath).toBe(true);
       expect(existsSync(offerPath)).toBe(true);
       const offer = JSON.parse(readFileSync(offerPath, "utf8")) as CofoundOffer;
       expectFoundingRows(A, offerFingerprint(offer), offer.cadence.key);
-      // The terminal road prints no JSON answer and the JSON road (C1) prints no card line.
-      expect(opened.lines.some((l) => l.trim().startsWith("{"))).toBe(false);
+      // The answer carries the card's digest and confirm phrase (and, on a staged root alone, the staged code for the harness).
+      expect(opened.out["data"]?.["cards"]?.[0]).toMatchObject({ chair: "your seat in the joint Nexus", confirm: expect.stringMatching(/^[a-z]+-[a-z]+-[a-z]+$/) });
       const aSeat = offer.seat;
 
       at(B);
