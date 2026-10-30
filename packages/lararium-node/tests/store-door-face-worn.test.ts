@@ -60,3 +60,17 @@ test("every face row takes the binding: none reaches its command under another f
   }
   expect(leaked).toEqual([]);
 });
+
+test("RED: the relay rows that read a face are face rows: another face refuses, no session refuses; CONTROL: rotate stays a place row", async () => {
+  const rows = door();
+  const worn = { ordinal: 1, presenter: ATOM_1 };
+  for (const verb of ["intent-relay-enable", "intent-relay-disable", "intent-relay-status"] as const) {
+    expect(STORE_DOOR_FACE_ROWS.has(verb), verb).toBe(true);
+    expect(await rows[verb]({ face: 0 }, ctxOf(worn))).toMatchObject({ refused: expect.stringMatching(/face-row-other-face/) });
+    expect(await rows[verb]({}, ctxOf())).toMatchObject({ refused: expect.stringMatching(/face-row-rides-a-session/) });
+    // CONTROL: the session's own face passes the binding and reaches the relay's own reading (this scratch root holds no face).
+    const own = await rows[verb]({}, ctxOf(worn)).catch((e: Error) => ({ threw: e.message }));
+    expect(JSON.stringify(own)).not.toMatch(/face-row-/);
+  }
+  expect(STORE_DOOR_FACE_ROWS.has("intent-relay-rotate")).toBe(false);
+});
