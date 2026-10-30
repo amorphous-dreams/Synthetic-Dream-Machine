@@ -241,7 +241,21 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
     bodies=list(genome.bodies)
     routes=list(genome.walkways)
     ascents=list(genome.ascents)
-    for i,goal in enumerate(spatial.goals):
+    # An end-to-end goal may be satisfied by an authored, uniquely
+    # connected orthogonal sequence. Construct its direct supported
+    # segments BEFORE attempting a diagonal shortcut.
+    def _intention_order(item):
+        _,goal=item
+        if goal.kind!="connect":
+            return 0
+        known={b.entity_id:b for b in bodies}
+        if goal.subject not in known or goal.object not in known:
+            return 1
+        a,b=known[goal.subject],known[goal.object]
+        xy=(abs(a.translation[0]-b.translation[0]),
+            abs(a.translation[1]-b.translation[1]))
+        return 1 if all(delta>1e-7 for delta in xy) else 0
+    for i,goal in sorted(enumerate(spatial.goals),key=_intention_order):
         if goal.kind=="ascend":
             if any(a.source==goal.subject and a.destination==goal.object
                    for a in ascents):
