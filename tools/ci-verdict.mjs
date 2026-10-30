@@ -239,7 +239,10 @@ export function classifyFailure(err) {
   if (err?.code === "ENOENT") return "hard";
   const text = `${err?.stderr ?? ""}\n${err?.message ?? ""}\n${err?.code ?? ""}`;
   if (err?.killed || err?.signal === "SIGTERM" || err?.code === "ETIMEDOUT") return "unreadable";
-  if (/HTTP 5\d\d|\b5\d\d (Bad Gateway|Server Error|Service Unavailable|Gateway Time)|Bad Gateway|Service Unavailable|Gateway Time-?out|timed? ?out|timeout|ETIMEDOUT|ECONN\w*|EAI_AGAIN|ENOTFOUND|no such host|could not resolve host|dial tcp|network is unreachable|connection (reset|refused|closed)|TLS handshake|rate limit|HTTP 429/i.test(text)) return "unreadable";
+  // An explicit HTTP status decides before any word in the text: a 404 that names `timeout.yml` is still a 404.
+  const status = /HTTP (\d{3})/.exec(text);
+  if (status) return Number(status[1]) >= 500 || Number(status[1]) === 429 ? "unreadable" : "hard";
+  if (/Bad Gateway|Service Unavailable|Gateway Time-?out|timed? ?out|timeout|ETIMEDOUT|ECONN\w*|EAI_AGAIN|ENOTFOUND|no such host|could not resolve host|dial tcp|network is unreachable|connection (reset|refused|closed)|TLS handshake|rate limit|error connecting to|check your internet connection|githubstatus|unexpected EOF/i.test(text)) return "unreadable";
   return "hard";
 }
 
@@ -322,7 +325,11 @@ async function readOnce({ sh, sleep, branch, head, opt }) {
   };
 
   let runs;
-  try { runs = await runsFor(opt.workflow); } catch (e) { if (e.dark) { const reason = reasonOf(e); return { v: unreadableVerdict(head, reason), heldOut: heldOutDark(head, reason), jm: null }; } throw e; }
+  try {
+    runs = await runsFor(opt.workflow);
+    // A branch that holds no run at all may not exist: a typo would hold a vigil forever. A 404 here is a hard read.
+    if (runs.length === 0) await settle(() => sh("gh", ["api", `repos/{owner}/{repo}/branches/${encodeURI(branch)}`, "--jq", ".name"]));
+  } catch (e) { if (e.dark) { const reason = reasonOf(e); return { v: unreadableVerdict(head, reason), heldOut: heldOutDark(head, reason), jm: null }; } throw e; }
   const first = readVerdict({ runs, head });
   const views = {}; let jobsDark = false;
   for (const id of new Set([first.run, first.last?.run])) {
@@ -379,6 +386,11 @@ export async function main(argv, { sh = defaultSh, sleep = defaultSleep, log = c
   const { v, heldOut, jm } = r;
   log(argv.includes("--json") ? JSON.stringify({ branch, ...v, heldOut, jobMinutes: jm }, null, 2)
     : [`ci-verdict: branch ${branch}`, ...render(v), ...(v.state === "unreadable" || r.jobsDark ? [] : [renderJobMinutes(jm)]), ...(r.jobsDark ? [renderJobMinutes(null)] : []), ...renderHeldOut(heldOut)].join("\n"));
+  // A vigil never ends in success over a held-out reading it could not read: outside --wait the third reading only says.
+  if (argv.includes("--wait") && v.state === "green") {
+    if (heldOut.state === "unreadable") return exitOf("unreadable");
+    if (heldOut.hard) { err("ci-verdict: could not read — the held-out runs"); return 3; }
+  }
   return exitOf(v.state);
 }
 

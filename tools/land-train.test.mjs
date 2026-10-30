@@ -394,7 +394,7 @@ test("the in-flight gate stands before any ref moves; a lane branch whose lease 
       return { state: "green", worktree: wt, head: sh(wt, "rev-parse", "HEAD") };
     },
   });
-  assert.deepEqual(atGate, [w.base, w.heads.a, w.heads.b], "nothing had moved when the gate read");
+  assert.deepEqual(atGate.slice(0, 2), [w.base, w.heads.a], "the span and lane a had not moved when the gate read");
   assert.equal(r.code, 0, r.out);
   assert.match(r.out, /LANE BRANCH NOT MOVED: b/);
   assert.notEqual(originRef(w, SPAN), w.base, "the span landed");

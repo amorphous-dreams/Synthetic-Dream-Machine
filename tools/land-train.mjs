@@ -83,9 +83,36 @@ export function spanPushRefusal(runs) {
   return live === 0 ? null : `REFUSED: ${live} run(s) still in flight on the span; push after they complete`;
 }
 
-/** The unfinished runs of a landed lane branch: they measure a commit the span's own run already measures. */
-export function runsToCancel(runs) {
-  return runs.filter((r) => r.status !== "completed").map((r) => r.databaseId);
+/** The unfinished runs of a landed lane branch at the pushed land sha: they measure a commit the span's own run already
+ *  measures. With `sha`, a run of the lane's NEXT feature (another head) keeps running. */
+export function runsToCancel(runs, sha) {
+  return runs.filter((r) => r.status !== "completed" && (sha === undefined || r.headSha === sha)).map((r) => r.databaseId);
+}
+
+/** Every status that counts as a run in flight; the newest five runs say nothing of an older one still running. */
+export const ACTIVE_STATUSES = ["queued", "in_progress", "waiting", "requested", "pending"];
+export function activeRuns(gh, branch) {
+  return ACTIVE_STATUSES.flatMap((status) => gh(["run", "list", "--branch", branch, "--status", status, "--limit", "100", "--json", "status"]));
+}
+
+/** `owner/name` of a GitHub remote url. */
+export function repoOfRemote(url) {
+  const m = /github\.com[:/]([^/]+)\/([^/]+?)(?:\.git)?\/?$/.exec(String(url).trim());
+  if (!m) throw new Error(`origin (${url}) names no GitHub repository`);
+  return `${m[1]}/${m[2]}`;
+}
+
+/** The environment every `gh` call runs under: origin's repository (never an inherited GH_REPO) and the passwd home's gh config. */
+export function ghEnv(env, home, slug) {
+  return { ...env, HOME: home, GH_REPO: slug };
+}
+
+/** The two verdict words off a ci-verdict child's stdout and exit code; exit 4 with no word on a line is UNREADABLE. */
+export function verdictWords(stdout, status) {
+  const word = (re) => re.exec(stdout ?? "")?.[1]?.toLowerCase();
+  let ci = word(/^ci-verdict: (GREEN|RED|UNREADABLE|UNREAD)\b/m), heldOut = word(/^held-out: (GREEN|RED|UNREADABLE|UNREAD)\b/m);
+  if (status === 4) { ci ??= "unreadable"; heldOut ??= "unreadable"; }
+  return { ci: ci ?? "unread", heldOut: heldOut ?? "unread" };
 }
 
 const short = (sha) => String(sha).slice(0, 9);
@@ -117,6 +144,7 @@ export async function landTrain({ name, base, specs, plan = false, span = SPAN, 
   let lanes;
   try { lanes = specs.map(parseSpec); } catch (e) { return stop(2, e.message); }
   if (lanes.length === 0) return stop(2, "no lane named");
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(String(name))) return stop(2, `train name "${name}" must be one plain path component`);
 
   let who;
   try { who = { name: git(["config", "user.name"]), email: git(["config", "user.email"]) }; } catch { who = { name: "", email: "" }; }
@@ -157,6 +185,10 @@ export async function landTrain({ name, base, specs, plan = false, span = SPAN, 
 
   const direct = lanes.length === 1 && isAncestor(git, SP, lanes[0].head);
   if (!direct) {
+    // The train reads every lane over the span as it stands: the span head itself must read GREEN (the shell's SPAN NOT GREEN).
+    const sv = await settled(ops, span, SP), sk = classify(sv);
+    if (sk === "unreadable") return stop(10, `UNREADABLE: the span head ${short(SP)}'s verdict could not be read (${sv.ci}/${sv.heldOut}); read again later, it is no red`);
+    if (sk !== "green") return stop(5, `SPAN NOT GREEN at ${short(SP)}: ci ${sv.ci} · held-out ${sv.heldOut}`);
     const d = diskRefusal(ops.disk(), ops.env); if (d) return stop(6, d);
     const c = worktreeCapRefusal(ops.houseWorktrees()); if (c) return stop(6, c);
   }
@@ -174,10 +206,10 @@ export async function landTrain({ name, base, specs, plan = false, span = SPAN, 
     return { code: 0 };
   }
 
-  // The checkout must hold the span head, so the fast-forward after the lane pushes is a fast-forward.
-  if (git(["rev-parse", "HEAD"]) !== SP) {
-    try { git(["merge", "--ff-only", "-q", SP]); } catch { return stop(2, `MAIN CHECKOUT IS NOT AT ORIGIN'S SPAN HEAD ${short(SP)}; fast-forward it first`); }
-  }
+  // The checkout must hold the span head exactly, so the fast-forward after the span push is a fast-forward and a local
+  // commit the span never published can neither ride the push nor strand the lane branches.
+  if (git(["rev-parse", "HEAD"]) !== SP && isAncestor(git, "HEAD", SP)) { try { git(["merge", "--ff-only", "-q", SP]); } catch { /* the check below says it */ } }
+  if (git(["rev-parse", "HEAD"]) !== SP) return stop(2, `MAIN CHECKOUT IS NOT AT ORIGIN'S SPAN HEAD ${short(SP)}; bring it there first`);
 
   let worktree = null, lands = [], finalTree;
   if (direct) {
@@ -207,24 +239,34 @@ export async function landTrain({ name, base, specs, plan = false, span = SPAN, 
     if (git(["rev-parse", `${prev}^{tree}`]) !== finalTree) return stop(5, "FINAL TREE DIFFERS FROM THE TRAIN'S", `  the train worktree stands at ${worktree}`);
   }
 
-  // Nothing moves while a run flies on the span: the gate stands before any lane branch pushes, and again before the span.
-  const gate = () => spanPushRefusal(ops.spanRuns(span));
-  const g1 = gate(); if (g1) return stop(6, g1);
+  // Nothing moves while a run flies on the span. The SPAN pushes first, as the one decision, under a lease on the head this
+  // land read: a writer that moved it during the train refuses the land and leaves every lane branch where it stood.
+  const g = spanPushRefusal(ops.spanRuns(span)); if (g) return stop(6, g);
+  const last = lands.at(-1).land;
+  try { git(["push", "-q", `--force-with-lease=refs/heads/${span}:${SP}`, "origin", `${last}:refs/heads/${span}`]); }
+  catch (e) { return stop(6, `SPAN PUSH REFUSED: the span moved during the train (expected ${short(SP)}); nothing landed and no lane branch moved`, `  ${String(e?.stderr ?? e?.message ?? e).trim().split("\n")[0]}`); }
+  say(`pushed ${short(last)} to ${span}`);
+  try { git(["merge", "--ff-only", "-q", last]); } catch { say(`WARNING: the local ${span} did not fast-forward to ${short(last)}; run git fetch and fast-forward it`); }
+  const moved = [];
   for (const { lane, land } of lands) {
     const branch = `${span}--${lane.suffix}`;
     say(`landed ${lane.suffix} (PR #${lane.pr}) as ${land}`);
-    git(["push", "-q", `--force-with-lease=${branch}:${lane.head}`, "origin", `${land}:refs/heads/${branch}`]);
+    try { git(["push", "-q", `--force-with-lease=${branch}:${lane.head}`, "origin", `${land}:refs/heads/${branch}`]); moved.push({ lane, land }); }
+    catch { say(`LANE BRANCH NOT MOVED: ${lane.suffix} (its lease on ${short(lane.head)} failed; the span holds its head, so its PR reads merged)`); }
   }
-  const last = lands.at(-1).land;
-  git(["merge", "--ff-only", "-q", last]);
-  const g2 = gate(); if (g2) return stop(6, g2, "SPAN PUSH DID NOT LAND: the lane branches moved; push the span when the runs complete");
-  git(["push", "-q", "origin", span]);
-  say(`pushed ${short(last)} to ${span}`);
   if (worktree) ops.removeWorktree(worktree);
-  // The lane-branch push marks each PR merged and starts a run on a commit the span's own run already measures; those runs
-  // only crowd the queue ahead of live lanes, so the land cancels them.
-  await ops.sleep(20000);
-  for (const { lane } of lands) for (const id of await ops.cancelRuns(`${span}--${lane.suffix}`)) say(`cancelled the landed lane's run ${lane.suffix} ${id}`);
+  // The lane-branch push starts a run on a commit the span's own run already measures; those runs only crowd the queue ahead
+  // of live lanes. Cancel by the pushed land sha (the lane's next feature keeps its runs), once the runs have appeared.
+  let pending = moved;
+  for (let round = 0; round < 3 && pending.length; round++) {
+    await ops.sleep(20000);
+    const still = [];
+    for (const m of pending) {
+      const ids = await ops.cancelRuns(`${span}--${m.lane.suffix}`, m.land);
+      if (ids.length === 0) still.push(m); else for (const id of ids) say(`cancelled the landed lane's run ${m.lane.suffix} ${id}`);
+    }
+    pending = still;
+  }
   return stop(0, direct ? "DIRECT-LANDED" : "BATCH-LANDED");
 }
 
@@ -233,9 +275,11 @@ const GB = 1024 ** 3;
 function realOps({ cwd, scratch, env = process.env }) {
   const run = (cmd, args, o = {}) => execFileSync(cmd, args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], maxBuffer: 256 * 1024 * 1024, ...o, env: { ...env, ...o.env } }).trim();
   const git = (args, o = {}) => run("git", args, { cwd: o.cwd ?? cwd, env: o.env });
-  const gh = (args) => JSON.parse(run("gh", args, { cwd, timeout: 60000 }));
-  const free = (path) => { try { const s = statfsSync(path); return Math.floor((Number(s.bavail) * Number(s.bsize)) / GB * 10) / 10; } catch { return Infinity; } };
   const home = userInfo().homedir;
+  const slug = repoOfRemote(git(["remote", "get-url", "origin"]));
+  const ghe = ghEnv(env, home, slug);
+  const gh = (args) => JSON.parse(run("gh", args, { cwd, timeout: 60000, env: ghe }));
+  const free = (path) => { try { const s = statfsSync(path); return Math.floor((Number(s.bavail) * Number(s.bsize)) / GB * 10) / 10; } catch { return Infinity; } };
   return {
     git, env,
     sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
@@ -243,19 +287,18 @@ function realOps({ cwd, scratch, env = process.env }) {
     readMsg: (p) => { try { return readFileSync(p, "utf8"); } catch { return ""; } },
     disk: () => ({ cGb: existsSync("/mnt/c") ? free("/mnt/c") : Infinity, rootGb: free("/") }),
     houseWorktrees: () => (git(["worktree", "list", "--porcelain"]).match(/^worktree .*$/gm) ?? []).filter((l) => l.startsWith(`worktree ${join(home, ".lares-scratch")}/`)).length,
-    spanRuns: (span) => gh(["run", "list", "--branch", span, "--limit", "5", "--json", "status"]),
-    cancelRuns: async (branch) => {
-      const ids = runsToCancel(gh(["run", "list", "--branch", branch, "--limit", "5", "--json", "databaseId,status"]));
+    spanRuns: (span) => activeRuns(gh, span),
+    cancelRuns: async (branch, sha) => {
+      const ids = runsToCancel(gh(["run", "list", "--branch", branch, "--limit", "30", "--json", "databaseId,status,headSha"]), sha);
       const done = [];
-      for (const id of ids) { try { run("gh", ["run", "cancel", String(id)], { cwd }); done.push(id); } catch { /* finished meanwhile */ } }
+      for (const id of ids) { try { run("gh", ["run", "cancel", String(id)], { cwd, env: ghe }); done.push(id); } catch { /* finished meanwhile */ } }
       return done;
     },
     removeWorktree: (wt) => { try { git(["worktree", "remove", "--force", wt]); git(["worktree", "prune"]); } catch { /* already gone */ } },
     // ci-verdict reads once here (--retries 0): the waiting on UNREADABLE belongs to the land.
     verdict: async (branch, sha) => {
-      const r = spawnSync(process.execPath, [join(HERE, "ci-verdict.mjs"), "--branch", branch, "--head", sha, "--retries", "0"], { cwd, encoding: "utf8", env });
-      const word = (re) => (re.exec(r.stdout ?? "")?.[1] ?? "unread").toLowerCase();
-      return { ci: word(/^ci-verdict: (GREEN|RED|UNREADABLE|UNREAD)\b/m), heldOut: word(/^held-out: (GREEN|RED|UNREADABLE|UNREAD)\b/m) };
+      const r = spawnSync(process.execPath, [join(HERE, "ci-verdict.mjs"), "--branch", branch, "--head", sha, "--retries", "0"], { cwd, encoding: "utf8", env: ghe });
+      return verdictWords(r.stdout, r.status);
     },
     train: (ctx) => realTrain({ ...ctx, cwd, scratch, git, run, env }),
   };
