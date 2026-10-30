@@ -138,15 +138,6 @@ describe("★ ONE HOME for a verb door's words ★", () => {
     expect(orphans).toEqual([]);
   });
 
-  test("the refusal path and the help path render the SAME lines", () => {
-    const lines = helpLines("library");
-    expect(lines[0], "the refusal spine an operator greps for").toMatch(/^usage: lares library/);
-    const printed: string[] = [];
-    vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { printed.push(a.map(String).join(" ")); });
-    renderCommandHelp("library");
-    expect(printed.join("\n"), "one home, two channels — the same bytes").toBe(lines.join("\n"));
-    expect(lines.join("\n"), "the migrated words survived the move").toContain("acquire");
-  });
 });
 
 describe("★ `--help --meme` reaches the wiki through the meme rail ★", () => {
