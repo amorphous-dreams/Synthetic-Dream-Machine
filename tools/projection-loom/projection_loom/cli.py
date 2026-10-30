@@ -134,6 +134,12 @@ def main(argv=None):
     p.add_argument('--offspring',type=int,default=3)
     p.add_argument('--exact-budget',type=int,default=2)
     p.add_argument('--seed',type=int,default=41)
+    p=commands.add_parser('place-compare',help='Publish native evidence for comparable operator review')
+    p.add_argument('--campaign',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('place-compare-verify',help='Independently re-audit a previously published place comparison')
+    p.add_argument('--campaign',type=Path,required=True)
+    p.add_argument('--receipt',type=Path,required=True)
     p=commands.add_parser('place-verify',help='Re-audit the native source and all candidate aftermath')
     p.add_argument('--campaign',type=Path,required=True)
     p=commands.add_parser('place-candidate-review',help='Write operator-attributed review of one admitted location')
@@ -475,6 +481,16 @@ def main(argv=None):
         else:
             result = validate_variants(args.comparison)
         print(json.dumps(result, indent=2))
+        return result
+    if args.command in ('place-compare','place-compare-verify'):
+        from .place_comparison import place_comparison,verify_place_comparison
+        if args.command=='place-compare':
+            result=place_comparison(args.campaign,args.out)
+        else:
+            result={'valid':verify_place_comparison(args.campaign,
+                json.loads(args.receipt.read_text(encoding='utf8'))),
+                'automatic_promotion':False}
+        print(json.dumps(result,indent=2))
         return result
     if args.command in ('fire-place-bind','fire-place-verify'):
         from .intent_seed import IntentContract
