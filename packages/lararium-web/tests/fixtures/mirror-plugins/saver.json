@@ -1,0 +1,6 @@
+{
+  "title": "$:/plugins/test/saver",
+  "type": "application/json",
+  "plugin-type": "plugin",
+  "text": "{\"tiddlers\": {\"$:/plugins/test/saver/module.js\": {\"title\": \"$:/plugins/test/saver/module.js\", \"type\": \"application/javascript\", \"module-type\": \"saver\", \"text\": \"exports.name='x';\"}}}"
+}

@@ -57,7 +57,8 @@ describe("glass boot on the real page", () => {
 
     await afterChange(tw, () => tw.wiki.addTiddler(new tw.Tiddler({ title: "Glass Seed", text: "Changed glass body" })));
     expect(shadowRoot.textContent).toContain("Changed glass body");
-    expect(typeof (globalThis as Record<string, unknown>)["Buffer"]).toBe("function");
+    // The mirror boots in TW5's own browser mode and lends nothing onto the page: no Buffer stands on the window while it runs.
+    expect(typeof (globalThis as Record<string, unknown>)["Buffer"]).toBe("undefined");
     camera.unmount();
     expect(shadowRoot.childNodes).toHaveLength(0);
     tw.wiki.addTiddler(new tw.Tiddler({ title: "Glass Seed", text: "After unmount" }));

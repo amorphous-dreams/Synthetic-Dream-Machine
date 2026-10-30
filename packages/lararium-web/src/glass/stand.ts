@@ -3,7 +3,7 @@ import type { ReturnTypeOfPagePort } from "./transport-type.js";
 import { bootGlass } from "./boot.js";
 import type { readGlassBootInputs } from "./cas.js";
 
-type Inputs = { coreCid: string; pluginCids: readonly string[] };
+type Inputs = { coreCid: string; pluginCids: readonly string[]; sealedRest?: boolean };
 type Seams = { readInputs?: typeof readGlassBootInputs; attachShadow?: (host: HTMLElement) => ShadowRoot;
   bootEngine?: () => void | Promise<void>; paint?: () => void;
   /** Runs on each record the mirror lands, with the width that landing serves, so a test can plant a capacity error in it. */

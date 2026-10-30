@@ -7,11 +7,13 @@ export interface GlassBootInputs {
   coreBytes: Uint8Array;
   preloadedTiddlers: Record<string, unknown>[];
   coreCid: string;
+  /** The vessel's word that its store rests sealed (S's row): the plugin gate opens on it and on nothing else. */
+  sealedRest: boolean;
 }
 
 /** Read only the named CAS members and witness the core's byte identity. */
-export async function readGlassBootInputs({ coreCid, pluginCids }: {
-  coreCid: string; pluginCids: readonly string[];
+export async function readGlassBootInputs({ coreCid, pluginCids, sealedRest }: {
+  coreCid: string; pluginCids: readonly string[]; sealedRest?: boolean;
 }): Promise<GlassBootInputs> {
   named("core", coreCid);
   const coreBytes = await readCasBlobFromOpfs(coreCid);
@@ -24,5 +26,5 @@ export async function readGlassBootInputs({ coreCid, pluginCids }: {
     if (sha256HexBytesSync(bytes) !== cid) throw new Error(`glass-plugin-sha256-mismatch:${cid}`);
     preloadedTiddlers.push(...preloadsFromCasBlob(bytes));
   }
-  return { coreBytes, preloadedTiddlers, coreCid };
+  return { coreBytes, preloadedTiddlers, coreCid, sealedRest: sealedRest === true };
 }

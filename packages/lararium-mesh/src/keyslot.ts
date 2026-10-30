@@ -6,8 +6,8 @@
  * route yields. Any ONE slot opens the tree key, so a tree holding a passphrase slot and a paper slot opens under either,
  * and a 2-of-2 slot asks for both pins at once.
  *
- * THE PIN KINDS form a CLOSED union of the kinds this build BUILDS: `passphrase` (scrypt) and `paper` (a SLIP-39
- * sheet). A kind joins the union together with its builder; a declared kind with nothing behind it would be a
+ * THE PIN KINDS form a CLOSED union of the kinds this build BUILDS: `passphrase` (scrypt), `paper` (a SLIP-39
+ * sheet), and `passkey` (an authenticator PRF). A kind joins the union together with its builder; a declared kind with nothing behind it would be a
  * stub. Every built kind is a human route, so a slot that binds holds one, and the tree must keep at least one slot:
  * an unbind that would leave none refuses.
  *
@@ -47,8 +47,8 @@ import { generateMnemonics, combineMnemonics, readBackMismatch, Slip39Error } fr
 import { adoptUnwrappedTreeKey, treeKeyAnswersCheck, treeKeyCheckOf, TREE_KEY_LENGTH, type TreeKey } from "./tree-key.js";
 
 /** The pin kinds this build builds. */
-export type PinKind = "passphrase" | "paper";
-export const PIN_KINDS: readonly PinKind[] = Object.freeze(["passphrase", "paper"]);
+export type PinKind = "passphrase" | "paper" | "passkey";
+export const PIN_KINDS: readonly PinKind[] = Object.freeze(["passphrase", "paper", "passkey"]);
 
 /** The scrypt cost a passphrase pin derives at (~0.5 s in the browser-shippable implementation). A change of cost
  *  is a change of pin kind, never a stored parameter a tree could lower. */
@@ -71,7 +71,8 @@ export const ROTATION_OFFER =
 
 export interface PassphrasePinRecord { readonly kind: "passphrase"; readonly salt: string; readonly nonce: string; readonly wrapped: string }
 export interface PaperPinRecord { readonly kind: "paper"; readonly nonce: string; readonly wrapped: string }
-export type PinRecord = PassphrasePinRecord | PaperPinRecord;
+export interface PasskeyPinRecord { readonly kind: "passkey"; readonly credentialId: Uint8Array; readonly prfSalt: Uint8Array; readonly nonce: string; readonly wrapped: string }
+export type PinRecord = PassphrasePinRecord | PaperPinRecord | PasskeyPinRecord;
 
 export interface SlotRecord {
   /** A random id: the HKDF salt of every wrap in the slot, and the handle `unbindSlot` takes. */
@@ -159,6 +160,13 @@ function concat(...parts: Uint8Array[]): Uint8Array {
 
 const wrapKey = (material: Uint8Array, slotId: Uint8Array): Uint8Array => hkdf(sha256, material, slotId, INFO, 32);
 const pinAad = (slotId: Uint8Array, index: number, kind: PinKind): Uint8Array => concat(utf8("pin"), slotId, Uint8Array.of(index), utf8(kind));
+// The authenticator consumes prfSalt; the random slot id salts HKDF independently, while
+// info binds this key to the pin's place and kind.
+const passkeyKey = (output: Uint8Array, slotId: Uint8Array, index: number): Uint8Array => hkdf(sha256, output, slotId, pinAad(slotId, index, "passkey"), 32);
+/** Mint the salt before the ceremony: the authenticator needs it to produce the output. */
+export function mintPasskeySalt(rng: RandomProvider = defaultCryptoProvider): Uint8Array {
+  return rng.getRandomValues(new Uint8Array(32));
+}
 const treeKeyAad = (slotId: Uint8Array): Uint8Array => concat(utf8("treeKey"), slotId);
 
 function passphraseMaterial(passphrase: string, salt: Uint8Array): Uint8Array {
@@ -176,7 +184,8 @@ function fromHex(s: string, bytes: number, what: string): Uint8Array {
 
 export type PinSpec =
   | { readonly kind: "passphrase"; readonly passphrase: string }
-  | { readonly kind: "paper"; readonly confirmed: ConfirmedPaperPin };
+  | { readonly kind: "paper"; readonly confirmed: ConfirmedPaperPin }
+  | { readonly kind: "passkey"; readonly credentialId: Uint8Array; readonly prfSalt: Uint8Array; readonly prfOutput: Uint8Array };
 
 export interface SlotSpec { readonly t: number; readonly pins: readonly PinSpec[] }
 
@@ -193,6 +202,14 @@ export function bindSlot(tree: SlotTree | null, treeKey: TreeKey, spec: SlotSpec
     throw new Error(`keyslot: a slot's threshold must be an integer in 1..${spec.pins.length} (its pin count); got ${spec.t}`);
   }
   if (spec.pins.length > 255) throw new Error("keyslot: a slot holds at most 255 pins");
+  // THE PASSKEY STAYS OPTIONAL (operator, 2026-10-29): a tree never holds a passkey as its only route. The bind reads the whole
+  // tree, the slots that stand and the one binding: a passkey slot beside a passphrase or paper slot binds; a tree that would
+  // open by a passkey alone refuses by name. A local-first island weighs the human's easy path through a centralized
+  // authenticator provider against its own sovereignty; the tension stays alive here, resolved by nobody.
+  const human = (p: { kind: string }) => p.kind === "passphrase" || p.kind === "paper";
+  if (spec.pins.some((p) => p.kind === "passkey") && !spec.pins.some(human) && !(tree?.slots ?? []).some((s) => s.pins.some(human))) {
+    throw new Error("keyslot: passkey-alone-refused");
+  }
   // Resolve every pin's KEK material BEFORE minting anything, so a refusal leaves nothing half-built.
   const materials = spec.pins.map((pin, i): PinMaterial => {
     switch ((pin as { kind: unknown }).kind) {
@@ -205,6 +222,11 @@ export function bindSlot(tree: SlotTree | null, treeKey: TreeKey, spec: SlotSpec
         const secret = confirmedSecrets.get((pin as { confirmed: object }).confirmed);
         if (secret === undefined) throw new Error(`keyslot: pin ${i + 1}: a paper pin binds only after its sheet reads back (confirmPaperPin or confirmHeldPaper)`);
         return { kind: "paper" as const, secret };
+      }
+      case "passkey": {
+        const p = pin as Extract<PinSpec, { kind: "passkey" }>;
+        if (!(p.credentialId instanceof Uint8Array) || p.credentialId.length === 0 || !(p.prfSalt instanceof Uint8Array) || p.prfSalt.length !== 32 || !(p.prfOutput instanceof Uint8Array) || p.prfOutput.length !== 32) throw new Error("keyslot: invalid passkey material");
+        return { kind: "passkey", credentialId: p.credentialId.slice(), prfSalt: p.prfSalt.slice(), secret: p.prfOutput };
       }
       default:
         throw new Error(`keyslot: pin ${i + 1}: kind "${String((pin as { kind: unknown }).kind)}" lies outside the built pin kinds (${PIN_KINDS.join(", ")})`);
@@ -227,6 +249,11 @@ export function bindSlot(tree: SlotTree | null, treeKey: TreeKey, spec: SlotSpec
       const wrapped = xchacha20poly1305(key, nonce, pinAad(slotId, i, "passphrase")).encrypt(plaintext);
       return { kind: "passphrase", salt: hex(salt), nonce: hex(nonce), wrapped: hex(wrapped) };
     }
+    if (m.kind === "passkey") {
+      const key = passkeyKey(m.secret, slotId, i);
+      const wrapped = xchacha20poly1305(key, nonce, pinAad(slotId, i, "passkey")).encrypt(plaintext);
+      return { kind: "passkey", credentialId: m.credentialId, prfSalt: m.prfSalt, nonce: hex(nonce), wrapped: hex(wrapped) };
+    }
     const key = wrapKey(m.secret, slotId);
     const wrapped = xchacha20poly1305(key, nonce, pinAad(slotId, i, "paper")).encrypt(plaintext);
     return { kind: "paper", nonce: hex(nonce), wrapped: hex(wrapped) };
@@ -238,15 +265,16 @@ export function bindSlot(tree: SlotTree | null, treeKey: TreeKey, spec: SlotSpec
   return { keyCheck: tree?.keyCheck ?? treeKeyCheckOf(treeKey), slots: [...(tree?.slots ?? []), slot] };
 }
 
-type PinMaterial = { readonly kind: "passphrase"; readonly passphrase: string } | { readonly kind: "paper"; readonly secret: Uint8Array };
+type PinMaterial = { readonly kind: "passphrase"; readonly passphrase: string } | { readonly kind: "paper"; readonly secret: Uint8Array } | { readonly kind: "passkey"; readonly secret: Uint8Array; readonly credentialId: Uint8Array; readonly prfSalt: Uint8Array };
 
 /** Refuse one human route bound as two pins of one slot: a passphrase by its NFKC form, a paper pin by its secret. */
 function refuseRouteBoundTwice(materials: readonly PinMaterial[]): void {
   const seen = new Map<string, number>();
   materials.forEach((m, i) => {
-    const key = m.kind === "passphrase" ? `passphrase:${m.passphrase.normalize("NFKC")}` : `paper:${hex(m.secret)}`;
+    const key = m.kind === "passphrase" ? `passphrase:${m.passphrase.normalize("NFKC")}` : m.kind === "paper" ? `paper:${hex(m.secret)}` : `passkey:${hex(m.credentialId)}`;
     const first = seen.get(key);
     if (first !== undefined) {
+      if (m.kind === "passkey") throw new Error("keyslot: duplicate-route");
       throw new Error(`keyslot: pins ${first + 1} and ${i + 1} bind one ${m.kind} route twice; each pin of a slot holds its own human route`);
     }
     seen.set(key, i);
@@ -264,7 +292,8 @@ export function unbindSlot(tree: SlotTree, slotId: string): { readonly tree: Slo
 
 export type Credential =
   | { readonly kind: "passphrase"; readonly passphrase: string }
-  | { readonly kind: "paper"; readonly sheets: readonly string[] };
+  | { readonly kind: "paper"; readonly sheets: readonly string[] }
+  | { readonly kind: "passkey"; readonly credentialId: Uint8Array; readonly prfOutput: Uint8Array };
 
 export type TreeKeyUnlock =
   | { readonly reading: "opens"; readonly treeKey: TreeKey; readonly slot: string }
@@ -275,6 +304,19 @@ export type TreeKeyUnlock =
 
 function tryUnwrap(key: Uint8Array, nonce: Uint8Array, aad: Uint8Array, wrapped: Uint8Array): Uint8Array | null {
   try { return xchacha20poly1305(key, nonce, aad).decrypt(wrapped); } catch { return null; }
+}
+
+/** Open one passkey share; all credential failures carry the same refusal. */
+export function openPasskeyPin(slot: SlotRecord, pinIndex: number, prfOutput: Uint8Array):
+  { readonly reading: "opens"; readonly share: Uint8Array } | { readonly reading: "slot-refused" } {
+  try {
+    const pin = slot.pins[pinIndex];
+    if (pin?.kind !== "passkey" || prfOutput.length !== 32) return { reading: "slot-refused" };
+    const slotId = fromHex(slot.id, SLOT_ID_LENGTH, "slot id");
+    const share = tryUnwrap(passkeyKey(prfOutput, slotId, pinIndex), fromHex(pin.nonce, NONCE_LENGTH, "pin nonce"),
+      pinAad(slotId, pinIndex, "passkey"), fromHex(pin.wrapped, SHARE_LENGTH + TAG_LENGTH, "wrapped share"));
+    return share === null ? { reading: "slot-refused" } : { reading: "opens", share };
+  } catch { return { reading: "slot-refused" }; }
 }
 
 /** Open the tree key with whatever credentials the operator presents. Any one slot whose threshold they meet opens it. */
@@ -295,6 +337,14 @@ export function openTreeKey(tree: SlotTree, credentials: readonly Credential[]):
       const nonce = fromHex(pin.nonce, NONCE_LENGTH, "pin nonce");
       const wrapped = fromHex(pin.wrapped, SHARE_LENGTH + TAG_LENGTH, "wrapped share");
       const aad = pinAad(slotId, i, pin.kind);
+      if (pin.kind === "passkey") {
+        for (const c of credentials) {
+          if (c.kind !== "passkey" || hex(c.credentialId) !== hex(pin.credentialId) || c.prfOutput.length !== 32) continue;
+          const share = tryUnwrap(passkeyKey(c.prfOutput, slotId, i), nonce, aad, wrapped);
+          if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); return; }
+        }
+        return;
+      }
       const materials: Uint8Array[] = pin.kind === "passphrase"
         ? passphrases.map((p) => passphraseMaterial(p, fromHex(pin.salt, SALT_LENGTH, "pin salt")))
         : paperSecrets;
@@ -327,6 +377,7 @@ export function encodeSlotTree(tree: SlotTree): Uint8Array {
       id: s.id, t: s.t, nonce: s.nonce, wrappedKey: s.wrappedKey,
       pins: s.pins.map((p) => (p.kind === "passphrase"
         ? { kind: p.kind, salt: p.salt, nonce: p.nonce, wrapped: p.wrapped }
+        : p.kind === "passkey" ? { kind: p.kind, credentialId: hex(p.credentialId), prfSalt: hex(p.prfSalt), nonce: p.nonce, wrapped: p.wrapped }
         : { kind: p.kind, nonce: p.nonce, wrapped: p.wrapped })),
     })),
   }));
@@ -359,6 +410,12 @@ export function decodeSlotTree(bytes: Uint8Array | null): SlotTreeReading {
         if (p.kind === "passphrase") {
           fromHex(p.salt as string, SALT_LENGTH, `${pw} salt`);
           return { kind: "passphrase", salt: p.salt as string, nonce: p.nonce as string, wrapped: p.wrapped as string };
+        }
+        if (p.kind === "passkey") {
+          if (typeof p.credentialId !== "string" || p.credentialId.length === 0 || p.credentialId.length % 2 !== 0) throw new Error(`${pw} credential id invalid`);
+          const credentialId = fromHex(p.credentialId, p.credentialId.length / 2, `${pw} credential id`);
+          const prfSalt = fromHex(p.prfSalt as string, 32, `${pw} PRF salt`);
+          return { kind: "passkey", credentialId, prfSalt, nonce: p.nonce as string, wrapped: p.wrapped as string };
         }
         if (p.kind === "paper") return { kind: "paper", nonce: p.nonce as string, wrapped: p.wrapped as string };
         throw new Error(`${pw}: kind "${String(p.kind)}" lies outside the built pin kinds (${PIN_KINDS.join(", ")})`);

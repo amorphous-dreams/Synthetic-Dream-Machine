@@ -590,8 +590,8 @@ export type {
   CustodyIo, SealedCarrier, SealedCarrierUpdate, StandingCarrier, TreeKeyReading, WriteSealedCarrierArgs, CommitSlotTreeArgs, RotateTreeKeyArgs, SettleRotationArgs,
   WriteFaceCarrierArgs, RotateFckArgs, CommitFaceTreeArgs,
 } from "./sealed-writer.js";
-export { bindSlot, unbindSlot, openTreeKey, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper } from "./keyslot.js";
-export type { PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, Credential, TreeKeyUnlock, SlotTreeReading } from "./keyslot.js";
+export { bindSlot, unbindSlot, openTreeKey, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper, mintPasskeySalt, openPasskeyPin, PIN_KINDS } from "./keyslot.js";
+export type { PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, PinKind, PinRecord, PasskeyPinRecord, Credential, TreeKeyUnlock, SlotTreeReading } from "./keyslot.js";
 export { mintTreeKey, treeKeyEquals } from "./tree-key.js";
 // The serving key and the serving tree that wraps it under the tree key's entry — see `serving-key`.
 export { mintServingKey, SK_LENGTH } from "./serving-key.js";
