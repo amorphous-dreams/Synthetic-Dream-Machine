@@ -48,3 +48,23 @@ def test_explicit_route_never_invents_operator_corner_or_a_false_native_witness(
     with pytest.raises(ValueError,match="no longer matches"):
         verify_orthogonal_route_receipt(original,goal,doctored)
     assert report["native_audition_completed"] is False
+
+def test_orthogonal_route_cli_keeps_operator_turn_and_source_digest(tmp_path):
+    import json
+    from projection_loom.cli import main
+    original,goal=site()
+    (tmp_path/"genome.json").write_text(json.dumps(original.to_dict()))
+    (tmp_path/"spatial.json").write_text(json.dumps(goal.to_dict()))
+    args=["--genome",str(tmp_path/"genome.json"),
+          "--spatial",str(tmp_path/"spatial.json")]
+    receipt=tmp_path/"turn.json"
+    result=main(["place-orthogonal-route",*args,"--turn","x-then-y",
+                 "--corner-id","landing","--out",str(receipt)])
+    assert result["original_genome_sha256"]==original.identity
+    assert result["result_genome_sha256"]!=original.identity
+    assert main(["place-orthogonal-route-verify",*args,
+                 "--receipt",str(receipt)])["valid"]
+    changed=PlaceBody("east",original.bodies[0].program,(10,10,2))
+    wrong=PlaceGenome((changed,original.bodies[1]))
+    with pytest.raises(ValueError,match="equal-top"):
+        propose_orthogonal_route(wrong,goal,turn="x-then-y",corner_id="landing")

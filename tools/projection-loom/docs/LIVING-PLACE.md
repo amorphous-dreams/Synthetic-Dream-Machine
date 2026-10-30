@@ -1,3 +1,35 @@
+## N9 · Intent aftermath · Operator-selected non-axis passage by two native legs
+
+The `place-orthogonal-route` CLI accepts a **single explicit**
+diagonal `connect(source,destination)` intent, an original
+source-preserved `PlaceGenome`, the operator's x-then-y or y-then-x
+choice, and a new bounded semantic corner handle. It creates a
+distinct native corner body and two independently constructed
+axis-aligned deck bodies. The existing unique route graph then
+returns an ordered two-hop chain; the existing exact native
+STEP bearing and corridor witness independently decides whether
+the original diagonal goal actually works.
+
+This implementation provides a useful **right-angle** connection
+between original equal-height diagonal sites. It does NOT grant an
+arbitrary curved, sloped or accessible corridor, invent a route
+when the operator declines to select the bend, replace source
+bodies, or quietly choose the apparently shorter alternative.
+The typed preview keeps the original genome hash, selected
+bend direction and corner name, proposed genome hash, and
+`native_audition_completed=False`, with independent replay
+against original inputs. The CLI caller must pass that proposed
+genome to real native `place-run` / `assess_place` for proof.
+
+The paired test executes both author-permitted bends on the
+same synthetic original native bodies with actual STEP; both
+must independently show two contact/clearance witnesses, and
+their constructively distinct genomes must not collapse to the
+same outcome. This is an intentional alternative set, not a
+calculated aesthetic winner or a structural engineering claim.
+
+---
+
 ## N9 · Intent aftermath · Source-fixed compound architectural counterfactuals
 
 The `place-intent-ablate` and `place-intent-ablate-verify` commands
