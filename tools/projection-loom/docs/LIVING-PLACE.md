@@ -191,3 +191,22 @@ surrendering independent construction truth, source authority, review or
 causal ancestry to the author's metaphors. Existing `place-review` for
 Fire's read-only carved-native passage studies remains untouched:
 new operator review uses `place-candidate-review`.
+
+## N8 · Aftermath XIII · An alternative remains an alternative
+
+`place-compare` assembles one immutable review index from the complete
+**independently rehydrated** native developmental campaign: original goal,
+rehearsal proof, final native-workspace proof, authored topology niche,
+source authority, deferred and refused attempts, and direct paths to the
+actual production STEP/USD representations. The operator can inspect
+several separately constructed alternatives without a hidden scalar winner
+or a forced loss of rare morphology. `place-compare-verify` independently
+rebuilds this index and refuses modified content. Unsupported spatial
+goals still appear as explicitly unwitnessed candidate records.
+
+An evidence index does not make a beautiful image. This initial handback
+exposes exact geometry that a separate production renderer may use, not a
+claim that present JSON can replace visual art review. A later optional
+scene-level six-view visual board should share one frozen camera and
+regrow its presentation from the same STEP witness, never from a
+self-generated mask folded into source evidence.

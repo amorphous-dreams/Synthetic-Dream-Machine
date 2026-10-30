@@ -1,3 +1,24 @@
+## ☕ N8 · Operator comparison, intent aftermath XIII · 2026-10-29
+
+**N8-O** (`0e779765`) adds `place-compare` /
+`place-compare-verify` and `place_comparison.py`. Every admitted
+candidate's source-bound causal/native workspace is independently
+rehydrated, STEP and USD paths are exposed, spatial contact/route
+proof and candidate niche remain visible, and unverified/refused
+alternatives retain their status. The index refuses changed content
+rather than assigning an automatic aesthetic winner. Exact-head
+CI must execute its new test before acceptance.
+
+**Intent aftermath XIII:** creative comparison must not collapse
+into the easy scalar of total new nodes. This native index solves
+evidence accessibility, **not** finished visual art direction. A
+future scene-level shared-camera gallery can add actual render
+comparisons while retaining geometry/source separation.
+No automatic promotion, source survey claim, Unreal Editor execution,
+load certification or PR merge.
+
+---
+
 ## ☕ N8 · 2026-10-29 · exact-source Fire binding and CI consolidation
 
 **N8-N** (`9593be9a`) adds `fire-place-bind` and
