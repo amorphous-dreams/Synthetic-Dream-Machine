@@ -341,9 +341,9 @@ export class VerbDispatcher {
    * prior attempt's result, and its fresh run concludes refused by the fence's own name.
    */
   private replayAdmitted(invocation: Verb): boolean {
-    if (!this.opts.registry.has(invocation.action)) return true;
     try {
-      this.opts.registry.admit(invocation.action, {
+      const admit = this.opts.registry.has(invocation.action) ? "admit" : "admitRouted";
+      this.opts.registry[admit](invocation.action, {
         daemon: this.opts.daemon, invocation, cap: async () => ({ ok: false, reason: "replay" }),
         presenter: this.opts.presenterOf?.(invocation) ?? invocation.requestedBy, local: this.opts.localOf?.(invocation) ?? false,
       });

@@ -593,7 +593,8 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
   wiki.addTiddler = function(tiddler: any) {
     const result = original.call(this, tiddler);
     const title = tiddler?.fields?.title ?? tiddler?.title;
-    if (typeof title === "string") stamps.set(title, wiki.getTiddler(title));
+    // Only a title the reaction router reads (`lar:`) takes a stamp, so every stamp meets the router that consumes it.
+    if (typeof title === "string" && title.startsWith("lar:")) stamps.set(title, wiki.getTiddler(title));
     return result;
   };
   try { return dispatchLarControlEventInner(ev); } finally { wiki.addTiddler = original; }

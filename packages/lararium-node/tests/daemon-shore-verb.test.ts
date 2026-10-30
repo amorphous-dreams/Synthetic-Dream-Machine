@@ -31,7 +31,7 @@ async function stand(shore?: (args: Record<string, unknown>) => Promise<Record<s
 // The shore reads the daemon wiki's working layer, the mounted face's own: the content fence admits its presenter alone.
 let mounted = "";
 const invoke = (registry: VerbTable, args: Record<string, unknown>) =>
-  registry.get("shore")!(args, { daemon: {} as never, invocation: { requestId: "shore-1" } as never, presenter: mounted, cap: async () => ({ ok: true }) } as never) as Promise<Record<string, unknown>>;
+  registry.get("shore")!(args, { daemon: {} as never, invocation: { requestId: "shore-1" } as never, presenter: mounted, local: true, cap: async () => ({ ok: true }) } as never) as Promise<Record<string, unknown>>;
 
 describe("the daemon island's shore verb", () => {
   test("with a shore door injected, the daemon registers `shore` and answers through that door with the caller's own arguments", async () => {

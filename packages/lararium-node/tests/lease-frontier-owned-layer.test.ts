@@ -138,7 +138,7 @@ describe("the lease frontier reads off the island's own daemon layer", () => {
     // realm-feed writes a writer's slot and stands behind the content fence, so the call presents as the mounted face.
     const call = (verb: string, args: Record<string, unknown>) =>
       (registry as unknown as { get(n: string): ((a: Record<string, unknown>, c: unknown) => Promise<Record<string, unknown>>) | undefined })
-        .get(verb)!(args, { presenter: `0x${daemonAuth.atom.key}` });
+        .get(verb)!(args, { presenter: `0x${daemonAuth.atom.key}`, local: true });
     const fed = await call("realm-feed", { realm, writer });
     expect(fed["epoch"]).toBe(1);
     expect(Object.keys(daemonHandle.doc()!.tiddlers).some((t) => t.includes(realm))).toBe(true);

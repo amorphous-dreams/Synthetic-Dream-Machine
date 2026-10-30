@@ -36,7 +36,8 @@ async function standTwoFaces() {
 test("a routed wiki-act crosses the same presenter fence before routing", async () => {
   const { registry, composite, sibling, mounted } = await standTwoFaces();
   const routed: string[] = [];
-  const dispatcher = new VerbDispatcher({ daemon: composite, registry, verifier: { verify: async () => ({ ok: true }) },
+  // Both asks arrive over the vessel's own channel: the fence reads the presenter, not the channel, for a sibling's DID.
+  const dispatcher = new VerbDispatcher({ daemon: composite, registry, localOf: () => true, verifier: { verify: async () => ({ ok: true }) },
     routeFn: async (invocation) => { routed.push(invocation.requestedBy); return {}; } } as never);
   const invocation = (requestedBy: string) => ({ requestId: requestedBy, title: "t", action: "wiki-act", requestedBy,
     args: { wiki: "home", verb: "CLEAR", args: { bag: "lar:///ha.ka.ba/wikis/home/working" } } });
@@ -64,7 +65,7 @@ test("a content verb refuses a presenter that is not the mounted face, by name",
     // The fence fails closed: a call that names no presenter refuses too.
     expect(await call(verb, undefined, a2), `${verb} no presenter`).toMatchObject({ reason: "content-mounted-only" });
     // CONTROL: the mounted face's call passes the fence (it may refuse for another reason).
-    expect(await call(verb, mounted, a2), `${verb} mounted`).not.toMatchObject({ reason: "content-mounted-only" });
+    expect(await call(verb, mounted, a2, true), `${verb} mounted`).not.toMatchObject({ reason: "content-mounted-only" });
     // A sibling's DID on the vessel's own channel refuses too; the channel lends no face.
     expect(await call(verb, sibling, a2, true), `${verb} local sibling`).toMatchObject({ reason: "content-mounted-only" });
   }
