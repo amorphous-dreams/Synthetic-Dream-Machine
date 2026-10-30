@@ -1,3 +1,25 @@
+## ☕ N8 · 2026-10-29 · feature/intent waves VII–VIII pending exact-head acceptance
+
+**N8-J** (`7586d190`) refuses original evidence bytes that changed
+before new place work; it archives original source content with the native
+candidate and identifies original-file testimony separately from external
+survey authority. **Intent aftermath VII** (`aae1ea4f`) writes the scope
+into immutable preregistration and requires independent replay of prior
+source/native lineages. **N8-K** (`beb5f233`) connects the existing
+explicitly selected Fire `bridges` plan to a typed place-level `connect`
+construction, with exact original witness/seed/location matching, no
+Art Sigil language execution, and refusal for unimplemented relations.
+**Intent aftermath VIII** adds dedicated CI coverage and boundary notes.
+
+Existing OODA-HA, Fire, STEP, location, and original-source authorities
+remain distinct. No extra operator selection, pet-name or automatic canon
+decision. The second published N8 head `b997fb95` still requires its
+complete exact-head CI verdict; earlier c356 N8 integration failed its
+contract/viewport tests and was not accepted. This section records only
+implementation, not new acceptance.
+
+---
+
 ## ☕ N8 · Whole-machina feature/intent cycles IV–V + CI recovery · 2026-10-29
 
 Following the initial `c356a551` N8 push, the existing integration workflows

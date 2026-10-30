@@ -126,3 +126,24 @@ topological theorem or an artistic judge. Each new relation needs its own
 constructive and counterfactual native witnesses. Converging the existing
 generalized campaign and the place campaign's phase orchestration without
 installing a second helm remains an explicit future refactor priority.
+
+## N8 · Aftermath VIII · Fire is an interpreter, not an executable free-text engine
+
+`fire_spatial.bind_fire_spatial` consumes the existing **verified typed Fire
+plan** through an explicit alternative ID, matching a source witness and a
+known intent/location. Both material endpoints must already resolve to
+different real location-body handles. Only `bridges/bridge-between` maps to
+the presently witnessed `SpatialGoal(connect)`. A poetically compelling
+`encircles` or other artistic relation does not gain a fake passage by
+being proximate to a constructed form; it remains in its own study context
+until a trustworthy native method exists.
+
+This code does not parse art prose, generate language, issue identity
+claims, certify survey sources, or choose among Fire alternatives.
+The binding contains the original Fire plan digest, selected proposal ID,
+source-witness handle, typed interpretation identity and a no-promotion
+claim. An independent verifier reconstructs those fields from the same
+witnesses before any native construction is proposed.
+
+The operator may continue to speak Art Sigils at the existing expressive
+level; the compiler only receives bounded, source-bound proposals.
