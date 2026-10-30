@@ -49,6 +49,12 @@ $src"
       return 1
     fi
   fi
+  # A tree whose index still carries the reality-tunnel carrier carries the checkout's seat, so the gate that reads
+  # it applies: a commit that stages the gate's own deletion beside it refuses rather than slipping past.
+  if [ "$script" = "repo-tunnel-staged.sh" ] && git -C "$REPO" ls-files --cached --error-unmatch "bags/lares/ha.ka.ba/lares/cli/reality-tunnel.mem" >/dev/null 2>&1; then
+    echo "[pre-commit] the index carries the reality-tunnel carrier but not tools/$script — refusing" >&2
+    return 1
+  fi
   echo "[pre-commit] this tree carries no tools/$script — that gate does not apply here"
   return 0
 }

@@ -13,7 +13,7 @@
  */
 import { createHash } from "node:crypto";
 import {
-  existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, readlinkSync, renameSync, symlinkSync, unlinkSync,
+  chmodSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, readlinkSync, renameSync, symlinkSync, unlinkSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, join } from "node:path";
@@ -66,7 +66,7 @@ export interface Row {
 }
 
 /** A target's live form: file bytes, a link's target, or absent. */
-type Live = { kind: "absent" } | { kind: "file"; bytes: string } | { kind: "link"; target: string };
+type Live = { kind: "absent" } | { kind: "file"; bytes: string; mode?: number } | { kind: "link"; target: string };
 
 export interface Reader {
   live(path: string): Live;
@@ -77,7 +77,7 @@ export const diskReader: Reader = {
     let st;
     try { st = lstatSync(path); } catch { return { kind: "absent" }; }
     if (st.isSymbolicLink()) return { kind: "link", target: readlinkSync(path) };
-    return { kind: "file", bytes: readFileSync(path, "utf8") };
+    return { kind: "file", bytes: readFileSync(path, "utf8"), mode: st.mode & 0o7777 };
   },
 };
 
@@ -193,12 +193,23 @@ function rowOf(it: Item, live: Live, touched: boolean): Row {
   return { ...base, state: "drift", detail: cur === null ? "absent; tend writes it" : want === null ? "present; tend lifts it" : "differs; tend rewrites it" };
 }
 
+/** Write `bytes` at `path` through a temp beside it, keeping the target's mode (0644 for a new file). */
+function writeKeepingMode(path: string, bytes: string, mode: number | undefined): void {
+  mkdirSync(dirname(path), { recursive: true });
+  const tmp = `${path}.lares-tmp-${process.pid}`;
+  writeFileSync(tmp, bytes, { encoding: "utf8", mode: 0o600 });
+  chmodSync(tmp, mode ?? 0o644);
+  renameSync(tmp, path);
+}
+
 // ── Tend ────────────────────────────────────────────────────────────────────────────────────────
 
 export interface TendResult {
   readonly rows: Row[];
   readonly wrote: string[];
   readonly refused: Row[];
+  /** External items whose host refused or failed the change: the exit reads 4. */
+  readonly failed: Array<{ id: string; detail: string }>;
   readonly generation: Generation | null;
 }
 
@@ -206,13 +217,17 @@ export interface TendResult {
 export type Locker = (path: string) => Promise<{ release(): Promise<void> }>;
 
 export async function tend(
-  items: readonly Item[], ledger: Ledger, opts: { force?: boolean; lock?: Locker; reader?: Reader } = {},
+  items: readonly Item[], ledger: Ledger,
+  opts: { force?: boolean; lock?: Locker; radiusLock?: Locker; reader?: Reader } = {},
 ): Promise<TendResult> {
   const reader = opts.reader ?? diskReader;
   const entries: LedgerEntry[] = [];
   const wrote: string[] = [];
+  const failed: Array<{ id: string; detail: string }> = [];
   const refusedPaths = new Set<string>();
   let generation: Generation | null = null;
+  // ONE TEND PER RADIUS AT A TIME: two tends read, write and number their generations in turn.
+  const radius = opts.radiusLock ? await opts.radiusLock(ledger.dir) : null;
 
   try {
     for (const [path, group] of byPath(items)) {
@@ -223,9 +238,9 @@ export async function tend(
         const snapshot = it.external!.snapshot();
         const r = it.external!.apply();
         if (r.ok) {
-          entries.push({ path, external: it.id, snapshot, prior: { kind: "absent" }, wrote: null });
+          entries.push({ path, external: it.id, snapshot, prior: { kind: "absent" }, wrote: sha(it.external!.snapshot()) });
           wrote.push(`${path} (${it.id})`);
-        }
+        } else failed.push({ id: it.id, detail: r.detail });
       }
       const fileItems = acting.filter((x) => !x.external);
       if (fileItems.length === 0) continue;
@@ -251,11 +266,7 @@ export async function tend(
         const want = desiredOf(fileItems, live, foreign);
         if (want === cur) continue;
         if (want === null) unlinkSync(path);
-        else {
-          mkdirSync(dirname(path), { recursive: true });
-          writeFileSync(`${path}.lares-tmp`, want, "utf8");
-          renameSync(`${path}.lares-tmp`, path);
-        }
+        else writeKeepingMode(path, want, live.kind === "file" ? live.mode : undefined);
         entries.push({ path, prior: live, wrote: want === null ? null : sha(want) });
         wrote.push(path);
       } finally {
@@ -264,10 +275,11 @@ export async function tend(
     }
   } finally {
     // A tend that throws midway still records what it wrote, so `undo` reaches every changed target.
-    if (entries.length) generation = ledger.record("tend", entries);
+    try { if (entries.length) generation = ledger.record("tend", entries); }
+    finally { await radius?.release(); }
   }
   const rows = read(items, ledger, reader);
-  return { rows, wrote, refused: rows.filter((r) => refusedPaths.has(r.path) && r.state === "foreign"), generation };
+  return { rows, wrote, refused: rows.filter((r) => refusedPaths.has(r.path) && r.state === "foreign"), failed, generation };
 }
 
 // ── Undo ────────────────────────────────────────────────────────────────────────────────────────
@@ -286,6 +298,20 @@ export interface UndoResult {
 export function undo(
   ledger: Ledger, gen?: number, opts: { force?: boolean; externals?: ReadonlyMap<string, External> } = {},
 ): UndoResult {
+  return undoUnder(ledger, gen, opts);
+}
+
+/** `undo` under the radius lock, so it never interleaves with a tend in the same radius. */
+export async function undoLocked(
+  ledger: Ledger, gen: number | undefined, opts: { force?: boolean; externals?: ReadonlyMap<string, External>; radiusLock?: Locker } = {},
+): Promise<UndoResult> {
+  const held = opts.radiusLock ? await opts.radiusLock(ledger.dir) : null;
+  try { return undoUnder(ledger, gen, opts); } finally { await held?.release(); }
+}
+
+function undoUnder(
+  ledger: Ledger, gen: number | undefined, opts: { force?: boolean; externals?: ReadonlyMap<string, External> },
+): UndoResult {
   const gens = ledger.generations();
   const target = gen === undefined ? gens.filter((g) => g.act === "tend").at(-1) : gens.find((g) => g.gen === gen);
   if (!target) throw new Error(gen === undefined ? "no tend generation stands to undo" : `no generation ${gen} stands`);
@@ -296,17 +322,16 @@ export function undo(
       const ext = opts.externals?.get(e.external);
       if (!ext) { refused.push(e.path); continue; }
       const snapshot = ext.snapshot();
-      if (ext.restore(e.snapshot ?? "null").ok) entries.push({ path: e.path, external: e.external, snapshot, prior: { kind: "absent" }, wrote: null });
+      if (e.wrote !== null && sha(snapshot) !== e.wrote && !opts.force) { refused.push(e.path); continue; }
+      if (ext.restore(e.snapshot ?? "null").ok) entries.push({ path: e.path, external: e.external, snapshot, prior: { kind: "absent" }, wrote: sha(ext.snapshot()) });
       else refused.push(e.path);
       continue;
     }
     const live = diskReader.live(e.path);
     if (liveHash(live) !== e.wrote && !opts.force) { refused.push(e.path); continue; }
     if (live.kind !== "absent") unlinkSync(e.path);
-    if (e.prior.kind === "file") {
-      mkdirSync(dirname(e.path), { recursive: true });
-      writeFileSync(e.path, e.prior.bytes, "utf8");
-    } else if (e.prior.kind === "link") {
+    if (e.prior.kind === "file") writeKeepingMode(e.path, e.prior.bytes, e.prior.mode);
+    else if (e.prior.kind === "link") {
       mkdirSync(dirname(e.path), { recursive: true });
       symlinkSync(e.prior.target, e.path);
     }

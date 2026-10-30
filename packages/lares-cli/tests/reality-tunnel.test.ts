@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { execFileSync } from "node:child_process";
 import {
-  existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync,
+  chmodSync, existsSync, lstatSync, statSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -374,7 +374,7 @@ describe("the cold reader's findings, each a red first", () => {
     writeFileSync(join(dir, "bad.json"), "{not json");
     await tend([file("bad.json", { transform: jsonFloor("n", 5), foreign: jsonForeign })], l, { force: true });
     expect(JSON.parse(readFileSync(join(dir, "bad.json"), "utf8"))).toEqual({ n: 5 });
-    expect(l.generations().at(-1)?.entries[0]?.prior).toEqual({ kind: "file", bytes: "{not json" });
+    expect(l.generations().at(-1)?.entries[0]?.prior).toMatchObject({ kind: "file", bytes: "{not json" });
   });
 
   it("an unreachable piece outranks ordinary drift in the exit", () => {
@@ -385,7 +385,7 @@ describe("the cold reader's findings, each a red first", () => {
     const guessed = mkdtempSync(join(dir, "Users-"));
     const real = mkdtempSync(join(dir, "real-"));
     const state = mkdtempSync(join(dir, "state-"));
-    expect(windowsProfile(guessed, { state, ask: () => real })).toBe(real);
+    expect(windowsProfile(guessed, { state, ask: () => real, persist: true })).toBe(real);
     expect(windowsProfile(guessed, { state: mkdtempSync(join(dir, "s2-")), ask: () => null })).toBeNull();
     expect(windowsProfile(guessed, { state, ask: () => { throw new Error("cached, never asked"); } })).toBe(real);
   });
@@ -401,11 +401,116 @@ describe("the cold reader's findings, each a red first", () => {
     execFileSync("git", ["-C", root, "add", ".claude/agents"]);
     const show = (rel: string): string | null => { try { return execFileSync("git", ["-C", root, "show", `:${rel}`], { encoding: "utf8" }); } catch { return null; } };
     const rows = read(repoItems(root, declared(root, show), show), l, indexReader(root));
-    expect(rows.filter((r) => /scout/.test(r.id)).every((r) => r.state === "drift")).toBe(true);
+    const scouts = rows.filter((r) => /scout/.test(r.id));
+    expect(scouts.map((r) => r.id).sort()).toEqual(["claude.scout-explore", "claude.scout-plan"]);
+    expect(scouts.every((r) => r.state === "drift")).toBe(true);
   });
 
   it("verify fails when a probe's host does not answer", () => {
     const v = verifyLoads({ door: "repo", repo: REPO, home: dir, probe: true, entries: [{ session_id: "s", file_path: join(REPO, declared(REPO).seed), load_reason: "include", cwd: REPO }], probes: () => [{ ok: true, line: "claude ✓" }, { ok: false, line: "codex: does not answer" }] });
     expect(v.ok).toBe(false);
+  });
+});
+
+describe("the second cold reader's findings, each a red first", () => {
+  const free = { release: async (): Promise<void> => {} };
+  const file = (p: string, what: Partial<Item>): Item => ({ id: `t.${p}`, radius: "home", host: "t", path: join(dir, p), what: p, ...what });
+
+  it("two tends in one radius serialize: neither loses the other's write or its generation", async () => {
+    const l = ledger();
+    const order: string[] = [];
+    let held = false;
+    const radiusLock = async () => {
+      while (held) await new Promise((r) => setTimeout(r, 5));
+      held = true; order.push("in");
+      return { release: async () => { order.push("out"); held = false; } };
+    };
+    await Promise.all([
+      tend([file("c.toml", { transform: (c) => `${c ?? ""}a = 1\n` })], l, { radiusLock }),
+      tend([file("c.toml", { transform: (c) => (c ?? "").includes("b =") ? c : `${c ?? ""}b = 2\n` })], l, { radiusLock }),
+    ]);
+    expect(order).toEqual(["in", "out", "in", "out"]);
+    expect(l.generations().map((g) => g.gen)).toEqual([1, 2]);
+  });
+
+  it("tend keeps a target's mode, and undo puts the prior mode back", async () => {
+    const l = ledger();
+    const p = join(dir, "secret.json");
+    writeFileSync(p, '{"n": 1}\n', { mode: 0o600 });
+    chmodSync(p, 0o600);
+    await tend([file("secret.json", { transform: jsonFloor("n", 5) })], l);
+    expect(statSync(p).mode & 0o777).toBe(0o600);
+    undo(l);
+    expect(statSync(p).mode & 0o777).toBe(0o600);
+  });
+
+  it("an external undo refuses a seat a hand changed after the tend", async () => {
+    const l = ledger();
+    let seat: string | null = "old";
+    const ext: External = {
+      observe: () => ({ aligned: seat === "new", detail: "" }),
+      apply: () => { seat = "new"; return { ok: true, detail: "" }; },
+      snapshot: () => JSON.stringify(seat),
+      restore: (s) => { seat = JSON.parse(s) as string | null; return { ok: true, detail: "" }; },
+    };
+    const it1 = file("seat", { external: ext });
+    await tend([it1], l);
+    seat = "hand-set";
+    expect(undo(l, undefined, { externals: new Map([[it1.id, ext]]) }).refused).toEqual([it1.path]);
+    expect(seat).toBe("hand-set");
+  });
+
+  it("a host that fails its apply reads unreachable, never drift", async () => {
+    const ext: External = {
+      observe: () => ({ aligned: false, detail: "" }), apply: () => ({ ok: false, detail: "claude does not answer" }),
+      snapshot: () => "null", restore: () => ({ ok: true, detail: "" }),
+    };
+    const r = await tend([file("seat", { external: ext })], ledger());
+    expect(r.failed.map((f) => f.detail)).toEqual(["claude does not answer"]);
+  });
+
+  it("reading the homes asks Windows but writes no cache; tending keeps it", () => {
+    const state = mkdtempSync(join(dir, "state-"));
+    const real = mkdtempSync(join(dir, "real-"));
+    expect(windowsProfile(dir, { state, ask: () => real, persist: false })).toBe(real);
+    expect(existsSync(join(state, "windows-profile"))).toBe(false);
+    windowsProfile(dir, { state, ask: () => real, persist: true });
+    expect(existsSync(join(state, "windows-profile"))).toBe(true);
+  });
+
+  it("verify judges the newest session, not the one that logged last, and only this tree's seed", () => {
+    const seed = join(REPO, declared(REPO).seed);
+    const entries = [
+      { session_id: "old", file_path: seed, load_reason: "include", cwd: REPO },
+      { session_id: "new", file_path: "/elsewhere/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem", load_reason: "include", cwd: REPO },
+      { session_id: "old", file_path: join(REPO, "x/CLAUDE.md"), load_reason: "nested_traversal", cwd: REPO },
+    ];
+    const v = judgeLoads(entries, "repo", REPO, [seed]);
+    expect(v.lines[0]).toContain("session new");
+    expect(v.ok).toBe(false);
+  });
+});
+
+describe("the pre-commit gate cannot be staged away", () => {
+  it("a commit that stages the gate's deletion beside the carrier refuses", () => {
+    const root = mkdtempSync(join(dir, "hook-"));
+    execFileSync("git", ["init", "-q", root]);
+    mkdirSync(join(root, ".githooks"), { recursive: true });
+    writeFileSync(join(root, ".githooks/pre-commit"), readFileSync(join(REPO, ".githooks/pre-commit"), "utf8"), { mode: 0o755 });
+    mkdirSync(join(root, dirname(CARRIER)), { recursive: true });
+    writeFileSync(join(root, CARRIER), "carrier\n");
+    execFileSync("git", ["-C", root, "add", CARRIER]);
+    let refused = false;
+    try { execFileSync(join(root, ".githooks/pre-commit"), { cwd: root, stdio: "pipe" }); } catch (e) { refused = /reality-tunnel carrier/.test(String((e as { stderr?: Buffer }).stderr)); }
+    expect(refused).toBe(true);
+  });
+  it("CONTROL: a tree that carries neither the carrier nor the gate passes the gate's branch", () => {
+    const root = mkdtempSync(join(dir, "hook-"));
+    execFileSync("git", ["init", "-q", root]);
+    mkdirSync(join(root, ".githooks"), { recursive: true });
+    writeFileSync(join(root, ".githooks/pre-commit"), readFileSync(join(REPO, ".githooks/pre-commit"), "utf8"), { mode: 0o755 });
+    writeFileSync(join(root, "x.txt"), "x");
+    execFileSync("git", ["-C", root, "add", "x.txt"]);
+    expect(String(execFileSync(join(root, ".githooks/pre-commit"), { cwd: root, encoding: "utf8" }))).toContain("repo-tunnel-staged.sh — that gate does not apply here");
   });
 });

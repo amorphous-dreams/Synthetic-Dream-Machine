@@ -12,11 +12,11 @@ import { execFileSync } from "node:child_process";
 import { homedir } from "node:os";
 import { createInterface } from "node:readline/promises";
 import { repoRoot } from "@lararium/mesh/node";
-import { EXIT, Ledger, exitOf, read, tend, undo, type Item, type Reader, type Row } from "../reality-tunnel/engine.js";
+import { EXIT, Ledger, exitOf, read, tend, undoLocked, type Item, type Reader, type Row } from "../reality-tunnel/engine.js";
 import { homeLedgerDir, repoLedgerDir } from "../reality-tunnel/places.js";
 import { declared, homeItems, repoItems } from "../reality-tunnel/catalog.js";
 import { resolveHomes } from "../reality-tunnel/homes.js";
-import { hostLocker } from "../reality-tunnel/lock.js";
+import { hostLocker, radiusLock } from "../reality-tunnel/lock.js";
 import { verifyLoads, type VerifyResult } from "../reality-tunnel/verify.js";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
@@ -70,13 +70,13 @@ export const indexText = (repo: string) => (rel: string): string | null => {
   catch { return null; }
 };
 
-export function itemsFor(door: Door, staged = false): { items: Item[]; ledger: Ledger; root: string } {
+export function itemsFor(door: Door, staged = false, persist = false): { items: Item[]; ledger: Ledger; root: string } {
   if (door === "repo") {
     // `--staged` reads the carrier and the seed the commit carries, never the working tree's.
     const items = staged ? repoItems(repoRoot, declared(repoRoot, indexText(repoRoot)), indexText(repoRoot)) : repoItems(repoRoot);
     return { items, ledger: new Ledger(repoLedgerDir(repoRoot)), root: repoRoot };
   }
-  return { items: homeItems({ repo: repoRoot, homes: resolveHomes() }), ledger: new Ledger(homeLedgerDir()), root: homedir() };
+  return { items: homeItems({ repo: repoRoot, homes: resolveHomes({ persist }) }), ledger: new Ledger(homeLedgerDir()), root: homedir() };
 }
 
 export async function cmdTunnelDoor(door: Door, args: ParsedArgs): Promise<number> {
@@ -88,7 +88,7 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs): Promise<numbe
     console.error(`lares ${door} ${verb}: --staged reads the index, and only \`lares repo read\` reads it`);
     return EXIT.usage;
   }
-  const { items, ledger } = itemsFor(door, args.flags["staged"] === true);
+  const { items, ledger } = itemsFor(door, args.flags["staged"] === true, verb === "tend" || verb === "undo");
 
   if (verb === "read") {
     const reader = args.flags["staged"] === true ? indexReader(repoRoot) : undefined;
@@ -104,8 +104,8 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs): Promise<numbe
     const before = read(items, ledger);
     const writes = before.filter((r) => r.state === "drift" || (r.state === "foreign" && args.flags["force"] === true));
     if (door === "home" && writes.length > 0 && !(await consent(writes, args))) return EXIT.usage;
-    const r = await tend(items, ledger, { force: args.flags["force"] === true, lock: hostLocker });
-    const code = r.refused.length > 0 ? EXIT.foreign : exitOf(r.rows);
+    const r = await tend(items, ledger, { force: args.flags["force"] === true, lock: hostLocker, radiusLock });
+    const code = r.refused.length > 0 ? EXIT.foreign : r.failed.length > 0 ? EXIT.unreachable : exitOf(r.rows);
     emit(args, {
       ok: code === 0,
       data: { radius: door, wrote: r.wrote, refused: r.refused, generation: r.generation?.gen ?? null, rows: r.rows, exit: code },
@@ -113,6 +113,7 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs): Promise<numbe
         console.log(r.wrote.length ? `tended ${r.wrote.length} target(s)${r.generation ? ` · generation ${r.generation.gen}` : ""}` : "every item already holds; nothing written");
         for (const w of r.wrote) console.log(`  wrote ${w}`);
         for (const f of r.refused) console.log(`  refused ${f.path}: ${f.detail} (--force takes it; the ledger keeps its bytes)`);
+        for (const f of r.failed) console.log(`  unreachable ${f.id}: ${f.detail}`);
         const off = r.rows.filter((x) => x.state !== "aligned" && x.state !== "absent");
         if (off.length) show(off, false);
       },
@@ -125,7 +126,7 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs): Promise<numbe
     if (n !== undefined && !Number.isInteger(n)) { console.error(`lares ${door} undo: a generation is a whole number`); return EXIT.usage; }
     let r;
     const externals = new Map(items.filter((i) => i.external).map((i) => [i.id, i.external!] as const));
-    try { r = undo(ledger, n, { force: args.flags["force"] === true, externals }); }
+    try { r = await undoLocked(ledger, n, { force: args.flags["force"] === true, externals, radiusLock }); }
     catch (e) { console.error(`lares ${door} undo: ${(e as Error).message}`); return EXIT.usage; }
     const g = r.generation;
     emit(args, { ok: r.refused.length === 0, data: { radius: door, generation: g?.gen ?? null, undoes: g?.undoes ?? n ?? null, restored: g?.entries.map((e) => e.path) ?? [], refused: r.refused }, human: () => {

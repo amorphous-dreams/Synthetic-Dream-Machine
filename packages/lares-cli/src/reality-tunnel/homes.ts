@@ -37,7 +37,7 @@ function askWindows(): string | null {
  * another account's profile, so none stands: the answer comes from `%USERPROFILE%`, asked once and
  * kept in the home's state, and a profile Windows does not name reads as none.
  */
-export function windowsProfile(native: string, opts: { state?: string; ask?: () => string | null } = {}): string | null {
+export function windowsProfile(native: string, opts: { state?: string; ask?: () => string | null; persist?: boolean } = {}): string | null {
   const state = opts.state ?? join(process.env["XDG_STATE_HOME"]?.trim() || join(native, ".local", "state"), "lares", "reality-tunnel");
   const cache = join(state, "windows-profile");
   try {
@@ -46,15 +46,16 @@ export function windowsProfile(native: string, opts: { state?: string; ask?: () 
   } catch { /* not asked yet */ }
   const p = (opts.ask ?? askWindows)();
   if (!p || !existsSync(p)) return null;
-  try { mkdirSync(state, { recursive: true }); writeFileSync(cache, `${p}\n`); } catch { /* the answer stands; the cache is a convenience */ }
+  // Observing writes nothing: only a tend keeps the answer.
+  if (opts.persist) { try { mkdirSync(state, { recursive: true }); writeFileSync(cache, `${p}\n`); } catch { /* the answer stands; the cache is a convenience */ } }
   return p;
 }
 
-export function resolveHomes(opts: { home?: string; windows?: string | null; env?: NodeJS.ProcessEnv } = {}): Homes {
+export function resolveHomes(opts: { home?: string; windows?: string | null; env?: NodeJS.ProcessEnv; persist?: boolean } = {}): Homes {
   const native = opts.home ?? homedir();
   if (opts.windows !== undefined) return { native, windows: opts.windows };
   const env = opts.env ?? process.env;
-  return { native, windows: process.platform === "linux" && onWsl(env) ? windowsProfile(native) : null };
+  return { native, windows: process.platform === "linux" && onWsl(env) ? windowsProfile(native, { persist: opts.persist === true }) : null };
 }
 
 /** Every home in the set, each with the name a row prints. */

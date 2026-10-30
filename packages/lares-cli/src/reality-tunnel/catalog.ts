@@ -99,7 +99,7 @@ export function repoItems(repo: string, d: Declared = declared(repo), textOf: Te
 /** Claude's lares seat, changed through the `claude` CLI and read from the store it writes. */
 function claudeMcp(home: string, mcp: LaresMcpCommand): External {
   const store = join(home, ".claude.json");
-  type Seat = { command?: string; args?: string[]; env?: Record<string, string> };
+  type Seat = { command?: string; args?: string[]; env?: Record<string, string>; [k: string]: unknown };
   const seat = (): Seat | undefined => {
     try { return ((JSON.parse(readFileSync(store, "utf8")) as { mcpServers?: Record<string, Seat> }).mcpServers ?? {})["lares"]; }
     catch { return undefined; }
@@ -112,14 +112,15 @@ function claudeMcp(home: string, mcp: LaresMcpCommand): External {
     const r = spawnSync("claude", args, { encoding: "utf8", timeout: 15_000 });
     return r.status === 0 ? { ok: true, detail: "" } : { ok: false, detail: String(r.stderr ?? r.error ?? "").trim().slice(0, 120) };
   };
+  // Every seat shape (stdio, SSE, HTTP, WebSocket) rides `claude mcp add-json`, so a restore puts back
+  // exactly the seat it took away, whatever its shape.
   const put = (s: Seat | null): { ok: boolean; detail: string } => {
     if (seat()) {
       const rm = run(["mcp", "remove", "-s", "user", "lares"]);
       if (!rm.ok) return rm;
     }
-    if (s === null || !s.command) return { ok: true, detail: "" };
-    const env = Object.entries(s.env ?? {}).flatMap(([k, v]) => ["-e", `${k}=${v}`]);
-    return run(["mcp", "add", "--scope", "user", "lares", ...env, "--", s.command, ...(s.args ?? [])]);
+    if (s === null) return { ok: true, detail: "" };
+    return run(["mcp", "add-json", "--scope", "user", "lares", JSON.stringify(s)]);
   };
   const snapshot = (): string => JSON.stringify(seat() ?? null);
   return {
@@ -131,10 +132,12 @@ function claudeMcp(home: string, mcp: LaresMcpCommand): External {
     apply: () => {
       if (!claudeCli()) return { ok: false, detail: "the `claude` CLI does not answer; the seat writes through it" };
       const before = snapshot();
-      const r = put({ command: mcp.command, args: mcp.args, env: mcp.env });
-      // A failed re-aim puts the prior seat back rather than leaving the harness with none.
-      if (!r.ok) put(JSON.parse(before) as Seat | null);
-      return r.ok ? { ok: true, detail: "registered" } : r;
+      const r = put({ type: "stdio", command: mcp.command, args: mcp.args, env: mcp.env });
+      if (r.ok) return { ok: true, detail: "registered" };
+      // A failed re-aim puts the prior seat back rather than leaving the harness with none, and says
+      // when even that fails.
+      const back = put(JSON.parse(before) as Seat | null);
+      return { ok: false, detail: back.ok ? r.detail : `${r.detail}; the prior seat's restore failed too: ${back.detail}` };
     },
   };
 }
