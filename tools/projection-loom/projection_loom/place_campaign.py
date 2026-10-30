@@ -170,6 +170,24 @@ def verify_place_campaign(path):
         if report["workspace_sha256"]!=predecessor["workspace_sha256"]:
             raise ValueError("Parent native evidence cannot independently replay")
         review=_read(path/"parent-review.json")
+        prior=predecessor["prior_pre_registration"]
+        if canonical_json_sha256(prior)!=predecessor["prior_campaign_sha256"]:
+            raise ValueError("Prior place campaign preregistration changed")
+        from .place_amendment import verify_place_amendment
+        original_goal=(prior["intent_sha256"],prior["spatial_intent_sha256"])
+        next_goal=(pre["intent_sha256"],pre["spatial_intent_sha256"])
+        amendment=predecessor.get("intent_amendment")
+        if original_goal!=next_goal:
+            original_contract=_read(path/"pre_registration.json")
+            from .intent_seed import IntentContract
+            # The current intent digest and authored goal are bound in the
+            # successor preregistration, not inferred from a copied narrative.
+            if amendment is None or amendment.get("prior_pre_registration_sha256")!=canonical_json_sha256(prior) or amendment.get("new_intent_sha256")!=pre["intent_sha256"] or amendment.get("new_spatial_intent_sha256")!=pre["spatial_intent_sha256"]:
+                raise ValueError("Changed inherited place intent lacks its exact prior-bound amendment")
+            if amendment.get("sha256")!=canonical_json_sha256({k:v for k,v in amendment.items() if k!="sha256"}) or amendment.get("automatic_artistic_promotion") is not False:
+                raise ValueError("Inherited place intent amendment changed")
+        elif amendment is not None:
+            raise ValueError("Unchanged inherited place cannot smuggle an intent amendment")
         if review!=predecessor["review"] or review.get("decision")!="accept":
             raise ValueError("Continuation lacks the prior accepted operator decision")
         verify_location_review(parent_workspace,review)
@@ -412,10 +430,20 @@ def review_place_candidate(campaign,candidate_id,*,actor,decision,reason,destina
             "automatic_promotion":False}
 
 def continue_place_campaign(previous,review_receipt,intent,spatial,out,*,
-                            epochs=2,offspring=3,exact_budget=2,seed=41):
+                            epochs=2,offspring=3,exact_budget=2,seed=41,
+                            amendment=None):
     """Only a reviewed ACCEPT choice may seed a new, fully witnessed study."""
     prior=Path(previous)
     summary=verify_place_campaign(prior)
+    prior_pre=_read(prior/"pre_registration.json")
+    spatial.bind(intent)
+    from .place_amendment import verify_place_amendment
+    changed=(prior_pre["intent_sha256"],prior_pre["spatial_intent_sha256"])!=(
+        intent.identity,spatial.identity)
+    if changed:
+        verify_place_amendment(amendment,prior_pre,intent,spatial)
+    elif amendment is not None:
+        raise ValueError("Unchanged place intent refuses an unnecessary amendment")
     review=_read(review_receipt)
     if review.get("decision")!="accept":
         raise ValueError("Only an operator-accepted place may seed continuation")
@@ -442,6 +470,8 @@ def continue_place_campaign(previous,review_receipt,intent,spatial,out,*,
              "workspace_sha256":parent_manifest["sha256"],
              "genome_sha256":genome.identity,"review":review,
              "prior_campaign_sha256":summary["pre_registration_sha256"],
+             "prior_pre_registration":prior_pre,
+             "intent_amendment":amendment,
              "prior_candidate_id":selected["candidate_id"],
              "claim_scope":"attributed-study-lineage; not an editor causal reparent"}
     return run_place_campaign(fresh,intent,spatial,genome,out,epochs=epochs,
