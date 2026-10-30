@@ -124,7 +124,7 @@ def test_immutable_grammar_source_survives_external_modification_without_promoti
     assert pre["source_evidence_scope"]=="original-file-bytes-matched-no-survey-certificate"
     source.write_text('{"proposed_construction":"changed after audit"}')
     assert verify_place_campaign(target)==report
-    with pytest.raises(ValueError,match="Original source bytes"):
+    with pytest.raises(ValueError,match="Source bytes disagree with hash"):
         run_place_campaign(inventory,intent,goal,genome,tmp_path/"corrupt-followup",
                            epochs=1,offspring=1,exact_budget=1)
     assert not (tmp_path/"corrupt-followup").exists()

@@ -124,6 +124,9 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
          "predecessor":({k:v for k,v in predecessor.items() if k!="workspace_path"}
                         if predecessor is not None else None)}
     pre["run_id"]=canonical_json_sha256(pre)
+    # Snapshot JSON is the causal comparison, not Python tuple/list identity.
+    # Preserve original bytes and the canonical full-length content digest.
+    pre=json.loads(json.dumps(pre,allow_nan=False,sort_keys=True))
     if (out/"summary.json").exists():
         old=_read(out/"pre_registration.json")
         if old!=pre:
