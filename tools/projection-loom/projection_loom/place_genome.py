@@ -150,7 +150,10 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
     for i,goal in enumerate(spatial.goals):
         if goal.kind!="connect":
             continue
-        if any(w.source==goal.subject and w.destination==goal.object for w in routes):
+        if unique_walkway_chain(PlaceGenome(
+                tuple(sorted(bodies,key=lambda x:x.entity_id)),
+                tuple(sorted(routes,key=lambda w:(w.source,w.deck,w.destination))),
+                ),goal.subject,goal.object):
             continue
         found={b.entity_id:b for b in bodies}
         if goal.subject not in found or goal.object not in found:
@@ -189,3 +192,27 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
         routes.append(Walkway(goal.subject,name,goal.object))
     return PlaceGenome(tuple(sorted(bodies,key=lambda x:x.entity_id)),
                        tuple(sorted(routes,key=lambda w:(w.source,w.deck,w.destination))))
+
+def unique_walkway_chain(genome:PlaceGenome,subject,destination,*,max_hops=8):
+    """Return the one declared directed route, or refuse unresolved choices."""
+    if not isinstance(genome,PlaceGenome) or not 1<=max_hops<=16:
+        raise ValueError("Bounded native place graph required")
+    adjacency={}
+    for w in genome.walkways:
+        adjacency.setdefault(w.source,[]).append(w)
+    candidates=[]
+    def visit(node,seen,chain):
+        if len(candidates)>1:
+            return
+        if node==destination and chain:
+            candidates.append(tuple(chain))
+            return
+        if len(chain)>=max_hops:
+            return
+        for edge in sorted(adjacency.get(node,()),key=lambda x:(x.destination,x.deck)):
+            if edge.destination not in seen:
+                visit(edge.destination,seen|{edge.destination},chain+[edge])
+    visit(subject,{subject},[])
+    if len(candidates)>1:
+        raise ValueError("Competing authored walkways require an operator-selected path")
+    return candidates[0] if candidates else ()

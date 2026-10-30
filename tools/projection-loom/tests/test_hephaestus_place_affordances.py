@@ -67,3 +67,35 @@ def test_north_south_native_bridge_uses_same_independent_contact_gate(tmp_path):
     evidence=assess_place(tmp_path/"ns",proposed,intent)
     assert evidence["all_declared_goals_witnessed"]
     assert evidence["goals"][0]["proof"]["principal_axis"]=="y"
+
+def test_two_witnessed_walkway_segments_connect_three_independent_sites(tmp_path):
+    from projection_loom.place_genome import unique_walkway_chain
+    base,_=fixture()
+    root=base.bodies[1].program
+    west=PlaceBody("west",root,(0,0,0))
+    middle=PlaceBody("middle",root,(10,0,0))
+    east=PlaceBody("east",root,(20,0,0))
+    deck=base.bodies[0].program
+    bridge1=PlaceBody("deck1",deck,(5,0,2))
+    bridge2=PlaceBody("deck2",deck,(15,0,2))
+    genome=PlaceGenome(tuple(sorted((west,middle,east,bridge1,bridge2),
+                                   key=lambda b:b.entity_id)),
+                      (Walkway("middle","deck2","east"),
+                       Walkway("west","deck1","middle")))
+    # The test's author chooses a single two-hop route; no inferred shortcut.
+    intent=SpatialIntent("a"*64,(SpatialGoal("connect","west","east"),),"operator")
+    assert len(unique_walkway_chain(genome,"west","east"))==2
+    package_scene(genome.declaration("three-sites"),tmp_path/"route")
+    result=assess_place(tmp_path/"route",genome,intent)
+    assert result["all_declared_goals_witnessed"]
+    assert result["goals"][0]["proof"]["hops"]==2
+    assert len(result["goals"][0]["proof"]["segments"])==2
+
+def test_competing_paths_refuse_unsolicited_semantic_shortcut():
+    from projection_loom.place_genome import unique_walkway_chain
+    genome,_=fixture()
+    extra=PlaceBody("deck2",genome.bodies[0].program,(5,.5,2))
+    two=PlaceGenome(tuple(sorted((*genome.bodies,extra),key=lambda x:x.entity_id)),
+                    (Walkway("west","deck","east"),Walkway("west","deck2","east")))
+    with pytest.raises(ValueError,match="Competing"):
+        unique_walkway_chain(two,"west","east")
