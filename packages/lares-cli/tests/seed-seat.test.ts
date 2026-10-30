@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import {
   BOOT_CARRIER, CLAUDE_LINK, CODEX_DOC_CAP, CODEX_LINK, SEAT_RULE, SEAT_RULE_EXCLUDE, SEAT_RULE_OWNER,
-  SEEDLESS_FILES, liftSeedLines, mainCloneOf, tendLink, tendRepoSeat, tendSeatRule,
+  SEEDLESS_FILES, liftSeedLines, mainCloneOf, namesSeed, tendLink, tendRepoSeat, tendSeatRule,
 } from "../src/seed-seat.js";
 import { wireCodexHome } from "../src/codex-wire.js";
 
@@ -180,6 +180,24 @@ describe("the weld with tools/seed-seat.mjs", () => {
     expect(tool.RULE).toBe(SEAT_RULE);
     expect(tool.RULE_EXCLUDE).toBe(SEAT_RULE_EXCLUDE);
     expect(tool.SEEDLESS_SURFACES).toEqual(SEEDLESS_FILES);
+  });
+
+  it("both read one pointer predicate: links, imports and bare paths are pointers, prose is not", async () => {
+    const tool = await import(join(REPO, "tools/seed-seat.mjs"));
+    const samples = [
+      "-> [noosphere-boot.mem](bags/x/noosphere-boot.mem)", "Always load -> [noosphere-boot.mem](/a/b)",
+      "@bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem", "@.claude/noosphere-boot", "bags/x/noosphere-boot.mem",
+      "- never hand-edit noosphere-boot.mem; the memegraph writes it", "the link `.claude/noosphere-boot` stays mentioned",
+    ];
+    for (const s of samples) expect(namesSeed(s)).toBe(tool.isPointerLine(s));
+    expect(samples.map(namesSeed)).toEqual([true, true, true, true, true, false, false]);
+  });
+
+  it("lifting a pointer keeps prose that mentions the carrier by name", () => {
+    const f = join(dir, "CLAUDE.md");
+    writeFileSync(f, "@old/noosphere-boot.mem\n\n- never hand-edit noosphere-boot.mem\n");
+    liftSeedLines(f, "CLAUDE.md");
+    expect(readFileSync(f, "utf8")).toBe("- never hand-edit noosphere-boot.mem\n");
   });
 
   it("a seed link the tool reads as a link stays one the wire leaves alone", () => {

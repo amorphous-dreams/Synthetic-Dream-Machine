@@ -58,11 +58,12 @@ export const SEEDLESS_FILES = SEEDLESS.map((s) => s.file);
 const CLAUDE_RENDER = `@${CLAUDE_LINK}\n\n${ADAPTER("Claude", "- Add only Claude-specific customizations here.\n")}`;
 
 /**
- * A pointer line: one naming the carrier's file, or an import of a seed link. The one shape this
- * module owns inside a file it shares; prose that mentions the link stays the operator's.
+ * A pointer line: a markdown link to the carrier's file, an import of a seed name, or the carrier's
+ * path standing alone. The one shape this module owns inside a file it shares; prose that mentions
+ * the file by name stays the operator's.
  */
-const namesSeed = (line: string): boolean =>
-  line.includes("noosphere-boot.mem") || /^\s*@\S*noosphere-boot\S*\s*$/.test(line);
+export const namesSeed = (line: string): boolean =>
+  line.includes("[noosphere-boot.mem](") || /^\s*@\S*noosphere-boot\S*\s*$/.test(line) || /^\s*\S*noosphere-boot\.mem\s*$/.test(line);
 
 /**
  * Tend one relative link from `root/link` to the carrier. A regular file at that path keeps a

@@ -153,10 +153,12 @@ test("the staged gate refuses a seed staged ahead of its scouts, and passes once
   execFileSync(gate, { cwd: dir, stdio: "pipe" });
 });
 
-test("the staged gate stays silent on a commit that leaves the seat alone", () => {
+test("the staged gate passes a commit over a seated index", () => {
   const dir = seatedClone();
   cpTools(dir);
   execFileSync("git", ["init", "-q", dir]);
+  execFileSync("git", ["-C", dir, "add", "-A"]);
+  execFileSync("git", ["-C", dir, "-c", "user.email=w@x.invalid", "-c", "user.name=w", "commit", "-q", "-m", "seat", "--no-verify"]);
   writeFileSync(join(dir, "other.txt"), "x");
   execFileSync("git", ["-C", dir, "add", "other.txt"]);
   execFileSync(join(dir, "tools/seed-seat-staged.sh"), { cwd: dir, stdio: "pipe" });
@@ -190,4 +192,41 @@ test("AGENTS.md or Copilot's file carrying the seed or a pointer to it names the
     writeFileSync(join(dir, surface), SEED_TEXT);
     assert.match(faultsOf(dir).join("\n"), /carries the seed or a pointer/);
   }
+});
+
+test("--index reads a staged link's target, not its mode alone", () => {
+  const dir = seatedClone();
+  execFileSync("rm", [join(dir, CODEX_LINK)]);
+  symlinkSync("CLAUDE.md", join(dir, CODEX_LINK));
+  execFileSync("git", ["init", "-q", dir]);
+  execFileSync("git", ["-C", dir, "add", "-A"]);
+  assert.match(faultsOf(dir, { index: true }).join("\n"), /AGENTS\.override\.md: the index links to CLAUDE\.md/);
+});
+
+test("--index reads a seed @-token against the index, not the working tree", () => {
+  const dir = seatedClone();
+  writeFileSync(join(dir, SEED), `${SEED_TEXT}\nsee @staged.md here\n`);
+  writeFileSync(join(dir, "staged.md"), "x");
+  project(dir);
+  execFileSync("git", ["init", "-q", dir]);
+  execFileSync("git", ["-C", dir, "add", "-A"]);
+  execFileSync("rm", [join(dir, "staged.md")]);
+  assert.match(faultsOf(dir, { index: true }).join("\n"), /@staged\.md resolves to a file/);
+});
+
+test("prose that mentions the seed's file name reads as prose, never as a pointer", () => {
+  const dir = seatedClone();
+  writeFileSync(join(dir, "AGENTS.md"), "## Surface\n\n- never hand-edit noosphere-boot.mem; the memegraph writes it\n");
+  assert.deepEqual(faultsOf(dir), []);
+});
+
+test("the staged gate reads every commit, so a seeded file outside any list never lands", () => {
+  const dir = seatedClone();
+  cpTools(dir);
+  execFileSync("git", ["init", "-q", dir]);
+  execFileSync("git", ["-C", dir, "add", "-A"]);
+  execFileSync("git", ["-C", dir, "-c", "user.email=w@x.invalid", "-c", "user.name=w", "commit", "-q", "-m", "seat", "--no-verify"]);
+  writeFileSync(join(dir, "copilot-instructions.md"), `-> [noosphere-boot.mem](${SEED})\n`);
+  execFileSync("git", ["-C", dir, "add", "copilot-instructions.md"]);
+  assert.throws(() => execFileSync(join(dir, "tools/seed-seat-staged.sh"), { cwd: dir, stdio: "pipe" }), (e) => /REFUSED/.test(String(e.stderr)));
 });

@@ -26,7 +26,7 @@
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, realpathSync, writeFileSync } from "node:fs";
-import { basename, dirname, extname, isAbsolute, join, resolve } from "node:path";
+import { dirname, extname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const SEED = "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem";
@@ -103,6 +103,13 @@ export function importsOf(text) {
   return out;
 }
 
+/**
+ * A pointer line: a markdown link to the seed's file, an import of a seed name, or the seed's path
+ * standing alone. Prose that mentions the file by name reads as prose.
+ */
+export const isPointerLine = (line) =>
+  line.includes("[noosphere-boot.mem](") || /^\s*@\S*noosphere-boot\S*\s*$/.test(line) || /^\s*\S*noosphere-boot\.mem\s*$/.test(line);
+
 /** Bare `@word` tokens inside the seed that an import would try to follow. */
 export function seedAtTokens(seed) {
   const out = new Set();
@@ -123,7 +130,10 @@ function linkFaults(root, link, index) {
   if (index) {
     const entry = execFileSync("git", ["-C", root, "ls-files", "--stage", "--", link], { encoding: "utf8" }).trim();
     if (!entry) return [`${link}: absent from the index; it links to ${SEED}`];
-    return entry.startsWith("120000 ") ? [] : [`${link}: the index holds a regular file, not a link`];
+    if (!entry.startsWith("120000 ")) return [`${link}: the index holds a regular file, not a link`];
+    const target = execFileSync("git", ["-C", root, "show", `:${link}`], { encoding: "utf8" });
+    const want = relative(dirname(join(root, link)), join(root, SEED));
+    return target === want ? [] : [`${link}: the index links to ${target}, not ${want}`];
   }
   const abs = join(root, link);
   let stat = null;
@@ -169,7 +179,7 @@ export function faultsOf(root, { index = false } = {}) {
 
   for (const surface of SEEDLESS_SURFACES) {
     const text = read(surface);
-    if (text !== null && (text.includes(seed.slice(0, 200)) || text.includes(basename(SEED)))) faults.push(`${surface}: carries the seed or a pointer to it; ${SURFACE_WHY}`);
+    if (text !== null && (text.includes(seed.slice(0, 200)) || text.split("\n").some(isPointerLine))) faults.push(`${surface}: carries the seed or a pointer to it; ${SURFACE_WHY}`);
   }
 
   for (const scout of SCOUTS) {
@@ -178,9 +188,12 @@ export function faultsOf(root, { index = false } = {}) {
     else if (onDisk !== projectScout(seed, scout)) faults.push(`${scoutPath(scout)}: parts from the seed's projection; node tools/seed-seat.mjs project rewrites it`);
   }
 
+  const stands = index
+    ? (abs) => { try { execFileSync("git", ["-C", root, "cat-file", "-e", `:${relative(root, abs)}`], { stdio: "ignore" }); return true; } catch { return false; } }
+    : existsSync;
   for (const token of seedAtTokens(seed)) {
     for (const base of [dirname(join(root, LINK)), dirname(join(root, SEED)), root]) {
-      if (existsSync(resolve(base, token))) { faults.push(`${SEED}: @${token} resolves to a file, which an import would inline inside the seed`); break; }
+      if (stands(resolve(base, token))) { faults.push(`${SEED}: @${token} resolves to a file, which an import would inline inside the seed`); break; }
     }
   }
   return faults;
