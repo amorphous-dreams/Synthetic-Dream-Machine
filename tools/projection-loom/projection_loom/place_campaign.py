@@ -118,6 +118,39 @@ def observed_place_descriptor(genome:PlaceGenome,affordances):
 
 
 
+def relational_emission_census(frontiers,records):
+    """YIN: record actual relational proposals, refusals and exact native results.
+
+    The census derives from immutable offered/attempted witness records. It
+    never treats source digests or a proposed recombinant as native admission.
+    """
+    offered=[row for frontier in frontiers for row in frontier["offered"]]
+    actual={row["candidate_id"]:row for row in records}
+    if len(actual)!=len(records) or len({row["candidate_id"] for row in offered})!=len(offered):
+        raise ValueError("Relational census requires uniquely attributable candidate identities")
+    selected=[row for row in offered if row["emitter"]=="relational-recombination"]
+    attempted=[row for row in selected if row["audition"]=="attempted"]
+    admitted=[row for row in attempted if actual.get(row["candidate_id"],{}).get("status")=="admitted"]
+    deferred=[row for row in offered if row["emitter_receipt"]["recombination_deferral"] is not None]
+    reasons={}
+    for row in deferred:
+        reason=row["emitter_receipt"]["recombination_deferral"]
+        reasons[reason]=reasons.get(reason,0)+1
+    if any(row["candidate_id"] not in actual for row in attempted):
+        raise ValueError("Relational census found an auditioned but unreported candidate")
+    body={"schema":"projection-loom/observed-relational-emission-census",
+          "all_offered":len(offered),"native_attempts":len(actual),
+          "relational_offered":len(selected),
+          "relational_native_attempted":len(attempted),
+          "relational_native_admitted":len(admitted),
+          "relational_native_unverified":len(attempted)-len(admitted),
+          "recombination_deferrals":len(deferred),
+          "deferral_reasons":reasons,
+          "distinct_admitted_recombinants":len({row["genome_sha256"] for row in admitted}),
+          "automatic_artistic_winner":False}
+    return {**body,"sha256":canonical_json_sha256(body)}
+
+
 def select_place_auditions(offered,budget,preferred=None,*,epoch=0,emitter_receipts=None):
     """One existing OODA-HA preference can reorder finite native auditions.
 
@@ -171,6 +204,7 @@ def _verify_place_frontiers(path,pre,summary,spatial,resolved):
     archive=[]
     niches=set()
     digests=[]
+    reconstructed_frontiers=[]
     total=0
     journal=OODAHAJournal(path/"session.json",identity={
         "location":pre["location"],"score_state":"spatial-proposal-native-only",
@@ -201,6 +235,7 @@ def _verify_place_frontiers(path,pre,summary,spatial,resolved):
         if actual!=expected:
             raise ValueError("Native place proposal frontier diverged from original intent and source seed")
         digests.append(canonical_json_sha256(expected))
+        reconstructed_frontiers.append(expected)
         attempted=summary["candidates"][total:total+pre["exact_budget"]]
         if ([row["candidate_id"] for row in attempted] !=
                 [name for name,_ in seats]):
@@ -223,6 +258,9 @@ def _verify_place_frontiers(path,pre,summary,spatial,resolved):
                     archive.append({"genome":candidate,"candidate_id":identifier,
                                     "workspace_sha256":row["workspace_sha256"]})
         total+=len(attempted)
+    if summary.get("relational_emissions")!=relational_emission_census(
+            reconstructed_frontiers,summary["candidates"]):
+        raise ValueError("Relational birth/refusal census differs from audited native frontiers")
     if (total!=summary["attempted"] or
             summary.get("frontier_sha256")!=digests or
             summary["offered"]!=pre["epochs"]*pre["offspring"] or
@@ -407,6 +445,7 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
     niches=set()
     all_records=[]
     frontier_sha256=[]
+    frontier_records=[]
     try:
         for epoch in range(epochs):
             loop=f"location/place-{epoch:03d}"
@@ -439,6 +478,7 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
                                          emitter_receipts=emitter_receipts)
             save_once(out/"frontiers"/f"epoch_{epoch:03d}.json",frontier)
             frontier_sha256.append(canonical_json_sha256(frontier))
+            frontier_records.append(frontier)
             for i,(identifier,candidate) in enumerate(seats):
                 loopid=loop+"/"+identifier
                 open_child(journal,loopid,parent=loop,scope="candidate",
@@ -505,6 +545,7 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
                  "offered":epochs*offspring,"attempted":len(all_records),
                  "deferred":epochs*(offspring-exact_budget),
                  "frontier_sha256":frontier_sha256,
+                 "relational_emissions":relational_emission_census(frontier_records,all_records),
                  "admitted":sum(r["status"]=="admitted" for r in all_records),
                  "distinct_admitted_genomes":len({r["genome_sha256"] for r in all_records
                                             if r["status"]=="admitted"}),

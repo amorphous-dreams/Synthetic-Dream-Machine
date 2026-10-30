@@ -220,3 +220,34 @@ def test_study_replay_refuses_forged_emitter_parentage(tmp_path):
     path.write_text(json.dumps(front))
     with pytest.raises(ValueError,match="frontier diverged"):
         verify_place_campaign(root)
+
+def test_relational_census_derives_real_auditions_and_abstentions(tmp_path):
+    import json
+    from projection_loom.place_campaign import relational_emission_census
+    data=setup()
+    root=tmp_path/"census"
+    summary=run_place_campaign(*data,root,epochs=2,offspring=2,exact_budget=1,
+                               prefer_emitter="relational-recombination")
+    frontiers=[json.loads((root/"frontiers"/f"epoch_{epoch:03d}.json").read_text())
+               for epoch in range(2)]
+    census=relational_emission_census(frontiers,summary["candidates"])
+    assert summary["relational_emissions"]==census
+    assert census["all_offered"]==4 and census["native_attempts"]==2
+    assert census["relational_offered"]==0
+    assert census["relational_native_admitted"]==0
+    assert census["recombination_deferrals"]==1
+    assert not census["automatic_artistic_winner"]
+    assert verify_place_campaign(root)==summary
+
+
+def test_relational_census_tamper_is_not_silent(tmp_path):
+    import json
+    data=setup()
+    root=tmp_path/"tampered-census"
+    run_place_campaign(*data,root,epochs=1,offspring=1,exact_budget=1)
+    path=root/"summary.json"
+    row=json.loads(path.read_text())
+    row["relational_emissions"]["native_attempts"]=0
+    path.write_text(json.dumps(row))
+    with pytest.raises(ValueError,match="Relational birth/refusal census"):
+        verify_place_campaign(root)
