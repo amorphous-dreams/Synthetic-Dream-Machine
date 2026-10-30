@@ -51,6 +51,8 @@ vi.mock("../src/nexus-standing.js", () => ({
   nodeNexusIsland: () => "island", nodeNexusIslandsBelow: () => [], nodeNexusStanding: () => ({ kind: "own", scope: "island" }),
 }));
 vi.mock("../src/persona-kel-ring.js", () => ({ carryPersonaKelUpTheGradient: async () => {} }));
+// The hearth's canon reads the Kahu realm by the founding face's custody group (`admit-canon-reads-the-realm`); this file reads the edge alone.
+vi.mock("../src/kahu-realm.js", () => ({ admitCanonDocs: async () => ({}), hearthCustodyGroup: async () => "group-zero" }));
 vi.mock("../src/hearth-aid.js", () => ({ hearthAid: () => "hearth-aid" }));
 vi.mock("../src/lan-address.js", () => ({ wsUrlForOrigin: () => null }));
 vi.mock("@lararium/keyhive", () => ({

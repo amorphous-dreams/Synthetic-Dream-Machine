@@ -16,11 +16,13 @@ describe("a row's refusal names itself", () => {
   });
 
   test("a fleet-join row refuses a face that reads as no index, before any read: never the founding face's act", async () => {
+    // A face row rides its session's face: a face that reads as no index names a face the session does not wear.
+    const worn = { worn: { ordinal: 0, presenter: `0x${"00".repeat(32)}` } };
     for (const face of ["2", 1.5, -1, null, true]) {
       for (const verb of ["fleet-join-offer", "fleet-join-answer"] as const) {
-        const out = await run(verb, { face, request: {} });
+        const out = await (rows[verb] as (a: Record<string, unknown>, c: unknown) => Promise<Record<string, unknown>>)({ face, request: {} }, worn);
         expect(out["refusal"], `${verb} ${JSON.stringify(face)}`).toBe(`${verb}-refused`);
-        expect(String(out["refused"])).toMatch(/face-malformed/);
+        expect(String(out["refused"])).toMatch(/face-row-other-face/);
       }
     }
   });

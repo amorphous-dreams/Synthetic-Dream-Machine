@@ -75,7 +75,7 @@ The crew lines that bind a running lane stand at <<~ loulou "lar:///ha.ka.ba/lar
 <<~ ahu #/the-seat-law>>
 !! The seat law ~ the brief section every Codex seat carries
 
-The launcher preflights each Codex seat and appends the bullets below to its brief. It refuses a model missing from Codex's models cache, `gpt-6-sol`, a pool at or under the 20% weekly floor, a pool line unreadable twice (never read as zero), a seat directory outside `~/.lares-scratch/<lane>/`, a build seat on the main checkout, and a build seat over a stale dist. It logs each attempt.
+`tools/launch-codex.mjs` preflights each Codex seat and appends the bullets below to its brief, once, reading them from this section. It refuses a model missing from Codex's models cache, `gpt-6-sol`, a pool at or under the 20% weekly floor, a pool line unreadable twice (never read as zero), a seat directory outside `~/.lares-scratch/<lane>/`, a build seat on the main checkout, and a build seat over a stale dist. It logs each attempt.
 
 * Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
 * Never commit and never run a git write. The lead commits each red, then each fix.
@@ -120,7 +120,7 @@ The measures behind each placement stand at <<~ loulou "lar:///ha.ka.ba/lares/do
 
 * ''CI and held-out on the lane head make the verdict.'' The lane's local battery reads what it touched, in this order: `pnpm build`; each red's proof against its parent; `node tools/evergreen-boundary.mjs`; `bash tools/witness-all.sh`; `tools/typecheck-witness.sh`; the touched packages' whole suites (`lararium-mesh` always) under a scratch `HOME` and a scratch `LAR_ROOT` with `LAR_BAGS` unset; `node --test` over the touched tools; ONE e2e file that exercises the touched surface, named in the hand-back.
 * ''CI carries the rest'': the whole e2e sets and every other suite, and reads the witness fleet again as the verdict.
-* ''One heavy battery at a time on the box.'' The lead runs it through the battery lock, which refuses (exit 64) where the lock cannot open and never runs unlocked.
+* ''One heavy battery at a time on the box.'' The lead runs it through `tools/battery.sh`, whose lock reads `LARES_BATTERY_LOCK`, else the passwd home's `.lares-scratch/.battery.lock` (never `$HOME`, since a lead runs under a scratch `HOME`); it refuses (exit 64) where the lock cannot open, never runs unlocked, and passes the command's exit code through.
 * ''A red that clears with no edit names shared state'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">> #/red-first).
 <<~/ahu>>
 
@@ -169,6 +169,7 @@ A premium request counts per prompt, never per tool call.
 * ''A lane pushes its own branch'' once per feature (#/the-feature-unit), and never the span or `main`.
 * ''A lane hands back on green'': its battery (#/the-battery), CI and held-out read green on its head, its pull request opens into the work branch, and its fresh read precedes the land. A Copilot PR review runs only on the operator's ask.
 * ''A lane worktree'' counts toward five at most; the train holds the sixth. Worktrees and scratch roots live under `~/.lares-scratch/<lane>/`, never `/tmp`; a provision reads `df` first and stops under 60G free on C:. A lane may hold a second worktree, each with one writer, when two features on its path build in parallel. Free slots fill from the road's order without asking.
+* ''One tool lands a batch'': `tools/land-train.mjs` carries the train, the chained land, the direct land of a lane that already holds the span head, the disk floor (`LARES_DISK_MIN_C_GB`), the worktree cap, the span-push gate and the cancel of the landed lanes' runs; `--plan` prints the commits it would write and pushes nothing. A verdict reads three states: green, red, and UNREADABLE (GitHub unreachable or a 5xx), which waits, exits 10 and never reads as red or green; `tools/ci-verdict.mjs --wait` carries that wait, and its `job-minutes` line gives the CI currency below.
 * ''The controller lands in batches'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">> #/state). A batch forms once two or more features read green; a lone green feature drains as a batch of one when no other lane has a feature nearing green, and a span-fault cure or shared ground other lanes build on lands at once. One train reads every green lane merged over the span as it stands: the shared packages' suites, `tools/witness-all.sh`, evergreen and the tallies (a suite log with no "Test Files" line reads red; a dirty tree reads red); each lane's CI carried the e2e. The land writes one commit per lane, chained, each with the train's merge tree, so the span's last tree equals the train's tree. The span pushes only while no run flies on it, and the land cancels the CI runs its lane-branch pushes start. A lane on an older base lands when the span moved only by lands since (subjects carrying ` — merge PR #N`).
 * ''Road commits'' (road rows, o-takiage moves, changelog bullets, `#/state`) ride behind a batch, never between queued lands.
 * ''After each land'' the build cache caps at 15GB (`docker builder prune -f --max-used-space 15GB`); no image or system prune without the operator's word.
@@ -211,7 +212,7 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 !! The launch ~ one brief file, any lineage
 
 * ''A brief stands as a file'' that names the mask, the ground, the ruling it enacts, the house style and the handback shape.
-* ''One launcher per Codex seat'' takes the seat directory, the model, the effort and a mode: `build` (workspace-write, network off, both tmp excludes, `-C <worktree> --add-dir <seat>`), `read` (`-s read-only -C <seat>` over an empty directory, reading the repo from there) or `research` (`codex --search exec …` ahead of `exec`, networked, only where the brief asks for the field). Every mode carries `-c approval_policy="never"` and the seat law (#/the-seat-law). Each seat's directory sits under the lane's scratch directory, since the spend script finds the lane from the rollout's cwd.
+* ''One launcher per Codex seat'' (`tools/launch-codex.mjs`; `--dry-run` prints the argument array and spawns nothing) takes the seat directory, the model, the effort and a mode: `build` (workspace-write, network off, both tmp excludes, `-C <worktree> --add-dir <seat>`), `read` (`-s read-only -C <seat>` over an empty directory, reading the repo from there) or `research` (`codex --search exec …` ahead of `exec`, networked, only where the brief asks for the field). Every mode carries `-c approval_policy="never"` and the seat law (#/the-seat-law). Each seat's directory sits under the lane's scratch directory, since the spend script finds the lane from the rollout's cwd.
 * ''A seat that needs a CI log'' receives the excerpt as a file.
 * ''A cut-short seat continues by its session id'' through the launcher's resume mode, which carries the same preflight and walls and names the model again; the lead's resume sheet records that id beside the seat's directory, model, effort and head.
 * ''`codex exec` stands as the shell seat.'' `codex mcp-server` left the CLI upstream; `codex mcp` connects tools to Codex and never serves Codex as a tool.
@@ -262,6 +263,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;95Sd06SsNjR8U6lgYHPKc2I04MBzw9SYTA-r06khvLg
+<<^ code="&#x0003;">>ni:///sha-256;vKFHst7G4t_xCJjDfVMhWrB20wiEVvn_WiN9_QjffdI
 
 <<^ code="&#x0004;" -> to="?">>

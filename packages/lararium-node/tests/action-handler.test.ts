@@ -37,12 +37,16 @@ import { runLocalVerb } from "../../lararium-tw5/src/verb-local-dispatch.js";
 const BAG_LOW  = "lar:///ha.ka.ba/bags/low";
 const BAG_MID  = "lar:///ha.ka.ba/bags/mid";
 const BAG_HIGH = "lar:///ha.ka.ba/bags/high";
+const WORKING_HIGH = "lar:///ha.ka.ba/wikis/high/working";
+const WORKING_MID = "lar:///ha.ka.ba/wikis/mid/working";
 
 function makeComposite(): CompositeStore {
   const c = new CompositeStore();
   c.addLayer({ bagId: BAG_LOW,  store: new MemoryTiddlerStore(), writable: true, defaultWritable: false });
   c.addLayer({ bagId: BAG_MID,  store: new MemoryTiddlerStore(), writable: true, defaultWritable: false });
   c.addLayer({ bagId: BAG_HIGH, store: new MemoryTiddlerStore(), writable: true });
+  c.addLayer({ bagId: WORKING_HIGH, store: new MemoryTiddlerStore(), writable: true });
+  c.addLayer({ bagId: WORKING_MID, store: new MemoryTiddlerStore(), writable: true });
   return c;
 }
 
@@ -392,9 +396,10 @@ describe("DROP handler", () => {
     await seedTiddler(composite, BAG_LOW, "A", "a", "c-1");
     const drop = { bag: BAG_MID };
     await table.get("DROP")!(drop, makeContext(composite, "DROP", drop));
+    await table.get("DROP")!({ bag: WORKING_MID }, makeContext(composite, "DROP", { bag: WORKING_MID }));
     const argsFor = (verb: string, bag: string): Record<string, unknown> => {
       if (verb === "CLEAR") return { bag };
-      if (verb === "LOAD") return { "source-uri": "seed", "to-bag": bag, "seed-door": "founding", "change-id": "c-1", carriers: [] };
+      if (verb === "LOAD") return { "source-uri": "seed", "to-bag": WORKING_MID, "change-id": "c-1", carriers: [] };
       if (verb === "INGEST") {
         const carrier = { uri: "lar:///ha.ka.ba/x/A", text: "a", diskHash: "d", syncedHash: null };
         return { "source-uri": "seed", "to-bag": bag, "change-id": "c-1", carriers: [carrier] };
@@ -493,7 +498,7 @@ describe("LOAD handler", () => {
     const table = new VerbTable();
     registerActionReactors(table, { composite });
     const handler = table.get("LOAD")!;
-    const args = { "source-uri": "https://example.org/seed.json", "to-bag": BAG_HIGH, "seed-door": "founding", "change-id": "c" };
+    const args = { "source-uri": "https://example.org/seed.json", "to-bag": WORKING_HIGH, "change-id": "c" };
     await expect(handler(args, makeContext(composite, "LOAD", args))).rejects.toThrow(/no carriers/);
   });
 
@@ -504,15 +509,14 @@ describe("LOAD handler", () => {
     const handler = table.get("LOAD")!;
     const args = {
       "source-uri": "bags/lares/api/example.md",
-      "to-bag": BAG_HIGH,
-      "seed-door": "founding",
+      "to-bag": WORKING_HIGH,
       "change-id": "c-load-1",
       carriers: [{ title: "lar:///ha.ka.ba/lares/example", text: "Aloha — carrier body.\n" }],
     };
     const summary = await handler(args, makeContext(composite, "LOAD", args)) as { count: number; titles: string[] };
     expect(summary.count).toBeGreaterThanOrEqual(1);
     const all = await composite.resolveAll("lar:///ha.ka.ba/lares/example");
-    const landed = all.find((e) => e.bagId === BAG_HIGH);
+    const landed = all.find((e) => e.bagId === WORKING_HIGH);
     expect(landed).toBeTruthy();
     expect(landed?.record.meta?.changeId).toBe("c-load-1");
   });

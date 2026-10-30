@@ -107,7 +107,7 @@ describe("the residency reactor — every verb into canon", () => {
       const before = r.heads();
       const stranger = await strangerHand("removed");
       const carrier = { uri: "lar:///t/x", text: meme("/x"), diskHash: "d", syncedHash: null };
-      expect(await reasonOf(async () => run(r.composite, "LOAD", stranger, { "source-uri": "lar:///t/src", "to-bag": LARES, "change-id": "c", "seed-door": "founding", carriers: [{ text: meme("/x") }] }))).toBe("kahu-reach");
+      expect(await reasonOf(async () => run(r.composite, "LOAD", stranger, { "source-uri": "lar:///t/src", "to-bag": LARES, "change-id": "c", carriers: [{ text: meme("/x") }] }))).toBe("kahu-reach");
       expect(await reasonOf(async () => run(r.composite, "INGEST", stranger, { "source-uri": "lar:///t/src", "to-bag": LARES, "change-id": "c", carriers: [carrier] }))).toBe("kahu-reach");
       expect(r.heads()).toEqual(before);
       // CONTROL: the same INGEST into a user bag asks no source and draws no kahu-reach.

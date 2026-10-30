@@ -16,7 +16,7 @@
 
 import { describe, test, expect, vi } from "vitest";
 import {
-  CompositeStore, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, VERB_RESULT_KEY,
+  CompositeStore, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, VERB_RESULT_KEY, VERB_URI_PREFIX,
 } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";
@@ -138,6 +138,27 @@ describe("VerbDispatcher — redelivered requestId vs. the already-landed outcom
     expect(warnSpy.mock.calls[0]?.[0]).toContain("do-redeliver");
 
     warnSpy.mockRestore();
+    dispatcher.stop();
+  });
+});
+
+describe("VerbDispatcher — a redelivered invocation leaves the VM (Sol's delta read)", () => {
+  test("RED: a redelivery against a landed outcome is removed from the VM, so no stamp rides a standing invocation; CONTROL: the outcome stands unchanged", async () => {
+    const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
+    const daemon = makeDaemon();
+    const registry = new VerbTable();
+    registry.register("do-once", async () => ({ ran: true }));
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry });
+    dispatcher.start();
+    dispatcher.placeVerb({ verb: "do-once", args: {}, requestedBy: "did:key:test", requestId: "req-once" });
+    await settle();
+    expect((await outcomeOf(daemon, "req-once"))?.fields.status).toBe("done");
+    dispatcher.placeVerb({ verb: "do-once", args: { again: true }, requestedBy: "did:key:test", requestId: "req-once" });
+    const wiki = (tw5 as unknown as { $tw: { wiki: { getTiddler(t: string): unknown } } }).$tw.wiki;
+    expect(wiki.getTiddler(`${VERB_URI_PREFIX}req-once`), "the redelivery stands placed").toBeDefined();
+    await settle();
+    expect(wiki.getTiddler(`${VERB_URI_PREFIX}req-once`)).toBeUndefined();
+    expect((await outcomeOf(daemon, "req-once"))?.fields.status).toBe("done");
     dispatcher.stop();
   });
 });

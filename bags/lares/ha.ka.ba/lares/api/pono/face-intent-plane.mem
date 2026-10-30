@@ -138,6 +138,9 @@ The operator's tension, 2026-10-20: //every little action must not end up in eac
 # A far agent's intent, admitted by a relay, verifies on a device that never saw the relay; a revoked delegation refuses on read, the revocation arriving first or after; a relay that alters an argument breaks the signature.
 # A device asleep across a voiding event declines on waking; an intent with no bound gets honored.
 # The plane never reaches the mirror (the tree-clean witness, with a projected wiki as its known positive).
+# A single-effect intent runs once under a re-pin and a re-target: an outcome spends the slot, so no atom may act on the same intent again; two bodies under one intent id refuse `id-collision` and void every copy; the control, a same-body duplicate, stays a duplicate.
+# An admission receipt names one digest of the heads the relay judged against, so the plane's growth never carries a receipt past the Noise bound; a `class` audience reads the device's own capability; a denial, an out-of-audience outcome and each refusal show in the pane with the entry id they concern.
+# A relay admission rechecks the ring, the key chain and the delegation immediately before the final append and before each effect of a heed loop, from the current document; a revocation merged during an earlier effect stops the later ones.
 # The rubric holds: a hundred keystrokes and one save in a face's wiki write no entry; one "move to crossroads" writes one intent and one outcome. A seeded duplicate-answer fixture trips the duplicate counter before a zero gets trusted.
 
 <<~/ahu>>
@@ -146,10 +149,10 @@ The operator's tension, 2026-10-20: //every little action must not end up in eac
 
 !! The build ~ roadmap row `I1`
 
-Row `I1` at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> carries the build, red-first in this order: the plane and its entry kinds; stand-down and the verb classes; the read-side winner; claims, takeover and causal voids; the face-join summons moving off the daemon doc onto the plane (closing "two hearths of one face"); the daemon wiki's view pane; the rubric's witness; then the far agent's relay seat after its own research. The CLI's per-invocation face naming (the session model's commit 5) lands beside the summons move, since an intent names its issuing face.
+Row `I1` at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> carries the build, red-first in this order: the plane and its entry kinds; stand-down and the verb classes; the read-side winner; claims, takeover and causal voids; the face-join summons moving off the daemon doc onto the plane (closing "two hearths of one face"); the daemon wiki's view pane; the rubric's witness; then the far agent's relay seat, row `I2`, built. Row `I3` carries the plane's hardening under re-pin, re-target and growth (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/i2-relay-lane">>). The CLI's per-invocation face naming (the session model's commit 5) lands beside the summons move, since an intent names its issuing face.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JZjAUrGaQF5lLnhK-vDCjTl_fIuUug4zxxRRHp0VaRc
+<<^ code="&#x0003;">>ni:///sha-256;OckeZMNIKYywwOdDYKYRleamxZAf8-9eCQkiax1mxtI
 
 <<^ code="&#x0004;" -> to="?">>

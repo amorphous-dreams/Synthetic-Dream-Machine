@@ -15,6 +15,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-custody
  */
+import { readyWorker } from "./fixtures/ready-worker.js";
 import { describe, expect, test } from "vitest";
 import { decodeSlotTree, openTreeKey } from "@lararium/mesh";
 import { attachSharedHolder, holderWorkerHandle, type SharedWorkerHost } from "../src/shared-holder.js";
@@ -27,7 +28,7 @@ const SLOW = 60_000;
 const hex = (b: Uint8Array): string => Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
 const PASS = { kind: "passphrase", passphrase: "the hearth keeps its fire" } as const;
 
-function tab(): Worker { return new Worker(new URL("./fixtures/custody-tab.worker.ts", import.meta.url), { type: "module" }); }
+function tab(): Promise<Worker> { return readyWorker(new URL("./fixtures/custody-tab.worker.ts", import.meta.url)); }
 /** A worker that dies at load or posts an unreadable reply refuses by name; listening for `message` alone left it a silent hang. */
 function ask<T>(worker: Worker, msg: Record<string, unknown>): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -50,14 +51,12 @@ async function sealedVessel(tag: string): Promise<string> {
 
 describe("an unlock belongs to one tab", () => {
   test("KNOWN POSITIVE: a tab worker that faults at load refuses its ask by name, never hangs", async () => {
-    const dead = new Worker(new URL("./fixtures/faulting-tab.worker.ts", import.meta.url), { type: "module" });
-    try { await expect(ask(dead, { op: "status", idbName: "unused" })).rejects.toThrow(/status: the tab worker faulted/); }
-    finally { dead.terminate(); }
+    await expect(readyWorker(new URL("./fixtures/faulting-tab.worker.ts", import.meta.url))).rejects.toThrow(/the tab worker faulted/);
   }, SLOW);
 
   test("TC1 a face unlocked in one tab reads locked in a second tab of the same origin — CONTROL: the first tab holds it, the second unlocks on its own", async () => {
     const idbName = await sealedVessel("two-tabs");
-    const second = tab();
+    const second = await tab();
     try {
       expect(await readBrowserCustody(idbName)).toMatchObject({ reading: "sealed", unlocked: true });   // CONTROL: the first tab holds its unlock
       expect(await ask(second, { op: "status", idbName })).toMatchObject({ reading: "sealed", unlocked: false });

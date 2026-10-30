@@ -1,4 +1,5 @@
 /** The node store holder's face-scoped intent door. */
+import { CustodyLocked } from "../custody-holder.js";
 import { randomBytes } from "node:crypto";
 import type { Repo } from "@automerge/automerge-repo";
 import {
@@ -12,7 +13,7 @@ import {
 } from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { listAnchoredPersonas, loadIdentityAnchors } from "../identity-anchors.js";
-import { KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
+import { KeyhiveProvider, InMemoryEventStore, faceJoinNonce, ownSummonsOf } from "@lararium/keyhive";
 import { loadVeilArchive } from "../identity-anchors.js";
 import { loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";
@@ -74,7 +75,10 @@ export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined,
   const held = await listAnchoredPersonas();
   let named: number | undefined;
   if ("group" in selector) {
-    for (const candidate of held) if ((await loadIdentityAnchors(candidate))?.personaGroupId === selector.group) { named = candidate; break; }
+    for (const candidate of held) {
+      try { if ((await loadIdentityAnchors(candidate))?.personaGroupId === selector.group) { named = candidate; break; } }
+      catch (error) { if (error instanceof CustodyLocked) throw error; }
+    }
     if (named === undefined) throw new IntentRefused("face-not-held");
   } else named = selector.index;
   const index = resolveIntentFaceIndex(named, held, await unlockedFaceOrdinals());
@@ -165,14 +169,14 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
         let args = opts.args, nonce = opts.nonce, audience: IntentAudience;
         if (opts.verb === "face-join") {
           // A joinee asks the face's founding hearth to seat it: the request carries this vessel's own ContactCard and complete
-          // device edge, pins the hearth, and takes the joinee's atom key as nonce so a replay keeps one intent id.
+          // device edge, pins the hearth, and takes the face-join nonce (the atom and the pin) so a replay keeps one intent id.
           const hearth = projection.admissions[0]?.deviceKey;
           if (!named && !hearth) throw new IntentRefused("hearth-absent: the face's log names no founding hearth; name one with --to");
           audience = named ? intentAudience(opts) : { mode: "pinned", atom: hearth! };
           if (args === undefined) {
             // A ContactCard is not byte-stable across derivations, so a replay returns the request already standing.
-            const standing = view().intents.find((state) => state.verb === "face-join" && state.issuer === atom.key && state.status !== "void"
-              && !state.slots.some((slot) => (slot.winner?.entry.body["result"] as { admitted?: unknown } | undefined)?.admitted === false));
+            // The summons standing for THIS pin alone (`ownSummonsOf`, the leaf's own rule): one pinned elsewhere is no replay.
+            const standing = ownSummonsOf(view(), atom.key, audience.mode === "pinned" ? audience.atom : undefined);
             if (standing) return { id: standing.id, replayed: true };
             const archive = await loadVeilArchive(group);
             if (!archive) throw new IntentRefused("veil-archive-absent: this vessel holds no ContactCard for the face; re-admit it");
@@ -182,7 +186,7 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
             try { contactCard = new TextDecoder().decode(await khp.contactCard()); } finally { await khp.dispose(); }
             args = { summons: { contactCard, deviceEdge: anchors.deviceEdge } };
           }
-          nonce ??= atom.key;
+          nonce ??= faceJoinNonce(atom.key, audience);
         } else audience = intentAudience(opts);
         entry = await buildIntent({ group, signer, verb: opts.verb, args: args ?? {}, nonce: nonce ?? randomBytes(16).toString("hex"), audience, bound, verbs });
         break;

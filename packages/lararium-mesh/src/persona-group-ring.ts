@@ -83,7 +83,11 @@ export function makePersonaGroupIdentityRing(opts: {
     const key = opts.provenVesselKey(peerId);
     if (!key) return false;                       // proved nothing → fail-closed
     if (opts.deviceAside(key)) return false;      // set aside from the fleet → no seat
-    for (const record of await opts.grants.records()) {
+    // THE PLANE THAT CANNOT BE READ WITHHOLDS, as a torn record does (the Founding Walk, W4): on a leaf the plane under
+    // decision is the one the records rest on, and a decision that rejects syncs nothing, ever.
+    let records: Iterable<unknown>;
+    try { records = await opts.grants.records(); } catch { return false; }
+    for (const record of records) {
       let ok = false;
       try { ok = await opts.grants.verify(record, key); } catch { ok = false; }   // a torn record withholds
       if (ok) return true;

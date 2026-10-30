@@ -136,7 +136,8 @@ export interface CopyAction extends ResidencyActionBase {
 /** MOVE — atomic ADD to toBag + CLEAR title from fromBag (transfer pair). */
 export interface MoveAction extends ResidencyActionBase {
   readonly verb:        "MOVE";
-  readonly title:       string;
+  /** One family's root; absent, the MOVE promotes the WHOLE source layer (every live title) into toBag. */
+  readonly title?:      string;
   readonly fromBag:     string;
   readonly toBag:       string;
   readonly changeId:    string;
@@ -354,7 +355,7 @@ export function encodeResidencyArgs(action: ResidencyAction): ResidencyArgs {
     case "COPY":
     case "MOVE":
       return {
-        title:        action.title,
+        ...(action.title !== undefined ? { title: action.title } : {}),
         "from-bag":   action.fromBag,
         "to-bag":     action.toBag,
         "change-id":  action.changeId,
@@ -417,10 +418,15 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
     const fromBag  = str("from-bag");
     const toBag    = str("to-bag");
     const changeId = str("change-id");
-    if (!title || !fromBag || !toBag || !changeId) return null;
+    if (!fromBag || !toBag || !changeId) return null;
     const shadow = inv.action === "MOVE" && args["shadow"] === true ? { shadow: true as const } : {};
     // The shadow ask rides a MOVE alone, and only as `true`.
     if (args["shadow"] !== undefined && (inv.action !== "MOVE" || args["shadow"] !== true)) return null;
+    // A MOVE with no title promotes the whole source layer; a shadow ask names one title. ADD and COPY name one.
+    if (!title) {
+      if (inv.action !== "MOVE" || args["title"] !== undefined || args["shadow"] !== undefined) return null;
+      return { ...base, verb: "MOVE", fromBag, toBag, changeId };
+    }
     return { ...base, verb: inv.action, title, fromBag, toBag, changeId, ...shadow };
   }
 

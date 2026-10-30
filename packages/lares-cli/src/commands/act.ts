@@ -77,15 +77,19 @@ function receiptToResult(r: ReceiptAnswer): SubmitResult | undefined {
  */
 function addressTitleForLoad(source: string, file: string, toBag: string): string {
   const parts = resolve(file).split(sep);
+  // The FIRST plane segment whose interior reads as an address wins: a holding's files sit at
+  // `bags/<holding>/ha.ka.ba/bags/<holding>/…`, and the inner `bags` names no interior of its own.
   for (const plane of ["bags", "wikis"]) {
-    const i = parts.lastIndexOf(plane);
-    if (i >= 0 && i + 2 < parts.length) {
+    for (let i = parts.indexOf(plane); i >= 0; i = parts.indexOf(plane, i + 1)) {
+      if (i + 2 >= parts.length) continue;
       const interior = parts.slice(i + 2).join("/").replace(/\.[^/.]+$/, "");
       if (/^\w+\.\w+\.\w+\//.test(interior)) return `lar:///${interior}`;
     }
   }
   const rel = relative(source, file).split(sep).join("/").replace(/\.[^/.]+$/, "");
-  const base = toBag.replace(/\/+$/, "");
+  // A record's address lives under its BAG; a wiki slot (`wikis/<slug>/working`) is where it rests, never its name.
+  const slug = wikiSlugOfBag(toBag);
+  const base = (slug && /\/wikis\//.test(toBag) ? `lar:///ha.ka.ba/bags/${slug}` : toBag).replace(/\/+$/, "");
   return rel ? `${base}/${rel}` : base;
 }
 
@@ -95,6 +99,7 @@ function printUsage(): void {
   console.error(`  VERB ∈ { ${ACTION_VERBS.join(", ")}, REPACK }`);
   console.error("");
   console.error("  ADD / COPY / MOVE  --title <t> --from <bag> --to <bag> [--change-id <id>]");
+  console.error("  MOVE of a layer    --from <bag> --to <bag>   moves every live title the source holds (promotion)");
   console.error("  MOVE of a tombstone  --title <t> --from <bag> [--to <bag>] [--shadow]");
   console.error("                     carries the delete down into a bag that holds the title; with no --to the");
   console.error("                     holders print as candidates; --shadow hides the title from a bag that holds none");
@@ -226,8 +231,7 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-/** The founding door comes from the rite's in-process seed call; CLI parsing never supplies it. */
-export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<number> {
+export async function cmdAct(args: ParsedArgs): Promise<number> {
   const verbRaw = args.positional[0];
   if (!verbRaw) { printUsage(); return 2; }
   if (verbRaw === "REPACK") return await actRepack(args);
@@ -262,15 +266,21 @@ export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<n
     const fromBag  = args.options["from"];
     const toBag    = args.options["to"];
     changeId = args.options["change-id"] ?? newChangeId();
-    if (!title || !fromBag || (verb !== "MOVE" && !toBag)) {
-      console.error(`lares act ${verb}: --title, --from, --to all required`);
+    // A MOVE naming --from and --to and no --title promotes the WHOLE source layer (every live title) in one act.
+    const layerMove = verb === "MOVE" && !title && !!fromBag && !!toBag;
+    if (!layerMove && (!title || !fromBag || (verb !== "MOVE" && !toBag))) {
+      console.error(verb === "MOVE" ? "lares act MOVE: --title, --from, --to (or --from and --to alone to move the whole layer) required" : `lares act ${verb}: --title, --from, --to all required`);
+      return 2;
+    }
+    if (layerMove && args.flags["shadow"]) {
+      console.error("lares act MOVE: --shadow names one tombstoned title; a layer move names none");
       return 2;
     }
     if (verb !== "MOVE" && args.flags["shadow"]) {
       console.error(`lares act ${verb}: --shadow rides a MOVE of a tombstone alone`);
       return 2;
     }
-    if (verb === "MOVE" && !toBag) {
+    if (verb === "MOVE" && !toBag && title) {
       try {
         const did = await vesselDid();
         const where = await runVerb("where", { tiddler: title }, did);
@@ -288,7 +298,7 @@ export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<n
       }
       return 2;
     }
-    actionArgs["title"]      = title;
+    if (title) actionArgs["title"] = title;
     actionArgs["from-bag"]   = fromBag;
     actionArgs["to-bag"]     = toBag;
     actionArgs["change-id"]  = changeId;
@@ -334,7 +344,6 @@ export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<n
     actionArgs["source-uri"] = sourceUri;
     actionArgs["to-bag"]     = toBag;
     actionArgs["change-id"]  = changeId;
-    if (seedDoor) actionArgs["seed-door"] = seedDoor;
 
     // The disk grant lives HERE — the operator gesture reads the carriers and
     // sends content WITH the verb (islands hold no fetch capability). A local
@@ -587,10 +596,11 @@ export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<n
   // attempt's landed outcome, rather than running the verb again — the CLI's own telling of "that
   // already landed" distinct from "I just landed it".
   const effectOf = result.effectOf;
+  const data = { verb, ...summary, audit: auditUri, changeId, ...(effectOf !== undefined ? { effectOf } : {}) };
   emit(args, {
     ok: true,
     requestId: result.requestId,
-    data: { verb, ...summary, audit: auditUri, changeId, ...(effectOf !== undefined ? { effectOf } : {}) },
+    data,
     human: () => {
       if (summary["dryRun"]) {
         const wl = Array.isArray(summary["wouldLand"]) ? summary["wouldLand"].length : 0;

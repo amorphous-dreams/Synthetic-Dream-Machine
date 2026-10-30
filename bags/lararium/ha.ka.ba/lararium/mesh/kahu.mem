@@ -542,7 +542,7 @@ copy OUT of canon ask nothing.
 
 ''THE LIVE SYSTEM DOCUMENTS REST IN THE REALM.'' The founding mints one document per system bag and registers each as a
 realm bag of the hearth's realm, sealed by persona zero's per-Nexus key as the steward (`kahu-realm.ts`,
-`landKahuRealm`; tier `contract`, kept by that one name). A vessel NAMES them at boot only where the board carries a
+`landKahuRealm`; tier `contract`, kept by that one name). A document's id derives from the steward's own seed, a MAC under persona zero's per-Nexus seed over the Nexus and the bag (`kahuBagDocUrl`), so no peer can pre-seed the canon a founding adopts and a founding retried under that leaf registers the same document. A reader never recomputes it: the Kahu canon counts only registrations sealed by exactly that steward, the hearth keeps each registration it sealed and the kept copy stands first where it verifies, and the steward's seals over two documents for one bag stand none. What stays owed (roadmap row `P26`): a member's synced change counts only under Kahu reach, the steward's succession across a leaf reissue and a paper restore, and a whole-record conflict resolution verb. A vessel NAMES them at boot only where the board carries a
 counted admission for the Kahu realm's group (`standKahuCanon`): the registrations come off the realm doc folded and
 seal-verified, the keel mounts exactly what it names (`keel.systemCanon`), and the registered bag set, the `bags/lares`
 and `bags/lararium` disk mirrors and the system wikis' document urls follow the same naming. A vessel outside the cabal
@@ -690,6 +690,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hZ3JdcUlzrIxPUHR1kn28lc9uTdzft8UturX1Wk1hZc
+<<^ code="&#x0003;">>ni:///sha-256;U3MWvZgSysGbPwyt-jnua5OrckAIwhT3CLs1tSSU0GM
 
 <<^ code="&#x0004;" -> to="?">>

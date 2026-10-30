@@ -31,7 +31,21 @@
  *   --workflow  default: CI
  *   --held-out  default: held-out.yml (the workflow's file name: a workflow absent from the default branch
  *               answers to no display name)
- * Exit: 0 green · 1 red · 2 unread · 3 the reader itself could not read (gh absent, no such branch).
+ *   --wait      read again every --interval seconds (default 30) until neither the CI reading nor the held-out reading
+ *               reads `unread`; the exit code is the CI reading's, unchanged. A run cancelled clean, a run still
+ *               running and a held-out run that does not name the head yet are all `unread`, so the wait goes on.
+ *   --retries   how many times an UNREADABLE read (network, 5xx, timeout, rate limit) reads again before the door
+ *               says so (default 6). Applies with or without --wait.
+ * Exit: 0 green · 1 red · 2 unread · 3 the reader itself could not read (gh absent, no such branch, a 4xx)
+ *       · 4 UNREADABLE (GitHub could not be reached, or answered 5xx, for every one of the reads).
+ *
+ * ── THREE VERDICTS, AND A FOURTH THING THAT IS NO VERDICT ───────────────────────────────────────
+ * GREEN, RED, and UNREAD (nothing measured the head yet) are readings of the CI. UNREADABLE says the reader could not
+ * reach GitHub: it never reads as red, never reads as green, never ends a vigil early, and never calls for a rerun.
+ * A run whose jobs endpoint stays unreadable falls back to that run's own conclusion at the exact sha, and says so.
+ *
+ * The line `job-minutes: N (critical path M min)` sums each job's started-to-completed minutes from the head's run;
+ * M is the run's first start to its last completion. A job with no completion reads `partial`, never a smaller number.
  *
  * `readVerdict`, `readHeldOut` and `failing` carry the whole law as pure functions over `gh`'s JSON, so
  * `ci-verdict.test.mjs` plants a recorded reading and needs no network.
@@ -194,6 +208,7 @@ export function renderHeldOut(h) {
     }
     for (const o of h.other) lines.push(`    ${o.conclusion}: ${o.job}`);
   }
+  if (h.state === "unreadable") lines.push("  UNREADABLE is no verdict: GitHub could not be reached. It reads again, and never stands for red or green.");
   if (h.state === "unread") lines.push("  UNREAD never reads as green: the CI workflow and the shards raise no container mesh and no browser weld.");
   return lines;
 }
@@ -202,6 +217,7 @@ export function renderHeldOut(h) {
 export function render(v) {
   const short = (sha) => String(sha).slice(0, 9);
   const lines = [`ci-verdict: ${v.state.toUpperCase()} for ${short(v.head)} — ${v.why}`];
+  if (v.state === "unreadable") return [...lines, "  UNREADABLE is no verdict: GitHub could not be reached. It reads again, and never stands for red or green."];
   if (v.url) lines.push(`  ${v.url}`);
   const reds = (list) => list.flatMap((f) => [`    ${f.conclusion}: ${f.job}`, ...f.steps.map((s) => `      step: ${s}`)]);
   lines.push(...reds(v.failing));
@@ -216,47 +232,166 @@ export function render(v) {
   return lines;
 }
 
-export const exitOf = (state) => ({ green: 0, red: 1, unread: 2 })[state];
+export const exitOf = (state) => ({ green: 0, red: 1, unread: 2, unreadable: 4 })[state];
 
-function main(argv) {
-  const opt = (name, fallback) => { const i = argv.indexOf(`--${name}`); return i >= 0 && argv[i + 1] ? argv[i + 1] : fallback; };
-  const sh = (cmd, args) => execFileSync(cmd, args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
-  let v;
-  try {
-    const namedBranch = opt("branch", null);
-    const branch = namedBranch ?? sh("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
-    if (namedBranch === null && branch === "HEAD") throw new Error("detached HEAD: name --branch");
-    const head = sh("git", ["rev-parse", opt("head", "HEAD")]);
-    const runs = JSON.parse(sh("gh", ["run", "list", "--branch", branch, "--workflow", opt("workflow", "CI"), "--limit", opt("limit", "30"),
-      "--json", "databaseId,headSha,status,conclusion,createdAt,url"]));
-    const view = (id) => JSON.parse(sh("gh", ["run", "view", String(id), "--json", "jobs"]));
-    const first = readVerdict({ runs, head });
-    const views = {};
-    for (const id of new Set([first.run, first.last?.run])) if (id != null) views[id] = view(id);
-    v = readVerdict({ runs, head, views });
-    // The third reading says and never moves the exit code, so a failure to read IT reads unread and stops
-    // nothing: the CI reading above still decides how this door exits.
-    let heldOut;
-    try {
-      const heldRuns = JSON.parse(sh("gh", ["run", "list", "--branch", branch, "--workflow", opt("held-out", "held-out.yml"), "--limit", opt("limit", "30"),
-        "--json", "databaseId,headSha,status,conclusion,createdAt,url"]));
-      const firstHeld = readHeldOut({ runs: heldRuns, head });
-      let behind = null;
-      if (firstHeld.run !== null && !firstHeld.coversHead) {
-        // A run head this checkout never fetched names no ancestor it can count from: the gap stays unsaid.
-        try { behind = Number(sh("git", ["rev-list", "--count", `${firstHeld.runHead}..${head}`])); } catch { behind = null; }
+/** Whether a failed `gh`/`git` call says GitHub could not be reached ("unreadable": read again) or the question is wrong ("hard"). */
+export function classifyFailure(err) {
+  if (err?.code === "ENOENT") return "hard";
+  const text = `${err?.stderr ?? ""}\n${err?.message ?? ""}\n${err?.code ?? ""}`;
+  if (err?.killed || err?.signal === "SIGTERM" || err?.code === "ETIMEDOUT") return "unreadable";
+  // An explicit HTTP status decides before any word in the text: a 404 that names `timeout.yml` is still a 404.
+  const status = /HTTP (\d{3})/.exec(text);
+  if (status) return Number(status[1]) >= 500 || Number(status[1]) === 429 ? "unreadable" : "hard";
+  if (/Bad Gateway|Service Unavailable|Gateway Time-?out|timed? ?out|timeout|ETIMEDOUT|ECONN\w*|EAI_AGAIN|ENOTFOUND|no such host|could not resolve host|dial tcp|network is unreachable|connection (reset|refused|closed)|TLS handshake|rate limit|error connecting to|check your internet connection|githubstatus|unexpected EOF/i.test(text)) return "unreadable";
+  return "hard";
+}
+
+const MIN = 60000;
+const stampMs = (t) => { const ms = Date.parse(t ?? ""); return Number.isFinite(ms) && ms > Date.parse("1970-01-02T00:00:00Z") ? ms : null; };
+
+/** Job minutes from one run view: `{ minutes, criticalMin, partial, jobs }`, or `null` where no view stands. */
+export function jobMinutes(view) {
+  if (!view || !Array.isArray(view.jobs)) return null;
+  let total = 0, first = Infinity, last = -Infinity, partial = false, counted = 0;
+  for (const j of view.jobs) {
+    if (j.conclusion === "skipped") continue;
+    const a = stampMs(j.startedAt), b = stampMs(j.completedAt);
+    if (j.status !== "completed" || a === null || b === null) { partial = true; continue; }
+    total += (b - a) / MIN; first = Math.min(first, a); last = Math.max(last, b); counted++;
+  }
+  const round = (x) => Math.round(x * 10) / 10;
+  return { minutes: round(total), criticalMin: counted ? round((last - first) / MIN) : 0, partial, jobs: view.jobs.length };
+}
+
+/** The job-minutes line; `partial` never prints a figure that could pass for the whole. */
+export function renderJobMinutes(jm) {
+  if (jm === null || jm === undefined) return "job-minutes: unread (the run's jobs endpoint stayed unreadable)";
+  if (jm.partial) return `job-minutes: partial (a job in the run has no completion time yet; the finished jobs alone sum to ${jm.minutes})`;
+  return `job-minutes: ${jm.minutes.toFixed(1)} (critical path ${jm.criticalMin.toFixed(1)} min)`;
+}
+
+/** The verdict where the reader could not reach GitHub for every one of its reads. */
+export function unreadableVerdict(head, reason) {
+  return { state: "unreadable", why: `GitHub could not be read (${reason}); this is no verdict, so it never stands for red or green`, head, run: null, url: null, failing: [], last: null };
+}
+
+/** The held-out reading where GitHub could not be reached. */
+export function heldOutDark(head, reason) {
+  return { ...heldOutUnreadable(head, reason), state: "unreadable", why: `GitHub could not be read for the held-out runs (${reason})` };
+}
+
+/** The held-out reading from the run's own conclusion alone, where its jobs endpoint stayed unreadable. */
+export function heldOutByConclusion({ runs, head }) {
+  const run = [...runs].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))).find((r) => r.headSha === head);
+  const base = heldOutUnreadable(head, "no held-out run names this head");
+  if (!run) return base;
+  const note = "run conclusion only; its jobs endpoint stayed unreadable";
+  const out = { ...base, run: run.databaseId, runHead: run.headSha, coversHead: true, behind: 0, url: run.url ?? null };
+  if (run.status !== "completed") return { ...out, state: "unread", why: `run ${run.databaseId} still reads ${run.status} (${note})` };
+  if (run.conclusion === "success") return { ...out, state: "green", why: `run ${run.databaseId} completed success (${note})` };
+  if (WHOLE.has(run.conclusion)) return { ...out, state: "red", why: `run ${run.databaseId} completed ${run.conclusion} (${note})` };
+  return { ...out, state: "unread", why: `run ${run.databaseId} completed ${run.conclusion}: it measured this head in no whole way (${note})` };
+}
+
+const defaultSh = (cmd, args) => execFileSync(cmd, args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 60000, maxBuffer: 64 * 1024 * 1024 }).trim();
+const defaultSleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const FIELDS = "databaseId,headSha,status,conclusion,createdAt,url";
+const reasonOf = (e) => String(e?.stderr || e?.message || e).trim().split("\n")[0].slice(0, 200);
+
+/** One whole reading of `head`, every UNREADABLE call read again up to `retries` times. Throws a hard failure as it stands. */
+async function readOnce({ sh, sleep, branch, head, opt }) {
+  const retries = Number(opt.retries), waitMs = Number(opt.interval) * 1000;
+  // A call that reads UNREADABLE reads again; the last failure is marked and handed up.
+  const settle = async (fn) => {
+    for (let i = 0; ; i++) {
+      try { return fn(); } catch (e) {
+        if (classifyFailure(e) !== "unreadable") throw e;
+        if (i >= retries) throw Object.assign(e, { dark: true });
+        await sleep(waitMs);
       }
-      heldOut = readHeldOut({ runs: heldRuns, head, views: firstHeld.run === null ? {} : { [firstHeld.run]: view(firstHeld.run) }, behind });
-    } catch (err) {
-      heldOut = heldOutUnreadable(head, String(err?.stderr || err?.message || err).trim());
     }
-    console.log(argv.includes("--json") ? JSON.stringify({ branch, ...v, heldOut }, null, 2)
-      : [`ci-verdict: branch ${branch}`, ...render(v), ...renderHeldOut(heldOut)].join("\n"));
+  };
+  const list = (workflow, withSha) => settle(() => JSON.parse(sh("gh", ["run", "list", "--branch", branch, "--workflow", workflow, "--limit", opt.limit, ...(withSha ? ["--commit", head] : []), "--json", FIELDS])));
+  // The branch list holds a window; a head older than it is asked for by its sha.
+  const runsFor = async (workflow) => {
+    const runs = await list(workflow, false);
+    if (runs.some((r) => r.headSha === head)) return runs;
+    const own = await list(workflow, true);
+    return [...runs, ...own.filter((r) => !runs.some((x) => x.databaseId === r.databaseId))];
+  };
+  const viewOf = async (id) => {
+    try { return await settle(() => JSON.parse(sh("gh", ["run", "view", String(id), "--json", "jobs"]))); }
+    catch (e) { if (e.dark) return null; throw e; }
+  };
+
+  let runs;
+  try {
+    runs = await runsFor(opt.workflow);
+    // A branch that holds no run at all may not exist: a typo would hold a vigil forever. A 404 here is a hard read.
+    if (runs.length === 0) await settle(() => sh("gh", ["api", `repos/{owner}/{repo}/branches/${encodeURI(branch)}`, "--jq", ".name"]));
+  } catch (e) { if (e.dark) { const reason = reasonOf(e); return { v: unreadableVerdict(head, reason), heldOut: heldOutDark(head, reason), jm: null }; } throw e; }
+  const first = readVerdict({ runs, head });
+  const views = {}; let jobsDark = false;
+  for (const id of new Set([first.run, first.last?.run])) {
+    if (id == null) continue;
+    const view = await viewOf(id);
+    if (view === null) { if (id === first.run) jobsDark = true; } else views[id] = view;
+  }
+  const v = readVerdict({ runs, head, views });
+  if (jobsDark && v.run !== null) v.why += " (run conclusion only; its jobs endpoint stayed unreadable)";
+  const jm = first.run !== null && views[first.run] ? jobMinutes(views[first.run]) : null;
+
+  // The third reading says and never blocks: a failure to read IT leaves the CI reading where it stands.
+  let heldOut;
+  try {
+    const heldRuns = await runsFor(opt.heldOut);
+    const firstHeld = readHeldOut({ runs: heldRuns, head });
+    if (firstHeld.run === null) heldOut = firstHeld;
+    else {
+      const view = await viewOf(firstHeld.run);
+      if (view === null && firstHeld.coversHead) heldOut = heldOutByConclusion({ runs: heldRuns, head });
+      else {
+        let behind = null;
+        if (!firstHeld.coversHead) { try { behind = Number(sh("git", ["rev-list", "--count", `${firstHeld.runHead}..${head}`])); } catch { behind = null; } }
+        heldOut = readHeldOut({ runs: heldRuns, head, views: view === null ? {} : { [firstHeld.run]: view }, behind });
+      }
+    }
   } catch (err) {
-    console.error(`ci-verdict: could not read — ${String(err?.stderr || err?.message || err).trim()}`);
+    heldOut = err.dark ? heldOutDark(head, reasonOf(err)) : Object.assign(heldOutUnreadable(head, reasonOf(err)), { hard: true });
+  }
+  return { v, heldOut, jm, jobsDark };
+}
+
+/** The door: returns the exit code. `sh`, `sleep`, `log` and `err` inject, so a test plants a recorded sequence. */
+export async function main(argv, { sh = defaultSh, sleep = defaultSleep, log = console.log, err = console.error } = {}) {
+  const arg = (name, fallback) => { const i = argv.indexOf(`--${name}`); return i >= 0 && argv[i + 1] ? argv[i + 1] : fallback; };
+  const opt = { workflow: arg("workflow", "CI"), heldOut: arg("held-out", "held-out.yml"), limit: arg("limit", "30"), retries: arg("retries", "6"), interval: arg("interval", "30") };
+  for (const k of ["retries", "interval"]) if (!Number.isFinite(Number(opt[k])) || Number(opt[k]) < 0) { err(`ci-verdict: --${k} wants a non-negative number`); return 3; }
+  let r, branch;
+  try {
+    const namedBranch = arg("branch", null);
+    branch = namedBranch ?? sh("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
+    if (namedBranch === null && branch === "HEAD") throw new Error("detached HEAD: name --branch");
+    const head = sh("git", ["rev-parse", arg("head", "HEAD")]);
+    for (;;) {
+      r = await readOnce({ sh, sleep, branch, head, opt });
+      const waiting = r.v.state === "unread" || (r.heldOut.state === "unread" && !r.heldOut.hard);
+      if (!argv.includes("--wait") || !waiting) break;
+      await sleep(Number(opt.interval) * 1000);
+    }
+  } catch (e) {
+    err(`ci-verdict: could not read — ${reasonOf(e)}`);
     return 3;
+  }
+  const { v, heldOut, jm } = r;
+  log(argv.includes("--json") ? JSON.stringify({ branch, ...v, heldOut, jobMinutes: jm }, null, 2)
+    : [`ci-verdict: branch ${branch}`, ...render(v), ...(v.state === "unreadable" || r.jobsDark ? [] : [renderJobMinutes(jm)]), ...(r.jobsDark ? [renderJobMinutes(null)] : []), ...renderHeldOut(heldOut)].join("\n"));
+  // A vigil never ends in success over a held-out reading it could not read: outside --wait the third reading only says.
+  if (argv.includes("--wait") && v.state === "green") {
+    if (heldOut.state === "unreadable") return exitOf("unreadable");
+    if (heldOut.hard) { err("ci-verdict: could not read — the held-out runs"); return 3; }
   }
   return exitOf(v.state);
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) process.exit(main(process.argv.slice(2)));
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) process.exit(await main(process.argv.slice(2)));

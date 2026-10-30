@@ -261,12 +261,21 @@ describe("parseResidencyAction — missing-arg rejection (transfer verbs)", () =
     "change-id": "c-1",
   };
 
-  for (const verb of ["ADD", "COPY", "MOVE"]) {
+  for (const verb of ["ADD", "COPY"]) {
     test(`${verb} missing title returns null`, () => {
       const { title, ...rest } = fullTransferArgs;
       void title;
       expect(parseResidencyAction(makeInvocation(verb, rest))).toBeNull();
     });
+  }
+  test("MOVE missing title parses as a LAYER move: the whole source layer promotes, no title, no shadow", () => {
+    const { title, ...rest } = fullTransferArgs;
+    void title;
+    expect(parseResidencyAction(makeInvocation("MOVE", rest))).toEqual({ requestId: "test-req-1", requestedBy: makeInvocation("MOVE", rest).requestedBy, verb: "MOVE", fromBag: rest["from-bag"], toBag: rest["to-bag"], changeId: rest["change-id"] });
+    expect(parseResidencyAction(makeInvocation("MOVE", { ...rest, shadow: true }))).toBeNull();
+    expect(parseResidencyAction(makeInvocation("MOVE", { ...rest, title: "" }))).toBeNull();
+  });
+  for (const verb of ["ADD", "COPY", "MOVE"]) {
     test(`${verb} missing from-bag returns null`, () => {
       const { "from-bag": fromBag, ...rest } = fullTransferArgs;
       void fromBag;

@@ -369,6 +369,12 @@ function coerceRegistration(parsed: unknown): RealmBagRegistration | null {
   };
 }
 
+/** A registration's bytes as a kept file or a row holds them, read at the exact floor shape; torn or foreign bytes read null. */
+export function parseRealmBagRegistration(text: string): RealmBagRegistration | null {
+  if (text.length > REALM_BAG_RECORD_MAX) return null;
+  try { return coerceRegistration(JSON.parse(text)); } catch { return null; }
+}
+
 /** Every well-formed registration the realm doc carries (unverified — the fold decides trust). */
 export function realmBagRegistrationsFromDoc(doc: LarDoc | undefined | null): RealmBagRegistration[] {
   const tiddlers = doc?.tiddlers;

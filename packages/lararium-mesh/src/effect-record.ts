@@ -289,18 +289,20 @@ export function mapActionToEffects(action: ResidencyAction, opts?: MapOptions): 
         reason:       "copy-overwrite",
       }];
     case "MOVE": {
+      // A layer MOVE names no title: its rows name the bags alone.
+      const titled: { tiddlerTitle?: string } = action.title !== undefined ? { tiddlerTitle: action.title } : {};
       const summary = opts?.result && typeof opts.result === "object" ? opts.result as Record<string, unknown> : {};
       if (summary["carried"] === "tombstone") {
         const shadow = summary["shadow"] === true;
         return [
           {
             ...base, eventId: newId(), archivalVerb: "deaccession", bag: action.toBag,
-            tiddlerTitle: action.title, changeId: action.changeId, sourceBag: action.fromBag,
+            ...titled, changeId: action.changeId, sourceBag: action.fromBag,
             destBag: action.toBag, disposition: `${shadow ? "shadowed" : "deleted"}-by-move-from:${action.fromBag}`,
           },
           {
             ...base, eventId: newId(), archivalVerb: "deaccession", bag: action.fromBag,
-            tiddlerTitle: action.title, changeId: action.changeId, sourceBag: action.fromBag,
+            ...titled, changeId: action.changeId, sourceBag: action.fromBag,
             destBag: action.toBag, disposition: `transferred-to:${action.toBag}`,
           },
         ];
@@ -312,7 +314,7 @@ export function mapActionToEffects(action: ResidencyAction, opts?: MapOptions): 
           eventId:      newId(),
           archivalVerb: "accession",
           bag:          action.toBag,
-          tiddlerTitle: action.title,
+          ...titled,
           changeId:     action.changeId,
           sourceBag:    action.fromBag,
           destBag:      action.toBag,
@@ -323,7 +325,7 @@ export function mapActionToEffects(action: ResidencyAction, opts?: MapOptions): 
           eventId:      newId(),
           archivalVerb: "deaccession",
           bag:          action.fromBag,
-          tiddlerTitle: action.title,
+          ...titled,
           changeId:     action.changeId,
           sourceBag:    action.fromBag,
           destBag:      action.toBag,

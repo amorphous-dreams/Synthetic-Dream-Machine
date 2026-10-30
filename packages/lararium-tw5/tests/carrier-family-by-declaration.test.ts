@@ -19,7 +19,7 @@ import { exportCarrierFile } from "../src/meme-write.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 
-const BAG = "lar:///ha.ka.ba/bags/family";
+const BAG = "lar:///ha.ka.ba/wikis/family/working";
 const URI = "lar:///ha.ka.ba/t/family/teaches-the-frame";
 
 const HEAD = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/t/shown">>`;
@@ -58,7 +58,7 @@ describe.skipIf(wikiSkip)(`a carrier's declaration decides its family${skipNote}
   async function ingest(r: ReturnType<typeof rig>, carrier: { text: string; ext: string; meta?: string; uri?: string }): Promise<Record<string, unknown>> {
     const uri = carrier.uri ?? URI;
     const args = {
-      "source-uri": "file:///scratch", "to-bag": BAG, "seed-door": "founding", "change-id": "chg-family",
+      "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-family",
       carriers: [{ uri, text: carrier.text, diskHash: carrierHash(carrier.text, carrier.meta), syncedHash: null, ext: carrier.ext, ...(carrier.meta !== undefined ? { meta: carrier.meta } : {}) }],
     };
     const result = await r.table.get("INGEST")!(args, ctx(r.composite, "INGEST", args)) as Record<string, unknown>;
@@ -67,7 +67,7 @@ describe.skipIf(wikiSkip)(`a carrier's declaration decides its family${skipNote}
 
   async function load(r: ReturnType<typeof rig>, carrier: { text: string; ext: string; meta?: string; title?: string }): Promise<Record<string, unknown>> {
     const args = {
-      "source-uri": "file:///scratch", "to-bag": BAG, "seed-door": "founding", "change-id": "chg-family",
+      "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-family",
       carriers: [{ title: carrier.title ?? URI, text: carrier.text, ext: carrier.ext, ...(carrier.meta !== undefined ? { meta: carrier.meta } : {}) }],
     };
     return table(r).get("LOAD")!(args, ctx(r.composite, "LOAD", args)) as Promise<Record<string, unknown>>;

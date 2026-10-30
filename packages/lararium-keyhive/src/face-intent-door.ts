@@ -137,14 +137,24 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
   return { heed, attach, describe };
 }
 
-/** The joinee issues one invocation through the shared plane, keyed by its atom. */
+/**
+ * THE FACE-JOIN NONCE names the joinee's atom AND the hearth it pins: the intent id excludes the audience, so one nonce
+ * over two pins named one intent and the fold kept whichever record sorted first. One pin over the same bytes keeps one
+ * id across every replay (the join stays idempotent); a summons pinned to another hearth is its own intent.
+ */
+export function faceJoinNonce(atomKey: string, audience: { readonly mode: string; readonly atom?: string }): string {
+  const atom = atomKey.toLowerCase();
+  return audience.mode === "pinned" && audience.atom ? `${atom}:${audience.atom.toLowerCase()}` : atom;
+}
+
+/** The joinee issues one invocation through the shared plane, keyed by its atom and the hearth it pins. */
 export async function requestFaceJoin(input: { readonly group: string; readonly plane: DocHandle<LarDoc>; readonly atom: IntentSigner;
   readonly hearthAtom?: string; readonly projection?: { readonly admissions: readonly { readonly deviceKey: string }[] };
   readonly summons: unknown; readonly verbs: IntentVerbRegistry }): Promise<string> {
   const hearth = input.hearthAtom ?? input.projection?.admissions[0]?.deviceKey;
   if (!hearth) throw new Error("face-join: no founding hearth admission");
   const entry = await buildIntent({ group: input.group, signer: input.atom, verb: "face-join", args: { summons: input.summons },
-    nonce: input.atom.key.toLowerCase(), audience: { mode: "pinned", atom: hearth.toLowerCase() }, verbs: input.verbs });
+    nonce: faceJoinNonce(input.atom.key, { mode: "pinned", atom: hearth }), audience: { mode: "pinned", atom: hearth.toLowerCase() }, verbs: input.verbs });
   const id = intentId(entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string });
   input.plane.change((draft) => writeIntentEntry(draft, entry));
   return id;

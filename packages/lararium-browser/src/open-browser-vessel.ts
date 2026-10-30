@@ -47,12 +47,12 @@ import {
   type GenesisSeed, type IslandMsg_Manifest,
   takeInvite, popInvite, hex,
   type WalkRecord, type CarryOutcome,
-  readHearthFloorCard,
+  readHearthFloorCard, provenPlaneUrls,
 }                                            from "@lararium/mesh";
 import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloorCard, fileOwnHearthPins, hearthNameOf, flowNexusFor } from "./browser-gate-pins.js";
 import { readHearthFloor, type HearthFloorRead } from "./browser-floor-read.js";
 import { composeBrowserFacePresentation } from "./browser-face-presentation.js";
-import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
+import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, provenCrossingPlanes, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
 import { readLarControlResult, readLarFrame, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame } from "@lararium/mesh";
 import { createBrowserConnectionState, crossingStandingOf, observeRelayConnection } from "./browser-connection-state.js";
@@ -1256,6 +1256,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // url the proof checked) and the proven persona planes by group. Nothing below reads the founding bootstrap's singular fields.
       let provenWornPlaneUrl: string | null = null;
       const provenPlanes = new Map<string, string>();
+      let wornFaceProjection: Parameters<typeof provenPlaneUrls>[0] | null = null;
       {
         // A FACED BOOT PROVES ITS FACE: a social record that omits the persona plane cannot skip the proof.
         // The founding bootstrap names ONE face's shared documents: the worn face's persona plane reads off its own plane entry,
@@ -1287,6 +1288,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // face this boot does not wear registers its persona plane only where its own sealed anchor, the verified KEL and its
         // signed log vouch for that url. A bootstrap entry no proof backs registers nothing.
         portFaceId = wornGroup;
+        wornFaceProjection = proof.projection;
+        // THE WORN FACE'S PLANES CROSS AT ITS OWN HEARTH as its signed log names them, and only now: no plane url read off the
+        // unsealed bootstrap crossed before this proof. The repo asks the hearth again for what the gate now opens.
+        if (crossing.openFacePlanes(provenCrossingPlanes(proof.projection, {
+          persona: wornPlaneUrl, intents: wornIntentsUrl,
+          ...(foundingFace ? { identities: social.identitiesUrl, circles: social.circlesUrl, sessions: social.sessionsUrl } : {}),
+        }))) { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } }
         provenWornPlaneUrl = wornPlaneUrl;
         provenPlanes.set(wornGroup, wornPlaneUrl);
         for (const plane of social.personaPlanes) {
@@ -1310,10 +1318,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         if (!foundingFace) registerInCatalog(wornIntentsBag, wornIntentsUrl);
         const wornFace = foundingFace && social.personaBagId ? personaSiblingBagIds(social.personaBagId) : null;
         if (wornFace) {
-          registerInCatalog(wornFace.circles, social.circlesUrl);
-          registerInCatalog(wornFace.identities, social.identitiesUrl);
-          registerInCatalog(wornFace.sessions, social.sessionsUrl);
-          registerInCatalog(wornFace.intents, social.intentsUrl);
+          // The bootstrap rests unsealed in this origin's IndexedDB, so a url read from it proves nothing alone: each sibling
+          // registers only as the face's signed log names it, the one rule the node composer holds too.
+          const named = wornFaceProjection ? provenPlaneUrls(wornFaceProjection, { circles: social.circlesUrl ?? null, identities: social.identitiesUrl ?? null, sessions: social.sessionsUrl ?? null, intents: social.intentsUrl ?? null }) : null;
+          if (named) for (const key of ["circles", "identities", "sessions", "intents"] as const) { const url = named[key]; if (url) registerInCatalog(wornFace[key], url); }
         }
         // THIS DEVICE'S OWN ENTRY joins the face's shared documents the moment its replica holds them (a causal read, never a timer or the next boot).
         if (foundingFace && social.identitiesUrl && social.circlesUrl) {

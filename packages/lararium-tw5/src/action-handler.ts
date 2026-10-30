@@ -459,7 +459,9 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
       if (action.verb === "MOVE") await requireKahuReach(action.fromBag, opts.kahuReach, "MOVE out of canon");
     }
 
-    if (action.verb === "LOAD" && /^lar:\/\/\/ha\.ka\.ba\/bags\/[^/]+$/.test(action.toBag) && args["seed-door"] !== "founding") {
+    // W27: a write lands on a working layer, and canon takes it by promotion. No door passes a LOAD into canon;
+    // the seed walks this road too. The refusal names the road: a title-less MOVE promotes the whole working layer.
+    if (action.verb === "LOAD" && /^lar:\/\/\/ha\.ka\.ba\/bags\/[^/]+$/.test(action.toBag)) {
       const slug = action.toBag.slice(action.toBag.lastIndexOf("/") + 1);
       throw new VerbRefusal("load-into-canon", `load-into-canon: LOAD --to lar:///ha.ka.ba/wikis/${slug}/working, then MOVE --from lar:///ha.ka.ba/wikis/${slug}/working --to lar:///ha.ka.ba/bags/${slug}`);
     }
@@ -1611,7 +1613,8 @@ function groupOf(titles: readonly string[], root: string): string[] {
 async function executeMove(action: MoveAction, access: BagAccess): Promise<Record<string, unknown>> {
   const o = origin(action);
   // A bag never moves a title onto itself: landing and then retracting in one bag would delete the title.
-  if (action.fromBag === action.toBag) throw new MoveWithinOneBagRefusal(action.title, action.fromBag);
+  if (action.fromBag === action.toBag) throw new MoveWithinOneBagRefusal(action.title ?? "(the whole layer)", action.fromBag);
+  if (action.title === undefined) return executeLayerMove(action, access, o);
   const rootRecord = await readFromBag(access, action.fromBag, action.title);
   if (rootRecord?.meta?.deleted) {
     // THE TOMBSTONE ROAD. The source record stands as a tombstone, so the move carries the delete down.
@@ -1681,6 +1684,36 @@ async function executeMove(action: MoveAction, access: BagAccess): Promise<Recor
     moved++;
   }
   return { title: action.title, fromBag: action.fromBag, toBag: action.toBag, changeId: action.changeId, moved };
+}
+
+/**
+ * THE LAYER MOVE: a MOVE naming the two bags and no title promotes the WHOLE source layer, every live title it holds,
+ * into the target in one act (W27: a write lands on a working layer, and canon takes it by promotion). A seed that
+ * LOADed a holding onto a wiki's working layer cannot name what landed (the answer rides bounded; a memetic record
+ * takes its name from its head), so promotion names the layer, never a list. Order as the titled road keeps it: every
+ * title lands first, then each retracts (hard-remove, never a tombstone, so canon shows through below). The answer
+ * names the bags and the count; the titles ride the effect records and the dry run's projection, never a list here.
+ */
+async function executeLayerMove(action: MoveAction, access: BagAccess, o: ChangeOrigin): Promise<Record<string, unknown>> {
+  const titles = (await listLiveTitlesInBag(access, action.fromBag)).filter((t) => !isEffectRecordUri(t));
+  const landed = new Map<string, LarTiddlerRecord>();
+  for (const t of titles) {
+    const source = await readFromBag(access, action.fromBag, t);
+    if (!source || source.meta?.deleted) continue;
+    await landInBag(access, action.toBag, source, lineageOf(source, action.changeId), o);
+    landed.set(t, source);
+  }
+  // A WRITE THAT LANDS ON THE LAYER AFTER ITS RECORD'S LANDING IS NEVER LOST: each record leaves the layer only while it
+  // still holds the fields that landed (the store tests and removes in one change), so a record another hand wrote or
+  // deleted since stays where it stands, for the next promotion, and the answer counts it kept.
+  const source = await access.write(action.fromBag);
+  if (!source) throw new Error(`action-handler: target bag "${action.fromBag}" unreachable — cannot remove (no silent misroute).`);
+  let moved = 0, kept = 0;
+  for (const [t, record] of landed) {
+    await source.remove(t, o, { only: record });
+    if ((await source.get(t)) === null) moved++; else kept++;
+  }
+  return { fromBag: action.fromBag, toBag: action.toBag, changeId: action.changeId, moved, kept };
 }
 
 export class TombstoneTargetHoldsNothingRefusal extends Error {

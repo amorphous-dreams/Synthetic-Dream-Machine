@@ -19,7 +19,7 @@
  */
 
 import { existsSync, readFileSync } from "fs";
-import { isValidAutomergeUrl, type AutomergeUrl, type Repo } from "@automerge/automerge-repo";
+import { type AutomergeUrl, type Repo } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, personaBagIdFor, PERSONA_KEL_PREFIX_TIDDLER,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
@@ -28,7 +28,7 @@ import {
   faceAtomKeyFromSeed,
   leaseEpochPrefix, readFace,
   signPersonaAct, actCid, edgeBodyDigest, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  LARES_DOC_URI, LARARIUM_DOC_URI, tiddlerText, FLEET_HAND, type LarDoc,
+  tiddlerText, FLEET_HAND, type LarDoc,
 } from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
@@ -41,6 +41,7 @@ import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../ne
 import { carryPersonaKelUpTheGradient } from "../persona-kel-ring.js";
 import { hearthAid } from "../hearth-aid.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
+import { admitCanonDocs, hearthCustodyGroup } from "../kahu-realm.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";
 import { fleetLineageForVessel } from "../fleet-lineage.js";
 import { loadFaceAnchorOfGroup } from "../face-anchor-store.js";
@@ -115,25 +116,6 @@ export function deviceAdmitSyncUrl(explicitSyncUrl?: string): string | null {
     host === "::1" || host === "::" || /^::ffff:(127\.|0\.0\.0\.0$|7f[0-9a-f]{2}:)/.test(host) || host === "::ffff:0:0";
   if (loopbackOrUnspecified) return null;
   return wsUrlForOrigin(url.origin);
-}
-
-/** The catalog titles whose documents a joinee mounts as its hearth's base canon. */
-const HEARTH_CANON_TITLES: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
-
-/**
- * THE CANON DOCUMENTS THIS HEARTH NAMES TO A JOINEE — `@lares` and `@lararium`, by document url, as this
- * vessel's own catalog holds them. They ride the fleet-join answer's signed carriage, so the joinee's gate widens
- * by exactly these documents. A pointer the catalog lacks, or holds torn, goes unnamed.
- */
-export async function admitCanonDocs(repo: Repo, registryUrl: string): Promise<Readonly<Record<string, string>>> {
-  let registry: LarDoc | undefined;
-  try { registry = (await repo.find<LarDoc>(registryUrl as AutomergeUrl)).doc(); } catch { return {}; }
-  const named: Record<string, string> = {};
-  for (const title of HEARTH_CANON_TITLES) {
-    const url = tiddlerText(registry?.tiddlers?.[title]);
-    if (url && isValidAutomergeUrl(url)) named[title] = url;
-  }
-  return named;
 }
 
 /** The root refuses to bind a device its own fleet board shows set aside. The reading names itself. */
@@ -447,7 +429,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   }
   const hearth: AdmitHearthReading = {
     gatePin: stoodSovereignPin(larSealHome(), opts.gateDoor),
-    canon:   opts.catalogUrl ? await admitCanonDocs(repo, opts.catalogUrl) : {},
+    canon:   await admitCanonDocs(repo, larSealHome(), await hearthCustodyGroup()),
     islandKind: founderIdentity.kind, islandScope: founderIdentity.scope,
   };
   return { payload, hearth };

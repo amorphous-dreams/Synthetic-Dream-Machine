@@ -124,7 +124,7 @@ async function runFoundingRite(args: ParsedArgs): Promise<number> {
   const steps: ReadonlyArray<readonly [string, Sub]> = [
     ["found", (a) => cmdFound(a)],
     ["stand", (a) => standVessel({ ...a, positional: ["stand"] })],
-    ["seed",  (a) => cmdSeed({ ...a, flags: { ...a.flags, apply: true, yes: true } }, true)],
+    ["seed",  (a) => cmdSeed({ ...a, flags: { ...a.flags, apply: true, yes: true } })],
   ];
   for (const [name, run] of steps) {
     const code = await run({ ...args, positional: [] });

@@ -41,6 +41,7 @@
 import { type Socket } from "node:net";
 import { randomUUID } from "node:crypto";
 import { PARK_LIMIT } from "./owned-store.js";
+import { faceRowArgs } from "./face-selector.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   CompositeStore,
@@ -87,7 +88,9 @@ export interface UdsChannelOptions {
    * this channel awaits via `daemonHandle`. For a session call, the seat supplies
    * `requestedBy` from the verified presenter and `face` from the verified proof subject.
    */
-  readonly placeVerb: (o: { origin: "channel"; verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; face?: string; effectKey?: string }) => void;
+  readonly placeVerb: (o: { origin: "channel"; verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; face?: string; ordinal?: number; effectKey?: string }) => void;
+  /** The ask under this id concluded here (its outcome read, or its wait ended): main's booking for it retires. */
+  readonly retireAsk?: (requestId: string) => void;
   /** The vessel's claim on its store — the rendezvous socket (`/tmp/lares-<uid>/<digest>.sock`) both sides derive. */
   readonly claim: StoreClaim & { readonly holder: "vessel" };
   /**
@@ -153,14 +156,7 @@ const sameAnchor = (a: SessionAnchor | undefined, b: SessionAnchor | undefined):
   a !== undefined && b !== undefined && a.kind === b.kind && a.aid === b.aid &&
   (a.kind === "nexus" || (b.kind === "place" && a.head === b.head));
 
-/**
- * A face row's arguments bound to the session's face: every face-naming key (`face`, `handleIndex`) set to `ordinal`, or
- * null where a key names another face. A row reads its face by whichever key it takes, so both name the one face.
- */
-export function faceRowArgs(args: Readonly<Record<string, unknown>>, ordinal: number): Record<string, unknown> | null {
-  for (const key of ["face", "handleIndex"] as const) if (args[key] !== undefined && args[key] !== ordinal) return null;
-  return { ...args, face: ordinal, handleIndex: ordinal };
-}
+export { faceRowArgs };
 
 export interface UdsSessionDoor {
   open(ask: { faceRef: string; hand: Hand }): Promise<{ ok: true; supply: UdsSessionSupply } | { ok: false; refusal: string }>;
@@ -186,6 +182,8 @@ interface Invocation {
    */
   effectKey?: string;
   face?: string;
+  /** The session's face on this vessel (its ordinal); set by the session door alone, never read off a frame. */
+  ordinal?: number;
 }
 
 /** A read-only receipt query — `{op:"receipt", requestId}`. Never reaches `placeVerb`; see H1. */
@@ -828,9 +826,11 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       requestedBy: inv.requestedBy,
       requestId,
       ...(inv.face !== undefined && { face: inv.face }),
+      ...(inv.face !== undefined && inv.ordinal !== undefined && { ordinal: inv.ordinal }),
       ...(inv.effectKey !== undefined && { effectKey: inv.effectKey }),
     });
-    return awaitOutcome(inv.verb, requestId, inv.timeoutMs);
+    try { return await awaitOutcome(inv.verb, requestId, inv.timeoutMs); }
+    finally { opts.retireAsk?.(requestId); }
   };
 
   /** Answer a `{op:"receipt"}` query (H1, now durable) — a READ, built from the fact ledger plus
@@ -1063,7 +1063,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       sock.once("close", closed);
       const face = checked.session.face.proofSubject;
       handle({ verb: frame["verb"], args, requestId: faceScopedId(face, requestId),
-        requestedBy: state.supply!.presenter, face: checked.session.face.proofSubject,
+        requestedBy: state.supply!.presenter, face: checked.session.face.proofSubject, ordinal: state.supply!.ordinal,
         ...(typeof frame["effectKey"] === "string" && { effectKey: faceScopedId(face, frame["effectKey"]) }),
         ...(typeof frame["timeoutMs"] === "number" && { timeoutMs: frame["timeoutMs"] }) }, sock, requestId,
         () => { sock.off("close", closed); resolve(); });
@@ -1296,6 +1296,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
 
       const oneShot = { ...(parsed as Invocation) };
       delete oneShot.face;
+      delete oneShot.ordinal;
       const inv: Invocation = sessionRequestId === undefined ? oneShot : parsed as Invocation;
       if (!inv.verb || !inv.requestedBy) return fail("verb + requestedBy required");
       // A ROW THAT ACTS AS A FACE RIDES THAT FACE'S SESSION: the maintenance frame carries no face, so it serves none.

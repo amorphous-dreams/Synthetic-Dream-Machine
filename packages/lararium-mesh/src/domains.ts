@@ -553,6 +553,12 @@ export const CUSTODY_D_DOMAIN = mint("custody-carrier-d");
 export const CUSTODY_F_DOMAIN = mint("custody-carrier-f");
 /** An S row's seal context: a named node-only secret under a named node principal. */
 export const CUSTODY_S_DOMAIN = mint("custody-carrier-s");
+/** A face's bond to its leaf key at one realm's Nexus, signed by the face's atom and by the leaf over one image: its own
+ *  name, so no other signed shape (a feed roll, a vouch, a grant) verifies as a bond (`face-leaf-bond`). */
+export const FACE_LEAF_BOND_DOMAIN = mint("face-leaf-bond");
+/** A face's ask to feed one realm as its leaf, signed by its atom over the one request it rides: a bond proves a past
+ *  signing, and this proves the present hand, so no bond replays as a feed (`face-leaf-bond`). */
+export const REALM_FEED_ASK_DOMAIN = mint("realm-feed-ask");
 
 /**
  * Every domain this house mints, in declaration order. DERIVED: each `mint` and `frozen` call above lands

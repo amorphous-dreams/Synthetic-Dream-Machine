@@ -281,13 +281,22 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
   test("★ a cross-operator peer holding a VALID face-join grant record reaches the face's persona-plane doc ★", async () => {
     const holder = await makePeerFace(nexusAid, grantHolderLabel);
     expect(holder.faceKey).toBe(grantHolderFaceKey);
+    const lines: string[] = [];
+    const realLog = console.log;
+    console.log = (...args: unknown[]) => { lines.push(args.map(String).join(" ")); realLog(...args); };
     const { client } = dialFounder(syncUrl, gatePin, holder.face);
     const joineeRepo = new Repo({ network: [client] });
     try {
       const grantTitle = faceGrantTitle(personaGroupId, `0x${holder.faceKey}`);
       const outcome = await awaitTitle(joineeRepo, personaBagUrl, grantTitle, 8_000);
       expect(outcome, "the grant-holder never synced the persona-plane doc — the ring did not admit it").toBe("synced");
+      const admission = lines.filter((line) => line.startsWith("[lar-gate] session "));
+      expect(admission).toHaveLength(1);
+      expect(admission[0]).toMatch(/^\[lar-gate\] session .+: stranger$/);
+      // CONTROL: neither the proven face key nor the full peer identifier appears in the log.
+      expect(admission[0]).not.toContain(holder.faceKey);
     } finally {
+      console.log = realLog;
       client.disconnect();
       await joineeRepo.shutdown();
     }

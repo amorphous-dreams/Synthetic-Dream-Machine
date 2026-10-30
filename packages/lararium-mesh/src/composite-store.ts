@@ -18,6 +18,7 @@ import type {
   LarTiddlerRecord,
   LarTiddlerChange,
   ChangeOrigin,
+  LarRemoveOptions,
   MemeProjection,
   LarWriteOptions,
 } from "./tiddler-store.js";
@@ -422,11 +423,11 @@ export class CompositeStore implements LarTiddlerStore {
     return this.writableStore.tombstone(title, origin, this._writeOptionsFor(options, this.writableStore, "tombstone"));
   }
 
-  async remove(title: string, origin: ChangeOrigin): Promise<void> {
+  async remove(title: string, origin: ChangeOrigin, options?: LarRemoveOptions): Promise<void> {
     if (!this.writableStore) throw new NoWorkingLayerRefusal("The bagless remove");
     const retired = this._refuseRetired(this.writableStore, [], "remove", [title]);
     if (retired) await retired;
-    return this.writableStore.remove(title, origin);
+    return this.writableStore.remove(title, origin, options);
   }
 
   /**

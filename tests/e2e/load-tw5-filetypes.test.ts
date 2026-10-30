@@ -22,6 +22,7 @@ import { tmpdir } from "node:os";
 import { stagedTarget, targetInstance, type LarInstance } from "../harness/instance.js";
 
 const LARES_URI = "lar:///ha.ka.ba/wikis/lares/working";
+const LARES_BAG = "lar:///ha.ka.ba/bags/lares";
 
 let lar: LarInstance;
 let src = "";
@@ -77,9 +78,10 @@ describe.skipIf(!stagedTarget)("LOAD — memetic memes AND all legal TW5 filetyp
 
   test("T5 — headless plain files land as text/plain, titled by the loci law", () => {
     // DERIVE from the target, never hardcode the address. The loci law titles a headless carrier
-    // `<the --to bag>/<basename>`, so the expectation moves whenever the bag URI does — and a literal
-    // here simply records where the bag USED to live, which is what it had come to record.
-    expect(titles).toContain(`${LARES_URI}/plain`);
-    expect(titles).toContain(`${LARES_URI}/notes`);
+    // `<the bag the --to slot rests for>/<basename>`: a wiki's working slot is where the record rests,
+    // never its name, so a carrier LOADed onto `wikis/lares/working` takes its address under `bags/lares`.
+    expect(titles).toContain(`${LARES_BAG}/plain`);
+    expect(titles).toContain(`${LARES_BAG}/notes`);
+    expect(titles.some((t) => t.startsWith(`${LARES_URI}/`)), "no record takes the slot as its name").toBe(false);
   });
 });

@@ -27,7 +27,7 @@ export { composeBrowser } from "./browser-caps.js";
 export type { BrowserVesselOptions, BrowserVesselResult, ProjectionSurfaceFrame } from "./open-browser-vessel.js";
 export { makeSurfaceReturnLeg } from "./surface-return-leg.js";
 export type { SurfaceReturnLeg, ReturnLegVerdict, DaemonReturnDoor, PoolReturnDoor } from "./surface-return-leg.js";
-export { HearthCanonGate, admittedCanonDocs, hearthCanonDocIds, isOwnHearthCrossing, seatHearthCanon } from "./hearth-canon.js";
+export { HearthCanonGate, admittedCanonDocs, hearthCanonDocIds, isOwnHearthCrossing, provenCrossingPlanes, seatHearthCanon } from "./hearth-canon.js";
 export type { HearthCanonDocs } from "./hearth-canon.js";
 
 export type { CoherenceFrameWithRev } from "./wiki-coherence-frame.js";

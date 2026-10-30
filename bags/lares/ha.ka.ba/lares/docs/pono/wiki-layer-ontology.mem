@@ -239,7 +239,7 @@ The moment layers mount layers, cycles become expressible. Recipe-watch MUST ref
 
 Every boundary a lararium holds reads as a ''causal-island shore'' (`causal-islands`): two sides, each its own partially-ordered log, no shared "now." Three shores wear one law:
 
-* ''working ↔ canon'' — the `@working` live layer crosses to its `@{slug}` canon by a cap-gated promotion `MOVE`.
+* ''working ↔ canon'' — the `@working` live layer crosses to its `@{slug}` canon by a cap-gated promotion `MOVE`. A `MOVE` naming the two bags and no title promotes the whole layer: every live title lands in the canon first, then each leaves the layer only while it still holds the fields that landed, so a record another hand wrote or deleted since stays for the next promotion and the answer counts it kept. A seed walks this road too (`LOAD` onto the wiki's working layer, then one layer `MOVE`), and no door passes a `LOAD` into canon.
 * ''plane ↔ plane'' — a bag's pointer crosses `@catalog` (user) ⇄ `@oracle` (system) by an admin `MOVE` that sets a new meshwise surface. ''Plane membership stays mutable, never hardcoded'' — composability across planes holds first-class; the split scopes by //role//, never by a frozen plane.
 * ''host ↔ lararium'' //(deferred horizon)// — a lararium may embed as a ''guest'' causal island inside a host that owns its own integration layer (UE5.6/6+ Verse / SceneGraph; MUDlet's Lua object-model). The guest never assumes it sits at the top, never claims a global now across the shore.
 
@@ -347,6 +347,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bV0JiHqwfPz0VS4oE5eOGL0dl_baB5ajvYbrfEDOsYY
+<<^ code="&#x0003;">>ni:///sha-256;jYOqtw051j0sPG62S5ITF5ORyPXqZKBDykgI-Fc7imc
 
 <<^ code="&#x0004;" -> to="?">>
