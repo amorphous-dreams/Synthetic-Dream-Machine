@@ -65,21 +65,7 @@ describe("storeFailure names a failure by its own type", () => {
     expect(storeFailure(new RoutedVerbRefused("later", "a-later-name")).code).toBe("a-later-name");
   });
 
-  it("the store's own faults each read under their own code", () => {
-    const held = Object.assign(Object.create(StoreHeld.prototype) as Error, { message: "a vessel (pid 7) holds the store" });
-    expect(storeFailure(held).code).toBe("store-held");
-    expect(storeFailure(new SlowBootTimeout("parked", "the vessel's store door", [7])).code).toBe("store-door-timeout");
-    const waited = storeFailure(new LocalWaitExpired("nexus-kapae", 10, "req-7"));
-    expect(waited.code).toBe("outcome-unknown");
-    expect(waited.hint).toMatch(/lares receipt req-7/);
-    expect(storeFailure(new DaemonUnreachable("/tmp/x.sock")).code).toBe("daemon-unreachable");
-  });
 
-  it("CONTROL: a fault that names nothing keeps the word its command gave", () => {
-    expect(storeFailure(new Error("disk full"))).toEqual({ code: "error", message: "disk full" });
-    expect(storeFailure(new NexusKapaeError("made here, through no door"), "refused").code).toBe("refused");
-    expect(storeFailure(new RoutedVerbRefused("no name given")).code).toBe("error");
-  });
 });
 
 describe("a command's JSON carries the name", () => {

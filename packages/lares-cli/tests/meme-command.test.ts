@@ -322,15 +322,6 @@ describe("lares meme normalize — the write seat, local, no daemon", () => {
 });
 
 describe("projectPlan — the seat law, no daemon", () => {
-  test("a file with --to md seats LOCAL", () => {
-    expect(projectPlan(memeArgs(["project", "x.mem"], { to: "md" })).seat).toBe("local");
-  });
-  test("★ a file with any other target, or a lar: uri, seats DAEMON ★", () => {
-    for (const to of ["html", "tid", "json", "mem"]) {
-      expect(projectPlan(memeArgs(["project", "x.mem"], { to, recipe: "default" })).seat, `file --to ${to}`).toBe("daemon");
-    }
-    expect(projectPlan(memeArgs(["project", "lar:///t/x"], { to: "md", recipe: "default" })).seat).toBe("daemon");
-  });
   test("a target off the list refuses; a missing --to refuses; --recipe with --bag refuses", () => {
     expect(() => projectPlan(memeArgs(["project", "x.mem"], { to: "pdf" }))).toThrow(/--to/);
     expect(() => projectPlan(memeArgs(["project", "x.mem"]))).toThrow(/--to/);

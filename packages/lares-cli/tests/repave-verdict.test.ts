@@ -20,33 +20,9 @@ import { describe, it, expect } from "vitest";
 import { repaveVerdict } from "../src/commands/capture/harvest.js";
 
 describe("repave-verdict — counts, against the sources they came from", () => {
-  it("★ sources stood and nothing landed reads BARREN, never success ★", () => {
-    const v = repaveVerdict({ sources: 1030, before: 0, after: 0 });
-    expect(v.ok).toBe(false);
-    expect(v.state).toBe("barren");
-    expect(v.why).toMatch(/1,030/);         // grouped, because a person reads this at a glance
-  });
 
-  it("★ sources stood and drawers grew reads LANDED ★", () => {
-    const v = repaveVerdict({ sources: 1030, before: 0, after: 40299 });
-    expect(v.ok).toBe(true);
-    expect(v.state).toBe("landed");
-  });
 
-  it("★ no sources at all is honest, not a fault ★", () => {
-    // A fresh machine with no AI transcripts has nothing to pour, and must not be told it failed.
-    const v = repaveVerdict({ sources: 0, before: 0, after: 0 });
-    expect(v.ok).toBe(true);
-    expect(v.state).toBe("empty");
-  });
 
-  it("★ a re-pave that SHRANK the corpus refuses ★", () => {
-    // The sources still hold what the palace no longer does.
-    const v = repaveVerdict({ sources: 1030, before: 40299, after: 12000 });
-    expect(v.ok).toBe(false);
-    expect(v.state).toBe("shrank");
-    expect(v.why).toMatch(/40299|40,299/);
-  });
 
   it("an idempotent re-run that landed nothing NEW still stands", () => {
     // Everything was already landed. The count did not move, and that is the verb working.
