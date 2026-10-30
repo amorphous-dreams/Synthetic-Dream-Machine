@@ -323,7 +323,8 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
                 raise ValueError("Intent-bearing column already occupies another name")
             column=PlaceBody(name,GrowthProgram((GrowthNode("root","foundation",
                 size=(round(width,6),round(width,6),round(rise,6))),)),
-                (lower.translation[0],lower.translation[1],
+                (round(lower.translation[0]+lo[0]/2-width/2,6),
+                 round(lower.translation[1]+lo[1]/2-width/2,6),
                  round(lower.translation[2]+lo[2],6)))
             bodies.append(column)
             bearings.append(BearingRun(goal.subject,name,goal.object))

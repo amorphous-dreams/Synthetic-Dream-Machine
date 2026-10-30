@@ -109,3 +109,30 @@ def test_laterally_misaligned_original_roof_refuses_column_birth():
     displaced=PlaceGenome(tuple(sorted((base,moved),key=lambda x:x.entity_id)))
     with pytest.raises(ValueError,match="aligned authored footprints"):
         propose_from_spatial_intent(displaced,goal)
+
+
+def test_intent_grows_supported_canopy_without_blocking_center_refuge(tmp_path):
+    from projection_loom.place_genome import propose_from_spatial_intent
+    from projection_loom.intent_seed import IntentContract
+    floor=PlaceBody("floor",GrowthProgram((GrowthNode("root","foundation",
+                   size=(4,4,1)),)),(0,0,0))
+    roof=PlaceBody("roof",GrowthProgram((GrowthNode("root","foundation",
+                   size=(5,5,.4)),)),(0,0,4))
+    original=PlaceGenome((floor,roof))
+    intent=IntentContract("shelter-with-bearing","A sheltered and physically grounded court",
+                          ("bearing","cover"))
+    goals=SpatialIntent(intent.identity,(
+        SpatialGoal("bear","floor","roof",.8,1.1),
+        SpatialGoal("shelter","floor","roof",.8,1.1)), "operator")
+    created=propose_from_spatial_intent(original,goals)
+    assert len(created.bodies)==3 and len(created.bearings)==1
+    package_scene(created.declaration(intent.location),tmp_path/"joint")
+    evidence=assess_place(tmp_path/"joint",created,goals)
+    assert evidence["all_declared_goals_witnessed"],evidence
+    statuses={row["status"] for row in evidence["goals"]}
+    assert statuses=={"geometric-bearing-proposal","geometric-shelter-proposal"}
+    cover=next(x["proof"] for x in evidence["goals"]
+               if x["status"]=="geometric-shelter-proposal")
+    assert cover["clear_core_floor_area"]==.64
+    assert cover["intrusions"]==0
+    assert not cover["load_certification"] and not cover["occupancy_certification"]

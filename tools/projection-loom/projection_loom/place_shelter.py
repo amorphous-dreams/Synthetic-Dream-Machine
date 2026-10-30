@@ -40,9 +40,16 @@ def native_shelter_cover(bundle,manifest,solids,bounds,goal,*,headroom=1.8):
         return None,"Native planar overhead cover area falls below authored footprint"
     # Exact independent STEP solids (not bounding boxes) determine whether
     # any unrelated body occupies the proposed enclosed headroom.
+    # The claim protects only the bounded central refuge core. An
+    # independently measured bearing column may occupy the surrounding
+    # original roof footprint without silently being called empty.
+    core_width=goal.min_width
+    if (not lowx<=midx-core_width/2 or not midx+core_width/2<=highx
+            or not lowy<=midy-core_width/2 or not midy+core_width/2<=highy):
+        return None,"Authored central refuge core lies outside native roof coverage"
     occupied=cq.Workplane("XY").box(
-        highx-lowx,highy-lowy,gap-.004).translate(
-        ((lowx+highx)/2,(lowy+highy)/2,(a[5]+b[2])/2)).val()
+        core_width,core_width,gap-.004).translate(
+        (midx,midy,(a[5]+b[2])/2)).val()
     intruders=[]
     for name,shape in solids.items():
         if name in (floor_id,roof_id):
@@ -68,7 +75,9 @@ def native_shelter_cover(bundle,manifest,solids,bounds,goal,*,headroom=1.8):
              "native_planar_cover_area":float(face_area),
              "headroom_height":float(gap),"required_headroom":float(headroom),
              "minimum_cover_width":float(min(highx-lowx,highy-lowy)),
-             "intrusions":0,"scope":"horizontal-roof-over-floor-only",
+             "clear_core_width":float(core_width),
+             "clear_core_floor_area":float(core_width**2),
+             "intrusions":0,"scope":"horizontal-roof-over-bounded-clear-core-only",
              "weather_certification":False,"occupancy_certification":False,
              "load_certification":False,"automatic_promotion":False}
     return {**payload,"sha256":canonical_json_sha256(payload)},None
