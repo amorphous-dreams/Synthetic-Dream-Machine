@@ -103,3 +103,25 @@ def test_source_free_implicit_frame_cannot_claim_native_location(tmp_path):
         run_place_campaign(LocationStack(intent.location),intent,goal,genome,
                            tmp_path/"no-frame",epochs=1,offspring=1,exact_budget=1)
     assert not (tmp_path/"no-frame").exists()
+
+def test_immutable_grammar_source_survives_external_modification_without_promotion(tmp_path):
+    from projection_loom.intent_seed import SeedEntry,SeedBundle
+    from projection_loom.location_stack import Frame
+    source=tmp_path/"authored-grammar.json"
+    source.write_text('{"proposed_construction":"one crossing"}')
+    _,intent,goal,genome=setup()
+    entry=SeedEntry.from_file("constructive-grammar",source)
+    inventory=LocationStack.admit_seed_bundle(SeedBundle((entry,)),intent)
+    inventory.add_frame(Frame("authored-local","local3d","model_unit"))
+    target=tmp_path/"source-place"
+    report=run_place_campaign(inventory,intent,goal,genome,target,
+                              epochs=1,offspring=1,exact_budget=1)
+    assert report["admitted"]==1
+    native=target/"candidates"/report["candidates"][0]["candidate_id"]/"workspace"
+    assert any((native/"sources").iterdir())
+    source.write_text('{"proposed_construction":"changed after audit"}')
+    assert verify_place_campaign(target)==report
+    with pytest.raises(ValueError,match="Original source bytes"):
+        run_place_campaign(inventory,intent,goal,genome,tmp_path/"corrupt-followup",
+                           epochs=1,offspring=1,exact_budget=1)
+    assert not (tmp_path/"corrupt-followup").exists()

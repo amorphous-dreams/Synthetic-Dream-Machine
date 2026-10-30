@@ -100,7 +100,9 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
     local=[f for f in inventory.frames.values() if f.kind=="local3d"]
     if len(local)!=1:
         raise ValueError("Location campaign requires exactly one explicitly authored local3d frame")
-    inventory.verify_source_bytes()
+    source_status=inventory.verify_source_bytes()
+    if any(state!="matched" for state in source_status.values()):
+        raise ValueError("Original source bytes no longer match the authored location inventory")
     out=Path(out)
     from .place_genome import propose_from_spatial_intent
     resolved=propose_from_spatial_intent(genome,spatial)
