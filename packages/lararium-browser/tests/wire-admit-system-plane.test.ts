@@ -51,4 +51,9 @@ describe("the browser admit ingest wire", () => {
     const input = await bootCarrying(plain);
     expect(input.hearthCanonDocs).toEqual(plain);
   });
+
+  test("the crossing decision reads no plane url off the unsealed bootstrap (the proof opens the face's planes later)", async () => {
+    const input = await bootCarrying({ [LARES_DOC_URI]: generateAutomergeUrl(), [LARARIUM_DOC_URI]: generateAutomergeUrl() });
+    expect(input).not.toHaveProperty("facePlaneDocs");
+  });
 });
