@@ -48,12 +48,18 @@ def _inventory(bundle,intent):
     return stack
 
 
-def _summary(pre,root):
+def _summary(pre,root,arms,intent):
     rows=[]
     for arm in pre["arms"]:
         kind=arm["kind"]
         report=verify_place_campaign(root/kind)
         written=json.loads((root/kind/"pre_registration.json").read_text(encoding="utf8"))
+        # The selected carrier must be the one actually admitted to this
+        # location; a self-consistent but unrelated source inventory cannot
+        # inherit the operator's original source designation.
+        expected_inventory=_inventory(arms[kind],intent)
+        if written["original_inventory_sha256"]!=expected_inventory.to_dict()["snapshot_sha256"]:
+            raise ValueError("Source carrier and native inventory are not the same attributed bytes")
         if (written["original_genome_sha256"]!=pre["original_genome_sha256"]
                 or written["spatial_intent_sha256"]!=pre["spatial_intent_sha256"]
                 or written["intent_sha256"]!=pre["intent_sha256"]
@@ -65,11 +71,26 @@ def _summary(pre,root):
                      "inventory_sha256":written["original_inventory_sha256"],
                      "pre_registration_sha256":report["pre_registration_sha256"],
                      "attempted":report["attempted"],"deferred":report["deferred"],
-                     "admitted":report["admitted"],"spatial_niches":report["spatial_niches"]})
+                     "admitted":report["admitted"],"spatial_niches":report["spatial_niches"],
+                     "candidate_genomes":[{"id":row["candidate_id"],
+                                           "genome_sha256":row["genome_sha256"]}
+                                          for row in report["candidates"]],
+                     "native_morphologies":[{"id":row["candidate_id"],
+                        "descriptor":({key:value for key,value in row["descriptor"].items()
+                                       if key!="native_scene_sha256"}
+                                      if row.get("descriptor") else None)}
+                        for row in report["candidates"]]})
+    comparable_genomes=[row["candidate_genomes"] for row in rows]
+    comparable_morphologies=[row["native_morphologies"] for row in rows]
     body={"schema":"projection-loom/source-transfer-native-comparison",
           "source_preregistration_sha256":pre["sha256"],
           "arms":rows,"native_attempts":sum(x["attempted"] for x in rows),
           "equal_native_budgets":len({x["attempted"] for x in rows})==1,
+          "distinct_source_inventories":len({x["inventory_sha256"] for x in rows})==len(rows),
+          "identical_native_candidate_genomes":all(x==comparable_genomes[0]
+                                                      for x in comparable_genomes),
+          "identical_native_morphologies":all(x==comparable_morphologies[0]
+                                               for x in comparable_morphologies),
           "source_conditioned_architecture_proven":False,
           "source_camera_registration":False,
           "automatic_artistic_winner":False}
@@ -90,7 +111,7 @@ def run_source_transfer(arms,intent,spatial,genome,out,*,
             run_place_campaign(_inventory(arms[kind],intent),
                 intent,spatial,genome,root/kind,seed=seed,epochs=epochs,
                 offspring=offspring,exact_budget=exact_budget)
-        result=_summary(pre,root)
+        result=_summary(pre,root,arms,intent)
         save_once(root/"comparison.json",result)
         return verify_source_transfer(arms,intent,spatial,genome,root,
             seed=seed,epochs=epochs,offspring=offspring,exact_budget=exact_budget)
@@ -107,6 +128,6 @@ def verify_source_transfer(arms,intent,spatial,genome,out,*,
             (root/"preregistration.json").read_text(encoding="utf8"))!=pre:
         raise ValueError("Original source transfer preregistration diverged")
     actual=json.loads((root/"comparison.json").read_text(encoding="utf8"))
-    if actual!=_summary(pre,root):
+    if actual!=_summary(pre,root,arms,intent):
         raise ValueError("Source transfer comparison diverged from independent native arm witnesses")
     return actual

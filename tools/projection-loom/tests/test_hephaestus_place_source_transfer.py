@@ -26,6 +26,9 @@ def test_independent_source_carriers_hold_equal_native_budget(tmp_path):
                                epochs=1,offspring=1,exact_budget=1)
     assert len(report["arms"])==3 and report["native_attempts"]==3
     assert report["equal_native_budgets"]
+    assert report["distinct_source_inventories"]
+    assert report["identical_native_candidate_genomes"]
+    assert report["identical_native_morphologies"]
     assert not report["source_conditioned_architecture_proven"]
     assert verify_source_transfer(arms,intent,spatial,genome,root,
                                   epochs=1,offspring=1,exact_budget=1)==report
@@ -64,3 +67,17 @@ def test_source_transfer_cli_exposes_one_native_helm(tmp_path):
     assert result["native_attempts"]==3
     assert main(["place-source-transfer-verify",*args,
                  "--study",str(destination)])==result
+
+def test_source_claim_cannot_swap_original_carrier_after_source_study(tmp_path):
+    _,intent,spatial,genome=setup()
+    arms=inputs(tmp_path)
+    root=tmp_path/"audit"
+    run_source_transfer(arms,intent,spatial,genome,root,
+                        epochs=1,offspring=1,exact_budget=1)
+    replacement=tmp_path/"other.png"
+    Image.new("RGBA",(8,8),(233,40,50,255)).save(replacement)
+    wrong=dict(arms)
+    wrong["image-group"]=SeedBundle((SeedEntry.from_file("image-group",replacement),))
+    with pytest.raises(ValueError,match="preregistration"):
+        verify_source_transfer(wrong,intent,spatial,genome,root,
+                               epochs=1,offspring=1,exact_budget=1)
