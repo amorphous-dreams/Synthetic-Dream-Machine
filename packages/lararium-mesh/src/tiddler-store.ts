@@ -264,8 +264,9 @@ export interface LarTiddlerStore {
    * a lower bag (vs kāpae, which shadows it). The retract a MOVE/promotion uses
    * on its source so a lower-bag canonical copy surfaces — "tombstone distinct
    * from absent" (residency-model anti-pattern #3). Audit lives in the ledger.
-   * With `only`, the title leaves only while it still holds a live record whose fields equal `only`'s, read and
-   * removed in one synchronous change: a record another hand wrote or deleted since stays as it stands.
+   * With `only`, the title leaves only while it still holds a live record whose fields equal `only`'s and no
+   * concurrent value beside it, read and removed in one synchronous change: a record another hand wrote, deleted or
+   * wrote concurrently since stays as it stands.
    */
   remove(title: string, origin: ChangeOrigin, options?: LarRemoveOptions): Promise<void>;
 

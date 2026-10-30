@@ -23,7 +23,7 @@
  */
 import { interpretAsDocumentId, type AutomergeUrl, type Repo } from "@automerge/automerge-repo";
 import {
-  LARARIUM_DOC_URI, LARES_DOC_URI, emptyLarDoc, faceAtomKeyFromSeed, kahuCabalStanding, kahuRealmGroup, materializeSharedLarDoc,
+  LARARIUM_DOC_URI, LARES_DOC_URI, deterministicDocUrl, faceAtomKeyFromSeed, kahuCabalStanding, kahuRealmGroup, materializeSharedLarDoc,
   canonicalJson, parseRealmBagRegistration, realmBagRegistrationCounts, realmBagRegistrationsFromDoc, realmDocUrl, signRealmBagRegistration,
   writeRealmBagRegistration, ed25519SignerFromSeed,
   type LarDoc, type RealmBagRegistration, type StewardSigner,
@@ -44,6 +44,15 @@ export function kahuRealmHandleIndex(): number { return 0; }
 
 /** The live documents a vessel holds, by bag; a field stays absent where this vessel holds none. */
 export interface KahuCanonDocs { readonly lares?: AutomergeUrl; readonly lararium?: AutomergeUrl }
+
+/**
+ * THE KAHU DOCUMENT OF A BAG DERIVES FROM THE NEXUS AND THE BAG, seeded as the realm doc is (`realmDocUrl`): every genuine
+ * seal the steward ever makes for a bag names this one document, so a seal carries no freshness to lose. An older seal
+ * replayed, a kept copy restored from an old seal home and a founding retry over a wiped registry all name it.
+ */
+export function kahuBagDocUrl(nexus: string, bagUri: string): AutomergeUrl {
+  return deterministicDocUrl(`${bagUri}#${nexus}`);
+}
 
 const urlOf = (docs: ReadonlyMap<string, { readonly docUrl: string }>, bag: string): AutomergeUrl | undefined =>
   docs.get(bag)?.docUrl as AutomergeUrl | undefined;
@@ -71,17 +80,17 @@ async function keptRegistration(sealHome: string, nexus: string, bagUri: string,
   let text: string;
   try { text = readFileSync(path, "utf8"); } catch { return null; }
   const rec = parseRealmBagRegistration(text);
-  if (!rec || rec.realmId !== nexus || rec.bagUri !== bagUri) return null;
+  if (!rec || rec.realmId !== nexus || rec.bagUri !== bagUri || rec.docUrl !== kahuBagDocUrl(nexus, bagUri)) return null;
   if (rec.keptBy.length !== 1 || rec.keptBy[0]!.toLowerCase() !== steward) return null;
   return (await realmBagRegistrationCounts(rec, nexus)) ? rec : null;
 }
 
-/** The registry's rows for each Kahu bag sealed by EXACTLY the hearth's Kahu steward and counted at this Nexus. */
+/** The registry's rows for each Kahu bag sealed by EXACTLY the hearth's Kahu steward over the bag's derived document, counted at this Nexus. */
 async function stewardRows(doc: LarDoc | undefined | null, nexus: string, steward: string): Promise<ReadonlyMap<string, readonly RealmBagRegistration[]>> {
   const rows = new Map<string, RealmBagRegistration[]>();
   for (const rec of realmBagRegistrationsFromDoc(doc)) {
     if (rec.keptBy.length !== 1 || rec.keptBy[0]!.toLowerCase() !== steward) continue;
-    if (!KAHU_REALM_BAGS.includes(rec.bagUri)) continue;
+    if (!KAHU_REALM_BAGS.includes(rec.bagUri) || rec.docUrl !== kahuBagDocUrl(nexus, rec.bagUri)) continue;
     if (!(await realmBagRegistrationCounts(rec, nexus))) continue;
     rows.set(rec.bagUri, [...(rows.get(rec.bagUri) ?? []), rec]);
   }
@@ -89,13 +98,12 @@ async function stewardRows(doc: LarDoc | undefined | null, nexus: string, stewar
 }
 
 /**
- * THE KAHU CANON STANDS ON ONE STEWARD AND ITS KEPT SEAL. `foldRealmBags` verifies every self-named steward's seal and
- * never that the hand holds the hearth's canon, so the Kahu canon counts only registrations sealed by EXACTLY the
- * hearth's Kahu steward (one owner per registry; kahu.mem: kept by that one name). A signature carries no freshness, so
- * the registration the hearth KEEPS pins each bag: a registry row that names anything else (another hand's, a deleted
- * one, the steward's own older seal replayed) reads as nothing, and the steward's kept row lands on the registry again.
- * A bag the hearth keeps no registration for stands on the steward's one row and is kept from then on; two of the
- * steward's rows naming different documents stand none (a tie never grants). A kept file stands only where it verifies.
+ * THE KAHU CANON STANDS ON ONE STEWARD AND ONE DERIVED DOCUMENT. `foldRealmBags` verifies every self-named steward's seal
+ * and never that the hand holds the hearth's canon, so the Kahu canon counts only registrations sealed by EXACTLY the
+ * hearth's Kahu steward (one owner per registry; kahu.mem: kept by that one name) over the bag's derived document
+ * (`kahuBagDocUrl`): a row naming any other document reads as nothing, whoever sealed it. The registration the hearth
+ * KEEPS stands first where it verifies, and lands on the registry again where no row there carries it; a bag the hearth
+ * keeps none for stands on the steward's counted row and is kept from then on. A kept file stands only where it verifies.
  */
 async function standKahuRegistrations(
   realm: { doc(): LarDoc | undefined; change(fn: (d: LarDoc) => void): void }, sealHome: string, nexus: string, steward: string,
@@ -123,7 +131,7 @@ async function standKahuRegistrations(
 }
 
 /**
- * Land the Kahu realm at the founding: one live document per system bag, registered on the hearth's realm doc under
+ * Land the Kahu realm at the founding: one live document per system bag (derived, `kahuBagDocUrl`), registered on the hearth's realm doc under
  * persona zero's per-Nexus key. Idempotent. Refuses (`NexusCabalError`) where this vessel holds no seated charter.
  */
 export async function landKahuRealm(opts: {
@@ -142,8 +150,7 @@ export async function landKahuRealm(opts: {
     signer ??= opts.steward
       ? await opts.steward(core.nexus)
       : await (async () => { const leaf = await mintNexusLeaf(kahuRealmHandleIndex(), core.nexus); return { signer: leaf.verifyingKey.toLowerCase(), sign: ed25519SignerFromSeed(leaf.seed) }; })();
-    const doc = opts.repo.create<LarDoc>(emptyLarDoc());
-    await doc.whenReady();
+    const doc = await materializeSharedLarDoc(opts.repo, kahuBagDocUrl(core.nexus, bagUri), bagUri);
     const rec = await signRealmBagRegistration({ realmId: core.nexus, bagUri, docUrl: doc.url, readTier: "contract" }, [signer]);
     if (!(await realmBagRegistrationCounts(rec, core.nexus))) throw new NexusCabalError(`the Kahu realm's registration of ${bagUri} counts nothing: the steward's seal does not verify`);
     // KEPT BEFORE IT IS PUBLISHED: no registry row of the steward's ever stands without the hearth's own copy.

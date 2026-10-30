@@ -504,7 +504,10 @@ export class AutomergeDocStore implements LarTiddlerStore {
     this.handle.change((doc) => {
       const tiddlers = doc.tiddlers as unknown as Record<string, MutableLarTiddlerRecord>;
       // THE TEST AND THE REMOVAL SHARE ONE CHANGE: no write lands between them.
-      if (options?.only && !holdsOnly(tiddlers[title] as unknown as LarTiddlerRecord | undefined, options.only)) { removed = false; return; }
+      // A title holding a concurrent value the live one hides (a parallel draft, field or whole record) stays: removing
+      // it would retract that value unlanded. It leaves at the pass after a write settles it.
+      if (options?.only && (!holdsOnly(tiddlers[title] as unknown as LarTiddlerRecord | undefined, options.only)
+        || this.parallelDrafts(title).length > 0)) { removed = false; return; }
       delete tiddlers[title];
     });
     if (!removed) return;

@@ -64,8 +64,13 @@ export function standingOfReading(reading: "clear" | "aside" | "owing" | "return
  * it as its own intent (`faceJoinNonce`); the hearth refuses the mispinned one by its own fence.
  */
 export function standingOwnSummons(view: IntentView, issuer: string, hearth?: string): boolean {
+  return ownSummonsOf(view, issuer, hearth) !== undefined;
+}
+
+/** The standing summons of `issuer` pinned to `hearth` (any pin where none is named): the one rule the leaf and the CLI read. */
+export function ownSummonsOf(view: IntentView, issuer: string, hearth?: string): IntentView["intents"][number] | undefined {
   const own = issuer.toLowerCase();
-  return view.intents.some((state) => state.verb === "face-join" && state.issuer.toLowerCase() === own && state.status !== "void"
+  return view.intents.find((state) => state.verb === "face-join" && state.issuer.toLowerCase() === own && state.status !== "void"
     && (hearth === undefined || (state.audience.mode === "pinned" && state.audience.atom.toLowerCase() === hearth.toLowerCase()))
     && !state.slots.some((slot) => (slot.winner?.entry.body["result"] as { admitted?: unknown } | undefined)?.admitted === false));
 }

@@ -18,21 +18,37 @@ const hand = { kind: "tw-local", instanceId: "test" } as const;
 const rec = (text: string) => ({ tiddler: { title: T, text }, meta: {} });
 
 describe("a conditional remove over a conflicted title", () => {
-  test("a title holding a concurrent value stays; CONTROL: the same title with no concurrent value leaves", async () => {
+  const twoHands = async () => {
     const repo = new Repo({ network: [] });
     const here = repo.create<LarDoc>(emptyLarDoc());
-    const there = repo.clone<LarDoc>(here);
     const store = new AutomergeDocStore(here, "lar:///ha.ka.ba/wikis/probe/working");
+    return { repo, here, store, other: (h: ReturnType<typeof repo.clone<LarDoc>>) => new AutomergeDocStore(h, "lar:///ha.ka.ba/wikis/probe/working") };
+  };
+
+  test("a field written concurrently stays; CONTROL: once a write settles the field, the conditional remove takes the title", async () => {
+    const { repo, here, store, other } = await twoHands();
+    await store.put(rec("v0"), hand);
+    const there = repo.clone<LarDoc>(here);
     await store.put(rec("v1"), hand);
-    await new AutomergeDocStore(there, "lar:///ha.ka.ba/wikis/probe/working").put(rec("v2"), hand);
+    await other(there).put(rec("v2"), hand);
     here.merge(there);
-    const visible = (await store.get(T))!;
-    await store.remove(T, hand, { only: visible });
+    expect(store.parallelDrafts(T).length, "the merge holds a concurrent value").toBeGreaterThan(0);
+    await store.remove(T, hand, { only: (await store.get(T))! });
     expect(await store.get(T), "the title holding a concurrent value stays").not.toBeNull();
 
-    // CONTROL: a write settles the conflict; the conditional remove of what is now visible takes the title.
     await store.put(rec("settled"), hand);
+    expect(store.parallelDrafts(T)).toHaveLength(0);
     await store.remove(T, hand, { only: (await store.get(T))! });
     expect(await store.get(T)).toBeNull();
+  });
+
+  test("a title two hands created concurrently stays under a conditional remove", async () => {
+    const { repo, here, store, other } = await twoHands();
+    const there = repo.clone<LarDoc>(here);
+    await store.put(rec("v1"), hand);
+    await other(there).put(rec("v2"), hand);
+    here.merge(there);
+    await store.remove(T, hand, { only: (await store.get(T))! });
+    expect(await store.get(T)).not.toBeNull();
   });
 });

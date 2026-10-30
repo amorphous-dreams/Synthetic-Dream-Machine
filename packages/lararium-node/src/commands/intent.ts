@@ -12,7 +12,7 @@ import {
 } from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { listAnchoredPersonas, loadIdentityAnchors } from "../identity-anchors.js";
-import { KeyhiveProvider, InMemoryEventStore, faceJoinNonce } from "@lararium/keyhive";
+import { KeyhiveProvider, InMemoryEventStore, faceJoinNonce, ownSummonsOf } from "@lararium/keyhive";
 import { loadVeilArchive } from "../identity-anchors.js";
 import { loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";
@@ -171,8 +171,8 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
           audience = named ? intentAudience(opts) : { mode: "pinned", atom: hearth! };
           if (args === undefined) {
             // A ContactCard is not byte-stable across derivations, so a replay returns the request already standing.
-            const standing = view().intents.find((state) => state.verb === "face-join" && state.issuer === atom.key && state.status !== "void"
-              && !state.slots.some((slot) => (slot.winner?.entry.body["result"] as { admitted?: unknown } | undefined)?.admitted === false));
+            // The summons standing for THIS pin alone (`ownSummonsOf`, the leaf's own rule): one pinned elsewhere is no replay.
+            const standing = ownSummonsOf(view(), atom.key, audience.mode === "pinned" ? audience.atom : undefined);
             if (standing) return { id: standing.id, replayed: true };
             const archive = await loadVeilArchive(group);
             if (!archive) throw new IntentRefused("veil-archive-absent: this vessel holds no ContactCard for the face; re-admit it");
