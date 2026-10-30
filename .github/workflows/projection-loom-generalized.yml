@@ -26,6 +26,8 @@ on:
       - 'tools/projection-loom/projection_loom/place_campaign.py'
       - 'tools/projection-loom/projection_loom/constructive_phases.py'
       - 'tools/projection-loom/projection_loom/fire_spatial.py'
+      - 'tools/projection-loom/projection_loom/fire_contract.py'
+      - 'tools/projection-loom/schemas/fire_proposal.schema.json'
       - 'tools/projection-loom/projection_loom/place_intent_contrast.py'
       - 'tools/projection-loom/projection_loom/place_comparison.py'
       - 'tools/projection-loom/projection_loom/place_gallery.py'

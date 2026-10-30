@@ -62,3 +62,29 @@ def test_fire_binding_cli_preserves_original_plan_and_refuses_stale_witness(tmp_
               "--witness-id","forged","--actor","operator",
               "--out",str(tmp_path/"forged.json")])
     assert not (tmp_path/"forged.json").exists()
+
+@pytest.mark.parametrize("relation,implementation,expected",[
+    ("bridges","bridge-between","connect"),
+    ("covers","overhead-canopy","shelter"),
+    ("ascends","stair-flight","ascend")])
+def test_fire_named_relationships_bind_typed_native_spatial_goals(relation,implementation,expected):
+    from projection_loom.fire_contract import ALLOWED,SOURCE
+    import json
+    assert ALLOWED[relation]==implementation
+    schema=json.loads(SOURCE.read_text())
+    assert relation in schema["properties"]["alternatives"]["items"]["properties"]["relation"]["enum"]
+    intent=IntentContract("place","Construct one explicit relationship",("relation",))
+    record=bind_fire_spatial(plan(relation,implementation),intent,original(),
+        alternative_id="join-1",source_witness_id="witness-a",authored_by="operator")
+    spatial=SpatialIntent.from_dict(record["spatial_intent"])
+    assert spatial.goals[0].kind==expected
+    assert verify_fire_spatial(record,plan(relation,implementation),intent,original())
+    assert not record["automatic_promotion"]
+
+
+def test_fire_cannot_misbind_a_cover_as_an_ascent():
+    intent=IntentContract("place","Native meaning",("relation",))
+    with pytest.raises(ValueError,match="implemented"):
+        bind_fire_spatial(plan("covers","stair-flight"),intent,original(),
+             alternative_id="join-1",source_witness_id="witness-a",
+             authored_by="operator")

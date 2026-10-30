@@ -25,8 +25,13 @@ def bind_fire_spatial(plan,intent,genome,*,alternative_id,source_witness_id,
     if len(matching)!=1:
         raise ValueError("Fire selection must name one exact authored alternative")
     chosen=matching[0]
-    if chosen.get("relation")!="bridges" or chosen.get("implementation")!="bridge-between":
-        raise ValueError("Fire alternative lacks an implemented place-level crossing")
+    relation_mapping={"bridges":("bridge-between","connect"),
+                      "covers":("overhead-canopy","shelter"),
+                      "ascends":("stair-flight","ascend")}
+    relation=chosen.get("relation")
+    pair=relation_mapping.get(relation)
+    if pair is None or chosen.get("implementation")!=pair[0]:
+        raise ValueError("Fire alternative lacks an implemented place-level spatial relation")
     resolved=verified["resolved"]
     if (chosen.get("subject") not in resolved or chosen.get("object") not in resolved):
         raise ValueError("Fire aliases are not unambiguously resolved")
@@ -34,7 +39,13 @@ def bind_fire_spatial(plan,intent,genome,*,alternative_id,source_witness_id,
     ids={x.entity_id for x in genome.bodies}
     if a not in ids or b not in ids or a==b:
         raise ValueError("Bound Fire endpoints do not identify distinct native location bodies")
-    spatial=SpatialIntent(intent.identity,(SpatialGoal("connect",a,b),),authored_by)
+    parameters=chosen.get("parameters",{})
+    if not isinstance(parameters,dict) or set(parameters)-{"width","max_step","depth","clearance","setback"}:
+        raise ValueError("Fire spatial parameters must remain bounded and typed")
+    spatial=SpatialIntent(intent.identity,(SpatialGoal(
+        pair[1],a,b,
+        min_width=parameters.get("width",.8),
+        max_step=parameters.get("max_step",1.1)),),authored_by)
     return {"schema":"projection-loom/fire-spatial-binding",
             "spatial_intent":spatial.to_dict(),
             "spatial_intent_sha256":spatial.identity,
@@ -42,7 +53,7 @@ def bind_fire_spatial(plan,intent,genome,*,alternative_id,source_witness_id,
             "selected_alternative_id":alternative_id,
             "original_source_witness_id":source_witness_id,
             "source_seed_sha256":seed_sha256,
-            "claim_scope":"explicit-native-crossing-proposal-only",
+            "claim_scope":"selected-source-bound-native-spatial-proposal-only",
             "automatic_promotion":False}
 
 

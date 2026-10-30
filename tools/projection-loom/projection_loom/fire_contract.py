@@ -21,6 +21,8 @@ SOURCE = Path(__file__).resolve().parents[1] / "schemas" / "fire_proposal.schema
 
 ALLOWED = {
     "bridges": "bridge-between",
+    "covers": "overhead-canopy",
+    "ascends": "stair-flight",
     "encircles": "ring-around",
     "bears": "bearing-column",
     "studies": "study-only",

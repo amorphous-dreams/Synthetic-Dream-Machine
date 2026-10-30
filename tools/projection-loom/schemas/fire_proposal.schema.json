@@ -179,7 +179,9 @@
               "encircles",
               "bears",
               "studies",
-              "skirts"
+              "skirts",
+              "covers",
+              "ascends"
             ]
           },
           "object": {
@@ -191,7 +193,9 @@
               "ring-around",
               "bearing-column",
               "study-only",
-              "skirting-court"
+              "skirting-court",
+              "overhead-canopy",
+              "stair-flight"
             ]
           },
           "parameters": {
@@ -217,6 +221,11 @@
                 "type": "number",
                 "minimum": 0,
                 "maximum": 0.2
+              },
+              "max_step": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1.1
               }
             }
           }
