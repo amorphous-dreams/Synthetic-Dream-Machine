@@ -184,6 +184,25 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
     bodies=list(genome.bodies)
     routes=list(genome.walkways)
     for i,goal in enumerate(spatial.goals):
+        if goal.kind=="shelter":
+            known={b.entity_id:b for b in bodies}
+            if goal.object in known:
+                continue  # Never overwrite an operator-authored native roof.
+            if goal.subject not in known:
+                raise ValueError("Intent-grown canopy lacks its named native floor")
+            floor=known[goal.subject]
+            if len(floor.program.nodes)!=1 or floor.program.nodes[0].op!="foundation":
+                raise ValueError("Canopy construction needs a simple measurable native floor")
+            root=floor.program.nodes[0]
+            if len(bodies)>=16:
+                raise ValueError("Bounded native location body budget exceeded")
+            roof=PlaceBody(goal.object,GrowthProgram((GrowthNode("root","foundation",
+                size=(round(max(root.size[0]+1.,goal.min_width*2),6),
+                      round(max(root.size[1]+1.,goal.min_width*2),6),.4)),)),
+                (floor.translation[0],floor.translation[1],
+                 round(floor.translation[2]+root.size[2]+2.2,6)))
+            bodies.append(roof)
+            continue
         if goal.kind!="connect":
             continue
         if unique_walkway_chain(PlaceGenome(

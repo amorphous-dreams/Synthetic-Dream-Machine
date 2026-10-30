@@ -56,3 +56,31 @@ def test_shelter_campaign_inherits_native_cover_without_pretending_route(tmp_pat
     assert described["shelter_witness_count"]==1
     assert described["max_native_route_hops"]==0
     assert described["artistic_fitness_claim"] is None
+
+def test_intent_causes_missing_canopy_birth_from_authorized_floor(tmp_path):
+    from projection_loom.place_genome import propose_from_spatial_intent
+    from projection_loom.intent_seed import IntentContract
+    from projection_loom.location_stack import LocationStack,Frame
+    from projection_loom.place_campaign import run_place_campaign
+    floor=next(x for x in fixture()[0].bodies if x.entity_id=="floor")
+    spare=PlaceBody("other",floor.program,(15,0,0))
+    original=PlaceGenome((floor,spare))
+    intent=IntentContract("covered-place","Raise shelter over floor",("cover",))
+    goal=SpatialIntent(intent.identity,(SpatialGoal("shelter","floor","roof",1.,1.),),
+                       "operator")
+    generated=propose_from_spatial_intent(original,goal)
+    assert len(generated.bodies)==3 and "roof" in {x.entity_id for x in generated.bodies}
+    assert generated.identity!=original.identity
+    assert propose_from_spatial_intent(generated,goal)==generated
+    source=LocationStack(intent.location)
+    source.add_frame(Frame("authored-local","local3d","model_unit"))
+    summary=run_place_campaign(source,intent,goal,original,tmp_path/"study",
+                               epochs=1,offspring=1,exact_budget=1)
+    assert summary["admitted"]==1
+    assert summary["candidates"][0]["affordances"]["goals"][0]["status"]=="geometric-shelter-proposal"
+
+
+def test_canopy_intent_does_not_replace_an_existing_native_roof():
+    from projection_loom.place_genome import propose_from_spatial_intent
+    genome,goal=fixture(roof_x=20)
+    assert propose_from_spatial_intent(genome,goal)==genome
