@@ -1,3 +1,31 @@
+## N9 · Intent aftermath · Source-fixed compound architectural counterfactuals
+
+The `place-intent-ablate` and `place-intent-ablate-verify` commands
+run one bounded **two-to-four goal** native study under one unchanged
+original `IntentContract`, source-independent `PlaceGenome`, and
+attributed `SpatialIntent`. The arms preserve the FULL intent and
+each leave-one-out variation, with exactly one preregistered
+STEP audition budget per arm. The output keeps actual native
+witnesses, distinct geometric refusals, content-addressed original
+genomes and precise per-arm goal digests. An independently replayed
+study reconstructs each geometry and reimports the STEP, including
+negative results.
+
+This assay identifies construction consequences of authoring
+different combinations of goals. It does not claim one arm
+visually superior, authenticate real-world photographic sources,
+certify human accessibility, or trigger new OODA-HA controller
+decisions. The experiment acts as a bounded observation *inside*
+the already-authorized architectural science toolchain, never as a
+self-running substitute for the place campaign.
+
+A failed or unfinished study carries a `FAILED` marker and
+cannot be accepted on replay. Neither changing the number of
+originally offered native bodies nor editing an ablation arm's
+goal digest can repair an unsupported relation after the fact.
+
+---
+
 ## N9 · Intent aftermath · Bounded auditions under the existing OODA-HA helm
 
 The place campaign now receives an explicit

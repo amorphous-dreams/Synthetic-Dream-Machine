@@ -47,6 +47,8 @@ def _manifest(intent,spatial,genome):
 def verify_compound_intent_study(root,intent,spatial,genome):
     root=Path(root)
     pre=_read(root/"pre_registration.json")
+    if (root/"FAILED").exists():
+        raise ValueError("An incomplete compound study cannot be accepted on re-entry")
     if pre!=_manifest(intent,spatial,genome):
         raise ValueError("Compound study original construction or authored aim changed")
     receipt=_read(root/"summary.json")
@@ -56,6 +58,10 @@ def verify_compound_intent_study(root,intent,spatial,genome):
     for name,goals in _arms(spatial):
         folder=root/name
         row=_read(folder/"receipt.json")
+        if (row["arm_id"]!=name
+                or row["goal_sha256"]!=canonical_json_sha256([x.to_dict() for x in goals])
+                or row["automatic_promotion"] is not False):
+            raise ValueError("Ablation arm lost attributed intent or acquired automatic authority")
         if not goals:
             if row["state"]!="control-empty-no-goal" or (folder/"scene").exists():
                 raise ValueError("Empty goal control gained unauthorized native witness")

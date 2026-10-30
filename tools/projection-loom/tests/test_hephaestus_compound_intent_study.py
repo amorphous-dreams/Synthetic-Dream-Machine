@@ -32,3 +32,22 @@ def test_ablated_native_receipt_cannot_adopt_an_unearned_success(tmp_path):
     f.write_text(json.dumps(row))
     with pytest.raises(ValueError,match="diverged"):
         verify_compound_intent_study(path,intent,spatial,original)
+
+def test_cli_matched_ablation_reuses_original_survey_free_native_inputs(tmp_path):
+    from projection_loom.cli import main
+    original,intent,spatial=combined()
+    contract={"location":intent.location,"aim":intent.aim,
+              "objectives":list(intent.objectives),
+              "invariants":list(intent.invariants),
+              "budgets":[list(row) for row in intent.budgets]}
+    for label,document in (("intent",contract),("spatial",spatial.to_dict()),
+                           ("genome",original.to_dict())):
+        (tmp_path/(label+".json")).write_text(json.dumps(document))
+    arguments=["--intent",str(tmp_path/"intent.json"),
+               "--spatial",str(tmp_path/"spatial.json"),
+               "--genome",str(tmp_path/"genome.json")]
+    study=tmp_path/"native-contrast"
+    first=main(["place-intent-ablate",*arguments,"--out",str(study)])
+    second=main(["place-intent-ablate-verify",*arguments,"--study",str(study)])
+    assert first==second
+    assert all(r["native_evidence"]["spatial_intent_sha256"] for r in first["arms"])

@@ -129,6 +129,16 @@ def main(argv=None):
     p.add_argument('--plan',type=Path,required=True)
     p.add_argument('--intent',type=Path,required=True)
     p.add_argument('--genome',type=Path,required=True)
+    p=commands.add_parser('place-intent-ablate',help='Matched full-goal and leave-one-out native STEP study')
+    p.add_argument('--intent',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('place-intent-ablate-verify',help='Reaudit each exact native intent counterfactual')
+    p.add_argument('--intent',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--study',type=Path,required=True)
     p=commands.add_parser('place-intent-preview',help='Inspect typed architectural births before native STEP audition')
     p.add_argument('--intent',type=Path,required=True)
     p.add_argument('--spatial',type=Path,required=True)
@@ -602,6 +612,25 @@ def main(argv=None):
         else:
             result={'valid':verify_place_gallery(args.campaign,args.gallery),
                     'source_camera_registration':False,'automatic_promotion':False}
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command in ('place-intent-ablate','place-intent-ablate-verify'):
+        from .intent_seed import IntentContract
+        from .spatial_intent import SpatialIntent
+        from .place_genome import PlaceGenome
+        from .compound_intent_study import run_compound_intent_study,verify_compound_intent_study
+        authored=json.loads(args.intent.read_text(encoding='utf8'))
+        if set(authored)!={'location','aim','objectives','invariants','budgets'}:
+            raise ValueError('Matched native study requires original attributed intent fields')
+        intent=IntentContract(authored['location'],authored['aim'],
+                              tuple(authored['objectives']),tuple(authored['invariants']),
+                              tuple(tuple(x) for x in authored['budgets']))
+        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        genotype=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
+        if args.command=='place-intent-ablate':
+            result=run_compound_intent_study(intent,spatial,genotype,args.out)
+        else:
+            result=verify_compound_intent_study(args.study,intent,spatial,genotype)
         print(json.dumps(result,indent=2))
         return result
     if args.command in ('place-intent-preview','place-intent-preview-verify'):
