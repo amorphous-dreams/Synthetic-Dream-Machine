@@ -98,7 +98,7 @@ def test_same_native_sites_yield_distinct_shelter_and_ascent_births(tmp_path):
     lower=next(x for x in authored.bodies if x.entity_id=="begin")
     upper=next(x for x in authored.bodies if x.entity_id=="summit")
     original=PlaceGenome(tuple(sorted((lower,upper),key=lambda x:x.entity_id)))
-    intent=IntentContract("stairsite","Choose a spatial meaning",("rise","cover"))
+    intent=IntentContract("stairsite","Choose a spatial meaning",("cover","rise"))
     ascent=SpatialIntent(intent.identity,earlier.goals,"operator")
     cover=SpatialIntent(intent.identity,(SpatialGoal("shelter","begin","roof"),),"operator")
     for path,goal in (("stair",ascent),("roof",cover)):

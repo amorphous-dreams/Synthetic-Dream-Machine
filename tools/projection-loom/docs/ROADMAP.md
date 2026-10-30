@@ -1,3 +1,28 @@
+## ☕ N9 · Single-runner ownership and CI recovery · 2026-10-29
+
+**N9-L** (`fad32e9e`) moves native living-place runs under
+the existing `single_runner` process lease, mirroring
+generalized developmental campaigns. The lock sits beside
+the not-yet-created immutable destination so two writers
+cannot race into competing scene receipts. Partial outputs
+remain refusals; release of a lock never certifies them.
+
+**Intent aftermath L:** tests block concurrent runners and
+preserve the original FAILED marker. The previous N9
+generalized integration reported GREEN contracts/Blender
+but RED native tests due to a noncanonical fixture
+objective ordering `rise,cover`, which violated the
+already-held sorted `IntentContract` invariant.
+Correct the fixture to `cover,rise` without reducing
+the source law. All green from previous exact heads
+stays separate; this recovery must pass new hosted CI.
+
+No automated artistic preference, load certification,
+Elyncia canon promotion or PR merge accompanies
+this structural cleanup.
+
+---
+
 ## ☕ N9 · Shared phase helm / intent aftermath H · 2026-10-29
 
 **N9-H** (`5090b846`) consolidates epoch and candidate phase entry/exit

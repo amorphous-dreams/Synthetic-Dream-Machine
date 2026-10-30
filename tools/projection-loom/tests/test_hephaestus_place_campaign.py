@@ -182,3 +182,13 @@ def test_native_place_runner_uses_same_single_runner_lease_as_generalized(tmp_pa
     assert report["admitted"]==1
     assert run_place_campaign(*inputs,dest,epochs=1,offspring=1,exact_budget=1)==report
     assert not (tmp_path/".concurrent-place.session.runlock").exists()
+
+def test_incomplete_native_campaign_stays_failed_after_single_runner_unlock(tmp_path):
+    inputs=setup()
+    out=tmp_path/"incomplete"
+    out.mkdir()
+    (out/"FAILED").write_text("a crashed earlier writer")
+    with pytest.raises(ValueError,match="Incomplete or occupied"):
+        run_place_campaign(*inputs,out,epochs=1,offspring=1,exact_budget=1)
+    assert (out/"FAILED").exists()
+    assert not (tmp_path/".incomplete.session.runlock").exists()

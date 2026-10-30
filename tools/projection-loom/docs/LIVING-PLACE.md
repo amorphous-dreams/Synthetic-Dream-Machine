@@ -1,3 +1,28 @@
+## N9 · Aftermath L · One native session / one exact-source runner
+
+The place runner now uses the same `single_runner` lease as the
+generalized developmental campaign. Its sibling lock protects an
+as-yet-unpublished output: a racing second process cannot create
+a competing source/intent frontier at that destination. A crashed
+or partially written output remains visibly incomplete and
+cannot replay as an accepted candidate after lock release.
+
+The single OODA-HA journal still determines which phase may
+advance; a lease coordinates process ownership only, not
+artistic rank, operator review, physical safety or a second
+control plane. A rejected attempt never receives a success
+receipt merely because it obtains the lease next.
+
+A first N9 exact-head native run found one **fixture defect**:
+a matched-intent test passed `rise,cover` instead of sorted
+`cover,rise`. The pre-existing `IntentContract` correctly
+refused noncanonical objectives. Recovery corrects only that
+test fixture; the immutable intent rule remains unchanged.
+Rerun native STEP, generalized, CAD and held-out gates on
+the new head before claiming acceptance.
+
+---
+
 ## N9 · Aftermath H · Single five-phase authorial helm
 
 Both multi-body native growth and the generalized visual-source
