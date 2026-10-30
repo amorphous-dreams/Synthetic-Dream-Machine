@@ -206,7 +206,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
       // main registry, e.g. wiki-switch). Without this, daemon-origin verbs never leave
       // the worker (projection frames reach main, but verse-events had no bridge).
       const cancelVerse = tw5.onVerseEvent({
-        handleVerseEvent: (uri: string, listenable: string, verb?: string, fromUri?: string, args?: Record<string, unknown>) => {
+        handleVerseEvent: (uri: string, listenable: string, verb?: string, fromUri?: string, args?: Record<string, unknown>, origin?: "surface" | "content") => {
           // The reaction-router already gates on the `lares-dispatch` marker, so ONLY a
           // genuine summon reaches here (the verb machinery's own invocation/outcome
           // writes never carry the marker → router-inert, the marker alone gating this
@@ -218,6 +218,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
             listenable,
             payload: {
               uri,
+              origin: origin ?? "content",
               ...(verb    !== undefined ? { verb }    : {}),
               ...(fromUri !== undefined ? { fromUri } : {}),
               ...(args    !== undefined ? { [LARES_VERB_ARGS_WIRE_FIELD]: JSON.stringify(args) } : {}),
@@ -262,7 +263,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
             ...(msg.effectKey ? { effectKey:  msg.effectKey             } : {}),
             ...(msg.face      ? { face:       msg.face                  } : {}),
           });
-          localAsks.add(placed);
+          if (placedAskIsLocal(msg)) localAsks.add(placed);
           if (localAsks.size > 4096) localAsks.delete(localAsks.values().next().value as string);
         }
         return true;
@@ -399,3 +400,5 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
     }),
   ]);
 }
+
+export function placedAskIsLocal(msg: Pick<DaemonMsg_PlaceVerb, "origin">): boolean { return msg.origin === "channel" || msg.origin === "surface"; }

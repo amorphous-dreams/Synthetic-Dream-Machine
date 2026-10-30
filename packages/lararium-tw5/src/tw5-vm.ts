@@ -134,13 +134,13 @@ export class TW5Engine {
    * Returns a teardown function (Verse cancelable equivalent).
    */
   onVerseEvent(consumer: {
-    handleVerseEvent(uri: string, listenable: string, verb?: string, fromUri?: string, args?: Record<string, unknown>): void;
+    handleVerseEvent(uri: string, listenable: string, verb?: string, fromUri?: string, args?: Record<string, unknown>, origin?: "surface" | "content"): void;
   }): () => void {
     if (!this._tw) return () => {};
     const handler = (...args: unknown[]) => {
-      const event = args[0] as { uri?: string; listenable?: string; verb?: string; fromUri?: string; args?: Record<string, unknown> } | undefined;
+      const event = args[0] as { uri?: string; listenable?: string; verb?: string; fromUri?: string; args?: Record<string, unknown>; origin?: "surface" | "content" } | undefined;
       if (event?.uri && event.listenable) {
-        consumer.handleVerseEvent(event.uri, event.listenable, event.verb, event.fromUri, event.args);
+        consumer.handleVerseEvent(event.uri, event.listenable, event.verb, event.fromUri, event.args, event.origin);
       }
     };
     this._tw.wiki.addEventListener("tm-verse-event", handler);

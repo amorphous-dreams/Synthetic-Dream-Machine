@@ -292,3 +292,5 @@ export {
   checkCarrierLifecycle,
 } from "./carrier-lifecycle.js";
 export type { CarrierLifecycle, LifecycleStage } from "./carrier-lifecycle.js";
+
+export { placedAskIsLocal } from "./daemon-behavior.js";

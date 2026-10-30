@@ -71,7 +71,7 @@ export function routedInnerBags(invocation: Verb): string[] {
   const bags: string[] = [];
   for (const k of ["to-bag", "from-bag", "bag", "toBag", "fromBag"]) {
     const v = a[k];
-    if (typeof v === "string" && isSystemCanonBag(v) && !bags.includes(v)) bags.push(v);
+    if (typeof v === "string" && !bags.includes(v)) bags.push(v);
   }
   return bags;
 }
@@ -89,8 +89,22 @@ export async function gateRoutedVerb(invocation: Verb, verifier: CapabilityVerif
   if (!proof.ok) {
     throw new Error(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bagUrl}, access=${access}): ${proof.reason ?? "no grant"}`);
   }
+  // Every inner bag clears its own cap: a source is READ (a copy out of canon stays open to a reader), a destination
+  // takes the outer access.
+  const innerArgs = (invocation.args as Record<string, unknown>)["args"];
+  const sources = new Set<string>();
+  if (innerArgs !== null && typeof innerArgs === "object" && !Array.isArray(innerArgs)) {
+    for (const k of ["from-bag", "fromBag"]) { const v = (innerArgs as Record<string, unknown>)[k]; if (typeof v === "string") sources.add(v); }
+  }
+  for (const bag of routedInnerBags(invocation)) {
+    if (bag === bagUrl) continue;
+    const need: CapabilityAccess = sources.has(bag) ? "read" : access;
+    const inner = await verifier.verify({ presenter, bagUrl: bag, access: need, ...(local ? { channel: "local" as const } : {}) });
+    if (!inner.ok) throw new Error(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bag}, access=${need}): ${inner.reason ?? "no grant"}`);
+  }
   if (verifier.kahuReach) {
-    for (const bag of routedInnerBags(invocation)) await verifier.kahuReach(bag, invocation.action, presenter);
+    // Only a system canon bag takes the Kahu hand; every inner bag already cleared its cap above.
+    for (const bag of routedInnerBags(invocation)) if (isSystemCanonBag(bag)) await verifier.kahuReach(bag, invocation.action, presenter);
   }
 }
 

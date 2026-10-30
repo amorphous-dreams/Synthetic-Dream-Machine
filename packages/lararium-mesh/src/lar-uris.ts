@@ -610,3 +610,10 @@ export const BAG_IDS = {
 // THE TITLE LAW rides this module's door: a session-form URI never stands as a storage key
 // (`title-law.ts`). A pure reader (`@lararium/mesh/lar-uris`) and the barrel both reach it here.
 export { SESSION_FORM_TITLE_CODE, SessionFormTitleRefusal, assertStorableTitle, larUserinfoOf, storableTitleFault } from "./title-law.js";
+
+/** Decode the island-built event envelope; the arguments cannot claim its origin. */
+export function islandEventAsk(listenable: string, payload: Record<string, unknown>) {
+  if (typeof payload["verb"] !== "string") return null;
+  const origin: "channel" | "surface" | "content" = payload["origin"] === "channel" || payload["origin"] === "surface" ? payload["origin"] : "content";
+  return { verb: payload["verb"], args: verbArgsFromPayload(payload), requestedBy: typeof payload["requestedBy"] === "string" ? payload["requestedBy"] : listenable, listenable, ...(typeof payload["fromUri"] === "string" ? { fromUri: payload["fromUri"] } : {}), origin };
+}

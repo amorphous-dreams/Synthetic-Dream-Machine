@@ -88,7 +88,7 @@ export class IslandKernel {
 
     this._liveHandles.add({
       cancel: this._tw5.onVerseEvent({
-        handleVerseEvent: (uri: string, listenable: string, verb?: string, fromUri?: string, args?: Record<string, unknown>) => {
+        handleVerseEvent: (uri: string, listenable: string, verb?: string, fromUri?: string, args?: Record<string, unknown>, origin?: "surface" | "content") => {
           // Structured summon args ride the GP-2-flat island wire as ONE `verb-args` JSON
           // string (the payload admits only scalars); the vessel re-parses it (#48).
           this._post({
@@ -97,6 +97,7 @@ export class IslandKernel {
             listenable,
             payload: {
               uri,
+              origin: origin ?? "content",
               ...(verb    !== undefined && { verb }),
               ...(fromUri !== undefined && { fromUri }),
               ...(args    !== undefined && { [LARES_VERB_ARGS_WIRE_FIELD]: JSON.stringify(args) }),

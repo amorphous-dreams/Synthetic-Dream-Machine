@@ -39,7 +39,7 @@ import {
   emptyLarDoc, storedLarRecord, tiddlerText, plainRecord, plainRecordOrNull,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, recipeHostFacets,
   DAEMON_BAG_ID,
-  BAG_IDS, slugFromUri, verbArgsFromPayload, registerCrossroadsPointer,
+  BAG_IDS, slugFromUri, islandEventAsk, registerCrossroadsPointer,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl,
   type RealmBagRegistration, MEMORY_CUT_SHADOW_READ,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
@@ -1284,7 +1284,7 @@ async function prepareNodeBootOn(
     if (!daemonVm) throw new Error("the daemon island does not stand yet");
     const vm = daemonVm;
     return askSeatDuties({
-      daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb(o), facts,
+      daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), facts,
       vesselKey: activeAtom?.key ?? "", sign: (image) => {
         if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
         return activeAtom.sign(image);
@@ -3127,16 +3127,8 @@ async function prepareNodeBootOn(
     eventBus.subscribe<{ wikiId: string; listenable: string; payload: Record<string, string | number | boolean> }>(
       "worker.event",
       ({ listenable, payload }) => {
-        const verb    = typeof payload["verb"]    === "string" ? payload["verb"]    : undefined;
-        const fromUri = typeof payload["fromUri"] === "string" ? payload["fromUri"] : undefined;
-        if (!verb) return;
-        daemonVm.placeVerb({
-          verb,
-          args:        verbArgsFromPayload(payload),   // structured args off the `verb-args` JSON (#48)
-          requestedBy: typeof payload["requestedBy"] === "string" ? payload["requestedBy"] : listenable,
-          listenable,
-          ...(fromUri ? { fromUri } : {}),
-        });
+        const ask = islandEventAsk(listenable, payload);
+        if (ask) daemonVm.placeVerb(ask);
       },
     );
   };
@@ -3315,7 +3307,7 @@ async function prepareNodeBootOn(
         return async (to: Uint8Array) => {
           // The cut read this vessel's shadow at its entry; the ask says so, and the holder reads none of its own.
           const out = await askIslandMemory({
-            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb(o), act: "cut",
+            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), act: "cut",
             facts: { to: Buffer.from(to).toString("hex"), shadow: MEMORY_CUT_SHADOW_READ },
             vesselKey: activeAtom?.key ?? "", sign: (image) => {
               if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
@@ -3335,7 +3327,7 @@ async function prepareNodeBootOn(
         const vm = daemonVm;
         return async () => {
           const out = await askIslandMemory({
-            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb(o), act: "door", facts: {},
+            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), act: "door", facts: {},
             vesselKey: activeAtom?.key ?? "", sign: (image) => {
               if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
               return activeAtom.sign(image);
@@ -3350,7 +3342,7 @@ async function prepareNodeBootOn(
         const vm = daemonVm;
         return async (section: string, sealedSecret: string) => {
           const out = await askIslandMemory({
-            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb(o), act: "import", facts: { section, secret: sealedSecret },
+            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }), act: "import", facts: { section, secret: sealedSecret },
             vesselKey: activeAtom?.key ?? "", sign: (image) => {
               if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
               return activeAtom.sign(image);

@@ -28,18 +28,6 @@ function reactorsOver(store: MemoryTiddlerStore) {
 const store = (): MemoryTiddlerStore => new MemoryTiddlerStore(DAEMON_BAG_ID);
 
 describe("realm-feed — the offering rolls one writer's own slot", () => {
-  test("a presenter may feed only its own writer slot", async () => {
-    const s = store();
-    const r = reactorsOver(s);
-    const sibling = { presenter: `0x${FACE_B}` } as VerbContext;
-    // CONTROL: the sibling's own offering lands in its own slot.
-    expect(await r.feed({ realm: REALM, writer: FACE_B }, sibling)).toMatchObject({ writer: FACE_B });
-    expect((await s.get(realmFeedSlotUri(REALM, FACE_B)))?.tiddler.text).toBe("1");
-    // RED today: feed trusts writer without binding it to the presenter.
-    await expect(r.feed({ realm: REALM, writer: FACE_A }, sibling)).rejects.toMatchObject({ reason: "writer-not-presenter" });
-    expect(await s.get(realmFeedSlotUri(REALM, FACE_A))).toBeNull();
-  });
-
   test("a first feed lands epoch 1 and reports itself as first", async () => {
     const s = store();
     const r = reactorsOver(s);

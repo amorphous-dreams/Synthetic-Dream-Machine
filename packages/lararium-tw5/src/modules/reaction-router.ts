@@ -128,10 +128,14 @@ function fireReactionsForUri(wiki: TW5Wiki, graph: ReactionGraph, uri: string): 
     }
   }
 
+  const stamps = (wiki as unknown as { __larSurfaceWrites?: Map<string, unknown> }).__larSurfaceWrites;
+  const origin = stamps?.get(uri) === tiddler && tiddler ? "surface" : "content";
+  stamps?.delete(uri);
   for (const [listenable, reaction] of listenables) {
     wiki.dispatchEvent("tm-verse-event", {
       uri,
       listenable,
+      origin,
       ...(reaction.verb !== undefined && { verb: reaction.verb, fromUri: uri, args: reaction.args ?? {} }),
     });
   }

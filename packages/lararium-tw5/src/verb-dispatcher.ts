@@ -57,7 +57,7 @@ import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, E
 import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
-import { runLocalVerb, gateRoutedVerb } from "./verb-local-dispatch.js";
+import { runLocalVerb, gateRoutedVerb, makeCapVerify } from "./verb-local-dispatch.js";
 
 export interface VerbContext {
   readonly daemon: CompositeStore;
@@ -189,6 +189,10 @@ export class VerbTable {
     if (this.fenceOf && this.fenced(verbName)) this.fenceOf.check(verbName, context);
   }
 
+  admitRouted(verbName: string, context: VerbContext): void {
+    if (this.fenceOf && !Object.hasOwn(this.fenceOf.open, verbName)) this.fenceOf.check(verbName, context);
+  }
+
   get(verbName: string): VerbReactor | undefined {
     const inner = this.handlers.get(verbName);
     const fence = this.fenceOf;
@@ -301,6 +305,9 @@ export class VerbDispatcher {
       });
     }
     if (this.opts.routeFn) {
+      const presenter = this.opts.presenterOf?.(invocation) ?? invocation.requestedBy;
+      const local = this.opts.localOf?.(invocation) === true;
+      this.opts.registry.admitRouted(invocation.action, { daemon: this.opts.daemon, invocation, presenter, local, cap: makeCapVerify(this.opts.verifier, presenter, local) });
       // Verify-then-delegate: the keyholder worker gates the cap BEFORE
       // routing to main; main then trusts the worker→main channel as the
       // capability (project_verification_placement). Enforced only when a

@@ -349,7 +349,10 @@ export interface IslandMsg_Teardown {
 // delegate via DaemonMsg_DelegateVerb; the island awaits DaemonMsg_VerbResult before writing outcome.
 
 /** Vessel → island: place a volatile verb invocation in the daemon island's TW5 wiki. */
+export type PlaceOrigin = "channel" | "surface" | "content";
+
 export interface DaemonMsg_PlaceVerb {
+  origin: PlaceOrigin;
   type: "daemon:place-verb";
   verb: string;
   args: Record<string, unknown>;
@@ -1131,6 +1134,7 @@ export function mkFault(wikiUri: string, error: string): IslandMsg_Fault {
 }
 
 export function mkDaemonPlaceVerb(opts: {
+  origin: PlaceOrigin;
   verb: string;
   args: Record<string, unknown>;
   requestedBy: string;
@@ -1144,6 +1148,7 @@ export function mkDaemonPlaceVerb(opts: {
 }): DaemonMsg_PlaceVerb {
   const msg: DaemonMsg_PlaceVerb = {
     type: "daemon:place-verb",
+    origin: opts.origin,
     verb: opts.verb,
     args: opts.args,
     requestedBy: opts.requestedBy,
