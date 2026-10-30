@@ -129,6 +129,18 @@ def main(argv=None):
     p.add_argument('--plan',type=Path,required=True)
     p.add_argument('--intent',type=Path,required=True)
     p.add_argument('--genome',type=Path,required=True)
+    p=commands.add_parser('place-compose-route',help='Grow operator-selected passage with every other typed spatial goal')
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--goal-index',type=int,required=True)
+    p.add_argument('--turn',choices=('x-then-y','y-then-x'),required=True)
+    p.add_argument('--corner-id',required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--genome-out',type=Path,required=True)
+    p=commands.add_parser('place-compose-route-verify',help='Recreate original selected multi-goal passage')
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--receipt',type=Path,required=True)
     p=commands.add_parser('place-orthogonal-study',help='Compare two explicitly chosen native right-angle routes')
     p.add_argument('--genome',type=Path,required=True)
     p.add_argument('--spatial',type=Path,required=True)
@@ -640,6 +652,26 @@ def main(argv=None):
         else:
             result={'valid':verify_place_gallery(args.campaign,args.gallery),
                     'source_camera_registration':False,'automatic_promotion':False}
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command in ('place-compose-route','place-compose-route-verify'):
+        from .place_genome import PlaceGenome
+        from .spatial_intent import SpatialIntent
+        from .place_composed_route import compose_operator_route,verify_composed_operator_route
+        from .generalized_campaign import save_once
+        genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
+        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        if args.command=='place-compose-route':
+            if args.out==args.genome_out:
+                raise ValueError('Source-bound route receipt and constructed genome require separate paths')
+            result=compose_operator_route(genome,spatial,goal_index=args.goal_index,
+                                          turn=args.turn,corner_id=args.corner_id)
+            save_once(args.out,result)
+            save_once(args.genome_out,result['proposed_genome'])
+        else:
+            result={'valid':verify_composed_operator_route(genome,spatial,
+                json.loads(args.receipt.read_text(encoding='utf8'))),
+                    'automatic_promotion':False}
         print(json.dumps(result,indent=2))
         return result
     if args.command in ('place-orthogonal-study','place-orthogonal-study-verify'):
