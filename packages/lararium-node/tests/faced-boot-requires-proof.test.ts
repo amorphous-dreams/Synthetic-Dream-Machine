@@ -53,10 +53,11 @@ describe("a faced boot proves its face", () => {
     for (const rel of ["lararium-node/src/open-node-vessel.ts", "lararium-browser/src/open-browser-vessel.ts"]) {
       const src = read(rel);
       expect(src).toMatch(/planes: \{[^}]*intents:/s);
-      // The node reads its bootstrap from a cleartext file, so it registers the mounted siblings through the signed-log proof (provenPlaneUrls).
-      if (rel.includes("lararium-node")) { expect(src).toMatch(/provenPlaneUrls\(wornFaceProjection,/); expect(src).toMatch(/registerInCatalog\(wornFace\[key\],/); continue; }
-      expect(src).toMatch(/registerInCatalog\(wornFace\.intents,/);
-      expect(src).toMatch(/registerInCatalog\(wornFace\.circles,/);
+      // Both bootstraps rest unsealed (the node's a cleartext file, the browser's plain IndexedDB), so both register the mounted
+      // siblings only as the signed log names them (provenPlaneUrls): one rule, read by capability and never by host.
+      expect(src).toMatch(/provenPlaneUrls\(wornFaceProjection,/);
+      expect(src).toMatch(/registerInCatalog\(wornFace\[key\],/);
+      expect(src).not.toMatch(/registerInCatalog\(wornFace\.\w+\s*,\s*(?:bootstrap|social)\.\w+Url\s*\)/);
     }
   });
 
