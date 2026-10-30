@@ -129,6 +129,18 @@ def main(argv=None):
     p.add_argument('--plan',type=Path,required=True)
     p.add_argument('--intent',type=Path,required=True)
     p.add_argument('--genome',type=Path,required=True)
+    p=commands.add_parser('place-orthogonal-study',help='Compare two explicitly chosen native right-angle routes')
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--location',required=True)
+    p.add_argument('--corner-id',required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('place-orthogonal-study-verify',help='Reimport and compare original two native route arms')
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--location',required=True)
+    p.add_argument('--corner-id',required=True)
+    p.add_argument('--study',type=Path,required=True)
     p=commands.add_parser('place-orthogonal-route',help='Propose an explicitly operator-chosen two-leg diagonal crossing')
     p.add_argument('--genome',type=Path,required=True)
     p.add_argument('--spatial',type=Path,required=True)
@@ -622,6 +634,20 @@ def main(argv=None):
         else:
             result={'valid':verify_place_gallery(args.campaign,args.gallery),
                     'source_camera_registration':False,'automatic_promotion':False}
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command in ('place-orthogonal-study','place-orthogonal-study-verify'):
+        from .place_genome import PlaceGenome
+        from .spatial_intent import SpatialIntent
+        from .place_orthogonal_study import run_orthogonal_study,verify_orthogonal_study
+        genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
+        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        if args.command=='place-orthogonal-study':
+            result=run_orthogonal_study(genome,spatial,args.out,
+                       location=args.location,corner_id=args.corner_id)
+        else:
+            result=verify_orthogonal_study(args.study,genome,spatial,
+                       location=args.location,corner_id=args.corner_id)
         print(json.dumps(result,indent=2))
         return result
     if args.command in ('place-orthogonal-route','place-orthogonal-route-verify'):
