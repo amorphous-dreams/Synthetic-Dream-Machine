@@ -189,3 +189,38 @@ def test_cli_joint_fire_goals_are_direct_place_run_inputs(tmp_path):
               "--alternatives","b-cover","a-bridge","--witness-id","witness-a",
               "--actor","operator","--out",str(tmp_path/"nope.json"),
               "--spatial-out",str(tmp_path/"nope-spatial.json")])
+
+
+def test_joint_fire_replays_both_real_native_goals_in_one_scene(tmp_path):
+    from projection_loom.fire_spatial import bind_fire_spatial_set
+    from projection_loom.scene_usd import package_scene
+    from projection_loom.place_affordances import assess_place,verify_place_affordances
+    base=original()
+    growth=base.bodies[0].program
+    third=PlaceBody("court",growth,(0,12,0))
+    canopy=PlaceBody("roof",growth,(0,12,4))
+    place=PlaceGenome(tuple(sorted((*base.bodies,third,canopy),
+                                  key=lambda b:b.entity_id)))
+    proposal={"schema":"projection-loom/fire-bound-plan",
+              "source_witness_id":"witness-a","seed_entity_sha256":None,
+              "location":"place","resolved":{"west":"west","east":"east",
+                                              "court":"court","roof":"roof"},
+              "alternatives":[
+                  {"id":"a-bridge","relation":"bridges","implementation":"bridge-between",
+                   "subject":"west","object":"east"},
+                  {"id":"b-cover","relation":"covers","implementation":"overhead-canopy",
+                   "subject":"court","object":"roof"}]}
+    plan_hash=canonical_json_sha256(proposal)
+    proposal["sha256"]=plan_hash
+    contract=IntentContract("place","Cross and rest",("connect","shelter"))
+    bound=bind_fire_spatial_set(proposal,contract,place,
+                alternative_ids=("a-bridge","b-cover"),
+                source_witness_id="witness-a",authored_by="operator")
+    goal=SpatialIntent.from_dict(bound["spatial_intent"])
+    child=propose_from_spatial_intent(place,goal)
+    package_scene(child.declaration("place"),tmp_path/"joint")
+    result=assess_place(tmp_path/"joint",child,goal)
+    assert result["all_declared_goals_witnessed"],result
+    assert {g["status"] for g in result["goals"]}=={
+        "geometric-route-proposal","geometric-shelter-proposal"}
+    assert verify_place_affordances(tmp_path/"joint",child,goal,result)

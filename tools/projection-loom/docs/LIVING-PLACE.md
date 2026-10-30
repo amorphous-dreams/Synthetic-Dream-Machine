@@ -1,3 +1,26 @@
+## N9-R2 · Intent aftermath: joined authored Fire goals cross the native boundary
+
+The operator now invokes `fire-place-bind-set` with one to eight
+explicitly chosen and lexicographically ordered alternative IDs, a
+verified original Fire plan, the original source witness, the authored
+`IntentContract`, and a native place genome. Two independently
+digest-bound outputs cross the boundary: a complete **immutable
+selection receipt** and a minimal **SpatialIntent** immediately consumable
+by `place-run --spatial`. `fire-place-verify-set` reconstructs
+the entire typed selection, not just its final joint checksum.
+
+A native test grows one genuine crossing and independently witnesses
+one authored overhead cover in the same scene. Each requires its
+own reimported STEP proof; success of one cannot disguise failure of
+the other. Wrong ordering, duplicate goals, stale source identities,
+altered child receipts and changed original proposals refuse rather
+than silently reinterpreting a mythic or poetic request.
+
+No generated raster, model text, freehand creative treatment, safety
+certificate or canon approval enters this programmatic boundary.
+
+---
+
 ## N9-R1 · Aftermath: one authored selection, several consequences
 
 The typed Fire interface now admits a finite *set* of one to eight explicitly
