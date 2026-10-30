@@ -12,7 +12,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { EXIT, Ledger, exitOf, read, tend, undo, type Item } from "../src/intent/engine.js";
 import {
-  claudeHook, headLine, jsonFloor, jsonForeign, jsonIncludes, jsonSet, namesSeed, seedless, tomlHook, tomlMcpServer,
+  claudeHook, headLine, jsonFloor, tomlHookForeign, jsonForeign, jsonIncludes, jsonSet, namesSeed, seedless, tomlHook, tomlMcpServer,
   tomlTableKey, tomlTableUnset, tomlTopFloor,
 } from "../src/intent/kinds.js";
 import { CARRIER, declared, homeItems, repoItems } from "../src/intent/catalog.js";
@@ -74,6 +74,18 @@ describe("hooks re-aim at the resolved path rather than standing beside a stale 
     const f = claudeHook("Stop", "hook.sh", { type: "command", command: 'bash "/new/hook.sh"', timeout: 30 });
     const o = JSON.parse(f('{"hooks":{"Stop":[{"hooks":[{"type":"command","command":"bash \\"/old/hook.sh\\""}]},{"hooks":[{"type":"command","command":"other"}]}]}}')!);
     expect(o.hooks.Stop).toEqual([{ hooks: [{ type: "command", command: 'bash "/new/hook.sh"', timeout: 30 }] }, { hooks: [{ type: "command", command: "other" }] }]);
+  });
+  it("Claude: an operator's own hook and a group's matcher stand beside the house's, untouched", () => {
+    const f = claudeHook("SessionStart", "wake.mjs", { type: "command", command: "node", args: ["/new/wake.mjs"], timeout: 15 });
+    const mine = { type: "command", command: "echo mine" };
+    const o = JSON.parse(f(JSON.stringify({ hooks: { SessionStart: [{ matcher: "startup", hooks: [mine, { type: "command", command: "node", args: ["/old/wake.mjs"] }] }] } }))!);
+    expect(o.hooks.SessionStart[0]).toEqual({ matcher: "startup", hooks: [mine, { type: "command", command: "node", args: ["/new/wake.mjs"], timeout: 15 }] });
+    expect(f(JSON.stringify(o))).toBe(JSON.stringify(o));
+  });
+  it("Codex: a block that mixes the house's hook with another reads foreign, never stripped", () => {
+    const mixed = "[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = \"command\"\ncommand = \"/old/hook.sh\"\ntimeout = 60\n\n[[hooks.Stop.hooks]]\ntype = \"command\"\ncommand = \"mine.sh\"\n";
+    expect(tomlHookForeign("Stop", "hook.sh")(mixed)).toMatch(/shares/);
+    expect(tomlHookForeign("Stop", "hook.sh")("[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = \"command\"\ncommand = \"/old/hook.sh\"\n")).toBeNull();
   });
   it("Codex: one block names the resolved path", () => {
     const t = tomlHook("Stop", "hook.sh", "/new/hook.sh", 60)("[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = \"command\"\ncommand = \"/old/hook.sh\"\ntimeout = 60\n")!;

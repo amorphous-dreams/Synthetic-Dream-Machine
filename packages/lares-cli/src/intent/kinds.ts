@@ -74,12 +74,33 @@ function converge<T>(list: readonly T[], mentions: (m: T) => boolean, entry: T):
 
 const mentionsScript = (base: string) => (v: unknown): boolean => JSON.stringify(v ?? null).includes(base);
 
-/** Claude's `hooks.<event>`: one group carries the house's hook for `base`. */
+/**
+ * Claude's `hooks.<event>`: the house's command for `base` stands once, at the resolved path. The
+ * convergence runs at the COMMAND, never the group: a stale house command re-aims in its own place,
+ * under its own group's matcher, and every command that is not the house's stands untouched.
+ */
 export const claudeHook = (event: string, base: string, command: Json): Transform =>
   jsonEdit((o) => {
     const hooks = at(o, ["hooks"]);
-    const groups = Array.isArray(hooks[event]) ? (hooks[event] as unknown[]) : [];
-    hooks[event] = converge(groups, mentionsScript(base), { hooks: [command] });
+    const groups = (Array.isArray(hooks[event]) ? (hooks[event] as unknown[]) : []) as Array<Json & { hooks?: unknown[] }>;
+    const mentions = mentionsScript(base);
+    const want = JSON.stringify(command);
+    const held = groups.some((g) => (g.hooks ?? []).some((c) => JSON.stringify(c) === want));
+    let placed = held;
+    const next: Array<Json & { hooks?: unknown[] }> = [];
+    for (const g of groups) {
+      const cmds = Array.isArray(g.hooks) ? g.hooks : [];
+      if (!cmds.some(mentions)) { next.push(g); continue; }
+      const kept: unknown[] = [];
+      for (const c of cmds) {
+        if (!mentions(c)) { kept.push(c); continue; }
+        if (JSON.stringify(c) === want) { if (!kept.some((k) => JSON.stringify(k) === want)) kept.push(c); continue; }
+        if (!placed) { kept.push(command); placed = true; }
+      }
+      if (kept.length > 0) next.push({ ...g, hooks: kept });
+    }
+    if (!placed) next.push({ hooks: [command] });
+    hooks[event] = next;
   });
 
 /** Copilot's `hooks/lares.json`: the event list carries the house's hook for `base`. */
@@ -201,6 +222,15 @@ export const tomlMcpServer = (name: string, server: { command: string; args: rea
   const block = `[mcp_servers.${name}]\ncommand = ${JSON.stringify(server.command)}\nargs = [${server.args.map((a) => JSON.stringify(a)).join(", ")}]\nenv = { ${env} }\n`;
   const body = lines.join("\n").replace(/\n*$/, "");
   return tidy(`${body}${body.length ? "\n\n" : ""}${block}`);
+};
+
+/** A Codex hook block that carries the house's hook beside another stands outside the house's ownership. */
+export const tomlHookForeign = (event: string, base: string) => (cur: string | null): string | null => {
+  if (cur === null) return null;
+  const groups = (((tomlTryParse(cur) ?? {})["hooks"] as Json | undefined)?.[event] ?? []) as Array<{ hooks?: Array<Json> }>;
+  return groups.some((g) => JSON.stringify(g).includes(base) && (g.hooks ?? []).some((h) => !JSON.stringify(h).includes(base)))
+    ? `a [[hooks.${event}]] block shares the house's hook with another; the house rewrites none of it`
+    : null;
 };
 
 /** Codex's `[[hooks.<event>]]`: one block carries the house's hook for `script`, at the resolved path. */

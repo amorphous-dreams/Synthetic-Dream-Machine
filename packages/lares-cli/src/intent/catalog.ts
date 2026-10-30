@@ -12,7 +12,7 @@ import { parse as parseToml } from "smol-toml";
 import type { External, Item, Radius } from "./engine.js";
 import {
   claudeHook, copilotHook, headLine, jsonFloor, jsonForeign, jsonIncludes, jsonSet, owned, seedless, tomlForeign,
-  tomlHook, tomlMcpServer, tomlTableKey, tomlTableUnset, tomlTopFloor,
+  tomlHook, tomlHookForeign, tomlMcpServer, tomlTableKey, tomlTableUnset, tomlTopFloor,
 } from "./kinds.js";
 import { homesOf, type Homes } from "./homes.js";
 import { resolveLaresMcp, type LaresMcpCommand } from "../mcp-resolve.js";
@@ -183,7 +183,11 @@ function homeItem(
       return base(seat ? { transform: jsonSet(s["path"] as string[], seat), foreign: jsonForeign } : {});
     }
     case "toml-mcp": return base(mcp ? { transform: tomlMcpServer("lares", mcp), foreign: tomlForeign } : {});
-    case "toml-hook": return base({ transform: tomlHook(str(s, "event"), script.slice(script.lastIndexOf("/") + 1), script, timeout), foreign: tomlForeign });
+    case "toml-hook": {
+      const name = script.slice(script.lastIndexOf("/") + 1);
+      const shared = tomlHookForeign(str(s, "event"), name);
+      return base({ transform: tomlHook(str(s, "event"), name, script, timeout), foreign: (cur) => tomlForeign(cur) ?? shared(cur) });
+    }
     case "toml-table-key": return base({ transform: tomlTableKey(str(s, "table"), str(s, "key"), s["value"] as string), foreign: tomlForeign });
     case "toml-table-unset": return base({ transform: tomlTableUnset(str(s, "table"), str(s, "key")), foreign: tomlForeign });
     case "seedless": return base({ transform: seedless() });
