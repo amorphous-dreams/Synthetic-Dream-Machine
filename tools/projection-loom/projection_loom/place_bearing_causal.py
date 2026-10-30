@@ -37,6 +37,8 @@ def materialize_bearing_support(source,genome,spatial,destination,*,actor):
     if not evidence["all_declared_goals_witnessed"]:
         raise ValueError("Native bearing must independently prove exact contact before causal change")
     goal=spatial.goals[0]
+    if any(b.lower==goal.subject and b.upper==goal.object for b in genome.bearings):
+        raise ValueError("Two-contact native column needs separately materialized causal bearing links")
     ground=RelationalGround.load(original/manifest["paths"]["ground"])
     proposal=propose_support(ground,scene,goal.subject,goal.object,actor=actor)
     output=Path(destination)

@@ -1,3 +1,35 @@
+## N9-BC · Intent aftermath: the bearing verb can construct a column
+
+For two aligned and independently authored source solids with an
+unclosed positive vertical bearing gap, `SpatialGoal(bear)`
+now creates a finite **separate native column body** and an
+explicit, immutable `BearingRun(lower,column,upper)`.
+The vertical program derives its height from measured authored
+foundation top and authored roof underside. It cannot invent
+a source footprint, insert an unbounded column, or rewrite a
+present direct contact. Each of the two resulting native
+support-face contacts receives its own STEP, face-area, distance,
+scene, and source geometry witness. The inherited genome and
+quality-diversity descriptor preserve the intermediate structure
+rather than conflating it with a single floor-to-roof touch.
+
+`place-bearing-support` continues to materialize **one**
+direct contact as a causal `supports` operation. A new
+two-contact column currently requires two independent causal
+support operations and therefore refuses that one-link CLI
+without side effects. Do not transfer success of a two-contact
+geometric chain into a one-contact causal statement.
+
+An invented column remains a construction proposal, without
+wind, loads, foundations, human clearance, structural design,
+accessibility or art-quality certification. The operator alone
+approves its use in a later creative generation. A simple
+column might obstruct a separately authored shelter floor;
+the independent cover witness must refuse rather than
+silently treating that spatial conflict as acceptable.
+
+---
+
 ## N9-CB · Intent aftermath: a contact can enter causal ancestry
 
 The `bear` affordance now crosses the **existing** `RelationalGround`

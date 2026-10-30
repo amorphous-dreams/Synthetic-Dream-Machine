@@ -70,3 +70,42 @@ def test_fire_can_bind_bearing_without_granting_load_authority():
              source_witness_id="contact-original",authored_by="operator")
     assert result["spatial_intent"]["goals"][0]["kind"]=="bear"
     assert not result["automatic_promotion"]
+
+
+def test_intent_grows_separate_column_and_proves_both_native_bearings(tmp_path):
+    from projection_loom.place_genome import propose_from_spatial_intent
+    from projection_loom.intent_seed import IntentContract
+    from projection_loom.location_stack import LocationStack,Frame
+    from projection_loom.place_campaign import run_place_campaign,verify_place_campaign
+    original,old=fixture(roof_z=4.)
+    contract=IntentContract("bearing-site","Give a raised roof native contact",("bearing",))
+    goal=SpatialIntent(contract.identity,old.goals,"operator")
+    child=propose_from_spatial_intent(original,goal)
+    assert len(child.bearings)==1 and len(child.bodies)==3
+    assert child.bearings[0].lower=="base" and child.bearings[0].upper=="cap"
+    assert propose_from_spatial_intent(child,goal)==child
+    package_scene(child.declaration(contract.location),tmp_path/"native")
+    proof=assess_place(tmp_path/"native",child,goal)
+    assert proof["all_declared_goals_witnessed"],proof
+    assert proof["goals"][0]["proof"]["contact_count"]==2
+    assert not proof["goals"][0]["proof"]["load_certification"]
+    source=LocationStack(contract.location)
+    source.add_frame(Frame("local-author","local3d","model_unit"))
+    study=tmp_path/"study"
+    result=run_place_campaign(source,contract,goal,original,study,
+                              epochs=1,offspring=1,exact_budget=1)
+    assert result["admitted"]==1
+    assert result["candidates"][0]["descriptor"]["native_bearings"][0][
+        "native_contact_count"]==2
+    assert verify_place_campaign(study)==result
+
+
+def test_laterally_misaligned_original_roof_refuses_column_birth():
+    from projection_loom.place_genome import propose_from_spatial_intent
+    original,goal=fixture(roof_z=4.)
+    cap=next(x for x in original.bodies if x.entity_id=="cap")
+    base=next(x for x in original.bodies if x.entity_id=="base")
+    moved=PlaceBody("cap",cap.program,(2,0,4))
+    displaced=PlaceGenome(tuple(sorted((base,moved),key=lambda x:x.entity_id)))
+    with pytest.raises(ValueError,match="aligned authored footprints"):
+        propose_from_spatial_intent(displaced,goal)
