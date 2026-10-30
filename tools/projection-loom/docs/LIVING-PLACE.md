@@ -64,3 +64,25 @@ and an axis-aligned agent envelope. The inherited construction grammar still
 uses `foundation/spawn/split/bridge/carve` within each body. The study does
 not infer unobserved real-world scale, certified accessibility, load,
 human experience, or survey truth. A review or export cannot promote canon.
+
+## N8 · Intent aftermath IV · A relation makes a change, not a label
+
+The new `propose_from_spatial_intent` creates a bounded additional
+construction body ONLY when the operator/Fire explicitly author a `connect`
+goal between two known, simple rooted support sites. Their authored dimensions
+and placements determine the deck's constructive program, not image pixels,
+language tokens, or arbitrary OpenCascade face identifiers. Existing declared
+walkways remain untouched. The original genome and the constructed genome
+each keep full separate content digests in the preregistration.
+
+North/south and either horizontal direction use the same native bearing test;
+diagonal and different-level supports still refuse. `shelter` and `ascend`
+continue as explicit unimplemented architectural hypotheses. This limited
+contrast establishes genuine intent sensitivity for a finite case, not
+generalized text-to-architecture or human interpretation of a sanctuary.
+Operator and Fire attribution describes the authored record; it does not
+cryptographically authenticate its human author.
+
+The native corridor uses a bounded axis-aligned agent envelope; no formula
+silently turns that witness into building-code accessibility or physical
+load-bearing certification. Equal camera/source testimonies survive unchanged.

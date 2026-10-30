@@ -46,3 +46,32 @@ def test_intent_actually_constructs_missing_spatial_relationship():
 def proposed_again(genome,goal):
     from projection_loom.place_genome import propose_from_spatial_intent
     return propose_from_spatial_intent(genome,goal)
+
+def test_same_source_different_intent_changes_the_proposed_topology():
+    from projection_loom.intent_seed import IntentContract
+    from projection_loom.spatial_intent import SpatialGoal,SpatialIntent
+    from projection_loom.place_genome import propose_from_spatial_intent
+    original=PlaceGenome(scene().bodies[1:],())
+    i=IntentContract("two-heights","Different potential narratives",("crossing","shelter"))
+    passage=SpatialIntent(i.identity,(SpatialGoal("connect","west","east"),),"fire")
+    refuge=SpatialIntent(i.identity,(SpatialGoal("shelter","west","east"),),"fire")
+    a=propose_from_spatial_intent(original,passage)
+    b=propose_from_spatial_intent(original,refuge)
+    assert len(a.bodies)==3 and a.walkways
+    assert b==original and not b.walkways
+    # An unsupported artistic goal remains an unbuilt study, not made-up geometry.
+
+def test_diagonal_and_mismatched_elevation_are_explicit_intent_refusals():
+    from projection_loom.intent_seed import IntentContract
+    from projection_loom.spatial_intent import SpatialGoal,SpatialIntent
+    from projection_loom.place_genome import propose_from_spatial_intent
+    original=PlaceGenome(scene().bodies[1:],())
+    i=IntentContract("two-heights","A path",("crossing",))
+    goal=SpatialIntent(i.identity,(SpatialGoal("connect","west","east"),),"operator")
+    changed=list(original.bodies)
+    changed[0]=PlaceBody("east",changed[0].program,(10,1,0))
+    with pytest.raises(ValueError,match="axis-aligned"):
+        propose_from_spatial_intent(PlaceGenome(tuple(changed)),goal)
+    changed[0]=PlaceBody("east",changed[0].program,(10,0,2))
+    with pytest.raises(ValueError,match="equally elevated"):
+        propose_from_spatial_intent(PlaceGenome(tuple(changed)),goal)
