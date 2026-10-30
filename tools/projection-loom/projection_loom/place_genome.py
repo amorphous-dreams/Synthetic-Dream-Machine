@@ -305,8 +305,7 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
                     or upper.program.nodes[0].op!="foundation"):
                 raise ValueError("Bearing-column birth requires simple native foundation bodies")
             lo,hi=lower.program.nodes[0].size,upper.program.nodes[0].size
-            rise=(upper.translation[2]-hi[2]*0)+(0) - (
-                lower.translation[2]+lo[2])
+            rise=upper.translation[2]-(lower.translation[2]+lo[2])
             if rise<=.05 or rise>8 or len(bodies)>=16:
                 # Touching originals require no invented column. A gap that
                 # exceeds the finite construction envelope stays unresolved.

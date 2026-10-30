@@ -37,12 +37,18 @@ def observed_place_descriptor(genome:PlaceGenome,affordances):
     for item in affordances["goals"]:
         proof=item["proof"]
         if item["status"]=="geometric-bearing-proposal":
-            contact=(proof or {}).get("native_contact",{})
-            if (not isinstance(contact,dict) or contact.get("load_certification") is not False
-                    or contact.get("native_contact_area",0)<=0):
+            chain=(proof or {}).get("support_chain",[])
+            if (not isinstance(chain,list) or len(chain) not in (1,2)
+                    or any(not isinstance(contact,dict)
+                           or contact.get("load_certification") is not False
+                           or contact.get("native_contact_area",0)<=0
+                           for contact in chain)):
                 raise ValueError("Place bearing lacks independent exact STEP contact testimony")
-            bearings.append({"native_contact_area":contact["native_contact_area"],
-                             "lower":contact["lower"],"upper":contact["upper"]})
+            bearings.append({"native_contact_area":min(
+                                 x["native_contact_area"] for x in chain),
+                             "lower":chain[0]["lower"],
+                             "upper":chain[-1]["upper"],
+                             "native_contact_count":len(chain)})
             continue
         if item["status"]=="geometric-ascent-proposal":
             if (not proof or not proof.get("edge_contacts")

@@ -108,9 +108,21 @@ def assess_place(bundle,genome:PlaceGenome,spatial:SpatialIntent,*,headroom=1.8)
             if goal.subject not in solids or goal.object not in solids:
                 item["reason"]="Geometric bearing requires two named independent STEP bodies"
             else:
+                chains=[b for b in genome.bearings
+                        if b.lower==goal.subject and b.upper==goal.object]
                 try:
-                    contact=native_support(bundle,goal.subject,goal.object,
-                        minimum_contact_area=max(.05,goal.min_width**2/8))
+                    if len(chains)>1:
+                        raise ValueError("Competing authored columns require operator selection")
+                    if chains:
+                        chain=chains[0]
+                        contacts=[
+                            native_support(bundle,chain.lower,chain.column,
+                                minimum_contact_area=max(.05,goal.min_width**2/8)),
+                            native_support(bundle,chain.column,chain.upper,
+                                minimum_contact_area=max(.05,goal.min_width**2/8))]
+                    else:
+                        contacts=[native_support(bundle,goal.subject,goal.object,
+                            minimum_contact_area=max(.05,goal.min_width**2/8))]
                 except ValueError as exc:
                     item["reason"]="Independent native bearing refused: "+str(exc)
                 else:
@@ -119,7 +131,9 @@ def assess_place(bundle,genome:PlaceGenome,spatial:SpatialIntent,*,headroom=1.8)
                                        "source":goal.subject,"destination":goal.object,
                                        "scene_sha256":manifest["sha256"],
                                        "genome_sha256":genome.identity,
-                                       "native_contact":contact,
+                                       "support_chain":contacts,
+                                       "native_contact":contacts[0] if len(contacts)==1 else None,
+                                       "contact_count":len(contacts),
                                        "load_certification":False,
                                        "automatic_promotion":False})
             outcomes.append(item)
