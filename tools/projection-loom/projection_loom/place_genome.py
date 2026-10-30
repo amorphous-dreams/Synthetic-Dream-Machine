@@ -65,9 +65,33 @@ class Walkway:
 
 
 @dataclass(frozen=True)
+class AscentRun:
+    """Operator-authored ordered rising tread handles, not an inferred path."""
+    source: str
+    steps: tuple[str,...]
+    destination: str
+
+    def __post_init__(self):
+        names=(self.source,*self.steps,self.destination)
+        if (not 1<=len(self.steps)<=8 or len(set(names))!=len(names)
+                or any(not isinstance(n,str) or not _NAME.fullmatch(n) for n in names)):
+            raise ValueError("Ascent requires distinct named endpoints and one to eight treads")
+
+    def to_dict(self):
+        return {"source":self.source,"steps":list(self.steps),"destination":self.destination}
+
+    @classmethod
+    def from_dict(cls,doc):
+        if not isinstance(doc,dict) or set(doc)!={"source","steps","destination"} or not isinstance(doc["steps"],list):
+            raise ValueError("Ascent requires exact source, ordered steps and destination")
+        return cls(doc["source"],tuple(doc["steps"]),doc["destination"])
+
+
+@dataclass(frozen=True)
 class PlaceGenome:
     bodies: tuple[PlaceBody,...]
     walkways: tuple[Walkway,...]=()
+    ascents: tuple[AscentRun,...]=()
 
     def __post_init__(self):
         if not 2<=len(self.bodies)<=16 or not all(isinstance(b,PlaceBody) for b in self.bodies):
@@ -82,6 +106,13 @@ class PlaceGenome:
             raise ValueError("Walkways must be unique and sorted")
         if any(not {w.source,w.deck,w.destination}<=set(ids) for w in self.walkways):
             raise ValueError("Walkway endpoints require declared native bodies")
+        if len(self.ascents)>8 or any(not isinstance(x,AscentRun) for x in self.ascents):
+            raise ValueError("Ascent declarations require bounded typed runs")
+        keys=[(a.source,a.steps,a.destination) for a in self.ascents]
+        if len(keys)!=len(set(keys)) or keys!=sorted(keys):
+            raise ValueError("Ascent runs must be uniquely sorted")
+        if any(not set((a.source,*a.steps,a.destination))<=set(ids) for a in self.ascents):
+            raise ValueError("Ascent treads require declared native bodies")
 
     @property
     def identity(self):
@@ -90,14 +121,16 @@ class PlaceGenome:
     def to_dict(self):
         return {"schema":"projection-loom/place-genome",
                 "bodies":[b.to_dict() for b in self.bodies],
-                "walkways":[w.to_dict() for w in self.walkways]}
+                "walkways":[w.to_dict() for w in self.walkways],
+                "ascents":[a.to_dict() for a in self.ascents]}
 
     @classmethod
     def from_dict(cls,doc):
-        if not isinstance(doc,dict) or set(doc)!={"schema","bodies","walkways"} or doc.get("schema")!="projection-loom/place-genome":
+        if not isinstance(doc,dict) or set(doc)!={"schema","bodies","walkways","ascents"} or doc.get("schema")!="projection-loom/place-genome":
             raise ValueError("Place genome requires exact typed schema, bodies and walkways")
         return cls(tuple(PlaceBody.from_dict(x) for x in doc["bodies"]),
-                   tuple(Walkway.from_dict(x) for x in doc["walkways"]))
+                   tuple(Walkway.from_dict(x) for x in doc["walkways"]),
+                   tuple(AscentRun.from_dict(x) for x in doc["ascents"]))
 
     def declaration(self,location):
         if not location:
@@ -134,7 +167,7 @@ class PlaceGenome:
                 place=(body.translation[0],round(body.translation[1]+offset,6),
                        body.translation[2])
                 bodies[i]=replace(body,translation=place)
-        return PlaceGenome(tuple(bodies),self.walkways)
+        return PlaceGenome(tuple(bodies),self.walkways,self.ascents)
 
 def propose_from_spatial_intent(genome:PlaceGenome,spatial):
     """Construct only a supported two-site native crossing hypothesis.
@@ -194,7 +227,8 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
         bodies.append(deck)
         routes.append(Walkway(goal.subject,name,goal.object))
     return PlaceGenome(tuple(sorted(bodies,key=lambda x:x.entity_id)),
-                       tuple(sorted(routes,key=lambda w:(w.source,w.deck,w.destination))))
+                       tuple(sorted(routes,key=lambda w:(w.source,w.deck,w.destination))),
+                       genome.ascents)
 
 def unique_walkway_chain(genome:PlaceGenome,subject,destination,*,max_hops=8):
     """Return the one declared directed route, or refuse unresolved choices."""
