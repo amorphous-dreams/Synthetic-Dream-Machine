@@ -1,5 +1,32 @@
 # Projection Loom · Living handoff
 
+## Re-entry · October 30, 2026
+
+Work on `feature/green-jello-dinosaur-5--projection-loom`, PR #84. Fetch the actual branch SHA and all exact-head GitHub Actions before claiming acceptance. The last verified prior head `7e0da25a` passed the Loom CAD, native/generalized and held-out gates; whole-repository CI failed because three ashes-bearing `.mem` carriers carried stale SHA-256 block checks. The first new YIN commit repairs all three checks and verifies them against the exact STX→ETX bytes, but **the pending implementation head still needs its own CI**.
+
+### New YIN feature / aftermath pairs (staged for one push)
+
+- `place_compound_routes.py`: independently reimport and audit two operator-selected bend alternatives under the *entire* authored multi-goal `SpatialIntent`; keep per-goal status contrasts, measured route differences, typed refusals and zero automatic selection. `place-compound-routes` and `place-compound-routes-verify` expose the study through the existing CLI.
+- `place_source_transfer.py`: rebind source-carrier identity to its actual audited `LocationStack`; distinguish heterogeneous intake from observed invariant native genomes and witnessed morphology. Neither images nor grammar seeds yet condition actual construction.
+- `place_recombination.py`: a region from each of two typed, source-preserving parent genomes contributes explicit named generated bodies *and complete relation fragments*. Partial relation selection and competing paths refuse. It does not inherit parental native certification.
+- `place_recombination_study.py`: regenerate the recombinant child under its own real STEP/USD scene and verify every goal, source seal, child genotype and receipt independently. CLI: `place-recombine-native` and `place-recombine-native-verify`.
+- Added tamper, CLI and native tests. Earlier architectural obligations, source seals, native gallery, counterfactual studies and the one `OODAHAJournal` remain active; no new controller.
+
+### Working discipline
+
+Continue YIN systems consolidation with feature → intent aftermath pairs, including a successful native construction, an explicit refusal and immutable replay for each meaningful change. Accumulate bisectable Git commits before one consolidated branch push for exact-head Actions. Do not add version ladders or compatibility shims. Keep source measurements, geometric audits, presentation and operator authority distinct. No merge, artistic winner, canon promotion or irreversible o-takiage follows automatically.
+
+### Acceptance / re-entry
+
+Read `LIVING-PLACE.md`, `ROADMAP.md`, `HEPHAESTUS-KANBAN.md`, the current Lares boot and PR Actions. If native or repo-wide CI fails, inspect the specific failing job, repair the common code cause, commit and push a new head. Never reassign the predecessor head's green runs to later commits. The original historical handoffs remain below in holding ashes, not deleted.
+
+## Ashes holding ahu · previous living front
+
+<details>
+<summary>Previous living front (preserved verbatim)</summary>
+
+# Projection Loom · Living handoff
+
 **Current authority:** PR [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84), branch `feature/green-jello-dinosaur-5--projection-loom`. Always fetch the actual head and finished exact-head workflows; neither this text nor a previously green SHA transfers acceptance. PR remains open until separately authorized.
 
 ## Active constructive machinery
@@ -20,6 +47,9 @@ Retained features: native STEP/USD construction and source workspaces; goal-spec
 ## Ashes holding ahu
 
 Historical handoffs, CI snapshots, design hypotheses and prior wave notes follow verbatim below. They no longer govern current-head acceptance, but remain available for archaeology and reversible recovery. This o-takiage does **not** delete a line, file, legal source, or active canon address.
+
+
+</details>
 
 <details>
 <summary>Prior HANDOFF.md · original Git blob 56fbc4cce0f72312c5bb69cef687c53875ed8ecb (verbatim preserved)</summary>

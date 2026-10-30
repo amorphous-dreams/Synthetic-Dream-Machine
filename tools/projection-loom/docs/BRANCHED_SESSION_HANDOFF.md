@@ -1,3 +1,20 @@
+# Projection Loom · Evergreen re-entry key
+
+**Repository:** `amorphous-dreams/Synthetic-Dream-Machine` · **PR:** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · **Branch:** `feature/green-jello-dinosaur-5--projection-loom`.
+
+Fetch the full boot `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` on `feature/green-jello-dinosaur-5`, then the actual working PR head, exact-head GitHub Actions, and `HANDOFF.md`, `ROADMAP.md`, `LIVING-PLACE.md`, `HEPHAESTUS-KANBAN.md`.
+
+**Working mode: YIN.** Alternate complete feature waves with intent-aftermath/consolidation. Write substantial test-backed construction and strict re-entry checks, commit bisectable changes, push once after the batch, and repair actual exact-head failures before green claims. No application versions, compatibility adapters, second OODA-HA controller, automatic artistic choice or canon promotion.
+
+**Latest campaign:** repaired three ashes-meme checks; added multi-goal matched native crossing alternatives, source-bound intake/morphology comparison, complete two-parent relation-region recombination and fresh recombinant STEP re-auditions. The prior head `7e0da25a` had green Loom/native/held-out gates and red repository-wide CI solely from stale three-carrier checks. The new branch head must win all its own gates.
+
+**Remaining frontier:** expressive compound constraints, relational-genome emitters inside one journal, actual source-conditioned architecture, independent editor integration and reviewed whole-place alternatives.
+
+## Ashes holding ahu · previous living front
+
+<details>
+<summary>Previous living front (preserved verbatim)</summary>
+
 # Projection Loom · Re-entry key
 
 **Repository:** `amorphous-dreams/Synthetic-Dream-Machine` · **PR:** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · **Branch:** `feature/green-jello-dinosaur-5--projection-loom`.
@@ -11,6 +28,9 @@ The original source and final artistic judgment remain operator-controlled. No m
 ## Ashes holding ahu
 
 The previous entire handoff remains verbatim below; its historical head and command examples no longer supersede this re-entry key.
+
+
+</details>
 
 <details>
 <summary>Prior BRANCHED_SESSION_HANDOFF.md · original Git blob b69811795c5885c3a9c7181b6d58f9fa2e392413 (verbatim preserved)</summary>

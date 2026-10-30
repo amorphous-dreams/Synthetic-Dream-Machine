@@ -1,5 +1,35 @@
 # Projection Loom · Living roadmap
 
+## Intent and next constructive frontier · YIN consolidation
+
+Grow *relationships that compose* before multiplying special-purpose CAD verbs. Use the existing OODA-HA journal, source-preserving growth seal, typed spatial obligations and independently imported native STEP evidence. Local Jing asks whether the authored obligations survive composition/restriction; it does not claim the general YIN/YANG/KI instrument.
+
+### Newly delivered, pending exact-head evidence
+
+1. Full-goal matched native crossing alternatives, with explicit operator bend choice, separated outcomes and independently checked STEP route contacts.
+2. Source-carrier lineage binding through verified `LocationStack` identities and actual matched native morphology, not seed-label similarity.
+3. Explicit two-parent architectural region recombination with inherited complete relation fragments, unambiguous handles and a new child native re-audition.
+4. Correction of stale SHA-256 checks in three meme carriers following the holding-ashes fold; original contents and addresses preserved.
+
+### Remaining full feature ambitions
+
+- Broader graph constraint solving that grows multiple geometry choices and explains collisions/refusals without assigning an artistic winner.
+- Heritable topology mutation and two-parent recombination as population emitters under one OODA-HA helm, with budgeted native auditions and operator continuation.
+- Genuine source-conditioned architecture with measured registration, cross-seed held-out comparisons, and substantive transfer.
+- Whole-place interactive operator comparison that carries alternative lineage, constraint conflicts and visual evidence without becoming another authority.
+- Real Unreal Editor round trips distinguished from OpenUSD artifact export; further engineering safety work remains separately scoped.
+
+### Acceptance priority
+
+Verify the new exact-head CAD, OpenUSD/STEP, Blender, repository-wide and held-out gates **after** the consolidated publish. Record failures and repairs at their own commit identities. Refresh handoff/kanban again if CI changes the known truth.
+
+## Ashes holding ahu · previous living front
+
+<details>
+<summary>Previous living front (preserved verbatim)</summary>
+
+# Projection Loom · Living roadmap
+
 ## Governing intent
 
 Grow source-preserving, independently witnessed architectural possibilities from authored spatial relationships under one OODA-HA helm. Hold YIN's consolidation and Jing-style compose/restrict coherence alongside YANG's constructive breadth and KI's actual cross-context flow. These form a working design lens, not a claim to have implemented the house's general sensorium Jing instrument.
@@ -24,6 +54,9 @@ Grow source-preserving, independently witnessed architectural possibilities from
 ## Ashes holding ahu
 
 Every prior roadmap item, old acceptance snapshot, rejected proposal and historical campaign record remains verbatim below, with its previous repository blob recorded. No deletion or canon promotion occurs in this holding burn.
+
+
+</details>
 
 <details>
 <summary>Prior ROADMAP.md · original Git blob ea6d12491f1229745af26f4cf36c69a7394441ff (verbatim preserved)</summary>

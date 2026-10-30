@@ -1,3 +1,26 @@
+# Living Place · Current constructive and evidence contract
+
+## YIN: source → obligations → compositional children → STEP → review
+
+`place_obligations.plan_spatial_obligations` orders attributed typed `connect`, `shelter`, `ascend`, `bear` aims. `place_source_seal.seal_constructive_growth` refuses replacement of original bodies and relations. Their receipts bind native previews and the one OODA-HA location/epoch/candidate journal.
+
+### Constructive studies with their own native audit
+
+`place_compound_routes.run_compound_route_study` grows both explicitly named orthogonal bends of one selected `connect` relationship, preserving the full original goal set. Each arm builds and reimports its own STEP/USD source, checks every goal and returns a measured route descriptor and status contrast. Evidence differences never automatically become artistic preference.
+
+`place_recombination.recombine_place_regions` composes complete explicitly selected generated regions from two source-preserving parent genomes. Parent body overlap, omitted dependent relation handles and competing paths refuse. `place_recombination_study` creates a *fresh* native scene, verifies the recombinant genotype and produces exact independent evidence. A parent's passed STEP audit never passes by inheritance.
+
+`place_source_transfer` holds seed-carrier admission distinct from source-conditioned morphology. Each arm's source inventory must correspond to the actual typed input file; native candidate genomes and observed descriptors compare separately from source IDs. This does **not** infer camera registration or image-driven architecture.
+
+### Held boundaries
+
+These mechanisms certify only bounded exact-BRep geometric relations, not structural load safety, accessible use, global measurement or aesthetic success. Renders, signed hashes and route variants cannot pick an artistic winner. Operator review, Elyncia canon and final o-takiage require separate authority.
+
+## Ashes holding ahu · previous living front
+
+<details>
+<summary>Previous living front (preserved verbatim)</summary>
+
 # Living Place · Current constructive contract
 
 ## Author → compose → construct → witness → return
@@ -17,6 +40,9 @@ Native BRep clearance, contact, shelter and ascent proposals stop below engineer
 ## Ashes holding ahu
 
 Prior design-time intent, provenance constraints, examples, incomplete proposals and test results follow verbatim, preserved as the previously living contract. The burn changes the navigational front door, not the source testimony.
+
+
+</details>
 
 <details>
 <summary>Prior LIVING-PLACE.md · original Git blob facd1f140ec8ffad264a01f366b36b09bd3e89a9 (verbatim preserved)</summary>

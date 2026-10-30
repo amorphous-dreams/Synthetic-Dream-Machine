@@ -1,5 +1,32 @@
 # Hephaestus · Current working board
 
+## New YIN wave inventory · code staged
+
+- [x] Repair actual STX→ETX BCC on three holding-ashes memes; retain bytes and addressable history.
+- [x] Add full-intent native matched crossing experiment and CLI; replay each STEP scene and per-goal status.
+- [x] Bind each source-carrier to the precise original `LocationStack`; report native genotype/phenotype invariance distinctly.
+- [x] Compose closed generated relation regions from two typed native parents, with partial-chain refusals.
+- [x] Independently build and audit a recombinant STEP/USD child; verify immutable genotype, geometry, and source receipts.
+- [x] Add source-bound adversarial and positive native tests for each new seam.
+
+**These checkboxes record landed code, not a declaration of successful CI.** Read actual PR head.
+
+## Unresolved and intended waves
+
+- [ ] Reconcile exact-head full CAD, generalized, repo-wide and held-out workflows for the new publish; repair any genuine red failures and keep their witnesses.
+- [ ] Widen expressive construction through constrained *combinations*, not new specialty controllers.
+- [ ] Fold inherited region recombination into the budgeted OODA-HA candidate emitter ecology with actual independent native diversity.
+- [ ] Make source media materially condition architectural proposals with explicit measurements and held-out tests.
+- [ ] Finish editor and whole-place review integrations under operator authority.
+- [ ] Preserve original ashes carriers and stable fragment references during any future further consolidation.
+
+## Ashes holding ahu · previous living front
+
+<details>
+<summary>Previous living front (preserved verbatim)</summary>
+
+# Hephaestus · Current working board
+
 ## Implemented, awaiting final exact-head acceptance
 
 - [x] Compose typed spatial obligations with goal-index dependency witnesses and compose/restrict (local Jing) checks.
@@ -23,6 +50,9 @@ These checkboxes mean **code staged**, not whole-head CI green. The branch SHA a
 ## Ashes holding ahu
 
 The prior kanban chronology, wave receipts, failures and historical checklists follow verbatim. None disappears in this pass.
+
+
+</details>
 
 <details>
 <summary>Prior HEPHAESTUS-KANBAN.md · original Git blob 6fa8fdea4b503f490eafe8cbe2dc01e90b98175f (verbatim preserved)</summary>
