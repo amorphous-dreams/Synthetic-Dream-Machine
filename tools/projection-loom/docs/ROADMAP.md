@@ -1,3 +1,24 @@
+## ☕ N8 · 2026-10-29 · native six-view comparison and intent aftermath XIV
+
+**N8-P** (`36582a80`) adds `place-gallery` /
+`place-gallery-verify`, rendering actual verified STEP models for
+independently valid location bodies into one six-view, source-original-
+frozen orthographic camera set. The program concatenates presentation
+triangles only; disconnected bodies do not undergo an illicit Boolean
+fusion. Images/cameras are digest-addressed and independently reproduced
+from the original genome and each finished candidate native bundle.
+No generated raster becomes a source or a hidden objective.
+
+**Intent aftermath XIV:** the visual operator handback now complements
+the purely native comparison inventory, without automatic aesthetic
+ranking or source-survey interpretation. Re-entry tests refuse
+modified image bytes. All changes remain implementation, not
+exact-head acceptance, until hosted Actions finish. Unreal Editor,
+structural loads, licensed art generation, pet naming, canon and merge
+remain outside this wave.
+
+---
+
 ## ☕ N8 · Operator comparison, intent aftermath XIII · 2026-10-29
 
 **N8-O** (`0e779765`) adds `place-compare` /

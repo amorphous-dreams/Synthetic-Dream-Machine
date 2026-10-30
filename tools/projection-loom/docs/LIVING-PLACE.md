@@ -210,3 +210,24 @@ claim that present JSON can replace visual art review. A later optional
 scene-level six-view visual board should share one frozen camera and
 regrow its presentation from the same STEP witness, never from a
 self-generated mask folded into source evidence.
+
+## N8 · Aftermath XIV · Real presentation, bounded evidentiary scope
+
+`place-gallery` now renders six orthographic silhouette views directly
+from each independently reimported real native STEP location, without
+merging disconnected solids into a construction BRep. The common camera
+set freezes once from the original authored place-genome construction,
+not per contender. A candidate can extend beyond the original frame
+rather than silently receiving a better fitting camera. Every PNG and
+camera receipt receives a content digest; re-entry recomputes the images
+from verified native original source and rejects tampering. The
+`place-gallery-verify` command does not authorize choosing a winner,
+certify a photographic camera or a surveyed site, or replace the
+original source-frame testimony.
+
+This gallery closes the visual comparison seam while preserving separate
+operator artistic judgment. Its monochrome silhouettes do not prove
+aesthetics, materiality, lighting, path usability or structural safety.
+It intentionally does not feed its own output back as evidence for the
+next evolutionary epoch. The current Fire and operator can review native
+programs and choose whether a distinct form deserves another study.

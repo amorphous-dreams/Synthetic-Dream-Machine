@@ -119,7 +119,7 @@ def verify_place_gallery(campaign,gallery):
             if not path.is_file() or sha256(path.read_bytes()).hexdigest()!=item["image_sha256"]:
                 raise ValueError("Native gallery illustration changed")
     with tempfile.TemporaryDirectory(prefix="loom-gallery-replay-") as td:
-        expected=render_place_gallery(campaign,td)
+        expected=render_place_gallery(campaign,Path(td)/"regenerated")
     if receipt!=expected:
         raise ValueError("Gallery differs from original native geometry and frozen cameras")
     return True
