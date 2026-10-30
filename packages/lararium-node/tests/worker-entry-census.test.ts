@@ -1,58 +1,121 @@
 import { readFileSync, readdirSync } from "node:fs";
+import { dirname, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { expect, test } from "vitest";
 
-// Keep listener event names while hiding comments and other string contents.
-function codeOnly(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*|(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)/g, (token) => {
-    if (/^["'](?:message|connect)["']$/.test(token)) return token;
-    return token.replace(/[^\n]/g, " ");
+import { codeOnly, listenerIndex, violation } from "../../../tools/worker-entry-scan.mjs";
+
+const root = fileURLToPath(new URL("../../../", import.meta.url));
+const packages = resolve(root, "packages");
+function walk(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = resolve(dir, entry.name);
+    return entry.isDirectory() ? walk(path) : entry.isFile() ? [path] : [];
   });
 }
-function listenerIndex(source: string): number {
-  const code = codeOnly(source);
-  const match = /\.addEventListener\s*\(\s*["'](?:message|connect)["']|\brunBrowserSovereignWorker\s*\(|\bhost\.listen\s*\(/.exec(code);
-  return match?.index ?? -1;
+function deriveEntries(): string[] {
+  const entries = new Set<string>();
+  for (const pkg of readdirSync(packages, { withFileTypes: true }).filter((entry) => entry.isDirectory())) {
+    const base = resolve(packages, pkg.name);
+    for (const sub of ["src", "tests/fixtures"]) {
+      let files: string[];
+      try { files = walk(resolve(base, sub)); } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") continue;
+        throw error;
+      }
+      for (const file of files) {
+        if (/\.worker\.(?:ts|mjs)$/.test(file)) entries.add(file);
+        if (sub !== "src" || !/\.[cm]?[jt]sx?$/.test(file)) continue;
+        const source = readFileSync(file, "utf8");
+        // Resolve statically named constructor URLs and Vite worker imports. Variable URLs have no static target here.
+        const targets = /new\s+(?:SharedWorker|Worker)\s*\(\s*(?:new\s+URL\s*\(\s*)?["']([^"']+)["']|["']([^"']+)\?(?:sharedworker|worker)(?:&[^"']*)?["']/g;
+        for (const match of source.matchAll(targets)) {
+          const target = match[1] ?? match[2];
+          if (target.startsWith(".")) entries.add(resolve(dirname(file), target));
+        }
+      }
+    }
+  }
+  return [...entries].sort();
 }
-function violation(name: string, source: string): string | null {
-  const code = codeOnly(source), index = listenerIndex(source);
-  if (index < 0) return `${name}: no listener`;
-  return /\bawait\b/.test(code.slice(0, index)) ? name : null;
+const nameOf = (path: string) => relative(root, path).replaceAll("\\", "/");
+const exceptions: Record<string, string> = {
+  "packages/lararium-browser/tests/fixtures/faulting-tab.worker.ts": "This fixture deliberately faults before listening.",
+  "packages/lararium-browser/tests/fixtures/late-listener-tab.worker.ts": "This fixture deliberately models a slow module graph.",
+  "packages/lararium-browser/tests/fixtures/stub-island.worker.ts": "This module exports an island factory rather than a worker entry.",
+};
+const readyGated: Record<string, string> = {
+  "packages/lararium-web/src/workers/daemon.worker.ts": "packages/lararium-browser/src/daemon-island-start.ts",
+  "packages/lararium-web/src/workers/wiki.worker.ts": "packages/lararium-browser/src/browser-wiki-worker.ts",
+};
+const sharedWorkers = new Set([
+  "packages/lararium-web/src/workers/shared-holder.worker.ts",
+  "packages/lararium-browser/src/shared-holder.worker.ts",
+  "packages/lararium-browser/tests/fixtures/shared-holder-live.worker.ts",
+  "packages/lararium-browser/tests/fixtures/buffered-shared.worker.ts",
+]);
+// Discover SharedWorker targets at their source sites as well as the known direct entry and fixtures.
+for (const pkg of readdirSync(packages, { withFileTypes: true }).filter((entry) => entry.isDirectory())) {
+  let files: string[];
+  try { files = walk(resolve(packages, pkg.name, "src")); } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") continue;
+    throw error;
+  }
+  for (const file of files.filter((path) => /\.[cm]?[jt]sx?$/.test(path))) {
+    const source = readFileSync(file, "utf8");
+    const targets = /new\s+SharedWorker\s*\(\s*(?:new\s+URL\s*\(\s*)?["']([^"']+)["']|["']([^"']+)\?sharedworker(?:&[^"']*)?["']/g;
+    for (const match of source.matchAll(targets)) {
+      const target = match[1] ?? match[2];
+      if (target.startsWith(".")) sharedWorkers.add(nameOf(resolve(dirname(file), target)));
+    }
+  }
+}
+function sharedViolation(name: string, source: string): string | null {
+  const code = codeOnly(source);
+  const index = /\.addEventListener\s*\(\s*["']connect["']/.exec(code)?.index ?? -1;
+  if (index < 0) return `${name}: no connect listener`;
+  const before = code.slice(0, index);
+  let depth = 0;
+  for (const char of before) { if (char === "{") depth++; else if (char === "}") depth--; }
+  return depth !== 0 || /\bawait\b/.test(before) ? name : null;
 }
 
-test("RED: worker entries listen before awaiting; CONTROL: the scanner names a late listener and accepts an early listener", () => {
-  expect(violation("planted", 'await boot(); self.addEventListener("message", () => {});')).toBe("planted");
-  expect(violation("honest", 'self.addEventListener("message", () => {}); await boot();')).toBeNull();
-  expect(violation("missing", "const x = 1;")).toBe("missing: no listener");
-  const entries = [
-    ["shared-holder.worker.ts", new URL("../../lararium-browser/src/shared-holder.worker.ts", import.meta.url)],
-    ["daemon-island-start.ts", new URL("../../lararium-browser/src/daemon-island-start.ts", import.meta.url)],
-    ["browser-wiki-worker.ts", new URL("../../lararium-browser/src/browser-wiki-worker.ts", import.meta.url)],
-    ["sovereign-kernel.ts", new URL("../../lararium-tw5/src/sovereign-kernel.ts", import.meta.url)],
-  ] as const;
-  for (const [name, url] of entries) {
-    const source = readFileSync(url, "utf8");
-    expect(listenerIndex(source), name).toBeGreaterThanOrEqual(0);
-    expect(violation(name, source)).toBeNull();
-  }
-  const kernel = codeOnly(readFileSync(entries[3][1], "utf8"));
+test("RED: executable template expressions before a listener are named; CONTROL: plain template text stands", () => {
+  expect(violation("template-text.worker.ts", '`await boot()`; self.addEventListener("message", () => {});')).toBeNull();
+  expect(violation("template-await.worker.ts", '`${await boot()}`; self.addEventListener("message", () => {});')).toBe("template-await.worker.ts");
+});
+
+test("CONTROL: derived census includes known entries and names planted late and missing listeners", () => {
+  const entries = deriveEntries().map(nameOf);
+  expect(entries.length).toBeGreaterThan(0);
+  for (const name of [...Object.keys(readyGated), ...sharedWorkers, ...Object.keys(exceptions)]) expect(entries).toContain(name);
+  expect(violation("planted.worker.ts", 'await boot(); self.addEventListener("message", () => {});')).toBe("planted.worker.ts");
+  expect(violation("honest.worker.ts", 'self.addEventListener("message", () => {}); await boot();')).toBeNull();
+  expect(sharedViolation("nested-shared.worker.ts", 'async function boot() { self.addEventListener("connect", () => {}); }')).toBe("nested-shared.worker.ts");
+  expect(sharedViolation("missing-shared.worker.ts", 'self.addEventListener("message", () => {});')).toBe("missing-shared.worker.ts: no connect listener");
+});
+
+test("CONTROL: ready-gated delegates listen before the kernel posts ready", () => {
+  const kernel = codeOnly(readFileSync(resolve(root, "packages/lararium-tw5/src/sovereign-kernel.ts"), "utf8"));
   const listen = kernel.indexOf("host.listen("), ready = kernel.indexOf("host.ready?.()", listen);
   expect(listen).toBeGreaterThanOrEqual(0);
   expect(ready).toBeGreaterThan(listen);
   expect(kernel.slice(listen, ready)).not.toMatch(/\bawait\b/);
-
-  // The fixture entries follow the same rule.
-  expect(violation("planted.worker.ts", 'await boot(); self.addEventListener("message", () => {});')).toBe("planted.worker.ts");
-  const exceptions: Record<string, string> = {
-    "faulting-tab.worker.ts": "This fixture deliberately faults before listening.",
-    "late-listener-tab.worker.ts": "This fixture deliberately models a slow module graph.",
-    "stub-island.worker.ts": "This module exports an island factory rather than a worker entry.",
-  };
-  const dir = new URL("../../lararium-browser/tests/fixtures/", import.meta.url);
-  const files = readdirSync(dir).filter((name) => (name.endsWith(".worker.ts") || name.endsWith(".mjs")) && !(name in exceptions));
-  expect(files.length).toBeGreaterThan(0);
-  for (const name of files) {
-    const source = readFileSync(new URL(name, dir), "utf8");
-    expect(listenerIndex(source), name).toBeGreaterThanOrEqual(0);
-    expect(violation(name, source)).toBeNull();
+  for (const [entry, delegate] of Object.entries(readyGated)) {
+    const source = readFileSync(resolve(root, delegate), "utf8");
+    expect(violation(delegate, source), entry).toBeNull();
+    expect(codeOnly(source), entry).toMatch(/\brunBrowserSovereignWorker\s*\(/);
   }
+});
+
+test("RED: derived worker entries listen before awaiting, including synchronous SharedWorker connect listeners", () => {
+  const violations: string[] = [];
+  for (const path of deriveEntries()) {
+    const name = nameOf(path);
+    if (name in exceptions || name in readyGated) continue;
+    const source = readFileSync(path, "utf8");
+    const result = sharedWorkers.has(name) ? sharedViolation(name, source) : violation(name, source);
+    if (result) violations.push(result);
+  }
+  expect(violations).toEqual([]);
 });
