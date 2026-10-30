@@ -1,3 +1,23 @@
+## N9 · Aftermath X · Two true native outcomes from one starting place
+
+The matched trial now runs the full developmental and native
+location pathway for the same starting site under two different
+explicit goals: sheltered space and rising passage. Both arms
+share exact candidate audition budgets and seed streams. Original
+source witnesses keep the same digests while the generated
+genomes, actual STEP solids and geometric aftermath differ.
+
+`verify_matched_architecture` reopens each candidate's actual
+source-grounded native workspace and OODA-HA receipt. Changing
+a final report's labels or admitting a different native
+candidate cannot substitute for the causal history.
+Unregistered synthetic cameras or rendered self-observations
+supply no source score in either arm. Neither geometric
+admission nor matched differentiation pronounces one
+design aesthetically better or physically safe.
+
+---
+
 ## N9 · Aftermath F · Fire carries more than crossings
 
 Fire's typed, validated `covers` and `ascends` proposals now

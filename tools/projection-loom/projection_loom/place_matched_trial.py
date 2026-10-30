@@ -73,6 +73,45 @@ def run_matched_architecture(out,*,seeds=(41,73),epochs=2):
             "accessibility_certification":False,"load_certification":False,
             "automatic_artistic_winner":False}
     save_once(out/"comparison.json",report)
+    return verify_matched_architecture(out)
+
+
+def verify_matched_architecture(out):
+    """Independent full-native replay; copied comparisons cannot relabel an arm."""
+    import json
+    root=Path(out)
+    report=json.loads((root/"comparison.json").read_text(encoding="utf8"))
+    if report.get("schema")!="projection-loom/n9-matched-spatial-development":
+        raise ValueError("Unknown matched native developmental contract")
+    rows=report.get("arms",[])
+    if len(rows)!=len(report["seeds"])*2:
+        raise ValueError("Matched architectural study lost an original source arm")
+    seen=set()
+    for row in rows:
+        key=(row["seed"],row["arm"])
+        if key in seen or row["arm"] not in ("shelter","ascent") or row["seed"] not in report["seeds"]:
+            raise ValueError("Matched native arm identity duplicated or replaced")
+        seen.add(key)
+        folder=root/f"seed-{row['seed']}"/row["arm"]
+        summary=verify_place_campaign(folder)
+        pre=__import__("json").loads((folder/"pre_registration.json").read_text(encoding="utf8"))
+        if (pre["original_genome_sha256"]!=report["original_genome_sha256"]
+                or row["original_genome_sha256"]!=report["original_genome_sha256"]
+                or pre["original_inventory_sha256"]!=report["source_inventory_sha256"]
+                or row["original_inventory_sha256"]!=report["source_inventory_sha256"]
+                or pre["seed"]!=row["seed"] or pre["epochs"]!=report["epochs"]
+                or pre["offspring"]!=report["offspring"]
+                or pre["exact_budget"]!=report["exact_budget"]
+                or pre["spatial_intent_sha256"]!=row["spatial_intent_sha256"]
+                or pre["spatial_intent"]["goals"][0]["kind"]!=row["arm"]):
+            raise ValueError("Matched original source, goal or native budget was replaced")
+        first=next((x for x in summary["candidates"] if x["status"]=="admitted"),None)
+        if (first is None or first["genome_sha256"]!=row["native_candidate_sha256"]
+                or first["workspace_sha256"]!=row["workspace_sha256"]
+                or summary["admitted"]!=row["admitted"]
+                or summary["attempted"]!=row["attempted"]
+                or summary["deferred"]!=row["deferred"]):
+            raise ValueError("Matched source-native candidate evidence changed")
     return report
 
 

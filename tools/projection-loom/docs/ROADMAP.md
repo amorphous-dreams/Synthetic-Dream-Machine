@@ -1,3 +1,33 @@
+## ☕ N9 · Native developmental trial and intent aftermath X · 2026-10-29
+
+**N9-X** (`6a8c62bf`) adds a source-fixed, paired, repeated
+full place-generation experiment: both shelter and ascent
+receive the same two original native source sites, explicit
+`IntentContract`, epoch count, offspring count, exact native
+audition budget and seeds. Each intent independently constructs
+different STEP bodies; its accepted candidates carry
+`location_workspace`, separate experimental source/native
+evidence, and full five-phase OODA-HA receipts.
+
+**Intent aftermath X:** rehydrate every original/native
+candidate and compare the saved trial's labels, budgets,
+original source identity, constructed genome and goal
+against actual workspace and preregistration evidence.
+A forged report or swapped arm cannot become a true
+causal experiment merely by changing summary JSON.
+A paired arm may fail independently; no code silently
+credits it native acceptance.
+
+This provides a finite, falsifiable whole-machina study,
+not subjective architectural superiority. Shared
+synthetic sources provide **no** calibrated camera,
+engineering load, human safety or artist's own verdict.
+Full native CAD, Blender, repo and held-out CI still
+judge only their exact heads. Unreal Editor remains
+an unprovisioned application witness.
+
+---
+
 ## ☕ N9 · Fire-to-place typed relation wave / aftermath F · 2026-10-29
 
 **N9-F** (`b0c76137`) extends the existing, source-validated
