@@ -169,6 +169,63 @@ class PlaceGenome:
                 bodies[i]=replace(body,translation=place)
         return PlaceGenome(tuple(bodies),self.walkways,self.ascents)
 
+    def vary_spatial(self,spatial,seed,*,count=1):
+        """Preserve authored contact topology while mutating goal-relevant form.
+
+        This proposal bias carries no native-validity or aesthetic guarantee.
+        Exact STEP gates still judge every descendant independently.
+        """
+        from .spatial_intent import SpatialIntent
+        if (not isinstance(spatial,SpatialIntent) or type(seed) is not int
+                or type(count) is not int or not 1<=count<=8):
+            raise ValueError("Spatial mutation needs bounded attributed goals and seed")
+        rng=random.Random(seed)
+        current=self
+        for index in range(count):
+            bodies=list(current.bodies)
+            choices=[]
+            known={b.entity_id:b for b in bodies}
+            for goal in spatial.goals:
+                if goal.kind=="shelter" and goal.object in known:
+                    choices.append(("shelter",(goal.object,),None))
+                elif goal.kind=="ascend":
+                    runs=[r for r in current.ascents
+                          if r.source==goal.subject and r.destination==goal.object]
+                    if len(runs)==1:
+                        a,b=known[goal.subject],known[goal.object]
+                        axis=0 if abs(b.translation[0]-a.translation[0])>=abs(
+                            b.translation[1]-a.translation[1]) else 1
+                        choices.append(("ascend",runs[0].steps,1-axis))
+                elif goal.kind=="connect":
+                    routes=unique_walkway_chain(current,goal.subject,goal.object)
+                    if len(routes)==1:
+                        a,b=known[goal.subject],known[goal.object]
+                        axis=0 if abs(b.translation[0]-a.translation[0])>=abs(
+                            b.translation[1]-a.translation[1]) else 1
+                        choices.append(("connect",(routes[0].deck,),1-axis))
+            if not choices:
+                return current.vary(seed+index,count=count-index)
+            kind,targets,dim=rng.choice(choices)
+            factor=round(rng.uniform(.86,1.14),6)
+            updated=[]
+            for body in bodies:
+                if body.entity_id not in targets:
+                    updated.append(body)
+                    continue
+                nodes=list(body.program.nodes)
+                root=nodes[0]
+                dimensions=list(root.size)
+                if kind=="shelter":
+                    for k in (0,1):
+                        dimensions[k]=round(max(.5,dimensions[k]*factor),6)
+                else:
+                    dimensions[dim]=round(max(.5,dimensions[dim]*factor),6)
+                nodes[0]=replace(root,size=tuple(dimensions))
+                updated.append(replace(body,program=GrowthProgram(tuple(nodes))))
+            current=PlaceGenome(tuple(updated),current.walkways,current.ascents)
+        return current
+
+
 def propose_from_spatial_intent(genome:PlaceGenome,spatial):
     """Construct only a supported two-site native crossing hypothesis.
 

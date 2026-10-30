@@ -232,8 +232,8 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
             offered=[]
             for i in range(offspring):
                 parent=(archive[i%len(archive)]["genome"] if archive else genome)
-                candidate=(parent if epoch==0 and i==0 else parent.vary(
-                    seed+epoch*10007+i*137+1,count=1))
+                candidate=(parent if epoch==0 and i==0 else parent.vary_spatial(
+                    spatial,seed+epoch*10007+i*137+1,count=1))
                 offered.append((f"p{epoch:03d}c{i:03d}",candidate))
             for i,(identifier,candidate) in enumerate(offered[:exact_budget]):
                 loopid=loop+"/"+identifier
