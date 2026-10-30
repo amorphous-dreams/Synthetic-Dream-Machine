@@ -87,7 +87,7 @@ async function foldKahuCanon(doc: LarDoc | undefined | null, nexus: string, stew
 }
 
 /**
- * The steward restores its own seal: a kept registration the registry no longer carries (a hostile deletion, a
+ * The steward restores its own seal: a kept registration absent from the registry (a hostile deletion, a
  * replaced row) lands again under the steward's key. Its bytes are the steward's own, so nothing new is signed.
  */
 function restoreKept(realm: { doc(): LarDoc | undefined; change(fn: (d: LarDoc) => void): void }, sealHome: string, nexus: string, steward: string, standing: ReadonlyMap<string, RealmBagRegistration>): string[] {
