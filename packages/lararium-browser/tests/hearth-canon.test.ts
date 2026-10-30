@@ -224,6 +224,30 @@ describe("hearthCrossingOf — the vessel's crossing wears the widened gate for 
     }
   });
 
+  // THE FOUNDING WALK, W4 (measured 2026-10-29): a browser leaf that joined face h0 of its own hearth crossed, was
+  // sorted same-operator by the hearth, and still never received the face's own planes: its crossing gate opened
+  // the boards and the admit's two canon documents alone, so the leaf's repo never asked its hearth for the persona
+  // plane (`DocumentUnavailableRefusal … bag persona-<id>`), and the face never seated. The face's planes the join
+  // landed in the leaf's own catalog open at the own-hearth crossing; nowhere else, and never a reserved plane.
+  test("RED: the own-hearth crossing opens the joined face's own planes; CONTROL: a foreign hearth and a reserved plane stay shut", () => {
+    const PERSONA_URL = generateAutomergeUrl(), CIRCLES_URL = generateAutomergeUrl();
+    const own = at({ facePlaneDocs: [PERSONA_URL, CIRCLES_URL] });
+    expect(own.ownHearth).toBe(true);
+    expect(opens(own.gate, PERSONA_URL)).toBe(true);
+    expect(opens(own.gate, CIRCLES_URL)).toBe(true);
+    // The canon and the boards still open; the daemon bag and the oracle stay shut beside the planes.
+    expect(opens(own.gate, LARES_URL)).toBe(true);
+    expect(opens(own.gate, crossroadsDocUrl(NEXUS))).toBe(true);
+    expect(opens(own.gate, DAEMON_URL)).toBe(false);
+    expect(opens(own.gate, oracleGenesisDocUrl())).toBe(false);
+    // CONTROL: a foreign hearth never opens a face plane, whatever the leaf's catalog names.
+    expect(opens(at({ pinnedGatePubKey: FOREIGN, facePlaneDocs: [PERSONA_URL] }).gate, PERSONA_URL)).toBe(false);
+    // CONTROL: a reserved document listed as a face plane falls out — the oracle and a board never ride this list.
+    expect(opens(at({ facePlaneDocs: [oracleGenesisDocUrl(), "not-a-document"] }).gate, oracleGenesisDocUrl())).toBe(false);
+    // CONTROL: no planes named opens no plane.
+    expect(opens(at({}).gate, PERSONA_URL)).toBe(false);
+  });
+
   test("CONTROL: no gate key pinned is the operator's own node, so no federation gate stands", () => {
     expect(at({ pinnedGatePubKey: undefined }).gate).toBeNull();
   });
