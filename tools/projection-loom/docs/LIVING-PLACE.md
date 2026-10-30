@@ -1,3 +1,31 @@
+## N9-R3/R4 · Intent aftermath: accepting stones does not approve a future aim
+
+A native location's **accepted review** approves the operator's chosen
+parent candidate. It does NOT authorize new architectural goals without
+another intentional act. New continuation requires a separate
+`place-intent-amendment` whenever the original `IntentContract`
+identity or the typed `SpatialIntent` changes. This record binds the
+entire prior immutable preregistration digest, old and new contract
+identities, old and new goal digests, the same location, a named
+operator, and a stated reason.
+
+Unchanged goal continuation remains ordinary. Unchanged goals **refuse**
+a smuggled amendment. Modified goals refuse without a valid
+operator-attributed amendment. `place-amend` produces a dedicated
+immutable document, `place-continue --amendment` accepts it, and
+every regenerated candidate re-enters the same exact native geometry
+and causal workspace gates. The successor preregistration now preserves
+the *full* authored intent fields for independent reconstruction,
+rather than merely accepting a free-floating hash.
+
+The handback remains attribution, not a cryptographic personal
+signature; runtime local controls and operator consent carry their own
+trust boundaries. An amendment never changes the parent workspace or
+original source, grants pet-names or canon, certifies physical safety,
+or decides aesthetic merit.
+
+---
+
 ## N9-R2 · Intent aftermath: joined authored Fire goals cross the native boundary
 
 The operator now invokes `fire-place-bind-set` with one to eight

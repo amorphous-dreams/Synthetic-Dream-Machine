@@ -1,3 +1,27 @@
+## ☕ N9 · Operator intent amendment, build/aftermath cycles R3–R4 · 2026-10-29
+
+**Feature R3:** `place_amendment.py` introduces digest-bound
+operator-authored permissions to redirect an accepted native place's
+future intention, rather than inferring fresh authority from
+`accept`. **Intent aftermath R3:** the child study preregisters
+the exact full `IntentContract` and independently replays the
+original and successor identities; unchanged goals refuse a
+fabricated amendment. **Feature R4:** `place-amend` and
+`place-continue --amendment` complete the CLI path from explicit
+permission to a new generation. **Intent aftermath R4:** dedicated
+tests run in the real STEP/OpenUSD lane, and the evergreen handoff
+records these semantic and operator boundaries.
+
+The N9 joint Fire goal changes from the preceding waves remain
+separately selected and source-bound. The next needed evidence
+covers *actual* native re-entry and adversarial changes of intent.
+No new branch merge, source promotion, human safety, pet-name or
+Elyncia canon follows automatically. The repository-wide witness
+at pre-N9 head `27ddfd8e` still reported one excess
+narration finding, which requires an attributable local correction.
+
+---
+
 ## ☕ N9-R · 2026-10-29 · multi-goal Fire, native composition and intent aftermath
 
 From the audited earlier head `27ddfd8e` (N9 native, STEP/Blender,
