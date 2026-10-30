@@ -43,3 +43,17 @@ test("RED: a relay ring that cannot be read leaves registration off and boot sta
   expect(prove).not.toHaveBeenCalled();
   expect((await registerFacePlanesForRelay({ group, relayEnabled: async () => true, prove, register })).length).toBe(4);
 });
+
+test("RED: the mounted face registers its sibling planes only as its signed log names them; CONTROL: a signed sessions url still passes the proof", async () => {
+  const { readFileSync } = await import("node:fs");
+  const source = readFileSync(new URL("../src/open-node-vessel.ts", import.meta.url), "utf8");
+  const start = source.indexOf("const wornFace = wornFaceProved");
+  expect(start).toBeGreaterThan(-1);
+  const block = source.slice(start, source.indexOf("// The selected face's custody standing", start));
+  // The bootstrap file rests in cleartext, so a url read from it alone proves nothing.
+  expect(block).toMatch(/provenPlaneUrls\s*\(/);
+  expect(block).not.toMatch(/registerInCatalog\s*\(\s*wornFace\.\w+\s*,\s*bootstrap\.\w+Url\s*\)/);
+  const signed = { planes: { circles: "c", identities: "i", sessions: "s", intents: "n" } };
+  expect(provenPlaneUrls(signed, { circles: "c", identities: "i", sessions: "s", intents: "n" })?.sessions).toBe("s");
+  expect(provenPlaneUrls(signed, { circles: "c", identities: "i", sessions: "FORGED", intents: "n" })?.sessions).toBeNull();
+});
