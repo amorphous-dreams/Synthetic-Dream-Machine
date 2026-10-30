@@ -19,7 +19,7 @@ import { placeMeme, readMeme, type MemeSink } from "../src/place-meme.js";
 import type { TiddlerFields } from "../src/deserializer.js";
 
 const URI = "lar:///t.base.two-sides/one";
-const BAG = "lar:///ha.ka.ba/bags/two-sides";
+const BAG = "lar:///ha.ka.ba/wikis/two-sides/working";
 
 /** One carrier in a framing the render normalizes: an unsorted meta block and a wide margin. */
 const framed = (prose: string): string =>
@@ -110,7 +110,7 @@ function ctx(composite: CompositeStore, args: Record<string, unknown>): VerbCont
 async function ingest(composite: CompositeStore, carrier: Record<string, unknown>): Promise<Record<string, unknown>> {
   const table = new VerbTable();
   registerActionReactors(table, { composite });
-  const args = { "source-uri": "file:///scratch", "to-bag": BAG, "seed-door": "founding", "change-id": "chg-two-sides", carriers: [carrier] };
+  const args = { "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-two-sides", carriers: [carrier] };
   const result = await table.get("INGEST")!(args, ctx(composite, args)) as Record<string, unknown>;
   return (result["carriers"] as Array<Record<string, unknown>>)[0]!;
 }
@@ -159,7 +159,7 @@ describe("INGEST carries the base's two sides", () => {
     const wave = (carrier: Record<string, unknown>) => parseResidencyAction({
       requestId: "r", title: "t", action: "INGEST", targets: [], batchMode: "best-effort", status: "pending",
       requestedBy: "x", requestedAt: "2026-10-13T00:00:00Z",
-      args: { "source-uri": "file:///s", "to-bag": BAG, "seed-door": "founding", "change-id": "c", carriers: [carrier] },
+      args: { "source-uri": "file:///s", "to-bag": BAG, "change-id": "c", carriers: [carrier] },
     } as unknown as Verb);
     const whole = wave({ uri: URI, text: D, diskHash: "sha256:aa", syncedHash: "sha256:bb", syncedRecordsHash: "sha256:cc" });
     expect((whole as { carriers: Array<Record<string, unknown>> }).carriers[0]!["syncedRecordsHash"]).toBe("sha256:cc");
