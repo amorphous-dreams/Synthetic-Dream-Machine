@@ -1,3 +1,32 @@
+## ☕ N9 · Fire-to-place typed relation wave / aftermath F · 2026-10-29
+
+**N9-F** (`b0c76137`) extends the existing, source-validated
+current Fire proposal contract with `covers/overhead-canopy`
+and `ascends/stair-flight`, alongside the held
+`bridges/bridge-between`. The explicit, operator-selected
+bound Fire alternative now becomes the corresponding
+`SpatialGoal(shelter)`, `SpatialGoal(ascend)` or
+`SpatialGoal(connect)`, optionally carrying bounded
+authored width and maximum step parameters. No new
+Art Sigil parser, AI model, native Boolean shortcut,
+or identity ledger authority enters the construction stack.
+
+**Intent aftermath F:** the original Fire witness and
+semantic handles remain required. In particular the
+`covers` Fire proposal may refer only to an existing,
+separately witnessed material roof; constructing a
+*missing* named roof uses an explicitly authored
+`SpatialIntent` and cannot be fabricated as an observed
+Fire source endpoint. This distinction protects source
+honesty while enabling both workflows.
+
+All native shelter/ascent constructs still pass their
+independent STEP gates, and no geometric status
+certifies a building, route accessibility, artistic
+quality, or Elyncia canon. Exact-head CI required.
+
+---
+
 ## ☕ N9 · Single-runner ownership and CI recovery · 2026-10-29
 
 **N9-L** (`fad32e9e`) moves native living-place runs under

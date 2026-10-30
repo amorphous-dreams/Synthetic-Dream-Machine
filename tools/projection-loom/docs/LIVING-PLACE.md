@@ -1,3 +1,24 @@
+## N9 · Aftermath F · Fire carries more than crossings
+
+Fire's typed, validated `covers` and `ascends` proposals now
+bind to independently implemented native cover and tread-chain
+hypotheses. Each selection still requires a particular Fire
+alternative, an unchanged original witness, a location-matched
+intent digest, distinct real material endpoints and a bounded
+interpretation. A wrong pairing such as `covers/stair-flight`
+cannot cross the contract.
+
+Important epistemic difference: a Fire selector resolves original
+witness nodes. A hypothetical *new* roof cannot claim to have
+appeared in the original Fire source graph. The operator may
+instead author the typed `shelter(floor,new-roof)` intent as a
+proposal for birth; the native engine creates that body and
+tests it without inventing provenance. No new relation turns
+a render, symbolic metaphor or human preference into a
+safety certificate.
+
+---
+
 ## N9 · Aftermath L · One native session / one exact-source runner
 
 The place runner now uses the same `single_runner` lease as the
