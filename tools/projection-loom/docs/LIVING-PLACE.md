@@ -1,3 +1,24 @@
+# Living Place · Current constructive/evidence contract
+
+## Authored source → typed obligations → heritable child → native evidence → operator
+
+`SpatialIntent` and `plan_spatial_obligations` preserve distinct `connect`, `shelter`, `ascend`, `bear` goals with deterministic dependency order and typed refusals. `seal_constructive_growth` guards original bodies and relations. The independent `place_affordances` STEP/BRep checks remain the only bounded geometric evidence, never artistic or structural load certification.
+
+**Relational evolution:** `place_emitters.emit_place_child` uses at most two different native-admitted parent genomes per observed niche. `generated_components` finds whole native relation regions; `recombine_place_regions` refuses half-relations or competing routes. The emitter deterministically samples compatible parent regions and records source genome digests, parent native workspace identities and the candidate's original goal scope. No admitted parent may transfer geometric success to a child.
+
+**One helm:** `place_campaign` records every proposal in the attributed frontier, stores its emitter receipt with the independently audited candidate, binds its digest into candidate Observe, and replays the exact same proposal stream in `verify_place_campaign`. The finite audition budget never expands for breeding. `relational_emission_census` separately accounts for offered/deferred/attempted/admitted births; the phenotype niche count remains grounded in observed native evidence.
+
+**One operator surface:** `place_comparison` and `place_board` project source, evidence, refusal and parentage into review. The six-view image is an illustration, and an accepted successor study still requires a separate explicit operator receipt.
+
+### Unresolved boundaries
+
+Generational *topology* changes beyond selecting complete parent regions, real source-conditioned image/grammar geometry, actual Unreal Editor integration, physical safety certification and artistic judgment remain open. Never reassign their authority to an emitter, rendered image, or provenance hash.
+
+## Ashes holding ahu · predecessor living front
+
+<details>
+<summary>Previous living front · retained verbatim</summary>
+
 # Living Place · Current constructive and evidence contract
 
 ## YIN: source → obligations → compositional children → STEP → review
@@ -17,6 +38,9 @@
 These mechanisms certify only bounded exact-BRep geometric relations, not structural load safety, accessible use, global measurement or aesthetic success. Renders, signed hashes and route variants cannot pick an artistic winner. Operator review, Elyncia canon and final o-takiage require separate authority.
 
 ## Ashes holding ahu · previous living front
+
+
+</details>
 
 <details>
 <summary>Previous living front (preserved verbatim)</summary>

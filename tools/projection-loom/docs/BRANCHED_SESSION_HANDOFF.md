@@ -1,3 +1,24 @@
+# Projection Loom · Evergreen session re-entry
+
+**Repository:** `amorphous-dreams/Synthetic-Dream-Machine` · **PR:** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · **branch:** `feature/green-jello-dinosaur-5--projection-loom`.
+
+Start by fetching the **entire** boot at `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` on `feature/green-jello-dinosaur-5`. Then read the PR's actual head and exact-head GitHub Actions, `HANDOFF.md`, `ROADMAP.md`, `LIVING-PLACE.md`, and `HEPHAESTUS-KANBAN.md`.
+
+**Method:** YIN consolidation via OODA-HA feature → intent-aftermath pairs, bisectable commits, batch publication after full features, exact native audits and honest red CI repair. No version numbering or compatibility adapters. Preserve one existing `OODAHAJournal` authority and the operator's independent artistic/canon authority.
+
+**Predecessor evidence:** `a6026ebe` completed **all 13 Actions workflows successfully** (CAD/evidence, STEP/USD/Blender, held-out and repository-wide included).
+
+**New feature batch:** relational native parent-region births flow through the existing generational place campaign, reproducible frontier, candidate phase receipts, exact native budgets, bound source workspaces, witnessed-diversity archive, and operator board. Unavailable recombination stays an explicit deferral. Source and native provenance do not grant an artistic winner.
+
+**Next check:** the currently pushed head's full CI after publication. **Next frontier:** rich competing construction/topology, genuine source-conditioned geometry and separately proven real editor integration.
+
+Previous living text remains verbatim below in its holding ahu. No deletion or canonical retirement.
+
+## Ashes holding ahu · predecessor living front
+
+<details>
+<summary>Previous living front · retained verbatim</summary>
+
 # Projection Loom · Evergreen re-entry key
 
 **Repository:** `amorphous-dreams/Synthetic-Dream-Machine` · **PR:** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · **Branch:** `feature/green-jello-dinosaur-5--projection-loom`.
@@ -11,6 +32,9 @@ Fetch the full boot `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` on `featu
 **Remaining frontier:** expressive compound constraints, relational-genome emitters inside one journal, actual source-conditioned architecture, independent editor integration and reviewed whole-place alternatives.
 
 ## Ashes holding ahu · previous living front
+
+
+</details>
 
 <details>
 <summary>Previous living front (preserved verbatim)</summary>

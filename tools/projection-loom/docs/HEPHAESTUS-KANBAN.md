@@ -1,3 +1,30 @@
+# Hephaestus · YIN working board
+
+## Current landing · staged
+
+- [x] Rehydrate current Lares boot and verify all 13 workflows on predecessor `a6026ebe` passed.
+- [x] Add shared deterministic native place proposal generator: initial, mutation, source-closed relational recombination.
+- [x] Refuse unproven parents; record immutable native workspace ancestry and deterministic compatible-region sampling.
+- [x] Integrate under existing OODA-HA epoch and candidate receipts; add emitter preference without extra native auditions.
+- [x] Reconstruct both frontier and phenotype-admission census; bound parent pool per niche.
+- [x] Expose native parentage and typed abstentions on existing comparison and read-only operator board.
+- [x] Add independent positive/negative generator, tamper, frontier, board and native-campaign tests.
+
+These checkboxes reflect source commits, not a finished exact-head CI verdict.
+
+## Unresolved acceptance and features
+
+- [ ] Run full exact-head CAD, generalized USD/STEP, Blender, repo-wide, held-out and targeted tests; repair any red jobs.
+- [ ] Produce diversified topology via competing native architectural constructive alternatives and held-out audits.
+- [ ] Prove actual source-conditioned architectural morphology rather than heterogeneous seed identity only.
+- [ ] Implement reviewed editor round trip and richer operator semantic contrasts without automatic aesthetic choice.
+- [ ] Maintain YIN wave/aftermath cadence, compact evergreen fronts and reversible ashes.
+
+## Ashes holding ahu · predecessor living front
+
+<details>
+<summary>Previous living front · retained verbatim</summary>
+
 # Hephaestus · Current working board
 
 ## New YIN wave inventory · code staged
@@ -21,6 +48,9 @@
 - [ ] Preserve original ashes carriers and stable fragment references during any future further consolidation.
 
 ## Ashes holding ahu · previous living front
+
+
+</details>
 
 <details>
 <summary>Previous living front (preserved verbatim)</summary>

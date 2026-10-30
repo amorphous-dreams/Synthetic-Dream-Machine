@@ -1,3 +1,33 @@
+# Projection Loom · Evergreen handoff
+
+## Live YIN re-entry · relational breeding under one helm
+
+**Repository** `amorphous-dreams/Synthetic-Dream-Machine` · **PR** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · **branch** `feature/green-jello-dinosaur-5--projection-loom`. Fetch actual PR head; read the **entire** `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` on `feature/green-jello-dinosaur-5` before acting.
+
+The predecessor implementation head `a6026ebe817a37b3938b6f8659c147a9a3d020e4` passed **all 13 exact-head GitHub Actions workflows**, including native CAD, generalized USD/STEP and Blender, repository-wide CI and held-out witnesses. Those results do **not** transfer to the current YIN feature batch until its own Actions finish.
+
+### Current implementation · code staged, not yet CI-accepted
+
+- `place_emitters.py` constructs source-bound initial, mutation or **closed-region relational-recombination** proposals. Parent pairs only enter from independently admitted native workspaces, and the proposal explicitly identifies parent candidate IDs, native workspace SHA-256 identities, generation regions and deterministic sampling. Missing/invalid pairs defer with a typed reason; they never fabricate parent witness or aesthetic preference.
+- `place_campaign.py` uses the **same proposal function** in both execution and verification. Original `OODAHAJournal` remains the one helm; exact native audition budgets, source obligations, candidate Observe receipts and frontier replays cover every offered, attempted and deferred genome.
+- Relational **emission census** independently reconstructs offered, deferred, audited and admitted recombinant counts. Observed spatial niche census stays distinct from the bounded breeding pool (at most two different native-witnessed genotypes per niche). No extra native audit or automatic winner gets inferred from an emitter label.
+- `place_comparison.py` and `place_board.py` now expose attributed emitter receipts and native parent lineage, including deferred breeding reasons, to the operator beside independently verified USD/STEP workspaces and six-view gallery.
+- Previously verified: typed `connect/shelter/ascend/bear` obligations, source seals, explicit orthogonal compound alternatives, two-parent recombinant native STEP studies, heterogeneous source-carrier experiments, and operator review/continuation.
+
+### Recommended re-entry
+
+1. Fetch fresh PR head, repository CI, held-out, OpenUSD/STEP, Blender, full CAD and dedicated regression verdicts.
+2. If any new head turns red, inspect exact failing job/test logs and repair the source cause; **do not** claim green through a predecessor head.
+3. Run `cd tools/projection-loom && python -m pytest -q tests/test_hephaestus_place_emitters.py tests/test_hephaestus_place_campaign.py tests/test_hephaestus_place_board.py tests/test_hephaestus_place_comparison.py`, then full `python -m pytest -q tests` and `python scripts/check_architecture.py` in a capable local environment. Previous GitHub-connector staging could not execute a local clone.
+4. Continue alternating full feature waves and YIN intent-aftermath. Next strongest frontier: constraint-driven *different topology* births and truthful source-conditioned architecture, rather than increasing the number of emitter names.
+
+**Authority boundary:** No PR merge, pet-name, Elyncia canon, artistic winner, physical safety certification, source pose registration or irreversible o-takiage. Source testimony, native geometry, rendered presentation and operator judgment remain separate.
+
+## Ashes holding ahu · predecessor living front
+
+<details>
+<summary>Previous living front · retained verbatim</summary>
+
 # Projection Loom · Living handoff
 
 ## Re-entry · October 30, 2026
@@ -21,6 +51,9 @@ Continue YIN systems consolidation with feature → intent aftermath pairs, incl
 Read `LIVING-PLACE.md`, `ROADMAP.md`, `HEPHAESTUS-KANBAN.md`, the current Lares boot and PR Actions. If native or repo-wide CI fails, inspect the specific failing job, repair the common code cause, commit and push a new head. Never reassign the predecessor head's green runs to later commits. The original historical handoffs remain below in holding ashes, not deleted.
 
 ## Ashes holding ahu · previous living front
+
+
+</details>
 
 <details>
 <summary>Previous living front (preserved verbatim)</summary>

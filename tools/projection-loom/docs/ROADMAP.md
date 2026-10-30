@@ -1,3 +1,34 @@
+# Projection Loom · Evergreen roadmap
+
+## YIN consolidation · the frontier now
+
+Architecture should inherit **relationships** through independently audited genomes, not merely shapes or renamed mutations. Preserve one five-phase OODA-HA journal, source-bound native bodies, and Jing-style compose/restrict coherence.
+
+### Implemented in the active feature batch (exact-head gates pending)
+
+- [x] Deterministic initial/mutation/relational-recombination proposal service shared by run and replay.
+- [x] Complete generated-region components; reject truncated relations, self-conflicting sources and missing native parents.
+- [x] Operator preference for genuine breeding proposals without silently inventing one when no pair exists.
+- [x] Native-parent workspace identity and source ancestry in each candidate's frontier/Observe/receipt.
+- [x] Two witnessed genotypes per observed niche at most, without inflating phenotype niche counts.
+- [x] Relational birth/deferral/admission census reconstructed from immutable native auditions.
+- [x] Operator comparison/board exposes parentage and deferral alongside verified STEP and independent presentation.
+
+### Next feature → intent-consolidation pairs
+
+1. Grow alternative *architectural topology* under composed constraints (multiple real layouts, not just body dimensions), with refusal/conflict explanation.
+2. Test repeated independently admitted recombinant births at matched exact STEP budgets; compare witnessed topology, morphological breadth, source preservation and refusal density, not scene hashes alone.
+3. Make image/constructive-grammar/proxy inputs condition architectural proposals through **explicitly attributed measured structure**; hold camera calibration and image-to-CAD limitations visible.
+4. Expand whole-place operator steering and real editor round trips with independently verified provenance; Unreal Editor validation remains separate from USD export.
+5. Perform source and intent Aftermath, maintain compact living docs, preserve ashes, and pursue full exact-head repo/native/held-out gates.
+
+**Acceptance:** predecessor `a6026ebe` achieved 13/13 completed workflows green; new branch head must earn its own verdict. No version ladders, compatibility shims, automatic artistic winner or Elyncia canon promotion.
+
+## Ashes holding ahu · predecessor living front
+
+<details>
+<summary>Previous living front · retained verbatim</summary>
+
 # Projection Loom · Living roadmap
 
 ## Intent and next constructive frontier · YIN consolidation
@@ -24,6 +55,9 @@ Grow *relationships that compose* before multiplying special-purpose CAD verbs. 
 Verify the new exact-head CAD, OpenUSD/STEP, Blender, repository-wide and held-out gates **after** the consolidated publish. Record failures and repairs at their own commit identities. Refresh handoff/kanban again if CI changes the known truth.
 
 ## Ashes holding ahu · previous living front
+
+
+</details>
 
 <details>
 <summary>Previous living front (preserved verbatim)</summary>
