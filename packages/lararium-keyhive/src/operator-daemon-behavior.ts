@@ -120,7 +120,7 @@ export type DyadReader = (fleetRootDid: string, deviceVerifyingKey: string) => i
  * The dyad's reader a gate asks through, or a refusal by name. A gate that binds or seats a device reads that
  * device's standing first; with no reader composed it cannot read one, and it never reads the absence as `clear`.
  */
-export function requireDyadReader(reader: DyadReader | undefined, gate: "the Binding Gate" | "the join gate" | "the content-key seat" | "the intent door"): DyadReader {
+export function requireDyadReader(reader: DyadReader | undefined, gate: "the Binding Gate" | "the join gate" | "the content-key seat" | "the intent door" | "the seat summons"): DyadReader {
   if (!reader) {
     throw new Error(
       `[daemon] DyadReaderAbsent: ${gate} reads a device's standing off the vessel's own fold of its fleet board, and this island ` +
@@ -144,6 +144,7 @@ import { FACE_GRANT_PREFIX, verifyFaceGrantRecord, type FaceGrantRecord } from "
 import { makeFaceSeat, makeGroupDocListener, type GroupDocHandle } from "./face-seat.js";
 import { runFaceJoinOperation } from "./face-join-operation.js";
 import { makeFaceIntentDoor } from "./face-intent-door.js";
+import { makeSeatSummons, standingOfReading } from "./face-seat-summons.js";
 import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
 import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
@@ -1216,10 +1217,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const door = makeFaceIntentDoor({
               group, atom: { key: atom.key, sign: atom.sign }, plane, personaRecords: () => faceRecordsOf([personaPlane.doc()], group),
               kelChain: daemonAuth.personaKel!.chain, anchor: daemonAuth.faceAnchor ?? null,
-              standing: async (device) => {
-                const reading = await requireDyadReader(dyadReader(ctx), "the intent door")(edge.personaRootDid, device);
-                return reading === "clear" ? "stands" : reading === "aside" ? "aside" : "unknown";
-              },
+              standing: async (device) => standingOfReading(await requireDyadReader(dyadReader(ctx), "the intent door")(edge.personaRootDid, device)),
               verbs: faceIntentVerbs(), effects: new Map([["face-join", faceJoinVia]]),
               runDeclaredEffect: async (verb, args, at) => {
                 const table = intentRegistry, verifier = intentVerifier;
@@ -1243,11 +1241,35 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
                 .catch(() => ctx.tw5.setTiddler({ title: INTENT_VIEW_CAP, text: "0", ...SEED_OFF_DISK }));
             };
             registerIntentView();
-            heedIntentDoor = () => { void door.heed(); };
-            const wake = (): void => { void door.heed(); };
+            // THE JOINEE'S HALF: a joined, unseated leaf summons its own seat on this plane, once, pinned to the founding
+            // hearth the persona log admitted first ("join = intent; idempotent": the person's fleet join IS the intent). It
+            // asks again on every change of the two planes until the seat lands; each answer that is not an issue names itself.
+            const summons = makeSeatSummons({
+              group, atom: { key: atom.key, sign: atom.sign }, plane, verbs: faceIntentVerbs(),
+              seated: () => veil.knowsAgent(group),
+              contactCard: async () => { try { return await veil.contactCard(); } catch { return null; } },
+              deviceEdge: edge,
+              standing: async (device) => standingOfReading(await requireDyadReader(dyadReader(ctx), "the seat summons")(edge.personaRootDid, device)),
+              // THE VERIFIED PROJECTION names the founding hearth: the face's lineage reads the log, never a raw plane record.
+              projection: () => readFace(daemonAuth.personaKel!.chain, daemonAuth.faceAnchor ?? null)?.project(faceRecordsOf([personaPlane.doc()], group) as never, group) ?? null,
+              view: async () => (await door.describe()).view,
+              log: (message) => console.log(`[daemon] ${message}`),
+            });
+            let summonsSaid: string | null = null;
+            const summon = (): void => {
+              void summons.summon().then((answer) => {
+                if (answer === "issued" || answer === "seated" || answer === summonsSaid) return;
+                summonsSaid = answer;
+                console.log(`[daemon] the seat summons waits: ${answer}`);
+              }, (error) => console.log(`[daemon] the seat summons faulted: ${String(error)}`));
+            };
+            heedIntentDoor = () => { void door.heed(); summon(); };
+            const wake = (): void => { void door.heed(); summon(); };
             personaPlane.on("change", wake);
             const stopDoor = door.attach();
-            doorStop = () => { stopDoor(); personaPlane.off("change", wake); };
+            plane.on("change", summon);
+            summon();
+            doorStop = () => { stopDoor(); personaPlane.off("change", wake); plane.off("change", summon); };
           } catch (error) { console.log(`[daemon] the face intent door waits: ${String(error)}`); }
           finally { doorAttaching = false; }
         };

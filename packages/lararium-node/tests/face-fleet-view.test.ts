@@ -15,7 +15,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { generateAutomergeUrl, interpretAsDocumentId, type DocumentId } from "@automerge/automerge-repo";
-import { DAEMON_BAG_ID, DeterministicFederationGate, PERSONA_GROUP_ID_TIDDLER, personaBagIdFor, personaMembershipEntries, personaSiblingBagIds, type FaceGrantReading } from "@lararium/mesh";
+import { DAEMON_BAG_ID, DeterministicFederationGate, PERSONA_GROUP_ID_TIDDLER, personaBagIdFor, personaMembershipEntries, personaSiblingBagIds, type FaceGrantReading , type LarDoc } from "@lararium/mesh";
 import { faceFleetFacets, faceFleetViews, bridgeBooks } from "../src/face-fleet-view.js";
 import { selfSlotShareDecision } from "../src/self-slot-share.js";
 
@@ -145,5 +145,40 @@ describe("the worn face's books: the bridge until O1 (an allow-list the catalog 
     expect(await gate.mayFederate(idOf(TWO.circles)), "a catalog row for face two is not a book").toBe(false);
     expect(await gate.mayFederate(idOf(WIKI))).toBe(true);
     expect(await gate.mayFederate(idOf(ONE.circles))).toBe(true);
+  });
+});
+
+describe("the bridge names the Kahu canon this vessel stands (walk R4: the canon reaches a joined leaf)", () => {
+  // The catalog points at the vessel's books; the Kahu realm, never the catalog, registers `@lares` and `@lararium`
+  // (one owner per registry). A worn face's session read every book the catalog named and none of the canon, so a
+  // seated leaf's wiki faulted on `slot bags/lararium unavailable — the peer answered WITHOUT doc` (measured, w1).
+  const WIKI = generateAutomergeUrl(), LARES = generateAutomergeUrl(), LARARIUM = generateAutomergeUrl();
+  const catalog = { tiddlers: { "lar:///ha.ka.ba/bags/notes": { tiddler: { title: "lar:///ha.ka.ba/bags/notes", text: WIKI } } } } as unknown as LarDoc;
+
+  test("RED: the books name the catalog's pointers and the canon the realm stands for this vessel", () => {
+    const books = bridgeBooks(catalog, { lares: LARES as never, lararium: LARARIUM as never });
+    expect(books.has(String(idOf(WIKI)))).toBe(true);
+    expect(books.has(String(idOf(LARES)))).toBe(true);
+    expect(books.has(String(idOf(LARARIUM)))).toBe(true);
+    expect(books.size).toBe(3);
+  });
+
+  test("CONTROL: no canon named adds no book; a canon the catalog also points at counts once; a half-stood canon names its half", () => {
+    expect([...bridgeBooks(catalog, {})]).toEqual([String(idOf(WIKI))]);
+    expect([...bridgeBooks(catalog)]).toEqual([String(idOf(WIKI))]);
+    const both = { tiddlers: { ...(catalog as unknown as { tiddlers: Record<string, unknown> }).tiddlers, "lar:///ha.ka.ba/bags/lares": { tiddler: { title: "lar:///ha.ka.ba/bags/lares", text: LARES } } } } as unknown as LarDoc;
+    expect(bridgeBooks(both, { lares: LARES as never }).size).toBe(2);
+    expect(bridgeBooks(catalog, { lararium: LARARIUM as never }).has(String(idOf(LARARIUM)))).toBe(true);
+    expect(bridgeBooks(catalog, { lararium: LARARIUM as never }).has(String(idOf(LARES)))).toBe(false);
+  });
+
+  test("through the share verdict: the worn face's session reads the canon the vessel stands; a carried face's session does not", async () => {
+    const pinned = { ...bootstrap(ONE, TWO), [PERSONA_GROUP_ID_TIDDLER]: { text: G1 } };
+    const books = () => bridgeBooks(catalog, { lares: LARES as never, lararium: LARARIUM as never });
+    const views = faceFleetViews(() => pinned, () => G1, books);
+    views.seat("worn-device", grant(G1));
+    views.seat("other-device", grant(G2));
+    expect(await views.gateFor("worn-device")!.mayFederate(idOf(LARARIUM))).toBe(true);
+    expect(await views.gateFor("other-device")!.mayFederate(idOf(LARARIUM))).toBe(false);
   });
 });

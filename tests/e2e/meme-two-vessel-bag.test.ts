@@ -256,9 +256,12 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
   test("⑨ the later grant lands as a record on the PersonaGroup plane; B's kit takes the seat; a put rides the face", async () => {
     const before = B!.bootLog();
     expect(before, "CONTROL: B stood pinned, not seated").toMatch(/pinned, not yet seated/);
-    expect(before).not.toMatch(/grant record taken/);
-    // B asks for its seat on the face's intents plane: its own card and the edge A signed for it, pinned to the founding
-    // hearth. A's door answers; the record lands on the PersonaGroup plane.
+    // JOIN = INTENT (the Founding Walk, W4, 2026-10-29): B's own daemon island issues the one face-join summons the moment it
+    // stands joined and unseated, pinned to the founding hearth (`face-seat-summons`); the hand step below REPLAYS it and
+    // answers the standing intent's id, so the plane holds one summons of B however many times a hand asks.
+    const summonsDeadline = Date.now() + 90_000;
+    while (!/the seat summons issued/.test(B!.bootLog()) && Date.now() < summonsDeadline) await new Promise((res) => setTimeout(res, 1000));
+    expect(B!.bootLog(), "B's own island summoned its seat").toMatch(/the seat summons issued/);
     const requested = await requestFaceJoin(B!);
     const grant = await faceJoinOutcome(B!, requested);
     console.error(`meme-two-vessel-bag MEASURE A: face-join → admitted ${String(grant["admitted"])} · reKeyed ${String(grant["reKeyed"])} · reSealed ${String(grant["reSealedCount"] ?? "(none)")} · record ${String(grant["recordTitle"] ?? "(none)")} ${grant["reason"] ? `· reason ${String(grant["reason"])}` : ""}`);

@@ -13,8 +13,9 @@
  *     the board takes it, and its carriage commits to this hearth's STOOD sovereign pin. The founder holds that Nexus's
  *     root, so no CLI step stands between.
  *   · ONCE. The bundle is kept at `<sealHome>/nexus/face-admit/<aid>/<nym>.json`, and every later answer reuses it while it
- *     still reads held at the charter and still commits to the pin the gate stands under. A kept bundle that fails either
- *     is minted again.
+ *     still reads held at the charter, still commits to the pin the gate stands under, and still names the canon the
+ *     realm names now (the pin and the canon ride one signature). A kept bundle that fails any of the three is minted
+ *     again whole.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange · lar:///ha.ka.ba/lararium/mesh/membership-doctrine
  *
@@ -28,6 +29,7 @@ import {
 } from "@lararium/mesh";
 import { admitBundlePathFor, isAdmitBundle, type AdmitBundle } from "./admit-bundle.js";
 import { primaryNexusAid } from "./carried-set.js";
+import { admitCanonDocs, hearthCustodyGroup } from "./kahu-realm.js";
 import { runNexusContract } from "./commands/nexus-contract.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { hearthSovereignPin } from "./hearth-sovereign-pin.js";
@@ -60,9 +62,21 @@ export async function ensureFaceHouseholdLeaf(sealHome: string, face: number): P
   return mintNexusLeaf(face, householdAid(sealHome));
 }
 
-/** A kept bundle that still reads held at the household charter and still commits to the pin the gate stands under. */
-async function stillStands(bundle: AdmitBundle, sealHome: string, aid: string, pinDigest: string): Promise<boolean> {
+/** The canon list two carriages agree on: the same titles naming the same documents, in any order. */
+function sameCanon(a: Readonly<Record<string, string>>, b: Readonly<Record<string, string>>): boolean {
+  const ka = Object.keys(a).sort(), kb = Object.keys(b).sort();
+  return ka.length === kb.length && ka.every((k, i) => k === kb[i] && a[k] === b[k]);
+}
+
+/**
+ * A kept bundle that still reads held at the household charter, still commits to the pin the gate stands under, and
+ * still names the canon the catalog names NOW. The pin and the canon ride one signature (the admit signs what it
+ * carries), so a canon that drifted from the catalog's current list (an admit minted before the seed named the
+ * hearth's documents) is never patched beside the signature: the bundle is minted again whole.
+ */
+async function stillStands(bundle: AdmitBundle, sealHome: string, aid: string, pinDigest: string, canon: Readonly<Record<string, string>>): Promise<boolean> {
   if (!bundle.opening || gateBundleDigest(bundle.opening.carriage.gatePin) !== pinDigest) return false;
+  if (!sameCanon(bundle.opening.carriage.canon, canon)) return false;
   const root = heldNexusRoot({ nexus: aid, charter: readNexusDoc(sealHome), denyBoard: [], antigen: [], antigenVerifier: makeMultiSigQuorumVerifier() });
   if ("absent" in root) return false;
   return "carriage" in (await verifySignedAdmitBundle(bundle, root));
@@ -85,10 +99,12 @@ export async function ensureFaceHouseholdAdmit(opts: {
   const nym = leaf.verifyingKey;
   leaf.seed.fill(0);
   const pinDigest = gateBundleDigest(hearthSovereignPin(aid, opts.gateDoor));
+  // The canon the realm names now: the same read the contract door signs into a fresh admit's carriage.
+  const canon = await admitCanonDocs(opts.repo, opts.sealHome, await hearthCustodyGroup());
   const path = faceHouseholdAdmitPath(opts.sealHome, aid, nym);
   let kept: unknown = null;
   try { kept = JSON.parse(readFileSync(path, "utf8")); } catch { kept = null; }
-  if (isAdmitBundle(kept) && kept.aid === aid && kept.admit.nym.toLowerCase() === nym && kept.opening && await stillStands(kept, opts.sealHome, aid, pinDigest)) {
+  if (isAdmitBundle(kept) && kept.aid === aid && kept.admit.nym.toLowerCase() === nym && kept.opening && await stillStands(kept, opts.sealHome, aid, pinDigest, canon)) {
     return kept as AdmitBundle & { readonly opening: NonNullable<AdmitBundle["opening"]> };
   }
   const result = await runNexusContract({

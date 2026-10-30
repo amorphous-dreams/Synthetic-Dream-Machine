@@ -2,7 +2,8 @@
  * intent-command-live — the store-door rows of `lares intent` over a really founded face: the row proves the intents plane
  * against the face's signed log, issues under the face atom, reads the plane back, and the persona root's word voids.
  * Reds: a spread single-effect request refuses before any write; an unregistered plane refuses by name. Controls: a
- * pinned `face-join` issues, carries this vessel's own ContactCard and complete device edge, and keeps one id on replay.
+ * pinned `face-join` issues, carries this vessel's own ContactCard and complete device edge, and keeps one id on replay;
+ * a face-join pinned to another hearth is its own intent, replayed only by its own pin.
  */
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -68,6 +69,15 @@ describe("lares intent over a founded face", () => {
     const summons = records.find((r) => r.body.verb === "face-join")!.body.args!.summons!;
     expect(summons.contactCard.length).toBeGreaterThan(10);
     expect(summons.deviceEdge).toBeTruthy();
+  }, 240_000);
+
+  test("RED (Sol): a face-join pinned to another hearth is its own intent, never a replay of the standing one", async () => {
+    const standing = ((await row("intent-show", {})) as { rows: Array<{ id: string; verb: string }> }).rows.find((r) => r.verb === "face-join")!;
+    const elsewhere = await row("intent-issue", { intentVerb: "face-join", to: "99".repeat(32) }) as { id: string; replayed?: boolean };
+    expect(elsewhere.replayed, "a summons pinned elsewhere issues its own").toBeFalsy();
+    expect(elsewhere.id).not.toBe(standing.id);
+    const again = await row("intent-issue", { intentVerb: "face-join", to: "99".repeat(32) }) as { id: string; replayed?: boolean };
+    expect(again.id, "the same pin replays its own").toBe(elsewhere.id);
   }, 240_000);
 
   test("the persona root's cancel voids the intent the face atom issued; show names the void", async () => {

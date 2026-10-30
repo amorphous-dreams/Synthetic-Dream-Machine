@@ -812,7 +812,7 @@ async function prepareNodeBootOn(
   // The mounted face also reads this vessel's wikis, catalog and bags (the bridge until O1, `face-fleet-view`).
   let catalogForViews: (() => LarDoc | undefined) | null = null;
   const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,
-    () => (catalogForViews ? bridgeBooks(catalogForViews()) : new Set<string>()));
+    () => (catalogForViews ? bridgeBooks(catalogForViews(), kahuCanon) : new Set<string>()));
   stood.push({ what: "the face views", down: () => faceViews.close() });
   // THIS HEARTH'S OWN HOSTING DOCS — one per Nexus it carries, under its own gate key. A contracted peer (a carrier
   // of that Nexus) replicates them for the cross-check every walker's fork reading rests on. Filled once the vessel
@@ -842,6 +842,8 @@ async function prepareNodeBootOn(
       const socket = (network.sockets as Record<string, unknown>)[peerId];
       const session = socket ? gateSync.sessionOf(socket) : null;
       if (session) {
+        const face = session.class === "same-operator" && session.face ? `, face ${session.face.personaGroup.slice(0, 12)}…` : "";
+        console.log(`[lar-gate] session ${peerId.slice(0, 12)}…: ${session.class}${face}`);
         // The key the gate proved: the session's face key, or a faceless place's own key. No vessel key rides.
         const identHex = session.scope?.faceKey ?? session.placeKey;
         if (identHex) peerIdentifierMap.set(peerId, identHex);

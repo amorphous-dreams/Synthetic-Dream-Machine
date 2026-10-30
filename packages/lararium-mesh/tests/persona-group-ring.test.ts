@@ -92,6 +92,35 @@ describe("the PersonaGroup ring — the face's grant records decide, and nothing
     expect(await permissive.mayFederate(ELSEWHERE, STRANGER)).toBe(true);
   });
 
+  // THE FOUNDING WALK, W4 (measured 2026-10-29): on a browser leaf the ring's records read the face's persona plane
+  // through the catalog, and that plane was the very document the decision was about — not yet local. The read
+  // rejected (`DocumentUnavailableRefusal`), the composed gate rejected with it, and automerge-repo logged
+  // "Error loading sync state or share policy" for every governed plane: a decision that throws syncs nothing.
+  // A plane that cannot be read withholds, as a torn record does: the composed verdict RESOLVES to the base's.
+  test("RED: a plane read that rejects withholds — the composed gate resolves to the base, never rejects; CONTROL: once the plane reads, the grant admits", async () => {
+    let planeReads = 0;
+    let available = false;
+    const r = makePersonaGroupIdentityRing({
+      governs: (doc) => doc === PLANE,
+      deviceAside: () => false,
+      provenVesselKey: (peer) => (peer === MEMBER ? MEMBER_KEY : null),
+      grants: {
+        records: async () => { planeReads++; if (!available) throw new Error("[document-unavailable] bag persona unavailable"); return [grantFor(MEMBER_KEY)]; },
+        verify: async (record, key) => (record as { joineeAgentIdHex: string }).joineeAgentIdHex === `agent-${key}`,
+      },
+    });
+    const widened = r.compose(denyAll);
+    await expect(widened.mayFederate(PLANE, MEMBER)).resolves.toBe(false);
+    expect(planeReads).toBe(1);                       // the ring truly reached for the plane
+    // CONTROL: an allowing base still allows without reading the plane at all.
+    await expect(r.compose(allowAll).mayFederate(PLANE, MEMBER)).resolves.toBe(true);
+    expect(planeReads).toBe(1);
+    // CONTROL: the plane arrives (the product's own event, no clock): the same decision now admits the grant-holder.
+    available = true;
+    await expect(widened.mayFederate(PLANE, MEMBER)).resolves.toBe(true);
+    expect(planeReads).toBe(2);
+  });
+
   test("CONTROL: the vessel's OWN hand is never questioned — the founder's own reads do not move", async () => {
     let asked = 0;
     const r = makePersonaGroupIdentityRing({

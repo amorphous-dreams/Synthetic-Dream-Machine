@@ -14,7 +14,7 @@ import {
   crossroadsDocUrl, whoBoardDocUrl, materializeSharedLarDoc, mutableLarRecord, oracleGenesisDocUrl, emptyLarDoc, tiddlerText,
   type FederationGate, type LarDoc,
 } from "@lararium/mesh";
-import { HearthCanonGate, admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, isOwnHearthCrossing, seatHearthCanon } from "../src/hearth-canon.js";
+import { HearthCanonGate, admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, isOwnHearthCrossing, provenCrossingPlanes, seatHearthCanon } from "../src/hearth-canon.js";
 import { browserShareConfig } from "../src/open-browser-vessel.js";
 
 const NEXUS = "ab".repeat(32);
@@ -222,6 +222,36 @@ describe("hearthCrossingOf — the vessel's crossing wears the widened gate for 
       expect(opens(foreign.gate, LARARIUM_URL)).toBe(false);
       expect(opens(foreign.gate, crossroadsDocUrl(NEXUS))).toBe(true);
     }
+  });
+
+  // THE FACE'S OWN PLANES CROSS AT ITS OWN HEARTH, AS ITS SIGNED LOG NAMES THEM. The bootstrap rests unsealed in the
+  // origin's IndexedDB, so a plane url read from it proves nothing alone (the twin #125 closed for the catalog): the
+  // own-hearth crossing opens no face plane until the face proof passes, then exactly the planes the proof's
+  // projection names for the worn face. A substituted url (the leaf's own catalog named as `sessions`) never opens.
+  test("RED: the own-hearth crossing opens no face plane before the proof, then only the planes the face's signed log names", () => {
+    const PERSONA_URL = generateAutomergeUrl(), CIRCLES_URL = generateAutomergeUrl(), INTENTS_URL = generateAutomergeUrl();
+    const own = at({});
+    expect(opens(own.gate, PERSONA_URL), "no face plane crosses before the proof").toBe(false);
+    // The face's signed log names persona, intents and circles; the bootstrap carries the leaf's catalog as `sessions`.
+    const projection = { planes: { persona: PERSONA_URL, intents: INTENTS_URL, circles: CIRCLES_URL } };
+    const proven = provenCrossingPlanes(projection, { persona: PERSONA_URL, intents: INTENTS_URL, circles: CIRCLES_URL, sessions: CATALOG_URL, identities: null });
+    expect([...proven].sort()).toEqual([PERSONA_URL, INTENTS_URL, CIRCLES_URL].sort());
+    expect(own.openFacePlanes(proven)).toBe(true);
+    for (const url of [PERSONA_URL, INTENTS_URL, CIRCLES_URL]) expect(opens(own.gate, url)).toBe(true);
+    expect(opens(own.gate, CATALOG_URL), "a substituted plane never opens").toBe(false);
+    // The canon and the boards still open; the daemon bag and the oracle stay shut beside the planes.
+    expect(opens(own.gate, LARES_URL)).toBe(true);
+    expect(opens(own.gate, crossroadsDocUrl(NEXUS))).toBe(true);
+    expect(opens(own.gate, DAEMON_URL)).toBe(false);
+    expect(opens(own.gate, oracleGenesisDocUrl())).toBe(false);
+    // CONTROL: a foreign hearth opens no face plane, whatever the proof names.
+    const foreign = at({ pinnedGatePubKey: FOREIGN });
+    expect(foreign.openFacePlanes([PERSONA_URL])).toBe(false);
+    expect(opens(foreign.gate, PERSONA_URL)).toBe(false);
+    // CONTROL: a reserved document never rides the list, even named by a log.
+    const reserved = at({});
+    reserved.openFacePlanes(provenCrossingPlanes({ planes: { persona: oracleGenesisDocUrl() } }, { persona: oracleGenesisDocUrl() }));
+    expect(opens(reserved.gate, oracleGenesisDocUrl())).toBe(false);
   });
 
   test("CONTROL: no gate key pinned is the operator's own node, so no federation gate stands", () => {

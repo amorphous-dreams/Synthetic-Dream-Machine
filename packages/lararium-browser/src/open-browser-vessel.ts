@@ -52,7 +52,7 @@ import {
 import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloorCard, fileOwnHearthPins, hearthNameOf, flowNexusFor } from "./browser-gate-pins.js";
 import { readHearthFloor, type HearthFloorRead } from "./browser-floor-read.js";
 import { composeBrowserFacePresentation } from "./browser-face-presentation.js";
-import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
+import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, provenCrossingPlanes, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
 import { readLarControlResult, readLarFrame, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame } from "@lararium/mesh";
 import { createBrowserConnectionState, crossingStandingOf, observeRelayConnection } from "./browser-connection-state.js";
@@ -1289,6 +1289,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // signed log vouch for that url. A bootstrap entry no proof backs registers nothing.
         portFaceId = wornGroup;
         wornFaceProjection = proof.projection;
+        // THE WORN FACE'S PLANES CROSS AT ITS OWN HEARTH as its signed log names them, and only now: no plane url read off the
+        // unsealed bootstrap crossed before this proof. The repo asks the hearth again for what the gate now opens.
+        if (crossing.openFacePlanes(provenCrossingPlanes(proof.projection, {
+          persona: wornPlaneUrl, intents: wornIntentsUrl,
+          ...(foundingFace ? { identities: social.identitiesUrl, circles: social.circlesUrl, sessions: social.sessionsUrl } : {}),
+        }))) { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } }
         provenWornPlaneUrl = wornPlaneUrl;
         provenPlanes.set(wornGroup, wornPlaneUrl);
         for (const plane of social.personaPlanes) {
