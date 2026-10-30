@@ -42,3 +42,36 @@ def test_amendment_retains_original_site_and_required_actor():
                               SpatialIntent(IntentContract("place","Retarget",("cover",)).identity,
                               (SpatialGoal("shelter","west","roof"),),"operator"),
                               actor="",reason="retarget")
+
+
+def test_accepted_native_place_can_only_change_aim_with_separate_amendment(tmp_path):
+    from test_hephaestus_place_campaign import setup
+    from projection_loom.place_campaign import (
+        run_place_campaign,review_place_candidate,continue_place_campaign,
+        verify_place_campaign)
+    source,intent,spatial,genome=setup()
+    first=tmp_path/"first"
+    prior=run_place_campaign(source,intent,spatial,genome,first,
+                             epochs=1,offspring=1,exact_budget=1)
+    chosen=prior["candidates"][0]["candidate_id"]
+    receipt=tmp_path/"accept.json"
+    review_place_candidate(first,chosen,actor="operator",decision="accept",
+                           reason="Keep native crossing",destination=receipt)
+    new_intent=IntentContract(intent.location,"Keep crossing but change artistic aim",
+                              tuple(sorted((*intent.objectives,"new-intention"))))
+    next_goal=SpatialIntent(new_intent.identity,spatial.goals,"operator")
+    with pytest.raises(ValueError,match="explicit"):
+        continue_place_campaign(first,receipt,new_intent,next_goal,tmp_path/"forbidden",
+                                epochs=1,offspring=1,exact_budget=1)
+    import json
+    amendment=author_place_amendment(
+        json.loads((first/"pre_registration.json").read_text()),new_intent,next_goal,
+        actor="operator",reason="Retain the native route for a different design study")
+    inherited=tmp_path/"changed"
+    summary=continue_place_campaign(first,receipt,new_intent,next_goal,inherited,
+                              epochs=1,offspring=1,exact_budget=1,amendment=amendment)
+    assert summary["admitted"]>=1
+    assert verify_place_campaign(inherited)==summary
+    original_prelude=json.loads((first/"pre_registration.json").read_text())
+    assert original_prelude["intent_sha256"]==intent.identity
+    assert original_prelude["spatial_intent_sha256"]==spatial.identity

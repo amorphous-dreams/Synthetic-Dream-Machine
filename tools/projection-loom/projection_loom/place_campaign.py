@@ -153,6 +153,16 @@ def verify_place_campaign(path):
             summary["pre_registration_sha256"]!=canonical_json_sha256(pre)):
         raise ValueError("Location campaign summary diverged from preregistration")
     intent=SpatialIntent.from_dict(pre["spatial_intent"])
+    contract_fields=pre["intent_contract"]
+    if not isinstance(contract_fields,dict) or set(contract_fields)!={
+            "location","aim","objectives","invariants","budgets"}:
+        raise ValueError("Place preregistration lacks complete original intent")
+    original_intent=IntentContract(contract_fields["location"],contract_fields["aim"],
+                  tuple(contract_fields["objectives"]),
+                  tuple(contract_fields["invariants"]),
+                  tuple(tuple(x) for x in contract_fields["budgets"]))
+    if original_intent.identity!=pre["intent_sha256"] or intent.intent_sha256!=original_intent.identity:
+        raise ValueError("Place intent contract changed after native construction")
     genome=PlaceGenome.from_dict(pre["original_genome"])
     if intent.identity!=pre["spatial_intent_sha256"] or genome.identity!=pre["original_genome_sha256"]:
         raise ValueError("Campaign original sources or intent changed")
@@ -174,18 +184,11 @@ def verify_place_campaign(path):
         if canonical_json_sha256(prior)!=predecessor["prior_campaign_sha256"]:
             raise ValueError("Prior place campaign preregistration changed")
         from .place_amendment import verify_place_amendment
-        original_goal=(prior["intent_sha256"],prior["spatial_intent_sha256"])
-        next_goal=(pre["intent_sha256"],pre["spatial_intent_sha256"])
+        old_goal=(prior["intent_sha256"],prior["spatial_intent_sha256"])
+        new_goal=(pre["intent_sha256"],pre["spatial_intent_sha256"])
         amendment=predecessor.get("intent_amendment")
-        if original_goal!=next_goal:
-            original_contract=_read(path/"pre_registration.json")
-            from .intent_seed import IntentContract
-            # The current intent digest and authored goal are bound in the
-            # successor preregistration, not inferred from a copied narrative.
-            if amendment is None or amendment.get("prior_pre_registration_sha256")!=canonical_json_sha256(prior) or amendment.get("new_intent_sha256")!=pre["intent_sha256"] or amendment.get("new_spatial_intent_sha256")!=pre["spatial_intent_sha256"]:
-                raise ValueError("Changed inherited place intent lacks its exact prior-bound amendment")
-            if amendment.get("sha256")!=canonical_json_sha256({k:v for k,v in amendment.items() if k!="sha256"}) or amendment.get("automatic_artistic_promotion") is not False:
-                raise ValueError("Inherited place intent amendment changed")
+        if old_goal!=new_goal:
+            verify_place_amendment(amendment,prior,original_intent,intent)
         elif amendment is not None:
             raise ValueError("Unchanged inherited place cannot smuggle an intent amendment")
         if review!=predecessor["review"] or review.get("decision")!="accept":
@@ -254,6 +257,10 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
     resolved=propose_from_spatial_intent(genome,spatial)
     pre={"schema":"projection-loom/place-preregistration",
          "location":intent.location,"intent_sha256":intent.identity,
+         "intent_contract":{"location":intent.location,"aim":intent.aim,
+                            "objectives":list(intent.objectives),
+                            "invariants":list(intent.invariants),
+                            "budgets":[list(x) for x in intent.budgets]},
          "spatial_intent":spatial.to_dict(),"spatial_intent_sha256":spatial.identity,
          "original_inventory_sha256":inventory.to_dict()["snapshot_sha256"],
          "source_evidence_scope":("original-file-bytes-matched-no-survey-certificate"
