@@ -45,7 +45,7 @@ const exceptions: Record<string, string> = {
   "packages/lararium-browser/tests/fixtures/stub-island.worker.ts": "This module exports an island factory rather than a worker entry.",
 };
 const readyGated: Record<string, string> = {
-  "packages/lararium-web/src/workers/daemon.worker.ts": "packages/lararium-browser/src/daemon-island-start.ts",
+  "packages/lararium-web/src/workers/daemon.worker.ts": "packages/lararium-browser/src/browser-daemon-island.ts",
   "packages/lararium-web/src/workers/wiki.worker.ts": "packages/lararium-browser/src/browser-wiki-worker.ts",
 };
 const sharedWorkers = new Set([
@@ -103,8 +103,11 @@ test("CONTROL: ready-gated delegates listen before the kernel posts ready", () =
   expect(kernel.slice(listen, ready)).not.toMatch(/\bawait\b/);
   for (const [entry, delegate] of Object.entries(readyGated)) {
     const source = readFileSync(resolve(root, delegate), "utf8");
-    expect(violation(delegate, source), entry).toBeNull();
-    expect(codeOnly(source), entry).toMatch(/\brunBrowserSovereignWorker\s*\(/);
+    // The daemon delegate calls startIsland() at load; the body that registers the listener lives in daemon-island-start.ts.
+    const starter = delegate.endsWith("browser-daemon-island.ts");
+    expect(violation(delegate, source, starter ? ["startIsland"] : []), entry).toBeNull();
+    const body = starter ? readFileSync(resolve(root, "packages/lararium-browser/src/daemon-island-start.ts"), "utf8") : source;
+    expect(codeOnly(body), entry).toMatch(/\brunBrowserSovereignWorker\s*\(/);
   }
 });
 
@@ -129,6 +132,10 @@ test("RED: the scanner reads execution order, not text; CONTROL: honest entries 
   expect(violation("uncalled.worker.ts", 'function start() { self.addEventListener("message", () => {}); }\nawait boot();')).toBe("uncalled.worker.ts: no listener");
   // An await inside a deferred function ahead of the listener runs later and delays nothing.
   expect(violation("deferred.worker.ts", 'async function later() { await boot(); }\nself.addEventListener("message", () => {});')).toBeNull();
+  // A call to an imported starter counts as the listener where it runs at load, and only when named as one.
+  expect(violation("starter.worker.ts", 'startIsland();\nawait boot();', ["startIsland"])).toBeNull();
+  expect(violation("late-starter.worker.ts", 'await boot();\nstartIsland();', ["startIsland"])).toBe("late-starter.worker.ts");
+  expect(violation("unnamed-starter.worker.ts", 'startIsland();', [])).toBe("unnamed-starter.worker.ts: no listener");
   // CONTROL: the plain top-level listener before an await stands.
   expect(violation("honest.worker.ts", 'self.addEventListener("message", () => {});\nawait boot();')).toBeNull();
 });

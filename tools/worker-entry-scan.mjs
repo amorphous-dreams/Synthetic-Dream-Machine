@@ -31,10 +31,10 @@ export function codeOnly(source) {
 }
 
 const FUNCTION_NODES = new Set(["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"]);
-function registersListener(node) {
+function registersListener(node, starters) {
   if (node.type !== "CallExpression") return false;
   const callee = node.callee;
-  if (callee.type === "Identifier") return callee.name === "runBrowserSovereignWorker";
+  if (callee.type === "Identifier") return callee.name === "runBrowserSovereignWorker" || starters.has(callee.name);
   if (callee.type !== "MemberExpression" || callee.computed || callee.property.type !== "Identifier") return false;
   if (callee.property.name === "addEventListener") {
     const first = node.arguments[0];
@@ -46,14 +46,14 @@ function awaitsAtLoad(node) {
   return node.type === "AwaitExpression" || (node.type === "ForOfStatement" && node.await === true);
 }
 /** What one top-level statement does at load: where its first listener registration starts and whether it awaits first. */
-function scanStatement(statement) {
+function scanStatement(statement, starters) {
   let listener = -1, awaitBeforeListener = false, awaits = false;
   const events = [];
   (function visit(node) {
     if (!node || typeof node.type !== "string") return;
     if (FUNCTION_NODES.has(node.type)) return;
     if (awaitsAtLoad(node)) events.push({ kind: "await", end: node.end });
-    if (registersListener(node)) events.push({ kind: "listen", start: node.start, end: node.end });
+    if (registersListener(node, starters)) events.push({ kind: "listen", start: node.start, end: node.end });
     for (const key of Object.keys(node)) {
       const value = node[key];
       if (Array.isArray(value)) for (const child of value) visit(child);
@@ -73,15 +73,17 @@ function statementsOf(source) {
 
 export function listenerIndex(source) {
   for (const statement of statementsOf(source)) {
-    const { listener } = scanStatement(statement);
+    const { listener } = scanStatement(statement, new Set());
     if (listener >= 0) return listener;
   }
   return -1;
 }
-export function violation(name, source) {
+/** `starters` names functions this entry imports whose body registers the listener (the call counts where it runs at load). */
+export function violation(name, source, starters = []) {
+  const known = new Set(starters);
   let awaited = false;
   for (const statement of statementsOf(source)) {
-    const result = scanStatement(statement);
+    const result = scanStatement(statement, known);
     if (result.listener >= 0) return awaited || result.awaitBeforeListener ? name : null;
     if (result.awaits) awaited = true;
   }
