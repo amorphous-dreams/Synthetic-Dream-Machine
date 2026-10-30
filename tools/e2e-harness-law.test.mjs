@@ -15,6 +15,11 @@
 //   3. A SCRATCH PROBE COLLECTED BY EVERYONE. A `zz-*` or `__probe-*` file dropped into `tests/e2e` joins every
 //      other run's whole set while it exists. The e2e config excludes them; a live `vitest list` proves it.
 //
+//   4. A VACUOUS VECTOR. A test whose first statement is `if (lar.mode !== "staged") return;` (or any early-return
+//      guard) reads GREEN in the mode it skips while asserting nothing: a silent zero across the set. A vector
+//      that means something in one mode only declares it (`describe.skipIf(!stagedTarget)`), so another mode reads
+//      SKIPPED; a vector that can assert in every mode asserts.
+//
 // Each scanner runs first over a planted positive, so a scanner that matches nothing reads red rather than
 // reading the tree as clean.
 import { test } from "node:test";
@@ -298,4 +303,62 @@ test("the e2e config never collects a zz-* or __probe-* scratch file, and still 
   } finally {
     rmSync(base, { recursive: true, force: true });
   }
+});
+
+// ── 4. VACUOUS VECTORS ──────────────────────────────────────────────────────────────────────────────────────
+
+/** `text` with its leading whitespace and comments dropped — what the first statement of a body begins with. */
+function afterLeadingTrivia(text) {
+  let rest = text;
+  for (;;) {
+    const next = rest.replace(/^\s+/, "").replace(/^\/\/[^\n]*/, "").replace(/^\/\*[\s\S]*?\*\//, "");
+    if (next === rest) return rest;
+    rest = next;
+  }
+}
+
+/**
+ * Each test (`test(` / `it(` and their modifiers) whose body opens on an early-return guard, with its line. The body
+ * is the first `=> {` or `function (...) {` after the call opens, found before the next test or describe opens.
+ */
+export function vacuousVectors(text) {
+  const hits = [];
+  for (const m of text.matchAll(/(?<![\w.])(?:test|it)(?:\.\w+(?:\([^)]*\))?)*\(/g)) {
+    const after = text.slice(m.index + m[0].length);
+    const next = after.search(/\n\s*(?:test|it|describe)(?:\.\w+)*\(/);
+    const window = next < 0 ? after : after.slice(0, next);
+    const body = /(?:=>|function\s*\w*\s*\([^)]*\))\s*\{/.exec(window);
+    if (!body) continue;
+    const first = afterLeadingTrivia(window.slice(body.index + body[0].length));
+    if (/^if\s*\([^\n]*\)\s*(?:\{\s*)?return\b/.test(first)) {
+      const at = text.slice(0, m.index).split("\n").length;
+      hits.push({ line: at, text: first.split("\n")[0].trim() });
+    }
+  }
+  return hits;
+}
+
+test("CONTROL: the vacuous-vector scanner reads each planted early-return guard, and lets an honest vector stand", () => {
+  const planted = [
+    'test("a", async () => {\n  if (lar.mode !== "staged") return;\n  expect(1).toBe(1);\n});',
+    'it("b", () => {\n  // staged only\n  if (lar.mode !== "staged") { return; }\n});',
+    'test("c", async function () {\n  /* why */\n  if (!ready) return;   // skip\n});',
+    'test.concurrent("d", async () => {\n\n  if (process.env.LAR_TARGET === "live") return;\n});',
+  ];
+  for (const src of planted) assert.equal(vacuousVectors(src).length, 1, `the scanner missed:\n${src}`);
+  const honest = [
+    'describe.skipIf(!stagedTarget)("x", () => {\n  test("a", async () => {\n    expect(1).toBe(1);\n  });\n});',
+    'test("b", () => {\n  const x = 1;\n  if (x) return;\n});',
+    'beforeAll(async () => {\n  if (!stagedTarget) return;\n});\ntest("c", () => { expect(1).toBe(1); });',
+  ];
+  for (const src of honest) assert.deepEqual(vacuousVectors(src), [], `the scanner flagged an honest vector:\n${src}`);
+  const two = 'test("a", () => {\n  if (x) return;\n});\n\ntest("b", () => {\n  expect(1).toBe(1);\n});\n';
+  assert.equal(vacuousVectors(two).length, 1, "a guard in one test must not leak into its neighbour");
+});
+
+test("no e2e vector opens on an early-return guard — a mode a vector cannot run in reads SKIPPED, never green", () => {
+  const { ts } = surfaces();
+  assert.ok(ts.length > 20, `the walk found ${ts.length} ts files — a silent zero`);
+  const found = ts.flatMap((f) => vacuousVectors(readFileSync(f, "utf8")).map((h) => `${rel(f)}:${h.line}  ${h.text}`));
+  assert.deepEqual(found, [], `a vector that returns before asserting reads green having proven nothing — declare it with describe.skipIf, or assert:\n${found.join("\n")}`);
 });

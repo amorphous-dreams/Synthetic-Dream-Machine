@@ -19,7 +19,7 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, targetInstance, type LarInstance } from "../harness/instance.js";
 
 const LARES_URI = "lar:///ha.ka.ba/wikis/lares/working";
 
@@ -30,7 +30,7 @@ let loadOk = false;
 
 beforeAll(async () => {
   lar = await targetInstance();
-  if (lar.mode !== "staged") return;
+  if (!stagedTarget) return;
 
   src = mkdtempSync(join(tmpdir(), "lares-load-types-"));
   // memetic carrier — SOH heading, decomposes at the membrane
@@ -57,30 +57,25 @@ afterAll(async () => {
   await lar.stop();
 });
 
-describe("LOAD — memetic memes AND all legal TW5 filetypes (via TW5's registry)", () => {
+describe.skipIf(!stagedTarget)("LOAD — memetic memes AND all legal TW5 filetypes (via TW5's registry)", () => {
   test("T1 — the mixed-filetype batch LOAD lands", () => {
-    if (lar.mode !== "staged") return;
     expect(loadOk).toBe(true);
     expect(titles.length).toBeGreaterThanOrEqual(5);
   });
 
   test("T2 — a memetic .md decomposes at the membrane (heading-titled)", () => {
-    if (lar.mode !== "staged") return;
     expect(titles.some((t) => t.includes("test/memetic-witness"))).toBe(true);
   });
 
   test("T3 — a .tid lands through application/x-tiddler, keeping its own title", () => {
-    if (lar.mode !== "staged") return;
     expect(titles).toContain("TestTidTitle");
   });
 
   test("T4 — a .json lands through application/json", () => {
-    if (lar.mode !== "staged") return;
     expect(titles).toContain("JsonTiddler");
   });
 
   test("T5 — headless plain files land as text/plain, titled by the loci law", () => {
-    if (lar.mode !== "staged") return;
     // DERIVE from the target, never hardcode the address. The loci law titles a headless carrier
     // `<the --to bag>/<basename>`, so the expectation moves whenever the bag URI does — and a literal
     // here simply records where the bag USED to live, which is what it had come to record.

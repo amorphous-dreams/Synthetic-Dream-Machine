@@ -23,7 +23,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { join } from "node:path";
 import { readFileSync } from "node:fs";
-import { targetInstance, bootDocUrl, vesselStorageDir, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, targetInstance, bootDocUrl, vesselStorageDir, type LarInstance } from "../harness/instance.js";
 import { memeticWikitextDeserializer } from "../../packages/lararium-tw5/src/deserializer.js";
 import { realmStandingDocUrl } from "../../packages/lararium-mesh/src/realm-bag.js";
 
@@ -82,15 +82,13 @@ async function untilRealmNames(instance: LarInstance, catalogUrl: string, bag: s
   }
 }
 
-describe("smoke — the vessel stands", () => {
+describe.skipIf(!stagedTarget)("smoke — the vessel stands", () => {
   test("staged vessel reaches live with the lares hearth wiki seated", async () => {
-    if (lar.mode !== "staged") return;   // a live hearth already stands; its log is its own
     expect(lar.bootLog()).toContain("phase → live");
     expect(await untilLogLine(lar, /live — wiki: lares/)).toMatch(/live — wiki: lares/);
   }, TEST_BUDGET_MS);
 
   test("the Kahu realm names the live lares document, and no catalog row does", async () => {
-    if (lar.mode !== "staged") return;   // raw-storage read assumes an owned root
     await untilLogLine(lar, /catalog:\s+automerge:[A-Za-z0-9]+/);
     const catalogUrl = bootDocUrl(lar, "catalog");
     expect(catalogUrl).toBeTruthy();
@@ -101,14 +99,12 @@ describe("smoke — the vessel stands", () => {
   }, TEST_BUDGET_MS);
 
   test("CONTROL: a wait on a line the vessel never prints fails, naming the line", async () => {
-    if (lar.mode !== "staged") return;
     await expect(untilLogLine(lar, /a line no vessel prints/, 300)).rejects.toThrow(/never printed \/a line no vessel prints\//);
   });
 });
 
-describe("smoke — residency canon through the real CLI", () => {
+describe.skipIf(!stagedTarget)("smoke — residency canon through the real CLI", () => {
   test("LOAD feeds the hearth carrier-borne: boot meme → parent + every ahu child", async () => {
-    if (lar.mode !== "staged") return;   // mutating gesture — staged only
     const working = "lar:///ha.ka.ba/wikis/lares/working";
     const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", working, "--yes", "--json"]);
     expect(r.json?.["ok"]).toBe(true);
@@ -124,7 +120,6 @@ describe("smoke — residency canon through the real CLI", () => {
   });
 
   test("LOAD refuses a carrier-less gesture loudly (islands never fetch)", async () => {
-    if (lar.mode !== "staged") return;
     const r = await lar.cli(["act", "LOAD", "--source-uri", "https://example.org/nope", "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
     expect(r.json?.["ok"]).toBe(false);
     // The CLI's error rides a STRUCTURED envelope — `{ code, message, hint? }`. Stringifying the whole
@@ -134,7 +129,6 @@ describe("smoke — residency canon through the real CLI", () => {
   });
 
   test("LOAD into canon names the working slot and its promotion MOVE", async () => {
-    if (lar.mode !== "staged") return;
     const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", LARES_URI, "--yes", "--json"]);
     expect(r.json?.["ok"]).toBe(false);
     const err = r.json?.["error"] as { message?: string } | undefined;
@@ -144,7 +138,6 @@ describe("smoke — residency canon through the real CLI", () => {
   });
 
   test("wiki init + add-bag compose the user registry", async () => {
-    if (lar.mode !== "staged") return;   // mints registry entries — staged only
     const g = await lar.cli(["wiki", "init", "garden", "--json"]);
     expect(g.json?.["ok"]).toBe(true);
     expect((g.json?.["data"] as { recipeUri?: string })?.recipeUri).toMatch(/recipes\/garden/);
@@ -159,7 +152,6 @@ describe("smoke — residency canon through the real CLI", () => {
   });
 
   test("bag stats answers with the operator's real identity (no placeholder DID)", async () => {
-    if (lar.mode !== "staged") return;
     const r = await lar.cli(["bag", "stats"]);
     expect(r.code).toBe(0);
     expect(r.stdout + r.stderr).not.toMatch(/bad hex length/);
