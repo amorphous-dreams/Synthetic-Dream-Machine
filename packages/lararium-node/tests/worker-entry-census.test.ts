@@ -92,6 +92,9 @@ test("CONTROL: derived census includes known entries and names planted late and 
   expect(violation("planted.worker.ts", 'await boot(); self.addEventListener("message", () => {});')).toBe("planted.worker.ts");
   expect(violation("honest.worker.ts", 'self.addEventListener("message", () => {}); await boot();')).toBeNull();
   expect(sharedViolation("nested-shared.worker.ts", 'async function boot() { self.addEventListener("connect", () => {}); }')).toBe("nested-shared.worker.ts");
+  expect(sharedViolation("arg-await-shared.worker.ts", 'self.addEventListener("connect", await makeHandler());')).toBe("arg-await-shared.worker.ts");
+  expect(sharedViolation("arrow-shared.worker.ts", 'const start = () => self.addEventListener("connect", () => {});')).toBe("arrow-shared.worker.ts: no connect listener");
+  expect(sharedViolation("honest-shared.worker.ts", 'self.addEventListener("connect", () => {});\nawait boot();')).toBeNull();
   expect(sharedViolation("missing-shared.worker.ts", 'self.addEventListener("message", () => {});')).toBe("missing-shared.worker.ts: no connect listener");
 });
 
@@ -139,6 +142,12 @@ test("RED: the scanner reads execution order, not text; CONTROL: honest entries 
   // The listener registers after its own arguments evaluate: an await inside them delays registration.
   expect(violation("arg-await.worker.ts", 'self.addEventListener("message", await makeHandler());')).toBe("arg-await.worker.ts");
   expect(violation("await-wrapped.worker.ts", 'await self.addEventListener("message", () => {});')).toBeNull();
+  // The listener must be the worker's own scope, unconditional, and live at load.
+  expect(violation("other-target.worker.ts", 'const t = new EventTarget(); t.addEventListener("message", () => {});')).toBe("other-target.worker.ts: no listener");
+  expect(violation("conditional.worker.ts", 'if (flag) self.addEventListener("message", () => {});')).toBe("conditional.worker.ts: no listener");
+  expect(violation("class-field.worker.ts", 'class Dormant { field = self.addEventListener("message", () => {}); }')).toBe("class-field.worker.ts: no listener");
+  expect(violation("globalthis.worker.ts", 'globalThis.addEventListener("message", () => {});')).toBeNull();
+  expect(violation("onmessage-free.worker.ts", 'try { self.addEventListener("message", () => {}); } finally {}')).toBeNull();
   // CONTROL: the plain top-level listener before an await stands.
   expect(violation("honest.worker.ts", 'self.addEventListener("message", () => {});\nawait boot();')).toBeNull();
 });

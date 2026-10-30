@@ -57,3 +57,15 @@ test("RED: the mounted face registers its sibling planes only as its signed log 
   expect(provenPlaneUrls(signed, { circles: "c", identities: "i", sessions: "s", intents: "n" })?.sessions).toBe("s");
   expect(provenPlaneUrls(signed, { circles: "c", identities: "i", sessions: "FORGED", intents: "n" })?.sessions).toBeNull();
 });
+
+test("RED: a relay disabled while its proof is pending registers nothing; CONTROL: a relay still enabled after the proof registers", async () => {
+  const group = "did:example:sibling-flip";
+  const proof = { circles: "c", identities: "i", sessions: "s", intents: "n" };
+  const register = vi.fn();
+  let enabled = true;
+  const relayEnabled = async () => enabled;
+  expect(await registerFacePlanesForRelay({ group, relayEnabled, prove: async () => { enabled = false; return proof; }, register })).toEqual([]);
+  expect(register).not.toHaveBeenCalled();
+  enabled = true;
+  expect((await registerFacePlanesForRelay({ group, relayEnabled, prove: async () => proof, register })).length).toBe(4);
+});
