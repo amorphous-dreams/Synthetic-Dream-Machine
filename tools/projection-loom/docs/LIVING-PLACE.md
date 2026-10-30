@@ -1,3 +1,22 @@
+## N9 · Aftermath M · Variation follows the verb
+
+A heritable place now varies what a relationship **does**:
+a passage carries width between its two bearings, a
+canopy covers floor area, and a stair run rises through
+an ordered chain of native treads. None carries the
+authority of a surveyed plan, engineered structure or
+literary interpretation. The exact native STEP
+audition retains power to refuse every proposal.
+
+The original source/intent digests never change with
+mutation. A descendant only enters the quality-diversity
+archive after its separately imported STEP surfaces,
+native support/occupancy witnesses and causal location
+workspace agree. Even a geometrically novel variant
+cannot select itself as an artistic winner.
+
+---
+
 ## N9 · Aftermath C · Two real supports, two causal islands
 
 A single positively witnessed horizontal deck can now produce

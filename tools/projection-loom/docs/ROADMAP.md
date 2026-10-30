@@ -1,3 +1,35 @@
+## ☕ N9 · Goal-conditioned morphology and intent aftermath M · 2026-10-29
+
+**N9-M** (`1c75028a`) grounds place-level mutation in authored
+spatial relationships rather than arbitrary native body names:
+the `connect` lineage varies the transverse width of its
+single witnessed deck; the `shelter` lineage varies both
+horizontal canopy-overhang dimensions; the `ascend`
+lineage varies the shared transverse width of an explicit
+ordered tread chain. A typed, finite seed controls each
+change. No part-count reward, self-generated preview mask,
+or mutating of unbound original evidence becomes a design aim.
+
+**Intent aftermath M:** native offspring must still enter
+the same OODA-HA journal and pass exact STEP/causal
+workspace and source gates. Regression tests check
+deterministic variation, unchanged typed walkway/ascent
+relations, independent native affordance proofs, and a
+multi-epoch campaign retaining multiple constructive
+genomes without promoting an artistic winner. Invalid
+offspring stay refusals, not automatic alternatives
+that rewrite the original intent.
+
+Remaining engineering: deepen constructive shelter support
+and circulation forms, formalize authored structure beyond
+single-root fixtures, test real Blender changes to composite
+architectural locations, finish exact-head hosted CI and
+the not-yet-provisioned real Unreal Editor witness.
+No load/accessibility certification, pet-name or canon
+promotion belongs to this wave.
+
+---
+
 ## N9 · Aftermath C · Two real supports, two causal islands
 
 A single positively witnessed horizontal deck can now produce
