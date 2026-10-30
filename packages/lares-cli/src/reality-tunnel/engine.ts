@@ -46,6 +46,10 @@ export interface Item {
 export interface External {
   observe(): { aligned: boolean; detail: string };
   apply(): { ok: boolean; detail: string };
+  /** The host store's state before a change, as the ledger keeps it. */
+  snapshot(): string;
+  /** Put a snapshot back; `undo` calls it. */
+  restore(snapshot: string): { ok: boolean; detail: string };
 }
 
 export type State = "aligned" | "drift" | "foreign" | "unreachable" | "absent";
@@ -85,6 +89,9 @@ const liveHash = (l: Live): string | null =>
 
 export interface LedgerEntry {
   readonly path: string;
+  /** An external item's id, and its host store's snapshot before the change. */
+  readonly external?: string;
+  readonly snapshot?: string;
   /** The bytes before the write, a link's prior target, or absent. */
   readonly prior: Live;
   /** The hash of what the write left (null = the write left the target absent). */
@@ -134,8 +141,8 @@ export class Ledger {
 
 // ── Read ────────────────────────────────────────────────────────────────────────────────────────
 
-function desiredOf(items: readonly Item[], live: Live): string | null {
-  let cur: string | null = live.kind === "file" ? live.bytes : null;
+function desiredOf(items: readonly Item[], live: Live, take = false): string | null {
+  let cur: string | null = live.kind === "file" && !take ? live.bytes : null;
   for (const it of items) if (it.transform) cur = it.transform(cur);
   return cur;
 }
@@ -202,67 +209,99 @@ export async function tend(
   items: readonly Item[], ledger: Ledger, opts: { force?: boolean; lock?: Locker; reader?: Reader } = {},
 ): Promise<TendResult> {
   const reader = opts.reader ?? diskReader;
-  const before = read(items, ledger, reader);
-  const refused = before.filter((r) => r.state === "foreign" && !opts.force);
-  const refusedPaths = new Set(refused.map((r) => r.path));
   const entries: LedgerEntry[] = [];
   const wrote: string[] = [];
+  const refusedPaths = new Set<string>();
+  let generation: Generation | null = null;
 
-  for (const [path, group] of byPath(items)) {
-    if (refusedPaths.has(path)) continue;
-    const acting = group.filter((it) => !it.unreachable && !it.absent);
-    if (acting.length === 0) continue;
-    for (const it of acting.filter((x) => x.external)) {
-      if (!it.external!.observe().aligned) {
+  try {
+    for (const [path, group] of byPath(items)) {
+      const acting = group.filter((it) => !it.unreachable && !it.absent);
+      if (acting.length === 0) continue;
+      for (const it of acting.filter((x) => x.external)) {
+        if (it.external!.observe().aligned) continue;
+        const snapshot = it.external!.snapshot();
         const r = it.external!.apply();
-        if (r.ok) wrote.push(`${path} (${it.id})`);
+        if (r.ok) {
+          entries.push({ path, external: it.id, snapshot, prior: { kind: "absent" }, wrote: null });
+          wrote.push(`${path} (${it.id})`);
+        }
       }
-    }
-    const fileItems = acting.filter((x) => !x.external);
-    if (fileItems.length === 0) continue;
-    const live = reader.live(path);
-    const linkItem = fileItems.find((x) => x.link !== undefined);
-    const held = opts.lock ? await opts.lock(path) : null;
-    try {
-      if (linkItem) {
-        if (live.kind === "link" && live.target === linkItem.link) continue;
-        mkdirSync(dirname(path), { recursive: true });
-        if (live.kind !== "absent") unlinkSync(path);
-        symlinkSync(linkItem.link!, path);
-        entries.push({ path, prior: live, wrote: sha(`link:${linkItem.link}`) });
+      const fileItems = acting.filter((x) => !x.external);
+      if (fileItems.length === 0) continue;
+      // THE LOCK COMES BEFORE THE READ: a writer that finished while this one waited keeps its bytes.
+      const held = opts.lock ? await opts.lock(path) : null;
+      try {
+        const live = reader.live(path);
+        const linkItem = fileItems.find((x) => x.link !== undefined);
+        if (linkItem) {
+          if (live.kind === "link" && live.target === linkItem.link) continue;
+          if (live.kind === "file" && !opts.force) { refusedPaths.add(path); continue; }
+          mkdirSync(dirname(path), { recursive: true });
+          if (live.kind !== "absent") unlinkSync(path);
+          symlinkSync(linkItem.link!, path);
+          entries.push({ path, prior: live, wrote: sha(`link:${linkItem.link}`) });
+          wrote.push(path);
+          continue;
+        }
+        if (live.kind === "link") { refusedPaths.add(path); continue; }
+        const cur = live.kind === "file" ? live.bytes : null;
+        const foreign = fileItems.some((it) => it.foreign?.(cur));
+        if (foreign && !opts.force) { refusedPaths.add(path); continue; }
+        const want = desiredOf(fileItems, live, foreign);
+        if (want === cur) continue;
+        if (want === null) unlinkSync(path);
+        else {
+          mkdirSync(dirname(path), { recursive: true });
+          writeFileSync(`${path}.lares-tmp`, want, "utf8");
+          renameSync(`${path}.lares-tmp`, path);
+        }
+        entries.push({ path, prior: live, wrote: want === null ? null : sha(want) });
         wrote.push(path);
-        continue;
+      } finally {
+        await held?.release();
       }
-      if (live.kind === "link") continue;
-      const want = desiredOf(fileItems, live);
-      const cur = live.kind === "file" ? live.bytes : null;
-      if (want === cur) continue;
-      if (want === null) unlinkSync(path);
-      else {
-        mkdirSync(dirname(path), { recursive: true });
-        writeFileSync(`${path}.lares-tmp`, want, "utf8");
-        renameSync(`${path}.lares-tmp`, path);
-      }
-      entries.push({ path, prior: live, wrote: want === null ? null : sha(want) });
-      wrote.push(path);
-    } finally {
-      await held?.release();
     }
+  } finally {
+    // A tend that throws midway still records what it wrote, so `undo` reaches every changed target.
+    if (entries.length) generation = ledger.record("tend", entries);
   }
-  const generation = entries.length ? ledger.record("tend", entries) : null;
-  return { rows: read(items, ledger, reader), wrote, refused, generation };
+  const rows = read(items, ledger, reader);
+  return { rows, wrote, refused: rows.filter((r) => refusedPaths.has(r.path) && r.state === "foreign"), generation };
 }
 
 // ── Undo ────────────────────────────────────────────────────────────────────────────────────────
 
-/** Restore the prior bytes a generation recorded, and record the restore as its own generation. */
-export function undo(ledger: Ledger, gen?: number): Generation {
+export interface UndoResult {
+  readonly generation: Generation | null;
+  /** Targets a hand touched after the generation wrote them: undo leaves them as they stand. */
+  readonly refused: string[];
+}
+
+/**
+ * Restore the prior bytes a generation recorded, and record the restore as its own generation. A
+ * target whose live bytes differ from what that generation wrote holds a hand's later edit, so undo
+ * refuses it unless forced; an external item restores through its host's own tool.
+ */
+export function undo(
+  ledger: Ledger, gen?: number, opts: { force?: boolean; externals?: ReadonlyMap<string, External> } = {},
+): UndoResult {
   const gens = ledger.generations();
   const target = gen === undefined ? gens.filter((g) => g.act === "tend").at(-1) : gens.find((g) => g.gen === gen);
   if (!target) throw new Error(gen === undefined ? "no tend generation stands to undo" : `no generation ${gen} stands`);
   const entries: LedgerEntry[] = [];
+  const refused: string[] = [];
   for (const e of target.entries) {
+    if (e.external) {
+      const ext = opts.externals?.get(e.external);
+      if (!ext) { refused.push(e.path); continue; }
+      const snapshot = ext.snapshot();
+      if (ext.restore(e.snapshot ?? "null").ok) entries.push({ path: e.path, external: e.external, snapshot, prior: { kind: "absent" }, wrote: null });
+      else refused.push(e.path);
+      continue;
+    }
     const live = diskReader.live(e.path);
+    if (liveHash(live) !== e.wrote && !opts.force) { refused.push(e.path); continue; }
     if (live.kind !== "absent") unlinkSync(e.path);
     if (e.prior.kind === "file") {
       mkdirSync(dirname(e.path), { recursive: true });
@@ -273,7 +312,7 @@ export function undo(ledger: Ledger, gen?: number): Generation {
     }
     entries.push({ path: e.path, prior: live, wrote: liveHash(e.prior) });
   }
-  return ledger.record("undo", entries, target.gen);
+  return { generation: entries.length ? ledger.record("undo", entries, target.gen) : null, refused };
 }
 
 // ── The exit contract ───────────────────────────────────────────────────────────────────────────
@@ -282,7 +321,7 @@ export const EXIT = { aligned: 0, drift: 1, usage: 2, foreign: 3, unreachable: 4
 
 export function exitOf(rows: readonly Row[]): number {
   if (rows.some((r) => r.state === "foreign")) return EXIT.foreign;
-  if (rows.some((r) => r.state === "drift")) return EXIT.drift;
   if (rows.some((r) => r.state === "unreachable")) return EXIT.unreachable;
+  if (rows.some((r) => r.state === "drift")) return EXIT.drift;
   return EXIT.aligned;
 }

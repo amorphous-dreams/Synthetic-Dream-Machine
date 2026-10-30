@@ -136,7 +136,7 @@ A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the sam
 * ''`lares` global'' — `--install` writes a `lares.cmd` shim beside the bin (on Unix it symlinks into `~/.local/bin`). Add that directory to PATH so `lares` runs bare. The link step stays self-contained — it does not depend on `pnpm setup`/`PNPM_HOME`.
 * ''Python'' — the integration check resolves `python3` → `python` → `py`, so the check finds Windows' `python`/`py`.
 * ''The wake hook stays portable'' — it runs node exec-form (`node lares-wake-hook.mjs`), no shell, identical on Windows and Unix.
-* ''mempalace's keep-hooks run in bash'' (`Stop` / `PreCompact`) — on native Windows they need ''Git for Windows'' (which Claude Code already requires for its bash tool). With Git Bash present, `lares vessel stand --claude` wires them as `bash "<path>"`; without it, the verbatim keep-leg stays dark until someone installs Git for Windows.
+* ''mempalace's keep-hooks run in bash'' (`Stop` / `PreCompact`) — on native Windows they need ''Git for Windows'' (which Claude Code already requires for its bash tool). With Git Bash present, `lares home tend` wires them as `bash "<path>"`; without it, the verbatim keep-leg stays dark until someone installs Git for Windows.
 * ''`lares vessel stand --restart`'' (the dev restart) checks POSIX ports with `lsof` then `ss`, and Windows ports with `netstat`; the restart path signals the discovered process (`packages/lares-cli/src/port-control.ts`).
 
 <<~/ahu>>
@@ -149,6 +149,6 @@ A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the sam
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uWCtWTLZYcP6l65f3DdNSstXsCcwF94kZdj7UT2SefU
+<<^ code="&#x0003;">>ni:///sha-256;R7j8d_tAAItWAYw5NtwNkg1AxiXFR0VxkBUdacuy1bQ
 
 <<^ code="&#x0004;" -> to="?">>

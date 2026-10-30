@@ -24,9 +24,14 @@ export const SCOUT_MARKER = "# projected by";
 type Spec = Record<string, unknown> & { id: string; host: string; kind: string; file: string; what: string };
 export interface Declared { readonly seed: string; readonly repo: Spec[]; readonly home: Spec[] }
 
+/** Reads one repo-relative file, or null when it stands absent: the working tree, or the index for `--staged`. */
+export type TextOf = (rel: string) => string | null;
+const treeText = (repo: string): TextOf => (rel) => (existsSync(join(repo, rel)) ? readFileSync(join(repo, rel), "utf8") : null);
+
 /** The carrier's `toml reality-tunnel` fence, parsed whole. */
-export function declared(repo: string): Declared {
-  const text = readFileSync(join(repo, CARRIER), "utf8");
+export function declared(repo: string, textOf: TextOf = treeText(repo)): Declared {
+  const text = textOf(CARRIER);
+  if (text === null) throw new Error(`${CARRIER} stands absent`);
   const m = /^```toml reality-tunnel\n([\s\S]*?)^```/m.exec(text);
   if (!m) throw new Error(`${CARRIER} carries no \`toml reality-tunnel\` fence`);
   const d = parseToml(m[1]!) as { seed?: string; repo?: Spec[]; home?: Spec[] };
@@ -71,7 +76,7 @@ const item = (radius: Radius, s: Spec, path: string, rest: Partial<Item>): Item 
   ({ id: s.id, radius, host: s.host, path, what: s.what, ...rest });
 
 /** The checkout's items. */
-export function repoItems(repo: string, d: Declared = declared(repo)): Item[] {
+export function repoItems(repo: string, d: Declared = declared(repo), textOf: TextOf = treeText(repo)): Item[] {
   const seedAbs = join(repo, d.seed);
   return d.repo.map((s) => {
     const path = join(repo, s.file);
@@ -82,7 +87,7 @@ export function repoItems(repo: string, d: Declared = declared(repo)): Item[] {
       case "toml-top-floor": return item("repo", s, path, { transform: tomlTopFloor(str(s, "key"), Number(s["floor"])), foreign: tomlForeign });
       case "json-includes": return item("repo", s, path, { transform: jsonIncludes(str(s, "key"), str(s, "value")), foreign: jsonForeign });
       case "scout": {
-        const seed = existsSync(seedAbs) ? readFileSync(seedAbs, "utf8") : "";
+        const seed = textOf(d.seed) ?? "";
         const o = owned(projectScout(d.seed, seed, s), SCOUT_MARKER);
         return item("repo", s, path, { ...o, ...(seed ? {} : { unreachable: `${d.seed} absent; the scout would carry nothing` }) });
       }
@@ -94,24 +99,42 @@ export function repoItems(repo: string, d: Declared = declared(repo)): Item[] {
 /** Claude's lares seat, changed through the `claude` CLI and read from the store it writes. */
 function claudeMcp(home: string, mcp: LaresMcpCommand): External {
   const store = join(home, ".claude.json");
-  const seat = (): { command?: string; args?: string[] } | undefined => {
-    try { return ((JSON.parse(readFileSync(store, "utf8")) as { mcpServers?: Record<string, never> }).mcpServers ?? {})["lares"]; }
+  type Seat = { command?: string; args?: string[]; env?: Record<string, string> };
+  const seat = (): Seat | undefined => {
+    try { return ((JSON.parse(readFileSync(store, "utf8")) as { mcpServers?: Record<string, Seat> }).mcpServers ?? {})["lares"]; }
     catch { return undefined; }
   };
   const aligned = (): boolean => {
     const s = seat();
     return s !== undefined && s.command === mcp.command && JSON.stringify(s.args ?? []) === JSON.stringify(mcp.args);
   };
+  const run = (args: string[]): { ok: boolean; detail: string } => {
+    const r = spawnSync("claude", args, { encoding: "utf8", timeout: 15_000 });
+    return r.status === 0 ? { ok: true, detail: "" } : { ok: false, detail: String(r.stderr ?? r.error ?? "").trim().slice(0, 120) };
+  };
+  const put = (s: Seat | null): { ok: boolean; detail: string } => {
+    if (seat()) {
+      const rm = run(["mcp", "remove", "-s", "user", "lares"]);
+      if (!rm.ok) return rm;
+    }
+    if (s === null || !s.command) return { ok: true, detail: "" };
+    const env = Object.entries(s.env ?? {}).flatMap(([k, v]) => ["-e", `${k}=${v}`]);
+    return run(["mcp", "add", "--scope", "user", "lares", ...env, "--", s.command, ...(s.args ?? [])]);
+  };
+  const snapshot = (): string => JSON.stringify(seat() ?? null);
   return {
     observe: () => aligned()
       ? { aligned: true, detail: `aimed at ${mcp.args[0] ?? "lares_mcp.py"}` }
       : { aligned: false, detail: seat() ? "drifted from the resolved seat; tend re-aims it" : "absent; tend registers it" },
+    snapshot,
+    restore: (snap) => put(JSON.parse(snap) as Seat | null),
     apply: () => {
       if (!claudeCli()) return { ok: false, detail: "the `claude` CLI does not answer; the seat writes through it" };
-      if (seat()) spawnSync("claude", ["mcp", "remove", "-s", "user", "lares"], { encoding: "utf8", timeout: 10_000 });
-      const env = Object.entries(mcp.env).flatMap(([k, v]) => ["-e", `${k}=${v}`]);
-      const r = spawnSync("claude", ["mcp", "add", "--scope", "user", "lares", ...env, "--", mcp.command, ...mcp.args], { encoding: "utf8", timeout: 15_000 });
-      return r.status === 0 ? { ok: true, detail: "registered" } : { ok: false, detail: String(r.stderr ?? "").trim().slice(0, 120) };
+      const before = snapshot();
+      const r = put({ command: mcp.command, args: mcp.args, env: mcp.env });
+      // A failed re-aim puts the prior seat back rather than leaving the harness with none.
+      if (!r.ok) put(JSON.parse(before) as Seat | null);
+      return r.ok ? { ok: true, detail: "registered" } : r;
     },
   };
 }

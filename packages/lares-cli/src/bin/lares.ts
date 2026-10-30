@@ -302,7 +302,7 @@ export async function dispatch(argv: readonly string[]): Promise<number> {
   }
   // Per-command help: `lares <command> --help` renders the command's own examples-first help and
   // returns — never running the handler. The command may ALSO render help on missing-args itself.
-  // A SUB-DOOR answers for itself when the registry holds one (`lares vessel wire --help`), so a
+  // A SUB-DOOR answers for itself when the registry holds one (`lares vessel rite --help`), so a
   // sub-verb's flags reach the reader instead of its parent's.
   // `--meme` follows the door's help with the wiki record standing behind it, read through the meme
   // rail (`lares meme get`) — the same verb any vessel with the cap can run.

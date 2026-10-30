@@ -139,7 +139,7 @@ function resolveHolderSpawn(scriptFile: string): ResolvedHolderSpawn {
  * kapae · un_kapae). NOT a palace holder — it takes `--palace <sensorium dir>` (the sensorium ROOT,
  * not a leaf store; it resolves `<palace>/content` itself) and speaks MCP over stdio to a harness.
  *
- * The seat `lares vessel stand --claude/--codex/--copilot/--vscode` registers: a harness reaches memory
+ * The seat `lares home tend` registers: a harness reaches memory
  * THROUGH the lares house, never around it into a palace of its own. One owner per palace.
  */
 export type LaresMcpSpawn = ResolvedHolderSpawn;

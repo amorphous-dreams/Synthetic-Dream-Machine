@@ -62,29 +62,38 @@ export function finalHash(seed: string): string | null {
   return /ni:\/\/\/sha-256;([A-Za-z0-9_-]{8})/.exec(seed.split("\n").reverse().find((l) => l.includes("ni:///sha-256;")) ?? "")?.[1] ?? null;
 }
 
-function probes(door: "repo" | "home", repo: string): string[] {
+export interface Probe { readonly ok: boolean; readonly line: string }
+
+/** Each host asked directly; a host that does not answer fails its probe, never passes it. */
+function probes(door: "repo" | "home", repo: string): Probe[] {
   const cwd = door === "repo" ? repo : mkdtempSync(join(tmpdir(), "lares-verify-"));
-  const out: string[] = [];
+  const out: Probe[] = [];
   const ctx = spawnSync("claude", ["-p", "/context"], { cwd, encoding: "utf8", timeout: 180_000, input: "" });
   const seeds = String(ctx.stdout ?? "").split("\n").filter((l) => /noosphere-boot/.test(l) && /\|/.test(l)).length;
-  out.push(ctx.error ? "claude: does not answer" : `claude /context: ${seeds} seed row(s)${seeds === 1 ? " ✓" : " ✗"}`);
+  out.push(ctx.error || ctx.status !== 0
+    ? { ok: false, line: "claude: does not answer" }
+    : { ok: seeds === 1, line: `claude /context: ${seeds} seed row(s)` });
   if (door === "repo") {
-    const seed = readFileSync(join(repo, seedOf(repo)), "utf8");
-    const want = finalHash(seed);
+    const want = finalHash(readFileSync(join(repo, seedOf(repo)), "utf8"));
     const ask = "Do not run any commands or tools. Near the very end of your project instructions there is a line containing 'ni:///sha-256;'. Reply with only the 8 characters that immediately follow 'sha-256;' on that line, or NONE if you cannot see such a line.";
     const cx = spawnSync("codex", ["exec", "-s", "read-only", ask], { cwd, encoding: "utf8", timeout: 240_000, input: "" });
     const got = String(cx.stdout ?? "").trim().split("\n").at(-1)?.trim();
-    out.push(cx.error ? "codex: does not answer" : `codex final hash: ${got ?? "?"}${got === want ? " ✓" : ` ✗ (the seed ends ${want})`}`);
+    out.push(cx.error || cx.status !== 0
+      ? { ok: false, line: "codex: does not answer" }
+      : { ok: got === want, line: `codex final hash: ${got ?? "?"} (the seed ends ${want})` });
     const cp = spawnSync("copilot", ["instruction", "list"], { cwd, encoding: "utf8", timeout: 60_000, input: "" });
-    const listed = String(cp.stdout ?? "");
-    out.push(cp.error ? "copilot: does not answer" : `copilot sources: CLAUDE.md ${/CLAUDE\.md/.test(listed) ? "listed ✓" : "absent ✗"}`);
+    out.push(cp.error || cp.status !== 0
+      ? { ok: false, line: "copilot: does not answer" }
+      : { ok: /CLAUDE\.md/.test(String(cp.stdout ?? "")), line: "copilot sources: CLAUDE.md" });
   }
   return out;
 }
 
-export function verifyLoads(opts: { door: "repo" | "home"; repo: string; home: string; probe: boolean; entries?: LoadEntry[] }): VerifyResult {
+export function verifyLoads(opts: {
+  door: "repo" | "home"; repo: string; home: string; probe: boolean; entries?: LoadEntry[]; probes?: () => Probe[];
+}): VerifyResult {
   const judged = judgeLoads(opts.entries ?? readLoads(opts.home), opts.door, opts.repo);
   if (!opts.probe) return judged;
-  const p = probes(opts.door, opts.repo);
-  return { ok: judged.ok && p.every((l) => !l.includes("✗")), lines: [...judged.lines, ...p] };
+  const p = (opts.probes ?? (() => probes(opts.door, opts.repo)))();
+  return { ok: judged.ok && p.every((x) => x.ok), lines: [...judged.lines, ...p.map((x) => `${x.ok ? "✓" : "✗"} ${x.line}`)] };
 }

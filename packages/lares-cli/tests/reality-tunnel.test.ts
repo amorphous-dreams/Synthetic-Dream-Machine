@@ -10,13 +10,15 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { EXIT, Ledger, exitOf, read, tend, undo, type Item } from "../src/reality-tunnel/engine.js";
+import { EXIT, Ledger, exitOf, read, tend, undo, type External, type Item } from "../src/reality-tunnel/engine.js";
+import { windowsProfile } from "../src/reality-tunnel/homes.js";
+import { indexReader } from "../src/commands/tunnel-door.js";
 import {
   claudeHook, headLine, jsonFloor, tomlHookForeign, jsonForeign, jsonIncludes, jsonSet, namesSeed, seedless, tomlHook, tomlMcpServer,
   tomlTableKey, tomlTableUnset, tomlTopFloor,
 } from "../src/reality-tunnel/kinds.js";
 import { CARRIER, declared, homeItems, repoItems } from "../src/reality-tunnel/catalog.js";
-import { finalHash, judgeLoads } from "../src/reality-tunnel/verify.js";
+import { finalHash, judgeLoads, verifyLoads } from "../src/reality-tunnel/verify.js";
 
 const REPO = join(import.meta.dirname, "..", "..", "..");
 let dir: string;
@@ -158,7 +160,7 @@ describe("the engine", () => {
     const l = ledger();
     writeFileSync(join(dir, "u.json"), '{"n": 1}\n');
     await tend([file("u.json", { transform: jsonFloor("n", 5) })], l);
-    const g = undo(l);
+    const g = undo(l).generation!;
     expect(readFileSync(join(dir, "u.json"), "utf8")).toBe('{"n": 1}\n');
     expect(g.act).toBe("undo");
     expect(g.undoes).toBe(1);
@@ -315,5 +317,95 @@ describe("the brief line", () => {
     const out = execFileSync("node", [join(REPO, "packages/lares-cli/dist/src/bin/lares.js"), "repo", "read", "--brief"], { encoding: "utf8", cwd: REPO });
     expect(out.trim().split("\n")).toHaveLength(1);
     expect(out).toMatch(/^reality tunnel: /);
+  });
+});
+
+describe("the cold reader's findings, each a red first", () => {
+  const free = { release: async (): Promise<void> => {} };
+  const file = (p: string, what: Partial<Item>): Item => ({ id: `t.${p}`, radius: "home", host: "t", path: join(dir, p), what: p, ...what });
+
+  it("tend reads under the lock: a writer that finished while tend waited keeps its change", async () => {
+    const p = join(dir, "s.json");
+    writeFileSync(p, '{"a": 1}\n');
+    const lock = async (path: string) => { writeFileSync(path, '{"a": 1, "theirs": true}\n'); return free; };
+    await tend([file("s.json", { transform: jsonFloor("n", 5), foreign: jsonForeign })], ledger(), { lock });
+    expect(JSON.parse(readFileSync(p, "utf8"))).toEqual({ a: 1, theirs: true, n: 5 });
+  });
+
+  it("a tend that fails midway still records a generation for what it wrote", async () => {
+    const l = ledger();
+    mkdirSync(join(dir, "adir"));
+    const items = [file("ok.json", { transform: jsonFloor("n", 5) }), file("adir", { transform: () => "x" })];
+    await expect(tend(items, l)).rejects.toThrow();
+    expect(l.generations().at(-1)?.entries.map((e) => e.path)).toEqual([join(dir, "ok.json")]);
+  });
+
+  it("undo refuses a target a hand touched after the tend, and --force takes it", async () => {
+    const l = ledger();
+    const p = join(dir, "u.json");
+    writeFileSync(p, '{"n": 1}\n');
+    await tend([file("u.json", { transform: jsonFloor("n", 5) })], l);
+    writeFileSync(p, '{"n": 9, "mine": true}\n');
+    const r = undo(l);
+    expect(r.refused).toEqual([p]);
+    expect(readFileSync(p, "utf8")).toBe('{"n": 9, "mine": true}\n');
+    undo(l, undefined, { force: true });
+    expect(readFileSync(p, "utf8")).toBe('{"n": 1}\n');
+  });
+
+  it("an external seat records a snapshot, and undo restores it", async () => {
+    const l = ledger();
+    let seat: string | null = "old";
+    const ext: External = {
+      observe: () => ({ aligned: seat === "new", detail: String(seat) }),
+      apply: () => { seat = "new"; return { ok: true, detail: "" }; },
+      snapshot: () => JSON.stringify(seat),
+      restore: (s) => { seat = JSON.parse(s) as string | null; return { ok: true, detail: "" }; },
+    };
+    const it1 = file("seat", { external: ext });
+    await tend([it1], l);
+    expect(seat).toBe("new");
+    undo(l, undefined, { externals: new Map([[it1.id, ext]]) });
+    expect(seat).toBe("old");
+  });
+
+  it("--force takes bytes that do not parse, and the ledger keeps them", async () => {
+    const l = ledger();
+    writeFileSync(join(dir, "bad.json"), "{not json");
+    await tend([file("bad.json", { transform: jsonFloor("n", 5), foreign: jsonForeign })], l, { force: true });
+    expect(JSON.parse(readFileSync(join(dir, "bad.json"), "utf8"))).toEqual({ n: 5 });
+    expect(l.generations().at(-1)?.entries[0]?.prior).toEqual({ kind: "file", bytes: "{not json" });
+  });
+
+  it("an unreachable piece outranks ordinary drift in the exit", () => {
+    expect(exitOf(read([file("d", { transform: () => "x" }), file("u", { unreachable: "no script" })], ledger()))).toBe(EXIT.unreachable);
+  });
+
+  it("the Windows profile comes from Windows itself; an unverified guess never stands", () => {
+    const guessed = mkdtempSync(join(dir, "Users-"));
+    const real = mkdtempSync(join(dir, "real-"));
+    const state = mkdtempSync(join(dir, "state-"));
+    expect(windowsProfile(guessed, { state, ask: () => real })).toBe(real);
+    expect(windowsProfile(guessed, { state: mkdtempSync(join(dir, "s2-")), ask: () => null })).toBeNull();
+    expect(windowsProfile(guessed, { state, ask: () => { throw new Error("cached, never asked"); } })).toBe(real);
+  });
+
+  it("--staged reads the carrier and the seed the commit carries", async () => {
+    const root = clone();
+    const l = ledger();
+    await tend(repoItems(root), l);
+    execFileSync("git", ["-C", root, "add", "-A"]);
+    const seedRel = declared(REPO).seed;
+    writeFileSync(join(root, seedRel), `${readFileSync(join(root, seedRel), "utf8")}\nunstaged\n`);
+    await tend(repoItems(root), l);
+    execFileSync("git", ["-C", root, "add", ".claude/agents"]);
+    const show = (rel: string): string | null => { try { return execFileSync("git", ["-C", root, "show", `:${rel}`], { encoding: "utf8" }); } catch { return null; } };
+    const rows = read(repoItems(root, declared(root, show), show), l, indexReader(root));
+    expect(rows.filter((r) => /scout/.test(r.id)).every((r) => r.state === "drift")).toBe(true);
+  });
+
+  it("verify fails when a probe's host does not answer", () => {
+    const v = verifyLoads({ door: "repo", repo: REPO, home: dir, probe: true, entries: [{ session_id: "s", file_path: join(REPO, declared(REPO).seed), load_reason: "include", cwd: REPO }], probes: () => [{ ok: true, line: "claude ✓" }, { ok: false, line: "codex: does not answer" }] });
+    expect(v.ok).toBe(false);
   });
 });

@@ -6,9 +6,9 @@
  * to its host's defaults. So the home radius resolves both, and each row names the home it read.
  */
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { basename, join } from "node:path";
+import { join } from "node:path";
 
 export interface Homes {
   /** The home this process runs under. */
@@ -22,18 +22,32 @@ const onWsl = (env: NodeJS.ProcessEnv): boolean => {
   try { return /microsoft/i.test(readFileSync("/proc/version", "utf8")); } catch { return false; }
 };
 
-/** The Windows profile as a WSL path: `/mnt/c/Users/<name>` when it stands, else `%USERPROFILE%` through `wslpath`. */
-function windowsProfile(native: string): string | null {
-  const guess = join("/mnt/c/Users", basename(native));
-  if (existsSync(guess)) return guess;
-  const echo = spawnSync("cmd.exe", ["/c", "echo", "%USERPROFILE%"], { encoding: "utf8", timeout: 4000 });
+/** Ask Windows for `%USERPROFILE%` and convert it to a WSL path; null when Windows does not answer. */
+function askWindows(): string | null {
+  const echo = spawnSync("cmd.exe", ["/c", "echo", "%USERPROFILE%"], { encoding: "utf8", timeout: 4000, cwd: "/mnt/c" });
   const win = String(echo.stdout ?? "").trim();
-  if (echo.status === 0 && win && !win.includes("%")) {
-    const conv = spawnSync("wslpath", ["-u", win], { encoding: "utf8", timeout: 2000 });
-    const p = String(conv.stdout ?? "").trim();
-    if (conv.status === 0 && p && existsSync(p)) return p;
-  }
-  return null;
+  if (echo.status !== 0 || !win || win.includes("%")) return null;
+  const conv = spawnSync("wslpath", ["-u", win], { encoding: "utf8", timeout: 2000 });
+  const p = String(conv.stdout ?? "").trim();
+  return conv.status === 0 && p ? p : null;
+}
+
+/**
+ * The Windows profile, as Windows itself names it. A guess from the Linux user name could name
+ * another account's profile, so none stands: the answer comes from `%USERPROFILE%`, asked once and
+ * kept in the home's state, and a profile Windows does not name reads as none.
+ */
+export function windowsProfile(native: string, opts: { state?: string; ask?: () => string | null } = {}): string | null {
+  const state = opts.state ?? join(process.env["XDG_STATE_HOME"]?.trim() || join(native, ".local", "state"), "lares", "reality-tunnel");
+  const cache = join(state, "windows-profile");
+  try {
+    const held = readFileSync(cache, "utf8").trim();
+    if (held && existsSync(held)) return held;
+  } catch { /* not asked yet */ }
+  const p = (opts.ask ?? askWindows)();
+  if (!p || !existsSync(p)) return null;
+  try { mkdirSync(state, { recursive: true }); writeFileSync(cache, `${p}\n`); } catch { /* the answer stands; the cache is a convenience */ }
+  return p;
 }
 
 export function resolveHomes(opts: { home?: string; windows?: string | null; env?: NodeJS.ProcessEnv } = {}): Homes {
