@@ -169,6 +169,7 @@ A premium request counts per prompt, never per tool call.
 * ''A lane pushes its own branch'' once per feature (#/the-feature-unit), and never the span or `main`.
 * ''A lane hands back on green'': its battery (#/the-battery), CI and held-out read green on its head, its pull request opens into the work branch, and its fresh read precedes the land. A Copilot PR review runs only on the operator's ask.
 * ''A lane worktree'' counts toward five at most; the train holds the sixth. Worktrees and scratch roots live under `~/.lares-scratch/<lane>/`, never `/tmp`; a provision reads `df` first and stops under 60G free on C:. A lane may hold a second worktree, each with one writer, when two features on its path build in parallel. Free slots fill from the road's order without asking.
+* ''One tool lands a batch'': `tools/land-train.mjs` carries the train, the chained land, the direct land of a lane that already holds the span head, the disk floor (`LARES_DISK_MIN_C_GB`), the worktree cap, the span-push gate and the cancel of the landed lanes' runs; `--plan` prints the commits it would write and pushes nothing. A verdict reads three states: green, red, and UNREADABLE (GitHub unreachable or a 5xx), which waits, exits 10 and never reads as red or green; `tools/ci-verdict.mjs --wait` carries that wait, and its `job-minutes` line gives the CI currency below.
 * ''The controller lands in batches'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">> #/state). A batch forms once two or more features read green; a lone green feature drains as a batch of one when no other lane has a feature nearing green, and a span-fault cure or shared ground other lanes build on lands at once. One train reads every green lane merged over the span as it stands: the shared packages' suites, `tools/witness-all.sh`, evergreen and the tallies (a suite log with no "Test Files" line reads red; a dirty tree reads red); each lane's CI carried the e2e. The land writes one commit per lane, chained, each with the train's merge tree, so the span's last tree equals the train's tree. The span pushes only while no run flies on it, and the land cancels the CI runs its lane-branch pushes start. A lane on an older base lands when the span moved only by lands since (subjects carrying ` — merge PR #N`).
 * ''Road commits'' (road rows, o-takiage moves, changelog bullets, `#/state`) ride behind a batch, never between queued lands.
 * ''After each land'' the build cache caps at 15GB (`docker builder prune -f --max-used-space 15GB`); no image or system prune without the operator's word.
@@ -262,6 +263,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hp_DoJfjlrz_rEh9nQkfpC3WRd2jMUWivaZE-XUtzI8
+<<^ code="&#x0003;">>ni:///sha-256;vKFHst7G4t_xCJjDfVMhWrB20wiEVvn_WiN9_QjffdI
 
 <<^ code="&#x0004;" -> to="?">>
