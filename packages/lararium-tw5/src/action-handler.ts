@@ -459,9 +459,11 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
       if (action.verb === "MOVE") await requireKahuReach(action.fromBag, opts.kahuReach, "MOVE out of canon");
     }
 
-    if (action.verb === "LOAD" && /^lar:\/\/\/ha\.ka\.ba\/bags\/[^/]+$/.test(action.toBag) && args["seed-door"] !== "founding") {
+    // W27: a write lands on a working layer, and canon takes it by promotion. No door passes a LOAD into canon;
+    // the seed walks this road too. The refusal names the road at the grain the verb table spells (a MOVE per title).
+    if (action.verb === "LOAD" && /^lar:\/\/\/ha\.ka\.ba\/bags\/[^/]+$/.test(action.toBag)) {
       const slug = action.toBag.slice(action.toBag.lastIndexOf("/") + 1);
-      throw new VerbRefusal("load-into-canon", `load-into-canon: LOAD --to lar:///ha.ka.ba/wikis/${slug}/working, then MOVE --from lar:///ha.ka.ba/wikis/${slug}/working --to lar:///ha.ka.ba/bags/${slug}`);
+      throw new VerbRefusal("load-into-canon", `load-into-canon: LOAD --to lar:///ha.ka.ba/wikis/${slug}/working, then MOVE --title <t> --from lar:///ha.ka.ba/wikis/${slug}/working --to lar:///ha.ka.ba/bags/${slug} for each landed title`);
     }
     // INGEST returns disk edits through the shore's own hash gate; this LOAD door does not govern it.
 

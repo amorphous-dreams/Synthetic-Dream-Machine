@@ -5,9 +5,9 @@
  * existing feed gestures, kind-routed per holding:
  *   - SYSTEM bags (lares, lararium — their docs mint at boot) → the diff-gated
  *     `ingest` gesture (disk-hash vs synced-hash vs island render-hash).
- *   - Every OTHER holding (sdm, elyncia, …) → the `act LOAD`
- *     gesture, whose island reactor mints the catalog-corpus entry on a virgin
- *     catalog (the ingest gate cannot).
+ *   - Every OTHER holding (sdm, elyncia, …) → the island's named road through the `act`
+ *     gesture: CREATE the bag, LOAD onto the wiki's working layer, MOVE each landed title into canon
+ *     (W27: a write lands on a working layer, and canon takes it by promotion).
  *
  * IDEMPOTENT (causal-island law): each run converges from whatever state it finds —
  * a virgin Synced tree reads everything NEW; a converged tree no-ops per holding.
@@ -75,13 +75,20 @@ export function discoverHoldings(bagsDir: string): Array<{ holding: string; sour
 }
 
 /**
- * Feed ONE holding back into its doc — the kind-route (ingest for system bags, CREATE+LOAD
- * for the rest), lifted out so the whole-store `seedRun` shares ONE kind-routed spelling for feeding a holding. Returns this holding's verdict row.
+ * Feed ONE holding back into its doc — the kind-route (ingest for system bags, the island's named road
+ * for the rest), lifted out so the whole-store `seedRun` shares ONE kind-routed spelling for feeding a holding.
+ * Returns this holding's verdict row.
+ *
+ * THE NAMED ROAD (W27: a write lands on a working layer, and canon takes it by promotion). A LOAD into a canon
+ * bag refuses `load-into-canon` and names this road, and the seed walks it as any hand would, through the one
+ * public act gesture: CREATE the bag (idempotent), LOAD onto the wiki's working layer (the act mounts that wiki),
+ * then MOVE each title the island's LOAD answer named from the working layer into canon. The MOVE grain reads
+ * per title because that is the grain the verb table spells; the titles come from the island's own answer,
+ * never from a second read of the disk. No founding door stands: the rite's seed and the daily seed walk one road.
  */
 export async function seedHolding(
   args: ParsedArgs,
   h: { holding: string; source: string; toBag: string },
-  founding = false,
 ): Promise<SeedHolding> {
   if (SYSTEM_HOLDINGS.has(h.holding)) {
     // Infrastructure bags (lares/lararium) flow as NAMELESS ENTITIES — no special auto-confirm.
@@ -97,6 +104,7 @@ export async function seedHolding(
     });
     return { ...h, gesture: "ingest", exitCode };
   }
+  const working = workingLayerOf(h.toBag);
   // LOAD refuses an unregistered bag (cap-denied) — CREATE registers the
   // catalog-corpus entry first. CREATE converges idempotently (same content
   // id → same outcome), so every seed run may lead
@@ -113,13 +121,31 @@ export async function seedHolding(
     });
     if (createCode !== 0) return { ...h, gesture: "load", exitCode: createCode };
   }
-  const exitCode = await cmdAct({
+  // The island's LOAD answer names the titles it landed; the seed hears them here and promotes each.
+  let landed: string[] = [];
+  const loadCode = await cmdAct({
     command: "act",
     positional: ["LOAD"],
-    options: { ...args.options, "source-uri": h.source, to: h.toBag },
+    options: { ...args.options, "source-uri": h.source, to: working },
     flags,
-  }, founding ? "founding" : undefined);
-  return { ...h, gesture: "load", exitCode };
+  }, (data) => { if (Array.isArray(data["titles"])) landed = data["titles"].filter((t): t is string => typeof t === "string"); });
+  if (loadCode !== 0 || !args.flags["apply"]) return { ...h, gesture: "load", exitCode: loadCode };
+  for (const title of landed) {
+    const moveCode = await cmdAct({
+      command: "act",
+      positional: ["MOVE"],
+      options: { ...args.options, title, from: working, to: h.toBag },
+      flags: { ...args.flags, yes: true },
+    });
+    if (moveCode !== 0) return { ...h, gesture: "load", exitCode: moveCode };
+  }
+  return { ...h, gesture: "load", exitCode: 0 };
+}
+
+/** The working layer of the wiki a canon bag opens as (W27: every bag opens as its own wiki). */
+function workingLayerOf(canonBag: string): string {
+  const slug = canonBag.slice(canonBag.lastIndexOf("/") + 1);
+  return `lar:///ha.ka.ba/wikis/${slug}/working`;
 }
 
 /**
@@ -127,14 +153,14 @@ export async function seedHolding(
  * write contention). Continues past a failing holding (converge what it can); the
  * caller reads per-holding exit codes.
  */
-export async function seedRun(args: ParsedArgs, founding = false): Promise<SeedHolding[]> {
+export async function seedRun(args: ParsedArgs): Promise<SeedHolding[]> {
   const holdings = discoverHoldings(larBagsDir());
   const ledger: SeedHolding[] = [];
-  for (const h of holdings) ledger.push(await seedHolding(args, h, founding));
+  for (const h of holdings) ledger.push(await seedHolding(args, h));
   return ledger;
 }
 
-export async function cmdSeed(args: ParsedArgs, founding = false): Promise<number> {
+export async function cmdSeed(args: ParsedArgs): Promise<number> {
   const bagsDir = larBagsDir();
   const holdings = discoverHoldings(bagsDir);
   if (holdings.length === 0) {
@@ -146,7 +172,7 @@ export async function cmdSeed(args: ParsedArgs, founding = false): Promise<numbe
     return 3;
   }
   console.log(`[seed] ${holdings.length} holding(s): ${holdings.map((h) => h.holding).join(" · ")}${args.flags["apply"] ? "" : "  (preview — pass --apply)"}`);
-  const ledger = await seedRun(args, founding);
+  const ledger = await seedRun(args);
   const failed = ledger.filter((h) => h.exitCode !== 0);
   for (const h of failed) console.error(`[seed] ${h.holding} (${h.gesture}) → exit ${h.exitCode}`);
   console.log(`[seed] ${ledger.length - failed.length}/${ledger.length} holding(s) converged`);

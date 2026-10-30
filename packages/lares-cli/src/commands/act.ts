@@ -226,8 +226,11 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-/** The founding door comes from the rite's in-process seed call; CLI parsing never supplies it. */
-export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<number> {
+/**
+ * `heard` hands an in-process caller (the seed) the island's own answer for a landed act (the emitted `data`:
+ * a LOAD's `titles`, a dry run's `wouldLand`), beside the exit code the CLI face returns. CLI parsing never supplies it.
+ */
+export async function cmdAct(args: ParsedArgs, heard?: (data: Record<string, unknown>) => void): Promise<number> {
   const verbRaw = args.positional[0];
   if (!verbRaw) { printUsage(); return 2; }
   if (verbRaw === "REPACK") return await actRepack(args);
@@ -334,7 +337,6 @@ export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<n
     actionArgs["source-uri"] = sourceUri;
     actionArgs["to-bag"]     = toBag;
     actionArgs["change-id"]  = changeId;
-    if (seedDoor) actionArgs["seed-door"] = seedDoor;
 
     // The disk grant lives HERE — the operator gesture reads the carriers and
     // sends content WITH the verb (islands hold no fetch capability). A local
@@ -587,10 +589,12 @@ export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<n
   // attempt's landed outcome, rather than running the verb again — the CLI's own telling of "that
   // already landed" distinct from "I just landed it".
   const effectOf = result.effectOf;
+  const data = { verb, ...summary, audit: auditUri, changeId, ...(effectOf !== undefined ? { effectOf } : {}) };
+  heard?.(data);
   emit(args, {
     ok: true,
     requestId: result.requestId,
-    data: { verb, ...summary, audit: auditUri, changeId, ...(effectOf !== undefined ? { effectOf } : {}) },
+    data,
     human: () => {
       if (summary["dryRun"]) {
         const wl = Array.isArray(summary["wouldLand"]) ? summary["wouldLand"].length : 0;

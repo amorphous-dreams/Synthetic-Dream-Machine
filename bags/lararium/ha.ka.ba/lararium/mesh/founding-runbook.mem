@@ -158,7 +158,7 @@ The host shim starts the container at `up`. The vessel stands holding no vessel 
 
 ''The seed leaves the checkout as it stood.'' A carrier whose bytes say what its records render stands unchanged, whatever framing a hand gave it, so a first `vessel seed` writes no tracked file and `git status` in the checkout reads clean. The unlock adds no untracked file either: the records the daemon seeds from source never project (<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/bag-roles">>), so `wikis/` receives a file only where a person writes one. A later change to a record writes that one carrier in its canonical render.
 
-''See'': the act prints `the hearth stands: nexus-<sha>`, the seed charter at one seat and threshold one, PRIVATE, the seat's fingerprint, and persona zero's edge bound to this hearth. `vessel seed` names each holding under `/workspace/bags` and ends `6/6 holding(s) converged` (the count follows the holdings the checkout carries); a second run submits nothing for a bag that already matches. `vessel read` reports the live node; `persona list` marks index zero active; `nexus seal show` reads SEED with one seated key; the daemon recipe list returns seeded wiki entries.
+''See'': the act prints `the hearth stands: nexus-<sha>`, the seed charter at one seat and threshold one, PRIVATE, the seat's fingerprint, and persona zero's edge bound to this hearth. `vessel seed` names each holding under `/workspace/bags` and ends `6/6 holding(s) converged` (the count follows the holdings the checkout carries); the two infrastructure holdings ride the diff-gated ingest, and every other holding walks the island's named road: the act creates the bag, loads the carriers onto that wiki's working layer, then moves each landed record into canon, since a write lands on a working layer and canon takes it by promotion (<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/bag-roles">>); a second run submits nothing for a bag that already matches. `vessel read` reports the live node; `persona list` marks index zero active; `nexus seal show` reads SEED with one seated key; the daemon recipe list returns seeded wiki entries.
 
 ''Proves'': one act founds the hearth's custody, place, persona zero and seed charter, the vessel seeds its corpus from the tracked bags, and it serves as the first operator's live node.
 
@@ -374,6 +374,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZR2oElVql0DdVbyW4kZmT1z2O_ENILx3pUsumd4ARjg
+<<^ code="&#x0003;">>ni:///sha-256;BqmYwqhdNFjFJmENHnJTU-QrwddXmLIqMzvqYxILvdw
 
 <<^ code="&#x0004;" -> to="?">>

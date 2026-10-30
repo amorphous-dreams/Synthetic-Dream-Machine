@@ -34,8 +34,9 @@ describe("LOAD lands on a wiki working layer", () => {
     await expect(r.load(args(WORKING), r.context)).resolves.toMatchObject({ verb: "LOAD" });
   });
 
-  test("CONTROL: the founding seed door admits canon LOAD", async () => {
+  test("no door passes a LOAD into canon: a founding-seed key beside the args changes nothing", async () => {
+    // W3 (Lares, 2026-10-29, wikis-first): the rite's seed walks the named road too; the key the rite once passed is no key.
     const r = reactor();
-    await expect(r.load(args(CANON, { "seed-door": "founding" }), r.context)).resolves.toMatchObject({ verb: "LOAD" });
+    await expect(r.load(args(CANON, { "seed-door": "founding" }), r.context)).rejects.toThrow(/load-into-canon.*MOVE --title/);
   });
 });
