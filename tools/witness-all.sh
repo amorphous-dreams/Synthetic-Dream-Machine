@@ -30,7 +30,7 @@ declare -A HELD_OUT=(
 
 # Witnesses heavy enough to run in a CI cell of their own (`tools/ci-cells.mjs` names the cell of each). A bare run
 # still runs them all; `--except-apart` leaves them to their cells, and `--only <name>` runs exactly one of them.
-APART=(contract-witness household-https-witness)
+APART=(contract-witness)
 
 mode=all
 only=""

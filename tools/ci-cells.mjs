@@ -24,45 +24,47 @@ import { createWriteStream, existsSync, mkdirSync, readFileSync, readdirSync } f
 import { basename, join, resolve } from "node:path";
 
 const pkg = (name, dir, shard, extra = {}) => ({ name, dir, ...(shard ? { shard } : {}), ...extra });
-const node = (i) => ({ cell: `node-${i}`, packages: [pkg("@lararium/node", "packages/lararium-node", `${i}/3`)] });
-const web = (i) => ({ cell: `web-${i}`, packages: [pkg("@lararium/web", "packages/lararium-web", `${i}/2`)] });
+const node = (i) => ({ cell: `node-${i}`, packages: [pkg("@lararium/node", "packages/lararium-node", `${i}/2`)] });
 
 /**
  * The package-suite cells. A `shard` of `i/n` runs vitest's own shard; the n rows of one package are the whole package.
  * `vitest: false` marks a suite that writes no vitest JSON report (the TiddlyWiki5 jasmine edition): the cell's own exit
- * answers for it. Measured on run 40956130282 (seconds): node 841 · web 390 · cli 171 · mesh 141 · tw5 100 · browser 58 · keyhive 27.
+ * answers for it.
+ *
+ * FEW CELLS, BECAUSE THE RUNNER POOL IS SHARED. Every cell repeats checkout, install, build and engines (60 to 260 seconds
+ * measured on run 40977288914), and the lanes of this repository draw on one capped pool, so the number that decides is
+ * total job-minutes, with each run's critical path held at or under the slowest e2e shard (about 16 minutes). Run seconds
+ * of the serial job (run 40956130282): node 841 · web 390 · cli 171 · mesh 141 · tw5 100 · browser 58 · keyhive 27.
  */
 export const TEST_CELLS = Object.freeze([
-  node(1), node(2), node(3), web(1), web(2),
-  { cell: "cli", packages: [
+  node(1), node(2),
+  { cell: "web-cli", packages: [
+    pkg("@lararium/web", "packages/lararium-web"),
     pkg("@lares/cli", "packages/lares-cli"),
     pkg("@lares/harness", "tests"),
     pkg("@lararium/memetic-frame", "packages/lararium-memetic-frame"),
     pkg("@lararium/mempalace", "packages/lararium-mempalace"),
     pkg("@lararium/sensorium", "packages/lararium-sensorium"),
   ] },
-  { cell: "mesh", packages: [
+  { cell: "mesh-tw5", packages: [
     pkg("@lararium/mesh", "packages/lararium-mesh"),
-    pkg("@lararium/keyhive", "packages/lararium-keyhive"),
-    pkg("tiddlywiki", "TiddlyWiki5", null, { vitest: false }),
-  ] },
-  { cell: "tw5", packages: [
     pkg("@lararium/tw5", "packages/lararium-tw5"),
     pkg("@lararium/browser", "packages/lararium-browser"),
+    pkg("@lararium/keyhive", "packages/lararium-keyhive"),
+    pkg("tiddlywiki", "TiddlyWiki5", null, { vitest: false }),
   ] },
 ]);
 
 const CLEAN = /^witness-all: every witness clean$/m;
 /**
- * The witness cells. `only` names an apart witness (`APART` in witness-all.sh); the fleet cell runs the rest and must
- * name its held-out roll call; `self-tests` runs every `tools/*.test.mjs`. `must` is what a green log carries.
- * Measured (seconds): contract-witness 373 · household-https-witness 178 · the rest of the fleet ~280 · self-tests 258.
+ * The witness cells. `only` names an apart witness (`APART` in witness-all.sh), which rides a cell of its own; the `rest`
+ * cell runs the fleet without it, then the tool self-tests, and its log must carry the fleet's held-out roll call and the
+ * self-tests' summary. `must` is what a green log carries.
+ * Measured (seconds): contract-witness 373 · the rest of the fleet ~460 · self-tests 258.
  */
 export const WITNESS_CELLS = Object.freeze([
-  { cell: "fleet", run: ["tools/witness-all.sh", "--except-apart"], must: [CLEAN, /held out of this run/] },
-  { cell: "contract-witness", only: "contract-witness", run: ["tools/witness-all.sh", "--only", "contract-witness"], must: [CLEAN] },
-  { cell: "household-https-witness", only: "household-https-witness", run: ["tools/witness-all.sh", "--only", "household-https-witness"], must: [CLEAN] },
-  { cell: "self-tests", selfTests: true, must: [/^ℹ tests [1-9]\d*$/m, /^ℹ fail 0$/m] },
+  { cell: "contract-witness", only: "contract-witness", runs: [["tools/witness-all.sh", "--only", "contract-witness"]], must: [CLEAN] },
+  { cell: "rest", runs: [["tools/witness-all.sh", "--except-apart"], "self-tests"], must: [CLEAN, /held out of this run/, /^ℹ tests [1-9]\d*$/m, /^ℹ fail 0$/m] },
 ]);
 
 export const cellIds = (cells) => cells.map((c) => c.cell);
@@ -177,11 +179,15 @@ async function runWitnessCell(id, out) {
   if (!cell) throw new Error(`no witness cell ${id}; the table names ${cellIds(WITNESS_CELLS).join(", ")}`);
   mkdirSync(out, { recursive: true });
   const logFile = join(out, `${id}.log`);
-  if (cell.selfTests) {
-    const files = readdirSync("tools").filter((f) => f.endsWith(".test.mjs")).sort().map((f) => join("tools", f));
-    return runCommand("node", ["--test", ...files], logFile);
+  // Every run of the cell happens whatever the one before answered; the worst exit wins.
+  let worst = 0;
+  for (const run of cell.runs) {
+    if (run === "self-tests") {
+      const files = readdirSync("tools").filter((f) => f.endsWith(".test.mjs")).sort().map((f) => join("tools", f));
+      worst = Math.max(worst, await runCommand("node", ["--test", ...files], logFile));
+    } else worst = Math.max(worst, await runCommand(run[0], run.slice(1), logFile));
   }
-  return runCommand(cell.run[0], cell.run.slice(1), logFile);
+  return worst;
 }
 
 const flag = (args, name) => { const i = args.indexOf(name); return i === -1 ? undefined : args[i + 1]; };

@@ -17,9 +17,9 @@ const code = (yml) => yml.replace(/^\s*#.*$/gm, "");
 
 const lawful = (passed = 3) => ({ numTotalTests: passed, numPassedTests: passed, numFailedTests: 0, success: true, testResults: [] });
 const allReports = () => new Map(expectedTestReports().map((r) => [r.file, { cell: r.cell, report: lawful() }]));
-const allLogs = () => new Map(WITNESS_CELLS.map((c) => [c.cell, c.cell === "self-tests"
-  ? "ℹ tests 485\nℹ pass 485\nℹ fail 0\n"
-  : `── x ──\nwitness-all: every witness clean\n${c.cell === "fleet" ? "── held out of this run ──\n" : ""}`]));
+const allLogs = () => new Map(WITNESS_CELLS.map((c) => [c.cell, c.cell === "rest"
+  ? "── x ──\nwitness-all: every witness clean\n── held out of this run ──\nℹ tests 485\nℹ pass 485\nℹ fail 0\n"
+  : "── x ──\nwitness-all: every witness clean\n"]));
 
 test("C1 CONTROL: a whole matrix reads green, every cell answering", () => {
   const verdict = evaluateTestCells({ reports: allReports() });
@@ -39,6 +39,7 @@ test("C2 RED: a cell whose report never arrived refuses by name", () => {
 
 test("C3 RED: a cell that ran zero passing tests, one with a failure, and one with a corrupt report each refuse", () => {
   const [a, b, c] = expectedTestReports();
+  assert.ok(c, "the table owes at least three reports");
   const reports = allReports();
   reports.set(a.file, { cell: a.cell, report: lawful(0) });
   reports.set(b.file, { cell: b.cell, report: { ...lawful(), numFailedTests: 1, success: false } });
@@ -55,17 +56,17 @@ test("C4 RED: a report no cell of the table owns refuses (a cell renamed or adde
   assert.match(evaluateTestCells({ reports }).problems.join("\n"), /unexpected report: cell ghost/);
 });
 
-test("C5 RED: a witness cell with no log, a red log, and a fleet log with no roll call each refuse", () => {
+test("C5 RED: a witness cell with no log, a red log, a rest log with no roll call or no self-test summary each refuse", () => {
   const logs = allLogs();
   logs.delete("contract-witness");
-  logs.set("household-https-witness", "── household-https-witness ──\nwitness-all: 1 red\n");
-  logs.set("fleet", "witness-all: every witness clean\n");
-  logs.set("self-tests", "ℹ tests 0\nℹ fail 0\n");
-  const text = evaluateWitnessCells({ logs }).problems.join("\n");
+  logs.set("rest", "witness-all: every witness clean\nℹ tests 485\nℹ fail 0\n");
+  let text = evaluateWitnessCells({ logs }).problems.join("\n");
   assert.match(text, /missing log: cell contract-witness/);
-  assert.match(text, /red log: cell household-https-witness/);
-  assert.match(text, /red log: cell fleet/);
-  assert.match(text, /red log: cell self-tests/);
+  assert.match(text, /red log: cell rest/);
+  logs.set("rest", "witness-all: every witness clean\n── held out of this run ──\nℹ tests 0\nℹ fail 0\n");
+  assert.match(evaluateWitnessCells({ logs }).problems.join("\n"), /red log: cell rest/);
+  logs.set("contract-witness", "── contract-witness ──\nwitness-all: 1 red\n");
+  assert.match(evaluateWitnessCells({ logs }).problems.join("\n"), /red log: cell contract-witness/);
   logs.set("rogue", "witness-all: every witness clean\n");
   assert.match(evaluateWitnessCells({ logs }).problems.join("\n"), /unexpected log: cell rogue/);
 });
@@ -112,7 +113,7 @@ test("C8 RED: the witness cells split witness-all.sh's roster with none lost and
   const whole = list();
   const fleet = list("--except-apart");
   const apart = WITNESS_CELLS.filter((c) => c.only).map((c) => c.only);
-  assert.ok(apart.length >= 2);
+  assert.ok(apart.length >= 1);
   const parts = [...fleet, ...apart.flatMap((w) => list("--only", w))];
   assert.deepEqual([...parts].sort(), [...whole].sort());
   assert.equal(new Set(parts).size, parts.length);

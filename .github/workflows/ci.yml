@@ -122,8 +122,9 @@ jobs:
 
   # ─── test (all package suites, as cells) ───────────────────────────────────
   # EACH CELL IS A SLICE OF THE SUITES ON A RUNNER OF ITS OWN, and the slowest cell sets the wall clock. The slices are
-  # the table `TEST_CELLS` in tools/ci-cells.mjs: node as three vitest shards, web as two, the small packages grouped
-  # by weight. Every cell is self-contained (its own checkout, install, build, holder venv and engines) and uploads
+  # the table `TEST_CELLS` in tools/ci-cells.mjs: node as two vitest shards, the other packages grouped
+  # into two cells by weight. FEW CELLS: every cell repeats checkout, install and build, and the lanes share one capped
+  # runner pool, so total job-minutes decides, with each run's critical path held near the slowest e2e shard. Every cell is self-contained (its own checkout, install, build, holder venv and engines) and uploads
   # one JSON report per package; the reports double as the per-file timings that name the slowest files. The job
   # named `Test` below is the gate: it fails closed on any missing, empty, red or unexpected cell.
   test-cells:
@@ -138,12 +139,8 @@ jobs:
         include:
           - cell: node-1
           - cell: node-2
-          - cell: node-3
-          - cell: web-1
-          - cell: web-2
-          - cell: cli
-          - cell: mesh
-          - cell: tw5
+          - cell: web-cli
+          - cell: mesh-tw5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -343,8 +340,8 @@ jobs:
   # than in a comment nobody reads; the step below fails if that roll call is missing, because a
   # skip that stops announcing itself is the silence these witnesses exist to break.
   #
-  # THE JOB RUNS AS CELLS (`WITNESS_CELLS` in tools/ci-cells.mjs): the fleet without its two heaviest witnesses, each of
-  # those two in a cell of its own, and the self-tests in a fourth. The job named `Witnesses` below is the gate over
+  # THE JOB RUNS AS TWO CELLS (`WITNESS_CELLS` in tools/ci-cells.mjs): the heaviest witness apart, and the rest of the
+  # fleet with the self-tests beside it. The job named `Witnesses` below is the gate over
   # them and fails closed on any missing, red or unexpected cell log.
   witness-cells:
     name: Witness cell ${{ matrix.cell }}
@@ -354,10 +351,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - cell: fleet
           - cell: contract-witness
-          - cell: household-https-witness
-          - cell: self-tests
+          - cell: rest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -392,7 +387,7 @@ jobs:
       - name: Build the grammar wasm (ahu-pair-parity reads it)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm --filter ./packages/tree-sitter-memetic-wikitext build:wasm
-      # The cell runs its witnesses through `witness-all`, which never short-circuits: the worst exit wins. The fleet
+      # The cell runs its witnesses through `witness-all`, which never short-circuits: the worst exit wins. The rest
       # cell's log must carry the held-out roll call, and the gate reads it there: a held-out witness that stops
       # naming itself has become an unmeasured gate wearing a green check. The self-tests are each
       # `tools/*.test.mjs`, planting the reds their tool owes against fakes and scratch trees, so they need no docker,
