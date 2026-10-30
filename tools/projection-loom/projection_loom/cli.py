@@ -129,6 +129,16 @@ def main(argv=None):
     p.add_argument('--plan',type=Path,required=True)
     p.add_argument('--intent',type=Path,required=True)
     p.add_argument('--genome',type=Path,required=True)
+    p=commands.add_parser('place-intent-preview',help='Inspect typed architectural births before native STEP audition')
+    p.add_argument('--intent',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('place-intent-preview-verify',help='Reconstruct a prior pre-audition intent preview')
+    p.add_argument('--intent',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--receipt',type=Path,required=True)
     p=commands.add_parser('place-run',help='Grow source-bound architectural locations under one OODA-HA journal')
     p.add_argument('--inventory',type=Path,required=True)
     p.add_argument('--intent',type=Path,required=True)
@@ -590,6 +600,28 @@ def main(argv=None):
         else:
             result={'valid':verify_place_gallery(args.campaign,args.gallery),
                     'source_camera_registration':False,'automatic_promotion':False}
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command in ('place-intent-preview','place-intent-preview-verify'):
+        from .intent_seed import IntentContract
+        from .spatial_intent import SpatialIntent
+        from .place_genome import PlaceGenome
+        from .place_intent_preview import preview_place_intent,verify_place_intent_preview
+        from .generalized_campaign import save_once
+        raw=json.loads(args.intent.read_text(encoding='utf8'))
+        if set(raw)!={'location','aim','objectives','invariants','budgets'}:
+            raise ValueError('Preview needs exact attributed IntentContract fields')
+        intent=IntentContract(raw['location'],raw['aim'],tuple(raw['objectives']),
+                              tuple(raw['invariants']),tuple(tuple(x) for x in raw['budgets']))
+        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
+        if args.command=='place-intent-preview':
+            result=preview_place_intent(intent,spatial,genome)
+            save_once(args.out,result)
+        else:
+            result={'valid':verify_place_intent_preview(intent,spatial,genome,
+                         json.loads(args.receipt.read_text(encoding='utf8'))),
+                    'automatic_promotion':False}
         print(json.dumps(result,indent=2))
         return result
     if args.command in ('place-compare','place-compare-verify'):
