@@ -32,3 +32,14 @@ def test_shared_phase_vocabulary_refuses_shadow_scope(tmp_path):
     with pytest.raises(ValueError,match="epoch or candidate"):
         open_child(journal,"ineligible",parent="location",scope="shadow-controller",
                    evidence={},orient={},decide={},act={})
+
+def test_same_child_receipts_refuse_second_interpretation(tmp_path):
+    journal=OODAHAJournal(tmp_path/"phase.json",identity={
+        "location":"site","score_state":"native-only","run":"strict"},
+        initial={},autonomy=1.)
+    info={"parent":"location","scope":"epoch","evidence":{"source":"original"},
+          "orient":{"seed":"a"},"decide":{"budget":1},"act":{"native":"STEP"}}
+    open_child(journal,"location/a",**info)
+    with pytest.raises(ValueError,match="collision"):
+        open_child(journal,"location/a",**{**info,"evidence":{"source":"changed"}})
+    assert journal.data["loops"]["location/a"]["receipts"]["observe"]=={"source":"original"}

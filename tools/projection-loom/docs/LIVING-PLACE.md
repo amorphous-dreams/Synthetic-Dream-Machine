@@ -1,3 +1,21 @@
+## N9 · Aftermath H · Single five-phase authorial helm
+
+Both multi-body native growth and the generalized visual-source
+developmental experiment now use one *shared vocabulary* to open
+and close child loops in the already-existing `OODAHAJournal`.
+The helper carries no log, scheduling policy, eligibility, and
+no new authority. Observe, Orient, Decide, Act, and Aftermath
+remain in the journal with unchanged parental `act` anchors.
+A source/intent mismatch remains a refusal, even when the
+same helper opens a nominally similar epoch.
+
+This refactor preserves different semantics across the two
+realms: a native place can witness a roof or stepped rise,
+while the generalized image campaign can score a calibrated
+source view. One score can never silently certify the other.
+
+---
+
 ## N9 · Aftermath A3 · Intention now causes an ascending structure
 
 An explicit `ascend(lower, upper)` goal now constructs the missing

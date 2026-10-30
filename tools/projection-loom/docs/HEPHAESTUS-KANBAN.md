@@ -1,3 +1,31 @@
+## ☕ N9 · Shared phase helm / intent aftermath H · 2026-10-29
+
+**N9-H** (`5090b846`) consolidates epoch and candidate phase entry/exit
+of both the existing generalized input campaign and the native
+living-place campaign into `constructive_phases.open_child` /
+`close_child`, which delegate DIRECTLY to the sole
+`OODAHAJournal`. Existing phase names, parent anchors, source
+receipts, scope boundaries and closing receipts remain unchanged;
+no additional controller, alternate five-phase model or
+autonomous canon review appears.
+
+**Intent aftermath H:** a test reopens an independently durable
+journal and refuses repeated observe evidence under the same
+causal loop identity. A changed original source cannot silently
+become the same candidate through helper reuse. The place runner
+also consults the existing journal pause/review policy at
+epoch boundaries. Neither suite may bypass the inherited
+native/source gates merely because a policy approves an action.
+
+This shifts attention back to architecture rather than duplicating
+phase semantics. Further shared orchestration should use the
+same helm and explicit provenance, not collapse independent
+source fitness into geometry. Check the exact new CI SHA
+for generalized/native/Blender, CAD, repository and held-out
+before declaring this refactor accepted.
+
+---
+
 ## ☕ N9 · intent-born structure / paired aftermath · 2026-10-29
 
 **N9-S2** (`0817b369`) constructs a missing finite canopy from a
