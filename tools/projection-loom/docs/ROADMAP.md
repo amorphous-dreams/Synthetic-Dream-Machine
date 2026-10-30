@@ -1,3 +1,23 @@
+## ☕ N8 · 2026-10-29 · exact-source Fire binding and CI consolidation
+
+**N8-N** (`9593be9a`) adds `fire-place-bind` and
+`fire-place-verify` commands, carrying an exactly selected
+pre-validated Fire bridge proposal to typed `SpatialIntent`. Tests
+refuse altered source witnesses and report whether immutable binding
+rehydrates against the original Fire plan. This does not execute art
+prose, write pet-names, or select a winner.
+
+**Intent aftermath XII:** the Fire-to-place interface now crosses a
+deliberate operator-selection boundary. Original witness, source seed,
+Fire plan, authored interpretive goal, native construction, accepted
+workspace, and later operator selection retain independent digests and
+distinct authority. The earlier N8 replay bug is repaired at
+`caa4911b`, but all feature claims await exact-head hosted execution.
+No Unreal Editor proof or engineered load safety arises from passage
+contact. PR #84 remains open/unmerged.
+
+---
+
 ## ☕ N8 · Native intent topology + replay aftermath · 2026-10-29
 
 **N8-L** (`991cf1cb`) grows beyond one bridge: a unique, explicitly authored

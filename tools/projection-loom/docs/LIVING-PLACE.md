@@ -166,3 +166,28 @@ may pass through several named places; that still does not establish
 wheelchair accessibility, true human circulation over slopes, engineered
 stability, environmental safety or a visually compelling interpretation.
 The creative intent must remain separate from these finite mechanical tests.
+
+## N8 · Aftermath XII · Language, verified program, and approved choice
+
+`fire-place-bind` now exposes the already-existing typed `fire_spatial`
+adapter through the main CLI. It consumes an exact Fire-bound plan,
+unmodified original-source witness identity, an operator-specified
+alternative ID, the immutable explicit `IntentContract`, and a
+source-independent `PlaceGenome` with real endpoint handles. The CLI
+writes an immutable result that can provide the `spatial` input to
+`place-run`; the companion `fire-place-verify` reconstructs every field
+against the unchanged original plan and intent. Tampered witness IDs or
+missing alternative aliases refuse before any artifact publishes.
+
+The native construction layer still knows no natural-language Art Sigil
+parser, no model daemon, and no art-directed automatic winner. A Fire
+`bridges` relation produces a bounded crossing proposal ONLY after
+the operator explicitly selects and binds that proposal. `shelter`,
+`ascend`, `ring-around`, and other interpretive relations do not
+silently become a generative bridge implementation.
+
+This improves the handoff from creative intention to CAD program without
+surrendering independent construction truth, source authority, review or
+causal ancestry to the author's metaphors. Existing `place-review` for
+Fire's read-only carved-native passage studies remains untouched:
+new operator review uses `place-candidate-review`.
