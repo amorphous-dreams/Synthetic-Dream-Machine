@@ -24,7 +24,8 @@
 import { interpretAsDocumentId, type AutomergeUrl, type Repo } from "@automerge/automerge-repo";
 import {
   LARARIUM_DOC_URI, LARES_DOC_URI, emptyLarDoc, faceAtomKeyFromSeed, kahuCabalStanding, kahuRealmGroup, materializeSharedLarDoc,
-  realmBagRegistrationCounts, realmBagRegistrationsFromDoc, realmDocUrl, signRealmBagRegistration, writeRealmBagRegistration, ed25519SignerFromSeed,
+  canonicalJson, parseRealmBagRegistration, realmBagRegistrationCounts, realmBagRegistrationsFromDoc, realmDocUrl, signRealmBagRegistration,
+  writeRealmBagRegistration, ed25519SignerFromSeed,
   type LarDoc, type RealmBagRegistration, type StewardSigner,
 } from "@lararium/mesh";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
@@ -63,43 +64,62 @@ function keepRegistration(sealHome: string, rec: RealmBagRegistration): void {
   mkdirSync(join(path, ".."), { recursive: true });
   atomicWriteFileSync(path, JSON.stringify(rec, null, 2));
 }
-function keptRegistration(sealHome: string, nexus: string, bagUri: string): RealmBagRegistration | null {
+/** The hearth's kept registration for a bag, where it reads whole and verifies as the steward's own seal over this Nexus and bag; else none. */
+async function keptRegistration(sealHome: string, nexus: string, bagUri: string, steward: string): Promise<RealmBagRegistration | null> {
   const path = keptRegistrationPath(sealHome, nexus, bagUri);
   if (!existsSync(path)) return null;
-  try { return JSON.parse(readFileSync(path, "utf8")) as RealmBagRegistration; } catch { return null; }
+  let text: string;
+  try { text = readFileSync(path, "utf8"); } catch { return null; }
+  const rec = parseRealmBagRegistration(text);
+  if (!rec || rec.realmId !== nexus || rec.bagUri !== bagUri) return null;
+  if (rec.keptBy.length !== 1 || rec.keptBy[0]!.toLowerCase() !== steward) return null;
+  return (await realmBagRegistrationCounts(rec, nexus)) ? rec : null;
 }
 
-/**
- * THE CANON'S FOLD READS ONE STEWARD. `foldRealmBags` verifies every self-named steward's seal and never that the hand
- * holds the hearth's canon, so a peer with sync-write on the registry could seal its own `@lares` row (beside the genuine
- * one: equivocal; in its place: its document stands). The Kahu canon counts only registrations kept by EXACTLY the
- * hearth's Kahu steward, so another hand's row names nothing and equivocates nothing (one owner per registry).
- */
-async function foldKahuCanon(doc: LarDoc | undefined | null, nexus: string, steward: string): Promise<ReadonlyMap<string, RealmBagRegistration>> {
-  const standing = new Map<string, RealmBagRegistration>();
+/** The registry's rows for each Kahu bag sealed by EXACTLY the hearth's Kahu steward and counted at this Nexus. */
+async function stewardRows(doc: LarDoc | undefined | null, nexus: string, steward: string): Promise<ReadonlyMap<string, readonly RealmBagRegistration[]>> {
+  const rows = new Map<string, RealmBagRegistration[]>();
   for (const rec of realmBagRegistrationsFromDoc(doc)) {
     if (rec.keptBy.length !== 1 || rec.keptBy[0]!.toLowerCase() !== steward) continue;
     if (!KAHU_REALM_BAGS.includes(rec.bagUri)) continue;
     if (!(await realmBagRegistrationCounts(rec, nexus))) continue;
-    standing.set(rec.bagUri, rec);
+    rows.set(rec.bagUri, [...(rows.get(rec.bagUri) ?? []), rec]);
   }
-  return standing;
+  return rows;
 }
 
 /**
- * The steward restores its own seal: a kept registration absent from the registry (a hostile deletion, a
- * replaced row) lands again under the steward's key. Its bytes are the steward's own, so nothing new is signed.
+ * THE KAHU CANON STANDS ON ONE STEWARD AND ITS KEPT SEAL. `foldRealmBags` verifies every self-named steward's seal and
+ * never that the hand holds the hearth's canon, so the Kahu canon counts only registrations sealed by EXACTLY the
+ * hearth's Kahu steward (one owner per registry; kahu.mem: kept by that one name). A signature carries no freshness, so
+ * the registration the hearth KEEPS pins each bag: a registry row that names anything else (another hand's, a deleted
+ * one, the steward's own older seal replayed) reads as nothing, and the steward's kept row lands on the registry again.
+ * A bag the hearth keeps no registration for stands on the steward's one row and is kept from then on; two of the
+ * steward's rows naming different documents stand none (a tie never grants). A kept file stands only where it verifies.
  */
-function restoreKept(realm: { doc(): LarDoc | undefined; change(fn: (d: LarDoc) => void): void }, sealHome: string, nexus: string, steward: string, standing: ReadonlyMap<string, RealmBagRegistration>): string[] {
+async function standKahuRegistrations(
+  realm: { doc(): LarDoc | undefined; change(fn: (d: LarDoc) => void): void }, sealHome: string, nexus: string, steward: string,
+): Promise<{ readonly standing: ReadonlyMap<string, RealmBagRegistration>; readonly restored: readonly string[] }> {
+  const rows = await stewardRows(realm.doc(), nexus, steward);
+  const standing = new Map<string, RealmBagRegistration>();
   const restored: string[] = [];
   for (const bagUri of KAHU_REALM_BAGS) {
-    if (standing.has(bagUri)) continue;
-    const kept = keptRegistration(sealHome, nexus, bagUri);
-    if (!kept || kept.keptBy.length !== 1 || kept.keptBy[0]!.toLowerCase() !== steward) continue;
-    realm.change((draft) => writeRealmBagRegistration(draft, kept, steward, true));
-    restored.push(bagUri);
+    const onRegistry = rows.get(bagUri) ?? [];
+    const kept = await keptRegistration(sealHome, nexus, bagUri, steward);
+    if (kept) {
+      standing.set(bagUri, kept);
+      const bytes = canonicalJson(kept);
+      if (!onRegistry.some((rec) => canonicalJson(rec) === bytes)) {
+        realm.change((draft) => writeRealmBagRegistration(draft, kept, steward, true));
+        restored.push(bagUri);
+      }
+      continue;
+    }
+    if (new Set(onRegistry.map((rec) => rec.docUrl)).size !== 1) continue;
+    keepRegistration(sealHome, onRegistry[0]!);
+    standing.set(bagUri, onRegistry[0]!);
   }
-  return restored;
+  return { standing, restored };
 }
 
 /**
@@ -114,12 +134,11 @@ export async function landKahuRealm(opts: {
   const core = await cabalCore(opts.repo, opts.sealHome, undefined);
   const realm = await materializeSharedLarDoc(opts.repo, realmDocUrl(core.nexus), "realm");
   const steward = await kahuSteward(core.nexus);
-  const standing = await foldKahuCanon(realm.doc(), core.nexus, steward);
-  const registered: string[] = [...restoreKept(realm, opts.sealHome, core.nexus, steward, standing)];
+  const { standing, restored } = await standKahuRegistrations(realm, opts.sealHome, core.nexus, steward);
+  const registered: string[] = [...restored];
   let signer: StewardSigner | null = null;
-  const nowStanding = await foldKahuCanon(realm.doc(), core.nexus, steward);
   for (const bagUri of KAHU_REALM_BAGS) {
-    if (nowStanding.has(bagUri)) continue;
+    if (standing.has(bagUri)) continue;
     signer ??= opts.steward
       ? await opts.steward(core.nexus)
       : await (async () => { const leaf = await mintNexusLeaf(kahuRealmHandleIndex(), core.nexus); return { signer: leaf.verifyingKey.toLowerCase(), sign: ed25519SignerFromSeed(leaf.seed) }; })();
@@ -127,11 +146,12 @@ export async function landKahuRealm(opts: {
     await doc.whenReady();
     const rec = await signRealmBagRegistration({ realmId: core.nexus, bagUri, docUrl: doc.url, readTier: "contract" }, [signer]);
     if (!(await realmBagRegistrationCounts(rec, core.nexus))) throw new NexusCabalError(`the Kahu realm's registration of ${bagUri} counts nothing: the steward's seal does not verify`);
-    realm.change((draft) => writeRealmBagRegistration(draft, rec, signer!.signer, true));
+    // KEPT BEFORE IT IS PUBLISHED: no registry row of the steward's ever stands without the hearth's own copy.
     keepRegistration(opts.sealHome, rec);
+    realm.change((draft) => writeRealmBagRegistration(draft, rec, signer!.signer, true));
     registered.push(bagUri);
   }
-  const landed = await foldKahuCanon(realm.doc(), core.nexus, steward);
+  const { standing: landed } = await standKahuRegistrations(realm, opts.sealHome, core.nexus, steward);
   const lares = urlOf(landed, LARES_DOC_URI), lararium = urlOf(landed, LARARIUM_DOC_URI);
   if (!lares || !lararium) throw new NexusCabalError("the Kahu realm's registrations did not fold to standing");
   return { nexus: core.nexus, docs: { lares, lararium }, registered };
@@ -154,12 +174,8 @@ export async function standKahuCanon(opts: {
   if (kahuCabalStanding(board.acts, group, board.roster, board.nexus).standing !== "admitted") return {};
   const realm = await materializeSharedLarDoc(opts.repo, realmDocUrl(board.nexus), "realm");
   const steward = await kahuSteward(board.nexus);
-  let standing = await foldKahuCanon(realm.doc(), board.nexus, steward);
-  const restored = restoreKept(realm, opts.sealHome, board.nexus, steward, standing);
-  if (restored.length > 0) {
-    console.log(`[kahu-realm] the steward restored its own registration of ${restored.join(", ")} on the realm doc`);
-    standing = await foldKahuCanon(realm.doc(), board.nexus, steward);
-  }
+  const { standing, restored } = await standKahuRegistrations(realm, opts.sealHome, board.nexus, steward);
+  if (restored.length > 0) console.log(`[kahu-realm] the steward restored its own registration of ${restored.join(", ")} on the realm doc`);
   const lares = urlOf(standing, LARES_DOC_URI), lararium = urlOf(standing, LARARIUM_DOC_URI);
   return { ...(lares ? { lares } : {}), ...(lararium ? { lararium } : {}) };
 }
