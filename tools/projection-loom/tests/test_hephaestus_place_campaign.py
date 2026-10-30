@@ -251,3 +251,17 @@ def test_relational_census_tamper_is_not_silent(tmp_path):
     path.write_text(json.dumps(row))
     with pytest.raises(ValueError,match="Relational birth/refusal census"):
         verify_place_campaign(root)
+
+def test_two_native_witnessed_variants_can_supply_breeding_without_invented_niches(tmp_path):
+    from projection_loom.place_campaign import relational_emission_census
+    data=setup()
+    folder=tmp_path/"two-parent"
+    result=run_place_campaign(*data,folder,epochs=2,offspring=2,
+                              exact_budget=2,seed=8,
+                              prefer_emitter="relational-recombination")
+    assert verify_place_campaign(folder)==result
+    census=result["relational_emissions"]
+    assert census["relational_offered"]+census["recombination_deferrals"]>=1
+    assert census["relational_native_attempted"]<=result["attempted"]
+    assert census["distinct_admitted_recombinants"]<=census["relational_native_admitted"]
+    assert census["automatic_artistic_winner"] is False

@@ -159,7 +159,7 @@ def select_place_auditions(offered,budget,preferred=None,*,epoch=0,emitter_recei
     their original genome proposals or score/physical safety rules.
     """
     if preferred not in (None,"initial","mutation","relational-recombination"):
-        raise ValueError("Place runner supports only initial/mutation emitter preference")
+        raise ValueError("Unsupported attributed place emitter preference")
     if type(budget) is not int or not 1<=budget<=len(offered):
         raise ValueError("Invalid exact native place audition budget")
     keyed=list(enumerate(offered))
@@ -253,10 +253,12 @@ def _verify_place_frontiers(path,pre,summary,spatial,resolved):
                 raise ValueError("Candidate Observe lost its source or original obligations")
             if row["status"]=="admitted":
                 niche=tuple(row["niche"])
-                if niche not in niches:
-                    niches.add(niche)
+                niches.add(niche)
+                if (not any(p["genome"].identity==candidate.identity for p in archive)
+                        and sum(p["niche"]==niche for p in archive)<2):
                     archive.append({"genome":candidate,"candidate_id":identifier,
-                                    "workspace_sha256":row["workspace_sha256"]})
+                                    "workspace_sha256":row["workspace_sha256"],
+                                    "niche":niche})
         total+=len(attempted)
     if summary.get("relational_emissions")!=relational_emission_census(
             reconstructed_frontiers,summary["candidates"]):
@@ -523,11 +525,12 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
                         niche=tuple(descriptor["niche"])
                         row["descriptor"]=descriptor
                         row["niche"]=list(niche)
-                        if niche not in niches:
-                            niches.add(niche)
+                        niches.add(niche)
+                        if (not any(p["genome"].identity==candidate.identity for p in archive)
+                                and sum(p["niche"]==niche for p in archive)<2):
                             archive.append({"genome":candidate,"candidate_id":identifier,
                                             "workspace_sha256":row["workspace_sha256"],
-                                            "witness":evidence})
+                                            "niche":niche,"witness":evidence})
                     else:
                         row["status"]="spatial-unverified"
                         row["reason"]="Original goal lacks full native affordance evidence"
