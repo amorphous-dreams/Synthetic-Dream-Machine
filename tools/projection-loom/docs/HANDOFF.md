@@ -1,3 +1,37 @@
+## ☕ N9 · Intent-grown native column and CI syntax recovery · 2026-10-29
+
+**N9-BC1** (`d71656a0`) adds explicit heritable
+`BearingRun(lower,column,upper)` and bounded column birth
+between two aligned, original single-foundation native bodies
+with a positive gap. **N9-BC2** (`6912a7b5`) reimports
+two independently valid STEP bearing contacts as separate
+native evidence; the place morphology counts two contacts,
+not a fictional direct lower-to-upper touch.
+**Intent aftermath BC** (`7ccec0ae`) tests heritable
+column construction, exact BRep reentry and refusal
+when authored original footprints do not align. The
+single-contact `place-bearing-support` command
+refuses unsupported two-contact causal materialization
+rather than inventing a nonexistent direct native face.
+
+**CI observation:** at earlier head `ebd7fcb1`,
+the dedicated contracts and USD/STEP and full CAD lanes
+correctly went red on `place_bearing_causal.py` line 75:
+an unmatched closing parenthesis prevented parsing.
+The ownership census also refused the unparsable Python
+module. **Recovery `9d491557`** completes the outer
+receipt condition, preserving the original tamper guard.
+The earlier red gates remain recorded, not relabeled
+green; inspect full new-head CI before acceptance.
+
+Scope: native bearing contact has not passed any
+structural engineering safety calculation.
+Real Unreal Editor witness, general non-axis architecture,
+automated art quality and operator canon remain open.
+No pet-name, o-takiage, safety claim or PR merge.
+
+---
+
 ## ☕ N9 · Bearing/contact and causal handback · build/aftermath waves · 2026-10-29
 
 **N9-B feature** (`71f5aaa5`): typed Fire `bears/bearing-column`
