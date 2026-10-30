@@ -110,6 +110,16 @@ def main(argv=None):
     p.add_argument('--offspring',type=int,default=3)
     p.add_argument('--exact-budget',type=int,default=2)
     p.add_argument('--seed',type=int,default=41)
+    p=commands.add_parser('place-continue',help='Grow the next study from an explicitly accepted review')
+    p.add_argument('--campaign',type=Path,required=True)
+    p.add_argument('--review',type=Path,required=True)
+    p.add_argument('--intent',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--epochs',type=int,default=2)
+    p.add_argument('--offspring',type=int,default=3)
+    p.add_argument('--exact-budget',type=int,default=2)
+    p.add_argument('--seed',type=int,default=41)
     p=commands.add_parser('place-verify',help='Re-audit the native source and all candidate aftermath')
     p.add_argument('--campaign',type=Path,required=True)
     p=commands.add_parser('place-review',help='Write operator-attributed review of one admitted location')
@@ -452,7 +462,7 @@ def main(argv=None):
             result = validate_variants(args.comparison)
         print(json.dumps(result, indent=2))
         return result
-    if args.command in ('place-run','place-verify','place-review'):
+    if args.command in ('place-run','place-verify','place-review','place-continue'):
         from .place_campaign import run_place_campaign,verify_place_campaign,review_place_candidate
         if args.command == 'place-run':
             from .intent_seed import IntentContract
@@ -468,6 +478,19 @@ def main(argv=None):
             result=run_place_campaign(LocationStack.load(args.inventory),intent,
                 SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8'))),
                 PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8'))),
+                args.out,epochs=args.epochs,offspring=args.offspring,
+                exact_budget=args.exact_budget,seed=args.seed)
+        elif args.command == 'place-continue':
+            from .place_campaign import continue_place_campaign
+            from .intent_seed import IntentContract
+            from .spatial_intent import SpatialIntent
+            source=json.loads(args.intent.read_text(encoding='utf8'))
+            if set(source)!={'location','aim','objectives','invariants','budgets'}:
+                raise ValueError('Continued intent requires exact original contract fields')
+            intent=IntentContract(source['location'],source['aim'],tuple(source['objectives']),
+                       tuple(source['invariants']),tuple(tuple(x) for x in source['budgets']))
+            result=continue_place_campaign(args.campaign,args.review,intent,
+                SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8'))),
                 args.out,epochs=args.epochs,offspring=args.offspring,
                 exact_budget=args.exact_budget,seed=args.seed)
         elif args.command == 'place-verify':

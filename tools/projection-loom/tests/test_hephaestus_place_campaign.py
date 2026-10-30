@@ -63,3 +63,31 @@ def test_intent_births_a_walkway_from_two_sites_not_a_fixed_seed(tmp_path):
     assert summary["admitted"]==1
     assert summary["candidates"][0]["affordances"]["all_declared_goals_witnessed"]
     assert source.walkways==()
+
+def test_accepted_operator_place_continues_with_archived_source_and_native_parent(tmp_path):
+    from projection_loom.place_campaign import continue_place_campaign,review_place_candidate
+    data=setup()
+    first=tmp_path/"first"
+    prior=run_place_campaign(*data,first,epochs=1,offspring=1,exact_budget=1)
+    selected=prior["candidates"][0]["candidate_id"]
+    accepted=tmp_path/"accepted.json"
+    review_place_candidate(first,selected,actor="operator",decision="accept",
+                           reason="Hold this native crossing",destination=accepted)
+    second=tmp_path/"second"
+    summary=continue_place_campaign(first,accepted,data[1],data[2],second,
+                                   epochs=1,offspring=1,exact_budget=1)
+    assert summary["admitted"]>=1
+    assert (second/"parent-native-workspace"/"manifest.json").exists()
+    assert verify_place_campaign(second)==summary
+
+def test_abstention_cannot_be_reinterpreted_as_operator_selection(tmp_path):
+    from projection_loom.place_campaign import continue_place_campaign,review_place_candidate
+    data=setup()
+    first=tmp_path/"first"
+    report=run_place_campaign(*data,first,epochs=1,offspring=1,exact_budget=1)
+    review=tmp_path/"abstain.json"
+    review_place_candidate(first,report["candidates"][0]["candidate_id"],
+                           actor="operator",decision="abstain",reason="",destination=review)
+    with pytest.raises(ValueError,match="operator-accepted"):
+        continue_place_campaign(first,review,data[1],data[2],tmp_path/"forbidden",
+                                epochs=1,offspring=1,exact_budget=1)

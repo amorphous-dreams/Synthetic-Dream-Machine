@@ -8,6 +8,7 @@ spatial goal, and operator judgment retain separate authorities.
 from __future__ import annotations
 from pathlib import Path
 import json
+import shutil
 from .intent_seed import IntentContract
 from .location_stack import LocationStack
 from .place_genome import PlaceGenome
@@ -41,6 +42,19 @@ def verify_place_campaign(path):
             or propose_from_spatial_intent(genome,intent).identity
             !=pre["intent_constructed_genome_sha256"]):
         raise ValueError("Authored spatial construction changed after preregistration")
+    predecessor=pre.get("predecessor")
+    if predecessor is not None:
+        from .location_review import verify_location_review
+        parent_workspace=path/"parent-native-workspace"
+        report=verify_workspace(parent_workspace)
+        if report["workspace_sha256"]!=predecessor["workspace_sha256"]:
+            raise ValueError("Parent native evidence cannot independently replay")
+        review=_read(path/"parent-review.json")
+        if review!=predecessor["review"] or review.get("decision")!="accept":
+            raise ValueError("Continuation lacks the prior accepted operator decision")
+        verify_location_review(parent_workspace,review)
+        if predecessor["genome_sha256"]!=genome.identity:
+            raise ValueError("Inherited source genome differs from operator choice")
     for row in summary["candidates"]:
         folder=path/"candidates"/row["candidate_id"]
         receipt=_read(folder/"receipt.json")
@@ -70,7 +84,8 @@ def verify_place_campaign(path):
 
 def run_place_campaign(inventory:LocationStack,intent:IntentContract,
                        spatial:SpatialIntent,genome:PlaceGenome,out,*,
-                       epochs=2,offspring=3,exact_budget=2,seed=41):
+                       epochs=2,offspring=3,exact_budget=2,seed=41,
+                       predecessor=None):
     if not isinstance(inventory,LocationStack) or inventory.location_id!=intent.location:
         raise ValueError("Place campaign requires its original source/frame inventory")
     if not isinstance(genome,PlaceGenome) or not isinstance(intent,IntentContract):
@@ -95,7 +110,9 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
          "intent_constructed_genome_sha256":resolved.identity,
          "epochs":epochs,"offspring":offspring,"exact_budget":exact_budget,"seed":seed,
          "native_policy":"exact-STEP-before-spatial-admission",
-         "autoranking":False}
+         "autoranking":False,
+         "predecessor":({k:v for k,v in predecessor.items() if k!="workspace_path"}
+                        if predecessor is not None else None)}
     pre["run_id"]=canonical_json_sha256(pre)
     if (out/"summary.json").exists():
         old=_read(out/"pre_registration.json")
@@ -105,6 +122,15 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
     if out.exists():
         raise ValueError("Incomplete or occupied campaign must not replay as success")
     out.mkdir(parents=True)
+    if predecessor is not None:
+        from .location_review import verify_location_review
+        prior=Path(predecessor["workspace_path"])
+        if verify_workspace(prior)["workspace_sha256"]!=predecessor["workspace_sha256"]:
+            raise ValueError("Inherited native parent differs from reviewed evidence")
+        if not verify_location_review(prior,predecessor["review"]):
+            raise ValueError("Inherited operator review does not match native parent")
+        shutil.copytree(prior,out/"parent-native-workspace")
+        save_once(out/"parent-review.json",predecessor["review"])
     save_once(out/"pre_registration.json",pre)
     journal=OODAHAJournal(out/"session.json",identity={
         "location":intent.location,"score_state":"spatial-proposal-native-only",
@@ -214,3 +240,40 @@ def review_place_candidate(campaign,candidate_id,*,actor,decision,reason,destina
                 Path(campaign)/"candidates"/candidate_id/"genome.json"),
             "review":witness,"automatic_next_epoch":False,
             "automatic_promotion":False}
+
+def continue_place_campaign(previous,review_receipt,intent,spatial,out,*,
+                            epochs=2,offspring=3,exact_budget=2,seed=41):
+    """Only a reviewed ACCEPT choice may seed a new, fully witnessed study."""
+    prior=Path(previous)
+    summary=verify_place_campaign(prior)
+    review=_read(review_receipt)
+    if review.get("decision")!="accept":
+        raise ValueError("Only an operator-accepted place may seed continuation")
+    admitted=[x for x in summary["candidates"] if x["status"]=="admitted"
+              and x["workspace_sha256"]==review.get("workspace_sha256")]
+    if len(admitted)!=1:
+        raise ValueError("Operator review does not uniquely select an audited candidate")
+    selected=admitted[0]
+    source=prior/"candidates"/selected["candidate_id"]
+    parent=source/"workspace"
+    from .location_review import verify_location_review
+    verify_location_review(parent,review)
+    genome=PlaceGenome.from_dict(_read(source/"genome.json"))
+    old_inventory=LocationStack.load(parent/"inventory.json")
+    # Preserve independent source testimony, but remove generated CAD members;
+    # the new workspace must reconstruct these from inherited native programs.
+    fresh=LocationStack.from_dict(old_inventory.to_dict())
+    fresh.elements={k:v for k,v in fresh.elements.items() if v.kind!="cad_body"}
+    fresh.relations=[r for r in fresh.relations
+                     if r.subject in fresh.elements and r.object in fresh.elements]
+    fresh.audit()
+    parent_manifest=_read(parent/"manifest.json")
+    lineage={"workspace_path":str(parent),
+             "workspace_sha256":parent_manifest["sha256"],
+             "genome_sha256":genome.identity,"review":review,
+             "prior_campaign_sha256":summary["pre_registration_sha256"],
+             "prior_candidate_id":selected["candidate_id"],
+             "claim_scope":"attributed-study-lineage; not an editor causal reparent"}
+    return run_place_campaign(fresh,intent,spatial,genome,out,epochs=epochs,
+                              offspring=offspring,exact_budget=exact_budget,
+                              seed=seed,predecessor=lineage)
