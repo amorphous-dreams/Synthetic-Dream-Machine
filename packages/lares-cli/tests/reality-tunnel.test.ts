@@ -45,25 +45,6 @@ function clone(): string {
 
 const ledger = (): Ledger => new Ledger(mkdtempSync(join(dir, "ledger-")));
 
-describe("every kind converges: a second application changes nothing", () => {
-  const cases: Array<[string, (c: string | null) => string | null, Array<string | null>]> = [
-    ["jsonFloor", jsonFloor("cleanupPeriodDays", 99999), [null, "{}", '{"cleanupPeriodDays": 30, "model": "x"}', '{"cleanupPeriodDays":200000}']],
-    ["jsonSet", jsonSet(["mcpServers", "lares"], { command: "p" }), [null, '{"mcpServers":{"other":{}}}']],
-    ["jsonIncludes", jsonIncludes("claudeMdExcludes", "**/x.md"), [null, '{"claudeMdExcludes":["a"]}']],
-    ["claudeHook", claudeHook("Stop", "hook.sh", { type: "command", command: 'bash "/new/hook.sh"', timeout: 30 }), [null, '{"hooks":{"Stop":[{"hooks":[{"type":"command","command":"bash \\"/old/hook.sh\\""}]},{"hooks":[{"type":"command","command":"other"}]}]}}']],
-    ["headLine", headLine("@.claude/noosphere-boot", "@.claude/noosphere-boot\n\nbody\n"), [null, "@bags/x/noosphere-boot.mem\n\n- prose\n", "# title\n"]],
-    ["seedless", seedless("thin\n"), [null, "-> [noosphere-boot.mem](x)\n\n- keep\n", "---\npaths: ['**']\n---\n\n-> [noosphere-boot.mem](x)\n"]],
-    ["tomlTopFloor", tomlTopFloor("project_doc_max_bytes", 65536), [null, "project_doc_max_bytes = 32768\n[mcp_servers.x]\ncommand = \"n\"\n", "[a]\nb = 1\n"]],
-    ["tomlTableKey", tomlTableKey("history", "persistence", "save-all"), [null, "[history]\npersistence = \"none\"\nmax_bytes = 10\n", "model = \"x\"\n"]],
-    ["tomlTableUnset", tomlTableUnset("history", "max_bytes"), [null, "[history]\nmax_bytes = 10\npersistence = \"save-all\"\n"]],
-    ["tomlMcpServer", tomlMcpServer("lares", MCP), [null, "[mcp_servers.lares]\ncommand = \"/old\"\nargs = []\nenv = { }\n\n[other]\na = 1\n"]],
-    ["tomlHook", tomlHook("Stop", "hook.sh", "/new/hook.sh", 60), [null, "[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = \"command\"\ncommand = \"/old/hook.sh\"\ntimeout = 60\n"]],
-  ];
-  for (const [name, f, inputs] of cases) {
-    it(name, () => { for (const x of inputs) { const once = f(x); expect(f(once)).toBe(once); } });
-  }
-});
-
 describe("the memory guard never lowers", () => {
   it("raises a low value and keeps a higher one", () => {
     const f = jsonFloor("cleanupPeriodDays", 99999);

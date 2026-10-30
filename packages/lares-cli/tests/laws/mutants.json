@@ -1,0 +1,20 @@
+{
+  "about": "Named mutants each law must kill: a law's strength reads as the mutants it kills, never as a count of its cases. tools/law-mutants-witness.sh applies each in turn and reads the laws red. Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-measure",
+  "suite": "vitest.mutation.config.ts",
+  "mutants": [
+    { "law": "L6", "why": "the key-path walker wipes an operator's sibling keys", "file": "src/reality-tunnel/kinds.ts",
+      "find": "    if (next === null || typeof next !== \"object\" || Array.isArray(next)) node[k] = {};", "replace": "    if (true) node[k] = {};" },
+    { "law": "L5", "why": "a pointer line reads as prose, so no seed pointer ever lifts", "file": "src/reality-tunnel/kinds.ts",
+      "find": "  line.includes(\"[noosphere-boot.mem](\") || /^\\s*@\\S*noosphere-boot\\S*\\s*$/.test(line) || /^\\s*\\S*noosphere-boot\\.mem\\s*$/.test(line);", "replace": "  false;" },
+    { "law": "L6", "why": "a TOML value of the wrong shape reads as the house's to change", "file": "src/reality-tunnel/kinds.ts",
+      "find": "  const fits = shape === \"number\" ? typeof held === \"number\" : held !== null && typeof held === \"object\" && !Array.isArray(held);", "replace": "  const fits = true;" },
+    { "law": "L5", "why": "a Claude hook the house owes never lands", "file": "src/reality-tunnel/kinds.ts",
+      "find": "    if (!placed) next.push({ hooks: [command] });", "replace": "" },
+    { "law": "memory guard", "why": "the TOML floor lowers a value above it", "file": "src/reality-tunnel/kinds.ts",
+      "find": "  if (typeof held === \"number\" && held >= floor) return cur;", "replace": "  if (typeof held === \"number\" && held <= floor) return cur;" },
+    { "law": "L5", "why": "tend rewrites a target that already holds its tunnel", "file": "src/reality-tunnel/engine.ts",
+      "find": "        if (want === cur) continue;", "replace": "" },
+    { "law": "L13", "why": "a foreign target writes despite the refusal", "file": "src/reality-tunnel/engine.ts",
+      "find": "        if (foreign && !opts.force) { refusedPaths.add(path); continue; }", "replace": "" }
+  ]
+}

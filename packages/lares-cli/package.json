@@ -2,7 +2,7 @@
   "name": "@lares/cli",
   "version": "0.1.0",
   "private": true,
-  "description": "Lares operator CLI \u2014 lares vessel found, lares act (Residency Model ACTION verbs), lares wiki, lares bag, lares meme, \u2026 One entry point for every operator-facing ceremony.",
+  "description": "Lares operator CLI — lares vessel found, lares act (Residency Model ACTION verbs), lares wiki, lares bag, lares meme, … One entry point for every operator-facing ceremony.",
   "type": "module",
   "bin": {
     "lares": "./bin/lares.mjs"
@@ -25,6 +25,8 @@
     "smol-toml": "1.9.0"
   },
   "devDependencies": {
+    "@fast-check/vitest": "0.5.0",
+    "fast-check": "4.10.2",
     "tsx": "4.23.15",
     "vitest": "5.0.3"
   }

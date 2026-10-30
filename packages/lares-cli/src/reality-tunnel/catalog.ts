@@ -11,8 +11,8 @@ import { dirname, join, relative } from "node:path";
 import { parse as parseToml } from "smol-toml";
 import type { External, Item, Radius } from "./engine.js";
 import {
-  claudeHook, copilotHook, headLine, jsonFloor, jsonForeign, jsonIncludes, jsonSet, owned, seedless, tomlForeign,
-  tomlHook, tomlHookForeign, tomlMcpServer, tomlTableKey, tomlTableUnset, tomlTopFloor,
+  claudeHook, copilotHook, headLine, jsonFloor, jsonForeign, jsonIncludes, jsonSet, owned, seedless, 
+  tomlHook, tomlHookForeign, tomlMcpServer, tomlShapeForeign, tomlTableForeign, tomlTableKey, tomlTableUnset, tomlTopFloor,
 } from "./kinds.js";
 import { homesOf, type Homes } from "./homes.js";
 import { resolveLaresMcp, type LaresMcpCommand } from "../mcp-resolve.js";
@@ -84,7 +84,7 @@ export function repoItems(repo: string, d: Declared = declared(repo), textOf: Te
       case "seed-link": return item("repo", s, path, { link: relative(dirname(path), seedAbs) });
       case "head-import": return item("repo", s, path, { transform: headLine(str(s, "line"), str(s, "render")) });
       case "seedless": return item("repo", s, path, { transform: seedless(s["render"] as string | undefined) });
-      case "toml-top-floor": return item("repo", s, path, { transform: tomlTopFloor(str(s, "key"), Number(s["floor"])), foreign: tomlForeign });
+      case "toml-top-floor": return item("repo", s, path, { transform: tomlTopFloor(str(s, "key"), Number(s["floor"])), foreign: tomlShapeForeign(str(s, "key"), "number") });
       case "json-includes": return item("repo", s, path, { transform: jsonIncludes(str(s, "key"), str(s, "value")), foreign: jsonForeign });
       case "scout": {
         const seed = textOf(d.seed) ?? "";
@@ -208,14 +208,14 @@ function homeItem(
         : { type: "stdio", command: mcp.command, args: mcp.args, env: mcp.env });
       return base(seat ? { transform: jsonSet(s["path"] as string[], seat), foreign: jsonForeign } : {});
     }
-    case "toml-mcp": return base(mcp ? { transform: tomlMcpServer("lares", mcp), foreign: tomlForeign } : {});
+    case "toml-mcp": return base(mcp ? { transform: tomlMcpServer("lares", mcp), foreign: tomlShapeForeign("mcp_servers", "table") } : {});
     case "toml-hook": {
       const name = script.slice(script.lastIndexOf("/") + 1);
       const shared = tomlHookForeign(str(s, "event"), name);
-      return base({ transform: tomlHook(str(s, "event"), name, script, timeout), foreign: (cur) => tomlForeign(cur) ?? shared(cur) });
+      return base({ transform: tomlHook(str(s, "event"), name, script, timeout), foreign: (cur) => tomlShapeForeign("hooks", "table")(cur) ?? shared(cur) });
     }
-    case "toml-table-key": return base({ transform: tomlTableKey(str(s, "table"), str(s, "key"), s["value"] as string), foreign: tomlForeign });
-    case "toml-table-unset": return base({ transform: tomlTableUnset(str(s, "table"), str(s, "key")), foreign: tomlForeign });
+    case "toml-table-key": return base({ transform: tomlTableKey(str(s, "table"), str(s, "key"), s["value"] as string), foreign: tomlTableForeign(str(s, "table")) });
+    case "toml-table-unset": return base({ transform: tomlTableUnset(str(s, "table"), str(s, "key")), foreign: tomlTableForeign(str(s, "table")) });
     case "seedless": return base({ transform: seedless() });
     case "seed-rule": {
       const link = join(clone, ".claude", "noosphere-boot");

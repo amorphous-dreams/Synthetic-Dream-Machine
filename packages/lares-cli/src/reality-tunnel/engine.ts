@@ -2,7 +2,7 @@
  * reality-tunnel/engine — an operator's machine converges on declared reality tunnel, one radius per invocation.
  *
  * Law: lar:///ha.ka.ba/lares/cli/reality-tunnel. An ITEM declares what one target holds; the target's
- * desired bytes are a pure function of its current bytes, every item on one file composing in
+ * desired bytes follow from its current bytes alone, every item on one file composing in
  * order. `read` answers two diffs per item, live against the tunnel (what `tend` would do) and live
  * against the bytes the house last wrote (someone touched it). `tend` writes only on difference,
  * refuses bytes it does not own unless forced, and records a GENERATION: each target's prior bytes

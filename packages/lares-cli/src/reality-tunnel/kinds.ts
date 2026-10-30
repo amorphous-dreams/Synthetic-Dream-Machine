@@ -1,5 +1,5 @@
 /**
- * reality-tunnel/kinds — the transforms an item names. Each is a pure function of a target's current bytes,
+ * reality-tunnel/kinds — the transforms an item names. Each maps a target's current bytes to its desired bytes and reads nothing else,
  * and each returns the current bytes unchanged once they already hold the tunnel, so a second
  * `tend` writes nothing (f(f(x)) = f(x)).
  *
@@ -77,7 +77,7 @@ const mentionsScript = (base: string) => (v: unknown): boolean => JSON.stringify
 /**
  * Claude's `hooks.<event>`: the house's command for `base` stands once, at the resolved path. The
  * convergence runs at the COMMAND, never the group: a stale house command re-aims in its own place,
- * under its own group's matcher, and every command that is not the house's stands untouched.
+ * under its own group's matcher, and every command outside the house's own stands untouched.
  */
 export const claudeHook = (event: string, base: string, command: Json): Transform =>
   jsonEdit((o) => {
@@ -167,21 +167,45 @@ function tableSpan(lines: readonly string[], header: string): [number, number] |
 
 const tidy = (s: string): string => s.replace(/\n{3,}/g, "\n\n");
 
-/** A top-level number that rises to `floor` and never falls. */
+/** A TOML target whose top-level `key` holds a value of another shape than `shape` names. */
+export const tomlShapeForeign = (key: string, shape: "number" | "table") => (cur: string | null): string | null => {
+  if (cur === null) return null;
+  const why = tomlForeign(cur);
+  if (why) return why;
+  const held = (tomlTryParse(cur) ?? {})[key];
+  if (held === undefined) return null;
+  const fits = shape === "number" ? typeof held === "number" : held !== null && typeof held === "object" && !Array.isArray(held);
+  return fits ? null : `\`${key}\` holds a value of another shape than the house keeps there; the house changes none of it`;
+};
+
+/** A top-level number that rises to `floor` and never falls; only the lines before the first table read as top level. */
 export const tomlTopFloor = (key: string, floor: number): Transform => (cur) => {
   const text = cur ?? "";
-  if (tomlForeign(cur)) return cur;
+  if (tomlShapeForeign(key, "number")(cur)) return cur;
   const held = (tomlTryParse(text) ?? {})[key];
   if (typeof held === "number" && held >= floor) return cur;
   const line = `${key} = ${floor}`;
-  const re = new RegExp(`^\\s*${key}\\s*=.*$`, "m");
-  return re.test(text) ? text.replace(re, line) : `${line}\n${text.length ? `\n${text}` : ""}`;
+  const lines = text.split("\n");
+  const firstTable = lines.findIndex((l) => l.trimStart().startsWith("["));
+  const top = firstTable === -1 ? lines.length : firstTable;
+  const at = lines.slice(0, top).findIndex((l) => new RegExp(`^\\s*${key}\\s*=`).test(l));
+  if (at >= 0) { lines[at] = line; return lines.join("\n"); }
+  return `${line}\n${text.length ? `\n${text}` : ""}`;
+};
+
+const isTable = (v: unknown): v is Json => v !== null && typeof v === "object" && !Array.isArray(v);
+
+/** A TOML target whose `table` holds a scalar or an array: the house owns no table there. */
+export const tomlTableForeign = (table: string) => (cur: string | null): string | null => {
+  if (cur === null) return tomlForeign(cur);
+  const held = (tomlTryParse(cur) ?? {})[table];
+  return tomlForeign(cur) ?? (held !== undefined && !isTable(held) ? `\`${table}\` holds a value where a table belongs; the house changes none of it` : null);
 };
 
 /** `[table] key = value`, with every other line of the table standing. */
 export const tomlTableKey = (table: string, key: string, value: string | number): Transform => (cur) => {
   const text = cur ?? "";
-  if (tomlForeign(cur)) return cur;
+  if (tomlTableForeign(table)(cur)) return cur;
   const t = (tomlTryParse(text) ?? {})[table] as Json | undefined;
   if (t && t[key] === value) return cur;
   const lit = typeof value === "string" ? JSON.stringify(value) : String(value);
@@ -197,7 +221,7 @@ export const tomlTableKey = (table: string, key: string, value: string | number)
 
 /** `[table]` carries no `key`: a cap the house's retention cannot keep beside. */
 export const tomlTableUnset = (table: string, key: string): Transform => (cur) => {
-  if (cur === null || tomlForeign(cur)) return cur;
+  if (cur === null || tomlTableForeign(table)(cur)) return cur;
   const t = (tomlTryParse(cur) ?? {})[table] as Json | undefined;
   if (!t || !(key in t)) return cur;
   const lines = cur.split("\n");
@@ -210,7 +234,7 @@ export const tomlTableUnset = (table: string, key: string): Transform => (cur) =
 /** Codex's `[mcp_servers.<name>]`, held whole; a drifted table strips and the held one appends. */
 export const tomlMcpServer = (name: string, server: { command: string; args: readonly string[]; env: Record<string, string> }): Transform => (cur) => {
   const text = cur ?? "";
-  if (tomlForeign(cur)) return cur;
+  if (tomlShapeForeign("mcp_servers", "table")(cur)) return cur;
   const held = ((tomlTryParse(text) ?? {})["mcp_servers"] as Json | undefined)?.[name];
   if (JSON.stringify(held) === JSON.stringify({ command: server.command, args: server.args, env: server.env })) return cur;
   let lines = text.split("\n");
@@ -236,7 +260,7 @@ export const tomlHookForeign = (event: string, base: string) => (cur: string | n
 /** Codex's `[[hooks.<event>]]`: one block carries the house's hook for `script`, at the resolved path. */
 export const tomlHook = (event: string, base: string, script: string, timeout: number): Transform => (cur) => {
   const text = cur ?? "";
-  if (tomlForeign(cur)) return cur;
+  if (tomlShapeForeign("hooks", "table")(cur)) return cur;
   const groups = (((tomlTryParse(text) ?? {})["hooks"] as Json | undefined)?.[event] ?? []) as Array<{ hooks?: Array<Json> }>;
   const ours = groups.filter((g) => JSON.stringify(g).includes(base));
   const want = { type: "command", command: script, timeout };

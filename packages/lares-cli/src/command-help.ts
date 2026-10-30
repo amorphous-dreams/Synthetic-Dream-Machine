@@ -175,6 +175,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   sensorium: {
+    usage: "usage: lares sensorium <run|open|query|ls|keep|dissolve|name|names|propose-name|accept-name> …",
     synopsis:
       "The source-neutral sensorium surface. `run` / `open` ingest a path into a scratch sensorium. " +
       "`run` is ephemeral-DEFAULT: open → ingest → analyze → DISSOLVE on exit (success OR error). `open` " +
@@ -209,6 +210,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   mempalace: {
+    usage: "usage: lares mempalace <install|setup|harvest|repave|status|quiesce|resume> [flags]  ·  lares mempalace <vendored verb> …",
     synopsis:
       "THE GUEST COMPARATOR'S DOOR (the sovereign sensorium lives at `lares sense`). The guest ~/.mempalace " +
       "is the vendored vanilla nakama store — a clean comparator, a SEPARATE causal island the vessel never " +
@@ -234,6 +236,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   hooks: {
+    usage: "usage: lares hooks <pause|resume|status>",
     synopsis:
       "The hook-lever on its own: `pause` / `resume` / `status` the capture + ingest hooks by writing / " +
       "removing a marker file the hook scripts check and NO-OP on when present. Lets a migration or a " +
@@ -301,6 +304,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     meme: "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite",
   },
   vessel: {
+    usage: "usage: lares vessel <unbound|found|rotate|stand|stop|seed|read|rite> [flags]",
     synopsis:
       "THE VESSEL DOOR — one namespace over the vessel's own causal island. Four primitives and one " +
       "read: `found` mints identity + bootstrap · `stand` brings the daemon up and reports · `stop` " +
@@ -328,6 +332,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   sense: {
+    usage: "usage: lares sense <search|relate|structure|status> [--lens <plane>]  ·  lares sense <lifecycle verb> …",
     synopsis:
       "THE SOVEREIGN SENSORIUM'S ONE DOOR (the guest comparator lives at `lares mempalace`). READ four " +
       "verbs with the plane as a `--lens` parameter (search · relate · structure · status), so a new plane " +

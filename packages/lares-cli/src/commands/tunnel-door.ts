@@ -94,7 +94,7 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs): Promise<numbe
     const reader = args.flags["staged"] === true ? indexReader(repoRoot) : undefined;
     const rows = read(items, ledger, reader);
     const code = exitOf(rows);
-    // `--brief` is the one line a hook reads, terminal or none: the wake hook calls it with no TTY.
+    // `--brief` prints the one line a hook reads, terminal or none: the wake hook calls it with no TTY.
     if (args.flags["brief"] === true) { show(rows, true); return code; }
     emit(args, { ok: code === 0, data: { radius: door, rows, exit: code }, human: () => show(rows, false) });
     return code;
