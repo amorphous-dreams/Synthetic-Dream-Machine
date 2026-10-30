@@ -27,7 +27,8 @@ def bind_fire_spatial(plan,intent,genome,*,alternative_id,source_witness_id,
     chosen=matching[0]
     relation_mapping={"bridges":("bridge-between","connect"),
                       "covers":("overhead-canopy","shelter"),
-                      "ascends":("stair-flight","ascend")}
+                      "ascends":("stair-flight","ascend"),
+                      "bears":("bearing-column","bear")}
     relation=chosen.get("relation")
     pair=relation_mapping.get(relation)
     if pair is None or chosen.get("implementation")!=pair[0]:

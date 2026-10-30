@@ -33,8 +33,17 @@ def observed_place_descriptor(genome:PlaceGenome,affordances):
     routes=[]
     cover=[]
     ascents=[]
+    bearings=[]
     for item in affordances["goals"]:
         proof=item["proof"]
+        if item["status"]=="geometric-bearing-proposal":
+            contact=(proof or {}).get("native_contact",{})
+            if (not isinstance(contact,dict) or contact.get("load_certification") is not False
+                    or contact.get("native_contact_area",0)<=0):
+                raise ValueError("Place bearing lacks independent exact STEP contact testimony")
+            bearings.append({"native_contact_area":contact["native_contact_area"],
+                             "lower":contact["lower"],"upper":contact["upper"]})
+            continue
         if item["status"]=="geometric-ascent-proposal":
             if (not proof or not proof.get("edge_contacts")
                     or proof.get("total_native_rise",0)<=0
@@ -64,12 +73,14 @@ def observed_place_descriptor(genome:PlaceGenome,affordances):
                        "width":min(x["route_width_lower_bound"] for x in segments),
                        "axes":sorted(set(x["principal_axis"] for x in segments))})
     widths=([x["width"] for x in routes]+[x["width"] for x in cover]
-            +[x["width"] for x in ascents])
+            +[x["width"] for x in ascents]
+            +[x["native_contact_area"]**.5 for x in bearings])
     width=min(widths)
     hops=max((x["hops"] for x in routes),default=0)
     axis_count=len(set(axis for route in routes for axis in route["axes"]))
     niche=(min(8,len(genome.walkways)),min(8,hops),min(8,int(width*2)),
-           min(2,axis_count),min(8,len(cover)),min(8,len(ascents)))
+           min(2,axis_count),min(8,len(cover)),min(8,len(ascents)),
+           min(8,len(bearings)))
     return {"schema":"projection-loom/observed-place-morphology",
             "native_scene_sha256":affordances["native_scene_sha256"],
             "body_count":len(genome.bodies),"walkway_count":len(genome.walkways),
@@ -77,6 +88,7 @@ def observed_place_descriptor(genome:PlaceGenome,affordances):
             "shelter_witness_count":len(cover),
             "native_ascent_risers":ascents,
             "ascent_witness_count":len(ascents),
+            "native_bearings":bearings,"bearing_witness_count":len(bearings),
             "route_width_lower_bound":(min(x["width"] for x in routes)
                                      if routes else None),
             "minimum_spatial_width":width,

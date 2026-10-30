@@ -186,6 +186,8 @@ class PlaceGenome:
             choices=[]
             known={b.entity_id:b for b in bodies}
             for goal in spatial.goals:
+                if goal.kind=="bear" and goal.object in known:
+                    choices.append(("bear",(goal.object,),0))
                 if goal.kind=="shelter" and goal.object in known:
                     choices.append(("shelter",(goal.object,),None))
                 elif goal.kind=="ascend":

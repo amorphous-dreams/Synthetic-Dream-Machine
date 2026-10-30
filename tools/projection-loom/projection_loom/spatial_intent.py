@@ -10,7 +10,7 @@ from math import isfinite
 import re
 from .provenance_encoding import canonical_json_sha256
 
-KINDS=frozenset(("connect","shelter","ascend"))
+KINDS=frozenset(("connect","shelter","ascend","bear"))
 _HANDLE=re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,63}$")
 
 

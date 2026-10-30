@@ -17,6 +17,7 @@ from .place_genome import PlaceGenome, unique_walkway_chain
 from .spatial_intent import SpatialIntent
 from .place_shelter import native_shelter_cover
 from .place_ascent import native_ascent_run
+from .native_support import native_support
 from .provenance_encoding import canonical_json_sha256
 
 
@@ -103,6 +104,26 @@ def assess_place(bundle,genome:PlaceGenome,spatial:SpatialIntent,*,headroom=1.8)
     outcomes=[]
     for goal in spatial.goals:
         item={"goal":goal.to_dict(),"status":"unverified","proof":None}
+        if goal.kind=="bear":
+            if goal.subject not in solids or goal.object not in solids:
+                item["reason"]="Geometric bearing requires two named independent STEP bodies"
+            else:
+                try:
+                    contact=native_support(bundle,goal.subject,goal.object,
+                        minimum_contact_area=max(.05,goal.min_width**2/8))
+                except ValueError as exc:
+                    item["reason"]="Independent native bearing refused: "+str(exc)
+                else:
+                    item.update(status="geometric-bearing-proposal",
+                                proof={"schema":"projection-loom/place-geometric-bearing",
+                                       "source":goal.subject,"destination":goal.object,
+                                       "scene_sha256":manifest["sha256"],
+                                       "genome_sha256":genome.identity,
+                                       "native_contact":contact,
+                                       "load_certification":False,
+                                       "automatic_promotion":False})
+            outcomes.append(item)
+            continue
         if goal.kind=="ascend":
             matches=[run for run in genome.ascents
                      if run.source==goal.subject and run.destination==goal.object]
@@ -171,7 +192,7 @@ def assess_place(bundle,genome:PlaceGenome,spatial:SpatialIntent,*,headroom=1.8)
             "spatial_intent_sha256":spatial.identity,
             "all_declared_goals_witnessed":all(x["status"] in (
                 "geometric-route-proposal","geometric-shelter-proposal",
-                "geometric-ascent-proposal")
+                "geometric-ascent-proposal","geometric-bearing-proposal")
                 for x in outcomes),
             "goals":outcomes,"automatic_promotion":False}
 
