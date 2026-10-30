@@ -35,6 +35,12 @@ def verify_place_campaign(path):
     genome=PlaceGenome.from_dict(pre["original_genome"])
     if intent.identity!=pre["spatial_intent_sha256"] or genome.identity!=pre["original_genome_sha256"]:
         raise ValueError("Campaign original sources or intent changed")
+    from .place_genome import propose_from_spatial_intent
+    if (PlaceGenome.from_dict(pre["intent_constructed_genome"]).identity
+            !=pre["intent_constructed_genome_sha256"]
+            or propose_from_spatial_intent(genome,intent).identity
+            !=pre["intent_constructed_genome_sha256"]):
+        raise ValueError("Authored spatial construction changed after preregistration")
     for row in summary["candidates"]:
         folder=path/"candidates"/row["candidate_id"]
         receipt=_read(folder/"receipt.json")
@@ -78,11 +84,15 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
     inventory.audit()
     inventory.verify_source_bytes()
     out=Path(out)
+    from .place_genome import propose_from_spatial_intent
+    resolved=propose_from_spatial_intent(genome,spatial)
     pre={"schema":"projection-loom/place-preregistration",
          "location":intent.location,"intent_sha256":intent.identity,
          "spatial_intent":spatial.to_dict(),"spatial_intent_sha256":spatial.identity,
          "original_inventory_sha256":inventory.to_dict()["snapshot_sha256"],
          "original_genome":genome.to_dict(),"original_genome_sha256":genome.identity,
+         "intent_constructed_genome":resolved.to_dict(),
+         "intent_constructed_genome_sha256":resolved.identity,
          "epochs":epochs,"offspring":offspring,"exact_budget":exact_budget,"seed":seed,
          "native_policy":"exact-STEP-before-spatial-admission",
          "autoranking":False}
@@ -99,6 +109,7 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
     journal=OODAHAJournal(out/"session.json",identity={
         "location":intent.location,"score_state":"spatial-proposal-native-only",
         "run":pre["run_id"]},initial={},autonomy=1.)
+    genome=resolved
     archive=[]
     niches=set()
     all_records=[]

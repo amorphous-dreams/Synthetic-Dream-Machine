@@ -28,3 +28,21 @@ def test_place_refuses_ambiguous_or_unbound_members():
         PlaceGenome(tuple(reversed(scene().bodies)))
     with pytest.raises(ValueError,match="exact"):
         PlaceGenome.from_dict({"schema":"projection-loom/place-genome","bodies":[]})
+
+def test_intent_actually_constructs_missing_spatial_relationship():
+    from projection_loom.intent_seed import IntentContract
+    from projection_loom.spatial_intent import SpatialIntent,SpatialGoal
+    from projection_loom.place_genome import propose_from_spatial_intent
+    original=PlaceGenome(scene().bodies[1:],())  # two rooted sites, no deck
+    intent=IntentContract("two-heights","Connect the heights",("crossing",))
+    goal=SpatialIntent(intent.identity,(SpatialGoal("connect","west","east"),),"fire")
+    generated=propose_from_spatial_intent(original,goal)
+    assert generated.identity!=original.identity
+    assert len(generated.bodies)==3 and len(generated.walkways)==1
+    assert generated.bodies[0].entity_id=="east"
+    assert proposed_again(generated,goal).identity==generated.identity
+    assert original.walkways==()
+
+def proposed_again(genome,goal):
+    from projection_loom.place_genome import propose_from_spatial_intent
+    return propose_from_spatial_intent(genome,goal)

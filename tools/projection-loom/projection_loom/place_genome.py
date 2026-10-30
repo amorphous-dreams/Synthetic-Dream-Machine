@@ -132,3 +132,51 @@ class PlaceGenome:
                        body.translation[2])
                 bodies[i]=replace(body,translation=place)
         return PlaceGenome(tuple(bodies),self.walkways)
+
+def propose_from_spatial_intent(genome:PlaceGenome,spatial):
+    """Construct only a supported two-site native crossing hypothesis.
+
+    This narrow constructor consumes an AUTHORED `connect` relationship,
+    not prose or imagery. It handles only two single-foundation bodies on
+    equal elevated planes, with finite positive 2D overlap in their y bands.
+    More complex location configurations remain explicit future work.
+    """
+    from .spatial_intent import SpatialIntent
+    from .developmental import GrowthNode
+    if not isinstance(genome,PlaceGenome) or not isinstance(spatial,SpatialIntent):
+        raise ValueError("Spatial construction requires typed inputs")
+    bodies=list(genome.bodies)
+    routes=list(genome.walkways)
+    for i,goal in enumerate(spatial.goals):
+        if goal.kind!="connect":
+            continue
+        if any(w.source==goal.subject and w.destination==goal.object for w in routes):
+            continue
+        found={b.entity_id:b for b in bodies}
+        if goal.subject not in found or goal.object not in found:
+            raise ValueError("Spatial bridge intent names unknown support sites")
+        a,b=found[goal.subject],found[goal.object]
+        if (len(a.program.nodes)!=1 or len(b.program.nodes)!=1
+                or a.program.nodes[0].op!="foundation"
+                or b.program.nodes[0].op!="foundation"):
+            raise ValueError("Authored crossing proposal needs two simple measured native root sites")
+        x0,y0,z0=a.translation
+        x1,y1,z1=b.translation
+        p,q=a.program.nodes[0].size,b.program.nodes[0].size
+        if x1<=x0+1 or abs((z0+p[2])-(z1+q[2]))>1e-7:
+            raise ValueError("Authored crossing currently needs eastward equally elevated supports")
+        low=max(y0-p[1]/2,y1-q[1]/2)
+        high=min(y0+p[1]/2,y1+q[1]/2)
+        if high-low<goal.min_width or .5>goal.max_step:
+            raise ValueError("Authored crossing lacks width or allowed step height")
+        name=f"intent_deck_{i:03d}"
+        if name in found:
+            raise ValueError("Spatial construction would overwrite an existing entity")
+        span=round(x1-x0+min(p[0],q[0]),6)
+        deck=PlaceBody(name,GrowthProgram((GrowthNode("root","foundation",
+            size=(span,round(min(2.,high-low),6),.5)),)),
+            (round((x0+x1)/2,6),round((low+high)/2,6),round(z0+p[2],6)))
+        bodies.append(deck)
+        routes.append(Walkway(goal.subject,name,goal.object))
+    return PlaceGenome(tuple(sorted(bodies,key=lambda x:x.entity_id)),
+                       tuple(sorted(routes,key=lambda w:(w.source,w.deck,w.destination))))

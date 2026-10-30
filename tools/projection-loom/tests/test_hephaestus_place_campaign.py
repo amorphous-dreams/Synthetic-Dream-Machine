@@ -54,3 +54,12 @@ def test_review_requires_explicit_operator_choice_and_valid_witness(tmp_path):
     with pytest.raises(ValueError,match="uniquely named"):
         review_place_candidate(out,"invented",actor="operator",decision="accept",
              reason="",destination=tmp_path/"wrong.json")
+
+def test_intent_births_a_walkway_from_two_sites_not_a_fixed_seed(tmp_path):
+    inventory,intent,goal,whole=setup()
+    source=PlaceGenome(whole.bodies[1:],())
+    summary=run_place_campaign(inventory,intent,goal,source,tmp_path/"intent-birth",
+                               epochs=1,offspring=1,exact_budget=1)
+    assert summary["admitted"]==1
+    assert summary["candidates"][0]["affordances"]["all_declared_goals_witnessed"]
+    assert source.walkways==()
