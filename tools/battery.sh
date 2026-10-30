@@ -9,13 +9,15 @@
 # Exit 64: the lock cannot open (or flock failed); the command never runs unlocked. Otherwise the command's own exit code.
 set -uo pipefail
 if [ -n "${LARES_BATTERY_LOCK:-}" ]; then
+  case "$LARES_BATTERY_LOCK" in /*) ;; *) echo "battery: REFUSED, LARES_BATTERY_LOCK must be an absolute path (two working directories would pick two locks): $LARES_BATTERY_LOCK" >&2; exit 64;; esac
   LOCK=$LARES_BATTERY_LOCK
 else
   PW_HOME=$(getent passwd "$(id -u)" | cut -d: -f6)
-  LOCK=${PW_HOME:-/root}/.lares-scratch/.battery.lock
+  [ -n "$PW_HOME" ] || { echo "battery: REFUSED, the passwd lookup for the lock's home failed; set an absolute LARES_BATTERY_LOCK" >&2; exit 64; }
+  LOCK=$PW_HOME/.lares-scratch/.battery.lock
 fi
 [ "${1:-}" = "--lock-path" ] && { echo "$LOCK"; exit 0; }
-exec 9>"$LOCK" 2>/dev/null || { echo "battery: REFUSED, the lock $LOCK cannot open here (a walled seat?); run single-file checks bare, and leave the battery to the lane lead" >&2; exit 64; }
+{ exec 9>"$LOCK"; } 2>/dev/null || { echo "battery: REFUSED, the lock $LOCK cannot open here (a walled seat?); run single-file checks bare, and leave the battery to the lane lead" >&2; exit 64; }
 echo "battery: waiting for the box ($(date +%T))" >&2
 flock 9 || { echo "battery: REFUSED, flock failed on $LOCK" >&2; exit 64; }
 echo "battery: holding the box ($(date +%T))" >&2

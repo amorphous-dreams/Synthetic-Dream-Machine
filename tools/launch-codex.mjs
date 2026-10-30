@@ -22,10 +22,10 @@
  * The Codex cache, auth and rollouts live under the PASSWD home (`os.userInfo().homedir`), never `$HOME`: a lead runs
  * under a scratch HOME. Every reader injects, so a test stands nothing. The tool never writes `~/.codex`.
  */
-import { spawn as nodeSpawn } from "node:child_process";
+import { execFileSync, spawn as nodeSpawn } from "node:child_process";
 import { appendFileSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from "node:fs";
 import { userInfo } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { globalStampPath, packageStampPath, sourceDigest, workspacePackageDirs } from "./stamp-build.mjs";
 
@@ -85,10 +85,11 @@ export function seatLaw(canonText) {
   return `## SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)\n${bullets.join("\n")}\n`;
 }
 
-/** The brief carrying the canon law exactly once: a section by that heading that differs from the law is replaced, never trusted. */
+/** The brief carrying the canon law exactly once: every section under the SEAT LAW heading that is not the law alone is replaced, never trusted. */
 export function appendSeatLaw(brief, law) {
-  if (brief.includes(law) && brief.match(/^## SEAT LAW/gm).length === 1) return brief;
-  const kept = brief.replace(/^## SEAT LAW[^\n]*\n[\s\S]*?(?=^## |(?![\s\S]))/gm, "");
+  const heading = /^## SEAT LAW(?: \(|$)[^\n]*\n?/gm;
+  if (brief.includes(law) && (brief.match(heading) ?? []).length === 1) return brief;
+  const kept = brief.replace(/^## SEAT LAW(?: \(|$)[^\n]*\n[\s\S]*?(?=^## (?!SEAT LAW(?: \(|$))|(?![\s\S]))/gm, "");
   return `${kept}${kept.endsWith("\n") ? "" : "\n"}\n${law}`;
 }
 
@@ -104,18 +105,25 @@ function newestRolloutLines(home) {
   };
   walk(join(home, ".codex", "sessions"), 0);
   files.sort((a, b) => b[0] - a[0]);
-  // A rollout a moment old may hold no rate_limits record yet; the pool is the account's, so the newest one that has it answers.
-  for (const [, p] of files.slice(0, 8)) {
-    const lines = readFileSync(p, "utf8").split("\n").filter((l) => l.includes('"rate_limits"'));
-    if (lines.length) return lines;
-  }
-  return null;
+  // The NEWEST rollout alone answers: an older record is a stale pool, and a newest one with none reads unreadable.
+  const newest = files[0]?.[1];
+  if (!newest) return null;
+  const lines = readFileSync(newest, "utf8").split("\n").filter((l) => l.includes('"rate_limits"'));
+  return lines.length ? lines : null;
+}
+
+/** The main checkout `repo` belongs to: the git common dir's parent (a lane worktree's launcher still guards the real main). */
+export function mainCheckout(repo) {
+  try {
+    const common = execFileSync("git", ["-C", repo, "rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+    return basename(common) === ".git" ? dirname(realpathSync(common)) : real(repo);
+  } catch { return repo; }
 }
 
 /** The real readers; `home` defaults to the passwd home. */
 export function realReaders(home = realHome(), repo = REPO) {
   return {
-    realHome: home, repo,
+    realHome: home, repo: mainCheckout(repo),
     modelsCache: () => { try { return readFileSync(join(home, ".codex", "models_cache.json"), "utf8"); } catch { return null; } },
     rolloutLines: () => { try { return newestRolloutLines(home); } catch { return null; } },
     distFresh: (wt) => { try { return distFresh(wt); } catch { return false; } },
@@ -169,8 +177,9 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
   const seatDir = real(o.seatDir);
   try {
     readers ??= realReaders();
-    const { pool } = preflight({ ...o, seatDir }, readers);
-    const args = seatArgs({ ...o, seatDir });
+    const worktree = o.worktree ? real(o.worktree) : undefined;
+    const { pool } = preflight({ ...o, seatDir, worktree }, readers);
+    const args = seatArgs({ ...o, seatDir, worktree });
     log(pool);
     if (o.dryRun) { log(`DRY-RUN ${JSON.stringify(["codex", ...args, "<brief>"])}`); return 0; }
     const law = seatLaw(readers.canon());
