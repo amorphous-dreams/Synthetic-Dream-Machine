@@ -83,6 +83,27 @@ describe("a title-less MOVE promotes the whole working layer", () => {
     expect(await empty.run({})).toMatchObject({ moved: 0 });
   });
 
+  test("L5 — (Luna) a newer source version written between the landing and the removal survives in canon", async () => {
+    const r = await rig();
+    const source = r.stores.get(workingBag)!, target = r.stores.get(canonBag)!;
+    // THE INTERLEAVED WRITER: the moment the layer MOVE lands "two" in canon, another hand writes a newer "two" onto the
+    // working layer. The older copy landed; the removal must not take the newer one with it.
+    const put = target.put.bind(target);
+    let interleaved = false;
+    (target as unknown as { put: typeof put }).put = async (record, origin) => {
+      await put(record, origin);
+      if (!interleaved && record.tiddler.title === "lar:///ha.ka.ba/other/two") {
+        interleaved = true;
+        await source.put({ tiddler: { title: "lar:///ha.ka.ba/other/two", text: "text of two, NEWER" }, meta: { changeId: "change:two-newer" } }, hand);
+      }
+    };
+    const result = await r.run({});
+    expect(interleaved).toBe(true);
+    expect(result).toMatchObject({ moved: 4 });
+    expect((await target.get("lar:///ha.ka.ba/other/two"))?.tiddler.text, "canon holds the NEWER version").toBe("text of two, NEWER");
+    expect(await source.get("lar:///ha.ka.ba/other/two"), "the layer holds none after").toBeNull();
+  });
+
   test("L4 — CONTROL: a titled MOVE moves one family alone; the other families stay on the layer", async () => {
     const r = await rig();
     const result = await r.run({ title: "lar:///ha.ka.ba/bags/probe" });

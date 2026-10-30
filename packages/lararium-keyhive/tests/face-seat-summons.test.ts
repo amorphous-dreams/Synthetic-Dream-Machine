@@ -14,7 +14,7 @@
 import { describe, expect, test } from "vitest";
 import { faceIntentVerbs, intentEntryRecordsOfGroup, type DocHandle, type LarDoc } from "@lararium/mesh";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
-import { makeSeatSummons, firstAdmittedDevice } from "../src/face-seat-summons.js";
+import { makeSeatSummons, standingOfReading } from "../src/face-seat-summons.js";
 
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const plane = () => {
@@ -26,25 +26,29 @@ const GROUP = "0x" + "ab".repeat(32);
 const HEARTH_KEY = "11".repeat(32);
 const edge = { deviceVerifyingKey: "", personaRootDid: "0x" + "cd".repeat(32) } as never;
 
-async function fixture(over: Partial<{ seated: boolean; card: boolean; edge: boolean; standing: "stands" | "aside" | "unknown"; hearth: boolean }> = {}) {
-  const o = { seated: false, card: true, edge: true, standing: "stands" as const, hearth: true, ...over };
+async function fixture(over: Partial<{ seated: boolean; card: boolean; edge: boolean; standing: "stands" | "aside" | "unknown"; hearth: boolean; rawFirst: string | null }> = {}) {
+  const o = { seated: false, card: true, edge: true, standing: "stands" as const, hearth: true, rawFirst: null as string | null, ...over };
   const signer = ed25519SignerFromSeed(seedOf(106));
   const atom = { key: await ed25519VerifyingKeyFromSeed(seedOf(106)), sign: async (bytes: Uint8Array) => { const sig = await signer(bytes); return typeof sig === "string" ? sig : Array.from(sig, (b) => b.toString(16).padStart(2, "0")).join(""); } };
   const shared = plane(), verbs = faceIntentVerbs();
   let seated = o.seated;
   const calls = { cards: 0 };
   const log: string[] = [];
-  const records = o.hearth ? [{ body: { act: "admission", seq: 1, deviceKey: HEARTH_KEY } }] : [];
+  // THE VERIFIED PROJECTION names the founding hearth (`readFace(...).project(...)`: admissions in act order, signed and
+  // chained); a raw transport record on the plane (`rawFirst`: an unsigned `admission` with seq -1) never enters it.
+  const projection = o.hearth ? { admissions: [{ deviceKey: HEARTH_KEY, cid: "cid-1" }] } : { admissions: [] };
+  const records = [...(o.rawFirst ? [{ body: { act: "admission", seq: -1, deviceKey: o.rawFirst } }] : []), ...(o.hearth ? [{ body: { act: "admission", seq: 1, deviceKey: HEARTH_KEY } }] : [])];
+  void records;
   const summons = makeSeatSummons({
     group: GROUP, atom, plane: shared.handle, verbs,
     seated: async () => seated,
     contactCard: async () => { calls.cards++; return o.card ? new TextEncoder().encode('{"card":"j"}') : null; },
     deviceEdge: o.edge ? { ...edge, deviceVerifyingKey: atom.key } : null,
     standing: async () => o.standing,
-    personaRecords: () => records,
+    projection: () => projection,
     // The view as the plane's own entries fold it (the door's reader needs a verified lineage this fixture holds none of).
-    view: async () => ({ intents: (intentEntryRecordsOfGroup(shared.doc, GROUP) as { body: { entry: string; issuer: string; verb: string; nonce: string } }[])
-      .filter((r) => r.body.entry === "intent").map((r) => ({ id: r.body.nonce, issuer: r.body.issuer, verb: r.body.verb, status: "open", slots: [] })) }) as never,
+    view: async () => ({ intents: (intentEntryRecordsOfGroup(shared.doc, GROUP) as { body: { entry: string; issuer: string; verb: string; nonce: string; audience: { mode: string; atom?: string } } }[])
+      .filter((r) => r.body.entry === "intent").map((r) => ({ id: r.body.nonce, issuer: r.body.issuer, verb: r.body.verb, status: "open", slots: [], audience: r.body.audience })) }) as never,
     log: (m) => { log.push(m); },
   });
   return { summons, shared, atom, log, calls, seat: () => { seated = true; }, entries: () => intentEntryRecordsOfGroup(shared.doc, GROUP) };
@@ -88,9 +92,34 @@ describe("a joined, unseated leaf summons its own seat", () => {
     expect(aside.entries()).toHaveLength(0);
   });
 
-  test("firstAdmittedDevice reads the earliest admission act and nothing malformed", () => {
-    expect(firstAdmittedDevice([{ body: { act: "admission", seq: 3, deviceKey: "b" } }, { body: { act: "admission", seq: 1, deviceKey: "a" } }, { body: { act: "founding", seq: 0 } }, null, "x"])).toBe("a");
-    expect(firstAdmittedDevice([{ body: { act: "admission", seq: 1, deviceKey: 7 } }])).toBeNull();
-    expect(firstAdmittedDevice([])).toBeNull();
+  test("RED (Sol): the summons pins the VERIFIED projection's first admission; an unsigned raw record on the plane never mispins it", async () => {
+    const f = await fixture({ rawFirst: "99".repeat(32) });
+    expect(await f.summons.summon()).toBe("issued");
+    const entry = f.entries()[0] as { body: { audience: { mode: string; atom: string } } };
+    expect(entry.body.audience).toEqual({ mode: "pinned", atom: HEARTH_KEY });
+  });
+
+  test("RED (Sol): a standing summons pinned ELSEWHERE is no standing summons: one pinned to the hearth issues beside it", async () => {
+    const f = await fixture();
+    // A summons this atom issued earlier, pinned to a hand that is not the founding hearth (a mispin before the cure).
+    const { requestFaceJoin } = await import("../src/face-intent-door.js");
+    await requestFaceJoin({ group: GROUP, plane: f.shared.handle, atom: f.atom, hearthAtom: "99".repeat(32), summons: { contactCard: "{}", deviceEdge: { deviceVerifyingKey: f.atom.key, personaRootDid: "0x" + "cd".repeat(32) } as never }, verbs: faceIntentVerbs() });
+    expect(f.entries()).toHaveLength(1);
+    expect(await f.summons.summon()).toBe("issued");
+    const pins = (f.entries() as { body: { entry: string; audience?: { atom?: string } } }[]).filter((e) => e.body.entry === "intent").map((e) => e.body.audience?.atom);
+    expect(pins).toContain(HEARTH_KEY);
+    expect(await f.summons.summon()).toBe("standing");
+  });
+
+  test("RED (Sol): a device that RETURNED after a lift, or still OWES its roll, stands for the summons; aside and unknown do not", () => {
+    expect(standingOfReading("clear")).toBe("stands");
+    expect(standingOfReading("returned")).toBe("stands");
+    expect(standingOfReading("owing")).toBe("stands");
+    expect(standingOfReading("aside")).toBe("aside");
+    expect(standingOfReading("unknown")).toBe("unknown");
+  });
+
+  test("standingOfReading reads every edge standing (the five states, kept apart)", () => {
+    for (const reading of ["clear", "returned", "owing", "aside", "unknown"] as const) expect(["stands", "aside", "unknown"]).toContain(standingOfReading(reading));
   });
 });
