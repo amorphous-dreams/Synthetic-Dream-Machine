@@ -161,6 +161,24 @@ def main(argv=None):
     p.add_argument('--genome',type=Path,required=True)
     p.add_argument('--spatial',type=Path,required=True)
     p.add_argument('--receipt',type=Path,required=True)
+    p=commands.add_parser('place-recombine-native',help='Recombine two selected native regions and independently reimport STEP')
+    p.add_argument('--original',type=Path,required=True)
+    p.add_argument('--left-parent',type=Path,required=True)
+    p.add_argument('--right-parent',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--left-generated',nargs='+',required=True)
+    p.add_argument('--right-generated',nargs='+',required=True)
+    p.add_argument('--location',required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('place-recombine-native-verify',help='Reimport exact recombinant STEP and verify both original parent regions')
+    p.add_argument('--original',type=Path,required=True)
+    p.add_argument('--left-parent',type=Path,required=True)
+    p.add_argument('--right-parent',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--left-generated',nargs='+',required=True)
+    p.add_argument('--right-generated',nargs='+',required=True)
+    p.add_argument('--location',required=True)
+    p.add_argument('--study',type=Path,required=True)
     p=commands.add_parser('place-compound-routes',help='Audit both named bends under every authored spatial goal through real STEP')
     p.add_argument('--genome',type=Path,required=True)
     p.add_argument('--spatial',type=Path,required=True)
@@ -732,6 +750,24 @@ def main(argv=None):
             result={'valid':verify_composed_operator_route(genome,spatial,
                 json.loads(args.receipt.read_text(encoding='utf8'))),
                     'automatic_promotion':False}
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command in ('place-recombine-native','place-recombine-native-verify'):
+        from .place_recombination_study import run_recombined_native,verify_recombined_native
+        from .place_genome import PlaceGenome
+        from .spatial_intent import SpatialIntent
+        def parse_genome(path):
+            return PlaceGenome.from_dict(json.loads(path.read_text(encoding='utf8')))
+        original=parse_genome(args.original)
+        left=parse_genome(args.left_parent)
+        right=parse_genome(args.right_parent)
+        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        opts={'location':args.location,'left_generated':args.left_generated,
+              'right_generated':args.right_generated}
+        if args.command=='place-recombine-native':
+            result=run_recombined_native(original,left,right,spatial,args.out,**opts)
+        else:
+            result=verify_recombined_native(args.study,original,left,right,spatial,**opts)
         print(json.dumps(result,indent=2))
         return result
     if args.command in ('place-compound-routes','place-compound-routes-verify'):
