@@ -46,6 +46,7 @@ The boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>) seats by
 * ''An import stays inside the tree.'' A project import resolving outside the working tree waits on an approval and loads nothing until it has one.
 * ''Scouts start bare.'' Explore and Plan load no `CLAUDE.md`; a same-named project agent overrides each and drops its built-in tool limits.
 * ''Hook context arrives in finish order,'' capped per string; a seed never rides a hook.
+* ''Compaction re-seats the import.'' After a compact, a Claude session's memory listing carries the seed whole again.
 * ''Codex cuts silently.'' Its project-doc budget defaults below the seed's bytes and truncates the tail with no notice to the model; `AGENTS.override.md` wins over `AGENTS.md`; a symlink reads through; an untrusted project loads no project doc and no project config.
 * ''Copilot dedupes nothing.'' It reads `AGENTS.md`, `.github/copilot-instructions.md`, `CLAUDE.md` with its include and the operator's personal files, each whole, and never reads `AGENTS.override.md`.
 * ''The instruments.'' `claude -p "/context"` lists every memory file a session loaded with its tokens; `copilot instruction list` names Copilot's sources; a Codex probe asks for the seed's final block-check hash, which a cut tail cannot answer. A model asked to count copies of a string its own prompt holds counts the prompt.
@@ -68,15 +69,15 @@ The boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>) seats by
 
 * ''Scout quality.'' Does an Explore override search as well as the built-in it replaces? One sweep run both ways; a Sonnet judge reads both hand-backs.
 * ''A linkless checkout.'' Under `core.symlinks=false` each link reads as a path string; the witness names it red, and a Windows probe measures the hosts where one stands.
-* ''Compaction.'' Does each host re-seat the whole seed after a compact? `/context` across a forced `/compact`; a Codex hash probe after its own.
+* ''Compaction beyond Claude.'' Codex carries its project doc as a contextual message, which a compact may summarize; a hash probe after a Codex compact, and the same for Copilot.
 * ''The seed's own `@` tokens.'' The witness guards them; a grammar call follows only if one ever resolves.
 * ''VS Code agent mode.'' It reads `CLAUDE.md` only under `chat.useClaudeMdFile`, and its include behavior stands unmeasured; a probe for the seed's final hash settles both.
 * ''Copilot's cloud agent and code review.'' Whether either reads `CLAUDE.md`'s include, and whether code review cuts an instruction file short; a pull-request probe for the seed's final hash.
 * ''Seats outside the clone for Codex and Copilot.'' Each host loads a personal instruction file beside the project's with no exclude, so a personal seed would seat twice inside the clone; the row stays open until a host offers an exclude or a per-directory scope.
-* ''Codex trust in a worktree.'' An untrusted worktree path seats nothing and says nothing; the witness reads files, never trust. A probe from each new worktree root reads the hash.
+* ''Codex trust in a worktree.'' A worktree under a trusted root reads the hash; an untrusted path seats nothing and says nothing, and the witness reads files, never trust. A probe from each new worktree root reads the hash.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pWg6VGnB6MbVsGCTYYtKxvZu8iajuGa2Ci40RnW42Ng
+<<^ code="&#x0003;">>ni:///sha-256;RkhwniujgNZqNbRN1Lgo0b-8s_i6LkmgImISb6erxkc
 
 <<^ code="&#x0004;" -> to="?">>
