@@ -139,6 +139,13 @@ def main(argv=None):
     p.add_argument('--offspring',type=int,default=3)
     p.add_argument('--exact-budget',type=int,default=2)
     p.add_argument('--seed',type=int,default=41)
+    p=commands.add_parser('place-amend',help='Author a prior-bound operator permission to change design intention')
+    p.add_argument('--campaign',type=Path,required=True)
+    p.add_argument('--intent',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--actor',required=True)
+    p.add_argument('--reason',required=True)
+    p.add_argument('--out',type=Path,required=True)
     p=commands.add_parser('place-continue',help='Grow the next study from an explicitly accepted review')
     p.add_argument('--campaign',type=Path,required=True)
     p.add_argument('--review',type=Path,required=True)
@@ -149,6 +156,7 @@ def main(argv=None):
     p.add_argument('--offspring',type=int,default=3)
     p.add_argument('--exact-budget',type=int,default=2)
     p.add_argument('--seed',type=int,default=41)
+    p.add_argument('--amendment',type=Path)
     p=commands.add_parser('place-causal-support',help='Fork independently witnessed deck bearings into native causal location ancestry')
     p.add_argument('--workspace',type=Path,required=True)
     p.add_argument('--genome',type=Path,required=True)
@@ -596,6 +604,25 @@ def main(argv=None):
                     'automatic_promotion':False}
         print(json.dumps(result,indent=2))
         return result
+    if args.command=='place-amend':
+        from .place_campaign import verify_place_campaign
+        from .place_amendment import author_place_amendment
+        from .intent_seed import IntentContract
+        from .spatial_intent import SpatialIntent
+        from .generalized_campaign import save_once
+        verify_place_campaign(args.campaign)
+        old=json.loads((args.campaign/'pre_registration.json').read_text(encoding='utf8'))
+        payload=json.loads(args.intent.read_text(encoding='utf8'))
+        if set(payload)!={'location','aim','objectives','invariants','budgets'}:
+            raise ValueError('Place amendment requires exact authored intent fields')
+        contract=IntentContract(payload['location'],payload['aim'],
+                  tuple(payload['objectives']),tuple(payload['invariants']),
+                  tuple(tuple(x) for x in payload['budgets']))
+        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        result=author_place_amendment(old,contract,spatial,actor=args.actor,reason=args.reason)
+        save_once(args.out,result)
+        print(json.dumps(result,indent=2))
+        return result
     if args.command in ('place-run','place-verify','place-candidate-review','place-continue'):
         from .place_campaign import run_place_campaign,verify_place_campaign,review_place_candidate
         if args.command == 'place-run':
@@ -623,10 +650,13 @@ def main(argv=None):
                 raise ValueError('Continued intent requires exact original contract fields')
             intent=IntentContract(source['location'],source['aim'],tuple(source['objectives']),
                        tuple(source['invariants']),tuple(tuple(x) for x in source['budgets']))
+            amendment=(json.loads(args.amendment.read_text(encoding='utf8'))
+                       if args.amendment is not None else None)
             result=continue_place_campaign(args.campaign,args.review,intent,
                 SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8'))),
                 args.out,epochs=args.epochs,offspring=args.offspring,
-                exact_budget=args.exact_budget,seed=args.seed)
+                exact_budget=args.exact_budget,seed=args.seed,
+                amendment=amendment)
         elif args.command == 'place-verify':
             result=verify_place_campaign(args.campaign)
         else:

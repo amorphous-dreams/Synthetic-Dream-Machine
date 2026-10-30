@@ -75,3 +75,34 @@ def test_accepted_native_place_can_only_change_aim_with_separate_amendment(tmp_p
     original_prelude=json.loads((first/"pre_registration.json").read_text())
     assert original_prelude["intent_sha256"]==intent.identity
     assert original_prelude["spatial_intent_sha256"]==spatial.identity
+
+
+def test_amendment_cli_keeps_accepted_place_and_new_purpose_distinct(tmp_path):
+    from test_hephaestus_place_campaign import setup
+    from projection_loom.place_campaign import run_place_campaign
+    from projection_loom.cli import main
+    import json
+    source,intent,spatial,genome=setup()
+    prior=tmp_path/"original"
+    run_place_campaign(source,intent,spatial,genome,prior,
+                       epochs=1,offspring=1,exact_budget=1)
+    amended=IntentContract(intent.location,"Additional operator purpose",
+                           tuple(sorted((*intent.objectives,"amended"))))
+    goal=SpatialIntent(amended.identity,spatial.goals,"operator")
+    contract_path=tmp_path/"intent.json"
+    spatial_path=tmp_path/"spatial.json"
+    contract_path.write_text(json.dumps({
+        "location":amended.location,"aim":amended.aim,
+        "objectives":list(amended.objectives),
+        "invariants":list(amended.invariants),
+        "budgets":[list(x) for x in amended.budgets]}))
+    spatial_path.write_text(json.dumps(goal.to_dict()))
+    target=tmp_path/"amendment.json"
+    output=main(["place-amend","--campaign",str(prior),
+        "--intent",str(contract_path),"--spatial",str(spatial_path),
+        "--actor","operator","--reason","Change the design context",
+        "--out",str(target)])
+    assert json.loads(target.read_text())==output
+    assert verify_place_amendment(output,
+        json.loads((prior/"pre_registration.json").read_text()),
+        amended,goal)
