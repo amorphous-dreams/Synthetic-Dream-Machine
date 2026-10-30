@@ -8,7 +8,7 @@ from .place_orthogonal_route import propose_orthogonal_route
 from .scene_usd import package_scene
 from .place_affordances import assess_place,verify_place_affordances
 from .generalized_campaign import save_once
-from .provenance_encoding import canonical_json_sha256
+from .provenance_encoding import canonical_json_sha256, first_json_difference
 
 _TURNS=("x-then-y","y-then-x")
 
@@ -32,7 +32,7 @@ def verify_orthogonal_study(study,genome,spatial,*,location,corner_id):
     root=Path(study)
     pre=_read(root/"preregistration.json")
     if (root/"FAILED").exists() or pre!=_preregister(genome,spatial,location,corner_id):
-        raise ValueError("Orthogonal study changed its original native source or operator choices")
+        raise ValueError("Orthogonal study changed its original native source or operator choices at "+str(first_json_difference(_preregister(genome,spatial,location,corner_id),pre)))
     report=_read(root/"summary.json")
     actual=[]
     for turn in _TURNS:

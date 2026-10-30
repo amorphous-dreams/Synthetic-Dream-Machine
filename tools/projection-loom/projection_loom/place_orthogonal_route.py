@@ -9,7 +9,7 @@ from math import isfinite
 from .place_genome import PlaceBody,PlaceGenome,unique_walkway_chain,propose_from_spatial_intent
 from .developmental import GrowthProgram,GrowthNode
 from .spatial_intent import SpatialIntent,SpatialGoal
-from .provenance_encoding import canonical_json_sha256
+from .provenance_encoding import canonical_json_sha256, first_json_difference
 
 def propose_orthogonal_route(genome,spatial,*,turn,corner_id):
     if not isinstance(genome,PlaceGenome) or not isinstance(spatial,SpatialIntent):
@@ -82,5 +82,5 @@ def verify_orthogonal_route_receipt(genome,spatial,receipt):
            turn=receipt["operator_bend_direction"],
            corner_id=receipt["operator_named_corner"])
     if receipt!=expected:
-        raise ValueError("Right-angle proposal no longer matches original operator choice and genome")
+        raise ValueError("Right-angle proposal no longer matches original operator choice and genome at "+str(first_json_difference(expected,receipt)))
     return True

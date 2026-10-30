@@ -13,7 +13,7 @@ from .place_genome import PlaceGenome,propose_from_spatial_intent
 from .scene_usd import package_scene
 from .place_affordances import assess_place,verify_place_affordances
 from .generalized_campaign import save_once
-from .provenance_encoding import canonical_json_sha256
+from .provenance_encoding import canonical_json_sha256, first_json_difference
 
 
 def _read(path):
@@ -50,7 +50,7 @@ def verify_compound_intent_study(root,intent,spatial,genome):
     if (root/"FAILED").exists():
         raise ValueError("An incomplete compound study cannot be accepted on re-entry")
     if pre!=_manifest(intent,spatial,genome):
-        raise ValueError("Compound study original construction or authored aim changed")
+        raise ValueError("Compound study original construction or authored aim changed at "+str(first_json_difference(_manifest(intent,spatial,genome),pre)))
     receipt=_read(root/"summary.json")
     if receipt["pre_registration_sha256"]!=canonical_json_sha256(pre):
         raise ValueError("Compound study changed original preregistration")

@@ -22,3 +22,33 @@ def canonical_json_sha256(value, *, allow_nan=False):
         ensure_ascii=False, allow_nan=allow_nan,
     ).encode('utf8')
     return sha256(encoded).hexdigest()
+
+
+def first_json_difference(expected, observed, path="$"):
+    """Locate the first divergence; never reinterpret or forgive a receipt.
+
+    Both arguments already carry the requested authority. This function
+    supplies diagnostics only; the caller MUST still refuse on any mismatch.
+    """
+    if type(expected) is not type(observed):
+        return path + " (type)"
+    if isinstance(expected, dict):
+        if set(expected) != set(observed):
+            missing=sorted(set(expected)-set(observed))
+            extra=sorted(set(observed)-set(expected))
+            key=(missing or extra)[0]
+            return path + "." + str(key) + (" (missing)" if missing else " (unexpected)")
+        for key in sorted(expected):
+            diff=first_json_difference(expected[key],observed[key],path+"."+str(key))
+            if diff is not None:
+                return diff
+        return None
+    if isinstance(expected, list):
+        if len(expected)!=len(observed):
+            return path + " (length)"
+        for i,(left,right) in enumerate(zip(expected,observed)):
+            diff=first_json_difference(left,right,path+f"[{i}]")
+            if diff is not None:
+                return diff
+        return None
+    return None if expected==observed else path
