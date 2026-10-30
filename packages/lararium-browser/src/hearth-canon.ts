@@ -80,16 +80,39 @@ export function hearthCanonDocIds(named: HearthCanonDocs): ReadonlySet<DocumentI
 export class HearthCanonGate implements FederationGate {
   readonly #outer: FederationGate;
   readonly #canon: ReadonlySet<DocumentId>;
+  readonly #planes: ReadonlySet<DocumentId>;
 
-  constructor(outer: FederationGate, named: HearthCanonDocs) {
+  /** `planes`: the joined face's own plane documents, by id, which the own-hearth crossing opens beside the canon. */
+  constructor(outer: FederationGate, named: HearthCanonDocs, planes: ReadonlySet<DocumentId> = new Set()) {
     this.#outer = outer;
     this.#canon = hearthCanonDocIds(named);
+    this.#planes = planes;
   }
 
   mayFederate(documentId: DocumentId, peerId?: PeerId): boolean | Promise<boolean> {
-    if (this.#canon.has(documentId)) return true;
+    if (this.#canon.has(documentId) || this.#planes.has(documentId)) return true;
     return this.#outer.mayFederate(documentId, peerId);
   }
+}
+
+/**
+ * THE FACE'S OWN PLANES CROSS AT ITS OWN HEARTH (the Founding Walk, W4, 2026-10-29). The hearth's view federates a
+ * same-operator session's five planes (`face-fleet-view`); the leaf's side of that same law is this list: the plane
+ * documents the join landed in the leaf's own catalog, which its own-hearth crossing opens so its repo asks the hearth
+ * for them. Read as DATA like the canon: a well-formed url each, never a reserved document (the oracle, a board).
+ */
+export function facePlaneDocIds(planes: readonly unknown[] | undefined, nexusPubkey: string): ReadonlySet<DocumentId> {
+  const ids = new Set<DocumentId>();
+  if (!planes) return ids;
+  const oracleId = interpretAsDocumentId(oracleGenesisDocUrl());
+  const boards = new DeterministicFederationGate(nexusPubkey);
+  for (const url of planes) {
+    if (typeof url !== "string" || !isValidAutomergeUrl(url)) continue;
+    const docId = interpretAsDocumentId(url as AutomergeUrl) as DocumentId;
+    if (docId === oracleId || boards.mayFederate(docId)) continue;
+    ids.add(docId);
+  }
+  return ids;
 }
 
 /**
@@ -105,12 +128,14 @@ export function hearthCrossingOf(at: {
   readonly holdsDeviceEdge:  boolean;
   readonly hearthCanonDocs:  unknown;
   readonly nexusPubkey:      string;
+  /** The joined face's own plane documents (urls) the join landed in this vessel's catalog; the own-hearth crossing opens them. */
+  readonly facePlaneDocs?:   readonly unknown[];
 }): { readonly ownHearth: boolean; readonly hearthCanon: HearthCanonDocs; readonly gate: FederationGate | null } {
   const ownHearth = isOwnHearthCrossing(at);
   const hearthCanon: HearthCanonDocs = ownHearth ? admittedCanonDocs(at.hearthCanonDocs, at.nexusPubkey) : {};
   if (!at.pinnedGatePubKey) return { ownHearth, hearthCanon, gate: null };
   const boards = new DeterministicFederationGate(at.nexusPubkey);
-  return { ownHearth, hearthCanon, gate: ownHearth ? new HearthCanonGate(boards, hearthCanon) : boards };
+  return { ownHearth, hearthCanon, gate: ownHearth ? new HearthCanonGate(boards, hearthCanon, facePlaneDocIds(at.facePlaneDocs, at.nexusPubkey)) : boards };
 }
 
 /** The slice of a vessel catalog handle the seating reads and writes. */

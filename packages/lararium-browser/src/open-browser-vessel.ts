@@ -847,6 +847,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     holdsDeviceEdge:  Boolean(social.deviceEdge),
     hearthCanonDocs:  social.hearthCanonDocs,
     nexusPubkey,
+    // The joined face's own planes, as the join landed them here: the leaf's half of the hearth's face view (W4).
+    facePlaneDocs: [social.personaUrl, social.identitiesUrl, social.circlesUrl, social.sessionsUrl, social.intentsUrl, ...social.personaPlanes.map((plane) => plane.url)],
   });
   const { ownHearth } = crossing;
   // The canon documents the admit named. The own-hearth gate opens exactly these, and this vessel's own oracle

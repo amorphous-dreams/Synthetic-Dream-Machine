@@ -840,6 +840,8 @@ async function prepareNodeBootOn(
       const socket = (network.sockets as Record<string, unknown>)[peerId];
       const session = socket ? gateSync.sessionOf(socket) : null;
       if (session) {
+        const face = session.class === "same-operator" && session.face ? `, face ${session.face.personaGroup.slice(0, 12)}…` : "";
+        console.log(`[lar-gate] session ${peerId.slice(0, 12)}…: ${session.class}${face}`);
         // The key the gate proved: the session's face key, or a faceless place's own key. No vessel key rides.
         const identHex = session.scope?.faceKey ?? session.placeKey;
         if (identHex) peerIdentifierMap.set(peerId, identHex);
