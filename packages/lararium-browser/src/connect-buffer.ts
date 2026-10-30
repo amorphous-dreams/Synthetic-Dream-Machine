@@ -21,3 +21,9 @@ export function makeConnectBuffer<T>(onError: (error: unknown) => void = (error)
     },
   };
 }
+
+/** A holder whose start failed answers each buffered and later port with a refusal the page already reads (and floors on). */
+export function refuseBufferedPorts(buffer: ConnectBuffer<{ postMessage(message: unknown): void }>, storeName: string, error: unknown): void {
+  const cause = `holder-unavailable: ${error instanceof Error ? error.message : String(error)}`;
+  buffer.open((port) => port.postMessage({ kind: "holder:refused", storeName, cause }));
+}

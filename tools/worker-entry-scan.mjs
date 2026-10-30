@@ -31,14 +31,16 @@ export function codeOnly(source) {
 }
 
 const FUNCTION_NODES = new Set(["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"]);
-function registersListener(node, starters) {
+function registersListener(node, starters, kinds, scopes) {
   if (node.type !== "CallExpression") return false;
   const callee = node.callee;
   if (callee.type === "Identifier") return callee.name === "runBrowserSovereignWorker" || starters.has(callee.name);
   if (callee.type !== "MemberExpression" || callee.computed || callee.property.type !== "Identifier") return false;
   if (callee.property.name === "addEventListener") {
+    // Only the worker's own scope receives the worker's messages: another EventTarget is no listener.
+    const scope = callee.object.type === "Identifier" && (callee.object.name === "self" || callee.object.name === "globalThis" || scopes.has(callee.object.name));
     const first = node.arguments[0];
-    return first?.type === "Literal" && (first.value === "message" || first.value === "connect");
+    return scope && first?.type === "Literal" && kinds.has(first.value);
   }
   return callee.property.name === "listen" && callee.object.type === "Identifier" && callee.object.name === "host";
 }
@@ -46,20 +48,29 @@ function awaitsAtLoad(node) {
   return node.type === "AwaitExpression" || (node.type === "ForOfStatement" && node.await === true);
 }
 /** What one top-level statement does at load: where its first listener registration completes (after its arguments evaluate) and whether it awaits first. */
-function scanStatement(statement, starters) {
+function scanStatement(statement, starters, kinds, scopes) {
   let listener = -1, awaitBeforeListener = false, awaits = false;
   const events = [];
-  (function visit(node) {
+  // `maybe` marks code that may not run at load (a branch, a loop body, a short-circuit, a catch, a class body): an await
+  // there still counts against a later listener, but a listener there does not stand.
+  (function visit(node, maybe) {
     if (!node || typeof node.type !== "string") return;
-    if (FUNCTION_NODES.has(node.type)) return;
+    if (FUNCTION_NODES.has(node.type) || node.type === "ClassBody") return;
     if (awaitsAtLoad(node)) events.push({ kind: "await", end: node.end });
-    if (registersListener(node, starters)) events.push({ kind: "listen", start: node.end, end: node.end });
+    if (!maybe && registersListener(node, starters, kinds, scopes)) events.push({ kind: "listen", start: node.end, end: node.end });
     for (const key of Object.keys(node)) {
       const value = node[key];
-      if (Array.isArray(value)) for (const child of value) visit(child);
-      else if (value && typeof value === "object") visit(value);
+      const later = maybe
+        || (node.type === "IfStatement" && key !== "test")
+        || (node.type === "ConditionalExpression" && key !== "test")
+        || (node.type === "LogicalExpression" && key === "right")
+        || (node.type === "SwitchCase" && key === "consequent")
+        || (/^(?:For|ForIn|ForOf|While|DoWhile)Statement$/.test(node.type) && key === "body")
+        || (node.type === "TryStatement" && key === "handler");
+      if (Array.isArray(value)) for (const child of value) visit(child, later);
+      else if (value && typeof value === "object") visit(value, later);
     }
-  })(statement);
+  })(statement, false);
   for (const event of events.sort((a, b) => a.end - b.end || (a.kind === "listen" ? -1 : 1) - (b.kind === "listen" ? -1 : 1))) {
     if (event.kind === "await") { awaits = true; if (listener < 0) awaitBeforeListener = true; }
     else if (listener < 0) listener = event.start;
@@ -71,21 +82,42 @@ function statementsOf(source) {
   return parseModule(js, { ecmaVersion: "latest", sourceType: "module" }).body;
 }
 
+/** Top-level names bound straight to the worker scope (`const sw = globalThis`), after the types are stripped. */
+function scopeAliases(statements) {
+  const names = new Set();
+  for (const statement of statements) {
+    if (statement.type !== "VariableDeclaration") continue;
+    for (const d of statement.declarations) {
+      if (d.id.type === "Identifier" && d.init?.type === "Identifier" && (d.init.name === "self" || d.init.name === "globalThis" || names.has(d.init.name))) names.add(d.id.name);
+    }
+  }
+  return names;
+}
+
 export function listenerIndex(source) {
   for (const statement of statementsOf(source)) {
-    const { listener } = scanStatement(statement, new Set());
+    const { listener } = scanStatement(statement, new Set(), MESSAGE_OR_CONNECT, scopeAliases(statementsOf(source)));
     if (listener >= 0) return listener;
   }
   return -1;
 }
 /** `starters` names functions this entry imports whose body registers the listener (the call counts where it runs at load). */
+const MESSAGE_OR_CONNECT = new Set(["message", "connect"]);
 export function violation(name, source, starters = []) {
+  return scan(name, source, starters, MESSAGE_OR_CONNECT, "no listener");
+}
+/** A SharedWorker entry registers `connect` itself in its synchronous top level. */
+export function sharedViolation(name, source) {
+  return scan(name, source, [], new Set(["connect"]), "no connect listener");
+}
+function scan(name, source, starters, kinds, missing) {
   const known = new Set(starters);
   let awaited = false;
-  for (const statement of statementsOf(source)) {
-    const result = scanStatement(statement, known);
+  const all = statementsOf(source), scopes = scopeAliases(all);
+  for (const statement of all) {
+    const result = scanStatement(statement, known, kinds, scopes);
     if (result.listener >= 0) return awaited || result.awaitBeforeListener ? name : null;
     if (result.awaits) awaited = true;
   }
-  return `${name}: no listener`;
+  return `${name}: ${missing}`;
 }

@@ -1,4 +1,4 @@
-import type { ConnectBuffer } from "./connect-buffer.js";
+import { refuseBufferedPorts, type ConnectBuffer } from "./connect-buffer.js";
 import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 import { attachMessageChannelSync } from "@lararium/mesh";
@@ -6,7 +6,17 @@ import { makeHolderRuntime } from "./shared-holder-runtime.js";
 import type { BrowserIslandScope } from "./browser-sovereign-island-model.js";
 
 
+/** Starts the holder; a start that fails refuses every buffered and later port by name, then rethrows for the entry's log. */
 export async function startHolder(buffer: ConnectBuffer<MessagePort>): Promise<void> {
+  try { await startHolderOn(buffer); }
+  catch (error) {
+    const lock = new URL((globalThis as unknown as { location: { href: string } }).location.href).searchParams.get("lock") ?? "lares:vessel:lares:vessel";
+    refuseBufferedPorts(buffer, lock, error);
+    throw error;
+  }
+}
+
+async function startHolderOn(buffer: ConnectBuffer<MessagePort>): Promise<void> {
   const sw = globalThis as unknown as {
     name: string;
     location: { href: string };

@@ -3,7 +3,7 @@ import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "vitest";
 
-import { codeOnly, listenerIndex, violation } from "../../../tools/worker-entry-scan.mjs";
+import { codeOnly, listenerIndex, sharedViolation, violation } from "../../../tools/worker-entry-scan.mjs";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const packages = resolve(root, "packages");
@@ -70,15 +70,6 @@ for (const pkg of readdirSync(packages, { withFileTypes: true }).filter((entry) 
     }
   }
 }
-function sharedViolation(name: string, source: string): string | null {
-  const code = codeOnly(source);
-  const index = /\.addEventListener\s*\(\s*["']connect["']/.exec(code)?.index ?? -1;
-  if (index < 0) return `${name}: no connect listener`;
-  const before = code.slice(0, index);
-  let depth = 0;
-  for (const char of before) { if (char === "{") depth++; else if (char === "}") depth--; }
-  return depth !== 0 || /\bawait\b/.test(before) ? name : null;
-}
 
 test("RED: executable template expressions before a listener are named; CONTROL: plain template text stands", () => {
   expect(violation("template-text.worker.ts", '`await boot()`; self.addEventListener("message", () => {});')).toBeNull();
@@ -91,7 +82,7 @@ test("CONTROL: derived census includes known entries and names planted late and 
   for (const name of [...Object.keys(readyGated), ...sharedWorkers, ...Object.keys(exceptions)]) expect(entries).toContain(name);
   expect(violation("planted.worker.ts", 'await boot(); self.addEventListener("message", () => {});')).toBe("planted.worker.ts");
   expect(violation("honest.worker.ts", 'self.addEventListener("message", () => {}); await boot();')).toBeNull();
-  expect(sharedViolation("nested-shared.worker.ts", 'async function boot() { self.addEventListener("connect", () => {}); }')).toBe("nested-shared.worker.ts");
+  expect(sharedViolation("nested-shared.worker.ts", 'async function boot() { self.addEventListener("connect", () => {}); }')).toBe("nested-shared.worker.ts: no connect listener");
   expect(sharedViolation("arg-await-shared.worker.ts", 'self.addEventListener("connect", await makeHandler());')).toBe("arg-await-shared.worker.ts");
   expect(sharedViolation("arrow-shared.worker.ts", 'const start = () => self.addEventListener("connect", () => {});')).toBe("arrow-shared.worker.ts: no connect listener");
   expect(sharedViolation("honest-shared.worker.ts", 'self.addEventListener("connect", () => {});\nawait boot();')).toBeNull();
