@@ -1,39 +1,26 @@
 #!/usr/bin/env node
 /**
- * seed-seat — every Claude door seats the boot seed whole at turn 1, by reference, at content rank.
+ * seed-seat — every host stands the whole boot seed at turn 1, once, by reference, at content rank.
  *
- * ── THE SEAT ─────────────────────────────────────────────────────────────────────────────────────
- * Claude Code's `@` import loads a file by its NAME: `.md`, `.txt`, `.json` and extensionless names
- * expand, and a `.mem` stays silent. It follows a symlink to the bytes it names. So one relative link,
- * `.claude/noosphere-boot`, carries the memegraph's own bytes to the project CLAUDE.md, the operator's
- * global CLAUDE.md, every fork and every spirit that loads CLAUDE.md. Nothing copies; the memegraph's
- * write to the `.mem` is the update. One file imported from two scopes seats once.
+ * The law, the ground measured against each host and the open research stand in one carrier:
+ * lar:///ha.ka.ba/lares/docs/pono/seed-seat. This tool holds the three acts that keep it:
  *
- * ── THE OTHER HOSTS ───────────────────────────────────────────────────────────────────────────────
- * Codex reads `AGENTS.override.md` in place of `AGENTS.md`, so a second link of that name seats Codex,
- * and `.codex/config.toml` lifts the project-doc cap past the seed's bytes. Copilot never reads the
- * override; it reads `AGENTS.md`, `.github/copilot-instructions.md` and CLAUDE.md with its import, so
- * the import seats Copilot once and the other two stay seedless.
+ * ── PROJECT ──────────────────────────────────────────────────────────────────────────────────────
+ * Explore and Plan read no CLAUDE.md, so `.claude/agents/{Explore,Plan}.md` carry the seed's bytes as a
+ * pure function of the seed: frontmatter that restores read-only tools, the seed, the scout's mask.
+ * A scout whose bytes already match stays unwritten; the root build runs this.
  *
- * ── THE SCOUTS ───────────────────────────────────────────────────────────────────────────────────
- * Explore and Plan start without CLAUDE.md. A same-named agent under `.claude/agents/` overrides each
- * built-in, and its body becomes the scout's system prompt, so the scouts carry the seed's bytes in a
- * PROJECTION: a pure function of the seed, written only when its bytes differ, read back whole by the
- * witness. The override drops the built-in's tool limits, so each projection names its own
- * `disallowedTools`; a scout reads and never writes.
+ * ── CHECK ────────────────────────────────────────────────────────────────────────────────────────
+ * Every link stays a relative link to the seed, CLAUDE.md imports the Claude link by a loadable name,
+ * the settings exclude the operator's rule, the Codex cap holds the seed, the Copilot-read surfaces
+ * stay seedless, each scout matches its projection, and no `@` token in the seed resolves to a file.
+ * `--index` reads what a commit carries.
  *
- * ── THE OPERATOR'S SEAT ──────────────────────────────────────────────────────────────────────────
- * `install` writes one rule file the installer owns whole, `<home>/.claude/rules/lares-seed-seat.md`,
- * importing the main clone's link by absolute path, so a session in any directory stands the house. A
- * second run changes nothing and `--uninstall` lifts the file; a same-named file the installer never
- * wrote stays untouched and the run refuses. The clone derives from git's common dir, so a run from any
- * worktree seats the main clone.
- *
- * ── ONE SEED PER SESSION ─────────────────────────────────────────────────────────────────────────
- * The host dedupes an import by its real path, so a lane worktree's own seed and the main clone's seed
- * load as two. The repo's `.claude/settings.json` excludes the operator's rule (`claudeMdExcludes`), so
- * inside the clone or any of its worktrees the project import seats the tree's own seed alone, and
- * everywhere else the rule seats the main clone's.
+ * ── INSTALL ──────────────────────────────────────────────────────────────────────────────────────
+ * Writes `<home>/.claude/rules/lares-seed-seat.md` whole, importing the main clone's link, so a session
+ * in any directory stands the house; the repo excludes that rule, so a session inside the clone or a
+ * worktree seats its own tree's seed alone. A second run changes nothing, `--uninstall` lifts it, and
+ * a same-named file it never wrote refuses the run. The main clone derives from git's common dir.
  *
  * Usage:  node tools/seed-seat.mjs project [--root <dir>]       write the scouts that differ from the seed
  *         node tools/seed-seat.mjs check [--root <dir>] [--index]  read the seat; exit 1 on a fault
