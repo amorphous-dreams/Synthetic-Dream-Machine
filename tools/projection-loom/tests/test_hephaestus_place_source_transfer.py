@@ -44,3 +44,23 @@ def test_forged_source_comparison_cannot_rewrite_native_witness(tmp_path):
     with pytest.raises(ValueError,match="diverged"):
         verify_source_transfer(arms,intent,spatial,genome,root,
                                epochs=1,offspring=1,exact_budget=1)
+
+def test_source_transfer_cli_exposes_one_native_helm(tmp_path):
+    from projection_loom.cli import main
+    _,intent,spatial,genome=setup()
+    arms=inputs(tmp_path)
+    files={kind:bundle.entries[0].locator for kind,bundle in arms.items()}
+    authored={"location":intent.location,"aim":intent.aim,
+              "objectives":list(intent.objectives),"invariants":list(intent.invariants),
+              "budgets":[list(item) for item in intent.budgets]}
+    for name,data in (("sources",files),("intent",authored),
+                      ("spatial",spatial.to_dict()),("genome",genome.to_dict())):
+        (tmp_path/(name+".json")).write_text(json.dumps(data))
+    args=[key for name in ("sources","intent","spatial","genome")
+          for key in ("--"+name,str(tmp_path/(name+".json")))]
+    args+=["--epochs","1","--offspring","1","--exact-budget","1"]
+    destination=tmp_path/"cli-study"
+    result=main(["place-source-transfer",*args,"--out",str(destination)])
+    assert result["native_attempts"]==3
+    assert main(["place-source-transfer-verify",*args,
+                 "--study",str(destination)])==result

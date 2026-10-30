@@ -129,6 +129,26 @@ def main(argv=None):
     p.add_argument('--plan',type=Path,required=True)
     p.add_argument('--intent',type=Path,required=True)
     p.add_argument('--genome',type=Path,required=True)
+    p=commands.add_parser('place-source-transfer',help='Matched native place study across independent source-carrier kinds')
+    p.add_argument('--sources',type=Path,required=True,help='JSON object mapping seed kind to original file path')
+    p.add_argument('--intent',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--seed',type=int,default=41)
+    p.add_argument('--epochs',type=int,default=1)
+    p.add_argument('--offspring',type=int,default=2)
+    p.add_argument('--exact-budget',type=int,default=1)
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('place-source-transfer-verify',help='Reimport each source-carrier native arm and replay original budgets')
+    p.add_argument('--sources',type=Path,required=True)
+    p.add_argument('--intent',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--seed',type=int,default=41)
+    p.add_argument('--epochs',type=int,default=1)
+    p.add_argument('--offspring',type=int,default=2)
+    p.add_argument('--exact-budget',type=int,default=1)
+    p.add_argument('--study',type=Path,required=True)
     p=commands.add_parser('place-compose-route',help='Grow operator-selected passage with every other typed spatial goal')
     p.add_argument('--genome',type=Path,required=True)
     p.add_argument('--spatial',type=Path,required=True)
@@ -652,6 +672,32 @@ def main(argv=None):
         else:
             result={'valid':verify_place_gallery(args.campaign,args.gallery),
                     'source_camera_registration':False,'automatic_promotion':False}
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command in ('place-source-transfer','place-source-transfer-verify'):
+        from .place_source_transfer import run_source_transfer,verify_source_transfer
+        from .intent_seed import SeedEntry,SeedBundle,IntentContract
+        from .spatial_intent import SpatialIntent
+        from .place_genome import PlaceGenome
+        raw=json.loads(args.intent.read_text(encoding='utf8'))
+        if set(raw)!={'location','aim','objectives','invariants','budgets'}:
+            raise ValueError('Source transfer requires exact original authored intent')
+        intent=IntentContract(raw['location'],raw['aim'],
+              tuple(raw['objectives']),tuple(raw['invariants']),
+              tuple(tuple(v) for v in raw['budgets']))
+        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
+        spec=json.loads(args.sources.read_text(encoding='utf8'))
+        if not isinstance(spec,dict) or any(type(v) is not str for v in spec.values()):
+            raise ValueError('Source transfer requires typed original file locations')
+        arms={kind:SeedBundle((SeedEntry.from_file(kind,path),))
+              for kind,path in spec.items()}
+        kw={'seed':args.seed,'epochs':args.epochs,
+            'offspring':args.offspring,'exact_budget':args.exact_budget}
+        if args.command=='place-source-transfer':
+            result=run_source_transfer(arms,intent,spatial,genome,args.out,**kw)
+        else:
+            result=verify_source_transfer(arms,intent,spatial,genome,args.study,**kw)
         print(json.dumps(result,indent=2))
         return result
     if args.command in ('place-compose-route','place-compose-route-verify'):
