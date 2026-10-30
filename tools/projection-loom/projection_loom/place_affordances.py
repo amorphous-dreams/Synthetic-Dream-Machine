@@ -16,6 +16,7 @@ from .scene_usd import validate_scene
 from .place_genome import PlaceGenome, unique_walkway_chain
 from .spatial_intent import SpatialIntent
 from .place_shelter import native_shelter_cover
+from .place_ascent import native_ascent_run
 from .provenance_encoding import canonical_json_sha256
 
 
@@ -102,6 +103,21 @@ def assess_place(bundle,genome:PlaceGenome,spatial:SpatialIntent,*,headroom=1.8)
     outcomes=[]
     for goal in spatial.goals:
         item={"goal":goal.to_dict(),"status":"unverified","proof":None}
+        if goal.kind=="ascend":
+            matches=[run for run in genome.ascents
+                     if run.source==goal.subject and run.destination==goal.object]
+            if len(matches)!=1:
+                item["reason"]="Ascent requires exactly one explicit native ordered tread chain"
+            else:
+                proof,reason=native_ascent_run(bundle,manifest,solids,bounds,
+                                              matches[0],goal,headroom=headroom)
+                if proof is None:
+                    item["reason"]=reason
+                else:
+                    item.update(status="geometric-ascent-proposal",
+                                proof={**proof,"genome_sha256":genome.identity})
+            outcomes.append(item)
+            continue
         if goal.kind=="shelter":
             proof,reason=native_shelter_cover(bundle,manifest,solids,bounds,goal,
                                                headroom=headroom)
@@ -154,7 +170,8 @@ def assess_place(bundle,genome:PlaceGenome,spatial:SpatialIntent,*,headroom=1.8)
             "location":manifest["location"],"native_scene_sha256":manifest["sha256"],
             "spatial_intent_sha256":spatial.identity,
             "all_declared_goals_witnessed":all(x["status"] in (
-                "geometric-route-proposal","geometric-shelter-proposal")
+                "geometric-route-proposal","geometric-shelter-proposal",
+                "geometric-ascent-proposal")
                 for x in outcomes),
             "goals":outcomes,"automatic_promotion":False}
 
