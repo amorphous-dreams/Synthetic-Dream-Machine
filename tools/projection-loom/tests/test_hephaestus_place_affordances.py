@@ -99,3 +99,23 @@ def test_competing_paths_refuse_unsolicited_semantic_shortcut():
                     (Walkway("west","deck","east"),Walkway("west","deck2","east")))
     with pytest.raises(ValueError,match="Competing"):
         unique_walkway_chain(two,"west","east")
+
+def test_two_hop_witness_does_not_accept_a_forged_middle_bearing(tmp_path):
+    from projection_loom.place_affordances import verify_place_affordances
+    from projection_loom.place_genome import unique_walkway_chain
+    base,_=fixture()
+    root=base.bodies[1].program
+    make=lambda name,program,x:PlaceBody(name,program,(x,0,0 if name in ("west","middle","east") else 2))
+    bodies=(make("west",root,0),make("middle",root,10),make("east",root,20),
+            PlaceBody("deck1",base.bodies[0].program,(5,0,2)),
+            PlaceBody("deck2",base.bodies[0].program,(15,0,2)))
+    genome=PlaceGenome(tuple(sorted(bodies,key=lambda x:x.entity_id)),
+                       (Walkway("middle","deck2","east"),
+                        Walkway("west","deck1","middle")))
+    intent=SpatialIntent("a"*64,(SpatialGoal("connect","west","east"),),"operator")
+    package_scene(genome.declaration("route-integrity"),tmp_path/"scene")
+    actual=assess_place(tmp_path/"scene",genome,intent)
+    assert actual["all_declared_goals_witnessed"]
+    actual["goals"][0]["proof"]["segments"][1]["bearing_sha256"][0]="0"*64
+    with pytest.raises(ValueError,match="differ"):
+        verify_place_affordances(tmp_path/"scene",genome,intent,actual)

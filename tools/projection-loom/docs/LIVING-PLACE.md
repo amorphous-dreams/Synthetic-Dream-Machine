@@ -147,3 +147,22 @@ witnesses before any native construction is proposed.
 
 The operator may continue to speak Art Sigils at the existing expressive
 level; the compiler only receives bounded, source-bound proposals.
+
+## N8 · Aftermath X · A place can require several separately evidenced bridges
+
+A `connect` goal now admits an explicitly authored **unique directed
+walkway chain** through up to eight separately named native deck segments.
+Each step independently reimports actual STEP solids, verifies both real
+planar bearing contacts, the authored step-height bound, and an empty bounded
+agent corridor; full lineage preserves each segment's own independent
+hash. Competing reachable chains produce a typed refusal rather than an
+undisclosed automatic route choice. Disconnected locations stay free to
+contain independent native solids.
+
+Only axis-aligned horizontal bridges receive this witness. An existing
+multi-hop relation takes precedence over adding a new direct bridge: the
+operator's already authored route cannot be silently rewritten. Crossings
+may pass through several named places; that still does not establish
+wheelchair accessibility, true human circulation over slopes, engineered
+stability, environmental safety or a visually compelling interpretation.
+The creative intent must remain separate from these finite mechanical tests.
