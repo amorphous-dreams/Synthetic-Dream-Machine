@@ -1003,7 +1003,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // mounted face's, a label off the channel (a synced summons), and a call naming no presenter refuse.
           if (context.local === true && context.presenter !== undefined && !namesADid(context.presenter)) return;
           // Only the vessel's own channel or a person's surface act wears the mounted face: an unsigned synced claim that
-          // names the mounted atom stays a claim and refuses like any other (Sol's read, slice 4).
+          // names the mounted atom stays a claim and refuses like any other.
           if (context.local !== true || context.presenter === undefined || bareKey(context.presenter) !== bareKey(daemonAuth.atom.key)) {
             throw new VerbRefusal("content-mounted-only", `[daemon] ${verb}: this verb runs on the mounted face's content keys, mint and documents; a presenter that is not the mounted face holds none here.`);
           }
