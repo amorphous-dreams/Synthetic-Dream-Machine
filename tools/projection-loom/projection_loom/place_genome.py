@@ -307,11 +307,24 @@ def propose_from_spatial_intent(genome:PlaceGenome,spatial):
             root=floor.program.nodes[0]
             if len(bodies)>=16:
                 raise ValueError("Bounded native location body budget exceeded")
+            roof_position=[floor.translation[0],floor.translation[1],
+                           round(floor.translation[2]+root.size[2]+2.2,6)]
+            # When the same named floor launches an authored ascending
+            # passage, locate its canopy away from the first tread.
+            # This changes the PROPOSAL, never grants geometric admission.
+            for run in ascents:
+                if run.source==goal.subject and run.destination in known:
+                    upper=known[run.destination]
+                    horizontal=[upper.translation[j]-floor.translation[j] for j in (0,1)]
+                    axis=0 if abs(horizontal[0])>=abs(horizontal[1]) else 1
+                    sign=1 if horizontal[axis]>0 else -1
+                    roof_position[axis]=round(
+                        roof_position[axis]-sign*(root.size[axis]/2+.1),6)
+                    break
             roof=PlaceBody(goal.object,GrowthProgram((GrowthNode("root","foundation",
                 size=(round(max(root.size[0]+1.,goal.min_width*2),6),
                       round(max(root.size[1]+1.,goal.min_width*2),6),.4)),)),
-                (floor.translation[0],floor.translation[1],
-                 round(floor.translation[2]+root.size[2]+2.2,6)))
+                tuple(roof_position))
             bodies.append(roof)
             continue
         if goal.kind!="connect":
