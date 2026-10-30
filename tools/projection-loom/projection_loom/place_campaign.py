@@ -106,16 +106,39 @@ def observed_place_descriptor(genome:PlaceGenome,affordances):
 
 
 
-def _place_frontier(epoch,offered,pre):
+def select_place_auditions(offered,budget,preferred=None,*,epoch=0):
+    """One existing OODA-HA preference can reorder finite native auditions.
+
+    Refuse to pretend unsupported shared emitters exist at the place aperture.
+    This changes which children consume the same exact native budget, never
+    their original genome proposals or score/physical safety rules.
+    """
+    if preferred not in (None,"initial","mutation"):
+        raise ValueError("Place runner supports only initial/mutation emitter preference")
+    if type(budget) is not int or not 1<=budget<=len(offered):
+        raise ValueError("Invalid exact native place audition budget")
+    keyed=list(enumerate(offered))
+    if preferred=="mutation":
+        keyed.sort(key=lambda row:(0 if (epoch>0 or row[0]>0) else 1,row[0]))
+    # An initial preference keeps ordinary original-first audition order.
+    return [row for _,row in keyed[:budget]]
+
+
+def _place_frontier(epoch,offered,pre,preferred):
+    seats=select_place_auditions(offered,pre["exact_budget"],preferred,epoch=epoch)
+    admitted={identifier for identifier,_ in seats}
     body={"schema":"projection-loom/place-proposal-frontier",
           "epoch":epoch,"run_id":pre["run_id"],
           "spatial_intent_sha256":pre["spatial_intent_sha256"],
           "original_inventory_sha256":pre["original_inventory_sha256"],
           "exact_budget":pre["exact_budget"],
+          "operator_preferred_emitter":preferred,
+          "audition_order":[identifier for identifier,_ in seats],
           "offered":[{"candidate_id":identifier,
                       "genome_sha256":candidate.identity,
                       "genome":candidate.to_dict(),
-                      "audition":"attempted" if i<pre["exact_budget"] else "deferred"}
+                      "emitter":"initial" if epoch==0 and i==0 else "mutation",
+                      "audition":"attempted" if identifier in admitted else "deferred"}
                      for i,(identifier,candidate) in enumerate(offered)]}
     return json.loads(json.dumps(body,sort_keys=True,allow_nan=False))
 
@@ -130,6 +153,9 @@ def _verify_place_frontiers(path,pre,summary,spatial,resolved):
     niches=set()
     digests=[]
     total=0
+    journal=OODAHAJournal(path/"session.json",identity={
+        "location":pre["location"],"score_state":"spatial-proposal-native-only",
+        "run":pre["run_id"]},initial={},autonomy=1.)
     for epoch in range(pre["epochs"]):
         offered=[]
         for i in range(pre["offspring"]):
@@ -137,16 +163,23 @@ def _verify_place_frontiers(path,pre,summary,spatial,resolved):
             candidate=(parent if epoch==0 and i==0 else parent.vary_spatial(
                 spatial,pre["seed"]+epoch*10007+i*137+1,count=1))
             offered.append((f"p{epoch:03d}c{i:03d}",candidate))
-        expected=_place_frontier(epoch,offered,pre)
+        loop=f"location/place-{epoch:03d}"
+        decision=journal.data["loops"][loop]["receipts"]["decide"]
+        if (decision["exact_budget"]!=pre["exact_budget"]
+                or decision["explicit_goal"]!=pre["spatial_intent_sha256"]):
+            raise ValueError("Operator steering altered authored native budget or original spatial goal")
+        preferred=decision.get("operator_preferred_emitter")
+        seats=select_place_auditions(offered,pre["exact_budget"],preferred,epoch=epoch)
+        expected=_place_frontier(epoch,offered,pre,preferred)
         actual=_read(path/"frontiers"/f"epoch_{epoch:03d}.json")
         if actual!=expected:
             raise ValueError("Native place proposal frontier diverged from original intent and source seed")
         digests.append(canonical_json_sha256(expected))
         attempted=summary["candidates"][total:total+pre["exact_budget"]]
         if ([row["candidate_id"] for row in attempted] !=
-                [name for name,_ in offered[:pre["exact_budget"]]]):
+                [name for name,_ in seats]):
             raise ValueError("Audition frontier omits or substitutes a candidate")
-        for (identifier,candidate),row in zip(offered[:pre["exact_budget"]],attempted):
+        for (identifier,candidate),row in zip(seats,attempted):
             if row["genome_sha256"]!=candidate.identity or row["epoch"]!=epoch:
                 raise ValueError("Audited native child differs from offered developmental genome")
             if row["status"]=="admitted":
@@ -252,7 +285,7 @@ def verify_place_campaign(path):
 def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
                        spatial:SpatialIntent,genome:PlaceGenome,out,*,
                        epochs=2,offspring=3,exact_budget=2,seed=41,
-                       predecessor=None):
+                       predecessor=None,prefer_emitter=None):
     if not isinstance(inventory,LocationStack) or inventory.location_id!=intent.location:
         raise ValueError("Place campaign requires its original source/frame inventory")
     if not isinstance(genome,PlaceGenome) or not isinstance(intent,IntentContract):
@@ -261,7 +294,8 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
     if (type(epochs) is not int or not 1<=epochs<=6
             or type(offspring) is not int or not 1<=offspring<=8
             or type(exact_budget) is not int or not 1<=exact_budget<=offspring
-            or type(seed) is not int):
+            or type(seed) is not int
+            or prefer_emitter not in (None,"initial","mutation")):
         raise ValueError("Bounded matched location experiment budgets required")
     inventory.audit()
     local=[f for f in inventory.frames.values() if f.kind=="local3d"]
@@ -287,6 +321,7 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
          "intent_constructed_genome":resolved.to_dict(),
          "intent_constructed_genome_sha256":resolved.identity,
          "epochs":epochs,"offspring":offspring,"exact_budget":exact_budget,"seed":seed,
+         "initial_emitter_preference":prefer_emitter,
          "native_policy":"exact-STEP-before-spatial-admission",
          "autoranking":False,
          "predecessor":({k:v for k,v in predecessor.items() if k!="workspace_path"}
@@ -326,11 +361,16 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
             loop=f"location/place-{epoch:03d}"
             if not journal.poll():
                 raise RuntimeError("Operator pause or review must resolve before native place audition")
+            selected_preference=(journal.data["policy"].get("preferred_emitter")
+                                 or pre["initial_emitter_preference"])
+            if selected_preference not in (None,"initial","mutation"):
+                raise ValueError("Operator preferred emitter unavailable at living-place aperture")
             open_child(journal,loop,parent="location",scope="epoch",
                        evidence={"genome":genome.identity,"spatial":spatial.identity},
                        orient={"source":pre["original_inventory_sha256"]},
                        decide={"exact_budget":exact_budget,
-                               "explicit_goal":spatial.identity},
+                               "explicit_goal":spatial.identity,
+                               "operator_preferred_emitter":selected_preference},
                        act={"native":"independent-STEP"})
             offered=[]
             for i in range(offspring):
@@ -338,10 +378,12 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
                 candidate=(parent if epoch==0 and i==0 else parent.vary_spatial(
                     spatial,seed+epoch*10007+i*137+1,count=1))
                 offered.append((f"p{epoch:03d}c{i:03d}",candidate))
-            frontier=_place_frontier(epoch,offered,pre)
+            frontier=_place_frontier(epoch,offered,pre,selected_preference)
+            seats=select_place_auditions(offered,exact_budget,
+                                         selected_preference,epoch=epoch)
             save_once(out/"frontiers"/f"epoch_{epoch:03d}.json",frontier)
             frontier_sha256.append(canonical_json_sha256(frontier))
-            for i,(identifier,candidate) in enumerate(offered[:exact_budget]):
+            for i,(identifier,candidate) in enumerate(seats):
                 loopid=loop+"/"+identifier
                 open_child(journal,loopid,parent=loop,scope="candidate",
                            evidence={"place-genome":candidate.identity},
@@ -422,7 +464,7 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
 def run_place_campaign(inventory:LocationStack,intent:IntentContract,
                        spatial:SpatialIntent,genome:PlaceGenome,out,*,
                        epochs=2,offspring=3,exact_budget=2,seed=41,
-                       predecessor=None):
+                       predecessor=None,prefer_emitter=None):
     """Use the existing single-runner lease for native location sessions.
 
     A sibling lock protects the not-yet-created immutable output directory;
@@ -434,7 +476,8 @@ def run_place_campaign(inventory:LocationStack,intent:IntentContract,
     with single_runner(lock):
         return _run_place_campaign_locked(
             inventory,intent,spatial,genome,out,epochs=epochs,offspring=offspring,
-            exact_budget=exact_budget,seed=seed,predecessor=predecessor)
+            exact_budget=exact_budget,seed=seed,predecessor=predecessor,
+            prefer_emitter=prefer_emitter)
 
 
 def review_place_candidate(campaign,candidate_id,*,actor,decision,reason,destination):
@@ -456,7 +499,7 @@ def review_place_candidate(campaign,candidate_id,*,actor,decision,reason,destina
 
 def continue_place_campaign(previous,review_receipt,intent,spatial,out,*,
                             epochs=2,offspring=3,exact_budget=2,seed=41,
-                            amendment=None):
+                            amendment=None,prefer_emitter=None):
     """Only a reviewed ACCEPT choice may seed a new, fully witnessed study."""
     prior=Path(previous)
     summary=verify_place_campaign(prior)
@@ -501,4 +544,5 @@ def continue_place_campaign(previous,review_receipt,intent,spatial,out,*,
              "claim_scope":"attributed-study-lineage; not an editor causal reparent"}
     return run_place_campaign(fresh,intent,spatial,genome,out,epochs=epochs,
                               offspring=offspring,exact_budget=exact_budget,
-                              seed=seed,predecessor=lineage)
+                              seed=seed,predecessor=lineage,
+                              prefer_emitter=prefer_emitter)

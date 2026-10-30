@@ -140,6 +140,7 @@ def main(argv=None):
     p.add_argument('--genome',type=Path,required=True)
     p.add_argument('--receipt',type=Path,required=True)
     p=commands.add_parser('place-run',help='Grow source-bound architectural locations under one OODA-HA journal')
+    p.add_argument('--prefer-emitter',choices=('initial','mutation'))
     p.add_argument('--inventory',type=Path,required=True)
     p.add_argument('--intent',type=Path,required=True)
     p.add_argument('--spatial',type=Path,required=True)
@@ -157,6 +158,7 @@ def main(argv=None):
     p.add_argument('--reason',required=True)
     p.add_argument('--out',type=Path,required=True)
     p=commands.add_parser('place-continue',help='Grow the next study from an explicitly accepted review')
+    p.add_argument('--prefer-emitter',choices=('initial','mutation'))
     p.add_argument('--campaign',type=Path,required=True)
     p.add_argument('--review',type=Path,required=True)
     p.add_argument('--intent',type=Path,required=True)
@@ -720,7 +722,8 @@ def main(argv=None):
                 SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8'))),
                 PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8'))),
                 args.out,epochs=args.epochs,offspring=args.offspring,
-                exact_budget=args.exact_budget,seed=args.seed)
+                exact_budget=args.exact_budget,seed=args.seed,
+                prefer_emitter=args.prefer_emitter)
         elif args.command == 'place-continue':
             from .place_campaign import continue_place_campaign
             from .intent_seed import IntentContract
