@@ -208,12 +208,14 @@ def verify_bearing_chain(source,genome,spatial,destination):
             or evidence["native_scene_sha256"]!=report["source_native_scene_sha256"]):
         raise ValueError("Original native column evidence diverges")
     prior=first["workspace_sha256"]
+    current_source=original
     for idx,(lower,upper) in enumerate(pair,1):
         path=out/f"support-{idx}"
         audited=verify_workspace(path)
         info=_read(path/"manifest.json")
         row=report["events"][idx-1]
-        scene=path/info["paths"]["scene"]
+        source_info=_read(current_source/"manifest.json")
+        scene=current_source/source_info["paths"]["scene"]
         bearing=native_support(scene,lower,upper)
         ground=RelationalGround.load(path/info["paths"]["ground"])
         expected={"parent":lower,"child":upper,"verb":"supports","required":True}
@@ -229,6 +231,7 @@ def verify_bearing_chain(source,genome,spatial,destination):
                 or expected not in ground.snapshot()["relations"]):
             raise ValueError("Native column event, face contact or causal frontier changed")
         prior=audited["workspace_sha256"]
+        current_source=path
     if prior!=report["final_workspace_sha256"]:
         raise ValueError("Native column final causal evidence changed")
     return report
