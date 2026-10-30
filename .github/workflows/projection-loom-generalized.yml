@@ -18,6 +18,11 @@ on:
       - 'tools/projection-loom/projection_loom/native_support.py'
       - 'tools/projection-loom/projection_loom/source_registration.py'
       - 'tools/projection-loom/projection_loom/location_stack.py'
+      - 'tools/projection-loom/projection_loom/spatial_intent.py'
+      - 'tools/projection-loom/projection_loom/place_genome.py'
+      - 'tools/projection-loom/projection_loom/place_affordances.py'
+      - 'tools/projection-loom/projection_loom/place_campaign.py'
+      - 'tools/projection-loom/scripts/place_intent_crucible.py'
       - 'tools/projection-loom/projection_loom/hephaestus_holistic.py'
       - 'tools/projection-loom/projection_loom/matched_registered_trial.py'
       - 'tools/projection-loom/projection_loom/fractal_ooda_ha.py'
@@ -59,7 +64,7 @@ jobs:
           python -m pip install -r requirements-ci.txt
           python -m pip install --no-deps -e .
           python -m pip check
-      - run: python -m pytest -q tests/test_generalized_*.py tests/test_hephaestus_relational.py tests/test_hephaestus_incremental.py tests/test_hephaestus_regulative.py tests/test_capability_producer.py tests/test_hephaestus_census.py tests/test_hephaestus_admission.py tests/test_hephaestus_multiview.py tests/test_hephaestus_funnels.py tests/test_hephaestus_registration.py tests/test_hephaestus_registered_multiview.py tests/test_hephaestus_matched_trial.py tests/test_hephaestus_steering.py
+      - run: python -m pytest -q tests/test_generalized_*.py tests/test_hephaestus_relational.py tests/test_hephaestus_incremental.py tests/test_hephaestus_regulative.py tests/test_capability_producer.py tests/test_hephaestus_census.py tests/test_hephaestus_admission.py tests/test_hephaestus_multiview.py tests/test_hephaestus_funnels.py tests/test_hephaestus_registration.py tests/test_hephaestus_registered_multiview.py tests/test_hephaestus_matched_trial.py tests/test_hephaestus_steering.py tests/test_hephaestus_spatial_intent.py tests/test_hephaestus_place_genome.py
       - run: python scripts/check_architecture.py
       - name: Source import/capability responsibility census
         run: python scripts/hephaestus_census.py --out out/hephaestus-census.json
@@ -106,7 +111,19 @@ jobs:
           python -m pip install --no-deps -e .
           python -m pip check
       - name: Headless real OpenUSD and native STEP reimport
-        run: python -m pytest -q tests/test_hephaestus_usd.py tests/test_hephaestus_editor.py tests/test_hephaestus_crucible.py tests/test_hephaestus_variants.py tests/test_hephaestus_location_workspace.py tests/test_hephaestus_native_support.py tests/test_hephaestus_support_workspace.py tests/test_hephaestus_location_admission.py tests/test_hephaestus_transfer.py tests/test_hephaestus_transfer_adversarial.py tests/test_hephaestus_location_review.py
+        run: python -m pytest -q tests/test_hephaestus_usd.py tests/test_hephaestus_editor.py tests/test_hephaestus_crucible.py tests/test_hephaestus_variants.py tests/test_hephaestus_location_workspace.py tests/test_hephaestus_native_support.py tests/test_hephaestus_support_workspace.py tests/test_hephaestus_location_admission.py tests/test_hephaestus_transfer.py tests/test_hephaestus_transfer_adversarial.py tests/test_hephaestus_location_review.py tests/test_hephaestus_place_affordances.py tests/test_hephaestus_place_campaign.py
+      - name: N8 native living-place intent and operator aftermath crucible
+        run: python scripts/place_intent_crucible.py --out out/n8-two-heights
+      - name: Retain N8 native place, descendants and abstaining operator receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: n8-native-intent-place
+          path: |
+            tools/projection-loom/out/n8-two-heights/
+            tools/projection-loom/out/n8-operator-review.json
+            tools/projection-loom/out/n8-two-heights-report.json
+          retention-days: 60
       - name: Independent source/pose, bearing, causal edit and native USD holistic crucible
         run: |
           mkdir -p out
