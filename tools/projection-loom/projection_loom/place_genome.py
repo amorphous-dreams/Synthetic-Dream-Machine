@@ -219,7 +219,12 @@ class PlaceGenome:
             known={b.entity_id:b for b in bodies}
             for goal in spatial.goals:
                 if goal.kind=="bear" and goal.object in known:
-                    choices.append(("bear",(goal.object,),0))
+                    columns=[run.column for run in current.bearings
+                             if run.lower==goal.subject and run.upper==goal.object]
+                    # A grown bearing column carries the relation. Do not
+                    # silently deform the original upper authored support.
+                    targets=tuple(columns) if columns else (goal.object,)
+                    choices.append(("bear",targets,0))
                 if goal.kind=="shelter" and goal.object in known:
                     choices.append(("shelter",(goal.object,),None))
                 elif goal.kind=="ascend":
@@ -232,11 +237,15 @@ class PlaceGenome:
                         choices.append(("ascend",runs[0].steps,1-axis))
                 elif goal.kind=="connect":
                     routes=unique_walkway_chain(current,goal.subject,goal.object)
-                    if len(routes)==1:
-                        a,b=known[goal.subject],known[goal.object]
+                    for route in routes:
+                        # Every independently authored deck can contribute a
+                        # heritable local alteration. For orthogonal passages,
+                        # the segment, not the diagonal global heading, owns
+                        # the transverse width dimension.
+                        a,b=known[route.source],known[route.destination]
                         axis=0 if abs(b.translation[0]-a.translation[0])>=abs(
                             b.translation[1]-a.translation[1]) else 1
-                        choices.append(("connect",(routes[0].deck,),1-axis))
+                        choices.append(("connect",(route.deck,),1-axis))
             if not choices:
                 return current.vary(seed+index,count=count-index)
             kind,targets,dim=rng.choice(choices)
