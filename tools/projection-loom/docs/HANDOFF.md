@@ -1,3 +1,31 @@
+## ☕ N9 · CI aftermath syntax recovery · 2026-10-29
+
+The first full CAD runner against `e1987bb4` refused before
+tests because a newly added `place_causal_support`
+if-condition dropped an outer grouping parenthesis.
+`b0b5936b` restores valid Python syntax and keeps
+all proof conditions—scope, schema, no automatic promotion,
+and no load certification—intact. The original workflow
+remains correctly RED; the syntax repair only qualifies
+for acceptance if new exact-head CAD/generalized/native,
+repository and held-out checks pass.
+
+N9-M adds goal-conditioned developmental mutation: deck
+width, roof overhang, or rising-tread width follows the
+explicit `SpatialIntent`, never a broad part-count
+heuristic. Intent aftermath M keeps original source and
+causal ancestry immutable, verifies new native offspring,
+and records a finite multi-epoch generative test.
+
+Further backlog still needs a broader authored grammar
+for shelter support and non-axis circulation, an actual
+Unreal application witness, and tested engineering
+measurements where safety claims might eventually matter.
+Neither CI recovery nor native geometric evidence
+automatically selects a winner, pet-name or canon.
+
+---
+
 ## ☕ N9 · Goal-conditioned morphology and intent aftermath M · 2026-10-29
 
 **N9-M** (`1c75028a`) grounds place-level mutation in authored
