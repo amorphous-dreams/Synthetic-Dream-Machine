@@ -25,7 +25,7 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, targetInstance, type LarInstance } from "../harness/instance.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -113,7 +113,7 @@ const SLUGS = ["cutc-edit", "cutc-trans", "cutc-ren", "cutc-del", "cutc-brake-1"
 
 beforeAll(async () => {
   lar = await targetInstance();
-  if (lar.mode !== "staged") return;
+  if (!stagedTarget) return;
   SRC = join(lar.root, "bags/lares");
   tickTemplate = readFileSync(TICK_TMPL, "utf8");
 
@@ -139,9 +139,8 @@ beforeAll(async () => {
 
 afterAll(async () => { await lar.stop(); });
 
-describe("watcher Cut C — the disk peer witnessed end-to-end", () => {
+describe.skipIf(!stagedTarget)("watcher Cut C — the disk peer witnessed end-to-end", () => {
   test("live + coalesce — backend self-test fires; rapid edits drain to ONE wave", async () => {
-    if (lar.mode !== "staged") return;
     const w = spawnWatch();
     try {
       await w.waitFor(/backend live/);          // cookie echoed on ext4 — fails closed if dead
@@ -179,7 +178,6 @@ describe("watcher Cut C — the disk peer witnessed end-to-end", () => {
   }
 
   test("transient vanish — delete+recreate leaves nothing pending and tombstones nothing", async () => {
-    if (lar.mode !== "staged") return;
     const w = spawnWatch();
     try {
       await w.waitFor(/watching/);
@@ -204,7 +202,6 @@ describe("watcher Cut C — the disk peer witnessed end-to-end", () => {
   }, 90_000);
 
   test("rename — delete + same-bytes add re-links the record by content", async () => {
-    if (lar.mode !== "staged") return;
     const w = spawnWatch();
     try {
       await w.waitFor(/watching/);
@@ -226,7 +223,6 @@ describe("watcher Cut C — the disk peer witnessed end-to-end", () => {
   }, 90_000);
 
   test("mass vanish — three files read as one count; nothing tombstones; a wrong count refuses; restore returns them", async () => {
-    if (lar.mode !== "staged") return;
     const w = spawnWatch();
     const slugs = ["cutc-brake-1", "cutc-brake-2", "cutc-brake-3"];
     try {
@@ -263,7 +259,6 @@ describe("watcher Cut C — the disk peer witnessed end-to-end", () => {
   }, 120_000);
 
   test("remove — a vanished file stays gone and unwritten until a person removes its carrier in the wiki", async () => {
-    if (lar.mode !== "staged") return;
     const w = spawnWatch();
     try {
       await w.waitFor(/watching/);

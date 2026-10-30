@@ -438,9 +438,17 @@ function attachLive(): LarInstance {
   };
 }
 
+/**
+ * Whether this run stands its own vessel (the default) rather than attaching to a live hearth (`LAR_TARGET=live`).
+ * Read at import, so a suite declares its mode at collection: a vector that only means something against an owned,
+ * mutable instance sits in `describe.skipIf(!stagedTarget)` and reads SKIPPED beside a live hearth — an early
+ * `return` inside the body would read GREEN having asserted nothing (tools/e2e-harness-law.test.mjs refuses it).
+ */
+export const stagedTarget: boolean = process.env["LAR_TARGET"] !== "live";
+
 /** Target an instance per LAR_TARGET: "live" attaches; anything else stages. */
 export async function targetInstance(): Promise<LarInstance> {
-  return process.env["LAR_TARGET"] === "live" ? attachLive() : openStaged();
+  return stagedTarget ? openStaged() : attachLive();
 }
 
 /**

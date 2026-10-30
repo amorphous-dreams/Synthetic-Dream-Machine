@@ -17,7 +17,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, targetInstance, type LarInstance } from "../harness/instance.js";
 import { promoteLoadedTitles } from "../harness/promote.js";
 import { projectionDrained, settleWordOver } from "../harness/settle-word.js";
 
@@ -45,7 +45,7 @@ function ingest(args: string[]): ReturnType<LarInstance["cli"]> {
 
 beforeAll(async () => {
   lar = await targetInstance();
-  if (lar.mode !== "staged") return;
+  if (!stagedTarget) return;
   projected = join(lar.root, BOOT_PROJ);
   const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
   if (r.json?.["ok"] !== true) throw new Error(`seed LOAD failed: ${JSON.stringify(r.json)}`);
@@ -56,9 +56,8 @@ beforeAll(async () => {
 }, 120_000);
 afterAll(async () => { await lar.stop(); });
 
-describe("ingest quiescence — the composed loop holds still", () => {
+describe.skipIf(!stagedTarget)("ingest quiescence — the composed loop holds still", () => {
   test("Q1 — project∘ingest = identity: the settled mirror scans all-unchanged", async () => {
-    if (lar.mode !== "staged") return;
     const r = await ingest([]);
     const d = r.json?.["data"] as Record<string, unknown>;
     expect(d["changed"]).toBe(0);
@@ -67,7 +66,6 @@ describe("ingest quiescence — the composed loop holds still", () => {
   }, 60_000);
 
   test("Q2 — a disk content edit converges in ONE cycle", async () => {
-    if (lar.mode !== "staged") return;
     const before = readFileSync(projected, "utf8");
     // THE PROJECTION SPEAKS MEMETIC-WIKITEXT, never the carrier's source dialect. A markdown `#` heading
     // round-trips to `!`, and `#` at line start means an ORDERED LIST ITEM here — so hunting `# ` on this
@@ -96,7 +94,6 @@ describe("ingest quiescence — the composed loop holds still", () => {
   }, 120_000);
 
   test("Q3 — quiescence: zero writes after round N", async () => {
-    if (lar.mode !== "staged") return;
     // Q2's settle word ended round N: the file stands as the projection left it.
     const settled = readFileSync(projected, "utf8");
     // barrier: the island looked at the disk and drained its reconcile queue (`lares shore`), so a write an echo
@@ -107,7 +104,6 @@ describe("ingest quiescence — the composed loop holds still", () => {
   }, 60_000);
 
   test("Q4 — the NFC membrane assertion refuses foreign normal forms loudly", async () => {
-    if (lar.mode !== "staged") return;
     const nfdPath = join(lar.root, "bags/lares/ha.ka.ba/lares/api/nfd-probe.mem");
     const body = readFileSync(projected, "utf8")
       .replace(/noosphere-boot/g, "nfd-probe")

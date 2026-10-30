@@ -18,7 +18,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, targetInstance, type LarInstance } from "../harness/instance.js";
 import { promoteLoadedTitles } from "../harness/promote.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
@@ -56,7 +56,7 @@ async function awaitPublishDiff(gainPath: string, losePath: string, timeoutMs = 
 
 beforeAll(async () => {
   lar = await targetInstance();
-  if (lar.mode !== "staged") return;          // mutating — staged only
+  if (!stagedTarget) return;   // mutating — staged only
   const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", WORKING_LARES, "--yes", "--json"]);
   if (r.json?.["ok"] !== true) throw new Error(`seed LOAD failed: ${JSON.stringify(r.json)}`);
   await promoteLoadedTitles(lar, ((r.json["data"] as { titles?: string[] }).titles ?? []), "lares");
@@ -65,9 +65,8 @@ beforeAll(async () => {
 }, 120_000);
 afterAll(async () => { await lar.stop(); });
 
-describe("promotion publish-diff — the cap-gated carrier MOVE across a canon shore", () => {
+describe.skipIf(!stagedTarget)("promotion publish-diff — the cap-gated carrier MOVE across a canon shore", () => {
   test("P1 — the cap-gated carrier MOVE succeeds for the owner, with an audit record", async () => {
-    if (lar.mode !== "staged") return;
     const r = await lar.cli(["act", "MOVE", "--title", BOOT_URI, "--from", LARES_URI, "--to", LARARIUM_URI, "--yes", "--json"]);
     expect(r.json?.["ok"]).toBe(true);
     const data = r.json?.["data"] as Record<string, unknown>;
@@ -79,7 +78,6 @@ describe("promotion publish-diff — the cap-gated carrier MOVE across a canon s
   }, 60_000);
 
   test("P2 — the disk publish-diff: the whole carrier moves bags/lares → bags/lararium", async () => {
-    if (lar.mode !== "staged") return;
     const { gained, lost } = await awaitPublishDiff(
       join(lar.root, "bags/lararium", REL),
       join(lar.root, "bags/lares",    REL),
