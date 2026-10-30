@@ -14,6 +14,9 @@
  *   L2  a dry run of the layer MOVE projects every title and commits nothing.
  *   L3  a layer MOVE onto its own bag refuses by name; an empty layer answers zero and moves nothing.
  *   L4  CONTROL: a titled MOVE moves one family alone and the other families stay on the layer.
+ *   L5  a write that lands on the layer after its record's landing stays there (the next promotion carries it), however
+ *       the writes interleave: the layer's record leaves only while it still holds the fields that landed.
+ *   L6  a delete that lands after the landing stands on the layer; the MOVE removes no tombstone.
  */
 import { describe, expect, test } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
@@ -25,6 +28,7 @@ const canonBag = "lar:///ha.ka.ba/bags/probe";
 const workingBag = "lar:///ha.ka.ba/wikis/probe/working";
 const live = (title: string) => ({ tiddler: { title, text: `text of ${title}` }, meta: { changeId: `change:${title}` } });
 const hand = { kind: "tw-local", instanceId: "test" } as const;
+const TWO = "lar:///ha.ka.ba/other/two";
 const FAMILIES = ["lar:///ha.ka.ba/bags/probe", "lar:///ha.ka.ba/bags/probe#/$postamble", "lar:///ha.ka.ba/probe/docs/one", "lar:///ha.ka.ba/other/two"];
 
 async function rig(titles: readonly string[] = FAMILIES) {
@@ -83,25 +87,41 @@ describe("a title-less MOVE promotes the whole working layer", () => {
     expect(await empty.run({})).toMatchObject({ moved: 0 });
   });
 
-  test("L5 — (Luna) a newer source version written between the landing and the removal survives in canon", async () => {
-    const r = await rig();
-    const source = r.stores.get(workingBag)!, target = r.stores.get(canonBag)!;
-    // THE INTERLEAVED WRITER: the moment the layer MOVE lands "two" in canon, another hand writes a newer "two" onto the
-    // working layer. The older copy landed; the removal must not take the newer one with it.
+  /** THE INTERLEAVED WRITER: each time the layer MOVE lands "two" in canon (up to `times`), another hand writes onto the working layer. */
+  const interleave = (r: Awaited<ReturnType<typeof rig>>, write: (n: number) => Promise<void>, times: number) => {
+    const target = r.stores.get(canonBag)!;
     const put = target.put.bind(target);
-    let interleaved = false;
+    let n = 0;
     (target as unknown as { put: typeof put }).put = async (record, origin) => {
       await put(record, origin);
-      if (!interleaved && record.tiddler.title === "lar:///ha.ka.ba/other/two") {
-        interleaved = true;
-        await source.put({ tiddler: { title: "lar:///ha.ka.ba/other/two", text: "text of two, NEWER" }, meta: { changeId: "change:two-newer" } }, hand);
-      }
+      if (n < times && record.tiddler.title === TWO) await write(++n);
     };
+    return () => n;
+  };
+
+  test("L5 — a write that lands on the layer after its record's landing is never lost: the newest resolves on top", async () => {
+    const r = await rig();
+    const source = r.stores.get(workingBag)!;
+    let newest = "";
+    const writes = interleave(r, async (n) => {
+      newest = `text of two, write ${n}`;
+      await source.put({ tiddler: { title: TWO, text: newest }, meta: { changeId: `change:two-${n}` } }, hand);
+    }, 2);
     const result = await r.run({});
-    expect(interleaved).toBe(true);
-    expect(result).toMatchObject({ moved: 4 });
-    expect((await target.get("lar:///ha.ka.ba/other/two"))?.tiddler.text, "canon holds the NEWER version").toBe("text of two, NEWER");
-    expect(await source.get("lar:///ha.ka.ba/other/two"), "the layer holds none after").toBeNull();
+    expect(writes()).toBeGreaterThanOrEqual(1);
+    expect((await r.composite.resolveLayered(TWO))?.record.tiddler.text, "the newest write resolves").toBe(newest);
+    expect((await source.get(TWO))?.tiddler.text, "the layer keeps the record that moved since its landing").toBe(newest);
+    expect(result).toMatchObject({ moved: 3, kept: 1 });
+    expect(await r.holds(canonBag)).toEqual(FAMILIES);
+  });
+
+  test("L6 — a delete that lands on the layer after its record's landing stands: the MOVE never removes the tombstone", async () => {
+    const r = await rig();
+    const source = r.stores.get(workingBag)!;
+    interleave(r, async () => { await source.tombstone(TWO, hand); }, 1);
+    const result = await r.run({});
+    expect((await source.get(TWO))?.meta?.deleted, "the tombstone stands on the layer").toBe(true);
+    expect(result).toMatchObject({ moved: 3, kept: 1 });
   });
 
   test("L4 — CONTROL: a titled MOVE moves one family alone; the other families stay on the layer", async () => {
