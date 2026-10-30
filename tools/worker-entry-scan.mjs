@@ -45,7 +45,7 @@ function registersListener(node, starters) {
 function awaitsAtLoad(node) {
   return node.type === "AwaitExpression" || (node.type === "ForOfStatement" && node.await === true);
 }
-/** What one top-level statement does at load: where its first listener registration starts and whether it awaits first. */
+/** What one top-level statement does at load: where its first listener registration completes (after its arguments evaluate) and whether it awaits first. */
 function scanStatement(statement, starters) {
   let listener = -1, awaitBeforeListener = false, awaits = false;
   const events = [];
@@ -53,14 +53,14 @@ function scanStatement(statement, starters) {
     if (!node || typeof node.type !== "string") return;
     if (FUNCTION_NODES.has(node.type)) return;
     if (awaitsAtLoad(node)) events.push({ kind: "await", end: node.end });
-    if (registersListener(node, starters)) events.push({ kind: "listen", start: node.start, end: node.end });
+    if (registersListener(node, starters)) events.push({ kind: "listen", start: node.end, end: node.end });
     for (const key of Object.keys(node)) {
       const value = node[key];
       if (Array.isArray(value)) for (const child of value) visit(child);
       else if (value && typeof value === "object") visit(value);
     }
   })(statement);
-  for (const event of events.sort((a, b) => (a.kind === "await" ? a.end : a.start) - (b.kind === "await" ? b.end : b.start))) {
+  for (const event of events.sort((a, b) => a.end - b.end || (a.kind === "listen" ? -1 : 1) - (b.kind === "listen" ? -1 : 1))) {
     if (event.kind === "await") { awaits = true; if (listener < 0) awaitBeforeListener = true; }
     else if (listener < 0) listener = event.start;
   }
