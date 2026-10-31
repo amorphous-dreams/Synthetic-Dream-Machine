@@ -39,7 +39,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, composeFleetJoinRequest, faceKeyGrantImage, fleetJoinAnswerImage, fleetJoinOffer,
   fleetJoinSealPair, foldWithdrawals, hex, issueCertificate, mintVesselFaceKey, readFleetJoinAnswer, readFleetJoinOffer,
   readFleetJoinRequest, sealAddressSecret, heldNexusRoot, makeMultiSigQuorumVerifier, nexusAidOf, verifySignedAdmitBundle,
-  gateBundleDigest,
+  gateBundleDigest, admitGatePinDigest,
   type FaceKeyGrant, type FleetJoinAnswer, type FleetJoinOffer, type FleetJoinRequest,
   type VesselFaceCertificate,
   faceAtomKeyFromSeed,
@@ -395,7 +395,10 @@ export async function runFleetJoinLand(opts: { readonly repo: Repo; readonly ans
   }
   keepHearthFloorPins(sealHome, dial.aid, answer.floorPins);
   try { await landFaceAddressSecret(answer.personaGroup, addressSecret); } finally { addressSecret.fill(0); }
-  await keepFaceJoinRecord({ personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants });
+  // THE LANDED HEARTH PIN, sealed under the face's own key (road `P26`): the one record a dial reads to know its hearth as
+  // this face's own. The bootstrap carries the pin to dial with; only this sealed row says which act wrote it.
+  await keepFaceJoinRecord({ personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants,
+    hearthPin: admitGatePinDigest(answer.carriage.gatePin) });
   await runInit({ repo: opts.repo, force: true, admitPayload: admit, custody: { slots: [] } });
   await clearPendingFleetJoin(offer.personaGroup, request.nonce);
   return answer;

@@ -183,6 +183,10 @@ export interface FaceJoinRecord {
   readonly grants:       readonly unknown[];
   /** The root holder's issued book; empty on a vessel that issued nothing. A write that omits it keeps it. */
   readonly issued?:      readonly IssuedFaceKey[];
+  /** THE LANDED HEARTH PIN (road `P26`; controller revision ruling 2026-10-31): the digest (`admitGatePinDigest`) of the
+   *  sovereign pin `fleet join land` wrote for this face, sealed here under the face's own key. A dial reads its hearth as
+   *  this face's own only where its pin's digest is this one. A write that omits it keeps the standing one. */
+  readonly hearthPin?:   string;
 }
 
 const HEX64 = /^[0-9a-f]{64}$/;
@@ -199,10 +203,17 @@ function readIssued(v: unknown): IssuedFaceKey[] {
   });
 }
 
-function recordBytes(record: FaceJoinRecord, issued: readonly IssuedFaceKey[]): Uint8Array {
+function readHearthPin(v: unknown): string | undefined {
+  if (v === undefined) return undefined;
+  if (typeof v !== "string" || !HEX64.test(v)) throw new Error("malformed");
+  return v;
+}
+
+function recordBytes(record: FaceJoinRecord, issued: readonly IssuedFaceKey[], hearthPin?: string): Uint8Array {
   return utf8.encode(JSON.stringify({
     personaGroup: record.personaGroup, rootKey: record.rootKey, certificates: record.certificates, grants: record.grants,
     ...(issued.length > 0 ? { issued } : {}),
+    ...(hearthPin !== undefined ? { hearthPin } : {}),
   }));
 }
 
@@ -213,18 +224,22 @@ export async function keepFaceJoinRecord(record: FaceJoinRecord): Promise<void> 
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   await updateCustodyRow("identity", file, (standing) => {
     let issued: readonly IssuedFaceKey[] = record.issued ?? [];
+    let hearthPin = record.hearthPin === undefined ? undefined : readHearthPin(record.hearthPin);
     if (standing !== null) {
-      let root: unknown, kept: unknown;
-      try { ({ rootKey: root, issued: kept } = JSON.parse(new TextDecoder().decode(standing)) as { rootKey?: unknown; issued?: unknown }); } catch { root = undefined; }
+      let root: unknown, kept: unknown, keptPin: unknown;
+      try { ({ rootKey: root, issued: kept, hearthPin: keptPin } = JSON.parse(new TextDecoder().decode(standing)) as { rootKey?: unknown; issued?: unknown; hearthPin?: unknown }); } catch { root = undefined; }
       if (root !== record.rootKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
       if (record.issued === undefined) {
         try { issued = readIssued(kept); } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
       }
-      const bytes = recordBytes(record, issued);
+      if (record.hearthPin === undefined) {
+        try { hearthPin = readHearthPin(keptPin); } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+      }
+      const bytes = recordBytes(record, issued, hearthPin);
       if (bytesEqual(standing, bytes)) return { plaintext: null, value: undefined };
       return { plaintext: bytes, value: undefined };
     }
-    return { plaintext: recordBytes(record, issued), value: undefined };
+    return { plaintext: recordBytes(record, issued, hearthPin), value: undefined };
   });
 }
 
@@ -249,16 +264,17 @@ export async function noteIssuedFaceKeys(args: {
   await updateCustodyRow("identity", file, (standing) => {
     let base: FaceJoinRecord = { personaGroup: args.personaGroup, rootKey: args.rootKey, certificates: [], grants: [] };
     let issued: IssuedFaceKey[] = [];
+    let hearthPin: string | undefined;
     if (standing !== null) {
       let r: Record<string, unknown>;
       try { r = JSON.parse(new TextDecoder().decode(standing)) as Record<string, unknown>; } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
       if (r["rootKey"] !== args.rootKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
       if (!Array.isArray(r["certificates"]) || !Array.isArray(r["grants"])) throw new CustodyRowUnavailable("identity", file, "malformed");
       base = { personaGroup: args.personaGroup, rootKey: args.rootKey, certificates: r["certificates"], grants: r["grants"] };
-      try { issued = readIssued(r["issued"]); } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+      try { issued = readIssued(r["issued"]); hearthPin = readHearthPin(r["hearthPin"]); } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
     }
     const replaced = (e: IssuedFaceKey): boolean => fresh.some((f) => f.nexus === e.nexus && f.faceKey === e.faceKey && f.vesselFaceKey === e.vesselFaceKey);
-    const bytes = recordBytes(base, [...issued.filter((e) => !replaced(e)), ...fresh]);
+    const bytes = recordBytes(base, [...issued.filter((e) => !replaced(e)), ...fresh], hearthPin);
     if (standing !== null && bytesEqual(standing, bytes)) return { plaintext: null, value: undefined };
     return { plaintext: bytes, value: undefined };
   });
@@ -272,6 +288,7 @@ export async function readFaceJoinRecord(personaGroup: string): Promise<FaceJoin
   try {
     const r = JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>;
     if (r["personaGroup"] !== personaGroup || typeof r["rootKey"] !== "string" || !Array.isArray(r["certificates"]) || !Array.isArray(r["grants"])) throw new Error("malformed");
-    return { personaGroup, rootKey: r["rootKey"], certificates: r["certificates"], grants: r["grants"], issued: readIssued(r["issued"]) };
+    const hearthPin = readHearthPin(r["hearthPin"]);
+    return { personaGroup, rootKey: r["rootKey"], certificates: r["certificates"], grants: r["grants"], issued: readIssued(r["issued"]), ...(hearthPin !== undefined ? { hearthPin } : {}) };
   } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
 }

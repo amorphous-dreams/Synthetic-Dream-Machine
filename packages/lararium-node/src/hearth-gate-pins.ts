@@ -20,7 +20,6 @@ import {
   type GateBundlePin, type HearthPinIndex,
 } from "@lararium/mesh";
 import type { AdmitBundle } from "./admit-bundle.js";
-import type { HearthPinProvenance } from "./hearth-dial-pin.js";
 
 /** The vessel's pair index: one per boot, empty until the admit repin seeds it. */
 export function hearthGatePins(): HearthPinIndex {
@@ -46,11 +45,9 @@ export interface HearthDialChoice {
   readonly notes:   readonly string[];
   /** Disagreements the boot should WARN of: the dial stood, on a choice another kept pin contradicts. */
   readonly warnings: readonly string[];
-  /** WHERE THE DIAL'S PIN CAME FROM (road `P26`): the bootstrap's pin, a kept admit bundle's, or none. The dial seats the
-   *  relation its source proves, read off this vessel's own records alone. */
+  /** WHERE THE DIAL'S PIN CAME FROM (road `P26`): the bootstrap's pin, a kept admit bundle's, or none. A kept bundle's pin
+   *  seats the contracted class; the face's own hearth reads off the sealed landing record alone (`dial-relation`). */
   readonly source:   "bootstrap" | "kept" | null;
-  /** The bootstrap pin's provenance tag, where the dial's pin is the bootstrap's and carries one. */
-  readonly provenance?: HearthPinProvenance;
 }
 
 /**
@@ -74,7 +71,7 @@ export interface HearthDialChoice {
  */
 export function chooseHearthDial(opts: {
   readonly explicitUrl?: string | null;
-  readonly hearthPin?:   { readonly syncUrl: string; readonly gatePin?: GateBundlePin; readonly provenance?: HearthPinProvenance } | null;
+  readonly hearthPin?:   { readonly syncUrl: string; readonly gatePin?: GateBundlePin } | null;
   readonly kept:         readonly AdmitBundle[];
   readonly walkRelay?:   string | null;
   readonly keptFloor?:   (nexusHex: string) => readonly GateBundlePin[];
@@ -121,8 +118,7 @@ export function chooseHearthDial(opts: {
       if ("pin" in read && read.pin.tier === "floor" && read.pin.nexus === pin.nexus) filings.push({ hearth: at, pin: read.pin });
     }
   }
-  const provenance = source === "bootstrap" ? opts.hearthPin?.provenance : undefined;
-  return { syncUrl, pin, filings, notes, warnings, source, ...(provenance ? { provenance } : {}) };
+  return { syncUrl, pin, filings, notes, warnings, source };
 }
 
 /** File each pin under its own hearth. Returns how many the index took. */

@@ -78,12 +78,12 @@ describe("the guard serves the standing count and each document's own home", () 
 
   test("T4 — RED: a write queued after the ask began, before it resumed, still classes that ask", async () => {
     const sealHome = mkdtempSync(join(tmpdir(), "lar-kahu-burst-")); roots.push(sealHome);
-    const holder = kahuProtectedHolder({ sealHome, canon: () => ({}) }) as ReturnType<typeof kahuProtectedHolder> & { settledIds?: () => Promise<ReadonlyMap<string, "kahu-canon">> };
+    const holder = kahuProtectedHolder({ sealHome, canon: () => ({}) }) as ReturnType<typeof kahuProtectedHolder> & { pending?: () => boolean };
     try {
       await holder.recount();
       const doc = mesh.deterministicDocUrl("a-burst-kept-canon");
       const rec = await registration("nexus-" + "b4".repeat(32), doc);
-      const guard = protectedDocGuard({ ids: () => holder.ids(), settled: () => holder.settled(), ...(holder.settledIds ? { settledIds: () => holder.settledIds!() } : {}), decide: { "kahu-canon": () => false } } as GuardOptions);
+      const guard = protectedDocGuard({ ids: () => holder.ids(), settled: () => holder.settled(), ...(holder.pending ? { pending: () => holder.pending!() } : {}), decide: { "kahu-canon": () => false } } as GuardOptions);
       const asked = guard.withholds("member", idOf(doc));       // the ask begins and captures what stands
       keepKahuRegistration(sealHome, rec);                       // a classification write lands before the ask resumes
       expect(await asked, "T4: the ask waits for the later write's recount").toBe(true);

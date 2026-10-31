@@ -35,6 +35,9 @@ export interface ProtectedDocGuardOptions {
   /** RECOUNT BEFORE SERVE (road `P26`): where given, every ask waits for the ids' pending recount, so a classification write
    *  a moment ago classes the very next ask. A recount that fails still lets the ask read the map that stands. */
   readonly settled?: () => Promise<void>;
+  /** Whether a recount stands queued and unfinished NOW. With it, an ask waits until none does and classes in that same
+   *  turn, so a write queued after the ask began, before it resumed, still classes the ask. */
+  readonly pending?: () => boolean;
   /** Each class's live decider: does this peer hold the class's reach now, for THIS document (its own home's standing)? */
   readonly decide: { readonly [C in ProtectedDocClass]?: (peerId: string, documentId: string) => boolean | Promise<boolean> };
 }
@@ -47,8 +50,12 @@ export function protectedDocGuard(opts: ProtectedDocGuardOptions): ProtectedDocG
   return {
     classOf,
     async withholds(peerId, documentId) {
-      if (documentId !== undefined && opts.settled) { try { await opts.settled(); } catch { /* the standing map still classes */ } }
-      const cls = classOf(documentId);
+      if (documentId !== undefined && opts.settled) {
+        try {
+          do { await opts.settled(); } while (opts.pending?.() === true);
+        } catch { return true; }                         // a count that cannot settle classes nothing it may serve
+      }
+      const cls = classOf(documentId);                   // the same turn the last check held
       if (cls === null) return false;
       if (cls === "unreadable" || !peerId) return true;
       const decide = opts.decide[cls];

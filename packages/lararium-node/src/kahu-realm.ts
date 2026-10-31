@@ -392,6 +392,43 @@ export async function watchKahuStanding(opts: {
   return { held: () => held, refresh, close: () => { closed = true; core.handle.off("change", onBoard); }, nexus: core.nexus };
 }
 
+/** One live Kahu standing watch (`watchKahuStanding`). */
+export interface KahuStandingWatch { held(): boolean; refresh(): void; close(): void; readonly nexus: string | null }
+
+/**
+ * EVERY HOME'S KAHU STANDING, IN ONE BOOK (road `P26`; Sol's transport read, BLOCKER 4): the primary home's watch and one per
+ * carried home. A document reads its own home's watch (`heldAt`; null names the primary, where the keel's canon stands); an
+ * unwatched home reads not admitted. A charter roll re-reads EVERY watch (`refreshAll`), so a carried home's admission a
+ * roll closed never waits on that home's next board change.
+ */
+export function kahuStandingBook(): {
+  readonly primary: KahuStandingWatch | null;
+  setPrimary(watch: KahuStandingWatch): void;
+  hasCarried(nexus: string): boolean;
+  addCarried(nexus: string, watch: KahuStandingWatch): void;
+  heldAt(nexus: string | null): boolean;
+  refreshAll(): void;
+  close(): void;
+} {
+  let primary: KahuStandingWatch | null = null;
+  const carried = new Map<string, KahuStandingWatch>();
+  return {
+    get primary() { return primary; },
+    setPrimary(watch) { primary = watch; },
+    hasCarried: (nexus) => carried.has(nexus),
+    addCarried(nexus, watch) { if (carried.has(nexus)) { watch.close(); return; } carried.set(nexus, watch); },
+    heldAt(nexus) {
+      if (nexus === null || (primary !== null && nexus === primary.nexus)) return primary?.held() === true;
+      return carried.get(nexus)?.held() === true;
+    },
+    refreshAll() {
+      try { primary?.refresh(); } catch { /* one watch never stops the rest */ }
+      for (const watch of carried.values()) { try { watch.refresh(); } catch { /* one watch never stops the rest */ } }
+    },
+    close() { for (const watch of carried.values()) watch.close(); carried.clear(); primary?.close(); primary = null; },
+  };
+}
+
 /**
  * THE KAHU CANON'S IDS, DURABLY, OVER EVERY HOME (road `P26`; controller design rulings 2026-10-31): every document id this
  * vessel would hold as a live `lares` or `lararium` document at ANY Nexus it holds a charter for, read without consulting
@@ -459,10 +496,18 @@ export async function kahuProtectedDocHomes(opts: { readonly sealHome: string; r
  */
 export function kahuProtectedHolder(opts: {
   readonly sealHome: string; readonly canon: () => KahuCanonDocs; readonly onChange?: () => void;
-}): { ids(): ReadonlyMap<string, "kahu-canon">; homeOf(id: string): string | null; homes(): ReadonlySet<string>; recount(): Promise<void>; settled(): Promise<void>; close(): void } {
+}): {
+  ids(): ReadonlyMap<string, "kahu-canon">; homeOf(id: string): string | null; homes(): ReadonlySet<string>; recount(): Promise<void>;
+  settled(): Promise<void>; pending(): boolean; close(): void;
+} {
   let map: ReadonlyMap<string, "kahu-canon"> = new Map();
   let homes: ReadonlyMap<string, string | null> = new Map();
   let tail: Promise<void> = Promise.resolve();
+  // RECOUNT GENERATIONS (Sol's transport read, BLOCKER 3): every recount takes the next number when it QUEUES, and `done`
+  // names the last one that finished. `pending()` reads whether any queued recount stands unfinished NOW; the guard waits
+  // until none does and classes in that same turn, so a write queued after an ask began still classes that ask.
+  let queued = 0;
+  let done = 0;
   let closed = false;
   const once = async (): Promise<void> => {
     if (closed) return;
@@ -474,16 +519,20 @@ export function kahuProtectedHolder(opts: {
     if (moved) { try { opts.onChange?.(); } catch { /* a listener never breaks the count */ } }
   };
   const recount = (): Promise<void> => {
+    const generation = ++queued;
     const turn = tail.then(once);
-    tail = turn.catch((err: unknown) => { console.warn(`[kahu-realm] the protected canon ids would not recount: ${String(err)}`); });
+    tail = turn.catch((err: unknown) => { console.warn(`[kahu-realm] the protected canon ids would not recount: ${String(err)}`); })
+      .then(() => { done = generation; });
     return turn;
   };
+  const settled = async (): Promise<void> => { while (done < queued) await tail; };
   const onWrite = (): void => { void recount().catch(() => {}); };
   CLASSIFICATION_WRITES.add(onWrite);
   return {
     ids: () => map,
     homeOf: (id) => homes.get(id) ?? null,
     homes: () => new Set([...homes.values()].filter((n): n is string => n !== null)),
-    recount, settled: () => tail, close: () => { closed = true; CLASSIFICATION_WRITES.delete(onWrite); },
+    recount, settled, pending: () => done < queued,
+    close: () => { closed = true; CLASSIFICATION_WRITES.delete(onWrite); },
   };
 }

@@ -50,6 +50,7 @@ vi.mock("@noble/ed25519", () => ({}));
 vi.mock("@lararium/keyhive", () => ({ carriedAdmitOfFleetJoin: () => ({ kind: "device-admit/v1" }) }));
 vi.mock("@lararium/mesh", () => ({
   gateBundleDigest: (pin: unknown) => JSON.stringify(pin),
+  admitGatePinDigest: () => "a".repeat(64),
   nexusAidOf: () => "nexus-a",
   heldNexusRoot: () => ({ nexus: "nexus-a" }),
   makeMultiSigQuorumVerifier: () => ({}),
