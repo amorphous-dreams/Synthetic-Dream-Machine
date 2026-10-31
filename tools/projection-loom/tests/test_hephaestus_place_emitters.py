@@ -226,3 +226,31 @@ def test_topology_search_recovers_alternative_when_first_waypoint_conflicts():
     assert "intrudes into original native source barrier" in ancestry["rejected_patterns"][0]["reason"]
     assert len(unique_walkway_chain(child,"west","east"))==3
     assert row["native_audition_completed"] is False
+
+
+def test_topology_native_census_distinguishes_offer_attempt_and_admission():
+    from projection_loom.place_campaign import relational_emission_census
+    p=GrowthProgram((GrowthNode("root","foundation",size=(4,4,2)),))
+    original=PlaceGenome((PlaceBody("east",p,(12,12,0)),
+                          PlaceBody("west",p,(0,0,0))))
+    spatial=SpatialIntent("a"*64,(SpatialGoal("connect","west","east"),),"operator")
+    resolved=propose_from_spatial_intent(original,spatial)
+    child,receipt=emit_place_child(original,resolved,[],spatial,
+                                   epoch=1,index=1,offspring=3,seed=12)
+    assert receipt["emitter"]=="topology-birth"
+    offered={"candidate_id":"p001c001","genome_sha256":child.identity,
+             "emitter":"topology-birth","emitter_receipt":receipt,
+             "audition":"attempted"}
+    rejected=relational_emission_census([{"offered":[offered]}],
+              [{"candidate_id":"p001c001","genome_sha256":child.identity,
+                "status":"native-rejected"}])
+    assert rejected["topology_offered"]==1
+    assert rejected["topology_native_attempted"]==1
+    assert rejected["topology_native_admitted"]==0
+    assert rejected["relational_offered"]==0
+    assert rejected["native_attempts"]==1
+    deferred=relational_emission_census([{"offered":[{**offered,
+                                "audition":"deferred"}]}],[])
+    assert deferred["topology_offered"]==1
+    assert deferred["topology_native_attempted"]==0
+    assert deferred["topology_native_admitted"]==0
