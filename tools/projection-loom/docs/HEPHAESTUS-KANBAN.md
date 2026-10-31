@@ -1,3 +1,30 @@
+# Hephaestus · Active YIN board
+
+## Source-landed topology waves; final exact-head CI pending
+
+- [x] Confirm predecessor `08d38b8b` completed full CAD and generalized OpenUSD/STEP/Blender successfully; repository CI and held-out remained in progress at inspection.
+- [x] Three-hop `x-y-x` / `y-x-y` topological births with two attributed native corner foundations and three independently measurable deck segments.
+- [x] Build matched four-arm 2-hop/3-hop native study under all source-authorized spatial goals; provide typed CLI run/verify and one source-bound receipt per arm.
+- [x] Refuse generated corner intrusion into preserved original cuboid supports.
+- [x] Keep construction-refused alternatives in comparison with precise reason, without charging false STEP auditions.
+- [x] Regression tests: full original goal scope, two pattern families, fixed native route axes/hops, source obstruction, forged refusal and forged proof, CLI replay.
+- [x] Fold evergreen documents while preserving all previous front text under holding ashes.
+
+## Required next acts
+
+- [ ] Exact-head complete CAD/evidence, OpenUSD/STEP/Blender, repository and held-out CI verdicts for this new batch; investigate any real red witness.
+- [ ] Test held-out site geometries and larger goal interactions; attribute source refusal rather than inventing geometry.
+- [ ] Generalize beyond two/three-hop finite-axis route proposals; keep those proposals under the existing OODA-HA helm when they become generational.
+- [ ] Genuine source-conditioned architectural genotype and real editor roundtrip under operator review.
+- [ ] Preserve previous documents and memes within holding ashes; no irreversible burn or deletion.
+
+Checks show code landed/staged, not runtime admission. PR #84 stays open and unmerged.
+
+## Ashes holding ahu · preceding living front
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
 # Hephaestus · Evergreen YIN kanban
 
 ## Source-delivered in current aftermath
@@ -21,6 +48,9 @@
 **Checked means source landed, not CI passed.** PR #84 remains open/unmerged, no operator promotion or final o-takiage.
 
 ## Ashes holding ahu · preceding living reading
+
+
+</details>
 
 <details>
 <summary>Previous living front retained verbatim</summary>

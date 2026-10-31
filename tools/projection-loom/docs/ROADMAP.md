@@ -1,3 +1,32 @@
+# Projection Loom · YIN constructive roadmap
+
+## Intent: architectural relations grow genuine alternatives
+
+Keep one source-bound `SpatialIntent`, one generational OODA-HA helm and independent STEP evidence. Consolidate shared constructive obligations, not a catalog of unrelated special-case controllers.
+
+### Constructive and aftermath work staged in this batch
+
+- [x] Build independent **three-hop** circulation topology (`x-y-x`, `y-x-y`) from two original diagonal equal-height supports and two newly named waypoints. Preserve original native bodies and the whole goal set.
+- [x] Construct matched **two-hop versus three-hop** alternatives at equal per-arm native budgets. Report ordered axes/hops/widths, full authored goal consequences and source-bound identity rather than digest-only diversity.
+- [x] Expose these alternatives through a typed run/verify CLI and immutable independently replayed receipts.
+- [x] Make native-original footprint interference a bounded typed constructive refusal; retain refused alternatives while auditing the others; never bill a refused construction as a STEP attempt.
+- [x] Add real STEP tests for positive three-hop corridors and negative/corrupt route witnesses, and a mixed-success source-site study.
+
+### Next YIN feature and intent-aftermath frontier
+
+1. Close exact-head CAD, generalized STEP/USD and Blender, repo-wide and held-out gates; inspect failures against the new source rather than predecessor results.
+2. Fold multiple topology constructions into **heritable** generational proposal families under one `OODAHAJournal`, preserving operator-named original support choices and finite native budgets.
+3. Expand constructive graph constraints beyond rectangular equal-height three-hop cases with typed goals, collision checks and negative native evidence; avoid pretending that an exploratory routing heuristic certifies safety.
+4. Demonstrate real **source-conditioned** architectural morphology from attributed measurements and held-out input classes. Heterogeneous source intake and body-footprint clearance alone do not prove image/grammar-to-CAD conditioning.
+5. Strengthen visual, editor and operator roundtrips, especially real Unreal Editor testing, without source-authority fusion or automatic winners.
+
+Historical roadmaps remain in the in-file ashes. No file deletion, source removal, operator promotion or canon retirement.
+
+## Ashes holding ahu · preceding living front
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
 # Projection Loom · Living YIN roadmap
 
 ## Architectural coherence frontier
@@ -25,6 +54,9 @@ The present direction is **constructible, attributable relationships under one O
 **Acceptance record:** `a6026ebe` 13/13 green; `b9491a20` three workflow failures caused by one stale refusal-text test; subsequent staged commits have **not** received a completed exact-head CI verdict at authoring time.
 
 ## Ashes holding ahu · preceding living reading
+
+
+</details>
 
 <details>
 <summary>Previous living front retained verbatim</summary>

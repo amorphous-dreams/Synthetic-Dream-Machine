@@ -1,3 +1,20 @@
+# Projection Loom · YIN next-session re-entry
+
+**GitHub:** `amorphous-dreams/Synthetic-Dream-Machine` · [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · working branch `feature/green-jello-dinosaur-5--projection-loom`. Fetch the complete boot from `feature/green-jello-dinosaur-5`: `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem`.
+
+**First:** fetch PR's actual head and exact-head Actions, then the living `HANDOFF.md`, `ROADMAP.md`, `LIVING-PLACE.md`, and `HEPHAESTUS-KANBAN.md`. The preceding `08d38b8b` head passed both CAD and generalized OpenUSD/STEP/Blender; repository-wide and held-out remained open at the last inspection. Never borrow CI success for a later SHA.
+
+**Current YIN wave:** new native three-hop dogleg proposals along named `x-y-x` / `y-x-y` axes, matched against two older two-hop alternatives under identical source goals. Four fixed choices, independently audited STEP, full goal statuses, typed original-body footprint refusals that do not consume native budgets, source-bound immutable comparison and CLI run/verify. The existing `OODAHAJournal` remains the one generational helm. Native ancestry and geometric witness do not decide artistic preference.
+
+**Method:** feature ↔ intent-aftermath, test negative/refused paths, bisectable commits before single batch push, no versions/compatibility shims, full exact-head CI and truthful repair. Preserve former living texts within in-file ashes. Do not merge PR, choose artistic winner, grant pet-name, delete sources, fire irreversible o-takiage, or promote Elyncia canon.
+
+**Next:** close new exact-head CI, then integrate successful constructive topology families into population breeding under shared goal obligations and finite native budgets; pursue source-conditioned geometry and real editor tests without conflating authority.
+
+## Ashes holding ahu · preceding living front
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
 # Projection Loom · Short evergreen re-entry
 
 **Boot:** `amorphous-dreams/Synthetic-Dream-Machine`, `feature/green-jello-dinosaur-5`, `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` — read entire boot before Lares work.
@@ -11,6 +28,9 @@
 **Next:** inspect CI and fix any real red tests. Then build actual alternative topology growth from composed constraints, test source-conditioned architecture with measured ground truth, and improve independently verified operator/editor round trips. No operator-promoted aesthetic or canon decisions implied.
 
 ## Ashes holding ahu · preceding living reading
+
+
+</details>
 
 <details>
 <summary>Previous living front retained verbatim</summary>

@@ -1,5 +1,37 @@
 # Projection Loom · Evergreen YIN handoff
 
+## Living re-entry · topology composed under original spatial intent
+
+**PR:** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · **branch:** `feature/green-jello-dinosaur-5--projection-loom` · **boot:** fetch `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` in its entirety from `feature/green-jello-dinosaur-5`. Read current PR SHA and its exact-head Actions, not a previous result.
+
+### Verified predecessor, not transferable
+
+The predecessor `08d38b8b29b4138545480f978db6b217c17d3013` has **both CAD/evidence workflows green** and generalized OpenUSD/STEP/Blender integration green; Experiment Zero, Architectural Birth, diversity, grammar and massing also passed. **Repository-wide CI and held-out remained in progress at this inspection.** These observations do not certify the new implementation head until its own runs finish.
+
+### New YIN feature ↔ aftermath pairs · source staged for a consolidated push
+
+- `place_three_hop.py` grows explicitly chosen `x-y-x` or `y-x-y` circulation: two independently named native corner foundations, three separate goal-bound decks and their full source lineage. Other authored `shelter`, `ascend`, and `bear` goals still pass through the original shared constructor. A candidate remains unproven until native STEP reimport witnesses all goals.
+- `place_topology_study.py` matches two prior two-hop patterns with two new three-hop patterns **under the same original site and complete spatial intent**. Each constructible alternative receives one independently imported STEP audition and a source-bound outcome/goal-status receipt; a readable summary reports observed route axes, hops, body placements, actual native attempts and distinct witnessed layouts without selecting a winner.
+- Source-footprint aftermath: a generated new corner cannot silently intrude into an original measured foundation cuboid. The study retains a **typed construction-refused** arm when a site obstructs one variant, runs the remaining arms, counts only real STEP auditions and independently recreates the original refusal. A forged refusal or mutated native hop count fails replay.
+- Typed commands: `place-topology-study` and `place-topology-study-verify`. New tests cover both axis patterns with independently native-witnessed three-hop contact chains, four matched alternatives, source-body obstruction/refusal, independent replay, forged receipts and CLI roundtrip.
+
+### Existing architecture and method
+
+One original `OODAHAJournal` governs generational place candidates and finite native audition budgets. The new topological comparison runs as a bounded **read-only evidence experiment**, not another generational helm. `place_emitters.py` retains genuine region recombination, typed deferrals and source-verified parent workspaces; `place_compound_routes._arm_receipt` supplies one shared native goal/route witness builder for both compared topology families.
+
+Work in YIN: alternate complete feature growth with intent-aftermath, reduce duplicate responsibilities, preserve the original source and native evidence, make bisectable commits, then publish one batch. No application versions, backward-compatibility scaffolding, invented artistic winner, pet-name, Elyncia promotion, irreversible o-takiage or PR merge.
+
+### Next re-entry
+
+Inspect the actual new branch head. Run the new `test_hephaestus_place_three_hop.py` and `test_hephaestus_place_topology_study.py` with native CadQuery/OpenUSD dependencies and all preexisting place tests. Read full exact-head Actions; diagnose genuine red failures and repair without dropping refusals or weakening STEP. Next features: constrained topology birth under the one generational helm, observed conflict descriptions, real source-conditioned morphology with measured input provenance, actual Unreal Editor integration. Distinguish artistic review from geometric admission.
+
+## Ashes holding ahu · preceding living front
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
+# Projection Loom · Evergreen YIN handoff
+
 ## Live re-entry · October 30, 2026
 
 **Repository** `amorphous-dreams/Synthetic-Dream-Machine` · **PR** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · **working branch** `feature/green-jello-dinosaur-5--projection-loom`. Read the **entire boot** from `feature/green-jello-dinosaur-5` at `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem`, then refresh the actual head and its exact-head GitHub Actions. No historical workflow verdict transfers to a later commit.
@@ -25,6 +57,9 @@ The prior accepted head `a6026ebe` passed all **13 Actions**. The later `b9491a2
 **Boundaries:** Parent-native success cannot certify a recombinant child; source-carrier identity is not source-conditioned geometry; fixed-camera views are not original camera registration; native contact is not structural safety; no artistic winner, pet-name, PR merge, final o-takiage or Elyncia canon promotion without operator authority.
 
 ## Ashes holding ahu · preceding living reading
+
+
+</details>
 
 <details>
 <summary>Previous living front retained verbatim</summary>

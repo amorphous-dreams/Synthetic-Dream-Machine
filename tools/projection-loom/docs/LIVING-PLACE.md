@@ -1,3 +1,22 @@
+# Living Place · Source-bound topology and native witness contract
+
+## Original support → typed route → native construction → independent evidence → operator
+
+`place_obligations` preserves typed `connect`, `shelter`, `ascend`, `bear` intents. `place_source_seal` blocks changes to original body/relation declarations. The new `place_three_hop.propose_three_hop_route` requires explicit selected connect-goal index, original diagonal equal-elevated simple native supports, supported `x-y-x` or `y-x-y` axis pattern, an operator-named waypoint prefix, sufficient width/step and body capacity. It constructs two separate foundation corners plus three independently audited deck segments; no source moves or implicit artistic route selection follow.
+
+The original full `SpatialIntent` still governs the final proposed place. A coarse finite cuboid/footprint test refuses generated corner intrusion into an original authored root body before invoking the native trial. This precheck *does not replace* STEP contact and clearance audits.
+
+`place_topology_study` matches two-hop and three-hop proposals under the same original source with **one exact native STEP budget per constructible arm**. It records independent scene witness, each original goal's status, observed axes/hops, source bodies and construction refusals. Refused configurations stay visible but do not consume native STEP attempts. The study refuses forged positive witnesses, forged negative construction refusals and moved source geometry on replay. It does not create a second generational controller.
+
+Previously witnessed `place_compound_routes._arm_receipt` supplies the common native goal/route projection. `place_campaign` keeps the one existing five-phase `OODAHAJournal`, source-bound parent archive, auditable recombination/frontier and operator-review boundary.
+
+**Not yet proven:** general routing beyond bounded original rectangular support geometry; structural safety, accessibility, exact source-camera registration, image-conditioned geometry, Unreal Editor live round trip and artistic winner. STEP says only bounded geometric affordance.
+
+## Ashes holding ahu · preceding living front
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
 # Living Place · Evergreen constructive and witness contract
 
 ## Source → obligations → heritable architecture → independently audited native evidence → operator
@@ -15,6 +34,9 @@ The immutable frontier distinguishes every **offered** genome from the finite se
 **Open limits:** general constraint-solving topology births, measured source-conditioned geometry, safe structural engineering, original image camera pose, accessible building certification, real Unreal Editor round trip, and artistic acceptance require independent new witnesses.
 
 ## Ashes holding ahu · preceding living reading
+
+
+</details>
 
 <details>
 <summary>Previous living front retained verbatim</summary>
