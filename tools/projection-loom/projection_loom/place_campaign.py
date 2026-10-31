@@ -25,6 +25,23 @@ from .provenance_encoding import canonical_json_sha256
 def _read(path):
     return json.loads(Path(path).read_text(encoding="utf8"))
 
+def _resolve_campaign_source(genome, spatial, preferred):
+    """Preserve diagonal sources for explicit topology-steered native campaigns.
+
+    The ordinary crossing constructor continues to refuse diagonals. Actual
+    three-hop proposals still require independent native STEP admission.
+    """
+    from .place_genome import propose_from_spatial_intent
+    try:
+        return propose_from_spatial_intent(genome,spatial)
+    except ValueError as exc:
+        if (preferred=="topology-birth"
+                and "axis-aligned equally elevated support pair" in str(exc)
+                and any(goal.kind=="connect" for goal in spatial.goals)):
+            return genome
+        raise
+
+
 def observed_place_descriptor(genome:PlaceGenome,affordances):
     """Observed route morphology, not guessed architectural or artistic value."""
     if (not isinstance(genome,PlaceGenome)
@@ -325,7 +342,7 @@ def verify_place_campaign(path):
         raise ValueError("Campaign intent growth rewrote or lost original source declarations")
     if (PlaceGenome.from_dict(pre["intent_constructed_genome"]).identity
             !=pre["intent_constructed_genome_sha256"]
-            or propose_from_spatial_intent(genome,intent).identity
+            or _resolve_campaign_source(genome,intent,pre["initial_emitter_preference"]).identity
             !=pre["intent_constructed_genome_sha256"]):
         raise ValueError("Authored spatial construction changed after preregistration")
     predecessor=pre.get("predecessor")
@@ -416,7 +433,7 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
     from .place_obligations import plan_spatial_obligations
     from .place_source_seal import seal_constructive_growth
     construction_plan=plan_spatial_obligations(genome,spatial)
-    resolved=propose_from_spatial_intent(genome,spatial)
+    resolved=_resolve_campaign_source(genome,spatial,prefer_emitter)
     pre={"schema":"projection-loom/place-preregistration",
          "location":intent.location,"intent_sha256":intent.identity,
          "intent_contract":{"location":intent.location,"aim":intent.aim,
