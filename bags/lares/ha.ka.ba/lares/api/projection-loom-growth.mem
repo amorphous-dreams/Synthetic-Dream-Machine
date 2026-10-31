@@ -53,12 +53,12 @@ The Operator designates this as kept research, not witnessed Loom capability.
 
 <<~ ahu #/links>>
 
-`tools/projection-loom/docs/research/growth-contract.md` names the executable grammar and witness limits.
+The current native code and tests own executable growth grammar and witness limits; the retired `growth-contract.md` remains retrievable from Git at the pre-burn archive head.
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-athenaion">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ri35PckhjRiIqMMf18Azz8_KmHuUKxAePZo2iKrbUV4
+<<^ code="&#x0003;">>ni:///sha-256;SdjcgILNekYha3E1EEkg3LPG2hFALdvoawbvA0MVtCM
 
 <<^ code="&#x0004;" -> to="?">>
