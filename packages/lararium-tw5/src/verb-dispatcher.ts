@@ -58,7 +58,7 @@ import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, E
 import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
-import { runLocalVerb, gateRoutedVerb, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
+import { runLocalVerb, gateRoutedVerb, RoutedCapDenied, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
 
 export interface VerbContext {
   readonly daemon: CompositeStore;
@@ -257,7 +257,8 @@ export interface VerbDispatcherOptions {
   readonly presenterOf?: (invocation: Verb) => string;
   /** True for a verb the vessel's own presence channel took; the verifier reads it as `channel: "local"`. */
   readonly localOf?: (invocation: Verb) => boolean;
-  readonly routeFn?:  (invocation: Verb) => Promise<Record<string, unknown>>;
+  /** Route a verb to main. `signal` aborts when the dispatcher gives up on the ask (a mount that timed out), so the router drops what it holds for it. */
+  readonly routeFn?:  (invocation: Verb, signal?: AbortSignal) => Promise<Record<string, unknown>>;
 }
 
 export class VerbDispatcher {
@@ -353,7 +354,7 @@ export class VerbDispatcher {
       // that asks for a mount reads `bag not registered` for a slot of the wiki the act aims at: a presenter the
       // verifier denies for any other reason (no face, no grant) never reaches a mount, and the fence ran before.
       const slug = routedWikiSlug(invocation);
-      const unregistered = /bag not registered: (lar:\/\/\/\S+)/.exec(refusal instanceof Error ? refusal.message : "")?.[1];
+      const unregistered = refusal instanceof RoutedCapDenied && refusal.kind === "bag-not-registered" ? refusal.bagUrl : undefined;
       if (!slug || !unregistered || wikiSlugOfBag(unregistered) !== slug) throw refusal;
       await this.mountAimedWiki(slug, invocation);
       await gateRoutedVerb(invocation, this.opts.verifier, presenter, local);
@@ -369,12 +370,13 @@ export class VerbDispatcher {
     const refuse = (cause: string): Error => Object.assign(new Error(`wiki-mount-refused: ${cause}`), { reason: "wiki-mount-refused" });
     if (!this.opts.routeFn) throw refuse(`no-route: ${slug} has no island to ask`);
     let timer: ReturnType<typeof setTimeout> | undefined;
+    const abandon = new AbortController();
     try {
       // The ask rides its own correlation id: a caller's request id never names a mount.
       const asked = this.opts.routeFn({
         requestId: `wiki-mount:${globalThis.crypto.randomUUID()}`, title: `wiki-mount:${slug}`, action: "wiki-switch", args: { slug }, requestedBy: invocation.requestedBy,
         targets: [], batchMode: "best-effort", status: "pending", requestedAt: invocation.requestedAt,
-      } as Verb);
+      } as Verb, abandon.signal);
       const bound = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(refuse(`mount-timeout: ${slug} did not answer within ${WIKI_MOUNT_BOUND_MS}ms`)), WIKI_MOUNT_BOUND_MS); });
       const answer = await Promise.race([asked, bound]);
       if (answer["active"] !== true) throw refuse(`${String(answer["cause"] ?? "not-active")}: ${String(answer["detail"] ?? slug)}`);
@@ -383,6 +385,7 @@ export class VerbDispatcher {
       throw refuse(cause instanceof Error ? cause.message : String(cause));
     } finally {
       if (timer) clearTimeout(timer);
+      abandon.abort();   // an ask the gate stopped waiting on drops its entry in the router (a settled ask has none left)
     }
   }
 

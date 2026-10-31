@@ -123,11 +123,19 @@ export function routedWikiSlug(invocation: Verb): string | null {
  * island's own clearance (`kahuReachClearedAtGate`) is a composition option set in code at the island's behavior, never a
  * field the envelope can carry, so nothing a caller sends lifts it.
  */
+/** A routed verb's capability denial; the typed kinds a verifier answers ride along, so a reader never parses the message. */
+export class RoutedCapDenied extends Error {
+  constructor(message: string, readonly kind?: "bag-not-registered", readonly bagUrl?: string) {
+    super(message);
+    this.name = "RoutedCapDenied";
+  }
+}
+
 export async function gateRoutedVerb(invocation: Verb, verifier: CapabilityVerifier, presenter: string, local: boolean): Promise<void> {
   const { access, bagUrl } = deriveRoutedCap(invocation);
   const proof = await verifier.verify({ presenter, bagUrl, access, ...(local ? { channel: "local" as const } : {}) });
   if (!proof.ok) {
-    throw new Error(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bagUrl}, access=${access}): ${proof.reason ?? "no grant"}`);
+    throw new RoutedCapDenied(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bagUrl}, access=${access}): ${proof.reason ?? "no grant"}`, proof.kind, proof.bagUrl);
   }
   // Every inner bag clears its own cap, its grade read off the act the envelope carries: only a COPY reads its source
   // (a copy out of canon stays open to a reader); a MOVE deletes at its source, and any other act takes the outer
@@ -145,7 +153,7 @@ export async function gateRoutedVerb(invocation: Verb, verifier: CapabilityVerif
     if (bag === bagUrl) continue;
     const need: CapabilityAccess = readOnly.has(bag) ? "read" : access;
     const inner = await verifier.verify({ presenter, bagUrl: bag, access: need, ...(local ? { channel: "local" as const } : {}) });
-    if (!inner.ok) throw new Error(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bag}, access=${need}): ${inner.reason ?? "no grant"}`);
+    if (!inner.ok) throw new RoutedCapDenied(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bag}, access=${need}): ${inner.reason ?? "no grant"}`, inner.kind, inner.bagUrl);
   }
   if (verifier.kahuReach) {
     // System canon takes the Kahu hand wherever the act writes or deletes; a COPY's read-only source asks none.

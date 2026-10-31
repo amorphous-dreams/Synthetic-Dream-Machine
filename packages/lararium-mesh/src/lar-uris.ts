@@ -302,7 +302,7 @@ export function catalogCorpusEntryUri(slug: string): string {
   return `${CATALOG_DOC_URI}/corpus/${slug}`;
 }
 
-/** Prefix used to discover catalog corpus-registry entries. */
+/** The prefix every catalog corpus-registry entry shares, so a scan finds them all. */
 export const CATALOG_CORPUS_PREFIX = `${CATALOG_DOC_URI}/corpus/`;
 
 // ── Federation scale (the RESIDENCY-BAG axis) ─────────────────────────────

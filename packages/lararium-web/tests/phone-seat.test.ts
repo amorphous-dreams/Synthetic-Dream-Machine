@@ -43,9 +43,9 @@ describe("phoneSeatExplanation — one explaining line, or nothing", () => {
 });
 
 describe("the seed-at-rest line — one status line, two spellings", () => {
-  test("no wrap → 'seed: cleartext at rest'; a cloud-synced wrap names its class", async () => {
+  test("no wrap → 'seed: no passkey wrap on record'; a cloud-synced wrap names its class", async () => {
     const { seedRestStatus } = await import("../src/phone-seat.js");
-    expect(seedRestStatus(undefined)).toBe("seed: cleartext at rest");
+    expect(seedRestStatus(undefined)).toBe("seed: no passkey wrap on record");
     expect(seedRestStatus({ keyClass: "cloud-synced" })).toBe("seed: wrapped under a passkey (cloud-synced)");
     expect(seedRestStatus({ keyClass: "device-minted" })).toBe("seed: wrapped under a passkey (device-minted)");
   });
