@@ -37,28 +37,48 @@ export function receiptFields(result: unknown): Record<string, unknown> {
 export type FaceIntentAdmissionPorts = Pick<FaceIntentDoorPorts, "group" | "plane" | "personaRecords" | "kelChain" | "anchor" | "standing" | "holdsCapability" | "verbs" | "heldFrontiers"> & {
   /** The relay ring: still reads true at the commit boundary, or the append refuses `face-off`. */
   readonly relayAdmits?: () => boolean | Promise<boolean>;
+  /** The ring's synchronous mirror: read in the commit turn itself, after every await. */
+  readonly relayStands?: () => boolean;
   readonly refresh?: () => Promise<FaceIntentAdmissionPorts>;
 };
+type Standing = "stands" | "aside" | "unknown";
+const standingAtoms = (ports: FaceIntentAdmissionPorts, face: NonNullable<ReturnType<typeof readFace>>): Set<string> => {
+  const projection = face.project(ports.personaRecords(), ports.group);
+  return new Set([...projection.devices.map((d) => d.toLowerCase()), ...intentEntryRecordsOfGroup(ports.plane.doc(), ports.group).map((r) => String((r as { signer?: unknown })?.signer ?? "").toLowerCase())].filter(Boolean));
+};
+/**
+ * The asynchronous half of a read: standings an async port answers, fetched ahead. A port that answers synchronously
+ * is read again at the commit moment, so only an async answer rests as of this fetch (the causal island's last sync).
+ */
+export async function prefetchStandings(ports: FaceIntentAdmissionPorts): Promise<ReadonlyMap<string, Standing>> {
+  const face = readFace(ports.kelChain, ports.anchor);
+  if (!face) throw new Error("face-intent-door: no verified face lineage");
+  const out = new Map<string, Standing>();
+  for (const atom of standingAtoms(ports, face)) { const got = ports.standing(atom); out.set(atom, got instanceof Promise ? await got : got); }
+  return out;
+}
+/**
+ * The synchronous half: the lineage, the roster, the records, the admissions and every synchronous standing read from the
+ * LIVE ports in one turn, with no await between them and whatever acts on the result. An atom an async port never
+ * answered reads `unknown`, so a late arrival fails closed.
+ */
+export function readIntentNow(ports: FaceIntentAdmissionPorts, prefetched: ReadonlyMap<string, Standing>): { view: IntentView; records: unknown[]; readInput: Omit<IntentReadInput, "records"> } {
+  const face = readFace(ports.kelChain, ports.anchor);
+  if (!face) throw new Error("face-intent-door: no verified face lineage");
+  const standings = new Map<string, Standing>();
+  for (const atom of standingAtoms(ports, face)) {
+    const got = ports.standing(atom);
+    standings.set(atom, got instanceof Promise ? (prefetched.get(atom) ?? "unknown") : got);
+  }
+  const settled = face.project(ports.personaRecords(), ports.group);
+  const records = intentEntryRecordsOfGroup(ports.plane.doc(), ports.group);
+  const readInput: Omit<IntentReadInput, "records"> = { group: ports.group, admissions: intentAdmissionRecordsOfGroup(ports.plane.doc(), ports.group),
+    face: faceRosterForIntents(settled, face.lineage), standing: (atom) => standings.get(atom.toLowerCase()) ?? "unknown",
+    ...(ports.holdsCapability ? { holdsCapability: ports.holdsCapability } : {}), verbs: ports.verbs, ...(ports.heldFrontiers ? { heldFrontiers: ports.heldFrontiers() } : {}) };
+  return { view: readIntentPlane({ ...readInput, records }), records, readInput };
+}
 export function makeFaceIntentReader(ports: FaceIntentAdmissionPorts) {
-  const read = async (): Promise<{ view: IntentView; records: unknown[]; readInput: Omit<IntentReadInput, "records"> }> => {
-    const face = readFace(ports.kelChain, ports.anchor);
-    if (!face) throw new Error("face-intent-door: no verified face lineage");
-    const projection = face.project(ports.personaRecords(), ports.group);
-    const standings = new Map<string, "stands" | "aside" | "unknown">();
-    for (const atom of new Set([...projection.devices.map((d) => d.toLowerCase()), ...intentEntryRecordsOfGroup(ports.plane.doc(), ports.group).map((r) => String((r as { signer?: unknown })?.signer ?? "").toLowerCase())])) {
-      if (atom) standings.set(atom, await ports.standing(atom));
-    }
-    // Every await above has settled: the lineage, the roster, the records and the admissions read from the same synchronous
-    // moment. The chain reads again here, since a rotation that merged during a standing read moves the lineage.
-    const current = readFace(ports.kelChain, ports.anchor);
-    if (!current) throw new Error("face-intent-door: no verified face lineage");
-    const settled = current.project(ports.personaRecords(), ports.group);
-    const records = intentEntryRecordsOfGroup(ports.plane.doc(), ports.group);
-    const readInput: Omit<IntentReadInput, "records"> = { group: ports.group, admissions: intentAdmissionRecordsOfGroup(ports.plane.doc(), ports.group),
-      face: faceRosterForIntents(settled, current.lineage), standing: (atom) => standings.get(atom.toLowerCase()) ?? "unknown",
-      ...(ports.holdsCapability ? { holdsCapability: ports.holdsCapability } : {}), verbs: ports.verbs, ...(ports.heldFrontiers ? { heldFrontiers: ports.heldFrontiers() } : {}) };
-    return { view: readIntentPlane({ ...readInput, records }), records, readInput };
-  };
+  const read = async (): Promise<{ view: IntentView; records: unknown[]; readInput: Omit<IntentReadInput, "records"> }> => readIntentNow(ports, await prefetchStandings(ports));
   return { read };
 }
 
@@ -82,13 +102,15 @@ export async function admitAgentEntry(ports: FaceIntentAdmissionPorts, raw: unkn
         if (!decision.ok) return { status: "refused", refusal: decision.refusal };
         const receipt = await signIntentAdmission({ group: ports.group, entry: decision.cid, delegation: decision.delegation, heads: localIntentHeads(records) }, relay);
         if (!readIntentAdmission(receipt, { group: ports.group }).ok) return { status: "refused", refusal: "fault" };
+        // Every async acquisition runs first: the standings an async port answers, then the ring, then the reload, which
+        // reads the face's lineage, roster and synchronous standings as of its own completion. From the next synchronous
+        // line to the append nothing awaits, so the authority the append reads stands as of one turn.
+        const standings = await prefetchStandings(currentPorts);
+        if (ports.relayAdmits && (await ports.relayAdmits()) !== true) return { status: "refused", refusal: "face-off" };
         currentPorts = ports.refresh ? await ports.refresh() : ports;
         if (currentPorts.group !== ports.group || currentPorts.plane !== ports.plane) return { status: "refused", refusal: "fault" };
-        const fresh = await makeFaceIntentReader(currentPorts).read();
-        // The ring reads last among the awaits: a face switched off during the final read appends nothing.
-        if (ports.relayAdmits && (await ports.relayAdmits()) !== true) return { status: "refused", refusal: "face-off" };
-        // The decision below runs synchronously against the plane's current document, so no await separates
-        // the final authority check from the append; a refusal or a duplicate answers without touching the plane.
+        if (ports.relayStands && !ports.relayStands()) return { status: "refused", refusal: "face-off" };
+        const fresh = readIntentNow(currentPorts, standings);
         const doc = ports.plane.doc();
         const current = decideAdmission({ group: ports.group, raw: decision.entry, records: intentEntryRecordsOfGroup(doc, ports.group), read: { ...fresh.readInput, admissions: intentAdmissionRecordsOfGroup(doc, ports.group) } });
         if (!current.ok) return { status: "refused", refusal: current.refusal };
@@ -108,31 +130,41 @@ export async function admitAgentEntry(ports: FaceIntentAdmissionPorts, raw: unkn
   try { return await task; } finally { if (admissionQueues.get(ports.plane) === tail) admissionQueues.delete(ports.plane); }
 }
 
+const inflight = new WeakMap<object, Set<string>>();
 export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
   let running: Promise<void> | null = null, dirty = false;
   const read = async (): Promise<IntentView> => (await makeFaceIntentReader(ports).read()).view;
   const pass = async (): Promise<void> => {
-    const view = await read();
-    const raw = intentEntryRecordsOfGroup(ports.plane.doc(), ports.group) as SignedIntentEntry[];
+    // The standings an async port answers arrive first; everything after rebuilds from the LIVE ports in one turn.
+    const standings = await prefetchStandings(ports);
+    const flying = inflight.get(ports.plane) ?? new Set<string>();
+    inflight.set(ports.plane, flying);
+    let view = readIntentNow(ports, standings).view, stale = false;
     for (const first of view.intents) {
-      // Each effect revalidates from the CURRENT document: a revocation, a cancel, a takeover or an outcome merged by an
-      // earlier effect stops the later ones, so the loop never acts on the view it captured at its head.
-      const current = first === view.intents[0] ? view : await read();
-      const state = current.intents.find((i) => i.id === first.id);
-      if (!state || !mayAct(current, state.id, ports.atom.key.toLowerCase()).act) continue;
+      // Each effect revalidates from the CURRENT document in the turn that invokes it: a revocation, a cancel, a takeover
+      // or an outcome an earlier effect merged stops the later ones. Only a pass that has awaited since its last build rebuilds.
+      if (stale) { view = readIntentNow(ports, standings).view; stale = false; }
+      const state = view.intents.find((i) => i.id === first.id);
+      if (!state || !mayAct(view, state.id, ports.atom.key.toLowerCase()).act) continue;
+      // A single-effect run in flight on this plane fences every other executor of its id until it settles, so a re-pin
+      // that lands mid-run opens no second run (an outcome spends the slot only once it exists).
+      if (state.class === "single-effect" && flying.has(state.id)) continue;
       const effect = ports.effects?.get(state.verb) ?? (ports.runDeclaredEffect && state.class === "idempotent" ? (args: unknown, ctx: { intentId: string; intent: IntentEntryBody; pinnedAtom: string; agent: { key: string; delegation: string } | null }) => ports.runDeclaredEffect!(state.verb, args, ctx) : undefined);
       if (!effect || !ports.verbs.classOfVerb(state.verb)) continue;
-      const invocation = raw.find((r) => r?.body?.entry === "intent" && r.body.issuer === state.issuer &&
+      const invocation = (intentEntryRecordsOfGroup(ports.plane.doc(), ports.group) as SignedIntentEntry[]).find((r) => r?.body?.entry === "intent" && r.body.issuer === state.issuer &&
         intentId(r.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string }) === state.id);
       if (!invocation) continue;
       const pinnedAtom = state.audience.mode === "pinned" ? state.audience.atom : state.audience.mode === "asks" && state.answer && state.answer !== "contested"
         ? (state.answer.entry.body.executor as string | undefined) : undefined;
       if (state.class === "single-effect" && !pinnedAtom) continue;
+      if (state.class === "single-effect") flying.add(state.id);
+      stale = true;
       try {
         const result = await effect(invocation.body.args, { intentId: state.id, intent: invocation.body, pinnedAtom: pinnedAtom ?? ports.atom.key, agent: state.agent ? { key: state.issuer, delegation: state.agent.delegation } : null });
         const receipt = await buildOutcome({ group: ports.group, signer: ports.atom, cause: state.id, result: { status: "done", ...receiptFields(result) } });
         ports.plane.change((draft) => writeIntentEntry(draft, receipt));
       } catch (error) { ports.log(`face intent ${state.id} faulted: ${String(error)}`); }
+      finally { flying.delete(state.id); }
     }
   };
   const heed = (): Promise<void> => {

@@ -38,11 +38,10 @@ export function decideAdmission(input: { readonly group: string; readonly raw: u
   if (!r.ok) return { ok: false, refusal: r.refusal === "group" ? "group" : ["shape", "domain", "unknown-entry"].includes(r.refusal) ? "malformed" : "entry-refused" };
   if (r.entry.body.entry !== "intent" || typeof r.entry.body.delegation !== "string") return { ok: false, refusal: "entry-refused" };
   const id = intentId(r.entry.body as unknown as Parameters<typeof intentId>[0]);
-  // An existing copy under this id with another body (another cid) makes a collision, never a fresh intent.
-  for (const raw of input.records) {
-    const entry = readIntentEntry(raw, { group: input.group, authorize: () => true });
-    if (entry.ok && entry.entry.body.entry === "intent" && entry.cid !== r.cid && intentId(entry.entry.body as unknown as Parameters<typeof intentId>[0]) === id) return { ok: false, refusal: "id-collision" };
-  }
+  // A copy under this id that the fold itself accepts (signer, issuer and delegation checks pass) with another cid makes a
+  // collision, never a fresh intent; an entry the fold refuses establishes none, so a planted forgery poisons no id.
+  const existing = readIntentPlane({ ...input.read, records: input.records });
+  if (existing.collisions.some(c => c.id === id) || existing.intents.some(i => i.id === id && i.cid !== r.cid)) return { ok: false, refusal: "id-collision" };
   const others = input.records.filter(raw => {
     const entry = readIntentEntry(raw, { group: input.group, authorize: () => true });
     return !entry.ok || entry.entry.body.entry !== "intent" || intentId(entry.entry.body as unknown as Parameters<typeof intentId>[0]) !== id;

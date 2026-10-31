@@ -3,7 +3,7 @@ import { faceRecordsOf } from "@lararium/mesh";
 import { admitAgentEntry, type FaceIntentAdmissionPorts } from "@lararium/keyhive";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
 import { loadIntentFace } from "./commands/intent.js";
-import { intentRelayRing } from "./intent-relay-ring.js";
+import { intentRelayRing, intentRelayStands } from "./intent-relay-ring.js";
 import { intentRelayPublicKey, signAsIntentRelay } from "./intent-relay-key-store.js";
 import { CustodyLocked } from "./custody-holder.js";
 import type { IntentRelayFace } from "./intent-relay.js";
@@ -21,7 +21,7 @@ export async function resolveIntentRelayFace(group: string, ports: { repo: Repo;
     try {
       const refresh = async (): Promise<FaceIntentAdmissionPorts> => {
         const loaded = await loadIntentFace(ports.repo, ports.catalogUrl, { group });
-        return { group, plane: loaded.plane, personaRecords: () => faceRecordsOf([loaded.personaPlane?.doc()], group), kelChain: loaded.kelChain, anchor: loaded.anchor, standing: loaded.standing, verbs: loaded.verbs, heldFrontiers: () => loaded.heldFrontiers, relayAdmits: () => ring.admits(group), refresh };
+        return { group, plane: loaded.plane, personaRecords: () => faceRecordsOf([loaded.personaPlane?.doc()], group), kelChain: loaded.kelChain, anchor: loaded.anchor, standing: loaded.standing, verbs: loaded.verbs, heldFrontiers: () => loaded.heldFrontiers, relayAdmits: () => ring.admits(group), relayStands: () => intentRelayStands(group), refresh };
       };
       const result = await admitAgentEntry(await refresh(), entry, { key: await intentRelayPublicKey(), sign: signAsIntentRelay });
       if (result.status !== "refused" && result.status !== "fault") {

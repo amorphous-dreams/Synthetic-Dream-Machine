@@ -26,7 +26,7 @@ export interface IntentSlot {
 }
 export interface IntentState {
   readonly admissions: readonly { cid: string; relay: string }[];
-  readonly id: string; readonly issuer: string; readonly verb: string; readonly class: IntentVerbClass;
+  readonly id: string; readonly cid: string; readonly issuer: string; readonly verb: string; readonly class: IntentVerbClass;
   readonly fenced: boolean;
   readonly audience: IntentAudience; readonly bound: IntentBound | null;
   readonly status: "open" | "answered" | "void" | "unknown-frontier";
@@ -45,6 +45,8 @@ export interface IntentView {
   readonly delegations: readonly { readonly cid: string; readonly agent: string; readonly prefix: string; readonly status: "live" | "revoked" | "closed" | "lapsed" | "awaiting" | "pending-revoke-orphan"; readonly revokedBy: string | null }[];
   readonly refused: readonly { readonly refusal: string; readonly cid?: string }[];
   readonly refusedAdmissions: readonly { readonly refusal: string }[];
+  /** Intent ids whose copies disagree: every copy refuses, and the ids list their cids. */
+  readonly collisions: readonly { readonly id: string; readonly cids: readonly string[] }[];
   readonly strayAnswers: readonly IntentRecord[];
   readonly standing: (atom: string) => Standing;
   readonly holdsCapability: (atom: string, capability: string) => boolean;
@@ -114,10 +116,10 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
   }
   // One id names one body: the id hashes issuer, verb, args and nonce apart from the audience, so a second body
   // under it (a re-pin, a re-target) would let cid order pick a winner. Every copy refuses and none folds.
-  const intents = new Map<string, IntentRecord>();
+  const intents = new Map<string, IntentRecord>(), collisions: { id: string; cids: string[] }[] = [];
   for (const [id, copies] of bodies) {
     if (copies.length === 1) intents.set(id, copies[0]!);
-    else for (const copy of copies) refused.push({ refusal: "id-collision", cid: copy.cid });
+    else { collisions.push({ id, cids: copies.map((c) => c.cid).sort() }); for (const copy of copies) refused.push({ refusal: "id-collision", cid: copy.cid }); }
   }
   const asks = byKind("asks"), answers = byKind("answer"), claims = byKind("claim"), takeovers = byKind("takeover"), releases = byKind("release"), cancels = byKind("cancel"), supersedes = byKind("supersede"), outcomes = byKind("outcome");
   const authorized = (r: IntentRecord, issuer: string, claimant?: string): boolean => {
@@ -215,11 +217,11 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
     }
     const unknown = (agent ? agent.status === "awaiting" : input.standing(issuer) === "unknown") || slots.some((s) => s.unknownFrontier);
     const status = voidCause ? "void" : unknown ? "unknown-frontier" : slots.some((s) => s.winner) ? "answered" : "open";
-    states.push({ admissions: admissions.flatMap(r => r.ok && r.admission.body.entry === source.cid ? [{ cid: r.cid, relay: r.admission.body.relay }] : []).sort((a, b) => a.cid.localeCompare(b.cid)), id, issuer, verb: body.verb as string, class: classification.class, fenced: classification.class === "single-effect" || !!classification.fenced, audience, bound, status, voidCause, agent, asks: ownAsks,
+    states.push({ cid: source.cid, admissions: admissions.flatMap(r => r.ok && r.admission.body.entry === source.cid ? [{ cid: r.cid, relay: r.admission.body.relay }] : []).sort((a, b) => a.cid.localeCompare(b.cid)), id, issuer, verb: body.verb as string, class: classification.class, fenced: classification.class === "single-effect" || !!classification.fenced, audience, bound, status, voidCause, agent, asks: ownAsks,
       answer, claim, claims: ownClaims, slots, voidAfterAct: voidCause ? ownOutcomes : [], outOfAudience });
   }
   refused.sort((a, b) => a.refusal.localeCompare(b.refusal) || (a.cid ?? "").localeCompare(b.cid ?? ""));
-  return { intents: states, delegations, refused, refusedAdmissions, strayAnswers, standing: input.standing, holdsCapability: input.holdsCapability ?? (() => false), face: input.face };
+  return { intents: states, delegations, refused, refusedAdmissions, collisions, strayAnswers, standing: input.standing, holdsCapability: input.holdsCapability ?? (() => false), face: input.face };
 }
 
 export type MayActReason = "spent" | "answered" | "void" | "not-audience" | "pinned-elsewhere" | "fenced-by-claim" | "awaiting-answer" | "unknown-frontier" | "atom-aside";
