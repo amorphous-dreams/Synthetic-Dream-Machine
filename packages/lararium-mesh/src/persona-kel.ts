@@ -188,9 +188,8 @@ export function personaEventBytes(core: PersonaEventCore): Uint8Array {
 
 /** The kind as the bound bytes carry it: present on a typed event, absent on a rotation and a veto. */
 function kindPart(core: Pick<PersonaEventCore, "kind" | "enrolCount" | "enrolThreshold">): { readonly kind?: string; readonly enrolCount?: number; readonly enrolThreshold?: number } {
-  if (core.kind === undefined) return {};
   return {
-    kind: core.kind,
+    ...(core.kind === undefined ? {} : { kind: core.kind }),
     ...(core.enrolCount === undefined ? {} : { enrolCount: core.enrolCount }),
     ...(core.enrolThreshold === undefined ? {} : { enrolThreshold: core.enrolThreshold }),
   };
@@ -278,6 +277,7 @@ export function personaRotationSigningBytes(
     provisional,                                    // the marker rides the signed bytes too
     vetoOfCid:       null,
     enrolmentDigest: enrolmentDigestOf(enrolments), // the recovery contacts attest the re-enrolments with the rotation
+    ...lawPart(head),                               // the standing law rides the signed bytes of every rotation
   });
 }
 
@@ -335,13 +335,14 @@ export async function mintPersonaRotation(input: {
     provisional:     input.provisional ?? false,
     vetoOfCid:       null,
     enrolmentDigest: enrolmentDigestOf(enrolments),
+    ...lawPart(head),                      // a log that holds an enrolment keeps its law on every rotation
   };
   for (const sealed of enrolments) {
     if (!(await verifySealedEnrolment(sealed, head.prefix, freshOpKeyDid))) {
       return { ok: false, reason: "an enrolment the fresh op-key did not seal — only the key a rotation seats re-enrols on it" };
     }
   }
-  if (head.kind === RECOVERY_CONTACT_ENROLMENT_KIND) {
+  if (head.enrolCount !== undefined) {
     const shape = revealedSetFault(head, { recoveryRoster, recoveryThreshold } as PersonaKelEvent);
     if (shape) return { ok: false, reason: shape };
   }
@@ -425,6 +426,7 @@ function vetoCore(contested: PersonaKelEvent, standing: PersonaKelEvent): Person
     provisional:     false,
     vetoOfCid:       contested.eventCid,
     enrolmentDigest: enrolmentDigestOf([]),          // a veto restores the standing key; it enrols no one
+    ...lawPart(standing),
   };
 }
 
@@ -550,6 +552,10 @@ function successorStructureFault(prev: PersonaKelEvent, e: PersonaKelEvent): str
     if (e.nextRecoverySetHash !== prev.nextRecoverySetHash) return "a veto moves the rolling recovery commitment";
     if (e.provisional)                                      return "a veto never reads provisional";
   }
+  // THE LAW TRAVELS: once a log holds an enrolment, every later rotation and veto carries its signed count and threshold forward.
+  if (prev.enrolCount !== undefined && (e.enrolCount !== prev.enrolCount || e.enrolThreshold !== prev.enrolThreshold)) {
+    return "an event on a log that holds an enrolment carries the enrolment's count and threshold forward";
+  }
   return null;
 }
 
@@ -577,7 +583,12 @@ function enrolmentStructureFault(prev: PersonaKelEvent, e: PersonaKelEvent): str
   return null;
 }
 
-/** Why a rotation's revealed set fails the enrolment it opens: not three distinct keys at two, or a count or threshold off the enrolment's signed fields. */
+/** The enrolment's signed count and threshold, as a later event on the same log carries them forward. */
+function lawPart(from: PersonaKelEvent): { readonly enrolCount?: number; readonly enrolThreshold?: number } {
+  return from.enrolCount === undefined ? {} : { enrolCount: from.enrolCount, enrolThreshold: from.enrolThreshold as number };
+}
+
+/** Why a rotation's revealed set fails the standing law (three distinct keys at two): not three distinct keys at two, or a count or threshold off the enrolment's signed fields. */
 function revealedSetFault(enrolment: PersonaKelEvent, e: PersonaKelEvent): string | null {
   const distinct = new Set(e.recoveryRoster.map((k) => k.toLowerCase())).size;
   if (e.recoveryRoster.length !== RECOVERY_CONTACT_COUNT || distinct !== RECOVERY_CONTACT_COUNT || e.recoveryThreshold !== RECOVERY_CONTACT_THRESHOLD) {
@@ -613,7 +624,7 @@ export function personaSuccessorFault(prev: PersonaKelEvent, e: PersonaKelEvent)
   }
   // THE REVEAL DECIDES: the first rotation over an enrolment opens the set its digest committed, and the set must be
   // exactly the three distinct keys at threshold two the enrolment signed (the digest alone shows no count).
-  if (prev.kind === RECOVERY_CONTACT_ENROLMENT_KIND) {
+  if (prev.enrolCount !== undefined) {
     const shape = revealedSetFault(prev, e);
     if (shape) return shape;
   }

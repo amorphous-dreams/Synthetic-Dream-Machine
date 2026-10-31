@@ -31,7 +31,7 @@ import { RECOVERY_CONTACT_REGISTRATION_DOMAIN, RECOVERY_CONTACT_POSSESSION_DOMAI
  *   face-bundle-guardian-set        -> face-bundle-recovery-contact-set (the bundle's format mark)
  *   kind "guardian-enrolment"       -> "recovery-contact-enrolment"    (the typed event: its bytes, cid and every cid after)
  *   party "guardian"                -> "recovery-contact"              (a face-log view's signed party; FACE_LOG_VIEW_DOMAIN is unchanged, so an old-party view now fails the reader)
- *   the enrolment event               gains enrolCount 3 and enrolThreshold 2 in its signed bytes (the KEL verifier decides the 2-of-3 law)
+ *   the enrolment event               gains enrolCount 3 and enrolThreshold 2 in its signed bytes, and every later rotation and veto on that log carries them forward (the KEL verifier decides the 2-of-3 law; the reveal decides the set)
  * Before the cut: enrolment bytes 47251fe4…, event cid pkel1-9d0bab85…, possession bytes ec416f4b…, registration
  * phrase aster-wind-mesa, card phrases dawn-opal-wave · vine-anchor-crest · mesa-heron-wind, rotation cid pkel2-8f47d2af….
  */
@@ -116,7 +116,7 @@ describe("the weld: enrolment, the seed-share card and the recovery rotation, by
     expect(rot.ok).toBe(true);
     if (!rot.ok) return;
     expect(rot.event.prefix).toBe(inception.prefix);
-    expect(rot.event.eventCid).toBe("pkel2-2a34590301dd9b22d76429a25503167ce0acd8a9cd11bcc4037890dd0be450db");
+    expect(rot.event.eventCid).toBe("pkel2-6326b3816bff606d924759a88a61ed63c4ea8d4be8c301a7b1b861aa2a29f0ed");
     expect((await verifyPersonaKelFull([inception, r.event, rot.event])).ok).toBe(true);
     const one = await attestAndRotate({
       head: r.event, freshOpKeyDid: fresh, recoveryContactKeys: keys, recoveryThreshold: 2,

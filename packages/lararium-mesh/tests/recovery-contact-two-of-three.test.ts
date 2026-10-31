@@ -184,19 +184,19 @@ describe("P2 — the reveal decides: a rotation revealing the enrolled set refus
 });
 
 describe("P2 — the law describes the standing set: every rotation on a log that holds an enrolment reveals three distinct keys at two", () => {
-  async function throughFirstRotation(nextKeys: Uint8Array[], nextThreshold: number) {
+  async function throughFirstRotation(graftKeys: Uint8Array[], graftThreshold: number) {
     const inception = await face();
     const first = contacts(3);
     const pubs = await Promise.all(first.map(pubOf));
     const en = await mintRecoveryContactEnrolment({ head: inception, recoveryContactSetHash: sealKeySetHash(pubs, 2), sign: signerOf(seed(11)) });
     if (!en.ok) throw new Error(en.reason);
-    const nextPubs = await Promise.all(nextKeys.map(pubOf));
+    const nextPubs = await Promise.all(graftKeys.map(pubOf));
     const fresh1 = `0x${await pubOf(seed(22))}`;
-    const bytes1 = personaRotationSigningBytes(en.event, fresh1, sealKeySetHash(nextPubs, nextThreshold));
+    const bytes1 = personaRotationSigningBytes(en.event, fresh1, sealKeySetHash(nextPubs, graftThreshold));
     const r1 = await mintPersonaRotation({
       head: en.event, freshOpKeyDid: fresh1, recoveryRoster: pubs, recoveryThreshold: 2,
       rotationSigs: await Promise.all([seed(1), seed(2)].map(async (s) => ({ signer: await pubOf(s), sig: await signerOf(s)(bytes1) }))),
-      nextRecoverySetHash: sealKeySetHash(nextPubs, nextThreshold),
+      nextRecoverySetHash: sealKeySetHash(nextPubs, graftThreshold),
     });
     if (!r1.ok) throw new Error(r1.reason);
     return { head: r1.event, nextPubs };
