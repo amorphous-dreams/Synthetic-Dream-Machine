@@ -12,6 +12,7 @@
  * an older one at its own sha or carried by a newer road commit read GREEN, whose run tested a tree holding it. A road commit
  * whose push changed only the paths of tools/ci-ignored-paths.json (meme, docs, wiki) raised no run; it passes when every commit
  * between it and the nearest first-parent ancestor reading GREEN changed ignored paths alone, and a code commit with no run refuses.
+ * A lane head follows the same rule on its own branch, over an ancestor whose CI reads GREEN.
  *
  *   TRAIN   merge every lane over the span in a provisioned worktree, install when the lockfile moved, build, run the suites of
  *           every package two lanes both touch, witness-all, evergreen; read each verdict from its tally, never an exit alone.
@@ -126,10 +127,10 @@ const isAncestor = (git, a, b) => { try { git(["merge-base", "--is-ancestor", a,
 
 const touchesIgnoredOnly = (git, c) => onlyIgnoredPaths(git(["diff-tree", "--no-commit-id", "--name-only", "-r", "-m", "--first-parent", c]).split("\n").filter(Boolean));
 /** The nearest first-parent ancestor of `c` reading GREEN at its sha, or null where a commit between holds a run that is not green or touches code. */
-async function greenAncestor(ops, git, span, c) {
+async function greenAncestor(ops, git, branch, c, { lane = false } = {}) {
   for (const a of git(["rev-list", "--first-parent", "-n", "50", `${c}^`]).split("\n").filter(Boolean)) {
-    const v = await settled(ops, span, a);
-    if (classify(v) === "green") return a;
+    const v = await settled(ops, branch, a, { lane });
+    if ((lane ? classifyLane(v) : classify(v)) === "green") return a;
     if (!(v.ci === "unread" && touchesIgnoredOnly(git, a))) return null;
   }
   return null;
@@ -206,7 +207,12 @@ export async function landTrain({ name, base, specs, plan = false, span = SPAN, 
     if (!isAncestor(git, baseSha, LH)) return stop(9, `LANE LACKS THE BASE: ${l.suffix}`);
     if (!ops.readMsg(l.msg).trim()) return stop(2, `NO MESSAGE FILE: ${l.msg}`);
     const v = await settled(ops, branch, LH, { lane: true });
-    const k = classifyLane(v);
+    let k = classifyLane(v);
+    if (k !== "green" && v.ci === "unread" && touchesIgnoredOnly(git, LH)) {
+      // The lane head's push changed ignored paths alone and raised no run; it reads GREEN over a CI-green ancestor on its own branch.
+      const anchor = await greenAncestor(ops, git, branch, LH, { lane: true });
+      if (anchor) { say(`lane ${l.suffix} head ${short(LH)} touches ignored paths only; no CI run stands; carried by green ancestor ${short(anchor)}`); k = "green"; }
+    }
     if (k === "unreadable") return stop(10, `UNREADABLE: lane ${l.suffix}'s CI verdict could not be read (${v.ci}); read again later, it is no red`);
     if (k !== "green") return stop(8, `LANE NOT GREEN: ${l.suffix}`, `  ci ${v.ci} · held-out ${heldOutNote(v)}`);
     l.subject = ops.readMsg(l.msg).split("\n")[0];
