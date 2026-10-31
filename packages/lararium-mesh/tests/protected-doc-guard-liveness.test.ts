@@ -8,6 +8,9 @@
  * recounts, so any finite burst drains within the bound.
  *
  *   L1  RED: a source that is pending after every settle round answers the ask (withhold), never holds it.
+ *   L2  RED (Sonnet cold read, Q5): a bound that trips fires `onBound`, so the composer re-asks its cached verdicts once the
+ *       queue drains (a document withheld at the bound never stays withheld in the Repo's cache); CONTROL: an ask that
+ *       settles within the bound fires nothing.
  *   L1c CONTROL: a source that drains after a few rounds classes the ask normally (an admitted peer reads, an unclassed doc falls through).
  */
 import { describe, expect, test } from "vitest";
@@ -47,5 +50,23 @@ describe("the guard's recount wait is bounded", () => {
     expect(await guard.withholds("stranger", "doc-a")).toBe(true);
     left = 3;
     expect(await guard.withholds("stranger", "doc-unclassed")).toBe(false);
+  });
+
+  test("L2 — RED: a bound that trips fires onBound; CONTROL: a settled ask fires nothing", async () => {
+    let writing = true, bound = 0, left = 0;
+    const guard = protectedDocGuard({
+      ids: () => new Map([["doc-a", "kahu-canon"]]),
+      settled: async () => { if (left > 0) left--; await new Promise<void>((r) => setImmediate(r)); },
+      pending: () => writing || left > 0,
+      decide: { "kahu-canon": () => true },
+      ...({ onBound: () => { bound++; } } as object),
+    } as Parameters<typeof protectedDocGuard>[0]);
+    try {
+      expect(await race(guard.withholds("hand", "doc-a"), 2_000)).toBe(true);
+      expect(bound, "the trip re-asks").toBe(1);
+    } finally { writing = false; }
+    left = 2;
+    expect(await guard.withholds("hand", "doc-a")).toBe(false);
+    expect(bound, "CONTROL: a settled ask re-asks nothing").toBe(1);
   });
 });

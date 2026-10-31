@@ -42,7 +42,7 @@ type RelationInput = {
 };
 type VesselPrivateModule = {
   vesselPrivateDocIds(bootstrapTiddlers: Record<string, { text?: string }>): ReadonlySet<string>;
-  vesselPrivateBook(opts: { bootstrapPath: string }): { ids(): ReadonlySet<string>; has(id: string): boolean; add(urlOrId: string | null | undefined): void; torn?(): boolean };
+  vesselPrivateBook(opts: { bootstrapPath: string; onGrow?: () => void }): { ids(): ReadonlySet<string>; has(id: string): boolean; add(urlOrId: string | null | undefined): void; torn?(): boolean };
   vesselPrivateRelationOpens(input: RelationInput): Promise<boolean>;
 };
 const vp = (await import("../src/vessel-private.js").catch(() => null)) as VesselPrivateModule | null;
@@ -228,5 +228,27 @@ describe("no relation, registration or alias widens who reads a vessel's private
     const firstTorn = join(dir, "first-torn.json");
     writeFileSync(firstTorn, "{");
     expect(vp!.vesselPrivateBook({ bootstrapPath: firstTorn }).torn!()).toBe(false);
+  });
+
+  test("V6 — RED: the book's growth fires onGrow; CONTROL: no growth, no fire", async () => {
+    expect(vp, "vessel-private stands").not.toBeNull();
+    const { utimesSync } = await import("node:fs");
+    const dir = mkdtempSync(join(tmpdir(), "lar-ralias-grow-")); roots.push(dir);
+    const path = join(dir, "social-bootstrap.json");
+    writeBootstrap(path, bootstrap(ONE));
+    let grew = 0;
+    const book = vp!.vesselPrivateBook({ bootstrapPath: path, onGrow: () => { grew++; } });
+    const atStand = grew;
+    book.add(CATALOG);
+    expect(grew, "the catalog's class re-asks").toBe(atStand + 1);
+    book.add(CATALOG);
+    expect(grew, "CONTROL: an id already classed re-asks nothing").toBe(atStand + 1);
+    writeBootstrap(path, bootstrap(ONE, TWO));
+    const t = Date.now() / 1000 + 5; utimesSync(path, t, t);
+    expect(book.has(String(idOf(TWO.circles)))).toBe(true);
+    expect(grew, "a face added at runtime re-asks").toBe(atStand + 2);
+    writeBootstrap(path, bootstrap(ONE, TWO)); utimesSync(path, t + 5, t + 5);
+    book.ids();
+    expect(grew, "CONTROL: a re-read that classes nothing new re-asks nothing").toBe(atStand + 2);
   });
 });
