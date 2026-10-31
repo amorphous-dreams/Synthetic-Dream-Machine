@@ -103,20 +103,29 @@ def _topology_birth(original, spatial, *, seed, epoch, index):
         return None,"original intent declares no connect relationship"
     choice=(seed+epoch*10007+index*137)%len(goals)
     goal_index=goals[choice]
-    pattern=PATTERNS[(seed+epoch+index)%len(PATTERNS)]
+    starting=(seed+epoch+index)%len(PATTERNS)
     prefix="route_e%d_c%d_g%d"%(epoch,index,goal_index)
-    try:
-        proposal=propose_three_hop_route(original,spatial,goal_index=goal_index,
-                                         pattern=pattern,corner_prefix=prefix)
-    except ValueError as exc:
-        return None,"source-bound topology refused: "+str(exc)
-    child=PlaceGenome.from_dict(proposal["proposed_genome"])
-    return (child,{"source_genome_sha256":original.identity,
-                   "spatial_intent_sha256":spatial.identity,
-                   "goal_index":goal_index,"pattern":pattern,
-                   "corner_prefix":prefix,"proposal_sha256":proposal["sha256"],
-                   "native_audition_completed":False,
-                   "automatic_operator_acceptance":False}),None
+    refusals=[]
+    for offset in range(len(PATTERNS)):
+        pattern=PATTERNS[(starting+offset)%len(PATTERNS)]
+        try:
+            proposal=propose_three_hop_route(original,spatial,goal_index=goal_index,
+                                             pattern=pattern,corner_prefix=prefix)
+        except ValueError as exc:
+            refusals.append({"pattern":pattern,"reason":str(exc)})
+            continue
+        child=PlaceGenome.from_dict(proposal["proposed_genome"])
+        return (child,{"source_genome_sha256":original.identity,
+                       "spatial_intent_sha256":spatial.identity,
+                       "goal_index":goal_index,"pattern":pattern,
+                       "sampled_pattern":PATTERNS[starting],
+                       "tested_patterns":len(refusals)+1,
+                       "rejected_patterns":refusals,
+                       "corner_prefix":prefix,"proposal_sha256":proposal["sha256"],
+                       "native_audition_completed":False,
+                       "automatic_operator_acceptance":False}),None
+    return None,("all source-bound topology patterns refused: "+
+                 "; ".join(row["pattern"]+": "+row["reason"] for row in refusals))
 
 
 def emit_place_child(original,resolved,archive,spatial,*,epoch,index,offspring,seed):
