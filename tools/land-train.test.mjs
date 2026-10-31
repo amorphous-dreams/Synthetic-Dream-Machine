@@ -488,3 +488,32 @@ test("RED: a lane reads GREEN on its CI alone; a red or unread held-out prints a
   assert.equal(ciRed.code, 8, ciRed.out);
   assert.match(ciRed.out, /held-out not run \(per train\)/);
 });
+
+test("RED: a meme-only road commit with no run, over a green ancestor, passes; CONTROL: a code commit with no run still refuses", async () => {
+  const unreadAt = (sha) => async (b, s) => (s === sha ? { ci: "unread", heldOut: "unread" } : { ci: "green", heldOut: "green" });
+  const w = world(["a"]);
+  const meme = w.commit(w.work, "bags/lares/ha.ka.ba/doc.mem", "m\n", "a meme-only road commit");
+  sh(w.work, "push", "-q", "origin", SPAN);
+  const ok = await run(w, { verdict: unreadAt(meme) }, {}, ["a"]);
+  assert.equal(ok.code, 0, ok.out);
+  assert.match(ok.out, /road commit .* touches ignored paths only/);
+  const w2 = world(["a"]);
+  const code = w2.commit(w2.work, "tools/x.mjs", "c\n", "a code road commit");
+  sh(w2.work, "push", "-q", "origin", SPAN);
+  const refused = await run(w2, { verdict: unreadAt(code) }, {}, ["a"]);
+  assert.equal(refused.code, 3, refused.out);
+  assert.match(refused.out, /NON-LAND COMMIT NOT READ GREEN/);
+  // CONTROL: a meme-only commit over an ancestor that does NOT read green refuses (the carry needs a green ancestor).
+  const w3 = world(["a"]);
+  const m3 = w3.commit(w3.work, "notes.md", "m\n", "a docs-only road commit");
+  sh(w3.work, "push", "-q", "origin", SPAN);
+  const noAnc = await run(w3, { verdict: async (b, s) => (s === m3 ? { ci: "unread", heldOut: "unread" } : { ci: "red", heldOut: "green" }) }, {}, ["a"]);
+  assert.equal(noAnc.code, 3, noAnc.out);
+  // CONTROL: a mixed commit (meme and code) with no run refuses.
+  const w4 = world(["a"]);
+  w4.commit(w4.work, "bags/x.mem", "m\n", "mixed part one");
+  const mixed = w4.commit(w4.work, "tools/y.mjs", "c\n", "mixed part two");
+  sh(w4.work, "push", "-q", "origin", SPAN);
+  const mx = await run(w4, { verdict: unreadAt(mixed) }, {}, ["a"]);
+  assert.equal(mx.code, 3, mx.out);
+});
