@@ -25,7 +25,7 @@ import {
 import * as init from "../src/commands/init.js";
 import { seatedCustody, unseatCustody, writeCustodyRow } from "../src/custody-seat.js";
 import {
-  RecoveryContactEnrolmentRefused, recoveryContactOffer, recoveryContactSetFile, recoveryContactStanding, readRecoveryContactSet, runRecoveryContactEnrolment,
+  RecoveryContactEnrolmentRefused, recoveryContactOffer, recoveryContactSetFile, recoveryContactStanding, readRecoveryContactSet, readRecoveryContactOffer, runRecoveryContactEnrolment,
 } from "../src/recovery-contact-enrolment.js";
 import { loadIdentityAnchors } from "../src/identity-anchors.js";
 import { ownedStore } from "../src/owned-store.js";
@@ -123,6 +123,14 @@ describe("a face enrols its first recovery contacts on this vessel", () => {
     expect(await lineage(prefix0)).toHaveLength(1);
     // CONTROL: two of three enrols.
     expect(await enrol(0, offers, 2)).toMatchObject({ threshold: 2, recoveryContacts: 3, seq: 1 });
+  });
+
+  test("G6 — the three offers read as three distinct contacts, each with its own slot and label", async () => {
+    const { prefix0 } = await twoFaces();
+    const lines = [await recoveryContactOffer(prefix0), await recoveryContactOffer(prefix0), await recoveryContactOffer(prefix0)].map((o) => o.offer);
+    const read = lines.map((l, i) => readRecoveryContactOffer(l, i).registration);
+    expect(new Set(read.map((r) => r.slot)).size).toBe(3);
+    expect(new Set(read.map((r) => r.label)).size).toBe(3);
   });
 
   test("G4 — a stopped run completes with the same offers; other offers refuse record-names-another-set", async () => {
