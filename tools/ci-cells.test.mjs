@@ -139,6 +139,19 @@ test("C8b RED: witness-all --static leaves exactly the docker witnesses out of t
   }
 });
 
+test("C8c RED: witness-all --fast is the static roster minus exactly the slow set; CONTROL: --static keeps every slow witness", () => {
+  const list = (...args) => {
+    const r = spawnSync("bash", ["tools/witness-all.sh", "--list", ...args], { cwd: ROOT, encoding: "utf8" });
+    assert.equal(r.status, 0, r.stderr);
+    return r.stdout.split("\n").filter(Boolean);
+  };
+  const stat = list("--static"), fast = list("--fast");
+  assert.deepEqual(stat.filter((w) => !fast.includes(w)).sort(), ["contract-witness", "custody-census-witness", "law-mutants-witness"]);
+  assert.equal(fast.every((w) => stat.includes(w)), true);
+  assert.equal(fast.some((w) => w.includes("household")), false, "--fast implies --static");
+  for (const w of ["contract-witness", "custody-census-witness", "law-mutants-witness"]) assert.ok(stat.includes(w), `${w} leaves --static`);
+});
+
 test("C9 RED: a cell's report name carries its cell and package, and the table keeps every package's script one plain vitest run", () => {
   assert.equal(testReportName("node", { dir: "packages/lararium-node" }), "report-node-lararium-node.json");
   for (const c of TEST_CELLS) for (const p of c.packages.filter((q) => q.vitest !== false)) {

@@ -35,12 +35,21 @@ declare -A DOCKER=(
   [household-resolver-witness]="stands the compose records check and resolver — needs docker"
 )
 
+# Static witnesses slow enough to leave the lane's FAST tier (`--fast`, which implies `--static`): measured run times on the
+# box, each over a minute where every other static witness ran under 30 seconds (measured 2026-10-31). The cloud's long tier and the train run them.
+declare -A SLOW=(
+  [contract-witness]="373s — founds vessels and walks the contract handshake end to end"
+  [custody-census-witness]="69s — walks the custody census over every carrier"
+  [law-mutants-witness]="134s — kills every mutant of the law tables"
+)
+
 # Witnesses heavy enough to run in a CI cell of their own (`tools/ci-cells.mjs` names the cell of each). A bare run
 # still runs them all; `--except-apart` leaves them to their cells, and `--only <name>` runs exactly one of them.
 APART=(contract-witness)
 
 mode=all
 static=0
+fast=0
 only=""
 list=0
 while [ "$#" -gt 0 ]; do
@@ -48,6 +57,7 @@ while [ "$#" -gt 0 ]; do
     --list) list=1 ;;
     --except-apart) mode=except ;;
     --static) static=1 ;;
+    --fast) static=1; fast=1 ;;
     --only) mode=only; only="${2:-}"; shift ;;
     *) echo "witness-all: unknown argument $1" >&2; exit 2 ;;
   esac
@@ -63,6 +73,7 @@ status=0
 held=()
 apart_skipped=()
 docker_skipped=()
+slow_skipped=()
 order=()
 declare -A exit_of=()
 declare -A seen=()
@@ -71,6 +82,7 @@ for path in tools/*witness*.sh; do
   seen[$w]=1
   if [ -n "${HELD_OUT[$w]:-}" ]; then held+=("$w — ${HELD_OUT[$w]}"); continue; fi
   if [ "$static" -eq 1 ] && [ -n "${DOCKER[$w]:-}" ]; then docker_skipped+=("$w — ${DOCKER[$w]}"); continue; fi
+  if [ "$fast" -eq 1 ] && [ -n "${SLOW[$w]:-}" ]; then slow_skipped+=("$w — ${SLOW[$w]}"); continue; fi
   case "$mode" in
     except) is_apart "$w" && { apart_skipped+=("$w"); continue; } ;;
     only) [ "$w" = "$only" ] || continue ;;
@@ -96,6 +108,11 @@ done
 if [ "$mode" = except ] && [ "${#apart_skipped[@]}" -gt 0 ]; then
   echo "── run apart, in cells of their own ──"
   printf '  %s\n' "${apart_skipped[@]}"
+fi
+
+if [ "${#slow_skipped[@]}" -gt 0 ]; then
+  echo "── slow witnesses left to the long tier (--fast) ──"
+  printf '  %s\n' "${slow_skipped[@]}"
 fi
 
 if [ "${#docker_skipped[@]}" -gt 0 ]; then
