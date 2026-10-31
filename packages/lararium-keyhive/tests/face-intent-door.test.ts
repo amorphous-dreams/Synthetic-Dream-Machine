@@ -471,3 +471,36 @@ describe("a completed effect stays settled, a detached door hears no fence, and 
     expect(effect).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("a detach that lands while a pass is in flight", () => {
+  test("RED: a door detached while its pass still acquires joins no fence wait and runs nothing after; CONTROL: the same door left attached runs once the fence frees", async () => {
+    const run = async (detach: boolean) => {
+      const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs();
+      let release!: () => void; const held = new Promise<void>((r) => { release = r; });
+      const a1 = vi.fn(async () => { await held; throw new Error("faulted"); }), a2 = vi.fn(async () => ({ recordCid: "two" }));
+      const base = { group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs, log: () => {}, standing: () => "stands" as const };
+      const intent = await buildIntent({ group: f.group, signer: f.joinee, verb: "face-join", args: { summons: {} }, nonce: f.joinee.key, audience: { mode: "asks" }, verbs });
+      const id = intentId(intent.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string });
+      const asks = await buildAsks({ group: f.group, signer: f.joinee, intent: id, needs: "executor" });
+      const first = await buildAnswer({ group: f.group, signer: f.h1, ask: intentEntryCid(asks), verdict: "approve", executor: f.h1.key });
+      shared.handle.change((d) => { writeIntentEntry(d, intent); writeIntentEntry(d, asks); writeIntentEntry(d, first); });
+      const d1 = makeFaceIntentDoor({ ...base, atom: f.h1, effects: new Map([["face-join", a1]]) });
+      const running = d1.heed();
+      await Promise.resolve();
+      const repin = await signIntentEntry({ group: f.group, entry: "answer", refs: [intentEntryCid(first)], ask: intentEntryCid(asks), verdict: "approve", executor: f.h2.key }, f.h1);
+      shared.handle.change((d) => writeIntentEntry(d, repin));
+      // The second door's acquisition holds open, so its first pass is still in flight when the detach lands.
+      let open!: () => void; const gate = new Promise<void>((r) => { open = r; });
+      const acquisition = { acquire: async () => { await gate; }, holds: () => true };
+      const stop2 = makeFaceIntentDoor({ ...base, atom: f.h2, acquisition, effects: new Map([["face-join", a2]]) }).attach();
+      await settle();
+      if (detach) stop2();
+      open(); await settle();
+      release(); await running; await settle();
+      if (!detach) stop2();
+      return a2.mock.calls.length;
+    };
+    expect(await run(true)).toBe(0);
+    expect(await run(false)).toBe(1);
+  });
+});
