@@ -93,6 +93,9 @@ Deferred: """+str(len(report["deferred"]))+"""</p>
 <p>Relational proposals: """+str(report["relational_emissions"]["relational_offered"])+
 """ · Independently native-audited: """+str(report["relational_emissions"]["relational_native_attempted"])+
 """ · Native-admitted: """+str(report["relational_emissions"]["relational_native_admitted"])+
+""" · Topology proposals: """+str(report["relational_emissions"]["topology_offered"])+
+""" · Topology STEP attempts: """+str(report["relational_emissions"]["topology_native_attempted"])+
+""" · Topology native-admitted: """+str(report["relational_emissions"]["topology_native_admitted"])+
 """ · Deferred proposals: """+str(report["relational_emissions"]["proposal_deferrals"])+
 """ · Rejected source-region combinations: """+str(report["relational_emissions"]["region_pairs_refused_before_birth"])+
 """ (proposal attempts only; not STEP auditions)</p>
