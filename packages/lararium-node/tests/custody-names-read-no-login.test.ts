@@ -5,13 +5,14 @@
  * names from its home alone: a host fact never picks which file a vessel reads.
  */
 import { afterAll, describe, expect, test, vi } from "vitest";
-import { cpSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { RandomProvider } from "@lararium/mesh";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { foundDirect } from "./found-route.js";
-import { generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
+import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
+import { larIdentityDir } from "../src/vessel-paths.js";
 import { faceRowNames } from "./face-paths.js";
 
 vi.setConfig({ testTimeout: 240_000 });
@@ -38,6 +39,7 @@ async function underEmail<T>(r: string, email: string, work: (flip: (next: strin
   try { return await work(write); }
   finally { if (prior === undefined) delete process.env["GIT_CONFIG_GLOBAL"]; else process.env["GIT_CONFIG_GLOBAL"] = prior; }
 }
+const placeFiles = (): string[] => readdirSync(larIdentityDir()).filter((f) => f.startsWith(".vessel-")).sort();
 const rootRows = (): string[] => faceRowNames().filter((f) => f.startsWith(".persona-group-root"));
 
 describe("custody names read no login", () => {
@@ -62,6 +64,31 @@ describe("custody names read no login", () => {
       const again = await generateOrLoadPersonaGroupRoot(0);
       expect(again).toEqual({ verifyingKey: first.verifyingKey, created: false });
       expect(rootRows()).toHaveLength(1);
+    }));
+  });
+
+  test("RED: a found on a flipped git email loads the place key that stands, and mints no second key or KEL", async () => {
+    const r = root();
+    await withLarRoot(r, () => underEmail(r, "a@x.invalid", async (flip) => {
+      await foundDirect({ ...at(r), entropy: entropy(1), placeFoundingCard: { readBack: async () => {} } });
+      const standing = placeFiles();
+      const first = await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
+      flip("b@x.invalid");
+      const again = await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
+      expect(again.verifyingKey, "the same place key answers").toBe(first.verifyingKey);
+      expect(placeFiles(), "no second key or KEL lands").toEqual(standing);
+    }));
+  });
+
+  test("CONTROL: a found on the unchanged email loads the place key that stands", async () => {
+    const r = root();
+    await withLarRoot(r, () => underEmail(r, "a@x.invalid", async () => {
+      await foundDirect({ ...at(r), entropy: entropy(1), placeFoundingCard: { readBack: async () => {} } });
+      const standing = placeFiles();
+      const first = await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
+      const again = await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
+      expect(again.verifyingKey).toBe(first.verifyingKey);
+      expect(placeFiles()).toEqual(standing);
     }));
   });
 });
