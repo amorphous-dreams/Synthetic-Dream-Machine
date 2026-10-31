@@ -20,6 +20,9 @@ def test_review_board_from_real_source_bound_native_place(tmp_path):
     assert result["relational_emissions"]["native_attempts"]==1
     assert "Emitter: initial" in (board/"board.html").read_text()
     assert "Relational proposals: 0" in (board/"board.html").read_text()
+    assert "Topology proposals: 0" in (board/"board.html").read_text()
+    assert "Topology STEP attempts: 0" in (board/"board.html").read_text()
+    assert "Topology native-admitted: 0" in (board/"board.html").read_text()
     assert "not STEP auditions" in (board/"board.html").read_text()
     assert "Source evidence" in (board/"board.html").read_text()
     assert "geometric-route-proposal" in (board/"board.html").read_text()
