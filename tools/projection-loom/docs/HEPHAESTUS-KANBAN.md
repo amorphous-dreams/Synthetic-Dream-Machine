@@ -1,5 +1,24 @@
 # Hephaestus · YIN active work board
 
+## Current topology inheritance · subsequent YIN refinement
+
+- [x] Integrate three-hop source-conditioned proposals into the single existing OODA-HA campaign and finite native frontier.
+- [x] Add deterministic proposal/refusal tests, then test original-body seal and independently authored goal preservation.
+- [x] Test that an unwitnessed archive entry cannot change an original-source topology proposal or create false native ancestry.
+- [x] Replace nested emitter-selection expression with explicit breeding/topology/default paths; no compatibility adapter.
+- [ ] Review exact-head CI on the new commit; a previous-head CAD/evidence run remained in progress when queried, and did not certify new commits.
+- [ ] Prove campaign-wide multi-epoch native admission and independent replay, preferred topology prioritization, corrupted receipts and exact audition budget under native CAD.
+- [ ] Lift shared deferral semantics across the entire run/verify/board surface without maintaining stale recombinant-only terminology.
+- [ ] Demonstrate measured source-conditioned morphology and real Unreal Editor witness separately from static gallery render.
+- [ ] Maintain holding ashes and operator authority; no PR merge or irreversible retirement.
+
+## Ashes holding ahu · preceding living board
+
+<details>
+<summary>Previous living board retained verbatim</summary>
+
+# Hephaestus · YIN active work board
+
 ## Source-landed waves, exact-head acceptance still required
 
 - [x] Bound new source-typed two-/three-hop topology proposals with explicit operator axes and named native corners.
@@ -1716,5 +1735,7 @@ The first generalized contract run for `9284c1d7` passed 87 tests and failed one
 
 **✶ Observe:** The new dual-BRep reparent could be verified by `native_support` but still needed a complete location ancestry and CLI handback. **⏿ Orient:** Changing a required parent is an attributable semantic choice within one unchanged STEP scene, not a silent geometry rewrite. **◇ Decide:** Reuse the existing `support_workspace` to fork an immutable child with original source snapshot, full causal parent manifest, prior/new ground, both independent contacts, a single OODA-HA session and exact scene digest. Provide one `native-support-reparent` CLI entrypoint rather than a new controller. **▶ Act:** Positive independent two-quay/bridge end-to-end native location supports old→new replacement and reopens the complete fork; tests refuse repeated destination, altered dual-contact receipts and disconnected new bearing. **↺ Aftermath:** Structural reparenting with unchanged geometry is now implemented; actual editor-guided reparent motion remains separate, and no load safety is inferred. Exact-head suite must pass.
 
+
+</details>
 
 </details>
