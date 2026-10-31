@@ -171,7 +171,7 @@ def emit_place_child(original,resolved,archive,spatial,*,epoch,index,offspring,s
           "resolved_genome_sha256":resolved.identity,
           "candidate_genome_sha256":child.identity,
           "ancestors":ancestors,
-          "recombination_deferral":refusal,
+          "proposal_deferral":refusal,
           "native_audition_completed":False,
           "operator_accepted":False}
     return child,{**body,"sha256":canonical_json_sha256(body)}
