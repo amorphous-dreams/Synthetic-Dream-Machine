@@ -69,7 +69,7 @@ let priorHome: string | undefined;
 let priorXdg: string | undefined;
 let priorGlobal: string | undefined;
 let configHome: string;
-const at = (file: string): string => /^\.persona-(?:group-root|roster|petnames|declarations|public-handles)(?:-[^./]+)?-h\d+\.json$/.test(file) ? handleRowPathIn(c.homes.identity, file) : join(c.homes.identity, file);
+const at = (file: string): string => /^\.persona-(?:group-root|roster|petnames|declarations|public-handles)-h\d+\.json$/.test(file) ? handleRowPathIn(c.homes.identity, file) : join(c.homes.identity, file);
 const read = (file: string): Buffer => readFileSync(at(file));
 const sealed = (file: string): void => expect(at(file) === join(c.homes.identity, file) ? readSCarrier(read(file)) : readFckCarrier(read(file))).toBe("sealed");
 const rosterFile = (i: number): string => `.persona-roster-h${i}.json`;
