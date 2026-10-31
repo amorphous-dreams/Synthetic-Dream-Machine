@@ -1,3 +1,20 @@
+# Projection Loom · Living YIN hephaestus-kanban
+
+## Bounded topology search · latest feature/aftermath
+
+PR #84, branch `feature/green-jello-dinosaur-5--projection-loom`. Source commits `d9a21d280ae000dd3c16e31f2dc27c7ba0660059` and `359f93ea4edb18f7737d1db7fdf8ae3f38be0ce2`.
+
+The generational topology emitter now tries both `x-y-x` and `y-x-y` patterns in a seeded deterministic order. A site that obstructs the first route can admit a second source-protecting proposal. The ancestry receipt records sampled and accepted pattern, number of alternatives tried, and the rejected pattern's actual construction reason. When all alternatives refuse, the original mutation fallback records the failed search; no phantom native STEP audition, artistic winner or new OODA-HA controller arises.
+
+A new regression test models a foundation obstacle blocking the initially selected route while allowing the alternate one. Existing mutation-refusal test now expects the bounded all-patterns refusal. **Changes committed through GitHub; local Python/native test execution did not occur.** Predecessor head `e2c08355` carried an in-progress CAD/evidence run at observation, not an acceptance verdict for this new code.
+
+**Next:** exact-head CI, test native campaign replay and budget invariants, audit proposal receipt integrity, consolidate emitter-specific refusal accounting without compatibility adapters. Real Unreal Editor and truly measured seed-conditioned geometry remain unwitnessed. Keep earlier front in ashes, operator authority and PR unmerged.
+
+## Ashes holding ahu · previous living front
+
+<details>
+<summary>Previous living document retained verbatim</summary>
+
 # Hephaestus · YIN active work board
 
 ## Current topology inheritance · subsequent YIN refinement
@@ -1735,6 +1752,8 @@ The first generalized contract run for `9284c1d7` passed 87 tests and failed one
 
 **✶ Observe:** The new dual-BRep reparent could be verified by `native_support` but still needed a complete location ancestry and CLI handback. **⏿ Orient:** Changing a required parent is an attributable semantic choice within one unchanged STEP scene, not a silent geometry rewrite. **◇ Decide:** Reuse the existing `support_workspace` to fork an immutable child with original source snapshot, full causal parent manifest, prior/new ground, both independent contacts, a single OODA-HA session and exact scene digest. Provide one `native-support-reparent` CLI entrypoint rather than a new controller. **▶ Act:** Positive independent two-quay/bridge end-to-end native location supports old→new replacement and reopens the complete fork; tests refuse repeated destination, altered dual-contact receipts and disconnected new bearing. **↺ Aftermath:** Structural reparenting with unchanged geometry is now implemented; actual editor-guided reparent motion remains separate, and no load safety is inferred. Exact-head suite must pass.
 
+
+</details>
 
 </details>
 
