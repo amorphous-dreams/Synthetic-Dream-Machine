@@ -49,7 +49,7 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
@@ -73,6 +73,12 @@ const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${
 /** The ledger with a second slot — B's edit, the one A must read back through the ford. */
 const memeWithSlot = (slot = "/b"): string =>
   `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "salt: 12 · barley: 40"\n\`\`\`\n\n<<~ ahu #/count>>\n\n! the count\n\n<<~/ahu>>\n\n<<~ ahu #${slot}>>\n\n! the highland tally\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+
+/** One carrier for A's own live Kahu canon (`@lares`), landed by the canon's ingest door (road P26's walk). */
+const KAHU_PATH = "p26.kahu.walk/ledger";
+const KAHU_URI  = `lar:///${KAHU_PATH}`;
+const kahuMeme = (): string =>
+  `<<^ code="&#x0001;" from="?" -> to="${KAHU_URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${KAHU_PATH}"\n\`\`\`\n\n<<~ ahu #/count>>\n\n! the steward's line\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 
 const meme = (): string =>
   `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "salt: 12 · barley: 40"\n\`\`\`\n\n<<~ ahu #/count>>\n\n! the count\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
@@ -666,5 +672,32 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
 
     // The measure always reports; it never passes on absence of looking.
     expect(registered, `no standing registration for ${LARES_BAG} — the measure had nothing to read`).not.toBe("");
+  }, 180_000);
+
+  // ⑭ THE KAHU CANON CROSSES ONLY TO KAHU HANDS (road P26; stable-founding-road #/rulings 2026-10-16 and 2026-10-18: the
+  // live `lares` and `lararium` documents rest held by no vessel outside the Kahu cabal, and every other hand reads the
+  // floor by CID). A ingests one record into her OWN live canon and reads it back, so the canon stands and holds a record
+  // to find. The same B that reads A's ford through the realm (the control on the very lane) asks for that record through
+  // the realm and draws `not-found`: A's realm gate answers her Kahu documents to Kahu reach alone, and a contracted
+  // member holds none. Before the cure the Nexus lane opened them to every member leaf, both ways.
+  test("⑭ A's live @lares stands for A, and B — a contracted member — reads none of it", async (ctx) => {
+    if (!contracted) ctx.skip();
+    const dir = join(A!.root, "bags", "lares", "p26.kahu.walk");
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "ledger.mem"), kahuMeme());
+    const ing = await A!.cli(["ingest", "--source", dir, "--to", "lar:///ha.ka.ba/bags/lares", "--apply", "--yes", "--json"]);
+    expect(ing.json?.["ok"], said(ing)).toBe(true);
+    const own = await A!.cli(["meme", "get", KAHU_URI, "--bag", "lares", "--json"]);
+    expect(own.json?.["ok"], `A's own canon reads its record: ${said(own)}`).toBe(true);
+    const ford = await pollB(60_000);
+    expect(ford.json?.["ok"], `CONTROL — B still reads A's ford through the realm: ${said(ford)}`).toBe(true);
+    let r = await B!.cli(["meme", "get", KAHU_URI, "--bag", "lares", "--realm", realmA, "--json"]);
+    for (const until = Date.now() + 30_000; r.json?.["ok"] !== true && Date.now() < until; ) {
+      await new Promise((res) => setTimeout(res, 3_000));
+      r = await B!.cli(["meme", "get", KAHU_URI, "--bag", "lares", "--realm", realmA, "--json"]);
+    }
+    console.error(`meme-realm-bag ⑭ MEASURE B: meme get --bag lares → ${said(r).trim().slice(0, 300)}`);
+    expect(r.json?.["ok"], said(r)).not.toBe(true);
+    expect(said(r)).toContain("not-found");
   }, 180_000);
 });
