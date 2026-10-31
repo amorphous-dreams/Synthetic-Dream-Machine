@@ -1,3 +1,18 @@
+# Projection Loom · YIN living hephaestus-kanban
+
+## Native topology accountability · current wave
+
+PR #84 on `feature/green-jello-dinosaur-5--projection-loom`. Source commits `fb5f07b53f846cbe0ac59101f5d41ec911a350ed` and `99ba802c69e5336ef0ac9ea80b17669f7232b5a6` extend the existing operator board with distinct topology **offered**, **native STEP attempted** and **native admitted** readings. A board regression test asserts all three counts on the original single-epoch native campaign, without inventing an admitted topology. No new controller, independent budget or aesthetic promotion.
+
+**Verification:** GitHub source writes succeeded. Local Python/native tests have not run here; the previous `d7ad2b27` CAD/evidence workflow remained in progress at inspection. Current exact-head acceptance must be checked anew. Still open: multi-epoch topology STEP admission and replay tampering, exact audition budgets, isomorphic contract audit across all consumers, measured source-conditioned morphology and real Unreal Editor.
+
+Historical material remains below; no compatibility adapter, PR merge, canon promotion, artist winner or irreversible o-takiage.
+
+## Ashes holding ahu · previous living front
+
+<details>
+<summary>Previous living front preserved verbatim</summary>
+
 # Projection Loom · Living YIN hephaestus-kanban
 
 ## Generalized proposal-deferral lift · October 30, 2026
@@ -1778,6 +1793,8 @@ The first generalized contract run for `9284c1d7` passed 87 tests and failed one
 
 **✶ Observe:** The new dual-BRep reparent could be verified by `native_support` but still needed a complete location ancestry and CLI handback. **⏿ Orient:** Changing a required parent is an attributable semantic choice within one unchanged STEP scene, not a silent geometry rewrite. **◇ Decide:** Reuse the existing `support_workspace` to fork an immutable child with original source snapshot, full causal parent manifest, prior/new ground, both independent contacts, a single OODA-HA session and exact scene digest. Provide one `native-support-reparent` CLI entrypoint rather than a new controller. **▶ Act:** Positive independent two-quay/bridge end-to-end native location supports old→new replacement and reopens the complete fork; tests refuse repeated destination, altered dual-contact receipts and disconnected new bearing. **↺ Aftermath:** Structural reparenting with unchanged geometry is now implemented; actual editor-guided reparent motion remains separate, and no load safety is inferred. Exact-head suite must pass.
 
+
+</details>
 
 </details>
 
