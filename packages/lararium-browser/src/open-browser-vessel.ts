@@ -1363,7 +1363,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // The WORN persona-root's binding (founder-signed): the gate pins personaKel.prefix and walks the KEL
         // to the current head; deviceEdge is the signed device→hearth edge. From the single bootstrap.
         signerDid: wornMount?.signerDid ?? social.signerDid,
-        personaKel: { prefix: personaKelPrefix, chain: personaKelChain },
+        personaKel: { prefix: personaKelPrefix, chain: personaKelChain, board: personaKelBoardDocUrl(nexusPubkey) },
         deviceEdge: wornMount?.deviceEdge ?? social.deviceEdge,
       };
       wornAtomSeed.fill(0);   // the manifest carries the seed's hex; the byte copy leaves this closure

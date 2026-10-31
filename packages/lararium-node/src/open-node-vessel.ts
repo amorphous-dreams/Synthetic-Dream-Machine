@@ -2421,7 +2421,7 @@ async function prepareNodeBootOn(
       }),
       ...(faceLit && signerDid ? { signerDid } : {}),
       ...(faceLit && personaKelPrefix && personaKelChain
-        ? { personaKel: { prefix: personaKelPrefix, chain: personaKelChain } }
+        ? { personaKel: { prefix: personaKelPrefix, chain: personaKelChain, board: personaKelBoardDocUrl(nexusPubkey) } }
         : {}),
       ...(faceLit && deviceEdge ? { deviceEdge } : {}),
       ...(outboxKey ? { outboxKey } : {}),

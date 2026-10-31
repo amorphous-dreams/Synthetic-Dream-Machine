@@ -281,8 +281,10 @@ export interface IslandMsg_Manifest {
      *  read from the daemon bag (the pin's root of trust); `chain` is the seq-sorted key-event-log the MAIN thread read
      *  from its per-Nexus KEL board replica "as of last sync" (no-global-now). The Binding Gate asserts
      *  `chain[0].prefix === prefix`, walks to the current head op-key, and verifies the edge against THAT head —
-     *  fail-closed on an absent/broken chain (never a global lookup). */
-    personaKel?:           { readonly prefix: string; readonly chain: readonly PersonaKelEvent[] };
+     *  fail-closed on an absent/broken chain (never a global lookup). `board` names that KEL board's document, so a door that
+     *  must read the lineage LIVE (the intent door: a rotation merged after boot reaches its next effect) reads the island's
+     *  own replica of it; a door that needs it holds shut where the composer names none. */
+    personaKel?:           { readonly prefix: string; readonly chain: readonly PersonaKelEvent[]; readonly board?: string };
     /** This vessel's signed device-delegation edge (root→vessel) — the public, Beelay-free binding. */
     deviceEdge?:           DeviceDelegationTiddler;
     /**
