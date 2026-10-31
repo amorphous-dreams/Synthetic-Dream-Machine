@@ -61,7 +61,7 @@ The crew lines that bind a running lane stand at <<~ loulou "lar:///ha.ka.ba/lar
 ** One writer per worktree; no claims ledger.
 ** The controller arms ONE watcher per seat (`until [ -f <seat>/final.md ]`, in the harness's background mode); a lead hands back once its seat launches and the controller's watcher wakes it. Leads and seats arm none. The lead keeps `resume.md` current at each commit and before each launch, and the controller sweeps a landed lane's watchers by pid.
 ** A lead hands back ONCE, short: one `<<~ status "…">>` line, the head (full sha), the CI and held-out readings on it, the story and the walk that proved it, the rulings taken from canon each with its source, and the true operator asks each with a lean. A failed or discarded seat gets a leg line (directory, model, effort, mode, attempts, outcome). Spend numbers come from the controller's `spend.py`, never a seat's word.
-** Spend reads from what each tool writes: Claude subagent transcripts, Codex rollouts, the Copilot run log's `Requests N Premium` line. A Copilot log with no such line reads UNMETERED, never zero; the Codex pool holds a weekly floor read from the newest rollout (20% for a build or research seat, 5% for a read seat). `spend.py` serves the controller alone and binds no lane.
+** Spend reads from what each tool writes: Claude subagent transcripts, Codex rollouts, the Copilot run log's `Requests N Premium` line. A Copilot log with no such line reads UNMETERED, never zero; the Codex pool holds a weekly floor read from the newest rollout (20% for a build or research seat, 0% for a read seat, the operator letting readers spend the pool to its end for now). `spend.py` serves the controller alone and binds no lane.
 * ''Observe pair.'' Before a phase designs anything, one seat cold-reads the as-built with `file:line`, and a second, woken apart and handed the framing alone, reads the field. Their handbacks collide in orient.
 * ''The Chao of a review'' (<<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>). Two reads over one question wear the Chao's two faces, and the review resolves to three:
 ** ''Hodge'' carries Yang and Ha, the Aneristic face: what holds its shape. It reads what the work states as standing (each claim, name and contract) against the source, and finds the line that does not hold.
@@ -75,7 +75,7 @@ The crew lines that bind a running lane stand at <<~ loulou "lar:///ha.ka.ba/lar
 <<~ ahu #/the-seat-law>>
 !! The seat law ~ the brief section every Codex seat carries
 
-`tools/launch-codex.mjs` preflights each Codex seat and appends the bullets below to its brief, once, reading them from this section. It refuses a model missing from Codex's models cache, `gpt-6-sol`, a pool at or under its weekly floor (20% for a build or research seat, 5% for a read seat), a pool line unreadable twice (never read as zero), a seat directory outside `~/.lares-scratch/<lane>/`, a build seat on the main checkout, and a build seat over a stale dist. It logs each attempt.
+`tools/launch-codex.mjs` preflights each Codex seat and appends the bullets below to its brief, once, reading them from this section. It refuses a model missing from Codex's models cache, `gpt-6-sol`, a pool at or under its weekly floor (20% for a build or research seat, 0% for a read seat, the operator letting readers spend the pool to its end for now), a pool line unreadable twice (never read as zero), a seat directory outside `~/.lares-scratch/<lane>/`, a build seat on the main checkout, and a build seat over a stale dist. It logs each attempt.
 
 * Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
 * Never commit and never run a git write. The lead commits each red, then each fix.
@@ -263,6 +263,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zJcVWqW4pvvLPRjmdwEmGeDoWEssfC-CAvVdmVVOS-M
+<<^ code="&#x0003;">>ni:///sha-256;3x88NK7aip1h4dmSU4WWV0zTUwqAL4dVzeowtDJAu9s
 
 <<^ code="&#x0004;" -> to="?">>

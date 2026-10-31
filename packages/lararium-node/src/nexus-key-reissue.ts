@@ -36,6 +36,7 @@ import { nodeNexusIsland } from "./nexus-standing.js";
 import { loadVesselVerifyingKey, personaRootExists } from "./node-vessel-identity.js";
 import { resolveFace } from "./face-selector.js";
 import { refuseWhileProvisional } from "./face-provisional.js";
+import { noteKahuClassificationWrite } from "./kahu-realm.js";
 
 export class NexusKeyReissueRefused extends Error {}
 
@@ -96,6 +97,8 @@ export async function runNexusKeyReissue(opts: {
     board.change((d) => writeNexusKeyHandOver(d, record));
     await opts.repo.flush();
     await finishNexusKeyReissue(acting, aid, keys.to);
+    // A CLASSIFICATION SOURCE MOVED: the successor's derivation now classes the Kahu canon (road `P26`).
+    noteKahuClassificationWrite();
     return { nexusAid: aid, handleIndex: acting, from, to, handOver: nexusKeyHandOverId(record), admitted };
   } finally {
     keys.from.fill(0);

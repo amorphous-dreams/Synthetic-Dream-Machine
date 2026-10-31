@@ -16,7 +16,7 @@
  * of the sandbox; no mode carries `--ephemeral`, so each seat keeps the rollout the spend tally counts.
  * PREFLIGHT refuses (exit 2, `SEAT-REFUSED: …`): a seat dir outside `<scratch>/<lane>/`, a missing brief, a model absent
  * from Codex's models cache, `gpt-6-sol`, a Codex pool line unreadable twice (never read as zero), a pool at or under
- * its floor (20% for a build or research seat, 5% for a read seat), a build seat on the main checkout, a build seat over a
+ * its floor (20% for a build or research seat, 0% for a read seat), a build seat on the main checkout, a build seat over a
  * stale dist.
  * `--dry-run` runs the preflight and prints the argument array, spawns nothing and writes nothing.
  *
@@ -33,8 +33,8 @@ import { globalStampPath, packageStampPath, sourceDigest, workspacePackageDirs }
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CANON = "bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem";
 const FLOOR = 20;
-/** A read seat's own floor: the operator approved Sol readers past the house floor (2026-10-31); builders and research keep FLOOR. */
-const READ_FLOOR = 5;
+/** A read seat's own floor: the operator lets readers spend the pool to its end for now (2026-10-31: "temp bump that limit to 0%"; it stood at 5); builders and research keep FLOOR. */
+const READ_FLOOR = 0;
 const MODES = ["build", "read", "research"];
 
 /** The passwd home, never `$HOME`. */

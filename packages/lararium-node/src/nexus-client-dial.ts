@@ -73,6 +73,9 @@ export interface NexusClientDialConfig {
   /** THE RETURN. Fires on every re-connect PAST THE FIRST. A caller re-folds the boards a partition staled and
    *  re-reads the Repo's cached share verdicts here; a re-ask of `docUrl` follows it regardless. */
   readonly onReconnect?: () => Promise<void> | void;
+  /** THE ARRIVAL'S SEAT (road `P26`): hears the adapter BEFORE it joins the Repo's network, so a `peer-candidate` listener the
+   *  caller attaches here marks the dialed peer's arrival ahead of the subsystem's `peer` event (`peerArrivals`). */
+  readonly beforeJoin?: (adapter: LarWSClientAdapter) => void;
 }
 
 /** The adapter shape the re-arm reads — its own `peer-candidate` event and nothing else. Named as a
@@ -149,6 +152,7 @@ export function startNexusClientDial(cfg: NexusClientDialConfig): NexusClientDia
     presentation: cfg.presentation, audience: cfg.aud ?? DAEMON_BAG_ID, deadlines: cfg.deadlines,
     dialSocket: () => nodeDialSocket(cfg.syncUrl), onLog: (line) => console.warn(line),
   });
+  cfg.beforeJoin?.(adapter);
   cfg.repo.networkSubsystem.addNetworkAdapter(adapter);
   log(`nexus dial-out up → ${cfg.syncUrl} (aud=${cfg.aud ?? DAEMON_BAG_ID})`);
 
@@ -200,6 +204,7 @@ export interface NexusClientDialInput {
   readonly docUrl?:     string | null;
   readonly onLog?:      (line: string) => void;
   readonly onReconnect?: () => Promise<void> | void;
+  readonly beforeJoin?: (adapter: LarWSClientAdapter) => void;
 }
 
 /**
@@ -223,5 +228,6 @@ export function maybeStartNexusClientDial(input: NexusClientDialInput): NexusCli
     ...(input.docUrl ? { docUrl: input.docUrl } : {}),
     ...(input.onLog ? { onLog: input.onLog } : {}),
     ...(input.onReconnect ? { onReconnect: input.onReconnect } : {}),
+    ...(input.beforeJoin ? { beforeJoin: input.beforeJoin } : {}),
   });
 }

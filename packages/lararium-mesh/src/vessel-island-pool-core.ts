@@ -1163,6 +1163,10 @@ export class VesselIslandPoolCore {
     });
     worker.onError((err) => {
       this._portDoor.releaseScope(wikiId);
+      // A SESSION ISLAND THAT ERRED LEAVES THE HOUSE (road `P26`): its scoped view closes, so its leg's arrival unseats and
+      // no gone island reads as standing in the arrival table.
+      const erred = this._slots.get(wikiId);
+      if (erred && erred.temperature === "wela" && erred.surface) { try { erred.surface.view.close(); } catch { /* already closed */ } }
       console.error(`[vessel-pool] island error for ${wikiId}:`, err);
     });
   }

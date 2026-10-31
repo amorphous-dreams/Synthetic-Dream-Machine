@@ -45,6 +45,9 @@ export interface HearthDialChoice {
   readonly notes:   readonly string[];
   /** Disagreements the boot should WARN of: the dial stood, on a choice another kept pin contradicts. */
   readonly warnings: readonly string[];
+  /** WHERE THE DIAL'S PIN CAME FROM (road `P26`): the bootstrap's pin, a kept admit bundle's, or none. A kept bundle's pin
+   *  seats the contracted class; the face's own hearth reads off the sealed landing record alone (`dial-relation`). */
+  readonly source:   "bootstrap" | "kept" | null;
 }
 
 /**
@@ -91,16 +94,18 @@ export function chooseHearthDial(opts: {
   if (keptUrls.length > 1) notes.push(`kept bundles name ${keptUrls.length} sync urls (${keptUrls.map(hearthNameOf).join(", ")}): none is the default`);
   const syncUrl = opts.explicitUrl ?? opts.hearthPin?.syncUrl ?? (keptUrls.length === 1 ? keptUrls[0]! : null) ?? opts.walkRelay ?? null;
   const filings: HearthFiling[] = [...(boot ? [boot] : []), ...kept.map(({ hearth, pin }) => ({ hearth, pin }))];
-  if (syncUrl === null) return { syncUrl, pin: null, filings, notes, warnings };
+  if (syncUrl === null) return { syncUrl, pin: null, filings, notes, warnings, source: null };
   const at = hearthNameOf(syncUrl);
   let pin: GateBundlePin | null = null;
+  let source: HearthDialChoice["source"] = null;
   if (boot !== null && boot.hearth === at) {
     pin = boot.pin;
+    source = "bootstrap";
     const differing = kept.filter((k) => k.hearth === at && k.pin.nexus === boot.pin.nexus && admitGatePinDigest(k.pin) !== admitGatePinDigest(boot.pin));
     if (differing.length > 0) warnings.push(`the bootstrap's pin and ${differing.length} kept pin(s) for ${at} differ: the dial uses the bootstrap's pin; the index keeps it and refuses the kept one`);
   } else {
     const here = [...new Map(kept.filter((k) => k.hearth === at).map((k) => [admitGatePinDigest(k.pin), k.pin])).values()];
-    if (here.length === 1) pin = here[0]!;
+    if (here.length === 1) { pin = here[0]!; source = "kept"; }
     else if (here.length > 1) notes.push(`${here.length} different kept pins stand for ${at}: the dial chooses none`);
   }
   const elsewhere = [...new Set(filings.filter((f) => f.hearth !== at).map((f) => f.hearth))];
@@ -113,7 +118,7 @@ export function chooseHearthDial(opts: {
       if ("pin" in read && read.pin.tier === "floor" && read.pin.nexus === pin.nexus) filings.push({ hearth: at, pin: read.pin });
     }
   }
-  return { syncUrl, pin, filings, notes, warnings };
+  return { syncUrl, pin, filings, notes, warnings, source };
 }
 
 /** File each pin under its own hearth. Returns how many the index took. */

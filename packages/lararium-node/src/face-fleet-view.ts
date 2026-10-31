@@ -85,8 +85,9 @@ export function viewFederationGate(view: SessionDocumentView): FederationGate {
 }
 
 export interface FaceFleetViews {
-  /** Open the view of the face a peer's session proved; a session with no face, or a face with no facets, opens none. */
-  seat(peerId: string, face: FaceGrantReading | null): void;
+  /** Open the view of the face a peer's session proved (an inbound gate's grant reading, or a dial's tagged pin for the worn
+   *  face: only the PersonaGroup is read); a session with no face, or a face with no facets, opens none. */
+  seat(peerId: string, face: Pick<FaceGrantReading, "personaGroup"> | null): void;
   /** The face gate the share verdict reads for `peerId`, or null where its session proved no face here. */
   gateFor(peerId: PeerId | string): FederationGate | null;
   /** The peer left: close its view. */

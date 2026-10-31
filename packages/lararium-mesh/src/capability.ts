@@ -27,6 +27,12 @@ export interface CapabilityVerifyArgs {
 export interface CapabilityVerifyResult {
   readonly ok:      boolean;
   readonly reason?: string;
+  /**
+   * A refusal's TYPE, for a reader that acts on the kind of denial and never on its words. `bag-not-registered` names a
+   * bag no provider registered yet, carrying its uri in `bagUrl`.
+   */
+  readonly kind?:   "bag-not-registered";
+  readonly bagUrl?: string;
 }
 
 export interface CapabilityVerifier {

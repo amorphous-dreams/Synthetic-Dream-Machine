@@ -24,6 +24,7 @@ import { custodyBreaches, custodyReading } from "./custody-census.mjs";
 import { backupTestCustody } from "./backup-test-custody.mjs";
 import { restoreTestCustody } from "./restore-test-custody.mjs";
 import { unlockTestCustody } from "./unlock-test-custody.mjs";
+import { daemonStood } from "./daemon-stood.mjs";
 
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const cli = join(repo, "packages/lares-cli/dist/src/bin/lares.js");
@@ -61,7 +62,7 @@ async function stand(root) {
   child.stderr.on("data", (d) => { log += String(d); });
   await new Promise((resolve, reject) => {
     const poll = setInterval(() => {
-      if (/phase → live/.test(log)) { clearInterval(poll); resolve(); }
+      if (daemonStood(log)) { clearInterval(poll); resolve(); }
       else if (child.exitCode !== null) { clearInterval(poll); reject(new Error(`daemon exited ${child.exitCode} before live:\n${log.slice(-3000)}`)); }
     }, 200);
   });

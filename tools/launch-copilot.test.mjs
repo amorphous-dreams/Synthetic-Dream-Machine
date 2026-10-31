@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { allowance, copilotArgs, permissionArgs, refusal, seatEnv } from "./launch-copilot.mjs";
+import { allowance, spendLine, copilotArgs, permissionArgs, refusal, seatEnv } from "./launch-copilot.mjs";
 
 const pairs = (args) => { const out = []; for (let i = 0; i < args.length; i++) if (args[i].startsWith("--") && !args[i + 1]?.startsWith("--")) out.push(`${args[i]} ${args[i + 1]}`); return out; };
 
@@ -67,7 +67,7 @@ test("the allowance reads the newest snapshot — KNOWN POSITIVE planted; an emp
   assert.match(allowance(f), /^97\/300 /);
   writeFileSync(f, JSON.stringify({ copilotUserCache: { "v1:abc": { response: { quota_reset_date: "2026-11-01",
     quota_snapshots: { chat: { quota_remaining: 0, entitlement: 0 }, premium_interactions: { quota_remaining: 41, entitlement: 300 } } } } } }));
-  assert.match(allowance(f), /^41\/300 \(resets 2026-11-01\)$/, "the nested cache shape reads");
+  assert.match(allowance(f), /^41\/300 \(resets 2026-11-01; last-known\)$/, "the nested cache shape reads");
   writeFileSync(f, "{}");
   assert.match(allowance(f), /no premium_interactions/);
 });
@@ -80,4 +80,21 @@ test("RED: --model fusion refuses by name in both modes; CONTROL: a pinned lens 
     }
     assert.ok(copilotArgs({ mode, prompt: "x", model: "gpt-5.3-codex", share: "/s.md" }).includes("gpt-5.3-codex"));
   }
+});
+
+test("RED: the run's spend reads the log's own Requests N Premium line — CONTROL: a log with none reads UNMETERED, never zero", () => {
+  const dir = mkdtempSync(join(tmpdir(), "copilot-log-"));
+  const f = join(dir, "run.log");
+  writeFileSync(f, "working\nRequests  6 Premium (1m 2s)\ndone\n");
+  assert.equal(spendLine(f), "spend: Requests  6 Premium (1m 2s)");
+  writeFileSync(f, "working\ndone\n");
+  assert.match(spendLine(f), /^spend: UNMETERED/);
+  assert.match(spendLine(join(dir, "absent.log")), /^spend: UNMETERED/);
+});
+
+test("the entitlement cache figure names itself last-known", () => {
+  const dir = mkdtempSync(join(tmpdir(), "copilot-cache-"));
+  const f = join(dir, "c.json");
+  writeFileSync(f, JSON.stringify({ a: { quota_reset_date: "2026-11-01", quota_snapshots: { premium_interactions: { quota_remaining: 9, entitlement: 300 } } } }));
+  assert.match(allowance(f), /^9\/300 .*last-known/);
 });
