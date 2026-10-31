@@ -14,7 +14,7 @@ import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import { sealKeySetHash } from "../src/wax-stamp.js";
 import {
-  mintPersonaInception, mintRecoveryContactEnrolment, personaEventBytes, personaEventCidOf, verifyPersonaKelFull, type PersonaKelEvent,
+  mintPersonaInception, mintPersonaRotation, personaRotationSigningBytes, mintRecoveryContactEnrolment, personaEventBytes, personaEventCidOf, verifyPersonaKelFull, type PersonaKelEvent,
 } from "../src/persona-kel.js";
 import { enrolRecoveryContacts, recoveryContactPossessionBytes, type RecoveryContactEnrolmentOffer } from "../src/recovery-keel-core.js";
 import { recoveryContactRegistrationCard } from "../src/recovery-registration.js";
@@ -142,3 +142,44 @@ describe("P2 — the KEL verifier decides: an enrolment event carries its count 
     expect((await verifyPersonaKelFull([inception, forged])).ok).toBe(false);
   });
 });
+
+describe("P2 — the reveal decides: a rotation revealing the enrolled set refuses any but three distinct keys at two, matching the signed fields", () => {
+  async function enrolledOver(keys: Uint8Array[], threshold: number) {
+    const inception = await face();
+    const pubs = await Promise.all(keys.map(pubOf));
+    const r = await mintRecoveryContactEnrolment({ head: inception, recoveryContactSetHash: sealKeySetHash(pubs, threshold), sign: signerOf(seed(11)) });
+    if (!r.ok) throw new Error(r.reason);
+    return { inception, enrolment: r.event, pubs };
+  }
+  async function reveal(head: PersonaKelEvent, pubs: string[], threshold: number, signers: Uint8Array[]) {
+    const fresh = `0x${await pubOf(seed(22))}`;
+    const bytes = personaRotationSigningBytes(head, fresh);
+    const rotationSigs = await Promise.all(signers.map(async (s) => ({ signer: await pubOf(s), sig: await signerOf(s)(bytes) })));
+    return mintPersonaRotation({ head, freshOpKeyDid: fresh, recoveryRoster: pubs, recoveryThreshold: threshold, rotationSigs });
+  }
+
+  test("CONTROL: a true three-at-two set reveals and rotates", async () => {
+    const { enrolment, pubs } = await enrolledOver(contacts(3), 2);
+    const r = await reveal(enrolment, pubs, 2, [seed(1), seed(2)]);
+    expect(r.ok, r.ok ? "" : r.reason).toBe(true);
+  });
+
+  test("★ RED: fields say three-at-two over a 1-of-2 digest; the rotation revealing that set refuses ★", async () => {
+    const { enrolment, pubs } = await enrolledOver(contacts(2), 1);
+    const r = await reveal(enrolment, pubs, 1, [seed(1)]);
+    expect(r.ok).toBe(false);
+  });
+
+  test("★ RED: a 2-of-2 reveal refuses though its digest matches ★", async () => {
+    const { enrolment, pubs } = await enrolledOver(contacts(2), 2);
+    const r = await reveal(enrolment, pubs, 2, [seed(1), seed(2)]);
+    expect(r.ok).toBe(false);
+  });
+
+  test("★ RED: a 3-of-3 reveal refuses though its digest matches ★", async () => {
+    const { enrolment, pubs } = await enrolledOver(contacts(3), 3);
+    const r = await reveal(enrolment, pubs, 3, [seed(1), seed(2), seed(3)]);
+    expect(r.ok).toBe(false);
+  });
+});
+
