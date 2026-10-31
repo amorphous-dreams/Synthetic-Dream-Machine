@@ -266,7 +266,7 @@ export type RealmBagFoldOptions = StewardSealReading & {
   /**
    * THE VESSEL'S PRIVATE DOCUMENTS, by id (lane `ralias`): true where this reader classes the document `vessel-private`
    * (its daemon document, a face's plane, its catalog). A registration naming one never counts here, whoever sealed it:
-   * a seal proves who keeps a book, never that the book is theirs to register. The share guard withholds the document
+   * a seal proves who keeps a book, never that its keepers hold the book to register. The share guard withholds the document
    * either way; this refusal keeps the fold from seating it. A consult that throws refuses (fail closed).
    */
   readonly vesselPrivate?: (documentId: string) => boolean;

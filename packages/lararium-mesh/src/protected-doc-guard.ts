@@ -42,6 +42,9 @@ export interface ProtectedDocGuardOptions {
    *  `SETTLE_ROUNDS` rounds of `settled`: a source still pending past them withholds the ask (fail closed), so a
    *  self-replenishing classification writer never holds an ask forever. */
   readonly pending?: () => boolean;
+  /** A bound that tripped: the guard withheld an ask past `SETTLE_ROUNDS`. The composer re-asks its cached verdicts once the
+   *  queue drains, so a document withheld at the bound never stays withheld in the Repo's cache. */
+  readonly onBound?: () => void;
   /** INCOMPLETE (controller re-ruling 2026-10-31): the classification met a read failure and no whole recount has cleared it.
    *  While it reads true, every document reads `unreadable`: withheld from every peer the guard stands before. */
   readonly incomplete?: () => boolean;
@@ -68,7 +71,10 @@ export function protectedDocGuard(opts: ProtectedDocGuardOptions): ProtectedDocG
         try {
           let rounds = 0;
           do {
-            if (rounds++ >= SETTLE_ROUNDS) return true;  // a writer that never lets the count settle withholds (fail closed)
+            if (rounds++ >= SETTLE_ROUNDS) {             // a writer that never lets the count settle withholds (fail closed)
+              try { opts.onBound?.(); } catch { /* a listener never opens the ask */ }
+              return true;
+            }
             await opts.settled();
           } while (opts.pending?.() === true);
         } catch { return true; }                         // a count that cannot settle classes nothing it may serve

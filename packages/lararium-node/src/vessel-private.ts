@@ -70,22 +70,32 @@ export interface VesselPrivateBook {
 }
 
 /** The vessel's private ids, grown off its bootstrap at each change and never shrunk. */
-export function vesselPrivateBook(opts: { readonly bootstrapPath: string }): VesselPrivateBook {
+export function vesselPrivateBook(opts: {
+  readonly bootstrapPath: string;
+  /** Fired at every growth (an id classed for the first time): the composer re-asks its cached share verdicts, so a verdict a
+   *  lane cached before the class landed never outlives it. */
+  readonly onGrow?: () => void;
+}): VesselPrivateBook {
   const ids = new Set<string>();
+  const grow = (id: string): boolean => { if (ids.has(id)) return false; ids.add(id); return true; };
+  const grew = (): void => { try { opts.onGrow?.(); } catch { /* a listener never breaks the book */ } };
   let seen: string | null = null;
   let torn = false;
   const refresh = (): void => {
     let stamp: string;
-    try { const st = statSync(opts.bootstrapPath); stamp = `${st.mtimeMs}:${st.size}:${st.ino}`; } catch { return; }
+    // mtime and ctime both move on an in-place rewrite of the same size (plane urls hold a fixed length).
+    try { const st = statSync(opts.bootstrapPath); stamp = `${st.mtimeMs}:${st.ctimeMs}:${st.size}:${st.ino}`; } catch { return; }
     if (stamp === seen) return;
     const tiddlers = readBootTiddlers(opts.bootstrapPath);
     let fresh: ReadonlySet<string> | null = null;
     if (tiddlers !== null) { try { fresh = vesselPrivateDocIds(tiddlers); } catch { fresh = null; } }
     // Torn mid-write (or a family that faults): every class stands, and once a whole read has stood the gap reads torn.
     if (fresh === null) { torn = seen !== null; return; }
-    for (const id of fresh) ids.add(id);
+    let moved = false;
+    for (const id of fresh) moved = grow(id) || moved;
     seen = stamp;
     torn = false;
+    if (moved) grew();
   };
   refresh();
   return {
@@ -95,13 +105,13 @@ export function vesselPrivateBook(opts: { readonly bootstrapPath: string }): Ves
     add(urlOrId) {
       if (!urlOrId) return;
       const id = urlOrId.startsWith("automerge:") ? idOfUrl(urlOrId) : urlOrId;
-      if (id) ids.add(id);
+      if (id && grow(id)) grew();
     },
   };
 }
 
 export interface VesselPrivateRelation {
-  /** The peer is a sibling the sibling channel proved. */
+  /** True where the sibling channel proved this peer. */
   readonly sibling: boolean;
   readonly siblingGate: FederationGate | null;
   /** The peer's session (inbound gate or same-face dial) sorted same-operator. */

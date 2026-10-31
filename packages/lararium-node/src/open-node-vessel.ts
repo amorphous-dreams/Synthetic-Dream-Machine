@@ -728,7 +728,9 @@ async function prepareNodeBootOn(
   // THE VESSEL'S PRIVATE DOCUMENTS, classed by IDENTITY off its own bootstrap before any peer can ask (lane `ralias`): the
   // daemon document and every face's five planes, then the catalog once it stands. The book re-reads the bootstrap where
   // it changed and never drops a class; the one guard below withholds each from every peer no proven relation opens it to.
-  const vesselPrivate = vesselPrivateBook({ bootstrapPath });
+  // Its growth re-asks the Repo's cached verdicts once the Repo stands (`reverdictLater`, set beside `reverdict` below).
+  let reverdictLater: () => void = () => {};
+  const vesselPrivate = vesselPrivateBook({ bootstrapPath, onGrow: () => reverdictLater() });
   // THE FACE THE COMPOSITION MOUNTS: the one the unlock named (`lares vault unlock --face N`), else the one face standing
   // open. The daemon doc's singular mount pins were written by the FOUNDING face and never move again; a mounted
   // non-founding face carries its own mount material in its anchors — the pins below default to it. Null means no
@@ -863,6 +865,7 @@ async function prepareNodeBootOn(
     protectedMemo = { kahu, priv, size: priv.size, map };
     return map;
   };
+  let boundWaiter: Promise<void> | null = null;
   const protectedDocs = protectedDocGuard({
     ids: protectedIds,
     // RECOUNT BEFORE SERVE (Sol's reads, SHOULD 2 and BLOCKER 3): an ask reads the ids once no recount queued before its read
@@ -872,6 +875,15 @@ async function prepareNodeBootOn(
     // A torn count withholds every document from every wire peer until a whole recount (controller re-ruling 2026-10-31).
     // So does a bootstrap that tore after a whole read: a face that write added stands unclassed until it reads whole (lane `ralias`).
     incomplete: () => kahuProtected?.incomplete() === true || vesselPrivate.torn(),
+    // A tripped bound withheld asks: once the queue drains, re-ask the cached verdicts (one waiter at a time, no clock).
+    onBound: () => {
+      if (boundWaiter) return;
+      boundWaiter = (async () => {
+        try { while (kahuProtected?.pending() === true) await kahuProtected.settled(); } catch { /* the re-ask still runs */ }
+        boundWaiter = null;
+        reverdictLater();
+      })();
+    },
     decide: {
       "kahu-canon": (peerId, documentId) => kahuHandAtWire({ session: peerSessions.get(peerId), custodyGroup, faceProven: wornFaceProven, canon: kahuCanon,
         kahuStanding: kahuStandings.heldAt(kahuProtected?.homeOf(documentId) ?? null) }),
@@ -1137,6 +1149,7 @@ async function prepareNodeBootOn(
     try { mkdirSync(storageDir, { recursive: true }); writeFileSync(catalogUrlFile, h.url, "utf8"); } catch { /* quota */ }
     return h;
   };
+  vesselPrivate.add(resolvedCatalogUrl);     // the catalog classes by its pointer before its document resolves
   const catalogHandle: DocHandle<LarDoc> = resolvedCatalogUrl
     ? await resolveBootDoc<LarDoc>(repo, resolvedCatalogUrl as AutomergeUrl, { tideline: "hearth-private", label: "@catalog" })
     : await blankCatalog();  // first boot (no url yet): legitimate founder-mint, not a ghost fallback
@@ -1236,6 +1249,7 @@ async function prepareNodeBootOn(
   // to read it again, or a member contracted AFTER its socket stood keeps drawing DENIED (measured: B's realm doc
   // arrived empty while A's board named her). `shareConfigChanged` re-evaluates every doc for every peer.
   const reverdict = (): void => { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } };
+  reverdictLater = reverdict;
   // THE CARRIED NEXUSES' BOARDS, read off this vessel's own live replica: every Nexus in the carried set, each
   // island resolved over its own charter home. A change on any of them — a revoke arriving by sync — refolds
   // the leaf map; the dialed island's board also re-checks what this vessel presents when it dials.
