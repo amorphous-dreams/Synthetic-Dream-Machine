@@ -227,7 +227,8 @@ const visitors = new Map<unknown, Map<DocHandle<LarDoc>, number>>();
 /** The settled ids this process still fences on a document: the retention `settledRuns` keeps. */
 export function settledRunsOf(plane: DocHandle<LarDoc>): ReadonlySet<string> { return new Set(settledRuns.get(planeKey(plane))?.keys() ?? []); }
 export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
-  let running: Promise<void> | null = null, dirty = false, visiting = false;
+  // `detached`: this door's attach was dropped. A pass still in flight when it lands acts on nothing after its next await.
+  let running: Promise<void> | null = null, dirty = false, visiting = false, detached = false;
   const read = async (): Promise<IntentView> => (await makeFaceIntentReader(ports).read()).view;
   const wake = (): void => { void heed(); };
   /** The fence-waiter sets this door joined, so its detach leaves none of them. */
@@ -241,7 +242,9 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
   /** One pass; true when a standing it needed went stale under its witness, so another pass re-acquires. */
   const pass = async (): Promise<boolean> => {
     // The async-sourced answers arrive first; everything after rebuilds from the LIVE ports in one turn.
+    if (detached) return false;
     await acquireAuthority(ports);
+    if (detached) return false;
     const key = planeKey(ports.plane);
     const flying = flights.get(key) ?? new Map<string, Set<() => void>>();
     flights.set(key, flying);
@@ -265,6 +268,7 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
       // Each effect revalidates from the CURRENT documents in the turn that invokes it: a revocation, a cancel, a takeover, an
       // outcome an earlier effect merged, or a standing whose witness moved stops the later ones. Only a pass that has awaited
       // since its last build rebuilds.
+      if (detached) return false;
       if (stale) { view = readIntentNow(ports).view; stale = false; }
       const state = view.intents.find((i) => i.id === first.id);
       if (!state) continue;
@@ -313,10 +317,12 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
   /** Wake on the plane's changes and on the documents behind the acquisition's witness; the returned call drops both, every fence wait this door joined, and its count among the document's readers. */
   const attach = (): (() => void) => {
     const changed = () => { void heed(); };
+    detached = false;
     ports.plane.on("change", changed);
     const unwatch = ports.acquisition?.watch?.(changed);
     void heed();
     return () => {
+      detached = true;
       ports.plane.off("change", changed); unwatch?.();
       for (const waiting of waits) waiting.delete(wake);
       waits.clear();

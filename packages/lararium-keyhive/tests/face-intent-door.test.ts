@@ -308,7 +308,9 @@ describe("the boundary acquires asynchronously, then observes in one synchronous
     expect(live.test("kelChain: () => chainNow()")).toBe(true);
     const start = source.indexOf("const door = makeFaceIntentDoor({");
     expect(start).toBeGreaterThan(-1);
-    const block = source.slice(start, source.indexOf("\n            });", start));
+    const end = source.indexOf("\n            });", start);
+    expect(end).toBeGreaterThan(start);
+    const block = source.slice(start, end);
     expect(block).not.toMatch(captured);
     expect(block).not.toMatch(asyncPort);
     expect(block).toMatch(live);
@@ -379,7 +381,9 @@ describe("the door wakes on its authority and keeps what settled", () => {
     expect(composed.test("const standings = intentDoorStandings({ repo })")).toBe(true);
     const start = source.indexOf("const attachDoor = async (): Promise<void> => {");
     expect(start).toBeGreaterThan(-1);
-    const block = source.slice(start, source.indexOf("const door = makeFaceIntentDoor({", start));
+    const end = source.indexOf("const door = makeFaceIntentDoor({", start);
+    expect(end).toBeGreaterThan(start);
+    const block = source.slice(start, end);
     expect(block).not.toMatch(external);
     expect(block).toMatch(composed);
   });

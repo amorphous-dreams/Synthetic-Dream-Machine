@@ -1204,7 +1204,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const intentsBag = personaSiblingBagIds(personaBagIdFor(group))!.intents;
         const faceJoinVia = (args: unknown, at: { readonly intentId: string; readonly pinnedAtom: string }): Promise<unknown> =>
           faceJoinEffect ? faceJoinEffect((args ?? {}) as Record<string, unknown>, at) : Promise.reject(new VerbRefusal("waking-floor", "face-join: lightAFace before admitting another atom"));
-        let doorStop: (() => void) | null = null, doorAttaching = false;
+        let doorStop: (() => void) | null = null, doorAttaching = false, doorShutSaid = false;
         const attachDoor = async (): Promise<void> => {
           if (doorStop || doorAttaching || stopped || !daemonAuth.atom) return;
           doorAttaching = true;
@@ -1216,9 +1216,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             // device's standing off the board fold over the island's OWN replicas of the fleet's edge board and the face's edge
             // ledger (the same ledger the vessel's ring keeps), under a witness over those documents and the KEL board. A dyad
             // reader on another shore (the vessel's answer across the port) carries no witness the island can check, so the door
-            // never reads through one; the witnessed documents' changes wake it.
+            // never reads through one; the witnessed documents' changes wake it. The fold stands on every shore by intent, with or
+            // without `readDyadFromBoard`: it reads only documents this island replicates, so no composed reader gates it.
             const kel = daemonAuth.personaKel!;
-            if (!kel.board) { console.log("[daemon] the intent door holds shut: the manifest names no persona-KEL board to read the face's lineage from"); return; }
+            if (!kel.board) {
+              if (!doorShutSaid) console.log("[daemon] the intent door holds shut: the manifest names no persona-KEL board to read the face's lineage from");
+              doorShutSaid = true; return;
+            }
             const plane = await ctx.repo.findWithProgress<LarDoc>(intentsUrl as AutomergeUrl).whenReady();
             const personaPlane = await ctx.repo.findWithProgress<LarDoc>(personaUrl as AutomergeUrl).whenReady();
             const kelBoard = await ctx.repo.findWithProgress<LarDoc>(kel.board as AutomergeUrl).whenReady();
