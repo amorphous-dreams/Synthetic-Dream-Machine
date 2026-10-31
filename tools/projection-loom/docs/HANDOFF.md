@@ -1,3 +1,31 @@
+# Projection Loom · O-takiage evergreen handoff · 2026-10-31
+
+**Working PR:** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84), branch `feature/green-jello-dinosaur-5--projection-loom`. **Base boot:** `feature/green-jello-dinosaur-5`, `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem`. Fetch the full boot and exact current PR head before continuing. No newer CI verdict has been established for the documentation commits here.
+
+## Latest feature / aftermath / L-prime wave
+
+- Previous o-takiage series through `959cfc9d`: exact-head Markdown census, five live navigation fronts shortened with byte-exact predecessors in Git.
+- New named historical retrieval index: `tools/projection-loom/archives/PR84_MARKDOWN_ASHES_INDEX.md` committed at `160adf404948034d831e994cee9468d543ccfefc`. This records all five source blobs, original paths, stable pre-burn head, commands for rehydration and the distinction between Git blobs and `ni:///sha-256` framing.
+- Crew-facing research fork re-entry clarified in `BRANCHED_SESSION_HANDOFF.md` at `e1b9540dad255ee3027ab1d2f4667a9e74f75347`. Complete admitted-parent bounded mutation is the **first proposed** native heredity test; reconstruction remains a second strategy. No three-epoch proof claimed; the prior reconstruction-first lock is still kept as attributed testimony.
+
+## Acceptance boundaries and live owners
+
+- Operational authority: `bags/lares/ha.ka.ba/lares/api/projection-loom-handoff.mem`.
+- Design owner and dissent: `bags/lares/ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design.mem` and still-live `RELATIONAL-INHERITANCE-DESIGN.md`.
+- Research owner: `bags/lares/ha.ka.ba/lares/api/projection-loom-research.mem` and research register.
+- Crew re-entry: `bags/lares/ha.ka.ba/lares/docs/projection-loom-native-inheritance-crew-handoff.mem`.
+- Ashes: indexed original Git blobs in `tools/projection-loom/archives/PR84_MARKDOWN_ASHES_INDEX.md`; not a sealed `.mem` carrier yet.
+
+## Next batches · held
+
+1. Mechanically finish complete Markdown blob/heading and consumer census (not only the seven priority files). Retain guides, references, research records, and example READMEs until real readers are mapped.
+2. Read canonical framing spec and locate repository frame validator; only then create root-bag ashes `.mem` and update existing `.mem` carriers with sealed digests. Do not guess the digest.
+3. Rebind unique current operational, design, research, and crew content without flattening dissent. Convert only proven redundant Markdown to pure redirect fronts, and preserve exact source blobs.
+4. Run architecture/docs/link checks, native CAD, held-out witnesses and repository CI at final exact SHA. No predecessor green transfer, no PR merge or Elyncia canon promotion by implication.
+5. L-prime aftermath: ensure every retirement links to one semantic owner, one immutable source and one recovery instruction. The o-takiage releases recursive document projections, not original geometry, native evidence, lineage or historical claims.
+
+---
+
 # Projection Loom · Evergreen re-entry after Markdown o-takiage (2026-10-31)
 
 **PR #84:** `feature/green-jello-dinosaur-5--projection-loom`. This is a documentation cleanup, not a new native geometry or CAD validation claim. Read the full boot from `feature/green-jello-dinosaur-5` and inspect live PR head/Actions before doing further work.
