@@ -20,7 +20,7 @@ import {
   writePersonaKelEvent, personaKelEventsFromBoard, personaKelChainsFromBoard, personaKelChainForPrefix,
 } from "../src/persona-kel-board.js";
 import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "../src/recovery-keel-core.js";
-import { guardianRecoveryRegistrationCard } from "../src/recovery-registration.js";
+import { recoveryContactRegistrationCard } from "../src/recovery-registration.js";
 import { personaKelBoardDocUrl } from "../src/deterministic-doc.js";
 import { DeterministicFederationGate } from "../src/federation-gate.js";
 
@@ -31,15 +31,15 @@ const SEEDS = {
 };
 const pubOf = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
 const didOf = async (s: Uint8Array) => `0x${await pubOf(s)}`;
-const guardianSigner = async (s: Uint8Array) => ({ signer: await pubOf(s), sign: async (b: Uint8Array) => hex(await ed.signAsync(b, s)) });
+const recoveryContactSigner = async (s: Uint8Array) => ({ signer: await pubOf(s), sign: async (b: Uint8Array) => hex(await ed.signAsync(b, s)) });
 
 async function foundedInception(opSeed: Uint8Array, threshold = 2) {
   const foundingOpKeyDid = await didOf(opSeed);
-  const guardianRecoveryKeys = await Promise.all([pubOf(SEEDS.g1), pubOf(SEEDS.g2), pubOf(SEEDS.g3)]);
-  const slots = ["mine", "guardian-a", "guardian-b"] as const;
-  const guardians = guardianRecoveryKeys.map((k, i) => guardianRecoveryRegistrationCard(slots[i]!, k, null));
-  const prov = provisionThresholdRecoveryAtFounding({ foundingOpKeyDid, guardians, recoveryThreshold: threshold });
-  return { guardianRecoveryKeys, ...prov };
+  const recoveryContactKeys = await Promise.all([pubOf(SEEDS.g1), pubOf(SEEDS.g2), pubOf(SEEDS.g3)]);
+  const slots = ["mine", "contact-a", "contact-b"] as const;
+  const recoveryContacts = recoveryContactKeys.map((k, i) => recoveryContactRegistrationCard(slots[i]!, k, null));
+  const prov = provisionThresholdRecoveryAtFounding({ foundingOpKeyDid, recoveryContacts, recoveryThreshold: threshold });
+  return { recoveryContactKeys, ...prov };
 }
 
 /** A board is just a LarDoc the writer mutates — a test needs no Automerge handle to exercise the reader. */
@@ -51,11 +51,11 @@ function boardWith(...events: PersonaKelEvent[]): LarDoc {
 
 describe("persona-kel-board — the board round-trips a KEL to its head", () => {
   test("write inception + rotation → read the chain → headOpKey lands the CURRENT head", async () => {
-    const { inception, guardianRecoveryKeys, recoveryThreshold } = await foundedInception(SEEDS.opA);
+    const { inception, recoveryContactKeys, recoveryThreshold } = await foundedInception(SEEDS.opA);
     const freshOpKeyDid = await didOf(SEEDS.opB);
     const rot = await attestAndRotate({
-      head: inception, freshOpKeyDid, guardianRecoveryKeys, recoveryThreshold,
-      guardianSigners: await Promise.all([guardianSigner(SEEDS.g1), guardianSigner(SEEDS.g2)]),
+      head: inception, freshOpKeyDid, recoveryContactKeys, recoveryThreshold,
+      recoveryContactSigners: await Promise.all([recoveryContactSigner(SEEDS.g1), recoveryContactSigner(SEEDS.g2)]),
     });
     expect(rot.ok).toBe(true);
     if (!rot.ok) return;

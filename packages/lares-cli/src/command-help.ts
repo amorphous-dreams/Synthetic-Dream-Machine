@@ -536,14 +536,15 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   persona: {
-    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | list | sync | reissue [--nexus <aid>] [--face N] | guardian show <index> | guardian offer --prefix <persona-…> | guardian enrol <index> --threshold <k> <offer>… | guardian view --prefix <persona-…> | provisional <index> | confirm <index> <lar-log-view:…> | view <persona-…> --seat-key <key>>",
+    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | list | sync | reissue [--nexus <aid>] [--face N] | recovery-contact show <index> | recovery-contact offer --prefix <persona-…> | recovery-contact enrol <index> --threshold <k> <offer>… | recovery-contact view --prefix <persona-…> | provisional <index> | confirm <index> <lar-log-view:…> | view <persona-…> --seat-key <key>>",
     synopsis:
       "The PLURALITY-PONO identity multitude. THREE NAMES, THREE JOBS: the private LABEL names a compartment " +
       "to you alone; the declared HANDLE names what a persona answers to OUTWARD (an intent — only " +
       "`lares handle publish` performs the announce); the SEAT stands it for a Kahu chair on this node and " +
       "needs no Handle and carries a private chair label. `--split-root` opts into recovery shares. A vessel wears no face " +
       "between commands: a command names the face it acts as (`--face N`), or resolves the one face standing open. Local-first: a write lands on this node first and rides up when a hearth answers. A joining " +
-      "vessel takes a face by `lares fleet join` and never mints its root here.",
+      "vessel takes a face by `lares fleet join` and never mints its root here. RECOVERY CONTACTS: three people each hold a recovery key for one face, and two of the three, together, restore " +
+      "your Handle (your Handle: the public card your face publishes, recognised by its own key). A recovery contact restores your Handle; a custodian card of a `--split-root` returns your memory, and neither stands in for the other.",
     examples: [
       "lares persona new 0 --name '<label>' --seat [--chair '<chair label>']",
       "lares persona new 1 --name '<label>' --seat [--chair '<chair label>']",
@@ -552,12 +553,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares persona list                     # held indices · labels · declared Handles",
       "lares persona sync                     # carry labels + Handles up to the fleet (the persona plane)",
       "lares persona reissue --nexus <aid> --face 1   # face 1 hands its key at that Nexus on to a fresh key",
-      "lares persona guardian offer --prefix <persona-…>         # a guardian cuts a fresh key for one face",
-      "lares persona guardian enrol 0 --threshold 2 <offer> <offer> <offer>   # the face's first guardian set",
+      "lares persona recovery-contact offer --prefix <persona-…>         # a recovery contact cuts a fresh key for one face",
+      "lares persona recovery-contact enrol 0 --threshold 2 <offer> <offer> <offer>   # the face's first recovery contact set",
       "lares persona provisional 1              # a restored face: the head its restore read, and who could confirm it",
       "lares persona confirm 1 <lar-log-view:…>  # one party's own view of that head confirms the face",
       "lares persona view <persona-…> --seat-key <key>   # a chair this vessel holds signs its view of a face's head",
-      "lares persona guardian view --prefix <persona-…>  # a guardian signs its own view of a face's head with its card",
+      "lares persona recovery-contact view --prefix <persona-…>  # a recovery contact signs its own view of a face's head with its card",
     ],
     flags: [
       "--name <petname>   (new) the PRIVATE label at that handle-index",
@@ -567,11 +568,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--split-root       (new) opt into arming the 2-of-3 recovery split",
       "reissue            the face's key (--face N, else the one face standing open) at one Nexus hands its standing on to a fresh random key, by a hand-over both keys sign",
       "--nexus <aid>      (reissue) the Nexus; absent, this vessel's own charter",
-      "guardian show      the face's prefix, which a guardian's offer names, and the set it holds",
-      "guardian offer     a guardian's fresh recovery key for one face: a card it keeps and an offer line it hands over",
-      "guardian enrol     the face's own key enrols its first guardian set; a key another face holds refuses",
-      "--prefix <p>       (guardian offer) the face the guardian guards",
-      "--threshold <k>    (guardian enrol) how many guardians sign a later rotation",
+      "recovery-contact show      the face's prefix, which a recovery contact's offer names, and the set it holds",
+      "recovery-contact offer     a recovery contact's fresh recovery key for one face: a card it keeps and an offer line it hands over",
+      "recovery-contact enrol     the face's own key enrols its first set of three recovery contacts (two of the three restore your Handle); a key another face holds refuses",
+      "--prefix <p>       (recovery-contact offer) the face the recovery contact guards",
+      "--threshold <k>    (recovery-contact enrol) how many recovery contacts sign a later rotation; two, the only count enrolment takes",
     ],
     next: ["lares persona list", "lares handle publish '<glamour>'   # the outward announce"],
   },

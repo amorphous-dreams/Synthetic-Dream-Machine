@@ -5,9 +5,9 @@
  * Proven:
  *   · inception → rotate → verify round-trips; the prefix stays FIXED, the LATEST head carries the op-key,
  *   · a broken hash-link / tampered event REFUSES (structural verify fails closed),
- *   · THRESHOLD-ATTEST: k distinct guardian sigs ACCEPT a rotation; k-1 REFUSE; a non-roster signer and a
+ *   · THRESHOLD-ATTEST: k distinct recovery contact sigs ACCEPT a rotation; k-1 REFUSE; a non-roster signer and a
  *     duplicated signer never pad the quorum; a revealed roster off the pre-commit REFUSES,
- *   · NOTHING RECONSTRUCTS — the rotation seats a fresh op-key from guardian SIGNATURES over public keys
+ *   · NOTHING RECONSTRUCTS — the rotation seats a fresh op-key from recovery contact SIGNATURES over public keys
  *     alone; no seed, share, or reconstruct is ever assembled,
  *   · THE GATE-WALK: an edge signed by the CURRENT head verifies; a rotated (fresh) op-key still verifies
  *     under a re-issued edge; an edge signed by the SUPERSEDED op-key rejects (kapae-shadowed).
@@ -24,9 +24,9 @@ import {
   type PersonaKelEvent,
 } from "../src/persona-kel.js";
 import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "../src/recovery-keel-core.js";
-import { guardianRecoveryRegistrationCard } from "../src/recovery-registration.js";
+import { recoveryContactRegistrationCard } from "../src/recovery-registration.js";
 
-// Fixed seeds → deterministic run. Op-key seeds (A = founding, B = post-rotation) + three guardian
+// Fixed seeds → deterministic run. Op-key seeds (A = founding, B = post-rotation) + three recovery contact
 // recovery seeds + one stranger who holds no recovery authority.
 const SEEDS = {
   opA:      new Uint8Array(32).fill(11),
@@ -41,15 +41,15 @@ const SEEDS = {
 const pubOf    = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
 const didOf    = async (s: Uint8Array) => `0x${await pubOf(s)}`;
 const signerOf = (s: Uint8Array) => async (bytes: Uint8Array) => hex(await ed.signAsync(bytes, s));
-const guardianSigner = async (s: Uint8Array) => ({ signer: await pubOf(s), sign: signerOf(s) });
+const recoveryContactSigner = async (s: Uint8Array) => ({ signer: await pubOf(s), sign: signerOf(s) });
 
 async function foundedInception(threshold = 2) {
   const foundingOpKeyDid = await didOf(SEEDS.opA);
-  const guardianRecoveryKeys = await Promise.all([pubOf(SEEDS.g1), pubOf(SEEDS.g2), pubOf(SEEDS.g3)]);
-  const slots = ["mine", "guardian-a", "guardian-b"] as const;
-  const guardians = guardianRecoveryKeys.map((k, i) => guardianRecoveryRegistrationCard(slots[i]!, k, null));
-  const prov = provisionThresholdRecoveryAtFounding({ foundingOpKeyDid, guardians, recoveryThreshold: threshold });
-  return { foundingOpKeyDid, guardianRecoveryKeys, ...prov };
+  const recoveryContactKeys = await Promise.all([pubOf(SEEDS.g1), pubOf(SEEDS.g2), pubOf(SEEDS.g3)]);
+  const slots = ["mine", "contact-a", "contact-b"] as const;
+  const recoveryContacts = recoveryContactKeys.map((k, i) => recoveryContactRegistrationCard(slots[i]!, k, null));
+  const prov = provisionThresholdRecoveryAtFounding({ foundingOpKeyDid, recoveryContacts, recoveryThreshold: threshold });
+  return { foundingOpKeyDid, recoveryContactKeys, ...prov };
 }
 
 describe("persona-kel — inception + structural verify", () => {
@@ -72,12 +72,12 @@ describe("persona-kel — inception + structural verify", () => {
 });
 
 describe("persona-kel — threshold-attest rotation (Fork B, NOTHING reconstructs)", () => {
-  test("k distinct guardian sigs seat a FRESH op-key; the prefix stays fixed, the head advances", async () => {
-    const { inception, guardianRecoveryKeys, recoveryThreshold } = await foundedInception();
+  test("k distinct recovery contact sigs seat a FRESH op-key; the prefix stays fixed, the head advances", async () => {
+    const { inception, recoveryContactKeys, recoveryThreshold } = await foundedInception();
     const freshOpKeyDid = await didOf(SEEDS.opB);
-    const guardianSigners = await Promise.all([guardianSigner(SEEDS.g1), guardianSigner(SEEDS.g2)]);
+    const recoveryContactSigners = await Promise.all([recoveryContactSigner(SEEDS.g1), recoveryContactSigner(SEEDS.g2)]);
 
-    const res = await attestAndRotate({ head: inception, freshOpKeyDid, guardianRecoveryKeys, recoveryThreshold, guardianSigners });
+    const res = await attestAndRotate({ head: inception, freshOpKeyDid, recoveryContactKeys, recoveryThreshold, recoveryContactSigners });
     expect(res.ok).toBe(true);
     if (!res.ok) return;
     const rotation = res.event;
@@ -95,17 +95,17 @@ describe("persona-kel — threshold-attest rotation (Fork B, NOTHING reconstruct
   });
 
   test("NOTHING reconstructs — the rotation carries only PUBLIC keys + signatures, never a secret", async () => {
-    const { inception, guardianRecoveryKeys, recoveryThreshold } = await foundedInception();
+    const { inception, recoveryContactKeys, recoveryThreshold } = await foundedInception();
     const freshOpKeyDid = await didOf(SEEDS.opB);
-    const guardianSigners = await Promise.all([guardianSigner(SEEDS.g1), guardianSigner(SEEDS.g3)]);
-    const res = await attestAndRotate({ head: inception, freshOpKeyDid, guardianRecoveryKeys, recoveryThreshold, guardianSigners });
+    const recoveryContactSigners = await Promise.all([recoveryContactSigner(SEEDS.g1), recoveryContactSigner(SEEDS.g3)]);
+    const res = await attestAndRotate({ head: inception, freshOpKeyDid, recoveryContactKeys, recoveryThreshold, recoveryContactSigners });
     expect(res.ok).toBe(true);
     if (!res.ok) return;
     // The event's whole recovery surface is PUBLIC: the revealed pubkey roster + detached signatures. No
-    // field carries share/seed material, and every signer value is a known guardian PUBLIC key.
-    for (const s of res.event.rotationSigs) expect(guardianRecoveryKeys).toContain(s.signer);
-    expect(res.event.recoveryRoster).toEqual(guardianRecoveryKeys);
-    // The guardians signed the SAME bytes the event binds — an independent recompute matches, proving the
+    // field carries share/seed material, and every signer value is a known recovery contact PUBLIC key.
+    for (const s of res.event.rotationSigs) expect(recoveryContactKeys).toContain(s.signer);
+    expect(res.event.recoveryRoster).toEqual(recoveryContactKeys);
+    // The recovery contacts signed the SAME bytes the event binds — an independent recompute matches, proving the
     // attestation rode signatures alone (no reconstruction shore exists to assemble a secret).
     const bytes = personaRotationSigningBytes(inception, freshOpKeyDid);
     for (const s of res.event.rotationSigs) {
@@ -121,27 +121,27 @@ describe("persona-kel — threshold-attest rotation (Fork B, NOTHING reconstruct
   });
 
   test("k-1 signatures REFUSE (below threshold, fail-closed)", async () => {
-    const { inception, guardianRecoveryKeys, recoveryThreshold } = await foundedInception(2);
+    const { inception, recoveryContactKeys, recoveryThreshold } = await foundedInception(2);
     const freshOpKeyDid = await didOf(SEEDS.opB);
-    const guardianSigners = await Promise.all([guardianSigner(SEEDS.g1)]);   // only 1 of a 2-of-3
-    const res = await attestAndRotate({ head: inception, freshOpKeyDid, guardianRecoveryKeys, recoveryThreshold, guardianSigners });
+    const recoveryContactSigners = await Promise.all([recoveryContactSigner(SEEDS.g1)]);   // only 1 of a 2-of-3
+    const res = await attestAndRotate({ head: inception, freshOpKeyDid, recoveryContactKeys, recoveryThreshold, recoveryContactSigners });
     expect(res.ok).toBe(false);
     if (res.ok) return;
     expect(res.reason).toMatch(/below-threshold|quorum/i);
   });
 
   test("a non-roster signer never pads the quorum; a duplicated signer counts once", async () => {
-    const { inception, guardianRecoveryKeys, recoveryThreshold } = await foundedInception(2);
+    const { inception, recoveryContactKeys, recoveryThreshold } = await foundedInception(2);
     const freshOpKeyDid = await didOf(SEEDS.opB);
 
     // g1 (real) + stranger (not in the pre-committed set): only ONE valid distinct roster signer → REFUSE.
-    const withStranger = await Promise.all([guardianSigner(SEEDS.g1), guardianSigner(SEEDS.stranger)]);
-    const r1 = await attestAndRotate({ head: inception, freshOpKeyDid, guardianRecoveryKeys, recoveryThreshold, guardianSigners: withStranger });
+    const withStranger = await Promise.all([recoveryContactSigner(SEEDS.g1), recoveryContactSigner(SEEDS.stranger)]);
+    const r1 = await attestAndRotate({ head: inception, freshOpKeyDid, recoveryContactKeys, recoveryThreshold, recoveryContactSigners: withStranger });
     expect(r1.ok).toBe(false);
 
     // g1 signing TWICE — a duplicate counts once, so still below a 2 threshold → REFUSE.
-    const g1 = await guardianSigner(SEEDS.g1);
-    const r2 = await attestAndRotate({ head: inception, freshOpKeyDid, guardianRecoveryKeys, recoveryThreshold, guardianSigners: [g1, g1] });
+    const g1 = await recoveryContactSigner(SEEDS.g1);
+    const r2 = await attestAndRotate({ head: inception, freshOpKeyDid, recoveryContactKeys, recoveryThreshold, recoveryContactSigners: [g1, g1] });
     expect(r2.ok).toBe(false);
   });
 
@@ -150,18 +150,18 @@ describe("persona-kel — threshold-attest rotation (Fork B, NOTHING reconstruct
     const freshOpKeyDid = await didOf(SEEDS.opB);
     // Swap g3 for the stranger — the revealed roster's digest no longer matches recoverySetHash.
     const forgedRoster = await Promise.all([pubOf(SEEDS.g1), pubOf(SEEDS.g2), pubOf(SEEDS.stranger)]);
-    const guardianSigners = await Promise.all([guardianSigner(SEEDS.g1), guardianSigner(SEEDS.g2)]);
-    const res = await attestAndRotate({ head: inception, freshOpKeyDid, guardianRecoveryKeys: forgedRoster, recoveryThreshold, guardianSigners });
+    const recoveryContactSigners = await Promise.all([recoveryContactSigner(SEEDS.g1), recoveryContactSigner(SEEDS.g2)]);
+    const res = await attestAndRotate({ head: inception, freshOpKeyDid, recoveryContactKeys: forgedRoster, recoveryThreshold, recoveryContactSigners });
     expect(res.ok).toBe(false);
     if (res.ok) return;
     expect(res.reason).toMatch(/reveal mismatch|does not match/i);
   });
 
   test("verifyRotationQuorum rejects a signature over the WRONG bytes (tamper-evident)", async () => {
-    const { inception, guardianRecoveryKeys, recoveryThreshold } = await foundedInception(2);
+    const { inception, recoveryContactKeys, recoveryThreshold } = await foundedInception(2);
     const freshOpKeyDid = await didOf(SEEDS.opB);
-    const guardianSigners = await Promise.all([guardianSigner(SEEDS.g1), guardianSigner(SEEDS.g2)]);
-    const res = await attestAndRotate({ head: inception, freshOpKeyDid, guardianRecoveryKeys, recoveryThreshold, guardianSigners });
+    const recoveryContactSigners = await Promise.all([recoveryContactSigner(SEEDS.g1), recoveryContactSigner(SEEDS.g2)]);
+    const res = await attestAndRotate({ head: inception, freshOpKeyDid, recoveryContactKeys, recoveryThreshold, recoveryContactSigners });
     expect(res.ok).toBe(true);
     if (!res.ok) return;
     // Re-verify the SAME sigs against a DIFFERENT seated op-key (opA) — the core bytes change → quorum fails.
@@ -169,17 +169,17 @@ describe("persona-kel — threshold-attest rotation (Fork B, NOTHING reconstruct
       seq: 1, prefix: inception.prefix, opKeyDid: inception.opKeyDid,
       recoverySetHash: inception.recoverySetHash, prevEventCid: inception.eventCid,
     };
-    const q = await verifyRotationQuorum(wrongCore, guardianRecoveryKeys, recoveryThreshold, res.event.rotationSigs);
+    const q = await verifyRotationQuorum(wrongCore, recoveryContactKeys, recoveryThreshold, res.event.rotationSigs);
     expect(q.ok).toBe(false);
   });
 });
 
 describe("persona-kel — structural break across a rotation", () => {
   test("a broken hash-link REFUSES", async () => {
-    const { inception, guardianRecoveryKeys, recoveryThreshold } = await foundedInception();
+    const { inception, recoveryContactKeys, recoveryThreshold } = await foundedInception();
     const freshOpKeyDid = await didOf(SEEDS.opB);
-    const guardianSigners = await Promise.all([guardianSigner(SEEDS.g1), guardianSigner(SEEDS.g2)]);
-    const res = await attestAndRotate({ head: inception, freshOpKeyDid, guardianRecoveryKeys, recoveryThreshold, guardianSigners });
+    const recoveryContactSigners = await Promise.all([recoveryContactSigner(SEEDS.g1), recoveryContactSigner(SEEDS.g2)]);
+    const res = await attestAndRotate({ head: inception, freshOpKeyDid, recoveryContactKeys, recoveryThreshold, recoveryContactSigners });
     expect(res.ok).toBe(true);
     if (!res.ok) return;
     const broken = { ...res.event, prevEventCid: "pkel0-wrong" };
@@ -190,7 +190,7 @@ describe("persona-kel — structural break across a rotation", () => {
 
 describe("persona-kel — the gate-walk (pin-move mechanism, pure)", () => {
   test("an edge under the CURRENT head verifies; a rotated key still verifies; a SUPERSEDED key rejects", async () => {
-    const { inception, guardianRecoveryKeys, recoveryThreshold, foundingOpKeyDid } = await foundedInception();
+    const { inception, recoveryContactKeys, recoveryThreshold, foundingOpKeyDid } = await foundedInception();
 
     // Founding edge: opA delegates to vesselX. It chains to the inception head (opA).
     const foundingEdge = await buildDeviceDelegation({
@@ -202,10 +202,10 @@ describe("persona-kel — the gate-walk (pin-move mechanism, pure)", () => {
     expect(g1.ok).toBe(true);
     expect(g1.headOpKey).toBe(foundingOpKeyDid);
 
-    // Rotate the op-key to opB via a guardian quorum.
+    // Rotate the op-key to opB via a recovery contact quorum.
     const freshOpKeyDid = await didOf(SEEDS.opB);
-    const guardianSigners = await Promise.all([guardianSigner(SEEDS.g1), guardianSigner(SEEDS.g2)]);
-    const rot = await attestAndRotate({ head: inception, freshOpKeyDid, guardianRecoveryKeys, recoveryThreshold, guardianSigners });
+    const recoveryContactSigners = await Promise.all([recoveryContactSigner(SEEDS.g1), recoveryContactSigner(SEEDS.g2)]);
+    const rot = await attestAndRotate({ head: inception, freshOpKeyDid, recoveryContactKeys, recoveryThreshold, recoveryContactSigners });
     expect(rot.ok).toBe(true);
     if (!rot.ok) return;
     const chain = [inception, rot.event];
@@ -228,11 +228,11 @@ describe("persona-kel — the gate-walk (pin-move mechanism, pure)", () => {
 
 describe("persona-kel — the gate-walk survives a malformed board", () => {
   test("RED: a junk event planted on the board leaves the valid edge admitted, and names the tail it set aside", async () => {
-    const { inception, guardianRecoveryKeys, recoveryThreshold } = await foundedInception();
+    const { inception, recoveryContactKeys, recoveryThreshold } = await foundedInception();
     const foundingEdge = await buildDeviceDelegation({
       personaRootSeed: SEEDS.opA, atomSeed: SEEDS.vesselX, hearthTrueName: "", boundEpoch: 0,
     });
-    // A board writer plants a "rotation" to a key of its own: its cid recomputes, and no guardian signed it.
+    // A board writer plants a "rotation" to a key of its own: its cid recomputes, and no recovery contact signed it.
     const core = {
       seq: 1, prefix: inception.prefix, opKeyDid: await didOf(SEEDS.stranger), recoverySetHash: inception.recoverySetHash,
       nextRecoverySetHash: inception.nextRecoverySetHash, prevEventCid: inception.eventCid, provisional: false, vetoOfCid: null,
@@ -245,8 +245,8 @@ describe("persona-kel — the gate-walk survives a malformed board", () => {
     const planted = await verifyEdgeAgainstPersonaKel(foundingEdge, [inception, junk]);
     expect(planted).toMatchObject({ ok: true, headOpKey: await didOf(SEEDS.opA), unreadable: expect.stringMatching(/do not verify and move nothing.*lineage stands at seq 0/) });
     // A torn tail past a lawful rotation stands the gate under that rotation's head.
-    const guardianSigners = await Promise.all([guardianSigner(SEEDS.g1), guardianSigner(SEEDS.g2)]);
-    const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), guardianRecoveryKeys, recoveryThreshold, guardianSigners });
+    const recoveryContactSigners = await Promise.all([recoveryContactSigner(SEEDS.g1), recoveryContactSigner(SEEDS.g2)]);
+    const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), recoveryContactKeys, recoveryThreshold, recoveryContactSigners });
     if (!rot.ok) throw new Error(rot.reason);
     const torn = { ...rot.event, seq: 2, prevEventCid: rot.event.eventCid, eventCid: "pkel2-junk" };
     const rotatedEdge = await buildDeviceDelegation({
@@ -289,15 +289,15 @@ describe("persona-kel — the gate-walk LICENSES OFF THE LEASE EPOCH, never a cl
   });
 
   test("CONTROL — the KEL-head rotation refusal still fires even with an epoch fence in play", async () => {
-    const { inception, guardianRecoveryKeys, recoveryThreshold } = await foundedInception();
+    const { inception, recoveryContactKeys, recoveryThreshold } = await foundedInception();
 
     const foundingEdge = await buildDeviceDelegation({
       personaRootSeed: SEEDS.opA, atomSeed: SEEDS.vesselX,
       hearthTrueName: "", boundEpoch: 0,
     });
     const freshOpKeyDid = await didOf(SEEDS.opB);
-    const guardianSigners = await Promise.all([guardianSigner(SEEDS.g1), guardianSigner(SEEDS.g2)]);
-    const rot = await attestAndRotate({ head: inception, freshOpKeyDid, guardianRecoveryKeys, recoveryThreshold, guardianSigners });
+    const recoveryContactSigners = await Promise.all([recoveryContactSigner(SEEDS.g1), recoveryContactSigner(SEEDS.g2)]);
+    const rot = await attestAndRotate({ head: inception, freshOpKeyDid, recoveryContactKeys, recoveryThreshold, recoveryContactSigners });
     expect(rot.ok).toBe(true);
     if (!rot.ok) return;
     const chain = [inception, rot.event];

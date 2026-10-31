@@ -4,8 +4,8 @@
  * ── WHAT THE CARDS HOLD ─────────────────────────────────────────────────────────────────────────
  * `lares persona new --split-root` splits the face's persona root 2-of-3 {device, recorded-code, escrow-peer}. The
  * person carries the recorded code and the escrow carrier off the device; the device share seals into the lost
- * vessel's home and dies with it. A guardian-card split names its three cards the same way (mine → device,
- * guardian-A → guardian, guardian-B → escrow-peer). A code spells only the share's point and its checksum: it names
+ * vessel's home and dies with it. A custodian-card split names its three cards the same way (mine → device,
+ * custodian-A → custodian, custodian-B → escrow-peer). A code spells only the share's point and its checksum: it names
  * no custodian, no epoch and no root. So the reader asks the person for the custodian each card came from, and for
  * the face the cards should rebuild.
  *
@@ -18,7 +18,7 @@
  *
  * It then BUILDS the body `restoreFaceBody` lands: the root and its verifying key, a roster line at the target
  * index, the anchors the root derives (the signer's name, and the prefix of the inception the root derives), the
- * inception alone as the carried key history, no names, no proof keys, no handle-book records, no guardian set, no
+ * inception alone as the carried key history, no names, no proof keys, no handle-book records, no recovery contact set, no
  * address secret (null: paper carries none, and the restore mints none, so the face's working slot refuses
  * `no-address-secret` until a fleet join lands the secret from a device that wears the face). The
  * board supplies any later key event, and the restore's head check folds both: a rotation away from the root
@@ -62,7 +62,7 @@ export interface PresentedCard { readonly code: string; readonly custodian: Cust
 /** The face the cards should rebuild, as the person names it: its root's public key, its prefix, or both. */
 export interface FaceNamed { readonly verifyingKey?: string; readonly prefix?: string }
 
-const CUSTODIANS: readonly CustodianTag[] = ["device", "recorded-code", "guardian", "escrow-peer"];
+const CUSTODIANS: readonly CustodianTag[] = ["device", "recorded-code", "custodian", "escrow-peer"];
 /** The threshold every founding split carries. */
 const QUORUM = 2;
 /** A card of the first split reads as epoch 1; a code spells no epoch, and a stale share meets the root check. */
@@ -131,7 +131,7 @@ export async function buildCardBody(args: { readonly cards: readonly PresentedCa
       rosterLine: { handleIndex: args.as, verifyingKey },
       anchors: { signerDid, personaKelPrefix: inception.prefix },
       kel: [inception],
-      names: {}, faceProofKeys: [], handleBook: { records: [] }, guardianSet: null, addressSecret: null,
+      names: {}, faceProofKeys: [], handleBook: { records: [] }, recoveryContactSet: null, addressSecret: null,
       memory: { section: emptyMemorySection(), holds: [] },
     };
   } finally { seed.fill(0); }

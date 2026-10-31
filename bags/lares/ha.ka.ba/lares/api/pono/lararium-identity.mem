@@ -502,7 +502,7 @@ never claim "rotate-on-loss" heals the past. The honest forward lever lies in ''
 gap stays a ''documented invariant''. Two tempting escapes stand ''refuted'': ''puncturable encryption'' serves a single holder and does not fit a replicated-key
 mesh (one replica puncturing leaves the others + backups open; no-global-now makes "all replicas
 punctured" unprovable), and ''threshold does not touch the encryption-history gap at all''. Root
-rotation/recovery rides ''KERI-style pre-rotation'' + ''Kintsugi-style'' guardian-threshold
+rotation/recovery rides ''KERI-style pre-rotation'' + ''Kintsugi-style'' recovery-contact-threshold
 recovery (#/provenance).
 
 ''Swap-back stays clean'' — `@daemon` already carries Keyhive cap-events as records, so the
@@ -555,6 +555,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MDsWRDpycxsavRinMNM2iBemHFuOMbijBe3YjUrODfY
+<<^ code="&#x0003;">>ni:///sha-256;fwk7DMMEwsQs-lPtT3HMo1dQs7MfXkmhX-esYBuv9D8
 
 <<^ code="&#x0004;" -> to="?">>

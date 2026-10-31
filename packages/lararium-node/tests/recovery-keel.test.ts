@@ -10,7 +10,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed25519 from "@noble/ed25519";
-import { countersignDeviceDelegation, faceAtomKeyFromSeed, mintFaceAtomSeed, type DeviceDelegationRootHalf, assembleQuorum, reconstructFromQuorum, decodeShareBytes, guardianShareFromCard, verifyDeviceDelegation, personaPrefixOf, type RecoveryShare } from "@lararium/mesh";
+import { countersignDeviceDelegation, faceAtomKeyFromSeed, mintFaceAtomSeed, type DeviceDelegationRootHalf, assembleQuorum, reconstructFromQuorum, decodeShareBytes, custodianShareFromCard, verifyDeviceDelegation, personaPrefixOf, type RecoveryShare } from "@lararium/mesh";
 import { splitRootAtFounding, reconstructAndReadmit, provisionRecoveryAtFounding, provisionRecoveryCardsAtFounding } from "../src/recovery-keel.js";
 import { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed } from "../src/node-vessel-identity.js";
 import { loadRecoveryDeviceShare } from "../src/recovery-share-store.js";
@@ -180,7 +180,7 @@ describe("recovery-keel — founding provision against the real identity store",
   });
 });
 
-describe("recovery-keel — identity recovery issues the SHARED guardian cards (reserve-aligned)", () => {
+describe("recovery-keel — identity recovery issues the SHARED custodian cards (reserve-aligned)", () => {
   const saved: Record<string, string | undefined> = {};
   const setEnv = (k: string, v: string | undefined): void => { saved[k] = process.env[k]; if (v === undefined) delete process.env[k]; else process.env[k] = v; };
   let dir: string;
@@ -195,21 +195,21 @@ describe("recovery-keel — identity recovery issues the SHARED guardian cards (
     rmSync(dir, { recursive: true, force: true });
   });
 
-  test("founding: split the minted root into mine + guardian-A/B cards, seal 'mine', recover from the two guardians", async () => {
+  test("founding: split the minted root into mine + custodian-A/B cards, seal 'mine', recover from the two custodians", async () => {
     await generateOrLoadPersonaGroupRoot();                       // the founding mint
     const { cards, mineSealed } = await provisionRecoveryCardsAtFounding(dir, "Ola", "Kai", seededRng(11));
 
     // The SAME card shape the charter reserve issues: three slots, three distinct custodians, human labels.
     expect(mineSealed).toBe(true);
-    expect(cards.map((c) => c.slot)).toEqual(["mine", "guardian-a", "guardian-b"]);
-    expect(cards.map((c) => c.custodian)).toEqual(["device", "guardian", "escrow-peer"]);
-    expect(cards.find((c) => c.slot === "guardian-a")!.label).toContain("guardian-A (Ola)");
+    expect(cards.map((c) => c.slot)).toEqual(["mine", "custodian-a", "custodian-b"]);
+    expect(cards.map((c) => c.custodian)).toEqual(["device", "custodian", "escrow-peer"]);
+    expect(cards.find((c) => c.slot === "custodian-a")!.label).toContain("custodian-A (Ola)");
     expect(new Set(cards.map((c) => c.confirmPhrase)).size).toBe(3);
 
-    // The "mine" (device) share sealed on THIS device; a lost device recovers from the two GUARDIAN cards.
+    // The "mine" (device) share sealed on THIS device; a lost device recovers from the two CUSTODIAN cards.
     expect((await loadRecoveryDeviceShare())?.custodian).toBe("device");
-    const guardianCards = cards.filter((c) => c.slot !== "mine");
-    const quorum = guardianCards.map((c) => guardianShareFromCard(c, 1));
+    const custodianCards = cards.filter((c) => c.slot !== "mine");
+    const quorum = custodianCards.map((c) => custodianShareFromCard(c, 1));
     const freshTreeKey = freshDeviceKey();
     const payload = await reconstructAndReadmit(quorum, readmitFields(freshTreeKey));
 
@@ -220,10 +220,10 @@ describe("recovery-keel — identity recovery issues the SHARED guardian cards (
     expect((await verifyDeviceDelegation(await complete(payload.deviceEdge), rootDid)).ok).toBe(true);
   });
 
-  test("ONE guardian card alone cannot recover — below threshold (fail closed)", async () => {
+  test("ONE custodian card alone cannot recover — below threshold (fail closed)", async () => {
     await generateOrLoadPersonaGroupRoot();
     const { cards } = await provisionRecoveryCardsAtFounding(dir, "Ola", "Kai", seededRng(11));
-    const one = [guardianShareFromCard(cards.find((c) => c.slot === "guardian-a")!, 1)];
+    const one = [custodianShareFromCard(cards.find((c) => c.slot === "custodian-a")!, 1)];
     await expect(reconstructAndReadmit(one, readmitFields(freshDeviceKey()))).rejects.toThrow(/below threshold/);
   });
 });

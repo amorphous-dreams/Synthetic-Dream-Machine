@@ -10,7 +10,7 @@
 import { afterEach, describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
-  hex, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, attestAndRotate,
+  hex, provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard, attestAndRotate,
   personaKelDropName, httpPersonaKelDropHerm, pullPersonaKelSuccessors,
 } from "@lararium/mesh";
 import { startHermRelayPort, type HermRelayPort } from "../src/herm-relay-port.js";
@@ -24,17 +24,17 @@ describe("the herm's drop floor stands beside the shut sibling route", () => {
   test("the drop floor: a plain request reads and keeps a KEL successor; every other ask meets one silence", async () => {
     relay = await startHermRelayPort(new Uint8Array(32).fill(88), 0);
     const base = `http://127.0.0.1:${relay.port}`;
-    const guardianSeeds = [61, 62, 63].map((b) => new Uint8Array(32).fill(b));
-    const guardianRecoveryKeys = await Promise.all(guardianSeeds.map(pubOf));
-    const slots = ["mine", "guardian-a", "guardian-b"] as const;
+    const recoveryContactSeeds = [61, 62, 63].map((b) => new Uint8Array(32).fill(b));
+    const recoveryContactKeys = await Promise.all(recoveryContactSeeds.map(pubOf));
+    const slots = ["mine", "contact-a", "contact-b"] as const;
     const prov = provisionThresholdRecoveryAtFounding({
       foundingOpKeyDid: `0x${await pubOf(new Uint8Array(32).fill(51))}`,
-      guardians: guardianRecoveryKeys.map((k, i) => guardianRecoveryRegistrationCard(slots[i]!, k, null)),
+      recoveryContacts: recoveryContactKeys.map((k, i) => recoveryContactRegistrationCard(slots[i]!, k, null)),
       recoveryThreshold: 2,
     });
     const rot = await attestAndRotate({
-      head: prov.inception, freshOpKeyDid: `0x${await pubOf(new Uint8Array(32).fill(52))}`, guardianRecoveryKeys, recoveryThreshold: 2,
-      guardianSigners: await Promise.all(guardianSeeds.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: async (b: Uint8Array) => hex(await ed.signAsync(b, s)) }))),
+      head: prov.inception, freshOpKeyDid: `0x${await pubOf(new Uint8Array(32).fill(52))}`, recoveryContactKeys, recoveryThreshold: 2,
+      recoveryContactSigners: await Promise.all(recoveryContactSeeds.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: async (b: Uint8Array) => hex(await ed.signAsync(b, s)) }))),
     });
     if (!rot.ok) throw new Error(rot.reason);
     const name = personaKelDropName(prov.inception.eventCid, relay.gatePubKey);

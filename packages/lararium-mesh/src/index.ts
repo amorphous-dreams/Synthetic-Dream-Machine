@@ -64,7 +64,7 @@ export * from "./persona-petname.js";
 export * from "./persona-declare.js";
 export * from "./persona-glamour.js";
 export * from "./recovery-keel-core.js";
-export * from "./guardian-card.js";
+export * from "./custodian-card.js";
 export * from "./recovery-registration.js";
 export * from "./capability.js";
 export * from "./domains.js";

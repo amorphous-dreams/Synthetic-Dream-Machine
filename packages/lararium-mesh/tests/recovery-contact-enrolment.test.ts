@@ -1,15 +1,15 @@
 /**
- * guardian-enrolment — a face founded one-of-one takes its guardians by its OWN key, under its own prefix.
+ * recovery-contact-enrolment — a face founded one-of-one takes its recovery contacts by its OWN key, under its own prefix.
  *
- * The ruling ("Guardian enrolment's shape", lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings): each face
- * founds one-of-one with no guardians; its log's verifier knows a TYPED first-enrolment event from the start; the
- * face's own CURRENT key signs it; it commits the guardian set and threshold; the prefix stays as it stands; every
- * later change to the set takes the guardians' authority.
+ * The ruling ("Recovery contact enrolment's shape", lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings): each face
+ * founds one-of-one with no recovery contacts; its log's verifier knows a TYPED first-enrolment event from the start; the
+ * face's own CURRENT key signs it; it commits the recovery contact set and threshold; the prefix stays as it stands; every
+ * later change to the set takes the recovery contacts' authority.
  *
  * Proven:
  *   · the current op-key enrols a set over a one-of-one head; prefix, op-key and every device edge stand,
  *   · after a self-rotation the CURRENT key enrols and the retired key cannot,
- *   · a second enrolment refuses, at the mint and at the reader; the guardians' quorum then rotates and the self set
+ *   · a second enrolment refuses, at the mint and at the reader; the recovery contacts' quorum then rotates and the self set
  *     refuses,
  *   · a stranger's, a tampered, an untyped or a padded enrolment moves nothing; a veto never names one,
  *   · the board carries the type and its signature through,
@@ -22,18 +22,18 @@ import { hex } from "../src/crypto.js";
 import { sealKeySetHash } from "../src/wax-stamp.js";
 import { buildDeviceDelegation } from "../src/device-delegation.js";
 import {
-  mintPersonaInception, mintPersonaRotation, mintGuardianEnrolment, mintVeto, personaRotationSigningBytes,
+  mintPersonaInception, mintPersonaRotation, mintRecoveryContactEnrolment, mintVeto, personaRotationSigningBytes,
   personaEnrolmentSigningBytes, personaEventBytes, personaEventCidOf, personaPrefixOf, sealedEnrolmentBytes,
   verifyPersonaKel, verifyPersonaKelFull,
-  foldPersonaContests, headOpKey, verifyEdgeAgainstPersonaKel, enrolmentDigestOf, GUARDIAN_ENROLMENT_KIND,
+  foldPersonaContests, headOpKey, verifyEdgeAgainstPersonaKel, enrolmentDigestOf, RECOVERY_CONTACT_ENROLMENT_KIND,
   type PersonaKelEvent,
 } from "../src/persona-kel.js";
 import { writePersonaKelEvent, personaKelEventsFromBoard } from "../src/persona-kel-board.js";
 import {
-  attestAndRotate, enrolGuardians, guardianCompartmentCheck, guardianPossessionBytes,
-  type GuardianEnrolmentOffer,
+  attestAndRotate, enrolRecoveryContacts, recoveryContactCompartmentCheck, recoveryContactPossessionBytes,
+  type RecoveryContactEnrolmentOffer,
 } from "../src/recovery-keel-core.js";
-import { guardianRecoveryRegistrationCard } from "../src/recovery-registration.js";
+import { recoveryContactRegistrationCard } from "../src/recovery-registration.js";
 import type { LarDoc } from "../src/base-doc.js";
 
 const SEEDS = {
@@ -64,7 +64,7 @@ async function friends(threshold = 2): Promise<{ keys: string[]; hash: string }>
 
 async function enrolled(head: PersonaKelEvent, seed: Uint8Array = SEEDS.opA): Promise<PersonaKelEvent> {
   const { hash } = await friends();
-  const r = await mintGuardianEnrolment({ head, guardianSetHash: hash, sign: signerOf(seed) });
+  const r = await mintRecoveryContactEnrolment({ head, recoveryContactSetHash: hash, sign: signerOf(seed) });
   if (!r.ok) throw new Error(r.reason);
   return r.event;
 }
@@ -81,16 +81,16 @@ async function resigned(e: PersonaKelEvent, seed: Uint8Array = SEEDS.opA): Promi
 }
 
 describe("the typed first enrolment", () => {
-  test("★ the face's own current key enrols a guardian set; the prefix, the op-key and the device edge stand ★", async () => {
+  test("★ the face's own current key enrols a recovery contact set; the prefix, the op-key and the device edge stand ★", async () => {
     const { inception } = await oneOfOne();
     const { hash } = await friends();
     const edge = await buildDeviceDelegation({
       personaRootSeed: SEEDS.opA, atomSeed: SEEDS.vessel, hearthTrueName: "", boundEpoch: 0,
     });
-    const r = await mintGuardianEnrolment({ head: inception, guardianSetHash: hash, sign: signerOf(SEEDS.opA) });
+    const r = await mintRecoveryContactEnrolment({ head: inception, recoveryContactSetHash: hash, sign: signerOf(SEEDS.opA) });
     expect(r.ok, r.ok ? "" : r.reason).toBe(true);
     if (!r.ok) return;
-    expect(r.event.kind).toBe(GUARDIAN_ENROLMENT_KIND);
+    expect(r.event.kind).toBe(RECOVERY_CONTACT_ENROLMENT_KIND);
     expect(r.event.prefix).toBe(inception.prefix);
     expect(r.event.opKeyDid).toBe(inception.opKeyDid);
     expect(r.event.recoverySetHash).toBe(inception.recoverySetHash);
@@ -123,19 +123,19 @@ describe("the typed first enrolment", () => {
     expect(rotated.ok).toBe(true);
     if (!rotated.ok) return;
     const { hash } = await friends();
-    const byRetired = await mintGuardianEnrolment({ head: rotated.event, guardianSetHash: hash, sign: signerOf(SEEDS.opA) });
+    const byRetired = await mintRecoveryContactEnrolment({ head: rotated.event, recoveryContactSetHash: hash, sign: signerOf(SEEDS.opA) });
     expect(byRetired.ok).toBe(false);
-    const byCurrent = await mintGuardianEnrolment({ head: rotated.event, guardianSetHash: hash, sign: signerOf(SEEDS.opB) });
+    const byCurrent = await mintRecoveryContactEnrolment({ head: rotated.event, recoveryContactSetHash: hash, sign: signerOf(SEEDS.opB) });
     expect(byCurrent.ok, byCurrent.ok ? "" : byCurrent.reason).toBe(true);
     if (byCurrent.ok) expect((await verifyPersonaKelFull([inception, rotated.event, byCurrent.event])).ok).toBe(true);
   });
 
-  test("★ a later change takes the guardians: a second enrolment refuses; their quorum rotates; the self set refuses ★", async () => {
+  test("★ a later change takes the recovery contacts: a second enrolment refuses; their quorum rotates; the self set refuses ★", async () => {
     const { inception, selfPub } = await oneOfOne();
     const first = await enrolled(inception);
     const g = await friends();
     const g4 = await pubOf(SEEDS.g4);
-    const again = await mintGuardianEnrolment({ head: first, guardianSetHash: sealKeySetHash([g4], 1), sign: signerOf(SEEDS.opA) });
+    const again = await mintRecoveryContactEnrolment({ head: first, recoveryContactSetHash: sealKeySetHash([g4], 1), sign: signerOf(SEEDS.opA) });
     expect(again.ok).toBe(false);
     // The reader refuses the same act forged past the mint.
     const forgedCore = { ...first, seq: first.seq + 1, prevEventCid: first.eventCid, nextRecoverySetHash: sealKeySetHash([g4], 1) };
@@ -144,34 +144,34 @@ describe("the typed first enrolment", () => {
     expect(foldPersonaContests([inception, first, forged]).kel).toHaveLength(2);
 
     const quorum = await attestAndRotate({
-      head: first, freshOpKeyDid: await didOf(SEEDS.opB), guardianRecoveryKeys: g.keys, recoveryThreshold: 2,
-      guardianSigners: [
+      head: first, freshOpKeyDid: await didOf(SEEDS.opB), recoveryContactKeys: g.keys, recoveryThreshold: 2,
+      recoveryContactSigners: [
         { signer: g.keys[0]!, sign: signerOf(SEEDS.g1) },
         { signer: g.keys[1]!, sign: signerOf(SEEDS.g2) },
       ],
     });
     expect(quorum.ok, quorum.ok ? "" : quorum.reason).toBe(true);
     const bySelf = await attestAndRotate({
-      head: first, freshOpKeyDid: await didOf(SEEDS.opB), guardianRecoveryKeys: [selfPub], recoveryThreshold: 1,
-      guardianSigners: [{ signer: selfPub, sign: signerOf(SEEDS.self) }],
+      head: first, freshOpKeyDid: await didOf(SEEDS.opB), recoveryContactKeys: [selfPub], recoveryThreshold: 1,
+      recoveryContactSigners: [{ signer: selfPub, sign: signerOf(SEEDS.self) }],
     });
     expect(bySelf.ok).toBe(false);
   });
 
-  test("an enrolment over a set an inception already names for guardians refuses: only a one-of-one face enrols", async () => {
+  test("an enrolment over a set an inception already names for recovery contacts refuses: only a one-of-one face enrols", async () => {
     // A genesis that grafts no set reads one-of-one; a head whose rolling set moved off the genesis set reads enrolled.
     const { inception } = await oneOfOne();
     const g = await friends();
     const moved = readdressed({ ...inception, seq: 1, prevEventCid: inception.eventCid, nextRecoverySetHash: g.hash, rotationSigs: [] });
-    const r = await mintGuardianEnrolment({ head: moved, guardianSetHash: sealKeySetHash([await pubOf(SEEDS.g4)], 1), sign: signerOf(SEEDS.opA) });
+    const r = await mintRecoveryContactEnrolment({ head: moved, recoveryContactSetHash: sealKeySetHash([await pubOf(SEEDS.g4)], 1), sign: signerOf(SEEDS.opA) });
     expect(r.ok).toBe(false);
   });
 
   test("an enrolment that commits the genesis set again, or no digest at all, refuses", async () => {
     const { inception } = await oneOfOne();
-    for (const guardianSetHash of [inception.recoverySetHash, "", "zz"]) {
-      const r = await mintGuardianEnrolment({ head: inception, guardianSetHash, sign: signerOf(SEEDS.opA) });
-      expect(r.ok, guardianSetHash).toBe(false);
+    for (const recoveryContactSetHash of [inception.recoverySetHash, "", "zz"]) {
+      const r = await mintRecoveryContactEnrolment({ head: inception, recoveryContactSetHash, sign: signerOf(SEEDS.opA) });
+      expect(r.ok, recoveryContactSetHash).toBe(false);
     }
   });
 
@@ -186,10 +186,10 @@ describe("the typed first enrolment", () => {
     expect(provisional.ok).toBe(true);
     if (!provisional.ok) return;
     const { hash } = await friends();
-    const r = await mintGuardianEnrolment({ head: provisional.event, guardianSetHash: hash, sign: signerOf(SEEDS.opB) });
+    const r = await mintRecoveryContactEnrolment({ head: provisional.event, recoveryContactSetHash: hash, sign: signerOf(SEEDS.opB) });
     expect(r.ok).toBe(false);
     const core = { ...provisional.event, seq: 2, prevEventCid: provisional.event.eventCid, nextRecoverySetHash: hash,
-      provisional: false, kind: GUARDIAN_ENROLMENT_KIND, recoveryRoster: [], recoveryThreshold: 0, rotationSigs: [] } as PersonaKelEvent;
+      provisional: false, kind: RECOVERY_CONTACT_ENROLMENT_KIND, recoveryRoster: [], recoveryThreshold: 0, rotationSigs: [] } as PersonaKelEvent;
     const forged = readdressed({ ...core, enrolSig: await signerOf(SEEDS.opB)(personaEventBytes(core)) });
     expect((await verifyPersonaKelFull([inception, provisional.event, forged])).ok).toBe(false);
   });
@@ -215,10 +215,10 @@ describe("what a board writer reaches", () => {
     const g4 = sealKeySetHash([await pubOf(SEEDS.g4)], 1);
     const probes: PersonaKelEvent[] = [
       { ...e, nextRecoverySetHash: g4 },                                                        // cid breaks
-      await resigned({ ...e, kind: "guardian-revocation" as typeof GUARDIAN_ENROLMENT_KIND }),    // a kind the reader knows not
+      await resigned({ ...e, kind: "recovery-contact-revocation" as typeof RECOVERY_CONTACT_ENROLMENT_KIND }),    // a kind the reader knows not
       { ...e, recoveryRoster: [await pubOf(SEEDS.g1)], recoveryThreshold: 1 },                   // a reveal rides no enrolment
       { ...e, rotationSigs: [{ signer: await pubOf(SEEDS.g1), sig: "00".repeat(64) }] },
-      // The face's own key signs an "enrolment" that also seats another op-key: a rotation no guardian attested.
+      // The face's own key signs an "enrolment" that also seats another op-key: a rotation no recovery contact attested.
       await resigned({ ...e, opKeyDid: await didOf(SEEDS.opB) }),
     ];
     for (const p of probes) expect((await verifyPersonaKelFull([inception, p])).ok).toBe(false);
@@ -231,7 +231,7 @@ describe("what a board writer reaches", () => {
 
   test("an inception that names a kind refuses", async () => {
     const { inception } = await oneOfOne();
-    expect(verifyPersonaKel([readdressed({ ...inception, kind: GUARDIAN_ENROLMENT_KIND })])).toBe(false);
+    expect(verifyPersonaKel([readdressed({ ...inception, kind: RECOVERY_CONTACT_ENROLMENT_KIND })])).toBe(false);
   });
 
   test("a veto never names an enrolment", async () => {
@@ -250,7 +250,7 @@ describe("what a board writer reaches", () => {
     writePersonaKelEvent(doc, inception);
     writePersonaKelEvent(doc, e);
     const read = personaKelEventsFromBoard(doc).sort((a, b) => a.seq - b.seq);
-    expect(read[1]!.kind).toBe(GUARDIAN_ENROLMENT_KIND);
+    expect(read[1]!.kind).toBe(RECOVERY_CONTACT_ENROLMENT_KIND);
     expect(read[1]!.enrolSig).toBe(e.enrolSig);
     expect((await verifyPersonaKelFull(read)).ok).toBe(true);
   });
@@ -287,44 +287,44 @@ describe("no prefix incepts unarmed", () => {
 });
 
 describe("the enrolment verb", () => {
-  async function offer(seed: Uint8Array, prefix: string, slot: "mine" | "guardian-a" | "guardian-b" = "guardian-a"): Promise<GuardianEnrolmentOffer> {
+  async function offer(seed: Uint8Array, prefix: string, slot: "mine" | "contact-a" | "contact-b" = "contact-a"): Promise<RecoveryContactEnrolmentOffer> {
     const key = await pubOf(seed);
     return {
-      registration:  guardianRecoveryRegistrationCard(slot, key, null),
-      possessionSig: await signerOf(seed)(guardianPossessionBytes(prefix, key)),
+      registration:  recoveryContactRegistrationCard(slot, key, null),
+      possessionSig: await signerOf(seed)(recoveryContactPossessionBytes(prefix, key)),
     };
   }
 
-  test("★ CONTROL: a fresh key per face enrols, each guardian proving possession first ★", async () => {
+  test("★ CONTROL: a fresh key per face enrols, each recovery contact proving possession first ★", async () => {
     const { inception } = await oneOfOne();
     const offers = [await offer(SEEDS.g1, inception.prefix), await offer(SEEDS.g2, inception.prefix), await offer(SEEDS.g3, inception.prefix)];
-    const r = await enrolGuardians({
-      head: inception, guardians: offers, threshold: 2, sign: signerOf(SEEDS.opA),
+    const r = await enrolRecoveryContacts({ selfRecoveryKey: await pubOf(SEEDS.self),
+      head: inception, recoveryContacts: offers, threshold: 2, sign: signerOf(SEEDS.opA),
       heldByOtherFaces: [{ handleIndex: 1, keys: [await pubOf(SEEDS.g4)] }],
     });
     expect(r.ok, r.ok ? "" : r.reason).toBe(true);
     if (!r.ok) return;
     expect(r.event.nextRecoverySetHash).toBe((await friends()).hash);
-    expect(r.guardianSetHash).toBe((await friends()).hash);
+    expect(r.recoveryContactSetHash).toBe((await friends()).hash);
   });
 
-  test("★ RED: one guardian key offered to two faces refuses guardian-key-serves-another-face ★", async () => {
+  test("★ RED: one recovery contact key offered to two faces refuses recovery-contact-key-serves-another-face ★", async () => {
     const { inception } = await oneOfOne();
-    const offers = [await offer(SEEDS.g1, inception.prefix), await offer(SEEDS.g2, inception.prefix)];
-    const r = await enrolGuardians({
-      head: inception, guardians: offers, threshold: 2, sign: signerOf(SEEDS.opA),
+    const offers = [await offer(SEEDS.g1, inception.prefix), await offer(SEEDS.g2, inception.prefix), await offer(SEEDS.g3, inception.prefix)];
+    const r = await enrolRecoveryContacts({ selfRecoveryKey: await pubOf(SEEDS.self),
+      head: inception, recoveryContacts: offers, threshold: 2, sign: signerOf(SEEDS.opA),
       heldByOtherFaces: [{ handleIndex: 3, keys: [await pubOf(SEEDS.g2)] }],
     });
     expect(r.ok).toBe(false);
     if (r.ok) return;
-    expect(r.refusal).toBe("guardian-key-serves-another-face");
+    expect(r.refusal).toBe("recovery-contact-key-serves-another-face");
     expect(r.reason).toContain("3");
   });
 
   test("the compartment check names the face whose set already holds the key, and passes a disjoint set", async () => {
     const k1 = await pubOf(SEEDS.g1), k2 = await pubOf(SEEDS.g2);
-    expect(guardianCompartmentCheck({ offered: [k1], heldByOtherFaces: [{ handleIndex: 2, keys: [k2] }] }).ok).toBe(true);
-    const v = guardianCompartmentCheck({ offered: [k1.toUpperCase()], heldByOtherFaces: [{ handleIndex: 2, keys: [k1] }] });
+    expect(recoveryContactCompartmentCheck({ offered: [k1], heldByOtherFaces: [{ handleIndex: 2, keys: [k2] }] }).ok).toBe(true);
+    const v = recoveryContactCompartmentCheck({ offered: [k1.toUpperCase()], heldByOtherFaces: [{ handleIndex: 2, keys: [k1] }] });
     expect(v.ok).toBe(false);
     if (!v.ok) { expect(v.handleIndex).toBe(2); expect(v.key).toBe(k1); }
   });
@@ -335,37 +335,30 @@ describe("the enrolment verb", () => {
     const wrongFace = await offer(SEEDS.g1, other.prefix);
     const wrongKey = { ...(await offer(SEEDS.g2, inception.prefix)), possessionSig: (await offer(SEEDS.g3, inception.prefix)).possessionSig };
     for (const bad of [wrongFace, wrongKey]) {
-      const r = await enrolGuardians({
-        head: inception, guardians: [bad, await offer(SEEDS.g4, inception.prefix)], threshold: 1, sign: signerOf(SEEDS.opA), heldByOtherFaces: [],
+      const r = await enrolRecoveryContacts({ selfRecoveryKey: await pubOf(SEEDS.self),
+        head: inception, recoveryContacts: [bad, await offer(SEEDS.g4, inception.prefix), await offer(SEEDS.g3, inception.prefix)], threshold: 2, sign: signerOf(SEEDS.opA), heldByOtherFaces: [],
       });
       expect(r.ok).toBe(false);
       if (!r.ok) expect(r.refusal).toBe("possession-unproven");
     }
   });
 
-  test("a repeated key and an unmeetable threshold refuse; the verb sets no count of its own", async () => {
+  test("a repeated key refuses; the count and the threshold are the law's, held in the 2-of-3 file", async () => {
     const { inception } = await oneOfOne();
     const a = await offer(SEEDS.g1, inception.prefix);
-    const repeated = await enrolGuardians({ head: inception, guardians: [a, a], threshold: 1, sign: signerOf(SEEDS.opA), heldByOtherFaces: [] });
+    const b = await offer(SEEDS.g2, inception.prefix);
+    const repeated = await enrolRecoveryContacts({ selfRecoveryKey: await pubOf(SEEDS.self), head: inception, recoveryContacts: [a, a, b], threshold: 2, sign: signerOf(SEEDS.opA), heldByOtherFaces: [] });
     expect(repeated.ok).toBe(false);
-    if (!repeated.ok) expect(repeated.refusal).toBe("guardian-key-repeated");
-    for (const threshold of [0, 2, 1.5]) {
-      const r = await enrolGuardians({ head: inception, guardians: [a], threshold, sign: signerOf(SEEDS.opA), heldByOtherFaces: [] });
-      expect(r.ok, String(threshold)).toBe(false);
-      if (!r.ok) expect(r.refusal).toBe("threshold-unmeetable");
-    }
-    // One guardian at threshold one enrols: count and threshold stay the person's.
-    const one = await enrolGuardians({ head: inception, guardians: [a], threshold: 1, sign: signerOf(SEEDS.opA), heldByOtherFaces: [] });
-    expect(one.ok, one.ok ? "" : one.reason).toBe(true);
+    if (!repeated.ok) expect(repeated.refusal).toBe("recovery-contact-key-repeated");
   });
 
-  test("the verb refuses face-holds-guardians over an enrolled face", async () => {
+  test("the verb refuses face-holds-recovery-contacts over an enrolled face", async () => {
     const { inception } = await oneOfOne();
     const first = await enrolled(inception);
-    const r = await enrolGuardians({
-      head: first, guardians: [await offer(SEEDS.g4, inception.prefix)], threshold: 1, sign: signerOf(SEEDS.opA), heldByOtherFaces: [],
+    const r = await enrolRecoveryContacts({ selfRecoveryKey: await pubOf(SEEDS.self),
+      head: first, recoveryContacts: [await offer(SEEDS.g4, inception.prefix), await offer(SEEDS.g1, inception.prefix), await offer(SEEDS.g2, inception.prefix)], threshold: 2, sign: signerOf(SEEDS.opA), heldByOtherFaces: [],
     });
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.refusal).toBe("face-holds-guardians");
+    if (!r.ok) expect(r.refusal).toBe("face-holds-recovery-contacts");
   });
 });

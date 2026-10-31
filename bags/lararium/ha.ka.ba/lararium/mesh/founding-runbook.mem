@@ -195,11 +195,11 @@ The credential prompts need the attached terminal. The vessel key seals the keyh
 
 <<~ ahu #/threshold-attest-recovery>>
 
-!! Recovery cards and the guardian signing boundary
+!! Recovery cards and the recovery contact signing boundary
 
-`persona new` splits no root by default. `persona new <index> --name '<label>' --split-root` opts into the 2-of-3 memory split. No card restores a charter. Guardians and paper restore a face's key lineage; only key material restores its private documents (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
+`persona new` splits no root by default. `persona new <index> --name '<label>' --split-root` opts into the 2-of-3 memory split. No card restores a charter. Recovery contacts and paper restore a face's key lineage; only key material restores its private documents (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
 
-`persona new` prints no recovery material by default; `--split-root` opts into self-custody reconstruction material and prints its own warning about shares. `lares persona guardian show <index>` reads a face's prefix and set. `lares persona guardian offer --prefix <prefix>` cuts one guardian key for that face; the guardian keeps its card and hands over its offer. `lares persona guardian enrol <index> --threshold <k> <offer>…` lets the face's current key sign its typed first enrolment. The vessel keeps that set in a sealed `guardian-set` row and refuses a key another face holds. A later guardian rotation needs the guardian quorum; the root-card reader and the bundle's carriage of an enrolled set still stand owed.
+`persona new` prints no recovery material by default; `--split-root` opts into self-custody reconstruction material and prints its own warning about shares. `lares persona recovery-contact show <index>` reads a face's prefix and set. `lares persona recovery-contact offer --prefix <prefix>` cuts one recovery contact key for that face; the recovery contact keeps its card and hands over its offer. `lares persona recovery-contact enrol <index> --threshold <k> <offer>…` lets the face's current key sign its typed first enrolment. The vessel keeps that set in a sealed `recovery-contact-set` row and refuses a key another face holds. A later recovery contact rotation needs the recovery contact quorum; the root-card reader and the bundle's carriage of an enrolled set still stand owed.
 
 ▢ ''OWED — the catastrophe rite.'' A lost card at a two-seat Nexus ends that Nexus (#/reserve holds the cold-key rite). `stable-founding-road.mem` and `kahu.mem#/seed-and-nexus` track charter replacement and Nexus founding.
 
@@ -356,7 +356,7 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-lifecycle">> Nexus life stages, succession, liveness and quiet
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">> hosted introductions, admission and three bound dials
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">> identity classes and their promotion paths
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">> persona custody, guardians and face rules
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">> persona custody, recovery contacts and face rules
 <<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">> personal slot bindings and Keyhive registration
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">> wiki layers, working writes and canon promotion
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout">> recovery custody evidence, reserve rehearsal and open work
@@ -374,6 +374,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BqmYwqhdNFjFJmENHnJTU-QrwddXmLIqMzvqYxILvdw
+<<^ code="&#x0003;">>ni:///sha-256;xoHvb-JavnyWXbc7A8bgaOdifHxB5AwoXCCKOA8d0Og
 
 <<^ code="&#x0004;" -> to="?">>

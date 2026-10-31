@@ -7,7 +7,7 @@ import { placeSignerFromSeed } from "../src/place-signer.js";
  *     through the module's OWN helpers a signature that both curve libraries read true (their default rule and
  *     their strict branch) and the door refuses. A verifier that calls a curve library directly accepts it.
  *   · THE IDENTITY KEY: a small-order key with the signature anyone writes for it. It refuses BY NAME where a
- *     key enters standing state (a seat, a guardian set, an op-key, a Handle key, a device edge, an admit).
+ *     key enters standing state (a seat, a recovery contact set, an op-key, a Handle key, a device edge, an admit).
  *
  * The census test (`ed25519-door-census.test.ts`) proves no source file calls a curve library's verify; these
  * vectors prove each family's verdict moves with the door. The charter's own vectors (the roll, the stamp, a
@@ -34,7 +34,7 @@ import { signWitness, verifyWitnessSig } from "../src/persistence-keel.js";
 import { buildFlowPointer, exportFlowSnapshot, verifyFlowPointer } from "../src/flow-substrate.js";
 import { mintPersonaInception, mintPersonaRotation, verifyPersonaKelFull, personaPrefixOf, personaEventCidOf, type PersonaKelEvent } from "../src/persona-kel.js";
 import { attestAndRotate, provisionThresholdRecoveryAtFounding } from "../src/recovery-keel-core.js";
-import { guardianRecoveryRegistrationCard } from "../src/recovery-registration.js";
+import { recoveryContactRegistrationCard } from "../src/recovery-registration.js";
 import { mintPlaceInception, verifyPlaceKel } from "../src/vessel-kel.js";
 import { handleKeyDigestOf, handleKeyFault, mintHandleInception, mintHandleRotation, verifyHandleKel, verifyHandleKelFull } from "../src/handle-kel.js";
 import { signFleetProof, signHandleCard, verifyFleetProof, verifyHandleCard } from "../src/handle-card.js";
@@ -157,23 +157,23 @@ describe("flow pointer (verifyFlowPointer)", () => {
 
 // ── THE KEY LOGS ─────────────────────────────────────────────────────────────────────────────────────────────
 describe("persona KEL", () => {
-  const rotate = async (guardian: Hand) => {
+  const rotate = async (recoveryContact: Hand) => {
     const op = await honestHand(31), fresh = await honestHand(32);
     const prov = provisionThresholdRecoveryAtFounding({
-      foundingOpKeyDid: `0x${op.key}`, guardians: [guardianRecoveryRegistrationCard("mine", guardian.key, null)], recoveryThreshold: 1,
+      foundingOpKeyDid: `0x${op.key}`, recoveryContacts: [recoveryContactRegistrationCard("mine", recoveryContact.key, null)], recoveryThreshold: 1,
     });
     const rotated = await attestAndRotate({
-      head: prov.inception, freshOpKeyDid: `0x${fresh.key}`, guardianRecoveryKeys: [guardian.key], recoveryThreshold: 1,
-      guardianSigners: [{ signer: guardian.key, sign: guardian.sign }],
+      head: prov.inception, freshOpKeyDid: `0x${fresh.key}`, recoveryContactKeys: [recoveryContact.key], recoveryThreshold: 1,
+      recoveryContactSigners: [{ signer: recoveryContact.key, sign: recoveryContact.sign }],
     });
     return { prov, rotated };
   };
-  test("CONTROL: a guardian's signature rotates the op-key", async () => {
+  test("CONTROL: a recovery contact's signature rotates the op-key", async () => {
     const { prov, rotated } = await rotate(await honestHand(33));
     if (!rotated.ok) throw new Error(rotated.reason);
     expect(await verifyPersonaKelFull([prov.inception, rotated.event])).toEqual({ ok: true });
   });
-  test("a guardian signature only a lenient verifier reads rotates nothing", async () => {
+  test("a recovery contact signature only a lenient verifier reads rotates nothing", async () => {
     const { rotated } = await rotate(torsionHand(33));
     expect(rotated).toMatchObject({ ok: false });
     expect(rotated.ok ? "" : rotated.reason).toMatch(/below-threshold quorum: 0\/1/);
@@ -189,22 +189,22 @@ describe("persona KEL", () => {
     });
     expect(await verifyPersonaKelFull([lawful])).toEqual({ ok: true });                         // CONTROL
   });
-  test("a small-order guardian hidden in a commitment surfaces at its reveal, and a small-order fresh op-key refuses", async () => {
-    // Minted past the registration card, which would refuse: the commitment hides the guardian until a rotation reveals it.
+  test("a small-order recovery contact hidden in a commitment surfaces at its reveal, and a small-order fresh op-key refuses", async () => {
+    // Minted past the registration card, which would refuse: the commitment hides the recovery contact until a rotation reveals it.
     const head = mintPersonaInception(`0x${(await honestHand(31)).key}`, sealKeySetHash([IDENTITY_KEY], 1));
     const fresh = `0x${(await honestHand(32)).key}`;
     const revealed = await mintPersonaRotation({
       head, freshOpKeyDid: fresh, recoveryRoster: [IDENTITY_KEY], recoveryThreshold: 1,
       rotationSigs: [{ signer: IDENTITY_KEY, sig: NOBODYS_SIGNATURE }],
     });
-    expect(revealed).toEqual({ ok: false, reason: "a revealed guardian key refuses at the Ed25519 door (key-small-order)" });
+    expect(revealed).toEqual({ ok: false, reason: "a revealed recovery contact key refuses at the Ed25519 door (key-small-order)" });
     const seated = await mintPersonaRotation({
       head, freshOpKeyDid: `0x${IDENTITY_KEY}`, recoveryRoster: [IDENTITY_KEY], recoveryThreshold: 1, rotationSigs: [],
     });
     expect(seated).toEqual({ ok: false, reason: "the fresh op-key refuses at the Ed25519 door (key-small-order)" });
   });
-  test("a guardian key the door refuses never enters a set", async () => {
-    expect(() => guardianRecoveryRegistrationCard("mine", IDENTITY_KEY, null)).toThrow(/guardian-key-refused.*key-small-order/);
+  test("a recovery contact key the door refuses never enters a set", async () => {
+    expect(() => recoveryContactRegistrationCard("mine", IDENTITY_KEY, null)).toThrow(/recovery-contact-key-refused.*key-small-order/);
   });
 });
 

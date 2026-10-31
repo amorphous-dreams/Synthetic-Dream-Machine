@@ -173,7 +173,7 @@ describe("⑨ the dyad, specified and unwired", () => {
   // contest keying with the veto-beats-provisional fold). All four walked clauses stand witnessed in
   // tests/provisional-veto.test.ts — including the late veto killing a hardened provisional's
   // descendants, and the idle observer whose patience is the resting state. THE GRAMMAR IS FROZEN
-  // for the alpha but for one ruled kind, the typed first guardian enrolment, whose absence leaves every
+  // for the alpha but for one ruled kind, the typed first recovery contact enrolment, whose absence leaves every
   // other event's bytes as they stood; the handle-KEL builds as a sibling on these primitives (G3).
 
   test.skip("A PRE-COMMITMENT NEVER EXPIRES UNNOTICED — the quorum's OUTPUT freshness fails before its keys do (a root-metadata expiry took clients down while every key stood healthy); no epoch, pre-commit, or rolling recovery commitment in this stack carries a freshness horizon a reader surfaces BEFORE a gate fails on it", () => {
@@ -184,17 +184,17 @@ describe("⑨ the dyad, specified and unwired", () => {
     expect(Object.keys(mesh)).toContain("riteContingency");
   });
 
-  // KEPT — ONE GUARDIAN SET NEVER SPANS COMPARTMENTS: `lares persona guardian enrol` gathers every other face's set off
-  // this vessel's own rows and refuses a key one of them holds (`guardian-key-serves-another-face`,
-  // persona-policy#/distinct-recovery). Witnessed in mesh tests/guardian-enrolment.test.ts and node
-  // tests/guardian-enrolment.test.ts (G2).
-  test("the guardian compartment check is exported", () => {
-    expect(Object.keys(mesh)).toContain("guardianCompartmentCheck");
+  // KEPT — ONE RECOVERY CONTACT SET NEVER SPANS COMPARTMENTS: `lares persona recovery-contact enrol` gathers every other face's set off
+  // this vessel's own rows and refuses a key one of them holds (`recovery-contact-key-serves-another-face`,
+  // persona-policy#/distinct-recovery). Witnessed in mesh tests/recovery-contact-enrolment.test.ts and node
+  // tests/recovery-contact-enrolment.test.ts (G2).
+  test("the recovery contact compartment check is exported", () => {
+    expect(Object.keys(mesh)).toContain("recoveryContactCompartmentCheck");
   });
 
-  // KEPT 2026-09-06 — A GUARDIAN CAN ROTATE greened by the ROLLING RECOVERY COMMITMENT (operator-
+  // KEPT 2026-09-06 — A RECOVERY CONTACT CAN ROTATE greened by the ROLLING RECOVERY COMMITMENT (operator-
   // approved, the KERI shape): the prefix binds the GENESIS set (anti-swap), while each rotation
-  // reveals against its predecessor's `nextRecoverySetHash` and grafts the next — guardian sets
+  // reveals against its predecessor's `nextRecoverySetHash` and grafts the next — recovery contact sets
   // turn over log-wise, no delegation needed. Witnessed in tests/rolling-recovery.test.ts (the
   // graft · the grafted set authorizes · the retired set refuses · the tampered graft breaks).
 

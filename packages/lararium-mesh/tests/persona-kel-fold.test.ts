@@ -58,11 +58,11 @@ function boardOf(events: readonly PersonaKelEvent[]) {
 
 /** The KEL rotated from the inception to `op` keeping `keep` — a lawful quorum-signed successor at seq 1. */
 async function rotatedTo(op: Uint8Array, keep: readonly Uint8Array[]): Promise<PersonaKelEvent[]> {
-  const { inception, guardianRecoveryKeys, recoveryThreshold } = await founded();
-  const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+  const { inception, recoveryContactKeys, recoveryThreshold } = await founded();
+  const recoveryContactSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
   const devices = await Promise.all(keep.map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
   const enrolments = await rollEnrolments({ prefix: inception.prefix, opSeed: op, devices });
-  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(op), guardianRecoveryKeys, recoveryThreshold, guardianSigners, enrolments });
+  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(op), recoveryContactKeys, recoveryThreshold, recoveryContactSigners, enrolments });
   if (!rot.ok) throw new Error(rot.reason);
   return [inception, rot.event];
 }

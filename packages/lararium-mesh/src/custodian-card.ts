@@ -1,5 +1,5 @@
 /**
- * guardian-card — the shared "Recovery-card" 2-of-3 primitive: ONE card shape, ONE handshake, MANY uses.
+ * custodian-card — the shared "Recovery-card" 2-of-3 primitive: ONE card shape, ONE handshake, MANY uses.
  *
  * Two keels split a secret 2-of-3 across the same three custodian slots and hand the operator printable
  * cards to place BY HAND (web3-pure — no cloud/email/API coupling): the CHARTER RESERVE splits the
@@ -8,13 +8,13 @@
  * handshake, and the split/reconstruct bridge — so BOTH issue the IDENTICAL card:
  *
  *   · "Recovery-card mine"        → custodian "device"       (the operator's copy, vessel-sealed at rest)
- *   · "Recovery-card guardian-A"  → custodian "guardian"     (a guardian holds it, off-device)
- *   · "Recovery-card guardian-B"  → custodian "escrow-peer"  (a second guardian holds it, off-device)
+ *   · "Recovery-card custodian-A"  → custodian "custodian"     (a custodian holds it, off-device)
+ *   · "Recovery-card custodian-B"  → custodian "escrow-peer"  (a second custodian holds it, off-device)
  *
- * The three custodian tags stay DISTINCT so EVERY two-card subset — including {guardian-A, guardian-B} —
- * forms a ≥2-distinct-custodian quorum (recovery-share's impersonation-quorum wall): the two guardians
+ * The three custodian tags stay DISTINCT so EVERY two-card subset — including {custodian-A, custodian-B} —
+ * forms a ≥2-distinct-custodian quorum (recovery-share's impersonation-quorum wall): the two custodians
  * rebuild WITHOUT the operator, and an operator-full-compromise reveals exactly ONE share → nothing. The
- * guardians who hold a citizen's reserve cards hold the SAME card shape that helps recover their identity —
+ * custodians who hold a citizen's reserve cards hold the SAME card shape that helps recover their identity —
  * one pattern integrity, two uses (isomorphism by composition).
  *
  * WHAT THE CARD RECONSTRUCTS stays the caller's concern, NOT this module's: the reserve rebuilds a reserve
@@ -22,38 +22,38 @@
  * (recovery-keel-core). This primitive shares the CARD + HANDSHAKE + 2-of-3 split; it makes NO claim about
  * what the rebuilt secret authorizes.
  *
- * Meme: lar:///ha.ka.ba/lararium/api/guardian-card
+ * Meme: lar:///ha.ka.ba/lararium/api/custodian-card
  */
 
 import {
   splitToShares, encodeShareBytes, decodeShareBytes,
   type RecoveryShare, type CustodianTag,
 } from "./recovery-share.js";
-import { GUARDIAN_CONFIRM_DOMAIN } from "./domains.js";
+import { CUSTODIAN_CONFIRM_DOMAIN } from "./domains.js";
 import { sha256HexSync } from "./crypto.js";
 import type { RandomProvider } from "./crypto.js";
 
 /** Any two DISTINCT custodians reconstruct — the impersonation-quorum floor the two keels both ride. */
-export const GUARDIAN_CARD_THRESHOLD = 2;
+export const CUSTODIAN_CARD_THRESHOLD = 2;
 
 /** Which custodian holds a card. The three slots map to DISTINCT recovery-share custodian tags below. */
-export type GuardianCardSlot = "mine" | "guardian-a" | "guardian-b";
+export type CustodianCardSlot = "mine" | "custodian-a" | "custodian-b";
 
 /**
  * Slot → recovery-share custodian tag. The tags stay DISTINCT so EVERY two-card subset — including
- * {guardian-a, guardian-b} — forms a ≥2-distinct-custodian quorum (recovery-share's impersonation-quorum
- * wall). That is the compromise-resistance both keels vow: the guardians recover WITHOUT "mine".
+ * {custodian-a, custodian-b} — forms a ≥2-distinct-custodian quorum (recovery-share's impersonation-quorum
+ * wall). That is the compromise-resistance both keels vow: the custodians recover WITHOUT "mine".
  */
-export const GUARDIAN_SLOT_CUSTODIAN: Record<GuardianCardSlot, CustodianTag> = {
+export const CUSTODIAN_SLOT_TAG: Record<CustodianCardSlot, CustodianTag> = {
   "mine":       "device",
-  "guardian-a": "guardian",
-  "guardian-b": "escrow-peer",
+  "custodian-a": "custodian",
+  "custodian-b": "escrow-peer",
 };
 
 /** A printable recovery card the operator places by hand (web3-pure — no cloud/email/API coupling here). */
-export interface GuardianCard {
-  readonly slot:          GuardianCardSlot;
-  /** The human label ("Recovery-card mine" / "Recovery-card guardian-A (name)"). */
+export interface CustodianCard {
+  readonly slot:          CustodianCardSlot;
+  /** The human label ("Recovery-card mine" / "Recovery-card custodian-A (name)"). */
   readonly label:         string;
   /** The recovery-share custodian tag this card carries (the type-wall identity, not the human label). */
   readonly custodian:     CustodianTag;
@@ -64,42 +64,42 @@ export interface GuardianCard {
 }
 
 /** A split's output: the three cards + the raw "mine" share the vessel seals at rest. */
-export interface GuardianCardSplit {
-  readonly cards:     GuardianCard[];
+export interface CustodianCardSplit {
+  readonly cards:     CustodianCard[];
   /** The "mine" share (custodian "device") — the ONLY share the vessel persists, sealed. */
   readonly mineShare: RecoveryShare;
 }
 
-function guardianCardLabel(slot: GuardianCardSlot, guardianA: string | null, guardianB: string | null): string {
+function custodianCardLabel(slot: CustodianCardSlot, custodianA: string | null, custodianB: string | null): string {
   switch (slot) {
     case "mine":       return "Recovery-card mine";
-    case "guardian-a": return `Recovery-card guardian-A (${guardianA ?? "unassigned"})`;
-    case "guardian-b": return `Recovery-card guardian-B (${guardianB ?? "unassigned"})`;
+    case "custodian-a": return `Recovery-card custodian-A (${custodianA ?? "unassigned"})`;
+    case "custodian-b": return `Recovery-card custodian-B (${custodianB ?? "unassigned"})`;
   }
 }
 
 /**
  * Split a secret 2-of-3 across the three custodian slots and render one card per slot. The "mine" share
- * seals to the vessel (the caller's node adapter does the sealing); the two guardian cards leave the device
+ * seals to the vessel (the caller's node adapter does the sealing); the two custodian cards leave the device
  * entirely. Each card carries a checksummed, decode-guarded share code + a distinct confirmation phrase.
  * The secret itself is never returned in a card — only its shares.
  */
-export function splitToGuardianCards(
+export function splitToCustodianCards(
   secret:        Uint8Array,
-  guardianA:     string | null,
-  guardianB:     string | null,
+  custodianA:     string | null,
+  custodianB:     string | null,
   recoveryEpoch: number,
   rng:           RandomProvider,
-  confirmDomain: string = GUARDIAN_CONFIRM_DOMAIN,
-): GuardianCardSplit {
-  const slots: GuardianCardSlot[] = ["mine", "guardian-a", "guardian-b"];
-  const custodians = slots.map((s) => GUARDIAN_SLOT_CUSTODIAN[s]);
-  const shares = splitToShares(secret, GUARDIAN_CARD_THRESHOLD, custodians, recoveryEpoch, rng);
-  const cards: GuardianCard[] = slots.map((slot, i) => {
+  confirmDomain: string = CUSTODIAN_CONFIRM_DOMAIN,
+): CustodianCardSplit {
+  const slots: CustodianCardSlot[] = ["mine", "custodian-a", "custodian-b"];
+  const custodians = slots.map((s) => CUSTODIAN_SLOT_TAG[s]);
+  const shares = splitToShares(secret, CUSTODIAN_CARD_THRESHOLD, custodians, recoveryEpoch, rng);
+  const cards: CustodianCard[] = slots.map((slot, i) => {
     const shareCode = encodeShareBytes(shares[i]!.bytes);
     return {
       slot,
-      label:         guardianCardLabel(slot, guardianA, guardianB),
+      label:         custodianCardLabel(slot, custodianA, custodianB),
       custodian:     shares[i]!.custodian,
       shareCode,
       confirmPhrase: confirmationPhrase(shareCode, confirmDomain),
@@ -114,20 +114,20 @@ export function splitToGuardianCards(
  * `assembleQuorum` / `reconstructFromQuorum` (recovery-share) to rebuild the secret. FAILS CLOSED: a
  * tampered code, or fewer than two distinct-custodian shares, never reconstructs.
  */
-export function guardianShareFromCard(card: GuardianCard, recoveryEpoch: number): RecoveryShare {
+export function custodianShareFromCard(card: CustodianCard, recoveryEpoch: number): RecoveryShare {
   return { bytes: decodeShareBytes(card.shareCode), custodian: card.custodian, recoveryEpoch };
 }
 
 // ── The confirmation phrase — a short human-verifiable cross-check, distinct per card ─────────────────
 // Derived from a domain-separated hash of the card's share code. A card's own holder already holds the
 // share, so the phrase reveals nothing new to them; it lets the operator confirm out-of-band ("does your
-// card read heron-amber-tide?") that a guardian holds the RIGHT card before a recovery ceremony trusts it.
+// card read heron-amber-tide?") that a custodian holds the RIGHT card before a recovery ceremony trusts it.
 // A tiny self-contained 64-word list keeps this pure-TS (no BIP39/wordlist dependency). ONE domain binds
 // BOTH keels — the reserve and identity recovery speak the SAME handshake (different secrets already yield
 // different share codes → different phrases; the shared domain keeps the receipt one shape).
 
 /** The default domain both keels share — one handshake across the reserve card and the identity card. */
-export { GUARDIAN_CONFIRM_DOMAIN } from "./domains.js";
+export { CUSTODIAN_CONFIRM_DOMAIN } from "./domains.js";
 const CONFIRM_WORDS: readonly string[] = [
   "amber", "anchor", "arbor", "ash", "aster", "birch", "brass", "brook",
   "cedar", "cinder", "clay", "cliff", "cove", "crane", "crest", "dawn",
@@ -142,9 +142,9 @@ const CONFIRM_WORDS: readonly string[] = [
 /**
  * A 3-word confirmation phrase over 18 bits (three 6-bit picks) of the share code's digest — distinct per
  * card because each share differs. Deterministic: the same (code, domain) always reads the same phrase, so
- * the operator and a guardian confirm a match over the phone.
+ * the operator and a custodian confirm a match over the phone.
  */
-export function confirmationPhrase(shareCode: string, domain: string = GUARDIAN_CONFIRM_DOMAIN): string {
+export function confirmationPhrase(shareCode: string, domain: string = CUSTODIAN_CONFIRM_DOMAIN): string {
   const digest = sha256HexSync(`${domain}|${shareCode}`);
   const n = Number.parseInt(digest.slice(0, 8), 16) >>> 0;
   const word = (shift: number): string => CONFIRM_WORDS[(n >>> shift) & 0x3f]!;

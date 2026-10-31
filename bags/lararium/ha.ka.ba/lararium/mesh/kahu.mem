@@ -205,7 +205,7 @@ and used only to roll. The shared reserve seed and its three cards stand retired
 none and arms no head that cannot roll (#/nexus-scale).
 
 ''LOSS AT ALPHA.'' A lost cold key at a two-seat Nexus ends that Nexus: the founders found a successor and
-re-issue its admits. Guardians recover a PERSON, never a Nexus seat. A seed that loses both its node and
+re-issue its admits. Recovery contacts recover a PERSON, never a Nexus seat. A seed that loses both its node and
 its paper gets re-founded.
 
 ''THE ENDURING SHAPE.'' Two seats FOUND a Nexus. A Nexus meant to endure SHOULD seat a third chair early
@@ -249,8 +249,8 @@ answer speaks for the Nexus's table and grants no name. The quorum removes, by k
 Whoever holds the domain's DNS credential decides what the zone says, so the domain acts as its
 keeper's hand, never as a consensus.
 
-''GUARDIANS STAY OPTIONAL AND PER FACE.'' Every face starts one-of-one self. No guardian key ever serves
-two faces, and a guardian set recovers a face's key lineage, never its memory
+''RECOVERY CONTACTS STAY OPTIONAL AND PER FACE.'' Every face starts one-of-one self. No recovery contact key ever serves
+two faces, and a recovery contact set recovers a face's key lineage, never its memory
 (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
 
 !!! RULED for the first ceremony (operator ruling)
@@ -261,16 +261,16 @@ Each line reads whole at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-
 * ''An operator's own herm'' takes one signature, scoped to one place and one Nexus, and falls with a kapae of the operator's own admit.
 * ''A seat gets ADDED, never replaced'': the standing Kahu add a holder to both cabals, and the founders keep their chairs.
 * ''Paper'': the cold-key card takes the house format — 64 hex plus a checksum, in groups of four — and prints its purpose, its chair label, its generation and a short charter fingerprint.
-* ''No guardians on the day'': each face starts one-of-one on its own paper, and enrolment comes later by one typed event on the face's own log, signed by the face's own key (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/persona-kel#/the-enrolment">>).
+* ''No recovery contacts on the day'': each face starts one-of-one on its own paper, and enrolment comes later by one typed event on the face's own log, signed by the face's own key (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/persona-kel#/the-enrolment">>).
 * ''A per-Nexus key mints at random'', and the face's lineage re-issues one by a signed hand-over the gate verifies (#/nexus-scale).
 
 !!! OPEN ~ what the operator owns
 
 Each item below stands unruled. Nothing in code decides one.
 
-* ''Guardian request authentication.'' Options: an agreed channel and a live voice · in person · a device-derived event plus a short string, named a byte check and never an identity proof.
+* ''Recovery contact request authentication.'' Options: an agreed channel and a live voice · in person · a device-derived event plus a short string, named a byte check and never an identity proof.
 * ''The veto.'' Options: keep it as a house fork rule and specify it · drop it.
-* ''Death and succession of a person.'' Options: guardian recovery under the same lineage · a separate succession object · no path.
+* ''Death and succession of a person.'' Options: recovery contact recovery under the same lineage · a separate succession object · no path.
 * ''The backup bundle.'' What it holds and which verb imports it. A bundle per face keeps faces unlinked on the backup medium.
 * ''The catastrophe rite and any third key.'' Options: no rite · an opt-in, charter-native seat-recovery rite with named witnesses · an outsider's third cold key. At alpha no rite stands, and LOSS AT ALPHA governs.
 
@@ -279,7 +279,7 @@ Each item below stands unruled. Nothing in code decides one.
 <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">> the founding acts, the fence and the build order
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">> walking, contracting and seating, and which take the quorum
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes#/promotion-path">> the class ladder and how an operator takes a seat
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">> guardians per face, and lineage apart from memory
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">> recovery contacts per face, and lineage apart from memory
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/two-layer-petnames">> Handles, pet-names and the private chair label
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/office">> the Lamplighter office and its quorum grant
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/second-operator">> the household walk for a seed, then a Nexus
@@ -391,7 +391,7 @@ reads back before the charter moves, and commits its digest; the next key rests 
 A routine roll takes k per-seat REVEALS. ''A card opens the one generation it prints'' (house reading under the
 cold-card law), so a digest left unrevealed carries forward nowhere: every roll lists fresh digests alone, and a
 chair whose card stays unrevealed leaves at that roll. It returns only as an added seat, whose key signs the roll
-as its proof of possession. ''No Guardian takes part in a routine roll.''
+as its proof of possession. ''No recovery contact takes part in a routine roll.''
 
 ''A KEY THE LINEAGE SEATED NEVER SEATS AGAIN, the genesis's own among them.'' A rolled epoch names its seats in its
 roll; the genesis inception image names its seats and threshold, and every seat signs that image. The FIRST roll reveals those seats and their
@@ -418,15 +418,15 @@ the persona seed — a cold key that shares a breach with the warm one buys noth
 ''FROST WITHIN A SEAT, MULTISIG ACROSS SEATS.'' One seat may spread its key across its holder's devices
 by threshold signing. Seats sign as distinct keys, because a quorum change must see WHICH seat signed.
 
-!!! The guardian stands a face apart ~ Guardians recover the PERSON
+!!! The recovery contact stands a face apart ~ Recovery contacts recover the PERSON
 
-''GUARDIANS RECOVER THE PERSON, never the Nexus.'' A Guardian holds a recovery key over a persona's KEL
+''RECOVERY CONTACTS RECOVER THE PERSON, never the Nexus.'' A Recovery contact holds a recovery key over a persona's KEL
 and, at recovery, signs that persona's rotation independently; nothing reconstructs
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/threshold-attest-recovery">>). When a seat
-holder loses their keys, their Guardians rotate the person back into continuity. Where a quorum survives
+holder loses their keys, their recovery contacts rotate the person back into continuity. Where a quorum survives
 (three or more seats), that quorum re-seats the person by its own roll (`seal reseat`). At two seats no
-quorum survives a lost cold key, and that Nexus ends (#/seed-and-nexus). ''Guardians carry no weight in the
-Nexus KEL.'' A guardian cuts a fresh key for each face they guard
+quorum survives a lost cold key, and that Nexus ends (#/seed-and-nexus). ''Recovery contacts carry no weight in the
+Nexus KEL.'' A recovery contact cuts a fresh key for each face they guard
 (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>). ''Owed in code — the
 re-found'': `seal reseat` rides the per-seat commitment and stands unbuilt.
 
@@ -689,6 +689,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;moy1VFGUbasQtMMzPZPnWAXdp9Wyvm4t4MvaZfTnoYE
+<<^ code="&#x0003;">>ni:///sha-256;soD5tu-F3V1OhZ4J4tM5-9xSPz0rocqfMjWRHm69uPM
 
 <<^ code="&#x0004;" -> to="?">>

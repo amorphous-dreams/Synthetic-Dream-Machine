@@ -11,7 +11,7 @@ import { describe, expect, it } from "vitest";
 import { faceLogViewLine, faceLogViewSigned, readFaceLogView, readFaceLogViewLine, signFaceLogView } from "../src/face-log-view.js";
 
 const SEED = Uint8Array.from({ length: 32 }, (_, i) => (i * 5 + 3) & 0xff);
-const view = () => signFaceLogView({ prefix: "persona-" + "ab".repeat(32), seq: 1, eventCid: "pkel1-" + "cd".repeat(32), party: "guardian", seed: SEED });
+const view = () => signFaceLogView({ prefix: "persona-" + "ab".repeat(32), seq: 1, eventCid: "pkel1-" + "cd".repeat(32), party: "recovery-contact", seed: SEED });
 
 describe("a party's own view of a face's head", () => {
   it("CONTROL: a signed view crosses as one line and verifies", async () => {
@@ -33,7 +33,7 @@ describe("a party's own view of a face's head", () => {
 
   it("RED: a line or a value of another shape reads as no view", async () => {
     const v = await view();
-    expect(readFaceLogViewLine("lar-guardian-offer:zz")).toBeNull();
+    expect(readFaceLogViewLine("lar-recovery-contact-offer:zz")).toBeNull();
     expect(readFaceLogViewLine("lar-log-view:!!!")).toBeNull();
     expect(readFaceLogView({ ...v, party: "stranger" })).toBeNull();
     expect(readFaceLogView({ ...v, seat: true })).toBeNull();

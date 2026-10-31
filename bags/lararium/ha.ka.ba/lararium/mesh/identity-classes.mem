@@ -28,7 +28,7 @@ written    = "2026-07-20"
 ! Identity Classes ~ who runs, who carries, who rotates
 
 > Status: PROPOSED — operator-ruled design (2026-07-20). The SUBSTRATE stands (the persona-root
-> signs device-delegation edges; the guardian-card 2-of-3 + recovery-share type-wall + the charter's
+> signs device-delegation edges; the custodian-card 2-of-3 + recovery-share type-wall + the charter's
 > pre-rotated epoch chain all live). READING-B — recovery ROTATES rather than RESURRECTS — stands built
 > at the persona-KEL and its readers; a door that mints a recovery rotation reads UNBUILT outside tests.
 
@@ -49,7 +49,7 @@ across four axes and fixes how each RECOVERS — the axis Reading-B re-cuts.
 
 !!! The faces ride beside the classes, never inside them
 
-A class names what a principal RUNS and how it RECOVERS; a ''face'' names a CAP STACK a human holds, and the two axes never collapse. Four faces stand — end user `walk` · Lamplighter `carry` · `tend/island` · `tend/reach` · Kahu `quorum-share` · Guardian (a recovery key over a person) — and they COMPOSE on a persona, combined by default, split only by the holder's own act. Founding names an act that seats the first kahu quorum, never a face. The face table and its law live at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks">>; this meme does not restate them. So the KAHU class row above reads as the class a vessel stands in while its human holds the Kahu face; one human may hold several faces at once, across whichever vessels their pool carries.
+A class names what a principal RUNS and how it RECOVERS; a ''face'' names a CAP STACK a human holds, and the two axes never collapse. Four faces stand — end user `walk` · Lamplighter `carry` · `tend/island` · `tend/reach` · Kahu `quorum-share` · Recovery contact (a recovery key over a person) — and they COMPOSE on a persona, combined by default, split only by the holder's own act. Founding names an act that seats the first kahu quorum, never a face. The face table and its law live at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks">>; this meme does not restate them. So the KAHU class row above reads as the class a vessel stands in while its human holds the Kahu face; one human may hold several faces at once, across whichever vessels their pool carries.
 
 !!! ★ HERM READS AS A STATE EVERY VESSEL PASSES THROUGH, not only a class one vessel HOLDS ★
 
@@ -98,7 +98,7 @@ value'', never by title ([[founding-runbook|lar:///ha.ka.ba/lararium/mesh/foundi
 
 * ''NON-TRANSFERABLE / basic'' (the USER floor) — a single-key identifier that pre-commits NO next
   key-set, so it ''cannot rotate by construction''. Its "rotation" reads as ''abandon-and-recreate'':
-  mint a fresh identifier, drop the old. Cheap, native, no reserve, no guardians. The un-rotatability
+  mint a fresh identifier, drop the old. Cheap, native, no reserve, no recovery contacts. The un-rotatability
   makes the property, not a lack.
 * ''TRANSFERABLE'' (the OPERATOR spine) — a pre-rotated, persistent identifier that ''rotates its
   signing keys while its identifier prefix stays fixed''. Its key-event-log carries the rotation
@@ -125,7 +125,7 @@ answers by founding the place afresh.
 
 ''RE-MADE, RE-DELEGATED, RECOVERED.'' The ladder decides which act answers a loss. A non-transferable face
 gets RE-MADE: a fresh identifier, fresh keys, no memory carried over. A delegated leaf gets RE-DELEGATED
-from its root. A transferable face RECOVERS its key lineage, by paper or by guardians. ''Memory recovers by
+from its root. A transferable face RECOVERS its key lineage, by paper or by recovery contacts. ''Memory recovers by
 key material on every class alike'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
 The class axis and the cap-stack axis never collapse (#/the-four-classes).
 
@@ -340,9 +340,9 @@ BeeKEM on the sync wire reads UNBUILT (`packages/lararium-node/src/plane-seal.ts
 ''Under Reading-A the persona-root serves as the operational signing key'' — persona-vault vends "the
 operator-root that signs edges", and the pinned `signerDid` every peer verifies against reads that
 root's public key (ceremony-core: `signerDid = founderEdge.operatorDid`). Recovery reconstructs the
-EXACT original root from a guardian quorum and re-signs a fresh device's edge with it
+EXACT original root from a recovery contact quorum and re-signs a fresh device's edge with it
 (recovery-core: the reconstructed root == the original). ''The old operational private key returns to
-life'' — and the guardian quorum that rebuilds it holds, transiently, the whole signing authority,
+life'' — and the recovery contact quorum that rebuilds it holds, transiently, the whole signing authority,
 forever, over anything (the recovery quorum doubles as the impersonation quorum, admitted as a priced/social
 cost, [[persona-policy|lar:///ha.ka.ba/lares/api/pono/persona-policy#/cryptographic-individual]]).
 
@@ -371,7 +371,7 @@ Four parts carry it:
 # ''The old key SUPERSEDES, never revives'' — the rotation advances the persona-KEL's head past the old
   operational key; a [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]] on the membership stack shadows its
   resurrection (evict runs forward-only, #siege-resilience). Post-rotation the fresh operational key sits
-  SOLELY with the recovering vessel — no quorum, no guardian, no recovery root holds it. Continuity
+  SOLELY with the recovering vessel — no quorum, no recovery contact, no recovery root holds it. Continuity
   survives; the key-history turns over.
 
 ''Blast-radius, cut:'' Reading-A hands the recovery quorum the
@@ -441,26 +441,26 @@ re-keys the person; the join survives both, because they touch different relatio
 The ruling fixes THAT recovery rotates; it leaves open HOW the recovery authority signs the rotation.
 Two readings, one tradeoff axis — does the recovery authority EVER materialize as a single secret?
 
-''FORK A — reconstruct-then-sign (guardians hold shares of the recovery root).'' The recovery ROOT seed
-splits 2-of-3 across the shared guardian-card slots (mine/device + guardian-A + guardian-B), IDENTICAL
+''FORK A — reconstruct-then-sign (custodians hold shares of the recovery root).'' The recovery ROOT seed
+splits 2-of-3 across the shared custodian-card slots (mine/device + custodian-A + custodian-B), IDENTICAL
 to the reserve ceremony — only the SECRET changes (the recovery root, never the operational root). At
 recovery, two distinct custodians reconstruct the recovery root TRANSIENTLY, it signs ONE rotation
 event, then zeroizes (`reconstructAndReadmit`'s window-bound, re-aimed at a rotation). ''Reuses the
-entire guardian-card + recovery-share + reconstruct machinery almost unchanged.''
+entire custodian-card + recovery-share + reconstruct machinery almost unchanged.''
 
 * //Tradeoff//: the recovery root still momentarily assembles as one secret — a transient
   impersonation-of-the-RECOVERY-authority window survives. It shrinks the blast radius (that secret can
   ONLY authorize a rotation, never resurrect the op-key or sign content), yet the recovery quorum stays
   AN impersonation quorum of the recovery authority.
 
-''FORK B — threshold-attest (guardians each SIGN, no reconstruction EVER).'' Each guardian holds their
+''FORK B — threshold-attest (recovery contacts each SIGN, no reconstruction EVER).'' Each recovery contact holds their
 OWN independent recovery keypair; inception pre-commits the k-of-n digest of their recovery PUBLIC keys
-(`sealKeySetHash`, the k-of-n cut already flagged in wax-stamp). At recovery, each guardian
+(`sealKeySetHash`, the k-of-n cut already flagged in wax-stamp). At recovery, each recovery contact
 independently SIGNS the rotation event with their own recovery key; the event carries k signatures
 verified against the pre-committed set. ''No secret ever reconstructs — the strictest never-reconstruct.''
 
 * //Tradeoff//: it does NOT reuse Shamir/recovery-share (a genuine k-of-n multisig over the persona-KEL
-  rotation, small but new); it asks each guardian to mint + custody a keypair (heavier than "write down
+  rotation, small but new); it asks each recovery contact to mint + custody a keypair (heavier than "write down
   a card"); the rotation event carries k separate signatures. This reads the FROST/TSS direction
   recovery-core already gestures at ("the seed then never assembles").
 
@@ -472,14 +472,14 @@ A tasked spirit read the field (`docs/pono/recovery-custody-scout` carries it ve
 * ''THE INVERSION.'' Fork A's assembled secret acts as a bearer token — courierable, delegable, improvisable — and that bearer-token property supplies ''simultaneously its worst security property and its best availability property''. ICANN held a key ceremony during a pandemic only because four key-holders could ''courier their credentials to surrogates''; under threshold signing that move means nothing. ''Fork B cannot bend in either direction.''
 * ''AND THE COUNTERWEIGHT.'' Independent-signature quorums form a ''DESTRUCTION quorum'', not merely an impersonation one: a rogue sub-quorum can emit a rotation nobody intended. Closable — but ''only by deriving the rotation body canonically'' rather than proposing it, and that mitigation belongs in whichever branch the house takes.
 
-⚠ ''Nothing in the public record turns on Shamir-versus-multisig.'' Every documented failure across the sweep turned on quorum counts that failed to count distinct signers, correlated custody nobody re-checked, ceremony scripts diverging from reality undetected for months to years, guardians who forgot or folded, and vendors who left. ''The fork prices a risk that has never bitten the field; the risks that bite run orthogonal to it.''
+⚠ ''Nothing in the public record turns on Shamir-versus-multisig.'' Every documented failure across the sweep turned on quorum counts that failed to count distinct signers, correlated custody nobody re-checked, ceremony scripts diverging from reality undetected for months to years, recovery contacts who forgot or folded, and vendors who left. ''The fork prices a risk that has never bitten the field; the risks that bite run orthogonal to it.''
 
 ''Both satisfy the ruling'' — neither resurrects the operational
 key; that part settled. The fork decides ONLY whether the RECOVERY authority itself ever briefly
-materializes as one secret. The guardian-CARD survives either way — Fork A's card carries a share of the
-recovery root; Fork B's card carries a guardian's recovery public key + a signing prompt. The operator
+materializes as one secret. The recovery CARD survives either way — Fork A's custodian card carries a share of the
+recovery root; Fork B's registration card carries a recovery contact's recovery public key + a signing prompt. The operator
 picks the axis: ''maximal reuse + a shrunk single-secret window (A)'' vs ''zero single-secret + new
-multisig machinery and heavier guardian onboarding (B)''.
+multisig machinery and heavier recovery contact onboarding (B)''.
 
 !!! ✓ RULED (operator, 2026-09-06) — the fork resolves as a LAYERED shape, not a winner
 
@@ -499,8 +499,8 @@ The forks answered different layers all along, and the ruling seats each where i
 * ''The CONTEST: FORK C, ON THE CHAIN'' — a recovery rotation enters the prefix's OWN KEL as
   PROVISIONAL and hardens causally. NEVER a pending-row on any board — a board of pending recoveries
   makes a compiled registry of the vulnerable (the registry filter,
-  `lar:///ha.ka.ba/lares/api/pono/registry-filter`). The private VENUE stands as a guardian-cabal realm
-  (the subject + their chosen guardians, ciphered): the realm coordinates, the chain hardens.
+  `lar:///ha.ka.ba/lares/api/pono/registry-filter`). The private VENUE stands as a recovery-contact-cabal realm
+  (the subject + their chosen recovery contacts, ciphered): the realm coordinates, the chain hardens.
 
 !!! ✓ THE HARDENING RULE — walked (2026-09-08), the φ-accrual half filled
 
@@ -535,25 +535,25 @@ a provisional at its seat kills that provisional and takes the seat; the contest
 outside tests passes one. So as built a provisional head seats NO key at any gate: the act-set of clause 1,
 the silence count of clause 3 and the Roughtime mark each read UNBUILT.
 * ''CIVIC rolls by per-seat pre-rotation'' — each Kahu seat commits its own cold next key, a roll
-  reveals k of them, the revealed keys sign it, and Guardians recover the PERSON by Fork B
+  reveals k of them, the revealed keys sign it, and recovery contacts recover the PERSON by Fork B
   above, never the charter (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>). The shared
   reserve seed split by Shamir beneath the charter retires with the re-found. At a two-seat Nexus a lost
   cold key ends that Nexus at alpha (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>).
-* ''GUARDIANS stay optional and per face'', and no guardian key ever serves two faces
-  (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>). Guardian count,
+* ''RECOVERY CONTACTS stay optional and per face'', and no recovery contact key ever serves two faces
+  (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>). Recovery contact count,
   request authentication, the veto and succession stand open at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>.
 
 ''THE ROLLING COMMITMENT (enacted with the ruling):'' every KEL event carries `nextRecoverySetHash`
 beside the genesis wall — the prefix keeps binding the GENESIS set (anti-swap survives), while each
-rotation reveals against its predecessor's rolling commitment and GRAFTS the next. Guardian sets turn
+rotation reveals against its predecessor's rolling commitment and GRAFTS the next. Recovery contact sets turn
 over log-wise: 1-of-1-self → real hands by the face's own typed first enrolment
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/persona-kel#/the-enrolment">>) → fresh hands by the guardians'
-rotation when a guardian churns, each transition a signed, board-walkable event. This retires the guardian-rotation gap without spending delegation.
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/persona-kel#/the-enrolment">>) → fresh hands by the recovery contacts'
+rotation when a recovery contact churns, each transition a signed, board-walkable event. This retires the recovery-contact-rotation gap without spending delegation.
 
 ''THE CROSSING RECORD (`reserve-transition` + `lares nexus seal grow`):'' when a multitude-of-one
 becomes real hands, the old quorum signs the handoff, the new quorum cross-signs the receipt (one
 byte-image, the TUF cross-sign), and WITNESSES attest — an independent witness reads, checkably, as a
-key seated in NEITHER set. The record rides carriage with the charter's own artifacts. The guardian CARD
+key seated in NEITHER set. The record rides carriage with the charter's own artifacts. The custodian CARD
 split into TWO objects (a bearer SHARE vs a public REGISTRATION — own modules, own confirm domains,
 own label stems), so no hand can select the wrong object: the ceremony-confusion cure the field earned.
 
@@ -574,7 +574,7 @@ Surfaced by the outside sweep (`docs/pono/recovery-custody-scout#the-third-axis`
 A research walk through KERI's own spec and kin systems priced delegation: a delegated inception
 carries the delegator's AID INSIDE the prefix, permanently, with no severance mechanic — recoverability
 purchased with a landlord in the identifier. The ROLLING COMMITMENT (#the-two-forks) answers the graft
-without it: guardian sets turn over log-wise under the un-delegated prefix. What delegation alone would
+without it: recovery contact sets turn over log-wise under the un-delegated prefix. What delegation alone would
 have bought — superseding a compromise OF the current rolling set between grafts — narrows to the
 contest window's job (Fork C: a provisional rotation the true holder out-competes causally). Delegation
 stays REJECTED for the persona plane; a future entity that genuinely wants a standing superior (an
@@ -673,7 +673,7 @@ Three walls hold this design, and each stays named:
   the recovering party //is// the original human stays higher-order social acceptance, answered by kahu-
   as-custodians and talk-story, never by a signature (`persona-policy.mem`).
 * ''the recovery-root pre-commit inherits the reserve's independence rule'' — the three recovery shares
-  (Fork A) or the three guardian keys (Fork B) MUST sit in three domains that do not fall together
+  (Fork A) or the three recovery contact keys (Fork B) MUST sit in three domains that do not fall together
   (#founding-runbook: the online-identity trap + the co-location trap). A monoculture of custody defeats
   the rotation before it starts, exactly as correlated compromise defeats the refresh clock
   (#siege-resilience#cadence).
@@ -691,13 +691,13 @@ Three walls hold this design, and each stays named:
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-wax-stamp">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/guardian-card">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/custodian-card">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/recovery-keel-core">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rrQg2CuAKbJwGml8SGOqFE8bakVSVMWbsbb4qcDrc7I
+<<^ code="&#x0003;">>ni:///sha-256;rfveQCSjgbd6fN307VYRoUjOtPkYegFWg4sh6wCJeNM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -422,11 +422,11 @@ function buildTable(): readonly CarrierRow[] {
     // One face's recognition book, in that face's own row: the nyms it recognised and the private labels it keeps for them.
     faceRowOf({ row: "handle-book", target: tgt(["D"]), inner: /^\.handle-book-h(0|[1-9]\d*)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "node-circle-store", name: (m) => `handle-book-h${m[1]}`, face: faceOf, bundle: "whole" }),
-    // One face's guardian set as its typed first enrolment committed it (`guardian-enrolment`): the keys a later
+    // One face's recovery contact set as its typed first enrolment committed it (`recovery-contact-enrolment`): the keys a later
     // rotation reveals, and what another face's enrolment reads to refuse a shared key. That face's bundle carries
     // it whole wherever the face's log commits it, and a restore lands it beside the root.
-    faceRowOf({ row: "guardian-set", target: tgt(["D"]), inner: /^guardian-set-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
-         writer: "guardian-enrolment", name: (m) => `guardian-set-h${m[1]}`, face: faceOf, bundle: "whole" }),
+    faceRowOf({ row: "recovery-contact-set", target: tgt(["D"]), inner: /^recovery-contact-set-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "recovery-contact-enrolment", name: (m) => `recovery-contact-set-h${m[1]}`, face: faceOf, bundle: "whole" }),
     // One restored face's provisional mark (`face-provisional`): the head its restore read, until a party to its
     // relation agrees. It belongs to the vessel that restored the face: no bundle carries it.
     faceRowOf({ row: "face-provisional", target: tgt(["D"]), inner: /^face-provisional-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
