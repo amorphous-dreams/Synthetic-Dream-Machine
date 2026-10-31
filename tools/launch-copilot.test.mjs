@@ -67,7 +67,7 @@ test("the allowance reads the newest snapshot — KNOWN POSITIVE planted; an emp
   assert.match(allowance(f), /^97\/300 /);
   writeFileSync(f, JSON.stringify({ copilotUserCache: { "v1:abc": { response: { quota_reset_date: "2026-11-01",
     quota_snapshots: { chat: { quota_remaining: 0, entitlement: 0 }, premium_interactions: { quota_remaining: 41, entitlement: 300 } } } } } }));
-  assert.match(allowance(f), /^41\/300 \(resets 2026-11-01\)$/, "the nested cache shape reads");
+  assert.match(allowance(f), /^41\/300 \(resets 2026-11-01; last-known\)$/, "the nested cache shape reads");
   writeFileSync(f, "{}");
   assert.match(allowance(f), /no premium_interactions/);
 });
