@@ -314,3 +314,73 @@ describe("the boundary acquires asynchronously, then observes in one synchronous
     expect(block).toMatch(live);
   });
 });
+
+describe("the door wakes on its authority and keeps what settled", () => {
+  test("RED: an attached door whose standing source settles after its re-passes ran out acts on the source's own wake; CONTROL: a detached door hears nothing", async () => {
+    const run = async (detach: boolean) => {
+      const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs(), effect = vi.fn(async () => ({ recordCid: "r" }));
+      let known = false, version = 0; const listeners = new Set<() => void>();
+      const standing = (_atom: string): Standing => (known ? "stands" : "unknown");
+      // An async source that answers `unknown` until its documents settle, then wakes whoever watches it.
+      const acquisition = { acquire: async (_atoms: ReadonlySet<string>) => {}, holds: () => known,
+        watch: (wake: () => void) => { listeners.add(wake); return () => { listeners.delete(wake); }; } };
+      const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs, log: () => {},
+        atom: f.h1, standing, acquisition, effects: new Map([["face-join", effect]]) });
+      const stop = door.attach();
+      await requestFaceJoin({ group: f.group, plane: shared.handle, atom: f.joinee, hearthAtom: f.h1.key, summons: { card: "one" }, verbs });
+      await settle();
+      expect(effect).not.toHaveBeenCalled();
+      if (detach) stop();
+      known = true; version++;
+      for (const wake of [...listeners]) wake();
+      await settle();
+      if (!detach) stop();
+      return { calls: effect.mock.calls.length, listening: listeners.size, version };
+    };
+    const live = await run(false);
+    expect(live.calls).toBe(1);
+    expect(live.listening).toBe(0);
+    const gone = await run(true);
+    expect(gone.calls).toBe(0);
+    expect(gone.listening).toBe(0);
+  });
+
+  test("RED: a run that settled with an outcome on one replica opens no second run on another handle over the same document; CONTROL: a run that faulted frees it", async () => {
+    const run = async (faults: boolean) => {
+      const f = await faceOf(), verbs = faceIntentVerbs();
+      // Two handles over ONE document id, each with its own replica (the second has not yet received the first's outcome).
+      const replica = () => { const p = plane(); (p.handle as unknown as { documentId: string }).documentId = `doc-${faults}`; return p; };
+      const a = replica(), b = replica();
+      let release!: () => void; const held = new Promise<void>((r) => { release = r; });
+      const first = vi.fn(async () => { await held; if (faults) throw new Error("faulted"); return { recordCid: "one" }; }), second = vi.fn(async () => ({ recordCid: "two" }));
+      const intent = await buildIntent({ group: f.group, signer: f.joinee, verb: "face-join", args: { summons: {} }, nonce: f.joinee.key, audience: { mode: "pinned", atom: f.h1.key }, verbs });
+      for (const p of [a, b]) p.handle.change((d) => writeIntentEntry(d, intent));
+      const base = { group: f.group, personaRecords: () => f.log, kelChain: () => [f.inception], verbs, log: () => {}, standing: () => "stands" as const, atom: f.h1 };
+      const onA = makeFaceIntentDoor({ ...base, plane: a.handle, effects: new Map([["face-join", first]]) });
+      const onB = makeFaceIntentDoor({ ...base, plane: b.handle, effects: new Map([["face-join", second]]) });
+      const running = onA.heed();
+      await Promise.resolve();
+      await onB.heed();
+      const during = second.mock.calls.length;
+      release(); await running; await settle();
+      await onB.heed();
+      return { during, after: second.mock.calls.length };
+    };
+    const settled = await run(false);
+    expect(settled.during).toBe(0); expect(settled.after).toBe(0);
+    const faulted = await run(true);
+    expect(faulted.during).toBe(0); expect(faulted.after).toBe(1);
+  });
+
+  test("RED: the daemon's intent door folds its standings over the documents it witnesses, never through an external dyad reader; CONTROL: the census finds planted forms", () => {
+    const source = readFileSync(new URL("../src/operator-daemon-behavior.ts", import.meta.url), "utf8");
+    const external = /\bdyadReader\s*\(/, composed = /\bintentDoorStandings\s*\(/;
+    expect(external.test("requireDyadReader(dyadReader(ctx, liveFace()), x)")).toBe(true);
+    expect(composed.test("const standings = intentDoorStandings({ repo })")).toBe(true);
+    const start = source.indexOf("const attachDoor = async (): Promise<void> => {");
+    expect(start).toBeGreaterThan(-1);
+    const block = source.slice(start, source.indexOf("const door = makeFaceIntentDoor({", start));
+    expect(block).not.toMatch(external);
+    expect(block).toMatch(composed);
+  });
+});

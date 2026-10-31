@@ -136,3 +136,43 @@ describe("the island's fleet board dyad reader", () => {
     expect(island, "the island no longer delegates dyad reading to a tab").not.toMatch(/import\s*\{[^}]*browserDyadAsker/);
   });
 });
+
+describe("the intent door's standings fold the island's own replicas under a witness over them", () => {
+  test("RED: a raise merged after the acquisition reads unknown in the next turn, a fresh acquisition reads it aside, and the board's change wakes the watch; CONTROL: an untouched edge stands, and a dropped watch hears nothing", async () => {
+    const path = "../src/index.js";
+    const module = await import(path).catch(() => null) as { intentDoorStandings?: unknown } | null;
+    expect(module?.intentDoorStandings, "intentDoorStandings stands at the keyhive door").toBeTypeOf("function");
+    type Doors = { standing: (atom: string) => string; acquisition: { acquire(atoms: ReadonlySet<string>): Promise<void>; holds(): boolean; watch?(wake: () => void): () => void } };
+    const make = module!.intentDoorStandings as (input: Record<string, unknown>) => Doors;
+    const rootSeed = new Uint8Array(32).fill(91);
+    const root = await ed25519VerifyingKeyFromSeed(rootSeed);
+    const device = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(92));
+    const other = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(93));
+    const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
+    try {
+      const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
+      const fx = await fleetFixture(rootSeed);
+      await fx.found(board);
+      const ledger = repo.create(emptyLarDoc());
+      const doors = make({ repo, fleetRoot: root, ownKey: device, board, ledger, lineage: () => fx.lineage });
+      const atoms = new Set([device, other]);
+      await doors.acquisition.acquire(atoms);
+      expect(doors.standing(device), "CONTROL: the founded fleet reads the device standing").toBe("stands");
+      let woken = 0;
+      const unwatch = doors.acquisition.watch!(() => { woken++; });
+      const raise = await signEdgeKapae({ edgeId: deviceEdgeId(root, device), raised: true, hand: "holder", parents: [] }, [{ signer: root, sign: ed25519SignerFromSeed(rootSeed) }]);
+      board.change((draft) => writeEdgeKapae(draft, raise));
+      expect(doors.acquisition.holds(), "the raise moved the witness").toBe(false);
+      expect(doors.standing(device), "a raise merged after the acquisition voids its answer in the next turn").toBe("unknown");
+      expect(woken, "the board's change wakes the watch").toBeGreaterThan(0);
+      await doors.acquisition.acquire(atoms);
+      expect(doors.standing(device), "a fresh acquisition reads the raise").toBe("aside");
+      expect(doors.standing(other), "CONTROL: an untouched edge still stands").toBe("stands");
+      unwatch();
+      const seen = woken;
+      const otherRaise = await signEdgeKapae({ edgeId: deviceEdgeId(root, other), raised: true, hand: "holder", parents: [] }, [{ signer: root, sign: ed25519SignerFromSeed(rootSeed) }]);
+      board.change((draft) => writeEdgeKapae(draft, otherRaise));
+      expect(woken, "CONTROL: a dropped watch hears nothing").toBe(seen);
+    } finally { await repo.shutdown(); }
+  });
+});
