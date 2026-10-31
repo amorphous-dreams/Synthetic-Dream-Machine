@@ -177,6 +177,26 @@ test("RED: a span commit since base whose subject lacks ` — merge PR #` refuse
   assert.ok(green.calls.verdicts.some(([b, s]) => b === SPAN && s === road), "the road commit was read at its exact sha on the span");
 });
 
+test("RED: a newer road commit read GREEN carries the older road commits beneath it (their runs cancelled by the next push); CONTROL: the newest road commit not green still refuses", async () => {
+  const w = world(["a"]);
+  const older = w.commit(w.work, "road.txt", "r1\n", "an older road commit");
+  const newer = w.commit(w.work, "road2.txt", "r2\n", "a newer road commit");
+  sh(w.work, "push", "-q", "origin", SPAN);
+  const cancelledBelow = async (branch, sha) => (sha === older ? { ci: "cancelled", heldOut: "cancelled" } : { ci: "green", heldOut: "green" });
+  const carried = await run(w, { verdict: cancelledBelow }, {}, ["a"]);
+  assert.equal(carried.code, 0, carried.out);
+  assert.match(carried.out, /carried by .*GREEN/);
+  // CONTROL: the newest road commit itself reads not green, so nothing carries it.
+  const w2 = world(["a"]);
+  w2.commit(w2.work, "road.txt", "r1\n", "an older road commit");
+  const newest = w2.commit(w2.work, "road2.txt", "r2\n", "a newer road commit");
+  sh(w2.work, "push", "-q", "origin", SPAN);
+  const headRed = await run(w2, { verdict: async (b, sha) => (sha === newest ? { ci: "red", heldOut: "green" } : { ci: "green", heldOut: "green" }) }, {}, ["a"]);
+  assert.equal(headRed.code, 3, headRed.out);
+  assert.match(headRed.out, /NON-LAND COMMIT NOT READ GREEN/);
+  void newer;
+});
+
 test("RED: an UNREADABLE verdict is never not-green: it waits, then exits 10 (its own code), neither 3 nor 8", async () => {
   const w = world(["a"]);
   const road = w.commit(w.work, "road.txt", "r\n", "a road commit"); void road;

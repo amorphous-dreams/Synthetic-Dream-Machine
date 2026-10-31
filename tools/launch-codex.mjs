@@ -16,7 +16,8 @@
  * of the sandbox; no mode carries `--ephemeral`, so each seat keeps the rollout the spend tally counts.
  * PREFLIGHT refuses (exit 2, `SEAT-REFUSED: …`): a seat dir outside `<scratch>/<lane>/`, a missing brief, a model absent
  * from Codex's models cache, `gpt-6-sol`, a Codex pool line unreadable twice (never read as zero), a pool at or under
- * its 20% floor, a build seat on the main checkout, a build seat over a stale dist.
+ * its floor (20% for a build or research seat, 5% for a read seat), a build seat on the main checkout, a build seat over a
+ * stale dist.
  * `--dry-run` runs the preflight and prints the argument array, spawns nothing and writes nothing.
  *
  * The Codex cache, auth and rollouts live under the PASSWD home (`os.userInfo().homedir`), never `$HOME`: a lead runs
@@ -32,6 +33,8 @@ import { globalStampPath, packageStampPath, sourceDigest, workspacePackageDirs }
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CANON = "bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem";
 const FLOOR = 20;
+/** A read seat's own floor: the operator approved Sol readers past the house floor (2026-10-31); builders and research keep FLOOR. */
+const READ_FLOOR = 5;
 const MODES = ["build", "read", "research"];
 
 /** The passwd home, never `$HOME`. */
@@ -51,7 +54,8 @@ export function seatArgs({ mode, model, effort, seatDir, worktree }) {
 }
 
 /** The newest rollout's rate_limits record, from its lines: the pool, or null when no line carries one. */
-export function readPool(lines) {
+export function readPool(lines, mode = "build") {
+  const floor = mode === "read" ? READ_FLOOR : FLOOR;
   let primary = null;
   for (const line of lines ?? []) {
     if (!line.includes('"rate_limits"')) continue;
@@ -62,9 +66,9 @@ export function readPool(lines) {
   }
   if (!primary) return null;
   const left = 100 - primary.used_percent;
-  const above = left > FLOOR;
+  const above = left > floor;
   const winDays = Math.floor(primary.window_minutes / 1440);
-  const summary = `codex pool: ${primary.used_percent.toFixed(1)}% used of a ${winDays}-day window, resets ${new Date(primary.resets_at * 1000).toISOString().slice(0, 16)}Z; ${left.toFixed(1)}% left, floor ${FLOOR}% -> ${above ? "ABOVE FLOOR" : "AT OR BELOW FLOOR: launch no new Codex seat"}`;
+  const summary = `codex pool: ${primary.used_percent.toFixed(1)}% used of a ${winDays}-day window, resets ${new Date(primary.resets_at * 1000).toISOString().slice(0, 16)}Z; ${left.toFixed(1)}% left, floor ${floor}% -> ${above ? "ABOVE FLOOR" : "AT OR BELOW FLOOR: launch no new Codex seat"}`;
   return { used: primary.used_percent, winDays, reset: primary.resets_at, left, above, summary };
 }
 
@@ -147,7 +151,7 @@ export function preflight({ mode, model, seatDir, worktree }, readers) {
   const cache = readers.modelsCache();
   if (!cache || !new RegExp(`"slug": *"${model.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`).test(cache)) throw refuse(`model ${model} is not in Codex's models cache`);
   // An empty read names itself and reads once more; it never stands in for a pool at zero.
-  const pool = readPool(readers.rolloutLines()) ?? readPool(readers.rolloutLines());
+  const pool = readPool(readers.rolloutLines(), mode) ?? readPool(readers.rolloutLines(), mode);
   if (!pool) throw refuse("Codex pool line unreadable (no rate_limits record in the newest rollout, read twice); read it by hand before launching");
   if (!pool.above) throw refuse(`Codex pool at or below its floor: ${pool.summary}`);
   if (mode === "build") {
