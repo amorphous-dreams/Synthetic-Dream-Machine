@@ -870,7 +870,8 @@ async function prepareNodeBootOn(
     settled: () => kahuProtected?.settled() ?? Promise.resolve(),
     pending: () => kahuProtected?.pending() === true,
     // A torn count withholds every document from every wire peer until a whole recount (controller re-ruling 2026-10-31).
-    incomplete: () => kahuProtected?.incomplete() === true,
+    // So does a bootstrap that tore after a whole read: a face that write added stands unclassed until it reads whole (lane `ralias`).
+    incomplete: () => kahuProtected?.incomplete() === true || vesselPrivate.torn(),
     decide: {
       "kahu-canon": (peerId, documentId) => kahuHandAtWire({ session: peerSessions.get(peerId), custodyGroup, faceProven: wornFaceProven, canon: kahuCanon,
         kahuStanding: kahuStandings.heldAt(kahuProtected?.homeOf(documentId) ?? null) }),

@@ -17,7 +17,10 @@
  * house and never reach the guard.
  *
  * DURABLE FOR THE RUN: the book re-reads the bootstrap when it changes (a face added while the vessel runs), and a class
- * never drops: a rewrite that loses a name, or a torn file, keeps every id already classed.
+ * never drops: a rewrite that loses a name, or a torn file, keeps every id already classed. A file that tears AFTER a whole
+ * read reads `torn` until a whole re-read: a face that write added would stand unclassed meanwhile, so the composer
+ * withholds every document from every guarded peer for that span (fail closed). A file absent, or torn from the first
+ * read, tears nothing: the boot reads it as none, and no face stands on it.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/stable-founding-road#/P26
  */
@@ -62,27 +65,33 @@ export interface VesselPrivateBook {
   has(documentId: string): boolean;
   /** Class one more document by its url or id (the catalog, once it stands). */
   add(urlOrId: string | null | undefined): void;
+  /** The bootstrap changed after a whole read and will not read whole now: ids it may add stand unclassed until it does. */
+  torn(): boolean;
 }
 
 /** The vessel's private ids, grown off its bootstrap at each change and never shrunk. */
 export function vesselPrivateBook(opts: { readonly bootstrapPath: string }): VesselPrivateBook {
   const ids = new Set<string>();
   let seen: string | null = null;
+  let torn = false;
   const refresh = (): void => {
     let stamp: string;
     try { const st = statSync(opts.bootstrapPath); stamp = `${st.mtimeMs}:${st.size}:${st.ino}`; } catch { return; }
     if (stamp === seen) return;
     const tiddlers = readBootTiddlers(opts.bootstrapPath);
-    if (tiddlers === null) return;                       // torn mid-write: every class stands, the next change re-reads
-    let fresh: ReadonlySet<string>;
-    try { fresh = vesselPrivateDocIds(tiddlers); } catch { return; }
+    let fresh: ReadonlySet<string> | null = null;
+    if (tiddlers !== null) { try { fresh = vesselPrivateDocIds(tiddlers); } catch { fresh = null; } }
+    // Torn mid-write (or a family that faults): every class stands, and once a whole read has stood the gap reads torn.
+    if (fresh === null) { torn = seen !== null; return; }
     for (const id of fresh) ids.add(id);
     seen = stamp;
+    torn = false;
   };
   refresh();
   return {
     ids() { refresh(); return ids; },
     has(documentId) { refresh(); return ids.has(String(documentId)); },
+    torn() { refresh(); return torn; },
     add(urlOrId) {
       if (!urlOrId) return;
       const id = urlOrId.startsWith("automerge:") ? idOfUrl(urlOrId) : urlOrId;
