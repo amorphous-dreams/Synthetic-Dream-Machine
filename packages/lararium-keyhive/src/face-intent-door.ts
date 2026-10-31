@@ -215,15 +215,29 @@ export async function admitAgentEntry(ports: FaceIntentAdmissionPorts, raw: unkn
 /** Per plane, each fenced id and the doors waiting on it; a plane's map stays once made, so no door ever fences into a map another dropped. */
 const flights = new Map<unknown, Map<string, Set<() => void>>>();
 /**
- * Per plane, each single-effect id a run in this process settled with an outcome. The outcome lands on the completing handle's
- * replica first; a door over another handle whose replica has not received it yet still reads the intent open, and this keeps it
- * from opening a second run meanwhile. A single-effect id runs once, so a settled id never runs here again.
+ * Per document, each single-effect id whose effect RAN TO COMPLETION in this process, with the handles that have read its outcome.
+ * The id stays fenced from the moment the effect returns, whether or not its receipt lands (a failed receipt is owed and retried as
+ * a receipt, never as a run): an outcome reaches the completing handle's replica first, and a door over another handle whose
+ * replica lacks it still reads the intent open. The entry leaves once every handle whose doors read this document has read the
+ * outcome, which then fences the id itself.
  */
-const settledRuns = new Map<unknown, Set<string>>();
+const settledRuns = new Map<unknown, Map<string, Set<DocHandle<LarDoc>>>>();
+/** Per document, the handles whose doors read it, counted per door; a door counts from its first pass until it detaches. */
+const visitors = new Map<unknown, Map<DocHandle<LarDoc>, number>>();
+/** The settled ids this process still fences on a document: the retention `settledRuns` keeps. */
+export function settledRunsOf(plane: DocHandle<LarDoc>): ReadonlySet<string> { return new Set(settledRuns.get(planeKey(plane))?.keys() ?? []); }
 export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
-  let running: Promise<void> | null = null, dirty = false;
+  let running: Promise<void> | null = null, dirty = false, visiting = false;
   const read = async (): Promise<IntentView> => (await makeFaceIntentReader(ports).read()).view;
   const wake = (): void => { void heed(); };
+  /** The fence-waiter sets this door joined, so its detach leaves none of them. */
+  const waits = new Set<Set<() => void>>();
+  /** Receipts this door owes: effects that ran to completion whose outcome never landed. */
+  const owed = new Map<string, Record<string, unknown>>();
+  const publish = async (id: string, fields: Record<string, unknown>): Promise<void> => {
+    const receipt = await buildOutcome({ group: ports.group, signer: ports.atom, cause: id, result: { status: "done", ...fields } });
+    ports.plane.change((draft) => writeIntentEntry(draft, receipt));
+  };
   /** One pass; true when a standing it needed went stale under its witness, so another pass re-acquires. */
   const pass = async (): Promise<boolean> => {
     // The async-sourced answers arrive first; everything after rebuilds from the LIVE ports in one turn.
@@ -231,9 +245,22 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
     const key = planeKey(ports.plane);
     const flying = flights.get(key) ?? new Map<string, Set<() => void>>();
     flights.set(key, flying);
-    const settled = settledRuns.get(key) ?? new Set<string>();
+    const settled = settledRuns.get(key) ?? new Map<string, Set<DocHandle<LarDoc>>>();
     settledRuns.set(key, settled);
+    const readers = visitors.get(key) ?? new Map<DocHandle<LarDoc>, number>();
+    visitors.set(key, readers);
+    if (!visiting) { visiting = true; readers.set(ports.plane, (readers.get(ports.plane) ?? 0) + 1); }
+    // An owed receipt lands before anything else runs: it settles an effect that already ran, and never runs it again.
+    for (const [id, fields] of [...owed]) {
+      try { await publish(id, fields); owed.delete(id); settled.get(id)?.add(ports.plane); } catch (error) { ports.log(`face intent ${id} receipt still owed: ${String(error)}`); }
+    }
     let view = readIntentNow(ports).view, stale = false, again = false;
+    // The retention: this handle reads each settled id's outcome, and an id every reading handle has seen leaves.
+    for (const [id, seen] of [...settled]) {
+      if (!view.intents.find((i) => i.id === id)?.slots.some((slot) => slot.winner !== null)) continue;
+      seen.add(ports.plane);
+      if ([...readers.keys()].every((handle) => seen.has(handle))) settled.delete(id);
+    }
     for (const first of view.intents) {
       // Each effect revalidates from the CURRENT documents in the turn that invokes it: a revocation, a cancel, a takeover, an
       // outcome an earlier effect merged, or a standing whose witness moved stops the later ones. Only a pass that has awaited
@@ -244,7 +271,7 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
       const may = mayAct(view, state.id, ports.atom.key.toLowerCase());
       if (!may.act) { if (may.reason === "unknown-frontier" && ports.acquisition && !ports.acquisition.holds()) again = true; continue; }
       if (state.class === "single-effect" && settled.has(state.id)) continue;
-      if (state.class === "single-effect" && flying.has(state.id)) { flying.get(state.id)!.add(wake); continue; }
+      if (state.class === "single-effect" && flying.has(state.id)) { const waiting = flying.get(state.id)!; waiting.add(wake); waits.add(waiting); continue; }
       const effect = ports.effects?.get(state.verb) ?? (ports.runDeclaredEffect && state.class === "idempotent" ? (args: unknown, ctx: { intentId: string; intent: IntentEntryBody; pinnedAtom: string; agent: { key: string; delegation: string } | null }) => ports.runDeclaredEffect!(state.verb, args, ctx) : undefined);
       if (!effect || !ports.verbs.classOfVerb(state.verb)) continue;
       const invocation = (intentEntryRecordsOfGroup(ports.plane.doc(), ports.group) as SignedIntentEntry[]).find((r) => r?.body?.entry === "intent" && r.body.issuer === state.issuer &&
@@ -258,9 +285,11 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
       stale = true;
       try {
         const result = await effect(invocation.body.args, { intentId: state.id, intent: invocation.body, pinnedAtom: pinnedAtom ?? ports.atom.key, agent: state.agent ? { key: state.issuer, delegation: state.agent.delegation } : null });
-        const receipt = await buildOutcome({ group: ports.group, signer: ports.atom, cause: state.id, result: { status: "done", ...receiptFields(result) } });
-        ports.plane.change((draft) => writeIntentEntry(draft, receipt));
-        if (fenced) settled.add(state.id);
+        // The effect RAN: from here the id stays settled whatever its receipt does.
+        if (fenced) settled.set(state.id, new Set());
+        const fields = receiptFields(result);
+        try { await publish(state.id, fields); settled.get(state.id)?.add(ports.plane); }
+        catch (error) { owed.set(state.id, fields); ports.log(`face intent ${state.id} ran; its receipt is owed: ${String(error)}`); }
       } catch (error) { ports.log(`face intent ${state.id} faulted: ${String(error)}`); }
       finally {
         if (fenced) {
@@ -281,13 +310,22 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
     })();
     return running;
   };
-  /** Wake on the plane's changes and on the documents behind the acquisition's witness; the returned call drops both. */
+  /** Wake on the plane's changes and on the documents behind the acquisition's witness; the returned call drops both, every fence wait this door joined, and its count among the document's readers. */
   const attach = (): (() => void) => {
     const changed = () => { void heed(); };
     ports.plane.on("change", changed);
     const unwatch = ports.acquisition?.watch?.(changed);
     void heed();
-    return () => { ports.plane.off("change", changed); unwatch?.(); };
+    return () => {
+      ports.plane.off("change", changed); unwatch?.();
+      for (const waiting of waits) waiting.delete(wake);
+      waits.clear();
+      if (visiting) {
+        visiting = false;
+        const readers = visitors.get(planeKey(ports.plane)), left = (readers?.get(ports.plane) ?? 1) - 1;
+        if (left > 0) readers!.set(ports.plane, left); else readers?.delete(ports.plane);
+      }
+    };
   };
   const describe = async (): Promise<{ readonly view: IntentView; readonly pane: IntentPaneModel }> => { const view = await read(); return { view, pane: intentPaneModel(view) }; };
   return { heed, attach, describe };
