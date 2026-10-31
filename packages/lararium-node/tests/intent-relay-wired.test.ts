@@ -12,11 +12,12 @@ import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 import { ownedStore } from "../src/owned-store.js";
 import { storeDoorDirect } from "../src/store-door-verbs.js";
 import { larBootstrapPath, larSealHome } from "../src/vessel-paths.js";
-import { resolveIntentRelayFace } from "../src/intent-relay-face.js";
+import { intentRelayPorts, resolveIntentRelayFace } from "../src/intent-relay-face.js";
 import * as custodySeat from "../src/custody-seat.js";
 import * as identityAnchors from "../src/identity-anchors.js";
 import { loadIntentFace } from "../src/commands/intent.js";
 import { intentRelayKeyOrMint } from "../src/intent-relay-key-store.js";
+import { enableIntentRelayFace } from "../src/intent-relay-ring.js";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, openTestCustody, seatSeedCharter } from "./found-route.js";
@@ -94,7 +95,8 @@ test("RED: a killed relay reopens its flushed receipt and retries once; CONTROL:
   const make = (x: number) => buildAgentIntent({ group, signer: agent, delegation: grant.cid, verb: "MOVE", args: { x }, nonce: "", audience: { mode: "every" }, verbs: faceIntentVerbs() });
   const failedEntry = await make(1), entry = await make(2);
   await withLarRoot(ROOT, async () => {
-    await openTestCustody(); await intentRelayKeyOrMint();
+    // The relay admits only a face its ring enables (`face-off` otherwise): the operator's switch stands first.
+    await openTestCustody(); await intentRelayKeyOrMint(); await enableIntentRelayFace(group);
     const open = () => { const adapter = new DurableNodeFSStorageAdapter(storage); return { adapter, repo: new Repo({ storage: adapter, network: [] }) }; };
     clockless();
     try {
@@ -127,7 +129,7 @@ test("RED: a killed relay reopens its flushed receipt and retries once; CONTROL:
         if (retry.status !== "duplicate") throw Error("retry not duplicate");
         expect(intentAdmissionCid(retry.receipt as Parameters<typeof intentAdmissionCid>[0])).toBe(receipt);
         const effect = vi.fn(async () => ({ result: "done" }));
-        const door = makeFaceIntentDoor({ group, plane: loaded.plane, personaRecords: () => faceRecordsOf([loaded.personaPlane?.doc()], group), kelChain: loaded.kelChain, anchor: loaded.anchor, standing: loaded.standing, heldFrontiers: () => loaded.heldFrontiers, verbs: loaded.verbs, atom: loaded.signer, effects: new Map([["MOVE", effect]]), log: () => {} });
+        const door = makeFaceIntentDoor({ ...intentRelayPorts(loaded), atom: loaded.signer, effects: new Map([["MOVE", effect]]), log: () => {} });
         await door.heed(); await door.heed();
         expect(effect).toHaveBeenCalledTimes(1);
       } finally { await reopened.repo.shutdown(); await reopened.adapter.close(); }
@@ -203,9 +205,7 @@ test("RED: relay-enabled siblings register planes when proven and lit; CONTROL: 
  * THE PORT ADAPTER: the relay's admission ports as `intent-relay-face` composes them from a loaded face, in this head's shape.
  * The scenario and its assertions below stand as written; a fix that changes the loader's shape moves only this adapter.
  */
-const relayPortsOf = (loaded: Awaited<ReturnType<typeof loadIntentFace>>): Parameters<typeof admitAgentEntry>[0] => ({ group: loaded.group, plane: loaded.plane,
-  personaRecords: () => faceRecordsOf([loaded.personaPlane?.doc()], loaded.group), kelChain: loaded.kelChain, anchor: loaded.anchor,
-  standing: loaded.standing, verbs: loaded.verbs, heldFrontiers: () => loaded.heldFrontiers });
+const relayPortsOf = (loaded: Awaited<ReturnType<typeof loadIntentFace>>): Parameters<typeof admitAgentEntry>[0] => intentRelayPorts(loaded);
 
 test("RED: a valid rotation merged after the face loads reaches the admission's commit turn; CONTROL: no rotation admits", async () => {
   const seed = new Uint8Array(32).fill(83), agent = { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };

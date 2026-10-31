@@ -33,7 +33,7 @@ async function fixture() {
   const repo = new Repo({ network: [] });
   const plane = repo.create<LarDoc>({ tiddlers: {} } as LarDoc);
   const verbs = fixtureIntentVerbs({ MOVE: 'idempotent', LOOK: 'idempotent' });
-  const ports = { group, plane, personaRecords: () => log, kelChain: [inception], standing: () => 'stands' as const, verbs };
+  const ports = { group, plane, personaRecords: () => log, kelChain: () => [inception], standing: () => 'stands' as const, verbs };
   const grant = await buildDelegation({ group, signer: root, epoch: 0, agent: agent.key, prefix: 'MOVE', policy: { kind: 'closed-args', args: { x: { type: 'integer' } } }, bound: { until: { roster: 'a'.repeat(64) } }, nonce: 'grant' });
   const entry = await buildAgentIntent({ group, signer: agent, delegation: intentEntryCid(grant), verb: 'MOVE', args: { x: 1 }, nonce: '', audience: { mode: 'every' }, verbs });
   plane.change(d => writeIntentEntry(d, grant));

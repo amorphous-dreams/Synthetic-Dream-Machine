@@ -6,8 +6,8 @@
  * lineage. A vessel at the floor holds no key to open its anchors, so it reads no lineage and every fleet frontier
  * stands unknown.
  */
-import type { Repo } from "@automerge/automerge-repo";
-import { materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, readFace, type FaceAnchor, type FaceReading, type HandLineage, type PersonaKelEvent } from "@lararium/mesh";
+import type { DocHandle, Repo } from "@automerge/automerge-repo";
+import { materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, readFace, type FaceAnchor, type FaceReading, type HandLineage, type LarDoc, type PersonaKelEvent } from "@lararium/mesh";
 import { CustodyLocked } from "./custody-holder.js";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
 import { nodeNexusIsland, nodeNexusIslandsBelow } from "./nexus-standing.js";
@@ -15,7 +15,11 @@ import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 
 const bare = (root: string): string => root.trim().toLowerCase().replace(/^0x/, "");
 
-export async function fleetFaceChainOf(repo: Repo, fleetRoot: string, islands: readonly string[], anchor?: FaceAnchor | null): Promise<{ face: FaceReading; chain: readonly PersonaKelEvent[] } | null> {
+/**
+ * The face, its chain, and the board that carries it: `board` and `prefix` let a door read the chain LIVE off the same replica
+ * (`personaKelChainForPrefix(board.doc(), prefix)`), so a rotation merged after this read reaches it.
+ */
+export async function fleetFaceChainOf(repo: Repo, fleetRoot: string, islands: readonly string[], anchor?: FaceAnchor | null): Promise<{ face: FaceReading; chain: readonly PersonaKelEvent[]; board: DocHandle<LarDoc>; prefix: string } | null> {
   let prefix: string | null = null;
   try {
     for (const index of await listAnchoredPersonas()) {
@@ -31,7 +35,7 @@ export async function fleetFaceChainOf(repo: Repo, fleetRoot: string, islands: r
     const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(island), "board:persona-kel");
     const chain = personaKelChainForPrefix(board.doc(), prefix);
     const face = readFace(chain, anchor);
-    if (face && chain) return { face, chain };
+    if (face && chain) return { face, chain, board, prefix };
   }
   return null;
 }

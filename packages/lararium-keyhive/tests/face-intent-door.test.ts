@@ -2,7 +2,7 @@ import { describe, expect, test, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { fixtureIntentVerbs, signIntentEntry, buildAnswer, buildAsks, buildIntent, intentEntryCid, writeIntentEntry, actCid, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, intentEntryRecordsOfGroup, intentId,
   mintPersonaInception, signPersonaAct, type DocHandle, type LarDoc } from "@lararium/mesh";
-import { makeFaceIntentDoor, requestFaceJoin } from "../src/face-intent-door.js";
+import { makeFaceIntentDoor, requestFaceJoin, witnessedStandings } from "../src/face-intent-door.js";
 
 const signer = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
 const plane = () => {
@@ -23,7 +23,7 @@ describe("face intent request", () => {
       log.push(await signPersonaAct(head ? { seq: head.body.seq, cid: actCid(head.body) } : null, { group, act, epoch: 0, fields }, root));
     }
     const shared = plane(), verbs = faceIntentVerbs(), add1 = vi.fn(async () => ({ recordCid: "grant" })), add2 = vi.fn(async () => ({ recordCid: "other" }));
-    const base = { group, plane: shared.handle, personaRecords: () => log, kelChain: [inception], standing: () => "stands" as const, verbs, log: () => {} };
+    const base = { group, plane: shared.handle, personaRecords: () => log, kelChain: () => [inception], standing: () => "stands" as const, verbs, log: () => {} };
     const first = makeFaceIntentDoor({ ...base, atom: h1, effects: new Map([["face-join", add1]]) });
     const second = makeFaceIntentDoor({ ...base, atom: h2, effects: new Map([["face-join", add2]]) });
     const id = await requestFaceJoin({ group, plane: shared.handle, atom: joinee, hearthAtom: h1.key, summons: { card: "one" }, verbs });
@@ -65,7 +65,7 @@ describe("face intent door stalls and gates", () => {
     const f = await faceOf(), verbs = faceIntentVerbs();
     const effect = vi.fn(async () => ({ recordCid: "grant" }));
     const doorFor = (shared: ReturnType<typeof plane>) => makeFaceIntentDoor({
-      group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception],
+      group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception],
       verbs, log: () => {}, atom: f.h1, standing: () => "stands", effects: new Map([["face-join", effect]]),
     });
     for (const thief of [await signer(91), f.h2]) {
@@ -88,7 +88,7 @@ describe("face intent door stalls and gates", () => {
   test("RED: an unknown frontier runs no effect and the clock is never read; CONTROL: the same intent acts once the frontier knows", async () => {
     const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs(), effect = vi.fn(async () => ({ recordCid: "grant" }));
     let known = false;
-    const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception], verbs, log: () => {},
+    const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs, log: () => {},
       atom: f.h1, standing: () => (known ? "stands" : "unknown"), effects: new Map([["face-join", effect]]) });
     await requestFaceJoin({ group: f.group, plane: shared.handle, atom: f.joinee, hearthAtom: f.h1.key, summons: { card: "one" }, verbs });
     const now = vi.spyOn(Date, "now").mockImplementation(() => { throw new Error("clock read"); });
@@ -104,7 +104,7 @@ describe("face intent door stalls and gates", () => {
   test("RED: an asks-gated face-join waits, a stray answer re-pins nothing, the answer-named atom acts; CONTROL: the other hearth never acts", async () => {
     const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs();
     const a1 = vi.fn(async () => ({ recordCid: "one" })), a2 = vi.fn(async () => ({ recordCid: "two" }));
-    const base = { group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception], verbs, log: () => {}, standing: () => "stands" as const };
+    const base = { group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs, log: () => {}, standing: () => "stands" as const };
     const d1 = makeFaceIntentDoor({ ...base, atom: f.h1, effects: new Map([["face-join", a1]]) });
     const d2 = makeFaceIntentDoor({ ...base, atom: f.h2, effects: new Map([["face-join", a2]]) });
     const intent = await buildIntent({ group: f.group, signer: f.joinee, verb: "face-join", args: { summons: {} }, nonce: f.joinee.key, audience: { mode: "asks" }, verbs });
@@ -124,7 +124,7 @@ describe("face intent door stalls and gates", () => {
   test("RED: a declared single-effect verb with no fenced effect never runs through the generic road; CONTROL: an idempotent verb does", async () => {
     const f = await faceOf(), shared = plane(), verbs = fixtureIntentVerbs({ once: "single-effect", echo: "idempotent" });
     const declared = vi.fn(async () => ({ ok: true }));
-    const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception], verbs, log: () => {},
+    const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs, log: () => {},
       atom: f.h1, standing: () => "stands", holdsCapability: () => true, runDeclaredEffect: declared });
     const once = await buildIntent({ group: f.group, signer: f.joinee, verb: "once", args: {}, nonce: "n", audience: { mode: "pinned", atom: f.h1.key }, verbs });
     shared.handle.change((d) => writeIntentEntry(d, once));
@@ -138,7 +138,7 @@ describe("face intent door stalls and gates", () => {
   test("RED: a re-pin after the first answer ran never runs the second hearth; CONTROL: a legitimate first answer pins and runs once", async () => {
     const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs();
     const a1 = vi.fn(async () => ({ recordCid: "one" })), a2 = vi.fn(async () => ({ recordCid: "two" }));
-    const base = { group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception], verbs, log: () => {}, standing: () => "stands" as const };
+    const base = { group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs, log: () => {}, standing: () => "stands" as const };
     const d1 = makeFaceIntentDoor({ ...base, atom: f.h1, effects: new Map([["face-join", a1]]) });
     const d2 = makeFaceIntentDoor({ ...base, atom: f.h2, effects: new Map([["face-join", a2]]) });
     const intent = await buildIntent({ group: f.group, signer: f.joinee, verb: "face-join", args: { summons: {} }, nonce: f.joinee.key, audience: { mode: "asks" }, verbs });
@@ -158,7 +158,7 @@ describe("face intent door stalls and gates", () => {
       const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs();
       let release!: () => void; const held = new Promise<void>((r) => { release = r; });
       const a1 = vi.fn(async () => { await held; if (faults) throw new Error("first hearth faulted"); return { recordCid: "one" }; }), a2 = vi.fn(async () => ({ recordCid: "two" }));
-      const base = { group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception], verbs, log: () => {}, standing: () => "stands" as const };
+      const base = { group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs, log: () => {}, standing: () => "stands" as const };
       const d1 = makeFaceIntentDoor({ ...base, atom: f.h1, effects: new Map([["face-join", a1]]) });
       const d2 = makeFaceIntentDoor({ ...base, atom: f.h2, effects: new Map([["face-join", a2]]) });
       const intent = await buildIntent({ group: f.group, signer: f.joinee, verb: "face-join", args: { summons: {} }, nonce: f.joinee.key, audience: { mode: "asks" }, verbs });
@@ -198,7 +198,7 @@ const standingSource = () => {
  * their assertions below stand as written; a fix that changes the port's shape moves only this adapter.
  */
 const asyncStanding = (source: ReturnType<typeof standingSource>, read: (atom: string) => Promise<Standing> = async (atom) => { const a = source.answer(atom); await Promise.resolve(); return a; }) =>
-  ({ standing: read });
+  witnessedStandings(read, source.version);
 /** A promise that records whether anyone ever awaited it: a read the door started and abandoned stays unawaited. */
 class Watched<T> extends Promise<T> {
   static override get [Symbol.species]() { return Promise; }
@@ -220,7 +220,7 @@ describe("the boundary acquires asynchronously, then observes in one synchronous
       const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs(), source = standingSource();
       const effect = vi.fn(async () => { if (moves) source.move(f.h1.key, "aside"); return { recordCid: "r" }; });
       await twoPinned(f, shared, verbs);
-      const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception], verbs, log: () => {},
+      const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs, log: () => {},
         atom: f.h1, ...asyncStanding(source), effects: new Map([["face-join", effect]]) });
       await door.heed();
       return effect.mock.calls.length;
@@ -235,7 +235,7 @@ describe("the boundary acquires asynchronously, then observes in one synchronous
       const effect = vi.fn(async () => ({ recordCid: "r" }));
       await requestFaceJoin({ group: f.group, plane: shared.handle, atom: f.joinee, hearthAtom: f.h1.key, summons: { card: "one" }, verbs });
       // The executor reads first; the move lands while the joinee's standing, read last, is still in flight.
-      const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception], verbs, log: () => {},
+      const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs, log: () => {},
         atom: f.h1, ...asyncStanding(source, async (atom) => { const a = source.answer(atom); await Promise.resolve();
           if (moves && atom.toLowerCase() === f.joinee.key.toLowerCase()) source.move(f.h1.key, "aside"); return a; }),
         effects: new Map([["face-join", effect]]) });
@@ -258,7 +258,7 @@ describe("the boundary acquires asynchronously, then observes in one synchronous
       const p = new Watched<Standing>((resolve, reject) => { if (ok) resolve(source.answer(atom)); else reject(new Error("board unreachable")); });
       reads.push(p); return p;
     };
-    const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception], verbs, log: () => {},
+    const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs, log: () => {},
       atom: f.h1, ...asyncStanding(source, read), effects: new Map([["face-join", effect]]) });
     await door.heed();
     await settle();
@@ -274,7 +274,7 @@ describe("the boundary acquires asynchronously, then observes in one synchronous
     const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs();
     let release!: () => void; const held = new Promise<void>((r) => { release = r; });
     const a1 = vi.fn(async () => { await held; throw new Error("first hearth faulted"); }), a2 = vi.fn(async () => ({ recordCid: "two" }));
-    const base = { group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception], verbs, log: () => {}, standing: () => "stands" as const };
+    const base = { group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs, log: () => {}, standing: () => "stands" as const };
     const intent = await buildIntent({ group: f.group, signer: f.joinee, verb: "face-join", args: { summons: {} }, nonce: f.joinee.key, audience: { mode: "asks" }, verbs });
     const id = intentId(intent.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string });
     const asks = await buildAsks({ group: f.group, signer: f.joinee, intent: id, needs: "executor" });
@@ -296,7 +296,7 @@ describe("the boundary acquires asynchronously, then observes in one synchronous
 
     const g = await faceOf(), other = plane(), b2 = vi.fn(async () => ({ recordCid: "two" }));
     await requestFaceJoin({ group: g.group, plane: other.handle, atom: g.joinee, hearthAtom: g.h2.key, summons: { card: "one" }, verbs });
-    const stop = makeFaceIntentDoor({ group: g.group, plane: other.handle, personaRecords: () => g.log, kelChain: [g.inception], verbs, log: () => {}, standing: () => "stands", atom: g.h2, effects: new Map([["face-join", b2]]) }).attach();
+    const stop = makeFaceIntentDoor({ group: g.group, plane: other.handle, personaRecords: () => g.log, kelChain: () => [g.inception], verbs, log: () => {}, standing: () => "stands", atom: g.h2, effects: new Map([["face-join", b2]]) }).attach();
     try { await settle(); expect(b2).toHaveBeenCalledTimes(1); } finally { stop(); }
   });
 

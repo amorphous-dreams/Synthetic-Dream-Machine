@@ -80,10 +80,10 @@ export type {
 export { runReadmitEdge, type ReadmitEdgeInput } from "./recovery-core.js";
 export { faceOperationTitle, readFaceOperation, writeFaceOperation } from "./face-operation-record.js";
 export { runFaceJoinOperation } from "./face-join-operation.js";
-export { makeFaceIntentDoor, requestFaceJoin, faceJoinNonce, makeFaceIntentReader, admitAgentEntry } from "./face-intent-door.js";
+export { makeFaceIntentDoor, requestFaceJoin, faceJoinNonce, makeFaceIntentReader, admitAgentEntry, witnessed, witnessedStandings } from "./face-intent-door.js";
 export { makeSeatSummons, foundingHearthOf, standingOfReading, standingOwnSummons, ownSummonsOf } from "./face-seat-summons.js";
 export type { SeatSummonsPorts, SeatSummonsAnswer } from "./face-seat-summons.js";
-export type { FaceIntentDoorPorts, FaceIntentAdmissionPorts } from "./face-intent-door.js";
+export type { FaceIntentDoorPorts, FaceIntentAdmissionPorts, AuthorityAcquisition } from "./face-intent-door.js";
 export { archiveIsOf } from "./archive-is-of.js";
 export type { GrantPlane, FaceJoinOperationInput } from "./face-join-operation.js";
 export type {

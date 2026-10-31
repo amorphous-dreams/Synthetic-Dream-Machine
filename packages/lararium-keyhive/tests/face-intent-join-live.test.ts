@@ -47,7 +47,7 @@ describe("a face-join request rides the intents plane to the pinned hearth", () 
     const effectFor = (own: string, ops: ReturnType<typeof memoryStore>) => async (args: unknown, at: { intentId: string; pinnedAtom: string }) =>
       runFaceJoinOperation({ provider: hearth, summons: (args as { summons: never }).summons, ctx, founderEdge, fence: { intentId: at.intentId, pinnedAtom: at.pinnedAtom, ownAtom: own },
         signGrant: async (bytes) => h1.sign(bytes), atomSeed: seedOf(7), operationStore: ops.store, grantPlane: { store: grants.store, heads: () => [String(grants.records.size)] } });
-    const base = { group: group.groupId, plane: shared.handle, personaRecords: () => log, kelChain: [inception], standing: () => "stands" as const, verbs, log: () => {} };
+    const base = { group: group.groupId, plane: shared.handle, personaRecords: () => log, kelChain: () => [inception], standing: () => "stands" as const, verbs, log: () => {} };
     const ops1 = memoryStore(), ops2 = memoryStore();
     const door1 = makeFaceIntentDoor({ ...base, atom: h1, effects: new Map([["face-join", effectFor(h1.key, ops1)]]) });
     const door2 = makeFaceIntentDoor({ ...base, atom: h2, effects: new Map([["face-join", effectFor(h2.key, ops2)]]) });
