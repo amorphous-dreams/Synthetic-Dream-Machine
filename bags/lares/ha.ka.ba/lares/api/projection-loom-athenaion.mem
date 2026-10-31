@@ -86,8 +86,7 @@ belongs to that project, not to a general-purpose Projection Loom.
 
 All 20 planned generalization items and the image-group / brutalist grammar /
 ziggurat-proxy seven-combination Experiment Zero matrix live in
-`tools/projection-loom/docs/ROADMAP.md`; the read-only source comparison
-lives in `tools/projection-loom/docs/research/athenaion-hard-reference.md`.
+the current `lar:///ha.ka.ba/lares/api/projection-loom-handoff`; the retired comparison and roadmap remain recoverable from `archive/pr84-markdown-pre-otakiage-20261031`.
 Neither document claims the new functionality already executed.
 
 <<~/ahu>>
@@ -98,6 +97,6 @@ Neither document claims the new functionality already executed.
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sjnp4jfm9xAOusO209eZXZAViUCz6RGRr1d9DHtpJsU
+<<^ code="&#x0003;">>ni:///sha-256;KYi06dd3S_n3VMdLw9ajZiVxV01sTpMdtaRFRfExplk
 
 <<^ code="&#x0004;" -> to="?">>
