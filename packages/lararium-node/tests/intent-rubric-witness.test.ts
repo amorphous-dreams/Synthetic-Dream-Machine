@@ -79,7 +79,7 @@ describe("intent rubric witness", () => {
       records.push(await signPersonaAct(last ? { seq: last.body.seq, cid: actCid(last.body) } : null, { group, act, epoch: 0, fields }, root));
     }
     const effect = vi.fn(async () => ({ moved: 1 }));
-    const door = makeFaceIntentDoor({ group, atom: executor, plane: shared.handle, personaRecords: () => records, kelChain: [inception],
+    const door = makeFaceIntentDoor({ group, atom: executor, plane: shared.handle, personaRecords: () => records, kelChain: () => [inception],
       standing: () => "stands", verbs: faceIntentVerbs(), runDeclaredEffect: (verb, args) => { expect(verb).toBe("MOVE"); expect(args).toMatchObject({ "change-id": "move-one" }); return effect(); }, log: () => {} });
     const issue = await buildIntent({ group, signer: issuer, verb: "MOVE", args: { title: "lar:///test/carrier", "from-bag": "source", "to-bag": "target", "change-id": "move-one" },
       nonce: "", audience: { mode: "pinned", atom: executor.key }, verbs: faceIntentVerbs() });

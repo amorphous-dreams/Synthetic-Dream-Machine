@@ -3,19 +3,21 @@ import { afterAll, beforeAll, expect, test, vi } from "vitest";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildAgentIntent, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, faceRecordsOf, intentEntryCid, intentEntryRecordsOfGroup, personaBagIdFor, personaSiblingBagIds, PERSONA_GROUP_ID_TIDDLER, type LarDoc } from "@lararium/mesh";
+import { buildAgentIntent, deriveSelfRecoveryKey, hexToBytes, mintPersonaRotation, personaKelChainForPrefix, personaRotationSigningBytes, writePersonaKelEvent, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, faceRecordsOf, intentEntryCid, intentEntryRecordsOfGroup, personaBagIdFor, personaSiblingBagIds, PERSONA_GROUP_ID_TIDDLER, type LarDoc } from "@lararium/mesh";
 import { intentAdmissionCid, intentAdmissionRecordsOfGroup } from "../../lararium-mesh/src/intent-admission.js";
-import { makeFaceIntentDoor } from "../../lararium-keyhive/src/face-intent-door.js";
+import { admitAgentEntry, makeFaceIntentDoor } from "../../lararium-keyhive/src/face-intent-door.js";
+import { loadPersonaGroupRootSeed } from "../src/node-vessel-identity.js";
 import { runFoundTheFace } from "../src/index.js";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 import { ownedStore } from "../src/owned-store.js";
 import { storeDoorDirect } from "../src/store-door-verbs.js";
 import { larBootstrapPath, larSealHome } from "../src/vessel-paths.js";
-import { resolveIntentRelayFace } from "../src/intent-relay-face.js";
+import { intentRelayPorts, resolveIntentRelayFace } from "../src/intent-relay-face.js";
 import * as custodySeat from "../src/custody-seat.js";
 import * as identityAnchors from "../src/identity-anchors.js";
 import { loadIntentFace } from "../src/commands/intent.js";
 import { intentRelayKeyOrMint } from "../src/intent-relay-key-store.js";
+import { enableIntentRelayFace } from "../src/intent-relay-ring.js";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, openTestCustody, seatSeedCharter } from "./found-route.js";
@@ -93,7 +95,8 @@ test("RED: a killed relay reopens its flushed receipt and retries once; CONTROL:
   const make = (x: number) => buildAgentIntent({ group, signer: agent, delegation: grant.cid, verb: "MOVE", args: { x }, nonce: "", audience: { mode: "every" }, verbs: faceIntentVerbs() });
   const failedEntry = await make(1), entry = await make(2);
   await withLarRoot(ROOT, async () => {
-    await openTestCustody(); await intentRelayKeyOrMint();
+    // The relay admits only a face its ring enables (`face-off` otherwise): the operator's switch stands first.
+    await openTestCustody(); await intentRelayKeyOrMint(); await enableIntentRelayFace(group);
     const open = () => { const adapter = new DurableNodeFSStorageAdapter(storage); return { adapter, repo: new Repo({ storage: adapter, network: [] }) }; };
     clockless();
     try {
@@ -126,7 +129,7 @@ test("RED: a killed relay reopens its flushed receipt and retries once; CONTROL:
         if (retry.status !== "duplicate") throw Error("retry not duplicate");
         expect(intentAdmissionCid(retry.receipt as Parameters<typeof intentAdmissionCid>[0])).toBe(receipt);
         const effect = vi.fn(async () => ({ result: "done" }));
-        const door = makeFaceIntentDoor({ group, plane: loaded.plane, personaRecords: () => faceRecordsOf([loaded.personaPlane?.doc()], group), kelChain: loaded.kelChain, anchor: loaded.anchor, standing: loaded.standing, heldFrontiers: () => loaded.heldFrontiers, verbs: loaded.verbs, atom: loaded.signer, effects: new Map([["MOVE", effect]]), log: () => {} });
+        const door = makeFaceIntentDoor({ ...intentRelayPorts(loaded), atom: loaded.signer, effects: new Map([["MOVE", effect]]), log: () => {} });
         await door.heed(); await door.heed();
         expect(effect).toHaveBeenCalledTimes(1);
       } finally { await reopened.repo.shutdown(); await reopened.adapter.close(); }
@@ -197,3 +200,44 @@ test("RED: relay-enabled siblings register planes when proven and lit; CONTROL: 
   expect(end).toBeGreaterThan(proven);
   expect(source.slice(proven, end)).toMatch(call);
 });
+
+/**
+ * THE PORT ADAPTER: the relay's admission ports as `intent-relay-face` composes them from a loaded face, in this head's shape.
+ * The scenario and its assertions below stand as written; a fix that changes the loader's shape moves only this adapter.
+ */
+const relayPortsOf = (loaded: Awaited<ReturnType<typeof loadIntentFace>>): Parameters<typeof admitAgentEntry>[0] => intentRelayPorts(loaded);
+
+test("RED: a valid rotation merged after the face loads reaches the admission's commit turn; CONTROL: no rotation admits", async () => {
+  const seed = new Uint8Array(32).fill(83), agent = { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
+  const relaySeed = new Uint8Array(32).fill(84), relay = { key: await ed25519VerifyingKeyFromSeed(relaySeed), sign: ed25519SignerFromSeed(relaySeed) };
+  const grant = await row("intent-root", { action: "delegate", agent: agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [3] } } }, until: `roster:${"e".repeat(64)}` }) as { cid: string };
+  const entry = await buildAgentIntent({ group, signer: agent, delegation: grant.cid, verb: "MOVE", args: { x: 3 }, nonce: "", audience: { mode: "every" }, verbs: faceIntentVerbs() });
+  await withLarRoot(ROOT, async () => {
+    await openTestCustody();
+    const run = async (rotates: boolean) => {
+      // A copy of the store per run, so the rotation never reaches the file's other tests.
+      const copy = mkdtempSync(join(ROOT, "rotation-")); cpSync(storage, copy, { recursive: true });
+      const adapter = new DurableNodeFSStorageAdapter(copy), repo = new Repo({ storage: adapter, network: [] });
+      try {
+        const loaded = await loadIntentFace(repo, catalogUrl, { group });
+        if (rotates) {
+          // The face's own recovery signer rotates its op-key on the KEL board the loader read, after the load returned.
+          const prefix = loaded.anchors.personaKelPrefix!;
+          const board = Object.values(repo.handles).find((h) => h.isReady() && personaKelChainForPrefix(h.doc() as LarDoc, prefix) !== null)!;
+          const head = personaKelChainForPrefix(board.doc() as LarDoc, prefix)!.at(-1)!;
+          const rootSeed = await loadPersonaGroupRootSeed(loaded.index);
+          const recovery = await deriveSelfRecoveryKey(rootSeed);
+          const fresh = `0x${await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(85))}`;
+          const sig = await ed25519SignerFromSeed(hexToBytes(recovery.signingKey))(personaRotationSigningBytes(head, fresh));
+          const rotated = await mintPersonaRotation({ head, freshOpKeyDid: fresh, recoveryRoster: [recovery.verifyingKey], recoveryThreshold: 1, rotationSigs: [{ signer: recovery.verifyingKey, sig }] });
+          if (!rotated.ok) throw Error(rotated.reason);
+          board.change((d) => writePersonaKelEvent(d as LarDoc, rotated.event));
+          expect(personaKelChainForPrefix(board.doc() as LarDoc, prefix)).toHaveLength(2);
+        }
+        return await admitAgentEntry(relayPortsOf(loaded), entry, relay);
+      } finally { await repo.shutdown(); await adapter.close(); }
+    };
+    expect(await run(true)).toEqual({ status: "refused", refusal: "entry-refused" });
+    expect((await run(false)).status).toBe("admitted");
+  });
+}, 240_000);

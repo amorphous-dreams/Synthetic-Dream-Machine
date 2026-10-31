@@ -7,7 +7,7 @@ import { NOISE_MAX_MESSAGE_BYTES, noiseInitiate, noiseKeyPair } from "./noise-ik
 
 export const INTENT_RELAY_ROUTE = "/ws/intent-relay";
 export const INTENT_RELAY_MAX_PLAINTEXT_BYTES = NOISE_MAX_MESSAGE_BYTES - 16 - 1;
-export const INTENT_RELAY_REFUSALS = ["malformed", "face-off", "entry-refused", "delegation-unknown", "delegation-revoked", "delegation-closed", "unknown-frontier", "agent-key", "verb-outside-prefix", "args-outside-policy", "group", "too-large", "fault"] as const;
+export const INTENT_RELAY_REFUSALS = ["malformed", "face-off", "entry-refused", "delegation-unknown", "delegation-revoked", "delegation-closed", "unknown-frontier", "agent-key", "verb-outside-prefix", "args-outside-policy", "id-collision", "group", "too-large", "fault"] as const;
 export type IntentRelayRefusal = (typeof INTENT_RELAY_REFUSALS)[number];
 export type IntentRelayResult =
   | { readonly status: "admitted" | "duplicate"; readonly receipt: unknown }

@@ -1,0 +1,81 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-intent-plane-collision">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable     = false
+file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-intent-plane-collision.mem"
+l-space       = "adjacent"
+mana          = 14
+manao         = 15
+manaoio       = 15
+render-target = "docs"
+role          = "read-only consumer handback (2026-10-29): a warm Fable read of the face intent plane (I1) and the relay seat (I2) collided with a COLD Fable reader briefed on the code alone, then each attacked the other's claims; the surviving takes, ranked, each anchored to a line; nothing edited in the plane, no test run (the tree held no node_modules and the lane law forbids an install in the main checkout). Feeds i1-intent-lane #owed, i2-relay-lane #owed, face-intent-plane #/the-reds; the operator decides what folds and where it lands."
+title         = "lar:///ha.ka.ba/lares/docs/history/spirit-handback-intent-plane-collision"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-intent-plane-collision"
+```
+
+<<~ ahu #/head>>
+
+! Intent plane collision ~ two readers, one plane, nine surviving takes
+
+A read-only consumer session read the span through PR #118 on `feature/green-jello-dinosaur-5` and then the intent plane's code against the vow its kits make. It held five claims. A second Fable reader (mask Cold-Lantern) then opened the same ground COLD: the three carriers, the code and the tests, with no conclusions handed over, and returned seven findings of its own. Each reader then attacked the other's claims against the code. This carrier holds what survived, ranked by harm, with the collision's own narrowings kept beside each take.
+
+''Method.'' Static read only; every claim traces to a line, and the two readers reached the receipt overflow by independent arithmetic (969 heads at a 44-character group id against the 65,518-byte plaintext bound). A finding marked PLAUSIBLE needs a run before anyone quotes a number from it. Line numbers drift; each take names its file so a builder reads the code before leaning on the row.
+
+<<~/ahu>>
+
+<<~ ahu #/the-takes>>
+
+!! The surviving takes, ranked
+
+# ''A single-effect verb can run twice after a re-pin or a re-target'' (CONFIRMED, high; Cold-Lantern's find). Two roads reach one hole in `packages/lararium-mesh/src/intent-read.ts`. (a) The `asks` road: `executor` derives from the CURRENT effective answer; an answer that cites the effective approve re-pins, as the I1 kit allows; after device A acted, a re-pin to B moves A's outcome into `outOfAudience`, the slot reads empty, status flips from answered back to open, and `mayAct(B)` answers `act:true`. For `face-join` the per-hearth operation record holds nothing on B, so B re-keys the joinee a second time. (b) The lowest-cid road: the fold keeps the lowest cid among copies of one intent id; audience and bound sit outside the id and inside the cid, and `bound.void` accepts any string, so an issuer grinds a lower cid in about two attempts and re-targets a pinned intent after the first executor acted; the relay admits such a copy as fresh, since `decideAdmission` removes every prior copy of the id before it reads. Issuer-only, so no privilege escalation, but the I1 kit vows that a concurrent append never forks the plane, and two bodies under one id form that fork, resolved by cid order instead of a refusal. The pane compounds both roads: `outcomeCount` reads zero and `outOfAudience` never renders, so the act that happened leaves the operator's window. Red: extend `face-intent-door.test.ts` so a re-pin answer naming the second hearth lands after the first ran, heed both doors, expect the second uncalled; and `fold([pinA, outcomeA, pinB-lower-cid])`, expect `mayAct(B)` to refuse.
+# ''Admission receipts grow with the plane and cross the Noise bound, after which every admission lands and answers silence'' (CONFIRMED, high; both readers). `localIntentHeads` in `intent-admission.ts` names as a head every entry nothing cites, and every device-side builder writes `refs: []`, so the head set tracks the plane. The receipt embeds the set and lands on the plane per admission, so the plane grows quadratically whether or not an agent ever dials. Past 969 heads `encodeIntentRelayResult` throws inside the relay door's try AFTER the entry and receipt appended and flushed; the gate answers `silence("fault")`, a retry returns `duplicate` with the same oversized receipt and goes silent again. Nothing on the read side consumes `heads`, so the cost buys nothing. Every storm and admission fixture passes `heads: []`. Cure the carrier already permits: the receipt names the Automerge document heads the relay judged against, or one digest of the sorted set, never the set. Red: seed about a thousand bare outcomes on the storm fixture's plane and submit once through its live harness; expect a result.
+# ''The `class` audience stands dead in production'' (CONFIRMED, medium; Cold-Lantern's find). `readIntentPlane` and `mayAct` default `holdsCapability` to a function that answers false, and no source caller supplies one: the daemon door in `operator-daemon-behavior.ts`, the CLI view in `commands/intent.ts` and the relay reader in `intent-relay-face.ts` all pass none. `lares intent issue --class X` issues cleanly and no device ever acts; any outcome a device records reads `outOfAudience`. Canon names class as one of four audience modes and the carrier's red one rides on a class intent; only the tests supply a capability reader.
+# ''The CLI denies an issuer its own cancel and supersede'' (CONFIRMED, medium; Cold-Lantern's find). The I1 kit says an issuer's own atom may supersede or cancel its own intent, the fold honors it and `intent-issue.test.ts` pins it; `commands/intent.ts` routes both through the persona root seed and refuses `root-absent` or `root-rotated` with no atom-signed path. A joinee holding no root cannot withdraw its own face-join request.
+# ''One admission costs about eleven full-plane signature passes, and nothing bounds the plane'' (CONFIRMED shape, PLAUSIBLE threshold, medium; Cold-Lantern's find). `admitAgentEntry` reads the plane, decides, computes heads, refreshes, reads again and decides again; each read verifies every entry under pure-JS Ed25519 and sweeps standing per signer in sequence; the door's pass re-verifies the whole plane on every change. The carrier promises compaction by the operator's act and no fold exists in any intent file. The gate deadline races the admit: when admission outruns it the gate answers `deadline-before-answer` while the queued task continues and appends, a second road to landed-but-silent. Nobody timed the verify; run one admission against a five-thousand-entry plane under the hand deadlines before quoting a number.
+# ''A denied ask has nowhere to land'' (CONFIRMED design gap, medium; the warm read, narrowed by the collision). The status enum holds open, answered, void and unknown-frontier; `voidCause` names no denial; a deny leaves `executor` null, `mayAct` answers `awaiting-answer` forever and nothing closes the intent short of a root or issuer cancel, which nothing issues. The narrowing: `IntentState.answer` carries the deny record, so a reader of the view can tell; `intentPaneModel` exports no answer or verdict field, so the daemon pane and `lares intent show` render a denied intent and an unanswered one as one row. The gap sits in the pane model and the status enum, never in the fold's data. Beside it: the CLI's `answer` demands `--executor` even for a deny and cites only the ask, so two CLI answers always read contested and the re-pin road the kit names has no CLI handle.
+# ''A faulting effect re-runs on every plane change and leaves no record'' (CONFIRMED, low-medium; Cold-Lantern's find). The door logs a throw and writes no outcome; every later heed re-runs it; status reads open forever, so the pane cannot tell nobody acted from the pinned device faults each time. Canon's "a recorded act, never a silent loss" holds no fault-side counterpart.
+# ''A finite `every` whose head the reader lacks reads `not-audience` where the law says it waits'' (CONFIRMED naming, low; the warm read, conceded by the cold one). The kit, the roadmap's I1 row and the test's own title say WAITS; the assertion pins `not-audience`. On a lagging reader an outcome from a device that held the head sorts into `outOfAudience`, status reads open and the count reads zero, the same under-report shape as take one. Nothing acts, so the safety holds; `unknown-frontier` matches the law, parallel to an unheld `asOf`.
+# ''The refused list names entries the fold honored'' (CONFIRMED diagnostic lie, low; both readers). A release whose `claim` names a takeover cid trips `not-issuer-or-root` in the first pass, which searches claims alone, while the second pass finds the takeover and ends the claim on it. The CLI's `release` names the chain tip, so every post-takeover release by the holder writes a false refused row into the pane; a release before any takeover passes clean, so the lie starts at the first takeover. The same list pushes `revoke-before-delegation-epoch` per pair while the revoke entry stays accepted, and `refused` carries no cid, so neither the pane nor `lares intent show` can say which entry it means.
+
+<<~/ahu>>
+
+<<~ ahu #/still-owed>>
+
+!! Confirmed still open, from the I2 kit's own Owed list
+
+`resolveIntentRelayFace` awaits `loadIdentityAnchors` per anchored ordinal with no try around the loop, and `identity-anchors.ts` throws `malformed` on an ill-shaped row rather than answering null. The sweep catches per group and downs it. The collision narrowed the reach: the loop breaks on the first match and the ordinals come ascending, so a face ordered before the malformed row keeps its relay and every face at or after it loses. `loadIntentFace` by group shares the enumeration and the fault.
+
+<<~/ahu>>
+
+<<~ ahu #/aside>>
+
+!! Aside ~ the checkout and the stamp
+
+On a Windows checkout with `core.autocrlf=true` the working tree holds every carrier as CRLF while the index holds LF (`git ls-files --eol` reads `i/lf w/crlf`), and the frame's check hashes the STX-to-ETX span byte for byte with no newline normalization, so `verifyBcc` over the working tree reads every carrier as mismatch while the committed bytes verify. No `.gitattributes` stands at the root. A `*.mem text eol=lf` attribute pins it; this carrier went out LF and stamped over LF.
+
+<<~/ahu>>
+
+<<~ ahu #/the-research-notes>>
+
+!! Research notes, not bugs
+
+* ''The empty nonce on idempotent verbs makes `cancel` permanent per issuer.'' The id hashes issuer, verb, args and nonce, and an idempotent verb must carry the empty nonce, so a cancelled or answered intent can never re-issue from the same atom with the same args. MOVE escapes because its args carry a `change-id`, which acts as the nonce the grammar forbids; the next idempotent verb without one hits the wall. Either idempotent verbs bind a caller-chosen causal nonce, or the rubric requires a change id in args by law.
+* ''Both readers found the pane the weakest surface.'' Takes one, six, eight and nine all end in the same place: the fold holds the truth and the pane under-reports it. A pane that renders `outOfAudience`, the answer's verdict and each refusal's cid would have shown three of these before any reader opened the code.
+
+<<~/ahu>>
+
+<<~ ahu #/clean>>
+
+!! Read and found clean, by trace
+
+The entry image and its domain split; signature coverage of audience, bound and refs; the agent to delegation to face chain and its five refusals; revoke precedence and arrival-order independence; lapsed on epoch roll; replay id stability; the relay frame bound on both sides; canonical-JSON strictness at the door; the ring row's canonical and sorted checks; the cold key store; the signing-gap refresh loop and its fingerprint; a device's bare release never reading as root; the admission queue keyed on the cached handle serializing in production as in the tests.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;s75V0s9O_nj0A5NObpV3k-6A7N4wQzaUVzNBLU_qU6Y
+
+<<^ code="&#x0004;" -> to="?">>

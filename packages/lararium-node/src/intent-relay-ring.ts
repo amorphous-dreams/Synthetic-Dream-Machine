@@ -26,8 +26,14 @@ async function set(group: string, enabled: boolean): Promise<void> {
     return { plaintext: bytesOf([...faces].sort()), value: undefined };
   });
 }
-export const enableIntentRelayFace = (group: string): Promise<void> => set(group, true);
-export const disableIntentRelayFace = (group: string): Promise<void> => set(group, false);
+/**
+ * The ring's in-process synchronous mirror: a face switched off in this process reads off in the SAME turn, before the
+ * custody row's write settles, so an admission's commit turn reads the switch without an await.
+ */
+const switchedOff = new Set<string>();
+export const intentRelayStands = (group: string): boolean => !switchedOff.has(group);
+export const enableIntentRelayFace = (group: string): Promise<void> => { switchedOff.delete(group); return set(group, true); };
+export const disableIntentRelayFace = (group: string): Promise<void> => { switchedOff.add(group); return set(group, false); };
 export function intentRelayRing(readers: { enabledFaces(): Promise<readonly string[]> } = { enabledFaces: enabledIntentRelayFaces }): { admits(group: string): Promise<boolean> } {
   return { async admits(group) { try { return (await readers.enabledFaces()).includes(group); } catch { return false; } } };
 }

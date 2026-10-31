@@ -8,12 +8,12 @@ import {
   faceRecordsOf, intentEntryCid, intentEntryRecordsOfGroup, intentAdmissionRecordsOfGroup, intentId, intentPaneModel,
   readIntentEntry,
   deviceEdgeId, fleetEdgeAuthority, fleetEdgeBoardDocUrl, fleetRaiseCids, readFleetFrontier, readFrontierPins, FLEET_HAND,
-  personaBagIdFor, personaSiblingBagIds, readIntentPlane, signIntentEntry, writeIntentEntry,
-  type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
+  personaBagIdFor, personaSiblingBagIds, readIntentPlane, personaKelChainForPrefix, readFace, materializeSharedLarDoc, edgeLedgerDocUrl, replicaHeads, signIntentEntry, writeIntentEntry,
+  type PersonaKelEvent, type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
 } from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { listAnchoredPersonas, loadIdentityAnchors } from "../identity-anchors.js";
-import { KeyhiveProvider, InMemoryEventStore, faceJoinNonce, ownSummonsOf } from "@lararium/keyhive";
+import { KeyhiveProvider, InMemoryEventStore, faceJoinNonce, ownSummonsOf, witnessed, watchHandles, type AuthorityAcquisition } from "@lararium/keyhive";
 import { loadVeilArchive } from "../identity-anchors.js";
 import { loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";
@@ -95,7 +95,11 @@ export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined,
   if (!plane) throw new IntentRefused("intent-plane-unregistered");
   const faceSource = await fleetFaceChainForVessel(repo, groupRoot(anchors), anchor);
   if (!faceSource) throw new IntentRefused("face-lineage-unreadable");
-  const { face, chain: kelChain } = faceSource;
+  // THE LOADED FACE HANDS BACK LIVE READERS, never what stood when the load returned: the chain reads the KEL board's replica at
+  // each call, and the fleet board's verified fold (standings and the held frontier) rests under a witness over every document it
+  // reads, so a door deciding later reads a rotation, a raise or a frontier merged after this load.
+  const { face, board: kelBoard, prefix: kelPrefix } = faceSource;
+  const kelChain = (): readonly PersonaKelEvent[] | null => personaKelChainForPrefix(kelBoard.doc(), kelPrefix);
   const persona = await catalog.find(personaBagIdFor(group));
   const projection = face.project(faceRecordsOf([persona?.doc()], group), group);
   if (!projection.founded || projection.fork) throw new IntentRefused("face-log-unreadable");
@@ -106,32 +110,40 @@ export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined,
   const atom = faceAtomKeyFromSeed(atomSeed, group);
   const signer: IntentSigner = { key: atom.key, sign: atom.sign };
   const verbs = faceIntentVerbs();
-  let standing: (key: string) => "stands" | "aside" | "unknown" = () => "unknown";
-  let heldFrontiers: ReadonlySet<string> = new Set();
-  try {
-    const fleetRoot = groupRoot(anchors);
+  const fleetRoot = groupRoot(anchors);
+  const fleetRead = async (): Promise<{ readonly standing: (key: string) => "stands" | "aside" | "unknown"; readonly heldFrontiers: ReadonlySet<string> } | null> => {
+    const lineage = readFace(kelChain() ?? undefined, anchor)?.lineage;
+    if (!lineage) return null;
     const board = await readVesselEdgeBoard({ repo, scope: fleetRoot, kind: "fleet",
       boardUrl: fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae", vesselKey: atom.key,
       authorityFor: fleetEdgeAuthority(fleetRoot) });
-    const frontier = readFleetFrontier({ fleetRoot, board: board.handle.doc(), lineage: face.lineage,
+    const frontier = readFleetFrontier({ fleetRoot, board: board.handle.doc(), lineage,
       seenRaises: fleetRaiseCids(board.counted.acts), pinned: readFrontierPins(board.ledger.doc(), fleetRoot)[FLEET_HAND] ?? null });
-    if (frontier.status === "known") {
-      heldFrontiers = new Set([frontier.asOf[FLEET_HAND]?.cid].filter((cid): cid is string => cid !== undefined));
-      standing = (key) => {
+    if (frontier.status !== "known") return null;
+    return { heldFrontiers: new Set([frontier.asOf[FLEET_HAND]?.cid].filter((cid): cid is string => cid !== undefined)),
+      standing: (key) => {
         const verdict = board.readings.get(deviceEdgeId(fleetRoot, key));
         return verdict?.stands === true ? "aside" : verdict && verdict.raiseCids.length > 0 ? "unknown" : "stands";
-      };
-    }
-  } catch { /* A board that cannot verify leaves standing unknown. */ }
+      } };
+  };
+  let fleet: { readonly now: () => Awaited<ReturnType<typeof fleetRead>> | null; readonly acquisition: AuthorityAcquisition } | null = null;
+  try {
+    const [edgeBoard, edgeLedger] = [await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(fleetRoot), "board:edge-kapae"), await materializeSharedLarDoc(repo, edgeLedgerDocUrl(atom.key), "ledger:edge")];
+    fleet = witnessed(fleetRead, () => [edgeBoard, edgeLedger, kelBoard].map((h) => replicaHeads(h).join(",")).join("|"), { watch: watchHandles([edgeBoard, edgeLedger, kelBoard]) });
+    await fleet.acquisition.acquire(new Set());
+  } catch { fleet = null; /* A board that cannot verify leaves standing unknown and no frontier held. */ }
+  const standing = (key: string): "stands" | "aside" | "unknown" => fleet?.now()?.standing(key) ?? "unknown";
+  const heldFrontiers = (): ReadonlySet<string> => fleet?.now()?.heldFrontiers ?? new Set<string>();
+  const acquisition = fleet?.acquisition;
   if ("group" in selector && group !== selector.group) throw new IntentRefused("face-not-held");
-  return { group, index, anchors, anchor, face, kelChain, projection, plane, personaPlane: persona, standing, heldFrontiers, verbs, atom, atomSeed, signer };
+  return { group, index, anchors, anchor, face, kelChain, projection, plane, personaPlane: persona, standing, heldFrontiers, acquisition, verbs, atom, atomSeed, signer };
 }
 
 export async function runIntentCommand(opts: IntentCommandOptions): Promise<Record<string, unknown>> {
   const { group, index, anchors, face, projection, plane, standing, heldFrontiers, verbs, atom, atomSeed, signer } = await loadIntentFace(opts.repo, opts.catalogUrl, { index: opts.face });
   const records = intentEntryRecordsOfGroup(plane.doc(), group);
   const view = () => readIntentPlane({
-    group, records, verbs, heldFrontiers, admissions: intentAdmissionRecordsOfGroup(plane.doc(), group),
+    group, records, verbs, heldFrontiers: heldFrontiers(), admissions: intentAdmissionRecordsOfGroup(plane.doc(), group),
     face: { devices: projection.devices, rosterCids: projection.cids,
       admittedAt: new Map(projection.admissions.map(({ deviceKey, cid }) => [deviceKey, cid])), lineage: face.lineage },
     standing,

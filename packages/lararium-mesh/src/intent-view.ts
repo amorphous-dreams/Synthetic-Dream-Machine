@@ -10,6 +10,8 @@ export interface IntentPaneModel {
   readonly refusedCount: number;
   readonly strayAnswerCount: number;
   readonly refused: readonly string[];
+  /** Each refusal with the entry it concerns, so the pane names which copy collided. */
+  readonly refusals: readonly { readonly refusal: string; readonly cid: string | null }[];
   readonly strayAnswers: readonly string[];
 }
 export function intentPaneModel(view: IntentView): IntentPaneModel {
@@ -25,5 +27,5 @@ export function intentPaneModel(view: IntentView): IntentPaneModel {
       ? (i.agent?.status === "awaiting" ? "delegation frontier missing" : view.standing(i.issuer) === "unknown" && !i.agent ? "issuer standing missing" : "outcome signer standing missing") : null,
     outcomeCount: i.status === "unknown-frontier" || i.slots.some((s) => s.unknownFrontier) ? "unknown" : i.slots.filter((s) => s.winner).length,
   })), delegations: view.delegations, refusedCount: view.refused.length, strayAnswerCount: view.strayAnswers.length,
-    refused: view.refused.map((r) => r.refusal), strayAnswers: view.strayAnswers.map((r) => r.cid) };
+    refused: view.refused.map((r) => r.refusal), refusals: view.refused.map((r) => ({ refusal: r.refusal, cid: r.cid ?? null })), strayAnswers: view.strayAnswers.map((r) => r.cid) };
 }

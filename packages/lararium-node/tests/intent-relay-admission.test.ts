@@ -138,7 +138,7 @@ test("RED: key rotation between public-key read and signing cannot produce an un
 }, 240_000);
 
 
-test("RED: held face reloads changed KEL after signing; CONTROL: unchanged face admits", async () => {
+test("RED: a held face reads a KEL that changed after signing, live, in the commit turn; CONTROL: unchanged face admits", async () => {
   const seed = new Uint8Array(32).fill(73), agent = { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
   const grant = await row("intent-root", { action: "delegate", agent: agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1, 2] } } }, until: `roster:${"f".repeat(64)}` }) as { cid: string };
   const make = (x: number) => buildAgentIntent({ group, signer: agent, delegation: grant.cid, verb: "MOVE", args: { x }, nonce: "", audience: { mode: "every" }, verbs: faceIntentVerbs() });
@@ -148,10 +148,10 @@ test("RED: held face reloads changed KEL after signing; CONTROL: unchanged face 
     let changed = false, resume!: () => void, started!: () => void;
     const gate = new Promise<void>(r => { resume = r; }), entered = new Promise<void>(r => { started = r; });
     const originalLoad = intentLoader.loadIntentFace, originalSign = relayKeys.signAsIntentRelay;
-    // The loader seam models a changed, no longer verifiable KEL snapshot after sync.
+    // The loader seam models the board's replica turning to a chain that no longer verifies after sync: the loaded face reads it live.
     const loader = vi.spyOn(intentLoader, "loadIntentFace").mockImplementation(async (...args) => {
       const fresh = await originalLoad(...args);
-      return changed ? { ...fresh, kelChain: [] } : fresh;
+      return { ...fresh, kelChain: () => (changed ? [] : fresh.kelChain()) };
     });
     const sign = vi.spyOn(relayKeys, "signAsIntentRelay").mockImplementationOnce(async bytes => { started(); await gate; return originalSign(bytes); });
     try {
@@ -159,7 +159,7 @@ test("RED: held face reloads changed KEL after signing; CONTROL: unchanged face 
       const pending = face.admit(entry);
       await entered; changed = true; resume();
       expect((await pending).status).toBe("refused");
-      expect(loader.mock.calls.length).toBeGreaterThan(1);
+      expect(loader.mock.calls.length).toBe(1);
       expect(intentEntryRecordsOfGroup(loaded.plane.doc(), group)).toHaveLength(beforeEntries);
       expect(intentAdmissionRecordsOfGroup(loaded.plane.doc(), group)).toHaveLength(beforeReceipts);
       changed = false;
