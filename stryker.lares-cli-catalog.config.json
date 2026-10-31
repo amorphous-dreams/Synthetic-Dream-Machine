@@ -1,0 +1,58 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "vitest",
+  "plugins": [
+    "@stryker-mutator/vitest-runner"
+  ],
+  "inPlace": false,
+  "concurrency": 4,
+  "vitest": {
+    "configFile": "packages/lares-cli/vitest.stryker.config.ts",
+    "pool": "forks"
+  },
+  "mutate": [
+    "packages/lares-cli/src/ingest-core.ts:660-660",
+    "packages/lares-cli/src/ingest-core.ts:665-665",
+    "packages/lares-cli/src/commands/act.ts:303-305",
+    "packages/lares-cli/src/commands/act.ts:313-314",
+    "packages/lares-cli/src/handle-carriage.ts:51-51",
+    "packages/lares-cli/src/store-door.ts:226-226",
+    "packages/lares-cli/src/roster-standing.ts:48-48"
+  ],
+  "ignorePatterns": [
+    "wikis",
+    "TiddlyWiki5",
+    "mempalace",
+    "VSCode-TW5-Syntax",
+    "automerge-repo",
+    "keyhive",
+    "folkjs",
+    "kowloon",
+    "elyncia",
+    "ftls",
+    "_osr",
+    "deploy",
+    "**/dist",
+    "**/dist-plugin",
+    ".stryker-tmp",
+    "reports"
+  ],
+  "tempDirName": ".stryker-tmp",
+  "reporters": [
+    "clear-text",
+    "json",
+    "html"
+  ],
+  "jsonReporter": {
+    "fileName": "reports/lares-cli-catalog/mutation.json"
+  },
+  "htmlReporter": {
+    "fileName": "reports/lares-cli-catalog/mutation.html"
+  },
+  "incremental": true,
+  "incrementalFile": "reports/lares-cli-catalog/stryker-incremental.json",
+  "timeoutMS": 30000,
+  "disableTypeChecks": "packages/lares-cli/src/**/*.ts",
+  "checkers": [],
+  "dashboard": {}
+}

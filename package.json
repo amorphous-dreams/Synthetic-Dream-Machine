@@ -30,6 +30,8 @@
   },
   "devDependencies": {
     "@lares/cli": "workspace:*",
+    "@stryker-mutator/core": "10.1.1",
+    "@stryker-mutator/vitest-runner": "10.1.1",
     "@types/node": "26.6.4",
     "acorn": "8.17.0",
     "concurrently": "10.0.6",

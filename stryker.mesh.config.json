@@ -1,0 +1,53 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "vitest",
+  "plugins": [
+    "@stryker-mutator/vitest-runner"
+  ],
+  "inPlace": false,
+  "concurrency": 4,
+  "vitest": {
+    "configFile": "packages/lararium-mesh/vitest.stryker.config.ts",
+    "pool": "forks"
+  },
+  "mutate": [
+    "packages/lararium-mesh/src/cap-compose.ts",
+    "packages/lararium-mesh/src/quorum-entry.ts"
+  ],
+  "ignorePatterns": [
+    "wikis",
+    "TiddlyWiki5",
+    "mempalace",
+    "VSCode-TW5-Syntax",
+    "automerge-repo",
+    "keyhive",
+    "folkjs",
+    "kowloon",
+    "elyncia",
+    "ftls",
+    "_osr",
+    "deploy",
+    "**/dist",
+    "**/dist-plugin",
+    ".stryker-tmp",
+    "reports"
+  ],
+  "tempDirName": ".stryker-tmp",
+  "reporters": [
+    "clear-text",
+    "json",
+    "html"
+  ],
+  "jsonReporter": {
+    "fileName": "reports/mesh/mutation.json"
+  },
+  "htmlReporter": {
+    "fileName": "reports/mesh/mutation.html"
+  },
+  "incremental": true,
+  "incrementalFile": "reports/mesh/stryker-incremental.json",
+  "timeoutMS": 30000,
+  "disableTypeChecks": "packages/lararium-mesh/src/**/*.ts",
+  "checkers": [],
+  "dashboard": {}
+}

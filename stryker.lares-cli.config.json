@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "vitest",
+  "plugins": ["@stryker-mutator/vitest-runner"],
+  "inPlace": false,
+  "concurrency": 4,
+  "vitest": { "configFile": "packages/lares-cli/vitest.stryker.config.ts", "pool": "forks" },
+  "mutate": ["packages/lares-cli/src/reality-tunnel/kinds.ts", "packages/lares-cli/src/reality-tunnel/engine.ts"],
+  "ignorePatterns": ["wikis", "TiddlyWiki5", "mempalace", "VSCode-TW5-Syntax", "automerge-repo", "keyhive", "folkjs", "kowloon", "elyncia", "ftls", "_osr", "deploy", "**/dist", "**/dist-plugin", ".stryker-tmp", "reports"],
+  "tempDirName": ".stryker-tmp",
+  "reporters": ["clear-text", "json", "html"],
+  "jsonReporter": { "fileName": "reports/lares-cli/mutation.json" },
+  "htmlReporter": { "fileName": "reports/lares-cli/mutation.html" },
+  "incremental": true,
+  "incrementalFile": "reports/lares-cli/stryker-incremental.json",
+  "timeoutMS": 30000,
+  "disableTypeChecks": "packages/lares-cli/src/**/*.ts",
+  "checkers": [],
+  "dashboard": {}
+}
