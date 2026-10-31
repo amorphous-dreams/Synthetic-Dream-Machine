@@ -254,7 +254,7 @@ describe("a removed device opens nothing sealed after its removal", () => {
     expect(outcomes.map((o) => o.did)).toEqual(["undelivered"]);
     expect(f!.seat.owedFor(BAG)).toEqual(["raise-1"]);
     // THE HOLDER REFUSES a seal under a head that precedes the owed removal, even with a signer in hand.
-    const ahead = await f!.seat.holder.sealBlob({ bagId: BAG, plaintext: utf8Bytes("x"), signer: f!.signer, owedActs: f!.seat.owedFor(BAG) });
+    const ahead = await f!.seat.holder.sealBlob({ bagId: BAG, plaintext: utf8Bytes("x"), signer: f!.signer, owedActs: () => f!.seat.owedFor(BAG) });
     expect("refusal" in ahead && ahead.refusal).toBe("roll-owed");
     // A session act whose signer the settle cannot use seals nothing either.
     const refusing = await f!.seat.seal({ bagId: BAG, plaintext: utf8Bytes("x"), signer: { certificate: f!.signer.certificate, sign: async () => ({ refusal: "signer-dropped" }) } });
@@ -270,6 +270,17 @@ describe("a removed device opens nothing sealed after its removal", () => {
     expect(await opens(c!, after.body.ref)).toBe("REFUSED:reference-unknown");
     expect(await opens(c!, before.body.ref)).toBe("sealed while c stood");
     void b;
+  });
+
+  it("A ROLL IN FLIGHT ALREADY BINDS A SEAL: the seat counts it owed from the moment it arrives, and the holder reads that inside its turn", async () => {
+    const { group, devices: [f, , c] } = await fleet(0x3a, ["f", "b", "c"]);
+    await seal(f!, "v1");
+    f!.signs = false;
+    const delivered = f!.seat.sink({ kind: "seat-roll", scope: SCOPE, edgeId: "edge-c", raiseCids: ["raise-9"], how: "revoked", seat: { group, member: c!.id } } as never).catch(() => "owed");
+    expect(f!.seat.owedFor(BAG)).toEqual(["raise-9"]);              // owed before the roll's own turn even ran
+    expect(await delivered).toBe("owed");
+    const ahead = await f!.seat.holder.sealBlob({ bagId: BAG, plaintext: utf8Bytes("x"), signer: f!.signer, owedActs: () => f!.seat.owedFor(BAG) });
+    expect("refusal" in ahead && ahead.refusal).toBe("roll-owed");
   });
 
   it("CONTROL: with no roll owed the session's seal proceeds under the head it holds", async () => {

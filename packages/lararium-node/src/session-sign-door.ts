@@ -35,8 +35,11 @@ interface Booking { readonly verb: string; readonly session: BookedSession }
 export class SessionSignBook {
   readonly #held = new Map<string, Booking>();
 
-  /** Book one call a session placed; the returned release drops this booking alone. */
+  /** Book one call a session placed; the returned release drops this booking alone. An id already booked keeps its
+   *  first booking: a second call under it (a retry, a sibling socket of the same face) books nothing, so no later
+   *  call re-routes an in-flight one to another session's signer. The seat's ledger runs one act per id. */
   hold(requestId: string, verb: string, session: BookedSession): () => void {
+    if (this.#held.has(requestId)) return () => {};
     const booking: Booking = { verb, session };
     this.#held.set(requestId, booking);
     return () => { if (this.#held.get(requestId) === booking) this.#held.delete(requestId); };

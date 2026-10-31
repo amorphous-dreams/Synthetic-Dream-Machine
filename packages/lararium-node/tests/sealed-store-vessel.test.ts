@@ -273,9 +273,12 @@ describe("a private body seals on a real founded vessel, end to end", () => {
     expect((err as { reason: string }).reason).toBe("signer-unavailable");
     expect(tree(sealedStoreDir(root))).toEqual([]);
     expect(tree(cadSealDir(root))).toEqual([]);
-    // A missing `bag`, and a body nobody staged, refuse before the holder gets asked.
+    // A missing `bag` refuses before the holder gets asked; with no session the staged tier never reads.
     await expect(bareVessel.run("sealed-seal", { text: BODY })).rejects.toThrow(/`bag` required/);
-    await expect(bareVessel.run("sealed-seal", { bag: BAG, cid: "ab".repeat(32) })).rejects.toThrow(/no staged body/);
+    await expect(bareVessel.run("sealed-seal", { bag: BAG, cid: "ab".repeat(32) })).rejects.toThrow(/signer-unavailable/);
+    // CONTROL: a session's ask reads the staged tier, and a body nobody staged refuses by name.
+    const withSession = await stand(st, root, { session: await proof() });
+    await expect(withSession.run("sealed-seal", { bag: BAG, cid: "ab".repeat(32) })).rejects.toThrow(/no staged body/);
   }, 120_000);
 });
 

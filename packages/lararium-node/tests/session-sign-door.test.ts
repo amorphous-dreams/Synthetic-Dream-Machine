@@ -53,6 +53,19 @@ describe("the session sign door answers from the session that placed the call", 
     expect(s.signed).toEqual([]);
   });
 
+  test("a second call under a booked id books nothing: the in-flight call keeps its own session's signer", async () => {
+    const book = new SessionSignBook();
+    const first = signer(), second = signer();
+    book.hold("req-1", "sealed-seal", { signer: first, anchor: NEXUS, subject: "subject-1" });
+    const releaseSecond = book.hold("req-1", "sealed-seal", { signer: second, anchor: NEXUS, subject: "subject-2" });
+    const door = book.door(() => CHAIN);
+    expect(await door({ op: "read", ask: "req-1", verb: "sealed-seal" })).toMatchObject({ subject: "subject-1" });
+    await door({ op: "sign", ask: "req-1", verb: "sealed-seal", payload });
+    releaseSecond();
+    expect(await door({ op: "read", ask: "req-1", verb: "sealed-seal" })).toMatchObject({ subject: "subject-1" });
+    expect([first.signed.length, second.signed.length]).toEqual([1, 0]);
+  });
+
   test("a released call answers nothing more: the booking lives for the call alone", async () => {
     const book = new SessionSignBook();
     const release = book.hold("req-1", "sealed-seal", { signer: signer(), anchor: NEXUS, subject: "subject-1" });

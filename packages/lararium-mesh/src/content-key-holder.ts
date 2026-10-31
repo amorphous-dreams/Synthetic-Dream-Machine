@@ -481,8 +481,9 @@ export class ContentKeyHolder {
     /** The raises the vessel counted whose removal roll still owes this bag (sealed-store road, step 2: a removed
      *  device opens nothing a vessel seals after it counts the raise). The head this seal writes under must follow
      *  every one, or the seal refuses `roll-owed` and seals nothing. A founding this seal makes owes none: its first
-     *  version wraps for the readers that stand now. */
-    readonly owedActs?: readonly string[] }): Promise<SealedBlob | HolderRefusal> {
+     *  version wraps for the readers that stand now. Read inside the holder's turn, so a roll that reached the
+     *  vessel after the caller looked still binds this seal. */
+    readonly owedActs?: () => readonly string[] }): Promise<SealedBlob | HolderRefusal> {
     return this.#inTurn<SealedBlob>(async () => {
       if (!isWellFormedText(args.bagId)) return refuse("bag-malformed");
       if (args.signer === null) return refuse("signer-unavailable");
@@ -499,7 +500,7 @@ export class ContentKeyHolder {
       const bag = bags.get(args.bagId)!;
       const at = await this.#head(bag, line, args.signer);
       if (isRefusal(at)) return at;
-      if (!founded) for (const act of args.owedActs ?? []) if (!line.lineage.followsRemoval(at.head, act)) return refuse("roll-owed");
+      if (!founded) for (const act of args.owedActs?.() ?? []) if (!line.lineage.followsRemoval(at.head, act)) return refuse("roll-owed");
       const key = line.keys.get(at.head)!;
       const sealed = sealPrivateBody(args.plaintext, { bagId: args.bagId, key }, random);
       if (!("body" in sealed)) return refuse("seal-refused", sealed.refusal);

@@ -180,8 +180,10 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
     // This island's own count of the fleet's acts answered these raises (`answerFleetSeatDuties`), so the
     // version a roll mints for them verifies against this seat's own evidence.
     for (const cid of seatRoll.raiseCids) answered.add(cid);
-    try { await roll(seatRoll); owed.delete(owedKey(seatRoll)); }
-    catch (err) { owed.set(owedKey(seatRoll), seatRoll); throw err; }
+    // OWED FROM THE MOMENT IT ARRIVES: a seal that reads the owed raises while this roll runs refuses ahead of it.
+    owed.set(owedKey(seatRoll), seatRoll);
+    await roll(seatRoll);
+    owed.delete(owedKey(seatRoll));
   };
   let settling: Promise<unknown> = Promise.resolve();
   const settle = (signer: RecordSigner | null): Promise<void> => {
@@ -209,7 +211,8 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
     holder, sink,
     async seal(args) {
       await settle(args.signer);
-      return holder.sealBlob({ ...args, owedActs: owedActs(args.bagId) });
+      // The holder reads the owed raises inside its own turn, so a roll that arrives after the settle still binds it.
+      return holder.sealBlob({ ...args, owedActs: () => owedActs(args.bagId) });
     },
     settle,
     owedFor: (bagId) => owedActs(bagId),

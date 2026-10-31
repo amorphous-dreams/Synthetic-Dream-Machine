@@ -808,12 +808,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       registry.register("sealed-seal", async (args, context) => {
         const seat = holderFor("sealed-seal");
         const bag = bagOf("sealed-seal", args);
+        // The session reads first: a place, foreign or absent session learns nothing of the cleartext-local tier.
+        const signer = await sessionOf("sealed-seal", context);
         const cid = typeof args["cid"] === "string" ? args["cid"] : "";
         const text = typeof args["text"] === "string" ? args["text"] : "";
         const plaintext = cid ? await sealedStore!.staged.read(cid) : text ? utf8Bytes(text) : null;
         if (plaintext === null) throw new Error(cid ? `[daemon] sealed-seal: no staged body at ${cid} in the cleartext-local tier.` : "[daemon] sealed-seal: `cid` (a staged body) or `text` (an inline body) required.");
         const history = args["history"] === "shareable" || args["history"] === "closed" ? args["history"] : undefined;
-        const signer = await sessionOf("sealed-seal", context);
         const sealed = await seat.seal({ bagId: bag, plaintext, signer, ...(history ? { founding: { history } } : {}) });
         if ("refusal" in sealed) return refusedBy("sealed-seal", sealed);
         return {
