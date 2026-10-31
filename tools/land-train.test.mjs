@@ -517,3 +517,21 @@ test("RED: a meme-only road commit with no run, over a green ancestor, passes; C
   const mx = await run(w4, { verdict: unreadAt(mixed) }, {}, ["a"]);
   assert.equal(mx.code, 3, mx.out);
 });
+
+test("RED: a lane head with no CI run reads GREEN when its nearest lane ancestor read CI GREEN and every commit since changed ignored paths alone; CONTROL: a code commit with no run, or a non-green ancestor, still refuses", async () => {
+  const lane = (w, file, msg) => { sh(w.work, "checkout", "-q", `${SPAN}--a`); const h = w.commit(w.work, file, "x\n", msg); sh(w.work, "push", "-q", "origin", `${SPAN}--a`); sh(w.work, "checkout", "-q", SPAN); w.heads.a = h; return h; };
+  const verdictFor = (head, rest) => async (b, s) => (s === head ? { ci: "unread", heldOut: "unread" } : rest);
+  const w = world(["a"]);
+  const meme = lane(w, "bags/lares/ha.ka.ba/note.mem", "a meme-only lane head");
+  const ok = await run(w, { verdict: verdictFor(meme, { ci: "green", heldOut: "unread" }) }, {}, ["a"]);
+  assert.equal(ok.code, 0, ok.out);
+  assert.match(ok.out, /lane a .*touches ignored paths only.*green ancestor/);
+  const w2 = world(["a"]);
+  const code = lane(w2, "tools/q.mjs", "a code lane head");
+  const refused = await run(w2, { verdict: verdictFor(code, { ci: "green", heldOut: "unread" }) }, {}, ["a"]);
+  assert.equal(refused.code, 8, refused.out);
+  const w3 = world(["a"]);
+  const m3 = lane(w3, "notes.md", "a docs-only lane head");
+  const red = await run(w3, { verdict: verdictFor(m3, { ci: "red", heldOut: "unread" }) }, {}, ["a"]);
+  assert.equal(red.code, 8, red.out);
+});
