@@ -480,9 +480,10 @@ export class ContentKeyHolder {
   sealBlob(args: { readonly bagId: string; readonly plaintext: Uint8Array; readonly signer: RecordSigner | null; readonly founding?: { readonly history: HistoryDeclaration };
     /** The raises the vessel counted whose removal roll still owes this bag (sealed-store road, step 2: a removed
      *  device opens nothing a vessel seals after it counts the raise). The head this seal writes under must follow
-     *  every one, or the seal refuses `roll-owed` and seals nothing. A founding this seal makes owes none: its first
-     *  version wraps for the readers that stand now. Read inside the holder's turn, so a roll that reached the
-     *  vessel after the caller looked still binds this seal. */
+     *  every one, or the seal refuses `roll-owed` and seals nothing. A founding takes no exemption: its first version
+     *  follows no removal, so no bag founds while a raise in its scope stays owed. Read twice inside the holder's
+     *  turn: before any key mints, and again at the commit point, after every signature and before the first byte
+     *  rests, so a raise counted while the seal signed still refuses it. */
     readonly owedActs?: () => readonly string[] }): Promise<SealedBlob | HolderRefusal> {
     return this.#inTurn<SealedBlob>(async () => {
       if (!isWellFormedText(args.bagId)) return refuse("bag-malformed");
@@ -493,6 +494,8 @@ export class ContentKeyHolder {
       let line = await this.#writeLine(bags.get(args.bagId));
       if (isRefusal(line)) {
         if (line.refusal !== "bag-unfounded") return line;
+        // A founding follows no removal: while a raise in the bag's scope stays owed, no first version mints.
+        if ((args.owedActs?.() ?? []).length > 0) return refuse("roll-owed");
         const made = await this.#found(bags, args.bagId, args.founding?.history ?? "closed", args.signer);
         if (isRefusal(made)) return made;
         line = made.line; founded = made.minted;
@@ -500,7 +503,8 @@ export class ContentKeyHolder {
       const bag = bags.get(args.bagId)!;
       const at = await this.#head(bag, line, args.signer);
       if (isRefusal(at)) return at;
-      if (!founded) for (const act of args.owedActs?.() ?? []) if (!line.lineage.followsRemoval(at.head, act)) return refuse("roll-owed");
+      const owesRoll = (): boolean => (args.owedActs?.() ?? []).some((act) => !line.lineage.followsRemoval(at.head, act));
+      if (owesRoll()) return refuse("roll-owed");
       const key = line.keys.get(at.head)!;
       const sealed = sealPrivateBody(args.plaintext, { bagId: args.bagId, key }, random);
       if (!("body" in sealed)) return refuse("seal-refused", sealed.refusal);
@@ -513,6 +517,9 @@ export class ContentKeyHolder {
       };
       const signed = await this.#sign("manifest", manifest, {}, args.bagId, line.locator, key, args.signer);
       if (isRefusal(signed)) return signed;
+      // THE COMMIT POINT. Every signature this seal waited on has landed; nothing of the value rests yet. A raise the
+      // vessel counted meanwhile binds it here: the head must still follow every owed raise, or nothing rests.
+      if (owesRoll()) return refuse("roll-owed");
       // A lock that landed while the manifest signed overwrote the key, so the record above never read back.
       await this.#rest(() => this.#ports.values.write(body.cid, body.ciphertext));
       const id = await this.#rest(() => store.putRecord(signed.carried));
