@@ -173,7 +173,7 @@ if FOUND=$(as_a vessel found --hearth --name adc-0 --skip-build --json 2>&1) && 
   A_AID=$(printf '%s' "$FOUND" | grep -oE '"nexusAid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
   if [ -n "$SEEDCARD" ]; then ok; else bad "the founding printed no seed card on a staged root"; fi
 else bad "$(printf '%s' "$FOUND" | tail -3 | tr '\n' ' ')"; fi
-run_a "A stands"                        vessel stand --install --skip-build
+run_a "A stands"                        vessel stand --init --skip-build
 unlock_root "$A_ROOT" A || exit 1
 assert_founded "$A_ROOT" A
 # A FAILED FOUNDING ENDS THE RUN. Many verbs below answer off disk, so a broken founding fills the report
@@ -216,7 +216,7 @@ step "B names its own persona"
 if B_MINT=$(as_b persona new 0 --name "$B_PROBE" --handle 'Independent Operator' --json 2>&1); then
   ok; B_PERSONA_KEY=$(printf '%s' "$B_MINT" | grep -oE '"verifyingKey":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
 else bad "$?"; printf '%s\n' "$B_MINT" | tail -4 | sed 's/^/      /'; B_PERSONA_KEY=""; fi
-run_b "B stands"                              vessel stand --install --skip-build
+run_b "B stands"                              vessel stand --init --skip-build
 unlock_root "$B_ROOT" B || exit 1
 if [ "$FAILED" -ne "$BEFORE" ]; then
   say "ABANDONED — B's founding failed; the handshake has no second vessel to cross to."

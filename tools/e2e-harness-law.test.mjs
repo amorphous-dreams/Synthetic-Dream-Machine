@@ -251,14 +251,14 @@ test("CONTROL: the door scanners read each planted bare door, and pass a gated o
   ].join("\n");
   assert.deepEqual(ungatedTs(ts, gated).map((h) => h.line), [1, 2, 3, 8, 9]);
   const sh = [
-    `run_a "A founds"   vessel stand --install`,                  // 1
+    `run_a "A founds"   vessel stand --init`,                  // 1
     `if ! LAR_ROOT="$TB" node "$REPO/bin/lares.mjs" vessel found >"$TB/init.log" 2>&1; then`, // 2
-    `run_b "B founds"   vessel stand --install --skip-build`,     // 3
+    `run_b "B founds"   vessel stand --init --skip-build`,     // 3
     `# lares vessel found resolves the true-name`,                // 4
     `say "① vessel stand — the Nexus founds"`,                    // 5
     `as_a vessel stop`,                                           // 6
     `bash -c "vessel found"`,                                     // 7 — a door inside a quoted bash -c
-    `eval "vessel stand --install"`,                              // 8 — a door inside a quoted eval
+    `eval "vessel stand --init"`,                              // 8 — a door inside a quoted eval
     `SUB=found`,                                                   // 9 — a binding, not itself a door
     `vessel "$SUB"`,                                               // 10 — the bound var standing in for the literal
     `lares vessel found # --skip-build`,                          // 11 — a --skip-build a comment alone carries

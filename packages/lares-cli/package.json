@@ -15,15 +15,18 @@
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json"
   },
   "dependencies": {
-    "@noble/ed25519": "3.2.0",
     "@lararium/memetic-frame": "workspace:*",
     "@lararium/mempalace": "workspace:*",
     "@lararium/mesh": "workspace:*",
     "@lararium/node": "workspace:*",
     "@lararium/sensorium": "workspace:*",
-    "@lararium/tw5": "workspace:*"
+    "@lararium/tw5": "workspace:*",
+    "@noble/ed25519": "3.2.0",
+    "smol-toml": "1.9.0"
   },
   "devDependencies": {
+    "@fast-check/vitest": "0.5.0",
+    "fast-check": "4.10.2",
     "tsx": "4.23.15",
     "vitest": "5.0.3"
   }

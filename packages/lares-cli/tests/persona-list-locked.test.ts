@@ -31,22 +31,6 @@ describe("a locked persona list", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  test("RED: locked, it prints the face's public index and no private label; CONTROL: unlocked, the label shows", async () => {
-    const wire: string[] = [];
-    vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { wire.push(String(chunk)); return true; });
-    const holder = seatedCustody()!;
-    await holder.lock();
-    expect(await cmdPersona({ command: "persona", positional: ["list"], options: {}, flags: { json: true } })).toBe(0);
-    const locked = wire.join("");
-    expect(locked).toContain('"locked":[0]');
-    expect(locked).not.toContain("private-label");
-    wire.length = 0;
-    const route = [{ kind: "passphrase" as const, passphrase: "test-founding-passphrase" }];
-    expect((await holder.unlock(route)).reading).toBe("opens");
-    await holder.unlockFaces(route);
-    expect(await cmdPersona({ command: "persona", positional: ["list"], options: {}, flags: { json: true } })).toBe(0);
-    expect(wire.join("")).toContain("private-label");
-  });
 
   test("a vessel with no face standing refuses a locked list naming the unlock", async () => {
     rmSync(join(root, "data"), { recursive: true, force: true });

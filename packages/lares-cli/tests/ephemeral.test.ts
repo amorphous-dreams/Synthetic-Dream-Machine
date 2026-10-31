@@ -25,8 +25,11 @@ function mkTranscript(dir: string, name: string, cwd: string): string {
 
 /** A transcript home OUTSIDE every scratch root (the "real project dir" stand-in). */
 function mkHome(): string {
-  // tmpdir would read as scratch — home the fixture under the repo's own tests dir instead.
-  const d = mkdtempSync(join(__dirname, ".eph-fixture-"));
+  // tmpdir would read as scratch, and the tests dir lies in the tracked tree: the fixture homes in the
+  // package's own ignored cache, outside both.
+  const cache = join(__dirname, "..", "node_modules", ".cache");
+  mkdirSync(cache, { recursive: true });
+  const d = mkdtempSync(join(cache, "eph-fixture-"));
   cleanups.push(d);
   return d;
 }

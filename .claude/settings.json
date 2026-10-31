@@ -1,4 +1,7 @@
 {
+  "claudeMdExcludes": [
+    "**/.claude/rules/lares-seed-seat.md"
+  ],
   "hooks": {
     "PreToolUse": [
       {

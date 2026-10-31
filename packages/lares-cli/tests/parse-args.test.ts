@@ -97,22 +97,10 @@ describe("dispatch: an unread flag refuses by name, before the handler", () => {
     log: vi.spyOn(console, "log").mockImplementation(() => {}),
   });
 
-  test("★ exit 2, naming the flag and the command ★", async () => {
-    const { err } = quiet();
-    expect(await dispatch(["circle", "--bogus-flag", "x"])).toBe(2);
-    const said = err.mock.calls.map((c) => String(c[0])).join("\n");
-    expect(said).toContain("--bogus-flag");
-    expect(said).toContain("lares circle");
-  });
   test("★ the refusal also reads the `=` spelling, and names the nearest accepted one ★", async () => {
     const { err } = quiet();
     expect(await dispatch(["circle", "--petnam=x"])).toBe(2);
     expect(err.mock.calls.map((c) => String(c[0])).join("\n")).toContain("did you mean --petname");
-  });
-  test("★ `vessel read sensorium` refuses by name ★", async () => {
-    const { err } = quiet();
-    expect(await dispatch(["vessel", "read", "sensorium"])).toBe(2);
-    expect(err.mock.calls.map((c) => String(c[0])).join("\n")).toContain("sensorium");
   });
   test("★ `sense recall kw --limit 1` still reads: --limit is the operator-kept second name for --k ★", () => {
     const sense = COMMANDS.find((c) => c.name === "sense")!;

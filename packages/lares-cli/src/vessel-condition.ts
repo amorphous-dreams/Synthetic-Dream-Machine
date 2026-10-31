@@ -69,7 +69,8 @@ export function vesselCondition(
       + "prose belongs in the message, where no caller keys on it",
     );
   }
-  if (input.state !== "standing" && CLAIMS_READY.test(input.message)) {
+  // The guard judges the house's own claim: a quoted span carries a cause the house echoes, never its claim.
+  if (input.state !== "standing" && CLAIMS_READY.test(input.message.replace(/"(?:[^"\\]|\\.)*"/g, '""'))) {
     throw new Error(
       `vessel-condition: a "${input.state}" condition may not carry a message claiming ready `
       + `("${input.message}") — a note that outranks its verdict is the fault this type exists to refuse`,
@@ -115,7 +116,7 @@ export function readVesselStanding(
     return vesselCondition({ state: "down", reason: "never-started", message: "nothing answered, and nothing was spawned" });
   }
   if (obs.refusal) {
-    return vesselCondition({ state: "degraded", reason: "uds-refused", message: `the verb socket refused to bind: ${obs.refusal}` });
+    return vesselCondition({ state: "degraded", reason: "uds-refused", message: `the verb socket refused to bind: ${JSON.stringify(obs.refusal)}` });
   }
   if (obs.attested && obs.accepting) {
     return vesselCondition({ state: "standing", reason: "accepting", message: "attested vessel-ready, and the verb socket answers" });

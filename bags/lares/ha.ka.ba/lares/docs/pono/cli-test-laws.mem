@@ -1,0 +1,109 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/cli-test-laws">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/cli-test-laws.mem"
+l-space   = "adjacent"
+role      = "the lares CLI's test architecture: the pattern integrities the suite defends, each tested as a law over inputs drawn from the live tables, its literal bug-finds kept as seeds, a known-positive control beside every zero; the census, the module shape, the migration, and the holes the laws name"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/cli-test-laws"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/cli-test-laws"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! The CLI's test laws ~ the pattern integrity, never the instance
+
+A fixed bug leaves a test that guards its one input. A suite of such instances guards what already broke and misses the next input of the same shape, and it reads green while a new door joins none of them. So the CLI's suite tests LAWS: the few pattern integrities the code keeps, each over every input the live tables declare, so a new door joins every law the day it lands. The literal cases fixed bugs left stay, as each law's SEEDS; and every law stands a known-positive CONTROL, so a law that cannot fail reads red.
+
+<<~/ahu>>
+
+<<~ ahu #/the-shape>>
+
+!! The shape of a law module
+
+* ''One law, one module'': `packages/lares-cli/tests/laws/<law>.law.test.ts`, its law stated in its header with its anchor here.
+* ''Inputs from the live tables'' (`tests/laws/harness.ts`): the command table, the help registry, the declared verb tables, the reality-tunnel's items. A table-driven law enumerates a finite table whole; a law over an unbounded input (bytes, a JSON or TOML document, an argv) draws generated inputs, with its seeds run first and a failing draw shrunk to its smallest case.
+* ''Seeds'': each literal case a fixed bug left, named for the bug's shape, run beside the generated inputs.
+* ''One seed for every draw'': `tests/laws/fixed-seed.ts` fixes the generators' seed, so a law reads the same on every machine and every run. `LARES_FC_SEED=<n>` names another seed, `LARES_FC_SEED=random` explores, and a failing draw prints the seed that replays it.
+* ''A control'': a known positive (a door that answers, two doors that differ, a writer that writes) the law must tell apart from its zero.
+* ''Behavior at the door'': a law asserts exit, stdout, stderr and the file tree a scratch root holds; a mock that mirrors the implementation proves nothing a law needs.
+
+<<~/ahu>>
+
+<<~ ahu #/the-laws>>
+
+!! The laws
+
+Census counts read rows (`test.each` counts once) across the suite's 135 files; a module named BUILT runs the law over the live tables.
+
+# ''L1 · An unknown door, verb or flag refuses by name, exit 2, before any handler runs'' (62 rows) ~ BUILT: `door-refuses-by-name.law.test.ts`.
+# ''L2 · Every declaration agrees with what the handlers read and expose'': accepts rows, boolean flags, the help registry, dispatch, the generated fixtures, the MCP mirror (111) ~ BUILT for usage spines against their verb tables (`usage-names-the-verbs.law.test.ts`); `accepts-table`, `parse-args`, `surface-projection` and `sense-help-parity` hold the rest and fold in as its modules.
+# ''L3 · Help and refusal render from one source, byte for byte, and lead with a usage spine'' (18) ~ BUILT: `help-is-the-refusal.law.test.ts`, through the real dispatcher: every help key's `--help`, and every door whose source refuses through the registry's lines.
+# ''L4 · An act writes its radius alone, and an observing verb writes nothing'' (26, with the founding-root and workspace-import rows) ~ BUILT for the reality-tunnel's read, verify and tend over scratch clones and homes, `vessel read` under a scratch root, and workspace imports (`radius-and-observe.law.test.ts`).
+# ''L5 · A convergent act changes nothing on a second run, and undo restores the recorded prior state exactly'' (26, with the undo rows) ~ BUILT for the reality-tunnel's kinds over generated documents (`reality-tunnel.law.test.ts`).
+# ''L6 · Foreign or changed bytes survive without explicit authorization'' (63) ~ BUILT for the reality-tunnel: a kind never turns parseable bytes unparseable, returns bytes it cannot own as it found them, and changes only the keys it owns.
+# ''L7 · A retry keeps attempt identity apart from effect identity'' (19) ~ BUILT: every served action verb, its counted fields tabled (`attempt-apart-from-effect.law.test.ts`).
+# ''L8 · Routing follows the declared destination: daemon, local, wiki'' (91) ~ BUILT for `act` (every action verb across witness and daemon slots) and `meme`'s seat plans (`routing-follows-declaration.law.test.ts`).
+# ''L9 · A named outcome keeps its cause and its exit class'' (168, the largest; 49 of its rows repeat an input) ~ BUILT over the live exit map and its three mappers (`outcome-keeps-cause.law.test.ts`); receipt, meme, ingest and shore doors stay open.
+# ''L10 · Readiness follows evidence, never reassuring prose'' (131) ~ BUILT: four verdict readers over their whole evidence spaces (`readiness-follows-evidence.law.test.ts`).
+# ''L11 · A content move requires unambiguous evidence'' (68) ~ BUILT: three pairing doors over generated vanish and arrival sets, order never moving a pairing (`moves-need-evidence.law.test.ts`).
+# ''L12 · Custody writes and private disclosures stay behind the authorized boundary'' (68) ~ BUILT: every CLI source module walked against the live custody doors, and the locked listing (`custody-stays-behind-the-door.law.test.ts`).
+# ''L13 · A refused act refuses whole: before any effect, and a faulting write leaves the standing bytes and no temp'' (18, folded from four proposals) ~ BUILT for the reality-tunnel's tend.
+# ''L14 · No wall clock decides an outcome; a deadline reads a monotonic clock'' (9, the house's no-global-now law) ~ BUILT for the reality-tunnel's kinds, under two clocks a year apart.
+# ''L15 · An output follows from its declared inputs alone, never from size, path or clock'' (58: projection, body shape, stamps, parsers, listings) ~ BUILT for the reality-tunnel's kinds; projection, body shape and stamps stay open.
+# ''L16 · Identity rides verified bytes: a signature verifies exactly its bytes, a round trip returns them verbatim, one artifact keeps one identity'' (24) ~ BUILT over generated payloads, receipts, cards, capture paths and stamps (`identity-rides-verified-bytes.law.test.ts`).
+
+<<~/ahu>>
+
+<<~ ahu #/the-migration>>
+
+!! The migration, law by law
+
+# ''Characterize'': the census tags each test with the law it implies (ORPHAN marks a test that guards one bug and no law).
+# ''Generalize'': a law module draws its inputs from the live tables and carries the cluster's distinct inputs as seeds.
+# ''Control'': the law reads red against its known positive before it reads green.
+# ''Retire'': a literal test leaves only when its law already covers its exact input. A test whose input no law covers stays, named, until a law does.
+# ''Measure'': mutation testing reads a law's strength; a mutant that survives names a missing generator or control, never a missing literal case.
+
+<<~/ahu>>
+
+<<~ ahu #/the-measure>>
+
+!! The measure ~ a law's strength reads as the mutants it kills
+
+A green suite proves its cases pass and never proves they could fail. `packages/lares-cli/tests/laws/mutants.json` names mutants, each one decision a law guards broken on purpose, with the law that must kill it and the law files that guard it; `tools/law-mutants-witness.sh` applies each in turn under `vitest.law-mutants.config.ts`, reads its named files red against it and every named file green against the source as it stands, and restores the source after every mutant and on an interrupt. A mutant that names no law file refuses the run, and a mutant whose find text the source does not hold reads STALE, so a refactor that moves the code moves the catalog with it. A mutant that survives names a missing law, generator or control, never a missing literal case: the first survivor named the key-ownership law, the second the floor law.
+
+Generated laws draw from `fast-check` through `@fast-check/vitest`, the literal cases run first as `examples`, and a failing draw shrinks to its smallest case. On their first runs the generated laws found four faults no literal case reached: a scalar where a table belongs crashed one TOML kind and made another write invalid TOML, a table named like a top-level key made the floor write a duplicate, and the floor's replace reached inside a table. The readiness law found a fifth: a refusal naming the word ready made the vessel reader throw, since the guard read an echoed cause as the house's own claim; the cause now rides quoted, and the guard reads around a quote.
+
+<<~/ahu>>
+
+<<~ ahu #/the-census>>
+
+!! The census
+
+* 1000 rows: 581 seeds, 230 repeats of an input their law already holds, 189 controls, 15 orphans.
+* Retired into the laws: 55 literal tests whose input a law now covers, three files whole (56 test blocks left their files; the scripted-wire CLEAR test returned); a test that keeps an assertion no law reaches (a hint's text, a wire's shape) stays until one does.
+* Two cold reads of each retirement against its law, a Codex and a Sonnet reader collided, name the guard a retirement drops; every such guard rides its law. L11: the scan's edited twin and its copy (its carriers each meeting a fate), the tree a scan leaves standing, and deletions named only when a pair holds. L7: every verb's wire fields. L8: each routed act's carriage, a canon-to-canon move, and `--in-wiki` over every slot. L9: a held store's own code, and the receipt an unknown outcome names. L10: each roster reading's count and cure, each refusing re-pave's count, the never-started reason, and a ready-claim refusal naming ready. L12: the locked list's public index, and doors that hold the seat's own. L16: each withheld carriage held to null, and a whole card under another kind refused. The scripted-wire CLEAR test stays beside L7, since only it reads the bytes the socket carries.
+* Smells: 206 prose-coupled assertions, 196 mocks that mirror the implementation, 100 giant fixtures, 60 source-regex reads, 29 timing waits, 24 tests that cannot fail, 23 that read or write outside a scratch root.
+
+<<~/ahu>>
+
+<<~ ahu #/the-holes>>
+
+!! The holes the laws name
+
+* ''Mutation testing at scale.'' Stryker 10 runs against this suite's vitest 5 and activates no mutant at runtime: every score read the same, killing only mutants that act at load. The named catalog stands in until a runner activates them; a probe of each Stryker release with vitest 5 settles it.
+* ''Tests that cannot fail.'' The census names 24: string-length checks, constants a test pins against itself, "mutation proof" blocks that re-implement the old shape and assert their own code, and a refusal test whose two exits read the same code.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;5HEQJlO53wWvJOf_9-b_ikJGrEyUO88xpvM7MxlAnyM
+
+<<^ code="&#x0004;" -> to="?">>

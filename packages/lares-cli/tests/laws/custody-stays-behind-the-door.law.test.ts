@@ -1,48 +1,29 @@
 /**
- * custody-write-census — NO FILE UNDER `packages/lares-cli/src` WRITES A CUSTODY ROW.
+ * L12 · CUSTODY WRITES AND PRIVATE DISCLOSURES STAY BEHIND THE AUTHORIZED BOUNDARY.
  *
- * A vessel's sealed rows change behind the custody door: a command sends an act frame, and a node function reads,
- * decides and seals under the one custody holder. A command file that wrote a row itself would write bare bytes
- * where a sealed row rests, or seal under a key session no door granted.
+ * Inputs: every module under `packages/lares-cli/src` (the live source tree, walked whole), read through
+ * an AST against doors derived from the carrier table and the custody modules (no list kept here); for
+ * disclosure, a locked listing per output mode. Seeds: the five planted roads a custody write takes
+ * (flat-row file, seat door, computed fs name, holder method, writer function) and the private-label
+ * listing the locked-list bug left. Control: each planted source reads red, a clean source reads clean,
+ * and an unlocked listing shows the label the locked one withholds.
+ * FOUNDS A VESSEL (hearth, scratch LAR_ROOT) in the disclosure block alone.
  *
- * EVERYTHING HERE DERIVES FROM THE CARRIER TABLE (`vault-carriers.ts`) AND THE CUSTODY MODULES, never from a list
- * kept in this file:
- *   · THE ROWS: every `hot` and `cold` row of `carrierTable()`.
- *   · THE ROW NAMES: the literal a row's own matcher spells (a flat row's file name), or the subtree it lives under.
- *   · THE WRITE DOORS: the `CustodyHolder` methods that write, update or remove a row (read off the interface);
- *     the custody seat's exported functions that call one; the sealed writer's exported functions that reach a
- *     `CustodyIo` mutator (read off that interface).
- *   · THE WRITER FUNCTIONS: for each row, the module its `writer` column names; in that module, every exported
- *     function that reaches a write door.
- *
- * THE LAW, per command file:
- *   C1  it calls no write door;
- *   C2  it names no writer function of any row's writer module (a command reaches those through an act alone);
- *   C3  it names no row beside a file-system write of its own.
- *
- * WHAT A CENSUS OF SPELLED NAMES CANNOT SEE, stated so nobody reads more into a green: a row's name assembled from
- * parts (`"transition-" + "pending.json"`), a write reached through a helper in another package that neither the
- * table nor the custody modules name, and a call whose name gets computed at run time. The sealed writer's own
- * rotation census catches what such a write leaves on disk: a bare file at a sealed row's path refuses the rotation.
- *
- * THE INSTRUMENT PROVES IT SEES (a zero here could read as blindness):
- *   K1  every hot or cold row yields a name to look for; every writer module that stands yields a writer function;
- *       the derived door set holds the seat's own doors;
- *   K2  PLANTED: a command source that writes a row's file, one that calls a seat door, one that calls a holder
- *       method, one that calls a writer function, each reads RED; a command source that reads rows through acts
- *       reads clean;
- *   K3  a row whose `writer` column names no node module stands UNWRITTEN: no source of any package writes a
- *       file beside its name.
+ * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { cpSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { parseAst } from "vitest/node";
-import { carrierTable } from "@lararium/node";
+import { carrierTable, seatedCustody } from "@lararium/node";
+import { cmdPersona } from "../../src/commands/persona.js";
+import { cmdVessel } from "../../src/commands/vessel.js";
 
-const PACKAGES = join(fileURLToPath(new URL(".", import.meta.url)), "..", "..");
+const PACKAGES = join(fileURLToPath(new URL(".", import.meta.url)), "..", "..", "..");
 const NODE_SRC = join(PACKAGES, "lararium-node", "src");
 const MESH_SRC = join(PACKAGES, "lararium-mesh", "src");
 const CLI_SRC  = join(PACKAGES, "lares-cli", "src");
@@ -166,7 +147,7 @@ const WRITE_DOORS: ReadonlySet<string> = new Set([...HOLDER_WRITES, ...SEAT_DOOR
 
 // ── derived from the carrier table ────────────────────────────────────────────────────────────────
 
-// The holder's own label row (face-owner) is written by the holder alone and is no row a command could name.
+// The holder's own label row (face-owner) is written by the holder alone, and no command can name it.
 const SEALED_ROWS = carrierTable().filter((r) => (r.custody === "hot" || r.custody === "cold" || r.custody === "face-hot" || r.custody === "face-cold") && !r.writer.startsWith("custody-holder"));
 
 /** The literal runs a matcher's source spells, with every regex construct read as a break. */
@@ -245,7 +226,14 @@ function violations(text: string): string[] {
   return out;
 }
 
-describe("the custody write census", () => {
+
+describe("L12 · custody writes stay behind the sealed door", () => {
+  const files = sourceFiles(CLI_SRC);
+
+  test("the walk reaches the live source tree whole", () => {
+    expect(files.length).toBeGreaterThan(50);
+  });
+
   test("K1 — the instrument sees: every sealed row yields a name, every writer module a writer function, and the doors hold the seat's own", () => {
     expect(SEALED_ROWS.length).toBeGreaterThan(20);
     expect(SEALED_ROWS.filter((r) => rowName(r) === null).map((r) => r.row)).toEqual([]);
@@ -259,42 +247,48 @@ describe("the custody write census", () => {
     expect(WRITER_MODULES.map((p) => relative(NODE_SRC, p))).not.toContain("custody-seat.ts");
   });
 
-  test("K2 — PLANTED: a command source that writes a custody row reads red, by each road; one that asks through acts reads clean", () => {
+  test.each(files.map((f) => [relative(CLI_SRC, f), f] as const))("%s writes no custody row outside the door", (_rel, path) => {
+    expect(violations(readFileSync(path, "utf8"))).toEqual([]);
+  });
+
+  describe("CONTROL: a planted source that writes a row reads red, by each road", () => {
     const flat = SEALED_ROWS.find((r) => r.row === "enroll-pending")!;
     const seatDoor = SEAT_DOORS[0]!;
     const writerFn = [...EVERY_WRITER_FUNCTION][0]!;
     const planted: Array<[string, string, RegExp]> = [
-      ["a command that writes a flat row's file",
+      ["a flat row's file beside a fs write",
         `import { writeFileSync } from "node:fs";\nimport { join } from "node:path";\nexport function f(home: string): void { writeFileSync(join(home, "${spell(rowName(flat)!)}"), "[]"); }\n`,
         /^C3 names the row enroll-pending/],
-      ["a command that calls a seat door",
+      ["a seat door call",
         `import { ${seatDoor} } from "@lararium/node";\nexport async function f(): Promise<void> { await (${seatDoor} as (...a: unknown[]) => Promise<unknown>)("identity", "x", new Uint8Array()); }\n`,
         new RegExp(`^C1 calls the write door ${seatDoor}$`)],
-      ["a command that reaches a file-system write by a computed name",
+      ["a computed fs name",
         `import * as fs from "node:fs";\nimport { join } from "node:path";\nexport function f(home: string): void { fs["writeFileSync"](join(home, "${spell(rowName(flat)!)}"), "[]"); }\n`,
         /^C3 names the row enroll-pending/],
-      ["a command that calls a holder method",
+      ["a holder method call",
         `export async function f(holder: { ${HOLDER_WRITES[0]}: (...a: unknown[]) => Promise<void> }): Promise<void> { await holder.${HOLDER_WRITES[0]}("identity", "x", new Uint8Array()); }\n`,
         new RegExp(`^C1 calls the write door ${HOLDER_WRITES[0]}$`)],
-      ["a command that calls a writer function",
+      ["a writer function named",
         `import { ${writerFn} } from "@lararium/node";\nexport const f = (): unknown => (${writerFn} as (...a: unknown[]) => unknown)();\n`,
         new RegExp(`^C2 names the writer function ${writerFn}$`)],
     ];
-    for (const [what, source, reads] of planted) {
+    test.each(planted)("%s reads red", (what, source, reads) => {
       const found = violations(source);
-      expect(found.length, what).toBeGreaterThan(0);
       expect(found.some((v) => reads.test(v)), `${what}: ${found.join(" · ")}`).toBe(true);
-    }
-    // CONTROL: a command that names a row in a comment, writes a file of its own and asks an act reads clean.
-    const clean = `// the crossing rests in ${spell(rowName(flat)!)}, behind the custody door\nimport { writeFileSync } from "node:fs";\nimport { sealedAct } from "../sealed-act-door.js";\nexport async function f(out: string): Promise<void> { writeFileSync(out, JSON.stringify(await sealedAct("crossing.state"))); }\n`;
-    expect(violations(clean)).toEqual([]);
-  });
-
-  test("C1-C3 — no file under packages/lares-cli/src writes a custody row", () => {
-    const files = sourceFiles(CLI_SRC);
-    expect(files.length).toBeGreaterThan(50);                                       // the walk found the command sources
-    const found = files.flatMap((path) => violations(readFileSync(path, "utf8")).map((v) => `${relative(CLI_SRC, path)}: ${v}`));
-    expect(found).toEqual([]);
+    });
+    test("a source that names a row in a comment and asks through acts reads clean", () => {
+      const clean = `// the crossing rests in ${spell(rowName(flat)!)}, behind the custody door\nimport { writeFileSync } from "node:fs";\nimport { sealedAct } from "../sealed-act-door.js";\nexport async function f(out: string): Promise<void> { writeFileSync(out, JSON.stringify(await sealedAct("crossing.state"))); }\n`;
+      expect(violations(clean)).toEqual([]);
+    });
+    test("a planted file on disk reads red through the same walk", () => {
+      const dir = mkdtempSync(join(tmpdir(), "lares-l12-plant-"));
+      try {
+        const p = join(dir, "planted.ts");
+        writeFileSync(p, planted[0]![1]);
+        expect(sourceFiles(dir)).toEqual([p]);
+        expect(violations(readFileSync(p, "utf8")).length).toBeGreaterThan(0);
+      } finally { rmSync(dir, { recursive: true, force: true }); }
+    });
   });
 
   test("K3 — a row whose writer column names no node module stands unwritten by every package's source", () => {
@@ -304,10 +298,51 @@ describe("the custody write census", () => {
     const found: string[] = [];
     for (const path of sources) {
       const text = readFileSync(path, "utf8");
-      // A cheap pass first: only a source that spells some unwritten row's name gets parsed.
       if (!unwritten.some((r) => { const name = rowName(r); return name !== null && text.includes(spell(name)); })) continue;
-      for (const row of rowsWrittenBeside(parse(text), unwritten)) found.push(`${relative(PACKAGES, path)}: names the row ${row} beside a file-system write, and the table names no module that writes it`);
+      for (const row of rowsWrittenBeside(parse(text), unwritten)) found.push(`${relative(PACKAGES, path)}: names the row ${row} beside a file-system write`);
     }
     expect(found).toEqual([]);
+  });
+});
+
+// A VESSEL IS FOUNDED HERE (hearth, scratch LAR_ROOT) so a locked listing has a private label to withhold.
+describe("L12 · a locked vault discloses no private label", () => {
+  vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
+  const LABEL = "private-label";
+  const PASS = "test-founding-passphrase";
+  let root: string;
+  let prior: string | undefined;
+  let wire: string[];
+  beforeEach(async () => {
+    prior = process.env["LAR_ROOT"];
+    root = mkdtempSync(join(tmpdir(), "lares-l12-locked-"));
+    process.env["LAR_ROOT"] = root;
+    wire = [];
+    vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { wire.push(a.map(String).join(" ")); });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(process.stdout, "write").mockImplementation((c: unknown) => { wire.push(String(c)); return true; });
+    cpSync(join(PACKAGES, "..", "genesis"), join(root, "genesis"), { recursive: true });
+    writeFileSync(join(root, ".lar-test-scratch"), "");
+    expect(await cmdVessel({ command: "vessel", positional: ["found"], options: { name: LABEL }, flags: { json: true, hearth: true } })).toBe(0);
+    wire.length = 0;
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+    if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  test.each([["json", { json: true }], ["text", { json: false }]])("persona list (%s) locked withholds the label and still names the public index; unlocked shows it (CONTROL)", async (_mode, flags) => {
+    const holder = seatedCustody()!;
+    await holder.lock();
+    expect(await cmdPersona({ command: "persona", positional: ["list"], options: {}, flags })).toBe(0);
+    expect(wire.join("\n")).not.toContain(LABEL);
+    if (flags.json) expect(wire.join("\n")).toContain('"locked":[0]');   // withholding never empties the listing
+    wire.length = 0;
+    const route = [{ kind: "passphrase" as const, passphrase: PASS }];
+    expect((await holder.unlock(route)).reading).toBe("opens");
+    await holder.unlockFaces(route);
+    expect(await cmdPersona({ command: "persona", positional: ["list"], options: {}, flags })).toBe(0);
+    expect(wire.join("\n")).toContain(LABEL);
   });
 });

@@ -42,7 +42,6 @@ import { cmdStand }     from "./stand.js";
 import { posturePlan, posturePlanNotice } from "./posture-plan.js";
 import { cmdSeed }     from "./seed.js";
 import { cmdRead, cmdStop } from "./read.js";
-import { cmdWire } from "./wire.js";
 import { cmdRotatePlace } from "./rotate-place.js";
 import { cmdStandForeground, cmdStandWithWeb, cmdRestart, cmdRiteRebuild, cmdRiteRefresh } from "./scripted.js";
 import { vesselDid } from "../env.js";
@@ -173,9 +172,6 @@ const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Su
   found: { summary: "mint the vessel identity, persona root, social planes and bootstrap (idempotent)", run: (a) => cmdFound(under(a)) },
   rotate: { summary: "rotate the place's online signer by its founding card — reads the card, prints and reads back the replacement", run: (a) => cmdRotatePlace(under(a)) },
   stand: { summary: "bring the daemon up and report — [--foreground] [--with-web] [--restart]", run: standVessel },
-  // THE ONE VESSEL VERB THAT REACHES OUTSIDE THE ROOT. Standing stays inside `LAR_ROOT`; wiring
-  // always touches the operator's home. Two radii, two verbs — a reader sees the reach in the name.
-  wire:  { summary: "point every AI surface on this machine at this vessel — idempotent, re-aims drift",  run: (a) => cmdWire(under(a)) },
   stop:  { summary: "halt the daemon on the port (graceful → forced); a free port reads as stopped",     run: (a) => cmdStop(under(a)) },
   seed:  { summary: "plant every bags/* holding back into its doc, kind-routed and diff-gated",         run: (a) => cmdSeed(under(a)) },
   read:  { summary: "inspect and start nothing — bootstrap, storage, port, seal, personas, quorum",      run: (a) => cmdRead(under(a)) },
@@ -195,7 +191,7 @@ function printVesselHelp(): void {
   console.log("    lares vessel rite founding            found · stand · seed");
   console.log("    lares persona new 0 --name '<label>'  light a face — this lifts it off the floor");
   console.log("    lares vessel stand                    stand again; the lift lands here");
-  console.log("    lares vessel wire                     point this machine's AI surfaces at it");
+  console.log("    lares home tend                       keep this device's homes on intent (another door, another radius)");
 }
 
 export async function cmdVessel(args: ParsedArgs): Promise<number> {

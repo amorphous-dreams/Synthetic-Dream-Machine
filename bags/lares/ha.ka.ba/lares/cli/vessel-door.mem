@@ -11,7 +11,7 @@ mana       = 15
 manao      = 15
 manaoio    = 14
 namespace  = "&#x2299;"
-role       = "The vessel door carries four primitives and one read, the wire and rite sub-doors, the founding · refresh · rebuild rites, retired spellings that refuse, and the witnesses that verify the surface."
+role       = "The vessel door carries four primitives and one read inside LAR_ROOT, the rotate and rite sub-doors, the founding · refresh · rebuild rites, retired spellings that refuse, and the witnesses that verify the surface."
 status-why = "the door stands, the compositions ride it as rites, every caller moved and every collapsed spelling refuses; walked by the founding and contract witnesses and the founding rehearsal harness"
 tags       = ["api/pono/meme", "lararium/api/lares-lararium-binding", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/cli/vessel-door"
@@ -76,6 +76,10 @@ daemon and its corpus form one island by every test this house applies, so they 
 plane with no door has nowhere to put new capability but the top level'' — which is why the verb count
 grows back wherever the law has not reached, and where to look when it does.
 
+''The vessel door writes `LAR_ROOT` and nothing else.'' The checkout and the operator's homes are islands of
+their own, each with its door: `lares repo` and `lares home` (<<~ loulou "lar:///ha.ka.ba/lares/cli/reality-tunnel#/the-radius-law">>).
+One invocation writes one radius, and a rite composes its own door's radius alone.
+
 <<~/ahu>>
 
 <<~ ahu #/the-primitives>>
@@ -93,7 +97,7 @@ Every substrate motion in this CLI composes from these, and no composition earns
 presence, storage size, port, seal state, personas, quorum).
 
 `build` compiles the workspace and stamps its source digest inside `rite refresh`; it names no vessel door.
-`stand` carries `--foreground`, `--with-web`, `--restart`, `--observe`, `--install`, and `--init` postures. The sub-doors `wire`, `rotate`, and `rite` point machine AI surfaces at the vessel, rotate the place's online signer by its founding card (it reads the old card and reads the replacement card back, and refuses beside a standing vessel), and run the named compositions. A faceless vessel presents its public place floor card and pin; each face holds its own Keyhive identity by atom. The sub-door `unbound` lists the documents this vessel minted that no binding names, through the daemon's own read; it removes nothing. `lares fleet join` carries a new vessel into one face's fleet.
+`stand` carries `--foreground`, `--with-web`, `--restart`, `--observe` and `--init` postures; `--init` founds where the root holds none. The sub-doors `rotate` and `rite` rotate the place's online signer by its founding card (it reads the old card and reads the replacement card back, and refuses beside a standing vessel), and run the named compositions. A faceless vessel presents its public place floor card and pin; each face holds its own Keyhive identity by atom. The sub-door `unbound` lists the documents this vessel minted that no binding names, through the daemon's own read; it removes nothing. `lares fleet join` carries a new vessel into one face's fleet.
 
 ''A hearth stood on a desk declares its origins and its shore.'' The compose files declare them for a container; a bare `lares vessel stand` after `vessel found --hearth` declares nothing, and the boot refuses with its cure in the line: `LAR_SAME_ORIGIN=true` (`origins.sameOrigin`) when every surface shares the relay face, else `LAR_WEB_ORIGIN` (`origins.web`) and `LAR_FLOW_ORIGIN` (`origins.flow`). A lararium whose shore stands undeclared stands and says so at boot: its Web origin answers no page until `LAR_PRONAOS_WEB_ROOT` and `LAR_PRONAOS_ARTIFACT_RECORD` name the built page and its record (the Founding Walk, W2 and W4, 2026-10-29).
 
@@ -270,6 +274,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sbgg5CGOxoZ38x5u_6vvbG9qjLOpb5KxaQPO-TaUrwI
+<<^ code="&#x0003;">>ni:///sha-256;-Aod5L69e_NLuCDrJLSosa-ieg4H0zpJSrTLb7MeVCc
 
 <<^ code="&#x0004;" -> to="?">>

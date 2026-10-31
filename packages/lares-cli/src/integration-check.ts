@@ -1,7 +1,7 @@
 /**
  * integration-check — verify (and, on demand, install) the mempalace integration
  * that `lares vessel stand` depends on. The CHECK is cheap and runs on every stand; the
- * INSTALL is one-time, behind `--install`, and touches the foundation.
+ * INSTALL is one-time, behind `lares mempalace install`, and touches the foundation.
  *
  * mempalace is a READ-ONLY sidecar submodule; we never edit it, only ensure it's
  * present and runnable so the witness organ is reachable.
@@ -111,7 +111,7 @@ export function checkMempalaceIntegration(): IntegrationReport {
         holderOk = probe.status === 0;
         holderDetail = holderOk
           ? `${py} -m mempalace.mcp_server importable`
-          : "holder deps absent — `lares vessel stand --install` (pip install -e ./mempalace)";
+          : "holder deps absent — `lares mempalace install` (pip install -e ./mempalace)";
       }
     } catch {
       /* leave the not-found default */

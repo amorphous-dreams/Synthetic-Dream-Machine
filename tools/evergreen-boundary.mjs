@@ -44,12 +44,10 @@ import { fileURLToPath } from "node:url";
 
 export const RULES = ["version", "clock", "narration", "old-shape", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history"];
 /** Today's measured open debt, per rule. RATCHET: each number may only ever come DOWN. */
-export const CEILINGS = { version: 58, clock: 56, narration: 181, "old-shape": 0, "retired-test": 6, "upgrade-delete": 0, "canon-history": 99, "canon-dated-history": 1 };
+export const CEILINGS = { version: 58, clock: 56, narration: 177, "old-shape": 0, "retired-test": 6, "upgrade-delete": 0, "canon-history": 99, "canon-dated-history": 1 };
 export const EXCEPTIONS = [
   { rule: "version", file: "packages/lararium-mesh/src/domains.ts", match: "const frozen =", reason: "The frozen builder preserves live signing domain bytes under the domain registry witness." },
   { rule: "version", file: "packages/lararium-browser/src/browser-vessel-identity.ts", match: "const IDB_VERSION", reason: "IndexedDB's open call takes a numeric version argument; the browser API names it." },
-  { rule: "version", file: "packages/lares-cli/src/copilot-wire.ts", match: "interface HooksFile { version?: number;", reason: "The Copilot CLI's hooks file carries its own version key; the upstream tool owns that schema." },
-  { rule: "version", file: "packages/lares-cli/src/copilot-wire.ts", match: "{ version: 1, hooks: {} }", reason: "A fresh Copilot hooks file opens at the version its upstream schema names." },
   { rule: "clock", file: "packages/lararium-tw5/src/wiki-draft-handlers.ts", match: "const cutoffMs =", reason: "The prune-stale report lists idle drafts for a person to read; the clock picks what the report shows, never what leaves, since nothing here prunes (operator ruling 2026-10-18)." },
   { rule: "clock", file: "packages/lararium-tw5/src/wiki-draft-handlers.ts", match: "const daysIdle =", reason: "The prune-stale report shows each draft's idle days to a person; the reading decides nothing (operator ruling 2026-10-18)." },
   { rule: "clock", file: "tools/browser-ci-join.mjs", match: "Date.now() >= deadline", reason: "The join reader bounds only its own wait for a host response." },

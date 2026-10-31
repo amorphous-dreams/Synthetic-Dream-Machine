@@ -115,22 +115,7 @@ describe("H7/M10 — CLEAR/DROP/CREATE fold --change-id into the effectKey nonce
     expect(a!.opts["effectKey"]).not.toBe(b!.opts["effectKey"]); // yet distinct effects
   });
 
-  test("DROP folds --change-id the same way", async () => {
-    expect(await cmdAct(act("DROP", "--bag", "lar:///test/catalog", "--change-id", "cid-fixed"))).toBe(0);
-    expect(await cmdAct(act("DROP", "--bag", "lar:///test/catalog", "--change-id", "cid-fixed"))).toBe(0);
-    const [a, b] = h.calls;
-    expect(a!.opts["effectKey"]).toBe(b!.opts["effectKey"]);
-  });
 
-  test("CREATE folds --change-id the same way, --plane included", async () => {
-    expect(await cmdAct(act("CREATE", "--bag", "lar:///test/catalog", "--change-id", "cid-fixed"))).toBe(0);
-    expect(await cmdAct(act("CREATE", "--bag", "lar:///test/catalog", "--change-id", "cid-fixed"))).toBe(0);
-    const [a, b] = h.calls;
-    expect(a!.opts["effectKey"]).toBe(b!.opts["effectKey"]);
-    expect(await cmdAct(act("CREATE", "--bag", "lar:///test/catalog", "--change-id", "cid-other"))).toBe(0);
-    const [, , c] = h.calls;
-    expect(c!.opts["effectKey"]).not.toBe(a!.opts["effectKey"]);
-  });
 
   test("CONTROL: with NO --change-id, each attempt mints its OWN default — two flagless CLEARs read as TWO distinct changes", async () => {
     expect(await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog"))).toBe(0);

@@ -88,7 +88,7 @@ const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | nu
   "trial-run": cmdTrialRun,
   // `setup` STANDS the sovereign organs, and founding never reaches it (operator ruling).
   // A vessel founds and serves without a single sensorium, so standing one rides its own act — on the
-  // door that already owns every other thing done to a sensorium. Folding it into `vessel stand --install`
+  // door that already owns every other thing done to a sensorium. Folding it into `vessel stand --init`
   // would make the memory tooling read as part of the base install.
   setup:     cmdSenseSetup,
   recall:    cmdRecall,

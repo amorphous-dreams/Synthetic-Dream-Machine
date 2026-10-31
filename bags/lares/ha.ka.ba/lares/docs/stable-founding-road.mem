@@ -41,7 +41,7 @@ its own carrier, and this carrier points there.
 !! Cold start ~ what a cold session reads, runs and obeys
 
 !!! Read, in this order
-# <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>, the boot seed; then this carrier, top to bottom.
+# <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>, the boot seed, which every host seats whole at turn 1 by reference (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seed-seat">>); then this carrier, top to bottom.
 # <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> before the first commit: which session holds which ground, and the commit isolation that guards hands inside one session.
 # <<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">> before the first test or wire: the red-first procedure in eight moves, the ladder for wiring a module that stands unreached, the instruments that read green while they lie, and the working agreements. Before any grammar work, <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/grammar-watch">>.
 # Bring every ruling #/open names to the operator before a lane builds against it.
@@ -61,7 +61,7 @@ its own carrier, and this carrier points there.
 
 !!! Steps
 # `export LAR_ROOT=~/.lares-scratch/<lane>/root` before any in-tree boot or any `lares` command that touches the store. `LAR_ROOT` moves the store, the bags root and every projection mirror root; `LAR_BAGS` alone moves only the bags root, and the projection still writes the tracked `bags/` and `wikis/`. A staged e2e vessel takes its own scratch `LAR_ROOT` and no global `LAR_BAGS`. One `lares meme normalize|check` reads files and needs only a scratch `LAR_BAGS`.
-# `LAR_ROOT` leaves these homes where they stand: `~/.mempalace` (the destructive `mempalace repave` among its readers), `~/.venv`, `~/.local/bin`, and the harness homes `~/.claude`, `~/.codex`, `~/.copilot`. A `vessel stand --codex` under a scratch root still writes the operator's real harness home.
+# `LAR_ROOT` leaves these homes where they stand: `~/.mempalace` (the destructive `mempalace repave` among its readers), `~/.venv`, `~/.local/bin`, and the harness homes `~/.claude`, `~/.codex`, `~/.copilot`. `lares home` writes those homes under any `LAR_ROOT`, so a lane never runs `lares home tend`; `lares vessel` writes the scratch root alone.
 # Build: `pnpm install --frozen-lockfile` only where a lead approved an install, then `pnpm -r build`, then `pnpm --filter @lararium/tw5 build:tw5-vendor` (the TW5 core blob that `head-parity` and the plugin smoke need), then `node tools/stamp-build.mjs`. A fresh `git worktree` holds empty submodules; populate them before building there.
 # ''A founding wants a human route on a TTY.'' With no TTY it refuses `CredentialTtyRefusal`, and no flag or environment variable carries a credential. A harness founds through the test door: `tools/test-scratch-marker.mjs` stages the root, `tools/seed-test-custody.mjs` names the published test route, then `lares vessel found --skip-build`; `tools/unlock-test-custody.mjs` opens a marked scratch root. An agent may read vessel state and hand the operator the next founding command as text; the operator performs each founding and custody act.
 # ''Every boot rests at the floor.'' A verb that needs sovereign state refuses at a standing floor and names `lares vault unlock`. A harness that reads the first `gate key:` line of a log reads the carriage relay's key where a relay stands.
@@ -547,7 +547,7 @@ Remaining behavior, proof, interface and later-plane work after the second-seat 
 
 !!! The rows
 
-* `G6` The evergreen sweep's remainder on held ground: stale prose, back-compat wording and tolerant readers in files other lanes hold, each named with its owner in the ground lane's shape file (`open-node-vessel.ts`, `open-browser-vessel.ts`, `nexus-seal-seed.ts`, `seed-wrap-prf.ts`, the tolerant readers in `ingest-core.ts`, `lar-uris.ts`, `mesh-palace.ts`); `cleanup-days.ts` stays unlocated. G; the false source comments ride the code lane of #/side-lanes.
+* `G6` The evergreen sweep's remainder on held ground: stale prose, back-compat wording and tolerant readers in files other lanes hold, each named with its owner in the ground lane's shape file (`open-node-vessel.ts`, `open-browser-vessel.ts`, `nexus-seal-seed.ts`, `seed-wrap-prf.ts`, the tolerant readers in `ingest-core.ts`, `lar-uris.ts`, `mesh-palace.ts`). G; the false source comments ride the code lane of #/side-lanes.
 * `G8` Measures. The per-verb flush stands measured by `tools/flush-bench.mjs`, a flush microbenchmark over the 443 resident carriers (porch, PR #105); its reading rests in the porch kit, never here. Owed: pack-PIN recursion stands unbuilt, and `assertBodyIndexTier` gains its production caller with the body-index writer. G.
 * `G18` The shore: the mode row never moves. G or B.
 * `G19` Canon sweeps. The porch read the shore surface's carriers, the test door's scratch marker, the browser surface's secure-context law and `secure-context.mem#/behind-the-terminator` against the code and harbor's law, and found them agreeing (PR #104). Owed: `kahu.mem` and `lamplighters.mem` on what the code holds, which waits on the operator's cadence-share intent (#/open). G.
@@ -822,6 +822,8 @@ Each step names the commits that hold it, as pointers into git.
 * ''Early starts beside the chain'': the node, CLI and tool fixtures funnel of train K.
 * ''Band-ladder residue'': one five-band ladder, the `lar_feedback` output field name. It rides the Sensorium's wait, and a frame inside it may heal at any time.
 * ''The capture lane's era ruling'': #/open.
+* ''The seed seat's open research'': the hosts it seats stand measured; scout quality, compaction, the linkless checkout, VS Code, Copilot's cloud surfaces and the seats outside the clone stand open (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seed-seat#/the-research">>).
+* ''The CLI's test laws'': the lares CLI's suite re-cut as sixteen laws over the live tables, its literal bug-finds kept as seeds and its strength read by named mutants; every law stands built for at least one domain, and the doors each law has yet to reach stand named in its row (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws">>).
 * ''DreamDOM, train D'' (operator ruling, 2026-10-16: DreamDOM names the superset of cameras, every root template over every document sink across the one engine per wiki). The model stands whole in <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>; its phases `D0` to `D7` and rows `D1` to `D17` read in <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>, and this carrier keeps no copy of them. `F8`'s control-event leg rides the roadmap's camera-contract phase.
 * ''Sealed-store step 3'': sealed Repo storage values, hydration checked against the session's face, and the fresh base a from-now admission needs. A face's own names ride its persona plane only once that plane's rest seals, so `lares persona sync` carries nothing until this step lands. It waits on a production session signer (the wire cutover's caller) and on ONE FACE (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>).
 
@@ -919,6 +921,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7CBeWrKO_RZyGAj7N526XBC-C5UZ5MMCtdUWldOsBzc
+<<^ code="&#x0003;">>ni:///sha-256;D0XDeXsW4-GjLwtT-54i3PfTq3Q_QpWnyFWKky-4KNQ
 
 <<^ code="&#x0004;" -> to="?">>

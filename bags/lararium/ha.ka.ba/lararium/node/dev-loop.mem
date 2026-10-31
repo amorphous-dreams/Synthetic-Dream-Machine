@@ -45,7 +45,7 @@ Ordered by how much they touch — reach for the //least// that fixes your case:
 <<~ has Cure rebuild "after/DEP-BUMP does/`lares vessel rite rebuild` — stop the incumbent + re-bake the genesis engine under current deps + serve ~ NO wipe, identity-safe (the serde-skew cure)">>
 <<~ has Cure foreground "after/boot-only does/`lares vessel stand --foreground` — run the dist node, fail-fast ~ no convergence, no rebuild">>
 <<~ has Cure founding "after/nothing-stands does/`lares vessel rite founding` — found · stand · seed, halting at the first step that refuses">>
-<<~ has Cure stand "after/standup does/`lares vessel stand` — attach when the published standing matches the face on disk, re-stand when it differs, or start detached when down; REPORT and hydrate; `--init` founds and wires every AI surface, while `lares vessel wire [--claude|--codex|--copilot|--vscode]` aims surfaces separately">>
+<<~ has Cure stand "after/standup does/`lares vessel stand` — attach when the published standing matches the face on disk, re-stand when it differs, or start detached when down; REPORT and hydrate; `--init` founds where the root holds none and writes `LAR_ROOT` alone, while `lares home tend` keeps the operator's homes">>
 
 ''The gap `refresh` closes:'' no other dev-loop verb compiles — none runs `pnpm build`. The island
 workers spawn from compiled `.js` siblings (a tsx-source run = a half-dead vessel: port bound, worker
@@ -119,6 +119,6 @@ never a default; a `REPO_ROOT` default would resolve `larHome()` to the repo and
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7iWxflWdXDnKnijNQSAY_f_FR4KFrOkVoH5j_x_uepo
+<<^ code="&#x0003;">>ni:///sha-256;hSCX6Qlr1WPGMLX_CYMDz23ijTaGhogsqpirQi-D0Jw
 
 <<^ code="&#x0004;" -> to="?">>

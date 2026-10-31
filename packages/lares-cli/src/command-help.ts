@@ -13,7 +13,7 @@
  * through `helpLines`, so the refusal and `--help` render identical bytes. A module holding its own copy
  * splits the two, and `tests/help-door-meme.test.ts` welds that split shut.
  *
- * A KEY MAY NAME A SUB-DOOR. `"vessel wire"` keys the sub-verb's own entry; the dispatcher prefers the
+ * A KEY MAY NAME A SUB-DOOR. `"<door> <sub>"` keys the sub-verb's own entry; the dispatcher prefers the
  * longer key when the positional matches, so a sub-door's flags reach the reader instead of its parent's.
  *
  * PURE DATA, SO ANY VESSEL CAN HOLD IT. This module imports nothing — no `node:fs`, no environment read.
@@ -175,6 +175,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   sensorium: {
+    usage: "usage: lares sensorium <run|open|query|ls|keep|dissolve|name|names|propose-name|accept-name> …",
     synopsis:
       "The source-neutral sensorium surface. `run` / `open` ingest a path into a scratch sensorium. " +
       "`run` is ephemeral-DEFAULT: open → ingest → analyze → DISSOLVE on exit (success OR error). `open` " +
@@ -209,6 +210,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   mempalace: {
+    usage: "usage: lares mempalace <install|setup|harvest|repave|status|quiesce|resume> [flags]  ·  lares mempalace <vendored verb> …",
     synopsis:
       "THE GUEST COMPARATOR'S DOOR (the sovereign sensorium lives at `lares sense`). The guest ~/.mempalace " +
       "is the vendored vanilla nakama store — a clean comparator, a SEPARATE causal island the vessel never " +
@@ -234,6 +236,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   hooks: {
+    usage: "usage: lares hooks <pause|resume|status>",
     synopsis:
       "The hook-lever on its own: `pause` / `resume` / `status` the capture + ingest hooks by writing / " +
       "removing a marker file the hook scripts check and NO-OP on when present. Lets a migration or a " +
@@ -301,6 +304,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     meme: "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite",
   },
   vessel: {
+    usage: "usage: lares vessel <unbound|found|rotate|stand|stop|seed|read|rite> [flags]",
     synopsis:
       "THE VESSEL DOOR — one namespace over the vessel's own causal island. Four primitives and one " +
       "read: `found` mints identity + bootstrap · `stand` brings the daemon up and reports · `stop` " +
@@ -310,8 +314,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "Advancing the genesis composition is a MESH act — `nexus kahuli` — never a vessel door.",
     examples: [
       "lares vessel stand                      # idempotent boot, attach-or-start, and REPORT",
-      "lares vessel wire                       # point every AI surface here (re-aims drift)",
-      "lares vessel wire --claude              # ~/.claude alone",
       "lares vessel read --palaces             # health, plus the palace-organ table",
       "lares vessel seed --apply --yes         # plant every holding (idempotent)",
       "lares vessel rite refresh               # the post-code-change cure: build · stop · stand",
@@ -321,10 +323,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "stand --with-web     node + Vite web surface together",
       "stand --restart             free the port, then serve the current vessel",
       "stand --observe      REPORT ONLY — withholds the standing half; outranks every acting flag",
-      "stand --install      found a vessel that holds none, then link `lares` globally — the founding runs first and stays inside LAR_ROOT; the mempalace sidecar has its own door, `mempalace install`",
-      "stand --init         founds the same, AND wires every AI surface (reaches ~/.claude etc; `vessel wire` is the door for that alone)",
-      "wire [--claude|--codex|--copilot|--vscode]   aim that surface here; no flag aims them all",
-      "wire --observe       REPORT what a wiring would touch; write nothing",
+      "stand --init         found a vessel where the root holds none — writes LAR_ROOT alone; the operator's homes ride `lares home`, the mempalace sidecar `mempalace install`",
       "read --palaces       the palace-organ health table (mempalace · structure · form · mesh)",
       "rite <petname>       founding · refresh · rebuild — the pet-named cap-stacks",
     ],
@@ -333,6 +332,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   sense: {
+    usage: "usage: lares sense <search|relate|structure|status> [--lens <plane>]  ·  lares sense <lifecycle verb> …",
     synopsis:
       "THE SOVEREIGN SENSORIUM'S ONE DOOR (the guest comparator lives at `lares mempalace`). READ four " +
       "verbs with the plane as a `--lens` parameter (search · relate · structure · status), so a new plane " +
@@ -745,32 +745,74 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["lares persona list", "lares vessel read"],
   },
 
-  "vessel wire": {
-    usage: "usage: lares vessel wire [--claude] [--codex] [--copilot] [--vscode] [--observe]",
+  "vessel rite": {
+    usage: "usage: lares vessel rite <founding|refresh|rebuild>",
     synopsis:
-      "Point every AI surface on this machine at this vessel. Idempotent: an aligned wire passes untouched, " +
-      "a DRIFTED one re-aims, an absent one gets written. THIS IS THE ONE VESSEL VERB THAT REACHES OUTSIDE " +
-      "THE VESSEL ROOT — `stand` never does.",
+      "The pet-named compositions over the vessel primitives. A rite composes ONE door's radius: each step writes " +
+      "LAR_ROOT and nothing else, so a machine's onboarding reads as three acts at three doors (`lares repo tend` · " +
+      "`lares home tend` · `lares vessel rite founding`).",
     examples: [
-      "lares vessel wire                # tend every surface, plus this repo's own adapters",
-      "lares vessel wire --claude       # ~/.claude alone",
-      "lares vessel wire --observe      # REPORT what a wiring would do; touch nothing",
+      "lares vessel rite founding        # found · stand · seed",
+      "lares vessel rite refresh         # the post-code-change cure: build · stop · stand",
+      "lares vessel rite rebuild         # re-derive · stand",
+    ],
+    flags: ["founding   found · stand · seed", "refresh    build · stop · stand", "rebuild    re-derive · stand"],
+    next: ["lares vessel read", "lares home read"],
+    meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
+  },
+
+  repo: {
+    usage: "usage: lares repo <read|tend|verify|undo> [--staged] [--force] [--probe] [--json]",
+    synopsis:
+      "THE CHECKOUT'S DOOR — this checkout holds its declared reality tunnel (lar:///ha.ka.ba/lares/cli/reality-tunnel): the seed's links " +
+      "and CLAUDE.md's import, the scouts that carry the seed, the files Copilot reads beside CLAUDE.md, Codex's doc cap, the " +
+      "operator rule's exclude. `read` answers both diffs (live against the tunnel, live against what the house last wrote) and " +
+      "writes nothing; `tend` writes only on difference and records a generation; `verify` reads what the hosts loaded; " +
+      "`undo [gen]` restores one. Exit: 0 aligned · 1 drift · 2 usage · 3 foreign bytes refused · 4 a needed piece absent.",
+    examples: [
+      "lares repo read                  # every item, both diffs; writes nothing",
+      "lares repo read --staged         # what the commit carries (the pre-commit gate reads this)",
+      "lares repo tend                  # converge; the root build runs this",
+      "lares repo verify --probe        # Claude's /context, Codex's final hash, Copilot's sources",
+      "lares repo undo                  # restore the latest tend generation",
     ],
     flags: [
-      "no flag        tend every surface, plus this repo's own adapters",
-      "--claude       ~/.claude — mempalace MCP + the wake/ingest hooks",
-      "--codex        ~/.codex",
-      "--copilot      ~/.copilot",
-      "--vscode       every VS Code root present (stable + Insiders, remote + local)",
-      "--observe      REPORT what a wiring would do; touch nothing",
+      "--staged       read the index rather than the working tree (read only)",
+      "--force        take bytes the house does not own; the ledger keeps them",
+      "--probe        verify by asking each host (spends model calls)",
     ],
-    next: ["lares vessel read --palaces", "lares vessel stand"],
-    meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
+    next: ["lares home read", "lares repo verify"],
+    meme: "lar:///ha.ka.ba/lares/cli/reality-tunnel",
+  },
+
+  home: {
+    usage: "usage: lares home <read|tend|verify|undo> [--brief] [--force] [--probe] [--yes] [--json]",
+    synopsis:
+      "THE OPERATOR'S HOMES' DOOR — every home the device carries (the native home, and the Windows profile under WSL) " +
+      "holds its declared reality tunnel: each harness's memory guard at its maximum (Claude's cleanupPeriodDays, Codex's saved " +
+      "history, Copilot's prompt history), the lares MCP seats and hooks aimed at the main clone, the seed rule, `lares` on " +
+      "the path. `tend` names every path it will write and asks first (--yes without a terminal). No door lowers a memory " +
+      "guard. Exit: 0 aligned · 1 drift · 2 usage · 3 foreign bytes refused · 4 a needed piece absent.",
+    examples: [
+      "lares home read                  # every home's items, both diffs; writes nothing",
+      "lares home read --brief          # one line (the wake hook prints it at turn 1)",
+      "lares home tend                  # converge every home; asks before writing",
+      "lares home verify                # the last Claude session loaded the seed once",
+      "lares home undo 3                # restore generation 3",
+    ],
+    flags: [
+      "--brief        one line: every item holds, or which stand off the tunnel",
+      "--force        take bytes the house does not own; the ledger keeps them",
+      "--probe        verify by asking each host (spends model calls)",
+      "--yes          tend without asking (a terminal-less caller)",
+    ],
+    next: ["lares home verify", "lares repo read"],
+    meme: "lar:///ha.ka.ba/lares/cli/reality-tunnel",
   },
 };
 
 /**
- * The door key for a `--help` call: the SUB-DOOR entry when one stands (`vessel wire`), the command
+ * The door key for a `--help` call: the SUB-DOOR entry when one stands (`"<door> <sub>"`), the command
  * otherwise. Longest match wins, so a sub-verb's own flags reach the reader instead of its parent's.
  */
 export function helpDoor(command: string, positional: readonly string[]): string {

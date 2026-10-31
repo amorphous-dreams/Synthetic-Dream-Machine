@@ -20,6 +20,6 @@ export default defineConfig({
     isolate: true,
     environment: "node",
     include: ["tests/**/*.test.ts"],
-    setupFiles: ["tests/support/found-route.ts", "tests/support/scratch-custody-setup.ts"],
+    setupFiles: ["tests/support/found-route.ts", "tests/support/scratch-custody-setup.ts", "tests/laws/fixed-seed.ts"],
   },
 });

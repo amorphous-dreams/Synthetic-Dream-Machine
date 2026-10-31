@@ -225,9 +225,9 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: option-bearing host stand routes to the CLI`, async () => {
-    const r = await run(shim, ["vessel", "stand", "--install"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    const r = await run(shim, ["vessel", "stand", "--init"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --install/);
+    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --init/);
   });
 
   test(`${name}: vessel stop stops the container from the host, never from inside it`, async () => {

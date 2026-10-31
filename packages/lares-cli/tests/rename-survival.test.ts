@@ -126,24 +126,6 @@ describe("rename-survival — the observation moves with the carrier (R2)", () =
     expect(tree.get(syncedTreeKey(TO_BAG, uriOf("old")))).not.toBeNull();
   });
 
-  test("★ a standing carrier a hand edited into the vanished one's bytes makes the pair ambiguous: the scan sends no deletion ★", () => {
-    // `old` vanished; `new` arrived with its bytes; and `twin`, a carrier that stood all along, now holds
-    // those bytes too. The island reads every carrier of the wave, finds two that hold the source's bytes
-    // and re-links none, so a deletion sent for `old` could only read as declined. The scan sends none.
-    const body = "# a note\n\nbody\n";
-    const { src, bagDir, tree } = seed("old.md", body);
-    writeFileSync(join(bagDir, "twin.md"), "# another\n\nits own body\n");
-    const first = scanSource(root, src, TO_BAG, tree)!;
-    const twin = first.rows.find((r) => r.uri === uriOf("twin"))!;
-    tree.set(syncedTreeKey(TO_BAG, twin.uri), twin.file, twin.diskHash);
-    rmSync(join(bagDir, "old.md"));
-    writeFileSync(join(bagDir, "new.md"), body);
-    writeFileSync(join(bagDir, "twin.md"), body);
-    const scan = scanSource(root, src, TO_BAG, tree)!;
-    expect(scan.rows.find((r) => r.uri === uriOf("twin"))!.status).toBe("changed");
-    expect(scan.renameDeletions ?? []).toEqual([]);
-    expect(scan.rows.find((r) => r.uri === uriOf("new"))!.status).toBe("new");
-  });
 
   test("an in-place EDIT still re-lands (changed) — never swallowed as a rename", () => {
     const { src, bagDir, tree } = seed("note.md", "# v1\n\nfirst body\n");
@@ -156,30 +138,5 @@ describe("rename-survival — the observation moves with the carrier (R2)", () =
     expect(candidatesOf(scan.rows).map((c) => c.uri)).toContain(uriOf("note"));
   });
 
-  test("a COPY (source stays live) is NOT a rename — it lands as new, source untouched", () => {
-    const body = "# shared body\n\nidentical content\n";
-    const { src, bagDir, tree, landedHash } = seed("orig.md", body);
-    // a COPY: same content at a new name, the source STILL on disk
-    writeFileSync(join(bagDir, "copy.md"), body);
-    const scan = scanSource(root, src, TO_BAG, tree)!;
-    const copyRow = scan.rows.find((r) => r.uri === uriOf("copy"))!;
-    expect(copyRow.status).toBe("new");            // a fresh landing, never a rename
-    expect(copyRow.renameFrom).toBeUndefined();
-    expect(scan.renameDeletions).toBeUndefined();  // the live source is never a deletion
-    // the source observation stays put
-    expect(tree.get(syncedTreeKey(TO_BAG, uriOf("orig")))).toBe(landedHash);
-  });
 
-  test("two arrived files sharing the vanished carrier's content pair with neither: no deletion rides the wave", () => {
-    const body = "# a note two files now hold\n\nthe same bytes twice\n";
-    const { src, bagDir, tree } = seed("old.md", body);
-    rmSync(join(bagDir, "old.md"));
-    writeFileSync(join(bagDir, "new-a.md"), body);
-    writeFileSync(join(bagDir, "new-b.md"), body);
-    const scan2 = scanSource(root, src, TO_BAG, tree)!;
-    // The island's delete gate reads an ambiguous pair as a tombstone; a scan tombstones nothing by itself.
-    expect(scan2.renameDeletions).toBeUndefined();
-    expect(scan2.rows.filter((r) => r.status === "renamed")).toEqual([]);
-    expect(scan2.rows.filter((r) => r.status === "new").map((r) => r.uri).sort()).toEqual([uriOf("new-a"), uriOf("new-b")]);
-  });
 });

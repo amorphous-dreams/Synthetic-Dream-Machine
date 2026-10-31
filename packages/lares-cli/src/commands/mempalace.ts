@@ -476,7 +476,7 @@ export async function cmdMempalace(args: ParsedArgs): Promise<number> {
  *
  * FOUNDING NEVER REACHES IT (operator ruling). This writes OUTSIDE the vessel root, into the
  * operator's real Python environment — so a founding that ran it could never stay isolated, and a throwaway
- * rehearsal would touch the machine it rehearses on. `vessel stand --install` stands the vessel; a separate tool
+ * rehearsal would touch the machine it rehearses on. `vessel stand --init` stands the vessel; a separate tool
  * answers on its own door.
  *
  * The mempalace is a READ-ONLY sidecar submodule. A vessel founds and serves without it; what it unlocks is

@@ -14,17 +14,20 @@
  * by ending it, and neither boots a vm.
  */
 
+import { repoRoot } from "@lararium/mesh/node";
 import { larDataDir, larPort, vesselDid, larBootstrapPath } from "../env.js";
 import { stopIncumbent, probePort } from "../port-control.js";
 import { udsAlive } from "../local-connector.js";
 import { existsSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { palaceOrgans, organHealthy, guestMempalaceOrgan, readMemeticWikitextCoupling, runDoctor, formatDoctorReport } from "@lararium/node";
-import { readClaudeCleanupPeriod, CLEANUP_PERIOD_DAYS_FLOOR } from "../claude-wire.js";
+import { read as readIntent, Ledger } from "../reality-tunnel/engine.js";
+import { homeItems } from "../reality-tunnel/catalog.js";
+import { resolveHomes } from "../reality-tunnel/homes.js";
+import { homeLedgerDir } from "../reality-tunnel/places.js";
 import { emit } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
-const CLAUDE_DEFAULT_CLEANUP_DAYS = 30; // Claude's own default when the key is unset.
 
 /**
  * `lares vessel read --palaces` — the palace-organ health table (re-runnable). Reads the SAME registry
@@ -183,12 +186,14 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
   const hasBoot    = existsSync(bootstrap);
   const storageStr = dirSizeHint(storage);
 
-  // Session-file retention — the mempalace's verbatim harvest source lives in
-  // ~/.claude/projects and Claude prunes it on startup by cleanupPeriodDays. Surface
-  // it so a short window (evaporating raw memory before it's mined) stays visible.
-  const cleanupRaw = readClaudeCleanupPeriod();
-  const cleanupEffective = cleanupRaw ?? CLAUDE_DEFAULT_CLEANUP_DAYS;
-  const cleanupProtected = cleanupEffective >= CLEANUP_PERIOD_DAYS_FLOOR;
+  // THE MEMORY GUARDS. Every harness's session store seeds the operator's memory, and each host prunes
+  // by its own retention; `lares home` keeps each at its maximum. The read surfaces the guards' rows so a
+  // lowered one (a hand, a host update) stays visible here as well as at the wake.
+  const guards = readIntent(
+    homeItems({ repo: repoRoot, homes: resolveHomes(), mcp: null, claudeCli: false }).filter((i) => /\.retain/.test(i.id)),
+    new Ledger(homeLedgerDir()),
+  ).filter((r) => r.state !== "absent");
+  const guardsHeld = guards.every((r) => r.state === "aligned");
 
   // Snapshot fields — the same data the prose renders, shaped for an agent.
   const data: Record<string, unknown> = {
@@ -196,8 +201,8 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
     storage:   storageStr,
     port,
     portInUse,
-    cleanupPeriodDays: cleanupRaw,
-    cleanupProtected,
+    memoryGuards: guards.map((r) => ({ id: r.id, path: r.path, state: r.state })),
+    memoryGuardsHeld: guardsHeld,
   };
   let residencyLine: string | null = null;
 
@@ -238,9 +243,9 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
       console.log(`  storage:     ${storageStr}`);
       console.log(`  port ${port}:  ${portInUse ? "in use (node likely running)" : "free"}`);
       if (residencyLine) console.log(`  residency:   ${residencyLine}`);
-      console.log(cleanupProtected
-        ? `  retention:   ${cleanupEffective} days — session files kept ~forever (mempalace source safe)`
-        : `  retention:   ${cleanupEffective} days${cleanupRaw === null ? " (Claude default, unset)" : ""} — raise with \`lares cleanup-days max\` (mempalace source evaporates)`);
+      console.log(guardsHeld
+        ? `  memory:      ${guards.length} retention guard(s) at their maximum`
+        : `  memory:      ${guards.filter((r) => r.state !== "aligned").map((r) => r.id).join(", ")} below the maximum — \`lares home tend\` raises them`);
     },
   });
   return 0;

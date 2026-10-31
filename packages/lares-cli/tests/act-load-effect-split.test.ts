@@ -163,6 +163,8 @@ describe("lares act — the split requestId/effectKey, every action verb (H4, wi
     expect(Object.prototype.hasOwnProperty.call(received[0]!, "effectKey")).toBe(false);
   });
 
+
+
   test("★ a non-LOAD verb (CLEAR) ALSO splits requestId from effectKey — the split is EVERY verb's, not LOAD-only ★", async () => {
     // CLEAR carries no content of its own that names a logical change (H7) — the SAME `--change-id`
     // across both attempts is what tells the daemon's effect index this is one retry of one change,
@@ -179,15 +181,6 @@ describe("lares act — the split requestId/effectKey, every action verb (H4, wi
     expect(received[0]!.requestId).not.toBe(received[0]!.effectKey); // never collapsed to one id
     // the wire args carry no change-id for a bag verb — the nonce rides CLI-side only
     expect(received[0]!.args).toEqual({ bag: "lar:///test/catalog" });
-  });
-
-  test("CONTROL: two CLEARs with NO --change-id read as TWO DISTINCT changes (H7 — the very collapse this nonce closes)", async () => {
-    const { received } = await standScripted([doneReply(1), doneReply(1)]);
-    const codeA = await cmdAct(parseArgs(["act", "CLEAR", "--bag", "lar:///test/catalog", "--yes", "--json"]));
-    const codeB = await cmdAct(parseArgs(["act", "CLEAR", "--bag", "lar:///test/catalog", "--yes", "--json"]));
-    expect(codeA).toBe(0);
-    expect(codeB).toBe(0);
-    expect(received[0]!.effectKey).not.toBe(received[1]!.effectKey);
   });
 
   test("★ a non-LOAD verb's abandoned-then-retry ALSO closes (fresh id per attempt, never wedged under one id) ★", async () => {

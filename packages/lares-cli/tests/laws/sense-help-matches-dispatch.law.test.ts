@@ -1,4 +1,9 @@
 /**
+ * L2 · A DECLARATION AGREES WITH WHAT THE DOOR ANSWERS: sense's help names exactly the verbs its dispatcher routes.
+ *
+ * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws
+ */
+/**
  * THE HELP TEXT NAMES EXACTLY WHAT DISPATCHES — both directions, or the test fails.
  *
  * The `sense` door carries a wide verb surface, and its summary is what an operator reads at the moment
