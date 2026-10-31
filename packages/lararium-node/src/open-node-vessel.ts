@@ -1845,7 +1845,12 @@ async function prepareNodeBootOn(
   const realmPaceCell = makeRealmPaceCell();
   const residencyWiring: VesselResidency = makeVesselResidency(
     () => vmManager,
-    { wikiActivationCap: NODE_WIKI_ACTIVATION_CAP, wikiPinBudget: NODE_WIKI_PIN_BUDGET, clock: realmPaceCell.read },
+    { wikiActivationCap: NODE_WIKI_ACTIVATION_CAP, wikiPinBudget: NODE_WIKI_PIN_BUDGET, clock: realmPaceCell.read,
+      // A catalog pointer never resolves a wiki onto one of this vessel's private documents (lane `ralias`).
+      wikiDocRefused: (wikiUrl) => {
+        if (!wikiUrl.startsWith("automerge:")) return null;
+        return vesselPrivate.has(String(interpretAsDocumentId(wikiUrl as AutomergeUrl))) ? "vessel-private" : null;
+      } },
     {
       onWikiCooled: (id) => console.log(`[residency] cooled wiki ${id} (island unmounted)`),
       onBagCooled:  (id) => console.log(`[residency] cooled bag ${id} (compact-then-drop reserved for repo#358)`),
