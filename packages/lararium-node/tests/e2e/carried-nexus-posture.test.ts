@@ -29,9 +29,10 @@ import { strangerFace, type CrossingFace } from "../../probes/crossing-synthetic
 import { heldCharter } from "../../../lararium-mesh/tests/charter-fixture.js";
 import {
   runInit, runFoundTheFace, foundSeedCharter, openNodeVessel, larSealHome, writeNexusDoc,
-  carriedCharterHome, seatFaceRoute, storeSeatKey,
+  carriedCharterHome, seatFaceRoute, storeSeatKey, loadIdentityAnchors,
 } from "../../dist/src/index.js";
 import { mountHttpFaceDispatcher } from "../../dist/src/http-face-dispatcher.js";
+import { answerDyadAsk } from "../../dist/src/worker-handle.js";
 import { hearthSovereignPin } from "../../dist/src/hearth-sovereign-pin.js";
 import type { NodeVesselResult } from "../../dist/src/open-node-vessel.js";
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
@@ -78,6 +79,7 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
   let pin: GateBundlePin;
   let tornDown = false;
   let ownSeat = "";
+  let ownEdge = { fleetRoot: "", deviceKey: "" };
   const knocks = new Set<string>();
   const charterAt = (federationPosture: "open" | "private"): NexusDoc => ({ ...partner, federationPosture });
   const writePartner = (posture: "open" | "private"): Promise<void> =>
@@ -87,6 +89,10 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
     await withLarRoot(ROOT, () => direct(runInit)({ storageDir: STORAGE, genesisDir: GENESIS, custody: TEST_CUSTODY, placeFoundingCard: { readBack: async () => {} } }));
     await withLarRoot(ROOT, () => foundSeedCharter({ name: "carrier", readBack: async () => {} }));
     await withLarRoot(ROOT, () => direct(runFoundTheFace)({ storageDir: STORAGE, genesisDir: GENESIS }));
+    // The founded face's own device edge: the dyad door answers this vessel's own seat through a standing door.
+    const edge = (await withLarRoot(ROOT, async () => loadIdentityAnchors(0)))?.deviceEdge;
+    if (!edge) throw new Error("[carried-nexus-posture] the founded face carries no device edge");
+    ownEdge = { fleetRoot: edge.personaRootDid.trim().toLowerCase().replace(/^0x/, ""), deviceKey: edge.deviceVerifyingKey };
     // THE PARTNER CHARTER seats a chair the founded face holds beside two foreign keys: the vessel holds a chair there.
     // The one-byte seeds stand booked in the charter fixture, so its genesis signs under this seat as under the others.
     const ownKey = (await withLarRoot(ROOT, () => storeSeatKey(0, new Uint8Array(32).fill(83)))).toLowerCase();
@@ -192,7 +198,7 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
     }
   }, 60_000);
 
-  test("T27-b RED: a teardown that meets a gate sweep in flight leaves the caller's dispatcher no knock; CONTROL: the standing vessel holds its knocks", async () => {
+  test("T27-b/c: a teardown that meets a gate sweep in flight leaves no knock, and the island's doors stand until the island shuts; CONTROLS: the standing vessel holds its knocks and its dyad door", async () => {
     // CONTROL: the standing composition holds a knock for each gate it stands.
     for (let i = 0; i < 50 && knocks.size === 0; i++) await turn(100);
     expect(knocks.size, "the standing vessel holds no knock").toBeGreaterThan(0);
@@ -201,9 +207,18 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
     const second = heldCharter({ keys: [ownSeat, ...foreign], threshold: 2 });
     await withLarRoot(ROOT, async () => { writeNexusDoc(carriedCharterHome(larSealHome(), second.aid), { ...second.doc(), federationPosture: "open" }); });
     await withLarRoot(ROOT, () => vessel.hostingDoor.rolled(second.aid));
+    // T27-c: the dyad door the daemon island asks through, read at the moment the island shuts down. This vessel's own
+    // seat reads through a standing door; with no door every ask answers `aside`.
+    const dyadNow = async (): Promise<string> => (await answerDyadAsk({ requestId: "t27c", fleetRoot: ownEdge.fleetRoot, deviceKey: ownEdge.deviceKey })).standing;
+    expect(await dyadNow(), "T27-c control: the standing vessel answers through its dyad door").not.toBe("aside");
+    const daemon = vessel.daemon as unknown as { shutdown: (...a: unknown[]) => Promise<unknown> };
+    const shutdown = daemon.shutdown.bind(daemon);
+    let atShutdown: string | null = null;
+    daemon.shutdown = async (...a: unknown[]) => { atShutdown ??= await dyadNow(); return shutdown(...a); };
     tornDown = true;
     await vessel.teardown();
     await turn(3_000);                                  // any sweep still in flight lands here
     expect([...knocks], "a sweep in flight registered a knock after the teardown drained them").toEqual([]);
+    expect(atShutdown, "T27-c RED: the dyad door dropped before the daemon island shut down").not.toBe("aside");
   }, 90_000);
 });
