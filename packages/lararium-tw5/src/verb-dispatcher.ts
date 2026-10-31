@@ -314,25 +314,32 @@ export class VerbDispatcher {
       });
     }
     if (this.opts.routeFn) {
-      const presenter = this.opts.presenterOf?.(invocation) ?? invocation.requestedBy;
-      const local = this.opts.localOf?.(invocation) === true;
-      // A wiki-addressing envelope meets the fence by its presenter. Any other routed ask that did not arrive local (a
-      // synced summons, content) names no presenter that can wear a face here, so the fence reads it as naming none.
-      if (routedAddressesWiki(invocation) || !local) {
-        this.opts.registry.admitRouted(invocation.action, { daemon: this.opts.daemon, invocation, ...(local ? { presenter } : {}), local, cap: makeCapVerify(this.opts.verifier, presenter, local) });
-      }
-      // Verify-then-delegate: the keyholder worker gates the cap BEFORE
-      // routing to main; main then trusts the worker→main channel as the
-      // capability (project_verification_placement). Enforced only when a
-      // real verifier exists; a pre-sovereign/test island (no verifier)
-      // routes as before.
-      if (this.opts.verifier) {
-        await gateRoutedVerb(invocation, this.opts.verifier, this.opts.presenterOf?.(invocation) ?? invocation.requestedBy,
-          this.opts.localOf?.(invocation) === true);
-      }
+      await this.clearRouted(invocation);
       return this.opts.routeFn(invocation);
     }
     throw new Error(`no handler registered for "${invocation.action}"`);
+  }
+
+  /**
+   * THE CLEARANCE A ROUTED VERB MEETS before main runs it under this island's trust: the fence, for a wiki-addressing
+   * envelope or an ask that did not arrive local, then the capability. A refusal throws. The delegate route meets it
+   * before it posts to main, and a session's face row meets it alone (`daemon:gate-verb-request`) before main runs
+   * the row as the session's face, its answer on the socket.
+   */
+  async clearRouted(invocation: Verb): Promise<void> {
+    const presenter = this.opts.presenterOf?.(invocation) ?? invocation.requestedBy;
+    const local = this.opts.localOf?.(invocation) === true;
+    // A wiki-addressing envelope meets the fence by its presenter. Any other routed ask that did not arrive local (a
+    // synced summons, content) names no presenter that can wear a face here, so the fence reads it as naming none.
+    if (routedAddressesWiki(invocation) || !local) {
+      this.opts.registry.admitRouted(invocation.action, { daemon: this.opts.daemon, invocation, ...(local ? { presenter } : {}), local, cap: makeCapVerify(this.opts.verifier, presenter, local) });
+    }
+    // Verify-then-delegate: the keyholder worker gates the cap BEFORE
+    // routing to main; main then trusts the worker→main channel as the
+    // capability (project_verification_placement). Enforced only when a
+    // real verifier exists; a pre-sovereign/test island (no verifier)
+    // routes as before.
+    if (this.opts.verifier) await gateRoutedVerb(invocation, this.opts.verifier, presenter, local);
   }
 
   /**

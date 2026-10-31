@@ -49,7 +49,7 @@ function island() {
   let onPlace: () => void = () => {};
   const placedOnce = new Promise<void>((r) => { onPlace = r; });
   const conclude = (requestId: string, output: Record<string, unknown>): void => {
-    const outcome = concludeVerb({ requestId, verb: "seat-duties", status: "done", requestedBy: "vessel", cause: "test-island", batchMode: "best-effort", results: { summary: { ok: true, output } } });
+    const outcome = concludeVerb({ requestId, verb: "seat-duties", status: "done", cause: "test-island", batchMode: "best-effort", results: { summary: { ok: true, output } } });
     daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
   };
   return { daemonHandle, placed, placedOnce, conclude, place: (o: (typeof placed)[number]) => { placed.push(o); onPlace(); } };

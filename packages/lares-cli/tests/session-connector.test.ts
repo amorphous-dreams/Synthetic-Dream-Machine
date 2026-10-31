@@ -39,7 +39,7 @@ describe("local session connector", () => {
           anchor: { kind: "place" as const, aid: "place-fixture", head: "place-head" }, mint: faceRef === "c" ? async () => ({ ok: false as const, refusal: "dial-refused" }) : fixtureMint } } },
       placeVerb: (o) => {
         placed.push(o);
-        const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", requestedBy: o.requestedBy,
+        const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done",
           ...(o.face !== undefined && { face: o.face }), cause: "worker", batchMode: "best-effort",
           results: { summary: { ok: true, output: { value: 1 } } } });
         daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });

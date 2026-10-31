@@ -59,7 +59,7 @@ import { parseMeshPeer } from "@lararium/mesh";
 import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh";
 import { makeUdsSeat, serveUdsFront, type UdsChannelOptions, type UdsFront } from "./uds-channel.js";
 import { nodeSwitchActLog } from "./switch-act-log.js";
-import { STORE_DOOR_FACE_ROWS } from "./store-door-verbs.js";
+import { STORE_DOOR_FACE_ROWS, faceRowAnswer } from "./store-door-verbs.js";
 import { makeCustodyHolder } from "./custody-holder.js";
 import { testScratchNotice } from "./test-scratch-notice.js";
 import { seatCustody } from "./custody-seat.js";
@@ -786,7 +786,15 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     sessions:     result.sessionDoor,
     switchActs:   nodeSwitchActLog,
     sessionVerbs: STORE_DOOR_FACE_ROWS,
-    sessionActs,
+    // A FACE ROW ANSWERS ON THE SOCKET ALONE (K20): the store door's face rows ride `session:act` beside the sealed acts,
+    // main's handler running as the face the session wears once the keyholder island clears it, so no outcome body
+    // pairs the face's atom with the key the row answers in the daemon document its fleet syncs.
+    sessionActs: {
+      names: new Set([...sessionActs.names, ...STORE_DOOR_FACE_ROWS]),
+      run: (act, args, worn) => (STORE_DOOR_FACE_ROWS as ReadonlySet<string>).has(act)
+        ? faceRowAnswer(() => result.daemon.runAsFace({ verb: act, args, worn }))
+        : sessionActs.run(act, args, worn),
+    },
     ...(receiptRing !== undefined && { ring: receiptRing.count, ringBytes: receiptRing.bytes }),
     onLog: (line) => console.log(`[lararium] ${line}`),
   }));

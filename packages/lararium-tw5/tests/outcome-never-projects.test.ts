@@ -14,7 +14,7 @@ import { writeOutcome, EFFECT_URI_PREFIX } from "../src/verb-vm.js";
 
 describe("an outcome and its effect index never project", () => {
   test("the outcome builder stamps disk-projection: no", () => {
-    const record = concludeVerb({ requestId: "r1", verb: "LOAD", status: "done", requestedBy: "operator", cause: "", batchMode: "best-effort", results: { a: { ok: true } as never } });
+    const record = concludeVerb({ requestId: "r1", verb: "LOAD", status: "done", cause: "", batchMode: "best-effort", results: { a: { ok: true } as never } });
     expect(record.tiddler.title).toBe(`${OUTCOME_URI_PREFIX}r1`);
     expect(record.tiddler["disk-projection"]).toBe("no");
     expect(record.tiddler["status"], "CONTROL: the outcome's content stands").toBe("done");

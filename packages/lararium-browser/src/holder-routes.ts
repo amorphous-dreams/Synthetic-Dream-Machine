@@ -9,6 +9,7 @@ export const HOLDER_ROUTES = {
   "daemon:worldline-compare-result": "reply",
   "daemon:worldline-trajectory-result": "reply",
   "daemon:resolve-binding-result": "reply",
+  "daemon:gate-verb-result": "reply",
 
   // The record port streams records to the tab whose session holds its lease.
   // A reply without a lease drops by name (`no-port-lease`).

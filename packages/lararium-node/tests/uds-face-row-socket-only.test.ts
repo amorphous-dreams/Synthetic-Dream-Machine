@@ -74,7 +74,7 @@ async function stand() {
     placeVerb: (o) => {
       // The old route: the island runs the row and its outcome body rests in the daemon document beside its requester.
       placed.push(o);
-      const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", requestedBy: o.requestedBy, cause: "test-worker",
+      const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", cause: "test-worker",
         batchMode: "best-effort", results: { summary: { ok: true, output: { face: LEAF } } } });
       daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
     } }));

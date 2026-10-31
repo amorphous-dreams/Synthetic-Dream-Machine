@@ -594,9 +594,9 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
 }
 
 /**
- * The door's reactors over a running vessel, by verb. EACH FACE ROW ACTS AS THE FACE ITS SESSION WORE: the vessel's main
- * thread booked that face (its ordinal, beside the presenter the session door verified) when it placed the ask, and the
- * row reads it from `worn` alone. A row naming another face (by `face` or `handleIndex`) refuses `face-row-other-face`;
+ * The door's reactors over a running vessel, by verb. EACH FACE ROW ACTS AS THE FACE ITS SESSION WORE: a face row rides
+ * `session:act`, and the vessel's main thread hands it that face (its ordinal, beside the presenter the session door
+ * verified; `DaemonVmCore.runAsFace`), which the row reads from `worn` alone. Its answer returns on that session's socket. A row naming another face (by `face` or `handleIndex`) refuses `face-row-other-face`;
  * a face row that rode no session (a surface act, host code, a synced summons) refuses `face-row-rides-a-session`.
  * Every row naming none acts as the worn face, so no row falls back to the one face open or to face 0.
  */
@@ -615,6 +615,16 @@ export function storeDoorReactors(deps: StoreDoorDeps): Record<StoreDoorVerb, Ve
     });
   }
   return bound;
+}
+
+/**
+ * A face row's answer on a session's socket (`session:act`): `{ status: "done", output }` with the row's own output (a
+ * row's refusal rides in it as `refused`), or `{ status: "error", errorMessage }` for the fault that stopped it (a
+ * clearance the keyholder island refused, a row that threw). The answer leaves this vessel on that socket alone.
+ */
+export async function faceRowAnswer(run: () => Promise<Record<string, unknown>>): Promise<Record<string, unknown>> {
+  try { return { status: "done", output: await run() }; }
+  catch (error) { return { status: "error", errorMessage: error instanceof Error ? error.message : String(error) }; }
 }
 
 /**

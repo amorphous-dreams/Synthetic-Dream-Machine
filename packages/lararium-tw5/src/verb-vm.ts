@@ -170,7 +170,6 @@ export async function writeOutcome(
     ...(opts.invocation.face !== undefined && { face: opts.invocation.face }),
     verb:        opts.invocation.action,
     status:      opts.status,
-    requestedBy: opts.invocation.requestedBy,
     cause:       opts.invocation.title,
     batchMode:   opts.invocation.batchMode,
     results: {
@@ -223,7 +222,6 @@ export async function copyEffectOutcome(
     ...(invocation.face !== undefined && { face: invocation.face }),
     verb:        invocation.action,
     status:      "done",
-    requestedBy: invocation.requestedBy,
     cause:       invocation.title,
     batchMode:   invocation.batchMode,
     results:     opts.priorResults,

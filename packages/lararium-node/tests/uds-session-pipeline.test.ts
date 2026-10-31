@@ -71,7 +71,7 @@ describe("UDS session socket, frames in flight", () => {
     let markHeld: (() => void) | undefined;
     const heldStarted = new Promise<void>((resolve) => { markHeld = resolve; });
     const land = (o: { requestId: string; verb: string; requestedBy: string; face?: string }) => {
-      const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", requestedBy: o.requestedBy,
+      const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done",
         ...(o.face !== undefined && { face: o.face }), cause: "test-worker", batchMode: "best-effort", results: { summary: { ok: true } } });
       daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
     };

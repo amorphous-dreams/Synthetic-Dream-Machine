@@ -115,7 +115,7 @@ async function stand(label: string, opts: {
       placed.push(o);
       // The outcome names its face, as the worker's does, so the session's receipt reads it terminal.
       const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", ...(o.face !== undefined ? { face: o.face } : {}),
-        requestedBy: o.requestedBy, cause: "test-worker", batchMode: "best-effort", results: { summary: { ok: true } } });
+        cause: "test-worker", batchMode: "best-effort", results: { summary: { ok: true } } });
       daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
     },
   });

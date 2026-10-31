@@ -42,6 +42,8 @@ import {
   mkStructurepalaceKapae,
   mkDaemonVerbResult,
   mkDaemonResolveBindingRequest,
+  mkDaemonGateVerbRequest,
+  newRequestId,
   mkDaemonDeriveSkeletonRequest,
   mkDaemonWorldlineCompareRequest,
   mkDaemonWorldlineTrajectoryRequest,
@@ -68,6 +70,7 @@ import {
   type IslandGrants,
   type DaemonMsg_DelegateVerb,
   type DaemonMsg_ResolveBindingResult,
+  type DaemonMsg_GateVerbResult,
   type DaemonMsg_DeriveSkeletonResult,
   type DaemonMsg_WorldlineCompareResult,
   type DaemonMsg_WorldlineTrajectoryResult,
@@ -233,6 +236,13 @@ export interface DaemonVmCore {
   placeVerb:      (opts: VesselPlaceVerbRequest) => void;
   /** The ask under this id concluded (its outcome landed, or its caller left): a booking for it lends nothing more. */
   retireAsk:      (requestId: string) => void;
+  /**
+   * RUN ONE FACE ROW AS A SESSION'S FACE, its answer returned here alone (K20): the keyholder island clears the row as it
+   * clears a routed verb from the presenter the session door verified (`daemon:gate-verb-request`), then main's handler
+   * runs wearing that face. Nothing is placed or dispatched, so no outcome body rests in the daemon document. A
+   * clearance's refusal throws, as does a row main holds no handler for.
+   */
+  runAsFace:      (o: { readonly verb: string; readonly args: Record<string, unknown>; readonly worn: SessionWorn }) => Promise<Record<string, unknown>>;
   lightFace:      (entry: JoinedFaceAuth) => Promise<void>;
   dropFace:       (atomKey: string) => Promise<void>;
   /** FEED one captured turn to the daemon's telemetry capture cap (the nalu). Fire-and-forget.
@@ -545,6 +555,12 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       console.error(`[daemon-island:fault] ${JSON.stringify(raw).slice(0, 240)}`);
     }
 
+    if (raw.type === "daemon:gate-verb-result") {
+      const msg = raw as DaemonMsg_GateVerbResult;
+      settleAsk(msg.requestId, true, msg.error);
+      return;
+    }
+
     if (raw.type === "daemon:resolve-binding-result") {
       const msg = raw as DaemonMsg_ResolveBindingResult;
       if (msg.error) settleAsk(msg.requestId, undefined, msg.error);
@@ -770,6 +786,16 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     lightFace: (entry) => askFace(entry.atom.key, "lit", mkDaemonFaceLit(entry)),
     dropFace: (atomKey) => askFace(atomKey, "dropped", mkDaemonFaceDrop(atomKey)),
     retireAsk: (requestId: string) => { sessionAsks.delete(requestId); },
+    runAsFace: async ({ verb, args, worn }) => {
+      const registry = _registry;
+      if (!registry) throw new Error(`[openDaemonVm] a face row ran before mountMainVerbs — verb="${verb}"`);
+      await askIsland<true>("gate", (requestId) => mkDaemonGateVerbRequest({ requestId, verb, args, requestedBy: worn.presenter }));
+      const requestId = newRequestId();
+      return runLocalVerb({
+        title: `${DAEMON_BAG_ID}/face-row/${requestId}`, requestId, action: verb, args, requestedBy: worn.presenter,
+        requestedAt: new Date().toISOString(), targets: [], batchMode: "best-effort" as BatchMode, status: "pending" as const,
+      }, { daemon: composite, registry, wornOf: () => worn, localOf: () => true });
+    },
     placeVerb: (o: VesselPlaceVerbRequest) => {
       if (o.origin === "channel" && o.face && o.requestId && o.requestedBy && o.ordinal !== undefined && Number.isSafeInteger(o.ordinal) && o.ordinal >= 0) {
         sessionAsks.set(o.requestId, { ordinal: o.ordinal, presenter: o.requestedBy, act: actOf(o.verb, o.args) });

@@ -86,7 +86,7 @@ describe("face bound session receipts", () => {
         if (o.effectKey && !prior) effects.set(o.effectKey, o.requestId);
         const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done",
           ...(o.face !== undefined && { face: o.face }),
-          requestedBy: o.requestedBy, cause: "test-worker", batchMode: "best-effort",
+          cause: "test-worker", batchMode: "best-effort",
           results: { summary: { ok: true, output: { args: o.args, ...(prior && { prior }) } } } });
         daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
       } });
@@ -148,7 +148,7 @@ describe("face bound session receipts", () => {
       expect(inFlight).toMatchObject({ receipt: { state: "pending" } });
       expect((inFlight.receipt as { position: { durable?: unknown } }).position.durable).toBeUndefined();
       const landed = concludeVerb({ requestId: held!.requestId, verb: held!.verb, status: "done",
-        ...(held!.face !== undefined && { face: held!.face }), requestedBy: held!.requestedBy,
+        ...(held!.face !== undefined && { face: held!.face }),
         cause: "test-worker", batchMode: "best-effort", results: { summary: { ok: true } } });
       daemonHandle.change((doc) => { doc.tiddlers[landed.tiddler.title] = landed as unknown as LarDoc["tiddlers"][string]; });
       expect(await ask(sameFaceReader.peer, sameFaceReader.env, "session:receipt", "held"))
@@ -195,7 +195,7 @@ describe("face bound session receipts", () => {
     const front = serveUdsFront({ claim });
     front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo, sessions: door, ring: 1,
       placeVerb: (o) => {
-        const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", requestedBy: o.requestedBy,
+        const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done",
           ...(o.face !== undefined && { face: o.face }), cause: "test-worker", batchMode: "best-effort", results: { summary: { ok: true } } });
         daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
       } }));

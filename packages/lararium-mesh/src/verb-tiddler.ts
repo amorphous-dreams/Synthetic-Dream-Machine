@@ -435,7 +435,6 @@ export interface OutcomeRecord extends LarTiddlerRecord {
     readonly face?: string;
     readonly verb:           string;
     readonly status:         "done" | "error";
-    readonly "requested-by": string;
     readonly "completed-at": string;
     readonly cause:          string;
     readonly tags:           string;
@@ -450,12 +449,12 @@ export interface OutcomeRecord extends LarTiddlerRecord {
   };
 }
 
+/** AN OUTCOME NAMES NO REQUESTER (K20): the volatile invocation carries who asked; the daemon document keeps the verb, its status and its result, so no synced outcome pairs a requester with what it answered. */
 export function concludeVerb(opts: {
   requestId:     string;
   verb:          string;
   face?: string;
   status:        "done" | "error";
-  requestedBy:   string;
   cause:         string;
   batchMode:     BatchMode;
   results?:      Record<string, VerbTargetResult>;
@@ -481,7 +480,6 @@ export function concludeVerb(opts: {
     "request-id":    opts.requestId,
     verb:            opts.verb,
     status:          opts.status,
-    "requested-by":  opts.requestedBy,
     "completed-at":  new Date().toISOString(),
     cause:           opts.cause,
     // Bookkeeping of the control bag: no mirror writes a file for an outcome, whatever layer holds it.
