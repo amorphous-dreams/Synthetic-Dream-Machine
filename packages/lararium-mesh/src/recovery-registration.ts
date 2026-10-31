@@ -2,7 +2,7 @@
  * recovery-registration — the Fork-B recovery contact REGISTRATION, held apart from the Fork-A share card.
  *
  * ── THE TWO CUSTODIES ARE NOT CONFUSABLE (the IdenTrust cure) ────────────────────────────────────
- * A Fork-A recovery contact card carries a BEARER SHARE of a reconstructable secret; this registration carries
+ * A Fork-A custodian card carries a BEARER SHARE of a reconstructable secret; this registration carries
  * a recovery contact's recovery PUBLIC key and nothing else — a full read of it reconstructs nothing. IdenTrust
  * 2024 signed the wrong object type because one tool could select either; the earned cure splits the
  * objects so the wrong one is not selectable: this module, its own confirm DOMAIN (the phone handshake
@@ -20,7 +20,7 @@ import { acceptEd25519Key } from "./ed25519-door.js";
 import { confirmationPhrase } from "./custodian-card.js";
 
 /** Which seat a registration card fills: the face's own, or one of the two recovery contacts beside it. */
-export type RecoveryContactSlot = "mine" | "contact-a" | "contact-b";
+export type RecoveryContactSlot = "mine" | "contact-a" | "contact-b" | "contact-c";
 
 /** A recovery contact's recovery-pubkey registration — the Fork-B card. */
 export interface RecoveryContactRegistration {
@@ -54,6 +54,6 @@ export function recoveryContactRegistrationCard(
   if (!accepted.ok) throw new Error(`[recovery-registration] recovery-contact-key-refused — the recovery pubkey refuses at the Ed25519 door (${accepted.refusal})`);
   const label = slot === "mine"
     ? "Recovery-contact mine"
-    : `Recovery-contact-${slot === "contact-a" ? "A" : "B"} (${recoveryContactLabel ?? "unassigned"})`;
+    : `Recovery-contact-${slot === "contact-a" ? "A" : slot === "contact-b" ? "B" : "C"} (${recoveryContactLabel ?? "unassigned"})`;
   return { slot, label, recoveryPubKey, confirmPhrase: registrationConfirmationPhrase(recoveryPubKey) };
 }

@@ -139,7 +139,7 @@ function plain(v: unknown, keys: readonly string[], optional: readonly string[] 
 }
 const isLabel = (v: unknown): v is string => typeof v === "string" && v.length > 0 && v.length <= LABEL_LIMIT;
 const isIndex = (v: unknown): v is number => Number.isSafeInteger(v) && (v as number) >= 0;
-const RECOVERY_CONTACT_SLOTS = ["mine", "contact-a", "contact-b"];
+const RECOVERY_CONTACT_SLOTS = ["mine", "contact-a", "contact-b", "contact-c"];
 
 /** A recovery contact set's SHAPE: a digest, a whole threshold, and registrations of the house's card shape. Null where it reads as none. */
 function readRecoveryContactSet(v: unknown): FaceBundleRecoveryContactSet | null {

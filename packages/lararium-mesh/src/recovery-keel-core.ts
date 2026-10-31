@@ -31,7 +31,7 @@ import { sealKeySetHash } from "./wax-stamp.js";
 import type { RecoveryContactRegistration } from "./recovery-registration.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
 import {
-  mintRecoveryContactEnrolment, mintPersonaInception, mintPersonaRotation, personaRotationSigningBytes,
+  RECOVERY_CONTACT_COUNT, RECOVERY_CONTACT_THRESHOLD, mintRecoveryContactEnrolment, mintPersonaInception, mintPersonaRotation, personaRotationSigningBytes,
   type PersonaKelEvent, type PersonaRotateResult, type SealedEnrolment,
 } from "./persona-kel.js";
 
@@ -144,10 +144,10 @@ export async function provisionRecoveryAtFounding(
   }
 }
 
-/** The founding card issue for personal identity recovery — the three shared recovery contact cards + a flag that
- *  the "mine" (device) share sealed on this vessel. The two recovery contact cards leave the device by hand. */
+/** The founding card issue for personal identity recovery — the three shared custodian cards + a flag that
+ *  the "mine" (device) share sealed on this vessel. The two custodian cards leave the device by hand. */
 export interface RecoveryCardsAtFounding {
-  /** All three cards, the SHARED shape: "Recovery-card mine" + "contact-A" + "contact-B". */
+  /** All three cards, the SHARED shape: "Recovery-card mine" + "custodian-A" + "custodian-B". */
   readonly cards:      CustodianCard[];
   /** True once the "mine" (device) share seals into the vault's recovery store. */
   readonly mineSealed: boolean;
@@ -156,23 +156,23 @@ export interface RecoveryCardsAtFounding {
 /**
  * Provision identity recovery at FOUNDING as CUSTODIAN CARDS — the pattern-integrity twin of the charter
  * reserve's `splitReserveSeed`. It splits the PersonaGroup root 2-of-3 into the SHARED card shape
- * (custodian-card: mine→device, contact-a→recovery contact, contact-b→escrow-peer), SEALS the "mine" (device)
+ * (custodian-card: mine→device, custodian-a→custodian, custodian-b→escrow-peer), SEALS the "mine" (device)
  * share into the vault's recovery store, and returns all three cards — so the operator places "Recovery-card
- * mine" (its share sealed here) + two recovery contact cards by hand, IDENTICAL to the reserve ceremony. The
- * recovery contacts who hold a citizen's reserve cards hold this same card shape for their identity.
+ * mine" (its share sealed here) + two custodian cards by hand, IDENTICAL to the reserve ceremony. The
+ * custodians who hold a citizen's reserve cards hold this same card shape for their identity.
  *
  * SEMANTICS (per canon, unchanged): the shares reconstruct the root TRANSIENTLY at recovery to sign a
  * re-admit edge for a FRESH device, then zeroize it (reconstructAndReadmit). The card SHAPE + handshake
  * share with the reserve; the recovery quorum IS the impersonation quorum (accepted priced/social) exactly
  * as `provisionRecoveryAtFounding` already stands — this path only re-shapes the surface into cards.
  *
- * The two recovery contact cards recover WITHOUT "mine" (distinct-custodian quorum); one card alone reconstructs
+ * The two custodian cards recover WITHOUT "mine" (distinct-custodian quorum); one card alone reconstructs
  * nothing (recovery-share's type wall). The root seed zeroizes the instant it is split.
  */
 export async function provisionRecoveryCardsAtFounding(
   vault: PersonaVault,
-  recoveryContactA: string | null,
-  recoveryContactB: string | null,
+  custodianA: string | null,
+  custodianB: string | null,
   rng: RandomProvider,
   recoveryEpoch = 1,
   handleIndex = 0,
@@ -183,7 +183,7 @@ export async function provisionRecoveryCardsAtFounding(
   }
   const rootSeed = await loadPersonaRootSeed(vault, handleIndex);
   try {
-    const split: CustodianCardSplit = splitToCustodianCards(rootSeed, recoveryContactA, recoveryContactB, recoveryEpoch, rng);
+    const split: CustodianCardSplit = splitToCustodianCards(rootSeed, custodianA, custodianB, recoveryEpoch, rng);
     await vault.recovery.save(handleIndex, split.mineShare);   // seal the "mine" (device) share at rest
     return { cards: split.cards, mineSealed: true };
   } finally {
@@ -349,10 +349,6 @@ export function recoveryContactCompartmentCheck(input: {
   return { ok: true };
 }
 
-/** The law of the set (operator ruling, 2026-10-31, "2 of 3"): three recovery contacts, any two of whom restore the Handle. */
-export const RECOVERY_CONTACT_COUNT = 3;
-export const RECOVERY_CONTACT_THRESHOLD = 2;
-
 /** Why an enrolment refused, by name. */
 export type RecoveryContactEnrolRefusal =
   | "face-holds-recovery-contacts"              // the face's rolling set already left its genesis set: the recovery contacts change it
@@ -382,6 +378,8 @@ export async function enrolRecoveryContacts(input: {
   readonly recoveryContacts:        readonly RecoveryContactEnrolmentOffer[];
   readonly threshold:        number;
   readonly heldByOtherFaces: readonly RecoveryContactKeysOfFace[];
+  /** The face's own self-recovery key (its public half): it counts as none of the three, whatever shape the genesis set holds. */
+  readonly selfRecoveryKey:  string;
   /** The face's CURRENT op-key's signer. */
   readonly sign:             (bytes: Uint8Array) => Promise<string>;
 }): Promise<RecoveryContactEnrolResult> {
@@ -398,9 +396,8 @@ export async function enrolRecoveryContacts(input: {
   }
   const keys = recoveryContacts.map((g) => g.registration.recoveryPubKey.toLowerCase());
   if (new Set(keys).size !== keys.length) return refuse("recovery-contact-key-repeated", "one recovery contact key stands twice in the offered set");
-  // The face's own self-recovery key stands as the genesis wall beside the set and counts as none of the three: a face
-  // founded one-of-one commits that key alone, so a lone-key digest equal to the genesis set names it.
-  const self = keys.find((k) => sealKeySetHash([k], 1) === head.recoverySetHash);
+  // The face's own self-recovery key counts as none of the three: excluded by the key itself, never by the genesis shape.
+  const self = keys.find((k) => k === input.selfRecoveryKey.toLowerCase());
   if (self !== undefined) {
     return refuse("self-recovery-key-offered", `the key ${self.slice(0, 16)}… is this face's own self-recovery key: it counts as none of the three recovery contacts`);
   }

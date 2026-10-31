@@ -25,7 +25,7 @@ import { randomBytes } from "node:crypto";
 import type { Repo } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
 import {
-  coldKeyCode, enrolRecoveryContacts, foldPersonaContests, recoveryContactPossessionBytes, recoveryContactRegistrationCard, hex,
+  coldKeyCode, deriveSelfRecoveryKey, enrolRecoveryContacts, foldPersonaContests, recoveryContactPossessionBytes, recoveryContactRegistrationCard, hex,
   type RecoveryContactEnrolmentOffer, type RecoveryContactKeysOfFace, type RecoveryContactRegistration, type PersonaKelEvent,
 } from "@lararium/mesh";
 import { readCustodyRow, updateCustodyRow } from "./custody-seat.js";
@@ -72,12 +72,12 @@ export function recoveryContactOfferLine(recoveryPubKey: string, possessionSig: 
   return `lar-recovery-contact-offer:${recoveryPubKey.toLowerCase()}:${possessionSig.toLowerCase()}`;
 }
 
-/** Read one offer line, or refuse `offer-malformed`. The slot follows the offer's place: the first reads `contact-a`. */
+/** Read one offer line, or refuse `offer-malformed`. The slot follows the offer's place: the first reads `contact-a`, the second `contact-b`, the third `contact-c`. */
 export function readRecoveryContactOffer(line: string, at: number): RecoveryContactEnrolmentOffer {
   const m = OFFER_RE.exec(line.trim().toLowerCase());
   if (!m) return refuse("offer-malformed", `offer ${at + 1} reads as no recovery contact offer (lar-recovery-contact-offer:<key>:<proof>)`);
   return {
-    registration:  recoveryContactRegistrationCard(at % 2 === 0 ? "contact-a" : "contact-b", m[1]!, null),
+    registration:  recoveryContactRegistrationCard((["contact-a", "contact-b", "contact-c"] as const)[Math.min(at, 2)]!, m[1]!, null),
     possessionSig: m[2]!,
   };
 }
@@ -158,6 +158,7 @@ export async function runRecoveryContactEnrolment(input: {
     const result = await enrolRecoveryContacts({
       head, recoveryContacts: offers, threshold,
       heldByOtherFaces: await recoveryContactKeysOfOtherFaces(handleIndex),
+      selfRecoveryKey: (await deriveSelfRecoveryKey(seed)).verifyingKey,
       sign: async (bytes) => hex(await ed.signAsync(bytes, seed)),
     });
     if (!result.ok) return refuse(result.refusal, result.reason);

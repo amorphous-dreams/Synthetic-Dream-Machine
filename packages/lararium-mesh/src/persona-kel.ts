@@ -138,6 +138,10 @@ export interface PersonaKelEvent {
   readonly kind?:             typeof RECOVERY_CONTACT_ENROLMENT_KIND;
   /** The standing op-key's signature over an enrolment's bytes (outside the cid, like `vetoSig`). */
   readonly enrolSig?:         string | null;
+  /** An enrolment's count of recovery contacts and its threshold, in the signed bytes: the KEL verifier refuses any
+   *  enrolment that is not three at two (operator, 2026-10-31, "2 of 3"). Absent on every other kind. */
+  readonly enrolCount?:       number;
+  readonly enrolThreshold?:   number;
   /** The digest of the enrolment list this event carries (`enrolmentDigestOf`) — bound into the cid and the
    *  rotation's quorum bytes, so the list is attested as one with the rotation. */
   readonly enrolmentDigest:   string;
@@ -153,8 +157,12 @@ export interface PersonaKelEvent {
 type PersonaEventCore = Pick<
   PersonaKelEvent,
   "seq" | "prefix" | "opKeyDid" | "recoverySetHash" | "nextRecoverySetHash" | "prevEventCid" | "provisional" | "vetoOfCid"
-  | "enrolmentDigest" | "kind"
+  | "enrolmentDigest" | "kind" | "enrolCount" | "enrolThreshold"
 >;
+
+/** The law of the set (operator ruling, 2026-10-31, "2 of 3"): three recovery contacts, any two of whom restore the Handle. */
+export const RECOVERY_CONTACT_COUNT = 3;
+export const RECOVERY_CONTACT_THRESHOLD = 2;
 
 /** The one typed event kind: a one-of-one face's first recovery contact set, signed by its own current op-key. */
 export const RECOVERY_CONTACT_ENROLMENT_KIND = "recovery-contact-enrolment" as const;
@@ -179,8 +187,13 @@ export function personaEventBytes(core: PersonaEventCore): Uint8Array {
 }
 
 /** The kind as the bound bytes carry it: present on a typed event, absent on a rotation and a veto. */
-function kindPart(core: Pick<PersonaEventCore, "kind">): { readonly kind?: string } {
-  return core.kind === undefined ? {} : { kind: core.kind };
+function kindPart(core: Pick<PersonaEventCore, "kind" | "enrolCount" | "enrolThreshold">): { readonly kind?: string; readonly enrolCount?: number; readonly enrolThreshold?: number } {
+  if (core.kind === undefined) return {};
+  return {
+    kind: core.kind,
+    ...(core.enrolCount === undefined ? {} : { enrolCount: core.enrolCount }),
+    ...(core.enrolThreshold === undefined ? {} : { enrolThreshold: core.enrolThreshold }),
+  };
 }
 
 /** The content-address of a persona-KEL event — a hash BINDING its authority core. A single bit-flip in any
@@ -354,6 +367,8 @@ function enrolmentCore(head: PersonaKelEvent, recoveryContactSetHash: string): P
     vetoOfCid:       null,
     enrolmentDigest: enrolmentDigestOf([]),     // every device keeps its standing: no box rides it
     kind:            RECOVERY_CONTACT_ENROLMENT_KIND,
+    enrolCount:      RECOVERY_CONTACT_COUNT,    // the law rides the signed bytes, so the verifier decides it
+    enrolThreshold:  RECOVERY_CONTACT_THRESHOLD,
   };
 }
 
@@ -370,7 +385,7 @@ export function personaEnrolmentSigningBytes(head: PersonaKelEvent, recoveryCont
  * set already moved off its genesis set (the recovery contacts' quorum changes it, by rotation), a set that is no digest or
  * the genesis set again, and a signature that does not verify under the head's op-key.
  *
- * It sets no count and no threshold itself: the digest folds whatever set it is handed, and the enrolment verb (`enrolRecoveryContacts`) holds the law of three contacts at two.
+ * The event carries the law's count and threshold in its signed bytes (three at two): the verifier refuses any enrolment that does not, and the enrolment verb (`enrolRecoveryContacts`) is the friendly front that refuses first, by name.
  */
 export async function mintRecoveryContactEnrolment(input: {
   readonly head:            PersonaKelEvent;
@@ -493,6 +508,8 @@ function coreOf(e: PersonaKelEvent): PersonaEventCore {
     nextRecoverySetHash: e.nextRecoverySetHash, prevEventCid: e.prevEventCid,
     provisional: e.provisional, vetoOfCid: e.vetoOfCid, enrolmentDigest: e.enrolmentDigest,
     ...(e.kind === undefined ? {} : { kind: e.kind }),
+    ...(e.enrolCount === undefined ? {} : { enrolCount: e.enrolCount }),
+    ...(e.enrolThreshold === undefined ? {} : { enrolThreshold: e.enrolThreshold }),
   };
 }
 
@@ -546,6 +563,9 @@ function enrolmentStructureFault(prev: PersonaKelEvent, e: PersonaKelEvent): str
   if (e.opKeyDid !== prev.opKeyDid)                        return "an enrolment keeps the face's op-key";
   if (!DIGEST_RE.test(e.nextRecoverySetHash))              return "an enrolment commits a recovery-contact-set digest";
   if (e.nextRecoverySetHash === prev.nextRecoverySetHash)  return "an enrolment commits a set other than the genesis set";
+  if (e.enrolCount !== RECOVERY_CONTACT_COUNT || e.enrolThreshold !== RECOVERY_CONTACT_THRESHOLD) {
+    return "an enrolment commits three recovery contacts at a threshold of two";
+  }
   if (e.enrolmentDigest !== enrolmentDigestOf([]))         return "an enrolment re-enrols no device";
   if (e.recoveryRoster.length !== 0 || e.recoveryThreshold !== 0 || e.rotationSigs.length !== 0) {
     return "an enrolment carries no reveal and no quorum";

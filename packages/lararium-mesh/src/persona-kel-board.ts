@@ -125,6 +125,8 @@ export function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
     ...(typeof p["vetoSig"] === "string" ? { vetoSig: p["vetoSig"] as string } : {}),
     ...(typeof p["kind"] === "string" ? { kind: p["kind"] as NonNullable<PersonaKelEvent["kind"]> } : {}),
     ...(typeof p["enrolSig"] === "string" ? { enrolSig: p["enrolSig"] as string } : {}),
+    ...(typeof p["enrolCount"] === "number" ? { enrolCount: p["enrolCount"] } : {}),
+    ...(typeof p["enrolThreshold"] === "number" ? { enrolThreshold: p["enrolThreshold"] } : {}),
     recoveryRoster,
     recoveryThreshold: p["recoveryThreshold"] as number,
     prevEventCid:      prevRaw,

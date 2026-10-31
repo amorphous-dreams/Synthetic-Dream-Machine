@@ -298,7 +298,7 @@ describe("the enrolment verb", () => {
   test("★ CONTROL: a fresh key per face enrols, each recovery contact proving possession first ★", async () => {
     const { inception } = await oneOfOne();
     const offers = [await offer(SEEDS.g1, inception.prefix), await offer(SEEDS.g2, inception.prefix), await offer(SEEDS.g3, inception.prefix)];
-    const r = await enrolRecoveryContacts({
+    const r = await enrolRecoveryContacts({ selfRecoveryKey: await pubOf(SEEDS.self),
       head: inception, recoveryContacts: offers, threshold: 2, sign: signerOf(SEEDS.opA),
       heldByOtherFaces: [{ handleIndex: 1, keys: [await pubOf(SEEDS.g4)] }],
     });
@@ -311,7 +311,7 @@ describe("the enrolment verb", () => {
   test("★ RED: one recovery contact key offered to two faces refuses recovery-contact-key-serves-another-face ★", async () => {
     const { inception } = await oneOfOne();
     const offers = [await offer(SEEDS.g1, inception.prefix), await offer(SEEDS.g2, inception.prefix), await offer(SEEDS.g3, inception.prefix)];
-    const r = await enrolRecoveryContacts({
+    const r = await enrolRecoveryContacts({ selfRecoveryKey: await pubOf(SEEDS.self),
       head: inception, recoveryContacts: offers, threshold: 2, sign: signerOf(SEEDS.opA),
       heldByOtherFaces: [{ handleIndex: 3, keys: [await pubOf(SEEDS.g2)] }],
     });
@@ -335,7 +335,7 @@ describe("the enrolment verb", () => {
     const wrongFace = await offer(SEEDS.g1, other.prefix);
     const wrongKey = { ...(await offer(SEEDS.g2, inception.prefix)), possessionSig: (await offer(SEEDS.g3, inception.prefix)).possessionSig };
     for (const bad of [wrongFace, wrongKey]) {
-      const r = await enrolRecoveryContacts({
+      const r = await enrolRecoveryContacts({ selfRecoveryKey: await pubOf(SEEDS.self),
         head: inception, recoveryContacts: [bad, await offer(SEEDS.g4, inception.prefix), await offer(SEEDS.g3, inception.prefix)], threshold: 2, sign: signerOf(SEEDS.opA), heldByOtherFaces: [],
       });
       expect(r.ok).toBe(false);
@@ -347,7 +347,7 @@ describe("the enrolment verb", () => {
     const { inception } = await oneOfOne();
     const a = await offer(SEEDS.g1, inception.prefix);
     const b = await offer(SEEDS.g2, inception.prefix);
-    const repeated = await enrolRecoveryContacts({ head: inception, recoveryContacts: [a, a, b], threshold: 2, sign: signerOf(SEEDS.opA), heldByOtherFaces: [] });
+    const repeated = await enrolRecoveryContacts({ selfRecoveryKey: await pubOf(SEEDS.self), head: inception, recoveryContacts: [a, a, b], threshold: 2, sign: signerOf(SEEDS.opA), heldByOtherFaces: [] });
     expect(repeated.ok).toBe(false);
     if (!repeated.ok) expect(repeated.refusal).toBe("recovery-contact-key-repeated");
   });
@@ -355,7 +355,7 @@ describe("the enrolment verb", () => {
   test("the verb refuses face-holds-recovery-contacts over an enrolled face", async () => {
     const { inception } = await oneOfOne();
     const first = await enrolled(inception);
-    const r = await enrolRecoveryContacts({
+    const r = await enrolRecoveryContacts({ selfRecoveryKey: await pubOf(SEEDS.self),
       head: first, recoveryContacts: [await offer(SEEDS.g4, inception.prefix), await offer(SEEDS.g1, inception.prefix), await offer(SEEDS.g2, inception.prefix)], threshold: 2, sign: signerOf(SEEDS.opA), heldByOtherFaces: [],
     });
     expect(r.ok).toBe(false);
