@@ -14,6 +14,7 @@ choices without substituting old prototypes for the active implementation.
 | Witness and validity preflight | [Preflight archive](archive/06-validation-gates.md) | Full-frame losses must penalize false positives; exact validity gates precede promotion |
 | Nameless entities and pet-name release | [Relational archive](archive/07-relational-emergence.md) | Identity follows unique relational witnesses, not mesh index; o-takiage releases soft holds |
 | Multimodal evidence and wide epochs | [Deep research VII](deep-research-vii.md) | Preserve heterogeneous source frames and source-to-inference provenance |
+| Heritable architectural relationships: design lock and native proof | [Relational inheritance design meme](../RELATIONAL-INHERITANCE-DESIGN.md) · [Lares design carrier](../../../../bags/lares/ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design.mem) | Derive family from admitted native workspaces, reconstruct a distinct goal-preserving child under one OODA-HA helm; three-epoch proof remains open |
 | Procedural multi-shot environment, shared sites and module tests | [Athenaion hard reference](athenaion-hard-reference.md) | Pinned nine-view reference/composition, scene-wide spatial layout, semantic slots, footprint policies, deterministic module builds and render comparisons; NOT native CAD proof or inherited evolutionary grammar |
 
 The active subsystems now cover:
