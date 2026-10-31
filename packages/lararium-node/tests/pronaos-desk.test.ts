@@ -20,6 +20,10 @@ afterEach(async () => {
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
 });
 
+const INDEX = '<link rel="manifest" href="/manifest.webmanifest"><script type="module" src="/assets/wiki.worker-def.js"></script>';
+const MANIFEST = '{"name":"Pronaos"}';
+const WORKER = "self.postMessage('worker')";
+
 function deskCheckout(opts: { web: boolean; record: boolean }): { repo: string; genesis: string } {
   const repo = mkdtempSync("/tmp/lararium-pronaos-desk-"); roots.push(repo);
   const web = join(repo, "packages", "lararium-web", "dist");
@@ -38,15 +42,21 @@ function deskCheckout(opts: { web: boolean; record: boolean }): { repo: string; 
   }));
   writeFileSync(join(genesis, "cas", cid), cas);
   if (opts.web) {
-    mkdirSync(web, { recursive: true });
-    writeFileSync(join(web, "index.html"), "<!doctype html><title>desk</title>");
+    mkdirSync(join(web, "assets"), { recursive: true });
+    writeFileSync(join(web, "index.html"), INDEX);
+    writeFileSync(join(web, "manifest.webmanifest"), MANIFEST);
+    writeFileSync(join(web, "assets", "wiki.worker-def.js"), WORKER);
   }
   if (opts.record) {
     mkdirSync(join(repo, ".pronaos-build"), { recursive: true });
-    const sha256 = createHash("sha256").update("<!doctype html><title>desk</title>").digest("hex");
+    const sha = (body: string): string => createHash("sha256").update(body).digest("hex");
     writeFileSync(join(repo, ".pronaos-build", "pronaos-artifact.json"), JSON.stringify({
       schema: "lararium-pronaos-artifact/v1",
-      routes: [{ path: "/", file: "index.html", contentType: "text/html; charset=utf-8", cache: "no-store", sha256 }],
+      routes: [
+        { path: "/", file: "index.html", contentType: "text/html; charset=utf-8", cache: "no-store", sha256: sha(INDEX) },
+        { path: "/manifest.webmanifest", file: "manifest.webmanifest", contentType: "application/manifest+json", cache: "no-store", sha256: sha(MANIFEST) },
+        { path: "/assets/wiki.worker-def.js", file: "assets/wiki.worker-def.js", contentType: "application/javascript", cache: "immutable", sha256: sha(WORKER) },
+      ],
     }));
   }
   return { repo, genesis };

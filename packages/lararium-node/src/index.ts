@@ -429,6 +429,8 @@ export type {
 export { buildPronaosProjection } from "./pronaos-projection.js";
 export type { PronaosProjectionInputs } from "./pronaos-projection.js";
 export { composePronaosFromEnv, parsePronaosCompositionConfig } from "./pronaos-composition.js";
+export { derivePronaosDeskInputs } from "./pronaos-desk.js";
+export type { PronaosDeskInputs } from "./pronaos-desk.js";
 export type { PronaosComposition, PronaosCompositionConfig } from "./pronaos-composition.js";
 export { bulbCap } from "./node-caps.js";
 export { pullBulb, pullArrival, kindleFromBulb, httpBulbTransport } from "./kindle.js";
