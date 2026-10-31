@@ -1875,6 +1875,10 @@ async function prepareNodeBootOn(
   stood.push({ what: "the client dial",       down: () => { dialStoodDown = true; dialAnchor.clear(); nexusDial?.stop(); } });
   stood.push({ what: "the residency sweeper", down: () => { residency.stopSweeper(); } });
   stood.push({ what: "the event bus",         down: () => { (eventBus as LarEventBusImpl | undefined)?.stop(); } });
+  // THE ISLAND'S DOORS drop after the island shuts (T27): the teardown runs backward, so this entry, pushed before the
+  // island's, runs after it. The dyad and custody write doors stand below; an ask the island sends while it shuts still
+  // reads through them, and a boot refused before they stand nulls nothing that stood.
+  stood.push({ what: "the island doors",      down: () => { setDyadDoor(null); setCustodyWriteDoor(null); } });
   stood.push({ what: "the daemon island",     down: async () => { await (daemonVm as DaemonVmCore | undefined)?.shutdown(); } });
   stood.push({ what: "the wiki islands",      down: async () => { await (vmManager as VesselIslandPool | undefined)?.disposeAll(); } });
 
@@ -2143,7 +2147,6 @@ async function prepareNodeBootOn(
       }
       return shadowRing.deviceStanding(fleetRoot, deviceKey);
     });
-    stood.push({ what: "the dyad door", down: () => setDyadDoor(null) });
     // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ──────────────
     // `vesselDyads` reads the ceremony-minted slots, the ONLY source — a bare delegation edge
     // presents no dyad. The read only observes — but a FACE
@@ -2534,7 +2537,6 @@ async function prepareNodeBootOn(
     if (sovereign) {
       setCustodyWriteDoor((_carrier, bytes) => personaGroupId
         ? sovereign.writeVeilArchive(bytes, personaGroupId) : Promise.reject(new Error("face-not-named: the mounted face names no PersonaGroup")));
-      stood.push({ what: "the custody write door", down: () => setCustodyWriteDoor(null) });
     }
     // THE ANCHOR THE DAEMON STANDS ON ALREADY CARRIES THE VERIFIED LEASE: this runs before `daemonAuth` snapshots `standingAnchor`, so the
     // daemon's live join and grant reads floor under the anchor this boot raised, never an older copy (read 6, opening row 2).
