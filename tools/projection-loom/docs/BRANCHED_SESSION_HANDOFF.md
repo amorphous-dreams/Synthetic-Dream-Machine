@@ -1,5 +1,10 @@
 # Projection Loom · YIN re-entry key
 
+## New design lock · heritable route relationships
+
+Read [RELATIONAL-INHERITANCE-DESIGN.md](RELATIONAL-INHERITANCE-DESIGN.md) and its Lares docs carrier `bags/lares/ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design.mem` before the next YIN code wave. The research-derived working lock chooses a **derived, native-observed route family plus parent-conditioned reconstruction**, never a second mutable graph or OODA-HA helm. The prior two-epoch test verifies a topology offer/attempt/replay, **not** an admitted topology parent → distinct admitted child. Demand the three-epoch STEP witness and adversarial replay; distinguish construction refusal, deferral, native rejection and admission. The new Deep Research app report remains uninspected here and must enter later with provenance. Preserve ashes; actual o-takiage releases soft identity affinity, not source or evidence. Do not infer operator authorization for code deletion, canon promotion, or PR merge.
+
+
 **Repository:** `amorphous-dreams/Synthetic-Dream-Machine` · [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · working branch `feature/green-jello-dinosaur-5--projection-loom`. Start by fetching the **entire** boot at `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` from `feature/green-jello-dinosaur-5`. Inspect live head SHA and its exact-head Actions before acting.
 
 **Working mode:** YIN consolidation, repeated full feature → intent-aftermath. Land substantial working native features and negative tests, preserve lineage and the one `OODAHAJournal`, keep bisectable commits, then publish for complete CI. No version ladders, compatibility adapters or automatic operator choices. Historical document fronts remain in each file's holding ashes.
