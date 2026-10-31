@@ -1,3 +1,18 @@
+# Projection Loom · YIN living roadmap
+
+## Latest source wave · topology admission accounting
+
+- [x] Add topology-offered, actual-native-attempted, and native-admitted counters to the existing immutable campaign emission census without changing the journal or exact STEP audition budget. Source commit `ee131a387ae17a1851c4bead4e63a7c45d5f51b6`.
+- [ ] Run native multi-epoch campaign and verify the new census through independent replay and corrupt-receipt tests. This wave did not execute Python locally.
+- [ ] Complete exact-head CI on the latest branch; previously inspected CAD/evidence run remained in progress.
+- [ ] Migrate the recombination-specific deferral field to a common typed proposal refusal end-to-end, without compatibility scaffolding.
+- [ ] Extend measured source-driven architecture and actual Unreal Editor validation without claiming safety or an artistic winner.
+
+## Ashes holding ahu · prior living roadmap
+
+<details>
+<summary>Prior front preserved verbatim</summary>
+
 # Projection Loom · Living YIN roadmap
 
 ## Bounded topology search · latest feature/aftermath
@@ -2174,6 +2189,8 @@ Operator pet-name promotion. At authoring time, the campaign had not yet
 produced hosted results; inspect exact-head workflow receipts and archives
 before calling any offspring successful.
 
+
+</details>
 
 </details>
 
