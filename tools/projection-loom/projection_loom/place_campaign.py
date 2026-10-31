@@ -159,7 +159,7 @@ def select_place_auditions(offered,budget,preferred=None,*,epoch=0,emitter_recei
     their original genome proposals or score/physical safety rules.
     """
     if preferred not in (None,"initial","mutation","relational-recombination"):
-        raise ValueError("Unsupported attributed place emitter preference")
+        raise ValueError("Place runner supports only initial, mutation and relational-recombination emitters")
     if type(budget) is not int or not 1<=budget<=len(offered):
         raise ValueError("Invalid exact native place audition budget")
     keyed=list(enumerate(offered))

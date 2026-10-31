@@ -30,6 +30,15 @@ def test_shared_unimplemented_emitter_must_not_silently_claim_steering():
         select_place_auditions(offered,1,"sobol")
     assert select_place_auditions(offered,1,"mutation",epoch=0)==[("next","b")]
     assert select_place_auditions(offered,1,"initial",epoch=0)==[("first","a")]
+    # An unavailable relational emitter cannot synthesize a native parent;
+    # steering applies only to actual source-bound offers.
+    receipts={"first":{"emitter":"initial"},"next":{"emitter":"relational-recombination"}}
+    assert select_place_auditions(offered,1,"relational-recombination",
+                                  epoch=1,emitter_receipts=receipts)==[("next","b")]
+    assert select_place_auditions(offered,1,"relational-recombination",
+                                  epoch=1,emitter_receipts={
+                                  "first":{"emitter":"initial"},
+                                  "next":{"emitter":"mutation"}})==[("first","a")]
 
 def test_forged_preferred_frontier_order_fails_independent_replay(tmp_path):
     import json
