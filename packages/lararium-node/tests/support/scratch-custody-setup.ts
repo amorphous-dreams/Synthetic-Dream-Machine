@@ -27,9 +27,9 @@ import { makeCustodyHolder, seatFaceAutoFounder, type CustodyHolder } from "../.
 import { seatCustodyWhenNeeded } from "../../src/custody-seat.js";
 import { vesselCustodyHomes } from "../../src/vault-carriers.js";
 
-// The suites read no person's git config: `readLocalOperatorHint` names a login off the global user.email, and an
-// operator's own email moves the row names a suite writes. The null device gives every suite, and every child it
-// spawns, the same empty global.
+// The suites read no person's git config: the vessel's display name reads the global user.name, and a person's own
+// config would move what a suite sees. The null device gives every suite, and every child it spawns, the same empty
+// global.
 process.env.GIT_CONFIG_GLOBAL = "/dev/null";
 
 /** The synthetic route (the seat fixture founds under the same string, so either opens the other's tree). */

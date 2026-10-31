@@ -5,13 +5,13 @@
  * names from its home alone: a host fact never picks which file a vessel reads.
  */
 import { afterAll, describe, expect, test, vi } from "vitest";
-import { cpSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { RandomProvider } from "@lararium/mesh";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { foundDirect } from "./found-route.js";
-import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
+import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselIdentity } from "../src/node-vessel-identity.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
 import { faceRowNames } from "./face-paths.js";
 
@@ -90,5 +90,16 @@ describe("custody names read no login", () => {
       expect(again.verifyingKey).toBe(first.verifyingKey);
       expect(placeFiles()).toEqual(standing);
     }));
+  });
+
+  test("a home holding only a file no row names boots to the ordinary refusal, and nothing mints", async () => {
+    const r = root();
+    await withLarRoot(r, async () => {
+      mkdirSync(larIdentityDir(), { recursive: true });
+      writeFileSync(join(larIdentityDir(), "stray-unrecognised.json"), "{}", { mode: 0o600 });
+      const before = readdirSync(larIdentityDir()).sort();
+      await expect(loadVesselIdentity()).rejects.toThrow(/no key file/);
+      expect(readdirSync(larIdentityDir()).sort(), "the boot lands nothing").toEqual(before);
+    });
   });
 });

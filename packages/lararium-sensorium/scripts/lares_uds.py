@@ -104,10 +104,9 @@ def operator_did() -> str:
     DESIGNATION (the did the daemon derives caps from), not by proof-of-possession, so the secret has
     no business in this process.
     """
-    import glob
-
     ident = identity_dir()
-    for f in sorted(glob.glob(os.path.join(ident, ".vessel-key-*.json"))):
+    f = os.path.join(ident, ".vessel-key.json")
+    if os.path.exists(f):
         with open(f) as fh:
             key = json.load(fh).get("verifyingKey")
         if key:

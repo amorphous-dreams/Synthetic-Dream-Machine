@@ -216,17 +216,17 @@ describe("vault door — status, unlock, bind, unbind", () => {
 
   it("★ status gives ONE reading of each standing file: a floor row beside its law, a bare hot row as a fault, a private file outside the table by name ★", async () => {
     const homes = vesselCustodyHomes();
-    writeFileSync(join(homes.identity, ".vessel-key-x.json"), "{}", { mode: 0o600 });
+    writeFileSync(join(homes.identity, ".vessel-key.json"), "{}", { mode: 0o600 });
     writeFileSync(join(homes.identity, ".persona-enroll-pending.json"), "{}", { mode: 0o600 });
     writeFileSync(join(homes.identity, "side-key.json"), "{}", { mode: 0o600 });
     expect(await cmdVault(parseArgs(["vault", "status", "--no-json"]))).toBe(0);
     const lines = out.join("\n").split("\n");
     // each standing file reads on exactly one line
-    for (const file of ["gate-root.bin", ".vessel-key-x.json", ".persona-enroll-pending.json", "s-slots.bin"]) {
+    for (const file of ["gate-root.bin", ".vessel-key.json", ".persona-enroll-pending.json", "s-slots.bin"]) {
       expect(lines.filter((l) => l.includes(file)), file).toHaveLength(1);
     }
     expect(lines.find((l) => l.includes("gate-root.bin"))).toMatch(/hot\s+device-minted\s+sealed/);
-    expect(lines.find((l) => l.includes(".vessel-key-x.json"))).toMatch(/floor\s+device-minted\s+bare\s+\S+\s+by law: /);
+    expect(lines.find((l) => l.includes(".vessel-key.json"))).toMatch(/floor\s+device-minted\s+bare\s+\S+\s+by law: /);
     expect(lines.find((l) => l.includes("s-slots.bin"))).toMatch(/bare\s+s-slots\.bin\s+by law: /);
     expect(lines.find((l) => l.includes(".persona-enroll-pending.json"))).toMatch(/bare\s+\.persona-enroll-pending\.json\s+FAULT/);
     expect(lines.find((l) => l.includes("side-key.json"))).toMatch(/OUTSIDE THE TABLE.*owner-only/);

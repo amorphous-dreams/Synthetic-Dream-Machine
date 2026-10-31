@@ -34,8 +34,8 @@ async function rowsOf(homes: CustodyHomes, files: Record<string, string | Uint8A
 
 describe("custody ⊥ secret-kind — one reading names both axes", () => {
   const SOWN = {
-    ".vessel-key-joshua.json": "{}", [`faces/${"ab".repeat(16)}/veil-archive-g${"a".repeat(64)}.bin`]: "x",
-    [`faces/${"ab".repeat(16)}/.persona-group-root-joshua-h0.json`]: "{}", [`faces/${"ab".repeat(16)}/recovery-device-share-h0.bin`]: "x",
+    ".vessel-key.json": "{}", [`faces/${"ab".repeat(16)}/veil-archive-g${"a".repeat(64)}.bin`]: "x",
+    [`faces/${"ab".repeat(16)}/.persona-group-root-h0.json`]: "{}", [`faces/${"ab".repeat(16)}/recovery-device-share-h0.bin`]: "x",
   };
 
   test("each key names its class and its custody off the one carrier table", async () => {
@@ -56,7 +56,7 @@ describe("custody ⊥ secret-kind — one reading names both axes", () => {
     try {
       const io = new FsCustodyIo(v.homes);
       await foundCustody({ io, homes: v.homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "census-test-route" }] }] });
-      const rows = await rowsOf(v.homes, { [`faces/${"ab".repeat(16)}/.persona-group-root-joshua-h0.json`]: "{}", [`faces/${"ab".repeat(16)}/recovery-device-share-h0.bin`]: "x" });
+      const rows = await rowsOf(v.homes, { [`faces/${"ab".repeat(16)}/.persona-group-root-h0.json`]: "{}", [`faces/${"ab".repeat(16)}/recovery-device-share-h0.bin`]: "x" });
       expect(rows.get("gate-root")).toMatchObject({ keyClass: "device-minted", custody: "hot", reading: "sealed", fault: false });
       expect(rows.get("persona-root-h0")).toMatchObject({ keyClass: "seed", custody: "face-cold", reading: "bare", fault: true });
       expect(rows.get("recovery-device-share-h0")).toMatchObject({ keyClass: "seed", custody: "face-cold", reading: "bare", fault: true });
@@ -81,7 +81,7 @@ describe("custody ⊥ secret-kind — one reading names both axes", () => {
   test("CONTROL: a GAP in the handle numbering throws nothing and drops nobody", async () => {
     const v = scratch();
     try {
-      const rows = await rowsOf(v.homes, { [`faces/${"ab".repeat(16)}/recovery-device-share-h0.bin`]: "x", [`faces/${"ab".repeat(16)}/recovery-device-share-h3.bin`]: "x", [`faces/${"ab".repeat(16)}/.persona-group-root-joshua-h3.json`]: "{}" });
+      const rows = await rowsOf(v.homes, { [`faces/${"ab".repeat(16)}/recovery-device-share-h0.bin`]: "x", [`faces/${"ab".repeat(16)}/recovery-device-share-h3.bin`]: "x", [`faces/${"ab".repeat(16)}/.persona-group-root-h3.json`]: "{}" });
       expect([...rows.keys()].sort()).toEqual(["persona-root-h3", "recovery-device-share-h0", "recovery-device-share-h3"]);
     } finally { v.drop(); }
   });
