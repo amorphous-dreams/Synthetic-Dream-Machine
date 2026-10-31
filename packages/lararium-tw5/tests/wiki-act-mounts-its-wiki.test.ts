@@ -42,13 +42,15 @@ const settle = async (): Promise<void> => { for (let i = 0; i < 20; i++) await n
 const outcomeOf = async (daemon: CompositeStore, id: string) => (await daemon.getLive(OUTCOME_URI_PREFIX + id))?.tiddler;
 
 const WORKING = "lar:///ha.ka.ba/wikis/orchard/working";
-function stand(opts: { switchAnswer?: Record<string, unknown> | Error; fence?: boolean; deny?: string } = {}) {
+function stand(opts: { textOnly?: boolean; switchAnswer?: Record<string, unknown> | Error; fence?: boolean; deny?: string } = {}) {
   const daemon = makeDaemon();
   const routed: string[] = [];
   let mounted = false;
   // The working slot's cap mints at the first mount, as resolveBinding does.
   const verifier: CapabilityVerifier = {
-    verify: async ({ bagUrl }) => opts.deny ? { ok: false, reason: opts.deny } : bagUrl === WORKING && !mounted ? { ok: false, reason: `bag not registered: ${bagUrl}` } : { ok: true },
+    verify: async ({ bagUrl }) => opts.deny ? { ok: false, reason: opts.deny }
+      : bagUrl === WORKING && !mounted ? (opts.textOnly ? { ok: false, reason: `bag not registered: ${bagUrl}` } : { ok: false, kind: "bag-not-registered", bagUrl, reason: `bag not registered: ${bagUrl}` })
+      : { ok: true },
   };
   const registry = new VerbTable();
   if (opts.fence) registry.fence({ open: {}, check: (verb, context) => {
@@ -131,6 +133,15 @@ describe("a wiki-act aimed at a wiki no island mounts asks the vessel to mount i
     await settle();
     expect(s.routed).toEqual([]);
     expect(String((await outcomeOf(s.daemon, "r3"))?.["results"])).toContain("no face provider");
+    s.dispatcher.stop();
+  });
+
+  test("RED: the mount trigger reads the refusal's TYPE; a denial that only spells `bag not registered` mounts nothing", async () => {
+    const s = stand({ textOnly: true });
+    s.act("did:key:mounted");
+    await settle();
+    expect(s.routed).toEqual([]);
+    expect(String((await outcomeOf(s.daemon, "r1"))?.["results"])).toContain("bag not registered");
     s.dispatcher.stop();
   });
 
