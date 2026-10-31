@@ -64,13 +64,14 @@ async function stand() {
     anchor: { kind: "nexus", aid: "nexus-one.synthetic" }, mint: async () => ({ ok: true, signer: { drop() {} } }) } }) };
   const placed: Array<{ verb: string; requestId: string }> = [];
   const ran: Array<{ act: string; args: Record<string, unknown>; worn: unknown }> = [];
-  const sessionActs = { names: new Set(["cabal-face"]), run: async (act: string, args: Record<string, unknown>, worn?: unknown) => {
+  const sessionActs = { names: new Set(["cabal-face", "realm-bag"]), run: async (act: string, args: Record<string, unknown>, worn?: unknown) => {
     ran.push({ act, args, worn });
     return { verb: act, realm: args["realm"], nexusAid: "nexus-one.synthetic", face: LEAF };
   } };
   const front = serveUdsFront({ claim });
   front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
-    switchActs: { write: async () => {} }, sessionVerbs: new Set(["cabal-face"]), sessionActs: sessionActs as never,
+    switchActs: { write: async () => {} }, sessionVerbs: new Set(["cabal-face"]),
+    socketVerbs: new Set(["cabal-face", "realm-bag", "realm-bags", "realm-clock"]), sessionActs: sessionActs as never,
     placeVerb: (o) => {
       // The old route: the island runs the row and its outcome body rests in the daemon document beside its requester.
       placed.push(o);
@@ -109,13 +110,26 @@ test("RED: a face row on session:act runs as the session's face, its answer ride
   expect(receipts[0]).toMatch(/proof-b/);
 });
 
-test("RED: a face row on session:call refuses face-row-answers-on-the-socket and places nothing; CONTROL: a place verb on session:call still places", async () => {
+test("RED: a face row on session:call refuses answers-on-the-socket and places nothing; CONTROL: a place verb on session:call still places", async () => {
   const v = await stand();
   const env = await v.open("hint-b");
   expect(await v.peer.ask({ op: "session:call", ...env, requestId: "call-1", verb: "cabal-face", args: { realm: REALM } }))
-    .toMatchObject({ kind: "session:refused", refusal: "face-row-answers-on-the-socket" });
+    .toMatchObject({ kind: "session:refused", refusal: "answers-on-the-socket" });
   expect(v.placed).toEqual([]);
   expect(v.synced().filter((r) => r.includes(LEAF))).toEqual([]);
   await v.peer.ask({ op: "session:call", ...env, requestId: "call-2", verb: "load", args: {} });
   expect(v.placed.map((p) => p.verb)).toEqual(["load"]);
+});
+
+test("RED (Sol's batch-head read, HIGH): realm-bag, realm-bags and realm-clock on session:call refuse answers-on-the-socket and place nothing; CONTROL: realm-bag on session:act runs as the session's face", async () => {
+  const v = await stand();
+  const env = await v.open("hint-b");
+  for (const verb of ["realm-bag", "realm-bags", "realm-clock"]) {
+    expect(await v.peer.ask({ op: "session:call", ...env, requestId: `call-${verb}`, verb, args: { realm: REALM } }), verb)
+      .toMatchObject({ kind: "session:refused", refusal: "answers-on-the-socket" });
+  }
+  expect(v.placed).toEqual([]);
+  expect(await v.peer.ask({ op: "session:act", ...env, requestId: "act-bag", act: "realm-bag", args: { realm: REALM } }))
+    .toMatchObject({ kind: "session:act-result" });
+  expect(v.ran.at(-1)).toEqual({ act: "realm-bag", args: { realm: REALM, face: 1 }, worn: { ordinal: 1, presenter: "verified-hint-b" } });
 });
