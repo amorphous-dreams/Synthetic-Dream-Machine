@@ -69,7 +69,9 @@ def _cross_parent(source, archive, spatial, *, seed, epoch, index):
                 tested.append({"candidate_pair_index":attempt_index,
                                "reason":str(exc)})
         if chosen is None:
-            return None,"all compatible source-bound region alternatives refused"
+            return None,("all compatible source-bound region alternatives refused: "+
+                         "; ".join(str(row["candidate_pair_index"])+": "+
+                                   row["reason"] for row in tested))
     except ValueError as exc:
         return None,"source-bound recombination refused: "+str(exc)
     ancestry={"left_candidate_id":left["candidate_id"],

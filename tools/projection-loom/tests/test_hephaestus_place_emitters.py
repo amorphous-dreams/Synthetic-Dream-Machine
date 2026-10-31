@@ -92,6 +92,7 @@ def test_identical_architecture_cannot_be_rebranded_as_successful_recombination(
                                epoch=1,index=1,offspring=2,seed=23)
     assert receipt["emitter"]=="mutation"
     assert "alternatives refused" in receipt["recombination_deferral"]
+    assert "generated child is identical to an admitted parent" in receipt["recombination_deferral"]
     assert receipt["native_audition_completed"] is False
 
 def test_relational_search_preserves_the_first_refusal_then_tries_another_closed_region(monkeypatch):
