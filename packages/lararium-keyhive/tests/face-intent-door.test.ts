@@ -152,4 +152,32 @@ describe("face intent door stalls and gates", () => {
     await d1.heed(); await d2.heed();
     expect(a1).toHaveBeenCalledTimes(1); expect(a2).not.toHaveBeenCalled();
   });
+  test("RED: a re-pin landing while the first effect runs opens no second run; CONTROL: a first effect that faults leaves the re-pinned hearth free to act", async () => {
+    const run = async (faults: boolean) => {
+      const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs();
+      let release!: () => void; const held = new Promise<void>((r) => { release = r; });
+      const a1 = vi.fn(async () => { await held; if (faults) throw new Error("first hearth faulted"); return { recordCid: "one" }; }), a2 = vi.fn(async () => ({ recordCid: "two" }));
+      const base = { group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception], verbs, log: () => {}, standing: () => "stands" as const };
+      const d1 = makeFaceIntentDoor({ ...base, atom: f.h1, effects: new Map([["face-join", a1]]) });
+      const d2 = makeFaceIntentDoor({ ...base, atom: f.h2, effects: new Map([["face-join", a2]]) });
+      const intent = await buildIntent({ group: f.group, signer: f.joinee, verb: "face-join", args: { summons: {} }, nonce: f.joinee.key, audience: { mode: "asks" }, verbs });
+      const id = intentId(intent.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string });
+      const asks = await buildAsks({ group: f.group, signer: f.joinee, intent: id, needs: "executor" });
+      const first = await buildAnswer({ group: f.group, signer: f.h1, ask: intentEntryCid(asks), verdict: "approve", executor: f.h1.key });
+      shared.handle.change((d) => { writeIntentEntry(d, intent); writeIntentEntry(d, asks); writeIntentEntry(d, first); });
+      const running = d1.heed();
+      await Promise.resolve();
+      const repin = await signIntentEntry({ group: f.group, entry: "answer", refs: [intentEntryCid(first)], ask: intentEntryCid(asks), verdict: "approve", executor: f.h2.key }, f.h1);
+      shared.handle.change((d) => writeIntentEntry(d, repin));
+      await d2.heed();
+      const during = a2.mock.calls.length;
+      release(); await running;
+      await d2.heed();
+      return { during, after: a2.mock.calls.length };
+    };
+    const live = await run(false);
+    expect(live.during).toBe(0); expect(live.after).toBe(0);
+    const faulted = await run(true);
+    expect(faulted.during).toBe(0); expect(faulted.after).toBe(1);
+  });
 });

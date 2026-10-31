@@ -174,3 +174,12 @@ describe("intent plane under re-pin, re-target and id collision", () => {
     expect(mayAct(f.fold([x]), id, f.a.key)).toEqual({ act: true });
   });
 });
+
+describe("the pane names the entry a refusal concerns", () => {
+  test("RED: an id-collision row carries both cids in the pane; CONTROL: a lone body draws no refusal row", async () => {
+    const f = await fixture();
+    const x = await f.intent({ mode: "every" }), y = await f.intent({ mode: "class", capability: "x" });
+    expect(intentPaneModel(f.fold([x, y])).refusals).toEqual([intentEntryCid(x), intentEntryCid(y)].sort().map((cid) => ({ refusal: "id-collision", cid })));
+    expect(intentPaneModel(f.fold([x])).refusals).toEqual([]);
+  });
+});
