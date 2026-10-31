@@ -594,6 +594,11 @@ function revealedSetFault(enrolment: PersonaKelEvent, e: PersonaKelEvent): strin
   if (e.recoveryRoster.length !== RECOVERY_CONTACT_COUNT || distinct !== RECOVERY_CONTACT_COUNT || e.recoveryThreshold !== RECOVERY_CONTACT_THRESHOLD) {
     return "a revealed recovery contact set holds exactly three distinct keys at a threshold of two";
   }
+  // The face's own self-recovery key counts as none of the three. The log shows it: a one-of-one genesis commits that key
+  // alone, so a revealed key whose singleton digest equals the genesis commitment is the self key.
+  if (e.recoveryRoster.some((k) => sealKeySetHash([k.toLowerCase()], 1) === enrolment.recoverySetHash)) {
+    return "a revealed recovery contact set names the face's own self-recovery key, which counts as none of the three";
+  }
   if (e.recoveryRoster.length !== enrolment.enrolCount || e.recoveryThreshold !== enrolment.enrolThreshold) {
     return "the revealed set disagrees with the count and threshold the enrolment signed";
   }
