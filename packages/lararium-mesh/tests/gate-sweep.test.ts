@@ -125,4 +125,35 @@ describe("the gate sweep owner", () => {
     const one = owner.refold(); await flush(); asks[0]!.resolve([{ aid: "n", posture: "open" }]); await one;
     expect(drops).toBe(1);
   });
+  test("RED a stalled after-step holds no later turn's drop (the cold read's SHOULD 1); CONTROL: after-steps still run one at a time", async () => {
+    const { read, asks } = handRead();
+    const drops: string[] = [];
+    let release: () => void = () => {};
+    let afters = 0;
+    let running = 0;
+    let overlapped = false;
+    const owner = gateSweep<Reading>({
+      readCarried: read, nexusesOf, seat: () => null,
+      drop: (readings) => { drops.push(readings.map((r) => r.posture).join(",")); },
+      // The first after-step stalls (a relay that never answers); the rest return at once.
+      after: async () => {
+        running++; if (running > 1) overlapped = true;
+        try { if (afters++ === 0) await new Promise<void>((r) => { release = r; }); } finally { running--; }
+      },
+    });
+    void owner.refold();
+    await flush();
+    asks[0]!.resolve([{ aid: "n", posture: "open" }]);
+    await flush();
+    void owner.refold();                                           // the charter tightens while the first after-step stalls
+    await flush();
+    expect(asks).toHaveLength(2);                                  // the second turn's read runs now
+    asks[1]!.resolve([{ aid: "n", posture: "private" }]);
+    await flush();
+    expect(drops).toEqual(["open", "private"]);                    // and its drop with it, past the stalled after-step
+    release();
+    await flush();
+    expect(overlapped).toBe(false);                                // CONTROL: no two after-steps ran at once
+    expect(afters).toBe(2);
+  });
 });
