@@ -384,3 +384,90 @@ describe("the door wakes on its authority and keeps what settled", () => {
     expect(block).toMatch(composed);
   });
 });
+
+describe("a completed effect stays settled, a detached door hears no fence, and settled ids leave once every replica sees the outcome", () => {
+  const asksFixture = async (shared: ReturnType<typeof plane>, f: Awaited<ReturnType<typeof faceOf>>, verbs: ReturnType<typeof faceIntentVerbs>) => {
+    const intent = await buildIntent({ group: f.group, signer: f.joinee, verb: "face-join", args: { summons: {} }, nonce: f.joinee.key, audience: { mode: "asks" }, verbs });
+    const id = intentId(intent.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string });
+    const asks = await buildAsks({ group: f.group, signer: f.joinee, intent: id, needs: "executor" });
+    const first = await buildAnswer({ group: f.group, signer: f.h1, ask: intentEntryCid(asks), verdict: "approve", executor: f.h1.key });
+    shared.handle.change((d) => { writeIntentEntry(d, intent); writeIntentEntry(d, asks); writeIntentEntry(d, first); });
+    const repin = await signIntentEntry({ group: f.group, entry: "answer", refs: [intentEntryCid(first)], ask: intentEntryCid(asks), verdict: "approve", executor: f.h2.key }, f.h1);
+    return { id, repin };
+  };
+
+  test("RED: an effect that ran to completion stays fenced when its receipt fails, and the receipt lands on a later pass; CONTROL: a fault mid-effect frees the id", async () => {
+    const run = async (mode: "receipt-fails" | "effect-faults") => {
+      const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs();
+      const a1 = vi.fn(async () => { if (mode === "effect-faults") throw new Error("mid-effect"); return { recordCid: "one" }; }), a2 = vi.fn(async () => ({ recordCid: "two" }));
+      const { id, repin } = await asksFixture(shared, f, verbs);
+      // The receipt's publication fails once, after the effect returned.
+      let failNext = mode === "receipt-fails";
+      const handle = { ...shared.handle, change: (edit: (draft: LarDoc) => void) => { if (failNext) { failNext = false; throw new Error("receipt write failed"); } shared.handle.change(edit); } } as unknown as DocHandle<LarDoc>;
+      const base = { group: f.group, plane: handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs, log: () => {}, standing: () => "stands" as const };
+      const d1 = makeFaceIntentDoor({ ...base, atom: f.h1, effects: new Map([["face-join", a1]]) });
+      const d2 = makeFaceIntentDoor({ ...base, atom: f.h2, effects: new Map([["face-join", a2]]) });
+      await d1.heed();
+      shared.handle.change((d) => writeIntentEntry(d, repin));
+      await d2.heed();
+      await d1.heed();
+      const outcomes = intentEntryRecordsOfGroup(shared.doc, f.group).filter((r) => (r as { body: { entry: string; cause?: string } }).body.entry === "outcome" && (r as { body: { cause?: string } }).body.cause === id).length;
+      return { first: a1.mock.calls.length, second: a2.mock.calls.length, outcomes };
+    };
+    const failed = await run("receipt-fails");
+    expect(failed.first).toBe(1); expect(failed.second).toBe(0); expect(failed.outcomes).toBe(1);
+    const faulted = await run("effect-faults");
+    expect(faulted.first).toBe(1); expect(faulted.second).toBe(1);
+  });
+
+  test("RED: a detached door's fence waiter never fires; CONTROL: an attached one does", async () => {
+    const run = async (detach: boolean) => {
+      const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs();
+      let release!: () => void; const held = new Promise<void>((r) => { release = r; });
+      const a1 = vi.fn(async () => { await held; throw new Error("faulted"); }), a2 = vi.fn(async () => ({ recordCid: "two" }));
+      const base = { group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs, log: () => {}, standing: () => "stands" as const };
+      const { repin } = await asksFixture(shared, f, verbs);
+      const d1 = makeFaceIntentDoor({ ...base, atom: f.h1, effects: new Map([["face-join", a1]]) });
+      const running = d1.heed();
+      await Promise.resolve();
+      shared.handle.change((d) => writeIntentEntry(d, repin));
+      const stop2 = makeFaceIntentDoor({ ...base, atom: f.h2, effects: new Map([["face-join", a2]]) }).attach();
+      await settle();
+      expect(a2).not.toHaveBeenCalled();
+      if (detach) stop2();
+      release(); await running; await settle();
+      if (!detach) stop2();
+      return a2.mock.calls.length;
+    };
+    expect(await run(true)).toBe(0);
+    expect(await run(false)).toBe(1);
+  });
+
+  test("RED: a settled id leaves the retention once every handle over its document reads the outcome, and stays while one does not; CONTROL: no run, no entry", async () => {
+    const path = "../src/face-intent-door.js";
+    const module = await import(path) as { settledRunsOf?: (plane: DocHandle<LarDoc>) => ReadonlySet<string> };
+    expect(module.settledRunsOf, "settledRunsOf names the retention").toBeTypeOf("function");
+    const f = await faceOf(), verbs = faceIntentVerbs();
+    const replica = () => { const p = plane(); (p.handle as unknown as { documentId: string }).documentId = "doc-retention"; return p; };
+    const a = replica(), b = replica();
+    const intent = await buildIntent({ group: f.group, signer: f.joinee, verb: "face-join", args: { summons: {} }, nonce: f.joinee.key, audience: { mode: "pinned", atom: f.h1.key }, verbs });
+    const id = intentId(intent.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string });
+    for (const p of [a, b]) p.handle.change((d) => writeIntentEntry(d, intent));
+    const base = { group: f.group, personaRecords: () => f.log, kelChain: () => [f.inception], verbs, log: () => {}, standing: () => "stands" as const, atom: f.h1 };
+    const effect = vi.fn(async () => ({ recordCid: "one" }));
+    const onA = makeFaceIntentDoor({ ...base, plane: a.handle, effects: new Map([["face-join", effect]]) });
+    const onB = makeFaceIntentDoor({ ...base, plane: b.handle, effects: new Map([["face-join", effect]]) });
+    expect(module.settledRunsOf!(a.handle).size, "CONTROL: no run, no entry").toBe(0);
+    await onB.heed();
+    expect(effect).toHaveBeenCalledTimes(1);
+    expect([...module.settledRunsOf!(a.handle)]).toEqual([id]);
+    await onA.heed();
+    expect(effect).toHaveBeenCalledTimes(1);
+    expect([...module.settledRunsOf!(a.handle)], "handle A has not read the outcome yet").toEqual([id]);
+    const outcome = intentEntryRecordsOfGroup(b.doc, f.group).find((r) => (r as { body: { entry: string } }).body.entry === "outcome")!;
+    a.handle.change((d) => writeIntentEntry(d, outcome as Parameters<typeof writeIntentEntry>[1]));
+    await onA.heed();
+    expect(module.settledRunsOf!(a.handle).size, "every handle reads the outcome: the entry leaves").toBe(0);
+    expect(effect).toHaveBeenCalledTimes(1);
+  });
+});
