@@ -355,7 +355,7 @@ export class VerbDispatcher {
       const slug = routedWikiSlug(invocation);
       const unregistered = /bag not registered: (lar:\/\/\/\S+)/.exec(refusal instanceof Error ? refusal.message : "")?.[1];
       if (!slug || !unregistered || wikiSlugOfBag(unregistered) !== slug) throw refusal;
-      await this.mountAimedWiki(slug, invocation.requestedBy);
+      await this.mountAimedWiki(slug, invocation);
       await gateRoutedVerb(invocation, this.opts.verifier, presenter, local);
     }
   }
@@ -365,15 +365,15 @@ export class VerbDispatcher {
    * stand. It follows the fence and the verifier's own `bag not registered` (see clearRouted), so only a presenter the
    * fence admits and the verifier otherwise clears can ask one. Main answers `wiki-switch` the way `ensureActive` does.
    */
-  private async mountAimedWiki(slug: string, requestedBy: string): Promise<void> {
+  private async mountAimedWiki(slug: string, invocation: Verb): Promise<void> {
     const refuse = (cause: string): Error => Object.assign(new Error(`wiki-mount-refused: ${cause}`), { reason: "wiki-mount-refused" });
     if (!this.opts.routeFn) throw refuse(`no-route: ${slug} has no island to ask`);
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
       // The ask rides its own correlation id: a caller's request id never names a mount.
       const asked = this.opts.routeFn({
-        requestId: `wiki-mount:${globalThis.crypto.randomUUID()}`, title: `wiki-mount:${slug}`, action: "wiki-switch", args: { slug },
-        targets: [], batchMode: "best-effort", status: "pending", requestedBy, requestedAt: new Date().toISOString(),
+        requestId: `wiki-mount:${globalThis.crypto.randomUUID()}`, title: `wiki-mount:${slug}`, action: "wiki-switch", args: { slug }, requestedBy: invocation.requestedBy,
+        targets: [], batchMode: "best-effort", status: "pending", requestedAt: invocation.requestedAt,
       } as Verb);
       const bound = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(refuse(`mount-timeout: ${slug} did not answer within ${WIKI_MOUNT_BOUND_MS}ms`)), WIKI_MOUNT_BOUND_MS); });
       const answer = await Promise.race([asked, bound]);
