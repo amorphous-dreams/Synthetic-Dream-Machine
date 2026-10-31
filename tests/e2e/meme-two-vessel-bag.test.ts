@@ -261,7 +261,9 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     // answers the standing intent's id, so the plane holds one summons of B however many times a hand asks.
     const summonsDeadline = Date.now() + 90_000;
     while (!/the seat summons issued/.test(B!.bootLog()) && Date.now() < summonsDeadline) await new Promise((res) => setTimeout(res, 1000));
-    expect(B!.bootLog(), "B's own island summoned its seat").toMatch(/the seat summons issued/);
+    // B's boot log is the only witness of which bind holds a summons back: a summons that never issues names it here.
+    const summonsLines = B!.bootLog().split("\n").filter((l) => /summons|face intent door|face-join|nexus-join|\[realm\]|lar-leaf/.test(l)).slice(-16).join("\n  ");
+    expect(B!.bootLog(), `B's own island summoned its seat:\n  ${summonsLines}`).toMatch(/the seat summons issued/);
     const requested = await requestFaceJoin(B!);
     const grant = await faceJoinOutcome(B!, requested);
     console.error(`meme-two-vessel-bag MEASURE A: face-join → admitted ${String(grant["admitted"])} · reKeyed ${String(grant["reKeyed"])} · reSealed ${String(grant["reSealedCount"] ?? "(none)")} · record ${String(grant["recordTitle"] ?? "(none)")} ${grant["reason"] ? `· reason ${String(grant["reason"])}` : ""}`);
