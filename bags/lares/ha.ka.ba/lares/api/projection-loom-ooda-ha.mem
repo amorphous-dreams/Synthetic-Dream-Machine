@@ -122,7 +122,7 @@ A candidate's Act MAY open one full child OODA-HA per trusted, versioned capabil
 <<~ ahu #/links>>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-capability-composition">>
 
-`tools/projection-loom/docs/ooda-ha-procedural.md` carries the executable
+The current `tools/projection-loom/projection_loom/fractal_ooda_ha.py` and `phase_rules.py` carry the executable
 contract and safe-point controls.
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
@@ -130,6 +130,6 @@ contract and safe-point controls.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;c7I9IcZh4UZBKfi4MN6fhfocMkPjCPWU2UnC4P8xNGU
+<<^ code="&#x0003;">>ni:///sha-256;vN61VW5WKILTm1hR5gf3G5qBai2TrUl7DFoO8jIdPKk
 
 <<^ code="&#x0004;" -> to="?">>
