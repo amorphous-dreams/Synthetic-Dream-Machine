@@ -1,3 +1,20 @@
+# Projection Loom · YIN re-entry key
+
+**Repository:** `amorphous-dreams/Synthetic-Dream-Machine` · [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · working branch `feature/green-jello-dinosaur-5--projection-loom`. Start by fetching the **entire** boot at `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` from `feature/green-jello-dinosaur-5`. Inspect live head SHA and its exact-head Actions before acting.
+
+**Working mode:** YIN consolidation, repeated full feature → intent-aftermath. Land substantial working native features and negative tests, preserve lineage and the one `OODAHAJournal`, keep bisectable commits, then publish for complete CI. No version ladders, compatibility adapters or automatic operator choices. Historical document fronts remain in each file's holding ashes.
+
+**New work:** A four-arm 2-hop/3-hop source-bound topology study with three-hop x-y-x / y-x-y native deck construction, source-footprint constructive refusal, one actual native STEP budget per successful constructed arm, original goal statuses, hop/axis geometry receipts and run/verify CLI. A further new **read-only six-view topology gallery** reuses frozen native cameras and independently reimported STEP bodies, keeps refused arms visible without fabricated images, and verifies every image/HTML/source manifest through exact replay. The study/gallery create no new evolutionary helm or artistic winner.
+
+**Acceptance:** First topology head `564eab24` had six-view gallery and real Blender passed, while full CAD/generalized native remained running at first inspection. Subsequent new code requires its *own* exact-head CI. Never claim a later head green from older runs.
+
+**Next:** close CI, then integrate topology alternatives into the one generational population; preserve source-testimony and native-evidence boundaries. Image-conditioned native construction, real Unreal Editor roundtrip, physical engineering safety and Elyncia canon remain open.
+
+## Ashes holding ahu · former living front
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
 # Projection Loom · YIN next-session re-entry
 
 **GitHub:** `amorphous-dreams/Synthetic-Dream-Machine` · [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · working branch `feature/green-jello-dinosaur-5--projection-loom`. Fetch the complete boot from `feature/green-jello-dinosaur-5`: `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem`.
@@ -11,6 +28,9 @@
 **Next:** close new exact-head CI, then integrate successful constructive topology families into population breeding under shared goal obligations and finite native budgets; pursue source-conditioned geometry and real editor tests without conflating authority.
 
 ## Ashes holding ahu · preceding living front
+
+
+</details>
 
 <details>
 <summary>Previous living front retained verbatim</summary>

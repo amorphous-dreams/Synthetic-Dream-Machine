@@ -1,3 +1,32 @@
+# Projection Loom · Living YIN handoff
+
+## Re-entry · relational topology and native operator imagery
+
+**Live GitHub:** `amorphous-dreams/Synthetic-Dream-Machine` · [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · branch `feature/green-jello-dinosaur-5--projection-loom`. Fetch the **entire** `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` at `feature/green-jello-dinosaur-5`, then the actual PR head, exact-head workflow verdicts and these living contracts. Do not use old head status for a new commit.
+
+### First topology head and new staged gallery feature
+
+The first published topology head `564eab24fab0c3471fe2e3ed8c68d820446fa0b7` contains typed three-hop `x-y-x` / `y-x-y` place routes, an equal-budget four-alternative native study against two old two-hop crossings, source footprint collision refusals, independent STEP reimport, original-goal consequence receipts and `place-topology-study` / `-verify` CLI. As last inspected, its standalone six-view gallery and real Blender editor workflow had passed; full CAD and generalized OpenUSD/STEP were still running. **Do not claim a complete exact-head gate yet.**
+
+**Current staged YIN feature/aftermath pair:** `place_topology_gallery.py` reuses the Loom's frozen fixed-camera native STEP illustration path. Each constructible two-/three-hop alternative receives a six-view sheet and its exact native scene/hash testimony, whether or not every architectural goal passed. A source-obstructed `construction-refused` arm remains visible on the review page as a refusal with **no fabricated image or STEP attempt**. The read-only HTML explicitly distinguishes offered alternatives, real native STEP attempts, witnessed axes/hops, refusals and original goal outcomes. Images support visual comparison only, never structural proof or artistic selection.
+
+`place-topology-gallery` and `place-topology-gallery-verify` CLI commands replay original typed sources, native study, each STEP mesh, six frozen cameras, image SHA-256, HTML SHA-256 and manifest. Tests cover all native images, a source-obstructed refusal card, forged image, forged HTML and command-line replay. This extends the existing operator inspection surface; it **does not** establish a second generational controller.
+
+### YIN working agreement
+
+Alternate full feature and intent-aftermath loops, preserving authored source, typed refusals, independent native evidence, and operator authority. Stage bisectable commits; publish the batch for exact-head CI only after the feature and negative witnesses land. Avoid version ladders or backward compatibility adapters. Existing `OODAHAJournal` remains the sole generational helm; new source-bound topology/galleries remain read-only comparative studies until an explicit operator and genome-continuation contract permits a next study.
+
+### Next re-entry
+
+Read completed current head CI; repair code at its own source, not by weakening STEP, source hashes, negative witnesses or refusal language. Then extend topological variation into the **same** generational campaign and show genuine source-conditioned morphology with measured input provenance. Real Unreal Editor validation, load safety, accessibility, camera-registration and artistic winner remain unwitnessed.
+
+No PR merge, operator pet-name, Elyncia canon promotion or irreversible o-takiage. Earlier living docs and memes remain below verbatim under holding ashes.
+
+## Ashes holding ahu · former living front
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
 # Projection Loom · Evergreen YIN handoff
 
 ## Living re-entry · topology composed under original spatial intent
@@ -26,6 +55,9 @@ Work in YIN: alternate complete feature growth with intent-aftermath, reduce dup
 Inspect the actual new branch head. Run the new `test_hephaestus_place_three_hop.py` and `test_hephaestus_place_topology_study.py` with native CadQuery/OpenUSD dependencies and all preexisting place tests. Read full exact-head Actions; diagnose genuine red failures and repair without dropping refusals or weakening STEP. Next features: constrained topology birth under the one generational helm, observed conflict descriptions, real source-conditioned morphology with measured input provenance, actual Unreal Editor integration. Distinguish artistic review from geometric admission.
 
 ## Ashes holding ahu · preceding living front
+
+
+</details>
 
 <details>
 <summary>Previous living front retained verbatim</summary>

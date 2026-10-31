@@ -1,3 +1,31 @@
+# Hephaestus · YIN active work board
+
+## Source-landed waves, exact-head acceptance still required
+
+- [x] Bound new source-typed two-/three-hop topology proposals with explicit operator axes and named native corners.
+- [x] Test source-original body footprint refusals and continue unaffected native alternatives.
+- [x] Match four route families in independent native STEP and preserve all authored goals, route axes/hops and negative receipts.
+- [x] Expose typed `place-topology-study` run/verify CLI.
+- [x] Reuse frozen native STEP gallery cameras/meshes to render six-view comparison images and independent digest checks.
+- [x] Present negative source-construction arms on HTML without fabricating a STEP attempt/image.
+- [x] Expose `place-topology-gallery` and `-verify` CLI, replay image, HTML and source-study manifests; test tampering.
+- [x] Refresh current docs while preserving each earlier front in the holding ashes.
+
+## Open gate and future construction
+
+- [ ] Close exact-head complete native CAD, generalized USD/STEP and Blender, repository CI and held-out, repairing any real failures.
+- [ ] Extend goal-conditioned topology emitters inside the existing native OODA-HA frontier, with independent lineage and budget receipts.
+- [ ] Prove real source-media influence and robust geometry beyond simple right-angle supports.
+- [ ] Finish real editor-validated roundtrip and operator choice without automatic aesthetic winner.
+- [ ] Preserve historical meme and document addresses and ashes; no destructive retirement.
+
+A checked source landing does not equal a green CI verdict. PR #84 remains unmerged.
+
+## Ashes holding ahu · former living front
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
 # Hephaestus · Active YIN board
 
 ## Source-landed topology waves; final exact-head CI pending
@@ -21,6 +49,9 @@
 Checks show code landed/staged, not runtime admission. PR #84 stays open and unmerged.
 
 ## Ashes holding ahu · preceding living front
+
+
+</details>
 
 <details>
 <summary>Previous living front retained verbatim</summary>

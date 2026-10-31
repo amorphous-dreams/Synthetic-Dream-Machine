@@ -1,3 +1,34 @@
+# Projection Loom · Living YIN roadmap
+
+## Intent: constructed relationships remain independently witnessed
+
+Keep one generational OODA-HA helm. Source-bound authored obligations grow native architecture, independently reimported STEP measures geometric contact/clearance, a frozen gallery illustrates those bodies, and operator judgment governs aesthetic promotion.
+
+### Current topology/galleries feature waves · exact-head CI open
+
+- [x] Grow source-bound three-hop `x-y-x` and `y-x-y` routes, and compare to two independently native-audited two-hop crossings.
+- [x] Report original complete goals, per-arm axes/hops and actual native STEP efforts; type source-footprint construct refusals without charging fake attempts.
+- [x] Deliver `place-topology-study` run/verify and adversarial native/contact/refusal tests.
+- [x] Deliver `place-topology-gallery` run/verify with **actual independently reimported STEP** six-view native sheets and a neutral HTML comparison page.
+- [x] Keep refused construction alternatives visible without images; preserve native-negative goal statuses and explicit absence of an artistic winner.
+- [x] Bind the frozen cameras, image digests, review HTML and original study to independent replay; test forged image and HTML.
+- [x] Fold all older living readings under in-file ashes, with no deletion or canon retirement.
+
+### Next feature ↔ intent-aftermath
+
+1. Inspect every new head's completed CAD/evidence, generalized OpenUSD/STEP/Blender, repository-wide and held-out gates. Repair red regressions with full source evidence.
+2. Integrate successful multi-hop topology growth into one existing `place_campaign` proposal frontier and lineage under exact native budgets, not a separate controller.
+3. Expand constrained routing beyond rectangular original equal-height supports and test competing original relationships, explicit sites and refusals.
+4. Establish actual source-conditioned architectural morphology from measured original images/grammar/proxies; heterogeneous file intake or source collision alone does not prove generative input causality.
+5. Verify real Unreal Editor roundtrip separately from USD export. Do not permit CAD STEP contact or frozen silhouette to claim engineering safety, accessibility, photogrammetric camera pose or artistic quality.
+
+PR #84 remains open. No app version numbers, compatibility shims, pet-name or Elyncia canon.
+
+## Ashes holding ahu · former living front
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
 # Projection Loom · YIN constructive roadmap
 
 ## Intent: architectural relations grow genuine alternatives
@@ -23,6 +54,9 @@ Keep one source-bound `SpatialIntent`, one generational OODA-HA helm and indepen
 Historical roadmaps remain in the in-file ashes. No file deletion, source removal, operator promotion or canon retirement.
 
 ## Ashes holding ahu · preceding living front
+
+
+</details>
 
 <details>
 <summary>Previous living front retained verbatim</summary>
