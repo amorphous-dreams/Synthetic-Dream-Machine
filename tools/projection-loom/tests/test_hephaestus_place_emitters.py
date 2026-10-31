@@ -161,7 +161,7 @@ def test_topology_refusal_keeps_finite_mutation_fallback():
                                epoch=1,index=1,offspring=3,seed=12)
     assert child.identity
     assert row["emitter"]=="mutation"
-    assert "source-bound topology refused" in row["recombination_deferral"]
+    assert "all source-bound topology patterns refused" in row["recombination_deferral"]
     assert row["native_audition_completed"] is False
 
 
@@ -201,3 +201,28 @@ def test_topology_proposal_is_independent_of_unwitnessed_parent_archive():
     assert a.identity==b.identity
     assert first==second
     assert first["emitter"]=="topology-birth"
+
+
+def test_topology_search_recovers_alternative_when_first_waypoint_conflicts():
+    from projection_loom.place_genome import unique_walkway_chain
+    p=GrowthProgram((GrowthNode("root","foundation",size=(4,4,2)),))
+    site=PlaceGenome(tuple(sorted((
+        PlaceBody("east",p,(12,12,0)),
+        PlaceBody("refuge",p,(30,30,0)),
+        PlaceBody("west",p,(0,0,0)),
+        PlaceBody("barrier",p,(6,0,0))),key=lambda b:b.entity_id)))
+    spatial=SpatialIntent("a"*64,(SpatialGoal("connect","west","east"),),"operator")
+    resolved=propose_from_spatial_intent(site,spatial)
+    # seed 12, epoch 1, index 1 samples x-y-x before trying y-x-y.
+    child,row=emit_place_child(site,resolved,[],spatial,
+                               epoch=1,index=1,offspring=3,seed=12)
+    assert row["emitter"]=="topology-birth"
+    ancestry=row["ancestors"][0]
+    assert ancestry["sampled_pattern"]=="x-y-x"
+    assert ancestry["pattern"]=="y-x-y"
+    assert ancestry["tested_patterns"]==2
+    assert len(ancestry["rejected_patterns"])==1
+    assert ancestry["rejected_patterns"][0]["pattern"]=="x-y-x"
+    assert "intrudes into original native source barrier" in ancestry["rejected_patterns"][0]["reason"]
+    assert len(unique_walkway_chain(child,"west","east"))==3
+    assert row["native_audition_completed"] is False
