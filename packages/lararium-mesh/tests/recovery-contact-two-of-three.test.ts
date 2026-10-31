@@ -168,6 +168,7 @@ describe("P2 — the reveal decides: a rotation revealing the enrolled set refus
     const { enrolment, pubs } = await enrolledOver(contacts(2), 1);
     const r = await reveal(enrolment, pubs, 1, [seed(1)]);
     expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toContain("three distinct keys at a threshold of two");
   });
 
   test("★ RED: a 2-of-2 reveal refuses though its digest matches ★", async () => {

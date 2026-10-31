@@ -19,7 +19,7 @@ import { RECOVERY_CONTACT_REGISTRATION_DOMAIN } from "./domains.js";
 import { acceptEd25519Key } from "./ed25519-door.js";
 import { confirmationPhrase } from "./custodian-card.js";
 
-/** Which seat a registration card fills: the face's own, or one of the two recovery contacts beside it. */
+/** Which seat a registration card fills: the face's own, or one of the three recovery contacts (a, b, c). */
 export type RecoveryContactSlot = "mine" | "contact-a" | "contact-b" | "contact-c";
 
 /** A recovery contact's recovery-pubkey registration — the Fork-B card. */

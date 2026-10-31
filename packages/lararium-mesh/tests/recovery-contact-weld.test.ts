@@ -23,7 +23,7 @@ import {
 import { DOMAIN_ROOT, RECOVERY_CONTACT_REGISTRATION_DOMAIN, RECOVERY_CONTACT_POSSESSION_DOMAIN, FACE_BUNDLE_DOMAIN } from "../src/domains.js";
 
 /**
- * THE FORMAT CUT (alpha line: no back-compat). The rename moved six signing domains, so exactly these pins moved (the enrolment pins moved a second time with its count and threshold) and
+ * THE FORMAT CUT (alpha line: no back-compat). The rename moved five signing domains and kinds, so exactly these pins moved (the enrolment pins moved a second time with its count and threshold) and
  * no others (the set digest, the refusal outcomes, the quorum verdicts and every structural pin stood unchanged):
  *   guardian-registration/v1        -> recovery-contact-registration   (the registration phrase)
  *   guardian-possession             -> recovery-contact-possession     (the possession bytes)
@@ -53,7 +53,7 @@ async function faceAndOffers(): Promise<{ inception: PersonaKelEvent; keys: stri
   const inception = mintPersonaInception(`0x${await pubOf(seed(11))}`, sealKeySetHash([await pubOf(seed(5))], 1));
   const keys = await Promise.all([1, 2, 3].map((n) => pubOf(seed(n))));
   const offers = await Promise.all(keys.map(async (k, i) => ({
-    registration:  recoveryContactRegistrationCard(i % 2 === 0 ? "contact-a" : "contact-b", k, null),
+    registration:  recoveryContactRegistrationCard((["contact-a", "contact-b", "contact-c"] as const)[i]!, k, null),
     possessionSig: await signerOf(seed(i + 1))(recoveryContactPossessionBytes(inception.prefix, k)),
   })));
   return { inception, keys, offers };
