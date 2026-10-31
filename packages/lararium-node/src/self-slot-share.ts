@@ -37,7 +37,7 @@
  */
 import type { DocumentId } from "@automerge/automerge-repo";
 import { carryContractShareDecision, carrierShareDecision, presenterIsKapaed, presenterStandsAside, siblingShareDecision } from "@lararium/mesh";
-import type { AntigenRing, FederationGate, NexusMembership, PeerClass, PlaneSeal, ShadowConsult } from "@lararium/mesh";
+import type { AntigenRing, FederationGate, NexusMembership, PeerClass, PlaneSeal, ProtectedDocGuard, ShadowConsult } from "@lararium/mesh";
 
 /** Every in-process island peer rides this empty relay ring → shared freely. */
 const NO_RELAY_PEERS: ReadonlySet<string> = new Set<string>();
@@ -75,6 +75,12 @@ export interface SelfSlotShareInput {
   /** D3: the gate of the face a SAME-OPERATOR session proved — that face's own planes and the public boards. The
    *  class grants no document; this gate does. Null → the session reads what any admitted peer reads. */
   readonly sessionFace?: FederationGate | null;
+  /**
+   * THE ONE GUARD for documents classed by identity (road `P26`, `protectedDocGuard`): a classed document crosses to a wire
+   * or sibling peer only while its class's decider holds for that peer now, ahead of every lane below (the same-face
+   * bridge, the realm gate, the shelf). Absent → no document is classed here.
+   */
+  readonly protectedDocs?: ProtectedDocGuard | null;
 }
 
 /**
@@ -88,6 +94,10 @@ export async function selfSlotShareDecision(input: SelfSlotShareInput): Promise<
   // THE EDGE SHADOW reads FIRST. A socket admitted before the shadow arrived keeps its class until the gate
   // re-sorts it; this verdict never waits for that, so a device set aside reads nothing from its next ask on.
   if (presenterStandsAside(input.shadow, input.peerId)) return false;
+  // THE PROTECTED DOCUMENTS read next, ahead of every lane: a document classed by its id (the live Kahu canon) crosses to a
+  // wire or sibling peer only while its class's decider holds now, whatever alias, title or registration names it. The
+  // vessel's own in-process islands stand inside the house and pass to the lanes below.
+  if ((input.hasWsSocket || input.sibling) && input.protectedDocs && await input.protectedDocs.withholds(input.peerId, input.documentId)) return false;
   // A SIBLING never shares freely: it arrives on no WS socket, yet it is no house member. Sibling-ness decides
   // FIRST, so a sibling's id never reads the house or WS verdict; an id that both a sibling and a WS socket claim
   // reads as neither (one id names one carrier) and denies. The sibling gate holds its whole verdict (the face's

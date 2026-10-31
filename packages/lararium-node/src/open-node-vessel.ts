@@ -66,7 +66,7 @@ import type { WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
-import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding } from "@lararium/mesh";
+import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, peerArrivals, admitGatePinDigest } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
   ACTIVE_WIKI_URI,
@@ -88,7 +88,8 @@ import {
   readGenesisCasManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
 import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.js";
-import { standKahuCanon, canonHeldUntilProof, type KahuCanonDocs } from "./kahu-realm.js";
+import { standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
+import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonCorpusRoot } from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
@@ -809,6 +810,55 @@ async function prepareNodeBootOn(
   const provenPlanes = new Map<string, string>();
   // The live system documents THIS vessel holds, named by the Kahu realm at boot (`standKahuCanon`): empty outside the cabal.
   let kahuCanon: KahuCanonDocs = {};
+  // The custody group's Kahu admission as the carriage board reads NOW (`watchKahuStanding`): the wire consult and the
+  // same-face bridge read it, so a counted removal closes the canon at the board's next change (road `P26`).
+  // EVERY HOME'S STANDING, ONE BOOK (road `P26`; Sol's reads, SHOULD 3 and BLOCKER 4): the primary home's watch and one per
+  // carried home Nexus the protected ids were classed under. A document decides on ITS home's standing; an unwatched home
+  // reads not admitted (fail closed); a charter roll re-reads every watch.
+  const kahuStandings = kahuStandingBook();
+  stood.push({ what: "the Kahu standings", down: () => kahuStandings.close() });
+  // THE PROTECTED DOCUMENTS, classed by IDENTITY (road `P26`; controller design ruling 2026-10-31): the live Kahu canon's
+  // ids, derived durably (`kahuProtectedDocIds`), so a retained replica keeps its class after a removal, across a reboot and
+  // under any alias. ONE guard at the head of the share verdict withholds them from every wire or sibling peer that does not
+  // hold Kahu reach live (`kahuHandAtWire`), ahead of the same-face bridge and the realm gate.
+  // The holder recounts at every classification source's write (a kept registration, a key re-issue), on every board
+  // change, on the charter path and at boot; a map that moved re-asks the Repo's cached share verdicts.
+  // It stands in `systemCanon` (where the seal home and the reverdict stand), before any wire peer can.
+  let kahuProtected: ReturnType<typeof kahuProtectedHolder> | null = null;
+  // Each carried home Nexus the holder names gets its own live standing watch, once; a home whose board cannot stand a watch
+  // stays unwatched and reads not admitted.
+  let kahuStandingVessel = "";
+  const standCarriedKahuStandings = async (): Promise<void> => {
+    const primary = kahuStandings.primary;
+    if (!primary) return;                                // the primary watch names its own Nexus first
+    for (const nexus of kahuProtected?.homes() ?? []) {
+      if (nexus === primary.nexus || kahuStandings.hasCarried(nexus)) continue;
+      try {
+        const watch = await watchKahuStanding({
+          repo, sealHome, vesselKey: kahuStandingVessel, personaGroupId: custodyGroup, aid: nexus,
+          onChange: () => reverdict(),
+          // A carried home's board carries its key hand-overs too: every change recounts, as the primary's does.
+          onBoardChange: () => { void recountKahuProtected().catch(() => {}); },
+        });
+        kahuStandings.addCarried(nexus, watch);
+      } catch (err) { console.warn(`[kahu-realm] no live standing at the carried home ${nexus.slice(0, 18)}…: ${String(err)} (its canon stays withheld)`); }
+    }
+  };
+  const recountKahuProtected = async (): Promise<void> => { await kahuProtected?.recount(); await standCarriedKahuStandings(); };
+  const noProtectedIds: ReadonlyMap<string, "kahu-canon"> = new Map();
+  const protectedDocs = protectedDocGuard({
+    ids: () => kahuProtected?.ids() ?? noProtectedIds,
+    // RECOUNT BEFORE SERVE (Sol's reads, SHOULD 2 and BLOCKER 3): an ask reads the ids once no recount queued before its read
+    // stays pending, in that same turn.
+    settled: () => kahuProtected?.settled() ?? Promise.resolve(),
+    pending: () => kahuProtected?.pending() === true,
+    // A torn count withholds every document from every wire peer until a whole recount (controller re-ruling 2026-10-31).
+    incomplete: () => kahuProtected?.incomplete() === true,
+    decide: {
+      "kahu-canon": (peerId, documentId) => kahuHandAtWire({ session: peerSessions.get(peerId), custodyGroup, faceProven: wornFaceProven, canon: kahuCanon,
+        kahuStanding: kahuStandings.heldAt(kahuProtected?.homeOf(documentId) ?? null) }),
+    },
+  });
   // The mounted face also reads this vessel's wikis, catalog and bags (the bridge until O1, `face-fleet-view`).
   let catalogForViews: (() => LarDoc | undefined) | null = null;
   const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,
@@ -837,9 +887,37 @@ async function prepareNodeBootOn(
   // the operator pinned that gate key out of band and imported that hearth's charter, so the realm's own
   // registered books federate back toward it. Filled by the dial below; empty on a vessel that dials nobody.
   const charterHearthPeers = new Set<string>();
+  // THE DIAL'S SEAT MAPS: the class, standing and view a dialed peer takes, and the hearth the realm's return lane names.
+  const dialSeatMaps: DialSeatMaps = { peerClassMap, peerNexus, faceViews, dialedHearth: null, dialedPeer: null };
+  // THE ONE ARRIVAL TABLE (road `P26`; controller transport ruling 2026-10-31): every relation a peer holds here stands on the
+  // arrival that proved it, keyed by (adapter, peerId) (`peerArrivals`). A replacement arrival of the id on another adapter
+  // drops the relation and clears what it seated; an arrival's own leave removes that arrival alone.
+  // Each inbound arrival keeps its own unseat and, once seated, the socket it arrived on: a leave reaches the arrival whose
+  // socket closed and never a newer one of the same id (generation identity, Sol's transport read).
+  const inboundUnseats = new Map<string, { readonly unseat: () => void; socket: { readonly readyState: number } | null }>();
+  const clearInboundPeer = (peerId: string): void => {
+    peerBindings.delete(peerId);
+    peerNexus.delete(peerId);
+    peerSessions.delete(peerId);
+    peerIdentifierMap.delete(peerId);
+    peerClassMap.delete(peerId);
+    faceViews.drop(peerId);
+    void nexusMembershipHolder?.present(peerId, null);
+  };
   network.on("peer-candidate", ({ peerId }: { peerId: string }) => {
+    // Marked in the emit itself, before the Repo's network subsystem hears the arrival.
+    const arrival = { gate: "inbound" } as const;
+    const held = { unseat: peerArrivals(repo).mark(network, peerId, arrival, () => clearInboundPeer(peerId)), socket: null as { readonly readyState: number } | null };
+    inboundUnseats.set(peerId, held);
     queueMicrotask(() => {
+      if (peerArrivals(repo).of(peerId)?.relation !== arrival) return;   // replaced before the seat: the newer arrival holds the id
       const socket = (network.sockets as Record<string, unknown>)[peerId];
+      if (socket && typeof socket === "object") {
+        held.socket = socket as { readonly readyState: number };
+        // THIS arrival's own socket closing unseats THIS arrival alone.
+        try { (socket as { once?: (e: string, f: () => void) => void }).once?.("close", () => { held.unseat(); if (inboundUnseats.get(peerId) === held) inboundUnseats.delete(peerId); }); }
+        catch { /* the adapter's leave still reaches it below */ }
+      }
       const session = socket ? gateSync.sessionOf(socket) : null;
       if (session) {
         const face = session.class === "same-operator" && session.face ? `, face ${session.face.personaGroup.slice(0, 12)}…` : "";
@@ -865,11 +943,11 @@ async function prepareNodeBootOn(
   });
   // A socket that closes takes its presentation with it: the next socket from the same peer presents afresh.
   network.on("peer-disconnected", ({ peerId }: { peerId: string }) => {
-    peerBindings.delete(peerId);
-    peerNexus.delete(peerId);
-    peerSessions.delete(peerId);
-    faceViews.drop(peerId);
-    void nexusMembershipHolder?.present(peerId, null);
+    const held = inboundUnseats.get(peerId);
+    // A leave whose id now names a newer arrival on a socket still open belongs to an older socket: the newer stands.
+    if (!held || (held.socket !== null && held.socket.readyState !== 3)) return;
+    held.unseat();
+    inboundUnseats.delete(peerId);
   });
   // The #59 antigen ring — the live Kapae-immune consult. Forward-declared here (the sharePolicy closes
   // over it) and STOOD once the operator's own nym (its Nexus key) is loaded, below. A null ring denies
@@ -912,6 +990,10 @@ async function prepareNodeBootOn(
     ?? (process.env["LAR_WIRE_LOG"] === "1"
       ? (v: ShareVerdictRecord) => console.log(`[wire] verdict ${v.hook} peer=${v.peerId} doc=${v.documentId ?? "-"} → ${v.verdict}`)
       : null);
+  // THE HOUSE'S OWN ISLAND PEERS, PROVEN (road `P26`): the peers that reached this Repo on an adapter the vessel attached for
+  // its own islands (`islandPeersOf`). Read through this cell, which the Repo's own set fills once the Repo stands; until
+  // then no peer reads as the house's own.
+  let houseIslands: { has(peerId: string): boolean } = new Set<string>();
   const repo = new Repo({
     storage,
     network: [network],
@@ -943,14 +1025,15 @@ async function prepareNodeBootOn(
       // OUTER peer-admission gate (unchanged): a WS peer whose session no face gate opened is not in
       // `peerIdentifierMap` → deny; an in-process island peer (no WS socket) is a house member → admit.
       if (wsSocket && !peerIdentifierMap.has(peerId)) return false;
-      // THE KAHU CANON WAITS FOR THE FACE PROOF: a wire peer reads none of it until the mounted face has proved (`canonHeldUntilProof`).
-      if (wsSocket && canonHeldUntilProof({ canon: kahuCanon, owesFaceProof: custodyGroup !== null, faceProven: wornFaceProven, documentId: documentId as string | undefined })) return false;
       // THE SELF-SLOT SPLIT — federatable-own vs private-own, keyed on the class the keyholder vouched
       // (selfSlotShareDecision holds the whole law + fail-closed default). A same-operator WS peer and
       // every in-process island peer full-sync; a cross-operator/unclassified WS peer reaches only the
       // deterministically-federatable planes; the antigen draws Mu on a Kapae'd presenter regardless.
       return selfSlotShareDecision({
-        hasWsSocket:     !!wsSocket,
+        // A WIRE PEER is every peer the house did not prove its own (road `P26`; in-process gets proven, never inferred from
+        // a missing listening socket): a dialed hearth on the dial's own adapter reads as wire, the guard first. A sibling
+        // keeps its own lane below.
+        hasWsSocket:     !!wsSocket || (!houseIslands.has(peerId) && !siblings?.provenKeyOf(peerId as PeerId)),
         // A SIBLING rides the sibling channel, proven there under the peer id its device key derives. It holds
         // standing, never the house: the sibling gate decides its every doc, and sibling-ness decides first.
         sibling:         Boolean(siblings?.provenKeyOf(peerId as PeerId)),
@@ -977,6 +1060,9 @@ async function prepareNodeBootOn(
         documentId: documentId as DocumentId | undefined,
         // A device the fleet root set aside reads nothing on any lane, the same-operator and sibling lanes included.
         shadow:          edgeShadows,
+        // THE ONE GUARD: the live Kahu canon, classed by id, crosses only while Kahu reach holds now; it also holds the canon
+        // until the mounted face proves, since the reach reads the proof (road `P26`).
+        protectedDocs,
       });
     }, wireProbe ?? undefined),
   });
@@ -998,6 +1084,7 @@ async function prepareNodeBootOn(
   stood.push({ what: "the rest door", down: () => { setRestDoor(null); for (const close of [...restDoorClosers]) close(); restDoorClosers.clear(); } });
   // The Repo stands down after everything that writes through it: it flushes, then closes its storage and network.
   stood.push({ what: "the Repo", down: async () => { await repo.flush(); await repo.shutdown(); } });
+  houseIslands = islandPeersOf(repo);
   emit("repo-open");
 
   // ── 2. Catalog — local-first rendezvous anchor (catalog-url file) ───────────
@@ -1225,7 +1312,12 @@ async function prepareNodeBootOn(
     landOwedHostingActs: async () => { await landOwedHostingActs?.(); },
     refoldAntigen: () => antigenHolder.refold(),
     refoldMembership: () => membershipHolder.refold(),
-    refreshRealmPlane: async () => { await realmPlane?.refresh(readNexusDoc(sealHome)); },
+    // The Kahu standing re-reads FIRST: an admission a roll closed never waits on the realm's own maintenance (road `P26`).
+    refreshRealmPlane: async () => {
+      kahuStandings.refreshAll();                          // every home: a carried charter's roll closes its admission too
+      await recountKahuProtected().catch((e: unknown) => console.warn(`[kahu-realm] the protected canon ids would not re-read: ${String(e)}`));
+      await realmPlane?.refresh(readNexusDoc(sealHome));
+    },
     refoldEdgeShadows: async () => { await edgeShadows?.refold(); },
     reverdict: () => reverdict(),
     representIfMoved: async () => { await representIfMoved?.(); },
@@ -1890,6 +1982,23 @@ async function prepareNodeBootOn(
         repo, sealHome, vesselKey: activeAtom?.key ?? "",
         personaGroupId: custodyGroup,   // sealed custody names the face; the composition tears down whole if its proof later refuses
       });
+      // THE PROTECTED IDS, then THE LIVE STANDING the guard reads: each flip re-counts and re-asks the cached share verdicts.
+      if (!kahuProtected) {
+        const holder = kahuProtectedHolder({ sealHome, canon: () => kahuCanon, onChange: () => reverdict() });
+        kahuProtected = holder;
+        stood.push({ what: "the protected canon ids", down: () => holder.close() });
+      }
+      await recountKahuProtected();
+      kahuStandingVessel = activeAtom?.key ?? "";
+      if (!kahuStandings.primary) {
+        const watch = await watchKahuStanding({
+          repo, sealHome, vesselKey: activeAtom?.key ?? "", personaGroupId: custodyGroup,
+          onChange: () => { void recountKahuProtected().catch(() => {}).finally(() => reverdict()); },
+          onBoardChange: () => { void recountKahuProtected().catch(() => {}); },
+        });
+        kahuStandings.setPrimary(watch);
+      }
+      await standCarriedKahuStandings();
       return kahuCanon;
     },
 
@@ -2143,8 +2252,9 @@ async function prepareNodeBootOn(
         // EACH PLANE'S LANES SCOPE TO ITS OWN NEXUS: the Nexus lane to a leaf that Nexus admitted, the return lane
         // to the hearth this vessel dialed (its pin's charter scope; none on a self-founded vessel).
         leafAidOf:        (peerId) => nexusMembershipHolder?.leafAidOf(peerId) ?? null,
-        dialedHearth:     () => ({ pinned: hearthPin !== null,
-          aid: hearthPin?.islandKind === "charter" ? hearthPin.islandScope ?? null : null }),
+        // THE HEARTH THE DIAL SEATED (Sol's transport read, BLOCKER 1): the Nexus of the pin the standing dial actually seated,
+        // never the bootstrap's scope; none while no dialed peer stands.
+        dialedHearth:     () => dialSeatMaps.dialedHearth ?? { pinned: false, aid: null },
         // THE REFOLD REVERDICT. The fold decides which documents the realm leg opens, and it moves on a change
         // ANOTHER member writes — a co-signature completing a proposal re-seats a registration this vessel
         // itself un-seated when the proposal replaced it. The Repo caches its verdict per (doc, peer), so the
@@ -2211,6 +2321,21 @@ async function prepareNodeBootOn(
         // this pin only once the vessel's own face composed there; a refusal leaves no pin, and the vessel's sessions
         // anchor at its own place.
         dialAnchor.composed(dialPin, dialPresentationNow);
+        // THE DIAL'S RELATION, read off this vessel's own records alone (road `P26`; controller fork ruling (b)): the pin's
+        // source and the act that wrote it. A pin `fleet join land` wrote for the worn face seats a face view of that face; a
+        // kept admit bundle's pin seats the contracted class and its standing; any other pin seats nothing beyond the shelf.
+        // The worn face's SEALED landing record names the pin `fleet join land` wrote (controller revision ruling): a record
+        // that cannot open (a locked face, a floor composition) names none, and the dial reads weakest.
+        let landedPin: string | null = null;
+        if (custodyGroup !== null) {
+          try { landedPin = (await readFaceJoinRecord(custodyGroup))?.hearthPin ?? null; }
+          catch (err) { console.log(`[nexus-join] the worn face's landing record would not open (${err instanceof Error ? err.message : String(err)}): the dial seats no face view`); }
+        }
+        if (!live()) return;
+        const dialRelation: DialRelation = dialRelationOf({
+          source: hd.source, landedPin, pinDigest: dialPin ? admitGatePinDigest(dialPin) : null, pinNexus: dialPin?.nexus ?? null, wornGroup: custodyGroup,
+        });
+        const dialUnseats = new Map<string, () => void>();
         nexusDial = maybeStartNexusClientDial({
           repo, syncUrl: hd.syncUrl, pins: gatePins, hearth: hearthNameOf(hd.syncUrl!), nexus: dialNexus,
           presentation: dialPresentationNow, deadlines: dialDeadlines(),
@@ -2218,15 +2343,25 @@ async function prepareNodeBootOn(
           onLog: (line) => console.log(`[nexus-join] ${line}`),
           // THE RETURN ON SOCKET A — a return re-folds the boards a partition staled.
           onReconnect: async () => { await afterRoll(); },
+          // THE ARRIVAL'S SEAT, before the adapter joins: the dialed peer's relation stands on its arrival on THIS adapter, so a
+          // replacement arrival of its id elsewhere drops it (and an impostor of a live inbound id on this adapter drops that).
+          beforeJoin: (adapter) => {
+            adapter.on("peer-candidate", ({ peerId }: { peerId: string }) => {
+              dialUnseats.set(peerId, peerArrivals(repo).mark(adapter, peerId, dialRelation, () => {
+                unseatDialPeer(dialSeatMaps, peerId);
+                charterHearthPeers.delete(peerId);
+              }));
+              seatDialPeer(dialSeatMaps, peerId, dialRelation);
+              // The peer at the other end of this dial IS the hearth the charter came from — the realm's return lane.
+              charterHearthPeers.add(peerId);
+              console.log(`[realm] the charter's hearth stands at peer ${peerId} — the realm's registered books federate back to it`);
+              console.log(`[nexus-join] the dialed hearth ${peerId.slice(0, 12)}… seats as ${dialRelation.kind}${dialRelation.kind === "same-face" ? " (the worn face's own hearth: its planes cross)" : ""}`);
+            });
+            adapter.on("peer-disconnected", ({ peerId }: { peerId: string }) => { dialUnseats.get(peerId)?.(); dialUnseats.delete(peerId); });
+          },
         });
         // A re-presentation has nothing to move while no presentation stands; the hook stays so the boards' callers keep it.
         representIfMoved = () => Promise.resolve();
-        // The peer at the other end of this dial IS the hearth the charter came from — the realm's return lane.
-        try { nexusDial?.adapter.on("peer-candidate", ({ peerId }: { peerId: string }) => {
-          charterHearthPeers.add(peerId);
-          console.log(`[realm] the charter's hearth stands at peer ${peerId} — the realm's registered books federate back to it`);
-        }); }
-        catch { /* an adapter without the event names no hearth — the realm leg simply never opens that lane */ }
       } catch (e) {
         // A re-dial that failed keeps no pin from before it: the vessel stands at its place anchor.
         dialAnchor.clear();

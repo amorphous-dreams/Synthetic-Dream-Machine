@@ -32,7 +32,7 @@ const C = new Uint8Array(32).fill(3);
 const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
 const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 
-const PUBLIC_BAG   = "lar:///ha.ka.ba/bags/lares";
+const PUBLIC_BAG   = "lar:///ha.ka.ba/bags/ford";
 const CONTRACT_BAG = "lar:///ha.ka.ba/bags/ledger";
 const PUBLIC_DOC   = deterministicDocUrl("public-book");
 const CONTRACT_DOC = deterministicDocUrl("contract-book");

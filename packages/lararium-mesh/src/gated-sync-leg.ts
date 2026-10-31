@@ -216,6 +216,14 @@ export class PortSyncAdapter extends NetworkAdapter {
     if (this.#stopped) return;
     try { this.#read((event as MessageEvent).data); } catch { /* a listener never throws */ }
   };
+  // A PORT THAT CLOSES TAKES ITS PEER (road `P26`): a worker that ended, or a side that closed its port, posts no `leave`, so
+  // the port's own close is the fact the house's arrival table reads.
+  readonly #onClose = (): void => {
+    if (this.#stopped || this.#remote === null) return;
+    const peerId = this.#remote as PeerId;
+    this.#remote = null;
+    this.emit("peer-disconnected", { peerId });
+  };
 
   constructor(port: MessagePort) {
     super();
@@ -230,6 +238,7 @@ export class PortSyncAdapter extends NetworkAdapter {
     this.peerId = peerId;
     if (peerMetadata !== undefined) this.peerMetadata = peerMetadata;
     this.#port.addEventListener("message", this.#onMessage);
+    this.#port.addEventListener("close", this.#onClose);
     this.#port.start();
     this.#port.postMessage({ senderId: peerId, type: "arrive", peerMetadata });
     this.#ready = true;                                    // a port needs no dial: it stands ready at once
@@ -250,6 +259,7 @@ export class PortSyncAdapter extends NetworkAdapter {
     if (this.#stopped) return;
     this.#stopped = true;
     this.#port.removeEventListener("message", this.#onMessage);
+    this.#port.removeEventListener("close", this.#onClose);
     if (this.peerId !== undefined) {
       try { this.#port.postMessage({ type: "leave", senderId: this.peerId }); } catch { /* the port already closed */ }
     }

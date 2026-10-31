@@ -34,7 +34,7 @@ const B = new Uint8Array(32).fill(2);
 const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
 const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const emptyDoc = (): LarDoc => ({ tiddlers: {} }) as LarDoc;
-const BAG = "lar:///ha.ka.ba/bags/lares";
+const BAG = "lar:///ha.ka.ba/bags/ford";
 const DOC_A = deterministicDocUrl("doc-a");
 const DOC_B = deterministicDocUrl("doc-b");
 

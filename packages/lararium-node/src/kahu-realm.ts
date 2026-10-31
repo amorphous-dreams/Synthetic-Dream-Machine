@@ -9,7 +9,8 @@
  *   · THE FOUNDING LANDS THE REALM (`landKahuRealm`). Beside the counted admission, the one-seat founding mints one
  *     document per system bag and registers each as a realm bag on the realm doc the charter names (the Nexus AID's
  *     deterministic doc), sealed by persona zero's per-Nexus key as the steward. A registration that already counts
- *     stands untouched, so a founding run again registers nothing new.
+ *     mints nothing new, so a founding run again registers no second document; one an earlier key of the steward's line
+ *     sealed re-seals under the line's head (`standKahuRegistrations`).
  *   · A VESSEL STANDS ITS CANON AT BOOT (`standKahuCanon`). It names the documents only where the cabal's board
  *     carries a counted admission for the Kahu realm's group: the registrations come off the realm doc, folded and
  *     seal-verified, and a vessel with no charter, no admission, a removed group or no registration holds none. The
@@ -25,17 +26,20 @@ import { interpretAsDocumentId, type AutomergeUrl, type Repo } from "@automerge/
 import {
   LARARIUM_DOC_URI, LARES_DOC_URI, deterministicDocUrl, faceAtomKeyFromSeed, kahuCabalStanding, kahuRealmGroup, materializeSharedLarDoc,
   canonicalJson, parseRealmBagRegistration, realmBagRegistrationCounts, realmBagRegistrationsFromDoc, realmDocUrl, signRealmBagRegistration,
-  writeRealmBagRegistration, ed25519SignerFromSeed,
+  writeRealmBagRegistration, ed25519SignerFromSeed, admittedKeyOf, followNexusKeyLine, kahuCabalActsFromBoard, realmBagKey, foundingRoster, nexusAidOf,
   type LarDoc, type RealmBagRegistration, type StewardSigner,
 } from "@lararium/mesh";
 import { createHmac } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { mintNexusLeaf } from "./nexus-leaf.js";
-import { NexusCabalError, cabalCore, readKahuCabalBoard } from "./commands/nexus-cabal.js";
+import { nexusKeyPublicOf, readNexusKeys } from "./face-key-custody.js";
+import { keyLineAt } from "./nexus-carriage.js";
+import { NexusCabalError, cabalCore } from "./commands/nexus-cabal.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
+import { nexusCharterDocPath, readNexusDoc } from "./nexus-doc.js";
 
 /** The system bags the Kahu cabal keeps live. */
 export const KAHU_REALM_BAGS: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
@@ -55,47 +59,106 @@ export interface KahuCanonDocs { readonly lares?: AutomergeUrl; readonly larariu
  */
 export async function kahuBagDocUrl(nexus: string, bagUri: string): Promise<AutomergeUrl> {
   const leaf = await mintNexusLeaf(kahuRealmHandleIndex(), nexus);
-  try {
-    return deterministicDocUrl(`kahu-doc:${createHmac("sha256", leaf.seed).update(`kahu-doc|${nexus}|${bagUri}`).digest("hex")}`);
-  } finally { leaf.seed.fill(0); }
+  try { return kahuBagDocUrlFrom(leaf.seed, nexus, bagUri); } finally { leaf.seed.fill(0); }
+}
+
+/** The founding's derivation under one steward seed: the document a leaf mints (or minted) for a Kahu bag. */
+function kahuBagDocUrlFrom(seed: Uint8Array, nexus: string, bagUri: string): AutomergeUrl {
+  return deterministicDocUrl(`kahu-doc:${createHmac("sha256", seed).update(`kahu-doc|${nexus}|${bagUri}`).digest("hex")}`);
 }
 
 const urlOf = (docs: ReadonlyMap<string, { readonly docUrl: string }>, bag: string): AutomergeUrl | undefined =>
   docs.get(bag)?.docUrl as AutomergeUrl | undefined;
 
-/** THE KAHU STEWARD: persona zero's per-Nexus leaf at the hearth's Nexus, the one name that keeps a system bag (kahu.mem). */
-async function kahuSteward(nexus: string): Promise<string> {
-  const leaf = await mintNexusLeaf(kahuRealmHandleIndex(), nexus);
-  leaf.seed.fill(0);
-  return leaf.verifyingKey.toLowerCase();
+/**
+ * THE KAHU STEWARD READS AS ITS KEY LINE (kahu.mem, the gate's shape: a gate stands a presenter under the HEAD of the
+ * key's line alone, and reads a line that forks as denied). The steward is persona zero's per-Nexus key at the hearth's
+ * Nexus; `lares persona reissue` hands it on by a hand-over both keys sign, so the canon counts a row sealed by ANY key
+ * of the line and re-seals it under the head. The head is the key this face holds that heads its own line, read over
+ * the carriage board and the hearth's kept copy (`keyLineAt`): mid re-issue the row holds the standing key and its
+ * successor, and whichever the line names as head stewards. A held key whose line forks, or that the line handed on,
+ * stewards nothing, so a forked line stands no canon. A face that holds no key at this Nexus mints its first (the
+ * founding). A paper restore's successor rides the face-key roll (face-proof.mem #/causal-withdrawal), which no code
+ * builds yet: its fresh key heads a line of its own, and until a roll names it the canon stands none.
+ */
+interface KahuStewardLine {
+  readonly head: string;
+  /** The line from the admitted key to the head; a row sealed by any of them counts. */
+  readonly keys: ReadonlySet<string>;
+  /** The head's signer, read at the moment it seals and zero-filled after. */
+  readonly signHead: () => Promise<StewardSigner & { readonly done: () => void }>;
+}
+async function kahuStewardLine(sealHome: string, nexus: string, board: LarDoc | undefined): Promise<KahuStewardLine | null> {
+  let held = await readNexusKeys(kahuRealmHandleIndex(), nexus);
+  if (held.length === 0) {
+    const leaf = await mintNexusLeaf(kahuRealmHandleIndex(), nexus);
+    held = [leaf.seed];
+  }
+  try {
+    const carried = keyLineAt(sealHome, nexus, board);
+    for (const seed of held) {
+      const key = nexusKeyPublicOf(seed).toLowerCase();
+      const admitted = admittedKeyOf({ nexus, key, carried });
+      if (admitted === null) continue;
+      const walk = followNexusKeyLine({ nexus, admitted, carried });
+      if (!("head" in walk) || walk.head !== key) continue;
+      const keys = new Set(walk.keys.map((k) => k.toLowerCase()));
+      return {
+        head: key, keys,
+        signHead: async () => {
+          const seeds = await readNexusKeys(kahuRealmHandleIndex(), nexus);
+          const again = seeds.find((s) => nexusKeyPublicOf(s).toLowerCase() === key);
+          for (const other of seeds) if (other !== again) other.fill(0);
+          if (!again) throw new NexusCabalError("the Kahu steward's head key left this vessel while it sealed");
+          return { signer: key, sign: ed25519SignerFromSeed(again), done: () => again.fill(0) };
+        },
+      };
+    }
+    return null;
+  } finally { for (const seed of held) seed.fill(0); }
 }
 
 /** Where the hearth keeps each registration its steward sealed: `<sealHome>/nexus/kahu-realm/<nexus>/<slug>.json`. */
 function keptRegistrationPath(sealHome: string, nexus: string, bagUri: string): string {
   return join(sealHome, "nexus", "kahu-realm", nexus, `${encodeURIComponent(bagUri)}.json`);
 }
-function keepRegistration(sealHome: string, rec: RealmBagRegistration): void {
+/**
+ * Keep a registration the steward sealed, under the hearth's seal home. The write is a CLASSIFICATION SOURCE (road `P26`):
+ * every live holder of the protected canon ids hears it and recounts at once (`noteKahuClassificationWrite`).
+ */
+export function keepKahuRegistration(sealHome: string, rec: RealmBagRegistration): void {
   const path = keptRegistrationPath(sealHome, rec.realmId, rec.bagUri);
   mkdirSync(join(path, ".."), { recursive: true });
   atomicWriteFileSync(path, JSON.stringify(rec, null, 2));
+  noteKahuClassificationWrite();
 }
-/** The hearth's kept registration for a bag, where it reads whole and verifies as the steward's own seal over this Nexus and bag; else none. */
-async function keptRegistration(sealHome: string, nexus: string, bagUri: string, steward: string): Promise<RealmBagRegistration | null> {
+
+/** The holders listening for a classification write in this process (`kahuProtectedHolder`). */
+const CLASSIFICATION_WRITES = new Set<() => void>();
+/**
+ * A write to a source the Kahu canon's classification reads (a kept registration, a key re-issue's hand-over): every live
+ * holder recounts. Called by the source's own writer, never by a reader.
+ */
+export function noteKahuClassificationWrite(): void {
+  for (const fn of [...CLASSIFICATION_WRITES]) { try { fn(); } catch { /* a holder never breaks the writer */ } }
+}
+/** The hearth's kept registration for a bag, where it reads whole and verifies as a seal of the steward's line over this Nexus and bag; else none. */
+async function keptRegistration(sealHome: string, nexus: string, bagUri: string, line: KahuStewardLine): Promise<RealmBagRegistration | null> {
   const path = keptRegistrationPath(sealHome, nexus, bagUri);
   if (!existsSync(path)) return null;
   let text: string;
   try { text = readFileSync(path, "utf8"); } catch { return null; }
   const rec = parseRealmBagRegistration(text);
   if (!rec || rec.realmId !== nexus || rec.bagUri !== bagUri) return null;
-  if (rec.keptBy.length !== 1 || rec.keptBy[0]!.toLowerCase() !== steward) return null;
+  if (rec.keptBy.length !== 1 || !line.keys.has(rec.keptBy[0]!.toLowerCase())) return null;
   return (await realmBagRegistrationCounts(rec, nexus)) ? rec : null;
 }
 
-/** The registry's rows for each Kahu bag sealed by EXACTLY the hearth's Kahu steward and counted at this Nexus. */
-async function stewardRows(doc: LarDoc | undefined | null, nexus: string, steward: string): Promise<ReadonlyMap<string, readonly RealmBagRegistration[]>> {
+/** The registry's rows for each Kahu bag sealed by exactly one key of the hearth's Kahu steward's line and counted at this Nexus. */
+async function stewardRows(doc: LarDoc | undefined | null, nexus: string, line: KahuStewardLine): Promise<ReadonlyMap<string, readonly RealmBagRegistration[]>> {
   const rows = new Map<string, RealmBagRegistration[]>();
   for (const rec of realmBagRegistrationsFromDoc(doc)) {
-    if (rec.keptBy.length !== 1 || rec.keptBy[0]!.toLowerCase() !== steward) continue;
+    if (rec.keptBy.length !== 1 || !line.keys.has(rec.keptBy[0]!.toLowerCase())) continue;
     if (!KAHU_REALM_BAGS.includes(rec.bagUri)) continue;
     if (!(await realmBagRegistrationCounts(rec, nexus))) continue;
     rows.set(rec.bagUri, [...(rows.get(rec.bagUri) ?? []), rec]);
@@ -105,35 +168,55 @@ async function stewardRows(doc: LarDoc | undefined | null, nexus: string, stewar
 
 /**
  * THE KAHU CANON STANDS ON ONE STEWARD AND ITS SEAL. `foldRealmBags` verifies every self-named steward's seal
- * and never that the hand holds the hearth's canon, so the Kahu canon counts only registrations sealed by EXACTLY the
- * hearth's Kahu steward (one owner per registry; kahu.mem: kept by that one name). The registration the hearth KEEPS
+ * and never that the hand holds the hearth's canon, so the Kahu canon counts only registrations sealed by one key of the
+ * hearth's Kahu steward's LINE (one owner per registry; kahu.mem: kept by that one name, whose line a re-issue moves), and
+ * re-seals under the line's head any an earlier key sealed. The registration the hearth KEEPS
  * stands first where it verifies, and lands on the registry again where no row there carries it; a bag the hearth keeps
  * none for stands on the steward's one counted document and is kept from then on, and the steward's seals over two
  * documents stand none (`equivocal`). A kept file stands only where it verifies. No reader recomputes the founding's
  * derivation: one leaf mints one document per bag, so the steward's seals name one document.
  */
 async function standKahuRegistrations(
-  realm: { doc(): LarDoc | undefined; change(fn: (d: LarDoc) => void): void }, sealHome: string, nexus: string, steward: string,
+  realm: { doc(): LarDoc | undefined; change(fn: (d: LarDoc) => void): void }, sealHome: string, nexus: string, line: KahuStewardLine,
 ): Promise<{ readonly standing: ReadonlyMap<string, RealmBagRegistration>; readonly restored: readonly string[]; readonly equivocal: readonly string[] }> {
-  const rows = await stewardRows(realm.doc(), nexus, steward);
+  const rows = await stewardRows(realm.doc(), nexus, line);
   const standing = new Map<string, RealmBagRegistration>();
   const restored: string[] = [], equivocal: string[] = [];
   for (const bagUri of KAHU_REALM_BAGS) {
     const onRegistry = rows.get(bagUri) ?? [];
-    const kept = await keptRegistration(sealHome, nexus, bagUri, steward);
-    if (kept) {
-      standing.set(bagUri, kept);
-      const bytes = canonicalJson(kept);
-      if (!onRegistry.some((rec) => canonicalJson(rec) === bytes)) {
-        realm.change((draft) => writeRealmBagRegistration(draft, kept, steward, true));
+    let kept = await keptRegistration(sealHome, nexus, bagUri, line);
+    if (!kept) {
+      if (new Set(onRegistry.map((rec) => rec.docUrl)).size > 1) { equivocal.push(bagUri); continue; }
+      if (onRegistry.length === 0) continue;
+      kept = onRegistry[0]!;
+      keepKahuRegistration(sealHome, kept);
+    }
+    // THE HEAD RE-SEALS. A registration an earlier key of the line sealed re-seals under the head, over the same document:
+    // kept before it publishes, and the predecessor's row retires in the same change, so the registry names the head alone.
+    const sealedBy = kept.keptBy[0]!.toLowerCase();
+    if (sealedBy !== line.head) {
+      const head = await line.signHead();
+      try {
+        const { realmId, docUrl, readTier, charters, expiry } = kept;
+        const resealed = await signRealmBagRegistration({ realmId, bagUri, docUrl, readTier, ...(charters ? { charters } : {}), ...(expiry !== undefined ? { expiry } : {}) }, [head]);
+        if (!(await realmBagRegistrationCounts(resealed, nexus))) throw new NexusCabalError(`the Kahu steward's head could not re-seal ${bagUri}: its seal does not verify`);
+        keepKahuRegistration(sealHome, resealed);
+        realm.change((draft) => {
+          writeRealmBagRegistration(draft, resealed, line.head, true);
+          delete draft.tiddlers[realmBagKey(bagUri, sealedBy)];
+        });
+        kept = resealed;
         restored.push(bagUri);
-      }
+      } finally { head.done(); }
+      standing.set(bagUri, kept);
       continue;
     }
-    if (new Set(onRegistry.map((rec) => rec.docUrl)).size > 1) { equivocal.push(bagUri); continue; }
-    if (onRegistry.length === 0) continue;
-    keepRegistration(sealHome, onRegistry[0]!);
-    standing.set(bagUri, onRegistry[0]!);
+    standing.set(bagUri, kept);
+    const bytes = canonicalJson(kept);
+    if (!onRegistry.some((rec) => canonicalJson(rec) === bytes)) {
+      realm.change((draft) => writeRealmBagRegistration(draft, kept!, line.head, true));
+      restored.push(bagUri);
+    }
   }
   return { standing, restored, equivocal };
 }
@@ -149,8 +232,9 @@ export async function landKahuRealm(opts: {
 }): Promise<{ readonly nexus: string; readonly docs: Required<KahuCanonDocs>; readonly registered: readonly string[] }> {
   const core = await cabalCore(opts.repo, opts.sealHome, undefined);
   const realm = await materializeSharedLarDoc(opts.repo, realmDocUrl(core.nexus), "realm");
-  const steward = await kahuSteward(core.nexus);
-  const { standing, restored, equivocal } = await standKahuRegistrations(realm, opts.sealHome, core.nexus, steward);
+  const line = await kahuStewardLine(opts.sealHome, core.nexus, core.handle.doc());
+  if (line === null) throw new NexusCabalError("the Kahu steward's key line at this Nexus forks, or this face's key handed its standing on: no canon stands under a line that forks");
+  const { standing, restored, equivocal } = await standKahuRegistrations(realm, opts.sealHome, core.nexus, line);
   // AN EQUIVOCAL REGISTRY IS NO ABSENCE: the steward's own seals naming two documents for a bag, with no kept copy to
   // pin one, refuse the founding rather than mint a replacement canon over them.
   if (equivocal.length > 0) {
@@ -160,18 +244,17 @@ export async function landKahuRealm(opts: {
   let signer: StewardSigner | null = null;
   for (const bagUri of KAHU_REALM_BAGS) {
     if (standing.has(bagUri)) continue;
-    signer ??= opts.steward
-      ? await opts.steward(core.nexus)
-      : await (async () => { const leaf = await mintNexusLeaf(kahuRealmHandleIndex(), core.nexus); return { signer: leaf.verifyingKey.toLowerCase(), sign: ed25519SignerFromSeed(leaf.seed) }; })();
+    signer ??= opts.steward ? await opts.steward(core.nexus) : await line.signHead();
     const doc = await materializeSharedLarDoc(opts.repo, await kahuBagDocUrl(core.nexus, bagUri), bagUri);
     const rec = await signRealmBagRegistration({ realmId: core.nexus, bagUri, docUrl: doc.url, readTier: "contract" }, [signer]);
     if (!(await realmBagRegistrationCounts(rec, core.nexus))) throw new NexusCabalError(`the Kahu realm's registration of ${bagUri} counts nothing: the steward's seal does not verify`);
     // KEPT BEFORE IT IS PUBLISHED: no registry row of the steward's ever stands without the hearth's own copy.
-    keepRegistration(opts.sealHome, rec);
+    keepKahuRegistration(opts.sealHome, rec);
     realm.change((draft) => writeRealmBagRegistration(draft, rec, signer!.signer, true));
     registered.push(bagUri);
   }
-  const { standing: landed } = await standKahuRegistrations(realm, opts.sealHome, core.nexus, steward);
+  if (signer && "done" in signer) (signer as { done: () => void }).done();
+  const { standing: landed } = await standKahuRegistrations(realm, opts.sealHome, core.nexus, line);
   const lares = urlOf(landed, LARES_DOC_URI), lararium = urlOf(landed, LARARIUM_DOC_URI);
   if (!lares || !lararium) throw new NexusCabalError("the Kahu realm's registrations did not fold to standing");
   return { nexus: core.nexus, docs: { lares, lararium }, registered };
@@ -187,14 +270,16 @@ export async function standKahuCanon(opts: {
   readonly repo: Repo; readonly sealHome: string; readonly vesselKey: string; readonly personaGroupId: string | null;
 }): Promise<KahuCanonDocs> {
   if (opts.personaGroupId === null) return {};
-  const board = await readKahuCabalBoard(opts.repo, opts.sealHome, opts.vesselKey);
-  if (board === null) return {};
+  let core: Awaited<ReturnType<typeof cabalCore>>;
+  try { core = await cabalCore(opts.repo, opts.sealHome, undefined, opts.vesselKey); }
+  catch (err) { if (err instanceof NexusCabalError) return {}; throw err; }
   let group: string;
   try { group = kahuRealmGroup(opts.personaGroupId); } catch { return {}; }
-  if (kahuCabalStanding(board.acts, group, board.roster, board.nexus).standing !== "admitted") return {};
-  const realm = await materializeSharedLarDoc(opts.repo, realmDocUrl(board.nexus), "realm");
-  const steward = await kahuSteward(board.nexus);
-  const { standing, restored } = await standKahuRegistrations(realm, opts.sealHome, board.nexus, steward);
+  if (kahuCabalStanding(kahuCabalActsFromBoard(core.handle.doc()), group, core.roster, core.nexus).standing !== "admitted") return {};
+  const realm = await materializeSharedLarDoc(opts.repo, realmDocUrl(core.nexus), "realm");
+  const line = await kahuStewardLine(opts.sealHome, core.nexus, core.handle.doc());
+  if (line === null) return {};
+  const { standing, restored } = await standKahuRegistrations(realm, opts.sealHome, core.nexus, line);
   if (restored.length > 0) console.log(`[kahu-realm] the steward restored its own registration of ${restored.join(", ")} on the realm doc`);
   const lares = urlOf(standing, LARES_DOC_URI), lararium = urlOf(standing, LARARIUM_DOC_URI);
   return { ...(lares ? { lares } : {}), ...(lararium ? { lararium } : {}) };
@@ -225,19 +310,270 @@ export async function hearthCustodyGroup(): Promise<string | null> {
   return (await loadIdentityAnchors(0).catch(() => null))?.personaGroupId ?? null;
 }
 
-/**
- * THE CANON WAITS FOR THE PROOF. The keel mounts the Kahu canon during assembly, before the mounted face's proof runs (the proof needs the
- * KEL board and the daemon doc that stand later), so the mount itself cannot wait. Everything that could TOUCH the mounted documents
- * does: no verb is wired until the daemon opens, no mirror writes until then, and a peer's sync of a canon document is denied here until
- * the proof passes, for a vessel that owes a face proof (sealed custody names a face). A vessel with no face owes none.
- */
-export function canonHeldUntilProof(input: {
-  readonly canon: KahuCanonDocs; readonly owesFaceProof: boolean; readonly faceProven: boolean; readonly documentId: string | undefined;
-}): boolean {
-  if (!input.owesFaceProof || input.faceProven || input.documentId === undefined) return false;
-  for (const url of [input.canon.lares, input.canon.lararium]) {
+
+/** The document ids of the live system documents this vessel holds: the Kahu canon a realm gate closes (road `P26`). */
+export function kahuCanonDocIds(canon: KahuCanonDocs): ReadonlySet<string> {
+  const ids = new Set<string>();
+  for (const url of [canon.lares, canon.lararium]) {
     if (!url) continue;
-    try { if (String(interpretAsDocumentId(url as AutomergeUrl)) === input.documentId) return true; } catch { /* a malformed url names nothing */ }
+    try { ids.add(String(interpretAsDocumentId(url))); } catch { /* a malformed url names nothing */ }
   }
-  return false;
+  return ids;
+}
+
+/**
+ * KAHU REACH AT THE WIRE (road `P26`): a peer holds it at this hearth exactly where its session wears the custody face,
+ * proven same-operator by this gate's grant ring, that face's own proof has passed, and the face's group stands ADMITTED
+ * to the Kahu cabal as the board reads NOW (`watchKahuStanding`). A counted removal closes the wire at the board's next
+ * change, never at the next boot (kahu.mem #/cabal-admission: a removal closes the access path for every reader that
+ * consults it). The sentinel half of the predicate reads in the daemon island, whose write doors consult it; this wire
+ * reads the admission, the act that closes access.
+ *
+ * Every other peer reads none, fail closed: a contracted member, a sibling, a place's seat, a session of another
+ * face. A hand of ANOTHER admitted group stays open: across operators no wire proof binds a peer to a PersonaGroup
+ * (the root map stays empty at the seat), and the sentinel half of the predicate reads in the daemon island, so such a
+ * hand reaches the canon through the write doors of its own vessel's cabal, never this wire, until both stand.
+ */
+export function kahuHandAtWire(input: {
+  readonly session: { readonly class: string; readonly face: { readonly personaGroup: string } | null } | undefined;
+  readonly custodyGroup: string | null; readonly faceProven: boolean; readonly canon: KahuCanonDocs;
+  /** The custody group's Kahu admission as the board reads NOW (`watchKahuStanding`), never the boot's snapshot. */
+  readonly kahuStanding: boolean;
+}): boolean {
+  if (!input.kahuStanding || !input.faceProven || input.custodyGroup === null) return false;
+  if (!input.canon.lares && !input.canon.lararium) return false;
+  const session = input.session;
+  if (!session || session.class !== "same-operator" || !session.face) return false;
+  return session.face.personaGroup.toLowerCase() === input.custodyGroup.toLowerCase();
+}
+
+
+/**
+ * THE KAHU STANDING, LIVE (road `P26`): whether the custody group stands admitted to the Kahu cabal, read off the carriage
+ * board as of its last sync and re-read on every board change, and on `refresh` (a charter import or roll moves the roster
+ * the acts count under). `onChange` hears each flip, so the composer re-asks its cached share verdicts. A vessel with no
+ * face, no seated charter or no readable group reads not admitted and never changes.
+ */
+export async function watchKahuStanding(opts: {
+  readonly repo: Repo; readonly sealHome: string; readonly vesselKey: string; readonly personaGroupId: string | null;
+  /** The Nexus whose board to read: a carried home's AID; the primary home where none is named. */
+  readonly aid?: string;
+  readonly onChange?: (held: boolean) => void;
+  /** Hears EVERY board change, flip or none: the board carries key hand-overs the canon's classification reads. */
+  readonly onBoardChange?: () => void;
+}): Promise<{ held(): boolean; refresh(): void; close(): void; readonly nexus: string | null }> {
+  const inert = { held: () => false, refresh: () => {}, close: () => {}, nexus: null };
+  if (opts.personaGroupId === null) return inert;
+  let group: string;
+  try { group = kahuRealmGroup(opts.personaGroupId); } catch { return inert; }
+  let core: Awaited<ReturnType<typeof cabalCore>>;
+  try { core = await cabalCore(opts.repo, opts.sealHome, opts.aid, opts.vesselKey); }
+  catch (err) { if (err instanceof NexusCabalError) return inert; throw err; }
+  const read = (): boolean => {
+    try {
+      const roster = foundingRoster(readNexusDoc(core.home));
+      return kahuCabalStanding(kahuCabalActsFromBoard(core.handle.doc()), group, roster, core.nexus).standing === "admitted";
+    } catch { return false; }
+  };
+  let held = read();
+  let closed = false;
+  const refresh = (): void => {
+    if (closed) return;
+    const now = read();
+    if (now === held) return;
+    held = now;
+    try { opts.onChange?.(held); } catch { /* a listener never breaks the reading */ }
+  };
+  const onBoard = (): void => {
+    refresh();
+    if (!closed) { try { opts.onBoardChange?.(); } catch { /* a listener never breaks the reading */ } }
+  };
+  core.handle.on("change", onBoard);
+  return { held: () => held, refresh, close: () => { closed = true; core.handle.off("change", onBoard); }, nexus: core.nexus };
+}
+
+/** One live Kahu standing watch (`watchKahuStanding`). */
+export interface KahuStandingWatch { held(): boolean; refresh(): void; close(): void; readonly nexus: string | null }
+
+/**
+ * EVERY HOME'S KAHU STANDING, IN ONE BOOK (road `P26`; Sol's transport read, BLOCKER 4): the primary home's watch and one per
+ * carried home. A document reads its own home's watch (`heldAt`; null names the primary, where the keel's canon stands); an
+ * unwatched home reads not admitted. A charter roll re-reads EVERY watch (`refreshAll`), so a carried home's admission a
+ * roll closed never waits on that home's next board change.
+ */
+export function kahuStandingBook(): {
+  readonly primary: KahuStandingWatch | null;
+  setPrimary(watch: KahuStandingWatch): void;
+  hasCarried(nexus: string): boolean;
+  addCarried(nexus: string, watch: KahuStandingWatch): void;
+  heldAt(nexus: string | null): boolean;
+  refreshAll(): void;
+  close(): void;
+} {
+  let primary: KahuStandingWatch | null = null;
+  const carried = new Map<string, KahuStandingWatch>();
+  return {
+    get primary() { return primary; },
+    setPrimary(watch) { primary = watch; },
+    hasCarried: (nexus) => carried.has(nexus),
+    addCarried(nexus, watch) { if (carried.has(nexus)) { watch.close(); return; } carried.set(nexus, watch); },
+    heldAt(nexus) {
+      if (nexus === null || (primary !== null && nexus === primary.nexus)) return primary?.held() === true;
+      return carried.get(nexus)?.held() === true;
+    },
+    refreshAll() {
+      try { primary?.refresh(); } catch { /* one watch never stops the rest */ }
+      for (const watch of carried.values()) { try { watch.refresh(); } catch { /* one watch never stops the rest */ } }
+    },
+    close() { for (const watch of carried.values()) watch.close(); carried.clear(); primary?.close(); primary = null; },
+  };
+}
+
+/**
+ * THE KAHU CANON'S IDS, DURABLY, OVER EVERY HOME (road `P26`; controller design rulings 2026-10-31): every document id this
+ * vessel would hold as a live `lares` or `lararium` document at ANY Nexus it holds a charter for, read without consulting
+ * standing, titles, catalog rows or a registration's presence, so a document keeps its class after a removal, across a
+ * reboot, under any other name, and at a carried home as at the primary one. The set joins:
+ *   (1) every document a kept registration names under the primary home and under every carried home
+ *       (`<home>/nexus/kahu-realm/<nexus>/`, plain on disk, read whatever the charter beside it reads);
+ *   (2) the founding's derivation (`kahuBagDocUrl`) under every key persona zero holds at each such Nexus (the standing key
+ *       and, mid re-issue, its successor);
+ *   (3) the canon the keel stood, where given.
+ * A home or a key the vessel cannot read contributes what it can and logs; the ids already read still stand, so a missing
+ * input never reads as "no canon" for what was read.
+ */
+export async function kahuProtectedDocIds(opts: { readonly sealHome: string; readonly canon?: KahuCanonDocs }): Promise<ReadonlySet<string>> {
+  return new Set((await kahuProtectedDocHomes(opts)).keys());
+}
+
+/**
+ * The same ids, each with the HOME NEXUS it was classed under (road `P26`; Sol's lanes read, SHOULD 3): a kept registration's
+ * Nexus, the Nexus a derivation ran at, or null for the canon the keel stood at the primary home. The guard decides each
+ * document on its own home's live standing, never the primary's alone.
+ */
+export async function kahuProtectedDocHomes(opts: { readonly sealHome: string; readonly canon?: KahuCanonDocs }): Promise<ReadonlyMap<string, string | null>> {
+  return (await readKahuProtected(opts)).homes;
+}
+
+/** An absent path reads as nothing standing; every other error is a failure to read. */
+const absent = (err: unknown): boolean => (err as { code?: unknown } | null)?.code === "ENOENT";
+
+/**
+ * The protected ids with their homes, AND every read failure met on the way (controller re-ruling 2026-10-31, after Sol's
+ * re-read): a directory, a kept registration, a key or a charter that would not read is named here, so the holder can mark
+ * its classification INCOMPLETE rather than take a partial count as truth. An absent path is no failure.
+ */
+async function readKahuProtected(opts: { readonly sealHome: string; readonly canon?: KahuCanonDocs }): Promise<{ readonly homes: ReadonlyMap<string, string | null>; readonly failures: readonly string[] }> {
+  const failures: string[] = [];
+  const ids = new Map<string, string | null>(opts.canon ? [...kahuCanonDocIds(opts.canon)].map((id) => [id, null] as const) : []);
+  const add = (url: string, nexus: string, where: string): void => {
+    try { const id = String(interpretAsDocumentId(url as AutomergeUrl)); if (!ids.has(id) || ids.get(id) === null) ids.set(id, nexus); }
+    catch { failures.push(`${where} names no document`); }
+  };
+  const homes: string[] = [opts.sealHome];
+  try { for (const name of readdirSync(join(opts.sealHome, "carried")).sort()) homes.push(join(opts.sealHome, "carried", name)); }
+  catch (err) { if (!absent(err)) failures.push(`the carried homes would not list: ${String(err)}`); }
+  const nexuses = new Set<string>();
+  for (const home of homes) {
+    try {
+      // A charter that STANDS and cannot be read reads TORN, never as none (dreamnet-architecture #/the-three-state-gradient).
+      const doc = readNexusDoc(home);
+      if (doc === null && existsSync(nexusCharterDocPath(home))) failures.push(`the charter at ${home} stands and reads as no charter`);
+      const aid = nexusAidOf(doc); if (aid) nexuses.add(aid);
+    }
+    catch (err) { failures.push(`the charter at ${home} would not read: ${String(err)}`); }
+    const keptRoot = join(home, "nexus", "kahu-realm");
+    let dirs: string[] = [];
+    try { dirs = readdirSync(keptRoot); } catch (err) { if (!absent(err)) failures.push(`${keptRoot} would not list: ${String(err)}`); }
+    for (const nexus of dirs) {
+      let files: string[] = [];
+      try { files = readdirSync(join(keptRoot, nexus)).filter((f) => f.endsWith(".json")); }
+      catch (err) { failures.push(`the kept registrations at ${join(keptRoot, nexus)} would not list: ${String(err)}`); }
+      for (const file of files) {
+        const at = join(keptRoot, nexus, file);
+        let rec: RealmBagRegistration | null = null;
+        try { rec = parseRealmBagRegistration(readFileSync(at, "utf8")); } catch (err) { failures.push(`${at} would not read: ${String(err)}`); continue; }
+        if (rec === null) { failures.push(`${at} reads as no registration`); continue; }
+        if (KAHU_REALM_BAGS.includes(rec.bagUri)) add(rec.docUrl, nexus, at);
+      }
+    }
+  }
+  for (const nexus of nexuses) {
+    let seeds: Uint8Array[] = [];
+    try { seeds = await readNexusKeys(kahuRealmHandleIndex(), nexus); }
+    catch (err) { failures.push(`persona zero's keys at ${nexus.slice(0, 18)}… would not read: ${String(err)}`); seeds = []; }
+    try {
+      for (const seed of seeds) for (const bagUri of KAHU_REALM_BAGS) add(kahuBagDocUrlFrom(seed, nexus, bagUri), nexus, `the derivation at ${nexus.slice(0, 18)}…`);
+    } finally { for (const seed of seeds) seed.fill(0); }
+  }
+  return { homes: ids, failures };
+}
+
+/**
+ * THE PROTECTED CANON IDS, HELD LIVE (road `P26`): the map the one guard reads, recounted at every classification source's
+ * write (`noteKahuClassificationWrite`: a kept registration, a key re-issue), on `recount` (the composer's boot, board
+ * changes and charter path), one recount at a time over the disk as it reads when its turn comes. `onChange` hears a map
+ * that moved, so the composer re-asks its cached share verdicts. Until the first recount lands the map reads empty; the
+ * composer recounts before any wire peer can stand.
+ */
+export function kahuProtectedHolder(opts: {
+  readonly sealHome: string; readonly canon: () => KahuCanonDocs; readonly onChange?: () => void;
+}): {
+  ids(): ReadonlyMap<string, "kahu-canon">; homeOf(id: string): string | null; homes(): ReadonlySet<string>; recount(): Promise<void>;
+  settled(): Promise<void>; pending(): boolean; incomplete(): boolean; close(): void;
+} {
+  let map: ReadonlyMap<string, "kahu-canon"> = new Map();
+  let homes: ReadonlyMap<string, string | null> = new Map();
+  let tail: Promise<void> = Promise.resolve();
+  // RECOUNT GENERATIONS (Sol's transport read, BLOCKER 3): every recount takes the next number when it QUEUES, and `done`
+  // names the last one that finished. `pending()` reads whether any queued recount stands unfinished NOW; the guard waits
+  // until none does and classes in that same turn, so a write queued after an ask began still classes that ask.
+  let queued = 0;
+  let done = 0;
+  // INCOMPLETE (controller re-ruling 2026-10-31): the last recount met a read failure. The guard then withholds every document
+  // from every wire peer; only a fully successful recount clears it. A partial count never replaces the map.
+  let incomplete = false;
+  let said = false;
+  let closed = false;
+  const once = async (): Promise<void> => {
+    if (closed) return;
+    let read: Awaited<ReturnType<typeof readKahuProtected>>;
+    try { read = await readKahuProtected({ sealHome: opts.sealHome, canon: opts.canon() }); }
+    catch (err) { read = { homes: new Map(), failures: [`the recount threw: ${String(err)}`] }; }
+    if (read.failures.length > 0) {
+      const was = incomplete;
+      incomplete = true;
+      if (!said) {
+        said = true;
+        console.error(`[kahu-realm] ⚠ THE PROTECTED CANON COUNT IS INCOMPLETE (${read.failures.length} read failure(s): ${read.failures.slice(0, 3).join("; ")}): every document is withheld from every wire peer until a recount reads whole; the next classification write or board change retries it`);
+      }
+      if (!was) { try { opts.onChange?.(); } catch { /* a listener never breaks the count */ } }
+      return;
+    }
+    const recovered = incomplete;
+    incomplete = false;
+    if (recovered) { said = false; console.warn("[kahu-realm] the protected canon count reads whole again: the wire's verdicts re-read"); }
+    const next = new Map([...read.homes.keys()].map((id) => [id, "kahu-canon" as const]));
+    const moved = recovered || next.size !== map.size || [...next.keys()].some((id) => !map.has(id) || homes.get(id) !== read.homes.get(id));
+    map = next;
+    homes = read.homes;
+    if (moved) { try { opts.onChange?.(); } catch { /* a listener never breaks the count */ } }
+  };
+  const recount = (): Promise<void> => {
+    const generation = ++queued;
+    const turn = tail.then(once);
+    tail = turn.catch((err: unknown) => { console.warn(`[kahu-realm] the protected canon ids would not recount: ${String(err)}`); })
+      .then(() => { done = generation; });
+    return turn;
+  };
+  const settled = async (): Promise<void> => { while (done < queued) await tail; };
+  const onWrite = (): void => { void recount().catch(() => {}); };
+  CLASSIFICATION_WRITES.add(onWrite);
+  return {
+    ids: () => map,
+    homeOf: (id) => homes.get(id) ?? null,
+    homes: () => new Set([...homes.values()].filter((n): n is string => n !== null)),
+    recount, settled, pending: () => done < queued, incomplete: () => incomplete,
+    close: () => { closed = true; CLASSIFICATION_WRITES.delete(onWrite); },
+  };
 }
