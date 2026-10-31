@@ -559,14 +559,20 @@ export function kahuProtectedHolder(opts: {
     homes = read.homes;
     if (moved) { try { opts.onChange?.(); } catch { /* a listener never breaks the count */ } }
   };
+  // COALESCED (P26 held row, lane `ralias`): a recount asked while another waits UNSTARTED joins it, since that count reads the
+  // disk only when its turn comes and so sees both writes. A burst of any size queues at most one count behind the running one.
+  let waiting: { gen: number; turn: Promise<void> } | null = null;
   const recount = (): Promise<void> => {
-    const generation = ++queued;
-    const turn = tail.then(once);
-    tail = turn.catch((err: unknown) => { console.warn(`[kahu-realm] the protected canon ids would not recount: ${String(err)}`); })
-      .then(() => { done = generation; });
-    return turn;
+    if (waiting) { waiting.gen = ++queued; return waiting.turn; }
+    const slot: { gen: number; turn: Promise<void> } = { gen: ++queued, turn: Promise.resolve() };
+    slot.turn = tail.then(() => { if (waiting === slot) waiting = null; return once(); });
+    waiting = slot;
+    tail = slot.turn.catch((err: unknown) => { console.warn(`[kahu-realm] the protected canon ids would not recount: ${String(err)}`); })
+      .then(() => { done = slot.gen; });
+    return slot.turn;
   };
-  const settled = async (): Promise<void> => { while (done < queued) await tail; };
+  // ONE ROUND: waits for the count queued now. The guard asks `pending()` after and bounds how many rounds it waits.
+  const settled = async (): Promise<void> => { await tail; };
   const onWrite = (): void => { void recount().catch(() => {}); };
   CLASSIFICATION_WRITES.add(onWrite);
   return {

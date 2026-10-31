@@ -116,11 +116,13 @@ describe("the face-reading census", () => {
       "lararium-node/src/boot-face-planes.ts": "the one enumerator of the bootstrap's plane entries",
       "lararium-node/src/open-node-vessel.ts": "each entry is read only to PROVE it (provenPlanes) before registration; the selves plane, bag list and registration read the proven map",
       "lararium-browser/src/open-browser-vessel.ts": "each entry is read only to PROVE it before registration; the bag list and the mount read the proven map",
+      "lararium-node/src/vessel-private.ts": "walks the family only to class each face's plane ids for the share guard to WITHHOLD (lane ralias)",
     },
     bootFacePlanes: {
       "lararium-node/src/boot-face-planes.ts": "the definition",
       "lararium-node/src/face-fleet-view.ts": "facet and exclusion reads; the composer feeds it nothing until the worn face proved",
       "lararium-node/src/open-node-vessel.ts": "reads the worn group's urls for the proof, which checks each against the signed plane acts",
+      "lararium-node/src/vessel-private.ts": "classes every face's plane ids for the share guard to WITHHOLD (lane ralias); it mounts, trusts and serves nothing it reads",
     },
     readPersonaPlanes: {
       "lararium-mesh/src/persona-planes.ts": "the definition",
