@@ -66,7 +66,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
-import { federationPostureFromDoc, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats, type SealEpoch } from "@lararium/mesh";
+import { federationPostureFromDoc, isVerbRefusal, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats, type SealEpoch } from "@lararium/mesh";
 import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "./commands/nexus-cabal.js";
 import { runFloorRelease } from "./commands/nexus-release.js";
 import { casDirForStorage } from "./node-cas.js";
@@ -618,13 +618,28 @@ export function storeDoorReactors(deps: StoreDoorDeps): Record<StoreDoorVerb, Ve
 }
 
 /**
- * A face row's answer on a session's socket (`session:act`): `{ status: "done", output }` with the row's own output (a
- * row's refusal rides in it as `refused`), or `{ status: "error", errorMessage }` for the fault that stopped it (a
- * clearance the keyholder island refused, a row that threw). The answer leaves this vessel on that socket alone.
+ * THE REALM VERBS THAT NAME A FACE'S KEY at a realm's Nexus: `realm-bag` signs as the acting face and answers its key
+ * (`signedBy`, `keptBy`), `realm-bags` lists stewards and `realm-clock` maintainers. On a session each answers on its
+ * socket alone, never in an outcome beside the session's face (K20): `realm-bag` and `realm-bags` run on main as
+ * session acts wearing the session's face (`REALM_SESSION_ACTS`), and `realm-clock`, an island read, rides the
+ * maintenance frame, which names no face.
  */
-export async function faceRowAnswer(run: () => Promise<Record<string, unknown>>): Promise<Record<string, unknown>> {
+export const REALM_KEY_VERBS: ReadonlySet<string> = new Set(["realm-bag", "realm-bags", "realm-clock"]);
+export const REALM_SESSION_ACTS: ReadonlySet<string> = new Set(["realm-bag", "realm-bags"]);
+
+/**
+ * A face row's answer on a session's socket (`session:act`): `{ status: "done", output }` with the row's own output (a
+ * row's refusal rides in it as `refused`), or `{ status: "error", errorMessage, reason? }` for the fault that stopped it
+ * (a clearance the keyholder island refused, a row that threw), its `reason` the refusal's own name where it carries one
+ * (`VerbRefusal`), and the fault named to `log`. The answer leaves this vessel on that socket alone.
+ */
+export async function faceRowAnswer(run: () => Promise<Record<string, unknown>>, log?: (line: string) => void): Promise<Record<string, unknown>> {
   try { return { status: "done", output: await run() }; }
-  catch (error) { return { status: "error", errorMessage: error instanceof Error ? error.message : String(error) }; }
+  catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    log?.(`face row faulted: ${errorMessage}`);
+    return { status: "error", errorMessage, ...(isVerbRefusal(error) ? { reason: error.reason } : {}) };
+  }
 }
 
 /**

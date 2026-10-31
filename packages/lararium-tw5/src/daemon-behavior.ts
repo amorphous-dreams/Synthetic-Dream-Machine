@@ -367,24 +367,25 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
       }
 
       if (type === "daemon:gate-verb-request") {
-        // A SESSION'S FACE ROW MEETS THE ROUTED CLEARANCE ALONE: a local ask of the presenter the session door verified,
-        // never placed and never dispatched, so no outcome follows; main runs the row once it clears.
+        // A SESSION'S FACE ROW MEETS THE ROUTED CLEARANCE ALONE: local, as the presenter the session door verified (read
+        // through this island's presenter mapping), never placed and never dispatched, so no outcome follows; main runs
+        // the row once it clears. The clearance takes its locality as given, so no ask the island holds lends it.
         const msg = raw as DaemonMsg_GateVerbRequest;
-        const ask = { requestId: msg.requestId, action: msg.verb, args: msg.args, requestedBy: msg.requestedBy };
         const dispatcher = _dispatcher;
         if (!dispatcher) {
           post(mkDaemonGateVerbResult({ requestId: msg.requestId, error: "the daemon's dispatcher does not stand yet" }));
           return true;
         }
-        localAsks.add(ask);
+        // The invocation never rests and never dispatches, so it carries no clock.
         const invocation = {
           title: `${VERB_URI_PREFIX}${msg.requestId}`, requestId: msg.requestId, action: msg.verb, args: msg.args,
-          requestedBy: msg.requestedBy, requestedAt: new Date().toISOString(), targets: [], batchMode: "best-effort" as const, status: "pending" as const,
-        };
-        dispatcher.clearRouted(invocation as Verb).then(
+          requestedBy: msg.requestedBy, requestedAt: "", targets: [], batchMode: "best-effort" as const, status: "pending" as const,
+        } as Verb;
+        const presenter = opts.presenterOf ? opts.presenterOf(invocation, true) : msg.requestedBy;
+        dispatcher.clearRouted(invocation, { local: true, presenter }).then(
           () => post(mkDaemonGateVerbResult({ requestId: msg.requestId })),
           (err: unknown) => post(mkDaemonGateVerbResult({ requestId: msg.requestId, error: err instanceof Error ? err.message : String(err) })),
-        ).finally(() => localAsks.drop(msg.requestId));
+        );
         return true;
       }
 
@@ -439,8 +440,6 @@ export interface LocalAsk { readonly requestId: string; readonly action: string;
 export function makeLocalAskBook(bound = 4096): {
   add(ask: LocalAsk): void;
   has(ask: LocalAsk): boolean;
-  /** Retire one ask whose act ended with no verb tiddler to leave the VM (a face row's clearance). */
-  drop(requestId: string): void;
   onWikiChange(changes: Record<string, { deleted?: boolean }>): void;
 } {
   const acts = new Map<string, string>();
@@ -448,7 +447,6 @@ export function makeLocalAskBook(bound = 4096): {
   return {
     add: (ask) => { acts.delete(ask.requestId); acts.set(ask.requestId, actOf(ask)); if (acts.size > bound) acts.delete(acts.keys().next().value as string); },
     has: (ask) => acts.get(ask.requestId) === actOf(ask),
-    drop: (requestId) => { acts.delete(requestId); },
     onWikiChange: (changes) => {
       for (const [title, change] of Object.entries(changes)) {
         if (change?.deleted && title.startsWith(VERB_URI_PREFIX)) acts.delete(title.slice(VERB_URI_PREFIX.length));

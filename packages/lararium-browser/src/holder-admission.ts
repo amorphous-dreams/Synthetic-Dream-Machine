@@ -14,6 +14,7 @@ export const TAB_REQUESTS: ReadonlySet<string> = new Set([
   "daemon:worldline-compare-request",
   "daemon:worldline-trajectory-request",
   "daemon:resolve-binding-request",
+  "daemon:gate-verb-request",
 ]);
 
 /** A message the holder answers only for an admitted session. */

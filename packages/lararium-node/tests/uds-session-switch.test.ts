@@ -377,7 +377,7 @@ describe("UDS session switch", () => {
       expect(await a.ask({ op: "session:call", ...envA, requestId: "place-row", verb: "load", args: { face: 1 } })).toMatchObject({ kind: "session:result" });
       expect((v.placed[0] as { args?: unknown }).args).toEqual({ face: 1 });
       expect(await a.ask({ op: "session:call", ...envA, requestId: "face-call", verb: "face-row", args: {} }))
-        .toEqual({ kind: "session:refused", requestId: "face-call", refusal: "face-row-answers-on-the-socket" });
+        .toEqual({ kind: "session:refused", requestId: "face-call", refusal: "answers-on-the-socket" });
       expect(v.placed).toHaveLength(1);
     } finally { await v.done(); }
   });

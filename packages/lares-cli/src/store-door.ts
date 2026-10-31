@@ -44,7 +44,9 @@ async function invokeAbortable(
  * rides it (`session:act`), and the session closes. The row's answer returns on that socket alone, so no outcome body
  * rests in the daemon document beside the face (K20). The door's own abort closes the session at once, as it ends the
  * maintenance frame's socket. A session the vessel refuses (a locked face, a face it does not hold, a moved anchor)
- * answers by the vessel's own name, and a row the vessel could not run throws `RoutedVerbRefused` with its words.
+ * answers by the vessel's own name, and a row the vessel could not run throws `RoutedVerbRefused` with its words and
+ * the refusal's own name. The act carries no flat timer of its own: the door's budgeted wait bounds it, and the vessel
+ * bounds its clearance (`LocalWaitExpired` serves the maintenance frame alone).
  */
 async function invokeInSession(
   verb: string, args: Record<string, unknown>, face: number,

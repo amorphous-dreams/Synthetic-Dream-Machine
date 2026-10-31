@@ -94,8 +94,9 @@ describe("a command's JSON carries the name", () => {
   });
 
   it("★ a store refusal no command caught leaves the dispatcher as one JSON object, never a throw ★", async () => {
-    const refused = { status: "error", requestId: "r", errorMessage: "the vessel holds no face", refusal: { reason: "waking-floor" } };
-    vi.mocked(openLocalSession).mockResolvedValue({ faceRef: "proof", call: async () => ({ kind: "session:result", ...refused }), close: async () => {} } as never);
+    // A face row rides `session:act`; the vessel's refusal answers with the refusal's own name as its reason.
+    const refused = { status: "error", errorMessage: "the vessel holds no face", reason: "waking-floor" };
+    vi.mocked(openLocalSession).mockResolvedValue({ faceRef: "proof", act: async () => refused, close: async () => {} } as never);
     const { code, payload } = await jsonOf(() => dispatch(["handle", "rotate", "--json"]));
     expect(payload.error?.code).toBe("waking-floor");
     expect(code).toBe(2);

@@ -191,6 +191,8 @@ export interface DaemonVmCoreOptions {
   eaSilenceMs?:    number;
   /** Bound on the host's ask for the daemon working binding; defaults to the document hang bound. */
   hostBindingBoundMs?: number;
+  /** Bound on a face row's clearance ask (`runAsFace`); defaults to the document hang bound. */
+  gateBoundMs?: number;
   /** Override the ea progress-stall budget in ms (default 3x silence). */
   eaStallMs?:      number;
 }
@@ -789,11 +791,14 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     runAsFace: async ({ verb, args, worn }) => {
       const registry = _registry;
       if (!registry) throw new Error(`[openDaemonVm] a face row ran before mountMainVerbs — verb="${verb}"`);
-      await askIsland<true>("gate", (requestId) => mkDaemonGateVerbRequest({ requestId, verb, args, requestedBy: worn.presenter }));
+      // A gate the island never answers ends by name within its bound, never a hang the session's act waits out.
+      await askIsland<true>("gate", (requestId) => mkDaemonGateVerbRequest({ requestId, verb, args, requestedBy: worn.presenter }),
+        opts.gateBoundMs ?? DOCUMENT_HANG_BOUND_MS);
       const requestId = newRequestId();
+      // The invocation never rests (no outcome follows it), so it carries no clock.
       return runLocalVerb({
         title: `${DAEMON_BAG_ID}/face-row/${requestId}`, requestId, action: verb, args, requestedBy: worn.presenter,
-        requestedAt: new Date().toISOString(), targets: [], batchMode: "best-effort" as BatchMode, status: "pending" as const,
+        requestedAt: "", targets: [], batchMode: "best-effort" as BatchMode, status: "pending" as const,
       }, { daemon: composite, registry, wornOf: () => worn, localOf: () => true });
     },
     placeVerb: (o: VesselPlaceVerbRequest) => {

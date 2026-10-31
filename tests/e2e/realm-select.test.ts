@@ -23,7 +23,7 @@ import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { openStaged, awaitRendezvous, foundStagedHearth, freePort, growStagedQuorum, type LarInstance } from "../harness/instance.js";
 import { seedUserBag } from "../harness/promote.js";
-import { censusOutcomeLinkage, OUTCOME_URI_PREFIX, plainValue, type LarDoc } from "../../packages/lararium-mesh/src/index.js";
+import { censusOutcomeLinkage, OUTCOME_URI_PREFIX, plainValue, type LarDoc, type StoredTiddlers } from "../../packages/lararium-mesh/src/index.js";
 import { STORE_DOOR_FACE_ROWS } from "../../packages/lararium-node/src/store-door-verbs.js";
 import { ownedStore } from "../../packages/lararium-node/src/owned-store.js";
 import { larDataDir } from "../../packages/lararium-node/src/vessel-paths.js";
@@ -167,12 +167,12 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
     await A!.stopDaemonOnly();
     const priorRoot = process.env["LAR_ROOT"];
     process.env["LAR_ROOT"] = A!.root;
-    let tiddlers: Record<string, unknown>;
+    let tiddlers: StoredTiddlers;
     try {
       const url = daemonDocUrlFromBootstrap();
       expect(url, "the bootstrap names the daemon document").toBeTruthy();
       tiddlers = await ownedStore(larDataDir(), async (repo) =>
-        ({ ...((await repo.find<LarDoc>(url as never)).doc()?.tiddlers ?? {}) }) as Record<string, unknown>);
+        ({ ...((await repo.find<LarDoc>(url as never)).doc()?.tiddlers ?? {}) }) as StoredTiddlers);
     } finally {
       if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
     }
@@ -180,13 +180,20 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
     const verbs = Object.entries(tiddlers).filter(([t]) => t.startsWith(OUTCOME_URI_PREFIX)).map(([, r]) => String(plainValue(((r as { tiddler?: Record<string, unknown> }).tiddler ?? {})["verb"])));
     console.error(`realm-select MEASURE census: ${census.outcomes} outcomes (${[...new Set(verbs)].join(",")}), linked ${JSON.stringify(census.linked)}`);
     expect(census.outcomes, "the census read the vessel's outcomes").toBeGreaterThan(0);
+    // The record the story turns on stands among them: the feed's own island verb, which lands beside its leaf's slot.
+    expect(verbs, "the census read the realm feed's outcome").toContain("realm-feed");
     expect(census.linked).toEqual([]);
     // KNOWN POSITIVE: the same census over the same record set, with one outcome pairing a requester and the leaf.
     const planted = `${OUTCOME_URI_PREFIX}k20-planted`;
     // Planted as the document keeps a record: `{ tiddler, meta }`, its strings wrapped as Automerge hands them out.
     const wrap = (val: string) => ({ val, [Symbol.for("_am_immutableString")]: true });
-    const withPlant = { ...tiddlers, [planted]: { tiddler: { title: wrap(planted), verb: wrap("load"), status: wrap("done"),
-      "requested-by": wrap("did:key:planted"), results: wrap(JSON.stringify({ summary: { ok: true, output: { writer: leaf } } })) }, meta: {} } };
-    expect(censusOutcomeLinkage(withPlant, { socketOnly: STORE_DOOR_FACE_ROWS, keys: [leaf] }).linked.map((l) => l.title)).toEqual([planted]);
+    // A session's outcome names its `face`; one beside the leaf, and one of a face row, each read linked.
+    const plantedRow = `${OUTCOME_URI_PREFIX}k20-planted-row`;
+    const withPlant = { ...tiddlers,
+      [planted]: { tiddler: { title: wrap(planted), verb: wrap("load"), status: wrap("done"), face: wrap("planted-proof-subject"),
+        results: wrap(JSON.stringify({ summary: { ok: true, output: { writer: leaf } } })) }, meta: {} },
+      [plantedRow]: { tiddler: { title: wrap(plantedRow), verb: wrap("cabal-face"), status: wrap("done") }, meta: {} } } as unknown as StoredTiddlers;
+    expect(censusOutcomeLinkage(withPlant, { socketOnly: STORE_DOOR_FACE_ROWS, keys: [leaf] }).linked.map((l) => [l.title, l.why]))
+      .toEqual(expect.arrayContaining([[planted, "requester-beside-key"], [plantedRow, "socket-only-verb"]]));
   }, 240_000);
 });

@@ -75,12 +75,14 @@ export interface UdsChannelOptions {
     readonly names: ReadonlySet<string>;
     readonly run: (act: string, args: Record<string, unknown>, worn: { readonly ordinal: number; readonly presenter: string }) => Promise<Record<string, unknown>>;
   };
-  /**
-   * Verbs that act as a face (`STORE_DOOR_FACE_ROWS`): each answers on a session's socket alone (`session:act`). The
-   * maintenance frame refuses one `face-row-rides-a-session`; a `session:call`, whose outcome body rests in the daemon
-   * document, refuses one `face-row-answers-on-the-socket`.
-   */
+  /** Verbs that act as a face (`STORE_DOOR_FACE_ROWS`): the maintenance frame refuses one `face-row-rides-a-session`. */
   readonly sessionVerbs?: ReadonlySet<string>;
+  /**
+   * Verbs whose answer on a session rides its socket alone (`session:act`): the face rows and the realm verbs that name a
+   * face's key at a realm's Nexus (`REALM_KEY_VERBS`). A `session:call`, whose outcome body rests in the daemon document
+   * beside the session's face, refuses one `answers-on-the-socket`, as it refuses every `sessionVerbs` row.
+   */
+  readonly socketVerbs?: ReadonlySet<string>;
   /** The daemon's warm daemon doc handle (result.daemon.daemonHandle). */
   readonly daemonHandle: DocHandle<LarDoc>;
   /** The daemon composite with its attached working layer established as default writable. */
@@ -1053,9 +1055,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         !state.supply || typeof state.supply.presenter !== "string" || !state.supply.presenter) {
       return sessionRefuse(sock, "malformed-message", requestId);
     }
-    // A FACE ROW'S ANSWER RIDES THE SOCKET ALONE (`session:act`): a call's outcome body rests in the daemon document
-    // beside its requester, so a face row never rides one.
-    if (opts.sessionVerbs?.has(frame["verb"])) return sessionRefuse(sock, "face-row-answers-on-the-socket", requestId);
+    // A FACE ROW'S ANSWER RIDES THE SOCKET ALONE (`session:act`), as does a realm verb's that names a face's key: a call's
+    // outcome body rests in the daemon document beside the session's face, so neither rides one.
+    if (opts.sessionVerbs?.has(frame["verb"]) || opts.socketVerbs?.has(frame["verb"])) return sessionRefuse(sock, "answers-on-the-socket", requestId);
     const args = frame["args"] as Record<string, unknown>;
     await new Promise<void>((resolve) => {
       const closed = () => resolve();

@@ -183,7 +183,8 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
     const requestId = typeof ask.requestId === "string" ? ask.requestId : undefined;
     const error = `[shared-holder] ${why}${requestId ? ` (${requestId})` : ""}`;
     const replyType = ask.type === "wiki:place-verb" ? "wiki:verb-result"
-      : ask.type === "daemon:delegate-verb" ? "daemon:verb-result" : "fault";
+      : ask.type === "daemon:delegate-verb" ? "daemon:verb-result"
+      : ask.type === "daemon:gate-verb-request" ? "daemon:gate-verb-result" : "fault";
     for (const entry of listeners) entry.cb({ type: replyType, ...(requestId ? { requestId } : {}),
       ...(replyType === "fault" ? { wikiUri: "" } : {}), error });
   };

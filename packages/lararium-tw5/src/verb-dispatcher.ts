@@ -326,9 +326,11 @@ export class VerbDispatcher {
    * before it posts to main, and a session's face row meets it alone (`daemon:gate-verb-request`) before main runs
    * the row as the session's face, its answer on the socket.
    */
-  async clearRouted(invocation: Verb): Promise<void> {
-    const presenter = this.opts.presenterOf?.(invocation) ?? invocation.requestedBy;
-    const local = this.opts.localOf?.(invocation) === true;
+  async clearRouted(invocation: Verb, given?: { readonly local: boolean; readonly presenter: string }): Promise<void> {
+    // A face row's clearance names its locality and presenter itself (the session door verified both), so no ask the
+    // island holds ever lends or borrows them.
+    const presenter = given?.presenter ?? this.opts.presenterOf?.(invocation) ?? invocation.requestedBy;
+    const local = given?.local ?? this.opts.localOf?.(invocation) === true;
     // A wiki-addressing envelope meets the fence by its presenter. Any other routed ask that did not arrive local (a
     // synced summons, content) names no presenter that can wear a face here, so the fence reads it as naming none.
     if (routedAddressesWiki(invocation) || !local) {
