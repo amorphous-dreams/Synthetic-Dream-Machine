@@ -33,6 +33,16 @@ Read `tools/projection-loom/docs/HANDOFF.md`, `LIVING-PLACE.md`, `ROADMAP.md`, `
 
 <<~/ahu>>
 
+<<~ ahu #/relational-inheritance-design>>
+
+!! Next native design proof
+
+Read `lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design` and `tools/projection-loom/docs/RELATIONAL-INHERITANCE-DESIGN.md`. The design selects a derived route-family witness and parent-conditioned reconstruction under one OODAHAJournal. Current topology tests do not yet prove a native-admitted parent followed by a distinct native-admitted child. Keep exact-budget STEP replay and source closure; preserve operator authority and all historical ashes.
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design">>
+
+<<~/ahu>>
+
 <<~ ahu #/entry>>
 ! Projection Loom — Operator/Lares handoff XII
 
@@ -429,6 +439,6 @@ No backlog item automatically grants a new capability.
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-reference-ci">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ff_XFpBkh9mOrBL25sUqWY0FGCpg9ScQLU_-MhQD8p0
+<<^ code="&#x0003;">>ni:///sha-256;fkq0I7C8Xl10A-jaz7usotx53o9mb2PLmZVO5YMf-PA
 
 <<^ code="&#x0004;" -> to="?">>
