@@ -1637,6 +1637,8 @@ async function prepareNodeBootOn(
       )
     : async (cid: string) => readVerifiedCasBlobFromFs(cid, cidDir);
   setCasDoor(resolveCidThroughDoor);
+  // The door's stand-down pushes in the next statement (T27): a boot that refuses on any await below leaves no door behind.
+  stood.push({ what: "the fetch door", down: () => setCasDoor(null) });
   if (hermShore) console.log(`[carriage] fetch door open — the herm shore · cid/ ${cidDir}`);
 
   // ── The CLIENT dial-out (Socket A, cleartext CRDT) — INERT until a peer sync URL + gate key ride the config ──
@@ -1848,7 +1850,6 @@ async function prepareNodeBootOn(
 
   // EVERYTHING THE CLOSURES BELOW STAND, read at teardown through the same forward refs they set. Each line
   // tolerates a ref no closure reached, so a boot that refuses midway stands down exactly what stood.
-  stood.push({ what: "the fetch door",        down: () => setCasDoor(null) });
   stood.push({ what: "the recall holders",    down: async () => {
     for (const h of recallHolders.values()) await h.close();
     for (const c of sourceCaptures.values()) await c.close();
