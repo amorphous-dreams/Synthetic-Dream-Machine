@@ -69,7 +69,7 @@ def inherit_family(original, spatial, native_archive, epoch, slot, seed):
     if not child: return ConstructionRefused(attributed_reason)
     require_same_original_goals_and_anchors(child)
     require_distinct_observed_route_candidate(parent, child)
-    return Proposal(child, parent_native_ids, "native_audition_completed": False)
+    return Proposal(child, parent_native_ids, native_audition_completed=False)
 ```
 
 The emitter never writes `native-admitted`. Only the existing campaign spends one real STEP audition, reimports every required native body, assesses **all** original goals and archives a verified workspace. The family derives after admission. A derived child inherits a parent relationship as a *causal constructive constraint*; it does not inherit the parent's pass verdict.
