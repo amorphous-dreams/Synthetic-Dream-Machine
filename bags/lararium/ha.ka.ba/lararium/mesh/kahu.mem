@@ -268,7 +268,6 @@ Each line reads whole at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-
 
 Each item below stands unruled. Nothing in code decides one.
 
-* ''Guardian count and threshold at enrolment.'' 2-of-3 survives one lost guardian and forms the impersonation quorum; 2-of-2 ends recovery at one loss.
 * ''Guardian request authentication.'' Options: an agreed channel and a live voice · in person · a device-derived event plus a short string, named a byte check and never an identity proof.
 * ''The veto.'' Options: keep it as a house fork rule and specify it · drop it.
 * ''Death and succession of a person.'' Options: guardian recovery under the same lineage · a separate succession object · no path.
@@ -690,6 +689,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;U3MWvZgSysGbPwyt-jnua5OrckAIwhT3CLs1tSSU0GM
+<<^ code="&#x0003;">>ni:///sha-256;moy1VFGUbasQtMMzPZPnWAXdp9Wyvm4t4MvaZfTnoYE
 
 <<^ code="&#x0004;" -> to="?">>
