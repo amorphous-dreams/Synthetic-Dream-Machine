@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { CARRIAGE_CARRIER_DOMAIN, carrierContractBytes, hex, mintPlaceInception, placeSignerFromSeed, verifyPlaceDutyAtHead,
-  provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, attestAndRotate, httpPersonaKelDropHerm,
+  provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard, attestAndRotate, httpPersonaKelDropHerm,
   depositPersonaKelChain, pullPersonaKelSuccessors } from "@lararium/mesh";
 import { startCarriageRelay } from "../src/carriage-relay.js";
 import { openRelayGateSeed, rotateRelayGateSeed, RELAY_GATE_SEED_FILE, RelayGateSeedRefused } from "../src/relay-gate-seed.js";
@@ -75,16 +75,16 @@ describe("relay service S row", () => {
     home();
     const key = (b: number) => new Uint8Array(32).fill(b);
     const pub = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
-    const guardians = [key(61), key(62), key(63)];
-    const guardianKeys = await Promise.all(guardians.map(pub));
+    const recoveryContacts = [key(61), key(62), key(63)];
+    const recoveryContactKeys = await Promise.all(recoveryContacts.map(pub));
     const start = provisionThresholdRecoveryAtFounding({
       foundingOpKeyDid: `0x${await pub(key(51))}`,
-      guardians: guardianKeys.map((value, i) => guardianRecoveryRegistrationCard(["mine", "guardian-a", "guardian-b"][i]!, value, null)),
+      recoveryContacts: recoveryContactKeys.map((value, i) => recoveryContactRegistrationCard(["mine", "contact-a", "contact-b"][i]!, value, null)),
       recoveryThreshold: 2,
     }).inception;
     const rotated = await attestAndRotate({
-      head: start, freshOpKeyDid: `0x${await pub(key(52))}`, guardianRecoveryKeys: guardianKeys, recoveryThreshold: 2,
-      guardianSigners: await Promise.all(guardians.slice(0, 2).map(async (seed) => ({ signer: await pub(seed), sign: async (bytes: Uint8Array) => hex(await ed.signAsync(bytes, seed)) }))),
+      head: start, freshOpKeyDid: `0x${await pub(key(52))}`, recoveryContactKeys: recoveryContactKeys, recoveryThreshold: 2,
+      recoveryContactSigners: await Promise.all(recoveryContacts.slice(0, 2).map(async (seed) => ({ signer: await pub(seed), sign: async (bytes: Uint8Array) => hex(await ed.signAsync(bytes, seed)) }))),
     });
     if (!rotated.ok) throw new Error(rotated.reason);
     const journal = join(process.env.LAR_ROOT!, "drops.jsonl");

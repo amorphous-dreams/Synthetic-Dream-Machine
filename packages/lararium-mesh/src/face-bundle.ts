@@ -18,7 +18,7 @@
  *
  * ── WHAT THE BODY NAMES ─────────────────────────────────────────────────────────────────────────
  * One face: its root, the roster line that names it, the two fixed names of its anchors, its key event log, its
- * own names, its face proof keys, its own handle-book records, the guardian set its typed first enrolment committed
+ * own names, its face proof keys, its own handle-book records, the recovery contact set its typed first enrolment committed
  * (null where its log commits none), its address secret (the 32 bytes its working documents derive their addresses
  * from, so a restored face finds the documents it wrote elsewhere; null where a reader built the body from paper,
  * which carries none) and its memory section. `readFaceBundleBody`
@@ -39,7 +39,7 @@ import { bindSlot, decodeSlotTree, encodeSlotTree, openTreeKey, type Credential,
 import { memoryKeypairOf, type MemoryKeypair } from "./memory-section.js";
 import { coercePersonaKelEvent } from "./persona-kel-board.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
-import type { GuardianRecoveryRegistration } from "./recovery-registration.js";
+import type { RecoveryContactRegistration } from "./recovery-registration.js";
 import type { TreeKey } from "./tree-key.js";
 
 /** A bundle key's width, in bytes. */
@@ -87,13 +87,13 @@ export function bindBundleRoutes(bundleKey: Uint8Array, routes: readonly SlotSpe
 export interface FaceBundleHolding { readonly bagId: string; readonly founding: string; readonly keyVersion: string }
 
 /**
- * The guardian set a face's typed first enrolment committed, as the face's own sealed record holds it: the digest
+ * The recovery contact set a face's typed first enrolment committed, as the face's own sealed record holds it: the digest
  * the event carries, the threshold, and the registrations a later rotation reveals against that digest.
  */
-export interface FaceBundleGuardianSet {
-  readonly guardianSetHash: string;
+export interface FaceBundleRecoveryContactSet {
+  readonly recoveryContactSetHash: string;
   readonly threshold:       number;
-  readonly guardians:       readonly GuardianRecoveryRegistration[];
+  readonly recoveryContacts:       readonly RecoveryContactRegistration[];
 }
 
 /** Everything one face's bundle carries, as the sealed body spells it. */
@@ -112,8 +112,8 @@ export interface FaceBundleBody {
   readonly faceProofKeys: readonly { readonly scope: string; readonly secret: string }[];
   /** The handle-book records this face itself recognised, each with this face's own label. */
   readonly handleBook: { readonly records: readonly Record<string, unknown>[] };
-  /** The guardian set the face's log commits by its typed first enrolment; null where the log still stands one-of-one. */
-  readonly guardianSet: FaceBundleGuardianSet | null;
+  /** The recovery contact set the face's log commits by its typed first enrolment; null where the log still stands one-of-one. */
+  readonly recoveryContactSet: FaceBundleRecoveryContactSet | null;
   /** The memory section, sealed to the pair this bundle's key derives (base64), and what it holds. */
   readonly memory:     { readonly section: string; readonly holds: readonly FaceBundleHolding[] };
   /**
@@ -139,22 +139,22 @@ function plain(v: unknown, keys: readonly string[], optional: readonly string[] 
 }
 const isLabel = (v: unknown): v is string => typeof v === "string" && v.length > 0 && v.length <= LABEL_LIMIT;
 const isIndex = (v: unknown): v is number => Number.isSafeInteger(v) && (v as number) >= 0;
-const GUARDIAN_SLOTS = ["mine", "guardian-a", "guardian-b"];
+const RECOVERY_CONTACT_SLOTS = ["mine", "contact-a", "contact-b"];
 
-/** A guardian set's SHAPE: a digest, a whole threshold, and registrations of the house's card shape. Null where it reads as none. */
-function readGuardianSet(v: unknown): FaceBundleGuardianSet | null {
-  const set = plain(v, ["guardianSetHash", "threshold", "guardians"]);
-  if (!set || typeof set["guardianSetHash"] !== "string" || !HEX64.test(set["guardianSetHash"])) return null;
-  if (!Number.isSafeInteger(set["threshold"]) || (set["threshold"] as number) < 1 || !Array.isArray(set["guardians"])) return null;
-  const guardians: GuardianRecoveryRegistration[] = [];
-  for (const one of set["guardians"] as unknown[]) {
+/** A recovery contact set's SHAPE: a digest, a whole threshold, and registrations of the house's card shape. Null where it reads as none. */
+function readRecoveryContactSet(v: unknown): FaceBundleRecoveryContactSet | null {
+  const set = plain(v, ["recoveryContactSetHash", "threshold", "recoveryContacts"]);
+  if (!set || typeof set["recoveryContactSetHash"] !== "string" || !HEX64.test(set["recoveryContactSetHash"])) return null;
+  if (!Number.isSafeInteger(set["threshold"]) || (set["threshold"] as number) < 1 || !Array.isArray(set["recoveryContacts"])) return null;
+  const recoveryContacts: RecoveryContactRegistration[] = [];
+  for (const one of set["recoveryContacts"] as unknown[]) {
     const g = plain(one, ["slot", "label", "recoveryPubKey", "confirmPhrase"]);
-    if (!g || typeof g["slot"] !== "string" || !GUARDIAN_SLOTS.includes(g["slot"]) || !isLabel(g["label"])) return null;
+    if (!g || typeof g["slot"] !== "string" || !RECOVERY_CONTACT_SLOTS.includes(g["slot"]) || !isLabel(g["label"])) return null;
     if (typeof g["recoveryPubKey"] !== "string" || !HEX64.test(g["recoveryPubKey"]) || typeof g["confirmPhrase"] !== "string" || g["confirmPhrase"].length > LABEL_LIMIT) return null;
-    guardians.push({ slot: g["slot"] as GuardianRecoveryRegistration["slot"], label: g["label"], recoveryPubKey: g["recoveryPubKey"], confirmPhrase: g["confirmPhrase"] });
+    recoveryContacts.push({ slot: g["slot"] as RecoveryContactRegistration["slot"], label: g["label"], recoveryPubKey: g["recoveryPubKey"], confirmPhrase: g["confirmPhrase"] });
   }
-  if (guardians.length === 0 || (set["threshold"] as number) > guardians.length) return null;
-  return { guardianSetHash: set["guardianSetHash"], threshold: set["threshold"] as number, guardians };
+  if (recoveryContacts.length === 0 || (set["threshold"] as number) > recoveryContacts.length) return null;
+  return { recoveryContactSetHash: set["recoveryContactSetHash"], threshold: set["threshold"] as number, recoveryContacts };
 }
 
 /**
@@ -165,7 +165,7 @@ function readGuardianSet(v: unknown): FaceBundleGuardianSet | null {
 export function readFaceBundleBody(bytes: Uint8Array): FaceBundleBody | null {
   let raw: unknown;
   try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); } catch { return null; }
-  const top = plain(raw, ["root", "rosterLine", "anchors", "kel", "names", "faceProofKeys", "handleBook", "guardianSet", "memory"], ["addressSecret"]);
+  const top = plain(raw, ["root", "rosterLine", "anchors", "kel", "names", "faceProofKeys", "handleBook", "recoveryContactSet", "memory"], ["addressSecret"]);
   if (!top) return null;
   const addressSecret = top["addressSecret"];
   if (addressSecret !== undefined && addressSecret !== null && (typeof addressSecret !== "string" || !HEX64.test(addressSecret))) return null;
@@ -212,8 +212,8 @@ export function readFaceBundleBody(bytes: Uint8Array): FaceBundleBody | null {
     }
     records.push(record);
   }
-  const guardianSet = top["guardianSet"] === null ? null : readGuardianSet(top["guardianSet"]);
-  if (top["guardianSet"] !== null && guardianSet === null) return null;
+  const recoveryContactSet = top["recoveryContactSet"] === null ? null : readRecoveryContactSet(top["recoveryContactSet"]);
+  if (top["recoveryContactSet"] !== null && recoveryContactSet === null) return null;
   if (typeof memory["section"] !== "string" || !BASE64.test(memory["section"])) return null;
   const holds: FaceBundleHolding[] = [];
   for (const one of memory["holds"] as unknown[]) {
@@ -227,7 +227,7 @@ export function readFaceBundleBody(bytes: Uint8Array): FaceBundleBody | null {
     anchors: { signerDid: anchors["signerDid"], personaKelPrefix: anchors["personaKelPrefix"] },
     kel,
     names: { ...(names["petname"] !== undefined ? { petname: names["petname"] as string } : {}), ...(names["handle"] !== undefined ? { handle: names["handle"] as string } : {}) },
-    faceProofKeys, handleBook: { records }, guardianSet, memory: { section: memory["section"], holds },
+    faceProofKeys, handleBook: { records }, recoveryContactSet, memory: { section: memory["section"], holds },
     ...(addressSecret !== undefined ? { addressSecret: addressSecret as string | null } : {}),
   };
   // ONE BODY, ONE SPELLING: the bytes must equal the canonical image of what they parsed to.

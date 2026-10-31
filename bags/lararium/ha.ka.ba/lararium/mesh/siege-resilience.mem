@@ -212,8 +212,8 @@ The maintainer (the bounded repair hand of [[steward-doctrine|lar:///ha.ka.ba/la
 | ''re-share'' | re-randomize the threshold shares; expire old theft | PSS refresh (#/reset-the-clock) |
 | ''evict'' | blank a member's path so it loses ALL future access | TreeKEM blank-the-path + a [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]] on the membership stack |
 | ''heal-partition'' | re-converge two halves after a split | gossip / epidemic anti-entropy |
-| ''recover-from-fork'' | re-anchor a forked island to a trusted line | weak-subjectivity CHECKPOINT — a guardian-signed re-genesis seed |
-| ''re-genesis'' | roll a Nexus whose quorum is lost, through its Guardians | the opt-in catastrophe rite — Guardian weight for rotation only + a contest window counted in witnessed receipts |
+| ''recover-from-fork'' | re-anchor a forked island to a trusted line | weak-subjectivity CHECKPOINT — a recovery-contact-signed re-genesis seed |
+| ''re-genesis'' | roll a Nexus whose quorum is lost, through its recovery contacts | the opt-in catastrophe rite — Recovery contact weight for rotation only + a contest window counted in witnessed receipts |
 
 Two verbs carry a sharp edge worth naming. ''evict'' runs forward-only — TreeKEM's blank-the-path removes //future// access (the evicted member keeps what it already read); pair it with the membership-stack [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]] so the eviction shadows resurrection. ''re-genesis'' stands OPEN and unbuilt: at two seats, loss of a cold key ends that Nexus and the founders found a successor, and the open readings remain no catastrophe rite, or an opt-in charter-native rite with named witnesses and a specified veto (`kahu#/seed-and-nexus`). Neither reading governs recovery before a ruling. One standing law binds any contest window a ruling admits: it counts WITNESSED RECEIPTS — a causal, monotone count — never time, since a veto window measured by a clock hands the race to whoever controls the clock (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>). Without the window, the social-recovery path itself becomes the adversary's cleanest entry — designation must carry authority and fail loud, never recover silently.
 
@@ -223,7 +223,7 @@ Two verbs carry a sharp edge worth naming. ''evict'' runs forward-only — TreeK
 
 !! Two recovery shapes ~ and only one lets a secret exist again
 
-''This stack holds two, and they diverge exactly where it matters.'' A SPLIT SEED reassembles at recovery — a transient window in which the whole secret stands somewhere. A THRESHOLD ATTESTATION gives each guardian their own key, has each SIGN the rotation independently, and ''assembles nothing''; the recovered authority rotates a fresh key rather than resurrecting an old one.
+''This stack holds two, and they diverge exactly where it matters.'' A SPLIT SEED reassembles at recovery — a transient window in which the whole secret stands somewhere. A THRESHOLD ATTESTATION gives each recovery contact their own key, has each SIGN the rotation independently, and ''assembles nothing''; the recovered authority rotates a fresh key rather than resurrecting an old one.
 
 > ''The second reads strictly better, and the stack already built it.'' So the live question never asks what shape arrived most recently — it asks ''whether the split seed needs to materialise at all''. Where it does not, the split retires, and no secret in the stack ever exists twice.
 
@@ -268,6 +268,6 @@ Forward references (intent attractors, unbuilt): [[oracle-governance|lar:///ha.k
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aT8iap2iPy6ouI1y-_M1ly89MRLAuTCMGFQIbvqykDo
+<<^ code="&#x0003;">>ni:///sha-256;frTxvwJFwwdd5iwB6dIRY80qvMVNSOOThkUBnbE32BM
 
 <<^ code="&#x0004;" -> to="?">>

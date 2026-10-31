@@ -77,7 +77,7 @@ One joint lane (`feature/green-jello-dinosaur-5--k15-wave-c`), one pull request,
 
 !! Owed beyond Wave C
 
-* ''The recovery door: guardian-quorum rotation, then `reanchorAfterRotation`, then a re-admit carrying the log and frontier.'' No production door rotates a persona root beneath its KEL prefix: `reanchorAfterRotation` stands proven as a library function with its red and control (a face recovered to a new root boots against the rewritten anchor; a document naming the new root with no KEL rotation behind it refuses), and `runReadmitEdge` has no production caller. Building the door means the guardian-quorum ceremony, whose guardian count is an open operator gate (`kahu#/seed-and-nexus`). The re-admit then carries the current `@persona` log and the signed frontier as a first admit does.
+* ''The recovery door: recovery-contact-quorum rotation, then `reanchorAfterRotation`, then a re-admit carrying the log and frontier.'' No production door rotates a persona root beneath its KEL prefix: `reanchorAfterRotation` stands proven as a library function with its red and control (a face recovered to a new root boots against the rewritten anchor; a document naming the new root with no KEL rotation behind it refuses), and `runReadmitEdge` has no production caller. Building the door means the recovery-contact-quorum ceremony, whose recovery contact count is an open operator gate (`kahu#/seed-and-nexus`). The re-admit then carries the current `@persona` log and the signed frontier as a first admit does.
 * ''The FCK fence'' leaves this wave whole and becomes Wave D (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k15-wave-d-lane">>). The two key-class `test.fails` rows in `face-isolation-routes.test.ts` stand for it.
 * ''A face's circles and identities follow the face'' (operator ruling, 2026-10-22): minted once at founding, named by a signed `plane` act, carried in the admit bundle, adopted by every admitted device, and named in the face proof beside the persona plane (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">> #/the-atom). Sessions stay per vessel, as motion.
 * ''A device's own entry joins the face's shared documents when they ARRIVE'': a fresh device holds neither document at its admit, so `joinFaceDocumentsOnArrival` subscribes to the replica's own progress view and writes its identity entry and ceremony circles the moment the document is ready, once. No reboot and no timer decide it, and a vessel outside the group never reaches it. Red and control: `join-face-documents.test.ts`.
@@ -106,6 +106,6 @@ One joint lane (`feature/green-jello-dinosaur-5--k15-wave-c`), one pull request,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jEG1cWhS6VTKyRoofdOP_3wyFf2bVARRFOslci_gy-I
+<<^ code="&#x0003;">>ni:///sha-256;wH2N48UUwo5yPqkHOKIy9N7sQaO6hPMU9crJlJeC6-w
 
 <<^ code="&#x0004;" -> to="?">>

@@ -15,7 +15,7 @@
  * A party shows its OWN view of the face's head, signed by its own key (`face-log-view`). The view confirms where it
  * names the face's prefix, agrees with the head the mark holds, verifies under the key it names, and that key stands
  * as the party it claims, judged against this vessel's own rows and never a list compiled about the face:
- *   · a GUARDIAN: a key in the set the face's own sealed `guardian-set` row holds, under the face's prefix;
+ *   · a RECOVERY CONTACT: a key in the set the face's own sealed `recovery-contact-set` row holds, under the face's prefix;
  *   · a SEATED CHAIR: a key a charter this vessel keeps seats, and that no seat row of this vessel holds (a chair
  *     this vessel holds speaks for this vessel, never as another party);
  *   · a SIBLING DEVICE: unread. The face's root signs every device edge, and the restorer holds that root, so an
@@ -24,8 +24,8 @@
  * stated: one agreeing party may itself sit stale.
  *
  * ── WHERE NO PARTY ANSWERS ──────────────────────────────────────────────────────────────────────
- * The guardians' recovery path answers, under the impersonation quorum (a rotation the guardians sign), and never the
- * local read alone. The guardians' rotation carries that path (road `K18`, stable-founding-road#/stride-1-spine); this module names
+ * The recovery contacts' recovery path answers, under the impersonation quorum (a rotation the recovery contacts sign), and never the
+ * local read alone. The recovery contacts' rotation carries that path (road `K18`, stable-founding-road#/stride-1-spine); this module names
  * it and builds none.
  *
  * Node-main only. Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-restore
@@ -38,7 +38,7 @@ import {
 import { readLocalPersonaKelEvents } from "./local-persona-kel.js";
 import { readCarriedCharters } from "./carried-set.js";
 import { readCustodyRow, removeCustodyRow, updateCustodyRow } from "./custody-seat.js";
-import { readGuardianSet } from "./guardian-enrolment.js";
+import { readRecoveryContactSet } from "./recovery-contact-enrolment.js";
 import { readNexusDoc } from "./nexus-doc.js";
 import { heldSeatKey, signAsSeat } from "./seat-key-store.js";
 import { larSealHome } from "./vessel-paths.js";
@@ -117,16 +117,16 @@ function seatedChairKeys(): Set<string> {
   return keys;
 }
 
-/** Who could confirm the face, in words a person reads: the guardians by key, and the kinds of party beside them. */
+/** Who could confirm the face, in words a person reads: the recovery contacts by key, and the kinds of party beside them. */
 export async function couldConfirm(handleIndex: number): Promise<string[]> {
   const mark = await readProvisionalMark(handleIndex);
   if (mark === null) return [];
   const out: string[] = [];
-  const set = await readGuardianSet(handleIndex);
-  if (set && set.prefix === mark.prefix) for (const g of set.guardians) out.push(`a guardian of this face (${g.recoveryPubKey.slice(0, 16)}…), with its own view`);
+  const set = await readRecoveryContactSet(handleIndex);
+  if (set && set.prefix === mark.prefix) for (const g of set.recoveryContacts) out.push(`a recovery contact of this face (${g.recoveryPubKey.slice(0, 16)}…), with its own view`);
   out.push("a chair seated in a charter this face stands in, with its own view");
   out.push("a sibling device of the same human (unread: an edge alone proves no sibling apart from the restorer)");
-  out.push("where none answers: the guardians' recovery path, under their quorum");
+  out.push("where none answers: the recovery contacts' recovery path, under their quorum");
   return out;
 }
 
@@ -146,9 +146,9 @@ export async function refuseWhileProvisional(handleIndex: number, act: string): 
 
 /** Whether `key` stands as a party of kind `party` for the face at `handleIndex`, on this vessel's own rows. */
 async function partyStands(handleIndex: number, prefix: string, party: FaceLogViewParty, key: string): Promise<boolean> {
-  if (party === "guardian") {
-    const set = await readGuardianSet(handleIndex);
-    return set !== null && set.prefix === prefix && set.guardians.some((g) => g.recoveryPubKey.toLowerCase() === key);
+  if (party === "recovery-contact") {
+    const set = await readRecoveryContactSet(handleIndex);
+    return set !== null && set.prefix === prefix && set.recoveryContacts.some((g) => g.recoveryPubKey.toLowerCase() === key);
   }
   if (party === "chair") return seatedChairKeys().has(key) && heldSeatKey(key) === null;
   return refuse("party-unread", "no door reads a sibling device's standing: the face's root signs every device edge, and a restorer holds that root, so an edge alone proves no sibling apart from it. Nothing moved.");
@@ -172,7 +172,7 @@ export async function confirmProvisional(input: { readonly handleIndex: number; 
     return refuse("party-not-standing", `the key ${view.key.slice(0, 16)}… stands as no ${view.party} of this face on this vessel's own rows. Nothing moved.`);
   }
   if (view.seq !== mark.head.seq || view.eventCid !== mark.head.eventCid) {
-    return refuse("view-disagrees", `the ${view.party} holds head ${view.seq} (${view.eventCid.slice(0, 20)}…), and the restore read head ${mark.head.seq} (${mark.head.eventCid.slice(0, 20)}…): the face stays provisional. A head the restore never read may stand; the guardians' recovery path answers a fork.`);
+    return refuse("view-disagrees", `the ${view.party} holds head ${view.seq} (${view.eventCid.slice(0, 20)}…), and the restore read head ${mark.head.seq} (${mark.head.eventCid.slice(0, 20)}…): the face stays provisional. A head the restore never read may stand; the recovery contacts' recovery path answers a fork.`);
   }
   await removeCustodyRow("identity", faceProvisionalFile(handleIndex));
   return { handleIndex, party: view.party, key: view.key, head: mark.head };

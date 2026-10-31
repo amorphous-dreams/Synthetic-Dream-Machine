@@ -223,6 +223,6 @@ describe("the barrel opens the card to the rite that consumes it", () => {
   test("the package barrel exports the module: the seal rite prints and reads its cards", () => {
     const barrel = readFileSync(new URL("../src/index.ts", import.meta.url), "utf8");
     expect(barrel).toContain(`export * from "./cold-key-card.js";`);
-    expect(barrel).toContain("guardian-card");                 // KNOWN POSITIVE: the probe reads the barrel
+    expect(barrel).toContain("custodian-card");                 // KNOWN POSITIVE: the probe reads the barrel
   });
 });

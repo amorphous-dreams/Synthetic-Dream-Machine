@@ -49,7 +49,7 @@ A tasked spirit went out over `identity-classes#the-two-forks` — Fork A ''reco
 >
 > ''Secret sharing degrades gracefully under a pandemic precisely because it can be subverted by courier. Threshold signing cannot be couriered, and therefore cannot bend.''
 
-''Fork A's assembled secret is simultaneously its worst security property and its best availability property. They are the same property.'' Fork B's guarantee that no secret ever reconstructs is equally a guarantee that ''no guardian can ever delegate, courier, or improvise their way through a crisis'' — the guardian signs personally or the rotation does not happen.
+''Fork A's assembled secret is simultaneously its worst security property and its best availability property. They are the same property.'' Fork B's guarantee that no secret ever reconstructs is equally a guarantee that ''no recovery contact can ever delegate, courier, or improvise their way through a crisis'' — the recovery contact signs personally or the rotation does not happen.
 
 <<~/ahu>>
 
@@ -61,7 +61,7 @@ The courier finding cuts toward A. This cuts back:
 
 > Independent-signature quorums are a ''DESTRUCTION'' quorum, not merely an impersonation quorum — closable, but ''only by making the rotation body canonically derived''.
 
-Read plainly: where a recovery authority ''reconstructs'', a rogue sub-quorum can impersonate. Where it ''attests independently'', a rogue sub-quorum can also ''emit a rotation nobody intended and leave the identifier somewhere its holder never chose'' — and unless the rotation body is derived canonically rather than proposed, there is nothing for the honest guardians' signatures to disagree WITH.
+Read plainly: where a recovery authority ''reconstructs'', a rogue sub-quorum can impersonate. Where it ''attests independently'', a rogue sub-quorum can also ''emit a rotation nobody intended and leave the identifier somewhere its holder never chose'' — and unless the rotation body is derived canonically rather than proposed, there is nothing for the honest recovery contacts' signatures to disagree WITH.
 
 ''So neither branch is the safe one.'' A prices a transient assembly; B prices a rogue rotation. The mitigation named — canonical derivation of the body — is small, specific, and belongs in whichever branch is taken.
 
@@ -90,7 +90,7 @@ They turned on, every time:
 * ''quorum counts that were not counts of distinct signers'' — four sightings, one a recurrence in the same library six years later;
 * ''custody correlated in ways nobody re-checked'' — Ronin's 5-of-9 that was 1-of-1, Loopring's guardians-of-guardians, FNMT's access codes stored beside the HSM;
 * ''ceremonies whose script and reality diverged undetected'' for six months to six years;
-* ''guardians who forgot, went dark, or folded to a warm phone call'';
+* ''recovery contacts who forgot, went dark, or folded to a warm phone call'';
 * ''vendors who left''.
 
 !!! The dominant public-CA failure mode
@@ -155,8 +155,8 @@ The sweep names three things unmeasured at home. All three are measurable, and t
 !!! ① The system ALREADY RUNS BOTH FORKS — one per scale
 
 * ''CIVIC scale'' — ⚠ ''corrected on a second read''. The charter ROTATION does not reconstruct anything: `sealRotate` seats the key-set that STANDS and verifies its digest against the head's `nextKeyCommit`, fail-closed. That is ''pre-rotation with a key-set reveal'' (TUF≈KERI), neither fork. ''Fork A's Shamir sits one layer beneath'' — `splitReserveSeed` 2-of-3 custodies the RESERVE SEED, the material `deriveReserveKeySet` turns into the successor key-set. So the 2-of-3 recovers ''the pre-committed future'', never the rotation authority.
-* ''HUMAN scale'' (persona-KEL) runs ''Fork B'': `attestAndRotate` gathers ≥k independent guardian signatures and its own comment states the property — //"each signs with their OWN recovery key and returns a signature, and NOTHING assembles (no seed, no share)."//
-* ⚠ ''Neither scale walks its recovery from a CLI door.'' At the civic scale no verb carries a card into a rotation: `seal rotate` reads vault persona roots alone, so a head armed with the reserve's commit never rolls and the roll refuses it by name (`reserve-armed`); `seal reserve rehearse` reads two cards back under a scratch root, proves the rebuilt key-set against the charter head, and rolls nothing. At the human scale `attestAndRotate` stands in the mesh library with no verb above it, and no verb enrolls a guardian set. The 2-of-3 therefore custodies a future that no ceremony can yet spend (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/threshold-attest-recovery">>); the field's principles for a recovery object and its reader rest on the shelf (<<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities#/shelf">>).
+* ''HUMAN scale'' (persona-KEL) runs ''Fork B'': `attestAndRotate` gathers ≥k independent recovery contact signatures and its own comment states the property — //"each signs with their OWN recovery key and returns a signature, and NOTHING assembles (no seed, no share)."//
+* ⚠ ''Neither scale walks its recovery from a CLI door.'' At the civic scale no verb carries a card into a rotation: `seal rotate` reads vault persona roots alone, so a head armed with the reserve's commit never rolls and the roll refuses it by name (`reserve-armed`); `seal reserve rehearse` reads two cards back under a scratch root, proves the rebuilt key-set against the charter head, and rolls nothing. At the human scale `attestAndRotate` stands in the mesh library with no verb above it, and no verb enrolls a recovery contact set. The 2-of-3 therefore custodies a future that no ceremony can yet spend (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/threshold-attest-recovery">>); the field's principles for a recovery object and its reader rest on the shelf (<<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities#/shelf">>).
 
 So a move //off// the wired mechanism is not a move toward an unbuilt thing. ''Each scale currently holds the fork that answers its own failure mode'', and whether that coincidence is right is the question — not whether the other branch exists.
 
@@ -168,7 +168,7 @@ So a move //off// the wired mechanism is not a move toward an unbuilt thing. ''E
 
 !!! ② The counterweight is ALREADY CLOSED at the human scale
 
-The sweep's warning against Fork B — a rogue sub-quorum emitting a rotation nobody intended, //"closable only by making the rotation body canonically derived"// — is closed here already. `personaRotationSigningBytes(head, freshOpKeyDid)` ''derives'' the signed body from the head and the fresh key; `mintPersonaRotation` recomputes identical bytes to verify. ''Guardians sign a derived body, never a proposed one.''
+The sweep's warning against Fork B — a rogue sub-quorum emitting a rotation nobody intended, //"closable only by making the rotation body canonically derived"// — is closed here already. `personaRotationSigningBytes(head, freshOpKeyDid)` ''derives'' the signed body from the head and the fresh key; `mintPersonaRotation` recomputes identical bytes to verify. ''Recovery contacts sign a derived body, never a proposed one.''
 
 !!! ③ ⚠ AND THE THIRD AXIS IS OPEN — our identifiers are NOT delegated
 
@@ -209,6 +209,6 @@ Read from `persona-kel.ts` and `recovery-keel-core.ts` at their current heads. �
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fCUIr9aOQvr7u-Ji4oO-iZHMoXjOvv1ULvB6Th1Rp3A
+<<^ code="&#x0003;">>ni:///sha-256;DHZ-hLNkzkR2WO6ykt0Kok_7mz6dsq_Q2ceNXmT5IV8
 
 <<^ code="&#x0004;" -> to="?">>

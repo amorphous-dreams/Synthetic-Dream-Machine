@@ -100,8 +100,8 @@ export async function gatherCredentials(verb: string, opts: { readonly route?: R
   }
 }
 
-/** Which card a person holds, as the split named it: the root split's two off-device cards, or a guardian card. */
-const CARD_CUSTODIANS = { r: "recorded-code", e: "escrow-peer", g: "guardian", d: "device" } as const;
+/** Which card a person holds, as the split named it: the root split's two off-device cards, or a custodian card. */
+const CARD_CUSTODIANS = { r: "recorded-code", e: "escrow-peer", g: "custodian", d: "device" } as const;
 export type CardCustodian = (typeof CARD_CUSTODIANS)[keyof typeof CARD_CUSTODIANS];
 
 /**

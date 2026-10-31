@@ -92,14 +92,14 @@ export const DYAD_BINDING_DOMAIN = frozen("dyad-binding");
  *  own seed, scoped by PersonaGroup — never from the persona seed (persona-circle#the-vault). */
 /** The founder's SELF-RECOVERY leaf off the PERSONA tree: a 1-of-1 recovery key derived from the
  *  persona seed, pre-committed at inception so no prefix ever incepts unarmed — the multitude-of-one,
- *  NAMED, until a real guardian set grafts in (the seal-reserve founding rhyme). */
+ *  NAMED, until a real recovery contact set grafts in (the seal-reserve founding rhyme). */
 export const PERSONA_SELF_RECOVERY_INFO = frozen("persona-self-recovery");
-/** The Fork-B registration handshake — DELIBERATELY apart from GUARDIAN_CONFIRM_DOMAIN: a bearer
+/** The Fork-B registration handshake — DELIBERATELY apart from CUSTODIAN_CONFIRM_DOMAIN: a bearer
  *  SHARE and a public REGISTRATION must never speak one phrase (the IdenTrust wrong-object cure). */
-export const GUARDIAN_REGISTRATION_DOMAIN = frozen("guardian-registration");
-/** A guardian's proof that it holds the private half of the recovery key it offers ONE face: its signature over
+export const RECOVERY_CONTACT_REGISTRATION_DOMAIN = mint("recovery-contact-registration");
+/** A recovery contact's proof that it holds the private half of the recovery key it offers ONE face: its signature over
  *  that face's prefix and that key, taken before the face's enrolment commits the key's set. */
-export const GUARDIAN_POSSESSION_DOMAIN = mint("guardian-possession");
+export const RECOVERY_CONTACT_POSSESSION_DOMAIN = mint("recovery-contact-possession");
 /** The growth rite's crossing record: old quorum signs the handoff, new quorum the receipt, witnesses
  *  outside both sets attest the rite — the checkable form of the ceremony witness report. */
 export const RESERVE_TRANSITION_DOMAIN = frozen("reserve-transition");
@@ -111,7 +111,7 @@ export const CHARTER_SEAT_ROLL_DOMAIN = mint("charter-seat-roll");
  *  seat reveals the key to roll. Its own name: a seat digest must never read as a key-set hash or a bare hash. */
 export const SEAT_NEXT_KEY_DOMAIN = mint("seat-next-key");
 /** The COLD-KEY CARD: the checksum that binds every character of a card's code, and the confirm phrase two
- *  people read to each other over it. Apart from `guardian-confirm`: a seat's card and a guardian's share never
+ *  people read to each other over it. Apart from `custodian-confirm`: a seat's card and a custodian's share never
  *  speak one phrase. */
 export const COLD_KEY_CARD_DOMAIN = mint("cold-key-card");
 /** The CO-FOUNDING OFFER: the public material one founder hands the other (a seat key, its cold successor's
@@ -262,8 +262,8 @@ export const SEAT_DUTIES_ASK_DOMAIN = mint("seat-duties-ask");
 export const VOUCH_EDGE_DOMAIN = frozen("vouch-edge");
 /** The record that a re-anchoring happened, never what made it valid. */
 export const RE_ANCHORING_DOMAIN = frozen("re-anchoring");
-/** A guardian's confirmation on a recovery card. */
-export const GUARDIAN_CONFIRM_DOMAIN = frozen("guardian-confirm");
+/** A custodian's confirmation on a recovery card. */
+export const CUSTODIAN_CONFIRM_DOMAIN = mint("custodian-confirm");
 
 // ── SEALED CONTENT + TRANSPORT ──────────────────────────────────────────────────────────────────
 // ── THE SEALED STORE: the one private-byte format ───────────────────────────────────────────────
@@ -335,14 +335,14 @@ export const MEMORY_ASK_DOMAIN = mint("memory-ask");
 // Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-bundle.
 /** The BACKUP BUNDLE's own name: its SHA-256 prefix stands as the format mark, and it leads the associated
  *  data of the bundle's sealed body. A changed format takes a new name: the body that carries the face's
- *  enrolled guardian set took this one. */
-export const FACE_BUNDLE_DOMAIN = mint("face-bundle-guardian-set");
+ *  enrolled recovery contact set took this one. */
+export const FACE_BUNDLE_DOMAIN = mint("face-bundle-recovery-contact-set");
 /** The HKDF `info` a bundle's BODY KEY derives under, from the bundle key. */
 export const FACE_BUNDLE_BODY_INFO = mint("face-bundle-body");
 /** The HKDF `info` a bundle's MEMORY SECTION key pair derives under, from the bundle key. Apart from the
  *  body key's name, so the pair's secret half never equals the key that opens the body. */
 export const FACE_BUNDLE_MEMORY_INFO = mint("face-bundle-memory");
-/** A PARTY'S OWN LOG VIEW of one face: the head a guardian, a seated chair or a sibling device holds for that
+/** A PARTY'S OWN LOG VIEW of one face: the head a recovery contact, a seated chair or a sibling device holds for that
  *  face's key history, signed by the party's own key. A restored face stands provisional until one agrees. */
 export const FACE_LOG_VIEW_DOMAIN = mint("face-log-view");
 /** The per-shrine KNOCK's key: a gate answers an upgrade only on the path an HMAC under SHA-256(this name ‖ its

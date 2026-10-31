@@ -58,7 +58,7 @@ import {
   dyadId, signDyadBindingWithSeed, writeDyad,
   mintFaceAtomSeed, faceAtomKeyFromSeed, FACE_CHECKPOINT_INFO,
   DYAD_ID_DOMAIN, type DyadRecord, type DyadRef,
-  deriveSelfRecoveryKey, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard,
+  deriveSelfRecoveryKey, provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard,
   enrolDevice, sealGroupSecret, groupSecretSealTitle, type GroupSecretSeal,
   type LarTiddlerStore, writePersonaAct,
   signFoundingLog, faceRootCommitment, edgeBodyDigest, landFleetGenesis, makeHandLineage,
@@ -544,7 +544,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // Seat seq-0 over the founding op-key (== signerDid, the edge's personaRootDid). The identifier PREFIX derives
   // from (founding op-key + the recovery-set pre-commit); it stays FIXED across every future Reading-B rotation,
   // so the Binding Gate pins the PREFIX and the op-key rotates beneath it. Recovery arms UNARMED here (empty
-  // pre-commit): the live founding gathers no guardians, so no rotation can attest yet — arming rides the
+  // pre-commit): the live founding gathers no recovery contacts, so no rotation can attest yet — arming rides the
   // separate recovery-keel wiring (provisionThresholdRecoveryAtFounding). The pin-move stands regardless: an
   // unarmed inception still walks to a head, and at inception the head IS signerDid (zero behavior change today).
   // SELF-STOOD mints its own inception. CONTRACTED mints NONE — the contracting operator's identifier
@@ -554,12 +554,12 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // domain-separated leaf. The multitude-of-one, NAMED: whoever holds the seed holds recovery,
   // which an empty commit already meant in practice while forbidding the rotation that acts on it.
   // `mintPersonaRotation` therefore works from day one (lose the device, hold the seed, rotate);
-  // a real guardian set arrives by the face's typed first enrolment, which its own current key signs
-  // (`mintGuardianEnrolment`), and every later change takes the guardians' rotation.
+  // a real recovery contact set arrives by the face's typed first enrolment, which its own current key signs
+  // (`mintRecoveryContactEnrolment`), and every later change takes the recovery contacts' rotation.
   const seatedEvents: readonly PersonaKelEvent[] = input.binding.mode === "self-stood"
     ? [provisionThresholdRecoveryAtFounding({
         foundingOpKeyDid:  signerDid,
-        guardians:         [guardianRecoveryRegistrationCard("mine", (await deriveSelfRecoveryKey(input.binding.signerSeed)).verifyingKey, null)],
+        recoveryContacts:         [recoveryContactRegistrationCard("mine", (await deriveSelfRecoveryKey(input.binding.signerSeed)).verifyingKey, null)],
         recoveryThreshold: 1,
       }).inception]
     : input.binding.personaKelChain;

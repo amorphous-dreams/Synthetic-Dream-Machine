@@ -6,7 +6,7 @@
  * head agrees with the one the restore read. The party signs one image: the face's fixed prefix, the head's sequence
  * and event id, the kind of party it speaks as, and its own public key. The image names no vessel and no session.
  *
- * A view proves only what its signer holds; WHO the signer stands as for the face (a guardian in the face's set, a
+ * A view proves only what its signer holds; WHO the signer stands as for the face (a recovery contact in the face's set, a
  * chair seated in a charter the face stands in, a sibling device of the same human) the confirming vessel judges
  * against its own rows. The residue stays stated: one agreeing party may itself sit stale, so agreement counts as
  * evidence that no fork shows to that party, never as proof that no unseen head stands.
@@ -20,7 +20,7 @@ import { FACE_LOG_VIEW_DOMAIN } from "./domains.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 
 /** The kinds of party whose own view confirms a restored face. */
-export const FACE_LOG_VIEW_PARTIES = ["guardian", "chair", "sibling"] as const;
+export const FACE_LOG_VIEW_PARTIES = ["recovery-contact", "chair", "sibling"] as const;
 export type FaceLogViewParty = (typeof FACE_LOG_VIEW_PARTIES)[number];
 
 /** One party's signed view of one face's head. */

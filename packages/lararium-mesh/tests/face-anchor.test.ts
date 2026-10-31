@@ -54,7 +54,7 @@ import { hex } from "../src/crypto.js";
 import { emptyLarDoc } from "../src/base-doc.js";
 import { writePersonaKelEvent, personaKelChainForPrefix } from "../src/persona-kel-board.js";
 import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "../src/recovery-keel-core.js";
-import { guardianRecoveryRegistrationCard } from "../src/recovery-registration.js";
+import { recoveryContactRegistrationCard } from "../src/recovery-registration.js";
 import { reanchorAfterRotation } from "../src/face-anchor.js";
 
 describe("face-anchor: a face recovered to a new root", () => {
@@ -65,14 +65,14 @@ describe("face-anchor: a face recovered to a new root", () => {
 
   async function rotated() {
     const keys = await Promise.all([pubOf(seeds.g1), pubOf(seeds.g2), pubOf(seeds.g3)]);
-    const slots = ["mine", "guardian-a", "guardian-b"] as const;
+    const slots = ["mine", "contact-a", "contact-b"] as const;
     const prov = provisionThresholdRecoveryAtFounding({
       foundingOpKeyDid: await didOf(seeds.opA),
-      guardians: keys.map((k, i) => guardianRecoveryRegistrationCard(slots[i]!, k, null)), recoveryThreshold: 2,
+      recoveryContacts: keys.map((k, i) => recoveryContactRegistrationCard(slots[i]!, k, null)), recoveryThreshold: 2,
     });
     const rot = await attestAndRotate({
-      head: prov.inception, freshOpKeyDid: await didOf(seeds.opB), guardianRecoveryKeys: keys, recoveryThreshold: prov.recoveryThreshold,
-      guardianSigners: await Promise.all([signer(seeds.g1), signer(seeds.g2)]),
+      head: prov.inception, freshOpKeyDid: await didOf(seeds.opB), recoveryContactKeys: keys, recoveryThreshold: prov.recoveryThreshold,
+      recoveryContactSigners: await Promise.all([signer(seeds.g1), signer(seeds.g2)]),
     });
     if (!rot.ok) throw new Error("fixture rotation refused");
     const doc = emptyLarDoc();

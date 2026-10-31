@@ -1083,7 +1083,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
    * `session:act`: one sealed act that acts as a face, run on the custody door's chain as the session's face. The act's
    * `face` or `handleIndex` names the session's face or refuses `face-row-other-face`. An act keyed by `face` that names
    * none takes the session's as `face`; an act keyed by `handleIndex` alone (crossing.sign and .witness, carriage.accept,
-   * persona.guardian.enrol, persona.confirm, selves.carry and .clear) names it by that key, and naming none refuses
+   * persona.recovery-contact.enrol, persona.confirm, selves.carry and .clear) names it by that key, and naming none refuses
    * `bad-args` at the act's own reading, which takes no `face`. Its arguments
    * and its answer ride this socket alone, as a custody frame's do: the receipt it leaves names the act and the face
    * (its digest covers those two, never an argument), and no outcome body rests anywhere.

@@ -33,7 +33,7 @@ const credentials = [{ kind: "passphrase", passphrase: ROUTE }] as const;
 const BODY = new TextEncoder().encode("a body a vessel sealed for this test");
 const FACE = { handleIndex: 0, verifyingKey: "ab".repeat(32) };
 const HOLD = { bagId: "lar:///ha.ka.ba/@test/bags/garden-notes", founding: "11".repeat(32), keyVersion: "22".repeat(32) };
-const RESTORED = { face: FACE, prefix: "E-test-prefix-0123456789", resumed: false, checked: { seq: 0, from: "bundle" }, guardianSet: "none", provisional: { couldConfirm: ["a chair seated in a charter this face stands in, with its own view"] }, landed: { faceProofKeys: 1, petname: true, handle: false, handleBook: { landed: 2, kept: 1 } }, holds: [HOLD] };
+const RESTORED = { face: FACE, prefix: "E-test-prefix-0123456789", resumed: false, checked: { seq: 0, from: "bundle" }, recoveryContactSet: "none", provisional: { couldConfirm: ["a chair seated in a charter this face stands in, with its own view"] }, landed: { faceProofKeys: 1, petname: true, handle: false, handleBook: { landed: 2, kept: 1 } }, holds: [HOLD] };
 
 let dir: string;
 let file: string;
@@ -149,7 +149,7 @@ describe("a root split's cards restore a root through the same act", () => {
     const body = readFaceBundleBody(plain)!;
     expect(body.root.verifyingKey).toBe(rootKey);
     expect(body.rosterLine).toEqual({ handleIndex: 2, verifyingKey: rootKey });
-    expect(body).toMatchObject({ names: {}, faceProofKeys: [], handleBook: { records: [] }, guardianSet: null, memory: { holds: [] } });
+    expect(body).toMatchObject({ names: {}, faceProofKeys: [], handleBook: { records: [] }, recoveryContactSet: null, memory: { holds: [] } });
   });
 
   it("C2 — the card reader's refusals keep their names and send no act", async () => {

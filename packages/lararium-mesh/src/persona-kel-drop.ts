@@ -11,7 +11,7 @@
  * bytes by content address. A deposit carries the successor AND its predecessor event. The herm keeps the successor
  * only when it VERIFIES against that predecessor (`admitPersonaKelDropDeposit`): the predecessor's cid recomputes,
  * the drop's name derives from it, and the successor passes the one reader's own successor check
- * (`personaSuccessorFault`) — a rotation by a guardian quorum against the predecessor's committed next keys (the
+ * (`personaSuccessorFault`) — a rotation by a recovery contact quorum against the predecessor's committed next keys (the
  * pre-rotation), a veto by the predecessor's op-key, every enrolment by its op-key's seal. So no one who lacks the
  * persona's keys files anything under a name a leaf pulls, and every quota counts verified values alone. A drop
  * holds plural values: a provisional rotation and its veto share a predecessor, and both stay; rotations and vetoes

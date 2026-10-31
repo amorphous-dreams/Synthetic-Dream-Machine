@@ -21,7 +21,7 @@
  * to that device's key holding its re-delegated edge and the next secret, signed by the fresh op-key and naming no
  * device. The KEL rides public boards, so no edge rides it in the clear: a board reader counts boxes and reads none,
  * and each device finds its own by trial-open. The event's content address commits the digest of the whole list,
- * and the guardians' quorum signs that address's bytes, so a board writer who strips, adds or swaps a box breaks
+ * and the recovery contacts' quorum signs that address's bytes, so a board writer who strips, adds or swaps a box breaks
  * the chain's walk instead of revoking or framing a device. A revoking rotation leaves the revoked device out: no
  * box opens for it, and it holds no secret past it.
  *

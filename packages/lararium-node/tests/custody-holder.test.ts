@@ -108,7 +108,7 @@ describe("CustodyHolder", () => {
     await h.writeRow("identity", file, new TextEncoder().encode('{"whole":true}'));
     writeFileSync(handleRowPathIn(homes.identity, file), '{"bare":true}');
     expect(await h.readRow("identity", file)).toEqual({ reading: "unavailable", why: "bare" });
-    await h.writeRow("identity", "guardian-set-h1.json", new TextEncoder().encode('{"whole":true}'));
+    await h.writeRow("identity", "recovery-contact-set-h1.json", new TextEncoder().encode('{"whole":true}'));
     expect(await h.readRow("identity", "anchors-h1.json")).toEqual({ reading: "absent" });
     // A sealed row cut short: it bears the seal and no longer opens. It reads unavailable by the reader's own
     // name for it, never `opens` and never `absent`.

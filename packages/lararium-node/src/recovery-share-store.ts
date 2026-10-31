@@ -44,7 +44,7 @@ interface StoredShare {
   readonly recoveryEpoch: number;
 }
 
-const CUSTODIANS: ReadonlySet<string> = new Set(["device", "recorded-code", "escrow-peer", "guardian"]);
+const CUSTODIANS: ReadonlySet<string> = new Set(["device", "recorded-code", "escrow-peer", "custodian"]);
 
 /** Read a share off a row's plaintext; any other shape refuses `malformed`. */
 function parseShare(bytes: Uint8Array, file: string): RecoveryShare {

@@ -11,7 +11,7 @@ import { Repo, cbor, type PeerId } from "@automerge/automerge-repo";
 import { base64UrlDecode, hex, hexToBytes } from "../../src/crypto.js";
 import { mintVeto, type PersonaKelEvent } from "../../src/persona-kel.js";
 import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "../../src/recovery-keel-core.js";
-import { guardianRecoveryRegistrationCard } from "../../src/recovery-registration.js";
+import { recoveryContactRegistrationCard } from "../../src/recovery-registration.js";
 import {
   enrolDevice, rollEnrolments, leafStandingUnder, enrolmentUnderHead, groupSecretOpenerFromSeed, type PersonaGroupEnrolment,
 } from "../../src/persona-group-secret.js";
@@ -36,13 +36,13 @@ export const pubOf    = (s: Uint8Array): Promise<string> => ed.getPublicKeyAsync
 export const didOf    = async (s: Uint8Array): Promise<string> => `0x${await pubOf(s)}`;
 export const signerOf = (s: Uint8Array) => async (bytes: Uint8Array): Promise<string> => hex(await ed.signAsync(bytes, s));
 
-/** The founded PersonaGroup: an inception under opA with a 2-of-3 guardian set armed. */
-export async function founded(): Promise<{ inception: PersonaKelEvent; guardianRecoveryKeys: string[]; recoveryThreshold: number }> {
-  const guardianRecoveryKeys = await Promise.all([pubOf(SEEDS.g1), pubOf(SEEDS.g2), pubOf(SEEDS.g3)]);
-  const slots = ["mine", "guardian-a", "guardian-b"] as const;
-  const guardians = guardianRecoveryKeys.map((k, i) => guardianRecoveryRegistrationCard(slots[i]!, k, null));
-  const prov = provisionThresholdRecoveryAtFounding({ foundingOpKeyDid: await didOf(SEEDS.opA), guardians, recoveryThreshold: 2 });
-  return { inception: prov.inception, guardianRecoveryKeys, recoveryThreshold: prov.recoveryThreshold };
+/** The founded PersonaGroup: an inception under opA with a 2-of-3 recovery contact set armed. */
+export async function founded(): Promise<{ inception: PersonaKelEvent; recoveryContactKeys: string[]; recoveryThreshold: number }> {
+  const recoveryContactKeys = await Promise.all([pubOf(SEEDS.g1), pubOf(SEEDS.g2), pubOf(SEEDS.g3)]);
+  const slots = ["mine", "contact-a", "contact-b"] as const;
+  const recoveryContacts = recoveryContactKeys.map((k, i) => recoveryContactRegistrationCard(slots[i]!, k, null));
+  const prov = provisionThresholdRecoveryAtFounding({ foundingOpKeyDid: await didOf(SEEDS.opA), recoveryContacts, recoveryThreshold: 2 });
+  return { inception: prov.inception, recoveryContactKeys, recoveryThreshold: prov.recoveryThreshold };
 }
 
 /** A root enrols a device: the edge and the sealed secret, under the KEL prefix. */
@@ -53,23 +53,23 @@ export async function enrol(root: Uint8Array, device: Uint8Array, prefix: string
 
 /** The KEL rotated to opB, re-enrolling exactly `keep` — a device left out is revoked by this rotation. */
 export async function rotatedKeeping(keep: readonly Uint8Array[]): Promise<PersonaKelEvent[]> {
-  const { inception, guardianRecoveryKeys, recoveryThreshold } = await founded();
-  const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+  const { inception, recoveryContactKeys, recoveryThreshold } = await founded();
+  const recoveryContactSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
   const devices = await Promise.all(keep.map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
   const enrolments = await rollEnrolments({ prefix: inception.prefix, opSeed: SEEDS.opB, devices });
-  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), guardianRecoveryKeys, recoveryThreshold, guardianSigners, enrolments });
+  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), recoveryContactKeys, recoveryThreshold, recoveryContactSigners, enrolments });
   if (!rot.ok) throw new Error(rot.reason);
   return [inception, rot.event];
 }
 
 /** The KEL rotated twice — opB re-enrolling `first`, then opC re-enrolling `second`. */
 export async function rotatedTwice(first: readonly Uint8Array[], second: readonly Uint8Array[]): Promise<PersonaKelEvent[]> {
-  const { guardianRecoveryKeys, recoveryThreshold } = await founded();
+  const { recoveryContactKeys, recoveryThreshold } = await founded();
   const once = await rotatedKeeping(first);
-  const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+  const recoveryContactSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
   const devices = await Promise.all(second.map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
   const enrolments = await rollEnrolments({ prefix: once[0]!.prefix, opSeed: SEEDS.opC, devices });
-  const rot = await attestAndRotate({ head: once[1]!, freshOpKeyDid: await didOf(SEEDS.opC), guardianRecoveryKeys, recoveryThreshold, guardianSigners, enrolments });
+  const rot = await attestAndRotate({ head: once[1]!, freshOpKeyDid: await didOf(SEEDS.opC), recoveryContactKeys, recoveryThreshold, recoveryContactSigners, enrolments });
   if (!rot.ok) throw new Error(rot.reason);
   return [...once, rot.event];
 }
@@ -77,11 +77,11 @@ export async function rotatedTwice(first: readonly Uint8Array[], second: readonl
 /** A PROVISIONAL rotation to opB re-enrolling `keep`, and the standing op-key's veto of it. The provisional
  *  confers nothing until accepted; the veto, folded, kills it. */
 export async function provisionalKeeping(keep: readonly Uint8Array[]): Promise<{ inception: PersonaKelEvent; provisional: PersonaKelEvent; veto: PersonaKelEvent }> {
-  const { inception, guardianRecoveryKeys, recoveryThreshold } = await founded();
-  const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+  const { inception, recoveryContactKeys, recoveryThreshold } = await founded();
+  const recoveryContactSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
   const devices = await Promise.all(keep.map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
   const enrolments = await rollEnrolments({ prefix: inception.prefix, opSeed: SEEDS.opB, devices });
-  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), guardianRecoveryKeys, recoveryThreshold, guardianSigners, enrolments, provisional: true });
+  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), recoveryContactKeys, recoveryThreshold, recoveryContactSigners, enrolments, provisional: true });
   if (!rot.ok) throw new Error(rot.reason);
   const veto = await mintVeto({ contested: rot.event, standing: inception, sign: signerOf(SEEDS.opA) });
   return { inception, provisional: rot.event, veto };

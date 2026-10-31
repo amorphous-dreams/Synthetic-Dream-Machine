@@ -27,7 +27,7 @@
 
 import { faceOption } from "../face-option.js";
 import {
-  faceStands, armRecoveryAtFounding, guardianOffer, listFaceOrdinals, CustodyLocked, type FoundFaceResult,
+  faceStands, armRecoveryAtFounding, recoveryContactOffer, listFaceOrdinals, CustodyLocked, type FoundFaceResult,
 } from "@lararium/node";
 import {
   renameOwnPersona, ownPersonaPetname, HANDLE_INDEX_CEILING,
@@ -103,7 +103,7 @@ export async function cmdPersona(args: ParsedArgs): Promise<number> {
       case "sync":  return await personaSync(args);
       case "reissue": return await personaReissue(args);
       case "lease": return await personaLease(args);
-      case "guardian": return await personaGuardian(args);
+      case "recovery-contact": return await personaRecoveryContact(args);
       case "provisional": return await personaProvisional(args);
       case "confirm": return await personaConfirm(args);
       case "view": return await personaView(args);
@@ -236,29 +236,29 @@ async function personaView(args: ParsedArgs): Promise<number> {
 }
 
 /**
- * `lares persona guardian show <index>` — the face's prefix (what a guardian's offer names) and the set it holds.
+ * `lares persona recovery-contact show <index>` — the face's prefix (what a recovery contact's offer names) and the set it holds.
  *
- * `lares persona guardian offer --prefix <persona-…>` — the GUARDIAN's half: mint a fresh recovery key for ONE face,
- * print the card the guardian keeps and the offer line the face's holder enrols. The key never rests on a vessel.
+ * `lares persona recovery-contact offer --prefix <persona-…>` — the RECOVERY CONTACT's half: mint a fresh recovery key for ONE face,
+ * print the card the recovery contact keeps and the offer line the face's holder enrols. The key never rests on a vessel.
  *
- * `lares persona guardian enrol <index> --threshold <k> <offer>…` — the face at `<index>` enrols its FIRST guardian
+ * `lares persona recovery-contact enrol <index> --threshold <k> <offer>…` — the face at `<index>` enrols its FIRST recovery contact
  * set: its own key signs one typed event on its key history, and the set's record rests sealed here. A key another
- * face of this vessel already holds refuses (`guardian-key-serves-another-face`); every later change to the set
- * takes the guardians' quorum. The count and the threshold stay the person's.
+ * face of this vessel already holds refuses (`recovery-contact-key-serves-another-face`); every later change to the set
+ * takes the recovery contacts' quorum. The count and the threshold stay the person's.
  */
-async function personaGuardian(args: ParsedArgs): Promise<number> {
+async function personaRecoveryContact(args: ParsedArgs): Promise<number> {
   const verb = args.positional[1];
   if (verb === "offer") {
     const prefix = typeof args.options["prefix"] === "string" ? args.options["prefix"].trim() : "";
-    if (!/^persona-[0-9a-f]{64}$/.test(prefix)) throw new UsageError("`persona guardian offer` names the face it guards: --prefix persona-<64 hex>");
-    const o = await guardianOffer(prefix);
+    if (!/^persona-[0-9a-f]{64}$/.test(prefix)) throw new UsageError("`persona recovery-contact offer` names the face it guards: --prefix persona-<64 hex>");
+    const o = await recoveryContactOffer(prefix);
     emit(args, {
       ok: true,
       // The card rides to this process's own output alone: the key rests nowhere else, so a reading without it
       // would leave an offer for a key nobody holds.
       data: { prefix, recoveryPubKey: o.recoveryPubKey, offer: o.offer, card: o.code },
       human: () => {
-        console.log(`[lares persona guardian offer] a fresh recovery key for the face ${prefix.slice(0, 24)}…`);
+        console.log(`[lares persona recovery-contact offer] a fresh recovery key for the face ${prefix.slice(0, 24)}…`);
         console.log("  KEEP THIS CARD: it signs this face's recovery. Write it down now; it rests nowhere else.");
         console.log(`  card   ${o.code}`);
         console.log("  hand the face's holder this offer line:");
@@ -269,18 +269,18 @@ async function personaGuardian(args: ParsedArgs): Promise<number> {
   }
   if (verb === "show") {
     const index = parseIndex(args.positional[2]);
-    const r = await sealedAct("persona.guardian.show", { handleIndex: index });
+    const r = await sealedAct("persona.recovery-contact.show", { handleIndex: index });
     emit(args, {
       ok: true,
       data: r,
       human: () => {
         console.log(`the face at h${index}: ${String(r["prefix"])}`);
-        if (r["guardianSetHash"] === null && r["headSet"] === null) {
-          console.log("  one-of-one: no guardians enrolled; a guardian cuts its offer with `lares persona guardian offer --prefix <the prefix above>`");
+        if (r["recoveryContactSetHash"] === null && r["headSet"] === null) {
+          console.log("  one-of-one: no recovery contacts enrolled; a recovery contact cuts its offer with `lares persona recovery-contact offer --prefix <the prefix above>`");
         } else if (r["committed"] === true) {
-          console.log(`  guardians: ${String(r["guardians"])} at threshold ${String(r["threshold"])} (set ${String(r["guardianSetHash"])})`);
+          console.log(`  recovery contacts: ${String(r["recoveryContacts"])} at threshold ${String(r["threshold"])} (set ${String(r["recoveryContactSetHash"])})`);
         } else {
-          console.log(`  PENDING: this vessel's record names the set ${String(r["guardianSetHash"])}, and the key history it reads commits ${String(r["headSet"] ?? "none yet")}`);
+          console.log(`  PENDING: this vessel's record names the set ${String(r["recoveryContactSetHash"])}, and the key history it reads commits ${String(r["headSet"] ?? "none yet")}`);
           console.log("  the same offers complete a stopped enrolment; a set another vessel of this face enrolled first stands as the face's");
         }
       },
@@ -291,52 +291,52 @@ async function personaGuardian(args: ParsedArgs): Promise<number> {
     const index = parseIndex(args.positional[2]);
     const raw = args.options["threshold"];
     const threshold = typeof raw === "string" ? Number(raw) : NaN;
-    if (!Number.isSafeInteger(threshold) || threshold < 1) throw new UsageError("`persona guardian enrol` needs --threshold <k>, a whole number from 1");
+    if (!Number.isSafeInteger(threshold) || threshold < 1) throw new UsageError("`persona recovery-contact enrol` needs --threshold <k>, a whole number from 1");
     const offers = args.positional.slice(3);
-    if (offers.length === 0) throw new UsageError("`persona guardian enrol` takes one guardian offer line per guardian");
-    const r = await sealedAct("persona.guardian.enrol", { handleIndex: index, offers: offers.join(" "), threshold });
+    if (offers.length === 0) throw new UsageError("`persona recovery-contact enrol` takes one recovery contact offer line per recovery contact");
+    const r = await sealedAct("persona.recovery-contact.enrol", { handleIndex: index, offers: offers.join(" "), threshold });
     emit(args, {
       ok: true,
       data: r,
       human: () => {
-        console.log(`the face at h${String(r["handleIndex"])} enrolled ${String(r["guardians"])} guardian(s) at threshold ${String(r["threshold"])}`);
-        console.log(`  set:   ${String(r["guardianSetHash"])}  (on its key history, sequence ${String(r["seq"])})`);
-        console.log("  every later change to this set takes the guardians' quorum");
+        console.log(`the face at h${String(r["handleIndex"])} enrolled ${String(r["recoveryContacts"])} recovery contact(s) at threshold ${String(r["threshold"])}`);
+        console.log(`  set:   ${String(r["recoveryContactSetHash"])}  (on its key history, sequence ${String(r["seq"])})`);
+        console.log("  every later change to this set takes the recovery contacts' quorum");
       },
     });
     return 0;
   }
   if (verb === "view") {
-    // THE GUARDIAN'S OWN VIEW of a face's head: this vessel's board supplies the head, and the guardian's card signs
+    // THE RECOVERY CONTACT'S OWN VIEW of a face's head: this vessel's board supplies the head, and the recovery contact's card signs
     // it in this process alone; the card's seed crosses no socket and zero-fills before the line prints.
     const prefix = typeof args.options["prefix"] === "string" ? args.options["prefix"].trim() : "";
-    if (!/^persona-[0-9a-f]{64}$/.test(prefix)) throw new UsageError("`persona guardian view` names the face it speaks for: --prefix persona-<64 hex>");
+    if (!/^persona-[0-9a-f]{64}$/.test(prefix)) throw new UsageError("`persona recovery-contact view` names the face it speaks for: --prefix persona-<64 hex>");
     const head = await sealedAct("persona.head", { prefix });
-    const code = await readGuardianCard();
+    const code = await readRecoveryContactCard();
     const seed = coldKeySeedFromCode(code);
     let line: string;
     try {
-      line = faceLogViewLine(await signFaceLogView({ prefix, seq: Number(head["seq"]), eventCid: String(head["eventCid"]), party: "guardian", seed }));
+      line = faceLogViewLine(await signFaceLogView({ prefix, seq: Number(head["seq"]), eventCid: String(head["eventCid"]), party: "recovery-contact", seed }));
     } finally { seed.fill(0); }
     emit(args, {
       ok: true, data: { prefix, seq: head["seq"], eventCid: head["eventCid"], view: line },
       human: () => {
-        console.log(`[lares persona guardian view] your view of ${prefix.slice(0, 24)}…: head ${String(head["seq"])}, off this vessel's own board`);
+        console.log(`[lares persona recovery-contact view] your view of ${prefix.slice(0, 24)}…: head ${String(head["seq"])}, off this vessel's own board`);
         console.log("  hand the restored face's holder this line (`lares persona confirm <index> <line>`):");
         console.log(`  ${line}`);
       },
     });
     return 0;
   }
-  return usage(args, "guardian");
+  return usage(args, "recovery-contact");
 }
 
-/** The guardian's card, read hidden on a terminal; a test installs its own. */
-let readGuardianCard: () => Promise<string> = async () => {
-  requireTty("lares persona guardian view");
-  return (await promptSecret("your guardian card (hidden): ")).trim();
+/** The recovery contact's card, read hidden on a terminal; a test installs its own. */
+let readRecoveryContactCard: () => Promise<string> = async () => {
+  requireTty("lares persona recovery-contact view");
+  return (await promptSecret("your recovery contact card (hidden): ")).trim();
 };
-export function setGuardianCardPrompt(read: () => Promise<string>): void { readGuardianCard = read; }
+export function setRecoveryContactCardPrompt(read: () => Promise<string>): void { readRecoveryContactCard = read; }
 
 async function personaNew(args: ParsedArgs): Promise<number> {
   seatNewFaceRoute();

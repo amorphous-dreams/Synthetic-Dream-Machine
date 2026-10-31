@@ -18,7 +18,7 @@ import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import {
   hex, ed25519SignerFromSeed, standSiblingChannel, enrolDevice, groupSecretOpenerFromSeed, dialSiblingHerm, SIBLING_ROUTE_SHUT,
-  provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, type PersonaKelEvent, type SiblingRefusal,
+  provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard, type PersonaKelEvent, type SiblingRefusal,
 } from "@lararium/mesh";
 import { startHermRelayPort, type HermRelayPort } from "../src/herm-relay-port.js";
 
@@ -27,11 +27,11 @@ const seed = (b: number) => new Uint8Array(32).fill(b);
 const NEXUS = "9a".repeat(32);
 
 async function inceptionOf(): Promise<PersonaKelEvent> {
-  const guardianRecoveryKeys = await Promise.all([seed(61), seed(62), seed(63)].map(pubOf));
-  const slots = ["mine", "guardian-a", "guardian-b"] as const;
+  const recoveryContactKeys = await Promise.all([seed(61), seed(62), seed(63)].map(pubOf));
+  const slots = ["mine", "contact-a", "contact-b"] as const;
   return provisionThresholdRecoveryAtFounding({
     foundingOpKeyDid: `0x${await pubOf(seed(51))}`,
-    guardians: guardianRecoveryKeys.map((k, i) => guardianRecoveryRegistrationCard(slots[i]!, k, null)),
+    recoveryContacts: recoveryContactKeys.map((k, i) => recoveryContactRegistrationCard(slots[i]!, k, null)),
     recoveryThreshold: 2,
   }).inception;
 }

@@ -33,14 +33,14 @@ describe("recovery-share — the impersonation-quorum guard as a type", () => {
 
   test("a SINGLE-custodian set can NEVER assemble a Quorum — the honeypot is unrepresentable", () => {
     // Two shares, BOTH held by the escrow-peer: enough points, but one custodian → forbidden.
-    const escrowOnly: RecoveryShare[] = splitToShares(SECRET, 2, ["escrow-peer", "guardian"], 1, rng)
+    const escrowOnly: RecoveryShare[] = splitToShares(SECRET, 2, ["escrow-peer", "custodian"], 1, rng)
       .map((s) => ({ ...s, custodian: "escrow-peer" as const }));   // re-tag both to one custodian
     expect(() => assembleQuorum(escrowOnly, 2)).toThrow(/single-custodian quorum forbidden/);
   });
 
   test("a 3-custodian k-of-n (the grown Circle) reconstructs from any 2 distinct custodians", () => {
-    const shares = splitToShares(SECRET, 2, ["device", "guardian", "guardian"], 4, rng);
-    const q = assembleQuorum([shares[0]!, shares[1]!], 2);   // device + a guardian → 2 distinct tags
+    const shares = splitToShares(SECRET, 2, ["device", "custodian", "custodian"], 4, rng);
+    const q = assembleQuorum([shares[0]!, shares[1]!], 2);   // device + a custodian → 2 distinct tags
     expect([...reconstructFromQuorum(q)]).toEqual([...SECRET]);
   });
 
