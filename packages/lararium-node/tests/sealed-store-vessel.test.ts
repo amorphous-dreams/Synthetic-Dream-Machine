@@ -6,9 +6,10 @@
  * The daemon island's `sealed-*` verbs run as the dispatcher would run them, and the vessel registers the sealed
  * body by its address (`registerSealedCarrier`), as its `cad-seal` verb does.
  *
- * ONE PART STANDS COMPOSED HERE AND NOT YET IN PRODUCTION: the session proof (a session's signer and this
- * vessel's reading of who may write). No production path opens a session signer yet, so the suite hands one
- * in through the same option a session open will use, and a vector pins what production reads without it.
+ * THE SESSION SIGN DOOR STANDS IN FOR THE VESSEL'S MAIN THREAD: the island names the invocation a session placed and
+ * reads that session's signer, its proof subject and the vessel's own chain (`island-session-proof.ts`). The suite
+ * answers that port as the vessel's book would (`session-sign-door.ts`), and the vectors pin what the island refuses:
+ * a place session, another face's session, and an ask no session placed.
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
@@ -17,10 +18,10 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, existsSync } 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
-import { announceSeatRoll, type SessionProof } from "@lararium/keyhive";
+import { announceSeatRoll, type IslandSessionProof, type SessionReading } from "@lararium/keyhive";
 import { hex, isVerbRefusal, mintOutboxKey, openOutboxParcel, readKeyParcel, readsAsOutboxSeal, restDigest, sha256HexBytesSync, utf8Bytes, type OutboxKey, type RecordSigner, type SeatRoll } from "@lararium/mesh";
 import { VerbTable } from "@lararium/tw5";
-import { sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
+import { faceProofSubjectRef, sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
 import { standFoundedIsland } from "./stand-founded-island.js";
 import { nodeSealedStoreShore } from "../src/sealed-store-island.js";
@@ -33,17 +34,23 @@ import { sealedStoreDir } from "../src/sealed-store-fs.js";
 const BAG = "lar:///ha.ka.ba/@test/bags/SEARCH-ME-garden-notes";
 const BODY = "the household's private note: SEARCH-ME-plaintext";
 const SCOPE = { nexusAid: "nexus-test-one", epochCid: "epoch-test-one" };
-const teardown: Array<() => void> = [];
-afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /* best-effort */ } } });
+// Each island leaves before the next test: a seat roll reaches every subscriber in turn and the first rejection ends
+// the delivery, so a seat left standing from an earlier test would keep the roll from this test's own seat.
+const teardown: Array<() => unknown> = [];
+afterEach(async () => { while (teardown.length) { try { await teardown.pop()!(); } catch { /* best-effort */ } } });
 
-const verbCtx = (presenter: string) => ({ daemon: {} as never, invocation: { requestId: "r1" } as never, cap: async () => ({ ok: true }), presenter, local: true }) as never;
-async function proof(): Promise<SessionProof> {
+const verbCtx = (presenter: string, local = true) => ({ daemon: {} as never, invocation: { requestId: "r1" } as never, cap: async () => ({ ok: true }), presenter, local }) as never;
+type Proof = IslandSessionProof & { readonly asks: Array<{ requestId: string; verb: string } | null> };
+/** The session sign door as the vessel's book answers it, over one face's chain: `reading` bends one answer. */
+async function proof(bend: (own: Exclude<SessionReading, { refusal: string }>) => SessionReading = (own) => own): Promise<Proof> {
   const c = await chain("sealed-vessel", "nexus-test-one");
   const signer: RecordSigner = {
     certificate: c.sessionCertificate,
     sign: async (purpose, payload) => ({ signature: await signHex(sessionSignatureImage(purpose, c.scope, c.sessionCertificate.sessionKey, payload), c.session) }),
   };
-  return { signer: () => signer, standing: { holdsWrite: () => true } };
+  const own = { signer, subject: faceProofSubjectRef(c.scope), chain: { scope: c.scope, vesselFaceKey: c.sessionCertificate.vesselFaceKey } };
+  const asks: Proof["asks"] = [];
+  return { asks, signer: async (ask) => { asks.push(ask); return ask === null ? { refusal: "signer-unavailable" } : bend(own); } };
 }
 /** Every file under `dir`, with its bytes. */
 function tree(dir: string): { path: string; bytes: Uint8Array }[] {
@@ -56,9 +63,10 @@ function tree(dir: string): { path: string; bytes: Uint8Array }[] {
 const holds = (files: { bytes: Uint8Array }[], needle: string): boolean => files.some((f) => hex(f.bytes).includes(hex(utf8Bytes(needle))));
 
 /** Boot the real daemon options over one founded island and one scratch storage root; answer its verbs. */
-async function stand(st: Awaited<ReturnType<typeof standFoundedIsland>>, root: string, over: { session?: SessionProof; archive?: Uint8Array; archiveOpens?: boolean; boot?: boolean; outboxKey?: OutboxKey } = {}) {
+async function stand(st: Awaited<ReturnType<typeof standFoundedIsland>>, root: string, over: { session?: IslandSessionProof; archive?: Uint8Array; archiveOpens?: boolean; boot?: boolean; outboxKey?: OutboxKey; local?: boolean } = {}) {
   const archives: Uint8Array[] = [];
-  const daemonAuth = { ...st.daemonAuth, ...(over.archive ? { veilArchiveBytes: over.archive } : {}), ...(over.archiveOpens === false ? { archiveOpens: false } : {}), ...(over.outboxKey ? { outboxKey: over.outboxKey } : {}) };
+  // The face registers the bag it seals under: a writer stands only over a bag its own face registers.
+  const daemonAuth = { ...st.daemonAuth, registerBags: [...st.daemonAuth.registerBags, BAG], ...(over.archive ? { veilArchiveBytes: over.archive } : {}), ...(over.archiveOpens === false ? { archiveOpens: false } : {}), ...(over.outboxKey ? { outboxKey: over.outboxKey } : {}) };
   const opts = operatorDaemonOptions({ daemonAuth } as never, {
     dyadReading: () => "clear",
     sealedStore: nodeSealedStoreShore(join(root, "daemon")),
@@ -69,14 +77,46 @@ async function stand(st: Awaited<ReturnType<typeof standFoundedIsland>>, root: s
   let kh: { dispose?: () => Promise<void> } | null = null;
   if (over.boot !== false) {
     kh = await opts.verifierFactory!(st.ctx) as never;
-    teardown.push(() => { void kh?.dispose?.(); });
+    teardown.push(() => kh?.dispose?.());
   }
   const registry = new VerbTable();
   opts.wireWorkerVerbs!(registry, st.ctx);
-  const run = (verb: string, args: Record<string, unknown>) => registry.get(verb)!(args, verbCtx(`0x${st.daemonAuth.atom.key}`)) as Promise<Record<string, unknown>>;
+  const run = (verb: string, args: Record<string, unknown>) => registry.get(verb)!(args, verbCtx(`0x${st.daemonAuth.atom.key}`, over.local ?? true)) as Promise<Record<string, unknown>>;
   return { run, archives, dispose: async () => { await kh?.dispose?.(); } };
 }
 const scratch = (): string => { const dir = mkdtempSync(join(tmpdir(), "sealed-vessel-")); teardown.push(() => rmSync(dir, { recursive: true, force: true })); return dir; };
+
+// FIRST IN THE FILE: the seat-roll seam is one process-wide subscriber list, and the daemon options' verifier carries no
+// dispose, so every island an earlier test stood stays subscribed; the first rejection ends a delivery.
+describe("the daemon island's boot subscribes the content-key roll to its own seat rolls", () => {
+  test("a seat roll the island announces stays owed until the next session act settles it with its own signer, which then seals under the successor; the same roll again owes nothing", async () => {
+    const root = scratch();
+    const st = await standFoundedIsland(teardown);
+    const session = await proof();
+    const vessel = await stand(st, root, { session });
+    // The face's scope reaches the bags the daemon registered: seal into one of them.
+    const bag = st.daemonAuth.registerBags[0]!;
+    const sealed = await vessel.run("sealed-seal", { bag, text: BODY });
+    const roll: SeatRoll = { kind: "seat-roll", scope: st.daemonAuth.deviceEdge.personaRootDid, edgeId: "edge-test", raiseCids: ["raise-test-1"], how: "gone" };
+    // THE PRODUCTION SEAM: the executor's own announce. No session placed it, so no signer stands: it stays owed.
+    await expect(announceSeatRoll(roll)).rejects.toThrow(/stays owed/);
+    const owedNow = await vessel.run("sealed-reading", { bag });
+    expect((owedNow["foundings"] as { held: string[] }[])[0]!.held.length).toBe(1);
+    // The session's next seal settles the roll first, with that session's own signer, and seals under the successor.
+    const after = await vessel.run("sealed-seal", { bag, text: "sealed after the roll" });
+    const reading = await vessel.run("sealed-reading", { bag });
+    const heads = (reading["foundings"] as { heads: string[]; held: string[] }[])[0]!;
+    expect(heads.held.length).toBe(2);
+    expect(heads.heads).not.toEqual([sealed["keyVersion"]]);
+    expect(after["keyVersion"]).toBe(heads.heads[0]);
+    await announceSeatRoll(roll);
+    const again = await vessel.run("sealed-reading", { bag });
+    expect((again["foundings"] as { held: string[] }[])[0]!.held.length).toBe(2);   // no second successor
+    // CONTROL: a roll for another scope reaches no bag here.
+    await announceSeatRoll({ ...roll, scope: "cd".repeat(32), raiseCids: ["raise-test-2"] });
+    expect(((await vessel.run("sealed-reading", { bag }))["foundings"] as { held: string[] }[])[0]!.held.length).toBe(2);
+  }, 120_000);
+});
 
 describe("a private body seals on a real founded vessel, end to end", () => {
   test("seal → the vessel registers it → restart from the kept Archive → open; nothing private rests in the sealed tiers", async () => {
@@ -156,7 +196,75 @@ describe("a private body seals on a real founded vessel, end to end", () => {
     expect(tree(cadSealDir(root))).toEqual([]);
   }, 120_000);
 
-  test("PRODUCTION TODAY, STATED: with no session proof composed the seal refuses `signer-unavailable`, and nothing rests", async () => {
+  test("THE ISLAND READS THE SESSION THAT PLACED THE ASK: it names the ask's request id and verb, and the session's own face seals", async () => {
+    const root = scratch();
+    const st = await standFoundedIsland(teardown);
+    const session = await proof();
+    const vessel = await stand(st, root, { session });
+    const sealed = await vessel.run("sealed-seal", { bag: BAG, text: BODY });
+    expect(sealed["founded"]).toBe(true);
+    expect(session.asks).toEqual([{ requestId: "r1", verb: "sealed-seal" }]);
+  }, 120_000);
+
+  test("A PLACE SESSION REACHES NO SEALED STORE: the vessel answers `session-anchor-place`, and nothing seals or opens", async () => {
+    const root = scratch();
+    const st = await standFoundedIsland(teardown);
+    const own = await stand(st, root, { session: await proof() });
+    const sealed = await own.run("sealed-seal", { bag: BAG, text: BODY });
+    await own.dispose();
+    const place = await stand(st, root, { session: await proof(() => ({ refusal: "session-anchor-place" })) });
+    const before = tree(sealedStoreDir(root)).length;
+    for (const [verb, args] of [["sealed-seal", { bag: BAG, text: "x" }], ["sealed-open", { bag: BAG, ref: sealed["ref"] }], ["sealed-reading", { bag: BAG }]] as const) {
+      const err = await place.run(verb, args as never).catch((e: unknown) => e);
+      expect(isVerbRefusal(err), verb).toBe(true);
+      expect((err as { reason: string }).reason, verb).toBe("session-anchor-place");
+    }
+    expect(tree(sealedStoreDir(root)).length).toBe(before);
+  }, 120_000);
+
+  test("ANOTHER FACE'S SESSION OPENS NOTHING THIS FACE SEALED: `session-face-foreign` at the seal, the open and the reading", async () => {
+    const root = scratch();
+    const st = await standFoundedIsland(teardown);
+    const own = await stand(st, root, { session: await proof() });
+    const sealed = await own.run("sealed-seal", { bag: BAG, text: BODY });
+    // CONTROL: the face that sealed opens it.
+    expect((await own.run("sealed-open", { bag: BAG, ref: sealed["ref"] }))["bytes"]).toBe(utf8Bytes(BODY).length);
+    await own.dispose();
+    const stranger = await chain("another-face", "nexus-test-one");
+    const foreign = await stand(st, root, { session: await proof((o) => ({ ...o, subject: faceProofSubjectRef(stranger.scope) })) });
+    const landed = tree(casDirForStorage(root)).length;
+    for (const [verb, args] of [["sealed-open", { bag: BAG, ref: sealed["ref"] }], ["sealed-seal", { bag: BAG, text: "x" }], ["sealed-reading", { bag: BAG }]] as const) {
+      const err = await foreign.run(verb, args as never).catch((e: unknown) => e);
+      expect(isVerbRefusal(err), verb).toBe(true);
+      expect((err as { reason: string }).reason, verb).toBe("session-face-foreign");
+    }
+    expect(tree(casDirForStorage(root)).length).toBe(landed);      // no cleartext landed
+  }, 120_000);
+
+  test("A WRITER STANDS ONLY UNDER THE VESSEL'S OWN CHAIN: a session certificate under another face-scoped key mints nothing", async () => {
+    const root = scratch();
+    const st = await standFoundedIsland(teardown);
+    const other = await chain("another-vessel", "nexus-test-one");
+    const astray = await stand(st, root, { session: await proof((o) => ({ ...o, chain: { scope: o.chain.scope, vesselFaceKey: other.sessionCertificate.vesselFaceKey } })) });
+    const err = await astray.run("sealed-seal", { bag: BAG, text: BODY }).catch((e: unknown) => e);
+    expect(isVerbRefusal(err)).toBe(true);
+    expect((err as { reason: string }).reason).not.toBe("signer-unavailable");
+    expect(tree(cadSealDir(root))).toEqual([]);
+  }, 120_000);
+
+  test("AN ASK NO SESSION PLACED BORROWS NO SIGNER: a summons (not the vessel's own channel) refuses, and the island asks the vessel nothing", async () => {
+    const root = scratch();
+    const st = await standFoundedIsland(teardown);
+    const session = await proof();
+    const summons = await stand(st, root, { session, local: false });
+    const err = await summons.run("sealed-seal", { bag: BAG, text: BODY }).catch((e: unknown) => e);
+    // The content fence answers a summons before the sign door would (`content-mounted-only`); either way it refuses.
+    expect(isVerbRefusal(err)).toBe(true);
+    expect(session.asks).toEqual([]);                              // the island never asked the vessel
+    expect(tree(cadSealDir(root))).toEqual([]);
+  }, 120_000);
+
+  test("WITH NO SESSION DOOR COMPOSED the seal refuses `signer-unavailable`, and nothing rests", async () => {
     const root = scratch();
     const st = await standFoundedIsland(teardown);
     const bareVessel = await stand(st, root);
@@ -209,36 +317,6 @@ describe("the outbox at rest names no reader, on a real founded vessel (custody#
     }
     expect(tree(join(sealedStoreDir(root), "outbox"))).toEqual([]);
     expect(tree(sealedStoreDir(root)).some((f) => f.path.includes("/hand-over/"))).toBe(false);   // the hand-over wrote no record ahead of a parcel it could not rest
-  }, 120_000);
-});
-
-describe("the daemon island's boot subscribes the content-key roll to its own seat rolls", () => {
-  test("a seat roll the island announces mints a successor for each bag its face reaches, and the same roll again owes nothing", async () => {
-    const root = scratch();
-    const st = await standFoundedIsland(teardown);
-    const session = await proof();
-    const vessel = await stand(st, root, { session });
-    // The face's scope reaches the bags the daemon registered: seal into one of them.
-    const bag = st.daemonAuth.registerBags[0]!;
-    const sealed = await vessel.run("sealed-seal", { bag, text: BODY });
-    const roll: SeatRoll = { kind: "seat-roll", scope: st.daemonAuth.deviceEdge.personaRootDid, edgeId: "edge-test", raiseCids: ["raise-test-1"], how: "gone" };
-    await announceSeatRoll(roll);                                   // THE PRODUCTION SEAM: the executor's own announce
-    const reading = await vessel.run("sealed-reading", { bag });
-    const heads = (reading["foundings"] as { heads: string[]; held: string[] }[])[0]!;
-    expect(heads.held.length).toBe(2);
-    expect(heads.heads).not.toEqual([sealed["keyVersion"]]);
-    const after = await vessel.run("sealed-seal", { bag, text: "sealed after the roll" });
-    expect(after["keyVersion"]).toBe(heads.heads[0]);
-    await announceSeatRoll(roll);
-    const again = await vessel.run("sealed-reading", { bag });
-    expect((again["foundings"] as { held: string[] }[])[0]!.held.length).toBe(2);   // no second successor
-    // CONTROL: a roll for another scope reaches no bag here.
-    await announceSeatRoll({ ...roll, scope: "cd".repeat(32), raiseCids: ["raise-test-2"] });
-    expect(((await vessel.run("sealed-reading", { bag }))["foundings"] as { held: string[] }[])[0]!.held.length).toBe(2);
-    // THE HOLDER LEAVES WITH ITS IDENTITY: once the island's identity disposes, no subscriber stands, so a roll
-    // announced afterwards asks nobody and settles (a seat left standing would try to mint through a dead identity).
-    await vessel.dispose();
-    await expect(announceSeatRoll({ ...roll, raiseCids: ["raise-test-3"] })).resolves.toBeUndefined();
   }, 120_000);
 });
 

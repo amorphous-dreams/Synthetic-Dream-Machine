@@ -242,6 +242,45 @@ describe("a removed device opens nothing sealed after its removal", () => {
     expect(await opens(c!, after.body.ref)).toBe("REFUSED:reference-unknown");
   });
 
+  it("A ROLL NO SESSION SIGNED STAYS OWED, AND NOTHING SEALS AHEAD OF IT: the holder refuses `roll-owed`; the session's own act settles it first, and the removed device opens nothing sealed after", async () => {
+    const { group, devices: [f, b, c], everything } = await fleet(0x34, ["f", "b", "c"]);
+    const before = await seal(f!, "sealed while c stood");
+    await carry(f!, c!);
+    // The seat roll arrives with no session behind it: the executor's announce finds no signer, the roll stays owed,
+    // and the raise stays unmarked (the next run brings it again).
+    f!.signs = false;
+    f!.raises.add("raise-1");
+    const outcomes = await runSeatDuties(keyhiveSeatShore(f!.provider), [{ kind: "revoke", scope: SCOPE, edgeId: "edge-c", seat: { group, member: c!.id }, raiseCids: ["raise-1"], then: "leave-out" }], (r) => f!.rolls.announce(r));
+    expect(outcomes.map((o) => o.did)).toEqual(["undelivered"]);
+    expect(f!.seat.owedFor(BAG)).toEqual(["raise-1"]);
+    // THE HOLDER REFUSES a seal under a head that precedes the owed removal, even with a signer in hand.
+    const ahead = await f!.seat.holder.sealBlob({ bagId: BAG, plaintext: utf8Bytes("x"), signer: f!.signer, owedActs: f!.seat.owedFor(BAG) });
+    expect("refusal" in ahead && ahead.refusal).toBe("roll-owed");
+    // A session act whose signer the settle cannot use seals nothing either.
+    const refusing = await f!.seat.seal({ bagId: BAG, plaintext: utf8Bytes("x"), signer: { certificate: f!.signer.certificate, sign: async () => ({ refusal: "signer-dropped" }) } });
+    expect("refusal" in refusing && refusing.refusal).toBe("roll-owed");
+    // THE SESSION'S OWN ACT settles the roll with its own signer, then seals under the successor.
+    const after = await f!.seat.seal({ bagId: BAG, plaintext: utf8Bytes("sealed after c left"), signer: f!.signer });
+    if ("refusal" in after) throw new Error(said(after));
+    expect(after.body.keyVersion).not.toBe(before.body.keyVersion);
+    expect(f!.seat.owedFor(BAG)).toEqual([]);
+    // The removed device takes everything a carrier could hand it and opens nothing sealed after its removal.
+    await c!.provider.ingestPeerEvents(await everything(f!)).catch(() => undefined);
+    await carry(f!, c!);
+    expect(await opens(c!, after.body.ref)).toBe("REFUSED:reference-unknown");
+    expect(await opens(c!, before.body.ref)).toBe("sealed while c stood");
+    void b;
+  });
+
+  it("CONTROL: with no roll owed the session's seal proceeds under the head it holds", async () => {
+    const { devices: [f] } = await fleet(0x36, ["f", "b", "c"]);
+    const first = await seal(f!, "v1");
+    expect(f!.seat.owedFor(BAG)).toEqual([]);
+    const next = await f!.seat.seal({ bagId: BAG, plaintext: utf8Bytes("v2"), signer: f!.signer });
+    if ("refusal" in next) throw new Error(said(next));
+    expect(next.body.keyVersion).toBe(first.body.keyVersion);
+  });
+
   it("CONTROL: with no removal the same device opens what the vessel seals next", async () => {
     const { devices: [f, , c] } = await fleet(0x38, ["f", "b", "c"]);
     await seal(f!, "v1");
