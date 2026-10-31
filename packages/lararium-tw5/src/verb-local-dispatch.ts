@@ -103,7 +103,9 @@ export function routedWikiSlug(invocation: Verb): string | null {
     if (typeof bag !== "string" || !/^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(bag)) return null;
     return wikiSlugOfBag(bag);
   };
-  const verb = typeof outer["verb"] === "string" ? (outer["verb"] as string).toUpperCase() : "";
+  // The main handler compares the verb's own spelling, so this reading does the same: a case the handler would not
+  // match names no wiki here either (the mount and the act then never aim at two wikis).
+  const verb = typeof outer["verb"] === "string" ? outer["verb"] as string : "";
   const wikiVerb = verb === "LOAD" || verb === "MOVE" || verb === "COPY" || verb === "ADD";
   const slug = typeof outer["wiki"] === "string" && outer["wiki"]
     ? outer["wiki"] as string

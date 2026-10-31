@@ -116,6 +116,14 @@ describe("a wiki-act aimed at a wiki no island mounts asks the vessel to mount i
     s.dispatcher.stop();
   });
 
+  test("RED (Copilot's read): a verb spelled in a case the main handler would not match aims at no wiki here either", async () => {
+    const s = stand();
+    s.dispatcher.placeVerb({ verb: "wiki-act", args: { verb: "load", args: { "to-bag": WORKING } }, requestedBy: "did:key:mounted", requestId: "r2" });
+    await settle();
+    expect(s.routed).not.toContain("wiki-switch");
+    s.dispatcher.stop();
+  });
+
   test("CONTROL: an act on a bag that names no non-daemon wiki slot asks no mount", async () => {
     const s = stand();
     s.act("did:key:mounted", "lar:///ha.ka.ba/bags/orchard");
