@@ -1,0 +1,323 @@
+{
+  "schema": "projection-loom/compound-build/v1",
+  "lineage": {
+    "schema": "projection-loom/compound-lineage/v1",
+    "recipe_sha256": "7f317bc1abcce96979ea7b37c51219e9a3134856a8e387a736bb3fa6ba024b2a",
+    "operator_sha256": "ae141c82a44e480be47f9fb6098d18bb2c729f81f3b9b3743c2252a3155e8e12",
+    "genome": {
+      "crown_offset": 0.0,
+      "crown_taper": 0.0,
+      "crystal.fracture": 0.1,
+      "crystal.guide": 0.0,
+      "crystal.relief": 0.14,
+      "crystal.seed": 13.0,
+      "crystal.wave": 7.0,
+      "fortress_width": 4.9,
+      "gallery_reach": 1.0,
+      "gate_width": 0.66,
+      "join.enable": 0.2,
+      "join.fracture": 0.05,
+      "join.relief": 0.06,
+      "join.seed": 11.0,
+      "join.wave": 5.0,
+      "keep_taper": 0.0,
+      "parapet_fraction": 0.68,
+      "shaft_asymmetry": -0.03294048234820368,
+      "shaft_jaggedness": 0.03149807690177113,
+      "shaft_length": 19.7025962844491,
+      "shaft_width": 2.7640938968397677,
+      "spire_segmentation": 0.0,
+      "terrace_offset": 0.0,
+      "terrace_overhang": 1.32,
+      "tower_height": 2.9
+    },
+    "source_hashes": {
+      "image": "78f8d1f0cf44a98b748054ae8b5c8f2229c1354696a8e1173963a7c98bc4fbe7"
+    },
+    "location": "necrospire",
+    "pet_name": "Necrospire: A Crystal Bearing a Fortress"
+  },
+  "steps": [
+    {
+      "id": "crystal.cad",
+      "entity": "Crystal",
+      "operator": "cad",
+      "state": "complete",
+      "output": {
+        "kind": "cad",
+        "part": "obsidian needle",
+        "authority": "BRep/material-after-audit"
+      },
+      "has": [
+        "#has/structural-cage"
+      ]
+    },
+    {
+      "id": "crystal.mesh",
+      "entity": "Crystal",
+      "operator": "cad-polymesh",
+      "state": "complete",
+      "output": {
+        "kind": "polymesh",
+        "layer": "~crystal-surface",
+        "part": "obsidian needle",
+        "authority": "polygon-surface",
+        "geometry": {
+          "source_vertices": 40,
+          "triangles": 76,
+          "BRep_tessellated": true,
+          "protected_socket": "top-east",
+          "protected_radius": 1.0,
+          "maximum_world_deviation": 0.15754784883932424,
+          "pixel_scale": 6.4649134485300035,
+          "evidence_state": "synthetic",
+          "guidance_applied": false
+        }
+      },
+      "has": [
+        "#has/faceted",
+        "#has/obsidian"
+      ]
+    },
+    {
+      "id": "crystal.socket",
+      "entity": "Crystal",
+      "operator": "semantic-socket",
+      "state": "complete",
+      "output": {
+        "kind": "socket",
+        "socket": "top-east",
+        "CAD_xyz": [
+          1.9392932390096893,
+          0.0,
+          1.2
+        ],
+        "authority": "spatial-proximity-only"
+      },
+      "has": [
+        "#has/protected-interface"
+      ]
+    },
+    {
+      "id": "join.cad",
+      "entity": "Joining",
+      "operator": "cad",
+      "state": "complete",
+      "output": {
+        "kind": "cad",
+        "part": "lower terrace",
+        "authority": "BRep/material-after-audit"
+      },
+      "has": [
+        "#has/structural-interface"
+      ]
+    },
+    {
+      "id": "join.contact-crystal",
+      "entity": "Joining",
+      "operator": "cad-contact",
+      "state": "complete",
+      "output": {
+        "kind": "contact",
+        "parent": "obsidian needle",
+        "part": "lower terrace",
+        "volume_ratio": 0.12023174115927994,
+        "authority": "exact-CAD-contact"
+      },
+      "has": []
+    },
+    {
+      "id": "join.mesh",
+      "entity": "Joining",
+      "operator": "cad-polymesh",
+      "state": "inactive"
+    },
+    {
+      "id": "join.socket",
+      "entity": "Joining",
+      "operator": "semantic-socket",
+      "state": "inactive-dependency"
+    },
+    {
+      "id": "fortress.cad",
+      "entity": "Fortress",
+      "operator": "cad",
+      "state": "complete",
+      "output": {
+        "kind": "cad",
+        "part": "central keep",
+        "authority": "BRep/material-after-audit"
+      },
+      "has": [
+        "#has/rooms",
+        "#has/fortification"
+      ]
+    },
+    {
+      "id": "fortress.contact-join",
+      "entity": "Fortress",
+      "operator": "cad-contact",
+      "state": "complete",
+      "output": {
+        "kind": "contact",
+        "parent": "lower terrace",
+        "part": "central keep",
+        "volume_ratio": 0.19486166007905142,
+        "authority": "exact-CAD-contact"
+      },
+      "has": []
+    }
+  ],
+  "audit": {
+    "location": "necrospire",
+    "pet_name": "Necrospire: A Crystal Bearing a Fortress",
+    "cad_valid": true,
+    "cad": {
+      "valid_joints": true,
+      "root": "obsidian needle",
+      "parts": 7,
+      "joints": 6,
+      "failed": [],
+      "weakest_volume_ratio": 0.12023174115927994,
+      "min_intersection_extent": 0.27500000000000036,
+      "contacts": [
+        {
+          "parent": "obsidian needle",
+          "child": "lower terrace",
+          "overlap_volume": 5.915845680856674,
+          "volume_ratio": 0.12023174115927994,
+          "minimum_intersection_extent": 0.5750002,
+          "required_volume": 0.24601846500000002,
+          "required_thickness": 0.02025,
+          "valid": true
+        },
+        {
+          "parent": "lower terrace",
+          "child": "central keep",
+          "overlap_volume": 9.587913300000002,
+          "volume_ratio": 0.19486166007905142,
+          "minimum_intersection_extent": 0.7395,
+          "required_volume": 0.24601846500000002,
+          "required_thickness": 0.02025,
+          "valid": true
+        },
+        {
+          "parent": "central keep",
+          "child": "upper keep",
+          "overlap_volume": 12.365555769000002,
+          "volume_ratio": 0.5778741168914577,
+          "minimum_intersection_extent": 1.7994999999999997,
+          "required_volume": 0.10699177734000005,
+          "required_thickness": 0.038955000000000004,
+          "valid": true
+        },
+        {
+          "parent": "upper keep",
+          "child": "parapet",
+          "overlap_volume": 1.8897070500000028,
+          "volume_ratio": 0.3477843962104081,
+          "minimum_intersection_extent": 0.27500000000000036,
+          "required_volume": 0.027167795199999976,
+          "required_thickness": 0.007799999999999994,
+          "valid": true
+        },
+        {
+          "parent": "lower terrace",
+          "child": "front lower terrace",
+          "overlap_volume": 1.7593027374999994,
+          "volume_ratio": 0.7086436170212767,
+          "minimum_intersection_extent": 0.55,
+          "required_volume": 0.012413169999999996,
+          "required_thickness": 0.00825,
+          "valid": true
+        },
+        {
+          "parent": "lower terrace",
+          "child": "western gallery",
+          "overlap_volume": 1.0561398750000008,
+          "volume_ratio": 0.8018867924528303,
+          "minimum_intersection_extent": 0.4500000000000002,
+          "required_volume": 0.006585342750000004,
+          "required_thickness": 0.0067500000000000025,
+          "valid": true
+        }
+      ],
+      "valid": true,
+      "union_solids": 1,
+      "union_valid": true,
+      "union_volume": 226.43721527775827,
+      "voids": {
+        "valid": true,
+        "errors": [],
+        "contacts": [
+          {
+            "name": "great-hall",
+            "kind": "room",
+            "inside_volume": 2.375825,
+            "outside_volume": 0.0
+          },
+          {
+            "name": "guarded-gate",
+            "kind": "doorway",
+            "inside_volume": 1.0569520500000005,
+            "outside_volume": 1.5625879500000002
+          },
+          {
+            "name": "upper-shaft",
+            "kind": "shaft",
+            "inside_volume": 0.3415103999999999,
+            "outside_volume": 0.0
+          }
+        ],
+        "reachable": [
+          "great-hall",
+          "guarded-gate",
+          "upper-shaft"
+        ],
+        "material_solids": 1,
+        "material_volume": 223.1335692077583
+      }
+    },
+    "layers": [
+      {
+        "name": "~crystal-surface",
+        "role": "sculptural",
+        "source": "procedural",
+        "valid": true,
+        "triangles": 76,
+        "watertight": true,
+        "positive_volume": true,
+        "covers_part": "obsidian needle",
+        "scope": "polygon-surface-only"
+      }
+    ],
+    "attachments": [
+      {
+        "name": "crystal.socket",
+        "valid": true,
+        "mesh_to_cad_anchor": 0.0,
+        "cad_point_to_brep": 0.0,
+        "tolerance": 0.08,
+        "selector": "top-east",
+        "scope": "interface-proximity-not-structural-fusion"
+      }
+    ],
+    "composite_valid_for_render": true,
+    "composite_cad_union_verified": false,
+    "authority": "CAD valid per body; meshes valid for render; anchors verify proximity only"
+  },
+  "capability_features": [
+    "Crystal:cad-polymesh:crystal.mesh",
+    "Crystal:cad:crystal.cad",
+    "Crystal:semantic-socket:crystal.socket",
+    "Fortress:cad-contact:fortress.contact-join",
+    "Fortress:cad:fortress.cad",
+    "Joining:cad-contact:join.contact-crystal",
+    "Joining:cad:join.cad"
+  ],
+  "claims": {
+    "CAD": "exact BRep validity and positive joins",
+    "polymesh": "closed visual surface",
+    "cross-kernel": "semantic socket proximity, not Boolean fusion"
+  }
+}

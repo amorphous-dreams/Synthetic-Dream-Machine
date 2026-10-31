@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/blob/feature/green-jello-dinosaur-5--projection-loom/tools/projection-loom/projection_loom/contracts/relational-operation.schema.json",
+  "title": "Relational operation with an observed causal frontier",
+  "type": "object",
+  "required": [
+    "kind",
+    "actor",
+    "target",
+    "frontier"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "enum": [
+        "create",
+        "attach",
+        "detach",
+        "reparent",
+        "transform",
+        "remove",
+        "bind-representation",
+        "annotate"
+      ]
+    },
+    "actor": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "frontier": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      }
+    },
+    "expected_revision": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "payload": {
+      "type": "object"
+    }
+  }
+}

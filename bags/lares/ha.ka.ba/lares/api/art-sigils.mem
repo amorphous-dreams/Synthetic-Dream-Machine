@@ -22,6 +22,7 @@ Eight artistic dimensions: worktype, subject, read, imagery, treatment, composit
 * [[Semantic Specification|ha.ka.ba/lares/api/art-sigils/spec]]
 * [[Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]]
 * [[Formal Analysis|ha.ka.ba/lares/api/art-sigils/formal-analysis]]
+* [[Projection Loom Dialect (Fire interface)|ha.ka.ba/lares/api/art-sigils/loom-dialect]]
 * [[Worked Examples|ha.ka.ba/lares/docs/art-sigils]]
 <<~/ahu>>
 
@@ -29,6 +30,6 @@ Eight artistic dimensions: worktype, subject, read, imagery, treatment, composit
 The grammar governs expression, not an artwork's subject, medium or style.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uuozCD31ILlnaYtl5Ny2NX4RyENhdECs3Rvpnfxolys
+<<^ code="&#x0003;">>ni:///sha-256;N9Pfb5W-tsWwk5VV5cZxHrZqYOuJyhYjnnqt0naHLtU
 
 <<^ code="&#x0004;" -> to="?">>

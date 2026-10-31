@@ -1,0 +1,99 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom-research">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-research.mem"
+namespace = "&#x0950; &#x0901;"
+title = "lar:///ha.ka.ba/lares/api/projection-loom-research"
+uri-path = "ha.ka.ba/lares/api/projection-loom-research"
+type = "text/memetic-wikitext+tiddlywiki"
+role = "kept research testimony, measurement contracts and open questions"
+tags = ["api/pono/meme", "projection-loom", "research"]
+```
+
+<<~ ahu #/entry>>
+
+! The Research Ledger Holds Many Witnesses
+
+A pet-named location carries a changing relational community: CAD bodies, terrain,
+photographs, drawings, point fields, void networks, histories, and unsolved forms.
+Each witness keeps the constraints its own measurements can support. A painting
+supplies visible pixels; a DEM supplies terrain heights in a declared frame;
+a photogrammetric reconstruction supplies poses and surfaces conditionally on
+its calibration; a CAD body supplies checked construction. None silently grants
+the authority of another.
+
+The research archive lives at `tools/projection-loom/docs/research/register.md`
+and retains the historical experiments, literature and present-day boundaries.
+
+<<~/ahu>>
+
+<<~ ahu #/catmas>>
+
+!! Pattern-Integrity Rhymes
+
+* ''Cybernetics / requisite variety:'' keep multiple viable structural hypotheses where evidence underdetermines a site. A single winning guess cannot speak for all unseen geometry.
+* ''Inverse graphics / factor graphs:'' separate source measurements, registration parameters, construction variables, and interpretive priors; never let a camera move to conceal bad geometry.
+* ''Shape grammars / program synthesis:'' grow discrete operations and continuous parameters; discover reusable macros only after repeated witnessed relationships support them.
+* ''Survey / GIS:'' preserve affine pixel positions, native CRS, horizontal units, nodata, vertical datum and independently tested transformations.
+* ''IFC / open voids:'' relate openings, recesses and rooms by purpose; an opening and a traversable route answer different tests.
+* ''OpenUSD / compositional scenes:'' let distinct bodies and variants share a location without forcing a scene-wide Boolean union.
+* ''Typed graph rewriting:'' do not orphan children, overwrite source testimony or silently rebind twins when a branch changes.
+* ''Quality diversity / ecological slack:'' retain viable alternatives in structurally different niches, including valid unnamed surprises.
+* ''Multi-fidelity optimization:'' use cheap proxies to order attention; use exact CAD/void audits to admit a construction.
+* ''W3C provenance / causal islands:'' preserve what source, method and code produced each claim without fabricating a global now.
+
+<<~/ahu>>
+
+<<~ ahu #/witness-ladder>>
+
+!! Source Ladder and Gauge
+
+One image -> provisional pixels and visible contours. Multiple registered photos -> constrained multi-view surfaces. Survey control -> anchored measurements. GeoTIFF DEM -> measured cells and native metadata. Mesh/point cloud -> witnessed sampled surfaces. CAD/IFC -> authored structural relationships. A mixed collection -> intersecting testimony and explicit conflicts.
+
+The unobserved stays unobserved. An image without metric control never confers meters. A provisional image camera never graduates because a generated silhouette looks persuasive. An uncertain relationship may retain alternatives until another witness arrives.
+
+<<~/ahu>>
+
+<<~ ahu #/athenaion-hard-reference>>
+
+!! Operator-kept hard external reference
+
+Athenaion (Leonxlnx/athenaion) carries an Operator-designated pinned
+architectural research reference at `9b8bd23b39c458a50fb1201037360047781c45b5`. Its
+shared scene plan, named placement slots, footprint exclusions, per-module
+build/test contracts, multi-reference camera comparisons and deterministic
+render budget inform the next Loom generalization backlog. They do not
+certify native BRep validity, calibration, inherited generative lineages
+or Elyncia canon. Consult the dedicated attributed research meme before
+claiming an upstream technique has transferred.
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-athenaion">>
+
+<<~/ahu>>
+
+<<~ ahu #/relational-inheritance-design>>
+
+!! Design witness · relation before shape
+
+The research register now points to `tools/projection-loom/docs/RELATIONAL-INHERITANCE-DESIGN.md` and the working design carrier `lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design`. They compare complete-region copying, source-goal inheritance, a derived native-observed route-family witness and parent-conditioned reconstruction. The C+D working choice requires a distinct native-admitted descendant under the same OODA-HA helm; the current two-epoch topology test does not yet prove that claim. The new Deep Research app report remains separate uninspected testimony until supplied.
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design">>
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-witness">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-growth">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-epochs">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;aECwNpRKMo5y0Fer0RRLsJPORaZ8Jk6OgkYa4K8kny0
+
+<<^ code="&#x0004;" -> to="?">>

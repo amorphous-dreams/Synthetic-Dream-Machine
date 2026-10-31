@@ -1,0 +1,66 @@
+{
+  "kind": "geometry-proxy",
+  "authority": "authored-proposal",
+  "units": "model_unit",
+  "tiers": [
+    {
+      "width": 8,
+      "depth": 8,
+      "height": 2,
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "width": 6.4,
+      "depth": 6.2,
+      "height": 1.4,
+      "offset": [
+        0.2,
+        0
+      ]
+    },
+    {
+      "width": 4.7,
+      "depth": 4.3,
+      "height": 1.2,
+      "offset": [
+        0.4,
+        0.1
+      ]
+    },
+    {
+      "width": 3.2,
+      "depth": 3,
+      "height": 1,
+      "offset": [
+        0.5,
+        0.2
+      ]
+    }
+  ],
+  "court": {
+    "size": [
+      1.2,
+      1.2,
+      0.7
+    ],
+    "offset": [
+      0,
+      0
+    ]
+  },
+  "gate": {
+    "size": [
+      0.8,
+      0.8,
+      1
+    ],
+    "face": "east",
+    "offset": [
+      0,
+      0
+    ]
+  }
+}

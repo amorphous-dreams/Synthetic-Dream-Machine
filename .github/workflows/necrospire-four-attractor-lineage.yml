@@ -1,0 +1,126 @@
+name: Necrospire four-attractor fresh lineage
+
+on:
+  push:
+    branches: [feature/necrospire-four-attractor-20261025]
+    paths:
+      - '.github/workflows/necrospire-four-attractor-lineage.yml'
+      - 'tools/projection-loom/examples/necrospire/four_attractor_lineage.py'
+      - 'tools/projection-loom/requirements-ci.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: necrospire-four-attractor-20261025
+  cancel-in-progress: false
+
+jobs:
+  grow-four-attractor-lineage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - name: Install native kernels and pinned scientific dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+          python -m pip check
+      - name: Freeze four distinct original attractors and audit guided seed
+        run: |
+          python examples/necrospire/four_attractor_lineage.py prepare \
+            --out out/necrospire_four_attractor_fresh > out-four-attractor-seed.json
+          python -m pytest -q tests/test_exploration.py tests/test_exploration_admission.py tests/test_experiment_zero.py tests/test_fracture_patterns.py
+      - name: Grow three-generation fresh OODA-HA lineage with 2x room
+        run: |
+          python -m projection_loom ooda-ha-run \
+            --project examples/necrospire/project_four_attractor.generated.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_four_attractor.generated.json \
+            --out out/necrospire_four_attractor_fresh \
+            --breeding --control full-speed --passes 3 \
+            --offspring-per-family 3 --exact-budget 12 --detail-budget 6 \
+            --seed 58321 --score-size 64 96 --finalists 3 \
+            --explore-overscan 2 --explore-depth 2 \
+            --explore-max-faces 200000 --explore-max-vertices 150000 \
+            --explore-review-seats 6 > out-four-attractor-run.json
+      - name: Compare source, proxy priors, other views and native ancestry
+        run: |
+          python examples/necrospire/four_attractor_lineage.py review \
+            --out out/necrospire_four_attractor_fresh > out-four-attractor-review.json
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          root=Path('out/necrospire_four_attractor_fresh')
+          x=json.loads((root/'four_attractor_review.json').read_text())
+          assert x['generations']==3
+          assert x['scored_review']>0
+          assert x['recommendation_authority'].startswith('adviser-only')
+          assert all('oblique' in z['views'] and 'top' in z['views'] for z in x['ranked_advisory_survivors'])
+          assert not x['governance'].startswith('inherit historical')
+          print('New ancestry, reviewed:',x['scored_review'],'preferred:',x['recommendation'])
+          PY
+      - name: Commit lightweight lineage handback to its own branch
+        run: |
+          mkdir -p examples/necrospire/lineages/four_attractor_fresh
+          cp out/necrospire_four_attractor_fresh/four_attractor_review.json examples/necrospire/lineages/four_attractor_fresh/review.json
+          cp out/necrospire_four_attractor_fresh/inputs/manifest.json examples/necrospire/lineages/four_attractor_fresh/attractors.json
+          cp out/necrospire_four_attractor_fresh/experiment_zero_review/contact_sheet.png examples/necrospire/lineages/four_attractor_fresh/contact_sheet.png
+          cat > examples/necrospire/lineages/four_attractor_fresh/README.md <<'EOF'
+          # Four-Attractor Necrospire · Fresh Lineage
+
+          Grown afresh from original oblique RGBA, archived oblique L8 alpha,
+          locally authored Ur ziggurat proxy and locally authored brutalist modularity rules.
+          No historic pilot seed, genotype, score, or ancestry entered this run.
+          Reference camera and oblique alpha remain provisional artwork evidence.
+          Geometry passes independent CAD/void, polygon and socket gates.
+
+          The stored JSON records source SHA, three-generation policy and an
+          **advisory-only** preference among independently regrown multiview
+          finalists. It does not claim Operator approval or promotion.
+          Full epoch journals, lineage archives, STEP and mesh witnesses belong
+          in the attached GitHub Actions archive, not this lightweight handback.
+          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add examples/necrospire/lineages/four_attractor_fresh/
+          git commit -m "experiment(necrospire): preserve fresh four-attractor lineage review"
+          git push origin HEAD:feature/necrospire-four-attractor-20261025
+      - name: Package complete native lineage and source contracts
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile,ZIP_DEFLATED
+          root=Path('out/necrospire_four_attractor_fresh')
+          if root.exists():
+              with ZipFile('four-attractor-lineage.zip','w',ZIP_DEFLATED,compresslevel=6) as z:
+                  for file in sorted(root.rglob('*')):
+                      if file.is_file(): z.write(file,file.relative_to(root.parent))
+          PY
+          if test -f four-attractor-lineage.zip; then sha256sum four-attractor-lineage.zip > four-attractor-lineage.sha256; fi
+      - name: Upload entire experiment with native receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: necrospire-four-attractor-fresh-lineage
+          path: |
+            tools/projection-loom/four-attractor-lineage.zip
+            tools/projection-loom/four-attractor-lineage.sha256
+            tools/projection-loom/out-four-attractor-seed.json
+            tools/projection-loom/out-four-attractor-run.json
+            tools/projection-loom/out-four-attractor-review.json
+          if-no-files-found: warn
+          retention-days: 90

@@ -21,30 +21,30 @@ Art Sigils articulate pictorial intentions across paintings, drawings, abstract 
 
 The specification governs artistic meaning, not the producer's internal generation algorithm. It neither promises a particular model's fidelity nor promotes rendered results into source canon. Articulation need not exhaust possibility: the maker may state a choice, delegate it, withhold it, or leave it silent.
 
-The Two Inks distinguish reusable red procedure definitions from subject-specific black invocations. Their different offices contribute to one artistic reading. Lares house sigils (<<~ name ...>>) and native TW5 calls (<<name ...>>) follow different conventions. The Inscription carries an invocation without a procedure definition. A receiving AI may interpret its structured language directly; native TW5 transclusion draws its definition from the Procedures meme.
+The Two Inks distinguish reusable red procedure definitions from subject-specific black invocations. Art Sigils now inhabits the Lares sharktooth namespace: `<<~ art ...>>`, with optional `<<~ art-study ...>>`, `<<~ art-counterpoint ...>>`, and `<<~ art-facture ...>>`. Bare `<<art ...>>` belongs to inherited TW5 macro syntax, not the house art sigil.
 <<~/ahu>>
 
 <<~ ahu #/syntax>>
-!! Native TW5 Grammar — declaration / invocation
+!! Lares sharktooth grammar — declaration / invocation
 
-Art Sigils use **two distinct, native TiddlyWiki5 5.4.0+ forms**, not one universal quotation style:
+Art Sigils uses the Lararium's memetic-wikitext `<<~ ...>>` dispatch atop TW5, while keeping two different syntactic roles for declarations and invocations:
 
-* **Procedure declarations** use `:` followed by **double-quoted default values**, e.g. `\procedure art(worktype:"artwork" treatment:"suit the read" ...)`. Omit defaults for `subject` and `read` unless an artwork's use calls for deliberate silence. The two quotation marks belong to the declaration grammar.
-* **Procedure invocations** use `=` followed by **backtick-wrapped parameter values**, e.g. `<<art subject=` followed by a backtick-wrapped `an artist's "impossible" passage` and the closing `>>`. This supports natural apostrophes or embedded double quotes without quoting the whole value as a directive to print text.
-* The canonical `art()` declaration and optional Folio definitions live in [[Art Sigils Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]]. Inscription and Folio artifacts contain **invocations only**, with an external reference to the Procedures meme. Native TW5 execution requires those definitions in scope; direct model interpretation may work without them.
-* **Terminology boundary:** **Art Sigils** names the art-direction practice, documents and ontology; the native procedure bears the name `art`. Neither name requires glyphs, magical symbols or printed labels in the depicted work.
-* **Scope of rule:** `art`, `art-study`, `art-counterpoint` and `art-facture` invocations use backtick-wrapped `name=` values; their declared defaults use colon plus double quotes. Lares house sigils follow separate house syntax.
-* **Delegation:** TW5 substitutes a declared default literally when the call omits the named value. The receiving artist or AI interprets that phrase in context. Silence, delegation and explicit withholding remain distinct artistic states.
-* **Rendered reading:** the native single-line procedure body concatenates phrases in declared order. A companion literal-rendering reference records expected parameter substitution, defaults and punctuation; written reference text alone does not attest live TW5 execution.
-* **Dynamic substitution caveat:** backtick values in TW5 may support internal variable substitution. Portable literal Inscription values should avoid unintentional interpolation markers. Optional dynamic Folios should declare their source context.
+* **Procedure declarations** retain TW5's `:` and double-quoted defaults, e.g. `\procedure ~art(worktype:"artwork" treatment:"suit the read" ...)`. The Lares procedure name carries the `~` marker; `subject` and `read` remain default-free in the canonical definition.
+* **Procedure invocations** use the house form `<<~ art subject="an artist's passage" read="the unseen seems near">>`, with `=` and TW5 quoted literal values. Use `[[...]]` or another supported literal delimiter for embedded double quotes. Backtick-delimited alpha arguments no longer serve as the house examples.
+* The canonical `~art` declaration and optional Folio definitions live in [[Art Sigils Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]]. Inscription and Folio carry **sharktooth invocations only**, referencing that meme outside their image-facing blocks. A Lares-enabled wiki must bind the house sigils to render them; an image receiver may instead interpret the text directly.
+* **Terminology boundary:** **Art Sigils** names the art-direction practice, documents and ontology; the house sigil bears the name `art`, invoked as `<<~ art ...>>`. Neither name requires glyphs, magical symbols or labels in the depicted work.
+* **Scope of rule:** `<<~ art ...>>`, `<<~ art-study ...>>`, `<<~ art-counterpoint ...>>` and `<<~ art-facture ...>>` use quoted `name="value"` parameters, with colon plus double quotes reserved for declared defaults. All four follow the house `<<~ ...>>` convention.
+* **Delegation:** When a procedure resolves in a Lares-enabled wiki, omitted values inherit literal declaration defaults. The receiving artist or AI then interprets those words. Silence, delegation and explicit withholding remain distinct artistic states.
+* **Rendered reading:** The bound `~art` procedure concatenates phrases in declared order. Companion literal-rendering references record expected substitutions, defaults and punctuation; written references alone do not attest execution in a live Lararium runtime.
+* **Dynamic substitution caveat:** Portable Inscription values use literal quoted parameters. A receiving TW5 or Lares environment may offer contextual substitutions, but source-dependent expressions should declare their context and stay outside the simple portable examples.
 * **Character budgeting:** the 1,024-character portability target covers the **Inscription invocation only**. The Folio uses a practical **6,000-character ceiling**, counting its entire copyable block including line breaks. Procedure definitions, meme wrappers and external research registers stay outside both forms. These targets express portability conventions, not guaranteed receiver limits.
-* **Text versus subject:** artist names, reference URIs and source photos can guide pictorial decisions without entering the image. Embedded quote characters may remain in the transcluded text; backtick delimiters alone do not prevent visual models from drawing unwanted captions.
+* **Text versus subject:** Artist names, reference URIs and source photos can guide pictorial decisions without entering the image. Quoted parameter values can survive into interpreted prose; quotation delimiters do not prevent visual models from drawing unintended captions.
 * **Prompt-bearing vocabulary:** treat every word in an image-facing value as a potential visual cue. Name the intended worktype directly, e.g. `messy concept-art board` when uneven pinned studies matter; keep `Folio` as a documentation form outside the copyable calls. Remove workflow and editorial terms such as `folio`, `source photos`, `artist credits`, `metadata`, `studio` and negative checklists from values unless the picture itself calls for them. Prefer short positive depiction boundaries (`board fills frame; figures inside studies`) over long exclusions. Artist references, media, supporting studies and consequential relations stay when they shape visible art. The grammar itself remains medium-neutral.
 
 Image-facing Inscription pattern (the reusable definition resides in the Procedures meme):
 
 ```tiddlywiki
-<<art subject=`a distant coast` read=`the unseen seems near`>>
+<<~ art subject="a distant coast" read="the unseen seems near">>
 ```
 
 A Folio presents one contiguous, copyable `tiddlywiki` block of at most **6,000 characters**. Its first `art()` invocation articulates the whole artwork; optional `art-study`, `art-counterpoint` and `art-facture` invocations develop visual studies, materials, uncertainties and pictorial relationships. **No URI, URL, webpage address or procedure declaration enters the block.** Source-aware AIs can read the adjacent research ahus alongside the sigils. Artistic findings from those sources belong in named parameters; raw addresses remain outside. Midjourney may rephrase long prompts; the compact Inscription offers a shorter form.
@@ -65,11 +65,19 @@ A Folio presents one contiguous, copyable `tiddlywiki` block of at most **6,000 
 The nucleus reads in this order: worktype / subject / read / imagery / treatment / composition / relation / depiction-scope. This order gives neither an object inventory nor a mandatory checklist: read carries the governing invitation, while other declared choices retain their own authority.
 <<~/ahu>>
 
+<<~ ahu #/technical-art-boundary>>
+!! Optional technical-art receiver register
+
+For isolated image-generation assets (true-alpha RGBA creature silhouettes, atmospheric FX, small patches and layered composition), consult [[Technical-Art Plate Fieldcraft|ha.ka.ba/lares/api/art-sigils/technical-art]]. It records practical controls, failure modes, alpha/mask behavior, region-targeting limits and approval discipline from an iterative OpenRaster crucible. This specialist practice lives OUTSIDE the portable eight-dimension nucleus: neither transparencies, specific image models, ORA nor a prescribed production pipeline become defaults for ordinary paintings, photographs, textiles or other works.
+
+The compact image-facing sigil describes the requested picture, not an illustrated acceptance-test poster. Engine-side transparent-background flags, reference selection, measured pixel masks and raster registration are recorded separately; words like "exactly at x=..." guide a receiver but cannot guarantee hard positional compliance. An artistic departure may still be excellent art while failing an explicitly isolated layer scope.
+<<~/ahu>>
+
 <<~ ahu #/optional>>
 !! Yin — speech, delegation, silence, withholding
 
 * ''Specified'': the operator authors a concrete choice. Explicit subject, read, relation and scope claims govern interpretation within their declared boundaries.
-* ''Delegated'': a TW5 default value such as "serve the read" supplies actual words, inviting the receiving model or collaborator to judge in context. TW5 substitutes text; it does not independently calculate the artistic decision.
+* ''Delegated'': a declared default such as "serve the read" supplies literal words, inviting a receiving model or collaborator to judge in context. Substitution alone never makes the artistic decision.
 * ''Silent'': an omitted dimension with an empty/default-free value makes no positive artistic claim. Do not fill a deliberate silence with a mandatory universal convention.
 * ''Withheld'': an explicit artistic choice reserves ambiguity, open form, empty space, unresolved identity or unseen evidence. Unlike silence, withholding expresses a positive intention.
 
@@ -141,7 +149,7 @@ For a specialized spatial, environmental or cartographic work, consult the optio
 <<~ ahu #/integrities>>
 !! Pattern integrities across worktypes
 
-# ''One art language, multiple expressions.'' Direct native TW5 sigil, its transcluded prose reading, and a richer Folio preserve a recognizable artistic intention; none commands a single AI engine.
+# ''One art language, multiple expressions.'' A Lares sharktooth Inscription, its interpreted prose reading, and an expanded Folio preserve a recognizable artistic intention; none commands a single AI engine.
 # ''Inscription carries one art call.'' A single invocation carries the artistic nucleus within a practical 1,024-character target, without importing the procedure declaration into the image-facing prompt. Procedure Grammar retains the formal executable definitions.
 # ''Folio carries the complete expanded work.'' One uninterrupted block of invocations expresses the whole artistic direction, including scoped studies, material behaviors and counterpoints, under a practical 6,000-character ceiling. Source URIs live in accompanying research ahus, never in the copyable block. The adjacent research supplies provenance without replacing the artistic instruction.
 # ''Depicted does not imply addressed.'' Audience, source photographer and studio maker stay outside the represented scene unless the work deliberately depicts them.
@@ -157,16 +165,16 @@ For a specialized spatial, environmental or cartographic work, consult the optio
 <<~ ahu #/interop>>
 !! Expression, execution, and reception
 
-Art Sigils distinguishes the **author's written intention**, its **literal TW5 rendering**, and any receiving artist or model's **visible interpretation**.
+Art Sigils distinguishes the **author's written intention**, its **literal Lares/TW5 rendering**, and any receiving artist or model's **visible interpretation**.
 
-* **Inscription:** one `<<art ...>>` invocation carries a portable minimal invitation. Its 1,024-character target describes the invocation alone, not a receiving engine's documented hard limit. TW5 delegation defaults come from the independently available canonical procedure; a model without that declaration may interpret explicit parameter values directly.
-* **Literal reading:** native TW5 transclusion substitutes declared parameters and defaults into the procedure's prose. It transforms syntax, not artistic judgment. An image-generating model may interpret the transmitted wikitext without executing TW5.
+* **Inscription:** one `<<~ art ...>>` invocation carries a portable minimal invitation. Its 1,024-character target describes the invocation alone, not a receiver's hard limit. Delegation defaults come from the canonical `~art` definition in a configured Lares environment; a model without that definition may still interpret explicit values directly.
+* **Literal reading:** The Lares-enabled renderer substitutes declared parameters and defaults into the procedure's prose. It transforms syntax, not artistic judgment. A model may interpret the sharktooth invocation without executing TW5 or the Lares plugin.
 * **Folio:** one copyable block of extended art sigils unfolds the eight-dimensional nucleus with specialized lexicons, studies, counterpoints and facture. The source-bearing research register sits outside that block: no address strings enter the image-facing sigils. A capable receiver may consume research ahus alongside the copied Folio; its parameter values convey relevant visual findings instead of raw URLs.
 * **Receiver-dependent conditions:** aspect ratio, random seed, model identity, stylistic controls, attached images and other tool settings sit outside the portable semantic fields unless the work explicitly concerns such settings.
 * **Interpretive variance:** different recipients may privilege different associations of the same words or artist reference. Neither exact repetition nor identical reception follows from an apparently equivalent source.
 * **Critical return:** compare a rendered work with its articulated read, composition, relations, material boundaries and scope. Treat visibly attractive divergences as optional discoveries, not automatic upgrades to the source.
 
-Formal Analysis carries the observational and comparative method; the Procedures meme carries executable TW5 declarations. Both operate through the eight-dimensional semantic contract described here.
+Formal Analysis carries the observational and comparative method; the Procedures meme carries the `~art` declaration and house extensions. Both operate through the eight-dimensional semantic contract described here.
 <<~/ahu>>
 
 
@@ -223,6 +231,6 @@ The grammar accommodates portraits, abstract fields, textiles, photographs, inst
 <<~/ahu>>
 
 
-<<^ code="&#x0003;">>ni:///sha-256;cYNfwvUdP0VwdOyfPHbAW1GoyvVZBHLKz-Dcr8vpkxA
+<<^ code="&#x0003;">>ni:///sha-256;fL-yZJ-_Vc-BRqwP7vGFWUkKM4tqz6kS2ZHl2Ok2cu0
 
 <<^ code="&#x0004;" -> to="?">>

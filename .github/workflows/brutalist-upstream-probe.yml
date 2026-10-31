@@ -1,0 +1,33 @@
+name: Research upstream CC0 brutalist grammar
+
+on:
+  push:
+    branches: [feature/necrospire-four-attractor-20261025]
+    paths: ['.github/workflows/brutalist-upstream-probe.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Fetch exact CC0 upstream OpenSCAD package
+        run: |
+          curl -fLsS --retry 3 --max-time 90 'https://opengameart.org/sites/default/files/brutalism2.zip' -o brutalism2.zip
+          sha256sum brutalism2.zip
+          unzip -l brutalism2.zip | head -90
+          python - <<'PY'
+          import zipfile
+          z=zipfile.ZipFile('brutalism2.zip')
+          for name in z.namelist():
+              if name.lower().endswith('.scad') and not name.startswith('__MACOSX'):
+                  data=z.read(name).decode('utf-8','replace')
+                  print('SCAD',repr(name),'bytes',len(data),'PREVIEW',repr(data[:750]))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nosycat-brutalism2-cc0-original
+          path: brutalism2.zip
+          retention-days: 90

@@ -1,0 +1,224 @@
+"""Independent semantic identity, causal-frontier and refusal witnesses."""
+import json
+import pytest
+from projection_loom.relational_ground import RelationalGround, IDENTITY
+
+
+def op(action, target, frontier=(), **kw):
+    return {"kind": action, "target": target, "frontier": list(frontier),
+            "actor": "operator", "payload": kw}
+
+
+def added(ground, action):
+    revised, receipt = ground.apply(action)
+    assert receipt["outcome"] == "accepted"
+    assert len(revised.events) == len(ground.events) + 1
+    return revised
+
+
+def test_stable_id_reparent_transform_and_representation_rename(tmp_path):
+    g = RelationalGround("independent-village")
+    for entity in ("old", "new", "terrace", "stair"):
+        g = added(g, op("create", entity, g.frontier, kind="construct"))
+    g = added(g, op("attach", "terrace", g.frontier, parent="old"))
+    g = added(g, op("attach", "stair", g.frontier, parent="terrace"))
+    g = added(g, op("reparent", "terrace", g.frontier,
+                    old_parent="old", new_parent="new"))
+    state = g.snapshot()
+    assert "terrace" in state["entities"]
+    assert {"parent": "new", "child": "terrace", "verb": "supports",
+            "required": True} in state["relations"]
+    assert state["entities"]["stair"]["invalidated"]
+    before_revision = state["entities"]["terrace"]["revision"]
+    g = added(g, op("bind-representation", "terrace", g.frontier,
+                    path="/Village/ChangingPrimPath"))
+    assert g.snapshot()["entities"]["terrace"]["revision"] == before_revision
+    matrix = list(IDENTITY)
+    matrix[3] = 7
+    g = added(g, op("transform", "terrace", g.frontier,
+                    matrix=matrix, frame="local3d"))
+    state = g.snapshot()
+    assert state["entities"]["terrace"]["id"] == "terrace"
+    assert state["entities"]["terrace"]["revision"] != before_revision
+    assert state["entities"]["stair"]["invalidated"]
+    path = tmp_path / "ground.json"
+    g.save(path)
+    assert RelationalGround.load(path).to_dict() == g.to_dict()
+    assert RelationalGround.load(path).as_prov()["activities"]
+
+
+def test_support_refusal_and_intentional_invalidation():
+    g = RelationalGround("garden")
+    for entity in ("root", "child"):
+        g = added(g, op("create", entity, g.frontier, kind="construct"))
+    g = added(g, op("attach", "child", g.frontier, parent="root"))
+    with pytest.raises(ValueError, match="strand"):
+        g.apply(op("remove", "root", g.frontier))
+    with pytest.raises(ValueError, match="explicit invalidation"):
+        g.apply(op("detach", "child", g.frontier, parent="root"))
+    g = added(g, op("detach", "child", g.frontier,
+                    parent="root", invalidate=True))
+    assert g.snapshot()["entities"]["child"]["invalidated"]
+    g = added(g, op("remove", "root", g.frontier))
+    assert "root" not in g.snapshot()["entities"]
+
+
+def test_concurrent_independent_edits_reconcile_without_global_clock():
+    g = RelationalGround("bridge")
+    for entity in ("a", "b"):
+        g = added(g, op("create", entity, g.frontier, kind="construct"))
+    frontier = g.frontier
+    a = added(g, op("annotate", "a", frontier, note="retain stone"))
+    b = added(a, op("annotate", "b", frontier, note="add railing"))
+    assert len(b.frontier) == 2  # incomparable sibling events
+    assert len(b.snapshot()["entities"]["a"]["annotations"]) == 1
+    assert len(b.snapshot()["entities"]["b"]["annotations"]) == 1
+    with pytest.raises(ValueError, match="Conflicting concurrent"):
+        b.apply(op("annotate", "a", frontier, note="conflicting annotation"))
+    with pytest.raises(ValueError, match="Unknown observed"):
+        b.apply(op("annotate", "a", ["0" * 64], note="invented frontier"))
+
+
+def test_atomic_refusals_cyclic_and_forged_causality():
+    g = RelationalGround("waterfront")
+    for entity in ("x", "y"):
+        g = added(g, op("create", entity, g.frontier, kind="construct"))
+    g = added(g, op("attach", "y", g.frontier, parent="x"))
+    old = g.to_dict()
+    with pytest.raises(ValueError, match="cycle"):
+        g.apply(op("attach", "x", g.frontier, parent="y"))
+    assert g.to_dict() == old
+    forged = json.loads(json.dumps(old))
+    forged["events"][next(iter(forged["events"]))]["operation"]["target"] = "forged"
+    with pytest.raises(ValueError, match="digest"):
+        RelationalGround.from_dict(forged)
+    with pytest.raises(ValueError, match="finite"):
+        g.apply(op("transform", "x", g.frontier,
+                   matrix=[float("nan")] * 16, frame="local3d"))
+
+
+def test_identity_is_not_content_hash_and_source_is_not_a_geometry_claim():
+    g = RelationalGround("witness")
+    g = added(g, op("create", "a", g.frontier, kind="construct", attributes={"mass": 2}))
+    g = added(g, op("create", "b", g.frontier, kind="construct", attributes={"mass": 2}))
+    s = g.snapshot()["entities"]
+    assert s["a"]["revision"] == s["b"]["revision"]
+    assert s["a"]["id"] != s["b"]["id"]
+    with pytest.raises(ValueError, match="requires source testimony"):
+        g.apply(op("create", "fake-source", g.frontier,
+                   kind="source", authority="source"))
+    with pytest.raises(ValueError, match="Cannot rewrite source"):
+        source = added(g, op("create", "source", g.frontier, kind="source",
+                             authority="source", source_ids=["photo:1"]))
+        source.apply(op("transform", "source", source.frontier,
+                        matrix=list(IDENTITY), frame="local3d"))
+
+
+def test_cli_roundtrip(tmp_path):
+    from projection_loom.cli import main
+    out = tmp_path / "location.json"
+    main(["ground-init", "--location", "cli-village", "--out", str(out)])
+    operation = tmp_path / "edit.json"
+    operation.write_text(json.dumps(op("create", "foundation",
+                                      [], kind="construct")))
+    second = tmp_path / "updated.json"
+    main(["ground-apply", "--ground", str(out), "--edit", str(operation),
+          "--out", str(second)])
+    assert "foundation" in RelationalGround.load(second).snapshot()["entities"]
+
+
+def test_exact_causal_retry_is_idempotent_even_after_later_compatible_history():
+    g = RelationalGround("retry-safe")
+    create_a = op("create", "a", (), kind="construct")
+    g = added(g, create_a)
+    create_b = op("create", "b", g.frontier, kind="construct")
+    g = added(g, create_b)
+    action = op("annotate", "a", g.frontier, note="operator note")
+    after = added(g, action)
+    # An unrelated sibling operation may arrive after the original edit.
+    after = added(after, op("annotate", "b", g.frontier, note="concurrent note"))
+    unchanged, receipt = after.apply(action)
+    assert receipt["outcome"] == "already-recorded"
+    assert unchanged.to_dict() == after.to_dict()
+    assert len(unchanged.snapshot()["entities"]["a"]["annotations"]) == 1
+
+
+def test_relocated_body_itself_needs_reaudit():
+    g = RelationalGround("structure")
+    g = added(g, op("create", "root", (), kind="construct"))
+    g = added(g, op("create", "child", g.frontier, kind="construct"))
+    g = added(g, op("attach", "child", g.frontier, parent="root"))
+    moved = list(IDENTITY)
+    moved[3] = 10
+    g = added(g, op("transform", "root", g.frontier,
+                    matrix=moved, frame="local3d"))
+    assert g.snapshot()["entities"]["root"]["invalidated"]
+    assert g.snapshot()["entities"]["child"]["invalidated"]
+
+
+def test_new_support_conflicts_with_unseen_descendant_edit():
+    g = RelationalGround("bridge-dependents")
+    for entity in ("a", "b", "leaf"):
+        g = added(g, op("create", entity, g.frontier, kind="construct"))
+    g = added(g, op("attach", "leaf", g.frontier, parent="b"))
+    start = g.frontier
+    annotated = added(g, op("annotate", "leaf", start, note="work began"))
+    with pytest.raises(ValueError, match="Conflicting concurrent"):
+        annotated.apply(op("attach", "b", start, parent="a"))
+
+
+def test_replay_rejects_parent_and_operation_frontier_disagreement():
+    from projection_loom.provenance_encoding import canonical_json_sha256
+    g = RelationalGround("replay")
+    g = added(g, op("create", "a", (), kind="construct"))
+    g = added(g, op("create", "b", g.frontier, kind="construct"))
+    events = json.loads(json.dumps(g.events))
+    last = next(k for k, v in events.items() if v["operation"]["target"] == "b")
+    changed = events.pop(last)
+    changed["parents"] = []
+    forged_id = canonical_json_sha256(
+        {"parents": changed["parents"], "operation": changed["operation"]})
+    events[forged_id] = changed
+    with pytest.raises(ValueError, match="Causal parent frontier"):
+        RelationalGround("replay", events=events)
+
+
+
+def test_rehydration_rejects_forged_merge_of_two_conflicting_causal_islands():
+    g = RelationalGround("merge-test")
+    g = added(g, op("create", "same", (), kind="construct"))
+    left = added(g, op("annotate", "same", g.frontier, note="left"))
+    right = added(g, op("annotate", "same", g.frontier, note="right"))
+    merged = {**left.events, **right.events}
+    with pytest.raises(ValueError, match="Conflicting concurrent edit in replayed"):
+        RelationalGround("merge-test", events=merged)
+    # Distinct branches remain admissible when they address distinct entities.
+    g = added(g, op("create", "other", g.frontier, kind="construct"))
+    a = added(g, op("annotate", "same", g.frontier, note="left"))
+    b = added(g, op("annotate", "other", g.frontier, note="right"))
+    assert len(RelationalGround("merge-test", events={
+        **a.events, **b.events}).frontier) == 2
+
+
+def test_causal_batch_replays_all_or_none_and_detects_forged_middle_edit():
+    from copy import deepcopy
+    ground = RelationalGround("batch-replay")
+    for name in ("north", "south"):
+        ground = added(ground, op("create", name, ground.frontier, kind="construct"))
+    actions = [{"kind": "annotate", "target": name, "actor": "operator",
+                "payload": {"note": "one group"}} for name in ("north", "south")]
+    changed, batch = ground.apply_batch(actions, observed_frontier=list(ground.frontier))
+    assert ground.verify_batch(batch).to_dict() == changed.to_dict()
+    assert len(changed.frontier) == 1
+    assert len(ground.frontier) == 1
+    tampered = deepcopy(batch)
+    tampered["operations"][1]["payload"]["note"] = "forged"
+    with pytest.raises(ValueError, match="digest changed"):
+        ground.verify_batch(tampered)
+    with pytest.raises(ValueError, match="exact current causal frontier"):
+        ground.apply_batch(actions, observed_frontier=[])
+    with pytest.raises(ValueError, match="exact typed fields"):
+        ground.apply_batch([{"kind": "annotate", "target": "north",
+                            "actor": "operator", "payload": {"note": "hi"},
+                            "frontier": list(ground.frontier)}],
+                           observed_frontier=list(ground.frontier))

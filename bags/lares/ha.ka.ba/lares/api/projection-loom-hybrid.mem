@@ -1,0 +1,88 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom-hybrid">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-hybrid.mem"
+l-space   = "stable"
+namespace = "&#x0950; &#x0901;"
+role      = "mixed CAD, polygon, implicit and witness geometry held by named relations"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/projection-loom-hybrid"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/projection-loom-hybrid"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/entry>>
+! Geometry speaks in several tongues
+
+A pet-named location holds an ecology of anonymous entities and independently
+validated representations. CAD rules testify to measurable material joins,
+polygon surfaces give sculptural form, heightfields and point sets give measured
+evidence, and signed distance fields MAY propose caves, fractures and erosion.
+No representation's capabilities automatically transfer to another kernel.
+
+<<~/ahu>>
+
+<<~ ahu #/invariants>>
+!! Identity, relation, and kernel authority
+
+* ''Identity enacts Relation.'' Bind each sculptural or physical entity to
+  named anchors, capability descriptors, source receipts, and a location frame.
+  An OpenCascade face number or a polygon vertex number alone never holds a
+  long-lived pet-name.
+* ''Structural truth stays local.'' A certified BRep union belongs to its CAD
+  body. A watertight polymesh with positive volume earns a render/surface
+  claim, not an exact STEP certificate. A measured point cloud carries testimony,
+  not a generator of hidden chambers.
+* ''Attachment makes a testable promise.'' The CAD cage and mesh share
+  position through explicit vertices and CAD shape anchors, with recorded
+  distances and tolerance. Contact-proximity does not prove strength or
+  mechanical fusion.
+* ''Composition does not coerce union.'' A combined render MAY include CAD,
+  polymesh, SDF and observed sources, but it MUST name the producer and audit
+  for each. Only a tested and explicit conversion/Boolean may upgrade authority.
+* ''The grammar may surprise us.'' An unnamed polygon branch MAY deform
+  beyond the initial BRep's appearance, yet must not destroy the unchanged
+  structural cage without renewed validation. Pet-naming and o-takiage remain
+  soft generational relationships, not topological traps.
+* ''Every method retains provenance.'' A triangulated witness, an authored
+  OpenSCAD grammar, or a surveyed DEM each retains its own source digest,
+  units, transform, license and uncertainty. Neither CGI nor synthetic source
+  alignment confers independent real-world registration.
+
+<<~/ahu>>
+
+<<~ ahu #/implementation>>
+!! Executable and prospective capability stacks
+
+`tools/projection-loom/projection_loom/hybrid.py` composes a validated CAD
+assembly, polygon layers and explicit anchors. `examples/necrospire/hybrid/`
+keeps a procedural faceted crystal distinct from the castle's BRep STEP.
+The two-epoch benchmark deliberately records whether the added polygon layer
+helps or hurts source agreement. OpenVDB/SDF backends, automatic BRep conversion
+and native OpenUSD stage export remain prospective, not implemented claims.
+
+<<~/ahu>>
+
+<<~ ahu #/evergreen-capability-composition>>
+
+!! CAD-derived mesh recipes enter the active OODA-HA helm
+
+The crystal mesh now grows from its validated CAD seed. A versioned recipe holds CAD/mesh loci, optional Joining skin, protected semantic socket and original source digest. Each capability executes in a child OODA-HA loop within the same Candidate Act and returns only its own scoped geometric authority. The old two-epoch hybrid script serves as historical comparison, never as a competing scheduler.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-capability-composition">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-reference-ci">>
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;q1tm-DFnzCdf9KWVJJfhYOnw2Ps9KucjyzVvNy0muvk
+
+<<^ code="&#x0004;" -> to="?">>

@@ -1,0 +1,17 @@
+........................................................................ [ 27%]
+........................................................................ [ 55%]
+........................................................................ [ 83%]
+..........................................                               [100%]
+=============================== warnings summary ===============================
+tests/test_survey_adapters.py::test_real_dem_metadata_mask_and_sample
+tests/test_survey_adapters.py::test_dem_digest_and_crs_do_not_silently_shift
+tests/test_survey_adapters.py::test_dem_rejects_datum_conflict_and_unscaled_frame
+tests/test_survey_adapters.py::test_known_horizontal_crs_transform_round_trip
+tests/test_survey_adapters.py::test_rigid_registration_known_answer_and_heldouts
+tests/test_survey_adapters.py::test_registration_wrong_pose_and_unverified
+tests/test_survey_adapters.py::test_unknown_height_datum_preserves_native_pixels
+  /opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/rasterio/transform.py:178: PendingDeprecationWarning: Use `@` matmul instead of `*` mul operator for matrix multiplication
+    return Affine.translation(west, north) * Affine.scale(xsize, -ysize)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+258 passed, 7 warnings in 48.34s

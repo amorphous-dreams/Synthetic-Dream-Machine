@@ -1,0 +1,49 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom-witness">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-witness.mem"
+namespace = "&#x0950; &#x0901;"
+title = "lar:///ha.ka.ba/lares/api/projection-loom-witness"
+uri-path = "ha.ka.ba/lares/api/projection-loom-witness"
+type = "text/memetic-wikitext+tiddlywiki"
+role = "source and registration witness law"
+tags = ["api/pono/meme", "projection-loom", "evidence"]
+```
+
+<<~ ahu #/entry>>
+
+! Each Evidence Source Testifies Within Its Frame
+
+The Loom carries source bytes by SHA-256, records native coordinates, and keeps
+`source` / `inferred` / `proposed` as distinct epistemic states. A raster with
+nodata cannot testify about its blank cells. A local model-unit coordinate
+cannot testify about meters. Two pixels, no matter their resemblance, do not
+alone measure the hidden side of a fortress.
+
+<<~/ahu>>
+
+<<~ ahu #/rules>>
+
+!! Registration and Measurement
+
+* ''Native data first.'' Read raster transforms, masks, and coordinate frames from actual bytes before comparing their claims.
+* ''Survey anchors testify.'' A control fit enters verified state only after a digest-checked source supplies training and independent held-out pairs, with residuals below an explicit tolerance. Even that result certifies only its declared transformation, not another camera.
+* ''Guard height datum.'' A horizontal CRS transform cannot quietly convert vertical datums. Unknown datum carries unknown authority.
+* ''Null gives information.'' Empty masks, symmetric calibration objects, unobserved features, and missing witnesses mark ambiguity, not success.
+* ''Keep errors distinct.'' A wrong fit, corrupted source, and failed CAD body require different rejection receipts.
+
+<<~/ahu>>
+
+<<~ ahu #/links>>
+
+`tools/projection-loom/docs/research/measurement-contract.md` carries executable boundaries and tests. Full research genealogy lives in `docs/research/register.md`.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;sL-xtSgoj57XXwC6JjXsJc-5gyArbnUYQgge4sv6ytM
+
+<<^ code="&#x0004;" -> to="?">>

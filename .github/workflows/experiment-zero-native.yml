@@ -1,0 +1,79 @@
+name: Projection Loom Experiment Zero and fracture-pattern witnesses
+
+on:
+  push:
+    branches:
+      - feature/green-jello-dinosaur-5--projection-loom
+    paths:
+      - '.github/workflows/experiment-zero-native.yml'
+      - 'tools/projection-loom/projection_loom/**'
+      - 'tools/projection-loom/tests/test_exploration.py'
+      - 'tools/projection-loom/tests/test_exploration_admission.py'
+      - 'tools/projection-loom/tests/test_experiment_zero.py'
+      - 'tools/projection-loom/tests/test_fracture_patterns.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: loom-experiment-zero-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  experiment-zero:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - name: Install native geometry and scientific kernels
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+          python -m pip check
+      - name: Compile and test integrated feature contracts
+        run: |
+          python -m compileall -q projection_loom
+          python -m pytest -q tests/test_exploration.py tests/test_exploration_admission.py tests/test_experiment_zero.py tests/test_fracture_patterns.py
+      - name: Reproduce statistical fragment and crack priors
+        run: |
+          python -m projection_loom fracture-pattern --out out/fracture-native             --size 128 192 --cells 36 --dimension 3 --fragments 64 --seed 41             > out-fracture-receipt.json
+      - name: Run native bounded Experiment Zero OODA-HA and regenerate orthographic views
+        run: |
+          python -m projection_loom ooda-ha-run             --project examples/necrospire/project_alpha.json             --capability-recipe examples/necrospire/hybrid/recipe_alpha.json             --out out/experiment-zero-native --control full-speed --breeding             --passes 1 --offspring-per-family 3             --exact-budget 12 --detail-budget 6 --score-size 64 96             --finalists 3 --explore-overscan 2 --explore-depth 2             --explore-review-seats 3             > out-experiment-zero-receipt.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          base=Path('out/experiment-zero-native')
+          session=json.loads((base/'session.json').read_text())
+          assert session['status']=='completed'
+          review=json.loads((base/'experiment_zero_review/review.json').read_text())
+          assert review['reviewed']>0
+          assert all('front' in row['views'] and 'oblique' in row['views'] for row in review['candidates'])
+          assert all('extra_fraction' in row['observation'] for row in review['candidates'])
+          print('Completed bounded review:',review['reviewed'])
+          PY
+      - name: Upload repeatable native and science witnesses
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: projection-loom-experiment-zero-native
+          path: |
+            tools/projection-loom/out-fracture-receipt.json
+            tools/projection-loom/out-experiment-zero-receipt.json
+            tools/projection-loom/out/fracture-native/**
+            tools/projection-loom/out/experiment-zero-native/experiment_zero_review/**
+            tools/projection-loom/out/experiment-zero-native/epoch_*.json
+            tools/projection-loom/out/experiment-zero-native/lineage_archive.json
+          if-no-files-found: warn
+          retention-days: 90

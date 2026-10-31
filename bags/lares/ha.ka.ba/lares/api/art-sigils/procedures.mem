@@ -9,7 +9,7 @@ title     = "lar:///ha.ka.ba/lares/api/art-sigils/procedures"
 file-path = "bags/lares/ha.ka.ba/lares/api/art-sigils/procedures.mem"
 type      = "text/memetic-wikitext+tiddlywiki"
 register  = "Synthesis-Canon"
-role      = "evergreen TW5 art grammar, canonical inscription procedure, optional scoped extensions"
+role      = "Lares sharktooth art grammar, canonical Inscription sigil, optional scoped extensions"
 status    = "stable"
 retain    = true
 ```
@@ -17,23 +17,23 @@ retain    = true
 <<~ ahu #/bearing>>
 ! Art Sigils — Procedure Grammar
 
-The portable Inscription carries **one native named-argument `<<art ...>>` invocation**, without a procedure declaration. This meme holds the canonical definition. TW5 transclusion requires that definition in the receiving wiki's scope; an image model familiar with wikitext may instead interpret the invocation's semantic structure directly. Neither path guarantees identical reception across models.
+The portable Inscription carries **one Lares sharktooth `<<~ art ...>>` invocation**, without a procedure declaration. This meme holds the canonical definition and the three optional extensions. The Lararium memetic-wikitext layer owns `<<~ ...>>` dispatch; the receiving wiki needs the corresponding definitions/bindings in scope. An image model may interpret the invocation directly without executing the wiki. Neither reception path guarantees identical results. The 1,024-character target covers the invocation alone, excluding wrappers, reference registers and Folio.
 
 The art-house lexicons live in the semantic specification and **inside values**, not in one procedure per artistic term. Only independently meaningful structural scopes warrant extended procedures. The 1,024-character target applies to the complete **invocation alone**, excluding the source code fence, meme wrapper, reference register and Folio.
 <<~/ahu>>
 
 <<~ ahu #/inscription>>
-!! Canonical `art()` procedure
+!! Canonical `~art` procedure
 
-The following definition governs Inscription and Folio calls. It stays in this grammar meme rather than in the transmitted artwork. Procedure declarations use colon plus double-quoted defaults (`worktype:"artwork"`); invocations use equals plus backtick-wrapped values (`name=` followed by its tick-delimited contents). The two syntactic roles remain distinct.
+The following definition governs the `<<~ art ...>>` Inscription and Folio calls. It stays in this grammar meme rather than in the transmitted artwork. House procedure declarations retain TW5's colon plus double-quoted defaults (`worktype:"artwork"`); invocations use equals plus quoted values (`subject="..."`). Plain TW5 may parse the sharktooth as a call to `~` without providing its Lares meaning; the memetic-wikitext layer supplies that dispatch.
 
 ```tiddlywiki
-\procedure art(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
+\procedure ~art(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
 ```
 
-* The eight semantic dimensions: worktype, subject, read, imagery, treatment, composition, relation, depiction-scope. Procedure definitions use `name:"default"`; invocations use TW5 v5.4.0+ `name=` followed by a backtick-wrapped value. A supplied invocation value overrides its default; an omitted value inherits it. Keep both syntaxes exact.
+* The eight semantic dimensions: worktype, subject, read, imagery, treatment, composition, relation, depiction-scope. Procedure definitions use `name:"default"`; house calls use `name="literal value"` (or another TW5 quoted literal form when needed). Supplied values override defaults. Preserve the separate syntaxes.
 * `subject` and `read` carry no explicit default; the authoring convention strongly prefers both. Other fields offer neutral or delegating defaults. Blank/silent values remain possible but the compact transclusion may then emit an empty label; do not mistake a blank for a creative instruction.
-* A declaration default such as `composition:"serve the read"` supplies literal words for TW5 to transclude; an AI or human interprets that artistic invitation. Quotes inside a backtick call value survive as characters inside the rendered text; they do not function as parameter delimiters. No assumption of dynamic evaluation or of guaranteed AI understanding follows.
+* A declaration default such as `composition:"serve the read"` supplies literal words for transclusion; a human or model interprets the artistic invitation. A literal value such as `subject="an artist's passage"` preserves its apostrophe; for embedded double quotes use a supported alternative literal delimiter such as `[[...]]`.
 * The declared defaults invite artistic freedom: omitted imagery follows subject and read, treatment suits the read, composition serves the read, relation arises only where meaningful, and scope follows worktype and imagery. Explicit values take precedence.
 * The procedure's subject and read do not prescribe genre, palette, medium, figures or photographic style. Context may deepen the *reading*, never secretly transplant source metadata as image content.
 <<~/ahu>>
@@ -44,9 +44,9 @@ The following definition governs Inscription and Folio calls. It stays in this g
 The eight-dimension `art()` call handles the artistic nucleus. A Folio can speak with ordinary art-house vocabulary in those same parameter values. The following three procedures offer **optional**, named scopes only when a separate investigation, consequential comparison or material condition merits independent expression.
 
 ```tiddlywiki
-\procedure art-study(question form proposal status:"unresolved") Study: <<question>>. Work: <<form>>. Proposal: <<proposal>>. Status: <<status>>.
-\procedure art-counterpoint(first second tension evidence:"visible in the images") Counterpoint: <<first>> meets <<second>>; <<tension>>. Evidence: <<evidence>>.
-\procedure art-facture(scope support medium handling:"let the medium's behavior remain visible") Facture in <<scope>>: <<medium>> on <<support>>; <<handling>>.
+\procedure ~art-study(question form proposal status:"unresolved") Study: <<question>>. Work: <<form>>. Proposal: <<proposal>>. Status: <<status>>.
+\procedure ~art-counterpoint(first second tension evidence:"visible in the images") Counterpoint: <<first>> meets <<second>>; <<tension>>. Evidence: <<evidence>>.
+\procedure ~art-facture(scope support medium handling:"let the medium's behavior remain visible") Facture in <<scope>>: <<medium>> on <<support>>; <<handling>>.
 ```
 
 * **`art-study`:** one interpretable proposal or question explored through a picture, object, variation or experiment. `status` can hold a provisional, rejected, open or settled artistic position without claiming verified fact.
@@ -67,7 +67,7 @@ Let the nucleus name **what artwork the maker proposes**. Elaborate only the dim
 * **Facture** names where the outer work's support, ground and marks act, as distinct from represented flesh, metal, fabric, stone or digital surface.
 * **Nested depiction** separates a physical artwork from the pictures and figures portrayed inside it; address and reference do not automatically count as depicted participants.
 * **Silence and openness** can perform the work that an additional procedure would only explain. Delegated parameters permit informed interpretation without filling every slot.
-* **Engine controls** and attached sources sit outside the art grammar unless the artwork itself expressly concerns them. The native `art()` declaration expresses consistent dimensions across receivers.
+* **Engine controls** and attached sources sit outside the art grammar unless the artwork expressly concerns them. The `~art` procedure articulates consistent dimensions in a Lares-enabled receiver; the invocation alone does not install or register a handler.
 
 The extended procedures provide modular **ways of telling**, not mandatory steps in production, a universal artwork layout, or proof of the artist's intent.
 <<~/ahu>>
@@ -78,43 +78,55 @@ The extended procedures provide modular **ways of telling**, not mandatory steps
 The following example deliberately leaves maps, genre illustration and studio boards aside. One artistic read unifies a two-panel material work and three optional elaborations.
 
 ```tiddlywiki
-<<art worktype=`abstract textile diptych` subject=`two incompatible rhythms` read=`contact without merger` imagery=`a densely stitched field beside a broad painted wash` treatment=`raw flax, indigo pigment and irregular thread` composition=`unequal panels divided by a quiet interval` relation=`loose threads cross the seam yet never join the fields` depiction-scope=`only the textile work; no maker depicted`>>
-<<art-study question=`Can the gap carry visual tension?` form=`two spare panel-spacing trials` proposal=`the smallest interval retains palpable separation` status=`open`>>
-<<art-counterpoint first=`repeated tightly sewn stitches` second=`one diffuse blue pigment wash` tension=`rhythm meets dispersion` evidence=`thread ends cross toward the adjacent field but stop short`>>
-<<art-facture scope=`left panel` support=`coarse undyed flax` medium=`waxed cotton thread and chalk` handling=`uneven needle spacing, exposed knots and worn edges`>>
+<<~ art worktype="abstract textile diptych" subject="two incompatible rhythms" read="contact without merger" imagery="a densely stitched field beside a broad painted wash" treatment="raw flax, indigo pigment and irregular thread" composition="unequal panels divided by a quiet interval" relation="loose threads cross the seam yet never join the fields" depiction-scope="only the textile work; no maker depicted">>
+<<~ art-study question="Can the gap carry visual tension?" form="two spare panel-spacing trials" proposal="the smallest interval retains palpable separation" status="open">>
+<<~ art-counterpoint first="repeated tightly sewn stitches" second="one diffuse blue pigment wash" tension="rhythm meets dispersion" evidence="thread ends cross toward the adjacent field but stop short">>
+<<~ art-facture scope="left panel" support="coarse undyed flax" medium="waxed cotton thread and chalk" handling="uneven needle spacing, exposed knots and worn edges">>
 ```
 
-Copy the relevant native procedure definitions into a live TW5 context before transcluding these calls. `<<~ name ...>>` denotes a Lares house sigil, not a substitute for a native `<<name ...>>` call. This example demonstrates expressive portability without imposing requirements on other artworks.
+Load/bind the house procedure definitions in a Lares-enabled wiki before rendering these calls. Plain TW5 inherits the syntax but not the Lararium dispatch. This example demonstrates expressive portability without imposing requirements on other artworks.
+<<~/ahu>>
+
+<<~ ahu #/technical-art-example>>
+!! Optional technical-art Inscription — specialist example
+
+The same eight fields can articulate a genuinely isolated, transparent FX plate without inventing an additional procedure. A single image-facing call names the intended VISUAL result; actual generation flags, reference inputs, exact dimensions and alpha verification belong to the receiver/compositing notes described in [[Technical-Art Plate Fieldcraft|ha.ka.ba/lares/api/art-sigils/technical-art]].
+
+```tiddlywiki
+<<~ art worktype="transparent RGBA technical-art FX plate" subject="several detached luminous vapor wisps" read="scattered breaths of gentle light in open space" imagery="six small pale-violet mist curls, sparse gold and turquoise pinlights, a few hair-fine streamers" treatment="feathered watercolor translucency, restrained local bloom" composition="wide shallow strip, asymmetric separate islands, most canvas clear alpha; a few trails bleed at edges" relation="wind right-to-left and slightly down, warm sun rim from upper-right, cool opposite fill" depiction-scope="FX marks only, no bodies, scenery, panels or captions">>
+```
+
+A second distinct plate for organism bodies would have its own call and independent generated output; it is not a request for a two-panel sheet. A tool's actual transparent-background flag is external receiver control, not a ninth Art Sigil argument. The example sets no universal palette, anatomy or fixed plate dimensions.
 <<~/ahu>>
 
 <<~ ahu #/notation-contract>>
 !! Procedure declaration, invocation and delegation
 
 * Canonical declarations use colon plus double-quoted defaults, e.g. `worktype:"artwork"` and `treatment:"suit the read"`.
-* Native TW5 v5.4.0+ calls use equals plus backtick-wrapped values for the `art()` nucleus and all optional procedures.
-* Apostrophes or double quotes *inside* a backtick value remain literal source characters. They can enter the transcluded prose and may also influence an image receiver's text-rendering conventions.
+* Lares sharktooth calls use equals plus quoted `name="value"` parameters for the `~art` nucleus and all optional procedures. The host's TW5 parameter grammar supplies the literal value forms; use `[[...]]` or single quotes when an embedded double quote requires a different delimiter.
+* Apostrophes within double-quoted values survive as literal text. Double quotes within a value need another supported literal delimiter; quotation marks that survive substitution may influence an image receiver's text-rendering conventions.
 * Omitted parameters inherit declared defaults verbatim. The receiving artist or model, not TW5, decides how to interpret their artistic delegation.
-* A default-free missing argument can yield empty output rather than an instruction to invent content. Where supported, intentional dynamic substitutions inside backtick payloads should declare their context; the portable Inscription favors literal values.
-* An artwork-specific Inscription carries one invocation; its surrounding meme may include a literal-rendering reference and a link to this grammar. The invocation alone does not register the procedure in a TW5 instance.
+* A default-free missing argument can yield empty output rather than an instruction to invent content. Keep portable Inscription values literal; context-dependent substitutions, where supported, require their own explicit scope.
+* An artwork-specific Inscription carries one sharktooth invocation; its surrounding meme may include a literal-rendering reference and a link to this grammar. The invocation by itself does not bind a house sigil inside an otherwise unconfigured wiki.
 <<~/ahu>>
 <<~ ahu #/aftermath>>
 !! Aftermath — meaning across representation
 
-The written call, its literal transclusion and the resulting artwork carry related but distinct meanings. A receiving artist's unexpected pictorial choices invite interpretation; they do not silently add parameters to the native procedure.
+The written house call, its literal transclusion and the resulting artwork carry related but distinct meanings. A receiving artist's unexpected pictorial choices invite interpretation; they do not silently add parameters to the Art Sigil.
 
 A support, motif, genre, material convention, named artist or depicted subject belongs to the artistic invitation that names it. The eight-dimensional nucleus and three optional Folio procedures impose no house style, narrative format or image layout.
 <<~/ahu>>
 <<~ ahu #/tw5-source>>
-!! Native TiddlyWiki documentation and verification boundary
+!! TiddlyWiki host syntax and Lares dispatch boundary
 
 * Procedures: https://tiddlywiki.com/static/Procedures.html
 * Procedure Definition Syntax: https://tiddlywiki.com/static/Procedure%2520Definition%2520Syntax.html
 * Calls: https://tiddlywiki.com/static/Calls.html
 * Substituted Attribute Values: https://tiddlywiki.com/static/Substituted%2520Attribute%2520Values.html
 
-These references describe native TW5 syntax. Hand-derived literal expansions express lexical expectations without claiming execution in a live runtime. An image-producing AI may read wikitext semantically without executing TW5.
+These references ground inherited TW5 procedure definitions and parameter literals. The Lararium memetic-wikitext plugin binds the `<<~ ...>>` sigil namespace; neither these references nor the written examples attest live registration or execution. Hand-derived literal expansions state expectations, not runtime test results.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ht2WS_Nw7kODpgMJm-C_OGAR0BUWEGI21jlSwioi7f0
+<<^ code="&#x0003;">>ni:///sha-256;H3Be5YunlEvGpBi-dV579W5FOeljwUeHzFHXQ7729kE
 
 <<^ code="&#x0004;" -> to="?">>

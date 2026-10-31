@@ -1,0 +1,41 @@
+name: Retire integrated Art Sigils standalone branch
+
+on:
+  push:
+    branches: [feature/green-jello-dinosaur-5--projection-loom]
+    paths: ['.github/workflows/retire-integrated-art-sigils.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  guarded-retirement:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Confirm exact source branch was integrated, then retire it
+        env:
+          OLD_BRANCH: feature/green-jello-dinosaur-5--art-sigil-house-grammar
+          EXPECTED_HEAD: 0d564b1b91d513d9eec925ce172ec3fd8f763527
+        run: |
+          set -eu
+          git fetch origin "${OLD_BRANCH}"
+          current="$(git ls-remote --heads origin "refs/heads/${OLD_BRANCH}" | cut -f1)"
+          if test -z "$current"; then
+            echo 'The standalone Art Sigils ref is already retired'
+            exit 0
+          fi
+          if test "$current" != "$EXPECTED_HEAD"; then
+            echo 'The original Art Sigils branch advanced; refuse to delete it'
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$EXPECTED_HEAD" HEAD; then
+            echo 'The Art Sigils history is not wholly integrated; refuse deletion'
+            exit 1
+          fi
+          echo 'Two-parent merge ancestry verified; deleting only the exact retired ref'
+          git push origin --delete "$OLD_BRANCH"

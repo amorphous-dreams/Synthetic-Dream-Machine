@@ -1,0 +1,70 @@
+{
+  "schema": "projection-loom/hybrid-mesh-trial/v1",
+  "evidence_status": "provisional-unregistered-artwork",
+  "source_sha256": "78f8d1f0cf44a98b748054ae8b5c8f2229c1354696a8e1173963a7c98bc4fbe7",
+  "epochs": 2,
+  "per_epoch": 6,
+  "evaluated": 12,
+  "finalists": [
+    {
+      "valid": true,
+      "epoch": 2,
+      "index": 4,
+      "genome": {
+        "shaft_width": 3.118607480913291,
+        "shaft_length": 19.0,
+        "fortress_width": 4.976989753589191,
+        "tower_height": 2.615066819740486,
+        "gallery_reach": 0.9893686160692811,
+        "gate_width": 0.6090952481114364
+      },
+      "mesh_perturb": 0.1313002705469612,
+      "hybrid_iou": 0.7133238114670475,
+      "cad_only_iou": 0.7295656724228152,
+      "cad_union_valid": true,
+      "mesh_render_valid": true,
+      "cad_mesh_union_verified": false
+    },
+    {
+      "valid": true,
+      "epoch": 1,
+      "index": 4,
+      "genome": {
+        "shaft_width": 3.207633707045987,
+        "shaft_length": 19.0,
+        "fortress_width": 5.07023184624894,
+        "tower_height": 2.732575851421087,
+        "gallery_reach": 0.9862492556528176,
+        "gate_width": 0.6202424950186717
+      },
+      "mesh_perturb": 0.10431495959415532,
+      "hybrid_iou": 0.6972795869737887,
+      "cad_only_iou": 0.7105316558441559,
+      "cad_union_valid": true,
+      "mesh_render_valid": true,
+      "cad_mesh_union_verified": false
+    },
+    {
+      "valid": true,
+      "epoch": 1,
+      "index": 5,
+      "genome": {
+        "shaft_width": 3.117359797826522,
+        "shaft_length": 22.17022565833891,
+        "fortress_width": 4.454082573361808,
+        "tower_height": 2.823150074376273,
+        "gallery_reach": 0.9260353868925711,
+        "gate_width": 0.5761286613020992
+      },
+      "mesh_perturb": 0.10918278395614966,
+      "hybrid_iou": 0.6964652893371194,
+      "cad_only_iou": 0.7137979513958627,
+      "cad_union_valid": true,
+      "mesh_render_valid": true,
+      "cad_mesh_union_verified": false
+    }
+  ],
+  "best_hybrid_iou": 0.7133238114670475,
+  "best_cad_only_iou": 0.7295656724228152,
+  "claims": "Rendered polymesh/CAD scene; BRep solid integrity remains CAD-only"
+}

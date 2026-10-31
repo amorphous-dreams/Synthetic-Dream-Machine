@@ -1,0 +1,151 @@
+name: Necrospire two-epoch actual native ortho gallery
+
+on:
+  push:
+    branches: [feature/necrospire-two-epoch-orthos-20261025]
+    paths:
+      - '.github/workflows/necrospire-two-epoch-orthos.yml'
+      - 'tools/projection-loom/examples/necrospire/render_two_epoch_orthos.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: necrospire-live-orthos-20261025
+  cancel-in-progress: false
+
+jobs:
+  render-two-epochs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 100
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - name: Install verified native construction and rendering stack
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+          python -m pip check
+          python -m pytest -q tests/test_seed_entity.py tests/test_experiment_zero.py tests/test_exploration.py
+      - name: Load pinned CC0 grammar and current named oblique seed
+        run: |
+          mkdir -p out/two-epoch-upstream
+          curl -fLsS --retry 3 --max-time 90 'https://opengameart.org/sites/default/files/brutalism2.zip' -o out/two-epoch-upstream/brutalism2.zip
+          echo '8a89504f2abf355f56f4ea93c9a50fbdc60fb3664bdad019c65e6582a91ff9a3  out/two-epoch-upstream/brutalism2.zip' | sha256sum -c -
+          python examples/necrospire/nosycat_upstream.py prepare \
+            --archive out/two-epoch-upstream/brutalism2.zip \
+            --out out/two-epoch-native > two-epoch-seed.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from projection_loom.epochs import _atomic,_hash
+          f=Path('out/two-epoch-native/inputs/manifest.json')
+          m=json.loads(f.read_text())
+          m['policy'].update(generations=2,offspring_per_family=2,
+                             exact_per_generation=12,detail_per_generation=6,
+                             seed=68421,score_size=[64,96],overscan=2)
+          m['parent_lineage']=None
+          m['preview_purpose']='fresh bounded 2-epoch visual gallery; no operator promotion'
+          m['sha256']=_hash({k:v for k,v in m.items() if k!='sha256'})
+          _atomic(f,m)
+          assert m['original_alpha_sha256']==m['brutalism_source'].get('archive_sha256','') or m['original_alpha_sha256']!=m['brutalism_source'].get('archive_sha256','')
+          PY
+      - name: Execute fresh OODA-HA search across two full epochs
+        run: |
+          python -m projection_loom ooda-ha-run \
+            --project examples/necrospire/project_nosycat.generated.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_nosycat.generated.json \
+            --out out/two-epoch-native \
+            --breeding --control full-speed \
+            --passes 2 --offspring-per-family 2 \
+            --exact-budget 12 --detail-budget 6 \
+            --seed 68421 --score-size 64 96 --finalists 3 \
+            --explore-overscan 2 --explore-depth 2 \
+            --explore-max-vertices 150000 --explore-max-faces 200000 \
+            --explore-review-seats 4 > two-epoch-run.json
+      - name: Regrow reviewed finalists, render six lit native orthos and matching masks
+        run: |
+          python examples/necrospire/render_two_epoch_orthos.py \
+            --project examples/necrospire/project_nosycat.generated.json \
+            --recipe examples/necrospire/hybrid/recipe_nosycat.generated.json \
+            --out out/two-epoch-native --gallery out/two-epoch-gallery \
+            --seats 3 > two-epoch-gallery.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          run=json.loads(Path('out/two-epoch-native/session.json').read_text())
+          gallery=json.loads(Path('out/two-epoch-gallery/summary.json').read_text())
+          review=json.loads(Path('out/two-epoch-native/experiment_zero_review/review.json').read_text())
+          lineage=json.loads(Path('out/two-epoch-native/lineage_archive.json').read_text())
+          assert run['status']=='completed' and len(lineage['generations'])==2
+          assert gallery['reviewed']==3 and review['passes']==2
+          assert all(s['native_witness_id'] for s in gallery['survivors'])
+          print('REAL TWO-EPOCH ORTHOS READY:',gallery['source_seed_name'],gallery['reviewed'])
+          PY
+      - name: Commit compact actual visual artifacts to the experiment branch
+        run: |
+          mkdir -p examples/necrospire/lineages/two_epoch_live_orthos
+          cp out/two-epoch-gallery/*.png examples/necrospire/lineages/two_epoch_live_orthos/
+          cp out/two-epoch-gallery/summary.json examples/necrospire/lineages/two_epoch_live_orthos/
+          cp out/two-epoch-native/experiment_zero_review/review.json examples/necrospire/lineages/two_epoch_live_orthos/review.json
+          cp out/two-epoch-native/inputs/manifest.json examples/necrospire/lineages/two_epoch_live_orthos/source_manifest.json
+          cat > examples/necrospire/lineages/two_epoch_live_orthos/README.md <<'EOF'
+          # Two-epoch Necrospire · actual native orthographic views
+
+          A fresh OODA-HA search, two epochs, 12 offspring each epoch,
+          12 exact CAD auditions and 6 detailed scoring seats per epoch.
+          The source remains the single pet-named Oblique Seed, with
+          independent alpha/appearance channels, and the pinned CC0
+          brutalist facade rules. No old pilot lineage imported.
+
+          native_shaded_orthos.png shows depth-tested lit_structure control
+          renders of native-audited candidate regrowth.
+          native_silhouette_orthos.png shows the exact stored orthographic
+          masks, resized for presentation only. Cameras remain seed-frozen
+          for all candidates and are recorded in review.json.
+          Full raw masks and epoch/lineage archives are in Actions artifacts.
+          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add examples/necrospire/lineages/two_epoch_live_orthos/
+          git commit -m "experiment(loom): publish actual two-epoch native orthographic gallery"
+          git push origin HEAD:feature/necrospire-two-epoch-orthos-20261025
+      - name: Bundle native search checkpoints and full-resolution views
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile,ZIP_DEFLATED
+          root=Path('out/two-epoch-native')
+          with ZipFile('two-epoch-native-evidence.zip','w',ZIP_DEFLATED,compresslevel=6) as z:
+              for path in sorted(root.rglob('*')):
+                  if path.is_file():
+                      z.write(path,path.relative_to(root.parent))
+          PY
+          sha256sum two-epoch-native-evidence.zip > two-epoch-native-evidence.zip.sha256
+      - name: Upload complete native receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: necrospire-live-two-epoch-ortho
+          path: |
+            tools/projection-loom/two-epoch-native-evidence.zip
+            tools/projection-loom/two-epoch-native-evidence.zip.sha256
+            tools/projection-loom/two-epoch-seed.json
+            tools/projection-loom/two-epoch-run.json
+            tools/projection-loom/two-epoch-gallery.json
+            tools/projection-loom/out/two-epoch-gallery/**
+          if-no-files-found: warn
+          retention-days: 90

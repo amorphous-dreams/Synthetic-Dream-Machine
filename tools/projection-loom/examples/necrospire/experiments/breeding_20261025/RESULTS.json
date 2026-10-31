@@ -1,0 +1,140 @@
+{
+  "schema": "projection-loom/necrospire-breeding-v2-completed-run/v1",
+  "status": "completed",
+  "source_commit": "035fb47f93e3170d38d2168de41ea955bac20f20",
+  "pre_regional_commit": "f403f9f5cd181f6cd7a2bbc2b9af32fd298bd4ac",
+  "implementation_commit": "bf7ad0edd1af0eb77623e05a1872a075a4611668",
+  "source_alpha_sha256": "78f8d1f0cf44a98b748054ae8b5c8f2229c1354696a8e1173963a7c98bc4fbe7",
+  "recipe_sha256": "7f317bc1abcce96979ea7b37c51219e9a3134856a8e387a736bb3fa6ba024b2a",
+  "evidence_state": "provisional",
+  "cad_mesh_union_verified": false,
+  "parameters": {
+    "generations": 6,
+    "families": 6,
+    "offspring_per_family": 12,
+    "exact_budget": 36,
+    "detail_budget": 18,
+    "seed": 41,
+    "size": [
+      128,
+      192
+    ]
+  },
+  "births": 432,
+  "states": {
+    "deferred": 216,
+    "scored": 108,
+    "audited": 108
+  },
+  "best": {
+    "generation": 6,
+    "candidate_id": "needle-006-004",
+    "family": "needle",
+    "emitter": "sobol",
+    "iou": 0.7384098006245496,
+    "loss": 0.261651531873365
+  },
+  "generations": [
+    {
+      "generation": 1,
+      "births": 72,
+      "states": {
+        "deferred": 36,
+        "scored": 18,
+        "audited": 18
+      },
+      "best_iou": 0.7223103057757645
+    },
+    {
+      "generation": 2,
+      "births": 72,
+      "states": {
+        "deferred": 36,
+        "scored": 18,
+        "audited": 18
+      },
+      "best_iou": 0.7082415160863816
+    },
+    {
+      "generation": 3,
+      "births": 72,
+      "states": {
+        "deferred": 36,
+        "scored": 18,
+        "audited": 18
+      },
+      "best_iou": 0.7222222222222222
+    },
+    {
+      "generation": 4,
+      "births": 72,
+      "states": {
+        "deferred": 36,
+        "scored": 18,
+        "audited": 18
+      },
+      "best_iou": 0.7251595259799453
+    },
+    {
+      "generation": 5,
+      "births": 72,
+      "states": {
+        "deferred": 36,
+        "scored": 18,
+        "audited": 18
+      },
+      "best_iou": 0.7170068027210884
+    },
+    {
+      "generation": 6,
+      "births": 72,
+      "states": {
+        "deferred": 36,
+        "scored": 18,
+        "audited": 18
+      },
+      "best_iou": 0.7384098006245496
+    }
+  ],
+  "champions": {
+    "crown": {
+      "id": "0005/crown-005-011",
+      "iou": 0.7102222222222222
+    },
+    "crystal": {
+      "id": "0004/crystal-004-004",
+      "iou": 0.7222222222222222
+    },
+    "fractured": {
+      "id": "0001/fractured-001-006",
+      "iou": 0.7059727711901624
+    },
+    "keep": {
+      "id": "0002/keep-002-006",
+      "iou": 0.7077059344552702
+    },
+    "needle": {
+      "id": "0006/needle-006-004",
+      "iou": 0.7384098006245496
+    },
+    "terraces": {
+      "id": "0006/terraces-006-004",
+      "iou": 0.7129443326626426
+    }
+  },
+  "masks_distinct": 89,
+  "coarse_niches": 2,
+  "regional_control_niches": 5,
+  "lineage_gallery_count": 12,
+  "finalists": 3,
+  "audit": {
+    "status": "completed",
+    "location": "necrospire",
+    "epochs": 6,
+    "candidates_evaluated": 216,
+    "capability_loops": 1944,
+    "finalists": 3,
+    "evidence_state": "provisional",
+    "events": 15187
+  }
+}
