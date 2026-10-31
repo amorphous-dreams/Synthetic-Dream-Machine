@@ -1,3 +1,22 @@
+# Projection Loom · YIN living roadmap
+
+## Source-landed topology inheritance · native acceptance pending
+
+- [x] Integrate deterministic, source-preserving three-hop topology proposal into the existing generational `emit_place_child` frontier, not a second OODA-HA controller.
+- [x] Route operator `topology-birth` steering through existing finite native audition selection and immutable emitter receipts.
+- [x] Add deterministic positive proposal and honest topology-refusal/mutation-fallback regression tests.
+- [x] Preserve previous roadmap verbatim below in ashes; no deletion.
+- [ ] Close exact new-head GitHub Actions, native tests, full CAD, generalized USD/STEP/Blender, repository CI and held-out witnesses. No completed workflow verdict presently available on the newly published head.
+- [ ] Extend tests to multi-epoch native admission and tamper replay, contested placements, limited budgets and steering; enforce genuine source-conditioned topology variation under witnessed STEP.
+- [ ] Consolidate generalized deferral and ancestry vocabulary isomorphically throughout consumers, rather than preserving a recombinant-specific key forever.
+- [ ] Deliver measured image/grammar/proxy-conditioned architectural morphology, and independent real Unreal Editor verification.
+- [ ] Preserve operator-only artistic selection, canon promotion and irreversible o-takiage.
+
+## Ashes holding ahu · preceding living roadmap
+
+<details>
+<summary>Previous living roadmap retained verbatim</summary>
+
 # Projection Loom · Living YIN roadmap
 
 ## Intent: constructed relationships remain independently witnessed
@@ -2121,5 +2140,7 @@ Operator pet-name promotion. At authoring time, the campaign had not yet
 produced hosted results; inspect exact-head workflow receipts and archives
 before calling any offspring successful.
 
+
+</details>
 
 </details>
