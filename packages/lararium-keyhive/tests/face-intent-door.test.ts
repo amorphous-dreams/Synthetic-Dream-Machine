@@ -447,7 +447,7 @@ describe("a completed effect stays settled, a detached door hears no fence, and 
     expect(await run(false)).toBe(1);
   });
 
-  test("RED: a settled id leaves the retention once every handle over its document reads the outcome, and stays while one does not; CONTROL: no run, no entry", async () => {
+  test("RED: a settled id stays in the retention for the process, while a handle lacks the outcome and after every handle reads it; CONTROL: no run, no entry", async () => {
     const path = "../src/face-intent-door.js";
     const module = await import(path) as { settledRunsOf?: (plane: DocHandle<LarDoc>) => ReadonlySet<string> };
     expect(module.settledRunsOf, "settledRunsOf names the retention").toBeTypeOf("function");
@@ -471,7 +471,7 @@ describe("a completed effect stays settled, a detached door hears no fence, and 
     const outcome = intentEntryRecordsOfGroup(b.doc, f.group).find((r) => (r as { body: { entry: string } }).body.entry === "outcome")!;
     a.handle.change((d) => writeIntentEntry(d, outcome as Parameters<typeof writeIntentEntry>[1]));
     await onA.heed();
-    expect(module.settledRunsOf!(a.handle).size, "every handle reads the outcome: the entry leaves").toBe(0);
+    expect([...module.settledRunsOf!(a.handle)], "every handle reads the outcome, and the entry stays for the process (a late handle may still lag)").toEqual([id]);
     expect(effect).toHaveBeenCalledTimes(1);
   });
 });

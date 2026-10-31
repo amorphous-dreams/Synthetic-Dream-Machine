@@ -215,28 +215,30 @@ export async function admitAgentEntry(ports: FaceIntentAdmissionPorts, raw: unkn
 /** Per plane, each fenced id and the doors waiting on it; a plane's map stays once made, so no door ever fences into a map another dropped. */
 const flights = new Map<unknown, Map<string, Set<() => void>>>();
 /**
- * Per document, each single-effect id whose effect RAN TO COMPLETION in this process, with the handles that have read its outcome.
- * The id stays fenced from the moment the effect returns, whether or not its receipt lands (a failed receipt is owed and retried as
- * a receipt, never as a run): an outcome reaches the completing handle's replica first, and a door over another handle whose
- * replica lacks it still reads the intent open. The entry leaves once every handle whose doors read this document has read the
- * outcome, which then fences the id itself.
+ * Per document, each single-effect id whose effect RAN TO COMPLETION in this process. The id stays fenced from the moment the
+ * effect returns, whether or not its receipt lands (a failed receipt is owed and retried as a receipt, never as a run): an outcome
+ * reaches the completing handle's replica first, and a door over another handle whose replica lacks it (two Repos in one process
+ * hold two replicas of one document) still reads the intent open, a handle that starts late included. So an id stays for the
+ * process's life, one string per completed single-effect run: that growth buys never running a completed effect twice here. A
+ * restart clears it, and from then on the outcome on the plane fences the id itself.
  */
-const settledRuns = new Map<unknown, Map<string, Set<DocHandle<LarDoc>>>>();
-/** Per document, the handles whose doors read it, counted per door; a door counts from its first pass until it detaches. */
-const visitors = new Map<unknown, Map<DocHandle<LarDoc>, number>>();
-/** The settled ids this process still fences on a document: the retention `settledRuns` keeps. */
-export function settledRunsOf(plane: DocHandle<LarDoc>): ReadonlySet<string> { return new Set(settledRuns.get(planeKey(plane))?.keys() ?? []); }
+const settledRuns = new Map<unknown, Set<string>>();
+/** The settled ids this process fences on a document: the retention `settledRuns` keeps. */
+export function settledRunsOf(plane: DocHandle<LarDoc>): ReadonlySet<string> { return new Set(settledRuns.get(planeKey(plane)) ?? []); }
 export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
   // `detached`: this door's attach was dropped. A pass still in flight when it lands acts on nothing after its next await.
-  let running: Promise<void> | null = null, dirty = false, visiting = false, detached = false;
+  let running: Promise<void> | null = null, dirty = false, detached = false;
   const read = async (): Promise<IntentView> => (await makeFaceIntentReader(ports).read()).view;
   const wake = (): void => { void heed(); };
   /** The fence-waiter sets this door joined, so its detach leaves none of them. */
   const waits = new Set<Set<() => void>>();
   /** Receipts this door owes: effects that ran to completion whose outcome never landed. */
   const owed = new Map<string, Record<string, unknown>>();
+  /** Sign and land one outcome; a detached door lands none, before its signing or after it, and the receipt stays owed. */
   const publish = async (id: string, fields: Record<string, unknown>): Promise<void> => {
+    if (detached) throw new Error("the door detached; the receipt stays owed");
     const receipt = await buildOutcome({ group: ports.group, signer: ports.atom, cause: id, result: { status: "done", ...fields } });
+    if (detached) throw new Error("the door detached; the receipt stays owed");
     ports.plane.change((draft) => writeIntentEntry(draft, receipt));
   };
   /** One pass; true when a standing it needed went stale under its witness, so another pass re-acquires. */
@@ -248,22 +250,15 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
     const key = planeKey(ports.plane);
     const flying = flights.get(key) ?? new Map<string, Set<() => void>>();
     flights.set(key, flying);
-    const settled = settledRuns.get(key) ?? new Map<string, Set<DocHandle<LarDoc>>>();
+    const settled = settledRuns.get(key) ?? new Set<string>();
     settledRuns.set(key, settled);
-    const readers = visitors.get(key) ?? new Map<DocHandle<LarDoc>, number>();
-    visitors.set(key, readers);
-    if (!visiting) { visiting = true; readers.set(ports.plane, (readers.get(ports.plane) ?? 0) + 1); }
     // An owed receipt lands before anything else runs: it settles an effect that already ran, and never runs it again.
     for (const [id, fields] of [...owed]) {
-      try { await publish(id, fields); owed.delete(id); settled.get(id)?.add(ports.plane); } catch (error) { ports.log(`face intent ${id} receipt still owed: ${String(error)}`); }
+      if (detached) return false;
+      try { await publish(id, fields); owed.delete(id); } catch (error) { ports.log(`face intent ${id} receipt still owed: ${String(error)}`); }
     }
+    if (detached) return false;
     let view = readIntentNow(ports).view, stale = false, again = false;
-    // The retention: this handle reads each settled id's outcome, and an id every reading handle has seen leaves.
-    for (const [id, seen] of [...settled]) {
-      if (!view.intents.find((i) => i.id === id)?.slots.some((slot) => slot.winner !== null)) continue;
-      seen.add(ports.plane);
-      if ([...readers.keys()].every((handle) => seen.has(handle))) settled.delete(id);
-    }
     for (const first of view.intents) {
       // Each effect revalidates from the CURRENT documents in the turn that invokes it: a revocation, a cancel, a takeover, an
       // outcome an earlier effect merged, or a standing whose witness moved stops the later ones. Only a pass that has awaited
@@ -290,9 +285,9 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
       try {
         const result = await effect(invocation.body.args, { intentId: state.id, intent: invocation.body, pinnedAtom: pinnedAtom ?? ports.atom.key, agent: state.agent ? { key: state.issuer, delegation: state.agent.delegation } : null });
         // The effect RAN: from here the id stays settled whatever its receipt does.
-        if (fenced) settled.set(state.id, new Set());
+        if (fenced) settled.add(state.id);
         const fields = receiptFields(result);
-        try { await publish(state.id, fields); settled.get(state.id)?.add(ports.plane); }
+        try { await publish(state.id, fields); }
         catch (error) { owed.set(state.id, fields); ports.log(`face intent ${state.id} ran; its receipt is owed: ${String(error)}`); }
       } catch (error) { ports.log(`face intent ${state.id} faulted: ${String(error)}`); }
       finally {
@@ -314,7 +309,7 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
     })();
     return running;
   };
-  /** Wake on the plane's changes and on the documents behind the acquisition's witness; the returned call drops both, every fence wait this door joined, and its count among the document's readers. */
+  /** Wake on the plane's changes and on the documents behind the acquisition's witness; the returned call drops both and every fence wait this door joined. */
   const attach = (): (() => void) => {
     const changed = () => { void heed(); };
     detached = false;
@@ -326,11 +321,6 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
       ports.plane.off("change", changed); unwatch?.();
       for (const waiting of waits) waiting.delete(wake);
       waits.clear();
-      if (visiting) {
-        visiting = false;
-        const readers = visitors.get(planeKey(ports.plane)), left = (readers?.get(ports.plane) ?? 1) - 1;
-        if (left > 0) readers!.set(ports.plane, left); else readers?.delete(ports.plane);
-      }
     };
   };
   const describe = async (): Promise<{ readonly view: IntentView; readonly pane: IntentPaneModel }> => { const view = await read(); return { view, pane: intentPaneModel(view) }; };
