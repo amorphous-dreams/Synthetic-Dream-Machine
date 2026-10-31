@@ -40,10 +40,10 @@ alone measure the hidden side of a fortress.
 
 <<~ ahu #/links>>
 
-`tools/projection-loom/docs/research/measurement-contract.md` carries executable boundaries and tests. Full research genealogy lives in `docs/research/register.md`.
+Current executable boundaries and tests live in `projection_loom/evidence_receipts.py` and the test suite. Historical measurement-contract and research-register testimony is recoverable through the pinned Git archive.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sL-xtSgoj57XXwC6JjXsJc-5gyArbnUYQgge4sv6ytM
+<<^ code="&#x0003;">>ni:///sha-256;iee1kLMdkiVfBWyahecE-AoJ7j4okAcL4HbEVtVfFm4
 
 <<^ code="&#x0004;" -> to="?">>
