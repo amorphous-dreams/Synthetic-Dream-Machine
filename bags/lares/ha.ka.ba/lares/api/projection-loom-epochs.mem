@@ -72,10 +72,10 @@ silent normalization during a refactor.
 
 <<~ ahu #/links>>
 
-`tools/projection-loom/docs/research/epoch-contract.md`, `docs/research/three-afterwards.md` and `docs/ooda-ha-procedural.md` carry current tests and limitations. The machine enacts the five phases as a guarded nested runtime controller; developer aftermaths still review our work, not a simulated CAD feature.
+The active epoch/phase behavior is witnessed by `projection_loom/fractal_ooda_ha.py`, `phase_rules.py` and current tests; the former research notes survive in the pre-burn Git archive. The machine enacts the five phases as a guarded nested runtime controller; developer aftermaths still review our work, not a simulated CAD feature.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-McT3D1kAIpVfkBBV71MMaEbcKPZnxpZPP7bqT1WwDA
+<<^ code="&#x0003;">>ni:///sha-256;nSR3198L1idJAUYpFA55ny2u4NZui-jyAZqOS8917ek
 
 <<^ code="&#x0004;" -> to="?">>
