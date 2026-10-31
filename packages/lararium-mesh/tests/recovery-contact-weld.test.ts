@@ -20,7 +20,7 @@ import { recoveryContactRegistrationCard } from "../src/recovery-registration.js
 import {
   splitToCustodianCards, CUSTODIAN_CARD_THRESHOLD, CUSTODIAN_SLOT_TAG, CUSTODIAN_CONFIRM_DOMAIN,
 } from "../src/custodian-card.js";
-import { RECOVERY_CONTACT_REGISTRATION_DOMAIN, RECOVERY_CONTACT_POSSESSION_DOMAIN, FACE_BUNDLE_DOMAIN } from "../src/domains.js";
+import { DOMAIN_ROOT, RECOVERY_CONTACT_REGISTRATION_DOMAIN, RECOVERY_CONTACT_POSSESSION_DOMAIN, FACE_BUNDLE_DOMAIN } from "../src/domains.js";
 
 /**
  * THE FORMAT CUT (alpha line: no back-compat). The rename moved six signing domains, so exactly these pins moved (the enrolment pins moved a second time with its count and threshold) and
@@ -127,7 +127,7 @@ describe("the weld: enrolment, the seed-share card and the recovery rotation, by
 
   test("the domains that ride bytes", () => {
     expect([RECOVERY_CONTACT_REGISTRATION_DOMAIN, RECOVERY_CONTACT_POSSESSION_DOMAIN, CUSTODIAN_CONFIRM_DOMAIN, FACE_BUNDLE_DOMAIN, RECOVERY_CONTACT_ENROLMENT_KIND])
-      .toEqual(["lar:///ha.ka.ba/lares/domain/recovery-contact-registration", "lar:///ha.ka.ba/lares/domain/recovery-contact-possession", "lar:///ha.ka.ba/lares/domain/custodian-confirm", "lar:///ha.ka.ba/lares/domain/face-bundle-recovery-contact-set", "recovery-contact-enrolment"]);
+      .toEqual([`${DOMAIN_ROOT}/recovery-contact-registration`, `${DOMAIN_ROOT}/recovery-contact-possession`, `${DOMAIN_ROOT}/custodian-confirm`, `${DOMAIN_ROOT}/face-bundle-recovery-contact-set`, "recovery-contact-enrolment"]);
   });
 
   test("the face-log view's signed parties", () => {
