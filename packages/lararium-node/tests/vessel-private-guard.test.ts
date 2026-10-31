@@ -42,7 +42,7 @@ type RelationInput = {
 };
 type VesselPrivateModule = {
   vesselPrivateDocIds(bootstrapTiddlers: Record<string, { text?: string }>): ReadonlySet<string>;
-  vesselPrivateBook(opts: { bootstrapPath: string }): { ids(): ReadonlySet<string>; has(id: string): boolean; add(urlOrId: string | null | undefined): void };
+  vesselPrivateBook(opts: { bootstrapPath: string }): { ids(): ReadonlySet<string>; has(id: string): boolean; add(urlOrId: string | null | undefined): void; torn?(): boolean };
   vesselPrivateRelationOpens(input: RelationInput): Promise<boolean>;
 };
 const vp = (await import("../src/vessel-private.js").catch(() => null)) as VesselPrivateModule | null;
@@ -206,5 +206,27 @@ describe("no relation, registration or alias widens who reads a vessel's private
     writeFileSync(path, "{\"text\": \"{\\\"tiddl");
     (await import("node:fs")).utimesSync(path, later + 5, later + 5);
     expect(book.has(String(idOf(ONE.persona))) && book.has(String(idOf(CATALOG)))).toBe(true);
+  });
+
+  test("V5 — RED: a bootstrap torn after a whole read reads torn until a whole re-read; CONTROL: torn from the first read tears nothing", async () => {
+    expect(vp, "vessel-private stands").not.toBeNull();
+    const { utimesSync } = await import("node:fs");
+    const dir = mkdtempSync(join(tmpdir(), "lar-ralias-torn-")); roots.push(dir);
+    const path = join(dir, "social-bootstrap.json");
+    writeBootstrap(path, bootstrap(ONE));
+    const book = vp!.vesselPrivateBook({ bootstrapPath: path });
+    expect(typeof book.torn, "the book reads torn").toBe("function");
+    expect(book.torn!()).toBe(false);
+    writeFileSync(path, "{\"text\": \"{\\\"tiddl");
+    const t = Date.now() / 1000 + 5; utimesSync(path, t, t);
+    expect(book.torn!(), "a write that tore mid-way").toBe(true);
+    writeBootstrap(path, bootstrap(ONE, TWO)); utimesSync(path, t + 5, t + 5);
+    expect(book.torn!(), "a whole re-read clears it").toBe(false);
+    expect(book.has(String(idOf(TWO.circles))), "and classes the face that write added").toBe(true);
+    // CONTROL: a vessel with no bootstrap, and one torn from its first read (the boot reads it as none), tear nothing.
+    expect(vp!.vesselPrivateBook({ bootstrapPath: join(dir, "absent.json") }).torn!()).toBe(false);
+    const firstTorn = join(dir, "first-torn.json");
+    writeFileSync(firstTorn, "{");
+    expect(vp!.vesselPrivateBook({ bootstrapPath: firstTorn }).torn!()).toBe(false);
   });
 });
