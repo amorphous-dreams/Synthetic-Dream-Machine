@@ -295,3 +295,17 @@ def test_diagonal_source_topology_campaign_preserves_replay_and_exact_budget(tmp
     (out/"frontiers"/"epoch_001.json").write_text(json.dumps(tampered))
     with pytest.raises(ValueError,match="frontier diverged"):
         verify_place_campaign(out)
+
+
+def test_diagonal_source_requires_explicit_topology_steering(tmp_path):
+    p=GrowthProgram((GrowthNode("root","foundation",size=(4,4,2)),))
+    site=PlaceGenome((PlaceBody("east",p,(12,12,0)),
+                      PlaceBody("west",p,(0,0,0))))
+    intent=IntentContract("diagonal-refusal","Preserve authored diagonal site",("connect",))
+    spatial=SpatialIntent(intent.identity,(SpatialGoal("connect","west","east"),),"operator")
+    inventory=LocationStack(intent.location)
+    inventory.add_frame(Frame("authored-local","local3d","model_unit"))
+    with pytest.raises(ValueError,match="axis-aligned equally elevated"):
+        run_place_campaign(inventory,intent,spatial,site,tmp_path/"ordinary",
+                           epochs=2,offspring=3,exact_budget=1,seed=12)
+    assert not (tmp_path/"ordinary").exists()
