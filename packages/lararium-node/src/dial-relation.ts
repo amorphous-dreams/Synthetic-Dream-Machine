@@ -81,7 +81,7 @@ export function seatDialPeer(maps: DialSeatMaps, peerId: string, relation: DialR
   maps.peerClassMap.set(peerId, "contracted");
 }
 
-/** The dialed peer left (or its arrival was replaced): drop its class, its standing and its view. */
+/** The dialed peer left, or another arrival took its id: drop its class, its standing and its view. */
 export function unseatDialPeer(maps: DialSeatMaps, peerId: string): void {
   maps.peerClassMap.delete(peerId);
   maps.peerNexus.delete(peerId);
