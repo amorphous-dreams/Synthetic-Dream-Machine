@@ -163,3 +163,41 @@ def test_topology_refusal_keeps_finite_mutation_fallback():
     assert row["emitter"]=="mutation"
     assert "source-bound topology refused" in row["recombination_deferral"]
     assert row["native_audition_completed"] is False
+
+
+def test_topology_birth_keeps_all_source_bodies_and_full_goal_scope():
+    from projection_loom.place_source_seal import seal_constructive_growth
+    p=GrowthProgram((GrowthNode("root","foundation",size=(4,4,2)),))
+    original=PlaceGenome((PlaceBody("east",p,(12,12,0)),
+                          PlaceBody("refuge",p,(30,30,0)),
+                          PlaceBody("west",p,(0,0,0))))
+    spatial=SpatialIntent("a"*64,(
+        SpatialGoal("connect","west","east"),
+        SpatialGoal("shelter","refuge","roof")),"operator")
+    resolved=propose_from_spatial_intent(original,spatial)
+    child,receipt=emit_place_child(original,resolved,[],spatial,
+                                  epoch=2,index=1,offspring=3,seed=11)
+    assert receipt["emitter"]=="topology-birth"
+    assert seal_constructive_growth(original,child)["original_bodies_rewritten"] is False
+    assert "roof" in {body.entity_id for body in child.bodies}
+    assert receipt["ancestors"][0]["native_audition_completed"] is False
+    assert receipt["sha256"]
+    assert receipt["candidate_genome_sha256"]==child.identity
+
+
+def test_topology_proposal_is_independent_of_unwitnessed_parent_archive():
+    p=GrowthProgram((GrowthNode("root","foundation",size=(4,4,2)),))
+    original=PlaceGenome((PlaceBody("east",p,(12,12,0)),
+                          PlaceBody("refuge",p,(30,30,0)),
+                          PlaceBody("west",p,(0,0,0))))
+    spatial=SpatialIntent("a"*64,(SpatialGoal("connect","west","east"),),"operator")
+    resolved=propose_from_spatial_intent(original,spatial)
+    archive=[{"candidate_id":"unwitnessed","genome":resolved,
+              "workspace_sha256":"not-native"}]
+    a,first=emit_place_child(original,resolved,[],spatial,
+                             epoch=1,index=1,offspring=3,seed=12)
+    b,second=emit_place_child(original,resolved,archive,spatial,
+                              epoch=1,index=1,offspring=3,seed=12)
+    assert a.identity==b.identity
+    assert first==second
+    assert first["emitter"]=="topology-birth"
