@@ -24,7 +24,7 @@ uri-path  = "ha.ka.ba/lares/api/projection-loom"
 
 !! Current relational seam · one operational helm
 
-`place_obligations.py` orders authored architectural obligations while refusing conflicting producers and dependency cycles. `place_source_seal.py` refuses silent replacement of original native bodies and relations. `place_campaign.py` binds those receipts to one existing `OODAHAJournal` with independently verified candidate and phase identities. The native STEP/USD evaluator alone tests physical contacts and clearances; the operator alone promotes aesthetic or canonical outcomes. These guards extend, not replace, the existing composite CAD/polygon capability system. Historical helm prose stays retrievable at #/ashes.
+`place_obligations.py` orders authored architectural obligations while refusing conflicting producers and dependency cycles. `place_source_seal.py` refuses silent replacement of original native bodies and relations. `place_campaign.py` binds those receipts to one existing `OODAHAJournal` with independently verified candidate and phase identities. The native STEP/USD evaluator alone tests physical contacts and clearances; the operator alone promotes aesthetic or canonical outcomes. These guards extend, not replace, the existing composite CAD/polygon capability system. Historical helm prose stays retrievable through the pinned Git archive.
 
 <<~/ahu>>
 
@@ -181,39 +181,11 @@ This historical reading moved to [[ashes|#ashes]] within the same carrier. The o
 
 <<~/ahu>>
 
-<<~ ahu #/ashes>>
+<<~ ahu #/git-ashes>>
 
-!! Holding ashes · operator-called, reversible, no deletion
+!! Git ledger — no recursively embedded history
 
-Original carrier Git blob: `a273376f62966bb174a4a0618d60ea86370e9509`. Its displaced historical sections remain byte-for-byte below; each original section address still stands as a pointer above. Git carries the complete prior carrier. This holding rite promotes no lifecycle change and makes no claim that canon or its inbound links can burn.
-
-!!! Retained historical procedural-helm
-
-````text
-<<~ ahu #/procedural-helm>>
-
-!! Executable OODA-HA Helm
-
-A location may run a hierarchy of guarded OODA-HA controllers: one location
-loop, bounded epoch loops, and candidates whose CAD audits execute inside their
-own Act phase. Every loop moves ✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act ->
-↺ Ho'oko / Aftermath -> close; a parent cannot close while children remain.
-
-An adjustable Operator/AI steering policy holds manual, shared, auto-nav, and
-full-speed modes on one continuous autonomy gradient. Every mode accepts
-explicit intervention at safe phase or candidate boundaries. Validated
-previews, relational witnesses, bounded AI suggestions, pet-name/o-takiage
-and lineage choices re-enter through durable operator checkpoints. A control
-cannot bypass source, geometry, registration, or CAD-validity gates.
-
-The default CLI follows scored-policy auto-navigation, not an undocumented LLM
-provider. A separate adviser callback may propose choices, but never invent
-validity. Development Aftermath still reviews OUR code and decisions;
-this procedural runtime Aftermath reviews the evolving location's outcome.
-
-<<~/ahu>>
-````
-
+The operator released this carrier's displaced historical ahu from the living text. Exact prior bytes survive on `archive/pr84-before-lares-ashes-retirement-20261031`, commit `0d05dce315397fd2be1a7098270363ff4a948745`, file `bags/lares/ha.ka.ba/lares/api/projection-loom.mem`; use `git show 0d05dce315397fd2be1a7098270363ff4a948745:bags/lares/ha.ka.ba/lares/api/projection-loom.mem` to recover them. The older `archive/pr84-markdown-pre-otakiage-20261031` holds the pre-Markdown fire. Historical claims and dissent are recoverable; Git does not promote them to current verified state.
 
 <<~/ahu>>
 
@@ -232,6 +204,6 @@ this procedural runtime Aftermath reviews the evolving location's outcome.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xTbJZeHpmyqc2EB5_FeilReIpApXR8zPb8izBSnfG4o
+<<^ code="&#x0003;">>ni:///sha-256;MZPg9o9OkfgeJFfPjoWnyd6IrD9DTHe7q6kXZ6TGgjc
 
 <<^ code="&#x0004;" -> to="?">>
