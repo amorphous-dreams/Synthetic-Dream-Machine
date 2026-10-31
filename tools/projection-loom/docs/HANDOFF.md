@@ -1,3 +1,16 @@
+# Projection Loom · Living YIN handoff
+
+## Generalized proposal-deferral lift · October 30, 2026
+
+**PR:** #84 · **Branch:** `feature/green-jello-dinosaur-5--projection-loom`. Feature wave migrated `recombination_deferral` to `proposal_deferral` without a backwards-compatibility adapter. Existing emitter, native campaign census, operator board, emitter tests and campaign tests now share the field. The board names deferred proposals rather than only deferred breeding. New census integrity checks protect topology ancestry: bounded attempted patterns, accepted vs rejected separation, and explicit absence of native certification. Latest code commit `b77404671b7ff69e302e4af909bfea815ff08e0c`.
+
+**Acceptance remains open:** source commits were published through GitHub connector; no local Python/native STEP execution occurred. The previously inspected `9145695d` workflow remained in progress, and it cannot certify this head. Next required wave: exact-head full CAD/evidence and repository CI, native multi-epoch campaign replay with altered receipt/budget negatives, broader source-conditioned architectural generation, real Unreal Editor validation. Preserve one OODA-HA helm, no version ladders/shims, no automatic artist judgment, no PR merge or irreversible o-takiage.
+
+## Ashes holding ahu · previous living front
+
+<details>
+<summary>Previous living front preserved verbatim</summary>
+
 # Projection Loom · YIN current wave
 
 ## Native topology census evidence
@@ -2727,6 +2740,8 @@ Operator pet-name promotion. At authoring time, the campaign had not yet
 produced hosted results; inspect exact-head workflow receipts and archives
 before calling any offspring successful.
 
+
+</details>
 
 </details>
 
