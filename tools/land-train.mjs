@@ -7,7 +7,8 @@
  *
  * Each lane `<span>--<suffix>` stands GREEN (CI and held-out, read by tools/ci-verdict.mjs) on a head that carries <base>,
  * the last span commit no lane here wrote. The span may stand past <base> only by LANDS (a first-parent subject carrying
- * ` — merge PR #`) or by ROAD commits the span's own CI and held-out read GREEN at their exact sha.
+ * ` — merge PR #`) or by ROAD commits the span's own CI and held-out read GREEN: the newest road commit at its exact sha, and
+ * an older one at its own sha or carried by a newer road commit read GREEN, whose run tested a tree holding it.
  *
  *   TRAIN   merge every lane over the span in a provisioned worktree, install when the lockfile moved, build, run the suites of
  *           every package two lanes both touch, witness-all, evergreen; read each verdict from its tally, never an exit alone.
@@ -158,12 +159,16 @@ export async function landTrain({ name, base, specs, plan = false, span = SPAN, 
   try { baseSha = git(["rev-parse", base]); } catch { return stop(3, `BASE ${base} IS NOT A COMMIT`); }
   if (!isAncestor(git, baseSha, SP)) return stop(3, `BASE ${base} IS NOT ON THE SPAN`);
 
-  // The span stands past <base> only by lands or by road commits read green at their exact sha.
+  // The span stands past <base> only by lands or by road commits read green. The walk runs newest first: a road commit read
+  // GREEN carries every older commit beneath it, since its run tested a tree that holds them (a push that lands while a run
+  // flies cancels that run, so an older sha may hold no verdict of its own). The newest road commit always reads at its sha.
+  let carrier = null;
   for (const c of git(["rev-list", "--first-parent", `${baseSha}..${SP}`]).split("\n").filter(Boolean)) {
     if (git(["log", "-1", "--format=%s", c]).includes(LAND_SUBJECT)) continue;
+    if (carrier) { say(`road commit ${short(c)} carried by ${short(carrier)} GREEN`); continue; }
     const v = await settled(ops, span, c);
     const k = classify(v);
-    if (k === "green") { say(`road commit ${short(c)} GREEN on the span`); continue; }
+    if (k === "green") { say(`road commit ${short(c)} GREEN on the span`); carrier = c; continue; }
     if (k === "unreadable") return stop(10, `UNREADABLE: the verdict of road commit ${short(c)} could not be read (${v.ci}/${v.heldOut}); read again later, it is no red`);
     return stop(3, `SPAN MOVED BY A NON-LAND COMMIT NOT READ GREEN since ${short(baseSha)}: ${git(["log", "-1", "--oneline", c]).slice(0, 80)}`);
   }
