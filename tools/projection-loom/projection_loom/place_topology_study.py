@@ -52,12 +52,28 @@ def _read(path):
     return json.loads(Path(path).read_text(encoding="utf8"))
 
 
+def _refusal(spatial,pattern,reason):
+    # Source-bounded construction refusal never masquerades as an executed
+    # native STEP audition or silently disappears from the comparison.
+    return {"turn":pattern,"proposal_sha256":None,
+            "result_genome_sha256":None,"state":"construction-refused",
+            "construction_refusal":reason,
+            "native_evidence":None,
+            "goal_statuses":[{"goal":g.to_dict(),"status":"unverified"}
+                             for g in spatial.goals],
+            "witnessed_route":None,"automatic_artistic_winner":False}
+
+
 def _arm(root,original,spatial,pre,pattern):
-    proposal=_propose(original,spatial,pre,pattern)
-    genome=PlaceGenome.from_dict(proposal["proposed_genome"])
-    witness=assess_place(root/pattern/"scene",genome,spatial)
-    verify_place_affordances(root/pattern/"scene",genome,spatial,witness)
-    row=_arm_receipt(proposal,genome,spatial,pre["goal_index"],witness,pattern)
+    try:
+        proposal=_propose(original,spatial,pre,pattern)
+    except ValueError as exc:
+        row=_refusal(spatial,pattern,str(exc))
+    else:
+        genome=PlaceGenome.from_dict(proposal["proposed_genome"])
+        witness=assess_place(root/pattern/"scene",genome,spatial)
+        verify_place_affordances(root/pattern/"scene",genome,spatial,witness)
+        row=_arm_receipt(proposal,genome,spatial,pre["goal_index"],witness,pattern)
     if _read(root/pattern/"receipt.json")!=row:
         raise ValueError("Native topology alternative changed original goal or STEP evidence")
     return row
@@ -84,10 +100,14 @@ def _summary(pre,arms):
                       "status_by_alternative":{arm["turn"]:arm["goal_statuses"][i]["status"]
                                                 for arm in arms},
                       "automatic_operator_selection":False})
+    refused=[{"pattern":row["turn"],"reason":row["construction_refusal"]}
+             for row in arms if row["state"]=="construction-refused"]
     body={"schema":"projection-loom/topology-native-comparison",
           "preregistration_sha256":pre["sha256"],
           "arms":arms,"goal_consequences":goals,
-          "native_attempts":len(arms),
+          "topology_alternatives_offered":len(arms),
+          "construction_refusals":refused,
+          "native_attempts":len(arms)-len(refused),
           "witnessed_route_count":len(witnessed),
           "observed_distinct_route_layouts":distinct,
           "observed_hops":[None if x is None else x["hops"] for x in layouts],
@@ -122,7 +142,11 @@ def run_topology_study(original,spatial,out,*,location,goal_index,corner_prefix)
     save_once(root/"preregistration.json",pre)
     try:
         for pattern in ALTERNATIVES:
-            proposed=_propose(original,spatial,pre,pattern)
+            try:
+                proposed=_propose(original,spatial,pre,pattern)
+            except ValueError as exc:
+                save_once(root/pattern/"receipt.json",_refusal(spatial,pattern,str(exc)))
+                continue
             child=PlaceGenome.from_dict(proposed["proposed_genome"])
             package_scene(child.declaration(location),root/pattern/"scene")
             native=assess_place(root/pattern/"scene",child,spatial)
