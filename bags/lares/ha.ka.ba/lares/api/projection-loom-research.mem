@@ -36,7 +36,7 @@ a photogrammetric reconstruction supplies poses and surfaces conditionally on
 its calibration; a CAD body supplies checked construction. None silently grants
 the authority of another.
 
-The research archive lives at `tools/projection-loom/docs/research/register.md`
+The historical research register is recoverable at `archive/pr84-markdown-pre-otakiage-20261031:tools/projection-loom/docs/research/register.md`; this `lar:` carrier is the living research ledger.
 and retains the historical experiments, literature and present-day boundaries.
 
 <<~/ahu>>
@@ -89,7 +89,7 @@ claiming an upstream technique has transferred.
 
 !! Design witness · relation before shape
 
-The research register now points to `tools/projection-loom/docs/RELATIONAL-INHERITANCE-DESIGN.md` and the working design carrier `lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design`. They compare complete-region copying, source-goal inheritance, a derived native-observed route-family witness and parent-conditioned reconstruction. The C+D working choice requires a distinct native-admitted descendant under the same OODA-HA helm; the current two-epoch topology test does not yet prove that claim. The new Deep Research app report remains separate uninspected testimony until supplied.
+The retired research register and detailed engineering design remain in the Git archive. The active working design is owned by `lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design`. They compare complete-region copying, source-goal inheritance, a derived native-observed route-family witness and parent-conditioned reconstruction. The C+D working choice requires a distinct native-admitted descendant under the same OODA-HA helm; the current two-epoch topology test does not yet prove that claim. The new Deep Research app report remains separate uninspected testimony until supplied.
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design">>
 
@@ -104,6 +104,6 @@ The research register now points to `tools/projection-loom/docs/RELATIONAL-INHER
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HRubai4KNa0u1RARyaIwBf50M3YHemO3o4H9HU3B9Z0
+<<^ code="&#x0003;">>ni:///sha-256;tKff5D6xQI1J958whHS0vEfDN5PW1agxBIw9lS1QC2o
 
 <<^ code="&#x0004;" -> to="?">>
