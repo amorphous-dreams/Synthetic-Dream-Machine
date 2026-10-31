@@ -93,6 +93,13 @@ export interface VesselResidencyConfig {
   idle?: number;
   /** Sweeper tick override (default DEFAULT_SWEEP_INTERVAL_MS). */
   sweepIntervalMs?: number;
+  /**
+   * THE VESSEL'S PRIVATE DOCUMENTS (lane `ralias`): a cause where this vessel classes the document a wiki's catalog row
+   * names as private (its daemon document, a face's plane, its catalog), else null. An island stands inside the house, past
+   * the share guard, so a catalog pointer never resolves a wiki onto one: the resolution refuses `no-read-grant` and
+   * teaches the pool nothing. A consult that throws refuses too. Absent, no document reads as private here.
+   */
+  wikiDocRefused?: (wikiUrl: string) => string | null;
 }
 
 /** The now-live pieces `wireToPool` composes over — supplied inside the vessel's makePool, once
@@ -209,6 +216,11 @@ export function makeVesselResidency(
       const derived = deriveWikiRecipe({ slug, record: rec, canonUrl: wikiUrl });
       if (!derived.ok) return derived;
       if (!wikiUrl) return { ok: false, cause: "no-such-bag", detail: wikiBagUri(slug) };
+      if (config.wikiDocRefused) {
+        let refused: string | null;
+        try { refused = config.wikiDocRefused(wikiUrl); } catch (err) { refused = `unreadable: ${String(err)}`; }
+        if (refused !== null) return { ok: false, cause: "no-read-grant", detail: `${wikiBagUri(slug)} names a ${refused} document` };
+      }
       const grainRecipe = derived.recipe;
       const libraryBags = grainRecipe?.libraryBags;
       const pluginOfferings = grainRecipe?.pluginOfferings;

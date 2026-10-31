@@ -604,6 +604,34 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     }
   }, 240_000);
 
+  // ⑮ NO REGISTRATION WIDENS A VESSEL'S PRIVATE DOCUMENTS (lane `ralias`). A's catalog names itself and her daemon document
+  // among its rows, so the realm-bag verb would read either as a book to register: the registration then seats the
+  // document on A's realm gate and the realm lanes open it to every contracted member. A's vessel classes both
+  // `vessel-private` by id: the registration never counts, so the verb refuses and B's realm view names neither.
+  const privateDocsA: { daemon: string; catalog: string } = { daemon: "", catalog: "" };
+  test("⑮ A's daemon document and catalog never become realm books: the registration refuses and B's realm view names neither", async () => {
+    expect(contracted, "the relation's doors stood (③): ⑮ walks only on a contracted member").toBe(true);
+    privateDocsA.daemon = bootDocUrl(A!, "daemon") ?? "";
+    privateDocsA.catalog = bootDocUrl(A!, "catalog") ?? "";
+    expect(privateDocsA.daemon && privateDocsA.catalog, "A's boot names her daemon document and catalog").toBeTruthy();
+    for (const bag of ["lar:///ha.ka.ba/bags/catalog", "lar:///ha.ka.ba/bags/daemon"]) {
+      const reg = await A!.cli(["nexus", "realm-bag", bag, "--face", "0", "--json"]);
+      console.error(`meme-realm-bag ⑮ MEASURE A realm-bag ${bag} → ${said(reg).trim().slice(0, 300)}`);
+      expect(reg.json?.["ok"], `A's ${bag} never registers: ${said(reg)}`).not.toBe(true);
+    }
+    const aBags = await A!.cli(["nexus", "realm-bags", "--json"]);
+    const docs = (((aBags.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>).map((b) => String(b["doc"]));
+    expect(docs, "A's realm seats neither private document").not.toContain(privateDocsA.daemon);
+    expect(docs).not.toContain(privateDocsA.catalog);
+    const bBags = await B!.cli(["nexus", "realm-bags", "--realm", realmA, "--json"]);
+    const bDocs = (((bBags.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>).map((b) => String(b["doc"]));
+    expect(bDocs, "B's realm view names neither").not.toContain(privateDocsA.daemon);
+    expect(bDocs).not.toContain(privateDocsA.catalog);
+    // CONTROL: the ford still crosses to B.
+    const ford = await pollB(60_000);
+    expect(ford.json?.["ok"], `CONTROL — B still reads A's ford through the realm: ${said(ford)}`).toBe(true);
+  }, 180_000);
+
   // ── ⑬ THE MEASURE: WHERE THE RETURN LANE STOPS ──────────────────────────────────────────────────
   // ⑪ stands red and its header names the seam as "past the wire" without saying WHICH of three stops
   // it is. This measure separates them on ONE run, and it runs LAST because its third probe takes A's
@@ -726,12 +754,12 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
 
   // ⑭b B'S OWN STORE, BY RAW ID. With B's daemon stopped (⑬ stops it; this stops it where ⑬ skipped), B's automerge
   // storage answers for each of A's live Kahu documents: a replica B never received holds no record of A's canon.
-  test("⑭b B's own store holds neither of A's live Kahu documents", async () => {
+  test("⑭b B's own store holds neither of A's live Kahu documents, nor her daemon document or catalog (⑮)", async () => {
     expect(kahuDocs.lares && kahuDocs.lararium, "⑭ named both documents").toBeTruthy();
     try { await B!.stopDaemonOnly(); } catch { /* ⑬ already stopped it */ }
     const repoB = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(B!)) });
     try {
-      for (const [bag, url] of Object.entries(kahuDocs)) {
+      for (const [bag, url] of [...Object.entries(kahuDocs), ...Object.entries(privateDocsA).filter(([, u]) => u !== "")]) {
         const body = await Promise.race([
           repoB.find(url as never).then((h) => JSON.stringify((h.doc() as object) ?? {}), () => "(unavailable)"),
           new Promise<string>((res) => setTimeout(() => res("(unavailable)"), 10_000)),
