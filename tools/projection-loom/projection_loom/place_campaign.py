@@ -145,6 +145,9 @@ def relational_emission_census(frontiers,records):
            or x["accepted_pair_index"]>=x["eligible_region_pair_count"]
            or not x["child_is_distinct_from_both_parents"] for x in ancestry):
         raise ValueError("Relational pairing record lost source-bound alternative testimony")
+    topologies=[row for row in offered if row["emitter"]=="topology-birth"]
+    topology_attempted=[row for row in topologies if row["audition"]=="attempted"]
+    topology_admitted=[row for row in topology_attempted if actual.get(row["candidate_id"],{}).get("status")=="admitted"]
     body={"schema":"projection-loom/observed-relational-emission-census",
           "all_offered":len(offered),"native_attempts":len(actual),
           "region_pairs_considered_in_proposals":considered,
@@ -153,6 +156,9 @@ def relational_emission_census(frontiers,records):
           "relational_native_attempted":len(attempted),
           "relational_native_admitted":len(admitted),
           "relational_native_unverified":len(attempted)-len(admitted),
+          "topology_offered":len(topologies),
+          "topology_native_attempted":len(topology_attempted),
+          "topology_native_admitted":len(topology_admitted),
           "recombination_deferrals":len(deferred),
           "deferral_reasons":reasons,
           "distinct_admitted_recombinants":len({row["genome_sha256"] for row in admitted}),
