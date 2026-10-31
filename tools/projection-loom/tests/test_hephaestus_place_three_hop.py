@@ -51,3 +51,14 @@ def test_three_hop_refuses_unselected_patterns_and_forged_waypoints():
     modified["intermediate_center_positions"][0][0]+=1
     with pytest.raises(ValueError,match="diverged"):
         verify_three_hop_route(site,spatial,modified)
+
+def test_generated_waypoint_cannot_displace_original_authored_foundation():
+    site,aim=authored()
+    p=site.bodies[0].program
+    blocked=PlaceGenome(tuple(sorted((*site.bodies,PlaceBody("barrier",p,(6,0,0))),
+                                   key=lambda x:x.entity_id)))
+    with pytest.raises(ValueError,match="intrudes into original native source barrier"):
+        propose_three_hop_route(blocked,aim,goal_index=0,
+                                pattern="x-y-x",corner_prefix="lane")
+    assert propose_three_hop_route(blocked,aim,goal_index=0,
+                                   pattern="y-x-y",corner_prefix="lane")["proposed_genome_sha256"]

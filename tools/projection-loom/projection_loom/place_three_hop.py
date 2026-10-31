@@ -58,6 +58,23 @@ def propose_three_hop_route(genome:PlaceGenome,spatial:SpatialIntent,*,
                                   size=(float(width),float(width),float(a[2]))),))
     corners=[PlaceBody(name,root,(float(x),float(y),float(z0)))
              for name,(x,y) in zip(names,sites)]
+    # Prospective generated *foundation* waypoints cannot silently displace
+    # any original native body's measured root footprint. This constrained
+    # cuboid check rejects obvious original-site conflicts before CAD, but
+    # STEP remains authoritative on every subsequent deck clearance.
+    for corner in corners:
+        cx,cy,cz=corner.translation
+        for original in genome.bodies:
+            if len(original.program.nodes)!=1 or original.program.nodes[0].op!="foundation":
+                raise ValueError("Three-hop avoidance requires measured single-foundation source bodies")
+            ox,oy,oz=original.translation
+            size=original.program.nodes[0].size
+            overlap=(min(cx+width,ox+size[0])-max(cx,ox),
+                     min(cy+width,oy+size[1])-max(cy,oy),
+                     min(cz+a[2],oz+size[2])-max(cz,oz))
+            if all(v>1e-7 for v in overlap):
+                raise ValueError("Generated waypoint "+corner.entity_id+
+                                 " intrudes into original native source "+original.entity_id)
     augmented=PlaceGenome(tuple(sorted((*genome.bodies,*corners),
                                        key=lambda row:row.entity_id)),
                           genome.walkways,genome.ascents,genome.bearings)
