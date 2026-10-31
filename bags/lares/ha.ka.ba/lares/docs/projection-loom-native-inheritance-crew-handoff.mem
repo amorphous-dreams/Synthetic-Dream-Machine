@@ -35,7 +35,7 @@ Root-bag Lares carriers remain the semantic owners; no second authority or evolu
 
 ''Worksite:'' `amorphous-dreams/Synthetic-Dream-Machine`, PR #84, `feature/green-jello-dinosaur-5--projection-loom`. The inspected baseline before this handoff came from `c75815d1b76bfb05c76130311adc78702b45e52e`, but every new commit must earn its own CI. The preferred boot ref remains `feature/green-jello-dinosaur-5`; fetch the entire `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem`. Operator-selected refs override the default. Never silently substitute `main`.
 
-''Engineering companion:'' `tools/projection-loom/docs/RELATIONAL-INHERITANCE-DESIGN.md`. ''Existing design meme:'' `lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design`. ''Operational carrier:'' `lar:///ha.ka.ba/lares/api/projection-loom-handoff`. ''Research ledger:'' `tools/projection-loom/docs/research/register.md`.
+''Active design:'' `lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design`. ''Operational carrier:'' `lar:///ha.ka.ba/lares/api/projection-loom-handoff`. ''Research ledger:'' `lar:///ha.ka.ba/lares/api/projection-loom-research`. ''Historical engineering companion:'' `archive/pr84-markdown-pre-otakiage-20261031:tools/projection-loom/docs/RELATIONAL-INHERITANCE-DESIGN.md` (Git, not live Markdown).
 
 <<~/ahu>>
 
@@ -111,7 +111,7 @@ The crew reports the exact commit, workflow IDs, native workspace identities, so
 
 !! Pono Before O-takiage · What the Fire Does and Does Not Do
 
-`tools/projection-loom/docs/relational-identity.md` defines o-takiage as release of a ''soft pet-name/evolutionary preference hold''. It does NOT burn CAD bodies, original geometry, lineage, evidence, historical identity claims or Git history.
+The retired `tools/projection-loom/docs/relational-identity.md`, preserved by Git, described o-takiage as release of a ''soft pet-name/evolutionary preference hold''. It does NOT burn CAD bodies, original geometry, lineage, evidence, historical identity claims or Git history.
 
 A proposed code/document retirement remains a separate, operator-gated action. Name exact paths and claims, replacement location, negative coverage, preserved ashes, rollback and approval before deleting active files. Relocating a misplaced carrier may preserve its bytes and `lar:` identity while retiring the old path after verifying a byte-identical copy.
 
@@ -135,6 +135,6 @@ The operator retains authority for canon, irreversible o-takiage, and the meanin
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XNK5Yn5eGYSP-81kvBNpC9KJdFh4vvuShuFLTXclWVw
+<<^ code="&#x0003;">>ni:///sha-256;-B57wP5sQkJ2HvSA7vOzQQddJk9s4DPd9URIoo4zWFM
 
 <<^ code="&#x0004;" -> to="?">>
