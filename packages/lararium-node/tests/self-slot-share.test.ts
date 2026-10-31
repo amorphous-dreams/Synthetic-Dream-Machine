@@ -299,3 +299,38 @@ describe("a SIBLING holds standing, never the house — the sibling gate alone d
     })).toBe(true);
   });
 });
+
+describe("T22: a share input that has not stood withholds by name on the wire and sibling lanes", () => {
+  // Each holder STOOD but empty: bans nobody, sets nobody aside, classes nothing. Distinct from null, which reads unstood.
+  const stoodAntigen: AntigenRing = { kapaed: new Set(), presenterNym: () => null };
+  const stoodShadow = { aside: () => false };
+  const stoodGuard = { classOf: () => null, withholds: async () => false };
+  const wire = (over: Partial<{ antigenRing: AntigenRing | null; shadow: typeof stoodShadow | null; protectedDocs: typeof stoodGuard | null }>) => selfSlotShareDecision({
+    hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: fedGate, membership: null, planeSeal: null, peerId: CROSS_PEER, documentId: CROSSROADS,
+    antigenRing: stoodAntigen, shadow: stoodShadow, protectedDocs: stoodGuard, ...over,
+  });
+
+  test("CONTROL: every input stood (empty) lets a stranger reach the shelf, as today", async () => {
+    expect(await wire({})).toBe(true);
+  });
+  test("RED: an unstood antigen ring withholds the shelf from a wire peer", async () => {
+    expect(await wire({ antigenRing: null })).toBe(false);
+  });
+  test("RED: an unstood edge shadow withholds the shelf from a wire peer", async () => {
+    expect(await wire({ shadow: null })).toBe(false);
+  });
+  test("RED: an unstood protected-document guard withholds the shelf from a wire peer", async () => {
+    expect(await wire({ protectedDocs: null })).toBe(false);
+  });
+  test("RED: a sibling meets the same withholding; CONTROL: an in-process island peer, inside the house, still full-syncs", async () => {
+    const siblingGate = { mayFederate: () => true };
+    expect(await selfSlotShareDecision({
+      hasWsSocket: false, sibling: true, siblingGate, peerClass: undefined, selfSlotFedGate: fedGate, membership: null, planeSeal: null,
+      peerId: "sibling-peer", documentId: CROSSROADS, antigenRing: null, shadow: stoodShadow, protectedDocs: stoodGuard,
+    })).toBe(false);
+    expect(await selfSlotShareDecision({
+      hasWsSocket: false, peerClass: undefined, selfSlotFedGate: fedGate, membership: null, planeSeal: null,
+      peerId: "island-peer", documentId: CATALOG_LIKE, antigenRing: null, shadow: null, protectedDocs: null,
+    })).toBe(true);
+  });
+});
