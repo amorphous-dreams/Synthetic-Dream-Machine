@@ -52,6 +52,7 @@ import {
   OUTCOME_URI_PREFIX,
   SUMMONS_URI_PREFIX,
   verbInputDigest,
+  wikiSlugOfBag,
 } from "@lararium/mesh";
 import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, EFFECT_URI_PREFIX } from "./verb-vm.js";
 import type { TW5Engine } from "./tw5-vm.js";
@@ -344,25 +345,36 @@ export class VerbDispatcher {
     // capability (project_verification_placement). Enforced only when a
     // real verifier exists; a pre-sovereign/test island (no verifier)
     // routes as before.
-    if (this.opts.verifier) {
-      await this.mountAimedWiki(invocation);
+    if (!this.opts.verifier) return;
+    try {
+      await gateRoutedVerb(invocation, this.opts.verifier, presenter, local);
+    } catch (refusal) {
+      // THE MOUNT FOLLOWS THE CAP'S OWN WORD. A working slot's cap mints at its wiki's first mount, so the one denial
+      // that asks for a mount reads `bag not registered` for a slot of the wiki the act aims at: a presenter the
+      // verifier denies for any other reason (no face, no grant) never reaches a mount, and the fence ran before.
+      const slug = routedWikiSlug(invocation);
+      const unregistered = /bag not registered: (lar:\/\/\/\S+)/.exec(refusal instanceof Error ? refusal.message : "")?.[1];
+      if (!slug || !unregistered || wikiSlugOfBag(unregistered) !== slug) throw refusal;
+      await this.mountAimedWiki(slug, invocation.requestedBy);
       await gateRoutedVerb(invocation, this.opts.verifier, presenter, local);
     }
   }
 
   /**
    * W27: an act aimed at a wiki no island mounts asks the vessel to mount it, and refuses by name when the mount cannot
-   * stand. A working slot's cap mints at the wiki's first mount, so the mount precedes the cap check, and it follows the
-   * fence (clearRouted runs the fence first), so only a presenter the fence admits can ask one. Main answers
-   * `wiki-switch` the way `ensureActive` does; a mounted wiki answers at once.
+   * stand. It follows the fence and the verifier's own `bag not registered` (see clearRouted), so only a presenter the
+   * fence admits and the verifier otherwise clears can ask one. Main answers `wiki-switch` the way `ensureActive` does.
    */
-  private async mountAimedWiki(invocation: Verb): Promise<void> {
-    const slug = routedWikiSlug(invocation);
-    if (!slug || !this.opts.routeFn) return;
+  private async mountAimedWiki(slug: string, requestedBy: string): Promise<void> {
     const refuse = (cause: string): Error => Object.assign(new Error(`wiki-mount-refused: ${cause}`), { reason: "wiki-mount-refused" });
+    if (!this.opts.routeFn) throw refuse(`no-route: ${slug} has no island to ask`);
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      const asked = this.opts.routeFn({ ...invocation, action: "wiki-switch", args: { slug }, requestId: `${invocation.requestId}#mount` });
+      // The ask rides its own correlation id: a caller's request id never names a mount.
+      const asked = this.opts.routeFn({
+        requestId: `wiki-mount:${globalThis.crypto.randomUUID()}`, title: `wiki-mount:${slug}`, action: "wiki-switch", args: { slug },
+        targets: [], batchMode: "best-effort", status: "pending", requestedBy, requestedAt: new Date().toISOString(),
+      } as Verb);
       const bound = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(refuse(`mount-timeout: ${slug} did not answer within ${WIKI_MOUNT_BOUND_MS}ms`)), WIKI_MOUNT_BOUND_MS); });
       const answer = await Promise.race([asked, bound]);
       if (answer["active"] !== true) throw refuse(`${String(answer["cause"] ?? "not-active")}: ${String(answer["detail"] ?? slug)}`);

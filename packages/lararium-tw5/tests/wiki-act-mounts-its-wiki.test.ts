@@ -13,6 +13,7 @@ import { CompositeStore, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, type CapabilityVerif
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
+import { routedWikiSlug } from "../src/verb-local-dispatch.js";
 
 type F = Record<string, unknown>;
 class FakeWiki {
@@ -41,13 +42,13 @@ const settle = async (): Promise<void> => { for (let i = 0; i < 20; i++) await n
 const outcomeOf = async (daemon: CompositeStore, id: string) => (await daemon.getLive(OUTCOME_URI_PREFIX + id))?.tiddler;
 
 const WORKING = "lar:///ha.ka.ba/wikis/orchard/working";
-function stand(opts: { switchAnswer?: Record<string, unknown> | Error; fence?: boolean } = {}) {
+function stand(opts: { switchAnswer?: Record<string, unknown> | Error; fence?: boolean; deny?: string } = {}) {
   const daemon = makeDaemon();
   const routed: string[] = [];
   let mounted = false;
   // The working slot's cap mints at the first mount, as resolveBinding does.
   const verifier: CapabilityVerifier = {
-    verify: async ({ bagUrl }) => bagUrl === WORKING && !mounted ? { ok: false, reason: `bag not registered: ${bagUrl}` } : { ok: true },
+    verify: async ({ bagUrl }) => opts.deny ? { ok: false, reason: opts.deny } : bagUrl === WORKING && !mounted ? { ok: false, reason: `bag not registered: ${bagUrl}` } : { ok: true },
   };
   const registry = new VerbTable();
   if (opts.fence) registry.fence({ open: {}, check: (verb, context) => {
@@ -122,6 +123,28 @@ describe("a wiki-act aimed at a wiki no island mounts asks the vessel to mount i
     await settle();
     expect(s.routed).not.toContain("wiki-switch");
     s.dispatcher.stop();
+  });
+
+  test("RED (Sol's read): a presenter the verifier denies for any reason but `bag not registered` triggers no mount, even with an explicit wiki", async () => {
+    const s = stand({ deny: "no face provider for this label" });
+    s.dispatcher.placeVerb({ verb: "wiki-act", args: { wiki: "orchard", verb: "LOAD", args: { "to-bag": WORKING } }, requestedBy: "did:key:label", requestId: "r3" });
+    await settle();
+    expect(s.routed).toEqual([]);
+    expect(String((await outcomeOf(s.daemon, "r3"))?.["results"])).toContain("no face provider");
+    s.dispatcher.stop();
+  });
+
+  test("RED (Sol's read): an explicit wiki with a malformed inner act mounts nothing (the denied bag names no slot of that wiki)", async () => {
+    const s = stand();
+    s.dispatcher.placeVerb({ verb: "wiki-act", args: { wiki: "orchard", verb: "NOPE", args: {} }, requestedBy: "did:key:mounted", requestId: "r4" });
+    await settle();
+    expect(s.routed).not.toContain("wiki-switch");
+    s.dispatcher.stop();
+  });
+
+  test("RED (Sol's read): a MOVE out of the daemon wiki's slot into an unmounted wiki's slot aims at the destination wiki", () => {
+    const inv = { requestId: "r5", title: "t", action: "wiki-act", requestedBy: "x", args: { verb: "MOVE", args: { "from-bag": "lar:///ha.ka.ba/wikis/daemon/working", "to-bag": WORKING } } } as never;
+    expect(routedWikiSlug(inv)).toBe("orchard");
   });
 
   test("CONTROL: an act on a bag that names no non-daemon wiki slot asks no mount", async () => {

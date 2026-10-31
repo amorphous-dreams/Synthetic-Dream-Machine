@@ -99,9 +99,12 @@ export function routedWikiSlug(invocation: Verb): string | null {
   if (invocation.action !== "wiki-act") return null;
   const outer = invocation.args as Record<string, unknown>;
   const inner = outer["args"] !== null && typeof outer["args"] === "object" && !Array.isArray(outer["args"]) ? outer["args"] as Record<string, unknown> : {};
+  // The daemon wiki stands on the daemon's own reach, so a daemon slot names no wiki to mount, and the main handler
+  // drops it BEFORE it prefers a source over a destination: so does this reading.
   const slot = (bag: unknown): string | null => {
     if (typeof bag !== "string" || !/^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(bag)) return null;
-    return wikiSlugOfBag(bag);
+    const slug = wikiSlugOfBag(bag);
+    return slug && slug !== "daemon" ? slug : null;
   };
   // The main handler compares the verb's own spelling, so this reading does the same: a case the handler would not
   // match names no wiki here either (the mount and the act then never aim at two wikis).
