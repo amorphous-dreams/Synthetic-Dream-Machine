@@ -131,10 +131,10 @@ def relational_emission_census(frontiers,records):
     selected=[row for row in offered if row["emitter"]=="relational-recombination"]
     attempted=[row for row in selected if row["audition"]=="attempted"]
     admitted=[row for row in attempted if actual.get(row["candidate_id"],{}).get("status")=="admitted"]
-    deferred=[row for row in offered if row["emitter_receipt"]["recombination_deferral"] is not None]
+    deferred=[row for row in offered if row["emitter_receipt"]["proposal_deferral"] is not None]
     reasons={}
     for row in deferred:
-        reason=row["emitter_receipt"]["recombination_deferral"]
+        reason=row["emitter_receipt"]["proposal_deferral"]
         reasons[reason]=reasons.get(reason,0)+1
     if any(row["candidate_id"] not in actual for row in attempted):
         raise ValueError("Relational census found an auditioned but unreported candidate")
@@ -159,7 +159,7 @@ def relational_emission_census(frontiers,records):
           "topology_offered":len(topologies),
           "topology_native_attempted":len(topology_attempted),
           "topology_native_admitted":len(topology_admitted),
-          "recombination_deferrals":len(deferred),
+          "proposal_deferrals":len(deferred),
           "deferral_reasons":reasons,
           "distinct_admitted_recombinants":len({row["genome_sha256"] for row in admitted}),
           "automatic_artistic_winner":False}
