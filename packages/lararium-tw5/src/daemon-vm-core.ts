@@ -630,10 +630,11 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         return;
       }
       // A SESSION'S DELEGATE PRESENTS AS ITS BOOKING: the presenter the session door verified, and local (it rode the
-      // vessel's own channel). Any other delegate keeps the claim it names and reads non-local.
+      // vessel's own channel). Any other delegate keeps the claim it names and reads non-local. Only the delegate of
+      // the act booked spends the booking: one naming another verb or other args under that id leaves it standing.
       const booked = sessionAsks.get(msg.requestId);
-      if (booked) sessionAsks.delete(msg.requestId);
       const worn: SessionWorn | undefined = booked && booked.act === actOf(msg.verb, msg.args) ? { ordinal: booked.ordinal, presenter: booked.presenter } : undefined;
+      if (worn) sessionAsks.delete(msg.requestId);
       const invocationLike = {
         title:       `${DAEMON_BAG_ID}/delegate/${msg.requestId}`,
         requestId:   msg.requestId,
