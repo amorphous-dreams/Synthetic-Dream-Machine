@@ -272,6 +272,54 @@ describe("a removed device opens nothing sealed after its removal", () => {
     void b;
   });
 
+  /** A seal paused inside its signer's first signature while a raise is counted and its roll arrives (the train's Sol
+   *  read, 2026-10-31): the seal must not commit under a key the removed reader holds. */
+  async function raceDuringSeal(founding: boolean, raiseLands: boolean) {
+    const { group, devices: [f, , c] } = await fleet(founding ? 0x50 : 0x52, ["f", "b", "c"]);
+    const before = founding ? null : await seal(f!, "sealed while c stood");
+    if (before) await carry(f!, c!);
+    let paused!: () => void, resume!: () => void;
+    const atFirstSign = new Promise<void>((r) => { paused = r; });
+    const release = new Promise<void>((r) => { resume = r; });
+    let signs = 0;
+    const slow: RecordSigner = { certificate: f!.signer.certificate, async sign(purpose, payload) { if (++signs === 1) { paused(); await release; } return f!.signer.sign(purpose, payload); } };
+    const sealing = f!.seat.seal({ bagId: BAG, plaintext: utf8Bytes("private after removal"), signer: slow });
+    await atFirstSign;
+    let rolling: Promise<string> = Promise.resolve("none");
+    if (raiseLands) {
+      f!.raises.add("raise-race");
+      f!.standing.set(bare(c!.id), "aside");
+      f!.signs = false;
+      rolling = f!.seat.sink({ kind: "seat-roll", scope: SCOPE, edgeId: "edge-c", raiseCids: ["raise-race"], how: "revoked", seat: { group, member: c!.id } } as never).then(() => "settled", () => "owed");
+    }
+    resume();
+    const sealed = await sealing;
+    await rolling;
+    let removedOpens = "nothing sealed";
+    if (!("refusal" in sealed)) { await carry(f!, c!); removedOpens = await opens(c!, sealed.body.ref); }
+    return { sealed, removedOpens, before };
+  }
+
+  it("A RAISE COUNTED WHILE A SEAL SIGNS, ON A BAG IT FOUNDS: the seal refuses `roll-owed` at its commit point, and the removed reader opens nothing", async () => {
+    const { sealed, removedOpens } = await raceDuringSeal(true, true);
+    expect("refusal" in sealed && sealed.refusal).toBe("roll-owed");
+    expect(removedOpens).toBe("nothing sealed");
+  });
+
+  it("A RAISE COUNTED WHILE A SEAL SIGNS, ON A BAG ALREADY FOUNDED: the seal refuses `roll-owed` at its commit point, and the removed reader opens nothing", async () => {
+    const { sealed, removedOpens } = await raceDuringSeal(false, true);
+    expect("refusal" in sealed && sealed.refusal).toBe("roll-owed");
+    expect(removedOpens).toBe("nothing sealed");
+  });
+
+  it("CONTROL: the same paused seal with no raise counted commits, founding and existing alike", async () => {
+    for (const founding of [true, false]) {
+      const { sealed, before } = await raceDuringSeal(founding, false);
+      if ("refusal" in sealed) throw new Error(said(sealed));
+      if (before) expect(sealed.body.keyVersion).toBe(before.body.keyVersion);
+    }
+  });
+
   it("A ROLL IN FLIGHT ALREADY BINDS A SEAL: the seat counts it owed from the moment it arrives, and the holder reads that inside its turn", async () => {
     const { group, devices: [f, , c] } = await fleet(0x3a, ["f", "b", "c"]);
     await seal(f!, "v1");
