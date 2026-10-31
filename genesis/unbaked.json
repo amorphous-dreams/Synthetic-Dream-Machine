@@ -1,0 +1,10 @@
+{
+  "format": "lararium-genesis-unbaked/v1",
+  "unbaked": [
+    {
+      "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
+      "sha256": "f9e8bf9a44c2791dc76160f68e049807aa329f35950eaf02555201b3855c7e57",
+      "why": "K20 o-takiage: two comments in meme-normalize.ts stopped citing the burned ai-phrasebook carrier, and the plugin bundle carries that source; no behaviour moved, so the bake waits for the next labelled re-bake"
+    }
+  ]
+}

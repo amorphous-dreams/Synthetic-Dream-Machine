@@ -60,7 +60,7 @@ function doneWorker(counter: { n: number }) {
     counter.n++;
     const outcome = concludeVerb({
       requestId: p.requestId, verb: p.verb, status: "done",
-      requestedBy: p.requestedBy, cause: "test-worker", batchMode: "best-effort",
+      cause: "test-worker", batchMode: "best-effort",
       results: { summary: { ok: true } },
     });
     daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
@@ -73,7 +73,7 @@ function bodyWorker(counter: { n: number }, bodyOf: (requestId: string) => numbe
     counter.n++;
     const outcome = concludeVerb({
       requestId: p.requestId, verb: p.verb, status: "done",
-      requestedBy: p.requestedBy, cause: "test-worker", batchMode: "best-effort",
+      cause: "test-worker", batchMode: "best-effort",
       results: { summary: { ok: true }, body: "b".repeat(bodyOf(p.requestId)) },
     });
     daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
@@ -302,7 +302,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       // model a remote peer doing the same).
       const workerDigest = await verbInputDigest({ verb, args });
       const outcome = concludeVerb({
-        requestId, verb, status: "done", requestedBy, cause: "remote-summons", batchMode: "best-effort",
+        requestId, verb, status: "done", cause: "remote-summons", batchMode: "best-effort",
         results: { summary: { ok: true } }, inputDigest: workerDigest,
       });
       // The ledger's own write carries the wait: the subscription has minted the fact once the working layer
@@ -507,7 +507,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       await dispatchAndStrand(v, counter, inv);
       await v.restart(() => {
         const outcome = concludeVerb({
-          requestId, verb: inv.verb, status: "done", requestedBy: inv.requestedBy, cause: "test-worker",
+          requestId, verb: inv.verb, status: "done", cause: "test-worker",
           batchMode: "best-effort", results: { summary: { ok: true } },
         });
         v.daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
@@ -576,7 +576,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
         // running the handler fresh.
         const outcome = concludeVerb({
           requestId: p.requestId, verb: p.verb, status: "done",
-          requestedBy: p.requestedBy, cause: "effect-dedup", batchMode: "best-effort",
+          cause: "effect-dedup", batchMode: "best-effort",
           results: { summary: { ok: true } }, effectOf: "req-effect-prior",
         });
         daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
@@ -647,7 +647,7 @@ describe("the receipt ring bounds BYTES as well as count", () => {
 
   /** The outcome a worker lands for request `n`, with a body of `body` bytes. Ids of one length weigh the same. */
   const outcomeOf = (n: number, body = BODY) => concludeVerb({
-    requestId: ID(n), verb: "nexus-kapae", status: "done", requestedBy: "did:key:test", cause: "test-worker",
+    requestId: ID(n), verb: "nexus-kapae", status: "done", cause: "test-worker",
     batchMode: "best-effort", results: { summary: { ok: true }, body: "b".repeat(body) },
   });
   const WEIGHT = outcomeBytesOf(outcomeOf(1).tiddler as Record<string, unknown>);
@@ -1047,7 +1047,7 @@ describe("a cancel's answer carries the vessel's outcome, never the caller's aba
       expect(await sendLine(v.socketPath, { op: "cancel", requestId })).toEqual({ requestId, state: "abandoned" });
       // Another road ran the id. Its record names no digest, so the fact keeps reading `abandoned` and the answer
       // below comes from the record alone, whatever the observer did.
-      const outcome = concludeVerb({ requestId, verb: "nexus-kapae", status: "done", requestedBy: "did:key:test", cause: "summons", batchMode: "best-effort", results: { summary: { ok: true } } });
+      const outcome = concludeVerb({ requestId, verb: "nexus-kapae", status: "done", cause: "summons", batchMode: "best-effort", results: { summary: { ok: true } } });
       v.daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
       expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("done");
       expect((await sendLine(v.socketPath, { op: "cancel", requestId }))["state"]).toBe("done");
@@ -1118,7 +1118,7 @@ describe("a cancelled id leaves the ring as every other fact does", () => {
     const b = s.ledgerAt(1);
     await b.ledger.cancel("req-c1");
     // A record no digest names: the ledger promotes nothing from it, and the cancelled fact keeps its verdict.
-    const outcome = concludeVerb({ requestId: "req-c1", verb: "nexus-kapae", status: "done", requestedBy: "did:key:test", cause: "test-worker", batchMode: "best-effort" });
+    const outcome = concludeVerb({ requestId: "req-c1", verb: "nexus-kapae", status: "done", cause: "test-worker", batchMode: "best-effort" });
     await b.composite.put(outcome, ORIGIN, { bag: DAEMON_BAG_ID });
     await b.ledger.observeOutcome("req-c1", "done", undefined, outcomeBytesOf(outcome.tiddler as Record<string, unknown>));
     expect(s.stored("req-c1")["state"]).toBe("abandoned");

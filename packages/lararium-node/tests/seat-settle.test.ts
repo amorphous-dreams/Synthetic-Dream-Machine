@@ -347,7 +347,7 @@ describe("the main thread asks its island a verb", () => {
     const placedOnce = new Promise<void>((r) => { onPlace = r; });
     const conclude = (requestId: string, status: "done" | "error", output: Record<string, unknown>, errorMessage?: string): void => {
       const outcome = concludeVerb({
-        requestId, verb: "seat-duties", status, requestedBy: "vessel", cause: "test-island", batchMode: "best-effort",
+        requestId, verb: "seat-duties", status, cause: "test-island", batchMode: "best-effort",
         results: { summary: { ok: status === "done", output } }, ...(errorMessage !== undefined ? { errorMessage } : {}),
       });
       daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });

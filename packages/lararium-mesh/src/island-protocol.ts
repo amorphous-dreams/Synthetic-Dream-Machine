@@ -602,6 +602,27 @@ export interface DaemonMsg_ResolveBindingRequest {
   wikiSlug: string;
 }
 
+/**
+ * Vessel → island: clear one face row before main runs it as a session's face (K20). The keyholder island meets the
+ * row with the clearance a routed verb meets before it delegates (`VerbDispatcher.clearRouted`, as a local ask of the
+ * presenter the session door verified), and answers whether it cleared. Nothing is placed or dispatched, so no
+ * outcome follows: the row's answer rides the session's socket alone.
+ */
+export interface DaemonMsg_GateVerbRequest {
+  type: "daemon:gate-verb-request";
+  requestId: string;
+  verb: string;
+  args: Record<string, unknown>;
+  requestedBy: string;
+}
+
+/** Island → vessel: the face row cleared (no `error`), or the clearance's refusal. */
+export interface DaemonMsg_GateVerbResult {
+  type: "daemon:gate-verb-result";
+  requestId: string;
+  error?: string;
+}
+
 /** Island → vessel: the resolved binding doc URLs (or an error). */
 export interface DaemonMsg_ResolveBindingResult {
   type: "daemon:resolve-binding-result";
@@ -721,6 +742,7 @@ export type VesselToIslandMsg =
   | DaemonMsg_FaceLit
   | DaemonMsg_FaceDrop
   | DaemonMsg_ResolveBindingRequest
+  | DaemonMsg_GateVerbRequest
   | DaemonMsg_EvictResult
   | DaemonMsg_ResidencyOpResult
   | WikiMsg_PlaceVerb
@@ -1007,6 +1029,7 @@ export type IslandToVesselMsg =
   | DaemonMsg_WorldlineCompareResult
   | DaemonMsg_WorldlineTrajectoryResult
   | DaemonMsg_ResolveBindingResult
+  | DaemonMsg_GateVerbResult
   | DaemonMsg_EvictRequest
   | DaemonMsg_ResidencyOp
   | DaemonMsg_WikiAlert
@@ -1036,7 +1059,7 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (v.type === LAR_CONTROL_EVENT) return readLarControlEvent(v) !== null;
   if (v.type === LAR_RESEND) return readLarResend(v) !== null;
   if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "doc:rested", "custody:written", "view:catalog-result", "view:content-result", "view:settled"] as const)
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "doc:rested", "custody:written", "view:catalog-result", "view:content-result", "view:settled"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 
@@ -1052,7 +1075,7 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
   if (v.type === LAR_SERVICE) return readLarService(v) !== null;
   if (isPortKind(v.type)) return readPortIslandMsg(v) !== null;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
     v.type as Exclude<IslandToVesselMsg["type"], LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }
@@ -1337,6 +1360,19 @@ export function mkDaemonResolveBindingRequest(opts: {
     recipeTrace: opts.recipeTrace,
     wikiSlug:    opts.wikiSlug,
   };
+}
+
+export function mkDaemonGateVerbRequest(opts: {
+  requestId:   string;
+  verb:        string;
+  args:        Record<string, unknown>;
+  requestedBy: string;
+}): DaemonMsg_GateVerbRequest {
+  return { type: "daemon:gate-verb-request", requestId: opts.requestId, verb: opts.verb, args: opts.args, requestedBy: opts.requestedBy };
+}
+
+export function mkDaemonGateVerbResult(opts: { requestId: string; error?: string }): DaemonMsg_GateVerbResult {
+  return { type: "daemon:gate-verb-result", requestId: opts.requestId, ...(opts.error !== undefined ? { error: opts.error } : {}) };
 }
 
 export function mkDaemonResolveBindingResult(opts: {

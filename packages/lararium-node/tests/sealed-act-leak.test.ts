@@ -90,7 +90,7 @@ async function stand(door: (parsed: unknown, sock: Socket) => boolean, rest: Pla
     placeVerb: (o) => {
       const p = o as Placed;
       const outcome = concludeVerb({
-        requestId: p.requestId, verb: p.verb, status: "done", requestedBy: p.requestedBy, cause: "test-worker",
+        requestId: p.requestId, verb: p.verb, status: "done", cause: "test-worker",
         batchMode: "best-effort", results: { summary: { echoed: p.args } },
       });
       daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });

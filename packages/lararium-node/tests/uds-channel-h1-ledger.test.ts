@@ -98,7 +98,7 @@ async function withChannel(
 const doneWorker = (p: Placed, daemonHandle: ReturnType<Repo["create"]>) => {
   const outcome = concludeVerb({
     requestId: p.requestId, verb: p.verb, status: "done",
-    requestedBy: p.requestedBy, cause: "test-worker", batchMode: "best-effort",
+    cause: "test-worker", batchMode: "best-effort",
     results: { summary: { ok: true } },
   });
   daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });

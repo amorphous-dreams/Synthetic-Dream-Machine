@@ -109,7 +109,7 @@ async function stand(label: string, opts: {
   const ran: Array<{ act: string; args: Record<string, unknown> }> = [];
   let ranStarted!: () => void;
   const ranFirst = new Promise<void>((resolve) => { ranStarted = resolve; });
-  const sessionActs = { names: new Set(["host.roll", "carriage.accept"]), run: async (act: string, args: Record<string, unknown>) => {
+  const sessionActs = { names: new Set(["host.roll", "carriage.accept", "face-row"]), run: async (act: string, args: Record<string, unknown>) => {
     ran.push({ act, args });
     ranStarted();
     if (opts.actHold) await opts.actHold;
@@ -123,7 +123,7 @@ async function stand(label: string, opts: {
     placeVerb: (o) => {
       placed.push(o);
       const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done",
-        requestedBy: o.requestedBy, cause: "test-worker", batchMode: "best-effort", results: { summary: { ok: true } } });
+        cause: "test-worker", batchMode: "best-effort", results: { summary: { ok: true } } });
       daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
     },
   }));
@@ -354,7 +354,9 @@ describe("UDS session switch", () => {
       expect(await place.ask({ verb: "load", args: {}, requestedBy: "did:place", requestId: "place-row" })).toMatchObject({ status: "done" });
       const a = await v.connect();
       const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
-      expect(await a.ask({ op: "session:call", ...envA, requestId: "on-session", verb: "face-row", args: {} })).toMatchObject({ kind: "session:result", status: "done" });
+      expect(await a.ask({ op: "session:act", ...envA, requestId: "on-session", act: "face-row", args: {} })).toMatchObject({ kind: "session:act-result" });
+      expect(v.placed.map((p) => (p as { verb: string }).verb)).toEqual(["load"]);      // the face row placed nothing
+      expect(v.ran.map((r) => r.act)).toEqual(["face-row"]);
     } finally { await v.done(); }
   });
   test("RED: a session's face binds the face row it carries: a row naming another face, or face and handleIndex disagreeing, refuses face-row-other-face and nothing runs", async () => {
@@ -362,18 +364,21 @@ describe("UDS session switch", () => {
     try {
       const a = await v.connect();
       const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));   // the face h0
-      const row = (requestId: string, args: Record<string, unknown>) => a.ask({ op: "session:call", ...envA, requestId, verb: "face-row", args });
+      const row = (requestId: string, args: Record<string, unknown>) => a.ask({ op: "session:act", ...envA, requestId, act: "face-row", args });
       for (const [id, args] of [["other-face", { face: 1 }], ["other-handle", { handleIndex: 1 }], ["split", { face: 0, handleIndex: 1 }]] as const) {
         expect(await row(id, args)).toEqual({ kind: "session:refused", requestId: id, refusal: "face-row-other-face" });
       }
-      expect(v.placed).toEqual([]);                                             // nothing reached the worker
-      // CONTROL: a row naming the session's face, or none, acts as that face under both keys.
-      expect(await row("named", { face: 0 })).toMatchObject({ kind: "session:result", status: "done" });
-      expect(await row("unnamed", { glamour: "x" })).toMatchObject({ kind: "session:result", status: "done" });
-      expect(v.placed.map((p) => (p as { args?: unknown }).args)).toEqual([{ face: 0, handleIndex: 0 }, { glamour: "x", face: 0, handleIndex: 0 }]);
-      // A row of the place carries its arguments as they came.
+      expect(v.ran).toEqual([]);                                                // nothing ran
+      // CONTROL: a row naming the session's face, or none, acts as that face.
+      expect(await row("named", { face: 0 })).toMatchObject({ kind: "session:act-result" });
+      expect(await row("unnamed", { glamour: "x" })).toMatchObject({ kind: "session:act-result" });
+      expect(v.ran.map((r) => r.args)).toEqual([{ face: 0 }, { glamour: "x", face: 0 }]);
+      // A row of the place carries its arguments as they came, and a face row never rides a call.
       expect(await a.ask({ op: "session:call", ...envA, requestId: "place-row", verb: "load", args: { face: 1 } })).toMatchObject({ kind: "session:result" });
-      expect((v.placed[2] as { args?: unknown }).args).toEqual({ face: 1 });
+      expect((v.placed[0] as { args?: unknown }).args).toEqual({ face: 1 });
+      expect(await a.ask({ op: "session:call", ...envA, requestId: "face-call", verb: "face-row", args: {} }))
+        .toEqual({ kind: "session:refused", requestId: "face-call", refusal: "answers-on-the-socket" });
+      expect(v.placed).toHaveLength(1);
     } finally { await v.done(); }
   });
   test("RED: a sealed act that acts as a face rides the session as its face, and its receipt names the act and the face alone", async () => {

@@ -40,14 +40,18 @@ async function invokeAbortable(
 }
 
 /**
- * Run `verb` inside the standing vessel on a session of face `face` (`h<N>`): the session opens, the one call rides it,
- * and the session closes. The door's own abort closes the session at once, as it ends the maintenance frame's socket.
- * A session the vessel refuses (a locked face, a face it does not hold, a moved anchor) answers by the vessel's own name.
+ * Run face row `verb` inside the standing vessel on a session of face `face` (`h<N>`): the session opens, the one act
+ * rides it (`session:act`), and the session closes. The row's answer returns on that socket alone, so no outcome body
+ * rests in the daemon document beside the face (K20). The door's own abort closes the session at once, as it ends the
+ * maintenance frame's socket. A session the vessel refuses (a locked face, a face it does not hold, a moved anchor)
+ * answers by the vessel's own name, and a row the vessel could not run throws `RoutedVerbRefused` with its words and
+ * the refusal's own name. The act carries no flat timer of its own: the door's budgeted wait bounds it, and the vessel
+ * bounds its clearance (`LocalWaitExpired` serves the maintenance frame alone).
  */
 async function invokeInSession(
   verb: string, args: Record<string, unknown>, face: number,
-  opts: { readonly timeoutMs: number; readonly signal: AbortSignal },
-): Promise<SubmitResult> {
+  opts: { readonly signal: AbortSignal },
+): Promise<Record<string, unknown>> {
   if (!udsSocketPresent()) throw new DaemonUnreachable(udsSocketPath());
   let session: Awaited<ReturnType<typeof openLocalSession>>;
   try { session = await openLocalSession({ faceRef: `h${face}`, hand: "cli" }); }
@@ -58,7 +62,15 @@ async function invokeInSession(
   }
   const abort = () => { void session.close(); };
   opts.signal.addEventListener("abort", abort, { once: true });
-  try { return await session.call(verb, args, { timeoutMs: opts.timeoutMs }) as unknown as SubmitResult; }
+  try {
+    const answer = await session.act(verb, args);
+    if (answer["status"] === "error") {
+      const reason = typeof answer["reason"] === "string" ? answer["reason"] : undefined;
+      throw new RoutedVerbRefused(typeof answer["errorMessage"] === "string" ? answer["errorMessage"] : reason ?? `${verb} failed`, reason);
+    }
+    const output = answer["output"];
+    return output !== null && typeof output === "object" && !Array.isArray(output) ? output as Record<string, unknown> : {};
+  }
   catch (e) {
     if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
     if (e instanceof SessionRefused) throw new RoutedVerbRefused(e.message, e.refusal);
@@ -134,8 +146,12 @@ export async function throughStoreDoor(opts: {
     let lastMessage = "";
     const controller = new AbortController();
     const verbPromise = (opts.face !== undefined
-      ? invokeInSession(opts.verb, opts.args, opts.face, { timeoutMs: totalBudgetMs, signal: controller.signal })
-      : invokeAbortable(opts.verb, opts.args, await vesselDid(), { timeoutMs: totalBudgetMs, signal: controller.signal }))
+      ? invokeInSession(opts.verb, opts.args, opts.face, { signal: controller.signal })
+      : invokeAbortable(opts.verb, opts.args, await vesselDid(), { timeoutMs: totalBudgetMs, signal: controller.signal }).then((r) => {
+        // The vessel's own name for the refusal rides out with its words: a floor, a retired bag, an abandoned id.
+        if (r.status === "error") throw new RoutedVerbRefused(r.errorMessage ?? "verb failed", r.refusal?.reason);
+        return summaryOutput(r) ?? {};
+      }))
       .finally(() => { settled = true; });
     // RACE the actual verb against a budgeted wait that NAMES the holder — never a flat clock that hangs mute.
     // The waiter never resolves on its own (its `probe` never reads true); it only ever throws `SlowBootTimeout`
@@ -150,9 +166,9 @@ export async function throughStoreDoor(opts: {
       },
       holderPids: () => pidsNamedIn(lastMessage),
     }).then((): { readonly quiet: true } => ({ quiet: true }));
-    let raced: { readonly quiet: true } | { readonly quiet: false; readonly v: SubmitResult };
+    let raced: { readonly quiet: true } | { readonly quiet: false; readonly v: Record<string, unknown> };
     try {
-      raced = await Promise.race([verbPromise.then((v): { readonly quiet: false; readonly v: SubmitResult } => ({ quiet: false, v })), named]);
+      raced = await Promise.race([verbPromise.then((v): { readonly quiet: false; readonly v: Record<string, unknown> } => ({ quiet: false, v })), named]);
     } catch (err) {
       // THIS DOOR'S OWN DECISION CLOSES THE SOCKET AT ONCE (H1). A budgeted wait that names a holder and
       // gives up must not leave the verb's own flat timer holding a channel open for the rest of ITS budget
@@ -163,10 +179,7 @@ export async function throughStoreDoor(opts: {
       await verbPromise.catch(() => { /* the abort's own rejection is not a second fault; `err` already is one */ });
       throw err;
     }
-    const r = raced.quiet ? await verbPromise : raced.v;
-    // The vessel's own name for the refusal rides out with its words: a floor, a retired bag, an abandoned id.
-    if (r.status === "error") throw new RoutedVerbRefused(r.errorMessage ?? "verb failed", r.refusal?.reason);
-    return { output: summaryOutput(r) ?? {}, via: "daemon" };
+    return { output: raced.quiet ? await verbPromise : raced.v, via: "daemon" };
   }
   return { output: await opts.direct(), via: "direct" };
 }

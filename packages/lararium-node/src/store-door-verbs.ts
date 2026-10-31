@@ -66,7 +66,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
-import { federationPostureFromDoc, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats, type SealEpoch } from "@lararium/mesh";
+import { federationPostureFromDoc, isVerbRefusal, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats, type SealEpoch } from "@lararium/mesh";
 import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "./commands/nexus-cabal.js";
 import { runFloorRelease } from "./commands/nexus-release.js";
 import { casDirForStorage } from "./node-cas.js";
@@ -594,9 +594,9 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
 }
 
 /**
- * The door's reactors over a running vessel, by verb. EACH FACE ROW ACTS AS THE FACE ITS SESSION WORE: the vessel's main
- * thread booked that face (its ordinal, beside the presenter the session door verified) when it placed the ask, and the
- * row reads it from `worn` alone. A row naming another face (by `face` or `handleIndex`) refuses `face-row-other-face`;
+ * The door's reactors over a running vessel, by verb. EACH FACE ROW ACTS AS THE FACE ITS SESSION WORE: a face row rides
+ * `session:act`, and the vessel's main thread hands it that face (its ordinal, beside the presenter the session door
+ * verified; `DaemonVmCore.runAsFace`), which the row reads from `worn` alone. Its answer returns on that session's socket. A row naming another face (by `face` or `handleIndex`) refuses `face-row-other-face`;
  * a face row that rode no session (a surface act, host code, a synced summons) refuses `face-row-rides-a-session`.
  * Every row naming none acts as the worn face, so no row falls back to the one face open or to face 0.
  */
@@ -615,6 +615,31 @@ export function storeDoorReactors(deps: StoreDoorDeps): Record<StoreDoorVerb, Ve
     });
   }
   return bound;
+}
+
+/**
+ * THE REALM VERBS THAT NAME A FACE'S KEY at a realm's Nexus: `realm-bag` signs as the acting face and answers its key
+ * (`signedBy`, `keptBy`), `realm-bags` lists stewards and `realm-clock` maintainers. On a session each answers on its
+ * socket alone, never in an outcome beside the session's face (K20): `realm-bag` and `realm-bags` run on main as
+ * session acts wearing the session's face (`REALM_SESSION_ACTS`), and `realm-clock`, an island read, rides the
+ * maintenance frame, which names no face.
+ */
+export const REALM_KEY_VERBS: ReadonlySet<string> = new Set(["realm-bag", "realm-bags", "realm-clock"]);
+export const REALM_SESSION_ACTS: ReadonlySet<string> = new Set(["realm-bag", "realm-bags"]);
+
+/**
+ * A face row's answer on a session's socket (`session:act`): `{ status: "done", output }` with the row's own output (a
+ * row's refusal rides in it as `refused`), or `{ status: "error", errorMessage, reason? }` for the fault that stopped it
+ * (a clearance the keyholder island refused, a row that threw), its `reason` the refusal's own name where it carries one
+ * (`VerbRefusal`), and the fault named to `log`. The answer leaves this vessel on that socket alone.
+ */
+export async function faceRowAnswer(run: () => Promise<Record<string, unknown>>, log?: (line: string) => void): Promise<Record<string, unknown>> {
+  try { return { status: "done", output: await run() }; }
+  catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    log?.(`face row faulted: ${errorMessage}`);
+    return { status: "error", errorMessage, ...(isVerbRefusal(error) ? { reason: error.reason } : {}) };
+  }
 }
 
 /**

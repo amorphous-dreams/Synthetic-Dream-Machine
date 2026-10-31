@@ -41,7 +41,6 @@
 import { type Socket } from "node:net";
 import { randomUUID } from "node:crypto";
 import { PARK_LIMIT } from "./owned-store.js";
-import { faceRowArgs } from "./face-selector.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   CompositeStore,
@@ -67,15 +66,23 @@ export interface UdsChannelOptions {
   /** Where a session switch's acts rest: the vessel's sealed row (`nodeSwitchActLog`). No log, no switch. */
   readonly switchActs?: SwitchActLog;
   /**
-   * The sealed acts that act as a face (`SESSION_ACTS`) and the custody door's chain that runs one (`CustodyDoor.act`): a
-   * `session:act` frame binds the session's face to the act and leaves a receipt naming the act and the face alone.
+   * The acts that act as a face and what runs one: the sealed acts (`SESSION_ACTS`, on the custody door's chain) and the
+   * store door's face rows (`STORE_DOOR_FACE_ROWS`, main's handler wearing the session's face). A `session:act` frame
+   * binds the session's face to the act, hands `run` the face it wears (its ordinal and the presenter the door
+   * verified), answers on this socket and leaves a receipt naming the act and the face alone.
    */
   readonly sessionActs?: {
     readonly names: ReadonlySet<string>;
-    readonly run: (act: string, args: Record<string, unknown>) => Promise<Record<string, unknown>>;
+    readonly run: (act: string, args: Record<string, unknown>, worn: { readonly ordinal: number; readonly presenter: string }) => Promise<Record<string, unknown>>;
   };
-  /** Verbs that act as a face: the maintenance frame refuses them `face-row-rides-a-session` (`STORE_DOOR_FACE_ROWS`). */
+  /** Verbs that act as a face (`STORE_DOOR_FACE_ROWS`): the maintenance frame refuses one `face-row-rides-a-session`. */
   readonly sessionVerbs?: ReadonlySet<string>;
+  /**
+   * Verbs whose answer on a session rides its socket alone (`session:act`): the face rows and the realm verbs that name a
+   * face's key at a realm's Nexus (`REALM_KEY_VERBS`). A `session:call`, whose outcome body rests in the daemon document
+   * beside the session's face, refuses one `answers-on-the-socket`, as it refuses every `sessionVerbs` row.
+   */
+  readonly socketVerbs?: ReadonlySet<string>;
   /** The daemon's warm daemon doc handle (result.daemon.daemonHandle). */
   readonly daemonHandle: DocHandle<LarDoc>;
   /** The daemon composite with its attached working layer established as default writable. */
@@ -155,8 +162,6 @@ export type SessionAnchor =
 const sameAnchor = (a: SessionAnchor | undefined, b: SessionAnchor | undefined): boolean =>
   a !== undefined && b !== undefined && a.kind === b.kind && a.aid === b.aid &&
   (a.kind === "nexus" || (b.kind === "place" && a.head === b.head));
-
-export { faceRowArgs };
 
 export interface UdsSessionDoor {
   open(ask: { faceRef: string; hand: Hand }): Promise<{ ok: true; supply: UdsSessionSupply } | { ok: false; refusal: string }>;
@@ -1050,14 +1055,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         !state.supply || typeof state.supply.presenter !== "string" || !state.supply.presenter) {
       return sessionRefuse(sock, "malformed-message", requestId);
     }
-    // A SESSION'S FACE BINDS THE FACE ROW IT CARRIES: a row that names another face (by `face` or `handleIndex`, or the
-    // two disagreeing) refuses, never overwritten; a row naming none acts as the session's face.
-    let args = frame["args"] as Record<string, unknown>;
-    if (opts.sessionVerbs?.has(frame["verb"])) {
-      const bound = faceRowArgs(args, state.supply.ordinal);
-      if (bound === null) return sessionRefuse(sock, "face-row-other-face", requestId);
-      args = bound;
-    }
+    // A FACE ROW'S ANSWER RIDES THE SOCKET ALONE (`session:act`), as does a realm verb's that names a face's key: a call's
+    // outcome body rests in the daemon document beside the session's face, so neither rides one.
+    if (opts.sessionVerbs?.has(frame["verb"]) || opts.socketVerbs?.has(frame["verb"])) return sessionRefuse(sock, "answers-on-the-socket", requestId);
+    const args = frame["args"] as Record<string, unknown>;
     await new Promise<void>((resolve) => {
       const closed = () => resolve();
       sock.once("close", closed);
@@ -1113,6 +1114,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     const scoped = faceScopedId(face, requestId);
     const action = `act:${name}`;
     const run = opts.sessionActs.run;
+    const worn = { ordinal: state.supply.ordinal, presenter: state.supply.presenter };
     arbitrating += 1;
     try {
       const digest = await verbInputDigest({ verb: action, args: {}, face });
@@ -1129,7 +1131,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       if (verdict.verdict === "refuse") return sessionRefuse(sock, verdict.reason, requestId);
       let answer: Record<string, unknown>;
       try {
-        answer = await run(name, bound);
+        answer = await run(name, bound, worn);
       } catch (error) {
         log(`session act ${name} faulted for ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
         answer = { status: "error", reason: "act-faulted" };

@@ -86,7 +86,7 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
         });
         const outcome = concludeVerb({
           requestId: o.requestId, verb: o.verb, status: "done",
-          requestedBy: o.requestedBy, cause: "test-worker", batchMode: "best-effort",
+          cause: "test-worker", batchMode: "best-effort",
           results: { summary: { ok: true, output: { toBag: String(o.args["toBag"]) } } },
         });
         daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
@@ -178,7 +178,7 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
         placed.push(o as Placed);
         const outcome = concludeVerb({
           requestId: o.requestId, verb: o.verb, status: "done",
-          requestedBy: o.requestedBy, cause: "test-worker", batchMode: "best-effort",
+          cause: "test-worker", batchMode: "best-effort",
           results: { summary: { ok: true } },
         });
         daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });

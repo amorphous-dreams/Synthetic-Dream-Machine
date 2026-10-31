@@ -7,7 +7,7 @@ import type { IslandToVesselMsg } from "../../lararium-mesh/src/island-protocol"
 const islandKinds = [
   "event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result",
   "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result",
-  "daemon:worldline-trajectory-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:face-settled",
+  "daemon:worldline-trajectory-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:face-settled",
   "daemon:residency-op", "daemon:wiki-alert", "gate:clear", "gate:refused", "cas:want", "dyad:ask", "doc:rest", "custody:write",
   "view:catalog", "view:content", "view:settle", "lar:frame", "lar:control-result", "lar:service",
   "port:snapshot", "port:changes", "port:reset", "port:written", "port:answer", "port:presence",
@@ -191,6 +191,18 @@ describe("shared holder routing keeps every island answer on its binding", () =>
     const sent = h.islandPosts.at(-1) as { requestId: string };
     h.fromIsland({ type: "wiki:verb-result", requestId: sent.requestId, result: { ok: true } });
     expect(a.received.at(-1)).toMatchObject({ type: "wiki:verb-result", requestId: "single", result: { ok: true } });
+  });
+
+  test("K20 (Sol's batch-head read): an admitted tab's face-row clearance gets its one reply on its own binding", async () => {
+    const h = harness(); const a = h.port(); const b = h.port();
+    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint); await h.admit(a); await h.admit(b);
+    a.send({ type: "daemon:gate-verb-request", requestId: "gate-1", verb: "cabal-face", args: {}, requestedBy: "0xatom" });
+    const sent = h.islandPosts.at(-1) as { type: string; requestId: string };
+    expect(sent.type).toBe("daemon:gate-verb-request");
+    expect(sent.requestId).not.toBe("gate-1");                                 // the holder's own correlation
+    h.fromIsland({ type: "daemon:gate-verb-result", requestId: sent.requestId });
+    expect(a.received.at(-1)).toMatchObject({ type: "daemon:gate-verb-result", requestId: "gate-1" });
+    expect(b.received.some((m) => (m as { type?: string }).type === "daemon:gate-verb-result")).toBe(false);
   });
 
   test("every island-to-vessel kind in the protocol has one declared route", () => {

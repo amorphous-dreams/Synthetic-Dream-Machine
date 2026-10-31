@@ -109,3 +109,15 @@ test("RED (Sol's delta read): a booking lends its face only to the very args it 
   (core as unknown as { retireAsk(id: string): void }).retireAsk("a-3");
   expect(await delegate("a-3", ATOM_1)).toBeNull();
 });
+
+test("RED (K20 booking LOW): a delegate whose act differs from the booking leaves the booking standing for the session's own delegate; CONTROL: the matching delegate consumes it", async () => {
+  const { core, delegate } = open();
+  core.placeVerb({ origin: "channel", verb: "probe-worn", args: { x: 1 }, requestedBy: ATOM_1, face: "subject-1", requestId: "m-2", ordinal: 1 } as never);
+  // Another verb, then other args, under the booked id: each wears no face and consumes nothing.
+  expect(await delegate("m-2", ATOM_1, "probe-context", { x: 1 })).toEqual({ presenter: ATOM_1, local: false });
+  expect(await delegate("m-2", ATOM_1, "probe-worn", { x: 2 })).toBeNull();
+  // The session's own delegate still wears the face it booked.
+  expect(await delegate("m-2", ATOM_1, "probe-worn", { x: 1 })).toEqual({ ordinal: 1, presenter: ATOM_1 });
+  // CONTROL: that matching delegate consumed the booking; a second one wears none.
+  expect(await delegate("m-2", ATOM_1, "probe-worn", { x: 1 })).toBeNull();
+});

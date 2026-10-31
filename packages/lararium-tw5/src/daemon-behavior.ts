@@ -19,6 +19,7 @@
 import {
   mkDaemonDelegateVerb,
   mkDaemonResolveBindingResult,
+  mkDaemonGateVerbResult,
   mkDaemonDeriveSkeletonResult,
   mkDaemonWorldlineCompareResult,
   mkDaemonWorldlineTrajectoryResult,
@@ -27,6 +28,7 @@ import {
   type DaemonMsg_FaceLit,
   type DaemonMsg_FaceDrop,
   type DaemonMsg_ResolveBindingRequest,
+  type DaemonMsg_GateVerbRequest,
   type DaemonMsg_DeriveSkeletonRequest,
   type DaemonMsg_WorldlineCompareRequest,
   type DaemonMsg_WorldlineTrajectoryRequest,
@@ -361,6 +363,29 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         } catch (err) {
           post(mkDaemonWorldlineTrajectoryResult({ requestId: msg.requestId, error: err instanceof Error ? err.message : String(err) }));
         }
+        return true;
+      }
+
+      if (type === "daemon:gate-verb-request") {
+        // A SESSION'S FACE ROW MEETS THE ROUTED CLEARANCE ALONE: local, as the presenter the session door verified (read
+        // through this island's presenter mapping), never placed and never dispatched, so no outcome follows; main runs
+        // the row once it clears. The clearance takes its locality as given, so no ask the island holds lends it.
+        const msg = raw as DaemonMsg_GateVerbRequest;
+        const dispatcher = _dispatcher;
+        if (!dispatcher) {
+          post(mkDaemonGateVerbResult({ requestId: msg.requestId, error: "the daemon's dispatcher does not stand yet" }));
+          return true;
+        }
+        // The invocation never rests and never dispatches, so it carries no clock.
+        const invocation = {
+          title: `${VERB_URI_PREFIX}${msg.requestId}`, requestId: msg.requestId, action: msg.verb, args: msg.args,
+          requestedBy: msg.requestedBy, requestedAt: "", targets: [], batchMode: "best-effort" as const, status: "pending" as const,
+        } as Verb;
+        const presenter = opts.presenterOf ? opts.presenterOf(invocation, true) : msg.requestedBy;
+        dispatcher.clearRouted(invocation, { local: true, presenter }).then(
+          () => post(mkDaemonGateVerbResult({ requestId: msg.requestId })),
+          (err: unknown) => post(mkDaemonGateVerbResult({ requestId: msg.requestId, error: err instanceof Error ? err.message : String(err) })),
+        );
         return true;
       }
 
