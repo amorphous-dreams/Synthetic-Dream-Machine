@@ -21,7 +21,7 @@ uri-path = "ha.ka.ba/lares/api/projection-loom-capability-composition"
 
 !! Current executable relation
 
-The architectural interpretation flows through `spatial_intent.py` → `place_obligations.py` → `place_genome.py` → `place_source_seal.py` → `place_campaign.py` and `place_affordances.py`. `place_composed_route.py` consumes an explicit operator bend; `place_source_transfer.py` tests independent source-carrier intake with equal native budgets. `fractal_ooda_ha.OODAHAJournal` remains the only five-phase authority. `place_board.py` offers read-only native gallery/operator presentation. None of these modules grants source camera registration, safe building certification, or artistic approval. Prior CAD/polygon operator invocation notes remain verbatim at #/ashes.
+The architectural interpretation flows through `spatial_intent.py` → `place_obligations.py` → `place_genome.py` → `place_source_seal.py` → `place_campaign.py` and `place_affordances.py`. `place_composed_route.py` consumes an explicit operator bend; `place_source_transfer.py` tests independent source-carrier intake with equal native budgets. `fractal_ooda_ha.OODAHAJournal` remains the only five-phase authority. `place_board.py` offers read-only native gallery/operator presentation. None of these modules grants source camera registration, safe building certification, or artistic approval. Prior CAD/polygon operator invocation notes remain in the pinned Git archive.
 
 <<~/ahu>>
 
@@ -39,7 +39,7 @@ not an OpenCascade face, a mesh vertex, or one compulsory geometry language.
 !! One OODA-HA authority
 
 * ''One helm.'' All living capability epochs MUST enter the executable
-  `run_ooda_epochs` phase controller. A second compound epoch scheduler MUST NOT
+  `run_ooda_ha_epochs` phase controller. A second compound epoch scheduler MUST NOT
   independently decide lineages, invent previews or apply operator controls.
 * ''Capabilities as child loops.'' Each actual candidate Act MAY open nested
   capability OODA-HA loops. Their trusted operators MUST execute in their own
@@ -116,40 +116,11 @@ the stepwise red-first commits, not relaxing native evidence checks.
 
 <<~/ahu>>
 
-<<~ ahu #/ashes>>
+<<~ ahu #/git-ashes>>
 
-!! Holding ashes · operator-called, reversible, no deletion
+!! Git ledger — no recursively embedded history
 
-Original carrier Git blob: `4e2a29756914c00de36e683d54380566ab9160e4`. Its displaced historical sections remain byte-for-byte below; each original section address still stands as a pointer above. Git carries the complete prior carrier. This holding rite promotes no lifecycle change and makes no claim that canon or its inbound links can burn.
-
-!!! Retained historical executable
-
-````text
-<<~ ahu #/executable>>
-!! Active source
-
-`tools/projection-loom/projection_loom/capability_stack.py` registers a
-trusted, versioned DAG of capability operators; `hybrid.py` grows bounded
-CAD-derived meshes and semantic sockets; `fractal_ooda_ha.py` executes the single
-recursive location/epoch/candidate/capability/gallery controller; `epochs.py`
-provides the strict CAD audition. `selection.py` chooses bounded candidate
-auditions and already scored review options; `review.py` regrows native-audited
-CAD/compound previews and their same-construction relation witnesses; and
-`gallery.py` regrows compound finalists during the controller's location
-Aftermath. These renderers MUST NOT independently steer operator choices,
-claim cross-kernel fusion, or turn an output image into source evidence. The original Necrospire RGBA and
-alpha, an under-specified visual witness, remain authoritative reference
-bytes, not a calibrated survey.
-
-Run with `python -m projection_loom ooda-run --project
-examples/necrospire/project.json --capability-recipe
-examples/necrospire/hybrid/recipe.json --control full-speed --passes 3
---candidates 4 --exact-budget 3 --detail-budget 3 --finalists 3
---out out/compound` from `tools/projection-loom/`.
-
-<<~/ahu>>
-````
-
+The operator released this carrier's displaced historical ahu from the living text. Exact prior bytes survive on `archive/pr84-before-lares-ashes-retirement-20261031`, commit `0d05dce315397fd2be1a7098270363ff4a948745`, file `bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem`; use `git show 0d05dce315397fd2be1a7098270363ff4a948745:bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem` to recover them. The older `archive/pr84-markdown-pre-otakiage-20261031` holds the pre-Markdown fire. Historical claims and dissent are recoverable; Git does not promote them to current verified state.
 
 <<~/ahu>>
 
@@ -160,6 +131,6 @@ examples/necrospire/hybrid/recipe.json --control full-speed --passes 3
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eKOfEaA-GAmCJVEe6hfEH0t6ox5tnNTIz3Z-qwFIguI
+<<^ code="&#x0003;">>ni:///sha-256;_4Abtfr4G0GmgPGD00_6sG_H2MNCJA1qcSSjuEW58bU
 
 <<^ code="&#x0004;" -> to="?">>
