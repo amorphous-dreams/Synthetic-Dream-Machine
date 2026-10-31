@@ -1,5 +1,20 @@
 # Projection Loom · Living YIN hephaestus-kanban
 
+## Verified repair checkpoint and topology replay hardening
+
+PR #84 on `feature/green-jello-dinosaur-5--projection-loom`. GitHub Actions run `41177032316` for head `c81f9a96195a7e815996ca88f76807b095b8bfd0` completed **success** in CAD/evidence CI, clearing the earlier five-test diagonal-fixture failure. This verdict belongs to that commit, not newer heads; repository-wide and other distinct workflows require separate evidence.
+
+Feature commit `b3d97ba230eee144198beb6894e890ca2742238c` adds a negative census witness: an altered topology ancestry attempt count must refuse rather than silently enter immutable replay. The current feature has not yet received its own completed native CI verdict.
+
+Next work: inspect all exact-head workflows, verify genuine multi-epoch topology native admission, refusal and finite audition budgets, test forged receipts and source-conditioned morphogenesis. Preserve one OODA-HA controller, no compatibility shims, no automatic artistic or Elyncia promotion. PR stays open; no irreversible o-takiage.
+
+## Ashes holding ahu · former living front
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
+# Projection Loom · Living YIN hephaestus-kanban
+
 ## Red CI diagnosis and targeted fixture repair
 
 **Branch:** `feature/green-jello-dinosaur-5--projection-loom` · **PR:** #84 · **repair commit:** `60d7f44d2d32d9fe059d6d035035ffed76cada3e`.
@@ -1808,6 +1823,8 @@ The first generalized contract run for `9284c1d7` passed 87 tests and failed one
 
 **✶ Observe:** The new dual-BRep reparent could be verified by `native_support` but still needed a complete location ancestry and CLI handback. **⏿ Orient:** Changing a required parent is an attributable semantic choice within one unchanged STEP scene, not a silent geometry rewrite. **◇ Decide:** Reuse the existing `support_workspace` to fork an immutable child with original source snapshot, full causal parent manifest, prior/new ground, both independent contacts, a single OODA-HA session and exact scene digest. Provide one `native-support-reparent` CLI entrypoint rather than a new controller. **▶ Act:** Positive independent two-quay/bridge end-to-end native location supports old→new replacement and reopens the complete fork; tests refuse repeated destination, altered dual-contact receipts and disconnected new bearing. **↺ Aftermath:** Structural reparenting with unchanged geometry is now implemented; actual editor-guided reparent motion remains separate, and no load safety is inferred. Exact-head suite must pass.
 
+
+</details>
 
 </details>
 
