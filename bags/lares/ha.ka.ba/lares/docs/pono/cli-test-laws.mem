@@ -89,8 +89,8 @@ Generated laws draw from `fast-check` through `@fast-check/vitest`, the literal 
 !! The census
 
 * 1000 rows: 581 seeds, 230 repeats of an input their law already holds, 189 controls, 15 orphans.
-* Retired into the laws: 53 literal tests whose exact input a law now covers, two files whole; a test that keeps an assertion no law reaches (a hint's text, a wire's shape) stays until one does.
-* A cold read of each retirement against its law names the guard a retirement drops. Six such guards ride their laws: the scan's edited twin and its copy (L11, its carriers each meeting a fate), CLEAR's wire args (L7, every verb's wire fields), the routed bags (L8, each routed act's carriage), the locked list's public index (L12), and the withheld carriages (L16, each seed held to null). The scripted-wire CLEAR test stays beside L7, since only it reads the bytes the socket carries.
+* Retired into the laws: 55 literal tests whose input a law now covers, three files whole (56 test blocks left their files; the scripted-wire CLEAR test returned); a test that keeps an assertion no law reaches (a hint's text, a wire's shape) stays until one does.
+* Two cold reads of each retirement against its law, a Codex and a Sonnet reader collided, name the guard a retirement drops; every such guard rides its law. L11: the scan's edited twin and its copy (its carriers each meeting a fate), the tree a scan leaves standing, and deletions named only when a pair holds. L7: every verb's wire fields. L8: each routed act's carriage, a canon-to-canon move, and `--in-wiki` over every slot. L9: a held store's own code, and the receipt an unknown outcome names. L10: each roster reading's count and cure, each refusing re-pave's count, the never-started reason, and a ready-claim refusal naming ready. L12: the locked list's public index, and doors that hold the seat's own. L16: each withheld carriage held to null, and a whole card under another kind refused. The scripted-wire CLEAR test stays beside L7, since only it reads the bytes the socket carries.
 * Smells: 206 prose-coupled assertions, 196 mocks that mirror the implementation, 100 giant fixtures, 60 source-regex reads, 29 timing waits, 24 tests that cannot fail, 23 that read or write outside a scratch root.
 
 <<~/ahu>>
@@ -104,6 +104,6 @@ Generated laws draw from `fast-check` through `@fast-check/vitest`, the literal 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SMTb_rwO522hdan0xr8E_CqRR8OqtS8qRaetqu_yv3Q
+<<^ code="&#x0003;">>ni:///sha-256;5HEQJlO53wWvJOf_9-b_ikJGrEyUO88xpvM7MxlAnyM
 
 <<^ code="&#x0004;" -> to="?">>

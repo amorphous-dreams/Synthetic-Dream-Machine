@@ -137,6 +137,18 @@ describe("L8 · act: the destination bag decides the reach, for every ACTION ver
     }
   });
 
+  test("seed: a canon-to-canon MOVE between two bags keeps the daemon's reach", async () => {
+    expect((await route(actOn("MOVE", OTHER_CANON, { from: CANON }))).verb).toBe("MOVE");
+  });
+
+  test("--in-wiki over every slot destination wraps for the active wiki and never names the slot's wiki", async () => {
+    for (const verb of DRIVEN) {
+      for (const slot of SLOT_NAMES) {
+        expect(await route(actOn(verb, witnessSlot(slot), { flags: { "in-wiki": true } }))).toEqual({ verb: WIKI, wiki: undefined, inner: verb });
+      }
+    }
+  });
+
   test("seed: a source slot beside a COPY or ADD never moves the reach (only MOVE reads its source)", async () => {
     for (const verb of ["COPY", "ADD"]) {
       expect((await route(actOn(verb, CANON, { from: witnessSlot("working") }))).verb).toBe(verb);

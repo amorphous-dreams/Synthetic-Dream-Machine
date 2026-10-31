@@ -20,6 +20,7 @@ import { EXIT_FOR, exitFor } from "../../src/render.js";
 import { DaemonUnreachable, refusalCode, refusalHint, verbFailure } from "../../src/verb-call.js";
 import { LocalWaitExpired } from "../../src/local-connector.js";
 import { RoutedVerbRefused, SlowBootTimeout, storeFailure } from "../../src/store-door.js";
+import { NexusKapaeError, StoreHeld } from "@lararium/node";
 import { EXIT_PARTIAL, conditionExit, vesselCondition, type VesselState } from "../../src/vessel-condition.js";
 import { UNKNOWN, door } from "./harness.js";
 
@@ -165,8 +166,10 @@ describe("L9 · a named outcome keeps its cause and its exit class", () => {
       const waited = storeFailure(new LocalWaitExpired("nexus-kapae", 10, "req-7"));
       const slow = storeFailure(new SlowBootTimeout("parked", "the vessel's store door", [7]));
       const gone = storeFailure(new DaemonUnreachable("/tmp/x.sock"));
-      expect([waited.code, slow.code, gone.code]).toEqual(["outcome-unknown", "store-door-timeout", "daemon-unreachable"]);
-      expect([waited.code, slow.code, gone.code].map(exitFor)).toEqual([6, 3, 3]);
+      const held = storeFailure(Object.assign(Object.create(StoreHeld.prototype) as Error, { message: "a vessel (pid 7) holds the store" }));
+      expect([waited.code, slow.code, gone.code, held.code]).toEqual(["outcome-unknown", "store-door-timeout", "daemon-unreachable", "store-held"]);
+      expect([waited.code, slow.code, gone.code, held.code].map(exitFor)).toEqual([6, 3, 3, 4]);
+      expect(waited.hint).toMatch(/lares receipt req-7/);   // an unknown outcome names the read that settles it
     });
 
     test("a fault that names nothing keeps the word its command gave (CONTROL)", () => {
@@ -174,6 +177,7 @@ describe("L9 · a named outcome keeps its cause and its exit class", () => {
       expect(storeFailure(new Error("disk full"), "refused").code).toBe("refused");
       expect(storeFailure(new RoutedVerbRefused("no name given")).code).toBe("error");
       expect(storeFailure(new RoutedVerbRefused("no name given"), "refused").code).toBe("refused");
+      expect(storeFailure(new NexusKapaeError("made here, through no door"), "refused").code).toBe("refused");
     });
 
     test("a named refusal never reads as the fallback word", () => {

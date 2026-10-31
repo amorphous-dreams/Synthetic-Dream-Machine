@@ -156,7 +156,13 @@ describe("L11 · scanSource reports each real carrier as read", () => {
         else if (typeof o.fate === "number") writeFileSync(join(dir, `old${i}.md`), body(o.fate));
       });
       news.forEach((c, i) => writeFileSync(join(dir, `new${i}.md`), body(c)));
+      const observed = () => olds.map((_, i) => tree.get(syncedTreeKey(TO, uriOf(`old${i}`))));
+      const before = observed();
+      expect(before.every((h) => h !== null), "each landed carrier holds an observation to keep").toBe(true);
       const scan = scanSource(root, src, TO, tree)!;
+      // A scan reads; it never moves an observation, and it names deletions only when a pair holds.
+      expect(observed(), "the scan leaves every landed observation where it stood").toEqual(before);
+      expect("renameDeletions" in scan, "renameDeletions rides only when a pair holds").toBe((scan.renameDeletions ?? []).length > 0);
       return {
         rows: scan.rows.map((r) => [r.uri, r.status, r.renameFrom ?? null] as const).sort(),
         dels: (scan.renameDeletions ?? []).map((d) => d.uri).sort(),

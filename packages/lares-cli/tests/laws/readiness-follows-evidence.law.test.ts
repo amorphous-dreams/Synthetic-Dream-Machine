@@ -112,7 +112,7 @@ describe("L10 vessel: every combination of evidence maps to one verdict", () => 
       for (const message of ["attested vessel-ready", "Ready", "all is well", "m"]) {
         const claims = /\bready\b/i.test(message);
         const mint = () => vesselCondition({ state, reason: "probe", message });
-        if (claims && state !== "standing") expect(mint).toThrow(); else expect(mint).not.toThrow();
+        if (claims && state !== "standing") expect(mint).toThrow(/ready/i); else expect(mint).not.toThrow();
       }
     }
   });
@@ -129,7 +129,7 @@ describe("L10 vessel: every combination of evidence maps to one verdict", () => 
   test("SEED: attested but not accepting reads rising; a bind refusal reads degraded at once; never started reads down", () => {
     expect(readVesselStanding({ attested: true, accepting: false, refusal: null, started: true }).state).toBe("rising");
     expect(readVesselStanding({ attested: true, accepting: false, refusal: "listen EINVAL", started: true }).state).toBe("degraded");
-    expect(readVesselStanding({ attested: false, accepting: false, refusal: null, started: false }).state).toBe("down");
+    expect(readVesselStanding({ attested: false, accepting: false, refusal: null, started: false })).toMatchObject({ state: "down", reason: "never-started" });
     expect(readVesselStanding({ attested: false, accepting: true, refusal: null, started: true }).state).toBe("rising");
   });
 
@@ -165,6 +165,15 @@ describe("L10 roster: standing derives from seated chairs and threshold alone", 
       expect(r.seated, JSON.stringify(g)).toBe(seated);
       expect(r.tolerance, JSON.stringify(g)).toBe(tolerance);
       expect(r.fragile, JSON.stringify(g)).toBe(seated && tolerance === 0);
+    }
+  });
+
+  test("every reading names its arithmetic: threshold of seated, the cure when fragile, and an unseated roster as unseated", () => {
+    for (const g of grid) {
+      const r = rosterStanding(g);
+      if (!r.seated) { expect(r.reading, JSON.stringify(g)).toMatch(/no kahu|nobody|unseated/i); continue; }
+      expect(r.reading, JSON.stringify(g)).toContain(`${g.threshold} of ${g.seated}`);
+      if (r.fragile) expect(r.reading, JSON.stringify(g)).toMatch(/one more seat|another seat/i);
     }
   });
 
@@ -238,6 +247,10 @@ describe("L10 re-pave: the verdict reads off counts, never off a clean exit", ()
       const v = repaveVerdict(g);
       expect({ ok: v.ok, state: v.state }, JSON.stringify(g)).toEqual(want(g));
       expect(v.why.length).toBeGreaterThan(0);
+      // A refusal names the count a person checks at a glance: the sources that landed nothing, the corpus it shrank from.
+      const named = (n: number) => new RegExp(`${n}|${n.toLocaleString("en-US")}`);
+      if (v.state === "barren") expect(v.why, JSON.stringify(g)).toMatch(named(g.sources));
+      if (v.state === "shrank") expect(v.why, JSON.stringify(g)).toMatch(named(g.before));
     }
   });
 

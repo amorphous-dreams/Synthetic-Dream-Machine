@@ -234,14 +234,17 @@ describe("L12 · custody writes stay behind the sealed door", () => {
     expect(files.length).toBeGreaterThan(50);
   });
 
-  test("K1 — the instrument sees: every sealed row yields a name, every writer module a writer function", () => {
+  test("K1 — the instrument sees: every sealed row yields a name, every writer module a writer function, and the doors hold the seat's own", () => {
     expect(SEALED_ROWS.length).toBeGreaterThan(20);
     expect(SEALED_ROWS.filter((r) => rowName(r) === null).map((r) => r.row)).toEqual([]);
     expect(HOLDER_WRITES.length).toBeGreaterThanOrEqual(3);
     expect(SEAT_DOORS.length).toBeGreaterThanOrEqual(HOLDER_WRITES.length);
+    for (const door of SEAT_DOORS) expect(door).toMatch(/CustodyRow$/);
     expect(SEALED_WRITER_DOORS.length).toBeGreaterThanOrEqual(3);
     expect(WRITER_MODULES.length).toBeGreaterThan(8);
     expect([...WRITER_FUNCTIONS].filter(([, fns]) => fns.length === 0).map(([path]) => relative(NODE_SRC, path))).toEqual([]);
+    // The seat's own module never reads as a row's writer: a writer module seals through it.
+    expect(WRITER_MODULES.map((p) => relative(NODE_SRC, p))).not.toContain("custody-seat.ts");
   });
 
   test.each(files.map((f) => [relative(CLI_SRC, f), f] as const))("%s writes no custody row outside the door", (_rel, path) => {

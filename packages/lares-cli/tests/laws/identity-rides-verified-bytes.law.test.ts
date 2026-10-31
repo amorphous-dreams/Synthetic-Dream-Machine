@@ -139,6 +139,11 @@ describe("L16 · the card carriage round-trips verbatim and withholds rather tha
     expect(parseHandleCardCarriage(`#card=${toToken(v)}`)).toBeNull();
   });
 
+  test.prop([card, fc.string({ maxLength: 24 }).filter((k) => k !== HANDLE_CARD_DOMAIN)], { examples: [[SEEDCARD, "not-a-handle-card"]] })(
+    "a whole card under any other kind decodes to null: the domain gates, not the presence of a kind", (c, kind) => {
+      expect(parseHandleCardCarriage(`#card=${toToken({ ...c, kind })}`)).toBeNull();
+    });
+
   test.prop([card, fc.constantFrom("kind", "nym", "sig", "actCid", "parents", "chain")])("a card missing a load-bearing field decodes to null", (c, drop) => {
     const { [drop as keyof HandleCard]: _gone, ...rest } = c as unknown as Record<string, unknown>;
     void _gone;
