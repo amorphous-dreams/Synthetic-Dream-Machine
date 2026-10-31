@@ -91,6 +91,34 @@ def _cross_parent(source, archive, spatial, *, seed, epoch, index):
     return (PlaceGenome.from_dict(record["child_genome"]),ancestry),None
 
 
+def _topology_birth(original, spatial, *, seed, epoch, index):
+    """Offer source-preserving route variation to the existing OODA-HA frontier.
+
+    A route proposal alone never grants native admission. The existing campaign
+    auditions its STEP solids under the original complete spatial intent.
+    """
+    from .place_three_hop import PATTERNS, propose_three_hop_route
+    goals=[i for i,goal in enumerate(spatial.goals) if goal.kind=="connect"]
+    if not goals:
+        return None,"original intent declares no connect relationship"
+    choice=(seed+epoch*10007+index*137)%len(goals)
+    goal_index=goals[choice]
+    pattern=PATTERNS[(seed+epoch+index)%len(PATTERNS)]
+    prefix="route_e%d_c%d_g%d"%(epoch,index,goal_index)
+    try:
+        proposal=propose_three_hop_route(original,spatial,goal_index=goal_index,
+                                         pattern=pattern,corner_prefix=prefix)
+    except ValueError as exc:
+        return None,"source-bound topology refused: "+str(exc)
+    child=PlaceGenome.from_dict(proposal["proposed_genome"])
+    return (child,{"source_genome_sha256":original.identity,
+                   "spatial_intent_sha256":spatial.identity,
+                   "goal_index":goal_index,"pattern":pattern,
+                   "corner_prefix":prefix,"proposal_sha256":proposal["sha256"],
+                   "native_audition_completed":False,
+                   "automatic_operator_acceptance":False}),None
+
+
 def emit_place_child(original,resolved,archive,spatial,*,epoch,index,offspring,seed):
     if (not isinstance(original,PlaceGenome) or not isinstance(resolved,PlaceGenome)
             or type(epoch) is not int or epoch<0
@@ -107,7 +135,11 @@ def emit_place_child(original,resolved,archive,spatial,*,epoch,index,offspring,s
         # Every later epoch offers one cross-parent region opportunity, without
         # inventing a second controller or exceeding the original audition budget.
         breeding=(epoch>0 and index==offspring-1)
-        proposal,refusal=_cross_parent(original,archive,spatial,seed=seed,epoch=epoch,index=index) if breeding else (None,None)
+        topology=(epoch>0 and offspring>=3 and index==offspring-2)
+        proposal,refusal=(_cross_parent(original,archive,spatial,seed=seed,epoch=epoch,index=index)
+                          if breeding else
+                          _topology_birth(original,spatial,seed=seed,epoch=epoch,index=index)
+                          if topology else (None,None))
         if proposal is None:
             parent=archive[index%len(archive)] if archive else {
                 "genome":resolved,"candidate_id":"authored-intent"}
@@ -118,7 +150,7 @@ def emit_place_child(original,resolved,archive,spatial,*,epoch,index,offspring,s
                         "genome_sha256":parent["genome"].identity}]
         else:
             child,ancestry=proposal
-            emitter="relational-recombination"
+            emitter="relational-recombination" if breeding else "topology-birth"
             ancestors=[ancestry]
     body={"schema":"projection-loom/place-emitter-proposal",
           "emitter":emitter,"epoch":epoch,"index":index,
