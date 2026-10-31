@@ -88,7 +88,7 @@ import {
   readGenesisCasManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
 import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.js";
-import { standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
+import { standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonCorpusRoot } from "./lares-config.js";
@@ -104,7 +104,7 @@ import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import { setCasDoor, setRestDoor, setCustodyWriteDoor, setDyadDoor } from "./worker-handle.js";
 import { writeCasEntriesFs } from "./node-cas.js";
-import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass, PersonaGroupIdentityRing, ProtectedDocClass } from "@lararium/mesh";
+import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass, PersonaGroupIdentityRing } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { readBootTiddlers, vesselPrivateBook, vesselPrivateRelationOpens } from "./vessel-private.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
@@ -852,29 +852,15 @@ async function prepareNodeBootOn(
     }
   };
   const recountKahuProtected = async (): Promise<void> => { await kahuProtected?.recount(); await standCarriedKahuStandings(); };
-  const noProtectedIds: ReadonlyMap<string, "kahu-canon"> = new Map();
-  // ONE ID MAP, TWO CLASSES: the vessel's private documents, then the Kahu canon over them. Rebuilt only when either moves.
-  let protectedMemo: { kahu: ReadonlyMap<string, ProtectedDocClass>; priv: ReadonlySet<string>; size: number; map: ReadonlyMap<string, ProtectedDocClass> } | null = null;
-  const protectedIds = (): ReadonlyMap<string, ProtectedDocClass> => {
-    const kahu = kahuProtected?.ids() ?? noProtectedIds;
-    const priv = vesselPrivate.ids();
-    if (protectedMemo && protectedMemo.kahu === kahu && protectedMemo.priv === priv && protectedMemo.size === priv.size) return protectedMemo.map;
-    const map = new Map<string, ProtectedDocClass>();
-    for (const id of priv) map.set(id, "vessel-private");
-    for (const [id, cls] of kahu) map.set(id, cls);
-    protectedMemo = { kahu, priv, size: priv.size, map };
-    return map;
-  };
+  // ONE ID MAP, TWO CLASSES (`protectedDocsOver`): the vessel's private documents, then the Kahu canon over them.
+  // RECOUNT BEFORE SERVE (Sol's reads, SHOULD 2 and BLOCKER 3): an ask reads the ids once no recount queued before its read
+  // stays pending, in that same turn. A torn count withholds every document from every wire peer until a whole recount
+  // (controller re-ruling 2026-10-31); so does a bootstrap that tore after a whole read (lane `ralias`), and so does a holder
+  // that has not stood yet (T22): until `systemCanon` stands it, the readings read incomplete.
+  const protectedReadings = protectedDocsOver(() => kahuProtected, vesselPrivate);
   let boundWaiter: Promise<void> | null = null;
   const protectedDocs = protectedDocGuard({
-    ids: protectedIds,
-    // RECOUNT BEFORE SERVE (Sol's reads, SHOULD 2 and BLOCKER 3): an ask reads the ids once no recount queued before its read
-    // stays pending, in that same turn.
-    settled: () => kahuProtected?.settled() ?? Promise.resolve(),
-    pending: () => kahuProtected?.pending() === true,
-    // A torn count withholds every document from every wire peer until a whole recount (controller re-ruling 2026-10-31).
-    // So does a bootstrap that tore after a whole read: a face that write added stands unclassed until it reads whole (lane `ralias`).
-    incomplete: () => kahuProtected?.incomplete() === true || vesselPrivate.torn(),
+    ...protectedReadings,
     // A tripped bound withheld asks: once the queue drains, re-ask the cached verdicts (one waiter at a time, no clock).
     onBound: () => {
       if (boundWaiter) return;
@@ -2025,12 +2011,15 @@ async function prepareNodeBootOn(
         personaGroupId: custodyGroup,   // sealed custody names the face; the composition tears down whole if its proof later refuses
       });
       // THE PROTECTED IDS, then THE LIVE STANDING the guard reads: each flip re-counts and re-asks the cached share verdicts.
+      const standing = !kahuProtected;
       if (!kahuProtected) {
         const holder = kahuProtectedHolder({ sealHome, canon: () => kahuCanon, onChange: () => reverdict() });
         kahuProtected = holder;
         stood.push({ what: "the protected canon ids", down: () => holder.close() });
       }
       await recountKahuProtected();
+      // The holder stood: a verdict cached while it had not (every wire ask withheld) reads again.
+      if (standing) reverdict();
       kahuStandingVessel = activeAtom?.key ?? "";
       if (!kahuStandings.primary) {
         const watch = await watchKahuStanding({
