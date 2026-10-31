@@ -138,7 +138,7 @@ export type ReanchorRefusal = "prefix" | "unverified-chain" | "not-head" | "no-r
  * The recovery rite that ROTATES the persona root beneath the same KEL prefix rewrites the anchor: the root
  * commitment and the edge digest move, the PersonaGroup, the prefix and the known frontier stay. The new root must be
  * the verified head of the KEL beneath the anchor's own prefix, so a document that names a new root with no KEL
- * rotation behind it moves nothing. A guardian-set rotation leaves root and edge unchanged and writes no anchor.
+ * rotation behind it moves nothing. A recovery-contact-set rotation leaves root and edge unchanged and writes no anchor.
  */
 export async function reanchorAfterRotation(
   anchor: FaceAnchor,

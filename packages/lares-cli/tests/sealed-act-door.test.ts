@@ -50,7 +50,7 @@
  *       act frame refuses either `face-act-rides-a-session`.
  *                                 control: the book a load answers is the book the save sends back
  *   D13 RED: EVERY ACT THAT SIGNS, OPENS OR WRITES AS A FACE RIDES A SESSION OF THAT FACE. The acts that name their face
- *       by `handleIndex` (a crossing's hand and witness, the carriage consent, the first guardians, a restored face's
+ *       by `handleIndex` (a crossing's hand and witness, the carriage consent, the first recovery contacts, a restored face's
  *       confirm, the fleet mirror's carry and clear) ride `session:act` on a session of the face they name, carrying
  *       `handleIndex` alone; the custody door's own act frame refuses each.
  *                                 control: an act of the place (`petname.set`) keeps the custody door's frame
@@ -286,7 +286,7 @@ describe("a command beside a standing vessel", () => {
       await vessel.down();
       seatCustody(null);
     }
-    expect(SEALED_ACT_NAMES.filter((n) => /recover|share|split/i.test(n))).toEqual([]);   // CONTROL: no act could have answered one
+    expect(SEALED_ACT_NAMES.filter((n) => /recover(?!y-contact\.)|share|split/i.test(n))).toEqual([]);   // CONTROL: no act could have answered one
   });
 
   test("D6 — the fleet mirror sends act frames alone, and its carry frames hold no name", async () => {
@@ -519,7 +519,7 @@ describe("a command beside a standing vessel", () => {
     await stage();
     const FACE_ACTS: Record<string, Record<string, unknown>> = {
       "crossing.sign": { handleIndex: 1 }, "crossing.witness": { handleIndex: 1, note: "seen" },
-      "carriage.accept": { handleIndex: 1 }, "persona.guardian.enrol": { handleIndex: 1, offers: "a b", threshold: 1 },
+      "carriage.accept": { handleIndex: 1 }, "persona.recovery-contact.enrol": { handleIndex: 1, offers: "a b", threshold: 1 },
       "persona.confirm": { handleIndex: 1, view: "v" }, "selves.carry": { handleIndex: 1, name: "petname" },
       "selves.clear": { handleIndex: 1, name: "petname" },
     };

@@ -13,7 +13,7 @@ import { proveFaceFromLog } from "../src/face-boot-proof.js";
 import { personaActRecordsOfGroup, signFoundingLog, signPersonaAct, writePersonaAct } from "../src/persona-act-board.js";
 import { writePersonaKelEvent, personaKelChainForPrefix } from "../src/persona-kel-board.js";
 import { provisionThresholdRecoveryAtFounding } from "../src/recovery-keel-core.js";
-import { guardianRecoveryRegistrationCard } from "../src/recovery-registration.js";
+import { recoveryContactRegistrationCard } from "../src/recovery-registration.js";
 import { actCid, signAct } from "../src/signed-act.js";
 
 const G = "g-mine";
@@ -25,7 +25,7 @@ async function founded(prefixOverride?: string) {
   const gk = await Promise.all([1, 2, 3].map((n) => pub(new Uint8Array(32).fill(n))));
   const prov = provisionThresholdRecoveryAtFounding({
     foundingOpKeyDid: `0x${rootKey}`,
-    guardians: gk.map((k, i) => guardianRecoveryRegistrationCard((["mine", "guardian-a", "guardian-b"] as const)[i]!, k, null)),
+    recoveryContacts: gk.map((k, i) => recoveryContactRegistrationCard((["mine", "contact-a", "contact-b"] as const)[i]!, k, null)),
     recoveryThreshold: 2,
   });
   const kelDoc = emptyLarDoc(); writePersonaKelEvent(kelDoc, prov.inception);

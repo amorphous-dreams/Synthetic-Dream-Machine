@@ -12,7 +12,7 @@
  *   3  COMMIT      ONE cold row, `restore-pending`, holds everything the restore will land. Before it nothing
  *                  moved; after it the restore completes, in this run or the next.
  *   4  LAND        each row from the pending row: the provisional mark, the proof keys, the names, the handle-book
- *                  records, the guardian set, the root and its roster line. Each lands only where nothing stands or where the same bytes stand.
+ *                  records, the recovery contact set, the root and its roster line. Each lands only where nothing stands or where the same bytes stand.
  *   5  RE-ADMIT    the carried key history seats on this vessel's own board and the face lights under this
  *                  vessel's own veil: a fresh key group, the same fixed prefix, a device edge the root signs for
  *                  this vessel's key, and the face's own address secret, landed from the bundle and never minted
@@ -28,10 +28,10 @@
  * read and where it read it, and every honest reader that holds a newer head refuses the edge a superseded root
  * signed, at its own gate.
  *
- * ── AFTER GUARDIAN ENROLMENT ───────────────────────────────────────────────────────────────────
- * A face's own bundle restores after it enrols guardians (stable-founding-road#/rulings, "A restore after guardian
+ * ── AFTER RECOVERY CONTACT ENROLMENT ───────────────────────────────────────────────────────────────────
+ * A face's own bundle restores after it enrols recovery contacts (stable-founding-road#/rulings, "A restore after recovery contact
  * enrolment"), so long as the newest event still reads as the typed first enrolment the root itself signed: the
- * root still operates, and the rolling commitment names the set that event committed. A guardians' rotation that
+ * root still operates, and the rolling commitment names the set that event committed. A recovery contacts' rotation that
  * moves the set ends that reach for every earlier bundle (`root-superseded`). A bundle cut after the enrolment
  * carries the set, and its own log must commit it; the restore checks its keys against this vessel's other faces
  * (no key guards two faces) and lands the face's sealed set row. A bundle cut before the enrolment still restores
@@ -53,8 +53,8 @@ import { createPrivateKey, createPublicKey } from "node:crypto";
 import { existsSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  GUARDIAN_ENROLMENT_KIND, HANDLE_BOOK_SNAPSHOT_ERA, bundleMemoryKeypair, canonicalJsonBytes, deriveSelfRecoveryKey,
-  foldPersonaContests, guardianCompartmentCheck, mintPersonaInception, openFaceBundleBody, readFaceBundleBody, sealKeySetHash,
+  RECOVERY_CONTACT_ENROLMENT_KIND, HANDLE_BOOK_SNAPSHOT_ERA, bundleMemoryKeypair, canonicalJsonBytes, deriveSelfRecoveryKey,
+  foldPersonaContests, recoveryContactCompartmentCheck, mintPersonaInception, openFaceBundleBody, readFaceBundleBody, sealKeySetHash,
   sealMemorySecret, verifyPersonaKelFull,
   type FaceBundleBody, type FaceBundleHolding, type PersonaKelEvent,
 } from "@lararium/mesh";
@@ -63,7 +63,7 @@ import type { BackupDoor } from "./face-bundle-cut.js";
 import { IslandVerbRefused } from "./island-verb-ask.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { openColdCustodyRow, removeColdCustodyRow, updateColdCustodyRow, updateCustodyRow } from "./custody-seat.js";
-import { guardianKeysOfOtherFaces, guardianSetFile, readGuardianSet, type GuardianSetRecord } from "./guardian-enrolment.js";
+import { recoveryContactKeysOfOtherFaces, recoveryContactSetFile, readRecoveryContactSet, type RecoveryContactSetRecord } from "./recovery-contact-enrolment.js";
 import { couldConfirm, markProvisional } from "./face-provisional.js";
 import { faceProofKeyStanding, landFaceProofKey } from "./face-key-custody.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
@@ -83,7 +83,7 @@ import { larBootstrapPath } from "./vessel-paths.js";
 export const RESTORE_REFUSALS = [
   "bundle-refused", "bundle-inconsistent", "root-superseded", "face-already-held", "restore-pending", "place-unfounded",
   "founding-face-unlit", "no-hearth", "index-held", "roster-names-another-key", "orphan-names-another-key", "row-conflict",
-  "guardian-key-serves-another-face", "hearth-stands", "no-address-secret",
+  "recovery-contact-key-serves-another-face", "hearth-stands", "no-address-secret",
 ] as const;
 export type RestoreRefusal = (typeof RESTORE_REFUSALS)[number];
 
@@ -102,11 +102,11 @@ export interface FaceBundleRestored {
   /** The head the key history check read: its sequence, and whether this vessel's own board held a history for the face. */
   readonly checked:  { readonly seq: number; readonly from: "board" | "bundle" };
   /**
-   * The face's guardian set: `none` where its log still stands one-of-one; `landed` where the bundle carried the set
+   * The face's recovery contact set: `none` where its log still stands one-of-one; `landed` where the bundle carried the set
    * the log commits and its row landed here; `held` where this vessel already held that same row; `absent` where the
    * log commits a set no part of this bundle carried (a bundle cut before the enrolment).
    */
-  readonly guardianSet: "none" | "landed" | "held" | "absent";
+  readonly recoveryContactSet: "none" | "landed" | "held" | "absent";
   /** The face stands PROVISIONAL (custody#/the-restore): who could confirm it, in words a person reads. */
   readonly provisional: { readonly couldConfirm: readonly string[] };
   readonly landed:   {
@@ -158,12 +158,12 @@ async function consistent(body: FaceBundleBody): Promise<{ readonly signerDid: s
   if (body.kel.some((e) => e.prefix !== inception.prefix)) inconsistent("the carried key history names another prefix");
   const verified = await verifyPersonaKelFull(body.kel);
   if (!verified.ok) inconsistent(`the carried key history fails to verify: ${verified.reason ?? "unverified"}`);
-  // A CARRIED GUARDIAN SET recomputes the digest it names, and the carried log's own typed first enrolment commits it.
-  const set = body.guardianSet;
+  // A CARRIED RECOVERY CONTACT SET recomputes the digest it names, and the carried log's own typed first enrolment commits it.
+  const set = body.recoveryContactSet;
   if (set !== null) {
-    const keys = set.guardians.map((g) => g.recoveryPubKey);
-    if (new Set(keys).size !== keys.length || sealKeySetHash(keys, set.threshold) !== set.guardianSetHash) inconsistent("the carried guardian set does not recompute the digest it names");
-    if (!body.kel.some((e) => e.kind === GUARDIAN_ENROLMENT_KIND && e.nextRecoverySetHash === set.guardianSetHash)) inconsistent("the carried guardian set names a digest no enrolment in the carried key history commits");
+    const keys = set.recoveryContacts.map((g) => g.recoveryPubKey);
+    if (new Set(keys).size !== keys.length || sealKeySetHash(keys, set.threshold) !== set.recoveryContactSetHash) inconsistent("the carried recovery contact set does not recompute the digest it names");
+    if (!body.kel.some((e) => e.kind === RECOVERY_CONTACT_ENROLMENT_KIND && e.nextRecoverySetHash === set.recoveryContactSetHash)) inconsistent("the carried recovery contact set names a digest no enrolment in the carried key history commits");
   }
   return { signerDid, recoveryCommit };
 }
@@ -185,12 +185,12 @@ async function currentHead(body: FaceBundleBody, carried: readonly PersonaKelEve
   }
   // THE ROOT STILL ANSWERS: it operates, and recovery rests with its own key, or with the set the root itself enrolled
   // by the typed first event, which the one reader admits only over a one-of-one head under the same op-key.
-  const enrolled = head.kind === GUARDIAN_ENROLMENT_KIND;
+  const enrolled = head.kind === RECOVERY_CONTACT_ENROLMENT_KIND;
   if (bare(head.opKeyDid) !== bare(signerDid) || (!enrolled && head.nextRecoverySetHash !== recoveryCommit)) {
     return refuse("root-superseded", `the newest key event this vessel reads for the face (sequence ${head.seq}) names another operating key or commits recovery to another key set: the face's current key history no longer accepts this root. Nothing moved.`);
   }
-  if (body.guardianSet !== null && body.guardianSet.guardianSetHash !== head.nextRecoverySetHash) {
-    return refuse("root-superseded", `the newest key event this vessel reads for the face (sequence ${head.seq}) commits another guardian set than the one this bundle carries. Nothing moved.`);
+  if (body.recoveryContactSet !== null && body.recoveryContactSet.recoveryContactSetHash !== head.nextRecoverySetHash) {
+    return refuse("root-superseded", `the newest key event this vessel reads for the face (sequence ${head.seq}) commits another recovery contact set than the one this bundle carries. Nothing moved.`);
   }
   // WHERE THE HEAD CAME FROM: this vessel's own board where the board itself holds that event, the bundle otherwise.
   return {
@@ -251,26 +251,26 @@ async function preflight(body: FaceBundleBody, target: number, founding = false)
       if ((await faceProofKeyStanding(key.scope, secret, target)) === "conflict") refuse("row-conflict", "a face proof key row the restore would write stands under other bytes, or under another face. Nothing moved.");
     } finally { secret.fill(0); }
   }
-  // THE GUARDIAN SET: no key guards two faces of one vessel (persona-policy#/distinct-recovery), and a set row at the
+  // THE RECOVERY CONTACT SET: no key guards two faces of one vessel (persona-policy#/distinct-recovery), and a set row at the
   // target stands only for this same set.
-  if (body.guardianSet !== null) {
-    const apart = guardianCompartmentCheck({ offered: body.guardianSet.guardians.map((g) => g.recoveryPubKey), heldByOtherFaces: await guardianKeysOfOtherFaces(target) });
-    if (!apart.ok) refuse("guardian-key-serves-another-face", `the carried guardian key ${apart.key.slice(0, 16)}… already guards the face at h${apart.handleIndex} on this vessel: a guardian holds a fresh key for each face. Nothing moved.`);
+  if (body.recoveryContactSet !== null) {
+    const apart = recoveryContactCompartmentCheck({ offered: body.recoveryContactSet.recoveryContacts.map((g) => g.recoveryPubKey), heldByOtherFaces: await recoveryContactKeysOfOtherFaces(target) });
+    if (!apart.ok) refuse("recovery-contact-key-serves-another-face", `the carried recovery contact key ${apart.key.slice(0, 16)}… already guards the face at h${apart.handleIndex} on this vessel: a recovery contact holds a fresh key for each face. Nothing moved.`);
   }
-  const standing = await readGuardianSet(target);
-  if (standing !== null && (body.guardianSet === null || standing.guardianSetHash !== body.guardianSet.guardianSetHash || standing.prefix !== body.anchors.personaKelPrefix)) {
-    refuse("row-conflict", `a guardian-set row stands at h${target} for another set or another face. Nothing moved.`);
+  const standing = await readRecoveryContactSet(target);
+  if (standing !== null && (body.recoveryContactSet === null || standing.recoveryContactSetHash !== body.recoveryContactSet.recoveryContactSetHash || standing.prefix !== body.anchors.personaKelPrefix)) {
+    refuse("row-conflict", `a recovery-contact-set row stands at h${target} for another set or another face. Nothing moved.`);
   }
 }
 
 /** The face's set row as the restore lands it: the carried set under the face's own prefix. */
-function guardianRecordOf(body: FaceBundleBody): GuardianSetRecord | null {
-  const set = body.guardianSet;
-  return set === null ? null : { prefix: body.anchors.personaKelPrefix, guardianSetHash: set.guardianSetHash, threshold: set.threshold, guardians: set.guardians };
+function recoveryContactRecordOf(body: FaceBundleBody): RecoveryContactSetRecord | null {
+  const set = body.recoveryContactSet;
+  return set === null ? null : { prefix: body.anchors.personaKelPrefix, recoveryContactSetHash: set.recoveryContactSetHash, threshold: set.threshold, recoveryContacts: set.recoveryContacts };
 }
 
 /** LAND each row a pending restore holds. Each lands only where nothing stands or where the same bytes stand. */
-async function land(pending: Pending, head: { readonly seq: number; readonly eventCid: string; readonly from: "board" | "bundle" }): Promise<FaceBundleRestored["landed"] & { readonly guardianSet: "landed" | "held" | null }> {
+async function land(pending: Pending, head: { readonly seq: number; readonly eventCid: string; readonly from: "board" | "bundle" }): Promise<FaceBundleRestored["landed"] & { readonly recoveryContactSet: "landed" | "held" | null }> {
   const { body, target } = pending;
   // THE PROVISIONAL MARK lands first among the rows: a face never stands restored here without it.
   await markProvisional(target, { prefix: body.anchors.personaKelPrefix, head: { seq: head.seq, eventCid: head.eventCid }, from: head.from });
@@ -292,15 +292,15 @@ async function land(pending: Pending, head: { readonly seq: number; readonly eve
   const book = await loadNodeHandleBook(target);
   const handleBook = await book.landFor(body.root.verifyingKey, { era: HANDLE_BOOK_SNAPSHOT_ERA, records: body.handleBook.records });
   if (handleBook.landed > 0 || handleBook.kept > 0) await saveNodeHandleBook(target, book);
-  // THE GUARDIAN SET lands where none stands; the same set there stays as it stands.
-  let guardianSet: "landed" | "held" | null = null;
-  const record = guardianRecordOf(body);
+  // THE RECOVERY CONTACT SET lands where none stands; the same set there stays as it stands.
+  let recoveryContactSet: "landed" | "held" | null = null;
+  const record = recoveryContactRecordOf(body);
   if (record !== null) {
-    guardianSet = await updateCustodyRow("identity", guardianSetFile(target), (standing) => {
+    recoveryContactSet = await updateCustodyRow("identity", recoveryContactSetFile(target), (standing) => {
       if (standing === null) return { plaintext: new TextEncoder().encode(JSON.stringify(record)), value: "landed" as const };
-      const held = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(standing)) as GuardianSetRecord;
-      if (held.guardianSetHash !== record.guardianSetHash || held.prefix !== record.prefix) {
-        throw new RestoreRefused("row-conflict", `a guardian-set row appeared at h${target} for another set while this restore landed; the pending row stays for a person to read`);
+      const held = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(standing)) as RecoveryContactSetRecord;
+      if (held.recoveryContactSetHash !== record.recoveryContactSetHash || held.prefix !== record.prefix) {
+        throw new RestoreRefused("row-conflict", `a recovery-contact-set row appeared at h${target} for another set while this restore landed; the pending row stays for a person to read`);
       }
       return { plaintext: null, value: "held" as const };
     });
@@ -308,7 +308,7 @@ async function land(pending: Pending, head: { readonly seq: number; readonly eve
   // THE ROOT AND ITS ROSTER LINE LAND LAST among the rows: every reader that asks "does this vessel hold the face"
   // reads the roster, so a restore that stopped sooner still reads as one that owes.
   await landPersonaRoot(target, { signingKey: body.root.signingKey, verifyingKey: body.root.verifyingKey });
-  return { faceProofKeys: body.faceProofKeys.length, petname, handle, handleBook, guardianSet };
+  return { faceProofKeys: body.faceProofKeys.length, petname, handle, handleBook, recoveryContactSet };
 }
 
 /**
@@ -386,7 +386,7 @@ export async function restoreFaceBody(args: {
         });
       } finally { row.fill(0); }
     }
-    const { guardianSet: setLanded, ...landed } = await land(pending, checked);
+    const { recoveryContactSet: setLanded, ...landed } = await land(pending, checked);
     // RE-ADMIT. The carried history seats on this vessel's own board, then the face lights under this vessel's own
     // veil. `runFoundTheFace` reads the root the roster now names and founds: the same fixed prefix, a fresh key
     // group, a device edge the root signs for this vessel's key. A face that already stands lit reads so and moves nothing.
@@ -404,7 +404,7 @@ export async function restoreFaceBody(args: {
     return {
       face: { handleIndex: pending.target, verifyingKey: pending.body.root.verifyingKey },
       prefix: pending.body.anchors.personaKelPrefix, resumed, checked: { seq: checked.seq, from: checked.from }, landed,
-      guardianSet: checked.enrolledSet === null ? "none" : setLanded ?? "absent", holds: pending.body.memory.holds,
+      recoveryContactSet: checked.enrolledSet === null ? "none" : setLanded ?? "absent", holds: pending.body.memory.holds,
       provisional: { couldConfirm: await couldConfirm(pending.target) },
     };
   });

@@ -3,7 +3,7 @@ import { Repo } from "@automerge/automerge-repo";
 import {
   emptyLarDoc, signFoundingLog, signPersonaAct, actCid, mintFaceAnchor, faceRootCommitment,
   didFromVerifyingKey, ed25519VerifyingKeyFromSeed, ed25519SignerFromSeed,
-  provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard,
+  provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard,
   writePersonaKelEvent, personaKelChainForPrefix, proveFaceFromLog,
 } from "@lararium/mesh";
 import { appendPersonaActs, readFacePersonaRecords } from "../src/persona-act-store.js";
@@ -17,9 +17,9 @@ async function fixture() {
   const rootKey = await ed25519VerifyingKeyFromSeed(seed);
   const signer = { key: rootKey, sign: ed25519SignerFromSeed(seed) };
   const did = didFromVerifyingKey(rootKey);
-  const guardians = await Promise.all([1, 2, 3].map(async (n, i) =>
-    guardianRecoveryRegistrationCard((['mine', 'guardian-a', 'guardian-b'] as const)[i]!, await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), null)));
-  const inception = provisionThresholdRecoveryAtFounding({ foundingOpKeyDid: did, guardians, recoveryThreshold: 2 }).inception;
+  const recoveryContacts = await Promise.all([1, 2, 3].map(async (n, i) =>
+    recoveryContactRegistrationCard((['mine', 'contact-a', 'contact-b'] as const)[i]!, await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), null)));
+  const inception = provisionThresholdRecoveryAtFounding({ foundingOpKeyDid: did, recoveryContacts, recoveryThreshold: 2 }).inception;
   const board = emptyLarDoc();
   writePersonaKelEvent(board, inception);
   const chain = personaKelChainForPrefix(board, inception.prefix)!;

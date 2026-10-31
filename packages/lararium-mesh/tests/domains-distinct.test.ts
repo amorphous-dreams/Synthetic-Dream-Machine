@@ -15,9 +15,10 @@ const ROOT = `${DOMAIN_ROOT}/`;
 
 /** The frozen set, sha256 over its sorted `EXPORT=string` rows. A move here re-keys live
  *  signatures and seals — it never reads as a refactor; only a deliberate retirement re-measures it. */
-const FROZEN_COUNT = 32;
+const FROZEN_COUNT = 30;
 // The relay-gate row left with the relay's derivation (33 → 32): the weld below is the 33-row hash (0252fa0a…) minus that one row, re-measured.
-const FROZEN_WELD = "3bbe945afa16e964704400c4cad06d07d3cf5a32b36468cc60088504703a0cdb";
+// Two frozen rows retired with the guardian rename (32 → 30): `guardian-registration` and `guardian-confirm` mint bare under their new names (`recovery-contact-registration`, `custodian-confirm`), a deliberate format cut; the weld below is the 32-row hash (3bbe945a…) minus those two rows, re-measured.
+const FROZEN_WELD = "2725abf58d8ec18e3740426f075ac6455d4d36ae87711890f0bad334adee5848";
 
 describe("the domain registry", () => {
   const named = Object.entries(domains).filter(([k, v]) => typeof v === "string" && /_(INFO|DOMAIN)$/.test(k) && k !== "DOMAIN_ROOT") as [string, string][];

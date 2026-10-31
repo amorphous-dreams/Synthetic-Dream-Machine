@@ -18,7 +18,7 @@
  * `S` reduced. The door changes which signatures and keys get ACCEPTED, and never what gets signed.
  *
  * TWO READINGS, ONE RULE. `acceptEd25519Key` answers at the moment a key ENTERS standing state (a charter
- * seat, an admit, a device edge, an inception, a Handle card, a guardian set); `readEd25519` answers a
+ * seat, an admit, a device edge, an inception, a Handle card, a recovery contact set); `readEd25519` answers a
  * signature with a named refusal a caller can surface; `verifyEd25519` reads the same answer as a boolean.
  * None throws: bytes or hex of any shape answer by name. Hex reads bare and lower-case alone, so one key
  * holds one spelling wherever a seat set or a signer dedup compares strings.

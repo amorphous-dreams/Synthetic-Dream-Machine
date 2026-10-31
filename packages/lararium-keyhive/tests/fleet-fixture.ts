@@ -4,7 +4,7 @@
  */
 import type { DocHandle } from "@automerge/automerge-repo";
 import {
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, guardianRecoveryRegistrationCard, landFleetFrontier, landFleetGenesis,
+  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, recoveryContactRegistrationCard, landFleetFrontier, landFleetGenesis,
   nextFleetFrontier, personaLineageFromKel, provisionThresholdRecoveryAtFounding, type LarDoc,
 } from "@lararium/mesh";
 
@@ -13,7 +13,7 @@ export async function fleetFixture(rootSeed: Uint8Array) {
   const keys = await Promise.all([1, 2, 3].map((n) => ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n))));
   const prov = provisionThresholdRecoveryAtFounding({
     foundingOpKeyDid: `0x${root}`,
-    guardians: keys.map((k, i) => guardianRecoveryRegistrationCard((["mine", "guardian-a", "guardian-b"] as const)[i]!, k, null)),
+    recoveryContacts: keys.map((k, i) => recoveryContactRegistrationCard((["mine", "contact-a", "contact-b"] as const)[i]!, k, null)),
     recoveryThreshold: 2,
   });
   const chain = [prov.inception];

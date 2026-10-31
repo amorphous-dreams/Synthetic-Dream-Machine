@@ -100,8 +100,8 @@ export async function gatherCredentials(verb: string, opts: { readonly route?: R
   }
 }
 
-/** Which card a person holds, as the split named it: the root split's two off-device cards, or a guardian card. */
-const CARD_CUSTODIANS = { r: "recorded-code", e: "escrow-peer", g: "guardian", d: "device" } as const;
+/** Which card a person holds, as the split named it: the root split's two off-device cards, or a custodian card. */
+const CARD_CUSTODIANS = { r: "recorded-code", e: "escrow-peer", c: "custodian", d: "device" } as const;
 export type CardCustodian = (typeof CARD_CUSTODIANS)[keyof typeof CARD_CUSTODIANS];
 
 /**
@@ -113,7 +113,7 @@ export async function gatherCards(verb: string): Promise<Array<{ readonly code: 
   requireTty(verb);
   const cards: Array<{ readonly code: string; readonly custodian: CardCustodian }> = [];
   for (;;) {
-    const a = (await promptLine(`card ${cards.length + 1} came from [r]ecorded code, [e]scrow carrier, [g]uardian card, [d]evice (blank line when done): `)).trim().toLowerCase();
+    const a = (await promptLine(`card ${cards.length + 1} came from [r]ecorded code, [e]scrow carrier, [c]ustodian card, [d]evice (blank line when done): `)).trim().toLowerCase();
     if (a === "") return cards;
     const custodian = CARD_CUSTODIANS[a[0] as keyof typeof CARD_CUSTODIANS];
     if (custodian === undefined) { say("  (choose one of the letters shown)"); continue; }

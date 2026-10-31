@@ -151,8 +151,9 @@ describe("the sealed-act table", () => {
     const spoken = JSON.stringify(answers).toLowerCase();
     for (const seed of seeds) expect(spoken.includes(seed)).toBe(false);
     expect(Object.keys(answers).length).toBe(calls.length);
-    // No row names a recovery split: its shares rebuild a root, so it runs in a command's own process alone.
-    expect(SEALED_ACT_NAMES.filter((n) => /recover|share|split|export|seed/i.test(n))).toEqual([]);
+    // No row names a recovery split: its shares rebuild a root, so it runs in a command's own process alone. The
+    // `persona.recovery-contact.*` rows hold no share: enrolment signs with the face's own root and keeps public keys.
+    expect(SEALED_ACT_NAMES.filter((n) => /recover(?!y-contact\.)|share|split|export|seed/i.test(n))).toEqual([]);
     // CONTROL: the same search finds a seed laid into an answer on purpose.
     expect(JSON.stringify({ ...answers, laid: seeds[0] }).toLowerCase().includes(seeds[0]!)).toBe(true);
   });

@@ -34,7 +34,7 @@ export interface RestoreLanded {
   readonly prefix: string;
   readonly resumed: boolean;
   readonly checked: { readonly seq: number; readonly from: "board" | "bundle" };
-  readonly guardianSet: "none" | "landed" | "held" | "absent";
+  readonly recoveryContactSet: "none" | "landed" | "held" | "absent";
   readonly provisional: { readonly couldConfirm: readonly string[] };
   readonly landed: { readonly faceProofKeys: number; readonly petname: boolean; readonly handle: boolean; readonly handleBook: { readonly landed: number; readonly kept: number } };
   readonly holds: ReadonlyArray<{ readonly bagId: string; readonly founding: string; readonly keyVersion: string }>;
@@ -87,7 +87,7 @@ export async function restoreFromBundle(args: {
 function landedOf(result: Record<string, unknown>, via: "vessel" | "direct"): RestoreLanded {
   return {
     ok: true, kind: "restore", via, face: result["face"] as RestoreLanded["face"], prefix: String(result["prefix"]), resumed: result["resumed"] === true,
-    checked: result["checked"] as RestoreLanded["checked"], guardianSet: (result["guardianSet"] ?? "none") as RestoreLanded["guardianSet"],
+    checked: result["checked"] as RestoreLanded["checked"], recoveryContactSet: (result["recoveryContactSet"] ?? "none") as RestoreLanded["recoveryContactSet"],
     provisional: (result["provisional"] ?? { couldConfirm: [] }) as RestoreLanded["provisional"], landed: result["landed"] as RestoreLanded["landed"], holds: (result["holds"] ?? []) as RestoreLanded["holds"],
   };
 }
@@ -128,7 +128,7 @@ export function restoreLines(landed: RestoreLanded): string[] {
     landed.checked.from === "board"
       ? `  key history: this vessel's own board held the face's history, and its newest head (sequence ${landed.checked.seq}) still accepts this root.`
       : `  key history: this vessel's board held no history for the face, so the check read the bundle's own log, as far as its cut (sequence ${landed.checked.seq}). A rotation that landed after the cut shows only on a board: every reader that holds the newer head refuses this seat at its own gate.`,
-    ...guardianLines(landed.guardianSet),
+    ...recoveryContactLines(landed.recoveryContactSet),
     "  PROVISIONAL: the face reads, recovers and serves its own content, and signs no act that changes who holds authority until a party to its relation shows its own view of the head above and that view agrees (`lares persona confirm`). Who could confirm:",
     ...landed.provisional.couldConfirm.map((line) => `    ${line}`),
     landed.via === "vessel"
@@ -144,12 +144,12 @@ export function restoreLines(landed: RestoreLanded): string[] {
   return lines;
 }
 
-/** What a restore says of the face's guardian set, where its key history commits one. */
-function guardianLines(set: RestoreLanded["guardianSet"]): string[] {
-  if (set === "landed") return ["  guardians: the bundle carried the set the face's key history commits, and this vessel holds its sealed row."];
-  if (set === "held") return ["  guardians: this vessel already held the set the face's key history commits; it stays as it stood."];
+/** What a restore says of the face's recovery contact set, where its key history commits one. */
+function recoveryContactLines(set: RestoreLanded["recoveryContactSet"]): string[] {
+  if (set === "landed") return ["  recovery contacts: the bundle carried the set the face's key history commits, and this vessel holds its sealed row."];
+  if (set === "held") return ["  recovery contacts: this vessel already held the set the face's key history commits; it stays as it stood."];
   if (set === "absent") {
-    return ["  guardians: the face's key history commits a guardian set this bundle did not carry (it was cut before the enrolment). The guardians still hold their own keys; cut a fresh bundle from a vessel that holds the set to carry it."];
+    return ["  recovery contacts: the face's key history commits a recovery contact set this bundle did not carry (it was cut before the enrolment). The recovery contacts still hold their own keys; cut a fresh bundle from a vessel that holds the set to carry it."];
   }
   return [];
 }

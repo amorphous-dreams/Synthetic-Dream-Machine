@@ -14,7 +14,7 @@ import { Repo } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
 import {
   buildDeviceDelegationRootHalf, hex, deriveSelfRecoveryKey, sealGroupSecret, groupSecretSealTitle, groupSecretOpenerFromSeed,
-  personaGroupSecret, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, tiddlerText,
+  personaGroupSecret, provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard, tiddlerText,
   mintFaceAnchor, personaActRecordsOfGroup, proveFaceFromLog, signFoundingLog, faceRootCommitment, edgeBodyDigest, writePersonaAct,
   ed25519SignerFromSeed, type PersonaKelEvent, type LarDoc,
 } from "@lararium/mesh";
@@ -40,7 +40,7 @@ async function bundleFor(deviceVerifyingKey: string, hearthTrueName = HEARTH) {
   const selfRecovery = await deriveSelfRecoveryKey(OPERATOR_SEED);
   const inception: PersonaKelEvent = provisionThresholdRecoveryAtFounding({
     foundingOpKeyDid: edge.personaRootDid,
-    guardians: [guardianRecoveryRegistrationCard("mine", selfRecovery.verifyingKey, null)],
+    recoveryContacts: [recoveryContactRegistrationCard("mine", selfRecovery.verifyingKey, null)],
     recoveryThreshold: 1,
   }).inception;
   // The same act seals the operator's PersonaGroup secret to this device, beside the edge.

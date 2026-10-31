@@ -3,7 +3,7 @@
  *
  * Every persona the live ceremony founds must pre-commit a REAL recovery-set digest into its prefix —
  * the founder's 1-of-1 self-recovery key (`deriveSelfRecoveryKey`, the multitude-of-one NAMED) until a
- * real guardian set stands. An empty pre-commit mints an identity Fork B can never rotate: a name with
+ * real recovery contact set stands. An empty pre-commit mints an identity Fork B can never rotate: a name with
  * no recovery future at all, discovered only the day a device dies.
  *
  * The third vector walks the whole point: the founder loses the device, still holds the seed, and

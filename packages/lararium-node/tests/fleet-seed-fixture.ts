@@ -6,7 +6,7 @@
  */
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  buildDeviceDelegation, guardianRecoveryRegistrationCard, landFleetGenesis, fleetEdgeBoardDocUrl, materializeSharedLarDoc,
+  buildDeviceDelegation, recoveryContactRegistrationCard, landFleetGenesis, fleetEdgeBoardDocUrl, materializeSharedLarDoc,
   mintFaceAnchor, personaKelBoardDocUrl, personaLineageFromKel, provisionThresholdRecoveryAtFounding, writePersonaKelEvent,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, type HandLineage, type LarDoc,
 } from "@lararium/mesh";
@@ -21,10 +21,10 @@ import { atomSeedOf } from "./atom-fixture.js";
 export async function seedFleet(handleIndex = 0, opts: { genesis?: boolean; repo?: Repo } = {}): Promise<{ root: string; lineage: HandLineage; prefix: string }> {
   const rootSeed = await loadPersonaGroupRootSeed(handleIndex);
   const root = await ed25519VerifyingKeyFromSeed(rootSeed);
-  const guardianKeys = await Promise.all([1, 2, 3].map((n) => ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n))));
+  const recoveryContactKeys = await Promise.all([1, 2, 3].map((n) => ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n))));
   const prov = provisionThresholdRecoveryAtFounding({
     foundingOpKeyDid: `0x${root}`,
-    guardians: guardianKeys.map((k, i) => guardianRecoveryRegistrationCard((["mine", "guardian-a", "guardian-b"] as const)[i]!, k, null)),
+    recoveryContacts: recoveryContactKeys.map((k, i) => recoveryContactRegistrationCard((["mine", "contact-a", "contact-b"] as const)[i]!, k, null)),
     recoveryThreshold: 2,
   });
   const lineage = personaLineageFromKel([prov.inception])!;

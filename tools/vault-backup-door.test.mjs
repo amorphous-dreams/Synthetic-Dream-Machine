@@ -141,9 +141,9 @@ test("a standing vessel cuts one face's backup bundle through its custody door",
     assert.equal(body.names.petname, "the gardener");
     assert.ok(body.kel.length >= 1 && body.kel[0].prefix === body.anchors.personaKelPrefix, "the body carries the face's key history from its inception");
     assert.equal((await mesh.verifyPersonaKelFull(body.kel)).ok, true);
-    assert.deepEqual(Object.keys(body).sort(), ["addressSecret", "anchors", "faceProofKeys", "guardianSet", "handleBook", "kel", "memory", "names", "root", "rosterLine"]);
+    assert.deepEqual(Object.keys(body).sort(), ["addressSecret", "anchors", "faceProofKeys", "handleBook", "kel", "memory", "names", "recoveryContactSet", "root", "rosterLine"]);
     assert.match(body.addressSecret, /^[0-9a-f]{64}$/, "the face's address secret rides, so its working documents follow it");
-    assert.equal(body.guardianSet, null, "a face that enrolled no guardians carries no set");
+    assert.equal(body.recoveryContactSet, null, "a face that enrolled no recovery contacts carries no set");
     assert.deepEqual(Object.keys(body.anchors).sort(), ["personaKelPrefix", "signerDid"]);
     await vessel.said(/\[custody\] backup: done/);
     assert.match(vessel.log(), /\[custody\] backup: refused \(no-slot-opens\)/);

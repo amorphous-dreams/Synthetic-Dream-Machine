@@ -137,9 +137,9 @@ describe("a face's handle index is its ordinal", () => {
   test("a handle-index row rests in the face at that ordinal and no other face opens it", async () => {
     const { holder, a, b } = await twoLockedFaces();
     await holder.unlockFace({ fcid: a.fcid }, cred("route-a"));
-    await holder.writeRow("identity", "guardian-set-h0.json", new TextEncoder().encode("{}"));
-    expect(existsSync(join(faceDir(seat!.homes.identity, a.fcid), "guardian-set-h0.json"))).toBe(true);
-    expect(existsSync(join(faceDir(seat!.homes.identity, b.fcid), "guardian-set-h0.json"))).toBe(false);
-    await expect(holder.writeRow("identity", "guardian-set-h1.json", new TextEncoder().encode("{}"))).rejects.toBeInstanceOf(FaceLocked);
+    await holder.writeRow("identity", "recovery-contact-set-h0.json", new TextEncoder().encode("{}"));
+    expect(existsSync(join(faceDir(seat!.homes.identity, a.fcid), "recovery-contact-set-h0.json"))).toBe(true);
+    expect(existsSync(join(faceDir(seat!.homes.identity, b.fcid), "recovery-contact-set-h0.json"))).toBe(false);
+    await expect(holder.writeRow("identity", "recovery-contact-set-h1.json", new TextEncoder().encode("{}"))).rejects.toBeInstanceOf(FaceLocked);
   });
 });

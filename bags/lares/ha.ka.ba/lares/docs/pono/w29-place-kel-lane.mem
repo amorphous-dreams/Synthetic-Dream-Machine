@@ -28,7 +28,7 @@ The floor trust chain orders its pin claims by place-KEL descent, so the place K
 
 !! The model ~ what stands
 
-* ''One KEL grammar.'' `packages/lararium-mesh/src/vessel-kel.ts` follows the house grammar (stable AID, `seq`, predecessor digest, event digest from the canonical core, strict fold, forks surfaced) with place authority alone: one key, no guardians, no quorum, no interaction events.
+* ''One KEL grammar.'' `packages/lararium-mesh/src/vessel-kel.ts` follows the house grammar (stable AID, `seq`, predecessor digest, event digest from the canonical core, strict fold, forks surfaced) with place authority alone: one key, no recovery contacts, no quorum, no interaction events.
 * ''Inception.'' `{kind, t:"icp", seq:0, key, next}`: `key` seats the ONLINE signer, `next` commits the digest of the cold key under `PLACE_NEXT_KEY_DOMAIN`, and the signer signs the event itself. The AID is the inception's digest.
 * ''Rotation.'' `{kind, t:"rot", aid, seq, prev, reveal, key, next}`: `reveal` opens the prior event's commitment, `key` seats the replacement signer, `next` commits a fresh cold key, and the REVEALED cold key signs. The online signer never selects its successor. A reused commitment or key refuses.
 * ''The card ceremony.'' The cold key rests on a founding card alone: its seed reaches no file. A founding and every rotation read the card back through an injected `PlaceFoundingCard` before a byte lands (the CLI adapts `cold-card-readback`; a staged test root stands in). A rotation runs under one custody claim: verify the card against the head, mint the next cold key and the replacement signer, read the replacement card back, stage the signed event with the replacement signer durably (`.vessel-rotating*.json`), publish the chain and the key file, remove the stage. A restart reconciles a staged file against the last verified head and never invents a successor; a staged file with no read-back card, or of another head, refuses.
@@ -68,6 +68,6 @@ The floor trust chain orders its pin claims by place-KEL descent, so the place K
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZkhKklI3M7TzicFaPQ5MbVo1N7VpAySKoTYslprHN9k
+<<^ code="&#x0003;">>ni:///sha-256;uXTtMrNRsthUDMWY1G0KOCgbu88D_rtMn0k93O0LnpY
 
 <<^ code="&#x0004;" -> to="?">>

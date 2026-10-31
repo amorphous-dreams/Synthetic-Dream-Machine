@@ -26,11 +26,11 @@
  */
 import {
   bundleMemoryKeypair, faceBundleBodyBytes, sealFaceBundleBody, verifyPersonaKelFull,
-  type FaceBundleBody, type FaceBundleGuardianSet, type FaceBundleHolding, type PersonaKelEvent,
+  type FaceBundleBody, type FaceBundleRecoveryContactSet, type FaceBundleHolding, type PersonaKelEvent,
 } from "@lararium/mesh";
 import { listFaceProofKeys } from "./face-key-custody.js";
 import { readFaceAddressSecret } from "./fleet-join-custody.js";
-import { readGuardianSet } from "./guardian-enrolment.js";
+import { readRecoveryContactSet } from "./recovery-contact-enrolment.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
 import { IslandVerbRefused } from "./island-verb-ask.js";
 import { loadNodeHandleBook } from "./node-circle-store.js";
@@ -78,10 +78,10 @@ export interface BackupDoor {
 }
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };
-type Parts = Partial<Mutable<Omit<FaceBundleBody, "names" | "guardianSet">>> & {
+type Parts = Partial<Mutable<Omit<FaceBundleBody, "names" | "recoveryContactSet">>> & {
   names: { petname?: string; handle?: string };
-  /** The face's guardian-set record as this vessel holds it, with the prefix it names; the key history decides whether it rides. */
-  guardianRecord?: FaceBundleGuardianSet & { readonly prefix: string };
+  /** The face's recovery-contact-set record as this vessel holds it, with the prefix it names; the key history decides whether it rides. */
+  recoveryContactRecord?: FaceBundleRecoveryContactSet & { readonly prefix: string };
 };
 type Extractor = (line: PersonaRosterLine, parts: Parts) => Promise<void>;
 
@@ -135,12 +135,12 @@ const EXTRACTORS: Readonly<Record<string, Extractor>> = {
     }
     try { parts.addressSecret = hexOf(secret); } finally { secret.fill(0); }
   },
-  // whole: the guardian set this face's typed first enrolment committed. It rides only where the face's key history,
+  // whole: the recovery contact set this face's typed first enrolment committed. It rides only where the face's key history,
   // as this vessel's board holds it, commits that very set (read after the history below); a record the head does
   // not show stands pending on this vessel and stays.
-  "guardian-set": async (line, parts) => {
-    const record = await readGuardianSet(line.handleIndex);
-    if (record) parts.guardianRecord = record;
+  "recovery-contact-set": async (line, parts) => {
+    const record = await readRecoveryContactSet(line.handleIndex);
+    if (record) parts.recoveryContactRecord = record;
   },
 };
 
@@ -153,7 +153,7 @@ export interface FaceBundleCut {
   readonly holds:      readonly FaceBundleHolding[];
   readonly face:       { readonly handleIndex: number; readonly verifyingKey: string };
   /** How many of each standing part the body carries, for the command's own words. */
-  readonly carries:    { readonly keyEvents: number; readonly faceProofKeys: number; readonly handleBookRecords: number; readonly petname: boolean; readonly handle: boolean; readonly guardians: number };
+  readonly carries:    { readonly keyEvents: number; readonly faceProofKeys: number; readonly handleBookRecords: number; readonly petname: boolean; readonly handle: boolean; readonly recoveryContacts: number };
 }
 
 /**
@@ -204,16 +204,16 @@ export async function cutFaceBundle(args: { readonly face: number; readonly bund
     throw err;
   } finally { pair.secret.fill(0); }
 
-  // THE GUARDIAN SET rides where the history's head commits it, under this face's own prefix.
+  // THE RECOVERY CONTACT SET rides where the history's head commits it, under this face's own prefix.
   const head = kel[kel.length - 1]!;
-  const record = parts.guardianRecord;
-  const guardianSet: FaceBundleGuardianSet | null = record && record.prefix === parts.anchors!.personaKelPrefix && head.nextRecoverySetHash === record.guardianSetHash
-    ? { guardianSetHash: record.guardianSetHash, threshold: record.threshold, guardians: record.guardians.map((g) => ({ slot: g.slot, label: g.label, recoveryPubKey: g.recoveryPubKey, confirmPhrase: g.confirmPhrase })) }
+  const record = parts.recoveryContactRecord;
+  const recoveryContactSet: FaceBundleRecoveryContactSet | null = record && record.prefix === parts.anchors!.personaKelPrefix && head.nextRecoverySetHash === record.recoveryContactSetHash
+    ? { recoveryContactSetHash: record.recoveryContactSetHash, threshold: record.threshold, recoveryContacts: record.recoveryContacts.map((g) => ({ slot: g.slot, label: g.label, recoveryPubKey: g.recoveryPubKey, confirmPhrase: g.confirmPhrase })) }
     : null;
 
   const body: FaceBundleBody = {
     root: parts.root!, rosterLine: parts.rosterLine!, anchors: parts.anchors!, kel,
-    names: parts.names, faceProofKeys: parts.faceProofKeys ?? [], handleBook: parts.handleBook ?? { records: [] }, guardianSet,
+    names: parts.names, faceProofKeys: parts.faceProofKeys ?? [], handleBook: parts.handleBook ?? { records: [] }, recoveryContactSet,
     addressSecret: parts.addressSecret!,
     memory: { section: memory.section, holds: memory.holds.map((h) => ({ bagId: h.bagId, founding: h.founding, keyVersion: h.keyVersion })) },
   };
@@ -226,7 +226,7 @@ export async function cutFaceBundle(args: { readonly face: number; readonly bund
       carries: {
         keyEvents: kel.length, faceProofKeys: body.faceProofKeys.length, handleBookRecords: body.handleBook.records.length,
         petname: body.names.petname !== undefined, handle: body.names.handle !== undefined,
-        guardians: body.guardianSet?.guardians.length ?? 0,
+        recoveryContacts: body.recoveryContactSet?.recoveryContacts.length ?? 0,
       },
     };
   } finally { bytes.fill(0); }

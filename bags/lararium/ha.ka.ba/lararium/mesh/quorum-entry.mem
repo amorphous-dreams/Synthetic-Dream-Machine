@@ -87,7 +87,7 @@ The rule takes no option:
 * ''hex reads bare and lower-case alone.'' One key holds one spelling wherever a seat set or a signer dedup
   compares strings; an upper-case or `0x`-prefixed copy of a key names nobody at the door.
 
-''A key refuses where it ENTERS, by name'': a charter seat, a roll's seated and revealed sets, a guardian
+''A key refuses where it ENTERS, by name'': a charter seat, a roll's seated and revealed sets, a recovery contact
 registration, a persona inception's op-key and each rotation's fresh one, a Handle key, both keys a device
 edge names, the device key an admit names. A charter, a roll or a log that names a refused key refuses WHOLE.
 Dropping the one seat would move a threshold nobody signed for.
@@ -95,7 +95,7 @@ Dropping the one seat would move a threshold nobody signed for.
 ''A weak key hidden inside a commitment refuses at its reveal, and the charter or face that committed it
 re-founds'': the reveal refuses whole, no roll or rotation can ever name that set lawfully, and nothing
 rescues the seat by counting it for nothing. So a committer checks before it hides: `seatNextDigest`, the
-guardian registration card and each minter pass the key through the door before any digest covers it.
+recovery contact registration card and each minter pass the key through the door before any digest covers it.
 
 No verifier takes its verify as a parameter where it can call the door itself: a function handed its verifier
 verifies as leniently as its caller chose.
@@ -116,6 +116,6 @@ passes.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;9fhrVYzF4M1iAJNY6xgspLCJXTBpNlqS6YnuTF8oM20
+<<^ code="&#x0003;">>ni:///sha-256;z0ANNd5_X3kgYICWbEDnU5WumgQzA-f1T9FykLKYORQ
 
 <<^ code="&#x0004;" -> to="?">>

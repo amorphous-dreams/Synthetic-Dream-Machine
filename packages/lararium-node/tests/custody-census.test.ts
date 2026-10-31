@@ -17,7 +17,7 @@ const SPEC: ReadonlyArray<readonly [row: string, classes: readonly CustodyPart[]
   ["persona-petnames", ["D"], false], ["persona-declarations", ["D"], false],
   ["public-handles", ["D"], false], ["vessel-face-key", ["D"], false], ["face-address-secret", ["D"], false],
   ["fleet-join-pending", ["D"], false], ["face-join-record", ["D"], false], ["handle-book", ["D"], false],
-  ["guardian-set", ["D"], false], ["face-provisional", ["D"], false], ["hosting-state", ["D"], false],
+  ["recovery-contact-set", ["D"], false], ["face-provisional", ["D"], false], ["hosting-state", ["D"], false],
   ["hosting-spent", ["D"], false], ["hosting-carry", ["D"], false], ["walk", ["D"], false],
   ["gate-memory", ["D"], false], ["transition-pending", ["F"], false], ["transitions", ["F"], false],
   ["cofound", ["D"], false], ["outbox-key", ["D"], false], ["sealed-outbox", ["D"], false],

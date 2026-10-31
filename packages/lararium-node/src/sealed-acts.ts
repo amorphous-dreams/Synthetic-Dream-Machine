@@ -55,7 +55,7 @@ import { ImportRefused, RestoreRefused, importFaceBundleMemory, restoreFaceBundl
 import { HostRefusal, runHostInvite, runHostRoll, runHostState } from "./commands/host.js";
 import { runWalkInvite, runWalkState, runWalkTake, WalkRefusal } from "./commands/walk.js";
 import { NexusKeyReissueRefused, runNexusKeyReissue } from "./nexus-key-reissue.js";
-import { GuardianEnrolmentRefused, guardianStanding, runGuardianEnrolment } from "./guardian-enrolment.js";
+import { RecoveryContactEnrolmentRefused, recoveryContactStanding, runRecoveryContactEnrolment } from "./recovery-contact-enrolment.js";
 import { ConfirmRefused, FaceProvisional, boardHeadOf, chairLogView, confirmProvisional, couldConfirm, readProvisionalMark } from "./face-provisional.js";
 import {
   SealCeremonyRefusal, armGenesis, armRoll, bindCrossing, heldSeatsAmong, openCrossing, readBackStandsIn, readCrossing, retireSeats,
@@ -331,10 +331,10 @@ async function reissueOrRefuse<T>(run: Promise<T>): Promise<T> {
 }
 
 /** A flow that answers `{ error }` refuses the act with those words; any other answer passes through. */
-/** A guardian enrolment's refusal reaches the caller by its own name. */
+/** A recovery contact enrolment's refusal reaches the caller by its own name. */
 async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
   try { return await run; } catch (err) {
-    if (err instanceof GuardianEnrolmentRefused) throw refuse(`${err.refusal}: ${err.message}`);
+    if (err instanceof RecoveryContactEnrolmentRefused) throw refuse(`${err.refusal}: ${err.message}`);
     throw err;
   }
 }
@@ -346,15 +346,15 @@ async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
  * door, acting as the place under a human unlock (hands-spine-lane#/watch names each and why):
  * `face.resolve` chooses the face and cannot ride the session it chooses; the seat, seal, cofound and roll-circle
  * acts are the charter's seats; petname.* and declaration.* write the place's sealed rows naming its faces (the face's
- * plane takes a name only by `selves.carry`); the persona reads (`roots`, `guardian.show`, `provisional`, `head`) and
+ * plane takes a name only by `selves.carry`); the persona reads (`roots`, `recovery-contact.show`, `provisional`, `head`) and
  * `selves.read`, `walk.state`, `host.state`, `carriage.readings` and `crossing.state` sign no face's key, and
  * `persona.view` signs as a held chair (a seat key), never as a face; crossing.open/bind/seal are the charter's rite; `walk.invite` and `host.invite` hand the place's wallet;
  * and `bundle.restore`/`bundle.import` land a face anew as recovery.
  */
 export const SESSION_ACTS: ReadonlySet<string> = new Set([
   // Sign under the face's key or root: its Nexus credential, its walk record, its hosting epoch, its hand and witness in
-  // a crossing, its consent to a Nexus's carriage, its first guardians, and its confirm of its own restored standing.
-  "persona.reissue", "walk.take", "host.roll", "crossing.sign", "crossing.witness", "carriage.accept", "persona.guardian.enrol", "persona.confirm",
+  // a crossing, its consent to a Nexus's carriage, its first recovery contacts, and its confirm of its own restored standing.
+  "persona.reissue", "walk.take", "host.roll", "crossing.sign", "crossing.witness", "carriage.accept", "persona.recovery-contact.enrol", "persona.confirm",
   // Read or write what the face alone keeps: its handle book, and its names on its own persona plane.
   "handle-book.load", "handle-book.save", "selves.carry", "selves.clear",
 ]);
@@ -616,21 +616,21 @@ export const SEALED_ACTS = Object.freeze({
     })))) };
   }),
 
-  // THE FACE'S FIRST GUARDIANS. The face's own root signs the typed first enrolment; its record rests sealed and
+  // THE FACE'S FIRST RECOVERY CONTACTS. The face's own root signs the typed first enrolment; its record rests sealed and
   // the event lands on the face's KEL board through the store the composition lends. The answer names the set's
   // digest and counts alone.
-  "persona.guardian.enrol": act({ handleIndex: index, offers: text, threshold: count }, async (a, ctx) => {
+  "persona.recovery-contact.enrol": act({ handleIndex: index, offers: text, threshold: count }, async (a, ctx) => {
     const store = ctx.hosting;
-    if (!store) throw refuse("no store stands here to land a guardian enrolment on");
-    return { ...(await enrolOrRefuse(store.withRepo((repo) => runGuardianEnrolment({
+    if (!store) throw refuse("no store stands here to land a recovery contact enrolment on");
+    return { ...(await enrolOrRefuse(store.withRepo((repo) => runRecoveryContactEnrolment({
       repo, handleIndex: a.handleIndex, offers: a.offers.split(/\s+/).filter((o) => o.length > 0), threshold: a.threshold,
     })))) };
   }),
 
-  "persona.guardian.show": act({ handleIndex: index }, async (a, ctx) => {
+  "persona.recovery-contact.show": act({ handleIndex: index }, async (a, ctx) => {
     const store = ctx.hosting;
     if (!store) throw refuse("no store stands here to read the face's key history from");
-    return { ...(await enrolOrRefuse(store.withRepo((repo) => guardianStanding(repo, a.handleIndex)))) };
+    return { ...(await enrolOrRefuse(store.withRepo((repo) => recoveryContactStanding(repo, a.handleIndex)))) };
   }),
 
   // THE PROVISIONAL STANDING of a restored face (custody#/the-restore): the mark and who could confirm; a party's own
@@ -643,7 +643,7 @@ export const SEALED_ACTS = Object.freeze({
     try { return { ...(await confirmProvisional({ handleIndex: a.handleIndex, view: a.view })) }; }
     catch (err) { if (err instanceof ConfirmRefused) throw refuse(`${err.reason}: ${err.message}`); throw err; }
   }),
-  // The head a guardian's own view names, off this vessel's own board; the guardian signs it in its own process.
+  // The head a recovery contact's own view names, off this vessel's own board; the recovery contact signs it in its own process.
   "persona.head": act({ prefix: text }, async (a, ctx) => {
     const store = ctx.hosting;
     if (!store) throw refuse("no store stands here to read the face's key history from");

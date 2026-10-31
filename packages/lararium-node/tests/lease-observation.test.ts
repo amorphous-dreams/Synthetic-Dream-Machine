@@ -1,7 +1,7 @@
 /** lease-observation — the anchor rises only on a verified signed slot. Reds: unsigned, stranger, other group; control: the root's advance. */
 import { describe, expect, it } from "vitest";
 import {
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, guardianRecoveryRegistrationCard, mintFaceAnchor,
+  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, recoveryContactRegistrationCard, mintFaceAnchor,
   provisionThresholdRecoveryAtFounding, signLeaseAdvance,
 } from "@lararium/mesh";
 import { realKel, forgedRotation } from "../../lararium-mesh/tests/kel-fixture.js";
@@ -14,7 +14,7 @@ describe("raiseAnchorFromSlots", () => {
     const gk = await Promise.all([1, 2, 3].map((n) => ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n + 60))));
     const prov = provisionThresholdRecoveryAtFounding({
       foundingOpKeyDid: `0x${root}`, recoveryThreshold: 2,
-      guardians: gk.map((k, i) => guardianRecoveryRegistrationCard((["mine", "guardian-a", "guardian-b"] as const)[i]!, k, null)),
+      recoveryContacts: gk.map((k, i) => recoveryContactRegistrationCard((["mine", "contact-a", "contact-b"] as const)[i]!, k, null)),
     });
     const anchor = mintFaceAnchor({ personaGroup: "g1", personaKelPrefix: prov.inception.prefix, personaRootDid: `0x${root}`, edge: {}, leaseEpoch: 0 });
     const sign = { key: root, sign: ed25519SignerFromSeed(seed) };

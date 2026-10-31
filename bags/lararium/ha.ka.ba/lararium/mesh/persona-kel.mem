@@ -38,7 +38,7 @@ the head, hash-linked onto its predecessor.
 # ''The old op-key SUPERSEDES, never revives'' — eviction runs forward-only. A thief of today's op-key learns
 nothing of the recovery future.
 
-Every event content-addresses by `eventCid` over an authority CORE, and the guardian rotation-signatures sign
+Every event content-addresses by `eventCid` over an authority CORE, and the recovery contact rotation-signatures sign
 the SAME bytes — the revealed roster/threshold ride OUTSIDE, verified against the bound `recoverySetHash`, so
 re-carrying an event never re-signs it (the sig-outside pattern). A single bit-flip yields a different cid, so
 the hash-link the next event binds is tamper-evident.
@@ -60,7 +60,7 @@ rotate, so `mintPersonaInception` refuses it and every reader refuses it too (`u
 one-of-one: its genesis digest names its own self-recovery key alone (identity-classes#the-two-forks).
 
 ''Fork-B — threshold-attest'' (identity-classes#the-two-forks): the rolling commitment holds the k-of-n DIGEST
-of the recovery PUBLIC keys (`sealKeySetHash`), the face's own key alone from inception and the guardians' once
+of the recovery PUBLIC keys (`sealKeySetHash`), the face's own key alone from inception and the recovery contacts' once
 the face enrols them (#/the-enrolment); a rotation carries k SIGNATURES over the event bytes, verified against
 the predecessor's commitment. ''NOTHING reconstructs'' — no secret ever assembles. The recovery
 authority signs ONLY rotations, never content.
@@ -69,22 +69,22 @@ authority signs ONLY rotations, never content.
 
 <<~ ahu #/the-enrolment>>
 
-!! The first guardian enrolment ~ one typed event the face's own key signs
+!! The first recovery contact enrolment ~ one typed event the face's own key signs
 
-A face founds one-of-one, so its guardians arrive later, and its log knows the act that brings them
-(<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>, "Guardian enrolment's shape"). The
-one typed event, `kind = "guardian-enrolment"`, keeps the prefix AND the op-key, commits the guardians' set and
+A face founds one-of-one, so its recovery contacts arrive later, and its log knows the act that brings them
+(<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>, "Recovery contact enrolment's shape"). The
+one typed event, `kind = "recovery-contact-enrolment"`, keeps the prefix AND the op-key, commits the recovery contacts' set and
 threshold (`sealKeySetHash`) as the rolling commitment, and carries no reveal, no quorum and no device box. The
 face's CURRENT op-key signs its bound bytes (`enrolSig`, outside the cid like `vetoSig`); the kind rides the cid
 and the signed bytes, so an untyped copy reads as another event.
 
 The reader admits it only over a hardened head whose rolling commitment still names the genesis set, so it reads
-as FIRST: once the set moves, every later change takes the guardians' quorum, by rotation, and a second
+as FIRST: once the set moves, every later change takes the recovery contacts' quorum, by rotation, and a second
 enrolment refuses. A veto never names one, since a veto kills a provisional alone. A rotation and a veto carry no
 kind, so their bytes read as they always read. Every device edge and every device's secret stand across an
-enrolment: they select by op-key, which it keeps. Before it lands, the vessel checks that each guardian proved
+enrolment: they select by op-key, which it keeps. Before it lands, the vessel checks that each recovery contact proved
 possession of its key over this face's prefix, that no key repeats, that the threshold meets the set, and that no
-key serves another face this vessel holds (`enrolGuardians`; <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
+key serves another face this vessel holds (`enrolRecoveryContacts`; <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
 Count, threshold, request authentication, the veto and succession stay open
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>).
 
@@ -107,7 +107,7 @@ provisional and every descendant fall.
 ''The contest folds STRUCTURALLY, and only what verifies competes.'' `foldPersonaContests` stands as THE ONE
 READER every KEL source folds through — the board, a herm's drops, a chain a caller hands: VERIFY, THEN FOLD. At
 each seat of the lineage only an event that verifies against the head already folded may compete, a rotation by
-its guardian quorum against the head's rolling commitment, a veto by the head's own op-key. A verified veto naming
+its recovery contact quorum against the head's rolling commitment, a veto by the head's own op-key. A verified veto naming
 a provisional at its seat wins, and the provisional and its descendants drop; no veto kills a hardened rotation.
 An event that does not verify moves nothing and revokes no one: the reader sets it aside, and every gate door
 names it `unreadable`. Two verified events at one seat stand as a FORK, which only duplicity mints; no reader
@@ -181,6 +181,6 @@ fold, the quorum, the veto — never on the board's liveness.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;-55aeY-yENnEC4aTjFP7C7v0UfvIoaZky1ZvOdKLJOk
+<<^ code="&#x0003;">>ni:///sha-256;qXKzL8rdFkVfYdVmHLg-x7GffZJ4G57-TrahZU38H34
 
 <<^ code="&#x0004;" -> to="?">>
