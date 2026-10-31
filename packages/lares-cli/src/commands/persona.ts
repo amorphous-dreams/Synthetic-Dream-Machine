@@ -30,7 +30,7 @@ import {
   faceStands, armRecoveryAtFounding, recoveryContactOffer, listFaceOrdinals, CustodyLocked, type FoundFaceResult,
 } from "@lararium/node";
 import {
-  renameOwnPersona, ownPersonaPetname, HANDLE_INDEX_CEILING,
+  renameOwnPersona, ownPersonaPetname, HANDLE_INDEX_CEILING, RECOVERY_CONTACT_THRESHOLD,
   declarePersonaHandle, standForKahuSeat,
   refuseSlot, personaSlotCeiling, defaultChairLabel, faceLogViewLine, coldKeySeedFromCode, signFaceLogView, type VesselClass,
 } from "@lararium/mesh";
@@ -236,6 +236,18 @@ async function personaView(args: ParsedArgs): Promise<number> {
 }
 
 /**
+ * What enrolment says aloud, which the word "recovery contact" does not: what two of the three can do. Your Handle is
+ * the public card your face publishes, recognised by its own key; a recovery contact restores it, never your memory.
+ */
+export function recoveryContactEnrolmentSpeech(): readonly string[] {
+  return [
+    "two of these three, together, can restore your Handle.",
+    "(your Handle: the public card your face publishes, recognised by its own key. No one of the three can do it alone, and none of them opens your memory.)",
+    "every later change to this set takes the recovery contacts' quorum.",
+  ];
+}
+
+/**
  * `lares persona recovery-contact show <index>` — the face's prefix (what a recovery contact's offer names) and the set it holds.
  *
  * `lares persona recovery-contact offer --prefix <persona-…>` — the RECOVERY CONTACT's half: mint a fresh recovery key for ONE face,
@@ -244,7 +256,7 @@ async function personaView(args: ParsedArgs): Promise<number> {
  * `lares persona recovery-contact enrol <index> --threshold <k> <offer>…` — the face at `<index>` enrols its FIRST recovery contact
  * set: its own key signs one typed event on its key history, and the set's record rests sealed here. A key another
  * face of this vessel already holds refuses (`recovery-contact-key-serves-another-face`); every later change to the set
- * takes the recovery contacts' quorum. The count and the threshold stay the person's.
+ * takes the recovery contacts' quorum. Three recovery contacts, a threshold of two: two of the three, together, restore your Handle.
  */
 async function personaRecoveryContact(args: ParsedArgs): Promise<number> {
   const verb = args.positional[1];
@@ -289,19 +301,20 @@ async function personaRecoveryContact(args: ParsedArgs): Promise<number> {
   }
   if (verb === "enrol") {
     const index = parseIndex(args.positional[2]);
+    // The threshold is the law's two: absent, it reads two; named, the vessel's refusal answers any other (`threshold-not-two`).
     const raw = args.options["threshold"];
-    const threshold = typeof raw === "string" ? Number(raw) : NaN;
-    if (!Number.isSafeInteger(threshold) || threshold < 1) throw new UsageError("`persona recovery-contact enrol` needs --threshold <k>, a whole number from 1");
+    const threshold = typeof raw === "string" ? Number(raw) : RECOVERY_CONTACT_THRESHOLD;
+    if (!Number.isFinite(threshold)) throw new UsageError("`persona recovery-contact enrol` reads --threshold as a number; the rule is two");
     const offers = args.positional.slice(3);
-    if (offers.length === 0) throw new UsageError("`persona recovery-contact enrol` takes one recovery contact offer line per recovery contact");
+    if (offers.length === 0) throw new UsageError("`persona recovery-contact enrol` takes the three recovery contacts' offer lines");
     const r = await sealedAct("persona.recovery-contact.enrol", { handleIndex: index, offers: offers.join(" "), threshold });
     emit(args, {
       ok: true,
       data: r,
       human: () => {
-        console.log(`the face at h${String(r["handleIndex"])} enrolled ${String(r["recoveryContacts"])} recovery contact(s) at threshold ${String(r["threshold"])}`);
+        console.log(`the face at h${String(r["handleIndex"])} enrolled ${String(r["recoveryContacts"])} recovery contacts at threshold ${String(r["threshold"])}`);
         console.log(`  set:   ${String(r["recoveryContactSetHash"])}  (on its key history, sequence ${String(r["seq"])})`);
-        console.log("  every later change to this set takes the recovery contacts' quorum");
+        for (const line of recoveryContactEnrolmentSpeech()) console.log(`  ${line}`);
       },
     });
     return 0;

@@ -370,7 +370,7 @@ export function personaEnrolmentSigningBytes(head: PersonaKelEvent, recoveryCont
  * set already moved off its genesis set (the recovery contacts' quorum changes it, by rotation), a set that is no digest or
  * the genesis set again, and a signature that does not verify under the head's op-key.
  *
- * It sets no count and no threshold: the digest folds whatever the person chose (#/open, recovery contact count).
+ * It sets no count and no threshold itself: the digest folds whatever set it is handed, and the enrolment verb (`enrolRecoveryContacts`) holds the law of three contacts at two.
  */
 export async function mintRecoveryContactEnrolment(input: {
   readonly head:            PersonaKelEvent;

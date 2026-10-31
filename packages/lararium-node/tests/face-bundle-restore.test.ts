@@ -184,7 +184,7 @@ async function cutOnDestroyedVessel(label: string, faceLabel = "the gardener", p
   if (recoveryContacts > 0) {
     const early = await cutHere();
     const offers = await Promise.all(Array.from({ length: recoveryContacts }, () => recoveryContactOffer(anchors.personaKelPrefix!)));
-    await withRepo((repo) => runRecoveryContactEnrolment({ repo, handleIndex: 0, offers: offers.map((o) => o.offer), threshold: recoveryContacts }));
+    await withRepo((repo) => runRecoveryContactEnrolment({ repo, handleIndex: 0, offers: offers.map((o) => o.offer), threshold: 2 }));
     enrolled = {
       early, recoveryContacts: offers.map((o) => ({ code: o.code, recoveryPubKey: o.recoveryPubKey })),
       kel: await withRepo((repo) => readLocalPersonaKelChain(repo, anchors.personaKelPrefix!)),
@@ -607,7 +607,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
   });
 
   test("R10 — a restore after recovery contact enrolment carries the face's set, and an earlier bundle still restores", async () => {
-    const a = await cutOnDestroyedVessel("a", "the gardener", 3, 2);
+    const a = await cutOnDestroyedVessel("a", "the gardener", 3, 3);
     const { early, recoveryContacts, kel } = a.enrolled!;
     const setHash = sealKeySetHash(recoveryContacts.map((g) => g.recoveryPubKey), 2);
     expect(kel.map((e) => e.kind ?? "plain"), "CONTROL: A's board heads at the typed first enrolment").toEqual(["plain", "recovery-contact-enrolment"]);
@@ -706,7 +706,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
   });
 
   test("R11 — a restored face stands provisional until a party's own view agrees with its head", async () => {
-    const a = await cutOnDestroyedVessel("a", "the gardener", 3, 1);
+    const a = await cutOnDestroyedVessel("a", "the gardener", 3, 3);
     const { recoveryContacts, kel } = a.enrolled!;
     await foundVessel("b");
     expect(await readProvisionalMark(0), "CONTROL: the face this vessel founded carries no mark").toBeNull();

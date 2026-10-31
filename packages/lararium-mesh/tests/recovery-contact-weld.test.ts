@@ -70,15 +70,16 @@ describe("the weld: enrolment, the seed-share card and the recovery rotation, by
     expect((await verifyPersonaKelFull([inception, r.event])).ok).toBe(true);
   });
 
-  test("enrolment refusals, by name: a repeated key, a bad proof, an unmeetable threshold, a key serving another face", async () => {
+  test("enrolment refusals, by name: a repeated key, a bad proof, a threshold off the rule, a key serving another face", async () => {
     const { inception, keys, offers } = await faceAndOffers();
     const sign = signerOf(seed(11));
     const refusal = async (o: typeof offers, threshold: number, held = [] as { handleIndex: number; keys: string[] }[]) =>
       (await enrolRecoveryContacts({ head: inception, recoveryContacts: o, threshold, heldByOtherFaces: held, sign }) as { refusal?: string }).refusal;
     expect(await refusal([offers[0]!, offers[0]!, offers[1]!], 2)).toBe("recovery-contact-key-repeated");
     expect(await refusal([{ ...offers[0]!, possessionSig: offers[1]!.possessionSig }, offers[1]!, offers[2]!], 2)).toBe("possession-unproven");
-    expect(await refusal(offers, 4)).toBe("threshold-unmeetable");
-    expect(await refusal(offers, 0)).toBe("threshold-unmeetable");
+    // The 2-of-3 law (the next commit) moved this one refusal: an unmeetable threshold now reads threshold-not-two.
+    expect(await refusal(offers, 4)).toBe("threshold-not-two");
+    expect(await refusal(offers, 0)).toBe("threshold-not-two");
     expect(await refusal(offers, 2, [{ handleIndex: 3, keys: [keys[1]!] }])).toBe("recovery-contact-key-serves-another-face");
   });
 

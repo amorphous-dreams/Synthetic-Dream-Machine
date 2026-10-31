@@ -18,7 +18,8 @@
  * The recovery contact's half: `recoveryContactOffer` mints a fresh key for ONE face, at random, and answers its card code and
  * one offer line (`lar-recovery-contact-offer:<key>:<proof>`). The key rests with the recovery contact, never on this vessel.
  *
- * Count, threshold, how an offer reaches the face, the veto and succession stay open (kahu#/seed-and-nexus).
+ * The set takes exactly three recovery contacts at a threshold of two, and never the face's own self-recovery key.
+ * How an offer reaches the face, the veto and succession stay open (kahu#/seed-and-nexus).
  */
 import { randomBytes } from "node:crypto";
 import type { Repo } from "@automerge/automerge-repo";
@@ -53,7 +54,7 @@ export type RecoveryContactEnrolmentRefusal =
   | "kel-unread"                 // the board's lineage for the face reads nothing, or forks
   | "offer-malformed"            // an offer line reads as no offer
   | "record-names-another-set"   // a record stands for another set while the head still stands one-of-one
-  | "face-holds-recovery-contacts" | "threshold-unmeetable" | "recovery-contact-key-repeated" | "possession-unproven"
+  | "face-holds-recovery-contacts" | "recovery-contacts-not-three" | "threshold-not-two" | "self-recovery-key-offered" | "recovery-contact-key-repeated" | "possession-unproven"
   | "recovery-contact-key-serves-another-face" | "enrolment-refused";
 
 export class RecoveryContactEnrolmentRefused extends Error {

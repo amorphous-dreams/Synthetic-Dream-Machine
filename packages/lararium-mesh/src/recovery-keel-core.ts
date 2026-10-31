@@ -303,8 +303,9 @@ export async function attestAndRotate(input: {
 // (`mintRecoveryContactEnrolment`), and every later change takes the recovery contacts' quorum (`attestAndRotate`). The core below
 // checks what the vessel and the recovery contacts owe before that event mints: each recovery contact proves it holds its key, no
 // key repeats, the threshold meets the set, and no key serves another face this vessel holds
-// (persona-policy#/distinct-recovery). Count, threshold, request authentication, the veto and succession stay the
-// person's and the operator's (kahu#/seed-and-nexus, OPEN): the core sets none of them.
+// (persona-policy#/distinct-recovery). The count and the threshold stand ruled: three recovery contacts, two of whom
+// restore the Handle (operator, 2026-10-31), and the face's own self-recovery key counts as none of the three. Request
+// authentication, the veto and succession stay the person's and the operator's (kahu#/seed-and-nexus, OPEN).
 
 /** The bytes a recovery contact signs to prove it holds the private half of `recoveryPubKey`, offered to the face `prefix`. */
 export function recoveryContactPossessionBytes(prefix: string, recoveryPubKey: string): Uint8Array {
@@ -348,10 +349,16 @@ export function recoveryContactCompartmentCheck(input: {
   return { ok: true };
 }
 
+/** The law of the set (operator ruling, 2026-10-31, "2 of 3"): three recovery contacts, any two of whom restore the Handle. */
+export const RECOVERY_CONTACT_COUNT = 3;
+export const RECOVERY_CONTACT_THRESHOLD = 2;
+
 /** Why an enrolment refused, by name. */
 export type RecoveryContactEnrolRefusal =
   | "face-holds-recovery-contacts"              // the face's rolling set already left its genesis set: the recovery contacts change it
-  | "threshold-unmeetable"              // a threshold below one, above the set, or not a whole number
+  | "recovery-contacts-not-three"       // any count of recovery contacts but three
+  | "threshold-not-two"                 // any threshold but two (two of the three restore the Handle)
+  | "self-recovery-key-offered"         // the face's own self-recovery key stands among the offered: it counts as none of the three
   | "recovery-contact-key-repeated"             // one key offered twice
   | "possession-unproven"               // a recovery contact's proof fails over this face's prefix and its own key
   | "recovery-contact-key-serves-another-face"  // a key this vessel holds in another face's set
@@ -364,7 +371,8 @@ export type RecoveryContactEnrolResult =
 
 /**
  * ENROL a one-of-one face's first recovery contact set. Checks in order, each refusing by name before anything mints: the face
- * still holds its genesis set alone; the threshold meets the offered set; no key repeats; every recovery contact proves
+ * still holds its genesis set alone; exactly three recovery contacts stand offered; the threshold reads two; no key repeats;
+ * none is the face's own self-recovery key; every recovery contact proves
  * possession over THIS face's prefix; no key serves another face. Then the face's own current op-key signs the typed
  * event (`mintRecoveryContactEnrolment`). The caller writes the event to the face's KEL board and keeps the registrations:
  * a later rotation reveals them against the digest.
@@ -382,11 +390,20 @@ export async function enrolRecoveryContacts(input: {
   if (head.nextRecoverySetHash !== head.recoverySetHash) {
     return refuse("face-holds-recovery-contacts", "this face already holds a recovery contact set: a change to it takes the recovery contacts' quorum, by rotation");
   }
-  if (!Number.isInteger(threshold) || threshold < 1 || threshold > recoveryContacts.length) {
-    return refuse("threshold-unmeetable", `a threshold of ${threshold} over ${recoveryContacts.length} recovery contact key(s) meets no quorum`);
+  if (recoveryContacts.length !== RECOVERY_CONTACT_COUNT) {
+    return refuse("recovery-contacts-not-three", `a face enrols three recovery contacts and ${recoveryContacts.length} stand offered: two of the three, together, restore your Handle`);
+  }
+  if (threshold !== RECOVERY_CONTACT_THRESHOLD) {
+    return refuse("threshold-not-two", `a threshold of ${threshold} is not the rule: two of the three recovery contacts, together, restore your Handle`);
   }
   const keys = recoveryContacts.map((g) => g.registration.recoveryPubKey.toLowerCase());
   if (new Set(keys).size !== keys.length) return refuse("recovery-contact-key-repeated", "one recovery contact key stands twice in the offered set");
+  // The face's own self-recovery key stands as the genesis wall beside the set and counts as none of the three: a face
+  // founded one-of-one commits that key alone, so a lone-key digest equal to the genesis set names it.
+  const self = keys.find((k) => sealKeySetHash([k], 1) === head.recoverySetHash);
+  if (self !== undefined) {
+    return refuse("self-recovery-key-offered", `the key ${self.slice(0, 16)}… is this face's own self-recovery key: it counts as none of the three recovery contacts`);
+  }
   for (const g of recoveryContacts) {
     const key = g.registration.recoveryPubKey.toLowerCase();
     let holds = false;
