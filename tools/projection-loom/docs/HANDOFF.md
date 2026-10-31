@@ -1,5 +1,28 @@
 # Projection Loom · Living YIN handoff
 
+## Re-entry · topology birth integrated in existing place helm
+
+**Working branch:** `feature/green-jello-dinosaur-5--projection-loom`; **PR:** #84; **latest source commit:** `b911060fd24c122e7143b32c6255e442fb6497e5`. Fetch complete noosphere boot from `feature/green-jello-dinosaur-5`. Exact-head GitHub Actions have **not** returned completed verdicts on this newly published commit; never transfer predecessor green checks.
+
+### New YIN feature wave
+- `place_emitters._topology_birth` offers bounded three-hop `x-y-x` or `y-x-y` alternatives directly into the existing `emit_place_child` proposal stream for epochs after zero when offspring count allows an additional topology slot. It reuses the existing source-protecting `propose_three_hop_route`, preserves source and authored intent hashes and explicitly withholds operator acceptance and native witness.
+- Existing `place_campaign` accepts `topology-birth` as a preferred emitter in the **same** `OODAHAJournal`, frontier and exact native-budget mechanism. A constrained route refusal falls back to typed mutation deferral rather than inventing success or consuming a special STEP budget.
+- New emitter tests cover deterministic three-hop ancestry and refusal/fallback. Source committed using GitHub connector. **Tests have not run locally**, as GitHub network DNS was unavailable to the container and the connector does not execute Python; CI on this new head remains unobserved.
+- No real Unreal Editor certification, safety judgment, aesthetic winner, pet-name, merge, Elyncia canon promotion or destructive o-takiage.
+
+### Next exact actions
+1. Inspect all workflow verdicts against this actual SHA; if red, fix the exact failing implementation without weakening source refusal, STEP or replay.
+2. Audit topology proposal ancestry and native admission across multi-epoch campaigns; test `topology-birth` steering/receipt tampering, finite audition counts and cases where authored sources obstruct only one topology.
+3. Consolidate `recombination_deferral` naming into generalized typed emission deferrals once all consumers and independent replay are migrated together; no compatibility shim.
+4. Pursue true measured source-conditioned architecture and real Unreal Editor integration separately.
+
+## Ashes holding ahu · preceding living front
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
+# Projection Loom · Living YIN handoff
+
 ## Re-entry · relational topology and native operator imagery
 
 **Live GitHub:** `amorphous-dreams/Synthetic-Dream-Machine` · [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · branch `feature/green-jello-dinosaur-5--projection-loom`. Fetch the **entire** `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` at `feature/green-jello-dinosaur-5`, then the actual PR head, exact-head workflow verdicts and these living contracts. Do not use old head status for a new commit.
@@ -2657,5 +2680,7 @@ Operator pet-name promotion. At authoring time, the campaign had not yet
 produced hosted results; inspect exact-head workflow receipts and archives
 before calling any offspring successful.
 
+
+</details>
 
 </details>
