@@ -88,7 +88,7 @@ import {
   readGenesisCasManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
 import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.js";
-import { standKahuCanon, canonHeldUntilProof, type KahuCanonDocs } from "./kahu-realm.js";
+import { standKahuCanon, canonHeldUntilProof, kahuCanonDocIds, kahuHandAtWire, type KahuCanonDocs } from "./kahu-realm.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonCorpusRoot } from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
@@ -2150,6 +2150,12 @@ async function prepareNodeBootOn(
         // itself un-seated when the proposal replaced it. The Repo caches its verdict per (doc, peer), so the
         // fold and the cache must move together or the registered book stays DENIED to the hand that keeps it.
         onRefold:         reverdict,
+        // THE KAHU CANON answers to Kahu reach alone (road `P26`): the live documents the keel stood, crossing only to a
+        // session that wears the face whose admission stood them, once that face has proved (`kahuHandAtWire`).
+        kahuCanon:        {
+          docs:  () => kahuCanonDocIds(kahuCanon),
+          reach: (peerId) => kahuHandAtWire({ session: peerSessions.get(peerId), custodyGroup, faceProven: wornFaceProven, canon: kahuCanon }),
+        },
         onLog:            (line) => console.log(`[realm] ${line}`),
       });
       selfSlotFedGate = realmPlane.gate;

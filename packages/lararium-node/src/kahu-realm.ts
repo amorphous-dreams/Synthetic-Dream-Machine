@@ -241,3 +241,34 @@ export function canonHeldUntilProof(input: {
   }
   return false;
 }
+
+/** The document ids of the live system documents this vessel holds: the Kahu canon a realm gate closes (road `P26`). */
+export function kahuCanonDocIds(canon: KahuCanonDocs): ReadonlySet<string> {
+  const ids = new Set<string>();
+  for (const url of [canon.lares, canon.lararium]) {
+    if (!url) continue;
+    try { ids.add(String(interpretAsDocumentId(url))); } catch { /* a malformed url names nothing */ }
+  }
+  return ids;
+}
+
+/**
+ * KAHU REACH AT THE WIRE (road `P26`): a peer holds it at this hearth exactly where its session wears the face whose
+ * counted admission stood this vessel's canon (`standKahuCanon` read it for the custody group), proven same-operator by
+ * this gate's grant ring, and that face's own proof has passed. The keel's reach and the wire's then read one hand.
+ *
+ * Every other peer reads none, fail closed: a contracted member, a sibling, a place's seat, a session of another
+ * face. A hand of ANOTHER admitted group stays open: across operators no wire proof binds a peer to a PersonaGroup
+ * (the root map stays empty at the seat), and the sentinel half of the predicate reads in the daemon island, so such a
+ * hand reaches the canon through the write doors of its own vessel's cabal, never this wire, until both stand.
+ */
+export function kahuHandAtWire(input: {
+  readonly session: { readonly class: string; readonly face: { readonly personaGroup: string } | null } | undefined;
+  readonly custodyGroup: string | null; readonly faceProven: boolean; readonly canon: KahuCanonDocs;
+}): boolean {
+  if (!input.faceProven || input.custodyGroup === null) return false;
+  if (!input.canon.lares && !input.canon.lararium) return false;
+  const session = input.session;
+  if (!session || session.class !== "same-operator" || !session.face) return false;
+  return session.face.personaGroup.toLowerCase() === input.custodyGroup.toLowerCase();
+}
