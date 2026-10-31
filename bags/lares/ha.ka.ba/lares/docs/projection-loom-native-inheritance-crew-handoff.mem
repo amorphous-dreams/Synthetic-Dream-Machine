@@ -62,7 +62,7 @@ The operator subsequently supplied `deep-research-report.md`, titled ''Projectio
 
 ''Map-Wisp'' challenges the two inheritance strategies. Show where complete-region mutation preserves parent-specific causality and where semantic reconstruction could become an unrelated fresh solution. Name the negative counterexample and operator-visible design trade-off.
 
-''Lares (Artificer)'' implements a disposable, deterministic `derive_route_family()` from original goal, typed body/segment chain and native-observed geometry. Reject missing endpoints, dangling corners, disconnected segments, altered original bodies and a second persisted graph. Then mutate a complete native-admitted route region with bounded parameter changes, preserving original supports and every original goal. Only afterward extend to semantic reconstruction.
+''Lares (Artificer)'' implements a disposable, deterministic `derive_route_family()` from `PlaceGenome + SpatialIntent` and its original goal, typed body/segment chain and source-closed route geometry. A separate observed witness binds that derived family to independently reimported native STEP evidence. Reject missing endpoints, dangling corners, disconnected segments, altered original bodies and a second persisted graph. Then mutate a complete native-admitted route region with bounded parameter changes, preserving original supports and every original goal. Only afterward extend to semantic reconstruction.
 
 ''Breach-Watch'' requires a native-admitted topology parent, a later-generation materially different descendant and a second independent STEP admission. Verify that the changed route differs by actual axis/waypoint/width/clearance or spatial measurement, not just renamed IDs. Corrupt ancestry, route order, parent admission, STEP bytes, budget ordinals, workspace and source; every forgery must fail independent replay.
 
@@ -125,6 +125,6 @@ The operator retains authority for canon, irreversible o-takiage, and the meanin
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MC4E4xfwhPhVMiY6O1L0HWFZSDrUzVTyNIW5EjeWlw0
+<<^ code="&#x0003;">>ni:///sha-256;Uiq0bgzHeSbGQTJxOkQAn--6TK0J323s3dKy53w76d8
 
 <<^ code="&#x0004;" -> to="?">>
