@@ -367,7 +367,9 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
       ...hearthDialTiddlers(payload.syncUrl, payload.hearthGatePubKey, {
         kind:  payload.hearthIslandKind,
         scope: payload.hearthIslandScope,
-      }, payload.hearthGatePin, payload.islandDocUrl),
+      }, payload.hearthGatePin, payload.islandDocUrl,
+      // THE PIN'S PROVENANCE (road `P26`): this act wrote the pin, for this face, so the dial reads its hearth as the face's own.
+      { act: "fleet-join-land", personaGroup: payload.personaGroupId }),
     }), null, 2), "utf8");
     await retireApplyCheckpoint(admitDaemon, admitSeed);
     await repo.flush();

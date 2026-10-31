@@ -14,6 +14,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { getHeads } from "@automerge/automerge";
 import type { PeerId, StorageAdapterInterface } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
+import { peerArrivals } from "./peer-arrivals.js";
 
 export interface IslandRepoConfig {
   /** Platform storage adapter (NodeFS / IndexedDB); undefined = in-memory. */
@@ -110,42 +111,25 @@ export function makeIslandRepo(cfg: IslandRepoConfig): Repo {
 
 /**
  * THE HOUSE'S OWN ISLAND PEERS, PROVEN BY ARRIVAL (road `P26`; controller rulings 2026-10-31: in-process gets proven, never
- * inferred; the proof keys on ARRIVAL, never on an id alone). Per Repo, the peers standing on an adapter the vessel attached
- * for its own islands (`attachMessageChannelSync`, a session view's leg). A share verdict reads a peer as in-process only
- * where its id stands here; every other peer, on any adapter, inbound or outbound, takes the wire path.
- *
- * automerge-repo's network subsystem accepts a second arrival of a live id as a REPLACEMENT connection and routes that id
- * through the newest adapter. So each island adapter MARKS its own arrival on its `peer-candidate` (its listener stands
- * before the subsystem's, so the mark lands first inside the one synchronous emit), and the book listens to the
- * subsystem's `peer` event: an id that arrives with no island mark pending arrived elsewhere, and leaves the set. The
- * island's own re-arrival on its adapter marks and seats it again.
+ * inferred; the proof keys on ARRIVAL, never on an id alone). The house's islands stand in the Repo's ONE arrival table
+ * (`peer-arrivals`) under the house relation: the peers that arrived on an adapter the vessel attached for its own islands
+ * (`attachMessageChannelSync`, a session view's leg). A share verdict reads a peer as in-process only where its standing
+ * arrival names the house; every other peer, on any adapter, inbound or outbound, takes the wire path. A replacement
+ * arrival of the id on any other adapter drops it; the island's own re-arrival on its adapter seats it again; an old leg's
+ * cleanup removes its own arrival alone.
  */
-interface IslandBook { readonly standing: Set<string>; readonly pending: Set<string> }
-const ISLAND_BOOKS = new WeakMap<Repo, IslandBook>();
-function islandBook(repo: Repo): IslandBook {
-  let book = ISLAND_BOOKS.get(repo);
-  if (!book) {
-    const made: IslandBook = { standing: new Set<string>(), pending: new Set<string>() };
-    repo.networkSubsystem.on("peer", ({ peerId }) => {
-      if (made.pending.delete(peerId)) return;          // the island's own arrival, marked on its adapter
-      made.standing.delete(peerId);                      // the same id arrived on another adapter: a replacement elsewhere
-    });
-    ISLAND_BOOKS.set(repo, made);
-    book = made;
-  }
-  return book;
-}
+const HOUSE = "house" as const;
 /** The peers standing on the vessel's own island adapters, proven by their arrival there. */
-export function islandPeersOf(repo: Repo): ReadonlySet<string> { return islandBook(repo).standing; }
+export function islandPeersOf(repo: Repo): { has(peerId: string): boolean } {
+  const arrivals = peerArrivals(repo);
+  return { has: (peerId) => arrivals.of(peerId)?.relation === HOUSE };
+}
 /**
- * Mark one island arrival: call it from the island adapter's OWN `peer-candidate` listener, attached before the adapter
- * joins the Repo's network, so the mark precedes the subsystem's `peer` event. Answers the peer's unseat.
+ * Mark one island arrival on `adapter`: call it from the island adapter's OWN `peer-candidate` listener, attached before the
+ * adapter joins the Repo's network, so the mark precedes the subsystem's `peer` event. Answers this arrival's own unseat.
  */
-export function markIslandArrival(repo: Repo, peerId: string): () => void {
-  const book = islandBook(repo);
-  book.pending.add(peerId);
-  book.standing.add(peerId);
-  return () => { book.standing.delete(peerId); book.pending.delete(peerId); };
+export function markIslandArrival(repo: Repo, peerId: string, adapter: object = repo): () => void {
+  return peerArrivals(repo).mark(adapter, peerId, HOUSE);
 }
 
 /**
@@ -160,7 +144,7 @@ export function attachMessageChannelSync(repo: Repo, mainPort: MessagePort, onPe
   const unseats = new Map<string, () => void>();
   const unseat = (peerId: string): void => { unseats.get(peerId)?.(); unseats.delete(peerId); };
   // Attached BEFORE the adapter joins the network: the arrival marks before the subsystem hears it.
-  adapter.on("peer-candidate", ({ peerId }) => { standing.add(peerId); unseats.set(peerId, markIslandArrival(repo, peerId)); onPeer?.(peerId); });
+  adapter.on("peer-candidate", ({ peerId }) => { standing.add(peerId); unseats.get(peerId)?.(); unseats.set(peerId, markIslandArrival(repo, peerId, adapter)); onPeer?.(peerId); });
   adapter.on("peer-disconnected", ({ peerId }) => { unseat(peerId); });
   // A port that closes under the vessel (the island's worker ended, or its side closed) carries no `leave`, and the
   // adapter's strong port reference forwards no `close`, so the vessel's network subsystem never reads the peer as

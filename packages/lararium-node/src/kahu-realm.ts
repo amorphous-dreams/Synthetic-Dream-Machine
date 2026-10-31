@@ -356,16 +356,18 @@ export function kahuHandAtWire(input: {
  */
 export async function watchKahuStanding(opts: {
   readonly repo: Repo; readonly sealHome: string; readonly vesselKey: string; readonly personaGroupId: string | null;
+  /** The Nexus whose board to read: a carried home's AID; the primary home where none is named. */
+  readonly aid?: string;
   readonly onChange?: (held: boolean) => void;
   /** Hears EVERY board change, flip or none: the board carries key hand-overs the canon's classification reads. */
   readonly onBoardChange?: () => void;
-}): Promise<{ held(): boolean; refresh(): void; close(): void }> {
-  const inert = { held: () => false, refresh: () => {}, close: () => {} };
+}): Promise<{ held(): boolean; refresh(): void; close(): void; readonly nexus: string | null }> {
+  const inert = { held: () => false, refresh: () => {}, close: () => {}, nexus: null };
   if (opts.personaGroupId === null) return inert;
   let group: string;
   try { group = kahuRealmGroup(opts.personaGroupId); } catch { return inert; }
   let core: Awaited<ReturnType<typeof cabalCore>>;
-  try { core = await cabalCore(opts.repo, opts.sealHome, undefined, opts.vesselKey); }
+  try { core = await cabalCore(opts.repo, opts.sealHome, opts.aid, opts.vesselKey); }
   catch (err) { if (err instanceof NexusCabalError) return inert; throw err; }
   const read = (): boolean => {
     try {
@@ -387,7 +389,7 @@ export async function watchKahuStanding(opts: {
     if (!closed) { try { opts.onBoardChange?.(); } catch { /* a listener never breaks the reading */ } }
   };
   core.handle.on("change", onBoard);
-  return { held: () => held, refresh, close: () => { closed = true; core.handle.off("change", onBoard); } };
+  return { held: () => held, refresh, close: () => { closed = true; core.handle.off("change", onBoard); }, nexus: core.nexus };
 }
 
 /**
@@ -404,8 +406,19 @@ export async function watchKahuStanding(opts: {
  * input never reads as "no canon" for what was read.
  */
 export async function kahuProtectedDocIds(opts: { readonly sealHome: string; readonly canon?: KahuCanonDocs }): Promise<ReadonlySet<string>> {
-  const ids = new Set<string>(opts.canon ? kahuCanonDocIds(opts.canon) : []);
-  const add = (url: string): void => { try { ids.add(String(interpretAsDocumentId(url as AutomergeUrl))); } catch { /* names nothing */ } };
+  return new Set((await kahuProtectedDocHomes(opts)).keys());
+}
+
+/**
+ * The same ids, each with the HOME NEXUS it was classed under (road `P26`; Sol's lanes read, SHOULD 3): a kept registration's
+ * Nexus, the Nexus a derivation ran at, or null for the canon the keel stood at the primary home. The guard decides each
+ * document on its own home's live standing, never the primary's alone.
+ */
+export async function kahuProtectedDocHomes(opts: { readonly sealHome: string; readonly canon?: KahuCanonDocs }): Promise<ReadonlyMap<string, string | null>> {
+  const ids = new Map<string, string | null>(opts.canon ? [...kahuCanonDocIds(opts.canon)].map((id) => [id, null] as const) : []);
+  const add = (url: string, nexus: string): void => {
+    try { const id = String(interpretAsDocumentId(url as AutomergeUrl)); if (!ids.has(id) || ids.get(id) === null) ids.set(id, nexus); } catch { /* names nothing */ }
+  };
   const homes: string[] = [opts.sealHome];
   try { for (const name of readdirSync(join(opts.sealHome, "carried")).sort()) homes.push(join(opts.sealHome, "carried", name)); }
   catch { /* no carried home stands */ }
@@ -423,7 +436,7 @@ export async function kahuProtectedDocIds(opts: { readonly sealHome: string; rea
       for (const file of files) {
         let rec: RealmBagRegistration | null = null;
         try { rec = parseRealmBagRegistration(readFileSync(join(keptRoot, nexus, file), "utf8")); } catch { rec = null; }
-        if (rec && KAHU_REALM_BAGS.includes(rec.bagUri)) add(rec.docUrl);
+        if (rec && KAHU_REALM_BAGS.includes(rec.bagUri)) add(rec.docUrl, nexus);
       }
     }
   }
@@ -431,7 +444,7 @@ export async function kahuProtectedDocIds(opts: { readonly sealHome: string; rea
     let seeds: Uint8Array[] = [];
     try { seeds = await readNexusKeys(kahuRealmHandleIndex(), nexus); } catch { seeds = []; }
     try {
-      for (const seed of seeds) for (const bagUri of KAHU_REALM_BAGS) add(kahuBagDocUrlFrom(seed, nexus, bagUri));
+      for (const seed of seeds) for (const bagUri of KAHU_REALM_BAGS) add(kahuBagDocUrlFrom(seed, nexus, bagUri), nexus);
     } finally { for (const seed of seeds) seed.fill(0); }
   }
   return ids;
@@ -446,16 +459,18 @@ export async function kahuProtectedDocIds(opts: { readonly sealHome: string; rea
  */
 export function kahuProtectedHolder(opts: {
   readonly sealHome: string; readonly canon: () => KahuCanonDocs; readonly onChange?: () => void;
-}): { ids(): ReadonlyMap<string, "kahu-canon">; recount(): Promise<void>; settled(): Promise<void>; close(): void } {
+}): { ids(): ReadonlyMap<string, "kahu-canon">; homeOf(id: string): string | null; homes(): ReadonlySet<string>; recount(): Promise<void>; settled(): Promise<void>; close(): void } {
   let map: ReadonlyMap<string, "kahu-canon"> = new Map();
+  let homes: ReadonlyMap<string, string | null> = new Map();
   let tail: Promise<void> = Promise.resolve();
   let closed = false;
   const once = async (): Promise<void> => {
     if (closed) return;
-    const ids = await kahuProtectedDocIds({ sealHome: opts.sealHome, canon: opts.canon() });
-    const next = new Map([...ids].map((id) => [id, "kahu-canon" as const]));
-    const moved = next.size !== map.size || [...next.keys()].some((id) => !map.has(id));
+    const read = await kahuProtectedDocHomes({ sealHome: opts.sealHome, canon: opts.canon() });
+    const next = new Map([...read.keys()].map((id) => [id, "kahu-canon" as const]));
+    const moved = next.size !== map.size || [...next.keys()].some((id) => !map.has(id) || homes.get(id) !== read.get(id));
     map = next;
+    homes = read;
     if (moved) { try { opts.onChange?.(); } catch { /* a listener never breaks the count */ } }
   };
   const recount = (): Promise<void> => {
@@ -465,5 +480,10 @@ export function kahuProtectedHolder(opts: {
   };
   const onWrite = (): void => { void recount().catch(() => {}); };
   CLASSIFICATION_WRITES.add(onWrite);
-  return { ids: () => map, recount, settled: () => tail, close: () => { closed = true; CLASSIFICATION_WRITES.delete(onWrite); } };
+  return {
+    ids: () => map,
+    homeOf: (id) => homes.get(id) ?? null,
+    homes: () => new Set([...homes.values()].filter((n): n is string => n !== null)),
+    recount, settled: () => tail, close: () => { closed = true; CLASSIFICATION_WRITES.delete(onWrite); },
+  };
 }

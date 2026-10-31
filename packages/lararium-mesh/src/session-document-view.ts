@@ -232,7 +232,7 @@ export class SessionDocumentView {
     // The view's own peer is the house's island peer (road `P26`), proven by its ARRIVAL on this leg: the leg marks it before
     // the leg joins the network, so the mark precedes the subsystem's `peer` event.
     let unseat: (() => void) | null = null;
-    leg.on("peer-candidate", ({ peerId }) => { unseat?.(); unseat = markIslandArrival(repo, peerId); });
+    leg.on("peer-candidate", ({ peerId }) => { unseat?.(); unseat = markIslandArrival(repo, peerId, leg); });
     leg.on("peer-disconnected", () => { unseat?.(); unseat = null; });
     repo.networkSubsystem.addNetworkAdapter(leg);
     this.#detach = () => { unseat?.(); unseat = null; repo.networkSubsystem.removeNetworkAdapter(leg); };

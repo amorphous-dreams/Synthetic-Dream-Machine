@@ -28,6 +28,10 @@ export const HEARTH_GATE_KEY_TIDDLER = `${DAEMON_BAG_ID}/hearth/gate-key`;
 export const HEARTH_GATE_PIN_TIDDLER = `${DAEMON_BAG_ID}/hearth/gate-pin`;
 /** The document the dial asks the hearth for (an `automerge:` url), as the admit named it. */
 export const HEARTH_DOC_URL_TIDDLER = `${DAEMON_BAG_ID}/hearth/doc-url`;
+/** THE PIN'S PROVENANCE (JSON): the act that wrote this pin and the face it wrote it for (road `P26`; controller fork ruling
+ *  (b), 2026-10-31). The dial seats the relation this tag names and no other: `fleet-join-land` for a face reads as that
+ *  face's own hearth. A pin with no tag reads as the weakest relation. */
+export const HEARTH_PIN_PROVENANCE_TIDDLER = `${DAEMON_BAG_ID}/hearth/pin-provenance`;
 /** The founder's RESOLVED NexusIdentity kind at admit time — a SNAPSHOT, never re-resolved live. */
 export const HEARTH_ISLAND_KIND_TIDDLER  = `${DAEMON_BAG_ID}/hearth/island-kind`;
 /** The scope that kind names — the genesis epoch string for `charter`, else the founder's own key. */
@@ -35,6 +39,22 @@ export const HEARTH_ISLAND_SCOPE_TIDDLER = `${DAEMON_BAG_ID}/hearth/island-scope
 
 const KEY_RE  = /^[0-9a-f]{64}$/;
 const KIND_RE = /^(own|anchor|charter|explicit)$/;
+
+/** The act that wrote a hearth pin, as the pin carries it: `fleet join land` for one face. */
+export interface HearthPinProvenance {
+  readonly act:          "fleet-join-land";
+  readonly personaGroup: string;
+}
+
+/** The provenance tag's reading: the one act it may name, or null for anything else. */
+export function readHearthPinProvenance(raw: unknown): HearthPinProvenance | null {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
+  const r = raw as Record<string, unknown>;
+  const keys = Object.keys(r).sort();
+  if (keys.length !== 2 || keys[0] !== "act" || keys[1] !== "personaGroup") return null;
+  if (r["act"] !== "fleet-join-land" || typeof r["personaGroup"] !== "string" || r["personaGroup"].length === 0) return null;
+  return { act: "fleet-join-land", personaGroup: r["personaGroup"] };
+}
 
 export interface HearthDialPin {
   readonly syncUrl:    string;
@@ -48,6 +68,8 @@ export interface HearthDialPin {
   readonly islandScope?: string;
   /** The document the admit named for the dial to ask for, when it named one. */
   readonly docUrl?: string;
+  /** The act that wrote this pin, when the pin carries its tag. */
+  readonly provenance?: HearthPinProvenance;
 }
 
 /** The bootstrap tiddlers an admission packs — empty when the payload named no dial. The island half is
@@ -59,9 +81,11 @@ export function hearthDialTiddlers(
   island?: { readonly kind?: string | null | undefined; readonly scope?: string | null | undefined } | null,
   gatePin?: GateBundlePin | null,
   docUrl?: string | null,
+  provenance?: HearthPinProvenance | null,
 ): Record<string, { title: string; text: string; kind: string }> {
   if (!syncUrl || !gatePubKey) return {};
   const base = {
+    ...(provenance ? { [HEARTH_PIN_PROVENANCE_TIDDLER]: { title: HEARTH_PIN_PROVENANCE_TIDDLER, text: JSON.stringify({ act: provenance.act, personaGroup: provenance.personaGroup }), kind: "hearth-door" } } : {}),
     ...(gatePin ? { [HEARTH_GATE_PIN_TIDDLER]: { title: HEARTH_GATE_PIN_TIDDLER, text: JSON.stringify(gatePin), kind: "hearth-door" } } : {}),
     ...(docUrl ? { [HEARTH_DOC_URL_TIDDLER]: { title: HEARTH_DOC_URL_TIDDLER, text: docUrl, kind: "hearth-door" } } : {}),
     [HEARTH_SYNC_URL_TIDDLER]: { title: HEARTH_SYNC_URL_TIDDLER, text: syncUrl, kind: "hearth-door" },
@@ -118,6 +142,15 @@ export function readHearthDialPin(bootstrapPath: string): HearthDialPin | null {
     const docRaw = packed.tiddlers?.[HEARTH_DOC_URL_TIDDLER]?.text;
     if (docRaw !== undefined && (typeof docRaw !== "string" || !/^automerge:[1-9A-HJ-NP-Za-km-z]+$/.test(docRaw.trim()))) return null;
     const docUrl = typeof docRaw === "string" ? docRaw.trim() : undefined;
-    return { syncUrl: syncUrl.trim(), gatePubKey, ...(gatePin ? { gatePin } : {}), ...(island ?? {}), ...(docUrl ? { docUrl } : {}) };
+    // The provenance tag, when the bootstrap holds one, names one act; a torn tag refuses the whole dial, never a silent
+    // fall to an untagged pin (which reads weakest anyway, yet a torn tag reads as something written wrong).
+    const provRaw = packed.tiddlers?.[HEARTH_PIN_PROVENANCE_TIDDLER]?.text;
+    let provenance: HearthPinProvenance | null = null;
+    if (provRaw !== undefined) {
+      if (typeof provRaw !== "string") return null;
+      provenance = readHearthPinProvenance(JSON.parse(provRaw));
+      if (provenance === null) return null;
+    }
+    return { syncUrl: syncUrl.trim(), gatePubKey, ...(gatePin ? { gatePin } : {}), ...(island ?? {}), ...(docUrl ? { docUrl } : {}), ...(provenance ? { provenance } : {}) };
   } catch { return null; }
 }

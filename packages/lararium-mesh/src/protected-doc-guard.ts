@@ -32,8 +32,11 @@ export interface ProtectedDocGuard {
 export interface ProtectedDocGuardOptions {
   /** Every protected document id the vessel holds, by class. Read at each ask; the vessel keeps it current. */
   readonly ids: () => ReadonlyMap<string, ProtectedDocClass>;
-  /** Each class's live decider: does this peer hold the class's reach now? */
-  readonly decide: { readonly [C in ProtectedDocClass]?: (peerId: string) => boolean | Promise<boolean> };
+  /** RECOUNT BEFORE SERVE (road `P26`): where given, every ask waits for the ids' pending recount, so a classification write
+   *  a moment ago classes the very next ask. A recount that fails still lets the ask read the map that stands. */
+  readonly settled?: () => Promise<void>;
+  /** Each class's live decider: does this peer hold the class's reach now, for THIS document (its own home's standing)? */
+  readonly decide: { readonly [C in ProtectedDocClass]?: (peerId: string, documentId: string) => boolean | Promise<boolean> };
 }
 
 export function protectedDocGuard(opts: ProtectedDocGuardOptions): ProtectedDocGuard {
@@ -44,12 +47,13 @@ export function protectedDocGuard(opts: ProtectedDocGuardOptions): ProtectedDocG
   return {
     classOf,
     async withholds(peerId, documentId) {
+      if (documentId !== undefined && opts.settled) { try { await opts.settled(); } catch { /* the standing map still classes */ } }
       const cls = classOf(documentId);
       if (cls === null) return false;
       if (cls === "unreadable" || !peerId) return true;
       const decide = opts.decide[cls];
       if (!decide) return true;
-      try { return (await decide(peerId)) !== true; } catch { return true; }
+      try { return (await decide(peerId, String(documentId))) !== true; } catch { return true; }
     },
   };
 }
