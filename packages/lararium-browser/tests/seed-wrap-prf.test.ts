@@ -1,11 +1,11 @@
 /**
- * seed-wrap-prf.test — PRF WRAPS THE SEED AT REST, BESIDE THE CLEARTEXT FINDING, OPT-IN (basket-one #/the-phone-seat,
+ * seed-wrap-prf.test — PRF WRAPS THE SEED AT REST, BESIDE THE UNWRAPPED PATH, OPT-IN (basket-one #/the-phone-seat,
  * ruled 2026-09-11: "PRF wraps beside and never mints, a synced passkey counts as a cloud").
  *
  * A fake `PublicKeyCredential` host with a fixed PRF output: wrap → unwrap round-trips the seed; a different PRF
  * output refuses, named; the wrap record NAMES the credential's key class (`cloud-synced` for a synced passkey).
  * CONTROL: a host without PRF → `detectPrf` reads `{ available: false, why }` and NOTHING wraps — the floor,
- * never a throw. The cleartext path stays untouched (its own witnesses stand in browser-persona-vault.test.ts).
+ * never a throw. The unwrapped path stays untouched (its own witnesses stand in browser-persona-vault.test.ts).
  */
 import { describe, test, expect } from "vitest";
 import {
