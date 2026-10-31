@@ -236,6 +236,8 @@ def test_relational_census_derives_real_auditions_and_abstentions(tmp_path):
     assert census["relational_offered"]==0
     assert census["relational_native_admitted"]==0
     assert census["recombination_deferrals"]==1
+    assert census["region_pairs_considered_in_proposals"]==0
+    assert census["region_pairs_refused_before_birth"]==0
     assert not census["automatic_artistic_winner"]
     assert verify_place_campaign(root)==summary
 

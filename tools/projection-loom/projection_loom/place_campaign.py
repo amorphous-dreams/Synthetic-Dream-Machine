@@ -138,8 +138,17 @@ def relational_emission_census(frontiers,records):
         reasons[reason]=reasons.get(reason,0)+1
     if any(row["candidate_id"] not in actual for row in attempted):
         raise ValueError("Relational census found an auditioned but unreported candidate")
+    ancestry=[row["emitter_receipt"]["ancestors"][0] for row in selected]
+    considered=sum(x["tested_region_pair_count"] for x in ancestry)
+    rejected=sum(len(x["rejected_region_alternatives"]) for x in ancestry)
+    if any(x["tested_region_pair_count"]!=1+len(x["rejected_region_alternatives"])
+           or x["accepted_pair_index"]>=x["eligible_region_pair_count"]
+           or not x["child_is_distinct_from_both_parents"] for x in ancestry):
+        raise ValueError("Relational pairing record lost source-bound alternative testimony")
     body={"schema":"projection-loom/observed-relational-emission-census",
           "all_offered":len(offered),"native_attempts":len(actual),
+          "region_pairs_considered_in_proposals":considered,
+          "region_pairs_refused_before_birth":rejected,
           "relational_offered":len(selected),
           "relational_native_attempted":len(attempted),
           "relational_native_admitted":len(admitted),

@@ -90,6 +90,12 @@ survey pose or canon promotion.</p></aside>
 <p>Location: """+h(report["location"])+""" · Source evidence: """+
 h(report["source_evidence_scope"])+""" · Admitted: """+str(report["admitted"])+""" ·
 Deferred: """+str(len(report["deferred"]))+"""</p>
+<p>Relational proposals: """+str(report["relational_emissions"]["relational_offered"])+
+""" · Independently native-audited: """+str(report["relational_emissions"]["relational_native_attempted"])+
+""" · Native-admitted: """+str(report["relational_emissions"]["relational_native_admitted"])+
+""" · Deferred pairing: """+str(report["relational_emissions"]["recombination_deferrals"])+
+""" · Rejected source-region combinations: """+str(report["relational_emissions"]["region_pairs_refused_before_birth"])+
+""" (proposal attempts only; not STEP auditions)</p>
 <section>"""+ "".join(blocks)+"""</section>
 <h2>Unattempted proposals</h2><ul>"""+deferred+"""</ul>
 <footer>Every viewed alternative retains its source and refusal testimony.
