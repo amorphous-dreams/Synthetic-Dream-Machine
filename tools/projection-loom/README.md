@@ -11,7 +11,7 @@ Projection Loom is a source-grounded constructive CAD and OODA-HA architecture l
 - [Lares crew handoff](../../bags/lares/ha.ka.ba/lares/docs/projection-loom-native-inheritance-crew-handoff.mem): OODA-HA working procedure.
 - Historical experiment and documentation narratives are recoverable at the pre-burn Git commit listed below, including the former `archives/README.md`.
 
-The complete source before the Markdown o-takiage is in Git at `864dc19e89a913ac82862b842202bfce0c68e16b`. The working PR is [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84), on `feature/green-jello-dinosaur-5--projection-loom`. Git history, not recursively copied Markdown, carries the historical research, experiments, old design contracts and earlier operator instructions. To read a retired document use `git show <pre-burn-head>:<source-path>`.
+The complete source before the Markdown o-takiage is pinned at commit `864dc19e89a913ac82862b842202bfce0c68e16b` on the durable Git branch [`archive/pr84-markdown-pre-otakiage-20261031`](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/tree/archive/pr84-markdown-pre-otakiage-20261031). This archive branch preserves ancestors including the earlier full recursive fronts. The working PR is [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84), on `feature/green-jello-dinosaur-5--projection-loom`. Git history, not recursively copied Markdown, carries the historical research, experiments, old design contracts and earlier operator instructions. To read a retired document use `git show <pre-burn-head>:<source-path>`.
 
 ## Executable operating boundary
 
