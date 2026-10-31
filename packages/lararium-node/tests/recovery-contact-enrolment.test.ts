@@ -111,6 +111,19 @@ describe("a face enrols its first recovery contacts on this vessel", () => {
     expect(await lineage(prefix0)).toHaveLength(2);
   });
 
+  test("G5 — the door takes three recovery contacts at a threshold of two and nothing else, each refusal before any write", async () => {
+    const { prefix0 } = await twoFaces();
+    const three = [await recoveryContactOffer(prefix0), await recoveryContactOffer(prefix0), await recoveryContactOffer(prefix0)];
+    const offers = three.map((o) => o.offer);
+    expect(await refusalOf(enrol(0, offers.slice(0, 2), 2))).toBe("recovery-contacts-not-three");
+    expect(await refusalOf(enrol(0, offers, 1))).toBe("threshold-not-two");
+    expect(await refusalOf(enrol(0, offers, 3))).toBe("threshold-not-two");
+    expect(await readRecoveryContactSet(0)).toBeNull();
+    expect(await lineage(prefix0)).toHaveLength(1);
+    // CONTROL: two of three enrols.
+    expect(await enrol(0, offers, 2)).toMatchObject({ threshold: 2, recoveryContacts: 3, seq: 1 });
+  });
+
   test("G4 — a stopped run completes with the same offers; other offers refuse record-names-another-set", async () => {
     const { prefix0 } = await twoFaces();
     const a = await recoveryContactOffer(prefix0);
