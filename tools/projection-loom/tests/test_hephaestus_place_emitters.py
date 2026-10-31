@@ -93,3 +93,40 @@ def test_identical_architecture_cannot_be_rebranded_as_successful_recombination(
     assert receipt["emitter"]=="mutation"
     assert "alternatives refused" in receipt["recombination_deferral"]
     assert receipt["native_audition_completed"] is False
+
+def test_relational_search_preserves_the_first_refusal_then_tries_another_closed_region(monkeypatch):
+    import projection_loom.place_emitters as emitters
+    from dataclasses import replace
+    original,resolved,spatial=inputs()
+    def change(entity,scale):
+        bodies=[]
+        for body in resolved.bodies:
+            if body.entity_id==entity:
+                nodes=list(body.program.nodes)
+                node=nodes[0]
+                nodes[0]=replace(node,size=(node.size[0]*scale,*node.size[1:]))
+                body=replace(body,program=GrowthProgram(tuple(nodes)))
+            bodies.append(body)
+        return PlaceGenome(tuple(bodies),resolved.walkways,resolved.ascents,resolved.bearings)
+    archive=[{"candidate_id":"p000c000","genome":change("intent_deck_000",1.05),
+              "workspace_sha256":"a"*64},
+             {"candidate_id":"p000c001","genome":change("roof",1.08),
+              "workspace_sha256":"b"*64}]
+    original_recombine=emitters.recombine_place_regions
+    seen=[]
+    def bounded_recombine(*args,**kwargs):
+        seen.append((tuple(kwargs["left_generated"]),tuple(kwargs["right_generated"])))
+        if len(seen)==1:
+            raise ValueError("first spatial relation set failed its source constraint")
+        return original_recombine(*args,**kwargs)
+    monkeypatch.setattr(emitters,"recombine_place_regions",bounded_recombine)
+    child,row=emit_place_child(original,resolved,archive,spatial,
+                              epoch=1,index=1,offspring=2,seed=13)
+    assert child.identity
+    assert row["emitter"]=="relational-recombination"
+    ancestry=row["ancestors"][0]
+    assert ancestry["tested_region_pair_count"]==2
+    assert len(ancestry["rejected_region_alternatives"])==1
+    assert ancestry["rejected_region_alternatives"][0]["reason"].startswith("first spatial relation")
+    assert ancestry["accepted_pair_index"]!=ancestry["sampled_pair_index"]
+    assert row["native_audition_completed"] is False
