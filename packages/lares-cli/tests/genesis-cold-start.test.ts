@@ -2,7 +2,7 @@
  * genesis-cold-start -- a founding on a fresh LAR_ROOT reaches the committed genesis/ with no hand copy, and the
  * CLI and the daemon resolve the same dir.
  */
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import { daemonGenesisDir } from "@lararium/node";
@@ -31,5 +31,17 @@ describe("a cold root and the shipped seed", () => {
     process.env["LAR_GENESIS"] = "/explicit/genesis";
     expect(larGenesisDir()).toBe("/explicit/genesis");
     expect(daemonGenesisDir()).toBe("/explicit/genesis");
+  });
+});
+
+describe("the CLI reads the configured genesis as the daemon does", () => {
+  test("a configured resources.genesis wins on a cold root in both", async () => {
+    const { laresConfigPath } = await import("@lararium/node");
+    process.env["LAR_ROOT"] = coldRoot(); process.env["HOME"] = coldRoot();
+    delete process.env["LAR_GENESIS"];
+    mkdirSync(join(process.env["HOME"]!, ".lares"), { recursive: true });
+    writeFileSync(laresConfigPath(), JSON.stringify({ resources: { genesis: "/configured/genesis" } }));
+    expect(larGenesisDir()).toBe("/configured/genesis");
+    expect(daemonGenesisDir()).toBe("/configured/genesis");
   });
 });

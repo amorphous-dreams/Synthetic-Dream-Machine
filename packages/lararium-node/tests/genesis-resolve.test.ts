@@ -80,6 +80,13 @@ describe("a vessel founded on the shipped seed pins the CID it used", () => {
     expect(() => checkGenesisPin(held.storage, resolveGenesis({ corpusRoot: held.root, shippedRoot: dirWithSeed("other") }))).not.toThrow();
   });
 
+  test("a re-found on another source clears the earlier pin, so no stale pin outlives it", () => {
+    const { root, storage } = stage();
+    pinGenesisSeed(storage, resolveGenesis({ corpusRoot: root, shippedRoot: dirWithSeed("A") }));
+    pinGenesisSeed(storage, resolveGenesis({ corpusRoot: dirWithSeed("mine"), shippedRoot: dirWithSeed("A") }));
+    expect(() => checkGenesisPin(storage, resolveGenesis({ corpusRoot: root, shippedRoot: dirWithSeed("B") }))).not.toThrow();
+  });
+
   test("the founding output names the directory and the CID it used", () => {
     const shipped = dirWithSeed("A");
     const resolution = resolveGenesis({ corpusRoot: dirWithSeed(null), shippedRoot: shipped });

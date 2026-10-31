@@ -20,7 +20,7 @@
  */
 
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 export type GenesisSource = "explicit" | "configured" | "root" | "shipped";
@@ -57,8 +57,9 @@ function seedCidAt(dir: string): string | null {
 
 const PIN_FILE = "genesis-pin.json";
 
-/** Record the seed CID a SHIPPED-seed founding used. Any other source pins nothing. */
+/** Record the seed CID a SHIPPED-seed founding used. Any other source pins nothing, and clears an earlier pin. */
 export function pinGenesisSeed(storageDir: string, resolution: GenesisResolution): void {
+  rmSync(join(storageDir, PIN_FILE), { force: true });
   if (resolution.source !== "shipped") return;
   const seedCid = seedCidAt(resolution.dir);
   if (seedCid === null) return;
