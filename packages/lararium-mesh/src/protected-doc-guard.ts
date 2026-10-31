@@ -38,6 +38,9 @@ export interface ProtectedDocGuardOptions {
   /** Whether a recount stands queued and unfinished NOW. With it, an ask waits until none does and classes in that same
    *  turn, so a write queued after the ask began, before it resumed, still classes the ask. */
   readonly pending?: () => boolean;
+  /** INCOMPLETE (controller re-ruling 2026-10-31): the classification met a read failure and no whole recount has cleared it.
+   *  While it reads true, every document reads `unreadable`: withheld from every peer the guard stands before. */
+  readonly incomplete?: () => boolean;
   /** Each class's live decider: does this peer hold the class's reach now, for THIS document (its own home's standing)? */
   readonly decide: { readonly [C in ProtectedDocClass]?: (peerId: string, documentId: string) => boolean | Promise<boolean> };
 }
@@ -45,7 +48,10 @@ export interface ProtectedDocGuardOptions {
 export function protectedDocGuard(opts: ProtectedDocGuardOptions): ProtectedDocGuard {
   const classOf = (documentId: string | undefined): ProtectedDocClass | "unreadable" | null => {
     if (documentId === undefined) return null;
-    try { return opts.ids().get(String(documentId)) ?? null; } catch { return "unreadable"; }
+    try {
+      if (opts.incomplete?.() === true) return "unreadable";   // no document stands proven unprotected while the count is torn
+      return opts.ids().get(String(documentId)) ?? null;
+    } catch { return "unreadable"; }
   };
   return {
     classOf,

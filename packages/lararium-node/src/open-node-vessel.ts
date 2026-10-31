@@ -850,6 +850,8 @@ async function prepareNodeBootOn(
     // stays pending, in that same turn.
     settled: () => kahuProtected?.settled() ?? Promise.resolve(),
     pending: () => kahuProtected?.pending() === true,
+    // A torn count withholds every document from every wire peer until a whole recount (controller re-ruling 2026-10-31).
+    incomplete: () => kahuProtected?.incomplete() === true,
     decide: {
       "kahu-canon": (peerId, documentId) => kahuHandAtWire({ session: peerSessions.get(peerId), custodyGroup, faceProven: wornFaceProven, canon: kahuCanon,
         kahuStanding: kahuStandings.heldAt(kahuProtected?.homeOf(documentId) ?? null) }),

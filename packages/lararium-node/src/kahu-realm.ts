@@ -452,39 +452,56 @@ export async function kahuProtectedDocIds(opts: { readonly sealHome: string; rea
  * document on its own home's live standing, never the primary's alone.
  */
 export async function kahuProtectedDocHomes(opts: { readonly sealHome: string; readonly canon?: KahuCanonDocs }): Promise<ReadonlyMap<string, string | null>> {
+  return (await readKahuProtected(opts)).homes;
+}
+
+/** An absent path reads as nothing standing; every other error is a failure to read. */
+const absent = (err: unknown): boolean => (err as { code?: unknown } | null)?.code === "ENOENT";
+
+/**
+ * The protected ids with their homes, AND every read failure met on the way (controller re-ruling 2026-10-31, after Sol's
+ * re-read): a directory, a kept registration, a key or a charter that would not read is named here, so the holder can mark
+ * its classification INCOMPLETE rather than take a partial count as truth. An absent path is no failure.
+ */
+async function readKahuProtected(opts: { readonly sealHome: string; readonly canon?: KahuCanonDocs }): Promise<{ readonly homes: ReadonlyMap<string, string | null>; readonly failures: readonly string[] }> {
+  const failures: string[] = [];
   const ids = new Map<string, string | null>(opts.canon ? [...kahuCanonDocIds(opts.canon)].map((id) => [id, null] as const) : []);
-  const add = (url: string, nexus: string): void => {
-    try { const id = String(interpretAsDocumentId(url as AutomergeUrl)); if (!ids.has(id) || ids.get(id) === null) ids.set(id, nexus); } catch { /* names nothing */ }
+  const add = (url: string, nexus: string, where: string): void => {
+    try { const id = String(interpretAsDocumentId(url as AutomergeUrl)); if (!ids.has(id) || ids.get(id) === null) ids.set(id, nexus); }
+    catch { failures.push(`${where} names no document`); }
   };
   const homes: string[] = [opts.sealHome];
   try { for (const name of readdirSync(join(opts.sealHome, "carried")).sort()) homes.push(join(opts.sealHome, "carried", name)); }
-  catch { /* no carried home stands */ }
+  catch (err) { if (!absent(err)) failures.push(`the carried homes would not list: ${String(err)}`); }
   const nexuses = new Set<string>();
   for (const home of homes) {
     try { const aid = nexusAidOf(readNexusDoc(home)); if (aid) nexuses.add(aid); }
-    catch (err) { console.warn(`[kahu-realm] the charter at ${home} would not read; its kept registrations still class: ${String(err)}`); }
+    catch (err) { failures.push(`the charter at ${home} would not read: ${String(err)}`); }
     const keptRoot = join(home, "nexus", "kahu-realm");
     let dirs: string[] = [];
-    try { dirs = readdirSync(keptRoot); } catch { dirs = []; }
+    try { dirs = readdirSync(keptRoot); } catch (err) { if (!absent(err)) failures.push(`${keptRoot} would not list: ${String(err)}`); }
     for (const nexus of dirs) {
       let files: string[] = [];
       try { files = readdirSync(join(keptRoot, nexus)).filter((f) => f.endsWith(".json")); }
-      catch (err) { console.warn(`[kahu-realm] the kept registrations at ${join(keptRoot, nexus)} would not list: ${String(err)}`); }
+      catch (err) { failures.push(`the kept registrations at ${join(keptRoot, nexus)} would not list: ${String(err)}`); }
       for (const file of files) {
+        const at = join(keptRoot, nexus, file);
         let rec: RealmBagRegistration | null = null;
-        try { rec = parseRealmBagRegistration(readFileSync(join(keptRoot, nexus, file), "utf8")); } catch { rec = null; }
-        if (rec && KAHU_REALM_BAGS.includes(rec.bagUri)) add(rec.docUrl, nexus);
+        try { rec = parseRealmBagRegistration(readFileSync(at, "utf8")); } catch (err) { failures.push(`${at} would not read: ${String(err)}`); continue; }
+        if (rec === null) { failures.push(`${at} reads as no registration`); continue; }
+        if (KAHU_REALM_BAGS.includes(rec.bagUri)) add(rec.docUrl, nexus, at);
       }
     }
   }
   for (const nexus of nexuses) {
     let seeds: Uint8Array[] = [];
-    try { seeds = await readNexusKeys(kahuRealmHandleIndex(), nexus); } catch { seeds = []; }
+    try { seeds = await readNexusKeys(kahuRealmHandleIndex(), nexus); }
+    catch (err) { failures.push(`persona zero's keys at ${nexus.slice(0, 18)}… would not read: ${String(err)}`); seeds = []; }
     try {
-      for (const seed of seeds) for (const bagUri of KAHU_REALM_BAGS) add(kahuBagDocUrlFrom(seed, nexus, bagUri), nexus);
+      for (const seed of seeds) for (const bagUri of KAHU_REALM_BAGS) add(kahuBagDocUrlFrom(seed, nexus, bagUri), nexus, `the derivation at ${nexus.slice(0, 18)}…`);
     } finally { for (const seed of seeds) seed.fill(0); }
   }
-  return ids;
+  return { homes: ids, failures };
 }
 
 /**
@@ -498,7 +515,7 @@ export function kahuProtectedHolder(opts: {
   readonly sealHome: string; readonly canon: () => KahuCanonDocs; readonly onChange?: () => void;
 }): {
   ids(): ReadonlyMap<string, "kahu-canon">; homeOf(id: string): string | null; homes(): ReadonlySet<string>; recount(): Promise<void>;
-  settled(): Promise<void>; pending(): boolean; close(): void;
+  settled(): Promise<void>; pending(): boolean; incomplete(): boolean; close(): void;
 } {
   let map: ReadonlyMap<string, "kahu-canon"> = new Map();
   let homes: ReadonlyMap<string, string | null> = new Map();
@@ -508,14 +525,33 @@ export function kahuProtectedHolder(opts: {
   // until none does and classes in that same turn, so a write queued after an ask began still classes that ask.
   let queued = 0;
   let done = 0;
+  // INCOMPLETE (controller re-ruling 2026-10-31): the last recount met a read failure. The guard then withholds every document
+  // from every wire peer; only a fully successful recount clears it. A partial count never replaces the map.
+  let incomplete = false;
+  let said = false;
   let closed = false;
   const once = async (): Promise<void> => {
     if (closed) return;
-    const read = await kahuProtectedDocHomes({ sealHome: opts.sealHome, canon: opts.canon() });
-    const next = new Map([...read.keys()].map((id) => [id, "kahu-canon" as const]));
-    const moved = next.size !== map.size || [...next.keys()].some((id) => !map.has(id) || homes.get(id) !== read.get(id));
+    let read: Awaited<ReturnType<typeof readKahuProtected>>;
+    try { read = await readKahuProtected({ sealHome: opts.sealHome, canon: opts.canon() }); }
+    catch (err) { read = { homes: new Map(), failures: [`the recount threw: ${String(err)}`] }; }
+    if (read.failures.length > 0) {
+      const was = incomplete;
+      incomplete = true;
+      if (!said) {
+        said = true;
+        console.error(`[kahu-realm] ⚠ THE PROTECTED CANON COUNT IS INCOMPLETE (${read.failures.length} read failure(s): ${read.failures.slice(0, 3).join("; ")}): every document is withheld from every wire peer until a recount reads whole; the next classification write or board change retries it`);
+      }
+      if (!was) { try { opts.onChange?.(); } catch { /* a listener never breaks the count */ } }
+      return;
+    }
+    const recovered = incomplete;
+    incomplete = false;
+    if (recovered) { said = false; console.warn("[kahu-realm] the protected canon count reads whole again: the wire's verdicts re-read"); }
+    const next = new Map([...read.homes.keys()].map((id) => [id, "kahu-canon" as const]));
+    const moved = recovered || next.size !== map.size || [...next.keys()].some((id) => !map.has(id) || homes.get(id) !== read.homes.get(id));
     map = next;
-    homes = read;
+    homes = read.homes;
     if (moved) { try { opts.onChange?.(); } catch { /* a listener never breaks the count */ } }
   };
   const recount = (): Promise<void> => {
@@ -532,7 +568,7 @@ export function kahuProtectedHolder(opts: {
     ids: () => map,
     homeOf: (id) => homes.get(id) ?? null,
     homes: () => new Set([...homes.values()].filter((n): n is string => n !== null)),
-    recount, settled, pending: () => done < queued,
+    recount, settled, pending: () => done < queued, incomplete: () => incomplete,
     close: () => { closed = true; CLASSIFICATION_WRITES.delete(onWrite); },
   };
 }
