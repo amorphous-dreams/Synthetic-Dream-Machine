@@ -1,3 +1,20 @@
+# Projection Loom · Living YIN roadmap
+
+## Continuing topology inheritance · October 30, 2026
+
+The working branch `feature/green-jello-dinosaur-5--projection-loom` holds the follow-on source and test wave. Latest code change `6744cabee54e6fa64837a89070e04e9b30a3a4d6`; the evergreen board was updated at `258c2c3d47d4125480cbe9f4e9088ac2da53bd1b`. PR #84 stays open/unmerged.
+
+**Landed:** deterministic source-preserving topology proposals within the existing generational OODA-HA helm; exact finite native audition selection recognizes topology preference; new emitter witnesses cover deterministic replay, refusal-to-mutation, preservation of original bodies and original goals, and independence from unverified parent archive entries. The emitter decision path now branches explicitly among relational breeding, topology construction and default mutation, with no compatibility shim. No new controller or independent native budget.
+
+**Acceptance:** These changes have been committed directly through the GitHub connector; Python tests and native STEP have not run in this session. The queried predecessor `d98e6abe` had a CAD/evidence workflow still in progress; its result does not certify this newer head. Fetch all exact-head workflow conclusions and diagnose any failing job before acceptance.
+
+**Open work:** Native multi-epoch admission/replay, exact budget and steering corruption witnesses, a common typed deferral vocabulary across every consumer without adapters, further topology graph constraints, genuine measured seed-conditioned morphology, and independently verified real Unreal Editor integration. Preserve operator authority over aesthetic winners, naming, Elyncia canon and irreversible o-takiage.
+
+## Ashes holding ahu · previous living roadmap
+
+<details>
+<summary>Prior living roadmap retained verbatim</summary>
+
 # Projection Loom · YIN living roadmap
 
 ## Source-landed topology inheritance · native acceptance pending
@@ -2140,6 +2157,8 @@ Operator pet-name promotion. At authoring time, the campaign had not yet
 produced hosted results; inspect exact-head workflow receipts and archives
 before calling any offspring successful.
 
+
+</details>
 
 </details>
 
