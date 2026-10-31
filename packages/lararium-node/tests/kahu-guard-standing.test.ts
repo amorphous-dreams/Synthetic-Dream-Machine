@@ -12,9 +12,14 @@
  *       ask: the guard serves the count only once no recount queued before its read stays pending.
  *   T5  RED (Sol BLOCKER 4): a charter roll re-reads EVERY home's standing, the carried homes' with the primary's; each
  *       document reads its own home's watch.
+ *   T6  RED (Sol's re-read; controller ruling 2026-10-31): a recount that meets a read failure marks the classification
+ *       INCOMPLETE and the guard withholds every document from every wire peer: a retained canon document a same-face alias
+ *       lane would carry draws withhold once its registration directory turns unreadable, and so does an ordinary book.
+ *       CONTROL: once the failure clears and a recount reads whole, the ordinary book crosses again and the canon stays
+ *       withheld.
  */
 import { afterAll, describe, expect, test } from "vitest";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
@@ -23,6 +28,7 @@ import * as mesh from "@lararium/mesh";
 import { LARES_DOC_URI, hex, protectedDocGuard, signRealmBagRegistration } from "@lararium/mesh";
 import * as kahuRealm from "../src/kahu-realm.js";
 import { kahuProtectedHolder, keepKahuRegistration } from "../src/kahu-realm.js";
+import { selfSlotShareDecision } from "../src/self-slot-share.js";
 
 const roots: string[] = [];
 afterAll(() => { for (const r of roots) rmSync(r, { recursive: true, force: true }); });
@@ -109,5 +115,38 @@ describe("the guard serves the standing count and each document's own home", () 
     expect(b.heldAt(null), "T5: the primary (keel canon) reads its own").toBe(true);
     expect(b.heldAt("nexus-primary"), "T5: the primary by name").toBe(true);
     expect(b.heldAt("nexus-unwatched"), "T5: an unwatched home reads not admitted").toBe(false);
+  });
+
+  test("T6 — RED: a registration that turns unreadable withholds everything from the wire; a whole recount restores", async () => {
+    const sealHome = mkdtempSync(join(tmpdir(), "lar-kahu-incomplete-")); roots.push(sealHome);
+    const nexus = "nexus-" + "e6".repeat(32);
+    const canon = mesh.deterministicDocUrl("a-retained-canon-behind-an-alias");
+    const book = idOf(mesh.deterministicDocUrl("an-ordinary-book"));
+    keepKahuRegistration(sealHome, await registration(nexus, canon));
+    const holder = kahuProtectedHolder({ sealHome, canon: () => ({}) }) as ReturnType<typeof kahuProtectedHolder> & { incomplete?: () => boolean };
+    const guard = protectedDocGuard({
+      ids: () => holder.ids(), settled: () => holder.settled(), pending: () => holder.pending(),
+      ...(holder.incomplete ? { incomplete: () => holder.incomplete!() } : {}),
+      decide: { "kahu-canon": () => false },
+    } as GuardOptions);
+    // A same-face session whose face view (the alias lane, the bridge) would carry any document it is asked for.
+    const crosses = (documentId: string) => selfSlotShareDecision({
+      hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: { mayFederate: async () => false }, antigenRing: null, membership: null,
+      planeSeal: null, peerId: "same-face-leaf", documentId, sessionFace: { mayFederate: async () => true }, protectedDocs: guard,
+    } as Parameters<typeof selfSlotShareDecision>[0]);
+    const kept = join(sealHome, "nexus", "kahu-realm", nexus);
+    try {
+      await holder.recount();
+      expect(await crosses(idOf(canon)), "CONTROL: the classed canon withholds").toBe(false);
+      expect(await crosses(book), "CONTROL: an ordinary book crosses").toBe(true);
+      chmodSync(kept, 0o000);                                  // the registration's directory turns unreadable
+      await holder.recount();
+      expect(await crosses(idOf(canon)), "T6: the retained canon behind the alias withholds").toBe(false);
+      expect(await crosses(book), "T6: incomplete withholds every document").toBe(false);
+      chmodSync(kept, 0o700);                                  // the failure clears
+      await holder.recount();
+      expect(await crosses(book), "CONTROL: a whole recount lets the ordinary book cross again").toBe(true);
+      expect(await crosses(idOf(canon)), "CONTROL: the canon stays withheld").toBe(false);
+    } finally { try { chmodSync(kept, 0o700); } catch { /* gone */ } holder.close(); }
   });
 });
