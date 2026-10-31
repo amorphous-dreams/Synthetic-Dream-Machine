@@ -13,13 +13,15 @@
  *     withholds its documents; a classed ask with no peer withholds.
  *   · ONE GUARD, MANY CLASSES. `ProtectedDocClass` names each class the guard serves; a later security feature adds its
  *     class (its ids and its decider) to this guard rather than standing a second one. P26 populates `kahu-canon`: the
- *     live `lares` and `lararium` documents, decided by Kahu reach at the wire.
+ *     live `lares` and `lararium` documents, decided by Kahu reach at the wire. Lane `ralias` populates `vessel-private`:
+ *     the vessel's daemon document, each face's five planes and the catalog, decided by the relation the peer proved
+ *     (the same-face view, the sibling gate, a face-join grant), never by a realm, registration, contract or carriage lane.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/stable-founding-road#/P26
  */
 
 /** The classes of protected documents this guard serves. */
-export type ProtectedDocClass = "kahu-canon";
+export type ProtectedDocClass = "kahu-canon" | "vessel-private";
 
 /** The guard a share verdict asks first. */
 export interface ProtectedDocGuard {

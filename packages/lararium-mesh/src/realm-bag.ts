@@ -262,12 +262,21 @@ export async function coSignRealmBagRegistration(
 
 /** What a fold may hand the seal verifier beyond the record itself: this reader's own knowledge of a Handle
  *  steward (`StewardSealReading`). A face steward's seal reads the same with or without it. */
-export type RealmBagFoldOptions = StewardSealReading;
+export type RealmBagFoldOptions = StewardSealReading & {
+  /**
+   * THE VESSEL'S PRIVATE DOCUMENTS, by id (lane `ralias`): true where this reader classes the document `vessel-private`
+   * (its daemon document, a face's plane, its catalog). A registration naming one never counts here, whoever sealed it:
+   * a seal proves who keeps a book, never that the book is theirs to register. The share guard withholds the document
+   * either way; this refusal keeps the fold from seating it. A consult that throws refuses (fail closed).
+   */
+  readonly vesselPrivate?: (documentId: string) => boolean;
+};
 
 /**
  * Does this registration COUNT for `realmId`? Fail-closed at every shore: a foreign realm, an empty steward
  * set, a name that reads neither class or that the record spells twice, a tier this fold does not know, a
- * steward with no verifying seal, a seal under a name the record does not keep — each reads false. n-of-n and
+ * document this reader classes vessel-private, a steward with no verifying seal, a seal under a name the record does
+ * not keep — each reads false. n-of-n and
  * nothing beside it: every named steward sealed, once, and no other hand stands on the record.
  */
 export async function realmBagRegistrationCounts(
@@ -285,6 +294,11 @@ export async function realmBagRegistrationCounts(
   // A lease reads as a ROLL COUNT — a torn one reads as no lease at all, which would widen the write.
   if (rec.expiry !== undefined && (!Number.isInteger(rec.expiry) || rec.expiry < 0)) return false;
   if (!rec.bagUri.startsWith("lar:///") || !rec.docUrl.startsWith("automerge:")) return false;
+  if (opts?.vesselPrivate) {
+    try {
+      if (opts.vesselPrivate(String(interpretAsDocumentId(rec.docUrl as AutomergeUrl)))) return false;
+    } catch { return false; }
+  }
   const bytes = realmBagBytes(rec);
   // EXACTLY THE KEPT NAMES, EACH ONCE, IN THEIR CANONICAL SPELLING. A name the record spells twice, a name in
   // another case (the seal's own verifier reads the name's class), and a seal under a name the record does not

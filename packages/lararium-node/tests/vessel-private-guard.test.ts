@@ -30,7 +30,7 @@ import * as ed from "@noble/ed25519";
 import { generateAutomergeUrl, interpretAsDocumentId, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, PERSONA_GROUP_ID_TIDDLER, RealmBagGate, deterministicDocUrl, foldRealmBags, hex, personaBagIdFor, personaMembershipEntries,
-  personaSiblingBagIds, protectedDocGuard, realmBagRegistrationCounts, signRealmBagRegistration, writeRealmBagRegistration,
+  personaSiblingBagIds, protectedDocGuard, realmBagRegistrationCounts, signRealmBagRegistration, storedLarRecord, writeRealmBagRegistration,
   type FaceGrantReading, type FederationGate, type LarDoc, type ProtectedDocClass,
 } from "@lararium/mesh";
 import { faceFleetViews, bridgeBooks } from "../src/face-fleet-view.js";
@@ -77,8 +77,8 @@ function bootstrap(...faces: Array<ReturnType<typeof urls>>): Record<string, { t
 const writeBootstrap = (path: string, tiddlers: Record<string, { text?: string }>): void =>
   writeFileSync(path, JSON.stringify({ title: "$:/lararium/social-bootstrap", text: JSON.stringify({ tiddlers }) }));
 const catalogDoc = { tiddlers: {
-  "lar:///ha.ka.ba/catalog": { title: "lar:///ha.ka.ba/catalog", text: CATALOG },
-  "lar:///ha.ka.ba/bags/notes": { title: "lar:///ha.ka.ba/bags/notes", text: BOOK },
+  "lar:///ha.ka.ba/catalog": storedLarRecord("lar:///ha.ka.ba/catalog", { text: CATALOG }, "lararium-seed"),
+  "lar:///ha.ka.ba/bags/notes": storedLarRecord("lar:///ha.ka.ba/bags/notes", { text: BOOK }, "alias"),
 } } as unknown as LarDoc;
 
 /** A's realm gate over a realm doc carrying `recs`: B's proven contract nym reads the book she keeps (the write side). */

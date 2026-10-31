@@ -19,7 +19,7 @@
 import { provenPlaneUrls, registerFacePlanesForRelay } from "./face-plane-registration.js";
 import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { larBootstrapPath } from "./vessel-paths.js";
 import { createAfterRoll } from "./after-roll-chain.js";
 import { join }                         from "path";
@@ -104,8 +104,9 @@ import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import { setCasDoor, setRestDoor, setCustodyWriteDoor, setDyadDoor } from "./worker-handle.js";
 import { writeCasEntriesFs } from "./node-cas.js";
-import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass } from "@lararium/mesh";
+import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass, PersonaGroupIdentityRing, ProtectedDocClass } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
+import { readBootTiddlers, vesselPrivateBook, vesselPrivateRelationOpens } from "./vessel-private.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder, carryPersonaKelUpTheGradient } from "./persona-kel-ring.js";
 import { vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
@@ -724,6 +725,10 @@ async function prepareNodeBootOn(
   const bootstrapPath = larBootstrapPath();   // <lares>/vessel — beside the docs it addresses
   // The hearth dial an admission pinned (null on a self-founded vessel — it IS the hearth).
   const hearthPin = readHearthDialPin(bootstrapPath);
+  // THE VESSEL'S PRIVATE DOCUMENTS, classed by IDENTITY off its own bootstrap before any peer can ask (lane `ralias`): the
+  // daemon document and every face's five planes, then the catalog once it stands. The book re-reads the bootstrap where
+  // it changed and never drops a class; the one guard below withholds each from every peer no proven relation opens it to.
+  const vesselPrivate = vesselPrivateBook({ bootstrapPath });
   // THE FACE THE COMPOSITION MOUNTS: the one the unlock named (`lares vault unlock --face N`), else the one face standing
   // open. The daemon doc's singular mount pins were written by the FOUNDING face and never move again; a mounted
   // non-founding face carries its own mount material in its anchors — the pins below default to it. Null means no
@@ -846,8 +851,20 @@ async function prepareNodeBootOn(
   };
   const recountKahuProtected = async (): Promise<void> => { await kahuProtected?.recount(); await standCarriedKahuStandings(); };
   const noProtectedIds: ReadonlyMap<string, "kahu-canon"> = new Map();
+  // ONE ID MAP, TWO CLASSES: the vessel's private documents, then the Kahu canon over them. Rebuilt only when either moves.
+  let protectedMemo: { kahu: ReadonlyMap<string, ProtectedDocClass>; priv: ReadonlySet<string>; size: number; map: ReadonlyMap<string, ProtectedDocClass> } | null = null;
+  const protectedIds = (): ReadonlyMap<string, ProtectedDocClass> => {
+    const kahu = kahuProtected?.ids() ?? noProtectedIds;
+    const priv = vesselPrivate.ids();
+    if (protectedMemo && protectedMemo.kahu === kahu && protectedMemo.priv === priv && protectedMemo.size === priv.size) return protectedMemo.map;
+    const map = new Map<string, ProtectedDocClass>();
+    for (const id of priv) map.set(id, "vessel-private");
+    for (const [id, cls] of kahu) map.set(id, cls);
+    protectedMemo = { kahu, priv, size: priv.size, map };
+    return map;
+  };
   const protectedDocs = protectedDocGuard({
-    ids: () => kahuProtected?.ids() ?? noProtectedIds,
+    ids: protectedIds,
     // RECOUNT BEFORE SERVE (Sol's reads, SHOULD 2 and BLOCKER 3): an ask reads the ids once no recount queued before its read
     // stays pending, in that same turn.
     settled: () => kahuProtected?.settled() ?? Promise.resolve(),
@@ -857,6 +874,13 @@ async function prepareNodeBootOn(
     decide: {
       "kahu-canon": (peerId, documentId) => kahuHandAtWire({ session: peerSessions.get(peerId), custodyGroup, faceProven: wornFaceProven, canon: kahuCanon,
         kahuStanding: kahuStandings.heldAt(kahuProtected?.homeOf(documentId) ?? null) }),
+      // A vessel-private document crosses only where a relation the peer PROVED already opens it: the scoped view of the face
+      // its same-operator session proved, the sibling gate, a face-join grant on the face's own planes (lane `ralias`).
+      "vessel-private": (peerId, documentId) => vesselPrivateRelationOpens({
+        sibling: Boolean(siblings?.provenKeyOf(peerId as PeerId)), siblingGate,
+        sameOperator: peerClassMap.get(peerId) === "same-operator", sessionFace: faceViews.gateFor(peerId),
+        faceGrant: faceGrantRing, peerId, documentId,
+      }),
     },
   });
   // The mounted face also reads this vessel's wikis, catalog and bags (the bridge until O1, `face-fleet-view`).
@@ -963,6 +987,8 @@ async function prepareNodeBootOn(
   // ring's sibling path over the public boards, and null denies every doc (fail-closed).
   let siblings: SiblingNetworkAdapter | null = null;
   let siblingGate: FederationGate | null = null;
+  // The PersonaGroup ring (set once it assembles, below): the vessel-private decider asks its face-join grant path alone.
+  let faceGrantRing: PersonaGroupIdentityRing | null = null;
   // The REALM plane — the relation's shared CRDT (realm-bag-brief). Stood once the oracle plane loads and a
   // charter names a realm; INERT (null) on a vessel outside every relation. Its gate composes ATOP the
   // deterministic shelf: the realm doc and each steward-registered bag's doc federate to a MEMBER peer alone.
@@ -1116,6 +1142,7 @@ async function prepareNodeBootOn(
   if (resolvedCatalogUrl && resolvedCatalogUrl !== catalogUrl) {
     try { mkdirSync(storageDir, { recursive: true }); writeFileSync(catalogUrlFile, catalogHandle.url, "utf8"); } catch { /* quota */ }
   }
+  vesselPrivate.add(catalogHandle.url);      // the catalog keeps its class from the moment it stands
   emit("catalog-ready");
 
   // ── Operator identity (node-held) ──────────────────────────────────────────
@@ -1894,14 +1921,7 @@ async function prepareNodeBootOn(
       // or not a string threw an uncaught SyntaxError/TypeError and killed the boot — while the pin reader
       // three hundred lines earlier answered `null` on that exact file. Two readers of one file must not
       // disagree about whether it is fatal.
-      let bootstrapTiddlers: Record<string, { text?: string }> = {};
-      if (existsSync(bootstrapPath)) {
-        try {
-          const plugin = JSON.parse(readFileSync(bootstrapPath, "utf8")) as Record<string, unknown>;
-          const packed = JSON.parse(String(plugin["text"] ?? "{}")) as { tiddlers?: Record<string, { text?: string }> };
-          bootstrapTiddlers = packed.tiddlers ?? {};
-        } catch { /* a torn bootstrap reads as none — never a fatal boot */ }
-      }
+      const bootstrapTiddlers: Record<string, { text?: string }> = readBootTiddlers(bootstrapPath) ?? {};   // torn reads as none
       faceBootTiddlers = bootstrapTiddlers;
       const daemonUrl = bootDaemonUrl(bootstrapTiddlers);
       // The mounted face decides which plane mounts; the Binding Gate below resolves the same face. The
@@ -2232,7 +2252,8 @@ async function prepareNodeBootOn(
         // material and passes a per-Nexus face key alone (`realm-steward`).
         stewardGuard:     stewardGuard(),
         // THE HANDLE BOOK: a Handle steward's seal reads against the chain this vessel's own book holds for it.
-        sealReading:      nodeHandleBookReading(),
+        // A registration naming one of this vessel's private documents never counts here (lane `ralias`).
+        sealReading:      { ...nodeHandleBookReading(), vesselPrivate: (id: string) => vesselPrivate.has(id) },
         // MANY REALMS. The planes stand each cabal realm this vessel's own ledger notes under the Nexus standing
         // here, read a peer's lineage standing in a realm off the edge shadow ring, and note a realm under that
         // Nexus the moment an act enters it. A cabal takes no key and no roster: the ledger holds this vessel's
@@ -2638,6 +2659,7 @@ async function prepareNodeBootOn(
           : true,
       });
       if (selfSlotFedGate) selfSlotFedGate = ring.compose(selfSlotFedGate);
+      faceGrantRing = ring;                  // the vessel-private decider reads the grant path alone, never the gate it widens
       // The fleet's own edge board rides the sibling lane beside the public boards, so a root's raise reaches every device.
       siblingGate = ring.composeSiblings(new DeterministicFederationGate(nexusPubkey, edgeShadows?.fleetBoardUrls() ?? []));
     }
