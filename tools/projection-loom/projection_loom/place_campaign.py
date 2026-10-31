@@ -167,8 +167,8 @@ def select_place_auditions(offered,budget,preferred=None,*,epoch=0,emitter_recei
     This changes which children consume the same exact native budget, never
     their original genome proposals or score/physical safety rules.
     """
-    if preferred not in (None,"initial","mutation","relational-recombination"):
-        raise ValueError("Place runner supports only initial, mutation and relational-recombination emitters")
+    if preferred not in (None,"initial","mutation","relational-recombination","topology-birth"):
+        raise ValueError("Place runner supports only initial, mutation, relational-recombination and topology-birth emitters")
     if type(budget) is not int or not 1<=budget<=len(offered):
         raise ValueError("Invalid exact native place audition budget")
     keyed=list(enumerate(offered))
@@ -388,7 +388,7 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
             or type(offspring) is not int or not 1<=offspring<=8
             or type(exact_budget) is not int or not 1<=exact_budget<=offspring
             or type(seed) is not int
-            or prefer_emitter not in (None,"initial","mutation","relational-recombination")):
+            or prefer_emitter not in (None,"initial","mutation","relational-recombination","topology-birth")):
         raise ValueError("Bounded matched location experiment budgets required")
     inventory.audit()
     local=[f for f in inventory.frames.values() if f.kind=="local3d"]
@@ -464,7 +464,7 @@ def _run_place_campaign_locked(inventory:LocationStack,intent:IntentContract,
                 raise RuntimeError("Operator pause or review must resolve before native place audition")
             selected_preference=(journal.data["policy"].get("preferred_emitter")
                                  or pre["initial_emitter_preference"])
-            if selected_preference not in (None,"initial","mutation","relational-recombination"):
+            if selected_preference not in (None,"initial","mutation","relational-recombination","topology-birth"):
                 raise ValueError("Operator preferred emitter unavailable at living-place aperture")
             open_child(journal,loop,parent="location",scope="epoch",
                        evidence={"genome":genome.identity,"spatial":spatial.identity,
