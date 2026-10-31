@@ -16,7 +16,7 @@
  * Opt-in: pnpm vitest run --config vitest.e2e.config.ts tests/e2e/carried-nexus-posture.test.ts
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { mkdirSync, rmSync, existsSync, cpSync } from "node:fs";
+import { chmodSync, mkdirSync, rmSync, existsSync, cpSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createServer, type Server } from "node:http";
@@ -76,6 +76,9 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
   let partner: NexusDoc;
   let url: string;
   let pin: GateBundlePin;
+  let tornDown = false;
+  let ownSeat = "";
+  const knocks = new Set<string>();
   const charterAt = (federationPosture: "open" | "private"): NexusDoc => ({ ...partner, federationPosture });
   const writePartner = (posture: "open" | "private"): Promise<void> =>
     withLarRoot(ROOT, async () => { writeNexusDoc(carriedCharterHome(larSealHome(), carriedAid), charterAt(posture)); });
@@ -87,6 +90,7 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
     // THE PARTNER CHARTER seats a chair the founded face holds beside two foreign keys: the vessel holds a chair there.
     // The one-byte seeds stand booked in the charter fixture, so its genesis signs under this seat as under the others.
     const ownKey = (await withLarRoot(ROOT, () => storeSeatKey(0, new Uint8Array(32).fill(83)))).toLowerCase();
+    ownSeat = ownKey;
     const foreign = await Promise.all([81, 82].map((b) => ed.getPublicKeyAsync(new Uint8Array(32).fill(b)).then(hex)));
     const held = heldCharter({ keys: [ownKey, ...foreign], threshold: 2 });
     carriedAid = held.aid;
@@ -94,7 +98,16 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
     await writePartner("open");
 
     http = createServer();
-    const dispatcher = mountHttpFaceDispatcher(http);
+    // THE CALLER'S DISPATCHER, tracked as the two-phase boot tracks it: every knock a composition registers, live.
+    const mounted = mountHttpFaceDispatcher(http);
+    const dispatcher = {
+      register: (face: Parameters<typeof mounted.register>[0]) => mounted.register(face),
+      registerUpgrade: (face: Parameters<typeof mounted.registerUpgrade>[0]) => {
+        knocks.add(face.name); const off = mounted.registerUpgrade(face);
+        return () => { knocks.delete(face.name); off(); };
+      },
+      dispose: () => mounted.dispose(),
+    } as typeof mounted;
     wss = new WebSocketServer({ noServer: true });
     await new Promise<void>((resolve) => http.listen(0, "127.0.0.1", resolve));
     const port = (http.address() as AddressInfo).port;
@@ -104,7 +117,7 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
   }, 180_000);
 
   afterAll(async () => {
-    try { await vessel?.teardown(); } catch { /* best-effort */ }
+    try { if (!tornDown) await vessel?.teardown(); } catch { /* best-effort */ }
     await new Promise<void>((res) => wss?.close(() => http?.close(() => res())));
     try { rmSync(ROOT, { recursive: true, force: true }); } catch { /* best-effort */ }
   }, 60_000);
@@ -144,6 +157,53 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
     } finally {
       await leave(seat);
       await writePartner("open");
+      // The next test seats under the OPEN charter again: one refold reads it back.
+      await withLarRoot(ROOT, () => vessel.hostingDoor.rolled(carriedAid));
     }
   }, 60_000);
+
+  test("T19-b, un-carry: a Nexus the vessel stops carrying stands its gate down and closes its seated stranger (slice 1's unstand cut)", async () => {
+    const seat = await seatStranger("uncarried stranger");
+    const home = await withLarRoot(ROOT, async () => carriedCharterHome(larSealHome(), carriedAid));
+    try {
+      rmSync(home, { recursive: true, force: true });
+      await withLarRoot(ROOT, () => vessel.hostingDoor.rolled(carriedAid));
+      for (let i = 0; i < 50 && !seat.closed; i++) await turn(100);
+      expect(seat.closed, "the stranger's socket outlived its gate").toBe(true);
+    } finally {
+      await leave(seat);
+      await writePartner("open");
+      await withLarRoot(ROOT, () => vessel.hostingDoor.rolled(carriedAid));
+    }
+  }, 60_000);
+
+  test("T19-c, read failure: carried charters that will not read read as nothing carried, and the carried gate's stranger closes", async () => {
+    const seat = await seatStranger("unread stranger");
+    const carriedDir = await withLarRoot(ROOT, async () => join(larSealHome(), "carried"));
+    try {
+      chmodSync(carriedDir, 0o000);
+      await withLarRoot(ROOT, () => vessel.hostingDoor.rolled(carriedAid));
+      for (let i = 0; i < 50 && !seat.closed; i++) await turn(100);
+      expect(seat.closed, "a carried set that would not read kept its stranger seated").toBe(true);
+    } finally {
+      chmodSync(carriedDir, 0o755);
+      await leave(seat);
+      await withLarRoot(ROOT, () => vessel.hostingDoor.rolled(carriedAid));
+    }
+  }, 60_000);
+
+  test("T27-b RED: a teardown that meets a gate sweep in flight leaves the caller's dispatcher no knock; CONTROL: the standing vessel holds its knocks", async () => {
+    // CONTROL: the standing composition holds a knock for each gate it stands.
+    for (let i = 0; i < 50 && knocks.size === 0; i++) await turn(100);
+    expect(knocks.size, "the standing vessel holds no knock").toBeGreaterThan(0);
+    // A second carried Nexus lands; its refold fires the gate sweep un-awaited, and the teardown starts at once.
+    const foreign = await Promise.all([84, 85].map((b) => ed.getPublicKeyAsync(new Uint8Array(32).fill(b)).then(hex)));
+    const second = heldCharter({ keys: [ownSeat, ...foreign], threshold: 2 });
+    await withLarRoot(ROOT, async () => { writeNexusDoc(carriedCharterHome(larSealHome(), second.aid), { ...second.doc(), federationPosture: "open" }); });
+    await withLarRoot(ROOT, () => vessel.hostingDoor.rolled(second.aid));
+    tornDown = true;
+    await vessel.teardown();
+    await turn(3_000);                                  // any sweep still in flight lands here
+    expect([...knocks], "a sweep in flight registered a knock after the teardown drained them").toEqual([]);
+  }, 90_000);
 });
