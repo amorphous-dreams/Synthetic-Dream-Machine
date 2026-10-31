@@ -148,6 +148,14 @@ def relational_emission_census(frontiers,records):
     topologies=[row for row in offered if row["emitter"]=="topology-birth"]
     topology_attempted=[row for row in topologies if row["audition"]=="attempted"]
     topology_admitted=[row for row in topology_attempted if actual.get(row["candidate_id"],{}).get("status")=="admitted"]
+    for row in topologies:
+        ancestry=row["emitter_receipt"]["ancestors"][0]
+        refusals=ancestry["rejected_patterns"]
+        if (ancestry["tested_patterns"]!=len(refusals)+1
+                or ancestry["tested_patterns"]>2
+                or ancestry["pattern"] in [item["pattern"] for item in refusals]
+                or ancestry["native_audition_completed"] is not False):
+            raise ValueError("Topology birth lost its bounded source refusal and native status")
     body={"schema":"projection-loom/observed-relational-emission-census",
           "all_offered":len(offered),"native_attempts":len(actual),
           "region_pairs_considered_in_proposals":considered,
