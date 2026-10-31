@@ -1,3 +1,9 @@
+# Retirement ledger · actual deletions
+
+The source tree no longer contains `tools/projection-loom/docs/ROADMAP.md` (commit `c8fba16f`), `HEPHAESTUS-KANBAN.md` (`db4835bf`), or `BRANCHED_SESSION_HANDOFF.md` (`5623c816`). The older table below retains historical path hyperlinks as provenance, **not active links**. Use `git show 7c644e670390ab51aaa39e9216bb833eb32e6762:<path>` to read exact original content. `HANDOFF.md` remains the human-facing re-entry; `LIVING-PLACE.md` remains a design reference. No canonical `.mem` frame sealing or link-consumer test is claimed for this batch.
+
+---
+
 # Projection Loom · O-takiage ashes · index
 
 **Source commit:** `7c644e670390ab51aaa39e9216bb833eb32e6762` (PR #84, before documentation retirement). **Archive medium:** immutable Git source blobs, not recursively duplicated inline documents. **Status:** Git-indexed, intentionally not yet a canonically sealed Lares `.mem` frame.
