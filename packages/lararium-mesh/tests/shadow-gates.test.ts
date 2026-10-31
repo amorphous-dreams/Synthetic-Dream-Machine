@@ -56,7 +56,7 @@ describe("the share verdicts read the edge shadow first", () => {
 describe("the realm's own gate reads the member shadow ahead of every lane", () => {
   const REALM = "epoch-cid-genesis";
   const REALM_URL = deterministicDocUrl("realm-doc");
-  const BAG = "lar:///ha.ka.ba/bags/lares";
+  const BAG = "lar:///ha.ka.ba/bags/ford";
   const BAG_DOC = deterministicDocUrl("bag-doc");
   const deny: FederationGate = { mayFederate: () => false };
   const A = new Uint8Array(32).fill(1);
