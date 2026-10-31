@@ -1,3 +1,18 @@
+# Projection Loom · Living YIN roadmap
+
+## Red CI diagnosis and targeted fixture repair
+
+**Branch:** `feature/green-jello-dinosaur-5--projection-loom` · **PR:** #84 · **repair commit:** `60d7f44d2d32d9fe059d6d035035ffed76cada3e`.
+
+GitHub Actions `41174886859` (exact head `ec2350a1`) completed **failure**: 706 passing, five failing tests in `test_hephaestus_place_emitters.py`. All five test fixtures called axis-only `propose_from_spatial_intent` on diagonal source geometry before testing the new three-hop emitter. The fixture repair passes the authored diagonal site itself as the proposal basis, retaining the strict original axis-only constructor and the three-hop source obligations. This change has **not** yet earned its own CI verdict or local native verification.
+
+**Next:** validate exact-new-head CI, independently run multi-epoch topology native campaign, verify source refusal and complete evidence replay, then continue source-conditioned morphology and real Unreal Editor work. Preserve one OODA-HA helm, source custody, operator choice and finite native budgets. No merge, automatic artistic winner, canon promotion or irreversible burn.
+
+## Ashes holding ahu · previous living front
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
 # Projection Loom · YIN living roadmap
 
 ## Native topology accountability · current wave
@@ -2230,6 +2245,8 @@ Operator pet-name promotion. At authoring time, the campaign had not yet
 produced hosted results; inspect exact-head workflow receipts and archives
 before calling any offspring successful.
 
+
+</details>
 
 </details>
 
