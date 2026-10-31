@@ -231,7 +231,7 @@ test("RED: a moved head refuses 3; a lane lacking the base refuses 9; a lane not
   const o2 = opsOf(w2); o2.ops.log = () => {};
   assert.equal((await landTrain({ name: "t", base: w2.base, specs: specs2, span: SPAN, cwd: w2.work }, o2.ops)).code, 9);
   const w3 = world();
-  const r3 = await run(w3, { verdict: async (b) => (b.endsWith("--b") ? { ci: "green", heldOut: "red" } : { ci: "green", heldOut: "green" }) });
+  const r3 = await run(w3, { verdict: async (b) => (b.endsWith("--b") ? { ci: "red", heldOut: "green" } : { ci: "green", heldOut: "green" }) });
   assert.equal(r3.code, 8, r3.out);
   assert.match(r3.out, /LANE NOT GREEN: b/);
   assert.equal(r3.calls.train, 0);
@@ -472,4 +472,19 @@ test("RED: the verdict adapter reads the child's exit code: 4 with no words is U
   assert.deepEqual(verdictWords("ci-verdict: GREEN for a\nheld-out: GREEN for a\n", 0), { ci: "green", heldOut: "green" });
   assert.deepEqual(verdictWords("ci-verdict: branch ci-verdict: GREEN\nci-verdict: RED for a — x\nheld-out: UNREAD for a", 1), { ci: "red", heldOut: "unread" });
   assert.deepEqual(verdictWords("", 3), { ci: "unread", heldOut: "unread" });
+});
+
+test("RED: a lane reads GREEN on its CI alone; a red or unread held-out prints and never gates. CONTROL: a red CI still refuses; the span keeps both", async () => {
+  const w = world(["a"]);
+  const red = await run(w, { verdict: async (b) => (b === SPAN ? { ci: "green", heldOut: "green" } : { ci: "green", heldOut: "red" }) }, {}, ["a"]);
+  assert.notEqual(red.code, 8, red.out);
+  assert.match(red.out, /lane a GREEN .*held-out: red/);
+  const w2 = world(["a"]);
+  const unread = await run(w2, { verdict: async (b) => (b === SPAN ? { ci: "green", heldOut: "green" } : { ci: "green", heldOut: "unread" }) }, {}, ["a"]);
+  assert.notEqual(unread.code, 8, unread.out);
+  assert.match(unread.out, /held-out: not run \(per train\)/);
+  const w3 = world(["a"]);
+  const ciRed = await run(w3, { verdict: async (b) => (b === SPAN ? { ci: "green", heldOut: "green" } : { ci: "red", heldOut: "unread" }) }, {}, ["a"]);
+  assert.equal(ciRed.code, 8, ciRed.out);
+  assert.match(ciRed.out, /held-out not run \(per train\)/);
 });

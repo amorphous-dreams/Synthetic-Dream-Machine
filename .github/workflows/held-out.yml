@@ -4,9 +4,12 @@ name: Held-out witnesses
 # families, the crossing matrix, the Herm mesh across three hops, and every mesh scenario. The per-push CI
 # fleet names these witnesses but cannot raise their browser and Docker substrates, so they ride here.
 #
-# EVERY PUSHED HEAD GETS READ. This workflow runs on each push to a feature branch and to `main`, on a
-# weekly clock, and by hand. `tools/ci-verdict.mjs` prints its verdict as the third reading beside the CI
-# workflow's own, so a head these drivers never measured reads UNREAD and never green.
+# HELD-OUT RUNS PER TRAIN, NOT PER LANE PUSH. This workflow runs on each push to the span and to `main`, on a
+# weekly clock, and by hand; a lane branch (`feature/green-jello-dinosaur-5--*`) never fires it, so a lane
+# reads GREEN on its CI alone and these drivers measure the merged tree after each land. `tools/ci-verdict.mjs`
+# still prints its verdict as the third reading beside the CI workflow's own, so a head these drivers never
+# measured reads UNREAD (a lane reads `held-out: not run (per train)`) and never green; the vigil on the span
+# reads both.
 #
 # FOUR JOBS, ONE VERDICT.
 #   plan      prints the cell matrix. `tools/held-out-cells.mjs` derives it: one cell per whole driver, and one
@@ -28,7 +31,7 @@ name: Held-out witnesses
 # `max-parallel` holds the cells to eight.
 on:
   push:
-    branches: ["feature/**", main]
+    branches: ["feature/**", "!feature/green-jello-dinosaur-5--*", main]
   schedule:
     - cron: "17 6 * * 0"
   workflow_dispatch:

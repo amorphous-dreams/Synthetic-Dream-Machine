@@ -5,7 +5,8 @@
  *   node tools/land-train.mjs [--plan] [--span <branch>] [--scratch <dir>] <name> <base> <suffix:pr:head:msgfile>...
  *   run from the main checkout, which stands on the span; wrap it in tools/battery.sh (a train is the heavy battery).
  *
- * Each lane `<span>--<suffix>` stands GREEN (CI and held-out, read by tools/ci-verdict.mjs) on a head that carries <base>,
+ * Each lane `<span>--<suffix>` stands GREEN (its CI alone, read by tools/ci-verdict.mjs; held-out runs per train, on the span,
+ * so a lane's held-out reading prints but never gates, and a lane with no run reads `held-out: not run (per train)`) on a head that carries <base>,
  * the last span commit no lane here wrote. The span may stand past <base> only by LANDS (a first-parent subject carrying
  * ` — merge PR #`) or by ROAD commits the span's own CI and held-out read GREEN: the newest road commit at its exact sha, and
  * an older one at its own sha or carried by a newer road commit read GREEN, whose run tested a tree holding it.
@@ -15,7 +16,7 @@
  *           Then write one commit per lane, chained, each with the train's own merge tree, and check the last tree IS the
  *           train's tree before anything pushes.
  *   DIRECT  one lane whose head already holds the span head lands with no train: the land commit takes the lane head's tree,
- *           which the lane's own CI and held-out already read.
+ *           which the lane's own CI already read.
  *   --plan  runs the read-only preflight and prints the commits it would write; it pushes nothing, builds nothing.
  *
  * A verdict reads THREE states. UNREADABLE (GitHub unreachable, a 5xx) reads again six times, thirty seconds apart, and then
@@ -120,16 +121,19 @@ const short = (sha) => String(sha).slice(0, 9);
 const isAncestor = (git, a, b) => { try { git(["merge-base", "--is-ancestor", a, b]); return true; } catch { return false; } };
 
 /** A lane or road verdict read until it stops reading UNREADABLE (six reads, thirty seconds apart). */
-async function settled(ops, branch, sha) {
+async function settled(ops, branch, sha, { lane = false } = {}) {
   let v;
   for (let i = 0; i < 6; i++) {
     v = await ops.verdict(branch, sha);
-    if (v.ci !== "unreadable" && v.heldOut !== "unreadable") return v;
-    if (v.ci === "red" || v.heldOut === "red") return v;
+    if (lane ? v.ci !== "unreadable" : v.ci !== "unreadable" && v.heldOut !== "unreadable") return v;
+    if (v.ci === "red" || (!lane && v.heldOut === "red")) return v;
     await ops.sleep(30000);
   }
   return v;
 }
+/** A lane reads GREEN on its CI alone: its held-out reading prints but never gates (held-out runs per train, on the span). */
+const classifyLane = (v) => (v.ci === "green" ? "green" : v.ci === "unreadable" ? "unreadable" : "notgreen");
+const heldOutNote = (v) => (v.heldOut === "unread" ? "not run (per train)" : v.heldOut);
 const classify = (v) => (v.ci === "red" || v.heldOut === "red" ? "notgreen"
   : v.ci === "unreadable" || v.heldOut === "unreadable" ? "unreadable"
   : v.ci === "green" && v.heldOut === "green" ? "green" : "notgreen");
@@ -180,12 +184,12 @@ export async function landTrain({ name, base, specs, plan = false, span = SPAN, 
     if (LH !== l.head) return stop(3, `HEAD MOVED: ${l.suffix} is ${LH}, not ${l.head}`);
     if (!isAncestor(git, baseSha, LH)) return stop(9, `LANE LACKS THE BASE: ${l.suffix}`);
     if (!ops.readMsg(l.msg).trim()) return stop(2, `NO MESSAGE FILE: ${l.msg}`);
-    const v = await settled(ops, branch, LH);
-    const k = classify(v);
-    if (k === "unreadable") return stop(10, `UNREADABLE: lane ${l.suffix}'s verdict could not be read (${v.ci}/${v.heldOut}); read again later, it is no red`);
-    if (k !== "green") return stop(8, `LANE NOT GREEN: ${l.suffix}`, `  ci ${v.ci} · held-out ${v.heldOut}`);
+    const v = await settled(ops, branch, LH, { lane: true });
+    const k = classifyLane(v);
+    if (k === "unreadable") return stop(10, `UNREADABLE: lane ${l.suffix}'s CI verdict could not be read (${v.ci}); read again later, it is no red`);
+    if (k !== "green") return stop(8, `LANE NOT GREEN: ${l.suffix}`, `  ci ${v.ci} · held-out ${heldOutNote(v)}`);
     l.subject = ops.readMsg(l.msg).split("\n")[0];
-    say(`lane ${l.suffix} GREEN at ${short(LH)} (PR #${l.pr})`);
+    say(`lane ${l.suffix} GREEN at ${short(LH)} (PR #${l.pr}) · held-out: ${heldOutNote(v)}`);
   }
 
   const direct = lanes.length === 1 && isAncestor(git, SP, lanes[0].head);

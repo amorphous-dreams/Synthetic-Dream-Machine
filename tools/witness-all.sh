@@ -28,17 +28,26 @@ declare -A HELD_OUT=(
   [witness-all]="this script"
 )
 
+# Witnesses in the default roster that still stand docker compose services or a container image. `--static` leaves
+# them to CI and the train, which carry docker, and runs every other witness; a bare run stays whole.
+declare -A DOCKER=(
+  [household-https-witness]="stands the compose issuer and terminator with a Pebble test authority on the product image — needs docker"
+  [household-resolver-witness]="stands the compose records check and resolver — needs docker"
+)
+
 # Witnesses heavy enough to run in a CI cell of their own (`tools/ci-cells.mjs` names the cell of each). A bare run
 # still runs them all; `--except-apart` leaves them to their cells, and `--only <name>` runs exactly one of them.
 APART=(contract-witness)
 
 mode=all
+static=0
 only=""
 list=0
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --list) list=1 ;;
     --except-apart) mode=except ;;
+    --static) static=1 ;;
     --only) mode=only; only="${2:-}"; shift ;;
     *) echo "witness-all: unknown argument $1" >&2; exit 2 ;;
   esac
@@ -53,6 +62,7 @@ fi
 status=0
 held=()
 apart_skipped=()
+docker_skipped=()
 order=()
 declare -A exit_of=()
 declare -A seen=()
@@ -60,6 +70,7 @@ for path in tools/*witness*.sh; do
   w="$(basename "$path" .sh)"
   seen[$w]=1
   if [ -n "${HELD_OUT[$w]:-}" ]; then held+=("$w — ${HELD_OUT[$w]}"); continue; fi
+  if [ "$static" -eq 1 ] && [ -n "${DOCKER[$w]:-}" ]; then docker_skipped+=("$w — ${DOCKER[$w]}"); continue; fi
   case "$mode" in
     except) is_apart "$w" && { apart_skipped+=("$w"); continue; } ;;
     only) [ "$w" = "$only" ] || continue ;;
@@ -85,6 +96,11 @@ done
 if [ "$mode" = except ] && [ "${#apart_skipped[@]}" -gt 0 ]; then
   echo "── run apart, in cells of their own ──"
   printf '  %s\n' "${apart_skipped[@]}"
+fi
+
+if [ "${#docker_skipped[@]}" -gt 0 ]; then
+  echo "── docker witnesses left to CI and the train (--static) ──"
+  printf '  %s\n' "${docker_skipped[@]}"
 fi
 
 if [ "$mode" != only ] && [ "${#held[@]}" -gt 0 ]; then
