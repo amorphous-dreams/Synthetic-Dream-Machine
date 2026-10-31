@@ -889,7 +889,9 @@ async function prepareNodeBootOn(
         kahuStanding: kahuStandings.heldAt(kahuProtected?.homeOf(documentId) ?? null) }),
       // A vessel-private document crosses only where a relation the peer PROVED already opens it: the scoped view of the face
       // its same-operator session proved, the sibling gate, a face-join grant on the face's own planes (lane `ralias`).
+      // Ownership reads first: the document crosses only to a peer proven as its owning face (the train's Sol read).
       "vessel-private": (peerId, documentId) => vesselPrivateRelationOpens({
+        owner: vesselPrivate.ownerOf(documentId), wornFace: custodyGroup, peerFace: faceViews.faceOf(peerId),
         sibling: Boolean(siblings?.provenKeyOf(peerId as PeerId)), siblingGate,
         sameOperator: peerClassMap.get(peerId) === "same-operator", sessionFace: faceViews.gateFor(peerId),
         faceGrant: faceGrantRing, peerId, documentId,

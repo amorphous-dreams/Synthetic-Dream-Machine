@@ -7,8 +7,13 @@
  * it alone) and its catalog pointer: never a catalog title, a realm registration or a peer's word, so a second name for one
  * of these documents changes nothing.
  *
- * WHO READS ONE: a peer whose proven relation already opens it (`vesselPrivateRelationOpens`), measured from the lanes
- * that serve these documents today:
+ * OWNERSHIP DECIDES FIRST (the train's Sol read, controller ruling): each id carries its owning face, the PersonaGroup
+ * whose plane it holds, or `vessel` for the daemon document and the catalog (the vessel wears one face, so `vessel` reads
+ * as the worn face). A classed document crosses only to a peer proven as its owner. No catalog pointer, alias or bridge
+ * widens that: the worn face's bridge admits whatever a catalog row names, so it never decides a vessel-private id alone.
+ *
+ * WHO READS ONE: a peer proven as its owner whose relation also opens it (`vesselPrivateRelationOpens`), measured from the
+ * lanes that serve these documents today:
  *   · a SAME-OPERATOR session (inbound gate or same-face dial) through the scoped view of the face it proved: that face's
  *     planes and the daemon document, and for the worn face the catalog across the bridge (`face-fleet-view`);
  *   · a SIBLING through the sibling gate: the face's own planes, never the daemon document;
@@ -45,26 +50,36 @@ export function readBootTiddlers(bootstrapPath: string): Record<string, { text?:
   } catch { return null; }
 }
 
-/** The daemon document and every face's five planes the bootstrap names, as document ids. A family that faults throws
- *  (the boot halts on it too). */
-export function vesselPrivateDocIds(bootstrapTiddlers: BootTiddlers): ReadonlySet<string> {
-  const out = new Set<string>();
-  const add = (url: string | null | undefined): void => { const id = idOfUrl(url); if (id) out.add(id); };
-  add(bootDaemonUrl(bootstrapTiddlers));
+/** The owner the daemon document and the catalog carry: the vessel itself, read as the face it wears. */
+export const VESSEL_OWNER = "vessel";
+
+/** Every id the bootstrap classes, with its owner: each face's five planes by that face's group, the daemon document by the
+ *  vessel. A family that faults throws (the boot halts on it too). */
+export function vesselPrivateOwners(bootstrapTiddlers: BootTiddlers): ReadonlyMap<string, string> {
+  const out = new Map<string, string>();
+  const add = (url: string | null | undefined, owner: string): void => { const id = idOfUrl(url); if (id && !out.has(id)) out.set(id, owner); };
+  add(bootDaemonUrl(bootstrapTiddlers), VESSEL_OWNER);
   // The family through the one enumerator (`bootFacePlanes`), then each face's five planes by its own group.
   for (const plane of bootFacePlanes(bootstrapTiddlers, null).personaPlanes) {
     const face = bootFacePlanes(bootstrapTiddlers, plane.personaGroupId);
-    add(face.personaUrl); add(face.identitiesUrl); add(face.circlesUrl); add(face.sessionsUrl); add(face.intentsUrl);
+    for (const url of [face.personaUrl, face.identitiesUrl, face.circlesUrl, face.sessionsUrl, face.intentsUrl]) add(url, plane.personaGroupId);
   }
   return out;
+}
+
+/** The daemon document and every face's five planes the bootstrap names, as document ids. */
+export function vesselPrivateDocIds(bootstrapTiddlers: BootTiddlers): ReadonlySet<string> {
+  return new Set(vesselPrivateOwners(bootstrapTiddlers).keys());
 }
 
 export interface VesselPrivateBook {
   /** Every id classed so far this run; the bootstrap re-reads first where it changed on disk. */
   ids(): ReadonlySet<string>;
   has(documentId: string): boolean;
-  /** Class one more document by its url or id (the catalog, once it stands). */
-  add(urlOrId: string | null | undefined): void;
+  /** The face that owns this classed document (a PersonaGroup, or `vessel`), or null where it stands unclassed. */
+  ownerOf(documentId: string): string | null;
+  /** Class one more document by its url or id (the catalog, once it stands), owned by the vessel unless named. */
+  add(urlOrId: string | null | undefined, owner?: string): void;
   /** The bootstrap changed after a whole read and will not read whole now: ids it may add stand unclassed until it does. */
   torn(): boolean;
 }
@@ -77,7 +92,9 @@ export function vesselPrivateBook(opts: {
   readonly onGrow?: () => void;
 }): VesselPrivateBook {
   const ids = new Set<string>();
-  const grow = (id: string): boolean => { if (ids.has(id)) return false; ids.add(id); return true; };
+  // The first owner an id is classed under stands for the run, as the class does.
+  const owners = new Map<string, string>();
+  const grow = (id: string, owner: string): boolean => { if (ids.has(id)) return false; ids.add(id); owners.set(id, owner); return true; };
   const grew = (): void => { try { opts.onGrow?.(); } catch { /* a listener never breaks the book */ } };
   let seen: string | null = null;
   let torn = false;
@@ -87,12 +104,12 @@ export function vesselPrivateBook(opts: {
     try { const st = statSync(opts.bootstrapPath); stamp = `${st.mtimeMs}:${st.ctimeMs}:${st.size}:${st.ino}`; } catch { return; }
     if (stamp === seen) return;
     const tiddlers = readBootTiddlers(opts.bootstrapPath);
-    let fresh: ReadonlySet<string> | null = null;
-    if (tiddlers !== null) { try { fresh = vesselPrivateDocIds(tiddlers); } catch { fresh = null; } }
+    let fresh: ReadonlyMap<string, string> | null = null;
+    if (tiddlers !== null) { try { fresh = vesselPrivateOwners(tiddlers); } catch { fresh = null; } }
     // Torn mid-write (or a family that faults): every class stands, and once a whole read has stood the gap reads torn.
     if (fresh === null) { torn = seen !== null; return; }
     let moved = false;
-    for (const id of fresh) moved = grow(id) || moved;
+    for (const [id, owner] of fresh) moved = grow(id, owner) || moved;
     seen = stamp;
     torn = false;
     if (moved) grew();
@@ -102,15 +119,22 @@ export function vesselPrivateBook(opts: {
     ids() { refresh(); return ids; },
     has(documentId) { refresh(); return ids.has(String(documentId)); },
     torn() { refresh(); return torn; },
-    add(urlOrId) {
+    ownerOf(documentId) { refresh(); return owners.get(String(documentId)) ?? null; },
+    add(urlOrId, owner = VESSEL_OWNER) {
       if (!urlOrId) return;
       const id = urlOrId.startsWith("automerge:") ? idOfUrl(urlOrId) : urlOrId;
-      if (id && grow(id)) grew();
+      if (id && grow(id, owner)) grew();
     },
   };
 }
 
 export interface VesselPrivateRelation {
+  /** The document's owner (`ownerOf`): a PersonaGroup, or `vessel`. Null withholds. */
+  readonly owner: string | null;
+  /** The face this vessel wears: `vessel` reads as it, and a sibling or a face-join grant proves it alone. */
+  readonly wornFace: string | null;
+  /** The face the peer's same-operator session proved (`faceFleetViews.faceOf`), or null. */
+  readonly peerFace: string | null;
   /** True where the sibling channel proved this peer. */
   readonly sibling: boolean;
   readonly siblingGate: FederationGate | null;
@@ -124,10 +148,17 @@ export interface VesselPrivateRelation {
   readonly documentId: string;
 }
 
-/** The `vessel-private` decider: does a relation this peer PROVED open this document? Every other lane stays shut. */
+const sameFace = (a: string | null | undefined, b: string | null | undefined): boolean =>
+  !!a && !!b && a.toLowerCase() === b.toLowerCase();
+
+/** The `vessel-private` decider: is this peer proven as the document's owner, and does its relation open the document?
+ *  Ownership reads first, so no gate's own allow-list (the bridge, a view, a ring) widens it. */
 export async function vesselPrivateRelationOpens(r: VesselPrivateRelation): Promise<boolean> {
   const doc = r.documentId as DocumentId, peer = r.peerId as PeerId;
-  if (r.sibling) return (await r.siblingGate?.mayFederate(doc, peer)) === true;
-  if (r.sameOperator && (await r.sessionFace?.mayFederate(doc, peer)) === true) return true;
-  return (await r.faceGrant?.admitsPeer(doc, peer)) === true;
+  const owner = r.owner === VESSEL_OWNER ? r.wornFace : r.owner;
+  if (!owner) return false;
+  // A sibling and a face-join grant holder each stand for the worn face alone.
+  if (r.sibling) return sameFace(owner, r.wornFace) && (await r.siblingGate?.mayFederate(doc, peer)) === true;
+  if (r.sameOperator && sameFace(owner, r.peerFace) && (await r.sessionFace?.mayFederate(doc, peer)) === true) return true;
+  return sameFace(owner, r.wornFace) && (await r.faceGrant?.admitsPeer(doc, peer)) === true;
 }

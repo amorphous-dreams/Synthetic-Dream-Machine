@@ -116,11 +116,18 @@ const verdict = (o: {
   ...(o.sibling ? { sibling: true, siblingGate: o.siblingGate ?? null } : {}),
 });
 
-/** The guard the composer seats: the vessel-private ids, decided by the relation the peer proved. */
+/** The owner the composer reads for a fixture id: each face's planes by its group, the daemon doc and catalog by the vessel. */
+const ownerOfId = (id: string): string | null =>
+  [ONE.persona, ONE.identities, ONE.circles, ONE.sessions, ONE.intents].some((u) => String(idOf(u)) === id) ? G1
+    : [TWO.persona, TWO.identities, TWO.circles, TWO.sessions, TWO.intents].some((u) => String(idOf(u)) === id) ? G2
+    : [DAEMON, CATALOG].some((u) => String(idOf(u)) === id) ? "vessel" : null;
+
+/** The guard the composer seats: the vessel-private ids, decided by ownership (worn face G1) and the relation the peer proved. */
 function seatedGuard(ids: ReadonlySet<string>, relation: (peerId: string) => Omit<RelationInput, "peerId" | "documentId">) {
   return protectedDocGuard({
     ids: () => new Map([...ids].map((id) => [id, "vessel-private" as ProtectedDocClass])),
-    decide: { ["vessel-private" as ProtectedDocClass]: (peerId: string, documentId: string) => vp!.vesselPrivateRelationOpens({ ...relation(peerId), peerId, documentId }) },
+    decide: { ["vessel-private" as ProtectedDocClass]: (peerId: string, documentId: string) =>
+      vp!.vesselPrivateRelationOpens({ owner: ownerOfId(documentId), wornFace: G1, ...relation(peerId), peerId, documentId }) },
   });
 }
 const noRelation = () => ({ sibling: false, siblingGate: null, sameOperator: false, sessionFace: null, faceGrant: null });
@@ -158,7 +165,7 @@ describe("no relation, registration or alias widens who reads a vessel's private
     const views = faceFleetViews(() => tiddlers, () => G1, () => bridgeBooks(catalogDoc));
     views.seat("own-device", { personaGroup: G1 } as FaceGrantReading);
     views.seat("other-face", { personaGroup: G2 } as FaceGrantReading);
-    const sameFace = (peerId: string) => ({ ...noRelation(), sameOperator: true, sessionFace: views.gateFor(peerId) });
+    const sameFace = (peerId: string) => ({ ...noRelation(), sameOperator: true, sessionFace: views.gateFor(peerId), peerFace: peerId === "own-device" ? G1 : peerId === "other-face" ? G2 : null });
     for (const url of [DAEMON, ONE.persona, ONE.identities, ONE.circles, ONE.sessions, ONE.intents, CATALOG]) {
       expect(await verdict({ guard: seatedGuard(ids, sameFace), fed: null, peerClass: "same-operator", peerId: "own-device", sessionFace: views.gateFor("own-device"), documentId: idOf(url) }), `the worn face's session reads ${url}`).toBe(true);
     }

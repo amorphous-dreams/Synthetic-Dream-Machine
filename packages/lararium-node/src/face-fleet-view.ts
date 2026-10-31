@@ -90,6 +90,8 @@ export interface FaceFleetViews {
   seat(peerId: string, face: Pick<FaceGrantReading, "personaGroup"> | null): void;
   /** The face gate the share verdict reads for `peerId`, or null where its session proved no face here. */
   gateFor(peerId: PeerId | string): FederationGate | null;
+  /** The PersonaGroup `peerId`'s session proved (its seated view's face), or null. */
+  faceOf(peerId: PeerId | string): string | null;
   /** The peer left: close its view. */
   drop(peerId: string): void;
   /** Close every view. */
@@ -101,7 +103,7 @@ export interface FaceFleetViews {
  * wears (the bootstrap's pin where none is named): its sessions also read the vessel's books (the bridge above).
  */
 export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?: () => string | null, books?: () => ReadonlySet<string>): FaceFleetViews {
-  const views = new Map<string, { view: SessionDocumentView; gate: FederationGate }>();
+  const views = new Map<string, { view: SessionDocumentView; gate: FederationGate; face: string }>();
   const drop = (peerId: string): void => {
     const held = views.get(peerId);
     views.delete(peerId);
@@ -118,7 +120,7 @@ export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?:
       // The mounted face is the caller's (sealed custody's) when it names one; the bootstrap's group text answers only where no caller does.
       const worn = wornGroup ? wornGroup() : (tiddlers?.[PERSONA_GROUP_ID_TIDDLER]?.text ?? null);
       if (worn !== face.personaGroup || tiddlers === null) {
-        views.set(peerId, { view, gate: viewFederationGate(view) });
+        views.set(peerId, { view, gate: viewFederationGate(view), face: face.personaGroup });
         return;
       }
       // THE BRIDGE: the mounted face reads the vessel's books too: its own view, plus the allow-list the catalog names (`bridgeBooks`).
@@ -126,9 +128,10 @@ export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?:
       const gate: FederationGate = {
         mayFederate: (documentId: DocumentId) => !view.closed && (view.fetch(String(documentId)).ok || (books?.().has(String(documentId)) ?? false)),
       };
-      views.set(peerId, { view, gate });
+      views.set(peerId, { view, gate, face: face.personaGroup });
     },
     gateFor: (peerId) => views.get(String(peerId))?.gate ?? null,
+    faceOf: (peerId) => views.get(String(peerId))?.face ?? null,
     drop,
     close() { for (const peerId of [...views.keys()]) drop(peerId); },
   };
