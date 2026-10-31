@@ -216,7 +216,7 @@ its own carrier, and this carrier points there.
 
 !!! Operator rulings, 2026-10-31
 * ''Recovery contacts, custodians and the Handle'' (operator ruling, 2026-10-31: //"Approve recovery contact, and during this rewrite we should use Handle (& explain it) over 'name'."//). A person who holds a recovery key over one face's key history and signs its rotation reads as a ''recovery contact'', the field's own word for the role. A quorum of a face's recovery contacts rotates the face's root beneath its fixed KEL prefix, so the face keeps its ''Handle'': the public, self-certifying card a face publishes and others recognise by its own key, never by a registry and never by a pet-name (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/heraldry">> #/ruling). A holder of one share of a root seed reads as a ''custodian'' (`CustodianTag` already says so). A custodian card returns memory, a recovery contact returns the Handle, and neither stands in for the other. ''Guardian'' keeps only its human sense (a child's legal guardian) and the fiction (the Lares as guardian spirits), and the Kahu keep their own name. Text a person reads says "your Handle" where it means what recovery restores, never "your name". The rename across canon, code and the CLI rides one lane, with a weld test before it.
-* ''Two of three recovery contacts'' (operator ruling, 2026-10-31: //"2 of 3"//). A face enrols exactly three recovery contacts at threshold two: one lost contact leaves recovery standing, and no single contact can rotate the face alone. Enrolment refuses any other count or threshold by name. Row `K18` carries the door.
+* ''Two of three recovery contacts'' (operator ruling, 2026-10-31: //"2 of 3"//). A face enrols exactly three recovery contacts at threshold two: one lost contact leaves recovery standing, and no single contact can rotate the face alone. Enrolment refuses any other count or threshold by name. The face's own self-recovery digest counts as none of the three (operator, 2026-10-31, approving the house lean): it keeps its own road, a seed in hand rotating the face alone, so the quorum that can rotate a face never includes a key the person lost. Row `K18` carries the door.
 
 !!! House rulings under the operator's delegation ~ the questions the operator delegated, each with what flips it
 The operator delegated these to the house: each stands as a house ruling the operator may overturn, its law lives in the carrier it names, and its build rides the stride rows #/the-loops indexes.
@@ -927,6 +927,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3qYIzcXuiMa_DS25ffWrSG48gKWYRuFMxKzHONuzdJM
+<<^ code="&#x0003;">>ni:///sha-256;1PivSdkXHAQ-T5eSx4ddyIeTswvPIJMwI7Fk5zJajfg
 
 <<^ code="&#x0004;" -> to="?">>
