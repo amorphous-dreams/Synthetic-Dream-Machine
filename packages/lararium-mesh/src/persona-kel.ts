@@ -341,6 +341,10 @@ export async function mintPersonaRotation(input: {
       return { ok: false, reason: "an enrolment the fresh op-key did not seal — only the key a rotation seats re-enrols on it" };
     }
   }
+  if (head.kind === RECOVERY_CONTACT_ENROLMENT_KIND) {
+    const shape = revealedSetFault(head, { recoveryRoster, recoveryThreshold } as PersonaKelEvent);
+    if (shape) return { ok: false, reason: shape };
+  }
   const quorum = await verifyRotationQuorum(core, recoveryRoster, recoveryThreshold, rotationSigs, head.nextRecoverySetHash);
   if (!quorum.ok) return { ok: false, reason: quorum.reason ?? "rotation quorum unsatisfied" };
   return {
@@ -573,6 +577,18 @@ function enrolmentStructureFault(prev: PersonaKelEvent, e: PersonaKelEvent): str
   return null;
 }
 
+/** Why a rotation's revealed set fails the enrolment it opens: not three distinct keys at two, or a count or threshold off the enrolment's signed fields. */
+function revealedSetFault(enrolment: PersonaKelEvent, e: PersonaKelEvent): string | null {
+  const distinct = new Set(e.recoveryRoster.map((k) => k.toLowerCase())).size;
+  if (e.recoveryRoster.length !== RECOVERY_CONTACT_COUNT || distinct !== RECOVERY_CONTACT_COUNT || e.recoveryThreshold !== RECOVERY_CONTACT_THRESHOLD) {
+    return "a revealed recovery contact set holds exactly three distinct keys at a threshold of two";
+  }
+  if (e.recoveryRoster.length !== enrolment.enrolCount || e.recoveryThreshold !== enrolment.enrolThreshold) {
+    return "the revealed set disagrees with the count and threshold the enrolment signed";
+  }
+  return null;
+}
+
 /**
  * Why `e` fails as the successor of `prev`, or null when it stands: the structural link, every sealed enrolment's
  * signature under the event's op-key, and the event's authority — a rotation's recovery contact quorum against the
@@ -594,6 +610,12 @@ export function personaSuccessorFault(prev: PersonaKelEvent, e: PersonaKelEvent)
     if (!e.vetoSig) return "the veto is unsigned";
     return signatureHolds(e.vetoSig, personaEventBytes(coreOf(e)), prev.opKeyDid)
       ? null : "the veto's signature does not verify against the standing op-key";
+  }
+  // THE REVEAL DECIDES: the first rotation over an enrolment opens the set its digest committed, and the set must be
+  // exactly the three distinct keys at threshold two the enrolment signed (the digest alone shows no count).
+  if (prev.kind === RECOVERY_CONTACT_ENROLMENT_KIND) {
+    const shape = revealedSetFault(prev, e);
+    if (shape) return shape;
   }
   const q = rotationQuorum(coreOf(e), e.recoveryRoster, e.recoveryThreshold, e.rotationSigs, prev.nextRecoverySetHash);
   return q.ok ? null : (q.reason ?? "rotation quorum unsatisfied");
