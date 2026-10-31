@@ -636,7 +636,7 @@ export class KeyhiveProvider implements CapabilityProvider {
   async verify(args: VerifyArgs): Promise<VerifyResult> {
     const docIdHex = this.bagToDocId.get(args.bagUrl);
     if (!docIdHex) {
-      return { ok: false, reason: `bag not registered: ${args.bagUrl}` };
+      return { ok: false, kind: "bag-not-registered", bagUrl: args.bagUrl, reason: `bag not registered: ${args.bagUrl}` };
     }
     await this.ensureIsland(docIdHex);   // CIV-2b — first access materializes a boot-deferred island
     const docId = new KH.DocumentId(hexToBytes(docIdHex));

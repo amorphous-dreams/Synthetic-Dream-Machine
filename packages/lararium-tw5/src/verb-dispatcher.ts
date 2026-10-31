@@ -58,7 +58,7 @@ import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, E
 import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
-import { runLocalVerb, gateRoutedVerb, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
+import { runLocalVerb, gateRoutedVerb, RoutedCapDenied, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
 
 export interface VerbContext {
   readonly daemon: CompositeStore;
@@ -353,7 +353,7 @@ export class VerbDispatcher {
       // that asks for a mount reads `bag not registered` for a slot of the wiki the act aims at: a presenter the
       // verifier denies for any other reason (no face, no grant) never reaches a mount, and the fence ran before.
       const slug = routedWikiSlug(invocation);
-      const unregistered = /bag not registered: (lar:\/\/\/\S+)/.exec(refusal instanceof Error ? refusal.message : "")?.[1];
+      const unregistered = refusal instanceof RoutedCapDenied && refusal.kind === "bag-not-registered" ? refusal.bagUrl : undefined;
       if (!slug || !unregistered || wikiSlugOfBag(unregistered) !== slug) throw refusal;
       await this.mountAimedWiki(slug, invocation);
       await gateRoutedVerb(invocation, this.opts.verifier, presenter, local);
