@@ -1,3 +1,18 @@
+# Projection Loom · Living YIN handoff
+
+## Explicit topology steering boundary · new negative witness
+
+**PR:** #84 · `feature/green-jello-dinosaur-5--projection-loom`. Native campaign source head `0dbe733637003a14dc391d2bdb803d74b98e346e` had a CAD/evidence workflow `41179464318` **in progress** at inspection. Its outcome cannot certify any later commit.
+
+Commit `7427cb69b607dcc37791b458ab91aa119151e935` adds a campaign-level negative test: ordinary diagonal crossing without explicit topology steering must refuse before any destination campaign root exists. This protects the source-specific diagonal reentry added in the preceding feature wave from silently weakening ordinary construction. The positive multi-epoch topology native replay test remains committed, awaiting CI execution.
+
+**Next:** inspect current-head CI and repair real failures, demonstrate admitted topology inheritance and exact STEP/lineage replay; consolidate shared proposal construction only after native witnesses. Source-conditioned morphology and actual Unreal Editor execution remain open. No additional controller, backwards-compatibility shim, automatic aesthetic choice, PR merge, Elyncia promotion or irreversible o-takiage.
+
+## Ashes holding ahu · previous living front
+
+<details>
+<summary>Prior front retained verbatim</summary>
+
 # Projection Loom · Living YIN handoff.md
 
 ## Native topology campaign reentry and independent replay
@@ -2802,6 +2817,8 @@ Operator pet-name promotion. At authoring time, the campaign had not yet
 produced hosted results; inspect exact-head workflow receipts and archives
 before calling any offspring successful.
 
+
+</details>
 
 </details>
 
