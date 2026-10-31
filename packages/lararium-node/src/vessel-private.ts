@@ -26,7 +26,7 @@
  */
 import { readFileSync, statSync } from "node:fs";
 import { interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { readPersonaPlanes, type FederationGate } from "@lararium/mesh";
+import type { FederationGate } from "@lararium/mesh";
 import { bootDaemonUrl, bootFacePlanes } from "./boot-face-planes.js";
 
 type BootTiddlers = Readonly<Record<string, { text?: string }>>;
@@ -51,8 +51,8 @@ export function vesselPrivateDocIds(bootstrapTiddlers: BootTiddlers): ReadonlySe
   const out = new Set<string>();
   const add = (url: string | null | undefined): void => { const id = idOfUrl(url); if (id) out.add(id); };
   add(bootDaemonUrl(bootstrapTiddlers));
-  const entries = Object.entries(bootstrapTiddlers).map(([title, t]) => ({ title, text: t?.text ?? null }));
-  for (const plane of readPersonaPlanes(entries)) {
+  // The family through the one enumerator (`bootFacePlanes`), then each face's five planes by its own group.
+  for (const plane of bootFacePlanes(bootstrapTiddlers, null).personaPlanes) {
     const face = bootFacePlanes(bootstrapTiddlers, plane.personaGroupId);
     add(face.personaUrl); add(face.identitiesUrl); add(face.circlesUrl); add(face.sessionsUrl); add(face.intentsUrl);
   }
