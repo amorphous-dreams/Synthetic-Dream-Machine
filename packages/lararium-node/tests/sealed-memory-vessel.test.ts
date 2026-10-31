@@ -15,13 +15,13 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
-import type { SessionProof } from "@lararium/keyhive";
+import type { IslandSessionProof } from "@lararium/keyhive";
 import {
   ed25519SignerFromSeed, hex, hexToBytes, isVerbRefusal, memoryKeypairOf, mintMemoryKeypair, openMemorySection, sealMemorySecret,
   signMemoryAsk, type MemoryAct, type RecordSigner,
 } from "@lararium/mesh";
 import { VerbTable } from "@lararium/tw5";
-import { sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
+import { faceProofSubjectRef, sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
 import { standFoundedIsland } from "./stand-founded-island.js";
 import { nodeSealedStoreShore } from "../src/sealed-store-island.js";
@@ -32,13 +32,15 @@ afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /
 const b64 = (bytes: Uint8Array): string => Buffer.from(bytes).toString("base64");
 const unb64 = (s: unknown): Uint8Array => new Uint8Array(Buffer.from(String(s), "base64"));
 
-async function proof(): Promise<SessionProof> {
+async function proof(): Promise<IslandSessionProof> {
   const c = await chain("memory-vessel", "nexus-test-one");
   const signer: RecordSigner = {
     certificate: c.sessionCertificate,
     sign: async (purpose, payload) => ({ signature: await signHex(sessionSignatureImage(purpose, c.scope, c.sessionCertificate.sessionKey, payload), c.session) }),
   };
-  return { signer: () => signer, standing: { holdsWrite: () => true } };
+  // The session sign door as the vessel's book answers it: this chain's session, its subject and the vessel's own chain.
+  const reading = { signer, subject: faceProofSubjectRef(c.scope), chain: { scope: c.scope, vesselFaceKey: c.sessionCertificate.vesselFaceKey } };
+  return { signer: async (ask) => (ask === null ? { refusal: "signer-unavailable" } : reading) };
 }
 
 /** Boot the real daemon options over one founded island whose composition names `BAG`; answer its verbs. */

@@ -15,13 +15,13 @@ import { readFaceAddressSecret } from "../src/fleet-join-custody.js";
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import { join } from "node:path";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
-import type { SessionProof } from "@lararium/keyhive";
+import type { IslandSessionProof } from "@lararium/keyhive";
 import {
   AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, attachMessageChannelSync, faceAtomKeyFromSeed, hex, makeIslandRepo, signMemoryAsk, wikiBagUri,
   type LarDoc, type MemoryAct, type RecordSigner,
 } from "@lararium/mesh";
 import { VerbTable } from "@lararium/tw5";
-import { sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
+import { faceProofSubjectRef, sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
 import { readFileSync } from "node:fs";
 import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
@@ -33,13 +33,15 @@ import { islandStorageDirOf, nodeSealedStoreShore } from "../src/sealed-store-is
 import { larBootstrapPath, larDataDir } from "../src/vessel-paths.js";
 
 /** One session proof for a suite's faces: the same chain signs on every vessel the suite stands, as one face's sessions do. */
-export async function suiteSessionProof(label: string): Promise<SessionProof> {
+export async function suiteSessionProof(label: string): Promise<IslandSessionProof> {
   const c = await chain(label, "nexus-test-one");
   const signer: RecordSigner = {
     certificate: c.sessionCertificate,
     sign: async (purpose, payload) => ({ signature: await signHex(sessionSignatureImage(purpose, c.scope, c.sessionCertificate.sessionKey, payload), c.session) }),
   };
-  return { signer: () => signer, standing: { holdsWrite: () => true } };
+  // The session sign door as the vessel's book answers it: this chain's session, its subject and the vessel's own chain.
+  const reading = { signer, subject: faceProofSubjectRef(c.scope), chain: { scope: c.scope, vesselFaceKey: c.sessionCertificate.vesselFaceKey } };
+  return { signer: async (ask) => (ask === null ? { refusal: "signer-unavailable" } : reading) };
 }
 
 export interface RootIsland {
@@ -53,7 +55,7 @@ export interface RootIsland {
  * Stand the daemon island of the root `LAR_ROOT` names, over `repo` (the store's one holder), wearing the face at
  * `handleIndex`. `bags` name the bags the island's composition registers beside the daemon's own.
  */
-export async function standRootIsland(args: { repo: Repo; handleIndex: number; bags: readonly string[]; sessionProof: SessionProof | null; dyad?: () => "clear" | "aside" }): Promise<RootIsland> {
+export async function standRootIsland(args: { repo: Repo; handleIndex: number; bags: readonly string[]; sessionProof: IslandSessionProof | null; dyad?: () => "clear" | "aside" }): Promise<RootIsland> {
   const { repo } = args;
   const anchors = await loadIdentityAnchors(args.handleIndex);
   if (!anchors?.signerDid || !anchors.personaKelPrefix || !anchors.deviceEdge) throw new Error("fixture: the face holds no whole anchors on this root");

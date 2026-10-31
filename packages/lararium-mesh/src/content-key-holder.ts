@@ -103,6 +103,7 @@ export const HOLDER_REFUSALS = [
   "fresh-base-unavailable",   // a new span opens on a fresh base, and no hand here cuts one
   "seat-not-standing",        // this vessel's own seat stands in no key group of its face: an import wraps for nobody
   "memory-malformed",         // a memory section does not open, or opens to no whole entries
+  "roll-owed",                // a counted raise still owes this bag its removal roll: nothing seals under a head that precedes it
 ] as const;
 export type HolderRefusalName = (typeof HOLDER_REFUSALS)[number];
 /** A refusal names what stopped the act. `cause` carries another module's own refusal name, never a key. */
@@ -476,7 +477,12 @@ export class ContentKeyHolder {
    * span's history, and a founding with no declaration stands closed. The sealed value rests, then the
    * manifest that names it, then the index rows.
    */
-  sealBlob(args: { readonly bagId: string; readonly plaintext: Uint8Array; readonly signer: RecordSigner | null; readonly founding?: { readonly history: HistoryDeclaration } }): Promise<SealedBlob | HolderRefusal> {
+  sealBlob(args: { readonly bagId: string; readonly plaintext: Uint8Array; readonly signer: RecordSigner | null; readonly founding?: { readonly history: HistoryDeclaration };
+    /** The raises the vessel counted whose removal roll still owes this bag (sealed-store road, step 2: a removed
+     *  device opens nothing a vessel seals after it counts the raise). The head this seal writes under must follow
+     *  every one, or the seal refuses `roll-owed` and seals nothing. A founding this seal makes owes none: its first
+     *  version wraps for the readers that stand now. */
+    readonly owedActs?: readonly string[] }): Promise<SealedBlob | HolderRefusal> {
     return this.#inTurn<SealedBlob>(async () => {
       if (!isWellFormedText(args.bagId)) return refuse("bag-malformed");
       if (args.signer === null) return refuse("signer-unavailable");
@@ -493,6 +499,7 @@ export class ContentKeyHolder {
       const bag = bags.get(args.bagId)!;
       const at = await this.#head(bag, line, args.signer);
       if (isRefusal(at)) return at;
+      if (!founded) for (const act of args.owedActs ?? []) if (!line.lineage.followsRemoval(at.head, act)) return refuse("roll-owed");
       const key = line.keys.get(at.head)!;
       const sealed = sealPrivateBody(args.plaintext, { bagId: args.bagId, key }, random);
       if (!("body" in sealed)) return refuse("seal-refused", sealed.refusal);
