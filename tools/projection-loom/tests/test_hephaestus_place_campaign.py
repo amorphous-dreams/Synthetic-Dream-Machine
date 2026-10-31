@@ -204,7 +204,7 @@ def test_relational_emitter_deferral_is_explicit_and_replayable(tmp_path):
     assert front["operator_preferred_emitter"]=="relational-recombination"
     assert all(row["emitter_receipt"]["candidate_genome_sha256"]==row["genome_sha256"]
                for row in front["offered"])
-    assert any(row["emitter_receipt"]["recombination_deferral"]
+    assert any(row["emitter_receipt"]["proposal_deferral"]
                for row in front["offered"])
     assert all(not row["emitter_receipt"]["operator_accepted"] for row in front["offered"])
 
@@ -235,7 +235,7 @@ def test_relational_census_derives_real_auditions_and_abstentions(tmp_path):
     assert census["all_offered"]==4 and census["native_attempts"]==2
     assert census["relational_offered"]==0
     assert census["relational_native_admitted"]==0
-    assert census["recombination_deferrals"]==1
+    assert census["proposal_deferrals"]==1
     assert census["region_pairs_considered_in_proposals"]==0
     assert census["region_pairs_refused_before_birth"]==0
     assert not census["automatic_artistic_winner"]
@@ -263,7 +263,7 @@ def test_two_native_witnessed_variants_can_supply_breeding_without_invented_nich
                               prefer_emitter="relational-recombination")
     assert verify_place_campaign(folder)==result
     census=result["relational_emissions"]
-    assert census["relational_offered"]+census["recombination_deferrals"]>=1
+    assert census["relational_offered"]+census["proposal_deferrals"]>=1
     assert census["relational_native_attempted"]<=result["attempted"]
     assert census["distinct_admitted_recombinants"]<=census["relational_native_admitted"]
     assert census["automatic_artistic_winner"] is False
