@@ -17,19 +17,19 @@ const sameOp = (personaGroup: string) => ({ class: "same-operator", face: { pers
 
 describe("Kahu reach at the hearth's wire", () => {
   test("the custody face's own same-operator session holds reach once the face proved (case folds)", () => {
-    expect(kahuHandAtWire({ session: sameOp(group.toUpperCase().replace("0X", "0x")), custodyGroup: group, faceProven: true, canon })).toBe(true);
+    expect(kahuHandAtWire({ session: sameOp(group.toUpperCase().replace("0X", "0x")), custodyGroup: group, faceProven: true, canon, kahuStanding: true })).toBe(true);
   });
   test("before the face proof, no session holds reach", () => {
-    expect(kahuHandAtWire({ session: sameOp(group), custodyGroup: group, faceProven: false, canon })).toBe(false);
+    expect(kahuHandAtWire({ session: sameOp(group), custodyGroup: group, faceProven: false, canon, kahuStanding: true })).toBe(false);
   });
   test("a contracted member, a session of another face, and an unseated peer hold none", () => {
-    expect(kahuHandAtWire({ session: { class: "contracted", face: null }, custodyGroup: group, faceProven: true, canon })).toBe(false);
-    expect(kahuHandAtWire({ session: sameOp("0x" + "cd".repeat(32)), custodyGroup: group, faceProven: true, canon })).toBe(false);
-    expect(kahuHandAtWire({ session: undefined, custodyGroup: group, faceProven: true, canon })).toBe(false);
+    expect(kahuHandAtWire({ session: { class: "contracted", face: null }, custodyGroup: group, faceProven: true, canon, kahuStanding: true })).toBe(false);
+    expect(kahuHandAtWire({ session: sameOp("0x" + "cd".repeat(32)), custodyGroup: group, faceProven: true, canon, kahuStanding: true })).toBe(false);
+    expect(kahuHandAtWire({ session: undefined, custodyGroup: group, faceProven: true, canon, kahuStanding: true })).toBe(false);
   });
   test("a vessel that stood no canon, or names no custody face, grants none", () => {
-    expect(kahuHandAtWire({ session: sameOp(group), custodyGroup: group, faceProven: true, canon: {} })).toBe(false);
-    expect(kahuHandAtWire({ session: sameOp(group), custodyGroup: null, faceProven: true, canon })).toBe(false);
+    expect(kahuHandAtWire({ session: sameOp(group), custodyGroup: group, faceProven: true, canon: {}, kahuStanding: true })).toBe(false);
+    expect(kahuHandAtWire({ session: sameOp(group), custodyGroup: null, faceProven: true, canon, kahuStanding: true })).toBe(false);
   });
   test("the canon's document ids are the two live documents, and nothing else", () => {
     expect([...kahuCanonDocIds(canon)].sort()).toEqual([String(interpretAsDocumentId(lares)), String(interpretAsDocumentId(lararium))].sort());

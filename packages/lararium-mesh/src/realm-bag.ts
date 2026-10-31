@@ -55,7 +55,6 @@ import {
 import type { FederationGate, NexusMembership } from "./federation-gate.js";
 import type { CapTier } from "./cap-tier.js";
 import { storedLarRecord } from "./stored-record.js";
-import { isSystemCanonBag } from "./kahu-canon-reach.js";
 
 /** The realm plane's pointer namespace on a vessel's oracle plane. */
 export const REALM_DOC_URI = bagUri("realm");
@@ -597,17 +596,17 @@ export interface KahuCanonConsult {
  * `lares` and `lararium` documents rest "held by no vessel outside" the Kahu cabal, and every other hand reads the
  * floor by CID (stable-founding-road #/rulings, 2026-10-16 and 2026-10-18). Wire access judges a document per peer in
  * BOTH directions, so a lane that let a member read the canon also let its changes land. A Kahu document is one the
- * keel's own canon names (`kahuCanon.docs`) or one a standing registration of a system bag names; whatever other
- * record names it, it crosses only to a peer the reach consult holds, and to nobody where no consult stands. The
- * replica set then closes over Kahu hands, so every change any replica carries came from a hand that holds reach,
- * and no change's actor id needs binding to a key.
+ * keel's own steward-verified canon names (`kahuCanon.docs`), the one owner of that naming: a registration on the realm
+ * doc, which any self-named steward can seal, neither opens a Kahu document nor closes an ordinary book. Whatever record
+ * names it, a Kahu document crosses only to a peer the reach consult holds NOW (the hearth reads the live admission).
+ * The replica set then closes over hands that hold reach, so every change a replica carries came from one, and no
+ * change's actor id needs binding to a key.
  *
  * The standing set swaps whole on `refold` (never a partial window).
  */
 export class RealmBagGate implements FederationGate {
   #standing: ReadonlySet<DocumentId> = new Set<DocumentId>();
   #byDocId: ReadonlyMap<DocumentId, RealmBagRegistration> = new Map<DocumentId, RealmBagRegistration>();
-  #systemDocs: ReadonlySet<string> = new Set<string>();
   #registrations: ReadonlyMap<string, RealmBagRegistration> = new Map<string, RealmBagRegistration>();
   #realmId: string | null = null;
   readonly #realmDocId: DocumentId;
@@ -640,7 +639,7 @@ export class RealmBagGate implements FederationGate {
       readonly memberAside?: (peerId: string) => boolean;
       readonly stands?: (peerId: string) => boolean;
       readonly nexusLane?: boolean;
-      /** THE KAHU CANON's consult: its documents answer to this reach alone. Absent → they cross to nobody. */
+      /** THE KAHU CANON's consult: its documents answer to this reach alone. Absent → the vessel names no Kahu document here. */
       readonly kahuCanon?: KahuCanonConsult;
     },
   ) {
@@ -658,7 +657,6 @@ export class RealmBagGate implements FederationGate {
   async refold(doc: LarDoc | undefined | null, realmId: string): Promise<void> {
     const next = new Set<DocumentId>();
     const byDoc = new Map<DocumentId, RealmBagRegistration>();
-    const systemDocs = new Set<string>();
     this.#registrations = await foldRealmBags(doc, realmId, this.#sealReading);
     this.#realmId = realmId;
     for (const rec of this.#registrations.values()) {
@@ -666,12 +664,10 @@ export class RealmBagGate implements FederationGate {
         const id = interpretAsDocumentId(rec.docUrl as AutomergeUrl) as DocumentId;
         next.add(id);
         byDoc.set(id, rec);
-        if (isSystemCanonBag(rec.bagUri)) systemDocs.add(String(id));
       } catch { /* a malformed url registers nothing */ }
     }
     this.#standing = next;
     this.#byDocId = byDoc;
-    this.#systemDocs = systemDocs;
   }
 
   /** THE WRITE CAP at the holder: does this nym stand in the bag's counted `keptBy`, inside the lease? The
@@ -690,11 +686,10 @@ export class RealmBagGate implements FederationGate {
     return documentId === this.#realmDocId || this.#standing.has(documentId) || this.#isKahuDoc(documentId);
   }
 
-  /** A Kahu document: one the keel's canon names, or one a standing registration of a system bag names. */
+  /** A Kahu document: one the keel's steward-verified canon names. A consult that throws reads every document as Kahu (fail closed). */
   #isKahuDoc(documentId: DocumentId): boolean {
-    const key = String(documentId);
-    if (this.#systemDocs.has(key)) return true;
-    try { return this.#kahuCanon?.docs().has(key) === true; } catch { return false; }
+    if (!this.#kahuCanon) return false;
+    try { return this.#kahuCanon.docs().has(String(documentId)); } catch { return true; }
   }
 
   /** The realm doc id plus the docs of standing registrations — for a caller that lists what the lane opens. */

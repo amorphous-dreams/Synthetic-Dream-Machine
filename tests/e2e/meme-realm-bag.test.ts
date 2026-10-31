@@ -6,18 +6,18 @@
  * Two vessels, two roots — B founds its OWN (no admit edge) and dials A at the cross-operator floor. The
  * relation's four doors run as the docker `meme` scenario runs them (`tools/mesh-scenarios.sh` contract_ab):
  * A seats a charter · the charter crosses by `seal export`/`seal import` · B signs her contract-in · A's
- * quorum admits her. A LOADs a carrier into `bags/lares`. THE VECTOR: B's `meme get --bag lares <uri>`.
+ * quorum admits her. A LOADs a carrier into `bags/ford`. THE VECTOR: B's `meme get --bag ford <uri>`.
  *
- * MEASURED (the law rests at lar:///ha.ka.ba/lararium/api/personal-slot): each operator mints its own `bags/lares` doc, the
+ * MEASURED (the law rests at lar:///ha.ka.ba/lararium/api/personal-slot): each operator mints its own `bags/ford` doc, the
  * contract writes the carriage-contracts board and never a bag, and B answers `not-found`. BUILT: the realm's
  * shared CRDT materializes on both members' boot from the charter's genesis epoch (`realmDocUrl`); A REGISTERS
- * her `bags/lares` on it (`lares nexus realm-bag lares` — steward-signed, read at CONTRACT); @crossroads
+ * her `bags/ford` on it (`lares nexus realm-bag ford` — steward-signed, read at CONTRACT); @crossroads
  * carries `{ bag, kept-by }` alone; B's third reach (`meme-verbs.ts` reach-by-access) walks the realm plane
  * FIRST and finds the doc, which A's wire gate federates to a contracted MEMBER and to nobody else.
  *
  * CONTROLS: before the registration, B answers exactly what a non-member answers after it (`not-found`,
  * byte-identical); C — a third operator dialing A with no contract — answers `not-found` after it too; a
- * crossroads read of the bag's meme shows no record; B's `meme put --bag lares` refuses (read tier).
+ * crossroads read of the bag's meme shows no record; B's `meme put --bag ford` refuses (read tier). The live `lares` and `lararium` documents are no relation's book: they cross to Kahu hands alone (⑭, road P26).
  *
  * THE WIRE UNDER THE REALM — TWO MAPS, NEVER LINKED. B boots before any contract and dials A at the
  * cross-operator floor, presenting her ContactCard ALONE: a self-founded vessel presents no root-signed edge
@@ -553,6 +553,56 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const after = await A!.cli(["meme", "get", URI, "--bag", "ford", "--json"]);
     expect(String((after.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("#/stale");
   }, 150_000);
+  // ⑭ THE KAHU CANON CROSSES ONLY TO KAHU HANDS (road P26; stable-founding-road #/rulings 2026-10-16 and 2026-10-18: the
+  // live `lares` and `lararium` documents rest held by no vessel outside the Kahu cabal, and every other hand reads the
+  // floor by CID). It runs while both daemons stand, ahead of ⑬'s teardown. A ingests one record into her OWN live canon
+  // and reads it back, so the canon stands and holds a record to find. The ids B asks by are A's own registered Kahu
+  // documents, read off both sides' realm view, so the ask names that very document. The same B that reads A's ford
+  // through the realm (the control on the very lane) is answered that nothing reaches the record and is refused a write, for `@lares`
+  // and `@lararium` both; ⑭b reads B's own store for either document by raw id once the daemons stop.
+  const kahuDocs: { lares: string; lararium: string } = { lares: "", lararium: "" };
+  test("⑭ A's live @lares and @lararium stand for A, and B — a contracted member — reads none of either and writes neither", async () => {
+    expect(contracted, "the relation's doors stood (③): ⑭ walks only on a contracted member").toBe(true);
+    const docOf = (r: { json: Record<string, unknown> | null }, bag: string): string =>
+      String((((r.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>).find((b) => b["bag"] === bag)?.["doc"] ?? "");
+    const aBags = await A!.cli(["nexus", "realm-bags", "--json"]);
+    kahuDocs.lares = docOf(aBags, "lar:///ha.ka.ba/bags/lares");
+    kahuDocs.lararium = docOf(aBags, "lar:///ha.ka.ba/bags/lararium");
+    expect(kahuDocs.lares, `A's realm names her live @lares: ${said(aBags)}`).toMatch(/^automerge:/);
+    expect(kahuDocs.lararium, `A's realm names her live @lararium: ${said(aBags)}`).toMatch(/^automerge:/);
+    const bBags = await B!.cli(["nexus", "realm-bags", "--realm", realmA, "--json"]);
+    expect(docOf(bBags, "lar:///ha.ka.ba/bags/lares"), "B's realm view names the same @lares document").toBe(kahuDocs.lares);
+    expect(docOf(bBags, "lar:///ha.ka.ba/bags/lararium"), "B's realm view names the same @lararium document").toBe(kahuDocs.lararium);
+
+    const dir = join(A!.root, "bags", "lares", "p26.kahu.walk");
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "ledger.mem"), kahuMeme());
+    const ing = await A!.cli(["ingest", "--source", dir, "--to", "lar:///ha.ka.ba/bags/lares", "--apply", "--yes", "--json"]);
+    expect(ing.json?.["ok"], said(ing)).toBe(true);
+    const own = await A!.cli(["meme", "get", KAHU_URI, "--bag", "lares", "--json"]);
+    expect(own.json?.["ok"], `A's own canon reads its record: ${said(own)}`).toBe(true);
+
+    const ford = await pollB(60_000);
+    expect(ford.json?.["ok"], `CONTROL — B still reads A's ford through the realm: ${said(ford)}`).toBe(true);
+    let r = await B!.cli(["meme", "get", KAHU_URI, "--bag", "lares", "--realm", realmA, "--json"]);
+    for (const until = Date.now() + 30_000; r.json?.["ok"] !== true && Date.now() < until; ) {
+      await new Promise((res) => setTimeout(res, 3_000));
+      r = await B!.cli(["meme", "get", KAHU_URI, "--bag", "lares", "--realm", realmA, "--json"]);
+    }
+    console.error(`meme-realm-bag ⑭ MEASURE B: meme get --bag lares → ${said(r).trim().slice(0, 300)}`);
+    expect(r.json?.["ok"], said(r)).not.toBe(true);
+    // The realm reach asked for A's very document (B's view names its id, above) and nothing crossed: the reach door's own
+    // refusal, measured on the first revised run.
+    expect(said(r)).toContain("nothing reaches it by access");
+
+    const file = join(B!.root, "kahu-walk-put.mem");
+    writeFileSync(file, kahuMeme());
+    for (const bag of ["lares", "lararium"]) {
+      const put = await B!.cli(["meme", "put", KAHU_URI, "--bag", bag, "--realm", realmA, "--file", file, "--json"]);
+      console.error(`meme-realm-bag ⑭ MEASURE B: meme put --bag ${bag} → ${said(put).trim().slice(0, 200)}`);
+      expect(put.json?.["ok"], `B writes no ${bag}: ${said(put)}`).not.toBe(true);
+    }
+  }, 240_000);
 
   // ── ⑬ THE MEASURE: WHERE THE RETURN LANE STOPS ──────────────────────────────────────────────────
   // ⑪ stands red and its header names the seam as "past the wire" without saying WHICH of three stops
@@ -674,30 +724,21 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     expect(registered, `no standing registration for ${LARES_BAG} — the measure had nothing to read`).not.toBe("");
   }, 180_000);
 
-  // ⑭ THE KAHU CANON CROSSES ONLY TO KAHU HANDS (road P26; stable-founding-road #/rulings 2026-10-16 and 2026-10-18: the
-  // live `lares` and `lararium` documents rest held by no vessel outside the Kahu cabal, and every other hand reads the
-  // floor by CID). A ingests one record into her OWN live canon and reads it back, so the canon stands and holds a record
-  // to find. The same B that reads A's ford through the realm (the control on the very lane) asks for that record through
-  // the realm and draws `not-found`: A's realm gate answers her Kahu documents to Kahu reach alone, and a contracted
-  // member holds none. Before the cure the Nexus lane opened them to every member leaf, both ways.
-  test("⑭ A's live @lares stands for A, and B — a contracted member — reads none of it", async (ctx) => {
-    if (!contracted) ctx.skip();
-    const dir = join(A!.root, "bags", "lares", "p26.kahu.walk");
-    mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, "ledger.mem"), kahuMeme());
-    const ing = await A!.cli(["ingest", "--source", dir, "--to", "lar:///ha.ka.ba/bags/lares", "--apply", "--yes", "--json"]);
-    expect(ing.json?.["ok"], said(ing)).toBe(true);
-    const own = await A!.cli(["meme", "get", KAHU_URI, "--bag", "lares", "--json"]);
-    expect(own.json?.["ok"], `A's own canon reads its record: ${said(own)}`).toBe(true);
-    const ford = await pollB(60_000);
-    expect(ford.json?.["ok"], `CONTROL — B still reads A's ford through the realm: ${said(ford)}`).toBe(true);
-    let r = await B!.cli(["meme", "get", KAHU_URI, "--bag", "lares", "--realm", realmA, "--json"]);
-    for (const until = Date.now() + 30_000; r.json?.["ok"] !== true && Date.now() < until; ) {
-      await new Promise((res) => setTimeout(res, 3_000));
-      r = await B!.cli(["meme", "get", KAHU_URI, "--bag", "lares", "--realm", realmA, "--json"]);
-    }
-    console.error(`meme-realm-bag ⑭ MEASURE B: meme get --bag lares → ${said(r).trim().slice(0, 300)}`);
-    expect(r.json?.["ok"], said(r)).not.toBe(true);
-    expect(said(r)).toContain("not-found");
-  }, 180_000);
+  // ⑭b B'S OWN STORE, BY RAW ID. With B's daemon stopped (⑬ stops it; this stops it where ⑬ skipped), B's automerge
+  // storage answers for each of A's live Kahu documents: a replica B never received holds no record of A's canon.
+  test("⑭b B's own store holds neither of A's live Kahu documents", async () => {
+    expect(kahuDocs.lares && kahuDocs.lararium, "⑭ named both documents").toBeTruthy();
+    try { await B!.stopDaemonOnly(); } catch { /* ⑬ already stopped it */ }
+    const repoB = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(B!)) });
+    try {
+      for (const [bag, url] of Object.entries(kahuDocs)) {
+        const body = await Promise.race([
+          repoB.find(url as never).then((h) => JSON.stringify((h.doc() as object) ?? {}), () => "(unavailable)"),
+          new Promise<string>((res) => setTimeout(() => res("(unavailable)"), 10_000)),
+        ]);
+        console.error(`meme-realm-bag ⑭b MEASURE B's store for ${bag} (${url}): ${body.slice(0, 160)}`);
+        expect(body.includes("p26.kahu.walk") || body.includes("tiddlers\":{\"lar:"), `B's store holds A's ${bag}: ${body.slice(0, 200)}`).toBe(false);
+      }
+    } finally { await repoB.shutdown().catch(() => {}); }
+  }, 60_000);
 });

@@ -88,7 +88,7 @@ import {
   readGenesisCasManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
 import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.js";
-import { standKahuCanon, canonHeldUntilProof, kahuCanonDocIds, kahuHandAtWire, type KahuCanonDocs } from "./kahu-realm.js";
+import { standKahuCanon, canonHeldUntilProof, kahuCanonDocIds, kahuHandAtWire, kahuCanonAtWire, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonCorpusRoot } from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
@@ -809,10 +809,13 @@ async function prepareNodeBootOn(
   const provenPlanes = new Map<string, string>();
   // The live system documents THIS vessel holds, named by the Kahu realm at boot (`standKahuCanon`): empty outside the cabal.
   let kahuCanon: KahuCanonDocs = {};
+  // The custody group's Kahu admission as the carriage board reads NOW (`watchKahuStanding`): the wire consult and the
+  // same-face bridge read it, so a counted removal closes the canon at the board's next change (road `P26`).
+  let kahuStanding: { held(): boolean; refresh(): void; close(): void } | null = null;
   // The mounted face also reads this vessel's wikis, catalog and bags (the bridge until O1, `face-fleet-view`).
   let catalogForViews: (() => LarDoc | undefined) | null = null;
   const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,
-    () => (catalogForViews ? bridgeBooks(catalogForViews(), kahuCanon) : new Set<string>()));
+    () => (catalogForViews ? bridgeBooks(catalogForViews(), kahuCanonAtWire(kahuCanon, kahuStanding?.held() === true)) : new Set<string>()));
   stood.push({ what: "the face views", down: () => faceViews.close() });
   // THIS HEARTH'S OWN HOSTING DOCS — one per Nexus it carries, under its own gate key. A contracted peer (a carrier
   // of that Nexus) replicates them for the cross-check every walker's fork reading rests on. Filled once the vessel
@@ -1225,7 +1228,7 @@ async function prepareNodeBootOn(
     landOwedHostingActs: async () => { await landOwedHostingActs?.(); },
     refoldAntigen: () => antigenHolder.refold(),
     refoldMembership: () => membershipHolder.refold(),
-    refreshRealmPlane: async () => { await realmPlane?.refresh(readNexusDoc(sealHome)); },
+    refreshRealmPlane: async () => { await realmPlane?.refresh(readNexusDoc(sealHome)); kahuStanding?.refresh(); },
     refoldEdgeShadows: async () => { await edgeShadows?.refold(); },
     reverdict: () => reverdict(),
     representIfMoved: async () => { await representIfMoved?.(); },
@@ -1890,6 +1893,14 @@ async function prepareNodeBootOn(
         repo, sealHome, vesselKey: activeAtom?.key ?? "",
         personaGroupId: custodyGroup,   // sealed custody names the face; the composition tears down whole if its proof later refuses
       });
+      // THE LIVE STANDING the wire reads beside the canon: each flip re-asks the Repo's cached share verdicts.
+      if (!kahuStanding) {
+        const watch = await watchKahuStanding({
+          repo, sealHome, vesselKey: activeAtom?.key ?? "", personaGroupId: custodyGroup, onChange: () => reverdict(),
+        });
+        kahuStanding = watch;
+        stood.push({ what: "the Kahu standing", down: () => watch.close() });
+      }
       return kahuCanon;
     },
 
@@ -2151,10 +2162,10 @@ async function prepareNodeBootOn(
         // fold and the cache must move together or the registered book stays DENIED to the hand that keeps it.
         onRefold:         reverdict,
         // THE KAHU CANON answers to Kahu reach alone (road `P26`): the live documents the keel stood, crossing only to a
-        // session that wears the face whose admission stood them, once that face has proved (`kahuHandAtWire`).
+        // session that wears the custody face, once that face has proved, while its Kahu admission stands NOW (`kahuHandAtWire`).
         kahuCanon:        {
           docs:  () => kahuCanonDocIds(kahuCanon),
-          reach: (peerId) => kahuHandAtWire({ session: peerSessions.get(peerId), custodyGroup, faceProven: wornFaceProven, canon: kahuCanon }),
+          reach: (peerId) => kahuHandAtWire({ session: peerSessions.get(peerId), custodyGroup, faceProven: wornFaceProven, canon: kahuCanon, kahuStanding: kahuStanding?.held() === true }),
         },
         onLog:            (line) => console.log(`[realm] ${line}`),
       });

@@ -8,18 +8,19 @@
  * document per peer in BOTH directions, so a member that may read a book also lands its changes in the hearth's
  * replica: the member's record then mounts as canon on the hearth's keel.
  *
- * The cure closes the replica set over Kahu hands: a Kahu document (one the keel's steward-verified canon names, or one
- * a standing registration of a system bag names) answers to the Kahu reach consult ALONE, ahead of the base gate and
- * every lane. Inside that closed set every change comes from a hand that holds reach, so no change's actor id needs
- * binding to a key.
+ * The cure closes the replica set over Kahu hands: a Kahu document (one the keel's steward-verified canon names, the
+ * consult's own `docs`) answers to the Kahu reach consult ALONE, ahead of the base gate and every lane. Inside that
+ * closed set every change comes from a hand that holds reach, so no change's actor id needs binding to a key.
  *
  * RED 1 (the mount): a Nexus member syncs a record into `@lares`; the hearth's replica carries it.
  * RED 2: the gate answers true for that member on the Kahu document.
  * RED 3: another hand's registration naming the Kahu document under a non-system bag opens nothing.
- * RED 4: a Kahu document crosses to nobody when the composer hands no reach consult (fail closed).
- * CONTROL 1: a Kahu hand (the reach consult holds) reads the document and its change lands.
+ * RED 4 (revised with Sol's read): a consult whose `docs` throws reads every document as Kahu (fail closed).
+ * CONTROL 1: a Kahu hand that holds NO Nexus membership reads the document and its change lands (reach alone opens it).
  * CONTROL 2: a CONTRACT book that names no system bag still crosses to the Nexus member, as before.
  * CONTROL 3: the member shadow still shuts a Kahu hand out.
+ * CONTROL 4 (Sol's read): a self-signed registration naming an ordinary book under `@lares` closes nothing: the
+ *   registry, which any self-named steward seals, never names the canon.
  */
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
@@ -87,7 +88,11 @@ async function syncedWrite(gate: FederationGate, peerName: string, title: string
     if (reached === "ready") {
       const theirs = await other.find<LarDoc>(canon.url);
       theirs.change((d) => { d.tiddlers[title] = storedLarRecord(title, { text: "a member's line" }, "member"); });
-      await new Promise((r) => setTimeout(r, 400));
+      // Wait on the hearth's own change, bounded: a landing write ends the wait at once; a refused one runs out the bound.
+      await new Promise<void>((done) => {
+        const timer = setTimeout(done, 3_000);
+        canon.on("change", () => { if (canon.doc()?.tiddlers?.[title] !== undefined) { clearTimeout(timer); done(); } });
+      });
     }
     return { reached, landed: canon.doc()?.tiddlers?.[title] !== undefined };
   } finally {
@@ -104,7 +109,8 @@ describe("the Kahu canon crosses only to Kahu hands", () => {
   test("RED 1 — a Nexus member's synced change to @lares never lands in the hearth's replica", async () => {
     const gate = gateOf(membership("member"), { kahuCanon: kahuCanon(["steward-leaf"]) });
     const { reached, landed } = await syncedWrite(gate, "member", "$:/member/line");
-    expect(reached).not.toBe("ready");
+    // Refused, never merely slow: the hearth answers the member's find unavailable inside the bound.
+    expect(reached).toBe("unavailable");
     expect(landed).toBe(false);
   });
 
@@ -131,16 +137,23 @@ describe("the Kahu canon crosses only to Kahu hands", () => {
     } finally { kahuDocs.clear(); }
   });
 
-  test("RED 4 — with no reach consult, a document a system bag's registration names crosses to nobody (fail closed)", async () => {
-    const canonUrl = deterministicDocUrl("kahu-lares-doc-4");
-    const gate = gateOf(membership("member"), {});
-    await gate.refold(await realmWith([{ bagUri: LARES_DOC_URI, docUrl: canonUrl, seed: stewardSeed }]), realm);
-    expect(await gate.mayFederate(id(canonUrl), peer("member"))).toBe(false);
+  test("RED 4 — a consult whose docs throw reads every document as Kahu (fail closed)", async () => {
+    const bookUrl = deterministicDocUrl("ordinary-book-4");
+    const gate = gateOf(membership("member"), { kahuCanon: { docs: () => { throw new Error("canon unreadable"); }, reach: () => false } });
+    await gate.refold(await realmWith([{ bagUri: "lar:///ha.ka.ba/bags/ordinary", docUrl: bookUrl, seed: stewardSeed }]), realm);
+    expect(await gate.mayFederate(id(bookUrl), peer("member"))).toBe(false);
+  });
+
+  test("CONTROL 4 — a self-signed registration naming an ordinary book under @lares closes nothing", async () => {
+    const bookUrl = deterministicDocUrl("ordinary-book-c4");
+    const gate = gateOf(membership("member"), { kahuCanon: kahuCanon([]) });
+    await gate.refold(await realmWith([{ bagUri: LARES_DOC_URI, docUrl: bookUrl, seed: forgerSeed }]), realm);
+    expect(await gate.mayFederate(id(bookUrl), peer("member"))).toBe(true);
   });
 
   test("CONTROL 1 — a Kahu hand reads the document, and its synced change lands", async () => {
-    // The Kahu hand also stands a Nexus member, so this control reads green before the cure (the Nexus lane) and after it (reach alone).
-    const gate = gateOf(membership("steward-leaf"), { kahuCanon: kahuCanon(["steward-leaf"]) });
+    // The Kahu hand stands in no Nexus membership: reach ALONE opens the document (revised with Luna's read).
+    const gate = gateOf(membership(), { kahuCanon: kahuCanon(["steward-leaf"]) });
     const { reached, landed } = await syncedWrite(gate, "steward-leaf", "$:/steward/line");
     expect(reached).toBe("ready");
     expect(landed).toBe(true);

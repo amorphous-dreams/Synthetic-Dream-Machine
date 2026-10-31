@@ -201,7 +201,7 @@ export function makeRealmPlane(opts: {
   readonly dialedHearth?: () => { readonly pinned: boolean; readonly aid: string | null };
   /**
    * THE KAHU CANON's consult (road `P26`): every plane's gate answers the live `lares` and `lararium` documents to Kahu
-   * reach alone, ahead of every lane. Absent → a document a system bag's registration names crosses to nobody.
+   * reach alone, ahead of every lane. Absent → the planes name no Kahu document (a vessel outside the cabal holds none).
    */
   readonly kahuCanon?: KahuCanonConsult;
 }): RealmPlanesHolder {

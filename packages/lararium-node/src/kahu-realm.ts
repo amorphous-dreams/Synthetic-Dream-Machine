@@ -9,7 +9,8 @@
  *   · THE FOUNDING LANDS THE REALM (`landKahuRealm`). Beside the counted admission, the one-seat founding mints one
  *     document per system bag and registers each as a realm bag on the realm doc the charter names (the Nexus AID's
  *     deterministic doc), sealed by persona zero's per-Nexus key as the steward. A registration that already counts
- *     stands untouched, so a founding run again registers nothing new.
+ *     mints nothing new, so a founding run again registers no second document; one an earlier key of the steward's line
+ *     sealed re-seals under the line's head (`standKahuRegistrations`).
  *   · A VESSEL STANDS ITS CANON AT BOOT (`standKahuCanon`). It names the documents only where the cabal's board
  *     carries a counted admission for the Kahu realm's group: the registrations come off the realm doc, folded and
  *     seal-verified, and a vessel with no charter, no admission, a removed group or no registration holds none. The
@@ -25,7 +26,7 @@ import { interpretAsDocumentId, type AutomergeUrl, type Repo } from "@automerge/
 import {
   LARARIUM_DOC_URI, LARES_DOC_URI, deterministicDocUrl, faceAtomKeyFromSeed, kahuCabalStanding, kahuRealmGroup, materializeSharedLarDoc,
   canonicalJson, parseRealmBagRegistration, realmBagRegistrationCounts, realmBagRegistrationsFromDoc, realmDocUrl, signRealmBagRegistration,
-  writeRealmBagRegistration, ed25519SignerFromSeed, admittedKeyOf, followNexusKeyLine, kahuCabalActsFromBoard, realmBagKey,
+  writeRealmBagRegistration, ed25519SignerFromSeed, admittedKeyOf, followNexusKeyLine, kahuCabalActsFromBoard, realmBagKey, foundingRoster,
   type LarDoc, type RealmBagRegistration, type StewardSigner,
 } from "@lararium/mesh";
 import { createHmac } from "node:crypto";
@@ -38,6 +39,7 @@ import { keyLineAt } from "./nexus-carriage.js";
 import { NexusCabalError, cabalCore } from "./commands/nexus-cabal.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
+import { readNexusDoc } from "./nexus-doc.js";
 
 /** The system bags the Kahu cabal keeps live. */
 export const KAHU_REALM_BAGS: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
@@ -101,7 +103,9 @@ async function kahuStewardLine(sealHome: string, nexus: string, board: LarDoc | 
       return {
         head: key, keys,
         signHead: async () => {
-          const again = (await readNexusKeys(kahuRealmHandleIndex(), nexus)).find((s) => nexusKeyPublicOf(s).toLowerCase() === key);
+          const seeds = await readNexusKeys(kahuRealmHandleIndex(), nexus);
+          const again = seeds.find((s) => nexusKeyPublicOf(s).toLowerCase() === key);
+          for (const other of seeds) if (other !== again) other.fill(0);
           if (!again) throw new NexusCabalError("the Kahu steward's head key left this vessel while it sealed");
           return { signer: key, sign: ed25519SignerFromSeed(again), done: () => again.fill(0) };
         },
@@ -146,8 +150,9 @@ async function stewardRows(doc: LarDoc | undefined | null, nexus: string, line: 
 
 /**
  * THE KAHU CANON STANDS ON ONE STEWARD AND ITS SEAL. `foldRealmBags` verifies every self-named steward's seal
- * and never that the hand holds the hearth's canon, so the Kahu canon counts only registrations sealed by EXACTLY the
- * hearth's Kahu steward (one owner per registry; kahu.mem: kept by that one name). The registration the hearth KEEPS
+ * and never that the hand holds the hearth's canon, so the Kahu canon counts only registrations sealed by one key of the
+ * hearth's Kahu steward's LINE (one owner per registry; kahu.mem: kept by that one name, whose line a re-issue moves), and
+ * re-seals under the line's head any an earlier key sealed. The registration the hearth KEEPS
  * stands first where it verifies, and lands on the registry again where no row there carries it; a bag the hearth keeps
  * none for stands on the steward's one counted document and is kept from then on, and the steward's seals over two
  * documents stand none (`equivocal`). A kept file stands only where it verifies. No reader recomputes the founding's
@@ -315,9 +320,12 @@ export function kahuCanonDocIds(canon: KahuCanonDocs): ReadonlySet<string> {
 }
 
 /**
- * KAHU REACH AT THE WIRE (road `P26`): a peer holds it at this hearth exactly where its session wears the face whose
- * counted admission stood this vessel's canon (`standKahuCanon` read it for the custody group), proven same-operator by
- * this gate's grant ring, and that face's own proof has passed. The keel's reach and the wire's then read one hand.
+ * KAHU REACH AT THE WIRE (road `P26`): a peer holds it at this hearth exactly where its session wears the custody face,
+ * proven same-operator by this gate's grant ring, that face's own proof has passed, and the face's group stands ADMITTED
+ * to the Kahu cabal as the board reads NOW (`watchKahuStanding`). A counted removal closes the wire at the board's next
+ * change, never at the next boot (kahu.mem #/cabal-admission: a removal closes the access path for every reader that
+ * consults it). The sentinel half of the predicate reads in the daemon island, whose write doors consult it; this wire
+ * reads the admission, the act that closes access.
  *
  * Every other peer reads none, fail closed: a contracted member, a sibling, a place's seat, a session of another
  * face. A hand of ANOTHER admitted group stays open: across operators no wire proof binds a peer to a PersonaGroup
@@ -327,10 +335,58 @@ export function kahuCanonDocIds(canon: KahuCanonDocs): ReadonlySet<string> {
 export function kahuHandAtWire(input: {
   readonly session: { readonly class: string; readonly face: { readonly personaGroup: string } | null } | undefined;
   readonly custodyGroup: string | null; readonly faceProven: boolean; readonly canon: KahuCanonDocs;
+  /** The custody group's Kahu admission as the board reads NOW (`watchKahuStanding`), never the boot's snapshot. */
+  readonly kahuStanding: boolean;
 }): boolean {
-  if (!input.faceProven || input.custodyGroup === null) return false;
+  if (!input.kahuStanding || !input.faceProven || input.custodyGroup === null) return false;
   if (!input.canon.lares && !input.canon.lararium) return false;
   const session = input.session;
   if (!session || session.class !== "same-operator" || !session.face) return false;
   return session.face.personaGroup.toLowerCase() === input.custodyGroup.toLowerCase();
+}
+
+/**
+ * THE CANON THE SAME-FACE BRIDGE NAMES (road `P26`): the keel's canon while the custody group's Kahu admission stands as
+ * the board reads now, and none once a removal counts. The bridge returns ahead of the realm gate, so it reads the same
+ * live standing the wire consult reads; a session it no longer names falls through to the realm gate, which answers the
+ * canon to reach alone.
+ */
+export function kahuCanonAtWire(canon: KahuCanonDocs, kahuStanding: boolean): KahuCanonDocs {
+  return kahuStanding ? canon : {};
+}
+
+/**
+ * THE KAHU STANDING, LIVE (road `P26`): whether the custody group stands admitted to the Kahu cabal, read off the carriage
+ * board as of its last sync and re-read on every board change, and on `refresh` (a charter import or roll moves the roster
+ * the acts count under). `onChange` hears each flip, so the composer re-asks its cached share verdicts. A vessel with no
+ * face, no seated charter or no readable group reads not admitted and never changes.
+ */
+export async function watchKahuStanding(opts: {
+  readonly repo: Repo; readonly sealHome: string; readonly vesselKey: string; readonly personaGroupId: string | null;
+  readonly onChange?: (held: boolean) => void;
+}): Promise<{ held(): boolean; refresh(): void; close(): void }> {
+  const inert = { held: () => false, refresh: () => {}, close: () => {} };
+  if (opts.personaGroupId === null) return inert;
+  let group: string;
+  try { group = kahuRealmGroup(opts.personaGroupId); } catch { return inert; }
+  let core: Awaited<ReturnType<typeof cabalCore>>;
+  try { core = await cabalCore(opts.repo, opts.sealHome, undefined, opts.vesselKey); }
+  catch (err) { if (err instanceof NexusCabalError) return inert; throw err; }
+  const read = (): boolean => {
+    try {
+      const roster = foundingRoster(readNexusDoc(core.home));
+      return kahuCabalStanding(kahuCabalActsFromBoard(core.handle.doc()), group, roster, core.nexus).standing === "admitted";
+    } catch { return false; }
+  };
+  let held = read();
+  let closed = false;
+  const refresh = (): void => {
+    if (closed) return;
+    const now = read();
+    if (now === held) return;
+    held = now;
+    try { opts.onChange?.(held); } catch { /* a listener never breaks the reading */ }
+  };
+  core.handle.on("change", refresh);
+  return { held: () => held, refresh, close: () => { closed = true; core.handle.off("change", refresh); } };
 }
