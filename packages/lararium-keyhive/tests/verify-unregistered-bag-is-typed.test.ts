@@ -16,4 +16,13 @@ describe("verify names an unregistered bag by type", () => {
     expect(answer.ok).toBe(false);
     expect(answer).toMatchObject({ kind: "bag-not-registered", bagUrl: BAG });
   });
+
+  test("CONTROL: a bag that stands registered but grants this presenter nothing carries no such kind", async () => {
+    const provider = new KeyhiveProvider();
+    await provider.init({ seed: new Uint8Array(32).fill(8), eventStore: new InMemoryEventStore() });
+    await provider.registerBag(BAG);
+    const answer = await provider.verify({ bagUrl: BAG, presenter: "00".repeat(32), access: "read" });
+    expect(answer.ok).toBe(false);
+    expect(answer.kind).toBeUndefined();
+  });
 });

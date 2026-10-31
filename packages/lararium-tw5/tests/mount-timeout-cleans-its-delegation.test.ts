@@ -49,6 +49,12 @@ describe("the delegation book", () => {
     expect(book.size()).toBe(0);
   });
 
+  test("RED (Copilot's read): a post that throws leaves no entry", async () => {
+    const book = makeDelegationBook(() => { throw new Error("port closed"); });
+    await expect(book.route(verb("a3"), new AbortController().signal)).rejects.toThrow(/port closed/);
+    expect(book.size()).toBe(0);
+  });
+
   test("CONTROL: an answered ask settles and leaves the book empty", async () => {
     const book = makeDelegationBook(() => {});
     const asked = book.route(verb("a2"), new AbortController().signal);

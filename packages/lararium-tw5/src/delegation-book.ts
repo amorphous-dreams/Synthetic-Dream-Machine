@@ -32,14 +32,14 @@ export function makeDelegationBook(post: Post): DelegationBook {
         signal?.addEventListener("abort", () => {
           if (pending.delete(id)) reject(new Error(`delegation abandoned: ${invocation.action} (${id})`));
         }, { once: true });
-        post(mkDaemonDelegateVerb({
+        try { post(mkDaemonDelegateVerb({
           requestId:   id,
           verb:        invocation.action,
           args:        invocation.args as Record<string, unknown>,
           requestedBy: invocation.requestedBy,
           ...(invocation.targets?.length ? { targets: [...invocation.targets] } : {}),
           ...(invocation.batchMode       ? { batchMode: String(invocation.batchMode) } : {}),
-        }));
+        })); } catch (error) { pending.delete(id); reject(error instanceof Error ? error : new Error(String(error))); }   // a post that throws leaves no entry
       });
     },
     answer(requestId, answer) {
