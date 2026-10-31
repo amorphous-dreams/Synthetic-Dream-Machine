@@ -299,7 +299,7 @@ export interface StoodGate {
   /** The exact upgrade pathname: `<route>/<knock>`. */
   readonly path: string;
   /** Stop answering on this path and cut every socket this gate seated: a gate stood down keeps no session it opened
-   *  (a Nexus no longer carried keeps no stranger). Idempotent. */
+   *  (a Nexus this vessel stopped carrying keeps no stranger). Idempotent. */
   unstand(): void;
 }
 
