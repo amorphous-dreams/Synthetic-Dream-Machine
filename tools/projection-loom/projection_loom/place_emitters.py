@@ -136,10 +136,14 @@ def emit_place_child(original,resolved,archive,spatial,*,epoch,index,offspring,s
         # inventing a second controller or exceeding the original audition budget.
         breeding=(epoch>0 and index==offspring-1)
         topology=(epoch>0 and offspring>=3 and index==offspring-2)
-        proposal,refusal=(_cross_parent(original,archive,spatial,seed=seed,epoch=epoch,index=index)
-                          if breeding else
-                          _topology_birth(original,spatial,seed=seed,epoch=epoch,index=index)
-                          if topology else (None,None))
+        if breeding:
+            proposal,refusal=_cross_parent(original,archive,spatial,
+                                           seed=seed,epoch=epoch,index=index)
+        elif topology:
+            proposal,refusal=_topology_birth(original,spatial,
+                                             seed=seed,epoch=epoch,index=index)
+        else:
+            proposal,refusal=None,None
         if proposal is None:
             parent=archive[index%len(archive)] if archive else {
                 "genome":resolved,"candidate_id":"authored-intent"}
