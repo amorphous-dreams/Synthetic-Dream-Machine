@@ -11,7 +11,7 @@
  * harness the key read refuses as `ScratchCustodyRefused`; a locked vessel refuses `CustodyLocked` (`face-key-custody.ts`,
  * `readNexusKey`). Either throw reaches the one catch that names the failure, so the measure reads the same path.
  */
-import { afterAll, describe, expect, test } from "vitest";
+import { afterAll, describe, expect, test, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -41,11 +41,15 @@ describe("T22 measure: a floor on a store a sovereign run left", () => {
     const keys = await Promise.all([71, 72].map((b) => ed.getPublicKeyAsync(new Uint8Array(32).fill(b)).then(hex)));
     writeNexusDoc(sealHome, heldCharter({ keys, threshold: 2 }).doc());
     const holder = kahuProtectedHolder({ sealHome, canon: () => ({}) });
+    const said = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
       await holder.recount();
       expect(holder.incomplete(), "the locked derivation names its failure").toBe(true);
+      // The one failure the count names is the key read under persona zero, no other throw (the cold read's SHOULD 1).
+      const lines = said.mock.calls.map((c) => c.map(String).join(" "));
+      expect(lines.some((l) => /\(1 read failure\(s\): persona zero's keys at /.test(l)), lines.join("\n")).toBe(true);
       expect(await guardOver(holder).withholds("dialed-hearth", KAHU_CANON_ID)).toBe(true);
-    } finally { holder.close(); }
+    } finally { said.mockRestore(); holder.close(); }
   });
 
   test("CONTROL: a seal home with no charter reads whole and withholds an unclassed document from nobody", async () => {

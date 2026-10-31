@@ -975,8 +975,8 @@ async function prepareNodeBootOn(
     inboundUnseats.delete(peerId);
   });
   // The #59 antigen ring — the live Kapae-immune consult. Forward-declared here (the sharePolicy closes
-  // over it) and STOOD once the operator's own nym (its Nexus key) is loaded, below. A null ring denies
-  // nobody (a denylist's absence = no bans), so the boot window before the ring stands is correctly inert.
+  // over it) and STOOD once the operator's own nym (its Nexus key) is loaded, below. Null reads UNSTOOD: the share
+  // verdict withholds every document from a wire or sibling peer until the ring stands (`unstoodShareInputs`).
   let antigenRing: AntigenRing | null = null;
   // The self-slot FEDERATION gate — the federatable-own/private-own classifier for a CROSS-OPERATOR peer.
   // Forward-declared (the sharePolicy closes over it) and STOOD once the operator's own nym is loaded,
@@ -996,8 +996,8 @@ async function prepareNodeBootOn(
   let realmPlane: RealmPlanesHolder | null = null;
   // THE EDGE SHADOW RING (kapae#/reach) — one live reading of this vessel's fleet board and realm boards, which
   // the sorter, the share verdict, carriage serve and the realm's gates all consult. Stood beside the Repo,
-  // below. The ring itself answers fail-closed until its first fold lands; null (no Repo yet) sets nobody aside,
-  // and no peer holds a socket that early.
+  // below. The ring itself answers fail-closed until its first fold lands; null (no Repo yet) reads UNSTOOD, and the
+  // share verdict withholds every document from a wire or sibling peer until the ring stands.
   let edgeShadows: EdgeShadowRing | null = null;
   // The nexus-doc MEMBERSHIP consult — the carry-split's member gate (a cross-operator MEMBER blind-transits a
   // sealed plane; a STRANGER reaches only the public shelf). Forward-declared (the sharePolicy closes over
