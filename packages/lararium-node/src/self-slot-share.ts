@@ -25,6 +25,11 @@
  * POSTURE IS NOT READ HERE. A stranger the gate does not answer never holds a socket: under PRIVATE the sorter
  * answers silence before any verdict, so every peer this decision sees was admitted, and posture has one reader.
  *
+ * AN INPUT THAT HAS NOT STOOD WITHHOLDS (T22, test-recut-road): null names a holder not yet stood, never an empty one. A
+ * null antigen ring, edge shadow or protected-document guard withholds every document from a wire or sibling peer, by
+ * name (`unstoodShareInputs`); a holder that stood and holds nothing passes its named inert value (`NO_BANS`,
+ * `NOBODY_ASIDE`, `NOTHING_CLASSED`). The vessel's own in-process islands stand inside the house and pass.
+ *
  * FAIL-CLOSED: a WS peer with no class routes to the shelf; the sealed-carry lane opens only for a
  * PROVABLY-member peer over a PROVABLY-sealed plane. THE SPLIT RIDES THE OUTER RING — the deterministic
  * federatable set — and that placement IS the safety: nothing runs ahead of it, so a permissive substitution
@@ -54,7 +59,8 @@ export interface SelfSlotShareInput {
   readonly peerClass: PeerClass | undefined;
   /** The federatable-own classifier (a pure function of this Nexus's pubkey). Null before it stands. */
   readonly selfSlotFedGate: FederationGate | null;
-  /** The #59 Kapae-antigen ring (consulted AHEAD; a Kapae'd presenter draws Mu). Null denies nobody. */
+  /** The #59 Kapae-antigen ring (consulted AHEAD; a Kapae'd presenter draws Mu). Null: the ring has not stood, and a
+   *  wire or sibling peer is withheld; a ring that stood empty passes `NO_BANS`. */
   readonly antigenRing: AntigenRing | null;
   /** The nexus-doc membership consult — a MEMBER blind-transits a sealed plane. Null → no peer is a member. */
   readonly membership: NexusMembership | null;
@@ -70,17 +76,36 @@ export interface SelfSlotShareInput {
   /** This hearth's own hosting docs — a contracted peer replicates them. */
   readonly hostingDocs?: ReadonlySet<DocumentId>;
   /** The edge-shadow consult (kapae#/reach): a device set aside from the fleet draws Mu on EVERY lane, the
-   *  same-operator and sibling lanes included. Null sets nobody aside. */
-  readonly shadow?: ShadowConsult | null;
+   *  same-operator and sibling lanes included. Null: the ring has not stood, and a wire or sibling peer is withheld; a
+   *  consult that sets nobody aside passes `NOBODY_ASIDE`. */
+  readonly shadow: ShadowConsult | null;
   /** D3: the gate of the face a SAME-OPERATOR session proved — that face's own planes and the public boards. The
    *  class grants no document; this gate does. Null → the session reads what any admitted peer reads. */
   readonly sessionFace?: FederationGate | null;
   /**
    * THE ONE GUARD for documents classed by identity (road `P26`, `protectedDocGuard`): a classed document crosses to a wire
    * or sibling peer only while its class's decider holds for that peer now, ahead of every lane below (the same-face
-   * bridge, the realm gate, the shelf). Absent → no document is classed here.
+   * bridge, the realm gate, the shelf). Null: the guard has not stood, and a wire or sibling peer is withheld; a vessel
+   * that classes no document passes `NOTHING_CLASSED`.
    */
-  readonly protectedDocs?: ProtectedDocGuard | null;
+  readonly protectedDocs: ProtectedDocGuard | null;
+}
+
+/** A Kapae-antigen ring that stood and bans nobody. */
+export const NO_BANS: AntigenRing = Object.freeze({ kapaed: new Set<string>(), presenterNym: () => null });
+/** An edge-shadow consult that stood and sets nobody aside. */
+export const NOBODY_ASIDE: ShadowConsult = Object.freeze({ aside: () => false });
+/** A protected-document guard that stood and classes no document. */
+export const NOTHING_CLASSED: ProtectedDocGuard = Object.freeze({ classOf: () => null, withholds: async () => false });
+
+/** The share inputs that have not stood, by name: each one withholds a wire or sibling peer's every document. */
+export function unstoodShareInputs(input: Pick<SelfSlotShareInput, "antigenRing" | "shadow" | "protectedDocs">): readonly string[] {
+  const unstood: string[] = [];
+  // Absent reads as unstood too: a caller the type never reached withholds rather than allows.
+  if (input.antigenRing == null) unstood.push("antigen-ring");
+  if (input.shadow == null) unstood.push("edge-shadow");
+  if (input.protectedDocs == null) unstood.push("protected-docs");
+  return unstood;
 }
 
 /**
@@ -91,13 +116,15 @@ export interface SelfSlotShareInput {
  * presenter draws Mu regardless. The self-slot INNER capability ring stays inert (identity = null).
  */
 export async function selfSlotShareDecision(input: SelfSlotShareInput): Promise<boolean> {
+  // AN INPUT THAT HAS NOT STOOD reads first: no deny layer stands yet for a peer from outside the house.
+  if ((input.hasWsSocket || input.sibling) && unstoodShareInputs(input).length > 0) return false;
   // THE EDGE SHADOW reads FIRST. A socket admitted before the shadow arrived keeps its class until the gate
   // re-sorts it; this verdict never waits for that, so a device set aside reads nothing from its next ask on.
   if (presenterStandsAside(input.shadow, input.peerId)) return false;
   // THE PROTECTED DOCUMENTS read next, ahead of every lane: a document classed by its id (the live Kahu canon) crosses to a
   // wire or sibling peer only while its class's decider holds now, whatever alias, title or registration names it. The
   // vessel's own in-process islands stand inside the house and pass to the lanes below.
-  if ((input.hasWsSocket || input.sibling) && input.protectedDocs && await input.protectedDocs.withholds(input.peerId, input.documentId)) return false;
+  if ((input.hasWsSocket || input.sibling) && input.protectedDocs != null && await input.protectedDocs.withholds(input.peerId, input.documentId)) return false;
   // A SIBLING never shares freely: it arrives on no WS socket, yet it is no house member. Sibling-ness decides
   // FIRST, so a sibling's id never reads the house or WS verdict; an id that both a sibling and a WS socket claim
   // reads as neither (one id names one carrier) and denies. The sibling gate holds its whole verdict (the face's

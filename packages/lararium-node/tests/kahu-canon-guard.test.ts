@@ -12,7 +12,8 @@
  * and every document a kept registration names), and ONE guard (`protectedDocGuard`, mesh) withholds a classed document from
  * every wire peer whose class decider (here `kahuHandAtWire`, live) does not hold, ahead of every lane.
  *
- *   A0  MEASURE (Sol's path, on the parent and after): with no guard seated, the alias crosses the same-face lane.
+ *   A0  MEASURE (Sol's path, on the parent and after): with a guard that classes nothing, the alias crosses the same-face
+ *       lane. (A guard that has not stood withholds every wire ask, T22, so the measure seats the inert one.)
  *   A1  RED: after removal, a catalog alias of the live canon crosses the same-face lane no more.
  *   A2  CONTROL: a live Kahu hand still reads the canon through that lane.
  *   B1  RED: after a counted removal and a fresh read off disk (the reboot), the protected set still names both canon ids.
@@ -30,7 +31,7 @@ import { deterministicDocUrl, storedLarRecord, PERSONA_GROUP_ID_TIDDLER, type Fe
 import * as kahuRealm from "../src/kahu-realm.js";
 import { standKahuCanon } from "../src/kahu-realm.js";
 import { bridgeBooks } from "../src/face-fleet-view.js";
-import { selfSlotShareDecision } from "../src/self-slot-share.js";
+import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 import { runCabalAct } from "../src/commands/nexus-cabal.js";
 import { loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { ownedStore } from "../src/owned-store.js";
@@ -50,9 +51,10 @@ const open: FederationGate = { mayFederate: async () => true };
 /** One verdict as the composer asks it, the guard seated where the composer seats it. */
 const verdict = (o: { guard: Guard | null; sessionFace?: FederationGate; fed?: FederationGate; peerClass: "same-operator" | "contracted"; documentId: string }) =>
   selfSlotShareDecision({
-    hasWsSocket: true, peerClass: o.peerClass, selfSlotFedGate: o.fed ?? null, antigenRing: null, membership: null, planeSeal: null,
+    hasWsSocket: true, peerClass: o.peerClass, selfSlotFedGate: o.fed ?? null, antigenRing: NO_BANS, membership: null, planeSeal: null,
     peerId: "peer", documentId: o.documentId as DocumentId, sessionFace: o.sessionFace ?? null,
     ...({ protectedDocs: o.guard } as object),
+    shadow: NOBODY_ASIDE,
   } as Parameters<typeof selfSlotShareDecision>[0]);
 
 describe("the Kahu canon is classed by identity and decided live, by one guard", () => {
@@ -60,9 +62,9 @@ describe("the Kahu canon is classed by identity and decided live, by one guard",
   /** A catalog an admitted same-face session wrote while admitted: an ordinary title pointing at the live canon. */
   const aliasCatalog = { tiddlers: { "lar:///ha.ka.ba/bags/notes": storedLarRecord("lar:///ha.ka.ba/bags/notes", { text: canonUrl }, "alias") } } as unknown as LarDoc;
 
-  test("A0 — MEASURE: with no guard seated, a catalog alias carries the canon across the same-face lane after removal", async () => {
+  test("A0 — MEASURE: with a guard that classes nothing, a catalog alias carries the canon across the same-face lane after removal", async () => {
     const sessionFace = gateOver(bridgeBooks(aliasCatalog, {}));
-    expect(await verdict({ guard: null, sessionFace, peerClass: "same-operator", documentId: idOf(canonUrl) })).toBe(true);
+    expect(await verdict({ guard: NOTHING_CLASSED, sessionFace, peerClass: "same-operator", documentId: idOf(canonUrl) })).toBe(true);
   });
 
   test("A1/A2 — a catalog alias crosses the same-face lane only while the Kahu hand holds live", async () => {

@@ -107,9 +107,10 @@ export interface VesselKeel {
    * THE SYSTEM CANON THE SHORE NAMES: the live `lares` and `lararium` document urls this vessel holds, from the Kahu
    * realm's standing registrations (road `W26`). A bag the shore does not name mounts no layer, so a vessel outside the
    * Kahu cabal holds neither document and reads the floor through `@oracle`. The keel reads no catalog row for either bag.
-   * Absent = the shore names none.
+   * REQUIRED (T22, test-recut-road): the node's keel stands its protected-canon holder here, so a keel that omitted it
+   * would leave that holder unstood for good; a keel that holds no canon says so by name, `async () => ({})`.
    */
-  systemCanon?:  () => Promise<{ readonly lares?: string; readonly lararium?: string }>;
+  systemCanon:   () => Promise<{ readonly lares?: string; readonly lararium?: string }>;
 
   // ── opts ──
   onPhase?:      (p: LarOpenPhase) => void;
@@ -188,7 +189,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
   // the Kahu realm's standing registrations on a vessel whose cabal admitted its group. No catalog row names either bag.
   // The named documents resolve through the tideline resolver, never the blank-mint fallback: a document that has not
   // reached this vessel yet surfaces a typed StillJoining and the layer is skipped, never a ghost minted over it.
-  const named = (await keel.systemCanon?.()) ?? {};
+  const named = await keel.systemCanon();
   let laresHandle: DocHandle<LarDoc> | null = null;
   if (named.lares) {
     const resolved = await resolveBootDoc<LarDoc>(repo, named.lares as AutomergeUrl, {
