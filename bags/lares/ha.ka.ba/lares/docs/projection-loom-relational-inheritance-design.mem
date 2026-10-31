@@ -16,6 +16,16 @@ type = "text/memetic-wikitext+tiddlywiki"
 uri-path = "ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design"
 ```
 
+<<~ ahu #/markdown-otakiage-20261031>>
+
+!! Evergreen routing after the operator-approved Markdown fire
+
+The living human entry points are now `tools/projection-loom/README.md` and `tools/projection-loom/docs/HANDOFF.md`. The old Projection Loom design, research, roadmap, kanban, guidebook, example and temporary ashes Markdown paths were retired from the working tree on PR #84 by explicit operator direction. Their byte-exact prior state is recoverable with `git show 864dc19e89a913ac82862b842202bfce0c68e16b:<path>` (and older complete living fronts at `7c644e670390ab51aaa39e9216bb833eb32e6762`). Git is the ashes carrier. Earlier sections naming retired `.md` paths are historical source references, not current runnable links; never infer those files still exist in the working tree.
+
+Root-bag Lares carriers remain the semantic owners; no second authority or evolution controller is created. The mutation-first versus reconstruction-first dispute remains kept testimony, not proof of a native-admitted descendant. Source bodies, STEP evidence, lineages and original research attributions survive this documentation retirement. Exact-head CI, repository-wide consumer reconciliation and code-path acceptance remain independent duties.
+
+<<~/ahu>>
+
 <<~ ahu #/entry>>
 
 ! Projection Loom · The Relation Survives Its Shape
@@ -117,6 +127,6 @@ The evergreen machina and design docs remain discoverable after the fire. The op
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oF_DlgGgFEJx6Kqd5adJs5KnKnvJ25IyhUGZw-K8rC4
+<<^ code="&#x0003;">>ni:///sha-256;CkkwavNSblRIvXMaLnBI9AIFzgCNKnaqg_eUDqMm0No
 
 <<^ code="&#x0004;" -> to="?">>
