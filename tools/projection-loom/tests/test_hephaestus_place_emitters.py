@@ -254,3 +254,23 @@ def test_topology_native_census_distinguishes_offer_attempt_and_admission():
     assert deferred["topology_offered"]==1
     assert deferred["topology_native_attempted"]==0
     assert deferred["topology_native_admitted"]==0
+
+
+def test_topology_census_rejects_forged_pattern_history():
+    from projection_loom.place_campaign import relational_emission_census
+    from copy import deepcopy
+    p=GrowthProgram((GrowthNode("root","foundation",size=(4,4,2)),))
+    original=PlaceGenome((PlaceBody("east",p,(12,12,0)),
+                          PlaceBody("west",p,(0,0,0))))
+    spatial=SpatialIntent("a"*64,(SpatialGoal("connect","west","east"),),"operator")
+    child,receipt=emit_place_child(original,original,[],spatial,
+                                   epoch=1,index=1,offspring=3,seed=12)
+    assert receipt["emitter"]=="topology-birth"
+    row={"candidate_id":"p001c001","genome_sha256":child.identity,
+         "emitter":"topology-birth","emitter_receipt":receipt,
+         "audition":"deferred"}
+    malformed=deepcopy(row)
+    malformed["emitter_receipt"]["ancestors"][0]["tested_patterns"]=3
+    import pytest
+    with pytest.raises(ValueError,match="bounded source refusal"):
+        relational_emission_census([{"offered":[malformed]}],[])
