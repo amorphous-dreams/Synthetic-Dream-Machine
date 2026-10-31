@@ -57,7 +57,7 @@ import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, E
 import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
-import { runLocalVerb, gateRoutedVerb, makeCapVerify, routedAddressesWiki } from "./verb-local-dispatch.js";
+import { runLocalVerb, gateRoutedVerb, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
 
 export interface VerbContext {
   readonly daemon: CompositeStore;
@@ -244,6 +244,9 @@ export class VerbTable {
   }
 }
 
+/** How long the gate waits for main to mount the wiki an act aims at. */
+const WIKI_MOUNT_BOUND_MS = 30_000;
+
 export interface VerbDispatcherOptions {
   readonly daemonVm:   TW5Engine;
   readonly daemon:    CompositeStore;
@@ -341,7 +344,34 @@ export class VerbDispatcher {
     // capability (project_verification_placement). Enforced only when a
     // real verifier exists; a pre-sovereign/test island (no verifier)
     // routes as before.
-    if (this.opts.verifier) await gateRoutedVerb(invocation, this.opts.verifier, presenter, local);
+    if (this.opts.verifier) {
+      await this.mountAimedWiki(invocation);
+      await gateRoutedVerb(invocation, this.opts.verifier, presenter, local);
+    }
+  }
+
+  /**
+   * W27: an act aimed at a wiki no island mounts asks the vessel to mount it, and refuses by name when the mount cannot
+   * stand. A working slot's cap mints at the wiki's first mount, so the mount precedes the cap check, and it follows the
+   * fence (clearRouted runs the fence first), so only a presenter the fence admits can ask one. Main answers
+   * `wiki-switch` the way `ensureActive` does; a mounted wiki answers at once.
+   */
+  private async mountAimedWiki(invocation: Verb): Promise<void> {
+    const slug = routedWikiSlug(invocation);
+    if (!slug || !this.opts.routeFn) return;
+    const refuse = (cause: string): Error => Object.assign(new Error(`wiki-mount-refused: ${cause}`), { reason: "wiki-mount-refused" });
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const asked = this.opts.routeFn({ ...invocation, action: "wiki-switch", args: { slug }, requestId: `${invocation.requestId}#mount` });
+      const bound = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(refuse(`mount-timeout: ${slug} did not answer within ${WIKI_MOUNT_BOUND_MS}ms`)), WIKI_MOUNT_BOUND_MS); });
+      const answer = await Promise.race([asked, bound]);
+      if (answer["active"] !== true) throw refuse(`${String(answer["cause"] ?? "not-active")}: ${String(answer["detail"] ?? slug)}`);
+    } catch (cause) {
+      if ((cause as { reason?: string }).reason === "wiki-mount-refused") throw cause;
+      throw refuse(cause instanceof Error ? cause.message : String(cause));
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
   }
 
   /**
