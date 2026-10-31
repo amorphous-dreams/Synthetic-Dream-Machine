@@ -131,3 +131,35 @@ def test_relational_search_preserves_the_first_refusal_then_tries_another_closed
     assert ancestry["rejected_region_alternatives"][0]["reason"].startswith("first spatial relation")
     assert ancestry["accepted_pair_index"]!=ancestry["sampled_pair_index"]
     assert row["native_audition_completed"] is False
+
+
+def test_topology_birth_enters_same_emitter_stream_without_native_claim():
+    from projection_loom.place_genome import unique_walkway_chain
+    p=GrowthProgram((GrowthNode("root","foundation",size=(4,4,2)),))
+    original=PlaceGenome((PlaceBody("east",p,(12,12,0)),
+                          PlaceBody("refuge",p,(30,30,0)),
+                          PlaceBody("west",p,(0,0,0))))
+    spatial=SpatialIntent("a"*64,(
+        SpatialGoal("connect","west","east"),
+        SpatialGoal("shelter","refuge","roof")),"operator")
+    resolved=propose_from_spatial_intent(original,spatial)
+    params=dict(epoch=1,index=1,offspring=3,seed=12)
+    child,row=emit_place_child(original,resolved,[],spatial,**params)
+    again,replay=emit_place_child(original,resolved,[],spatial,**params)
+    assert row==replay and child.identity==again.identity
+    assert row["emitter"]=="topology-birth"
+    assert len(unique_walkway_chain(child,"west","east"))==3
+    assert row["ancestors"][0]["source_genome_sha256"]==original.identity
+    assert row["ancestors"][0]["spatial_intent_sha256"]==spatial.identity
+    assert row["native_audition_completed"] is False
+    assert row["operator_accepted"] is False
+
+
+def test_topology_refusal_keeps_finite_mutation_fallback():
+    original,resolved,spatial=inputs()
+    child,row=emit_place_child(original,resolved,[],spatial,
+                               epoch=1,index=1,offspring=3,seed=12)
+    assert child.identity
+    assert row["emitter"]=="mutation"
+    assert "source-bound topology refused" in row["recombination_deferral"]
+    assert row["native_audition_completed"] is False
