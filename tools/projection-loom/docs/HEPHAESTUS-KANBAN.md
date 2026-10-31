@@ -1,3 +1,30 @@
+# Hephaestus · Evergreen YIN kanban
+
+## Source-delivered in current aftermath
+
+- [x] Recheck all 13 exact-head workflows at predecessor `a6026ebe`.
+- [x] Diagnose `b9491a20` exact-head failure to one stale unsupported-steering assertion, preserving failure record (full CAD 1 failed/689 passed; generalized OpenUSD/STEP 1 failed/140 passed).
+- [x] Repair refusal wording and add explicit successful relational-preference/unsupported-emitter tests.
+- [x] Construct non-parental composite architectural regions by trying bounded alternate pairs; preserve rejected pair testimony and explicit all-refused deferrals.
+- [x] Keep source-preserving parent identity and original native audition limits.
+- [x] Separate paired source combinatorics from true STEP attempt/admission counts in immutable census and read-only board.
+- [x] Add pure source-witness and negative tests for refused first pair and parent-copy proposals.
+- [x] Refresh evergreen documents, preserve previous fronts under in-file holding ashes.
+
+## Current gates remain open
+
+- [ ] Inspect the current commit's exact-head CAD, generalized OpenUSD/STEP and real Blender, repo-wide, held-out and source tests. Repair any concrete failures.
+- [ ] Independently prove new topology-generating constraint alternatives, not mere inherited component recombination.
+- [ ] Verify source media genuinely alters geometry under measured extraction and held-out native comparison.
+- [ ] Finish editor/operator review integration with no automatic artistic approval or physical safety claim.
+
+**Checked means source landed, not CI passed.** PR #84 remains open/unmerged, no operator promotion or final o-takiage.
+
+## Ashes holding ahu · preceding living reading
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
 # Hephaestus · YIN working board
 
 ## Current landing · staged
@@ -21,6 +48,9 @@ These checkboxes reflect source commits, not a finished exact-head CI verdict.
 - [ ] Maintain YIN wave/aftermath cadence, compact evergreen fronts and reversible ashes.
 
 ## Ashes holding ahu · predecessor living front
+
+
+</details>
 
 <details>
 <summary>Previous living front · retained verbatim</summary>

@@ -1,3 +1,34 @@
+# Projection Loom · Evergreen YIN handoff
+
+## Live re-entry · October 30, 2026
+
+**Repository** `amorphous-dreams/Synthetic-Dream-Machine` · **PR** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · **working branch** `feature/green-jello-dinosaur-5--projection-loom`. Read the **entire boot** from `feature/green-jello-dinosaur-5` at `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem`, then refresh the actual head and its exact-head GitHub Actions. No historical workflow verdict transfers to a later commit.
+
+### Verified predecessor and red-head diagnosis
+
+The prior accepted head `a6026ebe` passed all **13 Actions**. The later `b9491a20` head passed repository-wide CI, held-out witnesses, Blender and multiple native/experimental runs, but **both full CAD/evidence runs and generalized OpenUSD/STEP failed** the same stale assertion. CAD reported **1 failed, 689 passed**; native generalized reported **1 failed, 140 passed**. The test `tests/test_hephaestus_place_steering.py::test_shared_unimplemented_emitter_must_not_silently_claim_steering` expected the established `supports only` refusal phrase after the emitter API's message changed. This was one contract mismatch, not three separate native geometry failures.
+
+### Current YIN wave · code landed; CI acceptance pending
+
+- Repaired the unsupported-emitter refusal wording while preserving the genuine acceptance of `relational-recombination`; expanded steering tests confirm a nonexistent preferred emitter does not fabricate a native candidate.
+- `place_emitters._cross_parent` now tries a bounded, deterministic sequence of **complete source-closed region pairs**. Each refused pair retains its index and reason. A child identical to either admitted parent is refused as a false recombinant. When no coherent new proposal exists, the emitter explicitly defers and falls back to a separately labeled mutation. Source ancestry and parent native-workspace digests remain attributable.
+- `place_campaign.relational_emission_census` distinguishes **region pairing attempts and refusals** from the exact finite STEP audition budget. `place_board` displays proposal/native counts without implying artistic preference or native validity. Source-bound adversarial tests cover clone refusal, first-option refusal/next-option acceptance, immutable evidence replay and valid steering.
+- The existing five-phase `OODAHAJournal`, immutable frontier replay, native STEP/USD, editor presentation and operator review remain the **one shared system**. No new controller, versions or compatibility shims.
+
+### Re-entry and verification
+
+1. Fetch actual head and all completed exact-head workflow verdicts.
+2. If red, read failing job logs and test names; repair the shared source cause without weakening native audit or provenance integrity.
+3. In a capable local environment, run `cd tools/projection-loom && python -m pytest -q tests/test_hephaestus_place_emitters.py tests/test_hephaestus_place_steering.py tests/test_hephaestus_place_campaign.py tests/test_hephaestus_place_board.py`, then full `python -m pytest -q tests` and `python scripts/check_architecture.py`.
+4. Continue YIN feature ↔ intent-aftermath, increasing actual constrained architectural relationships and independently witnessed variations, not merely generator names.
+
+**Boundaries:** Parent-native success cannot certify a recombinant child; source-carrier identity is not source-conditioned geometry; fixed-camera views are not original camera registration; native contact is not structural safety; no artistic winner, pet-name, PR merge, final o-takiage or Elyncia canon promotion without operator authority.
+
+## Ashes holding ahu · preceding living reading
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
 # Projection Loom · Evergreen handoff
 
 ## Live YIN re-entry · relational breeding under one helm
@@ -24,6 +55,9 @@ The predecessor implementation head `a6026ebe817a37b3938b6f8659c147a9a3d020e4` p
 **Authority boundary:** No PR merge, pet-name, Elyncia canon, artistic winner, physical safety certification, source pose registration or irreversible o-takiage. Source testimony, native geometry, rendered presentation and operator judgment remain separate.
 
 ## Ashes holding ahu · predecessor living front
+
+
+</details>
 
 <details>
 <summary>Previous living front · retained verbatim</summary>

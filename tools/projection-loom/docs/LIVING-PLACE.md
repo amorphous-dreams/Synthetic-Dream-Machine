@@ -1,3 +1,24 @@
+# Living Place · Evergreen constructive and witness contract
+
+## Source → obligations → heritable architecture → independently audited native evidence → operator
+
+Typed `connect`, `shelter`, `ascend`, `bear` aims remain attributable to the authored `SpatialIntent`. `plan_spatial_obligations` composes goal dependencies; `seal_constructive_growth` refuses lost original bodies and relations. One existing `OODAHAJournal` binds preregistration, per-epoch choices, per-candidate Observe, exact STEP auditions and independent replay.
+
+### YIN relational births
+
+`place_emitters.emit_place_child` can produce initial, mutated or region-recombined construction. It accepts only independently native-admitted parent workspaces from the bounded breeding archive. `generated_components` groups complete generated relation fragments. The sampled, deterministic `_cross_parent` now tests a finite ordered set of region pairs, rejecting competing or severed topology and refusing proposals genetically identical to an admitted parent. An unsuccessful pair's reason survives in the successful child ancestry; exhaustive failure becomes a typed deferral and a separately attributed mutation. A successful proposal remains `native_audition_completed=False` until independently reimported STEP confirms each original goal.
+
+### Separate ledgers and operator evidence
+
+The immutable frontier distinguishes every **offered** genome from the finite set **auditioned** through STEP; independent campaign verification recreates the stream. `relational_emission_census` additionally reports attempted/rejected source-region combinations, which are **proposal attempts only**, not native STEP budgets. Parent geometry and operator choices are not certified by hashes. `place_comparison` and `place_board` show ancestry, native goal status and deferral without automatic winner or promotion.
+
+**Open limits:** general constraint-solving topology births, measured source-conditioned geometry, safe structural engineering, original image camera pose, accessible building certification, real Unreal Editor round trip, and artistic acceptance require independent new witnesses.
+
+## Ashes holding ahu · preceding living reading
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
 # Living Place · Current constructive/evidence contract
 
 ## Authored source → typed obligations → heritable child → native evidence → operator
@@ -15,6 +36,9 @@
 Generational *topology* changes beyond selecting complete parent regions, real source-conditioned image/grammar geometry, actual Unreal Editor integration, physical safety certification and artistic judgment remain open. Never reassign their authority to an emitter, rendered image, or provenance hash.
 
 ## Ashes holding ahu · predecessor living front
+
+
+</details>
 
 <details>
 <summary>Previous living front · retained verbatim</summary>

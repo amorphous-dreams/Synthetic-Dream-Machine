@@ -1,3 +1,20 @@
+# Projection Loom · Short evergreen re-entry
+
+**Boot:** `amorphous-dreams/Synthetic-Dream-Machine`, `feature/green-jello-dinosaur-5`, `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` — read entire boot before Lares work.
+
+**Live branch:** `feature/green-jello-dinosaur-5--projection-loom` · [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84). Read actual SHA, Actions and `HANDOFF.md`, `ROADMAP.md`, `LIVING-PLACE.md`, `HEPHAESTUS-KANBAN.md`. Never quietly substitute `main` or transfer prior green runs.
+
+**Working manner:** YIN consolidation in iterative OODA-HA feature → intent-aftermath waves. Build complete source-bound native features, test refusals and replay, commit bisectable code, publish the batch, repair CI at its exact head. No versions, compatibility shims, other helm, auto artistic winner, pet-name or Elyncia canon. Keep ashes verbatim and reversible.
+
+**Confirmed prior statuses:** `a6026ebe` all 13 workflows green. `b9491a20` had 1 failing steering-refusal assertion in full CAD and generalized OpenUSD/STEP, while repository CI and held-out witnesses passed. The current stage repairs it and improves relational pairing: if a first coherent region is refused, try other complete pairings; no copied parent may be rebranded a new child; typed deferral persists. The birth census and review board distinguish proposal attempts from finite native STEP trials. **New head requires its own CI.**
+
+**Next:** inspect CI and fix any real red tests. Then build actual alternative topology growth from composed constraints, test source-conditioned architecture with measured ground truth, and improve independently verified operator/editor round trips. No operator-promoted aesthetic or canon decisions implied.
+
+## Ashes holding ahu · preceding living reading
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
 # Projection Loom · Evergreen session re-entry
 
 **Repository:** `amorphous-dreams/Synthetic-Dream-Machine` · **PR:** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · **branch:** `feature/green-jello-dinosaur-5--projection-loom`.
@@ -15,6 +32,9 @@ Start by fetching the **entire** boot at `bags/lares/ha.ka.ba/lares/api/noospher
 Previous living text remains verbatim below in its holding ahu. No deletion or canonical retirement.
 
 ## Ashes holding ahu · predecessor living front
+
+
+</details>
 
 <details>
 <summary>Previous living front · retained verbatim</summary>

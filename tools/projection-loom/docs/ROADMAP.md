@@ -1,3 +1,34 @@
+# Projection Loom · Living YIN roadmap
+
+## Architectural coherence frontier
+
+The present direction is **constructible, attributable relationships under one OODA-HA helm**. The operator's authored goals, source genomes, child lineage, geometric evidence and aesthetic judgment remain separate authorities. The local Jing compose/restrict obligation check protects those distinctions without pretending to implement the whole sensorium model.
+
+### Current source-delivered wave · await exact-head CI
+
+- [x] Fix the single steering-refusal contract mismatch behind three red workflows at `b9491a20` (CAD 1/689 failing and native OpenUSD/STEP 1/140).
+- [x] Accept explicit relational steering only when a real emitted recombinant is available; do not synthesize nonexistent parent proposals.
+- [x] Try alternate source-preserving region combinations under deterministic finite proposal search, recording refusals and preventing cloned-parent false births.
+- [x] Count proposed region pairs and refused combinations **separately** from native STEP attempts and admitted children.
+- [x] Expose the relational proposal/native distinction to the read-only operator board.
+- [x] Add negative tests for unsupported emitter, parent copies, forged native ancestry, and first-pair refusal with subsequent coherent acceptance.
+- [x] Preserve old living documents/meme readings inside their respective holding ashes.
+
+### Next feature → aftermath sequence
+
+1. Inspect exact-head native, full CAD, generalized, repo-wide and held-out CI. Repair failed invariants without suppressing hard refusal.
+2. Grow **new topological relationships** from authored constraints beyond inherited closed-region selection: alternate route structures, dependency conflicts and bounded repairs with exact STEP witnesses.
+3. Study whether independent source media actually **condition** spatial output. Mixed seed-carrier intake by itself is not source-conditioned architectural morphology; explicitly measure input-to-construction correspondence.
+4. Mature human whole-place review, real Unreal Editor round trips and independent artist selection boundaries without turning visuals into geometric authority.
+5. Apply YIN aftermath after each complete feature: reduce duplicate logic, recompute source-to-child receipts, test held-out cases, keep a short living front and preserve the ashes.
+
+**Acceptance record:** `a6026ebe` 13/13 green; `b9491a20` three workflow failures caused by one stale refusal-text test; subsequent staged commits have **not** received a completed exact-head CI verdict at authoring time.
+
+## Ashes holding ahu · preceding living reading
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
 # Projection Loom · Evergreen roadmap
 
 ## YIN consolidation · the frontier now
@@ -25,6 +56,9 @@ Architecture should inherit **relationships** through independently audited geno
 **Acceptance:** predecessor `a6026ebe` achieved 13/13 completed workflows green; new branch head must earn its own verdict. No version ladders, compatibility shims, automatic artistic winner or Elyncia canon promotion.
 
 ## Ashes holding ahu · predecessor living front
+
+
+</details>
 
 <details>
 <summary>Previous living front · retained verbatim</summary>
