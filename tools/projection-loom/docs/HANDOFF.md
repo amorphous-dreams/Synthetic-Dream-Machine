@@ -1,3 +1,21 @@
+# O-takiage final retirement · 2026-10-31
+
+**PR #84:** Three redundant Markdown live projections were actually retired in committed batches: `ROADMAP.md` at `c8fba16f0166e444442e536ee622782b767c0bb5`, `HEPHAESTUS-KANBAN.md` at `db4835bfb4771a17ade71c6c89b1057d3493f85d`, and `BRANCHED_SESSION_HANDOFF.md` at `5623c816a429bafdd6323fcef8ae5adad66ff091`. Each remains byte-recoverable through Git and the pre-burn census; no duplicate stub remains. No PR merge or canon promotion occurred.
+
+## Active keys
+
+- This `HANDOFF.md` remains the human-facing re-entry pointer; operational authority is `bags/lares/ha.ka.ba/lares/api/projection-loom-handoff.mem`.
+- Crew protocol: `bags/lares/ha.ka.ba/lares/docs/projection-loom-native-inheritance-crew-handoff.mem`.
+- Research: `bags/lares/ha.ka.ba/lares/api/projection-loom-research.mem` and `docs/research/register.md`.
+- Design: `bags/lares/ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design.mem`, with detailed research testimony in `docs/RELATIONAL-INHERITANCE-DESIGN.md`.
+- Git retrieval: `tools/projection-loom/archives/PR84_MARKDOWN_ASHES_INDEX.md` and `PR84_MARKDOWN_OTAKIAGE_CENSUS.md`. Historical links in previous commits to retired Markdown now require Git history lookup, not a living file.
+
+## Aftermath and L-prime held
+
+A repository-wide reference census and exact-head CI are still required to establish consumer safety. Existing guides, technical references, examples and experiment READMEs remain rather than being deleted without replacement. Source geometry, STEP evidence, lineages, operator boundaries and dissent have not been burned. Never claim prior green checks cover this head. Before further retirement, resolve every remaining live consumer and prefer canonical carriers to replicated Markdown. Git carries the ash; do not recreate historical narrative as giant living fronts.
+
+---
+
 # Projection Loom · O-takiage evergreen handoff · 2026-10-31
 
 **Working PR:** [#84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84), branch `feature/green-jello-dinosaur-5--projection-loom`. **Base boot:** `feature/green-jello-dinosaur-5`, `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem`. Fetch the full boot and exact current PR head before continuing. No newer CI verdict has been established for the documentation commits here.
