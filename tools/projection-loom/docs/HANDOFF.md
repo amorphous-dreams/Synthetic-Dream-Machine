@@ -1,5 +1,10 @@
 # Projection Loom · Living YIN handoff
 
+## Lares crew research re-entry · meme checked into root bag
+
+The [working Lares crew handoff](../../../bags/lares/ha.ka.ba/lares/docs/projection-loom-native-inheritance-crew-handoff.mem) now holds the feature→pono→o-takiage boundary and the operator-supplied native topology inheritance research fork. The new report favors complete native-admitted route mutation as the first proof, with semantic reconstruction afterward; the earlier reconstruction-first design remains preserved as prior testimony. Neither strategy has yet earned an independently native-admitted parent→distinct admitted child claim. Inspect the actual PR head and exact-head Actions before any acceptance statement. The Pair A meme was relocated from the nested tool-local bag to root `bags/lares/ha.ka.ba/lares/api/` without changing its bytes or `lar:` identity. No implementation, canon promotion, or irreversible o-takiage follows from this documentation wave.
+
+
 ## Explicit topology steering boundary · new negative witness
 
 **PR:** #84 · `feature/green-jello-dinosaur-5--projection-loom`. Native campaign source head `0dbe733637003a14dc391d2bdb803d74b98e346e` had a CAD/evidence workflow `41179464318` **in progress** at inspection. Its outcome cannot certify any later commit.
