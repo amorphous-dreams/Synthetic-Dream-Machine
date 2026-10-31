@@ -38,7 +38,9 @@ export interface ProtectedDocGuardOptions {
    *  a moment ago classes the very next ask. A recount that fails still lets the ask read the map that stands. */
   readonly settled?: () => Promise<void>;
   /** Whether a recount stands queued and unfinished NOW. With it, an ask waits until none does and classes in that same
-   *  turn, so a write queued after the ask began, before it resumed, still classes the ask. */
+   *  turn, so a write queued after the ask began, before it resumed, still classes the ask. The wait runs at most
+   *  `SETTLE_ROUNDS` rounds of `settled`: a source still pending past them withholds the ask (fail closed), so a
+   *  self-replenishing classification writer never holds an ask forever. */
   readonly pending?: () => boolean;
   /** INCOMPLETE (controller re-ruling 2026-10-31): the classification met a read failure and no whole recount has cleared it.
    *  While it reads true, every document reads `unreadable`: withheld from every peer the guard stands before. */
@@ -46,6 +48,10 @@ export interface ProtectedDocGuardOptions {
   /** Each class's live decider: does this peer hold the class's reach now, for THIS document (its own home's standing)? */
   readonly decide: { readonly [C in ProtectedDocClass]?: (peerId: string, documentId: string) => boolean | Promise<boolean> };
 }
+
+/** BOUNDED BY ROUNDS, NEVER A CLOCK: how many settle rounds an ask waits for the recount queue to drain. The holder
+ *  coalesces recounts, so a finite burst drains in two (the running count, then one coalesced behind it). */
+export const SETTLE_ROUNDS = 8;
 
 export function protectedDocGuard(opts: ProtectedDocGuardOptions): ProtectedDocGuard {
   const classOf = (documentId: string | undefined): ProtectedDocClass | "unreadable" | null => {
@@ -60,7 +66,11 @@ export function protectedDocGuard(opts: ProtectedDocGuardOptions): ProtectedDocG
     async withholds(peerId, documentId) {
       if (documentId !== undefined && opts.settled) {
         try {
-          do { await opts.settled(); } while (opts.pending?.() === true);
+          let rounds = 0;
+          do {
+            if (rounds++ >= SETTLE_ROUNDS) return true;  // a writer that never lets the count settle withholds (fail closed)
+            await opts.settled();
+          } while (opts.pending?.() === true);
         } catch { return true; }                         // a count that cannot settle classes nothing it may serve
       }
       const cls = classOf(documentId);                   // the same turn the last check held
