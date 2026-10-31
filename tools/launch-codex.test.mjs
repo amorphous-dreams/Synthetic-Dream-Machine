@@ -276,13 +276,14 @@ test("RED: the seat law heading is exact: LAWFUL is no law, two blocks collapse 
   assert.ok(twice.includes(law));
 });
 
-test("the floors by mode: a READ seat launches down to its own 5% floor; a build or research seat keeps the 20% house floor", () => {
+test("the floors by mode: a READ seat launches down to its own floor (0% while the operator lets readers spend the last of the pool); a build or research seat keeps the 20% house floor", () => {
   const w = world();
   const fifteen = { ...w.readers, rolloutLines: () => [rate(85)] }; // 15% left
-  assert.match(preflight(ask(w, { mode: "read" }), fifteen).pool, /floor 5%.*ABOVE FLOOR/);
+  assert.match(preflight(ask(w, { mode: "read" }), fifteen).pool, /floor 0%.*ABOVE FLOOR/);
   refuses(w, {}, /at or below its floor/, fifteen); // CONTROL: a builder at 15% still refuses
   refuses(w, { mode: "research", worktree: undefined }, /at or below its floor/, fifteen);
-  refuses(w, { mode: "read" }, /at or below its floor/, { ...w.readers, rolloutLines: () => [rate(95)] }); // exactly 5% left
+  assert.match(preflight(ask(w, { mode: "read" }), { ...w.readers, rolloutLines: () => [rate(95)] }).pool, /ABOVE FLOOR/); // 5% left reads above a 0% floor
+  refuses(w, { mode: "read" }, /at or below its floor/, { ...w.readers, rolloutLines: () => [rate(100)] }); // an empty pool still refuses
   assert.equal(readPool([rate(85)], "read").above, true);
   assert.equal(readPool([rate(85)], "build").above, false);
 });

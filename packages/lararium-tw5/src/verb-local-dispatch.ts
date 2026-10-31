@@ -18,6 +18,7 @@ import {
   type CompositeStore,
   type Verb,
 } from "@lararium/mesh";
+import { wikiSlugOfBag } from "@lararium/mesh";
 import type { SessionWorn, VerbReactor, VerbTable } from "./verb-dispatcher.js";
 
 export type CapVerify = (access: CapabilityAccess, bagUrl: string) => Promise<CapabilityVerifyResult>;
@@ -87,6 +88,32 @@ export function routedAddressesWiki(invocation: Verb): boolean {
   const a = invocation.args as Record<string, unknown>;
   const inner = a["args"];
   return typeof a["wiki"] === "string" || (inner !== null && typeof inner === "object" && !Array.isArray(inner));
+}
+
+/**
+ * The wiki a routed `wiki-act` aims at, by the same reading the main handler uses to choose its island: the envelope's
+ * own `wiki`, else a MOVE's source slot, else the destination slot. The daemon wiki stands on the daemon's own reach and
+ * a bag outside the wiki slots names none, so both read null (nothing to mount).
+ */
+export function routedWikiSlug(invocation: Verb): string | null {
+  if (invocation.action !== "wiki-act") return null;
+  const outer = invocation.args as Record<string, unknown>;
+  const inner = outer["args"] !== null && typeof outer["args"] === "object" && !Array.isArray(outer["args"]) ? outer["args"] as Record<string, unknown> : {};
+  // The daemon wiki stands on the daemon's own reach, so a daemon slot names no wiki to mount, and the main handler
+  // drops it BEFORE it prefers a source over a destination: so does this reading.
+  const slot = (bag: unknown): string | null => {
+    if (typeof bag !== "string" || !/^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(bag)) return null;
+    const slug = wikiSlugOfBag(bag);
+    return slug && slug !== "daemon" ? slug : null;
+  };
+  // The main handler compares the verb's own spelling, so this reading does the same: a case the handler would not
+  // match names no wiki here either (the mount and the act then never aim at two wikis).
+  const verb = typeof outer["verb"] === "string" ? outer["verb"] as string : "";
+  const wikiVerb = verb === "LOAD" || verb === "MOVE" || verb === "COPY" || verb === "ADD";
+  const slug = typeof outer["wiki"] === "string" && outer["wiki"]
+    ? outer["wiki"] as string
+    : (verb === "MOVE" ? slot(inner["from-bag"]) : null) ?? (wikiVerb ? slot(inner["to-bag"] ?? inner["bag"]) : null);
+  return slug && slug !== "daemon" ? slug : null;
 }
 
 /**

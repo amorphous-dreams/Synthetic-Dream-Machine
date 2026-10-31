@@ -81,7 +81,7 @@ export function discoverHoldings(bagsDir: string): Array<{ holding: string; sour
  *
  * THE NAMED ROAD (W27: a write lands on a working layer, and canon takes it by promotion). A LOAD into a canon
  * bag refuses `load-into-canon` and names this road, and the seed walks it as any hand would, through the one
- * public act gesture: CREATE the bag (idempotent), LOAD onto the wiki's working layer (the act mounts that wiki),
+ * public act gesture: CREATE the bag (idempotent), LOAD onto the wiki's working layer (the keyholder gate asks the vessel to mount that wiki before it clears the working cap, `mountAimedWiki`),
  * then ONE title-less MOVE from the working layer into canon, which promotes every live title the layer holds. No founding door stands: the rite's seed and the daily seed walk one road.
  */
 export async function seedHolding(
