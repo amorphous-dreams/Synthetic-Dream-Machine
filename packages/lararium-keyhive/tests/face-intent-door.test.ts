@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { fixtureIntentVerbs, buildAnswer, buildAsks, buildIntent, intentEntryCid, writeIntentEntry, actCid, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, intentEntryRecordsOfGroup, intentId,
+import { fixtureIntentVerbs, signIntentEntry, buildAnswer, buildAsks, buildIntent, intentEntryCid, writeIntentEntry, actCid, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, intentEntryRecordsOfGroup, intentId,
   mintPersonaInception, signPersonaAct, type DocHandle, type LarDoc } from "@lararium/mesh";
 import { makeFaceIntentDoor, requestFaceJoin } from "../src/face-intent-door.js";
 
@@ -133,5 +133,23 @@ describe("face intent door stalls and gates", () => {
     shared.handle.change((d) => writeIntentEntry(d, echo));
     await door.heed();
     expect(declared).toHaveBeenCalledTimes(1);
+  });
+  test("RED: a re-pin after the first answer ran never runs the second hearth; CONTROL: a legitimate first answer pins and runs once", async () => {
+    const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs();
+    const a1 = vi.fn(async () => ({ recordCid: "one" })), a2 = vi.fn(async () => ({ recordCid: "two" }));
+    const base = { group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception], verbs, log: () => {}, standing: () => "stands" as const };
+    const d1 = makeFaceIntentDoor({ ...base, atom: f.h1, effects: new Map([["face-join", a1]]) });
+    const d2 = makeFaceIntentDoor({ ...base, atom: f.h2, effects: new Map([["face-join", a2]]) });
+    const intent = await buildIntent({ group: f.group, signer: f.joinee, verb: "face-join", args: { summons: {} }, nonce: f.joinee.key, audience: { mode: "asks" }, verbs });
+    const id = intentId(intent.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string });
+    const asks = await buildAsks({ group: f.group, signer: f.joinee, intent: id, needs: "executor" });
+    const first = await buildAnswer({ group: f.group, signer: f.h1, ask: intentEntryCid(asks), verdict: "approve", executor: f.h1.key });
+    shared.handle.change((d) => { writeIntentEntry(d, intent); writeIntentEntry(d, asks); writeIntentEntry(d, first); });
+    await d1.heed(); await d2.heed();
+    expect(a1).toHaveBeenCalledTimes(1); expect(a2).not.toHaveBeenCalled();
+    const repin = await signIntentEntry({ group: f.group, entry: "answer", refs: [intentEntryCid(first)], ask: intentEntryCid(asks), verdict: "approve", executor: f.h2.key }, f.h1);
+    shared.handle.change((d) => writeIntentEntry(d, repin));
+    await d1.heed(); await d2.heed();
+    expect(a1).toHaveBeenCalledTimes(1); expect(a2).not.toHaveBeenCalled();
   });
 });

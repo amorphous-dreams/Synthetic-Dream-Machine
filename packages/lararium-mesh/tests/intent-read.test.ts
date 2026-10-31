@@ -129,3 +129,48 @@ describe("intent fold", () => {
     expect(f.fold([once, claim, takeover, ownRelease]).intents[0]!.claim).toBeNull();
   });
 });
+
+describe("intent plane under re-pin, re-target and id collision", () => {
+  test("RED: an outcome spends a single-effect slot against a re-pinned answer; CONTROL: before the outcome the named executor acts, and a per-device outcome spends no other atom's slot", async () => {
+    const f = await fixture();
+    const call = await f.intent({ mode: "asks" }, "once", "repin"), id = f.id("once", "repin");
+    const ask = await entry(f.a, { entry: "asks", intent: id, needs: "executor" });
+    const first = await entry(f.a, { entry: "answer", ask: intentEntryCid(ask), verdict: "approve", executor: f.b.key });
+    expect(mayAct(f.fold([call, ask, first]), id, f.b.key)).toEqual({ act: true });
+    const ran = await entry(f.b, { entry: "outcome", cause: id, result: "done" });
+    const repin = await signIntentEntry({ group: "face", entry: "answer", refs: [intentEntryCid(first)], ask: intentEntryCid(ask), verdict: "approve", executor: f.a.key }, f.a);
+    const view = f.fold([call, ask, first, ran, repin]);
+    expect(mayAct(view, id, f.a.key)).toEqual({ act: false, reason: "spent" });
+    expect(mayAct(view, id, f.b.key)).toEqual({ act: false, reason: "spent" });
+    const per = await f.intent({ mode: "every" }, "per", "own"), perId = f.id("per", "own");
+    const mine = await entry(f.a, { entry: "outcome", cause: perId, result: "done" });
+    expect(mayAct(f.fold([per, mine]), perId, f.b.key)).toEqual({ act: true });
+  });
+
+  test("RED: fold([pinA, outcomeA, pinB-lower-cid]) refuses B; CONTROL: a same-body duplicate stays a duplicate", async () => {
+    const f = await fixture();
+    const x = await f.intent({ mode: "pinned", atom: f.a.key }, "once", "retarget"), y = await f.intent({ mode: "pinned", atom: f.b.key }, "once", "retarget"), id = f.id("once", "retarget");
+    const [pinB, pinA] = intentEntryCid(x) < intentEntryCid(y) ? [x, y] : [y, x];
+    const atomA = pinA === x ? f.a : f.b, atomB = pinB === x ? f.a : f.b;
+    const outcomeA = await entry(atomA, { entry: "outcome", cause: id, result: "done" });
+    const view = f.fold([pinA, outcomeA, pinB]);
+    expect(mayAct(view, id, atomB.key).act).toBe(false);
+    expect(mayAct(view, id, atomA.key).act).toBe(false);
+    const twice = f.fold([pinA, pinA]);
+    expect(twice.refused).toEqual([]);
+    expect(mayAct(twice, id, atomA.key)).toEqual({ act: true });
+  });
+
+  test("RED: two bodies under one id refuse id-collision with every copy void and its cid listed, never ordered by cid; CONTROL: one body stands", async () => {
+    const f = await fixture();
+    const x = await f.intent({ mode: "every" }), y = await f.intent({ mode: "class", capability: "x" }), id = f.id();
+    for (const order of [[x, y], [y, x]]) {
+      const view = f.fold(order);
+      expect(view.intents.find((i) => i.id === id)?.status ?? "void").toBe("void");
+      expect(mayAct(view, id, f.a.key).act).toBe(false);
+      expect(mayAct(view, id, f.b.key).act).toBe(false);
+      expect(view.refused).toEqual([{ refusal: "id-collision", cid: [intentEntryCid(x), intentEntryCid(y)].sort()[0] }, { refusal: "id-collision", cid: [intentEntryCid(x), intentEntryCid(y)].sort()[1] }]);
+    }
+    expect(mayAct(f.fold([x]), id, f.a.key)).toEqual({ act: true });
+  });
+});

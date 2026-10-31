@@ -217,3 +217,69 @@ test("RED: a roster act learned while the final read awaits standing still refus
   expect(intentAdmissionRecordsOfGroup(late.shared.doc, f.group)).toHaveLength(0);
   expect((await run(false)).result.status).toBe("admitted");
 });
+
+test("RED: the relay ring flips off during the final standing read, so no receipt and no append; CONTROL: the ring stays on and the entry admits", async () => {
+  const f = await fixture();
+  const run = async (flips: boolean) => {
+    const shared = plane(); shared.handle.change(d => writeIntentEntry(d, f.grant)); shared.change.mockClear();
+    let signed = false, ringOn = true;
+    const ports = { ...f.ports, plane: shared.handle, relayAdmits: async () => ringOn, standing: async () => { if (signed && flips) ringOn = false; return "stands" as const; } };
+    const result = await admitAgentEntry(ports, f.entry, { ...f.relay, sign: async bytes => { const out = await f.relay.sign(bytes); signed = true; return out; } });
+    return { result, shared };
+  };
+  const off = await run(true);
+  expect(off.result).toEqual({ status: "refused", refusal: "face-off" });
+  expect(off.shared.change).not.toHaveBeenCalled();
+  expect(intentAdmissionRecordsOfGroup(off.shared.doc, f.group)).toHaveLength(0);
+  expect(intentEntryRecordsOfGroup(off.shared.doc, f.group)).toHaveLength(1);
+  expect((await run(false)).result.status).toBe("admitted");
+});
+
+test("RED: a valid rotation merged while the final read awaits standing re-reads the chain and refuses; CONTROL: no rotation admits", async () => {
+  const f = await fixture();
+  const freshKey = `0x${(await who(10)).key}`;
+  const sig = await ed25519SignerFromSeed(hexToBytes(f.recovery.signingKey))(personaRotationSigningBytes(f.inception, freshKey));
+  const rotation = await mintPersonaRotation({ head: f.inception, freshOpKeyDid: freshKey, recoveryRoster: [f.recovery.verifyingKey], recoveryThreshold: 1, rotationSigs: [{ signer: f.recovery.verifyingKey, sig }] });
+  if (!rotation.ok) throw Error(rotation.reason);
+  const run = async (arrives: boolean) => {
+    const shared = plane(); shared.handle.change(d => writeIntentEntry(d, f.grant)); shared.change.mockClear();
+    let signed = false, merged = false;
+    const ports = { ...f.ports, plane: shared.handle, get kelChain() { return merged ? [f.inception, rotation.event] : [f.inception]; },
+      standing: async () => { if (signed && arrives) merged = true; return "stands" as const; } };
+    const result = await admitAgentEntry(ports, f.entry, { ...f.relay, sign: async bytes => { const out = await f.relay.sign(bytes); signed = true; return out; } });
+    return { result, shared };
+  };
+  const late = await run(true);
+  expect(late.result).toEqual({ status: "refused", refusal: "entry-refused" });
+  expect(late.shared.change).not.toHaveBeenCalled();
+  expect(intentAdmissionRecordsOfGroup(late.shared.doc, f.group)).toHaveLength(0);
+  expect((await run(false)).result.status).toBe("admitted");
+});
+
+test("RED: a revocation merged by an earlier effect stops the later effect of the heed loop; CONTROL: no revocation runs both once", async () => {
+  const f = await fixture();
+  const grant = await buildDelegation({ group: f.group, signer: f.root, epoch: 0, agent: f.agent.key, prefix: "MOVE", policy: { kind: "closed-args", args: { x: { type: "integer", oneOf: [1, 2] } } }, bound: { until: { roster: "a".repeat(64) } }, nonce: "loop" });
+  const revocation = await buildDelegationRevoke({ group: f.group, signer: f.root, epoch: 0, delegation: intentEntryCid(grant) });
+  const intents = await Promise.all([1, 2].map(x => buildAgentIntent({ group: f.group, signer: f.agent, delegation: intentEntryCid(grant), verb: "MOVE", args: { x }, nonce: "", audience: { mode: "every" }, verbs: f.verbs })));
+  const run = async (revokes: boolean) => {
+    const shared = plane(); shared.handle.change(d => { writeIntentEntry(d, grant); for (const i of intents) writeIntentEntry(d, i); });
+    const effect = vi.fn(async () => { if (revokes) shared.handle.change(d => writeIntentEntry(d, revocation)); return {}; });
+    const door = makeFaceIntentDoor({ ...f.ports, plane: shared.handle, atom: f.d2, effects: new Map([["MOVE", effect]]), log: () => {} });
+    await door.heed();
+    return effect;
+  };
+  expect(await run(true)).toHaveBeenCalledTimes(1);
+  expect(await run(false)).toHaveBeenCalledTimes(2);
+});
+
+test("RED: a second body under an admitted intent id refuses id-collision and appends nothing; CONTROL: the same body answers duplicate", async () => {
+  const f = await fixture(); f.shared.handle.change(d => writeIntentEntry(d, f.grant));
+  expect((await admitAgentEntry(f.ports, f.entry, f.relay)).status).toBe("admitted");
+  const rival = await buildAgentIntent({ group: f.group, signer: f.agent, delegation: intentEntryCid(f.grant), verb: "MOVE", args: { x: 1 }, nonce: "", audience: { mode: "class", capability: "x" }, verbs: f.verbs });
+  expect(intentId(rival.body as unknown as Parameters<typeof intentId>[0])).toBe(f.id);
+  f.shared.change.mockClear();
+  expect(await admitAgentEntry(f.ports, rival, f.relay)).toEqual({ status: "refused", refusal: "id-collision" });
+  expect(f.shared.change).not.toHaveBeenCalled();
+  expect(intentEntryRecordsOfGroup(f.shared.doc, f.group)).toHaveLength(2);
+  expect((await admitAgentEntry(f.ports, f.entry, f.relay)).status).toBe("duplicate");
+});
