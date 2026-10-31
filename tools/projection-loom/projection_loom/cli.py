@@ -179,6 +179,22 @@ def main(argv=None):
     p.add_argument('--right-generated',nargs='+',required=True)
     p.add_argument('--location',required=True)
     p.add_argument('--study',type=Path,required=True)
+    p=commands.add_parser('place-topology-gallery',help='Create frozen native six-view operator gallery from verified topology study')
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--goal-index',type=int,required=True)
+    p.add_argument('--corner-prefix',required=True)
+    p.add_argument('--location',required=True)
+    p.add_argument('--study',type=Path,required=True)
+    p.add_argument('--gallery',type=Path,required=True)
+    p=commands.add_parser('place-topology-gallery-verify',help='Independently rerender topology review from original native STEP')
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--goal-index',type=int,required=True)
+    p.add_argument('--corner-prefix',required=True)
+    p.add_argument('--location',required=True)
+    p.add_argument('--study',type=Path,required=True)
+    p.add_argument('--gallery',type=Path,required=True)
     p=commands.add_parser('place-topology-study',help='Independently STEP-audit matched two- and three-hop circulation under all original goals')
     p.add_argument('--genome',type=Path,required=True)
     p.add_argument('--spatial',type=Path,required=True)
@@ -782,6 +798,21 @@ def main(argv=None):
             result=run_recombined_native(original,left,right,spatial,args.out,**opts)
         else:
             result=verify_recombined_native(args.study,original,left,right,spatial,**opts)
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command in ('place-topology-gallery','place-topology-gallery-verify'):
+        from .place_topology_gallery import render_topology_gallery,verify_topology_gallery
+        from .place_genome import PlaceGenome
+        from .spatial_intent import SpatialIntent
+        original=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
+        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        choices={'location':args.location,'goal_index':args.goal_index,
+                 'corner_prefix':args.corner_prefix}
+        if args.command=='place-topology-gallery':
+            result=render_topology_gallery(original,spatial,args.study,args.gallery,**choices)
+        else:
+            result={'valid':verify_topology_gallery(original,spatial,args.study,args.gallery,**choices),
+                    'automatic_artistic_winner':False}
         print(json.dumps(result,indent=2))
         return result
     if args.command in ('place-topology-study','place-topology-study-verify'):

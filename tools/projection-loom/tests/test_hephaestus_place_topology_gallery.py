@@ -56,3 +56,21 @@ def test_rendered_gallery_image_and_html_rewrites_both_refuse_replay(tmp_path):
     (gallery/"review.html").write_text("<html>forged</html>")
     with pytest.raises(ValueError,match="board HTML diverged"):
         verify_topology_gallery(site,spatial,study,gallery,**opts)
+
+def test_topology_gallery_cli_requires_verified_original_sources(tmp_path):
+    from projection_loom.cli import main
+    site,spatial=authored()
+    original=tmp_path/"source.json"
+    goals=tmp_path/"spatial.json"
+    original.write_text(json.dumps(site.to_dict()))
+    goals.write_text(json.dumps(spatial.to_dict()))
+    opts={"location":"topological-place","goal_index":0,"corner_prefix":"lane"}
+    study=tmp_path/"study"
+    run_topology_study(site,spatial,study,**opts)
+    flags=["--genome",str(original),"--spatial",str(goals),
+           "--location","topological-place","--goal-index","0",
+           "--corner-prefix","lane","--study",str(study),
+           "--gallery",str(tmp_path/"gallery")]
+    result=main(["place-topology-gallery",*flags])
+    assert result["entries"][0]["image_file"]
+    assert main(["place-topology-gallery-verify",*flags])["valid"]
