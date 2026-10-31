@@ -13,6 +13,12 @@
 
 The session retires **43 Markdown files in the research, design, and example waves**, plus **three temporary archive Markdown documents**, all already committed as deleted. The root README and this one handoff remain. Earlier sessions separately retired `ROADMAP.md`, `HEPHAESTUS-KANBAN.md`, and `BRANCHED_SESSION_HANDOFF.md`; their source text also remains in Git.
 
+## Reachable Git ashes · final archival lock
+
+The operator-directed o-takiage does not rely on PR branch retention alone. A dedicated nonworking archival branch, `archive/pr84-markdown-pre-otakiage-20261031`, now points exactly to `864dc19e89a913ac82862b842202bfce0c68e16b`. A direct GitHub read on that branch recovered `docs/RELATIONAL-INHERITANCE-DESIGN.md` with the original Git blob SHA `8e581cc5eaaca201ab337acaccf1b8c4a8827ed6`. That commit's ancestors include the earlier `7c644e67` source and its recursive historical fronts. This archive branch **MUST remain reachable** if PR #84 is squash-merged or its working branch is deleted; do not remove it without another enduring ref.
+
+The final living entry points are `tools/projection-loom/README.md` and this `tools/projection-loom/docs/HANDOFF.md`. The 46 other Markdown files that existed in this tool's PR working surface at the beginning of this turn were retired from the live tree in Git commits. The four primary Lares carriers received canonically sealed top-level post-fire route notes, preserving the former wording as historical testimony. No native CAD or lineage files were deleted.
+
 ## Re-entry and recovery
 
 ```bash
