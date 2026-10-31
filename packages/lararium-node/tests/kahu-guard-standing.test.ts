@@ -8,6 +8,10 @@
  *       kept registration names that home's Nexus, never the primary's.
  *   T3b RED: the guard hands the document to its class's decider, so a decider can read the standing of THAT document's
  *       home: primary admission live and carried-home admission closed withholds the carried document alone.
+ *   T4  RED (Sol BLOCKER 3): a classification write queued AFTER an ask began, before that ask resumed, still classes the
+ *       ask: the guard serves the count only once no recount queued before its read stays pending.
+ *   T5  RED (Sol BLOCKER 4): a charter roll re-reads EVERY home's standing, the carried homes' with the primary's; each
+ *       document reads its own home's watch.
  */
 import { afterAll, describe, expect, test } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -17,6 +21,7 @@ import * as ed from "@noble/ed25519";
 import { interpretAsDocumentId, type AutomergeUrl } from "@automerge/automerge-repo";
 import * as mesh from "@lararium/mesh";
 import { LARES_DOC_URI, hex, protectedDocGuard, signRealmBagRegistration } from "@lararium/mesh";
+import * as kahuRealm from "../src/kahu-realm.js";
 import { kahuProtectedHolder, keepKahuRegistration } from "../src/kahu-realm.js";
 
 const roots: string[] = [];
@@ -69,5 +74,40 @@ describe("the guard serves the standing count and each document's own home", () 
     });
     expect(await guard.withholds("kahu-hand", primaryDoc), "T3b CONTROL: the primary canon crosses").toBe(false);
     expect(await guard.withholds("kahu-hand", carriedDoc), "T3b: the carried canon withholds").toBe(true);
+  });
+
+  test("T4 — RED: a write queued after the ask began, before it resumed, still classes that ask", async () => {
+    const sealHome = mkdtempSync(join(tmpdir(), "lar-kahu-burst-")); roots.push(sealHome);
+    const holder = kahuProtectedHolder({ sealHome, canon: () => ({}) }) as ReturnType<typeof kahuProtectedHolder> & { settledIds?: () => Promise<ReadonlyMap<string, "kahu-canon">> };
+    try {
+      await holder.recount();
+      const doc = mesh.deterministicDocUrl("a-burst-kept-canon");
+      const rec = await registration("nexus-" + "b4".repeat(32), doc);
+      const guard = protectedDocGuard({ ids: () => holder.ids(), settled: () => holder.settled(), ...(holder.settledIds ? { settledIds: () => holder.settledIds!() } : {}), decide: { "kahu-canon": () => false } } as GuardOptions);
+      const asked = guard.withholds("member", idOf(doc));       // the ask begins and captures what stands
+      keepKahuRegistration(sealHome, rec);                       // a classification write lands before the ask resumes
+      expect(await asked, "T4: the ask waits for the later write's recount").toBe(true);
+    } finally { holder.close(); }
+  });
+
+  test("T5 — RED: a roll refreshes every home's standing; each document reads its own home", () => {
+    const book = (kahuRealm as unknown as { kahuStandingBook?: () => {
+      setPrimary(w: object): void; addCarried(nexus: string, w: object): void; heldAt(nexus: string | null): boolean; refreshAll(): void;
+    } }).kahuStandingBook;
+    expect(typeof book, "kahuStandingBook stands").toBe("function");
+    const watch = (nexus: string, initially: boolean) => {
+      let held = initially, board = initially;
+      return { nexus, held: () => held, refresh: () => { held = board; }, close: () => {}, roll: (to: boolean) => { board = to; } };
+    };
+    const primary = watch("nexus-primary", true), carried = watch("nexus-carried", true);
+    const b = book!();
+    b.setPrimary(primary); b.addCarried("nexus-carried", carried);
+    expect(b.heldAt("nexus-carried"), "CONTROL: the carried home stands admitted").toBe(true);
+    carried.roll(false);                                         // the carried charter rolls; no board event follows
+    b.refreshAll();                                              // the roll hook
+    expect(b.heldAt("nexus-carried"), "T5: the roll re-reads the carried home").toBe(false);
+    expect(b.heldAt(null), "T5: the primary (keel canon) reads its own").toBe(true);
+    expect(b.heldAt("nexus-primary"), "T5: the primary by name").toBe(true);
+    expect(b.heldAt("nexus-unwatched"), "T5: an unwatched home reads not admitted").toBe(false);
   });
 });

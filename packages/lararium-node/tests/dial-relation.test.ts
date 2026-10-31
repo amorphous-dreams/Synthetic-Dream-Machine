@@ -6,37 +6,43 @@
  * Since the house proved its islands by arrival, a dialed hearth reads as WIRE: right for the guard, yet the dial seated no
  * relation at all, so a joined leaf's `face-join` summons on its face's intents plane could not cross the dial to the founding
  * hearth (e2e meme-two-vessel-bag ⑨ red at e6d11928b). The gate's signed answer carries no class (`verified` reads
- * `["state"]`), and the dialer never takes its relation from the remote's word: the PIN carries its provenance, written by
- * the act that made it.
+ * `["state"]`), and the dialer never takes its relation from the remote's word: its own sealed landing record names the
+ * pin the act wrote.
  *
- *   P1  RED: `fleet join land` tags the hearth pin it writes with its act and the face; the boot reads the tag back.
- *       CONTROL: a pin written without a tag reads none.
- *   P2  RED: the dial's choice names where its pin came from: the bootstrap's pin (with its tag) or a kept admit bundle.
- *   S1  RED: a dial whose pin `fleet join land` wrote for the WORN face seats a face view of that face: the intents plane
- *       (where the summons rides) and the persona plane cross to the dialed hearth.
+ *   REVISION (Sol's transport read; controller ruling): the provenance rests as a SEALED face custody row under that face's
+ *   FCK, written by `fleet join land` and binding (face, pin digest): the face's join record names the landed pin's digest
+ *   (road #/rulings 2026-10-19: "a face's custody rows seal under its own key"; "a face's secrets never rest clear"). A
+ *   bootstrap tag counts for nothing: a pin whose digest no sealed landing record names reads untagged.
+ *
+ *   P1  RED: the sealed face join record keeps the landed hearth pin's digest and reads it back.
+ *   P2  CONTROL: the dial's choice names where its pin came from: the bootstrap's pin or a kept admit bundle.
+ *   S1  CONTROL: a dial whose pin digest the worn face's sealed landing record names seats a face view of that face: the
+ *       intents plane (where the summons rides) and the persona plane cross to the dialed hearth.
  *   S2  CONTROL: a dial whose pin came from a kept admit bundle seats the contracted class and its standing, and shares no
  *       private plane.
- *   S3  RED: a pin with no provenance tag shares no private plane (the weakest relation, fail closed).
- *   S4  RED: a pin tagged for ANOTHER face than the worn one shares no private plane.
+ *   S3  RED (Sol BLOCKER 2): a bootstrap provenance tag naming the worn face, beside a pin no sealed landing record names,
+ *       shares no private plane.
+ *   S4  CONTROL: a landing record that names ANOTHER pin shares no private plane; no worn face shares none.
  *   S5  CONTROL: the unseat drops the class, the standing and the view.
+ *   S6  RED (Sol BLOCKER 1): the realm's return lane names the hearth the dial SEATED: a kept pin at B names B's Nexus, never
+ *       the bootstrap's hearth; the unseat clears it.
  */
 import { describe, expect, test } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { generateAutomergeUrl, interpretAsDocumentId, type DocumentId } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, DeterministicFederationGate, custodyRootDoor, deriveGateBundle, personaBagIdFor, personaMembershipEntries,
-  personaSiblingBagIds, sovereignGateRoot, sovereignRoute, type GateBundlePin, type PeerClass,
+  admitGatePinDigest, personaSiblingBagIds, sovereignGateRoot, sovereignRoute, type GateBundlePin, type PeerClass,
 } from "@lararium/mesh";
-import { hearthDialTiddlers, readHearthDialPin } from "../src/hearth-dial-pin.js";
+import { afterEach } from "vitest";
 import { chooseHearthDial } from "../src/hearth-gate-pins.js";
+import { keepFaceJoinRecord, readFaceJoinRecord } from "../src/fleet-join-custody.js";
+import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { faceFleetViews } from "../src/face-fleet-view.js";
 import { selfSlotShareDecision } from "../src/self-slot-share.js";
 
 type Relation = { readonly kind: string; readonly personaGroup?: string; readonly nexus?: string | null };
 type DialRelationModule = {
-  dialRelationOf(input: { source: "bootstrap" | "kept" | null; provenance?: unknown; pinNexus: string | null; wornGroup: string | null }): Relation;
+  dialRelationOf(input: { source: "bootstrap" | "kept" | null; landedPin: string | null; pinDigest: string | null; pinNexus: string | null; wornGroup: string | null; provenance?: unknown }): Relation;
   seatDialPeer(maps: unknown, peerId: string, relation: Relation): void;
   unseatDialPeer(maps: unknown, peerId: string): void;
 };
@@ -61,16 +67,13 @@ const idOf = (url: string) => interpretAsDocumentId(url as never) as DocumentId;
 const shelf = new DeterministicFederationGate("ab".repeat(32));
 const pinAt = (nexus: string, tag = 4): GateBundlePin =>
   deriveGateBundle(sovereignGateRoot(custodyRootDoor({ derive: () => new Uint8Array(32).fill(tag) })), new TextEncoder().encode(nexus), sovereignRoute("/ws")).pin;
-const bootstrapWith = (tiddlers: Record<string, unknown>): string => {
-  const dir = mkdtempSync(join(tmpdir(), "lares-dial-relation-"));
-  const path = join(dir, "social-bootstrap.json");
-  writeFileSync(path, JSON.stringify({ title: "$:/plugins/lares/bootstrap", text: JSON.stringify({ tiddlers }) }));
-  return path;
-};
+let custody: SeatedScratchCustody | null = null;
+afterEach(async () => { await custody?.drop(); custody = null; });
 
 /** The composer's seat maps and the share verdict a dial peer meets: wire, its class, its face view. */
 function seatRig() {
-  const maps = { peerClassMap: new Map<string, PeerClass>(), peerNexus: new Map<string, string | null>(), faceViews: faceFleetViews(() => bootstrap(ONE), () => G1) };
+  const maps: { peerClassMap: Map<string, PeerClass>; peerNexus: Map<string, string | null>; faceViews: ReturnType<typeof faceFleetViews>; dialedHearth?: { pinned: boolean; aid: string | null } | null } =
+    { peerClassMap: new Map<string, PeerClass>(), peerNexus: new Map<string, string | null>(), faceViews: faceFleetViews(() => bootstrap(ONE), () => G1), dialedHearth: null };
   const verdict = (peerId: string, url: string) => selfSlotShareDecision({
     hasWsSocket: true, peerClass: maps.peerClassMap.get(peerId), selfSlotFedGate: shelf, antigenRing: null, membership: null, planeSeal: null,
     federationPosture: "private", peerId, documentId: idOf(url), sessionFace: maps.faceViews.gateFor(peerId),
@@ -79,22 +82,17 @@ function seatRig() {
 }
 
 describe("the outbound dial seats the relation its own held records prove", () => {
-  test("P1 — RED: fleet join land tags the hearth pin with its act and face; CONTROL: an untagged pin reads none", () => {
+  test("P1 — RED: the sealed face join record keeps the landed hearth pin's digest", async () => {
+    custody = await seatScratchCustody("dial-relation");
     const pin = pinAt("nexus-a.synthetic");
-    const tagged = bootstrapWith({ ...(hearthDialTiddlers as (...a: unknown[]) => Record<string, unknown>)("ws://127.0.0.1:4242/ws", pin.signingKey, null, pin, null, { act: "fleet-join-land", personaGroup: G1 }) });
-    const plain = bootstrapWith({ ...hearthDialTiddlers("ws://127.0.0.1:4242/ws", pin.signingKey, null, pin) });
-    try {
-      expect((readHearthDialPin(tagged) as { provenance?: unknown } | null)?.provenance, "P1: the tag reads back").toEqual({ act: "fleet-join-land", personaGroup: G1 });
-      expect((readHearthDialPin(plain) as { provenance?: unknown } | null)?.provenance, "CONTROL: no tag").toBeUndefined();
-    } finally { for (const p of [tagged, plain]) rmSync(join(p, ".."), { recursive: true, force: true }); }
+    await keepFaceJoinRecord({ personaGroup: G1, rootKey: "ab".repeat(32), certificates: [], grants: [], hearthPin: admitGatePinDigest(pin) } as Parameters<typeof keepFaceJoinRecord>[0]);
+    expect((await readFaceJoinRecord(G1) as { hearthPin?: unknown } | null)?.hearthPin, "P1: the landed pin's digest reads back").toBe(admitGatePinDigest(pin));
   });
 
-  test("P2 — RED: the dial's choice names the bootstrap's pin as its source, with its tag", () => {
+  test("P2 — CONTROL: the dial's choice names the bootstrap's pin as its source", () => {
     const pin = pinAt("nexus-a.synthetic");
-    const provenance = { act: "fleet-join-land", personaGroup: G1 };
-    const choice = chooseHearthDial({ hearthPin: { syncUrl: "ws://127.0.0.1:4242/ws", gatePin: pin, provenance } as never, kept: [] }) as unknown as { source?: unknown; provenance?: unknown };
+    const choice = chooseHearthDial({ hearthPin: { syncUrl: "ws://127.0.0.1:4242/ws", gatePin: pin }, kept: [] });
     expect(choice.source, "P2: the source").toBe("bootstrap");
-    expect(choice.provenance, "P2: the tag rides the choice").toEqual(provenance);
   });
 
   test("S1–S5 — the dial's seat: same face crosses its planes; kept bundle contracted; untagged and foreign-face none", async () => {
@@ -104,11 +102,13 @@ describe("the outbound dial seats the relation its own held records prove", () =
     const nexusHex = Buffer.from("nexus-a.synthetic", "utf8").toString("hex");
     const { maps, verdict } = seatRig();
 
-    seatDialPeer(maps, "same-face", dialRelationOf({ source: "bootstrap", provenance: { act: "fleet-join-land", personaGroup: G1 }, pinNexus: nexusHex, wornGroup: G1 }));
+    const landed = admitGatePinDigest(pinAt("nexus-a.synthetic"));
+    const other = admitGatePinDigest(pinAt("nexus-a.synthetic", 9));
+    seatDialPeer(maps, "same-face", dialRelationOf({ source: "bootstrap", landedPin: landed, pinDigest: landed, pinNexus: nexusHex, wornGroup: G1 }));
     expect(await verdict("same-face", ONE.intents), "S1: the intents plane (the summons) crosses").toBe(true);
     expect(await verdict("same-face", ONE.persona), "S1: the persona plane crosses").toBe(true);
 
-    const contracted = dialRelationOf({ source: "kept", pinNexus: nexusHex, wornGroup: G1 });
+    const contracted = dialRelationOf({ source: "kept", landedPin: null, pinDigest: other, pinNexus: nexusHex, wornGroup: G1 });
     expect(contracted.kind, "S2: a kept bundle's pin reads contracted").toBe("contracted");
     seatDialPeer(maps, "contracted", contracted);
     expect(maps.peerClassMap.get("contracted"), "S2: the class").toBe("contracted");
@@ -116,16 +116,32 @@ describe("the outbound dial seats the relation its own held records prove", () =
     expect(await verdict("contracted", ONE.intents), "S2: no private plane").toBe(false);
     expect(await verdict("contracted", ONE.persona), "S2: no private plane").toBe(false);
 
-    seatDialPeer(maps, "untagged", dialRelationOf({ source: "bootstrap", pinNexus: nexusHex, wornGroup: G1 }));
-    expect(await verdict("untagged", ONE.intents), "S3: an untagged pin shares no private plane").toBe(false);
-    expect(maps.peerClassMap.get("untagged"), "S3: no class").toBeUndefined();
+    const forged = dialRelationOf({ source: "bootstrap", landedPin: null, pinDigest: other, pinNexus: nexusHex, wornGroup: G1, provenance: { act: "fleet-join-land", personaGroup: G1 } });
+    expect(forged.kind, "S3: a bootstrap tag alone grants nothing").toBe("untagged");
+    seatDialPeer(maps, "forged", forged);
+    expect(await verdict("forged", ONE.intents), "S3: no private plane").toBe(false);
+    expect(maps.peerClassMap.get("forged"), "S3: no class").toBeUndefined();
 
-    seatDialPeer(maps, "foreign", dialRelationOf({ source: "bootstrap", provenance: { act: "fleet-join-land", personaGroup: G2 }, pinNexus: nexusHex, wornGroup: G1 }));
-    expect(await verdict("foreign", ONE.intents), "S4: a pin tagged for another face shares no private plane").toBe(false);
+    seatDialPeer(maps, "foreign", dialRelationOf({ source: "bootstrap", landedPin: landed, pinDigest: other, pinNexus: nexusHex, wornGroup: G1 }));
+    expect(await verdict("foreign", ONE.intents), "S4: a landing record naming another pin shares no private plane").toBe(false);
+    expect(dialRelationOf({ source: "bootstrap", landedPin: landed, pinDigest: landed, pinNexus: nexusHex, wornGroup: null }).kind, "S4: no worn face").toBe("untagged");
 
     unseatDialPeer(maps, "same-face");
     expect(maps.peerClassMap.has("same-face"), "S5: the class drops").toBe(false);
     expect(maps.faceViews.gateFor("same-face"), "S5: the view drops").toBeNull();
     expect(await verdict("same-face", ONE.intents), "S5: nothing crosses after the unseat").toBe(false);
+  });
+
+  test("S6 — RED: the realm's return lane names the hearth the dial seated, and the unseat clears it", async () => {
+    const mod = await dialRelation();
+    const { dialRelationOf, seatDialPeer, unseatDialPeer } = mod!;
+    const { maps } = seatRig();
+    const atB = Buffer.from("nexus-b.synthetic", "utf8").toString("hex");
+    seatDialPeer(maps, "hearth-b", dialRelationOf({ source: "kept", landedPin: null, pinDigest: "d".repeat(64), pinNexus: atB, wornGroup: G1 }));
+    expect(maps.dialedHearth, "S6: the seated dial names B's Nexus").toEqual({ pinned: true, aid: "nexus-b.synthetic" });
+    unseatDialPeer(maps, "hearth-b");
+    expect(maps.dialedHearth ?? null, "S6: the unseat clears it").toBeNull();
+    seatDialPeer(maps, "untagged-b", dialRelationOf({ source: "bootstrap", landedPin: null, pinDigest: "d".repeat(64), pinNexus: atB, wornGroup: G1 }));
+    expect(maps.dialedHearth, "S6: an untagged dial still names its own hearth for the return lane").toEqual({ pinned: true, aid: "nexus-b.synthetic" });
   });
 });
