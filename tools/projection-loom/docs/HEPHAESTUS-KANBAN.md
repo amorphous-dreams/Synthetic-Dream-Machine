@@ -1,3 +1,16 @@
+# Projection Loom · YIN current wave
+
+## Native topology census evidence
+
+Branch `feature/green-jello-dinosaur-5--projection-loom` · PR #84. Source commit `ee131a38` separated topology-offered, topology-native-attempted and topology-native-admitted counts within the existing campaign census. Test commit `e9b0e7dc` adds deterministic positive proposal accounting, native rejection and unauditioned deferral witnesses. No new generational controller, no extra STEP budget, no automatic artistic judgment. GitHub source writes succeeded; native Python tests have not run in this session. Exact-head acceptance remains pending; an earlier head showed an in-progress CAD/evidence workflow.
+
+Next: full multi-epoch native replay and tamper proof, cross-surface typed refusal isomorphic lift, source-conditioned morphology with measured causality, real Unreal Editor validation. Preserve operator-only promotions, PR open/unmerged, no irreversible o-takiage.
+
+## Holding ashes · previous living front
+
+<details>
+<summary>Previous front preserved verbatim</summary>
+
 # Projection Loom · Living YIN hephaestus-kanban
 
 ## Bounded topology search · latest feature/aftermath
@@ -1752,6 +1765,8 @@ The first generalized contract run for `9284c1d7` passed 87 tests and failed one
 
 **✶ Observe:** The new dual-BRep reparent could be verified by `native_support` but still needed a complete location ancestry and CLI handback. **⏿ Orient:** Changing a required parent is an attributable semantic choice within one unchanged STEP scene, not a silent geometry rewrite. **◇ Decide:** Reuse the existing `support_workspace` to fork an immutable child with original source snapshot, full causal parent manifest, prior/new ground, both independent contacts, a single OODA-HA session and exact scene digest. Provide one `native-support-reparent` CLI entrypoint rather than a new controller. **▶ Act:** Positive independent two-quay/bridge end-to-end native location supports old→new replacement and reopens the complete fork; tests refuse repeated destination, altered dual-contact receipts and disconnected new bearing. **↺ Aftermath:** Structural reparenting with unchanged geometry is now implemented; actual editor-guided reparent motion remains separate, and no load safety is inferred. Exact-head suite must pass.
 
+
+</details>
 
 </details>
 
