@@ -142,7 +142,7 @@ def test_topology_birth_enters_same_emitter_stream_without_native_claim():
     spatial=SpatialIntent("a"*64,(
         SpatialGoal("connect","west","east"),
         SpatialGoal("shelter","refuge","roof")),"operator")
-    resolved=propose_from_spatial_intent(original,spatial)
+    resolved=original
     params=dict(epoch=1,index=1,offspring=3,seed=12)
     child,row=emit_place_child(original,resolved,[],spatial,**params)
     again,replay=emit_place_child(original,resolved,[],spatial,**params)
@@ -174,7 +174,7 @@ def test_topology_birth_keeps_all_source_bodies_and_full_goal_scope():
     spatial=SpatialIntent("a"*64,(
         SpatialGoal("connect","west","east"),
         SpatialGoal("shelter","refuge","roof")),"operator")
-    resolved=propose_from_spatial_intent(original,spatial)
+    resolved=original
     child,receipt=emit_place_child(original,resolved,[],spatial,
                                   epoch=2,index=1,offspring=3,seed=11)
     assert receipt["emitter"]=="topology-birth"
@@ -191,7 +191,7 @@ def test_topology_proposal_is_independent_of_unwitnessed_parent_archive():
                           PlaceBody("refuge",p,(30,30,0)),
                           PlaceBody("west",p,(0,0,0))))
     spatial=SpatialIntent("a"*64,(SpatialGoal("connect","west","east"),),"operator")
-    resolved=propose_from_spatial_intent(original,spatial)
+    resolved=original
     archive=[{"candidate_id":"unwitnessed","genome":resolved,
               "workspace_sha256":"not-native"}]
     a,first=emit_place_child(original,resolved,[],spatial,
@@ -212,7 +212,7 @@ def test_topology_search_recovers_alternative_when_first_waypoint_conflicts():
         PlaceBody("west",p,(0,0,0)),
         PlaceBody("barrier",p,(6,0,0))),key=lambda b:b.entity_id)))
     spatial=SpatialIntent("a"*64,(SpatialGoal("connect","west","east"),),"operator")
-    resolved=propose_from_spatial_intent(site,spatial)
+    resolved=site
     # seed 12, epoch 1, index 1 samples x-y-x before trying y-x-y.
     child,row=emit_place_child(site,resolved,[],spatial,
                                epoch=1,index=1,offspring=3,seed=12)
@@ -234,7 +234,7 @@ def test_topology_native_census_distinguishes_offer_attempt_and_admission():
     original=PlaceGenome((PlaceBody("east",p,(12,12,0)),
                           PlaceBody("west",p,(0,0,0))))
     spatial=SpatialIntent("a"*64,(SpatialGoal("connect","west","east"),),"operator")
-    resolved=propose_from_spatial_intent(original,spatial)
+    resolved=original
     child,receipt=emit_place_child(original,resolved,[],spatial,
                                    epoch=1,index=1,offspring=3,seed=12)
     assert receipt["emitter"]=="topology-birth"
