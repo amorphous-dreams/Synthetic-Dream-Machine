@@ -31,3 +31,19 @@ def test_source_bound_topology_study_refuses_forged_goal_or_step(tmp_path):
     path.write_text(json.dumps(row))
     with pytest.raises(ValueError,match="changed original goal or STEP evidence"):
         verify_topology_study(original,spatial,root,**opts)
+
+
+def test_full_native_topology_cli_round_trip(tmp_path):
+    from projection_loom.cli import main
+    original,spatial=authored()
+    site=tmp_path/"source.json"
+    aim=tmp_path/"spatial.json"
+    site.write_text(json.dumps(original.to_dict()))
+    aim.write_text(json.dumps(spatial.to_dict()))
+    flags=["--genome",str(site),"--spatial",str(aim),
+           "--location","topological-place","--goal-index","0",
+           "--corner-prefix","lane"]
+    root=tmp_path/"cli"
+    first=main(["place-topology-study",*flags,"--out",str(root)])
+    assert first["native_attempts"]==4
+    assert main(["place-topology-study-verify",*flags,"--study",str(root)])==first

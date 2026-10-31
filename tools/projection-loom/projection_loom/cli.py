@@ -179,6 +179,20 @@ def main(argv=None):
     p.add_argument('--right-generated',nargs='+',required=True)
     p.add_argument('--location',required=True)
     p.add_argument('--study',type=Path,required=True)
+    p=commands.add_parser('place-topology-study',help='Independently STEP-audit matched two- and three-hop circulation under all original goals')
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--goal-index',type=int,required=True)
+    p.add_argument('--corner-prefix',required=True)
+    p.add_argument('--location',required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p=commands.add_parser('place-topology-study-verify',help='Reaudit complete source and all matched topology STEP witnesses')
+    p.add_argument('--genome',type=Path,required=True)
+    p.add_argument('--spatial',type=Path,required=True)
+    p.add_argument('--goal-index',type=int,required=True)
+    p.add_argument('--corner-prefix',required=True)
+    p.add_argument('--location',required=True)
+    p.add_argument('--study',type=Path,required=True)
     p=commands.add_parser('place-compound-routes',help='Audit both named bends under every authored spatial goal through real STEP')
     p.add_argument('--genome',type=Path,required=True)
     p.add_argument('--spatial',type=Path,required=True)
@@ -768,6 +782,20 @@ def main(argv=None):
             result=run_recombined_native(original,left,right,spatial,args.out,**opts)
         else:
             result=verify_recombined_native(args.study,original,left,right,spatial,**opts)
+        print(json.dumps(result,indent=2))
+        return result
+    if args.command in ('place-topology-study','place-topology-study-verify'):
+        from .place_topology_study import run_topology_study,verify_topology_study
+        from .place_genome import PlaceGenome
+        from .spatial_intent import SpatialIntent
+        original=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
+        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        choices={'location':args.location,'goal_index':args.goal_index,
+                 'corner_prefix':args.corner_prefix}
+        if args.command=='place-topology-study':
+            result=run_topology_study(original,spatial,args.out,**choices)
+        else:
+            result=verify_topology_study(original,spatial,args.study,**choices)
         print(json.dumps(result,indent=2))
         return result
     if args.command in ('place-compound-routes','place-compound-routes-verify'):
