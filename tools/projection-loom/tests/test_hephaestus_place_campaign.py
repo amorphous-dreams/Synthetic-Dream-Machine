@@ -267,3 +267,31 @@ def test_two_native_witnessed_variants_can_supply_breeding_without_invented_nich
     assert census["relational_native_attempted"]<=result["attempted"]
     assert census["distinct_admitted_recombinants"]<=census["relational_native_admitted"]
     assert census["automatic_artistic_winner"] is False
+
+
+def test_diagonal_source_topology_campaign_preserves_replay_and_exact_budget(tmp_path):
+    import json
+    p=GrowthProgram((GrowthNode("root","foundation",size=(4,4,2)),))
+    source=PlaceGenome((PlaceBody("east",p,(12,12,0)),
+                        PlaceBody("west",p,(0,0,0))))
+    intent=IntentContract("diagonal-place","Native multi-hop inheritance",("circulation",))
+    spatial=SpatialIntent(intent.identity,(SpatialGoal("connect","west","east"),),"operator")
+    inventory=LocationStack(intent.location)
+    inventory.add_frame(Frame("authored-local","local3d","model_unit"))
+    out=tmp_path/"topology-native"
+    summary=run_place_campaign(inventory,intent,spatial,source,out,
+        epochs=2,offspring=3,exact_budget=1,seed=12,prefer_emitter="topology-birth")
+    assert summary["offered"]==6
+    assert summary["attempted"]==2
+    assert summary["deferred"]==4
+    assert summary["relational_emissions"]["topology_offered"]==1
+    assert summary["relational_emissions"]["topology_native_attempted"]==1
+    front=json.loads((out/"frontiers"/"epoch_001.json").read_text())
+    assert front["offered"][1]["emitter"]=="topology-birth"
+    assert front["audition_order"]==["p001c001"]
+    assert verify_place_campaign(out)==summary
+    tampered=json.loads((out/"frontiers"/"epoch_001.json").read_text())
+    tampered["offered"][1]["emitter_receipt"]["ancestors"][0]["tested_patterns"]=8
+    (out/"frontiers"/"epoch_001.json").write_text(json.dumps(tampered))
+    with pytest.raises(ValueError,match="frontier diverged"):
+        verify_place_campaign(out)
