@@ -33,6 +33,7 @@ import { interpretAsDocumentId, type AutomergeUrl, type NetworkAdapterInterface,
 import { defaultCryptoProvider } from "./crypto.js";
 import { GatedSyncLeg, LEG_PASS, PortSyncAdapter, carriesChanges, type LegMessage, type LegRefusal, type LegVerdict, type SyncLegGate } from "./gated-sync-leg.js";
 import { isCapabilityProfile, refuseBeyondProfile, type CapabilityProfile, type ProfileRefusal } from "./session-contract.js";
+import { seatIslandPeer } from "./island-repo.js";
 
 /** A programming fault against the view: malformed facets, an unknown profile, a second leg. */
 export class SessionViewError extends Error {}
@@ -229,7 +230,9 @@ export class SessionDocumentView {
     );
     this.#leg = leg;
     repo.networkSubsystem.addNetworkAdapter(leg);
-    this.#detach = () => { repo.networkSubsystem.removeNetworkAdapter(leg); };
+    // The view's own peer is the house's island peer (road `P26`): the share verdict reads it in-process by this proof alone.
+    const unseat = seatIslandPeer(repo, this.peerId);
+    this.#detach = () => { unseat(); repo.networkSubsystem.removeNetworkAdapter(leg); };
   }
 
   /** End the view: the leg stands down and every gate refuses from here on. */

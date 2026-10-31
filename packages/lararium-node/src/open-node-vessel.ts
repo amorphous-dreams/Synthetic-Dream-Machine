@@ -66,7 +66,7 @@ import type { WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
-import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, type ProtectedDocClass } from "@lararium/mesh";
+import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
   ACTIVE_WIKI_URI,
@@ -88,7 +88,7 @@ import {
   readGenesisCasManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
 import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.js";
-import { standKahuCanon, kahuHandAtWire, kahuProtectedDocIds, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
+import { standKahuCanon, kahuHandAtWire, kahuProtectedHolder, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonCorpusRoot } from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
@@ -816,13 +816,14 @@ async function prepareNodeBootOn(
   // ids, derived durably (`kahuProtectedDocIds`), so a retained replica keeps its class after a removal, across a reboot and
   // under any alias. ONE guard at the head of the share verdict withholds them from every wire or sibling peer that does not
   // hold Kahu reach live (`kahuHandAtWire`), ahead of the same-face bridge and the realm gate.
-  let kahuProtected: ReadonlyMap<string, ProtectedDocClass> = new Map();
-  const recountKahuProtected = async (): Promise<void> => {
-    const ids = await kahuProtectedDocIds({ sealHome, canon: kahuCanon });
-    kahuProtected = new Map([...ids].map((id) => [id, "kahu-canon" as const]));
-  };
+  // The holder recounts at every classification source's write (a kept registration, a key re-issue), on every board
+  // change, on the charter path and at boot; a map that moved re-asks the Repo's cached share verdicts.
+  // It stands in `systemCanon` (where the seal home and the reverdict stand), before any wire peer can.
+  let kahuProtected: ReturnType<typeof kahuProtectedHolder> | null = null;
+  const recountKahuProtected = async (): Promise<void> => { await kahuProtected?.recount(); };
+  const noProtectedIds: ReadonlyMap<string, "kahu-canon"> = new Map();
   const protectedDocs = protectedDocGuard({
-    ids: () => kahuProtected,
+    ids: () => kahuProtected?.ids() ?? noProtectedIds,
     decide: {
       "kahu-canon": (peerId) => kahuHandAtWire({ session: peerSessions.get(peerId), custodyGroup, faceProven: wornFaceProven, canon: kahuCanon, kahuStanding: kahuStanding?.held() === true }),
     },
@@ -930,6 +931,10 @@ async function prepareNodeBootOn(
     ?? (process.env["LAR_WIRE_LOG"] === "1"
       ? (v: ShareVerdictRecord) => console.log(`[wire] verdict ${v.hook} peer=${v.peerId} doc=${v.documentId ?? "-"} → ${v.verdict}`)
       : null);
+  // THE HOUSE'S OWN ISLAND PEERS, PROVEN (road `P26`): the peers that reached this Repo on an adapter the vessel attached for
+  // its own islands (`islandPeersOf`). Read through this cell, which the Repo's own set fills once the Repo stands; until
+  // then no peer reads as the house's own.
+  let houseIslands: ReadonlySet<string> = new Set<string>();
   const repo = new Repo({
     storage,
     network: [network],
@@ -966,7 +971,10 @@ async function prepareNodeBootOn(
       // every in-process island peer full-sync; a cross-operator/unclassified WS peer reaches only the
       // deterministically-federatable planes; the antigen draws Mu on a Kapae'd presenter regardless.
       return selfSlotShareDecision({
-        hasWsSocket:     !!wsSocket,
+        // A WIRE PEER is every peer the house did not prove its own (road `P26`; in-process gets proven, never inferred from
+        // a missing listening socket): a dialed hearth on the dial's own adapter reads as wire, the guard first. A sibling
+        // keeps its own lane below.
+        hasWsSocket:     !!wsSocket || (!houseIslands.has(peerId) && !siblings?.provenKeyOf(peerId as PeerId)),
         // A SIBLING rides the sibling channel, proven there under the peer id its device key derives. It holds
         // standing, never the house: the sibling gate decides its every doc, and sibling-ness decides first.
         sibling:         Boolean(siblings?.provenKeyOf(peerId as PeerId)),
@@ -1017,6 +1025,7 @@ async function prepareNodeBootOn(
   stood.push({ what: "the rest door", down: () => { setRestDoor(null); for (const close of [...restDoorClosers]) close(); restDoorClosers.clear(); } });
   // The Repo stands down after everything that writes through it: it flushes, then closes its storage and network.
   stood.push({ what: "the Repo", down: async () => { await repo.flush(); await repo.shutdown(); } });
+  houseIslands = islandPeersOf(repo);
   emit("repo-open");
 
   // ── 2. Catalog — local-first rendezvous anchor (catalog-url file) ───────────
@@ -1915,11 +1924,17 @@ async function prepareNodeBootOn(
         personaGroupId: custodyGroup,   // sealed custody names the face; the composition tears down whole if its proof later refuses
       });
       // THE PROTECTED IDS, then THE LIVE STANDING the guard reads: each flip re-counts and re-asks the cached share verdicts.
+      if (!kahuProtected) {
+        const holder = kahuProtectedHolder({ sealHome, canon: () => kahuCanon, onChange: () => reverdict() });
+        kahuProtected = holder;
+        stood.push({ what: "the protected canon ids", down: () => holder.close() });
+      }
       await recountKahuProtected();
       if (!kahuStanding) {
         const watch = await watchKahuStanding({
           repo, sealHome, vesselKey: activeAtom?.key ?? "", personaGroupId: custodyGroup,
           onChange: () => { void recountKahuProtected().catch(() => {}).finally(() => reverdict()); },
+          onBoardChange: () => { void recountKahuProtected().catch(() => {}); },
         });
         kahuStanding = watch;
         stood.push({ what: "the Kahu standing", down: () => watch.close() });

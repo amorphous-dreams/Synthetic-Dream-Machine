@@ -109,6 +109,28 @@ export function makeIslandRepo(cfg: IslandRepoConfig): Repo {
 }
 
 /**
+ * THE HOUSE'S OWN ISLAND PEERS, PROVEN (road `P26`; controller ruling 2026-10-31: in-process gets proven, never inferred):
+ * per Repo, the peer ids that arrived on an adapter the vessel attached for its own islands (`attachMessageChannelSync`, a
+ * session view's leg). A share verdict reads a peer as in-process only where its id stands here; every other peer, on any
+ * adapter, inbound or outbound (a dialed hearth on the dial's own adapter included), takes the wire path. Absence never
+ * proves a peer is the house's own.
+ */
+const ISLAND_PEERS = new WeakMap<Repo, Set<string>>();
+function islandPeerSet(repo: Repo): Set<string> {
+  let set = ISLAND_PEERS.get(repo);
+  if (!set) { set = new Set<string>(); ISLAND_PEERS.set(repo, set); }
+  return set;
+}
+/** The peers that reached this Repo on the vessel's own island adapters, standing now. */
+export function islandPeersOf(repo: Repo): ReadonlySet<string> { return islandPeerSet(repo); }
+/** Seat one island peer the vessel attached itself (a session view's own peer at its leg); answers its unseat. */
+export function seatIslandPeer(repo: Repo, peerId: string): () => void {
+  const set = islandPeerSet(repo);
+  set.add(peerId);
+  return () => { set.delete(peerId); };
+}
+
+/**
  * Attach a MessageChannel sync leg to an EXISTING repo (the vessel's main Repo).
  * The vessel keeps the main port; the island receives the transferred peer port.
  * Network-adapter construction is a CRDT concern owned by mesh — callers compose
@@ -117,11 +139,13 @@ export function makeIslandRepo(cfg: IslandRepoConfig): Repo {
 export function attachMessageChannelSync(repo: Repo, mainPort: MessagePort, onPeer?: (peerId: string) => void, onDropped?: (why: string) => void): () => void {
   const adapter = new MessageChannelNetworkAdapter(hardenedSyncPort(mainPort, onDropped));
   const standing = new Set<string>();
-  adapter.on("peer-candidate", ({ peerId }) => { standing.add(peerId); onPeer?.(peerId); });
+  const house = islandPeerSet(repo);
+  adapter.on("peer-candidate", ({ peerId }) => { standing.add(peerId); house.add(peerId); onPeer?.(peerId); });
+  adapter.on("peer-disconnected", ({ peerId }) => { house.delete(peerId); });
   // A port that closes under the vessel (the island's worker ended, or its side closed) carries no `leave`, and the
   // adapter's strong port reference forwards no `close`, so the vessel's network subsystem never reads the peer as
   // gone. The port's own close event is the fact.
-  mainPort.addEventListener("close", () => { for (const peerId of standing) adapter.emit("peer-disconnected", { peerId: peerId as never }); standing.clear(); });
+  mainPort.addEventListener("close", () => { for (const peerId of standing) { house.delete(peerId); adapter.emit("peer-disconnected", { peerId: peerId as never }); } standing.clear(); });
   repo.networkSubsystem.addNetworkAdapter(adapter);
   return () => adapter.disconnect();
 }

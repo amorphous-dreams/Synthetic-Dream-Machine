@@ -271,7 +271,7 @@ export { RECIPE_PLANES, effectiveRecipe, recipeRecordStands } from "./recipe-pla
 export type { EffectiveRecipe, RecipePlane } from "./recipe-planes.js";
 export { resolveRecipePluginCids, deriveWikiRecipe, wikiSlugOfBag } from "./surface-recipe.js";
 export type { WikiRecipeDerivation } from "./surface-recipe.js";
-export { makeIslandRepo, attachMessageChannelSync, replicaHeads } from "./island-repo.js";
+export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, seatIslandPeer } from "./island-repo.js";
 export { answerRestWithHeads, REST_STALL_ROUNDS } from "./rest-with-heads.js";
 export { GatedSyncLeg, oneWayDocumentsGate } from "./gated-sync-leg.js";
 export type { SyncLegGate, LegRefusal } from "./gated-sync-leg.js";

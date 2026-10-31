@@ -140,6 +140,8 @@ The container drivers ride hosted runners on every pushed head (`.github/workflo
 
 ''The island-door inventory measures reach, never policy.'' `tools/capability-inventory-witness.sh` reads, on the built tree, which of the four vessel doors (fetch, rest, custody write, dyad) each island class reaches, against the committed table `tools/capability-inventory.json`. A cell answers one question: does an ask from that class arrive at a door at all. On node every door stands as a stand-in that grants every ask and counts each call; what the real door then answers a real ask, a miss, a refusal or `aside`, stays outside the table. Each row drives the real code that builds its class's handle: a pool's own host spawn for the wiki and session islands, on node, and over a stand-in Web Worker in the browser, where the row reads every reply and counts the listeners the spawn attached. A row the tool cannot drive whole outside a browser reads `unmeasured` in every cell, never `silent`; the browser's daemon island reads so, since its spawn seam stands inside the vessel's open. A session island's view asks run through the pool's own listener, which no row drives: on node the content its view passes ends at the fetch door, behind that view's gate. Two source readings hold what no row drives, each counted per occurrence within a file: every reference to a function that spawns, wraps or answers an island, with every raw worker constructor and every renamed import of one, and every quoted ask or answer type of the doors and the view.
 
+''A house's own island is proven, never inferred'' (road `P26`; controller ruling 2026-10-31). A vessel attaches each island's sync adapter itself at the island's spawn (a wiki or daemon island's port, `attachMessageChannelSync`; a session island's gated leg, `SessionDocumentView.attach`), and keeps, per Repo, a POSITIVE set of the peers that arrive on those adapters (`islandPeersOf`, mesh `island-repo.ts`; a peer leaves the set at its disconnect or its port's close). A peer counts as the house's own only by membership in that set. Every other peer, on any adapter and in either direction, a hearth this vessel dialed included, takes the wire path, and the protected-document guard (`protectedDocGuard`, mesh `protected-doc-guard.ts`) reads first: a missing listening socket never proves a peer is in-process.
+
 <<~/ahu>>
 
 <<~ ahu #/the-release-manifest>>
@@ -173,6 +175,6 @@ No verb of the host shim and no service of the compose file removes a state dire
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BVDEeEAs9EIeIPL1sK9p2KAd26fnUWa1Azr1sXaMqIk
+<<^ code="&#x0003;">>ni:///sha-256;UVNVkjOUiHeff1nJj3GJPZaw0qxCyZgQECXRYksbQI4
 
 <<^ code="&#x0004;" -> to="?">>
