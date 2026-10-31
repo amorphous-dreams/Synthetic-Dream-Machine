@@ -25,10 +25,10 @@ import { foundDirect, openTestCustody, seatSeedCharter } from "./found-route.js"
 const source = readFileSync(new URL("../src/open-node-vessel.ts", import.meta.url), "utf8");
 const scan = (text: string, pattern: RegExp) => pattern.test(text);
 
-test("RED: the vessel stands, refreshes and closes the intent relay; CONTROL: the census finds a planted call and standSyncGates", () => {
+test("RED: the vessel stands, refreshes and closes the intent relay; CONTROL: the census finds a planted call and the gate sweep's after-step", () => {
   expect(scan("const planted = standIntentRelay({ gateServer });", /\bstandIntentRelay\s*\(/)).toBe(true);
-  expect(scan(source, /\b(?:const|function)\s+standSyncGates\b/)).toBe(true);
-  const start = source.indexOf("const standSyncGates =");
+  expect(scan(source, /\b(?:const|function)\s+afterGateSweep\b/)).toBe(true);
+  const start = source.indexOf("const afterGateSweep =");
   const end = source.indexOf("stood.push({ what: \"the sync gates' knocks\"", start);
   expect(end).toBeGreaterThan(start);
   const sweep = source.slice(start, end);
@@ -176,7 +176,7 @@ test("RED: a broken sibling anchor does not hide a healthy relay face; CONTROL: 
 test("RED: enabling a relay registers a lit sibling's planes at the gate sweep; CONTROL: the census finds a planted call", () => {
   const registers = /registerRelayPlanes\s*\??\.?\(/;
   expect(registers.test("await registerRelayPlanes?.();")).toBe(true);
-  const start = source.indexOf("const standSyncGates =");
+  const start = source.indexOf("const afterGateSweep =");
   const end = source.indexOf("stood.push({ what: \"the sync gates' knocks\"", start);
   const sweep = source.slice(start, end);
   const refresh = sweep.search(/intentRelay\.refresh\s*\(/);

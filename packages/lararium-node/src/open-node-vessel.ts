@@ -54,7 +54,7 @@ import {
   faceAtomKeyFromSeed, type FaceAtomKey,
   carriageFloorDutyOf, type PlaceSigner,
   genesisCasCidsFromOracle, provenVesselKeyOf,
-  wikiSlugOfBag,
+  wikiSlugOfBag, gateSweep, type GateSweepSeat,
 }                                       from "@lararium/mesh";
 import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
@@ -1254,10 +1254,35 @@ async function prepareNodeBootOn(
     await readCarried(),
     await placeCarriedNexuses({ sealHome, ownVesselKey: vesselIdentity.verifyingKey, open: carriedBoards.open }),
   );
-  // The Nexuses this vessel's gates stand in, as the last gate sweep read them (`standGates`, below).
-  let gateReadings: readonly CarriedNexusReading[] = [];
-  // The sync gates' sweep, set once they first stand (at the arm, below): every refold sweeps again.
-  let resweepGates: (() => Promise<void>) | null = null;
+  /**
+   * Every Nexus a gate stands in, for a sweep's readings: this vessel's own, and each it carries. A HERM stands at the
+   * explicit Nexus it was joined to and only there (the routes ruling, stable-founding-road: "an explicit Nexus opens the
+   * herm relay"): a Nexus whose carriage board counts a `carry` for this place's own key. A charter it merely holds stands
+   * no gate.
+   */
+  const gateNexusesOf = (readings: readonly CarriedNexusReading[]): string[] => {
+    const own = placeClass === "herm" ? null : ownNexusAid();
+    return [...new Set([...(own ? [own] : []), ...readings.map((r) => r.aid)])];
+  };
+  // THE GATE SWEEP'S ONE OWNER (`gateSweep`, mesh; test-recut-road T19/T27). One turn at a time it reads the carried
+  // postures, drops the sockets a refold demotes ON THOSE READINGS, stands the sync gates down and up to match, then runs
+  // the same-operator sweep and the intent relay. A read that throws reads as nothing carried. Its ports name capabilities:
+  // reads carried postures, serves a gate (the sync seat, below, once armed at `afterDaemon` and only where a sovereign
+  // custody root answers), drops what a refold demotes. Every port that reaches a later stage reads `gatesArmed` first.
+  let gatesArmed = false;
+  const gateSweepOwner = gateSweep<CarriedNexusReading>({
+    readCarried: async () => gateReadingsFor(placeClass, await readEveryCarried()),
+    nexusesOf:   gateNexusesOf,
+    seat:        () => (gatesArmed && sovereign ? syncSeat : null),
+    drop:        () => dropNoLongerHeld(),
+    // The D4 binding reads again at every sweep: a fleet-join answer's note reaches the gates at the refold its device
+    // edge sets off. A read that fails leaves the book unbound, so every presenter reads fleet-aside.
+    before:      async () => {
+      if (gatesArmed && sovereign) await deviceBook.refresh().catch((err: unknown) => console.warn(`[lar-gate] the face device book did not read: ${err instanceof Error ? err.message : String(err)}`));
+    },
+    after:       () => afterGateSweep(),
+    onFault:     (err) => console.warn(`[lar-gate] the gate sweep met a fault: ${err instanceof Error ? err.message : String(err)}`),
+  });
   // The oracle faces that follow the floor gates' set (`floorGates`, below): every refold tells them, and each sweeps again.
   const floorFollowers = new Set<() => void>();
   const floorGatesMoved = (): void => { for (const follower of [...floorFollowers]) { try { follower(); } catch { /* a face's own fault */ } } };
@@ -1272,7 +1297,7 @@ async function prepareNodeBootOn(
     const aid = nexus.trim().toLowerCase();
     if (placeClass === "herm") return ownPlacePosture(placeClass, null);
     if (ownNexusAid()?.toLowerCase() === aid) return ownPlacePosture(placeClass, readNexusDoc(sealHome));
-    return gateReadings.find((r) => r.aid.toLowerCase() === aid)?.posture ?? "private";
+    return gateSweepOwner.readings().find((r) => r.aid.toLowerCase() === aid)?.posture ?? "private";
   };
   /** A peer a contracted class holds: a leaf the membership reads held, or a PLACE whose key this board carries. */
   const contractHolds = (peerId: string): boolean => {
@@ -1302,9 +1327,10 @@ async function prepareNodeBootOn(
     repo,
     nexusPubkey,
     readCarried,
+    // A REFOLD READS AGAIN, THEN DROPS: the sweep owner's one turn refreshes the carried postures before its drop.
     onRefold:    () => {
-      reverdict(); dropNoLongerHeld(); sweepSameOperator?.();
-      void resweepGates?.().catch((err: unknown) => console.warn(`[lar-gate] the sync gates did not sweep: ${err instanceof Error ? err.message : String(err)}`));
+      reverdict();
+      void gateSweepOwner.refold().catch((err: unknown) => console.warn(`[lar-gate] the gate sweep did not run: ${err instanceof Error ? err.message : String(err)}`));
       floorGatesMoved();
     },
   });
@@ -1394,7 +1420,11 @@ async function prepareNodeBootOn(
     // The DEVICE behind the peer (D4), never the face key its gate proved: a device set aside draws Mu on every lane.
     vesselKeyOfPeer: deviceOfPeer,
     realmNymOfPeer:  (peerId) => peerContractNymMap.get(peerId) ?? null,
-    onRefold:        () => { reverdict(); dropNoLongerHeld(); sweepSameOperator?.(); seatSettler?.onFold(); },
+    onRefold:        () => {
+      reverdict();
+      void gateSweepOwner.refold().catch((err: unknown) => console.warn(`[lar-gate] the gate sweep did not run: ${err instanceof Error ? err.message : String(err)}`));
+      seatSettler?.onFold();
+    },
   });
   // THE SETTLE ON EVERY FOLD (kapae#/keys). A counted raise owes one key roll, and the fold itself sets the answer
   // off: no person types a verb and no timer runs. The settler reads the fold, hands the facts to the daemon
@@ -1508,54 +1538,28 @@ async function prepareNodeBootOn(
     }).catch((err: unknown) => console.warn(`[lar-gate] the same-operator sweep did not run: ${err instanceof Error ? err.message : String(err)}`));
   };
   /**
-   * Every Nexus a gate stands in: this vessel's own, and each it carries. A HERM stands at the explicit Nexus it was
-   * joined to and only there (the routes ruling, stable-founding-road: "an explicit Nexus opens the herm relay"): a Nexus
-   * whose carriage board counts a `carry` for this place's own key. A charter it merely holds stands no gate.
-   */
-  const gateNexuses = async (): Promise<string[]> => {
-    const read = await readEveryCarried();
-    gateReadings = gateReadingsFor(placeClass, read);
-    const own = placeClass === "herm" ? null : ownNexusAid();
-    return [...new Set([...(own ? [own] : []), ...gateReadings.map((r) => r.aid)])];
-  };
-  /**
    * The oracle's floor gates, one per Nexus, each seating through the face's own table (`flow-read-face`). The set
    * moves as the sync gates' does: every membership refold tells each face that follows it (`floorGatesMoved`), and the
    * face asks again, so a carry taken on a running herm stands its floor gate and an uncarry stands it down.
    */
   const floorGates: FlowGateArgs["gates"] = Object.assign(async (sessions: GateSessionTable) => {
     const door = await vesselFloorKeyDoor();
-    return (await gateNexuses()).map((nexus): FlowReadGate => {
+    await gateSweepOwner.refold();
+    return gateNexusesOf(gateSweepOwner.readings()).map((nexus): FlowReadGate => {
       const bundle = deriveGateBundle(floorGateRoot(door), new TextEncoder().encode(nexus), floorRoute(FLOW_SOCKET_ROUTE));
       return { gate: vesselGate(gateDeps, { bundle, nexus, sessions }), pin: bundle.pin };
     });
   }, {
     onMoved: (follower: () => void) => { floorFollowers.add(follower); return () => { floorFollowers.delete(follower); }; },
   });
-  // THE SYNC GATES: one sovereign gate per Nexus on the sync route, under the custody root, each on its own knock.
-  // A sweep stands the gate of every Nexus newly read and stands down the gate of one no longer read.
+  // THE SYNC SEAT: one sovereign gate per Nexus on the sync route, under the custody root, each on its own knock; the
+  // sweep owner stands the gate of every Nexus newly read and stands down the gate of one no longer read.
   // THE STOOD KNOCK, SAID. Each sync gate says the path it stands on, once, as it stands: the knock a device handed
   // this hearth's pin derives, so an operator (and a witness) reads where the gate answers. At the floor the
   // composition says once that it stands none (stable-founding-road: a hearth rests at its floor until a person
   // unlocks it).
-  const syncStood = new Map<string, { readonly unstand: () => void }>();
-  let floorRestSaid = false;
-  let registerRelayPlanes: (() => Promise<void>) | null = null;
-  const standSyncGates = async (): Promise<void> => {
-    if (!sovereign) {                            // the custody root answers a sovereign composition alone
-      if (!floorRestSaid) {
-        floorRestSaid = true;
-        console.log("[lar-gate] this vessel rests at its floor: it stands no sync gate until a person unlocks it (`lares vault unlock`)");
-      }
-      return;
-    }
-    // The D4 binding reads again at every sweep: a fleet-join answer's note reaches the gates at the refold its device
-    // edge sets off. A read that fails leaves the book unbound, so every presenter reads fleet-aside.
-    await deviceBook.refresh().catch((err: unknown) => console.warn(`[lar-gate] the face device book did not read: ${err instanceof Error ? err.message : String(err)}`));
-    const nexuses = new Set(await gateNexuses());
-    for (const [nexus, held] of syncStood) if (!nexuses.has(nexus)) { held.unstand(); syncStood.delete(nexus); }
-    for (const nexus of nexuses) {
-      if (syncStood.has(nexus)) continue;
+  const syncSeat: GateSweepSeat = {
+    stand(nexus) {
       const bundle: GateBundle = deriveGateBundle(sovereignGateRoot(custodyGateDoor()), new TextEncoder().encode(nexus), sovereignRoute(SOVEREIGN_SYNC_ROUTE));
       const at = gateServer.stand({ gate: vesselGate(gateDeps, { bundle, nexus, sessions: syncSessions.table }), pin: bundle.pin });
       // THE KNOCK. The dispatcher hands this path to the gate server and destroys every other upgrade before any 101.
@@ -1564,23 +1568,33 @@ async function prepareNodeBootOn(
         handle: (req, socket, head) => { if (!gateServer.handleUpgrade(req, socket, head)) socket.destroy(); },
       });
       console.log(`[lar-gate] the sync gate for Nexus ${nexus.slice(0, 18)}… stands on ${at.path}`);
-      syncStood.set(nexus, { unstand: () => { unregister?.(); at.unstand(); bundle.drop(); } });
-    }
+      return () => { unregister?.(); at.unstand(); bundle.drop(); };
+    },
+  };
+  let registerRelayPlanes: (() => Promise<void>) | null = null;
+  /** After each sweep turn: the same-operator sweep, then (armed and sovereign) the intent relay beside the sync gates. */
+  const afterGateSweep = async (): Promise<void> => {
     // The book just read again: a binding it no longer holds ends the same-operator session that stood on it.
     sweepSameOperator?.();
+    if (!gatesArmed || !sovereign) return;
     // THE INTENT RELAY stands beside the sync gates: one route per operator-enabled face, off until a person enables it.
     // Its admit signs under the relay's own key; the agent holds its own key and never wears a face's session.
     await registerRelayPlanes?.();
+    if (gateSweepOwner.closed) return;
     if (intentRelay === null) {
-      intentRelay = await standIntentRelay({
+      const relay = await standIntentRelay({
         gateServer, ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), rootDoor: custodyGateDoor(), deadlines: timerGateDeadlines(),
         faces: (group) => resolveIntentRelayFace(group, { repo, catalogUrl: catalogHandle.url }), log: (message) => console.log(message),
       });
+      // A relay that stood after the teardown began stands down at once: a torn composition keeps no route.
+      if (gateSweepOwner.closed || intentRelay !== null) { relay.close(); return; }
+      intentRelay = relay;
     } else await intentRelay.refresh();
   };
   let intentRelay: IntentRelayService | null = null;
   stood.push({ what: "the intent relay", down: () => { intentRelay?.close(); intentRelay = null; } });
-  stood.push({ what: "the sync gates' knocks", down: () => { for (const held of syncStood.values()) held.unstand(); syncStood.clear(); } });
+  // The sweep owner closes first: every sync gate and its knock stand down, and a turn still in flight stands nothing.
+  stood.push({ what: "the sync gates' knocks", down: () => gateSweepOwner.close() });
 
   // Read the bulb off the genesis dir — the ALL-PUBLIC seed + CAS a Herm serves so a stranger kindles their OWN
   // sovereign hearth (serve fire, never key). Null when the genesis is absent (nothing to hand). It pins no epoch
@@ -3302,9 +3316,11 @@ async function prepareNodeBootOn(
     // THE SYNC GATES stand once the island answers: one sovereign gate per Nexus, under the custody root, each
     // signing its own verdict. The walkers' session verbs (the blind mint, the sealed carriage) stand nowhere: the
     // walker arms ship SHUT by name, so no session ever sorts as a walker.
-    if (resweepGates === null) {
-      resweepGates = standSyncGates;
-      void standSyncGates().catch((err: unknown) => console.warn(`[lar-gate] the sync gates did not stand: ${err instanceof Error ? err.message : String(err)}`));
+    if (!gatesArmed) {
+      gatesArmed = true;
+      // The custody root answers a sovereign composition alone.
+      if (!sovereign) console.log("[lar-gate] this vessel rests at its floor: it stands no sync gate until a person unlocks it (`lares vault unlock`)");
+      void gateSweepOwner.refold().catch((err: unknown) => console.warn(`[lar-gate] the sync gates did not stand: ${err instanceof Error ? err.message : String(err)}`));
     }
     // THE HOSTING DOC RE-DERIVES FROM THE SEALED STATE. A roll commits at its state row; an act that sealed there
     // and never reached the doc lands as this sovereign composition stands, so its walkers can read the epoch.

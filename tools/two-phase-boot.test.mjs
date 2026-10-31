@@ -245,7 +245,7 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     assert.ok(sovereignly.seen.includes(veilAt), `T2 control: the sovereign composition reads the face's archive row (${veilAt})`);
     assert.notEqual(one.repo, zero.repo, "T1: a fresh Repo");
     assert.notEqual(one.daemon, zero.daemon, "T1: a fresh daemon island");
-    // A herm stands a gate knock only at a Nexus whose carriage board counts a carry for it (`gateNexuses`), and this
+    // A herm stands a gate knock only at a Nexus whose carriage board counts a carry for it (`gateNexusesOf`), and this
     // one is carried nowhere: what it holds on the server is its bulb read face.
     assert.ok(live.faces.size + live.knocks.size > baseline.faces + baseline.knocks,
       `T4 control: a standing composition holds a face on the server (${JSON.stringify(held())})`);

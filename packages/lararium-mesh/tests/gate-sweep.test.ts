@@ -17,7 +17,7 @@
  * On the span the module does not exist, so every case reads red at the missing name.
  */
 import { describe, expect, test } from "vitest";
-import { gateSweep, type GateSeat } from "../src/gate-sweep.js";
+import { gateSweep, type GateSweepSeat } from "../src/gate-sweep.js";
 
 interface Reading { readonly aid: string; readonly posture: "open" | "private" }
 
@@ -29,7 +29,7 @@ function handRead() {
 }
 
 /** A seat that records what stands. */
-function recordingSeat(): GateSeat & { stood: Set<string>; log: string[] } {
+function recordingSeat(): GateSweepSeat & { stood: Set<string>; log: string[] } {
   const stood = new Set<string>();
   const log: string[] = [];
   return {
