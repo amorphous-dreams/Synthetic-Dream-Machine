@@ -1,3 +1,16 @@
+# Projection Loom · YIN current wave
+
+## Native topology census evidence
+
+Branch `feature/green-jello-dinosaur-5--projection-loom` · PR #84. Source commit `ee131a38` separated topology-offered, topology-native-attempted and topology-native-admitted counts within the existing campaign census. Test commit `e9b0e7dc` adds deterministic positive proposal accounting, native rejection and unauditioned deferral witnesses. No new generational controller, no extra STEP budget, no automatic artistic judgment. GitHub source writes succeeded; native Python tests have not run in this session. Exact-head acceptance remains pending; an earlier head showed an in-progress CAD/evidence workflow.
+
+Next: full multi-epoch native replay and tamper proof, cross-surface typed refusal isomorphic lift, source-conditioned morphology with measured causality, real Unreal Editor validation. Preserve operator-only promotions, PR open/unmerged, no irreversible o-takiage.
+
+## Holding ashes · previous living front
+
+<details>
+<summary>Previous front preserved verbatim</summary>
+
 # Projection Loom · YIN living roadmap
 
 ## Latest source wave · topology admission accounting
@@ -2189,6 +2202,8 @@ Operator pet-name promotion. At authoring time, the campaign had not yet
 produced hosted results; inspect exact-head workflow receipts and archives
 before calling any offspring successful.
 
+
+</details>
 
 </details>
 
