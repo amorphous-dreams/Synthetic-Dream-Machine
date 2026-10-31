@@ -14,6 +14,10 @@
 
 A repository-wide reference census and exact-head CI are still required to establish consumer safety. Existing guides, technical references, examples and experiment READMEs remain rather than being deleted without replacement. Source geometry, STEP evidence, lineages, operator boundaries and dissent have not been burned. Never claim prior green checks cover this head. Before further retirement, resolve every remaining live consumer and prefer canonical carriers to replicated Markdown. Git carries the ash; do not recreate historical narrative as giant living fronts.
 
+## Closing ledger update
+
+The ashes retrieval ledger was refreshed at `70feed3fb556565a3259a85ab55dada4d076fdf1` to distinguish retired historical links from living paths. This handoff refresh follows that ledger update. Exact-head CI, whole-repository consumer census and `.mem` sealing remain unwitnessed. Next session must check real PR head and resolve references before further deletions.
+
 ---
 
 # Projection Loom · O-takiage evergreen handoff · 2026-10-31
