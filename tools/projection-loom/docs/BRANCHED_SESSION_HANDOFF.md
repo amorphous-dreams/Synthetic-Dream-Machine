@@ -1,3 +1,9 @@
+# O-takiage · branch re-entry correction (2026-10-31)
+
+The superseded reconstruction-first reading below is historical testimony, **not current precedence**. On research re-entry, bounded mutation of a complete, independently native-admitted parent route is the first proposed heredity witness; semantic reconstruction remains a second strategy. A derived route-family from `PlaceGenome + SpatialIntent` is not itself STEP admission. The two-epoch offering is not proof of native parent-to-distinct-child inheritance. Preserve both hypotheses and require an independently audited three-epoch witness. No second OODA-HA controller, no automatic aesthetic winner, no source deletion.
+
+The five recursive Markdown histories are recoverable from the [named Git ashes index](../archives/PR84_MARKDOWN_ASHES_INDEX.md). Source text and dissent are retained; current operational state belongs to the Lares handoff carrier. Exact-head CI has not been rerun for this o-takiage.
+
 # Projection Loom · YIN re-entry key
 
 ## 2026-10-31 Lares crew handoff meme · root-bag placement
