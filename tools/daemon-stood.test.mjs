@@ -19,7 +19,7 @@ test("CONTROL: the log that names the channel has stood, a lararium and a herm a
   assert.equal(daemonStood("[herm] phase → live\n[herm] uds verb-channel on /tmp/x.sock (perms 0600)\n"), true);
 });
 
-test("the three daemon harnesses wait through the reader, never on `phase → live` alone", () => {
+test("the four daemon harnesses wait through the reader, never on `phase → live` alone", () => {
   for (const f of ["custody-census-witness.mjs", "vault-backup-door.test.mjs", "vault-restore-door.test.mjs", "custody-door.test.mjs"]) {
     const text = readFileSync(new URL(f, import.meta.url), "utf8");
     assert.match(text, /daemonStood\(/, `${f} waits through daemonStood`);

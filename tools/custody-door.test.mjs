@@ -24,6 +24,7 @@ import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { TEST_PASSPHRASE } from "./test-custody-route.mjs";
 import { custodyActLanded, sendCustodyFrame, unlockTestCustody } from "./unlock-test-custody.mjs";
+import { daemonStood } from "./daemon-stood.mjs";
 
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const cli = join(repo, "packages/lares-cli/dist/src/bin/lares.js");
@@ -60,7 +61,7 @@ async function stand(root) {
   const lives = () => (log.match(/phase → live/g) ?? []).length;
   await new Promise((resolve, reject) => {
     const poll = setInterval(() => {
-      if (lives() > 0) { clearInterval(poll); resolve(); }
+      if (lives() > 0 && daemonStood(log)) { clearInterval(poll); resolve(); }
       else if (child.exitCode !== null) { clearInterval(poll); reject(new Error(`daemon exited ${child.exitCode} before live:\n${log.slice(-3000)}`)); }
     }, 200);
   });
