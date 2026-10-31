@@ -58,7 +58,7 @@ def test_missing_parents_become_explicit_mutation_deferral():
                                    epoch=1,index=1,offspring=2,seed=13)
     assert child.identity
     assert receipt["emitter"]=="mutation"
-    assert "two distinct native-admitted parents" in receipt["recombination_deferral"]
+    assert "two distinct native-admitted parents" in receipt["proposal_deferral"]
     assert receipt["native_audition_completed"] is False
 
 def test_missing_native_workspace_parent_cannot_enter_region_birth():
@@ -68,7 +68,7 @@ def test_missing_native_workspace_parent_cannot_enter_region_birth():
     _,record=emit_place_child(original,resolved,archive,spatial,
                               epoch=1,index=1,offspring=2,seed=13)
     assert record["emitter"]=="mutation"
-    assert "parent lacks independently witnessed native workspace" in record["recombination_deferral"]
+    assert "parent lacks independently witnessed native workspace" in record["proposal_deferral"]
 
 def test_identical_architecture_cannot_be_rebranded_as_successful_recombination():
     # Distinct parent identities alone do not prove a third architectural
@@ -91,8 +91,8 @@ def test_identical_architecture_cannot_be_rebranded_as_successful_recombination(
     _,receipt=emit_place_child(original,resolved,archive,spatial,
                                epoch=1,index=1,offspring=2,seed=23)
     assert receipt["emitter"]=="mutation"
-    assert "alternatives refused" in receipt["recombination_deferral"]
-    assert "generated child is identical to an admitted parent" in receipt["recombination_deferral"]
+    assert "alternatives refused" in receipt["proposal_deferral"]
+    assert "generated child is identical to an admitted parent" in receipt["proposal_deferral"]
     assert receipt["native_audition_completed"] is False
 
 def test_relational_search_preserves_the_first_refusal_then_tries_another_closed_region(monkeypatch):
@@ -161,7 +161,7 @@ def test_topology_refusal_keeps_finite_mutation_fallback():
                                epoch=1,index=1,offspring=3,seed=12)
     assert child.identity
     assert row["emitter"]=="mutation"
-    assert "all source-bound topology patterns refused" in row["recombination_deferral"]
+    assert "all source-bound topology patterns refused" in row["proposal_deferral"]
     assert row["native_audition_completed"] is False
 
 
