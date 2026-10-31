@@ -47,6 +47,8 @@ def test_proposals_hold_complete_parent_regions_and_repeat_identically():
     assert len(first.walkways)==1
     assert receipt["ancestors"][0]["automatic_operator_acceptance"] is False
     assert receipt["ancestors"][0]["eligible_region_pair_count"]>=1
+    assert receipt["ancestors"][0]["child_is_distinct_from_both_parents"]
+    assert receipt["ancestors"][0]["tested_region_pair_count"]<=receipt["ancestors"][0]["eligible_region_pair_count"]
     assert receipt["ancestors"][0]["left_native_workspace_sha256"]=="a"*64
 
 
@@ -67,3 +69,27 @@ def test_missing_native_workspace_parent_cannot_enter_region_birth():
                               epoch=1,index=1,offspring=2,seed=13)
     assert record["emitter"]=="mutation"
     assert "parent lacks independently witnessed native workspace" in record["recombination_deferral"]
+
+def test_identical_architecture_cannot_be_rebranded_as_successful_recombination():
+    # Distinct parent identities alone do not prove a third architectural
+    # genotype. A redundant merge must defer to an actual mutation.
+    from dataclasses import replace
+    original,resolved,spatial=inputs()
+    def scale_deck(factor):
+        bodies=[]
+        for body in resolved.bodies:
+            if body.entity_id=="intent_deck_000":
+                node=body.program.nodes[0]
+                revised=replace(node,size=(node.size[0]*factor,*node.size[1:]))
+                body=replace(body,program=GrowthProgram((revised,)))
+            bodies.append(body)
+        return PlaceGenome(tuple(bodies),resolved.walkways,resolved.ascents,resolved.bearings)
+    archive=[{"candidate_id":"p000c000","genome":scale_deck(1.02),
+              "workspace_sha256":"a"*64},
+             {"candidate_id":"p000c001","genome":scale_deck(1.04),
+              "workspace_sha256":"b"*64}]
+    _,receipt=emit_place_child(original,resolved,archive,spatial,
+                               epoch=1,index=1,offspring=2,seed=23)
+    assert receipt["emitter"]=="mutation"
+    assert "alternatives refused" in receipt["recombination_deferral"]
+    assert receipt["native_audition_completed"] is False

@@ -49,10 +49,27 @@ def _cross_parent(source, archive, spatial, *, seed, epoch, index):
         # Explore multiple compatible regions without ranking artistic quality.
         options=sorted(possibilities,key=lambda pair:(pair[0],pair[1]))
         selection_index=(seed+epoch*10007+index*137)%len(options)
-        selected=options[selection_index]
-        record=recombine_place_regions(source,a,b,spatial,
-                        left_generated=list(selected[0]),
-                        right_generated=list(selected[1]))
+        tested=[]
+        chosen=None
+        for offset in range(len(options)):
+            attempt_index=(selection_index+offset)%len(options)
+            pair=options[attempt_index]
+            try:
+                possible=recombine_place_regions(source,a,b,spatial,
+                        left_generated=list(pair[0]),right_generated=list(pair[1]))
+                # Relational breeding must actually combine two distinct
+                # parental contributions. Do not call a copied parent a birth.
+                if possible["child_genome_sha256"] in (a.identity,b.identity):
+                    raise ValueError("generated child is identical to an admitted parent")
+                record=possible
+                selected=pair
+                chosen=attempt_index
+                break
+            except ValueError as exc:
+                tested.append({"candidate_pair_index":attempt_index,
+                               "reason":str(exc)})
+        if chosen is None:
+            return None,"all compatible source-bound region alternatives refused"
     except ValueError as exc:
         return None,"source-bound recombination refused: "+str(exc)
     ancestry={"left_candidate_id":left["candidate_id"],
@@ -62,6 +79,10 @@ def _cross_parent(source, archive, spatial, *, seed, epoch, index):
               "right_native_workspace_sha256":right["workspace_sha256"],
               "eligible_region_pair_count":len(options),
               "sampled_pair_index":selection_index,
+              "accepted_pair_index":chosen,
+              "tested_region_pair_count":len(tested)+1,
+              "rejected_region_alternatives":tested,
+              "child_is_distinct_from_both_parents":True,
               "left_region":list(selected[0]),"right_region":list(selected[1]),
               "recombination_sha256":record["sha256"],
               "automatic_operator_acceptance":False}
