@@ -171,6 +171,19 @@ describe("P2 — the reveal decides: a rotation revealing the enrolled set refus
     if (!r.ok) expect(r.reason).toContain("three distinct keys at a threshold of two");
   });
 
+  test("★ RED (train Sol probe): a direct enrolment of [self, A, B] then a rotation signed by self + A refuses at the reveal ★", async () => {
+    const { enrolment, pubs } = await enrolledOver([SELF, seed(1), seed(2)], 2);
+    const r = await reveal(enrolment, pubs, 2, [SELF, seed(1)]);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toContain("self-recovery key");
+  });
+
+  test("CONTROL: three outside keys still rotate when the self key stands beside the set, not in it", async () => {
+    const { enrolment, pubs } = await enrolledOver([seed(1), seed(2), seed(3)], 2);
+    const r = await reveal(enrolment, pubs, 2, [seed(1), seed(3)]);
+    expect(r.ok, r.ok ? "" : r.reason).toBe(true);
+  });
+
   test("★ RED: a 2-of-2 reveal refuses though its digest matches ★", async () => {
     const { enrolment, pubs } = await enrolledOver(contacts(2), 2);
     const r = await reveal(enrolment, pubs, 2, [seed(1), seed(2)]);
