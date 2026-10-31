@@ -1,4 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import { fixtureIntentVerbs, signIntentEntry, buildAnswer, buildAsks, buildIntent, intentEntryCid, writeIntentEntry, actCid, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, intentEntryRecordsOfGroup, intentId,
   mintPersonaInception, signPersonaAct, type DocHandle, type LarDoc } from "@lararium/mesh";
 import { makeFaceIntentDoor, requestFaceJoin } from "../src/face-intent-door.js";
@@ -179,5 +180,137 @@ describe("face intent door stalls and gates", () => {
     expect(live.during).toBe(0); expect(live.after).toBe(0);
     const faulted = await run(true);
     expect(faulted.during).toBe(0); expect(faulted.after).toBe(1);
+  });
+});
+
+type Standing = "stands" | "aside" | "unknown";
+/**
+ * An async standing source as production holds one (the daemon's dyad fold over the edge board): `answer` reads the fold as
+ * the documents stand, `move` lands a change on them, and `version` names their heads, which every change moves.
+ */
+const standingSource = () => {
+  let version = 0; const moved = new Map<string, Standing>();
+  return { answer: (atom: string): Standing => moved.get(atom.toLowerCase()) ?? "stands",
+    move: (atom: string, to: Standing) => { moved.set(atom.toLowerCase(), to); version++; }, version: () => String(version) };
+};
+/**
+ * THE PORT ADAPTER: how a production door is handed an async standing source, in this head's port shape. The scenarios and
+ * their assertions below stand as written; a fix that changes the port's shape moves only this adapter.
+ */
+const asyncStanding = (source: ReturnType<typeof standingSource>, read: (atom: string) => Promise<Standing> = async (atom) => { const a = source.answer(atom); await Promise.resolve(); return a; }) =>
+  ({ standing: read });
+/** A promise that records whether anyone ever awaited it: a read the door started and abandoned stays unawaited. */
+class Watched<T> extends Promise<T> {
+  static override get [Symbol.species]() { return Promise; }
+  awaited = false;
+  override then<A = T, B = never>(ok?: ((v: T) => A | PromiseLike<A>) | null, no?: ((e: unknown) => B | PromiseLike<B>) | null): Promise<A | B> { this.awaited = true; return super.then(ok, no); }
+}
+const settle = async () => { for (let i = 0; i < 5; i++) await new Promise<void>((r) => setTimeout(r, 0)); };
+
+describe("the boundary acquires asynchronously, then observes in one synchronous turn", () => {
+  const twoPinned = async (f: Awaited<ReturnType<typeof faceOf>>, shared: ReturnType<typeof plane>, verbs: ReturnType<typeof faceIntentVerbs>) => {
+    for (const nonce of ["one", "two"]) {
+      const intent = await buildIntent({ group: f.group, signer: f.joinee, verb: "face-join", args: { summons: { nonce } }, nonce, audience: { mode: "pinned", atom: f.h1.key }, verbs });
+      shared.handle.change((d) => writeIntentEntry(d, intent));
+    }
+  };
+
+  test("RED: the executor moved aside during the first effect stops the second; CONTROL: no move runs both", async () => {
+    const run = async (moves: boolean) => {
+      const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs(), source = standingSource();
+      const effect = vi.fn(async () => { if (moves) source.move(f.h1.key, "aside"); return { recordCid: "r" }; });
+      await twoPinned(f, shared, verbs);
+      const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception], verbs, log: () => {},
+        atom: f.h1, ...asyncStanding(source), effects: new Map([["face-join", effect]]) });
+      await door.heed();
+      return effect.mock.calls.length;
+    };
+    expect(await run(true)).toBe(1);
+    expect(await run(false)).toBe(2);
+  });
+
+  test("RED: an executor read early, moved aside while a later standing still fetches, runs no effect; CONTROL: no move runs it", async () => {
+    const run = async (moves: boolean) => {
+      const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs(), source = standingSource();
+      const effect = vi.fn(async () => ({ recordCid: "r" }));
+      await requestFaceJoin({ group: f.group, plane: shared.handle, atom: f.joinee, hearthAtom: f.h1.key, summons: { card: "one" }, verbs });
+      // The executor reads first; the move lands while the joinee's standing, read last, is still in flight.
+      const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception], verbs, log: () => {},
+        atom: f.h1, ...asyncStanding(source, async (atom) => { const a = source.answer(atom); await Promise.resolve();
+          if (moves && atom.toLowerCase() === f.joinee.key.toLowerCase()) source.move(f.h1.key, "aside"); return a; }),
+        effects: new Map([["face-join", effect]]) });
+      await door.heed();
+      return effect.mock.calls.length;
+    };
+    expect(await run(true)).toBe(0);
+    expect(await run(false)).toBe(1);
+  });
+
+  test("RED: no standing read is started and abandoned, so a failing source rejects into the door and never into the process; CONTROL: the instrument names an unawaited read", async () => {
+    const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs(), source = standingSource();
+    const effect = vi.fn(async () => ({ recordCid: "r" }));
+    await requestFaceJoin({ group: f.group, plane: shared.handle, atom: f.joinee, hearthAtom: f.h1.key, summons: { card: "one" }, verbs });
+    // The first acquisition answers; every read after it rejects (a board that stops resolving).
+    const reads: Watched<Standing>[] = []; let answered = 0;
+    const atoms = new Set([f.h1.key, f.h2.key, f.joinee.key].map((k) => k.toLowerCase()));
+    const read = (atom: string): Promise<Standing> => {
+      const ok = answered < atoms.size; if (ok) answered++;
+      const p = new Watched<Standing>((resolve, reject) => { if (ok) resolve(source.answer(atom)); else reject(new Error("board unreachable")); });
+      reads.push(p); return p;
+    };
+    const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception], verbs, log: () => {},
+      atom: f.h1, ...asyncStanding(source, read), effects: new Map([["face-join", effect]]) });
+    await door.heed();
+    await settle();
+    expect(reads.filter((p) => !p.awaited)).toHaveLength(0);
+    expect(effect).toHaveBeenCalledTimes(1);
+    const planted = new Watched<Standing>((resolve) => resolve("stands"));
+    expect(planted.awaited).toBe(false);
+    await planted;
+    expect(planted.awaited).toBe(true);
+  });
+
+  test("RED: a fault in the fenced run wakes the attached hearth it fenced, with no manual heed; CONTROL: an attached hearth pinned from the start runs on its own", async () => {
+    const f = await faceOf(), shared = plane(), verbs = faceIntentVerbs();
+    let release!: () => void; const held = new Promise<void>((r) => { release = r; });
+    const a1 = vi.fn(async () => { await held; throw new Error("first hearth faulted"); }), a2 = vi.fn(async () => ({ recordCid: "two" }));
+    const base = { group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: [f.inception], verbs, log: () => {}, standing: () => "stands" as const };
+    const intent = await buildIntent({ group: f.group, signer: f.joinee, verb: "face-join", args: { summons: {} }, nonce: f.joinee.key, audience: { mode: "asks" }, verbs });
+    const id = intentId(intent.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string });
+    const asks = await buildAsks({ group: f.group, signer: f.joinee, intent: id, needs: "executor" });
+    const first = await buildAnswer({ group: f.group, signer: f.h1, ask: intentEntryCid(asks), verdict: "approve", executor: f.h1.key });
+    shared.handle.change((d) => { writeIntentEntry(d, intent); writeIntentEntry(d, asks); writeIntentEntry(d, first); });
+    const stop1 = makeFaceIntentDoor({ ...base, atom: f.h1, effects: new Map([["face-join", a1]]) }).attach();
+    const stop2 = makeFaceIntentDoor({ ...base, atom: f.h2, effects: new Map([["face-join", a2]]) }).attach();
+    try {
+      await settle();
+      expect(a1).toHaveBeenCalledTimes(1);
+      const repin = await signIntentEntry({ group: f.group, entry: "answer", refs: [intentEntryCid(first)], ask: intentEntryCid(asks), verdict: "approve", executor: f.h2.key }, f.h1);
+      shared.handle.change((d) => writeIntentEntry(d, repin));
+      await settle();
+      expect(a2).not.toHaveBeenCalled();
+      release();
+      await settle();
+      expect(a2).toHaveBeenCalledTimes(1);
+    } finally { stop1(); stop2(); }
+
+    const g = await faceOf(), other = plane(), b2 = vi.fn(async () => ({ recordCid: "two" }));
+    await requestFaceJoin({ group: g.group, plane: other.handle, atom: g.joinee, hearthAtom: g.h2.key, summons: { card: "one" }, verbs });
+    const stop = makeFaceIntentDoor({ group: g.group, plane: other.handle, personaRecords: () => g.log, kelChain: [g.inception], verbs, log: () => {}, standing: () => "stands", atom: g.h2, effects: new Map([["face-join", b2]]) }).attach();
+    try { await settle(); expect(b2).toHaveBeenCalledTimes(1); } finally { stop(); }
+  });
+
+  test("RED: the daemon's intent door reads its chain and standings LIVE, never the boot's captured chain or an async port; CONTROL: the census finds planted forms", () => {
+    const source = readFileSync(new URL("../src/operator-daemon-behavior.ts", import.meta.url), "utf8");
+    const captured = /kelChain\s*:\s*daemonAuth\.personaKel!?\.chain\b/, asyncPort = /\bstanding\s*:\s*async\b/, live = /kelChain\s*:\s*\(\)\s*=>/;
+    expect(captured.test("kelChain: daemonAuth.personaKel!.chain, anchor")).toBe(true);
+    expect(asyncPort.test("standing: async (device) => x")).toBe(true);
+    expect(live.test("kelChain: () => chainNow()")).toBe(true);
+    const start = source.indexOf("const door = makeFaceIntentDoor({");
+    expect(start).toBeGreaterThan(-1);
+    const block = source.slice(start, source.indexOf("\n            });", start));
+    expect(block).not.toMatch(captured);
+    expect(block).not.toMatch(asyncPort);
+    expect(block).toMatch(live);
   });
 });
