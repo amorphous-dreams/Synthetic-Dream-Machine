@@ -17,6 +17,9 @@
  *       lane would carry draws withhold once its registration directory turns unreadable, and so does an ordinary book.
  *       CONTROL: once the failure clears and a recount reads whole, the ordinary book crosses again and the canon stays
  *       withheld.
+ *   T6b RED (controller ruling: dreamnet-architecture #/the-three-state-gradient, "a charter stands and cannot be read" reads
+ *       TORN, "never confused with 'own'"): a charter file that stands with a malformed body, beside a retained alias,
+ *       marks the count INCOMPLETE and withholds. CONTROL: with no charter file at all the count reads whole.
  */
 import { afterAll, describe, expect, test } from "vitest";
 import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -28,6 +31,7 @@ import * as mesh from "@lararium/mesh";
 import { LARES_DOC_URI, hex, protectedDocGuard, signRealmBagRegistration } from "@lararium/mesh";
 import * as kahuRealm from "../src/kahu-realm.js";
 import { kahuProtectedHolder, keepKahuRegistration } from "../src/kahu-realm.js";
+import { nexusCharterDocPath } from "../src/nexus-doc.js";
 import { selfSlotShareDecision } from "../src/self-slot-share.js";
 
 const roots: string[] = [];
@@ -148,5 +152,28 @@ describe("the guard serves the standing count and each document's own home", () 
       expect(await crosses(book), "CONTROL: a whole recount lets the ordinary book cross again").toBe(true);
       expect(await crosses(idOf(canon)), "CONTROL: the canon stays withheld").toBe(false);
     } finally { try { chmodSync(kept, 0o700); } catch { /* gone */ } holder.close(); }
+  });
+
+  test("T6b — RED: a charter that stands with a malformed body tears the count; no charter at all reads whole", async () => {
+    const sealHome = mkdtempSync(join(tmpdir(), "lar-kahu-torn-charter-")); roots.push(sealHome);
+    const canon = mesh.deterministicDocUrl("a-retained-canon-beside-a-torn-charter");
+    const book = idOf(mesh.deterministicDocUrl("another-ordinary-book"));
+    keepKahuRegistration(sealHome, await registration("nexus-" + "6b".repeat(32), canon));
+    const holder = kahuProtectedHolder({ sealHome, canon: () => ({}) });
+    const guard = protectedDocGuard({
+      ids: () => holder.ids(), settled: () => holder.settled(), pending: () => holder.pending(), incomplete: () => holder.incomplete(),
+      decide: { "kahu-canon": () => false },
+    } as GuardOptions);
+    try {
+      await holder.recount();
+      expect(await guard.withholds("same-face-leaf", book), "CONTROL: no charter file reads whole; the book crosses").toBe(false);
+      const charter = nexusCharterDocPath(sealHome);
+      mkdirSync(join(charter, ".."), { recursive: true });
+      writeFileSync(charter, "this body reads as no charter");
+      await holder.recount();
+      expect(holder.incomplete(), "T6b: a standing charter that cannot be read tears the count").toBe(true);
+      expect(await guard.withholds("same-face-leaf", idOf(canon)), "T6b: the retained canon withholds").toBe(true);
+      expect(await guard.withholds("same-face-leaf", book), "T6b: every document withholds").toBe(true);
+    } finally { holder.close(); }
   });
 });
