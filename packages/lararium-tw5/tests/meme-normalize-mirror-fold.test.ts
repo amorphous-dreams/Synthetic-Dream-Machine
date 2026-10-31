@@ -60,7 +60,7 @@ describe("normalizeMemeSource — every read-only mirror folds to its canonical 
   });
 
   test("CONTROL — a bare `<<link …>>` (no `~`) matches NO declared mirror pattern, so it never folds", () => {
-    // Measured against the real corpus (ai-phrasebook.mem:14): `<<link "https://…">>` resembles
+    // A bare TW5 `<<link "https://…">>` macro call resembles
     // the `link` mirror's own word but carries none of its declared sharktooth shape
     // (`<<~ link …>>`) — a universally-optional `~` in the fold regex would rewrite text that is
     // not actually the sigil at all. Only `fragment` (its own `lar-open-pattern`) opens bare.

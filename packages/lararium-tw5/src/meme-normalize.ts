@@ -116,8 +116,8 @@ const MIRROR_CANONICAL_OF = new Map(READ_ONLY_MIRRORS.map((m) => [m.name, m.cano
  * compatibility spelling); every other read-only mirror requires the sharktooth (`<<~ NAME`,
  * `<<~! NAME` pragma form, `<<~/NAME` close). A regex that made `~` universally optional would fold
  * a bare `<<link …>>` that matches NO declared pattern for `link` at all — not the sigil, just text
- * that resembles one — measured against the real corpus (ai-phrasebook.mem:14) before this split
- * landed. Group 1 (the prefix, untouched) and group 2 (the mirror word, the only text rewritten).
+ * that resembles one (the bare-`<<link …>>` CONTROL in tests/meme-normalize-mirror-fold.test.ts
+ * guards it). Group 1 (the prefix, untouched) and group 2 (the mirror word, the only text rewritten).
  */
 function isBarePrefix(name: string, canonical: string): boolean {
   const rule = GENERATED_SIGILS.find((s) => s.name === name) ?? GENERATED_SIGILS.find((s) => s.name === canonical);
