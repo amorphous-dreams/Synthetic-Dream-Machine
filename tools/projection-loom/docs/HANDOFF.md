@@ -1,5 +1,20 @@
 # Projection Loom · Living YIN handoff
 
+## Verified repair checkpoint and topology replay hardening
+
+PR #84 on `feature/green-jello-dinosaur-5--projection-loom`. GitHub Actions run `41177032316` for head `c81f9a96195a7e815996ca88f76807b095b8bfd0` completed **success** in CAD/evidence CI, clearing the earlier five-test diagonal-fixture failure. This verdict belongs to that commit, not newer heads; repository-wide and other distinct workflows require separate evidence.
+
+Feature commit `b3d97ba230eee144198beb6894e890ca2742238c` adds a negative census witness: an altered topology ancestry attempt count must refuse rather than silently enter immutable replay. The current feature has not yet received its own completed native CI verdict.
+
+Next work: inspect all exact-head workflows, verify genuine multi-epoch topology native admission, refusal and finite audition budgets, test forged receipts and source-conditioned morphogenesis. Preserve one OODA-HA controller, no compatibility shims, no automatic artistic or Elyncia promotion. PR stays open; no irreversible o-takiage.
+
+## Ashes holding ahu · former living front
+
+<details>
+<summary>Previous living front retained verbatim</summary>
+
+# Projection Loom · Living YIN handoff
+
 ## Red CI diagnosis and targeted fixture repair
 
 **Branch:** `feature/green-jello-dinosaur-5--projection-loom` · **PR:** #84 · **repair commit:** `60d7f44d2d32d9fe059d6d035035ffed76cada3e`.
@@ -2770,6 +2785,8 @@ Operator pet-name promotion. At authoring time, the campaign had not yet
 produced hosted results; inspect exact-head workflow receipts and archives
 before calling any offspring successful.
 
+
+</details>
 
 </details>
 
