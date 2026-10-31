@@ -50,8 +50,8 @@ def _html_board(report):
                 parents.append(ancestry["candidate_id"])
         lineage=("<p class='lineage'>Emitter: "+h(emission["emitter"])+
                  (" · Native parent candidates: "+h(", ".join(parents)) if parents else "")+
-                 (" · Deferred breeding: "+h(emission["recombination_deferral"])
-                  if emission["recombination_deferral"] else "")+"</p>")
+                 (" · Deferred proposal: "+h(emission["proposal_deferral"])
+                  if emission["proposal_deferral"] else "")+"</p>")
         lines=[]
         for goal in item["goal_consequences"]:
             lines.append("<li>"+h(goal["kind"]+" ("+goal["subject"]+" → "+
@@ -64,8 +64,8 @@ def _html_board(report):
                       reason+"</article>")
     deferred="".join("<li>"+h(row["candidate_id"])+" (epoch "+
                      str(row["epoch"])+") · "+h(row["emitter_receipt"]["emitter"])+
-                     (" · "+h(row["emitter_receipt"]["recombination_deferral"])
-                      if row["emitter_receipt"]["recombination_deferral"] else "")+
+                     (" · "+h(row["emitter_receipt"]["proposal_deferral"])
+                      if row["emitter_receipt"]["proposal_deferral"] else "")+
                      "</li>" for row in report["deferred"])
     return ("""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -93,7 +93,7 @@ Deferred: """+str(len(report["deferred"]))+"""</p>
 <p>Relational proposals: """+str(report["relational_emissions"]["relational_offered"])+
 """ · Independently native-audited: """+str(report["relational_emissions"]["relational_native_attempted"])+
 """ · Native-admitted: """+str(report["relational_emissions"]["relational_native_admitted"])+
-""" · Deferred pairing: """+str(report["relational_emissions"]["recombination_deferrals"])+
+""" · Deferred proposals: """+str(report["relational_emissions"]["proposal_deferrals"])+
 """ · Rejected source-region combinations: """+str(report["relational_emissions"]["region_pairs_refused_before_birth"])+
 """ (proposal attempts only; not STEP auditions)</p>
 <section>"""+ "".join(blocks)+"""</section>
