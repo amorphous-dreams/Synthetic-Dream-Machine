@@ -20,8 +20,9 @@
  *       intents plane (where the summons rides) and the persona plane cross to the dialed hearth.
  *   S2  CONTROL: a dial whose pin came from a kept admit bundle seats the contracted class and its standing, and shares no
  *       private plane.
- *   S3  RED (Sol BLOCKER 2): a bootstrap provenance tag naming the worn face, beside a pin no sealed landing record names,
- *       shares no private plane.
+ *   S3  RED (Sol BLOCKER 2): a bootstrap pin no sealed landing record names shares no private plane, whatever the clear
+ *       bootstrap claims beside it: the relation reads no input but the sealed record and the pin's digest (the extra
+ *       `provenance` property a forger would supply has no reader at all).
  *   S4  CONTROL: a landing record that names ANOTHER pin shares no private plane; no worn face shares none.
  *   S5  CONTROL: the unseat drops the class, the standing and the view.
  *   S6  RED (Sol BLOCKER 1): the realm's return lane names the hearth the dial SEATED: a kept pin at B names B's Nexus, never
@@ -76,7 +77,7 @@ function seatRig() {
     { peerClassMap: new Map<string, PeerClass>(), peerNexus: new Map<string, string | null>(), faceViews: faceFleetViews(() => bootstrap(ONE), () => G1), dialedHearth: null };
   const verdict = (peerId: string, url: string) => selfSlotShareDecision({
     hasWsSocket: true, peerClass: maps.peerClassMap.get(peerId), selfSlotFedGate: shelf, antigenRing: null, membership: null, planeSeal: null,
-    federationPosture: "private", peerId, documentId: idOf(url), sessionFace: maps.faceViews.gateFor(peerId),
+    peerId, documentId: idOf(url), sessionFace: maps.faceViews.gateFor(peerId),
   } as Parameters<typeof selfSlotShareDecision>[0]);
   return { maps, verdict };
 }

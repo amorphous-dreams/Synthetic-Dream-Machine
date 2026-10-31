@@ -837,6 +837,8 @@ async function prepareNodeBootOn(
         const watch = await watchKahuStanding({
           repo, sealHome, vesselKey: kahuStandingVessel, personaGroupId: custodyGroup, aid: nexus,
           onChange: () => reverdict(),
+          // A carried home's board carries its key hand-overs too: every change recounts, as the primary's does.
+          onBoardChange: () => { void recountKahuProtected().catch(() => {}); },
         });
         kahuStandings.addCarried(nexus, watch);
       } catch (err) { console.warn(`[kahu-realm] no live standing at the carried home ${nexus.slice(0, 18)}…: ${String(err)} (its canon stays withheld)`); }

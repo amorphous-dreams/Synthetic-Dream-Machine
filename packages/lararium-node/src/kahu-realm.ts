@@ -39,7 +39,7 @@ import { keyLineAt } from "./nexus-carriage.js";
 import { NexusCabalError, cabalCore } from "./commands/nexus-cabal.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
-import { readNexusDoc } from "./nexus-doc.js";
+import { nexusCharterDocPath, readNexusDoc } from "./nexus-doc.js";
 
 /** The system bags the Kahu cabal keeps live. */
 export const KAHU_REALM_BAGS: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
@@ -475,7 +475,12 @@ async function readKahuProtected(opts: { readonly sealHome: string; readonly can
   catch (err) { if (!absent(err)) failures.push(`the carried homes would not list: ${String(err)}`); }
   const nexuses = new Set<string>();
   for (const home of homes) {
-    try { const aid = nexusAidOf(readNexusDoc(home)); if (aid) nexuses.add(aid); }
+    try {
+      // A charter that STANDS and cannot be read reads TORN, never as none (dreamnet-architecture #/the-three-state-gradient).
+      const doc = readNexusDoc(home);
+      if (doc === null && existsSync(nexusCharterDocPath(home))) failures.push(`the charter at ${home} stands and reads as no charter`);
+      const aid = nexusAidOf(doc); if (aid) nexuses.add(aid);
+    }
     catch (err) { failures.push(`the charter at ${home} would not read: ${String(err)}`); }
     const keptRoot = join(home, "nexus", "kahu-realm");
     let dirs: string[] = [];
