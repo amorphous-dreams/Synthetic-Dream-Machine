@@ -23,6 +23,11 @@ import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { openStaged, awaitRendezvous, foundStagedHearth, freePort, growStagedQuorum, type LarInstance } from "../harness/instance.js";
 import { seedUserBag } from "../harness/promote.js";
+import { censusOutcomeLinkage, OUTCOME_URI_PREFIX, plainValue, type LarDoc } from "../../packages/lararium-mesh/src/index.js";
+import { STORE_DOOR_FACE_ROWS } from "../../packages/lararium-node/src/store-door-verbs.js";
+import { ownedStore } from "../../packages/lararium-node/src/owned-store.js";
+import { larDataDir } from "../../packages/lararium-node/src/vessel-paths.js";
+import { daemonDocUrlFromBootstrap } from "../../packages/lararium-node/src/commands/cabal-join.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -147,4 +152,41 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
     expect(bad.json?.["ok"], said(bad)).toBe(false);
     expect(said(bad)).toContain("realm-unreadable");
   }, 120_000);
+
+  test("★ K20: a face row's answer rides the socket alone — no daemon outcome pairs the face with its key at the Nexus ★", async () => {
+    // The face stands in the cabal realm R and the door prints its key at R's Nexus: a per-Nexus leaf.
+    const stood = await A!.cli(["cabal", "face", "--realm", REALM_R, "--face", "0", "--json"]);
+    expect(stood.json?.["ok"], said(stood)).toBe(true);
+    const leaf = String(dataOf(stood)["face"] ?? "");
+    expect(leaf).toMatch(/^[0-9a-f]{64}$/);
+    // The feed rides a session of the face too, and its island verb writes the leaf's slot.
+    const fed = await A!.cli(["cabal", "feed", "--realm", REALM_R, "--face", "0", "--json"]);
+    console.error(`realm-select MEASURE feed: ${said(fed).trim().slice(0, 300)}`);
+    expect(fed.json?.["ok"], said(fed)).toBe(true);
+    // The store rests once the vessel stops; the census reads the daemon document the face fleet syncs.
+    await A!.stopDaemonOnly();
+    const priorRoot = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = A!.root;
+    let tiddlers: Record<string, unknown>;
+    try {
+      const url = daemonDocUrlFromBootstrap();
+      expect(url, "the bootstrap names the daemon document").toBeTruthy();
+      tiddlers = await ownedStore(larDataDir(), async (repo) =>
+        ({ ...((await repo.find<LarDoc>(url as never)).doc()?.tiddlers ?? {}) }) as Record<string, unknown>);
+    } finally {
+      if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
+    }
+    const census = censusOutcomeLinkage(tiddlers, { socketOnly: STORE_DOOR_FACE_ROWS, keys: [leaf] });
+    const verbs = Object.entries(tiddlers).filter(([t]) => t.startsWith(OUTCOME_URI_PREFIX)).map(([, r]) => String(plainValue(((r as { tiddler?: Record<string, unknown> }).tiddler ?? {})["verb"])));
+    console.error(`realm-select MEASURE census: ${census.outcomes} outcomes (${[...new Set(verbs)].join(",")}), linked ${JSON.stringify(census.linked)}`);
+    expect(census.outcomes, "the census read the vessel's outcomes").toBeGreaterThan(0);
+    expect(census.linked).toEqual([]);
+    // KNOWN POSITIVE: the same census over the same record set, with one outcome pairing a requester and the leaf.
+    const planted = `${OUTCOME_URI_PREFIX}k20-planted`;
+    // Planted as the document keeps a record: `{ tiddler, meta }`, its strings wrapped as Automerge hands them out.
+    const wrap = (val: string) => ({ val, [Symbol.for("_am_immutableString")]: true });
+    const withPlant = { ...tiddlers, [planted]: { tiddler: { title: wrap(planted), verb: wrap("load"), status: wrap("done"),
+      "requested-by": wrap("did:key:planted"), results: wrap(JSON.stringify({ summary: { ok: true, output: { writer: leaf } } })) }, meta: {} } };
+    expect(censusOutcomeLinkage(withPlant, { socketOnly: STORE_DOOR_FACE_ROWS, keys: [leaf] }).linked.map((l) => l.title)).toEqual([planted]);
+  }, 240_000);
 });

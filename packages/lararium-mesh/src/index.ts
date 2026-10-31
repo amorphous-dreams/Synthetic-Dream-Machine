@@ -625,3 +625,4 @@ export * from "./face-log-view.js";
 export { parseNexusDoc, readNexusDocFence, nexusDocFenceRe, NEXUS_DOC_FENCES } from "./nexus-doc-text.js";
 
 export * from "./intent-admission.js";
+export { censusOutcomeLinkage, type OutcomeLinkage } from "./outcome-census.js";
