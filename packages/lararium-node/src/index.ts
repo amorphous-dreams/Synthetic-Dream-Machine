@@ -429,6 +429,8 @@ export type {
 export { buildPronaosProjection } from "./pronaos-projection.js";
 export type { PronaosProjectionInputs } from "./pronaos-projection.js";
 export { composePronaosFromEnv, parsePronaosCompositionConfig } from "./pronaos-composition.js";
+export { resolveGenesis, pinGenesisSeed, checkGenesisPin, genesisFoundingLine, genesisResolutionAt } from "./genesis-resolve.js";
+export type { GenesisResolution, GenesisSource } from "./genesis-resolve.js";
 export { derivePronaosDeskInputs } from "./pronaos-desk.js";
 export type { PronaosDeskInputs } from "./pronaos-desk.js";
 export type { PronaosComposition, PronaosCompositionConfig } from "./pronaos-composition.js";

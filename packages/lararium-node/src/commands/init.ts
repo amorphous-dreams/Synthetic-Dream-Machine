@@ -27,7 +27,9 @@ import {
   nexusIdentity, nexusScopeOrThrow, nexusAidOf,
   mintFaceAnchor, raiseFaceFrontier,
 } from "@lararium/mesh";
-import { daemonGenesisDir } from "../lares-config.js";
+import { daemonGenesisDir, daemonCorpusRoot, loadLaresConfig } from "../lares-config.js";
+import { repoRoot } from "@lararium/mesh/node";
+import { genesisFoundingLine, genesisResolutionAt, pinGenesisSeed } from "../genesis-resolve.js";
 import { larDataDir, larBootstrapPath, larSealHome, larIdentityDir } from "../vessel-paths.js";
 import { FsCustodyIo } from "../custody-io.js";
 import { assertFoundingRoute, custodyTreeStands, foundCustody } from "../custody-session.js";
@@ -205,6 +207,11 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
   //
   // A gate that fires after the act it guards teaches the operator to distrust a clean refusal.
   const hearthTrueName = GENESIS_ENGINE_CID(genesisDir);
+  const genesisUsed = genesisResolutionAt(genesisDir, { explicit: process.env["LAR_GENESIS"], configured: loadLaresConfig().resources?.genesis, corpusRoot: daemonCorpusRoot(), shippedRoot: repoRoot });
+  if (hearthTrueName) {
+    console.log(`[lares vessel found] ${genesisFoundingLine(genesisUsed)}`);
+    pinGenesisSeed(storageDir, genesisUsed);
+  }
   if (!hearthTrueName) {
     throw new Error(
       "[lares vessel found] cannot found: hearth true-name (engine CID) absent from " + genesisDir + " —\n" +

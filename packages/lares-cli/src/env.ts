@@ -23,7 +23,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { larDataDir, loadVesselVerifyingKey, runtimeCasOverride } from "@lararium/node";
+import { larDataDir, loadVesselVerifyingKey, resolveGenesis, runtimeCasOverride } from "@lararium/node";
 
 // The vessel runtime-state resolvers — defined once in @lararium/node, surfaced here.
 export {
@@ -94,7 +94,7 @@ export function larWikisDir(): string {
 /** The genesis dir — `LAR_GENESIS`, else `<corpus>/genesis`. TRACKED SEED ALONE (island + cas), identical
  *  for every vessel. The per-vessel bootstrap left it for the store — see larBootstrapPath. */
 export function larGenesisDir(): string {
-  return process.env["LAR_GENESIS"] ?? join(larRoot(), "genesis");
+  return resolveGenesis({ explicit: process.env["LAR_GENESIS"], corpusRoot: larRoot(), shippedRoot: repoRoot }).dir;
 }
 
 /**

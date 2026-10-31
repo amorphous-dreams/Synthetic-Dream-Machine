@@ -20,6 +20,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
+import { resolveGenesis } from "./genesis-resolve.js";
 import { larHome } from "./vessel-paths.js";
 import type { ExplicitOriginComposition } from "./lan-address.js";
 
@@ -184,10 +185,13 @@ export function daemonCorpusRoot(): string {
   return process.env["LAR_ROOT"] ?? repoRoot;
 }
 
-/** The genesis dir — `LAR_GENESIS` → `config.resources.genesis` → `<corpus>/genesis`. Tracked seed
+/** The genesis dir — `LAR_GENESIS` → `config.resources.genesis` → `<corpus>/genesis` when it holds a seed → the build's shipped genesis (genesis-resolve). Tracked seed
  *  (seed.json + cas/ — the tracked bundle; the bootstrap rides the vessel store). */
 export function daemonGenesisDir(cfg: LaresConfig = loadLaresConfig()): string {
-  return process.env["LAR_GENESIS"] ?? cfg.resources?.genesis ?? join(daemonCorpusRoot(), "genesis");
+  return resolveGenesis({
+    explicit: process.env["LAR_GENESIS"], configured: cfg.resources?.genesis,
+    corpusRoot: daemonCorpusRoot(), shippedRoot: repoRoot,
+  }).dir;
 }
 
 /** The bags dir — `LAR_BAGS` → `config.resources.bags` → `<corpus>/bags`. The daemon's holdings tree. */
