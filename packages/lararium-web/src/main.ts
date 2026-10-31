@@ -567,12 +567,12 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
       const offer = phoneSeatExplanation(ambientPhoneSeatHost(reading.persistence));
       if (offer) row(vesselEl, "phone seat", offer, "warn");
     }).catch(() => { /* an unreadable storage surface reports nothing — never a fault */ });
-    // THE SEED AT REST — sealed under this browser's slot tree, or else cleartext or a passkey wrap whose class the line names.
+    // THE SEED AT REST — sealed under this browser's slot tree, or else a passkey wrap whose class the line names, or the plain word that no wrap stands.
     void readBrowserCustody(VESSEL_IDB).then(async (custodyNow) => {
       if (custodyNow.reading === "sealed") { row(vesselEl, "seed", "sealed under this browser's passphrase slot", "ok"); return; }
       const wrap = await readBrowserSeedWrap(undefined, (await loadBrowserActivePersona()) ?? 0);
       row(vesselEl, "seed", seedRestStatus(wrap), wrap ? "ok" : "warn");
-    }).catch(() => { /* an unreadable slot reads as cleartext elsewhere; this line stays silent — never a fault */ });
+    }).catch(() => { /* an unreadable slot reads its own refusal elsewhere; this line stays silent — never a fault */ });
   } catch (e) {
     // A leader whose vessel refused to open keeps the lead (no other tab could open the store either) and offers the retry; its
     // followers hear `parked` and wait on its surface.

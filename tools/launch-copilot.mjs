@@ -15,7 +15,7 @@
  *   walls: no `shell(bash)`, no `shell(env)`, never `--allow-all-*` or `--yolo`.
  *
  * The seat's handback lands in `<seat-dir>/<name>.out.md` (stdout), its log in `<name>.log`, the session share in
- * `<name>.share.md`. It prints the premium allowance before and after, read from Copilot's own entitlement cache.
+ * `<name>.share.md`. It prints the run's own spend (the log's `Requests N Premium` line) and the entitlement cache's last-known figure before and after.
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, openSync, readFileSync, realpathSync } from "node:fs";
@@ -81,7 +81,22 @@ export function seatEnv(env) {
   return out;
 }
 
-/** "<remaining>/<entitlement> (as of …, resets …)" from Copilot's entitlement cache, or why it cannot read. */
+/**
+ * The run's own spend: the run log's `Requests N Premium` line, which Copilot writes at exit. A log without the line
+ * reads UNMETERED, never zero (a crashed or refused run spent an unknown amount).
+ */
+export function spendLine(logPath) {
+  try {
+    const lines = readFileSync(logPath, "utf8").split("\n").filter((l) => /\bRequests\s+\d+\s+Premium\b/.test(l));
+    if (lines.length) return `spend: ${lines[lines.length - 1].trim()}`;
+  } catch { /* an absent log meters nothing */ }
+  return "spend: UNMETERED (no `Requests N Premium` line in the run log)";
+}
+
+/**
+ * "<remaining>/<entitlement> (as of …, resets …; last-known)" from Copilot's entitlement cache, or why it cannot read.
+ * The cache does not refresh on a non-interactive run, so its figure names itself last-known, never live.
+ */
 export function allowance(path = join(homedir(), ".cache/copilot/copilot-user-cache.json")) {
   try {
     const text = readFileSync(path, "utf8").replace(/^\s*\/\/.*$/gm, "");
@@ -99,7 +114,7 @@ export function allowance(path = join(homedir(), ".cache/copilot/copilot-user-ca
     };
     walk(JSON.parse(text), 0);
     if (!newest) return `no premium_interactions snapshot in ${path}`;
-    return `${newest.p.quota_remaining}/${newest.p.entitlement}${newest.p.timestamp_utc ? ` (as of ${newest.p.timestamp_utc}` : " ("}${newest.p.timestamp_utc ? ", " : ""}resets ${newest.reset})`;
+    return `${newest.p.quota_remaining}/${newest.p.entitlement}${newest.p.timestamp_utc ? ` (as of ${newest.p.timestamp_utc}` : " ("}${newest.p.timestamp_utc ? ", " : ""}resets ${newest.reset}; last-known)`;
   } catch (error) {
     return `unreadable: ${error.message}`;
   }
@@ -129,9 +144,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   let args;
   try { args = copilotArgs({ mode: o.mode, prompt: readFileSync(o.brief, "utf8"), model: o.model, effort: o.effort, share, addDirs: o.addDirs }); }
   catch (e) { console.error(`[launch-copilot] ${e.message}`); process.exit(2); }
-  console.log(`allowance before: ${allowance()}`);
+  console.log(`allowance before (cache): ${allowance()}`);
   const r = spawnSync("copilot", args, { cwd: o.cwd, env: seatEnv(process.env), stdio: ["ignore", openSync(out, "w"), openSync(log, "w")] });
   console.log(`${o.name} exit ${r.status ?? r.signal}${r.error ? ` (${r.error.message})` : ""}`);
-  console.log(`allowance after: ${allowance()}`);
+  console.log(spendLine(log));
+  console.log(`allowance after (cache): ${allowance()}`);
   process.exit(r.status ?? 1);
 }

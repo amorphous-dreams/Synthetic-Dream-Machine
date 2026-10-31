@@ -13,6 +13,10 @@
  *        its SharedWorker constructor as `host`), wrapped to record `postMessage`; no product hook stands for it.
  *        KNOWN POSITIVE FIRST: one message carrying the key through the same recording port reads found in each form.
  *
+ * THE COST. A passphrase pin derives its key with scrypt at N=2^17, r=8, p=1 (`keyslot.ts` SCRYPT, about half a second alone
+ * and several times that in a browser worker on a loaded box). Each derivation in a test counts against its bound, so TC1
+ * stands as two tests: the first derives once (the seal), the second twice (the seal and the second tab's own unlock).
+ *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-custody
  */
 import { readyWorker } from "./fixtures/ready-worker.js";
@@ -54,14 +58,21 @@ describe("an unlock belongs to one tab", () => {
     await expect(readyWorker(new URL("./fixtures/faulting-tab.worker.ts", import.meta.url))).rejects.toThrow(/the tab worker faulted/);
   }, SLOW);
 
-  test("TC1 a face unlocked in one tab reads locked in a second tab of the same origin — CONTROL: the first tab holds it, the second unlocks on its own", async () => {
-    const idbName = await sealedVessel("two-tabs");
+  test("TC1 a face unlocked in one tab reads locked in a second tab of the same origin — CONTROL: the first tab still holds it", async () => {
+    const idbName = await sealedVessel("two-tabs");   // one derivation: the seal
     const second = await tab();
     try {
       expect(await readBrowserCustody(idbName)).toMatchObject({ reading: "sealed", unlocked: true });   // CONTROL: the first tab holds its unlock
       expect(await ask(second, { op: "status", idbName })).toMatchObject({ reading: "sealed", unlocked: false });
       expect(await ask(second, { op: "read-row", idbName, row: "vessel-key" })).toMatchObject({ refused: "sealed-locked" });
-      expect(await ask(second, { op: "unlock", idbName, passphrase: PASS.passphrase })).toMatchObject({ reading: "opens" });   // CONTROL
+    } finally { second.terminate(); }
+  }, SLOW);
+
+  test("TC1b CONTROL: the second tab unlocks on its own and opens its own session", async () => {
+    const idbName = await sealedVessel("two-tabs-own-unlock");   // two derivations in all: the seal, then this unlock
+    const second = await tab();
+    try {
+      expect(await ask(second, { op: "unlock", idbName, passphrase: PASS.passphrase })).toMatchObject({ reading: "opens" });
       expect(await ask(second, { op: "status", idbName })).toMatchObject({ unlocked: true });
     } finally { second.terminate(); }
   }, SLOW);

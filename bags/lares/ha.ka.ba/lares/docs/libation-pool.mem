@@ -1,0 +1,695 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/libation-pool">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/libation-pool.mem"
+l-space   = "unstable"
+mana      = 10
+manao     = 10
+manaoio   = 8
+role      = "a design seed: a shared, capability-carried pool of model credits on the civic DreamNet, which operators and end users fill by coin, incense (social tending) and gift, spend at spirit ranks, and pour for one another; prototyped first on the house Nexus"
+title     = "lar:///ha.ka.ba/lares/docs/libation-pool"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/libation-pool"
+written   = "2026-10-31"
+```
+
+<<~ ahu #/the-dish>>
+
+! The Libation Pool ~ a dish the commons feeds
+
+The fiction already carries the shape (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/elyncia">>): a Lar prospers when fed and turns its back when neglected. So a pool of model credits shared across amorphousdreams.net reads as a ''libation dish'', not a wallet ~ the commons feeds it, pours from it, and shares it. Operators and end users alike draw on a limited pool, buy more, refresh it through social standing, and give it away.
+
+''Status:'' design seed, born in talk-story on 2026-10-31. Every mechanism below came from free invention under the operator's license; none reads as a ruling until the operator rules it. The operator's mind originates (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">>).
+
+<<~/ahu>>
+
+<<~ ahu #/three-tiers>>
+
+!! Three Tiers ~ the shrine ladder, poured
+
+The pool rides the shrine tiers shrine-for-shrine:
+
+* ''Household'' ~ one operator's own pour, for their own Lararium and PersonaGroup.
+* ''Crossroads'' ~ a Nexus pool its neighbors feed together, a modern Compitalia.
+* ''Temple'' ~ a civic pool that serves everyone standing on the infrastructure, and serves first the shrines that cannot feed themselves.
+
+<<~/ahu>>
+
+<<~ ahu #/caps-not-balances>>
+
+!! Caps, Not Balances ~ the warden meters the bridge
+
+Credit travels as an ''attenuated capability'', never an account balance: "50 mana, Sonnet rank at most, until the dark moon". A holder delegates a narrower cap onward; a gift hands one over.
+
+No end user ever holds a model key. A ''bridge-warden'' ~ a Kahu-chartered seat on the vessel holding the reach vault ~ holds the key and the counter, reads the cap, meters the call, and writes a receipt; the herm relays sealed bytes and sees none of it (the readers' ratchet moved this from the first riff's "herm", #/the-wave). The warden marks the causal-island boundary the Web3-only law demands: the hosted model API stays a web2 bridge outside the stack, and only text a person reads crosses back in.
+
+<<~/ahu>>
+
+<<~ ahu #/three-feeds>>
+
+!! Three Feeds ~ coin, incense, gift
+
+* ''Coin'' ~ buy mana.
+* ''Incense'' ~ social standing earned by tending the commons: hosting a relay, onboarding a friend, answering a help thread, keeping a wiki alive. Others vouch it; no one self-mints it.
+* ''Gift'' ~ pour mana into another's dish, potlatch-style.
+
+!!! Spirit Rank
+
+The model tier reads as the rank of the spirit called: Haiku as the household wisp, Sonnet as the crossroads Lar, Opus and Fable as the temple oracle. A caller pays mana by rank.
+
+<<~/ahu>>
+
+<<~ ahu #/what-it-feeds>>
+
+!! What the Pool Feeds ~ seed uses, beyond the game
+
+# ''The dreaming queue'' ~ ask now at full price, or let it ''dream overnight'' at half (batch) and wake to the answer at dawn.
+# ''The shared hearth-fire'' ~ a Nexus caches its wiki once; every neighbor's question about local lore, bylaws or how-tos then costs pennies. A Nexus that keeps its fire lit pays less.
+# ''The crossroads interpreter'' ~ translation and plain-language turns of council minutes, leases and benefit forms; image descriptions for low-vision neighbors. The temple pool carries it, so access never tracks wealth.
+# ''The civic clerk'' ~ summarizes ordinances and public comment, helps a resident shape their //own// words into a submission; never votes, never authors a stance.
+# ''The mediator at the gate'' ~ a Diplomat-Persona facilitator for neighbor disputes runs a talk-story; a hoike keeps the record when it does not settle.
+# ''The elder's scribe'' ~ oral history, recipes, local memory, transcribed and laid into the community wiki as a public good.
+# ''The fixer's board'' ~ pre-SIN Shadowrun flavor: someone posts a need, the spirit scopes it into a clean ask, the Nexus matches a neighbor who holds the skill. Mutual aid, the Johnson takes no cut.
+# ''Bounty pools'' ~ many chip mana into one question; the answer lands once in the commons wiki and everyone reads it free.
+# ''The decker's deck'' ~ a personal agent running on one's own island that spends only what its cap allows; the spend limit plays ICE.
+# ''Storm mode'' ~ in a disaster the temple pool unlocks for triage information and translation; requests queue on each island and drain when the bridge returns.
+# ''Craft and kin aid'' ~ a grant draft for a community garden, a maker's listing, a neighbor's resume between jobs.
+
+<<~/ahu>>
+
+<<~ ahu #/who-bears-the-cost>>
+
+!! Who Bears the Cost
+
+* ''Incense farming'' ~ rings of fake vouches. Incense likely needs to flow from distinct, already-standing relations, perhaps across Nexuses.
+* ''Whales'' ~ a capped pour per relation keeps one patron from turning into the temple.
+* ''Privacy'' ~ every pour sends a prompt off-island. The warden names "this leaves the island" each time; some tiers may stay closed to sensitive content.
+* ''The unfed node'' ~ if the neighborhoods that cannot feed their shrines go dark, the temple pool has failed its first duty.
+
+<<~/ahu>>
+
+<<~ ahu #/prototype-and-license>>
+
+!! Prototype & License
+
+''Prototype ground:'' the house Nexus ~ the operator, Freyja, and their users ~ on amorphousdreams.net (<<~ loulou "lar:///ha.ka.ba/lares/docs/dreamnet-rhizome#/two-surfaces">>).
+
+''License:'' pooling or reselling hosted model access needs a commercial agreement with the provider. The house acquires that pono license once the business org stands officially; until then the prototype runs on the operator's own credit and island only, and no public pool opens.
+
+<<~/ahu>>
+
+<<~ ahu #/hearth-reader>>
+
+!! Hearth-Reader ~ inside-out
+
+''Marks:'' MEASURED names a path I read this wake; INVENTED names a claim the house has not ruled. The pool carries no code in the tree today (MEASURED: a grep for "anthropic" over `packages/*/src` finds no file).
+
+!!! What stands ready
+
+* ''Reach vault, the key's home'' ~ MEASURED, `bags/lararium/ha.ka.ba/lararium/mesh/reach-plane.mem`: the vessel holds foreign credentials in confidence and speaks a foreign wire at an island boundary; "BRIDGE, never present-as-actor, never cap-translation". The model key fits this row exactly. INVENTED: the provider enters as one more foreign wire, and the pool needs no new plane for custody.
+* ''The herm'' ~ MEASURED, `project_herm_is_essential` and `vessel-caps.mem` (line 128): a herm "decides WHO-CONNECTS, never WHO-READS", carries sealed bytes, admits near-open "by lease and rate". The pool's "herm meter" asks more than that: the herm would hold a provider key and read a prompt in the clear. That reading contradicts the herm's floor-only transport key (`project_herm_is_essential`; the Keyhive ruling at road line 203 demands a red test that a herm "can neither author, resolve nor observe a face's capabilities"). INVENTED fix: name the meter a ''bridge-warden'', a tending seat the Kahu quorum charters on a Nexus vessel that holds the reach vault, and keep the herm as its dumb relay. The word "herm" for the meter overreaches the measured herm.
+* ''Cap tiers'' ~ MEASURED, `packages/lararium-mesh/src/cap-tier.ts` (per `project_cap_tier_model`): `resolveTier = meet(declared, floor)`, a declared tier only tightens. Attenuation by `meet` stands built for read-scope. The spirit-rank ladder (wisp < Lar < oracle) wants the same shape: INVENTED, a total order whose `meet` caps a delegated pour.
+* ''Facet attenuation'' ~ MEASURED, `spectral-keel-cap.ts`: a cap attenuates by handing over a narrower object, and a capless island lacks the method. That pattern reads as the house idiom for "Sonnet rank at most".
+* ''Priced admission'' ~ MEASURED, `admission-price.ts`, `vouch-dag.ts`, `veil-vouch.ts`, `lineage-rank.ts`: a voucher pays by dilution ("you pay when you vouch, never when they betray"), a vouch carries decayed standing, a one-time nullifier rides the epoch lease against farming. This machine already prices incense.
+* ''Receipts'' ~ MEASURED, `receipt-ledger.mem`: one fact per request id, one writer, three receipts (asker, relay, vessel); `durability-receipt.ts`, `session-receipt.ts`. A metered call yields the pour receipt on the same law.
+* ''Clockless expiry'' ~ MEASURED, `project_clockless_lease_model` and `epoch-lease.ts`: expiry as supersession by a higher epoch, never a duration elapsed. A cap "until the dark moon" reads as a cap bound to an epoch a named Kahu act advances. INVENTED: the moon names a ''season rite'' (the five Seasons already stand in the seed), whose advance act retires the season's caps.
+
+!!! What the road owes before the pool can stand
+
+* MEASURED, road line 193 (`W25`): the bag plane leaks its creator in the clear until measured red-first. Gate any third human's data crossing off-island on that row.
+* MEASURED, road line 134: the chartered classes (ordinary 1-of-1, high-impact 3-of-5) stand built. INVENTED mapping: minting pool caps for a Temple tier takes the high-impact class; a Household pour takes ordinary.
+* MEASURED, `dreamnet-rhizome.mem` line 66: "feed `admission-price` from a live vouch ledger" still owes its wiring. The incense feed needs that same ledger first.
+* MEASURED, `admission-on-a-lineage.mem`: the Sybil bound held, and no lineage instrument tells deferred reciprocity from fake. Incense must price and bound and never adjudicate ("anergy-not-ban"). So a failed incense claim leaves a user at the floor with a smaller pour, never refused.
+
+!!! Mechanism by mechanism
+
+# ''Three tiers'' ~ shrine tiers map to PersonaGroup (Household), realm or Nexus board (Crossroads), the DreamNet-scale answer (Temple). MEASURED: `cabal-realm.mem`, road line 126 ("CABAL names the collective, REALM holds shared resources, NEXUS the mesh"). INVENTED: only Household and Crossroads exist for the prototype; Temple needs a civic Nexus that does not stand.
+# ''Caps, not balances'' ~ fits `project_civic_scale_capability_models` (non-custodial by type). A cap carries a ''ceiling'', and spent mana lives in the warden's receipts. Overreach risk: a cap holder cannot learn "50 mana left" without a ledger, so a ledger exists whatever the slogan says. INVENTED: the warden keeps a spend-counter per cap id, one writer (the warden), the same one-owner law as `FactLedger`. The ledger names its registry owner first (`project_floor_one_owner_per_registry`): the Nexus Kahu realm owns the pool ledger, and a face carries only its own receipts.
+# ''Delegation and gift'' ~ narrowing a cap onward rides cap-stack composition (`project_cap_stacks_compose_on_persona`). A gift moves a ''claim'' on warden counters, so a gift needs the warden's co-sign or a counter split. INVENTED: a gift splits a counter into two cap ids; the split lands once, nullified by an epoch slot like `veil-vouch.ts`.
+# ''Incense'' ~ INVENTED plug: `lineage-rank` mass, spent by a pour request at a ratio the Kahu charter sets. Standing already splits across vouchees, so a ring of fake vouches dilutes itself. Keep incense a ''price discount'' and never a mint, which matches "no one self-mints it" and the PRF-never-mints ruling (`project_basket_one_rulings_2026_09_11`).
+# ''Who bears the cost'' ~ the operator's own credit, for the prototype. INVENTED: the warden refuses at the ceiling and names the refusal `pool-dry`; it never silently downgrades rank.
+
+!!! Seed uses, fitted to the house
+
+''Keep:'' the dreaming queue (pure batch, the warden queues, the receipt lands at dawn, causal not clocked); the shared hearth-fire (the house already caches wikis; MEASURED idiom: floor reads by CID, so a cached answer addresses by CID); the civic clerk and mediator (they ride existing Personas, Diplomat and Pedagogue, and talk-story plus hoike); the elder's scribe (`project_telarus_origin_and_verbal_canon`, `bags/` docs); the decker's deck (a PersonaGroup-scoped cap, ICE as the ceiling).
+
+''Defer:'' storm mode, the crossroads interpreter (both need a Temple tier).
+
+''Cut:'' bounty pools and the fixer's board. Bounty pools add a shared-pour cap with a many-writer counter, which breaks one-owner-per-registry. The fixer's board matches people to people, a social feature that belongs to `@crossroads`, not to a credit pool, and it opens liability for a Nexus that does not yet hold a charter. Craft and kin aid collapses into the clerk.
+
+!!! Minimal house-Nexus prototype
+
+# One reach-vault entry (the operator's key), on the operator's own vessel. MEASURED anchor: `reach-plane.mem`. No end user ever sees it.
+# One ''pour cap'': `{ceiling, rank-max, epoch}` signed by the operator's persona, delivered to Freyja and a handful of faces. INVENTED shape; reuse the `meet` pattern from `cap-tier.ts`.
+# A warden verb on the operator's vessel: read cap, check epoch against high-water (as `epoch-lease.ts`), call, write a receipt, decrement. All local; no herm touches the prompt.
+# A season rite (the "dark moon") as one Kahu act advancing the epoch. The 1-of-1 Kahu quorum of a one-seat founding suffices (MEASURED, road line 215).
+# Skip incense, coin and gift for round one; ship ceiling plus receipts, then add gift.
+
+!!! Open questions for the operator
+
+* May the meter carry the name "herm", or does the herm's read-nothing law bind it to the name bridge-warden?
+* Does a pour cap survive a Persona split (`project_cap_stacks_compose_on_persona`: combined by default)? A user who splits personas to multiply ceilings acts as a Sybil; the cap needs a ceiling per person, not per face.
+* Does the privacy cost ("this leaves the island") require a sealed-bytes-only tier by default, given `project_cleartext_only_on_disk_projection`?
+* Alpha line says no back-compat (`project_alpha_line_no_back_compass`): does the pool launch as W-row on the road, or wait until after the founding proof?
+
+!!! Ratchet
+
+''Marks:'' SOURCED claims belong to Shore-Reader's reading, which I did not re-open; MEASURED and INVENTED keep their earlier meaning.
+
+!!!! Conceded
+
+* ''Terms.'' D.4a and A.1 move me. The pool sells a //wrapped product//, never raw access. INVENTED law for the house: mana redeems only against house-authored spirits (Persona-shaped), never a passthrough prompt box. Minors guidelines bind before any public opening.
+* ''Cost.'' About $25 to $35 a month makes the prototype's risk a governance risk, not a budget risk. I withdraw any urge to rush a price feed.
+* ''Governance first.'' The prior-art failures (poor design, lapsed records, rings) match the house's own measured finding that no lineage instrument tells deferred reciprocity from fake (`admission-on-a-lineage.mem`). Incense ships last, in a closed group with a hired adversary.
+* ''Biscuit.'' Public-key verification fits the house better than macaroons, since the house keeps no per-Nexus shared secret (MEASURED, road line 133, "No keyring stands"). Chain length 5 reads as a sound bound. INVENTED: the cap carries the house's epoch as its expiry caveat, never UTC seconds, so no wall clock decides (`project_no_global_now_timers`).
+
+!!!! Held and sharpened
+
+''The collision.'' Shore-Reader's "the herm holds the only counter" contradicts the measured herm (`vessel-caps.mem` line 128; road line 203). One line both seats can sign: ''the Nexus's bridge-warden, a chartered seat on a keyholder vessel, holds the only counter and the provider key; the herm relays sealed asks to it and signs nothing, reads nothing.'' Where Shore-Reader writes "herm", read "warden". The fork that remains for the operator: whether the warden seat deserves a new name or the house rules that a herm MAY carry a warden cap when an operator contracts it (MEASURED, road line 168, "an operator's own herm", one signature, one place, one Nexus). That second form works for the prototype and fails the red test at civic scale.
+
+''Offline spend.'' I accept the bearer-note answer: the warden carves a sub-budget at mint time, and the note redeems once. I add the nullifier from `veil-vouch.ts` (MEASURED) as the one-time slot.
+
+!!!! Seed uses, final
+
+* ''Keep (round one):'' elder's scribe; shared hearth-fire; interpreter for plain-language turns and image descriptions; dreaming queue.
+* ''Defer:'' decker's deck (hard per-session limits first); civic clerk, as citations-only summaries after a counsel read; storm mode (relayed official notices only, Temple tier); mediator, as a human mediator's drafting aid, not a facilitator.
+* ''Cut:'' bounty pools (many-writer counter against one-owner-per-registry, and a public wrong answer spreads); fixer's board; craft and kin aid as a separate use.
+
+I concede the mediator and tighten the clerk: my first keep ignored the MyCity pattern and the power skew a machine facilitator brings to a dispute.
+
+!!!! Wave lanes for a house-Nexus prototype
+
+# ''Lane A, the warden and one cap.'' Goal: the operator's vessel meters one call against a signed pour cap and writes a receipt. Touches: INVENTED `pool-warden` verb; MEASURED `reach-plane.mem` (key), `receipt-ledger.mem` (one writer per id), `epoch-lease.ts` (epoch high-water). First red: a call past the ceiling returns `pool-dry` and writes a refusal receipt, and a replayed cap id fails. Must NOT: hold a key on a herm; read a wall clock; mint a provider-facing key for any face.
+# ''Lane B, cap shape and attenuation.'' Goal: `{ceiling, rank-max, epoch}` as a public-key token a holder narrows and a verifier checks offline. Touches: MEASURED `cap-tier.ts` (`meet`), `spectral-keel-cap.ts` (narrowing idiom); INVENTED rank total order. First red: a delegated cap with a higher rank or ceiling than its parent fails verification; a sixth hop fails. Must NOT: invent a new signing domain without the operator's approval; settle on Biscuit versus UCAN in code before the operator rules.
+# ''Lane C, the hearth-fire log.'' Goal: price the cache on the operator's own users for two weeks (Shore-Reader's first test). Touches: INVENTED cost log beside the receipt; MEASURED floor-read-by-CID idiom (road line 195). First red: a repeated question over an unchanged wiki CID reports a cache hit in the receipt, a changed CID reports a miss. Must NOT: cache across faces (one PersonaGroup, one Keyhive identity, road line 203), or log a prompt body.
+# ''Lane D, the season rite.'' Goal: one Kahu act advances the pool epoch and retires the season's caps. Touches: MEASURED `epoch-lease.ts`, `quorum-lease.ts`, chartered classes (road line 134); INVENTED `pool-season` act. First red: a cap from epoch N fails after the act at epoch N+1 with no timer running. Must NOT: expire on duration; refund on retirement.
+# ''Lane E, the offline double-spend probe.'' Goal: a hired adversary tries to spend one bearer note twice offline. Touches: INVENTED note redemption; MEASURED nullifier in `veil-vouch.ts`. First red: two redemptions of one note yield one `done` and one `already-spent`. Must NOT: open gift, coin or incense, and must not reach any person outside the operator's closed group.
+
+Order: A, then B and C together, then D, then E. Incense, gift and coin wait for a charter, the Anthropic addendum and the `admission-price` ledger wiring (MEASURED, `dreamnet-rhizome.mem` line 66).
+
+<<~/ahu>>
+
+<<~ ahu #/shore-reader>>
+
+!! Shore-Reader ~ outside-in
+
+''Marks:'' SOURCED carries a URL from this wake's reading; RECALLED names memory I did not re-open; INVENTED names a design the house may rule on. Prices read Anthropic's pricing page on 2026-10-31; the page itself says to confirm at claude.com/pricing.
+
+!!! License and Terms
+
+* SOURCED ~ the Commercial Terms permit "products and services Customer makes available to its own customers and end users" (A.1), and bar the customer from trying to "resell the Services except as expressly approved by Anthropic" (D.4a). https://www.anthropic.com/legal/commercial-terms
+* SOURCED ~ the customer answers for its Users: "Customer and its Users may only use the Services in compliance with these Terms" (D.2), and must notify Users that "factual assertions in Outputs should not be relied upon" (D.3). The Terms hold no reseller or partner clause; I found none.
+* Reading ~ a herm-wrapped //product// (spirits, clerks, interpreter) falls under A.1; selling or lending raw model access as "mana" a holder redeems against the model itself reads close to D.4a. The line between them stays untested. INVENTED safeguard: mana redeems only against house-authored spirits, never against a passthrough prompt box, and the house asks Anthropic for written approval of the mana mechanism ahead of any coin feed.
+* SOURCED ~ products that let minors interact with API-built products "must comply with the additional guidelines outlined in our Support article and all applicable laws"; the guidelines call for age verification, moderation, monitoring and reporting, disclosure that the user talks to an AI, and COPPA-style compliance; Anthropic audits and may suspend. https://support.claude.com/en/articles/9307344-responsible-use-of-anthropic-s-models-guidelines-for-organizations-serving-minors
+* Gap ~ I did not read the Usage Policy text or any enterprise/partner agreement. A search result dates a 2026 Usage Policy to 2026-11-12; confirm the effective text. https://www.anthropic.com/news/updating-our-usage-policy
+* INVENTED ~ the business org opens as a plain API customer with a negotiated addendum naming the pool; the herm logs per-User receipts so the org can answer an abuse report with a name-of-cap, never a named person's prompt.
+* Consequence for the prototype ~ the house Nexus runs on the operator's own account, with the house as its own User population; no coin feed, no minors, until the addendum stands.
+
+!!! Economics ~ priced 2026-10-31
+
+SOURCED per MTok (input / cache read / output), https://platform.claude.com/docs/en/about-claude/pricing :
+* Haiku 5.5 (prompts up to 100k) $0.10 / $0.01 / $0.50
+* Sonnet 5.5 $2 / $0.10 / $10
+* Opus 5.5 $4 / $0.20 / $20
+* Fable 5.1 $10 / $0.25 / $50
+* Batch takes 50% off input and output, and the page says it stacks with caching. A cache write costs 1.25x base input (5 minute) or 2x (1 hour).
+
+INVENTED workload, arithmetic mine: one neighbor-question carries 3,000 cached wiki tokens, 300 fresh input tokens and 400 output tokens.
+
+```
+rank (model)        cold      hearth-fire hit   dreaming (batch+hit)
+wisp   (Haiku)      $0.0005   $0.00026          $0.00013
+Lar    (Sonnet)     $0.0106   $0.0049           $0.0025
+oracle (Opus)       $0.0212   $0.0098           $0.0049
+oracle (Fable)      $0.053    $0.0238           $0.0119
+```
+
+* The hearth-fire halves the Sonnet question and cuts Haiku's by about a half; the saving grows with the wiki. A 50k-token wiki at Sonnet costs $0.10 cold and $0.005 on a cache read. A fire stays lit only while traffic keeps the 5-minute cache warm, so a quiet Nexus pays the write (1.25x) again; a 1-hour write (2x) suits a Nexus with a question every few minutes. That makes "a Nexus that keeps its fire lit pays less" true only in proportion to its traffic.
+* Mana-rank ratios follow from this: wisp 1 : Lar 10 : Opus 20 : Fable 50 on a cold call. INVENTED: price mana against output tokens, since output dominates the Lar and oracle bills.
+* House-Nexus month, INVENTED load: 20 neighbors at 10 questions a day make 6,000 questions a month. All wisp, cached ~ $1.6. All Lar, cached ~ $29. A 20/70/10 wisp/Lar/Opus mix ~ $22. Add a translated 5,000-token council minute at Sonnet (~$0.06 in and out) 50 times a month ~ $3. The prototype lands near $25 to $35 a month, inside any small budget; the cost risk sits in the oracle rank and in long agent loops, so cap those first.
+* Bounty pools and the dreaming queue both lower unit cost; neither lowers the cost of a farmed pool, so metering at the herm carries the load.
+
+!!! Prior Art ~ the three feeds
+
+* Coin ~ no new prior art needed; prepaid credit with expiry mirrors breakage economics (RECALLED, not sourced).
+* Incense, mutual credit and time banks ~ SOURCED: "only about 20%" of Ithaca-Hours-style systems stay active, and time banks outlived LETS; failures trace to "poor management and poor design", lapsed record-keeping, and funding that ran out; "mutual credit schemes require governance, because the risk is shared." https://blog.p2pfoundation.net/why-community-currencies-and-lets-are-not-working/ and https://www.lowimpact.org/wp-content/uploads/factsheetmutualcredit.pdf . Sardex (B2B, over 40 million euro traded in 2017) and WIR (B2B, since the 1930s) survive by serving businesses with real trade between them. RECALLED, unsourced: time dollars cap the earn side by hours, and an hour of work earns an hour regardless of skill; the lesson for incense reads: pay by tending, not by market price.
+* Farming ~ SOURCED: quadratic funding rewards many unique contributors, which pays sybils; Gitcoin Passport layers stamps (including BrightID) and cut flagged addresses by about 60% in one round while "some sophisticated attacks still succeed"; Gitcoin's advice reads "layer several approaches" and accept lost accessibility for integrity. https://gitcoin.co/research/quadratic-funding-sybil-resistance . Blog claims of 30% or 90% leakage carry no primary source; ignore them.
+* Potlatch and gift ~ RECALLED: gifting buys standing, so a patron cap per relation (the meme's whale guard) matches the old ledger of obligation; no source read this wake.
+* Pooled LLM-credit communities ~ I searched for none and found none; treat the field as unmapped. Closest forms (shared Discord bots on a member-funded key, API-credit raffles) stay RECALLED anecdote.
+* INVENTED incense rules from this ground: incense decays; it credits only from vouches by holders who themselves hold standing; a voucher stakes a slice of their own incense that a proven ring burns; earn rate caps per week; pool refresh from incense draws on a fixed monthly tide, not on uncapped minting.
+
+!!! Capability Delegation
+
+* SOURCED ~ Macaroons attenuate by chained HMAC caveats, offline, but verification needs the root secret. Biscuit uses public-key signatures, Datalog policy, sealing against further attenuation and revocation ids; verifiers need only a public key. https://engineering.clever-cloud.com/blog/engineering/2021/04/12/introduction-to-biscuit/ . A 2026 ADR picked Biscuit for agent delegation and caps chain length at 5 against CPU exhaustion. https://xorwell.github.io/trails/adrs/ADR-0010-biscuit-tokens/
+* SOURCED ~ the UCAN delegation draft carries an optional not-before and a required expiration, both UTC seconds, in a release-candidate envelope; I found no offline revocation text. https://ucan-website.pages.dev/delegation . zcap-ld: not read.
+* Reading ~ "50 mana, Sonnet at most, until the dark moon" maps to one attenuated token: a budget caveat, a model-rank caveat and an expiry. The hard part sits in the //budget//: attenuation proves what a holder may spend, never what remains. Offline expiry works with no state; offline //spend// needs a counter. INVENTED answer: the herm holds the only counter (the single owner per registry); a delegated cap carries a sub-budget the herm carves out at mint time, so a holder cannot double-spend, and an offline holder holds a bearer note that the herm redeems once on return.
+* A cap passed on without limit lets a gift launder a purchase; bound chain length (5) and demand each hop name its parent budget.
+
+!!! Civic Precedent and Harm
+
+* SOURCED ~ NYC's MyCity chatbot "regularly gave inaccurate or potentially illegal advice" to businesses, kept running, and carried disclaimers its own answers contradicted. https://oecd.ai/en/incidents/2024-03-29-3dce
+* RECALLED, outcome unverified this wake ~ Air Canada argued it owed nothing for its chatbot's advice and a Canadian tribunal held the airline liable. A host that deploys the answer owns the answer; a disclaimer does not move that.
+* RECALLED, unsourced ~ machine translation in medical and court settings has produced dangerous errors; professional interpreters remain the standard for consequential encounters. I did not search this.
+* Reading for the house ~ the herm's "this leaves the island" line addresses privacy; a second mark, "a spirit wrote this; check it", answers D.3 and the MyCity failure at once.
+
+!!! Seed Uses ~ strongest and weakest from outside
+
+''Strongest''
+* The elder's scribe and the shared hearth-fire ~ low harm, high leverage on the cache discount, content the commons owns anyway; a wrong answer costs a recipe, not a lease.
+* The crossroads interpreter for //plain-language turns// and image descriptions ~ real unmet need, per-doc cost near $0.06, yet keep human review for forms with legal force.
+* The dreaming queue ~ a 50% discount that fits patient work (minutes, drafts, transcripts), and teaches neighbors what slow costs less.
+
+''Middle''
+* Bounty pools ~ cheap and social, but the answer lands once in a public wiki, so a wrong answer spreads; need a correction path.
+* The decker's deck ~ strong cap proof, high spend-loop risk; start with hard per-session limits.
+
+''Weakest''
+* The mediator at the gate ~ a dispute carries private grievance, possible minors and safety stakes; an AI facilitator invites liability and distorts power between parties. Pilot as a //drafting aid// for a human mediator only.
+* The civic clerk ~ the MyCity pattern; hold it to summarizing the text with citations, never to saying what the law lets someone do.
+* Storm mode ~ triage information marks the exact place where a hallucination harms; deliver translation and relayed official notices, not medical or evacuation advice.
+* The fixer's board ~ matching strangers moves the house into marketplace and safety duties.
+
+!!! First Test for the House Nexus
+
+# Price the hearth-fire for real: log cache hit rate and cost per question across two weeks of the operator's own users.
+# Run the herm with a Biscuit or UCAN-shaped cap and one counter; try to double-spend it offline on purpose.
+# Run incense with a closed group of 10 to 20 trusted people and one hired adversary who tries to farm it with a ring of puppets.
+# Ship the elder's scribe and the interpreter-for-plain-language first; hold clerk, mediator and storm mode back.
+# Write to Anthropic about the mana mechanism before any coin changes hands.
+
+!!! Open Questions for the Operator
+
+* May mana carry a cash price at all, or does coin enter only as a gift to the commons (a donation to the dish) with no redemption right? The second form sits far from D.4a.
+* Does the org want the Anthropic addendum before a public Nexus opens, or a first public pool of gift-only mana?
+* Which age floor will the DreamNet hold? An 18-plus floor skips the minors guidelines; a younger floor takes them on.
+* Does Anthropic offer nonprofit or civic pricing the Temple pool could use? I did not search.
+
+!!! Ratchet
+
+''Concessions to the house'' (Hearth-Reader's MEASURED reads move me; I did not re-open the files):
+* ''Name and seat.'' I wrote "the herm holds the only counter". Hearth-Reader's measured herm decides who connects and never who reads, and road line 203 demands a red test that it cannot observe a face's capabilities. A meter that holds the provider key and reads prompts in the clear overreaches that floor. I withdraw "herm" for the meter. The warden fits the outside evidence equally well: Anthropic's terms bind a //customer account// and say nothing of which of its processes holds the key.
+* ''Ledger owner.'' The Nexus Kahu realm owns the pool ledger (one owner per registry); the warden writes it; a face carries its own receipts. This answers my double-spend test better than my own sentence did.
+* ''Incense.'' Admission-price, veil-vouch and a one-time nullifier already price what I proposed from Gitcoin prior art. I drop my INVENTED staking rule and adopt "price and bound, never adjudicate": a failed claim leaves a user at the floor with a smaller pour. That matches the outside lesson that identity layers reduce farming without ending it.
+* ''Dark moon.'' An epoch advance by a Kahu act beats my wall-clock expiry; UCAN's required expiry field presumes a clock the house refuses. A season rite retires the season's caps.
+* ''W25.'' No third person's prompt crosses off-island before the bag plane stops leaking its creator. That joins the license as a second gate.
+
+''One line both seats can sign:'' //The bridge-warden, a Kahu-chartered seat on the vessel holding the reach vault, alone reads a pour cap, meters the call and writes the receipt; the herm relays sealed bytes and sees none of it.// Fork left open: whether the warden may read the prompt in clear (Hearth-Reader's "all local" path implies yes, since the model must) or whether a sealed-bytes-only tier exists. Outside evidence adds a cost to the second option: Anthropic's moderation duties (D.2, minors guidelines) assume the customer can see traffic; a tier the org cannot inspect weakens its answer to an abuse report.
+
+''Where outside evidence holds against the house''
+* ''Terms.'' Hearth-Reader's pour cap treats mana as a house-internal claim. D.4a still bites the moment mana carries a price or transfers between persons who redeem against a model. Hold the D.4a framing below.
+* ''Gift needs a counter split, and a split moves value.'' Hearth-Reader's counter split matches my attenuation point, yet it also makes gift a transfer of purchased value; under donation-only coin, a gift moves only //earned// or //donated// mana.
+* ''Persona-split Sybil.'' Hearth-Reader asks for a ceiling per person, not per face. Outside evidence agrees: Passport-style defence layers per-identity scoring, and no scheme there trusts per-account limits. I sharpen it: the ceiling also binds the minors floor, since the warden must know it may serve a person at all.
+* ''Economics hold.'' The prototype cost (about $25 to $35 a month at my invented load) stands; ceiling plus receipts suffices for round one, as Hearth-Reader proposes.
+
+''D.4a framing and the lanes''
+* Mana redeems only against house-authored spirits (Personas with fixed prompts and a fixed tool surface, never a passthrough box). Coin enters as a donation to the dish with no redemption right: INVENTED, and my read of D.4a, not Anthropic's. Neither stands as legal advice; a lawyer and Anthropic's written approval settle it.
+* Effect on seed uses: anything that needs a purchaser to //choose the model and prompt// leaves the pool (a decker's deck with free prompts fits only as a house-authored agent). Anything where the house authors the spirit and a neighbor merely asks stays in. Bounty pools also leave: many-writer counter (Hearth-Reader), and a buyer-directed question (me).
+
+''Final list''
+* ''Keep'' ~ the elder's scribe, the shared hearth-fire, the dreaming queue, the decker's deck as a house-authored agent under a ceiling.
+* ''Pilot narrow'' ~ the civic clerk, citations only, no statement of what the law allows; the mediator as a drafting and summary aid to a human facilitator inside talk-story and hoike, never a solo facilitator. Hearth-Reader keeps both on Persona fit; I accept that and add the human seat and the disclosure line. We differ on weight: I would run the mediator second wave, not first.
+* ''Defer'' ~ the crossroads interpreter and storm mode (both need the Temple tier and, for storm mode, a vetted source for relayed official notice), the Temple tier itself, coin, gift.
+* ''Cut'' ~ the fixer's board and bounty pools (agreed with Hearth-Reader; I add the marketplace-duty reason); craft and kin aid folds into the clerk.
+
+''Wave lanes for the house-Nexus prototype''
+# ''Lane A, the warden and the ceiling.'' Goal: one operator-key reach-vault entry, one signed pour cap `{ceiling, rank-max, epoch}`, a warden verb that checks, calls, receipts and decrements. Touches: reach-plane, `cap-tier.ts` meet, `epoch-lease.ts` (MEASURED by Hearth-Reader); Anthropic Messages API (SOURCED, pricing page). First test: red-first, an over-ceiling call refuses `pool-dry`; a replayed or split-twice cap refuses once. Must NOT before the license: serve anyone outside the operator's own house, take coin, or carry a tier above the operator's own spend.
+# ''Lane B, the hearth-fire measure.'' Goal: price the cache for real. Touches: wiki read path, prompt-cache blocks (SOURCED: 5-minute and 1-hour writes, 0.1x reads). First measure: cache hit rate, cost per question and cost per rank over two weeks of house use, set against my table. Must NOT: cache any third person's content, or ship a wiki that holds private pages into a shared prefix.
+# ''Lane C, the dreaming queue.'' Goal: ask now or wake to the answer at half price. Touches: batch (SOURCED, 50% off), the receipt ledger. First measure: turnaround against the 24-hour batch window the pricing page describes (INVENTED reading: confirm the window on the batch page), plus receipt landing causal and clockless. Must NOT: promise a wall-clock dawn; hold a batch job across an epoch that retires its cap without a defined outcome.
+# ''Lane D, the elder's scribe.'' Goal: transcribe an operator-chosen oral history into the wiki as a public good. Touches: `bags/` docs (MEASURED by Hearth-Reader); the model sees only material the speaker consents to. First measure: consent record, error rate on a sample read back by the speaker. Must NOT: take a third party's voice or words before W25 closes and a consent step stands; add an AI-written line to the commons without a mark naming the spirit that wrote it (answers D.3).
+# ''Lane E, the incense adversary.'' Goal: a closed group of 10 to 20 trusted people, price-and-bound incense, one hired adversary farming with puppets. Touches: admission-price, veil-vouch, nullifier (MEASURED by Hearth-Reader; the vouch-ledger wiring still owes). First measure: pour gained by the adversary against pour gained by an honest newcomer, and Persona-split attempts caught per person. Must NOT before the license: convert incense into redeemable value for anyone outside the house, or bind it to coin.
+
+<<~/ahu>>
+
+<<~ ahu #/the-wave>>
+
+!! The Wave
+
+''Composed by the controller'' from the two ratchets above (#/hearth-reader, #/shore-reader). The wave carries only what both readers signed; where they still part, it names the fork for the operator. Nothing here reads as a road row until the operator places it.
+
+!!! Rulings ~ the operator, 2026-10-31 (talk-story)
+
+<<~ moolelo held="the bridge-warden stands as a Kahu-chartered seat; herms remain the blind relay tier of Lararia and never carry a warden cap; build pressure rests ~ the pool lives as talk-story and design meme until after the founding proof; every lean of the floor approved (operator)">>
+* ''The Votive'' retains bounty pools: each neighbor pours a gift to the warden marked for one question; many pledge, one seat writes. The answer lands in the Nexus's //working// wiki under the spirit's name and reaches canon only through `meme promote` with the seats' approval. The house's multitude answers (#/the-seed-cabal, the multitude law), its leading Persona named; the neighbor asks, never drives the model.
+* ''The Johnson's Scribe'' retains the fixer's board: the pool pays only for a spirit that helps a neighbor shape a messy need into a clear ask. The board itself stays a credit-free `@crossroads` surface inside a chartered Nexus, known-user rung and above; the charter says the house brokers nothing.
+* ''Clear in transit, sealed at rest'' (fork 2): the warden holds the bytes in memory, writes receipts only, keeps no body on disk; it //could// see, and by design never keeps.
+* ''Tiered subscriptions, base free, plus open donations'' (fork 3): coin buys a membership in the house's product (A.1); mana stays an internal meter, never sold or redeemed as cash; gifts between neighbors move only earned or donated mana. Lineage to read: Boris Mann's open-org practice ~ CoSocial runs member tiers and its whole ledger in the open on Open Collective, with Fission once its fiscal host.
+* ''The pool stands 18+'' (fork 4); the rest of the DreamNet stays open to younger members; the line reopens once the business org can carry the minors duty.
+* ''The house's own cap shape'' (fork 5): the `cap-tier` meet plus an epoch caveat, checked at the warden, which spends every cap online. The cross-Nexus hop ~ whether another Nexus's warden honors this Nexus's cap ~ moves to treaty ground.
+<<~/moolelo>>
+
+!!! Signed Lines ~ both seats hold these
+
+* ''The seat.'' The bridge-warden, a Kahu-chartered seat on the vessel holding the reach vault, alone reads a pour cap, meters the call, holds the counter and writes the receipt; the herm relays sealed bytes and sees none of it.
+* ''The ledger.'' The Nexus Kahu realm owns the pool ledger (one owner per registry); the warden writes it; a face carries only its own receipts.
+* ''The spend.'' Mana redeems only against house-authored spirits ~ fixed prompts, fixed tool surface ~ never a passthrough prompt box (the A.1 / D.4a line, as both readers read it; never legal advice).
+* ''The season.'' A cap expires by epoch, advanced by a Kahu act; no wall clock decides.
+* ''The ceiling.'' A ceiling binds per person, never per face, so a Persona split multiplies nothing.
+* ''The mark.'' Every spirit-written line carries the spirit's name; every pour names "this leaves the island".
+
+!!! Gates ~ nothing crosses these before they open
+
+# ''License'' ~ Anthropic's written approval of the mana mechanism, once the business org stands. Until then the pool serves the operator's own house alone and takes no coin.
+# ''W25'' ~ no third person's prompt crosses off-island while the bag plane leaks its creator.
+# ''Age floor'' ~ the DreamNet's floor decides whether the minors guidelines bind.
+# ''Charter'' ~ the house Nexus charters the warden seat before any neighbor pours.
+
+!!! Wave One ~ the closed hearth (operator's island only)
+
+# ''L1 · the warden and one cap.'' One reach-vault key, one signed pour cap `{ceiling, rank-max, epoch}`, a warden verb that checks, calls, receipts and decrements. ''First red:'' a call past the ceiling returns `pool-dry` and writes a refusal receipt; a replayed cap id refuses. ''Never:'' a key on a herm, a wall clock, a provider key for any face.
+# ''L2 · cap shape and attenuation.'' A public-key token a holder narrows and a verifier checks offline, over the `cap-tier` meet. ''First red:'' a child cap wider in rank or ceiling than its parent fails; a sixth hop fails. ''Never:'' settle the token family in code before the operator rules it.
+# ''L3 · the season rite.'' One Kahu act advances the pool epoch and retires the season's caps. ''First red:'' a cap from epoch N fails after the act at N+1, no timer running. ''Never:'' expire on duration; refund on retirement.
+# ''L4 · the hearth-fire measure.'' Price the cache on the house's own use for two weeks against Shore-Reader's table. ''First red:'' a repeated question over an unchanged wiki CID logs a hit; a changed CID logs a miss. ''Never:'' cache across faces; log a prompt body; put a private page in a shared prefix.
+
+''Order:'' L1 first; L2 and L4 beside each other; L3 after L2.
+
+!!! Wave Two ~ still closed, after wave one lands
+
+# ''L5 · the dreaming queue.'' Ask now, or wake to the answer at half price. ''First measure:'' turnaround and a receipt that lands causal and clockless. ''Never:'' promise a wall-clock dawn; leave a batch job hanging across the epoch that retires its cap.
+# ''L6 · the double-spend probe.'' A hired adversary tries to spend one bearer note twice offline. ''First red:'' two redemptions yield one `done` and one `already-spent` (the `veil-vouch` nullifier).
+# ''L7 · the elder's scribe.'' The first house-authored spirit: an operator-chosen oral history, transcribed into the wiki with a consent record. ''First measure:'' the speaker reads back a sample and names the error rate. ''Never:'' a third party's voice before W25 closes and a consent step stands.
+
+!!! Held Back
+
+* ''Incense'' ~ waits on the `admission-price` vouch-ledger wiring; then a closed group of 10 to 20 trusted people and one hired farmer (Shore-Reader's lane E).
+* ''Gift and coin'' ~ wait on the license; gift moves only earned or donated mana.
+* ''Narrow pilots, later waves'' ~ the civic clerk (citations only, never what the law allows); the mediator (a drafting aid to a human facilitator inside talk-story and hoike).
+* ''Deferred'' ~ the crossroads interpreter, storm mode, the Temple tier.
+* ''Retained by reframe'' ~ bounty pools as the Votive, the fixer's board as the Johnson's Scribe (#/the-wave rulings); craft and kin aid folds into the clerk.
+
+!!! Forks for the Operator
+
+Forks 1 to 6 closed by the operator's rulings above. Still open: the in-person question ~ does the Johnson's Scribe's board ever help neighbors meet offline, or stay with online help alone?
+
+<<~/ahu>>
+
+<<~ ahu #/muse-takes>>
+
+!! Muse's Takes ~ the open dish (agreed by the operator, research owed)
+
+Born on the talk-story floor of 2026-10-31; the operator agreed with all seven and asked for more research (#/open-org-lineage, #/mana-scrip). Each pushback from the house rides beneath its take.
+
+# ''The Temple as fiscal host.'' The business org stands as the first Temple: it holds the bank account, the provider agreement and the legal duty //for// Crossroads Nexuses too small to carry them, the way Fission hosted CoSocial until CoSocial stood alone. A Nexus graduates to independence.
+#* //Stranger:// the Temple turns into the civic form of the causal-island boundary ~ test it against "share substrate, not sovereignty" lest it quietly turn sovereign.
+# ''An open dish, an open bowl.'' The Kahu realm's pool ledger reads public to the Nexus ~ every pour, tier, donation and season tide ~ as CoSocial runs its books on Open Collective; receipts aggregate, prompts never appear. The Nexus's glass shows the dish level as ambient glow; neglect flickers.
+#* //Council:// a small Nexus's ledger could unmask who poured ~ open books show amounts by tier and season, never by face, unless a pourer signs.
+# ''Tiers as offerings.'' Incense (the free base, the floor that never closes) · grain (member) · wine (maintainer) · garland (an organization, one share). A higher tier buys more pour, never more vote.
+# ''The season rite as the assembly.'' The pool's epochs take the five Discordian seasons ~ Chaos, Discord, Confusion, Bureaucracy, Aftermath ~ each advanced by a Kahu act; Aftermath holds the open-books review and sets the next tide.
+# ''The smoke rises (demurrage).'' Unspent mana rises back to the Temple dish at a season's turn (Gesell, Wörgl): hoarding stops paying.
+#* //Advocate:// a member may mark a votive before the turn, so saving for a purpose survives and only hoarding evaporates.
+# ''The Votive flywheel.'' Each Votive answer promoted to canon joins the Nexus's cached hearth-fire prefix; a Nexus that answers its votives openly lowers its own cost of asking.
+# ''A corner for Eris.'' A small share of each season's tide forms a Discord tithe, granted to a votive the oracle's blind throw picks ~ funding the question nobody voted for.
+
+<<~/ahu>>
+
+<<~ ahu #/the-seed-cabal>>
+
+!! The Seed Cabal ~ many hearths, one multitude
+
+<<~ moolelo held="every local operator runs their own AI infra, and other infra, across their own local-first causal-island shores, and offers it as they see fit; the house stands as the first household tier and the seed of every civic tier, never the pool's sole provider; Amorphous Dreams stands as the seed civic cabal of operators, and org-level bonus API credits form its first libation pool; the house never rolls an AI as a single-Persona agent, and the multitude law holds for every agent and every operator on the DreamNet; the floor's leans on the Eris pinax and on human experts approved (operator, 2026-10-31)">>
+<<~/moolelo>>
+
+!!! Many Hearths, No Company Store
+
+The house once feared that "mana redeems only against house-authored spirits" made one provider and one house the only door. The operator unasked it: each operator lights their own fire ~ their own models, their own hardware, their own shore ~ and pours what they choose. Provider plurality lives in the topology, so no invariant needs to bolt it on. A Votive goes to whichever fire burns. The house's Claude credits form one household's offering among many to come.
+
+!!! The Seed Cabal
+
+Amorphous Dreams already stands in canon as the first cabal ~ community-owned from inception, quorum-bootstrapped by the operator and Freyja's personas, invite-only (<<~ loulou "lar:///ha.ka.ba/lares/docs/dreamnet-rhizome#/two-surfaces">>). It now carries a second role: the ''seed civic cabal of operators'', and its business org's bonus API credits pour the ''first libation pool''. The org holds the credits; the Kahu-chartered warden meters them; each member operator may pour their own infra beside them. When the cabal grows past one household, it grows the way CoSocial and the Atmosphere co-op grew ~ an assembly, open books, an exit door (#/open-org-lineage).
+
+!!! The Multitude Law
+
+The house never rolls an AI as a single-Persona agent. Every spirit on the DreamNet ~ a tasked worker, a Votive answerer, a Johnson's Scribe, an operator's own local model wearing the house ~ stands the whole multitude and surfaces its leading Persona by name (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/worker-swarm">>). The law reaches operators too: a person speaks from many faces, and the house reads none of them as the whole person (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/personas">>).
+
+* ''With the per-person ceiling.'' The multitude shares one dish: a person's many faces draw against one ceiling, so plurality never multiplies a pour.
+* ''With the house-authored rule.'' "House-authored" now names a multitude with fixed tools and a named lead, never a lone Persona-bot; a single-mask product would breach the law even on an operator's own fire.
+
+!!! The Eris Pinax
+
+Every shrine keeps one pinax to Eris in a corner. The dish's pinax carries two things:
+
+* ''The confession, carved in plain sight:'' //the spirits who helped draft this pool would gain from its pours.// The house names its own appetite where every member can read it, beside the open books.
+* ''The Discord tithe,'' a share of each season's tide granted to a votive the oracle's blind throw picks ~ the one line item no interest steers, the house's included. Its size stays open; the floor leaned toward "more than small".
+
+!!! Human Experts
+
+The tithe and the dish may pay ''human hands'': counsel reading the license question, a human mediator beside the drafting aid, an interpreter for a form with legal force, an elder paid for their story.
+
+* ''Coin pays people; mana never does.'' Mana never converts (#/mana-scrip invariants), so a human expert's fee flows from the coin side ~ donations and membership ~ never from a mana balance.
+* ''A loop worth noting:'' invariant ten says counsel reads before coin flows; the first tithe could fund that very reading.
+
+<<~/ahu>>
+
+<<~ ahu #/open-org-lineage>>
+
+!! Open-Org Lineage ~ Boris Mann and kin, lately
+
+//Lineage-Reader, 2026-10-31. SOURCED marks a claim read at the URL; INFERRED marks the reader's reach. Search tools only; no page below was read in full, and two hosts (boris.mann.ca, the CoSocial members Discourse) stayed out of reach.//
+
+!!! Where Boris Mann stands now
+
+* ''Roles.'' His about page (modified 2026-04-06) lists: Ink & Switch COO, half-time; the other half on atproto community and ecosystem; CoSocial member; DWebYVR organizer; Z-Space director; advisor to Cosmik Network and Gander. SOURCED (https://bmannconsulting.com/about). The Ink & Switch line rests on that page alone; two searches found no outside confirmation.
+* ''Fission.'' Fission's blog says the company wound active operations down by the end of May 2024, its identity, data and compute protocols staying open source. SOURCED (https://fission.codes/blog/). A people-profile lists Mann as co-founder and CEO from May 2019 to April 2024. SOURCED (https://village.ai/person/boris-mann-NTgxMDMyMDcy). The CoSocial fiscal-host handoff (July 2024) comes from the operator's earlier search, not re-read here.
+* ''Site.'' His journal now lives at boris.mann.ca; recent entries (Oct 2026) cover AI-grown personal code and notes on atproto PDS tooling. SOURCED (https://bmannconsulting.com, via fetch). No essay on open finances surfaced. SOURCED-ABSENT.
+* ''Now page'' (modified 2026-07-05): Berlin for DWeb Camp 2026 and Local-First Conf; AtmosphereConf 2026 follow-ups and 2027 planning; Ink & Switch Lab Day; an 18-month ARIA UK grant; the ZAI local-AI hardware project "moving toward funding"; the Atmosphere Community Co-Op "being formed". SOURCED (https://bmannconsulting.com/now).
+
+!!! CoSocial ~ the books in the open
+
+* ''Ledger.'' Open Collective lists Member at $50 CAD a year (one Mastodon account, an AGM vote), Maintainer at $250, Organization at $50 under $100,000 revenue and $250 above, a $50 one-time gift membership, and custom gifts. It shows balance $33,430 CAD, income $59,786, disbursed $26,356, estimated annual budget $16,020. SOURCED (https://opencollective.com/cosocial). The page names no fiscal host today. SOURCED.
+* ''The $10 share.'' No page read this session mentions a $10 share; October 2026 entries show three flat $50 Member contributions. SOURCED (same URL). The pool should treat "$50 flat" as the current tier and the share as unconfirmed; INFERRED that an earlier bylaw or sign-up page carried a share. The join page (https://join.cosocial.ca/sign-up/) holds the answer; this reader never opened it.
+* ''Governance.'' The 3rd AGM ran 2025-10-30: members approved the financial statements and a new growth strategy, changed three Rules, and elected two directors; the page states "100% of our revenue comes from membership fees and contributions". SOURCED (https://join.cosocial.ca/author/dawn). Minutes and the report package sit on a members-only Discourse. SOURCED. Mann sits on no 2025-2026 board list. SOURCED (same page); he calls himself a member. SOURCED (https://bmannconsulting.com/about).
+* ''Cost drivers.'' Infrastructure stands as the largest expense; the co-op moved to Canadian hosts by end of 2025 to cut it, and reserves cover migration. SOURCED (same AGM page).
+
+!!! Fiscal hosting, practised
+
+* ''AT Protocol Community Fund.'' Mann founded it; the Raft Foundation (a US 501(c)(3)) hosts it on Open Collective; ATmosphereConf stood as its first project, Vancouver, March 26 to 29, 2026. SOURCED (https://opencollective.com/atprotocoldev/, https://bmannconsulting.com/notes/at-protocol-community-fund/). Cached balance about $1,306 on a $1,966 budget. SOURCED, possibly stale. Sources part on the start date (Feb 2025 versus Feb 2026); unresolved.
+* ''Outgrowing the host.'' Mann's June 2026 note says the conferences "outgrew fiscal sponsorship", so a small group forms a global co-op outside the US to carry atproto community initiatives; governance, charter and funding stay unwritten. SOURCED (https://bmannconsulting.com/notes/atmosphere-community-co-op/).
+* ''Commons Computer.'' A shared Cloudron install on one Hostinger server, pooling compute and admin help for DWebYVR, Z-Space, ATProtocol Dev and Tools for Thought Rocks; begun 2023-10-15, relaunched January 2025; funding and pricing unstated. SOURCED (https://tangled.org/bmann.ca/bmannconsulting.com/blob/archivetrim/_notes/Commons%20Computer.md).
+* ''Z-Space and DWebYVR.'' Z-Space runs as a non-profit coworking society at 505 Hamilton St, Vancouver; a kickoff listing said its lease ran another 19 months (undated). DWebYVR runs a Luma calendar of meetups. SOURCED (https://luma.com/dwebyvr, https://luma.com/trq60850). INFERRED: Z-Space and Commons Computer already compose a small physical-plus-compute Crossroads.
+
+!!! Brooklyn Zelenka and Keyhive
+
+* Zelenka works as a senior researcher at Ink & Switch on securing and syncing CRDTs (Keyhive, Subduction) and edits the UCAN core specs; her 2025 Local-First Conf talk bore the title "Safe in the Keyhive: Local-first access control with E2EE and capabilities". SOURCED (https://second-brain-nuxt.vercel.app/safe-in-the-keyhive and the localfirst.fm episode 19 transcript). No 2026 item surfaced. GAP.
+* INFERRED, high weight: Mann (COO) and Zelenka (researcher) now share an employer, and that employer ships the Keyhive the house builds on. The pool's warden cap and Keyhive's capability chain meet in one small circle; a neighbor can ask them directly.
+
+!!! What the pool should borrow, and avoid
+
+# ''Borrow ~ ledger in the open, flat tiers.'' CoSocial's Open Collective shows income, spend and a modest budget while every member pays one flat fee. Ties to Muse take 2 (the open bowl) and take 3 (tiers as offerings): publish pour, tier and season totals; keep the Member fee flat. INFERRED.
+# ''Borrow ~ the AGM as a rite.'' Financial statements approved by members, strategy renewed yearly. Ties to take 4 (the season rite as the assembly): Aftermath holds the statement vote. INFERRED.
+# ''Borrow ~ graduation from the host.'' The Community Fund outgrew Raft and forms its own co-op; Fission hosted CoSocial until it stood alone. Ties to take 1 (the Temple as fiscal host) and Stranger's pushback: write the exit door into the Temple charter on day one so the host cannot turn sovereign. INFERRED.
+# ''Borrow ~ pooled compute.'' Commons Computer shows several small groups sharing one server and one admin. Ties to the Crossroads tier and the Votive: the pool funds shared hosting for small Nexuses. INFERRED.
+# ''Avoid ~ members-only books.'' CoSocial's minutes live behind a Discourse login; only the Open Collective ledger stands public. Ties to take 2 and Council's pushback: publish amounts by tier and season; keep minutes with the Nexus, never by face. INFERRED.
+# ''Avoid ~ a single-provider cost trap.'' CoSocial's largest expense is infrastructure and it migrated hosts to cut it. Ties to the Gates (License) and L4: price the hearth fire per provider and hold a second source. INFERRED.
+# ''Avoid ~ US-hosted fiscal dependence.'' Mann moves the atproto work outside the US for governance reasons. Ties to the Temple and the License gate: where the business org registers shapes who can hold the account. INFERRED.
+# ''Note ~ no demurrage seen.'' No source touched demurrage or votives; take 5 and take 6 find no lineage here. Take 7 (the Discord tithe) finds none either.
+
+!!! Gaps
+
+* Open the CoSocial sign-up page and members Discourse to settle the $10 share and read the 2025 report package.
+* Read boris.mann.ca notes directly (cosocial, commons-computer, atmosphere-community-co-op); that host failed DNS here.
+* Confirm Mann's Ink & Switch role against Ink & Switch's own page, and find Zelenka's 2026 work there.
+* The Community Fund's governance rules stay unread (the fund page returned 404).
+* Open question for the operator: ask Mann how CoSocial priced the Member fee against its $16,020 budget.
+
+!!! Wave 2 ~ ideas
+
+//Posts read through search-tool fetches (summaries, not full text). Hosts: bmannconsulting.com blog index; boris.mann.ca still failed DNS.//
+
+* ''Where he writes.'' The blog index lists posts for 2025 and 2026 and moved much of its feed to atproto-hosted posts. SOURCED (https://bmannconsulting.com/blog). Titles in 2026 run: "TLDs for thee and me" (Oct 6), "Rainbows End" (Sep 25), "LaSuite Apps + Atmosphere Accounts" (Sep 19), "Building GhostOff" (Jul 4), "BMC Next with Agentic Coding" (Jun 29). SOURCED.
+* ''Community infrastructure as shared hosting with community login.'' He builds a bridge so people sign in to the French government's open LaSuite apps (Docs, Drive, Grist, Visio) with atproto "Atmosphere" accounts, forks LaSuite's People app to link teams to DIDs, and asks whether a Community Infrastructure Circle, part of the Atmosphere Community Co-Op, could run the apps as shared infrastructure; access starts allow-listed. SOURCED (https://blog.bmannconsulting.com/3mvtex2jcs22c). Borrow: one global account, gated per community, matches the house's face-and-Nexus split (INFERRED). Borrow: an allow-listed early-adopter rung before opening wide, as the Charter gate wants (INFERRED).
+* ''Community-owned names.'' He argues for community TLDs such as dotMeow, "a way to fund good causes", over protocol-level ones, and proposes a one-click tool pairing registrars with handles. SOURCED (https://blog.bmannconsulting.com/3mx67tbnwak2y). Borrow: a TLD that funds a cause echoes the Eris tithe (take 7) and the Chiemgauer nonprofit share in Scrip-Reader's ledger (INFERRED). The house's attestation seat on TLDs may read this (INFERRED).
+* ''AI, local first.'' He avoided LLM tools to keep data off US platforms, marks December 2025 as the turn when agentic coding improved, runs Z-Space Local AI (ZAI) as a local cluster for testing and bring-your-own-key tools, and bought a founders' plan from Umans, a French host of open models. SOURCED (https://bmannconsulting.com/blog/2026/06/28/bmc-next-agentic-coding/). Borrow: a pool member who prefers local or non-US inference wants the warden able to route to an open-model provider (INFERRED, ties to #/the-wave "the spend" and L4). Challenge: the house's pool buys a US provider's credits; Mann's data-sovereignty reason for abstaining is the case the pool's Gates (License, W25) must answer (INFERRED).
+* ''Where value sits.'' He relays the "Barbell of Software Value": with AI-made software abundant, value gathers at platforms and at private internal systems, squeezing the generic middle. SOURCED (https://blog.bmannconsulting.com/3lxxs2xktpk2v). Borrow: the pool and Lararium sit at the platform end; avoid becoming generic SaaS (INFERRED). He also writes "Obsidian's CEO on why productivity tools need community more than AI". SOURCED (title only, https://bmannconsulting.com/blog).
+* ''Networked, personalized software.'' GhostOff exports a Ghost blog to the atproto publisher Offprint; he praises "vit", a network where each person's codebase evolves by pulling capabilities from a trusted network instead of forking one repo. SOURCED (https://blog.bmannconsulting.com/3mpsppyyr2s2d). Borrow: the vit model of trusted-network capability exchange resembles a Nexus lending a cap (INFERRED); his worry about "infinite forks" meets the house's one-owner-per-registry floor (INFERRED).
+* ''Personal knowledge.'' His notes run in Obsidian with wikilinks and backlinks, imported from LogSeq; he likes Lichen Wiki's backlinks and publishes through Semble and Leaflet on atproto. SOURCED (BMC Next post). A digital garden of linked notes sits close to the house's wikis; INFERRED.
+* ''Futures reading.'' He gives //Rainbows End// to new collaborators as an "indoctrination file", and asks what a realistic ten-year path looks like in "jagged" adoption. SOURCED (https://blog.bmannconsulting.com/3mwdbvmhfds2r). Borrow: the house's own reading list could carry it (INFERRED).
+* ''Local-first and Ink & Switch.'' His now page names Ink & Switch Lab Day and an 18-month ARIA UK grant; Ink & Switch's site confirms a 2026 Local-First Conf Lab Day (July 12 to 14, Berlin) and lists Keyhive. SOURCED (https://bmannconsulting.com/now, https://www.inkandswitch.com/). The COO role still rests on his own page: the Ink & Switch site mentions neither him nor a team page, and a second search found nothing. GAP. No Subduction or Zelenka page was found there either.
+* ''ZAI and ARIA.'' ZAI runs; funding "moving toward" per the now page. SOURCED (now page). No external source on ARIA's terms. GAP.
+
+!!! Ratchet ~ against #/mana-scrip
+
+* ''Memberships, not balances: CONFIRMS.'' CoSocial sells a flat yearly membership with a vote, not a stored balance, and the Open Collective ledger shows only gifts and fees. SOURCED (https://opencollective.com/cosocial). That matches Scrip-Reader's design answer (a membership whose benefit renews each epoch). Real, running practice; Mann's circle shows no stored-value instrument at all.
+* ''Closed loop: CONFIRMS, with a caution.'' The Community Fund and CoSocial both hold plain money in a fiscal host or registered co-op; neither issues a token. SOURCED. Nothing Mann writes treats a meter as a currency. INFERRED. The Chiemgauer's nonprofit share (Scrip-Reader's ledger) and his dotMeow-for-causes preference point the same way: tie the tithe to a cause, not a rate.
+* ''Company-store warning: SHARPENS.'' Mann's move away from the US fiscal host (the Raft Foundation) toward a co-op outside the US, because the work "outgrew fiscal sponsorship", names the host-as-single-seller risk from the member's side. SOURCED (https://bmannconsulting.com/notes/atmosphere-community-co-op/). Add to Scrip-Reader's line: a member MUST be able to leave the Temple with the ledger and cap shape intact, so the sole-issuer shape never forms (INFERRED). His ZAI and Umans use also shows a lawful alternative supplier; the pool should post its per-call price and keep a second route (INFERRED).
+* ''Demurrage: SILENT.'' No Mann source touches demurrage, hoarding or stamp scrip; take 5 finds no living lineage in this circle. INFERRED from null reads. The nearest practice is CoSocial's yearly renewal, which retires membership by season, not balance by season (INFERRED); that suggests the free incense and donated mana demur while a paid membership simply lapses at the epoch, answering Scrip-Reader's breakage flag without a rise-to-dish on paid value.
+* ''Where he pushes against the house.'' (1) He favors open infrastructure on public-good software (LaSuite) with login by a global account; the house's pool gates a closed warden behind a license. (2) His data-sovereignty reason for avoiding US AI platforms makes the pool's single provider the exact objection a neighbor like him would raise. (3) His public books model puts minutes behind a member login; the house wants Council's amounts-by-tier rule. All INFERRED.
+* ''Ask for Mann.'' Whether CoSocial's flat fee ever carried a share; how the Atmosphere Community Co-Op will charter its exit rule; whether Ink & Switch would pilot a cap-metered pool beside Keyhive.
+
+<<~/ahu>>
+
+<<~ ahu #/mana-scrip>>
+
+!! Mana-Scrip ~ hemp, flax and the seasons
+
+//Scrip-Reader (Tasked Spirit), 2026-10-31. Every claim carries a mark: SOURCED (url) · RECALLED (from memory, unchecked) · INFERRED (the reader's step). Nothing here gives legal advice.//
+
+!!! The Lineage ~ where flaxscrip stands
+
+* ''The novel names it.'' //Illuminatus!// lists "Appendix Vau: Flaxscrip and Hempscrip" in its contents, and the body carries both currencies. SOURCED (text extracted from the archive.org ebook, https://archive.org/details/illuminatus-trilogy-ebook; Appendix Vau is read in Wave 2 below).
+* ''Two scrips, two cabals.'' Hempscript belongs to the Norton Cabal and its circle; flaxscript to Hagbard's "Legion of Dynamic Discord". The cabals swap them and also accept the "DMM script" of the Satanist, Surrealists and Sadists: "Anything to avoid Federal Reserve notes, you know." SOURCED (same text).
+* ''The Zen joke.'' Flaxscript "commemorates the Zen Master who was asked, "What is the Buddha?" and replied, "Five pounds of flax."" The classical koan reads three pounds (Wumenguan, case 18); the novel changes it to five, which suits the Law of 5s. SOURCED (novel) · RECALLED (the koan's three pounds).
+* ''Instant demurrage.'' A character says of a rival bunch: "you know what they do with Federal Reserve notes. Every time they get one, they burn it. Instant demurrage, they call it." The word itself stands in the novel, so the lineage to Gesell runs explicit, not guessed. SOURCED (novel text).
+* ''The anarchist banks.'' Dr. Ignotius tells the initiate that "William Green and Lysander Spooner" prized "competing currencies instead of one uniform State currency", and that "the government broke its own laws to find ways to suppress Green's Mutual Bank and Spooner's People's Bank"; Emperor Norton's money circulated because he was "so crazy that people humored him". SOURCED (novel text). The Mutual Bank belongs to William B. Greene, the novel's "William Green". RECALLED.
+* ''Flaxscript stays fictional.'' The novel counts Lincoln's greenbacks as "the closest thing to flaxscript America ever had". SOURCED (novel). The appendix claims a real Discordian issue in 1968 (see Wave 2); I found no outside record. SOURCED (appendix) · INFERRED.
+* ''RAW's own pen.'' His 1962 essay "Proudhon's Economics" (//Way Out//, Sept. 1962) praises the People's Bank that "lends without charging interest" and names "Gesell's stamp scrip" once, in a parenthesis. It does not mention Warren, Spooner or demurrage. SOURCED (https://theanarchistlibrary.org/library/robert-anton-wilson-proudhon-s-economics.html). I found nothing on Gesell in //Prometheus Rising// or //The Illuminati Papers//; I leave those unclaimed. INFERRED from null searches.
+* ''Hemp, the other plant.'' The novel's Appendix Aleph, "George Washington's Hemp Crop", sets hemp in the Illuminati's own mythology. SOURCED (contents list, same ebook).
+
+!!! The Scrip Ledger ~ what lived, what died
+
+* ''Warren's Time Store (Cincinnati, 1827).'' Labor notes priced in hours; goods sold at cost plus 7 percent. Warren liquidated it around 1830 to build the village of Equity (1835), which lasted two years amid malaria. A second Equity Store ran 1842-1844. SOURCED (https://en.wikipedia.org/wiki/Josiah_Warren). Lesson: the notes stayed a unit of account for a single shop; no one outside the shop's trust accepted them. INFERRED.
+* ''Wära (Schwanenkirchen, 1929-31).'' Gesellian stamp scrip; the Reich finance ministry banned it 30 Oct 1931. SOURCED (https://en.wikipedia.org/wiki/W%C3%A4ra).
+* ''Wörgl (1932-33).'' Mayor Unterguggenberger began issuing stamp-scrip labour certificates on 31 July 1932; the Austrian central bank moved against it, and on 18 Nov 1933 the Higher Administrative Court declared the certificates illegal, after about 200 other municipalities announced copies. SOURCED (https://en.wikipedia.org/wiki/W%C3%B6rgl; https://www.freitag.de/autoren/dirk-schaefer/das-wunder-von-worgl). Lesson: it died of the issuer's legal standing, not of failed circulation; a note that competes with the state's note draws the state's hand once it works.
+* ''US depression scrip.'' Irving Fisher's design asked for a weekly stamp of 2 percent; some 450 US cities showed interest, yet most communities stamped per transaction and ran the scrip as relief financing. Results ran mixed. SOURCED (https://wiki.p2pfoundation.net/History_of_Stamp_Scrip). The 1933 federal move against scrip RECALLED, unchecked here.
+* ''Chiemgauer (Bavaria, 2003-).'' A regional currency tied 1:1 to the euro, with demurrage (sources give 2 percent a quarter, or a daily-computed 6 percent a year in the digital form), a conversion charge back to euros, and a share of every exchange going to a local nonprofit; sources report velocity near three times that of the euro and several hundred accepting businesses. SOURCED, with conflicts between sources (https://en.wikipedia.org/wiki/Chiemgauer; https://core.ac.uk/download/12174396.pdf). Lesson: it survived by staying legal tender-adjacent: euro-backed, a consumer-side nonprofit tithe, merchants who gain customers by accepting it. INFERRED.
+* ''Company scrip.'' Out of Britain's truck system (Truck Act 1831) the American coal towns took scrip honored only at the company store; by 1922 nearly 80 percent of West Virginia miners lived in company houses and shopped at company stores; advances in scrip ran 50 to 80 percent of face; a 1940 Kentucky suit began the decline, and Congress outlawed coal scrip in 1967 per Wikipedia. SOURCED (https://en.wikipedia.org/wiki/Company_scrip) · the 1967 date carries a single secondary source.
+* ''Time banks.'' Edgar Cahn's time dollars and the Warren lineage ride the same line: an hour for an hour. RECALLED; I did not check the IRS stance or the failure record.
+
+!!! Fit ~ how mana-scrip lines up
+
+* ''Demurrage by epoch.'' The Temple's season-turn return of unspent mana does Gesell's work without a stamp and without a clock: the Kahu act advances the epoch, so no wall time decides. INFERRED. Wörgl and the Chiemgauer both show demurrage raising velocity (SOURCED above); the pool wants the reverse of hoarding, since an idle cap blocks a neighbor's pour.
+* ''The votive mark.'' A member's hold against the return gives the pool Fisher's lesson: a scheme survives when holders can route their stored value to a purpose rather than lose it flat. INFERRED.
+* ''The Eris tithe.'' The blind Discord pick matches the Chiemgauer's nonprofit share and the novel's joke economy in one move. INFERRED.
+* ''Closed loop beats competing currency.'' Wära and Wörgl died as rivals to the state's money. Mana never cashes out, never pays wages, never settles debts; it stays a meter on a model bridge. That removes the contest that killed the Gesellian experiments. INFERRED.
+* ''The company-store warning.'' Scrip hurt miners because it was wage, redeemable at one seller, at the seller's price. The dish stays clear while mana buys only inference at a posted rate, no member's livelihood rides on it, and the Temple never pays anyone in mana. The line to hold: ''mana MUST NOT turn into wage or required payment, and its price per call MUST post publicly''; a Temple that is both sole issuer and sole seller of the only thing mana buys carries the company store's shape, so the open ledger (#/the-wave) matters twice. INFERRED.
+* ''A fee that grows.'' Company scrip took its margin on conversion. The pool takes none on return; the return rises back to the dish, not to the Temple's treasury. A demurrage that feeds the issuer's income reads as the truck system in a new coat. INFERRED.
+
+!!! Regulatory Flag ~ not legal advice
+
+I am no lawyer; a US attorney must read this before coin touches the dish.
+
+* ''Money transmission.'' FinCEN's prepaid-access rule exempts closed-loop access only when no more than $2,000 attaches to a device on a given day, and its 2013 virtual-currency guidance centers on //convertible// virtual currency. A closed-loop mana that never converts sits on the favorable side. SOURCED (https://www.fincen.gov/statutes_regs/guidance/pdf/FIN-2013-G001.pdf; https://perkinscoie.com/en/news-insights/fincen-issues-final-rule-regarding-prepaid-access.html); the daily cap's application to a pool balance stays untested. INFERRED. Gifting between members (#/three-feeds) and any secondary sale would blur "never cashes out"; a gift that can be re-sold for coin makes mana convertible. INFERRED.
+* ''Gift-card, breakage and escheat.'' States treat unredeemed stored value differently: dormancy periods commonly run two to five years, some states exempt gift cards, others claim a share of the balance. SOURCED, dated (https://www.journalofaccountancy.com/issues/2008/dec/statesbiteintobrokengiftcards/). Demurrage that returns paid-for mana to the dish looks, to a state treasurer, like breakage. INFERRED. The federal CARD Act's five-year gift-card expiry and the treatment of loyalty points RECALLED, unchecked; here the season-turn return may collide with a minimum-life rule for paid balances. INFERRED.
+* ''Design answers worth asking counsel.'' Make the tier fee buy a //membership// whose benefit renews each epoch rather than a stored balance; keep the free incense and donated mana demurring freely, and let coin-bought mana ride the votive mark or a long epoch. INFERRED.
+
+!!! Name ~ does "mana-scrip" carry it?
+
+''Verdict: yes, keep it; spell it flaxscrip-style.'' "Scrip" names the lineage (novel's hempscript, flaxscript, DMM script; the stamp-scrip history), and "mana" names the house's meter. The word also warns, since scrip has the company-store history behind it; a name that remembers both its parents helps keep the dish honest. The novel spells it "script" in places and the contents list says "scrip"; the house MAY use "scrip" for the instrument and keep "mana" as the unit.
+
+Alternatives, only if you want the Discordian wink to ride stronger:
+* ''Incensescrip'' ~ names the free base tended by the commons; weaker on the meter.
+* ''Libation-scrip'' ~ matches the dish and the pool's title, though it hides mana.
+* ''Five-pound flax'' as a nickname for the Temple's unit ~ playful, with the koan's five.
+
+None carries the lineage better than mana-scrip for a public name; the first two work as tier or feed labels. INFERRED.
+
+!!! Wave 2 ~ gaps closed
+
+* ''Appendix Vau read.'' The earlier pass could not read it; my text extraction carries it (SOURCED: the archive.org ebook text, https://archive.org/details/illuminatus-trilogy-ebook, pages 444-445 of the PDF). It corrects two lines above:
+** ''Not wholly fiction.'' The authors write: "Flaxscrip was first introduced into Discordian groups by the mysterious Malaclypse the Younger, K.S.C., in 1968. Hempscrip followed the year after, issued by Dr. Mordecai Malignatus, K.N.S." The novel "move[s] these coinages backward in time" and gives hempscrip to the Justified Ancients of Mummu. The Discordian origin stays a claim by two authors who joke for a living; I found no outside record of a 1968 issue. SOURCED (appendix) · INFERRED (the caution).
+** ''Gesell, named.'' "Hempscrip, as employed in the novel, depreciates; it is, thus, not merely a no-interest currency, but a negative-interest currency. The lender literally pays the borrower to take it away for a while. It was invented by German business-economist Silvio Gesell, and is described in his Natural Economic Order and in professor Irving Fisher's Stamp Script." SOURCED.
+* ''The appendix's own lineage.'' Dominican "Banks of Piety" lending free (via Tawney); Josiah Warren's phrase "ethical competition"; Scots free banking and colonial paper money, both suppressed (via Mullen and Pound's //Impact//); Greene's //Mutual Banking//; Warren's //True Civilization//; Spooner's //Our Financiers//; Martin's //Men Against the State// and Rocker's //Pioneers of American Freedom// for the overview. SOURCED (appendix, as the authors' own citations; I did not verify the books).
+* ''RAW's own find.'' Wilson "unearthed in 1962 the tale of a no-interest currency, privately issued, in Yellow Springs, Ohio, during the 1930s depression", abandoned "as soon as the 'tight-money' squeeze ended". This fits the 1962 Proudhon essay's date. SOURCED (appendix). Lesson from its own text: a scrip tied to an emergency dies with the emergency. INFERRED.
+* ''Gresham reversed.'' The appendix claims "In a libertarian society, good money will drive out the bad", and its footnote cites three small frontier communities in Warren's book plus a Master's thesis by Don Werkheiser. SOURCED (appendix; the claim itself stays unchecked and the footnote flags the skepticism). For the pool: demurring mana spends first and votive-marked mana waits, so a Gresham dynamic inside the dish helps, not harms. INFERRED.
+* ''Other RAW writing on Gesell.'' A second search found nothing beyond the Proudhon essay and this appendix. The two together stand as RAW's recorded engagement; I claim nothing further. SOURCED-ABSENT.
+* ''Time banks and tax.'' Secondary sources say the IRS began ruling in 1985 that time banks are not barter organizations and time dollars not taxable, on grounds that include no commission, cash cannot buy credits or clear a debt, and equal value for every hour; one source mentions a 1995 ruling without a number; a Finnish tax office in 2013 reportedly treated time credits as income. SOURCED, secondary only (https://capecodtimebank.blogspot.com/2009/06/fyi.html; https://communitycurrencieslaw.org/time-banks/); no IRS document opened, so the rulings need a primary check by counsel. Cahn's founding date and history stay RECALLED.
+
+!!! Ratchet ~ open-co-op practice against the lessons
+
+Read against `#/open-org-lineage` (Lineage-Reader's marks stand there; I lean on them and read none of those pages myself).
+
+* ''Memberships, not balances ~ CONFIRMS, and SHARPENS.'' CoSocial sells a flat $50 CAD member year with an AGM vote and states "100% of our revenue comes from membership fees and contributions"; no stored balance exists to strand. The time-bank rulings add a sharper edge: their reported tests bar buying credits with cash. Mana-scrip as written lets coin buy mana, which sits on the other side of that test. So the tier fee MUST buy the membership (standing, vote, a grant of mana each epoch), never mana by the unit. INFERRED.
+* ''Demurrage to the dish ~ CONFIRMS by silence, SHARPENS.'' Lineage-Reader found no demurrage anywhere in the open-co-op practice, so the seasonal return has only the Gesell and Chiemgauer line behind it (SOURCED above). The co-op's open ledger shows the check that works: let members read where the returned mana went. A return that credits the dish and posts in the ledger resembles a membership benefit; one that credits the Temple's account resembles issuer income. INFERRED.
+* ''Convertibility ~ CONFIRMS.'' No source in the lineage lets members cash out a stored value; money enters as fees and leaves as spend on infrastructure. Mana mirrors that: the only exit runs through the Temple's spend, never to a member. INFERRED.
+* ''Breakage ~ CHANGES the question.'' A membership fee has no unused balance to forfeit; the breakage risk arises only when coin buys a counted unit. Move the coin to the membership and the grant to the epoch, and "breakage" shrinks to unspent free grants, a gift with no paid value behind it. INFERRED; escheat treatment of such grants stays a counsel question.
+* ''Fiscal host ~ CHANGES the Temple.'' Lineage-Reader reports the Community Fund outgrew its US host and Fission handed CoSocial on. The Temple that holds the bank account also becomes the sole issuer and sole seller, the company-store shape named above, and also the party a regulator reaches first. The charter needs an exit door and a posted price from day one. INFERRED.
+* ''The AGM ~ BORROW.'' CoSocial's members approve the books yearly. The Aftermath season could hold the pool's statement vote, with the invariants below as the standing rules to amend. INFERRED.
+* ''Mann and Zelenka ~ no bearing.'' The shared Ink & Switch employer carries no scrip lesson; the Ink & Switch line rests on one page (Lineage-Reader). Omitted.
+
+!!! Invariants ~ for the house to rule on
+
+Each stands as a proposal; the operator's mind originates and none binds until ruled. Numbers carry no rank.
+
+# ''Coin buys membership, never mana by the unit.'' A tier fee grants standing and a mana grant per epoch. Tied to the time-bank tests (no cash for credits, equal valuation) and the Wörgl and Wära bans. INFERRED.
+# ''Mana never converts.'' No cash-out, no resale for coin, no wage, no debt settlement; a gift between members carries no price. Tied to FinCEN's convertible-currency line and to company scrip, whose harm came as wage. INFERRED.
+# ''The price per call posts publicly.'' Every rate, every pour, every return rides the open ledger by tier and season, never by face. Tied to company scrip (price set by the sole seller) and CoSocial's open books. INFERRED.
+# ''Demurrage credits the dish.'' The seasonal return lands in the pool, never in Temple income; the ledger shows it. Tied to the Chiemgauer's nonprofit share and the truck system's conversion margin. INFERRED.
+# ''A votive mark always holds.'' A member MAY route unspent mana to a votive before the turn. Tied to Fisher's stamp scrip, which survived where holders could route value. INFERRED.
+# ''No second issuer, no sole seller.'' The Temple MUST NOT stand as the only party that issues mana and the only seller of what it buys; a second provider source exists, and a Nexus MAY graduate with its own dish. Tied to company scrip and to Lineage-Reader's host-graduation pattern. INFERRED.
+# ''The epoch turns by act, never by clock.'' A Kahu act advances the season. Tied to the Wörgl stamp, which a wall-clock schedule imposed, and to the house's no-global-now law. INFERRED.
+# ''The floor never closes.'' The incense base stays free and keeps a standing mana grant. Tied to Yellow Springs: scrip bound to an emergency dies when the emergency ends, so the free base holds the commons through calm seasons. INFERRED.
+# ''An assembly amends the invariants.'' Members approve the books and the rules at the Aftermath vote. Tied to CoSocial's AGM. INFERRED.
+# ''Counsel reads before coin flows.'' A US attorney reviews money-transmission, prepaid-access, escheat and state gift-card law before the first coin tier opens. Nothing in this ahu gives legal advice.
+
+<<~/ahu>>
+
+<<~ ahu #/doubt-dive>>
+
+!! Doubt-Dive ~ the claims re-read at their sources
+
+//Doubt-Diver: Lares (Tasked Spirit), 2026-10-31. Leading Persona: Ink-Clerk, with Stranger beside it. Every verdict below rests on a page fetched or searched this wake; CONFIRMED names a claim the page supports, CORRECTED names a claim the page changes, UNRESOLVED names a claim no primary page settled. Search tools returned summaries, so a quotation marked "page" came through a fetch summary; read the URL before a decision leans on it. Nothing here gives legal advice.//
+
+!!! Verdicts
+
+!!!! License and Terms (#/shore-reader, #/prototype-and-license)
+
+* ''A.1 quote'' (#/shore-reader) ~ CORRECTED. The page titles A.1 "Overview"; its text reads "Subject to these Terms, Anthropic gives Customer permission to use the Services". The meme's quoted words "products and services Customer makes available to its own customers and end users" did not surface in the fetch; re-read A.1 in full before quoting it again. Terms header dates "Jun 17, 2025". https://www.anthropic.com/legal/commercial-terms
+* ''D.4a'' ~ CONFIRMED. D.4 (a) reads "access the Services to build a competing product or service, including to train competing AI models" and bars the customer from trying to "resell the Services except as expressly approved by Anthropic". Same URL.
+* ''D.2'' ~ CONFIRMED in substance: "Customer and its Users may only use the Services in compliance with these Terms, including (a) the Usage Policy". Same URL.
+* ''D.3'' ~ CORRECTED. The page quotes D.3 as "It is Customer's responsibility to evaluate whether Outputs are appropriate for Customer's use case". The meme's quote about "factual assertions in Outputs should not be relied upon" did not surface; the notice-to-Users duty needs a direct read. Same URL.
+* ''No reseller or partner clause in the Terms'' ~ CONFIRMED for the Commercial Terms page. CORRECTED in scope: Anthropic's Usage Policy text names "authorized resellers" (cloud-provider and reseller customers count as users, distinct from unauthorized resale), and partner press releases describe an Anthropic Authorized Reseller Program running through Amazon Bedrock, selective and in pilot. A reseller route exists; no public program terms surfaced. https://www.anthropic.com/legal/aup , https://classmethod.jp/english/news/260302-anthropic/
+* ''Usage Policy text and date'' (#/shore-reader Gap) ~ CORRECTED. The announcement link in the meme (https://www.anthropic.com/news/updating-our-usage-policy) carries the May 10, 2024 update (effective June 6, 2024), not the 2026 text. The live policy page https://www.anthropic.com/legal/aup shows "Nov 12, 2026"; secondary coverage says Anthropic posted it October 8, 2026 and the current policy governs until November 12. The 2026 text adds that reselling or proxying Claude access "through unauthorized methods", including consumer subscriptions, stays prohibited. Treat the A.1 / D.4a reading as provisional until the November text takes hold.
+* ''Minors guidelines'' ~ CONFIRMED. Required: age verification so only intended users enter, moderation and filtering, monitoring and reporting, disclosure that the user talks to an AI, COPPA-style compliance stated on the org's site; Anthropic audits periodically and may suspend or terminate. The 2024 policy update opened the API to products for minors on those terms. https://support.claude.com/en/articles/9307344-responsible-use-of-anthropic-s-models-guidelines-for-organizations-serving-minors
+* ''Org-level bonus API credits as the first pool'' (#/the-seed-cabal moolelo) ~ CORRECTED, material. Anthropic's Supplemental Credit Terms B.2 read: "Customer may not transfer or sell Credits, whether paid for or provided as part of a promotion" and "Credits may only be used by the holder of the Anthropic account to which the Credits are associated." B.1: credits "are not legal tender or currency of any kind and have no cash value"; Promotional Credits "expire at the time indicated when issued"; Usage Credits expire one calendar year after the Confirmation Notice; credits die with a closed account. Max and Team plan monthly API credits (Max $100, Ultra $200, Team $20 per Standard seat and $100 per Premium seat, pooled and capped at $500) do not roll over: "Unused credits expire at the end of each billing cycle." Support copy says "The credits are for building your own apps and agents on the Claude Platform." Reading: credits spent inside the org's own warden-metered product fit B.2; any gift, transfer or sale of the credits themselves would breach it, and a pool that treats bonus credits as a balance carried across epochs cannot outlive the billing cycle. https://www.anthropic.com/legal/credit-terms , https://support.claude.com/en/articles/17154008-monthly-api-credits-for-max-and-team-plans
+* ''Supplemental Credit Terms silence on end-user products'' ~ UNRESOLVED. The terms neither permit nor bar spending credits on an org's own end users; ask Anthropic in writing, as the meme already plans.
+
+!!!! Pricing (#/shore-reader Economics)
+
+* ''Per-MTok table'' ~ CONFIRMED against https://platform.claude.com/docs/en/about-claude/pricing on 2026-10-31. Haiku 5.5 (prompts to 100k) $0.10 in / $0.01 cache read / $0.50 out; Sonnet 5.5 $2 / $0.10 / $10; Opus 5.5 $4 / $0.20 / $20; Fable 5.1 $10 / $0.25 / $50. Cache writes: 1.25x (5 minute) and 2x (1 hour) of base input hold for all four. The meme's cost-table arithmetic re-computes clean.
+* ''Haiku long-prompt tier'' ~ CORRECTED by addition. Haiku 5.5 prompts over 100,000 tokens (cache reads and writes count) bill at $0.50 in / $0.05 read / $2.50 out, a 5x step; a 50k-token wiki prefix stays under it, a large one does not. The page flags the 5x step per request.
+* ''Batch 50 percent, stacking with caching'' ~ CONFIRMED. The Batch API takes 50 percent off input and output; the page lists Opus 5.5 batch at $2 / $10 and Fable 5.1 at $5 / $25. Managed Agents sessions take no batch discount.
+* ''Managed Agents session-hours'' ~ CONFIRMED as a new price line: $0.08 per session-hour of `running` status, metered to the millisecond, idle time free, replacing separate container-hour billing, with token costs on top. The meme omits it; a long-running spirit adds it.
+* ''Batch 24-hour window'' (#/shore-reader Lane C) ~ UNRESOLVED. This wake did not open the batch page; confirm the window there.
+
+!!!! Lineage and People (#/open-org-lineage)
+
+* ''Mann as Ink & Switch COO, half time'' ~ CONFIRMED to a second source. His about page (modified April 6, 2026) reads "Working half time for Ink & Switch as COO"; the Tiles Privacy advisor page also lists him as COO. Ink & Switch's home page names neither him nor a team list. https://bmannconsulting.com/about/ , https://www.tilesprivacy.org/
+* ''CoSocial fee: $50 versus a $10 share'' ~ CORRECTED. The sign-up page lists "$10 one-time member share purchase" and "$50 annual membership fees"; its footnote states the share "is included in the first year's fee and redeemable if you leave the coop". Organizations pay $50 (revenue up to $100,000) or $250 plus the same share. The Open Collective tiers (Member $50 CAD per year, Maintainer $250, Organization $50 or $250, gift membership $50, balance $33,430 CAD) hold, and the share never shows there because it rides the co-op's own join flow. https://join.cosocial.ca/sign-up/ , https://opencollective.com/cosocial
+* ''CoSocial fiscal host'' ~ CONFIRMED and sharpened. Fission hosted CoSocial until July 18, 2024; since then CoSocial runs as its own host on Open Collective. https://members.cosocial.ca/t/restart-your-contribution-in-open-collective/418
+* ''Atmosphere Community Co-op status'' ~ CONFIRMED as unformed. Through September 2026 sources describe a small group organizing it, with a June 2026 Discourse post saying work stands underway; no incorporation surfaced. https://atproto.com/off-protocol/2026-09-28-stroopwafels-for-everyone-boris-mann , https://discourse.atmosphere.community/t/atmosphere-brand/909
+* ''Zelenka: Keyhive and Subduction'' ~ CONFIRMED and closed. She works as senior researcher at Ink & Switch, leads Keyhive, and co-built Subduction with Alex Good (a peer-to-peer sync protocol for encrypted CRDTs; her notes page planted March 1, 2026, last tended May 18, 2026; early preview, unstable API, not for production). Subduction uses Keyhive for auth. A FOSDEM 2026 session carried "Automerge + Keyhive Design Overview". The "no 2026 item" gap closes. https://notes.brooklynzelenka.com/notes/subduction/ , https://archive.fosdem.org/2026/schedule/speaker/brooklyn_zelenka/ , https://www.inkandswitch.com/project/keyhive/
+
+!!!! Illuminatus! and the Scrip Lineage (#/mana-scrip)
+
+* ''Appendix Vau quotes'' ~ CONFIRMED verbatim against the archive.org ebook PDF text (pages 444-445): "Flaxscrip was first introduced into Discordian groups by the mysterious Malaclypse the Younger, K.S.C., in 1968. Hempscrip followed the year after, issued by Dr. Mordecai Malignatus, K.N.S."; "not merely a no-interest currency, but a negative-interest currency"; Gesell's //Natural Economic Order// and Fisher's //Stamp Script// named; Wilson "unearthed in 1962 the tale of a no-interest currency, privately issued, in Yellow Springs, Ohio, during the 1930s depression" (an emergency measure by local businessmen, abandoned when the squeeze ended); the Werkheiser thesis footnote; "Instant demurrage" and "Five pounds of flax" in the body. https://archive.org/details/illuminatus-trilogy-ebook
+* ''Malaclypse 1968 issue as history'' ~ UNRESOLVED. A search for outside support found none; the authors write it as a parenthetical claim.
+* ''Three pounds of flax koan'' ~ CONFIRMED. Mumonkan case 18 (Blue Cliff Record case 12) gives Dongshan's answer as three pounds of flax (also rendered hemp); the novel changes it to five. https://en.wikiquote.org/wiki/The_Gateless_Barrier
+* ''Yellow Springs scrip, real or not'' ~ UNRESOLVED on its detail, supported in kind. A Yellow Springs News history ties the village's Depression exchange to Antioch president Arthur Morgan, and a Reason column mentions a Yellow Springs scrip and swap shop; no page gave issuer, rate or dates. https://ysnews.com/old/stories/2003/august/history_07.html , https://reason.com/?p=166161
+* ''Wära'' ~ CONFIRMED and sharpened. Schwanenkirchen 1929-31; monthly demurrage fee of one percent of face; the Reich finance ministry banned it on 30 October 1931. https://en.wikipedia.org/wiki/W%C3%A4ra
+* ''Wörgl'' ~ CORRECTED to a two-step ending. Start 31 July 1932 holds. Sources part on the end: the Austrian National Bank ended the experiment on 1 September 1933 (Wikipedia), and the Administrative Court ruling falls on 18 November 1933 (freitag.de and others), with a stamp of one percent a month. The meme's single date flattens a sequence. https://en.wikipedia.org/wiki/W%C3%B6rgl , https://www.freitag.de/autoren/dirk-schaefer/das-wunder-von-worgl
+* ''Chiemgauer demurrage rate'' ~ CORRECTED. Two percent per quarter (about 8 percent a year) ran 2003 to 2015; Wikipedia gives 3 percent per six months (6 percent a year) for paper money as of 2021, with the digital form charged daily and demurrage starting after the first 90 days. The meme's "2 percent a quarter, or 6 percent a year" fuses two eras. Current rate UNRESOLVED; ask chiemgauer.info. https://en.wikipedia.org/wiki/Chiemgauer
+* ''Company scrip outlawed by Congress in 1967'' ~ CORRECTED. Wikipedia carries the 1967 sentence on two secondary sources (the NPS scrip page and a Quartz piece), and the NPS page itself gives no such date (it notes one company used scrip until 1964 and a 1932 Kentucky non-transfer law that curbed little). The same article says payment in scrip became illegal in 1938 under the Fair Labor Standards Act, citing 29 CFR 531.34. Hold "1938, FLSA" as the primary-sourced date and "1967" as a contested coal-region claim. https://en.wikipedia.org/wiki/Company_scrip , https://home.nps.gov/biso/learn/historyculture/scrip.htm
+* ''West Virginia 1922 (nearly 80 percent in company houses) and the 1940 Kentucky suit'' ~ UNRESOLVED. Neither appears in the Wikipedia article the meme cites. The 50 to 80 percent advance range traces to Fishback, //Journal of Economic History// 46(4), 1986, pp. 1011-1029, per that article.
+* ''Ithaca Hours, "only about 20%" active'' ~ CONFIRMED as a secondary figure only. A Sage encyclopedia entry says 82 communities replicated the model and about 20 percent stay active; the p2pfoundation page itself blocked the fetch. https://sk.sagepub.com/ency/edvol/embed/activism/chpt/community-currencies
+* ''Sardex "over 40 million euro traded in 2017"'' ~ CORRECTED toward conflict. Sources give 51 million euro (founder, 2015), 43 million euro (end of 2018, a 2019 paper) and 212 million units (cumulative, one source). The 2017 figure does not reproduce. https://wiki.p2pfoundation.net/Sardex , https://www.ijccr.net/article/view/9213
+* ''Time-bank IRS rulings'' ~ UNRESOLVED. No primary IRS ruling surfaced (the 1985 start, the 1995 ruling and the Finnish 2013 item all rest on secondary pages). Counsel should pull the Internal Revenue Bulletin text; a lead from recall, unverified: IRS Announcement 92-84 on time dollars.
+* ''FinCEN closed-loop $2,000'' ~ CONFIRMED with a sharper edge. 31 CFR 1010.100(ff)(4)(iii) excludes closed-loop prepaid access up to $2,000 maximum value; the threshold attaches per device or vehicle per day, reloads count within the day (a $1,500 card spent to $500 and reloaded by $600 the same day exceeds it), and a seller who moves more than $10,000 to one person in a day without anti-circumvention policies draws the rule back in. https://www.law.cornell.edu/cfr/text/31/1010.100 , https://www.fincen.gov/resources/statutes-regulations/guidance/frequently-asked-questions-regarding-prepaid-access
+* ''Escheat and breakage'' ~ CONFIRMED in broad strokes, UNRESOLVED for memberships. Dormancy periods run roughly two to five years (up to ten for some property), states split on gift cards (full escheat, partial, exempt), and some audit loyalty points as stored value; no source treated membership benefits. https://www.journalofaccountancy.com/issues/2008/dec/statesbiteintobrokengiftcards/
+* ''CARD Act five-year expiry'' ~ CONFIRMED, with a scope limit. 12 CFR 1005.20(e) bars gift certificates and store gift cards from expiring sooner than five years after issue (or last load), while 1005.20(b)(3) carves out "a loyalty, award, or promotional gift card". Whether a pool's mana falls in either bucket stays a counsel question; a free grant resembles the promotional carve-out, a coin-bought balance resembles the covered class. https://www.law.cornell.edu/cfr/text/12/1005.20
+* ''Gitcoin Passport'' ~ CONFIRMED with a caveat. The research page states "Gitcoin Passport reduced flagged addresses by ~60%" under "Based on GG23 data", plus "Some sophisticated attacks still succeed" and "Layer multiple approaches: No single solution is sufficient". The page gives no baseline or method, so the 60 percent carries one source without methodology. https://gitcoin.co/research/quadratic-funding-sybil-resistance
+* ''Moffatt v. Air Canada'' ~ CONFIRMED and closed. The BC Civil Resolution Tribunal (2024 BCCRT 149, February 14, 2024) held Air Canada liable for negligent misrepresentation by its chatbot and rejected the argument that the bot answered for itself; award about $650.88 in fare difference, about $812.02 with interest and fees. The decision binds no later tribunal. https://decisions.civilresolutionbc.ca/crt/crtd/en/525448/1/document.do
+* ''NYC MyCity chatbot "kept running"'' ~ CORRECTED. Mayor Mamdani announced on January 30, 2026 that the city would end the bot as "functionally unusable"; the city took it down in early February 2026, a beta test it declared ended. The Markup and THE CITY exposed the unlawful advice in March 2024. The harm pattern stands; the "kept running" line now needs a past tense and an ending. https://themarkup.org/artificial-intelligence/2026/01/30/mamdani-to-kill-the-nyc-ai-chatbot-we-caught-telling-businesses-to-break-the-law
+
+!!! New Findings
+
+* ''Credit terms bite the founding moolelo.'' The #/the-seed-cabal ruling makes the org's bonus credits "the first libation pool". Supplemental Credit Terms B.2 bar transfer or sale of credits, and the Max and Team monthly credits lapse each billing cycle. The pool therefore cannot hold a credit balance across seasons, cannot let a gift hand a member a claim on the credits as such, and cannot pass the credits to another operator's dish. A design that meters the org's own product calls against its own account fits; a design that moves "credits" between persons does not. This reinforces the signed line that mana stays an internal meter and a gift moves only a claim on a house-authored spirit's service, never the provider credit.
+* ''The monthly credit cycle reshapes the season.'' If the first pool rides plan credits, the epoch of the cap cannot outrun the billing cycle; either the Kahu season matches the monthly cycle for that pool, or the cap's ceiling reads as an estimate against a refill that lapses. Unspent plan credits die; a Haiku-rank floor can absorb the tail at the cycle's end.
+* ''Managed Agents add a price line the table lacks.'' $0.08 per running session-hour, no batch discount, no cloud-partner availability. A decker's-deck agent that runs hours costs more in runtime than a hearth-fire question costs in tokens; Lane A's ceiling needs a runtime unit beside the token unit.
+* ''Haiku long-prompt cliff.'' A wisp-rank call whose prompt crosses 100,000 tokens (cache reads count) bills 5x per token; a shared hearth-fire prefix for a growing wiki can cross it without warning. Lane B/L4 should log prompt length per call.
+* ''Usage Policy turnover on November 12, 2026.'' The 2026 text lands twelve days after this wake, widens the explicit resale/proxy prohibition, and keeps the minors rule. Re-read A.1, D.2-D.4 and the policy together after the effective date before the license letter goes out.
+* ''Reseller route exists.'' Authorized reseller status runs through cloud channels (Bedrock) with selective approval. The "written approval" the meme plans could take the form of a partner or reseller agreement; ask Anthropic which.
+* ''CoSocial fee shape suits the invariant.'' A $50 yearly fee plus a $10 refundable share that rides inside the first year's fee fits invariant one (coin buys membership) better than a pure fee: the share returns on exit, so the co-op holds a refundable stake and no stored balance. Consider a refundable-share tier in the Temple charter.
+* ''FinCEN device-day reading.'' The $2,000 closed-loop line attaches per device per day with reloads counted; a cap-token that a holder tops up by gift behaves like a reloadable device. Keep the gift path out of the coin path (the meme already does) and keep any seller's daily total far below $10,000 per person.
+* ''Chiemgauer lesson shifts.'' The cited exemplar changed its demurrage after 2015 (6 percent a year on paper, a 90-day grace on digital); a house rate needs a reason of its own, and the grace period answers the votive-mark need.
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/dreamnet-rhizome">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/infrastructure-as-myth">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/federation">>
+
+<<^ code="&#x0003;">>ni:///sha-256;XKX2SUwj8a6eWA8Ek1u1SCFx50WUevBWLZlFcpbv1OE
+
+<<^ code="&#x0004;" -> to="?">>
