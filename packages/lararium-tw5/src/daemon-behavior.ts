@@ -16,8 +16,8 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-behavior
  */
 
+import { makeDelegationBook } from "./delegation-book.js";
 import {
-  mkDaemonDelegateVerb,
   mkDaemonResolveBindingResult,
   mkDaemonGateVerbResult,
   mkDaemonDeriveSkeletonResult,
@@ -150,24 +150,9 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
   /** The requests that came in over the vessel's own presence channel or a surface leg, while each one stands. */
   const localAsks = makeLocalAskBook();
 
-  const _pendingDelegations = new Map<string, {
-    resolve: (result: Record<string, unknown>) => void;
-    reject:  (err: Error) => void;
-  }>();
-
-  function _routeToMain(invocation: Verb, post: IslandContext["post"]): Promise<Record<string, unknown>> {
-    return new Promise((resolve, reject) => {
-      _pendingDelegations.set(invocation.requestId, { resolve, reject });
-      post(mkDaemonDelegateVerb({
-        requestId:   invocation.requestId,
-        verb:        invocation.action,
-        args:        invocation.args as Record<string, unknown>,
-        requestedBy: invocation.requestedBy,
-        ...(invocation.targets?.length ? { targets: [...invocation.targets] } : {}),
-        ...(invocation.batchMode       ? { batchMode: String(invocation.batchMode) } : {}),
-      }));
-    });
-  }
+  // The asks to main wait here until main answers; `post` binds with the island's context at its first ea.
+  let _post: IslandContext["post"] = () => {};
+  const delegations = makeDelegationBook((msg) => _post(msg));
 
   // The daemon island is a nameless cap stack: #has engine-watch + #has daemon-dispatch (the
   // VerbDispatcher + the daemon:* signal family). The dispatch cap below holds what once was the
@@ -176,6 +161,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
     name: "daemon-dispatch",
     async onEa(ctx: IslandContext) {
       const { tw5, composite, post } = ctx;
+      _post = post;
       // Resolve the verifier: the async factory (bootDaemonKeyhive over the daemon
       // composite, then the working-layer attach) wins; else a ready verifier; else none (delegated-verb path).
       const verifier = opts.verifierFactory ? await opts.verifierFactory(ctx) : opts.verifier;
@@ -195,7 +181,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         daemonVm:  tw5,
         daemon:    composite,
         registry,
-        routeFn:  (invocation) => _routeToMain(invocation, post),
+        routeFn:  (invocation, signal) => delegations.route(invocation, signal),
         ...(verifier ? { verifier } : {}),
         ...(opts.presenterOf ? { presenterOf: (inv: Verb) => opts.presenterOf!(inv, localAsks.has(inv)) } : {}),
         localOf: (inv: Verb) => localAsks.has(inv),
@@ -275,12 +261,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
 
       if (type === "daemon:verb-result") {
         const msg = raw as DaemonMsg_VerbResult;
-        const pending = _pendingDelegations.get(msg.requestId);
-        if (pending) {
-          _pendingDelegations.delete(msg.requestId);
-          if (msg.error) pending.reject(new Error(msg.error));
-          else           pending.resolve(msg.result ?? {});
-        }
+        delegations.answer(msg.requestId, { ...(msg.error ? { error: msg.error } : {}), ...(msg.result ? { result: msg.result } : {}) });
         void post;
         return true;
       }
