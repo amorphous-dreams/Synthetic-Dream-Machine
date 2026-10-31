@@ -37,7 +37,7 @@ import {
   realmBagRegistrationCounts, writeRealmBagRegistration, realmBagRegistrationsFromDoc, foldRealmBags,
   realmBagBytes, realmBagSealedBy, stewardSealedHere, hex,
   writeRealmBagAnnounce, type RealmBagRegistration, type RealmCharterConsult, type StewardSigner,
-  type RealmBagFoldOptions, type KahuCanonConsult,
+  type RealmBagFoldOptions,
 } from "@lararium/mesh";
 
 /** Why a seal on this vessel refused. */
@@ -199,11 +199,6 @@ export function makeRealmPlane(opts: {
    * carried, never the vessel's own seed realm (two carried with no pin leave the dialed Nexus unnamed: it shuts).
    */
   readonly dialedHearth?: () => { readonly pinned: boolean; readonly aid: string | null };
-  /**
-   * THE KAHU CANON's consult (road `P26`): every plane's gate answers the live `lares` and `lararium` documents to Kahu
-   * reach alone, ahead of every lane. Absent → the planes name no Kahu document (a vessel outside the cabal holds none).
-   */
-  readonly kahuCanon?: KahuCanonConsult;
 }): RealmPlanesHolder {
   const { repo, registry, crossroadsHandle, membership, base } = opts;
   const log = opts.onLog ?? (() => {});
@@ -279,7 +274,6 @@ export function makeRealmPlane(opts: {
       ...(opts.pace    ? { pace:    opts.pace }    : {}),
       ...(memberAside ? { memberAside } : {}),
       ...(opts.sealReading ? { sealReading: opts.sealReading } : {}),
-      ...(opts.kahuCanon ? { kahuCanon: opts.kahuCanon } : {}),
       // A CABAL REALM answers to lineage standing in that realm alone: the Nexus lane and the charter-hearth
       // lane stay shut, so a Nexus member outside the cabal reads nothing of it.
       ...(kind === "cabal" ? { nexusLane: false, stands: (peerId: string) => opts.standsInRealm?.(peerId, realmId) ?? false } : {}),

@@ -26,11 +26,11 @@ import { interpretAsDocumentId, type AutomergeUrl, type Repo } from "@automerge/
 import {
   LARARIUM_DOC_URI, LARES_DOC_URI, deterministicDocUrl, faceAtomKeyFromSeed, kahuCabalStanding, kahuRealmGroup, materializeSharedLarDoc,
   canonicalJson, parseRealmBagRegistration, realmBagRegistrationCounts, realmBagRegistrationsFromDoc, realmDocUrl, signRealmBagRegistration,
-  writeRealmBagRegistration, ed25519SignerFromSeed, admittedKeyOf, followNexusKeyLine, kahuCabalActsFromBoard, realmBagKey, foundingRoster,
+  writeRealmBagRegistration, ed25519SignerFromSeed, admittedKeyOf, followNexusKeyLine, kahuCabalActsFromBoard, realmBagKey, foundingRoster, nexusAidOf,
   type LarDoc, type RealmBagRegistration, type StewardSigner,
 } from "@lararium/mesh";
 import { createHmac } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { mintNexusLeaf } from "./nexus-leaf.js";
@@ -59,9 +59,12 @@ export interface KahuCanonDocs { readonly lares?: AutomergeUrl; readonly larariu
  */
 export async function kahuBagDocUrl(nexus: string, bagUri: string): Promise<AutomergeUrl> {
   const leaf = await mintNexusLeaf(kahuRealmHandleIndex(), nexus);
-  try {
-    return deterministicDocUrl(`kahu-doc:${createHmac("sha256", leaf.seed).update(`kahu-doc|${nexus}|${bagUri}`).digest("hex")}`);
-  } finally { leaf.seed.fill(0); }
+  try { return kahuBagDocUrlFrom(leaf.seed, nexus, bagUri); } finally { leaf.seed.fill(0); }
+}
+
+/** The founding's derivation under one steward seed: the document a leaf mints (or minted) for a Kahu bag. */
+function kahuBagDocUrlFrom(seed: Uint8Array, nexus: string, bagUri: string): AutomergeUrl {
+  return deterministicDocUrl(`kahu-doc:${createHmac("sha256", seed).update(`kahu-doc|${nexus}|${bagUri}`).digest("hex")}`);
 }
 
 const urlOf = (docs: ReadonlyMap<string, { readonly docUrl: string }>, bag: string): AutomergeUrl | undefined =>
@@ -292,22 +295,6 @@ export async function hearthCustodyGroup(): Promise<string | null> {
   return (await loadIdentityAnchors(0).catch(() => null))?.personaGroupId ?? null;
 }
 
-/**
- * THE CANON WAITS FOR THE PROOF. The keel mounts the Kahu canon during assembly, before the mounted face's proof runs (the proof needs the
- * KEL board and the daemon doc that stand later), so the mount itself cannot wait. Everything that could TOUCH the mounted documents
- * does: no verb is wired until the daemon opens, no mirror writes until then, and a peer's sync of a canon document is denied here until
- * the proof passes, for a vessel that owes a face proof (sealed custody names a face). A vessel with no face owes none.
- */
-export function canonHeldUntilProof(input: {
-  readonly canon: KahuCanonDocs; readonly owesFaceProof: boolean; readonly faceProven: boolean; readonly documentId: string | undefined;
-}): boolean {
-  if (!input.owesFaceProof || input.faceProven || input.documentId === undefined) return false;
-  for (const url of [input.canon.lares, input.canon.lararium]) {
-    if (!url) continue;
-    try { if (String(interpretAsDocumentId(url as AutomergeUrl)) === input.documentId) return true; } catch { /* a malformed url names nothing */ }
-  }
-  return false;
-}
 
 /** The document ids of the live system documents this vessel holds: the Kahu canon a realm gate closes (road `P26`). */
 export function kahuCanonDocIds(canon: KahuCanonDocs): ReadonlySet<string> {
@@ -345,15 +332,6 @@ export function kahuHandAtWire(input: {
   return session.face.personaGroup.toLowerCase() === input.custodyGroup.toLowerCase();
 }
 
-/**
- * THE CANON THE SAME-FACE BRIDGE NAMES (road `P26`): the keel's canon while the custody group's Kahu admission stands as
- * the board reads now, and none once a removal counts. The bridge returns ahead of the realm gate, so it reads the same
- * live standing the wire consult reads; a session it no longer names falls through to the realm gate, which answers the
- * canon to reach alone.
- */
-export function kahuCanonAtWire(canon: KahuCanonDocs, kahuStanding: boolean): KahuCanonDocs {
-  return kahuStanding ? canon : {};
-}
 
 /**
  * THE KAHU STANDING, LIVE (road `P26`): whether the custody group stands admitted to the Kahu cabal, read off the carriage
@@ -389,4 +367,36 @@ export async function watchKahuStanding(opts: {
   };
   core.handle.on("change", refresh);
   return { held: () => held, refresh, close: () => { closed = true; core.handle.off("change", refresh); } };
+}
+
+/**
+ * THE KAHU CANON'S IDS, DURABLY (road `P26`; controller design ruling 2026-10-31): every document id this vessel would hold
+ * as a live `lares` or `lararium` document at its primary Nexus, read without consulting standing, titles, catalog rows or a
+ * registration's presence, so a document keeps its class after a removal, across a reboot, and under any other name. The
+ * set joins (1) the founding's derivation (`kahuBagDocUrl`) under every key persona zero holds at the Nexus (the standing
+ * key and, mid re-issue, its successor), (2) every document a kept registration names (`<sealHome>/nexus/kahu-realm/`,
+ * plain on disk, so a locked vessel still reads it), and (3) the canon the keel stood, where given. A key the custody
+ * holder cannot read contributes nothing and the rest still stand. The share verdict's one guard (`protectedDocGuard`,
+ * class `kahu-canon`) withholds these documents from every wire peer that does not hold Kahu reach live.
+ */
+export async function kahuProtectedDocIds(opts: { readonly sealHome: string; readonly canon?: KahuCanonDocs }): Promise<ReadonlySet<string>> {
+  const ids = new Set<string>(opts.canon ? kahuCanonDocIds(opts.canon) : []);
+  const add = (url: string): void => { try { ids.add(String(interpretAsDocumentId(url as AutomergeUrl))); } catch { /* names nothing */ } };
+  let nexus: string | null = null;
+  try { nexus = nexusAidOf(readNexusDoc(opts.sealHome)); } catch { nexus = null; }
+  if (nexus === null) return ids;
+  const keptDir = join(opts.sealHome, "nexus", "kahu-realm", nexus);
+  let files: string[] = [];
+  try { files = readdirSync(keptDir).filter((f) => f.endsWith(".json")); } catch { files = []; }
+  for (const file of files) {
+    let rec: RealmBagRegistration | null = null;
+    try { rec = parseRealmBagRegistration(readFileSync(join(keptDir, file), "utf8")); } catch { rec = null; }
+    if (rec && rec.realmId === nexus && KAHU_REALM_BAGS.includes(rec.bagUri)) add(rec.docUrl);
+  }
+  let seeds: Uint8Array[] = [];
+  try { seeds = await readNexusKeys(kahuRealmHandleIndex(), nexus); } catch { seeds = []; }
+  try {
+    for (const seed of seeds) for (const bagUri of KAHU_REALM_BAGS) add(kahuBagDocUrlFrom(seed, nexus, bagUri));
+  } finally { for (const seed of seeds) seed.fill(0); }
+  return ids;
 }

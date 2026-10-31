@@ -467,6 +467,7 @@ export * from "./face-working-address.js";
 export { pinnedDoc, PINNED_ACTOR } from "./pinned-doc.js";
 export * from "./cabal-realm-clock.js";
 export * from "./realm-bag.js";
+export * from "./protected-doc-guard.js";
 export * from "./realm-index.js";
 export * from "./me-circle.js";
 export * from "./veil-crossing.js";

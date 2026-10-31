@@ -568,18 +568,6 @@ export interface RealmCharterConsult {
 }
 
 /**
- * THE KAHU CANON'S OWN CONSULT — which documents hold a Nexus's live system canon on this vessel, and which peers hold
- * Kahu reach at its wire. Both answer off the vessel's own reading (the keel's steward-verified canon and the session
- * its gate proved), never a peer's word or a registration another hand wrote.
- */
-export interface KahuCanonConsult {
-  /** The document ids of the live `lares` and `lararium` documents this vessel holds (the keel's `standKahuCanon`). */
-  docs(): ReadonlySet<string>;
-  /** Does this peer hold Kahu reach, proven at this vessel's wire? A consult that throws answers no. */
-  reach(peerId: string): boolean | Promise<boolean>;
-}
-
-/**
  * RealmBagGate — a FederationGate over the realm plane: the realm doc and every STANDING registered bag's doc
  * federate on THREE lanes, each additive over a base gate (the deterministic public shelf; a doc the base
  * federates still federates):
@@ -591,16 +579,6 @@ export interface KahuCanonConsult {
  *     admitting anybody federates the book back to the hand that keeps it with her — the return lane.
  *   · THE NEXUS LANE, unchanged — the members board stays the Nexus answer for every peer the realm's own
  *     registration does not name.
- *
- * THE KAHU CANON answers to Kahu reach ALONE, ahead of the base gate and every lane above (road `P26`). The live
- * `lares` and `lararium` documents rest "held by no vessel outside" the Kahu cabal, and every other hand reads the
- * floor by CID (stable-founding-road #/rulings, 2026-10-16 and 2026-10-18). Wire access judges a document per peer in
- * BOTH directions, so a lane that let a member read the canon also let its changes land. A Kahu document is one the
- * keel's own steward-verified canon names (`kahuCanon.docs`), the one owner of that naming: a registration on the realm
- * doc, which any self-named steward can seal, neither opens a Kahu document nor closes an ordinary book. Whatever record
- * names it, a Kahu document crosses only to a peer the reach consult holds NOW (the hearth reads the live admission).
- * The replica set then closes over hands that hold reach, so every change a replica carries came from one, and no
- * change's actor id needs binding to a key.
  *
  * The standing set swaps whole on `refold` (never a partial window).
  */
@@ -616,7 +594,6 @@ export class RealmBagGate implements FederationGate {
   readonly #memberAside: ((peerId: string) => boolean) | null;
   readonly #stands: ((peerId: string) => boolean) | null;
   readonly #nexusLane: boolean;
-  readonly #kahuCanon: KahuCanonConsult | null;
 
   constructor(
     private readonly base: FederationGate,
@@ -639,8 +616,6 @@ export class RealmBagGate implements FederationGate {
       readonly memberAside?: (peerId: string) => boolean;
       readonly stands?: (peerId: string) => boolean;
       readonly nexusLane?: boolean;
-      /** THE KAHU CANON's consult: its documents answer to this reach alone. Absent → the vessel names no Kahu document here. */
-      readonly kahuCanon?: KahuCanonConsult;
     },
   ) {
     this.#realmDocId = interpretAsDocumentId(realmUrl) as DocumentId;
@@ -650,7 +625,6 @@ export class RealmBagGate implements FederationGate {
     this.#memberAside = opts?.memberAside ?? null;
     this.#stands = opts?.stands ?? null;
     this.#nexusLane = opts?.nexusLane !== false;
-    this.#kahuCanon = opts?.kahuCanon ?? null;
   }
 
   /** Re-fold the standing registrations off a realm doc snapshot — the docs the realm and member lanes open for. */
@@ -681,15 +655,9 @@ export class RealmBagGate implements FederationGate {
     return this.#registrations;
   }
 
-  /** Does this document belong to the realm's own plane: the realm doc, a standing registered bag's doc, or the Kahu canon? */
+  /** Does this document belong to the realm's own plane: the realm doc, or a standing registered bag's doc? */
   holdsDoc(documentId: DocumentId): boolean {
-    return documentId === this.#realmDocId || this.#standing.has(documentId) || this.#isKahuDoc(documentId);
-  }
-
-  /** A Kahu document: one the keel's steward-verified canon names. A consult that throws reads every document as Kahu (fail closed). */
-  #isKahuDoc(documentId: DocumentId): boolean {
-    if (!this.#kahuCanon) return false;
-    try { return this.#kahuCanon.docs().has(String(documentId)); } catch { return true; }
+    return documentId === this.#realmDocId || this.#standing.has(documentId);
   }
 
   /** The realm doc id plus the docs of standing registrations — for a caller that lists what the lane opens. */
@@ -698,12 +666,6 @@ export class RealmBagGate implements FederationGate {
   }
 
   async mayFederate(documentId: DocumentId, peerId?: PeerId): Promise<boolean> {
-    // THE KAHU CANON reads FIRST, ahead of the base gate and every lane: Kahu reach alone opens it, the shadow still
-    // shuts it, and a consult that throws (or stands absent) answers no.
-    if (this.#isKahuDoc(documentId)) {
-      if (!peerId || this.#memberAside?.(peerId)) return false;
-      try { return (await this.#kahuCanon?.reach(peerId)) === true; } catch { return false; }
-    }
     const isRealmDoc = documentId === this.#realmDocId;
     const ofRealm = isRealmDoc || this.#standing.has(documentId);
     // THE MEMBER SHADOW reads FIRST for the realm's own documents, ahead of the base gate and every lane below:

@@ -66,7 +66,7 @@ import type { WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
-import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding } from "@lararium/mesh";
+import { answerRestWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, type ProtectedDocClass } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
   ACTIVE_WIKI_URI,
@@ -88,7 +88,7 @@ import {
   readGenesisCasManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
 import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.js";
-import { standKahuCanon, canonHeldUntilProof, kahuCanonDocIds, kahuHandAtWire, kahuCanonAtWire, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
+import { standKahuCanon, kahuHandAtWire, kahuProtectedDocIds, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonCorpusRoot } from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
@@ -812,10 +812,25 @@ async function prepareNodeBootOn(
   // The custody group's Kahu admission as the carriage board reads NOW (`watchKahuStanding`): the wire consult and the
   // same-face bridge read it, so a counted removal closes the canon at the board's next change (road `P26`).
   let kahuStanding: { held(): boolean; refresh(): void; close(): void } | null = null;
+  // THE PROTECTED DOCUMENTS, classed by IDENTITY (road `P26`; controller design ruling 2026-10-31): the live Kahu canon's
+  // ids, derived durably (`kahuProtectedDocIds`), so a retained replica keeps its class after a removal, across a reboot and
+  // under any alias. ONE guard at the head of the share verdict withholds them from every wire or sibling peer that does not
+  // hold Kahu reach live (`kahuHandAtWire`), ahead of the same-face bridge and the realm gate.
+  let kahuProtected: ReadonlyMap<string, ProtectedDocClass> = new Map();
+  const recountKahuProtected = async (): Promise<void> => {
+    const ids = await kahuProtectedDocIds({ sealHome, canon: kahuCanon });
+    kahuProtected = new Map([...ids].map((id) => [id, "kahu-canon" as const]));
+  };
+  const protectedDocs = protectedDocGuard({
+    ids: () => kahuProtected,
+    decide: {
+      "kahu-canon": (peerId) => kahuHandAtWire({ session: peerSessions.get(peerId), custodyGroup, faceProven: wornFaceProven, canon: kahuCanon, kahuStanding: kahuStanding?.held() === true }),
+    },
+  });
   // The mounted face also reads this vessel's wikis, catalog and bags (the bridge until O1, `face-fleet-view`).
   let catalogForViews: (() => LarDoc | undefined) | null = null;
   const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,
-    () => (catalogForViews ? bridgeBooks(catalogForViews(), kahuCanonAtWire(kahuCanon, kahuStanding?.held() === true)) : new Set<string>()));
+    () => (catalogForViews ? bridgeBooks(catalogForViews(), kahuCanon) : new Set<string>()));
   stood.push({ what: "the face views", down: () => faceViews.close() });
   // THIS HEARTH'S OWN HOSTING DOCS — one per Nexus it carries, under its own gate key. A contracted peer (a carrier
   // of that Nexus) replicates them for the cross-check every walker's fork reading rests on. Filled once the vessel
@@ -946,8 +961,6 @@ async function prepareNodeBootOn(
       // OUTER peer-admission gate (unchanged): a WS peer whose session no face gate opened is not in
       // `peerIdentifierMap` → deny; an in-process island peer (no WS socket) is a house member → admit.
       if (wsSocket && !peerIdentifierMap.has(peerId)) return false;
-      // THE KAHU CANON WAITS FOR THE FACE PROOF: a wire peer reads none of it until the mounted face has proved (`canonHeldUntilProof`).
-      if (wsSocket && canonHeldUntilProof({ canon: kahuCanon, owesFaceProof: custodyGroup !== null, faceProven: wornFaceProven, documentId: documentId as string | undefined })) return false;
       // THE SELF-SLOT SPLIT — federatable-own vs private-own, keyed on the class the keyholder vouched
       // (selfSlotShareDecision holds the whole law + fail-closed default). A same-operator WS peer and
       // every in-process island peer full-sync; a cross-operator/unclassified WS peer reaches only the
@@ -980,6 +993,9 @@ async function prepareNodeBootOn(
         documentId: documentId as DocumentId | undefined,
         // A device the fleet root set aside reads nothing on any lane, the same-operator and sibling lanes included.
         shadow:          edgeShadows,
+        // THE ONE GUARD: the live Kahu canon, classed by id, crosses only while Kahu reach holds now; it also holds the canon
+        // until the mounted face proves, since the reach reads the proof (road `P26`).
+        protectedDocs,
       });
     }, wireProbe ?? undefined),
   });
@@ -1228,7 +1244,12 @@ async function prepareNodeBootOn(
     landOwedHostingActs: async () => { await landOwedHostingActs?.(); },
     refoldAntigen: () => antigenHolder.refold(),
     refoldMembership: () => membershipHolder.refold(),
-    refreshRealmPlane: async () => { await realmPlane?.refresh(readNexusDoc(sealHome)); kahuStanding?.refresh(); },
+    // The Kahu standing re-reads FIRST: an admission a roll closed never waits on the realm's own maintenance (road `P26`).
+    refreshRealmPlane: async () => {
+      kahuStanding?.refresh();
+      await recountKahuProtected().catch((e: unknown) => console.warn(`[kahu-realm] the protected canon ids would not re-read: ${String(e)}`));
+      await realmPlane?.refresh(readNexusDoc(sealHome));
+    },
     refoldEdgeShadows: async () => { await edgeShadows?.refold(); },
     reverdict: () => reverdict(),
     representIfMoved: async () => { await representIfMoved?.(); },
@@ -1893,10 +1914,12 @@ async function prepareNodeBootOn(
         repo, sealHome, vesselKey: activeAtom?.key ?? "",
         personaGroupId: custodyGroup,   // sealed custody names the face; the composition tears down whole if its proof later refuses
       });
-      // THE LIVE STANDING the wire reads beside the canon: each flip re-asks the Repo's cached share verdicts.
+      // THE PROTECTED IDS, then THE LIVE STANDING the guard reads: each flip re-counts and re-asks the cached share verdicts.
+      await recountKahuProtected();
       if (!kahuStanding) {
         const watch = await watchKahuStanding({
-          repo, sealHome, vesselKey: activeAtom?.key ?? "", personaGroupId: custodyGroup, onChange: () => reverdict(),
+          repo, sealHome, vesselKey: activeAtom?.key ?? "", personaGroupId: custodyGroup,
+          onChange: () => { void recountKahuProtected().catch(() => {}).finally(() => reverdict()); },
         });
         kahuStanding = watch;
         stood.push({ what: "the Kahu standing", down: () => watch.close() });
@@ -2161,12 +2184,6 @@ async function prepareNodeBootOn(
         // itself un-seated when the proposal replaced it. The Repo caches its verdict per (doc, peer), so the
         // fold and the cache must move together or the registered book stays DENIED to the hand that keeps it.
         onRefold:         reverdict,
-        // THE KAHU CANON answers to Kahu reach alone (road `P26`): the live documents the keel stood, crossing only to a
-        // session that wears the custody face, once that face has proved, while its Kahu admission stands NOW (`kahuHandAtWire`).
-        kahuCanon:        {
-          docs:  () => kahuCanonDocIds(kahuCanon),
-          reach: (peerId) => kahuHandAtWire({ session: peerSessions.get(peerId), custodyGroup, faceProven: wornFaceProven, canon: kahuCanon, kahuStanding: kahuStanding?.held() === true }),
-        },
         onLog:            (line) => console.log(`[realm] ${line}`),
       });
       selfSlotFedGate = realmPlane.gate;

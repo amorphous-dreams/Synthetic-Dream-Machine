@@ -9,7 +9,7 @@
  * did not close over Kahu hands.
  *
  *   P1  RED: `kahuHandAtWire` holds no reach while the live standing reads removed, whatever the boot held.
- *   P2  RED: the same-face bridge names no canon while the live standing reads removed (`kahuCanonAtWire`).
+ *   P2  (folded into the one guard, kahu-canon-guard A1/A2: the bridge no longer gates; the guard ahead of it does.)
  *   W1  CONTROL (on a real founding): the live standing reads the founding's admission.
  *   W2  RED: after a counted removal of the group, the live standing reads removed and says so to its listener.
  *   W3  CONTROL: a re-admission stands the reading again.
@@ -35,7 +35,7 @@ const sameOp = { class: "same-operator", face: { personaGroup: group } };
 
 type Watch = { held(): boolean; refresh(): void; close(): void };
 type WatchFn = (opts: { repo: unknown; sealHome: string; vesselKey: string; personaGroupId: string | null; onChange?: (held: boolean) => void }) => Promise<Watch>;
-const live = kahuRealm as unknown as { watchKahuStanding?: WatchFn; kahuCanonAtWire?: (c: object, held: boolean) => object };
+const live = kahuRealm as unknown as { watchKahuStanding?: WatchFn };
 
 describe("Kahu reach at the wire reads the live standing", () => {
   test("P1 — no reach while the live standing reads removed, whatever the boot held", () => {
@@ -43,12 +43,6 @@ describe("Kahu reach at the wire reads the live standing", () => {
       kahuRealm.kahuHandAtWire({ session: sameOp, custodyGroup: group, faceProven: true, canon, kahuStanding } as Parameters<typeof kahuRealm.kahuHandAtWire>[0]);
     expect(hand(true)).toBe(true);
     expect(hand(false)).toBe(false);
-  });
-
-  test("P2 — the same-face bridge names no canon while the live standing reads removed", () => {
-    expect(typeof live.kahuCanonAtWire, "kahuCanonAtWire stands").toBe("function");
-    expect(live.kahuCanonAtWire!(canon, true)).toEqual(canon);
-    expect(live.kahuCanonAtWire!(canon, false)).toEqual({});
   });
 
   const r = mkdtempSync(join(tmpdir(), "lar-kahu-live-"));
