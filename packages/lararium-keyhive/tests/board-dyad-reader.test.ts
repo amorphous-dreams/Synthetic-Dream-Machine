@@ -165,6 +165,9 @@ describe("the intent door's standings fold the island's own replicas under a wit
       expect(doors.acquisition.holds(), "the raise moved the witness").toBe(false);
       expect(doors.standing(device), "a raise merged after the acquisition voids its answer in the next turn").toBe("unknown");
       expect(woken, "the board's change wakes the watch").toBeGreaterThan(0);
+      // The root counts the raise into its next frontier, as the edge command does (an uncounted raise holds every clean edge unknown).
+      await fx.register(board, [raise.actCid]);
+      expect(doors.acquisition.holds(), "the registration moved the witness again").toBe(false);
       await doors.acquisition.acquire(atoms);
       expect(doors.standing(device), "a fresh acquisition reads the raise").toBe("aside");
       expect(doors.standing(other), "CONTROL: an untouched edge still stands").toBe("stands");

@@ -15,6 +15,17 @@ export interface AuthorityAcquisition {
   acquire(atoms: ReadonlySet<string>): Promise<void>;
   /** True while every answer the last acquisition took still stands under its witness, read synchronously and live. */
   holds(): boolean;
+  /** Hear each change of the documents the witness covers (an attached door re-passes on it); returns the unsubscribe. */
+  watch?(wake: () => void): () => void;
+}
+
+/** A watch over document handles: each one's change wakes, and the returned call drops every listener. */
+export function watchHandles(handles: readonly { on(event: "change", listener: () => void): void; off(event: "change", listener: () => void): void }[]): (wake: () => void) => () => void {
+  return (wake) => {
+    const listener = (): void => wake();
+    for (const h of handles) h.on("change", listener);
+    return () => { for (const h of handles) h.off("change", listener); };
+  };
 }
 
 export interface FaceIntentDoorPorts {
@@ -44,7 +55,8 @@ export interface FaceIntentDoorPorts {
  * reads that value, so a merge that lands AFTER it voids it in the very turn that would act on it. A fetch whose own writes
  * move the version (a ledger that keeps what it counted) settles on the next try, since those writes keep only what is new.
  */
-export function witnessed<T>(fetch: () => Promise<T>, version: () => string, tries = 3): { readonly now: () => T | null; readonly acquisition: AuthorityAcquisition } {
+export function witnessed<T>(fetch: () => Promise<T>, version: () => string, options: { readonly tries?: number; readonly watch?: (wake: () => void) => () => void } = {}): { readonly now: () => T | null; readonly acquisition: AuthorityAcquisition } {
+  const tries = options.tries ?? 3;
   let held: { readonly version: string; readonly value: T } | null = null;
   return {
     now: () => (held !== null && held.version === version() ? held.value : null),
@@ -56,12 +68,14 @@ export function witnessed<T>(fetch: () => Promise<T>, version: () => string, tri
         }
       },
       holds: () => held !== null && held.version === version(),
+      ...(options.watch ? { watch: options.watch } : {}),
     },
   };
 }
 
 /** Each atom's standing off an async reader under one witness over every document the reader reads; an atom never fetched, or fetched under a moved witness, reads `unknown`. */
-export function witnessedStandings(read: (atom: string) => Promise<Standing>, version: () => string, tries = 3): { readonly standing: (atom: string) => Standing; readonly acquisition: AuthorityAcquisition } {
+export function witnessedStandings(read: (atom: string) => Promise<Standing>, version: () => string, options: { readonly tries?: number; readonly watch?: (wake: () => void) => () => void } = {}): { readonly standing: (atom: string) => Standing; readonly acquisition: AuthorityAcquisition } {
+  const tries = options.tries ?? 3;
   const held = new Map<string, { readonly version: string; readonly standing: Standing }>();
   let asked: readonly string[] = [];
   return {
@@ -78,6 +92,7 @@ export function witnessedStandings(read: (atom: string) => Promise<Standing>, ve
         }
       },
       holds: () => { const now = version(); return asked.every((a) => held.get(a)?.version === now); },
+      ...(options.watch ? { watch: options.watch } : {}),
     },
   };
 }
@@ -199,6 +214,12 @@ export async function admitAgentEntry(ports: FaceIntentAdmissionPorts, raw: unkn
  */
 /** Per plane, each fenced id and the doors waiting on it; a plane's map stays once made, so no door ever fences into a map another dropped. */
 const flights = new Map<unknown, Map<string, Set<() => void>>>();
+/**
+ * Per plane, each single-effect id a run in this process settled with an outcome. The outcome lands on the completing handle's
+ * replica first; a door over another handle whose replica has not received it yet still reads the intent open, and this keeps it
+ * from opening a second run meanwhile. A single-effect id runs once, so a settled id never runs here again.
+ */
+const settledRuns = new Map<unknown, Set<string>>();
 export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
   let running: Promise<void> | null = null, dirty = false;
   const read = async (): Promise<IntentView> => (await makeFaceIntentReader(ports).read()).view;
@@ -210,6 +231,8 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
     const key = planeKey(ports.plane);
     const flying = flights.get(key) ?? new Map<string, Set<() => void>>();
     flights.set(key, flying);
+    const settled = settledRuns.get(key) ?? new Set<string>();
+    settledRuns.set(key, settled);
     let view = readIntentNow(ports).view, stale = false, again = false;
     for (const first of view.intents) {
       // Each effect revalidates from the CURRENT documents in the turn that invokes it: a revocation, a cancel, a takeover, an
@@ -220,6 +243,7 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
       if (!state) continue;
       const may = mayAct(view, state.id, ports.atom.key.toLowerCase());
       if (!may.act) { if (may.reason === "unknown-frontier" && ports.acquisition && !ports.acquisition.holds()) again = true; continue; }
+      if (state.class === "single-effect" && settled.has(state.id)) continue;
       if (state.class === "single-effect" && flying.has(state.id)) { flying.get(state.id)!.add(wake); continue; }
       const effect = ports.effects?.get(state.verb) ?? (ports.runDeclaredEffect && state.class === "idempotent" ? (args: unknown, ctx: { intentId: string; intent: IntentEntryBody; pinnedAtom: string; agent: { key: string; delegation: string } | null }) => ports.runDeclaredEffect!(state.verb, args, ctx) : undefined);
       if (!effect || !ports.verbs.classOfVerb(state.verb)) continue;
@@ -236,6 +260,7 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
         const result = await effect(invocation.body.args, { intentId: state.id, intent: invocation.body, pinnedAtom: pinnedAtom ?? ports.atom.key, agent: state.agent ? { key: state.issuer, delegation: state.agent.delegation } : null });
         const receipt = await buildOutcome({ group: ports.group, signer: ports.atom, cause: state.id, result: { status: "done", ...receiptFields(result) } });
         ports.plane.change((draft) => writeIntentEntry(draft, receipt));
+        if (fenced) settled.add(state.id);
       } catch (error) { ports.log(`face intent ${state.id} faulted: ${String(error)}`); }
       finally {
         if (fenced) {
@@ -256,11 +281,13 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
     })();
     return running;
   };
+  /** Wake on the plane's changes and on the documents behind the acquisition's witness; the returned call drops both. */
   const attach = (): (() => void) => {
     const changed = () => { void heed(); };
     ports.plane.on("change", changed);
+    const unwatch = ports.acquisition?.watch?.(changed);
     void heed();
-    return () => ports.plane.off("change", changed);
+    return () => { ports.plane.off("change", changed); unwatch?.(); };
   };
   const describe = async (): Promise<{ readonly view: IntentView; readonly pane: IntentPaneModel }> => { const view = await read(); return { view, pane: intentPaneModel(view) }; };
   return { heed, attach, describe };

@@ -35,8 +35,9 @@ describe("the island's dyad consults take a reader or refuse", () => {
     expect((code.match(/requireDyadReader\(dyadReader\(ctx\), "the join gate"\)\(/g) ?? []).length).toBe(1);
     // The mounted face's boot and each joined face's boot each pass the guard.
     expect((code.match(/requireDyadReader\(dyadReader\(ctx(?:, \{ \.\.\.daemonAuth, \.\.\.face \})?\), "the Binding Gate"\)\(/g) ?? []).length).toBe(2);
-    // The intent door reads a device's standing through the same guard, under the face's live lineage: an island with no reader stalls it as unknown, never as clear.
-    expect((code.match(/requireDyadReader\(dyadReader\(ctx, liveFace\(\)\), "the intent door"\)\(/g) ?? []).length).toBe(1);
+    // The intent door folds its standings over the island's own replicas (`intentDoorStandings`), never through a reader on another shore.
+    expect((code.match(/intentDoorStandings\(\{/g) ?? []).length).toBe(1);
+    expect(code).not.toMatch(/"the intent door"/);
     // The seat summons (the joinee's half of the intent door) reads its OWN edge's standing through the same guard: never a summons from an edge set aside.
     expect((code.match(/requireDyadReader\(dyadReader\(ctx\), "the seat summons"\)\(/g) ?? []).length).toBe(1);
     // The content-key seat reads a seat's standing and its own shadow through the same guard.

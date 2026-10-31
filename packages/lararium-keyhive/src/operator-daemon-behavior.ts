@@ -29,10 +29,10 @@ import {
   makeCabalRealmReactors,
   makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, SEED_OFF_DISK,
 } from "@lararium/tw5";
-import { ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, leaseEpochPrefix, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
+import { ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, leaseEpochPrefix, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
-import { boardDyadReader } from "./board-dyad-reader.js";
+import { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
 import type { DocHandle, LarDoc, AutomergeUrl, CapabilityVerifier, Verb } from "@lararium/mesh";
 
 /** Vessel-injected daemon shore the platform entry supplies (node folds the telemetry capture SINK here; a
@@ -120,7 +120,7 @@ export type DyadReader = (fleetRootDid: string, deviceVerifyingKey: string) => i
  * The dyad's reader a gate asks through, or a refusal by name. A gate that binds or seats a device reads that
  * device's standing first; with no reader composed it cannot read one, and it never reads the absence as `clear`.
  */
-export function requireDyadReader(reader: DyadReader | undefined, gate: "the Binding Gate" | "the join gate" | "the content-key seat" | "the intent door" | "the seat summons"): DyadReader {
+export function requireDyadReader(reader: DyadReader | undefined, gate: "the Binding Gate" | "the join gate" | "the content-key seat" | "the seat summons"): DyadReader {
   if (!reader) {
     throw new Error(
       `[daemon] DyadReaderAbsent: ${gate} reads a device's standing off the vessel's own fold of its fleet board, and this island ` +
@@ -143,7 +143,7 @@ import { announceSeatRoll } from "./seat-duty-executor.js";
 import { FACE_GRANT_PREFIX, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
 import { makeFaceSeat, makeGroupDocListener, type GroupDocHandle } from "./face-seat.js";
 import { runFaceJoinOperation } from "./face-join-operation.js";
-import { makeFaceIntentDoor, witnessedStandings } from "./face-intent-door.js";
+import { makeFaceIntentDoor } from "./face-intent-door.js";
 import { makeSeatSummons, standingOfReading } from "./face-seat-summons.js";
 import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
 import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
@@ -1213,25 +1213,22 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             if (!intentsUrl || !personaUrl) return;
             // THE DOOR READS LIVE AUTHORITY: the face's lineage off this island's own replica of the persona-KEL board (the boot's
             // chain names the face as it stood at boot, and a rotation merged since then must reach the next effect), and each
-            // device's standing off the dyad fold, fetched before a pass and read through a witness over every document that fold
-            // reads, so a pass never acts on a standing those documents have since moved past.
+            // device's standing off the board fold over the island's OWN replicas of the fleet's edge board and the face's edge
+            // ledger (the same ledger the vessel's ring keeps), under a witness over those documents and the KEL board. A dyad
+            // reader on another shore (the vessel's answer across the port) carries no witness the island can check, so the door
+            // never reads through one; the witnessed documents' changes wake it.
             const kel = daemonAuth.personaKel!;
             if (!kel.board) { console.log("[daemon] the intent door holds shut: the manifest names no persona-KEL board to read the face's lineage from"); return; }
             const plane = await ctx.repo.findWithProgress<LarDoc>(intentsUrl as AutomergeUrl).whenReady();
             const personaPlane = await ctx.repo.findWithProgress<LarDoc>(personaUrl as AutomergeUrl).whenReady();
             const kelBoard = await ctx.repo.findWithProgress<LarDoc>(kel.board as AutomergeUrl).whenReady();
-            const ledger = await dyadLedger;
             const atom = faceAtom();
+            const ownKey = daemonAuth.atom?.key ?? atom.key;
+            const ledger = (await dyadLedger) ?? await materializeSharedLarDoc(ctx.repo, edgeLedgerDocUrl(ownKey), "ledger:edge");
+            const fleetBoard = await materializeSharedLarDoc(ctx.repo, fleetEdgeBoardDocUrl(edge.personaRootDid), "board:edge-kapae");
             const chainNow = () => personaKelChainForPrefix(kelBoard.doc(), kel.prefix);
-            // The dyad fold reads the fleet frontier under the face's lineage: the live one, never the boot's.
-            const liveFace = () => ({ ...daemonAuth, personaKel: { ...kel, chain: chainNow() ?? [] } });
-            const headsOf = (url: string): string => {
-              const handle = (ctx.repo.handles as Record<string, DocHandle<LarDoc> | undefined>)[url.slice("automerge:".length)];
-              return handle?.isReady() ? replicaHeads(handle).join(",") : "-";
-            };
-            const standings = witnessedStandings(
-              async (device) => standingOfReading(await requireDyadReader(dyadReader(ctx, liveFace()), "the intent door")(edge.personaRootDid, device)),
-              () => [headsOf(fleetEdgeBoardDocUrl(edge.personaRootDid)), headsOf(edgeLedgerDocUrl(daemonAuth.atom?.key ?? atom.key)), ledger ? replicaHeads(ledger).join(",") : "-", replicaHeads(kelBoard).join(",")].join("|"));
+            const standings = intentDoorStandings({ repo: ctx.repo, fleetRoot: edge.personaRootDid, ownKey, board: fleetBoard, ledger,
+              lineage: () => readFace(chainNow() ?? undefined)?.lineage ?? null, lineageDocs: [kelBoard], ...(restDyadLedger ? { restLedger: restDyadLedger } : {}) });
             const door = makeFaceIntentDoor({
               group, atom: { key: atom.key, sign: atom.sign }, plane, personaRecords: () => faceRecordsOf([personaPlane.doc()], group),
               kelChain: () => chainNow(), anchor: daemonAuth.faceAnchor ?? null,

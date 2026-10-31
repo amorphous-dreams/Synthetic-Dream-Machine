@@ -13,7 +13,7 @@ import {
 } from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { listAnchoredPersonas, loadIdentityAnchors } from "../identity-anchors.js";
-import { KeyhiveProvider, InMemoryEventStore, faceJoinNonce, ownSummonsOf, witnessed, type AuthorityAcquisition } from "@lararium/keyhive";
+import { KeyhiveProvider, InMemoryEventStore, faceJoinNonce, ownSummonsOf, witnessed, watchHandles, type AuthorityAcquisition } from "@lararium/keyhive";
 import { loadVeilArchive } from "../identity-anchors.js";
 import { loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";
@@ -129,7 +129,7 @@ export async function loadIntentFace(repo: Repo, catalogUrl: string | undefined,
   let fleet: { readonly now: () => Awaited<ReturnType<typeof fleetRead>> | null; readonly acquisition: AuthorityAcquisition } | null = null;
   try {
     const [edgeBoard, edgeLedger] = [await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(fleetRoot), "board:edge-kapae"), await materializeSharedLarDoc(repo, edgeLedgerDocUrl(atom.key), "ledger:edge")];
-    fleet = witnessed(fleetRead, () => [edgeBoard, edgeLedger, kelBoard].map((h) => replicaHeads(h).join(",")).join("|"));
+    fleet = witnessed(fleetRead, () => [edgeBoard, edgeLedger, kelBoard].map((h) => replicaHeads(h).join(",")).join("|"), { watch: watchHandles([edgeBoard, edgeLedger, kelBoard]) });
     await fleet.acquisition.acquire(new Set());
   } catch { fleet = null; /* A board that cannot verify leaves standing unknown and no frontier held. */ }
   const standing = (key: string): "stands" | "aside" | "unknown" => fleet?.now()?.standing(key) ?? "unknown";
