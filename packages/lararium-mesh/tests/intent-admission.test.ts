@@ -111,8 +111,10 @@ test.each(["revoked", "closed", "awaiting"] as const)("RED: coincident invocatio
   const revoke = condition === "revoked" ? [await buildDelegationRevoke({ group: f.group, signer: f.root, epoch: 0, delegation: intentEntryCid(bad.grant) })] : [];
   const read = condition === "closed" ? { ...f.read, face: { ...f.face, rosterCids: ["c".repeat(64)] } } : f.read;
   const records = [live.grant, bad.grant, live.call, ...revoke];
-  const refusal = condition === "revoked" ? "delegation-revoked" : condition === "closed" ? "delegation-closed" : "unknown-frontier";
-  expect(await f.decide(bad.call, records, read)).toEqual({ ok: false, refusal });
-  expect(await f.decide(bad.call, [...records, bad.call], read)).toEqual({ ok: false, refusal });
+  // Two bodies under one invocation id read as a collision whatever the grant's condition: the live copy never masks the bad one, nor the bad one the live.
+  expect(await f.decide(bad.call, records, read)).toEqual({ ok: false, refusal: "id-collision" });
+  expect(await f.decide(bad.call, [...records, bad.call], read)).toEqual({ ok: false, refusal: "id-collision" });
+  const alone = await f.decide(bad.call, [live.grant, bad.grant, ...revoke], read);
+  expect(alone).toEqual({ ok: false, refusal: condition === "revoked" ? "delegation-revoked" : condition === "closed" ? "delegation-closed" : "unknown-frontier" });
   expect(await f.decide(live.call, records, read)).toMatchObject({ ok: true, duplicate: true });
 });

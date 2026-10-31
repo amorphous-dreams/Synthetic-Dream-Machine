@@ -43,7 +43,7 @@ export interface IntentState {
 export interface IntentView {
   readonly intents: readonly IntentState[];
   readonly delegations: readonly { readonly cid: string; readonly agent: string; readonly prefix: string; readonly status: "live" | "revoked" | "closed" | "lapsed" | "awaiting" | "pending-revoke-orphan"; readonly revokedBy: string | null }[];
-  readonly refused: readonly { readonly refusal: string }[];
+  readonly refused: readonly { readonly refusal: string; readonly cid?: string }[];
   readonly refusedAdmissions: readonly { readonly refusal: string }[];
   readonly strayAnswers: readonly IntentRecord[];
   readonly standing: (atom: string) => Standing;
@@ -67,7 +67,7 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
   const admissions = (input.admissions ?? []).map(raw => readIntentAdmission(raw, { group: input.group }));
   const refusedAdmissions = admissions.filter((r): r is Extract<typeof r, { ok: false }> => !r.ok).map(r => ({ refusal: r.refusal }));
   const devices = new Set(input.face.devices.map((a) => a.toLowerCase()));
-  const refused: { refusal: string }[] = [], all = new Map<string, IntentRecord>();
+  const refused: { refusal: string; cid?: string }[] = [], all = new Map<string, IntentRecord>();
   for (const raw of input.records) {
     const read = readIntentEntry(raw, { group: input.group, authorize: (signer, body) =>
       ["delegate", "delegate-revoke"].includes(body.entry) ? signsAtEpoch(input.face.lineage, body.epoch, signer) :
@@ -95,7 +95,7 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
     if (!delegationStates.has(cid) && !orphans.has(cid)) orphans.set(cid, { cid, agent: "", prefix: "", status: "pending-revoke-orphan", revokedBy: r.cid });
   }
   const delegations: IntentView["delegations"] = [...delegationStates.values(), ...orphans.values()].sort((a, b) => a.cid.localeCompare(b.cid));
-  const intents = new Map<string, IntentRecord>();
+  const bodies = new Map<string, IntentRecord[]>();
   for (const r of entries.filter((e) => e.entry.body.entry === "intent")) {
     const b = r.entry.body;
     if (b.delegation !== undefined) {
@@ -110,8 +110,14 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
     if (!check.ok) { refused.push({ refusal: check.refusal }); continue; }
     if (check.classification.class === "idempotent" && b.nonce !== "") { refused.push({ refusal: "idempotent-nonce" }); continue; }
     const id = intentId(b as unknown as { issuer: string; verb: string; args: unknown; nonce: string });
-    const prior = intents.get(id);
-    if (!prior || r.cid < prior.cid) intents.set(id, r);
+    bodies.set(id, [...(bodies.get(id) ?? []), r]);
+  }
+  // One id names one body: the id hashes issuer, verb, args and nonce apart from the audience, so a second body
+  // under it (a re-pin, a re-target) would let cid order pick a winner. Every copy refuses and none folds.
+  const intents = new Map<string, IntentRecord>();
+  for (const [id, copies] of bodies) {
+    if (copies.length === 1) intents.set(id, copies[0]!);
+    else for (const copy of copies) refused.push({ refusal: "id-collision", cid: copy.cid });
   }
   const asks = byKind("asks"), answers = byKind("answer"), claims = byKind("claim"), takeovers = byKind("takeover"), releases = byKind("release"), cancels = byKind("cancel"), supersedes = byKind("supersede"), outcomes = byKind("outcome");
   const authorized = (r: IntentRecord, issuer: string, claimant?: string): boolean => {
@@ -212,11 +218,11 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
     states.push({ admissions: admissions.flatMap(r => r.ok && r.admission.body.entry === source.cid ? [{ cid: r.cid, relay: r.admission.body.relay }] : []).sort((a, b) => a.cid.localeCompare(b.cid)), id, issuer, verb: body.verb as string, class: classification.class, fenced: classification.class === "single-effect" || !!classification.fenced, audience, bound, status, voidCause, agent, asks: ownAsks,
       answer, claim, claims: ownClaims, slots, voidAfterAct: voidCause ? ownOutcomes : [], outOfAudience });
   }
-  refused.sort((a, b) => a.refusal.localeCompare(b.refusal));
+  refused.sort((a, b) => a.refusal.localeCompare(b.refusal) || (a.cid ?? "").localeCompare(b.cid ?? ""));
   return { intents: states, delegations, refused, refusedAdmissions, strayAnswers, standing: input.standing, holdsCapability: input.holdsCapability ?? (() => false), face: input.face };
 }
 
-export type MayActReason = "answered" | "void" | "not-audience" | "pinned-elsewhere" | "fenced-by-claim" | "awaiting-answer" | "unknown-frontier" | "atom-aside";
+export type MayActReason = "spent" | "answered" | "void" | "not-audience" | "pinned-elsewhere" | "fenced-by-claim" | "awaiting-answer" | "unknown-frontier" | "atom-aside";
 export function mayAct(view: IntentView, intentId: string, atom: string): { readonly act: true } | { readonly act: false; readonly reason: MayActReason } {
   const state = view.intents.find((i) => i.id === intentId);
   if (!state) return { act: false, reason: "not-audience" };
@@ -224,6 +230,9 @@ export function mayAct(view: IntentView, intentId: string, atom: string): { read
   const standing = view.standing(atom);
   if (standing === "unknown" || state.status === "unknown-frontier") return { act: false, reason: "unknown-frontier" };
   if (standing === "aside") return { act: false, reason: "atom-aside" };
+  // An outcome spends a single-effect intent for every atom: a re-pin or a re-target never opens a second run, and an
+  // outcome the audience now reads as foreign still counts (the effect already ran).
+  if (state.class === "single-effect" && (state.slots.some((s) => s.winner) || state.outOfAudience.length)) return { act: false, reason: "spent" };
   if (state.audience.mode === "pinned" && state.audience.atom !== atom) return { act: false, reason: "pinned-elsewhere" };
   if (state.audience.mode === "asks") {
     if (!state.answer || state.answer === "contested" || field(state.answer, "verdict") !== "approve" || field(state.answer, "executor") !== atom) return { act: false, reason: "awaiting-answer" };
