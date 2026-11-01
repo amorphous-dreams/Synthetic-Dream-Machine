@@ -46,7 +46,30 @@ function liveLines(text) {
   return { lines, live: (i) => !inMask(spans, starts[i]) };
 }
 
-const hidden = [];
+// ── A STRAGGLER LEAVES THE CORPUS SILENTLY ─────────────────────────────────────────────────────
+// The finder reads only the one spelling, so a file still on a retired DOCTYPE stops declaring: it
+// drops from the carrier list, and every law that walks that list skips it without a word. This gate
+// asks the tracked tree instead — every live line opening `<<!DOCTYPE ` toward this grammar that does
+// not read the one declaration. A fence or an HTML comment quotes; neither counts. A DOCTYPE naming
+// some other grammar (a tree-sitter corpus teaching the sigil shape) declares no carrier of ours.
+const STRAGGLER = /^<<!DOCTYPE\s.*memetic-wikitext/;
+
+/** The line indexes an HTML comment covers, opener through closer, across lines. */
+function commentLines(lines) {
+  const inside = new Set();
+  let open = false;
+  lines.forEach((l, i) => {
+    let rest = l, covered = open;
+    for (;;) {
+      if (open) { const c = rest.indexOf("-->"); if (c < 0) break; open = false; rest = rest.slice(c + 3); }
+      else { const o = rest.indexOf("<!--"); if (o < 0) break; covered = covered || rest.slice(0, o).trim() === ""; open = true; rest = rest.slice(o + 4); }
+    }
+    if (covered) inside.add(i);
+  });
+  return inside;
+}
+
+const hidden = [], stragglers = [];
 const tracked = execFileSync("git", ["ls-files", "-z"], { cwd: REPO, encoding: "utf8", maxBuffer: 1 << 28 })
   .split("\0").filter(Boolean);
 for (const f of tracked) {
@@ -57,6 +80,10 @@ for (const f of tracked) {
   if (!text.includes("DOCTYPE")) continue;
   const { lines, live } = liveLines(text);
   if (lines.some((l, i) => live(i) && HIDDEN.test(l.trim()))) hidden.push(f);
+  const quoted = commentLines(lines);
+  lines.forEach((l, i) => {
+    if (live(i) && !quoted.has(i) && STRAGGLER.test(l) && l.trimEnd() !== DECLARATION) stragglers.push([f, l.trim().slice(0, 100)]);
+  });
 }
 
 const missing = [], misaimed = [];
@@ -82,13 +109,14 @@ for (const f of carriers) {
   }
 }
 
-console.log(`[doctype] ${carriers.length} carriers · ${missing.length} without · ${hidden.length} declaring to nobody · ${misaimed.length} in the wrong form${vanishedNote()}`);
+console.log(`[doctype] ${carriers.length} carriers · ${missing.length} without · ${hidden.length} declaring to nobody · ${misaimed.length} in the wrong form · ${stragglers.length} straggler(s) on another spelling${vanishedNote()}`);
 for (const f of missing.slice(0, 10)) console.log(`  no declaration   ${f}`);
 if (missing.length > 10) console.log(`  … and ${missing.length - 10} more`);
 for (const f of hidden) console.log(`  declares to nobody   ${f}`);
 for (const [f, line] of misaimed) console.log(`  ${f}\n    ${line}`);
+for (const [f, line] of stragglers) console.log(`  straggler   ${f}\n    ${line}`);
 
-if (missing.length + hidden.length + misaimed.length === 0) {
+if (missing.length + hidden.length + misaimed.length + stragglers.length === 0) {
   console.log("  every carrier opens by naming the grammar that reads it, at the one address that does");
   process.exit(0);
 }
