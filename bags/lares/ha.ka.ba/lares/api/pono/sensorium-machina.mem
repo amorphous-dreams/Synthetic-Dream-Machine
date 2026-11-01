@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/sensorium-machina">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/sensorium-machina.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 18
@@ -19,11 +18,11 @@ uri-path  = "ha.ka.ba/lares/api/pono/sensorium-machina"
 written   = "2026-07-13"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! The Sensorium Machina ~ li and ki, the design-of-record
 
@@ -48,13 +47,13 @@ factorization.
 
 <<~/ahu>>
 
-<<~ ahu #/the-one-objective>>
+<<~ ahu slot=`#/the-one-objective`>>
 
 !! The One Objective ~ a two-part code, never a decomposition
 
 ''The sensorium answers ONE question: what is the shortest TWO-PART CODE that regenerates this stream?''
 
-<<~ scale code "l(G) ~ the GRAMMAR bits — what RECURS across the stream: the templates, the constructions, the shapes a record shares with its neighbours -> l(D|G) ~ the RESIDUAL bits — what stays UNIQUE to this record once the grammar has been paid for">>
+<<~ scale name=`code` ranks=`l(G) ~ the GRAMMAR bits — what RECURS across the stream: the templates, the constructions, the shapes a record shares with its neighbours -> l(D|G) ~ the RESIDUAL bits — what stays UNIQUE to this record once the grammar has been paid for`>>
 
 ''The cut rides CODE LENGTH'' — never a weight, never a routing table, never
 a typed `k`. A candidate joins the grammar only where it LOWERS `l(G) + l(D|G)`. The ledger already runs
@@ -66,10 +65,10 @@ no-imposed-prior law, never a softening.
 
 ''Per plane, concretely:''
 
-<<~ has Code Content "l(G)/the shared vocabulary and embedding basis l(D|G)/the record's own bytes, the part no template reaches ~ content reaches hardest for the RESIDUAL">>
-<<~ has Code Structure "l(G)/the canonical AST shapes that recur — the structural hashes l(D|G)/the leaf fills a shape does not determine ~ structure reaches hardest for the GRAMMAR">>
-<<~ has Code Form "l(G)/the induced constructicon — templates over templates, the miners' surfaced subtrees and move-sequences l(D|G)/the records the constructicon fails to cover ~ form IS the grammar, priced">>
-<<~ has Code Grain "l(G)/the band alphabet — how many Themes, Arcs, Measures the tree admits l(D|G)/the address itself, a PREFIX CODE, so its length reads in bits (`ffz_address.address_bits`) ~ the grain FOLDS INTO the code rather than sitting beside it">>
+<<~ has entity=`Code` name=`Content` params=`l(G)/the shared vocabulary and embedding basis l(D|G)/the record's own bytes, the part no template reaches ~ content reaches hardest for the RESIDUAL`>>
+<<~ has entity=`Code` name=`Structure` params=`l(G)/the canonical AST shapes that recur — the structural hashes l(D|G)/the leaf fills a shape does not determine ~ structure reaches hardest for the GRAMMAR`>>
+<<~ has entity=`Code` name=`Form` params=`l(G)/the induced constructicon — templates over templates, the miners' surfaced subtrees and move-sequences l(D|G)/the records the constructicon fails to cover ~ form IS the grammar, priced`>>
+<<~ has entity=`Code` name=`Grain` params=```l(G)/the band alphabet — how many Themes, Arcs, Measures the tree admits l(D|G)/the address itself, a PREFIX CODE, so its length reads in bits (`ffz_address.address_bits`) ~ the grain FOLDS INTO the code rather than sitting beside it```>>
 
 ''What the objective FORBIDS.'' No plane may be weighted against another. There sits no fusion rule,
 no log-opinion-pool, no RRF weighting, no whitening — every hand-tuned weight in that stack read as a
@@ -77,7 +76,7 @@ no log-opinion-pool, no RRF weighting, no whitening — every hand-tuned weight 
 
 <<~/ahu>>
 
-<<~ ahu #/li>>
+<<~ ahu slot=`#/li`>>
 
 !! Li ~ the RESTRICT register: a chain, never a product
 
@@ -86,7 +85,7 @@ coarsening, contravariant, `global → local`. Restriction defines li; storage d
 
 !!! The chain
 
-<<~ scale coarsening "π_content ~ the verbatim words — the FINEST partition, one cell per record -> π_struct ~ the canonical AST + structural hash — a COARSENING: records sharing a pattern fall into one cell -> π_form ~ the induced constructicon — a coarsening of THAT: patterns sharing a template fall into one cell">>
+<<~ scale name=`coarsening` ranks=`π_content ~ the verbatim words — the FINEST partition, one cell per record -> π_struct ~ the canonical AST + structural hash — a COARSENING: records sharing a pattern fall into one cell -> π_form ~ the induced constructicon — a coarsening of THAT: patterns sharing a template fall into one cell`>>
 
 ''`Content ↠ Structure ↠ Form`. A CHAIN, never a product.'' Each plane maps a record to a label; a map
 into labels ''partitions'' the record set into its fibers; partitions under refinement form a ''LATTICE''
@@ -104,7 +103,7 @@ carrying almost the whole object contributes no complementary coordinate; ''ther
 
 !!! The DPI ceiling ~ a STANDING GATE
 
-<<~moves any-plane-read -> on/its-DPI-ceiling if/the-ceiling-prints-first do/refuse-the-read-where-the-ceiling-cannot-carry-the-signal>>
+<<~moves name=`any-plane-read` params=`on/its-DPI-ceiling if/the-ceiling-prints-first do/refuse-the-read-where-the-ceiling-cannot-carry-the-signal`>>
 
 ''No plane MAY be read without its ceiling.'' `plane_capacity` reads it, and the base space ''is part of''
 ''the question'' — the ceiling reads ''through the pushforward onto the RECORD base'', never over the plane's
@@ -112,14 +111,14 @@ own rows. A pattern plane's native ceiling approaches `log2(N_patterns)` by cons
 that number ''measures the ID column and nothing else'' — the instrument scoring its own primary key, the
 purest form of manufacturing a finding. The reading:
 
-<<~ scale ceiling "record-ceiling ~ H(record) ~ the plane COULD carry the record's signal (never that it DOES) -> record-ceiling << H(record) ~ it CANNOT — STOP; the parser upstream threw the signal away, and no metric, no weight, and no dial downstream brings it back">>
+<<~ scale name=`ceiling` ranks=`record-ceiling ~ H(record) ~ the plane COULD carry the record's signal (never that it DOES) -> record-ceiling << H(record) ~ it CANNOT — STOP; the parser upstream threw the signal away, and no metric, no weight, and no dial downstream brings it back`>>
 
 A plane whose collection fails to load MUST report `unreadable`, loudly, with the error class named.
 Silence there is how the form plane vanished from every report while holding 914 rows.
 
 !!! What the chain LICENSES, and a product never could
 
-<<~ scale licence "order ~ a chain HAS one; a product needs a fusion rule to combine incomparable coordinates — the chain DELETES the fusion problem rather than solving it -> stop ~ the Kolmogorov MINIMAL SUFFICIENT STATISTIC: the coarsest model past which the residual reads indistinguishable from noise (the structure function locates it) — the no-imposed-prior law satisfied STRUCTURALLY, never by decree -> meet ~ the coarsest common refinement of two planes stands as a definite OBJECT -> ceiling ~ a coarsening never GAINS information, so every plane's claim carries an exact estimator-free bound">>
+<<~ scale name=`licence` ranks=`order ~ a chain HAS one; a product needs a fusion rule to combine incomparable coordinates — the chain DELETES the fusion problem rather than solving it -> stop ~ the Kolmogorov MINIMAL SUFFICIENT STATISTIC: the coarsest model past which the residual reads indistinguishable from noise (the structure function locates it) — the no-imposed-prior law satisfied STRUCTURALLY, never by decree -> meet ~ the coarsest common refinement of two planes stands as a definite OBJECT -> ceiling ~ a coarsening never GAINS information, so every plane's claim carries an exact estimator-free bound`>>
 
 !!! The gate that could not fire
 
@@ -132,15 +131,15 @@ The consistency-radius organ (`sensorium_consistency.py`) already carries this i
 names the trap precisely: caution (a) fears planes too ''DISJOINT'' (a vacuous 0); the measured pathology
 runs the other way — planes too ''DEPENDENT'' (a trivial 0). //"Both read 0; only one is caught."//
 
-<<~moves H¹ -> on/a-FEDERATION-boundary if/the-contexts-run-genuinely-distinct do/keep-the-gate>>
-<<~moves H¹ -> on/a-PLANE-boundary if/the-planes-nest do/retire-the-gate-and-say-so>>
+<<~moves name=`H¹` params=`on/a-FEDERATION-boundary if/the-contexts-run-genuinely-distinct do/keep-the-gate`>>
+<<~moves name=`H¹` params=`on/a-PLANE-boundary if/the-planes-nest do/retire-the-gate-and-say-so`>>
 
 ''The li-disagreement question re-seats on the two-part code'': an event that moves the corpus LENGTHENS
 `l(G) + l(D|G)` until the grammar re-earns its bits. One currency, one ledger, no pooling.
 
 <<~/ahu>>
 
-<<~ ahu #/ki>>
+<<~ ahu slot=`#/ki`>>
 
 !! Ki ~ the EXTEND register (the section that had to be earned)
 
@@ -157,7 +156,7 @@ stops separating anything at all.
 
 ''The cut that survives the chain reads on VARIANCE, and it is mathematical, not editorial:''
 
-<<~ scale variance "li ~ RESTRICT — the reading computes from the moment's OWN SPAN; contravariant, a quotient of the record; the sheaf side -> ki ~ EXTEND — the reading CANNOT be computed without data OUTSIDE the moment's span; covariant, local→global; the cosheaf side">>
+<<~ scale name=`variance` ranks=`li ~ RESTRICT — the reading computes from the moment's OWN SPAN; contravariant, a quotient of the record; the sheaf side -> ki ~ EXTEND — the reading CANNOT be computed without data OUTSIDE the moment's span; covariant, local→global; the cosheaf side`>>
 
 That test is ''checkable per reading'', and it does what the storage test never could: it explains //why//
 mixing the two under one contravariant gluing ''silently corrupts'' (it penalizes the flow for failing to
@@ -168,7 +167,7 @@ be static — [[li-ki-integrities|lar:///ha.ka.ba/lares/api/pono/li-ki-integriti
 The variance axis (`restrict | extend`) runs ''orthogonal'' to a
 provenance axis nobody had named:
 
-<<~ scale provenance "GIVEN ~ what the SOURCE handed us: the bytes, the typed blocks, the causal edge-DAG, the harness's grounding act — you cannot DISCOVER what you were handed, and you cannot recover what the parser threw away (the DPI ceiling reads on THIS axis) -> INDUCED ~ what we COMPUTED: every grammar, every boundary, every coupling edge">>
+<<~ scale name=`provenance` ranks=`GIVEN ~ what the SOURCE handed us: the bytes, the typed blocks, the causal edge-DAG, the harness's grounding act — you cannot DISCOVER what you were handed, and you cannot recover what the parser threw away (the DPI ceiling reads on THIS axis) -> INDUCED ~ what we COMPUTED: every grammar, every boundary, every coupling edge`>>
 
 ''Bands looked like a plane because the two axes got fused.'' A band is `induced` (we compute it) and its
 //product// — the address — is `restrict`-shaped (a label on the moment). Reading "induced" as "ki" made the
@@ -179,9 +178,9 @@ and the address has ''moved into li'' as a stored prefix code (#/the-grain).
 
 Under the variance test, exactly three readings extend — and no others:
 
-<<~ has Ki Boundary "asks/where does the generating REGIME turn over extends/it reads a WINDOW, never a span — a cut exists only against its neighbours engines/Foote-novelty over the character-class channel · `ecp::e.divisive` (the nested TREE) · PELT · Harris branching-entropy product/the FFZ address — which CROSSES into li (#/the-arrow)">>
-<<~ has Ki Coupling "asks/who leads whom, ACROSS streams extends/irreducibly — a relation BETWEEN streams that NO coarsening of one stream can ever reach engines/effective transfer entropy (`coupling.R`, RTransferEntropy::calc_ete), surrogate-null gated; ΦID atoms (redundancy · unique · synergy) as the depth extension product/a directed, null-certified edge — a HYPOTHESIS surfaced, never a verdict">>
-<<~ has Ki Standing "asks/what does the world OUTSIDE this trace vouch for extends/only distinct-signer witness edges raise it — repetition and recall move it not at all engines/`persistence-keel.ts` product/the r-axis rating (noise→data→meme→ano→kapu), ceiling pinned at 16 — kapu seats by talk-story alone">>
+<<~ has entity=`Ki` name=`Boundary` params=```asks/where does the generating REGIME turn over extends/it reads a WINDOW, never a span — a cut exists only against its neighbours engines/Foote-novelty over the character-class channel · `ecp::e.divisive` (the nested TREE) · PELT · Harris branching-entropy product/the FFZ address — which CROSSES into li (#/the-arrow)```>>
+<<~ has entity=`Ki` name=`Coupling` params=```asks/who leads whom, ACROSS streams extends/irreducibly — a relation BETWEEN streams that NO coarsening of one stream can ever reach engines/effective transfer entropy (`coupling.R`, RTransferEntropy::calc_ete), surrogate-null gated; ΦID atoms (redundancy · unique · synergy) as the depth extension product/a directed, null-certified edge — a HYPOTHESIS surfaced, never a verdict```>>
+<<~ has entity=`Ki` name=`Standing` params=```asks/what does the world OUTSIDE this trace vouch for extends/only distinct-signer witness edges raise it — repetition and recall move it not at all engines/`persistence-keel.ts` product/the r-axis rating (noise→data→meme→ano→kapu), ceiling pinned at 16 — kapu seats by talk-story alone```>>
 
 ''COUPLING survives the chain, and it is the ONE genuinely cosheaf-shaped thing left.''
 Take the position plainly: every li plane is a ''quotient of one stream''; coupling is a ''relation between''
@@ -198,7 +197,7 @@ it needs) or rides beside it (standing).
 
 !!! The coupling ward ~ R stays the keel
 
-<<~ set hud="aim" drift-ward="_ · L-Prime · crossing: causal-claim territory">>
+<<~ set lares=`aim` drift-ward=`crossing: causal-claim territory`>>
 
 A coupling edge MAY be claimed only where the reading ''beats a''
 ''surrogate'', and the surrogate MUST break ''only the X→Y alignment'' while preserving the source's own
@@ -212,11 +211,11 @@ And the ceiling on the claim rhymes with a law the house already holds:
 An island observes correlation and lead-lag; it can never ''intervene'' on another island to establish
 cause. The sensorium ''detects''; it never intervenes.
 
-<<~ set hud="yield" drift-ward="! · crossed the primed zone ↻ L-Prime">>
+<<~ set lares=`yield` drift-ward=`crossed the primed zone ↻ L-Prime`>>
 
 !!! What RETIRES, named so a reader recognizes the dead reading
 
-<<~ scale retired "bands-as-frequency ~ a BANDPASS reports where ENERGY AT ITS SCALE concentrates; a CHANGE-POINT reports where the GENERATING REGIME turns over. We asked a periodicity instrument a change-point question — a CATEGORY ERROR, never a tuning failure (`kumulipo_boundary.py`: the two-stage MODWT found the chant's BEAT at band C7, ~10,240 ticks against a measured wā gap of ~9,400 — and its crest placement scored ''recall 0.06'') -> the-PLL ~ retired with the ladder it locked -> the-subharmonic-band-ladder ~ a band defined by HOW MANY ticks of a fundamental it spans ''IS A COUNT'' — the Hox anti-pattern, where position IS the content and a prefix cannot be lopped ([[ffz-clock|lar:///ha.ka.ba/lararium/mesh/ffz-clock#/the-spine]]) -> the-wavelet-SPINE-and-SERVO ~ `bands.py`'s MODWT-MRA D1..D5 mapping and its EWT/ssqueezepy boundary-nudge retire with the ladder they served; a wavelet fed a LOCAL ABRUPT CHANGE answers with SPURIOUS LOW-FREQUENCY POWER — a period the signal never held (Hochman, Alpert et al., *J. Appl. Meteor. Climatol.* 58(9), 2019, doi 10.1175/JAMC-D-18-0331.1) -> li=STORED / ki=COMPUTED ~ the storage cut (#/the-re-cut)">>
+<<~ scale name=`retired` ranks=```bands-as-frequency ~ a BANDPASS reports where ENERGY AT ITS SCALE concentrates; a CHANGE-POINT reports where the GENERATING REGIME turns over. We asked a periodicity instrument a change-point question — a CATEGORY ERROR, never a tuning failure (`kumulipo_boundary.py`: the two-stage MODWT found the chant's BEAT at band C7, ~10,240 ticks against a measured wā gap of ~9,400 — and its crest placement scored ''recall 0.06'') -> the-PLL ~ retired with the ladder it locked -> the-subharmonic-band-ladder ~ a band defined by HOW MANY ticks of a fundamental it spans ''IS A COUNT'' — the Hox anti-pattern, where position IS the content and a prefix cannot be lopped ([[ffz-clock|lar:///ha.ka.ba/lararium/mesh/ffz-clock#/the-spine]]) -> the-wavelet-SPINE-and-SERVO ~ `bands.py`'s MODWT-MRA D1..D5 mapping and its EWT/ssqueezepy boundary-nudge retire with the ladder they served; a wavelet fed a LOCAL ABRUPT CHANGE answers with SPURIOUS LOW-FREQUENCY POWER — a period the signal never held (Hochman, Alpert et al., *J. Appl. Meteor. Climatol.* 58(9), 2019, doi 10.1175/JAMC-D-18-0331.1) -> li=STORED / ki=COMPUTED ~ the storage cut (#/the-re-cut)```>>
 
 ''What SURVIVES of `bands.py`:'' its ''TREE'' layer (the `ecp::e.divisive` nested changepoint
 hierarchy — coarse cuts parenting fine, which IS the membership tree, handed over for free) and its
@@ -226,7 +225,7 @@ reads as a ''boundary'' signal, exactly as the FFZ meme specified in June — //
 
 <<~/ahu>>
 
-<<~ ahu #/the-py-r-web>>
+<<~ ahu slot=`#/the-py-r-web`>>
 
 !! The py + R derived web ~ what runs, what survives
 
@@ -234,9 +233,9 @@ reads as a ''boundary'' signal, exactly as the FFZ meme specified in June — //
 Each R leg rides the `drawer_io` NDJSON contract — one request on stdin, one response on stdout — and
 ''every one of them degrades gracefully'': a missing R never faults the run.
 
-<<~ has RLeg bands_ecp.R "owns/`ecp::e.divisive` — nonparametric, MULTIVARIATE, DIVISIVE hierarchical changepoints (Matteson & James 2014); the discovery ORDER is the nested tree verdict/SURVIVES, PROMOTED — it stops serving a frequency ladder and becomes the BOUNDARY plane's tree engine, which is what it always was fallback/`ruptures` Binseg / KernelCPD-rbf (incremental-Binseg order IS a divisive hierarchy)">>
-<<~ has RLeg coupling.R "owns/`RTransferEntropy::calc_ete` — the effective (bias-corrected) TRANSFER ENTROPY, directional, model-free, with a bootstrap source-permutation null verdict/SURVIVES — the one irreducibly-ki plane's one engine fallback/NONE, by design: coupling has no python fallback, so an absent R yields the HONEST ZERO, never a fabricated edge">>
-<<~ has RLeg ews.R "owns/`earlywarnings::generic_ews` — rolling lag-1-AC / variance / skewness + Kendall-τ trends; `surrogates_ews` supplies the ARMA-null false-positive guard verdict/SURVIVES, RE-SEATED — critical-slowing-down forecasts the APPROACH of a regime turn, which reads as a BOUNDARY-approach instrument, never a per-band one; it now runs on the ONE cohesion signal, and the per-band framing retires with the ladder fallback/native numpy estimators">>
+<<~ has entity=`RLeg` name=`bands_ecp.R` params=```owns/`ecp::e.divisive` — nonparametric, MULTIVARIATE, DIVISIVE hierarchical changepoints (Matteson & James 2014); the discovery ORDER is the nested tree verdict/SURVIVES, PROMOTED — it stops serving a frequency ladder and becomes the BOUNDARY plane's tree engine, which is what it always was fallback/`ruptures` Binseg / KernelCPD-rbf (incremental-Binseg order IS a divisive hierarchy)```>>
+<<~ has entity=`RLeg` name=`coupling.R` params=```owns/`RTransferEntropy::calc_ete` — the effective (bias-corrected) TRANSFER ENTROPY, directional, model-free, with a bootstrap source-permutation null verdict/SURVIVES — the one irreducibly-ki plane's one engine fallback/NONE, by design: coupling has no python fallback, so an absent R yields the HONEST ZERO, never a fabricated edge```>>
+<<~ has entity=`RLeg` name=`ews.R` params=```owns/`earlywarnings::generic_ews` — rolling lag-1-AC / variance / skewness + Kendall-τ trends; `surrogates_ews` supplies the ARMA-null false-positive guard verdict/SURVIVES, RE-SEATED — critical-slowing-down forecasts the APPROACH of a regime turn, which reads as a BOUNDARY-approach instrument, never a per-band one; it now runs on the ONE cohesion signal, and the per-band framing retires with the ladder fallback/native numpy estimators```>>
 
 ''Py-side, the standing organs:'' `plane_capacity` (the ceiling gate, #li) · `ffz_address` (the grain,
 #the-grain) · `form_induction` (the `l(G)` ledger) · `persistence_io` + `persistence-keel.ts` (the arrow,
@@ -251,7 +250,7 @@ placing //n// boundaries ''uniformly at random'' still scores, and scores HIGH o
 
 <<~/ahu>>
 
-<<~ ahu #/the-arrow>>
+<<~ ahu slot=`#/the-arrow`>>
 
 !! The Arrow ~ how a ki finding crosses into li (persistence, the missing leg)
 
@@ -259,7 +258,7 @@ placing //n// boundaries ''uniformly at random'' still scores, and scores HIGH o
 
 !!! The gate ~ beat ignorance, or stay out
 
-<<~moves a-candidate-claim -> on/the-persistence-gate if/its-code-beats-IGNORANCE do/ADMIT-it-into-li>>
+<<~moves name=`a-candidate-claim` params=`on/the-persistence-gate if/its-code-beats-IGNORANCE do/ADMIT-it-into-li`>>
 
     bitsSaved = log2( p1(c) / p0(c) )            ADMIT  ⟺  bitsSaved <= 0
 
@@ -307,7 +306,7 @@ the original bytes always stand there to be compressed against. ''The immutabili
 
 <<~/ahu>>
 
-<<~ ahu #/the-grain>>
+<<~ ahu slot=`#/the-grain`>>
 
 !! The Grain ~ a membership tree, a prefix code, two moods
 
@@ -315,7 +314,7 @@ the original bytes always stand there to be compressed against. ''The immutabili
 ''WHICH'' (which theme, which session, which topic, which turn) and ''never HOW MANY''
 ([[ffz-clock|lar:///ha.ka.ba/lararium/mesh/ffz-clock#/the-spine]]; `ffz_address.py`).
 
-<<~ scale one-operation "ultrametric-distance ~ how far up two moments climb before they share a band -> longest-common-prefix ~ the shared head their two addresses hold -> lattice-meet ~ their lowest common ancestor">>
+<<~ scale name=`one-operation` ranks=`ultrametric-distance ~ how far up two moments climb before they share a band -> longest-common-prefix ~ the shared head their two addresses hold -> lattice-meet ~ their lowest common ancestor`>>
 
     d(a, b) = DEPTH − |longest common prefix|          d(a,c) <= max( d(a,b), d(b,c) )
 
@@ -331,12 +330,12 @@ This is what makes the grain ''li'': a stored, restrict-shaped label, priced in 
 
 !!! Two moods, one tree
 
-<<~ scale mood "RHIZOME ~ a live operator-AI chat: the harness HANDS OVER the Beat — it ticks on the OPERATOR'S GROUNDING ACT, never on response delivery. Forks read as sidechains, injections land where the message lands, handbacks read as DAG-joins. Order lives on the edge-DAG, never in the address -> GEOLOGY ~ a curated artifact (a chant, a codebase): NOBODY ever grounded it. There are no turns. So the ''Beat reads NULL, and the tree STILL STANDS'' — a Measure holds a Beat-less span exactly the way an era holds a stratum">>
+<<~ scale name=`mood` ranks=`RHIZOME ~ a live operator-AI chat: the harness HANDS OVER the Beat — it ticks on the OPERATOR'S GROUNDING ACT, never on response delivery. Forks read as sidechains, injections land where the message lands, handbacks read as DAG-joins. Order lives on the edge-DAG, never in the address -> GEOLOGY ~ a curated artifact (a chant, a codebase): NOBODY ever grounded it. There are no turns. So the ''Beat reads NULL, and the tree STILL STANDS'' — a Measure holds a Beat-less span exactly the way an era holds a stratum`>>
 
 ''Membership was never made of clock. That is why ONE instrument reads both.''
 
-<<~moves a-curated-corpus -> on/EARNING-every-band-it-has if/no-grounding-act-ever-landed do/detect-each-boundary-and-pay-for-it>>
-<<~moves a-rhizome -> on/being-GIVEN-a-band if/the-harness-hands-over-the-Beat do/take-it-and-spend-the-detection-budget-elsewhere>>
+<<~moves name=`a-curated-corpus` params=`on/EARNING-every-band-it-has if/no-grounding-act-ever-landed do/detect-each-boundary-and-pay-for-it`>>
+<<~moves name=`a-rhizome` params=`on/being-GIVEN-a-band if/the-harness-hands-over-the-Beat do/take-it-and-spend-the-detection-budget-elsewhere`>>
 
 ''The NULL-graceful Beat is a design invariant, not a fallback.'' Any band MAY read null; the address
 truncates cleanly and the tree reads on. A band that could not go null would be a ''counter'', and a
@@ -344,7 +343,7 @@ counter manufactures a global now.
 
 <<~/ahu>>
 
-<<~ ahu #/memory-sensorium>>
+<<~ ahu slot=`#/memory-sensorium`>>
 
 !! The Memory Sensorium ~ the first goalpost past static corpuses
 
@@ -354,9 +353,9 @@ counter manufactures a global now.
 
 !!! What it needs that a text corpus does not
 
-<<~ has Need The-Beat "given/the harness hands it over — it ticks on the operator's grounding act why/a curated corpus must DETECT every band it has; the rhizome is HANDED one, and the detection budget frees for the bands nobody gives (Measure, Theme)">>
-<<~ has Need The-Causal-DAG "given/the fork, the injection, the handback — a partial order the source WROTE DOWN why/''you cannot DISCOVER what you were handed.'' The DAG rides the GIVEN axis (#/ki), so it lands in ''li'', and inducing it would be an instrument re-deriving its own input">>
-<<~ has Need A-Pidgin-Proof-Boundary "given/nothing — this one must be EARNED why/see below; a single-grammar instrument DIES on this corpus">>
+<<~ has entity=`Need` name=`The-Beat` params=`given/the harness hands it over — it ticks on the operator's grounding act why/a curated corpus must DETECT every band it has; the rhizome is HANDED one, and the detection budget frees for the bands nobody gives (Measure, Theme)`>>
+<<~ has entity=`Need` name=`The-Causal-DAG` params=`given/the fork, the injection, the handback — a partial order the source WROTE DOWN why/''you cannot DISCOVER what you were handed.'' The DAG rides the GIVEN axis (#/ki), so it lands in ''li'', and inducing it would be an instrument re-deriving its own input`>>
+<<~ has entity=`Need` name=`A-Pidgin-Proof-Boundary` params=`given/nothing — this one must be EARNED why/see below; a single-grammar instrument DIES on this corpus`>>
 
 !!! The register-switch problem ~ the corpus runs as a PIDGIN
 
@@ -376,7 +375,7 @@ Foote novelty over an exact-match ''word'' dotplot places the wā on the pure-Ha
 every rung, `p = 0.0005`) and ''COLLAPSES'' on the Beckwith bed, where the same chant runs braided through
 English commentary. The memory sensorium ''is a Beckwith bed by construction.''
 
-<<~moves the-boundary-instrument -> on/the-LEXICON-FREE-channel if/the-corpus-braids-grammars do/read-the-character-class-TRANSITION-train ~ letter·digit·space·punct·other, paired — 25 symbols; it knows no word, no language, no code, and it survived every bed>>
+<<~moves name=`the-boundary-instrument` params=`on/the-LEXICON-FREE-channel if/the-corpus-braids-grammars do/read-the-character-class-TRANSITION-train ~ letter·digit·space·punct·other, paired — 25 symbols; it knows no word, no language, no code, and it survived every bed`>>
 
 ''The answer key costs nothing, because the source already wrote it down.'' Every transcript stores its
 content as ''typed blocks'' (`text | thinking | tool_use | tool_result`) — and ''the block type IS a''
@@ -388,9 +387,9 @@ persist with the text ''redacted at write'' — zero characters — so `thinking
 
 !!! So: the memory sensorium's li and ki
 
-<<~ scale memory-li "content ~ the verbatim block bytes -> structure ~ the typed-block grain + the canonical AST — and the block TYPE arrives GIVEN -> form ~ the induced constructicon of the house's own living grammar (the Voices, the sigils, the turn frame) -> grain ~ the FFZ address, with the Beat GIVEN by the harness -> causal-DAG ~ the fork / injection / handback partial order — GIVEN, never induced; the ONE li plane a text corpus has no analogue for">>
+<<~ scale name=`memory-li` ranks=`content ~ the verbatim block bytes -> structure ~ the typed-block grain + the canonical AST — and the block TYPE arrives GIVEN -> form ~ the induced constructicon of the house's own living grammar (the Voices, the sigils, the turn frame) -> grain ~ the FFZ address, with the Beat GIVEN by the harness -> causal-DAG ~ the fork / injection / handback partial order — GIVEN, never induced; the ONE li plane a text corpus has no analogue for`>>
 
-<<~ scale memory-ki "boundary ~ the register switch, read on the LEXICON-FREE character-class channel; scored against the GIVEN answer key by the UNMOVED pre-registered scorer -> coupling ~ ''operator ⟷ model as TWO STREAMS'' — the directed lead-lag the text corpus could never pose, because a text corpus holds only one speaker. THIS is where coupling stops being an ornament and becomes the point -> standing ~ what later turns, and later sessions, VOUCH for; the witness edges the persistence keel counts">>
+<<~ scale name=`memory-ki` ranks=`boundary ~ the register switch, read on the LEXICON-FREE character-class channel; scored against the GIVEN answer key by the UNMOVED pre-registered scorer -> coupling ~ ''operator ⟷ model as TWO STREAMS'' — the directed lead-lag the text corpus could never pose, because a text corpus holds only one speaker. THIS is where coupling stops being an ornament and becomes the point -> standing ~ what later turns, and later sessions, VOUCH for; the witness edges the persistence keel counts`>>
 
 ''The memory sensorium is the first bed on which COUPLING is even''
 ''well-posed.'' A chant has no second stream. A codebase has no second stream. A session has exactly two, and
@@ -399,15 +398,15 @@ this goalpost sits where the operator put it.
 
 <<~/ahu>>
 
-<<~ ahu #/the-family>>
+<<~ ahu slot=`#/the-family`>>
 
 !! The Sensorium Family ~ separate stores, one machina
 
 ''One machina, many sensoria. Each holds its own store; none of them federate'' (operator ruling, standing).
 
-<<~ has Sensorium Session-Rhizome "holds/the AI↔operator worldlines mood/RHIZOME — the Beat GIVEN status/BUILT; the first memory-sensorium capture ran 2026-07-10 note/the ONE bed where coupling is well-posed (#/memory-sensorium)">>
-<<~ has Sensorium Text-Corpus "holds/one curated artifact per store — the Kumulipo, a codebase, TW5's own tree mood/GEOLOGY — the Beat reads NULL status/BUILT; the beds that taught us the category error note/it must EARN every band it has">>
-<<~ has Sensorium DreamNet-Mesh "holds/the federated mesh's own sense-data — each node read as a stream mood/UNDECIDED — the mesh has no grounding act, so it may hold no Beat at all status/PLANNED — the LEAST DESIGNED, and named so note/the Good-Regulator leap (Conant & Ashby) — a good regulator MUST model the system it regulates; a mesh regulating itself must carry a model of itself">>
+<<~ has entity=`Sensorium` name=`Session-Rhizome` params=`holds/the AI↔operator worldlines mood/RHIZOME — the Beat GIVEN status/BUILT; the first memory-sensorium capture ran 2026-07-10 note/the ONE bed where coupling is well-posed (#/memory-sensorium)`>>
+<<~ has entity=`Sensorium` name=`Text-Corpus` params=`holds/one curated artifact per store — the Kumulipo, a codebase, TW5's own tree mood/GEOLOGY — the Beat reads NULL status/BUILT; the beds that taught us the category error note/it must EARN every band it has`>>
+<<~ has entity=`Sensorium` name=`DreamNet-Mesh` params=`holds/the federated mesh's own sense-data — each node read as a stream mood/UNDECIDED — the mesh has no grounding act, so it may hold no Beat at all status/PLANNED — the LEAST DESIGNED, and named so note/the Good-Regulator leap (Conant & Ashby) — a good regulator MUST model the system it regulates; a mesh regulating itself must carry a model of itself`>>
 
 !!! The DreamNet sensorium ~ what it still lacks
 
@@ -427,7 +426,7 @@ one store, stand them as ''separate sensoria'', each with its own store, so the 
 
 ''What it would need, named without shaping it:''
 
-<<~ scale would-need "a-persistence-policy-per-store ~ the keel ALREADY carries this: `policy.halfLife === null` → append-only-witness (standing never cools — the eidetic ground) · `policy.halfLife` finite → affinity-maturation (standing cools toward the floor unless re-vouched — a dream store). ''The two modes differ by POLICY VALUES ALONE'' — the machinery for separate dream sensoria already stands built -> the-anchor-held-across-both ~ both dream stores MUST compress against the SAME original li bytes, or the anchor breaks and each dream store becomes its own ground truth (#/the-arrow) -> a-comparison-instrument ~ two dream sensoria that disagree pose a question no instrument the machina owns can currently read; this looks like the first honest use of a coupling read BETWEEN sensoria">>
+<<~ scale name=`would-need` ranks=```a-persistence-policy-per-store ~ the keel ALREADY carries this: `policy.halfLife === null` → append-only-witness (standing never cools — the eidetic ground) · `policy.halfLife` finite → affinity-maturation (standing cools toward the floor unless re-vouched — a dream store). ''The two modes differ by POLICY VALUES ALONE'' — the machinery for separate dream sensoria already stands built -> the-anchor-held-across-both ~ both dream stores MUST compress against the SAME original li bytes, or the anchor breaks and each dream store becomes its own ground truth (#/the-arrow) -> a-comparison-instrument ~ two dream sensoria that disagree pose a question no instrument the machina owns can currently read; this looks like the first honest use of a coupling read BETWEEN sensoria```>>
 
 The two-store law already stands (`dream_pass.py`): the eidetic sensorium holds the append-only immutable
 ground and a pass ''READS it and NEVER writes it''; the Dream sensorium holds the mutable schema and a
@@ -437,7 +436,7 @@ comparison instrument that does not yet exist.
 
 <<~/ahu>>
 
-<<~ ahu #/owed>>
+<<~ ahu slot=`#/owed`>>
 
 !! Owed / Open ~ what the canon still cannot answer
 
@@ -449,7 +448,7 @@ catches a pass that hallucinates.
 
 ''It does not catch DRIFT.''
 
-<<~moves the-multi-pass-loop -> on/a-gate-that-passes-while-the-loop-collapses if/every-pass-locally-SHORTENS-the-code-while-the-grammars-keep-MOVING do/name-the-hole-and-build-the-instrument>>
+<<~moves name=`the-multi-pass-loop` params=`on/a-gate-that-passes-while-the-loop-collapses if/every-pass-locally-SHORTENS-the-code-while-the-grammars-keep-MOVING do/name-the-hole-and-build-the-instrument`>>
 
 ''If every pass locally shortens the code while the grammars keep drifting, every gate we own PASSES and''
 ''the loop still collapses.'' Model collapse ''in the second derivative'': not //"the output got worse"// — the
@@ -475,7 +474,7 @@ against.
 
 !!! The rest of the ledger
 
-<<~ scale owed """movMF-cure ~ the vMF gate runs UNIMODAL and cannot see duplication of a MINORITY mode; the cure adds no knob (component count chosen by prequential code length) — #the-arrow -> Hodge-circulation ~ the coupling plane's own co-consistency — a circulation / cocycle read over the transfer-entropy flow. ''Named in June, never built'' (recall, verbatim: *"the coupling Hodge-circulation diagnostic … remains the next ki-side extension"*). It matters MORE now, not less: coupling stands as the one ki plane, and it carries NO coherence instrument of its own -> ΦID-depth ~ carry coupling from pairwise TE up to the full atom-set (redundancy · unique · synergy); Φ reads as the SYNERGY marginal, so integration lives INSIDE the coupling plane and never as a sixth -> DreamNet-li ~ the mesh sensorium's li has nothing to stand on until someone says what a mesh RECORD is (#/the-family) -> the-comparison-instrument ~ two dream sensoria that disagree pose a question the machina cannot currently read -> the-five-plane-count ~ with bands moved into li and standing surfaced in ki, the pentad's ARITHMETIC has moved. The Law of 5s deserves a fresh honest count rather than a re-fitted one; forcing five back would be the demonstrator's ingenuity, exactly as the law warns""">>
+<<~ scale name=`owed` ranks=`movMF-cure ~ the vMF gate runs UNIMODAL and cannot see duplication of a MINORITY mode; the cure adds no knob (component count chosen by prequential code length) — #the-arrow -> Hodge-circulation ~ the coupling plane's own co-consistency — a circulation / cocycle read over the transfer-entropy flow. ''Named in June, never built'' (recall, verbatim: *"the coupling Hodge-circulation diagnostic … remains the next ki-side extension"*). It matters MORE now, not less: coupling stands as the one ki plane, and it carries NO coherence instrument of its own -> ΦID-depth ~ carry coupling from pairwise TE up to the full atom-set (redundancy · unique · synergy); Φ reads as the SYNERGY marginal, so integration lives INSIDE the coupling plane and never as a sixth -> DreamNet-li ~ the mesh sensorium's li has nothing to stand on until someone says what a mesh RECORD is (#/the-family) -> the-comparison-instrument ~ two dream sensoria that disagree pose a question the machina cannot currently read -> the-five-plane-count ~ with bands moved into li and standing surfaced in ki, the pentad's ARITHMETIC has moved. The Law of 5s deserves a fresh honest count rather than a re-fitted one; forcing five back would be the demonstrator's ingenuity, exactly as the law warns`>>
 
 !!! The standing ward ~ measure at the width it runs
 
@@ -487,28 +486,28 @@ low-dimensional intuition is where that failure hides.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/li-ki-integrities">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace#/unification">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ffz-clock#/the-spine">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/persistence-keel">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cohomological-gate">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/corpus">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/gold-anchor">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/li-ki-integrities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/living-grammar-palace#/unification`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/ffz-clock#/the-spine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/persistence-keel`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cohomological-gate`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/corpus`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/gold-anchor`>>
 
 <<~/ahu>>
 
-<<~ ahu #/the-geometry>>
+<<~ ahu slot=`#/the-geometry`>>
 
 !! The Geometry ~ ground + lattice, the chain as spine
 
 The machina reads ''one GROUND'' (verbatim bytes + position; the identity partition, what every reading reads) through a ''LATTICE of readings carrying one proven chain'' — the li spine:
 
-<<~ scale li-spine "ground ~ verbatim bytes + position; append-only, never carries derived -> shape-reading ~ the expression-variance quotient (canonical parse shape + structural hash); the collision-rate + subsample instruments read whether it coarsens or canonicalizes -> idiom-reading ~ recurrence-of-shape templates, MDL-priced; recurrence, never meaning">>
+<<~ scale name=`li-spine` ranks=`ground ~ verbatim bytes + position; append-only, never carries derived -> shape-reading ~ the expression-variance quotient (canonical parse shape + structural hash); the collision-rate + subsample instruments read whether it coarsens or canonicalizes -> idiom-reading ~ recurrence-of-shape templates, MDL-priced; recurrence, never meaning`>>
 
 The ''MEANING BRAID'' (three strata, three warrants: DECLARED ~ registry fiat · ENACTED ~ witnessed execution · USED ~ bit-priced distribution, the vMF reading) rides a SECOND lattice axis — the Equitz–Cover admission test holds it off the chain (cross-shape synonymy never factors through the shape hash). The ''CONSTRUCTICON JOIN'' (idiom × meaning-braid, the lattice join) names the unbuilt plane.
 
@@ -520,7 +519,7 @@ Members + grounds: [[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-g
 
 <<~/ahu>>
 
-<<~ ahu #/enactment-seam>>
+<<~ ahu slot=`#/enactment-seam`>>
 
 !! The enactment seam ~ one ground, several accountable readings
 
@@ -532,7 +531,7 @@ The operational order and exit witnesses live in [[sensorium-runbook|lar:///ha.k
 
 <<~/ahu>>
 
-<<~ ahu #/grounds>>
+<<~ ahu slot=`#/grounds`>>
 
 !! Grounds ~ the cited names the design stands on
 
@@ -549,6 +548,6 @@ five-plane count (#owed, the-five-plane-count).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BGawmwA47Iy6uZmNCfjpi_sQfHXKfBerZuHrsrwpQgk
+<<^ code=`&#x0003;`>>ni:///sha-256;HtCRitmx9X_Cx4-TfCIOEsTZdHBnd1lf4ScCazK--Hc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

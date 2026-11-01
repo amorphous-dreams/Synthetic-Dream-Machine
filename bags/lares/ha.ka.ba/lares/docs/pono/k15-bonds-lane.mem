@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/k15-bonds-lane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/k15-bonds-lane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/k15-bonds-lane.mem"
 l-space   = "adjacent"
 role      = "the K15 bonds lane's kit: no seed reaches past the floor. The place mints no Keyhive identity, every face operation signs by the selected face's atom, the relay key is a random relay-only S row, cadence reads a public id, every floor edge signs through the scoped place signer, and the seed census follows renamed carriers"
 status    = "draft"
@@ -14,17 +13,17 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/k15-bonds-lane"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! K15 bonds ~ no seed reaches past the floor
 
-Road :208 (operator, 2026-10-19) rules that custody and identity read by capability, never by host. The bonds lane builds that ruling for every site that read the one vessel seed: the Keyhive Individual and its ContactCard, the bare leaf, the daemon proof, the sibling, enrolment and group-secret doors, the relay key, the carriage cadence and the floor edges. It runs after Waves C and D and the floor pin claim (PR #100) and before the X0 bake, since these bonds move identity bytes. The custody contract stands in <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k15-custody-step-zero">>.
+Road :208 (operator, 2026-10-19) rules that custody and identity read by capability, never by host. The bonds lane builds that ruling for every site that read the one vessel seed: the Keyhive Individual and its ContactCard, the bare leaf, the daemon proof, the sibling, enrolment and group-secret doors, the relay key, the carriage cadence and the floor edges. It runs after Waves C and D and the floor pin claim (PR #100) and before the X0 bake, since these bonds move identity bytes. The custody contract stands in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/k15-custody-step-zero`>>.
 
 <<~/ahu>>
 
-<<~ ahu #/the-model>>
+<<~ ahu slot=`#/the-model`>>
 
 !! The model that stands
 
@@ -36,7 +35,7 @@ Road :208 (operator, 2026-10-19) rules that custody and identity read by capabil
 
 <<~/ahu>>
 
-<<~ ahu #/the-slices>>
+<<~ ahu slot=`#/the-slices`>>
 
 !! The slices, each built with its red and control
 
@@ -49,7 +48,7 @@ Road :208 (operator, 2026-10-19) rules that custody and identity read by capabil
 
 <<~/ahu>>
 
-<<~ ahu #/old-bytes>>
+<<~ ahu slot=`#/old-bytes`>>
 
 !! Old bytes refuse by name
 
@@ -57,6 +56,6 @@ No CRDT document survives until X0, so re-genesis replaces migration. The node, 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MbvTPpz1SYH2nzHp3_95uRSkswMmsq3AsZr3kyKWz6k
+<<^ code=`&#x0003;`>>ni:///sha-256;A2f8G3W5WXCRI8zCYy33lyF2F3sKKSA5sjTXQBs-fvU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

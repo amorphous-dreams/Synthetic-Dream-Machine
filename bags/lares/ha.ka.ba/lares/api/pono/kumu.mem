@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kumu">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/kumu`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/kumu.mem"
 namespace = "&#x2299;"
 role      = "device-template declaration pragma — kumu as a Verse-style messaging edge widget set: @editable slots placed by kau, KumuListenable/KumuSubscribable reaction pins wired via papalohe; \\type/\\typos stand as native TW5 pragmas, carrying no mirror relation to kumu"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kumu"]
@@ -14,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kumu"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Kumu
 
@@ -33,7 +32,7 @@ The distinction: a procedure executes; a kumu holds the form other nodes instant
 
 <<~/ahu>>
 
-<<~ ahu #/device-model>>
+<<~ ahu slot=`#/device-model`>>
 
 !! The Device Model
 
@@ -53,7 +52,7 @@ kumu declaration — only placed instances wire.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -67,12 +66,12 @@ A kumu declaration's OUTPUT/INPUT pins derive from the type meme's `reaction:lis
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```text
-<<~ kumu TypeName(params)>>
+<<~ kumu name=`TypeName(params)`>>
   body template
 <<~/kumu>>
 ```
@@ -83,7 +82,7 @@ Hawaiian headword and no mirror relation to `kumu`
 
 <<~/ahu>>
 
-<<~ ahu #/pending>>
+<<~ ahu slot=`#/pending`>>
 
 !! Pending
 
@@ -94,18 +93,18 @@ research stream <confidence:0.6 — design resolved, implementation pending>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wehe">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kumu-device">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kau">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams/gaps-tensions">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wehe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kumu-device`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kau`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/papalohe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/research-streams/gaps-tensions`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6KF5j4g5fOBVFjKd1LFYZzkKjpKAYvM079_6f-1rDCA
+<<^ code=`&#x0003;`>>ni:///sha-256;dAc1xg0Gqc26Q8auBbE-1f4F9Btz-uSJ6Jl4Zo2D-eE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

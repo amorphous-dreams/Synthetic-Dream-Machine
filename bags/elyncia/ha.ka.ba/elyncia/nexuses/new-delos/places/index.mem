@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/index">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/index`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/index.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/places/index"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! New Delos ~ Places Index
 
@@ -29,7 +28,7 @@ hex-scale.'' Feed every hex: horizon · hidden handle · bleed.
 
 <<~/ahu>>
 
-<<~ ahu #/roster>>
+<<~ ahu slot=`#/roster`>>
 
 !! The Destination Roster
 
@@ -50,6 +49,6 @@ miles (near the Izmir-coast) — constellation members hanging over other Realms
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oZo8mC1dO4EtJ1gGemmQgUx3S-DfyWIOF9c8QfRjK-c
+<<^ code=`&#x0003;`>>ni:///sha-256;KTGIWGmRHbB7AC5nFmEPdKZDSSnBhdI1HvvuZM3gE_0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

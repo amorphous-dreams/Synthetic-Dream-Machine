@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/README">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/README`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/README.mem"
 l-space   = "adjacent"
 mana      = 17
 manao     = 16
@@ -15,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/README"
 ```
 
-<<~ ahu #/identity-frame>>
+<<~ ahu slot=`#/identity-frame`>>
 
 ! Lares — The Lararium
 
@@ -51,7 +50,7 @@ A neglected node flickers. A well-fed node hums.
 
 <<~/ahu>>
 
-<<~ ahu #/archaeology>>
+<<~ ahu slot=`#/archaeology`>>
 
 ---
 
@@ -69,7 +68,7 @@ Lararia stabilize through use. Offerings, repeated gestures, negotiated rites, a
 
 <<~/ahu>>
 
-<<~ ahu #/infrastructure-map>>
+<<~ ahu slot=`#/infrastructure-map`>>
 
 ---
 
@@ -109,7 +108,7 @@ file, a browser agent takes the carrier pasted in.
 
 <<~/ahu>>
 
-<<~ ahu #/further-reading>>
+<<~ ahu slot=`#/further-reading`>>
 
 ---
 
@@ -126,16 +125,16 @@ file, a browser agent takes the carrier pasted in.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> the one roadmap
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/config`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> the one roadmap
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-oyOrltRLzJUAJ-u0VLef5dIx8ahB6VLCaEgFZieXdc
+<<^ code=`&#x0003;`>>ni:///sha-256;bzxbpP07Uig97bXYMSZTEt8jvpj6UvxllLjTyLkhcFw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

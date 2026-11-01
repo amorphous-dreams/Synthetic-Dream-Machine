@@ -22,7 +22,7 @@
  * Residency rides the ENVELOPE, never a path and never a persisted field: `store.put(record, origin, { bag })`
  * takes the bag beside the record, and `UNPERSISTED_FIELDS = ["bag", "$origin-bag"]` keeps it off every
  * persisted byte. A residency move therefore touches no byte of the carrier — so the carrier's bytes, its
- * declared `uri-path`, its `file-path`, its own address mark and its block check all stand identical across
+ * declared `uri-path`, its own address mark and its block check all stand identical across
  * a promotion, and every carrier that points at it keeps pointing at the same live name.
  *
  * ── THE CROSSING, IN ORDER ──────────────────────────────────────────────────────────────────────

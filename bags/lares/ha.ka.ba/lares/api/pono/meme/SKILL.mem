@@ -4,16 +4,15 @@ description: Generate, compress, or audit meme surfaces under lar:///ha.ka.ba/la
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/meme/SKILL">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/meme/SKILL`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable          = true
 constraints        = ["S1: the parent invariant remains the copy-shape authority and this skill does not outrank it", "S2: a lawful meme keeps identity, thresholds, phase map, edges, and honest return throat visible", "S3: ratings remain distinct — confidence, mana, manao, and manaoio do not collapse into one vague quality signal", "S4: declared depth uses named pranala sugar only when the outward claim carries real yield, real backlog, or real adjacency", "S5: skeleton blocks, detailed conformance tables, research notes, and long procedure move outward before the parent swells"]
 covers             = ["lar:///ha.ka.ba/lares/api/pono/meme"]
-file-path          = "bags/lares/ha.ka.ba/lares/api/pono/meme/SKILL.mem"
 mana               = 16
 manao              = 17
 manaoio            = 14
@@ -30,7 +29,7 @@ uri-path           = "ha.ka.ba/lares/api/pono/meme/SKILL"
 This skill carries the working procedure.
 
 
-<<~ ahu #/load-contract>>
+<<~ ahu slot=`#/load-contract`>>
 
 !! Load Contract
 
@@ -45,7 +44,7 @@ Keep these points active when the skill loads:
 
 <<~/ahu>>
 
-<<~ ahu #/workflow-contract>>
+<<~ ahu slot=`#/workflow-contract`>>
 
 !! Workflow Contract
 
@@ -75,7 +74,7 @@ Do not:
 
 <<~/ahu>>
 
-<<~ ahu #/trigger>>
+<<~ ahu slot=`#/trigger`>>
 
 !! Trigger
 
@@ -95,7 +94,7 @@ Prefer another surface when the work concerns only:
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ read the carrier in document order and observe what shape actually lands on the page
 ⏿ sort required shape from optional depth without collapsing subtype law into meme law
@@ -105,7 +104,7 @@ Prefer another surface when the work concerns only:
 
 <<~/ahu>>
 
-<<~ ahu #/observe>>
+<<~ ahu slot=`#/observe`>>
 
 !! ✶ Observe
 
@@ -127,7 +126,7 @@ Preserve the difference between absent, stubbed, and filled surfaces.
 
 <<~/ahu>>
 
-<<~ ahu #/orient>>
+<<~ ahu slot=`#/orient`>>
 
 !! ⏿ Orient
 
@@ -149,7 +148,7 @@ Orientation rule:
 
 <<~/ahu>>
 
-<<~ ahu #/decide>>
+<<~ ahu slot=`#/decide`>>
 
 !! ◇ Decide
 
@@ -172,7 +171,7 @@ Do not round up.
 
 <<~/ahu>>
 
-<<~ ahu #/act>>
+<<~ ahu slot=`#/act`>>
 
 !! ▶ Act
 
@@ -189,9 +188,9 @@ When writing or revising:
 !!! Copy-Ready Skeleton
 
 ````markdown
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/[PATH]">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/[PATH]`>>
 
 
 # [Title]
@@ -199,7 +198,7 @@ When writing or revising:
 [One to three sentences naming scope and boundary.]
 
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 ✶ [observe pressure]
 ⏿ [orient pressure]
 ◇ [decide pressure]
@@ -208,23 +207,23 @@ When writing or revising:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 ## Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ pranala #has-meme from="?" -> to="lar:///ha.ka.ba/lares/api/pono/meme" family=control role=has>>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ pranala slot=`#has-meme` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/meme` family=`control` role=`has`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>:3474a83e5cb66844
+<<^ code=`&#x0003;`>>:3474a83e5cb66844
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>
 ````
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! ↺ Aftermath
 
@@ -250,15 +249,15 @@ Aftermath — close by naming:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/meme`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tQaMoTrWLQnp5PqtEAVFuQN223Lw8rv8aYYUJVwqxAg
+<<^ code=`&#x0003;`>>ni:///sha-256;VRnnEnsS7miQf8oOZ-amZmQ8jq_ObpF_TVCRi7dgbVo
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-ftls-powers-read">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-ftls-powers-read`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-ftls-powers-read.mem"
 l-space       = "adjacent"
 render-target = "docs"
 role          = "VERBATIM FTLS-Reader handback (2026-10-18) — Markdown transliterated only; source wording retained. Controller note: the branch left in the operator’s sweep; every file stands on the span. The unfinished-thread list stands for the operator’s return to the powers epic (the operator’s own solo work)."
@@ -14,7 +13,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-ftls-powers-read"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! FTLS-Reader handback
 
@@ -22,21 +21,21 @@ Verbatim final message of FTLS-Reader (2026-10-18); only Markdown transliterated
 
 <<~/ahu>>
 
-<<~ ahu #/opening>>
+<<~ ahu slot=`#/opening`>>
 
 ```text
-<<~ status "REACHED: origin/feature/ftls-powers (2942e2c69) sits in origin/feature/green-jello-dinosaur-5 (20728cdd6); it holds no branch-exclusive commit. Older wording and pending stubs changed on the span. INFERRED: its name need not remain as a work marker once the named records below stay preserved.">>
+<<~ status text=`REACHED: origin/feature/ftls-powers (2942e2c69) sits in origin/feature/green-jello-dinosaur-5 (20728cdd6); it holds no branch-exclusive commit. Older wording and pending stubs changed on the span. INFERRED: its name need not remain as a work marker once the named records below stay preserved.`>>
 ```
 <<~/ahu>>
 
-<<~ ahu #/ftls-reader-ink-clerk-handback>>
+<<~ ahu slot=`#/ftls-reader-ink-clerk-handback`>>
 
 ! FTLS-Reader (Ink-Clerk) handback
 
 `REACHED` marks a direct Git or file observation. `INFERRED` marks my reading of what that observation means. Repo paths below start at `/home/joshu/Synthetic-Dream-Machine`.
 <<~/ahu>>
 
-<<~ ahu #/branch-against-the-span>>
+<<~ ahu slot=`#/branch-against-the-span`>>
 
 !! Branch against the span
 
@@ -52,7 +51,7 @@ REACHED — `git log span..powers` returned no commits; `merge-base --is-ancesto
 | Branch powers doctrine: P/R/T/D/Ox, tags, mounts, locked Powers and ECM | ''MOVED, selectively · REACHED'' | `bags/sdm/ha.ka.ba/sdm/epic/powers-composition-rewrite.mem` names those concepts and references FTLS Chapter 06. `bags/sdm/ha.ka.ba/sdm/modules/powers/{read-magic,floating-disc,shield-ward}.mem`, matching `projections/powers/ftls-card/` and `witness/powers/osr-spells/`, demonstrate the new shape. ''INFERRED:'' these examples carry the model, not the whole Chapter 06 catalog; the remaining Markdown does not count as fully converted memes. |
 <<~/ahu>>
 
-<<~ ahu #/unfinished-threads-and-present-carriers>>
+<<~ ahu slot=`#/unfinished-threads-and-present-carriers`>>
 
 !! Unfinished threads and present carriers
 
@@ -62,14 +61,14 @@ REACHED — `git log span..powers` returned no commits; `merge-base --is-ancesto
 - ''REACHED:'' `_osr/FTLS/TODO_SDM_Powers_Index.md` records completed scans of five named sources but still asks whether other sources require a scan. ''INFERRED:'' that question remains in the source QA record until the operator settles its scope; individual source attestations fit the `bags/sdm/ha.ka.ba/sdm/witness/` pattern.
 <<~/ahu>>
 
-<<~ ahu #/verdict>>
+<<~ ahu slot=`#/verdict`>>
 
 !! Verdict
 
 ''Safe to delete the branch reference · INFERRED'', conditional on keeping this named preservation set on the span: `ftls/` chapters 01–10 (especially Chapter 06), `sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_04_Powers_Index.md`, `_osr/FTLS/` eight trackers, `_osr/BECMI/` crosswalk/staging/scripts, and `bags/sdm/ha.ka.ba/sdm/epic/powers-composition-rewrite.mem` with its current module, projection, and witness examples. ''REACHED:'' all already stand on the descendant span; the branch adds no exclusive commit. The pause and solo ownership remain the operator's frame. No deletion or repository write occurred.
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 ! Edges
 
@@ -77,6 +76,6 @@ Sources: `in/ftls-powers-reader.md`. Persona: FTLS-Reader. Date: 2026-10-18.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ecYi4kqqVPxl2iVRgFcbbLN6g1ji0JhaO1MPq5Cj8PQ
+<<^ code=`&#x0003;`>>ni:///sha-256;epTfszJ0JYPhkr_3OwzvCJABFo_ylrCX1-zgCMFIw3M
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

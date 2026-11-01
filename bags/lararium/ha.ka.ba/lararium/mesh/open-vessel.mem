@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/open-vessel">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/open-vessel`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/open-vessel.mem"
 hydrate     = true
 l-space     = "lararium"
 mana        = 17
@@ -24,7 +23,7 @@ The authority contract lives in [[operator-peer|lar:///ha.ka.ba/lararium/mesh/op
 This meme owns the ''compositional structure'': what a vessel composes FROM, and the
 ONE factory shape both platforms instance (see #one-derivation).
 
-<<~ ahu #/the-law>>
+<<~ ahu slot=`#/the-law`>>
 
 !! The Law
 
@@ -53,7 +52,7 @@ permanently-absent slot. A capability absent today reads as //not-yet-held//, ne
 
 <<~/ahu>>
 
-<<~ ahu #/the-seven-participations>>
+<<~ ahu slot=`#/the-seven-participations`>>
 
 !! The Seven Participations (what a vessel composes)
 
@@ -72,7 +71,7 @@ them, it does not re-implement them.
 
 <<~/ahu>>
 
-<<~ ahu #/the-shape>>
+<<~ ahu slot=`#/the-shape`>>
 
 !! The Shape — A Vessel Composes Its Pieces
 
@@ -101,7 +100,7 @@ phase sequence), never type-conformance to a port.
 
 <<~/ahu>>
 
-<<~ ahu #/role>>
+<<~ ahu slot=`#/role`>>
 
 !! Role Names Which Pieces the Keel Carries (the keystone reframe)
 
@@ -129,7 +128,7 @@ an accidental open-to-all reads as unreachable by construction.
 
 <<~/ahu>>
 
-<<~ ahu #/one-derivation>>
+<<~ ahu slot=`#/one-derivation`>>
 
 !! One Derivation ~ what a platform MAY decide, and what it MAY NOT
 
@@ -162,11 +161,11 @@ role-as-capability; native-first by subtraction), and the node + browser suites 
 vessels through the phase sequence, so the invariant carries a live guard rather than an
 argument. What stays open sits one level out: a live-daemon exercise of the full sequence.
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/operator-peer">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/island-protocol">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/operator-peer`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/causal-island`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/island-protocol`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lar-vessel`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZSKHJIwxsJaxFO830uYMcZtoWdI865OQ0Nn8RAhU6Z8
+<<^ code=`&#x0003;`>>ni:///sha-256;xu8-cdAr9DdAnr0DBT1Drra6e9P8GJF4frx_wm0kuCA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

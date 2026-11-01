@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/witness/powers/osr-spells/floating-disc">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/witness/powers/osr-spells/floating-disc`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/witness/powers/osr-spells/floating-disc.mem"
 l-space   = "sdm"
 mana      = 11
 manao     = 16
@@ -18,7 +17,7 @@ uri-path  = "ha.ka.ba/sdm/witness/powers/osr-spells/floating-disc"
 
 ! OSR Witness — Floating Disc
 
-<<~ ahu #/basic>>
+<<~ ahu slot=`#/basic`>>
 
 !! Basic
 
@@ -35,7 +34,7 @@ An invisible horizontal platform the size of a small round shield, created at th
 
 <<~/ahu>>
 
-<<~ ahu #/expert>>
+<<~ ahu slot=`#/expert`>>
 
 !! Expert
 
@@ -50,7 +49,7 @@ The Expert Set lists MU1 only; the Basic description governs.
 
 <<~/ahu>>
 
-<<~ ahu #/cyclopedia>>
+<<~ ahu slot=`#/cyclopedia`>>
 
 !! Rules Cyclopedia
 
@@ -67,7 +66,7 @@ As Basic, with the clarification that the disc follows at the caster's current m
 
 <<~/ahu>>
 
-<<~ ahu #/analysis>>
+<<~ ahu slot=`#/analysis`>>
 
 !! Conversion Analysis
 
@@ -79,17 +78,17 @@ As Basic, with the clarification that the disc follows at the caster's current m
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells">>
-<<~ loulou "lar:///ha.ka.ba/sdm/modules/powers/floating-disc">>
-<<~ loulou "lar:///ha.ka.ba/sdm/source/becmi/basic">>
-<<~ loulou "lar:///ha.ka.ba/sdm/source/uvg2e/floating-disc">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/modules/powers/floating-disc`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/source/becmi/basic`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/source/uvg2e/floating-disc`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aa3YQz0pHQB7TawuDcQ90C-nZeIxhOm4NPMHdybv4I4
+<<^ code=`&#x0003;`>>ni:///sha-256;iCHTN4eYDbw_s_wL2njyz8RqHF-mX9QfctxR7QnO0Uk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

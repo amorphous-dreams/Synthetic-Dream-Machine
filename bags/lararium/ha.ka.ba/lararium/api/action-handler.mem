@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/action-handler">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/api/action-handler`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/api/action-handler.mem"
 l-space     = "stable"
 mana        = 16
 manao       = 16
@@ -21,11 +20,11 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/api/action-handler"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! ACTION Verb Handler Family
 
@@ -39,7 +38,7 @@ operated from the CLI by `lares act`.
 
 <<~/ahu>>
 
-<<~ ahu #/verbs>>
+<<~ ahu slot=`#/verbs`>>
 
 !! The verb family
 
@@ -61,7 +60,7 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Handler Law
 
@@ -82,7 +81,7 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
    MOVE on the root and on each child of the group. The `change-id` argument (`lares act` mints a
    fresh one where the caller passes none) rides the receipt and the effect record, and lands on a
    record only where the source carries none. Derived text never keys on this id: it survives an
-   edit (`wiki-corpus-reader.ts` memos on the body). <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model#/anti-patterns">>
+   edit (`wiki-corpus-reader.ts` memos on the body). <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model#/anti-patterns`>>
 # ''Kāpae or retract, never silent delete'' (Anti-pattern #3 defense). CLEAR /
    DROP raise a ''kāpae'' tombstone (shadows lower bags — resurrection-prevention);
    A live-source MOVE ''retracts'' its source to //absent// (hard-remove → falls through, so the
@@ -110,7 +109,7 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
 
 <<~/ahu>>
 
-<<~ ahu #/dispatch>>
+<<~ ahu slot=`#/dispatch`>>
 
 !! Dispatch Shore
 
@@ -131,15 +130,15 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model#/effect-record-surface">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model#/effect-record-surface`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/personal-slot`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mYRNiS_1pgBR_-6d0EQp-Ga-osWWOHMB9QCK5w-JHTI
+<<^ code=`&#x0003;`>>ni:///sha-256;KT3xC59RMR_SWVlV3yM9KakwrvHf9TXbaBteeXnursU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

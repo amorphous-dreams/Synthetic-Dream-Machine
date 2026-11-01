@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/tiddlywiki-filter">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/tiddlywiki-filter`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/tiddlywiki-filter.mem"
 role      = "docs companion for x-tiddlywiki-filter: examples, guidance, reminders, and deferred scope notes"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/tiddlywiki-filter"
@@ -21,7 +20,7 @@ Procedure lives at [[tiddlywiki-filter/SKILL.md|../../api/pono/tiddlywiki-filter
 
 This file holds examples, explanatory guidance, reminders, and notes on deferred scope.
 
-<<~ ahu #/canonical-examples>>
+<<~ ahu slot=`#/canonical-examples`>>
 
 !! Canonical Examples
 
@@ -30,7 +29,7 @@ This file holds examples, explanatory guidance, reminders, and notes on deferred
 Find all sigils that link to the current meme:
 
 ````text
-<<~ hana #work>>
+<<~ hana grammar=`#work`>>
 ```toml
 grammar = "x-tiddlywiki-filter"
 context = "+currentMeme"
@@ -47,7 +46,7 @@ result-shape = "set"
 Find all sigils tagged `task` excluding the current meme:
 
 ````text
-<<~ hana #work>>
+<<~ hana grammar=`#work`>>
 ```toml
 grammar = "x-tiddlywiki-filter"
 context = "+currentMeme"
@@ -64,7 +63,7 @@ result-shape = "set"
 Get the `status` field of the current meme:
 
 ````text
-<<~ hana #work>>
+<<~ hana grammar=`#work`>>
 ```toml
 grammar = "x-tiddlywiki-filter"
 context = "+currentMeme"
@@ -81,7 +80,7 @@ result-shape = "scalar"
 Get the parent-list of the current meme:
 
 ````text
-<<~ hana #work>>
+<<~ hana grammar=`#work`>>
 ```toml
 grammar = "x-tiddlywiki-filter"
 context = "+currentMeme"
@@ -98,7 +97,7 @@ result-shape = "list"
 Find all untagged non-system sigils:
 
 ````text
-<<~ hana #work>>
+<<~ hana grammar=`#work`>>
 ```toml
 grammar = "x-tiddlywiki-filter"
 context = "+currentMeme"
@@ -112,7 +111,7 @@ result-shape = "set"
 
 <<~/ahu>>
 
-<<~ ahu #/guidance>>
+<<~ ahu slot=`#/guidance`>>
 
 !! Guidance
 
@@ -149,7 +148,7 @@ A future parser meme and render-pipeline meme should absorb these when they are 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
@@ -158,6 +157,6 @@ A future parser meme and render-pipeline meme should absorb these when they are 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ozrl26r5a5Di0oB8XtNphy1Yt92mt_ftFZ8qdjMV7B8
+<<^ code=`&#x0003;`>>ni:///sha-256;Clx5x_jtEBXMax1ktZFLe7QRBfwNizri_ojlLqh7KZk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

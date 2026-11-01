@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/RFC-2119">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/RFC-2119`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/RFC-2119.mem"
 role      = "docs companion for RFC-2119: online references, verb definitions, and IETF provenance"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/RFC-2119"
@@ -20,7 +19,7 @@ Law lives at [[RFC-2119|lar:///ha.ka.ba/lares/api/pono/RFC-2119]].
 
 This file holds online references, full IETF verb definitions, and provenance notes.
 
-<<~ ahu #/online-references>>
+<<~ ahu slot=`#/online-references`>>
 
 !! Online References
 
@@ -38,7 +37,7 @@ This stack uses ALL CAPS consistently for normative terms. The RFC 8174 clarific
 
 <<~/ahu>>
 
-<<~ ahu #/ietf-definitions>>
+<<~ ahu slot=`#/ietf-definitions`>>
 
 !! IETF Definitions (RFC 2119 verbatim)
 
@@ -57,7 +56,7 @@ It does not use REQUIRED, SHALL, SHALL NOT, RECOMMENDED, NOT RECOMMENDED, or OPT
 
 <<~/ahu>>
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Provenance
 
@@ -69,12 +68,12 @@ The stack does not import the full IETF RFC format — only the modal-force voca
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 * `lar:///ha.ka.ba/lares/api/pono/RFC-2119`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;daNWflo8Z3pRvOfzTRr3nOlxKQSbPep9kmvgeKMTsrk
+<<^ code=`&#x0003;`>>ni:///sha-256;HAzOnwPqak3teCJZ9aWPKbQGa4wWvH7rSr6QDmHBCrc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

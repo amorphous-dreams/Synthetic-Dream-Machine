@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/herm-carriage">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/node/herm-carriage.mem"
 l-space     = "lararium"
 mana        = 14
 role        = "invariant law: WHERE a herm stands its floor gates, HOW they answer, and the GATE-NATIVE carriage pull a vessel hands its carriage. A herm stands a floor gate at the explicit Nexus it was joined to and only there — a Nexus whose carriage board, on its own replica, counts a `carry` for its own vessel key (the shut-routes house ruling, stable-founding-road #/rulings: an explicit Nexus opens the herm relay). There it answers any proven peer that knocked (operator ruling \"A herm answers the knock\"). It signs its floor pin with the carried key and lays the statement on its own replica of the board. A reader presents its counted carry or its worn face with its admit; nothing composed, nothing dialed."
@@ -18,7 +17,7 @@ uri-path    = "ha.ka.ba/lararium/node/herm-carriage"
 written     = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Herm carriage ~ where a crossroads stands its gate, and how a vessel pulls through one
 
@@ -29,7 +28,7 @@ dials through such gates.
 
 <<~/ahu>>
 
-<<~ ahu #/where>>
+<<~ ahu slot=`#/where`>>
 
 !! Where ~ at the explicit Nexus, and only there
 
@@ -44,7 +43,7 @@ carry over the herm's key. It travels to the herm by hand, because the membershi
 
 <<~/ahu>>
 
-<<~ ahu #/how-it-answers>>
+<<~ ahu slot=`#/how-it-answers`>>
 
 !! How it answers ~ a herm answers the knock
 
@@ -55,7 +54,7 @@ governs that Nexus's own hearths and never the waystone; `nexus posture` refuses
 
 <<~/ahu>>
 
-<<~ ahu #/the-pin-a-reader-dials>>
+<<~ ahu slot=`#/the-pin-a-reader-dials`>>
 
 !! The pin a reader dials
 
@@ -68,7 +67,7 @@ descent orders the claims it files; a rotated herm is carried again under its ne
 
 <<~/ahu>>
 
-<<~ ahu #/what-a-reader-presents>>
+<<~ ahu slot=`#/what-a-reader-presents`>>
 
 !! What a reader presents
 
@@ -86,22 +85,22 @@ carried there as a place; a hearth that holds neither presents nothing there, an
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-node/src/herm-carriage.ts" family="code" role="has">>
-<<~ pranala #pull from="?" -> to="packages/lararium-mesh/src/carriage-pull.ts" family="code" role="stands-on">>
-<<~ pranala #pin from="?" -> to="packages/lararium-mesh/src/place-floor-pin.ts" family="code" role="signs-with">>
-<<~ pranala #join from="?" -> to="packages/lararium-node/src/carry-bundle.ts" family="code" role="joined-by">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/herm-carriage.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#pull` from=`?` to=`packages/lararium-mesh/src/carriage-pull.ts` family=`code` role=`stands-on`>>
+<<~ pranala slot=`#pin` from=`?` to=`packages/lararium-mesh/src/place-floor-pin.ts` family=`code` role=`signs-with`>>
+<<~ pranala slot=`#join` from=`?` to=`packages/lararium-node/src/carry-bundle.ts` family=`code` role=`joined-by`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carriage-pull">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/place-floor-pin">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/carry-bundle">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/socket-sorter">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carriage-pull`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/place-floor-pin`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/carry-bundle`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/socket-sorter`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IuslWyC_JXur83jDwigA1WTyP2QhjZvQYWtUNj-AcjQ
+<<^ code=`&#x0003;`>>ni:///sha-256;JUIuSZG6lVf143XLcP50jfsT2PUmX6t5yDTCDdO2bFg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

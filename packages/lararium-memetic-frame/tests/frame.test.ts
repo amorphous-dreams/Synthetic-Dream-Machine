@@ -8,7 +8,7 @@ import {
   frameCarrier, stampCarrier, headSigil, CARRIER_DECLARATION,
   frameStanding, readFrame, checkSpan, verdict,
   verifyBcc, bccOf, bccOfSpan, classifyPostamble, classifyPostEot,
-  matchCarrierHead, META_OPEN_CANON,
+  matchCarrierHead, META_OPEN_CANON, releaseSigil,
 } from "../src/index.js";
 
 const URI = "lar:///t/frame";
@@ -20,9 +20,9 @@ describe("the writer", () => {
   test("mints the canonical shape, byte for byte", () => {
     expect(carrier).toBe(
       `${CARRIER_DECLARATION}\n\n` +
-      `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n` +
-      `<<^ code="&#x0002;">>\n\n${BODY}\n\n<<^ code="&#x0003;">>${bccOf(carrier)}\n` +
-      `\n<<^ code="&#x0004;" -> to="?">>\n`,
+      `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n` +
+      `<<^ code=\`&#x0002;\`>>\n\n${BODY}\n\n<<^ code=\`&#x0003;\`>>${bccOf(carrier)}\n` +
+      `\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`,
     );
   });
 
@@ -46,17 +46,17 @@ describe("the writer", () => {
     });
     expect(full.startsWith(`above\n\n${CARRIER_DECLARATION}`)).toBe(true);
     expect(full).toContain(headSigil({ uri: URI, namespace: "⊙", kapu: true }));
-    expect(full).toContain('<<^ code="&#x0011;" namespace="⊙" from="?" -> to="lar:///t/frame">>');
+    expect(full).toContain('<<^ code=`&#x0011;` namespace=`⊙` from=`?` to=`lar:///t/frame`>>');
     expect(full).not.toContain("&#x0017;");
-    expect(full.endsWith(`<<^ code="&#x0004;" -> to="?">>\nbelow\n`)).toBe(true);
+    expect(full.endsWith(`<<^ code=\`&#x0004;\` to=\`?\`>>\nbelow\n`)).toBe(true);
     expect(verifyBcc(full)).toBe("ok");
   });
 
   test("RED: a carrier carrying a literal ETB mark reads as a torn spelling", () => {
     const carrier = frameCarrier({ head: { uri: URI }, body: BODY });
     const withEtb = carrier.replace(
-      /<<\^ code="&#x0004;" -> to="\?">>/,
-      `\nsila\n<<^ code="&#x0017;">>\n<<^ code="&#x0004;" -> to="?">>`,
+      releaseSigil(),
+      `\nsila\n<<^ code=\`&#x0017;\`>>\n<<^ code=\`&#x0004;\` to=\`?\`>>`,
     );
     const v = verdict(withEtb);
     expect(v.kind).toBe("torn");
@@ -92,7 +92,7 @@ describe("stampCarrier — the body first, the check last", () => {
     const bare = carrier.replace(bccOf(carrier)!, "");
     expect(verifyBcc(bare)).toBe("unchecked");
     expect(stampCarrier(bare)).toBe(carrier);
-    const torn = carrier.slice(0, carrier.indexOf('<<^ code="&#x0003;">>'));
+    const torn = carrier.slice(0, carrier.indexOf('<<^ code=`&#x0003;`>>'));
     expect(stampCarrier(torn)).toBe(torn);
   });
 });
@@ -109,7 +109,7 @@ describe("the ONE span reader", () => {
   });
 
   test("★ a second live ETX closes nothing past the first, and the reader NAMES it ★", () => {
-    const stray = frameCarrier({ head: { uri: URI }, body: `${BODY}\n\n<<^ code="&#x0003;">>\n\nafter` });
+    const stray = frameCarrier({ head: { uri: URI }, body: `${BODY}\n\n<<^ code=\`&#x0003;\`>>\n\nafter` });
     const st = frameStanding(stray);
     if (st.kind !== "framed") throw new Error("unframed");
     expect(stray.slice(st.end)).toMatch(/^\n\nafter/);
@@ -119,14 +119,14 @@ describe("the ONE span reader", () => {
   });
 
   test("an ETX ahead of the STX and a second STX are named too", () => {
-    expect(readFrame(`<<^ code="&#x0003;">>\n${carrier}`).faults.map((f) => f.kind)).toEqual(["etx-before-stx"]);
-    expect(readFrame(`${carrier}\n<<^ code="&#x0002;">>\n`).faults.map((f) => f.message).join("\n")).toMatch(/2 text frames/);
+    expect(readFrame(`<<^ code=\`&#x0003;\`>>\n${carrier}`).faults.map((f) => f.kind)).toEqual(["etx-before-stx"]);
+    expect(readFrame(`${carrier}\n<<^ code=\`&#x0002;\`>>\n`).faults.map((f) => f.message).join("\n")).toMatch(/2 text frames/);
   });
 
   test("torn and absent stay distinct", () => {
     expect(frameStanding("no frame here").kind).toBe("absent");
-    expect(frameStanding('<<^ code="&#x0002;">>\nbody').kind).toBe("torn");
-    expect(verifyBcc('<<^ code="&#x0002;">>\nbody')).toBe("torn");
+    expect(frameStanding('<<^ code=`&#x0002;`>>\nbody').kind).toBe("torn");
+    expect(verifyBcc('<<^ code=`&#x0002;`>>\nbody')).toBe("torn");
     expect(verifyBcc("no frame here")).toBe("unchecked");
   });
 });
@@ -143,7 +143,7 @@ describe("the check", () => {
 
   test("the slot classifier: empty, check, foreign", () => {
     expect(classifyPostamble("\n\n")).toEqual({ kind: "empty" });
-    expect(classifyPostamble(`${bccOfSpan("x")}\n\n<<^ code="&#x0004;" -> to="?">>\n`).kind).toBe("bcc");
+    expect(classifyPostamble(`${bccOfSpan("x")}\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`).kind).toBe("bcc");
     expect(classifyPostamble("stranded prose\n").kind).toBe("foreign");
   });
 });

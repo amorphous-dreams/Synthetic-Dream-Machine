@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/working-procedures">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/working-procedures`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem"
 hydrate   = true
 l-space   = "stable"
 role      = "working procedures — the standing law for any hand that tests, wires or measures in this tree: red-first test design in eight moves, the ladder for wiring a module that stands designed, tested and unreached, the instruments that read green while they report something false, how a fork settles, the working agreements that bind every spirit, and the rulings they rest on"
@@ -14,20 +13,20 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/working-procedures"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Working procedures ~ how a hand tests, wires and measures here
 
 Each block below states a procedure that cost this tree measured hours to learn. A hand reads the block
 that names its act before it writes a vector, a wire or a count. The named failure modes these procedures
-guard against read at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states#/index">>, each with its
+guard against read at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states#/index`>>, each with its
 own measured instance and diagnostic.
 
 <<~/ahu>>
 
-<<~ ahu #/grounds-before-wins>>
+<<~ ahu slot=`#/grounds-before-wins`>>
 
 !! Grounds before wins ~ how work gets ranked
 
@@ -39,7 +38,7 @@ land as ONE settlement.
 
 <<~/ahu>>
 
-<<~ ahu #/red-first>>
+<<~ ahu slot=`#/red-first`>>
 
 !! Red-first test design ~ the procedure, never the slogan
 
@@ -63,7 +62,7 @@ deferred.
 
 <<~/ahu>>
 
-<<~ ahu #/wiring-an-unreached-module>>
+<<~ ahu slot=`#/wiring-an-unreached-module`>>
 
 !! Wiring a module that stands designed, tested and unreached
 
@@ -85,7 +84,7 @@ package barrel until then.
 
 <<~/ahu>>
 
-<<~ ahu #/instruments-that-lie>>
+<<~ ahu slot=`#/instruments-that-lie`>>
 
 !! Instruments that read green while they report something false
 
@@ -95,8 +94,8 @@ Collide each before trusting it.
 * ''A digest gate'' answers "do these bytes match this hash", never "do these bytes belong here".
 * ''A fixture pins the grammar; only the corpus pins the reader.'' A hand-written fixture can agree with itself and disagree with every file on the shelf.
 * ''A grep for callers counts mentions'', including comments that say the caller does not exist. Follow the call; never grep the door.
-* ''A grep over sigils written with `[^>]` stops at the bearing arrow.'' Use `(?:[^>\n]|>(?!>))`, and fence the boundary the claim names.
-* ''A `git ls-files '*.mem'` sweep reaches frozen fixtures'' under `packages/tree-sitter-memetic-wikitext/fixtures/specimens/` and `packages/lararium-sensorium/scripts/fixtures/`. Their standing in an older carrier form marks them as frozen, never as stragglers; sweep `bags/` by name.
+* ''A grep over sigils written with `[^>]` stops at the first `>` inside a value.'' A value still holds `>` (a rank's or slide's `->`, a result arrow), so the class `[^>]` cuts the sigil short there. Use `(?:[^>\n]|>(?!>))`, and fence the boundary the claim names.
+* ''A `git ls-files '*.mem'` sweep reaches frozen fixtures'' under `packages/tree-sitter-memetic-wikitext/fixtures/specimens/`. Their standing in an older carrier form marks them as frozen, never as stragglers; sweep `bags/` by name.
 * ''A blanket re-stamp signs edits nobody authored.'' `lares meme normalize` names its files and takes no glob, and it NAMES every dirty carrier a run passed over.
 * ''Derive, never enumerate'': a quoted count drifts.
 * ''A commit subject claims; it proves nothing.'' A reader stricter than the parser still lies.
@@ -140,7 +139,7 @@ Collide each before trusting it.
 
 <<~/ahu>>
 
-<<~ ahu #/an-absence-names-its-far-side-barrier>>
+<<~ ahu slot=`#/an-absence-names-its-far-side-barrier`>>
 
 !! An absence names its far-side barrier ~ the boundary half of the silent-zero law
 
@@ -160,24 +159,24 @@ The house proves a zero with a known positive: an instrument that reads nothing 
 
 <<~/ahu>>
 
-<<~ ahu #/working-agreements>>
+<<~ ahu slot=`#/working-agreements`>>
 
 !! Working agreements ~ what binds every spirit
 
-* ''Commits'': a subject starts `lar:///word.word.word — summary`; every commit names its paths (`git commit -F <msg> --only -- <paths>`), and no hand commits blind. The guard between hands reads at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths#/law">>.
-* ''Vocabulary law'': OCI nouns name structure and residency verbs name motion; a version-control verb MUST NOT name a model operation. `ea` names the breath, never a "heartbeat"; `nalu` names the wave. Web2 vocabulary reads as crud. Prose in `api/` and in a spirit's own telling keeps L-Prime (<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>).
-* ''Build new, then retire.'' A retired term stays reserved and never gets reused for a changed thing (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme#/retirement">>).
+* ''Commits'': a subject starts `lar:///word.word.word — summary`; every commit names its paths (`git commit -F <msg> --only -- <paths>`), and no hand commits blind. The guard between hands reads at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/hearths#/law`>>.
+* ''Vocabulary law'': OCI nouns name structure and residency verbs name motion; a version-control verb MUST NOT name a model operation. `ea` names the breath, never a "heartbeat"; `nalu` names the wave. Web2 vocabulary reads as crud. Prose in `api/` and in a spirit's own telling keeps L-Prime (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>).
+* ''Build new, then retire.'' A retired term stays reserved and never gets reused for a changed thing (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme#/retirement`>>).
 * ''Mechanism at choke-points, policy in cascades.'' A capability stands as a manifest grant, never as a flag a cascade can set.
 * ''Prove by witness, never by assertion.'' A change that crosses a vessel proves itself against a staged vessel; a failing vector NAMES a hole.
-* ''Early alpha, until a third human.'' Shapes get tried and thrown away freely while one or two operators hold the mesh, since that takes only minimal coordination. Once a third human's data and habits enter it, and in any stable federated mesh, human-scale flows and persistence become the primary design attractors. The road's fence (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>) reads the same line.
+* ''Early alpha, until a third human.'' Shapes get tried and thrown away freely while one or two operators hold the mesh, since that takes only minimal coordination. Once a third human's data and habits enter it, and in any stable federated mesh, human-scale flows and persistence become the primary design attractors. The road's fence (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>) reads the same line.
 * ''Evergreen, with no old shapes.'' No migration door, no shim, and no detecting or warning about an old shape: old shapes stand as rejected experiments. Code, comments, logs, help text and test names state what IS, with no history words (//retired//, //no longer//, //now//, //legacy//, //pre-cutover//). Git carries the ashes, and o-takiage reaches code as much as carriers.
 * ''A refusal of the house's own earlier shape lives for one commit.'' The commit that moves a shape may refuse the earlier spelling by name; the next commit burns that refusal, its name list and the tests that pin the retired name. A check that also guards a live invariant (forged, foreign, occupied or malformed bytes) keeps the invariant in present tense, with present tests, and loses only the historical name.
 * ''Recursive o-takiage.'' A witness that catches burned names, or a list of retired names inside a test, lives only as scaffolding: build it, run it green, then burn it in the lane's final aftermath commit. No standing retired-names witness; a standing list keeps dead names and their l-space alive.
-* ''A burr gets taken when it appears'', or it gets a line with its wake condition in the roadmap (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>).
+* ''A burr gets taken when it appears'', or it gets a line with its wake condition in the roadmap (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/forks>>
+<<~ ahu slot=`#/forks`>>
 
 !! Forks ~ how a fork settles
 
@@ -193,7 +192,7 @@ Straight to the operator, at once: a classifier refusal; a destroy-class act pas
 
 <<~/ahu>>
 
-<<~ ahu #/rulings>>
+<<~ ahu slot=`#/rulings`>>
 
 !! Rulings ~ the operator's words the agreements rest on
 
@@ -203,17 +202,17 @@ Straight to the operator, at once: a classifier refusal; a destroy-class act pas
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> the named failure modes these procedures guard against
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start">> the roadmap's cold start names the instruments
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> the hearths ledger names which session holds which ground
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states`>> the named failure modes these procedures guard against
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start`>> the roadmap's cold start names the instruments
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/hearths`>> the hearths ledger names which session holds which ground
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ip7smQmZaff-mZIYmqxqXVCUxs7iKEVy08AWuUPhoEg
+<<^ code=`&#x0003;`>>ni:///sha-256;4EKoSHTs6PplJjCHwOyWgN5kevTH1o0DNP5qBZOoShE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

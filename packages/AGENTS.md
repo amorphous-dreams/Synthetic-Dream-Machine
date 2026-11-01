@@ -4,7 +4,6 @@
 
 ```toml
 uri-path     = "packages/AGENTS"
-file-path    = "packages/AGENTS.md"
 content-type = "text/memetic-wikitext+tiddlywiki"
 l-space      = "adjacent"
 manaoio      = 16

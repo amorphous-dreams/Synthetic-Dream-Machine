@@ -4,7 +4,7 @@
  * ── WHY THE GRAPH NEEDS ITS OWN READING ─────────────────────────────────────────────────────────
  * A `lar:` URI names; it does not fetch. So a carrier whose target moved keeps rendering, keeps
  * round-tripping, and keeps passing every gate this tree stands — `carrier-shape` asks whether a file
- * is whole, `meme-coordinates` asks whether its own two coordinates agree, `bcc` asks whether its bytes
+ * is whole, `meme-coordinates` asks whether its own coordinate agrees, `bcc` asks whether its bytes
  * match their check. **None of them looks outward.** An edge that resolves to nothing is invisible to
  * all three at once.
  *
@@ -41,24 +41,22 @@ export interface CarrierEdge {
   readonly form: EdgeForm;
 }
 
-// AND THE QUOTE IS NOT PART OF THE ADDRESS. TiddlyWiki reads `name:value` as call syntax, so an
-// UNQUOTED `lar:///x` in a positional slot binds a phantom parameter named `lar` and the positional
-// receives nothing — the corpus quotes them for that reason, and every scan here strips the pair.
+// EVERY ADDRESS RIDES A NAMED, TICKED VALUE (the kupono cut): ``<<~ loulou uri=`lar:///x`>>``,
+// ``<<~ pranala from=`…` to=`lar:///x`>>``, ``<<~ kahea uri=`lar:///x`>>``. The tick is not part of the
+// address, and every scan here strips the pair. A form that stopped matching reports no edges at all,
+// silently, so `tests/kupono-readers.test.ts` holds a known positive for each.
+//
+// A `>` CLOSES A CALL ONLY WHEN A SECOND ONE FOLLOWS — TiddlyWiki's own `reUnquotedAttribute` law — so
+// every scan spells its run `(?:[^>]|>(?!>))*?`. Measured: a scan of `[^>]*?` once found 0 of the
+// corpus's 84 `pranala` edges.
+//
+// AN EDGE IS THE END IT POINTS AT. A `pranala` names both ends, and only `to=` is the edge — `from=` is
+// where the carrier already stands. Anchored on the NAME, never on position: the writer emits `from`
+// first and a reader accepts either order, so position is not the relation.
 const PATTERNS: ReadonlyArray<readonly [EdgeForm, RegExp]> = [
-  ["loulou",   /<<~\s*loulou\s+"?lar:\/\/\/([^"\s>]+?)"?\s*>>/g],
-  // A `>` CLOSES A CALL ONLY WHEN A SECOND ONE FOLLOWS — TiddlyWiki's own `reUnquotedAttribute` law. A
-  // `pranala` states its target past a bearing arrow, so a scan of `[^>]*?` stops at that arrow and the
-  // sigil never reaches its own address — silently, as a form that simply reports no edges. Every scan in this grammar spells it
-  // `(?:[^>]|>(?!>))*?`, for that reason. Measured: without it this reader found 0 of the corpus's 84 `pranala` edges, and reported
-  // 163 dangling where 194 stand.
-  //
-  // AN EDGE IS THE END IT POINTS AT. A `pranala` names both ends, and only `to=` is the edge — `from=`
-  // is where the carrier already stands. Anchored on `to=` rather than on position, because a scan for
-  // the first address after the sigil reads whichever end is written first: it agrees wherever the
-  // source is `?` and inverts wherever the source is an address, counting a carrier's own ground as a
-  // dangling edge while the target it points at goes uncounted. Position is not the relation.
-  ["pranala",  /<<~\s*pranala(?:[^>]|>(?!>))*?\bto="?lar:\/\/\/([^"\s>]+?)"?[\s>]/g],
-  ["kahea",    /<<~\s*kahea(?:[^>]|>(?!>))*?"?lar:\/\/\/([^"\s>]+?)"?[\s>]/g],
+  ["loulou",   /<<~\s*loulou(?:[^>]|>(?!>))*?\suri=`lar:\/\/\/([^`\s]+?)`/g],
+  ["pranala",  /<<~\s*pranala(?:[^>]|>(?!>))*?\sto=`lar:\/\/\/([^`\s]+?)`/g],
+  ["kahea",    /<<~\s*kahea(?:[^>]|>(?!>))*?\suri=`lar:\/\/\/([^`\s]+?)`/g],
   ["wikilink", /\[\[[^\]|]*\|lar:\/\/\/([^\]]+)\]\]/g],
   ["wikilink", /\[\[lar:\/\/\/([^\]|]+)\]\]/g],
   // THE FORM THAT PREDATES THE ADDRESS. Before the corpus poured to `.mem`, a carrier linked its

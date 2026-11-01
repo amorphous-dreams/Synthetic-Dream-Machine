@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/has">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/has`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/has.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -19,11 +18,11 @@ uri-path  = "ha.ka.ba/lares/api/pono/has"
 written   = "2026-09-09"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Has ~ one relation, three slots, and it fuses nothing
 
@@ -31,7 +30,7 @@ written   = "2026-09-09"
 name holds''. The held thing answers for itself; the edge keeps silent.
 
 ```
-<<~ has rank pulse "levels/0-4 reads/a-mark-a-morpheme-a-word">>
+<<~ has entity=`rank` name=`pulse` params=`levels/0-4 reads/a-mark-a-morpheme-a-word`>>
 ```
 
 Where prose fuses map to territory (`X ${copula} Y`, the dead water), `has` re-opens
@@ -52,11 +51,11 @@ body says; the other reads what a carrier composes from.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Three clauses hold the law
 
-# ''Has carries what a name holds, and refuses essence.'' `<<~ has E N "…">>` writes
+# ''Has carries what a name holds, and refuses essence.'' ``<<~ has entity=`E` name=`N` params=`…`>>`` writes
    what the name `N` under the entity `E` holds; the pair holds it, and never turns
    into it. A line that reads `E N holds Y` where prose fused `E N ${copula} Y` clears
    the ward, and the held thing answers for itself.
@@ -78,18 +77,18 @@ it, and the aside stays out of the carrier's canonical bytes.
 ''A row states a holding; it opens no query face.'' The predicate runs over the `tags`
 field instead, through the filter `has-stack` names — `[stack[]]` / `[stack:has[<name>]]`.
 
-<<~ pranala #shelf from="?" -> to="packages/lararium-tw5/tiddlers/sigil-has.tid" family="code" role="has">>
+<<~ pranala slot=`#shelf` from=`?` to=`packages/lararium-tw5/tiddlers/sigil-has.tid` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ ahu #/the-three-slots>>
+<<~ ahu slot=`#/the-three-slots`>>
 
 !! The three slots, and the three laws that decide what a slot receives
 
 | ''slot'' | ''carries'' | ''shape'' |
-|1 · ENTITY |the family — the region the row belongs to |one word |
-|2 · NAME |the row — the member within that family |one word |
-|3 · HOLDS |what that name holds, whole |ONE quoted string |
+|1 · ENTITY (`entity=`) |the family — the region the row belongs to |one word |
+|2 · NAME (`name=`) |the row — the member within that family |one word |
+|3 · HOLDS (`params=`) |what that name holds, whole |ONE backtick value |
 
 ''One relation names every family, and the family rides as its first word.''
 
@@ -98,17 +97,20 @@ form through its compound branch, the tight form through the generic fallback �
 the compound branch reaches a DEFINITION. Measured at the render:
 
 |! call |! page |
-|`<<~ has Verb run "args/x">>` |`Verb run holds [args/x]` |
-|`<<~has Verb run "args/x">>` |`&lt;&lt;~has Verb run "args/x"&gt;&gt;` |
+|``<<~ has entity=`Verb` name=`run` params=`args/x`>>`` |`Verb run holds [args/x]` |
+|``<<~has entity=`Verb` name=`run` params=`args/x`>>`` |``&lt;&lt;~has entity=`Verb` name=`run` params=`args/x`&gt;&gt;`` |
 
 A claim by the rule and a call to the definition name different acts, and the tight form
-performs the first alone. Three hundred and sixty-five rows crossed to `has` wearing the
+performs the first alone; the head decides the route, and the measurement above reads the
+positional spelling the rows wore then. Three hundred and sixty-five rows crossed to `has` wearing the
 tight spelling, each one reading live on the page and reaching nothing.
 
-''THE THIRD SLOT RIDES QUOTED.'' It carries slashes, colons, arrows and prose. A call
-binds a named parameter with `=`, and TiddlyWiki reads any unquoted `word:` as exactly
-that — so a bare third slot hands its payload to a parameter nobody named and leaves the
-positional ''EMPTY''. One pair of quotes makes the whole payload ONE value.
+''A CALL NAMES EVERY VALUE.'' The third slot carries slashes, colons, arrows and prose.
+TiddlyWiki reads any unquoted `word:` as a named parameter, so a bare third slot hands its
+payload to a parameter nobody named and leaves the positional ''EMPTY''. A backtick value
+after `params=` makes the whole payload ONE value, and the `=` binds ahead of any colon the
+payload carries. The same law holds for the other two slots: `entity=` and `name=` ride
+named, because TiddlyWiki reads a backtick as quoting only after `name=`.
 
 ''AND IT RENDERS AS TEXT.'' What a row holds carries square brackets, arrows and
 backticks. A filtered transclusion would render each as a LINK to a tiddler nobody
@@ -118,7 +120,7 @@ the page unchanged.
 
 <<~/ahu>>
 
-<<~ ahu #/table-lift>>
+<<~ ahu slot=`#/table-lift`>>
 
 !! A table falls to has ~ a worked lift
 
@@ -131,8 +133,8 @@ The Mu table, as a table — the header vows, the cells honor by position:
 
 The same fact, as rows — ''one relation, and the family rides as its first word'':
 
-<<~ has Mu Wand "ascii/* glyph/🜂 element/Fire pull/ignition">>
-<<~ has Mu Arcana "ascii/0 glyph/🜍 element/Orichalcum pull/reset">>
+<<~ has entity=`Mu` name=`Wand` params=`ascii/* glyph/🜂 element/Fire pull/ignition`>>
+<<~ has entity=`Mu` name=`Arcana` params=`ascii/0 glyph/🜍 element/Orichalcum pull/reset`>>
 
 The Wand-row wears all five; the Arcana-row wears the ground member's own, written where
 a reader can see them. Neither row carries a null, and neither leans on a constructor.
@@ -146,7 +148,7 @@ never a truncation: the slot states no order, so what one call writes two calls 
 
 <<~/ahu>>
 
-<<~ ahu #/when-not-has>>
+<<~ ahu slot=`#/when-not-has`>>
 
 !! When not to reach for has ~ the other copula-free grammars
 
@@ -160,9 +162,9 @@ past `has` only once a row fails the ''holds-test''.
 Ask of the row's relation: ''what does it DO?'' The answer routes the verb.
 
 | ''when the relation…'' | ''rides…'' | ''authors as…'' | ''and cures the dead water of…'' |
-|''holds · wears'' //(default)// |a holding under a name |`<<~ has entity name "family/member …">>` |identity |
-|''follows · flows'' |a phase chain |`<<~ loops "a -> b -> c">>` |sequence-fused-as-identity |
-|''grades · ranks'' |a gradation |`<<~ scale family "a ~ one -> b ~ two">>` |level-welded-to-meaning |
+|''holds · wears'' //(default)// |a holding under a name |``<<~ has entity=`entity` name=`name` params=`family/member …`>>`` |identity |
+|''follows · flows'' |a phase chain |``<<~ loops phases=`a -> b -> c`>>`` |sequence-fused-as-identity |
+|''grades · ranks'' |a gradation |``<<~ scale name=`family` ranks=`a ~ one -> b ~ two`>>`` |level-welded-to-meaning |
 |''moves across'' |a transition |a trigger · a guard · an effect, each named |before-welded-to-after |
 
 `has` carries most of the boot; the others carry a minority — the ordered runs, the
@@ -177,7 +179,7 @@ left-to-right// and never folds inside-out. TW5 carries this in the `list` field
 runs apart from `tags`), walked first-to-last.
 
 ```
-<<~ loops "✶ observe -> ⏿ orient -> ◇ decide -> ▶ act -> ↺ aftermath">>
+<<~ loops phases=`✶ observe -> ⏿ orient -> ◇ decide -> ▶ act -> ↺ aftermath`>>
 ```
 
 The arrow //moves//; nothing welds to anything. The tail MAY re-enter the head — OODA-HA
@@ -191,9 +193,9 @@ ordinal anchor: a rank //exceeds// another by an unknown span, and no level //we
 its meaning. The Evidence Question — //how do I know?// — hands over the verb.
 
 ```
-<<~ scale syad "literal@0 ~ unsupported -> figurative@20 ~ fully-confirmed">>
-<<~ scale stage "green-room@1..4 -> wings@5..12 -> downstage@13..20">>
-<<~ scale rating "noise -> data -> meme -> ano -> kapu">>
+<<~ scale name=`syad` ranks=`literal@0 ~ unsupported -> figurative@20 ~ fully-confirmed`>>
+<<~ scale name=`stage` ranks=`green-room@1..4 -> wings@5..12 -> downstage@13..20`>>
+<<~ scale name=`rating` ranks=`noise -> data -> meme -> ano -> kapu`>>
 ```
 
 Anchors read `member[@coord][~ descriptor]` — `@n` a point, `@lo..hi` a band; the order
@@ -209,18 +211,18 @@ after welded to the before. The trigger does the work the dead water would have 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges reach out
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/parser">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/parser`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;p3562R1y2PsLO00P0htsbU_dttvEWb_Qa455GlDzbhg
+<<^ code=`&#x0003;`>>ni:///sha-256;qyNU1ouHLGbPAGQLyIZjdgElUXA9yvvdqSJrtKydCOk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

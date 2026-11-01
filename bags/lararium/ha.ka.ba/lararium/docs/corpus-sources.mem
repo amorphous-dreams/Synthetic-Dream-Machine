@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/corpus-sources">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/corpus-sources`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/docs/corpus-sources.mem"
 l-space       = "stable"
 mana          = 18
 manao         = 18
@@ -19,7 +18,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/corpus-sources"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Corpus Sources — the registry that DERIVES
 
@@ -38,7 +37,7 @@ carrier's own body.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law
 
@@ -59,7 +58,7 @@ It hydrates before all other corpora. All other corpora treat it as read-only at
 
 <<~/ahu>>
 
-<<~ ahu #/registry>>
+<<~ ahu slot=`#/registry`>>
 
 !! Where a corpus comes from
 
@@ -82,7 +81,7 @@ and produces `LarTiddlerRecord[]` through the projection codec — one record pe
 
 <<~/ahu>>
 
-<<~ ahu #/bag-recipe-topology>>
+<<~ ahu slot=`#/bag-recipe-topology`>>
 
 !! Bag/Recipe Topology
 
@@ -104,14 +103,14 @@ A setting-only table composes: lares + elyncia + room.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/tiddler-record">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/schema/projection-codec">>
-<<~ pranala #source-file from="?" -> to="packages/lararium-tw5/src/load-corpora.ts" family="code" role="has">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/tiddler-record`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/schema/projection-codec`>>
+<<~ pranala slot=`#source-file` from=`?` to=`packages/lararium-tw5/src/load-corpora.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5n0jL6uX0R-LZjEJVWfeFuptfumIgLLF_FhTZqpeAvY
+<<^ code=`&#x0003;`>>ni:///sha-256;xAOXfV__AouUZ6Qrz5k5X1FoG5n6qZGOSVUaftK3csY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/sigil-aka">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/sigil-aka`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/sigil-aka.mem"
 mana      = 16
 manao     = 16
 manaoio   = 15
@@ -16,11 +15,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/sigil-aka"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! ~aka Sigil Design
 
-`<<~ aka "lar:///target">>` — likeness/frozen-image transclusion.
+``<<~ aka uri=`lar:///target`>>`` — likeness/frozen-image transclusion.
 
 The `aka` sigil renders a ''projection'' of a canonical URI into the current meme.
 The target remains canonical at its source.
@@ -28,7 +27,7 @@ This meme records design decisions and deferred work.
 
 <<~/ahu>>
 
-<<~ ahu #/semantics>>
+<<~ ahu slot=`#/semantics`>>
 
 !! Semantics
 
@@ -43,11 +42,11 @@ The summary header always shows the target URI as a link, so the projection alwa
 
 Cascade tag: `lar:///ha.ka.ba/tags/aka-template` — operator can override the render template per scope.
 
-Call-site template override: `<<~ aka "lar:///target" "lar:///my-template">>` (p2 bypasses cascade).
+Call-site template override: ``<<~ aka uri=`lar:///target` template=`lar:///my-template`>>`` (p2 bypasses cascade).
 
 <<~/ahu>>
 
-<<~ ahu #/mechanism>>
+<<~ ahu slot=`#/mechanism`>>
 
 !! Render Mechanism
 
@@ -67,7 +66,7 @@ Template selection precedence: p2 explicit > cascade > fallback shadow tiddler.
 
 <<~/ahu>>
 
-<<~ ahu #/preview-image>>
+<<~ ahu slot=`#/preview-image`>>
 
 !! Preview Image — Tier 1 (live) / Tier 2 (deferred)
 
@@ -104,16 +103,16 @@ could include thumbnail + og-title in the handshake). Hold open.
 
 <<~/ahu>>
 
-<<~ ahu #/source-shelf>>
+<<~ ahu slot=`#/source-shelf`>>
 
 !! Source Shelf
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tw5-module">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tw5-module`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-ast">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/meme-ast`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0VL004IKiQxS920keWqOu4z-JiuyW7Qrt-rLM7osjWg
+<<^ code=`&#x0003;`>>ni:///sha-256;11zkLiNoZR00lp1R7SKJKAEdOI5kCyQs6mx3ieTfb60
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

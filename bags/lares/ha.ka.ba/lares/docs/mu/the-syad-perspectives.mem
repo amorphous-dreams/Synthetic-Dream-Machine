@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/mu/the-syad-perspectives.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 17
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/the-syad-perspectives"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Syad Perspectives — Condensed Research
 
@@ -31,7 +30,7 @@ The deeper archive bundle stays adjacent.
 
 <<~/ahu>>
 
-<<~ ahu #/reading-question>>
+<<~ ahu slot=`#/reading-question`>>
 
 !! Reading Question
 
@@ -43,7 +42,7 @@ Different measure.
 
 <<~/ahu>>
 
-<<~ ahu #/saptabhangi>>
+<<~ ahu slot=`#/saptabhangi`>>
 
 !! Saptabhangi
 
@@ -62,7 +61,7 @@ It names a frame where the truth axis does not fit cleanly.
 
 <<~/ahu>>
 
-<<~ ahu #/flag-surface>>
+<<~ ahu slot=`#/flag-surface`>>
 
 !! Flag Surface
 
@@ -78,7 +77,7 @@ Quiet stances stay encoded as quiet, not missing.
 
 <<~/ahu>>
 
-<<~ ahu #/legacy-boundary>>
+<<~ ahu slot=`#/legacy-boundary`>>
 
 !! Legacy Boundary
 
@@ -91,7 +90,7 @@ Spread rides flags and combination, not omission.
 
 <<~/ahu>>
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Provenance
 
@@ -107,16 +106,16 @@ The archive-derived research bundle lives at:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives/README">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives/README`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GCUfLXzzUuXe-5b5y-Ize6EGqVWtlsQCn0ZGBy4-MfY
+<<^ code=`&#x0003;`>>ni:///sha-256;V_6J7gB0zZjb6EGJdy5uJIs7RMNYfDdM3I3_SiBNCU4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

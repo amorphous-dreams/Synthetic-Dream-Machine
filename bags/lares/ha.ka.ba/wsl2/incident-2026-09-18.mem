@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/wsl2/incident-2026-09-18">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/wsl2/incident-2026-09-18`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/wsl2/incident-2026-09-18.mem"
 l-space    = "stable"
 mana       = 12
 manao      = 14
@@ -18,7 +17,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/wsl2/incident-2026-09-18"
 ```
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! 2026-09-18 — the fold gate that ate the VM
 
@@ -26,7 +25,7 @@ Three agent sessions ran in parallel on the Enyalios host (64 GB, 12 threads; th
 
 <<~/ahu>>
 
-<<~ ahu #/timeline>>
+<<~ ahu slot=`#/timeline`>>
 
 !! Timeline (PDT)
 
@@ -40,7 +39,7 @@ Three agent sessions ran in parallel on the Enyalios host (64 GB, 12 threads; th
 
 <<~/ahu>>
 
-<<~ ahu #/reproduction>>
+<<~ ahu slot=`#/reproduction`>>
 
 !! Reproduction
 
@@ -57,7 +56,7 @@ The fault sits in the regenerated parser with the new external scanner, fed a br
 
 <<~/ahu>>
 
-<<~ ahu #/ruled-out>>
+<<~ ahu slot=`#/ruled-out`>>
 
 !! Ruled out
 
@@ -69,7 +68,7 @@ The fault sits in the regenerated parser with the new external scanner, fed a br
 
 <<~/ahu>>
 
-<<~ ahu #/lessons>>
+<<~ ahu slot=`#/lessons`>>
 
 !! What changed because of it
 
@@ -80,6 +79,6 @@ The fault sits in the regenerated parser with the new external scanner, fed a br
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Pg_AKPtNZeLGjUtskBEIApol59MTDMSu7faZtRLpFuc
+<<^ code=`&#x0003;`>>ni:///sha-256;NApi-mle0tlPv9pKWQPT0-iGeUYoDuwhsu2HGCFTdTY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

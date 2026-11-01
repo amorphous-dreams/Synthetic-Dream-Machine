@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/projections/powers/ftls-card/shield-ward">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/projections/powers/ftls-card/shield-ward`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/projections/powers/ftls-card/shield-ward.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 17
@@ -19,7 +18,7 @@ uri-path  = "ha.ka.ba/sdm/projections/powers/ftls-card/shield-ward"
 
 ! Shield Ward — FTLS Card
 
-<<~ ahu #/card>>
+<<~ ahu slot=`#/card`>>
 
 !! Shield Ward
 //Skin-Close Barrier, Missile Filter//
@@ -30,7 +29,7 @@ A barrier less than an inch from your skin, moving with you. Strong cover agains
 
 <<~/ahu>>
 
-<<~ ahu #/overcharge>>
+<<~ ahu slot=`#/overcharge`>>
 
 !! Overcharge
 
@@ -39,24 +38,24 @@ A barrier less than an inch from your skin, moving with you. Strong cover agains
 
 <<~/ahu>>
 
-<<~ ahu #/components>>
+<<~ ahu slot=`#/components`>>
 
 !! Components
 
-<<~ kahea "lar:///ha.ka.ba/lararium/lists/components">>
+<<~ kahea uri=`lar:///ha.ka.ba/lararium/lists/components`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card">>
-<<~ loulou "lar:///ha.ka.ba/sdm/modules/powers/shield-ward">>
-<<~ loulou "lar:///ha.ka.ba/sdm/procedures/tag-pill">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/modules/powers/shield-ward`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/procedures/tag-pill`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vrTIboCR1I21Sp5vlBAjCcnWEF7xy3ll-rZ5ZIu-a0Y
+<<^ code=`&#x0003;`>>ni:///sha-256;0GsxOXDMKNcTrBggU6HxoFz7Z9KU1JbXi894AkeBbvM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

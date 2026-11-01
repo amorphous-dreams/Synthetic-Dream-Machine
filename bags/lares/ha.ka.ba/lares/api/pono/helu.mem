@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/helu">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/helu`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/helu.mem"
 namespace = "&#x2299;"
 role      = "filter-function declaration pragma — helu as enumeration/calculation; TW5 function equivalent; English alias: function"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-helu"]
@@ -14,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/helu"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Helu
 
@@ -32,7 +31,7 @@ Where `wehe` / `\procedure` declares a body that renders, `helu` declares a body
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -43,33 +42,34 @@ A helu declaration MUST register a function definition only, producing no render
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```text
-<<~ helu functionName(param:"default")>>
+<<~ helu name=`functionName` params=`param:"default"`>>
   [filter-expression-using-param]
 <<~/helu>>
 
-<<~ function functionName(param:"default")>>  [filter]  <<~/function>>
+<<~ function name=`functionName` params=`param:"default"`>>  [filter]  <<~/function>>
 ```
 
 TW5 equivalent:
+
 ```text
 \function functionName(param:"default") [filter-expression]
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wehe">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wehe`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;n4t9ekVNYH3RMRU0RHKYBg8w27SEsYEuLh0SbMmzc7M
+<<^ code=`&#x0003;`>>ni:///sha-256;r-kkGULc5eL8DbwgVt5GpgntMIaviBr4vo6U81xLv00
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

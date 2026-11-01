@@ -34,6 +34,6 @@ export {
 } from "./check.js";
 export { verdict, verdictOf, frameShape, type FrameVerdict, type FrameShape } from "./verdict.js";
 export {
-  CARRIER_DECLARATION, markCode, headSigil, frameCarrier, stampCarrier,
+  CARRIER_DECLARATION, markCode, headSigil, markSigil, releaseSigil, frameCarrier, stampCarrier,
   type FrameHeadSpec, type FrameCarrierInput,
 } from "./write.js";

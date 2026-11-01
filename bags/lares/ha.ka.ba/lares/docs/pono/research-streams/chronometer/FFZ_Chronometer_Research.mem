@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/research-streams/chronometer/FFZ_Chronometer_Research">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/research-streams/chronometer/FFZ_Chronometer_Research`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 title    = "lar:///ha.ka.ba/lares/docs/pono/research-streams/chronometer/FFZ_Chronometer_Research"
@@ -1244,6 +1244,6 @@ BoydLoop(PriorArt), PhaseVec(Architect), BridgeKeep(Continuity) — dissolved, f
 
 lar:///research.active.grows/chronometer/?stances=^.^.?.^.-&confidence=S:13&p=10#/O0.O0.O0.Å10.A1 → ?
 
-<<^ code="&#x0003;">>ni:///sha-256;GsDVLJJHVVjqfJRiKf69q8X80nKRhOcQ_wvF5R_KE3s
+<<^ code=`&#x0003;`>>ni:///sha-256;OvjgwlQlpIMEUwBxbL6gyv2QzVCG6ILsmPf2TmYhZbg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

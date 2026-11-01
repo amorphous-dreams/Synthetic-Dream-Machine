@@ -29,13 +29,13 @@ const OK_URI = "lar://crossroads/t.title.allowed/one";
 const CODE = "session-form-title";
 
 const framed = (uri: string, body: string): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t.title.context/capture"\n\`\`\`\n\n${body}\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t.title.context/capture"\n\`\`\`\n\n${body}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 /** A captured exchange: an aim, a quoted link and a fenced yield, each carrying a speaker's URI in the BODY. */
 const CAPTURE_BODY =
   `<<~ lares aim from="lar://mara:operator@crossroads/operator.asks.the-cost" -> to="lar://compita:agent@crossroads/clerk.reads.the-record">>\n\n` +
   `A quoted link: lar://alias:grant@host/some.path.here\n\n` +
-  "```\n<<~ lares yield from=\"lar://compita:agent@crossroads/clerk.named.the-source\" -> to=\"?\">>\n```";
+  "```\n<<~ lares yield from=\"lar://compita:agent@crossroads/clerk.named.the-source\" to=`?`>>\n```";
 
 const verbCtx = (requestId = "r1"): VerbContext => ({
   daemon: {} as CompositeStore,

@@ -5,7 +5,6 @@ export type HolderRoute = "reply" | "camera" | "owner" | "port";
 /** Every island kind declares the one binding that may receive it. */
 export const HOLDER_ROUTES = {
   "wiki:verb-result": "reply",
-  "daemon:derive-skeleton-result": "reply",
   "daemon:worldline-compare-result": "reply",
   "daemon:worldline-trajectory-result": "reply",
   "daemon:resolve-binding-result": "reply",

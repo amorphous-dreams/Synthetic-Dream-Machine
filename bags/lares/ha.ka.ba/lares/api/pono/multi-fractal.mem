@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/multi-fractal">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/multi-fractal`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/multi-fractal.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 17
@@ -20,7 +19,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/multi-fractal"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Multi-Fractal
 
@@ -30,7 +29,7 @@ The house keeps standing in this shape at every plane. Name it once; recognize i
 
 <<~/ahu>>
 
-<<~ ahu #/instances>>
+<<~ ahu slot=`#/instances`>>
 
 !! The Five Instances (PENTADIC)
 
@@ -46,17 +45,17 @@ Five instances, no sixth straining for room (#PENTA_1). A cluster that demands a
 
 <<~/ahu>>
 
-<<~ ahu #/laws>>
+<<~ ahu slot=`#/laws`>>
 
 !! The Two Laws That Make It Load-Bearing
 
-''1 — the container holds private (no-global-X).'' Every container above joins //local-first//: the mempalace never federates, the l-space chart stays provisional-not-territory, the "me" Circle discloses only by choosing. So the integrity carries ''"no global now" into every plane'' — no global memory, no global chart, no global self. The container always forms the private join. <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+''1 — the container holds private (no-global-X).'' Every container above joins //local-first//: the mempalace never federates, the l-space chart stays provisional-not-territory, the "me" Circle discloses only by choosing. So the integrity carries ''"no global now" into every plane'' — no global memory, no global chart, no global self. The container always forms the private join. <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
 ''2 — the instances may OVERLAP, held apart by sovereignty (substrate ≠ sovereignty).'' The instances do not partition cleanly — a single substrate (one device, one palace dir, one chart-point) may sit under several containers at once. The structure reads as an ''overlapping set-cover (a hypergraph), never a tree.'' What keeps the overlap from fusing the containers: each instance carries its own ''sovereignty'' (its own key, log, scope) over the ''shared substrate''. The overlap stays safe only because the per-instance sovereignty stays distinct — the same law the causal-island doctrine rules for co-located vessels, now read at every fractal.
 
 <<~/ahu>>
 
-<<~ ahu #/test>>
+<<~ ahu slot=`#/test`>>
 
 !! The Test
 
@@ -67,16 +66,16 @@ A candidate structure stands as multi-fractal when ALL hold:
 * instances MAY share substrate, held apart by distinct sovereignty;
 * the natural count lands bounded near five (#PENTA_1).
 
-A structure that merges the instances into ONE shared graph (sovereignty fused, not just substrate) fails the test — that reads as the Matrix anti-pattern (planes bled), never multi-fractal. <<~ loulou "lar:///ha.ka.ba/lararium/mesh/mookuauhau">>
+A structure that merges the instances into ONE shared graph (sovereignty fused, not just substrate) fails the test — that reads as the Matrix anti-pattern (planes bled), never multi-fractal. <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/mookuauhau`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/l-space`>>
 
-<<~ ahu #/why-it-recurses>>
+<<~ ahu slot=`#/why-it-recurses`>>
 
 !! Why it recurses ~ each rung answers a capture the rung below cannot
 
@@ -90,10 +89,10 @@ The shape above says the recursion happens. This says WHY it must.
 
 ''Read per-AXIS, never up one ladder'' (`dreamnet-architecture#two-axis-topology`): the two axes form //a 2D coordinate plane, never a single ladder// and //they never nest//. The capture-and-cure chain runs along each axis independently — which is also why delegation //tops at the cabal; above it, treaty// (`lararium-identity#five-scale`). The social axis already refuses to close on its own grounds.
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation#/the-constructor">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation#/the-constructor`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jCMe6kK0zaBXIqjXkyruWWaHpdlOJbXPgxqPAbRL9i8
+<<^ code=`&#x0003;`>>ni:///sha-256;CvKX0U7XdE1c5cxGqP6pOzvt41PxRL8Fi708yk4_Q04
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

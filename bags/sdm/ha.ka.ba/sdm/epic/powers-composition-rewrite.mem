@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/epic/powers-composition-rewrite">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/epic/powers-composition-rewrite`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/epic/powers-composition-rewrite.mem"
 l-space   = "sdm"
 mana      = 19
 manao     = 19
@@ -16,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/epic/powers-composition-rewrite"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
@@ -28,7 +27,7 @@ uri-path  = "ha.ka.ba/sdm/epic/powers-composition-rewrite"
 > Sprints 0–3 stand complete and committed; the composition model and the
 > module-nesting doctrine (D6) hold. Resume here once the OODA-HA cleanup lands.
 
-<<~ ahu #/vision>>
+<<~ ahu slot=`#/vision`>>
 
 !! Vision
 
@@ -57,7 +56,7 @@ Instance (TW5 data, mutable): what Lady Aki currently holds, how it mutated.
 
 <<~/ahu>>
 
-<<~ ahu #/base>>
+<<~ ahu slot=`#/base`>>
 
 !! The Base (Ha) — What Cannot Change
 
@@ -137,7 +136,7 @@ This base does not change. The epic addresses it, links it, makes it queryable.
 
 <<~/ahu>>
 
-<<~ ahu #/lineage>>
+<<~ ahu slot=`#/lineage`>>
 
 !! Design Lineage — Prior Art That Carries Load
 
@@ -155,7 +154,7 @@ This base does not change. The epic addresses it, links it, makes it queryable.
 
 <<~/ahu>>
 
-<<~ ahu #/principles>>
+<<~ ahu slot=`#/principles`>>
 
 !! Principles
 
@@ -216,7 +215,7 @@ This base does not change. The epic addresses it, links it, makes it queryable.
 
 <<~/ahu>>
 
-<<~ ahu #/architecture>>
+<<~ ahu slot=`#/architecture`>>
 
 !! Bag Topology
 
@@ -249,7 +248,7 @@ bags/sdm/
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
@@ -269,13 +268,13 @@ bags/sdm/
 Pranala form:
 
 ```text
-<<~ pranala #has from="?" -> to="lar:///ha.ka.ba/sdm/components/function/ecm-scan">>
-<<~ pranala #has from="?" -> to="lar:///ha.ka.ba/sdm/mount-points/trait">>
+<<~ pranala slot=`#has` from=`?` to=`lar:///ha.ka.ba/sdm/components/function/ecm-scan`>>
+<<~ pranala slot=`#has` from=`?` to=`lar:///ha.ka.ba/sdm/mount-points/trait`>>
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/tw5-tags>>
+<<~ ahu slot=`#/tw5-tags`>>
 
 !! TW5 Tag Syntax — Component Representation
 
@@ -288,7 +287,7 @@ Full meme   (.md, in recipe)    title:   lar:///ha.ka.ba/sdm/components/function
                                 caption: ecm-scan
                                 carries  #definition #activation #interaction #filters #aftermath
 
-Tag pointer (.tid, virtual)     title:   @sdm/tags/function/ecm-scan
+Tag pointer (.tid, virtual)     title:   sdm/tags/function/ecm-scan
                                 caption: ecm-scan
                                 meme:    lar:///ha.ka.ba/sdm/components/function/ecm-scan
 ```
@@ -323,12 +322,12 @@ The TOML `tags` field mirrors the Pranala `#has` edges. `#has` edges carry graph
 !!! Rendering: `tag-pill` + `components`
 
 * `<<tag-pill "TAG">>` reads the pointer's `caption` for the label and follows its `meme` field — `<$link to={{{ [<target>get[meme]else<target>] }}}>` — to open the full meme.
-* A card declares composition ''once'' as `@sdm/tags/…` tags; the single call `<<~ kahea "lar:///ha.ka.ba/lararium/lists/components">>` lists every `@`-prefixed tag on the tiddler and renders each as a pill.
+* A card declares composition ''once'' as `@sdm/tags/…` tags; the single call ``<<~ kahea uri=`lar:///ha.ka.ba/lararium/lists/components`>>`` lists every `@`-prefixed tag on the tiddler and renders each as a pill.
 * Both live as runtime `.tid` tagged `$:/tags/Global`: `lar:///ha.ka.ba/sdm/procedures/tag-pill` and `lar:///ha.ka.ba/lararium/lists/components`.
 
 <<~/ahu>>
 
-<<~ ahu #/progressive-display>>
+<<~ ahu slot=`#/progressive-display`>>
 
 !! Progressive Display — Cards as Mnemonic Doorways
 
@@ -384,7 +383,7 @@ each pill reads as a keyword the player learns over time.
 
 <<~/ahu>>
 
-<<~ ahu #/shapes>>
+<<~ ahu slot=`#/shapes`>>
 
 !! Meme Shapes
 
@@ -405,9 +404,9 @@ tags = ["@sdm/tags/function/ecm-scan", "@sdm/tags/domain/divination", "@sdm/tags
 ```
 
 ```text
-<<~ pranala #has from="?" -> to="lar:///ha.ka.ba/sdm/components/function/ecm-scan">>
-<<~ pranala #has from="?" -> to="lar:///ha.ka.ba/sdm/components/domain/divination">>
-<<~ pranala #has from="?" -> to="lar:///ha.ka.ba/sdm/mount-points/trait">>
+<<~ pranala slot=`#has` from=`?` to=`lar:///ha.ka.ba/sdm/components/function/ecm-scan`>>
+<<~ pranala slot=`#has` from=`?` to=`lar:///ha.ka.ba/sdm/components/domain/divination`>>
+<<~ pranala slot=`#has` from=`?` to=`lar:///ha.ka.ba/sdm/mount-points/trait`>>
 ```
 
 ''Mount-point'': `#contract #activation #cost #failure #removal #overflow #aftermath`
@@ -431,7 +430,7 @@ traits:
 
 <<~/ahu>>
 
-<<~ ahu #/decisions-resolved>>
+<<~ ahu slot=`#/decisions-resolved`>>
 
 !! Decisions Resolved — Session Zero (2026-05-31)
 
@@ -519,7 +518,7 @@ Same template, same `#has`/`#default` shape; the directory names the source-kind
 
 <<~/ahu>>
 
-<<~ ahu #/sprints>>
+<<~ ahu slot=`#/sprints`>>
 
 !! Sprints — Instructions for the Enacting Lares
 
@@ -671,7 +670,7 @@ Fresh `power-ontology.md`. Chapter 06 conversion checklist (not execution).
 
 <<~/ahu>>
 
-<<~ ahu #/acceptance>>
+<<~ ahu slot=`#/acceptance`>>
 
 !! Epic Acceptance
 
@@ -689,7 +688,7 @@ Fresh `power-ontology.md`. Chapter 06 conversion checklist (not execution).
 
 <<~/ahu>>
 
-<<~ ahu #/open-pressures>>
+<<~ ahu slot=`#/open-pressures`>>
 
 !! Open Design Pressures
 
@@ -733,7 +732,7 @@ relationship to the mounted pattern. This remains speculative.
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -764,7 +763,7 @@ relationship to the mounted pattern. This remains speculative.
 
 <<~/ahu>>
 
-<<~ ahu #/meme-edges>>
+<<~ ahu slot=`#/meme-edges`>>
 
 !! Edges
 
@@ -774,10 +773,10 @@ spine replaced by flat `#has`). The full record of what v0.0 held and why it
 retired lives in the transition witness; the files themselves remain in git
 history if ever needed.
 
-<<~ loulou "lar:///ha.ka.ba/sdm/witness/architecture/v0.0-transition">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/witness/architecture/v0.0-transition`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;szezqg4WtDzyTwX7rKrtOCuBln-sC9u8nRZUzbRlcyg
+<<^ code=`&#x0003;`>>ni:///sha-256;iVbwNkG_1XYlU9DpI1k0aXYnmh06-8eBk-rR-adxj1w
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

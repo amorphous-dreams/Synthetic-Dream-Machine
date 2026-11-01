@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-decision-record">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-decision-record`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/research/offering-antigen-scope-decision-record.mem"
 l-space    = "lares"
 mana       = 15
 manao      = 15
@@ -18,9 +17,9 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/research/offering-antigen-scope-decision-record"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/measured-boundary>>
+<<~ ahu slot=`#/measured-boundary`>>
 
 ! Offering Antigen scope — decision record for the receiving relation
 
@@ -38,8 +37,8 @@ The fold has no production caller. `offering-antigen.test.ts` guards that absenc
 
 |!study |! recommendation |! question left for the operator |
 |---|---|---|
-|<<~ loulou "lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a">>|Use the per-Nexus board as the receiving relation and retain only the signed `sealEpochCid` as charter binding; avoid a duplicate identity field. |Should exact epoch equality plus correct receiver-local roster selection be sufficient across charter rolls and copied boards? |
-|<<~ loulou "lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b">>|Keep the board as rendezvous, add stable charter-genesis `nexusScopeCid` to the signed act, and retain `sealEpochCid` for quorum lineage. |Does explicit stable scope prevent a meaningful cross-Nexus ambiguity that the receiver's scoped board and charter roster cannot already prevent? |
+|<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a`>>|Use the per-Nexus board as the receiving relation and retain only the signed `sealEpochCid` as charter binding; avoid a duplicate identity field. |Should exact epoch equality plus correct receiver-local roster selection be sufficient across charter rolls and copied boards? |
+|<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b`>>|Keep the board as rendezvous, add stable charter-genesis `nexusScopeCid` to the signed act, and retain `sealEpochCid` for quorum lineage. |Does explicit stable scope prevent a meaningful cross-Nexus ambiguity that the receiver's scoped board and charter roster cannot already prevent? |
 
 The studies agree that board placement alone is not a signature and that a receiver must not mistake carried bytes for a local verdict. They differ over whether the act must itself name a stable island in addition to its signing epoch. Study A's “genesis identity” phrasing needs to be read with the measured roll model: an epoch can be the genesis epoch or a later roll. That distinction is material before adopting its conclusion.
 
@@ -152,6 +151,6 @@ This record prepares a decision; it does not make it. No production field, fold,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CewAbev3S8V6vdncS4KMoOIaV-FzujS9eKdKXd18RRc
+<<^ code=`&#x0003;`>>ni:///sha-256;yEqtnIJ_loHXUGCuvpMsgOKXInbatSQB4O-mGk6zs6c
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

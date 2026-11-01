@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/place-floor-pin">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/place-floor-pin`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/place-floor-pin.mem"
 l-space     = "lararium"
 mana        = 14
 role        = "invariant law: the FLOOR PIN CLAIM. A place claims this exact gate pin at one head of its own KEL (place AID, seq, event digest, Nexus, tier, route), signed through its scoped signer under the place floor pin duty, and the reader resolves the signer at the named head. KEL descent orders the pin: a descendant claim replaces, a known ancestor refuses, a fork surfaces, arrival order selects nothing. The place's standing is a counted carry of the signer at the head, or an anchor conveyed apart from the card. Under the house ruling \"The admit's gate pin\"."
@@ -18,7 +17,7 @@ uri-path    = "ha.ka.ba/lararium/mesh/place-floor-pin"
 written     = "2026-10-26"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The floor pin claim ~ a pin the place's KEL vouches for
 
@@ -30,7 +29,7 @@ pin, at one head of its own KEL, signed by the signer the KEL seats there. One r
 
 <<~/ahu>>
 
-<<~ ahu #/the-claim>>
+<<~ ahu slot=`#/the-claim`>>
 
 !! The claim ~ one per route per head
 
@@ -43,7 +42,7 @@ head and the pin's digest), beside the place's KEL rows (`place-kel-board`). Any
 
 <<~/ahu>>
 
-<<~ ahu #/the-reader>>
+<<~ ahu slot=`#/the-reader`>>
 
 !! The reader files only what it can vouch for
 
@@ -59,7 +58,7 @@ crossing carried, whose first claim adopts the AID), and a deliberate person-to-
 
 <<~/ahu>>
 
-<<~ ahu #/descent>>
+<<~ ahu slot=`#/descent`>>
 
 !! KEL descent orders the pin
 
@@ -75,7 +74,7 @@ orders them and the index refuses one by name (`claim-moves-no-sovereign-pin`).
 
 <<~/ahu>>
 
-<<~ ahu #/the-carry>>
+<<~ ahu slot=`#/the-carry`>>
 
 !! The carry lands the claim
 
@@ -86,7 +85,7 @@ The herm carries the claim opaque. A rotated place is carried again under its ne
 
 <<~/ahu>>
 
-<<~ ahu #/the-place-arm>>
+<<~ ahu slot=`#/the-place-arm`>>
 
 !! The place arm
 
@@ -98,19 +97,19 @@ counted `uncarry` that descends from it leaves the place with no arm to present.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/place-floor-pin.ts" family="code" role="has">>
-<<~ pranala #index from="?" -> to="packages/lararium-mesh/src/admit-gate-pin.ts" family="code" role="files-into">>
-<<~ pranala #layer from="?" -> to="packages/lararium-node/src/herm-carriage.ts" family="code" role="signed-by">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-mesh/src/place-floor-pin.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#index` from=`?` to=`packages/lararium-mesh/src/admit-gate-pin.ts` family=`code` role=`files-into`>>
+<<~ pranala slot=`#layer` from=`?` to=`packages/lararium-node/src/herm-carriage.ts` family=`code` role=`signed-by`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carriage-pull">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/herm-carriage">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/carry-bundle">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carriage-pull`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/carry-bundle`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_dY274kkElzHHyrEbXUwyPfc2iWzBe8OhdMys8FiewA
+<<^ code=`&#x0003;`>>ni:///sha-256;d9j00zkrPYA2cW4SccT3Pqu0QCte44OcCx9wt2pTbD4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

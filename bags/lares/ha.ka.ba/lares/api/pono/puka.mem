@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/puka">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/puka`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/puka.mem"
 namespace = "&#x2299;"
 role      = "first-through-the-opening sigil — puka as the gap; Verse rush: first wins, losers continue until enclosing scope exits (NOT cancelled by winner); English alias: \\rush; async-first concurrency sprint pending"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-puka"]
@@ -14,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/puka"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Puka
 
@@ -37,7 +36,7 @@ Grammar only --- the selecting-race execution runtime awaits the async-first spr
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -50,34 +49,34 @@ A puka block MUST NOT appear directly inside a `huli` (`\for`) iteration body.
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```text
 <<~ puka>>
-  <<~ lele "lar:///target-a">>
-  <<~ lele "lar:///target-b">>
+  <<~ lele to=`lar:///target-a`>>
+  <<~ lele to=`lar:///target-b`>>
 <<~/puka>>
 
 <<~ rush>>
-  <<~ branch "lar:///target-a">>
-  <<~ branch "lar:///target-b">>
+  <<~ branch to=`lar:///target-a`>>
+  <<~ branch to=`lar:///target-b`>>
 <<~/rush>>
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-rush">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/holo">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-task-tree">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-rush`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/holo`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-task-tree`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sJT2POG-Hrirnf59h8RkDTnTRRNyHec5w4O-6w9r0JI
+<<^ code=`&#x0003;`>>ni:///sha-256;JrAWKJO0LcFHz8TTwXyBDkqXrvnEOwEGSJn00EGwxk8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

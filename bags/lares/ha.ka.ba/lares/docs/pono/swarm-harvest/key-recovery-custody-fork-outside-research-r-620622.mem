@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/key-recovery-custody-fork-outside-research-r-620622">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/key-recovery-custody-fork-outside-research-r-620622`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/key-recovery-custody-fork-outside-research-r-620622.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -18,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/key-recovery-custody-fork-outside-research-r-620622"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! KEY-RECOVERY CUSTODY FORK — OUTSIDE RESEARCH REPORT
 
@@ -28,7 +27,7 @@ The three largest messages one research spirit wrote, ''held verbatim and unedit
 
 <<~/ahu>>
 
-<<~ ahu #/message-1>>
+<<~ ahu slot=`#/message-1`>>
 
 !! Message 1 ~ 49,619 characters
 
@@ -401,7 +400,7 @@ This is, I think, the most decision-relevant thing in this report that your fram
 
 <<~/ahu>>
 
-<<~ ahu #/message-2>>
+<<~ ahu slot=`#/message-2`>>
 
 !! Message 2 ~ 18,254 characters
 
@@ -539,7 +538,7 @@ Finally, on threshold choice: Schechter measured **3-of-4 → 89% reliability at
 
 <<~/ahu>>
 
-<<~ ahu #/message-3>>
+<<~ ahu slot=`#/message-3`>>
 
 !! Message 3 ~ 17,911 characters
 
@@ -649,12 +648,12 @@ Across five research streams, **not one documented failure in the entire public 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6lMhV1zcZE4wNWC-p4iFE3ud7GkzFnXFGeV9qE9VaD8
+<<^ code=`&#x0003;`>>ni:///sha-256;8tXLO_WwVwMyOt0cbk7dNtLkR6GxlgOC8v89SsQAJVQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/api/bag-wiki-uri-split">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/api/bag-wiki-uri-split`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 content-type = "text/memetic-wikitext+tiddlywiki"
-file-path    = "bags/lararium/ha.ka.ba/lararium/api/bag-wiki-uri-split.mem"
 mana         = 17
 role         = "the bag / wiki / cid kind-plane law — the three surfaces a lar: URI names, the edit/publish shore, and the isomorphic wiki core"
 status-why   = "the minters carry the split (bagUri · wikiUri · cidUri · wikiSlotUri); the per-wiki slot binding stands half-enacted — the island keys draft per (PersonaGroup × fingerprint), the host keys it per vessel DID (recipe-layer-model#/the-blur)"
@@ -19,11 +18,11 @@ uri-path     = "ha.ka.ba/lararium/api/bag-wiki-uri-split"
 
 A `lar:` URI names one of three surfaces, and the KIND rides the ''first path segment'' — the heaviest-weight slot in `lar:` law, independent of ownership:
 
-<<~ scale kind-planes "bags/slug ~ a composable recipe piece · MUTABLE -> wikis/slug ~ a #has bag-stack · MUTABLE -> cid/<hash> ~ a content-addressed artifact · IMMUTABLE">>
+<<~ scale name=`kind-planes` ranks=`bags/slug ~ a composable recipe piece · MUTABLE -> wikis/slug ~ a #has bag-stack · MUTABLE -> cid/<hash> ~ a content-addressed artifact · IMMUTABLE`>>
 
 * ''`bags/slug`'' — the IPNS-shaped mutable content plane: a bag (a CRDT surface, an Automerge doc). A composable recipe piece, shared as the operator wishes.
 * ''`wikis/slug`'' — a `#has` bag-stack: a wiki's IDENTITY. Its per-wiki layers route off it (above the fold).
-* ''`cid/<hash>`'' — the /ipfs/ plane: the name carries the content hash, so it never changes. A frozen artifact answers to it forever. Its complement is the /ipns/ pointer — the `@oracle` `genesis-cid-*` tiddler carries a `cid:` field naming which cid stands current. `cid/` names the immutable artifact; the pointer names the current one; together they form IPFS ⋈ IPNS. Per `lar:` law `cid/<hash>` NAMES — the `genesis/cas/` store resolves bytes. This `cid/<hash>` KIND-plane stands as the ''content-addressed (CAD) byte tier'': `@cad` names the content-addressed byte tier; its bytes live here (`genesis/cas`), while its handles ride the publicity-tiered bags — public `crossroads` plaintext · private `@catalog` ciphertext · system `@oracle` (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>).
+* ''`cid/<hash>`'' — the /ipfs/ plane: the name carries the content hash, so it never changes. A frozen artifact answers to it forever. Its complement is the /ipns/ pointer — the `@oracle` `genesis-cid-*` tiddler carries a `cid:` field naming which cid stands current. `cid/` names the immutable artifact; the pointer names the current one; together they form IPFS ⋈ IPNS. Per `lar:` law `cid/<hash>` NAMES — the `genesis/cas/` store resolves bytes. This `cid/<hash>` KIND-plane stands as the ''content-addressed (CAD) byte tier'': `@cad` names the content-addressed byte tier; its bytes live here (`genesis/cas`), while its handles ride the publicity-tiered bags — public `crossroads` plaintext · private `@catalog` ciphertext · system `@oracle` (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>).
 
 !! Identity ⋈ canon — a wiki's two addresses
 
@@ -43,16 +42,16 @@ The two disk planes carry the two STATES of a meme:
 
 The per-wiki live layers ride above the fold, each rooted at the wiki's identity — `wikis/{slug}/{temp,draft,working,personal}` (minted by `wikiSlotUri(slug, kind)`); the `bags/{slug}` canon rides below as the read-only, promotion-target library member. The `@working`/`@draft`/`@personal` binding keys per `(PersonaGroup × recipe-fingerprint)` — the slot URI carries the address, the resolver hands over the per-fingerprint doc.
 
-!! The two-layer model (@lares · @lararium)
+!! The two-layer model (@lares · lararium)
 
 `lares`/`lararium` carry two layers that DO NOT compose into one wiki — the CID floor and the live edit surface stand decoupled:
 
-* ''Frozen doctrine floor — @daemon only.'' The genesis blob (the boot seed, `noosphere-boot`, the canon that survives a wipe) rides the ''@daemon wiki-worker's `libraryBags`'', addressed by ''`cid/<hash>`'' — reproducible from the hash, unreachable by an edit. Only @daemon holds the CID `lares`/`lararium` content. @daemon runs on these frozen CIDs and its behaviour changes only when new CIDs launch to the mesh.
+* ''Frozen doctrine floor — daemon-plane only.'' The genesis blob (the boot seed, `noosphere-boot`, the canon that survives a wipe) rides the ''@daemon wiki-worker's `libraryBags`'', addressed by ''`cid/<hash>`'' — reproducible from the hash, unreachable by an edit. Only daemon-plane holds the CID `lares`/`lararium` content. daemon-plane runs on these frozen CIDs and its behaviour changes only when new CIDs launch to the mesh.
 * ''Live edit surface — `wikis/lares`, `wikis/lararium`.'' Operator edit surfaces over `bags/lares` / `bags/lararium` (plus their own draft/working layers). They do NOT compose the CID floor.
 
-''The decoupling carries the safety.'' The boot floor stands CID-frozen in @daemon and the live wikis never mount it, so editing `wikis/lares` cannot break the boot. Promotion to the mesh renders the live edits to fresh CIDs and launches them to @daemon; only then does @daemon behaviour change. Edit freely, promote deliberately, immune core sealed until mint.
+''The decoupling carries the safety.'' The boot floor stands CID-frozen in daemon-plane and the live wikis never mount it, so editing `wikis/lares` cannot break the boot. Promotion to the mesh renders the live edits to fresh CIDs and launches them to daemon-plane; only then does daemon-plane behaviour change. Edit freely, promote deliberately, immune core sealed until mint.
 
-''THE DAEMON HOLDS THE ENGINE'' (operator ruling). The memetic-wikitext engine rides the @daemon
+''THE DAEMON HOLDS THE ENGINE'' (operator ruling). The memetic-wikitext engine rides the daemon-plane
 wiki-worker, CID-frozen beside the boot seed, and every device reaches THE SAME ENGINE by hash. That
 buys an ''idempotent control surface'': the parser a vessel runs answers to a CID rather than to what
 that vessel happens to hold, so two devices at the same engine-CID read a carrier identically and a
@@ -78,20 +77,20 @@ The catalog binds the two: `bags/oracle` → the genesis island's own doc URL, s
 
 One recipe expansion serves every context. `expandRecipe(recipe)` serves as the single slug-aware source of a wiki's slot cap-stack; the VM-free host derives a thin facet projection (`recipeHostFacets`: `wikiKey` = `wikis/slug` identity · `wikiBagId` = `bags/slug` canon · draft key · registration bags) from the same minters, so host and island name identical bags. A wiki recipe instances the nameless-entity `#has`-cap-stack model — nameless (addressed by its `wikis/slug` identity), `#has` a stack of bag-caps — conforming to the palace-entity pattern behaviorally (both expand to a cap-stack), never by a shared TS interface.
 
-!! What the @catalog tracks
+!! What the catalog-plane tracks
 
 Two maps, cleanly separated — each the operator's own, never a registry of others:
 
 * ''bags'' — `bags/{slug}` → automerge url. Composable recipe pieces, each one doc, shared per the user's wish.
 * ''wikis'' — `wikis/{slug}` → recipe (the `#has` bag-stack). Per-wiki layers route from here.
 
-`@oracle` names the shared system floor from its genesis seed. The read-face projects only seed-named rows and blob descriptors as a content-addressed snapshot without Automerge history; the snapshot carries the seed CID beside its own CID. It never hands the oracle document itself across the read-face. The floor's frozen seed-derived address and no-writer rule remain owed on the Kahu Plane road. LAW THE BUILD OWES: one porch answer per Nexus names the floor CID and derived WHO board address; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder">>).
+`@oracle` names the shared system floor from its genesis seed. The read-face projects only seed-named rows and blob descriptors as a content-addressed snapshot without Automerge history; the snapshot carries the seed CID beside its own CID. It never hands the oracle document itself across the read-face. The floor's frozen seed-derived address and no-writer rule remain owed on the Kahu Plane road. LAW THE BUILD OWES: one porch answer per Nexus names the floor CID and derived WHO board address; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`>>).
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes">> — anchors the shared oracle surface model
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane">> — sets the read-face projection and answer split
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split">> — separates floor rows from vessel pointers
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/one-model">> — places system floor beneath writable recipe layers
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane`>> — sets the read-face projection and answer split
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split`>> — separates floor rows from vessel pointers
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/one-model`>> — places system floor beneath writable recipe layers
 
-<<^ code="&#x0003;">>ni:///sha-256;3IovcsKqpGL4FSoldPIImfPzSMHxH0d-0cHzLzD5NPE
+<<^ code=`&#x0003;`>>ni:///sha-256;43T_JZFU9BpWg1OwjEFfwB0H51wTh_Iucg9Y1s2JJoM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/save-path">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/api/save-path`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/save-path.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 18
@@ -18,11 +17,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/save-path"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Save-Path Invariants — IslandAdaptor Outbound
 
@@ -30,7 +29,7 @@ Path K / F-arc: outbound hygiene for sustained live wiki authoring.
 
 <<~/ahu>>
 
-<<~ ahu #/problem>>
+<<~ ahu slot=`#/problem`>>
 
 !! Problem Space
 
@@ -50,7 +49,7 @@ The law this path enacts stands at `lar:///ha.ka.ba/lares/docs/pono/outbound-bri
 
 <<~/ahu>>
 
-<<~ ahu #/invariants>>
+<<~ ahu slot=`#/invariants`>>
 
 !! Invariants
 
@@ -131,7 +130,7 @@ site.
 
 <<~/ahu>>
 
-<<~ ahu #/debounce-design>>
+<<~ ahu slot=`#/debounce-design`>>
 
 !! Gate Design
 
@@ -168,18 +167,18 @@ title on the console.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/verse-mesh">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-adaptor`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/verse-mesh`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oaYPIfzMitesTkrQFM0OUlbOc7PLxzi7dFzEUioSiSE
+<<^ code=`&#x0003;`>>ni:///sha-256;tRMcp_lyacdNYIrAD03xZ4vDiV-DV8H5Vvpuhrx4aKw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

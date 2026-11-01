@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/signal-review">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/signal-review`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/signal-review.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal-review"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Lararium Signal Branch Review Memo
 
@@ -30,7 +29,7 @@ This memo reviews the current signal branch, marks pressure points, and proposes
 
 <<~/ahu>>
 
-<<~ ahu #/scope>>
+<<~ ahu slot=`#/scope`>>
 
 !! Scope
 
@@ -56,7 +55,7 @@ This memo does not attempt chronometer closure.
 
 <<~/ahu>>
 
-<<~ ahu #/observe>>
+<<~ ahu slot=`#/observe`>>
 
 !! ✶ Observe
 
@@ -88,7 +87,7 @@ This memo does not attempt chronometer closure.
 
 <<~/ahu>>
 
-<<~ ahu #/orient>>
+<<~ ahu slot=`#/orient`>>
 
 !! ⏿ Orient
 
@@ -130,7 +129,7 @@ The branch needs a boundary pass, a settlement pass, and a reduction pass focuse
 
 <<~/ahu>>
 
-<<~ ahu #/decide>>
+<<~ ahu slot=`#/decide`>>
 
 !! ◇ Decide
 
@@ -168,7 +167,7 @@ Use the following labels during the review:
 
 <<~/ahu>>
 
-<<~ ahu #/act>>
+<<~ ahu slot=`#/act`>>
 
 !! ▶ Act
 
@@ -208,7 +207,7 @@ Use the following labels during the review:
 
 <<~/ahu>>
 
-<<~ ahu #/assess>>
+<<~ ahu slot=`#/assess`>>
 
 !! ↺ Assess
 
@@ -240,19 +239,19 @@ That order should reduce churn and keep the branch from freezing unresolved FFZ 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/l-space">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/hud">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/render-targets">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/sa-display">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/lararium`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal/l-space`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal/hud`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal/render-targets`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal/sa-display`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qQwmwwOlfWcY2ajiLLms51Z9nTlLKtNE3LkzOS7pCP8
+<<^ code=`&#x0003;`>>ni:///sha-256;jj1_cFwZgGiLAR4YQoNClTmtiDG43Cb3Vk1tUuzbzAY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

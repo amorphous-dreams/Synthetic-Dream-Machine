@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/source-module">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/source-module`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/source-module.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 16
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/source-module"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Source Module
 
@@ -26,7 +25,7 @@ Makes monorepo source navigable, queryable, and reactable through lar:/// URIs.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ detect a postbuild trigger for a priority source file; read verbatim source text
 ⏿ orient: hash the content; compare against existing carrier in the store
@@ -36,7 +35,7 @@ Makes monorepo source navigable, queryable, and reactable through lar:/// URIs.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law
 
@@ -50,7 +49,7 @@ agents can read, query, and react to source changes as memes.
 
 <<~/ahu>>
 
-<<~ ahu #/carrier-shape>>
+<<~ ahu slot=`#/carrier-shape`>>
 
 !! Carrier Shape
 
@@ -71,7 +70,7 @@ The body (`text`) is the verbatim source content.
 
 <<~/ahu>>
 
-<<~ ahu #/priority-modules>>
+<<~ ahu slot=`#/priority-modules`>>
 
 !! Priority Modules
 
@@ -88,7 +87,7 @@ These files are the highest-value source-module memes:
 
 <<~/ahu>>
 
-<<~ ahu #/postbuild-contract>>
+<<~ ahu slot=`#/postbuild-contract`>>
 
 !! Postbuild Contract
 
@@ -103,10 +102,10 @@ The `write-source-memes.ts` script MUST:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;d7r1F3osCODXhuJwhGGAC5y9X3LeWv1Xjfgw9FBnjcg
+<<^ code=`&#x0003;`>>ni:///sha-256;6Nx6cv-_YT5iRfqTaWi4VmBgxWyysTNBSqhCF1NtL9A
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

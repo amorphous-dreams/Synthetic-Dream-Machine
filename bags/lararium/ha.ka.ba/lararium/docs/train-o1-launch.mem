@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/train-o1-launch">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/train-o1-launch`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/train-o1-launch.mem"
 l-space   = "adjacent"
 role      = "train O1 launch kit: face-scoped working address, production surfaces, receipts and session switch"
 status    = "draft"
@@ -14,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/train-o1-launch"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Train O1 ~ one face's sessions
 
@@ -24,7 +23,7 @@ uri-path  = "ha.ka.ba/lararium/docs/train-o1-launch"
 
 <<~/ahu>>
 
-<<~ ahu #/ground>>
+<<~ ahu slot=`#/ground`>>
 
 !! Ground and crew
 
@@ -34,7 +33,7 @@ The working address derives from three inputs: a verified face secret scoped to 
 
 <<~/ahu>>
 
-<<~ ahu #/walk>>
+<<~ ahu slot=`#/walk`>>
 
 !! Commit walk
 
@@ -45,7 +44,7 @@ The working address derives from three inputs: a verified face secret scoped to 
 
 <<~/ahu>>
 
-<<~ ahu #/witness>>
+<<~ ahu slot=`#/witness`>>
 
 !! Witness and red window
 
@@ -53,7 +52,7 @@ The working address takes a behavioural witness, never a declared red that pins 
 
 <<~/ahu>>
 
-<<~ ahu #/collisions>>
+<<~ ahu slot=`#/collisions`>>
 
 !! Collision sheet
 
@@ -67,7 +66,7 @@ The working address takes a behavioural witness, never a declared red that pins 
 
 <<~/ahu>>
 
-<<~ ahu #/done>>
+<<~ ahu slot=`#/done`>>
 
 !! Done when
 
@@ -75,16 +74,16 @@ Every interactive node and browser surface mounts under a verified face and scop
 
 <<~/ahu>>
 
-<<~ ahu #/rulings>>
+<<~ ahu slot=`#/rulings`>>
 
 !! Rulings
 
-The working address's input contract stands ruled (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>, the working address): O1's pure step builds its vectors to those bytes, and the fleet-join door of train W delivers the face address secret.
+The working address's input contract stands ruled (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>, the working address): O1's pure step builds its vectors to those bytes, and the fleet-join door of train W delivers the face address secret.
 
-The roadmap's ONE FACE path and `F1`–`F12` name the session debt (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>). Its standing law keeps the face at the session capability (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/decisions">>). O1 fixes no address bytes before the identity input contract lands. A change to that contract needs an explicit identity ruling.
+The roadmap's ONE FACE path and `F1`–`F12` name the session debt (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops`>>; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`>>). Its standing law keeps the face at the session capability (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/decisions`>>). O1 fixes no address bytes before the identity input contract lands. A change to that contract needs an explicit identity ruling.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7-tjESEcg40wZSBEMDasEtFU9I61zLbYvswwjpIqtUc
+<<^ code=`&#x0003;`>>ni:///sha-256;quDbPNKCpfA2rWbuU9ZcGS6E8Gl_VU9dYwWANOuvKV4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

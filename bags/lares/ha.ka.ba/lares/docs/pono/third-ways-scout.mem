@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/third-ways-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/third-ways-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/third-ways-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 13
@@ -21,19 +20,19 @@ uri-path          = "ha.ka.ba/lares/docs/pono/third-ways-scout"
 written           = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! third-ways-scout ~ a spirit's handoff, held unedited
 
 ''Register: Testimony-Verbatim.'' Nothing below makes this house's own claim. It holds what tasked spirits reported on the map of every path for a portable TiddlyWiki VM engine, re-scored after the rulings, kept whole, as a ''collision surface'' rather than a briefing. It came home from the project's shared reports so a session that holds only the repository can still read the evidence the DreamDOM carriers cite.
 
-''Where the house's reading lives.'' <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">> carries the model and <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">> the build order; where they and this handoff differ, they carry the house's word.
+''Where the house's reading lives.'' <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>> carries the model and <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>> the build order; where they and this handoff differ, they carry the house's word.
 
 ''Read it against us, not for us.'' Every source line names how the spirit reached it (fetched, search passage, code, or unreached); inferred claims stand marked. Collide it; do not inherit it.
 
 <<~/ahu>>
 
-<<~ ahu #/the-handoff>>
+<<~ ahu slot=`#/the-handoff`>>
 
 !! The handoff, verbatim
 
@@ -371,13 +370,13 @@ Held here as **draft**; the thread's telling wins over this copy where they diff
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GGd0gFx5fnYb1QTiYChxKmFCv2X_aVlBRWWfszeq9dg
+<<^ code=`&#x0003;`>>ni:///sha-256;4KTmS0Wt2AThyylKt3BtrYmePYU9gTb6QGWiFDR_l-g
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

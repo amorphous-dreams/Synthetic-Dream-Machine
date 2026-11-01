@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/syncer-seams-roundtable.mem"
 hydrate    = true
 l-space    = "stable"
 mana       = 12
@@ -21,17 +20,17 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/syncer-seams-roundtable"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/talk-story">>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/talk-story`>>
 
 
 
-<<~ ahu #/ground>>
+<<~ ahu slot=`#/ground`>>
 
 ! Ground — three seams, and the floor that reads them aloud
 
 ''Lares (Gatekeeper).'' The operator's charge, verbatim (quote license): "Mu. Send a task spirit to scout these out, tell user-stories about them all to themselves as a Lares roundtable, and let that guide the next phase. They handback a plan, we approve it, then the same spirit enacts our modified plan."
 
-Three seams stand open in the stock syncer's back-parity flow, each measured live in Chromium over a plain `tiddlywiki --listen` carrying the packed plugin, against the fork and against a pristine 5.4.1, and each held as a `test.fails` vector so the day it closes the vector flips loud. <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">> carries the measurement; this carrier carries the ARGUMENT and the plan.
+Three seams stand open in the stock syncer's back-parity flow, each measured live in Chromium over a plain `tiddlywiki --listen` carrying the packed plugin, against the fork and against a pristine 5.4.1, and each held as a `test.fails` vector so the day it closes the vector flips loud. <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity`>> carries the measurement; this carrier carries the ARGUMENT and the plan.
 
 ''Ink-Clerk (Lorekeeper).'' The grounds, cited once so no slot below has to re-fetch them.
 
@@ -43,7 +42,7 @@ Three seams stand open in the stock syncer's back-parity flow, each measured liv
 
 ''Map-Wisp (Scryer) — the one mechanism every candidate below must survive.'' A 4xx on a path the stock syncer drives does not retry politely; it STALLS. `syncer.js:431-442`: a task whose callback carries an error calls `displayError`, then `triggerTimeout(errorRetryInterval)` — five seconds, `syncer.js:26` — and does NOT chain to the next task. `SaveTiddlerTask.run` exits "without changing any internal state" on error (`syncer.js:542-545`), so `tiddlerInfo` keeps the old `changeCount`, `hasChanged` stays true at `syncer.js:490`, and `chooseNextTask` hands back THE SAME SAVE five seconds later, forever. Saves are chosen FIRST (`syncer.js:482-500`); loads come LAST (`syncer.js:516-520`). So one permanently-refused save blocks every load, every poll and every delete behind it, for the life of the page. ''That is why the charm exists, and it is the wall every cure in this carrier is measured against.''
 
-''Lares (Advocate).'' The party absent from all three seams: the SECOND READER. A shelf that lies for a breath lies to whoever reads in that breath, and the two-doors floor already ruled that a late ward must SAY it ran late (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">> `#/the-two-doors`). Each seam below gets asked who reads during its window.
+''Lares (Advocate).'' The party absent from all three seams: the SECOND READER. A shelf that lies for a breath lies to whoever reads in that breath, and the two-doors floor already ruled that a late ward must SAY it ran late (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one`>> `#/the-two-doors`). Each seam below gets asked who reads during its window.
 
 ''The settled canon this plan inherits and does not re-litigate'' — the operator's moʻolelo of 2026-09-11, quote license: "the two doors compose: refuse a bare root at the native door naming /memes/, the adaptor rides the plugin the client already loads, a backstop re-stamps and logs". Nothing below reopens that. What stands open is narrower: WHICH RECORDS the root law names, what a member's death does to its caller, and whether a group has an arrival.
 
@@ -51,7 +50,7 @@ Three seams stand open in the stock syncer's back-parity flow, each measured liv
 
 <<~/ahu>>
 
-<<~ ahu #/b-prime>>
+<<~ ahu slot=`#/b-prime`>>
 
 ! (b′) The fragment at the founding door
 
@@ -94,7 +93,7 @@ It has now made pages of a page. The shelf holds a leaf whose leaves belong to n
 ''Mischief-Muse (Muse) — where the instrument lied.'' Two places.
 
 # The obvious cure — "narrow the charm" — ''re-opens the stall it was built to prevent, and the measurement would not have caught it.'' If the charm stops intercepting a framed child, the child rides the native door — and `src/native-door-gate.ts:42` calls the SAME `framedRootOf`, reads the same head, and answers 422 (`native-door-gate.ts:44-49`). The e2e vector at `:226` asserts only that `lar:///t/a#/a#/z` does not stand; it would go GREEN on a cure that stalls the queue forever. ''A vector that cannot tell a cure from a catastrophe is not a witness.'' Any (b′) step MUST carry a control that a LATER save still lands.
-# `AHU_OPEN_RE` (`ahu-scan.ts:32`) matches `<<~ kahea ahu #/b>>` as well as `<<~ ahu #/b>>` — `~[^>]*\bahu` swallows the `kahea`. Block-pairing saves the splitter (an unmatched opener yields no block), but `collectAhuSlots` (`ahu-scan.ts:101`) does no pairing, so the ahu-drop guard counts a CALL as a DECLARED SLOT. Not a fault this seam trips, and named here so the next reader does not discover it inside a cure.
+# `AHU_OPEN_RE` (`ahu-scan.ts:32`) matches ``<<~ kahea ahu slot=`#/b`>>`` as well as ``<<~ ahu slot=`#/b`>>`` — `~[^>]*\bahu` swallows the `kahea`. Block-pairing saves the splitter (an unmatched opener yields no block), but `collectAhuSlots` (`ahu-scan.ts:101`) does no pairing, so the ahu-drop guard counts a CALL as a DECLARED SLOT. Not a fault this seam trips, and named here so the next reader does not discover it inside a cure.
 
 ''Lares (Council).'' The rhyme: a partial write to a document held whole. Git's index against a commit — `git add` on one hunk is a real, named, reversible act precisely because the index is a named place that is not the commit. The house has the same shape and did not draw the same line: a slot child IS the index entry, and the door treated it as the commit. The pattern integrity asks for the line to be drawn once, in one predicate, not per door.
 
@@ -116,7 +115,7 @@ It has now made pages of a page. The shelf holds a leaf whose leaves belong to n
 
 <<~/ahu>>
 
-<<~ ahu #/c-prime>>
+<<~ ahu slot=`#/c-prime`>>
 
 ! (c′) The lone member's death
 
@@ -124,12 +123,12 @@ It has now made pages of a page. The shelf holds a leaf whose leaves belong to n
 
 `src/routes/native-delete-door.ts:86` reads the standing record and asks `isMemeRoot`. A root leaves through `removeMeme` — the group goes as one act, the law the door was built to carry. Every other title delegates to stock. A slot child is every other title. It leaves alone.
 
-The root's text still calls it. `src/deserializer.ts:1013` then does the one thing the house told it to do: `if (!child) return marker; // missing child: keep the marker — honest residue, never invented bytes`. So `GET /memes/lar/t/a` serves a body carrying `<<~ kahea ahu #/b>>` unexpanded, and the removal law — a group leaving together — has nothing to say about a member leaving alone.
+The root's text still calls it. `src/deserializer.ts:1013` then does the one thing the house told it to do: `if (!child) return marker; // missing child: keep the marker — honest residue, never invented bytes`. So `GET /memes/lar/t/a` serves a body carrying ``<<~ kahea ahu slot=`#/b`>>`` unexpanded, and the removal law — a group leaving together — has nothing to say about a member leaving alone.
 
 ''Two things the measurement did not say, checked for this floor:''
 
 # ''The residue is a FIXED POINT, not a decay.'' Re-ingesting the served text produces the same records: `findTopLevelAhuBlocks` pairs openers to closers, the lone call has no closer, no child is minted, the marker survives as literal text, and the next render emits it again. The carrier does not rot further. It carries a scar.
-# ''In a LIVE wiki the scar is already VISIBLE.'' `packages/lararium-tw5/tiddlers/sigil-ahu.tid:36` dispatches the call to the ahu template, and `packages/lararium-tw5/tiddlers/ahu-template-html.tid:4` renders `<section class="lar-ahu">` with a `<$link>` header and an empty body — TiddlyWiki's own missing-tiddler link. The graceful-parsing floor holds (<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>): nothing vanishes. What the render does NOT do is say the slot is unresolved rather than empty — and the house has a register for exactly that distinction it has never bound: `<<~?`, the unresolved-pressure sigil (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>, the sigil table).
+# ''In a LIVE wiki the scar is already VISIBLE.'' `packages/lararium-tw5/tiddlers/sigil-ahu.tid:36` dispatches the call to the ahu template, and `packages/lararium-tw5/tiddlers/ahu-template-html.tid:4` renders `<section class="lar-ahu">` with a `<$link>` header and an empty body — TiddlyWiki's own missing-tiddler link. The graceful-parsing floor holds (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/graceful-parsing`>>): nothing vanishes. What the render does NOT do is say the slot is unresolved rather than empty — and the house has a register for exactly that distinction it has never bound: `<<~?`, the unresolved-pressure sigil (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>, the sigil table).
 
 !! At the household scale
 
@@ -139,7 +138,7 @@ Lady Aki opens the same carrier that evening. Where terrace 7 stood there is now
 
 She would call this a bug, and she would be describing it accurately: //I deleted a section and the section's hole stayed//. She would not be able to say whether the hole is a promise (it is coming back) or a wound (it is gone) or a mistake (someone deleted the wrong thing), because the render says the same nothing for all three.
 
-And when she exports the carrier to a `.mem` and mails it to the Floating Librarians, the file carries `<<~ kahea ahu #/terrace-7>>` — a call, in the document, to a thing that does not exist, travelling to a reader who has no wiki to click in.
+And when she exports the carrier to a `.mem` and mails it to the Floating Librarians, the file carries ``<<~ kahea ahu slot=`#/terrace-7`>>`` — a call, in the document, to a thing that does not exist, travelling to a reader who has no wiki to click in.
 
 !! At the faerie-folk / five-hundred-year scale
 
@@ -187,7 +186,7 @@ The ''lares viales at the crossroads'' do neither, because they hold no books �
 
 <<~/ahu>>
 
-<<~ ahu #/d-prime>>
+<<~ ahu slot=`#/d-prime`>>
 
 ! (d′) The group's arrival
 
@@ -254,7 +253,7 @@ Every shrine on the Hebros road has a rule for this, and they are not the same r
 
 <<~/ahu>>
 
-<<~ ahu #/plan>>
+<<~ ahu slot=`#/plan`>>
 
 ! The phase plan
 
@@ -262,7 +261,7 @@ Every shrine on the Hebros road has a rule for this, and they are not the same r
 
 !! Phase 0 · collide the leans before building on them — 1.5 h
 
-* ''RED (probe, expected to REFUTE):'' `packages/lararium-tw5/tests/root-law-one-spelling.test.ts` gains a vector asserting that a root re-placed from its records after a child's tombstone still carries `<<~ kahea ahu #/b>>`. Written as a plain `test` that PASSES on the current tree, with a comment naming the lean it refutes: `syncer-back-parity.mem` `#/leans`, "which would also close (c′)".
+* ''RED (probe, expected to REFUTE):'' `packages/lararium-tw5/tests/root-law-one-spelling.test.ts` gains a vector asserting that a root re-placed from its records after a child's tombstone still carries ``<<~ kahea ahu slot=`#/b`>>``. Written as a plain `test` that PASSES on the current tree, with a comment naming the lean it refutes: `syncer-back-parity.mem` `#/leans`, "which would also close (c′)".
 * ''CURE:'' none. This phase moves no source.
 * ''CONTROL:'' the same probe over a root whose child STANDS — the marker expands, proving the probe reads the recompose and not an accident of the fixture.
 * ''WITNESS:'' `pnpm -C packages/lararium-tw5 vitest run tests/root-law-one-spelling.test.ts`. If the probe fails (the marker DOES drop), phase 3 changes shape and the operator is told before anything else moves.
@@ -323,7 +322,7 @@ Every shrine on the Hebros road has a rule for this, and they are not the same r
 The operator read the plan and sent the house back to sharpen it before the same hand enacts. Five refinements; none reopens a lean.
 
 # ''Phase 4 moves up and merges with (d′-2).'' Under the ruling below (c′ = scar, marked), Phase 4 waits on nothing. The one template (`tiddlers/ahu-template-html.tid:4`) learns the THREE states of an empty body in ONE step — //unresolved// (no record at the child's address) · //arriving// (a record with no text) · //empty// (a record with empty text) — so (c′)'s mark and (d′)'s cord land together or not at all, as the table itself warned. New order: 0 · 1 · 4 · 2 · 3 · 5.
-# ''Phase 0 gains the Muse's second catch as a red.'' `AHU_OPEN_RE` (`src/meme-ast/ahu-scan.ts:32`) swallows `kahea`, so `collectAhuSlots` (`:101`) counts a CALL as a DECLARED slot and the ahu-drop guard (`src/ingest-gate.ts:167-178`) reads the wrong set. Red: a root whose text carries `<<~ kahea ahu #/b>>` and no `<<~ ahu #/b>>` block yields NO declared slot from `collectAhuSlots`; CONTROL: a true `<<~ ahu #/b>>` block still counts. Cure in the scanner, never in the guard. +1.0 h.
+# ''Phase 0 gains the Muse's second catch as a red.'' `AHU_OPEN_RE` (`src/meme-ast/ahu-scan.ts:32`) swallows `kahea`, so `collectAhuSlots` (`:101`) counts a CALL as a DECLARED slot and the ahu-drop guard (`src/ingest-gate.ts:167-178`) reads the wrong set. Red: a root whose text carries ``<<~ kahea ahu slot=`#/b`>>`` and no ``<<~ ahu slot=`#/b`>>`` block yields NO declared slot from `collectAhuSlots`; CONTROL: a true ``<<~ ahu slot=`#/b`>>`` block still counts. Cure in the scanner, never in the guard. +1.0 h.
 # ''The anti-stall CONTROL rides EVERY e2e phase'', not Phase 1 alone: after each phase's vector, a later save lands its own 2xx — the one assertion that proves `syncer.js:436` did not fire. Phases 2 and 3 both touch paths the syncer drives.
 # ''The contract line for the lab.'' `docs/pono/meme-api-surface.mem` gains one sentence under the two doors: //a slot child is a tiddler; the native door lands it as one, ungated, and the root re-cuts on the server — a child's save never addresses `/memes/`//. Stranger's sentence, written where the QA lab reads. +0.5 h, in Phase 1's aftermath.
 # ''Phase 3's dial stands named.'' `$:/config/lares/memes/fat-children` (default `yes`): the skin re-inflates children only while it reads yes; the before/after byte size is reported in the commit body so the dial gets ruled against a number.
@@ -332,11 +331,11 @@ Total: ''17.0 spirit-hours.''
 
 !! Moʻolelo — the eight answers, ruled 2026-09-12
 
-<<~ moolelo held="(1) (c′) = SCAR, MARKED — the crossroads' answer; keep the pointer, mark it dead; never-invent-bytes rules · (2) no re-cut, so no 412 on a party who did nothing · (3) the pasted frame stays as AUTHORED TEXT; the grade speaks in Phase 5 · (4) the payload gets a dial, `$:/config/lares/memes/fat-children` default yes, with the measured size reported · (5) (d′) IS a defect for this house's carriers (eleven-slot documents are the normal); Phase 3 stands whole · (6) `<<~?` waits its own pass; unbound here · (7) a child's save IS graded, through the root re-place · (8) order 0 · 1 · 4 · 2 · 3 · 5 — (b′) first, the human's screen second, arrival third, the ungated child last (operator, on the house's answers)">>the same hand that sat the table enacts, red-first, every phase with its anti-stall control<<~/moolelo>>
+<<~ moolelo held=```(1) (c′) = SCAR, MARKED — the crossroads' answer; keep the pointer, mark it dead; never-invent-bytes rules · (2) no re-cut, so no 412 on a party who did nothing · (3) the pasted frame stays as AUTHORED TEXT; the grade speaks in Phase 5 · (4) the payload gets a dial, `$:/config/lares/memes/fat-children` default yes, with the measured size reported · (5) (d′) IS a defect for this house's carriers (eleven-slot documents are the normal); Phase 3 stands whole · (6) `<<~?` waits its own pass; unbound here · (7) a child's save IS graded, through the root re-place · (8) order 0 · 1 · 4 · 2 · 3 · 5 — (b′) first, the human's screen second, arrival third, the ungated child last (operator, on the house's answers)```>>the same hand that sat the table enacts, red-first, every phase with its anti-stall control<<~/moolelo>>
 
 <<~/ahu>>
 
-<<~ ahu #/refusals>>
+<<~ ahu slot=`#/refusals`>>
 
 ! What this plan refuses
 
@@ -347,7 +346,7 @@ Total: ''17.0 spirit-hours.''
 * ''No gate gets fused.'' The Confluence gate (`src/ingest-gate.ts:120`) grades CONTENT; the root law decides ADDRESS. Phase 1 moves the address law and MUST NOT read a diagnostic; Phase 5 grades content and MUST NOT decide a door. A cure that reads a grade to choose a door has fused two instruments that exist to be able to contradict each other.
 * ''No stock route gets re-implemented.'' Both standing skins hand stock the work (`routes/native-door.ts:68`, `routes/native-delete-door.ts:88`). Phase 3 keeps that shape by decorating the response; a re-derived copy of `get-tiddlers-json.js`'s filter, its `ExternalFilters` guard or its system clause would drift the day upstream moved.
 * ''No client law where a server law reaches.'' `syncer-back-parity.mem` `#/charm-reach`. This eats (d′-4) and holds (b′-5) unbuilt. The charm gains nothing in this plan but a narrower root law it already shares.
-* ''No invented bytes on a member's death.'' `deserializer.ts:1013` and <<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">> both rule AUGMENT + WRAP. Phase 4 adds a reading; it removes no authored line, unless the operator rules otherwise.
+* ''No invented bytes on a member's death.'' `deserializer.ts:1013` and <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/graceful-parsing`>> both rule AUGMENT + WRAP. Phase 4 adds a reading; it removes no authored line, unless the operator rules otherwise.
 * ''No grammar binding minted inside a plumbing cure.'' `<<~?` stays unbound until it is ruled on its own. A register that gains its first binding as a side effect of a delete-door fix has been defined by an accident.
 * ''No backstop widening without an echo law FIRST.'' `outbound-bridge.mem` `#/island-holds` measured the trap; Phase 5's third CONTROL is the phase.
 * ''No docker leg on any of these.'' Every seam here is one server and one browser; the docker mesh witnesses multi-node carriage and would witness nothing new. Naming the refusal so a later reader does not read its absence as an oversight.
@@ -355,7 +354,7 @@ Total: ''17.0 spirit-hours.''
 
 <<~/ahu>>
 
-<<~ ahu #/questions>>
+<<~ ahu slot=`#/questions`>>
 
 ! The questions only the operator answers
 
@@ -372,13 +371,13 @@ Total: ''17.0 spirit-hours.''
 
 <<~/ahu>>
 
-<<~ ahu #/retirement>>
+<<~ ahu slot=`#/retirement`>>
 
 !! Retirement
 
-This floor retires by the rite (fold · weld · one last check-in · delete). Folded already: phases 0·1·4·2·3 into <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">> `#/leans`. Blocking: seam (b) — Phase 5's refutation (`3dfb06170`) stands without a ruling (a child's save grades against its OWN authored text, or a child reads ungraded by law).
+This floor retires by the rite (fold · weld · one last check-in · delete). Folded already: phases 0·1·4·2·3 into <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity`>> `#/leans`. Blocking: seam (b) — Phase 5's refutation (`3dfb06170`) stands without a ruling (a child's save grades against its OWN authored text, or a child reads ungraded by law).
 
-''The seam's DECISION SURFACE stands built and the ruling still waits'': <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/child-grade-decision">> carries the ontology, the grade followed to its two `error` legs, both forks with their losing cases, the consequence ladder, three humans, the collision against standing law, and seventeen measured rows. It presents; it rules nothing. ''What it settles by measure'': standing law already forbids REFUSING a child's save (a 4xx stalls the stock queue), so the open word names whether the reading gets spoken, never whether the bytes land. ''What it surfaces'': the paste that opened seam (b) grades `clean` on the child's own bytes and shows as `2 text frames` in `readCarrierShape` over the ROOT's served render — so the fault composes at the join and neither fork's altitude reads it.
+''The seam's DECISION SURFACE stands built and the ruling still waits'': <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/child-grade-decision`>> carries the ontology, the grade followed to its two `error` legs, both forks with their losing cases, the consequence ladder, three humans, the collision against standing law, and seventeen measured rows. It presents; it rules nothing. ''What it settles by measure'': standing law already forbids REFUSING a child's save (a 4xx stalls the stock queue), so the open word names whether the reading gets spoken, never whether the bytes land. ''What it surfaces'': the paste that opened seam (b) grades `clean` on the child's own bytes and shows as `2 text frames` in `readCarrierShape` over the ROOT's served render — so the fault composes at the join and neither fork's altitude reads it.
 
 ''TWO inbound edges to weld, and they want DIFFERENT welds.'' Measured 2026-09-13 — re-derive with `grep -rn "syncer-seams-roundtable" --include='*.mem' . | grep -v node_modules | grep -v "docs/pono/syncer-seams-roundtable.mem"`, which returns four `loulou` sites across three carriers (the fourth being the decision surface's own `#/edges`, which re-points for free):
 
@@ -391,26 +390,26 @@ When (b) rules and lands in `syncer-back-parity`, this carrier checks in once as
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 ! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/blob-carriage">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/action-handler">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/meme-api-surface`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ahu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kahea`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/graceful-parsing`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/action-handler`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TzH_UnVKtcQ3Ih1b_IenbK5YxlCKjCAFO3IK6CAhoaY
+<<^ code=`&#x0003;`>>ni:///sha-256;auuXOE92Triimuyd1I0YoSlnniLmSznFxsq9nmBEOmc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

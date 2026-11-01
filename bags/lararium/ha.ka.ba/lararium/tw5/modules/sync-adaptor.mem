@@ -1,10 +1,9 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
-file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/modules/sync-adaptor.mem"
 heleuma       = "ha"
 mana          = 18
 manao         = 17
@@ -20,7 +19,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/modules/sync-adaptor"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -36,7 +35,7 @@ uri-path      = "ha.ka.ba/lararium/tw5/modules/sync-adaptor"
 
 <<~/ahu>>
 
-<<~ ahu #/what-the-wiki-owns>>
+<<~ ahu slot=`#/what-the-wiki-owns`>>
 
 !! What the Nalu Engine Owns Instead
 
@@ -46,7 +45,7 @@ The TW5 module `nalu-engine` holds the one piece the adaptor deliberately does n
 
 <<~/ahu>>
 
-<<~ ahu #/the-cascade>>
+<<~ ahu slot=`#/the-cascade`>>
 
 !! The Bag-Path Cascade
 
@@ -58,7 +57,7 @@ The TW5 module `nalu-engine` holds the one piece the adaptor deliberately does n
 
 <<~/ahu>>
 
-<<~ ahu #/slot-of>>
+<<~ ahu slot=`#/slot-of`>>
 
 !! The Landed Ledger
 
@@ -74,30 +73,30 @@ The ledger stays volatile: one adaptor, one session. A stopped adaptor clears it
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
-<<~ pranala #source from="?" -> to="packages/lararium-tw5/src/island-adaptor.ts" family="code" role="has">>
-<<~ pranala #source-cascade from="?" -> to="packages/lararium-tw5/tiddlers/lar-bag-paths.tid" family="code" role="has">>
-<<~ pranala #source-engine from="?" -> to="packages/lararium-tw5/src/modules/nalu-engine.ts" family="code" role="has">>
-<<~ pranala #source-landing from="?" -> to="packages/lararium-tw5/src/wave-landing.ts" family="code" role="has">>
-<<~ pranala #source-ledger from="?" -> to="packages/lararium-tw5/src/landed-ledger.ts" family="code" role="has">>
-<<~ pranala #source-gate from="?" -> to="packages/lararium-tw5/src/hand-gate.ts" family="code" role="has">>
-<<~ pranala #source-bridge from="?" -> to="packages/lararium-tw5/src/outbound-bridge.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-tw5/src/island-adaptor.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-cascade` from=`?` to=`packages/lararium-tw5/tiddlers/lar-bag-paths.tid` family=`code` role=`has`>>
+<<~ pranala slot=`#source-engine` from=`?` to=`packages/lararium-tw5/src/modules/nalu-engine.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-landing` from=`?` to=`packages/lararium-tw5/src/wave-landing.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-ledger` from=`?` to=`packages/lararium-tw5/src/landed-ledger.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-gate` from=`?` to=`packages/lararium-tw5/src/hand-gate.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-bridge` from=`?` to=`packages/lararium-tw5/src/outbound-bridge.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/boot-gate">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/nalu-engine">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/modules/boot-gate`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-adaptor`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/nalu-engine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1yWJielGYQmDzOGyIgtzdAjl9ygGMKlO-xUCrOZ_XpU
+<<^ code=`&#x0003;`>>ni:///sha-256;ksXjx-anI7rylOeyCB8rEDhma7kW9HK_MGxJTSwaIXw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

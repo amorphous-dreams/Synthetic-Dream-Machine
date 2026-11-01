@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///test/mixed-ahu-fragment-tree">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///test/mixed-ahu-fragment-tree`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 title    = "lar:///test/mixed-ahu-fragment-tree"
@@ -11,54 +11,54 @@ uri-path = "test/mixed-ahu-fragment-tree"
 
 The parent holds three trees. Their branch sigils differ; their addressed worksite does not.
 
-<<~ ahu #/ridge>>
+<<~ ahu slot=`#/ridge`>>
 
 Ridge is sharktooth-authored.
 
-<<fragment #/ridge/fern>>
+<<~ ahu slot=`#/ridge/fern`>>
 
 Fern is English-authored inside the ridge.
 
-<<~ ahu #/ridge/fern/spore>>
+<<~ ahu slot=`#/ridge/fern/spore`>>
 
 Spore returns to sharktooth at depth three.
 
 <<~/ahu>>
 
-<</fragment>>
+<<~/ahu>>
 
 <<~/ahu>>
 
-<<fragment #/tide>>
+<<~ ahu slot=`#/tide`>>
 
 Tide is English-authored.
 
-<<~ ahu #/tide/reef>>
+<<~ ahu slot=`#/tide/reef`>>
 
 Reef is sharktooth-authored inside the tide.
 
-<<fragment #/tide/reef/fish>>
+<<~ ahu slot=`#/tide/reef/fish`>>
 
 Fish returns to English at depth three.
 
-<</fragment>>
+<<~/ahu>>
 
 <<~/ahu>>
 
-<</fragment>>
+<<~/ahu>>
 
-<<~ ahu #/sky>>
+<<~ ahu slot=`#/sky`>>
 
 Sky is a second sharktooth root.
 
-<<fragment #/sky/cloud>>
+<<~ ahu slot=`#/sky/cloud`>>
 
 Cloud is its English child.
 
-<</fragment>>
+<<~/ahu>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;50N0-hO_lUn-7rgcfu76Z6f90AtdyEkjdauCBtBiBNc
+<<^ code=`&#x0003;`>>ni:///sha-256;396y27W-bChMnygphgW-0fUitW1Z7N4leVHFM0ZcnSU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

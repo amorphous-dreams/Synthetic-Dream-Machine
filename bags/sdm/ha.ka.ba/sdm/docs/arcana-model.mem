@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/docs/arcana-model">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/docs/arcana-model`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/docs/arcana-model.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 15
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/docs/arcana-model"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Arcana Model ~ thirteen rooms, one closed set
 
@@ -28,7 +27,7 @@ FTLS Ch06 restructure, and the composition bag all cite one address.
 
 <<~/ahu>>
 
-<<~ ahu #/the-thirteen>>
+<<~ ahu slot=`#/the-thirteen`>>
 
 !! The Thirteen
 
@@ -61,7 +60,7 @@ cosmology's scars — life, death's border, the edge):
 
 <<~/ahu>>
 
-<<~ ahu #/guard-law>>
+<<~ ahu slot=`#/guard-law`>>
 
 !! The Arcana Guard-Law
 
@@ -75,7 +74,7 @@ enter as ''witness lanes'' feeding the same thirteen.
 
 <<~/ahu>>
 
-<<~ ahu #/blend-law>>
+<<~ ahu slot=`#/blend-law`>>
 
 !! The Blend Law (the Mage-1e warning, kept)
 
@@ -89,7 +88,7 @@ essence.
 
 <<~/ahu>>
 
-<<~ ahu #/walk-order>>
+<<~ ahu slot=`#/walk-order`>>
 
 !! The Walk of the Thirteen ~ five legs
 
@@ -101,7 +100,7 @@ the gear door) → ''↺ Aftermath'' — Ascension's re-seat marks Ch06 alpha.
 
 <<~/ahu>>
 
-<<~ ahu #/word-senses>>
+<<~ ahu slot=`#/word-senses`>>
 
 !! Word-Sense Laws ~ one name never blurs
 
@@ -133,14 +132,14 @@ verb × capability saturation × capability totality. One word, three owners, no
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/sdm/docs/composition-model">>
-<<~ loulou "lar:///ha.ka.ba/sdm/docs/three-lineage-convergence">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-burned-library">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/docs/composition-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/docs/three-lineage-convergence`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-burned-library`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FRjlE3TVIbu1n0kg5LGUR3rnycKUMl909ummp2ixOww
+<<^ code=`&#x0003;`>>ni:///sha-256;XNmpZmy8I-Ag9zHZMHqbQ_Yl5kug74lv-bX447sFxU4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

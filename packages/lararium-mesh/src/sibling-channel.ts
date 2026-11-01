@@ -912,7 +912,7 @@ function chainKey(kel: readonly PersonaKelEvent[]): string {
  *
  * A peer this channel yields is a device of THIS vessel's own PersonaGroup, proven over the session. It holds
  * STANDING and nothing more: the vessel's share policy hands it to the PersonaGroup ring, which admits it to its
- * face's own planes and the public boards — never the vessel's @daemon, never another face's planes.
+ * face's own planes and the public boards — never the vessel's daemon-plane, never another face's planes.
  */
 export async function standSiblingChannel(opts: {
   readonly repo: Repo;

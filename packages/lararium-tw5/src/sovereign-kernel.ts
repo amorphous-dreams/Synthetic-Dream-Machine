@@ -76,6 +76,7 @@ import { bridgeWikiToAdaptor } from "./outbound-bridge.js";
 import { makeViewChannel, type ViewChannel } from "./view-channel.js";
 import { makeRestDoor, type RestDoor } from "./rest-door.js";
 import type { IslandContext, IslandBehavior } from "./island-context.js";
+import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
 
 // ── The host shore — platform divergence as composition ──────────────────────
 
@@ -431,12 +432,12 @@ export function runSovereignKernel(
     if (typeof floorCidField === "string" && floorCidField.length > 0) {
       const floor = await resolveFloor(floorCidField, resolveByCid);
       if ("refusal" in floor) {
-        _post(mkFault(msg.wikiUri, `@oracle floor mount refused (${floor.refusal}): ${floor.reason}`));
+        _post(mkFault(msg.wikiUri, `${PLANE_LABELS.oracle} mount refused (${floor.refusal}): ${floor.reason}`));
         return;
       }
       floorRows = [floor.lares, floor.lararium];
     } else {
-      console.info("[floor] the genesis seed names no floor; @oracle reads the seed rows alone");
+      console.info(`[floor] the genesis seed names no floor; the ${PLANE_LABELS.oracle} reads the seed rows alone`);
     }
     // One recipe model — buildIslandRecipe walks expandRecipe(msg.recipe),
     // wires temp + every resolved CRDT slot, registers the adaptor, and ARMS

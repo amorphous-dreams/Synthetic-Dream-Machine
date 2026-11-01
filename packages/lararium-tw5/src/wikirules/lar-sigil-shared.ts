@@ -13,6 +13,7 @@
 import type { GrammarRules } from "../meme-ast/types.js";
 import type { MemeDiagnostic } from "../meme-ast/diagnostics.js";
 import { fencedSpans, inMask, type MaskSpan } from "@lararium/memetic-frame";
+import { readSigilAttrs } from "../sigil-attrs.js";
 
 /**
  * A parse-tree attribute, in the shapes TiddlyWiki's own parser emits.
@@ -102,7 +103,7 @@ export interface CompoundSigilMatch {
 // Matches <<~ WORD [WORD2] ARGS>> for any simple sigil invocation, and its optional `<<~!` pragma
 // spelling (group 1) — the caller GATES the bang to pragma-kind heads alone (matchCompoundSigilAt's
 // own `pragmaKindNames` parameter); a bang on any other head never reaches this dispatch.
-// Does not match pranala (arrow syntax, handled by matchPranalaOpenAt) or control chars.
+// Does not match pranala (its typed pair, handled by matchPranalaOpenAt) or control chars.
 // ── AN ENGLISH MIRROR IS A PURE NAME ─────────────────────────────────────────────────────────────
 // RULED: a mirror of a sigil name reasons as a Name — `link`, never `\link`. The slashed spelling
 // named nothing of its own; it aliased TiddlyWiki's pragma punctuation into a namespace that already
@@ -142,6 +143,14 @@ export function sigilOpenEnd(source: string, start: number): number {
   let depth = 0;
   while (i < lineEnd) {
     const c = source[i]!;
+    // A TICK RUN IS A VALUE (the kupono cut's one spelling), so a `>>` or a lone quote inside one rides
+    // as content. The triple run is tried first: ```` ```a `>>` b``` ```` closes on its own triple.
+    if (c === "`") {
+      const open = source.startsWith("```", i) ? "```" : "`";
+      const past = skip(i + open.length, open);
+      i = past >= 0 ? past : i + 1;   // no partner on the line: an ordinary character
+      continue;
+    }
     if (c === '"' || c === "'" || c === "[" || c === "<" || c === ">") {
       const triple = c === '"' && source.startsWith('"""', i);
       const open   = triple ? '"""' : c === "[" ? "[[" : c === "<" ? "<<" : c === ">" ? ">>" : c;
@@ -220,17 +229,20 @@ export function matchCompoundSigilAt(
 /**
  * Pranala edge sigil — explicit edge with from/to and optional slot/family/role.
  *
- * Inline form:  `<<~ pranala #name? from=A -> to=B [family=f] [role=r]>>`
- * Block form:   `<<~ pranala #name? from=A -> to=B>>body<<~/pranala>>`
+ * Inline form:  ``<<~ pranala slot=`#name`? from=`A` to=`B` [family=`f`] [role=`r`]>>``
+ * Block form:   ``<<~ pranala slot=`#name`? from=`A` to=`B`>>body<<~/pranala>>``
  *
  * The two forms share opener parsing; closer presence distinguishes them.
+ *
+ * ── ONE READER, AND THE PAIR ARE PLAIN ATTRIBUTES ────────────────────────────────────────────────
+ * The pair carries the relation (the kupono cut): no arrow stands between the ends, so `from`, `to`
+ * and `slot` read as ordinary named values through `readSigilAttrs`, the reader every other sigil's
+ * values go through. A bespoke pair regex beside it was a second spelling of the same grammar, free
+ * to drift from the first. Either order of `from` and `to` reads; a pranala naming no `from` or no
+ * `to` opens nothing.
  */
-// THE QUOTE IS NOT PART OF THE VALUE, AND THIS RULE STANDS ON THE RENDER PATH. TiddlyWiki types
-// `to=lar:///x` and `to="lar:///x"` identically, and the corpus writes the quoted form — an unquoted
-// `lar:///x` in a positional slot would bind a phantom parameter (tw5-calls-colon-caveat). A capture
-// that kept the pair renders the quote marks into the address a reader clicks.
-export const PRANALA_OPEN_RE =
-  /<<~\s*pranala\s+(?:(#[\w-]+)\s+)?from="?([^"\s>]+)"?\s*->\s*to="?([^"\s>]+)"?((?:\s+\w+=(?:"[^"]*"|[^\s>]+))*)\s*>>/g;
+/** The opener's head word, standing alone; `sigilOpenEnd` says where the call ends. */
+export const PRANALA_HEAD_RE = /<<~\s*pranala(?=[\s>])/y;
 
 export interface PranalaOpenMatch {
   readonly start:  number;
@@ -242,28 +254,16 @@ export interface PranalaOpenMatch {
 }
 
 export function matchPranalaOpenAt(source: string, start: number): PranalaOpenMatch | null {
-  PRANALA_OPEN_RE.lastIndex = start;
-  const m = PRANALA_OPEN_RE.exec(source);
-  if (!m || m.index !== start) return null;
-  const [, slot, from, to, tail] = m;
-  const attrs: Record<string, string> = {};
-  if (tail) {
-    // …and the trailing parameters take the same law: a quoted value hands back its interior.
-    const attrRe = /(\w+)="([^"]*)"|(\w+)=([^\s>]+)/g;
-    let am: RegExpExecArray | null;
-    while ((am = attrRe.exec(tail)) !== null) {
-      if (am[1] !== undefined) attrs[am[1]] = am[2]!;
-      else attrs[am[3]!] = am[4]!;
-    }
-  }
-  return {
-    start: m.index,
-    end:   PRANALA_OPEN_RE.lastIndex,
-    slot:  slot ?? null,
-    from:  from!,
-    to:    to!,
-    attrs,
-  };
+  PRANALA_HEAD_RE.lastIndex = start;
+  const head = PRANALA_HEAD_RE.exec(source);
+  if (!head) return null;
+  const end = sigilOpenEnd(source, start);
+  if (end < 0) return null;
+  const named: Record<string, string> = {};
+  for (const a of readSigilAttrs(source.slice(start + head[0].length, end - 2))) named[a.name] = a.value;
+  const { from, to, slot, ...attrs } = named;
+  if (from === undefined || to === undefined) return null;
+  return { start, end, slot: slot ?? null, from, to, attrs };
 }
 
 /**

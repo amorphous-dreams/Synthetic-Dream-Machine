@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/factions/gorgonne-diaspora">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/factions/gorgonne-diaspora`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/factions/gorgonne-diaspora.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 14
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/factions/gorgonne-diaspora"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Gorgonne Diaspora Cabals
 
@@ -29,7 +28,7 @@ discounted //Serpent's Gaze//, and the old appearance canon that already named t
 
 <<~/ahu>>
 
-<<~ ahu #/appearance>>
+<<~ ahu slot=`#/appearance`>>
 
 !! Appearance Canon
 
@@ -49,12 +48,12 @@ rigged with cloth, and a crew's toasts run in rounds, in sequence, by rank.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/factions/index">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/factions/index`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tj5wIaTI7KA1UcuzHEOxFuAzw-HXND_95Ch1pd_sias
+<<^ code=`&#x0003;`>>ni:///sha-256;zCj75_Piwj7lVEIgPoc-NrxpC1-uOei16GlvEIEHqgk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

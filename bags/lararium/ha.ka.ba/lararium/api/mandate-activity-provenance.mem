@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/api/mandate-activity-provenance`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/mandate-activity-provenance.mem"
 l-space   = "stable"
 mana      = 19
 manao     = 18
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/mandate-activity-provenance"
 ```
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Mandate → Activity → Appraisal
 
@@ -29,7 +28,7 @@ The mandate does not become the activity. An attended spirit's act reads as the 
 
 <<~/ahu>>
 
-<<~ ahu #/worldline-boundary>>
+<<~ ahu slot=`#/worldline-boundary`>>
 
 !! Worldline boundary
 
@@ -39,7 +38,7 @@ The boundary record carries the parent mandate, activity, result, delegation rel
 
 <<~/ahu>>
 
-<<~ ahu #/appraisal>>
+<<~ ahu slot=`#/appraisal`>>
 
 !! Local appraisal runs on a gradient
 
@@ -57,7 +56,7 @@ These stand as local appraisals, never a global present. Arrival order, wall-clo
 
 <<~/ahu>>
 
-<<~ ahu #/scenario-harness>>
+<<~ ahu slot=`#/scenario-harness`>>
 
 !! Red-first ScenarioCast guidance
 
@@ -78,14 +77,14 @@ The fiction failure modes serve as test names, not authority: False Archive test
 
 <<~/ahu>>
 
-<<~ ahu #/relations>>
+<<~ ahu slot=`#/relations`>>
 
 !! Membrane relations
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/operator-peer">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/capability">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/agent-worldline`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/operator-peer`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/attestation-plane`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/capability`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/causal-island`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0OHBZoV3FPiHjA6VdMpoGxP0HD_IW_KRM73V4p9dA7Y
+<<^ code=`&#x0003;`>>ni:///sha-256;bPbg-CfyuvMUr7UE-nBJksLM7NAcAz3GF6_cw6tBI0A
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

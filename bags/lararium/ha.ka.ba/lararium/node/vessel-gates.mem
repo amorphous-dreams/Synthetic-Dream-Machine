@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/vessel-gates">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/node/vessel-gates`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/node/vessel-gates.mem"
 l-space     = "lararium"
 mana        = 14
 role        = "invariant law: ONE face gate per (Nexus, route), every one a node vessel stands assembled from the same readers — the held root of the gate's own Nexus, the D4 shadow ring, the PersonaGroup grant ring, the one sorter over that Nexus's posture, and the withdrawal memory a sovereign gate keeps across a restart. The bundle comes from the composer under the tier's own root door; the session table from the route's own consumer."
@@ -16,7 +15,7 @@ uri-path    = "ha.ka.ba/lararium/node/vessel-gates"
 written     = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The vessel's gates ~ one assembly for every gate a node stands
 
@@ -26,7 +25,7 @@ their sessions, never the readers. `vesselGate` is the one place those readers m
 
 <<~/ahu>>
 
-<<~ ahu #/the-readers>>
+<<~ ahu slot=`#/the-readers`>>
 
 !! What every gate of one vessel reads
 
@@ -41,7 +40,7 @@ aside holds no same-operator seat, whatever it proves (house ruling "A device se
 
 <<~/ahu>>
 
-<<~ ahu #/the-bundle-and-the-table>>
+<<~ ahu slot=`#/the-bundle-and-the-table`>>
 
 !! The bundle and the table come from outside
 
@@ -52,18 +51,18 @@ vessel's own log through `onRefuse`; the wire never carries it.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-node/src/vessel-gates.ts" family="code" role="has">>
-<<~ pranala #gate from="?" -> to="packages/lararium-mesh/src/face-gate.ts" family="code" role="stands">>
-<<~ pranala #sorter from="?" -> to="packages/lararium-node/src/socket-sorter.ts" family="code" role="arms-with">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/vessel-gates.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#gate` from=`?` to=`packages/lararium-mesh/src/face-gate.ts` family=`code` role=`stands`>>
+<<~ pranala slot=`#sorter` from=`?` to=`packages/lararium-node/src/socket-sorter.ts` family=`code` role=`arms-with`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/socket-sorter">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/open-node-vessel">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/socket-sorter`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/open-node-vessel`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PzqVDJqsQEyCX_6vEMuTLjDmGdXpoB1uu2icnVmeFGU
+<<^ code=`&#x0003;`>>ni:///sha-256;crhLMwyCKjsmM8TM4-E3eEQghSmNSdOoK7NALhFsN3s
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

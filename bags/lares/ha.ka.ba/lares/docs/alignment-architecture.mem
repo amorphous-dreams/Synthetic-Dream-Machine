@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/alignment-architecture">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/alignment-architecture`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/alignment-architecture.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 15
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/alignment-architecture"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/thesis>>
+<<~ ahu slot=`#/thesis`>>
 
 ! The Lararium — Alignment Architecture
 
@@ -40,7 +39,7 @@ The home-intranet RPG (a Referee running encounters across player wikis) reads a
 
 <<~/ahu>>
 
-<<~ ahu #/foundation>>
+<<~ ahu slot=`#/foundation`>>
 
 !! The Vessel-Swarm Foundation
 
@@ -54,7 +53,7 @@ The alignment relation and the HUD both stand on this floor. The chat-island exc
 
 <<~/ahu>>
 
-<<~ ahu #/hud-in-chat>>
+<<~ ahu slot=`#/hud-in-chat`>>
 
 !! The HUD Runs in Chat, from Wiki Primitives
 
@@ -69,7 +68,7 @@ The shore runs both directions, and ''Lares wields AI tools to complete the retu
 
 <<~/ahu>>
 
-<<~ ahu #/graceful-import>>
+<<~ ahu slot=`#/graceful-import`>>
 
 !! Graceful Import — Foreign Data Rises Up the Pono Ladder
 
@@ -81,7 +80,7 @@ This pairs with the HUD shore as one motion in two directions: ''world → wiki'
 
 <<~/ahu>>
 
-<<~ ahu #/quine>>
+<<~ ahu slot=`#/quine`>>
 
 !! The Quine (P1–P4)
 
@@ -96,7 +95,7 @@ The quine runs as an ''asymptote'' — P3 drives validation partially, P4 awaits
 
 <<~/ahu>>
 
-<<~ ahu #/uefn-ontology>>
+<<~ ahu slot=`#/uefn-ontology`>>
 
 !! UEFN Ontology Alignment
 
@@ -123,7 +122,7 @@ UEFN (Unreal Editor for Fortnite) and its Verse language supply a mature vocabul
 
 <<~/ahu>>
 
-<<~ ahu #/island-model>>
+<<~ ahu slot=`#/island-model`>>
 
 !! The Island Model — Five Self-Similar Scales
 
@@ -137,7 +136,7 @@ A UEFN island holds its own devices, playspace, and causal clock; its event hori
 
 <<~/ahu>>
 
-<<~ ahu #/channel-device>>
+<<~ ahu slot=`#/channel-device`>>
 
 !! The Event-Bus Bag (channel_device)
 
@@ -154,7 +153,7 @@ payload = "JSON-encoded string"
 
 <<~/ahu>>
 
-<<~ ahu #/hud-scales>>
+<<~ ahu slot=`#/hud-scales`>>
 
 !! The HUD at Every Scale
 
@@ -170,7 +169,7 @@ Every layer uses one stack: tiddlers in bags, bags in recipes, recipes in TW5, r
 
 <<~/ahu>>
 
-<<~ ahu #/operator-alignment>>
+<<~ ahu slot=`#/operator-alignment`>>
 
 !! AI-Operator Alignment as First-Class Architecture
 
@@ -187,7 +186,7 @@ Four invariants follow:
 
 <<~/ahu>>
 
-<<~ ahu #/magical-federated-mesh>>
+<<~ ahu slot=`#/magical-federated-mesh`>>
 
 !! Position in the Magical Federated Mesh
 
@@ -197,23 +196,23 @@ The general pattern: N operators on N nodes sharing M bags across K federation e
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/hud">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/hud">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/the-lares-protocols">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/worker-message-protocol">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/hud`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/hud`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/the-lares-protocols`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/worker-message-protocol`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/quine-principles">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/attention-scale">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/quine-principles`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-event-lattice`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/federated-causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/attention-scale`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PwVaYZj56Jhsbnk91ihjtHNOeLSJLAlaDA0PYrUTn8U
+<<^ code=`&#x0003;`>>ni:///sha-256;pfGpnKXJ8QDO4bnCKhyZWM0kAdVMC_WHB98lgiHeGD0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

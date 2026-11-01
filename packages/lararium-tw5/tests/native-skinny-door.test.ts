@@ -26,7 +26,7 @@ const ROOT = "lar:///t/a";
 
 function wiki(dial?: string) {
   const store = new Map<string, TiddlerFields>();
-  store.set(ROOT, { title: ROOT, type: CARRIER_TYPE, text: "<<~ kahea ahu #/p>>", "uri-path": "t/a" });
+  store.set(ROOT, { title: ROOT, type: CARRIER_TYPE, text: "<<~ kahea ahu slot=`#/p`>>", "uri-path": "t/a" });
   store.set(`${ROOT}#/p`, { title: `${ROOT}#/p`, type: CARRIER_TYPE, text: "! p", "$fragment-parent": ROOT, "$slot": "#/p" });
   store.set("lar:///t/plain", { title: "lar:///t/plain", text: "prose" });
   if (dial !== undefined) store.set("$:/config/lares/memes/fat-children", { title: "$:/config/lares/memes/fat-children", text: dial });

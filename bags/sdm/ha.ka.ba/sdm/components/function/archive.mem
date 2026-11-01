@@ -1,12 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/function/archive">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/components/function/archive`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
 caption   = "archive"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/function/archive.mem"
 l-space   = "sdm"
 mana      = 13
 manao     = 16
@@ -19,7 +18,7 @@ uri-path  = "ha.ka.ba/sdm/components/function/archive"
 
 ! Archive
 
-<<~ ahu #/definition>>
+<<~ ahu slot=`#/definition`>>
 
 !! Definition
 
@@ -27,7 +26,7 @@ Storing to and retrieving from a noospheric record — the handshake that asks a
 
 <<~/ahu>>
 
-<<~ ahu #/activation>>
+<<~ ahu slot=`#/activation`>>
 
 !! Activation
 
@@ -35,7 +34,7 @@ Opens a channel to a stored corpus: query it, deposit into it, or authenticate a
 
 <<~/ahu>>
 
-<<~ ahu #/interaction>>
+<<~ ahu slot=`#/interaction`>>
 
 !! Interaction
 
@@ -43,7 +42,7 @@ Pairs with `function/magic-decode` (decode then fetch meaning) and `domain/divin
 
 <<~/ahu>>
 
-<<~ ahu #/filters>>
+<<~ ahu slot=`#/filters`>>
 
 !! Filters
 
@@ -54,7 +53,7 @@ Pairs with `function/magic-decode` (decode then fetch meaning) and `domain/divin
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -62,14 +61,14 @@ Pairs with `function/magic-decode` (decode then fetch meaning) and `domain/divin
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/components/tag`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yvLs6FnSawLXIXdw5fTIkBk3GSrcwoDwj9qfuUsWuD4
+<<^ code=`&#x0003;`>>ni:///sha-256;j7EQvDFltcgwQQCFZHuZyK9zs4kVXlvI3jJWu0L3ncI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

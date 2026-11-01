@@ -5,7 +5,7 @@
  *   · an IN-PROCESS island peer (no WS socket) — a house member — shares FREELY (empty relay ring);
  *   · a SIBLING (proven over the sibling channel, under the peer id its proven device key derives) — a device of
  *     the mounted face's PersonaGroup — holds STANDING, never the house: the sibling gate alone decides it (the face's
- *     own planes and the public boards; never the @daemon, never another face's planes). It decides FIRST; an id a
+ *     own planes and the public boards; never the daemon-plane, never another face's planes). It decides FIRST; an id a
  *     WS socket also holds denies;
  *   · a SAME-OPERATOR WS peer — a face the gate read admitted, with its PersonaGroup's grant and no fleet shadow —
  *     holds TRANSPORT, never a blanket (D3, "Sharing after the gate"): the gate of the face the session PROVED

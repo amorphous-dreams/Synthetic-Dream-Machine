@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/the-convergent-claim-research-report-9c49fc">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/the-convergent-claim-research-report-9c49fc`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/the-convergent-claim-research-report-9c49fc.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -18,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/the-convergent-claim-research-report-9c49fc"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! THE CONVERGENT CLAIM — research report
 
@@ -28,7 +27,7 @@ The three largest messages one research spirit wrote, ''held verbatim and unedit
 
 <<~/ahu>>
 
-<<~ ahu #/message-1>>
+<<~ ahu slot=`#/message-1`>>
 
 !! Message 1 ~ 49,008 characters
 
@@ -428,7 +427,7 @@ The word "revocation" does not appear in RFC 9172's key-management section. RFC 
 
 <<~/ahu>>
 
-<<~ ahu #/message-2>>
+<<~ ahu slot=`#/message-2`>>
 
 !! Message 2 ~ 23,012 characters
 
@@ -600,12 +599,12 @@ McDaniel & Rubin's rebuttal to Rivest (Springer auth wall; abstract publisher-el
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;s_73o3f5b4U3moAY2-EonV73PHPEGcNCkTd1oXS_FF4
+<<^ code=`&#x0003;`>>ni:///sha-256;SpJnJFPw-Y4joCF6CBBXBzU3z8kTwV-TZpivE0MNQD8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,54 +1,53 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/dispatcher">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/dispatcher`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/dispatcher.mem"
 mana      = 18
 manao     = 17
 manaoio   = 17
 namespace = "&#x2299;"
-role      = "~ dispatcher sigil — routes <<~ name args>> to the named ~procedure; the entry point for all sigil dispatch"
+role      = "~ dispatcher sigil — routes <<~ name key=`value`>> to the named ~procedure; the entry point for all sigil dispatch"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-dispatcher"]
 title     = "lar:///ha.ka.ba/lares/api/pono/dispatcher"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/dispatcher"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! ~ Dispatcher
 
-The root dispatch sigil. `<<~ name p1 p2 …>>` routes to the `\widget ~name` or
+The root dispatch sigil. ``<<~ name key=`value` …>>`` routes to the `\widget ~name` or
 `\procedure ~name` body registered in the current tiddler scope.
 
-The `~` widget receives `name` and `p1`–`p5` positional arguments and transcludes
+The `~` widget receives the sigil `name` and every NAMED parameter the call bound, and transcludes
 `$variable=[name prefixed with ~]`. This makes every operator-defined `\widget ~sigil`
-callable as `<<~ sigil args>>` without any JS registration.
+callable as ``<<~ sigil key=`value`>>`` without any JS registration.
 
 The `~` dispatcher carries the SharktoothSigil tag, making it first-class in the
 grammar: new sigils need only a tiddler — no code change required.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ sense the sigil name — what named body does this invocation reach?
 ⏿ orient: dispatcher looks up `~name` in TW5 procedure/widget namespace; delegates via $transclude
-   ⚠ A SECOND WORD NAMING A CHILD SLOT OPENS A COMPOUND. `<<~ season kau …>>` resolves `~season~kau`,
-     never `~season` with a positional `kau` — the child-slot words stand as `ahu` and `kau`, and any
-     sigil whose second word spells one of them binds a compound head. Measured against a definition
+   ⚠ A SECOND WORD NAMING A CHILD SLOT OPENS A COMPOUND. A call whose head `season` carries `kau` as its
+     second word resolves `~season~kau`, never `~season` with a value `kau` — the child-slot words stand
+     as `ahu` and `kau`, and any sigil whose second word spells one of them binds a compound head. Measured against a definition
      that stood and a call that reached nothing.
    ⚠ AND THE SPACE AFTER THE SHARKTOOTH BINDS. `<<~name …>>` written tight opens no head and falls to
      the gradient; the space carries the decision. Measured across 365 calls that each looked live.
 ◇ name MUST match a declared `\widget ~name` or `\procedure ~name` in accessible scope
-▶ emit a TRANSCLUDE naming `~name` directly, carrying p1–p5, the argument run whole as `args`,
+▶ emit a TRANSCLUDE naming `~name` directly, carrying the argument run whole as `args`,
   the verbatim source as `src`, and every NAMED parameter the call bound — TiddlyWiki hands a
   procedure only the parameters it declares, so a generic forwarder could pass none of them on
 ↺ named body renders in place; no edge created; pure render-time delegation. Where the name
@@ -58,43 +57,44 @@ grammar: new sigils need only a tiddler — no code change required.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
 The dispatcher MUST route via `\widget ~` — not direct JS widget lookup.
-The dispatcher MUST accept `name` and `p1`–`p5` positional arguments only.
+The dispatcher MUST route the head `name` and forward every NAMED parameter the call bound; a house sigil call names every value (the grammar law, [MEMETIC-WIKITEXT] #/named-parameters).
 The dispatcher MUST NOT carry `mode=` or other render-posture params — posture lives in the named body.
 A dispatched sigil MUST stand declared as `\widget ~name` or `\procedure ~name` in accessible tiddler scope.
 Undefined names resolve to empty output (TW5 missing-variable behavior) — MUST NOT throw.
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```text
 <<~ name>>
-<<~ name uri>>
-<<~ name arg1 arg2>>
+<<~ name uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ name key=`value` other-key=`value`>>
 ```
 
 TW5 wikitext body:
+
 ```
-\widget ~(name p1:"" p2:"" p3:"" p4:"" p5:"")
-<$transclude $variable={{{ [<name>addprefix[~]] }}} p1=<<p1>> p2=<<p2>> p3=<<p3>> p4=<<p4>> p5=<<p5>>/>
+\widget ~(name args:"" src:"")
+<$transclude $variable={{{ [<name>!is[blank]addprefix[~]] }}} args=<<args>>><$text text=<<src>>/></$transclude>
 \end
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fN4DaZepmeMlcvOxRdNaXYBGNuiDJbKL12zNJOcA3kk
+<<^ code=`&#x0003;`>>ni:///sha-256;FoUJielOWuYsUyMGnSwZac9RFPj4aOoVH_cLv9ocrrc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

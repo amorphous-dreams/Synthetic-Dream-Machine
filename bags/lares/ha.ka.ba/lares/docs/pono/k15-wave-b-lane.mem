@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/k15-wave-b-lane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/k15-wave-b-lane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/k15-wave-b-lane.mem"
 l-space   = "adjacent"
 role      = "the Wave B lane's kit and the controller's forward plan: K15 step 3 with F6 slice three and B1's admit guard as one joint lane, the stories that draw it, the reds in grounds-before-wins order, the crew in very large work chunks under the mixed-model-swarm protocols, the house's talk-story style, and the road past it"
 status    = "draft"
@@ -14,30 +13,30 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/k15-wave-b-lane"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Wave B ~ one face, one session, one sealer
 
 The controller (Opus) writes this kit on 2026-10-20 as the brief of a Sonnet Episkopos, and as the forward plan a later seat reads. The operator chose to keep the controller's context standing, so this kit carries what a handoff would carry: where the road stands, the lane to launch, how the house works, and what stays open.
 
-Wave B builds three roadmap rows as ONE joint lane, since each needs the others to read green: `K15` step 3 (sessions and registries routed by one face, no union), `F6` slice three (the Repo moves into the browser holder, and its sealed writes go to the asker, each sealer holding its own row class's key), and `B1`'s owed admit guard (the holder answers a port only for a session it admitted, and the last session of a face to close locks that face's hive). The rows stand at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>; the rulings they enact stand at its #/rulings.
+Wave B builds three roadmap rows as ONE joint lane, since each needs the others to read green: `K15` step 3 (sessions and registries routed by one face, no union), `F6` slice three (the Repo moves into the browser holder, and its sealed writes go to the asker, each sealer holding its own row class's key), and `B1`'s owed admit guard (the holder answers a port only for a session it admitted, and the last session of a face to close locks that face's hive). The rows stand at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>; the rulings they enact stand at its #/rulings.
 
 <<~/ahu>>
 
-<<~ ahu #/where-the-road-stands>>
+<<~ ahu slot=`#/where-the-road-stands`>>
 
 !! Where the road stands (2026-10-20)
 
 * ''The span'' reads green at `c211cd68f`, CI and held-out both: the K15 step 0 census (#70), the archive-row selector trace (#71) and the owned-store control (#77) stand merged.
 * ''The atom cut'' (`K15` step 2c, lane `--k15-atom-cut`) stands joined and under its whole check: a random atom per (vessel, PersonaGroup), sealed under that face's custody, signs every act on the face's behalf on node and browser; the device seed and the place seed keep the floor's duties alone. Its joined lanes: the mesh atom (#75), the browser half with its cross-face archive guard, the floor that boots faceless until its atom lights, and the face-join grant ordered by a verified serial. Wave B launches only once the atom cut stands merged on a green span.
 * ''DreamDom-Wright'' (Sonnet) holds #72 (`D6`, three engines), #73 (`D13`, the whole-road golden) and #74 (`D11`, host-bound titles), rebased onto `c211cd68f`, and #76 (the browser's second-boot pin), whose cure the atom cut already carries.
-* ''The work swarm stands whole again'' (operator, 2026-10-20: Codex's budget refreshed): each lane runs a Sonnet Episkopos with two enacting seats, a Codex Sol-6 and a Copilot `gpt-5.3-codex` at medium effort (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">> #/the-shapes).
+* ''The work swarm stands whole again'' (operator, 2026-10-20: Codex's budget refreshed): each lane runs a Sonnet Episkopos with two enacting seats, a Codex Sol-6 and a Copilot `gpt-5.3-codex` at medium effort (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>> #/the-shapes).
 
 <<~/ahu>>
 
-<<~ ahu #/the-stories>>
+<<~ ahu slot=`#/the-stories`>>
 
 !! The stories ~ what Wave B makes true
 
@@ -51,7 +50,7 @@ Wave B builds three roadmap rows as ONE joint lane, since each needs the others 
 
 <<~/ahu>>
 
-<<~ ahu #/the-reds>>
+<<~ ahu slot=`#/the-reds`>>
 
 !! The reds ~ grounds before wins, each red-first with a control
 
@@ -67,22 +66,22 @@ Each red lands as its own commit, red on that commit, before its cure; each cont
 
 <<~/ahu>>
 
-<<~ ahu #/the-crew>>
+<<~ ahu slot=`#/the-crew`>>
 
 !! The crew ~ very large work chunks under the mixed-model-swarm protocols
 
 ''We work in very large work chunks under the mixed-model-swarm protocols'' (operator, 2026-10-19). Wave B runs as ONE joint lane, one sub-branch (`feature/green-jello-dinosaur-5--k15-wave-b`) and one pull request, tested whole once, merged by train. It does not split into a PR per slice; the lead lands the reds and cures as commits in grounds-before-wins order and hands the lane back once.
 
 * ''The Episkopos'' (Sonnet) leads: it briefs each seat from one brief file, reads every build, runs the suites and `witness-all` itself, lands every commit from its own tree with `git commit -F <msg> --only -- <paths>`, and talks a design fork out with the controller before it builds across one.
-* ''Two enacting seats'': one Codex Sol-6, launched as the walled Codex spirit (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">> #/the-launch), and one Copilot `gpt-5.3-codex` at medium effort through `launch-copilot-builder.sh` (a read through `launch-copilot.sh`). Both build in the ONE worktree the lead provisions (`node tools/provision-worktree.mjs <dir>`), one writer at a time, and a seat that writes in parallel works in a worktree of its own that the lead merges from. Each seat builds or reads as the work pulls, and a seat never reads a diff it wrote. Sol and `gpt-5.3-codex` share the OpenAI lineage, so their cross-read counts once; the Episkopos reads every build as the second lineage.
+* ''Two enacting seats'': one Codex Sol-6, launched as the walled Codex spirit (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>> #/the-launch), and one Copilot `gpt-5.3-codex` at medium effort through `launch-copilot-builder.sh` (a read through `launch-copilot.sh`). Both build in the ONE worktree the lead provisions (`node tools/provision-worktree.mjs <dir>`), one writer at a time, and a seat that writes in parallel works in a worktree of its own that the lead merges from. Each seat builds or reads as the work pulls, and a seat never reads a diff it wrote. Sol and `gpt-5.3-codex` share the OpenAI lineage, so their cross-read counts once; the Episkopos reads every build as the second lineage.
 * ''Split by ground'': the Sol takes the judgment-heavy half (the node routing and the isolation red), the Copilot the browser holder and the mechanical modules; the composer hunks pass through the Episkopos alone.
 * ''The controller'' reads the lane's whole diff before merge, the lane's CI and held-out both, and merges it by train onto a span that reads green.
 
-The lane law stands at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">> #/the-lane-law and the swarm's at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>: red-first per commit; no `git stash`; never `--no-verify`; a scratch `LAR_ROOT` per vessel and no global `LAR_BAGS`; a kill names its own pid; a push only while no CI run stands in flight on that branch; `node tools/ci-verdict.mjs --branch <b> --head <sha>` read after each push; `node tools/e2e-shards.mjs push <lane>`; `tools/witness-all.sh` before the handback; every touched package's whole suite over the built tree.
+The lane law stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> #/the-lane-law and the swarm's at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>: red-first per commit; no `git stash`; never `--no-verify`; a scratch `LAR_ROOT` per vessel and no global `LAR_BAGS`; a kill names its own pid; a push only while no CI run stands in flight on that branch; `node tools/ci-verdict.mjs --branch <b> --head <sha>` read after each push; `node tools/e2e-shards.mjs push <lane>`; `tools/witness-all.sh` before the handback; every touched package's whole suite over the built tree.
 
 <<~/ahu>>
 
-<<~ ahu #/the-house-style>>
+<<~ ahu slot=`#/the-house-style`>>
 
 !! The house style ~ how the crew talks
 
@@ -93,7 +92,7 @@ The lane law stands at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-ha
 
 <<~/ahu>>
 
-<<~ ahu #/open-joints>>
+<<~ ahu slot=`#/open-joints`>>
 
 !! Open joints ~ carried, owned, not built in Wave B
 
@@ -105,7 +104,7 @@ The lane law stands at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-ha
 
 <<~/ahu>>
 
-<<~ ahu #/the-road-past-it>>
+<<~ ahu slot=`#/the-road-past-it`>>
 
 !! The road past Wave B ~ the controller's forward plan
 
@@ -117,6 +116,6 @@ The lane law stands at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-ha
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;y0n9BJQcs1cCSrKCO5ndr7QfyfRfjGLbRmovd4hDMfg
+<<^ code=`&#x0003;`>>ni:///sha-256;zdG84MsbVjJzkkw_MpS5-VwVHVrSa8UoJrPSHUe-6Aw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

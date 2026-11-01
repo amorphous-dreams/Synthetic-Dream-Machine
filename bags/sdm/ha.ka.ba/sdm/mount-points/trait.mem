@@ -1,12 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/mount-points/trait">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/mount-points/trait`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
 caption   = "trait"
-file-path = "bags/sdm/ha.ka.ba/sdm/mount-points/trait.mem"
 l-space   = "sdm"
 mana      = 16
 manao     = 17
@@ -17,13 +16,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/mount-points/trait"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
 ! Mount-Point — Trait
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -31,7 +30,7 @@ A Trait seats a Power ''in the practitioner'': engraved as memetic code, sung in
 
 <<~/ahu>>
 
-<<~ ahu #/activation>>
+<<~ ahu slot=`#/activation`>>
 
 !! Activation
 
@@ -39,7 +38,7 @@ A trait-seated Power activates from the self — range and target measured from 
 
 <<~/ahu>>
 
-<<~ ahu #/cost>>
+<<~ ahu slot=`#/cost`>>
 
 !! Cost
 
@@ -47,7 +46,7 @@ Pay Life equal to P (Ability Points at 1:1 parity). Double without the relevant 
 
 <<~/ahu>>
 
-<<~ ahu #/failure>>
+<<~ ahu slot=`#/failure`>>
 
 !! Failure
 
@@ -55,7 +54,7 @@ A failed activation runs the Danger Roll → Corruption procedure. Corruption on
 
 <<~/ahu>>
 
-<<~ ahu #/removal>>
+<<~ ahu slot=`#/removal`>>
 
 !! Removal
 
@@ -63,7 +62,7 @@ Traits resist casual removal. Re-engraving, corruption treatment, or a Path feat
 
 <<~/ahu>>
 
-<<~ ahu #/overflow>>
+<<~ ahu slot=`#/overflow`>>
 
 !! Overflow
 
@@ -71,7 +70,7 @@ Past capacity, additional patterns become Burdens (−1 to all rolls each) or wa
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -79,14 +78,14 @@ Past capacity, additional patterns become Burdens (−1 to all rolls each) or wa
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/mount-points/storage-class">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/mount-points/storage-class`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sEmDa-vzVBfpVBF1FEuHQTE-IrJAlKhDlKHfpL9ta8E
+<<^ code=`&#x0003;`>>ni:///sha-256;J97DBd5iumg9dm_sj9CmpmDiefkN67zmz7pu0SvlEBM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

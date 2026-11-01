@@ -360,7 +360,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     const orphan = `${x}#/gone`;
     await seedRecords(r, [{ title: x, text: "plain" }, { title: orphan, text: "old child", "$fragment-parent": x }]);
     await r.adaptor.armSeedCheckpoint();
-    const body = `<<^ code="&#x0001;" from="?" -> to="${x}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${x.slice(7)}"\n\`\`\`\n\n<<~ ahu #/a>>\n\n! body\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+    const body = `<<^ code=\`&#x0001;\` from=\`?\` to=\`${x}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${x.slice(7)}"\n\`\`\`\n\n<<~ ahu slot=\`#/a\`>>\n\n! body\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
     const d = openDraft(r, x, "");
     await afterDispatch();
     typeInto(r, d, body);
@@ -827,7 +827,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, retries and shadows${skipNote}
     await r.draft.put({ tiddler: { title: orphan, text: "old child", "$fragment-parent": x } }, remote);
     await turns();
     await r.adaptor.armSeedCheckpoint();
-    const body = `<<^ code="&#x0001;" from="?" -> to="${x}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${x.slice(7)}"\n\`\`\`\n\n<<~ ahu #/a>>\n\n! body\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+    const body = `<<^ code=\`&#x0001;\` from=\`?\` to=\`${x}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${x.slice(7)}"\n\`\`\`\n\n<<~ ahu slot=\`#/a\`>>\n\n! body\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
     const d = openDraft(r, x, "");
     await afterDispatch();
     typeInto(r, d, body);

@@ -21,6 +21,7 @@
  * reach rides the daemon verb rail `lares meme get` already uses, which any vessel holding the cap can run.
  * Every URI here comes HARVESTED from the owning module's own `Meme:` header — never invented at this seat.
  */
+import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
 
 export interface CommandHelp {
   /** the spine an operator greps for: `usage: lares <door> <a | b | c>`. */
@@ -345,8 +346,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares sense search \"entrance block\" --lens structure   # hybrid recall over a plane",
       "lares sense status --lens content                       # wings · rooms · entities · total",
-      "lares sense recall keyhive convergent removal           # stamp-filtered verbatim drawers",
-      "lares sense recall fork --voice Council --band canon     # filters compose (AND)",
+      "lares sense recall keyhive convergent removal           # verbatim drawers",
+      "lares sense recall fork --speaker operator --surface claude  # filters compose (AND)",
       "lares sense pour --all                                  # the sovereign re-pave (all sources)",
       "lares sense worldline 0425c035                          # walk a session's spirit tree",
       "lares sense teardown --confirm --drain                  # tear the planes for a clean re-pave",
@@ -357,7 +358,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "--lens <plane>  content | structure | form | persistence (default content) — READ verbs",
       "--wing <w>      scope to one project wing",
-      "--voice/--band/--agent/--surface/--drift   recall stamp filters (compose AND, honest counts)",
+      "--agent/--surface/--speaker/--channel/--function   recall filters (compose AND; need a query)",
       "--imago <id>    (recall) fetch one imago verbatim; --list lists imagines",
       "--all           (pour) sweep every transcript source",
       "--trial-root <absolute named root>  frozen Claude serving operation; trial-run/search/status only",
@@ -403,7 +404,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
         "`list --recipe` names the roots the wiki's whole stack resolves (a removed carrier lists nowhere); " +
         "`list --bag` names that one bag's own",
       "--dest-bag <uri>   (promote) the canon bag crossed into; the cap is read against this name",
-      "--approval <file>  (promote) the seats' approval over these exact bytes; a crossing into @crossroads refuses without one",
+      `--approval <file>  (promote) the seats' approval over these exact bytes; a crossing into the ${PLANE_LABELS.crossroads} refuses without one`,
       "--nexus <aid>      (promote) the Nexus whose charter reads the approval",
       "--gradient         (check) name each file's kind and the marks that kind requires and lacks",
       "--edges            (check) name the addresses these carriers point at, and which of them answer",

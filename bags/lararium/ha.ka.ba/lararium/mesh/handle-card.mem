@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/handle-card">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/handle-card`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/handle-card.mem"
 l-space     = "lararium"
 mana        = 15
 role        = "invariant law: a Handle is a QUORUM-PRESENTED NAME, and its card is what one such name shows the world. Names the k-of-n HandleGlamour (the owner-set generalises the lone key, 1-of-1 the degenerate personal face), the self-certifying card, the owner-binding folded into the prefix, the four moves (rotation · burn · graft · attest), and the TWO verification tiers — self-contained structure ⊥ board-checked presentation authority."
@@ -15,7 +14,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/handle-card"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Handle ~ a quorum-presented name, recognised by its own key
 
@@ -28,7 +27,7 @@ knows them one human is never published.
 
 <<~/ahu>>
 
-<<~ ahu #/the-mu>>
+<<~ ahu slot=`#/the-mu`>>
 
 !! The k-of-n HandleGlamour ~ a Handle is a quorum-presented name, not a lone key (operator, 2026-09-08)
 
@@ -45,7 +44,7 @@ civic tier. `mintHandleInception` keeps the single-owner path ergonomic as sugar
 
 <<~/ahu>>
 
-<<~ ahu #/self-certifying>>
+<<~ ahu slot=`#/self-certifying`>>
 
 !! The card certifies ITSELF ~ the name contains the key
 
@@ -68,7 +67,7 @@ re-presents blind.
 
 <<~/ahu>>
 
-<<~ ahu #/causal-publication-frontier>>
+<<~ ahu slot=`#/causal-publication-frontier`>>
 
 !! Causal, self-certifying, frontier-linked ~ a face carried over time
 
@@ -99,7 +98,7 @@ nym before the card exists, so no circle forms.
 
 <<~/ahu>>
 
-<<~ ahu #/the-chain>>
+<<~ ahu slot=`#/the-chain`>>
 
 !! The handle-KEL ~ a SIBLING grammar to the persona-KEL, never an extension
 
@@ -217,7 +216,7 @@ a claim made under a key-state says nothing about the state that replaced it.
 
 <<~/ahu>>
 
-<<~ ahu #/two-tiers>>
+<<~ ahu slot=`#/two-tiers`>>
 
 !! Two verification tiers ~ self-contained structure ⊥ board-checked presentation
 
@@ -255,7 +254,7 @@ plane, kept as an interface so this module never imports the persona-KEL.
 
 <<~/ahu>>
 
-<<~ ahu #/public-by-design>>
+<<~ ahu slot=`#/public-by-design`>>
 
 !! Public by design ~ one chain per call, no registry surface
 
@@ -285,18 +284,18 @@ forgery rides it too and dies at the recogniser, and the writer's arity itself s
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/handle-card.ts" family="code" role="has">>
-<<~ pranala #chain from="?" -> to="packages/lararium-mesh/src/handle-kel.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-mesh/src/handle-card.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#chain` from=`?` to=`packages/lararium-mesh/src/handle-kel.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/persona-kel">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/persona-kel`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/identity-classes`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/registry-filter`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ngWkxY-7FVGVqbj7uDXwutw79ncKoXjowIuUNK2V3Ik
+<<^ code=`&#x0003;`>>ni:///sha-256;QW2PsUe2gTBliDx5FQHIjfDJ6AORKm3N2Z3PivH-SDw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

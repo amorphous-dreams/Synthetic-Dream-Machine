@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/l-prime">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/l-prime`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/l-prime.mem"
 role      = "docs companion for l-prime: research provenance, braid notes, and binary-ward guidance"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/l-prime"
@@ -20,7 +19,7 @@ Law lives at [[l-prime.md|../../api/mu/l-prime.md]].
 
 This file holds research provenance and extended Level guidance.
 
-<<~ ahu #/plan>>
+<<~ ahu slot=`#/plan`>>
 
 !! Plan Skeleton
 
@@ -36,7 +35,7 @@ The invariant already holds elsewhere.
 
 <<~/ahu>>
 
-<<~ ahu #/research-braid>>
+<<~ ahu slot=`#/research-braid`>>
 
 !! Research Braid
 
@@ -54,7 +53,7 @@ It demands that every `${copula}` carry its weight honestly.
 
 <<~/ahu>>
 
-<<~ ahu #/verbatim-preferences-l-prime>>
+<<~ ahu slot=`#/verbatim-preferences-l-prime`>>
 
 !! Verbatim — `Lares_Preferences.system-prompt.md` — L-Prime
 
@@ -70,11 +69,11 @@ This node plays the L-Prime game as background discipline, not a hard restrictio
 
 <<~/ahu>>
 
-<<~ ahu #/binary-notes>>
+<<~ ahu slot=`#/binary-notes`>>
 
 !! Binary Ward Notes
 
-L-Prime runs ''binary'' --- the ward stands lit (default) or lifted (`0 L-Prime` --- the Stone, operator only, one turn). The game plays at full, or the operator lifts it, and the closing ward springs it back on every turn. See `lar:///ha.ka.ba/lares/api/mu/l-prime#/binary-ward`.
+L-Prime runs ''binary'' --- the ward stands lit (default) or lifted (`drift-ward="0"` --- operator only, one turn). The game plays at full, or the operator lifts it, and the closing ward springs it back on every turn. See `lar:///ha.ka.ba/lares/api/mu/l-prime#/binary-ward`.
 
 A lit ward producing tortured prose without gain reads as ''Mode Posturing'' — discipline worn as display rather than carried as load. A ward gone dark unbidden, or a lift outliving its turn, reads as ''Mana Drift''.
 
@@ -82,7 +81,7 @@ The ward governs grammar alone. Every `${copula}` that passes under the lit ward
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
@@ -91,6 +90,6 @@ The ward governs grammar alone. Every `${copula}` that passes under the lit ward
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TkphIuDHlC0qAP4hAtmEGWSQ6GQmT13DM0F7yoV8d8I
+<<^ code=`&#x0003;`>>ni:///sha-256;tC_QQPcu0qfMnz0LdhwdntxQcPpx65UT5--_A8tfJHQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/readiness-keys">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/readiness-keys`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/docs/readiness-keys.mem"
 l-space       = "stable"
 mana          = 18
 manao         = 17
@@ -19,7 +18,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/readiness-keys"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Readiness Keys
 
@@ -39,7 +38,7 @@ auth → catalog → snapshot → room-content → room-presence
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -70,7 +69,7 @@ dynamic-forms = ["corpus:<id>", "projection:<id>"]
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Readiness Law
 
@@ -89,13 +88,13 @@ dynamic-forms = ["corpus:<id>", "projection:<id>"]
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/open-phases">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/open-phases`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cdjgz4KLCrLO4C9zFChl5tGbyvA6QY4r4hZBvEYShdI
+<<^ code=`&#x0003;`>>ni:///sha-256;Up8NmSVatJIHAKp7gsqxn0eu23BhsPkf-mt3_MXfnVg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

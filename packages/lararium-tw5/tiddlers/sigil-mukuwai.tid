@@ -7,6 +7,6 @@ lar-pattern: <<~\s*mukuwai\s*>>
 lar-example: <<~ mukuwai>>
 type: text/vnd.tiddlywiki
 
-\procedure ~mukuwai(p2:"")
-<$transclude $variable="~" name=<<p2>>/>
+\procedure ~mukuwai(sigil:"")
+<$transclude $variable="~" name=<<sigil>>/>
 \end

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/worker-message-protocol">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/worker-message-protocol`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/worker-message-protocol.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/worker-message-protocol"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Worker Message Protocol — the StructuredClone Boundary
 
@@ -31,7 +30,7 @@ This meme lifts that protocol out of the alignment-architecture doctrine so oper
 
 <<~/ahu>>
 
-<<~ ahu #/boundary>>
+<<~ ahu slot=`#/boundary`>>
 
 !! What the Boundary Drops and Preserves
 
@@ -57,13 +56,14 @@ This meme lifts that protocol out of the alignment-architecture doctrine so oper
 
 <<~/ahu>>
 
-<<~ ahu #/envelope>>
+<<~ ahu slot=`#/envelope`>>
 
 !! Golden Principles — the Message Envelope
 
 The envelope's source of truth: `packages/lararium-mesh/src/island-protocol.ts`.
 
 ''GP-1 — A typed envelope.'' Every message MUST carry a `type` discriminant; its other fields ride flat beside it, each message type naming its own:
+
 ```json
 { "type": "<message-type>", "...": "the type's own fields" }
 ```
@@ -81,7 +81,7 @@ No naked payloads, and no version counter: a vessel and its islands run one buil
 
 <<~/ahu>>
 
-<<~ ahu #/prior-art>>
+<<~ ahu slot=`#/prior-art`>>
 
 !! Prior Art
 
@@ -92,7 +92,7 @@ No naked payloads, and no version counter: a vessel and its islands run one buil
 
 <<~/ahu>>
 
-<<~ ahu #/co-location>>
+<<~ ahu slot=`#/co-location`>>
 
 !! The Co-Location Insight
 
@@ -129,15 +129,15 @@ A browser camera renders inside the island and crosses the boundary twice, under
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/alignment-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-tiers">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/alignment-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-tiers`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qD5ugQmrvGG-DdV77KWzJthgomBuy_ExNJilb4ib4YE
+<<^ code=`&#x0003;`>>ni:///sha-256;pczC2payeHpeb19aJ5R3kOKLHW4AVkw1jxfkyODZyCQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,12 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/function/barrier">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/components/function/barrier`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
 caption   = "barrier"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/function/barrier.mem"
 l-space   = "sdm"
 mana      = 13
 manao     = 16
@@ -19,7 +18,7 @@ uri-path  = "ha.ka.ba/sdm/components/function/barrier"
 
 ! Barrier
 
-<<~ ahu #/definition>>
+<<~ ahu slot=`#/definition`>>
 
 !! Definition
 
@@ -27,7 +26,7 @@ Raising a physical or force wall — a held surface that blocks passage, line, o
 
 <<~/ahu>>
 
-<<~ ahu #/activation>>
+<<~ ahu slot=`#/activation`>>
 
 !! Activation
 
@@ -35,7 +34,7 @@ Manifests a span of barrier sized to P. It occupies space and must be sustained 
 
 <<~/ahu>>
 
-<<~ ahu #/interaction>>
+<<~ ahu slot=`#/interaction`>>
 
 !! Interaction
 
@@ -43,7 +42,7 @@ Pairs with `domain/abjuration` (defensive intent) and `domain/stuckforce` (a wal
 
 <<~/ahu>>
 
-<<~ ahu #/filters>>
+<<~ ahu slot=`#/filters`>>
 
 !! Filters
 
@@ -54,7 +53,7 @@ Pairs with `domain/abjuration` (defensive intent) and `domain/stuckforce` (a wal
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -62,14 +61,14 @@ Pairs with `domain/abjuration` (defensive intent) and `domain/stuckforce` (a wal
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/components/tag`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0AkVa3-CLm8gzHiHLhOEtzMbmkk-ETB6RTedddvhtpI
+<<^ code=`&#x0003;`>>ni:///sha-256;91YPmCOCeHixFZMTn-KtyPk381aq2-90hC3YqdtNxxg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

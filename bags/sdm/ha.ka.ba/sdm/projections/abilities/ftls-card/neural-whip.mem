@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/projections/abilities/ftls-card/neural-whip">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/projections/abilities/ftls-card/neural-whip`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/projections/abilities/ftls-card/neural-whip.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 17
@@ -19,7 +18,7 @@ uri-path  = "ha.ka.ba/sdm/projections/abilities/ftls-card/neural-whip"
 
 ! Neural Whip — FTLS Card
 
-<<~ ahu #/card>>
+<<~ ahu slot=`#/card`>>
 
 !! Neural Whip
 //The Biomancer's Reach//
@@ -30,7 +29,7 @@ A neural tentacle of stuckforce lashes out and strikes ''against Defense'' — n
 
 <<~/ahu>>
 
-<<~ ahu #/overcharge>>
+<<~ ahu slot=`#/overcharge`>>
 
 !! Overcharge
 
@@ -39,24 +38,24 @@ A neural tentacle of stuckforce lashes out and strikes ''against Defense'' — n
 
 <<~/ahu>>
 
-<<~ ahu #/components>>
+<<~ ahu slot=`#/components`>>
 
 !! Components
 
-<<~ kahea "lar:///ha.ka.ba/lararium/lists/components">>
+<<~ kahea uri=`lar:///ha.ka.ba/lararium/lists/components`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card">>
-<<~ loulou "lar:///ha.ka.ba/sdm/modules/abilities/neural-whip">>
-<<~ loulou "lar:///ha.ka.ba/sdm/procedures/tag-pill">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/modules/abilities/neural-whip`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/procedures/tag-pill`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ng3WEADtqN68RB1ps3NSX1Aqt0lXXstJL9xymt4_UdM
+<<^ code=`&#x0003;`>>ni:///sha-256;9nL8t0rq5ZtZeyPEWpR-9PVo-U3NGu8FGwUaB9aK8SM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

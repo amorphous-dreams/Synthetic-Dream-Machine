@@ -95,7 +95,7 @@ function listAfter(source: string, anchor: string, close: string): string[] {
 const COMPUTED_READS: Readonly<Record<string, { readonly sites: number; readonly names: () => string[] }>> = {
   // `reading(name)` reads `args.options[name]` and `name in args.flags` over the three sibling readings of `check`.
   "commands/meme":   { sites: 2, names: () => listAfter(code(resolve(SRC, "commands/meme.ts")), "const reading = (name: ", ")") },
-  // `filterKeys.some((k) => args.options[k] …)` and the loop that copies each filter into the verb's args.
+  // `filterKeys.filter((k) => args.options[k] …)` and the loop that copies each filter into the verb's args.
   "commands/recall": { sites: 3, names: () => listAfter(code(resolve(SRC, "commands/recall.ts")), "const filterKeys = [", "]") },
   // `posturePlan(Object.keys(a.flags).filter((k) => a.flags[k] === true))` hands on the names PRESENT on the
   // line; it reads no name of its own, and the posture table it feeds holds its own vectors.

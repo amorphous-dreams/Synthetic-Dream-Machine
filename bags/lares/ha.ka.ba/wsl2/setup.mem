@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/wsl2/setup">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/wsl2/setup`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/wsl2/setup.mem"
 l-space    = "stable"
 mana       = 14
 manao      = 15
@@ -18,7 +17,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/wsl2/setup"
 ```
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Windows 11 + WSL2 developer host
 
@@ -32,7 +31,7 @@ Windows-side steps run in PowerShell. Linux-side steps run inside the selected W
 
 <<~/ahu>>
 
-<<~ ahu #/preflight>>
+<<~ ahu slot=`#/preflight`>>
 
 !! 1 · Preconditions — Windows
 
@@ -71,7 +70,7 @@ Keep repositories under the distro's ext4 filesystem, such as `~/src/Synthetic-D
 
 <<~/ahu>>
 
-<<~ ahu #/scripts>>
+<<~ ahu slot=`#/scripts`>>
 
 !! 2 · Idempotent stands
 
@@ -108,7 +107,7 @@ The Windows stand reads the host first without elevation (edition, Windows accou
 
 <<~/ahu>>
 
-<<~ ahu #/resource-profile>>
+<<~ ahu slot=`#/resource-profile`>>
 
 !! 3 · Bounded VM profile — Windows
 
@@ -134,7 +133,7 @@ Run `wsl --shutdown` from Windows after a `.wslconfig` change, when no shell, da
 
 <<~/ahu>>
 
-<<~ ahu #/linux-profile>>
+<<~ ahu slot=`#/linux-profile`>>
 
 !! 4 · Linux profile — systemd and memory recovery
 
@@ -156,11 +155,11 @@ With inherited Windows PATH entries disabled, invoke the few Windows tools neede
 
 `earlyoom` receives `-m 5 -s 50`: it acts only when available memory falls below five percent and swap usage reaches fifty percent. `vm.swappiness=10` retains swap as a short recovery buffer. The combination protects interactive use from a runaway native compiler, parser, test, or WebAssembly process without pretending that a VM resource limit alone supplies graceful recovery.
 
-The memory-guard reasoning and the historical incident remain at <<~ loulou "lar:///ha.ka.ba/wsl2/memory-guard">> and <<~ loulou "lar:///ha.ka.ba/wsl2/incident-2026-09-18">>. They explain the pattern; they do not prescribe one operator's former machine layout.
+The memory-guard reasoning and the historical incident remain at <<~ loulou uri=`lar:///ha.ka.ba/wsl2/memory-guard`>> and <<~ loulou uri=`lar:///ha.ka.ba/wsl2/incident-2026-09-18`>>. They explain the pattern; they do not prescribe one operator's former machine layout.
 
 <<~/ahu>>
 
-<<~ ahu #/project>>
+<<~ ahu slot=`#/project`>>
 
 !! 5 · Repository tools — Linux
 
@@ -196,7 +195,7 @@ Use the first form for a process that respects a virtual-address cap. Prefer the
 
 <<~/ahu>>
 
-<<~ ahu #/verify>>
+<<~ ahu slot=`#/verify`>>
 
 !! 6 · Verify and repair
 
@@ -211,7 +210,7 @@ A witness drift states the local condition it could not verify. Repair only that
 
 <<~/ahu>>
 
-<<~ ahu #/settle>>
+<<~ ahu slot=`#/settle`>>
 
 !! 7 · Settle the host — stand, back up, update, heal, in that order
 
@@ -251,7 +250,7 @@ The update swaps the engine, never the distro: files, `/etc/wsl.conf`, the stand
 
 <<~/ahu>>
 
-<<~ ahu #/backup>>
+<<~ ahu slot=`#/backup`>>
 
 !! 8 · Back up and restore a distro — two ways
 
@@ -298,7 +297,7 @@ The registered path comes from the registry, never from memory: `Get-ItemPropert
 
 <<~/ahu>>
 
-<<~ ahu #/troubleshooting>>
+<<~ ahu slot=`#/troubleshooting`>>
 
 !! 9 · The seven errors a household meets
 
@@ -315,5 +314,5 @@ Two shapes a household also meets that carry no error text: the Linux password p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8a6r7BttDgh8C828NY9Gb13qIvrNtCFmTmtxQ2QXuvk
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0003;`>>ni:///sha-256;yY5eNxx6ev4-Ud1E3_oFH3K_oMkGP0mBOA7lM3QkNRE
+<<^ code=`&#x0004;` to=`?`>>

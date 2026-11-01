@@ -102,7 +102,7 @@ git -C "$WORK" reset -q -- "$SHELF/prism.md"
 # proves the gate's `projectMdCheck` path (not just the CLI's own `project` door) reads the record.
 step "⑥ a GFM+en pair recording its target → the gate re-projects WITH it, passes GREEN"
 cp "$PRISM_SRC" "$WORK/$SRC_DIR/prism-gfm.mem"
-sed -i 's#to="lar:///ha.ka.ba/lares/api/pono/prism"#to="lar:///ha.ka.ba/lares/api/pono/prism-gfm"#' "$WORK/$SRC_DIR/prism-gfm.mem"
+sed -i 's#to=`lar:///ha.ka.ba/lares/api/pono/prism`#to=`lar:///ha.ka.ba/lares/api/pono/prism-gfm`#' "$WORK/$SRC_DIR/prism-gfm.mem"
 ( cd "$WORK" && node "$LARES" meme project "$SRC_DIR/prism-gfm.mem" --to md --dialect GFM --tongue en --out "$SHELF" >/dev/null 2>&1 )
 if grep -q 'variant: GFM' "$WORK/$SHELF/prism-gfm.md.meta" 2>/dev/null && grep -q 'tongue: en' "$WORK/$SHELF/prism-gfm.md.meta" 2>/dev/null; then
   git -C "$WORK" add "$SRC_DIR/prism-gfm.mem" "$SHELF/prism-gfm.md" "$SHELF/prism-gfm.md.meta"

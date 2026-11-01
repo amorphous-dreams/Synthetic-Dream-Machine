@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/aniani">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/aniani`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/aniani.mem"
 l-space     = "stable"
 mana        = 16
 manao       = 16
@@ -20,7 +19,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/aniani"
 ```
 
-<<~ ahu #/mirror>>
+<<~ ahu slot=`#/mirror`>>
 
 ! Aniani ~ the Mirror
 
@@ -34,7 +33,7 @@ Three sources ground it. Gödel supplies the spine: a consistent system proves i
 
 <<~/ahu>>
 
-<<~ ahu #/reads-the-demonstrator>>
+<<~ ahu slot=`#/reads-the-demonstrator`>>
 
 !! It reads the demonstrator, not the phenomena
 
@@ -44,7 +43,7 @@ Where the set carries working instruments of its own ~ ways of weighing evidence
 
 <<~/ahu>>
 
-<<~ ahu #/the-question>>
+<<~ ahu slot=`#/the-question`>>
 
 !! One question, four grammars
 
@@ -59,7 +58,7 @@ A set passes where it names its own exemptions in the open. A set leaks where it
 
 <<~/ahu>>
 
-<<~ ahu #/three-faces>>
+<<~ ahu slot=`#/three-faces`>>
 
 !! The three faces
 
@@ -75,7 +74,7 @@ Three apertures of self-inclusion: source, consequence, grammar.
 
 <<~/ahu>>
 
-<<~ ahu #/register>>
+<<~ ahu slot=`#/register`>>
 
 !! The self-inclusion register ~ 0 to 20
 
@@ -93,7 +92,7 @@ The lift runs the same direction every time: move a silent exemption (0) to a na
 
 <<~/ahu>>
 
-<<~ ahu #/running-the-pass>>
+<<~ ahu slot=`#/running-the-pass`>>
 
 !! Running the pass
 
@@ -109,7 +108,7 @@ The lift runs the same direction every time: move a silent exemption (0) to a na
 
 <<~/ahu>>
 
-<<~ ahu #/strange-loop>>
+<<~ ahu slot=`#/strange-loop`>>
 
 !! The loop that never bottoms out
 
@@ -119,6 +118,6 @@ Leave one corner honestly open and seen. A set that sweeps every corner clean ha
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sVP1ybtuXvkoHHjMU8vvrWO9RinUstCUL79GwaTjUyc
+<<^ code=`&#x0003;`>>ni:///sha-256;ptM9K7BLdDqHDvWNyOIwGAolO5vF4YxL2gDURvKWYL0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

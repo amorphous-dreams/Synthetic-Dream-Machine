@@ -35,6 +35,8 @@ const TOKENS: Record<string, string> = Object.fromEntries([
     "oracleRec", "oracleOf", "OracleRecord", "fakeOracle", "oracleNames", "oracleWriters", "bindsOracleUrl", "registerCrossroadsInOracle",
   ].map((t) => [t, SLICE5] as const),
   ...["oracleTw", "oracleRel", "oracleReadFace"].map((t) => [t, OTHER] as const),
+  // The seed law that checks each `<<~ oracle>>` throw (die == face == tail) names the live blind gauge itself.
+  ["oracleCrossCheck", OTHER],
 ]);
 
 const FILES: Record<string, string> = {

@@ -57,11 +57,9 @@ from placebo_kumulipo import (
 FIXTURES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                             "fixtures", "shuffled-kumulipo")
 
-# The envelope swaps ONLY these address strings (file-path first — it contains the
-# library path as a substring, so order carries correctness; the placebo's discipline).
+# The envelope swaps ONLY this address string (the carrier names no file it rests in;
+# residency rides the envelope).
 _URI_SWAPS = (
-    ("bags/lares/ha.ka.ba/lares/library/hawaii/kumulipo/",
-     "packages/lararium-sensorium/scripts/fixtures/shuffled-kumulipo/"),
     ("ha.ka.ba/lares/library/hawaii/kumulipo/",
      "ha.ka.ba/lares/testbed/shuffled/kumulipo/"),
 )

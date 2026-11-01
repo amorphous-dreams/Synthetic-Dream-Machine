@@ -1,23 +1,22 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/circles-kowloon">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/circles-kowloon`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/circles-kowloon.mem"
 mana      = 16
-role      = "reference model: Kowloon circle data structure and social graph inversion; authoritative design reference for the per-face CirclesDoc that answers to @circles-<tag>"
+role      = "reference model: Kowloon circle data structure and social graph inversion; authoritative design reference for the per-face CirclesDoc that answers to circles-plane-<tag>"
 title     = "lar:///ha.ka.ba/lares/docs/pono/circles-kowloon"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/circles-kowloon"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/core-inversion>>
+<<~ ahu slot=`#/core-inversion`>>
 
 ! Circles — Kowloon Reference Model
 
@@ -37,7 +36,7 @@ This is social graph inversion: on centralized platforms, following creates a pu
 
 <<~/ahu>>
 
-<<~ ahu #/circle-data-model>>
+<<~ ahu slot=`#/circle-data-model`>>
 
 !! Circle Data Model (Kowloon schema)
 
@@ -61,7 +60,7 @@ Key: members are ''embedded snapshots'' (full actor profile + `lastFetchedAt`), 
 
 <<~/ahu>>
 
-<<~ ahu #/circle-types>>
+<<~ ahu slot=`#/circle-types`>>
 
 !! Circle Types
 
@@ -79,7 +78,7 @@ Key: members are ''embedded snapshots'' (full actor profile + `lastFetchedAt`), 
 
 <<~/ahu>>
 
-<<~ ahu #/addressing-hierarchy>>
+<<~ ahu slot=`#/addressing-hierarchy`>>
 
 !! Addressing Hierarchy
 
@@ -99,7 +98,7 @@ Enforced at handler level (`ActivityParser/handlers/Add/index.js`): rejects if `
 
 <<~/ahu>>
 
-<<~ ahu #/lararium-mapping>>
+<<~ ahu slot=`#/lararium-mapping`>>
 
 !! Lararium Mapping
 
@@ -107,19 +106,19 @@ Enforced at handler level (`ActivityParser/handlers/Add/index.js`): rejects if `
 > as an ''edge-closure'' — the reciprocal-edge fan over signed, typed, `lar:`-named
 > member edges, //evaluated// as a query — never a central `CirclesDoc` object a single
 > node owns as a roster
-> (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/group-as-closure">>). So the mapping rows
+> (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/group-as-closure`>>). So the mapping rows
 > below that read a circle as one owner-held doc trace Kowloon's prior art
 > faithfully; for //our// design read
 > `CirclesDoc`/`actorId`-ownership as the closure each member's own edge composes, and
 > read eviction as a kāpae on the membership stack
-> (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/membership-sense">>). The Kowloon
+> (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae#/membership-sense`>>). The Kowloon
 > reference itself stands unchanged — Kowloon legitimately uses a central object.
 
 | Kowloon | Lararium |
 |---|---|
 | `type: "System"` | `kind: "System"` — auto-seeded at node boot |
 | `type: "Circle"` | `kind: "Circle"` — operator-created |
-| `actorId` | `bag: @circles-<tag>` — the plane of the FACE that holds the circle, named off that PersonaGroup's own tag |
+| `actorId` | `bag: circles-plane-<tag>` — the plane of the FACE that holds the circle, named off that PersonaGroup's own tag |
 | `members[]` (embedded snapshots) | `memberDids` (TW5 list of DIDs); snapshots live in IdentitiesDoc |
 | `to/canReply/canReact` on circle | `addressingScope` field on CircleTiddler |
 | `to/canReply/canReact` on content | tiddler fields on content tiddlers (planned) |
@@ -130,18 +129,18 @@ Enforced at handler level (`ActivityParser/handlers/Add/index.js`): rejects if `
 
 <<~/ahu>>
 
-<<~ ahu #/system-circles>>
+<<~ ahu slot=`#/system-circles`>>
 
 !! System Circles to Auto-Seed
 
 At `seedCirclesDoc()` time — once per FACE, into that face's own `@circles-<tag>` — write these system circle tiddlers:
 
 ```
-@circles/following       — people this face actively reads
-@circles/all-following   — superset: followed nodes + circles
-@circles/circles         — tracks circle memberships
-@circles/blocked
-@circles/muted
+circles-plane/following       — people this face actively reads
+circles-plane/all-following   — superset: followed nodes + circles
+circles-plane/circles         — tracks circle memberships
+circles-plane/blocked
+circles-plane/muted
 ```
 
 ''The titles keep the bare namespace; the BAG carries the tag.'' A title resolves verbatim inside its own document, so `@circles/following` spells the same in every face's plane and one internal shape serves them all. Which face a follow belongs to reads off the BAG — `@circles-<tag>` — and a vessel-global `@circles` would seat one persona's blocked list in the same document as another's follows, where anything reading it correlates the faces a multitude exists to hold apart.
@@ -150,7 +149,7 @@ At `seedCirclesDoc()` time — once per FACE, into that face's own `@circles-<ta
 
 <<~/ahu>>
 
-<<~ ahu #/the-same-law-twice>>
+<<~ ahu slot=`#/the-same-law-twice`>>
 
 !! ★ The non-federating relation ~ one law, found twice, at two layers ★
 
@@ -172,7 +171,7 @@ The question //how far up does the inversion scale?// has a mechanical answer he
 
 <<~/ahu>>
 
-<<~ ahu #/not-adopted>>
+<<~ ahu slot=`#/not-adopted`>>
 
 !! What Lararium Does NOT Adopt from Kowloon
 
@@ -183,16 +182,16 @@ The question //how far up does the inversion scale?// has a mechanical answer he
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/heleuma/ka">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/local-first`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/heleuma/ka`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tNCpmOqjZ9W20-5a0u11gLK_QdFcA9WWehSIvjZj594
+<<^ code=`&#x0003;`>>ni:///sha-256;-DZybkxrhN3FhuOAXI83dmYMV5R6fQ-4W86EDQNvO90
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

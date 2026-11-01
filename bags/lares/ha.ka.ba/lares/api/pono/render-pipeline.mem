@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/render-pipeline">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/render-pipeline`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/render-pipeline.mem"
 l-space       = "stable"
 mana          = 17
 manao         = 17
@@ -19,11 +18,11 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/render-pipeline"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Render Pipeline Law
 
@@ -38,7 +37,7 @@ Both engines consume the same `text/memetic-wikitext` surface. The isomorphic pa
 
 <<~/ahu>>
 
-<<~ ahu #/render-axes>>
+<<~ ahu slot=`#/render-axes`>>
 
 !! Render Axes — Stage, Surface, and Mode held apart
 
@@ -69,7 +68,7 @@ Orthogonal to surface: a sigil renders live (`kahea`) or frozen (`aka`) through 
 
 <<~/ahu>>
 
-<<~ ahu #/causal-island>>
+<<~ ahu slot=`#/causal-island`>>
 
 !! Causal Island Boundary
 
@@ -92,7 +91,7 @@ Every pass that crosses the boundary MUST name its target.
 
 <<~/ahu>>
 
-<<~ ahu #/render-posture>>
+<<~ ahu slot=`#/render-posture`>>
 
 !! Render Posture ~ the sigil chooses, the cascade renders, the target projects
 
@@ -115,7 +114,7 @@ No render-mode variable threads the widget tree. Posture rides two places, and e
 
 <<~/ahu>>
 
-<<~ ahu #/template-cascade>>
+<<~ ahu slot=`#/template-cascade`>>
 
 !! Template Cascade
 
@@ -147,7 +146,7 @@ A target adapter may replace the default template by tagging a custom tiddler wi
 
 <<~/ahu>>
 
-<<~ ahu #/child-slot-model>>
+<<~ ahu slot=`#/child-slot-model`>>
 
 !! Child-Slot Model
 
@@ -158,17 +157,18 @@ A target adapter may replace the default template by tagging a custom tiddler wi
 ''kau'' — device instance slot. URI = `parentUri + "#" + deviceName`. In HTML mode the `~kau` widget renders the device instance or a placeholder hole if the definition tiddler is absent.
 
 ''Compound forms:''
+
 ```
-<<~ ahu #/slot>>            → bare child-slot; ~ahu widget
-<<~ kahea ahu #/slot>>      → live transclusion of child slot; ~kahea~ahu procedure
-<<~ aka ahu #slot>>        → frozen/projection read of child slot; ~aka~ahu procedure
+<<~ ahu slot=`#/slot`>>            → bare child-slot; ~ahu widget
+<<~ kahea ahu slot=`#/slot`>>      → live transclusion of child slot; ~kahea~ahu procedure
+<<~ aka ahu slot=`#slot`>>        → frozen/projection read of child slot; ~aka~ahu procedure
 ```
 
 The render posture difference (live vs. frozen) lives in the template cascade selection, not in sigil dispatch.
 
 <<~/ahu>>
 
-<<~ ahu #/suppressed-worksites>>
+<<~ ahu slot=`#/suppressed-worksites`>>
 
 !! Suppressed Worksites — Slots That Do Not Project
 
@@ -183,7 +183,7 @@ suppressed-worksites = ["meta", "meme-body-open", "body-close", "edges"]
 
 <<~/ahu>>
 
-<<~ ahu #/meme-ast-path>>
+<<~ ahu slot=`#/meme-ast-path`>>
 
 !! Non-TW5 Path — Meme AST
 
@@ -197,6 +197,7 @@ This path serves:
 * ''external mesh nodes'' — non-TW5 processes that read meme structure
 
 Produced types:
+
 ```typescript
 MemeAstNode    // structural node in the parse tree
 MemeNode       // named identity node (meme boundary)
@@ -210,7 +211,7 @@ This AST represents the same surface that TW5 renders, but as a traversable type
 
 <<~/ahu>>
 
-<<~ ahu #/kapu-render-open>>
+<<~ ahu slot=`#/kapu-render-open`>>
 
 !! Kapu Render Posture — Open Question
 
@@ -220,7 +221,7 @@ Open question: should `kapu` gain render presence in HTML mode — a visible bou
 
 <<~/ahu>>
 
-<<~ ahu #/hooko-boundary>>
+<<~ ahu slot=`#/hooko-boundary`>>
 
 !! Hoʻoko — Render Mutation Boundary
 
@@ -239,17 +240,17 @@ Trace continuity across the causal island boundary:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/parser">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/parser`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ahu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kahea`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rgdjUNNI6aaRR4u959lvbhp3QWopKKh22PQSJ51zgPc
+<<^ code=`&#x0003;`>>ni:///sha-256;LqGF3qWDL0xC6XEEdi7av3d2dRcOIdFBROmgp1Bkfy8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

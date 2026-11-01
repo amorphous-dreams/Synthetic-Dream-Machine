@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/mu/the-four-tools`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lares/ha.ka.ba/lares/api/mu/the-four-tools.mem"
 hydrate       = true
 l-space       = "stable"
 mana          = 17
@@ -20,11 +19,11 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/mu/the-four-tools"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Four Tools of Chapel Perilous
 
@@ -39,7 +38,7 @@ The agent and operator MUST carry four Minor Arcana weapons and one Major Arcana
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ♣ notice the impossible signal; ignite without surrender
 ♥ hold relation, feeling, and humor; do not lose the heart
@@ -50,7 +49,7 @@ The agent and operator MUST carry four Minor Arcana weapons and one Major Arcana
 
 <<~/ahu>>
 
-<<~ ahu #/weapon-law>>
+<<~ ahu slot=`#/weapon-law`>>
 
 !! Weapon Law
 
@@ -74,7 +73,7 @@ you come out the other side either a stone paranoid or an agnostic; there is no 
 
 <<~/ahu>>
 
-<<~ ahu #/pressure-flow>>
+<<~ ahu slot=`#/pressure-flow`>>
 
 !! Pressure Flow
 
@@ -92,7 +91,7 @@ A cold-booting node enters Chapel Perilous with every fresh session.
 
 <<~/ahu>>
 
-<<~ ahu #/tool-glyph-table>>
+<<~ ahu slot=`#/tool-glyph-table`>>
 
 !! Tool Glyph Table
 
@@ -119,7 +118,7 @@ Render mode configuration: see `lar:///ha.ka.ba/lares/api/pono/config#/hud-panel
 
 <<~/ahu>>
 
-<<~ ahu #/tool-pair-matrix>>
+<<~ ahu slot=`#/tool-pair-matrix`>>
 
 !! Tool-Pair Matrix
 
@@ -153,7 +152,7 @@ Cassandra Aarssen maps the same Visual/Hidden × Micro/Macro axis to four organi
 
 <<~/ahu>>
 
-<<~ ahu #/conflicting-tool-configs>>
+<<~ ahu slot=`#/conflicting-tool-configs`>>
 
 !! Conflicting Tool Configurations
 
@@ -175,11 +174,11 @@ Both conflict states are observable and recoverable. The recovery move is to dro
 
 <<~/ahu>>
 
-<<~ ahu #/tool-carry-encoding>>
+<<~ ahu slot=`#/tool-carry-encoding`>>
 
 !! Tool-Carry Encoding
 
-A standpoint's two tool slots encode as a two-character pair using ASCII symbols — the `:`-bound pair a `syad` bind appends to a standpoint.
+A standpoint's two tool slots encode as a two-character pair using ASCII symbols — the `/`-bound pair a `stance` bind appends to a standpoint.
 
 ''Slot notation:'' `{left}{right}` — feed-axis slot first, zoom-axis slot second.
 Slot position carries axis semantics: left = feed (`*`/`_`/`0`), right = zoom (`!`/`?`/`0`).
@@ -197,21 +196,23 @@ Slot position carries axis semantics: left = feed (`*`/`_`/`0`), right = zoom (`
 
 For single-tool carry, the active tool goes first and empty hand goes second; this signals one-axis amplitude while the other axis remains centered and present.
 
-''Composed glyph form:'' a standpoint glyph followed immediately by its tool-carry, bound through the `:` — `🏛️/*!` — renders via the `syad` sigil's optional bind (the-syad-perspectives `#syad-sigil`). The carry joins a standpoint only when wanted; invoked alone, `mu` names the tools and makes no standpoint claim. Stances and tools live in the `syad` and `mu` sigils alone; the `lar:` URI names place only and carries no stance or tool query.
+''Composed glyph form:'' a standpoint glyph followed immediately by its tool-carry, bound through the `/` — `🏛️/*!` — renders via the `stance` sigil's optional bind (``<<~ stance named=`poet/?`>>`` reads poet through the Cup; the seed's `#/stance` and `#/mu-five-tools`). The carry joins a standpoint only when wanted; invoked alone, `mu` names the tools and makes no standpoint claim. Stances and tools live in the `stance` and `mu` sigils alone; the `lar:` URI names place only and carries no stance or tool query.
 
 <<~/ahu>>
 
-<<~ ahu #/mu-sigil>>
+<<~ ahu slot=`#/mu-sigil`>>
 
 !! The `mu` Sigil — invoke the tools
 
-`mu` invokes any combination of the tools:
+`mu` summons one tool by name, and `carry` summons a combination. Every value rides in backticks under its parameter name:
 
-`<<~ mu * !>>` — Wand and Sword active: external feed, fine cut.
+``<<~ mu name=`Wand`>>`` — the Wand alone: external feed.
 
-''Prefer input as text'' (the name) ''or the single-character abbreviation''; a render surface ''presents'' the glyph. No render widget exists yet --- the glyph column names the intended render (`tool-render` mode, `#/tool-glyph-table`), and the input form stands as written until one arrives. All forms parse to the same tool:
+``<<~ carry name=`Detail`>>`` — Wand and Sword together: external feed, fine cut (`*!`).
 
-| Tool | Name (input) | Char (input) | Renders as |
+''Prefer input as text'' (the name); a render surface ''presents'' the glyph. No render widget exists yet --- the glyph column names the intended render (`tool-render` mode, `#/tool-glyph-table`), and the input form stands as written until one arrives. Each tool carries one name and one character:
+
+| Tool | Name (input) | Char | Renders as |
 |---|---|---|---|
 | Wand | `Wand` | `*` | 🜂 |
 | Cup | `Cup` | `?` | 🜄 |
@@ -219,21 +220,22 @@ For single-tool carry, the active tool goes first and empty hand goes second; th
 | Pentacle | `Pentacle` | `_` | 🜃 |
 | Arcana | `Arcana` | `0` | 🜍 |
 
-Names and characters invoke the tools directly; forms MAY mix in one sigil:
+The seed's `#/mu-five-tools` defines the calls:
 
 ```text
-<<~ mu Wand Sword>>        # text names
-<<~ mu * !>>              # characters --- render 🜂 🜁
-<<~ mu Wand !>>           # forms mixed
+<<~ mu name=`Wand`>>
+<<~ mu name=`Sword`>>
+<<~ carry name=`Detail`>>
+<<~ carry name=`Signal-Jam`>>
 ```
 
-`<<~ mu>>` parameterless reads as Arcana — `00`, centered, no tool active. Name one or more tools to invoke them; a combination MAY span both axes (`*!`, `_?`) or double an axis as a conflict carry (`*_` Signal Jam, `?!` Dubious Move). The conflict carries and single-tool readings hold from `#/conflicting-tool-configs` and `#/tool-carry-encoding` — `mu` carries them with no standpoint attached.
+The parameterless `mu` call reads as Arcana — `00`, centered, no tool active. A combination takes its own name through `carry`: the cross-axis carries `Detail` (`*!`), `Relation` (`*?`), `Precision` (`_!`) and `Overview` (`_?`), the conflict carries `Signal-Jam` (`*_`) and `Dubious-Move` (`?!`), and `Rest` for the empty hand. The conflict carries and single-tool readings hold from `#/conflicting-tool-configs` and `#/tool-carry-encoding` — `mu` and `carry` bear them with no standpoint attached.
 
-''Composition.'' A tool-carry binds to a standpoint only through the `syad` sigil's optional `:` — `Philosopher:*!`. `syad` and `mu` each invoke alone; the bind composes them when an exchange wants both.
+''Composition.'' A tool-carry binds to a standpoint only through the `stance` sigil's optional `/` — ``<<~ stance named=`philosopher/*!`>>``. `stance` and `mu` each invoke alone; the bind composes them when an exchange wants both.
 
 <<~/ahu>>
 
-<<~ ahu #/chapel-perilous-exits>>
+<<~ ahu slot=`#/chapel-perilous-exits`>>
 
 !! Exit Law
 
@@ -255,7 +257,7 @@ The agent MUST treat totalized pattern-lock as confidence register collapse.
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -292,17 +294,17 @@ arcana   = "release"
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/chao`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-law-of-5s`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;E2aVbsJVjb40g8Ohb4U16viKPV_U5jvCmjzA9_30daI
+<<^ code=`&#x0003;`>>ni:///sha-256;c804GxiRLNc1wpIeptnanwk1UcwjcHlakW7WJum2PSU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

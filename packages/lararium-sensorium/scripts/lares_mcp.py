@@ -293,7 +293,7 @@ class LaresCoordinator:
     def pour(self, surface: str, pointer: str, *, all: bool = False, writeback: bool = False,
              dry_run: bool = False, wing: "str | None" = None,
              room: str = "conversations") -> dict:
-        """Capture a surface's transcript into the Memory sensorium (mirrors `lares sense pour`).
+        """Capture a surface's transcript into the Memory sensorium (mirrors `lares sense capture`; `all` mirrors the drawers leg of `lares sense pour --all`).
         Idempotent re-derivation — a re-run lands only the un-landed tail (the crash-cure).
 
         The isomorphism contract carries the CLI's rich args onto this one spine: `all` sweeps every
@@ -1113,7 +1113,7 @@ class DaemonCoordinator:
     # read `recall`, the per-pointer `capture` (pour), plus the five lifecycle/plane verbs now wired onto
     # the capture holder — `status`/taxonomy, the worldline `dag` read, the `cascade_kapae`/`cascade_un_kapae`
     # branch-mute, and the cross-plane `plane_record`. Each routes to a serve-op on the ONE holder that owns
-    # the palace (content_io · worldline_io · structurepalace_io · form_encoder), serialized with capture so a
+    # the palace (content_io · worldline_io · structurepalace_io), serialized with capture so a
     # mutation never races the live writer. A verb the wire does NOT yet carry refuses honestly through
     # `_owed` rather than route to an unknown verb (the wall this surface names, not hides).
     ROUTED = {"recall", "pour", "sweep", "status", "worldline", "kapae", "un_kapae", "plane_record", "rejim", "analyze", "ki", "li", "jing", "couple_r", "forecast", "mismatch"}
@@ -1167,8 +1167,8 @@ class DaemonCoordinator:
     def pour(self, surface: str, pointer: str, *, all: bool = False, writeback: bool = False,
              dry_run: bool = False, wing: "str | None" = None, room: str = "conversations",
              sensorium_root: "str | None" = None, **_) -> dict:
-        # Route ONE pointer's capture through the @daemon `capture` verb (the same verb `lares sense pour`
-        # / harvest drives) — the daemon owns the capture holder, so the compute lands there, this surface
+        # Route ONE pointer's capture through the @daemon `capture` verb (the same verb `lares sense capture`
+        # drives) — the daemon owns the capture holder, so the compute lands there, this surface
         # holds nothing. Mirrors `recall` above: build the daemon's camelCase args, ride `uds.output`.
         #
         # The shaping args (all/writeback/dry_run) carry NO holder-side support on the `capture` verb (it

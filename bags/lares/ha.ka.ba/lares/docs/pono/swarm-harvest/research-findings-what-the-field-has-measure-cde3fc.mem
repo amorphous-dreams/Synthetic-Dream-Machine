@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/research-findings-what-the-field-has-measure-cde3fc">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/research-findings-what-the-field-has-measure-cde3fc`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/research-findings-what-the-field-has-measure-cde3fc.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -18,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/research-findings-what-the-field-has-measure-cde3fc"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Research findings: what the field has measured, by rung
 
@@ -28,7 +27,7 @@ The three largest messages one research spirit wrote, ''held verbatim and unedit
 
 <<~/ahu>>
 
-<<~ ahu #/message-1>>
+<<~ ahu slot=`#/message-1`>>
 
 !! Message 1 ~ 19,404 characters
 
@@ -132,7 +131,7 @@ I have enough now to compose a substantially strengthened final report. Let me d
 
 <<~/ahu>>
 
-<<~ ahu #/message-2>>
+<<~ ahu slot=`#/message-2`>>
 
 !! Message 2 ~ 9,840 characters
 
@@ -185,12 +184,12 @@ This is consistent with — though not sufficient on its own to prove — your h
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ugMV1NB6nkBlypihUXvs4Ufiifo9V_MNlljwwM3mUms
+<<^ code=`&#x0003;`>>ni:///sha-256;g5qzFQwUYEc3OQhd9qbGAkWy9clB6ad2LcEJjl1X0_8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

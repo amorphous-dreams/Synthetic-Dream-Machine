@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/reader-side-audience-curation-how-far-up-doe-171b6a">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/reader-side-audience-curation-how-far-up-doe-171b6a`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/reader-side-audience-curation-how-far-up-doe-171b6a.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -18,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/reader-side-audience-curation-how-far-up-doe-171b6a"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Reader-side audience curation: how far up does it scale?
 
@@ -28,7 +27,7 @@ The three largest messages one research spirit wrote, ''held verbatim and unedit
 
 <<~/ahu>>
 
-<<~ ahu #/message-1>>
+<<~ ahu slot=`#/message-1`>>
 
 !! Message 1 ~ 16,062 characters
 
@@ -185,7 +184,7 @@ The counterweight worth keeping: starter packs, adopted by only 4.37% of users, 
 
 <<~/ahu>>
 
-<<~ ahu #/message-2>>
+<<~ ahu slot=`#/message-2`>>
 
 !! Message 2 ~ 14,162 characters
 
@@ -323,7 +322,7 @@ Four independent literatures, four different decades, one shape.
 
 <<~/ahu>>
 
-<<~ ahu #/message-3>>
+<<~ ahu slot=`#/message-3`>>
 
 !! Message 3 ~ 13,702 characters
 
@@ -445,12 +444,12 @@ Confidence overall on the addendum: **medium-high** — most quotes came from op
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gm1AvK8CzNRSrmWOB17oxgsUjW1EdF8sTPDpQE7Cby0
+<<^ code=`&#x0003;`>>ni:///sha-256;59SrBPAho5LngkPt4OnF62AuRqLdVFx6ULmer4CQpe4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

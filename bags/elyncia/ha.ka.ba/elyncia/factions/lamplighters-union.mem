@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/factions/lamplighters-union">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/factions/lamplighters-union`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/factions/lamplighters-union.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 15
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/factions/lamplighters-union"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Lamplighters' Union
 
@@ -29,7 +28,7 @@ dark stretch on three continents.
 
 <<~/ahu>>
 
-<<~ ahu #/the-far-infrastructure>>
+<<~ ahu slot=`#/the-far-infrastructure`>>
 
 !! The Far Infrastructure
 
@@ -51,12 +50,12 @@ company repairing a broken Nexus one herm at a time.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/factions/index">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/factions/index`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QNtI3nKDc-3igdWtDfAP5UfCpZ0g1G27mrsyOmaboC4
+<<^ code=`&#x0003;`>>ni:///sha-256;1VxQYNbi0AsWOReoiFrak2_3GF0edhvtGpsYo70TlTM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

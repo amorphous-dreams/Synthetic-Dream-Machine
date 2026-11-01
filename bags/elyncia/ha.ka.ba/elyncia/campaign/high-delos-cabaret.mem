@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/elyncia/ha.ka.ba/elyncia/campaign/high-delos-cabaret.mem"
 l-space   = "adjacent"
 mana      = 13
 manao     = 13
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/campaign/high-delos-cabaret"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The House of Masks ~ Session 0.1 Actual Play
 
@@ -50,7 +49,7 @@ flashback's stamp answers to its own log, not the booth's.
 
 <<~/ahu>>
 
-<<~ ahu #/venue>>
+<<~ ahu slot=`#/venue`>>
 
 !! The Venue ~ The House of Masks
 
@@ -98,7 +97,7 @@ night, enough faction weight to tilt the sky island. Both truths stand; neither 
 
 <<~/ahu>>
 
-<<~ ahu #/summit-week>>
+<<~ ahu slot=`#/summit-week`>>
 
 !! The Summit Week ~ why the room is full
 
@@ -119,7 +118,7 @@ stranger.
 
 <<~/ahu>>
 
-<<~ ahu #/cast>>
+<<~ ahu slot=`#/cast`>>
 
 !! The Cast
 
@@ -166,7 +165,7 @@ stranger.
 
 <<~/ahu>>
 
-<<~ ahu #/casting>>
+<<~ ahu slot=`#/casting`>>
 
 !! Casting ~ the render sheet
 
@@ -229,7 +228,7 @@ the fresco-over-fresco walls) · ragged edges beat machine polish · no winking,
 
 <<~/ahu>>
 
-<<~ ahu #/intent>>
+<<~ ahu slot=`#/intent`>>
 
 !! Session Intent ~ character sheets by lifepath, co-narrated
 
@@ -281,7 +280,7 @@ prompted in-scene, answered in-voice, written to the sheet as it lands:
 
 <<~/ahu>>
 
-<<~ ahu #/format>>
+<<~ ahu slot=`#/format`>>
 
 !! Capture Format
 
@@ -300,7 +299,7 @@ The played record lands in this locus using the shelf's witness pattern
 
 <<~/ahu>>
 
-<<~ ahu #/open-forks>>
+<<~ ahu slot=`#/open-forks`>>
 
 !! Open Forks (operator's + table's hands)
 
@@ -316,16 +315,16 @@ The played record lands in this locus using the shelf's witness pattern
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/salt-stair-booth">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/the-grimalkin">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/campaign/salt-stair-booth`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/the-grimalkin`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zoU4NZX2pbFldqejqqo6FcYmntrfa-3sIxPDWnFHgUg
+<<^ code=`&#x0003;`>>ni:///sha-256;g_Zpy_6XQeGnymhJiH_EWFkpokBtOM6PIyVvugh47-A
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

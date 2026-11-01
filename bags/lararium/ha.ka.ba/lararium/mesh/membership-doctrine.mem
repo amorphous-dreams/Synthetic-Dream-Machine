@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⚕` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/membership-doctrine.mem"
 l-space    = "lararium"
 mana       = 16
 manao      = 16
@@ -21,7 +20,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/membership-doctrine"
 written    = "2026-07-21"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
@@ -31,7 +30,7 @@ written    = "2026-07-21"
 > public infrastructure. The line it draws decides whether the DreamNet becomes a
 > commons or a panopticon. Operator-ruled 2026-07-21.
 
-<<~ ahu #/the-invariant>>
+<<~ ahu slot=`#/the-invariant`>>
 
 !! The invariant
 
@@ -48,7 +47,7 @@ written    = "2026-07-21"
 
 ''So the check adds no trace, no roster row, and no new authority'' — it rides where the crypto already rides, bilaterally, peer-local, exactly like the rest of this doctrine.
 
-''AND ITS SCALE STAYS BOUNDED, which the no-roster ruling already anticipated.'' The excluder's market share bounds exclusion power: three fields built this gate correctly and three retreated under open-internet pressure. The one that held gates at the ''group'' boundary, where the members make up the whole relevant population and the membership stays local. ''Deployable at Lararium and Nexus scale; at DreamNet scale it predicts the same retreat'' — which explains why a bilateral leased contract per operator, and never a confederation-wide roster, makes the shape that survives. <<~ loulou "lar:///ha.ka.ba/lararium/mesh/grammar-invariants">>
+''AND ITS SCALE STAYS BOUNDED, which the no-roster ruling already anticipated.'' The excluder's market share bounds exclusion power: three fields built this gate correctly and three retreated under open-internet pressure. The one that held gates at the ''group'' boundary, where the members make up the whole relevant population and the membership stays local. ''Deployable at Lararium and Nexus scale; at DreamNet scale it predicts the same retreat'' — which explains why a bilateral leased contract per operator, and never a confederation-wide roster, makes the shape that survives. <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/grammar-invariants`>>
 
 — the condition stands ruled; ''its mechanism stands UNBUILT'', and a prior treatment waits on another worldline to surface from the sensorium.
 
@@ -60,15 +59,15 @@ stance (#carry-contract, #the-frame) in the one place it would otherwise erode f
 
 <<~/ahu>>
 
-<<~ ahu #/the-two-stacks>>
+<<~ ahu slot=`#/the-two-stacks`>>
 
 !! The two cap-stacks ~ operator contracts, user soft-attaches
 
 A human's posture rides the vessels in their PersonaGroup pool — a ''posture, not a caste'', chosen
 vessel by vessel (`identity-classes.mem`):
 
-<<~ has Stack OPERATOR "runs/a node vessel does/CONTRACTS with the Nexus (owes MANDATORY carriage) trace/a wax-sealed carriage contract — consensual, minimal, revocable (Kapae)">>
-<<~ has Stack USER "runs/browser-style vessels, no infra does/WALKS on an invite from any member face (boot-seeded from a node on the rhizome, own cap-stack, reads/writes through blind relays) trace/NONE — no roster, no account, no user table, no quorum admit">>
+<<~ has entity=`Stack` name=`OPERATOR` params=`runs/a node vessel does/CONTRACTS with the Nexus (owes MANDATORY carriage) trace/a wax-sealed carriage contract — consensual, minimal, revocable (Kapae)`>>
+<<~ has entity=`Stack` name=`USER` params=`runs/browser-style vessels, no infra does/WALKS on an invite from any member face (boot-seeded from a node on the rhizome, own cap-stack, reads/writes through blind relays) trace/NONE — no roster, no account, no user table, no quorum admit`>>
 
 ''An operator contracts because carriage carries a mutual obligation the mesh must check'' — a Nexus has
 to know its infrastructure-peers to gossip the antigen and split the carry. ''A user owes nothing,
@@ -83,14 +82,14 @@ the pool.
 | face | caps |
 |---|---|
 | ''end user'' | `walk` — //an operator KEEPS a hearth; a user WALKS the road// |
-| ''Lamplighter'' | `carry` · `tend/island` · `tend/reach` (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/reach">>) |
-| ''Kahu'' | the Nexus-scale `quorum-share`; the engine cadence rides a separate threshold, and the corpus-kahu curate at DreamNet scale (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>) |
-| ''Recovery contact'' | a recovery key over a persona's KEL — Recovery contacts recover the PERSON, and carry no weight in a Nexus KEL; a recovery contact cuts a fresh key for each face they guard; one human may hold it beside a Kahu seat, in a separate custody (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>) |
+| ''Lamplighter'' | `carry` · `tend/island` · `tend/reach` (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lamplighters#/reach`>>) |
+| ''Kahu'' | the Nexus-scale `quorum-share`; the engine cadence rides a separate threshold, and the corpus-kahu curate at DreamNet scale (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale`>>) |
+| ''Recovery contact'' | a recovery key over a persona's KEL — Recovery contacts recover the PERSON, and carry no weight in a Nexus KEL; a recovery contact cuts a fresh key for each face they guard; one human may hold it beside a Kahu seat, in a separate custody (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale`>>) |
 
 ''Founding names an ACT, never a face'': it seats the first kahu quorum, and the founder then holds
 a Kahu seat in that Nexus. ''Founders hold both stacks as two signed events each'': a seat in the genesis,
 and a carriage contract the subject signs and the seats countersign. One operator's charter reads as a
-SEED; two operators' seats in one charter read as a NEXUS (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>).
+SEED; two operators' seats in one charter read as a NEXUS (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>).
 
 ''Cap stacks COMPOSE on a persona — combined by default, split only by the holder's own act.'' A solo
 operator holds one persona for all their local infrastructure, and every cap they hold rides it; no
@@ -104,7 +103,7 @@ holding several personas. The design scales up from the clan, never down from th
 
 <<~/ahu>>
 
-<<~ ahu #/the-three-admissions>>
+<<~ ahu slot=`#/the-three-admissions`>>
 
 !! Three admissions ~ walking, contracting and seating never share a name
 
@@ -115,7 +114,7 @@ different signer, different trace.
 |! relation |! who acts |! what it takes |! what it leaves |
 | a USER ''walks'' | a hearth that hosts in the Nexus, and any walker it hosts | an invite, redeemed once at the host's own gate for a keyed grant (#/the-invite) | nothing: no quorum, no board entry, no who-invited-whom — the host keeps random nonces and a count |
 | an operator or place ''contracts'' | the subject, and ≥k of the kahu quorum | the presented admit, the subject's consent, ≥k Kahu countersigning, the carriage board, the Lamplighter office (`carry` · `tend`) | the carriage contract — and nothing more (#/the-operator-contract) |
-| a member is ''seated'' | the kahu quorum, through the seal lineage | a seat in the lineage's per-seat commitment | the seal lineage itself (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>) |
+| a member is ''seated'' | the kahu quorum, through the seal lineage | a seat in the lineage's per-seat commitment | the seal lineage itself (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale`>>) |
 
 ''CONTRACTING AND SEATING EACH TAKE THE SEAT QUORUM'' (operator-ruled). Admitting a Lamplighter and seating a
 Kahu each take the charter's seat quorum, and no single-seat class covers either; kapae and rolls take it
@@ -125,7 +124,7 @@ consumes the introduction (#/the-invite). What the code holds: a clockless allow
 walker-minted guest vesting at the host's next roll; single-use blind tokens burned at the host; revocation
 by a roll or by a kapae of the guest's leaf; no bound on the operator's own `lares host invite`. The bound
 rides three dials on the hosting act (#/the-invite); the home section stands at
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>.
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>.
 
 ''Walking reads as HOSPITALITY, never admission.'' An invite hands a guest the road; it confers no
 standing, asks no quorum and leaves no trace on any board (#/the-invite). ''Contracting reads as the one
@@ -135,21 +134,21 @@ the seal lineage records it as keys and a threshold, never as a roster.
 
 ''Removal follows the relation.'' Each relation that takes a marker names the hands that may set it aside,
 the gates that read the shadow and the keys that follow it
-(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/four-edges">>). A removal's record stays among the parties to
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae#/four-edges`>>). A removal's record stays among the parties to
 the relation it ends and never joins a Nexus board.
 
 The cadence threshold rides none of the three as a base relation: it seats operators who already
-contract, by its own lineage (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>).
+contract, by its own lineage (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/contract`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/the-operator-contract>>
+<<~ ahu slot=`#/the-operator-contract`>>
 
 !! The operator contract ~ the minimal wax-sealed payload
 
 An operator's membership entry carries the ''floor and nothing above it'' (operator-ruled):
 
-<<~ scale payload "operator-pubkey -> accepts-carriage -> charter-epoch">>
+<<~ scale name=`payload` ranks=`operator-pubkey -> accepts-carriage -> charter-epoch`>>
 
 ''No name, no email, no device list, no behavior.'' A quorum-signed `MembershipEntry` (the antigen's
 allow-twin, `blocked{}` ⊥ `members{}`, #carry-contract) — the operator signs "I accept carriage",
@@ -159,12 +158,12 @@ holds about a contracting operator.''
 
 ''The admit travels with its subject.'' The subject PRESENTS its quorum-signed entry at the wire, and
 the gate reads it against the deny-only `blocked{}` — never `members{}` folded into an allow roster
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>, which also carries what the code
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale`>>, which also carries what the code
 holds, the subject stamp's nexus-scoped leaf, and the gate's shape).
 
 <<~/ahu>>
 
-<<~ ahu #/two-maps>>
+<<~ ahu slot=`#/two-maps`>>
 
 !! Two maps ~ the per-Nexus LEAF and the persona ROOT never link
 
@@ -186,13 +185,13 @@ The law, in five clauses:
   holds no proven root edge, the root map answers null for that peer — an honest nothing, never a leaf
   promoted to stand in.
 # ''One face per session per Nexus, and no root edge beside a leaf under one proof key.'' A SESSION wears
-  the face and the vessel wears none (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session">>). A proof key that
+  the face and the vessel wears none (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session`>>). A proof key that
   presents a leaf to a Nexus — or will present one — presents NO root-signed edge to that Nexus on ANY
   socket, before the admit or after it: a root edge on one socket and a leaf admit on another link root to
   leaf through the shared key as surely as both on one socket would. The code as it stands proves ONE vessel
   key on every socket a vessel opens, so today the clause binds the whole vessel, and two sessions of one
   vessel that wear different faces would correlate at any gate both dial. The session ruling moves the gate
-  proof to a face-scoped subject, and <<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy">> names how
+  proof to a face-scoped subject, and <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy`>> names how
   such a key comes to stand; the cutover that wires it stands OWED. The wire therefore
   carries no contract slot at all: a self-founded vessel with no admit for the dialed Nexus presents its
   ContactCard alone, and only the fleet edge (signed by a root the vessel does NOT hold) rides beside a card.
@@ -207,7 +206,7 @@ proof subject closes that one, owed beside it.
 into it. Carriage asks //may this face carry for this Nexus//; the realm asks //who stands behind this
 face//. A wire that answers both at once builds the correlator this doctrine exists to refuse. The
 subject stamp's nexus-scoped leaf and the gate's shape stand at
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>.
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale`>>.
 
 !!! Prior art ~ two vindicate, one warns
 
@@ -221,7 +220,7 @@ subject stamp's nexus-scoped leaf and the gate's shape stand at
 
 <<~/ahu>>
 
-<<~ ahu #/the-held-root>>
+<<~ ahu slot=`#/the-held-root`>>
 
 !! The held root ~ the verifier reads an admit against a root this vessel holds
 
@@ -247,7 +246,7 @@ A charter that fails any of the three names no root.
 
 <<~/ahu>>
 
-<<~ ahu #/the-invite>>
+<<~ ahu slot=`#/the-invite`>>
 
 !! The invite ~ a hosted grant the guest carries, burned by its host, about no one
 
@@ -255,7 +254,7 @@ A charter that fails any of the three names no root.
 An invited user puts a friend forward as a SIGNED ACT that the hearth's operator sees and answers. Only an operator admits, and
 nobody arrives at a hearth by transitivity: a friend of a guest stands nowhere until the operator's own answer. It follows from the
 order a rhizome grows in, where a Lararium stands before its operator invites anyone
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/under-every-lararium">>).
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lamplighters#/under-every-lararium`>>).
 ''The answer consumes the introduction'' (operator-ruled): no introduction's signature outlives the operator's answer, so no record chains who invited whom.
 
 ''THE USER ROAD'S BOUND RIDES THREE DIALS'' (operator-ruled). A guest may ask for one friend at a time, and the
@@ -297,7 +296,7 @@ cross-check. The act grants nothing and names only the hearth. One key per act d
 and the act's link (`hosting-key`), with no counter.
 
 ''THE WORN FACE HOSTS'' (operator-ruled). The per-Nexus leaf of the WORN face signs the act — the same face its walks present. No roster
-order picks anything, and with no face worn no one gets hosted. The session ruling (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session">>)
+order picks anything, and with no face worn no one gets hosted. The session ruling (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session`>>)
 names the wearer as a SESSION, never the vessel. The code reads one vessel-wide worn face; the session's part stands OWED (above). ''ROOT-ON-FOUNDER'' keeps a face on one hosting store, and
 the first roll guards it: before its first act in a Nexus, a roll reads the hosting doc, and an act this face
 signed there that no local state holds refuses the roll aloud and writes nothing. A face hosting from two
@@ -359,7 +358,7 @@ so a roll reaches them with no restart; with no vessel standing, the command run
 key session and holds the store for that moment. A vessel at the floor reads no hosting row and hosts no
 walker until a person unlocks it.
 
-''A HOUSE'S OWN ISLAND COUNTS AS A PROVEN RELATION'' (road `P26`), proven by the adapter the vessel attached for it at its spawn (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor">> #/the-harnesses); direction never proves a relation, so a hearth this vessel dialed sorts as the wire.
+''A HOUSE'S OWN ISLAND COUNTS AS A PROVEN RELATION'' (road `P26`), proven by the adapter the vessel attached for it at its spawn (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/harbor`>> #/the-harnesses); direction never proves a relation, so a hearth this vessel dialed sorts as the wire.
 
 ''A NODE MAY WALK'' (operator-ruled). The sorter sorts by PROVEN RELATION, never by device type, so a node
 vessel holding a grant sorts as a walker exactly like a browser leaf. Walking grants it no carry duty and
@@ -386,7 +385,7 @@ host whose invite came in. The cryptography removes the record. It cannot remove
 carries, so a gate's posture folds over all of them); full Noise IK (the transport and the knock path leak
 to a passive watcher). The hosting key derives from the worn face's per-Nexus key, which mints at random and
 rests sealed and cold under the vessel key; the hosting stores' own rows rest outside that key until the custody
-seal takes them (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>).
+seal takes them (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`>>).
 
 ''The reputation-cost braid'' — the idea that an invite rides on the inviter's reputation as a cost
 (Sybil-resistance, accountability) — reserves to the ''Cabal tier'', never the general invite: a
@@ -402,14 +401,14 @@ carry the cost (`admission-on-a-lineage#the-standing`).
 
 <<~/ahu>>
 
-<<~ ahu #/the-walkers-carriage>>
+<<~ ahu slot=`#/the-walkers-carriage`>>
 
 !! The walker's carriage ~ carried sealed, reclaimed by the guest's own rhythm, never a backup
 
 ''THE HEARTH CARRIES A WALKER'S OWN DOCUMENTS AS SEALED CIPHERTEXT — CARRY ⊥ READ'' (operator-ruled). The
 walker seals each document as one sealed value under a key of that document's own, which its per-Nexus
 leaf's carry secret and the document's plaintext digest derive (`walk-carry-document`;
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/keys">>). It hands the hearth only the sealed bytes
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/keys`>>). It hands the hearth only the sealed bytes
 and their address. The hearth verifies the address, which needs no key, stores the bytes, and can never open
 them or confirm a guessed plaintext: two seals of one document share no address. The document's key, its
 digest and the address stay in the walker's own receipt, and one exposed receipt opens one document.
@@ -457,11 +456,11 @@ dial. The walker's own devices hold its documents. No surface may present carria
 but its presence buys no tenure. The quota bounds what any grant's diligence can hold. The hearth's own
 roll ends every grant it stops renewing, and a hard roll ends them all with no list to walk. Presence earns
 the guest NOTICE before the hearth takes its space back, never title to the hearth's disk
-(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-unswept-corner">>).
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-unswept-corner`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/the-carried-cap>>
+<<~ ahu slot=`#/the-carried-cap`>>
 
 !! What a face CARRIES ~ a capability, never a standing
 
@@ -483,7 +482,7 @@ the guest NOTICE before the hearth takes its space back, never title to the hear
 
 <<~/ahu>>
 
-<<~ ahu #/the-user-scope>>
+<<~ ahu slot=`#/the-user-scope`>>
 
 !! The user scope ~ soft-attach + inversion-of-control social graphs
 
@@ -499,7 +498,7 @@ carries this (partially wired, polish deferred — a 2a build).
 
 <<~/ahu>>
 
-<<~ ahu #/the-publishing-surface>>
+<<~ ahu slot=`#/the-publishing-surface`>>
 
 !! The publishing surface ~ four acts under one word, and a ladder
 
@@ -513,15 +512,15 @@ carries this (partially wired, polish deferred — a 2a build).
 
 Fields that manufacture standing-to-object publish all four. ''This stack publishes three and withholds the fourth'' — and that suffices, because rival readings that disagree stay checkable ''without anyone holding the member list''.
 
-''The surface already stands, tiered.'' The @crossroads / @nexus boards ride the always-carried MANDATORY tier every contracted operator carries free; a realm's charter rides veil-public; below that, content wraps in a Handle's, a persona's, or a dyad's own crypto. ''`carry ⊥ read ⊥ contract` holds at the transport'' and reads as model law rather than a transport detail.
+''The surface already stands, tiered.'' The crossroads-plane / nexus-plane boards ride the always-carried MANDATORY tier every contracted operator carries free; a realm's charter rides veil-public; below that, content wraps in a Handle's, a persona's, or a dyad's own crypto. ''`carry ⊥ read ⊥ contract` holds at the transport'' and reads as model law rather than a transport detail.
 
 > ''STANDING-TO-OBJECT SCOPES TO THE TIER AT WHICH A THING GETS PUBLISHED.''
 
-A realm publishing its declaration at the public tier gains outside challengers; one publishing at Handle tier keeps its challengers internal. ''Same machinery, one dial'' — and a realm under threat withdraws the tier without losing the faculty. Note what this does NOT buy: it names a procedural capacity to challenge, never an accrued position. ''Standing-to-object ⊥ `kūlana``'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">>).
+A realm publishing its declaration at the public tier gains outside challengers; one publishing at Handle tier keeps its challengers internal. ''Same machinery, one dial'' — and a realm under threat withdraws the tier without losing the faculty. Note what this does NOT buy: it names a procedural capacity to challenge, never an accrued position. ''Standing-to-object ⊥ `kūlana`'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/the-transition>>
+<<~ ahu slot=`#/the-transition`>>
 
 !! From the house to public infrastructure ~ lock it in at the floor
 
@@ -532,24 +531,24 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carry-contract`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/identity-classes`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/attestation-plane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6YG8dAyOXSHvFBklxTYGVcQNxB0iRZUj4xXm38ZqKRA
+<<^ code=`&#x0003;`>>ni:///sha-256;vaJz8mqltgtXmT-sOH3B8jbzC8daYqwPw25KZXQSMPY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

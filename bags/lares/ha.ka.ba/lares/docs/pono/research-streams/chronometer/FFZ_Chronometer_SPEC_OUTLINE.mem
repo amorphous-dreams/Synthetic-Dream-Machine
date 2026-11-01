@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/research-streams/chronometer/FFZ_Chronometer_SPEC_OUTLINE">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/research-streams/chronometer/FFZ_Chronometer_SPEC_OUTLINE`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 title    = "lar:///ha.ka.ba/lares/docs/pono/research-streams/chronometer/FFZ_Chronometer_SPEC_OUTLINE"
@@ -819,6 +819,6 @@ progression, including fork/join for Tasked Spirits.]
 
 lar:///protocol.outlined.awaits/chronometer/?stances=^.^.?.^.-&confidence=P:6&p=10#/O0.O0.O0.A6.A1 → ?
 
-<<^ code="&#x0003;">>ni:///sha-256;mXhJ3aGrvTdGvHE9qeWwgmk3P980hCF8gWS66WDhd-s
+<<^ code=`&#x0003;`>>ni:///sha-256;t2wJ8OWlevNL6koNfI-_SI01qlr7xBINcfNl8-R4Ukw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/browser/pono-charter">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/browser/pono-charter`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/browser/pono-charter.mem"
 l-space   = "lararium"
 mana      = 19
 manao     = 18
@@ -21,7 +20,7 @@ uri-path  = "ha.ka.ba/lararium/browser/pono-charter"
 Constitutional doc. Governs what code enters the package, how it survives, and what gets deleted.
 Code enters the package through the ''admission law'' below, and the adapter boundary in `deletion-map.md` names the DOM shores that stay host-side.
 
-<<~ ahu #/vessel-law>>
+<<~ ahu slot=`#/vessel-law`>>
 
 !! Vessel Law
 
@@ -84,7 +83,7 @@ protection; no explicit CSP gets required in that context.
 
 <<~/ahu>>
 
-<<~ ahu #/package-law>>
+<<~ ahu slot=`#/package-law`>>
 
 !! Package Law
 
@@ -100,7 +99,7 @@ The `@lararium/browser` package carries `BrowserVesselIslandPool`, `browser-wiki
 
 <<~/ahu>>
 
-<<~ ahu #/admission-law>>
+<<~ ahu slot=`#/admission-law`>>
 
 !! Admission Law
 
@@ -112,7 +111,7 @@ Code enters `@lararium/browser` only when it satisfies ''all three'' tests:
 
 <<~/ahu>>
 
-<<~ ahu #/open-questions>>
+<<~ ahu slot=`#/open-questions`>>
 
 !! Open Questions
 
@@ -126,17 +125,17 @@ These questions do not block charter adoption. They require measurement before r
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/browser/full-detached-worker-authority-pool-sprint">>
-<<~ loulou "lar:///ha.ka.ba/lararium/browser/deletion-map">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tw5-browser-surface">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/full-detached-worker-authority-pool-sprint`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/deletion-map`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lar-vessel`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tw5-browser-surface`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Loaq7QkUIBWrWZesDdq2JJzEDu4PqNft8xRQ-sn4auA
+<<^ code=`&#x0003;`>>ni:///sha-256;v8fJjz84B-qlv4CmsaTwxHYkSuFPZ4bu9Nct9jb3Yig
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

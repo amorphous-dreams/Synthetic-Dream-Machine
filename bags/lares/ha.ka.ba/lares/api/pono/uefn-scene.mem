@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/uefn-scene">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/uefn-scene`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/uefn-scene.mem"
 namespace = "&#x2299;"
 role      = "UEFN scene decomposition model — Verse scene file → Lararium wiki graph → TW5 filtered views; web3 / NOT Blueprint"
 tags      = ["lar:///ha.ka.ba/lararium/mesh/kumu-device"]
@@ -14,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/uefn-scene"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! UEFN Scene Decomposition
 
@@ -27,7 +26,7 @@ holding the bag can render any filtered view of the scene graph without a runnin
 
 <<~/ahu>>
 
-<<~ ahu #/semantic-separation>>
+<<~ ahu slot=`#/semantic-separation`>>
 
 !! Semantic Separation — Three Distinct Layers
 
@@ -46,7 +45,7 @@ a type //has// its components. Composition only (web3): the scene model carries 
 
 <<~/ahu>>
 
-<<~ ahu #/decomposition-law>>
+<<~ ahu slot=`#/decomposition-law`>>
 
 !! Decomposition Law
 
@@ -61,7 +60,7 @@ Every UEFN scene element maps to exactly one of three tiddler kinds:
 ** `spatial:contains` edges: nested class relationships
 
 ''Instance meme'' (`lar:///scene-bag/instances/{placementId}`) — one per placed device.
-** `kahea` edge to its type meme: `<<~ kahea "lar:///scene-bag/types/{ClassName}">>`
+** `kahea` edge to its type meme: ``<<~ kahea uri=`lar:///scene-bag/types/{ClassName}`>>``
 ** `papalohe` edges: Direct Event Binding wires (`listenable` → subscribable function)
 ** Ahu slots: `@editable` property values as child tiddlers
 
@@ -71,7 +70,7 @@ Every UEFN scene element maps to exactly one of three tiddler kinds:
 
 <<~/ahu>>
 
-<<~ ahu #/edge-vocabulary>>
+<<~ ahu slot=`#/edge-vocabulary`>>
 
 !! Edge Vocabulary for Scene Graphs
 
@@ -97,7 +96,7 @@ document-level containment.
 
 <<~/ahu>>
 
-<<~ ahu #/tiddler-filter-views>>
+<<~ ahu slot=`#/tiddler-filter-views`>>
 
 !! TW5 Filter Views
 
@@ -131,7 +130,7 @@ no UEFN process, no Epic servers, no network round-trip.
 
 <<~/ahu>>
 
-<<~ ahu #/import-pipeline>>
+<<~ ahu slot=`#/import-pipeline`>>
 
 !! Import Pipeline (Declared Unresolved)
 
@@ -168,7 +167,7 @@ Two viable import paths, each with limits:
 
 <<~/ahu>>
 
-<<~ ahu #/verse-effect-specifiers>>
+<<~ ahu slot=`#/verse-effect-specifiers`>>
 
 !! Verse Effect Specifiers in the Graph
 
@@ -200,16 +199,16 @@ pranala edge payloads. They feed future Verse code generation from the graph.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kumu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala-families">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kumu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/papalohe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala-families`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LQuy8I8nAv_H1iZZeLwiFybBHSwmFvgF1LuAZydJlG0
+<<^ code=`&#x0003;`>>ni:///sha-256;GrsHC__Zde2xeEeMvreol29XbWWkNctbNhCMhyex6h4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = false
-file-path   = "bags/lares/ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds.mem"
 l-space     = "stable"
 mana        = 15
 manao       = 15
@@ -17,11 +16,11 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Research Stream — Ward, Channel, and the Discipline Layer
 
@@ -31,7 +30,7 @@ Literal-quote witnesses under the five discipline-layer changes the operator rat
 
 <<~/ahu>>
 
-<<~ ahu #/ward-basin>>
+<<~ ahu slot=`#/ward-basin`>>
 
 !! Grounds 1 — the ward's basin named (`l-prime`)
 
@@ -41,7 +40,7 @@ WALS feature 120A — 175/386 languages allow zero copula; the essence/state dis
 
 <<~/ahu>>
 
-<<~ ahu #/classifier-channel>>
+<<~ ahu slot=`#/classifier-channel`>>
 
 !! Grounds 2 — the classifier channel + transmission law (`memetic-wikitext-framing#classifier-channel`)
 
@@ -53,7 +52,7 @@ The sigil layer names its office — //an unpronounced classifier register besid
 
 <<~/ahu>>
 
-<<~ ahu #/reference-fusion>>
+<<~ ahu slot=`#/reference-fusion`>>
 
 !! Grounds 3 — Reference-Fusion (`failure-states`)
 
@@ -63,7 +62,7 @@ Caught live in the parent vessel (the Kona case): a true claim held on borrowed 
 
 <<~/ahu>>
 
-<<~ ahu #/cup-before>>
+<<~ ahu slot=`#/cup-before`>>
 
 !! Grounds 4 — the Cup-before (`exchange-vector`)
 
@@ -73,7 +72,7 @@ Grounding-rifts study (ACL 2025) — LLMs initiate clarification 3× less, follo
 
 <<~/ahu>>
 
-<<~ ahu #/loose-thread>>
+<<~ ahu slot=`#/loose-thread`>>
 
 !! Grounds 5 — the loose thread (a Shrine to Eris)
 
@@ -83,7 +82,7 @@ Oral-formulaic multiformity (wave 12 — the constraint landscape conserves, not
 
 <<~/ahu>>
 
-<<~ ahu #/open-keys>>
+<<~ ahu slot=`#/open-keys`>>
 
 !! Open keys & cheap experiments
 
@@ -91,18 +90,18 @@ Keys still open: a second token-clean essence-fusion case (Map-Wisp) · an essen
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/reference-fusion">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/exchange-vector">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/research-streams`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states/reference-fusion`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/exchange-vector`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hkiO64iUBfCRzdB7ybOdERjmpY927giP1HR57xw-em4
+<<^ code=`&#x0003;`>>ni:///sha-256;MXbt_vRlvM426doI3ugifLf51ScW7iI535blrWMIINQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

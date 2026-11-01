@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/toml-ast">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/toml-ast`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/toml-ast.mem"
 l-space     = "lararium"
 mana        = 12
 role        = "invariant law: the two-layer TOML engine behind a carrier's meta fence. A SYNC spec-compliant reader on the read path, a comment-preserving WASM writer lazily loaded on the write path, and a graceful fall back to the raw string where the WASM cannot load. Names the flattening contract a TW5 field imposes."
@@ -15,7 +14,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/tw5/toml-ast"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! toml-ast ~ two layers, because reading and writing want different things
 
@@ -24,7 +23,7 @@ two paths carry different costs, so they take different engines.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! The invariants
 
@@ -43,7 +42,7 @@ on a node and fetches as a chunk in a browser, and nothing above this line branc
 
 <<~/ahu>>
 
-<<~ ahu #/the-flattening-contract>>
+<<~ ahu slot=`#/the-flattening-contract`>>
 
 !! What a TW5 field can hold, and what that costs TOML
 
@@ -61,15 +60,15 @@ fields stay its projection.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-tw5/src/toml-ast.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-tw5/src/toml-ast.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/lib-smol-toml">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/lib-smol-toml`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9-vRz6_yYHvmfX8iMQOx3ElOe9iy61St1iuV_jXTRLQ
+<<^ code=`&#x0003;`>>ni:///sha-256;Wo7UUmdozJmYDXZL7iRzVNtwWWa38kZtSXPnZ_rHw1M
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-branch-sweep">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-branch-sweep`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-branch-sweep.mem"
 l-space       = "adjacent"
 render-target = "docs"
 role          = "VERBATIM Branch-Scout and Sweep-Reader handback (2026-10-18) — Markdown transliterated only; source wording retained. Controller note: the scout’s table A named `origin/main` and the span for deletion against its brief; the controller re-sorted by measurement. The cold reader’s verdict “not pono as written” drove a rewrite (class-proven targets, one atomic leased push, restore lines). The operator ran the rewritten sweep on 2026-10-18 and every one of its 39 deletes landed. Name: the lens law’s own example, `lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm#/the-lens-law`."
@@ -14,7 +13,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-branch-sweep"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Branch-Scout and Sweep-Reader handback
 
@@ -22,25 +21,25 @@ Verbatim final message of Branch-Scout and Sweep-Reader (2026-10-18); only Markd
 
 <<~/ahu>>
 
-<<~ ahu #/branch-scout-handback>>
+<<~ ahu slot=`#/branch-scout-handback`>>
 
 !! Branch-Scout handback
 
-<<~ ahu #/branch-scout-handback/opening-scout>>
+<<~ ahu slot=`#/branch-scout-handback/opening-scout`>>
 
 ```text
-<<~ status "Branch-Scout: Lares (Tasked Spirit) — handback ready; no Git writes; core.bare=false on direct repo read (REACHED)." >>
+<<~ status text=`Branch-Scout: Lares (Tasked Spirit) — handback ready; no Git writes; core.bare=false on direct repo read (REACHED).` >>
 ```
 <<~/ahu>>
 
-<<~ ahu #/branch-scout-handback/branch-handback>>
+<<~ ahu slot=`#/branch-scout-handback/branch-handback`>>
 
 ! Branch handback
 
 Claims marked INFERRED derive from `branch-inventory.tsv`; claims marked REACHED come directly from supplied PR/worktree files or the read-only direct-repository config query returned `false` (REACHED). PR state was re-read: no PR has state OPEN (REACHED). `merged-by` records evidence for the merge rule, not a human merger identity.
 <<~/ahu>>
 
-<<~ ahu #/branch-scout-handback/a-safe-to-delete>>
+<<~ ahu slot=`#/branch-scout-handback/a-safe-to-delete`>>
 
 !! A. Safe to delete
 
@@ -80,7 +79,7 @@ Local branches and origin refs are listed separately.
 | `main` | `e36b3e346` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
 <<~/ahu>>
 
-<<~ ahu #/branch-scout-handback/b-merged-but-held>>
+<<~ ahu slot=`#/branch-scout-handback/b-merged-but-held`>>
 
 !! B. Merged but held
 
@@ -90,7 +89,7 @@ Local branches and origin refs are listed separately.
 | `feature/green-jello-dinosaur-5--w26-floor` | `fb82fbaa3` | 2026-10-16 | INFERRED: inventory; REACHED: controller handoff | — | yes | held: operator rulings unresolved; provisioning refused (controller state) |
 <<~/ahu>>
 
-<<~ ahu #/branch-scout-handback/c-unmerged>>
+<<~ ahu slot=`#/branch-scout-handback/c-unmerged`>>
 
 !! C. Unmerged
 
@@ -131,7 +130,7 @@ Local branches and origin refs are listed separately.
 | `github-pages` | `6bcf222a4` | 2026-01-07 | INFERRED: inventory | — | no | ahead_of_span=5; Merge branch 'main' into feature/github-pages-markdown |
 <<~/ahu>>
 
-<<~ ahu #/branch-scout-handback/d-origin-ci-throwaways>>
+<<~ ahu slot=`#/branch-scout-handback/d-origin-ci-throwaways`>>
 
 !! D. Origin `ci/*` throwaways
 
@@ -149,7 +148,7 @@ Local branches and origin refs are listed separately.
 | `ci/pre-fence-1` | `4a7378a3f` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | throwaway; merged by ancestry (INFERRED) |
 <<~/ahu>>
 
-<<~ ahu #/branch-scout-handback/commands-for-table-a-not-run>>
+<<~ ahu slot=`#/branch-scout-handback/commands-for-table-a-not-run`>>
 
 !! Commands for table A (NOT RUN)
 
@@ -188,23 +187,23 @@ Local branches and origin refs are listed separately.
 
 <<~/ahu>>
 
-<<~ ahu #/sweep-reader-handback>>
+<<~ ahu slot=`#/sweep-reader-handback`>>
 
 !! Sweep-Reader handback
 
-<<~ ahu #/sweep-reader-handback/opening-reader>>
+<<~ ahu slot=`#/sweep-reader-handback/opening-reader`>>
 
 ```text
-<<~ status "COLD READER: reviewed the script, inventory, PR record, and read-only Git state; no Git state changed; verdict: not pono as written">>
+<<~ status text=`COLD READER: reviewed the script, inventory, PR record, and read-only Git state; no Git state changed; verdict: not pono as written`>>
 ```
 <<~/ahu>>
 
-<<~ ahu #/sweep-reader-handback/cold-reader-lares-tasked-spirit-branch-sweep-handback>>
+<<~ ahu slot=`#/sweep-reader-handback/cold-reader-lares-tasked-spirit-branch-sweep-handback`>>
 
 ! COLD READER: Lares (Tasked Spirit) — branch sweep handback
 <<~/ahu>>
 
-<<~ ahu #/sweep-reader-handback/findings-ranked-by-consequence>>
+<<~ ahu slot=`#/sweep-reader-handback/findings-ranked-by-consequence`>>
 
 !! Findings, ranked by consequence
 
@@ -223,21 +222,21 @@ Local branches and origin refs are listed separately.
 7. ''The script ends by suggesting deletion of a branch the operator wants kept.'' [REACHED: lines 93–96, 135–136] The arrays correctly omit `worktree-agent-a522be6155f677695`, and the worktree listing confirms it remains checked out. Yet the final message tells the operator how to remove that worktree and force-delete its branch. Remove those two lines; their suggestion conflicts with the explicit keep ruling.
 <<~/ahu>>
 
-<<~ ahu #/sweep-reader-handback/mechanics-read>>
+<<~ ahu slot=`#/sweep-reader-handback/mechanics-read`>>
 
 !! Mechanics read
 
 [REACHED: lines 98–116, 126–133] `core.bare=false` currently passes; its first check runs before `git fetch`. The worktree parser found no listed local delete target checked out, while the kept `a522be6155f677695` branch does have a worktree. `grep -qxF ... && refuse` correctly allows an absent match under `set -e`; a match calls `refuse`. A moved tracked tip sets `moved=1` and refuses before deletion, while a missing ref prints `gone already` and silently leaves that target out. `[ "${#A[@]}" -gt 0 ] && ...` and its B/O counterparts safely skip empty arrays under Bash `set -e`; a minimal Bash check confirmed that a false left side of `&&` continues. The `read` prompt, however, comes after the fetch, and `n` refuses only then. The short-tip comparison detects movement in fetched local refs, subject to the remote race above. `git fetch` without pruning can also leave a stale remote-tracking ref for an already deleted server branch; the later push can fail after other deletes.
 <<~/ahu>>
 
-<<~ ahu #/sweep-reader-handback/scope-read>>
+<<~ ahu slot=`#/sweep-reader-handback/scope-read`>>
 
 !! Scope read
 
 [REACHED: lines 11–96] The arrays hold 13 local `-d`, 15 local `-D` for merged PRs, four harvested July locals, and 35 origin refs. Comparing them with `branch-inventory.tsv` found no protected name in a delete array and no omitted inventory branch already marked as an ancestor of the span or main, after the explicit keep list. The four harvested locals appear exactly once. `feature/ftls-powers` and `--art-sigils-yin` appear in `ORIGIN`; the latter has PR #46 marked `CLOSED`, while #47 reads `MERGED`. The live `--w26-own-canon` and `--browser-secrets` lanes stay out, as do the four parked lanes, `--w26-floor`, `fold-prep-local`, backup, `github-pages`, main, and the span. Targeted short-tip reads matched the script for a harvested spirit, `--browser-custody`, and `--art-sigils-yin`. I did not independently reread all 67 target refs; the scout inventory supplies that broader comparison.
 <<~/ahu>>
 
-<<~ ahu #/sweep-reader-handback/opinion-and-verdict>>
+<<~ ahu slot=`#/sweep-reader-handback/opinion-and-verdict`>>
 
 !! Opinion and verdict
 
@@ -248,7 +247,7 @@ The order `-d` then `-D` then remote deletion sensibly places Git's conservative
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 ! Edges
 
@@ -256,6 +255,6 @@ Sources: `in/branch-scout-luna.md; in/sweep-cold-reader.md`. Persona: Branch-Sco
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IjcyWW4CS_bUdUBpP5JGEL7dIcbig220BI7S0jSB7Fc
+<<^ code=`&#x0003;`>>ni:///sha-256;ATYXDarEGpGxKzD_RUFXHgL04_U-4k-eFacRBd8ec60
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

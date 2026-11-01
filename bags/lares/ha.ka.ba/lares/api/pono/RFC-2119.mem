@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/RFC-2119">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/RFC-2119`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/RFC-2119.mem"
 mana      = 18
 manao     = 18
 manaoio   = 18
@@ -18,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/RFC-2119"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! RFC-2119 — Normative Verbs (Kānāwai)
 
@@ -27,7 +26,7 @@ Carrier laws cite this meme; they do not re-declare the list.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ inventory where normative verbs appear across carrier laws in the stack.
 ⏿ separate force-bearing terms from prose habits and local restatements.
@@ -37,7 +36,7 @@ Carrier laws cite this meme; they do not re-declare the list.
 
 <<~/ahu>>
 
-<<~ ahu #/normative-language>>
+<<~ ahu slot=`#/normative-language`>>
 
 !! Normative Language
 
@@ -53,14 +52,14 @@ Carrier laws may explain local usage, but MUST cite this meme rather than re-dec
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/RFC-2119">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/RFC-2119`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;p0ec8BCX-glcvQzBhP4fOwniO7EQcPlKnrYZSSyo8Ko
+<<^ code=`&#x0003;`>>ni:///sha-256;bpBHB6qIj-fRdZQymDF04LNe0wZQrOEcrTRXjJmW5Rg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

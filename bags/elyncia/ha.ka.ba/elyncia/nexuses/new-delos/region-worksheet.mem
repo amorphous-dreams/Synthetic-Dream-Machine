@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! New Delos Nexus ~ Region Worksheet
 
@@ -42,7 +41,7 @@ This worksheet grows by play; each stratum carries prompts beside its canon.
 
 <<~/ahu>>
 
-<<~ ahu #/the-neighborhood>>
+<<~ ahu slot=`#/the-neighborhood`>>
 
 !! The Neighborhood ~ grounding the concept map (Eastern Net, from the gazetteer)
 
@@ -87,7 +86,7 @@ crater in the sinking Montenegro-analog mountains, west beyond the Marches), the
 
 <<~/ahu>>
 
-<<~ ahu #/the-gradient>>
+<<~ ahu slot=`#/the-gradient`>>
 
 !! The Levitation Gradient
 
@@ -114,7 +113,7 @@ own names; "New Delos" stays the Nexus's name entire. The old megacity went ''up
 
 <<~/ahu>>
 
-<<~ ahu #/high-delos>>
+<<~ ahu slot=`#/high-delos`>>
 
 !! High Delos ~ the flying capital
 
@@ -139,7 +138,7 @@ the Orrery actually sit, and who reads it?
 
 <<~/ahu>>
 
-<<~ ahu #/low-delos>>
+<<~ ahu slot=`#/low-delos`>>
 
 !! Low Delos ~ the megadungeon mouth
 
@@ -155,7 +154,7 @@ bottom? What does the nineteen-minute cycle breathe FOR?
 
 <<~/ahu>>
 
-<<~ ahu #/underdark>>
+<<~ ahu slot=`#/underdark`>>
 
 !! The Underdark ~ below the lowest layer
 
@@ -169,7 +168,7 @@ in Rhea's past imply about routes from HERE? Where do the whispered House-of-Mas
 
 <<~/ahu>>
 
-<<~ ahu #/outer-seas>>
+<<~ ahu slot=`#/outer-seas`>>
 
 !! The Outer Seas, Islands & Shores
 
@@ -186,15 +185,15 @@ First-Breaking cult fragment? Where do the smuggling wars actually land their ca
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/index">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/factions/index">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/index`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/factions/index`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WDWigz0yUkxsUQ2RZbOZGfo544sHZ3kcTbpIvdg3mRI
+<<^ code=`&#x0003;`>>ni:///sha-256;BJhforvEYqtPJH6lpTk2JQNERuj2RqZ_idJhmQ0uYvA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

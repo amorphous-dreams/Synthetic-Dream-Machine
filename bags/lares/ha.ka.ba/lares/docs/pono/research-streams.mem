@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/research-streams">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/research-streams`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = false
-file-path   = "bags/lares/ha.ka.ba/lares/docs/pono/research-streams.mem"
 l-space     = "stable"
 mana        = 16
 manao       = 16
@@ -17,7 +16,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/docs/pono/research-streams"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Research Streams - Docs Hub
 
@@ -26,17 +25,17 @@ Invariant law remains in API loci; quote witnesses remain here.
 
 <<~/ahu>>
 
-<<~ ahu #/streams>>
+<<~ ahu slot=`#/streams`>>
 
 !! Stream Memes
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams/prior-art">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams/adversarial-testing">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/research-streams/prior-art`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/research-streams/adversarial-testing`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds`>>
 
 <<~/ahu>>
 
-<<~ ahu #/tension>>
+<<~ ahu slot=`#/tension`>>
 
 !! Texture and Tension
 
@@ -55,14 +54,14 @@ executable adversarial tests -> receipt-backed trust
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/local-first`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/federated-causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FPsPOLZmJMFwcsl2Ms-kR-rIWq9zz9n-25wBQyDhlpc
+<<^ code=`&#x0003;`>>ni:///sha-256;RA0WdGiVWNgrLj4dU9XPk1wvP_vu3J2pU86SyZ7w7lE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

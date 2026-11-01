@@ -1,7 +1,7 @@
 ---
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"
-source-check: "ni:///sha-256;SLK_nZU5gLIOHJHaqT11r4xDRbmFrmFrnl9dyeUGPjA"
+source-check: "ni:///sha-256;xZamjAV_ySzWL39ahNc4a2ybBAQUHE7of2SWUiSeGIc"
 title: "lar:///ha.ka.ba/lares/api/pono/submissions/tiddlywiki-wikitext"
 tongue: "x-lares>en"
 variant: "GFM"
@@ -174,7 +174,7 @@ and the configuration tiddlers filter by these strings.
 | `list` | `*` `#` `;` `:` `>` runs — unordered, ordered, definition, quote lists; nesting by repetition. |
 | `table` | ` | `-delimited rows with alignment, header/footer/caption markers. |
 | `quoteblock` | `<<<` fenced block quotation. |
-| `codeblock` | ``` fenced verbatim block with optional language. |
+| `codeblock` | a three-backtick fenced verbatim block with optional language. |
 | `typedblock` | `$$$type … $$$` — a block parsed under another content type. |
 | `styleblock` | `@@` fenced block carrying CSS classes/styles. |
 | `horizrule` | `---` horizontal rule. |
@@ -335,5 +335,5 @@ rather than minting sibling types.
 
 <a id="edges"></a>
 
-- `loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"`
-- `loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"`
+- `loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`
+- `loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/lists/components">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/lists/components`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/lists/components.mem"
 mana      = 13
 manao     = 16
 role      = "TW5 procedure: render the current tiddler's has-stack as clickable tag-pills (stack filter; captions from definition memes)"
@@ -15,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/lists/components"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -23,7 +22,7 @@ uri-path  = "ha.ka.ba/lararium/lists/components"
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 \procedure components()
 <span class="sdm-component-list">
@@ -35,13 +34,13 @@ uri-path  = "ha.ka.ba/lararium/lists/components"
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/sdm/procedures/tag-pill">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/ui/meta-panel">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/procedures/tag-pill`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/ui/meta-panel`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Swmur-fULzw8anzPnNlVX_U1FswX2Qubg5g9uU97bVc
+<<^ code=`&#x0003;`>>ni:///sha-256;jz3v139tEh7uoyO807YXvdAQbTJZkWhmTSxVCVvWHR0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

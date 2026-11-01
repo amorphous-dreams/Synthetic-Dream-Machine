@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/model-tiers-2026">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/model-tiers-2026`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -9,13 +9,12 @@ l-space   = "lares"
 role      = "field research on model-tier placement (2026-10-30): what each Claude and Codex tier cost and yielded across one lane-day with three Fable lane leads beside Opus and Sonnet leads, collided with the providers' positioning and published orchestration studies, and the placement each tier's nature earns"
 status    = "research; read 2026-10-30; leans run LEAN-verify until a second lane-day reads; `mixed-model-swarm#/the-tiers` carries the placement as law"
 tags      = ["research", "models", "swarm", "economics", "tiers", "fable"]
-file-path = "bags/lares/ha.ka.ba/lares/docs/research/model-tiers-2026.mem"
 title     = "lar:///ha.ka.ba/lares/docs/research/model-tiers-2026"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/model-tiers-2026"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Model tiers, 2026 ~ each tier where its nature serves the whole
 
@@ -23,7 +22,7 @@ A read-only scout measured 115 Claude subagent transcripts (2026-10-17 to 2026-1
 
 <<~/ahu>>
 
-<<~ ahu #/the-field>>
+<<~ ahu slot=`#/the-field`>>
 
 !! What the providers say
 
@@ -35,7 +34,7 @@ Orchestration studies: an Opus lead over Sonnet subagents beat a single Opus by 
 
 <<~/ahu>>
 
-<<~ ahu #/what-this-crew-measured>>
+<<~ ahu slot=`#/what-this-crew-measured`>>
 
 !! What this crew measured
 
@@ -53,7 +52,7 @@ Orchestration studies: an Opus lead over Sonnet subagents beat a single Opus by 
 
 <<~/ahu>>
 
-<<~ ahu #/the-placement>>
+<<~ ahu slot=`#/the-placement`>>
 !! The placement ~ what each seat takes, in order
 
 # Seat the controller on Opus 5.5 at high effort; refresh its context at each batch land. Take Fable only for a named ruling Opus at max visibly missed.
@@ -68,7 +67,7 @@ Orchestration studies: an Opus lead over Sonnet subagents beat a single Opus by 
 A walled Codex seat writes and stops; the lead commits at each red and fix boundary. A Codex seat beats a Claude helper on every read, every listed build and one-question research; a Claude helper wins where the work needs house canon, SendMessage continuity, a commit, the battery lock, or a browser.
 <<~/ahu>>
 
-<<~ ahu #/stories>>
+<<~ ahu slot=`#/stories`>>
 
 !! Two stories
 
@@ -78,7 +77,7 @@ A walled Codex seat writes and stops; the lead commits at each red and fix bound
 
 <<~/ahu>>
 
-<<~ ahu #/open>>
+<<~ ahu slot=`#/open`>>
 
 !! Open
 
@@ -89,9 +88,9 @@ A walled Codex seat writes and stops; the lead commits at each red and fix bound
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/research/model-roster-2026">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/model-roster-2026`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ny4Od7Joz7--P0pi3uFo8aQarfS7EYAETW2tkLuZIBY
+<<^ code=`&#x0003;`>>ni:///sha-256;mcYmVpvaUWSFpJOpuoPgf8oVUpkIM0kbhqSI_CaKer4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

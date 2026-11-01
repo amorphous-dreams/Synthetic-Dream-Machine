@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/far-exclaves">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/far-exclaves`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/far-exclaves.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/places/far-exclaves"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Far Exclaves
 
@@ -38,6 +37,6 @@ their host Realms; host-region worksheets may cross-reference.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2TL4UJDz6Juo9rn7i5fXT0C_inkkT1gOLCaCaqBdgLc
+<<^ code=`&#x0003;`>>ni:///sha-256;8ivQ8qDlmkHuagmLhq8cRYGDEPQKOrIYCm2TbXCXU9E
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

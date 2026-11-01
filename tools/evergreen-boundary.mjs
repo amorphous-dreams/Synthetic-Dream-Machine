@@ -44,7 +44,7 @@ import { fileURLToPath } from "node:url";
 
 export const RULES = ["version", "clock", "narration", "old-shape", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history"];
 /** Today's measured open debt, per rule. RATCHET: each number may only ever come DOWN. */
-export const CEILINGS = { version: 58, clock: 56, narration: 176, "old-shape": 0, "retired-test": 6, "upgrade-delete": 0, "canon-history": 99, "canon-dated-history": 1 };
+export const CEILINGS = { version: 58, clock: 53, narration: 174, "old-shape": 0, "retired-test": 6, "upgrade-delete": 0, "canon-history": 98, "canon-dated-history": 1 };
 export const EXCEPTIONS = [
   { rule: "version", file: "packages/lararium-mesh/src/domains.ts", match: "const frozen =", reason: "The frozen builder preserves live signing domain bytes under the domain registry witness." },
   { rule: "version", file: "packages/lararium-browser/src/browser-vessel-identity.ts", match: "const IDB_VERSION", reason: "IndexedDB's open call takes a numeric version argument; the browser API names it." },

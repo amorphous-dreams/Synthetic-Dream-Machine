@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/rask-varkesh">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/characters/npcs/rask-varkesh`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/rask-varkesh.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/npcs/rask-varkesh"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Rask "Iron-Yip" Varkesh, Gnoll Commander
 
@@ -26,7 +25,7 @@ uri-path  = "ha.ka.ba/elyncia/characters/npcs/rask-varkesh"
 
 <<~/ahu>>
 
-<<~ ahu #/body>>
+<<~ ahu slot=`#/body`>>
 
 ! Rask “Iron-Yip” Varkesh, Gnoll Commander (Level 2, Named)
 
@@ -174,6 +173,6 @@ Run these fast; they’re competent but not heroic.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wwxydhtlZVG58zNwV0fzASuKt1kPsO9RxP6Dy_0ndUE
+<<^ code=`&#x0003;`>>ni:///sha-256;c6WoRKMFql1Vb3wP_y9g4ehjAENLMo3kp3bgbJriUbs
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

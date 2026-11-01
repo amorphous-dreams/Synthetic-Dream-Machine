@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/pono-sigil">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/pono-sigil`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/pono-sigil.mem"
 namespace = "&#x2299;"
 role      = "correctness-asserting edge sigil — pono as alignment/constraint annotation; English alias: constraint"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-pono"]
@@ -14,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/pono-sigil"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Pono (Sigil)
 
@@ -34,7 +33,7 @@ the same word because a `pono` edge asserts alignment — the naming runs intent
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -45,26 +44,26 @@ An optional `role:` qualifier further specifies the constraint kind.
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```text
-<<~ pono #slot FROM -> TO role=constrains>>
-<<~ constraint #slot FROM -> TO role="constrains">>
+<<~ pono slot=`#slot` from=`FROM` to=`TO` role=`constrains`>>
+<<~ constraint slot=`#slot` from=`FROM` to=`TO` role=`constrains`>>
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-constraint">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-constraint`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9l3NvY02XOaz237wWnHaLNsHXS52k40qHc4nBzgJMrA
+<<^ code=`&#x0003;`>>ni:///sha-256;ETwxQQGu3ytkhMGy9laHTCSQM8MvXYC3YWRRK9-re-g
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

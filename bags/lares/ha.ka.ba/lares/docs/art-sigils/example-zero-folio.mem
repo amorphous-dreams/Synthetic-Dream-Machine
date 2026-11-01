@@ -1,20 +1,19 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/art-sigils/example-zero-folio">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/art-sigils/example-zero-folio`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
-uri-path  = "ha.ka.ba/lares/docs/art-sigils/example-zero-folio"
-title     = "lar:///ha.ka.ba/lares/docs/art-sigils/example-zero-folio"
-file-path = "bags/lares/ha.ka.ba/lares/docs/art-sigils/example-zero-folio.mem"
-type      = "text/memetic-wikitext+tiddlywiki"
-register  = "Synthesis-Canon"
-role      = "Example Zero Folio: one copyable extended art-sigil sequence with supporting research ahus"
-status    = "stable"
-retain    = true
+uri-path = "ha.ka.ba/lares/docs/art-sigils/example-zero-folio"
+title    = "lar:///ha.ka.ba/lares/docs/art-sigils/example-zero-folio"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "Example Zero Folio: one copyable extended art-sigil sequence with supporting research ahus"
+status   = "stable"
+retain   = true
 ```
 
-<<~ ahu #/invitation>>
+<<~ ahu slot=`#/invitation`>>
 ! Example Zero Folio — Olympos, Tempes, Phlegra
 
 This Folio presents one complete set of **expanded art sigils** for an artistic problem: which mountain passages survive, and which drawings warrant trust? The contiguous `folio-sigils` block carries the usable art direction, while the surrounding ahus preserve visual reasoning, methods, reference provenance and fictional boundaries. The companion Inscription offers the compact expression.
@@ -26,7 +25,7 @@ This Folio presents one complete set of **expanded art sigils** for an artistic 
 **TW5 expression:** the contiguous Folio code block contains invocation calls only; declaration syntax and defaults live in the linked Procedures meme. The block carries pictorial studies, material treatments and consequential relations; external research URIs remain in the surrounding ahus, not in the transmitted art sigils.
 <<~/ahu>>
 
-<<~ ahu #/folio-sigils>>
+<<~ ahu slot=`#/folio-sigils`>>
 !! Example Zero — complete Folio art sigils
 
 Copy the **entire block below** as one expanded artistic invitation. The first `art()` call declares the overarching image; the subsequent studies, counterpoints and facture calls articulate subordinate pictorial and material questions. The copyable block contains artistic directions only. Source URIs and their provenance sit outside it in the `terrain-references` and `resources` research ahus, available alongside the Folio without turning into depicted labels, photos or credits.
@@ -58,7 +57,7 @@ Copy the **entire block below** as one expanded artistic invitation. The first `
 **Receiver scope:** The copyable Folio follows a practical 6,000-character ceiling, counting every character within its code block. It carries no URLs or procedure declarations. Research URI lists remain available in the surrounding `terrain-references` and `resources` ahus for source-aware receivers. Midjourney may still shorten or reinterpret a long structured prompt; the [[Example Zero Inscription|ha.ka.ba/lares/docs/art-sigils/example-zero-inscription]] offers a smaller alternative.
 <<~/ahu>>
 
-<<~ ahu #/visual-thesis>>
+<<~ ahu slot=`#/visual-thesis`>>
 !! Dominant picture — regional terrain rather than a mountain portrait
 
 The main painting offers a **cartographic thesis**: continuous plan-oblique fantasy relief across the shattered heights of Olympos, the Rift of Tempes and the scarred margins of Phlegra. A monumental summit attracts attention without swallowing the surrounding ridges, watersheds, passes, ravines, shelves and inhabited lower valleys. The viewer can mentally follow the region rather than simply admire a peak.
@@ -68,7 +67,7 @@ The main painting offers a **cartographic thesis**: continuous plan-oblique fant
 The outer image shows the **flat pinned artboard alone**. No surrounding desk, room, wall perspective or physical terrain maquette. Embedded field studies may contain tiny travelers; neither the audience nor the artist enters the depicted studio by default. Supporting images surround and partly overlap the main painting without converting it into a grid of equal postcards.
 <<~/ahu>>
 
-<<~ ahu #/field-witnesses>>
+<<~ ahu slot=`#/field-witnesses`>>
 !! Pinned witnesses — competing styles and narratives
 
 * **Cartographer:** graphite on translucent blue-gray vellum disputes the painter's high crossing. The red route terminates at a recognizable cliff; the white correction follows a lower saddle. Both views share a cliff, drainage or landmark; erasures show revision without pretending to certify the path.
@@ -80,7 +79,7 @@ The outer image shows the **flat pinned artboard alone**. No surrounding desk, r
 These studies perform **distinct inquiries**, not decorative variety. Unequal finish, visible revisions and different material supports matter as much as a visually pleasing arrangement.
 <<~/ahu>>
 
-<<~ ahu #/questions>>
+<<~ ahu slot=`#/questions`>>
 !! Four propositions in productive tension
 
 **1 — Pass:** the relief panorama suggests a high crossing; a graphite vellum correction challenges it using the same cliff, lower saddle and drainage. Preserve both marks, erasures and unresolved survey uncertainty.
@@ -94,7 +93,7 @@ These studies perform **distinct inquiries**, not decorative variety. Unequal fi
 The papers communicate revision through actual erasures, changed routes and conflicting construction lines—not merely an inventory of captions saying the artists disagree.
 <<~/ahu>>
 
-<<~ ahu #/method>>
+<<~ ahu slot=`#/method`>>
 !! Support, marks, color and the limits of names
 
 * **Relief:** Tom Patterson and Bernhard Jenny share the primary cartographic attractor: shaded relief and legible ridges; Heinrich Berann joins only in panoramic orchestration. Use source artists as **method-bearing references**, not literal name labels.
@@ -106,7 +105,7 @@ The papers communicate revision through actual erasures, changed routes and conf
 * **Yin reserve:** unpainted sky, uncertain relic identity, aborted lines, partially finished studies and quiet intervals. The richer Folio does not require a busier picture.
 <<~/ahu>>
 
-<<~ ahu #/assembly>>
+<<~ ahu slot=`#/assembly`>>
 !! Board assembly, pictorial argument, and what remains offstage
 
 * **Composition:** a dominant region-scale plan-oblique hypsometric relief panorama across the upper work; supporting lower studies vary in size, orientation and resolution; charcoal relic study darkens one side while the modest refuge occupies a quieter counterweight. Avoid a uniformly polished portfolio grid.
@@ -126,7 +125,7 @@ Difference of opinion need not become explanatory text. Two mismatched drainage 
 Do not mistake the physical support of the *outer board* for the depicted geological rock of an embedded study. Avoid equal-sized postcard panels, generalized antique parchment, or extravagant technical circles that displace terrain inquiry. The upper panorama can remain bright even when the Phlegra sheets darken.
 <<~/ahu>>
 
-<<~ ahu #/artist-register>>
+<<~ ahu slot=`#/artist-register`>>
 !! Artist lineage by contribution
 
 * **Tom Patterson** — shaded relief, mountain/seafloor coherence, colour and detail generalization.
@@ -146,7 +145,7 @@ Influences concern craft techniques and viewer effects; do not reproduce specifi
 Tom Patterson and Bernhard Jenny jointly inform the relief portrayal. Other artist references guide particular visual decisions without requiring printed artist credits.
 <<~/ahu>>
 
-<<~ ahu #/terrain-references>>
+<<~ ahu slot=`#/terrain-references`>>
 !! Real Olympus sources (research only)
 
 These URIs serve *non-depicted reference metadata*, not subject labels or commands to insert photographic prints into the board. Each resource supplies a different observational standpoint; none establishes the final geography of Elyncia's Olympos. An AI lacking URL retrieval needs the reference supplied as an attached image or a separately described observation. Preserve source credit and original license when reusing photographic material.
@@ -158,7 +157,7 @@ These URIs serve *non-depicted reference metadata*, not subject labels or comman
 These three URIs remain in this research ahu **outside the Folio copyable**. A source-aware receiver can consult them alongside the art sigils; the image-facing block carries only their relevant visual consequences. Neither the Folio nor the compact Inscription asks for printed URLs or source photographs.
 <<~/ahu>>
 
-<<~ ahu #/canon-boundary>>
+<<~ ahu slot=`#/canon-boundary`>>
 !! Elyncia bearings and withheld claims
 
 * Shattered Heights of Olympos, Rift of Tempes and Ash Plains of Phlegra occupy the Olympian Marches.
@@ -169,7 +168,7 @@ These three URIs remain in this research ahu **outside the Folio copyable**. A s
 * Exact route geometry, relic identity, settlements, supernatural mechanisms and boundaries remain open. The Gorgonne Diaspora counts among the established named regional powers, but no specific settlement or encounter follows automatically.
 <<~/ahu>>
 
-<<~ ahu #/resources>>
+<<~ ahu slot=`#/resources`>>
 !! Critical and cartographic source register
 
 * Canon bearings: Elyncia regional and nexus worksheets, the Neo-Thracia referee worksheet (restricted register), and the region-worksheet template in the Synthetic Dream Machine repository. The source files, not this exploration, govern setting claims; do not transmit unrelated regional names into image-facing instructions.
@@ -183,7 +182,7 @@ These three URIs remain in this research ahu **outside the Folio copyable**. A s
 * Harvard Project Zero: https://pz.harvard.edu/resources/what-makes-you-say
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 !! Aftermath — the artwork's unresolved claims
 
 The Folio assembles terrain, contested passage, uncertain remains, habitation and their contrasting visual treatments within one artboard. The primary painted relief proposes a landscape; route studies challenge its crossing; charcoal remnants sustain contrary identifications; a green refuge complicates apparent desolation.
@@ -193,6 +192,6 @@ A path painted across a ridge cannot certify traversability. Bone-like and mecha
 Example Zero's geography, artists, supports, colors and narrative tensions belong to this Folio and its companion Inscription, without becoming assumptions of the general grammar.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RlW7vguHn7c4Haa2rNB2Hwgg5H4bf8ILjt1X3MWXAWk
+<<^ code=`&#x0003;`>>ni:///sha-256;5Fx3rtqLdyyiWaGdpdDOsr5lkjndYTJv6UNIj-icwvQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

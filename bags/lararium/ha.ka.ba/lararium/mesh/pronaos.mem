@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/pronaos">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⚕` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/pronaos`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/pronaos.mem"
 hydrate    = true
 l-space    = "lararium"
 mana       = 15
@@ -21,11 +20,11 @@ uri-path   = "ha.ka.ba/lararium/mesh/pronaos"
 written    = "2026-09-22"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Pronaos ~ the house's first face, without a landlord
 
@@ -45,7 +44,7 @@ without cella access remains a studied possibility, not a runtime claim.
 
 <<~/ahu>>
 
-<<~ ahu #/mythic-binding>>
+<<~ ahu slot=`#/mythic-binding`>>
 
 !! The mythic binding ~ a forecourt for one house, not another road tier
 
@@ -72,7 +71,7 @@ place where a local composition makes a truthful outward face.
 
 <<~/ahu>>
 
-<<~ ahu #/the-placement>>
+<<~ ahu slot=`#/the-placement`>>
 
 !! The placement ~ the forecourt attached to a particular house
 
@@ -108,15 +107,15 @@ house-held `library:` collection or arbitrary CAS bytes public.
 
 <<~/ahu>>
 
-<<~ ahu #/the-rung-ladder>>
+<<~ ahu slot=`#/the-rung-ladder`>>
 
 !! The rung ladder ~ household, crossroads, temple
 
 How much a vessel says about itself to a stranger climbs three rungs, the same three tiers Elyncia keeps:
 a household shrine, a crossroads marker, a temple. ''Each rung opts in above the one below; the default stays
-silent.'' Grounds: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire#/legibility">> — a
+silent.'' Grounds: <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/shelter-against-empire#/legibility`>> — a
 self-description reads as the two-finger sign, cheap to read at a distance — and
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober">> — any surface that answers a
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober`>> — any surface that answers a
 stranger distinguishably reads as an oracle, so the client proves first.
 
 ```
@@ -145,16 +144,16 @@ descriptor hold one dispatcher key, so one vessel can never answer the well-know
 the waymark knob refuses: its arrival rides its Pronaos. Its readiness answer, `/api/health`, binds on a lararium
 alone; on a herm that path draws the closed door, since a readiness answer describes the self.
 
-''THE FLOOR STANDS ON NO RUNG.'' The floor carries the shared system rows its manifest names, as history-free content-addressed snapshots. It answers by the Nexus's release at the porch, to the name a reader brings: `GET /floor/<Nexus AID>` hands over the release rows the Nexus's crossroads board carries (each with the charter's epoch lineage), and `GET /cas/<cid>` the blobs the head release names. Every other name, an AID this vessel does not answer for and a wrong method draw the one closed door. A seated Kahu key seals the release as the steward, the cabal's approval of the manifest's exact bytes rides attached, and a herm carries and presents it without signing it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">> #/floor-release); a reader verifies the lineage, the seal, the approval and every blob's CID itself, and no tender name reaches a stranger. The vessel's own gate still admits only proven peers to its flow-map socket.
+''THE FLOOR STANDS ON NO RUNG.'' The floor carries the shared system rows its manifest names, as history-free content-addressed snapshots. It answers by the Nexus's release at the porch, to the name a reader brings: `GET /floor/<Nexus AID>` hands over the release rows the Nexus's crossroads board carries (each with the charter's epoch lineage), and `GET /cas/<cid>` the blobs the head release names. Every other name, an AID this vessel does not answer for and a wrong method draw the one closed door. A seated Kahu key seals the release as the steward, the cabal's approval of the manifest's exact bytes rides attached, and a herm carries and presents it without signing it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>> #/floor-release); a reader verifies the lineage, the seal, the approval and every blob's CID itself, and no tender name reaches a stranger. The vessel's own gate still admits only proven peers to its flow-map socket.
 
-''THE BULB CARRIES THE COAL ALONE'' (operator-ruled; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps#/the-five-caps">>).
+''THE BULB CARRIES THE COAL ALONE'' (operator-ruled; <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/vessel-caps#/the-five-caps`>>).
 The bulb carries the genesis seed and the CAS blobs that seed names, and nothing that names a house or a Nexus —
 so two houses holding one genesis hold one bulb CID. The corm holds the charter epoch as its freshness lease; a house's
 joining pointers ride the stolon, the invite. Neither rides the bulb.
 
 <<~/ahu>>
 
-<<~ ahu #/the-five-relations>>
+<<~ ahu slot=`#/the-five-relations`>>
 
 !! Five relations ~ reach, browser trust, identity, delivery, authority
 
@@ -172,7 +171,7 @@ presence carries a previously acquired response, never authority, membership, fr
 
 <<~/ahu>>
 
-<<~ ahu #/the-cap-stack>>
+<<~ ahu slot=`#/the-cap-stack`>>
 
 !! The Pronaos cap stack ~ the forecourt holds public delivery, never inner reach
 
@@ -200,7 +199,7 @@ house's first-reach presentation and delivery. Their rhyme grants no license to 
 
 <<~/ahu>>
 
-<<~ ahu #/the-declared-path>>
+<<~ ahu slot=`#/the-declared-path`>>
 
 !! The declared path ~ a route never grants ambient reach
 
@@ -223,7 +222,7 @@ replaces the later peer-key handshake or the served vessel's capability decision
 
 <<~/ahu>>
 
-<<~ ahu #/the-procession>>
+<<~ ahu slot=`#/the-procession`>>
 
 !! The forecourt ~ first reach unfolds in four local acts
 
@@ -237,7 +236,7 @@ local vessel enough truthful material to choose its next crossing.
 
 <<~/ahu>>
 
-<<~ ahu #/the-first-arrival>>
+<<~ ahu slot=`#/the-first-arrival`>>
 
 !! The first arrival ~ the house's own origin serves the kindle (RULED, BUILT)
 
@@ -266,7 +265,7 @@ descriptor, never the only one, and never a second source of truth.
 
 ''The arrival page answers at the floor.'' A lararium standing at its waking floor still serves its arrival
 page: liveness ⊥ readiness. A house that cannot yet open its archive stays reachable and says what it cannot
-do (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-arrival-page">>).
+do (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-arrival-page`>>).
 
 ''Built.'' The descriptor answers at `/.well-known/lar` — `lar` names the namespace, so the one name covers every
 vessel — as `application/vnd.lar.arrival+json`, canonical JSON derived from the route receipt alone: the arrival
@@ -283,12 +282,12 @@ before the boot reads either, so a house at its waking floor serves all of it.
 
 ''The descriptor never carries the floor's announcement.'' That announcement speaks to PEERS over the socket or
 relay, once per carried Nexus, and never at `/.well-known/lar`
-(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-announcement">>). So the bytes a floor serves here
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-announcement`>>). So the bytes a floor serves here
 equal the bytes a raised hearth serves.
 
 <<~/ahu>>
 
-<<~ ahu #/refusal-and-loss>>
+<<~ ahu slot=`#/refusal-and-loss`>>
 
 !! Refusal and loss ~ named outward failure, detailed local witness
 
@@ -304,7 +303,7 @@ other wall-clock witness may decide shared ordering, membership, integrity, admi
 
 <<~/ahu>>
 
-<<~ ahu #/the-production-shape>>
+<<~ ahu slot=`#/the-production-shape`>>
 
 !! The production shape ~ one house's forecourt, while every shore keeps its proof
 
@@ -320,7 +319,7 @@ design wave; they may configure reach and never create document or peer authorit
 
 <<~/ahu>>
 
-<<~ ahu #/the-red-witness>>
+<<~ ahu slot=`#/the-red-witness`>>
 
 !! The red witness ~ prove the approach before machinery grows
 
@@ -346,7 +345,7 @@ introduction, separate peer-key proof, and separate capability/admission refusal
 
 <<~/ahu>>
 
-<<~ ahu #/operator-stories>>
+<<~ ahu slot=`#/operator-stories`>>
 
 !! Operator stories ~ Gaia and Elyncia
 
@@ -365,7 +364,7 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<~ ahu #/next-cuts>>
+<<~ ahu slot=`#/next-cuts`>>
 
 !! Next cuts ~ one contract before deployment variants
 
@@ -381,31 +380,31 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps#/lares-viales">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology#/the-severability-law">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/publish-a-face">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/elyncia">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/lares-viales">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/vessel-caps#/lares-viales`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/nexus-topology#/the-severability-law`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/attestation-plane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/publish-a-face`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/elyncia`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/lares-viales`>>
 
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes">> — anchors the shared oracle surface model
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-cas-substrate">> — serves seed bytes and history-free floor rows
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane">> — carries answer authority without herm signatures
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance#/board-model">> — presents the steward-signed per-Nexus answer
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-cas-substrate`>> — serves seed bytes and history-free floor rows
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane`>> — carries answer authority without herm signatures
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance#/board-model`>> — presents the steward-signed per-Nexus answer
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-J0yJBS_4yVAnVtslKOyskJsRrfkuxktit5de771rY0
+<<^ code=`&#x0003;`>>ni:///sha-256;r-noTS2bwHSBi1IkE6BGfPdMRSyHLIVN5ZYsnW3QeOw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

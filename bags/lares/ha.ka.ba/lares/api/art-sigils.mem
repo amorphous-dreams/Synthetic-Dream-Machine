@@ -1,20 +1,19 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/art-sigils">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/art-sigils`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
-uri-path  = "ha.ka.ba/lares/api/art-sigils"
-title     = "lar:///ha.ka.ba/lares/api/art-sigils"
-file-path = "bags/lares/ha.ka.ba/lares/api/art-sigils.mem"
-type      = "text/memetic-wikitext+tiddlywiki"
-register  = "Synthesis-Canon"
-role      = "Art Sigils API index"
-status    = "stable"
-retain    = true
+uri-path = "ha.ka.ba/lares/api/art-sigils"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "Art Sigils API index"
+status   = "stable"
+retain   = true
 ```
 
-<<~ ahu #/index>>
+<<~ ahu slot=`#/index`>>
 ! Art Sigils — API
 
 Eight artistic dimensions: worktype, subject, read, imagery, treatment, composition, relation, depiction-scope.
@@ -25,10 +24,10 @@ Eight artistic dimensions: worktype, subject, read, imagery, treatment, composit
 * [[Worked Examples|ha.ka.ba/lares/docs/art-sigils]]
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 The grammar governs expression, not an artwork's subject, medium or style.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uuozCD31ILlnaYtl5Ny2NX4RyENhdECs3Rvpnfxolys
+<<^ code=`&#x0003;`>>ni:///sha-256;SAegB6TjQnRwNeywPIKw5rlKT_aAueqAmaoXQgIGaLY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/x-tiddlywiki-filter.mem"
 grammar-key = "x-tiddlywiki-filter"
 guest-mime  = "text/x-tiddlywiki-filter"
 mana        = 18
@@ -17,11 +16,11 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/x-tiddlywiki-filter"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! x-tiddlywiki-filter
 
@@ -36,7 +35,7 @@ pranala data model. This meme points; that meme holds the law.
 
 <<~/ahu>>
 
-<<~ ahu #/what-is-implemented>>
+<<~ ahu slot=`#/what-is-implemented`>>
 
 !! What Is Implemented
 
@@ -62,7 +61,7 @@ tiddler). Filters work the same way; the labels change.
 
 <<~/ahu>>
 
-<<~ ahu #/extensions>>
+<<~ ahu slot=`#/extensions`>>
 
 !! Extensions in wikitext-filter
 
@@ -84,7 +83,7 @@ See the full spec: `lar:///ha.ka.ba/lares/api/pono/wikitext-filter`
 
 <<~/ahu>>
 
-<<~ ahu #/invocation>>
+<<~ ahu slot=`#/invocation`>>
 
 !! Invocation
 
@@ -94,16 +93,16 @@ Two ways to use this grammar in a carrier:
 as `x-tiddlywiki-filter` / `wikitext-filter` automatically:
 
 ```text
-<<~ wai [tag[invariant]sort[title]]>>
-<<~ huli "[toml:l-space[grammar]]" as item>>
-<<~ ui "[edge:family[control]role[has]]">>
+<<~ wai filter=`[tag[invariant]sort[title]]`>>
+<<~ huli filter=`[toml:l-space[grammar]]` as=`as` sigil=`item`>>
+<<~ ui filter=`[edge:family[control]role[has]]`>>
 ```
 
 ''Block'' — via `hana` with an explicit grammar key when the expression is
 multi-line or needs a named degradation posture:
 
 ````text
-<<~ hana #work>>
+<<~ hana grammar=`#work`>>
 ```toml
 grammar      = "x-tiddlywiki-filter"
 context      = "[self[]]"
@@ -120,16 +119,16 @@ interchangeable in `hana` blocks. Prefer `"wikitext-filter"` for new authoring.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wikitext-filter">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/guest-grammar">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wikitext-filter`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/guest-grammar`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LIgl3fzU7AL1eEZH1jaajdI4k676A7U9HIRvq3nIG68
+<<^ code=`&#x0003;`>>ni:///sha-256;Id1AIjzo-gb7IOVUmrX7zzV6zHGmw7DHCfyRaOm5zTU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

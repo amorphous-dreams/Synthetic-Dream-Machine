@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/causal-islands.mem"
 heleuma       = "ba"
 l-space       = "stable"
 mana          = 18
@@ -21,7 +20,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/causal-islands"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Causal Islands
 
@@ -37,7 +36,7 @@ this model separates them.
 
 <<~/ahu>>
 
-<<~ ahu #/model>>
+<<~ ahu slot=`#/model`>>
 
 !! The model — three axes + one plane
 
@@ -70,7 +69,7 @@ homogeneous-trust (those devices already hold `admin` on `@daemon`, so marginal 
 (2026-06-29 cohere); above it the mesh scales on the orthogonal ''INFRA axis'' — `Nexus` and
 `DreamNet` join by ''treaty / mutual-carriage contract'' (who relays whose sealed bytes), never by
 delegation-up, a relay carrying without reading
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology">>). "DreamNet"
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology`>>). "DreamNet"
 names no registry and no canonical graph; it emerges as the transitive closure of who-relays-to-whom
 under everyone's local stances. Neighborhood, city, nexus and DreamNet
 ride the INFRA shrine-tiers and join by treaty, never as delegation-nested WHO rings.
@@ -92,7 +91,7 @@ capability structurally cannot express it. Lives in its own invariant
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law
 
@@ -129,7 +128,7 @@ pretending to a global now reads as the managing failure
 
 <<~/ahu>>
 
-<<~ ahu #/two-clocks>>
+<<~ ahu slot=`#/two-clocks`>>
 
 !! Two clocks, orthogonal — causal ⊥ rhythmic
 
@@ -163,7 +162,7 @@ membership-removal) name authority/liveness mechanisms, never clocks. Full rhyth
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -259,7 +258,7 @@ conditions = [
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source (TypeScript — compiled-in)
 
@@ -314,7 +313,7 @@ export function visibilityGate(input: VisibilityGateInput): boolean {
 
 <<~/ahu>>
 
-<<~ ahu #/the-model-key>>
+<<~ ahu slot=`#/the-model-key`>>
 
 !! A time value MAY enter as a KEY, never as an arbiter
 
@@ -338,7 +337,7 @@ Two parties holding positions at different epochs cannot reconcile them by compa
 
 <<~/ahu>>
 
-<<~ ahu #/reject>>
+<<~ ahu slot=`#/reject`>>
 
 !! Reject-list — the re-concentration traps
 
@@ -363,12 +362,12 @@ meant to escape):
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mandate-activity-provenance`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PlBbmobFmcS-UdprzIC4fZyo0RLlFbJgMWRvFNxMEYo
+<<^ code=`&#x0003;`>>ni:///sha-256;_GEtb6ldhjlMmk14U8cZRLppQrcwzY2ZJzHdfWTIXF0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/kairos">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/kairos`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/kairos.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/kairos"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! KAIROS — The Proactive Monitor as an Instrument
 
@@ -32,9 +31,9 @@ never a subsystem bolted beside it.
 
 <<~/ahu>>
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Provenance
 
@@ -56,7 +55,7 @@ quoting any of them onward.
 
 <<~/ahu>>
 
-<<~ ahu #/the-gate>>
+<<~ ahu slot=`#/the-gate`>>
 
 !! The Gate
 
@@ -97,7 +96,7 @@ changes shape or stops surfacing.
 
 <<~/ahu>>
 
-<<~ ahu #/tiers>>
+<<~ ahu slot=`#/tiers`>>
 
 !! The Ladder as Budget
 
@@ -143,7 +142,7 @@ than fall quiet. Silence reads as absence, and absence reads as broken.
 
 <<~/ahu>>
 
-<<~ ahu #/anatomy>>
+<<~ ahu slot=`#/anatomy`>>
 
 !! Check Anatomy
 
@@ -178,7 +177,7 @@ surfacing MUST clear a much higher bar.
 
 <<~/ahu>>
 
-<<~ ahu #/refusal>>
+<<~ ahu slot=`#/refusal`>>
 
 !! The Refusal to Act
 
@@ -198,7 +197,7 @@ the rule MUST NOT port without it.
 
 <<~/ahu>>
 
-<<~ ahu #/decay>>
+<<~ ahu slot=`#/decay`>>
 
 !! Decay — the re-entry key
 
@@ -223,19 +222,19 @@ teaches the operator that dismissal does nothing, and that lesson generalizes to
 button files against the ''analyzer author'', and analyzers with high dismissal rates ''get
 disabled''. A dismissal that silences one instance teaches the instrument nothing.
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hoike">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoike`>>
 
 <<~/ahu>>
 
-<<~ ahu #/trust-ledger>>
+<<~ ahu slot=`#/trust-ledger`>>
 
 !! The Trust Ledger — two accounts, never one
 
 Dixon & Wickens separate two channels that MUST NOT trade against
 each other:
 
-<<~ scale compliance "acting-when-it-fires ~ degraded by FALSE ALARMS">>
-<<~ scale reliance "trusting-the-silence ~ degraded by MISSES">>
+<<~ scale name=`compliance` ranks=`acting-when-it-fires ~ degraded by FALSE ALARMS`>>
+<<~ scale name=`reliance` ranks=`trusting-the-silence ~ degraded by MISSES`>>
 
 ''A quiet run makes a claim.'' Suppressing a noisy check to protect compliance draws down
 reliance, and nothing surfaces that draw unless the instrument counts both.
@@ -249,7 +248,7 @@ automation, root-caused to false alarms and to a base rate nobody weighed.
 
 <<~/ahu>>
 
-<<~ ahu #/check-set-one>>
+<<~ ahu slot=`#/check-set-one`>>
 
 !! Check Set One
 
@@ -282,7 +281,7 @@ published Claude Code escapes land at the ''argument'' layer, never the verb.
 
 <<~/ahu>>
 
-<<~ ahu #/ruled>>
+<<~ ahu slot=`#/ruled`>>
 
 !! Rulings — operator, 2026-08-27
 
@@ -308,19 +307,19 @@ free coarse breakpoint; a scheduled sweep needs its own justification.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/operations-review">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/degraded-states">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/workspace-trust-gate">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/identity-permissions">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hoike">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/operations-review`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/degraded-states`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences/workspace-trust-gate`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences/identity-permissions`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoike`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_CXOTFrAL6qDBVA6258g4nH4aMAM4e2va72SsM2vRZ8
+<<^ code=`&#x0003;`>>ni:///sha-256;tHCnv0O9EAJnE7JkP4ly7PIP2I_ecvkWUuUFA4oeXh0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 15
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Lindwyrm ~ Referee Dossier
 
@@ -28,7 +27,7 @@ and never draft here''; this meme points at their existence and carries none of 
 
 <<~/ahu>>
 
-<<~ ahu #/the-apparatus>>
+<<~ ahu slot=`#/the-apparatus`>>
 
 !! The Apparatus
 
@@ -46,7 +45,7 @@ and never draft here''; this meme points at their existence and carries none of 
 
 <<~/ahu>>
 
-<<~ ahu #/the-long-game>>
+<<~ ahu slot=`#/the-long-game`>>
 
 !! The Long Game
 
@@ -66,7 +65,7 @@ preparing it.
 
 <<~/ahu>>
 
-<<~ ahu #/form-and-seals>>
+<<~ ahu slot=`#/form-and-seals`>>
 
 !! Form, and the Sealed Strata
 
@@ -93,13 +92,13 @@ dragon builds meshes. These live referee-side of even this bag — the operator'
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/factions/league-of-free-cities">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/factions/league-of-free-cities`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vOIRDon2H3T3uVWx8sSBP_YeDMFhvAESYHBV5JQ6bXs
+<<^ code=`&#x0003;`>>ni:///sha-256;xameVKYmjIfuxRd9C8A7XY86UoIcXd6f_KGGyvAvYWQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

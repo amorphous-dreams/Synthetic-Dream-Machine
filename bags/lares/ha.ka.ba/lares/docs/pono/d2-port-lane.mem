@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/d2-port-lane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/d2-port-lane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/d2-port-lane.mem"
 l-space   = "adjacent"
 role      = "the D2 close lane's kit: the record port reaches a page: the port lease, the page transport, the lends, the real witnesses, listener timing, the retired port's settled write, the clockless hand gate and mount epoch, the info tier, the same-id resend, the widget-tree parity witness and the incremental document frequency"
 status    = "draft"
@@ -14,19 +13,19 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/d2-port-lane"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! D2 close ~ the record port reaches a page
 
-Order (controller, 2026-10-26): the lane runs in slot two, after I1 (the intent plane, PR #99). The operator ruled the same day to close as much open work as possible before the bake and founding, so D2 closes whole: every row of the port contract's #/owed stands built or stands ruled out of the lane by name (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract">>). The D3 glass engine follows as its own lane on a port a page can now reach (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">> D3).
+Order (controller, 2026-10-26): the lane runs in slot two, after I1 (the intent plane, PR #99). The operator ruled the same day to close as much open work as possible before the bake and founding, so D2 closes whole: every row of the port contract's #/owed stands built or stands ruled out of the lane by name (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract`>>). The D3 glass engine follows as its own lane on a port a page can now reach (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>> D3).
 
 The worker half stood since PR #87: the port log, the wire, the island handler, one island to one face, the bounds. No page reached it, because the composer lent nothing and the holder dropped port replies by name. This lane builds the road and closes the rows beside it.
 
 <<~/ahu>>
 
-<<~ ahu #/the-slices>>
+<<~ ahu slot=`#/the-slices`>>
 
 !! The ten rows, each built red first with its control
 
@@ -38,12 +37,12 @@ The worker half stood since PR #87: the port log, the wire, the island handler, 
 # ''The clockless debt ~ BUILT.'' `HandGate` flushes a title's coalesced marks at the next store family boundary, at the next act, at the eighth coalesced mark (`COALESCE_CAP`) or at teardown; `ShoreTimers` and the adaptor's `timers` parameter are gone. The adaptor crosses a boundary after a landed family and at the start of a discrete act, and the wiki behavior crosses one before every `lar:control-event`, `lar:resend`, `wiki:place-verb` and `port:` message. The camera's `mountEpoch` mints from a boot nonce (random, 32 bits) and a rising counter (20 bits, `mount-epoch-exhausted` past it). A throwing clock spy over both paths proves neither reads a clock (`hand-gate-clockless.test.ts`, `tw5-projection-epoch.test.ts`).
 # ''`$:/info/browser/*` ~ BUILT.'' The tier-local filter names `$:/state`, `$:/temp`, `$:/status` and `$:/info/browser` as titles and as prefixes; the handler tests pin the write refusal (`local-title`) and the silent change path (`record-port-info-browser.test.ts`), and `$:/info/other/*` still travels.
 # ''The same-id resend ~ BUILT.'' The page keeps each reliable act whole with its mount epoch and attempt count, and resends the same `eventId` at a fresh frame under the same epoch, at the next act (first, in order) and at a re-arm of the doors, up to three attempts. An epoch change ends the old epoch's acts with `stale-target` beside their targets; the attempt bound ends them with `binding-unavailable`; the unload hold lifts as entries end. The island's answer ring replays the original result and applies the act once (`projection-sink-resend.test.ts`, `tw5-projection-answer-replay.test.ts`).
-# ''The tree-sitter parity witness ~ BUILT.'' The in-VM `resolveWidgetTree` and the tree-sitter fold reduce the same specimens to their shared ahu slots and block loulou targets and agree (`host-ts/widget-tree-parity.test.mjs`, a gate of the tree-sitter package that reads the tw5 dist where the grammar wasm stands). The witness found and pins two divergences it does not cure: the host fold reads the spaced `<<~ ahu #x >>` and the legacy `#slot` spelling that the in-VM reader takes as no slot (the writer emits neither), and the in-VM reader lifts a loulou sigil mid-line where the host fold keeps the line whole.
+# ''The tree-sitter parity witness ~ BUILT.'' The in-VM `resolveWidgetTree` and the tree-sitter fold reduce the same specimens to their shared ahu slots and block loulou targets and agree (`host-ts/widget-tree-parity.test.mjs`, a gate of the tree-sitter package that reads the tw5 dist where the grammar wasm stands). The witness found and pins two divergences it does not cure: the host fold reads the spaced ``<<~ ahu slot=`#x` >>`` and the legacy `#slot` spelling that the in-VM reader takes as no slot (the writer emits neither), and the in-VM reader lifts a loulou sigil mid-line where the host fold keeps the line whole.
 # ''The whole-corpus fold ~ BUILT.'' The composite corpus reader keeps `title -> shingle set` and `shingle -> document count`, diffs a changed title's two sets, and re-derives only the form values a changed shingle or a moved stop threshold touches. A seeded 200-step add, edit and delete run compares the incremental planes with a cold fold after every step. Measured on 2,000 synthetic tiddlers (`scripts/measure-coherence-refold.ts`, median of seven after warm-up): one edit's refold took 1186.7 ms whole and 21.2 ms incremental, and the composite's whole `entries()` read took 1.0 ms.
 
 <<~/ahu>>
 
-<<~ ahu #/what-stands-beside>>
+<<~ ahu slot=`#/what-stands-beside`>>
 
 !! What stands beside the lane
 
@@ -55,15 +54,15 @@ The worker half stood since PR #87: the port log, the wire, the island handler, 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ddqfyvg4tW2g3uqhkGKlv61oAZZgJZQ-1Sq68-9UGCw
+<<^ code=`&#x0003;`>>ni:///sha-256;0ZpmdYeU-B4NP-ZtJBkX5p9qBOnJAdM5gP1v7HcV4Nk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

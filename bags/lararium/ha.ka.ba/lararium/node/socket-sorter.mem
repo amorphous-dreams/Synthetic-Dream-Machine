@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/socket-sorter">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/node/socket-sorter`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/node/socket-sorter.mem"
 l-space     = "lararium"
 mana        = 14
 role        = "invariant law: THE ONE SORTER a vessel's face gates arm with. Every presenter the gate PROVED is classed once, before any verdict, over the facts the gate itself read: same-operator · contracted · walker (SHUT by name; the shut-routes house ruling, stable-founding-road #/rulings) · stranger. A stranger is answered only where the gate's posture reads OPEN; otherwise SILENCE, exactly like a failed proof. The one posture reader: a lararium reads its charter and fails closed; a herm answers the knock, OPEN by class (operator ruling)."
@@ -16,7 +15,7 @@ uri-path    = "ha.ka.ba/lararium/node/socket-sorter"
 written     = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The socket sorter ~ one class per proven presenter, before any verdict
 
@@ -26,7 +25,7 @@ shadow, the tier the gate stands at, and the posture of the one Nexus the gate s
 
 <<~/ahu>>
 
-<<~ ahu #/the-four-classes>>
+<<~ ahu slot=`#/the-four-classes`>>
 
 !! Four classes, and silence
 
@@ -45,7 +44,7 @@ A presenter that sorts nowhere meets SILENCE: no frame, no reason, the same end 
 
 <<~/ahu>>
 
-<<~ ahu #/the-one-posture-reader>>
+<<~ ahu slot=`#/the-one-posture-reader`>>
 
 !! The one posture reader ~ a lararium reads its charter, a herm answers the knock
 
@@ -65,7 +64,7 @@ One gate stands per (Nexus, route), so a sorter reads that Nexus's posture alone
 
 <<~/ahu>>
 
-<<~ ahu #/a-refold-that-demotes-closes>>
+<<~ ahu slot=`#/a-refold-that-demotes-closes`>>
 
 !! A refold that demotes closes
 
@@ -76,19 +75,19 @@ drops each one the way the gate drops a refused one: no frame, no reason.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-node/src/socket-sorter.ts" family="code" role="has">>
-<<~ pranala #gate from="?" -> to="packages/lararium-mesh/src/face-gate.ts" family="code" role="arms">>
-<<~ pranala #assembly from="?" -> to="packages/lararium-node/src/vessel-gates.ts" family="code" role="stood-by">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/socket-sorter.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#gate` from=`?` to=`packages/lararium-mesh/src/face-gate.ts` family=`code` role=`arms`>>
+<<~ pranala slot=`#assembly` from=`?` to=`packages/lararium-node/src/vessel-gates.ts` family=`code` role=`stood-by`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/vessel-gates">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/herm-carriage">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/vessel-gates`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-ha25RDH1aRoJpqulzRLz6gwraN1D1NF7tD4tj1_nLo
+<<^ code=`&#x0003;`>>ni:///sha-256;nKNV1T_aGZ5mmd5v_br-wgXEK4M-SjYMwIPTTC_xb_s
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

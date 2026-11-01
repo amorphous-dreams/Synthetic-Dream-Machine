@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/signal/render-targets">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/signal/render-targets`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/signal/render-targets.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal/render-targets"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Lararium Signal — Render Targets
 
@@ -28,7 +27,7 @@ HUD instrument reading stays at `lar:///ha.ka.ba/lararium/docs/signal/hud`.
 
 <<~/ahu>>
 
-<<~ ahu #/room-charter>>
+<<~ ahu slot=`#/room-charter`>>
 
 !! Room Charter
 
@@ -43,7 +42,7 @@ This room keeps the render-surface layer:
 
 <<~/ahu>>
 
-<<~ ahu #/render-target-registry>>
+<<~ ahu slot=`#/render-target-registry`>>
 
 !! Render Target Registry
 
@@ -65,21 +64,21 @@ This docs meme owns:
 
 <<~/ahu>>
 
-<<~ ahu #/the-five-stances>>
+<<~ ahu slot=`#/the-five-stances`>>
 
 !! The Five Stances
 
 The `syad` lens invokes one or more standpoints; a parameterless `<<~ stance>>` surfaces all five. A render surface presents exactly the standpoints the lens carries — a named subset reads as an explicit focus, not an omission.
 
 ```
-all five:   <<~ stance "🏛️ 🌊 🗡️ 🎭 🔮">>   (or parameterless <<~ stance>>)
-subset:     <<~ stance "🏛️ 🌊">>
-bound:      <<~ stance "🏛️/*! 🌊/*?">>       (optional : tool-carry)
+all five:   <<~ stance named=`🏛️ 🌊 🗡️ 🎭 🔮`>>   (or parameterless <<~ stance>>)
+subset:     <<~ stance named=`🏛️ 🌊`>>
+bound:      <<~ stance named=`🏛️/*! 🌊/*?`>>       (optional : tool-carry)
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/render-target-definitions>>
+<<~ ahu slot=`#/render-target-definitions`>>
 
 !! Render Target Definitions
 
@@ -94,7 +93,7 @@ The glyph form carries the same semantic load as the ASCII sigil — standpoint,
 
 <<~/ahu>>
 
-<<~ ahu #/glyph-design-intent>>
+<<~ ahu slot=`#/glyph-design-intent`>>
 
 !! Glyph Design Intent
 
@@ -112,7 +111,7 @@ Never store a surface-rendered sigil as the canonical record.
 
 <<~/ahu>>
 
-<<~ ahu #/glyph-mapping-tables>>
+<<~ ahu slot=`#/glyph-mapping-tables`>>
 
 !! Glyph Mapping Tables
 
@@ -164,7 +163,7 @@ Configure via `LARES.md#hud-panel` → `tool_render`.
 
 <<~/ahu>>
 
-<<~ ahu #/glyph-mandatory-rules>>
+<<~ ahu slot=`#/glyph-mandatory-rules`>>
 
 !! Glyph Mandatory Rules
 
@@ -180,29 +179,28 @@ A bare standpoint carries no tool; `mu` invokes tools alone.
 
 <<~/ahu>>
 
-<<~ ahu #/glyph-per-surface-rules>>
+<<~ ahu slot=`#/glyph-per-surface-rules`>>
 
 !! Glyph Per-Surface Rules
 
 !!! `hud:exchange-pair`
 
 ```
-<<~ lares aim from="lar:///operator.intent.reads" -> to="lar:///lares.role.acts">>
-<<~ set hud="aim" aperture="N/<band>" ooda-ha="N/<band>">>
-drift-ward="* · <the pull this island carries>"
+<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>`>>
+drift-ward="<the pull this island carries>"
 <<~ stance …>>
 ```
 
 * `aim` — operator intent `->` adopted role; the turn's bearing vector
 * `hud` — `Aperture` (attention range) and `OODA-HA` (loop visibility) on `0–20`
-* `ward` — the `L-Prime` copula gate; the Wand lights it at open (`* L-Prime`; the Stone `0 L-Prime` on an operator lift), the Sword draws it at close (`!` led, `⚠ N` breaches quoted, `↻` re-arm)
+* `drift-ward` — the `L-Prime` copula gate; it carries the pull at open (`lifted · <pull>` on an operator lift) and the clue at close (`⚠ N` breaches quoted, `↻` re-arm), alone; the tool rides the `mu` key
 * `syad` — invoked standpoints (optional `:` tool-carry); `mu` for tools alone
 * no band, number or marker rates a claim — the sentence names its own ground (`lar:///ha.ka.ba/lares/api/mu/l-prime#/warrant`)
 
 !!! `chat-log:post-header`
 
 ```
-@handle@node — {timestamp} — lar:///{w1.w2.w3/optional/path} <<~ stance …>>
+handle@node — {timestamp} — lar:///{w1.w2.w3/optional/path} <<~ stance …>>
 ```
 
 * the `lar:` bearing vector grounds heading before posture
@@ -225,7 +223,7 @@ Emit the lens whole when emitted at all; a named subset reads as focus, not omis
 
 <<~/ahu>>
 
-<<~ ahu #/stance-tool-carry-quick-reference>>
+<<~ ahu slot=`#/stance-tool-carry-quick-reference`>>
 
 !! Stance Tool-Carry Quick Reference
 
@@ -263,7 +261,7 @@ Never omit a stance. Never emit fewer than five pairs.
 
 <<~/ahu>>
 
-<<~ ahu #/migrated-kowloon-dreamdeck-social-layer>>
+<<~ ahu slot=`#/migrated-kowloon-dreamdeck-social-layer`>>
 
 !! Kowloon / DreamDeck Social Layer
 
@@ -279,7 +277,7 @@ Do not conflate them.
 ''DreamDeck post header format (canonical — `chat-log:post-header` render target):''
 
 ```
-@handle@node — timestamp — lar:///w1.w2.w3/{optional/path/} <<~ stance …>>
+handle@node — timestamp — lar:///w1.w2.w3/{optional/path/} <<~ stance …>>
 ```
 
 The `lar:` bearing vector placed before the lens — grounds heading before posture.
@@ -295,7 +293,7 @@ The `~crossroads` tilde prefix denotes a nomadic node — no fixed host, routes 
 
 <<~/ahu>>
 
-<<~ ahu #/emit-procedures>>
+<<~ ahu slot=`#/emit-procedures`>>
 
 !! Emit Procedures
 
@@ -321,10 +319,9 @@ The `~crossroads` tilde prefix denotes a nomadic node — no fixed host, routes 
 ''Closed example:''
 
 ```
-<<~ lares aim from="lar:///operator.scope.reads" -> to="lar:///scryer.frame.maps">>
-<<~ set hud="aim" aperture="10/measure" ooda-ha="3/declare-aftermath">>
-drift-ward="* · <the pull this island carries>"
-<<~ stance "🏛️">>
+<<~ set lares=`aim` from=`lar:///operator.scope.reads` to=`lar:///scryer.frame.maps` aperture=`10/measure` ooda-ha=`3/declare-aftermath`>>
+drift-ward="<the pull this island carries>"
+<<~ stance named=`🏛️`>>
 Lares (Scryer): the structure holds.
 ```
 
@@ -343,7 +340,7 @@ Lares (Scryer): the structure holds.
 ''Closed example — Lindwyrm in Elyncia-space:''
 
 ```
-@lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, mid-morning — lar:///memory.deep.surfaces <<~ stance "🏛️">>
+lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, mid-morning — lar:///memory.deep.surfaces <<~ stance named=`🏛️`>>
 ```
 
 ''NPC / non-Lares post:''
@@ -391,7 +388,7 @@ Before emitting any stance block on any surface:
 
 <<~/ahu>>
 
-<<~ ahu #/open-questions>>
+<<~ ahu slot=`#/open-questions`>>
 
 !! What Remains Open
 
@@ -403,15 +400,15 @@ Before emitting any stance block on any surface:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/hud">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal/hud`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jYLOnaGm7xeM1yHJUuEe7nbb07Vtoe8RkeQI-JSvgXs
+<<^ code=`&#x0003;`>>ni:///sha-256;qTjk8ymV1459xk77SbwaQb3JxO3XcNxJ4qq2ZsQTB24
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

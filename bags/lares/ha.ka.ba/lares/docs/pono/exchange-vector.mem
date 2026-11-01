@@ -1,50 +1,49 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/exchange-vector">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/exchange-vector`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/exchange-vector.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
 manaoio   = 13
-role      = "docs sister for exchange vector law — record form, HUD example, and pattern-training guidance"
+role      = "docs sister for exchange vector law — record form, panel example, and pattern-training guidance"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/exchange-vector"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/exchange-vector"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Exchange Vector — Docs Sister
 
-This docs meme explains how each substantive exchange can carry a canonical `lar:` vector and a rendered HUD line.
+This docs meme explains how each substantive exchange can carry a canonical `lar:` vector and a rendered panel line.
 The law lives at `lar:///ha.ka.ba/lares/api/pono/exchange-vector`.
 This file gives examples and operator-facing guidance.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ observe the operator prompt and infer a provisional operator URI.
 ⏿ orient the node response with its own execution URI and stance posture.
 ◇ decide the vector before prose so the operator can catch misreads early.
-▶ emit canonical record form first, then HUD render, then content.
+▶ emit canonical record form first, then the panel render, then content.
 ↺ verify authority order, HA.KA.BA path, query parameters, and stance count; close trajectory only when the next state benefits from explicit marking.
 
 <<~/ahu>>
 
-<<~ ahu #/canonical-shape>>
+<<~ ahu slot=`#/canonical-shape`>>
 
 !! Canonical Shape
 
-The exchange vector opens the turn as one `aim` sigil — operator intent `->` the role the node adopts:
+The exchange vector opens the turn as one ``set lares=`aim` `` firing — operator intent at `from=`, the role the node adopts at `to=`, and the panel beside them:
 
 ```text
-<<~ lares aim from="lar:///operator.intent.reads" -> to="lar:///lares.role.acts">>
+<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>` drift-ward=`<the pull this island carries>`>>
 ```
 
 Read the URI layers as:
@@ -57,27 +56,35 @@ SECTION #anchor only when needed
 
 Do not place intent labels or signal in the fragment or a query.
 Fragments name section anchors; the URI names bearing and nothing mutable.
-Per-turn signal rides the `hud` · `ward` · `confidence` sigils.
+Per-turn signal rides the panel keys (`aperture`, `ooda-ha`, `drift-ward`) and the `confidence` sigil.
 
 <<~/ahu>>
 
-<<~ ahu #/hud-render>>
+<<~ ahu slot=`#/hud-render`>>
 
-!! HUD Render
+!! Panel Render
 
-The panel rides beneath the `aim` as sigils:
+The panel rides the `aim` firing itself, and a `stance` lens may follow it:
 
 ```text
-<<~ lares aim from="lar:///operator.scope.reads" -> to="lar:///scryer.frame.maps">>
-<<~ set hud="aim" aperture="10/measure" ooda-ha="3/declare-aftermath" drift-ward="* · <the pull this island carries>">>
-<<~ stance "🏛️ 🗡️">>
+<<~ set lares=`aim` from=`lar:///operator.scope.reads` to=`lar:///scryer.frame.maps` aperture=`10/measure` ooda-ha=`3/declare-aftermath` drift-ward=`<the pull this island carries>`>>
+<<~ stance named=`🏛️ 🗡️`>>
 ```
 
-Each sigil renders inline (`<<~ WORD ARGS>>`); an adjacent tool MAY pre-render it. The `aim` URI stays ASCII record form; the sigils carry per-turn signal, never the URI.
+Each sigil renders inline (``<<~ word key=`value` …>>``); an adjacent tool MAY pre-render it. The `aim` URIs stay ASCII record form; the keys carry per-turn signal, never the URI.
+
+A turn that changes heading or set mid-way writes a `steer` firing. One steer changes the bearing and one changes other keys on the same heading:
+
+```text
+<<~ set lares=`steer` to=`lar:///scryer.frame.tests` drift-ward=`<the pull the turned heading carries>`>>
+<<~ set lares=`steer` mode=`hold` aperture=`13/arc` drift-ward=`<the pull this heading still carries>`>>
+```
+
+The `yield` firing closes the turn with the ward first and `from=` and `` to=`?` `` last.
 
 <<~/ahu>>
 
-<<~ ahu #/pattern-training>>
+<<~ ahu slot=`#/pattern-training`>>
 
 !! Pattern Training Notes
 
@@ -90,21 +97,21 @@ A good training vector should:
 * use provisional `~` on HA.KA.BA when the node may have misread intent
 * put uncertainty in confidence and register rather than hiding it in prose
 
-Long-term, the server should validate the vector and render the HUD from the parsed record.
+Long-term, the server should validate the vector and render the panel from the parsed record.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/exchange-vector">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/render-targets">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/l-space-trust">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/exchange-vector`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal/render-targets`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/l-space-trust`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pN2Z0rJUhSjaMDSkTOHkJdSn8V_vcanu6oMJmW_zrzg
+<<^ code=`&#x0003;`>>ni:///sha-256;UB34uixutk1fMaH5tdr-VQI8dvRie2nlo2wvRFMXgHk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

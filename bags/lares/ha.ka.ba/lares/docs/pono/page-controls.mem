@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/page-controls">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/page-controls`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/page-controls.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 17
@@ -21,17 +20,17 @@ uri-path          = "ha.ka.ba/lares/docs/pono/page-controls"
 written           = "2026-10-11"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Page Controls ~ what the page holds, so the island never has to ask
 
-''The island renders through TiddlyWiki's page-template and layout layers; the third layer belongs to the page'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-layers">>). That ruling left three things owed: which page-native controls stand first, how a template names one, and which stock surfaces refuse meanwhile. This carrier answers them.
+''The island renders through TiddlyWiki's page-template and layout layers; the third layer belongs to the page'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-layers`>>). That ruling left three things owed: which page-native controls stand first, how a template names one, and which stock surfaces refuse meanwhile. This carrier answers them.
 
 > ''Register.'' Two sentences stand ruled (operator ruling, 2026-10-11, approving the house's leans): ''the first page-native controls read a field editor, a popover and a disclosure'', and ''a template names a control as a vessel-shipped custom element and never supplies script''. The rest reads as ''the designed shape'': a design study's contract, with every part unbuilt. One mechanism carries a measurement: a prototype ran the editor's engine seam (#/shadow-widgets). No control here has yet met a real browser.
 
 <<~/ahu>>
 
-<<~ ahu #/who-owns-what>>
+<<~ ahu slot=`#/who-owns-what`>>
 
 !! What the island owns, and what the page owns
 
@@ -39,13 +38,13 @@ written           = "2026-10-11"
 | ''The island'' | TiddlyWiki parses, transcludes, selects the camera's root, runs wiki actions, and emits absolute rendered state per declared camera key. Each key carries a monotone revision; each frame names the page revisions the island had sensed. | It never asks its document for a live value, a caret, a focus or a layout answer. |
 | ''The page'' | The vessel paints real nodes, binds a small reviewed registry of controls, and holds live values, composition, selection, focus, geometry, scrolling, top-layer state and animation. It sends whole values and identified events. | It runs no TiddlyWiki engine. |
 
-''The binding rule.'' A template names an allowlisted behaviour and its native descendants. The page fixes any cancellation policy when it BINDS that behaviour; an island's later reply never decides what a browser's default should have done (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-vectors">>, vector 2).
+''The binding rule.'' A template names an allowlisted behaviour and its native descendants. The page fixes any cancellation policy when it BINDS that behaviour; an island's later reply never decides what a browser's default should have done (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-vectors`>>, vector 2).
 
 ''Rendering never licenses a stock handler.'' Stock `$button` and `$link` can measure bounds and cancel a click, so their markup crossing the boundary grants their handlers nothing.
 
 <<~/ahu>>
 
-<<~ ahu #/the-control-set>>
+<<~ ahu slot=`#/the-control-set`>>
 
 !! The control set ~ three ruled first, the rest designed
 
@@ -76,7 +75,7 @@ written           = "2026-10-11"
 
 <<~/ahu>>
 
-<<~ ahu #/naming-a-control>>
+<<~ ahu slot=`#/naming-a-control`>>
 
 !! How a template names a control
 
@@ -122,7 +121,7 @@ The panel uses ordinary grouped buttons. A `role="menu"` would promise a keyboar
 
 <<~/ahu>>
 
-<<~ ahu #/the-wire>>
+<<~ ahu slot=`#/the-wire`>>
 
 !! The wire ~ a keyed frame down, one answered event up
 
@@ -145,7 +144,7 @@ The panel uses ordinary grouped buttons. A `role="menu"` would promise a keyboar
 * ''Each key paints from nothing'' and carries its own revision. A deletion carries an explicit tombstone.
 * ''A membership key names the complete set.'' Omission never means deletion.
 * ''`sensedRevision` names, per control, the page revision the island had taken in when it rendered.''
-* ''The page compares revisions within one key and one mount epoch'', never by arrival and never across keys (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling">>, conditions 1 to 4).
+* ''The page compares revisions within one key and one mount epoch'', never by arrival and never across keys (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling`>>, conditions 1 to 4).
 
 ''The event.'' One message kind, `lar:control-event`, carries `eventId`, `cameraId`, `mountEpoch`, `controlId`, `controlType`, `action`, `seenFrameRev`, an optional `localRev`, and `wholeValue`. Its schema bounds strings, id arrays and file bytes each on their own, and the island checks the rendered binding against its capability before any write.
 
@@ -155,11 +154,11 @@ The panel uses ordinary grouped buttons. A `role="menu"` would promise a keyboar
 
 ''A popover's wiki state shrinks to open or closed'', kept only where the wiki needs it. A small panel renders hidden in the frame and opens at once; a lazy body waits for measurement to ask for it.
 
-The session, surface and generation fields that wrap these messages stand at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-holder-protocol">>.
+The session, surface and generation fields that wrap these messages stand at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-holder-protocol`>>.
 
 <<~/ahu>>
 
-<<~ ahu #/refusals>>
+<<~ ahu slot=`#/refusals`>>
 
 !! The refusal words a person sees
 
@@ -181,7 +180,7 @@ The session, surface and generation fields that wrap these messages stand at <<~
 
 <<~/ahu>>
 
-<<~ ahu #/shadow-widgets>>
+<<~ ahu slot=`#/shadow-widgets`>>
 
 !! Shadow widgets ~ a twin under a stock name, sorted by mechanism
 
@@ -206,7 +205,7 @@ A twin under one of TiddlyWiki's stock widget names lets stock templates keep wo
 
 <<~/ahu>>
 
-<<~ ahu #/the-sinks-three-laws>>
+<<~ ahu slot=`#/the-sinks-three-laws`>>
 
 !! The sink's three laws ~ what the page keeps on every act
 
@@ -220,11 +219,11 @@ The page sink (`packages/lararium-web/src/projection-sink.ts`) and the projectio
 
 <<~/ahu>>
 
-<<~ ahu #/measure-first>>
+<<~ ahu slot=`#/measure-first`>>
 
 !! Measure first
 
-''One whole-surface key stands until measurements ask for a finer grain.'' The ruling names where a grain goes and orders no split (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling">>). A builder records serialized frame bytes, the island's render time, the page's morph time and long animation frames across a two-household session, and splits a key only where those numbers name the cost.
+''One whole-surface key stands until measurements ask for a finer grain.'' The ruling names where a grain goes and orders no split (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling`>>). A builder records serialized frame bytes, the island's render time, the page's morph time and long animation frames across a two-household session, and splits a key only where those numbers name the cost.
 
 ''The first probes, cheapest first'':
 
@@ -240,18 +239,18 @@ The page sink (`packages/lararium-web/src/projection-sink.ts`) and the projectio
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-layers">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/camera-mount">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-holder-protocol">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-prior-art">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-layers`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/camera-mount`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-holder-protocol`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-prior-art`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ScVxwdv-cG8bKMNZdgOgJo7hMXKbX_r7wKxUhrEN__8
+<<^ code=`&#x0003;`>>ni:///sha-256;7sJf2Ug_ATpRpBNNNoY8oYmYw4IXyztp6NT-mJRgguE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

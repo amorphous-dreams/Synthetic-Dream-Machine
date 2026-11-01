@@ -16,17 +16,17 @@ import {
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 
-const CARRIER = `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+const CARRIER = `<<!DOCTYPE type=\`memetic-wikitext+tiddlywiki\` spec=\`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/probe">>
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0001;\` namespace=\`⊙\` from=\`?\` to=\`lar:///ha.ka.ba/lares/api/pono/probe\`>>
+<<^ code=\`&#x0002;\`>>
 
 \`\`\`toml meta
 l-space  = "adjacent"
 uri-path = "ha.ka.ba/lares/api/pono/probe"
 \`\`\`
 
-<<~ ahu #/head>>
+<<~ ahu slot=\`#/head\`>>
 
 ! Probe — a worked example
 
@@ -43,17 +43,17 @@ A confidence of 12/20 stays 12/20, and \`lar:///a//b\` keeps its slashes.
 * a bullet
 
 <<~ranks kind carrier -> descriptor>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>
+<<~ loulou uri=\`lar:///ha.ka.ba/lares/api/pono/lar-uri\`>>
 
 \`\`\`\`
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0002;\`>>
 a teaching frame stays byte-identical, ''unrendered''
 \`\`\`\`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AAAA_probe_check
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=\`&#x0003;\`>>ni:///sha-256;AAAA_probe_check
+<<^ code=\`&#x0004;\` to=\`?\`>>
 `;
 
 describe("the submission projection", () => {
@@ -104,14 +104,14 @@ describe("the submission projection", () => {
 
   test("an `ahu #/a/b` opener drops the root slash and joins nested segments with `_`", () => {
     // Operator-approved: 0 of 2,011 canon slot names carry `_`, so the join is unambiguous.
-    const rooted = transposeMarkdown(CARRIER.replace("<<~ ahu #/head>>", "<<~ ahu #/a/b>>")).markdown;
+    const rooted = transposeMarkdown(CARRIER.replace("<<~ ahu slot=`#/head`>>", "<<~ ahu slot=`#/a/b`>>")).markdown;
     expect(rooted).toContain('<a id="a_b"></a>');
     expect(rooted).not.toContain('id="/a/b"');
     expect(rooted).not.toContain('id="#/a/b"');
   });
 
   test("an `ahu #/x` opener drops the lone root slash too", () => {
-    const rooted = transposeMarkdown(CARRIER.replace("<<~ ahu #/head>>", "<<~ ahu #/x>>")).markdown;
+    const rooted = transposeMarkdown(CARRIER.replace("<<~ ahu slot=`#/head`>>", "<<~ ahu slot=`#/x`>>")).markdown;
     expect(rooted).toContain('<a id="x"></a>');
     expect(rooted).not.toContain('id="/x"');
   });
@@ -121,20 +121,20 @@ describe("the submission projection", () => {
   });
 
   test("an `aka` edge keeps its own sigil word, distinct from `loulou`", () => {
-    const aka = transposeMarkdown("<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119>>\nprose\n").markdown;
+    const aka = transposeMarkdown("<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/RFC-2119`>>\nprose\n").markdown;
     expect(aka).toContain("- `aka lar:///ha.ka.ba/lares/api/pono/RFC-2119`");
     expect(aka).not.toContain("- `loulou");
   });
 
   test("a fence seals its interior — the teaching frame passes byte-identical", () => {
-    expect(p.markdown).toContain('<<^ code="&#x0002;">>\na teaching frame stays byte-identical');
+    expect(p.markdown).toContain('<<^ code=`&#x0002;`>>\na teaching frame stays byte-identical');
     expect(p.markdown).toContain("''unrendered''");
   });
 
   test("★ a TILDE fence seals its interior too — CommonMark §4.5 admits it as a peer ★", () => {
-    const src = "prose\n\n~~~\n''unrendered''\n<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119>>\n~~~\n\nafter ''bold''\n";
+    const src = "prose\n\n~~~\n''unrendered''\n<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/RFC-2119`>>\n~~~\n\nafter ''bold''\n";
     const md = transposeMarkdown(src).markdown;
-    expect(md).toContain("~~~\n''unrendered''\n<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119>>\n~~~");
+    expect(md).toContain("~~~\n''unrendered''\n<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/RFC-2119`>>\n~~~");
     expect(md).not.toContain("- `aka lar:///ha.ka.ba/lares/api/pono/RFC-2119`");
     // CONTROL: past the closing tilde run the walk transposes again.
     expect(md).toContain("after **bold**");
@@ -278,16 +278,16 @@ describe("against the live corpus", () => {
 
 describe("the tooth stands at one dispatch position", () => {
   const carrier = (open: string, close: string) =>
-    `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/probe">>\n\n` +
-    `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/probe">>\n` +
-    `<<^ code="&#x0002;">>\n\n${open}\n\n! A heading\n\n${close}\n\n` +
-    `<<^ code="&#x0003;">>\n<<^ code="&#x0004;" -> to="?">>\n`;
+    `<<!DOCTYPE type=\`memetic-wikitext+tiddlywiki\` spec=\`lar:///ha.ka.ba/probe\`>>\n\n` +
+    `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/probe\`>>\n` +
+    `<<^ code=\`&#x0002;\`>>\n\n${open}\n\n! A heading\n\n${close}\n\n` +
+    `<<^ code=\`&#x0003;\`>>\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
   const spellings: Array<[string, string, string]> = [
-    ["tooth then space", "<<~ ahu #/entry>>", "<<~/ahu>>"],
-    ["close carries a space", "<<~ ahu #/entry>>", "<<~ /ahu>>"],
-    ["tooth joined to the word", "<<~ahu #/entry>>", "<<~/ahu>>"],
-    ["both joined", "<<~ahu #/entry>>", "<<~ /ahu>>"],
+    ["tooth then space", "<<~ ahu slot=`#/entry`>>", "<<~/ahu>>"],
+    ["close carries a space", "<<~ ahu slot=`#/entry`>>", "<<~ /ahu>>"],
+    ["tooth joined to the word", "<<~ahu slot=`#/entry`>>", "<<~/ahu>>"],
+    ["both joined", "<<~ahu slot=`#/entry`>>", "<<~ /ahu>>"],
   ];
 
   // A close word carries its own slash, matching the plain register's
@@ -305,17 +305,17 @@ describe("the tooth stands at one dispatch position", () => {
 });
 
 describe("dialect profiles — RFC 7764 registered variants", () => {
-  const CARRIER2 = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/probe2">>
+  const CARRIER2 = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/lares/api/pono/probe2\`>>
 \`\`\`toml meta
 uri-path = "ha.ka.ba/lares/api/pono/probe2"
 \`\`\`
 
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0002;\`>>
 
 ! A heading
 
-<<^ code="&#x0003;">>ni:///sha-256;PROBE2
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=\`&#x0003;\`>>ni:///sha-256;PROBE2
+<<^ code=\`&#x0004;\` to=\`?\`>>
 `;
 
   test("CommonMark stays the default; today's output is unchanged", () => {
@@ -404,7 +404,7 @@ uri-path = "ha.ka.ba/lares/api/pono/probe2"
   });
 
   test("kramdown-rfc2629 WEAVES once every required key stands in the carrier's own toml meta", () => {
-    const src = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/draft-probe">>
+    const src = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/lares/api/pono/draft-probe\`>>
 \`\`\`toml meta
 author    = "J. Fontany"
 cat       = "info"
@@ -415,12 +415,12 @@ title     = "A Probe Draft"
 uri-path  = "ha.ka.ba/lares/api/pono/draft-probe"
 \`\`\`
 
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0002;\`>>
 
 ! A draft
 
-<<^ code="&#x0003;">>ni:///sha-256;PROBE3
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=\`&#x0003;\`>>ni:///sha-256;PROBE3
+<<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const p = projectSubmission(src, { profile: PROFILES["kramdown-rfc2629"] });
     expect(p.standalone).toBe(true);
@@ -478,7 +478,7 @@ describe("ahu ids: the ISO/IEC 9075-14 `_xHHHH_` escape, self-escaping", () => {
   });
 
   test("CONTROL: an ahu id for a canon-shaped slot never escapes (0 of 2,011 canon names need it)", () => {
-    const t = transposeMarkdown("<<~ ahu #/carrier-spine>>\nprose\n<<~/ahu>>\n");
+    const t = transposeMarkdown("<<~ ahu slot=`#/carrier-spine`>>\nprose\n<<~/ahu>>\n");
     expect(t.markdown).toContain('<a id="carrier-spine"></a>');
   });
 
@@ -491,14 +491,14 @@ describe("ahu ids: the ISO/IEC 9075-14 `_xHHHH_` escape, self-escaping", () => {
   });
 
   test("a kahakō + ʻokina ahu slot weaves to a readable, unescaped anchor id", () => {
-    const t = transposeMarkdown("<<~ ahu #/hawaiʻi/kānāwai>>\nprose\n<<~/ahu>>\n");
+    const t = transposeMarkdown("<<~ ahu slot=`#/hawaiʻi/kānāwai`>>\nprose\n<<~/ahu>>\n");
     expect(t.markdown).toContain('<a id="hawaiʻi_kānāwai"></a>');
   });
 });
 
 describe("aka vs kahea vs loulou — frozen, live, and plain citation", () => {
   test("a live `kahea` weaves as a plain-text-marked link — no glyph, decodable outward", () => {
-    const t = transposeMarkdown("<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>\n");
+    const t = transposeMarkdown("<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>\n");
     expect(t.markdown).toContain("(live) `kahea` [lar:///ha.ka.ba/lares/api/pono/lar-uri](lar:///ha.ka.ba/lares/api/pono/lar-uri)");
   });
 
@@ -509,25 +509,25 @@ describe("aka vs kahea vs loulou — frozen, live, and plain citation", () => {
   });
 
   test("a frozen `aka` with NO resolver falls back to a clearly marked unresolved reference", () => {
-    const t = transposeMarkdown('<<~ aka "lar:///ha.ka.ba/lares/api/pono/lar-uri">>\n');
+    const t = transposeMarkdown('<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>\n');
     expect(t.markdown).toContain("- `aka lar:///ha.ka.ba/lares/api/pono/lar-uri` (unresolved — no corpus to pin)");
   });
 
   test("a frozen `aka` WITH a resolver inlines the target's current text, pinned with its own ni: check", () => {
-    const target = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/target">>
+    const target = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/lares/api/pono/target\`>>
 \`\`\`toml meta
 uri-path = "ha.ka.ba/lares/api/pono/target"
 \`\`\`
 
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0002;\`>>
 
 ! Target content
 
-<<^ code="&#x0003;">>ni:///sha-256;TARGET_CHECK
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=\`&#x0003;\`>>ni:///sha-256;TARGET_CHECK
+<<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
-    const t = transposeMarkdown('<<~ aka "lar:///ha.ka.ba/lares/api/pono/target">>\n', PROFILES.CommonMark, resolve);
+    const t = transposeMarkdown('<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/target`>>\n', PROFILES.CommonMark, resolve);
     expect(t.markdown).toContain("<!-- aka: lar:///ha.ka.ba/lares/api/pono/target pinned ni:///sha-256;TARGET_CHECK -->");
     expect(t.markdown).toContain("# Target content");
     expect(t.markdown).toContain("<!-- /aka -->");
@@ -540,14 +540,14 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
     // the target text was in hand, so the entire meme (every section) rode into a fragment-scoped
     // pin, which for an outward artifact (an IANA submission) smuggles content the author never
     // pointed at.
-    const target = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/target">>
+    const target = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/lares/api/pono/target\`>>
 \`\`\`toml meta
 uri-path = "ha.ka.ba/lares/api/pono/target"
 \`\`\`
 
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0002;\`>>
 
-<<~ ahu #/other-slot>>
+<<~ ahu slot=\`#/other-slot\`>>
 
 ! Other Slot
 
@@ -555,7 +555,7 @@ This is a different section — must NOT appear in the pin.
 
 <<~/ahu>>
 
-<<~ ahu #/normative-language>>
+<<~ ahu slot=\`#/normative-language\`>>
 
 ! Normative Language
 
@@ -563,12 +563,12 @@ This is the slot the fragment names.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WHOLE_CHECK
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=\`&#x0003;\`>>ni:///sha-256;WHOLE_CHECK
+<<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
     const t = transposeMarkdown(
-      '<<~ aka "lar:///ha.ka.ba/lares/api/pono/target#/normative-language">>\n',
+      '<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/target#/normative-language`>>\n',
       PROFILES.CommonMark,
       resolve,
     );
@@ -582,44 +582,44 @@ This is the slot the fragment names.
   });
 
   test("CONTROL: the SAME target with NO fragment still inlines the whole carrier, unchanged", () => {
-    const target = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/target">>
+    const target = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/lares/api/pono/target\`>>
 \`\`\`toml meta
 uri-path = "ha.ka.ba/lares/api/pono/target"
 \`\`\`
 
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0002;\`>>
 
-<<~ ahu #/other-slot>>
+<<~ ahu slot=\`#/other-slot\`>>
 
 ! Other Slot
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WHOLE_CHECK
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=\`&#x0003;\`>>ni:///sha-256;WHOLE_CHECK
+<<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
-    const t = transposeMarkdown('<<~ aka "lar:///ha.ka.ba/lares/api/pono/target">>\n', PROFILES.CommonMark, resolve);
+    const t = transposeMarkdown('<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/target`>>\n', PROFILES.CommonMark, resolve);
     expect(t.markdown).toContain("# Other Slot");
     expect(t.markdown).toContain("<!-- aka: lar:///ha.ka.ba/lares/api/pono/target pinned ni:///sha-256;WHOLE_CHECK -->");
   });
 
   test("a `#/slot` fragment naming no slot falls back to the marked-unresolved form, naming the missing slot", () => {
-    const target = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/target">>
+    const target = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/lares/api/pono/target\`>>
 \`\`\`toml meta
 uri-path = "ha.ka.ba/lares/api/pono/target"
 \`\`\`
 
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0002;\`>>
 
 ! No slots here
 
-<<^ code="&#x0003;">>ni:///sha-256;TARGET_CHECK
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=\`&#x0003;\`>>ni:///sha-256;TARGET_CHECK
+<<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
     const t = transposeMarkdown(
-      '<<~ aka "lar:///ha.ka.ba/lares/api/pono/target#/nowhere">>\n',
+      '<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/target#/nowhere`>>\n',
       PROFILES.CommonMark,
       resolve,
     );
@@ -628,12 +628,12 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
 
   test("a frozen `aka` whose resolver answers null (target unknown to the corpus) still falls back marked", () => {
     const resolve = (): string | null => null;
-    const t = transposeMarkdown('<<~ aka "lar:///ha.ka.ba/lares/api/pono/nowhere">>\n', PROFILES.CommonMark, resolve);
+    const t = transposeMarkdown('<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/nowhere`>>\n', PROFILES.CommonMark, resolve);
     expect(t.markdown).toContain("- `aka lar:///ha.ka.ba/lares/api/pono/nowhere` (unresolved — no corpus to pin)");
   });
 
   test("CONTROL: `loulou` (and its mirror `link`) stays the plain reference bullet, untouched by the aka/kahea split", () => {
-    const t = transposeMarkdown("<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>\n<<~ link lar:///ha.ka.ba/lares/api/pono/lar-uri>>\n");
+    const t = transposeMarkdown("<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>\n<<~ link uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>\n");
     expect(t.markdown).toContain("- `loulou lar:///ha.ka.ba/lares/api/pono/lar-uri`");
     expect(t.markdown).toContain("- `link lar:///ha.ka.ba/lares/api/pono/lar-uri`");
   });
@@ -641,7 +641,7 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
   test("CONTROL: `pin`, aka's English mirror, takes the same frozen treatment as `aka`", () => {
     // sigil-pin.tid (sibling, this loop) retired `shadow`/`snapshot` for `pin` — read off the
     // table (`mirrorsOf`), never hand-listed here.
-    const t = transposeMarkdown('<<~ pin "lar:///ha.ka.ba/lares/api/pono/nowhere">>\n');
+    const t = transposeMarkdown('<<~ pin uri=`lar:///ha.ka.ba/lares/api/pono/nowhere`>>\n');
     expect(t.markdown).toContain("- `pin lar:///ha.ka.ba/lares/api/pono/nowhere` (unresolved — no corpus to pin)");
   });
 
@@ -653,20 +653,20 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
     // opening and closing on the fence's own fake pair, so the fragment pinned the fence's fake
     // body instead of the real slot — exactly the carrier-bytes-the-author-never-pointed-at
     // failure the slot-scoped law (line ~510 above) exists to rule out.
-    const target = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/fenced-target">>
+    const target = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/lares/api/pono/fenced-target\`>>
 \`\`\`toml meta
 uri-path = "ha.ka.ba/lares/api/pono/fenced-target"
 \`\`\`
 
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0002;\`>>
 
 \`\`\`text
-<<~ ahu #/normative-language>>
+<<~ ahu slot=\`#/normative-language\`>>
 FAKE slot content inside a fence — must not appear in the pin.
 <<~/ahu>>
 \`\`\`
 
-<<~ ahu #/normative-language>>
+<<~ ahu slot=\`#/normative-language\`>>
 
 ! Normative Language
 
@@ -674,12 +674,12 @@ Real slot content, outside any fence.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FENCED_CHECK
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=\`&#x0003;\`>>ni:///sha-256;FENCED_CHECK
+<<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/fenced-target" ? target : null);
     const t = transposeMarkdown(
-      '<<~ aka "lar:///ha.ka.ba/lares/api/pono/fenced-target#/normative-language">>\n',
+      '<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/fenced-target#/normative-language`>>\n',
       PROFILES.CommonMark,
       resolve,
     );
@@ -688,14 +688,14 @@ Real slot content, outside any fence.
   });
 
   test("CONTROL: the same slot with NO fence present still extracts normally", () => {
-    const target = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/unfenced-target">>
+    const target = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/lares/api/pono/unfenced-target\`>>
 \`\`\`toml meta
 uri-path = "ha.ka.ba/lares/api/pono/unfenced-target"
 \`\`\`
 
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0002;\`>>
 
-<<~ ahu #/normative-language>>
+<<~ ahu slot=\`#/normative-language\`>>
 
 ! Normative Language
 
@@ -703,12 +703,12 @@ Real slot content, no fence anywhere.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UNFENCED_CHECK
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=\`&#x0003;\`>>ni:///sha-256;UNFENCED_CHECK
+<<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/unfenced-target" ? target : null);
     const t = transposeMarkdown(
-      '<<~ aka "lar:///ha.ka.ba/lares/api/pono/unfenced-target#/normative-language">>\n',
+      '<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/unfenced-target#/normative-language`>>\n',
       PROFILES.CommonMark,
       resolve,
     );
@@ -718,16 +718,16 @@ Real slot content, no fence anywhere.
 
 describe("LOOP 7: a pin's TARGET decides its shape; WHICH SIGIL (aka/pin vs kanawai/law) decides normative vs informative", () => {
   const carrier = (akaLine: string, where: "head" | "body") =>
-    `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/probe">>
+    `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/lares/api/pono/probe\`>>
 \`\`\`toml meta
 uri-path = "ha.ka.ba/lares/api/pono/probe"
 \`\`\`
 
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0002;\`>>
 
 ${where === "head" ? akaLine : ""}
 
-<<~ ahu #/entry>>
+<<~ ahu slot=\`#/entry\`>>
 
 ! Entry
 
@@ -735,30 +735,30 @@ ${where === "body" ? akaLine : ""}
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=\`&#x0003;\`>>
+<<^ code=\`&#x0004;\` to=\`?\`>>
 `;
 
   // A CONTENT slot: no `reference-kind` at all — the shape every pre-LOOP-7 target still carries
   // (including the house's own `api/pono/RFC-2119` usage-law meme, per the operator's redirect).
-  const CONTENT_TARGET = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/target">>
+  const CONTENT_TARGET = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/lares/api/pono/target\`>>
 \`\`\`toml meta
 uri-path = "ha.ka.ba/lares/api/pono/target"
 \`\`\`
 
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0002;\`>>
 
 ! Target content
 
-<<^ code="&#x0003;">>ni:///sha-256;TARGET_CHECK
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=\`&#x0003;\`>>ni:///sha-256;TARGET_CHECK
+<<^ code=\`&#x0004;\` to=\`?\`>>
 `;
 
   // A REFERENCE meme, shaped exactly as Canon-Scribe's sibling work ships it (bags/lares/ha.ka.ba/
   // lares/ref/RFC-9498.mem): `reference-kind` top-level, citation fields under a nested `[reference]`
   // TOML table (`parseTaploFields` flattens it to `reference-<key>`). NOT RFC-2119/BCP 14 — an
   // ordinary informational reference, to prove detection reads meta, never a hardcoded path.
-  const REFERENCE_TARGET = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/ref/RFC-9498">>
+  const REFERENCE_TARGET = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/lares/ref/RFC-9498\`>>
 \`\`\`toml meta
 reference-kind = "rfc"
 uri-path       = "ha.ka.ba/lares/ref/RFC-9498"
@@ -771,18 +771,18 @@ target     = "https://www.rfc-editor.org/info/rfc9498"
 title      = "The GNU Name System"
 \`\`\`
 
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0002;\`>>
 
 ! GNU Name System reference meme
 
-<<^ code="&#x0003;">>ni:///sha-256;REF9498_CHECK
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=\`&#x0003;\`>>ni:///sha-256;REF9498_CHECK
+<<^ code=\`&#x0004;\` to=\`?\`>>
 `;
 
   // The BCP 14 key-words source — `reference-kind = "rfc"` plus `seriesinfo` naming RFC 2119/BCP 14.
   // Lives at a DELIBERATELY ODD address (never `.../RFC-2119`) to prove the special case fires off
   // the target's META, never a hardcoded path string.
-  const BCP14_TARGET = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/ref/key-words-source">>
+  const BCP14_TARGET = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/lares/ref/key-words-source\`>>
 \`\`\`toml meta
 reference-kind = "rfc"
 uri-path       = "ha.ka.ba/lares/ref/key-words-source"
@@ -795,12 +795,12 @@ target     = "https://www.rfc-editor.org/info/rfc2119"
 title      = "Key words for use in RFCs to Indicate Requirement Levels"
 \`\`\`
 
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0002;\`>>
 
 ! RFC 2119 — Key Words
 
-<<^ code="&#x0003;">>ni:///sha-256;BCP14_CHECK
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=\`&#x0003;\`>>ni:///sha-256;BCP14_CHECK
+<<^ code=\`&#x0004;\` to=\`?\`>>
 `;
 
   const resolve = (uri: string): string | null => {
@@ -812,14 +812,14 @@ title      = "Key words for use in RFCs to Indicate Requirement Levels"
 
   for (const where of ["head", "body"] as const) {
     test(`RED: a pin of a CONTENT target weaves as the frozen image in ${where} position — position no longer decides`, () => {
-      const src = carrier('<<~ aka "lar:///ha.ka.ba/lares/api/pono/target">>', where);
+      const src = carrier('<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/target`>>', where);
       const t = transposeMarkdown(src, PROFILES.CommonMark, resolve);
       expect(t.markdown).toContain("<!-- aka: lar:///ha.ka.ba/lares/api/pono/target pinned ni:///sha-256;TARGET_CHECK -->");
       expect(t.markdown).toContain("# Target content");
     });
 
     test(`RED: a pin of a REFERENCE meme weaves as a citation in ${where} position — position no longer decides`, () => {
-      const src = carrier('<<~ aka "lar:///ha.ka.ba/lares/ref/RFC-9498">>', where);
+      const src = carrier('<<~ aka uri=`lar:///ha.ka.ba/lares/ref/RFC-9498`>>', where);
       const t = transposeMarkdown(src, PROFILES.CommonMark, resolve);
       expect(t.markdown).toContain("- `aka lar:///ha.ka.ba/lares/ref/RFC-9498` — pinned `ni:///sha-256;REF9498_CHECK`");
       expect(t.markdown).not.toContain("GNU Name System reference meme");
@@ -828,13 +828,13 @@ title      = "Key words for use in RFCs to Indicate Requirement Levels"
   }
 
   test("a pin with no resolver falls back to the clearly marked unresolved form, whatever the eventual target kind", () => {
-    const src = carrier('<<~ aka "lar:///ha.ka.ba/lares/ref/RFC-9498">>', "head");
+    const src = carrier('<<~ aka uri=`lar:///ha.ka.ba/lares/ref/RFC-9498`>>', "head");
     const t = transposeMarkdown(src);
     expect(t.markdown).toContain("- `aka lar:///ha.ka.ba/lares/ref/RFC-9498` (unresolved — no corpus to pin)");
   });
 
   test("RED: kramdown-rfc2629 weaves a KANAWAI pin of the BCP 14 key-words source as the boilerplate — detected off META, not a hardcoded path", () => {
-    const src = carrier('<<~ kanawai "lar:///ha.ka.ba/lares/ref/key-words-source">>', "head");
+    const src = carrier('<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/key-words-source`>>', "head");
     const t = transposeMarkdown(src, PROFILES["kramdown-rfc2629"], resolve);
     expect(t.markdown).toContain(
       'The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", ' +
@@ -849,13 +849,13 @@ title      = "Key words for use in RFCs to Indicate Requirement Levels"
   });
 
   test("CONTROL: the SAME BCP 14 source, pinned in BODY position, still weaves the boilerplate — position never decided this", () => {
-    const src = carrier('<<~ kanawai "lar:///ha.ka.ba/lares/ref/key-words-source">>', "body");
+    const src = carrier('<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/key-words-source`>>', "body");
     const t = transposeMarkdown(src, PROFILES["kramdown-rfc2629"], resolve);
     expect(t.markdown).toContain("BCP 14");
   });
 
   test("CONTROL: an AKA pin (never kanawai) of the SAME BCP 14 source weaves an ordinary informative citation, never the boilerplate — role decides, not the target alone", () => {
-    const src = carrier('<<~ aka "lar:///ha.ka.ba/lares/ref/key-words-source">>', "head");
+    const src = carrier('<<~ aka uri=`lar:///ha.ka.ba/lares/ref/key-words-source`>>', "head");
     const t = transposeMarkdown(src, PROFILES["kramdown-rfc2629"], resolve);
     expect(t.markdown).not.toContain("BCP 14");
     // the fixture's address is deliberately NOT `.../RFC-2119` (proving detection reads meta, never
@@ -874,7 +874,7 @@ title      = "Key words for use in RFCs to Indicate Requirement Levels"
   });
 
   test("CONTROL: a non-BCP-14 reference meme pinned by AKA under kramdown-rfc2629 weaves its bracketed anchor, folded into `informative`", () => {
-    const src = carrier('<<~ aka "lar:///ha.ka.ba/lares/ref/RFC-9498">>', "head");
+    const src = carrier('<<~ aka uri=`lar:///ha.ka.ba/lares/ref/RFC-9498`>>', "head");
     const t = transposeMarkdown(src, PROFILES["kramdown-rfc2629"], resolve);
     expect(t.markdown).toContain("[RFC9498]");
     expect(t.markdown).not.toContain("BCP 14");
@@ -883,23 +883,23 @@ title      = "Key words for use in RFCs to Indicate Requirement Levels"
   });
 
   test("CONTROL: the SAME non-BCP-14 reference meme pinned by KANAWAI instead folds into `normative` — role alone flips the list, not the target", () => {
-    const src = carrier('<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-9498">>', "head");
+    const src = carrier('<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-9498`>>', "head");
     const t = transposeMarkdown(src, PROFILES["kramdown-rfc2629"], resolve);
     expect(t.markdown).toContain("[RFC9498]");
     expect(t.references).toEqual([{ anchor: "RFC9498", category: "normative" }]);
   });
 
   test("--tongue en weaves `aka` as `pin` and `kanawai` as `law` in the citation bullet", () => {
-    const src = carrier('<<~ aka "lar:///ha.ka.ba/lares/ref/RFC-9498">>', "head");
+    const src = carrier('<<~ aka uri=`lar:///ha.ka.ba/lares/ref/RFC-9498`>>', "head");
     const t = transposeMarkdown(src, PROFILES.CommonMark, resolve, "en");
     expect(t.markdown).toContain("- `pin lar:///ha.ka.ba/lares/ref/RFC-9498` — pinned");
-    const src2 = carrier('<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-9498">>', "head");
+    const src2 = carrier('<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-9498`>>', "head");
     const t2 = transposeMarkdown(src2, PROFILES.CommonMark, resolve, "en");
     expect(t2.markdown).toContain("- `law lar:///ha.ka.ba/lares/ref/RFC-9498` — pinned");
   });
 
   test("CONTROL: a reference meme whose anchor is NOT standard-RFC-shaped carries its citation fields inline", () => {
-    const nonStandard = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/ref/w3c-dom">>
+    const nonStandard = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/lares/ref/w3c-dom\`>>
 \`\`\`toml meta
 anchor         = "W3C.DOM"
 reference-kind = "w3c"
@@ -913,15 +913,15 @@ target     = "https://www.w3.org/TR/dom/"
 title      = "DOM Standard"
 \`\`\`
 
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0002;\`>>
 
 ! DOM reference meme
 
-<<^ code="&#x0003;">>ni:///sha-256;DOM_CHECK
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=\`&#x0003;\`>>ni:///sha-256;DOM_CHECK
+<<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const resolveDom = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/ref/w3c-dom" ? nonStandard : null);
-    const src = carrier('<<~ aka "lar:///ha.ka.ba/lares/ref/w3c-dom">>', "head");
+    const src = carrier('<<~ aka uri=`lar:///ha.ka.ba/lares/ref/w3c-dom`>>', "head");
     const t = transposeMarkdown(src, PROFILES["kramdown-rfc2629"], resolveDom);
     expect(t.markdown).toContain("[W3C.DOM]");
     expect(t.references).toEqual([{
@@ -932,7 +932,7 @@ title      = "DOM Standard"
   });
 
   test("projectSubmission over kramdown-rfc2629 DERIVES normative:/informative: from the carrier's own pins, never hand-listed", () => {
-    const src = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/draft-probe">>
+    const src = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/lares/api/pono/draft-probe\`>>
 \`\`\`toml meta
 author    = "J. Fontany"
 cat       = "info"
@@ -943,20 +943,20 @@ title     = "A Probe Draft"
 uri-path  = "ha.ka.ba/lares/api/pono/draft-probe"
 \`\`\`
 
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0002;\`>>
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/key-words-source">>
+<<~ kanawai uri=\`lar:///ha.ka.ba/lares/ref/key-words-source\`>>
 
-<<~ ahu #/entry>>
+<<~ ahu slot=\`#/entry\`>>
 
 ! Entry
 
-<<~ aka "lar:///ha.ka.ba/lares/ref/RFC-9498">>
+<<~ aka uri=\`lar:///ha.ka.ba/lares/ref/RFC-9498\`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PROBE3
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=\`&#x0003;\`>>ni:///sha-256;PROBE3
+<<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const p = projectSubmission(src, { profile: PROFILES["kramdown-rfc2629"], resolve });
     expect(p.markdown).toContain("normative:\n  RFC2119:\n  RFC8174:");
@@ -1005,19 +1005,19 @@ describe("fence-open reads through fence-mask's own rule — one rule, one place
 
   test("the meta fence's own close reads the same guard: a content line starting with backticks never closes it early", () => {
     const src = [
-      '<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/probe">>',
+      '<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/probe`>>',
       "```toml meta",
       "role = \"a value\"",
       "```` a content line that STARTS with backticks but is not a bare closer",
       "uri-path = \"ha.ka.ba/probe\"",
       "```",
       "",
-      '<<^ code="&#x0002;">>',
+      '<<^ code=`&#x0002;`>>',
       "",
       "! Body",
       "",
-      '<<^ code="&#x0003;">>',
-      '<<^ code="&#x0004;" -> to="?">>',
+      '<<^ code=`&#x0003;`>>',
+      '<<^ code=`&#x0004;` to=`?`>>',
       "",
     ].join("\n");
     const t = transposeMarkdown(src);
@@ -1033,18 +1033,18 @@ describe("fence-open reads through fence-mask's own rule — one rule, one place
 
 describe("the hana fence: a foreign-grammar span weaves as ONE fenced block, never through the line recognizers", () => {
   test("RED-before-fix shape: a `#` inside a hana TOML body must NOT become a markdown list item", () => {
-    const t = transposeMarkdown("<<~ hana toml>>\n# a TOML comment, not a heading\nkey = 1\n<<~/hana>>\n");
+    const t = transposeMarkdown("<<~ hana grammar=`toml`>>\n# a TOML comment, not a heading\nkey = 1\n<<~/hana>>\n");
     expect(t.markdown).not.toContain("1. a TOML comment");
     expect(t.markdown).toContain("```toml\n# a TOML comment, not a heading\nkey = 1\n```");
   });
 
   test("the fence's info string carries the grammar key", () => {
-    const t = transposeMarkdown("<<~ hana yaml>>\nfoo: bar\n<<~/hana>>\n");
+    const t = transposeMarkdown("<<~ hana grammar=`yaml`>>\nfoo: bar\n<<~/hana>>\n");
     expect(t.markdown).toContain("```yaml\nfoo: bar\n```");
   });
 
   test("a hana body's own `''`/`//` marks stay verbatim — the span never reaches the emphasis pass", () => {
-    const t = transposeMarkdown("<<~ hana toml>>\nnote = \"a //path// with ''marks''\"\n<<~/hana>>\n");
+    const t = transposeMarkdown("<<~ hana grammar=`toml`>>\nnote = \"a //path// with ''marks''\"\n<<~/hana>>\n");
     expect(t.markdown).toContain("note = \"a //path// with ''marks''\"");
   });
 
@@ -1052,7 +1052,7 @@ describe("the hana fence: a foreign-grammar span weaves as ONE fenced block, nev
     // Matches the walk's pre-existing law: ordinal resets on a BLANK LINE alone (not on every
     // construct that interrupts a prose run — an ahu anchor or an edge bullet between two ordered
     // items does not reset the count either). A hana span between two `#` items keeps that law.
-    const t = transposeMarkdown("# first\n<<~ hana toml>>\n# not a list item\n<<~/hana>>\n# second\n");
+    const t = transposeMarkdown("# first\n<<~ hana grammar=`toml`>>\n# not a list item\n<<~/hana>>\n# second\n");
     expect(t.markdown).toContain("1. first");
     expect(t.markdown).toContain("2. second");
     expect(t.markdown).toContain("```toml\n# not a list item\n```");
@@ -1061,11 +1061,11 @@ describe("the hana fence: a foreign-grammar span weaves as ONE fenced block, nev
 
 describe("the tongue axis — sigil HEAD names weave through the tongue's primary mirror", () => {
   const CARRIER3 = (body: string) =>
-    `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/tongue-probe">>\n\`\`\`toml meta\nuri-path = "ha.ka.ba/lares/api/pono/tongue-probe"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n${body}\n\n<<^ code="&#x0003;">>\n<<^ code="&#x0004;" -> to="?">>\n`;
+    `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/lares/api/pono/tongue-probe\`>>\n\`\`\`toml meta\nuri-path = "ha.ka.ba/lares/api/pono/tongue-probe"\n\`\`\`\n\n<<^ code=\`&#x0002;\`>>\n\n${body}\n\n<<^ code=\`&#x0003;\`>>\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
   test("CONTROL: no --tongue (undefined) leaves every head name canonical, byte-identical to before", () => {
     const src = CARRIER3(
-      '<<~ ahu #/entry>>\n\n<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>\n\n<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>\n\n<<~/ahu>>',
+      '<<~ ahu slot=`#/entry`>>\n\n<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>\n\n<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>\n\n<<~/ahu>>',
     );
     const noTongue = transposeMarkdown(src);
     const explicitUndefined = transposeMarkdown(src, PROFILES.CommonMark, undefined, undefined);
@@ -1076,7 +1076,7 @@ describe("the tongue axis — sigil HEAD names weave through the tongue's primar
 
   test("RED: --tongue en weaves kahea as transclude and aka as pin; ahu (no primary) stays ahu", () => {
     const src = CARRIER3(
-      '<<~ ahu #/entry>>\n\n<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>\n\n<<~ aka "lar:///ha.ka.ba/lares/api/pono/lar-uri">>\n\n<<~/ahu>>',
+      '<<~ ahu slot=`#/entry`>>\n\n<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>\n\n<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>\n\n<<~/ahu>>',
     );
     const t = transposeMarkdown(src, PROFILES.CommonMark, undefined, "en");
     expect(t.markdown).toContain("(live) `transclude` [lar:///ha.ka.ba/lares/api/pono/lar-uri]");
@@ -1088,7 +1088,7 @@ describe("the tongue axis — sigil HEAD names weave through the tongue's primar
   });
 
   test("RED: a kahea ARGUMENT containing the word \"kahea\" stays untranslated — only the head token moves", () => {
-    const src = CARRIER3('<<~ kahea "lar:///ha.ka.ba/lares/api/pono/kahea-fixture">>');
+    const src = CARRIER3('<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/kahea-fixture`>>');
     const t = transposeMarkdown(src, PROFILES.CommonMark, undefined, "en");
     expect(t.markdown).toContain("(live) `transclude` [lar:///ha.ka.ba/lares/api/pono/kahea-fixture](lar:///ha.ka.ba/lares/api/pono/kahea-fixture)");
     // the argument's own "kahea" substring rides untouched — never swept by a global replace
@@ -1096,7 +1096,7 @@ describe("the tongue axis — sigil HEAD names weave through the tongue's primar
   });
 
   test("loulou has no primary mirror for \"en\" — stays canonical under --tongue too", () => {
-    const src = CARRIER3('<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>');
+    const src = CARRIER3('<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>');
     const t = transposeMarkdown(src, PROFILES.CommonMark, undefined, "en");
     expect(t.markdown).toContain("- `loulou lar:///ha.ka.ba/lares/api/pono/lar-uri`");
   });
@@ -1109,21 +1109,21 @@ describe("the tongue axis — sigil HEAD names weave through the tongue's primar
   });
 
   test("a frozen aka's PINNED content weaves under the same tongue, recursively", () => {
-    const target = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/target">>
+    const target = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/lares/api/pono/target\`>>
 \`\`\`toml meta
 uri-path = "ha.ka.ba/lares/api/pono/target"
 \`\`\`
 
-<<^ code="&#x0002;">>
+<<^ code=\`&#x0002;\`>>
 
-<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>
+<<~ kahea uri=\`lar:///ha.ka.ba/lares/api/pono/lar-uri\`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TARGET_CHECK
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=\`&#x0003;\`>>ni:///sha-256;TARGET_CHECK
+<<^ code=\`&#x0004;\` to=\`?\`>>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
     const t = transposeMarkdown(
-      '<<~ aka "lar:///ha.ka.ba/lares/api/pono/target">>\n',
+      '<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/target`>>\n',
       PROFILES.CommonMark,
       resolve,
       "en",
@@ -1133,7 +1133,7 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
   });
 
   test("--tongue en, --dialect GFM: frontmatter carries lang and tongue: \"x-lares>en\"", () => {
-    const src = CARRIER3('<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>');
+    const src = CARRIER3('<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>');
     const p = projectSubmission(src, { profile: PROFILES.GFM, tongue: "en" });
     expect(p.markdown).toContain('lang: "en"');
     expect(p.markdown).toContain('tongue: "x-lares>en"');
@@ -1141,7 +1141,7 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
   });
 
   test("CONTROL: with no --tongue, frontmatter carries lang but OMITS the tongue key entirely", () => {
-    const src = CARRIER3('<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>');
+    const src = CARRIER3('<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>');
     const p = projectSubmission(src, { profile: PROFILES.GFM });
     expect(p.markdown).toContain('lang: "en"');
     expect(p.markdown).not.toContain("tongue:");
@@ -1153,20 +1153,20 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
   // tongue this stays true: neither path calls `resolveHeadWord`/`translateSigilHead`, so a quoted
   // `<<~ kahea …>>` reads byte-identical whether or not `--tongue` is active. Proven, not assumed.
   test("ADVERSARIAL: a fenced example's `<<~ kahea …>>` does NOT translate under --tongue en", () => {
-    const src = CARRIER3('```\n<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>\n```');
+    const src = CARRIER3('```\n<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>\n```');
     const noTongue = transposeMarkdown(src);
     const tongued = transposeMarkdown(src, PROFILES.CommonMark, undefined, "en");
     expect(tongued.markdown).toBe(noTongue.markdown);
-    expect(tongued.markdown).toContain("```\n<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>\n```");
+    expect(tongued.markdown).toContain("```\n<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>\n```");
     expect(tongued.markdown).not.toContain("transclude");
   });
 
   test("ADVERSARIAL: a hana body's `<<~ kahea …>>` does NOT translate under --tongue en", () => {
-    const src = CARRIER3('<<~ hana toml>>\nnote = "<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>"\n<<~/hana>>');
+    const src = CARRIER3('<<~ hana grammar=`toml`>>\nnote = "<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>"\n<<~/hana>>');
     const noTongue = transposeMarkdown(src);
     const tongued = transposeMarkdown(src, PROFILES.CommonMark, undefined, "en");
     expect(tongued.markdown).toBe(noTongue.markdown);
-    expect(tongued.markdown).toContain('note = "<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>"');
+    expect(tongued.markdown).toContain('note = "<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>"');
     expect(tongued.markdown).not.toContain("transclude");
   });
 });
@@ -1218,10 +1218,10 @@ describe("the reverse mirror map and its round-trip property", () => {
 describe("the projector reads a framing opener that names its ends", () => {
   const URI = "lar:///a.b.c/x";
   const body = (ends: string) =>
-    [`<<^ code="&#x0001;" ${ends}>>`, "", "A line of body.", "", '<<^ code="&#x0004;" -> to="?">>'].join("\n");
+    [`<<^ code=\`&#x0001;\` ${ends}>>`, "", "A line of body.", "", '<<^ code=`&#x0004;` to=`?`>>'].join("\n");
 
   test("the named end reaches the projection as the carrier's address", () => {
-    const p = projectSubmission(body(`from="?" -> to="${URI}"`), { title: "lar:///t" });
+    const p = projectSubmission(body(`from=\`?\` to=\`${URI}\``), { title: "lar:///t" });
     expect(p.markdown).toBeTruthy();
     expect(p.markdown).not.toContain("to=lar:///");
   });

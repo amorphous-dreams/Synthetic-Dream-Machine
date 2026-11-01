@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/kumu-device">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/kumu-device`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/kumu-device.mem"
 l-space     = "lararium"
 mana        = 17
 manao       = 17
@@ -20,7 +19,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/kumu-device"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Kumu Device Spec
 
@@ -36,7 +35,7 @@ pranala tiddler edges via `extractReactionBindings`.
 
 <<~/ahu>>
 
-<<~ ahu #/verse-model>>
+<<~ ahu slot=`#/verse-model`>>
 
 !! Verse 5.6+ Device Model
 
@@ -69,7 +68,7 @@ Lararium maps this directly:
 
 <<~/ahu>>
 
-<<~ ahu #/exports>>
+<<~ ahu slot=`#/exports`>>
 
 !! Exports
 
@@ -142,6 +141,7 @@ uuidFragment  — crypto.randomUUID() stable wiring address
 ```
 
 Both fragments produce tiddler title URIs:
+
 ```
 lar:///type-path#/nameFragment   — human-readable wiki-local label
 lar:///type-path#/uuidFragment   — stable UUID address for papalohe wiring
@@ -168,7 +168,7 @@ Selection rules:
 
 <<~/ahu>>
 
-<<~ ahu #/reaction-engine-removal>>
+<<~ ahu slot=`#/reaction-engine-removal`>>
 
 !! Reaction dispatch
 
@@ -183,17 +183,17 @@ See: `lar:///ha.ka.ba/lares/api/pono/nalu#/yin-collapse-law`
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/reaction-graph">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reaction-engine">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/papalohe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/reaction-graph`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reaction-engine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-event-lattice`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tjEuCkLRwVLiycDc6k_gPha8IXCqzgziJzl8bc1MW4s
+<<^ code=`&#x0003;`>>ni:///sha-256;BF1WvLJTbazLA9Gp9HoR2Cjoi5g43fmiUfFiohgjY6Q
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

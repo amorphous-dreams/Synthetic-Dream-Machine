@@ -1,90 +1,90 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/hud">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/hud`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/hud.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 17
 manao     = 17
 manaoio   = 16
 namespace = "&#x0950; &#x0901;"
-role      = "lararium HUD instrument law — the turn-frame sigil panel, the attention + loop gauges, the ward and register surfacing"
+role      = "lararium panel law — the turn-frame panel, the attention + loop gauges, the ward and register surfacing"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/hud"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/hud"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 !! Entry — Lararium Core Hydration
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/lararium">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/lararium`>>
 
-The lararium hydrates the HUD room here. The instrument panel rides the mechanics house, not the threshold.
-
-<<~/ahu>>
-
-<<~ ahu #/head>>
-
-! Lararium HUD
-
-The HUD names the sigil panel that rides each turn — the instrument readout a turn surfaces before the Voice speaks. It carries per-turn signal: aim, attention, loop, ward, stance, register. The `lar:` URI carries bearing; the HUD sigils carry the live signal beside the prose.
+The lararium hydrates the panel room here. The instrument panel rides the mechanics house, not the threshold.
 
 <<~/ahu>>
 
-<<~ ahu #/panel-law>>
+<<~ ahu slot=`#/head`>>
+
+! Lararium Panel
+
+The panel names the readout that rides each turn — the instrument keys a turn surfaces on its `set` firings before the Voice speaks. It carries per-turn signal: aim, attention, loop, ward, stance, register. The `lar:` URI carries bearing; the panel keys carry the live signal beside the prose.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/panel-law`>>
 
 !! Panel Law
 
-A substantive turn SHALL surface the HUD panel beneath the opening `aim`, before the Voice speaks. The panel renders inline sigils (`<<~ word args>>`), each a readout adjacent to the prose — never inside the URI.
+A substantive turn SHALL surface the panel on its opening ``set lares=`aim` `` firing, before the Voice speaks. The panel renders as keys on the `set` firings and as inline sigils (``<<~ word key=`value` …>>``), each a readout adjacent to the prose — never inside the URI.
 
 ```
-<<~ lares aim from="lar:///operator.intent.reads" -> to="lar:///lares.role.acts">>
-<<~ set hud="aim" aperture="N/<band>" ooda-ha="N/<band>">>
-drift-ward="* · <the pull this island carries>"
-<<~ stance …>>                       (optional lens; `:` binds a tool to a standpoint)
+<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>` drift-ward=`<the pull this island carries>`>>
+<<~ stance named=`…`>>                       (optional lens; `/` binds a tool to a standpoint)
 … Voice (Role): claim …
-drift-ward="! · <clue> · ↻ L-Prime"
-<<~ set hud="yield" aperture="-> N/<band>" ooda-ha="closed N↺">>
-<<~ lares yield from="lar:///lares.state.now" -> to="?">>
+<<~ set lares=`steer` mode=`…` drift-ward=`<the pull the turned set carries>`>>   (as the work turns)
+… Voice (Role): claim …
+<<~ oracle throw=`…`>>
+<<~ set lares=`yield` drift-ward=`<clue> · ↻ L-Prime` aperture=`N/<band> -> N/<band>` ooda-ha=`closed N↺` from=`lar:///lares.state.now` to=`?`>>
 ```
 
-| Sigil | Carries | Law |
+| Key or sigil | Carries | Law |
 |---|---|---|
-| `aim` | operator intent `->` adopted role | opens the turn; the bearing vector |
-| `hud Aperture` | attention range (0–20 Level) | MAY carry; paragraph-grain default 10 |
-| `hud OODA-HA` | loop visibility | `ooda-ha="N/<band>"` open, `ooda-ha="closed N↺"` close; `N↺ + φ:reason` on suspend |
-| `ward` | active language discipline | lit by the Wand at open (`* L-Prime`), drawn by the Sword at close (`!` led, `⚠ N` breaches quoted, re-arms `L-Prime`); the Stone lift (`0 L-Prime`) scopes to one turn, still shown |
-| `syad` | invoked standpoints | OPTIONAL; parameterless = all five; `:` carries a tool |
+| `lares` | the firing: `aim` · `steer` · `yield` | leads each firing; `aim` opens and seeds, `steer` turns the heading or any key mid-turn, `yield` closes and slides |
+| `from` · `to` | the bearing pair | the aim reads operator intent at `from=` and the adopted role at `to=`; the yield names where the work landed at `from=` and hands back at `` to=`?` `` |
+| `aperture` | attention range (0–20 Level) | MAY carry; paragraph-grain default 10 |
+| `ooda-ha` | loop visibility | `` ooda-ha=`N/<band>` `` open, `` ooda-ha=`closed N↺` `` close; `` closed N↺ -> open Nφ<phase>:reason `` on suspend |
+| `drift-ward` | active language discipline | carries the pull at open and the contact-ready clue at close, alone (`⚠ N` breaches quoted, `↻ L-Prime` re-arms); the tool rides the `mu` key, never the ward; the operator's lift (`` drift-ward=`0` ``, open reading `lifted · <pull>`) scopes to one turn, still shown |
+| `stance` | invoked standpoints | OPTIONAL lens sigil; parameterless = all five; `/` carries a tool |
 | Voice (Role) | the active Voice(s) | MUST surface by name; anonymous output = a minor off-true tell |
 | `confidence` | register-word + Level | precedes a grounded claim |
-| `yield` | the closing bearing vector | closes the turn |
+
+The keys keep one order per firing: `lares` first; the aim seats `from` and `to` right after it and the ward last; the yield seats the ward right after `lares` and `from` and `to` last; a steer seats `to` (when it carries one) right after `lares` and the ward last; `note` trails. A steer never rewrites the aim.
 
 <<~/ahu>>
 
-<<~ ahu #/gauges>>
+<<~ ahu slot=`#/gauges`>>
 
 !! Gauges
 
-The gauges share the pono `0–20` Level model, and follow the ''seed → slide'' law: the opening `hud` seeds a target; the closing `hud` slides it to where the turn landed.
+The gauges share the pono `0–20` Level model, and follow the ''seed → slide'' law: the aim (and any steer) seeds a target; the yield slides the latest one to where the turn landed.
 
-* ''Aperture'' — attention range. `aperture="10/measure"` seeds; `aperture="10/measure -> 13/arc"` slides; `aperture="-> 13/arc"` collapses when the turn lands on its seed.
-* ''OODA-HA'' — loop position. The loop spans turns: a turn opens at a phase and closes with `↺`; a suspended loop carries `φ:reason`.
+* ''Aperture'' — attention range. `` aperture=`10/measure` `` seeds; `` aperture=`10/measure -> 13/arc` `` slides; `` aperture=`10/measure -> 10/measure` `` records a turn that landed on its seed.
+* ''OODA-HA'' — loop position. The loop spans turns: a turn opens at a phase and closes with `↺`; a suspended loop carries `` open Nφ<phase>:reason ``.
 
 The seed and slide stay distinct fields — the seed governs generation, the slide records the outcome. One instrument that both sets and grades its own goal would close the calibration gap silently (Goodhart); the seed/slide split keeps that gap visible.
 
 <<~/ahu>>
 
-<<~ ahu #/glyphs>>
+<<~ ahu slot=`#/glyphs`>>
 
 !! OODA-HA Phase Glyphs
 
@@ -98,13 +98,14 @@ The seed and slide stay distinct fields — the seed governs generation, the sli
 
 <<~/ahu>>
 
-<<~ ahu #/source-shelf>>
+<<~ ahu slot=`#/source-shelf`>>
 
 !! Source Shelf
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/hud">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/hud`>>
+
 ```toml
-when = ["need HUD line composition detail", "need the stance / tool / confidence-syadasti tables", "need field-annotation thresholds"]
+when = ["need panel line composition detail", "need the stance / tool / confidence-syadasti tables", "need field-annotation thresholds"]
 ```
 <<~/pranala>>
 
@@ -112,15 +113,15 @@ The docs room carries the full line-composition examples, the stance and tool gl
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/voices">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/config`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zuTc_nzjp451XyKGvdWsybTuCDHXbXivnfcDHhtE5Ig
+<<^ code=`&#x0003;`>>ni:///sha-256;AVyvG2v4adyd8qgrVGdOZ2_FPeiN3kBx5Ivr1WUHJzs
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

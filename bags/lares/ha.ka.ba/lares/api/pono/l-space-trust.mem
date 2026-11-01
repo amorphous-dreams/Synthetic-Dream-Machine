@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/l-space-trust`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/l-space-trust.mem"
 mana      = 16
 manao     = 17
 manaoio   = 14
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/l-space-trust"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! l-space Trust Law
 
@@ -33,7 +32,7 @@ Canonical memes carry stable law; live exchange records carry situated signal; d
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ read the record's declared kind, its holding bag, the query signal, and the carrier source before trust assignment.
 ⏿ separate canonical memes from live exchange records from data memes without merging their force.
@@ -43,7 +42,7 @@ Canonical memes carry stable law; live exchange records carry situated signal; d
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 A ''canonical meme'' MAY carry stable law, capability shape, data, docs, or file-backed source truth.
 A ''live exchange record'' MAY carry exchange intent, session context, and trajectory pressure.
@@ -63,7 +62,7 @@ Operator agency matters; persistence and placement still matter.
 
 <<~/ahu>>
 
-<<~ ahu #/precedence>>
+<<~ ahu slot=`#/precedence`>>
 
 Precedence pressure reads from most stable to most local:
 
@@ -79,18 +78,18 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hooponopono`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-6hKWaPJQkckKtgRV8iSG8x0m_9KNby5g58JMGGH7R0
+<<^ code=`&#x0003;`>>ni:///sha-256;i_jttFlG6YMXoK3uTs8N374JGu2erX5XIrTjBZARDDc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

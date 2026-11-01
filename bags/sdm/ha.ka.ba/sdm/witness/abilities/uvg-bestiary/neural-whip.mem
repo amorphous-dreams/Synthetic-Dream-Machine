@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/witness/abilities/uvg-bestiary/neural-whip">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/witness/abilities/uvg-bestiary/neural-whip`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/witness/abilities/uvg-bestiary/neural-whip.mem"
 l-space   = "sdm"
 mana      = 11
 manao     = 16
@@ -18,7 +17,7 @@ uri-path  = "ha.ka.ba/sdm/witness/abilities/uvg-bestiary/neural-whip"
 
 ! UVG Witness — Neural Whip
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
@@ -37,7 +36,7 @@ The Cave Octopus is a ''Biomancer Extraordinaire'' — it replaced its human bod
 
 <<~/ahu>>
 
-<<~ ahu #/lift>>
+<<~ ahu slot=`#/lift`>>
 
 !! What the module lifts
 
@@ -49,7 +48,7 @@ The v0.1 ''Neural Whip'' module abstracts the creature's signature tentacle into
 
 <<~/ahu>>
 
-<<~ ahu #/fidelity>>
+<<~ ahu slot=`#/fidelity`>>
 
 !! Fidelity notes
 
@@ -58,14 +57,14 @@ The v0.1 ''Neural Whip'' module abstracts the creature's signature tentacle into
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/modules/abilities/neural-whip">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/modules/abilities/neural-whip`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Gd9PhKTyQXAbQjDEWuHMLWvg3Yuy5GSfgxqtjDHhNVc
+<<^ code=`&#x0003;`>>ni:///sha-256;6IMLB6_dMFXUWnLJ8McG_fzPUXkwMIgTaiKyjokyWiU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

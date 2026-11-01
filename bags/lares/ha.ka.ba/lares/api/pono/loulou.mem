@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/loulou">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/loulou`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/loulou.mem"
 mana      = 17
 manao     = 17
 manaoio   = 16
@@ -17,22 +16,22 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/loulou"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Loulou
 
 //loulou// — Hawaiian: to tie, bind, fasten; to link together.
 
 An outgoing relation-family edge sugar. Names what kind of connection holds between two sockets.
-Carries no execution pulse. Sugar for `<<~ pranala from=? -> to=URI family=relation>>`.
+Carries no execution pulse. Sugar for ``<<~ pranala from=`?` to=`URI` family=`relation`>>``.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ sense the target URI at the link mouth — note the destination socket
 ⏿ orient: family:relation, traversal:source-to-target, propagation:none; no execution pulse
@@ -42,7 +41,7 @@ Carries no execution pulse. Sugar for `<<~ pranala from=? -> to=URI family=relat
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -58,33 +57,35 @@ no propagation runs. The edge says what holds between the sockets, not what runs
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```text
-<<~ loulou URI>>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme#/law">>
+<<~ loulou uri=`URI`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme#/law`>>
 ```
 
 `?` source resolves to the nearest enclosing socket (ahu fragment or meme URI).
 A named `#fragment` anchor SHOULD win socket resolution before the enclosing meme URI.
 
 Regex (canonical):
+
 ```
 /<<~\s*loulou\s+(\S+)\s*>>/
 ```
 Groups: `[full, target-uri]`
 
 Full pranala expansion:
+
 ```text
-<<~ pranala from="?" -> to="URI" family="relation" lifecycle="instance" traversal="source-to-target" propagation="none">>
+<<~ pranala from=`?` to=`URI` family=`relation` lifecycle=`instance` traversal=`source-to-target` propagation=`none`>>
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -111,18 +112,18 @@ confidence-bounded = false
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/aka">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/aka`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kahea`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/papalohe`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-link">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-link`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;P4ppYA-yi3_zjrnhJv83ly0EVkovhvvnvhQRVbEAbbU
+<<^ code=`&#x0003;`>>ni:///sha-256;wa1Yg43q-UlabcA8Mc9WPI2b_tCdsRD5fN7pCmP6nWI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

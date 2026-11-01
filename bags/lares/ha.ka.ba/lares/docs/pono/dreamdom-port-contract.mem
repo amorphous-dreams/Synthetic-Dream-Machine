@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-port-contract.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 15
@@ -21,7 +20,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-port-contract"
 written           = "2026-10-22"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The record port contract ~ five questions, answered clockless
 
@@ -31,7 +30,7 @@ written           = "2026-10-22"
 
 <<~/ahu>>
 
-<<~ ahu #/snapshot>>
+<<~ ahu slot=`#/snapshot`>>
 
 !! Q1 ~ the chunked snapshot holds a stable base
 
@@ -43,7 +42,7 @@ written           = "2026-10-22"
 
 <<~/ahu>>
 
-<<~ ahu #/reset>>
+<<~ ahu slot=`#/reset`>>
 
 !! Q2 ~ a cursor resets by name, never by skipping
 
@@ -53,7 +52,7 @@ written           = "2026-10-22"
 
 <<~/ahu>>
 
-<<~ ahu #/write>>
+<<~ ahu slot=`#/write`>>
 
 !! Q3 ~ one transaction, per-family atomicity, `port:written` last
 
@@ -69,7 +68,7 @@ written           = "2026-10-22"
 
 <<~/ahu>>
 
-<<~ ahu #/tombstones>>
+<<~ ahu slot=`#/tombstones`>>
 
 !! Q4 ~ tombstones by count, and a lagging subscriber learns by reset
 
@@ -81,7 +80,7 @@ written           = "2026-10-22"
 
 <<~/ahu>>
 
-<<~ ahu #/presence>>
+<<~ ahu slot=`#/presence`>>
 
 !! Q5 ~ presence expires at causal boundaries; no timer runs anywhere in the port
 
@@ -93,7 +92,7 @@ written           = "2026-10-22"
 
 <<~/ahu>>
 
-<<~ ahu #/invoke>>
+<<~ ahu slot=`#/invoke`>>
 
 !! The invoke gate ~ authority re-checked at run time
 
@@ -104,7 +103,7 @@ written           = "2026-10-22"
 
 <<~/ahu>>
 
-<<~ ahu #/verb-cas>>
+<<~ ahu slot=`#/verb-cas`>>
 
 !! The `verb` and `cas` asks ~ island-local, both fail closed
 
@@ -114,7 +113,7 @@ written           = "2026-10-22"
 
 <<~/ahu>>
 
-<<~ ahu #/retry-law>>
+<<~ ahu slot=`#/retry-law`>>
 
 !! The one retry law ~ a resend of the same id, never a timer
 
@@ -125,7 +124,7 @@ A lost answer repairs by one law on every path: the sender resends the ''same id
 
 <<~/ahu>>
 
-<<~ ahu #/choices>>
+<<~ ahu slot=`#/choices`>>
 
 !! Choices the build made and the contract names
 
@@ -135,7 +134,7 @@ A lost answer repairs by one law on every path: the sender resends the ''same id
 
 <<~/ahu>>
 
-<<~ ahu #/gate-scope>>
+<<~ ahu slot=`#/gate-scope`>>
 
 !! Gate scope ~ two gates, kept apart
 
@@ -143,11 +142,11 @@ The proven-face verifier of #/invoke gates the port's invoke. Kahu reach admissi
 
 <<~/ahu>>
 
-<<~ ahu #/owed>>
+<<~ ahu slot=`#/owed`>>
 
 !! Beside the port ~ what stands built, and what stays owed
 
-The D2 close lane built the road a page takes to the port and closed the rows that stood owed beside it (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/d2-port-lane">>). What stands:
+The D2 close lane built the road a page takes to the port and closed the rows that stood owed beside it (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/d2-port-lane`>>). What stands:
 
 * ''Composer wiring and the port lease.'' The vessel's pool keeps the port lease (`port-lease.ts`): the binding that opens a `portId` owns it, another binding's open, close, ack, ask, write or presence under it refuses `port-owned`, and a reply with no lease drops by name (`no-port-lease`). The pool sends the island `port:lease{portId, grant}` ahead of each open, write and ask (a page can never send one: `port-kind-refused`) and `port:gone{portId}` when the transport ends; the island's `hasPortLease` lends `faceOf(portId)`, `mayEdit`, `bagGrant`, `actorOf`, `verbCap`, `casTierOf`, `kahuReach` and `authority` from the grant and calls `transportGone(portId)` on `port:gone`. An open with no lease resets `lagged` and holds nothing. The browser shared holder wraps the same door. The default vessel policy grants a read-only port; the actor manifest and its grants belong to D4.
 * ''The page transport.'' `ports.place(surface, binding, msg)` and `ports.close(binding)` on each vessel result, and `makePortTransport` on the page, carry one binding's port messages through the lease; a live island proves one write lands once and echoes once under `causedBy`.
@@ -168,16 +167,16 @@ What stays owed, each by name:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-field-scout">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-scout">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/d2-port-lane">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-field-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/d2-port-lane`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PIm3X2XafgVWQjE7Ly0OR4eYKNU1Nyod7W7uDIX5F-8
+<<^ code=`&#x0003;`>>ni:///sha-256;2WpyGk8xFdGBbT3tagFwvyZTeqRYJlEMA3bUEqvLJas
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

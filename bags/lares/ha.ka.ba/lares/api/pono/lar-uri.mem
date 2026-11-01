@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/lar-uri">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/api/pono/lar-uri.mem"
 l-space    = "stable"
 mana       = 18
 manao      = 17
@@ -19,11 +18,11 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/lar-uri"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/abstract>>
+<<~ ahu slot=`#/abstract`>>
 
 ! The `lar:` URI Scheme — A Naming Scheme for the Meme Graph
 
@@ -35,7 +34,7 @@ This specification names the scheme syntax (a formal ABNF grammar), the path tax
 
 <<~/ahu>>
 
-<<~ ahu #/status>>
+<<~ ahu slot=`#/status`>>
 
 !! Status and Maturity
 
@@ -43,7 +42,7 @@ This document holds ''submission-draft'' maturity. The scheme law, path taxonomy
 
 <<~/ahu>>
 
-<<~ ahu #/introduction>>
+<<~ ahu slot=`#/introduction`>>
 
 !! Introduction — Scope, Audience, and Relation to memetic-wikitext
 
@@ -61,7 +60,7 @@ This document holds ''submission-draft'' maturity. The scheme law, path taxonomy
 
 <<~/ahu>>
 
-<<~ ahu #/terminology>>
+<<~ ahu slot=`#/terminology`>>
 
 !! Terminology and Conformance Language
 
@@ -83,7 +82,7 @@ The key words ''MUST'', ''MUST NOT'', ''REQUIRED'', ''SHALL'', ''SHALL NOT'', ''
 
 <<~/ahu>>
 
-<<~ ahu #/scheme-syntax>>
+<<~ ahu slot=`#/scheme-syntax`>>
 
 !! Scheme Syntax (ABNF)
 
@@ -146,17 +145,19 @@ the spelling that abbreviates one losslessly waits on the siting question (#/rea
 
 <<~/ahu>>
 
-<<~ ahu #/path-taxonomy>>
+<<~ ahu slot=`#/path-taxonomy`>>
 
 !! Path Taxonomy
 
 ''Stable'' — literal `ha.ka.ba` root, permanent API surfaces (bare meme namespace at `child[1]`):
+
 ```
 lar:///ha.ka.ba/lares/api/pono/meme
 lar:///ha.ka.ba/lares/api/pono/lar-uri
 ```
 
 A CRDT surface names its kind-plane at `child[1]`, the `@`-slug at `child[2]`:
+
 ```
 lar:///ha.ka.ba/bags/lares       a bag (mutable content surface)
 lar:///ha.ka.ba/wikis/lares      a wiki (a #has bag-stack)
@@ -164,6 +165,7 @@ lar:///ha.ka.ba/cid/bafy…         an immutable content-addressed artifact
 ```
 
 ''Unstable'' — arbitrary three-term attitude root, session-specific bearing:
+
 ```
 lar:///threshold.uncertain.opens
 ```
@@ -188,7 +190,7 @@ The sync boundary admits ''any valid TW5 tiddler'': a plain-titled tiddler cross
 
 <<~/ahu>>
 
-<<~ ahu #/equality>>
+<<~ ahu slot=`#/equality`>>
 
 !! Equality
 
@@ -225,7 +227,7 @@ path — but it MUST NOT report two addresses equal that this rule reads apart.
 
 <<~/ahu>>
 
-<<~ ahu #/minting>>
+<<~ ahu slot=`#/minting`>>
 
 !! Minting and Collision
 
@@ -249,7 +251,7 @@ Two consequences bind:
 
 <<~/ahu>>
 
-<<~ ahu #/bag-surface>>
+<<~ ahu slot=`#/bag-surface`>>
 
 !! Surface Designation — `@` Names a CRDT Surface
 
@@ -281,7 +283,7 @@ Registry pattern. A bag MAY hold tiddlers whose titles read as //paths inside it
 
 <<~/ahu>>
 
-<<~ ahu #/five-planes>>
+<<~ ahu slot=`#/five-planes`>>
 
 !! The Five Planes
 
@@ -297,7 +299,7 @@ The planes compose: a turn of live exchange mints SPEECH + STABILITY-unstable na
 
 <<~/ahu>>
 
-<<~ ahu #/disk-siting>>
+<<~ ahu slot=`#/disk-siting`>>
 
 !! Disk Siting — a projection rule, not an address component
 
@@ -315,7 +317,7 @@ does not license dropping their authority.
 
 <<~/ahu>>
 
-<<~ ahu #/resolution>>
+<<~ ahu slot=`#/resolution`>>
 
 !! Resolution Model
 
@@ -334,7 +336,7 @@ Session form names the speaker through the userinfo subcomponent. It MUST stay w
 
 <<~/ahu>>
 
-<<~ ahu #/reach>>
+<<~ ahu slot=`#/reach`>>
 
 !! Reach — Residency Bars, Form Never Does
 
@@ -371,7 +373,7 @@ The current mirror derivation admits an authority and then drops it, meeting the
 
 <<~/ahu>>
 
-<<~ ahu #/signal-law>>
+<<~ ahu slot=`#/signal-law`>>
 
 !! Signal Law
 
@@ -392,7 +394,7 @@ BEARING (path) → ANCHOR (fragment, media-type-defined).
 
 <<~/ahu>>
 
-<<~ ahu #/conformance>>
+<<~ ahu slot=`#/conformance`>>
 
 !! Conformance Classes
 
@@ -406,7 +408,7 @@ A ''conforming author'' SHOULD: use local form for stable addresses and system r
 
 <<~/ahu>>
 
-<<~ ahu #/scheme-registration>>
+<<~ ahu slot=`#/scheme-registration`>>
 
 !! URI Scheme Registration (RFC 7595)
 
@@ -430,7 +432,7 @@ The scheme registers as ''provisional''; a future submission MAY seek permanent 
 
 <<~/ahu>>
 
-<<~ ahu #/security>>
+<<~ ahu slot=`#/security`>>
 
 !! Security Considerations
 
@@ -458,26 +460,30 @@ A ''hostful'' title carries none of the three. A host names an attribution and a
 
 <<~/ahu>>
 
-<<~ ahu #/examples>>
+<<~ ahu slot=`#/examples`>>
 
 !! Worked Examples (Non-Normative)
 
 A stable API address with a fragment:
+
 ```
 lar:///ha.ka.ba/lares/api/pono/meme#/law
 ```
 
 An unstable session territory:
+
 ```
 lar:///threshold.uncertain.opens/notes/first-pass
 ```
 
 A session-form speaker (exchange span only — never a title):
+
 ```
 lar://mischief-muse:agent@host/ha.ka.ba/lares/turn/current
 ```
 
 A hostful storage title, where the domain separates two namespaces sharing a path:
+
 ```
 lar://amorphousdream.com/ha.ka.ba/lares/api/pono/meme
 ```
@@ -492,13 +498,14 @@ never because a present one compels it; an author who reaches for the local form
 stays conforming in every case.
 
 A registry entry pointing at another bag:
+
 ```
 lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///ha.ka.ba/bags/elyncia
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/references>>
+<<~ ahu slot=`#/references`>>
 
 !! Normative References
 
@@ -512,7 +519,7 @@ lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///
 
 <<~/ahu>>
 
-<<~ ahu #/annex-open>>
+<<~ ahu slot=`#/annex-open`>>
 
 !! Annex — Open Items (Informative)
 
@@ -525,7 +532,7 @@ lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ sense which form the URI carries — local, hostful, or session (a userinfo ahead of the host); identify path class
 ⏿ orient against scheme law — slot count, path class, `child[1]` kind-plane-or-namespace
@@ -535,17 +542,17 @@ lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/sync-namespace">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sync-namespace`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VGavUZ5UfTHYiWjy0U8UySFGNi7mYWFLLb4vIkXZpmw
+<<^ code=`&#x0003;`>>ni:///sha-256;bB1OrWJIRuyQvXZTbzCMm6NF_VHa4m1DFYDKKNxcDgY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

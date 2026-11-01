@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/realm-bag-brief.mem"
 hydrate    = true
 l-space    = "stable"
 mana       = 12
@@ -13,7 +12,7 @@ manao      = 14
 manaoio    = 11
 namespace  = "&#x2299;"
 revised-on = "2026-09-13"
-role       = "realm-bag-brief — the brief on a relation-carried bag: a bag two operators keep through a relation. Where the bag doc registers (the realm's shared CRDT, ruled), what @crossroads carries (that it exists and who keeps it, never content), which cap-tier gates the read (CONTRACT) and the write (the named stewards' set), how B's `meme get --bag <x>` resolves it (reach-by-access, and why), what the realm layer already holds and what stands unbuilt, and the one gated red that waits on the seam. Every claim carries its file:line."
+role       = "realm-bag-brief — the brief on a relation-carried bag: a bag two operators keep through a relation. Where the bag doc registers (the realm's shared CRDT, ruled), what crossroads-plane carries (that it exists and who keeps it, never content), which cap-tier gates the read (CONTRACT) and the write (the named stewards' set), how B's `meme get --bag <x>` resolves it (reach-by-access, and why), what the realm layer already holds and what stands unbuilt, and the one gated red that waits on the seam. Every claim carries its file:line."
 status-why = "BUILT 2026-09-12: the realm's shared CRDT materializes at boot under one doc id, a bag registers on it steward-signed (`1bf9f0b2d`), and the crossing stands — the dial presents the CONTRACT edge, the share verdict seats on announce and access, B's `meme get --bag lares` answers under two operators (`04895b579`, `be008ef1a`; docker `★ B gets it ★ ok`). Two steps behind it walk red on their own terms (B's md projection wants a `meta` key; B's LOAD lands in her own bag while the stewards alone write A's); the bulb GAP and PARTITION reconnect stand — AND THE ANNOUNCE MOVED 2026-09-13 (`10c878d1d`): a PUBLIC-tier registration's announce carries the book's doc url so a carrier can read which books it may carry, every tighter tier unchanged and byte-identical."
 tags       = ["docs/pono/handoff", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief"
@@ -21,17 +20,17 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/talk-story">>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/talk-story`>>
 
 
 
-<<~ ahu #/ground>>
+<<~ ahu slot=`#/ground`>>
 
 ! Ground — the ford and its one book
 
 ''Measured'' (over `tools/mesh-scenarios.sh meme`): two operators each found their own `lar:///ha.ka.ba/bags/lares` doc; `nexus contract` writes the carriage-contracts board and B's kept consent, never a bag (`packages/lararium-node/src/nexus-carriage.ts:110` materializes `board:carriage-contracts` off `carriageDocUrl(nexusPubkey)`); B's `meme get --bag lares` answers `not-found`. The crossing that passed rode a FLEET dial — one operator's bag on two devices (`tests/e2e/meme-two-vessel-bag.test.ts`).
 
-''The ruling this brief enacts'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">> #/exit, quote license): "the shared bag registers in the realm's shared CRDT, @crossroads names only that it exists, read at CONTRACT".
+''The ruling this brief enacts'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one`>> #/exit, quote license): "the shared bag registers in the realm's shared CRDT, crossroads-plane names only that it exists, read at CONTRACT".
 
 ''That edge reads as a LICENCE, and no weld stands owed on it.'' The clause above sits here ''verbatim'', so this brief holds the ruling whole rather than reaching for it. The `loulou` names the floor that RECORDED the operator's words — a provenance mark, never a dependency — and it stays pointed there whatever becomes of that floor: a citation names where a thing got said, and re-aiming one at a carrier that never said it destroys the record while the sentence reads on unchanged. ''A hand folding `scale-stories-basket-one` MUST NOT re-point this site.'' Should that floor end, this quote stands as the record and this brief reads complete without it.
 
@@ -39,20 +38,20 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 
 <<~/ahu>>
 
-<<~ ahu #/what-a-relation-bag-needs>>
+<<~ ahu slot=`#/what-a-relation-bag-needs`>>
 
 !! 1 · What a relation-carried bag needs
 
 # ''One doc id both sides name.'' Two vessels that each mint their own `bags/lares` doc hold two docs under one name; the live system documents now rest in the Kahu realm, registered once at the founding (`packages/lararium-node/src/kahu-realm.ts`). A relation-carried bag needs a doc whose id DERIVES from the relation, the way a face's planes derive from the PersonaGroup doc id (`personaScopedBagIds(personaGroup.docIdHex)`, `packages/lararium-keyhive/src/ceremony-core.ts:329`): `realmScopedBagId(realmDocIdHex, slug)` — a pure function of the realm's own name, so both stewards compute the same address from the charter they both hold and find it with no registry consulted.
 # ''Where it registers.'' Three candidates stood: each vessel's private `@catalog` (the operator's OWN bag oracles under OCAP grants — `packages/lararium-mesh/src/lar-uris.ts:216`), the realm's shared CRDT, or the public `@crossroads` (`CROSSROADS_DOC_URI`, `lar-uris.ts:221`; federatable to any proof-carrying operator — `packages/lararium-mesh/src/federation-gate.ts:83,399`). RULED: the realm's shared CRDT. The `@catalog` keeps two copies sovereign and lets them drift (the two chests); `@crossroads` lets the world name the doc and would let the world read the count (the post at the herm).
-# ''What @crossroads carries.'' Exactly `{ bag exists, kept-by }`: the realm-scoped bag id and the stewards' nyms, as a crossroads record beside the WHO board — a stranger at the herm reads "a ford stands here, two clans keep it" and no count. Never a tiddler of the bag, never its doc contents, never the read cap.
-# ''The read cap: CONTRACT.'' `CapTier = "veil" | "personagroup" | "contract" | "public"` (`packages/lararium-mesh/src/cap-tier.ts:40`); CONTRACT = `{your-fleet ∪ a-cabal}` (`cap-tier.ts:37`), the bag's content key reaching the fleet plus the contracted cabal (the ruled delivery, its lockbox store owed) — PERSONAGROUP and CONTRACT "ride the SAME mechanism, differing ONLY in which set" (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>). The relay gate reads the resolved tier against the peer's membership (`federation-gate.ts:503`, `tierPermitsRelayPeer` at `cap-tier.ts:267`), so a CONTRACT-tier doc crosses to a contracted member and to nobody else — already the gate's law, needing only the bag's declared tier.
+# ''What crossroads-plane carries.'' Exactly `{ bag exists, kept-by }`: the realm-scoped bag id and the stewards' nyms, as a crossroads record beside the WHO board — a stranger at the herm reads "a ford stands here, two clans keep it" and no count. Never a tiddler of the bag, never its doc contents, never the read cap.
+# ''The read cap: CONTRACT.'' `CapTier = "veil" | "personagroup" | "contract" | "public"` (`packages/lararium-mesh/src/cap-tier.ts:40`); CONTRACT = `{your-fleet ∪ a-cabal}` (`cap-tier.ts:37`), the bag's content key reaching the fleet plus the contracted cabal (the ruled delivery, its lockbox store owed) — PERSONAGROUP and CONTRACT "ride the SAME mechanism, differing ONLY in which set" (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>). The relay gate reads the resolved tier against the peer's membership (`federation-gate.ts:503`, `tierPermitsRelayPeer` at `cap-tier.ts:267`), so a CONTRACT-tier doc crosses to a contracted member and to nobody else — already the gate's law, needing only the bag's declared tier.
 # ''The write cap: the named stewards' set.'' Narrower than the read set: the two stewards write, every household reads. In keyhive terms a `delegate({ bagUrl, audience, access })` per steward (`packages/lararium-keyhive/src/face-join.ts:224` shows the shape a re-grant takes), audience = each steward's PersonaGroup agent id, access = admin; the cabal's members earn read alone. A write from a non-steward lands nowhere: the composite's `writableStoreForBag` answers null for a bag the island cannot write (`packages/lararium-mesh/src/composite-store.ts:295`; `compositeMemeSink` refuses loudly, `packages/lararium-tw5/src/meme-sinks.ts:55-60`).
 # ''How B's `meme get --bag <x>` resolves it.'' `storeOfBag` walks three reaches in order (`packages/lararium-tw5/src/meme-verbs.ts:136-143`): a MOUNTED layer (`composite.storeForBag`, `composite-store.ts:286`), an instance SLOT through the one resolver, then REACH-BY-ACCESS (`opts.reach`, `meme-verbs.ts:104-110` — every registry plane's `find(key)` wrapped as an `AutomergeDocStore`). PICK: reach-by-access. A realm bag is nobody's mounted layer (mounting it writable on B would make B's island the bag's author; the ruling keeps the write with the stewards), and it fills no instance slot (a slot holds a wiki's own draft/working/personal doc). It stands as a registered bag reached by access — exactly what the third reach exists for; the registration in the realm's CRDT makes `find(key)` answer on B. The walk reads the realm plane first (`meme-verbs.ts:118-123`), then the catalog and oracle planes.
 
 <<~/ahu>>
 
-<<~ ahu #/what-the-realm-holds>>
+<<~ ahu slot=`#/what-the-realm-holds`>>
 
 !! 2 · What the realm layer holds, and the seams the brief named
 
@@ -63,15 +62,15 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 * The relation's doors: `seal export` / `seal import` / `accept-carriage` / `contract` (`packages/lares-cli/src/commands/nexus.ts:959-976, 326-343, 251-257`), landing on the carriage-contracts board.
 
 ''The seams'' — each named so a hand could take it, and each standing built (`packages/lararium-mesh/src/realm-bag.ts`, `packages/lararium-node/src/realm-plane.ts`; `status-why` names the commits). Each entry keeps the ground the brief measured when it named the seam:
-# ''The realm's shared CRDT as a DOC.'' The feed slots live in the DAEMON store today (`operator-daemon-behavior.ts:442-447` resolves `DAEMON_BAG_ID`), and @daemon never crosses (`project_face_join_and_plane_law.md`); `substrateUrl` lives only in the in-memory `CabalRealm` from a founding ceremony with no production caller (`project_cabal_realm_nexus_planes.md`). The realm CRDT that both stewards replicate has no doc a vessel materializes at boot. SEAM: `materializeSharedLarDoc(repo, realmDocUrl(realmDocIdHex), "realm")` beside the boards `nexus-refresh` already materializes (`packages/lararium-node/src/nexus-refresh.ts:87`).
+# ''The realm's shared CRDT as a DOC.'' The feed slots live in the DAEMON store today (`operator-daemon-behavior.ts:442-447` resolves `DAEMON_BAG_ID`), and daemon-plane never crosses (`project_face_join_and_plane_law.md`); `substrateUrl` lives only in the in-memory `CabalRealm` from a founding ceremony with no production caller (`project_cabal_realm_nexus_planes.md`). The realm CRDT that both stewards replicate has no doc a vessel materializes at boot. SEAM: `materializeSharedLarDoc(repo, realmDocUrl(realmDocIdHex), "realm")` beside the boards `nexus-refresh` already materializes (`packages/lararium-node/src/nexus-refresh.ts:87`).
 # ''The bag registration record'' on that doc: `{ bagId: realmScopedBagId(realm, slug), docUrl, stewards: [nym…], tier: "contract" }`, written by the steward who stands the bag, folded by both. SEAM: a `realm-bag` verb beside `realm-feed`.
 # ''The tier declaration.'' The bag's manifest carries its tier through the catalog-declared reader the gate consults (`CapTierRing`, `cap-tier.ts:240`); the realm doc's registration record serves as the DECLARED-tier source for a realm bag.
 # ''The reach.'' `makeMemeVerbOptions`' `reach` walks the realm plane too (`meme-verbs.ts:104`), so B's third reach finds the doc by the id it computed from the charter.
-# ''The @crossroads announce.'' One record on the crossroads plane, written when the registration lands, never carrying content. It reads `{ bag, kept-by }` at every tier tighter than PUBLIC — byte-identical to the announce that stood before the field existed — and gains the book's ''doc url'' for a PUBLIC-tier registration alone (the 2026-09-13 ruling, `10c878d1d`). That address alone lets a CARRIER learn which books it may carry by hash: the declaration that a book reads public lives on the realm doc, and the realm doc withholds from a carrier, so without it the carrier leg opened a lane nothing could reach.
+# ''The crossroads-plane announce.'' One record on the crossroads plane, written when the registration lands, never carrying content. It reads `{ bag, kept-by }` at every tier tighter than PUBLIC — byte-identical to the announce that stood before the field existed — and gains the book's ''doc url'' for a PUBLIC-tier registration alone (the 2026-09-13 ruling, `10c878d1d`). That address alone lets a CARRIER learn which books it may carry by hash: the declaration that a book reads public lives on the realm doc, and the realm doc withholds from a carrier, so without it the carrier leg opened a lane nothing could reach.
 
 <<~/ahu>>
 
-<<~ ahu #/the-red-that-waits>>
+<<~ ahu slot=`#/the-red-that-waits`>>
 
 !! 3 · The smallest red
 
@@ -79,17 +78,17 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/nexus-topology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2NsTQPKaSYAuk0hVwZuuuuJXedpsPqMF8GvQMQsn0_8
+<<^ code=`&#x0003;`>>ni:///sha-256;a_hUE8rx8C59_uK-Gi0v884nllnrTxCCVW3SmSrji8Q
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

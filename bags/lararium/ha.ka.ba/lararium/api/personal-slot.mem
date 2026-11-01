@@ -1,12 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/personal-slot">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/api/personal-slot`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 approved-on = "2026-06-01"
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/api/personal-slot.mem"
 l-space     = "stable"
 mana        = 16
 manao       = 15
@@ -14,8 +13,8 @@ manaoio     = 16
 merged-on   = "2026-06-04"
 namespace   = "&#x0950; &#x0901;"
 proposed-on = "2026-05-30"
-role        = "the @personal recipe slot (cross-device viewing state, PersonaGroup × recipe-fingerprint scoped) and its admin-doc-stored binding map — one ledger"
-status-why  = "the @personal slot stands; S7.7 cross-device remains"
+role        = "the personal-slot recipe slot (cross-device viewing state, PersonaGroup × recipe-fingerprint scoped) and its admin-doc-stored binding map — one ledger"
+status-why  = "the personal-slot slot stands; S7.7 cross-device remains"
 tags        = ["lar:///ha.ka.ba/lares/api/lararium/wiki-recipe", "lifecycle/standing"]
 title       = "lar:///ha.ka.ba/lararium/api/personal-slot"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -23,13 +22,13 @@ uri-path    = "ha.ka.ba/lararium/api/personal-slot"
 uri-shape   = "lar:///ha.ka.ba/wikis/{slug}/personal"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/problem>>
+<<~ ahu slot=`#/problem`>>
 
-! The @personal slot — slot grammar + binding storage (approved canon)
+! The personal-slot slot — slot grammar + binding storage (approved canon)
 
 !! The tension that asked for the slot
 
@@ -41,8 +40,8 @@ The WikiRecipe holds a per-wiki live stack over a shared canon floor:
 3. wikis/{slug}/working  the saved live write layer, CRDT, mesh-shared
 4. bags/{slug}           the wiki's canon, CRDT, mesh-shared (read-only, promotion target)
 5. libraryBags[]          optional content libraries, CRDT, mesh-shared
-6. @lares                 personality, CRDT, mesh-shared
-7. @lararium              system, CRDT, mesh-shared
+6. lares                 personality, CRDT, mesh-shared
+7. lararium              system, CRDT, mesh-shared
 ```
 
 Two federation scopes only — ''device-local'' (`wikis/{slug}/temp`) and
@@ -59,7 +58,7 @@ Keyhive already names a `PersonaGroup`.
 
 <<~/ahu>>
 
-<<~ ahu #/slot>>
+<<~ ahu slot=`#/slot`>>
 
 !! The slot
 
@@ -72,8 +71,8 @@ Keyhive already names a `PersonaGroup`.
 4. wikis/{slug}/working   operator's saved live edits, CRDT, recipe-scoped
 5. bags/{slug}            the wiki's canon, CRDT, mesh-shared (read-only)
 6. libraryBags[]           optional content libraries, CRDT, mesh-shared
-7. @lares                  personality, CRDT, mesh-shared
-8. @lararium               system, CRDT, mesh-shared
+7. lares                  personality, CRDT, mesh-shared
+8. lararium               system, CRDT, mesh-shared
 ```
 
 Slot URI: `lar:///ha.ka.ba/wikis/{slug}/personal` — a per-wiki live layer rooted
@@ -82,7 +81,7 @@ DOC per `(PersonaGroup × recipe-fingerprint)`; the URI carries the address.
 
 <<~/ahu>>
 
-<<~ ahu #/yang-yin-chao>>
+<<~ ahu slot=`#/yang-yin-chao`>>
 
 !! Yang / Yin / Chao — the design symmetry
 
@@ -99,8 +98,8 @@ The recipe carries a Tai Chi symmetry around the wiki's canon (`bags/{slug}`):
         │     live multiplayer, multi-session, the shared "space the wiki is."│
         └───────────────────────────────────────────────────────────────────┘
               libraryBags[]  ┐
-              @lares         │  YANG / Hodge — every named bag BELOW the canon
-              @lararium      ┘  is structured canon, mesh-shared, read-stable
+              lares         │  YANG / Hodge — every named bag BELOW the canon
+              lararium      ┘  is structured canon, mesh-shared, read-stable
 ```
 
 ''The per-wiki live layers ABOVE the canon'' (`wikis/{slug}/{temp,draft,personal,working}`)
@@ -110,7 +109,7 @@ recipe-fingerprints match.
 
 <<~/ahu>>
 
-<<~ ahu #/scoping-mechanism>>
+<<~ ahu slot=`#/scoping-mechanism`>>
 
 !! Scoping mechanism — the resolver binds, the URI doesn't
 
@@ -148,7 +147,7 @@ resolves to a fresh MemoryTiddlerStore at boot).
 
 <<~/ahu>>
 
-<<~ ahu #/cascade-rules>>
+<<~ ahu slot=`#/cascade-rules`>>
 
 !! Cascade rules that route to the personal layer
 
@@ -180,15 +179,15 @@ model these entries hold as ''first-write defaults'', not authoritative routing 
 
 <<~/ahu>>
 
-<<~ ahu #/core-claim>>
+<<~ ahu slot=`#/core-claim`>>
 
 !! Working document address
 
-The working document's address follows the face's relation to its wiki and slot kind, as stated at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-working-layer">>. A recipe fingerprint and a replicated daemon binding record do not choose that address.
+The working document's address follows the face's relation to its wiki and slot kind, as stated at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-working-layer`>>. A recipe fingerprint and a replicated daemon binding record do not choose that address.
 
 <<~/ahu>>
 
-<<~ ahu #/why-admin-doc>>
+<<~ ahu slot=`#/why-admin-doc`>>
 
 !! Why admin-doc-as-storage
 
@@ -206,7 +205,7 @@ Five forces converge here. Each one rules out a parallel storage option.
 
 <<~/ahu>>
 
-<<~ ahu #/data-model>>
+<<~ ahu slot=`#/data-model`>>
 
 !! Data model
 
@@ -214,7 +213,7 @@ Five forces converge here. Each one rules out a parallel storage option.
 
 ```toml
 title:        lar:///ha.ka.ba/bags/daemon/personal-bindings/${fingerprintHex}
-text:         "automerge:abcdef..."   # the @personal doc URL
+text:         "automerge:abcdef..."   # the personal-slot doc URL
 kind:         "personal-binding"
 fingerprint:  "${fingerprintHex}"
 recipe-trace: { wikiDocId, libraryBagDocIds }  # optional audit field, for diff/inspection
@@ -235,7 +234,7 @@ The bindings TIDDLERS live inside the admin doc. The `@personal` and `@draft` AU
 
 <<~/ahu>>
 
-<<~ ahu #/vessel-boot-flow>>
+<<~ ahu slot=`#/vessel-boot-flow`>>
 
 !! Vessel boot flow
 
@@ -266,7 +265,7 @@ const { url: personalUrl } = await resolveOrMintBinding({
   kind: "personal-binding", prefix: PERSONAL_BINDINGS_PREFIX,
   fingerprint, repo, composite, keyhive,
 });
-// Q11 = slice (a): @personal + @draft bind TOGETHER per-fingerprint. This @draft
+// Q11 = slice (a): personal-slot + draft-slot bind TOGETHER per-fingerprint. This draft-slot
 // REPLACES the boot's ad-hoc draft (:696) — that mint site rewires through the same
 // helper, so both slots converge across the operator's devices. Neither retires alone.
 const { url: draftUrl } = await resolveOrMintBinding({
@@ -342,7 +341,7 @@ Three research spirits (Keyhive/BeeKEM · object-capability theory · MLS/TreeKE
 
 <<~/ahu>>
 
-<<~ ahu #/lifecycle>>
+<<~ ahu slot=`#/lifecycle`>>
 
 !! Lifecycle
 
@@ -364,11 +363,11 @@ Three research spirits (Keyhive/BeeKEM · object-capability theory · MLS/TreeKE
 
 <<~/ahu>>
 
-<<~ ahu #/persongroup-liveness>>
+<<~ ahu slot=`#/persongroup-liveness`>>
 
 !! PersonaGroup liveness — pre-delegate to an always-on device (design space)
 
-> Status: DESIGN SPACE — not yet built. Depends on @personal cross-device (S7.7)
+> Status: DESIGN SPACE — not yet built. Depends on personal-slot cross-device (S7.7)
 > + multi-device keyhive delegation. Grounded in web research (memory
 > `project_asymmetric_peer_handoff`, 2026-06-06).
 
@@ -391,13 +390,13 @@ a handoff; treat intermittent leaves (phone, closed tab) as ''pull / mailbox''
 consumers that drain work when they wake, never push targets. Discovery names a
 candidate; a live broker or a direct probe confirms it lives before a handoff lands.
 
-This composes with the @personal slot: the binding map already lives admin-doc-
+This composes with the personal-slot slot: the binding map already lives admin-doc-
 stored and PersonaGroup-scoped; pre-delegation extends the same owned-namespace
 authority graph from //viewing state// to //task-execution authority//.
 
 <<~/ahu>>
 
-<<~ ahu #/browser-deferral>>
+<<~ ahu slot=`#/browser-deferral`>>
 
 !! Browser-side deferral
 
@@ -405,7 +404,7 @@ The handoff names "S9 / lararium-browser S4 real boot" as still in flight (Index
 
 <<~/ahu>>
 
-<<~ ahu #/residency-reconciliation>>
+<<~ ahu slot=`#/residency-reconciliation`>>
 
 !! Reconciliation with the Residency Model
 
@@ -415,17 +414,17 @@ The approved [[residency-model|lar:///ha.ka.ba/lararium/api/residency-model]] co
 * The binding tiddler in the admin doc names which Automerge document THIS device, in THIS recipe, mounts at the `wikis/{slug}/personal` URI.
 * The residency model surfaces `$:/StoryList` as the topmost manifestation in the resolver-defined priority order.
 
-Open the wiki; the StoryList syncs to your other devices because each layer holds its piece. This enactment lands as the @personal slot's coordination with the residency model (#/migration below), not as an independent migration.
+Open the wiki; the StoryList syncs to your other devices because each layer holds its piece. This enactment lands as the personal-slot slot's coordination with the residency model (#/migration below), not as an independent migration.
 
 <<~/ahu>>
 
-<<~ ahu #/migration>>
+<<~ ahu slot=`#/migration`>>
 
 !! Migration sketch
 
 # `wiki-recipe.ts` mints the per-wiki personal slot via `wikiSlotUri(slug, "personal")` (`lar:///ha.ka.ba/wikis/{slug}/personal`).
 # `expandRecipe()` lays `personal` among the per-wiki live slots above the wiki's `bags/{slug}` canon.
-# Update default cascade tiddler (`lar-bag-paths.tid`) with @personal rules.
+# Update default cascade tiddler (`lar-bag-paths.tid`) with personal-slot rules.
 # Wire vessel boot to compute the recipe fingerprint + resolve/create per-pair `@personal` and `@draft` doc URLs (host-inline, per #vessel-boot-flow).
 # Inject the resolved URLs into `BagResolver` at manifest time.
 # Keyhive PersonaGroup grant + capability check on the `@personal` and `@draft` bags.
@@ -438,11 +437,11 @@ Open the wiki; the StoryList syncs to your other devices because each layer hold
 '''' ''Test 8 (multi-bag overlay):'' write `$:/StoryList` in `wikis/{slug}/personal`, then `lares act ADD --title $:/StoryList --from wikis/{slug}/personal --to bags/{slug}`. Assert resolveAll returns both bags; resolveTopmost picks the personal layer per recipe priority; origin-bag field reads `wikis/{slug}/personal`; the `bags/{slug}` Manifestation remains visible to `lares wiki resolve $:/StoryList`.
 '''' ''Test 9 (transfer effect record):'' `lares act MOVE --title MyNote --from wikis/{slug}/personal --to bags/{slug}` produces one `transfer` effect record pairing accession (`bags/{slug}`) + deaccession (`wikis/{slug}/personal`); the deaccession log persists in `wikis/{slug}/personal/log/residency/` after the tiddler leaves.
 *** ''Eventual-consistency (S7.7):'' binding present, doc not-yet-decryptable → boot proceeds, mounts on sync.
-# Update memory-store.md @personal references.
+# Update memory-store.md personal-slot references.
 
 <<~/ahu>>
 
-<<~ ahu #/questions>>
+<<~ ahu slot=`#/questions`>>
 
 !! Questions — one ledger
 
@@ -451,7 +450,7 @@ This unified ledger renumbers once; every in-body cross-reference resolves here.
 ''Slot shape''
 
 Q1 (slot priority order) ✅ approved — `personal` among the per-wiki live slots, above the `bags/{slug}` canon.
-Q2 (one @personal or per-wiki) ✅ resolved — a per-wiki slot URI (`wikis/{slug}/personal`); the resolver binds the doc per `(PersonaGroup × recipe-fingerprint)`.
+Q2 (one personal-slot or per-wiki) ✅ resolved — a per-wiki slot URI (`wikis/{slug}/personal`); the resolver binds the doc per `(PersonaGroup × recipe-fingerprint)`.
 Q3 (`$:/palette` scope) ✅ resolved — palette routes to the personal layer (operator-across-devices). The personal rule (`[lar-kind[]match[personal]then{lar:///ha.ka.ba/lararium/config/current-wiki-personal}]`) matches the palette-choice title `$:/palette` exactly and lands above the `$:/state/` catch-all. Custom palette definitions under `$:/palettes/*` are NOT covered — open follow-up if operator-built palettes need to travel across recipes.
 Q4 (fingerprint algorithm) ✅ resolved — SHA-256 over canonical encoding of `(bags/{slug}-doc-id + sorted libraryBags doc-ids)` only. `lares` and `lararium` doc-ids do NOT participate — switching Lares personality or system bag does not fork the operator's view state across devices. `computeRecipeFingerprint()` in `wiki-recipe.ts` carries the same exclusion.
 
@@ -475,21 +474,21 @@ Q11 (`@draft` per-fingerprint vs boot draft) ✅ resolved 2026-06-03 — ''slice
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/keyhive/persona-group">>
-<<~ loulou "lar:///ha.ka.ba/lararium/config/bag-paths">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/keyhive/persona-group`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/config/bag-paths`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-working-layer">> ~ aligns slot addresses with the face working-layer rule
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri#/bag-surface">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/memory-store">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-working-layer`>> ~ aligns slot addresses with the face working-layer rule
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri#/bag-surface`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/memory-store`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/living-grammar-palace`>>
 
 ''Tie ~ palettes as casual register.'' A per-operator overlay (palette, view-state) reads as the CASUAL
 register's lived surface — the living grammar in use before curation lifts it ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]]
@@ -497,6 +496,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-nvkGsRK2UfWy7R7RYlA_cW_1zxNDjNvP5S4FKprUb0
+<<^ code=`&#x0003;`>>ni:///sha-256;09BNPvrWxZy0kbBJVJxwn_wFEtn_DLJ-zLqjumxxiNs
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

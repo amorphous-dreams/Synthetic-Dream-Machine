@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/keyhive/capability-provider">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/keyhive/capability-provider.mem"
 l-space     = "lararium"
 mana        = 14
 role        = "invariant law: CapabilityProvider — the narrow interface over Keyhive's pre-alpha API. States exactly WHAT the gate answers and what it declines to, the archive restore a joinee owes itself, the torn-tolerant boot replay, and the lazy island materialization. The four-verb access axis stands as a MODEL, never a second gate."
@@ -15,7 +14,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/keyhive/capability-provider"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! CapabilityProvider ~ what the gate answers, and what it does not
 
@@ -24,7 +23,7 @@ Keyhive Document per Lararium bag URL. That names the whole of what any code her
 
 <<~/ahu>>
 
-<<~ ahu #/the-axis-that-does-not-gate>>
+<<~ ahu slot=`#/the-axis-that-does-not-gate`>>
 
 !! The access axis reads as a MODEL
 
@@ -40,7 +39,7 @@ Outside the model entirely: `promote` and `propose` name a CEREMONY, `sync` name
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! The invariants
 
@@ -75,16 +74,16 @@ already sits resident, so an access shore may call it every time without cost.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-keyhive/src/capability-provider.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-keyhive/src/capability-provider.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/capability">>
-<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/event-store">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/capability`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/event-store`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1XncJzEJcF059mOVOZEU-Jt8yxra9xYfJr1F6zbBZZ8
+<<^ code=`&#x0003;`>>ni:///sha-256;4d9bJzWHPvMezY3EX1DeIreP4Tgn3naC-QQX8QuQNhs
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

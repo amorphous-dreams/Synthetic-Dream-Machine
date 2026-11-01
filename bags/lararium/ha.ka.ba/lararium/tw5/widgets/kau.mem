@@ -1,12 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/kau">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/widgets/kau`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 source-sha256 = "sha256:6cc6ce1e6d1dc43e399f3c00735763a804c36fdf3b646670588cc2505b9f5af2"
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/kau.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/kau"
@@ -19,11 +18,11 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/kau"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
-`<<~ kau #frag Name props>>` places a device instance into the carrier. kau = "to place upon, set down with intention" (Hawaiian).
+``<<~ kau slot=`#frag` name=`Name` props=`props`>>`` places a device instance into the carrier. kau = "to place upon, set down with intention" (Hawaiian).
 
 Each kau placement creates a device instance with:
 * ''Instance URI'': `carrierUri#fragment` (explicit `#frag` required; auto-UUID deferred to action tiddler when Keyhive WASM lands)
@@ -32,7 +31,7 @@ Each kau placement creates a device instance with:
 
 ''The widget reads the argument RUN, not the slots.'' Its shape runs positional-by-PREFIX rather than positional-by-arity — a placement carries a fragment the invocation form omits — so `args` parse decides: the first token opening with `#` reads as the fragment, and the remainder reads as name plus props.
 
-Invocation form: `<<~ kau Name>>` — no fragment; transcludes the kumu definition in the caller's context.
+Invocation form: ``<<~ kau slot=`Name`>>`` — no fragment; transcludes the kumu definition in the caller's context.
 
 Resolves the kumu definition via `[all[tiddlers+shadows]tag[lar:///ha.ka.ba/tags/kumu]field:kumu-name<_kau-name>first[]else[]]`.
 Placement renders `<div class="lar-kau lar-kau-place" data-uri="…">`.
@@ -51,22 +50,22 @@ Per-instance capability hooks and UUID write-back surface as explicit TW5 action
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
-<<~ pranala #source from="?" -> to="packages/lararium-tw5/tiddlers/sigil-kau.tid" family="code" role="has">>
-<<~ pranala #source-template from="?" -> to="packages/lararium-tw5/tiddlers/kau-template-html.tid" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-tw5/tiddlers/sigil-kau.tid` family=`code` role=`has`>>
+<<~ pranala slot=`#source-template` from=`?` to=`packages/lararium-tw5/tiddlers/kau-template-html.tid` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kau">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/kumu">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kau`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/widgets/kumu`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zTaRqeead6tBBq-PLWdfFLVrEE5ISTIrQ2nPbg6OoQs
+<<^ code=`&#x0003;`>>ni:///sha-256;pu4vvVpshkCmpH03nmiY1eF9aF1Y_eLRIjVB983HoSU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

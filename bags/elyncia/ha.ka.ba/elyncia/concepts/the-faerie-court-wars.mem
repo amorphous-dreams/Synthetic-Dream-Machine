@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-faerie-court-wars.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 15
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/the-faerie-court-wars"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Faerie Court Wars
 
@@ -31,7 +30,7 @@ its cast. The Court Wars run two thousand years later, among clans, over ground.
 
 <<~/ahu>>
 
-<<~ ahu #/the-bracket>>
+<<~ ahu slot=`#/the-bracket`>>
 
 !! Why the Era Sits Where It Sits
 
@@ -50,7 +49,7 @@ empire. ''What the Court Wars settled was who got the world the Datum made.''
 
 <<~/ahu>>
 
-<<~ ahu #/the-combatants>>
+<<~ ahu slot=`#/the-combatants`>>
 
 !! Who Fought
 
@@ -72,7 +71,7 @@ and turned against Neo-Thracian invaders twenty centuries after the war that for
 
 <<~/ahu>>
 
-<<~ ahu #/the-era-ladder>>
+<<~ ahu slot=`#/the-era-ladder`>>
 
 !! Design Law ~ the Era Ladder
 
@@ -126,7 +125,7 @@ Court Wars carries no default register; it carries the register of the front it 
 
 <<~/ahu>>
 
-<<~ ahu #/open>>
+<<~ ahu slot=`#/open`>>
 
 !! Open
 
@@ -138,15 +137,15 @@ Court Wars carries no default register; it carries the register of the front it 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-fae-clans">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/ichi">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-necrospire">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-fae-clans`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/ichi`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-necrospire`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EdV9WjZXT3TNc17gxTvmHifQq4RNI8ZmfaarBLqvkkc
+<<^ code=`&#x0003;`>>ni:///sha-256;MvRGqT1MA6OPD2_3c3CnKS_UriJUOVKRrLOJn-wkPgw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

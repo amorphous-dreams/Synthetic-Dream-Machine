@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/evergreen-sweep-2026">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/evergreen-sweep-2026`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -9,21 +9,20 @@ l-space   = "lares"
 role      = "field research, two traded Luna-6 waves and a Sol-6 code reader (2026-10-18), on lifting shared shapes into their packages and yanking authored version numbers and deciding wall clocks; the six rulings the operator approved; the Sol plan verbatim, Markdown transliterated only"
 status    = "research; read 2026-10-18; no code changed; row G37 carries the build"
 tags      = ["research", "evergreen", "aftermath", "no-global-now", "isomorphism"]
-file-path = "bags/lares/ha.ka.ba/lares/docs/research/evergreen-sweep-2026.mem"
 title     = "lar:///ha.ka.ba/lares/docs/research/evergreen-sweep-2026"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/evergreen-sweep-2026"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The evergreen sweep, 2026 ~ isomorphisms to lift, clocks and version numbers to yank
 
-After the long buildout the operator called a deep Aftermath and Evergreen pass over `packages/*/src` and `tools/` (2026-10-18): shapes two packages re-derive lift into the shared package that owns them (federated-mesh shapes into `@lararium/mesh`, TW5 shapes into `@lararium/tw5`), authored version numbers yield to CIDs and edges, and wall clocks that decide yield to causal events. A Luna-6 YIN and YANG pair read the code in two traded waves over pre-grepped inventories (281 clock lines, 373 version-shaped lines, 208 narrating comments, 76 names defined in two or more packages); a Sol-6 code reader then verified their findings against source, refuted ten, and wrote the plan as fourteen lanes. The plan rests verbatim from #/plan-refutations-and-corrections on, and #/rulings answers its open questions; the pair's wave-two handbacks rest at <<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep">>. Row `G37` carries the build; its standing witness (PR #53) holds today's count rather than a clean baseline, so the plan's lane 14 landed first.
+After the long buildout the operator called a deep Aftermath and Evergreen pass over `packages/*/src` and `tools/` (2026-10-18): shapes two packages re-derive lift into the shared package that owns them (federated-mesh shapes into `@lararium/mesh`, TW5 shapes into `@lararium/tw5`), authored version numbers yield to CIDs and edges, and wall clocks that decide yield to causal events. A Luna-6 YIN and YANG pair read the code in two traded waves over pre-grepped inventories (281 clock lines, 373 version-shaped lines, 208 narrating comments, 76 names defined in two or more packages); a Sol-6 code reader then verified their findings against source, refuted ten, and wrote the plan as fourteen lanes. The plan rests verbatim from #/plan-refutations-and-corrections on, and #/rulings answers its open questions; the pair's wave-two handbacks rest at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep`>>. Row `G37` carries the build; its standing witness (PR #53) holds today's count rather than a clean baseline, so the plan's lane 14 landed first.
 
 <<~/ahu>>
 
-<<~ ahu #/rulings>>
+<<~ ahu slot=`#/rulings`>>
 
 !! The operator's rulings (2026-10-18, approving the controller's leans)
 
@@ -32,13 +31,13 @@ After the long buildout the operator called a deep Aftermath and Evergreen pass 
 # ''A reader tolerates every grammar it will meet, named as an archive set.'' Capture keeps reading the heads a written turn may carry (`focus`, `feedback`) as a named archive set beside the live grammar, its comment stating the set and never its history. `rotate-recipe` keeps its prior canon readable, addressed by the doc's CID and a `rotated-from` link; `canon/vN` and `rotation-gen` leave.
 # ''The numbered preimages and formats rename together, in one deliberate re-genesis before the second operator.'' `engine/v1`, `plugins/v1`, `grammar/v1`, `lararium-genesis-seed/v1` and `lararium-genesis-cas/v1` take semantic names in the bake that closes `W26`, never by search and replace and never mid-slice, since each rename moves every CID the floor carries.
 # ''The floor announcement and the browser's store take their current shape.'' The announcement's signed body names its kind (`floor-announcement`) in the same re-genesis, and no reader of the numbered body remains. `openVesselIdb` lays its current stores and drops its additive migration branches; a store that does not match re-founds by name. The browser API's numeric open argument stays.
-# ''Worldline replay orders by parent links.'' A spawn names its parent turn, an inject its spawn, a handback its inject; producers add the missing parent link first, and a skip announces itself the way a cascade gap does (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">> #/totality-law), never a silent `continue`.
+# ''Worldline replay orders by parent links.'' A spawn names its parent turn, an inject its spawn, a handback its inject; producers add the missing parent link first, and a skip announces itself the way a cascade gap does (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>> #/totality-law), never a silent `continue`.
 
 ''The order between lanes'' (controller lean, approved): the standing witness lands first at today's count and only ever moves down, the way `unbuilt-laws` does; the byte, hex and pin lifts (lanes 1–3) run beside the Wrights' lanes on disjoint files; lanes that touch mesh session or genesis code wait for `W26` slice 2, and the preimage renames ride the bake that closes `W26`.
 
 <<~/ahu>>
 
-<<~ ahu #/plan-refutations-and-corrections>>
+<<~ ahu slot=`#/plan-refutations-and-corrections`>>
 
 !! Refutations and corrections
 
@@ -58,7 +57,7 @@ All paths below are relative to `/home/joshu/Synthetic-Dream-Machine`. Findings 
 
 <<~/ahu>>
 
-<<~ ahu #/plan-lane-plan>>
+<<~ ahu slot=`#/plan-lane-plan`>>
 
 !! Lane plan
 
@@ -67,7 +66,7 @@ Each lane fits one reviewable PR. “Red” names the failing test or static wit
 
 <<~/ahu>>
 
-<<~ ahu #/plan-lifts>>
+<<~ ahu slot=`#/plan-lifts`>>
 
 !!! LIFTS
 
@@ -80,7 +79,7 @@ Each lane fits one reviewable PR. “Red” names the failing test or static wit
 
 <<~/ahu>>
 
-<<~ ahu #/plan-clock-yanks>>
+<<~ ahu slot=`#/plan-clock-yanks`>>
 
 !!! CLOCK YANKS
 
@@ -95,7 +94,7 @@ Each lane fits one reviewable PR. “Red” names the failing test or static wit
 
 <<~/ahu>>
 
-<<~ ahu #/plan-version-yanks>>
+<<~ ahu slot=`#/plan-version-yanks`>>
 
 !!! VERSION YANKS
 
@@ -110,7 +109,7 @@ Each lane fits one reviewable PR. “Red” names the failing test or static wit
 
 <<~/ahu>>
 
-<<~ ahu #/plan-evergreen-sweep>>
+<<~ ahu slot=`#/plan-evergreen-sweep`>>
 
 !!! EVERGREEN SWEEP
 
@@ -121,7 +120,7 @@ Each lane fits one reviewable PR. “Red” names the failing test or static wit
 
 <<~/ahu>>
 
-<<~ ahu #/plan-standing-witnesses>>
+<<~ ahu slot=`#/plan-standing-witnesses`>>
 
 !!! STANDING WITNESSES
 
@@ -130,7 +129,7 @@ Each lane fits one reviewable PR. “Red” names the failing test or static wit
 
 <<~/ahu>>
 
-<<~ ahu #/plan-open-questions-for-the-operator>>
+<<~ ahu slot=`#/plan-open-questions-for-the-operator`>>
 
 !! Open questions for the operator
 
@@ -146,9 +145,9 @@ The inventory's 68 cross-package-name rows are search leads, not 68 isomorphisms
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BUmsVuhDgPU8Voa-1G_tUE4iXIW0lJks0d6NqCsyQxo
+<<^ code=`&#x0003;`>>ni:///sha-256;1nS_5iP3a-E94ls_czEQ6lOw1Nn5rOTHuhR2JnAOIlM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

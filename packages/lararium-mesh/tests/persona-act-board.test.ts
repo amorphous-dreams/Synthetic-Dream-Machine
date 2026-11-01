@@ -22,25 +22,25 @@ const docOf = (): LarDoc => ({ tiddlers: {} } as unknown as LarDoc);
 describe("persona-act-board", () => {
   test("CONTROL: the signed genesis log rests in the doc and projects whole", async () => {
     const root = await who(1);
-    const log = await signFoundingLog({ group: G, personaKelPrefix: "kel1", rootCommitment: "rc", epoch: 0, planes: { "@persona": "automerge:p", "@circles": "automerge:c" }, deviceKey: "dev1", edgeDigest: "ed1" }, root);
+    const log = await signFoundingLog({ group: G, personaKelPrefix: "kel1", rootCommitment: "rc", epoch: 0, planes: { "persona": "automerge:p", "circles": "automerge:c" }, deviceKey: "dev1", edgeDigest: "ed1" }, root);
     const doc = docOf();
     for (const a of log) writePersonaAct(doc, a);
     const lineage = personaLineageFromKel(await kel(root.key))!;
     const pr = projectPersonaLog(personaActRecordsOfGroup(doc, G), { group: G, lineage, authorize: () => true });
     expect(pr).toMatchObject({ founded: true, personaKelPrefix: "kel1", devices: ["dev1"], edges: { dev1: "ed1" } });
-    expect(registerablePlanes({ "@persona": "automerge:p", "@circles": "automerge:c", "@sessions": "automerge:forged" }, pr)).toEqual({ "@persona": "automerge:p", "@circles": "automerge:c" });
+    expect(registerablePlanes({ "persona": "automerge:p", "circles": "automerge:c", "sessions": "automerge:forged" }, pr)).toEqual({ "persona": "automerge:p", "circles": "automerge:c" });
     expect(personaActRecordsOfGroup(doc, "other")).toEqual([]);
   });
 
   test("RED: a plane act signed by a key outside the KEL never projects", async () => {
     const root = await who(1), thief = await who(9);
-    const log = await signFoundingLog({ group: G, personaKelPrefix: "kel1", rootCommitment: "rc", epoch: 0, planes: { "@persona": "automerge:p" }, deviceKey: "d", edgeDigest: "e" }, root);
+    const log = await signFoundingLog({ group: G, personaKelPrefix: "kel1", rootCommitment: "rc", epoch: 0, planes: { "persona": "automerge:p" }, deviceKey: "d", edgeDigest: "e" }, root);
     const head = { seq: log[log.length - 1]!.body.seq, cid: actCid(log[log.length - 1]!.body) };
-    const evil = await signPersonaAct(head, { group: G, act: "plane", epoch: 0, fields: { plane: "@circles", url: "automerge:evil" } }, thief);
+    const evil = await signPersonaAct(head, { group: G, act: "plane", epoch: 0, fields: { plane: "circles", url: "automerge:evil" } }, thief);
     const doc = docOf();
     for (const a of [...log, evil]) writePersonaAct(doc, a);
     const pr = projectPersonaLog(personaActRecordsOfGroup(doc, G), { group: G, lineage: personaLineageFromKel(await kel(root.key))!, authorize: () => true });
-    expect(pr.planes).toEqual({ "@persona": "automerge:p" });
+    expect(pr.planes).toEqual({ "persona": "automerge:p" });
   });
 
   test("RED: after a root rotation the old acts verify under the old key and the old key signs nothing new", async () => {

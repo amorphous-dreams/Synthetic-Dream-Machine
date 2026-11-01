@@ -1,12 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/domain/stuckforce">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/components/domain/stuckforce`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
 caption   = "stuckforce"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/domain/stuckforce.mem"
 l-space   = "sdm"
 mana      = 13
 manao     = 16
@@ -19,7 +18,7 @@ uri-path  = "ha.ka.ba/sdm/components/domain/stuckforce"
 
 ! Stuckforce
 
-<<~ ahu #/definition>>
+<<~ ahu slot=`#/definition`>>
 
 !! Definition
 
@@ -27,7 +26,7 @@ The SDM domain of applied force that grips, lifts, and holds — telekinetic hov
 
 <<~/ahu>>
 
-<<~ ahu #/activation>>
+<<~ ahu slot=`#/activation`>>
 
 !! Activation
 
@@ -35,7 +34,7 @@ Orients a module toward ''moving or holding mass without contact''. It carries w
 
 <<~/ahu>>
 
-<<~ ahu #/interaction>>
+<<~ ahu slot=`#/interaction`>>
 
 !! Interaction
 
@@ -43,7 +42,7 @@ Pairs with `function/cargo` (haul a load) and `function/barrier` (hold a wall of
 
 <<~/ahu>>
 
-<<~ ahu #/filters>>
+<<~ ahu slot=`#/filters`>>
 
 !! Filters
 
@@ -54,7 +53,7 @@ Pairs with `function/cargo` (haul a load) and `function/barrier` (hold a wall of
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -62,14 +61,14 @@ Pairs with `function/cargo` (haul a load) and `function/barrier` (hold a wall of
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/components/tag`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IBgW7ezal7gZVPzMVazOD1nzfPN6VXng0OcfUuWH9AM
+<<^ code=`&#x0003;`>>ni:///sha-256;BicFJnkMOTddAE_rSxnHdqidSc3wGr0lhOsU2JZSv5Q
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

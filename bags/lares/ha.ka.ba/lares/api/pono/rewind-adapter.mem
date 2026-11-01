@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/rewind-adapter">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/rewind-adapter`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/rewind-adapter.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 17
@@ -19,11 +18,11 @@ uri-path  = "ha.ka.ba/lares/api/pono/rewind-adapter"
 written   = "2026-06-30"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! The Rewind-Adapter ~ the kāpae detector, blind to the source app
 
@@ -35,7 +34,7 @@ The design donates upstream (#/donation): the base mempalace harvests transcript
 
 <<~/ahu>>
 
-<<~ ahu #/the-industry-does-kapae>>
+<<~ ahu slot=`#/the-industry-does-kapae`>>
 
 !! The Industry Already Does Kāpae
 
@@ -47,13 +46,13 @@ So the contribution splits clean: the mechanism (fork-and-keep) rhymes with prio
 
 <<~/ahu>>
 
-<<~ ahu #/two-families>>
+<<~ ahu slot=`#/two-families`>>
 
 !! Two Families ~ the load-bearing split
 
 Every source app sorts into one of two families by ''what its rewind does to the bytes''. The family, not the app, drives the adapter's behavior.
 
-<<~ set hud="aim" drift-ward="_ · L-Prime · crossing: essence-shaped storage-claims">>
+<<~ set lares=`aim` drift-ward=`crossing: essence-shaped storage-claims`>>
 
 ''Family A — APPEND-ONLY / FORK.'' A rewind writes a ''new fork'' — a new file, a new branch, a re-parented sibling — and ''nothing vanishes''. The source is its own witness: the road-not-taken stays re-harvestable from the store. Members: ''Claude Code · Codex · Aider · Gemini (snapshots) · Copilot-CLI · Copilot-Chat''.
 
@@ -66,7 +65,7 @@ The split governs one flag per adapter (`appendOnly`, #the-adapter-contract) and
 
 <<~/ahu>>
 
-<<~ ahu #/kapae-is-universal>>
+<<~ ahu slot=`#/kapae-is-universal`>>
 
 !! Kāpae Is Universal ~ the correction
 
@@ -82,9 +81,9 @@ Either way the road stays kept. The flag steers re-harvest and provenance, never
 
 <<~/ahu>>
 
-<<~ set hud="yield" drift-ward="! · crossed the primed zone ↻ L-Prime">>
+<<~ set lares=`yield` drift-ward=`crossed the primed zone ↻ L-Prime`>>
 
-<<~ ahu #/per-app-table>>
+<<~ ahu slot=`#/per-app-table`>>
 
 !! Per-App Table ~ the grounded map
 
@@ -104,7 +103,7 @@ Read on-disk from real stores on this box where marked; CLI/docs elsewhere. Each
 
 <<~/ahu>>
 
-<<~ ahu #/the-identity-ladder>>
+<<~ ahu slot=`#/the-identity-ladder`>>
 
 !! The Identity Ladder ~ four rungs, always parent-linked
 
@@ -119,7 +118,7 @@ The ladder degrades by degree, never hard-faults — the graceful-parsing discip
 
 <<~/ahu>>
 
-<<~ ahu #/edit-vs-delete>>
+<<~ ahu slot=`#/edit-vs-delete`>>
 
 !! Edit vs Delete ~ the shape of the disappearance
 
@@ -144,7 +143,7 @@ The classifier reads ''the shape of what went missing'' from the diff, then conf
 
 <<~/ahu>>
 
-<<~ ahu #/the-adapter-contract>>
+<<~ ahu slot=`#/the-adapter-contract`>>
 
 !! The Adapter Contract ~ the shore every source plugs into
 
@@ -166,7 +165,7 @@ The three emit-verbs map the three faces (#/the-three-faces): `fork` (keep both)
 
 <<~/ahu>>
 
-<<~ ahu #/adapters-built>>
+<<~ ahu slot=`#/adapters-built`>>
 
 !! Adapters Built ~ the swarm landed
 
@@ -185,7 +184,7 @@ Four adapters stand green against the `SourceAdapter` interface. Each names {`ap
 
 <<~/ahu>>
 
-<<~ ahu #/the-three-faces>>
+<<~ ahu slot=`#/the-three-faces`>>
 
 !! The Three Faces ~ onto Muse's model
 
@@ -199,7 +198,7 @@ Same primitive as the worldline's ratified `fork ≡ sibling-spawn`; the adapter
 
 <<~/ahu>>
 
-<<~ ahu #/donation>>
+<<~ ahu slot=`#/donation`>>
 
 !! Donation ~ the contribution back
 
@@ -217,7 +216,7 @@ Our contribution back: ''uuid-keying'' (the C-cut — turn-keyed identity), ''cu
 
 <<~/ahu>>
 
-<<~ ahu #/grounds>>
+<<~ ahu slot=`#/grounds`>>
 
 !! Grounds ~ how the map got read
 
@@ -235,7 +234,7 @@ Two research spirits stood the survey:
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -248,17 +247,17 @@ Two research spirits stood the survey:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline#/time">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/corpus">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/gold-anchor">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-memory">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace#/palace-instance">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/agent-worldline#/time`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/corpus`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/gold-anchor`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/living-grammar-palace#/palace-instance`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bhH3xgpsAjW-dZYRjXoFERbUHPeoD9Vl5U0da3S0tHs
+<<^ code=`&#x0003;`>>ni:///sha-256;n3nOGgoPrvXUY0cNeY88mnvtXfAbM4r55o97b8bjguc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

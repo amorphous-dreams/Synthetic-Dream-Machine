@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/syncer-back-parity.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 12
@@ -22,17 +21,17 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/syncer-back-parity"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/ground>>
+<<~ ahu slot=`#/ground`>>
 
 ! Syncer Back-Parity ~ the stock loop against a plain server carrying the plugin
 
 ''Register: Model-Standing.'' Every row below names the wire exchange it read — the request line the page issued and the status it got back. A row without one names itself as inference.
 
-The operator's words that opened this, verbatim: "we don't use the syncer in our `lararium` vessels, but I suppose we should scout the back-parity flow there." <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">> holds the ISLAND side — one direct `change` listener (Road B, `packages/lararium-tw5/src/outbound-bridge.ts`), where `$tw.syncer` never stands at all. This carrier scouts the other side: the stock syncer standing WHOLE, driving a stock `tiddlyweb` syncadaptor, against a plain `tiddlywiki --listen` that carries the packed plugin. <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">> holds the doors; this holds the LOOP that knocks on them.
+The operator's words that opened this, verbatim: "we don't use the syncer in our `lararium` vessels, but I suppose we should scout the back-parity flow there." <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>> holds the ISLAND side — one direct `change` listener (Road B, `packages/lararium-tw5/src/outbound-bridge.ts`), where `$tw.syncer` never stands at all. This carrier scouts the other side: the stock syncer standing WHOLE, driving a stock `tiddlyweb` syncadaptor, against a plain `tiddlywiki --listen` that carries the packed plugin. <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/meme-api-surface`>> holds the doors; this holds the LOOP that knocks on them.
 
 ''The lab.'' The `meme-api-surface` lab plus the client/server sync pair a stock wiki folder carries:
 
@@ -49,7 +48,7 @@ then a real Chromium loads `/` and the stock syncer runs its own loop over it. T
 
 <<~/ahu>>
 
-<<~ ahu #/six-flows>>
+<<~ ahu slot=`#/six-flows`>>
 
 !! The six flows
 
@@ -59,14 +58,14 @@ then a real Chromium loads `/` and the stock syncer runs its own loop over it. T
 | b · a SLOT CHILD edited in the browser | the same native PUT | `framedRootOf` reads null on a child, so it rides the native door UNGATED; the meme's hash moves because the render reads children live; the root never re-cuts and the backstop never fires | `/recipes/…/tiddlers/` | ''stands, ungated'' | (b) |
 | b′ · a slot child whose TEXT carries a head | the same native PUT | the charm reads the child's OWN head and re-addresses a FRAGMENT — a double-fragment record lands | `/memes/…%23/…` | ''seam'' | (b′) |
 | c · a meme ROOT deleted in the browser | `deleteTiddler` → `DELETE /bags/<bag>/tiddlers/<title>`, ONE title | the native delete door reads `isMemeRoot` and the group leaves through `removeMeme` | `/bags/…/tiddlers/` | ''cured'' | (c) |
-| c′ · a SLOT CHILD deleted in the browser | the same, one title | the child leaves; the root's `<<~ kahea ahu #/b>>` stands DANGLING and `GET /memes/` renders the call unexpanded | the same | ''seam'' | (c′) |
+| c′ · a SLOT CHILD deleted in the browser | the same, one title | the child leaves; the root's ``<<~ kahea ahu slot=`#/b`>>`` stands DANGLING and `GET /memes/` renders the call unexpanded | the same | ''seam'' | (c′) |
 | d · `syncFromServer` pulls a meme a second client changed | `getSkinnyTiddlers` stores the whole answer skinny in ONE batch, then `LoadTiddlerTask` fattens ONE title at a time | nothing coalesces the group; the root stands fat while its children are still skinny | `GET /recipes/…/tiddlers.json`, then per-title | ''seam (settles)'' | (d′) |
 | e · the `revision`/`bag` stamps | `get-tiddler.js` stamps both onto the JSON it serves; the client hands them back; `put-tiddler.js` strips `revision` | the charm sends the TEXT alone, so neither can reach the canonical hash; the native gate strips a `bag` naming the anchor | both | ''stands'' | (e) |
 | f · `$:/StoryList` · `$:/config/SyncFilter` | the filter is TOTAL minus a named exclusion list; `$:/StoryList` rides, `$:/temp/` · `$:/state/` · `$:/status/` · `$:/boot/` leave | the plugin creates NO `$:/lares/…` or `$:/temp/lares/…` in a stock client, so the filter's shape never gets tested here | `/recipes/…/tiddlers/` | ''stands'' | (f) |
 
 <<~/ahu>>
 
-<<~ ahu #/wire>>
+<<~ ahu slot=`#/wire`>>
 
 !! The wire, quoted
 
@@ -78,7 +77,7 @@ PUT /recipes/default/tiddlers/lar%3A%2F%2F%2Ft%2Fa-plain -> 204        the CONTR
 GET /recipes/default/tiddlers.json                                     ["lar:///t/a","lar:///t/a#/a","lar:///t/a#/b","lar:///t/a-plain"]
 ```
 
-and the root's own record on the shelf reads `<<~ kahea ahu #/a>>\n\n<<~ kahea ahu #/b>>` — split, never whole.
+and the root's own record on the shelf reads ``<<~ kahea ahu slot=`#/a`>>\n\n<<~ kahea ahu slot=`#/b`>>`` — split, never whole.
 
 ''(b) the slot child.'' Editing `lar:///t/a#/a` in the client:
 
@@ -106,7 +105,7 @@ DELETE /bags/default/tiddlers/lar%3A%2F%2F%2Ft%2Fa -> 204
 
 MEASURED RED before the cure: `expected [ 'lar:///t/a#/a', 'lar:///t/a#/a#/z' ] to deeply equal []` — the root left and its whole split STOOD, unreachable through every meme door (`memes.json` stops listing it, `GET /memes/` answers 404) and standing on disk until a later founding at the same uri tombstones it. CURED by `src/routes/native-delete-door` (#/cure): the same wire exchange now takes the group.
 
-''(c′) the child's delete.'' `DELETE /bags/default/tiddlers/lar%3A%2F%2F%2Ft%2Fa%23%2Fb -> 204` removes the child; the root's record still calls it, and `GET /memes/lar/t/a` renders `<<~ kahea ahu #/b>>` UNEXPANDED into the meme's own body. The removal law names a group leaving together and says nothing about a member leaving alone.
+''(c′) the child's delete.'' `DELETE /bags/default/tiddlers/lar%3A%2F%2F%2Ft%2Fa%23%2Fb -> 204` removes the child; the root's record still calls it, and `GET /memes/lar/t/a` renders ``<<~ kahea ahu slot=`#/b`>>`` UNEXPANDED into the meme's own body. The removal law names a group leaving together and says nothing about a member leaving alone.
 
 ''(d) the poll.'' A second client writes `PUT /bags/default/memes/lar/t/d -> 200` (root + three slots). The client's own `change` bus, recorded from before the write:
 
@@ -123,7 +122,7 @@ Three dispatches stand where the root is fat and a child of it holds no text —
 ''(e) the stamps.'' After the round trip the client's root carries `{revision: "1", bag: "default"}` and the server's record reads
 
 ```
-{"title":"lar:///t/a","fields":{"uri-path":"t/a"},"type":"text/…","text":"<<~ kahea ahu #/a>>…","revision":1,"bag":"default"}
+{"title":"lar:///t/a","fields":{"uri-path":"t/a"},"type":"text/…","text":"<<~ kahea ahu slot=`#/a`>>…","revision":1,"bag":"default"}
 ```
 
 — both stamps sit OUTSIDE `fields`, as TiddlyWeb's envelope, re-laid per answer. The `bag`-is-user-space ruling holds on this loop: the charm hands `/memes/` the text alone so no stamp can reach the canonical hash, `put-tiddler.js` deletes `revision` on the way in, and the native gate refuses a `bag` naming the host's anchor. The child's record after a native save carries exactly `$fragment-parent` · `$slot` · `uri-path`.
@@ -132,7 +131,7 @@ Three dispatches stand where the root is fat and a child of it holds no text —
 
 <<~/ahu>>
 
-<<~ ahu #/charm-reach>>
+<<~ ahu slot=`#/charm-reach`>>
 
 !! What the charm reaches, and the three things it cannot
 
@@ -146,7 +145,7 @@ The shape that rules here: a law the CLIENT carries reaches only the clients tha
 
 <<~/ahu>>
 
-<<~ ahu #/cure>>
+<<~ ahu slot=`#/cure`>>
 
 !! The cure ~ the native delete door
 
@@ -158,11 +157,11 @@ Witnesses: `tests/syncer-native-delete-door.test.ts` (6 vectors — the group le
 
 <<~/ahu>>
 
-<<~ ahu #/leans>>
+<<~ ahu slot=`#/leans`>>
 
 !! The leans — and what the roundtable made of them
 
-''Read <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">> for the argument and the plan; the outcome (2026-09-12) stands here so this carrier's table reads true:''
+''Read <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable`>> for the argument and the plan; the outcome (2026-09-12) stands here so this carrier's table reads true:''
 
 * ''(b′) CLOSED'' — the root law got ONE spelling (`framedRootOf` reads `isMemeRoot`; all three doors inherit it; no stall — `3d0f7248a`), the fragment PUT door walls itself with 400 for every other skin (`bf9d9e04f`), and the scanner no longer counts a `kahea` CALL as a declared slot (`75e895c3e` — a second defect fell beside it: a call before its own block dropped the slot's body into no record at all).
 * ''(c′) RULED Mu, marked'' — a member's death leaves the call standing (never-invent-bytes); the ahu template distinguishes `unresolved · arriving · empty · filled` (`79420f5b5`); the served text keeps the call, the page marks it. The re-cut lean below was REFUTED by measure: a re-place lands the marker again.
@@ -179,19 +178,19 @@ The leans as first written, kept for the record:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/tiddler-record">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
-<<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/meme-api-surface`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/tiddler-record`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ila2cOHZmLy8zGyCjdO4m01_MsH0p_hGvRbXsJEkqpc
+<<^ code=`&#x0003;`>>ni:///sha-256;4qEdOpxObp-44iV4GKmfYiRlY-5qDfvgys_JXWvyauM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

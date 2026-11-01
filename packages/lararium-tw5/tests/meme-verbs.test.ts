@@ -20,10 +20,10 @@ import type { VerbContext } from "../src/verb-dispatcher.js";
 
 const URI = "lar:///t/x";
 const meme = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n` +
-  `<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n` +
+  `<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 /** The smallest live wiki: four verbs over a Map, the shape `wikiMemeSink` reads. */
 function fakeWiki() {
@@ -232,7 +232,7 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     await land(canon, bagUri("garden"), ["a"]);
     const got = await makeMemeGetReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
     expect(got["meme"], "the read stopped at the designated bag and never walked the stack").not.toBeNull();
-    expect((got["meme"] as { text: string }).text).toContain("<<~ ahu #/a>>");
+    expect((got["meme"] as { text: string }).text).toContain("<<~ ahu slot=`#/a`>>");
   });
 
   test("★ the draft shadows canon when both hold it ★", async () => {
@@ -241,8 +241,8 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     await land(canon, bagUri("garden"), ["a"]);
     await land(draft, wikiSlotUri("garden", "draft"), ["b"]);
     const got = await makeMemeGetReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
-    expect((got["meme"] as { text: string }).text).toContain("<<~ ahu #/b>>");
-    expect((got["meme"] as { text: string }).text).not.toContain("<<~ ahu #/a>>");
+    expect((got["meme"] as { text: string }).text).toContain("<<~ ahu slot=`#/b`>>");
+    expect((got["meme"] as { text: string }).text).not.toContain("<<~ ahu slot=`#/a`>>");
   });
 
   /** The wiki's own delete of a canon carrier: a tombstone for the root and each slot child, in the working slot. */
@@ -260,7 +260,7 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     expect(got["meme"], "the recipe read stepped over the working layer's tombstone and answered canon").toBeNull();
     // The bag beneath still holds its own record: a read of that one bag answers it.
     const beneath = await makeMemeGetReactor(r.opts)({ bag: bagUri("garden"), uri: URI }, ctx());
-    expect((beneath["meme"] as { text: string }).text).toContain("<<~ ahu #/a>>");
+    expect((beneath["meme"] as { text: string }).text).toContain("<<~ ahu slot=`#/a`>>");
   });
 
   test("★ a projection through the recipe meets the same shadow and names the absent meme ★", async () => {
@@ -277,7 +277,7 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     await land(draft, wikiSlotUri("garden", "draft"), ["b"]);
     await canon.tombstone(URI, { kind: "canon-hydrate", receipt: "t" });
     const got = await makeMemeGetReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
-    expect((got["meme"] as { text: string }).text).toContain("<<~ ahu #/b>>");
+    expect((got["meme"] as { text: string }).text).toContain("<<~ ahu slot=`#/b`>>");
   });
 
   test("CONTROL: a record a hand REMOVED from the working layer (no tombstone) lets canon read through", async () => {
@@ -288,7 +288,7 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     await land(working, wikiSlotUri("garden", "working"), ["b"]);
     for (const title of [URI, `${URI}#/b`]) await working.remove(title, { kind: "canon-hydrate", receipt: "t" });
     const got = await makeMemeGetReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
-    expect((got["meme"] as { text: string }).text).toContain("<<~ ahu #/a>>");
+    expect((got["meme"] as { text: string }).text).toContain("<<~ ahu slot=`#/a`>>");
   });
 
   test("CONTROL: an absent meme reads null through the stack, never a refusal", async () => {
@@ -474,7 +474,7 @@ describe("meme-get — the read half", () => {
     const put = await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
     const got = (await makeMemeGetReactor(r.opts)({ recipe: "default", uri: URI }, ctx()))["meme"] as { text: string; canonicalHash: string };
     expect(got.canonicalHash).toBe(put["canonicalHash"]);
-    expect(got.text).toContain("<<~ ahu #/a>>");
+    expect(got.text).toContain("<<~ ahu slot=`#/a`>>");
   });
 
   test("reads a named bag back, and a bag's absence reads null", async () => {
@@ -521,7 +521,7 @@ describe("meme-project — the daemon skin of the projection", () => {
     const project = makeMemeProjectReactor(r.opts);
     const mem = await project({ bag: "sdm", uri: URI, to: "mem" }, ctx());
     expect(mem["contentType"]).toBe("text/memetic-wikitext+tiddlywiki");
-    expect(mem["text"]).toContain("<<~ ahu #/a>>");
+    expect(mem["text"]).toContain("<<~ ahu slot=`#/a`>>");
     const get = await makeMemeGetReactor(r.opts)({ bag: "sdm", uri: URI }, ctx());
     expect(mem["text"]).toBe((get["meme"] as { text: string }).text);
     const md = await project({ bag: "sdm", uri: URI, to: "md" }, ctx());

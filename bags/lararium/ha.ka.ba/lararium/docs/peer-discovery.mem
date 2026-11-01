@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/peer-discovery">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/peer-discovery`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/peer-discovery.mem"
 mana      = 18
 manao     = 18
 manaoio   = 17
@@ -268,15 +267,15 @@ state stays local-first, no-global-now enacted rather than breached.
 * ''mDNS in the browser'': not available (no UDP multicast in browsers). LAN
   discovery for browser peers routes through the node server's mDNS discovery.
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor#/lan-discovery">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/harbor#/lan-discovery`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AED385izMqR_bzTDwP-7cm0MTJxmoo4aW9ikfUzjzbI
+<<^ code=`&#x0003;`>>ni:///sha-256;yPa1iZg5KM7tfgWZrEK1Ui45drr04wdYq4IenUyFS5Y
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -12,7 +12,7 @@ from deep_time import content_hash, island_local_now
 
 
 def test_island_local_now_default_matches_bare_isoformat_shape():
-    # structurepalace_io / form_encoder shape: datetime.now(utc).isoformat() → trailing +00:00.
+    # structurepalace_io shape: datetime.now(utc).isoformat() → trailing +00:00.
     s = island_local_now()
     assert s.endswith("+00:00")
     assert re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?\+00:00", s)
@@ -59,5 +59,5 @@ def test_deep_time_imports_only_stdlib_no_sensorium_cycle():
             imported.update(a.name.split(".")[0] for a in node.names)
         elif isinstance(node, ast.ImportFrom) and node.module:
             imported.add(node.module.split(".")[0])
-    for forbidden in ("structurepalace_io", "form_encoder", "sensorium", "capture_sources"):
+    for forbidden in ("structurepalace_io", "form_store", "sensorium", "capture_sources"):
         assert forbidden not in imported, f"deep_time must not import {forbidden} (circular-import guard)"

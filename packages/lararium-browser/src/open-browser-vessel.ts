@@ -1466,7 +1466,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       //
       // The SAME ring decides for this face's SIBLINGS by its own path (`composeSiblings`), reading the device
       // key each one proved over the sibling session: the face's own planes and the public boards, never the
-      // @daemon, never another face's planes.
+      // daemon-plane, never another face's planes.
       const ringRelay = relayAdapter;
       const ringRoot = daemonAuth.deviceEdge?.personaRootDid;
       if (ringRoot && daemonAuth.personaKel) {

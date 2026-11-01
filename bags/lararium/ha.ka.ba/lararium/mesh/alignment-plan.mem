@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/alignment-plan">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/alignment-plan`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/alignment-plan.mem"
 l-space   = "lararium"
 mana      = 19
 manao     = 18
@@ -21,7 +20,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/alignment-plan"
 Governs the package dependency graph and the placement of shared concerns in the monorepo.
 This meme belongs in `@lararium/mesh` because mesh anchors the spine this plan describes.
 
-<<~ ahu #/dep-graph>>
+<<~ ahu slot=`#/dep-graph`>>
 
 !! Canonical Dependency Graph
 
@@ -40,7 +39,7 @@ No arrows go upstream. No package adds a dep that reaches into a downstream pack
 
 <<~/ahu>>
 
-<<~ ahu #/spine-law>>
+<<~ ahu slot=`#/spine-law`>>
 
 !! Spine Law
 
@@ -85,7 +84,7 @@ mesh, (C) byte emission. See `genesis-doc.ts` and `bags/lararium/mesh/genesis-do
 
 <<~/ahu>>
 
-<<~ ahu #/consistency-rules>>
+<<~ ahu slot=`#/consistency-rules`>>
 
 !! Consistency Rules
 
@@ -103,7 +102,7 @@ These rules apply to every new file and every dep addition in the monorepo.
 
 <<~/ahu>>
 
-<<~ ahu #/open-alignment-items>>
+<<~ ahu slot=`#/open-alignment-items`>>
 
 !! Open Alignment Items
 
@@ -118,15 +117,15 @@ These items name known inconsistencies in the current tree. Each carries a resol
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
-<<~ loulou "lar:///ha.ka.ba/lararium/browser/pono-charter">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lar-vessel`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/pono-charter`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1SdijwHWw3eB-eGxIod3vSvmzOi_w3j8P954bvsC5jU
+<<^ code=`&#x0003;`>>ni:///sha-256;SJA0hEqtk0MPu-Pvq-Zwh68S2iL0MCnwpWjGYxYSbP8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

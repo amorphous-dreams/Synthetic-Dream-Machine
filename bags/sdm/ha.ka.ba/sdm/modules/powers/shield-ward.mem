@@ -1,12 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/modules/powers/shield-ward">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/modules/powers/shield-ward`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
 caption   = "Shield Ward"
-file-path = "bags/sdm/ha.ka.ba/sdm/modules/powers/shield-ward.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 17
@@ -18,19 +17,19 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/modules/powers/shield-ward"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
 ! Shield Ward
 
-<<~ ahu #/has>>
+<<~ ahu slot=`#/has`>>
 
 !! Composition
 
 <<~/ahu>>
 
-<<~ ahu #/default>>
+<<~ ahu slot=`#/default`>>
 
 ```toml default
 canonical-name = "Shield Ward"
@@ -61,7 +60,7 @@ On a botched or breached ward, choose one: it flares and reveals the operator; g
 
 <<~/ahu>>
 
-<<~ ahu #/variants>>
+<<~ ahu slot=`#/variants`>>
 
 !! Variants
 
@@ -72,17 +71,17 @@ On a botched or breached ward, choose one: it flares and reveals the operator; g
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/modules/power">>
-<<~ loulou "lar:///ha.ka.ba/sdm/projections/powers/ftls-card/shield-ward">>
-<<~ loulou "lar:///ha.ka.ba/sdm/witness/powers/osr-spells/shield-ward">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/modules/power`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/projections/powers/ftls-card/shield-ward`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/witness/powers/osr-spells/shield-ward`>>
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -92,6 +91,6 @@ On a botched or breached ward, choose one: it flares and reveals the operator; g
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eWdn8hTJXVCds1FSysvzaThP_RjiOO2p7Y4BfideTf8
+<<^ code=`&#x0003;`>>ni:///sha-256;HvtmkL7s7_dBHQ7ZEL4o0T2dqEug0wXaMGaQDze1ED4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

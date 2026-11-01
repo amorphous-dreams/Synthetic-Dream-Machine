@@ -27,7 +27,7 @@ const DRAFT_TITLE = `Draft of '${TITLE}' by Bob`;
 /** A draft off the live value: Bob's text lost the merge. */
 const draft: LarTiddlerRecord = {
   tiddler: {
-    title: DRAFT_TITLE, text: "from Bob <<~ ahu #/x>> stays inert", "draft.of": TITLE, "draft.title": TITLE,
+    title: DRAFT_TITLE, text: "from Bob <<~ ahu slot=`#/x`>> stays inert", "draft.of": TITLE, "draft.title": TITLE,
     "lar-conflict-actor": "bbbb", "lar-conflict-fields": "text", "lar-conflict-live": "",
   },
 };

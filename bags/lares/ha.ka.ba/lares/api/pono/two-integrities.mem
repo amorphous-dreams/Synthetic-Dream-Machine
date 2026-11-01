@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/two-integrities">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/two-integrities`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/two-integrities.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 16
@@ -21,7 +20,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/two-integrities"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Two Integrities ~ a name system and a courier
 
@@ -31,7 +30,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/two-integrities"
 
 <<~/ahu>>
 
-<<~ ahu #/what-each-answers>>
+<<~ ahu slot=`#/what-each-answers`>>
 
 !! What each answers that we could not
 
@@ -41,7 +40,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/two-integrities"
 
 <<~/ahu>>
 
-<<~ ahu #/the-dyad>>
+<<~ ahu slot=`#/the-dyad`>>
 
 !! What they bring the Agent-Operator dyad
 
@@ -53,7 +52,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/two-integrities"
 
 <<~/ahu>>
 
-<<~ ahu #/the-node>>
+<<~ ahu slot=`#/the-node`>>
 
 !! What they bring a node on the mesh
 
@@ -65,7 +64,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/two-integrities"
 
 <<~/ahu>>
 
-<<~ ahu #/double-blind>>
+<<~ ahu slot=`#/double-blind`>>
 
 !! The double-blind wrap ~ what a lamplighter must not learn
 
@@ -80,7 +79,7 @@ Against #the-face-planes — where relations travel with the face and a vessel-g
 
 <<~/ahu>>
 
-<<~ ahu #/the-clock>>
+<<~ ahu slot=`#/the-clock`>>
 
 !! The one hard collision
 
@@ -92,7 +91,7 @@ Against #the-face-planes — where relations travel with the face and a vessel-g
 
 <<~/ahu>>
 
-<<~ ahu #/sensorium>>
+<<~ ahu slot=`#/sensorium`>>
 
 !! Onomancy in the sensorium, the memory palace, the dream work
 
@@ -103,7 +102,7 @@ Against #the-face-planes — where relations travel with the face and a vessel-g
 
 <<~/ahu>>
 
-<<~ ahu #/what-we-do-not-take>>
+<<~ ahu slot=`#/what-we-do-not-take`>>
 
 !! What we do NOT take, and why
 
@@ -115,7 +114,7 @@ Against #the-face-planes — where relations travel with the face and a vessel-g
 
 <<~/ahu>>
 
-<<~ ahu #/the-order>>
+<<~ ahu slot=`#/the-order`>>
 
 !! The order of adoption
 
@@ -127,11 +126,11 @@ Against #the-face-planes — where relations travel with the face and a vessel-g
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QFXujhbKcQVQDFOn5bytGJ2p21vNOcXKouCOjiHHN20
+<<^ code=`&#x0003;`>>ni:///sha-256;evFixu_vTSTXX6lfT5qlBYHhfs1i14poDo8AgjkwlbM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

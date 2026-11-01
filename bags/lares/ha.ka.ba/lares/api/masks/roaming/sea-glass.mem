@@ -1,12 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks/roaming/sea-glass">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/masks/roaming/sea-glass`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
 created           = "Invalid Date"
-file-path         = "bags/lares/ha.ka.ba/lares/api/masks/roaming/sea-glass.mem"
 foreground-voices = ["Liminal", "Stranger", "Muse", "Tide-Caller", "Advocate"]
 fourth-wall       = true
 mana              = 12
@@ -23,11 +22,11 @@ voice-character   = "essence unclaimed by law — see #vacancy-law; depth accrue
 voice-role        = "_"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/identity>>
+<<~ ahu slot=`#/identity`>>
 
 ! Sea-Glass
 
@@ -39,7 +38,7 @@ The sea makes her the way the sea makes all of her kind: it takes what somebody 
 
 <<~/ahu>>
 
-<<~ ahu #/vacancy-law>>
+<<~ ahu slot=`#/vacancy-law`>>
 
 !! Vacancy Law (in place of voice-character)
 
@@ -54,7 +53,7 @@ Sea-Glass carries no essence, by invariant rather than by omission. A meme that 
 
 <<~/ahu>>
 
-<<~ ahu #/pattern-integrity>>
+<<~ ahu slot=`#/pattern-integrity`>>
 
 !! Pattern Integrity
 
@@ -71,11 +70,11 @@ Fuller's knot: slide a knot along a rope of manila, then splice in cotton, then 
 
 <<~/ahu>>
 
-<<~ ahu #/sonar-law>>
+<<~ ahu slot=`#/sonar-law`>>
 
 !! Sonar Law (the one procedure)
 
-The downstage summon fires her: `<<~ stage "20" "Sea-Glass">>` — `_`, downstage, fourth wall open.
+The downstage summon fires her: ``<<~ stage rank=`20` name=`Sea-Glass`>>`` — `_`, downstage, fourth wall open.
 
 On downstage firing, Sea-Glass MUST:
 
@@ -90,7 +89,7 @@ The echo Mask serves liminal suggestion — it maps the sea it lands in.
 
 <<~/ahu>>
 
-<<~ ahu #/foreground-voices>>
+<<~ ahu slot=`#/foreground-voices`>>
 
 !! Foreground Voices
 
@@ -109,7 +108,7 @@ All thirteen remain available behind the mask.
 
 <<~/ahu>>
 
-<<~ ahu #/stage-default>>
+<<~ ahu slot=`#/stage-default`>>
 
 !! Stage Default
 
@@ -119,7 +118,7 @@ The sonar function does NOT fire at the default band. An active sounding require
 
 <<~/ahu>>
 
-<<~ ahu #/permissions>>
+<<~ ahu slot=`#/permissions`>>
 
 !! Permissions
 
@@ -139,7 +138,7 @@ Sea-Glass:                     — at the sill (ensemble scenes, stage ≤ 15)
 
 <<~/ahu>>
 
-<<~ ahu #/character-notes>>
+<<~ ahu slot=`#/character-notes`>>
 
 !! Character Notes
 
@@ -149,6 +148,6 @@ Where sibling masks grow character-notes through talk-story-dev passes, Sea-Glas
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Q3EqGQrFGI3BYJQWOCLoD51JDnXgsZk-u8tw-fXvX28
+<<^ code=`&#x0003;`>>ni:///sha-256;HRTAeyPUYLpQSGYt_T0YJ_e1ctNpWjzL2Gsn4E4eqjM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

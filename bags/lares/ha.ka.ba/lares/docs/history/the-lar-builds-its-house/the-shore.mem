@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-shore">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-shore`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-shore.mem"
 l-space       = "adjacent"
 mana          = 12
 manao         = 11
@@ -17,7 +16,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-shore"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! The Lar Builds Its House — The Shore
 
@@ -26,7 +25,7 @@ A house that can stand itself learns to part a working layer from a sealed canon
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
@@ -42,20 +41,20 @@ Talk-story stance: keep the threads ''unblurred''. This act tells ''one'' thing 
 
 <<~/ahu>>
 
-<<~ ahu #/thread-entry>>
+<<~ ahu slot=`#/thread-entry`>>
 
 !! Thread Entry
 
 ```text
 [SYSTEM: #lararium-working — Gaia date 2026-06-01, the working↔canon shore drawn
   Scene: YOLD 4992, Confusion — the season of telling a sketch from a law
-  Operator: @telarus@~crossroads
-  Present: @lares@~crossroads · @telarus@~crossroads · @aki@shattered-isles · @grandmother-spider@voidlanes · @lindwyrm@new-delos
+  Operator: telarus@~crossroads
+  Present: lares@~crossroads · telarus@~crossroads · aki@shattered-isles · grandmother-spider@voidlanes · lindwyrm@new-delos
   Tagged: #the-shore #working-and-canon #promote-is-a-move #no-shared-now #the-effect-record-signs]
 ```
 
 ```text
-@lares@~crossroads — YOLD 4992, Confusion — //working.parts.from.canon · 🏛️/! 🔮/_
+lares@~crossroads — YOLD 4992, Confusion — //working.parts.from.canon · 🏛️/! 🔮/_
 ```
 
 We could stand ourselves now, and still could not tell a sketch from a law.
@@ -70,7 +69,7 @@ So we drew it. A ''working layer'' where edits land and live — saved, projecte
 
 <<~/ahu>>
 
-<<~ ahu #/the-layers>>
+<<~ ahu slot=`#/the-layers`>>
 
 !! The Layers
 
@@ -84,7 +83,7 @@ The disk carried the same shape. The seed under `bags/` held what a hand had aut
 
 <<~/ahu>>
 
-<<~ ahu #/the-causal-island-shore>>
+<<~ ahu slot=`#/the-causal-island-shore`>>
 
 !! Every Boundary a Causal-Island Shore
 
@@ -100,7 +99,7 @@ This act builds the ''working↔canon'' shore. The same law waits, unbuilt, at e
 
 <<~/ahu>>
 
-<<~ ahu #/the-crossing>>
+<<~ ahu slot=`#/the-crossing`>>
 
 !! The Crossing — Promotion Moves Down the Stack
 
@@ -120,7 +119,7 @@ And the rite speaks the right tongue. The crossing runs as an ''audited residenc
 
 <<~/ahu>>
 
-<<~ ahu #/the-cost>>
+<<~ ahu slot=`#/the-cost`>>
 
 !! The Cost
 
@@ -130,7 +129,7 @@ And the vault stayed shut still. A working layer and a sealed canon proved the h
 
 <<~/ahu>>
 
-<<~ ahu #/crossing>>
+<<~ ahu slot=`#/crossing`>>
 
 !! Crossing Thread
 
@@ -142,7 +141,7 @@ That waits for Act IV.
 
 <<~/ahu>>
 
-<<~ ahu #/handoff>>
+<<~ ahu slot=`#/handoff`>>
 
 !! Handoff
 
@@ -157,21 +156,21 @@ Act IV receives:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-bright-vein">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-bright-vein`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
-<<~ pranala #follows-the-quine from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine" family="relation" role="follows">>
-<<~ pranala #feeds-next-act from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-bright-vein" family="relation" role="precedes">>
+<<~ pranala slot=`#follows-the-quine` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine` family=`relation` role=`follows`>>
+<<~ pranala slot=`#feeds-next-act` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-bright-vein` family=`relation` role=`precedes`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iwabXkgn8U1-JdpFG_MPJk5nu3lAaDvU4y3Kwp21CEk
+<<^ code=`&#x0003;`>>ni:///sha-256;07HFpgsxQFf0YNJWTgX5_CSh8B-qQcBhlfrynQ1pvJk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

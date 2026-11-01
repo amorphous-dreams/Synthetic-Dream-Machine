@@ -184,7 +184,7 @@ export {
   makeWardAlertReactor, fileWardRefusal,
 } from "./worker-data-verbs.js";
 export type { ResidencyOpPost } from "./worker-data-verbs.js";
-// The FOLLOW-GRAPH verbs over the sovereign @circles doc (source of truth; PRIVATE, fleet-synced
+// The FOLLOW-GRAPH verbs over the sovereign circles-plane doc (source of truth; PRIVATE, fleet-synced
 // same-operator, NEVER federated). Both vessels register them through the shared operator-daemon-behavior.
 export {
   makeCircleReactors, makeCircleAddReactor, makeCircleRemoveReactor, makeCircleListReactor,
@@ -195,7 +195,7 @@ export type { CircleVerbOptions, ResolveCirclesStore } from "./circle-verbs.js";
 // thread calls them from its custody door.
 export { readPersonaSelves, writePersonaSelfName } from "./persona-selves-plane.js";
 export type { PersonaSelfRow } from "./persona-selves-plane.js";
-// The CABAL-REALM verbs over @daemon — the OFFERING that feeds a realm, and the verdict-free capture-clock.
+// The CABAL-REALM verbs over daemon-plane — the OFFERING that feeds a realm, and the verdict-free capture-clock.
 export { makeCabalRealmReactors, makeRealmFeedReactor, makeRealmClockReactor } from "./cabal-realm-verbs.js";
 export type { CabalRealmVerbOptions, ResolveDaemonStore } from "./cabal-realm-verbs.js";
 // Verb-plane reactors (composite/repo-only — pono home is tw5, not node; both vessels hold them).
@@ -260,8 +260,8 @@ export type { MetaFenceSpan } from "./root-meta.js";
 // never the path — see carrier-files.ts.
 export {
   carrierFiles, readCarrierFiles, forgetCarrierFiles,
-  declaresCarrier, inSubmodule,
-  SUBMODULES,
+  declaresCarrier, inSubmodule, inFrozenSpecimen, outsideCorpus,
+  SUBMODULES, FROZEN_SPECIMENS,
 } from "./carrier-files.js";
 export type { CarrierDeclaration, CarrierDeclarationForm, CarrierFile as DeclaredCarrierFile } from "./carrier-files.js";
 // The carrier reader the genesis floor cut shares with every door that reads a carrier (`genesis-floor.ts`).
@@ -278,7 +278,7 @@ export { getGrammar, resetGrammar } from "./grammar-cache.js";
 // positionals a scheme would steal.
 export {
   readSigilAttrs, sigilAttr, sigilAttrValue, quotableAttrs,
-  positionalsOf, schemeShapedPositionals, lostPositionals,
+  schemeShapedPositionals, lostPositionals,
 } from "./sigil-attrs.js";
 export type { SigilAttr, SigilValueKind, LostPositional } from "./sigil-attrs.js";
 export type { CarrierShape, CarrierMarks } from "./carrier-shape.js";

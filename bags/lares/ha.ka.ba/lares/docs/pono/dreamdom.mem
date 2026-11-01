@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 17
@@ -21,7 +20,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! DreamDOM ~ the superset of cameras over one headless wiki engine
 
@@ -35,7 +34,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom"
 
 <<~/ahu>>
 
-<<~ ahu #/the-four-layers>>
+<<~ ahu slot=`#/the-four-layers`>>
 
 !! The four layers, and the two waists between them
 
@@ -63,7 +62,7 @@ Evidence and field reading: `docs/pono/third-ways-scout` §2.
 
 <<~/ahu>>
 
-<<~ ahu #/the-camera>>
+<<~ ahu slot=`#/the-camera`>>
 
 !! A camera = (root template, document sink)
 
@@ -97,7 +96,7 @@ Evidence: `docs/pono/third-ways-scout` §2.3 and §4.2.
 
 <<~/ahu>>
 
-<<~ ahu #/the-superset>>
+<<~ ahu slot=`#/the-superset`>>
 
 !! The superset of surfaces ~ two-way capability per member
 
@@ -125,7 +124,7 @@ Evidence: `docs/pono/two-way-interaction-scout` §7; `docs/pono/host-attractors-
 
 <<~/ahu>>
 
-<<~ ahu #/the-width-dial>>
+<<~ ahu slot=`#/the-width-dial`>>
 
 !! The width dial ~ full → skinny → story → none
 
@@ -151,7 +150,7 @@ Evidence: `docs/pono/third-ways-scout` §4.1, §4.4 and §10; the portable-engin
 
 <<~/ahu>>
 
-<<~ ahu #/the-actor>>
+<<~ ahu slot=`#/the-actor`>>
 
 !! The Wiki Actor and the first surface
 
@@ -188,7 +187,7 @@ Evidence: `docs/pono/third-ways-scout` §3 and §4.3; `docs/pono/two-way-interac
 
 <<~/ahu>>
 
-<<~ ahu #/the-rejected>>
+<<~ ahu slot=`#/the-rejected`>>
 
 !! Rejected and folded, named once
 
@@ -208,7 +207,7 @@ Evidence: `docs/pono/third-ways-scout` §4.0.
 
 <<~/ahu>>
 
-<<~ ahu #/the-position>>
+<<~ ahu slot=`#/the-position`>>
 
 !! Where the position stands genuinely unusual ~ four
 
@@ -223,7 +222,7 @@ Evidence: `docs/pono/third-ways-scout` §4.0.
 
 <<~/ahu>>
 
-<<~ ahu #/the-borrowed>>
+<<~ ahu slot=`#/the-borrowed`>>
 
 !! Where it stands merely borrowed ~ three, and they must not slip from mind
 
@@ -233,7 +232,7 @@ Evidence: `docs/pono/third-ways-scout` §4.0.
 
 <<~/ahu>>
 
-<<~ ahu #/the-fork>>
+<<~ ahu slot=`#/the-fork`>>
 
 !! ⚠ THE FORK a replacement document forces ~ absolute frames versus a mutating document
 
@@ -253,7 +252,7 @@ But drop-safety, the property that lets a burst of wiki changes collapse to one 
 
 <<~/ahu>>
 
-<<~ ahu #/the-ruling>>
+<<~ ahu slot=`#/the-ruling`>>
 
 !! ✓ THE FORK, RULED ~ keyed absolute frames, the grain declared at mount
 
@@ -285,7 +284,7 @@ Two absolute streams and one event leg. Neither side outranks the other (#/the-v
 
 <<~/ahu>>
 
-<<~ ahu #/the-crossings>>
+<<~ ahu slot=`#/the-crossings`>>
 
 !! The three crossings up, and the UP-leg contract
 
@@ -348,7 +347,7 @@ Evidence: `docs/pono/two-way-interaction-scout` §2, §3 and §6; `docs/pono/tw5
 
 <<~/ahu>>
 
-<<~ ahu #/what-a-sink-keeps>>
+<<~ ahu slot=`#/what-a-sink-keeps`>>
 
 !! What a sink beside the engine must keep ~ the seven silent losses and their cures
 
@@ -383,7 +382,7 @@ Evidence: `docs/pono/two-way-interaction-scout` §4; `docs/pono/tw5-vm-gaps-scou
 
 <<~/ahu>>
 
-<<~ ahu #/the-layers>>
+<<~ ahu slot=`#/the-layers`>>
 
 !! The three layers of a TiddlyWiki surface ~ and the two this house renders through
 
@@ -401,11 +400,11 @@ Evidence: `docs/pono/two-way-interaction-scout` §4; `docs/pono/tw5-vm-gaps-scou
 
 ''The reading of this direction into build'' now stands in `page-controls`: the first three page-native controls as ruled (a field editor, a popover, a disclosure), the designed set, the naming convention (a template names a vessel-shipped, allowlisted custom element in light DOM and never supplies script), the wire, the refusal words, and the shadow-widget verdict per stock widget. Still owed: which stock surfaces refuse meanwhile, pinned by the interaction goldens (#/conformance), and the open ruling on the browser DOM sink's edit template (#/open-rulings).
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls">> ~ carries the page-native controls named by each template
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/page-controls`>> ~ carries the page-native controls named by each template
 
 <<~/ahu>>
 
-<<~ ahu #/the-question>>
+<<~ ahu slot=`#/the-question`>>
 
 !! The question the wiki asks ~ one confirm road, rendered through layers 1 and 2
 
@@ -424,7 +423,7 @@ Evidence: `docs/pono/two-way-interaction-scout` §4; `docs/pono/tw5-vm-gaps-scou
 
 <<~/ahu>>
 
-<<~ ahu #/what-a-replacement-un-skips>>
+<<~ ahu slot=`#/what-a-replacement-un-skips`>>
 
 !! What replacing the fake document UN-SKIPS
 
@@ -443,7 +442,7 @@ TiddlyWiki does not merely tolerate a fake document; it ''DETECTS'' one and degr
 
 <<~/ahu>>
 
-<<~ ahu #/conformance>>
+<<~ ahu slot=`#/conformance`>>
 
 !! Conformance ~ three families, one frozen world, every surface a published row
 
@@ -478,7 +477,7 @@ Evidence: `docs/pono/evaluators-one-or-many` §5; `docs/pono/two-way-interaction
 
 <<~/ahu>>
 
-<<~ ahu #/the-vectors>>
+<<~ ahu slot=`#/the-vectors`>>
 
 !! The pono vectors ~ seven, written to get CHECKED rather than admired
 
@@ -492,7 +491,7 @@ Evidence: `docs/pono/evaluators-one-or-many` §5; `docs/pono/two-way-interaction
 
 <<~/ahu>>
 
-<<~ ahu #/what-would-squander-it>>
+<<~ ahu slot=`#/what-would-squander-it`>>
 
 !! What would squander the position
 
@@ -510,7 +509,7 @@ Evidence: `docs/pono/evaluators-one-or-many` §5; `docs/pono/two-way-interaction
 
 <<~/ahu>>
 
-<<~ ahu #/moolelo>>
+<<~ ahu slot=`#/moolelo`>>
 
 !! The moʻolelo ~ blessed by the operator, 2026-10-20
 
@@ -526,7 +525,7 @@ The DreamDOM's founding story: every later DreamDOM ruling answers to these seve
 
 <<~/ahu>>
 
-<<~ ahu #/open-rulings>>
+<<~ ahu slot=`#/open-rulings`>>
 
 !! Rulings ~ the operator's, each with the phase it shapes
 
@@ -564,14 +563,14 @@ The DreamDOM's founding story: every later DreamDOM ruling answers to these seve
 * ''Faults go to the alert rail''; TW5's `window.onerror` claim stays uninstalled.
 * ''Modals and notifications paint in the surface's root layer'' (#/the-crossings): `lar-root-services` owns the mirror's doors, since the stock root widget would bypass the Web3-only `http-request` door.
 * ''The browser vessel's opened key lives in its own worker'', never in page memory; the per-tab ask stands, and the shared holder carries no unlock. The unlock ceremony paints where the surface cannot reach (the boundary sits where the person types the secret; its shape stays research).
-* ''The full mirror runs people's plugins only after sealed-store steps 2 and 3 land for the browser store'' (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>). No clear row stands under the full mirror, and the device key rests non-extractable.
+* ''The full mirror runs people's plugins only after sealed-store steps 2 and 3 land for the browser store'' (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>). No clear row stands under the full mirror, and the device key rests non-extractable.
 
 !!! Standing open
 # ''The key grain for the browser camera at width none.'' One whole-surface key until measured, or river frames plus order plus membership. Blocks nothing; D1 measures.
 
 <<~/ahu>>
 
-<<~ ahu #/the-testimony>>
+<<~ ahu slot=`#/the-testimony`>>
 
 !! The testimony this collides against
 
@@ -601,32 +600,32 @@ The DreamDOM's founding story: every later DreamDOM ruling answers to these seve
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tw5-vm-gaps-scout">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/third-ways-scout">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/host-attractors-scout">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/two-way-interaction-scout">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-prior-art">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/evaluators-one-or-many">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mudlet-scout">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/ocif-orion-scout">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/canvas-field-scout">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/canvas-shelf-scout">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/render-pipeline">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-holder-protocol">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/camera-mount">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/vm-projection-bus">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/tw5-vm-gaps-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/third-ways-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/host-attractors-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/two-way-interaction-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-prior-art`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/page-controls`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/evaluators-one-or-many`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mudlet-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/ocif-orion-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/canvas-field-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/canvas-shelf-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/render-pipeline`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-holder-protocol`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/camera-mount`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/vm-projection-bus`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VJ-6bF8p894eikoDRkx1dVawPPvwptdswMCxVhoTS48
+<<^ code=`&#x0003;`>>ni:///sha-256;pN2dkX_X_ivvxww4j3gL9qZGXl4M-aD4QVu-w_FDxJU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

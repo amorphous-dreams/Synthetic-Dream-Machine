@@ -196,7 +196,6 @@ export function renderNexusDoc(doc: NexusDoc): string {
     // otherwise-derived spelling), so it rides straight off NEXUS_CHARTER_URI rather than the
     // unrelated NEXUS_CHARTER_URI_PATH constant (a display-only path nothing else validates against).
     `uri-path  = "${NEXUS_CHARTER_URI.slice("lar:///".length)}"`,
-    `file-path = "<lares>/nexus/${nexusCharterDocRelPath()}"`,
     `type      = ${JSON.stringify(CARRIER_TYPE)}`,
     `register  = "Canon"`,
     `mana      = 19`,
@@ -205,7 +204,7 @@ export function renderNexusDoc(doc: NexusDoc): string {
     `role      = "the nexus doc — three joints at three cadences: the SEAL lineage (rare, a rotation ceremony), the KAHU roster (steward seats), and the PRACTICE dials (fast, one hand). Each rides its own block and its own narrow writer."`,
     "```",
     "",
-    "<<~ ahu #/the-three-joints>>",
+    "<<~ ahu slot=`#/the-three-joints`>>",
     "",
     "! The nexus Doc — seal · kahu · practice",
     "",

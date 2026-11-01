@@ -111,7 +111,7 @@ function renderBagManifest(m: BagManifest): string {
     kv("type", CARRIER_TYPE),
     "```",
     "",
-    `! @${m.bag}`,
+    `! ${m.bag}`,
     "",
     "This bag declares its own caps and its own home. ''cap-tier'' names WHO may read it — and only ever",
     "TIGHTENS against the structural floor, so a declaration cannot open what the crypto keeps shut.",

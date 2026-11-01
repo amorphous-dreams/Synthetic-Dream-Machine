@@ -1,34 +1,33 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/automerge-tiga">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/automerge-tiga`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/automerge-tiga.mem"
 l-space   = "stable"
 mana      = 19
 manao     = 19
 manaoio   = 18
 namespace = "&#x2299;"
-role      = "invariant: two planes of different arity — the vessel-wide content tiga (ha/ka/ba) + a face's own four planes (persona/circles/identities/sessions), all named off one derived tag and resolved from @catalog"
+role      = "invariant: two planes of different arity — the vessel-wide content tiga (ha/ka/ba) + a face's own four planes (persona/circles/identities/sessions), all named off one derived tag and resolved from catalog-plane"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/pono/automerge-tiga"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/automerge-tiga"
 ```
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ observe that the doc stack carries two planes of DIFFERENT ARITY. The content plane holds vessel-wide roots — the content Tiga (ha/ka/ba), one oracle chain through ha. The social plane repeats ONCE PER FACE: `@persona-<tag>`, `@circles-<tag>`, `@identities-<tag>`, `@sessions-<tag>`, four planes off one derived tag, and a vessel holding a multitude carries one such set per face.
 ⏿ orient around Bucky Fuller's structural law: the triangle forms the minimal stable POLYGON, the tetrahedron the minimal structural SYSTEM — a shape that stands with nothing above it. The content plane rides a triangle rooted at ha and carries SDM forces (structure/fire/personality). A face rides a tetrahedron rooted at NOTHING: four planes bound by a shared derived tag, with no vessel-global doc over them, because a layer above a person's compartments mints exactly the root persona-circle canon forbids.
 ◇ decide that both planes stand canonical and load-bearing: the content Tiga names ha/ka/ba; a face's planes carry no SDM force names — function names them (persona, circles, identities, sessions). Ha holds oracle tiddlers for the two non-ha CONTENT docs. ''A face's four planes resolve from `@catalog`'' (operator ruling, 2026-08-20): `@oracle` names the SYSTEM bags, the universal floor every vessel carries, and a person's relations reach no such universality.
 ▶ lock the two-plane model as invariant: any peer that opens ha discovers the content siblings by walking LarariumDoc oracle tiddlers, and a face's planes reach each other by DERIVATION — `personaSiblingBagIds` reads the tag out of any one plane's own name, so no index lists them. No vertex carries upward pointers.
-↺ assess: the model holds when every deploy reaches the content arms from ha (CATALOG, LARES), and every lit face carries exactly four planes sharing one tag, each registered on `@catalog` and read back from `@catalog`. Residue: wiki docs and corpus docs function as non-root docs — they hang from ka as leaves. Corpus child-docs sit at pos-2 under @catalog (M22 remapping). Keyhive treats the content roots and each PersonaGroup's own four as SEPARATE group boundaries — a key appearing in both would correlate the face with the machine.
+↺ assess: the model holds when every deploy reaches the content arms from ha (CATALOG, LARES), and every lit face carries exactly four planes sharing one tag, each registered on `@catalog` and read back from `@catalog`. Residue: wiki docs and corpus docs function as non-root docs — they hang from ka as leaves. Corpus child-docs sit at pos-2 under catalog-plane (M22 remapping). Keyhive treats the content roots and each PersonaGroup's own four as SEPARATE group boundaries — a key appearing in both would correlate the face with the machine.
 
 <<~/ahu>>
 
-<<~ ahu #/tiga-law>>
+<<~ ahu slot=`#/tiga-law`>>
 
 !! Two Planes — the Content Tiga, and a Face's Own Four
 
@@ -65,7 +64,7 @@ A PersonaGroup's plane set repeats per FACE, never per vessel, and all four name
 | `IdentitiesDoc` | `@identities-<tag>` | how THIS face recognises others — the principal records it holds |
 | `CirclesDoc` | `@circles-<tag>` | who this face follows, blocks and mutes — the follow graph, private, never federated |
 | `SessionsDoc` | `@sessions-<tag>` | the sessions this face wears; hostful overlays project into these |
-| `IntentsDoc` | `@intents-<tag>` | the face's channel of intent: intents, outcomes and asks across its fleet, append-only, never mirrored (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-intent-plane">>) |
+| `IntentsDoc` | `@intents-<tag>` | the face's channel of intent: intents, outcomes and asks across its fleet, append-only, never mirrored (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>) |
 
 A face's planes carry no SDM force names — function names them.
 
@@ -99,7 +98,7 @@ Ha holds oracle tiddlers for the two non-ha CONTENT docs; a face's five resolve 
 
 # No leaf carries upward pointers. Leaves self-describe only (own lar: URI → own automerge URL).
 # Reachability flows ha → {ka, ba} → leaves inside the content plane. A face's four reach each other by DERIVATION off their shared tag, with no document above them. No back-edges anywhere.
-# `@` appears ONLY at pos-1 (root doc) or pos-2 (corpus child-doc under @catalog). Never at pos-3+.
+# `@` appears ONLY at pos-1 (root doc) or pos-2 (corpus child-doc under catalog-plane). Never at pos-3+.
 
 ''Self-description rule (every root doc and every face plane):''
 
@@ -117,7 +116,7 @@ sessions:    tiddlers["lar:///ha.ka.ba/bags/sessions-<tag>"].text   = automerge:
 
 <<~/ahu>>
 
-<<~ ahu #/zelenka-alignment>>
+<<~ ahu slot=`#/zelenka-alignment`>>
 
 !! Zelenka Alignment
 
@@ -134,7 +133,7 @@ Both planes' stability depends on this constraint holding at every deploy.
 
 <<~/ahu>>
 
-<<~ ahu #/boot-sequence-mapping>>
+<<~ ahu slot=`#/boot-sequence-mapping`>>
 
 !! Boot Sequence → the Two Planes
 
@@ -145,12 +144,12 @@ Step 2 — ha opens               : LarariumDoc syncs; grammar + widgets availab
           ha reads ba URI       : tiddlers[LARES_DOC_URI].text        → LaresDoc URL
           ha reads daemon URL   : the vessel bootstrap names it; no oracle registry answers for it
 Step 3 — ka opens               : CatalogDoc syncs; corpus + wiki URLs known
-Step 4 — corpus child-docs      : each carries own self-ref tiddler; pos-2 under @catalog
+Step 4 — corpus child-docs      : each carries own self-ref tiddler; pos-2 under catalog-plane
 Step 5 — wiki leaf              : situates session content
 Step 6 — ba opens               : LaresDoc syncs; personality layer active
-Step 7 — a lit face opens       : @catalog resolves @persona-<tag> and its three siblings;
+Step 7 — a lit face opens       : catalog-plane resolves persona-plane-<tag> and its three siblings;
                                   relations, principal records and session state available.
-                                  A PLACE with no face lit carries @daemon alone and stops here.
+                                  A PLACE with no face lit carries daemon-plane alone and stops here.
 ```
 
 Ba (LaresDoc) opens before any face — personality flows after structure and motion, before the identity layer activates.
@@ -159,7 +158,7 @@ This ordering carries structural correctness for the SDM metaphysics — not inc
 
 <<~/ahu>>
 
-<<~ ahu #/scope-1-networking>>
+<<~ ahu slot=`#/scope-1-networking`>>
 
 !! Scope 1 ~ the TS CID/CRDT pipe [surgical 2026-07-03]
 
@@ -167,18 +166,18 @@ The two-plane Automerge geometry rides ''Scope 1'' of the two-scopes ruling — 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/lararium-doc-stack">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes">> — names bootstrap-only daemon address resolution
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/lararium-doc-stack`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — names bootstrap-only daemon address resolution
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WBLjp7NW1_rtcPufYMJzko9366Gdok3x-nq8-V2gBwU
+<<^ code=`&#x0003;`>>ni:///sha-256;H-gp-S6d8GN_m24JPH5GFZx9o2knEVFw7sMPD7lJ7TU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

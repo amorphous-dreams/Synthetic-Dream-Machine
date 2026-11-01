@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/recipe-watch">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/recipe-watch`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/recipe-watch.mem"
 l-space     = "lararium"
 mana        = 11
 manao       = 11
@@ -16,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/tw5/recipe-watch"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -44,7 +43,7 @@ wiki behavior starts it at `onEa`, stops it at demote.
 
 <<~/ahu>>
 
-<<~ ahu #/invariants>>
+<<~ ahu slot=`#/invariants`>>
 
 !! Invariants
 
@@ -76,16 +75,16 @@ CRDT slot the oracles point at.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/engine-watch">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/recipe">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/compaction-handlers">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/engine-watch`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/recipe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/compaction-handlers`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZIMUmZ5SnDY_9vtjRXwL1fuhkupItPOCZHe7_Swsqt0
+<<^ code=`&#x0003;`>>ni:///sha-256;-vgKTet-HeORscVWzF_zUDHucc2tiKWC-A0kOlo1CiU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

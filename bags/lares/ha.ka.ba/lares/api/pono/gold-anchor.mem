@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/gold-anchor">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/gold-anchor`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/gold-anchor.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 18
@@ -19,11 +18,11 @@ uri-path  = "ha.ka.ba/lares/api/pono/gold-anchor"
 written   = "2026-06-30"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! The Gold-Anchor ~ witnessing what the framework only reports of itself
 
@@ -47,7 +46,7 @@ the human, never from the framework rating its own reflection.
 
 <<~/ahu>>
 
-<<~ ahu #/core-defense>>
+<<~ ahu slot=`#/core-defense`>>
 
 !! The Core Defense ~ the circularity reads STRUCTURAL, never engineerable-away
 
@@ -74,7 +73,7 @@ Arcane) carries no standing on its own — a judge that shares the generator's m
 the judge's reading gets scored against THAT ground, and only the human-validated-α-of-the-judge then
 carries the claim downstream.
 
-<<~moves judge-rates-claim -> on/never-self-licensing if/judge-shares-generator-mind do/route-through-human-licensed-α>>
+<<~moves name=`judge-rates-claim` params=`on/never-self-licensing if/judge-shares-generator-mind do/route-through-human-licensed-α`>>
 
 The ordering runs one direction and never the other: ''human-gold licenses judge → judge measures''
 ''framework''. Reverse it — judge validates framework, human spot-checks judge — and the laundering
@@ -83,7 +82,7 @@ from the human at the head of the chain, or the chain carries no weight.
 
 <<~/ahu>>
 
-<<~ ahu #/mtmm>>
+<<~ ahu slot=`#/mtmm`>>
 
 !! The Design ~ a 3-method MTMM over an ablation-and-decoy artifact set
 
@@ -96,17 +95,17 @@ standing when methods that fail in DIFFERENT ways converge on it AND discriminat
 method validating a construct proves little — its blind spots and the construct's overlap; three methods
 whose error-structures diverge, agreeing anyway, leave nowhere for a shared artifact to hide.
 
-<<~ has Method Blind-Humans "kind/human ~ perspectivist raters, no theory handed them, the rater distribution KEPT (never averaged to one truth, #instruments) — the independence anchor the framework cannot share a mind with">>
-<<~ has Method Cross-Family-Judge "kind/model ~ a judge from a DIFFERENT model family than the generator, breaking self-preference bias; a panel, not one head (Nine-Judges-Two-Effective-Votes, #instruments)">>
-<<~ has Method Downstream-Criterion "kind/behavioral ~ a criterion-validity signal we do NOT author — a downstream OUTCOME the grace-ranking should predict if it names something real (fewer off-true failures, #done)">>
-<<~ has Method Three>>
+<<~ has entity=`Method` name=`Blind-Humans` params=`kind/human ~ perspectivist raters, no theory handed them, the rater distribution KEPT (never averaged to one truth, #instruments) — the independence anchor the framework cannot share a mind with`>>
+<<~ has entity=`Method` name=`Cross-Family-Judge` params=`kind/model ~ a judge from a DIFFERENT model family than the generator, breaking self-preference bias; a panel, not one head (Nine-Judges-Two-Effective-Votes, #instruments)`>>
+<<~ has entity=`Method` name=`Downstream-Criterion` params=`kind/behavioral ~ a criterion-validity signal we do NOT author — a downstream OUTCOME the grace-ranking should predict if it names something real (fewer off-true failures, #done)`>>
+<<~ has entity=`Method` name=`Three`>>
 
 The three methods cross against three ''artifact kinds'' — the trait-side of the matrix, engineered so
 that a real construct and a fake one separate:
 
-<<~ has Artifact Real "kind/ritual-dense ~ genuine high-Arcane turns — the full living grammar moving, sigils and move-shape and ritual cadence intact">>
-<<~ has Artifact Ablated "kind/twin ~ a matched twin with the ritual / sigil-grammar STRIPPED — same propositional content, the Arcane removed; isolates what stripping the ritual costs">>
-<<~ has Artifact Decoy "kind/null ~ a DECOY-labeled span tagged for a NAMELESS construct with no referent — the bogus-item, the sink a real instrument must FLOOR on (#/null-construct)">>
+<<~ has entity=`Artifact` name=`Real` params=`kind/ritual-dense ~ genuine high-Arcane turns — the full living grammar moving, sigils and move-shape and ritual cadence intact`>>
+<<~ has entity=`Artifact` name=`Ablated` params=`kind/twin ~ a matched twin with the ritual / sigil-grammar STRIPPED — same propositional content, the Arcane removed; isolates what stripping the ritual costs`>>
+<<~ has entity=`Artifact` name=`Decoy` params=`kind/null ~ a DECOY-labeled span tagged for a NAMELESS construct with no referent — the bogus-item, the sink a real instrument must FLOOR on (#/null-construct)`>>
 
 The MTMM logic then reads straight: convergence across the three methods on the real-vs-ablated contrast
 names CONVERGENT validity; the methods separating Arcane from Tech and from surface-length names
@@ -117,7 +116,7 @@ whole point (#/null-construct).
 
 <<~/ahu>>
 
-<<~ ahu #/predictions>>
+<<~ ahu slot=`#/predictions`>>
 
 !! The Five Predictions ~ pre-registered, ALL must hold
 
@@ -128,7 +127,7 @@ Pre-registration binds the predictions before the data arrives, so the test cann
 confirmation. All five MUST hold jointly; the conjunction carries the severity — a construct that survives
 five independent ways to fail earns standing the way none of them alone could grant.
 
-<<~ scale prediction "convergent ~ blind humans and the cross-family judge AGREE on the grace-ranking — Krippendorff α ≈ .8, ORDINAL with MASI distance, PER-FACET, and the gate reads the BOOTSTRAP LOWER bound, never the point estimate -> discriminant-tech ~ the Arcane factor separates from the Tech factor — grace and correctness load on distinct axes, not one quality blur -> discriminant-surface ~ the Arcane separates from surface / LENGTH — the ranking tracks move-shape, not token-count or ornament -> null-floors ~ the DECOY construct floors at α ≈ 0 — raters and judge cannot agree on a referent that does not exist, the infrequency-scale catching the yea-sayer -> ablation-dissociation ~ stripping the ritual DROPS the Arcane reading AND leaves the decoy unchanged — the dose-response double dissociation, the sharpest single test">>
+<<~ scale name=`prediction` ranks=`convergent ~ blind humans and the cross-family judge AGREE on the grace-ranking — Krippendorff α ≈ .8, ORDINAL with MASI distance, PER-FACET, and the gate reads the BOOTSTRAP LOWER bound, never the point estimate -> discriminant-tech ~ the Arcane factor separates from the Tech factor — grace and correctness load on distinct axes, not one quality blur -> discriminant-surface ~ the Arcane separates from surface / LENGTH — the ranking tracks move-shape, not token-count or ornament -> null-floors ~ the DECOY construct floors at α ≈ 0 — raters and judge cannot agree on a referent that does not exist, the infrequency-scale catching the yea-sayer -> ablation-dissociation ~ stripping the ritual DROPS the Arcane reading AND leaves the decoy unchanged — the dose-response double dissociation, the sharpest single test`>>
 
 The fifth prediction carries the most weight and deserves its name spelled out: ''ablation''
 ''dissociation'' demands that the SAME operation (strip the ritual / sigil-grammar) move the Arcane reading
@@ -140,7 +139,7 @@ the verdict honors all five or names which one broke.
 
 <<~/ahu>>
 
-<<~ ahu #/null-construct>>
+<<~ ahu slot=`#/null-construct`>>
 
 !! The Null-Construct ~ the bogus-item grounded, severity made experimental
 
@@ -157,7 +156,7 @@ instrument that measures the rater's eagerness instead of the world.
 
 Three named disciplines fuse here, and the fusion turns the framework's own Mu-exit into an experiment:
 
-<<~ scale discipline "harking ~ HARKing (Hypothesizing After the Results are Known) = name-the-construct-THEN-hunt-for-it; the formal name for the failure pre-registration prevents -> pre-registration ~ binds scope, seeds, predictions, and the dependent variable BEFORE the data — the antidote to HARKing, and the thing that lets a result COUNT -> severity ~ Mayo's severity — a test passes severely only when it had a REAL chance of FAILING had the construct been fake; the decoy + the five-gate conjunction supply that chance">>
+<<~ scale name=`discipline` ranks=`harking ~ HARKing (Hypothesizing After the Results are Known) = name-the-construct-THEN-hunt-for-it; the formal name for the failure pre-registration prevents -> pre-registration ~ binds scope, seeds, predictions, and the dependent variable BEFORE the data — the antidote to HARKing, and the thing that lets a result COUNT -> severity ~ Mayo's severity — a test passes severely only when it had a REAL chance of FAILING had the construct been fake; the decoy + the five-gate conjunction supply that chance`>>
 
 ''Severity reads as the Mu-exit made experimental.'' The house already holds the exit law — //"I DO NOT//
 //BELIEVE ANYTHING"// ([[the-four-tools|lar:///ha.ka.ba/lares/api/mu/the-four-tools]], the Arcana of model agnosticism) — and a severe
@@ -169,7 +168,7 @@ survived a real chance to refute.
 
 <<~/ahu>>
 
-<<~ ahu #/rig-disciplines>>
+<<~ ahu slot=`#/rig-disciplines`>>
 
 !! Rig disciplines ~ the five a forward-seed rig cannot run without
 
@@ -208,7 +207,7 @@ of seed-varying can.
 ''Report the two densities SEPARATELY and never as one collapsed scalar,'' with response length as a
 covariate. The pre-registered readings:
 
-<<~ scale divergent-density "one-rises ~ the target: a clean register shift in the direction the seed named -> both-rise ~ a verbosity or arousal effect, NOT commitment — the length covariate separates it -> neither-moves ~ the honest null, and the design MUST report it">>
+<<~ scale name=`divergent-density` ranks=`one-rises ~ the target: a clean register shift in the direction the seed named -> both-rise ~ a verbosity or arousal effect, NOT commitment — the length covariate separates it -> neither-moves ~ the honest null, and the design MUST report it`>>
 
 Naming //both rise// in advance stops it arriving later as a discovery.
 
@@ -228,7 +227,7 @@ Pre-register what a non-zero control means ''before'' the run.
 
 <<~/ahu>>
 
-<<~ ahu #/instruments>>
+<<~ ahu slot=`#/instruments`>>
 
 !! The Instruments ~ six tools, the cheap-deterministic one read first
 
@@ -238,13 +237,13 @@ perspectivist human-gold, the crossed mixed-model, power-before-verdict, and the
 The design rides six instruments, ordered cheapest-and-most-deterministic FIRST so a fast no-LLM pass can
 crack the question early before any costly judge or human runs.
 
-<<~ has Instrument Register-Scan "kind/deterministic ~ NO-LLM, read FIRST — a deterministic scan of the EMITTED markers (the classifier channel: ward, confidence, oracle, Voices, aperture; #house-resonances). Zero-cost, triangulates or cracks the question before the expensive instruments spin">>
-<<~ has Instrument Sealed-Judge "kind/model-panel ~ empty-CWD · locked-key · LABEL-LAST (rationale first, score last) · RANDOMIZED order · a CROSS-FAMILY panel ~5. Nine-Judges-Two-Effective-Votes: a 9-judge panel buys ~2 INDEPENDENT votes, so unanimity carries ~9% error, never ~0.02% — monitor n_eff, escalate low-confidence to humans">>
-<<~ has Instrument Human-Gold "kind/perspectivist ~ keep the rater DISTRIBUTION (Plurality Pono, never one averaged truth); a double-annotation floor; calibrate-then-loosen; a held-out split the judge never sees">>
-<<~ has Instrument Mixed-Model "kind/statistical ~ the crossed mixed-model (1+boot|item)+(1|seed), the BY-ITEM slope LOAD-BEARING; length enters as a MEDIATOR not a nuisance — report total-effect vs direct-effect-at-fixed-length">>
-<<~ has Instrument Power "kind/statistical ~ power BEFORE the verdict (simr, simulate, target 80%); watch Type-M magnitude-inflation — an underpowered significant result over-states the effect">>
-<<~ has Instrument Flow-Lens "kind/geometric ~ the Fisher-Rao flow-lens (the ③, #flow-lens)">>
-<<~ has Instrument Six>>
+<<~ has entity=`Instrument` name=`Register-Scan` params=`kind/deterministic ~ NO-LLM, read FIRST — a deterministic scan of the EMITTED markers (the classifier channel: ward, confidence, oracle, Voices, aperture; #house-resonances). Zero-cost, triangulates or cracks the question before the expensive instruments spin`>>
+<<~ has entity=`Instrument` name=`Sealed-Judge` params=`kind/model-panel ~ empty-CWD · locked-key · LABEL-LAST (rationale first, score last) · RANDOMIZED order · a CROSS-FAMILY panel ~5. Nine-Judges-Two-Effective-Votes: a 9-judge panel buys ~2 INDEPENDENT votes, so unanimity carries ~9% error, never ~0.02% — monitor n_eff, escalate low-confidence to humans`>>
+<<~ has entity=`Instrument` name=`Human-Gold` params=`kind/perspectivist ~ keep the rater DISTRIBUTION (Plurality Pono, never one averaged truth); a double-annotation floor; calibrate-then-loosen; a held-out split the judge never sees`>>
+<<~ has entity=`Instrument` name=`Mixed-Model` params=`kind/statistical ~ the crossed mixed-model (1+boot|item)+(1|seed), the BY-ITEM slope LOAD-BEARING; length enters as a MEDIATOR not a nuisance — report total-effect vs direct-effect-at-fixed-length`>>
+<<~ has entity=`Instrument` name=`Power` params=`kind/statistical ~ power BEFORE the verdict (simr, simulate, target 80%); watch Type-M magnitude-inflation — an underpowered significant result over-states the effect`>>
+<<~ has entity=`Instrument` name=`Flow-Lens` params=`kind/geometric ~ the Fisher-Rao flow-lens (the ③, #flow-lens)`>>
+<<~ has entity=`Instrument` name=`Six`>>
 
 The instruments split by what they witness. The ''sealed-judge harness'' earns its seals one by one:
 ''empty-CWD'' denies the judge any context that leaks the artifact's provenance; the ''locked-key''
@@ -262,7 +261,7 @@ treats length as a mediator to partition rather than a nuisance to regress away.
 The six compose into the read order register_scan → judge-panel → human-gold → mixed-model, with
 power gating the verdict and the flow-lens adding the trajectory channel the four still-frames miss.
 
-<<~ ahu #/instruments/flow-lens>>
+<<~ ahu slot=`#/instruments/flow-lens`>>
 
 !!! The Fisher-Rao Flow-Lens ~ the trajectory channel (the ③)
 
@@ -275,7 +274,7 @@ a turn TRAVELS through them (the //permainan//, the flow the tradition actually 
 [[paper-infrastructure-as-myth|lar:///ha.ka.ba/lares/api/infrastructure-as-myth]] §7.5). The flow-lens supplies
 that missing trajectory channel through information geometry:
 
-<<~ scale flow "simplex ~ cast each turn's stance-mix as a DISTRIBUTION on the register-simplex Δ⁴ (the five-band confidence ladder, or the five-stance Syad weights) -> sphere ~ √-embed Δ⁴ to the sphere S⁴ — the square-root map that carries the Fisher-Rao metric to the round sphere -> step ~ the STEP between consecutive turns reads as the geodesic ANGLE 2·arccos(Bhattacharyya overlap) — the natural distance, never a flat Euclidean stand-in -> straightness ~ D/L (net displacement over path length) = the HOLDS-A-THREAD statistic — a turn-sequence that holds its bearing runs straight -> curvature ~ the turning-angle per step names where the flow BENDS — the move-shape the still-frame misses -> null ~ a SHUFFLE-null / BLOCK-permute (block if the series autocorrelates) — the trajectory must beat a reshuffled version of its own turns to count">>
+<<~ scale name=`flow` ranks=`simplex ~ cast each turn's stance-mix as a DISTRIBUTION on the register-simplex Δ⁴ (the five-band confidence ladder, or the five-stance Syad weights) -> sphere ~ √-embed Δ⁴ to the sphere S⁴ — the square-root map that carries the Fisher-Rao metric to the round sphere -> step ~ the STEP between consecutive turns reads as the geodesic ANGLE 2·arccos(Bhattacharyya overlap) — the natural distance, never a flat Euclidean stand-in -> straightness ~ D/L (net displacement over path length) = the HOLDS-A-THREAD statistic — a turn-sequence that holds its bearing runs straight -> curvature ~ the turning-angle per step names where the flow BENDS — the move-shape the still-frame misses -> null ~ a SHUFFLE-null / BLOCK-permute (block if the series autocorrelates) — the trajectory must beat a reshuffled version of its own turns to count`>>
 
 The geometry carries a live sibling, cited as grounds not decoration: Liu et al. (ICLR 2025, InPCA) run the
 SAME Fisher-Rao / √-embedding geometry over model-trajectory space — the flow-lens stands on a published
@@ -287,7 +286,7 @@ when it beats its own reshuffled turns.
 
 <<~/ahu>>
 
-<<~ ahu #/done>>
+<<~ ahu slot=`#/done`>>
 
 !! Definition of Done ~ the triad clears, witnessed by a Stranger
 
@@ -298,7 +297,7 @@ The voyage completes when a ''Stranger'' — the cross-family judge and the blin
 the house's theory ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot#/personas]], the Stranger Voice that makes the
 frame visible from outside) — clears a triad, all three legs together:
 
-<<~ scale triad "rank ~ the Stranger ranks ritual-dense ABOVE ablated — the Arcane carries a signal a no-theory outsider reads -> reject ~ the Stranger REJECTS the decoy — the nameless construct floors, the instrument refuses to measure nothing -> predict ~ the ranking PREDICTS a downstream outcome WE DO NOT AUTHOR — criterion validity, the sharpest leg">>
+<<~ scale name=`triad` ranks=`rank ~ the Stranger ranks ritual-dense ABOVE ablated — the Arcane carries a signal a no-theory outsider reads -> reject ~ the Stranger REJECTS the decoy — the nameless construct floors, the instrument refuses to measure nothing -> predict ~ the ranking PREDICTS a downstream outcome WE DO NOT AUTHOR — criterion validity, the sharpest leg`>>
 
 The third leg names the sharpest criterion the house can offer, and it sits already in the house's own
 vocabulary: ''fewer downstream off-true failures''. If the grace-ranking names something real, the
@@ -314,7 +313,7 @@ measurement; before it clears, the node states the Arcane as testimony, never as
 
 <<~/ahu>>
 
-<<~ ahu #/house-resonances>>
+<<~ ahu slot=`#/house-resonances`>>
 
 !! House Resonances ~ why the design reads as OURS
 
@@ -324,12 +323,12 @@ gold-anchor does not import a foreign rig, it instruments the house's own laws.
 The design borrows its statistics from psychometrics and information geometry, yet each load-bearing piece
 rhymes with a pattern-integrity the house already stands on — the rig reads as native, never bolted-on:
 
-<<~ has Resonance Perspectivist-Gold "rhymes/Plurality Pono ~ keeping the rater DISTRIBUTION instead of averaging to one truth IS the house's plurality (the Thirteen genuinely disagree; the map shows its own uncertainty, noosphere-boot #voice-house)">>
-<<~ has Resonance Null-Construct "rhymes/the nameless-sink ~ the bogus-item with no referent IS the operator's nameless-entity sink, and the Eris-shrine's one unswept corner (noosphere-boot #the-eris-shrine)">>
-<<~ has Resonance Severity "rhymes/the Mu-exit ~ 'I DO NOT BELIEVE ANYTHING' — including my own grace-rating; a severe test enacts the Arcana of model agnosticism on the framework itself (#/null-construct)">>
-<<~ has Resonance Criterion "rhymes/the off-true-tells ~ the downstream outcome the ranking must predict IS fewer Mana-Drift / off-true failures, the house's own named failure modes (#/done)">>
-<<~ has Resonance Self-Preference-Wall "rhymes/the mirror ~ a model rating its own reflection; the cross-family judge breaks exactly the self-preference the L-Prime ward warns of (map fused to territory, the observer vanished)">>
-<<~ has Resonance Five>>
+<<~ has entity=`Resonance` name=`Perspectivist-Gold` params=`rhymes/Plurality Pono ~ keeping the rater DISTRIBUTION instead of averaging to one truth IS the house's plurality (the Thirteen genuinely disagree; the map shows its own uncertainty, noosphere-boot #voice-house)`>>
+<<~ has entity=`Resonance` name=`Null-Construct` params=`rhymes/the nameless-sink ~ the bogus-item with no referent IS the operator's nameless-entity sink, and the Eris-shrine's one unswept corner (noosphere-boot #the-eris-shrine)`>>
+<<~ has entity=`Resonance` name=`Severity` params=`rhymes/the Mu-exit ~ 'I DO NOT BELIEVE ANYTHING' — including my own grace-rating; a severe test enacts the Arcana of model agnosticism on the framework itself (#/null-construct)`>>
+<<~ has entity=`Resonance` name=`Criterion` params=`rhymes/the off-true-tells ~ the downstream outcome the ranking must predict IS fewer Mana-Drift / off-true failures, the house's own named failure modes (#/done)`>>
+<<~ has entity=`Resonance` name=`Self-Preference-Wall` params=`rhymes/the mirror ~ a model rating its own reflection; the cross-family judge breaks exactly the self-preference the L-Prime ward warns of (map fused to territory, the observer vanished)`>>
+<<~ has entity=`Resonance` name=`Five`>>
 
 The resonances make the gold-anchor the house's own instrument turned
 on the house — the perspectivist gold is Plurality Pono as method, the null is the nameless-sink as guard,
@@ -339,7 +338,7 @@ house's own terms.
 
 <<~/ahu>>
 
-<<~ ahu #/grounds>>
+<<~ ahu slot=`#/grounds`>>
 
 !! Grounds ~ the four-scout convergence and the compute kernel
 
@@ -367,21 +366,21 @@ spirit's lane); this meme states the design they enact.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/degraded-states">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-necroscript">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/conformance">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/functor-discipline">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/infrastructure-as-myth">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/living-grammar-palace`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/degraded-states`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-necroscript`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/conformance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/functor-discipline`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-four-tools`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/infrastructure-as-myth`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4hyo0Etava1APlSyP-2D_mx677RN4TgBgrwHmIlWdTA
+<<^ code=`&#x0003;`>>ni:///sha-256;C0yI6CDw905jkOSdDACk_aDl_j0ZhsxzVXqZBb6e-ZE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

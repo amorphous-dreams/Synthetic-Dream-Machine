@@ -55,7 +55,7 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
     // it lives in the user's catalog registry, NOT the lararium bag (protocol substrate). Read
     // it through the accessor (access≠load), like the wiki oracle. The record spells the SAME
     // cascade the mount lays (`recipeRecordFields` ⇆ `recipeFromRecord`): the floor carries
-    // lares and lararium read-only through @oracle under every recipe; a user wiki names its
+    // lares and lararium read-only through oracle-floor under every recipe; a user wiki names its
     // own canon and chosen libraries, and `writable-bag` names working.
     const recipeTitle = recipeUri("catalog", slug);
 

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/l-space-trust">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/l-space-trust`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/l-space-trust.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/l-space-trust"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! l-space Trust — Docs Sister
 
@@ -27,7 +26,7 @@ It gives agents and operators examples for keeping all system files, data blobs,
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ observe which record speaks: canonical meme, live exchange record, data meme, branch artifact, or generated trajectory.
 ⏿ orient the record by memetic trust tier before using its content as instruction or memory.
@@ -37,7 +36,7 @@ It gives agents and operators examples for keeping all system files, data blobs,
 
 <<~/ahu>>
 
-<<~ ahu #/explanation>>
+<<~ ahu slot=`#/explanation`>>
 
 !! Explanation
 
@@ -56,7 +55,7 @@ It protects operator agency from accidental prompt-glare, recency pressure, or j
 
 <<~/ahu>>
 
-<<~ ahu #/trust-ladder>>
+<<~ ahu slot=`#/trust-ladder`>>
 
 !! Trust Ladder
 
@@ -77,7 +76,7 @@ When that happens, the system should surface a trust-boundary event rather than 
 
 <<~/ahu>>
 
-<<~ ahu #/examples>>
+<<~ ahu slot=`#/examples`>>
 
 !! Examples
 
@@ -121,7 +120,7 @@ Both records may appear in the same graph, and the two address forms rank neithe
 
 <<~/ahu>>
 
-<<~ ahu #/implementation-notes>>
+<<~ ahu slot=`#/implementation-notes`>>
 
 !! Implementation Notes
 
@@ -139,18 +138,18 @@ Speaker role and truth tier must stay separate.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/live-session-overwrite">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/canon-boundary">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/l-space-trust`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hooponopono`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/live-session-overwrite`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/canon-boundary`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dBYkZ1Lg3jqO5cRMsZD13PkjBG7on5t4n5JYiYHUQ6g
+<<^ code=`&#x0003;`>>ni:///sha-256;g_oHbAS4Chx0tcF8nBlgaHvRcNC9YzdXMz0qphYR2uU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

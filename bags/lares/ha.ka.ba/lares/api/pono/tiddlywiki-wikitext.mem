@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/tiddlywiki-wikitext.mem"
 l-space       = "stable"
 mana          = 15
 manao         = 16
@@ -19,7 +18,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"
 ```
 
-<<~ ahu #/abstract>>
+<<~ ahu slot=`#/abstract`>>
 
 ! TiddlyWiki 5 Wikitext — the base syntax
 
@@ -39,7 +38,7 @@ parse.
 
 <<~/ahu>>
 
-<<~ ahu #/status>>
+<<~ ahu slot=`#/status`>>
 
 !! Status
 
@@ -55,7 +54,7 @@ this record; the record's own envelope belongs to its storage format, not to the
 
 <<~/ahu>>
 
-<<~ ahu #/the-load-bearing-property>>
+<<~ ahu slot=`#/the-load-bearing-property`>>
 
 !! The load-bearing property — the total parse
 
@@ -83,7 +82,7 @@ harmlessness.
 
 <<~/ahu>>
 
-<<~ ahu #/terminology>>
+<<~ ahu slot=`#/terminology`>>
 
 !! Terminology
 
@@ -103,7 +102,7 @@ harmlessness.
 
 <<~/ahu>>
 
-<<~ ahu #/lexical-structure>>
+<<~ ahu slot=`#/lexical-structure`>>
 
 !! Lexical Structure
 
@@ -120,7 +119,7 @@ grammar, because the grammar of any given parse follows from the rules active in
 
 <<~/ahu>>
 
-<<~ ahu #/extension-mechanism>>
+<<~ ahu slot=`#/extension-mechanism`>>
 
 !! The Extension Mechanism — the rule-object contract
 
@@ -164,7 +163,7 @@ specification [MWT] under this contract.
 
 <<~/ahu>>
 
-<<~ ahu #/rule-inventory>>
+<<~ ahu slot=`#/rule-inventory`>>
 
 !! Rule Inventory — the default registry
 
@@ -194,7 +193,7 @@ and the configuration tiddlers filter by these strings.
 | `list` | `*` `#` `;` `:` `>` runs — unordered, ordered, definition, quote lists; nesting by repetition. |
 | `table` | `|`-delimited rows with alignment, header/footer/caption markers. |
 | `quoteblock` | `<<<` fenced block quotation. |
-| `codeblock` | ``` fenced verbatim block with optional language. |
+| `codeblock` | a three-backtick fenced verbatim block with optional language. |
 | `typedblock` | `$$$type … $$$` — a block parsed under another content type. |
 | `styleblock` | `@@` fenced block carrying CSS classes/styles. |
 | `horizrule` | `---` horizontal rule. |
@@ -235,7 +234,7 @@ and the configuration tiddlers filter by these strings.
 
 <<~/ahu>>
 
-<<~ ahu #/degradation>>
+<<~ ahu slot=`#/degradation`>>
 
 !! The Degradation Rule
 
@@ -258,7 +257,7 @@ next processor may understand.
 
 <<~/ahu>>
 
-<<~ ahu #/conformance>>
+<<~ ahu slot=`#/conformance`>>
 
 !! Conformance
 
@@ -285,7 +284,7 @@ implementations.
 
 <<~/ahu>>
 
-<<~ ahu #/test-suite>>
+<<~ ahu slot=`#/test-suite`>>
 
 !! The Executable Conformance Suite
 
@@ -298,7 +297,7 @@ claiming core conformance SHOULD pass that suite for the constructs it implement
 
 <<~/ahu>>
 
-<<~ ahu #/security>>
+<<~ ahu slot=`#/security`>>
 
 !! Security Considerations
 
@@ -322,7 +321,7 @@ document might use.
 
 <<~/ahu>>
 
-<<~ ahu #/media-type>>
+<<~ ahu slot=`#/media-type`>>
 
 !! Media Type
 
@@ -342,7 +341,7 @@ rather than minting sibling types.
 
 <<~/ahu>>
 
-<<~ ahu #/references>>
+<<~ ahu slot=`#/references`>>
 
 !! References
 
@@ -366,13 +365,13 @@ rather than minting sibling types.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SLK_nZU5gLIOHJHaqT11r4xDRbmFrmFrnl9dyeUGPjA
+<<^ code=`&#x0003;`>>ni:///sha-256;xZamjAV_ySzWL39ahNc4a2ybBAQUHE7of2SWUiSeGIc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

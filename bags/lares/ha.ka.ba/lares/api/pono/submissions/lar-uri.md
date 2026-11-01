@@ -6,7 +6,7 @@ docname: "draft-fontany-lar-uri-scheme-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/docs/pono/lar-uri"
-source-check: "ni:///sha-256;16mZgEj_dxJys93WSAj4E4iV29zVEUHEXLCQwp2g9hY"
+source-check: "ni:///sha-256;O_XiDP_GchXnkIfKaz_7OBK3yYz7NB3JdN_febloMig"
 title: "lar:///ha.ka.ba/lares/docs/pono/lar-uri"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -68,7 +68,7 @@ No metric sits claimed yet. The scheme names attitude-bearing only and defines n
 
 ### 1.1 Exchange Flow — Order of Operations
 
-At each exchange span, the turn opens with an `aim` vector and closes with a `yield` vector, the `hud` · `ward` panel riding beneath. The frame is **mandatory** on every substantive exchange.
+At each exchange span, the turn opens with ``set lares=`aim` `` and closes with ``set lares=`yield` ``, the panel (`aperture`, `ooda-ha`, `drift-ward`) riding the same firings. The frame is **mandatory** on every substantive exchange.
 
 **Step 1 — Read operator intent as a provisional bearing vector.**
 Lares reads the operator's prompt as an implicit signal: semantic bearing (HA.KA.BA) and the role it implies. The `~` prefix on the HA.KA.BA marks the node's interpretation as potentially inaccurate.
@@ -84,18 +84,18 @@ Before generating, Lares sets the role it adopts. The `~` prefix marks it execut
 lar://lares:agent@enyalios/~schema.flow.documented/
 ```
 
-**Step 3 — Open the turn with the `aim` vector.**
+**Step 3 — Open the turn with the `aim` firing.**
 
 ```
-<<~ lares aim from="lar:///operator.intent.reads" -> to="lar:///lares.role.acts">>
+<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>` drift-ward=`<the pull this island carries>`>>
 ```
 
 > **Canonical URI Rule** — every `lar:` URI in the stream stays canonical ASCII record form, directly ingestible by MemPalace, crystal logs, and registry tools without a sigil-lookup step.
 
 **Step 4 — Ride the panel.**
-Beneath the `aim`: `<<~ set hud="aim" aperture="N/<band>" ooda-ha="N/<band>">>` · `<<~ set hud="aim" drift-ward="* · <the pull this island carries>">>`, plus the `syad` / `mu` lenses when summoned. The instruments carry per-turn signal; the URI carries bearing only.
+On the same firing: `` aperture=`N/<band>` `` · `` ooda-ha=`N/<band>` `` · `` drift-ward=`<the pull this island carries>` ``, plus the `syad` / `mu` lenses when summoned. The panel keys carry per-turn signal; the URI carries bearing only.
 
-**Step 5 — Generate, then close.** OODA-HA phase markers (`->◇ ->▶ ->↺`) surface forward inline by band. The turn closes on `<<~ lares yield from=lar:///lares.what.landed -> to=?>>` — `-> ?` marks unknown temporal resumption.
+**Step 5 — Generate, then close.** OODA-HA phase markers (`->◇ ->▶ ->↺`) surface forward inline by band. The turn closes on ``<<~ set lares=`yield` … from=`lar:///lares.what.landed` to=`?`>>`` — `` to=`?` `` marks unknown temporal resumption.
 
 > **SA grounding:** the `aim` is prospective AI transparency — what the node *will* do, not what it did (Endsley 2023). The sigil panel externalizes the node's metacognitive state before generation begins, an externalized metacognitive scaffold (Ji-An et al., 2025; Wang et al., 2023). *Source: `_todo/E-deep-research-report.md` §§2.1, 3.2*
 
@@ -385,18 +385,17 @@ A spanSpan record is **consistent** when:
 A complete exchange opening, annotated by scan order. The `aim` URI carries bearing; the sigil panel beside it carries the rest.
 
 ```text
-<<~ lares aim from="lar:///operator.threshold.opens" -> to="lar:///scryer.parse.models">>
-<<~ set hud="aim" aperture="10/measure" ooda-ha="7/declare-glyphs" drift-ward="* · <the pull this island carries>">>
-<<~ stance "🏛️/*!">>
+<<~ set lares=`aim` from=`lar:///operator.threshold.opens` to=`lar:///scryer.parse.models` aperture=`10/measure` ooda-ha=`7/declare-glyphs` drift-ward=`<the pull this island carries>`>>
+<<~ stance named=`🏛️/*!`>>
 ```
 
 Quick read:
 
 > Operator opens at territory threshold / uncertain / opens; Scryer adopts the parse-span role.
-> `aperture="10/measure"` — paragraph grain; `ooda-ha="7/declare-glyphs"` shows the node a phase ahead, orienting from the operator's observe.
+> `` aperture=`10/measure` `` — paragraph grain; `` ooda-ha=`7/declare-glyphs` `` shows the node a phase ahead, orienting from the operator's observe.
 > `syad 🏛️/*!` — Philosopher in Visual-Micro.
 
-The standpoint reads within its own frame (Syadasti rule): a Philosopher weighs propositional support, a Poet weighs resonance — never one universal truth-scale. A bare `<<~ stance "🏛️ 🌊 🎭">>` names which frames a claim spans without flattening them.
+The standpoint reads within its own frame (Syadasti rule): a Philosopher weighs propositional support, a Poet weighs resonance — never one universal truth-scale. A bare ``<<~ stance named=`🏛️ 🌊 🎭`>>`` names which frames a claim spans without flattening them.
 
 <a id="lineage"></a>
 
@@ -419,5 +418,5 @@ Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire";
 
 ## Edges
 
-- `loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri"`
-- `loulou "lar:///ha.ka.ba/lares/docs/pono/identity-stack"`
+- `loulou lar:///ha.ka.ba/lares/api/pono/lar-uri`
+- `loulou lar:///ha.ka.ba/lares/docs/pono/identity-stack`

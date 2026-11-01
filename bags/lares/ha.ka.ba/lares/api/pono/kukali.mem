@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kukali">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/kukali`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/kukali.mem"
 mana      = 17
 manao     = 16
 manaoio   = 16
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kukali"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Kukali
 
@@ -33,7 +32,7 @@ Paired with papalohe — papalohe declares the wire; kukali declares the wait at
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ sense the wait declaration — note trigger name or absence; locate enclosing causal island
 ⏿ orient the suspension: find papalohe wire matching trigger name; bind subscribeOnce
@@ -43,7 +42,7 @@ Paired with papalohe — papalohe declares the wire; kukali declares the wait at
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -58,20 +57,21 @@ A kukali that cancels MUST reject its suspension Promise cleanly without leaking
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```text
 <<~ kukali>>
-<<~ kukali trigger=SlotName>>
+<<~ kukali trigger=`SlotName`>>
 <<~ suspends>>
-<<~ suspends trigger=SlotName>>
+<<~ suspends trigger=`SlotName`>>
 ```
 
 `suspends` carries the canonical English name — it emits the same `SigilNode { sigilName: "kukali" }`.
 
 Regex (canonical):
+
 ```
 /<<~\s*kukali(?:\s+trigger:([\w.-]+))?\s*>>/
 /<<~\s*suspends(?:\s+trigger[=:]"?([\w.-]+)"?)?\s*>>/
@@ -80,18 +80,18 @@ Regex (canonical):
 !!! Paired usage with papalohe
 
 ```text
-<<~ papalohe #on-score DeviceA -> ScoreDisplay trigger="OnEliminated" fn="Show">>
+<<~ papalohe slot=`#on-score` from=`DeviceA` to=`ScoreDisplay` trigger=`OnEliminated` fn=`Show`>>
 
 ... body ...
 
-<<~ kukali trigger="on-score">>
+<<~ kukali trigger=`on-score`>>
 ```
 
 `trigger:on-score` in kukali references `#on-score` — the fragment of the papalohe wire above.
 
 <<~/ahu>>
 
-<<~ ahu #/verse-analogy>>
+<<~ ahu slot=`#/verse-analogy`>>
 
 !! Verse Analogy
 
@@ -104,13 +104,13 @@ OnEliminated<override>()<suspends> : void =
 ```
 
 Kukali maps this into memetic-wikitext:
-* `<suspends>` annotation → `<<~ kukali trigger="slot-name">>`
+* `<suspends>` annotation → ``<<~ kukali trigger=`slot-name`>>``
 * Coroutine yield point → kukali sigil position in the carrier body
 * Resume on event → papalohe trigger fires; ReactionGraph resolves the subscribeOnce Promise
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -137,17 +137,17 @@ sigilName = "kukali"
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/papalohe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/federated-causal-islands`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-suspends">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-suspends`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rXmmV5KQABTJo6SulTL9SKwBQA3VD7_fHj5p0jqdjH8
+<<^ code=`&#x0003;`>>ni:///sha-256;0goZbhjSRsOyfElio7rMi-1007OPylvht9AXmk9zvvc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

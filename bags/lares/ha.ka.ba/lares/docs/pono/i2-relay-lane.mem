@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/i2-relay-lane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/i2-relay-lane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/i2-relay-lane.mem"
 l-space   = "adjacent"
 role      = "the I2 lane's kit: the far agent's relay seat built, a delegation grammar on the intent plane, a relay door off the local socket that admits the agent's own entry unchanged beside a signed receipt, and a reader that trusts the relay for nothing"
 status    = "draft"
@@ -14,21 +13,21 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/i2-relay-lane"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! I2 ~ the far agent's relay seat, built
 
-The carrier (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-intent-plane#/the-far-agent">>) rules the model; this kit reads what stands in the code. The lane builds on I1 (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/i1-intent-lane">>): the intent plane, its entries and its reader already stand, and the lane adds the grammar that lets an agent off every device of the face act on the plane, the seat that admits its entry, and the readers that check it.
+The carrier (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane#/the-far-agent`>>) rules the model; this kit reads what stands in the code. The lane builds on I1 (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/i1-intent-lane`>>): the intent plane, its entries and its reader already stand, and the lane adds the grammar that lets an agent off every device of the face act on the plane, the seat that admits its entry, and the readers that check it.
 
 <<~/ahu>>
 
-<<~ ahu #/the-model>>
+<<~ ahu slot=`#/the-model`>>
 
 !! The model the lane enacts
 
-* ''The agent holds its own key.'' It signs its `intent` with that key and never wears a session of the face. A session meets one face and one anchor and carries a hand that acts as the face (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>); the agent acts as itself under a delegation the face signed, so no hand opens a session for it and no atom signs its entry.
+* ''The agent holds its own key.'' It signs its `intent` with that key and never wears a session of the face. A session meets one face and one anchor and carries a hand that acts as the face (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands`>>); the agent acts as itself under a delegation the face signed, so no hand opens a session for it and no atom signs its entry.
 * ''The relay's admission sits beside a session and never inside one.'' The relay seat signs under its own key, held in the vessel's cold `intent-relay-key` row (`intent-relay-key-store.ts`). The admission runs on the relay door's route, off the session socket, and neither reads nor writes a session table. The operator's enable, disable and status act (`lares intent-relay`) names a face by its ordinal against the unlocked faces and changes nothing the face signs.
 * ''Delegation and revoke are plane entries.'' `INTENT_DELEGATION_DOMAIN` mints the grant: an agent key, a verb prefix, an argument policy and a causal bound (`until` or `asOf` naming a roster act), signed by the persona root at its epoch. A `delegate-revoke` entry voids it. A grant lives only at its lineage's current root epoch and reads `lapsed` past a retired one (`intent-delegation.ts`, `intent-read.ts`).
 * ''Admission leaves the entry unchanged.'' The agent's entry lands on the plane with the agent's signature and the receipt rides beside it as a separate record under `INTENT_ADMISSION_DOMAIN`: the relay key, the entry cid, the delegation cid and the heads the relay judged against. A receipt lists as provenance and never changes an intent's status, `mayAct` or winner (`intent-admission.ts`).
@@ -38,7 +37,7 @@ The carrier (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-intent-plane#/the-f
 
 <<~/ahu>>
 
-<<~ ahu #/the-slices>>
+<<~ ahu slot=`#/the-slices`>>
 
 !! The slices, each red-first with its control and its known positive
 
@@ -53,17 +52,17 @@ The carrier (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-intent-plane#/the-f
 
 <<~/ahu>>
 
-<<~ ahu #/the-fences>>
+<<~ ahu slot=`#/the-fences`>>
 
 !! What the lane keeps off
 
 The hands spine's session files, K15's seed, identity, custody and carriage-key code, K19's per-face providers, the porch and `GATE_FRAME` stay untouched. The relay never writes a session table, an agent never receives an atom or a session, and the lane carries no clock: every read and admission passes with a throwing `Date.now`. The lost-reply case proves a repeated submission after a delivered receipt duplicates nothing and the durable-reopen case proves a flushed receipt survives a reopened repo; a relay killed with its reply in flight, and a storage write that fails partway, stay unwitnessed.
 
 !!! Owed
-* The plane's hardening under re-pin, re-target and growth stands at roadmap row `I3` (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-intent-plane#/the-reds">>): the admission's commit-boundary rechecks, the receipt's one head digest and the single-effect spend.
+* The plane's hardening under re-pin, re-target and growth stands at roadmap row `I3` (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane#/the-reds`>>): the admission's commit-boundary rechecks, the receipt's one head digest and the single-effect spend.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rjn7y-gFcqjZehh4yKhdw-9CBBlCplsKK9ZCgT-K5vI
+<<^ code=`&#x0003;`>>ni:///sha-256;7TihswdiemBUAm0FpaZyAaSZXM2cGOw8dM6WLqeNBgY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="🎁" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/offering">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`🎁` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/offering`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/offering.mem"
 l-space    = "stable"
 mana       = 15
 manao      = 15
@@ -20,11 +19,11 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/offering"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/charge>>
+<<~ ahu slot=`#/charge`>>
 
 ! The charge — a gift announces itself, the receiver ratchets
 
@@ -45,7 +44,7 @@ uri-path   = "ha.ka.ba/lares/docs/pono/offering"
 
 <<~/ahu>>
 
-<<~ ahu #/the-house-today>>
+<<~ ahu slot=`#/the-house-today`>>
 
 !! The house as built — what the founding hearth built
 
@@ -61,11 +60,11 @@ uri-path   = "ha.ka.ba/lares/docs/pono/offering"
 
 `verifyPluginOffering` checks the signature over the offering's own bytes AND folds the blobs back through `computePluginsCid` — the same function the genesis bake runs. Both halves fail closed. A signed offering whose blobs fold elsewhere refuses; the signature never stands in for the fold. `verifiedPluginOfferingsFromDoc` repeats this certification after the shape filter has run over a public board.
 
-<<~ has Built Record "at/plugin-offering.ts:36-45 carries/kind·offeror·pluginsCid·blobs·sig ~ ONE signature, no steward set (operator ruling, dcec1ef0b)">>
-<<~ has Built Verify "at/plugin-offering.ts:76-92 does/signature-over-own-bytes AND blobs-fold-to-declared-region ~ fail-closed in both halves">>
-<<~ has Built Antigen "at/offering-antigen.ts does/fold VERIFIED causal quorum acts into held·withdrawn·unsettled·unavailable or no verdict ~ audit records retain rejected candidates, and the fold carries NO presentations">>
-<<~ has Built Presentation "at/offering-antigen.ts does/a tender says what it noticed ~ zero threshold weight; five honest presentations move a verdict exactly as far as none">>
-<<~ has Built Domains "at/domains.ts:133,142,150 holds/plugin-offering ⊥ offering-presentation ⊥ offering-kapae ~ a signature over one can never verify as another">>
+<<~ has entity=`Built` name=`Record` params=`at/plugin-offering.ts:36-45 carries/kind·offeror·pluginsCid·blobs·sig ~ ONE signature, no steward set (operator ruling, dcec1ef0b)`>>
+<<~ has entity=`Built` name=`Verify` params=`at/plugin-offering.ts:76-92 does/signature-over-own-bytes AND blobs-fold-to-declared-region ~ fail-closed in both halves`>>
+<<~ has entity=`Built` name=`Antigen` params=`at/offering-antigen.ts does/fold VERIFIED causal quorum acts into held·withdrawn·unsettled·unavailable or no verdict ~ audit records retain rejected candidates, and the fold carries NO presentations`>>
+<<~ has entity=`Built` name=`Presentation` params=`at/offering-antigen.ts does/a tender says what it noticed ~ zero threshold weight; five honest presentations move a verdict exactly as far as none`>>
+<<~ has entity=`Built` name=`Domains` params=`at/domains.ts:133,142,150 holds/plugin-offering ⊥ offering-presentation ⊥ offering-kapae ~ a signature over one can never verify as another`>>
 
 !!! The immune half stands READY, not live
 
@@ -85,14 +84,14 @@ The offering record stands immutable and content-addressed; no scalar currentnes
 
 !!! What stands HELD
 
-<<~ has Held PublishApply "the mesh mint + announcement exist, but source-local `publish plugins --apply` has no caller">>
-<<~ has Held Take "no bounded read-only `kahuli grammar --from <offering CID>` reader exists">>
-<<~ has Held Consultant "no receiver-local consultant/enforcement input contract or cap placement has been selected">>
-<<~ has Held Vessels "Node/Web and Docker multi-vessel replication, partition, rejoin, and custody story remains unclaimed">>
+<<~ has entity=`Held` name=`PublishApply` params=```the mesh mint + announcement exist, but source-local `publish plugins --apply` has no caller```>>
+<<~ has entity=`Held` name=`Take` params=```no bounded read-only `kahuli grammar --from <offering CID>` reader exists```>>
+<<~ has entity=`Held` name=`Consultant` params=`no receiver-local consultant/enforcement input contract or cap placement has been selected`>>
+<<~ has entity=`Held` name=`Vessels` params=`Node/Web and Docker multi-vessel replication, partition, rejoin, and custody story remains unclaimed`>>
 
 <<~/ahu>>
 
-<<~ ahu #/the-field>>
+<<~ ahu slot=`#/the-field`>>
 
 !! The field — what the outside built, and which half of it we may take
 
@@ -118,9 +117,9 @@ Every row carries a quote, a link and an as-of date. The discipline: ''weight th
 
 ''The Update Framework'' (https://theupdateframework.io/docs/security/, https://github.com/theupdateframework/specification, accessed 2026-09-13) names the three attacks a signature alone never answers (quote license):
 
-<<~ has Attack Rollback "TUF: 'An attacker presents files to a software update system that are older than those the client has already seen.'">>
-<<~ has Attack Freeze "TUF: 'An attacker continues to present files to a software update system [that] the client has already seen. As a result, the client is kept unaware of new files.'">>
-<<~ has Attack Mix-and-match "TUF: 'An attacker presents clients with a view of a repository that includes files that did not exist there together at the same time.'">>
+<<~ has entity=`Attack` name=`Rollback` params=`TUF: 'An attacker presents files to a software update system that are older than those the client has already seen.'`>>
+<<~ has entity=`Attack` name=`Freeze` params=`TUF: 'An attacker continues to present files to a software update system [that] the client has already seen. As a result, the client is kept unaware of new files.'`>>
+<<~ has entity=`Attack` name=`Mix-and-match` params=`TUF: 'An attacker presents clients with a view of a repository that includes files that did not exist there together at the same time.'`>>
 
 TUF answers them with FOUR roles at thresholds — root · targets · snapshot · timestamp — and defines a threshold as //"A positive integer number of keys (>=1) of that role whose signatures are required in order to consider a file as being properly signed by that role."// ''The house has a snapshot role and no timestamp role'' (#/security).
 
@@ -138,15 +137,15 @@ And the house's own prior scout already measured the ceiling: ''no live system s
 
 !!! ⑥ The incident record — the anti-patterns, dated
 
-<<~ has Incident xz-backdoor "2024-03-29 · CVE-2024-3094 · a co-maintainer cultivated over ~2 years shipped a backdoor in the RELEASE TARBALL, not the git tree. Andres Freund, oss-security: 'The upstream xz repository and the xz tarballs have been backdoored.' https://www.openwall.com/lists/oss-security/2024/03/29/4 ~ THE TRUSTED-MAINTAINER FAILURE">>
-<<~ has Incident left-pad "2016-03-22 · an author unpublished 273 packages after a naming dispute and broke the ecosystem's builds within hours; the registry then republished from backup without consent. https://en.wikipedia.org/wiki/Npm_left-pad_incident ~ THE WITHDRAWAL FAILURE">>
-<<~ has Incident PyPI-typosquat "2024-03-28 · 500+ automated typosquat uploads mimicking requests · TensorFlow · BeautifulSoup forced PyPI to suspend new-user registration and project creation for ~10 hours. https://thehackernews.com/2024/03/pypi-halts-sign-ups-amid-surge-of.html ~ THE NAME-RESOLUTION FAILURE">>
-<<~ has Incident Shai-Hulud "2025-09-15 · the first self-propagating npm worm: a post-install script harvested npm tokens · GitHub PATs · cloud credentials and auto-republished every package the stolen tokens could reach, downstream of the s1ngularity/Nx CI token theft. https://www.wiz.io/blog/shai-hulud-npm-supply-chain-attack ~ THE TAKEOVER-AT-SCALE FAILURE, and the one that argues hardest for a pull-ratchet">>
-<<~ has Incident dependency-confusion "2021-02-09 · Alex Birsan: a public package published under an organisation's INTERNAL name at a higher version wins the resolver and enters internal builds. ⚠ Medium refused automated fetch (HTTP 403) — the mechanism reads corroborated by Snyk · Sonatype · OWASP CICD-SEC-3, the VERBATIM stands UNVERIFIED and this carrier quotes none.">>
+<<~ has entity=`Incident` name=`xz-backdoor` params=`2024-03-29 · CVE-2024-3094 · a co-maintainer cultivated over ~2 years shipped a backdoor in the RELEASE TARBALL, not the git tree. Andres Freund, oss-security: 'The upstream xz repository and the xz tarballs have been backdoored.' https://www.openwall.com/lists/oss-security/2024/03/29/4 ~ THE TRUSTED-MAINTAINER FAILURE`>>
+<<~ has entity=`Incident` name=`left-pad` params=`2016-03-22 · an author unpublished 273 packages after a naming dispute and broke the ecosystem's builds within hours; the registry then republished from backup without consent. https://en.wikipedia.org/wiki/Npm_left-pad_incident ~ THE WITHDRAWAL FAILURE`>>
+<<~ has entity=`Incident` name=`PyPI-typosquat` params=`2024-03-28 · 500+ automated typosquat uploads mimicking requests · TensorFlow · BeautifulSoup forced PyPI to suspend new-user registration and project creation for ~10 hours. https://thehackernews.com/2024/03/pypi-halts-sign-ups-amid-surge-of.html ~ THE NAME-RESOLUTION FAILURE`>>
+<<~ has entity=`Incident` name=`Shai-Hulud` params=`2025-09-15 · the first self-propagating npm worm: a post-install script harvested npm tokens · GitHub PATs · cloud credentials and auto-republished every package the stolen tokens could reach, downstream of the s1ngularity/Nx CI token theft. https://www.wiz.io/blog/shai-hulud-npm-supply-chain-attack ~ THE TAKEOVER-AT-SCALE FAILURE, and the one that argues hardest for a pull-ratchet`>>
+<<~ has entity=`Incident` name=`dependency-confusion` params=`2021-02-09 · Alex Birsan: a public package published under an organisation's INTERNAL name at a higher version wins the resolver and enters internal builds. ⚠ Medium refused automated fetch (HTTP 403) — the mechanism reads corroborated by Snyk · Sonatype · OWASP CICD-SEC-3, the VERBATIM stands UNVERIFIED and this carrier quotes none.`>>
 
 <<~/ahu>>
 
-<<~ ahu #/the-gift>>
+<<~ ahu slot=`#/the-gift`>>
 
 !! The gift — the cultural frame the operator named, and what it does NOT supply
 
@@ -162,8 +161,8 @@ And the house's own prior scout already measured the ceiling: ''no live system s
 
 ''The Kula supplies the true shape, and that shape runs as CIRCULATION rather than transfer.'' Malinowski (//Argonauts of the Western Pacific//, 1922, quote license): //"It seems almost incredible at first, but it is the fact, nevertheless, that no one ever keeps any of the Kula valuables for any length of time."// Mauss's own paraphrase (p.28): //"The recipients of one day become the givers on the next."// ''The `carry` cap enacts exactly that'' — a Herm re-sharing a collection it never authored, and a taker who re-folds a collection becoming the next offeror (#/the-caps).
 
-<<~ has Failure Obligates "the gift that BINDS ~ potlatch: Mauss, p.8 (quote license) — 'the principle of rivalry and hostility that prevails in all these practices … the purely sumptuary destruction of wealth that has been accumulated in order to outdo the rival chief'. A gift whose ACCEPTANCE creates a debt. THE HOUSE'S ANSWER: a taker does nothing by being announced at — an offering reaches no disk until the receiver's own ratchet fires (#/apply MUST NOT ②③)">>
-<<~ has Failure Captures "the gift that TAKES ~ Virgil, Aeneid II (~49), quote license: 'Equō nē crēdite, Teucrī! Quidquid id est, timeō Danaōs et dōna ferentēs' — 'Do not trust the horse, Trojans! Whatever it is, I fear the Danaans, even when bringing gifts.' THE HOUSE'S ANSWER: partial — recompute proves the COMPOSITION and never the CONTENT (#/security, the takeover row). The horse recomputes perfectly.">>
+<<~ has entity=`Failure` name=`Obligates` params=`the gift that BINDS ~ potlatch: Mauss, p.8 (quote license) — 'the principle of rivalry and hostility that prevails in all these practices … the purely sumptuary destruction of wealth that has been accumulated in order to outdo the rival chief'. A gift whose ACCEPTANCE creates a debt. THE HOUSE'S ANSWER: a taker does nothing by being announced at — an offering reaches no disk until the receiver's own ratchet fires (#/apply MUST NOT ②③)`>>
+<<~ has entity=`Failure` name=`Captures` params=`the gift that TAKES ~ Virgil, Aeneid II (~49), quote license: 'Equō nē crēdite, Teucrī! Quidquid id est, timeō Danaōs et dōna ferentēs' — 'Do not trust the horse, Trojans! Whatever it is, I fear the Danaans, even when bringing gifts.' THE HOUSE'S ANSWER: partial — recompute proves the COMPOSITION and never the CONTENT (#/security, the takeover row). The horse recomputes perfectly.`>>
 
 !!! ★ THE CROSS-DOMAIN ECHO, AND IT LANDS IN OUR OWN FIELD ★
 
@@ -171,16 +170,16 @@ And the house's own prior scout already measured the ceiling: ''no live system s
 
 !!! And the golden principles the frame sits under
 
-<<~ has Principle Capability "Dennis & Van Horn, CACM 9(3), March 1966, p.145 (quote license): 'we think of a computation as proceeding within some sphere of protection specified by a list of capabilities … Each capability in a C-list locates by means of a pointer some computing object, and indicates the actions that the computation may perform with respect to that object.' ~ designation and permission FUSED in one token — which is what a CID does for bytes">>
-<<~ has Principle Least-privilege "Saltzer & Schroeder, Proc. IEEE 63(9), September 1975 (quote license): 'Every program and every user of the system should operate using the least set of privileges necessary to complete the job.' ~ `offer` grants nothing; `carry` grants bytes the world may already ask for; `witness` grants an order claim">>
-<<~ has Principle POLA "Miller, Robust Composition, JHU 2006, p.16 (quote license): 'The Principle of Least Authority (POLA) recommends that you grant each program only the authority it needs to do its job … If Solitaire only needs such limited authority, why does it get all of your authority?' ~ an announce that installs hands a stranger the receiver's whole authority">>
-<<~ has Principle Zooko "Wilcox-O'Hearn, 2001 (archived, quote license): 'you cannot have a namespace which is all three of: 1. decentralized … 2. secure … 3. using human-memorizable keys.' Stiegler's petnames split the three across three name-types: 'Though no single name can have all three properties, the petname system does indeed embody all three properties.' ~ the CID takes secure+decentralized; the reader's own petname supplies the third, locally (#/anti-roster)">>
+<<~ has entity=`Principle` name=`Capability` params=`Dennis & Van Horn, CACM 9(3), March 1966, p.145 (quote license): 'we think of a computation as proceeding within some sphere of protection specified by a list of capabilities … Each capability in a C-list locates by means of a pointer some computing object, and indicates the actions that the computation may perform with respect to that object.' ~ designation and permission FUSED in one token — which is what a CID does for bytes`>>
+<<~ has entity=`Principle` name=`Least-privilege` params=```Saltzer & Schroeder, Proc. IEEE 63(9), September 1975 (quote license): 'Every program and every user of the system should operate using the least set of privileges necessary to complete the job.' ~ `offer` grants nothing; `carry` grants bytes the world may already ask for; `witness` grants an order claim```>>
+<<~ has entity=`Principle` name=`POLA` params=`Miller, Robust Composition, JHU 2006, p.16 (quote license): 'The Principle of Least Authority (POLA) recommends that you grant each program only the authority it needs to do its job … If Solitaire only needs such limited authority, why does it get all of your authority?' ~ an announce that installs hands a stranger the receiver's whole authority`>>
+<<~ has entity=`Principle` name=`Zooko` params=`Wilcox-O'Hearn, 2001 (archived, quote license): 'you cannot have a namespace which is all three of: 1. decentralized … 2. secure … 3. using human-memorizable keys.' Stiegler's petnames split the three across three name-types: 'Though no single name can have all three properties, the petname system does indeed embody all three properties.' ~ the CID takes secure+decentralized; the reader's own petname supplies the third, locally (#/anti-roster)`>>
 
 ⚠ ''One attribution the carrier declines to make.'' The term //ambient authority// reads as Miller's and Tribble's by wide attestation, and the spirit could not pin a defining verbatim sentence in the thesis (erights.org and cap-lore.com refused fetch). ''The house uses the concept and quotes no definition for it.''
 
 <<~/ahu>>
 
-<<~ ahu #/the-caps>>
+<<~ ahu slot=`#/the-caps`>>
 
 !! The caps — three that carry, one that plants
 
@@ -190,9 +189,9 @@ And the house's own prior scout already measured the ceiling: ''no live system s
 
 ''OPEN, unruled:'' the Lamplighter face's ruled cap stack reads `carry` · `tend/island` · `tend/reach` (`membership-doctrine.mem` #/the-two-stacks); whether `offer` and `witness` join that stack, fold under `tend/*`, or stand as acts outside any face waits on the operator.
 
-<<~ has Cap offer "verb/sign-and-announce subject/an immutable signed offering record, by its complete offering CID holder/ANY vessel with a signing hand + the crossroads plane grants/nothing to anyone else ratchets/NOTHING reaches/the offeror's own additive announce record">>
-<<~ has Cap carry "verb/re-share subject/the BLOBS an announced offering names, by hash holder/a Herm, or any vessel lighting the rhizome cap grants/bytes the world may already ask any hearth for ratchets/NOTHING reaches/no read-cap, no persona, no verdict">>
-<<~ has Cap witness "verb/append subject/announcements — WHO announced WHICH region, in WHAT ORDER holder/any vessel that keeps a log grants/a checkable order claim ratchets/NOTHING reaches/no verdict; monitors condemn, the log never does">>
+<<~ has entity=`Cap` name=`offer` params=`verb/sign-and-announce subject/an immutable signed offering record, by its complete offering CID holder/ANY vessel with a signing hand + the crossroads plane grants/nothing to anyone else ratchets/NOTHING reaches/the offeror's own additive announce record`>>
+<<~ has entity=`Cap` name=`carry` params=`verb/re-share subject/the BLOBS an announced offering names, by hash holder/a Herm, or any vessel lighting the rhizome cap grants/bytes the world may already ask any hearth for ratchets/NOTHING reaches/no read-cap, no persona, no verdict`>>
+<<~ has entity=`Cap` name=`witness` params=`verb/append subject/announcements — WHO announced WHICH region, in WHAT ORDER holder/any vessel that keeps a log grants/a checkable order claim ratchets/NOTHING reaches/no verdict; monitors condemn, the log never does`>>
 
 ''`offer` composes from parts the house already holds.'' The mint (`signPluginOffering`) takes the signing hand as a parameter, so the cap rides the ''vessel's own key'' and reaches no seed. The announcement carries the complete signed record under its own content CID. ''A Place may hold it'' — `heraldry.mem` #/the-herm-card already seats a card owned by a Place DID with no persona root, so a faceless crossroads offering its own collection breaks nothing (#/questions Q6).
 
@@ -207,7 +206,7 @@ And the house's own prior scout already measured the ceiling: ''no live system s
 
 !!! ★ THE KAHU SET — one verb, the ONLY door that installs ★
 
-<<~ has Cap kahuli-grammar "verb/RATCHET subject/this hearth's grammarCid holder/the operator's OWN hand, at the receiving hearth does/recompute the region · verify the sig against the offeror's published Handle · THEN bake and bind ratchets/YES — this is the ratchet reaches/this hearth and the peers that follow it">>
+<<~ has entity=`Cap` name=`kahuli-grammar` params=`verb/RATCHET subject/this hearth's grammarCid holder/the operator's OWN hand, at the receiving hearth does/recompute the region · verify the sig against the offeror's published Handle · THEN bake and bind ratchets/YES — this is the ratchet reaches/this hearth and the peers that follow it`>>
 
 ''The proposed spelling'': `lares nexus kahuli grammar --from <offering-cid> --apply`. The CLI accepts no such command. The read-only `--from` contract and its relationship to the generic PluginOffering gift remain operator-held; any future `--apply` payload stays a separate receiver-held action rather than an offer-side effect.
 
@@ -225,15 +224,15 @@ The operator's charge already granted the overlap: //"not kahu, tho many may hol
 
 ''MUST NOT FUSE — the one forbidden composition'': ''an act that offers and installs in the same breath, for anyone but its own vessel.'' That shape has a name in the field and the field named it the wrong way round — it reads as AUTO-UPDATE, and `engine-watch` already ruled against it in this house: alert-only, never auto-reboot, ''the operator holds the reboot cap'' (memory `project_nexus_identity_kahuli_onboarding`, model A). ''A push-install turns one stolen key into a fleet'' — exactly the Shai-Hulud shape (#/the-field ⑥).
 
-<<~moves an-offering -> ANNOUNCED on/the-crossroads-plane by/the-offeror's-own-hand ~ reaches no other vessel's disk>>
-<<~moves an-offering -> INSTALLED on/the-receiving-hearth by/the-RECEIVER's-own-hand if/the-region-recomputes ~ one operator at a time, always>>
-<<~moves offer+install -> REFUSED on/any-vessel-but-one's-own ~ the fusion IS push, and push IS the takeover's amplifier>>
+<<~moves name=`an-offering` params=`ANNOUNCED on/the-crossroads-plane by/the-offeror's-own-hand ~ reaches no other vessel's disk`>>
+<<~moves name=`an-offering` params=`INSTALLED on/the-receiving-hearth by/the-RECEIVER's-own-hand if/the-region-recomputes ~ one operator at a time, always`>>
+<<~moves name=`offer+install` params=`REFUSED on/any-vessel-but-one's-own ~ the fusion IS push, and push IS the takeover's amplifier`>>
 
 ''The structural guarantee, so the fusion cannot arrive by accident'': the two live in ''different packages with different reach''. `offer` composes in `@lararium/mesh` where every vessel holding the cap can mint one (commit `dcec1ef0b`); the ratchet's re-derive runs as the node-bound genesis bake (`nexus-publish.ts:41-47` states why the region read stays node-bound). ''A mesh module cannot bake an island'' — some hand would have to write the fusion on purpose, at a third site, and mean it.
 
 <<~/ahu>>
 
-<<~ ahu #/security>>
+<<~ ahu slot=`#/security`>>
 
 !! The security table — every attack, the house's answer, and the gaps
 
@@ -257,8 +256,8 @@ Read the ''Gap'' column first. Four rows answer structurally, two answer partial
 
 Against that class exactly two things help. ''First'': a human decides, per hearth, per act — which a future bounded `kahuli grammar --from <offering CID>` reader may report, subject to the grammar-ratchet contract still held by the operator. ''Second'': a quorum can set a region aside after the fact — the causal antigen's work, ready for a receiver-local consult but not wired to any receiver yet. ''Everything else in the stack amounts to hygiene.''
 
-<<~moves --apply -> MUST-NOT-INSTALL on/the-takeover-row ~ a push-install converts one stolen key into every follower's disk>>
-<<~moves the-antigen -> OWES-A-CALLER on/the-takeover-row ~ causally folded, tested, and consulted by no production receiver yet>>
+<<~moves name=`--apply` params=`MUST-NOT-INSTALL on/the-takeover-row ~ a push-install converts one stolen key into every follower's disk`>>
+<<~moves name=`the-antigen` params=`OWES-A-CALLER on/the-takeover-row ~ causally folded, tested, and consulted by no production receiver yet`>>
 
 !!! And one honest note on what an offering does NOT carry
 
@@ -266,7 +265,7 @@ Against that class exactly two things help. ''First'': a human decides, per hear
 
 <<~/ahu>>
 
-<<~ ahu #/apply>>
+<<~ ahu slot=`#/apply`>>
 
 !! `--apply` — what it MUST do, and what it MUST NOT
 
@@ -295,7 +294,7 @@ The CLI verb remains HELD. This section bounds the source-local `publish plugins
 
 <<~/ahu>>
 
-<<~ ahu #/anti-roster>>
+<<~ ahu slot=`#/anti-roster`>>
 
 !! The anti-roster proof — the Handle's KEL and the recompute carry the whole trust
 
@@ -313,10 +312,10 @@ The CLI verb remains HELD. This section bounds the source-local `publish plugins
 
 Run the registry filter mechanically (memory `project_registry_filter_law.md`): ''announced-BY-the-subject · replicated causally · read as-of-last-sync = CARRIAGE → passes''; ''compiled-ABOUT-subjects · authoritative-now · enumerable = REGISTRY → rejected at any scope.''
 
-<<~ has Filter Announce "announced-by/the offeror's own signed record replicated/causally onto each peer's crossroads replica read/as-of-last-sync ~ CARRIAGE, PASSES">>
-<<~ has Filter Witness "announced-by/the subject, appended in ORDER keyed-on/the offering cid, never the offeror read/as-of-last-sync ~ a future witness may pass; the current announcement carries no order claim">>
-<<~ has Filter Index "an INDEX cap over the announce plane ~ PASSES ONLY IF reconstructible + non-authoritative (memory project_nexus_identity_kahuli_onboarding, discovery layer 2: 'carriage, not a registry')">>
-<<~ has Filter Store "a curated list of blessed offerors, at ANY scope, even ONE Nexus ~ REGISTRY, REJECTED">>
+<<~ has entity=`Filter` name=`Announce` params=`announced-by/the offeror's own signed record replicated/causally onto each peer's crossroads replica read/as-of-last-sync ~ CARRIAGE, PASSES`>>
+<<~ has entity=`Filter` name=`Witness` params=`announced-by/the subject, appended in ORDER keyed-on/the offering cid, never the offeror read/as-of-last-sync ~ a future witness may pass; the current announcement carries no order claim`>>
+<<~ has entity=`Filter` name=`Index` params=`an INDEX cap over the announce plane ~ PASSES ONLY IF reconstructible + non-authoritative (memory project_nexus_identity_kahuli_onboarding, discovery layer 2: 'carriage, not a registry')`>>
+<<~ has entity=`Filter` name=`Store` params=`a curated list of blessed offerors, at ANY scope, even ONE Nexus ~ REGISTRY, REJECTED`>>
 
 !!! ★ THE TWO OBJECTIONS, ANSWERED ★
 
@@ -330,7 +329,7 @@ Run the registry filter mechanically (memory `project_registry_filter_law.md`): 
 
 <<~/ahu>>
 
-<<~ ahu #/pattern-integrity-rhymes>>
+<<~ ahu slot=`#/pattern-integrity-rhymes`>>
 
 !! Pattern-integrity rhymes — where the field already landed on our shape
 
@@ -353,7 +352,7 @@ Independent fields under their own selection pressure each landed on a piece. Th
 
 <<~/ahu>>
 
-<<~ ahu #/plan>>
+<<~ ahu slot=`#/plan`>>
 
 !! The closure queue — red → cure → CONTROL
 
@@ -412,7 +411,7 @@ an ordered announce claim, or a receiver caller by implication.
 
 <<~/ahu>>
 
-<<~ ahu #/questions>>
+<<~ ahu slot=`#/questions`>>
 
 !! Questions only the operator answers
 
@@ -427,7 +426,7 @@ an ordered announce claim, or a receiver caller by implication.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges — what this design touches, and what it must not
 
@@ -435,34 +434,34 @@ an ordered announce claim, or a receiver caller by implication.
 
 ''What it MUST NOT move'': `verifyPluginOffering`'s one-record input — no roster, ever · the antigen fold's separation of presentations from quorum acts · `PluginOffering`'s absence of a scalar currentness field and co-signer · `computePluginsCid`'s single fold definition — mint and verify MUST NOT drift · public shape filtering before independent certification · the `@daemon` plane, which never crosses.
 
-<<~ pranala #door from="?" -> to="packages/lares-cli/src/commands/nexus-publish.ts" family="code" role="has">>
-<<~ pranala #record from="?" -> to="packages/lararium-mesh/src/plugin-offering.ts" family="code" role="has">>
-<<~ pranala #antigen from="?" -> to="packages/lararium-mesh/src/offering-antigen.ts" family="code" role="has">>
-<<~ pranala #ratchet from="?" -> to="packages/lares-cli/src/commands/nexus-kahuli.ts" family="code" role="has">>
-<<~ pranala #fold from="?" -> to="packages/lararium-mesh/src/genesis-doc.ts" family="code" role="has">>
-<<~ pranala #announce from="?" -> to="packages/lararium-mesh/src/offering-announce.ts" family="code" role="has">>
-<<~ pranala #shore from="?" -> to="packages/lararium-node/src/bulb-read-face.ts" family="code" role="has">>
+<<~ pranala slot=`#door` from=`?` to=`packages/lares-cli/src/commands/nexus-publish.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#record` from=`?` to=`packages/lararium-mesh/src/plugin-offering.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#antigen` from=`?` to=`packages/lararium-mesh/src/offering-antigen.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#ratchet` from=`?` to=`packages/lares-cli/src/commands/nexus-kahuli.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#fold` from=`?` to=`packages/lararium-mesh/src/genesis-doc.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#announce` from=`?` to=`packages/lararium-mesh/src/offering-announce.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#shore` from=`?` to=`packages/lararium-node/src/bulb-read-face.ts` family=`code` role=`has`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/heraldry">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lamplighters`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/vessel-caps`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/genesis-doc`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/identity-classes`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/handle-card`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/nexus-topology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/attestation-plane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/siege-resilience`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/heraldry`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/registry-filter`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yWZd_gGuJ5Uu0b0qmXps5S2pxvdz98zMO2JTIyL_YgE
+<<^ code=`&#x0003;`>>ni:///sha-256;Laa_3O1bUwbiF4NcpryW3W1ojSQ7jwZ_y42BylE5DMk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

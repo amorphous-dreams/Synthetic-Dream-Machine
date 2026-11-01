@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-field-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-field-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-port-field-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -21,7 +20,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-port-field-scout"
 written           = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The field around D2 ~ a spirit's handoff, held unedited
 
@@ -33,12 +32,12 @@ written           = "2026-10-16"
 
 <<~/ahu>>
 
-<<~ ahu #/the-handoff>>
+<<~ ahu slot=`#/the-handoff`>>
 
 !! The handoff, verbatim
 
 ````markdown
-<<~ status "D2 field review: useful precedents found; some requested systems and failure histories remain unverified">>
+<<~ status text=`D2 field review: useful precedents found; some requested systems and failure histories remain unverified`>>
 
 ## 1. Prior art
 
@@ -83,18 +82,18 @@ Firestore listeners send an initial snapshot and subsequent updates; local-cache
 4. Define tombstone retention and the recovery path for subscribers that fall behind. [reached: fetched https://docs.couchdb.org/en/stable/api/database/changes.html] //(inferred)//
 5. Decide the presence lane and specify refresh, reconnect state, and disconnect cleanup. [reached: fetched https://docs.yjs.dev/api/about-awareness] //(inferred)//
 
-<<~ lares yield -> to="controller">>
+<<~ set lares=`yield` to=`controller`>>
 ````
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;F4n9KsbkfDrBNq7yNJyl95uH5bdtuuHwa6mcMTKwxuQ
+<<^ code=`&#x0003;`>>ni:///sha-256;OkuYNlv8Ijgb7klHobT7S_6ozjQ9ohIIXlNNwLXsSQQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

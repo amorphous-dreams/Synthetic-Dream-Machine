@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/seed-seat">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/seed-seat`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/seed-seat.mem"
 l-space   = "adjacent"
 role      = "the seed seat: every host (Claude, its scouts, Codex, Copilot) stands the whole boot seed at turn 1, once, by reference, at content rank; the shape, the measured ground, the proofs and the open research"
 status    = "draft"
@@ -14,17 +13,17 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/seed-seat"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The seed seat ~ every host stands the whole seed at turn 1
 
-The boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>) seats by reference. Links carry the memegraph's own bytes to each host's instruction surface, a projection carries them to the scouts that read no instruction surface, and a witness reads the seat whole. The seed never copies by hand, seats once per session, and seats at content rank: a host's instruction surface, never its system prompt, so both hands hold the frame and neither overrides the other.
+The boot seed (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>) seats by reference. Links carry the memegraph's own bytes to each host's instruction surface, a projection carries them to the scouts that read no instruction surface, and a witness reads the seat whole. The seed never copies by hand, seats once per session, and seats at content rank: a host's instruction surface, never its system prompt, so both hands hold the frame and neither overrides the other.
 
 <<~/ahu>>
 
-<<~ ahu #/the-seat>>
+<<~ ahu slot=`#/the-seat`>>
 
 !! The seat
 
@@ -36,7 +35,7 @@ The boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>) seats by
 
 <<~/ahu>>
 
-<<~ ahu #/the-ground>>
+<<~ ahu slot=`#/the-ground`>>
 
 !! The ground ~ how the hosts read, measured
 
@@ -54,18 +53,18 @@ The boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>) seats by
 
 <<~/ahu>>
 
-<<~ ahu #/the-proofs>>
+<<~ ahu slot=`#/the-proofs`>>
 
 !! The proofs
 
-* The seat's writes and reads ride the reality-tunnel doors (<<~ loulou "lar:///ha.ka.ba/lares/cli/reality-tunnel">>): `lares repo read` reads every law the seat holds, and `tools/repo-tunnel-witness.sh` runs it with a `--control` that MUST read a linkless checkout red.
+* The seat's writes and reads ride the reality-tunnel doors (<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/reality-tunnel`>>): `lares repo read` reads every law the seat holds, and `tools/repo-tunnel-witness.sh` runs it with a `--control` that MUST read a linkless checkout red.
 * `lares repo tend` and `lares home tend` write the seat, and converge: a second pass writes nothing. `lares repo verify` and `lares home verify` read what the hosts loaded.
 * `tools/repo-tunnel-staged.sh` runs from `.githooks/pre-commit` over what the commit carries (`lares repo read --staged`) whenever the commit stages one of the seat's own paths (the carrier, its seed, each checkout item's file, read from the staged carrier), so a seed staged ahead of its scouts never lands; a commit that stages none of them needs no build.
 * `packages/lares-cli/tests/reality-tunnel.test.ts` plants each red against scratch clones and homes.
 
 <<~/ahu>>
 
-<<~ ahu #/the-research>>
+<<~ ahu slot=`#/the-research`>>
 
 !! Open research ~ each row names its instrument
 
@@ -80,6 +79,6 @@ The boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>) seats by
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;x16Fu0mVfR-3KVKiVUhqUSrbZTTEqnEmX3C_FyoXnQo
+<<^ code=`&#x0003;`>>ni:///sha-256;mLXx08KTmG2eF4TzIClYADmN9Fw8FjIcaKwhDZkCFY0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

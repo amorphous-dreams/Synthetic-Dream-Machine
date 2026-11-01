@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/mu">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/mu`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/mu.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Mu Docs
 
@@ -30,7 +29,7 @@ This shelf holds interpretive docs, witness bundles, and condensed research behi
 
 <<~/ahu>>
 
-<<~ ahu #/tree>>
+<<~ ahu slot=`#/tree`>>
 
 !! Tree
 
@@ -44,7 +43,7 @@ Use this branch for:
 
 <<~/ahu>>
 
-<<~ ahu #/sigil-arrival>>
+<<~ ahu slot=`#/sigil-arrival`>>
 
 !! The Sigils Teach by Arrival
 
@@ -61,18 +60,18 @@ AST reader: read the sockets, then route.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/the-four-tools">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/model-agnosticism">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/reality-tunnels">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/mu/the-four-tools`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/mu/model-agnosticism`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/mu/reality-tunnels`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wHa4cOO2N-k4g3tBDVSY5qzK-2wb2EMgn70Twyd-SkQ
+<<^ code=`&#x0003;`>>ni:///sha-256;ffMJJda2kpMn4oHbMFXox8KDQZ3PTLx8ZwdBguciXRU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

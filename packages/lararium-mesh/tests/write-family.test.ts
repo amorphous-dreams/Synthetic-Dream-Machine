@@ -21,7 +21,7 @@ function seeded(): Promise<{ store: AutomergeDocStore; changes: () => number; do
   const handle = repo.create<LarDoc>(emptyLarDoc());
   const store = new AutomergeDocStore(handle, "bag-f");
   return (async () => {
-    await store.put(rec(ROOT, "<<~ kahea ahu #/old>>"), origin);
+    await store.put(rec(ROOT, "<<~ kahea ahu slot=`#/old`>>"), origin);
     await store.put(rec(`${ROOT}#/old`, "old"), origin);
     return { store, changes: () => getAllChanges(handle.doc()!).length, doc: () => handle.doc()! };
   })();
@@ -32,10 +32,10 @@ describe("★ a meme family lands as ONE change ★", () => {
     const { store, changes, doc } = await seeded();
     const before = changes();
 
-    await store.writeFamily([rec(ROOT, "<<~ kahea ahu #/new>>"), rec(`${ROOT}#/new`, "fresh")], [`${ROOT}#/old`], origin);
+    await store.writeFamily([rec(ROOT, "<<~ kahea ahu slot=`#/new`>>"), rec(`${ROOT}#/new`, "fresh")], [`${ROOT}#/old`], origin);
 
     expect(changes() - before).toBe(1);
-    expect(tiddlerText(doc().tiddlers[ROOT])).toBe("<<~ kahea ahu #/new>>");
+    expect(tiddlerText(doc().tiddlers[ROOT])).toBe("<<~ kahea ahu slot=`#/new`>>");
     expect(tiddlerText(doc().tiddlers[`${ROOT}#/new`])).toBe("fresh");
     expect(doc().tiddlers[`${ROOT}#/old`]!.meta?.deleted).toBe(true);
   });
@@ -45,7 +45,7 @@ describe("★ a meme family lands as ONE change ★", () => {
     const seen: string[] = [];
     store.subscribe((c) => seen.push(`${c.record?.meta?.deleted ? "tombstone" : "put"} ${c.title}`));
 
-    await store.writeFamily([rec(ROOT, "<<~ kahea ahu #/new>>"), rec(`${ROOT}#/new`, "fresh")], [`${ROOT}#/old`], origin);
+    await store.writeFamily([rec(ROOT, "<<~ kahea ahu slot=`#/new`>>"), rec(`${ROOT}#/new`, "fresh")], [`${ROOT}#/old`], origin);
 
     expect(seen).toEqual([`put ${ROOT}`, `put ${ROOT}#/new`, `tombstone ${ROOT}#/old`]);
   });
@@ -53,7 +53,7 @@ describe("★ a meme family lands as ONE change ★", () => {
   test("CONTROL — a family whose content already stands makes no change at all", async () => {
     const { store, changes } = await seeded();
     const before = changes();
-    await store.writeFamily([rec(ROOT, "<<~ kahea ahu #/old>>"), rec(`${ROOT}#/old`, "old")], [], origin);
+    await store.writeFamily([rec(ROOT, "<<~ kahea ahu slot=`#/old`>>"), rec(`${ROOT}#/old`, "old")], [], origin);
     expect(changes()).toBe(before);
   });
 

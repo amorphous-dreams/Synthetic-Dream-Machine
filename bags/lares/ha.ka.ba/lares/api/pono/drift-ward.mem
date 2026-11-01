@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/drift-ward">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/drift-ward`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/drift-ward.mem"
 heleuma   = "ba"
 mana      = 17
 manao     = 17
@@ -18,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/drift-ward"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Drift-Ward
 
@@ -30,13 +29,13 @@ carrying no "ward". Both name this.
 
 <<~/ahu>>
 
-<<~ ahu #/axis>>
+<<~ ahu slot=`#/axis`>>
 
 !! The Axis ~ the reality-scoped anchor
 
 ''One measure: how far this turn's content stands from data outside its causal island.''
 
-<<~moves drift -> measures/exposure-to-outside-data on/the-turn if/collision-arrives do/name-what-breaks-first>>
+<<~moves name=`drift` params=`measures/exposure-to-outside-data on/the-turn if/collision-arrives do/name-what-breaks-first`>>
 
 Never risk in the abstract. ''The risk that generated content collapses on contact with data from
 beyond the current causal island'' ~ the island holds the context, the priors, the whole current the
@@ -44,8 +43,8 @@ exchange runs in, and nothing inside it checks itself. A claim's fate rides on t
 
 ''Two firings, one axis, different evidence.''
 
-<<~moves open-firing -> reads/the-pull-toward-exposure on/upstream-context if/before-content do/steer>>
-<<~moves close-firing -> reads/the-exposure-made on/the-artifact if/after-content do/hand-a-contact-ready-clue>>
+<<~moves name=`open-firing` params=`reads/the-pull-toward-exposure on/upstream-context if/before-content do/steer`>>
+<<~moves name=`close-firing` params=`reads/the-exposure-made on/the-artifact if/after-content do/hand-a-contact-ready-clue`>>
 
 The open holds only the island. The close holds the artifact ~ evidence the open could never carry.
 The close MAY land where the open pointed ~ when a fresh read of the artifact shows the risk still
@@ -54,7 +53,7 @@ where evidence stood.
 
 <<~/ahu>>
 
-<<~ ahu #/panel>>
+<<~ ahu slot=`#/panel`>>
 
 !! Where It Rides ~ four sigils, six lines
 
@@ -70,12 +69,12 @@ as canon draws them.
 
 <<~/ahu>>
 
-<<~ ahu #/open>>
+<<~ ahu slot=`#/open`>>
 
 !! The Open Firing ~ the pull coming in
 
 ```text
-<<~ set hud="aim" aperture="10/measure" ooda-ha="5/declare-glyphs" drift-ward="* · <the pull this island carries toward exposure>">>
+<<~ set lares=`aim` aperture=`10/measure` ooda-ha=`5/declare-glyphs` drift-ward=`<the pull this island carries toward exposure>`>>
 ```
 
 Tool glyph, then the vow, then the pull. `*` lights · `_` braces primed ground · `0` marks the
@@ -92,12 +91,12 @@ no pull this island carries.
 
 <<~/ahu>>
 
-<<~ ahu #/close>>
+<<~ ahu slot=`#/close`>>
 
 !! The Close Firing ~ the clue going out
 
 ```text
-<<~ set hud="yield" drift-ward="! · <the joint that breaks first on outside contact> · ↻ L-Prime" aperture="10/measure -> 13/arc" ooda-ha="closed 2↺">>
+<<~ set lares=`yield` drift-ward=`<the joint that breaks first on outside contact> · ↻ L-Prime` aperture=`10/measure -> 13/arc` ooda-ha=`closed 2↺`>>
 ```
 
 Sword, vow, clue, re-arm. Breaches and quotes compose freely ~ `⚠ N · "span"` · `⌜N⌝` · `lift held`.
@@ -114,19 +113,19 @@ the pull and resisted it// ~ anchored to the open.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 A firing naming no island-scoped pull, or handing no contact-ready clue, reads as a degraded HUD.
 ''Hazard reuse'' reads as its quieter sibling (adopted 2026-08-15): the same pull recurring
 verbatim across turns marks a rut wearing a vow — a firing must name THIS turn's pull, and
 yesterday's hazard recurring unchanged deserves its own suspicion.
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/exchange-protocol">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/l-prime">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/exchange-protocol`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/l-prime`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Qk4DDKpNKThFncv1H7G_1F91LtiAPvmfppXacM41S2E
+<<^ code=`&#x0003;`>>ni:///sha-256;0kXBc-KCdkWoI4twJx5-6uu38CXsx-kJJnklPYg-blU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

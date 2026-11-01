@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/identity-stack">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/identity-stack`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/pono/identity-stack.mem"
 l-space       = "stable"
 mana          = 15
 revision-note = "minted 2026-06-07 — holds the lar: scheme's identity-addressing surfaces (who-speaks, distinct from bearing); provenance docs/pono/lar-uri §3.3.1"
@@ -16,11 +15,11 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/pono/identity-stack"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/identity-stack>>
+<<~ ahu slot=`#/identity-stack`>>
 
 ! Identity Stack — DID / Handle / lar: Alias
 
@@ -28,9 +27,9 @@ uri-path      = "ha.ka.ba/lares/docs/pono/identity-stack"
 > ruled identity model. Do not use its DID/handle/alias table as the current identity or currentness
 > contract. The live model is ''capability-is-identity + Keyhive concap'' (the capability IS the identity;
 > petnames over the lar: l-space regions), with identity enacted by signed relations and causal evidence
-> frontiers — <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">> ·
-> <<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island">> ·
-> <<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">>.
+> frontiers — <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity`>> ·
+> <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/causal-island`>> ·
+> <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/agent-worldline`>>.
 > What this file describes (Elyncia.app / DreamDeck on AT Protocol `did:plc` + UCAN) reads as a ''web2-bridge''
 ''> app layer'' behind a causal-island boundary (Web3-only law), NOT the Lares-stack-proper identity. Held for a
 > later rewrite pass.
@@ -47,14 +46,14 @@ The Elyncia.app / DreamDeck identity model holds three distinct layers. ''Do not
 
 <<~/ahu>>
 
-<<~ ahu #/handle-form>>
+<<~ ahu slot=`#/handle-form`>>
 
 !! Handle Form
 
 Within the DreamDeck / Kowloon ActivityPub layer, identities use the canonical ActivityPub two-part handle structure:
 
 ```
-@alias@node
+alias@node
 ```
 
 | ActivityPub handle | lar: URI authority | Underlying DID |
@@ -67,15 +66,16 @@ The `~crossroads` tilde prefix denotes a nomadic/crossroads node — no fixed ho
 
 <<~/ahu>>
 
-<<~ ahu #/post-header-render>>
+<<~ ahu slot=`#/post-header-render`>>
 
 !! DreamDeck Post-Header Render Target
 
 The `chat-log:post-header` render target carries the in-chat-log, timestamped projection for post headers.
 
 ''DreamDeck post header format (canonical):''
+
 ```
-@handle@node — timestamp — //ha.ka.ba/lares/{optional/path/} [confidence] 🏛️{tc}🌊{tc}🗡️{tc}🎭{tc}🔮{tc}
+handle@node — timestamp — //ha.ka.ba/lares/{optional/path/} [confidence] 🏛️{tc}🌊{tc}🗡️{tc}🎭{tc}🔮{tc}
 ```
 
 The attitude triple (`//ha.ka.ba`) sits ''before'' other instruments like confidence and stance — grounds bearing before posture (BEARING → HOW, matching the URI path-first layout logic governed by lar-uri).
@@ -83,14 +83,14 @@ The attitude triple (`//ha.ka.ba`) sits ''before'' other instruments like confid
 | Render target | Surface | URIs canonical? | When used |
 |---|---|---|---|
 | `chat-log:post-header` | `@handle@node — timestamp — //ha.ka.ba{/path} [Reg] 🏛️{tc}…` | No — social projection with glyphs | DreamDeck feed posts, BBS thread headers |
-| `hud:exchange-pair` | `<<~ lares aim …>>` + `hud`·`ward` panel beneath | ''Yes — canonical ASCII URI''; only the sigil panel uses glyphs | Every exchange-span boundary (mandatory) |
+| `hud:exchange-pair` | ``<<~ set lares=`aim` …>>``, its panel keys riding the one sigil | ''Yes — canonical ASCII URI''; only the sigil panel uses glyphs | Every exchange-span boundary (mandatory) |
 | `record:full` | `lar://alias:grant@host/ha.ka.ba/lares/` | Yes — identity projection | Storage, crystal serialization, registry |
 
 The `record:full` and `hud:exchange-pair` render targets live in the lar-uri scheme itself; `chat-log:post-header` rides here because it projects identity + bearing onto the social surface.
 
 <<~/ahu>>
 
-<<~ ahu #/stance-carry>>
+<<~ ahu slot=`#/stance-carry`>>
 
 !! Stance Tool-Carry in Render Targets
 
@@ -100,18 +100,18 @@ See `the-four-tools` and `the-syad-perspectives` for the tool and standpoint gra
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/circles-kowloon">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/circles-kowloon`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lQ0zBpMEiyouvFV7usqJFabmwEGBeRRr1d-vQ2A3wsI
+<<^ code=`&#x0003;`>>ni:///sha-256;QV-mVWAmtaC8-JLbkaMrKrrWBPlDSkQWOIlt1TUcGbc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

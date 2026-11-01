@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/identity-classes">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⚕` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/identity-classes`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/identity-classes.mem"
 l-space    = "lararium"
 mana       = 15
 manao      = 15
@@ -21,7 +20,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/identity-classes"
 written    = "2026-07-20"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
@@ -38,18 +37,18 @@ and how it recovers//, never a stamped tier. Four points in that space carry nam
 returns to them: the ''USER'', the ''OPERATOR'', the ''KAHU'', and the ''HERM''. This meme maps them
 across four axes and fixes how each RECOVERS — the axis Reading-B re-cuts.
 
-<<~ ahu #/the-four-classes>>
+<<~ ahu slot=`#/the-four-classes`>>
 
 !! The four classes ~ four axes
 
-<<~ has Class USER "runs/NO infra (browser-style vessel) carries/short cap-stack · @oracle-read + own mesh-palace · a READ-CAP reaching its OWN operator's private data ACROSS the rhizome (relays blind-transit the ciphertext; the user decrypts) class/KERI non-transferable OR delegated recovers/abandon-and-recreate">>
-<<~ has Class OPERATOR "runs/a node vessel carries/MANDATORY tier (@oracle + @crossroads + Kapae) · full VESSEL stack (tuber/bulb) · sovereign @catalog · BLIND-TRANSITS private ciphertext for the mesh (MLS Delivery-Service; carry ⊥ read) class/KERI transferable (its persona-KEL IS a key-event-log) recovers/recovery-root-authorizes-rotation (Reading-B)">>
-<<~ has Class KAHU "runs/a node vessel — AND SEPARATELY holds a seat in the charter k-of-n (the vessel is layer ①, the seat layer ③; a seat moves without the vessel moving, and a vessel raises without the seat) carries/OPERATOR stack + the charter epoch chain + the steward repair-kit class/transferable, in TWO chains (own persona-KEL + the charter-KEL) recovers/personal (Reading-B) PLUS charter-quorum steward re-seat">>
-<<~ has Class HERM "runs/the @daemon keel + own mesh-palace + own refresh clock (semi-autonomous relay) carries/MANDATORY public/infra + BLIND-TRANSIT of private CIPHERTEXT (carry ⊥ read; holds the replica, reads NONE) · NO read-cap on operator-content · NO sovereign @catalog class/NONE-CIVIC — holds a PLACE DID (the self-certifying key names a SOMEWHERE: addressable, vouchable, carriage-contractable) and NO operator DID (no human key rests at a crossroads to steal); authority rides a wax-sealed carriage contract recovers/re-established by its operator — no self-recovery of a civic identity it never holds">>
+<<~ has entity=`Class` name=`USER` params=`runs/NO infra (browser-style vessel) carries/short cap-stack · oracle-floor-read + own mesh-palace · a READ-CAP reaching its OWN operator's private data ACROSS the rhizome (relays blind-transit the ciphertext; the user decrypts) class/KERI non-transferable OR delegated recovers/abandon-and-recreate`>>
+<<~ has entity=`Class` name=`OPERATOR` params=`runs/a node vessel carries/MANDATORY tier (@oracle + crossroads-plane + Kapae) · full VESSEL stack (tuber/bulb) · sovereign catalog-plane · BLIND-TRANSITS private ciphertext for the mesh (MLS Delivery-Service; carry ⊥ read) class/KERI transferable (its persona-KEL IS a key-event-log) recovers/recovery-root-authorizes-rotation (Reading-B)`>>
+<<~ has entity=`Class` name=`KAHU` params=`runs/a node vessel — AND SEPARATELY holds a seat in the charter k-of-n (the vessel is layer ①, the seat layer ③; a seat moves without the vessel moving, and a vessel raises without the seat) carries/OPERATOR stack + the charter epoch chain + the steward repair-kit class/transferable, in TWO chains (own persona-KEL + the charter-KEL) recovers/personal (Reading-B) PLUS charter-quorum steward re-seat`>>
+<<~ has entity=`Class` name=`HERM` params=`runs/the daemon-plane keel + own mesh-palace + own refresh clock (semi-autonomous relay) carries/MANDATORY public/infra + BLIND-TRANSIT of private CIPHERTEXT (carry ⊥ read; holds the replica, reads NONE) · NO read-cap on operator-content · NO sovereign catalog-plane class/NONE-CIVIC — holds a PLACE DID (the self-certifying key names a SOMEWHERE: addressable, vouchable, carriage-contractable) and NO operator DID (no human key rests at a crossroads to steal); authority rides a wax-sealed carriage contract recovers/re-established by its operator — no self-recovery of a civic identity it never holds`>>
 
 !!! The faces ride beside the classes, never inside them
 
-A class names what a principal RUNS and how it RECOVERS; a ''face'' names a CAP STACK a human holds, and the two axes never collapse. Four faces stand — end user `walk` · Lamplighter `carry` · `tend/island` · `tend/reach` · Kahu `quorum-share` · Recovery contact (a recovery key over a person) — and they COMPOSE on a persona, combined by default, split only by the holder's own act. Founding names an act that seats the first kahu quorum, never a face. The face table and its law live at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks">>; this meme does not restate them. So the KAHU class row above reads as the class a vessel stands in while its human holds the Kahu face; one human may hold several faces at once, across whichever vessels their pool carries.
+A class names what a principal RUNS and how it RECOVERS; a ''face'' names a CAP STACK a human holds, and the two axes never collapse. Four faces stand — end user `walk` · Lamplighter `carry` · `tend/island` · `tend/reach` · Kahu `quorum-share` · Recovery contact (a recovery key over a person) — and they COMPOSE on a persona, combined by default, split only by the holder's own act. Founding names an act that seats the first kahu quorum, never a face. The face table and its law live at <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks`>>; this meme does not restate them. So the KAHU class row above reads as the class a vessel stands in while its human holds the Kahu face; one human may hold several faces at once, across whichever vessels their pool carries.
 
 !!! ★ HERM READS AS A STATE EVERY VESSEL PASSES THROUGH, not only a class one vessel HOLDS ★
 
@@ -57,7 +56,7 @@ A class names what a principal RUNS and how it RECOVERS; a ''face'' names a CAP 
 
 ''So HERM reads two ways and both hold'': as a ''standing'' (a crossroads whose operator never intends to light it, contracted, faceless for good) and as a ''passage'' (any vessel, before its raise or after its raise lapses). The class rows describe the first; the floor describes the second.
 
-''SEATED ⊥ RAISED keeps the class law intact through the passage.'' The Herm's zero persona-slot ceiling bars a ''SEATED'' persona root — a human's key RESTING on a crossroads. It bars nothing about a ''RAISED'' cap: those arrive WITH a recognised operator, ride that operator's own keys, and stop standing when the recognition stops. The at-rest state never changes, so a stolen disk still yields nothing of anybody's person, and a herm may grow a house without ever becoming a place that keeps one. <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>
+''SEATED ⊥ RAISED keeps the class law intact through the passage.'' The Herm's zero persona-slot ceiling bars a ''SEATED'' persona root — a human's key RESTING on a crossroads. It bars nothing about a ''RAISED'' cap: those arrive WITH a recognised operator, ride that operator's own keys, and stop standing when the recognition stops. The at-rest state never changes, so a stolen disk still yields nothing of anybody's person, and a herm may grow a house without ever becoming a place that keeps one. <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor`>>
 
 ''And the floor stands as the HARDENED state, never a degraded one'' — the field inverted our first vocabulary, treating before-first-unlock as hardened and after-first-unlock as the liability. A vessel at the floor has lost its CAPS, never its FLOOR.
 
@@ -89,7 +88,7 @@ read-cap stays with the authorized decryptor alone. #the-mesh-breathes carries t
 
 <<~/ahu>>
 
-<<~ ahu #/the-identity-class-ladder>>
+<<~ ahu slot=`#/the-identity-class-ladder`>>
 
 !! The KERI ladder ~ transferable ⊥ non-transferable ⊥ delegated ⊥ none-civic
 
@@ -126,12 +125,12 @@ answers by founding the place afresh.
 ''RE-MADE, RE-DELEGATED, RECOVERED.'' The ladder decides which act answers a loss. A non-transferable face
 gets RE-MADE: a fresh identifier, fresh keys, no memory carried over. A delegated leaf gets RE-DELEGATED
 from its root. A transferable face RECOVERS its key lineage, by paper or by recovery contacts. ''Memory recovers by
-key material on every class alike'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
+key material on every class alike'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery`>>).
 The class axis and the cap-stack axis never collapse (#/the-four-classes).
 
 <<~/ahu>>
 
-<<~ ahu #/promotion-path>>
+<<~ ahu slot=`#/promotion-path`>>
 
 !! The promotion path ~ value accretes, the class hardens
 
@@ -142,7 +141,7 @@ The class axis and the cap-stack axis never collapse (#/the-four-classes).
 An identity ''drifts UP the ladder as it accretes value it cannot cheaply re-mint'' — relationships,
 standing, cabal entanglement (#the-frame carries the cost curve at founding-runbook#/key-replacement-cost):
 
-<<~moves user/non-transferable -> user/delegated -> operator/transferable on/accreted-value if/cheap-re-mint-no-longer-restores-the-relationships do/harden-the-class-not-the-person>>
+<<~moves name=`user/non-transferable` params=`user/delegated -> operator/transferable on/accreted-value if/cheap-re-mint-no-longer-restores-the-relationships do/harden-the-class-not-the-person`>>
 
 * ''non-transferable → delegated'' — the light user, worth keeping at last, accepts an operator root's
   delegation edge: the leaf stays disposable, the root carries the durability. No reserve lands on the
@@ -150,7 +149,7 @@ standing, cabal entanglement (#the-frame carries the cost curve at founding-runb
 * ''delegated → transferable'' — the vessel ''promotes'': it mints its OWN persona-KEL (an inception
   pre-rotation, #the-continuity-anchor), arms its own recovery commitment (#/the-two-forks), and steps off the root's
   delegation onto its own rotation chain. It becomes operator-class — it carries the future.
-* ''operator → kahu'' — a roll of the Nexus seal lineage seats a NEW seat key held by the operator's face, never the persona root, signed by the seat quorum (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>, <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>); the operator gains a SECOND chain
+* ''operator → kahu'' — a roll of the Nexus seal lineage seats a NEW seat key held by the operator's face, never the persona root, signed by the seat quorum (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>, <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale`>>); the operator gains a SECOND chain
   (the charter-KEL) atop its persona-KEL, and the steward repair-kit
   ([[siege-resilience|lar:///ha.ka.ba/lararium/mesh/siege-resilience#/repair-kit]]).
 
@@ -159,7 +158,7 @@ never by decree.
 
 <<~/ahu>>
 
-<<~ ahu #/herm-establishment>>
+<<~ ahu slot=`#/herm-establishment`>>
 
 !! Herm establishment ~ a contract, not a christening
 
@@ -167,7 +166,7 @@ An operator ''establishes a Herm by signing a Nexus carriage contract from a nod
 it semi-autonomous (operator ruling, 2026-07-20). ''No civic identity mints into the Herm'' — only the
 wax-sealed contract/edges:
 
-<<~flows operator-node-vessel -> signs-carriage-contract (wax-sealed PEER/TRANSIT edge, MANDATORY tier) -> Herm-boots-own-@daemon-keel (self-cert PLACE DID + own refresh clock) -> semi-autonomous-relay>>
+<<~flows name=`operator-node-vessel` path=`signs-carriage-contract (wax-sealed PEER/TRANSIT edge, MANDATORY tier) -> Herm-boots-own-@daemon-keel (self-cert PLACE DID + own refresh clock) -> semi-autonomous-relay`>>
 
 * the Herm ''boots permissionlessly'' on its own key (#vessel-caps: immune-core ⊕ blind-carriage ⊕
   public-read) — it asks no blessing to exist;
@@ -187,14 +186,14 @@ the recovery.
 
 <<~/ahu>>
 
-<<~ ahu #/the-founding-splits>>
+<<~ ahu slot=`#/the-founding-splits`>>
 
 !! ★ A FOUNDING STANDS TWO THINGS — a PLACE, then a FACE ★
 
 ''A founding carries a SOMEWHERE and a SOMEONE, and canon keeps them apart.'' #herm-establishment rules it directly: a Herm ''boots permissionlessly on its own key — it asks no blessing to exist'', and ''no civic identity mints into'' it. A rite that minted a human root before a vessel could carry a byte would seat on every crossroads the one thing the class exists to refuse.
 
-<<~ has Half Place "stands/@daemon · the public place key · the hearth-true-name · the public floor card and pin asks/nobody ~ carries, serves the public shelf, holds every sovereign act closed">>
-<<~ has Half Face "stands/the PersonaGroup + its private plane · the social planes · the device-delegation edge · the persona-KEL inception · the MeshCabal arrives/by an operator act ~ lights the hearth fire">>
+<<~ has entity=`Half` name=`Place` params=`stands/@daemon · the public place key · the hearth-true-name · the public floor card and pin asks/nobody ~ carries, serves the public shelf, holds every sovereign act closed`>>
+<<~ has entity=`Half` name=`Face` params=`stands/the PersonaGroup + its private plane · the social planes · the device-delegation edge · the persona-KEL inception · the MeshCabal arrives/by an operator act ~ lights the hearth fire`>>
 
 ''The place founds ALONE; the face lands on top of it, by a hand that came to dwell.'' A hearth whose operator stands right there runs both in one breath and gains nothing by typing twice. A crossroads never types the second at all.
 
@@ -208,7 +207,7 @@ the recovery.
 
 <<~/ahu>>
 
-<<~ ahu #/the-office>>
+<<~ ahu slot=`#/the-office`>>
 
 !! Kuleana ~ the OFFICE, and the civic standing between HERM and OPERATOR
 
@@ -216,7 +215,7 @@ the recovery.
 
 ''So it reads as a HERM THAT GAINED AUTHORITY CAPS WITHOUT GAINING A PERSONA CAP'', and `composable-keel`'s ''absence = un-routed authority'' makes that structural rather than flagged. Facelessness survives by construction.
 
-<<~moves civic-standing -> derived-from/the-cap-stack on/every-read if/a-persona-cap-arrives do/stop-reading-as-civic>>
+<<~moves name=`civic-standing` params=`derived-from/the-cap-stack on/every-read if/a-persona-cap-arrives do/stop-reading-as-civic`>>
 
 !!! ★ THE QUORUM SEATS THE OFFICE; THE QUORUM MUST NOT RENEW IT ★
 
@@ -228,18 +227,18 @@ So the quorum ''seats'' (rare); the ''renewal rides the lease-epoch roll'' (freq
 
 !!! Two sources of caps, answering two layers
 
-<<~ has Half Self-raise "layer/① act/open THIS vessel's archive holder/whoever holds this vessel's opening secret ~ bootstraps the first hearth; serves the portable node">>
-<<~ has Half Office-grant "layer/③ act/a standing Nexus seats an office holder/any current office-holder opens it ~ no circularity: the Nexus already stands">>
+<<~ has entity=`Half` name=`Self-raise` params=`layer/① act/open THIS vessel's archive holder/whoever holds this vessel's opening secret ~ bootstraps the first hearth; serves the portable node`>>
+<<~ has entity=`Half` name=`Office-grant` params=`layer/③ act/a standing Nexus seats an office holder/any current office-holder opens it ~ no circularity: the Nexus already stands`>>
 
 ''An office grant reaches NO archive by itself.'' A quorum's acts sit at ③, and a kahu holding shares becomes the collector the house forbids. The ① answer that survives: ''an OFFICE KEY, never a persona key'' — Place-DID-rooted, minted at establishment, opened through the raise door the mesh already stands. A human signs; ''never THE operator''. That difference carries the whole property.
 
 ''And the civic FLOOR runs far larger than a hearth's'': relay, public shelf, bulb, map-publish and segment-repair all stand with ''zero secret''. A district's service survives a power cut; only signing waits for a holder.
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters">> carries the Guild that tends these places, the immune coupling, and the tending caps.
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lamplighters`>> carries the Guild that tends these places, the immune coupling, and the tending caps.
 
 <<~/ahu>>
 
-<<~ ahu #/the-mesh-breathes>>
+<<~ ahu slot=`#/the-mesh-breathes`>>
 
 !! The mesh breathes ~ blind-transit of private ciphertext (carry ⊥ read)
 
@@ -289,12 +288,12 @@ wall built inside one.
 
 <<~/ahu>>
 
-<<~ ahu #/self-slot-reconciliation>>
+<<~ ahu slot=`#/self-slot-reconciliation`>>
 
 !! Reconciliation ~ the self-slot's read denial beside the breathing mesh
 
 The cross-operator self-slot ''DENIES a cabal-mate every cleartext private plane'': a cross-operator presenting a valid self-cert card + a verified V3 proof rides a BOUNDED
-federatable-carry tier — @crossroads + WHO + the Kapae antigen, the MANDATORY tier — and ''every private
+federatable-carry tier — crossroads-plane + WHO + the Kapae antigen, the MANDATORY tier — and ''every private
 plane (@catalog/@personal/@daemon/home/wikis) → DENIED'' on the cleartext sync wire. A proven member may also
 carry a provably sealed private body, never its read-cap. A Kapae'd cross-operator draws Mu.
 
@@ -312,8 +311,8 @@ a cross-operator-CLASS relay ''carries no private ciphertext at all''. The breat
 read, or the data never reaches its remote authorized reader across a foreign leg. So the mesh-breathes role
 needs the two denials split:
 
-<<~ has Fork SELF-SLOT-A "keep/the committed posture — a cross-operator carries ONLY the federatable set, private ciphertext never transits a foreign relay cost/the mesh does NOT breathe across operator boundaries; a remote same-operator user reaches its private data only over IN-fleet legs, never a cabal-mate's relay">>
-<<~ has Fork SELF-SLOT-B "refine/split sharePolicy's private-plane denial into DENY-READ-CAP (keep, absolute) ⊥ ALLOW-CARRY-of-ciphertext-to-a-blind-relay (new) — a cross-operator relay blind-transits sealed private bytes it can never read cost/a new carry-tier between MANDATORY and private-read; the relay holds encrypted replicas of planes it cannot decrypt (storage + the read-floor as the sole guard) gain/the mesh breathes — private data reaches its remote reader across ANY honest leg, carry-generous under the read-floor">>
+<<~ has entity=`Fork` name=`SELF-SLOT-A` params=`keep/the committed posture — a cross-operator carries ONLY the federatable set, private ciphertext never transits a foreign relay cost/the mesh does NOT breathe across operator boundaries; a remote same-operator user reaches its private data only over IN-fleet legs, never a cabal-mate's relay`>>
+<<~ has entity=`Fork` name=`SELF-SLOT-B` params=`refine/split sharePolicy's private-plane denial into DENY-READ-CAP (keep, absolute) ⊥ ALLOW-CARRY-of-ciphertext-to-a-blind-relay (new) — a cross-operator relay blind-transits sealed private bytes it can never read cost/a new carry-tier between MANDATORY and private-read; the relay holds encrypted replicas of planes it cannot decrypt (storage + the read-floor as the sole guard) gain/the mesh breathes — private data reaches its remote reader across ANY honest leg, carry-generous under the read-floor`>>
 
 ''SELF-SLOT-B stands, built NARROW'' (operator-ruled 2026-07-20, as `federation-gate.ts` records), because
 the mesh-breathes role the operator named REQUIRES private ciphertext to cross foreign legs, and carry ⊥ read
@@ -333,7 +332,7 @@ BeeKEM on the sync wire reads UNBUILT (`packages/lararium-node/src/plane-seal.ts
 
 <<~/ahu>>
 
-<<~ ahu #/reading-b-recovery>>
+<<~ ahu slot=`#/reading-b-recovery`>>
 
 !! Reading-B ~ recovery rotates, it never resurrects
 
@@ -350,7 +349,7 @@ cost, [[persona-policy|lar:///ha.ka.ba/lares/api/pono/persona-policy#/cryptograp
 than resurrects the old operational private key. Recovery ''preserves identity continuity, not
 cryptographic history.'' The move:
 
-<<~moves recovery/reconstruct-then-resurrect-the-op-key -> recovery/attest-then-rotate-a-fresh-op-key on/an-independent-random-recovery-root if/continuity-anchors-on-the-identifier-not-the-key do/supersede-the-old-key-never-revive-it>>
+<<~moves name=`recovery/reconstruct-then-resurrect-the-op-key` params=`recovery/attest-then-rotate-a-fresh-op-key on/an-independent-random-recovery-root if/continuity-anchors-on-the-identifier-not-the-key do/supersede-the-old-key-never-revive-it`>>
 
 Four parts carry it:
 
@@ -381,7 +380,7 @@ signer.
 
 <<~/ahu>>
 
-<<~ ahu #/the-continuity-anchor>>
+<<~ ahu slot=`#/the-continuity-anchor`>>
 
 !! The continuity anchor ~ the persona-KEL, not the key
 
@@ -414,7 +413,7 @@ antigen's ban-nym (#/the-honest-edges).
 
 <<~/ahu>>
 
-<<~ ahu #/the-two-relations>>
+<<~ ahu slot=`#/the-two-relations`>>
 
 !! Two relations join at the acting entity ~ why a rebind and a recovery never collide
 
@@ -434,7 +433,7 @@ re-keys the person; the join survives both, because they touch different relatio
 
 <<~/ahu>>
 
-<<~ ahu #/the-two-forks>>
+<<~ ahu slot=`#/the-two-forks`>>
 
 !! The custody fork ~ reconstruct-then-sign ⊥ threshold-attest
 
@@ -536,18 +535,18 @@ outside tests passes one. So as built a provisional head seats NO key at any gat
 the silence count of clause 3 and the Roughtime mark each read UNBUILT.
 * ''CIVIC rolls by per-seat pre-rotation'' — each Kahu seat commits its own cold next key, a roll
   reveals k of them, the revealed keys sign it, and recovery contacts recover the PERSON by Fork B
-  above, never the charter (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>). The shared
+  above, never the charter (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale`>>). The shared
   reserve seed split by Shamir beneath the charter retires with the re-found. At a two-seat Nexus a lost
-  cold key ends that Nexus at alpha (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>).
+  cold key ends that Nexus at alpha (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>).
 * ''RECOVERY CONTACTS stay optional and per face'', and no recovery contact key ever serves two faces
-  (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>). Recovery contact count,
-  request authentication, the veto and succession stand open at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>.
+  (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery`>>). Recovery contact count,
+  request authentication, the veto and succession stand open at <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>.
 
 ''THE ROLLING COMMITMENT (enacted with the ruling):'' every KEL event carries `nextRecoverySetHash`
 beside the genesis wall — the prefix keeps binding the GENESIS set (anti-swap survives), while each
 rotation reveals against its predecessor's rolling commitment and GRAFTS the next. Recovery contact sets turn
 over log-wise: 1-of-1-self → real hands by the face's own typed first enrolment
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/persona-kel#/the-enrolment">>) → fresh hands by the recovery contacts'
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/persona-kel#/the-enrolment`>>) → fresh hands by the recovery contacts'
 rotation when a recovery contact churns, each transition a signed, board-walkable event. This retires the recovery-contact-rotation gap without spending delegation.
 
 ''THE CROSSING RECORD (`reserve-transition` + `lares nexus seal grow`):'' when a multitude-of-one
@@ -559,7 +558,7 @@ own label stems), so no hand can select the wrong object: the ceremony-confusion
 
 <<~/ahu>>
 
-<<~ ahu #/the-delegation-axis>>
+<<~ ahu slot=`#/the-delegation-axis`>>
 
 !! ⚠ The axis that dominates the fork ~ delegation
 
@@ -582,7 +581,7 @@ office, never a person) may revisit it under its own name.
 
 <<~/ahu>>
 
-<<~ ahu #/the-handle-chain>>
+<<~ ahu slot=`#/the-handle-chain`>>
 
 !! The Handle's chain ~ a SIBLING grammar, never an extension (walked 2026-09-08)
 
@@ -651,7 +650,7 @@ the field; the mechanism (grafting the presenting set, identifier fixed) belongs
 
 <<~/ahu>>
 
-<<~ ahu #/the-honest-edges>>
+<<~ ahu slot=`#/the-honest-edges`>>
 
 !! The honest edges (kept lit)
 
@@ -680,24 +679,24 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-wax-stamp">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/custodian-card">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/recovery-keel-core">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/vessel-caps`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carry-contract`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/siege-resilience`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-wax-stamp`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/custodian-card`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/recovery-keel-core`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rfveQCSjgbd6fN307VYRoUjOtPkYegFWg4sh6wCJeNM
+<<^ code=`&#x0003;`>>ni:///sha-256;YNPIlmS_UkhEaOUnZAoOtbImQ7eeDpLDG1s5JniBQ2M
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

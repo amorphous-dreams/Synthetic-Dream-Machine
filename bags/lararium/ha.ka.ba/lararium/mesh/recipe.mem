@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/recipe">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/recipe`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/recipe.mem"
 l-space     = "lararium"
 mana        = 12
 manao       = 12
@@ -16,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/recipe"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -38,7 +37,7 @@ island mounts from.
 
 <<~/ahu>>
 
-<<~ ahu #/where-recipes-live>>
+<<~ ahu slot=`#/where-recipes-live`>>
 
 !! Where recipes live — two planes (operator ruling, 2026-06-16)
 
@@ -68,16 +67,16 @@ class, where the alert stays the permanent mechanism.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/lararium/wiki-recipe">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/engine-watch">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/lararium/wiki-recipe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/genesis-doc`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/engine-watch`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bT_LXGNPNQkv_JecGo1lLH1P3vJ2GZTaXz0BSzXTSzY
+<<^ code=`&#x0003;`>>ni:///sha-256;BHoPgkDp5pKQMj-5sFj-_Xmk1D0drycmXi6ZyaooBLg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

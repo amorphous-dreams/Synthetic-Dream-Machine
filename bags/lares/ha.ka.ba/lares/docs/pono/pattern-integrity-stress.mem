@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/pattern-integrity-stress.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 18
@@ -21,7 +20,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/pattern-integrity-stress"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The shape, stressed before it locks
 
@@ -31,7 +30,7 @@ Seven parallel investigations against the whole pattern-integrity — the unboun
 
 <<~/ahu>>
 
-<<~ ahu #/the-convergent-claim-wedges>>
+<<~ ahu slot=`#/the-convergent-claim-wedges`>>
 
 !! ★ The convergent claim has been built once, and it WEDGES ★
 
@@ -51,7 +50,7 @@ Keyhive stands as the only system unifying revocation, membership and revision i
 
 <<~/ahu>>
 
-<<~ ahu #/the-waist-never-moves>>
+<<~ ahu slot=`#/the-waist-never-moves`>>
 
 !! ★ An identity waist cannot be retrofitted — measured over eight years ★
 
@@ -65,7 +64,7 @@ Elsewhere the same result: a key-rotation issue ''open and dormant four years'',
 
 <<~/ahu>>
 
-<<~ ahu #/the-switcher-signals>>
+<<~ ahu slot=`#/the-switcher-signals`>>
 
 !! ★ The one study of exactly this population — zero adoption, and the switcher SIGNALS ★
 
@@ -85,7 +84,7 @@ The five practices they DID use ran ''covert and deniable'' — selective deleti
 
 <<~/ahu>>
 
-<<~ ahu #/nothing-is-rootless>>
+<<~ ahu slot=`#/nothing-is-rootless`>>
 
 !! ★ Custody delegates to machines. Accountability does not. ★
 
@@ -101,7 +100,7 @@ Every system runs machine-to-machine chains of arbitrary depth at runtime, ''the
 
 <<~/ahu>>
 
-<<~ ahu #/the-veil-leaks-at-sync>>
+<<~ ahu slot=`#/the-veil-leaks-at-sync`>>
 
 !! ★ The blind veil holds at the data layer and leaks at the sync layer — and one project REJECTED it in writing ★
 
@@ -128,7 +127,7 @@ Two issues asking for exactly the per-identity contact view, both labelled ''rej
 
 <<~/ahu>>
 
-<<~ ahu #/what-makes-it-lockable>>
+<<~ ahu slot=`#/what-makes-it-lockable`>>
 
 !! ★ You do not pick the waist. You pick N. ★
 
@@ -157,7 +156,7 @@ And the competitive complement: waist protocols become ''evolutionary kernels'' 
 
 <<~/ahu>>
 
-<<~ ahu #/the-mycelium-splits>>
+<<~ ahu slot=`#/the-mycelium-splits`>>
 
 !! ★ Split the biology and the grounding changes sign ★
 
@@ -173,7 +172,7 @@ And the competitive complement: waist protocols become ''evolutionary kernels'' 
 
 <<~/ahu>>
 
-<<~ ahu #/four-instrument-lies>>
+<<~ ahu slot=`#/four-instrument-lies`>>
 
 !! ⚠ Four instrument-lies, two of them the field's own
 
@@ -186,14 +185,14 @@ And the competitive complement: waist protocols become ''evolutionary kernels'' 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/managed-identity-scout">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dyad-ladder-scout">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/managed-identity-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dyad-ladder-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vbIhNuhs4n9q7QKRWk5f_K9gvv46Kvm9YfpDhMHbE_I
+<<^ code=`&#x0003;`>>ni:///sha-256;tifaL-en1MsG5KM3pC2oc8rXV_a0yH5jjHOR9DQhWT0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

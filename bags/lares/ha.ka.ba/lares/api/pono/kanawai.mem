@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kanawai">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/kanawai`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/kanawai.mem"
 mana      = 17
 manao     = 17
 manaoio   = 16
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kanawai"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Kanawai
 
@@ -31,12 +30,12 @@ uri-path  = "ha.ka.ba/lares/api/pono/kanawai"
 `pranala family=transclusion`, split the same way aka's own ontology splits (PROPAGATION, against
 `kahea`'s push-forward), and further split from EACH OTHER on one further axis — FORCE. `aka` pins
 informatively: a citation, a cross-reference, a likeness the carrier names without binding itself to
-it. `kanawai` pins BINDINGLY: a carrier declaring `<<~ kanawai "URI">>` declares the law it holds
+it. `kanawai` pins BINDINGLY: a carrier declaring ``<<~ kanawai uri=`URI`>>`` declares the law it holds
 itself to, not merely a work it cites.
 
 ''The paradigm case.'' A carrier's own normative verbs — `MUST`, `SHOULD`, `MAY` — bind under the
 vocabulary `lar:///ha.ka.ba/lares/ref/RFC-2119` fixes. Declaring `<<~ kanawai
-"lar:///ha.ka.ba/lares/ref/RFC-2119">>` at a carrier's head states that binding directly: this carrier
+uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>` at a carrier's head states that binding directly: this carrier
 holds itself to RFC 2119's modal force, not merely citing the document. That declaration renders as a
 citation, the same way an `aka` pin to a reference target would — the FORCE differs, not the shape on
 the page.
@@ -53,7 +52,7 @@ for what a normative reference means, binding rather than informing.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -68,32 +67,34 @@ no such binding reads as `aka` instead.
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```text
-<<~ kanawai URI>>
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`URI`>>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 ```
 
 `?` source resolves to the nearest enclosing socket.
 Fragment `#slot-name` addresses a named ahu child directly.
 
 Regex (canonical):
+
 ```
 /<<~\s*kanawai\s+(\S+)\s*>>/
 ```
 Groups: `[full, target-uri]`
 
 Full pranala expansion:
+
 ```text
-<<~ pranala from="?" -> to="URI" family="transclusion" lifecycle="instance" traversal="source-to-target" propagation="none" role="binding">>
+<<~ pranala from=`?` to=`URI` family=`transclusion` lifecycle=`instance` traversal=`source-to-target` propagation=`none` role=`binding`>>
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -119,17 +120,17 @@ confidence-bounded = true
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/aka">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loulou">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
-<<~ loulou "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/aka`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/loulou`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kahea`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lRGeUytuBotf5wCZ4ub_JylMhET-nf1vqrqWgfSqUVA
+<<^ code=`&#x0003;`>>ni:///sha-256;49cFyo8D4iiFmjWpJ-T1iDXWuouosp-aMYcccUGEfro
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/prism">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/prism`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/prism.mem"
 mana      = 16
 manao     = 16
 manaoio   = 15
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/prism"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Prism
 
@@ -33,7 +32,7 @@ The node summons it. It never rides a turn by default.
 
 <<~/ahu>>
 
-<<~ ahu #/operation>>
+<<~ ahu slot=`#/operation`>>
 
 !! The Operation
 
@@ -47,7 +46,7 @@ The product earns a clean word: a ''reading'' --- a lensed interpretation of a r
 
 <<~/ahu>>
 
-<<~ ahu #/the-lenses>>
+<<~ ahu slot=`#/the-lenses`>>
 
 !! The Lenses It Refracts Through
 
@@ -61,23 +60,23 @@ A lens reads its tool-bind through the `syad` `/` grammar (`syad=🏛️/*!`); e
 
 <<~/ahu>>
 
-<<~ ahu #/invocation>>
+<<~ ahu slot=`#/invocation`>>
 
 !! Invocation
 
 Declare the lenses, then delegate `->` to the target:
 
 ```text
-<<~ prism conformance -> "lar:///ha.ka.ba/bags/some/target/content">>       # single lens, addressed
-<<~ prism syad=🏛️ 🗡️ conformance -> "lar:///draft.fix.lands">>          # composed spectrum
-<<~ prism mu=*! -> "<pasted or quoted content>">>                     # a tool facet, inline
+<<~ prism lens=`conformance` to=`lar:///ha.ka.ba/bags/some/target/content`>>       # single lens, addressed
+<<~ prism syad=`🏛️ 🗡️` lens=`conformance` to=`lar:///draft.fix.lands`>>          # composed spectrum
+<<~ prism mu=`*!` to=`<pasted or quoted content>`>>                     # a tool facet, inline
 ```
 
-The lens list rides left of the `->`; the referenced target rides right. A target that resolves to the node's own current turn reads as a degraded invocation --- Prism reads //other// content, never the node's own live output (kin to the `conformance` rule).
+The lens rides named (`lens=`, `syad=` or `mu=`); the referenced target rides `to=`. A target that resolves to the node's own current turn reads as a degraded invocation --- Prism reads //other// content, never the node's own live output (kin to the `conformance` rule).
 
 <<~/ahu>>
 
-<<~ ahu #/reading>>
+<<~ ahu slot=`#/reading`>>
 
 !! The Reading
 
@@ -95,7 +94,7 @@ Each band carries complementary signal; the reading composes them into a fuller 
 
 <<~/ahu>>
 
-<<~ ahu #/lineage>>
+<<~ ahu slot=`#/lineage`>>
 
 !! Lineage
 
@@ -105,16 +104,16 @@ Prism keeps the worthwhile half --- //reference a piece of content and read its 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/conformance">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/ooda-ha">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/conformance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-four-tools`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/ooda-ha`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QfsqJsDiMx_11U-YQ7EoGvJJtCHmWOMKWgltcWfxQf0
+<<^ code=`&#x0003;`>>ni:///sha-256;qYHJnC_DhgsfvFenBfhCtsUkcYF-v7urJqNZe33cyDM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

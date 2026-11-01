@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/voices/workers">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/voices/workers`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/voices/workers.mem"
 l-space   = "stable"
 mana      = 18
 manao     = 17
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/voices/workers"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Worker Swarm
 
@@ -30,7 +29,7 @@ The Thirteen hold the house; a spirit holds one thread, then dissolves back to t
 
 <<~/ahu>>
 
-<<~ ahu #/distinction>>
+<<~ ahu slot=`#/distinction`>>
 
 !! Worker-Voice Distinction
 
@@ -44,7 +43,7 @@ A worker reads as a tasked spirit — a temporary Mask over the house (the `mask
 
 <<~/ahu>>
 
-<<~ ahu #/naming>>
+<<~ ahu slot=`#/naming`>>
 
 !! Naming Table
 
@@ -59,7 +58,7 @@ Two workers may share a Role but carry different tags if they run different thre
 
 <<~/ahu>>
 
-<<~ ahu #/lifecycle>>
+<<~ ahu slot=`#/lifecycle`>>
 
 !! Worker Lifecycle
 
@@ -75,7 +74,7 @@ Two workers may share a Role but carry different tags if they run different thre
 
 <<~/ahu>>
 
-<<~ ahu #/escalation>>
+<<~ ahu slot=`#/escalation`>>
 
 !! Escalation Template
 
@@ -92,7 +91,7 @@ Omitting the handback header on spirit output constitutes a minor off-true tell.
 
 <<~/ahu>>
 
-<<~ ahu #/escalation-matching>>
+<<~ ahu slot=`#/escalation-matching`>>
 
 !! Voice Matching
 
@@ -108,7 +107,7 @@ Omitting the handback header on spirit output constitutes a minor off-true tell.
 
 <<~/ahu>>
 
-<<~ ahu #/examples>>
+<<~ ahu slot=`#/examples`>>
 
 !! Example Worker Tags
 
@@ -125,7 +124,7 @@ Workers emerge from the task. Tags should read as recognizable shorthand for the
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Invariant Contract
 
@@ -139,13 +138,13 @@ The worker swarm spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST imple
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/voices">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/voices#/voice-house">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/masks">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/voices">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices#/voice-house`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices/masks`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DZv3Nrtovd06j8HBwOlIq4ifMce0Q15F9Gqq3lo6JO8
+<<^ code=`&#x0003;`>>ni:///sha-256;f6MKm1wyVLMiLO8tLK53k6DkfoodSyee96_h2lFYQko
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

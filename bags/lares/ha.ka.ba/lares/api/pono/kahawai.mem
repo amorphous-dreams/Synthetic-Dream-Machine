@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kahawai">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/kahawai`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/kahawai.mem"
 namespace = "&#x2299;"
 role      = "conditional branch-continuation sigil — elif form; Hawaiian alias for elif; a second stream joining the flow"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kahawai"]
@@ -14,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kahawai"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Kahawai
 
@@ -30,7 +29,7 @@ water cascade.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -41,38 +40,39 @@ and no preceding condition in the chain has already rendered.
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```text
-<<~ wai [first-filter]>>
+<<~ wai filter=`[first-filter]`>>
   first branch
-<<~ kahawai [second-filter]>>
+<<~ kahawai filter=`[second-filter]`>>
   second branch
 <<~ mukuwai>>
   fallback branch
 ```
 
 English alias forms:
+
 ```text
-<<~ if [first-filter]>>  ...
-<<~ elif [second-filter]>>  ...
+<<~ if filter=`[first-filter]`>>  ...
+<<~ elif filter=`[second-filter]`>>  ...
 <<~ else>>  ...
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wai">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/mukuwai">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-elif">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wai`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/mukuwai`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-elif`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dycaPfMc6lnN945AAIKA98ngjF77ZSwFiuguND7KeAk
+<<^ code=`&#x0003;`>>ni:///sha-256;Dv7zmOjyhl_CRPIPvzA731yqZ_cL4lGt1GVeJTx-Y-I
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

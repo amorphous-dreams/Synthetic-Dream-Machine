@@ -7,8 +7,8 @@ triple, handback → the spawn edge's valid-interval closed, kapae (rewind) → 
 edge of a retracted turn closed (valid_to set, never deleted — history kept).
 
 This is OUR script (packages/lararium-sensorium/scripts), NOT the vendored submodule:
-it CALLS the mempalace KnowledgeGraph public API (add_triple / invalidate) the same
-way loci_io.py calls the collection. We never edit mempalace/.
+it CALLS the mempalace KnowledgeGraph public API (add_triple / invalidate). We never
+edit mempalace/.
 
   add  PATCHFILE       <- NDJSON {subject,predicate,object,valid_from?,valid_to?,
                           turn_key?,source_file?,confidence?} ; one kg.add_triple each.

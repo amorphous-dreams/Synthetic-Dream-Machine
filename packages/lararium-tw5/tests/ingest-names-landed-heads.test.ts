@@ -20,9 +20,9 @@ import { Repo, shoreRig, turns, workingBag, personalBag, remote } from "./wiki-s
 const URI = "lar:///t.ingest.heads/one";
 const BAG = "lar:///ha.ka.ba/bags/ingest-heads";
 const meme = (prose: string): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n` +
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n` +
   "```toml meta\nuri-path = \"t.ingest.heads/one\"\n```\n\n" +
-  `${prose}\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `${prose}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 async function ingest(composite: CompositeStore, text: string): Promise<Array<Record<string, unknown>>> {
   const invocation = { requestId: "ingest-heads", title: "ingest", action: "INGEST", args: {}, targets: [], batchMode: "best-effort", status: "pending", requestedBy: "test", requestedAt: "2026-10-25" } as unknown as Verb;

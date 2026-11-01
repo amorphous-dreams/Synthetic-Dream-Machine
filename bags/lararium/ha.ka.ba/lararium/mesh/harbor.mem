@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/harbor">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/harbor`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/harbor.mem"
 hydrate   = true
 l-space   = "stable"
 role      = "the container boundary as law — one image that carries code and nothing of a household; two mounts, /workspace for bags and wikis and /state for vessel homes and custody; the local socket kept inside the container with the host CLI entering through `docker compose exec`; engine control kept on the host and no docker socket for the app; LAN discovery that offers unauthoritative candidates while a pinned admission alone grants authority; a TLS terminator in front of a vessel that names its reach face from one setting; harnesses that run the image by digest; a release manifest that binds the image digest to the genesis, engine and grammar CIDs; no pave or wipe command"
@@ -14,17 +13,17 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/harbor"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Harbor ~ the container boundary
 
 A Lararium runs inside a container. This carrier states where the container ends and the household begins: what the image carries, what arrives as a mount, which side holds the socket, which side controls the engine, how a vessel gets found on a LAN, how a browser reaches it over HTTPS, and what a release names.
 
-> ''Register.'' The operator ruled that all code runs dockerized, that one Lararium serves one human, that local-first comes first, and that no pave or wipe command exists (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). The house settled the boundary below under those rulings. The road lists what the build still owes (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>, HARBOR).
+> ''Register.'' The operator ruled that all code runs dockerized, that one Lararium serves one human, that local-first comes first, and that no pave or wipe command exists (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). The house settled the boundary below under those rulings. The road lists what the build still owes (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`>>, HARBOR).
 
 <<~/ahu>>
 
-<<~ ahu #/code-and-hooks>>
+<<~ ahu slot=`#/code-and-hooks`>>
 
 !! Code in the container, hooks on the host
 
@@ -39,7 +38,7 @@ A host shim holds no logic of the vessel. It routes a verb to the container and 
 
 <<~/ahu>>
 
-<<~ ahu #/the-image>>
+<<~ ahu slot=`#/the-image`>>
 
 !! The image ~ code and genesis, nothing of a household
 
@@ -53,13 +52,13 @@ A host shim holds no logic of the vessel. It routes a verb to the container and 
 
 <<~/ahu>>
 
-<<~ ahu #/the-two-mounts>>
+<<~ ahu slot=`#/the-two-mounts`>>
 
 !! The two mounts ~ `/workspace` and `/state`
 
 | Mount | Holds | Law |
 |---|---|---|
-| `/workspace` | `bags/` and `wikis/`, the corpus the disk projection reads and writes | editable from the host; the projection's mirror roots resolve under it (<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>) |
+| `/workspace` | `bags/` and `wikis/`, the corpus the disk projection reads and writes | editable from the host; the projection's mirror roots resolve under it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>) |
 | `/state` | the vessel's homes and its custody | one directory per vessel; backed up apart from the corpus; never an image layer |
 
 * ''One Lararium per human, never per face.'' A human's faces keep their data together in one vessel. No design assumes a container or a state mount per face; a session wears a face and the vessel wears none.
@@ -69,7 +68,7 @@ A host shim holds no logic of the vessel. It routes a verb to the container and 
 
 <<~/ahu>>
 
-<<~ ahu #/the-socket>>
+<<~ ahu slot=`#/the-socket`>>
 
 !! The socket stays inside
 
@@ -81,7 +80,7 @@ The daemon and the CLI meet at a Unix socket in the container's own `/tmp`, a tm
 
 <<~/ahu>>
 
-<<~ ahu #/the-engine>>
+<<~ ahu slot=`#/the-engine`>>
 
 !! Engine control stays with the host
 
@@ -95,14 +94,14 @@ The container drops every Linux capability and forbids new privileges. It publis
 
 <<~/ahu>>
 
-<<~ ahu #/lan-discovery>>
+<<~ ahu slot=`#/lan-discovery`>>
 
 !! LAN discovery ~ candidates, never authority
 
 Two vessels on one household LAN may find each other without typing an address. Discovery answers one question alone: //which addresses might host a vessel//.
 
 * ''An announcement carries a bare service and a port.'' It carries no catalog address, no Nexus name, no key and no label that names a person or a house. Anyone on the LAN reads an announcement, so it holds nothing worth reading.
-* ''A candidate grants nothing.'' The listener gains a URL to try. The gate at that URL answers only a dialer who already holds its pinned key (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/decisions">>, the knock), so a candidate dialed with a wrong key meets silence.
+* ''A candidate grants nothing.'' The listener gains a URL to try. The gate at that URL answers only a dialer who already holds its pinned key (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/decisions`>>, the knock), so a candidate dialed with a wrong key meets silence.
 * ''A pinned admission alone grants authority.'' The key reaches the joining device through an admission a human carried: a QR code or a `lar:` URI holding the URL and the gate key. A right key still wants the host's explicit admit before any plane opens.
 * ''The fallback needs no multicast.'' The same QR code or URI carries the URL itself, so a LAN that drops multicast (guest isolation, a mesh of access points, a routed segment) loses convenience and nothing else.
 * ''No clock decides.'' A candidate that stops answering simply fails the next dial; no timer marks a peer lapsed.
@@ -111,15 +110,15 @@ A container on the engine's default bridge network sends and hears no LAN multic
 
 <<~/ahu>>
 
-<<~ ahu #/household-https>>
+<<~ ahu slot=`#/household-https`>>
 
 !! Household HTTPS ~ a terminator in front, one declared name
 
-A browser mints keys only in a secure context, so a phone on the LAN needs an `https` origin its trust store already accepts (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>). The boundary places that concern outside the vessel:
+A browser mints keys only in a secure context, so a phone on the LAN needs an `https` origin its trust store already accepts (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>>). The boundary places that concern outside the vessel:
 
 * ''A TLS terminator stands in front of the vessel'' and holds the wildcard certificate. The vessel serves plaintext to the terminator alone and keeps its loopback publication.
 * ''One split-horizon resolver'' on the always-on node answers each household name with its own LAN address. The operator keeps one records file, one `<LAN address> <name>` line per name, so two hearths answer with two addresses. A name under the zone that the file does not list answers "no such name", so no household name leaves the house; a reverse lookup of a private, loopback or link-local address answers "no such name" inside the house as well; every other name forwards upstream. A one-shot check reads the file as the vessel's own uid before the resolver stands, so a file only that uid reads serves; it refuses by name a line the resolver would answer wrongly or never (an address octet led by a zero among them, since the resolver loads no zone that holds one), and renders the zone the resolver serves; a refused edit leaves the resolver on the last zone the check passed. No device installs anything.
-* ''The vessel names its reach face from one setting'', `LAR_PUBLIC_URL`. An `https` name carries `wss` for the relay, and the crossing URL the vessel prints (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>) uses that same name throughout.
+* ''The vessel names its reach face from one setting'', `LAR_PUBLIC_URL`. An `https` name carries `wss` for the relay, and the crossing URL the vessel prints (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos`>>) uses that same name throughout.
 * ''The operator supplies the domain and the DNS credential; a one-shot issuer reads it.'' The credential rests as two owner-read files in a host directory the operator names, outside both mounts of #/the-two-mounts. The issuer service alone mounts that directory, read-only, asks for one wildcard certificate per machine and exits. It asks public resolvers for the zone's apex and its challenge record, never the household resolver, and refuses by name a resolver it reads as inside the house (a private, loopback, link-local or shared address, the resolver's own service name, a local name or a name under the zone): the household resolver answers every name under the zone itself, so through it the issuer would find the house's own apex and no name server. A record the zone publishes under the household name stays out of reach inside the house. No credential value enters the image, the compose file, an environment variable, `/state` or `/workspace`, and the vessel's container mounts none of it.
 * ''The first always-on node issues; a second machine receives its certificate by hand.'' One node holds the credential. Every other machine gets a certificate and key a human carried to it.
 * ''Issuance and renewal sit at the edge of the causal island.'' A certificate's validity window belongs to the browser's trust decision. It decides no admission, no revocation and no act inside the vessel.
@@ -128,7 +127,7 @@ The terminator, the resolver and the issuer attach through profiles in the compo
 
 <<~/ahu>>
 
-<<~ ahu #/the-harnesses>>
+<<~ ahu slot=`#/the-harnesses`>>
 
 !! The harnesses stand on the image
 
@@ -144,7 +143,7 @@ The container drivers ride hosted runners on every pushed head (`.github/workflo
 
 <<~/ahu>>
 
-<<~ ahu #/the-release-manifest>>
+<<~ ahu slot=`#/the-release-manifest`>>
 
 !! The release manifest
 
@@ -152,29 +151,29 @@ A release names one multi-arch image index and one record beside it. The record 
 
 <<~/ahu>>
 
-<<~ ahu #/no-pave>>
+<<~ ahu slot=`#/no-pave`>>
 
 !! No pave, no wipe
 
-No verb of the host shim and no service of the compose file removes a state directory, a workspace or a volume that holds a vessel. The shim refuses, by name, every CLI verb that would clear a vessel's state. A fresh start happens by hand and stays reversible: the operator moves the old homes aside and founds again (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start">>). Stopping the vessel leaves both mounts as they stood.
+No verb of the host shim and no service of the compose file removes a state directory, a workspace or a volume that holds a vessel. The shim refuses, by name, every CLI verb that would clear a vessel's state. A fresh start happens by hand and stays reversible: the operator moves the old homes aside and founds again (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start`>>). Stopping the vessel leaves both mounts as they stood.
 
 ''Local-first comes first.'' Nothing in the boundary forecloses a keyless ciphertext carrier on a cloud surface later: custody stays in `/state`, and a carrier that holds sealed bytes alone needs neither mount's contents in the clear.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> the road carries the container rulings and the HARBOR build list
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">> secure context explains the browser wall the terminator clears
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">> disk projection defines what lands under the workspace mount
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">> pronaos defines the web surface and the crossing a browser walks
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">> the founding runbook walks an operator through a first vessel
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/no-global-now">> no wall clock decides an act
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> the road carries the container rulings and the HARBOR build list
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>> secure context explains the browser wall the terminator clears
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>> disk projection defines what lands under the workspace mount
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos`>> pronaos defines the web surface and the crossing a browser walks
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>> the founding runbook walks an operator through a first vessel
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>> no wall clock decides an act
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2g-FY_uXeQERyQxEQ9cLrSgUwk9dKJdxBPKitQoQwSc
+<<^ code=`&#x0003;`>>ni:///sha-256;rMa-NgZezq-VomkyGBATvJyQHwxx0kwg23yXCsT9q2c
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

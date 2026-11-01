@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/keyhive/event-store">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/keyhive/event-store`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/keyhive/event-store.mem"
 l-space     = "lararium"
 mana        = 12
 role        = "invariant law: EventStore — durable persistence for Keyhive ops, and the island slice a boot may load without losing decryptability. Names why an event carries an island, which events carry NONE and must co-load with every slice, and why causality needs no sorting here."
@@ -15,7 +14,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/keyhive/event-store"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! EventStore ~ what a vessel remembers of its own capabilities
 
@@ -25,7 +24,7 @@ the state it held.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! The invariants
 
@@ -46,15 +45,15 @@ caller that has not reasoned about slices gets the whole record rather than a si
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-keyhive/src/event-store.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-keyhive/src/event-store.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/capability-provider">>
-<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/keyhive-provider`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bFZFp181RDGacs2G5Pydb1gk8L8wqKbupI10JqCSgrU
+<<^ code=`&#x0003;`>>ni:///sha-256;h_L12BaFwntLhvoNgRX8MjSDf8mFHwqCXGClJCBEiZM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

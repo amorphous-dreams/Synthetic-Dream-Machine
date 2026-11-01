@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/quorum-entry">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/quorum-entry`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/quorum-entry.mem"
 l-space     = "lararium"
 mana        = 13
 role        = "invariant law: the ONE canonical byte-image every quorum-signed steward entry signs over — shared beneath the Kapae antigen board and the members set. Names the subtraction, the domain-stays-first-and-required separation, and the deliberate refusal to carry a verdict (fold + quorum stay board-local, so a shared verifier cannot turn admission into conscription)."
@@ -15,7 +14,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/quorum-entry"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! quorum-entry ~ one byte-image, two boards, no drift
 
@@ -26,7 +25,7 @@ two boards can never drift a field apart while both claiming a quorum verified t
 
 <<~/ahu>>
 
-<<~ ahu #/the-subtraction>>
+<<~ ahu slot=`#/the-subtraction`>>
 
 !! The subtraction ~ the shared act beneath two boards
 
@@ -40,7 +39,7 @@ signed content'', so re-carrying an entry never re-signs it.
 
 <<~/ahu>>
 
-<<~ ahu #/domain-first>>
+<<~ ahu slot=`#/domain-first`>>
 
 !! The domain stays first and stays required ~ the cross-board separation
 
@@ -52,7 +51,7 @@ the domain un-defaultable.
 
 <<~/ahu>>
 
-<<~ ahu #/refuses-a-verdict>>
+<<~ ahu slot=`#/refuses-a-verdict`>>
 
 !! What this module refuses ~ bytes only, never a verdict
 
@@ -64,7 +63,7 @@ declines every judgment about them.
 
 <<~/ahu>>
 
-<<~ ahu #/the-one-door>>
+<<~ ahu slot=`#/the-one-door`>>
 
 !! The one door ~ every Ed25519 signature and every key reads one strict rule
 
@@ -106,16 +105,16 @@ passes.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/quorum-entry.ts" family="code" role="has">>
-<<~ pranala #the-door from="?" -> to="packages/lararium-mesh/src/ed25519-door.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-mesh/src/quorum-entry.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#the-door` from=`?` to=`packages/lararium-mesh/src/ed25519-door.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/registry-filter`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;z0ANNd5_X3kgYICWbEDnU5WumgQzA-f1T9FykLKYORQ
+<<^ code=`&#x0003;`>>ni:///sha-256;Mx3t53unHow8ESW62hL4289VV8j1f7G_nCy159NOUPI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

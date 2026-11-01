@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/ui">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/ui`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/ui.mem"
 namespace = "&#x2299;"
 role      = "query surface sigil — evaluates TW5 filter and renders result list; English alias: query"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-ui"]
@@ -14,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/ui"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Ui
 
@@ -29,7 +28,7 @@ and renders whatever answers.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -39,30 +38,31 @@ A ui sigil MUST evaluate the filter in the current tiddler context.
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```text
-<<~ ui [filter-expression]>>
-<<~ query [filter-expression]>>
+<<~ ui filter=`[filter-expression]`>>
+<<~ query filter=`[filter-expression]`>>
 ```
 
 TW5 filter expansion:
+
 ```text
 <$list filter="[filter-expression]"><$view field="title"/></$list>
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-query">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-query`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KFHWBYbcRUoL1pqJIexfmPH4GZ_YjlkpqFigT9gtFTQ
+<<^ code=`&#x0003;`>>ni:///sha-256;ggmS8n-5WTvhcfcRYJ4i-mc2fC_hpquUV7H5ZuQj9Lc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

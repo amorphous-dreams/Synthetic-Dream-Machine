@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/templates/mount-points/storage-class">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/templates/mount-points/storage-class`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/templates/mount-points/storage-class.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 17
@@ -16,13 +15,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/mount-points/storage-class"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
 ! Template — Mount-Point (Storage Class)
 
-<<~ ahu #/intent>>
+<<~ ahu slot=`#/intent`>>
 
 !! Intent
 
@@ -30,7 +29,7 @@ A mount-point meme names ''where a module seats on an entity'' and the contract 
 
 <<~/ahu>>
 
-<<~ ahu #/required-shape>>
+<<~ ahu slot=`#/required-shape`>>
 
 !! Required Shape
 
@@ -46,7 +45,7 @@ A mount-point meme names ''where a module seats on an entity'' and the contract 
 
 <<~/ahu>>
 
-<<~ ahu #/writing-law>>
+<<~ ahu slot=`#/writing-law`>>
 
 !! Writing Law
 
@@ -56,14 +55,14 @@ A mount-point meme names ''where a module seats on an entity'' and the contract 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/modules/power">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/modules/power`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WA5_ymmTyAVyK7iF9J62g-gQLAgG_UznBnXWhGZqk48
+<<^ code=`&#x0003;`>>ni:///sha-256;Nm8gkBgUeKyDX8hmn8U0fIElC5tn1Qnn-9t1lkM5osY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

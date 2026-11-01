@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/projection-nalu">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/api/projection-nalu`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/projection-nalu.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 18
@@ -20,17 +19,17 @@ uri-path  = "ha.ka.ba/lararium/api/projection-nalu"
 written   = "2026-06-26"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/nalu">>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Projection-Nalu ~ the wave that carries a sovereign's state to a substrate
 
 A lararium holds state no observer sees until a wave carries it out. ''The projection-nalu names that wave'' — the shared form three live mechanisms each enact:
 
-<<~ scale projection "node-disk -> browser-DOM -> chat-mempalace">>
+<<~ scale name=`projection` ranks=`node-disk -> browser-DOM -> chat-mempalace`>>
 
 Each runs one shape — ''`SOURCE → forward-pass → NALU gate → SINK`'' — and each swaps only the ''SINK'', never the engine: `role = capability ≠ platform`. The node lararium flushes rendered wiki state to ''fs''; the browser lararium flushes it to a ''shadow-DOM''; the chat session flushes annotated turns to the ''mempalace''. One wave, three shores.
 
@@ -40,14 +39,14 @@ The nalu (the wave that carries the whole shaped movement, never one molecule) s
 
 <<~/ahu>>
 
-<<~ ahu #/two-families>>
+<<~ ahu slot=`#/two-families`>>
 
 !! Two gate-families ~ conserved, kept distinct
 
 The gate fires in one of two families. The survey's load-bearing finding: ''the split runs deep, not arbitrary'' — biology, earth, and human systems each run BOTH families, often in one substrate (a neuron grades on its dendrites and spikes on its axon; a hydrograph holds baseflow and stormflow; a ledger zeroes temporary accounts and rolls permanent ones forward). The families MUST stay distinct — forcing them into one breaks both.
 
-<<~ scale accumulate "heterogeneous -> every-item-conserved -> buffer-batch-flush -> durable-RESERVE -> refractory-lockout">>
-<<~ scale coalesce "homogeneous -> newest-supersedes -> unflushed-FADES -> no-reserve -> NO-refractory">>
+<<~ scale name=`accumulate` ranks=`heterogeneous -> every-item-conserved -> buffer-batch-flush -> durable-RESERVE -> refractory-lockout`>>
+<<~ scale name=`coalesce` ranks=`homogeneous -> newest-supersedes -> unflushed-FADES -> no-reserve -> NO-refractory`>>
 
 * ''Accumulate'' (durable) carries every heterogeneous item to delivery; it buffers, flushes a batch on a crest, holds a durable ''reserve'' under load, and pays a ''refractory lockout'' that buys ordering and forbids backflow. Biology names it ''integrate-and-fire''. Engine: `CaptureNalu` (`mesh/capture-nalu.ts`) — ceiling · spill-to-reserve · backoff · dead-letter · RRP←reserve refill.
 * ''Coalesce'' (transient) carries homogeneous frames where the newest supersedes and the unflushed ''fades'' (the decay-envelope). It holds ''no'' reserve — a dropped intermediate reads as the correct dual of accumulate's every-one-delivered, never a loss — and it MUST NOT pay the refractory lockout (that stalls the freshest frame). Engine: `CoalesceGate` (`mesh/projection-nalu.ts`).
@@ -56,7 +55,7 @@ The gate fires in one of two families. The survey's load-bearing finding: ''the 
 
 <<~/ahu>>
 
-<<~ ahu #/rhymes>>
+<<~ ahu slot=`#/rhymes`>>
 
 !! The rhymes ~ three deep domains carry this form (2026-06-26)
 
@@ -70,14 +69,14 @@ Three tasked spirits hunted structural rhymes outside computer science. The conv
 
 <<~/ahu>>
 
-<<~ ahu #/facets>>
+<<~ ahu slot=`#/facets`>>
 
 !! Facets ~ held as vocabulary, grown on demand (YIN)
 
 The survey named more than the engines yet carry. Held here, built when a sink needs them — never speculatively:
 
-<<~ scale flush-reducer "deliver -> fold/net -> zero -> supersede-decay">>
-<<~ scale flush-trigger "threshold/pressure -> periodic -> nested-periodic -> incremental -> event -> deferred-low-load">>
+<<~ scale name=`flush-reducer` ranks=`deliver -> fold/net -> zero -> supersede-decay`>>
+<<~ scale name=`flush-trigger` ranks=`threshold/pressure -> periodic -> nested-periodic -> incremental -> event -> deferred-low-load`>>
 
 * ''flush-reducer'' — the flush carries a verb: deliver · ''fold/net'' (settlement) · ''zero'' (the close) · ''supersede-decay'' (the bell).
 * ''flush-trigger'' — threshold/pressure (tide-mill head · seismic · overpressure) · periodic · ''nested-periodic'' (colotomy = the Aperture ladder pulse·beat·measure·arc·theme) · incremental/min-viable-chunk (speech) · event/signal (the bell) · deferred-low-load (sleep consolidation = off-peak compaction).
@@ -87,7 +86,7 @@ The survey named more than the engines yet carry. Held here, built when a sink n
 
 <<~/ahu>>
 
-<<~ ahu #/guards>>
+<<~ ahu slot=`#/guards`>>
 
 !! Guards ~ the failure modes the rhymes named
 
@@ -97,13 +96,13 @@ The survey named more than the engines yet carry. Held here, built when a sink n
 
 <<~/ahu>>
 
-<<~ ahu #/servo>>
+<<~ ahu slot=`#/servo`>>
 
 !! The servo ~ the threshold breathes (self-regulation, per family)
 
 Every collect-then-fire system ''servos its threshold to a set-point'' — the gate stops guessing and tracks the load. A 2026-06-26 prior-art survey (Linux Net DIM · NIC interrupt coalescing · AIMD · Nagle/triple-buffering · rAF/React scheduler) grounded the law, and the keel finding: ''the two families servo in OPPOSITE directions, because one runs lossless and one runs lossy.''
 
-<<~ scale servo "accumulate/shrink-depth-when-slow -> coalesce/GROW-window-when-slow -> display/stay-frame-pinned">>
+<<~ scale name=`servo` ranks=`accumulate/shrink-depth-when-slow -> coalesce/GROW-window-when-slow -> display/stay-frame-pinned`>>
 
 * ''Accumulate'' (lossless — every item must flush): under load, ''shrink'' the batch depth so per-flush latency stays bounded. Engine: `adaptGate` (`mesh/gate-tuning.ts`) on the EWMA'd flush latency.
 * ''Timed coalesce'' (lossy/newest-wins; the disk reconcile draws `KeyedReconcileGate`, which holds no window to tune): under load, ''GROW'' the window — rendering while the prior flush still drains wastes the work, so spacing flushes wider makes each carry a fresher state for less work (Net DIM widens under flood; AIMD: back off multiplicatively, recover additively). Engine: `adaptWindow` (`mesh/gate-tuning.ts`), opt-in on `KeyedCoalesceGate`.
@@ -117,19 +116,19 @@ Every collect-then-fire system ''servos its threshold to a set-point'' — the g
 
 <<~/ahu>>
 
-<<~ ahu #/cells>>
+<<~ ahu slot=`#/cells`>>
 
 !! The cells ~ every projection rides a nameless causal island (the runtime has-stack)
 
 The three nalus do not live in bespoke worker classes. Each rides a ''sovereign causal island'' composed as a `#has` ''cap stack'' — the RUNTIME twin of the data-plane has-stack law (`lar:///ha.ka.ba/lares/api/pono/has-stack`): a worker is a NAMELESS entity whose cap stack IS its behavior. `composeIsland([...caps])` (`tw5/island-caps.ts`) folds the stack into one `IslandBehavior` the sovereign kernel drives.
 
-<<~ scale cap "hasCapture/IN-accumulate -> hasProjection/OUT-coalesce -> hasDispatch/the-synapse -> hasEngineWatch/hasRecipeWatch/drift">>
+<<~ scale name=`cap` ranks=`hasCapture/IN-accumulate -> hasProjection/OUT-coalesce -> hasDispatch/the-synapse -> hasEngineWatch/hasRecipeWatch/drift`>>
 
-A wiki island = `[hasDispatch, hasProjection, hasEngineWatch, hasRecipeWatch]`; the ''@daemon'' (the bound-operator's vessel-only worker, severed from federation) = `[hasDispatch, hasProjection, hasEngineWatch, hasCapture]` (`daemon-behavior.ts`; its render cap rests inert until a worker entry wires `onBoot`) — telemetry ''folds into @daemon as an IDEMPOTENT cap'': every @daemon carries it (tending the operator's session-capture falls to the daemon as a duty), neither a bespoke worker nor a standalone island. The capture cap stays a DISTINCT `#has` unit (FLOW) beside dispatch (AUTHORITY) — the master cut holds at the cap shore, never the worker — and rests INERT until a sink + feed get wired (a valid resting state). The breath runs two gate-families on one island substrate (IN-axon + OUT-dendrite, the neuron rhyme); dispatch runs as the third, non-gate channel. A cap injects its substrate shore, never imports it — the same stack composes on node, browser, any vessel.
+A wiki island = `[hasDispatch, hasProjection, hasEngineWatch, hasRecipeWatch]`; the ''@daemon'' (the bound-operator's vessel-only worker, severed from federation) = `[hasDispatch, hasProjection, hasEngineWatch, hasCapture]` (`daemon-behavior.ts`; its render cap rests inert until a worker entry wires `onBoot`) — telemetry ''folds into daemon-plane as an IDEMPOTENT cap'': every daemon-plane carries it (tending the operator's session-capture falls to the daemon as a duty), neither a bespoke worker nor a standalone island. The capture cap stays a DISTINCT `#has` unit (FLOW) beside dispatch (AUTHORITY) — the master cut holds at the cap shore, never the worker — and rests INERT until a sink + feed get wired (a valid resting state). The breath runs two gate-families on one island substrate (IN-axon + OUT-dendrite, the neuron rhyme); dispatch runs as the third, non-gate channel. A cap injects its substrate shore, never imports it — the same stack composes on node, browser, any vessel.
 
 <<~/ahu>>
 
-<<~ ahu #/enaction>>
+<<~ ahu slot=`#/enaction`>>
 
 !! Enaction ~ where the form lives in code
 
@@ -149,13 +148,13 @@ The DOM nalu (`tw5-projection.ts`) draws `CoalesceGate`; the Automerge-boundary 
 
 <<~/ahu>>
 
-<<~ ahu #/network-ring>>
+<<~ ahu slot=`#/network-ring`>>
 
 !! The network ring ~ kupono intent for the DreamNet uplift (forward bearing, not enaction)
 
 ''Intent for the network uplift'' — the wire stands UNBUILT (YIN). The recognition to carry: ''this gate model already FORMS a transport-protocol kernel.'' The uplift lifts it one ring of the scale ladder (Lararium → Nexus → DreamNet), the SINK moving local → peer → many. The rhyme map:
 
-<<~ scale ring "intra-island/SINK=local -> inter-island/SINK=peer -> mesh/SINK=many">>
+<<~ scale name=`ring` ranks=`intra-island/SINK=local -> inter-island/SINK=peer -> mesh/SINK=many`>>
 
 * ''accumulate → reliable-ordered transport'' (TCP/ARQ rhyme): the reserve becomes the retransmit buffer · dead-letter the give-up · the CRDT-as-dedup the at-least-once + idempotent guarantee. Cross-peer ordering rides vector clocks — never a global now (`causal-islands.mem`).
 * ''coalesce → gossip / epidemic dissemination'' (Plumtree eager+lazy push): newest-wins becomes last-write-wins state-sync, one→many, eventual consistency. The lossy drop stays the correct dual at mesh scale.
@@ -170,21 +169,21 @@ The DOM nalu (`tw5-projection.ts`) draws `CoalesceGate`; the Automerge-boundary 
 * ''capture-drain'' (`mesh/capture-drain.ts`) — the TRAILING WATERMARK: the checkpoint advances only from a store-confirmed commit, never from dequeue (Kafka-offset / outbox / WAL-checkpoint / Flink-barrier convergence). A gap blocks advance; backlog surfaces a stall as honest bounded pressure; reclaim couples to real landings. This models the replay and store-confirmed acknowledgement invariants (the reserve→retransmit-buffer + the at-least-once-ack the ring named); the durable reserve and live store wiring stand UNBUILT.
 * ''parallel-ingest'' (`mesh/parallel-ingest.ts`) — the SINGLE-WRITER SPLIT: embeddings fan out across the bounded credit-paced pool (parallel, expensive); every commit funnels through ONE ordered serial writer (a contended writer benched ~400× slower). Structured concurrency: complete-clean-or-fail-loud.
 * ''merge-gate'' (`mesh/merge-gate.ts`) — the fan-in merge acts as a GATE not a funnel: VALIDATE before the irreversible commit (kinetic-proofreading), assign one-way order, RECYCLE rejects to a dead-letter lane (never drop, never block) — plus CONSUME-LICENSE-ON-COMMIT (DNA-replication licensing). `parallel-ingest.ts` commits through one serial lane, tracks a separate in-memory license set, and advances the drain after each resolved verdict (commit, dead-letter or skip). A drain-owned license registry (the watermark advance == the license removal, one mechanism) stands UNBUILT.
-* ''KAPPA law'' (live wiring UNBUILT): the SAME runtime MUST serve live capture AND recovery/harvest — recovery replays through the same @daemon gate from offset 0, never a separate raw-mine batch lane (Lambda = the anti-pattern). Every source (main turns · spirit returns · harvest) routes through the ONE sovereign nalu gate; telemetry + synthesis + rhizome-stitch happen AT the gate — a bypass makes a second, blind witness.
+* ''KAPPA law'' (live wiring UNBUILT): the SAME runtime MUST serve live capture AND recovery/harvest — recovery replays through the same daemon-plane gate from offset 0, never a separate raw-mine batch lane (Lambda = the anti-pattern). Every source (main turns · spirit returns · harvest) routes through the ONE sovereign nalu gate; telemetry + synthesis + rhizome-stitch happen AT the gate — a bypass makes a second, blind witness.
 
-''Held for the live-wire:'' the real embed + commit shores (through the @daemon), a shared durable quarantine (merge-gate's per-item proofread-reject ⋈ capture-nalu's batch-poison, two triggers one lane), the SubagentStop→nalu hook, and retiring the `lares subagents` direct-mine bypass.
+''Held for the live-wire:'' the real embed + commit shores (through the daemon-plane), a shared durable quarantine (merge-gate's per-item proofread-reject ⋈ capture-nalu's batch-poison, two triggers one lane), the SubagentStop→nalu hook, and retiring the `lares subagents` direct-mine bypass.
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands#/task-handoff">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/nalu-engine">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/servo">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-provider">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/disk-projector">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/federated-causal-islands#/task-handoff`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/nalu-engine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/servo`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/meme-provider`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/disk-projector`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6Sq1-GaL305P2aoaHmjWenmX4Vtlj1tU-uNXut0AacI
+<<^ code=`&#x0003;`>>ni:///sha-256;NKeKilzN1TVi97NbcAu15Ov6yyGmDxiYHQbXTBCAq1c
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

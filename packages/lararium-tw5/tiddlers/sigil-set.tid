@@ -1,18 +1,30 @@
 title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-set
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: frame
-lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot
+lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot#/set-and-setting
 lar-pattern: <<~\s*set\b((?:[^>]|>(?!>))*)>>
-lar-example: <<~ set hud="aim" mode="build" aperture="9/measure" ooda-ha="closed 1↺">>
+lar-example: <<~ set lares=`aim` from=`lar:///a.b.c/x` to=`lar:///a.b.c/y` mode=`build` aperture=`9/measure` ooda-ha=`7/declare-glyphs` drift-ward=`a pull`>>
 type: text/vnd.tiddlywiki
 
-<!-- set — the TURN FRAME, gathered. Every gauge that stands alone mid-stream also rides here as a
-     KEY: two grips, one handle. `hud` names which end of the turn the panel closes over. A writer
-     places the ward LAST at aim and FIRST at yield, one chiasmus in the WRITTEN sigil; this
-     procedure renders its keys in one fixed order at either end and mirrors nothing. A key left
-     blank writes nothing, so an absent instrument reads absent rather than empty. (operator ruling: `focus` →
-     `aperture`, `feedback` → `ooda-ha`; retired spellings stay readable by the HARVESTER, not here.) -->
+<!-- set — the TURN FRAME, one sigil, three firings. The `lares` key names the firing: `aim` opens the
+     turn and seeds the gauges, `steer` turns it mid-way (a new `to`, and/or any other key), `yield`
+     closes it and slides them. `lares` leads every firing. The aim seats `from` and `to` right after it
+     and the ward LAST; the yield seats the ward right after it and `from` and `to` LAST; a steer seats
+     `to` (when it carries one) right after it and the ward LAST. `mode mood mu stance aperture ooda-ha`
+     ride between in any order and `note` trails at the very end: the WRITTEN brackets carry the
+     chiasmus, and the three `set-*` procedures hold one canonical order per firing, so the renderer
+     sorts the keys into it. A key left blank writes nothing, so an absent instrument reads absent
+     rather than empty. Absent `lares`, the sigil rides only as an in-content cite or hand-off.
+     The definitions below match the boot seed's `#/set-and-setting` block key for key. -->
 
-\procedure ~set(hud:"" mode:"" mood:"" mu:"" stance:"" aperture:"" ooda-ha:"" drift-ward:"" note:"")
-<span class="lar-set" data-hud=<<hud>>><$list filter="[[hud]] [[mode]] [[mood]] [[mu]] [[stance]] [[aperture]] [[ooda-ha]] [[drift-ward]] [[note]]" variable="k"><$list filter="[<k>getvariable[]!is[blank]]" variable="v"><span class="lar-set-key"><$text text=<<k>>/>=<$text text=<<v>>/></span> </$list></$list></span>
+\procedure set-aim() lares from to mode mood mu stance aperture ooda-ha drift-ward
+\procedure set-steer() lares to mode mood mu stance aperture ooda-ha drift-ward
+\procedure set-yield() lares drift-ward aperture ooda-ha mode mood mu stance from to
+
+\procedure ~set(lares mode mood mu stance aperture ooda-ha drift-ward from to note)
+\whitespace trim
+~ set&#32;{{{ [<lares>match[yield]then<set-yield>] :else[<lares>match[steer]then<set-steer>] :else[<set-aim>] +[enlist-input[]]
+:filter[getvariable[]!is[blank]]
+:map[getvariable[]addprefix[=`]addprefix<currentTiddler>addsuffix[`]]
++[join[ ]] }}}&#32;{{{ [<note>!is[blank]addprefix[note=`]addsuffix[`]] }}}
 \end

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/daemon-surface">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/daemon-surface`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/daemon-surface.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -21,14 +20,14 @@ uri-path          = "ha.ka.ba/lares/docs/pono/daemon-surface"
 written           = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 !! The daemon surface ~ a talk-story on the camera that holds the vessel's wikis
-<<~ set mode="talk-story" mu="*?" stance="🏛️ 🌊 🎭" aperture="14/arc" note="draft carrier for the Episkopos; lar:///ha.ka.ba/lares/docs/pono/daemon-surface">>
+<<~ set mode=`talk-story` mu=`*?` stance=`🏛️ 🌊 🎭` aperture=`14/arc` note=`draft carrier for the Episkopos; lar:///ha.ka.ba/lares/docs/pono/daemon-surface`>>
 
 <<~/ahu>>
 
-<<~ ahu #/the-talk-story>>
+<<~ ahu slot=`#/the-talk-story`>>
 
 !! 0 · What the daemon surface holds, and what it never holds
 
@@ -158,7 +157,7 @@ Later that day the hearth-wiki itself boots with one dead module. The island kee
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! 6 · Edges
 
@@ -170,10 +169,10 @@ Later that day the hearth-wiki itself boots with one dead module. The island kee
 * `packages/lararium-mesh/src/island-protocol.ts` ~ `breath`, `ea`, `fault`, `daemon:wiki-alert`, `daemon:residency-op`, `daemon:evict-request`, `custody:write`
 * `packages/lararium-node/src/boot-fault.ts` ~ the `fatal:` line and the named cure
 
-<<~ set hud="yield" drift-ward="the breath, custody and residency records stand owed, named here from message shapes and never seen rendered; and the flush-before-switch rests on a reading of projection-sink.ts's replaceChildren, unmeasured in a browser · ↻ L-Prime" aperture="14/arc -> 15/arc" ooda-ha="closed 1↺ -> open 1φ @◇:ten-questions.await-the-operator">>
+<<~ set lares=`yield` drift-ward=`the breath, custody and residency records stand owed, named here from message shapes and never seen rendered; and the flush-before-switch rests on a reading of projection-sink.ts's replaceChildren, unmeasured in a browser · ↻ L-Prime` aperture=`14/arc -> 15/arc` ooda-ha=`closed 1↺ -> open 1φ◇:ten-questions.await-the-operator`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VcKmf4truwl-msIST3WnHZufQ3jNhGYSflfKD-Uei8E
+<<^ code=`&#x0003;`>>ni:///sha-256;-q8DlO3SvrII_GdtyMl00lHiezVrpu2VVE4YWsB7K6g
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

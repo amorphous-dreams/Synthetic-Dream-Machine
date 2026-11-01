@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/vendor/sq-streams">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/vendor/sq-streams`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable          = true
-file-path          = "bags/lares/ha.ka.ba/lares/api/vendor/sq-streams.mem"
 mana               = 18
 manao              = 18
 manaoio            = 17
@@ -18,7 +17,7 @@ type               = "text/memetic-wikitext+tiddlywiki"
 uri-path           = "ha.ka.ba/lares/api/vendor/sq-streams"
 ```
 
-<<~ ahu #/about>>
+<<~ ahu slot=`#/about`>>
 
 ! Streams Plugin — by Saq Imtiaz
 
@@ -71,12 +70,12 @@ record saying one thing and the offering carrying another.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tw5-module">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tw5-module`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zD5kEPAh_6w-OV3gYcfwTGwowhrH1EACKc-C4YFHTBw
+<<^ code=`&#x0003;`>>ni:///sha-256;ffpc1vfGgInX-i_cjYSN1dHlp08WIG5lhPLq_FdT8es
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

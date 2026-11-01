@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/index">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/index`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/index.mem"
 l-space   = "archive"
 mana      = 16
 manao     = 16
@@ -16,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/history/lindwyrm/index"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Lindwyrm — Story Arc Index
 
@@ -26,7 +25,7 @@ The arc seals at Act VII, the hoard disclosed. The work that follows — the Lar
 
 <<~/ahu>>
 
-<<~ ahu #/architecture>>
+<<~ ahu slot=`#/architecture`>>
 
 !! Architecture & Structure
 
@@ -38,7 +37,7 @@ The arc seals at Act VII, the hoard disclosed. The work that follows — the Lar
 
 <<~/ahu>>
 
-<<~ ahu #/acts>>
+<<~ ahu slot=`#/acts`>>
 
 !! Narrative Loci (Act Order)
 
@@ -53,7 +52,7 @@ Acts I, II, VI, and VII stand here as discrete narrative loci. The arc's middle 
 
 <<~/ahu>>
 
-<<~ ahu #/standalone>>
+<<~ ahu slot=`#/standalone`>>
 
 !! Standalone Loci
 
@@ -64,6 +63,6 @@ Acts I, II, VI, and VII stand here as discrete narrative loci. The arc's middle 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Dv_8lIsqaL4hEIPG8kgZ5nInufXOn7XXZYNx4LE3NRs
+<<^ code=`&#x0003;`>>ni:///sha-256;CscSY05rwx_X_KcXJVFHstiZRIHpNOLuY-Kv1g9m0Sw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,12 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/verse-mesh">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/verse-mesh`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
 docs      = "lar:///ha.ka.ba/lararium/docs/verse-mesh"
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/verse-mesh.mem"
 mana      = 18
 manao     = 18
 manaoio   = 17
@@ -251,18 +250,18 @@ Every row names a pace ''inside a worker''; no row places an engine on a main th
 The landing queue stays identical across all platforms.
 The host-task seat changes; the landing contract does not. The nalu engine holds no timer.
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/camera-mount">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-provider">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-adaptor`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/camera-mount`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/meme-provider`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zLnqhQ6Fn56LotMbpHUBc1Tmj644z2QnVZWmLWWZAgM
+<<^ code=`&#x0003;`>>ni:///sha-256;vomH_XXESh8PlZ9s9G-3ClJg7gG9FsUJsRqy32_MiRk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

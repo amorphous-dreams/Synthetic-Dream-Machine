@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/cli-test-laws">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/cli-test-laws`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/cli-test-laws.mem"
 l-space   = "adjacent"
 role      = "the lares CLI's test architecture: the pattern integrities the suite defends, each tested as a law over inputs drawn from the live tables, its literal bug-finds kept as seeds, a known-positive control beside every zero; the census, the module shape, the migration, and the holes the laws name"
 status    = "draft"
@@ -14,9 +13,9 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/cli-test-laws"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The CLI's test laws ~ the pattern integrity, never the instance
 
@@ -24,7 +23,7 @@ A fixed bug leaves a test that guards its one input. A suite of such instances g
 
 <<~/ahu>>
 
-<<~ ahu #/the-shape>>
+<<~ ahu slot=`#/the-shape`>>
 
 !! The shape of a law module
 
@@ -37,7 +36,7 @@ A fixed bug leaves a test that guards its one input. A suite of such instances g
 
 <<~/ahu>>
 
-<<~ ahu #/the-laws>>
+<<~ ahu slot=`#/the-laws`>>
 
 !! The laws
 
@@ -62,7 +61,7 @@ Census counts read rows (`test.each` counts once) across the suite's 135 files; 
 
 <<~/ahu>>
 
-<<~ ahu #/the-migration>>
+<<~ ahu slot=`#/the-migration`>>
 
 !! The migration, law by law
 
@@ -74,7 +73,7 @@ Census counts read rows (`test.each` counts once) across the suite's 135 files; 
 
 <<~/ahu>>
 
-<<~ ahu #/the-measure>>
+<<~ ahu slot=`#/the-measure`>>
 
 !! The measure ~ a law's strength reads as the mutants it kills
 
@@ -84,7 +83,7 @@ Generated laws draw from `fast-check` through `@fast-check/vitest`, the literal 
 
 <<~/ahu>>
 
-<<~ ahu #/the-census>>
+<<~ ahu slot=`#/the-census`>>
 
 !! The census
 
@@ -95,7 +94,7 @@ Generated laws draw from `fast-check` through `@fast-check/vitest`, the literal 
 
 <<~/ahu>>
 
-<<~ ahu #/the-holes>>
+<<~ ahu slot=`#/the-holes`>>
 
 !! The holes the laws name
 
@@ -104,6 +103,6 @@ Generated laws draw from `fast-check` through `@fast-check/vitest`, the literal 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;C38R7_i0K5nvoD415SAa8b_TQrum00lVJMK7Y_A4zwY
+<<^ code=`&#x0003;`>>ni:///sha-256;tqXIpNi8k7_JvHwM4VkgtG9owDa6ZNkGAHABQ6QCtWI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

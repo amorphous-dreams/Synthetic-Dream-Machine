@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/cli/vessel-door">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/cli/vessel-door.mem"
 l-space    = "lares"
 mana       = 15
 manao      = 15
@@ -19,11 +18,11 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/cli/vessel-door"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/the-record-laws>>
+<<~ ahu slot=`#/the-record-laws`>>
 
 !! The record laws ~ what a command IS, and where a name lives
 
@@ -46,7 +45,7 @@ session artifact ids, storage artifact ids, and any other first-class name.
 
 ''The authority says who spoke; the naming CONVENTION reads as a courtesy, never a verdict:''
 
-<<~ scale locality """hostless ~ "`lar:///ha.ka.ba/lares/commands/promote/…`" — a hot, warm or cold STORAGE artifact, on-disk projections first -> hostful ~ "`lar://node.alpha.local/ha.ka.ba/bags/sessions/live/…`" — a LIVE session artifact, named at the node holding it""">>
+<<~ scale name=`locality` ranks=```hostless ~ "`lar:///ha.ka.ba/lares/commands/promote/…`" — a hot, warm or cold STORAGE artifact, on-disk projections first -> hostful ~ "`lar://node.alpha.local/ha.ka.ba/bags/sessions/live/…`" — a LIVE session artifact, named at the node holding it```>>
 
 ''An author following the convention hands a reader a hint, and the law stops there.'' Hostful and hostless
 name WHAT a URI names — a hostful authority states who spoke, under what grant, from where, which reads as
@@ -63,7 +62,7 @@ where both laws stood settled with no live carrier holding either.
 
 <<~/ahu>>
 
-<<~ ahu #/the-law>>
+<<~ ahu slot=`#/the-law`>>
 
 ! The Vessel Door ~ one namespace over the vessel's island
 
@@ -77,21 +76,21 @@ plane with no door has nowhere to put new capability but the top level'' — whi
 grows back wherever the law has not reached, and where to look when it does.
 
 ''The vessel door writes `LAR_ROOT` and nothing else.'' The checkout and the operator's homes are islands of
-their own, each with its door: `lares repo` and `lares home` (<<~ loulou "lar:///ha.ka.ba/lares/cli/reality-tunnel#/the-radius-law">>).
+their own, each with its door: `lares repo` and `lares home` (<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/reality-tunnel#/the-radius-law`>>).
 One invocation writes one radius, and a rite composes its own door's radius alone.
 
 <<~/ahu>>
 
-<<~ ahu #/the-primitives>>
+<<~ ahu slot=`#/the-primitives`>>
 
 !! What the door answers — four primitives and one read
 
 Every substrate motion in this CLI composes from these, and no composition earns a primitive's seat.
 
-<<~ has Primitive found "mints the vessel identity, the persona root, the social planes and the bootstrap ~ idempotent, skips what stands">>
-<<~ has Primitive stand "brings the daemon up, foreground or detached, and reports what it found ~ attach when one already answers">>
-<<~ has Primitive stop "ends a running daemon by port, signals gracefully and waits for its exit ~ never a restart in disguise">>
-<<~ has Primitive seed "plants every bags holding back into its doc, kind-routed, diff-gated ~ idempotent; a converged tree no-ops">>
+<<~ has entity=`Primitive` name=`found` params=`mints the vessel identity, the persona root, the social planes and the bootstrap ~ idempotent, skips what stands`>>
+<<~ has entity=`Primitive` name=`stand` params=`brings the daemon up, foreground or detached, and reports what it found ~ attach when one already answers`>>
+<<~ has entity=`Primitive` name=`stop` params=`ends a running daemon by port, signals gracefully and waits for its exit ~ never a restart in disguise`>>
+<<~ has entity=`Primitive` name=`seed` params=`plants every bags holding back into its doc, kind-routed, diff-gated ~ idempotent; a converged tree no-ops`>>
 
 ''The read beside them'': `read` — the pure inspection that starts nothing (bootstrap
 presence, storage size, port, seal state, personas, quorum).
@@ -111,7 +110,7 @@ separately as `@cad` caps rather than folding into the grammar ratchet.
 
 <<~/ahu>>
 
-<<~ ahu #/the-collapse>>
+<<~ ahu slot=`#/the-collapse`>>
 
 !! The collapse, verb by verb
 
@@ -122,7 +121,7 @@ return 0 and print a full page, which reads exactly like a door that opened.
 
 ''NO DOOR WIPES.'' Three retired spellings named a wipe of the vessel store, and no door or rite answers one
 (operator-ruled): a fresh start runs by hand, moving the old homes aside
-(<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start">>).
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start`>>).
 
 |! retired |! composes |! answers at |
 | `init` | found | `vessel found` |
@@ -148,7 +147,7 @@ and cannot be expressed as a sequence of the others. Everything else composes.
 
 <<~/ahu>>
 
-<<~ ahu #/the-founding-rite>>
+<<~ ahu slot=`#/the-founding-rite`>>
 
 !! The founding rite rides the rite-door
 
@@ -163,7 +162,7 @@ The founding rite restarts nothing, so no second unlock stands between its movem
 
 <<~/ahu>>
 
-<<~ ahu #/the-ripples>>
+<<~ ahu slot=`#/the-ripples`>>
 
 !! Every caller that closes with the door
 
@@ -193,7 +192,7 @@ moved.
 
 <<~/ahu>>
 
-<<~ ahu #/what-stands>>
+<<~ ahu slot=`#/what-stands`>>
 
 !! What stays outside the vessel door, and why
 
@@ -204,15 +203,15 @@ moved.
 and any other word refuses as a usage error. `status` gives one reading of each standing file the carrier table
 names and prints any private file outside it; `unbind <slot-id> --rotate` moves the vessel key in the same act that
 removes the slot, and its census passes before any byte moves
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-table">>).
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-table`>>).
 
 ''THE `vault` DOOR CARRIES A FACE'S BACKUP.'' `lares vault backup --face <N> --out <file>` cuts one face's
 backup bundle through the standing vessel's custody door: it reads the vessel's own route and the bundle's new
 route on a terminal, and no flag, environment variable or pipe carries either
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-cut">>). `lares vault restore <file>` brings a face back from
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-cut`>>). `lares vault restore <file>` brings a face back from
 its bundle as a recovery act: it reads the bundle's route on a terminal, and the vessel takes a NEW seat under the
 face's fixed prefix (`--as <N>` names the index; `--memory` lands the bundle's content keys on that seat)
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-restore">>). Both verbs live on `vault` because they move
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-restore`>>). Both verbs live on `vault` because they move
 nothing of the vessel's substrate: they ask the custody door, as `unlock` and `lock` do.
 
 ''ONE FLAG ASKS FOR KEYHIVE'S OWN TRACE, BY NAME.'' `--keyhive-trace` on any command sets `LAR_KEYHIVE_TRACE=1`
@@ -233,7 +232,7 @@ verified — a green suite afterward proves neither half.
 
 <<~/ahu>>
 
-<<~ ahu #/the-verifications>>
+<<~ ahu slot=`#/the-verifications`>>
 
 !! What proves the door holds
 
@@ -263,17 +262,17 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/lares-lararium-binding">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">> · <<~ loulou "lar:///ha.ka.ba/lararium/api/sensorium-runbook">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> · Fresh starts move old homes aside by hand.
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor">> · Host shim holds the engine in a container.
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">> · Meme skins share the daemon content contract.
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/lares-lararium-binding`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> · Fresh starts move old homes aside by hand.
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/harbor`>> · Host shim holds the engine in a container.
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/meme-api-surface`>> · Meme skins share the daemon content contract.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-Aod5L69e_NLuCDrJLSosa-ieg4H0zpJSrTLb7MeVCc
+<<^ code=`&#x0003;`>>ni:///sha-256;6DC5OECpywTHLQ3Xr_U-VpK9T67MAp1UGR6dgAUqqtg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

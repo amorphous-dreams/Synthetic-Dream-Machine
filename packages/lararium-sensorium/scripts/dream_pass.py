@@ -195,7 +195,7 @@ def eidetic_logical_hash(root: str) -> str:
     metadatas, and vectors, read through each store's own face and canonically
     serialized. The record grain carries the never-writes-eidetic witness where the
     sqlite carrier's bookkeeping churn cannot."""
-    from form_encoder import FormPalaceStore
+    from form_store import FormPalaceStore
     from structurepalace_io import StructurePalaceStore
 
     root = os.path.expanduser(root)

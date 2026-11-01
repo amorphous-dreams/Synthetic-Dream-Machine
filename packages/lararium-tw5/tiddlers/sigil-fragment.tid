@@ -3,9 +3,9 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: child-slot
 lar-mirror-of: ahu
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/ahu
-lar-open-pattern: <<fragment\s+(#\/[\wāēīōūʻ-]+(?:\/[\wāēīōūʻ-]+)*)(?:\s+->\s+"?((?:[^"\s>]|>(?!>))+)?"?)?\s*>>
+lar-open-pattern: <<fragment\s+slot=`(#\/[\wāēīōūʻ-]+(?:\/[\wāēīōūʻ-]+)*)`(?:\s+to=`([^`]*)`)?\s*>>
 lar-close-pattern: <</fragment\s*>>
-lar-example: <<fragment #/head>>\nbody\n<</fragment>>
+lar-example: <<fragment slot=`#/head`>>\nbody\n<</fragment>>
 type: text/vnd.tiddlywiki
 
 <!-- English alias of ahu. It lowers to the shared child-slot AST, stream event,

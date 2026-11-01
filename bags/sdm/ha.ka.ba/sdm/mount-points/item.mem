@@ -1,12 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/mount-points/item">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/mount-points/item`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
 caption   = "item"
-file-path = "bags/sdm/ha.ka.ba/sdm/mount-points/item.mem"
 l-space   = "sdm"
 mana      = 16
 manao     = 17
@@ -17,13 +16,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/mount-points/item"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
 ! Mount-Point — Item
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -33,7 +32,7 @@ An Item seats a Power ''in an object'': spellbook, rod, idol-cartridge, living p
 
 <<~/ahu>>
 
-<<~ ahu #/activation>>
+<<~ ahu slot=`#/activation`>>
 
 !! Activation
 
@@ -41,7 +40,7 @@ An item-seated Power activates from the object — the practitioner must hold, w
 
 <<~/ahu>>
 
-<<~ ahu #/cost>>
+<<~ ahu slot=`#/cost`>>
 
 !! Cost
 
@@ -49,7 +48,7 @@ Pay Life equal to P; double without the relevant skill. A container item costs o
 
 <<~/ahu>>
 
-<<~ ahu #/failure>>
+<<~ ahu slot=`#/failure`>>
 
 !! Failure
 
@@ -57,7 +56,7 @@ Danger Roll → Corruption on failure. Corruption on an item degrades or curses 
 
 <<~/ahu>>
 
-<<~ ahu #/removal>>
+<<~ ahu slot=`#/removal`>>
 
 !! Removal
 
@@ -65,7 +64,7 @@ Remove by un-equipping, transferring, or disabling the object. Disabling an `ite
 
 <<~/ahu>>
 
-<<~ ahu #/overflow>>
+<<~ ahu slot=`#/overflow`>>
 
 !! Overflow
 
@@ -73,7 +72,7 @@ Past 7 + Strength carried slots, use a container item to compress many Powers in
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -81,14 +80,14 @@ Past 7 + Strength carried slots, use a container item to compress many Powers in
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/mount-points/storage-class">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/mount-points/storage-class`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_ZHqM9vsPpzm3b0JLrR71RO6HerQB4p761rRgezZz54
+<<^ code=`&#x0003;`>>ni:///sha-256;vX-kifia0wtUESF55N2K-wUR47420uc_QxRDuPHrj5c
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

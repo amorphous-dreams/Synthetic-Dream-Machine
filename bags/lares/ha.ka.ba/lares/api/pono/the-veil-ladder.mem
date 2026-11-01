@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/the-veil-ladder">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/the-veil-ladder.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 17
@@ -20,7 +19,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/the-veil-ladder"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Veil-Ladder ~ from throwaway to true-name, a self on the fed mesh
 
@@ -28,7 +27,7 @@ A self on the DreamNet reads not as a row in a registry but as a ''ladder of vei
 
 <<~/ahu>>
 
-<<~ ahu #/the-three-rungs>>
+<<~ ahu slot=`#/the-three-rungs`>>
 
 !! The Three Rungs ~ where a self can stand
 
@@ -42,18 +41,18 @@ The pledge marks the shore where distributed trust (a vouch) mints a public thin
 
 <<~/ahu>>
 
-<<~ ahu #/the-base-model>>
+<<~ ahu slot=`#/the-base-model`>>
 
 !! The Base Model ~ anon floor, Handle overlay, burn falls back
 
 The rungs name where a self CAN stand; this names what EVERY vessel holds. Anon reads as the ''ground, not a tier'': every vessel — anon, known, operator-with-node-infra, admin alike — stands anon at its floor (its own veiled-key, its own local content, no group) and ''MUST always fall back there''. Caps and node infrastructure stack ABOVE the floor; they never dissolve it.
 
-A ''PersonaGroup rides as an OVERLAY, never a promotion that consumes the anon''. A vessel MAY accept an invite into one, gaining ''shared doc-syncs'' between its human's own devices atop each vessel's floor (the @catalog crossing, `persona-crossing`). The overlay adds; the floor persists beneath, untouched. ''The Handle rides a DISTINCT layer above'': the veiled-user pseudonym the PersonaGroup CARRIES and ''announces'' on the DreamNet via its `handle-card` (mesh/handle-card). Binding the vessels (the PersonaGroup, content-sync) and announcing the identity (the Handle, social recognition) never collapse into one act — a PersonaGroup that syncs but never publishes stays unannounced; whichever vessels carry a Handle can announce it.
+A ''PersonaGroup rides as an OVERLAY, never a promotion that consumes the anon''. A vessel MAY accept an invite into one, gaining ''shared doc-syncs'' between its human's own devices atop each vessel's floor (the catalog-plane crossing, `persona-crossing`). The overlay adds; the floor persists beneath, untouched. ''The Handle rides a DISTINCT layer above'': the veiled-user pseudonym the PersonaGroup CARRIES and ''announces'' on the DreamNet via its `handle-card` (mesh/handle-card). Binding the vessels (the PersonaGroup, content-sync) and announcing the identity (the Handle, social recognition) never collapse into one act — a PersonaGroup that syncs but never publishes stays unannounced; whichever vessels carry a Handle can announce it.
 
 ''THE FLOOR CARRIES TWO OCCASIONS, and only one of them follows a choice.'' This section names the floor a BURN
 falls to — a deliberate shedding. A vessel that WAKES unable to open its sealed archive falls to the same
 floor by an ''unchosen'' absence, and the rule reads identically: it has lost its CAPS, never its FLOOR, so
-it stands rather than refuses. <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>
+it stands rather than refuses. <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor`>>
 
 ''Burning the Handle severs the overlay FORWARD, never the floor.'' The vessels lose sync over //new// shared content until the user or operator resolves it (re-invite, re-key), and drop back to their anon floor — keeping their own content AND whatever shared content they ''already decrypted''. keyhive (BeeKEM) carries ''post-compromise security'' but NOT forward secrecy: revoke re-keys the group so the burned vessel reads nothing shared //after// the burn, yet it never erases the past it already read. The cut runs one-way — future, not history (`persona-content-crossing`, the burn test). That forward severance names the DreamNet's ''risk / reward / cost''.
 
@@ -61,7 +60,7 @@ Two reversibilities stay distinct: ''doc-syncs revoke and restore'' (an overlay 
 
 <<~/ahu>>
 
-<<~ ahu #/the-tightrope>>
+<<~ ahu slot=`#/the-tightrope`>>
 
 !! The Tightrope ~ rep ⊥ anonymity, reconciled by rotation
 
@@ -71,7 +70,7 @@ The lived rung stretches as a ''tightrope'': reputation and anonymity pull again
 
 <<~/ahu>>
 
-<<~ ahu #/the-circle>>
+<<~ ahu slot=`#/the-circle`>>
 
 !! The Circle ~ a self holds a place, not a row
 
@@ -79,7 +78,7 @@ A human holds one-or-more ''virtual places'' — each a single-principal ''Circl
 
 <<~/ahu>>
 
-<<~ ahu #/the-distributed-trust>>
+<<~ ahu slot=`#/the-distributed-trust`>>
 
 !! The Distributed Trust ~ the FLOW-map, not a blind oracle
 
@@ -92,7 +91,7 @@ Threshold-blind crypto (Coconut/FROST, k-of-n — a lone kahu stays strictly wea
 
 <<~/ahu>>
 
-<<~ ahu #/the-immune-systems>>
+<<~ ahu slot=`#/the-immune-systems`>>
 
 !! The Immune Systems ~ context licenses, anergy not ban
 
@@ -100,7 +99,7 @@ Immune systems meet bad actors ''one vessel-veil at a time'' — some automated,
 
 <<~/ahu>>
 
-<<~ ahu #/the-price>>
+<<~ ahu slot=`#/the-price`>>
 
 !! The Price ~ burn, not watch
 
@@ -110,7 +109,7 @@ Reputation across a break goes ''priced, not policed''. ''Positive'' rep the hol
 
 <<~/ahu>>
 
-<<~ ahu #/the-bounds>>
+<<~ ahu slot=`#/the-bounds`>>
 
 !! The Bounds ~ the mesh holds mechanism, the members hold meaning
 
@@ -125,22 +124,22 @@ For a thing with ''no king'', this marks no gap — it stands as the only honest
 
 <<~/ahu>>
 
-<<~ ahu #/the-recovery>>
+<<~ ahu slot=`#/the-recovery`>>
 
 !! The Recovery ~ the involuntary-loss flip-side of the burn (the lone 1-vessel citizen)
 
 The burn (#/the-price) reads as a //chosen// shedding; ''involuntary key-loss'' makes the same cut by accident — and it lands hardest on the ''lone 1-vessel citizen'' (one device, no Circle) whose declared Handle, unlike a cheap anon-veil, carries accreted standing a dead key forfeits. The floor, held: recovery ''re-admits, never escrows a secret at rest'' (device re-admission, the G-recovery keel). The one bound that governs all of it: ''the recovery quorum and the impersonation quorum stand as ONE quorum'' (Camenisch-Lysyanskaya) — no party can restore you without the power to //become// you, so there reads ''no safe custodial escrow, only priced quorums'' (raise k · hide recovery contacts · time-delay + live-key veto).
 
-For the citizen with ''no quorum yet'', the floor rests on a ''standalone recorded code as the FIRST non-device share'' of their own threshold (not a vault-key — the one recovery act a lone citizen performs alone, Apple-shape blind escrow; Google/Samsung both need a second device and fail the lone case). Birth quorum = `{device, recorded-code}`; a peer node MAY hold one share (Delivery-Service) but ''never a quorum'' (never Auth-Root). The quorum grows `code → +2nd device → +Circle guardians → FROST/TSS` (no reconstruction window), retiring imported trust as the Circle forms. Across every migration the ''anonymity ⊥ non-transferability'' bound holds (the same law that prices the burn, #the-price): ''positive rep rides holder-continuity proofs'' (no watcher), ''negative marks bind to the RETIRED key as anergy'' — tolerated-inert, ''never laundered'' by a recovery. Recovery restores the seat + earned standing, never a clean slate. <<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-recovery-keel">>
+For the citizen with ''no quorum yet'', the floor rests on a ''standalone recorded code as the FIRST non-device share'' of their own threshold (not a vault-key — the one recovery act a lone citizen performs alone, Apple-shape blind escrow; Google/Samsung both need a second device and fail the lone case). Birth quorum = `{device, recorded-code}`; a peer node MAY hold one share (Delivery-Service) but ''never a quorum'' (never Auth-Root). The quorum grows `code → +2nd device → +Circle guardians → FROST/TSS` (no reconstruction window), retiring imported trust as the Circle forms. Across every migration the ''anonymity ⊥ non-transferability'' bound holds (the same law that prices the burn, #the-price): ''positive rep rides holder-continuity proofs'' (no watcher), ''negative marks bind to the RETIRED key as anergy'' — tolerated-inert, ''never laundered'' by a recovery. Recovery restores the seat + earned standing, never a clean slate. <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-recovery-keel`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/two-roots">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/multi-fractal">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/two-roots`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/multi-fractal`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/attestation-plane`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;A4jCP2Yw9YBCITGj0yNzqgd0jAXqB22KT57vFpCXPWQ
+<<^ code=`&#x0003;`>>ni:///sha-256;Jtv0RFMDCMJQ_6lWj-zOmPU0SdpuiS_GLUOqL5eD4rk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

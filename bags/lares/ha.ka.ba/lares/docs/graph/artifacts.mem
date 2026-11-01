@@ -1,10 +1,9 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/graph/artifacts">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/graph/artifacts`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
-file-path   = "bags/lares/ha.ka.ba/lares/docs/graph/artifacts.mem"
 l-space     = "stable"
 mana        = 17
 manao       = 17
@@ -17,7 +16,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/docs/graph/artifacts"
 ```
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ observe: the current boot receipt uses a compilation timestamp as its identity — not content addressing.
 ⏿ orient: Nix derivations and Bazel action caching both hash inputs; Anthropic prompt caching requires byte-identical prefixes.
@@ -27,7 +26,7 @@ uri-path    = "ha.ka.ba/lares/docs/graph/artifacts"
 
 <<~/ahu>>
 
-<<~ ahu #/content-addressing>>
+<<~ ahu slot=`#/content-addressing`>>
 
 !! Content-Addressed Identity
 
@@ -69,7 +68,7 @@ Clients that carry the previous receipt can compare: if `sha256` matches, the co
 
 <<~/ahu>>
 
-<<~ ahu #/artifact-minimal>>
+<<~ ahu slot=`#/artifact-minimal`>>
 
 !! Artifact: Minimal Boot
 
@@ -123,7 +122,7 @@ Clients that carry the previous receipt can compare: if `sha256` matches, the co
 
 <<~/ahu>>
 
-<<~ ahu #/artifact-full>>
+<<~ ahu slot=`#/artifact-full`>>
 
 !! Artifact: Full Boot
 
@@ -133,7 +132,7 @@ Clients that carry the previous receipt can compare: if `sha256` matches, the co
 
 ''JSON shape extends minimal boot:''
 
-```json
+```text
 {
   "artifact": "full-boot",
   "compiled_at": "<ISO-8601 UTC>",
@@ -182,7 +181,7 @@ Clients that carry the previous receipt can compare: if `sha256` matches, the co
 
 <<~/ahu>>
 
-<<~ ahu #/artifact-receipt>>
+<<~ ahu slot=`#/artifact-receipt`>>
 
 !! Artifact: Boot Receipt
 
@@ -230,7 +229,7 @@ If the hash matches, the LLM context prefix already cached at Anthropic remains 
 
 <<~/ahu>>
 
-<<~ ahu #/dual-index>>
+<<~ ahu slot=`#/dual-index`>>
 
 !! Dual-Index Content Resources
 
@@ -259,7 +258,7 @@ This supports cache miss fills and cross-session identity verification without r
 
 <<~/ahu>>
 
-<<~ ahu #/validation-contract>>
+<<~ ahu slot=`#/validation-contract`>>
 
 !! Validation Contract
 
@@ -278,7 +277,7 @@ A ''valid artifact'' carries `dag_violations = []`. All other validation fields 
 
 <<~/ahu>>
 
-<<~ ahu #/compaction>>
+<<~ ahu slot=`#/compaction`>>
 
 !! Compaction Rule
 
@@ -294,17 +293,17 @@ Full boot may trigger compaction once the relation expansion reaches larger grap
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/graph">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/nodes">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/traversal">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/nodes">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/graph`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/graph/nodes`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/graph/traversal`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/graph/nodes`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ku1s8euo8dC16QerYBgwXQdukv43JIuXRsAHoq0XUbw
+<<^ code=`&#x0003;`>>ni:///sha-256;efUUXb7BCUzdTV3UnFfgLh3j9-fDusjIxerPubfTFJ0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -40,7 +40,7 @@ const REALM_R = "c1ab".repeat(16);          // the book club's realm
 const REALM_NEVER = "0ddba11".padEnd(64, "0");   // a realm this vessel never enters
 const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${r.stderr}`;
 const meme = (): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\n\`\`\`\n\n<<~ ahu #/minutes>>\n\n! the minutes\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\n\`\`\`\n\n<<~ ahu slot=\`#/minutes\`>>\n\n! the minutes\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 function missing(): string[] {
   const out: string[] = [];

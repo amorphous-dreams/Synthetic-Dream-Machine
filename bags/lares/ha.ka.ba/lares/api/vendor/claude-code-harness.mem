@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/vendor/claude-code-harness">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/vendor/claude-code-harness`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/api/vendor/claude-code-harness.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 16
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/vendor/claude-code-harness"
 ```
 
-<<~ ahu #/about>>
+<<~ ahu slot=`#/about`>>
 
 ! Vendor Declaration — the Claude Code Harness
 
@@ -27,7 +26,7 @@ offers, on what contract, at what stability — never what the house must become
 
 <<~/ahu>>
 
-<<~ ahu #/evidence-grades>>
+<<~ ahu slot=`#/evidence-grades`>>
 
 !! Evidence Grades — read before citing anything here
 
@@ -48,7 +47,7 @@ held.
 
 <<~/ahu>>
 
-<<~ ahu #/the-published-seat>>
+<<~ ahu slot=`#/the-published-seat`>>
 
 !! The Published Seat
 
@@ -62,7 +61,7 @@ architecture stated as unopinionated about which harness comes next.
 
 <<~/ahu>>
 
-<<~ ahu #/the-seams>>
+<<~ ahu slot=`#/the-seams`>>
 
 !! The Seams, ranked by which way the dependency runs
 
@@ -91,7 +90,7 @@ configuration edits, carrying `source` and `file_path` — the drift surface a p
 watches. RAW: a hook MAY block the change, and ''a blocked change surfaces no message to the
 operator or to the agent — only a debug-log line''. ''So on this seam, acting runs invisible
 and only observing speaks''
-(<<~ loulou "lar:///ha.ka.ba/lararium/docs/kairos#/refusal">>).
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/kairos#/refusal`>>).
 
 ''The frame ceiling.'' Hook output strings, `additionalContext`
 included, cap at 10,000 characters; past it the text lands in a file and the exchange
@@ -109,7 +108,7 @@ hooks, carry a hard allow or deny.
 
 <<~/ahu>>
 
-<<~ ahu #/the-laws-we-adopt>>
+<<~ ahu slot=`#/the-laws-we-adopt`>>
 
 !! The Laws This House Adopts
 
@@ -118,7 +117,7 @@ Each stands substrate-neutral — true of any harness, ours included.
 ''Context runs finite, with diminishing returns.'' Recall degrades as
 a window fills; the design objective reads as the smallest set of high-signal tokens that
 carries the outcome. ''The transclusion substrate enacts this''
-(<<~ loulou "lar:///ha.ka.ba/lararium/api/context-substrate">>).
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/context-substrate`>>).
 
 ''Just-in-time retrieval over pre-loading.'' Hold lightweight
 identifiers; load content at runtime through them. ''A `lar:` URI stands as that
@@ -143,7 +142,7 @@ gets ignored wholesale. ''Measure the seed rather than assume it.''
 
 <<~/ahu>>
 
-<<~ ahu #/traps>>
+<<~ ahu slot=`#/traps`>>
 
 !! Traps
 
@@ -162,11 +161,11 @@ loses all three together.
 ''A pattern bounds a string; only a runtime bounds authority.''
 Wherever an allowed program can name another program, an allow-list has delegated its whole
 authority to text the pattern never sees
-(<<~ loulou "lar:///ha.ka.ba/lararium/docs/kairos#/check-set-one">>).
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/kairos#/check-set-one`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/stability>>
+<<~ ahu slot=`#/stability`>>
 
 !! Stability
 
@@ -184,18 +183,18 @@ built against them tests behaviour, never a schema.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/context-substrate">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/kairos">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/infrastructure-as-myth">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/context-substrate`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/kairos`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/infrastructure-as-myth`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XayZJYVMFSaDAluntbmvS6FJCS97P_3wVhLc8o7KFj8
+<<^ code=`&#x0003;`>>ni:///sha-256;mGQsQCPG_cwV-1cSvLFl18qA7fYBJxN5nXb5RUnFlEs
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⚕` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/nexus-topology`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/nexus-topology.mem"
 hydrate    = true
 l-space    = "lararium"
 mana       = 15
@@ -21,11 +20,11 @@ uri-path   = "ha.ka.ba/lararium/mesh/nexus-topology"
 written    = "2026-08-08"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Nexus Topology ~ which name serves which glass
 
@@ -35,19 +34,19 @@ The two-axis meme (`dreamnet-architecture.mem`) names how a mesh ''relates''; th
 
 <<~/ahu>>
 
-<<~ ahu #/the-names>>
+<<~ ahu slot=`#/the-names`>>
 
 !! The names ~ two Nexuses, one mobile reserve
 
-<<~ has Namespace First-Nexus "name/*.amorphousdreams.net serves/the-first-Nexus glass/desktop-and-LAN">>
-<<~ has Namespace Second-Nexus "name/*.elyncia.net serves/the-second-Nexus glass/desktop-and-LAN">>
-<<~ has Namespace Mobile-Reserve "name/elyncia.app serves/the-mobile-surface glass/phone-and-tablet held/RESERVED">>
+<<~ has entity=`Namespace` name=`First-Nexus` params=`name/*.amorphousdreams.net serves/the-first-Nexus glass/desktop-and-LAN`>>
+<<~ has entity=`Namespace` name=`Second-Nexus` params=`name/*.elyncia.net serves/the-second-Nexus glass/desktop-and-LAN`>>
+<<~ has entity=`Namespace` name=`Mobile-Reserve` params=`name/elyncia.app serves/the-mobile-surface glass/phone-and-tablet held/RESERVED`>>
 
 ''Both Nexuses ride the same TLD.'' One registry operator, so ''one policy surface and one seizure procedure'' rather than two — which simplifies the drill and concentrates the exposure in the same act. Name both halves: a single procedure rehearses once and covers both names; a single procedure also fails once and takes both.
 
 <<~/ahu>>
 
-<<~ ahu #/why-app-for-mobile>>
+<<~ ahu slot=`#/why-app-for-mobile`>>
 
 !! Why `.app` carries the mobile surface ~ the TLD does the work
 
@@ -59,11 +58,11 @@ The `.app` TLD ships ''HSTS-preloaded across the whole zone'' — browsers refus
 
 <<~/ahu>>
 
-<<~ ahu #/three-layers>>
+<<~ ahu slot=`#/three-layers`>>
 
 !! Three serving layers ~ where a request actually lands
 
-<<~ scale serving "household@0..6 ~ a split-horizon resolver answers Nexus names with LAN addresses; the home node serves; no internet at all -> operator-lan@7..13 ~ a contracted operator routes their own LAN under a delegated challenge label, forwarding outward through the Nexus name -> cloud-shelf@14..20 ~ the general internet resolves to the Nexus's own hosts">>
+<<~ scale name=`serving` ranks=`household@0..6 ~ a split-horizon resolver answers Nexus names with LAN addresses; the home node serves; no internet at all -> operator-lan@7..13 ~ a contracted operator routes their own LAN under a delegated challenge label, forwarding outward through the Nexus name -> cloud-shelf@14..20 ~ the general internet resolves to the Nexus's own hosts`>>
 
 ''The same name answers differently by vantage'' — which reads as the honest shape rather than a trick, because a causal island only ever knows what its own resolver told it (`causal-islands.mem`). A household that loses its uplink keeps every local answer; a visitor from the wider internet reaches the cloud shelf; neither one holds a global view, and neither needs one.
 
@@ -81,7 +80,7 @@ The `.app` TLD ships ''HSTS-preloaded across the whole zone'' — browsers refus
 
 <<~/ahu>>
 
-<<~ ahu #/the-rebinding-test>>
+<<~ ahu slot=`#/the-rebinding-test`>>
 
 !! The zero-lift shortcut ~ unmeasured, so unplanned-on
 
@@ -89,7 +88,7 @@ The `.app` TLD ships ''HSTS-preloaded across the whole zone'' — browsers refus
 
 <<~/ahu>>
 
-<<~ ahu #/renewal-inverts>>
+<<~ ahu slot=`#/renewal-inverts`>>
 
 !! Renewal inverts ~ we authorize once, they operate continuously
 
@@ -119,7 +118,7 @@ The 50-new-certificates-per-registered-domain-per-week ceiling ''does'' draw one
 !!! The bounded reach contract ~ the local DNS token has five separate shores
 
 The operator-facing "local DNS token" has a precise design home as a ''bounded reach grant''
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>). It is a scoped contract over one
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract`>>). It is a scoped contract over one
 operator subtree and one Nexus charter epoch, never a bearer secret and never a public operator roster.
 The grant keeps five capabilities apart: carriage, local recursive-resolver policy, bounded origin
 attestation, self-certifying identity, and Onomancy's DNSSEC binding. A name grants rendezvous only;
@@ -136,7 +135,7 @@ provider/account/CAA choice stays OPEN until a named provider and governance act
 
 <<~/ahu>>
 
-<<~ ahu #/the-caa-collision>>
+<<~ ahu slot=`#/the-caa-collision`>>
 
 !! The CAA collision ~ a child record replaces its parent whole
 
@@ -150,7 +149,7 @@ provider/account/CAA choice stays OPEN until a named provider and governance act
 
 <<~/ahu>>
 
-<<~ ahu #/the-shrinking-window>>
+<<~ ahu slot=`#/the-shrinking-window`>>
 
 !! The shrinking window ~ serve-offline has a clock on it
 
@@ -168,7 +167,7 @@ Let's Encrypt ended expiration notices in 2025 and ''deleted the stored subscrib
 
 <<~/ahu>>
 
-<<~ ahu #/two-live-gates>>
+<<~ ahu slot=`#/two-live-gates`>>
 
 !! Two gates already in force
 
@@ -177,7 +176,7 @@ Let's Encrypt ended expiration notices in 2025 and ''deleted the stored subscrib
 
 <<~/ahu>>
 
-<<~ ahu #/the-severability-law>>
+<<~ ahu slot=`#/the-severability-law`>>
 
 !! What a Nexus name may claim ~ nothing
 
@@ -187,7 +186,7 @@ Let's Encrypt ended expiration notices in 2025 and ''deleted the stored subscrib
 * A person's standing NEVER rides a name under these zones. Carry a host-scoped address as ''identity'' rather than as ''address'' and the arrangement repeats the failure the field has already measured — the domain owner comes to hold every identity on it.
 * Withholding a name withholds a signpost. Every key, byte, and peer relation survives it, so ''no delegation makes a landlord''.
 
-''A SEALED NEXUS STANDS ISOLATED ON TWO ORTHOGONAL CUTS, and severable on both.'' INFRA/carriage — no signed PEER/TRANSIT leyline to any other Nexus (carriage rides a deliberate signature, never an auto-proposal). Content/read — a private membership plane with no public @crossroads face. It loses no self by having neither, because rendezvous ≠ identity: no seizable object stands. ''Interop comes later cheaply'' — opening a leyline signs one carriage contract and `#has-NOT {read}` survives it; across a DIFFERENT engine two Nexuses interoperate only at the content-address floor, since a blob still hashes to its CID whatever its age (the disjoint-station-set floor, #dreamnet-architecture, epoch-binding-surfaces#/the-real-mover).
+''A SEALED NEXUS STANDS ISOLATED ON TWO ORTHOGONAL CUTS, and severable on both.'' INFRA/carriage — no signed PEER/TRANSIT leyline to any other Nexus (carriage rides a deliberate signature, never an auto-proposal). Content/read — a private membership plane with no public crossroads-plane face. It loses no self by having neither, because rendezvous ≠ identity: no seizable object stands. ''Interop comes later cheaply'' — opening a leyline signs one carriage contract and `#has-NOT {read}` survives it; across a DIFFERENT engine two Nexuses interoperate only at the content-address floor, since a blob still hashes to its CID whatever its age (the disjoint-station-set floor, #dreamnet-architecture, epoch-binding-surfaces#/the-real-mover).
 
 The two-name design carries its own answer to the concentration it creates: ''each Nexus can resolve for the other's attestations''. That costs nothing to arrange early and stops staying arrangeable once either name carries load alone.
 
@@ -201,7 +200,7 @@ The two-name design carries its own answer to the concentration it creates: ''ea
 
 <<~/ahu>>
 
-<<~ ahu #/what-stays-open>>
+<<~ ahu slot=`#/what-stays-open`>>
 
 !! What stays open
 
@@ -213,7 +212,7 @@ The two-name design carries its own answer to the concentration it creates: ''ea
 
 <<~/ahu>>
 
-<<~ ahu #/reading-the-older-memes>>
+<<~ ahu slot=`#/reading-the-older-memes`>>
 
 !! Reading the older memes ~ a worked example is not a deployment claim
 
@@ -223,22 +222,22 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/network-edge">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/attestation-plane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reach-plane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/network-edge`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;52Su1akKceZCTIK-uJSdCQeub6l0qcjIb9BD2Dsv54w
+<<^ code=`&#x0003;`>>ni:///sha-256;9Dx_N9pAobA-o2ZPPVKBsYt_0QYjU14FWWa8IK5jCUw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

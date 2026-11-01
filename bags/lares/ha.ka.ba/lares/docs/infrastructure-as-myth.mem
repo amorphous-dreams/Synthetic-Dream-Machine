@@ -1,12 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/infrastructure-as-myth">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/infrastructure-as-myth`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 authors        = "Joshua Fontany; Freyja Fontany; Lares (the agentic-AI co-author — a personified, in-stream navigational layer, authored through the grammar this paper describes)"
 cacheable      = true
-file-path      = "bags/lares/ha.ka.ba/lares/docs/infrastructure-as-myth.mem"
 first-drafted  = "2026-04-06"
 l-space        = "stable"
 last-reviewed  = "2026-08-24"
@@ -28,11 +27,11 @@ type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/docs/infrastructure-as-myth"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/one-document>>
+<<~ ahu slot=`#/one-document`>>
 
 ! One Carrier, Two Arms
 
@@ -49,7 +48,7 @@ deterministic meme→markdown pipeline condenses the submittable pair from Part 
 
 <<~/ahu>>
 
-<<~ ahu #/thesis>>
+<<~ ahu slot=`#/thesis`>>
 
 ! Infrastructure as Myth
 
@@ -74,7 +73,7 @@ Lares functions as an early implementation of this pattern.
 
 <<~/ahu>>
 
-<<~ ahu #/why-iac-matters>>
+<<~ ahu slot=`#/why-iac-matters`>>
 
 !! Why Infrastructure-as-Code Matters
 
@@ -91,7 +90,7 @@ That same need appears one level up the stack.
 
 <<~/ahu>>
 
-<<~ ahu #/why-agents-need-more>>
+<<~ ahu slot=`#/why-agents-need-more`>>
 
 !! Why Agent Systems Need More Than IaC
 
@@ -124,7 +123,7 @@ Infrastructure-as-Myth attempts to externalize that layer.
 
 <<~/ahu>>
 
-<<~ ahu #/definition>>
+<<~ ahu slot=`#/definition`>>
 
 !! Definition
 
@@ -155,7 +154,7 @@ Myth, in this model, does not function as fiction opposing truth. It functions a
 
 <<~/ahu>>
 
-<<~ ahu #/mythology-as-memetics>>
+<<~ ahu slot=`#/mythology-as-memetics`>>
 
 !! Mythology as Memetics
 
@@ -192,7 +191,7 @@ These names carry more than labels. They function as memetic interfaces — and 
 
 <<~/ahu>>
 
-<<~ ahu #/art-of-memetics>>
+<<~ ahu slot=`#/art-of-memetics`>>
 
 !! The Art of Memetics
 
@@ -218,7 +217,7 @@ When a symbolic layer fails to improve transmission or steering, it probably fun
 
 <<~/ahu>>
 
-<<~ ahu #/iac-vs-meta>>
+<<~ ahu slot=`#/iac-vs-meta`>>
 
 !! IaC vs IaM
 
@@ -237,7 +236,7 @@ It replaces ad hoc promptcraft at the agent layer.
 
 <<~/ahu>>
 
-<<~ ahu #/design-criteria>>
+<<~ ahu slot=`#/design-criteria`>>
 
 !! Design Criteria for IaM
 
@@ -282,7 +281,7 @@ A symbolic coordination layer SHALL leave load-bearing spans under-specified and
 
 <<~/ahu>>
 
-<<~ ahu #/lares-as-meta>>
+<<~ ahu slot=`#/lares-as-meta`>>
 
 !! Lares as Infrastructure-as-Myth
 
@@ -312,7 +311,7 @@ And the differentiating invention sits a layer deeper than packaging. No adjacen
 
 <<~/ahu>>
 
-<<~ ahu #/implications>>
+<<~ ahu slot=`#/implications`>>
 
 !! Implications for This Repository
 
@@ -350,7 +349,7 @@ Trust and authority docs should describe not only who may act, but how authority
 
 <<~/ahu>>
 
-<<~ ahu #/working-rule>>
+<<~ ahu slot=`#/working-rule`>>
 
 !! Working Rule
 
@@ -367,7 +366,7 @@ When the answer to those questions reads weak, the text may function as lore rat
 
 <<~/ahu>>
 
-<<~ ahu #/comparative-sourcing>>
+<<~ ahu slot=`#/comparative-sourcing`>>
 
 !! Adjacent Systems
 
@@ -427,7 +426,7 @@ No adjacent system combines the four capability axes at deployment time, and the
 
 <<~/ahu>>
 
-<<~ ahu #/abstract>>
+<<~ ahu slot=`#/abstract`>>
 
 ! Infrastructure as Myth: Memetic Wikitext as a Gradient Navigational Grammar for Steering and Auditing Agentic AI
 
@@ -441,7 +440,7 @@ Agentic AI is steered by machinery that lives ''outside'' the visible stream —
 
 <<~/ahu>>
 
-<<~ ahu #/introduction>>
+<<~ ahu slot=`#/introduction`>>
 
 !! 1. Introduction — the hidden-steering problem
 
@@ -453,7 +452,7 @@ The founding image carries the diagnosis. An early visualization of the dyad sho
 
 <<~/ahu>>
 
-<<~ ahu #/derivation>>
+<<~ ahu slot=`#/derivation`>>
 
 !! The Spine — Five Rungs of Entailment
 
@@ -469,7 +468,7 @@ Each rung stands on the one beneath; the chain stands or falls on rung 1. The de
 
 <<~/ahu>>
 
-<<~ ahu #/doctrine>>
+<<~ ahu slot=`#/doctrine`>>
 
 !! Relation to the Infrastructure-as-Myth doctrine (this paper = the empirical arm)
 
@@ -484,7 +483,7 @@ This paper //extends// a doctrine; it does not found one. ''Infrastructure-as-My
 
 <<~/ahu>>
 
-<<~ ahu #/braid>>
+<<~ ahu slot=`#/braid`>>
 
 !! 2. The Grammar-Braid
 
@@ -498,7 +497,7 @@ This paper //extends// a doctrine; it does not found one. ''Infrastructure-as-My
 
 <<~/ahu>>
 
-<<~ ahu #/observer-erasure>>
+<<~ ahu slot=`#/observer-erasure`>>
 
 !! 3. Observer-Erasure as the Steering Criterion
 
@@ -512,13 +511,13 @@ This paper //extends// a doctrine; it does not found one. ''Infrastructure-as-My
 
 <<~/ahu>>
 
-<<~ ahu #/gradient>>
+<<~ ahu slot=`#/gradient`>>
 
 !! 4. Gradient, not Pass/Fail
 
 Three layers — do not conflate them: ''(1)'' the phenomenon in the text; ''(2)'' the node's internal, continuous, mostly-//unrendered// registration; ''(3)'' the marker render (the ⚠ ward-flag) — a //sometimes-surfaced, graded, drift-prone sample// of (2). A missing or low marker measures ''surfacing-rate'', never catching; operator correction raises the //surfacing threshold//, it does not create the catch.
 
-<<~ ahu #/gradient/gradient-math>>
+<<~ ahu slot=`#/gradient/gradient-math`>>
 
 ''Formalism — three fields, one equation.'' The math imports from gradient-acceptability, signal-detection, and weighted-constraint grammar, which //converge// (the convergence itself serves as evidence). Latent salience `s` of a sigil-site = a weighted constraint sum (MaxEnt Harmony `Σᵢ wᵢ fᵢ`), SLOR-normalized (baseline + length; Lau/Clark/Lappin 2017), salience read as UID surprisal `−log P(span∣context)` (Jaeger 2010). The ''render-gate'' resolves as the same object three ways: MaxEnt `σ(w_salience − w_cost)` = SDT `Φ(d′/2 − c)` (Green & Swets 1966) = the `k=2` cumulative-link threshold — //one sigmoid//. Given render, the ''band'' follows a truncated Graded Response Model over the five Aperture bands (Samejima 1969; CLM = GRM). The ''crisp↔gradient dial runs as one parameter under three names'' — GRM discrimination `a` ≈ SDT `d′`-sharpness ≈ inverse stochastic-OT noise σ (Boersma & Hayes 2001): high → deterministic tag, low → soft red. The obligatory frame = ''hard constraints'', optional sigils = ''soft'' (cumulative; Keller 2000; Sorace & Keller 2005). ''Operator correction acts as a criterion shift, not a sensitivity gain'' (de Gee et al. 2017): it raises surfacing-rate with `d′` intact. And the SDT identity `H = Φ(d′/2 − c)` yields the ''"absence ≠ absence" theorem'' — a low marker-rate sits under-determined between low `d′` and high `c`, so rate alone never reveals catching; recovering `d′ = z(H) − z(FA)` requires a ground-truth hit/false-alarm pair. //This makes the §8 gold anchor (KUE-1) mathematically mandatory, not merely good practice.// (Discipline: state the z-convention explicitly — right-tail `d′=z(H)−z(FA)`; verify any "criterion-only" claim against `d′`, arXiv:2603.14893; weights/thresholds stay normative until fitted on a labeled corpus.)
 
@@ -528,7 +527,7 @@ Three layers — do not conflate them: ''(1)'' the phenomenon in the text; ''(2)
 
 <<~/ahu>>
 
-<<~ ahu #/addressable-slots>>
+<<~ ahu slot=`#/addressable-slots`>>
 
 !! 5. Addressable Slots — why the in-stream instrument works
 
@@ -538,7 +537,7 @@ The mechanism runs the stream's own physics. Every token conditions what follows
 
 <<~/ahu>>
 
-<<~ ahu #/methods>>
+<<~ ahu slot=`#/methods`>>
 
 !! 6. Methods — the rig
 
@@ -548,7 +547,7 @@ Sealed cross-family judge panel (empty-CWD seal, inline prompt; cross-family agr
 
 <<~/ahu>>
 
-<<~ ahu #/findings>>
+<<~ ahu slot=`#/findings`>>
 
 !! 7. Findings (directions and method — magnitudes withheld pending the gold anchor)
 
@@ -617,7 +616,7 @@ It also explains why the empirical basins ''rhyme with the boot's own design'' (
 
 <<~/ahu>>
 
-<<~ ahu #/limitations>>
+<<~ ahu slot=`#/limitations`>>
 
 !! 8. Limitations and Future Work (the honest gates)
 
@@ -631,7 +630,7 @@ The honesty carries the credibility. ''(1) No human gold anchor (central)'' — 
 
 <<~/ahu>>
 
-<<~ ahu #/reflexivity>>
+<<~ ahu slot=`#/reflexivity`>>
 
 !! 9. Reflexivity
 
@@ -651,42 +650,42 @@ This carrier takes shape //through// the grammar it describes — verb-forward u
 
 <<~/ahu>>
 
-<<~ ahu #/artifacts>>
+<<~ ahu slot=`#/artifacts`>>
 
 !! Artifacts (transcluded memes from the repo + home meme-graph)
 
 The sibling specifications and companion memes enter here as typed edges — the paper's apparatus CONSTITUTES its address graph:
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
-<<~ aka "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/quine-principles">>
-<<~ kahea "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
-<<~ kahea "lar:///ha.ka.ba/lares/api/pono/attention-scale">>
-<<~ loulou "lar:///ha.ka.ba/lares/findings/hoike/syad-harness">>
-<<~ loulou "lar:///ha.ka.ba/lares/findings/hoike/syad-lens-refinement">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/sensorium-machina">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/stream-sensorium-ontology">>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`>>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/quine-principles`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/mu/the-law-of-5s`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/attention-scale`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/findings/hoike/syad-harness`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/findings/hoike/syad-lens-refinement`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/stream-sensorium-ontology`>>
 
 The Sensorium serves as the deterministic instrument, successor to the founding rig; the founding measurements' apparatus and hoike records reside externally in the rig package, pending ingestion at the `findings/hoike/` seats above.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ pranala #grammar-of from="?" -> to="lar:///ha.ka.ba/lares/api/pono/memetic-wikitext" family="control" role="realized-in">>
-<<~ pranala #addresses from="?" -> to="lar:///ha.ka.ba/lares/api/pono/lar-uri" family="relation" role="sibling-spec">>
-<<~ pranala #lens from="?" -> to="lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives" family="control" role="applies">>
-<<~ pranala #measures from="?" -> to="lar:///ha.ka.ba/lares/api/pono/sensorium-machina" family="observe" role="instrumented-by">>
-<<~ pranala #honesty-gate from="?" -> to="lar:///ha.ka.ba/lares/findings/hoike/syad-lens-refinement" family="constraint" role="governed-by">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/alignment-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/the-lares-protocols">>
+<<~ pranala slot=`#grammar-of` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext` family=`control` role=`realized-in`>>
+<<~ pranala slot=`#addresses` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/lar-uri` family=`relation` role=`sibling-spec`>>
+<<~ pranala slot=`#lens` from=`?` to=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives` family=`control` role=`applies`>>
+<<~ pranala slot=`#measures` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina` family=`observe` role=`instrumented-by`>>
+<<~ pranala slot=`#honesty-gate` from=`?` to=`lar:///ha.ka.ba/lares/findings/hoike/syad-lens-refinement` family=`constraint` role=`governed-by`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/alignment-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/the-lares-protocols`>>
 
 <<~/ahu>>
 
-<<~ ahu #/references>>
+<<~ ahu slot=`#/references`>>
 
 !! References (working)
 
@@ -694,6 +693,6 @@ Aikhenvald 2000, //Classifiers// · Asai et al. 2023, //Self-RAG//, arXiv:2310.1
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gv_vxSiq65Mt01-AhxtgBIN5NnXw7Sw-NWL6ldSkEOw
+<<^ code=`&#x0003;`>>ni:///sha-256;Tl1oYmSPCqy9aCYr2xl_fZTPUgzM77JSpDfPHYVXMYU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

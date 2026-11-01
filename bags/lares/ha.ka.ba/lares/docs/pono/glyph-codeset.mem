@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/glyph-codeset">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/glyph-codeset`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/glyph-codeset.mem"
 l-space   = "stable"
 mana      = 17
 manao     = 16
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/glyph-codeset"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Glyph Codeset — Nine Categories
 
@@ -29,7 +28,7 @@ The glyph set inside a sigil's opening bracket answers: WHO, WHAT PROTOCOL, WHAT
 
 <<~/ahu>>
 
-<<~ ahu #/category-table>>
+<<~ ahu slot=`#/category-table`>>
 
 !! Nine Categories
 
@@ -49,7 +48,7 @@ CAT  RANGE              BLOCK                    ROLE
 
 <<~/ahu>>
 
-<<~ ahu #/cat1-protocol>>
+<<~ ahu slot=`#/cat1-protocol`>>
 
 !! Category 1 — PROTOCOL (C0 Controls: &#0000;–&#0031;)
 
@@ -82,7 +81,7 @@ Validation: ≤1 lifecycle glyph (SOH|STX|ETX|EOT|ENQ|ACK|NAK); separators and m
 
 <<~/ahu>>
 
-<<~ ahu #/cat2-auxiliary>>
+<<~ ahu slot=`#/cat2-auxiliary`>>
 
 !! Category 2 — AUXILIARY (Combining Diacriticals: &#0768;–&#0879;)
 
@@ -98,7 +97,7 @@ Modifying markers that apply to adjacent content. No limit; contradictory combin
 
 <<~/ahu>>
 
-<<~ ahu #/cat3-namespace>>
+<<~ ahu slot=`#/cat3-namespace`>>
 
 !! Category 3 — NAMESPACE (Devanagari: &#2304;–&#2431;)
 
@@ -122,7 +121,7 @@ Authority tier markers. Combination uses intersection semantics (most restrictiv
 
 <<~/ahu>>
 
-<<~ ahu #/cat4-scale>>
+<<~ ahu slot=`#/cat4-scale`>>
 
 !! Category 4 — SCALE (Superscripts/Subscripts: &#8304;–&#8334;)
 
@@ -140,7 +139,7 @@ The subscript index matches Chronometer slot position (rightmost=0/Action throug
 
 <<~/ahu>>
 
-<<~ ahu #/cat5-direction>>
+<<~ ahu slot=`#/cat5-direction`>>
 
 !! Category 5 — DIRECTION (Arrows: &#8592;–&#8703;)
 
@@ -159,7 +158,7 @@ The subscript index matches Chronometer slot position (rightmost=0/Action throug
 
 <<~/ahu>>
 
-<<~ ahu #/cat6-relation>>
+<<~ ahu slot=`#/cat6-relation`>>
 
 !! Category 6 — RELATION (Math Operators: &#8704;–&#8959;)
 
@@ -181,7 +180,7 @@ No limit; compose naturally. The intersection operator (∩) reflects the UCAN g
 
 <<~/ahu>>
 
-<<~ ahu #/cat7-technical>>
+<<~ ahu slot=`#/cat7-technical`>>
 
 !! Category 7 — TECHNICAL (Miscellaneous Technical: &#8960;–&#9215;)
 
@@ -196,11 +195,12 @@ Context-dependent. No combinatorial limit defined.
 
 <<~/ahu>>
 
-<<~ ahu #/cat9-semantic>>
+<<~ ahu slot=`#/cat9-semantic`>>
 
 !! Category 9 — SEMANTIC (Geometric + Misc Symbols: &#9632;–&#9983;)
 
 ''Geometric sub-block (state indicators):''
+
 ```
   ■ (&#9632;)  active/present     (also Act OODA-HA HUD sigil)
   □ (&#9633;)  inactive/absent
@@ -210,6 +210,7 @@ Context-dependent. No combinatorial limit defined.
 ```
 
 ''Miscellaneous Symbols sub-block (planetary / geomantic domain markers):''
+
 ```
   ☉ (&#9737;)  Sun       Fortuna Major/Minor
   ☽ (&#9789;)  Moon      Populus/Via
@@ -229,7 +230,7 @@ Context-dependent. No combinatorial limit defined.
 
 <<~/ahu>>
 
-<<~ ahu #/ucan-attenuation>>
+<<~ ahu slot=`#/ucan-attenuation`>>
 
 !! UCAN Attenuation Formula
 
@@ -249,7 +250,7 @@ effective(inner, frame) = {
 
 <<~/ahu>>
 
-<<~ ahu #/parsing>>
+<<~ ahu slot=`#/parsing`>>
 
 !! Parsing Pseudocode
 
@@ -278,6 +279,7 @@ function parseGlyphSet(stream, offset):
 ```
 
 ''Validation rules per category:''
+
 ```
 PROTOCOL:   ≤1 lifecycle glyph (SOH|STX|ETX|EOT|ENQ|ACK|NAK)
             separators + mode switches may co-occur
@@ -292,6 +294,7 @@ SEMANTIC:   no limit; multiple domain markers = tag union
 ```
 
 ''Strictness modes:''
+
 ```
 boot-mode:  strict. Unknown glyphs → error. All memes fully validated.
 run-mode:   permissive. Unknown glyphs → warning, treated as body.
@@ -300,7 +303,7 @@ run-mode:   permissive. Unknown glyphs → warning, treated as body.
 
 <<~/ahu>>
 
-<<~ ahu #/three-layer-encoding>>
+<<~ ahu slot=`#/three-layer-encoding`>>
 
 !! W3C Three-Layer Encoding
 
@@ -319,16 +322,16 @@ Round-trip fidelity: Storage → Interchange → Storage MUST produce identical 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/law-of-5s">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/law-of-5s`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;y8Cni19HcDSsBVEhl2V8_7waLnx7FZda_-cLzaHzlcU
+<<^ code=`&#x0003;`>>ni:///sha-256;TFH6Rmk-kFmpfAOdY05vl7i32ERwEZxrDYs8gSWZPU0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

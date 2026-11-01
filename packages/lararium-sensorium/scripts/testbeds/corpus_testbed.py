@@ -89,7 +89,7 @@ def witness(root: str, store: cio.ContentStore, pass_summary: dict) -> dict:
     """The 3-plane read-back witness: per-plane counts off the DURABLE stores + one sample
     record shown present in all three planes, its cid keying each. Reads back, never trusts
     the in-memory pass state (prove-by-witness)."""
-    from form_encoder import FormPalaceStore
+    from form_store import FormPalaceStore
     from structurepalace_io import StructurePalaceStore
 
     structure_store = StructurePalaceStore(os.path.join(root, "structure"))

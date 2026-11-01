@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/verb-tiddler">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/verb-tiddler`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/verb-tiddler.mem"
 l-space     = "lararium"
 mana        = 14
 role        = "the verb/summons/outcome task surface — verb (invocation), summons (edge transport), outcome (result); LANGUAGE-protocol register internal, the UCAN Invocation/Receipt/Task ontology held as boundary projection for lineage + interop"
@@ -15,7 +14,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/verb-tiddler"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! The surface this file owns
 
@@ -27,7 +26,7 @@ Three lar: URIs carry one request through its life, request and result held apar
 
 <<~/ahu>>
 
-<<~ ahu #/the-record-over-the-summary>>
+<<~ ahu slot=`#/the-record-over-the-summary`>>
 
 !! The record over the summary ~ the outcome may carry a VIEW (RULED)
 
@@ -50,7 +49,7 @@ and count agree with the record.
 
 <<~/ahu>>
 
-<<~ ahu #/ontology-attractor>>
+<<~ ahu slot=`#/ontology-attractor`>>
 
 !! The internal register (LANGUAGE-protocol frame) + the nakama boundary
 
@@ -75,13 +74,13 @@ Audit/ledger note: durable residency audit lives at `@<bag>/ledger/residency/<ev
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/task-graph-geometry">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verification-placement">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/task-graph-geometry`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verification-placement`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_IilO_DNhrqKEaJ2_13gbUehc1p0urApZ11KoIHkqfc
+<<^ code=`&#x0003;`>>ni:///sha-256;KQaRtnvKLCkNC1OgpCEHcxeqTb9Tff-uDxfMDcx1Pzc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -107,7 +107,7 @@ const NEXUS_RITES: Readonly<Record<string, { readonly composes: string; readonly
  * `lares nexus realm-bag <bag-uri>` — register a bag this vessel's steward keeps on the realm's shared CRDT
  * (realm-bag-brief). The bag's doc is the one this vessel names for the URI; the record
  * rides the seal of the key the acting face (`--face N`, else the one face standing open) presents to the realm's
- * Nexus, never a persona root; @crossroads carries only that the bag exists and who keeps it.
+ * Nexus, never a persona root; crossroads-plane carries only that the bag exists and who keeps it.
  * A contracted member reads it through `meme get --bag <slug>`; the stewards alone write.
  *
  * A name enters a record by its own hand first. `--join` ASKS to keep a bag another hand keeps: this vessel's

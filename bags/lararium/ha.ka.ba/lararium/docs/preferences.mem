@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/preferences">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/preferences`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/preferences.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Lararium Preferences Extraction Shelf
 
@@ -32,7 +31,7 @@ The concepts stand on their own feet.
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
@@ -53,7 +52,7 @@ This pass only promotes concepts that recur strongly enough to feel load-bearing
 
 <<~/ahu>>
 
-<<~ ahu #/tree>>
+<<~ ahu slot=`#/tree`>>
 
 !! Tree
 
@@ -72,14 +71,14 @@ This pass only promotes concepts that recur strongly enough to feel load-bearing
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/lararium`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dyEkyWYhgV1BQrs4rdIhnyB2m6__Xg89BQk-xKYRRcs
+<<^ code=`&#x0003;`>>ni:///sha-256;PdgRK6LjDHIRKY-gZGl3545ZK1UihZycXckwGNWf8s8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

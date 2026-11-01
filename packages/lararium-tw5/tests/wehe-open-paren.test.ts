@@ -7,7 +7,10 @@
 // fixture — so it blesses no grammar as canonical; it holds the derived scan+build layer to the
 // corpus.
 /**
- * WEHE/HELU/PROCEDURE/DEFINE — the `name(params)` open-pattern pairs (lar:///sigil.wehe.pairs).
+ * WEHE/HELU/PROCEDURE/DEFINE — the named `name=`/`params=` open-pattern pairs (lar:///sigil.wehe.pairs).
+ *
+ * The Cut 3 grammar retired the `name(params)` signature form with the positional values: a definition
+ * head names its `name=` and its `params=` as ticked values, and the same pairing law holds on them.
  *
  * ── THE DEFECT ───────────────────────────────────────────────────────────────────────────────────
  * `sigil-wehe.tid` (and `sigil-helu.tid`, and wehe's own mirrors `sigil-procedure.tid` /
@@ -55,15 +58,15 @@ function pairs(sigilName: string, src: string): { opens: number; closes: number 
   };
 }
 
-describe("wehe/helu/procedure/define — name(params) pairs open/close, no orphan-close", () => {
+describe("wehe/helu/procedure/define — named name/params pair open/close, no orphan-close", () => {
   test("wehe — the corpus's own form (api/pono/wehe.mem:69)", () => {
-    const src = '<<~ wehe greet(name:"world")>>Hello <<name>>!<<~/wehe>>';
+    const src = '<<~ wehe name=`greet` params=`name:"world"`>>Hello <<name>>!<<~/wehe>>';
     expect(pairs("wehe", src)).toEqual({ opens: 1, closes: 1 });
     expect(hasErrorNode(src), "an orphan-close Error node stood where wehe should have paired").toBe(false);
   });
 
   test("helu — the corpus's own form (api/pono/helu.mem:51)", () => {
-    const src = '<<~ helu functionName(param:"default")>>\n  [filter-expression-using-param]\n<<~/helu>>';
+    const src = '<<~ helu name=`functionName` params=`param:"default"`>>\n  [filter-expression-using-param]\n<<~/helu>>';
     expect(pairs("helu", src)).toEqual({ opens: 1, closes: 1 });
     expect(hasErrorNode(src)).toBe(false);
   });
@@ -72,20 +75,21 @@ describe("wehe/helu/procedure/define — name(params) pairs open/close, no orpha
     // canonicalName erasure (scanner.ts collectEvents): an alias sigil's events emit its CANONICAL
     // name, never its own — so a paired procedure/define reads as a paired "wehe" event, not
     // "procedure"/"define".
-    const src = '<<~ procedure greet(name:"world")>>Hello<<~/procedure>>';
+    const src = '<<~ procedure name=`greet` params=`name:"world"`>>Hello<<~/procedure>>';
     expect(pairs("wehe", src)).toEqual({ opens: 1, closes: 1 });
     expect(hasErrorNode(src)).toBe(false);
   });
 
   test("define — wehe's other English mirror, same paren shape (alias-erased to `wehe`)", () => {
-    const src = '<<~ define greet(name:"world")>>Hello<<~/define>>';
+    const src = '<<~ define name=`greet` params=`name:"world"`>>Hello<<~/define>>';
     expect(pairs("wehe", src)).toEqual({ opens: 1, closes: 1 });
     expect(hasErrorNode(src)).toBe(false);
   });
 
-  test("CONTROL — the space-tail form (no parens) still pairs, unbroken by the fix", () => {
-    const src = '<<~ wehe greet name:"world">>Hello<<~/wehe>>';
+  test("CONTROL — a trailing shape= key (the rest group) still pairs, unbroken by the named name and params", () => {
+    const src = '<<~ wehe name=`greet` params=`name:"world"` shape=block>>Hello<<~/wehe>>';
     expect(pairs("wehe", src)).toEqual({ opens: 1, closes: 1 });
     expect(hasErrorNode(src)).toBe(false);
   });
+
 });

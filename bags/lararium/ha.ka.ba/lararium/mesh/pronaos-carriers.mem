@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/pronaos-carriers">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⚕` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/pronaos-carriers`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/pronaos-carriers.mem"
 hydrate    = true
 l-space    = "lararium"
 mana       = 15
@@ -21,9 +20,9 @@ uri-path   = "ha.ka.ba/lararium/mesh/pronaos-carriers"
 written    = "2026-09-22"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! NGINX and Caddy ~ commodity bodies for one Pronaos
 
@@ -41,21 +40,21 @@ ontology; it provides an ordinary delivery body for a peer composition.
 
 <<~/ahu>>
 
-<<~ ahu #/related-carriers>>
+<<~ ahu slot=`#/related-carriers`>>
 
 !! Related carriers ~ the carrier study rides existing law
 
-The common first-face contract lives in <<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>. Browser origin
-and DNS/ACME pressure lives in <<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>. Reach-plane custody
-and foreign transport remain in <<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>. The household proof
-that stays owed reads in <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>.
+The common first-face contract lives in <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos`>>. Browser origin
+and DNS/ACME pressure lives in <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>>. Reach-plane custody
+and foreign transport remain in <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reach-plane`>>. The household proof
+that stays owed reads in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops`>>.
 
 This meme adds carrier pattern knowledge. It does not replace those carriers or silently open their unresolved
 operator rulings.
 
 <<~/ahu>>
 
-<<~ ahu #/myth-and-boundary>>
+<<~ ahu slot=`#/myth-and-boundary`>>
 
 !! Myth and boundary ~ the carrier wears the forecourt's clothes
 
@@ -78,7 +77,7 @@ the next one.
 
 <<~/ahu>>
 
-<<~ ahu #/common-contract>>
+<<~ ahu slot=`#/common-contract`>>
 
 !! Common contract ~ translate the same Pronaos receipt into either carrier
 
@@ -112,7 +111,7 @@ the operator and test witness.
 
 <<~/ahu>>
 
-<<~ ahu #/cache-law>>
+<<~ ahu slot=`#/cache-law`>>
 
 !! Cache law ~ integrity witnesses and delivery classes never fuse
 
@@ -146,7 +145,7 @@ policy. The receipt and witness must say which policy stands. No global clock de
 
 <<~/ahu>>
 
-<<~ ahu #/nginx>>
+<<~ ahu slot=`#/nginx`>>
 
 !! NGINX ~ explicit glass and mature operations
 
@@ -201,7 +200,7 @@ or SPA fallback would violate this meme's refusal law.
 
 <<~/ahu>>
 
-<<~ ahu #/caddy>>
+<<~ ahu slot=`#/caddy`>>
 
 !! Caddy ~ approachable glass with automatic HTTPS
 
@@ -260,7 +259,7 @@ shape; the Pronaos descriptor still supplies positive route ownership, cache cla
 
 <<~/ahu>>
 
-<<~ ahu #/pattern-integrity-rhymes>>
+<<~ ahu slot=`#/pattern-integrity-rhymes`>>
 
 !! Pattern-integrity rhymes ~ borrow the body, preserve the law
 
@@ -296,7 +295,7 @@ deployment custody, not a protocol version gate or a hidden identity translation
 
 <<~/ahu>>
 
-<<~ ahu #/selection>>
+<<~ ahu slot=`#/selection`>>
 
 !! Selection ~ choose the carrier by operator context, not mythology
 
@@ -319,7 +318,7 @@ surface.
 
 <<~/ahu>>
 
-<<~ ahu #/deployment-scales>>
+<<~ ahu slot=`#/deployment-scales`>>
 
 !! Deployment scales ~ one contract, many physical bodies
 
@@ -362,7 +361,7 @@ authority by that fact.
 
 <<~/ahu>>
 
-<<~ ahu #/gaia-elyncia>>
+<<~ ahu slot=`#/gaia-elyncia`>>
 
 !! Operator stories ~ Gaia and Elyncia
 
@@ -382,7 +381,7 @@ and causal history of the vessel that crossed it. A carrier offers the bearing; 
 
 <<~/ahu>>
 
-<<~ ahu #/red-witness>>
+<<~ ahu slot=`#/red-witness`>>
 
 !! Red witness ~ prove the contract through both bodies
 
@@ -415,7 +414,7 @@ must preserve route ownership, integrity, refusal, peer symmetry, local continui
 
 <<~/ahu>>
 
-<<~ ahu #/open-and-deferred>>
+<<~ ahu slot=`#/open-and-deferred`>>
 
 !! Open and deferred ~ keep the cut small
 
@@ -435,7 +434,7 @@ must preserve route ownership, integrity, refusal, peer symmetry, local continui
 
 <<~/ahu>>
 
-<<~ ahu #/sources>>
+<<~ ahu slot=`#/sources`>>
 
 !! Sources ~ engineering receipts, not imported authority
 
@@ -458,7 +457,7 @@ grant a capability, establish peer identity, or create a compatibility/version g
 
 <<~/ahu>>
 
-<<~ ahu #/aftercare>>
+<<~ ahu slot=`#/aftercare`>>
 
 !! Aftercare ~ Evergreen and L-Prime
 
@@ -473,6 +472,6 @@ deferred and does not enter this carrier meme by implication.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;11loFiwwLVDfaQnT5PT7x54OECZSQtbZmFcjrbq8G8Q
+<<^ code=`&#x0003;`>>ni:///sha-256;JMseabXBzhXedAbH4Eq3EXpBIqnl_HUfNvR5HU3e3sk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

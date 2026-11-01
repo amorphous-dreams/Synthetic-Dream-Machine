@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⬡" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/group-as-closure">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⬡` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/group-as-closure`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/api/pono/group-as-closure.mem"
 l-space    = "stable"
 mana       = 14
 manao      = 14
@@ -20,11 +19,11 @@ uri-path   = "ha.ka.ba/lares/api/pono/group-as-closure"
 written    = "2026-06-29"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Group as Closure
 
@@ -40,7 +39,7 @@ prior-arts converge on this shape; this meme stands them whole and maps them ont
 
 <<~/ahu>>
 
-<<~ ahu #/core-claim>>
+<<~ ahu slot=`#/core-claim`>>
 
 !! A Group Names a Closure, Not an Object
 
@@ -56,7 +55,7 @@ linked-local-names grant ''global reach without a global namespace''. The group 
 the edges, never out of a register.
 
 ''Causal-island-safe by construction.'' A closure ''evaluated'' never demands a global
-now (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>). Each vessel
+now (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/federated-causal-islands`>>). Each vessel
 resolves the closure over ''its own synced view'' — //"the group, as of my last sync"// —
 and two vessels may hold different views without either lying. The edges glue (or fail to
 glue) as a presheaf; the membership query reads the local section. No coordinator
@@ -72,7 +71,7 @@ as a live, signed, decaying gesture, not a row in a table.
 
 <<~/ahu>>
 
-<<~ ahu #/quorum>>
+<<~ ahu slot=`#/quorum`>>
 
 !! Quorum — a Composed Threshold Subject
 
@@ -86,7 +85,7 @@ Three properties ride this composition load-bearing:
 * ''Transparent.'' Who-signed stays visible — the verifier sees //which// K chains
   satisfied, never an anonymized count. This fits Plurality Pono: the house surfaces
   competing readings rather than blending them, and a quorum surfaces //who// carried the
-  threshold (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/personas">>).
+  threshold (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/personas`>>).
 * ''Nesting.'' A satisfied quorum stands as a subject another quorum may name —
   quorum-of-quorums — so a cabal-of-cabals threshold composes without new machinery.
 * ''Composed, never granted.'' Keyhive supplies ''membership'' (the delegate/revoke
@@ -99,16 +98,16 @@ no one signature, and no one stolen key, moves the subject.
 
 <<~/ahu>>
 
-<<~ ahu #/eviction>>
+<<~ ahu slot=`#/eviction`>>
 
 !! Eviction — a Kāpae on the Membership Stack
 
 Removing a member raises a ''kāpae'' on the membership stack — a remove-wins tombstone
 that ''shadows'' the member's prior edges where the cascade resolves
-(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/membership-sense">>; the kāpae model
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae#/membership-sense`>>; the kāpae model
 stands whole there — the membership-stack eviction, remove-wins-under-partition, and
 re-admit-by-lowering — this meme references it, never re-defines it; the bag-cascade
-shadow rides <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model#/anti-patterns">>).
+shadow rides <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model#/anti-patterns`>>).
 Eviction composes three moves, none of them a state-replay:
 
 * ''kāpae (remove-wins shadow)'' — the convergent CRDT remove, last-writer-shadows, so a
@@ -125,12 +124,12 @@ falls out of the query, local-first.
 
 <<~/ahu>>
 
-<<~ ahu #/maps-to-stack>>
+<<~ ahu slot=`#/maps-to-stack`>>
 
 !! Maps to Our Stack
 
 The closure model carries directly onto the existing identity architecture
-(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">>):
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity`>>):
 
 * ''PersonaGroup = a closure over vessels.'' One operator's N device-vessels resolve as
   the reciprocal-edge closure of per-vessel delegation edges — never a roster doc a single
@@ -153,7 +152,7 @@ The closure model carries directly onto the existing identity architecture
 * ''Rides `#has`-stack composition.'' A group composes by ''added edges'', never by
   subclassing — the nameless-entity + signed-edge ontology, no group //type//, only the
   closure over what each member `#has` declared
-  (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/social-axis">>).
+  (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/social-axis`>>).
 * ''The Kowloon Admins role-circle = the keeper-cabal skeleton.'' The Circles
   role-of-admins (mutual-petname recognition, no central registrar) adapts web2→web3 as
   the keeper-cabal: Automerge for the edge log, UCAN for the attenuated delegation, `#has`
@@ -162,7 +161,7 @@ The closure model carries directly onto the existing identity architecture
 
 <<~/ahu>>
 
-<<~ ahu #/prior-art>>
+<<~ ahu slot=`#/prior-art`>>
 
 !! Prior Art — Four Converging Roots
 
@@ -187,19 +186,19 @@ group-object, the closure model carries a real pattern integrity, not a stylisti
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/membership-sense">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model#/anti-patterns">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-seal">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/federated-causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae#/membership-sense`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model#/anti-patterns`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-seal`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QhXz8TRB7Vdwn7ft2Hd-8N367_OWGFUdZ21LeSNkgBQ
+<<^ code=`&#x0003;`>>ni:///sha-256;6xT4boRfjwoU4_DW02Zu1DTJ3WbRjIzdrcAhyfaqtq4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

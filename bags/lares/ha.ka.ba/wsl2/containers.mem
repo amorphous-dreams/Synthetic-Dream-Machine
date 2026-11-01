@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/wsl2/containers">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/wsl2/containers`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/wsl2/containers.mem"
 l-space    = "stable"
 mana       = 13
 manao      = 14
@@ -18,7 +17,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/wsl2/containers"
 ```
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Containers on the WSL2 host — the ruling and its tripwire
 
@@ -28,7 +27,7 @@ The lararium kit runs as a compose-shaped stack in containers behind the WSL2 in
 
 <<~/ahu>>
 
-<<~ ahu #/wslc>>
+<<~ ahu slot=`#/wslc`>>
 
 !! WSL containers (`wslc`) — what shipped
 
@@ -50,7 +49,7 @@ The community discovered the session VM already runs stock Moby and that compose
 
 <<~/ahu>>
 
-<<~ ahu #/engine-in-distro>>
+<<~ ahu slot=`#/engine-in-distro`>>
 
 !! Docker Engine inside the distro — the path that carries the stack
 
@@ -68,7 +67,7 @@ Rootful Docker Engine with the compose plugin, supervised by systemd inside Ubun
 
 <<~/ahu>>
 
-<<~ ahu #/fallbacks>>
+<<~ ahu slot=`#/fallbacks`>>
 
 !! Fallbacks, ranked
 
@@ -80,7 +79,7 @@ Not today: `wslc` (no compose, no socket); nerdctl + containerd (works, more han
 
 <<~/ahu>>
 
-<<~ ahu #/tripwire>>
+<<~ ahu slot=`#/tripwire`>>
 
 !! The tripwire — what reverses the ruling
 
@@ -96,7 +95,7 @@ When the tripwire turns: `stand-linux.sh` step 5b reads for `wslc` first and rep
 
 <<~/ahu>>
 
-<<~ ahu #/rootless-variant>>
+<<~ ahu slot=`#/rootless-variant`>>
 
 !! Rootless — the operator-chosen variant
 
@@ -117,7 +116,7 @@ Podman's own machine distro still reproduces #41492 because it starts systemd in
 
 <<~/ahu>>
 
-<<~ ahu #/sources>>
+<<~ ahu slot=`#/sources`>>
 
 !! Sources
 
@@ -129,6 +128,6 @@ Community, most rigorous first: [[endjin — Trying out WSL containers|https://e
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;L2RqEEIY3ZY64pTbnOOZLDZ9nQ_u5W3P_MM1gk97xJ4
+<<^ code=`&#x0003;`>>ni:///sha-256;LmJwD6nnTj86UWUVHD02QgVttjJF8qJ7jYWOXf1Vlmg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

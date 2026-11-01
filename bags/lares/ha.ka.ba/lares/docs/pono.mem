@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Pono Docs
 
@@ -30,7 +29,7 @@ This shelf holds explanatory protocol docs, migration notes, and operator-facing
 
 <<~/ahu>>
 
-<<~ ahu #/tree>>
+<<~ ahu slot=`#/tree`>>
 
 !! Tree
 
@@ -43,16 +42,16 @@ Use this branch for:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/lar-uri`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CZaOZJnuaCjrUoQ1UurBC7qBnf4b_lM_OaJeG1DAFeM
+<<^ code=`&#x0003;`>>ni:///sha-256;VLJIzfDADkIG4139URE3k89tqkdsF2H6RrBbWM-hr-o
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

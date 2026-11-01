@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/wehe">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/wehe`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/wehe.mem"
 mana      = 17
 manao     = 16
 manaoio   = 16
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/wehe"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Wehe
 
@@ -36,17 +35,17 @@ Sugar for the TW5 `\procedure` pragma, first-class in memetic-wikitext as a bloc
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ sense the name and param signature — this block defines a callable; note the crossing boundary
 ⏿ orient: pragma-alias; the declaration serves as the sigil; no render output; body becomes callable body
 ◇ name MUST be unique in current tiddler scope; params declare positional/named argument surface
 ▶ emit pragma declaration node; TW5 parser registers the procedure at parse-time
-↺ `<<~ kahea name(args)>>` (name-call form) invokes the procedure at render time in any tiddler that transcludes this one; confirm callable registered; no stray render output; body round-trips correctly
+↺ ``<<~ kahea name=`name` params=`args`>>`` (name-call form) invokes the procedure at render time in any tiddler that transcludes this one; confirm callable registered; no stray render output; body round-trips correctly
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -54,40 +53,43 @@ A wehe block MUST declare a name and optional parameter signature.
 A wehe block MUST close with `<<~/wehe>>` (or `<<~/procedure>>`).
 A wehe block MUST function as a declaration, producing no render output (not a transclusion).
 A wehe name MUST stand unique within the current tiddler's procedure namespace.
-A wehe block SHOULD use the `~` prefix convention for sigil-dispatched procedures: `<<~ wehe ~name(params)>>`.
+A wehe block SHOULD use the `~` prefix convention for sigil-dispatched procedures: ``<<~ wehe name=`~name(params)`>>``.
 
 English alias `\procedure` means the identical thing. Either form MAY appear in operator memes.
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 Hawaiian form:
+
 ```text
-<<~ wehe name(param1:"default" param2:"")>>
+<<~ wehe name=`name` params=`param1:"default" param2:""`>>
 procedure body
 <<~/wehe>>
 ```
 
 English alias form (identical semantics):
+
 ```text
-<<~ procedure name(param1:"default" param2:"")>>
+<<~ procedure name=`name` params=`param1:"default" param2:""`>>
 procedure body
 <<~/procedure>>
 ```
 
 `~`-dispatched convention (operator-extension sigils):
+
 ```text
-<<~ procedure ~mysigil(uri:"" p1:"")>>
+<<~ procedure name=`~mysigil` params=`uri:"" p1:""`>>
 <$tiddler tiddler=<<uri>>>...
 <<~/procedure>>
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -107,18 +109,18 @@ close-pattern = '<<~\/wehe\s*>>'
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wai">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/huli">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kahea`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wai`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/huli`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-define">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-define`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;myh985UXREAIeg2mX3B3sX_0wPtBXzNkU3fj2bDw0m0
+<<^ code=`&#x0003;`>>ni:///sha-256;MSigaa5neKkX4hiGn9RwXJhN8JZzjhuxCtpb3a9Vu-Y
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

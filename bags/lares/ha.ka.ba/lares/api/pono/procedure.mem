@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/procedure">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/procedure`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/procedure.mem"
 mana      = 18
 manao     = 17
 manaoio   = 17
@@ -17,19 +16,19 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/procedure"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! \procedure
 
 English alias for `wehe`. See canonical spec:
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/wehe">>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/wehe`>>
 
 `\procedure` and `wehe` share identical semantics. Both declare a named callable body.
 Use whichever reads more naturally in context.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;C-ucQIQb0wh4rZr6OyZCEEOLFZ47Ues1sXs1BMxH4P0
+<<^ code=`&#x0003;`>>ni:///sha-256;XMJyASAi27DQifWfYQSv9H1rmdgKjgVm7sgOMUwsKso
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,16 +1,15 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/content-resolution">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/content-resolution.mem"
 l-space    = "lararium"
 mana       = 16
 manao      = 16
 manaoio    = 14
-role       = "the converged DreamNet content-resolution design — large bodies leave the CRDT: skinny TW5 handle + bytes in the cid/ KIND-plane addressed by the three-plane oracle model (public @crossroads plaintext ni:// / private @catalog ciphertext / system @oracle CID-floor) + resolveByCid over three gates + DHT-free discovery; doubly-grounded (2 research waves ∪ @oracle/convergent-mesh canon)"
+role       = "the converged DreamNet content-resolution design — large bodies leave the CRDT: skinny TW5 handle + bytes in the cid/ KIND-plane addressed by the three-plane oracle model (public crossroads-plane plaintext ni:// / private catalog-plane ciphertext / system oracle-floor CID-floor) + resolveByCid over three gates + DHT-free discovery; doubly-grounded (2 research waves ∪ oracle-floor/convergent-mesh canon)"
 status-why = "the design-north; NOT built"
 tags       = ["api/pono/convergent-mesh", "mesh/oracle-governance", "api/pono/causal-islands", "api/pono/orichalcum-capabilities", "lifecycle/designed"]
 title      = "lar:///ha.ka.ba/lararium/mesh/content-resolution"
@@ -19,16 +18,16 @@ uri-path   = "ha.ka.ba/lararium/mesh/content-resolution"
 written    = "2026-07-19"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Content Resolution ~ large bodies leave the CRDT
 
 A body large enough to burst the CRDT leaves it — the `cid/` tier holds the bytes, the
-CRDT holds the handle. (#51 named this law when a 16MB Twain overflowed the @daemon
+CRDT holds the handle. (#51 named this law when a 16MB Twain overflowed the daemon-plane
 summons.) This meme carries the converged answer: ''the''
 ''body leaves the doc.'' A skinny TW5 handle stays in the CRDT; the bytes leave for the
 content-addressed `cid/` tier (`@cad` names the content-addressed tier); a `resolveByCid`
@@ -36,8 +35,8 @@ callback walks them home across three gates that ''never fuse''; discovery runs
 ''without a DHT''. The design stands
 ''doubly-grounded'' — two astral-sea research waves (Fathom on CAS/blob mechanics,
 Meridian on federated capability) INDEPENDENTLY re-derived what the `@oracle`
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>) and `convergent-mesh`
-(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/convergent-mesh">>) canon already held.
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance`>>) and `convergent-mesh`
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/convergent-mesh`>>) canon already held.
 
 > Status: PROPOSED — design-north, NOT built. The #51 hotfix (eager CAS staging +
 > `resolveByCid` shore) ships step 1; this meme carries the persistent-external north
@@ -45,7 +44,7 @@ Meridian on federated capability) INDEPENDENTLY re-derived what the `@oracle`
 
 <<~/ahu>>
 
-<<~ ahu #/the-birth>>
+<<~ ahu slot=`#/the-birth`>>
 
 !! The birth ~ #51, the 16MB-Twain overflow
 
@@ -58,7 +57,7 @@ external body.
 
 <<~/ahu>>
 
-<<~ ahu #/tw5-shore>>
+<<~ ahu slot=`#/tw5-shore`>>
 
 !! The TW5 shore ~ ride the lazy engine, never fork it
 
@@ -72,14 +71,14 @@ verified in TW5 source — the house adds a resolver, never a fork of the lazy p
 
 <<~/ahu>>
 
-<<~ ahu #/cad-storage>>
+<<~ ahu slot=`#/cad-storage`>>
 
 !! Storage ~ `@cad`, the content-addressed tier
 
 ''`@cad` names the content-addressed TIER'': the ''`cid/` KIND-plane'' holds its bytes,
 the publicity-tiered bags hold its handles.
 The bytes rest in the ''`cid/<hash>` KIND-plane'' (`genesis/cas/`, the canon
-bag-wiki-uri-split, <<~ loulou "lar:///ha.ka.ba/lararium/mesh/base-doc">>); the ''handles''
+bag-wiki-uri-split, <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/base-doc`>>); the ''handles''
 ride the ''publicity-tiered bags''. The ''three-plane oracle model'' — the grant-graph
 WHO-axis recurring at the blob layer — carries the ruling law: ''the publicity plane''
 ''decides the addressing mode.''
@@ -88,7 +87,7 @@ WHO-axis recurring at the blob layer — carries the ruling law: ''the publicity
   fetches AND verifies, foreign-legible, federates at ≥meme-rating, archival to 500 years.
   No confirmation-oracle risk — the content stands public by design.
 * ''Private → `@catalog`.'' A ''sealed value'' under a ciphertext address, capability-gated
-  (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>). The address hashes the
+  (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>). The address hashes the
   ciphertext, `blake3:` over every sealed byte, so an untrusted holder verifies, pins and
   repairs ''blind'', never touching a key (Tahoe ''verify-cap ⊥ read-cap''). The body takes
   ''randomized authenticated encryption'' under its bag's versioned content key, bound to
@@ -98,7 +97,7 @@ WHO-axis recurring at the blob layer — carries the ruling law: ''the publicity
   private tier keeps the ciphertext address, the blind verify and the capability gate.
 * ''System → `@oracle`.'' The genesis seed places system rows and blob descriptors in the `@oracle`
   island, and the CAS supplies the bytes by CID. The floor's frozen seed-derived address and its
-  no-writer rule stand owed (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>).
+  no-writer rule stand owed (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance`>>).
 
 ''The publicity plane sets the structural FLOOR the sharing-posture reads'' (`cap-tier.mem`): a `crossroads`
 public plane floors at PUBLIC, a `@catalog` sealed plane floors at CONTRACT, a cleartext-local plane at
@@ -126,7 +125,7 @@ same WHO-axis that tiers a bag tiers its bytes.
 
 <<~/ahu>>
 
-<<~ ahu #/resolve-by-cid>>
+<<~ ahu slot=`#/resolve-by-cid`>>
 
 !! `resolveByCid` ~ three gates that never fuse
 
@@ -137,12 +136,12 @@ URL. This resolver keeps them ''three orthogonal gates'', none collapsing into a
   the sealed face gate's verdict, with Ed25519 readings from `packages/lararium-mesh/src/ed25519-door.ts`.
 * ''Gate 2 — may-this-identity-resolve-THIS-cid (content-authz).'' A `#has` cap scoped
   `{peer × address}`, validated UCAN-shape (aud==next-iss → sub=holder) against a grow-only
-  revocation-CID set (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>).
+  revocation-CID set (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>).
 * ''Gate 3 — may-they-read (decrypt).'' The bag's content key, delivered through a lockbox
   to the bag's key group, ''held SEPARATE'' — the node
   routes and verifies ciphertext and ''never decrypts''. That IS the
   MLS-Delivery-Service-never-decryptor keel, the node-never-Auth-root law
-  (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/convergent-mesh#/contract-key-agreement">>).
+  (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/convergent-mesh#/contract-key-agreement`>>).
 
 Between gate 2 and gate 3 the resolver ''walks a chain'': local `cid/` store →
 hint-named provider (Iroh BlobTicket = hash + NodeAddr, the discovery collapsing into the
@@ -159,7 +158,7 @@ grants passage past all three.
 
 <<~/ahu>>
 
-<<~ ahu #/cad-candidates>>
+<<~ ahu slot=`#/cad-candidates`>>
 
 !! Two CAD-candidate scenarios ~ one store, two extraction boundaries
 
@@ -192,7 +191,7 @@ and the resolver never learn which grain birthed the blob.
 
 <<~/ahu>>
 
-<<~ ahu #/dht-free-discovery>>
+<<~ ahu slot=`#/dht-free-discovery`>>
 
 !! Discovery without a DHT ~ the rendezvous, not the shared present
 
@@ -200,17 +199,17 @@ The load-bearing question both waves chased: ''how a body finds its provider wit
 global DHT''. The chain answers it — hint-in-reference → connected peers → named
 bag-scoped tracker — and the global Kademlia DHT, the one structurally-forced global-now,
 stays ''behind a causal-island boundary''
-(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>). This IS the `@oracle`
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>). This IS the `@oracle`
 shape: a per-Nexus WHO board address, derived from the Nexus key, names a ''rendezvous ADDRESS, not a''
 ''shared present'' — each peer materializes its own converging causal island over the
 address; the address coordinates, the state stays local-first, ''no-global-now enacted, not''
-''breached'' (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance#/board-model">>).
+''breached'' (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance#/board-model`>>).
 Per-nexus on ownership and scale (never one global board); steward-signed source →
 verify-only public read; ''forkable'' — the fork guards.
 
 <<~/ahu>>
 
-<<~ ahu #/handle-and-map>>
+<<~ ahu slot=`#/handle-and-map`>>
 
 !! The handle ~ logical name over an indirection map
 
@@ -220,24 +219,24 @@ The skinny tiddler carries a ''stable logical handle'' (cap/name) plus a
 private-forest). In the private tier the pointer names the body's plaintext digest, and the
 bag's signed manifests carry the map: an entry locator, keyed under the content key, leads a
 reader from that digest to the sealed value's address, and a holder of no key reads an opaque
-value (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records">>). Only the
+value (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records`>>). Only the
 bytes ride the `cid/` tier.
 
 <<~/ahu>>
 
-<<~ ahu #/two-revocation-modes>>
+<<~ ahu slot=`#/two-revocation-modes`>>
 
 !! Revocation ~ two modes, already-fetched unrecallable
 
 Revocation runs two modes, matching `convergent-mesh`'s epoch-lease-vs-convergent-removal
-(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/convergent-mesh#/two-revocation-modes">>):
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/convergent-mesh#/two-revocation-modes`>>):
 
 * ''authz-revoke'' — drop the `#has` cap + drop the retention tag. Cheap,
   forward-immediate.
 * ''content-revoke'' — the bag's content key rolls to a successor version at the causal
   removal act; later writes seal under it, and earlier sealed values keep their bytes and
   their addresses. Forward-only
-  (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/epochs">>).
+  (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/epochs`>>).
 
 ''Already-fetched bytes stand UNRECALLABLE by construction.'' The design assumes it:
 deletion across caches ''cannot exist'' in no-global-now, so the model never pretends to
@@ -245,7 +244,7 @@ it. Revocation ratchets past the broken party; it never re-seals a body already 
 
 <<~/ahu>>
 
-<<~ ahu #/the-convergence>>
+<<~ ahu slot=`#/the-convergence`>>
 
 !! The convergence ~ external re-derived internal
 
@@ -268,7 +267,7 @@ invents ''only the composition'', never a new primitive.
 
 <<~/ahu>>
 
-<<~ ahu #/open-forks>>
+<<~ ahu slot=`#/open-forks`>>
 
 !! Forks ~ two settled, one a delegated lean, one open
 
@@ -279,7 +278,7 @@ Four choices rode ahead of the build; ① and ② stand settled, ③ stands as t
   for range-verify); #46 closed it.
 * ''② Private body keys — SETTLED.'' A private body seals under its bag's random, versioned
   content key, and a lockbox carries that key to the bag's readers
-  (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/keys">>). No convergence secret
+  (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/keys`>>). No convergence secret
   derives a body key.
 * ''③ Indirection-map placement — a delegated lean.'' Controller's delegated house lean (2026-10-22, under the operator's
   standing confidence: //"go with your new leans if confident"//): the logical-name→cid map rides the Automerge doc of the
@@ -295,21 +294,21 @@ fork ④ stays open: the operator's priors decide it, and wave-3 may reopen any.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/convergent-mesh">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-prior-art">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/base-doc">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/convergent-mesh`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-prior-art`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/base-doc`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yp5frDj0ZiOYI37jE2EjM8paek9TKSNhL6gFI7ERqmc
+<<^ code=`&#x0003;`>>ni:///sha-256;sIUFKE2o_e2aSGPwP4AENjAKhPyM1E3l7e9F3QDywZ8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

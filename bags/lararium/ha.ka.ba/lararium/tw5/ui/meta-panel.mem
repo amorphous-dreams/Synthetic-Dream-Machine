@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/ui/meta-panel">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/ui/meta-panel`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/ui/meta-panel.mem"
 mana      = 18
 manao     = 18
 manaoio   = 17
@@ -93,7 +92,7 @@ uri-path  = "ha.ka.ba/lararium/tw5/ui/meta-panel"
 </div>
 \end
 
-<<~ ahu #/hud-fields>>
+<<~ ahu slot=`#/hud-fields`>>
 
 ```toml
 # Canonical field ordering for meta-panel render and MCP hud tool.
@@ -111,13 +110,13 @@ exclude = ["title", "text", "tags", "bag", "revision", "created", "modified", "c
 
 
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/ui/meta-viewtemplate-tab">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/hud">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/ui/meta-viewtemplate-tab`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/hud`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9OFLdg_UPCNd1w70USd4Y-3FaSweakXTy1qiDzGbd8k
+<<^ code=`&#x0003;`>>ni:///sha-256;9wGxFyU1wPrz5fszzEI7I_f0tlQ62780F4Q4ojgF9e8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

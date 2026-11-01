@@ -20,7 +20,6 @@ import { makeDelegationBook } from "./delegation-book.js";
 import {
   mkDaemonResolveBindingResult,
   mkDaemonGateVerbResult,
-  mkDaemonDeriveSkeletonResult,
   mkDaemonWorldlineCompareResult,
   mkDaemonWorldlineTrajectoryResult,
   type DaemonMsg_PlaceVerb,
@@ -29,7 +28,6 @@ import {
   type DaemonMsg_FaceDrop,
   type DaemonMsg_ResolveBindingRequest,
   type DaemonMsg_GateVerbRequest,
-  type DaemonMsg_DeriveSkeletonRequest,
   type DaemonMsg_WorldlineCompareRequest,
   type DaemonMsg_WorldlineTrajectoryRequest,
   type BatchMode,
@@ -263,31 +261,6 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         const msg = raw as DaemonMsg_VerbResult;
         delegations.answer(msg.requestId, { ...(msg.error ? { error: msg.error } : {}), ...(msg.result ? { result: msg.result } : {}) });
         void post;
-        return true;
-      }
-
-      if (type === "daemon:derive-skeleton-request") {
-        // The recall twin of the telemetry capture: derive the query's move-skeleton IN this island's
-        // TW5 VM, against the full self-hosted grammar + the LIVE grammar-cache basis — the SAME
-        // Move→Vec functor capture runs. The in-VM fn lives on $tw.lares (query-derive-vm startup);
-        // we reach it across ctx.tw5.$tw, identical to the capture annotate path. One runtime, no
-        // node-side fallback. Plugin absent / parse fault → a graceful null (→ recall fuses content-only).
-        const msg = raw as DaemonMsg_DeriveSkeletonRequest;
-        try {
-          const $tw = (tw5 as { $tw?: { lares?: { deriveQuerySkeletonVm?: (q: string) => { skeleton: unknown; basis: unknown } | null } } } | undefined)?.$tw;
-          const fn = $tw?.lares?.deriveQuerySkeletonVm;
-          if (!fn) {
-            console.warn("[daemon-behavior] $tw.lares.deriveQuerySkeletonVm absent (plugin not loaded) — recall degrades to content-only (drop-honesty)");
-            post(mkDaemonDeriveSkeletonResult({ requestId: msg.requestId }));
-          } else {
-            const d = fn(msg.query);
-            post(mkDaemonDeriveSkeletonResult(
-              d ? { requestId: msg.requestId, skeleton: d.skeleton, basis: d.basis } : { requestId: msg.requestId },
-            ));
-          }
-        } catch (err) {
-          post(mkDaemonDeriveSkeletonResult({ requestId: msg.requestId, error: err instanceof Error ? err.message : String(err) }));
-        }
         return true;
       }
 

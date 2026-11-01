@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/identity-invariants-2026">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/identity-invariants-2026`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -9,21 +9,20 @@ l-space   = "lares"
 role      = "field and code research, a two-wave traded Codex and Copilot pass (2026-10-20), on where a face's identity invariants rest: what the Binding Gate verifies and what it takes on trust, which pins read as invariant, local or shared, and why sync carries while verification decides"
 status    = "research; read 2026-10-20; the operator approved its recommendation the same day"
 tags      = ["research", "identity", "crdt", "custody", "kel", "persona-group", "no-global-now"]
-file-path = "bags/lares/ha.ka.ba/lares/docs/research/identity-invariants-2026.mem"
 title     = "lar:///ha.ka.ba/lares/docs/research/identity-invariants-2026"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/identity-invariants-2026"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Identity invariants, 2026 ~ sync carries, verification decides
 
-The operator un-asked a founding choice on 2026-10-20: //"When we started, all we had was direct API calls and CRDT docs, so that's where I put everything that should auto-sync based on the capabilities of the currently-in-context keys. But does setting these identity invariants on a mutable CRDT read pono?"// A Codex seat read the code and a Copilot seat read the field, each in two traded waves. Claims read MEASURED (read in code, with file and line) or LEAD (inference, or a recalled source). The ruling stands at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings, //sync carries; verification decides//.
+The operator un-asked a founding choice on 2026-10-20: //"When we started, all we had was direct API calls and CRDT docs, so that's where I put everything that should auto-sync based on the capabilities of the currently-in-context keys. But does setting these identity invariants on a mutable CRDT read pono?"// A Codex seat read the code and a Copilot seat read the field, each in two traded waves. Claims read MEASURED (read in code, with file and line) or LEAD (inference, or a recalled source). The ruling stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings, //sync carries; verification decides//.
 
 <<~/ahu>>
 
-<<~ ahu #/findings>>
+<<~ ahu slot=`#/findings`>>
 
 !! Findings
 
@@ -35,7 +34,7 @@ The operator un-asked a founding choice on 2026-10-20: //"When we started, all w
 
 <<~/ahu>>
 
-<<~ ahu #/the-sort>>
+<<~ ahu slot=`#/the-sort`>>
 
 !! The sort ~ where each pin rests
 
@@ -50,7 +49,7 @@ The operator un-asked a founding choice on 2026-10-20: //"When we started, all w
 
 <<~/ahu>>
 
-<<~ ahu #/recommendation>>
+<<~ ahu slot=`#/recommendation`>>
 
 !! The recommendation ~ both seats converged
 
@@ -60,6 +59,6 @@ A sealed anchor per face per device; signed records carried by sync under immuta
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kOXTc_Dqf0CQbmeebgMwnkNF3obPfRT1YgAjl93Tbxs
+<<^ code=`&#x0003;`>>ni:///sha-256;uKegRZ8mQQumjbEerJSWGxs1rnG9HUC8qenMcCSP8FQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

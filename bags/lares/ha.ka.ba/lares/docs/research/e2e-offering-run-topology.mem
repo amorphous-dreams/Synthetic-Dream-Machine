@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/e2e-offering-run-topology">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/e2e-offering-run-topology`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/research/e2e-offering-run-topology.mem"
 l-space   = "lares"
 mana      = 16
 manao     = 16
@@ -18,9 +17,9 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/e2e-offering-run-topology"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/scope>>
+<<~ ahu slot=`#/scope`>>
 
 ! Offering receiver E2E — run topology audit
 
@@ -126,5 +125,5 @@ This is the minimum **reproducible** preparation established by repository wirin
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5HrwJcXwi78hehxM1Py57uIj5UAm5CVbKytqDK0-xXc
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0003;`>>ni:///sha-256;9lPsoQrln2oaASo1t2sU8wa4k1EpgooKA9RTtffIoZo
+<<^ code=`&#x0004;` to=`?`>>

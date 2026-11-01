@@ -1,12 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/hook/imbued">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/components/hook/imbued`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
 caption   = "imbued"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/hook/imbued.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 16
@@ -19,7 +18,7 @@ uri-path  = "ha.ka.ba/sdm/components/hook/imbued"
 
 ! Imbued
 
-<<~ ahu #/definition>>
+<<~ ahu slot=`#/definition`>>
 
 !! Definition
 
@@ -27,7 +26,7 @@ A canonical cost hook: the Life paid to activate stays ''locked'' until the Powe
 
 <<~/ahu>>
 
-<<~ ahu #/activation>>
+<<~ ahu slot=`#/activation`>>
 
 !! Activation
 
@@ -35,7 +34,7 @@ Modifies the cost protocol, not the effect. While imbued, the locked Life is una
 
 <<~/ahu>>
 
-<<~ ahu #/interaction>>
+<<~ ahu slot=`#/interaction`>>
 
 !! Interaction
 
@@ -43,7 +42,7 @@ Common on `domain/abjuration` wards and standing barriers. Distinct from `item` 
 
 <<~/ahu>>
 
-<<~ ahu #/filters>>
+<<~ ahu slot=`#/filters`>>
 
 !! Filters
 
@@ -54,7 +53,7 @@ Common on `domain/abjuration` wards and standing barriers. Distinct from `item` 
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -62,14 +61,14 @@ Common on `domain/abjuration` wards and standing barriers. Distinct from `item` 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/components/tag`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0QRIuqyBKkKVHLTWU7e7Ecf7wJe5eO3_VfONQVhce-I
+<<^ code=`&#x0003;`>>ni:///sha-256;87ZHhsItd_396mhwYisAxKaKs5B2xzIPBKY-yJISglo
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

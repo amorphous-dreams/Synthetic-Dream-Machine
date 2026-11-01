@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/books/a-broken-world/spine">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/books/a-broken-world/spine`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/books/a-broken-world/spine.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -18,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/books/a-broken-world/spine"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Elyncia 01 ~ A Broken World ~ Spine
 
@@ -33,7 +32,7 @@ below activate one by one as each chunk meme seats; until then the walk reads as
 
 <<~/ahu>>
 
-<<~ ahu #/walk>>
+<<~ ahu slot=`#/walk`>>
 
 !! The Walk ~ reading order
 
@@ -50,7 +49,7 @@ below activate one by one as each chunk meme seats; until then the walk reads as
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source Staging
 
@@ -60,12 +59,12 @@ comes only after all source text reads as moved.)//
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/books/index">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/books/index`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;N4OT5UlY2m79VnakWnshQ4En05M8ZjP2PVYhCcpYD1w
+<<^ code=`&#x0003;`>>ni:///sha-256;xOz9iyIImucIf0XOpzLLlyZgKEmGUrxoM3ZyPvu6vnQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

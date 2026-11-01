@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/witness/powers/osr-spells/read-magic">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/witness/powers/osr-spells/read-magic`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/witness/powers/osr-spells/read-magic.mem"
 l-space   = "sdm"
 mana      = 11
 manao     = 16
@@ -18,7 +17,7 @@ uri-path  = "ha.ka.ba/sdm/witness/powers/osr-spells/read-magic"
 
 ! OSR Witness — Read Magic
 
-<<~ ahu #/basic>>
+<<~ ahu slot=`#/basic`>>
 
 !! Basic
 
@@ -35,7 +34,7 @@ The magic-user may read — not speak — magical words or runes, such as those 
 
 <<~/ahu>>
 
-<<~ ahu #/expert>>
+<<~ ahu slot=`#/expert`>>
 
 !! Expert
 
@@ -50,7 +49,7 @@ The Expert Set reproduces the MU1 spell list only; it carries no standalone desc
 
 <<~/ahu>>
 
-<<~ ahu #/cyclopedia>>
+<<~ ahu slot=`#/cyclopedia`>>
 
 !! Rules Cyclopedia
 
@@ -67,7 +66,7 @@ The spellcaster may read — not speak — magical words or runes on scrolls and
 
 <<~/ahu>>
 
-<<~ ahu #/analysis>>
+<<~ ahu slot=`#/analysis`>>
 
 !! Conversion Analysis
 
@@ -80,17 +79,17 @@ The spellcaster may read — not speak — magical words or runes on scrolls and
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells">>
-<<~ loulou "lar:///ha.ka.ba/sdm/modules/powers/read-magic">>
-<<~ loulou "lar:///ha.ka.ba/sdm/source/becmi/basic">>
-<<~ loulou "lar:///ha.ka.ba/sdm/source/becmi/rules-cyclopedia">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/modules/powers/read-magic`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/source/becmi/basic`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/source/becmi/rules-cyclopedia`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ptlDEaCJDIjvek_Hv1PmViZ9Wpm1auoxIBzT-F8QQ14
+<<^ code=`&#x0003;`>>ni:///sha-256;Tf5fQ1ewFPg0Jp1V15b-smfp0Z_f1oqwcuGQhdtaQb4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

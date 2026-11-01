@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/session-contract">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/session-contract`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/session-contract.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 17
@@ -21,21 +20,21 @@ uri-path          = "ha.ka.ba/lares/api/pono/session-contract"
 written           = "2026-10-11"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Session Contract ~ what a tab or a CLI run holds, and what it never holds
 
-''A session wears the face and the vessel wears none'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session">>). This carrier states the contract under that ruling: what a session carries, what the vessel's owner keeps for it, how a surface mounts, how the holder speaks, and how a session switches and ends.
+''A session wears the face and the vessel wears none'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session`>>). This carrier states the contract under that ruling: what a session carries, what the vessel's owner keeps for it, how a surface mounts, how the holder speaks, and how a session switches and ends.
 
-''One vessel holds one durable backing Repo, one store lock, custody, and one trusted, face-blind daemon.'' Each tab or CLI run opens a volatile session that wears exactly one verified face. The gate-facing half of the same ruling, the proof a session presents on the wire, stands at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>.
+''One vessel holds one durable backing Repo, one store lock, custody, and one trusted, face-blind daemon.'' Each tab or CLI run opens a volatile session that wears exactly one verified face. The gate-facing half of the same ruling, the proof a session presents on the wire, stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof`>>.
 
 > ''Register.'' The operator approved this contract's decisions as presented (operator ruling, 2026-10-11; quote license: //"Pono, this all reads good. Flowstate approved (per tab state reads pono, we want that, and can sync up 'views' later if needed)."//). A sentence below that carries the operator's own words stands as law. The remainder reads as ''the designed shape'': approved in outline, and unbuilt wherever #/standing-and-owed says OWED. One reading belongs to the house and carries its own mark (#/receipts).
 
 <<~/ahu>>
 
-<<~ ahu #/what-a-session-carries>>
+<<~ ahu slot=`#/what-a-session-carries`>>
 
 !! What a session carries ~ an id that routes, a binding that authorizes
 
@@ -56,7 +55,7 @@ written           = "2026-10-11"
 
 <<~/ahu>>
 
-<<~ ahu #/the-hands>>
+<<~ ahu slot=`#/the-hands`>>
 
 !! The hands ~ every hand opens a session, and hands differ by profile, never by key
 
@@ -76,10 +75,10 @@ written           = "2026-10-11"
 | ''attended'' | the operator sits in the session and directs the work: the spirit extends the operator's hands | the operator's face, as the operator's own act | the operator's act, with the spirit's Mask as authorship |
 | ''standing'' | a spirit works under a standing grant, with no person in the loop | nothing that changes who holds authority; it drafts | working-layer writes carrying a Mask |
 
-''The vessel's own key serves as a spirit's system identity.'' No spirit holds a key of its own, and the house mints none for it. A model from any provider sits in the same seat, and an act that crosses a vessel presents what any session of that face on that vessel presents (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>). The operator answers for a spirit's acts: a neighbour who shadows the spirit shadows that vessel's edge. A derived lineage handle addresses and recalls a spirit's work and grants no identity (<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">> · <<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>).
+''The vessel's own key serves as a spirit's system identity.'' No spirit holds a key of its own, and the house mints none for it. A model from any provider sits in the same seat, and an act that crosses a vessel presents what any session of that face on that vessel presents (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof`>>). The operator answers for a spirit's acts: a neighbour who shadows the spirit shadows that vessel's edge. A derived lineage handle addresses and recalls a spirit's work and grants no identity (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/agent-worldline`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mandate-activity-provenance`>>).
 
 * ''A standing grant names the face a seat wears.'' The grant rests at the MCP mount. The owner verifies it afresh at every open, and it opens nothing while the vessel rests at the floor: no spirit works on a locked vessel.
-* ''The Mask travels as authorship.'' A write into a shared realm carries the hand that made it as a field of the record, beside the face that signs: the kind of hand, and a spirit's Mask. The field names and authorizes nothing; no gate reads it. A Mask pins to no key and no identifier, so it counts as no pet-name (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">>).
+* ''The Mask travels as authorship.'' A write into a shared realm carries the hand that made it as a field of the record, beside the face that signs: the kind of hand, and a spirit's Mask. The field names and authorizes nothing; no gate reads it. A Mask pins to no key and no identifier, so it counts as no pet-name (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>).
 * ''An agent's dissent drafts; a person's ask edits'' (operator ruling, 2026-10-16). An agent that disagrees with a person's edit files its own version as a draft beside it, and the person's edit stands until the person chooses: an agent never overrides. A person who asks an agent to edit a tiddler directly makes that edit the person's own act (the ''attended'' position above), and the agent writes it, reaching only the tiddlers the ask names and only under the asker's own write authority.
 * ''A projected wiki stands as a surface.'' One tree on disk serves the person. A wiki names a face's relation to a composition (#/the-working-layer), so each face's wiki takes its own folder and the path says whose wiki it holds. No file and no `.meta` chooses the signer: an edit returns under the face of the session that leases the surface. A switch advances the generation, and an edit sensed under an earlier generation surfaces as a draft.
 * ''Files that changed while no session held the lease'' ingest at the next mount, under the mounting face, as surfaced drafts.
@@ -93,8 +92,8 @@ written           = "2026-10-11"
 
 ''A session switches in place, and the door reads afresh.'' A session's switch runs the five-step fence over its own table entry: freeze and preflight, the intent, the fence of the outgoing generation, advance and commit, the outcome and then live. A commit that fails closes that session alone, and a sibling session of the same face keeps its generation, face and signer. The node's production door (`packages/lararium-node/src/uds-session-door.ts`) takes an `h<N>` hint, reads that face's anchors, its K15 atom (the presenter) and its proof at the Nexus the vessel dials, and reads and writes nothing; a locked face refuses `face-locked`, any other fault `door-failed` with its detail kept in the vessel's log, and a proof of another PersonaGroup `face-group-mismatch`. ''A session is a meeting between a face and an anchor, held by neither's registry'' (operator ruling, 2026-10-27): identity-as-relation for places as for faces. One session binds one (face, anchor). The anchor is the Nexus the vessel dials, or, for a vessel standing with no Nexus, the vessel's own place, named by its W29 place KEL prefix; the vessel's state decides which (a dial pin standing, or none), never its config. At a place anchor the face proves itself by its atom presented to its own vessel, with no Nexus admit. A proof at another anchor refuses `anchor-moved`, and every command that acts as a face rides a session of that face on a running vessel; rows and acts of the place keep their frames, and verbs that run with no vessel open stay off sessions. Built: each supply names its anchor, `{ kind: "nexus", aid }` or `{ kind: "place", aid: <W29 place KEL prefix>, head }`, and the door answers `anchorNow`, reading where the place KEL stands at each check (its login read once, so a git config change moves no anchor, and a verify only once the KEL's bytes moved), so a rotation of the place moves the anchor and a read that fails refuses that one frame `anchor-unread` with the session standing; the place signer reads the same head before and after each signature, so a rotation between a frame's check and the signature refuses `anchor-moved` there; the dial pin stands only once the vessel's own presentation composed at it, so a refused composition or a failed re-dial leaves the vessel at its place anchor. At the place the door supplies the face from its atom and the place alone (`supplyPlaceFace`: the proof subject names the atom and the place, the admit reference the place KEL's head) and the atom certifies the session's key (`PlaceSessionSigner`, under four place domains apart from every Nexus image). A session whose anchor the vessel left ends `anchor-moved` at its next frame, and a switch whose proof stands at another anchor refuses `anchor-moved`. Every store-door row that acts as a face (`STORE_DOOR_FACE_ROWS`) rides a session of that face on a running vessel, and the maintenance frame refuses such a row `face-row-rides-a-session`; rows of the place keep the frame. ''A face row's answer rides the socket alone'' (`K20`): each rides `session:act`, where the vessel's main thread runs it as the face the session wears once the keyholder island clears it as it clears a routed verb (`daemon:gate-verb-request`, nothing placed or dispatched), its answer returns on that socket, and its receipt names the act and the face; a `session:call`, whose outcome body rests in the daemon document beside the session's face, refuses a face row `answers-on-the-socket`. The realm verbs that name a face's key at a realm's Nexus (`REALM_KEY_VERBS`: `realm-bag`, which signs as the worn face, `realm-bags` and `realm-clock`) refuse a call the same way: `realm-bag` and `realm-bags` ride `session:act` as the session's face, and `realm-clock` rides the maintenance frame, which names no face. ''The session's face binds what it carries'': the supply names the face's ordinal, and a row whose `face` or `handleIndex` names another face, or whose two keys disagree, refuses `face-row-other-face`, never overwritten; a row naming none acts as the session's face. Every sealed act that signs, reads or writes as a face (`SESSION_ACTS`: persona.reissue, walk.take, host.roll, crossing.sign, crossing.witness, carriage.accept, persona.recovery-contact.enrol, persona.confirm, handle-book.load, handle-book.save, selves.carry, selves.clear) rides `session:act` on the custody door's one chain under the same binding, naming its face by its own key (`face`, else `handleIndex` for the acts keyed by it alone), and the receipt each leaves names the act and the face alone, never an argument or the answer; a retry under one requestId reads that receipt, the act running once per id and its answer never surviving a hang-up. ''One requestId, one intent'' (the retry contract): the receipt's digest covers the act and the face and never an argument, so a caller that reuses an id for other arguments reads the first act's receipt and its new intent never runs; a caller draws a fresh id for each intent and reuses one only to retry that same intent. A ledger that fails before the run answers `session-fault` (nothing ran); a ledger that fails to record the outcome after the run answers `act-faulted` with the receipt, never `session-fault`, and a retry under that id reads the act's outcome, never `pending`; the custody door's own act frame refuses them `face-act-rides-a-session`. Every other sealed act acts as the place and stays at the custody door (the lane kit names each and why); `face.resolve` among them reads and signs nothing, and cannot ride the session it chooses, and `persona.view` signs as a held chair, never as a face. A restored face standing provisional opens a session like any other, so its confirm rides one. The seal roll anchors by authority: the acting face's session proves it opens before any card reads, the carriage anchor rides the frame as the place's row and gates the roll, and each realm edge anchor rides a session of the face named or resolved after the charter lands, never halving the roll: with no face open the edge step answers `no-face-open`, and a face that locked after the preflight leaves the edge anchors `owed` by name. A daemon that boots one face's Keyhive provider judges a second face's session as the stranger its atom reads as, until the next lane routes each session to its face's own provider. A hint naming a Nexus (`h<N>@<aid>`) waits on a vessel that dials a second Nexus.
 
-* ''The daemon holds one Keyhive provider per joined face'' (operator ruling, 2026-10-27; <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k19-hive-lane">>). Each unlocked face boots through the full gate over its own cap-event scope and bag-document ledger, and a verify routes by the session's presenter atom: an atom no provider holds refuses "no provider for face <key>", and the place key gets no grant. No verifier judges many faces. A sibling's lock and unlock ride `daemon:face-drop` and `daemon:face-lit` and recompose nothing.
-* ''A session acts only as the face it wears.'' The UDS session door places each session ask with its face's ordinal, and the vessel's main thread books that face (ordinal and verified presenter) by request id as it places the ask; a delegate back from the island hands its handler that booking, never the presenter the delegate names, and a booking serves one delegate of the act it booked, which alone spends it; since `K20` a booking lends a session call its presenter and locality alone, since no face row rides a call. Every store-door face row binds to the face its session wears, which main hands it (`DaemonVmCore.runAsFace`): a row that rode no session refuses `face-row-rides-a-session`, a row naming another face refuses `face-row-other-face`, and a row naming none acts as the worn face, with no fallback to the one face open or to face 0. A row that reads a face acts as that face wherever it sat, so the intent-relay rows `intent-relay-enable`, `-disable` and `-status` are face rows, while the relay key's rotation stays a place row. A realm feed runs on the vessel's main thread as the session's face, bound by the face→leaf bond (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k19-hive-lane">>), so no answer pairs a face with its leaf. No daemon outcome names its requester (`K20`): the volatile invocation carries who asked, so the realm feed's outcome never names the atom beside the slot its leaf names, and a census (`censusOutcomeLinkage`) reads the daemon outcomes for any that pairs a requester with a key or answers a face row.
+* ''The daemon holds one Keyhive provider per joined face'' (operator ruling, 2026-10-27; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/k19-hive-lane`>>). Each unlocked face boots through the full gate over its own cap-event scope and bag-document ledger, and a verify routes by the session's presenter atom: an atom no provider holds refuses "no provider for face <key>", and the place key gets no grant. No verifier judges many faces. A sibling's lock and unlock ride `daemon:face-drop` and `daemon:face-lit` and recompose nothing.
+* ''A session acts only as the face it wears.'' The UDS session door places each session ask with its face's ordinal, and the vessel's main thread books that face (ordinal and verified presenter) by request id as it places the ask; a delegate back from the island hands its handler that booking, never the presenter the delegate names, and a booking serves one delegate of the act it booked, which alone spends it; since `K20` a booking lends a session call its presenter and locality alone, since no face row rides a call. Every store-door face row binds to the face its session wears, which main hands it (`DaemonVmCore.runAsFace`): a row that rode no session refuses `face-row-rides-a-session`, a row naming another face refuses `face-row-other-face`, and a row naming none acts as the worn face, with no fallback to the one face open or to face 0. A row that reads a face acts as that face wherever it sat, so the intent-relay rows `intent-relay-enable`, `-disable` and `-status` are face rows, while the relay key's rotation stays a place row. A realm feed runs on the vessel's main thread as the session's face, bound by the face→leaf bond (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/k19-hive-lane`>>), so no answer pairs a face with its leaf. No daemon outcome names its requester (`K20`): the volatile invocation carries who asked, so the realm feed's outcome never names the atom beside the slot its leaf names, and a census (`censusOutcomeLinkage`) reads the daemon outcomes for any that pairs a requester with a key or answers a face row.
 * ''A switch act rests on its vessel alone.'' The intent and the outcome name two faces together, and the face's working layer syncs to every vessel of the face's fleet, so they rest in the vessel's sealed `switch-acts` custody row and in no document.
 * ''The hand's claim names a profile, and the socket's file mode gates who may claim.'' A `session:open` names its hand; the door grants that hand's profile to whatever process the socket's file mode admits.
 
@@ -102,7 +101,7 @@ written           = "2026-10-11"
 
 <<~/ahu>>
 
-<<~ ahu #/the-working-layer>>
+<<~ ahu slot=`#/the-working-layer`>>
 
 !! The working layer ~ one document per face relation, wiki, and slot kind
 
@@ -110,7 +109,7 @@ One working document follows each `(face relation, wiki, slot kind)`. Its addres
 
 The working layer follows the wiki across recipe recomposition; it never follows the recipe's composition fingerprint. Here, `wiki` names the face's relation to a composition over bags, never a global wiki name or registry id. Two faces at one table may hold wikis that share bags; sharing happens at the bag. Presence and multiplayer spaces sit above shared bags.
 
-A leaf with an admit and no seat writes nothing to the face's wikis. Join first; the face secret arrives at the face-proof join (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain">>).
+A leaf with an admit and no seat writes nothing to the face's wikis. Join first; the face secret arrives at the face-proof join (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain`>>).
 
 The gate and document membership refuse a removed vessel. The working document keeps its address; rotation to a fresh document takes a separate, deliberate act.
 
@@ -118,7 +117,7 @@ The working kind resolves through `resolveFaceWorkingSlot` (`packages/lararium-m
 
 <<~/ahu>>
 
-<<~ ahu #/the-owner>>
+<<~ ahu slot=`#/the-owner`>>
 
 !! The owner ~ acts and outcomes persist; a roster of sessions never does
 
@@ -130,7 +129,7 @@ The working kind resolves through `resolveFaceWorkingSlot` (`packages/lararium-m
 
 <<~/ahu>>
 
-<<~ ahu #/islands>>
+<<~ ahu slot=`#/islands`>>
 
 !! Islands ~ one per interactive surface, and per-tab state as wanted
 
@@ -138,11 +137,11 @@ The working kind resolves through `resolveFaceWorkingSlot` (`packages/lararium-m
 
 ''Per-tab state stands as the operator wants it'' (operator ruling, 2026-10-11; quote license: //"per tab state reads pono, we want that, and can sync up 'views' later if needed"//). Each tab runs its own TiddlyWiki engine and keeps its own story river, drafts, scroll, cameras and frames. Two tabs of one face share their durable documents through the one owner. Syncing a view across tabs stays a later, optional feature, and nothing in this contract waits on it.
 
-''A camera's frame keys and revisions live within its surface mount'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling">>). The pool's bookkeeping, pending calls, failure accounting and leases all use the whole key.
+''A camera's frame keys and revisions live within its surface mount'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling`>>). The pool's bookkeeping, pending calls, failure accounting and leases all use the whole key.
 
 <<~/ahu>>
 
-<<~ ahu #/the-document-view>>
+<<~ ahu slot=`#/the-document-view`>>
 
 !! The session-scoped document view ~ what replaces the broad sync port
 
@@ -158,11 +157,11 @@ The working kind resolves through `resolveFaceWorkingSlot` (`packages/lararium-m
 
 <<~/ahu>>
 
-<<~ ahu #/the-effective-recipe>>
+<<~ ahu slot=`#/the-effective-recipe`>>
 
 !! The effective recipe ~ one function, at surface mount
 
-''One mesh function resolves a session's effective recipe when a surface mounts.'' It takes the vessel's recipe records, the session's verified face plane, the bags that face may read, the plugin inputs and the capability profile; it returns absolute ids and a recipe revision. A grant decides what a face CAN read and a recipe decides what a session DOES mount (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-house-table">>).
+''One mesh function resolves a session's effective recipe when a surface mounts.'' It takes the vessel's recipe records, the session's verified face plane, the bags that face may read, the plugin inputs and the capability profile; it returns absolute ids and a recipe revision. A grant decides what a face CAN read and a recipe decides what a session DOES mount (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-house-table`>>).
 
 ''A mounted island never hot-swaps.'' A recipe change gets written, sync carries it, and the next mount reads it. Node and browser share the one function; neither platform resolves a recipe of its own.
 
@@ -172,7 +171,7 @@ The working kind resolves through `resolveFaceWorkingSlot` (`packages/lararium-m
 
 <<~/ahu>>
 
-<<~ ahu #/the-holder-protocol>>
+<<~ ahu slot=`#/the-holder-protocol`>>
 
 !! The holder's message kinds ~ every reply returns to the binding that asked
 
@@ -188,11 +187,11 @@ The working kind resolves through `resolveFaceWorkingSlot` (`packages/lararium-m
 | `session:switch` → `session:switch-result` | The expected generation and the target face reference. It advances this session alone. |
 | `session:revoke` · `session:close` → `session:closed` | An observed causal reason, or a local close cause. Facets, dials, scoped views, routes and leases all drop. |
 
-''The control-event leg carries every act a person makes on a surface'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls#/the-wire">>; the kinds stand at `lar:///ha.ka.ba/lararium/mesh/lar-camera`). No `wiki:dom-event` or `wiki:dom-input` kind passes a door. A daemon panel, a wiki and any later camera each open a surface under a named session, and none consults a vessel-wide active face or active surface.
+''The control-event leg carries every act a person makes on a surface'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/page-controls#/the-wire`>>; the kinds stand at `lar:///ha.ka.ba/lararium/mesh/lar-camera`). No `wiki:dom-event` or `wiki:dom-input` kind passes a door. A daemon panel, a wiki and any later camera each open a surface under a named session, and none consults a vessel-wide active face or active surface.
 
 <<~/ahu>>
 
-<<~ ahu #/receipts>>
+<<~ ahu slot=`#/receipts`>>
 
 !! Receipts ~ bound to the face's proof subject and the input's digest
 
@@ -206,7 +205,7 @@ The working kind resolves through `resolveFaceWorkingSlot` (`packages/lararium-m
 
 <<~/ahu>>
 
-<<~ ahu #/the-cli>>
+<<~ ahu slot=`#/the-cli`>>
 
 !! The CLI ~ a one-shot command names its face
 
@@ -220,7 +219,7 @@ The local socket carries the open, calls, receipt queries, cancel, the switch an
 
 <<~/ahu>>
 
-<<~ ahu #/the-browser>>
+<<~ ahu slot=`#/the-browser`>>
 
 !! The browser ~ the shared worker owns; each tab makes its own wiki worker
 
@@ -238,34 +237,34 @@ The local socket carries the open, calls, receipt queries, cancel, the switch an
 
 <<~/ahu>>
 
-<<~ ahu #/the-trust-line>>
+<<~ ahu slot=`#/the-trust-line`>>
 
 !! The trust line ~ one custody context, no human counted
 
-''A browser vessel's trust domain runs at one custody context'': one browser profile under one locked OS account, holding one vessel's store, lock and keys. The browser walls storage, locks, workers and channels between profiles and accounts, and walls nothing inside one origin of one profile; a profile walls storage, never people, since anyone at an unlocked OS login can switch to it. So a household's shared device gives each operator their own locked OS account and browser profile, and the vessel never counts humans: no constructor for a human exists in the model (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>), and a ''hand'' names a session's custody principal (#/the-hands), never a person.
+''A browser vessel's trust domain runs at one custody context'': one browser profile under one locked OS account, holding one vessel's store, lock and keys. The browser walls storage, locks, workers and channels between profiles and accounts, and walls nothing inside one origin of one profile; a profile walls storage, never people, since anyone at an unlocked OS login can switch to it. So a household's shared device gives each operator their own locked OS account and browser profile, and the vessel never counts humans: no constructor for a human exists in the model (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>), and a ''hand'' names a session's custody principal (#/the-hands), never a person.
 
 ''Inside one custody context'', the holder separates PersonaGroups by custody: each face's secrets seal under keys only that face's unlocked session holds. Same-origin code that turns hostile can erase or roll back local stores, take a Web Lock or approach the SharedWorker; it reaches only this context's view of itself, never a sealed face it cannot unlock.
 
-''A missing record proves no clean history.'' A device's own gate enforces its standing best-effort; its peers' gates enforce it, each from its own ledger and the signed standing it holds. A peer reads a device's absent raise against the board's signed edge frontier (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings, the edge frontier): holding a frontier that includes every raise it has seen, it reads absence as clear as of that frontier; lacking one, a widening act waits as unknown. Until the frontier stands built, a peer reads absence as clear for sync and for widening alike, and the gap stays named.
+''A missing record proves no clean history.'' A device's own gate enforces its standing best-effort; its peers' gates enforce it, each from its own ledger and the signed standing it holds. A peer reads a device's absent raise against the board's signed edge frontier (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings, the edge frontier): holding a frontier that includes every raise it has seen, it reads absence as clear as of that frontier; lacking one, a widening act waits as unknown. Until the frontier stands built, a peer reads absence as clear for sync and for widening alike, and the gap stays named.
 
-''Tiers contract outward by signed, narrowed relations.'' One operator's household Nexus, neighbourhood Lararium, tribe and regional Nexus stand as distinct realms, charters and seats over one vessel or several. Carriage carries and reads nothing; a seat, a realm membership, a document read and a promotion each take their own grant, and no tier inherits another's membership or map by transit. Tiers sharing one origin, host or relay can correlate by metadata; where tiers must not learn of each other, they run on separate substrate. The research rests at <<~ loulou "lar:///ha.ka.ba/lares/docs/research/browser-trust-line-2026">>.
+''Tiers contract outward by signed, narrowed relations.'' One operator's household Nexus, neighbourhood Lararium, tribe and regional Nexus stand as distinct realms, charters and seats over one vessel or several. Carriage carries and reads nothing; a seat, a realm membership, a document read and a promotion each take their own grant, and no tier inherits another's membership or map by transit. Tiers sharing one origin, host or relay can correlate by metadata; where tiers must not learn of each other, they run on separate substrate. The research rests at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/browser-trust-line-2026`>>.
 
 <<~/ahu>>
 
-<<~ ahu #/how-a-session-ends>>
+<<~ ahu slot=`#/how-a-session-ends`>>
 
 !! How a session ends
 
 * ''A CLI run'': the socket closes or the process exits; an explicit close; a switch; an observed causal revocation.
 * ''A tab'': the page's close signal; a lost port; the holder's death; a switch; an observed causal revocation.
-* ''An abrupt tab loss'' may send no close. The holder reclaims an unresponsive lease by a ''local monotonic liveness budget''. That budget frees resources and never judges a relation: it expires no face, no admit and no grant (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/no-global-now">>).
+* ''An abrupt tab loss'' may send no close. The holder reclaims an unresponsive lease by a ''local monotonic liveness budget''. That budget frees resources and never judges a relation: it expires no face, no admit and no grant (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>).
 * ''An observed revocation'' closes the sessions that depend on the revoked relation and records the causal fence. A replica holding no later history answers //as of the last verified fence// or //incomplete//. It invents no current standing and no lapse by a wall clock; an act that needs a fresher relation refuses by name.
 
 At every ending the session's facets, signer handles, dials, scoped views, routes and island leases drop.
 
 <<~/ahu>>
 
-<<~ ahu #/the-switch>>
+<<~ ahu slot=`#/the-switch`>>
 
 !! The switch ~ five steps, one session
 
@@ -275,11 +274,11 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 # ''Advance, mount, dial.'' The generation advances. The target surfaces mount under the new scoped view, and the session dials with fresh keys under the target face's proof.
 # ''Write the outcome.'' A mount or a dial that fails at commit closes this session and reports the partial outcome; the caller opens afresh. Nothing restores the old face's authority in silence.
 
-''Every other session and the daemon continue untouched.'' The record never crosses the wire (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session">>).
+''Every other session and the daemon continue untouched.'' The record never crosses the wire (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/standing-and-owed>>
+<<~ ahu slot=`#/standing-and-owed`>>
 
 !! What the code holds, and what it owes
 
@@ -293,7 +292,7 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 * ''A working document at a face-secret address'' (`faceWorkingDocUrl`, `resolveFaceWorkingSlot`, `materializeFaceWorkingDoc` in `packages/lararium-mesh/src/face-working-address.ts`; #/the-working-layer). The compose sites that still resolve the working kind through `resolveSlotDoc` move with the openers.
 * ''A watcher that names its own destination.'' `lares watch --source <dir> --to <bagUri>` takes the bag from its caller and submits each wave under the vessel's identity (`packages/lares-cli/src/commands/watch.ts`); no lease and no face stands between a disk edit and its signature.
 
-''What stands specified in code.'' Each names a module and its vectors. No production path calls any of them, so none reads as built (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures#/wiring-an-unreached-module">>).
+''What stands specified in code.'' Each names a module and its vectors. No production path calls any of them, so none reads as built (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures#/wiring-an-unreached-module`>>).
 
 * ''The hands' profiles.'' `face`, `verb`, `ingest` and `seat` (`packages/lararium-mesh/src/session-contract.ts`). A session carries one from its open to its end, and a switch of face keeps it.
 * ''The scoped document view'' (`packages/lararium-mesh/src/session-document-view.ts` over `gated-sync-leg.ts`). It answers announcements, fetches, writes, catalog names and content reads from the session's own facets.
@@ -305,10 +304,10 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 ''OWED ~ eleven debts, each resting on the one before it.'' A builder closes each with its callers and its own proof, so the tree keeps a runnable contract at every step.
 
 # ''Scoped document access.'' The session-scoped view over announcements, fetches, writes, catalog and content-addressed reads; no durable per-island store. The view, the pool's surface door and the island's half stand specified in code. The debt closes when every interactive surface mounts through that door, which waits on a verified face (debt two) and on callers that hold a session (debts four and six). Four hunks close with it: the share verdict's caller reads the pool's view for an island's peer, the leaf's relay adapter wears the one-way gate over its hearth's canon, the hearth wears that gate's twin toward its leaves, and a wiki island's verbs that read the catalog document move to the view's catalog ask.
-# ''The face proof and its grants.'' Two faces on one vessel present different proof subjects, and a copied id or an own-hand claim gains no plane (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>). The subjects, private authority, the session signer and the one face supplier stand specified in code. The debt closes when the node's session open on the local socket and the browser holder call the supplier and mint a signer at every open. Those callers wait on three things: the custody rows for the face proof key and each vessel's face-scoped key, an admit that signs what it carries, and the ring's lookup by face subject (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/owed">>). The supplier's face names one PersonaGroup at one Nexus, and a session binds that one (face, Nexus): a face that stands at a second Nexus opens a second session with its own proof and recipe, and no implicit multi-Nexus face session exists (a house ruling the operator MAY overturn).
+# ''The face proof and its grants.'' Two faces on one vessel present different proof subjects, and a copied id or an own-hand claim gains no plane (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof`>>). The subjects, private authority, the session signer and the one face supplier stand specified in code. The debt closes when the node's session open on the local socket and the browser holder call the supplier and mint a signer at every open. Those callers wait on three things: the custody rows for the face proof key and each vessel's face-scoped key, an admit that signs what it carries, and the ring's lookup by face subject (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof#/owed`>>). The supplier's face names one PersonaGroup at one Nexus, and a session binds that one (face, Nexus): a face that stands at a second Nexus opens a second session with its own proof and recipe, and no implicit multi-Nexus face session exists (a house ruling the operator MAY overturn).
 # ''The recipe resolver and the pool's identity.'' The working-layer binding follows #/the-working-layer; two same-face sessions take two islands, a repeated exact mount opens one, and a recipe write reaches the next mount by sync without changing a live mount. The resolver and the whole-key pool stand specified in code, with one proof through the node vessel's own parts that a recipe naming an offering resolves. The working layer's address stands (#/the-working-layer). The callers stay owed: the compose sites resolve the working kind through `resolveFaceWorkingSlot`, with the face secret the join door landed; the compose sites resolve through the one function at surface mount, the browser's plugin selection folds into it, and the wiki door, its retained mount specs and the recipe watch retire with the last caller.
 # ''Node callers move to sessions.'' The socket, its binding, the face-bound receipts and the local connector stand (#/standing-and-owed). The node's production door answers `session:open` from the face supplier at either anchor, and every store-door row and sealed act that acts as a face rides a session bound to that face (#/the-hands); the debt closes once two CLI sessions wear different faces at once over one Repo, each judged by its own face's provider (the next lane), and a copied socket and a cross-face receipt read both refuse.
-# ''The browser holder as owner.'' Two tabs show one backing Repo and one held lock; a failed daemon boot refuses both, releases the lock and permits a retry. The routing and the faceless envelope stand (#/standing-and-owed). The face-bearing `session:open`, `session:call` and `session:switch` wait on the face supplier's browser caller, `W4` (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>), and the holder's custody fork waits on the operator.
+# ''The browser holder as owner.'' Two tabs show one backing Repo and one held lock; a failed daemon boot refuses both, releases the lock and permits a retry. The routing and the faceless envelope stand (#/standing-and-owed). The face-bearing `session:open`, `session:call` and `session:switch` wait on the face supplier's browser caller, `W4` (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops`>>), and the holder's custody fork waits on the operator.
 # ''Browser surfaces.'' Two tabs mount one wiki under separate sessions; frames and control answers reach their source surface alone; no wiki engine runs on the page's main thread.
 # ''The switch, and the selector retires.'' Switching one session leaves another live; an old generation's effect never paints the new face; no boot path reads a vessel-wide active face. The node's half stands (#/the-hands); the browser's switch waits on `W4`.
 # ''The disk as a surface.'' The watcher opens a session and leases each projected wiki; a disk edit returns under the leasing session's face; an edit from an earlier generation and a file changed under no lease both surface as drafts; a move between two faces' folders asks for a copy by name.
@@ -320,25 +319,25 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-house-table">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/vessel-key">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/no-global-now">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot#/core-claim">> ~ aligns slot addresses with the face working-layer rule
-<<~ loulou "lar:///ha.ka.ba/lararium/api/camera-mount">> ~ keeps camera surfaces within each mounted wiki
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">> ~ the disk surface a watcher session leases
-<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">> ~ owes a re-true: a spirit carries a Mask and the vessel's seat
-<<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">> ~ owes the same re-true at its worldline boundary
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/page-controls`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-house-table`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/vessel-key`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/personal-slot#/core-claim`>> ~ aligns slot addresses with the face working-layer rule
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/camera-mount`>> ~ keeps camera surfaces within each mounted wiki
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>> ~ the disk surface a watcher session leases
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/agent-worldline`>> ~ owes a re-true: a spirit carries a Mask and the vessel's seat
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mandate-activity-provenance`>> ~ owes the same re-true at its worldline boundary
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;U9XvBJtm9TrPUVoijLqZP3PtekmIXcH8WIcckNJvYcI
+<<^ code=`&#x0003;`>>ni:///sha-256;wWF_eZJT8H1ErNnivy-bpval-b3l-cGbaFlFJvN7tTE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

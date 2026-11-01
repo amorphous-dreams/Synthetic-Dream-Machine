@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/w14-floor-pin-lane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/w14-floor-pin-lane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/w14-floor-pin-lane.mem"
 l-space   = "adjacent"
 role      = "the W14 to W16 lane's kit: the floor pin claim a place signs at one head of its own KEL, the pair index that orders pins by KEL descent as a set, the floor card that carries the claim and never anchors itself, and the carry that lands act and claim in one write"
 status    = "draft"
@@ -14,17 +13,17 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/w14-floor-pin-lane"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! W14 to W16 ~ the place claims its floor pin
 
-Three road rows share one shape: the `#floor=` card read unsigned on origin trust (W14), a floor pin statement carried no causal position and the index filed first-wins, so a rotated floor key re-filed only on a restart (W15), and two-vault carry partials landed no floor pin, so a cofounded Nexus carried no herm (W16). The prerequisite, the pre-rotated place KEL, stands from W29 (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/w29-place-kel-lane">>). This lane builds the one relation the three rows name.
+Three road rows share one shape: the `#floor=` card read unsigned on origin trust (W14), a floor pin statement carried no causal position and the index filed first-wins, so a rotated floor key re-filed only on a restart (W15), and two-vault carry partials landed no floor pin, so a cofounded Nexus carried no herm (W16). The prerequisite, the pre-rotated place KEL, stands from W29 (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w29-place-kel-lane`>>). This lane builds the one relation the three rows name.
 
 <<~/ahu>>
 
-<<~ ahu #/the-model>>
+<<~ ahu slot=`#/the-model`>>
 
 !! The model ~ what stands
 
@@ -40,7 +39,7 @@ Three road rows share one shape: the `#floor=` card read unsigned on origin trus
 
 <<~/ahu>>
 
-<<~ ahu #/the-slices>>
+<<~ ahu slot=`#/the-slices`>>
 
 !! The slices
 
@@ -55,7 +54,7 @@ Three road rows share one shape: the `#floor=` card read unsigned on origin trus
 
 <<~/ahu>>
 
-<<~ ahu #/the-reds>>
+<<~ ahu slot=`#/the-reds`>>
 
 !! The reds
 
@@ -67,6 +66,6 @@ Three road rows share one shape: the `#floor=` card read unsigned on origin trus
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yU2ZGTCieHBatIg2bP5NkY6YXZo6nRg3EKIdXItWKXk
+<<^ code=`&#x0003;`>>ni:///sha-256;9Ejtf5nQBDxD7V3fUJODOpUaYqMQx36kQUyaxhvxp6g
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

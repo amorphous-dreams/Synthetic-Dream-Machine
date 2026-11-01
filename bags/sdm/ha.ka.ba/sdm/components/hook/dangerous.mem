@@ -1,12 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/hook/dangerous">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/components/hook/dangerous`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
 caption   = "dangerous"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/hook/dangerous.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 16
@@ -19,7 +18,7 @@ uri-path  = "ha.ka.ba/sdm/components/hook/dangerous"
 
 ! Dangerous
 
-<<~ ahu #/definition>>
+<<~ ahu slot=`#/definition`>>
 
 !! Definition
 
@@ -27,7 +26,7 @@ A canonical risk hook: the Power forces a ''Danger Roll'' on activation regardle
 
 <<~/ahu>>
 
-<<~ ahu #/activation>>
+<<~ ahu slot=`#/activation`>>
 
 !! Activation
 
@@ -35,7 +34,7 @@ A canonical risk hook: the Power forces a ''Danger Roll'' on activation regardle
 
 <<~/ahu>>
 
-<<~ ahu #/interaction>>
+<<~ ahu slot=`#/interaction`>>
 
 !! Interaction
 
@@ -43,7 +42,7 @@ Composes with any domain or function. ''Vertical-vs-flat pressure lives here:'' 
 
 <<~/ahu>>
 
-<<~ ahu #/filters>>
+<<~ ahu slot=`#/filters`>>
 
 !! Filters
 
@@ -54,7 +53,7 @@ Composes with any domain or function. ''Vertical-vs-flat pressure lives here:'' 
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -62,14 +61,14 @@ Composes with any domain or function. ''Vertical-vs-flat pressure lives here:'' 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/components/tag`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;G-P4ADKOT6c-bV7uwg9joknCc2v5vZtBnPn6jf7fnGs
+<<^ code=`&#x0003;`>>ni:///sha-256;awAVFWNIf-jK5DBeDzzleH0knk8JFrUyXKqXtCCl_mg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -31,7 +31,7 @@ describe("root metadata is authored body", () => {
   test("emits root TOML immediately after STX and retains it on reparse", () => {
     const map = records(readFileSync(FIXTURE, "utf8"));
     const rendered = expandMemeRefs(reader(map), URI)!;
-    expect(rendered.indexOf('code="&#x0002;">>\n\n```toml meta')).toBeGreaterThanOrEqual(0);
+    expect(rendered.indexOf('code=`&#x0002;`>>\n\n```toml meta')).toBeGreaterThanOrEqual(0);
     expect(rendered).not.toMatch(/SOH[\s\S]*```toml meta/);
     const reparsed = records(rendered);
     expect(reparsed.get(URI)!["custom"]).toBe("root-authority");
@@ -55,9 +55,9 @@ describe("root metadata is authored body", () => {
 
 describe("★ root metadata before STX is a frame fault, never recovered ★", () => {
   const preStx = readFileSync(FIXTURE, "utf8").replace(
-    '<<^ code="&#x0001;" from="?" -> to="lar:///tests/root-meta-body">>\n<<^ code="&#x0002;">>\n\n```toml meta',
-    '<<^ code="&#x0001;" from="?" -> to="lar:///tests/root-meta-body">>\n```toml meta',
-  ).replace('```\n\nRoot prose', '```\n\n<<^ code="&#x0002;">>\n\nRoot prose');
+    '<<^ code=`&#x0001;` from=`?` to=`lar:///tests/root-meta-body`>>\n<<^ code=`&#x0002;`>>\n\n```toml meta',
+    '<<^ code=`&#x0001;` from=`?` to=`lar:///tests/root-meta-body`>>\n```toml meta',
+  ).replace('```\n\nRoot prose', '```\n\n<<^ code=`&#x0002;`>>\n\nRoot prose');
 
   test("the gate refuses it on the frame fault `meta-before-stx`", () => {
     const diagnostics = memeticIngestOps.deserialize(URI, preStx, verdict(preStx)).diagnostics;

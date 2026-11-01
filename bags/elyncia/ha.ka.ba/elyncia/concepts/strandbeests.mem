@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/strandbeests">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/concepts/strandbeests`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/strandbeests.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 14
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/strandbeests"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Strandbeests
 
@@ -33,7 +32,7 @@ about it. The beests simply live at the water level mercy left behind.
 
 <<~/ahu>>
 
-<<~ ahu #/domestication>>
+<<~ ahu slot=`#/domestication`>>
 
 !! Self-Domestication ~ the mycelial bond
 
@@ -52,7 +51,7 @@ train because the supply train grows its own cargo and carries itself.
 
 <<~/ahu>>
 
-<<~ ahu #/the-great-beests>>
+<<~ ahu slot=`#/the-great-beests`>>
 
 !! The Great Beests ~ walking reefs
 
@@ -71,7 +70,7 @@ answers as itself. What a frame can host scales with what a frame can bear.
 
 <<~/ahu>>
 
-<<~ ahu #/the-anomaly>>
+<<~ ahu slot=`#/the-anomaly`>>
 
 !! The Anomaly ~ what happened in Aki's clearing
 
@@ -91,14 +90,14 @@ Full event: [[strandbeest-shrine|lar:///ha.ka.ba/elyncia/characters/companions/s
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/companions/strandbeest-shrine">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/lares-viales">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/companions/strandbeest-shrine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/lares-viales`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bjFiyIH-7uQW37hJBcfo3Z8dUq4HKdEbIrRyRLXKHHI
+<<^ code=`&#x0003;`>>ni:///sha-256;7sI4JTBXUiGQGx3N7N9IkyiSTkyuSyVQhCpfslEpueA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

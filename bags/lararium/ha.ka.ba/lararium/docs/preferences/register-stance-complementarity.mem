@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/preferences/register-stance-complementarity">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/preferences/register-stance-complementarity`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/preferences/register-stance-complementarity.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences/register-stance-complementarity"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Register–Stance Complementarity — Staging Shelf
 
@@ -28,7 +27,7 @@ This room holds the explicit old claim that register and stance remain orthogona
 
 <<~/ahu>>
 
-<<~ ahu #/plan>>
+<<~ ahu slot=`#/plan`>>
 
 !! Plan Skeleton
 
@@ -46,7 +45,7 @@ Current comparison surfaces:
 
 <<~/ahu>>
 
-<<~ ahu #/verbatim-core-registers>>
+<<~ ahu slot=`#/verbatim-core-registers`>>
 
 !! Verbatim — `Lares_Epistemology.core.md` — Registers and Stances
 
@@ -64,17 +63,17 @@ Current comparison surfaces:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/epistemology">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/preferences/epistemology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WuTUW02iUI-5iMEd2X8pF6YcKKrri_zybCmEYT3wckQ
+<<^ code=`&#x0003;`>>ni:///sha-256;4q_ZFq5MpDuLfB5nOIpwBfQD90TX1hAgaklRmKi9umg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

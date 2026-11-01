@@ -28,10 +28,10 @@ const { deserializeCarrier } = await import("../src/deserializer.js");
 
 const URI = "lar:///t/digest-lazy";
 const carrier = (body: string): string => stampCarrier(
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${URI.slice(7)}"\n\`\`\`\n\n` +
-  `${body}\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`);
-const SOUND = carrier("<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>");
-const ORPHAN = carrier("<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\nstray prose\n\n<<~/ahu>>");
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${URI.slice(7)}"\n\`\`\`\n\n` +
+  `${body}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`);
+const SOUND = carrier("<<~ ahu slot=`#/a`>>\n\n! a\n\n<<~/ahu>>");
+const ORPHAN = carrier("<<~ ahu slot=`#/a`>>\n\n! a\n\n<<~/ahu>>\n\nstray prose\n\n<<~/ahu>>");
 const STALE = ORPHAN.replace(/ni:\/\/\/sha-256;[A-Za-z0-9_-]+/, "ni:///sha-256;0000000000000000000000000000000000000000000");
 
 describe("★ the deserializer's digest runs only where a fence lands ★", () => {

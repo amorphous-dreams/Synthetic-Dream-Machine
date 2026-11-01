@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/realm-nexus-unblur-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⚕` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/realm-nexus-unblur-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/realm-nexus-unblur-scout.mem"
 hydrate    = true
 l-space    = "lararium"
 mana       = 14
@@ -21,11 +20,11 @@ uri-path   = "ha.ka.ba/lararium/mesh/realm-nexus-unblur-scout"
 written    = "2026-09-13"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Realm / Nexus ~ the word-blur, measured
 
@@ -37,7 +36,7 @@ The ruling gives the two words distinct jobs. This carrier measures how far the 
 
 <<~/ahu>>
 
-<<~ ahu #/one-value-two-words>>
+<<~ ahu slot=`#/one-value-two-words`>>
 
 !! The structural fact ~ both words name ONE value
 
@@ -57,25 +56,25 @@ Different shapes, one word, adjacent files. This reads as a latent ''correctness
 
 <<~/ahu>>
 
-<<~ ahu #/realm-shaped-nexus>>
+<<~ ahu slot=`#/realm-shaped-nexus`>>
 
 !! Where `realm` names something NEXUS-shaped (public · mesh-wide · charter-keyed)
 
 # ''`realm-glamour.ts`, the whole module'' — `:1-4` names it "the PUBLIC face of a cabal-realm: its CHARTER, the only thing that ever crosses the read-face wire"; `:21-24` declares VEIL-PUBLIC, anon-readable; the set stands at `:118`. Pure projection, no key touches it — the highest-value rename candidate, and the one canon itself named (see #/must-not-move).
-# ''`REALM_BAG_ANNOUNCE_PREFIX`'' (`realm-bag.ts:69`) with `REALM_BAG_ANNOUNCE_DOMAIN` (`domains.ts:153`). The header at `realm-bag.ts:24-25` reads "WHAT @CROSSROADS CARRIES" — the public announce lane, realm-named. UN-RENAMEABLE.
+# ''`REALM_BAG_ANNOUNCE_PREFIX`'' (`realm-bag.ts:69`) with `REALM_BAG_ANNOUNCE_DOMAIN` (`domains.ts:153`). The header at `realm-bag.ts:24-25` reads "WHAT CROSSROADS-PLANE CARRIES" — the public announce lane, realm-named. UN-RENAMEABLE.
 # ''Both realm-bag prefixes sit under `dreamnet/`'' (`realm-bag.ts:66,69`), and `dreamnet` stands ABOVE `nexus` on the mesh ladder (`lar-uris.ts:299`). One prefix family hosts the mesh-wide announce and the cabal-private registration together.
 # ''The CLI door'' — `nexus realm-bag` / `nexus realm-bags` (`lares-cli/src/commands/nexus.ts:110-111`), output keyed `realm` (`:207,241-242`).
 # ''`re-anchoring.ts`'' signs and keys on a field literally named `realm` (`:108,:114,:144,:156`; key built at `:122` under `RE_ANCHORING_PREFIX`, `:54`) while the attestation carries a PUBLIC, un-thresholded, growable attestor set (`:104-106`).
 
 !!! The corpus says these read DELIBERATE, not drift
 
-The realm plane ''owns a ruled PUBLIC tier'': `heraldry.mem:145` ("`RealmBagGate.mayFederate` opens for such a peer only when the document's own registration declares PUBLIC"), `heraldry.mem:134` (PUBLIC = {world}), `realm-bag-brief.mem:65` (the @crossroads announce gains the doc url for a PUBLIC-tier registration alone), `cabal-realm.mem:191` (a realm carries "a public org root published to @crossroads").
+The realm plane ''owns a ruled PUBLIC tier'': `heraldry.mem:145` ("`RealmBagGate.mayFederate` opens for such a peer only when the document's own registration declares PUBLIC"), `heraldry.mem:134` (PUBLIC = {world}), `realm-bag-brief.mem:65` (the crossroads-plane announce gains the doc url for a PUBLIC-tier registration alone), `cabal-realm.mem:191` (a realm carries "a public org root published to crossroads-plane").
 
 This ''strengthens'' the ruling and ''raises its price'': moving the public half out of the word `realm` re-sites a ruled tier, never merely a spelling.
 
 <<~/ahu>>
 
-<<~ ahu #/nexus-shaped-realm>>
+<<~ ahu slot=`#/nexus-shaped-realm`>>
 
 !! Where `nexus` names something REALM-shaped (cabal-private · membership-scoped)
 
@@ -93,7 +92,7 @@ This ''strengthens'' the ruling and ''raises its price'': moving the public half
 
 <<~/ahu>>
 
-<<~ ahu #/must-not-move>>
+<<~ ahu slot=`#/must-not-move`>>
 
 !! THE UN-RENAMEABLE SET
 
@@ -178,7 +177,7 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 
 <<~/ahu>>
 
-<<~ ahu #/ranked>>
+<<~ ahu slot=`#/ranked`>>
 
 !! What a later unblur pass would move ~ ranked
 
@@ -208,6 +207,6 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lw67nsAT2qSYTplt6HnBsTO3Fi61OO0Q_5xQVA1pl20
+<<^ code=`&#x0003;`>>ni:///sha-256;6WLQQfl5-qZQlFaL4W2rmnPRMwBq-vk_MfSEUwiTijw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

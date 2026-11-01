@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/open-phases">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/open-phases`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/docs/open-phases.mem"
 l-space       = "stable"
 mana          = 17
 manao         = 17
@@ -18,7 +17,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/open-phases"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Open Phases
 
@@ -26,7 +25,7 @@ uri-path      = "ha.ka.ba/lararium/docs/open-phases"
 
 <<~/ahu>>
 
-<<~ ahu #/sequence>>
+<<~ ahu slot=`#/sequence`>>
 
 !! Phase Sequence
 
@@ -41,20 +40,20 @@ Node emits `boot`, `repo-open`, and `catalog-ready` while opening its repository
 
 The shared wiki cap emits `wiki-ready` and `vessel-ready` after `mountWikiSlot`; the shared mount cap emits `tw5-booted` and `live` after `mountPrimaryWiki` (`packages/lararium-tw5/src/core-caps.ts`). `mountWikiSlot` resolves the draft handle, but these caps emit no `draft-ready` (`core-caps.ts`). The resulting full-vessel callback order places `corpus-ready` before `wiki-ready`, despite its later place in the type declaration (`open-vessel-core.ts`; `core-caps.ts`).
 
-A canon crossing into `@crossroads` passes `lares meme promote --approval <file>`; the charter's seats approve the exact carrier bytes before the move (`packages/lares-cli/src/commands/meme-promote.ts`; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">> #/chartered-classes).
+A canon crossing into `@crossroads` passes `lares meme promote --approval <file>`; the charter's seats approve the exact carrier bytes before the move (`packages/lares-cli/src/commands/meme-promote.ts`; <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>> #/chartered-classes).
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/node-host">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/catalog-doc">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/readiness-keys">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/node-host`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/catalog-doc`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/readiness-keys`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PhERSesMN2RW6Y5YeqRP2fez-wi6ZgLuqKwWbogb5d0
+<<^ code=`&#x0003;`>>ni:///sha-256;0KzD5DMSqBJDEo_uvKxbgNowkP3F_tIjy3cehoIMmcc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

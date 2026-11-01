@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/mesh-goldens">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/mesh-goldens`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/mesh-goldens.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 14
@@ -19,17 +18,17 @@ uri-path  = "ha.ka.ba/lares/docs/pono/mesh-goldens"
 written   = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Mesh goldens ~ the e2e suite as scripts of acts and events
 
-''Why.'' The house's law reads that a wall clock never decides run or drop (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/no-global-now">>), and most of `tests/e2e/` decides pass or fail by `Date.now()` deadlines over polls of the disk and of stdout. Those waits fail intermittently under load (row `W24`), and a defect that lives between a CLI process and a running daemon (row `W18`) stays invisible to a test that holds one process. DreamDOM answers the same shape at the page with interaction goldens (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">> #/conformance): a script of acts over a frozen world, with the expected writes, messages and answers, run on every host as a row. The mesh takes the same form.
+''Why.'' The house's law reads that a wall clock never decides run or drop (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>), and most of `tests/e2e/` decides pass or fail by `Date.now()` deadlines over polls of the disk and of stdout. Those waits fail intermittently under load (row `W24`), and a defect that lives between a CLI process and a running daemon (row `W18`) stays invisible to a test that holds one process. DreamDOM answers the same shape at the page with interaction goldens (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>> #/conformance): a script of acts over a frozen world, with the expected writes, messages and answers, run on every host as a row. The mesh takes the same form.
 
 ''Status.'' Designed, unbuilt. A lane opens it under `mixed-model-swarm#/the-lanes`; `W24`'s cure lands as its first script.
 
 <<~/ahu>>
 
-<<~ ahu #/the-model>>
+<<~ ahu slot=`#/the-model`>>
 
 !! The model ~ seven parts
 
@@ -43,11 +42,11 @@ written   = "2026-10-16"
 
 <<~/ahu>>
 
-<<~ ahu #/the-otakiage>>
+<<~ ahu slot=`#/the-otakiage`>>
 
 !! The o-takiage ~ how the suite moves onto it
 
-* No compatibility layer and no shim: early alpha takes the move whole (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings, the fence). The suite moves one family of scripts at a time (the fleet joins, the carriage, the crossings, the herm), each family's polling helpers burning as its scripts land, each family green in the shards before the next.
+* No compatibility layer and no shim: early alpha takes the move whole (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings, the fence). The suite moves one family of scripts at a time (the fleet joins, the carriage, the crossings, the herm), each family's polling helpers burning as its scripts land, each family green in the shards before the next.
 * Test names state the law in the present tense; dated measurement narration in test comments leaves for git.
 * A witness refuses `Date.now()` and `setTimeout` deadlines under `tests/e2e/`, runs green over the moved tree, then burns itself with its guard list.
 * The first slice stands: the daemon writes each vessel's journal alone (`journal.jsonl` under the data dir, one epoch per boot), a projecting island hands its `bag-projected` entry in through `journal-append` (admitted only from a projector, over a mirror that stands), and `lares events --wait` answers the moment an entry lands. Owed beside it: a CLI that gives up on its budget cancels its waiter in the daemon, and the daemon's own projector shares the per-bag dedup the door keeps.
@@ -55,7 +54,7 @@ written   = "2026-10-16"
 
 <<~/ahu>>
 
-<<~ ahu #/the-talk-story>>
+<<~ ahu slot=`#/the-talk-story`>>
 
 !! The talk-story ~ how the model was refined
 
@@ -63,15 +62,15 @@ The Muse drafted the model; a Copilot Chao pair read it against the tree. Hodge 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/no-global-now">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qTBqlhdxRG-HCROwZkSLl8mOCe87lUl-FWpWyHk0AnU
+<<^ code=`&#x0003;`>>ni:///sha-256;oniE7V3AP6eZfx_Qc2BT7rRHjwzk5Y9kMGuyrgvo3SE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

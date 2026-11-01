@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/lararium-doc-stack">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/lararium-doc-stack`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/docs/lararium-doc-stack.mem"
 mana          = 11
 manao         = 11
 manaoio       = 11
@@ -18,7 +17,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/lararium-doc-stack"
 ```
 
-> ''Supersession note (2026-06-10).'' This meme records the research-era six-layer model. The current composition law lives at `lar:///ha.ka.ba/lararium/mesh/recipe` (stored composition shape), `lar:///ha.ka.ba/lararium/mesh/island-protocol` (IslandGrants — typed ocap manifest; library layers resolve island-side from @catalog, boot = first reconcile), and `lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology` (the layer stack and its laws). Read what follows as lineage, not law.
+> ''Supersession note (2026-06-10).'' This meme records the research-era six-layer model. The current composition law lives at `lar:///ha.ka.ba/lararium/mesh/recipe` (stored composition shape), `lar:///ha.ka.ba/lararium/mesh/island-protocol` (IslandGrants — typed ocap manifest; library layers resolve island-side from catalog-plane, boot = first reconcile), and `lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology` (the layer stack and its laws). Read what follows as lineage, not law.
 
 ! LarariumDoc Stack
 
@@ -147,15 +146,15 @@ A companion `$:/plugins/lararium/export/md` TW5 plugin registers the
 `.md` format in the export dropdown — re-using TW5's export widget
 infrastructure rather than rolling a separate exporter.
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/composite-store">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri-namespace">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/composite-store`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/lar-uri-namespace`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8Zw2byp0NxXX8-pWD-CljWEELjgnGwg8YA8Z8eThPeM
+<<^ code=`&#x0003;`>>ni:///sha-256;1DY64CcQt6dR4oQFZYqeAHXuC9R-r2SVuI1ioZtcFSw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

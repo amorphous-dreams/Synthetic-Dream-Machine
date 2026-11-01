@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/factions/dominion-of-magic">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/factions/dominion-of-magic`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/factions/dominion-of-magic.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 15
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/factions/dominion-of-magic"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Rise of the Dominion of Magic
 
@@ -33,7 +32,7 @@ League's border defines them as much as their own.
 
 <<~/ahu>>
 
-<<~ ahu #/the-sealed-spine>>
+<<~ ahu slot=`#/the-sealed-spine`>>
 
 !! The Sealed Spine (kapu — Session 1.0 intent)
 
@@ -59,14 +58,14 @@ on an answer their founder knows was a lie.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-necrospire">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/factions/league-of-free-cities">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-necrospire`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/factions/league-of-free-cities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DxgqC0hCAdiyK7FPC6Z_QkwvaxtWuKedM-wn72YUmaY
+<<^ code=`&#x0003;`>>ni:///sha-256;e3hUlMupvPUZbHiNQS4uDU3OVnyhRZ-JPXPEIM27IXg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

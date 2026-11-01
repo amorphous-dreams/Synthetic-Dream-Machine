@@ -1,12 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/modules/tw5-modules">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/modules/tw5-modules`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 source-sha256   = "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 cacheable       = true
-file-path       = "bags/lararium/ha.ka.ba/lararium/tw5/modules/tw5-modules.mem"
 mana            = 19
 manao           = 18
 manaoio         = 18
@@ -20,7 +19,7 @@ type            = "text/memetic-wikitext+tiddlywiki"
 uri-path        = "ha.ka.ba/lararium/tw5/modules/tw5-modules"
 ```
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
@@ -30,18 +29,18 @@ An empty body defines an empty library, which the gate treats as a no-op. The `t
 
 The sigil declarations and render templates that make up the wikitext surface travel a different road: `scripts/build-plugin-tiddler.ts` folds `packages/lararium-tw5/tiddlers/*.tid` into `src/plugin-tiddler.generated.ts`, and the plugin ships them as shadow tiddlers. No gate stands in that path — a shadow tiddler carries no executable body.
 
-<<~ pranala #source from="?" -> to="packages/lararium-tw5/src/tw5-module-gate.ts" family="code" role="has">>
-<<~ pranala #source-plugin from="?" -> to="packages/lararium-tw5/scripts/build-plugin-tiddler.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-tw5/src/tw5-module-gate.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-plugin` from=`?` to=`packages/lararium-tw5/scripts/build-plugin-tiddler.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/boot-gate">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tw5-module">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/modules/boot-gate`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tw5-module`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;isJv0qsXux6vOVQUBEpu4JNnkRaa6sXh3-8ThCMd6KA
+<<^ code=`&#x0003;`>>ni:///sha-256;dgsaVbths6EpHdFLkJtVIewkiidkz9fMbMxYi_wsBRI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

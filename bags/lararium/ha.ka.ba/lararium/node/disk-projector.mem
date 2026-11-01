@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/disk-projector">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/node/disk-projector`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/node/disk-projector.mem"
 l-space     = "lararium"
 mana        = 8
 role        = "self-documentation: LarDiskProjector — the node-side enactment of the disk-projection law. Carries what the FILE owns and the law carrier does not: the one render shore, the holding gate that fences a cross-mirror unlink, what the in-flight write set does and does not guarantee, and the level-triggered reconcile gate. Surface law, granularity and routing live at api/disk-projection."
@@ -15,7 +14,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/node/disk-projector"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 ! LarDiskProjector ~ the node hand on the projection law
 
@@ -25,7 +24,7 @@ top of that law, and nothing the law already states.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! What the projector itself binds
 
@@ -59,7 +58,7 @@ and every guarantee stands without it.
 
 <<~/ahu>>
 
-<<~ ahu #/the-servo>>
+<<~ ahu slot=`#/the-servo`>>
 
 !! The level-triggered reconcile gate
 
@@ -69,20 +68,20 @@ This section, anchored `#/the-servo`, holds the disk shore's level-triggered rec
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-node/src/disk-projector.ts" family="code" role="has">>
-<<~ pranala #siting from="?" -> to="packages/lararium-node/src/bag-paths.ts" family="code" role="has">>
-<<~ pranala #law from="?" -> to="lar:///ha.ka.ba/lararium/api/disk-projection" family="relation" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#siting` from=`?` to=`packages/lararium-node/src/bag-paths.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#law` from=`?` to=`lar:///ha.ka.ba/lararium/api/disk-projection` family=`relation` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/schema/projection-codec">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu#/guards">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/servo">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/schema/projection-codec`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/projection-nalu#/guards`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/servo`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oiKpw4soxuoh_pEskOZE5KbuxfMxlmUrVCaGhyZbDx4
+<<^ code=`&#x0003;`>>ni:///sha-256;_L_Zm-FfWB9HoJJHCGOf9YGzzV_ggDvRDutDmnf9bDY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

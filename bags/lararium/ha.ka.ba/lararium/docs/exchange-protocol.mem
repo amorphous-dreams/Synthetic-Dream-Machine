@@ -1,18 +1,17 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/exchange-protocol">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/exchange-protocol`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/exchange-protocol.mem"
-l-space   = "stable"
-role      = "agent-facing exchange flow meme: bearing-vector/HUD bracket and HA handoff"
-title     = "lar:///ha.ka.ba/lararium/docs/exchange-protocol"
-type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lararium/docs/exchange-protocol"
+l-space  = "stable"
+role     = "agent-facing exchange flow meme: bearing-vector/HUD bracket and HA handoff"
+title    = "lar:///ha.ka.ba/lararium/docs/exchange-protocol"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lararium/docs/exchange-protocol"
 ```
 
-<<~ ahu #/exchange-flow>>
+<<~ ahu slot=`#/exchange-flow`>>
 
 !! Exchange Flow — Agent Contract
 
@@ -21,15 +20,13 @@ AI agent: use this only when the session requests lararium exchange framing or w
 Core frame:
 
 ```text
-<<~ lares aim from="lar:///operator.intent.reads" -> to="lar:///lares.role.acts">>
-<<~ set hud="aim" aperture="N/<band>" ooda-ha="N/<band>">>
-drift-ward="* · <the pull this island carries>"
+<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>`>>
+drift-ward="<the pull this island carries>"
 
 ... generated response ...
 
-drift-ward="! · <clue> · ↻ L-Prime"
-<<~ set hud="yield" aperture="-> N/<band>" ooda-ha="closed N↺">>
-<<~ lares yield from="lar:///lares.what.landed" -> to="?">>
+drift-ward="<clue> · ↻ L-Prime"
+<<~ set lares=`yield` aperture=`-> N/<band>` ooda-ha=`closed N↺` from=`lar:///lares.what.landed` to=`?`>>
 ```
 
 Rules for agents:
@@ -39,7 +36,7 @@ Rules for agents:
 * Fenced code blocks protect `->`, `?`, brackets, and lar paths from Markdown renderer drift.
 * `-> ?` marks HA: complete, examine residue, release anchor, return initiative.
 * The sigils carry humility instruments, not decorative badges:
-** `ward * L-Prime` — the spring-loaded copula gate; lit rejects identity/predication `is` (essence or state-report). The Wand lights it at open and the Sword draws it at close (`ward ! ⚠ N` quoting breaches, `ward ! ·` otherwise, re-arming `↻ L-Prime`); the Stone (`ward 0 L-Prime`, operator only) lifts it for a single turn, never persisting. See `lar:///ha.ka.ba/lares/api/mu/l-prime`. `#has` runs free — the ward gates the copula alone.
+** `drift-ward` — the spring-loaded copula gate; lit rejects identity/predication `is` (essence or state-report). It carries the pull at open and the clue at close, alone (`⚠ N` quoting breaches, re-arming `↻ L-Prime`); the tool rides the `mu` key, never the ward; the operator's lift (`drift-ward="0"`, operator only) lifts it for a single turn, never persisting. See `lar:///ha.ka.ba/lares/api/mu/l-prime`. `#has` runs free — the ward gates the copula alone.
 ** `hud aperture="N/<band>"` (0–20) — attention range, the grain/zoom the span carries; bands Pulse·Beat·Measure·Arc·Theme. Primary signal during `prism` intake (reading referenced content). See `lar:///ha.ka.ba/lares/api/pono/attention-scale`.
 ** `hud ooda-ha="N/<band>"` — loop visibility, `ooda-ha="closed N↺"` at close (or `N↺ + φ:reason` when a loop suspends across turns).
 ** No band, number or marker rides beside a claim: a grounded claim names its ground in its own sentence (`lar:///ha.ka.ba/lares/api/mu/l-prime#/warrant`).
@@ -57,10 +54,10 @@ choose aftermath anchor/vector
 emit fenced CLOSE: ward-slide + HUD-slide + aftermath-vector -> ?
 ```
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/voices#/exchange-protocol">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/exchange-protocol`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;y-FtRaqKVh15Qc7Hv8L4Vtit2XzFTm3i57-D28j3704
+<<^ code=`&#x0003;`>>ni:///sha-256;aI5Mqe6pOeApBPvuwgmcDEM5MJm9mcUMkxx0eYR7xf0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

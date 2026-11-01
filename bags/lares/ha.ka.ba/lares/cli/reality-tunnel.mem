@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/cli/reality-tunnel">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/cli/reality-tunnel`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/cli/reality-tunnel.mem"
 l-space   = "adjacent"
 role      = "the radius law and the operator's declared reality tunnel: what the checkout and every operator home on the device hold, read by `lares repo` and `lares home`"
 status    = "draft"
@@ -14,19 +13,19 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/cli/reality-tunnel"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Reality tunnel ~ one door per radius, one declared tunnel beneath them
 
 An operator's machine holds what the operator declares, through one door per RADIUS: `lares repo` for the checkout, `lares home` for every operator home the device carries, `lares vessel` for `LAR_ROOT` alone. The doors read, tend, verify and undo; the tunnel they converge on stands here as data, and the engine's kinds (link, owned file, JSON key, floor, TOML table, lifted line) stand in code (`packages/lares-cli/src/reality-tunnel/`).
 
-''The name.'' The boot seed seeds a reality tunnel (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/set-and-setting">>): the frame a session reads within. This carrier declares the machine's half of that tunnel, the set every host wakes into, and the doors keep the setting true to it. ''Intent'' names the wiki daemon's intent plane, a different relation; the CLI never borrows the word.
+''The name.'' The boot seed seeds a reality tunnel (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/set-and-setting`>>): the frame a session reads within. This carrier declares the machine's half of that tunnel, the set every host wakes into, and the doors keep the setting true to it. ''Intent'' names the wiki daemon's intent plane, a different relation; the CLI never borrows the word.
 
 <<~/ahu>>
 
-<<~ ahu #/the-radius-law>>
+<<~ ahu slot=`#/the-radius-law`>>
 
 !! The radius law
 
@@ -41,7 +40,7 @@ An operator's machine holds what the operator declares, through one door per RAD
 
 <<~/ahu>>
 
-<<~ ahu #/the-tunnel>>
+<<~ ahu slot=`#/the-tunnel`>>
 
 !! The declared tunnel
 
@@ -315,7 +314,7 @@ what = "`lares` answers on the operator's path"
 
 <<~/ahu>>
 
-<<~ ahu #/the-proofs>>
+<<~ ahu slot=`#/the-proofs`>>
 
 !! The proofs
 
@@ -325,7 +324,7 @@ what = "`lares` answers on the operator's path"
 
 <<~/ahu>>
 
-<<~ ahu #/the-research>>
+<<~ ahu slot=`#/the-research`>>
 
 !! Open research ~ each row names its instrument
 
@@ -337,6 +336,6 @@ what = "`lares` answers on the operator's path"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;APwYrcETGyEYnEjv1QGQscXWeLX9eOhjz5_yG73MZqE
+<<^ code=`&#x0003;`>>ni:///sha-256;wB2YUWVZDWkfFl9q61zLLOjJC1pJKRjmGtCa6DX5iVg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

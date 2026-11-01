@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono.mem"
 mana      = 13
 manao     = 14
 manaoio   = 12
@@ -25,7 +24,7 @@ In Hawaiian, //pono// carries rightness, properness, equity, and true condition.
 
 This folder already shows the family shape around it: `meme`, `invariant`, `memetic-wikitext`, `lar-uri`, `pranala`, `l-prime`, `guest-grammar`, and their skill surfaces. Pono ties to that shape not by swallowing those laws into itself, but by staying small enough that each child may keep its own true work.
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ read the local law surface first; find the right proportion before adding more
 ⏿ orient what properly stays here versus what belongs with adjacent pono carriers or docs
@@ -35,16 +34,16 @@ This folder already shows the family shape around it: `meme`, `invariant`, `meme
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yfZYHrc7Vp5BF7KT8f1BpNGix_9iqM8Ijw0yuGjxl2c
+<<^ code=`&#x0003;`>>ni:///sha-256;ziVn03OqoNm7DvAi8ari1CxbTqHL-2MUAvv-ILRjxJc
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

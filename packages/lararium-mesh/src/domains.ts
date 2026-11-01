@@ -506,7 +506,7 @@ export const OFFERING_PRESENTATION_DOMAIN = frozen("offering-presentation");
  * signature minted over one must never verify as the other.
  */
 export const OFFERING_KAPAE_DOMAIN = frozen("offering-kapae");
-/** The @crossroads ANNOUNCE of a realm bag — that it exists and who keeps it, NEVER the doc. A different
+/** The crossroads-plane ANNOUNCE of a realm bag — that it exists and who keeps it, NEVER the doc. A different
  *  domain from the registration: a public announce must never stand in for a steward's signature. */
 export const REALM_BAG_ANNOUNCE_DOMAIN = frozen("realm-bag-announce");
 /** The persona-root seed WRAPPED at rest under a passkey PRF output (browser, opt-in). A NAME of its own,

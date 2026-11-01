@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-engine-advance-recovery">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-engine-advance-recovery`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-engine-advance-recovery.mem"
 l-space       = "adjacent"
 mana          = 16
 manao         = 16
@@ -17,7 +16,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-engine-advance-recovery"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Engine-advance research recovery — the no-flag-day / nexus-shard-epoch mining
 
@@ -25,7 +24,7 @@ Verbatim final message of the research-recovery spirit (task `a4266132e8b31bf08`
 
 <<~/ahu>>
 
-<<~ ahu #/verdict>>
+<<~ ahu slot=`#/verdict`>>
 
 !! Verdict up front
 
@@ -33,7 +32,7 @@ The research the operator remembers is ''real and substantially recoverable'', b
 
 <<~/ahu>>
 
-<<~ ahu #/where>>
+<<~ ahu slot=`#/where`>>
 
 !! (1) WHERE the research lives
 
@@ -49,7 +48,7 @@ Already-captured canon that carries fragments of this research: `bags/lararium/�
 
 <<~/ahu>>
 
-<<~ ahu #/models>>
+<<~ ahu slot=`#/models`>>
 
 !! (2) The RECOVERED MODEL(S), faithfully
 
@@ -66,13 +65,13 @@ Already-captured canon that carries fragments of this research: `bags/lararium/�
 ''MODEL D — migrate-by-non-renewal, but on the LEASE axis, not the engine (25 Aug L30160; 60b5a3fe).'' The one migrate-by-non-renewal primitive that exists is `epoch-lease.ts`, a pure max-register //"staling grants by non-renewal, per-writer slots"// — governing `boundEpoch`, ''not'' `hearthTrueName`. //"The epoch is a LEASE, never a targeted revoker."// Rolling a group's lease epoch //"invalidates every device edge at once — that's not revocation, that's re-admit the whole fleet"// (the ''"fleet-reset lever": gate-enforceable but unbuilt, no command rolls it''). A graceful touch exists in the fiction spec: at ⅞ of a lease a vessel ''rebinds to any sufficient PersonaGroup member'', not only its grantor. The RE-KEY (epoch-roll) verb is classified ''LATENT — model-only, no verb wired.''
 
 ''MODEL E — the 500-year / proof-against-empire framing = threat model + CAS answer.'' The "500-year," "isolated nexus attacked in isolation," "necrospire/Maelstrom" material is ''Elyncia worldbuilding used as spec'' ("the myth is the spec"). Its engineering distillates are captured:
-* `siege-resilience.mem` (PROPOSED): survive a persistent 500-year adversary by ''resetting the clock the adversary races'' — Proactive Secret Sharing, so //"the 500-year clock collapses to the length of one window"//; TWO CLOCKS (authority refresh ⊥ flow self-heal); delegate verbs re-key/re-share/evict/heal-partition/recover-from-fork/re-genesis; Dijkstra self-stabilization; @daemon on every Herm so no node depends on a distant operator.
+* `siege-resilience.mem` (PROPOSED): survive a persistent 500-year adversary by ''resetting the clock the adversary races'' — Proactive Secret Sharing, so //"the 500-year clock collapses to the length of one window"//; TWO CLOCKS (authority refresh ⊥ flow self-heal); delegate verbs re-key/re-share/evict/heal-partition/recover-from-fork/re-genesis; Dijkstra self-stabilization; daemon-plane on every Herm so no node depends on a distant operator.
 * `shelter-against-empire.mem`: //"What buys safety is having no seizable object, no nameable category, and no list that holds still"//; every historical register-failure ran //legal/administrative, not cryptographic//.
 * The design answer to 500-year-old infra is ''content-address, not fetch'': //"a blob written five centuries ago still hashes to the same CID,"// `@oracle` is read-open by content-address, ancient and modern lararia interoperate with ''no handshake, no migration, no protocol upgrade'' — //"She doesn't repair them. She introduces them."// This is the deepest recovered rationale for why the engine must be a content-addressed petname and why coexistence (not flag-day) is mandatory.
 
 <<~/ahu>>
 
-<<~ ahu #/relation>>
+<<~ ahu slot=`#/relation`>>
 
 !! (3) Relation to the CURRENT model
 
@@ -82,7 +81,7 @@ Already-captured canon that carries fragments of this research: `bags/lararium/�
 
 <<~/ahu>>
 
-<<~ ahu #/settled>>
+<<~ ahu slot=`#/settled`>>
 
 !! (4) What the prior research SETTLED that the current design has forgotten or is about to re-derive
 
@@ -97,7 +96,7 @@ Already-captured canon that carries fragments of this research: `bags/lararium/�
 
 <<~/ahu>>
 
-<<~ ahu #/second-scout>>
+<<~ ahu slot=`#/second-scout`>>
 
 !! Second scout — verified, + the grammar-tier-move in the operator's own words, + the scale NULL
 
@@ -111,6 +110,6 @@ A later engine+grammar scout (2026-09-11) verified this recovery's claims agains
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-RIr9pwVLPs46QE-E556n_oPGvRH6zk4i8xbUFW_0Pc
+<<^ code=`&#x0003;`>>ni:///sha-256;oo_B62IL2fh8kEGhFnLMXEUXpk_1ANZVItwg9C1WHB4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

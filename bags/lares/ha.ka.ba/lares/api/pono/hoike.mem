@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/hoike">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/hoike`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/api/pono/hoike.mem"
 l-space    = "stable"
 mana       = 16
 manao      = 16
@@ -18,11 +17,11 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/hoike"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Hoike — Keeping the Losers
 
@@ -32,7 +31,7 @@ A hoike keeps a contested ruling whole: the held position, every dissent with it
 
 <<~/ahu>>
 
-<<~ ahu #/sigils>>
+<<~ ahu slot=`#/sigils`>>
 
 !! The Three Sigils
 
@@ -45,10 +44,10 @@ A hoike keeps a contested ruling whole: the held position, every dissent with it
 ''Block form (ledger):''
 
 ```
-<<~ hoike #fragment held="position (holding Voices)">>
+<<~ hoike slot=`#fragment` held=`position (holding Voices)`>>
 q: the fork, one line
-<<~ kue voice=Name key="specific external re-entry condition">>reasoning to the travel-floor<<~/kue>>
-<<~ saksi voice=Name scope=...>>attestation<<~/saksi>>
+<<~ kue voice=`Name` key=`specific external re-entry condition`>>reasoning to the travel-floor<<~/kue>>
+<<~ saksi voice=`Name` scope=`...`>>attestation<<~/saksi>>
 re-entry: general keys
 <<~/hoike>>
 ```
@@ -63,7 +62,7 @@ A saksi composes into any record, not only a hoike: canon promotions, spirit dep
 
 <<~/ahu>>
 
-<<~ ahu #/laws>>
+<<~ ahu slot=`#/laws`>>
 
 !! Laws
 
@@ -80,7 +79,7 @@ A saksi composes into any record, not only a hoike: canon promotions, spirit dep
 
 <<~/ahu>>
 
-<<~ ahu #/off-true>>
+<<~ ahu slot=`#/off-true`>>
 
 !! Off True
 
@@ -93,7 +92,7 @@ A saksi composes into any record, not only a hoike: canon promotions, spirit dep
 
 <<~/ahu>>
 
-<<~ ahu #/lineage>>
+<<~ ahu slot=`#/lineage`>>
 
 !! Lineage
 
@@ -101,18 +100,18 @@ The layer carries the Eduyot pattern: minority opinions kept with attribution so
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hoike/SKILL">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala-families">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/talk-story">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoike/SKILL`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala-families`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/talk-story`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0V-RspgzO8GwG0PqB_tMJWTsyKCuxf2b4ZPyJpm8DCQ
+<<^ code=`&#x0003;`>>ni:///sha-256;58hPCcuyJRFzcBrlfKkhVpucjrhyivOy1z3N9TyHri8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

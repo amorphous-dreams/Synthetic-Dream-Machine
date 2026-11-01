@@ -223,6 +223,7 @@ import { listWalkRecords }        from "./node-walk-store.js";
 import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
 import { carriedSet, readCarriedCharters }       from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
+import { PLANE_LABELS } from "@lararium/mesh";
 
 /** The genesis dir when a caller sites none — resolves through the composable genesis cap
  *  (`LAR_GENESIS` → `~/.lares/config.json` → repo-relative `<corpus>/genesis`). Genesis stays
@@ -1145,7 +1146,7 @@ async function prepareNodeBootOn(
   };
   vesselPrivate.add(resolvedCatalogUrl);     // the catalog classes by its pointer before its document resolves
   const catalogHandle: DocHandle<LarDoc> = resolvedCatalogUrl
-    ? await resolveBootDoc<LarDoc>(repo, resolvedCatalogUrl as AutomergeUrl, { tideline: "hearth-private", label: "@catalog" })
+    ? await resolveBootDoc<LarDoc>(repo, resolvedCatalogUrl as AutomergeUrl, { tideline: "hearth-private", label: PLANE_LABELS.catalog })
     : await blankCatalog();  // first boot (no url yet): legitimate founder-mint, not a ghost fallback
   if (resolvedCatalogUrl && resolvedCatalogUrl !== catalogUrl) {
     try { mkdirSync(storageDir, { recursive: true }); writeFileSync(catalogUrlFile, catalogHandle.url, "utf8"); } catch { /* quota */ }
@@ -1910,7 +1911,7 @@ async function prepareNodeBootOn(
     resolveBootDoc<LarDoc>(repo, bootstrap.daemonUrl as AutomergeUrl,
       // THE BOOTSTRAP NAMES THIS DOC, so an `unavailable` here waits for this vessel's own flush rather than reading as
       // a doc nobody wrote: a founding seeds it moments earlier in this same process.
-      { tideline: "hearth-private", label: "@daemon", settled: () => repo.flush() });
+      { tideline: "hearth-private", label: PLANE_LABELS.daemon, settled: () => repo.flush() });
 
   const keel: VesselOrchestration<VesselIslandPool>["keel"] = {
     repo,
@@ -2697,7 +2698,7 @@ async function prepareNodeBootOn(
     //
     // The SAME ring decides for this face's SIBLINGS, by its own path (`composeSiblings`): a device the face's
     // PersonaGroup delegated, proven over the sibling session, reaches the face's own planes and the public
-    // boards — never the @daemon, never another face's planes. Its proof source is the sibling channel's alone;
+    // boards — never the daemon-plane, never another face's planes. Its proof source is the sibling channel's alone;
     // the grant path reads only what this vessel's inbound gate proved.
     if (personaGroupId && deviceEdge?.personaRootDid && personaKelPrefix && personaKelChain) {
       const ring = await assemblePersonaGroupRing({
@@ -2813,16 +2814,12 @@ async function prepareNodeBootOn(
           return null;
         }
       },
-      // The dual recall fuse — the form-leg construction (markers→vector derive IN the daemon VM, the
-      // content-only degradation on fault) + the RRF fuse, verbatim. The markers derive round-trips the
-      // warm worker (deriveSkeleton); VM cold/unavailable → resolves null → the markers leg fuses
-      // content-only (graceful, no shadow derive). A form-holder rejection collapses to [] → fuse
-      // content-only. REUSES the recall form holder.
+      // The dual recall fuse — the form leg (held as a placeholder, Train Q: it answers []) + the RRF
+      // fuse. A form-leg rejection collapses to [] → fuse content-only. REUSES the recall form palace.
       multiRecall: (legs, args) => {
         recallFormPalace ??= makeFormPalace(larFormPalaceDir());
         recallStructurePalace ??= makeStructurePalace(larStructurePalaceDir());
-        const deriveSkeleton = (q: string) => daemonVm.deriveSkeleton(q);
-        const formSearchLeg = makeFormSearch({ query: args["query"] as string, formPalace: recallFormPalace, deriveSkeleton });
+        const formSearchLeg = makeFormSearch({ query: args["query"] as string, formPalace: recallFormPalace });
         // The STRUCTURE leg rides the reserved `extraGraphs` slot — the 3rd graph, fused on the shared
         // verbatim_sha like content+form (a holder fault degrades to []). The N-ary core needs no change.
         const structureLeg = makeStructureSearch(recallStructurePalace);
@@ -3176,7 +3173,7 @@ async function prepareNodeBootOn(
 
     // realm-bag — REGISTER a bag this vessel's steward keeps on the realm's shared CRDT (realm-bag-brief): the
     // record `{ bagUri, docUrl, keptBy, readTier }` sealed by the key the acting face (`face`, else the one face standing open) presents to the
-    // realm's Nexus, landed on the realm doc, and announced on @crossroads as `{ bagUri, keptBy }` alone. The
+    // realm's Nexus, landed on the realm doc, and announced on crossroads-plane as `{ bagUri, keptBy }` alone. The
     // steward door holds the whole verb (`realm-steward`): it picks the signer, and it never reaches a root.
     // The verb names its realm (`args.realm`); an act in a cabal realm stands the vessel there.
     registry.register("realm-bag", (args) => runRealmBag({

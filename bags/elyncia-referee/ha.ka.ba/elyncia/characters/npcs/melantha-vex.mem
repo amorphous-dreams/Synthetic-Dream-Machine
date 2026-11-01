@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/melantha-vex">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/characters/npcs/melantha-vex`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/melantha-vex.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -17,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/npcs/melantha-vex"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Captain Melantha Vex
 
@@ -26,7 +25,7 @@ uri-path  = "ha.ka.ba/elyncia/characters/npcs/melantha-vex"
 
 <<~/ahu>>
 
-<<~ ahu #/body>>
+<<~ ahu slot=`#/body`>>
 
 ! Captain Melantha Vex
 
@@ -293,6 +292,6 @@ Use Melantha when the table needs:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KjDLyIdMB79gylrsvebs_3l35vRqYiyYfJ-K4XFjMvE
+<<^ code=`&#x0003;`>>ni:///sha-256;HIc6dxRHhZrhMt4B7M9bpUwes7a-7yvW2ZVDgQKX2kQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

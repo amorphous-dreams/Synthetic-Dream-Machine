@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/async-flows">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/api/async-flows`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/async-flows.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 17
@@ -20,11 +19,11 @@ uri-path  = "ha.ka.ba/lararium/api/async-flows"
 written   = "2026-06-25"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lararium/mesh/operator-peer">>
+<<~ aka uri=`lar:///ha.ka.ba/lararium/mesh/operator-peer`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Async Flows ~ timing insight for human and agent
 
@@ -40,7 +39,7 @@ and `lares` holds all three pieces: a ''daemon-job model'' (submit→id→poll),
 
 <<~/ahu>>
 
-<<~ ahu #/the-contract>>
+<<~ ahu slot=`#/the-contract`>>
 
 !! The Contract ~ four verbs over the request-id
 
@@ -48,10 +47,10 @@ Every long op returns its ''request-id fast'' (the durable idempotency key we
 already mint). On a TTY with no `--detach` it transparently attaches to `watch`;
 off-TTY / `--detach` it returns the id and exits.
 
-<<~ has Verb status "lares vessel read <id> ~ one-shot, authoritative current state; emits a pollInterval hint">>
-<<~ has Verb watch "lares watch <id> ~ stream progress until terminal; --exit-status mirrors the job result into the CLI exit code (gh/kubectl shape)">>
-<<~ has Verb wait "lares wait <id> --timeout <s> ~ block until terminal-or-timeout; timeout → structured 'still running + progress', NEVER a hard fail (the work lives in the job, not the call)">>
-<<~ has Verb cancel "lares cancel <id> ~ move the job to the cancelled terminal state (distinct from Ctrl-C, which DETACHES — job keeps running, re-attach by id)">>
+<<~ has entity=`Verb` name=`status` params=`lares vessel read <id> ~ one-shot, authoritative current state; emits a pollInterval hint`>>
+<<~ has entity=`Verb` name=`watch` params=`lares watch <id> ~ stream progress until terminal; --exit-status mirrors the job result into the CLI exit code (gh/kubectl shape)`>>
+<<~ has entity=`Verb` name=`wait` params=`lares wait <id> --timeout <s> ~ block until terminal-or-timeout; timeout → structured 'still running + progress', NEVER a hard fail (the work lives in the job, not the call)`>>
+<<~ has entity=`Verb` name=`cancel` params=`lares cancel <id> ~ move the job to the cancelled terminal state (distinct from Ctrl-C, which DETACHES — job keeps running, re-attach by id)`>>
 
 ''As built'' (`packages/lares-cli/src/bin/lares.ts`): `lares receipt <requestId>` reads a request's
 receipt from the vessel's own ledger and durable outcome doc, dispatching nothing; `lares cancel <requestId>`
@@ -65,11 +64,11 @@ Precedent: `gh run watch --exit-status`, `kubectl wait --for=condition --timeout
 
 <<~/ahu>>
 
-<<~ ahu #/the-job-machine>>
+<<~ ahu slot=`#/the-job-machine`>>
 
 !! The Job Machine ~ five states, terminal-once
 
-<<~ scale job "working ~ in progress -> input_required ~ awaiting the operator -> completed ~ ok, terminal -> failed ~ error, terminal -> cancelled ~ stopped, terminal">>
+<<~ scale name=`job` ranks=`working ~ in progress -> input_required ~ awaiting the operator -> completed ~ ok, terminal -> failed ~ error, terminal -> cancelled ~ stopped, terminal`>>
 
 ''Terminal-once:'' once a job reaches completed/failed/cancelled it never moves
 again. ''Poll carries the authority'' (not pushed notifications, which drop) — non-terminal
@@ -79,7 +78,7 @@ shape). A caller fetches the result after terminal, by id.
 
 <<~/ahu>>
 
-<<~ ahu #/dual-surface>>
+<<~ ahu slot=`#/dual-surface`>>
 
 !! The Dual Surface ~ one event stream, two projections
 
@@ -103,7 +102,7 @@ payload on stdout off-TTY or under `--json`); the progress stream reads UNBUILT.
 
 <<~/ahu>>
 
-<<~ ahu #/progress-eta>>
+<<~ ahu slot=`#/progress-eta`>>
 
 !! Progress & ETA
 
@@ -116,7 +115,7 @@ payload on stdout off-TTY or under `--json`); the progress stream reads UNBUILT.
 
 <<~/ahu>>
 
-<<~ ahu #/timeouts-cancel-resume>>
+<<~ ahu slot=`#/timeouts-cancel-resume`>>
 
 !! Timeouts · Cancellation · Resumability
 
@@ -136,7 +135,7 @@ payload on stdout off-TTY or under `--json`); the progress stream reads UNBUILT.
 
 <<~/ahu>>
 
-<<~ ahu #/agent-ergonomics>>
+<<~ ahu slot=`#/agent-ergonomics`>>
 
 !! Agent Ergonomics ~ never block the agent's context
 
@@ -149,13 +148,13 @@ payload on stdout off-TTY or under `--json`); the progress stream reads UNBUILT.
 
 <<~/ahu>>
 
-<<~ ahu #/map-and-backlog>>
+<<~ ahu slot=`#/map-and-backlog`>>
 
 !! Map to Our Infra + Backlog
 
 Three pieces stand:
 
-<<~ scale have "daemon-jobs ~ mempalace `--daemon --background` → job-id → daemon jobs/wait/status (we call mine SYNCHRONOUSLY instead) -> durable-results ~ lares summons → @daemon/outcomes/<requestId> (CRDT, survives a CLI timeout, re-queryable) -> dual-render ~ render.ts prose/JSON (the progress-event split shore)">>
+<<~ scale name=`have` ranks=```daemon-jobs ~ mempalace `--daemon --background` → job-id → daemon jobs/wait/status (we call mine SYNCHRONOUSLY instead) -> durable-results ~ lares summons → daemon-plane/outcomes/<requestId> (CRDT, survives a CLI timeout, re-queryable) -> dual-render ~ render.ts prose/JSON (the progress-event split shore)```>>
 
 ''Implementation order'' (write-toward; confirm interfaces first — see caveat):
 # Make long ops ''return the request-id fast'' (+ `--detach`); default TTY attaches to `watch`.
@@ -170,16 +169,16 @@ write toward; it describes no current emission.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/operator-peer">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/capture-annotation-model">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/mempalace-integration">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/operator-peer`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/capture-annotation-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mempalace-integration`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;e_aQave-xiNFOGV-2jq_pfWctU6Lv8Mc2i_nT6k-fjc
+<<^ code=`&#x0003;`>>ni:///sha-256;EigD2c3lugffl9Bl4eg1-zNmlXMYgy2YG4J6_SAOYsA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

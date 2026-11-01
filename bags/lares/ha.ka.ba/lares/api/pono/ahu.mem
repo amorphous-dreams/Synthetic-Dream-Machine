@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/ahu">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/ahu`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/ahu.mem"
 mana      = 18
 manao     = 18
 manaoio   = 18
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/ahu"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Ahu
 
@@ -37,17 +36,17 @@ and wikitext body.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ sense the slot name — a `#/name` anchor, rooted at the carrier; the boundary scope of this content unit
 ⏿ orient: child-slot, parent-relative addressing; slot name becomes tiddler title suffix
 ◇ parent at `lar:///uri`; this slot creates child at `lar:///uri#/name`; content stays inside boundary
 ▶ emit child-slot block node; deserializer produces a separate tiddler for each slot
-↺ parent tiddler references child via `<<~ kahea ahu #/name>>`; child answers at its own address; confirm round-trip: parent body contains kahea~ahu summons; child has meta fields + content
+↺ parent tiddler references child via ``<<~ kahea ahu slot=`#/name`>>``; child answers at its own address; confirm round-trip: parent body contains kahea~ahu summons; child has meta fields + content
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -56,7 +55,7 @@ A slot token admits `[a-z0-9āēīōūʻ-]` — lowercase ASCII letters and digi
 An ahu block MUST close with `<<~/ahu>>`.
 An ahu block MAY nest inside another ahu block. A nested slot extends its enclosing slot path (`#/parent/child`), while a top-level slot begins a path at the carrier root.
 An ahu slot MUST produce an independently addressable tiddler at `parentUri + slot`.
-The tiddler representing an enclosing scope MUST reference each child slot via `<<~ kahea ahu #/slot>>` in its body.
+The tiddler representing an enclosing scope MUST reference each child slot via ``<<~ kahea ahu slot=`#/slot`>>`` in its body.
 Child slot tiddlers MUST NOT duplicate the parent's meta TOML — they carry their own.
 
 By convention the slot name `#/head` carries the meme's primary content body.
@@ -64,25 +63,27 @@ By convention the slot name `#source-shelf` carries pranala edge declarations.
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 Decomposed at the wiki's causal island boundaries:
 
 ```text
-<<~ ahu #/slot-name>>
+<<~ ahu slot=`#/slot-name`>>
 content body
 
 <<~/ahu>>
 ```
 
 Compound kahea-ahu summons form (in parent tiddler body after decomposition):
+
 ```text
-<<~ kahea ahu #/slot-name>>
+<<~ kahea ahu slot=`#/slot-name`>>
 ```
 
 Regex (open, canonical):
+
 ```
 /<<~[^>]*\bahu\s+(#\/[\w-]+(?:\/[\w-]+)*)\s*>>/
 ```
@@ -91,7 +92,7 @@ Close tag: `<<~/ahu>>`
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -110,7 +111,7 @@ slot = 1
 
 <<~/ahu>>
 
-<<~ ahu #/quoteblock-floor>>
+<<~ ahu slot=`#/quoteblock-floor`>>
 
 !! The quoteblock floor — un-decomposable content fences, never drops
 
@@ -119,7 +120,7 @@ Content that will not decompose fences to a quoteblock. The fence stands as the 
 The grain matches the write that produces the un-decomposable content:
 
 * ''Whole-chunk ingest'' — a carrier arrives through the deserializer, or from outside the wiki into it, whole and partially un-decomposable. The whole chunk quoteblocks; no family stands yet at that point, so the carrier offers the only grain available.
-* ''In-place ahu update'' — an ahu tiddler that already stands, edited to un-decomposable content. ONLY that ahu's body quoteblocks; the `<<~ ahu #/slot>>…<<~/ahu>>` wrapper survives untouched, and the rest of the family stands untouched. A paste into the live TW5 browser counts as a write: the save lands in the CRDT store, and the house projects it back to disk — so this grain governs there too (fix on write).
+* ''In-place ahu update'' — an ahu tiddler that already stands, edited to un-decomposable content. ONLY that ahu's body quoteblocks; the ``<<~ ahu slot=`#/slot`>>…<<~/ahu>>`` wrapper survives untouched, and the rest of the family stands untouched. A paste into the live TW5 browser counts as a write: the save lands in the CRDT store, and the house projects it back to disk — so this grain governs there too (fix on write).
 
 A fenced span needs no new law to keep the ahu-fidelity guard honest. Fence-mask covers it (#/syntax, #/schema; the shared scanner at `packages/lararium-tw5/src/meme-ast/ahu-scan.ts`), so the span declares zero slots, so `collectAhuSlots` finds nothing to drop. Un-decomposable content can never mint a phantom slot or a false conflict — the guard passes by construction.
 
@@ -168,17 +169,17 @@ This law lifts [[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing#
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/child-grade-decision">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kahea`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/graceful-parsing`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/child-grade-decision`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;o-zRJcYNgA_OzgTn0l-7Mlbag8mgrWIe7bpY5SHhPFY
+<<^ code=`&#x0003;`>>ni:///sha-256;ORXPfOSYb4aAhLJoZLx4x5N2Yn_XPIO6T9ZWA6bifuI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

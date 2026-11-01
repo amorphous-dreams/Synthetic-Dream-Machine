@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/ui/engine-update-banner">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/ui/engine-update-banner`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/ui/engine-update-banner.mem"
 mana      = 18
 manao     = 17
 manaoio   = 16
@@ -22,6 +21,6 @@ uri-path  = "ha.ka.ba/lararium/tw5/ui/engine-update-banner"
 </div>
 </$reveal>
 
-<<^ code="&#x0003;">>ni:///sha-256;kTfKkWJvDlmL-IR4vNoqyJCoeng7AaFiwyNApXo5WTA
+<<^ code=`&#x0003;`>>ni:///sha-256;8toJOYsrhV_sLkrAA0qiWFX4qsNfOR6LW-BFIMlc8-A
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

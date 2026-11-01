@@ -27,7 +27,7 @@ import { TW5Engine } from "../src/tw5-vm.js";
 import { bootTestWiki, renderWikitext, wikiSkip, skipNote } from "./test-wiki.js";
 
 /** The operator's own firing, verbatim. */
-const CALL = '<<~ stage "20" "Mischief-Muse">>';
+const CALL = "<<~ stage rank=`20` name=`Mischief-Muse`>>";
 
 describe.skipIf(wikiSkip)(`stage — a registered sigil${skipNote}`, () => {
   let e: TW5Engine;
@@ -41,7 +41,7 @@ describe.skipIf(wikiSkip)(`stage — a registered sigil${skipNote}`, () => {
   });
 
   test("CONTROL — a head the grammar registers nothing for still echoes", () => {
-    expect(rendered('<<~ vorpal-snicker "20" "Nobody">>')).toBe(false);
+    expect(rendered("<<~ vorpal-snicker rank=`20` name=`Nobody`>>")).toBe(false);
   });
 
   test("★ stage renders its DEFINITION, not its own text ★", () => {
@@ -57,18 +57,18 @@ describe.skipIf(wikiSkip)(`stage — a registered sigil${skipNote}`, () => {
   });
 
   test("★ the depth rides bare too — the masks canon wrote it that way first ★", () => {
-    const html = r("<<~ stage 12 Sea-Glass>>");
+    const html = r("<<~ stage rank=`12` name=`Sea-Glass`>>");
     expect(html).toContain("Sea-Glass");
     expect(html).toContain("12");
   });
 
   test("★ a mask name carrying a space survives, quoted ★", () => {
-    expect(r('<<~ stage "16" "Ghost of Mark Twain">>')).toContain("Ghost of Mark Twain");
+    expect(r("<<~ stage rank=`16` name=`Ghost of Mark Twain`>>")).toContain("Ghost of Mark Twain");
   });
 
   test("★ a summon with no mask still renders, and loses no depth ★", () => {
-    expect(rendered('<<~ stage "20">>')).toBe(true);
-    expect(r('<<~ stage "20">>')).toContain("20");
+    expect(rendered("<<~ stage rank=`20`>>")).toBe(true);
+    expect(r("<<~ stage rank=`20`>>")).toContain("20");
   });
 
   /**
@@ -78,7 +78,7 @@ describe.skipIf(wikiSkip)(`stage — a registered sigil${skipNote}`, () => {
    * in the other — which only a real binding can produce.
    */
   test("★ the depth and the mask land in DIFFERENT slots ★", () => {
-    expect(r(CALL)).toContain("Mischief-Muse @20");
+    expect(r(CALL)).toContain("Mischief-Muse@20");
   });
 
   test("★ and the delimiters do not reach the page — a quote binds a value, it is not one ★", () => {

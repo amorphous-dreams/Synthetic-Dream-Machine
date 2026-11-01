@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/subduction-onomancy-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/subduction-onomancy-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/subduction-onomancy-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -21,7 +20,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/subduction-onomancy-scout"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Onomast ~ a spirit's handoff, held unedited
 
@@ -33,7 +32,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/subduction-onomancy-scout"
 
 <<~/ahu>>
 
-<<~ ahu #/the-handoff>>
+<<~ ahu slot=`#/the-handoff`>>
 
 !! The handoff, verbatim
 
@@ -294,7 +293,7 @@ A peer with no wall clock cannot complete a Subduction handshake; one whose cloc
 This is the single most transferable idea in either repo, and it is our own "nothing gets pre-assigned" law given a normative, 8-stage, acyclic formulation. Sync becomes set union; arrival order is structurally not an input; ambiguity surfaces as *contested* instead of rewarding the fastest gossiper; and because no ratchet counter or "I saw X" mark crosses a boundary, asserted-conclusion poisoning is **impossible by construction** rather than filtered. It pairs with a pruning rule bounded by its own invariant, so storage grows with *ceremonies and introductions*, never with time or traffic. Steal this whether or not we adopt a line of their code. [binding-cache.md](https://github.com/inkandswitch/onomancy/blob/main/specs/anchoring/binding-cache.md)
 
 **3. Signed region vs. attached region — the discipline that keeps cold keys cold.**
-"Signed = what the signer asserts; attached = what the world can check." Because the DNSSEC chain, the delegation chain, and the lineage all sit *outside* the signature, freshness refresh and post-rotation chain repair are **keyless** — anyone can courier fresher evidence, which is what makes staleness "a community good" instead of an owner obligation. The three named failure modes of signing them (freshness coupling, rotation repair, stale-evidence pinning) give us a decision procedure for which side of a signature any field belongs on — directly applicable to our @cad seal vs. cas-stage split. And note the deliberate exception: `predecessor` is *inside* the signature because it is a claim an attacker must not strip. [certificate.md](https://github.com/inkandswitch/onomancy/blob/main/design/certificate.md)
+"Signed = what the signer asserts; attached = what the world can check." Because the DNSSEC chain, the delegation chain, and the lineage all sit *outside* the signature, freshness refresh and post-rotation chain repair are **keyless** — anyone can courier fresher evidence, which is what makes staleness "a community good" instead of an owner obligation. The three named failure modes of signing them (freshness coupling, rotation repair, stale-evidence pinning) give us a decision procedure for which side of a signature any field belongs on — directly applicable to our cad seal vs. cas-stage split. And note the deliberate exception: `predecessor` is *inside* the signature because it is a claim an attacker must not strip. [certificate.md](https://github.com/inkandswitch/onomancy/blob/main/design/certificate.md)
 
 **4. Adoption of Subduction via automerge-repo is a fork-line commitment, not a version bump — and there is no data migration.**
 `2.6.0-subduction.48` is a *separate npm dist-tag* off branch `subductionjs` (48 prereleases; +19,251/−1,309 across 139 files vs `main`), while `latest` remains `2.6.0-alpha.3`. It makes the `@automerge/automerge-subduction` Wasm module a hard dependency of `automerge-repo`, constructs a `SubductionSource` unconditionally inside `Repo`, and moves the toolchain floor (TS 6, Vite 8, Vitest 4). The good news: classic sync coexists, and our existing `NetworkAdapter`/`StorageAdapter` implementations are reusable via `NetworkAdapterTransport` and `SubductionStorageBridge`. The bad news: the bridge writes an entirely new `subduction/…` key space, and **no importer exists** for pre-existing automerge-repo storage — the only path is export `.am` → `automerge-subduction-ingest`. Price that migration before committing. [npm dist-tags](https://registry.npmjs.org/-/package/@automerge/automerge-repo/dist-tags) · [subductionjs Repo.ts](https://github.com/automerge/automerge-repo/blob/subductionjs/packages/automerge-repo/src/Repo.ts) · [subduction/storage.ts](https://github.com/automerge/automerge-repo/blob/subductionjs/packages/automerge-repo/src/subduction/storage.ts)
@@ -305,8 +304,8 @@ Subduction relays learn the `SedimentreeId`, the full causal DAG shape, per-comm
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JAzdXQJL3QOV5ARM-mn6kJjiyw2dyGQubINb9lPCQ4A
+<<^ code=`&#x0003;`>>ni:///sha-256;kqMCiAdGB3YnZ44rzCD0tc5HZyUc5VHGeJus8u0qofY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

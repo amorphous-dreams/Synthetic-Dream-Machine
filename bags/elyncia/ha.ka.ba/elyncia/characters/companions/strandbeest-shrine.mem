@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/companions/strandbeest-shrine">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/characters/companions/strandbeest-shrine`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/companions/strandbeest-shrine.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -17,13 +16,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/companions/strandbeest-shrine"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Faerie-Ring Strandbeest Shrine
 
 <<~/ahu>>
 
-<<~ ahu #/body>>
+<<~ ahu slot=`#/body`>>
 
 ! Faerie-Ring Strandbeest-Shrine — Character Sheet
 
@@ -335,6 +334,6 @@ The strandbeest legs lock into aggressive posture — stabbing, sweeping, and tr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RK2htBf7moxII_r0fRDOCgmyYDzKn4ksq-FzFdfD1no
+<<^ code=`&#x0003;`>>ni:///sha-256;Dt_9P4dR4N3mmzAY1qpna909gdftlEvdL61MOW7Hv3M
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

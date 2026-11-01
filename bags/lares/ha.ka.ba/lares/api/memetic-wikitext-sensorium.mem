@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/memetic-wikitext-sensorium">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/memetic-wikitext-sensorium`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/memetic-wikitext-sensorium.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 15
@@ -19,11 +18,11 @@ uri-path  = "ha.ka.ba/lares/api/memetic-wikitext-sensorium"
 written   = "2026-07-01"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! The Memetic-Wikitext Sensorium ~ neither-top, co-located peers, made concrete
 
@@ -39,7 +38,7 @@ entity `#has` a cap-stack, and the composition CONSTITUTES the filetree. Here th
 
 ''The two peers:''
 
-<<~ scale peer "formal ~ memes-on-disk = the grammar / liturgy — the inscribed classifier channel, the red that steers -> informal ~ chat-sessions = the pidgin — the lived stream, the black that speaks">>
+<<~ scale name=`peer` ranks=`formal ~ memes-on-disk = the grammar / liturgy — the inscribed classifier channel, the red that steers -> informal ~ chat-sessions = the pidgin — the lived stream, the black that speaks`>>
 
 ''Neither stands on top.'' The manifest carries `coupling.children = [formal, informal]` — two children of one
 nameless parent, addressed as peers ([[causal-islands|lar:///ha.ka.ba/lares/api/noosphere-boot#/causal-islands]]).
@@ -49,14 +48,14 @@ neither direction; `coupleMesh` reads which one carries, and how much.
 
 <<~/ahu>>
 
-<<~ ahu #/the-fractal>>
+<<~ ahu slot=`#/the-fractal`>>
 
 !! The Fractal Co-Location ~ one structure, two scales
 
 ''The load-bearing insight:'' the //neither-top, co-located peers// pattern forms no one-off shape at the
 corpus scale. It ''recurs'' — the same pattern holds at a finer scale, inside a single text.
 
-<<~ scale scale "stratum ~ WITHIN one text: the red-sigil-register ⋈ the black-prose co-locate — the classifier channel beside the propositional stream ([[classifier-channel|lar:///ha.ka.ba/lares/api/noosphere-boot#/classifier-channel]]) -> corpus ~ ACROSS texts: the formal-liturgical ⋈ the informal-pidgin co-locate — the two peer sub-sensoria and their coupling edge">>
+<<~ scale name=`scale` ranks=`stratum ~ WITHIN one text: the red-sigil-register ⋈ the black-prose co-locate — the classifier channel beside the propositional stream ([[classifier-channel|lar:///ha.ka.ba/lares/api/noosphere-boot#/classifier-channel]]) -> corpus ~ ACROSS texts: the formal-liturgical ⋈ the informal-pidgin co-locate — the two peer sub-sensoria and their coupling edge`>>
 
 ''So ONE structure serves both.'' The reader written for the stratum scale — split a text into
 co-located channels, window each into a signal, couple them — ''supplies the same shape'' composed at the
@@ -69,14 +68,14 @@ FFZ-aligned tick stream) and calls it at both scales.
 
 <<~/ahu>>
 
-<<~ ahu #/the-reader>>
+<<~ ahu slot=`#/the-reader`>>
 
 !! The Reader ~ island-scan + injection + standoff strata (no new parser)
 
 ''Crucible verdict: do NOT build a new parser.'' The reader composes three instruments already fit to the
 disjoint partition the sigil register makes.
 
-<<~ scale instrument "island-scan ~ the meme-ast `collectEvents` scanner ([[scanner|lar:///ha.ka.ba/lararium/tw5/modules/meme-ast]]) — a DISJOINT-MATCH pass: the <<~…">> ranges are the islands, the gaps are the sea; disjoint-match dodges tree-sitter's no-overlap limit -> injection ~ a tree-sitter INJECTION config — sigil grammar injected into the <<~…>> ranges; injections model the disjoint partition NATIVELY (outer prose language, inner sigil language) -> standoff ~ a source-CID-pinned STANDOFF stratum-tag table: per byte-range `{span, tag, source-CID}`, held BESIDE the text (rust-analyzer style), never woven into it >>
+<<~ scale name=`instrument` ranks=```island-scan ~ the meme-ast `collectEvents` scanner ([[scanner|lar:///ha.ka.ba/lararium/tw5/modules/meme-ast]]) — a DISJOINT-MATCH pass: the `<<~` ranges are the islands, the gaps are the sea; disjoint-match dodges tree-sitter's no-overlap limit -> injection ~ a tree-sitter INJECTION config — sigil grammar injected into the `<<~` ranges; injections model the disjoint partition NATIVELY (outer prose language, inner sigil language) -> standoff ~ a source-CID-pinned STANDOFF stratum-tag table: per byte-range `{span, tag, source-CID}`, held BESIDE the text (rust-analyzer style), never woven into it```>>
 
 ''The strata associate to a skeletal tier — autosegmental, not position-identity.'' The ''skeletal tier''
 consists of the prose/char stream (the black anchors). The ''strata'' (the red sigil spans) hang off it by
@@ -84,19 +83,19 @@ consists of the prose/char stream (the black anchors). The ''strata'' (the red s
 skeletal slot without //equalling// that slot's position. A sigil does not merely sit at an offset; it
 ''associates'' to a region of the skeletal tier — many strata to one anchor, one stratum spanning many.
 
-<<~ scale tier "skeletal ~ the prose/char stream — the black anchors, segmented by the sigil islands -> stratum ~ a red (or base) span, tagged, span-measured, source-CID-pinned -> association ~ the edge linking a stratum to a skeletal anchor; a fine stratum on a coarse anchor CROSSES bands">>
+<<~ scale name=`tier` ranks=`skeletal ~ the prose/char stream — the black anchors, segmented by the sigil islands -> stratum ~ a red (or base) span, tagged, span-measured, source-CID-pinned -> association ~ the edge linking a stratum to a skeletal anchor; a fine stratum on a coarse anchor CROSSES bands`>>
 
 <<~/ahu>>
 
-<<~ ahu #/two-axes>>
+<<~ ahu slot=`#/two-axes`>>
 
 !! Two Axes ~ span × channel
 
 ''A stratum reads on two independent axes; collapsing them loses the signal.''
 
-<<~ scale axis "span ~ the aperture-ladder ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot#/law-of-5s]] — Pulse·Beat·Measure·Arc·Theme): the GRAIN of the stratum's own byte-range — the FFZ membership address reads it (a containment level), never a frequency band -> channel ~ the red/black classifier — a CATEGORICAL annotation (black prose · red control-sigil · base — the four Mu wildcard operators `* ? ! _`); not a scale, a KIND">>
+<<~ scale name=`axis` ranks=```span ~ the aperture-ladder ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot#/law-of-5s]] — Pulse·Beat·Measure·Arc·Theme): the GRAIN of the stratum's own byte-range — the FFZ membership address reads it (a containment level), never a frequency band -> channel ~ the red/black classifier — a CATEGORICAL annotation (black prose · red control-sigil · base — the four Mu wildcard operators `* ? ! _`); not a scale, a KIND```>>
 
-''The cross-band proof.'' A control-sigil at fine grain — an inline ``
+''The cross-band proof.'' A control-sigil at fine grain — an inline sigil
 mid-paragraph — has a ''fine'' span-band (Pulse: it spans few bytes) yet ''associates'' to a ''coarse''
 skeletal anchor (the paragraph, Measure or Arc). Read by the outer band alone, it would get forced UP to the
 paragraph's band and lose its fineness. The two-axes model refuses that: the stratum keeps its own
@@ -106,13 +105,13 @@ records that it ''crosses'' bands. A fine control-signal on a coarse anchor read
 
 <<~/ahu>>
 
-<<~ ahu #/li-ki>>
+<<~ ahu slot=`#/li-ki`>>
 
 !! The Li / Ki Split ~ 理 pattern ⊥ 氣 flow
 
 ''The reader senses two orthogonal things, and the sensorium's cap-kinds already name them.''
 
-<<~ scale sense "li ~ 理 — the RESTRICT register: the CHAIN content ↠ structure ↠ form, each computed from the moment's OWN span (contravariant, the sheaf side). The stratum table, the skeletal tier, the association graph, the induced constructicon read it -> ki ~ 氣 — the EXTEND register: the three readings boundary · coupling · standing, each needing data OUTSIDE the moment's span (covariant, the cosheaf side). Here COUPLING is the live centre — the directed formal↔informal (and red↔black) flow, read on demand">>
+<<~ scale name=`sense` ranks=`li ~ 理 — the RESTRICT register: the CHAIN content ↠ structure ↠ form, each computed from the moment's OWN span (contravariant, the sheaf side). The stratum table, the skeletal tier, the association graph, the induced constructicon read it -> ki ~ 氣 — the EXTEND register: the three readings boundary · coupling · standing, each needing data OUTSIDE the moment's span (covariant, the cosheaf side). Here COUPLING is the live centre — the directed formal↔informal (and red↔black) flow, read on demand`>>
 
 ''The split maps cap-for-cap, and the cut rides VARIANCE, never storage.'' The sensorium primitive's FIBER
 caps carry the li (the restrict chain — computed from the moment's own span); its BASE caps carry the ki
@@ -122,7 +121,7 @@ stratification (pattern); `readKi` returns the coupling (flow). The reader holds
 
 <<~/ahu>>
 
-<<~ ahu #/autosegmental>>
+<<~ ahu slot=`#/autosegmental`>>
 
 !! The Association Graph ~ autosegmental grounding (Goldsmith · Bird & Ellison)
 
@@ -130,9 +129,9 @@ stratification (pattern); `readKi` returns the coupling (flow). The reader holds
 Ellison 1994). That grounding hands the reader six properties — the first three enacted, the rest
 named for follow-up.
 
-<<~ scale enacted "typed-multigraph ~ the associations are a TYPED OVERLAP MULTIGRAPH — confidence-line ≠ ward-line ≠ voice-line, labeled distinct relations over ONE skeleton (feature-geometry class-links), never one undifferentiated association. `AssociationEdge.relation` carries the sigil head -> rightward-spread ~ SEED-FORWARD / marker-leads reads as textbook L-to-R SPREADING: a sigil anchored at its marker governs the prose that FOLLOWS until a boundary/competing marker; `direction` defaults rightward, docks leftward only for a closing/trailing sigil -> unit-anchored ~ Goldsmith's STABILITY argument: the edge keys on skeletal INDICES, never byte offsets, so the red register SURVIVES a splice/rewrite of the black stream (the autosegment re-docks) — curing the offset-drift / live-wiki re-projection tax (crucible-F1) for FREE">>
+<<~ scale name=`enacted` ranks=```typed-multigraph ~ the associations are a TYPED OVERLAP MULTIGRAPH — confidence-line ≠ ward-line ≠ voice-line, labeled distinct relations over ONE skeleton (feature-geometry class-links), never one undifferentiated association. `AssociationEdge.relation` carries the sigil head -> rightward-spread ~ SEED-FORWARD / marker-leads reads as textbook L-to-R SPREADING: a sigil anchored at its marker governs the prose that FOLLOWS until a boundary/competing marker; `direction` defaults rightward, docks leftward only for a closing/trailing sigil -> unit-anchored ~ Goldsmith's STABILITY argument: the edge keys on skeletal INDICES, never byte offsets, so the red register SURVIVES a splice/rewrite of the black stream (the autosegment re-docks) — curing the offset-drift / live-wiki re-projection tax (crucible-F1) for FREE```>>
 
-<<~ scale follow-up "ncc-float-dock ~ the No-Crossing Constraint makes a red sigil steering ACROSS a `<<~…">>` framing boundary a DETECTABLE breach (Coleman & Local: asserting A≺B ∧ A∘B at once is incoherent) — crucible-F2. Cure: red steering is DOMAIN-LOCAL to its block; cross-boundary influence = FLOAT + DOCK (a floating red autosegment re-docking at the next block's boundary, a licensed hand-off), NEVER spread-across -> wfc-minimal-repair ~ Goldsmith Proposal 4 / Harmonic Phonology: don't REJECT an under-associated parse, REPAIR it by minimal association-adding; unmarked spans DEFAULT-FILL the ambient register by the Association Convention. This IS graceful-parsing ([[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing]] — augment+wrap, no parse breaks badly); REUSE it -> fst-validity ~ Bird & Ellison: the stratified parse = the synchronized INTERSECTION product of per-tier automata; well-formed ⟺ intersection non-empty (a real algorithm on the meme-ast machinery) -> ocp ~ the Obligatory Contour Principle normalizes: two adjacent identical markers collapse to one >>
+<<~ scale name=`follow-up` ranks=```ncc-float-dock ~ the No-Crossing Constraint makes a red sigil steering ACROSS a `<<~` framing boundary a DETECTABLE breach (Coleman & Local: asserting A≺B ∧ A∘B at once is incoherent) — crucible-F2. Cure: red steering is DOMAIN-LOCAL to its block; cross-boundary influence = FLOAT + DOCK (a floating red autosegment re-docking at the next block's boundary, a licensed hand-off), NEVER spread-across -> wfc-minimal-repair ~ Goldsmith Proposal 4 / Harmonic Phonology: don't REJECT an under-associated parse, REPAIR it by minimal association-adding; unmarked spans DEFAULT-FILL the ambient register by the Association Convention. This IS graceful-parsing ([[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing]] — augment+wrap, no parse breaks badly); REUSE it -> fst-validity ~ Bird & Ellison: the stratified parse = the synchronized INTERSECTION product of per-tier automata; well-formed ⟺ intersection non-empty (a real algorithm on the meme-ast machinery) -> ocp ~ the Obligatory Contour Principle normalizes: two adjacent identical markers collapse to one```>>
 
 ''Where memetic-wikitext EXCEEDS phonology'' (reach past autosegmental for these): the skeleton
 NESTS RECURSIVELY (tree-sitter / RAPTOR, not a flat tier); the tiers themselves form LANGUAGES (html ⊂
@@ -143,11 +142,11 @@ tree-sitter.
 
 <<~/ahu>>
 
-<<~ ahu #/enactment>>
+<<~ ahu slot=`#/enactment`>>
 
 !! Enactment ~ the concrete instance
 
-<<~ scale part "reader ~ `packages/lararium-node/src/memetic-wikitext-sensorium.ts` — `stratify()` (island-scan → standoff strata + skeletal tier + typed association graph), `sigilInjectionQuery()` (the tree-sitter injection config), the two-axes span×channel read -> compose ~ `buildMemeticWikitextSensorium()` — the top nameless entity `#has {formal, informal}` via `buildSensoriumManifest`, `coupling.children=[formal, informal]`, neither top -> couple ~ `coupleAligned()` — the fractal atom; feeds an ALIGNED-TICK stream to the keel's `windowed-coupling` RUNTIME ([[windowed-coupling|lar:///ha.ka.ba/lararium/mesh/flow]] — L-window · floor-warming · change-point reset · hop) then screens with `linearityGate`. `readKiStratum` walks Pulse-grain ticks (red↔black); `readKiCorpus` JOINS FFZ-addressed cells (formal↔informal). A THIN call, never a rebuild">>
+<<~ scale name=`part` ranks=```reader ~ `packages/lararium-node/src/memetic-wikitext-sensorium.ts` — `stratify()` (island-scan → standoff strata + skeletal tier + typed association graph), `sigilInjectionQuery()` (the tree-sitter injection config), the two-axes span×channel read -> compose ~ `buildMemeticWikitextSensorium()` — the top nameless entity `#has {formal, informal}` via `buildSensoriumManifest`, `coupling.children=[formal, informal]`, neither top -> couple ~ `coupleAligned()` — the fractal atom; feeds an ALIGNED-TICK stream to the keel's `windowed-coupling` RUNTIME ([[windowed-coupling|lar:///ha.ka.ba/lararium/mesh/flow]] — L-window · floor-warming · change-point reset · hop) then screens with `linearityGate`. `readKiStratum` walks Pulse-grain ticks (red↔black); `readKiCorpus` JOINS FFZ-addressed cells (formal↔informal). A THIN call, never a rebuild```>>
 
 ''The FFZ alignment CONSTITUTES the runtime's contract — not optional polish.''
 The `windowed-coupling` runtime demands ALIGNED TICKS //"at a shared grain — the worldline aligns//
@@ -176,6 +175,6 @@ identically across the TS/py shore: the li-reader on one bank, the ki-model on t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QsEMBTNoIQ9hCs0LCS98EgztNJKfwUcu_EZL837Q4ew
+<<^ code=`&#x0003;`>>ni:///sha-256;ruNtdfYVL8TuPLVcaBtuxwwnNdM5JGXHSO7VMuTqhSo
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

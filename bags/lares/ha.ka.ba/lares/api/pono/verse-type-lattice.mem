@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/verse-type-lattice">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/verse-type-lattice`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/verse-type-lattice.mem"
 l-space     = "stable"
 mana        = 17
 manao       = 17
@@ -17,7 +16,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/verse-type-lattice"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Verse Type Lattice
 
@@ -30,7 +29,7 @@ ch. 13 (effects), ch. 17 (persistable); Epic Games developer documentation.
 
 <<~/ahu>>
 
-<<~ ahu #/lattice>>
+<<~ ahu slot=`#/lattice`>>
 
 !! The Type Lattice
 
@@ -71,7 +70,7 @@ Function subtyping: `(T1)->R1 <: (T2)->R2` requires `T2 <: T1` and `R1 <: R2`.
 
 <<~/ahu>>
 
-<<~ ahu #/class-modifiers>>
+<<~ ahu slot=`#/class-modifiers`>>
 
 !! Class Modifiers That Affect the Lattice
 
@@ -84,7 +83,7 @@ Function subtyping: `(T1)->R1 <: (T2)->R2` requires `T2 <: T1` and `R1 <: R2`.
 
 <<~/ahu>>
 
-<<~ ahu #/persistable-constraint>>
+<<~ ahu slot=`#/persistable-constraint`>>
 
 !! Persistable — A Closed Constraint Universe
 
@@ -115,7 +114,7 @@ game sessions — Verse's equivalent of cross-session player storage.
 
 <<~/ahu>>
 
-<<~ ahu #/effects-as-edge-labels>>
+<<~ ahu slot=`#/effects-as-edge-labels`>>
 
 !! Effects System — Six Families
 
@@ -158,7 +157,7 @@ failable expression into a conditional branch.
 
 <<~/ahu>>
 
-<<~ ahu #/pranala-edge-labels>>
+<<~ ahu slot=`#/pranala-edge-labels`>>
 
 !! Effects as Pranala Edge Labels
 
@@ -177,19 +176,19 @@ See `uefn-scene` for the `reaction:subscribable` edge format and `KumuSubscribab
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-task-tree">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/uefn-scene">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/heihei">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-task-tree`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-event-lattice`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/uefn-scene`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/heihei`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jIM2QdvLM0_Qk9x2S0N_9G1trJEFTMS2yJxKmnSmXkc
+<<^ code=`&#x0003;`>>ni:///sha-256;pYCPG4zHpdC0uTBN4Cq1DpPQJqgYhiEG-HddrJcjE7c
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

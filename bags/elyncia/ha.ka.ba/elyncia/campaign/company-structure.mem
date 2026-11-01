@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/campaign/company-structure">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/campaign/company-structure`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/campaign/company-structure.mem"
 l-space   = "stable"
 mana      = 13
 manao     = 13
@@ -17,13 +16,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/campaign/company-structure"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Sidebar ~ Company Structure & Multi-PC Play
 
 <<~/ahu>>
 
-<<~ ahu #/body>>
+<<~ ahu slot=`#/body`>>
 
 ! Sidebar — Alpha Playtest Company Structure and Multi-PC Play v3
 
@@ -235,6 +234,6 @@ The intended play pattern: ''the company can do more than a normal small party, 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QYmpivTL3dNizGpAnIC4vThkQHnEKqaLN5kAbuDm1Q4
+<<^ code=`&#x0003;`>>ni:///sha-256;imNv0fAusgsEN3fyOeb1QIpmuRmci-bZ1P5hTbYbt2g
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

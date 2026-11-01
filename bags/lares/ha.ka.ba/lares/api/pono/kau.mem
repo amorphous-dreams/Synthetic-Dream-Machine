@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kau">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/kau`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/kau.mem"
 mana      = 18
 manao     = 18
 manaoio   = 17
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kau"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Kau
 
@@ -29,7 +28,7 @@ A device placed with intention. The instance takes its own address.
 
 <<~/ahu>>
 
-<<~ ahu #/etymology>>
+<<~ ahu slot=`#/etymology`>>
 
 !! Etymology and Mythology
 
@@ -45,7 +44,7 @@ In Keyhive terms: the kau instance URI becomes a UCAN resource string. Per-insta
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law
 
@@ -59,14 +58,14 @@ In Keyhive terms: the kau instance URI becomes a UCAN resource string. Per-insta
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```
-<<~ kau DeviceName>>                       placement, auto-generated fragment
-<<~ kau #my-instance DeviceName>>          placement, explicit fragment
-<<~ kau #my-instance DeviceName prop=val>> placement with props
+<<~ kau slot=`DeviceName`>>                       placement, auto-generated fragment
+<<~ kau slot=`#my-instance` name=`DeviceName`>>          placement, explicit fragment
+<<~ kau slot=`#my-instance` name=`DeviceName` prop=`val`>> placement with props
 ```
 
 The DeviceName resolves via `[all[tiddlers]tag[$:/tags/LarariumKumu]field:kumu-name[DeviceName]]`.
@@ -88,7 +87,7 @@ Both stubs are deferred pending Keyhive WASM. When they land, they surface as ex
 
 <<~/ahu>>
 
-<<~ ahu #/uefn-mapping>>
+<<~ ahu slot=`#/uefn-mapping`>>
 
 !! UEFN Device Model Mapping
 
@@ -103,24 +102,24 @@ Both stubs are deferred pending Keyhive WASM. When they land, they surface as ex
 
 <<~/ahu>>
 
-<<~ ahu #/causal-island>>
+<<~ ahu slot=`#/causal-island`>>
 
 !! Causal Island
 
-Each kau instance operates as an isolated async execution boundary. Events do not leak between instances. The only declared crossing points are papalohe edges: `<<~ papalohe DeviceA -> DeviceB listenable=Event subscribable=Handler>>`.
+Each kau instance operates as an isolated async execution boundary. Events do not leak between instances. The only declared crossing points are papalohe edges: ``<<~ papalohe from=`DeviceA` to=`DeviceB` listenable=`Event` subscribable=`Handler`>>``.
 
 This maps directly to the Ink & Switch island model: each automerge object operates as a causally independent document. Merges happen at declared sync points, not implicitly.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kumu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waiho">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kumu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waiho`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/papalohe`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wBeNNF0GpvvkAtGmlRSXhHLhrhPvPirig3WJo5DgGsg
+<<^ code=`&#x0003;`>>ni:///sha-256;HNJHg2s7gGLONpd4hLF_QppnPMbYQzD3eWC18x6aJb4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

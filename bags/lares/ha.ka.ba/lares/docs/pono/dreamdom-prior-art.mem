@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom-prior-art">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-prior-art`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-prior-art.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 15
@@ -21,7 +20,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-prior-art"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! DreamDOM Prior Art ~ a spirit's handoff, held unedited
 
@@ -35,7 +34,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-prior-art"
 
 <<~/ahu>>
 
-<<~ ahu #/the-handoff>>
+<<~ ahu slot=`#/the-handoff`>>
 
 !! The handoff, verbatim
 
@@ -248,10 +247,10 @@ Every delta-based system in the corpus must queue; you can drop precisely becaus
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/vm-projection-bus">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/two-integrities">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/vm-projection-bus`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/projection-nalu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/two-integrities`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6NDQ3QjnFhEQjkk6RGa3K7RgeVroVOWR4GJJAE13l8I
+<<^ code=`&#x0003;`>>ni:///sha-256;2Nb5FGpMS2qJ86W-yVt2QlFjwEV6e8UfKqBgpapo0sU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

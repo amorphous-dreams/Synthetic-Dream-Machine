@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/persona-kel">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/persona-kel`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/persona-kel.mem"
 l-space     = "lararium"
 mana        = 15
 role        = "invariant law: the persona-KEL — a stable identifier PREFIX the operational key rotates BENEATH, so continuity rides the LOG, never the key. Names the armed inception + rolling recovery commitment, Fork-B threshold-attest (nothing reconstructs), the provisional/veto contest folded structurally, the board as an additive per-Nexus CRDT, the frozen-for-alpha status, and duplicity-detection as the dual of a registry."
@@ -15,7 +14,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/persona-kel"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The persona-KEL ~ continuity rides the log, never the key
 
@@ -26,7 +25,7 @@ persona scale: it invents nothing structural, it re-sites what stands.
 
 <<~/ahu>>
 
-<<~ ahu #/the-invariant>>
+<<~ ahu slot=`#/the-invariant`>>
 
 !! The invariant ~ prefix fixed, head authoritative, old key superseded
 
@@ -45,7 +44,7 @@ the hash-link the next event binds is tamper-evident.
 
 <<~/ahu>>
 
-<<~ ahu #/armed-inception>>
+<<~ ahu slot=`#/armed-inception`>>
 
 !! Armed inception + the rolling recovery commitment
 
@@ -67,12 +66,12 @@ authority signs ONLY rotations, never content.
 
 <<~/ahu>>
 
-<<~ ahu #/the-enrolment>>
+<<~ ahu slot=`#/the-enrolment`>>
 
 !! The first recovery contact enrolment ~ one typed event the face's own key signs
 
 A face founds one-of-one, so its recovery contacts arrive later, and its log knows the act that brings them
-(<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>, "Recovery contact enrolment's shape"). The
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>, "Recovery contact enrolment's shape"). The
 one typed event, `kind = "recovery-contact-enrolment"`, keeps the prefix AND the op-key, commits the recovery contacts' set and
 threshold (`sealKeySetHash`) as the rolling commitment, and carries no reveal, no quorum and no device box. The
 face's CURRENT op-key signs its bound bytes (`enrolSig`, outside the cid like `vetoSig`); the kind rides the cid
@@ -84,13 +83,13 @@ enrolment refuses. A veto never names one, since a veto kills a provisional alon
 kind, so their bytes read as they always read. Every device edge and every device's secret stand across an
 enrolment: they select by op-key, which it keeps. Before it lands, the vessel checks that each recovery contact proved
 possession of its key over this face's prefix, that no key repeats, that the threshold meets the set, and that no
-key serves another face this vessel holds (`enrolRecoveryContacts`; <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
+key serves another face this vessel holds (`enrolRecoveryContacts`; <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery`>>).
 Count, threshold, request authentication, the veto and succession stay open
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>).
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/the-contest>>
+<<~ ahu slot=`#/the-contest`>>
 
 !! The provisional / veto contest ~ liveness proposes, the standing hand disposes
 
@@ -115,7 +114,7 @@ settles it by board order or herm order, and the gate admits no edge under it �
 
 <<~/ahu>>
 
-<<~ ahu #/the-board>>
+<<~ ahu slot=`#/the-board`>>
 
 !! The board ~ an additive per-Nexus CRDT, fail-closed end to end
 
@@ -143,7 +142,7 @@ names it rather than meet a chain already cleaned.
 
 <<~/ahu>>
 
-<<~ ahu #/frozen-for-alpha>>
+<<~ ahu slot=`#/frozen-for-alpha`>>
 
 !! Frozen for alpha ~ the primitives the sibling grammar builds on
 
@@ -156,7 +155,7 @@ wiring ride DECLARED above the freeze, not folded into it.
 
 <<~/ahu>>
 
-<<~ ahu #/duplicity-dual>>
+<<~ ahu slot=`#/duplicity-dual`>>
 
 !! Duplicity-detection ~ the dual of a registry
 
@@ -170,17 +169,17 @@ fold, the quorum, the veto — never on the board's liveness.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/persona-kel.ts" family="code" role="has">>
-<<~ pranala #board from="?" -> to="packages/lararium-mesh/src/persona-kel-board.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-mesh/src/persona-kel.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#board` from=`?` to=`packages/lararium-mesh/src/persona-kel-board.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/identity-classes`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/handle-card`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/registry-filter`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qXKzL8rdFkVfYdVmHLg-x7GffZJ4G57-TrahZU38H34
+<<^ code=`&#x0003;`>>ni:///sha-256;iIPSZlwNCvUeVwYs4dQESNWrIte6a_PrTB0Ethh0KJU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

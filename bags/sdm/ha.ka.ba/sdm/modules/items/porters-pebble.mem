@@ -1,12 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/modules/items/porters-pebble">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/modules/items/porters-pebble`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
 caption   = "Porter's Pebble"
-file-path = "bags/sdm/ha.ka.ba/sdm/modules/items/porters-pebble.mem"
 l-space   = "sdm"
 mana      = 14
 manao     = 17
@@ -18,13 +17,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/modules/items/porters-pebble"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
 ! Porter's Pebble
 
-<<~ ahu #/has>>
+<<~ ahu slot=`#/has`>>
 
 !! Composition
 
@@ -32,7 +31,7 @@ An item is ''an entity with mount-points'', not a new kind of module. It `#has` 
 
 <<~/ahu>>
 
-<<~ ahu #/default>>
+<<~ ahu slot=`#/default`>>
 
 ```toml default
 canonical-name = "Porter's Pebble"
@@ -56,7 +55,7 @@ A botched activation or a sundered pebble follows the `item` mount-point's failu
 
 <<~/ahu>>
 
-<<~ ahu #/variants>>
+<<~ ahu slot=`#/variants`>>
 
 !! Variants
 
@@ -66,19 +65,19 @@ A botched activation or a sundered pebble follows the `item` mount-point's failu
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/modules/power">>
-<<~ loulou "lar:///ha.ka.ba/sdm/modules/powers/floating-disc">>
-<<~ loulou "lar:///ha.ka.ba/sdm/mount-points/item">>
-<<~ loulou "lar:///ha.ka.ba/sdm/projections/items/ftls-card/porters-pebble">>
-<<~ loulou "lar:///ha.ka.ba/sdm/witness/items/uvg/porters-pebble">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/modules/power`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/modules/powers/floating-disc`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/mount-points/item`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/projections/items/ftls-card/porters-pebble`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/witness/items/uvg/porters-pebble`>>
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -88,6 +87,6 @@ A botched activation or a sundered pebble follows the `item` mount-point's failu
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JM4TlzP74syTJn2Tcl6aY03k_O9QjBC5VpSqwCIwi5g
+<<^ code=`&#x0003;`>>ni:///sha-256;2WWN7wLdK09LCErrPwX2YOhDnZkFNtWRkhuAYcNp14E
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

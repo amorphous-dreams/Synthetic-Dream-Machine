@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/lele">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/widgets/lele`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/lele.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/lele"
@@ -18,17 +17,17 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/lele"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
-`<<~ lele "lar:///a.b.c/x">>` starts a SIDE FLOW at a target, and the caller carries on. //Lele// leaps and knows the tree it left: the edge emits into the message family, starts the target flow, and waits for no answer. The enclosing async context bounds the leap and cancels what remains when that context completes. `hoolele` makes the other move — it leaves the tree.
+``<<~ lele to=`lar:///a.b.c/x`>>`` starts a SIDE FLOW at a target, and the caller carries on. //Lele// leaps and knows the tree it left: the edge emits into the message family, starts the target flow, and waits for no answer. The enclosing async context bounds the leap and cancels what remains when that context completes. `hoolele` makes the other move — it leaves the tree.
 
 ''The target rides as the first positional, and it rides QUOTED.'' An unquoted address reaches nothing: `lar:///x` standing bare in a positional slot binds a parameter named `lar`, and the slot receives nothing. One pair of quotes fills it.
 
 <<~/ahu>>
 
-<<~ ahu #/render>>
+<<~ ahu slot=`#/render`>>
 
 !! Render
 
@@ -42,21 +41,21 @@ The declaration rides in `packages/lararium-tw5/tiddlers/sigil-lele.tid` with `l
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
-<<~ pranala #source from="?" -> to="packages/lararium-tw5/tiddlers/sigil-lele.tid" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-tw5/tiddlers/sigil-lele.tid` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lele">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/kukali">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lele`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/widgets/kukali`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_sU_1dXLVCvUlbs6EDPh2K6Kd1vM-s81sg-DFppl0cY
+<<^ code=`&#x0003;`>>ni:///sha-256;gUIHLo973CLPQ4FELP0wql6lR7qZ6pJ74IlPpMz_FWQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

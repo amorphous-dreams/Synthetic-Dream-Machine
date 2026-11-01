@@ -16,15 +16,15 @@ const title = "lar:///test/promotion";
 const fromBag = "lar:///test/working";
 const toBag = CROSSROADS_BAG;
 const source = [
-  '<<^ code="&#x0001;" from="?" -> to="lar:///test/promotion">>',
-  '<<^ code="&#x0002;">>',
+  '<<^ code=`&#x0001;` from=`?` to=`lar:///test/promotion`>>',
+  '<<^ code=`&#x0002;`>>',
   '```toml meta',
   'uri-path = "test/promotion"',
   'tags = ["lifecycle/standing"]',
   '```',
   'body',
-  '<<^ code="&#x0003;">>ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-  '<<^ code="&#x0004;" -> to="?">>',
+  '<<^ code=`&#x0003;`>>ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+  '<<^ code=`&#x0004;` to=`?`>>',
 ].join("\n");
 
 async function fixture() {

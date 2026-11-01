@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/tiddler-fields">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/tiddler-fields`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/tiddler-fields.mem"
 mana      = 18
 manao     = 18
 manaoio   = 18
@@ -86,14 +85,14 @@ Current host-law:
 
 This split removes the old flat-record ambiguity where TW5 content fields and host metadata shared one namespace and drifted into accidental collisions.
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tw5-module">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/tiddler-store">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tw5-module`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/tiddler-store`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;R0JwcJ-ExkfZXIroAq1g45QsOdRZ3UmNiW__RBq5Da4
+<<^ code=`&#x0003;`>>ni:///sha-256;GBXF1JqPCvFEewi-iPzF0uChC1XxAlm7cPttjwZx7x0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

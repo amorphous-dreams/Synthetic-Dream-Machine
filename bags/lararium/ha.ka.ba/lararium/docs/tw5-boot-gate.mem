@@ -1,10 +1,9 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/tw5-boot-gate">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/tw5-boot-gate`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
-file-path     = "bags/lararium/ha.ka.ba/lararium/docs/tw5-boot-gate.mem"
 last-reviewed = "2026-07-18"
 mana          = 17
 manao         = 17
@@ -16,7 +15,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/tw5-boot-gate"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! TW5 Boot Gate — Contract
 
@@ -46,7 +45,7 @@ bootTrustedModules(tw)
 
 <<~/ahu>>
 
-<<~ ahu #/thresholds>>
+<<~ ahu slot=`#/thresholds`>>
 
 !! Gate Thresholds
 
@@ -63,7 +62,7 @@ Additionally: `source-sha256` must verify (the tagged SHA-256 digest of the `tex
 
 <<~/ahu>>
 
-<<~ ahu #/stuck-in-ts>>
+<<~ ahu slot=`#/stuck-in-ts`>>
 
 !! Why No Meme Can Carry This
 
@@ -75,6 +74,6 @@ The distinction makes the whole gate. ''Authority rides on what a carrier holds 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hN6-oUq_gtt2evZmSDIBAu2fVf1-4uokXKBmmeTs4H0
+<<^ code=`&#x0003;`>>ni:///sha-256;hrk0WmFPvgDUgvIeRATkObECsPQYfAC_1FswyEyh-iE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

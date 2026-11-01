@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/ref/RFC-9420">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/ref/RFC-9420`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable      = true
-file-path      = "bags/lares/ha.ka.ba/lares/ref/RFC-9420.mem"
 mana           = 14
 manao          = 14
 manaoio        = 13
@@ -25,7 +24,7 @@ target     = "https://www.rfc-editor.org/info/rfc9420"
 title      = "The Messaging Layer Security (MLS) Protocol"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! RFC 9420 — The Messaging Layer Security (MLS) Protocol
 
@@ -34,12 +33,12 @@ never invented — in `[reference]` above, so a pin at this address cites the wo
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CxPPP9s-20RDPj7U_2WpO_NTRDh10HRA4bCmjQdEJho
+<<^ code=`&#x0003;`>>ni:///sha-256;4wgkHWLNalAh36udxvuSTkjTxM4ii1MNTmINdU31yx0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

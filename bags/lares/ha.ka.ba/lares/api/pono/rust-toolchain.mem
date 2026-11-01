@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/rust-toolchain">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/rust-toolchain`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/rust-toolchain.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -21,7 +20,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/rust-toolchain"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Rust Toolchain ~ so the house can prove a fix rather than await it
 
@@ -31,7 +30,7 @@ The toolchain therefore serves as more than a convenience. It marks ''the differ
 
 <<~/ahu>>
 
-<<~ ahu #/what-the-forks-pin>>
+<<~ ahu slot=`#/what-the-forks-pin`>>
 
 !! What each fork pins ~ measured, not assumed
 
@@ -46,7 +45,7 @@ The toolchain therefore serves as more than a convenience. It marks ''the differ
 
 <<~/ahu>>
 
-<<~ ahu #/the-emitter>>
+<<~ ahu slot=`#/the-emitter`>>
 
 !! The emitter ~ wasm-pack, three targets, one slim step
 
@@ -67,7 +66,7 @@ node build_slim.js
 
 <<~/ahu>>
 
-<<~ ahu #/two-paths>>
+<<~ ahu slot=`#/two-paths`>>
 
 !! Two paths, and they serve different purposes
 
@@ -78,7 +77,7 @@ node build_slim.js
 
 <<~/ahu>>
 
-<<~ ahu #/the-divergence-law>>
+<<~ ahu slot=`#/the-divergence-law`>>
 
 !! The law ~ a locally-built wasm declares a FLAG-DAY
 
@@ -94,7 +93,7 @@ So, MUST:
 
 <<~/ahu>>
 
-<<~ ahu #/the-order>>
+<<~ ahu slot=`#/the-order`>>
 
 !! The order
 
@@ -108,7 +107,7 @@ So, MUST:
 
 <<~/ahu>>
 
-<<~ ahu #/open-loops>>
+<<~ ahu slot=`#/open-loops`>>
 
 !! Open loops ~ deferred, not dropped
 
@@ -133,9 +132,9 @@ So, MUST:
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/two-integrities">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/two-integrities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UG1Wuwfl9jhOx3_loGJ7ZCMpAxagyCPTjJY8k_wS88U
+<<^ code=`&#x0003;`>>ni:///sha-256;szsUAUqzTobN0z1aLIWKwu7B6rUnWT4NFtqI_3uNSMg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

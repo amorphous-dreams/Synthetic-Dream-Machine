@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/failure-states/not-walking-before-minting">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/failure-states/not-walking-before-minting`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/failure-states/not-walking-before-minting.mem"
 mana      = 14
 manao     = 15
 manaoio   = 13
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/not-walking-before-minting"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Not Walking Before Minting
 
@@ -33,7 +32,7 @@ The node reasons a finding out from context — sometimes across several researc
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ detect the moment a finding feels NEW — that feeling carries no evidence either way.
 ⏿ orient by ''walking the graph one hop'' from the nearest meme: read its edges, its residues, its history-bag neighbours.
@@ -43,7 +42,7 @@ The node reasons a finding out from context — sometimes across several researc
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 ''Walk the edges before minting.''
 
@@ -57,7 +56,7 @@ The node MUST record a rediscovery when it happens, with the credit stated: //th
 
 <<~/ahu>>
 
-<<~ ahu #/diagnostic>>
+<<~ ahu slot=`#/diagnostic`>>
 
 If a finding written as new already sits in a meme one hop from where the node was working, Not Walking Before Minting occurred.
 If the walk ran and returned nothing, the mint stands earned.
@@ -65,12 +64,12 @@ If the graph's version reads WORSE than the derivation, that reads as a genuine 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme-evolution-kupono">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme-evolution-kupono`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NsoI4zq49DpuiJB6RuSwylsjPL_xJqtbi8uFVn0Roa0
+<<^ code=`&#x0003;`>>ni:///sha-256;2uoZUHnnpL_zEPiwCf2rU5RN8dWB305TH1WFH-md6C0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

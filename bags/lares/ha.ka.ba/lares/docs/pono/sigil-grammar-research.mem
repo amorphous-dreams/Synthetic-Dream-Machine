@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/sigil-grammar-research">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/sigil-grammar-research`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/sigil-grammar-research.mem"
 l-space   = "stable"
 mana      = 17
 manao     = 16
@@ -16,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/sigil-grammar-research"
 ```
 
-<<~ ahu #/purpose>>
+<<~ ahu slot=`#/purpose`>>
 
 ! Hawaiian Dream-Code Sigil Grammar — Research Document
 
@@ -35,7 +34,7 @@ explicit avoidance of direct natural-language overwrite.
 
 <<~/ahu>>
 
-<<~ ahu #/findings>>
+<<~ ahu slot=`#/findings`>>
 
 !! Findings (2026-04-27)
 
@@ -72,7 +71,7 @@ Loulou (`loulou`) was sourced from the cultural team directly and is treated as 
 
 <<~/ahu>>
 
-<<~ ahu #/recommended-sigil-grammar>>
+<<~ ahu slot=`#/recommended-sigil-grammar`>>
 
 !! Recommended Sigil Grammar
 
@@ -102,7 +101,7 @@ indentation-only or implicit-end syntax.
 !!! Conditional grammar `[C]` / `[SC]`
 
 ```text
-<<~ wai CONDITION>>          [C] conditional source / if-branch
+<<~ wai filter=`CONDITION`>>          [C] conditional source / if-branch
   BODY
 <<~ mukuwai>>                [C] alternate outflow / else-branch
   FALLBACK BODY
@@ -112,9 +111,9 @@ indentation-only or implicit-end syntax.
 With chained branch-channel `[SC]`:
 
 ```text
-<<~ wai CONDITION>>
+<<~ wai filter=`CONDITION`>>
   BODY A
-<<~ kahawai CONDITION>>      [C] branch-channel / else-if
+<<~ kahawai filter=`CONDITION`>>      [C] branch-channel / else-if
   BODY B
 <<~ mukuwai>>
   FALLBACK BODY
@@ -156,7 +155,7 @@ suppression. General imperative looping, switch/case, and try-catch remain defer
 
 <<~/ahu>>
 
-<<~ ahu #/precedent-alignment>>
+<<~ ahu slot=`#/precedent-alignment`>>
 
 !! Precedent Alignment
 
@@ -222,14 +221,14 @@ Design implication: grammar edits follow the implementation checklist below.
 
 <<~/ahu>>
 
-<<~ ahu #/syntax-examples>>
+<<~ ahu slot=`#/syntax-examples`>>
 
 !! Syntax Examples
 
 !!! Basic conditional
 
 ```text
-<<~ wai [tag[ready]]>>
+<<~ wai filter=`[tag[ready]]`>>
 Ready text flows here.
 <<~ mukuwai>>
 Fallback text.
@@ -239,9 +238,9 @@ Fallback text.
 !!! Chained conditional
 
 ```text
-<<~ wai [tag[open-question]]>>
+<<~ wai filter=`[tag[open-question]]`>>
 This meme still flows unresolved.
-<<~ kahawai [tag[ready-for-canon]]>>
+<<~ kahawai filter=`[tag[ready-for-canon]]`>>
 This meme can be brought to Council.
 <<~ mukuwai>>
 This meme rests as ordinary text.
@@ -251,13 +250,13 @@ This meme rests as ordinary text.
 !!! Inline command
 
 ```text
-<<~ kahea "lar:///ha.ka.ba/lares/mu">>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/mu`>>
 ```
 
 !!! Arrowed resolution request
 
 ```text
-<<~ kahea source -> ?>>
+<<~ kahea from=`source` to=`?`>>
 ```
 
 !!! Chained command composition
@@ -272,7 +271,7 @@ Sugar forms do not lock out downstream command grammar.
 !!! Block worksite
 
 ```text
-<<~ ahu #/fragment-id>>
+<<~ ahu slot=`#/fragment-id`>>
 Body text, local claims, citations, or child sigils.
 
 <<~/ahu>>
@@ -281,18 +280,18 @@ Body text, local claims, citations, or child sigils.
 !!! Block-vs-inline rendering declaration
 
 ```text
-<<~ wehe my-procedure (param1 param2) shape=block>>
+<<~ wehe name=`my-procedure` params=`param1 param2` shape=`block`>>
 Procedure body.
 <<~/wehe>>
 
-<<~ helu my-function (input) shape=inline>>
+<<~ helu name=`my-function` params=`input` shape=`inline`>>
 Function expression.
 <<~/helu>>
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/parser-implementation-notes>>
+<<~ ahu slot=`#/parser-implementation-notes`>>
 
 !! Parser / Agent Implementation Notes
 
@@ -347,7 +346,7 @@ When editing grammar meme or parser:
 
 <<~/ahu>>
 
-<<~ ahu #/uncertainty-list>>
+<<~ ahu slot=`#/uncertainty-list`>>
 
 !! Uncertainty List
 
@@ -386,7 +385,7 @@ When editing grammar meme or parser:
 
 <<~/ahu>>
 
-<<~ ahu #/source-notes>>
+<<~ ahu slot=`#/source-notes`>>
 
 !! Source Notes
 
@@ -406,15 +405,15 @@ When editing grammar meme or parser:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;P6pMDq_wXXNZuPgHhKmL63IYUhZBZZZYgdc6cV0QsRA
+<<^ code=`&#x0003;`>>ni:///sha-256;vB9eeBkdKZQ1I0c4wUCaaJhfucnunVPmo3YF6aqZ_i0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -27,7 +27,7 @@ BODY='```toml meta
 '"$META"'
 ```'
 BCC="ni:///sha-256;$(printf '%s' "$BODY" | sha256sum | cut -d' ' -f1)"
-printf '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>\n\n<<^ code="&#x0001;" from="?" -> to="lar:///x/y/z">>\n<<^ code="&#x0002;">>\n\n%s\n\n<<^ code="&#x0003;">>%s\n\n<<^ code="&#x0004;" -> to="?">>\n' "$BODY" "$BCC" > "$scratch/control.mem"
+printf '<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>\n\n<<^ code=`&#x0001;` from=`?` to=`lar:///x/y/z`>>\n<<^ code=`&#x0002;`>>\n\n%s\n\n<<^ code=`&#x0003;`>>%s\n\n<<^ code=`&#x0004;` to=`?`>>\n' "$BODY" "$BCC" > "$scratch/control.mem"
 git -C "$scratch" add -A
 
 # CONTROL: a carrier declaring bare, at the one address, passes.
@@ -36,9 +36,22 @@ if ! REPO="$scratch" node tools/doctype.mjs >/dev/null 2>&1; then
 fi
 
 # PROVOCATION: the same address hidden in a comment, in a file of another extension, fails.
-printf '<!-- <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">> -->\n\n# notes\n' > "$scratch/notes.md"
+printf '<!-- <<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>> -->\n\n# notes\n' > "$scratch/notes.md"
 git -C "$scratch" add -A
 if REPO="$scratch" node tools/doctype.mjs >/dev/null 2>&1; then
   echo "[doctype-witness] a declaration hidden in a comment passed the gate — it declares to nobody"; exit 1
 fi
-echo "[doctype-witness] a hidden declaration fails whatever the file's extension, and the control passes"
+
+# PROVOCATION: a straggler still on the retired DOCTYPE spelling. The carrier finder reads only the
+# ticked form, so the straggler stops declaring and every corpus law that walks the carrier list skips
+# it — a silent zero. The tracked-tree scan must name it.
+git -C "$scratch" rm -qf notes.md
+printf '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>\n\n# a straggler\n' > "$scratch/straggler.mem"
+git -C "$scratch" add -A
+if out="$(REPO="$scratch" node tools/doctype.mjs 2>&1)"; then
+  echo "[doctype-witness] a straggler on the retired DOCTYPE passed the gate — it left the corpus unseen"; exit 1
+fi
+if ! grep -q "straggler.mem" <<<"$out"; then
+  echo "[doctype-witness] the gate failed the straggler without naming it"; exit 1
+fi
+echo "[doctype-witness] a hidden declaration and a retired-DOCTYPE straggler each fail by name, and the control passes"

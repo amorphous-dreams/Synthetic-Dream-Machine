@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/tiddler-record">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/tiddler-record`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/tiddler-record.mem"
 l-space       = "stable"
 mana          = 18
 manao         = 18
@@ -20,7 +19,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/tiddler-record"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Tiddler Record — Canonical Schema Law
 
@@ -29,7 +28,7 @@ Carrier text functions as a projection artifact — not as an Automerge storage 
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law
 
@@ -65,7 +64,7 @@ Files on disk that use carrier format (`.md` files in `lares/`, `ftls/`, `elynci
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -93,13 +92,13 @@ ahu-slot-children     = "independent records — not embedded in parent record"
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/schema/projection-codec">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/schema/projection-codec`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aul52Nql6GQnZVL4nKMQIXESe7LDOvASLwax54KvbHE
+<<^ code=`&#x0003;`>>ni:///sha-256;c90nRTE2nvt8g2lBXfTX1WADNpxrmsdhZxuPwanAgKQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

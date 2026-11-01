@@ -1,18 +1,17 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/lar-telemetry">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/api/lar-telemetry`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/lar-telemetry.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 18
 manao     = 18
 manaoio   = 17
 namespace = "&#x0950; &#x0901;"
-role      = "lar-telemetry — the process that reads a turn's instrument sigils (the gauges) into gradient-valued readings and projects lar_* onto the mempalace drawer: the built `lar-telemetry` verb sweeps the drawers the `lar_hv` gate marks, and the hold-then-flush-on-the-wave leg stands as unbuilt design; the chat sigils as SharktoothSigil instruments; gradient readings never verdicts; verbatim-always / telemetry-eventual; @daemon owns it all"
+role      = "lar-telemetry — the process that reads a turn's instrument sigils (the gauges) into gradient-valued readings and projects lar_* onto the mempalace drawer: the built `lar-telemetry` verb sweeps the drawers the `lar_hv` gate marks, and the hold-then-flush-on-the-wave leg stands as unbuilt design; the chat sigils as SharktoothSigil instruments; gradient readings never verdicts; verbatim-always / telemetry-eventual; daemon-plane owns it all"
 tags      = ["api/pono/meme", "api/lararium"]
 title     = "lar:///ha.ka.ba/lararium/api/lar-telemetry"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -20,18 +19,18 @@ uri-path  = "ha.ka.ba/lararium/api/lar-telemetry"
 written   = "2026-06-24"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/lararium-memory#/capture-before-wire">>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory#/capture-before-wire`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! lar-telemetry ~ the turn reports its instruments
 
 ''A turn carries instruments; lar-telemetry reads them.'' The HUD sigils gauge
 the turn — `hud` the aperture/loop dials, `confidence` the certainty vow, `ward`
 the L-Prime drift-register, `oracle` the entropy meter, `lares` the bearing. The
-@daemon TiddlyWiki engine reads those instruments into ''gradient-valued''
+daemon-plane TiddlyWiki engine reads those instruments into ''gradient-valued''
 ''readings'' and projects them across the shore as `lar_*` onto the mempalace drawer.
 The design below holds them for the next wave; that hold stands unbuilt
 (#/the-telemetry-flow).
@@ -49,14 +48,14 @@ four-spirit grounding pass over the live parser and the TW5 framework).
 the mine. A producer reads the instruments AND the verbatim in ONE forward pass — a
 born-annotated record enqueued to the unified capture-nalu and flushed on the local tick
 through the RFC-002 source-adapter; mempalace FILES, never mines. And the writer is a
-SEPARATE LOCAL ''non-federated'' worker-VM, NOT the federated @daemon — work-memory is a
-local island; @daemon's part here sits on the federated mesh plane. The `lar_hv` stamp gates the
+SEPARATE LOCAL ''non-federated'' worker-VM, NOT the federated daemon-plane — work-memory is a
+local island; daemon-plane's part here sits on the federated mesh plane. The `lar_hv` stamp gates the
 sweep: a drawer already current skips, so a re-run annotates each drawer once. Depth:
 lar:///ha.ka.ba/lararium/api/capture-annotation-model#/forward-facing-nalu.
 
 <<~/ahu>>
 
-<<~ ahu #/one-instrument-reader>>
+<<~ ahu slot=`#/one-instrument-reader`>>
 
 !! One Reader ~ the regex retires into the engine
 
@@ -68,21 +67,21 @@ Two readers parse the exchange today; one survives.
   grammar runs ''self-hosted'': a tiddler tagged the `SharktoothSigil` grammar tag
   //teaches the parser a new word// (`grammar-cache` reads its `lar-*` fields into a
   `SigilRule`). Adding an instrument adds a tiddler, never code.
-* ''The regex harvester'' — `turn-harvest` reads the whole gradient on the `0..20`
-  band, island-grammar, never dropping source. It earned the gradient discipline;
-  it also ''duplicates the engine's grammar in regex'' — the second reader the
-  `ONE-parser` law forbids.
+* ''No regex reader.'' The regex harvester earned the gradient discipline (the whole
+  gradient on the `0..20` band, island-grammar, never dropping source) and duplicated
+  the engine's grammar in regex — the second reader the `ONE-parser` law forbids. It
+  burned whole (lar:///ha.ka.ba/lararium/api/ingest-canon#/the-harvester-burn).
 
-<<~moves second-reader -> engine-grammar on/the-@daemon-VM if/it-can-read-in-the-engine do/retire-the-regex>>
+<<~moves name=`second-reader` params=`engine-grammar on/the-@daemon-VM if/it-can-read-in-the-engine do/retire-the-regex`>>
 
 ''The ruling: if it CAN happen in the wiki''
-''engine, it DOES.'' `turn-harvest`'s regex retires into the engine grammar. One
-grammar SOURCE (the instrument `.tids`), one runtime (the @daemon VM).
+''engine, it DOES.'' No regex reader stands beside the engine grammar. One
+grammar SOURCE (the instrument `.tids`), one runtime (the daemon-plane VM).
 
 !!! Leaf and block
 
 The `lar-sigil` wikirule carries `types {block, inline}`. A ''block'' sigil holds
-a `closePattern` and captures a body (`<<~ ahu #/slot>>…<<~/ahu>>`); a ''leaf''
+a `closePattern` and captures a body (``<<~ ahu slot=`#/slot`>>…<<~/ahu>>``); a ''leaf''
 instrument (the chat sigils — `<<~ oracle>>`, `<<~ stance>>`) carries its reading inline
 and emits no children. A compound `<<~ WORD ARGS>>` resolves to a `macrocall` on
 the `~` dispatcher (`name` + `p1`); the dispatcher routes `name` to the
@@ -90,7 +89,7 @@ instrument's reading procedure.
 
 <<~/ahu>>
 
-<<~ ahu #/the-instruments>>
+<<~ ahu slot=`#/the-instruments`>>
 
 !! The Instruments ~ each a SharktoothSigil .tid
 
@@ -99,13 +98,13 @@ offices: the ''word'' (teaches the parser), the ''field-read'' (the structured
 gradient reading), the ''gradient render'' (a `\procedure`, band-dressed). The
 gauge panel the engine learns to read:
 
-<<~ has Gauge Lares "form/leaf reads/aimRoot=w1.w2.w3 · yieldRoot · holding? ~ the bearing vector">>
-<<~ has Gauge Hud "form/leaf reads/aperture=0..20 + band{pulse·beat·measure·arc·theme} · oodaCount · phase{✶⏿◇▶↺} · suspendReason ~ the gauges">>
-<<~ has Gauge Ward "form/leaf reads/office{* ! ? _ 0} · swordLed? · breaches:N · quoted:N · lifted? ~ the L-Prime drift register, NOT a verdict">>
-<<~ has Gauge Confidence "form/leaf reads/register · value=0..20 · band{provisional..canon} ~ the certainty dial">>
-<<~ has Gauge Oracle "form/leaf reads/driftSpend=↯N · die · count · tailLen · crossCheckOk? ~ the entropy meter">>
-<<~ has Gauge Syad-Mu "form/leaf reads/stances[] / tools[] ~ the standpoint + tool lenses">>
-<<~ has Gauge Voice "form/prose-header reads/voices[]{name · role · mask} ~ the Thirteen, anchored in the stream not a <<~>>" >>
+<<~ has entity=`Gauge` name=`Lares` params=`form/leaf reads/aimRoot=w1.w2.w3 · yieldRoot · holding? ~ the bearing vector`>>
+<<~ has entity=`Gauge` name=`Hud` params=`form/leaf reads/aperture=0..20 + band{pulse·beat·measure·arc·theme} · oodaCount · phase{✶⏿◇▶↺} · suspendReason ~ the gauges`>>
+<<~ has entity=`Gauge` name=`Ward` params=`form/leaf reads/office{* ! ? _ 0} · swordLed? · breaches:N · quoted:N · lifted? ~ the L-Prime drift register, NOT a verdict`>>
+<<~ has entity=`Gauge` name=`Confidence` params=`form/leaf reads/register · value=0..20 · band{provisional..canon} ~ the certainty dial`>>
+<<~ has entity=`Gauge` name=`Oracle` params=`form/leaf reads/driftSpend=↯N · die · count · tailLen · crossCheckOk? ~ the entropy meter`>>
+<<~ has entity=`Gauge` name=`Syad-Mu` params=`form/leaf reads/stances[] / tools[] ~ the standpoint + tool lenses`>>
+<<~ has entity=`Gauge` name=`Voice` params=```form/prose-header reads/voices[]{name · role · mask} ~ the Thirteen, anchored in the stream, never a `<<~` sigil```>>
 
 The grammar entry (`sigil-X.tid`: `lar-kind`, the inline pattern) teaches the word;
 the reading (`\procedure`, tagged Global, routed by the `~` dispatcher) reads `p1`
@@ -114,7 +113,7 @@ matching pattern, not a sigil island.
 
 <<~/ahu>>
 
-<<~ ahu #/readings-never-verdicts>>
+<<~ ahu slot=`#/readings-never-verdicts`>>
 
 !! Readings, Never Verdicts ~ the render law
 
@@ -122,7 +121,7 @@ The render carries `register-dressed-never-gated` into render code: ''every''
 ''instrument renders its reading on its `0..20` band, dressed by register — never a''
 ''✓/✗.'' Telemetry reports values; it does not judge.
 
-<<~ scale reading "provisional@1..4 ~ cool, the play register -> synthesis@9..12 ~ working -> canon@17..20 ~ warm, weight-bearing">>
+<<~ scale name=`reading` ranks=`provisional@1..4 ~ cool, the play register -> synthesis@9..12 ~ working -> canon@17..20 ~ warm, weight-bearing`>>
 
 * `confidence` renders a ''band-colored dial'' at its value, not a checkmark.
 * `ward` renders its ''breach count as drift-marks on a gradient'' — a Sword close
@@ -137,27 +136,27 @@ never gating whether it surfaces.
 
 <<~/ahu>>
 
-<<~ ahu #/the-telemetry-flow>>
+<<~ ahu slot=`#/the-telemetry-flow`>>
 
 !! The Telemetry Flow ~ same hook, hold, flush on nalu
 
 lar-telemetry fires at the ''same hook timing as mempalace'' (Stop / SessionEnd /
 PreCompact). The hook adds a leg beside the verbatim mine: it hands the turn to
-@daemon through the verb spine (the `lar-telemetry` verb, riding the
+daemon-plane through the verb spine (the `lar-telemetry` verb, riding the
 summons/outcome rail slice-1 `recall` proved).
 
 ''What stands in code.'' The `lar-telemetry` verb (`packages/lararium-tw5/src/verb-caps.ts`,
 `telemetryVerbCap`) calls the telemetry writeback provider, and
-`packages/lararium-sensorium/src/telemetry-writeback.ts` sweeps the drawers the `lar_hv` gate marks,
-reads each turn's gradient (`harvestTurnGradient`) and projects the `lar_*` patch onto the drawer.
+`packages/lararium-sensorium/src/telemetry-writeback.ts` stands as a placeholder that writes nothing
+(operator ruling 2026-10-31, Train Q) until the sensorium arc returns the projection.
 No caller holds a reading on a queue: the three steps below state UNBUILT design.
 
-<<~flows turn -> @daemon-reads-the-instruments -> hold(enqueueNalu) -> next-nalu-flush -> Cmd-projects-lar_*-across-the-shore -> mempalace-drawer>>
+<<~flows name=`turn` path=`@daemon-reads-the-instruments -> hold(enqueueNalu) -> next-nalu-flush -> Cmd-projects-lar_*-across-the-shore -> mempalace-drawer`>>
 
-# ''Read'' — the @daemon VM wikifies the turn through the instrument `\procedures`;
+# ''Read'' — the daemon-plane VM wikifies the turn through the instrument `\procedures`;
    `$wikify output="parsetree"` (or `wiki.renderTiddler("text/html")` + read the
    `data-*` attributes) yields the structured gradient readings.
-# ''Hold'' — @daemon ''`enqueueNalu`''s the readings: they sit on the shared queue,
+# ''Hold'' — daemon-plane ''`enqueueNalu`''s the readings: they sit on the shared queue,
    scheduled, undelivered. //The swell builds.// (`nalu` = the changeset wave;
    `lar:///ha.ka.ba/lares/api/pono/nalu`.)
 # ''Flush on the next nalu'' — the next wave delivers the readings;
@@ -170,26 +169,26 @@ annotation finds its drawer present. //The nalu is the pulse that makes "eventua
 //concrete// — "hold" ≡ `enqueueNalu`, "flush" ≡ the wave.
 
 ''The nalu delivers in-wiki; the drawer lives across the shore.'' The wave makes
-the readings consistent inside @daemon's wiki; the cross-shore drawer write rides a
+the readings consistent inside daemon-plane's wiki; the cross-shore drawer write rides a
 `Cmd` effect the wave fires — distinct engines, one pulse. ''Never as tids''
 (operator ruling): the readings stay transient computation; the drawer holds the
 only durable home. A queryable `<<~ ui>>` filter layer reads the drawers later.
 
 <<~/ahu>>
 
-<<~ ahu #/verbatim-then-telemetry>>
+<<~ ahu slot=`#/verbatim-then-telemetry`>>
 
 !! Verbatim Always, Telemetry Eventual ~ the robust shore
 
-"One runtime in @daemon" pressing against "capture must never lose a turn" resolves
+"One runtime in daemon-plane" pressing against "capture must never lose a turn" resolves
 on one shore:
 
-<<~ scale capture "verbatim ~ VM-free · the drawer body · ALWAYS lands -> telemetry ~ @daemon-owned · the lar_* readings · EVENTUAL">>
+<<~ scale name=`capture` ranks=`verbatim ~ VM-free · the drawer body · ALWAYS lands -> telemetry ~ daemon-plane-owned · the lar_* readings · EVENTUAL`>>
 
 * ''Verbatim capture'' (the mine leg) stays VM-free and lands every turn — the
-  journey is never lost, @daemon up or down.
+  journey is never lost, daemon-plane up or down.
 * ''lar-telemetry'' runs ''@daemon-owned and eventual'' — held, flushed on the wave;
-  if @daemon sleeps, the readings wait for its next breath and the `lar_hv` sweep
+  if daemon-plane sleeps, the readings wait for its next breath and the `lar_hv` sweep
   re-enriches stale drawers (the backstop).
 * ''Flush resilience'' — a flush that finds the drawer not-yet-present (the mine
   leg still running) ''re-holds to a later nalu''; the sweep is the final net. No
@@ -197,32 +196,32 @@ on one shore:
 
 <<~/ahu>>
 
-<<~ ahu #/ownership>>
+<<~ ahu slot=`#/ownership`>>
 
-!! @daemon Owns It All
+!! daemon-plane Owns It All
 
 lar-telemetry runs in the ''@daemon VM'' — the always-resident admin lane, the
-operator's authority home — never in a hot content wiki island. @daemon owns
+operator's authority home — never in a hot content wiki island. daemon-plane owns
 read · hold · flush · project, behind the causal-island shore; mempalace stays a
 vendored web2 sibling reached through the seat, never a citizen of the stack
 (web3-only law). One grammar, one runtime, one owner, one wave.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-memory">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/nalu-engine">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/mempalace-integration">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nihomano-sigils">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/parser">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/lararium-canonical-model">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/living-grammar">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/nalu-engine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mempalace-integration`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nihomano-sigils`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/parser`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/lararium-canonical-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/living-grammar-palace`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/living-grammar`>>
 
 ''Tie ~ the markers feed the form-palace.'' The classifier channel this process reads (the `<<~ …>>`
 instrument sigils — the red that steers) is exactly the marker-emission Route A the living-grammar
@@ -231,6 +230,6 @@ readings AND the form-capture both drain the one emitted-marker stream, no disco
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3GtEux2EspWpuyY-jvnkX0iUNNCqEKmQHMevGVWuDhY
+<<^ code=`&#x0003;`>>ni:///sha-256;E6ALJF1S2ZD2XMoqSO-UCqQlpfnbAlmFXe_VmCQ_VsQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

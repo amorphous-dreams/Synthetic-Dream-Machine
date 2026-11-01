@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/test-recut-road">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/test-recut-road`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/test-recut-road.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -22,13 +21,13 @@ uri-path          = "ha.ka.ba/lares/docs/pono/test-recut-road"
 written           = "2026-10-31"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The test re-cut road ~ test-first refactoring and the cap-stack lift
 
-''What this carrier holds: train T's kit.'' The road holds the train's rows, rulings and order (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-order">>); this kit holds what they rest on. The build order that makes the house's code testable at the grain its claims live at, ahead of the founding: a shared scratch fixture, events where tests poll, pure readers lifted out of the boot composer, instance-owned doors, the composer cut along capability lines into stages both vessel kinds share, and a mutation runner that scores what a test proves. Each row names what it builds, its red-first shape, the files it touches, what it waits on, and the house law it touches. Landed work reads in git and the CHANGELOG; a complete row moves to #/o-takiage at its land, and this carrier keeps only what stays owed.
+''What this carrier holds: train T's kit.'' The road holds the train's rows, rulings and order (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-order`>>); this kit holds what they rest on. The build order that makes the house's code testable at the grain its claims live at, ahead of the founding: a shared scratch fixture, events where tests poll, pure readers lifted out of the boot composer, instance-owned doors, the composer cut along capability lines into stages both vessel kinds share, and a mutation runner that scores what a test proves. Each row names what it builds, its red-first shape, the files it touches, what it waits on, and the house law it touches. Landed work reads in git and the CHANGELOG; a complete row moves to #/o-takiage at its land, and this carrier keeps only what stays owed.
 
 ''How it rides the house roadmap.'' The train runs ''beside'' the six paths of `stable-founding-road#/the-road`, never stalling them. The compose hunks of `open-node-vessel.ts` and `open-browser-vessel.ts` keep their named owners (`stable-founding-road` owner law): a row here reaches them only through a module boundary, or through the one named single-owner step `T12` holds.
 
@@ -38,15 +37,15 @@ written           = "2026-10-31"
 
 <<~/ahu>>
 
-<<~ ahu #/rulings>>
+<<~ ahu slot=`#/rulings`>>
 
 !! The rulings
 
-Train T's rulings stand in the road: <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">> (2026-10-31). This kit keeps the floor that settled them (#/the-floor) and the reads behind them (#/the-reads).
+Train T's rulings stand in the road: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>> (2026-10-31). This kit keeps the floor that settled them (#/the-floor) and the reads behind them (#/the-reads).
 
 <<~/ahu>>
 
-<<~ ahu #/as-built>>
+<<~ ahu slot=`#/as-built`>>
 
 !! The ground, measured 2026-10-31
 
@@ -64,7 +63,7 @@ The scout reports behind this table rest outside the memegraph, in the controlle
 
 <<~/ahu>>
 
-<<~ ahu #/the-lift-map>>
+<<~ ahu slot=`#/the-lift-map`>>
 
 !! The god-method's lift map ~ sorted by capability
 
@@ -83,27 +82,27 @@ Six lift targets, each row in #/the-rows naming its own:
 
 <<~/ahu>>
 
-<<~ ahu #/the-rows>>
+<<~ ahu slot=`#/the-rows`>>
 
 !! The rows
 
-Train T's rows stand in the road's own stride: <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/stride-t-recut">>. Each row's evidence and lift target read here, in #/as-built, #/the-lift-map and #/the-reads.
+Train T's rows stand in the road's own stride: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/stride-t-recut`>>. Each row's evidence and lift target read here, in #/as-built, #/the-lift-map and #/the-reads.
 
 <<~/ahu>>
 
-<<~ ahu #/the-floor>>
+<<~ ahu slot=`#/the-floor`>>
 
 !! The floor ~ the forks the reads left, talked out
 
 Operator, 2026-10-31: //"In this house, we 'talk story' to decide, we don't hold an invisible slot at the end of the turn for the operator ... Only surface things that survive this with uncertainty."// The house convened on the eight forks the reads named, two rounds each, against canon and a Gaia and an Elyncia story; every fork settled, and none survived to the operator.
 
 ```
-<<~ talk-story #test-recut-forks ground:"eight forks the cut reads left owed on this road" >>
+<<~ talk-story slot=`#test-recut-forks` ground=`eight forks the cut reads left owed on this road` >>
 bearings: forks parked as operator asks · each settled in-house against canon · the rows carry the settlement
 telling: Council ranks the forks by what inherits shape; Stranger asks of each what capability it rests on;
 Breach-Watch holds the security floor (verification never bends); Liminal checks none closes falsely.
 Round one floated each house lean; round two pressed it with a story and the canon that governs.
-<<~ moolelo held:"each fork below settles in-house; the rows carry it (house, under the operator's delegation, 2026-10-31)" >>
+<<~ moolelo held=`each fork below settles in-house; the rows carry it (house, under the operator's delegation, 2026-10-31)` >>
 T5 daemonAuth: a node-local builder promoted later would stage "a now, b later"; the cut sorts by capability
   and browser vessels hold every cap. Settled: one pure shared builder in mesh, never surface-reachable,
   proven by a sentinel-seed no-leak test.
@@ -132,7 +131,7 @@ T21: burning the one-use claim alone would leave a removed member re-entering on
 
 <<~/ahu>>
 
-<<~ ahu #/the-reads>>
+<<~ ahu slot=`#/the-reads`>>
 
 !! The reads behind the rows
 
@@ -140,7 +139,7 @@ The scouts and readers wrote to the controller's scratch, outside the memegraph,
 
 <<~/ahu>>
 
-<<~ ahu #/laws>>
+<<~ ahu slot=`#/laws`>>
 
 !! The laws each row keeps
 
@@ -154,7 +153,7 @@ The scouts and readers wrote to the controller's scratch, outside the memegraph,
 
 <<~/ahu>>
 
-<<~ ahu #/open>>
+<<~ ahu slot=`#/open`>>
 
 !! What stays open
 
@@ -162,7 +161,7 @@ Train T's open items stand in the road's #/open.
 
 <<~/ahu>>
 
-<<~ ahu #/o-takiage>>
+<<~ ahu slot=`#/o-takiage`>>
 
 !! O Takiage
 
@@ -170,18 +169,18 @@ Train T's complete rows move to the road's own #/o-takiage at each land. This ki
 
 <<~/ahu>>
 
-<<~ ahu #/loulou>>
+<<~ ahu slot=`#/loulou`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-attractor">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff#/the-lane-law">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/cli-test-laws">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/otakiage">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures#/red-first">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-attractor`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff#/the-lane-law`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/cli-test-laws`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures#/red-first`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KTSRGZcfHs-f8-N2wP8RN5IPBjkH6B1ZAVzECYnjHzY
+<<^ code=`&#x0003;`>>ni:///sha-256;rGiIPY1YMXzybe6A8R1Fk9yJ20KdaToNsmYdWpKtE8g
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

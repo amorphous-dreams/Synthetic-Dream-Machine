@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/e2e-harness-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/e2e-harness-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/e2e-harness-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -21,7 +20,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/e2e-harness-scout"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Wright ~ a spirit's handoff, held unedited
 
@@ -33,7 +32,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/e2e-harness-scout"
 
 <<~/ahu>>
 
-<<~ ahu #/the-handoff>>
+<<~ ahu slot=`#/the-handoff`>>
 
 !! The handoff, verbatim
 
@@ -158,9 +157,9 @@ Measured through the built deserializer, `noosphere-boot.mem` yields **22**: par
 
 ### RC-H · The framing head took named ends — **1 failure + 1 FALSE GREEN**
 Commit **`5acdf71ca`** (2026-08-29, "the graph names its own ends — 628 carriers take from= and to="). Touched **0** files under `tests/`. The head is now
-`<<^ code="&#x0001;" namespace="…" from="?" -> to="lar:///…">>`.
+`<<^ code=`&#x0001;` namespace=`…` from=`?` to=`lar:///…`>>`.
 
-**Failure:** `load-tw5-filetypes.test.ts:38` writes the retired head `<<^ code="&#x0001;" from="?" -> to="lar:///…">>`. Collided directly against `packages/lararium-tw5/dist/deserializer.js`:
+**Failure:** `load-tw5-filetypes.test.ts:38` writes the retired head `<<^ code=`&#x0001;` from=`?` to=`lar:///…`>>`. Collided directly against `packages/lararium-tw5/dist/deserializer.js`:
 
 ```
 OLD head → 1 record titled 'fallback-title'                       ← membrane does not read it
@@ -219,8 +218,8 @@ Finally, two housekeeping notes worth the operator's ear: add a named `test:e2e:
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;k7BBeHoNCN1RLXRqz1yW0fop0hb_zVdPK7B9oMmUjpg
+<<^ code=`&#x0003;`>>ni:///sha-256;C8O_wgziZKX0uRDiGazPMioG-4usyeAts9so9SQU_Lk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

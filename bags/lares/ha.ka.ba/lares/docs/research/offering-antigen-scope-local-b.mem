@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b.mem"
 l-space    = "lares"
 mana       = 15
 manao      = 15
@@ -18,9 +17,9 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/scope-contract>>
+<<~ ahu slot=`#/scope-contract`>>
 
 ! Offering Antigen scope ~ the board is a rendezvous; the act carries the island
 
@@ -198,17 +197,17 @@ those movements silently changes which Nexus the record speaks for.
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-nexus-keying-spine">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/offering">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/quorum-entry">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-nexus-keying-spine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/offering`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/quorum-entry`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/attestation-plane`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5xDA2oLGF7UQZyOVMQoHacEvdsSK76JQtVww3iOJc-0
+<<^ code=`&#x0003;`>>ni:///sha-256;AX-LivrCTSdtwMoPgCIUbjUXLVCPRts23xPmcwoKY5U
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

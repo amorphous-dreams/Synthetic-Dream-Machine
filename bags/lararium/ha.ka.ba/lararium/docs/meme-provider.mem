@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/meme-provider">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/meme-provider`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/docs/meme-provider.mem"
 l-space     = "lararium"
 mana        = 15
 role        = "invariant law: MemeProvider — the coalescing fan-out between an Automerge DocHandle and typed projections. Names why coalescing exists at all, the three scales and the threshold between them, the storm gate that keeps a flood from starving re-projection, and the per-island sync-complete ordering. Isomorphic, zero Automerge import."
@@ -15,7 +14,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/docs/meme-provider"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! MemeProvider ~ one fan-out, three scales
 
@@ -28,7 +27,7 @@ rather than the replay.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! What this file binds
 
@@ -63,7 +62,7 @@ reports and the fan-out continues to the rest.
 
 <<~/ahu>>
 
-<<~ ahu #/the-source>>
+<<~ ahu slot=`#/the-source`>>
 
 !! Where the bytes live
 
@@ -78,20 +77,20 @@ the reference, and the law below it stays the part a reader needs anyway.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/meme-provider.ts" family="code" role="has">>
-<<~ pranala #gate from="?" -> to="packages/lararium-mesh/src/projection-nalu.ts" family="code" role="has">>
-<<~ pranala #contract from="?" -> to="packages/lararium-mesh/src/tiddler-store.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-mesh/src/meme-provider.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#gate` from=`?` to=`packages/lararium-mesh/src/projection-nalu.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#contract` from=`?` to=`packages/lararium-mesh/src/tiddler-store.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/tiddler-store">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu#/enaction">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/nalu-engine#/gate-families-shore">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/tiddler-store`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/projection-nalu#/enaction`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/nalu-engine#/gate-families-shore`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Jmlag_IB2rCe9Zf7HEytZydV5zx56C-o2N4f2BMzRe4
+<<^ code=`&#x0003;`>>ni:///sha-256;nKZiWKXuSthmmdENBJnRNmTOwkKrMCOQC2V-uhFGDlI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

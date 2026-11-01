@@ -1,29 +1,28 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/mempalace-integration">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/api/mempalace-integration`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/mempalace-integration.mem"
 hydrate   = true
 l-space   = "stable"
 mana      = 17
 manao     = 15
 manaoio   = 14
 namespace = "&#x0950; &#x0901;"
-role      = "the pono model for mempalace as the lararium's memory-library — tensegrity, the @daemon shore, the lar_ net, the surfaces, the boundary"
+role      = "the pono model for mempalace as the lararium's memory-library — tensegrity, the daemon-plane shore, the lar_ net, the surfaces, the boundary"
 tags      = ["api/pono/meme", "api/lararium"]
 title     = "lar:///ha.ka.ba/lararium/api/mempalace-integration"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/mempalace-integration"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lararium/api/lararium-canonical-model">>
+<<~ aka uri=`lar:///ha.ka.ba/lararium/api/lararium-canonical-model`>>
 
 
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! mempalace ~ the guest comparator and the library shore
 
@@ -33,11 +32,11 @@ uri-path  = "ha.ka.ba/lararium/api/mempalace-integration"
 
 ''The upstream base.'' The pinned submodule names upstream `develop` at `d9bf01e` on local branch `dev/sdm-upstream-base`. The `dev/sdm-integration` merge at `1798186` stands outside the runtime dependency: its extra daemon, NDJSON adapter, lazy embedder, search-hit metadata and test changes carry no implicit authority into this branch. A capability returns only after a fresh contract and a witness against the pinned upstream API. The upstream hook scripts carry no pause check (their patch rests preserved); the Lararium's own hook pause path stays a separate concern.
 
-Three memory registers continue to pull against one another: the verbatim journey in the owned Sensorium, curated `CLAUDE.md` / `MEMORY.md` / `AGENTS.md` conclusions, and the lararium quine's domain canon. Recall may compare them and surface conflict; no register silently overwrites another. The fuller relation stands at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-memory">>.
+Three memory registers continue to pull against one another: the verbatim journey in the owned Sensorium, curated `CLAUDE.md` / `MEMORY.md` / `AGENTS.md` conclusions, and the lararium quine's domain canon. Recall may compare them and surface conflict; no register silently overwrites another. The fuller relation stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>.
 
 <<~/ahu>>
 
-<<~ ahu #/boundary>>
+<<~ ahu slot=`#/boundary`>>
 
 !! One library, two stores, separate authority
 
@@ -49,7 +48,7 @@ The guest comparator remains a separately tended upstream palace at `~/.mempalac
 
 <<~/ahu>>
 
-<<~ ahu #/capability-settlement>>
+<<~ ahu slot=`#/capability-settlement`>>
 
 !! Re-earn capabilities against the upstream pin
 
@@ -64,7 +63,7 @@ The redesign crosses these gates in order:
 
 <<~/ahu>>
 
-<<~ ahu #/capture>>
+<<~ ahu slot=`#/capture`>>
 
 !! Capture reads native sources, then lands once per source identity
 
@@ -72,21 +71,21 @@ The current memory source caps read Claude and Codex JSONL, Copilot CLI SQLite, 
 
 A chat-harness source envelope retains the declared surface and harness, native session ID, thread/agent ID where supplied, event or format version, execution host, source pointer and source event identity. A book source instead names its work, edition, digital witness, portable library locator and exact byte revision; it does not invent a native chat session ID. `cwd` contributes routing context; it does not stand alone as session identity. The harness's turn and subagent events supply the Beat and causal edges when present. A missing edge stays unknown, never inferred from prose. A related chat, fork, or remote session names a new graph relation, never a duplicate drawer. These are redesign contracts; today's parsers have not yet earned all of them. See the current [Claude hook reference](https://code.claude.com/docs/en/hooks), [Codex hook reference](https://learn.chatgpt.com/docs/hooks), and [Copilot CLI directory reference](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference).
 
-Static corpus Sensoriums use the same composition with a different source and order declaration. The memory rhizome receives its turn Beat and fork/handback edges from the harness; a corpus with no grounded Beat must earn any temporal reading. The design of record, including li/ki limits, stands at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/sensorium-machina">>.
+Static corpus Sensoriums use the same composition with a different source and order declaration. The memory rhizome receives its turn Beat and fork/handback edges from the harness; a corpus with no grounded Beat must earn any temporal reading. The design of record, including li/ki limits, stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina`>>.
 
 <<~/ahu>>
 
-<<~ ahu #/hooks>>
+<<~ ahu slot=`#/hooks`>>
 
 !! Pause the minting, drain the holders
 
 `lares hooks pause` writes `<state>/hooks.paused`; the parent ingest hook checks that marker before starting a job. The upstream hook scripts now match upstream `develop` and carry no Lararium pause check. The marker stops new Lararium hook work, but never proves an existing holder drained or an independently enabled upstream hook stopped. A teardown or comparator re-pave must pause its actual intake, drain and verify holders, act on the named store, then resume only the intake it held. Host hooks and a containerized vessel inhabit different path namespaces; a host marker does not automatically appear under `/state`.
 
-The current `lares mempalace repave` still expects the operator to quiesce holders first. Its preview's quiesce wording must not be read as an enacted drain. The current operator lifecycle and measure-first law stand at <<~ loulou "lar:///ha.ka.ba/lararium/api/sensorium-runbook">>.
+The current `lares mempalace repave` still expects the operator to quiesce holders first. Its preview's quiesce wording must not be read as an enacted drain. The current operator lifecycle and measure-first law stand at <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>.
 
 <<~/ahu>>
 
-<<~ ahu #/container-crossing>>
+<<~ ahu slot=`#/container-crossing`>>
 
 !! The container crossing carries a Python seat and still needs source ingress
 
@@ -96,7 +95,7 @@ The deployment keeps Node-supervised stdio holders. The host collector must copy
 
 <<~/ahu>>
 
-<<~ ahu #/redesign-plan>>
+<<~ ahu slot=`#/redesign-plan`>>
 
 !! The redesign plan ~ source evidence, owned ground, earned readings
 
@@ -168,7 +167,7 @@ These are technical exit witnesses; #/provisional-roadmap gives the alpha execut
 
 <<~/ahu>>
 
-<<~ ahu #/provisional-roadmap>>
+<<~ ahu slot=`#/provisional-roadmap`>>
 
 !! Strangler-fig alpha roadmap ~ one read route at a time
 
@@ -200,7 +199,7 @@ Pull a source slice only with a named host, harness, surface, producer version, 
 
 <<~/ahu>>
 
-<<~ ahu #/grounds>>
+<<~ ahu slot=`#/grounds`>>
 
 !! Prior-art grounds and the limits of their rhyme
 
@@ -208,16 +207,16 @@ CloudEvents [source plus id](https://github.com/cloudevents/spec/blob/v1.0.2/clo
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-memory">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/sensorium-machina">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/sensorium-runbook">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fXeTX1tkM76kdCeu9QmmLVLLVz71Wy1lJI5dKNueK8U
+<<^ code=`&#x0003;`>>ni:///sha-256;Xa-sp-AhpGuexlSCGm50fr-QMyjA6IVEfILuQBEeuq4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

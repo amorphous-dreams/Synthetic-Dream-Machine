@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-port-scout.mem"
 hydrate           = true
 l-space           = "stable"
 mana              = 14
@@ -21,7 +20,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-port-scout"
 written           = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The cold read of D2's ground ~ a spirit's handoff, held unedited
 
@@ -33,12 +32,12 @@ written           = "2026-10-16"
 
 <<~/ahu>>
 
-<<~ ahu #/the-handoff>>
+<<~ ahu slot=`#/the-handoff`>>
 
 !! The handoff, verbatim
 
 ````markdown
-<<~ status "D2 ground read; handback inline because this read-only workspace supplied no -o path">>
+<<~ status text=`D2 ground read; handback inline because this read-only workspace supplied no -o path`>>
 
 ## 1. What stands for D2
 
@@ -88,13 +87,13 @@ I could not write a `-o` file: no output path appeared in the request, and this 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xELlNk5vlkd_m1PNaSlzqsu9lqkuRQ6Baolpri4BV-A
+<<^ code=`&#x0003;`>>ni:///sha-256;GISxDFTPId6wcB4uuOdz7nA_dYbA-7BFkrWMenl7tlo
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

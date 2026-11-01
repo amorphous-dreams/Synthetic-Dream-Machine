@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/filters/stack">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/filters/stack`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/tw5/filters/stack.mem"
 mana       = 14
 module-ref = "lar:///ha.ka.ba/lararium/tw5/filters/stack"
 role       = "filter operator: the has-stack query surface — stack[] emits qualified component URIs; stack:has[X] filters by holding (per-carrier relative-name qualification)"
@@ -16,7 +15,7 @@ uri-path   = "ha.ka.ba/lararium/tw5/filters/stack"
 written    = "2026-06-12"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -26,23 +25,23 @@ written    = "2026-06-12"
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source
 
 Pure core: `qualifyStackTag` / `stackOf` (`packages/lararium-tw5/src/has-stack.ts`); operator shell: `packages/lararium-tw5/src/filters/stack.ts` (packed into the lares plugin).
 
-<<~ pranala #source from="?" -> to="packages/lararium-tw5/src/has-stack.ts" family="code" role="has">>
-<<~ pranala #source-filter from="?" -> to="packages/lararium-tw5/src/filters/stack.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-tw5/src/has-stack.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-filter` from=`?` to=`packages/lararium-tw5/src/filters/stack.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-n_LfH6dhFdPJ20S334vzXd7NzbYRz5YvqQ40UJIJKA
+<<^ code=`&#x0003;`>>ni:///sha-256;rKWcQP39gTryYQbVHfz2jf27w9Xho3m5jOg848Mlsss
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

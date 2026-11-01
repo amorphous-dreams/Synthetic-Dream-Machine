@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/operator-peer">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/operator-peer`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/operator-peer.mem"
 hydrate   = true
 l-space   = "lararium"
 mana      = 19
@@ -27,7 +26,7 @@ This document carries the load. `lar-vessel.md` and `open-vessel.md` carry
 implementation notes. The two-lane topology and ea sovereignty law described here
 sit above any single vessel implementation.
 
-<<~ ahu #/vocabulary>>
+<<~ ahu slot=`#/vocabulary`>>
 
 !! Vocabulary
 
@@ -45,7 +44,7 @@ sit above any single vessel implementation.
 
 <<~/ahu>>
 
-<<~ ahu #/two-lane-law>>
+<<~ ahu slot=`#/two-lane-law`>>
 
 !! Two-Lane Law
 
@@ -78,7 +77,7 @@ handles only resource-local side effects.
 
 <<~/ahu>>
 
-<<~ ahu #/ea-law>>
+<<~ ahu slot=`#/ea-law`>>
 
 !! Ea Law — Vessel Sovereignty
 
@@ -105,7 +104,7 @@ before any doc change applies.
 
 <<~/ahu>>
 
-<<~ ahu #/command-receipt-surface>>
+<<~ ahu slot=`#/command-receipt-surface`>>
 
 !! Command / Receipt Surface
 
@@ -143,7 +142,7 @@ the same core — see #actor-parity.)
 
 <<~/ahu>>
 
-<<~ ahu #/actor-parity>>
+<<~ ahu slot=`#/actor-parity`>>
 
 !! Actor Parity — Human and AI Agent
 
@@ -211,7 +210,7 @@ seed+card; then V3 C (peer transport) and the writable MCP surface compose over 
 
 <<~/ahu>>
 
-<<~ ahu #/vessel-parity>>
+<<~ ahu slot=`#/vessel-parity`>>
 
 !! Vessel Parity
 
@@ -234,26 +233,26 @@ Where the node vessel does more (disk projection, persistent relay, process cont
 that counts as edge adaptation, not authority. The browser vessel breathes with
 identical ea rights. The ring runs on every leaf kind — a face where a listening vessel exists, a single
 user device, and one device of a user-caps-only fleet where no vessel listens
-(<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy">>).
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy`>>).
 A sibling holds standing on either shore: the ring's sibling path admits it to the face's own planes and the
-public boards, never the @daemon and never another face's planes. It stands under the peer id its proven device
+public boards, never the daemon-plane and never another face's planes. It stands under the peer id its proven device
 key derives, and both shores read sibling-ness before any other ring, so a sibling never inherits another
 carrier's verdict.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/open-vessel">>
-<<~ loulou "lar:///ha.ka.ba/lararium/browser/pono-charter">>
-<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mandate-activity-provenance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lar-vessel`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/open-vessel`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/pono-charter`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/keyhive-provider`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mFw6gbuzdr8M-3ayN7jGR2xTAXBw8Jy1nEgDAd3Lueo
+<<^ code=`&#x0003;`>>ni:///sha-256;di3E85m-mnkhvXsZD5oiqa-bK20g-WItnLlFsFVJ2ek
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

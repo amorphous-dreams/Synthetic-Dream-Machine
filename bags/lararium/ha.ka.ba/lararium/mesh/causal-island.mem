@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/causal-island">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/causal-island`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/causal-island.mem"
 hydrate     = true
 l-space     = "lararium"
 mana        = 18
@@ -20,7 +19,7 @@ uri-path    = "ha.ka.ba/lararium/mesh/causal-island"
 
 ! Causal Island — Ontological Law
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 `island-protocol.ts` owns the ontological law that names where one island ends and
 another begins, the per-bag ''ACCESS'' axis (a MODEL mirroring Keyhive's native
@@ -29,7 +28,7 @@ above any vessel implementation; every vessel honors it.
 
 <<~/ahu>>
 
-<<~ ahu #/no-global-now>>
+<<~ ahu slot=`#/no-global-now`>>
 
 !! No Global Now
 
@@ -48,7 +47,7 @@ marks a ''causal island boundary''.
 
 <<~/ahu>>
 
-<<~ ahu #/four-tiers>>
+<<~ ahu slot=`#/four-tiers`>>
 
 !! Four Tiers (inner → outer)
 
@@ -61,7 +60,7 @@ marks a ''causal island boundary''.
 
 <<~/ahu>>
 
-<<~ ahu #/substrate-not-sovereignty>>
+<<~ ahu slot=`#/substrate-not-sovereignty`>>
 
 !! Share Substrate, Not Sovereignty (load-bearing)
 
@@ -103,7 +102,7 @@ islands.
 
 <<~/ahu>>
 
-<<~ ahu #/access-axis>>
+<<~ ahu slot=`#/access-axis`>>
 
 !! ACCESS Axis (Axis 1 of the authority model)
 
@@ -115,7 +114,7 @@ those two, and no call site in this tree narrows an action by verb.
 ''Naming the ladder here as a checked tier would promise a reader a gate they could then fail to find''
 — and this room did exactly that, describing a typed four-level constant that exists in no source file.
 A reader who trusted it would design against a gradation the substrate has never enforced. The sibling
-law at <<~ loulou "lar:///ha.ka.ba/lararium/keyhive/capability-provider">> states the same limit from
+law at <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>> states the same limit from
 the provider's side.
 
 ''Relay-law exception:'' `pull` does NOT imply `read`. A relay holds pull and
@@ -129,7 +128,7 @@ ALIGNMENT (the non-monotonic lemures plane). See
 
 <<~/ahu>>
 
-<<~ ahu #/selected-contracts>>
+<<~ ahu slot=`#/selected-contracts`>>
 
 !! Two selected contracts ~ a worker's own storage scope, and typed authority evidence
 
@@ -141,12 +140,12 @@ implication, and no relation borrows another relation's epoch.
 * ''Ordinary reads stay parent-attached.'' The daemon worker's primary Repo carries oracle, persona, catalog, crossroads and recipe documents through the parent crossing and persists none of them.
 * ''Only a worker-owned document recovers from the worker's own storage.'' The manifest names one owned document, its own transferred port and its own physical root (`ownedDocument`, `packages/lararium-mesh/src/island-protocol.ts`); the owned Repo admits that document alone. The daemon document stands as the first owned scope, on node and in the browser.
 * ''A refusal keeps its name'': `worker-parent-required`, `document-not-resident`, `storage-corrupt`, `storage-quota`, `replay-incomplete`, `peer-required`. No process turns one into a successful empty document or a silent re-fetch. A CRDT conflict keeps both heads and goes to the operator's Talk Story.
-* ''Pin state names itself.'' Residency stays an Island Pool fact, with pinning apart from `wela` and `anu` (<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-tiers">>); a compaction cut never reads as an authority epoch (<<~ loulou "lar:///ha.ka.ba/lararium/tw5/compaction-handlers">>).
+* ''Pin state names itself.'' Residency stays an Island Pool fact, with pinning apart from `wela` and `anu` (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-tiers`>>); a compaction cut never reads as an authority epoch (<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/compaction-handlers`>>).
 * ''Owed'': a general document pin with a real physical storage boundary, its entry in the residency inventory, and the corrupt and quota refusals under test. A label, a post-save filter or bag hotness never stands in for that boundary.
 
 !!! Typed authority evidence, per relation
 
-* ''No mesh-wide epoch exists.'' The lease frontier, the charter lineage, PersonaGroup or realm membership, the CGKA epoch and the compaction cut stay separate values (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">>).
+* ''No mesh-wide epoch exists.'' The lease frontier, the charter lineage, PersonaGroup or realm membership, the CGKA epoch and the compaction cut stay separate values (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces`>>).
 * ''Every relation tells five states apart'' before it applies its own policy (`packages/lararium-mesh/src/authority-verdict.ts`): `checked-valid`, the verifier holds and walks the named witness; `unavailable`, it lacks the witness or the local material, which proves no revocation; `stale`, a newer causal head stands known; `malformed`, a byte, signature, predecessor, audience or resource check fails; `revoked`, an explicit kapae or later authority state shadows the grant.
 * ''A mutation gate rejects `malformed` and `revoked`, and answers `stale` or `unavailable` with its named refusal or a pending receipt.'' A stale Handle may render as a labelled observation alone. Daemon proof replay stays scoped to its connection, and a restart takes a fresh handshake. Contract and Cabal mutation each require their own current accepted frontier.
 * ''No gate turns `unavailable` into `checked-valid`'' by reading wall time or by inferring a realm epoch.
@@ -155,18 +154,18 @@ implication, and no relation borrows another relation's epoch.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mandate-activity-provenance`>>
 Related (project tiddlers): [[project_no_vm_on_main_thread]], [[feedback_isomorphism_by_composition]],
 [[project_asymmetric_peer_handoff]], [[project_relay_access_rings]].
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/operator-peer">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/operator-peer`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FUIC0Jh4-At78XwUi7nw4JLzexrUJIUbTQo24tG5Lok
+<<^ code=`&#x0003;`>>ni:///sha-256;6E75vm5Ctf2KDRPASKDyUOeeiAf3QKRW1nurlHXpjRQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

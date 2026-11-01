@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/wikitext-filter">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/wikitext-filter`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/wikitext-filter.mem"
 grammar-key = "wikitext-filter"
 guest-mime  = "text/x-wikitext-filter"
 l-space     = "stable"
@@ -18,7 +17,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/wikitext-filter"
 ```
 
-<<~ ahu #/purpose>>
+<<~ ahu slot=`#/purpose`>>
 
 ! Lararium Filter Grammar
 
@@ -45,7 +44,7 @@ for new authoring.
 
 <<~/ahu>>
 
-<<~ ahu #/operators-this-dialect-adds>>
+<<~ ahu slot=`#/operators-this-dialect-adds`>>
 
 !! The operators this dialect adds over TW5
 
@@ -105,11 +104,11 @@ Queries memes by reaction-family (papalohe) edges. Useful for finding UEFN devic
 [edge:family[reaction]dir[outbound]]            memes that emit reaction edges (event sources)
 ```
 
-The `trigger` property carries the event name from the `papalohe` sugar form (`<<~ papalohe FROM -> TO trigger=OnBegin>>`).
+The `trigger` property carries the event name from the `papalohe` sugar form (``<<~ papalohe from=`FROM` to=`TO` trigger=`OnBegin`>>``).
 
 <<~/ahu>>
 
-<<~ ahu #/preserved-operators>>
+<<~ ahu slot=`#/preserved-operators`>>
 
 !! Preserved Operators (TW5 Compat)
 
@@ -151,7 +150,7 @@ each[key]       — one representative per unique TOML key value
 
 <<~/ahu>>
 
-<<~ ahu #/scope-and-context>>
+<<~ ahu slot=`#/scope-and-context`>>
 
 !! Scope and Context Model
 
@@ -160,7 +159,7 @@ Filters evaluate against an ''explicit context'', not an ambient dynamic variabl
 | Context source | How set | Applies to |
 |---------------|---------|------------|
 | Carrier `#meta` URI | Default when no `meme` block active | Top-level filter expressions in a carrier |
-| `meme` sigil block | `<<~ meme "lar:///uri">>` encloses filter usage | All filter expressions inside the block |
+| `meme` sigil block | ``<<~ meme uri=`lar:///uri`>>`` encloses filter usage | All filter expressions inside the block |
 | `huli` loop variable | `as item` binding | Filter expressions inside the `huli` body |
 | `wehe`/`helu` parameter | Named arg passed at `kahea` call site | Filter expressions inside definition body |
 
@@ -169,7 +168,7 @@ A filter expression that needs "the current meme" uses `[self[]]`.
 
 <<~/ahu>>
 
-<<~ ahu #/invocation>>
+<<~ ahu slot=`#/invocation`>>
 
 !! Invocation
 
@@ -177,12 +176,12 @@ A filter expression that needs "the current meme" uses `[self[]]`.
 
 ````text
 # Inline (wai, huli, ui)
-<<~ wai "[tag[invariant]sort[toml:title]]">>
-<<~ huli "[edge:family[control]role[owns]]" as item>>
-<<~ ui "[toml:l-space[grammar]]">>
+<<~ wai filter=`[tag[invariant]sort[toml:title]]`>>
+<<~ huli filter=`[edge:family[control]role[owns]]` as=`as` sigil=`item`>>
+<<~ ui filter=`[toml:l-space[grammar]]`>>
 
 # Block (hana with grammar-key)
-<<~ hana #work>>
+<<~ hana grammar=`#work`>>
 ```toml
 grammar      = "wikitext-filter"
 context      = "[self[]]"
@@ -199,7 +198,7 @@ The key `"x-tiddlywiki-filter"` serves import and migration.
 
 <<~/ahu>>
 
-<<~ ahu #/migration-from-tw5>>
+<<~ ahu slot=`#/migration-from-tw5`>>
 
 !! Migration from x-tiddlywiki-filter
 
@@ -218,15 +217,15 @@ Systematic find-replace for authors migrating TW5 content:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Sp5sf5ELoPtrrDt2FQzGlLRVeO0mD5XOcv4eFPQzVds
+<<^ code=`&#x0003;`>>ni:///sha-256;Ccr05RfDKb6lKpqZmuaKpKFKhm2boUVUKNhVAH9j9gU
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

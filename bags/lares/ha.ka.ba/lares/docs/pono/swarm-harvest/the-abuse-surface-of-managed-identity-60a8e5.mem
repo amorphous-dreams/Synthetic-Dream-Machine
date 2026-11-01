@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/the-abuse-surface-of-managed-identity-60a8e5">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/the-abuse-surface-of-managed-identity-60a8e5`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/the-abuse-surface-of-managed-identity-60a8e5.mem"
 l-space   = "stable"
 mana      = 12
 manao     = 14
@@ -18,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/the-abuse-surface-of-managed-identity-60a8e5"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! THE ABUSE SURFACE OF MANAGED IDENTITY
 
@@ -28,7 +27,7 @@ The three largest messages one research spirit wrote, ''held verbatim and unedit
 
 <<~/ahu>>
 
-<<~ ahu #/message-1>>
+<<~ ahu slot=`#/message-1`>>
 
 !! Message 1 ~ 54,685 characters
 
@@ -427,7 +426,7 @@ Whether the self-exemption is earned — a supervised Google account is *created
 
 <<~/ahu>>
 
-<<~ ahu #/message-2>>
+<<~ ahu slot=`#/message-2`>>
 
 !! Message 2 ~ 45,654 characters
 
@@ -650,7 +649,7 @@ That is the closest thing anywhere to a requirement for a channel the manager ca
 
 <<~/ahu>>
 
-<<~ ahu #/message-3>>
+<<~ ahu slot=`#/message-3`>>
 
 !! Message 3 ~ 8,806 characters
 
@@ -720,12 +719,12 @@ The supervised party can *discover* the relation in Google and Apple, and is tol
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;L0STHSKpvlQ9g1aprmcjZBULo5Oj9SQ5a6-KUtMkG4k
+<<^ code=`&#x0003;`>>ni:///sha-256;ckt-GRJmukJ3oHnndO78nfixH7l-SjrJMqToE4kiAs4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

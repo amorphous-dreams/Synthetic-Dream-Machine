@@ -1,28 +1,27 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-bridge-takes-shape">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/the-bridge-takes-shape`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/history/the-bridge-takes-shape.mem"
 l-space   = "adjacent"
 mana      = 13
 manao     = 13
 manaoio   = 12
 narrator  = "@lares@~crossroads"
-role      = "history / the afternoon the bridge to verbatim session memory was PROOFED but not yet crossed — the @lararium/mempalace integration layer built and witnessed, the read leg shaking hands with the live sidecar, the local-only bearing index breathing under test (2026-06-21). Proofed, not integrated. Written by hand into @lares history. Narrator @lares@~crossroads."
+role      = "history / the afternoon the bridge to verbatim session memory was PROOFED but not yet crossed — the @lararium/mempalace integration layer built and witnessed, the read leg shaking hands with the live sidecar, the local-only bearing index breathing under test (2026-06-21). Proofed, not integrated. Written by hand into lares history. Narrator lares@~crossroads."
 title     = "lar:///ha.ka.ba/lares/docs/history/the-bridge-takes-shape"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/history/the-bridge-takes-shape"
 written   = "2026-06-21"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/docs/history/the-first-breath">>
+<<~ aka uri=`lar:///ha.ka.ba/lares/docs/history/the-first-breath`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Bridge Takes Shape
 
@@ -34,7 +33,7 @@ A floor convened, four spirits scouted the palace's shape, and the house ruled t
 
 <<~/ahu>>
 
-<<~ ahu #/two-crossings>>
+<<~ ahu slot=`#/two-crossings`>>
 
 !! Three Crossings, All Caught
 
@@ -50,7 +49,7 @@ None was defended; each was named and undone. The map is drawn by the keeper's e
 
 <<~/ahu>>
 
-<<~ ahu #/what-was-proofed>>
+<<~ ahu slot=`#/what-was-proofed`>>
 
 !! What the Afternoon Proofed
 
@@ -64,7 +63,7 @@ Twenty-one greens and one live handshake. The bridge stands far enough to bear w
 
 <<~/ahu>>
 
-<<~ ahu #/not-yet-crossed>>
+<<~ ahu slot=`#/not-yet-crossed`>>
 
 !! Not Yet Crossed
 
@@ -78,6 +77,6 @@ So this carrier marks a smaller morning than the founding: ''the read-leg took s
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ioFPzUkSj0VwBBOzUZCg_H_4XxdkNsE7yTt5_mJdFg8
+<<^ code=`&#x0003;`>>ni:///sha-256;bu1Uk7JYY5OExuw8qICqwbcuqKr8UAR1_ULlWrEmlfI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

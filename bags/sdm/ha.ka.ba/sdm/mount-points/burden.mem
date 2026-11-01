@@ -1,12 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/mount-points/burden">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/mount-points/burden`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
 caption   = "burden"
-file-path = "bags/sdm/ha.ka.ba/sdm/mount-points/burden.mem"
 l-space   = "sdm"
 mana      = 15
 manao     = 17
@@ -17,13 +16,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/mount-points/burden"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
 ! Mount-Point — Burden
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -31,7 +30,7 @@ A Burden seats a Power ''against the practitioner'': a curse, compulsion, afflic
 
 <<~/ahu>>
 
-<<~ ahu #/activation>>
+<<~ ahu slot=`#/activation`>>
 
 !! Activation
 
@@ -39,7 +38,7 @@ A Burden often activates involuntarily — on a trigger, a condition, or the ref
 
 <<~/ahu>>
 
-<<~ ahu #/cost>>
+<<~ ahu slot=`#/cost`>>
 
 !! Cost
 
@@ -47,7 +46,7 @@ The standing −1 per slot is the cost, paid continuously. Some Burdens also dem
 
 <<~/ahu>>
 
-<<~ ahu #/failure>>
+<<~ ahu slot=`#/failure`>>
 
 !! Failure
 
@@ -55,7 +54,7 @@ A Burden rarely "fails" — it afflicts. Botching its resistance deepens it: ano
 
 <<~/ahu>>
 
-<<~ ahu #/removal>>
+<<~ ahu slot=`#/removal`>>
 
 !! Removal
 
@@ -63,7 +62,7 @@ Remove by treatment, quest, atonement, or breaking the compulsion's condition. U
 
 <<~/ahu>>
 
-<<~ ahu #/overflow>>
+<<~ ahu slot=`#/overflow`>>
 
 !! Overflow
 
@@ -71,7 +70,7 @@ Burden is itself the overflow sink for Trait and Item. Past 20, the character is
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -79,14 +78,14 @@ Burden is itself the overflow sink for Trait and Item. Past 20, the character is
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/mount-points/storage-class">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/mount-points/storage-class`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6LPyJGpW3LbqxmljxeFuKeJ4vPyr6ZpiJAieRHw6J3k
+<<^ code=`&#x0003;`>>ni:///sha-256;0eHl17SaFRpD-F06rKlgGxcfb-w3cRHXxz3U5Vp6ApE
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -4,16 +4,15 @@ description: Generate, compress, or audit guest-grammar surfaces under lar:///ha
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable          = true
 constraints        = ["S1: the parent invariant remains the admission law and this skill does not outrank it", "S2: guest work enters only through explicit host admission; ambient leakage does not count as lawful guest grammar", "S3: root primitives stay host-side and do not become guest-family proxies", "S4: hana keeps opener, optional priming payload, and guest body distinct", "S5: parser legality, lowering schemas, fixture execution, and long examples move outward before the parent swells"]
 covers             = ["lar:///ha.ka.ba/lares/api/pono/guest-grammar"]
-file-path          = "bags/lares/ha.ka.ba/lares/api/pono/guest-grammar/SKILL.mem"
 mana               = 15
 manao              = 16
 manaoio            = 14
@@ -30,7 +29,7 @@ uri-path           = "ha.ka.ba/lares/api/pono/guest-grammar/SKILL"
 [[guest-grammar.md|../guest-grammar.md]] holds the law.
 This skill carries the working procedure.
 
-<<~ ahu #/load-contract>>
+<<~ ahu slot=`#/load-contract`>>
 
 !! Load Contract
 
@@ -45,7 +44,7 @@ Keep these points active when the skill loads:
 
 <<~/ahu>>
 
-<<~ ahu #/workflow-contract>>
+<<~ ahu slot=`#/workflow-contract`>>
 
 !! Workflow Contract
 
@@ -75,7 +74,7 @@ Do not:
 
 <<~/ahu>>
 
-<<~ ahu #/trigger>>
+<<~ ahu slot=`#/trigger`>>
 
 !! Trigger
 
@@ -95,7 +94,7 @@ Prefer another surface when the work concerns only:
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ read host and guest boundaries first and observe the actual admission surface
 ⏿ sort admission law, ownership boundary, degradation pressure, and implementation detail by where they belong
@@ -105,7 +104,7 @@ Prefer another surface when the work concerns only:
 
 <<~/ahu>>
 
-<<~ ahu #/observe>>
+<<~ ahu slot=`#/observe`>>
 
 !! ✶ Observe
 
@@ -126,7 +125,7 @@ Preserve the difference between admitted, malformed, unsupported, and absent gue
 
 <<~/ahu>>
 
-<<~ ahu #/orient>>
+<<~ ahu slot=`#/orient`>>
 
 !! ⏿ Orient
 
@@ -148,7 +147,7 @@ Orientation rule:
 
 <<~/ahu>>
 
-<<~ ahu #/decide>>
+<<~ ahu slot=`#/decide`>>
 
 !! ◇ Decide
 
@@ -169,7 +168,7 @@ Do not round up from aspiration to law.
 
 <<~/ahu>>
 
-<<~ ahu #/act>>
+<<~ ahu slot=`#/act`>>
 
 !! ▶ Act
 
@@ -185,7 +184,7 @@ When writing or revising:
 !!! Canonical Hana Shape
 
 ````text
-<<~ hana #work>>
+<<~ hana grammar=`#work`>>
 ```toml
 grammar = "x-tiddlywiki-filter"
 profile = "canonical"
@@ -200,7 +199,7 @@ result-shape = "set"
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! ↺ Aftermath
 
@@ -226,15 +225,15 @@ Aftermath — close by naming:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/guest-grammar">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/guest-grammar">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/guest-grammar`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/guest-grammar`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9nlKb61i3EWY8wcdrbKjseHaaY3XzbDC-fDyS_qaGyE
+<<^ code=`&#x0003;`>>ni:///sha-256;yepykIooAP0tMNR03obnIUTsnsoNM3sqJE7AC8ltjUA
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

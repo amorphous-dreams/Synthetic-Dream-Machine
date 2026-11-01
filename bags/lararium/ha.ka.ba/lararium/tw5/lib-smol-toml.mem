@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/lib-smol-toml">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/lib-smol-toml`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/lib-smol-toml.mem"
 mana      = 17
 manao     = 16
 manaoio   = 16
@@ -15,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/lib-smol-toml"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! smol-toml Library Tiddler
 
@@ -34,7 +33,7 @@ the import to this `require()` call via `rollupOptions.output.paths`.
 
 <<~/ahu>>
 
-<<~ ahu #/consumers>>
+<<~ ahu slot=`#/consumers`>>
 
 !! Consumers
 
@@ -44,7 +43,7 @@ the import to this `require()` call via `rollupOptions.output.paths`.
 
 <<~/ahu>>
 
-<<~ ahu #/design-notes>>
+<<~ ahu slot=`#/design-notes`>>
 
 !! Design Notes
 
@@ -61,16 +60,16 @@ component properties, and tick-scoped state in a WYSIWYG-friendly field structur
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/toml-ast">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-toml">>
-<<~ loulou "lar:///plugins/lares/memetic-wikitext">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/toml-ast`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-toml`>>
+<<~ loulou uri=`lar:///plugins/lares/memetic-wikitext`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;76DqY0rezUm8ZZyWyt_TThnTrJGd4LVzUdtzfICfznU
+<<^ code=`&#x0003;`>>ni:///sha-256;iJQiFz7MtSCS0VbKUZKl-ULtFnU9TYHj4bR5-Qf0CL4
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

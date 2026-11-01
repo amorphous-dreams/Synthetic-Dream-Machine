@@ -17,13 +17,10 @@
  * The `--k` name mirrors the isomorphic MCP tool arg (`recall(query, k)`). `--limit` names the same cap
  * (operator-kept, 2026-10-11): `--k` wins when both ride one call.
  *
- * STAMP FILTERS — compose with the search or the list (honest counts, never a
- * silent drop): --voice <name> · --band <canon|synthesis|provisional|raw> ·
- * --agent <id|handle-prefix|pet-name> · --surface <claude|codex|copilot-cli|copilot-vscode> ·
- * --drift (drift-flagged turns only). List mode reads the stamped lar_* drawer
- * metadata exactly; search mode reads surface/agent exactly off the source name
- * and re-runs the capture's own gradient reader for voice/band/drift (the search
- * wire returns no drawer metadata — see mesh/stamp-filter.ts).
+ * FILTERS — `--agent` · `--surface` (stream provenance) and `--speaker` · `--channel` · `--function`
+ * (the block taxonomy) ride the verb verbatim to the recall coordinator, whose signature is the one
+ * filter home. A filter narrows only the coordinator's search, which needs a query: with no query (or
+ * beside `--imago`) a filter, like `--pair`, refuses with a usage pointer, never an unfiltered list.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/lararium-memory#/shared-mesh
  */
@@ -51,15 +48,24 @@ export async function cmdRecall(args: ParsedArgs): Promise<number> {
   const limit   = args.options["k"] ?? args.options["limit"];
   const wantList = args.flags["list"];
   // The provenance filters (agent · surface) + the block-taxonomy filters (speaker · channel · function)
-  // — a filter alone implies --list. speaker="operator" surfaces the operator's steering as its own
-  // stratum; channel="speech" the loud voices; function names one role. The CLI stays isomorphic with the
-  // /mcp recall tool, both carrying the same filter set. (Enrichment filters voice/band/drift not here.)
+  // — each narrows the coordinator's search, so each needs a query. speaker="operator" surfaces the
+  // operator's steering as its own stratum; channel="speech" the loud voices; function names one role. The
+  // CLI stays isomorphic with the /mcp recall tool, both carrying the same filter set.
   const filterKeys = ["agent", "surface", "speaker", "channel", "function"] as const;
-  const hasFilters = filterKeys.some((k) => args.options[k] !== undefined);
+  const presentFilters = filterKeys.filter((k) => args.options[k] !== undefined);
 
-  if (!query && !imago && !wantList && !hasFilters) {
+  // A filter (and the --pair view) narrows only the coordinator's search: the list pages drawers by wing,
+  // the imago fetch reads one entry, and no query-less filtered search stands. Refuse rather than answer
+  // unfiltered.
+  const searchOnly: string[] = [...presentFilters, ...(args.flags["pair"] ? ["pair"] : [])];
+  if (searchOnly.length && (!query || imago)) {
+    console.error(`lares sense recall: ${searchOnly.map((k) => `--${k}`).join(" ")} ${searchOnly.length === 1 ? "narrows" : "narrow"} only the search, which needs a query — usage: lares sense recall <keywords...> ${searchOnly.map((k) => `--${k}${k === "pair" ? "" : " <v>"}`).join(" ")}`);
+    return 2;
+  }
+
+  if (!query && !imago && !wantList) {
     console.error("usage: lares sense recall <keywords...> | --imago <id> | --list [--wing <w>] [--k <n>]");
-    console.error("  filters: --agent <id> --surface <claude|codex|copilot-cli|copilot-vscode>");
+    console.error("  filters (with a query): --agent <id> --surface <claude|codex|copilot-cli|copilot-vscode>");
     console.error("           --speaker <operator|agent|harness> --channel <speech|thought|tool> --function <steering|surface|scaffold|thinking|action|result>");
     return 2;
   }
@@ -123,18 +129,6 @@ export async function cmdRecall(args: ParsedArgs): Promise<number> {
 
   const out = summaryOutput(result) ?? {};
   const mode = out["mode"];
-  // STALE-DAEMON GUARD — a daemon predating the stamp filters ignores unknown verb args and
-  // returns the UNFILTERED result (the silent drop the filters ban). A filtered response always
-  // carries `scanned`; its absence under requested filters refuses loud, never lies quietly.
-  if (hasFilters && mode !== "imago" && typeof out["scanned"] !== "number") {
-    const msg = "the running daemon predates recall stamp filters (it returned an unfiltered result)";
-    emit(args, {
-      ok: false, requestId: result.requestId,
-      error: { code: "verb-error", message: msg, hint: "Restart the daemon on fresh dist (`lares vessel stand --foreground` / `lares vessel stand`) and retry." },
-      human: () => { console.error(`lares sense recall: ${msg}`); console.error("  Restart the daemon on fresh dist (`lares vessel stand --foreground` / `lares vessel stand`) and retry."); },
-    });
-    return exitFor("verb-error");
-  }
   emit(args, {
     ok: true,
     requestId: result.requestId,
@@ -146,9 +140,7 @@ export async function cmdRecall(args: ParsedArgs): Promise<number> {
         console.log(typeof d["content"] === "string" ? d["content"] : JSON.stringify(d, null, 2));
       } else if (mode === "search") {
         const hits = Array.isArray(out["results"]) ? (out["results"] as Array<Record<string, unknown>>) : [];
-        const fnote = typeof out["scanned"] === "number"
-          ? ` (filtered: ${String(out["matched"] ?? hits.length)} of ${String(out["scanned"])} scanned)` : "";
-        console.log(`recall "${query}" — ${hits.length} hit${hits.length === 1 ? "" : "s"}${fnote}`);
+        console.log(`recall "${query}" — ${hits.length} hit${hits.length === 1 ? "" : "s"}`);
         for (const h of hits) {
           const sim  = typeof h["similarity"] === "number" ? `${(h["similarity"] * 100).toFixed(0)}%` : "  ?";
           const loc  = [h["wing"], h["room"]].filter(Boolean).join("/") || "—";
@@ -159,8 +151,7 @@ export async function cmdRecall(args: ParsedArgs): Promise<number> {
         // list
         const imagines = Array.isArray(out["imagines"]) ? (out["imagines"] as Array<Record<string, unknown>>) : [];
         const total = out["total"];
-        const fnote = typeof out["scanned"] === "number" ? ` (filtered from ${String(out["scanned"])} scanned)` : "";
-        console.log(`imagines ${imagines.length}${typeof total === "number" ? ` of ${total}` : ""}${fnote}`);
+        console.log(`imagines ${imagines.length}${typeof total === "number" ? ` of ${total}` : ""}`);
         for (const d of imagines) {
           const loc = [d["wing"], d["room"]].filter(Boolean).join("/") || "—";
           console.log(`  ${String(d["imago_id"] ?? d["id"] ?? "?")}  ${loc}`);

@@ -468,7 +468,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // behind a document nothing can ever reach again.
   //
   // A face's relations travel with the FACE. The circles plane holds who this persona follows, blocks and mutes;
-  // @identities holds how it recognises others; @sessions holds the sessions it wears. One vessel-global
+  // identities-plane holds how it recognises others; sessions-plane holds the sessions it wears. One vessel-global
   // set would put one persona's blocked list in the same document as another's follows, and anything
   // reading it correlates the faces a multitude exists to hold apart.
   const planes        = personaScopedBagIds(personaGroup.groupId);

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/receipt-ledger">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/receipt-ledger`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/receipt-ledger.mem"
 l-space     = "lararium"
 role        = "the receipt ledger as law — one durable fact per request id, written by one writer; one winner per id, with every refusal named; abandonment by a causal event alone, never by a timer; the three receipts of a cancel (the caller's abandonment, the relay's delivery, the vessel's outcome), none standing in for another; a ring that bounds what the vessel keeps and answers `retention-gap` past it; what the direct leg holds, and what a leg across a herm adds and still owes"
 source-file = "packages/lararium-node/src/uds-channel.ts"
@@ -14,19 +13,19 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/receipt-ledger"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The receipt ledger ~ what a vessel says about a request, and who else may say anything
 
 A person asks a vessel to act, and the ask carries a request id. This carrier states what the vessel records about that id, what each party may say about it, and what a later read of the id answers. It covers the leg where the asker and the vessel share a machine, and it states what a leg across a herm adds.
 
-> ''Register.'' The operator ruled the three receipts, that a caller's timeout never counts as a cancel, that eviction answers `retention-gap`, and that no wall clock decides whether an act runs (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). The house settled the ledger below under those rulings. A line marked ''house reading'' states a choice the rulings leave room for.
+> ''Register.'' The operator ruled the three receipts, that a caller's timeout never counts as a cancel, that eviction answers `retention-gap`, and that no wall clock decides whether an act runs (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). The house settled the ledger below under those rulings. A line marked ''house reading'' states a choice the rulings leave room for.
 
-The verb, summons and outcome records themselves read at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/verb-tiddler">>. The socket between a CLI and its vessel reads at <<~ loulou "lar:///ha.ka.ba/lararium/api/lares-lararium-binding">>.
+The verb, summons and outcome records themselves read at <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/verb-tiddler`>>. The socket between a CLI and its vessel reads at <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/lares-lararium-binding`>>.
 
 <<~/ahu>>
 
-<<~ ahu #/three-receipts>>
+<<~ ahu slot=`#/three-receipts`>>
 
 !! Three receipts ~ three parties, three facts
 
@@ -44,7 +43,7 @@ The verb, summons and outcome records themselves read at <<~ loulou "lar:///ha.k
 
 <<~/ahu>>
 
-<<~ ahu #/the-fact>>
+<<~ ahu slot=`#/the-fact`>>
 
 !! The fact ~ one record per request id, one writer
 
@@ -67,7 +66,7 @@ The vessel keeps one ''receipt fact'' per request id at `@daemon/receipts/<reque
 
 <<~/ahu>>
 
-<<~ ahu #/one-winner>>
+<<~ ahu slot=`#/one-winner`>>
 
 !! One winner per request id
 
@@ -87,7 +86,7 @@ A ''receipt read'' asks what the ledger holds and dispatches nothing. It answers
 
 <<~/ahu>>
 
-<<~ ahu #/abandonment>>
+<<~ ahu slot=`#/abandonment`>>
 
 !! Abandonment ~ a causal event, never a timer
 
@@ -104,7 +103,7 @@ Three things never abandon a request:
 
 <<~/ahu>>
 
-<<~ ahu #/the-ring>>
+<<~ ahu slot=`#/the-ring`>>
 
 !! The ring ~ what the vessel keeps, and what it answers past that
 
@@ -123,7 +122,7 @@ Vessel config sets both bounds (`receipts.ring`: `ratePerMin`, `horizonDays`, `b
 
 <<~/ahu>>
 
-<<~ ahu #/the-direct-leg>>
+<<~ ahu slot=`#/the-direct-leg`>>
 
 !! The direct leg ~ a CLI beside its vessel
 
@@ -142,11 +141,11 @@ On this leg two of the three receipts exist. The cancel line carries the caller'
 
 <<~/ahu>>
 
-<<~ ahu #/the-relay-leg>>
+<<~ ahu slot=`#/the-relay-leg`>>
 
 !! The relay leg ~ what a herm between asker and vessel adds
 
-A herm carries sealed frames between keys it proved, reads none of them, and holds no ledger (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>). An ask that crosses a herm adds one party and one receipt.
+A herm carries sealed frames between keys it proved, reads none of them, and holds no ledger (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/vessel-caps`>>). An ask that crosses a herm adds one party and one receipt.
 
 ''What the law fixes:''
 
@@ -156,11 +155,11 @@ A herm carries sealed frames between keys it proved, reads none of them, and hol
 * ''No timer on any side.'' The asker's wait, the herm's socket deadline and the vessel's wait each pace their own holder. None of them abandons, cancels or evicts.
 * ''The asker keeps its own abandonment.'' A cancel that the herm drops still happened on the asker's side. The asker records that it withdrew, and reads the vessel's outcome when one reaches it.
 
-''What stays owed.'' No code asks, cancels or answers across a herm. A remote caller reaches a vessel by dialing that vessel's own daemon door and writing a summons (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/verb-tiddler#/contract">>); a herm carries no daemon document, since its carriage moves sealed envelopes and the document relay stays a socket of its own (`packages/lararium-node/src/carriage-relay.ts`). The channel observes a summoned verb's outcome and mints its fact, and a summoner holds no cancel.
+''What stays owed.'' No code asks, cancels or answers across a herm. A remote caller reaches a vessel by dialing that vessel's own daemon door and writing a summons (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/verb-tiddler#/contract`>>); a herm carries no daemon document, since its carriage moves sealed envelopes and the document relay stays a socket of its own (`packages/lararium-node/src/carriage-relay.ts`). The channel observes a summoned verb's outcome and mints its fact, and a summoner holds no cancel.
 
 ''What a herm already carries.'' An envelope holds an open `kind` and an opaque payload, and the relay routes it between proven keys (`packages/lararium-mesh/src/membership-channel.ts`). Two siblings under one PersonaGroup hold a sealed session across a herm (`packages/lararium-mesh/src/sibling-channel.ts`). Either could carry an ask with no change to the frame a herm routes. Neither gives the ask a meaning, a reader at the vessel, or an authority; and a herm sends nothing back when it hands a frame onward.
 
-''The relay leg's three shapes'' (house ruling under the operator's delegation; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). Each answers one need, and none adds a signing domain.
+''The relay leg's three shapes'' (house ruling under the operator's delegation; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). Each answers one need, and none adds a signing domain.
 
 # ''The asker's proof: the sealed sibling session.'' The ask rides the sealed sibling session, which already proved its far end, and the vessel reads that session's proof as the asker's. A herm's stamp never serves. Reach therefore narrows to one PersonaGroup: an asker outside the vessel's own PersonaGroup holds no such session and asks across no herm.
 # ''The sealed payload: the session's own seal.'' The ask, the cancel and the vessel's answer ride under that session's seal as a tagged inner frame beside the sync message, so a herm reads no plaintext and the frame it routes stays unchanged.
@@ -168,11 +167,11 @@ A herm carries sealed frames between keys it proved, reads none of them, and hol
 
 ''What the ruling leaves standing.'' A party that needs to audit relay delivery after its asker vanishes holds nothing here; that need, shown concrete, re-opens the delivery receipt toward a signed note that names exactly what the relay attests. Which verbs a sibling's standing reaches across the session rides the leg's build.
 
-''What stays owed.'' The whole leg lands with the sibling channel at face scope (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/stride-1-spine">>, `W9` and `W12`); none of it stands built.
+''What stays owed.'' The whole leg lands with the sibling channel at face scope (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/stride-1-spine`>>, `W9` and `W12`); none of it stands built.
 
 <<~/ahu>>
 
-<<~ ahu #/what-the-code-holds>>
+<<~ ahu slot=`#/what-the-code-holds`>>
 
 !! What the code holds
 
@@ -182,16 +181,16 @@ A herm carries sealed frames between keys it proved, reads none of them, and hol
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">> the rulings name the three receipts and the law of no global now
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/verb-tiddler">> the verb, summons and outcome records
-<<~ loulou "lar:///ha.ka.ba/lararium/api/lares-lararium-binding">> the socket between a CLI and its vessel
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">> a herm carries and reads nothing
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/no-global-now">> no wall clock decides an act
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>> the rulings name the three receipts and the law of no global now
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/verb-tiddler`>> the verb, summons and outcome records
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/lares-lararium-binding`>> the socket between a CLI and its vessel
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/vessel-caps`>> a herm carries and reads nothing
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>> no wall clock decides an act
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WrrrA2pfVx0zGgr496hXJGN-O8nGRekAYhGvUDneu2c
+<<^ code=`&#x0003;`>>ni:///sha-256;HKybUJiK917OnTXpCXD59h1f4HbnLgqF085GUWeybGg
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

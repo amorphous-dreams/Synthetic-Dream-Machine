@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/canvas/rooms">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/canvas/rooms`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/canvas/rooms.mem"
 mana      = 16
 manao     = 16
 manaoio   = 16
@@ -16,11 +15,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/canvas/rooms"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Lararium Canvas Rooms
 
@@ -30,7 +29,7 @@ Portals connect rooms as directed edges.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ count rooms; name layout strategy for each.
 ⏿ orient portals against room topology; check directionality.
@@ -41,7 +40,7 @@ Portals connect rooms as directed edges.
 
 <<~/ahu>>
 
-<<~ ahu #/room-law>>
+<<~ ahu slot=`#/room-law`>>
 
 !! Room Law
 
@@ -55,7 +54,7 @@ Layout strategies follow a priority order. The cascade selects first match.
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -130,12 +129,12 @@ label      = "← System"
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/canvas/zoom-levels">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/canvas/zoom-levels`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pFalQh_nDzi0smGs0mcfhpM0xJqifoNb80KlXj48S3o
+<<^ code=`&#x0003;`>>ni:///sha-256;qauxI2slGpmvJm-ck78heIGoFn_mjLOTgpKobEGNoaQ
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

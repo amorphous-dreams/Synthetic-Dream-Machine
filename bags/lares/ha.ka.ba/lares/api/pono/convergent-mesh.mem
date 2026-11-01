@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/convergent-mesh">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/convergent-mesh`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/api/pono/convergent-mesh.mem"
 hydrate    = true
 l-space    = "stable"
 mana       = 14
@@ -20,23 +19,23 @@ uri-path   = "ha.ka.ba/lares/api/pono/convergent-mesh"
 written    = "2026-06-24"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Convergent Mesh ~ one shape under revocation, membership, and revision
 
 Three problems the mesh once held apart — ''adjudicating a revision'' to shared canon, ''revoking'' a capability, and ''reading group membership'' — collapse to ''one shape'' under the `#has`-stack lens (`has-stack-ontology`): an entity carries a nameless stack of capabilities, and all three become operations on that stack. The shape, six properties:
 
-<<~ scale convergent "local ~ read/check/act against what THIS node verifies, as of last sync; never a global census -> decaying-lease ~ a capability fades unless fed (feed-the-Lar = ratchet); not persistent-state-changed-by-events -> graded-belief ~ hold a degree (Maybe-Logic 0..20), commit on a hysteretic threshold -> cost-bound ~ each proof costs-to-forge or binds-to-position (per-vessel-key + delegation) -> lineage-scoped ~ revocation notice · membership cost · revision reliance all ride the delegation lineage -> constitutional-core ~ a small unamendable core, fork-by-fiat, the rest self-adjudicated locally">>
+<<~ scale name=`convergent` ranks=`local ~ read/check/act against what THIS node verifies, as of last sync; never a global census -> decaying-lease ~ a capability fades unless fed (feed-the-Lar = ratchet); not persistent-state-changed-by-events -> graded-belief ~ hold a degree (Maybe-Logic 0..20), commit on a hysteretic threshold -> cost-bound ~ each proof costs-to-forge or binds-to-position (per-vessel-key + delegation) -> lineage-scoped ~ revocation notice · membership cost · revision reliance all ride the delegation lineage -> constitutional-core ~ a small unamendable core, fork-by-fiat, the rest self-adjudicated locally`>>
 
 Five of the six rest on machinery the house already holds — the ratchet, the residency ladder, the Maybe-Logic band, the per-vessel-key, the causal islands. Only the constitutional core stays genuinely new — and it names the ''kahu's'' office (`kahu`).
 
 <<~/ahu>>
 
-<<~ ahu #/three-clocks>>
+<<~ ahu slot=`#/three-clocks`>>
 
 !! Three clocks, three jobs
 
@@ -48,11 +47,11 @@ Time rides three instruments, never one (`ffz-clock`):
 
 <<~/ahu>>
 
-<<~ ahu #/two-revocation-modes>>
+<<~ ahu slot=`#/two-revocation-modes`>>
 
 !! Two revocation modes ~ the epoch is a LEASE, not a revoker
 
-''CANONICAL — this section is the founding statement of the fencing epoch, and a sweep should CITE it rather than restate it.'' The collapse (one mechanism, two carriers) and the ownership cut that keeps our fence off Keyhive's CGKA epoch both stand downstream of this paragraph: <<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">>
+''CANONICAL — this section is the founding statement of the fencing epoch, and a sweep should CITE it rather than restate it.'' The collapse (one mechanism, two carriers) and the ownership cut that keeps our fence off Keyhive's CGKA epoch both stand downstream of this paragraph: <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces`>>
 
 Revocation runs two modes, and conflating them ships an unsafe gate:
 
@@ -63,7 +62,7 @@ The content-resolution design (`content-resolution`) ''mechanizes both modes on 
 
 <<~/ahu>>
 
-<<~ ahu #/contract-key-agreement>>
+<<~ ahu slot=`#/contract-key-agreement`>>
 
 !! The contract performs the key-agreement
 
@@ -71,7 +70,7 @@ Private docs spawn fresh and isolated per vessel — they hide in `@catalog` —
 
 <<~/ahu>>
 
-<<~ ahu #/beelay-bypass>>
+<<~ ahu slot=`#/beelay-bypass`>>
 
 !! The Beelay bypass ~ what rides the relay, what stays Beelay's
 
@@ -81,7 +80,7 @@ Consistent with the bypass, the content-resolution design (`content-resolution`)
 
 <<~/ahu>>
 
-<<~ ahu #/groundings>>
+<<~ ahu slot=`#/groundings`>>
 
 !! Groundings ~ the falsifiable cross-domain rhymes
 
@@ -104,7 +103,7 @@ The convergence reads as a real pattern integrity, not a Law-of-5s pleasing stor
 
 <<~/ahu>>
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Provenance ~ PROPOSED, twice-refuted-and-survived
 
@@ -112,33 +111,33 @@ This meme stands ''PROPOSED'' (crucible-before-binding). The model held through 
 
 <<~/ahu>>
 
-<<~ ahu #/scope-1-networking>>
+<<~ ahu slot=`#/scope-1-networking`>>
 
 !! Scope 1 ~ the DreamNet networking pipe [surgical 2026-07-03]
 
 This meme rides ''Scope 1'' of the two-scopes ruling — the CID / CAD-blob / CRDT DreamNet→Meshpalace ''networking'' pipe, the special-case TS reaches through the full tools-stack, coordinated by `@daemon` verbs. Its ''CRDT-causal clock runs in TS'' (structural causality — the Automerge logical time of #three-clocks, `getHeads`/ITC-shaped), distinct from the py/R FFZ-rhythm sensorium gates that ''Scope 2'' (the general Sensorium-palaces) rides. The convergent membership + coordinator-free key-agreement worked here ''consume the whole model''; both scopes braid TS-coordination with py/R-tooling. the ruling firms the networking/sensorium split, and lands the FfzClock↔Automerge distinction (#/three-clocks) inside it.
 
-The Scope-1 CAD-blob pipe carries a ''concrete design'' (`content-resolution`, doubly-grounded — two astral-sea research waves ∪ this canon): large bodies ''leave the CRDT'' as a ''skinny TW5 handle'' (a stable logical-name + provider-hint, riding TW5's own `lazyLoad` engine) resolving through an ''@cad ciphertext-addressed CAS'' (`cid = BLAKE3(ciphertext)`, so an untrusted holder verifies/pins/repairs blind) via a ''`resolveByCid`'' host callback — three gates never fused, chaining local → hint-named provider → connected peers → PENDING (first-class lawful state). Design-north, ''NOT built''; the content-addressed tier `@cad` (bytes in the `cid/<hash>` KIND-plane, `genesis/cas`; handles in the publicity-tiered bags — public `crossroads` plaintext · private `@catalog` ciphertext · system `@oracle`) = this meme's Scope-1 pipe made concrete (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>).
+The Scope-1 CAD-blob pipe carries a ''concrete design'' (`content-resolution`, doubly-grounded — two astral-sea research waves ∪ this canon): large bodies ''leave the CRDT'' as a ''skinny TW5 handle'' (a stable logical-name + provider-hint, riding TW5's own `lazyLoad` engine) resolving through an ''@cad ciphertext-addressed CAS'' (`cid = BLAKE3(ciphertext)`, so an untrusted holder verifies/pins/repairs blind) via a ''`resolveByCid`'' host callback — three gates never fused, chaining local → hint-named provider → connected peers → PENDING (first-class lawful state). Design-north, ''NOT built''; the content-addressed tier `@cad` (bytes in the `cid/<hash>` KIND-plane, `genesis/cas`; handles in the publicity-tiered bags — public `crossroads` plaintext · private `@catalog` ciphertext · system `@oracle`) = this meme's Scope-1 pipe made concrete (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>).
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/membership-sense">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ffz-clock">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae#/membership-sense`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/ffz-clock`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WeHAzNpuSgUDdWqaL32h2hmaPIiS1rmJvwZjVJbqNQc
+<<^ code=`&#x0003;`>>ni:///sha-256;l4CCgTFYclKvMRgXXT3rbZPeuSjbquwbRfbkV_cDyY0
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

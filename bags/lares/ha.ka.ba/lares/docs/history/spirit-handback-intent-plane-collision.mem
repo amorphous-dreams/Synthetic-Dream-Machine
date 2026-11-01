@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-intent-plane-collision">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-intent-plane-collision`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-intent-plane-collision.mem"
 l-space       = "adjacent"
 mana          = 14
 manao         = 15
@@ -17,7 +16,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-intent-plane-collision"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Intent plane collision ~ two readers, one plane, nine surviving takes
 
@@ -27,7 +26,7 @@ A read-only consumer session read the span through PR #118 on `feature/green-jel
 
 <<~/ahu>>
 
-<<~ ahu #/the-takes>>
+<<~ ahu slot=`#/the-takes`>>
 
 !! The surviving takes, ranked
 
@@ -43,7 +42,7 @@ A read-only consumer session read the span through PR #118 on `feature/green-jel
 
 <<~/ahu>>
 
-<<~ ahu #/still-owed>>
+<<~ ahu slot=`#/still-owed`>>
 
 !! Confirmed still open, from the I2 kit's own Owed list
 
@@ -51,7 +50,7 @@ A read-only consumer session read the span through PR #118 on `feature/green-jel
 
 <<~/ahu>>
 
-<<~ ahu #/aside>>
+<<~ ahu slot=`#/aside`>>
 
 !! Aside ~ the checkout and the stamp
 
@@ -59,7 +58,7 @@ On a Windows checkout with `core.autocrlf=true` the working tree holds every car
 
 <<~/ahu>>
 
-<<~ ahu #/the-research-notes>>
+<<~ ahu slot=`#/the-research-notes`>>
 
 !! Research notes, not bugs
 
@@ -68,7 +67,7 @@ On a Windows checkout with `core.autocrlf=true` the working tree holds every car
 
 <<~/ahu>>
 
-<<~ ahu #/clean>>
+<<~ ahu slot=`#/clean`>>
 
 !! Read and found clean, by trace
 
@@ -76,6 +75,6 @@ The entry image and its domain split; signature coverage of audience, bound and 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;s75V0s9O_nj0A5NObpV3k-6A7N4wQzaUVzNBLU_qU6Y
+<<^ code=`&#x0003;`>>ni:///sha-256;E0fPoy1kE0-hFTpA4xpNz0PmFZjbW523288dXtyELQY
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

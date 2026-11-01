@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives/README">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives/README`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/mu/the-syad-perspectives/README.mem"
 l-space   = "stable"
 mana      = 16
 manao     = 17
@@ -17,11 +16,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/the-syad-perspectives/README"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Syad Perspectives Shelf
 
@@ -31,7 +30,7 @@ Derivation remains recoverable here.
 
 <<~/ahu>>
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Provenance
 
@@ -57,7 +56,7 @@ The tight invariant lives at:
 
 <<~/ahu>>
 
-<<~ ahu #/rule>>
+<<~ ahu slot=`#/rule`>>
 
 !! Extracted Rule
 
@@ -67,7 +66,7 @@ The active stance names the `syād` --- the standpoint from which the number rea
 
 <<~/ahu>>
 
-<<~ ahu #/stance-array>>
+<<~ ahu slot=`#/stance-array`>>
 
 !! Stance Array Extraction
 
@@ -89,7 +88,7 @@ Combination reads through simultaneous flags, not omission.
 
 <<~/ahu>>
 
-<<~ ahu #/reading-question>>
+<<~ ahu slot=`#/reading-question`>>
 
 !! Reading Question
 
@@ -102,7 +101,7 @@ The number does not.
 
 <<~/ahu>>
 
-<<~ ahu #/spectrum-drift>>
+<<~ ahu slot=`#/spectrum-drift`>>
 
 !! Spectrum Drift
 
@@ -116,7 +115,7 @@ and it keeps `avaktavya` from collapsing into mere uncertainty.
 
 <<~/ahu>>
 
-<<~ ahu #/saptabhangi>>
+<<~ ahu slot=`#/saptabhangi`>>
 
 !! Saptabhangi Extraction
 
@@ -138,7 +137,7 @@ It names a frame where the true/false axis does not apply cleanly.
 
 <<~/ahu>>
 
-<<~ ahu #/multi-stance-boundary>>
+<<~ ahu slot=`#/multi-stance-boundary`>>
 
 !! Multi-Stance Boundary
 
@@ -152,7 +151,7 @@ not through a collapsed average.
 
 <<~/ahu>>
 
-<<~ ahu #/canon-transition>>
+<<~ ahu slot=`#/canon-transition`>>
 
 !! Canon Transition
 
@@ -165,7 +164,7 @@ The correction closed omission-based live examples.
 
 <<~/ahu>>
 
-<<~ ahu #/legacy-notes>>
+<<~ ahu slot=`#/legacy-notes`>>
 
 !! Legacy Notes
 
@@ -181,7 +180,7 @@ They do not govern the live fold.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
@@ -190,6 +189,6 @@ They do not govern the live fold.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cep9VpC1rHCLAq_45G__8nEWJXtgtKeD9sHAsax2W0I
+<<^ code=`&#x0003;`>>ni:///sha-256;DS3d7FQViE_te9GAK6V5Nz0QVtOqKl2rUU6mA3Zt1e8
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

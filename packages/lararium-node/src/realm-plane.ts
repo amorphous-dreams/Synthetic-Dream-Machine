@@ -4,7 +4,7 @@
  * names each realm doc, the id pointer names the default realm, the steward pointer names a realm's worn key,
  * and the standing pointer carries that realm's folded registrations. The holder materializes each shared CRDT,
  * charter names, pins the pointer on the vessel's own catalog plane (so the daemon island's reach walks it),
- * folds the standing registrations into the wire gate, and lands a steward's registration + its @crossroads
+ * folds the standing registrations into the wire gate, and lands a steward's registration + its crossroads-plane
  * announce.
  *
  * A vessel that holds no primary or carried charter stands no realm: the holder rests INERT (no doc, no pointer,
@@ -89,7 +89,7 @@ export interface RealmPlaneHolder {
   /** Has this steward name SEALED HERE: does some record of this realm on the doc this vessel holds carry that
    *  name's own verifying seal? The steward door asks before it writes a name another hand holds. */
   sealedHere(name: string): Promise<boolean>;
-  /** Register a bag this vessel's steward keeps: seal, land on the realm doc, announce on @crossroads.
+  /** Register a bag this vessel's steward keeps: seal, land on the realm doc, announce on crossroads-plane.
    *  `propose` names stewards whose hands have NOT sealed this record — it accretes their names and counts
    *  nothing until each proposed hand co-signs (n-of-n; a named-but-unsigned steward is conscription). A
    *  proposed name must already have sealed a record of this realm, else `steward-name-unproven`.

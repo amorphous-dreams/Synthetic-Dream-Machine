@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/base-doc">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/base-doc`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/base-doc.mem"
 l-space     = "lararium"
 mana        = 9
 manao       = 9
@@ -16,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/base-doc"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -42,7 +41,7 @@ turns a bag-URI into a live doc handle:
 
 <<~/ahu>>
 
-<<~ ahu #/two-plane>>
+<<~ ahu slot=`#/two-plane`>>
 
 !! One owner per registry (W26 slice 2, 2026-10-18)
 
@@ -54,6 +53,6 @@ island document is the floor's read-face (`wiki-layer-ontology#oracle-planes`).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RFTHZ5hRVcsK1vcJs_Lfr7rDmrI74-HqBvFVc7zWE-w
+<<^ code=`&#x0003;`>>ni:///sha-256;UPQakWwBK0pago6VKfVg_xNQF_JUkEDr23EEuqU-KTo
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

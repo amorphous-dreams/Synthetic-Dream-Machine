@@ -33,7 +33,7 @@ async function rosterOf(n: number, threshold: number, epoch = EPOCH): Promise<Ka
   return { keys, threshold, sealEpochCid: epoch };
 }
 
-const BYTES = utf8Bytes("<<~ ahu #/doc>> the public-infrastructure doc, as drafted in the realm <<~/ahu>>");
+const BYTES = utf8Bytes("<<~ ahu slot=`#/doc`>> the public-infrastructure doc, as drafted in the realm <<~/ahu>>");
 
 async function approved(signerSeeds: number[], actClass: "ordinary" | "high-impact" | "emergency" = "high-impact", surface = "charter") {
   const roster   = await rosterOf(5, 3);

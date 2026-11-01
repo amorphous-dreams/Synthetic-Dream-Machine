@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/ref/RFC-9591">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/ref/RFC-9591`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable      = true
-file-path      = "bags/lares/ha.ka.ba/lares/ref/RFC-9591.mem"
 mana           = 14
 manao          = 14
 manaoio        = 13
@@ -25,7 +24,7 @@ target     = "https://www.rfc-editor.org/info/rfc9591"
 title      = "The Flexible Round-Optimized Schnorr Threshold (FROST) Protocol for Two-Round Schnorr Signatures"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! RFC 9591 — The FROST Protocol for Two-Round Schnorr Signatures
 
@@ -34,12 +33,12 @@ never invented — in `[reference]` above, so a pin at this address cites the wo
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_xy61GrgPyBOLQZRdu7HFZy2FxuJCLNvCgohz959j3U
+<<^ code=`&#x0003;`>>ni:///sha-256;bYtstVBX9vqAvGsk8tfRzDNR-bNK5FQ0Y44CizNEVEs
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

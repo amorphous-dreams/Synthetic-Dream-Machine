@@ -8,11 +8,11 @@
  * idempotent) hold — rather than loosening the gate that guards the graph.
  *
  * Classes closed here (the ones a hand-authored or lifted carrier most often trips):
- *   1. **SOH opener.** The opener canonicalizes to `<<^ code="&#x0001;" namespace="[namespace-glyphs]" `
+ *   1. **SOH opener.** The opener canonicalizes to ``<<^ code=`&#x0001;` namespace=`[namespace-glyphs]` ``
  *      — one space after `<<^`, then the meta-declared namespace as LITERAL glyphs
  *      (or none), then the SOH char. Two drifts trip it: a missing/stale namespace
  *      (the renderer re-injects → round-trip breaks), and a missing space
- *      (`<<^ code="&#x0001;" `, the lifted-corpus form — 10 stragglers against 102 canonical
+ *      (``<<^ code=`&#x0001;` ``, the lifted-corpus form — 10 stragglers against 102 canonical
  *      siblings). The meta field is authoritative; the SOH is derived from it.
  *   2. **Sigil close spacing.** A close carrying whitespace before `>>` tightens.
  *      The reader takes both spellings; the writer emits one.
@@ -30,7 +30,7 @@
 import {
   fencedSpans, inMask, frameAlt,
 } from "@lararium/memetic-frame";
-import { rootMetaFence, metaValueRaw, metaKeyRedefinitions } from "./root-meta.js";
+import { rootMetaFence, metaFences, metaValueRaw, metaKeyRedefinitions } from "./root-meta.js";
 // GENERATED_SIGILS is pure data (SigilRule[] literals, no runtime deps) — safe in this
 // dependency-free-by-constraint file the same way the frame import above reasons about it.
 import { GENERATED_SIGILS } from "./meme-ast/grammar-table.generated.js";
@@ -47,7 +47,7 @@ const SOH_ALT = frameAlt("SOH");
  * namespace correctly whether the carrier states one, states a stale one, or states none at all.
  */
 const SOH_OPENER_RE = new RegExp(
-  `(<<\\^)[ \\t]*code="(${SOH_ALT})"(?:[ \\t]+namespace="([^"]*)")?`);
+  `(<<\\^)[ \\t]*code=\`(${SOH_ALT})\`(?:[ \\t]+namespace=\`([^\`]*)\`)?`);
 
 /** Decode `&#xNNNN;` entities to literal glyphs; non-entity chars pass through. */
 function decodeEntities(s: string): string {
@@ -359,7 +359,7 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
     // Canonical opener: the control head, the code param, then the namespace param where the meta
     // declares one. Comparing the WHOLE matched head rather than the namespace alone canonicalizes
     // spacing and param order together, so one rewrite settles every drift the head can carry.
-    const rebuilt = `${soh[1]} code="${code}"${want ? ` namespace="${want}"` : ""}`;
+    const rebuilt = `${soh[1]} code=\`${code}\`${want ? ` namespace=\`${want}\`` : ""}`;
     if (soh[0]! !== rebuilt) {
       const next = seat.text.slice(0, soh.index) + rebuilt + seat.text.slice(soh.index + soh[0]!.length);
       seat.apply("frame", next, () => have !== want
@@ -426,10 +426,10 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
   {
     const mask = fencedSpans(seat.text);
     let folded = 0;
-    // Every slot-bearing sigil shares the shape `<<… #/path…` — the parameter right after the
-    // root mark, up to the next delimiter (`"`, `>`, or whitespace). Scoping the fold to text
-    // that follows `<<` … `#/` inside one sigil call keeps prose and lar-uri fragments untouched.
-    const SLOT_TOKEN_RE = /(<<[^\n>]*?\s)(#\/?[^\s">]+)/g;
+    // Every slot-bearing sigil shares the shape ``<<… slot=`#/path` …`` — a named value opening on the
+    // root mark, up to the next delimiter (a tick, `>`, or whitespace). Scoping the fold to text that
+    // follows `<<` … `#/` inside one sigil call keeps prose and lar-uri fragments untouched.
+    const SLOT_TOKEN_RE = /(<<[^\n>]*?\s(?:[\w-]+=`)?)(#\/?[^\s"`>]+)/g;
     const next = seat.text.replace(SLOT_TOKEN_RE, (whole, head: string, path: string, offset: number) => {
       if (inMask(mask, offset)) return whole;
       const nfc = path.normalize("NFC");
@@ -452,7 +452,7 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
   // sibling of its own parent, which reads as structure and addresses as none. No slot is exempt from a
   // root: every slot a carrier declares opens a child, and a child answers to an address.
   //
-  // FLAT PATHS EXPAND (operator ruling). `<<~ ahu #/a/b/c>> … <<~/ahu>>` names THREE nested slots in
+  // FLAT PATHS EXPAND (operator ruling). ``<<~ ahu slot=`#/a/b/c`>> … <<~/ahu>>`` names THREE nested slots in
   // one open/close pair — the author wrote the whole chain inline rather than opening each level by
   // hand. Any segment already satisfied by the enclosing stack is not "new"; a path already matching
   // its enclosing stack is untouched. Beyond that, each MISSING parent segment mints its own wrapper
@@ -468,7 +468,7 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
     // Slot token = `[a-z0-9āēīōūʻ-]` (operator ruling, slot-grammar-orthography); `/` nests. By
     // this point (clause 3.5 runs first) any fold-eligible apostrophe/decomposed vowel has already
     // precomposed to the canonical glyphs, so the class below names the admitted set exactly.
-    const OPEN_RE = /^<<(~ ?ahu|fragment) #\/?([a-z0-9āēīōūʻ/-]+)(.*)$/i;
+    const OPEN_RE = /^<<(~ ?ahu|fragment) slot=`#\/?([a-z0-9āēīōūʻ/-]+)`(.*)$/i;
 
     // The enclosing `stack` is ALWAYS the prefix a new open mints onto — a bare leaf (`#ha-fields`)
     // always lands under whatever is physically open around it, regardless of what name it carries.
@@ -536,7 +536,7 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
         const path = [...base, ...newSegs].join("/");
         stack.push(newSegs[0]!);
         closeCounts.push(1);
-        const rebuilt = `<<${m[1]} #/${path}${m[3]}`;
+        const rebuilt = `<<${m[1]} slot=\`#/${path}\`${m[3]}`;
         if (rebuilt !== line) rooted += 1;
         out.push(rebuilt);
         continue;
@@ -561,7 +561,7 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
 
       for (let i = 0; i < newSegs.length; i++) {
         const path = [...base, ...newSegs.slice(0, i + 1)].join("/");
-        out.push(i === newSegs.length - 1 ? `<<${m[1]} #/${path}${m[3]}` : `<<${m[1]} #/${path}>>`);
+        out.push(i === newSegs.length - 1 ? `<<${m[1]} slot=\`#/${path}\`${m[3]}` : `<<${m[1]} slot=\`#/${path}\`>>`);
         stack.push(newSegs[i]!);
       }
       closeCounts.push(newSegs.length);
@@ -597,6 +597,25 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
     if (rooted > 0) {
       seat.apply("frame", next, () => `lar: fragment: ${rooted} fragment${rooted === 1 ? "" : "s"} rooted (#name → #/name)`);
     }
+  }
+
+  // ── 5.5. Retired meta keys — FRAME AUTHORITY ──────────────────────────────
+  //
+  // RESIDENCY RIDES THE ENVELOPE (operator ruling, Train Q). `file-path` named the file a carrier rests
+  // in, inside its own content; the bag carries residency and the title names content, and a meme
+  // travels to hosts that keep no files at all. The line leaves every live meta fence, the root's and
+  // each slot's alike; a fence SHOWN as held text moves no byte. No reader takes the field back.
+  {
+    let dropped = 0;
+    let next = seat.text;
+    for (const fence of metaFences(seat.text).reverse()) {
+      const lines = fence.body.split("\n");
+      const kept = lines.filter((l) => !/^file-path[ \t]*=/.test(l));
+      if (kept.length === lines.length) continue;
+      dropped += lines.length - kept.length;
+      next = next.slice(0, fence.bodyStart) + kept.join("\n") + next.slice(fence.bodyEnd);
+    }
+    if (dropped > 0) seat.apply("frame", next, () => `retired meta key: ${dropped} file-path line${dropped === 1 ? "" : "s"} dropped (residency rides the envelope)`);
   }
 
   // ── 6. Meta columns — FRAME AUTHORITY ─────────────────────────────────────
@@ -638,8 +657,10 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
       (whole, sharkPrefix: string | undefined, sharkName: string | undefined,
         barePrefix: string | undefined, bareName: string | undefined, offset: number) => {
         if (inMask(mask, offset) || inAnySpan(hanaSpans, offset)) return whole;
-        const prefix = sharkPrefix ?? barePrefix!;
         const name = sharkName ?? bareName!;
+        // A bare mirror (`<<fragment`, `<</fragment`) folds to a canonical head that opens on the sharktooth:
+        // the prefix folds with the word, or the result (`<<ahu`) reads as no pattern at all.
+        const prefix = sharkPrefix ?? (barePrefix === "<</" ? "<<~/" : "<<~ ");
         folded += 1;
         return prefix + MIRROR_CANONICAL_OF.get(name)!;
       },

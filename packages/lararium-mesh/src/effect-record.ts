@@ -378,7 +378,7 @@ export function mapActionToEffects(action: ResidencyAction, opts?: MapOptions): 
         eventId:      newId(),
         archivalVerb: "creation",
         bag:          action.bag,
-        reason:       `bag minted in @${action.plane} plane`,
+        reason:       `bag minted in the ${action.plane} plane`,
       }];
   }
 }

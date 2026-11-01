@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/the-lares-protocols">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/the-lares-protocols`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable      = false
-file-path      = "bags/lares/ha.ka.ba/lares/docs/the-lares-protocols.mem"
 l-space        = "stable"
 last-reviewed  = "2026-05-27"
 mana           = 14
@@ -21,11 +20,11 @@ type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/docs/the-lares-protocols"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 
 
-<<~ ahu #/thesis>>
+<<~ ahu slot=`#/thesis`>>
 
 ! The Purpose of Protocols
 
@@ -41,7 +40,7 @@ Modularity describes a structural property of the system, not a governance frame
 
 <<~/ahu>>
 
-<<~ ahu #/where-protocols-go-quiet>>
+<<~ ahu slot=`#/where-protocols-go-quiet`>>
 
 !! Where Protocols Go Quiet
 
@@ -60,7 +59,7 @@ Theoretical openness offers little practical leverage against convergence in ung
 
 <<~/ahu>>
 
-<<~ ahu #/two-traditional-models-and-the-third>>
+<<~ ahu slot=`#/two-traditional-models-and-the-third`>>
 
 !! Two Traditional Models and a Third
 
@@ -83,7 +82,7 @@ Two articles, two readings of ATProto: Connected Places flags one operator three
 
 <<~/ahu>>
 
-<<~ ahu #/app-file-topology>>
+<<~ ahu slot=`#/app-file-topology`>>
 
 !! Topology as Political Site
 
@@ -109,7 +108,7 @@ Lares answers the diagnostic with a fourth arrangement:
 
 <<~/ahu>>
 
-<<~ ahu #/lares-position>>
+<<~ ahu slot=`#/lares-position`>>
 
 !! Lares Quine Position
 
@@ -144,7 +143,7 @@ The slot Lares occupies wants a name; the meme leaves the naming for a future re
 
 <<~/ahu>>
 
-<<~ ahu #/the-unsolved-question>>
+<<~ ahu slot=`#/the-unsolved-question`>>
 
 !! The Unsolved Question
 
@@ -168,20 +167,20 @@ These questions don't get answered by adding more architecture. They get answere
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "https://connectedplaces.online/the-purpose-of-protocols/">>
-<<~ loulou "https://www.pfrazee.com/blog/practical-decentralization">>
-<<~ loulou "https://www.orionreed.com/posts/app-file-topology/">>
+<<~ loulou uri=`https://connectedplaces.online/the-purpose-of-protocols/`>>
+<<~ loulou uri=`https://www.pfrazee.com/blog/practical-decentralization`>>
+<<~ loulou uri=`https://www.orionreed.com/posts/app-file-topology/`>>
 
-<<~ pranala #cites-protocols from="?" -> to="https://connectedplaces.online/the-purpose-of-protocols/" family="relation" role="has">>
-<<~ pranala #cites-decentralization from="?" -> to="https://www.pfrazee.com/blog/practical-decentralization" family="relation" role="has">>
-<<~ pranala #cites-topology from="?" -> to="https://www.orionreed.com/posts/app-file-topology/" family="relation" role="has">>
+<<~ pranala slot=`#cites-protocols` from=`?` to=`https://connectedplaces.online/the-purpose-of-protocols/` family=`relation` role=`has`>>
+<<~ pranala slot=`#cites-decentralization` from=`?` to=`https://www.pfrazee.com/blog/practical-decentralization` family=`relation` role=`has`>>
+<<~ pranala slot=`#cites-topology` from=`?` to=`https://www.orionreed.com/posts/app-file-topology/` family=`relation` role=`has`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OgS1SbYoMzDrOfRlXU11XhlcEahqgg4_ktId0UsEp_I
+<<^ code=`&#x0003;`>>ni:///sha-256;tbmhEyfSo0dIR33AlbszuA7bRx67GsGY5NsV6M05R1A
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

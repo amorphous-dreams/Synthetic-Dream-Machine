@@ -1,20 +1,19 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/art-sigils/spec">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/art-sigils/spec`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
-uri-path  = "ha.ka.ba/lares/api/art-sigils/spec"
-title     = "lar:///ha.ka.ba/lares/api/art-sigils/spec"
-file-path = "bags/lares/ha.ka.ba/lares/api/art-sigils/spec.mem"
-type      = "text/memetic-wikitext+tiddlywiki"
-register  = "Synthesis-Canon"
-role      = "evergreen Art Sigils ontology, interpretive bounds, and art-house lexicons"
-status    = "stable"
-retain    = true
+uri-path = "ha.ka.ba/lares/api/art-sigils/spec"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils/spec"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "evergreen Art Sigils ontology, interpretive bounds, and art-house lexicons"
+status   = "stable"
+retain   = true
 ```
 
-<<~ ahu #/purpose>>
+<<~ ahu slot=`#/purpose`>>
 ! Art Sigils — Semantic Specification
 
 Art Sigils articulate pictorial intentions across paintings, drawings, abstract works, maps, illustrations, photographs, posters, preparatory studies and images containing other images. An Inscription carries one compact, invocation-only artistic invitation; a Folio expresses that intention through one contiguous block of richer sigils, specialized material scopes and counterpoints. Reference URIs remain in adjacent research ahus, outside the transmitted Folio. Surrounding ahus preserve the research and interpretation outside the transmitted art.
@@ -24,7 +23,7 @@ The specification governs artistic meaning, not the producer's internal generati
 The Two Inks distinguish reusable red procedure definitions from subject-specific black invocations. Their different offices contribute to one artistic reading. Lares house sigils (<<~ name ...>>) and native TW5 calls (<<name ...>>) follow different conventions. The Inscription carries an invocation without a procedure definition. A receiving AI may interpret its structured language directly; native TW5 transclusion draws its definition from the Procedures meme.
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 !! Native TW5 Grammar — declaration / invocation
 
 Art Sigils use **two distinct, native TiddlyWiki5 5.4.0+ forms**, not one universal quotation style:
@@ -33,7 +32,7 @@ Art Sigils use **two distinct, native TiddlyWiki5 5.4.0+ forms**, not one univer
 * **Procedure invocations** use `=` followed by **backtick-wrapped parameter values**, e.g. `<<art subject=` followed by a backtick-wrapped `an artist's "impossible" passage` and the closing `>>`. This supports natural apostrophes or embedded double quotes without quoting the whole value as a directive to print text.
 * The canonical `art()` declaration and optional Folio definitions live in [[Art Sigils Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]]. Inscription and Folio artifacts contain **invocations only**, with an external reference to the Procedures meme. Native TW5 execution requires those definitions in scope; direct model interpretation may work without them.
 * **Terminology boundary:** **Art Sigils** names the art-direction practice, documents and ontology; the native procedure bears the name `art`. Neither name requires glyphs, magical symbols or printed labels in the depicted work.
-* **Scope of rule:** `art`, `art-study`, `art-counterpoint` and `art-facture` invocations use backtick-wrapped `name=` values; their declared defaults use colon plus double quotes. Lares house sigils follow separate house syntax.
+* **Scope of rule:** `art`, `art-study`, `art-counterpoint` and `art-facture` invocations use backtick-wrapped `name=` values; their declared defaults use colon plus double quotes. Lares house sigils write the same form: `=` followed by a backtick value, every value named.
 * **Delegation:** TW5 substitutes a declared default literally when the call omits the named value. The receiving artist or AI interprets that phrase in context. Silence, delegation and explicit withholding remain distinct artistic states.
 * **Rendered reading:** the native single-line procedure body concatenates phrases in declared order. A companion literal-rendering reference records expected parameter substitution, defaults and punctuation; written reference text alone does not attest live TW5 execution.
 * **Dynamic substitution caveat:** backtick values in TW5 may support internal variable substitution. Portable literal Inscription values should avoid unintentional interpolation markers. Optional dynamic Folios should declare their source context.
@@ -50,7 +49,7 @@ Image-facing Inscription pattern (the reusable definition resides in the Procedu
 A Folio presents one contiguous, copyable `tiddlywiki` block of at most **6,000 characters**. Its first `art()` invocation articulates the whole artwork; optional `art-study`, `art-counterpoint` and `art-facture` invocations develop visual studies, materials, uncertainties and pictorial relationships. **No URI, URL, webpage address or procedure declaration enters the block.** Source-aware AIs can read the adjacent research ahus alongside the sigils. Artistic findings from those sources belong in named parameters; raw addresses remain outside. Midjourney may rephrase long prompts; the compact Inscription offers a shorter form.
 <<~/ahu>>
 
-<<~ ahu #/nucleus>>
+<<~ ahu slot=`#/nucleus`>>
 !! The eight artistic dimensions
 
 * ''worktype'' — category and communicative convention of the offered work, e.g. portrait, terrain plate, book illustration, concept board, installation, poster. Neither genre nor image file format alone substitutes for worktype.
@@ -65,7 +64,7 @@ A Folio presents one contiguous, copyable `tiddlywiki` block of at most **6,000 
 The nucleus reads in this order: worktype / subject / read / imagery / treatment / composition / relation / depiction-scope. This order gives neither an object inventory nor a mandatory checklist: read carries the governing invitation, while other declared choices retain their own authority.
 <<~/ahu>>
 
-<<~ ahu #/optional>>
+<<~ ahu slot=`#/optional`>>
 !! Yin — speech, delegation, silence, withholding
 
 * ''Specified'': the operator authors a concrete choice. Explicit subject, read, relation and scope claims govern interpretation within their declared boundaries.
@@ -78,7 +77,7 @@ No intrinsic artistic virtue follows from filling all eight fields. A simple pho
 Interpretation priority: protect explicit choices; read the full subject and intended read together; allow delegated decisions within those boundaries; preserve expressly withheld unknowns. An added reference contributes evidence or technique according to its declared role and must not override the work's geographic, narrative or depiction boundary. Context reduction cuts secondary detail before cutting the artwork's defining visual relationship.
 <<~/ahu>>
 
-<<~ ahu #/scopes>>
+<<~ ahu slot=`#/scopes`>>
 !! Representation, address, and artifactual layers
 
 * **Outer artifact:** the complete work encountered by a viewer: a photograph, painted field, printed page, constructed object, installation or digital image.
@@ -92,7 +91,7 @@ Interpretation priority: protect explicit choices; read the full subject and int
 * **Source boundaries:** reference images, attributed methods, metadata and worldbuilding notes may inform the work without entering it as visible objects, labels or credited names. State a displayed inscription only when its pictorial presence matters.
 <<~/ahu>>
 
-<<~ ahu #/pictorial-evidence>>
+<<~ ahu slot=`#/pictorial-evidence`>>
 !! Visual propositions, relations and evidence
 
 A picture can make a perceptual or interpretive **proposition** without proving it. An adjacent picture, repeated motif, alteration, blank interval or opposing gesture may answer, question or transform that proposition. This option applies to any worktype with consequential relations; Art Sigils never requires a pinboard, comparative studies or a visible research process.
@@ -109,7 +108,7 @@ A picture can make a perceptual or interpretive **proposition** without proving 
 The same eight dimensions accommodate both a solitary monochrome photograph and a many-part conceptual installation. Use discipline-specific terms only where the artwork earns them.
 <<~/ahu>>
 
-<<~ ahu #/lexicons>>
+<<~ ahu slot=`#/lexicons`>>
 !! Art-house lexicons — optional vocabulary within values
 
 These terms offer handles inside the eight dimensions rather than enumerated allowed values, requirements, or promises of a particular renderer. Some carry different meanings across media; interpret each within its local artistic problem.
@@ -138,7 +137,7 @@ Anchorage, relay, pictorial title, caption, handwritten note, printed legend, ca
 For a specialized spatial, environmental or cartographic work, consult the optional cartography research ahu; the basic grammar neither inherits nor privileges its vocabulary.
 <<~/ahu>>
 
-<<~ ahu #/integrities>>
+<<~ ahu slot=`#/integrities`>>
 !! Pattern integrities across worktypes
 
 # ''One art language, multiple expressions.'' Direct native TW5 sigil, its transcluded prose reading, and a richer Folio preserve a recognizable artistic intention; none commands a single AI engine.
@@ -154,7 +153,7 @@ For a specialized spatial, environmental or cartographic work, consult the optio
 # ''Source authorities retain limits.'' Getty concepts inform terms, real geography informs appearance, and fictional canon governs fictional world facts only within its claimed scope.
 <<~/ahu>>
 
-<<~ ahu #/interop>>
+<<~ ahu slot=`#/interop`>>
 !! Expression, execution, and reception
 
 Art Sigils distinguishes the **author's written intention**, its **literal TW5 rendering**, and any receiving artist or model's **visible interpretation**.
@@ -170,7 +169,7 @@ Formal Analysis carries the observational and comparative method; the Procedures
 <<~/ahu>>
 
 
-<<~ ahu #/cartography-research>>
+<<~ ahu slot=`#/cartography-research`>>
 !! Cartography, terrain portrayal, and plan-oblique relief — optional specialist register
 
 A cartographic image may aim to convey spatial relationships, terrain morphology, travel affordances, or measured data. These intentions differ; visual appeal alone cannot validate a survey. **This ahu offers specialist research for terrain-related art; no cartographic convention enters the core `art()` defaults or its other applications.**
@@ -188,7 +187,7 @@ A cartographic image may aim to convey spatial relationships, terrain morphology
 The same semantic grammar serves a technical topographic plate, a freely invented dream landscape, a narrative route painting or a terrain-themed installation. Use `worktype`, `read`, `treatment` and `relation` to determine what viewers should understand or question.
 <<~/ahu>>
 
-<<~ ahu #/art-research>>
+<<~ ahu slot=`#/art-research`>>
 !! Research bearings — general art ontology
 
 Scholarly sources furnish vocabulary and competing interpretive lenses, never one mandatory aesthetic or automatic instruction to imitate their named authors.
@@ -212,7 +211,7 @@ Scholarly sources furnish vocabulary and competing interpretive lenses, never on
 * TiddlyWiki native Procedures, Definition Syntax and Calls: https://tiddlywiki.com/static/Procedures.html ; https://tiddlywiki.com/static/Procedure%2520Definition%2520Syntax.html ; https://tiddlywiki.com/static/Calls.html
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 !! Aftermath — interpretation and artistic bounds
 
 Artworks, instructions, references and interpretations carry distinct authorities. Formal criticism distinguishes what a work **shows**, what viewers **infer**, what credible sources **support**, and what the authored **read** invites. Neither a suggestive image nor an artist's name alone establishes technique, intention, identity or provenance.
@@ -223,6 +222,6 @@ The grammar accommodates portraits, abstract fields, textiles, photographs, inst
 <<~/ahu>>
 
 
-<<^ code="&#x0003;">>ni:///sha-256;cYNfwvUdP0VwdOyfPHbAW1GoyvVZBHLKz-Dcr8vpkxA
+<<^ code=`&#x0003;`>>ni:///sha-256;NiXz97qO6sfiFSdCOOewX-oCdJpw5_6Ig86CIOzOoPw
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

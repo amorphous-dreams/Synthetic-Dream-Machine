@@ -1,7 +1,7 @@
 ---
 lang: "en"
 source: "lar:///ha.ka.ba/lares/docs/tw5-calls-colon-caveat"
-source-check: "ni:///sha-256;vAquQu-jlBroqFT5QPE4E6qVzWPfyhbcAiESux5T_5U"
+source-check: "ni:///sha-256;L9mx5mhhEvgCmMnMl_GdEvaw4-1DVUk4qJsj4-ztDfg"
 title: "lar:///ha.ka.ba/lares/api/pono/submissions/tw5-calls-colon-caveat"
 tongue: "x-lares>en"
 variant: "GFM"
@@ -57,7 +57,7 @@ parameter name — `<<my-procedure address=https://example.com>>` — where no q
 
 A tiddler title needs no delimiters, and the reason carries the whole behaviour: `$:/some/tiddler` fails the parameter-name test at `$:/some`, so it rides whole. A URI scheme passes that test. Nothing else separates the two cases.
 
-The `name=value` form asks the least of an author, since it drops the quoting entirely — the `=` binds before the value's colon arrives.
+The `name=value` form asks the least of an author, since it drops the quoting entirely — the `=` binds before the value's colon arrives. The house writes that form with a backtick value, ``name=`https://example.com` ``, which the host reads as a substituted value after the `=` (`parseutils.js:333`); a backtick run without its name keeps its backticks and splits at the first space.
 
 <a id="measured"></a>
 
@@ -78,5 +78,5 @@ A time of day trips the case a URI trips, so the warning leads with the general 
 
 <a id="edges"></a>
 
-- `loulou "lar:///ha.ka.ba/lares/docs/relational-parameter"`
-- `loulou "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"`
+- `loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#/lexical-structure`
+- `loulou lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext`

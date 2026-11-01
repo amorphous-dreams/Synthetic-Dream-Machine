@@ -173,10 +173,10 @@ describe("L16 · a capture source keeps one identity across ingress", () => {
 // ── 5 · a stamp attests only a bounded, complete span ───────────────────────
 const line = fc.stringMatching(/^[A-Za-z0-9 ,.-]{0,30}$/);
 const body = fc.array(line, { minLength: 1, maxLength: 6 }).map((ls) => ls.join("\n"));
-const HEAD = '<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/t">>\n';
-const STX = '<<^ code="&#x0002;">>\n';
-const ETX = '<<^ code="&#x0003;">>';
-const EOT = '\n\n<<^ code="&#x0004;" -> to="?">>\n';
+const HEAD = '<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/t`>>\n';
+const STX = '<<^ code=`&#x0002;`>>\n';
+const ETX = '<<^ code=`&#x0003;`>>';
+const EOT = '\n\n<<^ code=`&#x0004;` to=`?`>>\n';
 const framed = (b: string): string => `${HEAD}${STX}${b}\n\n${ETX}${EOT}`;
 
 describe("L16 · a stamp attests a bounded, complete span", () => {

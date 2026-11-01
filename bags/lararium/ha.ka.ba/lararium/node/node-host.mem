@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/node-host">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/node/node-host`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/node/node-host.mem"
 l-space     = "lararium"
 mana        = 3
 role        = "self-documentation: TODO describe node-host.ts"
@@ -15,12 +14,12 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/node/node-host"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 TODO: describe the load-bearing surface this file owns.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eNLLprSmX8xW6_gI2JhjEAuOrnLgomFQm8O5wn5Hrpo
+<<^ code=`&#x0003;`>>ni:///sha-256;d_Y9QOHU9r3LM_8GfbJsU1p_LA7Z4zVtKaIzH5KwoFk
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

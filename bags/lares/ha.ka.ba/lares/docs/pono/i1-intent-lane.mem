@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/i1-intent-lane">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/i1-intent-lane`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/i1-intent-lane.mem"
 l-space   = "adjacent"
 role      = "the I1 lane's kit: the face intent plane built, a fifth face plane that carries signed entries, folds them by slot and causal reference, answers with no election and no clock, and moves the face-join summons off the daemon doc"
 status    = "draft"
@@ -14,17 +13,17 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/i1-intent-lane"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! I1 ~ the face intent plane, built
 
-The carrier (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-intent-plane">>) rules the model; this kit reads what stands in the code. The lane opened after Wave C sealed each face's identity anchor, Wave D put each face under its own key and K17-R made every lease rise on a signed advance. The far agent's relay seat follows in the I2 kit (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/i2-relay-lane">>).
+The carrier (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>) rules the model; this kit reads what stands in the code. The lane opened after Wave C sealed each face's identity anchor, Wave D put each face under its own key and K17-R made every lease rise on a signed advance. The far agent's relay seat follows in the I2 kit (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/i2-relay-lane`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/the-model>>
+<<~ ahu slot=`#/the-model`>>
 
 !! The model the lane enacts
 
@@ -38,7 +37,7 @@ The carrier (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-intent-plane">>) ru
 
 <<~/ahu>>
 
-<<~ ahu #/the-slices>>
+<<~ ahu slot=`#/the-slices`>>
 
 !! The slices, one lane, each red-first with its control and its known positive
 
@@ -57,7 +56,7 @@ The bundled plugin carries the mesh's bag table, so `genesis/unbaked.json` decla
 
 <<~/ahu>>
 
-<<~ ahu #/the-fences>>
+<<~ ahu slot=`#/the-fences`>>
 
 !! What the lane keeps off
 
@@ -65,6 +64,6 @@ The W14-W16 floor pin lane's files, K17's frontier, lease and realm boards (the 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NZu3rrQtxn4LItfL3YlssPQunZP_PrJb96T9mrXiQDM
+<<^ code=`&#x0003;`>>ni:///sha-256;o3wNArJ_zi3MOFpO7CHT4_lZlP0Kh_4d2d5fCeX4Nbs
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

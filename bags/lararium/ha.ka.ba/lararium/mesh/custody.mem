@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/custody">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/custody`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/custody.mem"
 hydrate   = true
 l-space   = "stable"
 role      = "custody at rest as law — the carrier table that names every private file a vessel keeps, its six custody classes, the law each row outside every key rests bare under, the outbox's seal and its crash law, the census that names any private file outside the table, and the readers that derive from it; the per-face backup bundle as a record (one face, one fresh key, one human route, a standing section and a memory section, and what it never carries); the cut and its refusals; the restore as a recovery act in five steps, each with its named refusals, and the provisional standing a restored face holds until a party to its relation confirms its head; what a thief of the medium learns and what a thief who opens a bundle learns; what the code holds and what stays owed"
@@ -14,21 +13,21 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/custody"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Custody ~ what a vessel keeps at rest, and what one face carries away
 
 A vessel keeps private files: keys, rosters, names, and the state its key shore needs. This carrier states the law of those files at rest. It names the one table that lists them, the bundle that carries one face off the device, and the act that brings a face back on a fresh vessel.
 
-> ''Register.'' The operator approved the bundle's model as presented, the same-face continuity ruling and the statement of reach among its points (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). The house settled the bytes, the row dispositions, the refusal names and each reading marked below under that approval.
+> ''Register.'' The operator approved the bundle's model as presented, the same-face continuity ruling and the statement of reach among its points (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). The house settled the bytes, the row dispositions, the refusal names and each reading marked below under that approval.
 
-''Words.'' The ''vessel key'' seals a vessel's private files (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/keys">>). A ''route'' names what a person holds to open a key: a passphrase, or a paper sheet. A ''seat'' names one vessel's own place in a face's key group. A ''content key'' opens the sealed values of one bag at one key version. A ''face's root'' names the persona root seed a face signs its lineage with. The ''serving key'' (SK) seals the serving rows alone, and the vessel key and each ember slot wrap it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/the-serving-key">>). The ''outbox key'' seals the sealed store's outbox parcels, and the vessel key wraps it (#/the-table, the outbox).
+''Words.'' The ''vessel key'' seals a vessel's private files (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/keys`>>). A ''route'' names what a person holds to open a key: a passphrase, or a paper sheet. A ''seat'' names one vessel's own place in a face's key group. A ''content key'' opens the sealed values of one bag at one key version. A ''face's root'' names the persona root seed a face signs its lineage with. The ''serving key'' (SK) seals the serving rows alone, and the vessel key and each ember slot wrap it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/ember#/the-serving-key`>>). The ''outbox key'' seals the sealed store's outbox parcels, and the vessel key wraps it (#/the-table, the outbox).
 
 <<~/ahu>>
 
-<<~ ahu #/the-table>>
+<<~ ahu slot=`#/the-table`>>
 
 !! The carrier table ~ one list, every reader derives
 
@@ -46,7 +45,7 @@ A vessel keeps private files: keys, rosters, names, and the state its key shore 
 
 A private file the floor never reads rides `hot`: the seal costs it nothing, and it closes the social graph at rest.
 
-''The `serving` class holds the serving rows and nothing beside them'' (house ruling under the operator's delegation; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). SK seals exactly the rows a serving gate and blind carriage read and write for parties already standing (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/the-tiers">>), so a holder of the disk who gathers the embers' answers opens those rows and no `hot` or `cold` row. ''No serving row holds a minting secret'': no epoch secret, hosting key, leaf seed or signing key rests under SK, and a walker's grant checks at SERVING under a public half alone, a shape the hosted road's re-cut lands before the ember's walker arm. No serving row opens under the vessel key, and no vessel-key row opens under SK. A vessel-key rotation re-wraps the vessel key's entry in the serving tree and re-seals no serving row; an SK rotation re-seals every serving row and touches no `hot` or `cold` row. When an ember slot answers with no person's confirm, and what a hearth with no hardware anchor asks instead, reads in the ember's own law (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/the-raise">>).
+''The `serving` class holds the serving rows and nothing beside them'' (house ruling under the operator's delegation; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). SK seals exactly the rows a serving gate and blind carriage read and write for parties already standing (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/ember#/the-tiers`>>), so a holder of the disk who gathers the embers' answers opens those rows and no `hot` or `cold` row. ''No serving row holds a minting secret'': no epoch secret, hosting key, leaf seed or signing key rests under SK, and a walker's grant checks at SERVING under a public half alone, a shape the hosted road's re-cut lands before the ember's walker arm. No serving row opens under the vessel key, and no vessel-key row opens under SK. A vessel-key rotation re-wraps the vessel key's entry in the serving tree and re-seals no serving row; an SK rotation re-seals every serving row and touches no `hot` or `cold` row. When an ember slot answers with no person's confirm, and what a hearth with no hardware anchor asks instead, reads in the ember's own law (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/ember#/the-raise`>>).
 
 !!! What the table decides
 
@@ -58,7 +57,7 @@ A private file the floor never reads rides `hot`: the seal costs it nothing, and
 * ''A file spelled like a row answers to that row's law.'' A row never excuses the file it matched. A `floor` or `floor-plain` file that rests under the vessel key's seal or under SK's reads as a FAULT, since no rotation re-seals it. A file whose bytes stop inside the seal's magic reads `torn`, never bare, and a short file that opens with the house family's prefix under another magic reads `unopenable` (`s-envelope.ts`); a `floor` or `floor-plain` file that reads any seal (`sealed`, `torn`, `unopenable`) reads as a FAULT, save on the sealed store's own shelves (`sealed-store-fs`), whose bytes stay opaque by design and answer to their row's own check alone. A row that reads its law off the bytes (the sealed store's rests) faults a file whose name fails to commit to its bytes, and a file whose bytes fail to read whole as the kind its shelf names, so a clear key under a rest's spelling reads as a FAULT. An outbox parcel that fails to read as a sealed parcel reads as a FAULT (#/the-table, the outbox). ''The census reads a vessel's own writers, and it catches no planted secret under a row's exact spelling where the row reads no law off the bytes.'' A note of the sealed store, a Keyhive chunk, a contact card, a charter, a consent and an admit pin carry no check of their bytes, so a clear key a hand drops under one of those spellings reads as that row, bare and with no fault, and stays off the list of files outside the table. Whoever writes such a file already holds the disk.
 * ''The census names the private files outside the table, within the three homes.'' One reader walks each home whole, the subtrees no row names among them, and names every file there that reads private and answers to no row: a file whose mode admits its owner alone, a file under the vessel key's seal or SK's, and a sidecar a writer left standing. `lares vault status` prints that list beside ONE reading of each standing file, and a witness refuses a founded vessel that holds one. ''Its reach ends at the three homes'': the config home, the projected files and a store a setting moved elsewhere stand outside it. Its mode sign reads what a writer chose: a file whose mode admits a group reads as no private file, a link reads as no file, and under a umask that strips group and other from every file the reading names files no writer marked. It errs toward naming more.
 * ''A row names whose it reads as'': one face's own (its handle-index), or the vessel's.
-* ''The slot tree wraps a key under human routes'' (`packages/lararium-mesh/src/keyslot.ts`; the operator's rulings stand at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). Each slot wraps the key under a slot key, and splits that slot key across its pins: a passphrase, stretched by scrypt, or a paper sheet that carries 32 random bytes. Any one slot opens the key, and a tree always keeps one route. The tree commits to the one key it wraps, so a slot spliced in from another tree opens nothing. It rests as plain bytes: a random id for each slot, a threshold, each pin's kind, salts, nonces and wrapped bytes, and no version, counter or clock.
+* ''The slot tree wraps a key under human routes'' (`packages/lararium-mesh/src/keyslot.ts`; the operator's rulings stand at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). Each slot wraps the key under a slot key, and splits that slot key across its pins: a passphrase, stretched by scrypt, or a paper sheet that carries 32 random bytes. Any one slot opens the key, and a tree always keeps one route. The tree commits to the one key it wraps, so a slot spliced in from another tree opens nothing. It rests as plain bytes: a random id for each slot, a threshold, each pin's kind, salts, nonces and wrapped bytes, and no version, counter or clock.
 * ''A row names how a bundle treats it'': `whole` (the row rides as it rests), `lines` (the one face's own lines ride, and nothing of another face), or `stays` (the row never leaves its vessel). A bundle's cut and a restore's check both derive from this column, so no hand picks the rows a bundle carries.
 
 !!! How a bundle treats each row
@@ -73,11 +72,11 @@ A private file the floor never reads rides `hot`: the seal costs it nothing, and
 | `persona-declarations` | `lines` | this face's declared Handle; the seat claim and the chair label name a seat on one node, and stay |
 | `handle-book` | `lines` | the records this face recognised, each with this face's own label. A record that names no recognising face stays on its vessel and enters no bundle (house reading) |
 | `veil-archive`, `keyhive-archive` | `stays` | a seat's own key state: a carried copy would let its holder sign as that seat |
-| `seat-key` | `stays` | a chair's own key in a charter: a carried copy would let its holder sign as that chair (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>) |
-| `cadence-key` | `stays` | a hearth's own cadence key and its next key: a carried copy would let its holder offer an engine as that hearth (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>) |
+| `seat-key` | `stays` | a chair's own key in a charter: a carried copy would let its holder sign as that chair (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>) |
+| `cadence-key` | `stays` | a hearth's own cadence key and its next key: a carried copy would let its holder offer an engine as that hearth (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/contract`>>) |
 | `face-provisional` | `stays` | one restored face's provisional mark: the head its restore read on this vessel. A fresh restore elsewhere reads its own head and marks its own face (#/the-restore, the provisional standing) |
 | `restore-pending` | `stays` | a restore's own commit row: it holds what one restore still owes this vessel, and leaves once that restore lands (#/the-restore) |
-| `sk-slots`, `sk-rotation-owed`, every `serving` row | `stays` | the serving tier belongs to its hearth: a restored vessel mints its own SK and binds fresh embers (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/meets">>) |
+| `sk-slots`, `sk-rotation-owed`, every `serving` row | `stays` | the serving tier belongs to its hearth: a restored vessel mints its own SK and binds fresh embers (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/ember#/meets`>>) |
 | `vessel-face-key`, `gate-memory`, `device-share`, `public-handles`, every other row | `stays` | each belongs to its vessel, or names another face, or rebuilds from a board |
 
 !!! The rows that rest bare, each by law
@@ -86,22 +85,22 @@ A private file the floor never reads rides `hot`: the seal costs it nothing, and
 | `vessel-key` | `floor` | the floor signs with it before any person unlocks, so no vessel key may stand between a boot and it |
 | `vessel-kel` | `floor` | the vessel key's own inception names that key and carries its signature: it stands public and proves itself, and a load of the key reads it before any person unlocks |
 | `s-slots` | `floor` | the slot tree wraps the vessel key under each human route, so the key it wraps cannot seal it |
-| `sk-slots` | `floor` | the serving tree wraps SK under the vessel key's entry and each ember slot, so the key it wraps cannot seal it, and a raise reads it before any key opens (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/the-serving-key">>) |
+| `sk-slots` | `floor` | the serving tree wraps SK under the vessel key's entry and each ember slot, so the key it wraps cannot seal it, and a raise reads it before any key opens (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/ember#/the-serving-key`>>) |
 | `sk-rotation-owed` | `floor` | a deny-only mark in the serving tree: any counted removal sets it, and while it stands the serving tree refuses every ask, until the SK rotation at a human unlock clears it. It holds no secret, and a raise must read it with no key open |
 | `relay-gate-seed` | `floor` | a herm stands its relay before any person unlocks, so its random relay-only gate seed (principal: the relay service) rests outside every key; it signs no floor duty and opens no face |
 | `charter`, `carried-charter` | `floor-plain` | the floor's gate reads each charter before any key opens, and a charter stands public and signed |
 | `carriage-consent`, `carriage-admit` | `floor-plain` | the floor reads a kept consent and an admit pin before any key opens; each names a charter, a reach and a gate's public key, and holds no secret |
 | `nexus-key-line` | `floor-plain` | a key hand-over names two public keys and both their signatures, and it stands public on the Nexus's carriage board |
-| `sealed-rest`, `sealed-chunk` | `floor-plain` | a lockbox, a record, an index row and a Keyhive chunk hold ciphertext, opaque ids and addresses, and no secret, name or key in the clear; a blind carrier may hold every one (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store">>) |
+| `sealed-rest`, `sealed-chunk` | `floor-plain` | a lockbox, a record, an index row and a Keyhive chunk hold ciphertext, opaque ids and addresses, and no secret, name or key in the clear; a blind carrier may hold every one (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store`>>) |
 | `sealed-own` | `floor-plain` | the vessel's own note for its sealed store holds opaque ids, a one-byte mark or nothing, under an opaque name |
 
 Every `serving` row rests sealed under SK. Every other row rests `hot` or `cold`, sealed under the vessel key, save the outbox's parcels, which rest sealed under the outbox key the vessel key wraps (below).
 
-''The `sk-rotation-owed` mark binds an honest disk alone'' (house ruling under the operator's delegation). A hand that writes an older serving tree onto the disk restores the removed pin and omits the mark, and that hand already holds the disk; no fence here detects the rollback (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/a-thief">>).
+''The `sk-rotation-owed` mark binds an honest disk alone'' (house ruling under the operator's delegation). A hand that writes an older serving tree onto the disk restores the removed pin and omits the mark, and that hand already holds the disk; no fence here detects the rollback (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/ember#/a-thief`>>).
 
 !!! The outbox ~ sealed parcels, random names, and a crash law
 
-''A locked disk names no reader'' (house ruling under the operator's delegation; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). A parcel carries Keyhive operations that name the readers a vessel wrapped a key for, so its row leaves `floor-plain` for a sealed class.
+''A locked disk names no reader'' (house ruling under the operator's delegation; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). A parcel carries Keyhive operations that name the readers a vessel wrapped a key for, so its row leaves `floor-plain` for a sealed class.
 
 * ''One outbox key, stable, wrapped by the vessel key.'' The vessel key wraps the outbox key, and an unlock hands it to the daemon island the way content keys reach that island. The bare outbox key rests nowhere beside the parcels: a locked vessel holds it wrapped alone, and a vessel-key rotation re-wraps it and re-seals no parcel.
 * ''Each parcel seals whole'' under randomized authenticated encryption keyed from the outbox key. The parcel's reader and its routing ride inside the sealed body.
@@ -126,7 +125,7 @@ Every `serving` row rests sealed under SK. Every other row rests `hot` or `cold`
 
 <<~/ahu>>
 
-<<~ ahu #/the-bundle>>
+<<~ ahu slot=`#/the-bundle`>>
 
 !! The bundle ~ one face, sealed under a route a person holds
 
@@ -158,9 +157,9 @@ The body carries the face's root and the lines that let the face stand again: th
 
 !!! The memory section ~ content keys, never a seat key
 
-''Memory rides as content keys.'' The section carries the bare content keys the cutting vessel's holder COUNTED AND HELD for this face at the cut, one per bag and key version. Each entry names its bag, the bag's locator, the key version id and the key. The key version id commits the key and the bag (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records">>).
+''Memory rides as content keys.'' The section carries the bare content keys the cutting vessel's holder COUNTED AND HELD for this face at the cut, one per bag and key version. Each entry names its bag, the bag's locator, the key version id and the key. The key version id commits the key and the bag (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records`>>).
 
-''The section seals inside the key island, under the bundle key.'' The bundle key alone derives one key pair for the section. The daemon island, where the content-key holder lives, seals the section to that pair's public half and answers ciphertext, so the bundle key's holder alone opens it and no secret crosses the island's port at the cut. An import derives the pair's secret half from the bundle key and hands it to the taking vessel's island sealed to a key that island named for that one import; the island opens the section inside itself. A bare content key never crosses a port in the clear, at the cut or at the import (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store">>).
+''The section seals inside the key island, under the bundle key.'' The bundle key alone derives one key pair for the section. The daemon island, where the content-key holder lives, seals the section to that pair's public half and answers ciphertext, so the bundle key's holder alone opens it and no secret crosses the island's port at the cut. An import derives the pair's secret half from the bundle key and hands it to the taking vessel's island sealed to a key that island named for that one import; the island opens the section inside itself. A bare content key never crosses a port in the clear, at the cut or at the import (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store`>>).
 
 !!! What a bundle reaches, stated without softening
 
@@ -172,7 +171,7 @@ The body carries the face's root and the lines that let the face stand again: th
 
 <<~/ahu>>
 
-<<~ ahu #/the-cut>>
+<<~ ahu slot=`#/the-cut`>>
 
 !! The cut ~ `lares vault backup --face <N>`
 
@@ -186,7 +185,7 @@ The body carries the face's root and the lines that let the face stand again: th
 
 ''The cut asks the vessel's own route again'' (house reading). An unlocked vessel's custody door answers any process of its own user, and no act of its table hands out a root. A bundle rebuilds a root for whoever holds its route, so the cut rides a frame of its own that carries the vessel's route. A route that opens no slot spends one of the boot's unlock attempts.
 
-''The cut refuses under the vessel's own edge shadow'' (`own-edge-shadowed`). A cut hands keys beyond the holder, and a vessel under its own shadow performs no key act (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>). ''The cut reads the shadow once, at its entry.'' A raise the vessel counts while a cut runs binds its next act: the bundle that cut produced stands, and the next cut refuses. The vessel's main thread takes that one reading before any row opens, and says so inside the ask it signs for the memory section; the island's holder then reads none of its own.
+''The cut refuses under the vessel's own edge shadow'' (`own-edge-shadowed`). A cut hands keys beyond the holder, and a vessel under its own shadow performs no key act (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae#/keys`>>). ''The cut reads the shadow once, at its entry.'' A raise the vessel counts while a cut runs binds its next act: the bundle that cut produced stands, and the next cut refuses. The vessel's main thread takes that one reading before any row opens, and says so inside the ask it signs for the memory section; the island's holder then reads none of its own.
 
 !!! The cut's refusals
 
@@ -209,7 +208,7 @@ A cut that refuses writes no file, and a cut never writes over one: a standing f
 
 <<~/ahu>>
 
-<<~ ahu #/the-restore>>
+<<~ ahu slot=`#/the-restore`>>
 
 !! The restore ~ a recovery act, never a row copy
 
@@ -221,25 +220,25 @@ A cut that refuses writes no file, and a cut never writes over one: a standing f
 # ''Preflight, before any write.'' The vessel reads every target row and every relation, the names rows and the handle-book among them: a row that stands and does not read whole refuses here, by its own name. The check of the board reads and never writes: a board this vessel never held reads as holding no event. A founded place stands here, the hearth the restored face binds stands (its seed charter, or the hearth an admit joined it to), and a face above index zero rides beside a lit founding face. The root's public key derives from its seed, the roster line names that key, and the prefix and signer name match what the root itself derives. The carried key history verifies whole, from the inception that root derives. ''The face's CURRENT key history still accepts the root'': every key event this vessel reads for the face, off the carried log and off its own board, folds through the one reader of key histories, and the newest event of that lineage still names this root as the operating key and still commits recovery to this root's own recovery key, or reads as the typed first enrolment this root signed. A rotation still open to contest counts as the newest event. A history that forks refuses: no reader settles a fork by order. An event that fails its own proof moves nothing, so nobody blocks a restore by planting one. No root of this face stands here. The target handle-index holds no other root, no other roster line and no lit face; an orphan root row there matches the bundle's key. No `face-proof-key` row stands there under other bytes.
 # ''One durable commit.'' The vessel seals ONE row, `restore-pending`, that holds everything the restore will land. That one write commits the restore: before it nothing moved, and after it the restore completes, in this run or the next. The vessel then lands each row from it: the proof-key rows, the names, the handle-book records, the root row and its roster line. Each lands only where nothing stands or where the same bytes stand, so a run that stops anywhere lands the rest when the same command runs again.
 # ''Re-admit.'' The vessel seats the carried key history on its own board and lights the face under its own veil: a fresh key group, the same fixed prefix, a device edge the root signs for this vessel's key, and the face's own address secret, landed from the body and never minted. The pending row leaves once the face stands lit. The face mounts when the vessel stands again and a person unlocks it.
-# ''Import'' (`lares vault restore <file> --memory`). The vessel, standing unlocked and wearing the face, hands the memory section to its daemon island's import door (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store">>). The command prints each version's outcome, and that the sealed bytes must stand in this vessel's rests for a body to open.
+# ''Import'' (`lares vault restore <file> --memory`). The vessel, standing unlocked and wearing the face, hands the memory section to its daemon island's import door (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store`>>). The command prints each version's outcome, and that the sealed bytes must stand in this vessel's rests for a body to open.
 
 ''A stopped restore completes.'' A pending row that names the same root resumes at the landing, from the row and never from the bundle handed in. The key history check runs again first, over the row's log, the handed bundle's log and the board, so another cut of the face that carries a newer head refuses the resume. A pending row that names another face refuses, and so does another index named over a restore that stands pending.
 
 ''Restore lands additively.'' It never replaces a newer lockbox, record, key, name or label with a bundle's snapshot. A name fills only where the vessel holds none. An old bundle over a newer holder adds what the holder lacks and moves nothing it holds.
 
-''A face's own bundle restores after it enrols recovery contacts'' (house ruling under the operator's delegation; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). The newest event may read as the typed first enrolment the root itself signed: the root still operates, and the rolling commitment names the set that event committed. A recovery contacts' rotation that moves the set cuts every earlier bundle off (`root-superseded`), so the rotation, never the enrolment, ends a stolen bundle's reach. A bundle cut after the enrolment carries the set: its registrations recompute the digest it names, its own carried history commits it, the newest head commits the same set, no carried key guards another face of this vessel, and the face's sealed `recovery-contact-set` row lands at the target index beside the root, where none stands or where the same set stands. A bundle cut before the enrolment still restores where the board holds the event, and the restore says the set rode no bundle: the recovery contacts still hold their keys, and a fresh cut from a vessel that holds the set carries it. The restored face stands provisional either way (#/the-restore, the provisional standing).
+''A face's own bundle restores after it enrols recovery contacts'' (house ruling under the operator's delegation; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). The newest event may read as the typed first enrolment the root itself signed: the root still operates, and the rolling commitment names the set that event committed. A recovery contacts' rotation that moves the set cuts every earlier bundle off (`root-superseded`), so the rotation, never the enrolment, ends a stolen bundle's reach. A bundle cut after the enrolment carries the set: its registrations recompute the digest it names, its own carried history commits it, the newest head commits the same set, no carried key guards another face of this vessel, and the face's sealed `recovery-contact-set` row lands at the target index beside the root, where none stands or where the same set stands. A bundle cut before the enrolment still restores where the board holds the event, and the restore says the set rode no bundle: the recovery contacts still hold their keys, and a fresh cut from a vessel that holds the set carries it. The restored face stands provisional either way (#/the-restore, the provisional standing).
 
 ''A vessel checks the newest key history it reads, and every honest reader checks its own'' (house reading). The house keeps no registry of heads, and no vessel reads a head it never received. The restore answers which head its check read, by sequence, and whether it read that head off this vessel's own board or off the bundle's log. The carried log reaches as far as the cut. A rotation that landed after the cut shows only on a board, so a fresh vessel that reached no board passes a root the face has since superseded. That vessel's seat then stands for itself alone: every reader that holds the newer head refuses the edge the superseded root signed, at its own gate, and this vessel's own gate refuses it too once its board carries that head.
 
 ''A face whose other vessels still stand takes the join door'' (house reading). A restore founds a fresh key group under the face's fixed prefix. Where another vessel of the face still holds the group, that vessel seats the new device through the fleet-join door, and the bundle serves that device's memory alone (`--memory`).
 
-''A restore as persona zero runs through the founding act'' (house ruling, <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). A person who lost their one machine founds the fresh hearth FROM the bundle (`lares vessel found --hearth --restore <bundle>`): the act lands the bundle's face at h0 through this same restore, its one commit row, its checks and its provisional mark, in place of a fresh root; seats a fresh one-seat seed charter over that root, with a fresh chair the restored face holds; and lights the face bound to the new charter's AID. A bundle carries no seat key, so the lost hearth's chair carries no authority on the new one. A founding that stopped part way resumes only its own root: while its commit row stands, a bare founding refuses and mints no root over it, and another face's bundle refuses `restore-pending`; a root that differs at h0 refuses (`roster-names-another-key`), and nothing mints over it. Over a standing hearth the act lands no restored face as persona zero (`hearth-stands`): the restore beside persona zero answers there.
+''A restore as persona zero runs through the founding act'' (house ruling, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). A person who lost their one machine founds the fresh hearth FROM the bundle (`lares vessel found --hearth --restore <bundle>`): the act lands the bundle's face at h0 through this same restore, its one commit row, its checks and its provisional mark, in place of a fresh root; seats a fresh one-seat seed charter over that root, with a fresh chair the restored face holds; and lights the face bound to the new charter's AID. A bundle carries no seat key, so the lost hearth's chair carries no authority on the new one. A founding that stopped part way resumes only its own root: while its commit row stands, a bare founding refuses and mints no root over it, and another face's bundle refuses `restore-pending`; a root that differs at h0 refuses (`roster-names-another-key`), and nothing mints over it. Over a standing hearth the act lands no restored face as persona zero (`hearth-stands`): the restore beside persona zero answers there.
 
-''The root cards restore a root and open no memory'' (house ruling, <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>, "Paper restores a root, never memory"). The two off-device cards of a root split (`persona new --split-root`: the recorded code and the escrow carrier; a custodian-card split names its cards the same way) rebuild the persona root alone. A code spells a share's point and its checksum, and names no custodian, no epoch and no root, so the reader asks the person which custodian each card came from and which face the cards should rebuild, by its root's public key or by its prefix. It reads each card on its checksum, gathers two distinct custodians, rebuilds the seed for the length of one build, and refuses by name before anything reads the board: `cards-too-few`, `cards-one-custodian`, `card-malformed`, `cards-repeat`, `face-unnamed`, and `cards-another-root` where the rebuilt root differs from the face named (shares of two splits, a split that re-rolled, another face). It then builds the body the restore lands: the root and its roster line at the free target index, the anchors the root derives, the root's own inception as the carried history, no name, no proof key, no handle-book record, no recovery contact set, no address secret (paper carries none, so the face's working slot refuses `no-address-secret` until a fleet join lands the secret from a device that wears the face), and a memory section with no entry, sealed to a key whose secret half nobody keeps. The restore's steps and refusals follow unchanged, so a board that holds a rotation away from the root refuses `root-superseded`, and the face lands under a NEW seat. Content keys stay random and wrap under the vessel key or a bundle's own key, and no key the root derives opens memory: a person recovers memory through a bundle (`--memory`). Cards carry no later key event, so the head check reads the board for them.
+''The root cards restore a root and open no memory'' (house ruling, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>, "Paper restores a root, never memory"). The two off-device cards of a root split (`persona new --split-root`: the recorded code and the escrow carrier; a custodian-card split names its cards the same way) rebuild the persona root alone. A code spells a share's point and its checksum, and names no custodian, no epoch and no root, so the reader asks the person which custodian each card came from and which face the cards should rebuild, by its root's public key or by its prefix. It reads each card on its checksum, gathers two distinct custodians, rebuilds the seed for the length of one build, and refuses by name before anything reads the board: `cards-too-few`, `cards-one-custodian`, `card-malformed`, `cards-repeat`, `face-unnamed`, and `cards-another-root` where the rebuilt root differs from the face named (shares of two splits, a split that re-rolled, another face). It then builds the body the restore lands: the root and its roster line at the free target index, the anchors the root derives, the root's own inception as the carried history, no name, no proof key, no handle-book record, no recovery contact set, no address secret (paper carries none, so the face's working slot refuses `no-address-secret` until a fleet join lands the secret from a device that wears the face), and a memory section with no entry, sealed to a key whose secret half nobody keeps. The restore's steps and refusals follow unchanged, so a board that holds a rotation away from the root refuses `root-superseded`, and the face lands under a NEW seat. Content keys stay random and wrap under the vessel key or a bundle's own key, and no key the root derives opens memory: a person recovers memory through a bundle (`--memory`). Cards carry no later key event, so the head check reads the board for them.
 
 !!! The provisional standing ~ a restored face waits on one party to its relation
 
-''A restored face stands PROVISIONAL'' (house ruling under the operator's delegation; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). The restore read the newest key history this vessel holds, and no vessel reads a head it never received, so the face waits until at least one party to its relation shows its own log view of the face and that view agrees with the head the restore read.
+''A restored face stands PROVISIONAL'' (house ruling under the operator's delegation; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). The restore read the newest key history this vessel holds, and no vessel reads a head it never received, so the face waits until at least one party to its relation shows its own log view of the face and that view agrees with the head the restore read.
 
 * ''Who confirms'': a sibling device of the same human, a seated chair of a Nexus the face stands in, or one of the face's recovery contacts. Each shows the log view it holds itself; the house keeps no registry of heads, and a confirm reads no list compiled about the face.
 * ''What the face does while provisional'': it reads, recovers and serves its own content. It signs no act that changes who holds authority, and each such act refuses by name and names who could confirm.
@@ -277,13 +276,13 @@ A cut that refuses writes no file, and a cut never writes over one: a standing f
 | `memory-unavailable` | `--memory` met a vessel with no daemon island, or no vessel standing |
 | `signer-unavailable` | `--memory` met an island that holds no session signer: an import signs a record |
 
-Every refusal of a restore lands before the commit row, so before any row moves. An import that refuses lands no key; each entry of an import that runs draws one outcome of its own (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store">>).
+Every refusal of a restore lands before the commit row, so before any row moves. An import that refuses lands no key; each entry of an import that runs draws one outcome of its own (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store`>>).
 
 ''The restore's two acts ride the custody door's act table'' (house reading). The table takes no credential of the vessel, and nothing a row takes opens the vessel key. The two rows take a bundle's body still sealed and the bundle's own key, which the person's route already opened in the command's process: that key opens one bundle's body and nothing this vessel holds. A root comes in through the restore's row, and no row answers one. With no vessel standing the command runs the same restore in its own process; an import needs the standing vessel's island.
 
 <<~/ahu>>
 
-<<~ ahu #/a-thief>>
+<<~ ahu slot=`#/a-thief`>>
 
 !! What a thief learns
 
@@ -306,7 +305,7 @@ Every refusal of a restore lands before the commit row, so before any row moves.
 
 <<~/ahu>>
 
-<<~ ahu #/what-the-code-holds>>
+<<~ ahu slot=`#/what-the-code-holds`>>
 
 !! What the code holds
 
@@ -319,7 +318,7 @@ Every refusal of a restore lands before the commit row, so before any row moves.
 * ''The bundle's bytes'' (`packages/lararium-mesh/src/face-bundle.ts`): the format mark, the slot tree, the sealed body under a key the bundle key derives, the memory pair that key derives under another name, and a body reader that refuses any part the shape does not name.
 * ''The cut'' (`packages/lararium-node/src/face-bundle-cut.ts`): one extractor for each row the table's column names, the shadow read once at the entry, and each refusal of #/the-cut. A test holds the extractors equal to the column.
 * ''The custody door's `backup` frame'' (`packages/lararium-node/src/custody-frames.ts`) and the holder's route proof (`custody-holder.ts` `proves`): the frame carries the vessel's own route, a face and a bundle key, and nothing beside them.
-* ''The memory section's cut'': the vessel's main thread signs one ask of its daemon island (`packages/lararium-node/src/island-verb-ask.ts` `askIslandMemory`), and the island seals the section to the pair the bundle key derives (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/what-the-code-holds">>). No content key mints on a production vessel until a session signer stands, so a production cut carries an empty section.
+* ''The memory section's cut'': the vessel's main thread signs one ask of its daemon island (`packages/lararium-node/src/island-verb-ask.ts` `askIslandMemory`), and the island seals the section to the pair the bundle key derives (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/what-the-code-holds`>>). No content key mints on a production vessel until a session signer stands, so a production cut carries an empty section.
 * ''`lares vault backup --face <N> --out <file>`'' (`packages/lares-cli/src/vault-backup.ts`, `commands/vault.ts`): the command reads the vessel's route and the bundle's new route on a terminal, binds the slot tree in its own process and writes the file owner-only. The test door for marked scratch roots (`tools/backup-test-custody.mjs`) runs the same cut under the published test route.
 * ''The handle-book's tag for the recognising face'' (`packages/lararium-mesh/src/handle-book.ts`): a recognition made while a face stands worn tags that face's root key, `snapshotFor` answers one face's own records under that face's own labels, and a record no face tagged enters no bundle. The node command line tags; a browser vessel cuts no bundle and tags nothing.
 
@@ -331,29 +330,29 @@ Every refusal of a restore lands before the commit row, so before any row moves.
 * ''The chair's key row'' (`packages/lararium-node/src/seat-key-store.ts`; the table's `seat-key` row). One cold row holds one chair's key, 32 bytes minted at random, under a name that carries the face whose seat claim stood and a digest of the key's public half. The store mints, signs one image for one opening, lists by name alone, answers one face's public halves for one read, and retires a row its own vessel key opens once that row's bytes answer the key asked for. The seal rite mints each standing chair's key there (`seal-ceremony.ts` `armGenesis`), adopts at a roll each cold key a person typed back from its card, once its digest answers the standing head (`armRoll`), signs a roll as a seat (`seal.sign`), and retires a key no held charter seats and no open crossing names (`retireSeats`); the quorum doors sign with the rows (`held-quorum.ts`). No chair's NEXT key rests on the vessel: it rests on its card.
 * ''The hearth's cadence key row'' (`packages/lararium-node/src/cadence-key-store.ts`; the table's `cadence-key` row). One cold row holds one hearth's cadence key and its next key, 64 bytes minted at random on the device, never derived from serving or floor material, under a name that carries a digest of the key's public half. The store mints, signs one image for one opening, and retires a row its own vessel key opens once that row's bytes answer the key asked for. The two-founder act mints one per founding at its offer and its join, and signs the cadence inception with it (`cofound-ceremony.ts`). No card prints at the founding: the next key rests in the row, and the cadence image commits its digest.
 * ''The founding record row'' (`packages/lararium-node/src/cofound-record.ts`; the table's `cofound` row). One hot row per joint founding, named by the offer fingerprint, records the offer this vessel made or answered, its seat and cadence keys' public halves and the inception image it judged. The inception door signs a joint founding only for the seat and the image that row holds (`seal-ceremony.ts` `signLicensedInception`).
-* ''The sealed outbox'' (`packages/lararium-node/src/outbox-key.ts`; `packages/lararium-mesh/src/sealed-store-rest.ts` `putOutbox`, `outbox`; the table's `outbox-key` and `sealed-outbox` rows). The outbox key mints once into its `hot` row, and the vessel's main thread opens it at each unlocked composition and hands it to the daemon island on its manifest, the road the keyhive Archive rides. The island's `sealed-hand-over`, `sealed-parcels` and `sealed-serve` verbs seal each parcel whole under XChaCha20-Poly1305 with a fresh nonce, the reader inside the seal, and rest it under a random name by one whole write; a read filters by reader after it opens. The census, `vault status` and the custody census tool read the `outbox` class. The receiver folds a repeated parcel idempotently: the same parcels received twice rest nothing new and move no reading (`packages/lararium-mesh/tests/content-key-holder.test.ts`). No reader empties the outbox and no act deletes a parcel: the member lane that ships a parcel and deletes it after the ship rides the carriage protocol (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>).
+* ''The sealed outbox'' (`packages/lararium-node/src/outbox-key.ts`; `packages/lararium-mesh/src/sealed-store-rest.ts` `putOutbox`, `outbox`; the table's `outbox-key` and `sealed-outbox` rows). The outbox key mints once into its `hot` row, and the vessel's main thread opens it at each unlocked composition and hands it to the daemon island on its manifest, the road the keyhive Archive rides. The island's `sealed-hand-over`, `sealed-parcels` and `sealed-serve` verbs seal each parcel whole under XChaCha20-Poly1305 with a fresh nonce, the reader inside the seal, and rest it under a random name by one whole write; a read filters by reader after it opens. The census, `vault status` and the custody census tool read the `outbox` class. The receiver folds a repeated parcel idempotently: the same parcels received twice rest nothing new and move no reading (`packages/lararium-mesh/tests/content-key-holder.test.ts`). No reader empties the outbox and no act deletes a parcel: the member lane that ships a parcel and deletes it after the ship rides the carriage protocol (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed`>>).
 * ''The end-to-end rehearsal'' (`packages/lararium-node/tests/face-bundle-rehearsal.test.ts`, on the real founding, the real face rite and each vessel's own key island; `tools/vault-restore-door.test.mjs`, on the built tree and standing vessels): found, light a face, seal a private body, cut, destroy the vessel's home, found fresh, restore, import, open the body and a second body sealed after the cut under the same version; a second restore and another identity refuse.
 
 ''Specified in code: the suites run it, and no production path completes it.''
-* ''The memory import'' (`face-bundle-restore.ts` `importFaceBundleMemory`; the act table's `bundle.import` row). The standing vessel places the island's door and its import under its own signed asks. An import signs a record, and no production path opens a session signer, so on a production vessel it refuses `signer-unavailable`. Caller that completes it: the wire cutover's session open (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>).
+* ''The memory import'' (`face-bundle-restore.ts` `importFaceBundleMemory`; the act table's `bundle.import` row). The standing vessel places the island's door and its import under its own signed asks. An import signs a record, and no production path opens a session signer, so on a production vessel it refuses `signer-unavailable`. Caller that completes it: the wire cutover's session open (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed`>>).
 
-''Owed: ruled, and no code holds it.'' Each rides a row of <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>.
+''Owed: ruled, and no code holds it.'' Each rides a row of <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops`>>.
 * ''The `serving` class'': the carrier table's class, `sk-slots`, `sk-rotation-owed`, the serving rows under SK, the SK rotation, and the census, `vault status` and the rotation's list reading every class (train E, beside the ember's serving tier).
 * ''The provisional standing's residue'' (train K): a sibling device's view, which no door reads apart from the restorer; and the guard on the authority-changing doors of the wire cutover and the Nexus host (a seat's root-signed crossing, the edge kapae, the device admit, the two-founder act, and the session signer's authority purpose).
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">> the sealed store states the content keys, the memory section's import door and the same-face ruling
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember">> the ember states the serving tier SK seals, the serving tree and the raise
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-shape">> the waking floor states the custody door and its frames
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">> persona policy rules that lineage and memory recover apart
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">> kapae rules the key side of a removal
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">> the roadmap carries the operator's ruling
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>> the sealed store states the content keys, the memory section's import door and the same-face ruling
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/ember`>> the ember states the serving tier SK seals, the serving tree and the raise
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-shape`>> the waking floor states the custody door and its frames
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery`>> persona policy rules that lineage and memory recover apart
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae#/keys`>> kapae rules the key side of a removal
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>> the roadmap carries the operator's ruling
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZRW_KWaF14rECdx5MrM8-m5PlSTE7GfbgYHAm-lbPv0
+<<^ code=`&#x0003;`>>ni:///sha-256;2rDyHOqTIhnsy_RQwI4gErA3woF-x-tSLiyVqtIYmeM
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -27,14 +27,14 @@ const URI = "lar:///t.witness.npc/inventory";
  * `place` leg alone — a test-fixture divergence, not a `check`/`place` reading disagreement.
  */
 const witness = (uri: string, slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n` +
-  `<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${uri.slice(7)}"\nbag = "backpack: rope, lantern"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n\n`).join("") +
-  `<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n` +
+  `<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.slice(7)}"\nbag = "backpack: rope, lantern"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n\n`).join("") +
+  `<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 /** The same carrier with its one slot torn: the opener stands, the closer never arrives. */
 const unclosedOf = (uri: string): string => witness(uri, ["a"]).replace("<<~/ahu>>\n", "");
 /** The same carrier with a closer no opener claims. */
-const orphanOf = (uri: string): string => witness(uri, ["a"]).replace("<<~ ahu #/a>>\n", "");
+const orphanOf = (uri: string): string => witness(uri, ["a"]).replace("<<~ ahu slot=`#/a`>>\n", "");
 
 describe.skipIf(wikiSkip)(`one text, one grade${skipNote}`, () => {
   let face: LaresMemeFace;

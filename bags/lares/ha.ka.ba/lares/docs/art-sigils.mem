@@ -1,20 +1,19 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/art-sigils">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/art-sigils`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
-uri-path  = "ha.ka.ba/lares/docs/art-sigils"
-title     = "lar:///ha.ka.ba/lares/docs/art-sigils"
-file-path = "bags/lares/ha.ka.ba/lares/docs/art-sigils.mem"
-type      = "text/memetic-wikitext+tiddlywiki"
-register  = "Synthesis-Canon"
-role      = "Art Sigils examples index"
-status    = "stable"
-retain    = true
+uri-path = "ha.ka.ba/lares/docs/art-sigils"
+title    = "lar:///ha.ka.ba/lares/docs/art-sigils"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "Art Sigils examples index"
+status   = "stable"
+retain   = true
 ```
 
-<<~ ahu #/index>>
+<<~ ahu slot=`#/index`>>
 ! Art Sigils — Examples
 
 * **Zero · Shattered Olympos:** [[Inscription|ha.ka.ba/lares/docs/art-sigils/example-zero-inscription]] · [[Folio|ha.ka.ba/lares/docs/art-sigils/example-zero-folio]]
@@ -23,10 +22,10 @@ retain    = true
 [[Art Sigils API|ha.ka.ba/lares/api/art-sigils]]
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 Examples demonstrate the grammar without defining its defaults.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PrAan2ZIMJO_h-y-juT_WqJ5zexzfJLhqiLP5SSPwuc
+<<^ code=`&#x0003;`>>ni:///sha-256;IMwlS0_E__g5gghDH2CGSBFs5j9USR4e_DcJpwvtCLo
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

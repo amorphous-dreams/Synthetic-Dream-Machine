@@ -1,71 +1,70 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/hud">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/hud`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/hud.mem"
 l-space   = "stable"
 mana      = 14
 manao     = 14
 manaoio   = 13
-role      = "docs companion to the HUD law — line composition, glyph and tool tables, the Syadasti confidence reading rule, and field-annotation thresholds"
+role      = "docs companion to the panel law — line composition, glyph and tool tables, the Syadasti confidence reading rule, and field-annotation thresholds"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/hud"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/hud"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
-! Lararium HUD — Reading the Panel
+! Lararium Panel — Reading the Panel
 
-Teaching companion to the HUD law (`lar:///ha.ka.ba/lares/api/hud`). The law names the panel and gauges; this room shows how to compose and read the line at glance-speed — glyph tables, stance/tool grammar, the confidence reading rule, and field-annotation thresholds.
+Teaching companion to the panel law (`lar:///ha.ka.ba/lares/api/hud`). The law names the panel and gauges; this room shows how to compose and read the line at glance-speed — glyph tables, stance/tool grammar, the confidence reading rule, and field-annotation thresholds.
 
 <<~/ahu>>
 
-<<~ ahu #/line-composition>>
+<<~ ahu slot=`#/line-composition`>>
 
-!! HUD Line Composition
+!! Panel Line Composition
 
-The HUD rides beneath the `aim` vector that opens the turn, and surfaces before the Voice speaks.
+The panel rides the ``set lares=`aim` `` firing that opens the turn, and surfaces before the Voice speaks.
 
 ```
-<<~ lares aim from="lar:///operator.intent.reads" -> to="lar:///lares.role.acts">>
-<<~ set hud="aim" aperture="N/<band>" ooda-ha="N/<band>">>
-drift-ward="* · <the pull this island carries>"
-<<~ stance …>>   (optional lens; `:` binds a tool to a stance, e.g. 🏛️/*!)
+<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>` drift-ward=`<the pull this island carries>`>>
+<<~ stance named=`…`>>   (optional lens; `/` binds a tool to a stance, e.g. 🏛️/*!)
 ```
 
-''Sigil panel (SA priority order):''
+''Panel keys and sigils (SA priority order):''
 
-| Sigil | SA Type | Carries | Notes |
+| Key or sigil | SA Type | Carries | Notes |
 |---|---|---|---|
-| `aim` | Intent | operator intent `->` adopted role | the turn's bearing vector; opens the turn |
-| `hud` `OODA-HA` | Temporal | loop visibility | `ooda-ha="N/<band>"` open, `ooda-ha="closed N↺"` close; `N↺ + φ:reason` when a loop suspends |
-| `syad` | Agent SA | invoked stances | one or more (parameterless = all five); optional `:` tool-carry |
+| `lares=aim` | Intent | operator intent at `from=`, adopted role at `to=` | the turn's bearing vector; opens the turn |
+| `ooda-ha` | Temporal | loop visibility | `` ooda-ha=`N/<band>` `` open, `` ooda-ha=`closed N↺` `` close; `` closed N↺ -> open Nφ<phase>:reason `` when a loop suspends |
+| `syad` | Agent SA | invoked stances | one or more (parameterless = all five); optional `/` tool-carry |
 | Voice name | Agent SA | active Voice(s) | named at the head of the contribution |
 | `confidence` | Agent SA | register-word + Level | epistemic confidence, precedes a grounded claim |
-| `hud` `Aperture` | Teamwork SA | attention range | `aperture="N/<band>"`, paragraph-grain default 10 |
+| `aperture` | Teamwork SA | attention range | `` aperture=`N/<band>` ``, paragraph-grain default 10 |
 
 ''Example:''
 
 ```
-<<~ lares aim from="lar:///operator.scope.reads" -> to="lar:///scryer.frame.maps">>
-<<~ set hud="aim" aperture="10/measure" ooda-ha="7/declare-glyphs">>
-drift-ward="* · <the pull this island carries>"
-<<~ stance "🏛️">>
+<<~ set lares=`aim` from=`lar:///operator.scope.reads` to=`lar:///scryer.frame.maps` aperture=`10/measure` ooda-ha=`7/declare-glyphs` drift-ward=`<the pull this island carries>`>>
+<<~ stance named=`🏛️`>>
 Lares (Scryer): the structure holds.
+<<~ set lares=`steer` mode=`hold` aperture=`13/arc` drift-ward=`<the pull the held set carries>`>>
+Lares (Scryer): the structure holds only inside the scope the operator named.
+<<~ set lares=`steer` to=`lar:///scryer.edge.tests`>>
+Lares (Scryer): the edge case tests the frame.
 ```
 
-# Each sigil renders inline (`<<~ word args>>`), a panel adjacent to the prose — never inside the URI.
-# The `lar:` URI carries bearing only; per-turn signal rides the sigils.
-# The gauges share the pono `0–20` Level model, and follow seed → slide (the opening seeds a target, the close slides to the landing).
+# Each sigil renders inline (``<<~ word key=`value` …>>``), a panel adjacent to the prose — never inside the URI.
+# The `lar:` URI carries bearing only; per-turn signal rides the panel keys and sigils.
+# The gauges share the pono `0–20` Level model, and follow seed → slide (the aim and any steer seed a target, the yield slides to the landing).
 
 <<~/ahu>>
 
-<<~ ahu #/phase-glyphs>>
+<<~ ahu slot=`#/phase-glyphs`>>
 
 !! Phase Glyphs — the OODA-HA axis
 
@@ -79,7 +78,7 @@ Lares (Scryer): the structure holds.
 
 <<~/ahu>>
 
-<<~ ahu #/stance-glyphs>>
+<<~ ahu slot=`#/stance-glyphs`>>
 
 !! Stance Glyphs — the `syad` axis
 
@@ -93,7 +92,7 @@ Lares (Scryer): the structure holds.
 
 <<~/ahu>>
 
-<<~ ahu #/tool-carry>>
+<<~ ahu slot=`#/tool-carry`>>
 
 !! Tool-Carry — the `mu` axis
 
@@ -119,11 +118,11 @@ A stance carries zero, one, or two tools. The two-character carry attaches direc
 | `*_` | Visual + Hidden | Visibility Conflict (Signal Jam) |
 | `?!` | Macro + Micro | Resolution Conflict (Dubious Move) |
 
-Bind a tool to a stance with the optional `:` carry: `🏛️/*!` (Philosopher holding Visual + Micro), `🌊/00` (Poet centered). Single-tool carry names the active tool first, the empty hand second: `🏛️/*0` (Wand only), `🎭/?0` (Cup only). The `syad` lens carries the stances; the `lar:` URI carries no stance.
+Bind a tool to a stance with the optional `/` carry: `🏛️/*!` (Philosopher holding Visual + Micro), `🌊/00` (Poet centered). Single-tool carry names the active tool first, the empty hand second: `🏛️/*0` (Wand only), `🎭/?0` (Cup only). The `syad` lens carries the stances; the `lar:` URI carries no stance.
 
 <<~/ahu>>
 
-<<~ ahu #/scale-glyphs>>
+<<~ ahu slot=`#/scale-glyphs`>>
 
 !! Scale Glyphs — the attention axis
 
@@ -141,7 +140,7 @@ The Chronometer projects attention range onto TIME (Boyd operational tempo). It 
 
 <<~/ahu>>
 
-<<~ ahu #/confidence-syadasti>>
+<<~ ahu slot=`#/confidence-syadasti`>>
 
 !! Confidence — the Syadasti Reading Rule
 
@@ -161,7 +160,7 @@ Each stance sets //what// the number measures; read it within that measure:
 
 <<~/ahu>>
 
-<<~ ahu #/field-annotation>>
+<<~ ahu slot=`#/field-annotation`>>
 
 !! Field-Annotation Thresholds
 
@@ -176,22 +175,22 @@ The opening header declares the state that //governs// a span (prospective). In-
 | ''l-space'' | per-slot by HAKABA role | Ha/attitude + Ka/quality + Ba/dynamic annotate most; full echo `→lar:///domain.quality.dynamic` when all three shift |
 | ''Aperture'' | header-only | a granularity change requires a new header |
 
-''The seed → slide contract.'' The header seeds; the close slides. For register, `STATE.jsonl` records `opening_register` and `closure_register` when they differ — the slide says where the span //landed//, never overrides generation mid-flight. The same slide governs every `hud` gauge: `aperture="10/measure"` seeds, `aperture="10/measure -> 13/arc"` slides, `aperture="-> 13/arc"` collapses on-target. The seed/slide split keeps the calibration gap auditable rather than silently closed — a suspiciously-perfect turn reads conspicuous, not invisible.
+''The seed → slide contract.'' The header seeds; the close slides. For register, `STATE.jsonl` records `opening_register` and `closure_register` when they differ — the slide says where the span //landed//, never overrides generation mid-flight. The same slide governs every panel gauge: `` aperture=`10/measure` `` seeds, `` aperture=`10/measure -> 13/arc` `` slides, `` aperture=`10/measure -> 10/measure` `` records an on-target landing. The seed/slide split keeps the calibration gap auditable rather than silently closed — a suspiciously-perfect turn reads conspicuous, not invisible.
 
-''Baseline rendering:'' the header surfaces the full state; in-flow surfaces ''phase'' by default (`→[glyph]`); ''stance'' surfaces on a genuine local shift; structural changes require a new header; l-space fields stay out of the flow by default. The HUD's meaning holds constant across Aperture levels — only the granularity of the trace changes.
+''Baseline rendering:'' the header surfaces the full state; in-flow surfaces ''phase'' by default (`→[glyph]`); ''stance'' surfaces on a genuine local shift; structural changes require a new header; l-space fields stay out of the flow by default. The panel's meaning holds constant across Aperture levels — only the granularity of the trace changes.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/hud">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/voices">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/ooda-ha">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/hud`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/ooda-ha`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ba4TIsrIxrtATNiILpoOVsqIFggR9tIL3AH3MBsqYWs
+<<^ code=`&#x0003;`>>ni:///sha-256;BlFviHI9R4DAiU-BKrC_8GkDjeOpT9vdasboZ_GZznI
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>
