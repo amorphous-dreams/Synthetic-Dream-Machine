@@ -23,7 +23,7 @@
  * Canon: lar:///ha.ka.ba/lararium/api/composable-keel
  */
 
-import { composeVessel, readStampFilters, hitPassesStampFilters, drawerPassesStampFilters, type CapModule, type StampFilters } from "@lararium/mesh";
+import { composeVessel, type CapModule } from "@lararium/mesh";
 import type {
   SparseFormVector,
   WorldlineStubWire,
@@ -99,8 +99,8 @@ export interface FormPalaceProvider {
    *  the singleton holder with {@link multiRecall}. */
   getForm(sha: string): Promise<SparseFormVector | null>;
   /** The dual/multi recall fuse: the injected CONTENT leg (the recall verb's read-client search) +
-   *  the FORM leg (the singleton holder + the in-VM markers-derive, degrading to [] on fault) fused by
-   *  reciprocal rank on the verbatim_sha. The impl carries the makeFormSearch + multiGraphRecall body
+   *  the FORM leg (held as a placeholder answering [], Train Q) fused by reciprocal rank on the
+   *  verbatim_sha. The impl carries the makeFormSearch + multiGraphRecall body
    *  verbatim node-side; the verb body keeps its arg-coercion and passes the assembled args. */
   multiRecall(
     legs: { contentSearch: (a: Record<string, unknown>) => Promise<Record<string, unknown>> },
@@ -235,69 +235,6 @@ export function telemetryProviderCap(impl: TelemetryProvider): CapModule {
 
 // ── VERB-GROUP caps — declare the providers they route, register their verb(s) over the resolved impls ─
 
-/** Search-path stamp filtering: OVERFETCH the semantic search (×5, floor 25, cap 100 — the
- *  holder's own limit ceiling), post-filter each hit ({@link hitPassesStampFilters}: exact
- *  source-derived surface/agent + the sovereign gradient re-read for voice/band/drift — the
- *  search wire carries no drawer metadata and no turn key to join on), then cut to the caller's
- *  limit. Honest counts ride out: `scanned` (pre-filter) + `matched` (post-filter, pre-cut). */
-async function filteredSearch(
-  client: RecallClient,
-  filters: StampFilters,
-  a: { query: string; wing?: string | undefined; limit?: number | undefined },
-): Promise<Record<string, unknown>> {
-  const limit = a.limit !== undefined && Number.isFinite(a.limit) ? Math.max(1, a.limit) : 5;
-  const fetchLimit = Math.min(100, Math.max(25, limit * 5));
-  const res = await client.search({ query: a.query, ...(a.wing !== undefined ? { wing: a.wing } : {}), limit: fetchLimit });
-  const all = Array.isArray(res["results"]) ? (res["results"] as Array<Record<string, unknown>>) : [];
-  const matched = all.filter((h) => hitPassesStampFilters(filters, h));
-  return {
-    mode: "search",
-    ...res,
-    results: matched.slice(0, limit),
-    filters: filters as unknown as Record<string, unknown>,
-    scanned: all.length,
-    matched: matched.length,
-  };
-}
-
-/** List-path stamp filtering: page the drawer list (wing-scoped when given) and keep the drawers
- *  whose stamped `lar_*` metadata passes ({@link drawerPassesStampFilters} — exact, per-drawer).
- *  Pages the whole scope, so a caller SHOULD pass the narrowest wing it knows (the drawersWhere
- *  discipline). Honest counts: `scanned` + `matched` ride out beside the cut list. */
-async function filteredList(
-  client: RecallClient,
-  filters: StampFilters,
-  a: { wing?: string | undefined; limit?: number | undefined },
-): Promise<Record<string, unknown>> {
-  const limit = a.limit !== undefined && Number.isFinite(a.limit) ? Math.max(1, a.limit) : 20;
-  const pageSize = 200;
-  const kept: Array<Record<string, unknown>> = [];
-  let scanned = 0;
-  let matched = 0;
-  for (let offset = 0; ; offset += pageSize) {
-    const page = await client.listDrawers({ ...(a.wing !== undefined ? { wing: a.wing } : {}), limit: pageSize, offset });
-    const imagines = Array.isArray(page["imagines"]) ? (page["imagines"] as Array<Record<string, unknown>>) : [];
-    scanned += imagines.length;
-    for (const d of imagines) {
-      const meta = (d["metadata"] as Record<string, unknown> | undefined) ?? {};
-      if (!drawerPassesStampFilters(filters, meta)) continue;
-      matched += 1;
-      if (kept.length < limit) kept.push(d);
-    }
-    const count = typeof page["count"] === "number" ? (page["count"] as number) : imagines.length;
-    const total = typeof page["total"] === "number" ? (page["total"] as number) : scanned;
-    if (count < pageSize || offset + count >= total) break;
-  }
-  return {
-    mode: "list",
-    imagines: kept,
-    total: matched,
-    filters: filters as unknown as Record<string, unknown>,
-    scanned,
-    matched,
-  };
-}
-
 /** recall — the mempalace READ shore (semantic-search | list | get | multi-graph fuse). Requires
  *  the mempalace read-client + the form store (the dual fuse). */
 export function recallVerbCap(): CapModule {
@@ -316,8 +253,8 @@ export function recallVerbCap(): CapModule {
           const limit    = typeof limitRaw === "number" ? limitRaw : typeof limitRaw === "string" ? Number(limitRaw) : undefined;
           // Multi-graph recall (P4): N-ary fuse the CONTENT (verbatim mempalace) + FORM (.formpalace) +
           // later graphs by reciprocal rank fusion on the verbatim_sha. Opt-in (`dual`/`multi`) — the FORM
-          // leg routes by query shape (bearing → structured where-filter · markers → vector · keywords →
-          // where-or-defer). The `dual` arg name stays accepted for callers; `multi` reads the same.
+          // leg stands as a placeholder answering [] (Train Q), so the fuse reads content + structure.
+          // The `dual` arg name stays accepted for callers; `multi` reads the same.
           const dual         = args["dual"] === true || args["dual"] === "true"
                             || args["multi"] === true || args["multi"] === "true";
           const register     = typeof args["register"]     === "string" ? (args["register"]     as string) : undefined;
@@ -330,12 +267,6 @@ export function recallVerbCap(): CapModule {
           const apertureGrain = typeof agRaw === "number" || typeof agRaw === "string" ? agRaw : undefined;
           const awRaw        = args["apertureWidth"] ?? args["aperture_width"];
           const apertureWidth = typeof awRaw === "number" ? awRaw : typeof awRaw === "string" && awRaw !== "" ? Number(awRaw) : undefined;
-          // STAMP FILTERS (voice · band · agent · surface · drift) — compose with the semantic
-          // query (post-filter, honest counts) or the list (exact lar_* metadata). Throws on an
-          // invalid band; the multi fuse re-shapes hits, so filters + dual refuse loud (never a
-          // silent drop) until the fuse learns them.
-          const filters = readStampFilters(args);
-          if (filters && dual) throw new Error("recall: stamp filters (--voice/--band/--agent/--surface/--drift) do not yet compose with --multi");
           // The addressed sensorium (from `lares sense <sensorium> recall`) — picks that sensorium's recall
           // holder up the cap ladder (absent → the memory default).
           const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
@@ -343,8 +274,6 @@ export function recallVerbCap(): CapModule {
           // first cold start; this makes recall-into-wake fast.
           return mp.withClient(async (client) => {
             if (imagoId) return { mode: "imago", imago: await client.getImago(imagoId) };
-            if (filters && query) return filteredSearch(client, filters, { query, wing, limit });
-            if (filters) return filteredList(client, filters, { wing, limit });
             if (dual && query) {
               // The form-leg construction (markers→vector derive IN the daemon VM, content-only
               // degradation on fault) + the RRF fuse ride the form provider's multiRecall impl, verbatim;
@@ -369,9 +298,7 @@ export function recallVerbCap(): CapModule {
             // home, so a new physics filter (a new taxonomy axis, a new stratum) narrows here with ZERO edit:
             // the API signature IS the capability. Strip only the MODE-ROUTING keys the branches above already
             // consumed (imago/list/dual/multi SELECT the mode — never a py content-filter); the client
-            // extracts `sensoriumRoot` itself, and the coordinator drops any arg its signature refuses. The
-            // stamp filters (voice/band/agent/surface/drift) never reach here — a present one routes to
-            // filteredSearch above — so verbatim forwarding never double-applies them.
+            // extracts `sensoriumRoot` itself, and the coordinator drops any arg its signature refuses.
             if (query) {
               const { imago: _im, list: _ls, dual: _du, multi: _mu, ...forward } = args;
               return { mode: "search", ...(await client.search(forward)) };
