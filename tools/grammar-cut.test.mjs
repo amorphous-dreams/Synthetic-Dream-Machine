@@ -11,7 +11,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { loadContext, cutText, censusText } from './grammar-cut.mjs';
+import { loadContext, cutText, censusText, cutFoot, narrowFences } from './grammar-cut.mjs';
 
 const REPO = fileURLToPath(new URL('../', import.meta.url));
 const PLANES = {
@@ -69,16 +69,19 @@ const CARRIER = [
   'body',
   '<<~/ahu>>',
   '',
-  '<<^ code="&#x0003;">>ni:///sha-256;AAAA',
+  '<<^ code=`&#x0003;`>>ni:///sha-256;AAAA',
   '',
   '<<^ code="&#x0004;" -> to="?">>',
   '',
 ].join('\n');
 
-// The carrier as the corpus holds it: its check verifies over the bytes it wraps. The raw fixture's
-// `AAAA` stands for a foot only (a text that declares no carrier keeps it as written).
-const SEALED = ctx.frame.stampCarrier(CARRIER);
-const reseal = (text) => ctx.frame.stampCarrier(text);
+// The carrier as the corpus held it before Cut 6: its check verifies over the bytes it wraps, and it
+// trails the ETX >> (the retired trailer). The raw fixture's `AAAA` stands for a foot only (a text that
+// declares no carrier keeps it as written).
+const toTrailer = (text) => text.replace(/ bcc=`([^`]*)`>>/, '>>$1');
+const SEALED = toTrailer(ctx.frame.stampCarrier(CARRIER.replace('>>ni:///sha-256;AAAA', '>>')));
+/** The slot form of a trailer carrier: Cut 6a alone. */
+const slotted = (text) => cutFoot(text, ctx.frame).text;
 
 test('the envelope cuts: DOCTYPE names, ticked marks, arrows out, the toml block untouched, the seal re-minted', () => {
   const r = cut(SEALED);
@@ -88,15 +91,15 @@ test('the envelope cuts: DOCTYPE names, ticked marks, arrows out, the toml block
   assert.equal(lines[3], '<<^ code=`&#x0002;`>>');
   assert.equal(lines[6], 'title    = "lar:///ha.ka.ba/x/y"');
   assert.equal(lines[10], '<<~ ahu slot=`#/head`>>');
-  assert.match(lines[14], /^<<\^ code=`&#x0003;`>>ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}$/);
+  assert.match(lines[14], /^<<\^ code=`&#x0003;` bcc=`ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}`>>$/);
   assert.equal(lines[16], '<<^ code=`&#x0004;` to=`?`>>');
   assert.equal(r.seal, 'ok');
 });
 
 test('a broken seal refuses: a body line planted under an old check never re-seals, and the file stays as it stood', () => {
-  assert.equal(ctx.frame.verifyBcc(SEALED), 'ok');
+  assert.equal(ctx.frame.verifyBcc(slotted(SEALED)), 'ok');
   const planted = SEALED.replace('body\n', 'body\nINJECTED unsealed line\n');
-  assert.equal(ctx.frame.verifyBcc(planted), 'mismatch');
+  assert.equal(ctx.frame.verifyBcc(slotted(planted)), 'mismatch');
   const r = cut(planted);
   assert.equal(r.text, planted, 'the cut writes nothing over a broken seal');
   assert.equal(r.seal, 'mismatch');
@@ -326,4 +329,45 @@ test('a cut that would widen an inline span past two ticks refuses: TiddlyWiki r
   const r = cut('see ``<<~ kue voice="a `b` c">>`` here\n');
   assert.equal(r.text, 'see ``<<~ kue voice="a `b` c">>`` here\n');
   assert.deepEqual(kinds(r), ['wide-span']);
+});
+
+// ── Cut 6: the foot rides its slot, the fences outrun their ticks ──
+
+test('Cut 6a: the trailer moves into the ETX slot byte for byte, and the seal verifies with its value unchanged', () => {
+  const value = /ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}/.exec(SEALED)[0];
+  const r = cut(SEALED, { disable: ['fences'] });
+  assert.ok(r.text.includes('<<^ code=`&#x0003;` bcc=`' + value + '`>>') || ctx.frame.verifyBcc(r.text) === 'ok');
+  assert.equal(r.counts.foot, 1);
+  assert.equal(ctx.frame.verifyBcc(slotted(SEALED)), 'ok');
+  assert.ok(slotted(SEALED).includes('<<^ code=`&#x0003;` bcc=`' + value + '`>>'), 'the value never changes');
+});
+
+test('CONTROL: Cut 6a switched off leaves the trailer, and the frame tears it by name', () => {
+  const r = cut(SEALED, { disable: ['foot'] });
+  assert.match(r.text, /<<\^ code=`&#x0003;`>>ni:\/\/\//);
+  assert.deepEqual(kinds(r), ['seal-broken']);
+});
+
+test('Cut 6a: a quoted foot inside a fence never moves', () => {
+  const quoted = SEALED.replace('body\n', 'body\n````\n<<^ code=`&#x0003;`>>ni:///sha-256;BBBB\n````\n');
+  const moved = slotted(quoted);
+  assert.ok(moved.includes('````\n<<^ code=`&#x0003;`>>ni:///sha-256;BBBB\n````'));
+});
+
+test('Cut 6b: a fence whose run does not outrun its inner ticks widens, opener and closer both', () => {
+  const src = 'a\n\n```python\nRE = r\'```toml(.*?)```\'\n```\n\nz\n';
+  assert.equal(narrowFences(src).length, 1);
+  const r = cut(src);
+  assert.equal(r.text, 'a\n\n````python\nRE = r\'```toml(.*?)```\'\n````\n\nz\n');
+  assert.equal(narrowFences(r.text).length, 0);
+  assert.equal(one(r.text), r.text, 'a second run writes nothing');
+});
+
+test('CONTROL: a fence already wider than its ticks, and a toml meta fence, never widen', () => {
+  const wide = 'a\n\n````\nx ``` y\n````\n';
+  assert.equal(one(wide), wide);
+  const meta = '```toml meta\nk = "```"\n```\n';
+  const r = cut(meta);
+  assert.equal(r.text, meta);
+  assert.deepEqual(kinds(r), ['narrow-meta-fence']);
 });
