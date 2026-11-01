@@ -1,0 +1,903 @@
+name: Projection Loom native research studies
+
+# Manual operator selection; independent native study jobs and receipts.
+# Original workflows remain in archive/pr84-before-workflow-otakiage-20261031.
+on:
+  workflow_dispatch:
+    inputs:
+      study:
+        description: Select a source-bound reproducible study
+        type: choice
+        required: true
+        default: native-readiness
+        options:
+          - all
+          - upstream-cc0
+          - experiment-zero
+          - native-readiness
+          - source-seed
+          - evergreen-native
+          - coevolution
+          - architectural-birth
+          - fullres-massing
+          - four-attractor
+          - cc0-comparison
+          - ortho-gallery
+
+permissions:
+  contents: read
+
+concurrency:
+  group: loom-study-${{ github.ref }}-${{ inputs.study }}
+  cancel-in-progress: false
+
+jobs:
+  upstream-cc0:
+    if: ${{ inputs.study == 'upstream-cc0' || inputs.study == 'all' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Fetch exact CC0 upstream OpenSCAD package
+        run: |
+          curl -fLsS --retry 3 --max-time 90 'https://opengameart.org/sites/default/files/brutalism2.zip' -o brutalism2.zip
+          echo '8a89504f2abf355f56f4ea93c9a50fbdc60fb3664bdad019c65e6582a91ff9a3  brutalism2.zip' | sha256sum -c -
+          unzip -l brutalism2.zip | head -90
+          python - <<'PY'
+          import zipfile
+          z=zipfile.ZipFile('brutalism2.zip')
+          for name in z.namelist():
+              if name.lower().endswith('.scad') and not name.startswith('__MACOSX'):
+                  data=z.read(name).decode('utf-8','replace')
+                  print('SCAD',repr(name),'bytes',len(data),'PREVIEW',repr(data[:750]))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nosycat-brutalism2-cc0-original
+          path: brutalism2.zip
+          retention-days: 90
+
+  experiment-zero:
+    if: ${{ inputs.study == 'experiment-zero' || inputs.study == 'all' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - name: Install native geometry and scientific kernels
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+          python -m pip check
+      - name: Compile and test integrated feature contracts
+        run: |
+          python -m compileall -q projection_loom
+          python -m pytest -q tests/test_exploration.py tests/test_exploration_admission.py tests/test_experiment_zero.py tests/test_fracture_patterns.py
+      - name: Reproduce statistical fragment and crack priors
+        run: |
+          python -m projection_loom fracture-pattern --out out/fracture-native             --size 128 192 --cells 36 --dimension 3 --fragments 64 --seed 41             > out-fracture-receipt.json
+      - name: Run native bounded Experiment Zero OODA-HA and regenerate orthographic views
+        run: |
+          python -m projection_loom ooda-ha-run             --project examples/necrospire/project_alpha.json             --capability-recipe examples/necrospire/hybrid/recipe_alpha.json             --out out/experiment-zero-native --control full-speed --breeding             --passes 1 --offspring-per-family 3             --exact-budget 12 --detail-budget 6 --score-size 64 96             --finalists 3 --explore-overscan 2 --explore-depth 2             --explore-review-seats 3             > out-experiment-zero-receipt.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          base=Path('out/experiment-zero-native')
+          session=json.loads((base/'session.json').read_text())
+          assert session['status']=='completed'
+          review=json.loads((base/'experiment_zero_review/review.json').read_text())
+          assert review['reviewed']>0
+          assert all('front' in row['views'] and 'oblique' in row['views'] for row in review['candidates'])
+          assert all('extra_fraction' in row['observation'] for row in review['candidates'])
+          print('Completed bounded review:',review['reviewed'])
+          PY
+      - name: Upload repeatable native and science witnesses
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: projection-loom-experiment-zero-native
+          path: |
+            tools/projection-loom/out-fracture-receipt.json
+            tools/projection-loom/out-experiment-zero-receipt.json
+            tools/projection-loom/out/fracture-native/**
+            tools/projection-loom/out/experiment-zero-native/experiment_zero_review/**
+            tools/projection-loom/out/experiment-zero-native/epoch_*.json
+            tools/projection-loom/out/experiment-zero-native/lineage_archive.json
+          if-no-files-found: warn
+          retention-days: 90
+
+  native-readiness:
+    if: ${{ inputs.study == 'native-readiness' || inputs.study == 'all' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - name: Install native modeling kernels
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+          python -m pip check
+      - name: Native topology, matched runs, checkpoint replay and seal
+        run: |
+          python -m projection_loom campaign-readiness \
+            --project examples/necrospire/project_alpha.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+            --out out/pre-campaign-readiness \
+            --passes 1 --offspring-per-family 3 \
+            --exact-budget 12 --detail-budget 6 --seed 41 \
+            --score-size 64 96 | tee out-readiness.json
+          python -m projection_loom campaign-verify --out out/pre-campaign-readiness \
+            | tee out-readiness-seal.json
+      - name: Independently inspect bounded conclusion
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          row=json.loads(Path('out-readiness.json').read_text())
+          assert row['schema']=='projection-loom/pre-campaign-evidence'
+          assert row['paired']['same_source_camera_seed_objectives_budgets']
+          assert row['paired']['proposal_divergence']['different_genomes'] > 0
+          assert row['evidence_gate'] in ('no-go','bounded-evidence-complete')
+          assert json.loads(Path('out/pre-campaign-readiness/replay/replay.json').read_text())['equivalent']
+          print('Bounded readiness classification:',row['evidence_gate'])
+          PY
+      - name: Package source-bound evidence with external digest
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
+          path=Path('out/pre-campaign-readiness')
+          if path.exists():
+              with ZipFile('out-readiness.zip','w',ZIP_DEFLATED,compresslevel=6) as z:
+                  for f in sorted(path.rglob('*')):
+                      if f.is_file():z.write(f,f.relative_to(path.parent))
+          PY
+          if test -f out-readiness.zip; then sha256sum out-readiness.zip > out-readiness.zip.sha256; fi
+      - name: Upload local native evidence for external durable preservation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: projection-loom-native-readiness
+          path: |
+            tools/projection-loom/out-readiness.zip
+            tools/projection-loom/out-readiness.zip.sha256
+            tools/projection-loom/out-readiness.json
+            tools/projection-loom/out-readiness-seal.json
+          if-no-files-found: warn
+          retention-days: 90
+
+  source-seed:
+    if: ${{ inputs.study == 'source-seed' || inputs.study == 'all' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - name: Install native kernels
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+          python -m pip check
+      - name: Regenerate content-addressed recipe from the named source
+        run: |
+          python examples/necrospire/hybrid/make_alpha_recipe.py
+          python -m compileall -q projection_loom
+      - name: Test source channels, name binding, DAG and native influence
+        run: |
+          python -m pytest -q tests/test_seed_entity.py tests/test_exploration.py tests/test_experiment_zero.py tests/test_fracture_patterns.py
+      - name: Native bounded OODA-HA seed-witness pass
+        run: |
+          python -m projection_loom ooda-ha-run \
+            --project examples/necrospire/project_alpha.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+            --out out/named-seed-witness --breeding --control full-speed \
+            --passes 1 --offspring-per-family 1 --exact-budget 3 \
+            --detail-budget 2 --score-size 64 96 --finalists 3 \
+            --explore-overscan 2 --explore-depth 2 \
+            > out-named-seed-run.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('out/named-seed-witness')
+          ledger=json.loads((root/'identity-ledger.json').read_text())
+          assert len(ledger['claims'])==1
+          claim=ledger['claims'][0]
+          assert claim['active'] and claim['name']=="Necrospire's First Glimpse"
+          assert claim['born_handle']=='@seed/oblique-seed'
+          journal=json.loads((root/'session.json').read_text())
+          assert journal['status']=='completed'
+          assert 'seed:entity' in journal['identity']['source_digests']
+          print('Pet-named source, native OODA-HA and source identity proven')
+          PY
+      - name: Verify generated recipe matches its committed source
+        run: |
+          git diff --exit-code -- examples/necrospire/hybrid/recipe_alpha.json
+          test -s examples/necrospire/hybrid/recipe_alpha.json
+      - name: Upload source-seed independent native receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: projection-loom-source-seed
+          path: |
+            tools/projection-loom/examples/necrospire/hybrid/recipe_alpha.json
+            tools/projection-loom/out-named-seed-run.json
+            tools/projection-loom/out/named-seed-witness/identity-ledger.json
+            tools/projection-loom/out/named-seed-witness/session.json
+            tools/projection-loom/out/named-seed-witness/epoch_*.json
+            tools/projection-loom/out/named-seed-witness/experiment_zero_review/**
+          if-no-files-found: warn
+          retention-days: 90
+
+  evergreen-native:
+    if: ${{ inputs.study == 'evergreen-native' || inputs.study == 'all' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - name: Install exact CAD and renderer
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+          python -m pip check
+      - name: RED contracts now green
+        run: |
+          python -m pytest -q tests/test_pre_campaign_hardening.py \
+            tests/test_wave_xxv_search.py \
+            tests/test_open_topology.py tests/test_search_strategy_alpha.py \
+            tests/test_evergreen_five_loops.py tests/test_ooda_ha_inward.py \
+            tests/test_phase_rules.py
+      - name: Fresh source-bound generation with native CAD and independently regrown gallery
+        run: |
+          python -m projection_loom ooda-ha-run \
+            --project examples/necrospire/project_alpha.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+            --out out/necrospire-evergreen-feature-grammar-witness \
+            --control full-speed --breeding --passes 1 \
+            --offspring-per-family 3 --exact-budget 12 --detail-budget 6 \
+            --seed 41 --score-size 128 192 --finalists 3 \
+            | tee out-alpha-grammar-run.log
+      - name: Native OODA-HA closure and evergreen searchability receipt
+        run: |
+          python scripts/check_compound_epoch.py --out out/necrospire-evergreen-feature-grammar-witness \
+            | tee out-alpha-grammar-native-audit.json
+          python -m projection_loom search-census \
+            --archive out/necrospire-evergreen-feature-grammar-witness/lineage_archive.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+            --out out-alpha-grammar-census.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          census=json.loads(Path('out-alpha-grammar-census.json').read_text())
+          assert census['declared_loci']==29
+          assert census['unreachable_loci']==[]
+          assert census['scored_members']>0
+          assert json.loads(Path('out/necrospire-evergreen-feature-grammar-witness/session.json').read_text())['status']=='completed'
+          PY
+      - name: Close annotated source and authorized donor route through one native OODA-HA helm
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from PIL import Image
+          from projection_loom.capability_stack import CapabilityRecipe
+          out=Path('out/operator-source-witness')
+          out.mkdir(parents=True,exist_ok=True)
+          Image.new('L',(128,192),255).save(out/'fortress-attention.png')
+          recipe=CapabilityRecipe.load('examples/necrospire/hybrid/recipe_breeding.json')
+          donor=dict(recipe.initial)
+          donor['shaft_width']=3.6
+          (out/'donor.json').write_text(json.dumps({'genome':donor}))
+          PY
+          python -m projection_loom feature-annotate \
+            --project examples/necrospire/project_alpha.json \
+            --region Fortress=out/operator-source-witness/fortress-attention.png \
+            --score-size 128 192 \
+            --out out/operator-source-witness/features.json
+          python -m projection_loom transfer-seed \
+            --source-recipe examples/necrospire/hybrid/recipe_breeding.json \
+            --target-recipe examples/necrospire/hybrid/recipe_alpha.json \
+            --donor-genome out/operator-source-witness/donor.json \
+            --donor-id donor-campaign/needle --family needle \
+            --focus shaft_width --authorize \
+            --out out/operator-source-witness/transfer.json
+          python -m projection_loom ooda-ha-run \
+            --project examples/necrospire/project_alpha.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+            --out out/operator-source-witness/audited-campaign \
+            --feature-evidence out/operator-source-witness/features.json \
+            --transfer-bundle out/operator-source-witness/transfer.json \
+            --control full-speed --breeding --passes 1 \
+            --offspring-per-family 3 --exact-budget 12 --detail-budget 6 \
+            --seed 43 --score-size 128 192 --finalists 3 \
+            | tee out-alpha-annotated-run.log
+          python scripts/check_compound_epoch.py \
+            --out out/operator-source-witness/audited-campaign \
+            | tee out-alpha-annotated-native-audit.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('out/operator-source-witness')
+          source=json.loads((root/'features.json').read_text())
+          donor=json.loads((root/'transfer.json').read_text())
+          journal=json.loads((root/'audited-campaign/session.json').read_text())
+          epoch=json.loads((root/'audited-campaign/epoch_001.json').read_text())
+          identity=journal['identity']
+          assert journal['status']=='completed'
+          assert identity['feature_evidence_sha256']
+          assert identity['transfer_bundle_sha256']==donor['sha256']
+          assert any(p.get('ancestry',{}).get('transfer',{}).get('donor_id')=='donor-campaign/needle'
+                     for p in epoch['proposals'].values() if p.get('ancestry',{}).get('transfer'))
+          assert source['view_sha256']
+          PY
+      - name: Preserve independent source-bound receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: necrospire-evergreen-feature-grammar-witness
+          path: |
+            tools/projection-loom/out/necrospire-evergreen-feature-grammar-witness/
+            tools/projection-loom/out-alpha-grammar-run.log
+            tools/projection-loom/out-alpha-grammar-native-audit.json
+            tools/projection-loom/out-alpha-grammar-census.json
+            tools/projection-loom/out/operator-source-witness/
+            tools/projection-loom/out-alpha-annotated-run.log
+            tools/projection-loom/out-alpha-annotated-native-audit.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  coevolution:
+    if: ${{ inputs.study == 'coevolution' || inputs.study == 'all' }}
+    name: Two-generation component collaborations and exact witnesses
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - name: Install CAD and native polygon kernels
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+          python -m pip check
+          python scripts/check_env.py | tee out-alpha-env.json
+      - name: Verify source-bound breeding contracts
+        run: |
+          python -m pytest -q tests/test_pre_campaign_hardening.py \
+            tests/test_search_strategy_alpha.py \
+            tests/test_campaign_archive.py \
+            tests/test_campaign_breeding.py \
+            tests/test_campaign_controller.py \
+            tests/test_campaign_fairness.py \
+            tests/test_campaign_regional_niches.py \
+            tests/test_selection_policies.py
+      - name: Run independent two-generation audited component campaign
+        run: |
+          python -m projection_loom ooda-ha-run \
+            --project examples/necrospire/project_breeding.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_breeding.json \
+            --out out/necrospire-alpha-coevolution-witness \
+            --control full-speed --breeding --passes 2 \
+            --offspring-per-family 3 --exact-budget 12 \
+            --detail-budget 6 --seed 41 \
+            --score-size 128 192 --finalists 3 \
+            | tee out-alpha-run.log
+      - name: Independently audit native completion and recorded search reachability
+        run: |
+          python scripts/check_compound_epoch.py \
+            --out out/necrospire-alpha-coevolution-witness \
+            | tee out-alpha-native-audit.json
+          python -m projection_loom search-census \
+            --archive out/necrospire-alpha-coevolution-witness/lineage_archive.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_breeding.json \
+            --out out-alpha-search-census.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          census=json.loads(Path('out-alpha-search-census.json').read_text())
+          journal=json.loads(Path('out/necrospire-alpha-coevolution-witness/session.json').read_text())
+          assert census['unreachable_loci']==[]
+          assert census['declared_loci']==25
+          assert census['scored_members']>0
+          assert journal['status']=='completed'
+          assert all(x['phase']=='closed' for x in journal['loops'].values())
+          assert 'location/final-gallery' in journal['loops']
+          funnel=census['activation_funnel']['join.enable']
+          assert funnel['proposed']['active']>0, \
+              'Joining switch was never proposed in this source-bound campaign'
+          assert funnel['exact_attempted']['active']>0, \
+              'Joining topology proposals were starved of exact CAD auditions'
+          # The native kernel may reject a reachable topology, and scoring is
+          # a second gate. Record both outcomes; never demand an invented
+          # successful descendant to make this diagnostic witness green.
+          assert funnel['native_valid']['active']>=funnel['scored']['active']
+          assert funnel['exact_attempted']['active']>=funnel['native_valid']['active']
+          print('Joining exact-audition funnel:',json.dumps(funnel,sort_keys=True))
+          PY
+      - name: Package independent audit witnesses
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
+          path=Path('out/necrospire-alpha-coevolution-witness')
+          if path.exists():
+              with ZipFile('out-alpha-coevolution-witness.zip','w',ZIP_DEFLATED,compresslevel=6) as z:
+                  for f in sorted(path.rglob('*')):
+                      if f.is_file(): z.write(f,str(f))
+          PY
+          if test -f out-alpha-coevolution-witness.zip; then sha256sum out-alpha-coevolution-witness.zip > out-alpha-coevolution-witness.sha256; fi
+      - name: Upload native audits and structured lineage evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: necrospire-alpha-two-generation-coevolution
+          path: |
+            tools/projection-loom/out-alpha-coevolution-witness.zip
+            tools/projection-loom/out-alpha-coevolution-witness.sha256
+            tools/projection-loom/out-alpha-search-census.json
+            tools/projection-loom/out-alpha-native-audit.json
+            tools/projection-loom/out-alpha-env.json
+            tools/projection-loom/out-alpha-run.log
+          if-no-files-found: warn
+          retention-days: 30
+
+  architectural-birth:
+    if: ${{ inputs.study == 'architectural-birth' || inputs.study == 'all' }}
+    name: Source-held relation inheritance through one OODA-HA helm
+    runs-on: ubuntu-24.04
+    timeout-minutes: 80
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - name: Install established native kernels and reproducible inputs
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+          python -m pip check
+          python scripts/check_env.py | tee birth-env.json
+      - name: Audit bounded recipe, source identity, inheritance and native contact
+        run: |
+          python -m compileall -q projection_loom examples/necrospire/birth_fixture.py
+          python -m pytest -q tests/test_arch_birth.py \
+            tests/test_campaign_breeding.py tests/test_campaign_archive.py
+      - name: Author and regrow distinct source-derived Architectural Birth recipe
+        run: |
+          python examples/necrospire/birth_fixture.py
+          python - <<'PY'
+          from pathlib import Path
+          from projection_loom.pipeline import Project
+          from projection_loom.capability_stack import CapabilityRecipe,CapabilityCompositor
+          p=Project.load('examples/necrospire/project_birth.json')
+          r=CapabilityRecipe.load('examples/necrospire/hybrid/recipe_birth.json')
+          comp=CapabilityCompositor(p,r,size=(64,96),
+                                  source_mask=p.source_mask((64,96)))
+          baseline=comp.grow(r.initial)
+          active={**r.initial,'arch.birth.enable':1.0}
+          growth=comp.grow(active)
+          assert baseline.audit['cad']['valid']
+          assert growth.audit['cad']['valid']
+          assert len(growth.scene.assembly.parts)>len(baseline.scene.assembly.parts)
+          print('Source identity:',p.seed_entity.sha256)
+          print('Birth recipe:',r.sha256)
+          print('Carved native birth:',growth.witness().witness_id)
+          PY
+      - name: Run two bounded source-held OODA-HA birth epochs
+        run: |
+          python -m projection_loom ooda-ha-run \
+            --project examples/necrospire/project_birth.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_birth.json \
+            --out out/architectural-birth-cohort \
+            --control full-speed --breeding --passes 2 \
+            --offspring-per-family 3 --exact-budget 12 \
+            --detail-budget 6 --seed 41 \
+            --score-size 64 96 --finalists 3 \
+            | tee birth-campaign.log
+      - name: Audit lineage and construction results without inventing survivors
+        run: |
+          python scripts/check_compound_epoch.py --out out/architectural-birth-cohort \
+            | tee birth-native-audit.json
+          python -m projection_loom search-census \
+            --archive out/architectural-birth-cohort/lineage_archive.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_birth.json \
+            --out birth-search-census.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          base=Path('out/architectural-birth-cohort')
+          session=json.loads((base/'session.json').read_text())
+          archive=json.loads((base/'lineage_archive.json').read_text())
+          census=json.loads(Path('birth-search-census.json').read_text())
+          assert session['status']=='completed'
+          assert census['unreachable_loci']==[]
+          assert len(archive['generations'])==2
+          assert 'arch.birth.enable' in census['activation_funnel']
+          assert census['activation_funnel']['arch.birth.enable']['proposed']['active']>0
+          assert census['activation_funnel']['arch.birth.enable']['exact_attempted']['active']>0
+          print('Birth funnel:',census['activation_funnel']['arch.birth.enable'])
+          print('Scored survivors:',census['scored_members'])
+          PY
+      - name: Package attributed birth receipts and source identities
+        if: always()
+        run: |
+          python - <<'PY'
+          from zipfile import ZipFile,ZIP_DEFLATED
+          from pathlib import Path
+          folder=Path('out/architectural-birth-cohort')
+          if folder.exists():
+              with ZipFile('birth-cohort.zip','w',ZIP_DEFLATED,compresslevel=6) as z:
+                  for file in sorted(folder.rglob('*')):
+                      if file.is_file():z.write(file,str(file))
+          PY
+          if test -f birth-cohort.zip; then sha256sum birth-cohort.zip > birth-cohort.sha256; fi
+      - name: Upload source, native and ancestry evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: necrospire-heritable-architectural-birth
+          path: |
+            tools/projection-loom/birth-cohort.zip
+            tools/projection-loom/birth-cohort.sha256
+            tools/projection-loom/birth-env.json
+            tools/projection-loom/birth-campaign.log
+            tools/projection-loom/birth-native-audit.json
+            tools/projection-loom/birth-search-census.json
+            tools/projection-loom/examples/necrospire/project_birth.json
+            tools/projection-loom/examples/necrospire/hybrid/recipe_birth.json
+          if-no-files-found: warn
+          retention-days: 60
+
+  fullres-massing:
+    if: ${{ inputs.study == 'fullres-massing' || inputs.study == 'all' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - name: Install native kernels and exact inputs
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+          python -m pip check
+      - name: Contract tests before generating offspring
+        run: |
+          python -m pytest -q tests/test_massing_fullres.py tests/test_arch_birth.py tests/test_campaign_breeding.py tests/test_campaign_archive.py
+      - name: Make new source-bound primary-massing project and recipe
+        run: python examples/necrospire/massing_fixture.py
+      - name: Run three OODA-HA generations (coarse proposal scoring only)
+        run: |
+          python -m projection_loom ooda-ha-run \
+            --project examples/necrospire/project_massing.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_massing.json \
+            --control full-speed --breeding --passes 3 \
+            --offspring-per-family 4 --exact-budget 12 --detail-budget 6 \
+            --seed 41 --score-size 128 192 --finalists 3 \
+            --out out/necrospire-massing-fullres \
+            | tee massing-generation.log
+      - name: Audit source-held native epoch receipts
+        run: |
+          python scripts/check_compound_epoch.py --out out/necrospire-massing-fullres
+      - name: Independently re-grow and rescore native offspring at 1024x1536
+        run: |
+          python scripts/full_resolution_massing_audit.py \
+            --project examples/necrospire/project_massing.json \
+            --recipe examples/necrospire/hybrid/recipe_massing.json \
+            --session out/necrospire-massing-fullres \
+            --out out/full-resolution-finalists \
+            | tee full-resolution-result.log
+      - name: Retain full receipts, candidates, masks and all failure reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: necrospire-full-resolution-massing
+          path: |
+            tools/projection-loom/out/necrospire-massing-fullres/
+            tools/projection-loom/out/full-resolution-finalists/
+            tools/projection-loom/massing-generation.log
+            tools/projection-loom/full-resolution-result.log
+            tools/projection-loom/examples/necrospire/project_massing.json
+            tools/projection-loom/examples/necrospire/hybrid/recipe_massing.json
+          retention-days: 60
+
+  four-attractor:
+    if: ${{ inputs.study == 'four-attractor' || inputs.study == 'all' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - name: Install native kernels and pinned scientific dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+          python -m pip check
+      - name: Freeze four distinct original attractors and audit guided seed
+        run: |
+          python examples/necrospire/four_attractor_lineage.py prepare \
+            --out out/necrospire_four_attractor_fresh > out-four-attractor-seed.json
+          python -m pytest -q tests/test_exploration.py tests/test_exploration_admission.py tests/test_experiment_zero.py tests/test_fracture_patterns.py
+      - name: Grow three-generation fresh OODA-HA lineage with 2x room
+        run: |
+          python -m projection_loom ooda-ha-run \
+            --project examples/necrospire/project_four_attractor.generated.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_four_attractor.generated.json \
+            --out out/necrospire_four_attractor_fresh \
+            --breeding --control full-speed --passes 3 \
+            --offspring-per-family 3 --exact-budget 12 --detail-budget 6 \
+            --seed 58321 --score-size 64 96 --finalists 3 \
+            --explore-overscan 2 --explore-depth 2 \
+            --explore-max-faces 200000 --explore-max-vertices 150000 \
+            --explore-review-seats 6 > out-four-attractor-run.json
+      - name: Compare source, proxy priors, other views and native ancestry
+        run: |
+          python examples/necrospire/four_attractor_lineage.py review \
+            --out out/necrospire_four_attractor_fresh > out-four-attractor-review.json
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          root=Path('out/necrospire_four_attractor_fresh')
+          x=json.loads((root/'four_attractor_review.json').read_text())
+          assert x['generations']==3
+          assert x['scored_review']>0
+          assert x['recommendation_authority'].startswith('adviser-only')
+          assert all('oblique' in z['views'] and 'top' in z['views'] for z in x['ranked_advisory_survivors'])
+          assert not x['governance'].startswith('inherit historical')
+          print('New ancestry, reviewed:',x['scored_review'],'preferred:',x['recommendation'])
+          PY
+      - name: Package complete native lineage and source contracts
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile,ZIP_DEFLATED
+          root=Path('out/necrospire_four_attractor_fresh')
+          if root.exists():
+              with ZipFile('four-attractor-lineage.zip','w',ZIP_DEFLATED,compresslevel=6) as z:
+                  for file in sorted(root.rglob('*')):
+                      if file.is_file(): z.write(file,file.relative_to(root.parent))
+          PY
+          if test -f four-attractor-lineage.zip; then sha256sum four-attractor-lineage.zip > four-attractor-lineage.sha256; fi
+      - name: Upload entire experiment with native receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: necrospire-four-attractor-fresh-lineage
+          path: |
+            tools/projection-loom/four-attractor-lineage.zip
+            tools/projection-loom/four-attractor-lineage.sha256
+            tools/projection-loom/out-four-attractor-seed.json
+            tools/projection-loom/out-four-attractor-run.json
+            tools/projection-loom/out-four-attractor-review.json
+          if-no-files-found: warn
+          retention-days: 90
+
+  cc0-comparison:
+    if: ${{ inputs.study == 'cc0-comparison' || inputs.study == 'all' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - name: Install CAD and scientific kernels
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+          python -m pip check
+      - name: Fetch exact CC0 OpenSCAD source, verify integrity, compile upstream sample
+        run: |
+          mkdir -p out/nosycat_source
+          curl -fLsS --retry 3 --max-time 90 'https://opengameart.org/sites/default/files/brutalism2.zip' -o out/nosycat_source/brutalism2.zip
+          echo '8a89504f2abf355f56f4ea93c9a50fbdc60fb3664bdad019c65e6582a91ff9a3  out/nosycat_source/brutalism2.zip' | sha256sum -c -
+          unzip -q out/nosycat_source/brutalism2.zip -d out/nosycat_source
+          openscad -o out/nosycat_source/institute1-witness.stl out/nosycat_source/brutalism2/institute1.scad
+          test -s out/nosycat_source/institute1-witness.stl
+      - name: Create independent source-anchored genome and audit CC0 facade modules
+        run: |
+          python examples/necrospire/nosycat_upstream.py prepare --archive out/nosycat_source/brutalism2.zip --out out/nosycat_fresh > out-nosycat-seed.json
+          python -m pytest -q tests/test_architecture_contract.py tests/test_exploration.py tests/test_exploration_admission.py tests/test_experiment_zero.py tests/test_fracture_patterns.py
+      - name: Run fresh three-generation native Experiment Zero
+        run: |
+          python -m projection_loom ooda-ha-run \
+            --project examples/necrospire/project_nosycat.generated.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_nosycat.generated.json \
+            --out out/nosycat_fresh --breeding --control full-speed \
+            --passes 3 --offspring-per-family 3 \
+            --exact-budget 12 --detail-budget 6 \
+            --seed 58363 --score-size 64 96 --finalists 3 \
+            --explore-overscan 2 --explore-depth 2 \
+            --explore-max-faces 200000 --explore-max-vertices 150000 \
+            --explore-review-seats 6 > out-nosycat-run.json
+      - name: Compare two full lineages on common source metrics
+        run: |
+          python examples/necrospire/nosycat_upstream.py compare --out out/nosycat_fresh > out-nosycat-comparison.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('out/nosycat_fresh/comparison.json').read_text())
+          assert x['baseline']['reviewed']==6
+          assert x['cc0_brutalist']['reviewed']>=1
+          assert x['new_band_enabled_review'] + x['new_pier_enabled_review'] > 0
+          print('Baseline best alpha IoU:',x['baseline']['best_alpha_iou'])
+          print('CC0 best alpha IoU:',x['cc0_brutalist']['best_alpha_iou'])
+          print('Difference:',x['delta_best_alpha_iou'])
+          print('CC0 facade enabled reviewed:',x['new_band_enabled_review'],x['new_pier_enabled_review'])
+          PY
+      - name: Bundle native journals, both source code and exact upstream archive
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile,ZIP_DEFLATED
+          roots=(Path('out/nosycat_fresh'),Path('out/nosycat_source'))
+          with ZipFile('nosycat-native-lineage.zip','w',ZIP_DEFLATED,compresslevel=6) as z:
+              for root in roots:
+                  if root.exists():
+                      for file in sorted(root.rglob('*')):
+                          if file.is_file():z.write(file,file.relative_to(root.parent))
+          PY
+          sha256sum nosycat-native-lineage.zip > nosycat-native-lineage.zip.sha256
+      - name: Upload native source, lineage, review, comparison
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: necrospire-nosycat-cc0-native-lineage
+          path: |
+            tools/projection-loom/nosycat-native-lineage.zip
+            tools/projection-loom/nosycat-native-lineage.zip.sha256
+            tools/projection-loom/out-nosycat-seed.json
+            tools/projection-loom/out-nosycat-run.json
+            tools/projection-loom/out-nosycat-comparison.json
+          if-no-files-found: warn
+          retention-days: 90
+
+  ortho-gallery:
+    if: ${{ inputs.study == 'ortho-gallery' || inputs.study == 'all' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 80
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - name: Install native CAD and render stack
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+          python -m pip check
+      - name: Verify native review presentation tests
+        run: |
+          python -m compileall -q projection_loom
+          python -m pytest -q tests/test_ortho_gallery.py tests/test_experiment_zero.py tests/test_seed_entity.py
+      - name: Reproduce bounded native one-epoch reviewers
+        run: |
+          python -m projection_loom ooda-ha-run \
+            --project examples/necrospire/project_alpha.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+            --out out/ortho-gallery-native --breeding --control full-speed \
+            --passes 1 --offspring-per-family 2 --exact-budget 12 --detail-budget 6 \
+            --seed 58394 --score-size 64 96 --finalists 3 \
+            --explore-overscan 2 --explore-depth 2 \
+            --explore-review-seats 3 > out-ortho-native-run.json
+      - name: Render verified six-view boards from unchanged native receipts
+        run: |
+          python -m projection_loom review-orthos \
+            --project examples/necrospire/project_alpha.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+            --out out/ortho-gallery-native --gallery out/ortho-presentation \
+            --seats 2 > out-ortho-presentation.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('out/ortho-presentation')
+          review=json.loads(Path('out/ortho-gallery-native/experiment_zero_review/review.json').read_text())
+          s=json.loads((root/'summary.json').read_text())
+          assert s['reviewed']==2
+          assert s['original_source_review_sha256']==review['sha256']
+          assert all((root/v['file']).is_file() for v in s['images'].values())
+          assert len(s['views'])==6 and all(s['survivors'])
+          print('Verified native review gallery, no promoted descendants')
+          PY
+      - name: Upload ephemeral CI proof; do not commit offspring
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: loom-native-ortho-gallery-ci
+          path: |
+            tools/projection-loom/out-ortho-native-run.json
+            tools/projection-loom/out-ortho-presentation.json
+            tools/projection-loom/out/ortho-presentation/**
+          if-no-files-found: warn
+          retention-days: 30
