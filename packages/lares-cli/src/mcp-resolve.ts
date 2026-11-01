@@ -49,7 +49,9 @@ export const IMAGE_SEAT = "/app/packages/lararium-sensorium/scripts/lares_mcp.py
 /** The vessel's root inside the surface container, as the compose file's environment names it. */
 function containerRoot(compose: string): string | null {
   if (!existsSync(compose)) return null;
-  return /^\s+LAR_ROOT:\s*(\S+)\s*$/m.exec(readFileSync(compose, "utf8"))?.[1] ?? null;
+  // Every vessel service takes the one `&roots` block, so the first `LAR_ROOT:` names the root they share.
+  const value = /^\s+LAR_ROOT:\s*(\S+)\s*$/m.exec(readFileSync(compose, "utf8"))?.[1];
+  return value === undefined ? null : value.replace(/^(["'])(.*)\1$/, "$2");
 }
 
 /**

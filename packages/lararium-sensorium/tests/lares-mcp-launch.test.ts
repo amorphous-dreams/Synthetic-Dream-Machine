@@ -71,6 +71,12 @@ describe("the seat's launch reads its mcp first", () => {
     expect(r.stderr).not.toContain("below the pin");
   });
 
+  it.each(["2.3", "2.3.1", "2.10.0"])("control: mcp %s, at or past the pin's release, passes the probe", (version) => {
+    const r = launch(version);
+    expect(r.stderr).toContain("no lares daemon");
+    expect(r.stderr).not.toContain("below the pin");
+  });
+
   it("the pin the seat holds agrees with requirements.txt and the image lock", () => {
     const held = /^MCP_PIN = "([^"]+)"$/m.exec(readFileSync(SEAT, "utf8"))?.[1];
     expect(held).toBe(pinIn("requirements.txt"));

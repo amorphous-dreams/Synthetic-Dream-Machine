@@ -52,7 +52,9 @@ def mcp_floor_refusal() -> "str | None":
         found = metadata.version("mcp")
     except metadata.PackageNotFoundError:
         return f"lares_mcp: no mcp installed; the seat needs mcp=={MCP_PIN}. {cure}"
-    if _release(found) < _release(MCP_PIN):
+    have, need = _release(found), _release(MCP_PIN)
+    width = max(len(have), len(need))   # `2.3` and `2.3.0` name one release: pad before the compare
+    if have + (0,) * (width - len(have)) < need + (0,) * (width - len(need)):
         return f"lares_mcp: mcp {found} stands below the pin mcp=={MCP_PIN}; the seat cannot build on it. {cure}"
     return None
 
