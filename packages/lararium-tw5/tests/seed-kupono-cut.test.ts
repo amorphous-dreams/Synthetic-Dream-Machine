@@ -154,7 +154,7 @@ const bandLaw = (text: string): string[] => {
  * Cut 4: the worked turns obey the frame the seed states. Each turn opens on one aim, may steer, throws the
  * oracle, and closes on one yield; lares= leads each firing; keys sit in the seed's own seat order (the ward
  * last at aim, first at yield); every bearing names a three-term root; the yield hands off to ?. A steer
- * records a change and never rewrites the aim: it never re-reads the aim's from=, and a to= it casts names a
+ * records a change and never rewrites the aim: it carries no from= (the brackets own the vector's ends), and a to= it casts names a
  * new bearing. Across the seed the turns show both steer uses and both loop endings.
  */
 const frameLaw = (text: string): string[] => {
@@ -163,7 +163,7 @@ const frameLaw = (text: string): string[] => {
   for (const [k, v] of Object.entries(order)) if (!v) found.push(`no \\procedure set-${k}() seat order`);
   const turns = fencedBlocks(text).filter((b) => b.includes("<<~ set lares=`aim`"));
   if (turns.length < 2) found.push(`worked turns in the new frame: ${turns.length} (want 2 or more)`);
-  let steerTo = 0, steerKeys = 0, steerFrom = 0, steerWard = 0, suspended = 0, closed = 0;
+  let steerTo = 0, steerKeys = 0, steerWard = 0, suspended = 0, closed = 0;
   turns.forEach((block, t) => {
     const lines = block.split("\n").filter((l) => /^<<~ (set|oracle) /.test(l));
     const kinds = lines.map((l) => (l.startsWith("<<~ oracle") ? "oracle" : /^<<~ set lares=`(\w+)`/.exec(l)?.[1] ?? "unled"));
@@ -171,7 +171,7 @@ const frameLaw = (text: string): string[] => {
     if (!/^aim( steer)* oracle yield$/.test(shape)) found.push(`turn ${t + 1}: firing order «${shape}»`);
     const keysOf = (l: string) => [...l.matchAll(KEYED)].map((m) => [m[1]!, m[2]!] as const);
     const aim = keysOf(lines[0] ?? "");
-    const aimFrom = aim.find(([k]) => k === "from")?.[1], aimTo = aim.find(([k]) => k === "to")?.[1];
+    const aimTo = aim.find(([k]) => k === "to")?.[1];
     lines.forEach((l, i) => {
       const kind = kinds[i]!;
       if (kind === "oracle") return;
@@ -200,10 +200,9 @@ const frameLaw = (text: string): string[] => {
       }
       if (kind === "steer") {
         if (keys.length < 2) found.push(`turn ${t + 1} steer: records no change`);
-        if (vals.from && vals.from === aimFrom) found.push(`turn ${t + 1} steer: re-reads the aim's from= (rewrites the aim)`);
+        if (vals.from) found.push(`turn ${t + 1} steer: carries from= (half-rewrites the aim's origin; the brackets own the vector's ends)`);
         if (vals.to && vals.to === aimTo) found.push(`turn ${t + 1} steer: casts the aim's own to= (records no change)`);
         if (/↻/.test(vals["drift-ward"] ?? "")) found.push(`turn ${t + 1} steer: ward in close form`);
-        if (vals.from) steerFrom++;
         if (vals["drift-ward"]) steerWard++;
         if (vals.to) steerTo++;
         else if (keys.length >= 2) steerKeys++;
@@ -212,7 +211,6 @@ const frameLaw = (text: string): string[] => {
   });
   if (steerTo < 1) found.push("no worked steer turns the bearing (to=)");
   if (steerKeys < 1) found.push("no worked steer casts other keys on the same heading");
-  if (steerFrom < 1) found.push("no worked steer carries from= (where the work stood)");
   if (steerWard < 1) found.push("no worked steer carries a ward");
   if (suspended < 1) found.push("no worked turn suspends its loop");
   if (closed < 1) found.push("no worked turn closes its loop");
@@ -252,7 +250,7 @@ describe("controls: each law names its planted fault", () => {
   }
   test("frameLaw names each planted frame fault, not merely one", () => {
     const f = frameLaw(PLANTED.frameLaw).join("\n");
-    for (const want of ["firing order", "rewrites the aim", "records no change", "root not three terms", "no worked steer casts", "band above 0", "aim: ward in close form", "lacks the ooda-ha tally", "no worked steer carries a ward"])
+    for (const want of ["firing order", "steer: carries from=", "records no change", "root not three terms", "no worked steer casts", "band above 0", "aim: ward in close form", "lacks the ooda-ha tally", "no worked steer carries a ward"])
       expect(f).toContain(want);
   });
   test("bandLaw names both planted gauges, procedureValues each unticked value", () => {
