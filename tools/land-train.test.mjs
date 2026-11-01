@@ -4,7 +4,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as LT from "./land-train.mjs";
@@ -1039,4 +1039,33 @@ test("RED: --local reads what lands too: `git merge` follows the span's rename i
   assert.match(r.out, /NO SHIP: a/);
   assert.equal(originRef(w, SPAN), SP);
   assert.equal(r.calls.removed.length, 1, "the refused train's worktree leaves");
+});
+
+// A lane editing a path the span then renames into the class (merge-tree follows the rename).
+function renameWorld(lanes = ["a"]) {
+  const w = world(lanes);
+  const c0 = w.commit(w.work, "src/x.txt", "l1\nl2\nl3\nl4\nl5\n", "add x — merge PR #1: x");
+  sh(w.work, "push", "-q", "origin", SPAN);
+  sh(w.work, "checkout", "-q", "-B", `${SPAN}--a`, c0);
+  w.heads.a = w.commit(w.work, "src/x.txt", "l1\nl2\nEVIL\nl4\nl5\n", "lane edits x");
+  sh(w.work, "push", "-q", "-f", "origin", `${SPAN}--a`); sh(w.work, "checkout", "-q", SPAN);
+  sh(w.work, "mv", "src/x.txt", "src/custody-x.txt"); sh(w.work, "commit", "-q", "-m", "rename into the class — merge PR #2: shipped");
+  sh(w.work, "push", "-q", "origin", SPAN);
+  return w;
+}
+const shipFor = (w, s) => { mkdirSync(join(w.dir, "ship"), { recursive: true }); writeFileSync(join(w.dir, "ship", `${s}-${w.heads[s]}.md`), `sha: ${w.heads[s]}\nread: controller read\n`); };
+
+test("RED: a RESUMED train re-reads what it lands against the table and the SHIP: a SHIP revoked after the train pushed refuses (12) and tears the train down", async () => {
+  const w = renameWorld();
+  shipFor(w, "a");
+  const SP = originRef(w, SPAN);
+  const dies = await runQ(w, { over: { ciRuns: async (sha) => { if (sha !== SP) throw new Error("HTTP 401: Bad credentials"); return []; } } }).catch((e) => ({ code: `threw ${e.message}` }));
+  assert.match(String(dies.code), /401/, "run 1 pushed its train and died on the read");
+  assert.ok(sh(w.origin, "for-each-ref", `refs/heads/${SPAN}--train-*`), "the train ref stands");
+  rmSync(join(w.dir, "ship"), { recursive: true });
+  const r = await runQ(w);
+  assert.equal(r.code, 12, r.out);
+  assert.match(r.out, /NO SHIP: a/);
+  assert.equal(originRef(w, SPAN), SP, "nothing landed");
+  assert.equal(sh(w.origin, "for-each-ref", `refs/heads/${SPAN}--train-*`), "", "the refused train is torn down");
 });
