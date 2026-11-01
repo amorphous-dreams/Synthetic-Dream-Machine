@@ -22,7 +22,7 @@ import { existsSync, mkdirSync, openSync, readFileSync, statSync } from "node:fs
 import { join } from "node:path";
 import { spawn } from "node:child_process";
 import { repoRoot } from "@lararium/mesh/node";
-import { fatalLine } from "@lararium/node";
+import { fatalLine, derivePronaosDeskInputs, originDeclaration } from "@lararium/node";
 import { faceStandsOnDisk } from "../floor-cure.js";
 import { engineHeldByHost } from "../port-control.js";
 import { standingPath, standingVerdict } from "@lararium/mesh/rendezvous-path";
@@ -33,6 +33,7 @@ import { emit } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
 import { checkMempalaceIntegration, standOk } from "../integration-check.js";
+import { standPageEnv } from "../stand-page.js";
 import { foundIfAbsent, type FoundStep } from "../standup.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -251,6 +252,15 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       const startOffset = existsSync(log) ? statSync(log).size : 0;
       const logFd = openSync(log, "a");
       // Detached + unref so the hook never blocks on the long-lived daemon.
+      // `--page` (an explicit act) names the desk's prepared Web root for the child; the node's composition verifies it.
+      let childEnv: NodeJS.ProcessEnv = { ...process.env, LAR_CAS: larCasDir() };
+      if (args.flags["page"] === true) {
+        const declared = originDeclaration();
+        const page = standPageEnv(childEnv, derivePronaosDeskInputs(repoRoot),
+          { originDeclared: declared.sameOrigin !== undefined || declared.webOrigin !== undefined || declared.flowOrigin !== undefined });
+        childEnv = { ...page.env };
+        if (page.note !== null) console.error(`lares vessel stand: ${page.note}`);
+      }
       const child = spawn("node", [distMain, "--port", String(port), "--root", root], {
         cwd: join(repoRoot, "packages", "lararium-node"),
         detached: true,
@@ -259,7 +269,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
         // Export the corpus CAS dir so the daemon worker's resolveByCid reads the SAME
         // dir the CLI stages carrier bodies to (larCasDir) — deterministic across the two
         // processes regardless of the LAR_ROOT default. A verb rides references, not bodies.
-        env: { ...process.env, LAR_CAS: larCasDir() },
+        env: childEnv,
       });
       child.unref();
       started = true;

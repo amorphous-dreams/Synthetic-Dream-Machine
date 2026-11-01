@@ -44,6 +44,28 @@ export function assertPronaosRuntimeConfiguration({ dockerfile, compose }) {
   return { webRoot: WEB_ROOT, artifactRecord: RECORD_PATH, profiles };
 }
 
+/**
+ * The SURFACE compose (docker-compose.surface.yml), the preferred container path: its standing `lares` service
+ * names the Web root, the receipt and the same-origin declaration, each exactly. The `herm` service composes
+ * no page by law and is not asked. The block is bounded by the next service key at the same indent.
+ */
+export function assertSurfacePronaosConfiguration({ compose }) {
+  const start = compose.indexOf("\n  lares:\n");
+  if (start < 0) throw new Error("Surface compose has no bounded lares service block");
+  const rest = compose.slice(start + 1);
+  const next = rest.slice(1).search(/\n  [a-z][a-z-]*:\n/);
+  const service = next < 0 ? rest : rest.slice(0, next + 1);
+  const want = [
+    ["LAR_PRONAOS_WEB_ROOT", WEB_ROOT],
+    ["LAR_PRONAOS_ARTIFACT_RECORD", RECORD_PATH],
+    ["LAR_SAME_ORIGIN", '"true"'],
+  ];
+  for (const [name, value] of want) {
+    if (!service.includes(`\n      ${name}: ${value}`)) throw new Error(`surface lares service does not declare ${name}: ${value}`);
+  }
+  return { webRoot: WEB_ROOT, artifactRecord: RECORD_PATH, service: "lares" };
+}
+
 export function assertPronaosRuntimeInputs({ webRoot, artifactRecord }) {
   if (!existsSync(webRoot) || !statSync(webRoot).isDirectory()) {
     throw new Error(`Pronaos Web root is absent: ${webRoot}`);
@@ -73,7 +95,8 @@ if (process.argv[1]?.endsWith("pronaos-runtime-wiring.mjs")) {
       dockerfile: readFileSync("Dockerfile", "utf8"),
       compose: readFileSync("docker-compose.yml", "utf8"),
     });
-    console.log(`[pronaos-runtime] configuration green: ${result.webRoot} + ${result.artifactRecord}`);
+    assertSurfacePronaosConfiguration({ compose: readFileSync("docker-compose.surface.yml", "utf8") });
+    console.log(`[pronaos-runtime] configuration green: ${result.webRoot} + ${result.artifactRecord} (compose + surface)`);
   } catch (error) {
     console.error(`[pronaos-runtime] RED\n${error.message}`);
     process.exitCode = 1;

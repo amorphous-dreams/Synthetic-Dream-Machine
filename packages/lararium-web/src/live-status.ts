@@ -18,6 +18,30 @@ export function sameOriginRelayUrl(location: Pick<ServedLocation, "protocol" | "
 }
 
 /**
+ * The relay a page dials when its own origin answers as a lararium's Pronaos and `?relay=` names none.
+ *
+ * The proof stands on a capability, never a host: the same-origin arrival descriptor (`/.well-known/lar`)
+ * answers JSON whose `format` reads `lar-arrival`. A Vite dev server answers every unknown path with its
+ * index.html at 200, so the status proves nothing and the format decides; a file page has no origin to ask.
+ * Every miss reads undefined, the pure local boot. No timer decides: the origin answers or fails on its own.
+ */
+export const ARRIVAL_DESCRIPTOR_PATH = "/.well-known/lar";
+export async function arrivalRelayUrl(
+  location: Pick<ServedLocation, "origin" | "protocol" | "host">,
+  fetchFn: (input: string) => Promise<Response>,
+): Promise<string | undefined> {
+  if (location.protocol !== "http:" && location.protocol !== "https:") return undefined;
+  try {
+    const response = await fetchFn(`${location.origin}${ARRIVAL_DESCRIPTOR_PATH}`);
+    if (!response.ok) return undefined;
+    const body: unknown = JSON.parse(await response.text());
+    return (body as { format?: unknown } | null)?.format === "lar-arrival" ? sameOriginRelayUrl(location) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * The hearth's floor card the arrival URL carries in its fragment (`#floor=<card>`), which never reaches a server: the place's
  * signed floor pin claim for the flow route and the KEL rows that fold to its head, read by the mesh's one reader
  * (`readHearthFloorCard`). A torn card reads none. The card never anchors itself (`floorAnchorOf`).

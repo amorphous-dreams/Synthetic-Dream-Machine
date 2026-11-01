@@ -27,7 +27,9 @@ import {
   nexusIdentity, nexusScopeOrThrow, nexusAidOf,
   mintFaceAnchor, raiseFaceFrontier,
 } from "@lararium/mesh";
-import { daemonGenesisDir } from "../lares-config.js";
+import { daemonGenesisDir, daemonCorpusRoot, loadLaresConfig } from "../lares-config.js";
+import { repoRoot } from "@lararium/mesh/node";
+import { genesisFoundingLine, genesisResolutionAt, pinGenesisSeed } from "../genesis-resolve.js";
 import { larDataDir, larBootstrapPath, larSealHome, larIdentityDir } from "../vessel-paths.js";
 import { FsCustodyIo } from "../custody-io.js";
 import { assertFoundingRoute, custodyTreeStands, foundCustody } from "../custody-session.js";
@@ -166,7 +168,20 @@ function readPackedTiddlers(path: string): PackedTiddlers {
   return packed.tiddlers ?? {};
 }
 
+/**
+ * The founding act, then the genesis pin. The pin moves ONLY when a founding succeeds (`skipped: false`): a founding
+ * that refuses (custody locked, an occupied store) leaves the earlier pin standing, so the store it left unchanged
+ * still boots against the seed it was founded on.
+ */
 export async function runInit(opts: InitOptions): Promise<InitResult> {
+  const result = await runInitAct(opts);
+  if (!result.skipped) {
+    pinGenesisSeed(result.storageDir, genesisResolutionAt(result.genesisDir, { explicit: process.env["LAR_GENESIS"], configured: loadLaresConfig().resources?.genesis, corpusRoot: daemonCorpusRoot(), shippedRoot: repoRoot }));
+  }
+  return result;
+}
+
+async function runInitAct(opts: InitOptions): Promise<InitResult> {
   const defaults   = defaultDirs();
   const storageDir = opts.storageDir ?? defaults.storageDir;
   const genesisDir = opts.genesisDir ?? defaults.genesisDir;
@@ -205,6 +220,10 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
   //
   // A gate that fires after the act it guards teaches the operator to distrust a clean refusal.
   const hearthTrueName = GENESIS_ENGINE_CID(genesisDir);
+  const genesisUsed = genesisResolutionAt(genesisDir, { explicit: process.env["LAR_GENESIS"], configured: loadLaresConfig().resources?.genesis, corpusRoot: daemonCorpusRoot(), shippedRoot: repoRoot });
+  if (hearthTrueName) {
+    console.log(`[lares vessel found] ${genesisFoundingLine(genesisUsed)}`);
+  }
   if (!hearthTrueName) {
     throw new Error(
       "[lares vessel found] cannot found: hearth true-name (engine CID) absent from " + genesisDir + " —\n" +
