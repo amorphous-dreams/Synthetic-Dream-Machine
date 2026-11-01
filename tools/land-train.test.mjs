@@ -4,9 +4,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import * as LT from "./land-train.mjs";
 import {
   ACTIVE_STATUSES, activeRuns, diskRefusal, ghEnv, landTrain, parseSpec, readSuiteLog, repoOfRemote, runsToCancel, sharedPackages, spanPushRefusal, verdictWords, worktreeCapRefusal,
 } from "./land-train.mjs";
@@ -66,6 +67,8 @@ function world(lanes = ["a", "b"], { touch = (s) => `packages/p-${s}/f.txt` } = 
   cfg("user.name", "Test Lane"); cfg("user.email", "test@example.com");
   const commit = (wt, file, body, msg) => { mkdirSync(join(wt, file, ".."), { recursive: true }); writeFileSync(join(wt, file), body); sh(wt, "add", "-A"); sh(wt, "commit", "-q", "-m", msg); return sh(wt, "rev-parse", "HEAD"); };
   commit(work, "README", "base\n", "base");
+  // The security-class table stands in the span's tree (the queue reads it from the span head, never from a lane).
+  commit(work, "tools/security-class-paths.json", `${JSON.stringify({ paths: ["tools/security-class-paths.json", "tools/land-train.mjs", ".github/**"], tokens: ["custody"] })}\n`, "the security table");
   sh(work, "push", "-q", "origin", SPAN);
   const base = sh(work, "rev-parse", "HEAD");
   const heads = {}, msgs = {};
@@ -73,12 +76,12 @@ function world(lanes = ["a", "b"], { touch = (s) => `packages/p-${s}/f.txt` } = 
     sh(work, "checkout", "-q", "-b", `${SPAN}--${s}`, base);
     heads[s] = commit(work, touch(s), `${s}\n`, `lane ${s}`);
     sh(work, "push", "-q", "origin", `${SPAN}--${s}`);
-    msgs[s] = join(dir, `${s}.msg`); writeFileSync(msgs[s], `lar:///w/${s} — merge PR #${s}: lane ${s}\n`);
+    msgs[s] = join(dir, `${s}.msg`); writeFileSync(msgs[s], `lar:///w/${s} — merge PR #${100 + lanes.indexOf(s)}: lane ${s}\n`);
   }
   sh(work, "checkout", "-q", SPAN);
   return { dir, origin, work, base, heads, msgs, lanes, cfg, commit };
 }
-const specsOf = (w, only = w.lanes) => only.map((s, i) => `${s}:${100 + i}:${w.heads[s]}:${w.msgs[s]}`);
+const specsOf = (w, only = w.lanes) => only.map((s) => `${s}:${100 + w.lanes.indexOf(s)}:${w.heads[s]}:${w.msgs[s]}`);
 
 /** The injected ops: network, disk and the train are stand-ins; git is real. */
 function opsOf(w, over = {}) {
@@ -111,7 +114,7 @@ function opsOf(w, over = {}) {
 const run = (w, over, opts = {}, only) => {
   const { ops, calls } = opsOf(w, over);
   const lines = []; ops.log = (l) => lines.push(l);
-  return landTrain({ name: "t1", base: w.base, specs: specsOf(w, only), span: SPAN, cwd: w.work, ...opts }, ops).then((r) => ({ ...r, calls, out: lines.join("\n") }));
+  return landTrain({ name: "t1", local: true, specs: specsOf(w, only), span: SPAN, cwd: w.work, ...opts }, ops).then((r) => ({ ...r, calls, out: lines.join("\n") }));
 };
 const originRef = (w, ref) => sh(w.origin, "rev-parse", ref);
 
@@ -127,7 +130,7 @@ test("CONTROL: a recorded clean batch of two lanes lands as chained commits whos
   assert.equal(sh(w.work, "rev-parse", `${first}^2`), w.heads.a);
   assert.equal(sh(w.work, "rev-parse", `${second}^`), first, "the second land chains on the first");
   assert.equal(sh(w.work, "rev-parse", `${second}^2`), w.heads.b);
-  assert.match(sh(w.work, "log", "-1", "--format=%s", first), / — merge PR #a/);
+  assert.match(sh(w.work, "log", "-1", "--format=%s", first), / — merge PR #100:/);
   assert.equal(originRef(w, `${SPAN}--a`), first, "each lane branch moves to its land commit");
   assert.equal(originRef(w, `${SPAN}--b`), second);
   assert.deepEqual(r.calls.cancelled.sort(), [`${SPAN}--a`, `${SPAN}--b`]);
@@ -159,7 +162,7 @@ test("RED: --plan prints the commits it would write and pushes nothing, builds n
   assert.match(r.out, /PLAN .*lane a.*PR #100/);
   assert.match(r.out, /PLAN .*lane b.*PR #101/);
   assert.match(r.out, new RegExp(w.heads.a.slice(0, 9)));
-  assert.match(r.out, / — merge PR #a/, "the land message's subject is printed");
+  assert.match(r.out, / — merge PR #100:/, "the land message's subject is printed");
   assert.equal(r.calls.cancelled.length, 0);
 });
 
@@ -168,7 +171,7 @@ test("RED: a span commit since base whose subject lacks ` — merge PR #` refuse
   // The span moved by a road commit after the lanes branched: the lane then lacks nothing it needs (base stays on the span).
   const road = w.commit(w.work, "road.txt", "r\n", "a road commit");
   sh(w.work, "push", "-q", "origin", SPAN);
-  const ungreen = await run(w, { verdict: async () => ({ ci: "red", heldOut: "green" }) }, {}, ["a"]);
+  const ungreen = await run(w, { verdict: async (b) => (b === SPAN ? { ci: "red", heldOut: "green" } : { ci: "green", heldOut: "green" }) }, {}, ["a"]);
   assert.equal(ungreen.code, 3, ungreen.out);
   assert.match(ungreen.out, /NON-LAND COMMIT NOT READ GREEN/);
   assert.equal(ungreen.calls.train, 0);
@@ -214,22 +217,23 @@ test("RED: an UNREADABLE verdict is never not-green: it waits, then exits 10 (it
   assert.equal(flaky.code, 0, flaky.out);
 });
 
-test("RED: a moved head refuses 3; a lane lacking the base refuses 9; a lane not green refuses 8", async () => {
+test("RED: a moved head refuses 3; a lane sharing no history with the span refuses 2; a lane not green refuses 8", async () => {
   const w = world();
   const moved = await run(w, {}, {}, undefined);
   assert.equal(moved.code, 0);
   const w1 = world();
   const specs = specsOf(w1); specs[0] = specs[0].replace(w1.heads.a, "f".repeat(40));
   const { ops } = opsOf(w1); const lines = []; ops.log = (l) => lines.push(l);
-  const r1 = await landTrain({ name: "t", base: w1.base, specs, span: SPAN, cwd: w1.work }, ops);
+  const r1 = await landTrain({ name: "t", local: true, specs, span: SPAN, cwd: w1.work }, ops);
   assert.equal(r1.code, 3); assert.match(lines.join("\n"), /HEAD MOVED: a/);
-  // base not an ancestor of the lane: branch a lane from an orphan root.
+  // a lane with no common base: branch it from an orphan root.
   const w2 = world(["a"]);
   sh(w2.work, "checkout", "-q", "--orphan", "stray"); sh(w2.work, "rm", "-rfq", "."); writeFileSync(join(w2.work, "s"), "s"); sh(w2.work, "add", "-A"); sh(w2.work, "commit", "-q", "-m", "stray");
   const stray = sh(w2.work, "rev-parse", "HEAD"); sh(w2.work, "push", "-q", "-f", "origin", `stray:${SPAN}--a`); sh(w2.work, "checkout", "-q", SPAN);
-  const specs2 = [`a:1:${stray}:${w2.msgs.a}`];
-  const o2 = opsOf(w2); o2.ops.log = () => {};
-  assert.equal((await landTrain({ name: "t", base: w2.base, specs: specs2, span: SPAN, cwd: w2.work }, o2.ops)).code, 9);
+  const specs2 = [`a:100:${stray}:${w2.msgs.a}`];
+  const o2 = opsOf(w2); const l2 = []; o2.ops.log = (l) => l2.push(l);
+  assert.equal((await landTrain({ name: "t", local: true, specs: specs2, span: SPAN, cwd: w2.work }, o2.ops)).code, 2);
+  assert.match(l2.join("\n"), /NO COMMON BASE: a/);
   const w3 = world();
   const r3 = await run(w3, { verdict: async (b) => (b.endsWith("--b") ? { ci: "red", heldOut: "green" } : { ci: "green", heldOut: "green" }) });
   assert.equal(r3.code, 8, r3.out);
@@ -341,15 +345,16 @@ test("RED: the DIRECT land: a lane whose head holds the span head lands with no 
   const laneHead = sh(w2.work, "rev-parse", "HEAD"); sh(w2.work, "push", "-q", "origin", `${SPAN}--x`); sh(w2.work, "checkout", "-q", SPAN);
   assert.notEqual(laneHead, laneHead0);
   const { ops, calls } = opsOf(w2); const lines = []; ops.log = (l) => lines.push(l);
-  const base = w2.base; // the land that moved the span is a " — merge PR #" commit, so the span walk passes
-  const r = await landTrain({ name: "d", base, specs: [`x:7:${laneHead}:${w2.msgs.x}`], span: SPAN, cwd: w2.work }, ops);
+  const r = await landTrain({ specs: [`x:100:${laneHead}:${w2.msgs.x}`], span: SPAN, cwd: w2.work }, ops);
   assert.equal(r.code, 0, lines.join("\n"));
   assert.equal(calls.train, 0, "no train ran");
   const land = originRef(w2, SPAN);
   assert.equal(sh(w2.work, "rev-parse", `${land}^{tree}`), sh(w2.work, "rev-parse", `${laneHead}^{tree}`));
   assert.equal(sh(w2.work, "rev-parse", `${land}^`), ahead);
   assert.equal(sh(w2.work, "rev-parse", `${land}^2`), laneHead);
-  assert.deepEqual(calls.cancelled, [`${SPAN}--x`]);
+  // The lane push of a DIRECT land changes no file (its tree IS the lane tree), so paths-ignore raises no run to cancel
+  // (measured on four DIRECT lands, 2026-11-01): the land waits on none.
+  assert.deepEqual(calls.cancelled, []);
   assert.match(lines.join("\n"), /DIRECT-LANDED/);
 });
 
@@ -442,7 +447,7 @@ test("RED: a train name that climbs out of scratch refuses (2)", async () => {
   const w = world(["a"]);
   const { ops } = opsOf(w); ops.log = () => {};
   for (const bad of ["../../tmp/pwn", "a/b", "", ".hidden"]) {
-    assert.equal((await landTrain({ name: bad, base: w.base, specs: specsOf(w, ["a"]), span: SPAN, cwd: w.work }, ops)).code, 2, bad);
+    assert.equal((await landTrain({ name: bad, local: true, specs: specsOf(w, ["a"]), span: SPAN, cwd: w.work }, ops)).code, 2, bad);
   }
 });
 
@@ -507,7 +512,7 @@ test("RED: a meme-only road commit with no run, over a green ancestor, passes; C
   const w3 = world(["a"]);
   const m3 = w3.commit(w3.work, "notes.md", "m\n", "a docs-only road commit");
   sh(w3.work, "push", "-q", "origin", SPAN);
-  const noAnc = await run(w3, { verdict: async (b, s) => (s === m3 ? { ci: "unread", heldOut: "unread" } : { ci: "red", heldOut: "green" }) }, {}, ["a"]);
+  const noAnc = await run(w3, { verdict: async (b, s) => (s === m3 ? { ci: "unread", heldOut: "unread" } : b === SPAN ? { ci: "red", heldOut: "green" } : { ci: "green", heldOut: "green" }) }, {}, ["a"]);
   assert.equal(noAnc.code, 3, noAnc.out);
   // CONTROL: a mixed commit (meme and code) with no run refuses.
   const w4 = world(["a"]);
@@ -534,4 +539,554 @@ test("RED: a lane head with no CI run reads GREEN when its nearest lane ancestor
   const m3 = lane(w3, "notes.md", "a docs-only lane head");
   const red = await run(w3, { verdict: verdictFor(m3, { ci: "red", heldOut: "unread" }) }, {}, ["a"]);
   assert.equal(red.code, 8, red.out);
+});
+
+// ── QUEUE: the train verifies in the cloud on the merge result ───────────────────────────────────────────────
+// The CI stand-in answers per sha from the refs that hold it at the origin (the span and its `--train-*` branches), so
+// a pushed train head, a probe of an existing chain commit and the span head each hold their own run. `red(sha, w,
+// attempt)` decides each run's conclusion from the tree it would test.
+const hasFile = (w, sha, path) => { try { sh(w.work, "cat-file", "-e", `${sha}:${path}`); return true; } catch { return false; } };
+function opsQ(w, { red = () => false, extra = () => [], over = {} } = {}) {
+  const { ops, calls } = opsOf(w);
+  const localTrain = ops.train;
+  Object.assign(calls, { local: 0, asked: [], reruns: [], cancelledRuns: [], dispatched: [] });
+  const attempts = new Map(), ids = new Map();
+  const refsAt = (sha) => sh(w.origin, "for-each-ref", "--points-at", sha, "--format=%(refname:short)", "refs/heads").split("\n").filter(Boolean);
+  Object.assign(ops, {
+    // The local battery: QUEUE never runs it (counted, and green, so a tool that still trains locally lands and says so).
+    train: async (ctx) => { calls.local++; try { return await localTrain(ctx); } catch { return { state: "conflict", worktree: null, files: ["(the local merge stopped)"] }; } },
+    ciRuns: async (sha) => {
+      calls.asked.push(sha);
+      return refsAt(sha).filter((b) => b === SPAN || b.startsWith(`${SPAN}--train-`)).map((b) => {
+        const key = `${b}@${sha}`; if (!ids.has(key)) ids.set(key, ids.size + 1);
+        const id = ids.get(key), attempt = attempts.get(id) ?? 1;
+        return { databaseId: id, headBranch: b, headSha: sha, status: "completed", conclusion: red(sha, w, attempt) ? "failure" : "success", attempt, createdAt: "2026-11-01T00:00:00Z" };
+      }).concat(extra(sha));
+    },
+    rerun: async (id) => { calls.reruns.push(id); attempts.set(id, (attempts.get(id) ?? 1) + 1); },
+    cancelRun: async (id) => { calls.cancelledRuns.push(id); },
+    heldOut: async () => ({ covered: originRef(w, SPAN), state: "green", inFlight: 0 }),
+    dispatchCI: async (ref) => { calls.dispatched.push(ref); },
+    ...over,
+  });
+  return { ops, calls };
+}
+const runQ = (w, { red, extra, over, only, ...opts } = {}) => {
+  const { ops, calls } = opsQ(w, { red, extra, over });
+  const lines = []; ops.log = (l) => lines.push(l);
+  return LT.landTrain({ specs: specsOf(w, only), span: SPAN, cwd: w.work, shipDir: join(w.dir, "ship"), queueDir: join(w.dir, "q"), ...opts }, ops)
+    .then((r) => ({ ...r, calls, out: lines.join("\n") }));
+};
+const pushedTrains = (out) => [...out.matchAll(/^pushed train (\S+) ([0-9a-f]{40})$/gm)].map((m) => ({ branch: m[1], sha: m[2] }));
+const refAt = (w, ref) => { try { return originRef(w, ref); } catch { return null; } };
+const isAnc = (w, a, b) => { try { sh(w.work, "merge-base", "--is-ancestor", a, b); return true; } catch { return false; } };
+const spanAhead = (w) => { const c = w.commit(w.work, "ahead.txt", "a\n", "span ahead — merge PR #0: an earlier land"); sh(w.work, "push", "-q", "origin", SPAN); return c; };
+
+test("RED: QUEUE: a lane lacking the span head lands through a train (exit 9 before the queue, when the controller typed the span head as the base); its land keeps the house subject", async () => {
+  const w = world(["a"]);
+  const SP = spanAhead(w);
+  const r = await runQ(w);
+  assert.equal(r.code, 0, r.out);
+  const land = originRef(w, SPAN);
+  assert.equal(sh(w.work, "rev-parse", `${land}^`), SP, "the land chains on the span head");
+  assert.equal(sh(w.work, "rev-parse", `${land}^2`), w.heads.a);
+  assert.match(sh(w.work, "log", "-1", "--format=%s", land), / — merge PR #100:/);
+  assert.equal(r.calls.local, 0, "no local battery ran");
+});
+
+test("RED: QUEUE: the verdict reads the pushed train head's CI, and the span fast-forwards to that exact sha; CONTROL: a green on another sha of the train branch never lands", async () => {
+  const w = world();
+  const r = await runQ(w);
+  assert.equal(r.code, 0, r.out);
+  const [t] = pushedTrains(r.out);
+  assert.ok(t && t.branch.startsWith(`${SPAN}--train-`), r.out);
+  assert.equal(originRef(w, SPAN), t.sha, "the span IS the train head CI read (a fast-forward, no new commit)");
+  assert.ok(r.calls.asked.includes(t.sha), "the train head's own runs were read");
+  assert.equal(r.calls.local, 0, "the local battery never ran");
+  // CONTROL: the train branch holds a GREEN run of another sha, and the train head's own run reads red.
+  const w2 = world(["a"]);
+  const SP2 = spanAhead(w2); // a lane holding the span head would land DIRECT
+  const r2 = await runQ(w2, {
+    red: (sha) => sha !== SP2,
+    // The train branch also holds a GREEN run of another sha (the lane head): the reader matches the head, never the branch.
+    extra: (sha) => (sha === SP2 ? [] : [{ databaseId: 99, headBranch: `${SPAN}--train-1-x`, headSha: w2.heads.a, status: "completed", conclusion: "success", attempt: 1, createdAt: "x" }]),
+  });
+  assert.equal(r2.code, 5, r2.out);
+  assert.equal(originRef(w2, SPAN), SP2, "nothing landed");
+});
+
+test("RED: QUEUE: a red train of three drops the culprit by bisection over its own chain and lands the rest; the green prefix lands at its EXISTING chain sha", async () => {
+  const w = world(["a", "b", "c"]);
+  const r = await runQ(w, { red: (sha) => hasFile(w, sha, "packages/p-b/f.txt") });
+  assert.equal(r.code, 11, r.out);
+  assert.match(r.out, /DROPPED b: /);
+  const final = originRef(w, SPAN);
+  for (const s of ["a", "c"]) assert.ok(hasFile(w, final, `packages/p-${s}/f.txt`), `${s} landed`);
+  assert.ok(!hasFile(w, final, "packages/p-b/f.txt"), "b never landed");
+  const [t1] = pushedTrains(r.out);
+  const prefix = sh(w.work, "rev-parse", `${final}^`);
+  assert.equal(sh(w.work, "rev-parse", `${prefix}^2`), w.heads.a);
+  assert.ok(isAnc(w, prefix, t1.sha), "lane a's land IS the first commit of the first train's chain, never a rebuild");
+  assert.equal(sh(w.work, "rev-parse", `${final}^2`), w.heads.c);
+});
+
+test("RED: QUEUE: a security-class lane with no SHIP for its exact head refuses by name (12) and nothing pushes; CONTROL: the SHIP for that sha passes", async () => {
+  const touch = (s) => (s === "s" ? "packages/p-s/custody-door.txt" : `packages/p-${s}/f.txt`);
+  const w = world(["a", "s"], { touch });
+  const r = await runQ(w);
+  assert.equal(r.code, 12, r.out);
+  assert.match(r.out, /NO SHIP: s/);
+  assert.equal(originRef(w, SPAN), w.base);
+  assert.equal(pushedTrains(r.out).length, 0, "no train pushed");
+  // A SHIP for another sha does not count.
+  mkdirSync(join(w.dir, "ship"), { recursive: true });
+  writeFileSync(join(w.dir, "ship", `s-${"e".repeat(40)}.md`), `sha: ${"e".repeat(40)}\nread: controller diff read\n`);
+  assert.equal((await runQ(w)).code, 12);
+  // A lane that edits the table itself is security-class (the table sits in its own list).
+  const w3 = world(["t"], { touch: () => "tools/security-class-paths.json" });
+  const r3 = await runQ(w3);
+  assert.equal(r3.code, 12, r3.out);
+  // CONTROL: the SHIP naming the exact head passes.
+  writeFileSync(join(w.dir, "ship", `s-${w.heads.s}.md`), `sha: ${w.heads.s}\nread: controller diff read + Sonnet cold read\n`);
+  const ok = await runQ(w);
+  assert.equal(ok.code, 0, ok.out);
+});
+
+test("RED: QUEUE: train N+1 builds on train N's head while N verifies, and re-chains when N reds", async () => {
+  const w = world(["a", "b", "c", "d"]);
+  const r = await runQ(w, { k: 2, depth: 2, red: (sha) => hasFile(w, sha, "packages/p-b/f.txt") });
+  assert.equal(r.code, 11, r.out);
+  const trains = pushedTrains(r.out);
+  const [t1, t2] = trains;
+  assert.ok(t2 && isAnc(w, t1.sha, t2.sha), "train 2 was pushed on train 1's head (speculation)");
+  const final = originRef(w, SPAN);
+  for (const s of ["a", "c", "d"]) assert.ok(hasFile(w, final, `packages/p-${s}/f.txt`), `${s} landed`);
+  assert.ok(!hasFile(w, final, "packages/p-b/f.txt"));
+  assert.ok(!isAnc(w, t2.sha, final), "the speculative train never landed: its base died with train 1");
+  assert.equal(refAt(w, t2.branch), null, "the dead speculative train's branch is gone");
+});
+
+test("RED: a land message whose subject lacks ` — merge PR #<pr>` refuses (2) before any train; a later land would read it as a road commit", async () => {
+  const w = world(["a"]);
+  writeFileSync(w.msgs.a, "lar:///w/a — lane a with no marker\n");
+  const r = await runQ(w);
+  assert.equal(r.code, 2, r.out);
+  assert.match(r.out, /MESSAGE LACKS " — merge PR #100"/);
+  // The marker names THIS pull request: #1000 does not stand for #100.
+  writeFileSync(w.msgs.a, "lar:///w/a — merge PR #1000: lane a\n");
+  assert.equal((await runQ(w)).code, 2);
+  assert.equal(originRef(w, SPAN), w.base);
+});
+
+test("RED: QUEUE: a red train reruns its failed jobs once and reads the NEW attempt (a flake lands, no bisect); a train run cancelled clean is VOID (13), never a wait", async () => {
+  const w = world();
+  const r = await runQ(w, { red: (sha, _w, attempt) => sha !== w.base && attempt === 1 });
+  assert.equal(r.code, 0, r.out);
+  assert.equal(r.calls.reruns.length, 1, "one rerun of the failed jobs");
+  assert.equal(pushedTrains(r.out).length, 1, "no probe: the rerun read green");
+  const w2 = world(["a"]);
+  const SP2 = spanAhead(w2);
+  const r2 = await runQ(w2, {
+    over: { ciRuns: async (sha) => [{ databaseId: 9, headBranch: sha === SP2 ? SPAN : `${SPAN}--train-x`, headSha: sha, status: "completed", conclusion: sha === SP2 ? "success" : "cancelled", attempt: 1, createdAt: "x" }] },
+  });
+  assert.equal(r2.code, 13, r2.out);
+  assert.match(r2.out, /VOID/);
+  assert.equal(originRef(w2, SPAN), SP2);
+});
+
+test("RED: QUEUE: a red over a span head with no real run probes the span (dispatch) before blaming a lane; a red span pauses (16) and drops no lane", async () => {
+  const w = world();
+  let dispatched = false, att = 1;
+  const r = await runQ(w, {
+    red: () => true,
+    over: {
+      dispatchCI: async () => { dispatched = true; },
+      // The span head holds no run until the dispatch raises one (its push changed ignored paths alone); that run reads red.
+      ciRuns: async (sha) => (sha === w.base
+        ? (dispatched ? [{ databaseId: 50, headBranch: SPAN, headSha: sha, status: "completed", conclusion: "failure", attempt: att, createdAt: "x" }] : [])
+        : [{ databaseId: 51, headBranch: `${SPAN}--train-x`, headSha: sha, status: "completed", conclusion: "failure", attempt: att, createdAt: "x" }]),
+      rerun: async () => { att++; },
+    },
+  });
+  assert.equal(r.code, 16, r.out);
+  assert.match(r.out, /SPAN RED/);
+  assert.doesNotMatch(r.out, /DROPPED/);
+  assert.ok(dispatched, "the span head got its own run");
+  assert.equal(originRef(w, SPAN), w.base);
+});
+
+test("RED: QUEUE: the held-out gate pauses on a RED newest completed run (15) and past M=3 lands beyond its covered sha with none in flight; CONTROL: a run in flight that turns green lets the queue go", async () => {
+  const w = world(["a"]);
+  const covered = spanAhead(w); // a lane holding the span head would land DIRECT, past the gate
+  const r = await runQ(w, { over: { heldOut: async () => ({ covered, state: "red", inFlight: 0 }) } });
+  assert.equal(r.code, 15, r.out);
+  assert.match(r.out, new RegExp(`HELD-OUT RED at ${covered.slice(0, 9)}`));
+  for (let i = 1; i <= 4; i++) w.commit(w.work, `l${i}.txt`, `${i}\n`, `land ${i} — merge PR #${i}: earlier`);
+  sh(w.work, "push", "-q", "origin", SPAN);
+  const lag = await runQ(w, { over: { heldOut: async () => ({ covered, state: "green", inFlight: 0 }) } });
+  assert.equal(lag.code, 15, lag.out);
+  assert.match(lag.out, /HELD-OUT LAGS: 4 lands past/);
+  assert.equal(pushedTrains(lag.out).length, 0);
+  let reads = 0;
+  const go = await runQ(w, { over: { heldOut: async () => (++reads === 1 ? { covered, state: "green", inFlight: 1 } : { covered: originRef(w, SPAN), state: "green", inFlight: 0 }) } });
+  assert.equal(go.code, 0, go.out);
+  assert.ok(reads >= 2, "the gate waited on the run in flight");
+});
+
+test("RED: QUEUE: a conflict at chain build drops that lane by name, and every later lane carrying its commits, and lands the rest", async () => {
+  const w = world(["a", "b"], { touch: () => "packages/shared/f.txt" });
+  sh(w.work, "checkout", "-q", "-b", `${SPAN}--c`, w.heads.b);
+  w.heads.c = w.commit(w.work, "packages/p-c/f.txt", "c\n", "lane c on b");
+  sh(w.work, "push", "-q", "origin", `${SPAN}--c`); sh(w.work, "checkout", "-q", SPAN);
+  w.lanes.push("c"); w.msgs.c = join(w.dir, "c.msg"); writeFileSync(w.msgs.c, "lar:///w/c — merge PR #102: lane c\n");
+  const r = await runQ(w);
+  assert.equal(r.code, 11, r.out);
+  assert.match(r.out, /DROPPED b: conflict/);
+  assert.match(r.out, /DROPPED c: carries b/);
+  const final = originRef(w, SPAN);
+  assert.equal(sh(w.work, "rev-parse", `${final}^2`), w.heads.a);
+});
+
+test("RED: QUEUE: a lane whose diff changes ignored paths alone refuses the queue (no run would come); CONTROL: it lands DIRECT once it holds the span head", async () => {
+  const w = world(["a"], { touch: () => "bags/x/note.mem" });
+  spanAhead(w);
+  const r = await runQ(w);
+  assert.equal(r.code, 2, r.out);
+  assert.match(r.out, /MEME-ONLY LANE: a/);
+  sh(w.work, "checkout", "-q", `${SPAN}--a`); sh(w.work, "merge", "-q", "--no-edit", SPAN);
+  w.heads.a = sh(w.work, "rev-parse", "HEAD"); sh(w.work, "push", "-q", "origin", `${SPAN}--a`); sh(w.work, "checkout", "-q", SPAN);
+  const d = await runQ(w);
+  assert.equal(d.code, 0, d.out);
+  assert.match(d.out, /DIRECT-LANDED/);
+});
+
+test("RED: QUEUE: enqueue validates and writes one entry per lane; run drains the queue; status exits 1 while a train ref stands unlanded and 0 when none does", async () => {
+  const w = world();
+  const { ops } = opsQ(w); const lines = []; ops.log = (l) => lines.push(l);
+  const o = { span: SPAN, cwd: w.work, shipDir: join(w.dir, "ship"), queueDir: join(w.dir, "q") };
+  assert.equal((await LT.enqueue({ ...o, specs: specsOf(w) }, ops)).code, 0, lines.join("\n"));
+  const bad = specsOf(w, ["a"])[0].replace(w.heads.a, "f".repeat(40));
+  assert.equal((await LT.enqueue({ ...o, specs: [bad] }, ops)).code, 3, "a moved head never enters");
+  assert.equal((await LT.queueStatus(o, ops)).code, 0);
+  const t = sh(w.work, "commit-tree", `${w.heads.a}^{tree}`, "-p", w.base, "-m", "stray train");
+  sh(w.work, "push", "-q", "origin", `${t}:refs/heads/${SPAN}--train-9-${t.slice(0, 9)}`);
+  assert.equal((await LT.queueStatus(o, ops)).code, 1, "a train ref stands unlanded");
+  sh(w.work, "push", "-q", "origin", "--delete", `${SPAN}--train-9-${t.slice(0, 9)}`);
+  const r = await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops);
+  assert.equal(r.code, 0, lines.join("\n"));
+  const final = originRef(w, SPAN);
+  for (const s of ["a", "b"]) assert.ok(hasFile(w, final, `packages/p-${s}/f.txt`));
+  assert.equal((await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops)).code, 2, "an empty queue names no lane");
+});
+
+test("RED: QUEUE: a run that finds the lock of a dead process takes it over and RESUMES the standing train ref that chains the queued lanes, landing that exact sha", async () => {
+  const w = world(["a"]);
+  const SP = spanAhead(w);
+  const tree = sh(w.work, "merge-tree", "--write-tree", SP, w.heads.a);
+  const t = sh(w.work, "commit-tree", tree, "-p", SP, "-p", w.heads.a, "-F", w.msgs.a);
+  const branch = `${SPAN}--train-1-${t.slice(0, 9)}`;
+  sh(w.work, "push", "-q", "origin", `${t}:refs/heads/${branch}`);
+  mkdirSync(join(w.dir, "q"), { recursive: true });
+  writeFileSync(join(w.dir, "q", "lock"), "999999\n");
+  const r = await runQ(w);
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /RESUMED/);
+  assert.equal(originRef(w, SPAN), t, "the standing train's own sha landed");
+  assert.equal(pushedTrains(r.out).length, 0, "no new train pushed");
+});
+
+test("RED: a non-ASCII path still reads its class: git's C-quoting never hides a security path (12) nor a meme-only lane (2)", async () => {
+  const w = world(["a"], { touch: () => ".github/workflows/é.yml" });
+  const r = await runQ(w);
+  assert.equal(r.code, 12, r.out);
+  assert.match(r.out, /NO SHIP: a/);
+  const w2 = world(["b"], { touch: () => "bags/é/note.mem" });
+  spanAhead(w2);
+  const r2 = await runQ(w2);
+  assert.equal(r2.code, 2, r2.out);
+  assert.match(r2.out, /MEME-ONLY LANE: b/);
+});
+
+test("RED: a queued lane that lands DIRECT settles its entry, so the next run never re-reads a landed head", async () => {
+  const w = world(["a"]);
+  const { ops } = opsQ(w); const lines = []; ops.log = (l) => lines.push(l);
+  const o = { span: SPAN, cwd: w.work, shipDir: join(w.dir, "ship"), queueDir: join(w.dir, "q") };
+  assert.equal((await LT.enqueue({ ...o, specs: specsOf(w) }, ops)).code, 0);
+  const r = await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops);
+  assert.equal(r.code, 0, lines.join("\n"));
+  assert.match(lines.join("\n"), /DIRECT-LANDED/);
+  assert.deepEqual(readdirSync(join(w.dir, "q", "entries")), [], "the entry left the queue");
+  assert.equal((await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops)).code, 2, "the next run finds no lane");
+});
+
+test("RED: run --plan reads the queue and moves no entry, even a lane its chain would drop", async () => {
+  const w = world(["a", "b"], { touch: () => "packages/shared/f.txt" });
+  spanAhead(w);
+  const { ops } = opsQ(w); const lines = []; ops.log = (l) => lines.push(l);
+  const o = { span: SPAN, cwd: w.work, shipDir: join(w.dir, "ship"), queueDir: join(w.dir, "q") };
+  assert.equal((await LT.enqueue({ ...o, specs: specsOf(w) }, ops)).code, 0);
+  const r = await LT.landTrain({ ...o, fromQueue: true, plan: true, specs: [] }, ops);
+  assert.equal(r.code, 0, lines.join("\n"));
+  assert.equal(readdirSync(join(w.dir, "q", "entries")).length, 2, "both entries still queued");
+  assert.ok(!existsSync(join(w.dir, "q", "dropped")), "nothing moved to dropped/");
+});
+
+test("RED: a span head whose only run was cancelled clean gets a dispatched run before any lane takes blame, never a VOID stop", async () => {
+  const w = world(["a"]);
+  const SP = spanAhead(w);
+  let dispatched = false, att = 1;
+  const r = await runQ(w, {
+    red: (sha) => hasFile(w, sha, "packages/p-a/f.txt"),
+    over: {
+      dispatchCI: async () => { dispatched = true; },
+      ciRuns: async (sha) => (sha === SP
+        ? [{ databaseId: 70, headBranch: SPAN, headSha: sha, status: "completed", conclusion: "cancelled", attempt: 1, createdAt: "1" }, ...(dispatched ? [{ databaseId: 72, headBranch: SPAN, headSha: sha, status: "completed", conclusion: "success", attempt: 1, createdAt: "2" }] : [])]
+        : [{ databaseId: 71, headBranch: `${SPAN}--train-x`, headSha: sha, status: "completed", conclusion: "failure", attempt: att, createdAt: "1" }]),
+      rerun: async () => { att++; },
+    },
+  });
+  assert.equal(r.code, 5, r.out);
+  assert.ok(dispatched, "the span head got its own run");
+  assert.match(r.out, /DROPPED a: /);
+});
+
+test("RED: a lane whose change already stands on the span adds nothing to the chain: it drops by name (no empty train waits on a run that never comes)", async () => {
+  const w = world(["a", "b"]);
+  w.commit(w.work, "packages/p-a/f.txt", "a\n", "the same change — merge PR #0: landed by another road");
+  sh(w.work, "push", "-q", "origin", SPAN);
+  const r = await runQ(w);
+  assert.equal(r.code, 11, r.out);
+  assert.match(r.out, /DROPPED a: its change already stands on the span/);
+  assert.equal(sh(w.work, "rev-parse", `${originRef(w, SPAN)}^2`), w.heads.b);
+});
+
+test("RED: a stale queue entry (its lane moved on) drops by name and the run drains the rest; CONTROL: named lanes still refuse whole (3)", async () => {
+  const w = world(["a", "b"]);
+  const { ops } = opsQ(w); const lines = []; ops.log = (l) => lines.push(l);
+  const o = { span: SPAN, cwd: w.work, shipDir: join(w.dir, "ship"), queueDir: join(w.dir, "q") };
+  assert.equal((await LT.enqueue({ ...o, specs: specsOf(w) }, ops)).code, 0);
+  sh(w.work, "checkout", "-q", `${SPAN}--a`); w.commit(w.work, "packages/p-a/g.txt", "g\n", "lane a moved on"); sh(w.work, "push", "-q", "origin", `${SPAN}--a`); sh(w.work, "checkout", "-q", SPAN);
+  const r = await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops);
+  assert.equal(r.code, 11, lines.join("\n"));
+  assert.match(lines.join("\n"), /DROPPED a: HEAD MOVED/);
+  assert.equal(readdirSync(join(w.dir, "q", "dropped")).length, 1);
+  assert.equal(sh(w.work, "rev-parse", `${originRef(w, SPAN)}^2`), w.heads.b);
+  const w2 = world(["a", "b"]);
+  sh(w2.work, "checkout", "-q", `${SPAN}--a`); w2.commit(w2.work, "packages/p-a/g.txt", "g\n", "lane a moved on"); sh(w2.work, "push", "-q", "origin", `${SPAN}--a`); sh(w2.work, "checkout", "-q", SPAN);
+  const named = await runQ(w2);
+  assert.equal(named.code, 3, named.out);
+  assert.match(named.out, /HEAD MOVED: a/);
+});
+
+test("RED: the class reads what LANDS: a lane editing a path the span renamed into the class needs its SHIP (merge-tree follows the rename; the lane's own diff never names the new path)", async () => {
+  const w = world(["a"]);
+  const c0 = w.commit(w.work, "src/x.txt", "l1\nl2\nl3\nl4\nl5\n", "add x — merge PR #1: x");
+  sh(w.work, "push", "-q", "origin", SPAN);
+  sh(w.work, "checkout", "-q", "-B", `${SPAN}--a`, c0);
+  w.heads.a = w.commit(w.work, "src/x.txt", "l1\nl2\nEVIL\nl4\nl5\n", "lane edits x");
+  sh(w.work, "push", "-q", "-f", "origin", `${SPAN}--a`); sh(w.work, "checkout", "-q", SPAN);
+  sh(w.work, "mv", "src/x.txt", "src/custody-x.txt"); sh(w.work, "commit", "-q", "-m", "rename into the class — merge PR #2: shipped");
+  sh(w.work, "push", "-q", "origin", SPAN);
+  const SP = originRef(w, SPAN);
+  const r = await runQ(w);
+  assert.equal(r.code, 12, r.out);
+  assert.match(r.out, /NO SHIP: a .*src\/custody-x\.txt/);
+  assert.equal(originRef(w, SPAN), SP, "nothing landed");
+  // CONTROL: the SHIP for the lane's exact head lets it land.
+  mkdirSync(join(w.dir, "ship"), { recursive: true });
+  writeFileSync(join(w.dir, "ship", `a-${w.heads.a}.md`), `sha: ${w.heads.a}\nread: controller read of the landed tree\n`);
+  assert.equal((await runQ(w)).code, 0);
+});
+
+test("RED: the repo's security table classes the code that decides CI's verdict: cells, shards, witnesses, the build stamp, disk guard, every package manifest and vitest config", () => {
+  const table = JSON.parse(readFileSync(new URL("./security-class-paths.json", import.meta.url), "utf8"));
+  for (const p of ["tools/ci-cells.mjs", "tools/e2e-shards.mjs", "tools/typecheck-witness.sh", "tools/exact-deps-witness.sh", "tools/stamp-build.mjs", "tools/disk-guard.mjs",
+    "packages/lararium-mesh/package.json", "packages/lararium-tw5/vitest.config.ts", "vitest.config.mjs", "tools/witness-all.sh", ".github/workflows/ci.yml"]) {
+    assert.deepEqual(LT.securityHits(table, [p]), [p], `${p} reads security-class`);
+  }
+  // CONTROL: an ordinary source path stays out of the class.
+  assert.deepEqual(LT.securityHits(table, ["packages/lararium-tw5/src/wiki-shore.ts"]), []);
+});
+
+test("RED: a VOID train tears down its ref, so the next run builds afresh instead of resuming the cancelled run forever; status clears", async () => {
+  const w = world(["a"]);
+  const SP = spanAhead(w);
+  let cancelledOnce = true;
+  const ciRuns = async (sha) => [{ databaseId: sha === SP ? 1 : 2, headBranch: sha === SP ? SPAN : `${SPAN}--train-x`, headSha: sha, status: "completed", conclusion: sha === SP || !cancelledOnce ? "success" : "cancelled", attempt: 1, createdAt: "x" }];
+  const r1 = await runQ(w, { over: { ciRuns } });
+  assert.equal(r1.code, 13, r1.out);
+  const { ops } = opsQ(w); ops.log = () => {};
+  assert.equal((await LT.queueStatus({ span: SPAN, cwd: w.work, queueDir: join(w.dir, "q") }, ops)).code, 0, "no train ref stands after VOID");
+  cancelledOnce = false;
+  const r2 = await runQ(w, { over: { ciRuns } });
+  assert.equal(r2.code, 0, r2.out);
+  assert.doesNotMatch(r2.out, /RESUMED/);
+});
+
+test("RED: no wait outlives its subject: a link whose landed diff is meme-only drops; a span that moves under a dispatched probe re-chains; a resumed train with no run rebuilds; a vanished train ref reads VOID; a rerun read without `attempt` ends", { timeout: 20000 }, async () => {
+  // (a) the lane's code already stands on the span, so its land changes a meme alone: no run would come.
+  const w = world(["a", "b"], { touch: (s) => `packages/p-${s}/f.txt` });
+  sh(w.work, "checkout", "-q", `${SPAN}--a`); w.heads.a = w.commit(w.work, "bags/x/a.mem", "m\n", "lane a's meme"); sh(w.work, "push", "-q", "origin", `${SPAN}--a`); sh(w.work, "checkout", "-q", SPAN);
+  w.commit(w.work, "packages/p-a/f.txt", "a\n", "a's code — merge PR #0: by another road"); sh(w.work, "push", "-q", "origin", SPAN);
+  const ra = await runQ(w);
+  assert.equal(ra.code, 11, ra.out);
+  assert.match(ra.out, /DROPPED a: .*ignored paths alone/);
+  // (b) a resumed train ref with no run of its own rebuilds rather than waiting (stood a minute in the past, so a fresh
+  // chain over the same parents writes another sha).
+  const w3 = world(["a"]);
+  const SP3 = spanAhead(w3);
+  const tree3 = sh(w3.work, "merge-tree", "--write-tree", SP3, w3.heads.a);
+  const t3 = execFileSync("git", ["commit-tree", tree3, "-p", SP3, "-p", w3.heads.a, "-F", w3.msgs.a], { cwd: w3.work, encoding: "utf8", env: { ...process.env, GIT_COMMITTER_DATE: "2001-01-01T00:00:00Z", GIT_AUTHOR_DATE: "2001-01-01T00:00:00Z" } }).trim();
+  sh(w3.work, "push", "-q", "origin", `${t3}:refs/heads/${SPAN}--train-1-${t3.slice(0, 9)}`);
+  const { ops: o3 } = opsQ(w3); const base3 = o3.ciRuns; const l3 = []; o3.log = (l) => l3.push(l);
+  o3.ciRuns = async (sha) => (sha === t3 ? [] : base3(sha));
+  const r3 = await LT.landTrain({ specs: specsOf(w3), span: SPAN, cwd: w3.work, shipDir: join(w3.dir, "ship"), queueDir: join(w3.dir, "q") }, o3);
+  assert.equal(r3.code, 0, l3.join("\n"));
+  assert.doesNotMatch(l3.join("\n"), /RESUMED/);
+  // (c) the train ref vanishes while no run names it: VOID, never a wait.
+  const w4 = world(["a"]);
+  spanAhead(w4);
+  const { ops: o4 } = opsQ(w4); const base4 = o4.ciRuns; const l4 = []; o4.log = (l) => l4.push(l);
+  o4.ciRuns = async (sha) => {
+    const refs = sh(w4.origin, "for-each-ref", "--points-at", sha, "--format=%(refname:short)", `refs/heads/${SPAN}--train-*`).split("\n").filter(Boolean);
+    if (refs.length) { for (const ref of refs) sh(w4.origin, "update-ref", "-d", `refs/heads/${ref}`); return []; }
+    return base4(sha);
+  };
+  const r4 = await LT.landTrain({ specs: specsOf(w4), span: SPAN, cwd: w4.work, shipDir: join(w4.dir, "ship"), queueDir: join(w4.dir, "q") }, o4);
+  assert.equal(r4.code, 13, l4.join("\n"));
+  // (d) an old gh answers no `attempt`: the rerun's read ends once the run went live and completed again.
+  const w5 = world(["a"]);
+  const SP5 = spanAhead(w5);
+  let phase = 0;
+  const r5 = await runQ(w5, {
+    over: {
+      rerun: async () => { phase = 1; },
+      ciRuns: async (sha) => (sha === SP5 ? [{ databaseId: 1, headBranch: SPAN, headSha: sha, status: "completed", conclusion: "success", createdAt: "x" }]
+        : [{ databaseId: 2, headBranch: `${SPAN}--train-x`, headSha: sha, createdAt: "x", ...(phase === 0 ? { status: "completed", conclusion: "failure" } : phase++ === 1 ? { status: "in_progress", conclusion: "" } : { status: "completed", conclusion: "success" }) }]),
+    },
+  });
+  assert.equal(r5.code, 0, r5.out);
+});
+
+test("RED: a dark queued entry (its CI reads no verdict) is skipped by name and kept queued while the rest land (14); only a positive red drops it", async () => {
+  const w = world(["a", "b"]);
+  const { ops } = opsQ(w); const lines = []; ops.log = (l) => lines.push(l);
+  const o = { span: SPAN, cwd: w.work, shipDir: join(w.dir, "ship"), queueDir: join(w.dir, "q") };
+  assert.equal((await LT.enqueue({ ...o, specs: specsOf(w) }, ops)).code, 0);
+  ops.verdict = async (branch) => (branch.endsWith("--a") ? { ci: "unread", heldOut: "unread" } : { ci: "green", heldOut: "green" });
+  const r = await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops);
+  assert.equal(r.code, 14, lines.join("\n"));
+  assert.match(lines.join("\n"), /SKIPPED a: /);
+  assert.deepEqual(readdirSync(join(w.dir, "q", "entries")).map((f) => f.replace(/^\d+-/, "")), ["a.json"], "a stays queued; b landed");
+  assert.ok(hasFile(w, originRef(w, SPAN), "packages/p-b/f.txt"));
+  // CONTROL: a positive red drops the entry.
+  ops.verdict = async () => ({ ci: "red", heldOut: "unread" });
+  const r2 = await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops);
+  assert.equal(r2.code, 5, lines.join("\n"));
+  assert.match(lines.join("\n"), /DROPPED a: LANE NOT GREEN/);
+});
+
+test("RED: a rerun GitHub refuses reads UNREADABLE (10), never a red: a flake must not name a lane", async () => {
+  const w = world(["a"]);
+  spanAhead(w);
+  const r = await runQ(w, { red: (sha, w2) => hasFile(w2, sha, "packages/p-a/f.txt"), over: { rerun: async () => { throw new Error("HTTP 502: Bad Gateway"); } } });
+  assert.equal(r.code, 10, r.out);
+  assert.doesNotMatch(r.out, /DROPPED/);
+});
+
+test("RED: only a push or dispatch run answers for a sha: a pull_request run's green at the train head never lands it", async () => {
+  const w = world(["a"]);
+  const SP = spanAhead(w);
+  const r = await runQ(w, {
+    red: (sha) => sha !== SP,
+    extra: (sha) => (sha === SP ? [] : [{ databaseId: 500, event: "pull_request", headBranch: `${SPAN}--train-pr`, headSha: sha, status: "completed", conclusion: "success", attempt: 1, createdAt: "9999" }]),
+  });
+  assert.equal(r.code, 5, r.out);
+  assert.equal(originRef(w, SPAN), SP);
+});
+
+test("RED: a re-chain onto a moved span re-reads the security table from the new head: a lane the new table classes needs its SHIP", async () => {
+  const w = world(["a"]);
+  spanAhead(w);
+  let moved = false;
+  const { ops } = opsQ(w); const base = ops.ciRuns; const lines = []; ops.log = (l) => lines.push(l);
+  ops.ciRuns = async (sha) => {
+    if (!moved && sh(w.origin, "for-each-ref", "--points-at", sha, `refs/heads/${SPAN}--train-*`)) {
+      moved = true;
+      const other = join(w.dir, "other"); sh(w.dir, "clone", "-q", w.origin, other); sh(other, "config", "user.name", "O"); sh(other, "config", "user.email", "o@o");
+      w.commit(other, "tools/security-class-paths.json", `${JSON.stringify({ paths: ["tools/security-class-paths.json", "packages/p-a/**"], tokens: [] })}\n`, "the table widens — merge PR #3: table");
+      sh(other, "push", "-q", "origin", SPAN);
+    }
+    return base(sha);
+  };
+  const r = await LT.landTrain({ specs: specsOf(w), span: SPAN, cwd: w.work, shipDir: join(w.dir, "ship"), queueDir: join(w.dir, "q") }, ops);
+  assert.equal(r.code, 12, lines.join("\n"));
+  assert.match(lines.join("\n"), /NO SHIP: a/);
+});
+
+test("RED: --local reads what lands too: `git merge` follows the span's rename into the class, so the lane needs its SHIP (12) and the worktree leaves", async () => {
+  const w = world(["a"]);
+  const c0 = w.commit(w.work, "src/x.txt", "l1\nl2\nl3\nl4\nl5\n", "add x — merge PR #1: x");
+  sh(w.work, "push", "-q", "origin", SPAN);
+  sh(w.work, "checkout", "-q", "-B", `${SPAN}--a`, c0);
+  w.heads.a = w.commit(w.work, "src/x.txt", "l1\nl2\nEVIL\nl4\nl5\n", "lane edits x");
+  sh(w.work, "push", "-q", "-f", "origin", `${SPAN}--a`); sh(w.work, "checkout", "-q", SPAN);
+  sh(w.work, "mv", "src/x.txt", "src/custody-x.txt"); sh(w.work, "commit", "-q", "-m", "rename into the class — merge PR #2: shipped");
+  sh(w.work, "push", "-q", "origin", SPAN);
+  const SP = originRef(w, SPAN);
+  const r = await run(w, {}, { shipDir: join(w.dir, "ship") });
+  assert.equal(r.code, 12, r.out);
+  assert.match(r.out, /NO SHIP: a/);
+  assert.equal(originRef(w, SPAN), SP);
+  assert.equal(r.calls.removed.length, 1, "the refused train's worktree leaves");
+});
+
+// A lane editing a path the span then renames into the class (merge-tree follows the rename).
+function renameWorld(lanes = ["a"]) {
+  const w = world(lanes);
+  const c0 = w.commit(w.work, "src/x.txt", "l1\nl2\nl3\nl4\nl5\n", "add x — merge PR #1: x");
+  sh(w.work, "push", "-q", "origin", SPAN);
+  sh(w.work, "checkout", "-q", "-B", `${SPAN}--a`, c0);
+  w.heads.a = w.commit(w.work, "src/x.txt", "l1\nl2\nEVIL\nl4\nl5\n", "lane edits x");
+  sh(w.work, "push", "-q", "-f", "origin", `${SPAN}--a`); sh(w.work, "checkout", "-q", SPAN);
+  sh(w.work, "mv", "src/x.txt", "src/custody-x.txt"); sh(w.work, "commit", "-q", "-m", "rename into the class — merge PR #2: shipped");
+  sh(w.work, "push", "-q", "origin", SPAN);
+  return w;
+}
+const shipFor = (w, s) => { mkdirSync(join(w.dir, "ship"), { recursive: true }); writeFileSync(join(w.dir, "ship", `${s}-${w.heads[s]}.md`), `sha: ${w.heads[s]}\nread: controller read\n`); };
+
+test("RED: a RESUMED train re-reads what it lands against the table and the SHIP: a SHIP revoked after the train pushed refuses (12) and tears the train down", async () => {
+  const w = renameWorld();
+  shipFor(w, "a");
+  const SP = originRef(w, SPAN);
+  const dies = await runQ(w, { over: { ciRuns: async (sha) => { if (sha !== SP) throw new Error("HTTP 401: Bad credentials"); return []; } } }).catch((e) => ({ code: `threw ${e.message}` }));
+  assert.match(String(dies.code), /401/, "run 1 pushed its train and died on the read");
+  assert.ok(sh(w.origin, "for-each-ref", `refs/heads/${SPAN}--train-*`), "the train ref stands");
+  rmSync(join(w.dir, "ship"), { recursive: true });
+  const r = await runQ(w);
+  assert.equal(r.code, 12, r.out);
+  assert.match(r.out, /NO SHIP: a/);
+  assert.equal(originRef(w, SPAN), SP, "nothing landed");
+  assert.equal(sh(w.origin, "for-each-ref", `refs/heads/${SPAN}--train-*`), "", "the refused train is torn down");
+});
+
+test("RED: a queued entry refused for its SHIP at chain time drops by name and the queue drains the rest (11); CONTROL: a named lane still refuses the whole land (12)", async () => {
+  const w = renameWorld();
+  sh(w.work, "checkout", "-q", "-b", `${SPAN}--b`, w.base); w.heads.b = w.commit(w.work, "packages/p-b/f.txt", "b\n", "lane b"); sh(w.work, "push", "-q", "origin", `${SPAN}--b`); sh(w.work, "checkout", "-q", SPAN);
+  w.lanes.push("b"); w.msgs.b = join(w.dir, "b.msg"); writeFileSync(w.msgs.b, "lar:///w/b — merge PR #101: lane b\n");
+  const named = await runQ(w);
+  assert.equal(named.code, 12, named.out);
+  const { ops } = opsQ(w); const lines = []; ops.log = (l) => lines.push(l);
+  const o = { span: SPAN, cwd: w.work, shipDir: join(w.dir, "ship"), queueDir: join(w.dir, "q") };
+  assert.equal((await LT.enqueue({ ...o, specs: specsOf(w) }, ops)).code, 0);
+  const r = await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops);
+  assert.equal(r.code, 11, lines.join("\n"));
+  assert.match(lines.join("\n"), /DROPPED a: NO SHIP/);
+  assert.deepEqual(readdirSync(join(w.dir, "q", "entries")), []);
+  assert.ok(hasFile(w, originRef(w, SPAN), "packages/p-b/f.txt"), "lane b landed");
+});
+
+test("RED: the table classes every tsconfig (`pnpm -r typecheck` reads them)", () => {
+  const table = JSON.parse(readFileSync(new URL("./security-class-paths.json", import.meta.url), "utf8"));
+  for (const p of ["tsconfig.json", "tsconfig.base.json", "packages/lararium-mesh/tsconfig.json", "packages/lararium-tw5/tsconfig.build.json"]) assert.deepEqual(LT.securityHits(table, [p]), [p], p);
 });
