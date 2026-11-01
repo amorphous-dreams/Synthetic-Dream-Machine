@@ -25,6 +25,7 @@ import { seatScratchCustody } from "./custody-seat-fixture.js";
 import { openOutboxKey, outboxKeyFile } from "../src/outbox-key.js";
 import { handleRowPathIn } from "./face-paths.js";
 import { readFckCarrier } from "@lararium/mesh";
+import { nativeKdf } from "@lararium/mesh/node";
 
 const HOST = "0123456789abcdef0123456789abcdef";
 
@@ -283,7 +284,7 @@ describe("the S key rotation reads its carriers from the table", { timeout: 30_0
     const io = new ScratchCustodyIo(homes);
     const treeKey = mintTreeKey();
     const treePath = sSlotsPath(homes.identity);
-    await commitSlotTree({ io, path: treePath, expected: null, treeKey, tree: bindSlot(null, treeKey, { t: 1, pins: [right] }), carriers: sSealedCarriers(homes) });
+    await commitSlotTree({ io, path: treePath, expected: null, treeKey, tree: await bindSlot(null, treeKey, { t: 1, pins: [right] }, nativeKdf), carriers: sSealedCarriers(homes) });
     const sealed: SealedCarrier[] = [
       custodyRootCarrier(homes.identity),
       { name: "identity/.persona-enroll-pending.json", path: join(homes.identity, ".persona-enroll-pending.json"), keyClass: "relation" },
@@ -312,7 +313,7 @@ describe("the S key rotation reads its carriers from the table", { timeout: 30_0
       const newTreeKey = mintTreeKey();
       await rotateNodeKey({ io: v.io, homes: v.homes, oldTreeKey: v.treeKey, newTreeKey, slots: [{ t: 1, pins: [right] }] });
       const tree = decodeSlotTree(await v.io.read(sSlotsPath(v.homes.identity)));
-      const o = tree.reading === "readable" ? openTreeKey(tree.tree, [right]) : null;
+      const o = tree.reading === "readable" ? await openTreeKey(tree.tree, [right], nativeKdf) : null;
       expect(o?.reading).toBe("opens");
       for (const c of v.sealed) {
         const r = await openSealedCarrier({ io: v.io, treeKey: (o as { treeKey: TreeKey }).treeKey, carrier: c });
@@ -424,7 +425,7 @@ describe("the census names every private file outside the table", () => {
       const io = new ScratchCustodyIo(homes);
       const treeKey = mintTreeKey();
       const treePath = sSlotsPath(homes.identity);
-      await commitSlotTree({ io, path: treePath, expected: null, treeKey, tree: bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "the hearth remembers" }] }), carriers: sSealedCarriers(homes) });
+      await commitSlotTree({ io, path: treePath, expected: null, treeKey, tree: await bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "the hearth remembers" }] }, nativeKdf), carriers: sSealedCarriers(homes) });
       const stray: SealedCarrier = { name: "storage/stray.bin", path: join(homes.storage, "stray.bin") };
       await writeSealedCarrier({ io, treeKey, treePath, carrier: stray, plaintext: new TextEncoder().encode("x") });
       chmodSync(stray.path, 0o644);

@@ -5,6 +5,7 @@ import { mintTreeKey, sealUnderS } from "../src/tree-key.js";
 import { writeSealedCarrier, commitSlotTree, writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, openFaceCarrier,
   rotateFck, settleFaceRotation, commitFaceTree, assertFaceStoreUnoccupied, CensusRefusal, OccupiedStoreRefusal,
   ROTATING_SUFFIX, SEALING_SUFFIX, type CustodyIo } from "../src/sealed-writer.js";
+import { nativeKdf } from "../src/node.js";
 
 const text = (s: string) => new TextEncoder().encode(s);
 const pin = { t: 1, pins: [{ kind: "passphrase", passphrase: "face route" }] } as const;
@@ -36,7 +37,7 @@ class MemoryIo implements CustodyIo {
 async function found() {
   const io = new MemoryIo(), ak = mintFck(), bk = mintFck();
   for (const [key, c, treePath] of [[ak, a, "/faces/a/tree"], [bk, b, "/faces/b/tree"]] as const) {
-    await commitFaceTree({ io, path: treePath, expected: null, key, tree: bindSlot(null, key, pin), carriers: [c] });
+    await commitFaceTree({ io, path: treePath, expected: null, key, tree: await bindSlot(null, key, pin, nativeKdf), carriers: [c] });
     await writeFaceCarrier({ io, key, treePath, carrier: c, plaintext: text(c.owner) });
   }
   io.log = [];
@@ -77,7 +78,7 @@ describe("face sealed writer", () => {
     await expect(writeFaceCarrier({ io, key: ak, treePath: "/faces/b/tree", carrier: b, plaintext: text("x") }))
       .rejects.toMatchObject({ reading: "tree-key-mismatch" });
     await expect(removeFaceCarrier({ io, key: ak, treePath: "/faces/b/tree", carrier: b })).rejects.toMatchObject({ reading: "tree-key-mismatch" });
-    await expect(rotateFck({ io, treePath: "/faces/b/tree", carriers: [b], oldKey: ak, newKey: mintFck(), slots: [pin] }))
+    await expect(rotateFck({ kdf: nativeKdf, io, treePath: "/faces/b/tree", carriers: [b], oldKey: ak, newKey: mintFck(), slots: [pin] }))
       .rejects.toMatchObject({ reading: "tree-key-mismatch" });
     expect(io.snapshot()).toEqual(before);
     expect((await openFaceCarrier({ io, key: bk, carrier: b })).reading).toBe("opens");
@@ -93,7 +94,7 @@ describe("face sealed writer", () => {
     const { io, ak } = await found();
     const treeKey = mintTreeKey(), treeKeyCarrier = { name: "treeKey", path: a.path };
     const treeKeyTree = "/faces/a/s-tree";
-    await commitSlotTree({ io, path: treeKeyTree, expected: null, treeKey, tree: bindSlot(null, treeKey, pin), carriers: [] });
+    await commitSlotTree({ io, path: treeKeyTree, expected: null, treeKey, tree: await bindSlot(null, treeKey, pin, nativeKdf), carriers: [] });
     const faceBytes = (await io.read(a.path))!;
     await expect(writeSealedCarrier({ io, treeKey, treePath: treeKeyTree, carrier: treeKeyCarrier, plaintext: text("x") }))
       .rejects.toMatchObject({ reading: "unopenable" });
@@ -113,7 +114,7 @@ describe("face sealed writer", () => {
     const { io, ak } = await found();
     io.files.set("/faces/a/hidden", sealUnderFck(ak, { ...a, path: "/faces/a/hidden" }, text("hidden")));
     const before = io.snapshot();
-    await expect(rotateFck({ io, treePath: "/faces/a/tree", carriers: [a], oldKey: ak, newKey: mintFck(), slots: [pin] }))
+    await expect(rotateFck({ kdf: nativeKdf, io, treePath: "/faces/a/tree", carriers: [a], oldKey: ak, newKey: mintFck(), slots: [pin] }))
       .rejects.toBeInstanceOf(CensusRefusal);
     expect(io.snapshot()).toEqual(before);
   });
@@ -121,14 +122,14 @@ describe("face sealed writer", () => {
     const { io, ak } = await found();
     const bad = (await io.read(a.path))!; bad[bad.length - 1] ^= 1; io.files.set(a.path, bad);
     const before = io.snapshot();
-    await expect(rotateFck({ io, treePath: "/faces/a/tree", carriers: [a], oldKey: ak, newKey: mintFck(), slots: [pin] }))
+    await expect(rotateFck({ kdf: nativeKdf, io, treePath: "/faces/a/tree", carriers: [a], oldKey: ak, newKey: mintFck(), slots: [pin] }))
       .rejects.toMatchObject({ reading: "key-fails" });
     expect(io.snapshot()).toEqual(before);
     expect(io.log).toEqual([]);
   });
   test("CONTROL: rotation re-seals A alone and binds its new tree", async () => {
     const { io, ak, bk } = await found(); const bBytes = await io.read(b.path), next = mintFck();
-    await rotateFck({ io, treePath: "/faces/a/tree", carriers: [a], oldKey: ak, newKey: next, slots: [pin] });
+    await rotateFck({ kdf: nativeKdf, io, treePath: "/faces/a/tree", carriers: [a], oldKey: ak, newKey: next, slots: [pin] });
     expect((await openFaceCarrier({ io, key: next, carrier: a })).reading).toBe("opens");
     expect((await openFaceCarrier({ io, key: ak, carrier: a })).reading).toBe("key-fails");
     expect(await io.read(b.path)).toEqual(bBytes);
@@ -138,7 +139,7 @@ describe("face sealed writer", () => {
   test("RED and CONTROL: a commit phase fault settles A forward without sweeping B", async () => {
     const { io, ak, bk } = await found(); const next = mintFck(), bBytes = await io.read(b.path);
     io.failAt = `rename ${a.path}${ROTATING_SUFFIX}`;
-    await expect(rotateFck({ io, treePath: "/faces/a/tree", carriers: [a], oldKey: ak, newKey: next, slots: [pin] })).rejects.toThrow(/injected/);
+    await expect(rotateFck({ kdf: nativeKdf, io, treePath: "/faces/a/tree", carriers: [a], oldKey: ak, newKey: next, slots: [pin] })).rejects.toThrow(/injected/);
     io.revive();
     expect(await settleFaceRotation({ io, treePath: "/faces/a/tree", carriers: [a] })).toBe("completed");
     expect((await openFaceCarrier({ io, key: next, carrier: a })).reading).toBe("opens");
@@ -148,7 +149,7 @@ describe("face sealed writer", () => {
   test("RED and CONTROL: a fault before the tree sidecar settles without replacing a standing row", async () => {
     const { io, ak, bk } = await found(); const before = io.snapshot();
     io.failAt = `write /faces/a/tree${ROTATING_SUFFIX}`;
-    await expect(rotateFck({ io, treePath: "/faces/a/tree", carriers: [a], oldKey: ak, newKey: mintFck(), slots: [pin] })).rejects.toThrow(/injected/);
+    await expect(rotateFck({ kdf: nativeKdf, io, treePath: "/faces/a/tree", carriers: [a], oldKey: ak, newKey: mintFck(), slots: [pin] })).rejects.toThrow(/injected/);
     io.revive();
     expect(await settleFaceRotation({ io, treePath: "/faces/a/tree", carriers: [a] })).toBe("discarded");
     expect(io.snapshot()).toEqual(before);
@@ -157,7 +158,7 @@ describe("face sealed writer", () => {
   test("RED: founding refuses a standing face row and names it", async () => {
     const io = new MemoryIo(); io.files.set(a.path, sealUnderFck(mintFck(), a, text("x")));
     await expect(assertFaceStoreUnoccupied({ io, treePath: "/faces/a/tree", carriers: [a] })).rejects.toBeInstanceOf(OccupiedStoreRefusal);
-    await expect(commitFaceTree({ io, path: "/faces/a/tree", expected: null, key: mintFck(), tree: bindSlot(null, mintFck(), pin), carriers: [a] }))
+    await expect(commitFaceTree({ io, path: "/faces/a/tree", expected: null, key: mintFck(), tree: await bindSlot(null, mintFck(), pin, nativeKdf), carriers: [a] }))
       .rejects.toBeInstanceOf(OccupiedStoreRefusal);
   });
 });

@@ -15,6 +15,7 @@ import {
   type CustodyHomes, type CustodyStatus, type CustodyStatusRow,
 } from "@lararium/node";
 import { openTreeKey, decodeSlotTree, type Credential, type SlotSpec } from "@lararium/mesh";
+import { nativeKdf } from "@lararium/mesh/node";
 import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
 import { gatherBundleRoute, gatherCards, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
 import { backupLines, cutBundleToFile } from "../vault-backup.js";
@@ -433,7 +434,7 @@ async function vaultUnbindFace(args: ParsedArgs, homes: CustodyHomes, io: FsCust
     staying = [];
     for (const sl of tree.tree.slots.filter((x) => x.id !== slotId)) {
       const got = await gatherStayingSlot({ id: sl.id, t: sl.t, pins: sl.pins.map((p) => p.kind) });
-      const proof = openTreeKey(tree.tree, got.credentials);
+      const proof = await openTreeKey(tree.tree, got.credentials, nativeKdf);
       if (proof.reading !== "opens" || proof.slot !== sl.id) throw new UsageError(`what was typed for slot ${sl.id} does not open it; nothing was changed`);
       staying.push(got.spec);
     }
@@ -470,7 +471,7 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
     staying = [];
     for (const sl of status.tree.slots.filter((x) => x.id !== slotId)) {
       const got = await gatherStayingSlot(sl);
-      const proof = tree.reading === "readable" ? openTreeKey(tree.tree, got.credentials) : null;
+      const proof = tree.reading === "readable" ? await openTreeKey(tree.tree, got.credentials, nativeKdf) : null;
       if (!proof || proof.reading !== "opens" || proof.slot !== sl.id) {
         throw new UsageError(`what was typed for slot ${sl.id} does not open it; nothing was changed`);
       }

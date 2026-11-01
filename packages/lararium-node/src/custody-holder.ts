@@ -34,6 +34,7 @@ import {
   openFaceCarrier, writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, commitFaceTree, bindSlot, mintFck,
   type Credential, type CustodyIo, type FaceCarrier, type FaceCustodyKey, type ServingKey, type SlotSpec, type TreeKey,
 } from "@lararium/mesh";
+import { nativeKdf } from "@lararium/mesh/node";
 import { faceCarrierFor, openFaceTree } from "./face-custody.js";
 import { appendFaceEntry, bindFaceAsk, FaceIndexRefused, bindFaceGroup, faceTreePath, findFace, readFaceIndex, retireFaceAsk } from "./face-index.js";
 import { custodyDerive, custodyRootFromBytes, openCustodyRootCarrier, type CustodyRoot } from "./custody-root.js";
@@ -316,7 +317,7 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
       const { ordinal, fcid } = await appendFaceEntry(held, a.homes.identity, { ask: args.ask ?? null, group: args.group ?? null, ...(args.ordinal !== undefined ? { ordinal: args.ordinal } : {}), ...(args.fillRetired ? { fillRetired: true } : {}) });
       const fck = mintFck();
       let tree = null as import("@lararium/mesh").SlotTree | null;
-      for (const spec of args.slots) tree = bindSlot(tree, fck, spec);
+      for (const spec of args.slots) tree = await bindSlot(tree, fck, spec, nativeKdf);
       await commitFaceTree({ io: held, path: faceTreePath(a.homes.identity, fcid), expected: null, key: fck, tree: tree!, carriers: [] });
       await writeFaceCarrier({ io: held, key: fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: ownerCarrier(fcid), plaintext: encodeOwner({ fcid, group: args.group ?? null }) });
       faces.set(fcid, { fck, slot: null, ordinal });

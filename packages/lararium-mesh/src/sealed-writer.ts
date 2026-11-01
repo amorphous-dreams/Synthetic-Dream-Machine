@@ -39,7 +39,7 @@
  */
 
 import { bytesEqual, defaultCryptoProvider, type RandomProvider } from "./crypto.js";
-import { bindSlot, encodeSlotTree, decodeSlotTree, type SlotSpec, type SlotTree } from "./keyslot.js";
+import { bindSlot, encodeSlotTree, decodeSlotTree, type KdfPort, type SlotSpec, type SlotTree } from "./keyslot.js";
 import { sealUnderS, openUnderS, treeKeyAnswersCheck, type TreeKey, type TreeKeyOpening } from "./tree-key.js";
 import { readSCarrier, type SCarrierReading } from "./s-envelope.js";
 import { isRelationClass, type KeyClass } from "./key-class.js";
@@ -429,7 +429,7 @@ export async function rotateTreeKey(args: RotateTreeKeyArgs): Promise<SlotTree> 
 export interface RotateFckArgs {
   readonly io: CustodyIo; readonly treePath: string; readonly carriers: readonly FaceCarrier[];
   readonly oldKey: FaceCustodyKey; readonly newKey: FaceCustodyKey;
-  readonly slots: readonly SlotSpec[]; readonly rng?: RandomProvider;
+  readonly slots: readonly SlotSpec[]; readonly kdf: KdfPort; readonly rng?: RandomProvider;
 }
 
 /** Re-seal the complete carrier census of one face, then commit that face's new slot tree. */
@@ -453,6 +453,8 @@ export interface RotateTreeKeyArgs {
   readonly oldTreeKey:    TreeKey;
   readonly newTreeKey:    TreeKey;
   readonly slots:    readonly SlotSpec[];
+  /** The port each re-bound passphrase pin derives through. */
+  readonly kdf:      KdfPort;
   readonly rng?:     RandomProvider;
 }
 
@@ -487,7 +489,7 @@ async function rotateHeld<C extends SealedCarrier>(args: RotateTreeKeyArgs & { r
   }
   if (args.slots.length === 0) throw new Error("sealed-writer: a rotation that binds no slot leaves the new tree key with no human route");
   let tree: SlotTree | null = null;
-  for (const spec of args.slots) tree = bindSlot(tree, args.newTreeKey, spec, rng);
+  for (const spec of args.slots) tree = await bindSlot(tree, args.newTreeKey, spec, args.kdf, rng);
   const treeBytes = encodeSlotTree(tree!);
 
   // WRITE AND CHECK every sidecar; the tree's goes last, as the commit point.

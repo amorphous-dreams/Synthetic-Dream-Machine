@@ -21,6 +21,7 @@ import {
 } from "../src/custody-root.js";
 import { carrierTable, sSealedCarriers, sSlotsPath } from "../src/vault-carriers.js";
 import { ScratchCustodyIo, scratchHomes } from "./custody-io-fixture.js";
+import { nativeKdf } from "@lararium/mesh/node";
 
 const hex = (b: Uint8Array): string => Buffer.from(b).toString("hex");
 /** Fixed inputs: bytes 0..31 for the custody root, bytes 32..63 for the floor key. */
@@ -33,7 +34,7 @@ async function founded(): Promise<{ io: ScratchCustodyIo; treeKey: TreeKey; iden
   const io = new ScratchCustodyIo(homes);
   const treeKey = mintTreeKey();
   const treePath = sSlotsPath(homes.identity);
-  await commitSlotTree({ io, path: treePath, expected: null, treeKey, tree: bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "fixture" }] }), carriers: sSealedCarriers(homes) });
+  await commitSlotTree({ io, path: treePath, expected: null, treeKey, tree: await bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "fixture" }] }, nativeKdf), carriers: sSealedCarriers(homes) });
   return { io, treeKey, identity: homes.identity, treePath, drop };
 }
 

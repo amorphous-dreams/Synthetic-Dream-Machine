@@ -19,6 +19,7 @@ import { join } from "node:path";
 import { hexToBytes, openBundleKey, openFaceBundleBody, readFaceBundle, sealFaceBundleBody, type SlotSpec } from "@lararium/mesh";
 import type { CustodyFrame } from "../src/custody-door.js";
 import { SEALED_BYTES_LINE, backupLines, cutBundleToFile } from "../src/vault-backup.js";
+import { nativeKdf } from "@lararium/mesh/node";
 
 vi.setConfig({ testTimeout: 120_000 });
 
@@ -56,12 +57,12 @@ describe("a cut writes a bundle only where the vessel answered a sealed body", (
     const read = readFaceBundle(new Uint8Array(readFileSync(out)));
     expect(read.reading).toBe("readable");
     if (read.reading !== "readable") return;
-    const key = openBundleKey(read.tree, [{ kind: "passphrase", passphrase: BUNDLE_ROUTE }]);
+    const key = await openBundleKey(read.tree, [{ kind: "passphrase", passphrase: BUNDLE_ROUTE }], nativeKdf);
     expect(key.reading).toBe("opens");
     if (key.reading !== "opens") return;
     expect(Buffer.from(openFaceBundleBody(read.sealedBody, key.bundleKey)!).toString()).toBe("a body the vessel sealed for this test");
     // The vessel's own route opens no slot of the bundle.
-    expect(openBundleKey(read.tree, [{ kind: "passphrase", passphrase: VESSEL_ROUTE }]).reading).toBe("no-slot-opens");
+    expect((await openBundleKey(read.tree, [{ kind: "passphrase", passphrase: VESSEL_ROUTE }], nativeKdf)).reading).toBe("no-slot-opens");
   });
 
   it("V2 — the one frame carries the vessel's route, the face and a key, and nothing of the bundle's route", async () => {

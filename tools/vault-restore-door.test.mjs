@@ -95,12 +95,13 @@ function everyByte(root) {
 
 test("a face cut on one vessel restores onto a fresh one through its custody door, and stands there at a new seat", { timeout: 1_800_000 }, async () => {
   const mesh = await import(pathToFileURL(join(repo, "packages/lararium-mesh/dist/index.js")).href);
+  const { nativeKdf } = await import(pathToFileURL(join(repo, "packages/lararium-mesh/dist/node.js")).href);
   const outDir = mkdtempSync(join(tmpdir(), "lares-restore-out-"));
   const roots = [];
   let vessel = null;
-  const openBody = (file) => {
+  const openBody = async (file) => {
     const read = mesh.readFaceBundle(new Uint8Array(readFileSync(file)));
-    const key = mesh.openBundleKey(read.tree, [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
+    const key = await mesh.openBundleKey(read.tree, [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }], nativeKdf);
     return { body: mesh.readFaceBundleBody(mesh.openFaceBundleBody(read.sealedBody, key.bundleKey)), bundleKey: Buffer.from(key.bundleKey).toString("hex") };
   };
   try {
@@ -113,7 +114,7 @@ test("a face cut on one vessel restores onto a fresh one through its custody doo
     assert.equal(cut.ok, true, JSON.stringify(cut));
     await vessel.stop();
     vessel = null;
-    const a = openBody(bundle);
+    const a = await openBody(bundle);
     rmSync(rootA, { recursive: true, force: true });
     assert.equal(existsSync(rootA), false, "vessel A's whole home stands destroyed");
 
@@ -149,7 +150,7 @@ test("a face cut on one vessel restores onto a fresh one through its custody doo
     const again = join(outDir, "gardener-from-b.bundle");
     const recut = await backupTestCustody(rootB, { face: 1, out: again });
     assert.equal(recut.ok, true, `the restored vessel holds the face lit, and cuts it from its own seat: ${JSON.stringify(recut)}`);
-    const b = openBody(again);
+    const b = await openBody(again);
     assert.equal(b.body.root.verifyingKey, a.body.root.verifyingKey, "the same root");
     assert.equal(b.body.root.signingKey, a.body.root.signingKey);
     assert.equal(b.body.anchors.personaKelPrefix, a.body.anchors.personaKelPrefix, "the same fixed prefix");

@@ -17,6 +17,7 @@ import {
 } from "@lararium/mesh";
 import { CustodyLockRefused, FsCustodyIo } from "../src/custody-io.js";
 import { rotateNodeKey, vesselCustodyHomes, sSealedCarriers, sSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
+import { nativeKdf } from "@lararium/mesh/node";
 
 const pass = { kind: "passphrase", passphrase: "the hearth remembers" } as const;
 const text = (v: string): Uint8Array => new TextEncoder().encode(v);
@@ -273,7 +274,7 @@ describe("FsCustodyIo — the port over the real filesystem", () => {
 async function found(io: CustodyIo): Promise<{ treeKey: TreeKey; treePath: string; sealed: SealedCarrier[] }> {
   const treeKey = mintTreeKey();
   const treePath = sSlotsPath(homes.identity);
-  await commitSlotTree({ io, path: treePath, expected: null, treeKey, tree: bindSlot(null, treeKey, { t: 1, pins: [pass] }), carriers: sSealedCarriers(homes) });
+  await commitSlotTree({ io, path: treePath, expected: null, treeKey, tree: await bindSlot(null, treeKey, { t: 1, pins: [pass] }, nativeKdf), carriers: sSealedCarriers(homes) });
   const sealed: SealedCarrier[] = [
     { name: "identity/.persona-enroll-pending.json", path: join(homes.identity, ".persona-enroll-pending.json"), keyClass: "relation" },
     { name: "identity/gate-root.bin", path: join(homes.identity, "gate-root.bin"), keyClass: "device-minted" },
@@ -295,7 +296,7 @@ describe("PROOF 1 — rotate, reopen, compare, rename on actual carrier files", 
     await rotateNodeKey({ io, homes, oldTreeKey: f.treeKey, newTreeKey, slots: [{ t: 1, pins: [pass] }] });
 
     const tree = decodeSlotTree((await io.read(f.treePath))!);
-    const opened = tree.reading === "readable" ? openTreeKey(tree.tree, [pass]) : null;
+    const opened = tree.reading === "readable" ? await openTreeKey(tree.tree, [pass], nativeKdf) : null;
     expect(opened?.reading).toBe("opens");
     const treeKey2 = (opened as { treeKey: TreeKey }).treeKey;
     for (const c of f.sealed) {
@@ -331,7 +332,7 @@ describe("PROOF 3 — an occupied store refuses before any write", () => {
     const treeKey = mintTreeKey();
     const err = await commitSlotTree({
       io, path: sSlotsPath(homes.identity), expected: null, treeKey,
-      tree: bindSlot(null, treeKey, { t: 1, pins: [pass] }), carriers: sSealedCarriers(homes),
+      tree: await bindSlot(null, treeKey, { t: 1, pins: [pass] }, nativeKdf), carriers: sSealedCarriers(homes),
     }).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(OccupiedStoreRefusal);
     expect((err as OccupiedStoreRefusal).standing.map((s) => s.carrier.name).sort()).toEqual(["identity/.persona-enroll-pending.json", "identity/gate-root.bin"]);
@@ -353,12 +354,12 @@ describe("PROOF 3 — an occupied store refuses before any write", () => {
     const t0 = join(root, "other-tree.bin");
     const stray: SealedCarrier = { name: "storage/odd/stray.bin", path: join(homes.storage, "odd", "stray.bin") };
     // Seal a stray under another vessel's tree, then drop it into this vessel's storage home.
-    await commitSlotTree({ io, path: t0, expected: null, treeKey: treeKey0, tree: bindSlot(null, treeKey0, { t: 1, pins: [pass] }), carriers: [] });
+    await commitSlotTree({ io, path: t0, expected: null, treeKey: treeKey0, tree: await bindSlot(null, treeKey0, { t: 1, pins: [pass] }, nativeKdf), carriers: [] });
     await writeSealedCarrier({ io, treeKey: treeKey0, treePath: t0, carrier: stray, plaintext: text("x") });
     rmSync(t0);
 
     const treeKey = mintTreeKey();
-    const args = { path: sSlotsPath(homes.identity), expected: null, treeKey, tree: bindSlot(null, treeKey, { t: 1, pins: [pass] }), carriers: sSealedCarriers(homes) };
+    const args = { path: sSlotsPath(homes.identity), expected: null, treeKey, tree: await bindSlot(null, treeKey, { t: 1, pins: [pass] }, nativeKdf), carriers: sSealedCarriers(homes) };
     const err = await commitSlotTree({ io, ...args }).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(OccupiedStoreRefusal);
     expect((err as OccupiedStoreRefusal).unlisted).toEqual([stray.path]);
@@ -383,7 +384,7 @@ describe("the relation refusal — no rotation regenerates it", () => {
     const altIo = new FsCustodyIo({ identity: join(altRoot, "i"), storage: join(altRoot, "s"), seal: join(altRoot, "n") });
     const other = mintTreeKey();
     const altTree = join(altRoot, "i", "s-slots.bin");
-    await commitSlotTree({ io: altIo, path: altTree, expected: null, treeKey: other, tree: bindSlot(null, other, { t: 1, pins: [pass] }), carriers: [] });
+    await commitSlotTree({ io: altIo, path: altTree, expected: null, treeKey: other, tree: await bindSlot(null, other, { t: 1, pins: [pass] }, nativeKdf), carriers: [] });
     for (const c of [pending, walk]) {
       const alt = { ...c, path: join(altRoot, "c", c.name.replace(/\//g, "_")) };
       await writeSealedCarrier({ io: altIo, treeKey: other, treePath: altTree, carrier: alt, plaintext: text("alien") });

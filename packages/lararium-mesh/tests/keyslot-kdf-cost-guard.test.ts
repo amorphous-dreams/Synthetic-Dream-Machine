@@ -24,8 +24,8 @@ describe("only this package mints a port", () => {
   test("a hand-built port refuses at bind and at open, before it derives", async () => {
     let calls = 0;
     const forged = { derive: async () => { calls++; return new Uint8Array(32); } } as unknown as KdfPort;
-    await expect(bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }, defaultCryptoProvider, forged)).rejects.toThrow(/kdf-port-unminted/);
-    const tree = await bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }, defaultCryptoProvider, nobleKdf);
+    await expect(bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }, forged, defaultCryptoProvider)).rejects.toThrow(/kdf-port-unminted/);
+    const tree = await bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }, nobleKdf, defaultCryptoProvider);
     await expect(openTreeKey(tree, [right], forged)).rejects.toThrow(/kdf-port-unminted/);
     expect(calls).toBe(0);
   });
@@ -45,7 +45,7 @@ describe("the port receives the ONE cost", () => {
   test("every derivation hands the port the real cost, frozen, at bind and at open", async () => {
     const seen: unknown[] = [];
     const counting = mintKdfPort(async (pw, salt, cost) => { seen.push(cost); return nobleKdfDerive(pw, salt, cost); });
-    const tree = await bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }, defaultCryptoProvider, counting);
+    const tree = await bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }, counting, defaultCryptoProvider);
     expect((await openTreeKey(tree, [right], counting)).reading).toBe("opens");
     expect(seen.length).toBe(2);
     for (const c of seen) { expect(c).toEqual(REAL_COST); expect(Object.isFrozen(c)).toBe(true); }
@@ -54,7 +54,7 @@ describe("the port receives the ONE cost", () => {
   test("a cost written into the tree at rest reaches no derivation", async () => {
     const seen: unknown[] = [];
     const counting = mintKdfPort(async (pw, salt, cost) => { seen.push(cost); return nobleKdfDerive(pw, salt, cost); });
-    const tree = await bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }, defaultCryptoProvider, nobleKdf);
+    const tree = await bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }, nobleKdf, defaultCryptoProvider);
     const json = JSON.parse(new TextDecoder().decode(encodeSlotTree(tree)));
     json.slots[0].pins[0] = { ...json.slots[0].pins[0], N: 2, r: 1, p: 1, cost: { N: 2, r: 1, p: 1 } };
     json.scrypt = { N: 2 };
@@ -82,14 +82,14 @@ describe("the port receives the ONE cost", () => {
 
 describe("a refusing KDF fails closed", () => {
   test("a port that throws refuses the bind and the open by name, never as a wrong passphrase", async () => {
-    const tree = await bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }, defaultCryptoProvider, nobleKdf);
+    const tree = await bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }, nobleKdf, defaultCryptoProvider);
     const refusing = mintKdfPort(async () => { throw new Error("ERR_CRYPTO_INVALID_SCRYPT_PARAMS"); });
-    await expect(bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }, defaultCryptoProvider, refusing)).rejects.toThrow(/kdf-refused/);
+    await expect(bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }, refusing, defaultCryptoProvider)).rejects.toThrow(/kdf-refused/);
     await expect(openTreeKey(tree, [right], refusing)).rejects.toThrow(/kdf-refused/);
   });
 
   test("a port that answers short refuses by name", async () => {
-    const tree = await bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }, defaultCryptoProvider, nobleKdf);
+    const tree = await bindSlot(null, mintTreeKey(), { t: 1, pins: [right] }, nobleKdf, defaultCryptoProvider);
     const short = mintKdfPort(async () => new Uint8Array(31));
     await expect(openTreeKey(tree, [right], short)).rejects.toThrow(/kdf-refused/);
   });

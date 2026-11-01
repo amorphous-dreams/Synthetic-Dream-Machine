@@ -38,7 +38,7 @@
 
 import { xchacha20poly1305 } from "@noble/ciphers/chacha.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
-import { scrypt } from "@noble/hashes/scrypt.js";
+import { scryptAsync } from "@noble/hashes/scrypt.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { defaultCryptoProvider, hex, type RandomProvider } from "./crypto.js";
 import { SLOT_WRAP_INFO } from "./domains.js";
@@ -50,9 +50,41 @@ import { adoptUnwrappedTreeKey, treeKeyAnswersCheck, treeKeyCheckOf, TREE_KEY_LE
 export type PinKind = "passphrase" | "paper" | "passkey";
 export const PIN_KINDS: readonly PinKind[] = Object.freeze(["passphrase", "paper", "passkey"]);
 
-/** The scrypt cost a passphrase pin derives at (~0.5 s in the browser-shippable implementation). A change of cost
+/** The scrypt cost a passphrase pin derives at (~0.5 s in the browser-shippable implementation, ~0.3 s native). A change of cost
  *  is a change of pin kind, never a stored parameter a tree could lower. */
-const SCRYPT = { N: 1 << 17, r: 8, p: 1, dkLen: 32 } as const;
+const SCRYPT = Object.freeze({ N: 1 << 17, r: 8, p: 1, dkLen: 32 } as const);
+
+/** The cost a KDF port receives on every derivation: always `SCRYPT`, handed over by this module. */
+export type ScryptCost = typeof SCRYPT;
+type Derive = (password: Uint8Array, salt: Uint8Array, cost: ScryptCost) => Promise<Uint8Array>;
+
+declare const kdfBrand: unique symbol;
+/**
+ * THE KDF PORT. Each passphrase derivation runs through a port the caller names, so the host's native scrypt serves
+ * where the host offers one (`nativeKdf`, `@lararium/mesh/node`) and noble serves elsewhere (`nobleKdf`), to the same
+ * bytes. The port carries NO cost: this module hands it `SCRYPT` on every call, and only this package mints a port,
+ * so an argument can name which implementation derives and never how hard. A hand-built port refuses
+ * (`kdf-port-unminted`); a port that throws or answers short refuses (`kdf-refused`), never as a wrong passphrase
+ * and never by falling back to another port.
+ */
+export interface KdfPort { readonly [kdfBrand]: true }
+const mintedPorts = new WeakMap<object, Derive>();
+
+/** Mint a port over `derive`. Package-internal: neither public door exports it. */
+export function mintKdfPort(derive: Derive): KdfPort {
+  const port = Object.freeze({}) as KdfPort;
+  mintedPorts.set(port, derive);
+  return port;
+}
+
+/** Noble's scrypt, yielding to the event loop as it runs: the port every host holds. */
+export const nobleKdf: KdfPort = mintKdfPort((password, salt, cost) => scryptAsync(password, salt, { N: cost.N, r: cost.r, p: cost.p, dkLen: cost.dkLen }));
+
+function deriveOf(kdf: KdfPort): Derive {
+  const derive = typeof kdf === "object" && kdf !== null ? mintedPorts.get(kdf) : undefined;
+  if (derive === undefined) throw new Error("keyslot: kdf-port-unminted: a passphrase derives only through a port this package mints (nobleKdf, or nativeKdf from the host door)");
+  return derive;
+}
 const SLOT_KEY_LENGTH = 32;
 const PAPER_SECRET_LENGTH = 32;
 const SLOT_ID_LENGTH = 16;
@@ -169,8 +201,14 @@ export function mintPasskeySalt(rng: RandomProvider = defaultCryptoProvider): Ui
 }
 const treeKeyAad = (slotId: Uint8Array): Uint8Array => concat(utf8("treeKey"), slotId);
 
-function passphraseMaterial(passphrase: string, salt: Uint8Array): Uint8Array {
-  return scrypt(passphrase.normalize("NFKC"), salt, SCRYPT);
+async function passphraseMaterial(passphrase: string, salt: Uint8Array, derive: Derive): Promise<Uint8Array> {
+  const password = utf8(passphrase.normalize("NFKC"));
+  let out: unknown;
+  try { out = await derive(password, salt, SCRYPT); }
+  catch (cause) { throw new Error("keyslot: kdf-refused: the KDF port refused the derivation; nothing opened and nothing bound", { cause }); }
+  finally { password.fill(0); }
+  if (!(out instanceof Uint8Array) || out.length !== SCRYPT.dkLen) throw new Error(`keyslot: kdf-refused: the KDF port answered other than ${SCRYPT.dkLen} bytes`);
+  return out;
 }
 
 function fromHex(s: string, bytes: number, what: string): Uint8Array {
@@ -193,7 +231,8 @@ export interface SlotSpec { readonly t: number; readonly pins: readonly PinSpec[
  * Bind one slot over `treeKey` into `tree` (`null` founds the tree, committing it to `treeKey`). Refuses a slot with no human
  * route, a route bound twice in one slot, and a `treeKey` the standing tree does not commit to.
  */
-export function bindSlot(tree: SlotTree | null, treeKey: TreeKey, spec: SlotSpec, rng: RandomProvider = defaultCryptoProvider): SlotTree {
+export async function bindSlot(tree: SlotTree | null, treeKey: TreeKey, spec: SlotSpec, kdf: KdfPort, rng: RandomProvider = defaultCryptoProvider): Promise<SlotTree> {
+  const derive = deriveOf(kdf);
   if (tree !== null && !treeKeyAnswersCheck(treeKey, tree.keyCheck)) {
     throw new Error("keyslot: the tree key in hand is not the tree key this tree commits to; a slot binds only over the tree's own tree key");
   }
@@ -240,12 +279,13 @@ export function bindSlot(tree: SlotTree | null, treeKey: TreeKey, spec: SlotSpec
     ? spec.pins.map(() => ({ x: 0, ys: slotKey }))
     : splitSecret(slotKey, spec.t, spec.pins.length, rng);
 
-  const pins: PinRecord[] = materials.map((m, i) => {
+  const pins: PinRecord[] = [];
+  for (const [i, m] of materials.entries()) pins.push(await (async (): Promise<PinRecord> => {
     const nonce = rng.getRandomValues(new Uint8Array(NONCE_LENGTH));
     const plaintext = concat(Uint8Array.of(shares[i]!.x), shares[i]!.ys);
     if (m.kind === "passphrase") {
       const salt = rng.getRandomValues(new Uint8Array(SALT_LENGTH));
-      const key = wrapKey(passphraseMaterial(m.passphrase, salt), slotId);
+      const key = wrapKey(await passphraseMaterial(m.passphrase, salt, derive), slotId);
       const wrapped = xchacha20poly1305(key, nonce, pinAad(slotId, i, "passphrase")).encrypt(plaintext);
       return { kind: "passphrase", salt: hex(salt), nonce: hex(nonce), wrapped: hex(wrapped) };
     }
@@ -257,7 +297,7 @@ export function bindSlot(tree: SlotTree | null, treeKey: TreeKey, spec: SlotSpec
     const key = wrapKey(m.secret, slotId);
     const wrapped = xchacha20poly1305(key, nonce, pinAad(slotId, i, "paper")).encrypt(plaintext);
     return { kind: "paper", nonce: hex(nonce), wrapped: hex(wrapped) };
-  });
+  })());
 
   const treeKeyNonce = rng.getRandomValues(new Uint8Array(NONCE_LENGTH));
   const wrappedKey = xchacha20poly1305(wrapKey(slotKey, slotId), treeKeyNonce, treeKeyAad(slotId)).encrypt(treeKey);
@@ -320,7 +360,8 @@ export function openPasskeyPin(slot: SlotRecord, pinIndex: number, prfOutput: Ui
 }
 
 /** Open the tree key with whatever credentials the operator presents. Any one slot whose threshold they meet opens it. */
-export function openTreeKey(tree: SlotTree, credentials: readonly Credential[]): TreeKeyUnlock {
+export async function openTreeKey(tree: SlotTree, credentials: readonly Credential[], kdf: KdfPort): Promise<TreeKeyUnlock> {
+  const derive = deriveOf(kdf);
   const notes: string[] = [];
   const paperSecrets: Uint8Array[] = [];
   for (const c of credentials) {
@@ -332,8 +373,8 @@ export function openTreeKey(tree: SlotTree, credentials: readonly Credential[]):
   for (const slot of tree.slots) {
     const slotId = fromHex(slot.id, SLOT_ID_LENGTH, "slot id");
     const shares: ShareBytes[] = [];
-    slot.pins.forEach((pin, i) => {
-      if (shares.length >= slot.t) return;
+    for (const [i, pin] of slot.pins.entries()) {
+      if (shares.length >= slot.t) break;
       const nonce = fromHex(pin.nonce, NONCE_LENGTH, "pin nonce");
       const wrapped = fromHex(pin.wrapped, SHARE_LENGTH + TAG_LENGTH, "wrapped share");
       const aad = pinAad(slotId, i, pin.kind);
@@ -341,18 +382,20 @@ export function openTreeKey(tree: SlotTree, credentials: readonly Credential[]):
         for (const c of credentials) {
           if (c.kind !== "passkey" || hex(c.credentialId) !== hex(pin.credentialId) || c.prfOutput.length !== 32) continue;
           const share = tryUnwrap(passkeyKey(c.prfOutput, slotId, i), nonce, aad, wrapped);
-          if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); return; }
+          if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); break; }
         }
-        return;
+        continue;
       }
-      const materials: Uint8Array[] = pin.kind === "passphrase"
-        ? passphrases.map((p) => passphraseMaterial(p, fromHex(pin.salt, SALT_LENGTH, "pin salt")))
-        : paperSecrets;
+      const materials: Uint8Array[] = [];
+      if (pin.kind === "passphrase") {
+        const salt = fromHex(pin.salt, SALT_LENGTH, "pin salt");
+        for (const p of passphrases) materials.push(await passphraseMaterial(p, salt, derive));
+      } else materials.push(...paperSecrets);
       for (const m of materials) {
         const share = tryUnwrap(wrapKey(m, slotId), nonce, aad, wrapped);
-        if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); return; }
+        if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); break; }
       }
-    });
+    }
     if (shares.length < slot.t) continue;
     const slotKey = slot.t === 1 ? shares[0]!.ys : combineSecret(shares.slice(0, slot.t));
     const treeKey = tryUnwrap(

@@ -19,6 +19,7 @@ import {
   bindBundleRoutes, encodeFaceBundle, hex, mintBundleKey,
   type Credential, type FaceBundleHolding, type SlotSpec,
 } from "@lararium/mesh";
+import { nativeKdf } from "@lararium/mesh/node";
 import type { CustodyDoorAnswer, CustodyFrame } from "./custody-door.js";
 
 /** What a cut that landed answers: the file, its length, the face and what the bundle holds. Nothing secret. */
@@ -53,7 +54,7 @@ export async function cutBundleToFile(args: {
   if (existsSync(args.out)) return { ok: false, reason: "out-exists", message: `a file already stands at ${args.out}; a cut never writes over one. Name a fresh path.` };
   const bundleKey = mintBundleKey();
   try {
-    const tree = bindBundleRoutes(bundleKey, args.bundleRoutes);
+    const tree = await bindBundleRoutes(bundleKey, args.bundleRoutes, nativeKdf);
     const a = await args.send({ op: "backup", credentials: args.vesselCredentials, face: args.face, key: hex(bundleKey) });
     if (a === null) return { ok: false, reason: "daemon-unreachable", message: "the vessel stopped answering before the cut landed; no file was written" };
     if (typeof a["sealedBody"] !== "string") {

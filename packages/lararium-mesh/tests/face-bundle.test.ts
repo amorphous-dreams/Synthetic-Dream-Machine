@@ -25,6 +25,7 @@ import { sha256 } from "@noble/hashes/sha2.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { xchacha20poly1305 } from "@noble/ciphers/chacha.js";
 import { ed25519 } from "@noble/curves/ed25519.js";
+import { nativeKdf } from "../src/node.js";
 
 // Every bind and every open runs a slot's own key derivation, priced to cost a guesser; the suite waits it out.
 vi.setConfig({ testTimeout: 120_000 });
@@ -62,23 +63,23 @@ function bodyFor(bundleKey: Uint8Array): FaceBundleBody {
   };
 }
 /** One whole cut: a fresh key, two routes, the body sealed and framed. */
-function cut() {
+async function cut() {
   const bundleKey = mintBundleKey();
   const paper = paperRoute();
-  const tree = bindBundleRoutes(bundleKey, [{ t: 1, pins: [PASS] }, paper.spec]);
+  const tree = await bindBundleRoutes(bundleKey, [{ t: 1, pins: [PASS] }, paper.spec], nativeKdf);
   const body = bodyFor(bundleKey);
   const bytes = encodeFaceBundle(tree, sealFaceBundleBody(faceBundleBodyBytes(body), bundleKey));
   return { bundleKey, tree, body, bytes, sheets: paper.sheets };
 }
 
 describe("a bundle opens under any one route a person bound", () => {
-  it("CONTROL: the passphrase and the paper sheet each open the one bundle key, and the body reads back whole", () => {
-    const made = cut();
+  it("CONTROL: the passphrase and the paper sheet each open the one bundle key, and the body reads back whole", async () => {
+    const made = await cut();
     const read = readFaceBundle(made.bytes);
     expect(read.reading).toBe("readable");
     if (read.reading !== "readable") return;
     for (const credential of [PASS, { kind: "paper", sheets: made.sheets } as const]) {
-      const opened = openBundleKey(read.tree, [credential]);
+      const opened = await openBundleKey(read.tree, [credential], nativeKdf);
       expect(opened.reading).toBe("opens");
       if (opened.reading !== "opens") continue;
       expect(hex(opened.bundleKey)).toBe(hex(made.bundleKey));
@@ -88,22 +89,22 @@ describe("a bundle opens under any one route a person bound", () => {
     }
   });
 
-  it("a route that opens no slot reads `no-slot-opens`, apart from a malformed file", () => {
-    const made = cut();
+  it("a route that opens no slot reads `no-slot-opens`, apart from a malformed file", async () => {
+    const made = await cut();
     const read = readFaceBundle(made.bytes);
-    expect(read.reading === "readable" && openBundleKey(read.tree, [WRONG]).reading).toBe("no-slot-opens");
+    expect(read.reading === "readable" && (await openBundleKey(read.tree, [WRONG], nativeKdf)).reading).toBe("no-slot-opens");
   });
 
-  it("the format mark reads as the first eight bytes of SHA-256 over the format's name, and leads the file", () => {
-    const made = cut();
+  it("the format mark reads as the first eight bytes of SHA-256 over the format's name, and leads the file", async () => {
+    const made = await cut();
     expect(hex(faceBundleMark())).toBe(hex(sha256(utf8Bytes(FACE_BUNDLE_DOMAIN)).slice(0, 8)));
     expect(hex(made.bytes.subarray(0, 8))).toBe(hex(faceBundleMark()));
   });
 });
 
 describe("authenticated encryption covers the whole inner body", () => {
-  it("one altered bit anywhere in the sealed body opens for nobody", () => {
-    const made = cut();
+  it("one altered bit anywhere in the sealed body opens for nobody", async () => {
+    const made = await cut();
     const read = readFaceBundle(made.bytes);
     if (read.reading !== "readable") throw new Error("setup");
     const whole = openFaceBundleBody(read.sealedBody, made.bundleKey);
@@ -118,9 +119,9 @@ describe("authenticated encryption covers the whole inner body", () => {
     }
   });
 
-  it("another bundle's key opens nothing, and a body moved under another bundle's tree opens for nobody", () => {
-    const a = cut();
-    const b = cut();
+  it("another bundle's key opens nothing, and a body moved under another bundle's tree opens for nobody", async () => {
+    const a = await cut();
+    const b = await cut();
     const readA = readFaceBundle(a.bytes);
     const readB = readFaceBundle(b.bytes);
     if (readA.reading !== "readable" || readB.reading !== "readable") throw new Error("setup");
@@ -128,13 +129,13 @@ describe("authenticated encryption covers the whole inner body", () => {
     // A second key's write: bundle B's tree framed over bundle A's body opens B's key and never A's body.
     const spliced = readFaceBundle(encodeFaceBundle(readB.tree, readA.sealedBody));
     if (spliced.reading !== "readable") throw new Error("setup");
-    const opened = openBundleKey(spliced.tree, [PASS]);
+    const opened = await openBundleKey(spliced.tree, [PASS], nativeKdf);
     expect(opened.reading).toBe("opens");
     expect(opened.reading === "opens" && openFaceBundleBody(spliced.sealedBody, opened.bundleKey)).toBeNull();
   });
 
-  it("the body key and the memory pair's secret half each differ from the bundle key and from one another", () => {
-    const made = cut();
+  it("the body key and the memory pair's secret half each differ from the bundle key and from one another", async () => {
+    const made = await cut();
     const pair = bundleMemoryKeypair(made.bundleKey);
     expect(hex(pair.secret)).not.toBe(hex(made.bundleKey));
     // The body does not open under the pair's secret half, nor the section under the bundle key itself.
@@ -192,17 +193,17 @@ describe("a malformed file names itself, apart from a route that opens nothing",
     ["a tree length that runs past the file", (bytes: Uint8Array) => { const out = Uint8Array.from(bytes); new DataView(out.buffer).setUint32(8, out.length, false); return out; }],
     ["a slot tree that reads torn", (bytes: Uint8Array) => { const out = Uint8Array.from(bytes); out[12] = 0x00; return out; }],
     ["an empty file", () => new Uint8Array(0)],
-  ])("%s reads `bundle-malformed`", (_name, bend) => {
-    const made = cut();
+  ])("%s reads `bundle-malformed`", async (_name, bend) => {
+    const made = await cut();
     expect(readFaceBundle(made.bytes).reading).toBe("readable");
     expect(readFaceBundle(bend(made.bytes)).reading).toBe("bundle-malformed");
   });
 });
 
 describe("two bundles share nothing, and a holder with no route reads the residue alone", () => {
-  it("two cuts of one face share no key, salt, nonce, slot id or check", () => {
-    const a = cut();
-    const b = cut();
+  it("two cuts of one face share no key, salt, nonce, slot id or check", async () => {
+    const a = await cut();
+    const b = await cut();
     expect(hex(a.bundleKey)).not.toBe(hex(b.bundleKey));
     expect(a.tree.keyCheck).not.toBe(b.tree.keyCheck);
     const fields = (made: ReturnType<typeof cut>): string[] => {
@@ -228,8 +229,8 @@ describe("two bundles share nothing, and a holder with no route reads the residu
     expect(shared).toBe(0);
   });
 
-  it("the residue names the length, each slot's pin kinds and its threshold, and no word of the body", () => {
-    const made = cut();
+  it("the residue names the length, each slot's pin kinds and its threshold, and no word of the body", async () => {
+    const made = await cut();
     const residue = faceBundleResidue(made.bytes);
     expect(residue).toEqual({ length: made.bytes.length, slots: [{ t: 1, pins: ["passphrase"] }, { t: 1, pins: ["paper"] }] });
     const text = Buffer.from(made.bytes).toString("latin1");
@@ -239,11 +240,11 @@ describe("two bundles share nothing, and a holder with no route reads the residu
     for (const word of ["garden-notes", "the gardener", ROOT_SEED]) expect(plain.includes(word)).toBe(true);
   });
 
-  it("a slot lifted from a bundle's tree into a vessel's tree opens nothing there", () => {
-    const made = cut();
-    const vessel = bindSlot(null, mintTreeKey(), { t: 1, pins: [{ kind: "passphrase", passphrase: "the vessel's own route" }] });
+  it("a slot lifted from a bundle's tree into a vessel's tree opens nothing there", async () => {
+    const made = await cut();
+    const vessel = await bindSlot(null, mintTreeKey(), { t: 1, pins: [{ kind: "passphrase", passphrase: "the vessel's own route" }] }, nativeKdf);
     const grafted = { keyCheck: vessel.keyCheck, slots: [...vessel.slots, made.tree.slots[0]!] };
-    expect(openTreeKey(grafted, [PASS]).reading).toBe("no-slot-opens");
+    expect((await openTreeKey(grafted, [PASS], nativeKdf)).reading).toBe("no-slot-opens");
   });
 });
 

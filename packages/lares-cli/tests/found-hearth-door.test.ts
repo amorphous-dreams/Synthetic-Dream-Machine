@@ -22,6 +22,7 @@ import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import { listPersonaRoots, readNexusDoc } from "@lararium/node";
 import { NEXUS_AID_PATTERN, bindBundleRoutes, encodeFaceBundle, mintBundleKey, nexusAidOf, sealFaceBundleBody } from "@lararium/mesh";
+import { nativeKdf } from "@lararium/mesh/node";
 
 vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
@@ -97,7 +98,7 @@ describe("lares vessel found --hearth", () => {
     const ROUTE = "the-bundle-route-for-a-founding-test";
     const bundleKey = mintBundleKey();
     const file = join(root, "face.bundle");
-    writeFileSync(file, encodeFaceBundle(bindBundleRoutes(bundleKey, [{ t: 1, pins: [{ kind: "passphrase", passphrase: ROUTE }] }]), sealFaceBundleBody(new TextEncoder().encode("{}"), bundleKey)));
+    writeFileSync(file, encodeFaceBundle(await bindBundleRoutes(bundleKey, [{ t: 1, pins: [{ kind: "passphrase", passphrase: ROUTE }] }], nativeKdf), sealFaceBundleBody(new TextEncoder().encode("{}"), bundleKey)));
     writeFileSync(join(root, "junk.bundle"), "no bundle here");
     try {
       setFoundingBundleRoute(async () => [{ kind: "passphrase", passphrase: ROUTE }]);

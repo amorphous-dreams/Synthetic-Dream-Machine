@@ -45,7 +45,7 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-custody
  */
 import {
-  bindSlot, unbindSlot, openTreeKey, encodeSlotTree, decodeSlotTree, confirmHeldPaper, mintTreeKey, treeKeyEquals,
+  bindSlot, unbindSlot, openTreeKey, nobleKdf, encodeSlotTree, decodeSlotTree, confirmHeldPaper, mintTreeKey, treeKeyEquals,
   writeSealedCarrier, openSealedCarrier, removeSealedCarrier, commitSlotTree, settleRotation, SEALING_SUFFIX, ROTATING_SUFFIX,
   constantTimeBytesEqual, isWalkRecord, type CustodyIo, type SealedCarrier, type Credential, type PinSpec, type SlotTree, type TreeKey,
 } from "@lararium/mesh";
@@ -476,10 +476,10 @@ function pinOf(route: Credential): PinSpec {
 }
 
 /** Prove `route` opens `tree`'s encoded bytes to `treeKey` through `slotId`, before the tree lands anywhere. */
-function proveRouteOpens(tree: SlotTree, treeKey: TreeKey, route: Credential, slotId: string): void {
+async function proveRouteOpens(tree: SlotTree, treeKey: TreeKey, route: Credential, slotId: string): Promise<void> {
   const back = decodeSlotTree(encodeSlotTree(tree));
   if (back.reading !== "readable") throw new Error("[browser-custody] the bound slot tree does not read back; nothing was written");
-  const opened = openTreeKey(back.tree, [route]);
+  const opened = await openTreeKey(back.tree, [route], nobleKdf);
   if (opened.reading !== "opens" || !treeKeyEquals(opened.treeKey, treeKey) || opened.slot !== slotId) {
     throw new Error("[browser-custody] the route does not reopen the slot it just bound; nothing was written");
   }
@@ -544,9 +544,9 @@ export async function sealBrowserKeystore(idbName: string, route: Credential): P
     const io = browserKeystoreCustodyIo(idbName);
     if ((await io.read(CUSTODY_TREE_ROW)) !== null) throw new BrowserCustodyRefused("already-sealed", idbName);
     const treeKey = mintTreeKey();
-    const tree = bindSlot(null, treeKey, { t: 1, pins: [pinOf(route)] });
+    const tree = await bindSlot(null, treeKey, { t: 1, pins: [pinOf(route)] }, nobleKdf);
     const slot = tree.slots[0]!.id;
-    proveRouteOpens(tree, treeKey, route, slot);
+    await proveRouteOpens(tree, treeKey, route, slot);
     await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, treeKey, tree, carriers: await standingCarriers(idbName) });
     unlocked.set(idbName, treeKey);
     const { moved, left } = await settleClearRows(idbName, treeKey);
@@ -562,7 +562,7 @@ async function openWith(idbName: string, credentials: readonly Credential[]): Pr
   const bytes = await browserKeystoreCustodyIo(idbName).read(CUSTODY_TREE_ROW);
   if (bytes === null) throw new BrowserCustodyRefused("not-sealed", idbName);
   const tree = treeOrRefuse(idbName, bytes);
-  const r = openTreeKey(tree, credentials);
+  const r = await openTreeKey(tree, credentials, nobleKdf);
   return r.reading === "opens" ? { tree, bytes, opened: { treeKey: r.treeKey, slot: r.slot } } : { tree, bytes, opened: null, notes: r.notes };
 }
 
@@ -596,9 +596,9 @@ export async function bindBrowserCustodySlot(idbName: string, route: Credential)
     const io = browserKeystoreCustodyIo(idbName);
     const expected = await io.read(CUSTODY_TREE_ROW);
     if (expected === null) throw new BrowserCustodyRefused("not-sealed", idbName);
-    const tree = bindSlot(treeOrRefuse(idbName, expected), treeKey, { t: 1, pins: [pinOf(route)] });
+    const tree = await bindSlot(treeOrRefuse(idbName, expected), treeKey, { t: 1, pins: [pinOf(route)] }, nobleKdf);
     const slot = tree.slots[tree.slots.length - 1]!.id;
-    proveRouteOpens(tree, treeKey, route, slot);
+    await proveRouteOpens(tree, treeKey, route, slot);
     await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected, treeKey, tree, carriers: [] });
     return { slot };
   });

@@ -41,7 +41,7 @@ const SALTS: readonly (readonly [string, RandomProvider])[] = [
 
 async function crossOpens(passphrase: string, rng: RandomProvider, bindWith: KdfPort, openWith: KdfPort): Promise<boolean> {
   const treeKey = mintTreeKey();
-  const tree = await bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase }] }, rng, bindWith);
+  const tree = await bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase }] }, bindWith, rng);
   const opened = await openTreeKey(tree, [{ kind: "passphrase", passphrase }], openWith);
   return opened.reading === "opens" && treeKeyEquals(opened.treeKey, treeKey);
 }
@@ -66,7 +66,7 @@ describe("native ≡ noble at the real cost", () => {
 
   test("an NFKC-equal spelling opens across ports, and a near-miss refuses under both", async () => {
     const treeKey = mintTreeKey();
-    const tree = await bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "ﬁne ①" }] }, defaultCryptoProvider, nativeKdf);
+    const tree = await bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "ﬁne ①" }] }, nativeKdf, defaultCryptoProvider);
     const folded = await openTreeKey(tree, [{ kind: "passphrase", passphrase: "fine 1" }], nobleKdf);
     expect(folded.reading === "opens" && treeKeyEquals(folded.treeKey, treeKey)).toBe(true);
     for (const kdf of [nobleKdf, nativeKdf]) {
