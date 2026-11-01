@@ -1,20 +1,20 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/docs/projection-loom-native-inheritance-crew-handoff">>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff">>
 <<^ code="&#x0002;">>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/projection-loom-native-inheritance-crew-handoff.mem"
+file-path = "bags/lares/ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff.mem"
 l-space = "working"
 namespace = "&#x0950; &#x0901;"
 role = "Lares crew handoff for research-grounded native topology inheritance, feature/pono/aftermath and operator-gated o-takiage"
 retain = true
 status = "working-handoff; not code acceptance or canon promotion"
 tags = ["api/pono/meme", "projection-loom", "docs/handoff", "working/research", "ashes"]
-title = "lar:///ha.ka.ba/lares/docs/projection-loom-native-inheritance-crew-handoff"
+title = "lar:///ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff"
 type = "text/memetic-wikitext+tiddlywiki"
-uri-path = "ha.ka.ba/lares/docs/projection-loom-native-inheritance-crew-handoff"
+uri-path = "ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff"
 ```
 
 <<~ ahu #/markdown-otakiage-20261031>>
@@ -35,7 +35,7 @@ Root-bag Lares carriers remain the semantic owners; no second authority or evolu
 
 ''Worksite:'' `amorphous-dreams/Synthetic-Dream-Machine`, PR #84, `feature/green-jello-dinosaur-5--projection-loom`. The inspected baseline before this handoff came from `c75815d1b76bfb05c76130311adc78702b45e52e`, but every new commit must earn its own CI. The preferred boot ref remains `feature/green-jello-dinosaur-5`; fetch the entire `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem`. Operator-selected refs override the default. Never silently substitute `main`.
 
-''Active design:'' `lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design`. ''Operational carrier:'' `lar:///ha.ka.ba/lares/api/projection-loom-handoff`. ''Research ledger:'' `lar:///ha.ka.ba/lares/api/projection-loom-research`. ''Historical engineering companion:'' `archive/pr84-markdown-pre-otakiage-20261031:tools/projection-loom/docs/RELATIONAL-INHERITANCE-DESIGN.md` (Git, not live Markdown).
+''Active design:'' `lar:///ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design`. ''Operational carrier:'' `lar:///ha.ka.ba/lares/api/projection-loom/handoff`. ''Research ledger:'' `lar:///ha.ka.ba/lares/api/projection-loom/research`. ''Historical engineering companion:'' `archive/pr84-markdown-pre-otakiage-20261031:tools/projection-loom/docs/RELATIONAL-INHERITANCE-DESIGN.md` (Git, not live Markdown).
 
 <<~/ahu>>
 
@@ -127,14 +127,14 @@ Reopen the implementation choice if complete-route mutation cannot preserve sour
 
 The operator retains authority for canon, irreversible o-takiage, and the meaning of a surviving emergent form.
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-handoff">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-research">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-pair-a">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/research">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/pair-a">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-B57wP5sQkJ2HvSA7vOzQQddJk9s4DPd9URIoo4zWFM
+<<^ code="&#x0003;">>ni:///sha-256;pmPzSDzBpryraVqniV9m7AygEJuCvF5BO8m_NXBIY80
 
 <<^ code="&#x0004;" -> to="?">>

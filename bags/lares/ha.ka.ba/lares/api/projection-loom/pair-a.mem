@@ -1,6 +1,6 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom-pair-a">>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/pair-a">>
 <<^ code="&#x0002;">>
 
 ```toml meta
@@ -9,9 +9,9 @@ l-space = "stable"
 namespace = "&#x0950; &#x0901;"
 role = "Pair A hard-reference, seed provenance and first-pass evidence gates"
 tags = ["api/pono/meme"]
-title = "lar:///ha.ka.ba/lares/api/projection-loom-pair-a"
+title = "lar:///ha.ka.ba/lares/api/projection-loom/pair-a"
 type = "text/memetic-wikitext+tiddlywiki"
-uri-path = "ha.ka.ba/lares/api/projection-loom-pair-a"
+uri-path = "ha.ka.ba/lares/api/projection-loom/pair-a"
 ```
 
 <<~ ahu #/entry>>
@@ -52,9 +52,9 @@ under bounded OODA-HA epochs. Until that moment, synthetic previews can
 validate the machina's mechanics but not the external reconstruction's fidelity.
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
 
-<<^ code="&#x0003;">>ni:///sha-256;AtXSzQLfNDESUWQajhIvXaI83sHHh2jJy9-qV4gsE_4
+<<^ code="&#x0003;">>ni:///sha-256;G8zU3ROdKvCJ7rPB_MG40jDg4gFoaFDw1d6UqDzmKec
 
 <<^ code="&#x0004;" -> to="?">>

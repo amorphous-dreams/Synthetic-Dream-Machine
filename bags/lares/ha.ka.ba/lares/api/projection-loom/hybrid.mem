@@ -1,18 +1,18 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom-hybrid">>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/hybrid">>
 <<^ code="&#x0002;">>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-hybrid.mem"
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/hybrid.mem"
 l-space   = "stable"
 namespace = "&#x0950; &#x0901;"
 role      = "mixed CAD, polygon, implicit and witness geometry held by named relations"
 tags      = ["api/pono/meme"]
-title     = "lar:///ha.ka.ba/lares/api/projection-loom-hybrid"
+title     = "lar:///ha.ka.ba/lares/api/projection-loom/hybrid"
 type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lares/api/projection-loom-hybrid"
+uri-path  = "ha.ka.ba/lares/api/projection-loom/hybrid"
 ```
 
 <<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
@@ -78,11 +78,11 @@ The crystal mesh now grows from its validated CAD seed. A versioned recipe holds
 <<~/ahu>>
 
 <<~ ahu #/edges>>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-capability-composition">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-reference-ci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/capability-composition">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/reference-ci">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;q1tm-DFnzCdf9KWVJJfhYOnw2Ps9KucjyzVvNy0muvk
+<<^ code="&#x0003;">>ni:///sha-256;GmTKtNi4MCXDXd_NDHSQ3ShDTUV6R5jpxCza5vhVGJ0
 
 <<^ code="&#x0004;" -> to="?">>

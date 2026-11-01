@@ -1,11 +1,11 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom">>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/index">>
 <<^ code="&#x0002;">>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom.mem"
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/index.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 15
@@ -13,9 +13,9 @@ manaoio   = 14
 namespace = "&#x0950; &#x0901;"
 role      = "constructive-solid architecture, evolutionary form selection, and orthographic drafting control"
 tags      = ["api/pono/meme"]
-title     = "lar:///ha.ka.ba/lares/api/projection-loom"
+title     = "lar:///ha.ka.ba/lares/api/projection-loom/index"
 type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lares/api/projection-loom"
+uri-path  = "ha.ka.ba/lares/api/projection-loom/index"
 ```
 
 <<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
@@ -190,20 +190,20 @@ The operator released this carrier's displaced historical ahu from the living te
 <<~/ahu>>
 
 <<~ ahu #/edges>>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-capability-composition">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/capability-composition">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/handoff">>
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-ooda-ha">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-hybrid">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-reference-ci">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-athenaion">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-poc0">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/hybrid">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/reference-ci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/athenaion">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/poc0">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MZPg9o9OkfgeJFfPjoWnyd6IrD9DTHe7q6kXZ6TGgjc
+<<^ code="&#x0003;">>ni:///sha-256;5eJhXf5iU3CVpO1JCAVpyl46Gh7SHBS0X7aO_M2iKLU
 
 <<^ code="&#x0004;" -> to="?">>

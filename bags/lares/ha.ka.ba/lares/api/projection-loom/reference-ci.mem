@@ -1,18 +1,18 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom-reference-ci">>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/reference-ci">>
 <<^ code="&#x0002;">>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-reference-ci.mem"
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/reference-ci.mem"
 l-space   = "stable"
 namespace = "&#x0950; &#x0901;"
 role      = "reproducible external witness acquisition and GitHub Actions verification"
 tags      = ["api/pono/meme"]
-title     = "lar:///ha.ka.ba/lares/api/projection-loom-reference-ci"
+title     = "lar:///ha.ka.ba/lares/api/projection-loom/reference-ci"
 type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lares/api/projection-loom-reference-ci"
+uri-path  = "ha.ka.ba/lares/api/projection-loom/reference-ci"
 ```
 
 <<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
@@ -52,10 +52,10 @@ execute CAD and synthetic image tests without acquiring any third-party asset.
 <<~/ahu>>
 
 <<~ ahu #/edges>>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-hybrid">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/hybrid">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FA5ThiOnDKfxBJHGDNiJwm3XXGGQTac9SckdLIGVvKo
+<<^ code="&#x0003;">>ni:///sha-256;-MdCLXERFJ288V8taY0zCHTUKBHbvJaW9rd8pzDYbGs
 
 <<^ code="&#x0004;" -> to="?">>

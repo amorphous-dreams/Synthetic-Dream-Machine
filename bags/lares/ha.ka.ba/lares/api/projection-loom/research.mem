@@ -1,14 +1,14 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom-research">>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/research">>
 <<^ code="&#x0002;">>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-research.mem"
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/research.mem"
 namespace = "&#x0950; &#x0901;"
-title = "lar:///ha.ka.ba/lares/api/projection-loom-research"
-uri-path = "ha.ka.ba/lares/api/projection-loom-research"
+title = "lar:///ha.ka.ba/lares/api/projection-loom/research"
+uri-path = "ha.ka.ba/lares/api/projection-loom/research"
 type = "text/memetic-wikitext+tiddlywiki"
 role = "kept research testimony, measurement contracts and open questions"
 tags = ["api/pono/meme", "projection-loom", "research"]
@@ -81,7 +81,7 @@ certify native BRep validity, calibration, inherited generative lineages
 or Elyncia canon. Consult the dedicated attributed research meme before
 claiming an upstream technique has transferred.
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-athenaion">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/athenaion">>
 
 <<~/ahu>>
 
@@ -89,21 +89,21 @@ claiming an upstream technique has transferred.
 
 !! Design witness · relation before shape
 
-The retired research register and detailed engineering design remain in the Git archive. The active working design is owned by `lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design`. They compare complete-region copying, source-goal inheritance, a derived native-observed route-family witness and parent-conditioned reconstruction. The C+D working choice requires a distinct native-admitted descendant under the same OODA-HA helm; the current two-epoch topology test does not yet prove that claim. The new Deep Research app report remains separate uninspected testimony until supplied.
+The retired research register and detailed engineering design remain in the Git archive. The active working design is owned by `lar:///ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design`. They compare complete-region copying, source-goal inheritance, a derived native-observed route-family witness and parent-conditioned reconstruction. The C+D working choice requires a distinct native-admitted descendant under the same OODA-HA helm; the current two-epoch topology test does not yet prove that claim. The new Deep Research app report remains separate uninspected testimony until supplied.
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design">>
 
 <<~/ahu>>
 
 <<~ ahu #/edges>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-witness">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-growth">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-epochs">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/witness">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/growth">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/epochs">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tKff5D6xQI1J958whHS0vEfDN5PW1agxBIw9lS1QC2o
+<<^ code="&#x0003;">>ni:///sha-256;5vBfg8PmdkyDFcoxJzBgtIXFxIE_GSOPnWKvU4obYrw
 
 <<^ code="&#x0004;" -> to="?">>

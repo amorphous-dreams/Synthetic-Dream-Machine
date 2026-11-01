@@ -1,18 +1,18 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom-handoff">>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/handoff">>
 <<^ code="&#x0002;">>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-handoff.mem"
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/handoff.mem"
 l-space = "working"
 namespace = "&#x0950; &#x0901;"
 role = "volatile operational handoff, operator how-tos, verified receipts, in-flight work and prioritized backlog for Projection Loom"
 tags = ["api/pono/meme", "working/handoff"]
-title = "lar:///ha.ka.ba/lares/api/projection-loom-handoff"
+title = "lar:///ha.ka.ba/lares/api/projection-loom/handoff"
 type = "text/memetic-wikitext+tiddlywiki"
-uri-path = "ha.ka.ba/lares/api/projection-loom-handoff"
+uri-path = "ha.ka.ba/lares/api/projection-loom/handoff"
 ```
 
 <<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
@@ -47,9 +47,9 @@ Read `tools/projection-loom/README.md`, `tools/projection-loom/docs/HANDOFF.md` 
 
 !! Research re-entry and root-bag crew meme
 
-The operator-supplied `deep-research-report.md` recommends complete admitted-route mutation first, semantic reconstruction second. This reopens the earlier reconstruction-first design priority without erasing its testimony. The complete crew handoff lives at `lar:///ha.ka.ba/lares/docs/projection-loom-native-inheritance-crew-handoff` under repository-root `bags/lares/`. Its source-derived family descriptor and separately native-observed admission receipt preserve one geometric truth and one OODA-HA helm. The full report attachment remains conversation testimony, not a verbatim Git archive. The Pair A carrier now sits at root `bags/lares/ha.ka.ba/lares/api/projection-loom-pair-a.mem` with unchanged bytes.
+The operator-supplied `deep-research-report.md` recommends complete admitted-route mutation first, semantic reconstruction second. This reopens the earlier reconstruction-first design priority without erasing its testimony. The complete crew handoff lives at `lar:///ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff` under repository-root `bags/lares/`. Its source-derived family descriptor and separately native-observed admission receipt preserve one geometric truth and one OODA-HA helm. The full report attachment remains conversation testimony, not a verbatim Git archive. The Pair A carrier now sits at root `bags/lares/ha.ka.ba/lares/api/projection-loom-pair-a.mem` with unchanged bytes.
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom-native-inheritance-crew-handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff">>
 
 <<~/ahu>>
 
@@ -57,9 +57,9 @@ The operator-supplied `deep-research-report.md` recommends complete admitted-rou
 
 !! Next native design proof
 
-Read `lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design`. The operator-supplied research reopens the old reconstruction-first design: independently admitted complete-parent route mutation is the first proposed heredity proof, while parent-conditioned reconstruction remains a second strategy under one OODAHAJournal. Current topology tests do not yet prove a native-admitted parent followed by a distinct native-admitted child. Keep exact-budget STEP replay and source closure; preserve operator authority and all historical ashes.
+Read `lar:///ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design`. The operator-supplied research reopens the old reconstruction-first design: independently admitted complete-parent route mutation is the first proposed heredity proof, while parent-conditioned reconstruction remains a second strategy under one OODAHAJournal. Current topology tests do not yet prove a native-admitted parent followed by a distinct native-admitted child. Keep exact-budget STEP replay and source closure; preserve operator authority and all historical ashes.
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design">>
 
 <<~/ahu>>
 
@@ -158,13 +158,13 @@ The operator released this carrier's displaced historical ahu from the living te
 
 <<~ ahu #/edges>>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-capability-composition">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-ooda-ha">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-hybrid">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-reference-ci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/capability-composition">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/hybrid">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/reference-ci">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mNFeQiK5_Tvfkbo6faSP0hLvhY-bTYLQoyJ24C2EJm8
+<<^ code="&#x0003;">>ni:///sha-256;4tugESpgomvHQJOdcb2kiHlFvs-GkjMj5m-500kzRZo
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,18 +1,18 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom-athenaion">>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/athenaion">>
 <<^ code="&#x0002;">>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-athenaion.mem"
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/athenaion.mem"
 l-space = "stable"
 namespace = "&#x0950; &#x0901;"
 role = "Operator-pinned external research reference for Projection Loom composition, sites, multi-view matching and modular procedural world generation; noncanonical upstream"
 tags = ["api/pono/meme", "projection-loom", "research", "external-reference"]
-title = "lar:///ha.ka.ba/lares/api/projection-loom-athenaion"
+title = "lar:///ha.ka.ba/lares/api/projection-loom/athenaion"
 type = "text/memetic-wikitext+tiddlywiki"
-uri-path = "ha.ka.ba/lares/api/projection-loom-athenaion"
+uri-path = "ha.ka.ba/lares/api/projection-loom/athenaion"
 written = "2026-10-27"
 ```
 
@@ -86,17 +86,17 @@ belongs to that project, not to a general-purpose Projection Loom.
 
 All 20 planned generalization items and the image-group / brutalist grammar /
 ziggurat-proxy seven-combination Experiment Zero matrix live in
-the current `lar:///ha.ka.ba/lares/api/projection-loom-handoff`; the retired comparison and roadmap remain recoverable from `archive/pr84-markdown-pre-otakiage-20261031`.
+the current `lar:///ha.ka.ba/lares/api/projection-loom/handoff`; the retired comparison and roadmap remain recoverable from `archive/pr84-markdown-pre-otakiage-20261031`.
 Neither document claims the new functionality already executed.
 
 <<~/ahu>>
 
 <<~ ahu #/edges>>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-research">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-growth">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/research">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/growth">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KYi06dd3S_n3VMdLw9ajZiVxV01sTpMdtaRFRfExplk
+<<^ code="&#x0003;">>ni:///sha-256;Ai8vqVi0O2wKgsiqapsO1zKdkWUv_fT8FdbGFFVTlqc
 
 <<^ code="&#x0004;" -> to="?">>

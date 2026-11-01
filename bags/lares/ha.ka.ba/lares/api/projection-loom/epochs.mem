@@ -1,14 +1,14 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom-epochs">>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/epochs">>
 <<^ code="&#x0002;">>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-epochs.mem"
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/epochs.mem"
 namespace = "&#x0950; &#x0901;"
-title = "lar:///ha.ka.ba/lares/api/projection-loom-epochs"
-uri-path = "ha.ka.ba/lares/api/projection-loom-epochs"
+title = "lar:///ha.ka.ba/lares/api/projection-loom/epochs"
+uri-path = "ha.ka.ba/lares/api/projection-loom/epochs"
 type = "text/memetic-wikitext+tiddlywiki"
 role = "bounded evolutionary method orchestration and aftermath"
 tags = ["api/pono/meme", "projection-loom", "ooda-ha"]
@@ -76,6 +76,6 @@ The active epoch/phase behavior is witnessed by `projection_loom/fractal_ooda_ha
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nSR3198L1idJAUYpFA55ny2u4NZui-jyAZqOS8917ek
+<<^ code="&#x0003;">>ni:///sha-256;olpsxKZf0WS4nw7OnDUrN12HhtvUFwhqnJee56-OILU
 
 <<^ code="&#x0004;" -> to="?">>

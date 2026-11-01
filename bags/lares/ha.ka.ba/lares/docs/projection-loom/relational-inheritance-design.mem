@@ -1,6 +1,6 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design">>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design">>
 <<^ code="&#x0002;">>
 
 ```toml meta
@@ -11,9 +11,9 @@ role = "source-grounded, operator-reviewable design lock and Lares crew executio
 status = "working-design; no canon promotion"
 retain = true
 tags = ["projection-loom", "docs/design", "research/testimony"]
-title = "lar:///ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design"
+title = "lar:///ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design"
 type = "text/memetic-wikitext+tiddlywiki"
-uri-path = "ha.ka.ba/lares/docs/projection-loom-relational-inheritance-design"
+uri-path = "ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design"
 ```
 
 <<~ ahu #/markdown-otakiage-20261031>>
@@ -42,9 +42,9 @@ This design meme carries the next YIN engineering wave from research to independ
 
 The operator supplied `deep-research-report.md`, titled ''Projection Loom: Native Topology Inheritance — Deep Research and Implementable Feature/Consolidation Plan''. This report recommends ''mutating a complete native-admitted parent route first'' for the initial falsifiable heredity witness, and semantic reconstruction as a second strategy. The earlier C+D reconstruction-first lock below remains preserved as historical working design, not silently rewritten. The source-derived `RouteFamilyDescriptor` must depend only on `PlaceGenome + SpatialIntent`; independent STEP verification binds a separate observed admission witness. No external research citations in the supplied report have been independently reverified here, and the attachment is not archived verbatim in Git.
 
-This turns the re-entry key: the next crew may implement mutation-first under the same helm, preserving D as a later candidate and recording counterexamples. Read `lar:///ha.ka.ba/lares/docs/projection-loom-native-inheritance-crew-handoff` for the complete operator handoff and pono/o-takiage boundaries.
+This turns the re-entry key: the next crew may implement mutation-first under the same helm, preserving D as a later candidate and recording counterexamples. Read `lar:///ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff` for the complete operator handoff and pono/o-takiage boundaries.
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom-native-inheritance-crew-handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff">>
 
 <<~/ahu>>
 
@@ -120,13 +120,13 @@ The evergreen machina and design docs remain discoverable after the fire. The op
 
 <<~ ahu #/edges>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-research">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/research">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/handoff">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wL_cWFvLrWIIHPid6MAtqbGcJb663dhWNwxVa5j9w7M
+<<^ code="&#x0003;">>ni:///sha-256;ZivpEuux0D_MeW9HcAmf8YbHXIR0PYwj4nGrx9tYfZE
 
 <<^ code="&#x0004;" -> to="?">>
