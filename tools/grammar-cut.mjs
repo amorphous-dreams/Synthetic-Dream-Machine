@@ -25,7 +25,7 @@
  *
  * ── THE ORACLE DECIDES, NEVER THE PATTERN ───────────────────────────────────────────────────────
  * Every changed sigil parses twice through the real TiddlyWiki parser: BEFORE, the parser's
- * values must equal this tool's own reading of the old call (so a tokenizer slip cannot pass);
+ * values must equal this tool's own reading of the call as written (so a tokenizer slip cannot pass);
  * AFTER, the parser must hand back exactly the named, substituted values the tool meant to write.
  * A sigil that fails either check is refused and left as it stands.
  *
@@ -380,12 +380,12 @@ export function cutSigil(ctx, src, opts = {}) {
       else return { refuse: "arrow", why: "an arrow survived" };
     }
   }
-  // A captured chain carries its raw text, so the parser's reading of the OLD chain binds nothing.
+  // A captured chain carries its raw text, so the parser's reading of the chain as written binds nothing.
   const before = restAt === null ? beforeReading(h, toks) : beforeReading(h, toks.slice(0, restAt));
   return { text: h.prefix + body + toks.trail + ">>", intended, before, prefixOnly: restAt !== null };
 }
 
-/** What this tool reads in the old call, in the parser's terms, for the BEFORE check. */
+/** What this tool reads in the call as written, in the parser's terms, for the BEFORE check. */
 function beforeReading(h, toks) {
   const r = [];
   if (h.sym === "~" && h.spaced) r.push({ positional: true, value: h.head });
