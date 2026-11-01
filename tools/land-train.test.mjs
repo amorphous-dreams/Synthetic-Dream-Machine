@@ -4,7 +4,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as LT from "./land-train.mjs";
@@ -793,4 +793,16 @@ test("RED: QUEUE: a run that finds the lock of a dead process takes it over and 
   assert.match(r.out, /RESUMED/);
   assert.equal(originRef(w, SPAN), t, "the standing train's own sha landed");
   assert.equal(pushedTrains(r.out).length, 0, "no new train pushed");
+});
+
+test("RED: a non-ASCII path still reads its class: git's C-quoting never hides a security path (12) nor a meme-only lane (2)", async () => {
+  const w = world(["a"], { touch: () => ".github/workflows/é.yml" });
+  const r = await runQ(w);
+  assert.equal(r.code, 12, r.out);
+  assert.match(r.out, /NO SHIP: a/);
+  const w2 = world(["b"], { touch: () => "bags/é/note.mem" });
+  spanAhead(w2);
+  const r2 = await runQ(w2);
+  assert.equal(r2.code, 2, r2.out);
+  assert.match(r2.out, /MEME-ONLY LANE: b/);
 });
