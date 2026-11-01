@@ -45,13 +45,13 @@ async function foundUnder(passphrase: string): Promise<void> {
 const derivations = (seen: string[][]): number => seen.reduce((n, list) => n + list.length, 0);
 
 describe("the scratch custody's open", () => {
-  it("RED: a tree the scratch route opens costs ONE derivation per unlock, never two", async () => {
+  it("RED: a tree the scratch route opens costs ONE derivation for the node tree's unlock, never two", async () => {
     await foundUnder(SCRATCH_PASSPHRASE);
     const seen: string[][] = [];
     await openScratch(counting(seen));
     expect(seen.length, "an unlock and an unlockFaces").toBe(2);
-    expect(derivations(seen), "one passphrase offered per call").toBe(2);
-    expect(seen.every((list) => list.length === 1 && list[0] === SCRATCH_PASSPHRASE)).toBe(true);
+    expect(seen[0], "the node tree's unlock offers the scratch route alone").toEqual([SCRATCH_PASSPHRASE]);
+    expect(derivations(seen), "one for the node tree, both routes in the one faces call").toBe(3);
   });
 
   it("CONTROL: a tree founded under the staged route still opens, and the staged route reaches the holder", async () => {
