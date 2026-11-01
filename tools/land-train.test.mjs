@@ -834,15 +834,15 @@ test("RED: run --plan reads the queue and moves no entry, even a lane its chain 
 test("RED: a span head whose only run was cancelled clean gets a dispatched run before any lane takes blame, never a VOID stop", async () => {
   const w = world(["a"]);
   const SP = spanAhead(w);
-  let dispatched = false;
+  let dispatched = false, att = 1;
   const r = await runQ(w, {
     red: (sha) => hasFile(w, sha, "packages/p-a/f.txt"),
     over: {
       dispatchCI: async () => { dispatched = true; },
       ciRuns: async (sha) => (sha === SP
         ? [{ databaseId: 70, headBranch: SPAN, headSha: sha, status: "completed", conclusion: "cancelled", attempt: 1, createdAt: "1" }, ...(dispatched ? [{ databaseId: 72, headBranch: SPAN, headSha: sha, status: "completed", conclusion: "success", attempt: 1, createdAt: "2" }] : [])]
-        : [{ databaseId: 71, headBranch: `${SPAN}--train-x`, headSha: sha, status: "completed", conclusion: "failure", attempt: 1, createdAt: "1" }]),
-      rerun: async () => { throw new Error("HTTP 403: rerun refused"); },
+        : [{ databaseId: 71, headBranch: `${SPAN}--train-x`, headSha: sha, status: "completed", conclusion: "failure", attempt: att, createdAt: "1" }]),
+      rerun: async () => { att++; },
     },
   });
   assert.equal(r.code, 5, r.out);
@@ -984,4 +984,12 @@ test("RED: a dark queued entry (its CI reads no verdict) is skipped by name and 
   const r2 = await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops);
   assert.equal(r2.code, 5, lines.join("\n"));
   assert.match(lines.join("\n"), /DROPPED a: LANE NOT GREEN/);
+});
+
+test("RED: a rerun GitHub refuses reads UNREADABLE (10), never a red: a flake must not name a lane", async () => {
+  const w = world(["a"]);
+  spanAhead(w);
+  const r = await runQ(w, { red: (sha, w2) => hasFile(w2, sha, "packages/p-a/f.txt"), over: { rerun: async () => { throw new Error("HTTP 502: Bad Gateway"); } } });
+  assert.equal(r.code, 10, r.out);
+  assert.doesNotMatch(r.out, /DROPPED/);
 });
