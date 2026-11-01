@@ -19,7 +19,8 @@ import { deserializeCarrier } from "../src/deserializer.js";
 import { normalizeMemeSource } from "../src/meme-normalize.js";
 import { AHU_OPEN_RE, KAHEA_REF_RE, collectAhuSlots } from "../src/meme-ast/ahu-scan.js";
 import { declaresCarrier } from "../src/carrier-files.js";
-import { pinTargetsOf } from "../src/weave/index.js";
+import { pinTargetsOf, transposeMarkdown } from "../src/weave/index.js";
+import { collectEvents } from "../src/meme-ast/scanner.js";
 
 describe("★ a ticked value hands back its interior ★", () => {
   test("single and triple ticks strip to the value", () => {
@@ -53,6 +54,28 @@ describe("★ a sigil ends at its own `>>`, never one a ticked value carries ★
   test("CONTROL: the quoted spelling already holds", () => {
     const s = '<<~ x a="it\'s >> ok">> after';
     expect(sigilOpenEnd(s, 0)).toBe(s.indexOf(" after"));
+  });
+});
+
+describe("★ the generic scan and the weave's ahu opener end at the call's own `>>` ★", () => {
+  const generic = (t: string) => collectEvents(t).filter((e) => e.generic);
+
+  test("a `>>` inside a ticked value rides as content: one call, read whole", () => {
+    const s = "<<~ x note=`a >> b`>> after";
+    const evs = generic(s);
+    expect(evs.map((e) => e.raw)).toEqual(["<<~ x note=`a >> b`>>"]);
+    const t = "<<~ x note=```a `>>` b```>> after";
+    expect(generic(t).map((e) => e.raw)).toEqual(["<<~ x note=```a `>>` b```>>"]);
+  });
+
+  test("an ahu opener whose value carries `>>` still opens its slot in the weave", () => {
+    const md = transposeMarkdown("<<~ ahu slot=`#/s` note=`a >> b`>>\n\nProse.\n\n<<~/ahu>>\n").markdown;
+    expect(md).toContain('<a id="s"></a>');
+  });
+
+  test("CONTROL: a plain call reads whole, and a plain ahu opener opens", () => {
+    expect(generic("<<~ x note=`a b`>> after").map((e) => e.raw)).toEqual(["<<~ x note=`a b`>>"]);
+    expect(transposeMarkdown("<<~ ahu slot=`#/s`>>\n\nProse.\n\n<<~/ahu>>\n").markdown).toContain('<a id="s"></a>');
   });
 });
 
