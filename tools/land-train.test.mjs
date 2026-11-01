@@ -742,3 +742,16 @@ test("RED: QUEUE: a conflict at chain build drops that lane by name, and every l
   const final = originRef(w, SPAN);
   assert.equal(sh(w.work, "rev-parse", `${final}^2`), w.heads.a);
 });
+
+test("RED: QUEUE: a lane whose diff changes ignored paths alone refuses the queue (no run would come); CONTROL: it lands DIRECT once it holds the span head", async () => {
+  const w = world(["a"], { touch: () => "bags/x/note.mem" });
+  spanAhead(w);
+  const r = await runQ(w);
+  assert.equal(r.code, 2, r.out);
+  assert.match(r.out, /MEME-ONLY LANE: a/);
+  sh(w.work, "checkout", "-q", `${SPAN}--a`); sh(w.work, "merge", "-q", "--no-edit", SPAN);
+  w.heads.a = sh(w.work, "rev-parse", "HEAD"); sh(w.work, "push", "-q", "origin", `${SPAN}--a`); sh(w.work, "checkout", "-q", SPAN);
+  const d = await runQ(w);
+  assert.equal(d.code, 0, d.out);
+  assert.match(d.out, /DIRECT-LANDED/);
+});
