@@ -60,6 +60,28 @@ export function init(this: RuleInstance, parser: WikiParser): void {
   this.parser = parser;
 }
 
+/**
+ * ── A BLOCK SIGIL ENDS ITS LINE ────────────────────────────────────────────────────────────────
+ * TiddlyWiki splits `<<m>>` by where the call's `>>` falls: alone on its line (`\r?\n` or the end of
+ * the source follows) it is `macrocallblock`; with anything after it — `<<m>>;abc`, `<<m>>* item`,
+ * `<<a>> <<b>>`, even one trailing space — the line is a paragraph holding `macrocallinline` and then
+ * text. The core instantiates each rule once per phase and marks it (`this.is.block` / `this.is.inline`),
+ * so this rule asks the SAME question in its block phase: every claim — the fragment, pranala, compound
+ * and generic forms alike — stands only when its opener's `>>` ends the line. A claim that fails the
+ * test declines, and the inline phase, which has no such condition, takes the sigil inside the paragraph
+ * with the text after it; the diagnostic floor (`sigil-trailing-text`, meme-ast) leaves its receipt.
+ *
+ * A closer-bearing compound (`ahu` …) answers to its OPENER's line: the opener with text after its
+ * `>>` is not a block opener, so the block claim declines and the inline phase reads the opener
+ * where it stands (the body that follows it begins at that same `>>`, as it always has). Stock TW5
+ * has no closer-bearing block call to measure against, so the ruling follows the opener's `>>` alone.
+ */
+const LINE_END_RE = /\r?\n|$/y;
+function endsLine(source: string, at: number): boolean {
+  LINE_END_RE.lastIndex = at;
+  return LINE_END_RE.test(source);
+}
+
 // TW5's evalGlobal injects `$tw` as a direct parameter into module code; in the Node VM sandbox
 // globalThis is the empty context, so the injected variable is the only reachable spelling.
 declare const $tw: {
@@ -109,12 +131,19 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       .filter((s) => (s as { kind?: string }).kind === "pragma" || (s as { kind?: string }).kind === "pragma-alias")
       .map((s) => s.name),
   );
+  const blockPhase = !!this.is?.block;
+  /** In the block phase a claim whose opener's `>>` leaves text on the line declines. */
+  const declines = (openEnd: number): boolean => blockPhase && !endsLine(source, openEnd);
   let pos = indexOfSigilOpen(source, startPos);
   while (pos >= 0) {
     // English `fragment` shares the child-slot intent backend with `ahu`. Rendering uses that
     // shared shape; carrier decomposition retains the authored worksite spelling for projection.
     if (source.startsWith("<<fragment", pos)) {
       const open = FRAGMENT_OPEN_RE.exec(source.slice(pos));
+      if (open && declines(pos + open[0].length)) {
+        pos = indexOfSigilOpen(source, pos + 3);
+        continue;
+      }
       if (open) {
         const close = source.indexOf("<</fragment>>", pos + open[0].length);
         this.matchPos = pos;
@@ -129,6 +158,10 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
     // the block form carries a body. `matchPranalaOpenAt` reads the call through the one attribute
     // reader and hands back both ends by name, so the edge never reads backwards.
     const pranala = matchPranalaOpenAt(source, pos);
+    if (pranala && declines(pranala.end)) {
+      pos = indexOfSigilOpen(source, pos + 3);
+      continue;
+    }
     if (pranala) {
       const closeEnd = findCloseEnd(source, "pranala", pranala.end);
       if (closeEnd !== null) {
@@ -162,6 +195,10 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
     // Handles: <<~ kahea ahu #slot>>, <<~ ahu #slot>>…<<~/ahu>>,
     //          <<~ kahea lar:///uri>>, <<~ loulou lar:///uri>>, <<~ kau …>>
     let compound = matchCompoundSigilAt(source, pos, childSlotNames, pragmaKindNames);
+    if (compound && declines(compound.end)) {
+      pos = indexOfSigilOpen(source, pos + 3);
+      continue;
+    }
     if (compound) {
       // `ahu` anchors a bare `#name` at the same slot a rooted `#/name` names — the loop's
       // graceful-read ruling (weave carries it too): the two spellings read as one address, never
@@ -216,6 +253,10 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       // REGISTERS the head, the host runs it; where it does not, the floor catches what the host
       // would swallow.
       if (!generic.spaced && generic.sigil && registeredHeads.has(generic.sigil)) return undefined;
+      if (declines(generic.end)) {
+        pos = indexOfSigilOpen(source, pos + 3);
+        continue;
+      }
       if (generic.sigil && closers[generic.sigil] && generic.sigil !== "pranala") {
         const closeEnd = findCloseEnd(source, generic.sigil, generic.end, closers);
         if (closeEnd !== null) {
