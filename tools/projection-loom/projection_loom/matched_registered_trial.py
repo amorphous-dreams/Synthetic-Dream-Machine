@@ -9,7 +9,8 @@ significance from one trial.
 from __future__ import annotations
 import json
 from pathlib import Path
-from .generalized_campaign import run_cohort, save_once, measured_view_scores
+from .generalized_campaign import run_cohort, measured_view_scores
+from .receipt_store import save_once
 from .developmental import GrowthProgram, compile_growth
 from .intent_seed import IntentContract, SeedBundle
 from .seed_adapters import registered_views

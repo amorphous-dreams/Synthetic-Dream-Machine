@@ -7,7 +7,7 @@ from .spatial_intent import SpatialIntent
 from .place_orthogonal_route import propose_orthogonal_route
 from .scene_usd import package_scene
 from .place_affordances import assess_place,verify_place_affordances
-from .generalized_campaign import save_once
+from .receipt_store import save_once
 from .provenance_encoding import canonical_json_sha256, first_json_difference
 
 _TURNS=("x-then-y","y-then-x")

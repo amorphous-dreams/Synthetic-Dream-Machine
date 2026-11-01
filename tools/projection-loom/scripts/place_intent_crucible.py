@@ -12,7 +12,7 @@ from projection_loom.spatial_intent import SpatialIntent,SpatialGoal
 from projection_loom.place_genome import PlaceGenome,PlaceBody,Walkway
 from projection_loom.place_campaign import (run_place_campaign, review_place_candidate,
                                             verify_place_campaign, continue_place_campaign)
-from projection_loom.generalized_campaign import save_once
+from projection_loom.receipt_store import save_once
 
 
 def main(argv=None):

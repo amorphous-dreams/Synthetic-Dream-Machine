@@ -20,7 +20,7 @@ from pathlib import Path
 
 from .editor_proposals import apply_proposal, seed_editor_ground, verify_transfer_receipts
 from .fractal_ooda_ha import OODAHAJournal
-from .generalized_campaign import save_once
+from .receipt_store import save_once
 from .location_stack import Element, LocationStack
 from .provenance_encoding import canonical_json_sha256
 from .relational_ground import IDENTITY, RelationalGround

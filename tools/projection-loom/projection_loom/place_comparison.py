@@ -8,7 +8,7 @@ from pathlib import Path
 import json
 from .place_campaign import verify_place_campaign
 from .location_workspace import verify_workspace
-from .generalized_campaign import save_once
+from .receipt_store import save_once
 from .provenance_encoding import canonical_json_sha256
 
 

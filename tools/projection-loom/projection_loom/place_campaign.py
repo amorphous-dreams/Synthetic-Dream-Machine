@@ -16,7 +16,7 @@ from .spatial_intent import SpatialIntent
 from .place_affordances import assess_place, verify_place_affordances
 from .scene_usd import package_scene
 from .location_workspace import create_workspace, verify_workspace
-from .generalized_campaign import save_once
+from .receipt_store import save_once
 from .fractal_ooda_ha import OODAHAJournal, single_runner
 from .constructive_phases import open_child,close_child
 from .provenance_encoding import canonical_json_sha256

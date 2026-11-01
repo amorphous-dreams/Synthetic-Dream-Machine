@@ -6,7 +6,8 @@ import json
 
 from projection_loom.intent_seed import IntentContract
 from projection_loom.seed_adapters import load_adapters
-from projection_loom.generalized_campaign import run_cohort, save_once
+from projection_loom.generalized_campaign import run_cohort
+from projection_loom.receipt_store import save_once
 
 COHORTS={
     "I":("image",), "B":("brutalist",), "Z":("ziggurat",),

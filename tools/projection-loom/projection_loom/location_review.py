@@ -7,7 +7,7 @@ from __future__ import annotations
 from pathlib import Path
 import json
 from .provenance_encoding import canonical_json_sha256
-from .generalized_campaign import save_once
+from .receipt_store import save_once
 from .location_workspace import verify_workspace
 
 DECISIONS = frozenset(("accept", "abstain", "dissent"))

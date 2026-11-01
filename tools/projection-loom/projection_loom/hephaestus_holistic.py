@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .generalized_campaign import save_once
+from .receipt_store import save_once
 from .seed_adapters import image_group, registered_views
 from .location_stack import LocationStack
 from .location_workspace import (

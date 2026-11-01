@@ -766,7 +766,7 @@ def main(argv=None):
         from .place_genome import PlaceGenome
         from .spatial_intent import SpatialIntent
         from .place_composed_route import compose_operator_route,verify_composed_operator_route
-        from .generalized_campaign import save_once
+        from .receipt_store import save_once
         genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
         spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
         if args.command=='place-compose-route':
@@ -861,7 +861,7 @@ def main(argv=None):
         from .place_genome import PlaceGenome
         from .spatial_intent import SpatialIntent
         from .place_orthogonal_route import orthogonal_route_receipt,verify_orthogonal_route_receipt
-        from .generalized_campaign import save_once
+        from .receipt_store import save_once
         genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
         spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
         if args.command=='place-orthogonal-route':
@@ -898,7 +898,7 @@ def main(argv=None):
         from .spatial_intent import SpatialIntent
         from .place_genome import PlaceGenome
         from .place_intent_preview import preview_place_intent,verify_place_intent_preview
-        from .generalized_campaign import save_once
+        from .receipt_store import save_once
         raw=json.loads(args.intent.read_text(encoding='utf8'))
         if set(raw)!={'location','aim','objectives','invariants','budgets'}:
             raise ValueError('Preview needs exact attributed IntentContract fields')
@@ -938,7 +938,7 @@ def main(argv=None):
         from .fire_spatial import bind_fire_spatial_set,verify_fire_spatial_set
         from .intent_seed import IntentContract
         from .place_genome import PlaceGenome
-        from .generalized_campaign import save_once
+        from .receipt_store import save_once
         raw=json.loads(args.intent.read_text(encoding='utf8'))
         if set(raw)!={'location','aim','objectives','invariants','budgets'}:
             raise ValueError('Fire joint contract requires exact authored fields')
@@ -965,7 +965,7 @@ def main(argv=None):
         from .intent_seed import IntentContract
         from .place_genome import PlaceGenome
         from .fire_spatial import bind_fire_spatial,verify_fire_spatial
-        from .generalized_campaign import save_once
+        from .receipt_store import save_once
         data=json.loads(args.intent.read_text(encoding='utf8'))
         if set(data)!={'location','aim','objectives','invariants','budgets'}:
             raise ValueError('Fire place intent requires exact author-supplied fields')
@@ -989,7 +989,7 @@ def main(argv=None):
         from .place_amendment import author_place_amendment
         from .intent_seed import IntentContract
         from .spatial_intent import SpatialIntent
-        from .generalized_campaign import save_once
+        from .receipt_store import save_once
         verify_place_campaign(args.campaign)
         old=json.loads((args.campaign/'pre_registration.json').read_text(encoding='utf8'))
         payload=json.loads(args.intent.read_text(encoding='utf8'))
@@ -1092,7 +1092,7 @@ def main(argv=None):
                            'native-support-verify'):
         from .relational_ground import RelationalGround
         from .native_support import propose_support,propose_reparent,verify_support_proposal
-        from .generalized_campaign import save_once
+        from .receipt_store import save_once
         ground=RelationalGround.load(args.ground)
         if args.command=='native-support-propose':
             result=propose_support(ground,args.bundle,args.lower,args.upper)
@@ -1110,7 +1110,7 @@ def main(argv=None):
         from .seed_adapters import image_group
         from .seed_adapters import registered_views
         from .location_stack import LocationStack
-        from .generalized_campaign import save_once
+        from .receipt_store import save_once
         stack=LocationStack.admit_registered_views(registered_views(image_group(args.image_group)),args.location)
         save_once(args.out,stack.to_dict())
         result={'schema':'projection-loom/registered-location-inventory',

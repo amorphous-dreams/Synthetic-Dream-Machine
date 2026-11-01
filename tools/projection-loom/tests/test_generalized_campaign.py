@@ -122,7 +122,7 @@ def test_successful_summary_refuses_missing_or_tampered_receipts(tmp_path):
 
 def test_receipt_publication_refuses_competing_writers(tmp_path):
     from concurrent.futures import ThreadPoolExecutor
-    from projection_loom.generalized_campaign import save_once
+    from projection_loom.receipt_store import save_once
     target = tmp_path / "immutable.json"
     with ThreadPoolExecutor(max_workers=8) as pool:
         results = list(pool.map(lambda _: save_once(target, {"a": 1}), range(32)))

@@ -14,7 +14,7 @@ from .place_genome import PlaceGenome
 from .developmental import compile_growth
 from .intent_evolution import fixed_inspection_cameras
 from .gallery_artifacts import VIEWS,native_six_view_sheet
-from .generalized_campaign import save_once
+from .receipt_store import save_once
 from .provenance_encoding import canonical_json_sha256
 
 

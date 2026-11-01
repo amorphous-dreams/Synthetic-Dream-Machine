@@ -13,7 +13,7 @@ from .spatial_intent import SpatialIntent
 from .scene_usd import package_scene
 from .place_affordances import assess_place,verify_place_affordances
 from .provenance_encoding import canonical_json_sha256
-from .generalized_campaign import save_once
+from .receipt_store import save_once
 
 TURNS=("x-then-y","y-then-x")
 

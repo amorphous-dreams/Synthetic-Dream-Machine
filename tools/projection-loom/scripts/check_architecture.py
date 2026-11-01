@@ -70,6 +70,11 @@ def inspect_source_tree(root):
                 imported = [item.name for item in node.names]
             elif isinstance(node, ast.ImportFrom):
                 imported = [node.module] if node.module else []
+                if (node.module in ('generalized_campaign',
+                                    'projection_loom.generalized_campaign')
+                        and any(item.name == 'save_once' for item in node.names)):
+                    errors.append(
+                        f'Immutable receipt writer must not be imported from campaign: {path.name}')
             else:
                 imported = []
 

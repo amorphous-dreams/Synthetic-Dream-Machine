@@ -11,7 +11,7 @@ from .place_genome import PlaceGenome
 from .place_recombination import recombine_place_regions
 from .place_affordances import assess_place,verify_place_affordances
 from .scene_usd import package_scene
-from .generalized_campaign import save_once
+from .receipt_store import save_once
 from .provenance_encoding import canonical_json_sha256
 
 

@@ -9,7 +9,7 @@ from pathlib import Path
 from .intent_seed import SeedBundle
 from .location_stack import LocationStack, Frame
 from .place_campaign import run_place_campaign, verify_place_campaign
-from .generalized_campaign import save_once
+from .receipt_store import save_once
 from .provenance_encoding import canonical_json_sha256
 
 KINDS=frozenset(("image-group","constructive-grammar","geometry-proxy"))

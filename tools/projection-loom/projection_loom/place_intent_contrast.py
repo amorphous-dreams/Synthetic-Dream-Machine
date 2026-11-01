@@ -7,7 +7,7 @@ from projection_loom.place_genome import PlaceBody,PlaceGenome,propose_from_spat
 from projection_loom.spatial_intent import SpatialGoal,SpatialIntent
 from projection_loom.place_affordances import assess_place,verify_place_affordances
 from projection_loom.scene_usd import package_scene
-from projection_loom.generalized_campaign import save_once
+from projection_loom.receipt_store import save_once
 from projection_loom.provenance_encoding import canonical_json_sha256
 
 

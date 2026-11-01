@@ -14,7 +14,7 @@ from .place_genome import PlaceGenome,unique_walkway_chain
 from .spatial_intent import SpatialIntent
 from .place_affordances import assess_place
 from .native_support import propose_support
-from .generalized_campaign import save_once
+from .receipt_store import save_once
 from .provenance_encoding import canonical_json_sha256
 
 

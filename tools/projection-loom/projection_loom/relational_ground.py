@@ -397,7 +397,7 @@ class RelationalGround:
         return cls.from_dict(json.loads(Path(path).read_text(encoding="utf8")))
 
     def save(self, path):
-        from .generalized_campaign import save_once
+        from .receipt_store import save_once
         save_once(path, self.to_dict())
 
     def as_prov(self):

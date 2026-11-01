@@ -11,7 +11,7 @@ import tempfile
 from hashlib import sha256
 from pathlib import Path
 
-from .generalized_campaign import save_once
+from .receipt_store import save_once
 from .place_comparison import place_comparison
 from .place_gallery import render_place_gallery
 from .provenance_encoding import canonical_json_sha256

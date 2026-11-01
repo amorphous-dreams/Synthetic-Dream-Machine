@@ -13,7 +13,7 @@ from .intent_seed import IntentContract
 from .location_stack import LocationStack,Frame
 from .spatial_intent import SpatialGoal,SpatialIntent
 from .place_campaign import run_place_campaign,verify_place_campaign
-from .generalized_campaign import save_once
+from .receipt_store import save_once
 from .provenance_encoding import canonical_json_sha256
 
 

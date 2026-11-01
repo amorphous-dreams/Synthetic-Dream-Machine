@@ -14,7 +14,7 @@ from .place_genome import PlaceGenome
 from .spatial_intent import SpatialIntent
 from .place_affordances import assess_place
 from .native_support import native_support,propose_support
-from .generalized_campaign import save_once
+from .receipt_store import save_once
 from .provenance_encoding import canonical_json_sha256
 
 
