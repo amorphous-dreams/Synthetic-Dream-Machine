@@ -806,3 +806,15 @@ test("RED: a non-ASCII path still reads its class: git's C-quoting never hides a
   assert.equal(r2.code, 2, r2.out);
   assert.match(r2.out, /MEME-ONLY LANE: b/);
 });
+
+test("RED: a queued lane that lands DIRECT settles its entry, so the next run never re-reads a landed head", async () => {
+  const w = world(["a"]);
+  const { ops } = opsQ(w); const lines = []; ops.log = (l) => lines.push(l);
+  const o = { span: SPAN, cwd: w.work, shipDir: join(w.dir, "ship"), queueDir: join(w.dir, "q") };
+  assert.equal((await LT.enqueue({ ...o, specs: specsOf(w) }, ops)).code, 0);
+  const r = await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops);
+  assert.equal(r.code, 0, lines.join("\n"));
+  assert.match(lines.join("\n"), /DIRECT-LANDED/);
+  assert.deepEqual(readdirSync(join(w.dir, "q", "entries")), [], "the entry left the queue");
+  assert.equal((await LT.landTrain({ ...o, fromQueue: true, specs: [] }, ops)).code, 2, "the next run finds no lane");
+});
