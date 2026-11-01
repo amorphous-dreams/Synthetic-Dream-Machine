@@ -2,29 +2,26 @@ name: Projection Loom CAD and evidence CI
 
 on:
   pull_request:
-    branches:
-      - feature/green-jello-dinosaur-5
+    branches: [feature/green-jello-dinosaur-5]
     paths:
       - 'tools/projection-loom/**'
       - 'bags/lares/ha.ka.ba/lares/api/projection-loom/**'
       - 'bags/lares/ha.ka.ba/lares/docs/projection-loom/**'
       - '.github/workflows/projection-loom.yml'
-      - 'bags/lares/ha.ka.ba/lares/api/projection-loom/**'
-      - 'bags/lares/ha.ka.ba/lares/docs/projection-loom/**'
+      - '.github/workflows/projection-loom-studies.yml'
   push:
-    branches:
-      - 'feature/green-jello-dinosaur-5--projection-loom'
-      - 'feature/projection-loom-poc0-pair-a-ur-brutalist'
+    branches: [feature/green-jello-dinosaur-5]
     paths:
       - 'tools/projection-loom/**'
+      - 'bags/lares/ha.ka.ba/lares/api/projection-loom/**'
+      - 'bags/lares/ha.ka.ba/lares/docs/projection-loom/**'
       - '.github/workflows/projection-loom.yml'
   workflow_dispatch:
     inputs:
       public_reference:
         type: boolean
-        description: 'Fetch the public CC0 Brutalist pack and upload an unreviewed SHA-256 lock'
+        description: Fetch public CC0 sample as unreviewed evidence
         default: false
-
 permissions:
   contents: read
 
@@ -105,7 +102,7 @@ jobs:
 
   cc0-public-witness:
     name: Public CC0 external source (advisory, unpinned until reviewed)
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.public_reference)
+    if: github.event_name == 'workflow_dispatch' && inputs.public_reference
     continue-on-error: true
     runs-on: ubuntu-24.04
     timeout-minutes: 15

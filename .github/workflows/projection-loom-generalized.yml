@@ -1,68 +1,28 @@
 name: Projection Loom input-generalization integration
 on:
-  push:
-    branches: [feature/green-jello-dinosaur-5--projection-loom]
+  pull_request:
+    branches: [feature/green-jello-dinosaur-5]
     paths:
       - '.github/workflows/projection-loom-generalized.yml'
-      - 'tools/projection-loom/projection_loom/intent_seed.py'
-      - 'tools/projection-loom/projection_loom/seed_adapters.py'
-      - 'tools/projection-loom/projection_loom/developmental.py'
-      - 'tools/projection-loom/projection_loom/intent_evolution.py'
-      - 'tools/projection-loom/projection_loom/generalized_campaign.py'
-      - 'tools/projection-loom/projection_loom/relational_ground.py'
-      - 'tools/projection-loom/projection_loom/scene_usd.py'
-      - 'tools/projection-loom/projection_loom/scene_variants.py'
-      - 'tools/projection-loom/projection_loom/incremental_graph.py'
-      - 'tools/projection-loom/projection_loom/editor_proposals.py'
-      - 'tools/projection-loom/projection_loom/location_workspace.py'
-      - 'tools/projection-loom/projection_loom/native_support.py'
-      - 'tools/projection-loom/projection_loom/source_registration.py'
-      - 'tools/projection-loom/projection_loom/location_stack.py'
-      - 'tools/projection-loom/projection_loom/spatial_intent.py'
-      - 'tools/projection-loom/projection_loom/place_genome.py'
-      - 'tools/projection-loom/projection_loom/place_intent_preview.py'
-      - 'tools/projection-loom/projection_loom/compound_intent_study.py'
-      - 'tools/projection-loom/projection_loom/place_orthogonal_route.py'
-      - 'tools/projection-loom/projection_loom/place_orthogonal_study.py'
-      - 'tools/projection-loom/projection_loom/place_affordances.py'
-      - 'tools/projection-loom/projection_loom/place_shelter.py'
-      - 'tools/projection-loom/projection_loom/place_ascent.py'
-      - 'tools/projection-loom/projection_loom/place_matched_trial.py'
-      - 'tools/projection-loom/projection_loom/place_causal_support.py'
-      - 'tools/projection-loom/projection_loom/place_campaign.py'
-      - 'tools/projection-loom/projection_loom/place_amendment.py'
-      - 'tools/projection-loom/projection_loom/place_bearing_causal.py'
-      - 'tools/projection-loom/projection_loom/constructive_phases.py'
-      - 'tools/projection-loom/projection_loom/fire_spatial.py'
-      - 'tools/projection-loom/projection_loom/fire_contract.py'
-      - 'tools/projection-loom/schemas/fire_proposal.schema.json'
-      - 'tools/projection-loom/projection_loom/place_intent_contrast.py'
-      - 'tools/projection-loom/projection_loom/place_comparison.py'
-      - 'tools/projection-loom/projection_loom/place_gallery.py'
-      - 'tools/projection-loom/scripts/place_intent_crucible.py'
-      - 'tools/projection-loom/projection_loom/hephaestus_holistic.py'
-      - 'tools/projection-loom/projection_loom/matched_registered_trial.py'
-      - 'tools/projection-loom/projection_loom/fractal_ooda_ha.py'
-      - 'tools/projection-loom/projection_loom/evidence_receipts.py'
-      - 'tools/projection-loom/projection_loom/intent_evolution.py'
-      - 'tools/projection-loom/projection_loom/regulative_growth.py'
-      - 'tools/projection-loom/projection_loom/hephaestus_crucible.py'
+      - 'tools/projection-loom/projection_loom/**'
+      - 'tools/projection-loom/tests/test_hephaestus_*.py'
+      - 'tools/projection-loom/tests/test_generalized_*.py'
       - 'tools/projection-loom/blender/**'
       - 'tools/projection-loom/scripts/real_blender_witness.py'
-      - 'tools/projection-loom/projection_loom/contracts/**'
-      - 'tools/projection-loom/projection_loom/cli.py'
-      - 'tools/projection-loom/tests/test_hephaestus_*.py'
-      - 'tools/projection-loom/tests/test_capability_producer.py'
-      - 'tools/projection-loom/tests/test_hephaestus_multiview.py'
-      - 'tools/projection-loom/tests/test_hephaestus_registered_multiview.py'
-      - 'tools/projection-loom/tests/test_hephaestus_funnels.py'
       - 'tools/projection-loom/scripts/hephaestus_census.py'
-      - 'tools/projection-loom/pyproject.toml'
+      - 'tools/projection-loom/scripts/place_intent_crucible.py'
       - 'tools/projection-loom/experiments/zero/**'
-      - 'tools/projection-loom/tests/test_generalized_*.py'
+      - 'tools/projection-loom/requirements-ci.txt'
+      - 'tools/projection-loom/pyproject.toml'
+      - 'bags/lares/ha.ka.ba/lares/api/projection-loom/**'
+      - 'bags/lares/ha.ka.ba/lares/docs/projection-loom/**'
   workflow_dispatch:
 permissions:
   contents: read
+
+concurrency:
+  group: projection-loom-generalized-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   contracts:
     runs-on: ubuntu-24.04

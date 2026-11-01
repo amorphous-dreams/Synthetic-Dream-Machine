@@ -1,19 +1,22 @@
 name: Loom current AI Fire · typed semantic/native grammar
 
 on:
-  push:
-    branches: [feature/green-jello-dinosaur-5--projection-loom]
+  pull_request:
+    branches: [feature/green-jello-dinosaur-5]
     paths:
       - '.github/workflows/loom-fire-grammar.yml'
       - 'bags/lares/ha.ka.ba/lares/api/art-sigils/**'
+      - 'bags/lares/ha.ka.ba/lares/api/projection-loom/**'
+      - 'bags/lares/ha.ka.ba/lares/docs/projection-loom/**'
       - 'tools/projection-loom/projection_loom/fire_*.py'
+      - 'tools/projection-loom/projection_loom/cli.py'
+      - 'tools/projection-loom/examples/necrospire/fire_study.py'
       - 'tools/projection-loom/schemas/fire_proposal.schema.json'
       - 'tools/projection-loom/tests/test_fire*.py'
-      - 'tools/projection-loom/projection_loom/cli.py'
+      - 'tools/projection-loom/tests/test_place_witness.py'
       - 'tools/projection-loom/pyproject.toml'
       - 'tools/projection-loom/requirements-ci.txt'
   workflow_dispatch:
-
 permissions:
   contents: read
 
