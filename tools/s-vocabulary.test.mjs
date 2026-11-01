@@ -24,7 +24,7 @@ test("KNOWN POSITIVE: the check catches every spelling, in code, in a comment an
 test("KNOWN POSITIVE (canon): a carrier's prose that spells it is caught, and a content address is not prose", () => {
   assert.ok(memWords(`The ${up} opens the tree.`).length > 0);
   assert.ok(memWords(`* ''${cap}'' rotation re-wraps the entry`).length > 0);
-  assert.deepEqual(memWords(`<<^ code="&#x0003;">>ni:///sha-256;rhCZHcumogmxUwIG${up}-4mFt8tZrJ48k1hAEfqv65ps`), []);
+  assert.deepEqual(memWords(`<<^ code=\`&#x0003;\`>>ni:///sha-256;rhCZHcumogmxUwIG${up}-4mFt8tZrJ48k1hAEfqv65ps`), []);
 });
 
 test("CONTROL: unrelated words read clean", () => {

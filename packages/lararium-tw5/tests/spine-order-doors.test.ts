@@ -16,12 +16,12 @@ import { memeticWikitextDeserializer, TORN_FIELD, BARE_DATA_TYPE } from "../src/
 import { decideIngest } from "../src/ingest-gate.js";
 
 const URI = "lar:///t/spine-doors";
-const HEAD = (uri: string) => `<<^ code="&#x0001;" from="?" -> to="${uri}">>`;
-const STX = '<<^ code="&#x0002;">>';
-const EOT = '<<^ code="&#x0004;" -> to="?">>';
+const HEAD = (uri: string) => `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>`;
+const STX = '<<^ code=`&#x0002;`>>';
+const EOT = '<<^ code=`&#x0004;` to=`?`>>';
 const carrier = (body: string, head = HEAD(URI)): string => stampCarrier(
-  `${head}\n${STX}\n\n\`\`\`toml meta\nuri-path = "${URI.slice(7)}"\n\`\`\`\n\n${body}\n\n<<^ code="&#x0003;">>\n\n${EOT}\n`);
-const SOUND = carrier("<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\nprose");
+  `${head}\n${STX}\n\n\`\`\`toml meta\nuri-path = "${URI.slice(7)}"\n\`\`\`\n\n${body}\n\n<<^ code=\`&#x0003;\`>>\n\n${EOT}\n`);
+const SOUND = carrier("<<~ ahu slot=`#/a`>>\n\n! a\n\n<<~/ahu>>\n\nprose");
 
 const OUT_OF_ORDER: Record<string, string> = {
   "EOT inside the text":  carrier(`prose\n\n${EOT}\n\nbytes the check covers`),

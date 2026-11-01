@@ -17,15 +17,14 @@ import { readCarrier, vanishedNote, distCarrierFiles } from "./corpus-read.mjs";
 import { join } from "path";
 
 const REPO = process.env["REPO"] ?? process.cwd();
-const SPEC_URI = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext";
-const ROOT = "memetic-wikitext+tiddlywiki";
-// QUOTED, because a bare positional binds a PHANTOM parameter and leaves the slot EMPTY — the carrier-head
-// ruling.
-const DECLARATION = `<<!DOCTYPE "${ROOT}" "${SPEC_URI}">>`;
 const { carrierFiles, inSubmodule } = await distCarrierFiles(REPO, "doctype");
 // A FENCED DECLARATION DECLARES NOTHING. A carrier that TEACHES the register writes the declaration in
 // a fence, and a reader counting lines takes the lesson for the carrier's own act.
-const { fencedSpans, inMask } = await import(
+//
+// THE DECLARATION IS THE SHORE'S OWN (`CARRIER_DECLARATION`, the writer's constant), imported rather than
+// spelled a second time here: two hand-kept literals drift on the day the grammar moves, and the cut that
+// ticked every value moved this one.
+const { fencedSpans, inMask, CARRIER_DECLARATION: DECLARATION } = await import(
   new URL("../packages/lararium-memetic-frame/dist/index.js", import.meta.url).pathname);
 
 // ── A DECLARATION STANDS BARE, ON ITS OWN LINE ─────────────────────────────────────────────────

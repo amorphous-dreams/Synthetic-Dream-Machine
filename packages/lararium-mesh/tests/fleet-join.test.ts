@@ -55,7 +55,7 @@ async function world(): Promise<World> {
   const seal = { secret: sealSecret, key: hex(x25519.getPublicKey(sealSecret)) };
   const body = { nonce: NONCE, atomKey: joinee.key, sealKey: seal.key, requests: [a.request, b.request] };
   const request: FleetJoinRequest = { kind: "fleet-join-request", ...body, signature: await signHex(fleetJoinRequestImage(body), joinee) };
-  const carriage = { gatePin: PIN, canon: { "@lares": "automerge:canon-lares" } };
+  const carriage = { gatePin: PIN, canon: { lares: "automerge:canon-lares" } };
   const answerBody = {
     nonce: NONCE, atomKey: joinee.key, personaGroup: GROUP, edge: { kind: "device-admit/v1", deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS },
     carriage,
@@ -127,7 +127,7 @@ describe("the fleet-join door's files", () => {
     // The pin is the full sovereign sync pin AT the island the answer names: a bare key, or a pin at another Nexus, refuses.
     expect(read(w, { ...w.answer, carriage: { ...w.answer.carriage, gatePin: "cd".repeat(32) } })).toEqual({ refusal: "answer-malformed" });
     expect(read(w, { ...w.answer, carriage: { ...w.answer.carriage, gatePin: sovereignPinAt("nexus-elsewhere.synthetic", 5) } })).toEqual({ refusal: "answer-pin-other-nexus" });
-    expect(read(w, { ...w.answer, carriage: { ...w.answer.carriage, canon: { "@lares": "automerge:other" } } })).toEqual({ refusal: "answer-admit-other-commit" });
+    expect(read(w, { ...w.answer, carriage: { ...w.answer.carriage, canon: { lares: "automerge:other" } } })).toEqual({ refusal: "answer-admit-other-commit" });
     expect(read(w, { ...w.answer, edge: { kind: "device-admit/v1", deviceEdge: "swapped" } })).toEqual({ refusal: "answer-unsigned" });
     expect(read(w, { ...w.answer, reach: { ...w.answer.reach, syncUrl: "ws://elsewhere.synthetic" } })).toEqual({ refusal: "answer-unsigned" });
     // CONTROL: the right answer under another root refuses; under its own root it reads.
@@ -386,7 +386,7 @@ describe("the answer carries the dial: the charter, the face's admit and the flo
 
   test("RED: an admit the root signed over another carriage, or for another face, refuses by name", async () => {
     const w = await world();
-    const other = { ...w.answer.carriage, canon: { "@lares": "automerge:elsewhere" } };
+    const other = { ...w.answer.carriage, canon: { lares: "automerge:elsewhere" } };
     expect(read(w, await resign(w, { admit: faceAdmitOver(other, w.a.scope.faceKey) }))).toEqual({ refusal: "answer-admit-other-commit" });
     expect(read(w, await resign(w, { admit: faceAdmitOver(w.answer.carriage, w.b.scope.faceKey) }))).toEqual({ refusal: "answer-admit-other-face" });
     expect(read(w, await resign(w, { admit: { ...w.answer.admit, salt: "zz" } }))).toEqual({ refusal: "answer-malformed" });

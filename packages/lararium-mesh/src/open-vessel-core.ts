@@ -32,6 +32,7 @@ import { resolveBootDoc, isStillJoining } from "./boot-resolver.js";
 import { isCondemned, isUnresolved, type DocLoadProbe, type ProbeResult } from "./doc-load-probe-contract.js";
 import { storedLarRecord } from "./stored-record.js";
 import { resolveCatalogRow } from "./catalog-row.js";
+import { PLANE_LABELS } from "./plane-labels.js";
 
 /**
  * The doc URLs a vessel's bootstrap resolves.
@@ -193,7 +194,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
   let laresHandle: DocHandle<LarDoc> | null = null;
   if (named.lares) {
     const resolved = await resolveBootDoc<LarDoc>(repo, named.lares as AutomergeUrl, {
-      tideline: "mesh-shared", scale: "dreamnet", label: "@lares (the Kahu realm's live canon)",
+      tideline: "mesh-shared", scale: "dreamnet", label: `${PLANE_LABELS.lares} (the Kahu realm's live canon)`,
     });
     if (!isStillJoining(resolved)) {
       laresHandle = resolved;
@@ -203,7 +204,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
   let larariumHandle: DocHandle<LarDoc> | null = null;
   if (named.lararium) {
     const resolved = await resolveBootDoc<LarDoc>(repo, named.lararium as AutomergeUrl, {
-      tideline: "mesh-shared", scale: "dreamnet", label: "@lararium (the Kahu realm's live canon)",
+      tideline: "mesh-shared", scale: "dreamnet", label: `${PLANE_LABELS.lararium} (the Kahu realm's live canon)`,
     });
     if (!isStillJoining(resolved)) {
       larariumHandle = resolved;

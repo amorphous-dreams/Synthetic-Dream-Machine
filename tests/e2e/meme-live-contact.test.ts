@@ -51,9 +51,9 @@ const URI  = `lar:///${PATH}`;
 
 /** A framed witness meme whose body holds the named ahu slots. */
 const meme = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 /** What the witness needs before it can stand a vessel; empty when everything is in place. */
 function missing(): string[] {
@@ -140,8 +140,8 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     // The read hands back the CANONICAL carrier: the framing normalized, the block check stamped, the
     // body whole. Framed as sent, the two slots and the address read back verbatim.
     expect(text).toContain(`uri-path = "${PATH}"`);
-    expect(text).toContain("<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>");
-    expect(text).toContain("<<~ ahu #/b>>\n\n! b\n\n<<~/ahu>>");
+    expect(text).toContain("<<~ ahu slot=`#/a`>>\n\n! a\n\n<<~/ahu>>");
+    expect(text).toContain("<<~ ahu slot=`#/b`>>\n\n! b\n\n<<~/ahu>>");
     base = String(d["canonicalHash"]);
     // The base IS the digest of the bytes handed back — collided here, never assumed.
     expect(base).toBe(`sha256:${createHash("sha256").update(text).digest("hex")}`);
@@ -171,8 +171,8 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     const after = await lar.cli(["meme", "get", URI, ...WIKI, "--json"]);
     const afterText = String((after.json?.["data"] as Record<string, unknown>)["text"]);
     expect(afterText).toBe(String((before.json?.["data"] as Record<string, unknown>)["text"]));
-    expect(afterText).toContain("<<~ ahu #/c>>");
-    expect(afterText).not.toContain("<<~ ahu #/b>>");
+    expect(afterText).toContain("<<~ ahu slot=`#/c`>>");
+    expect(afterText).not.toContain("<<~ ahu slot=`#/b`>>");
   });
 
   test("project --to md → text + a `.meta` beside --out", async () => {

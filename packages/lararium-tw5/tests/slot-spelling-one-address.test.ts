@@ -16,28 +16,28 @@ import { checkCarrier } from "../src/carrier-check.js";
 
 const URI = "lar:///t/spelling";
 const carrier = (body: string): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/spelling"\n\`\`\`\n\n` +
-  body + `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
-const bare = carrier("<<~ ahu #a>>\n\n! a\n\n<<~/ahu>>\n");
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/spelling"\n\`\`\`\n\n` +
+  body + `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
+const bare = carrier("<<~ ahu slot=`#a`>>\n\n! a\n\n<<~/ahu>>\n");
 // CANON: a nested open carries its WHOLE path from the carrier root — `#/a/c` nested inside `#/a`
 // names its own full address, a strict descendant, never a leaf to append.
-const rooted = carrier("<<~ ahu #/a>>\n\n<<~ ahu #/a/c>>\n\n! c\n\n<<~/ahu>>\n\n<<~/ahu>>\n");
+const rooted = carrier("<<~ ahu slot=`#/a`>>\n\n<<~ ahu slot=`#/a/c`>>\n\n! c\n\n<<~/ahu>>\n\n<<~/ahu>>\n");
 // The RETIRED tolerance: `#/c` nested inside `#/a` is a RELATIVE form (unnormalized authoring) —
 // the reader takes it verbatim (never re-prefixed to `#/a/c`), and the check names the fault.
-const relative = carrier("<<~ ahu #/a>>\n\n<<~ ahu #/c>>\n\n! c\n\n<<~/ahu>>\n\n<<~/ahu>>\n");
+const relative = carrier("<<~ ahu slot=`#/a`>>\n\n<<~ ahu slot=`#/c`>>\n\n! c\n\n<<~/ahu>>\n\n<<~/ahu>>\n");
 
 describe("the rooted ahu slot law", () => {
   test("a bare slot stays in root bytes and mints no child record", () => {
     const decoded = { records: memeticWikitextDeserializer(bare, { title: URI }) };
     expect(decoded.records.map((r) => r.title)).toEqual([URI]);
-    expect(String(decoded.records[0]?.text)).toContain("<<~ ahu #a>>");
+    expect(String(decoded.records[0]?.text)).toContain("<<~ ahu slot=`#a`>>");
     expect([...memeticIngestOps.declaredStructure(bare)]).toEqual([]);
   });
 
   test("a bare slot surfaces as a partial ahu form instead of disappearing", () => {
     const parsed = parseMemeText(URI, bare);
     expect(parsed.failures.some((f) => f.reason === "partial-form:ahu")).toBe(true);
-    expect(JSON.stringify(parsed.nodes)).toContain("<<~ ahu #a>>");
+    expect(JSON.stringify(parsed.nodes)).toContain("<<~ ahu slot=`#a`>>");
   });
 
   test("rooted nested slots mint their complete fragment path", () => {
@@ -45,7 +45,7 @@ describe("the rooted ahu slot law", () => {
     expect(decoded.records.map((r) => r.title).filter((title) => !title.includes("/$")).sort())
       .toEqual([URI, `${URI}#/a`, `${URI}#/a/c`]);
     expect(String(decoded.records.find((r) => r.title === `${URI}#/a`)?.text))
-      .toContain("<<~ kahea ahu #/a/c>>");
+      .toContain("<<~ kahea ahu slot=`#/a/c`>>");
   });
 
   // READ relation (never MINT): a nested open's own path is taken verbatim — never re-composed
@@ -67,7 +67,7 @@ describe("the rooted ahu slot law", () => {
   });
 
   test("an address equal to its parent faults too — a collision, not a resolution", () => {
-    const equal = carrier("<<~ ahu #/a>>\n\n<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\n<<~/ahu>>\n");
+    const equal = carrier("<<~ ahu slot=`#/a`>>\n\n<<~ ahu slot=`#/a`>>\n\n! a\n\n<<~/ahu>>\n\n<<~/ahu>>\n");
     const diagnostics = checkCarrier(deserializeCarrier(equal, { title: URI }));
     expect(diagnostics.some((d) => d.code === "nested-slot-outside-parent")).toBe(true);
   });

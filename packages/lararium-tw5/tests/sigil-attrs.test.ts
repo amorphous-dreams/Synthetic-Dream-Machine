@@ -4,12 +4,12 @@
  * Every vector here names a shape the corpus actually carries, or a shape that would break if quoted.
  */
 import { describe, test, expect } from "vitest";
-import { readSigilAttrs, sigilAttrValue, quotableAttrs, positionalsOf } from "../src/sigil-attrs.js";
+import { readSigilAttrs, sigilAttrValue, quotableAttrs } from "../src/sigil-attrs.js";
 
 describe("both spellings reach one reading", () => {
   test("★ bare and quoted name the same value ★", () => {
     expect(sigilAttrValue(" #x from=? -> to=lar:///d family=code role=has", "family")).toBe("code");
-    expect(sigilAttrValue(' #x from="?" -> to="lar:///d" family="code" role="has"', "family")).toBe("code");
+    expect(sigilAttrValue(' #x from=`?` to=`lar:///d` family="code" role="has"', "family")).toBe("code");
   });
 
   test("the quote flag reports which spelling stood", () => {
@@ -181,11 +181,14 @@ describe("the corpus shapes, verbatim", () => {
     expect(a).toEqual({ from: "?", to: "packages/lararium-mesh/src/crypto.ts", family: "code", role: "has" });
   });
 
-  test("★ a panel, whole ★", () => {
-    const b = ' hud="yield" mode="strike" aperture="14/arc" drift-ward="* · a note"';
+  test("★ a yield firing, whole ★", () => {
+    const b = " lares=`yield` drift-ward=`the joint that breaks first · ↻ L-Prime` aperture=`10/measure -> 14/arc` ooda-ha=`closed 0↺ -> open 1φ◇:fork.waits` from=`lar://compita:agent@crossroads/a.b.c` to=`?`";
     const a = Object.fromEntries(readSigilAttrs(b).map((x) => [x.name, x.value]));
-    expect(a["drift-ward"]).toBe("* · a note");
-    expect(a["aperture"]).toBe("14/arc");
+    expect(a["lares"]).toBe("yield");
+    expect(a["drift-ward"]).toBe("the joint that breaks first · ↻ L-Prime");
+    expect(a["aperture"]).toBe("10/measure -> 14/arc");
+    expect(a["ooda-ha"]).toBe("closed 0↺ -> open 1φ◇:fork.waits");
+    expect(a["to"]).toBe("?");
   });
 
   test("★ a turn bearing, whole ★", () => {
@@ -204,42 +207,3 @@ describe("the corpus shapes, verbatim", () => {
  * are the same rules, since a positional wears the same four delimiters and stands beside the same
  * `name=value` pairs it must step over.
  */
-describe("positionalsOf — the slots a dispatcher fills", () => {
-  test("bare words read in order", () => {
-    expect(positionalsOf("organ mempalace")).toEqual(["organ", "mempalace"]);
-  });
-
-  test("★ the delimiters come off — a quote binds a value, it is not part of one ★", () => {
-    expect(positionalsOf('"20" "Mischief-Muse"')).toEqual(["20", "Mischief-Muse"]);
-  });
-
-  test("★ a quoted positional carrying spaces stays ONE slot ★", () => {
-    expect(positionalsOf('"16" "Ghost of Mark Twain"')).toEqual(["16", "Ghost of Mark Twain"]);
-  });
-
-  test("★ all four delimiters, as parseStringLiteral takes them ★", () => {
-    expect(positionalsOf(`"""a -> b""" 'c d' [[A Title]] plain`))
-      .toEqual(["a -> b", "c d", "A Title", "plain"]);
-  });
-
-  test("★ a named parameter fills a NAME and never a slot ★", () => {
-    expect(positionalsOf('aim from="a" -> to="b"')).toEqual(["aim", "->"]);
-  });
-
-  test("★ a colon-bearing value inside a quoted slot is prose, not a separator ★", () => {
-    expect(positionalsOf('rhyme "physics ~ Lightcone: proper time"'))
-      .toEqual(["rhyme", "physics ~ Lightcone: proper time"]);
-  });
-
-  test("an empty body fills no slot", () => {
-    expect(positionalsOf("")).toEqual([]);
-    expect(positionalsOf("   ")).toEqual([]);
-  });
-
-  test("★ an unquoted scheme still binds a name — the hazard reads the same from this side ★", () => {
-    // `lar:///x` spells with parameter-name characters, so TiddlyWiki takes it as `lar` = `///x`
-    // and the SLOT RECEIVES NOTHING. This reader must agree with that, never paper over it.
-    expect(positionalsOf("loulou lar:///x")).toEqual(["loulou"]);
-    expect(positionalsOf('loulou "lar:///x"')).toEqual(["loulou", "lar:///x"]);
-  });
-});

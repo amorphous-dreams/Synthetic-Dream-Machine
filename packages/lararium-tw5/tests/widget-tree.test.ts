@@ -63,7 +63,7 @@ describe("Annex B widget tree", () => {
     expect(resolveWidgetTree([unknown], defaultWidgetRegistry)[0]).toMatchObject({
       kind: "degraded", text: "<<~ stranger>>", degraded: { reason: "unknown-sigil:stranger" },
     });
-    const known = parseMemeText(URI, "<<~ ahu #/start>>\n\nHello.\n\n<<~/ahu>>");
+    const known = parseMemeText(URI, "<<~ ahu slot=`#/start`>>\n\nHello.\n\n<<~/ahu>>");
     const tree = resolveWidgetTree(known.nodes.slice(), defaultWidgetRegistry);
     expect(tree[0]).toMatchObject({ kind: "section", attrs: { slot: "#/start" } });
     expect(tree.some(node => node.degraded || node.children.some(child => child.degraded))).toBe(false);

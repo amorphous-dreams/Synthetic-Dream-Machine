@@ -4,7 +4,7 @@
 /**
  * ahu-sections-address — every named `ahu` section becomes an addressable tiddler.
  *
- * A meme splits into one tiddler per `<<~ ahu #name>>` child, and the section's address
+ * A meme splits into one tiddler per ``<<~ ahu slot=`#name`>>`` child, and the section's address
  * (`lar:///<uri-path>#name`) resolves to that tiddler. That is the whole premise of a fragment in a
  * `lar:` URI: the name points at a thing.
  *
@@ -15,7 +15,7 @@
  *
  * The two tests below split the fault by cause:
  *
- *   ① EVERY OPEN CLOSES.        A `<<~ ahu #x>>` with no `<<~/ahu>>` swallows the sections that
+ *   ① EVERY OPEN CLOSES.        A ``<<~ ahu slot=`#x`>>`` with no `<<~/ahu>>` swallows the sections that
  *                               follow it, so they never open a tiddler of their own.
  *
  *                               A NESTED section is not that fault. Nesting is deliberate house
@@ -56,7 +56,7 @@ export function frame(text: string): { opens: string[]; closes: number } {
     if (fence) { if (fenceLineClose(line, fence)) fence = null; continue; }
     fence = fenceLineOpen(line);
     if (fence) continue;
-    const open = /^(?:<<~ ahu|<<fragment) #\/?([a-z0-9-]+)/.exec(line);
+    const open = /^(?:<<~ (?:kahea |aka )?ahu|<<fragment) slot=`#\/?([a-z0-9-]+)`/.exec(line);
     if (open) opens.push(open[1]!);
     if (/^(?:<<~\/ahu|<<\/fragment)/.test(line)) closes += 1;
   }
@@ -92,7 +92,7 @@ describe("frame() — fence toggling reads CommonMark §4.5, never a naive line.
     const text = [
       "prose before",
       "```memetic-wikitext tangle`more prose",
-      "<<~ ahu #a>>",
+      "<<~ ahu slot=`#a`>>",
       "body",
       "<<~/ahu>>",
     ].join("\n");
@@ -104,10 +104,10 @@ describe("frame() — fence toggling reads CommonMark §4.5, never a naive line.
   test("CONTROL — a real fence (clean info string) still masks the open/close it carries", () => {
     const text = [
       "```text",
-      "<<~ ahu #fenced-example>>",
+      "<<~ ahu slot=`#fenced-example`>>",
       "<<~/ahu>>",
       "```",
-      "<<~ ahu #real>>",
+      "<<~ ahu slot=`#real`>>",
       "<<~/ahu>>",
     ].join("\n");
     const { opens, closes } = frame(text);

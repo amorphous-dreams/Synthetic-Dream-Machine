@@ -70,7 +70,7 @@ export interface CarrierDeclaration {
  * any file is written in.
  */
 function standsAlone(form: CarrierDeclarationForm, line: string): boolean {
-  if (form === "doctype") return /^<<!DOCTYPE\s+"?memetic-wikitext[^\n>]*>>$/.test(line);
+  if (form === "doctype") return /^<<!DOCTYPE\s+type=`memetic-wikitext[^\n>]*>>$/.test(line);
   return ALONE_TYPE_RE.test(line);
 }
 
@@ -78,7 +78,7 @@ function standsAlone(form: CarrierDeclarationForm, line: string): boolean {
  * The doctype sigil a carrier opens with. It declares only standing alone on its line: inside a
  * comment it renders as nothing and reaches no reader, so it declares nothing.
  */
-const DOCTYPE_RE = /<<!DOCTYPE\s+"?memetic-wikitext[^\n>]*>>/;
+const DOCTYPE_RE = /<<!DOCTYPE\s+type=`memetic-wikitext[^\n>]*>>/;
 
 /** A `.tid` field line, where no sigil may precede the fields. */
 const TID_TYPE_RE = new RegExp(String.raw`^\s*type\s*:\s*` + CARRIER_TYPE.replace("+", "\\+"), "m");

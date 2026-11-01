@@ -31,10 +31,10 @@ const { decideIngest, memeticIngestOps } = await import("../src/ingest-gate.js")
 
 const URI = "lar:///t/gate-reads-once";
 const carrier = (body: string): string => stampCarrier(
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${URI.slice(7)}"\n\`\`\`\n\n` +
-  `${body}\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`);
-const SOUND = carrier("<<~ ahu #/a>>\n\n! a\n\n<<~ ahu #/a/b>>\nb\n<<~/ahu>>\n\n<<~/ahu>>\n\nprose");
-const FENCED = carrier("<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\nstray prose\n\n<<~/ahu>>");
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${URI.slice(7)}"\n\`\`\`\n\n` +
+  `${body}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`);
+const SOUND = carrier("<<~ ahu slot=`#/a`>>\n\n! a\n\n<<~ ahu slot=`#/a/b`>>\nb\n<<~/ahu>>\n\n<<~/ahu>>\n\nprose");
+const FENCED = carrier("<<~ ahu slot=`#/a`>>\n\n! a\n\n<<~/ahu>>\n\nstray prose\n\n<<~/ahu>>");
 const sha = (s: string): string => `sha256:${createHash("sha256").update(s).digest("hex")}`;
 const zero = (): void => { calls.verdict = 0; calls.verdictOf = 0; calls.fencedSpans = 0; };
 
@@ -72,7 +72,7 @@ describe("★ the gate threads its reading ★", () => {
   });
 
   test("CONTROL — a torn carrier still refuses at error grade", () => {
-    const torn = SOUND.replace('<<^ code="&#x0003;">>', "");
+    const torn = SOUND.replace('<<^ code=`&#x0003;`>>', "");
     const decision = decideIngest({ uri: URI, diskText: torn, diskHash: sha(torn), syncedHash: null, currentRenderHash: sha("x"), hash: sha });
     expect(decision.kind).toBe("refuse");
     expect(memeticIngestOps.grade(memeticIngestOps.deserialize(URI, torn, verdict(torn)).diagnostics)).toBe("error");

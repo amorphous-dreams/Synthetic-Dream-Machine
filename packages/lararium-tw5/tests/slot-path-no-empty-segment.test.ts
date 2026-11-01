@@ -13,9 +13,9 @@ const URI = "lar:///t/x";
 
 /** A framed meme with one parent slot holding one child slot, the two opened as given. */
 const nested = (parent: string, child: string): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
-  `<<~ ahu ${parent}>>\n\nouter\n\n<<~ ahu ${child}>>\n\ninner\n\n<<~/ahu>>\n\n<<~/ahu>>\n\n` +
-  `<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
+  `<<~ ahu slot=\`${parent}\`>>\n\nouter\n\n<<~ ahu slot=\`${child}\`>>\n\ninner\n\n<<~/ahu>>\n\n<<~/ahu>>\n\n` +
+  `<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 const fragments = (text: string): string[] =>
   memeticWikitextDeserializer(text, { title: URI }).map((r) => String(r.title).split("#")[1] ?? "").filter(Boolean);
@@ -30,7 +30,7 @@ describe("★ the deserializer mints no // title ★", () => {
   test("an unrooted parent opens no slot — its closer closes nothing, so the whole chunk fences", () => {
     const records = memeticWikitextDeserializer(nested("#parent", "#/child"), { title: URI });
     expect(records.map((r) => r.title)).toEqual([URI]);
-    expect(String(records[0]!.text)).toMatch(/^```text\n<<~ ahu #parent>>/);
+    expect(String(records[0]!.text)).toMatch(/^```text\n<<~ ahu slot=`#parent`>>/);
     expect(String(records[0]!["$quoteblocked"])).toContain("ahu-orphan-close");
   });
   test("CONTROL: two unrooted opens mint no slot at either depth", () => {

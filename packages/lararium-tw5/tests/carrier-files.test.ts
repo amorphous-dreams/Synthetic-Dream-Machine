@@ -60,7 +60,7 @@ describe("declaresCarrier — a file counts as a carrier when it says so", () =>
 
   /** A meta block standing above a frame's STX still declares — the finder asks nothing about STX. */
   test("a meta block above STX still declares", () => {
-    const d = declaresCarrier(`\`\`\`toml meta\ntype = "${CARRIER_TYPE}"\n\`\`\`\n<<^ code="&#x0002;">>\n`);
+    const d = declaresCarrier(`\`\`\`toml meta\ntype = "${CARRIER_TYPE}"\n\`\`\`\n<<^ code=\`&#x0002;\`>>\n`);
     expect(d?.form).toBe("type-field");
   });
 
@@ -174,7 +174,6 @@ describe("no reader enumerates the corpus by its own glob", () => {
     // Not a corpus finder: it asks which files bags/ TRACKS, carrier or not, to catch an uncarried one.
     ["packages/lararium-tw5/tests/carrier-shape.test.ts", "asks what bags/ tracks, not what declares — an uncarried file is its finding"],
     // Not a corpus finder: it sweeps prose and source for a retired photocopy verb.
-    ["tools/photocopies-to-has.mjs", "sweeps prose and source for a verb spelling, never the corpus"],
     // Not a corpus finder: it asks which carriers the WORKING TREE shows dirty, to refuse a blind stamp.
   ]);
 

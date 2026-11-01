@@ -23,7 +23,7 @@ const allowCap = async (_a: CapabilityAccess, _b: string): Promise<CapabilityVer
 
 /** A minimal memetic carrier at `uri`, its meta carrying `extra` lines. */
 const carrierText = (uri: string, body: string, extra = ""): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${uri.slice(7)}"\n${extra}\`\`\`\n\n${body}\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.slice(7)}"\n${extra}\`\`\`\n\n${body}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 function rig() {
   const store = new MemoryTiddlerStore(BAG);

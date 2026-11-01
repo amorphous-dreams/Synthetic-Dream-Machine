@@ -1156,9 +1156,9 @@ run_meme() {
   local BAG_LINE='bag = "backpack: rope, lantern"' BAG_RE='^bag +=  *"backpack: rope, lantern"$'
   # The witness meme, slots named by the caller: `meme_text a` · `meme_text a b`.
   meme_text() {
-    printf '<<^ code="&#x0001;" from="?" -> to="%s">>\n<<^ code="&#x0002;">>\n\n```toml meta\nuri-path = "t.witness.npc/inventory"\n%s\n```\n\n' "$URI" "$BAG_LINE"
-    local s; for s in "$@"; do printf '<<~ ahu #/%s>>\n\n! %s\n\n<<~/ahu>>\n\n' "$s" "$s"; done
-    printf '<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n'
+    printf '<<^ code=`&#x0001;` from=`?` to=`%s`>>\n<<^ code=`&#x0002;`>>\n\n```toml meta\nuri-path = "t.witness.npc/inventory"\n%s\n```\n\n' "$URI" "$BAG_LINE"
+    local s; for s in "$@"; do printf '<<~ ahu slot=`#/%s`>>\n\n! %s\n\n<<~/ahu>>\n\n' "$s" "$s"; done
+    printf '<<^ code=`&#x0003;`>>\n\n<<^ code=`&#x0004;` to=`?`>>\n'
   }
   # One `meme get --bag <book> --json` on a hearth — the whole JSON, for the caller to read fields off.
   # B stands on her own seed: A's realm reaches her as a carried charter's realm, named on every realm-scoped call.
@@ -1259,7 +1259,7 @@ run_meme() {
   # crossing that failed past this step failed in the carriage; one that failed here never left A.
   step "A's own bag read carries the line byte-whole, hash = the put's"
   local GA
-  GA=$(await_meme lararium-a "<<~ ahu #/a>>" 30)
+  GA=$(await_meme lararium-a "<<~ ahu slot=\`#/a\`>>" 30)
   if json_text "$GA" | grep -qE "$BAG_RE" && [ "$(json_hash "$GA")" = "$HASH_A" ] \
      && ! json_text "$GA" | grep -q '\$origin-bag'; then ok
   else bad "A's bag read disagrees with A's put"; printf '%s\n' "$GA" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
@@ -1269,7 +1269,7 @@ run_meme() {
   # realm doc and the registered bag's doc to a contracted MEMBER and to nobody else.
   step "★ B gets it — the line byte-whole, canonicalHash = A's ★"
   local GB crossed=0
-  if GB=$(await_meme lararium-b "<<~ ahu #/a>>" 90) \
+  if GB=$(await_meme lararium-b "<<~ ahu slot=\`#/a\`>>" 90) \
      && json_text "$GB" | grep -qE "$BAG_RE" && [ "$(json_hash "$GB")" = "$HASH_A" ] \
      && ! json_text "$GB" | grep -q '\$origin-bag'; then ok; crossed=1
   else
@@ -1358,7 +1358,7 @@ run_meme() {
     printf '      A co-signs: %s\n' "$(printf '%s' "$COSIGN" | tail -1 | cut -c1-220)"
     printf '      B puts:     %s\n' "$(printf '%s' "$PUT" | tail -1 | cut -c1-220)"
     clear_all; return; fi
-  if GA2=$(await_meme lararium-a "<<~ ahu #/b>>" 90) && json_text "$GA2" | grep -qE "$BAG_RE"; then ok
+  if GA2=$(await_meme lararium-a "<<~ ahu slot=\`#/b\`>>" 90) && json_text "$GA2" | grep -qE "$BAG_RE"; then ok
   else
     # MEASURED: B's gate opens a realm-carried doc to a peer her OWN membership names a MEMBER, and B
     # contracted INTO A's nexus rather than admitting him — her member set is empty, so she announces nothing
@@ -1380,11 +1380,11 @@ run_meme() {
   LD=$($COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag "$BOOK" --realm "$AID_A" --base "$HASH_C" --file /tmp/npc-c.mem --json 2>&1)
   local cut_ok=1; printf '%s' "$LD" | grep -q '"ok":true' || cut_ok=0
   # A MUST NOT see it while B is cut — a slot that crosses a partition names a channel that is not the mesh.
-  local leaked=0; GA2=$(meme_get lararium-a); json_text "$GA2" | grep -qF "<<~ ahu #/c>>" && leaked=1
+  local leaked=0; GA2=$(meme_get lararium-a); json_text "$GA2" | grep -qF "<<~ ahu slot=\`#/c\`>>" && leaked=1
   docker network connect "$NET" "$CB" >/dev/null 2>&1 || { bad "could not return B to the mesh"; clear_all; return; }
   if [ "$cut_ok" -eq 0 ]; then bad "B's put refused while cut — a sovereign vessel writes offline"; printf '%s\n' "$LD" | tail -2 | cut -c1-300 | sed 's/^/      /'
   elif [ "$leaked" -eq 1 ]; then bad "A read B's edit WHILE B was cut — the partition did not partition"
-  elif GA2=$(await_meme lararium-a "<<~ ahu #/c>>" 180) && json_text "$GA2" | grep -qE "$BAG_RE"; then ok
+  elif GA2=$(await_meme lararium-a "<<~ ahu slot=\`#/c\`>>" 180) && json_text "$GA2" | grep -qE "$BAG_RE"; then ok
   else
     gap "B's offline edit never reached A after the return — the seam is the RECONNECT, not the write"
     printf '      A reads: %s\n' "$(printf '%s' "$GA2" | tail -1 | cut -c1-200)"
@@ -1476,7 +1476,7 @@ run_climb() {
   else bad "the hearth's first boot did not read its seed charter (AID '${AID}')"; fi
 
   step "the face STANDS and is USED — a carrier lands under it"
-  $COMPOSE exec -T lararium-a sh -c "printf '<<^ code=\"&#x0001;\" from=\"?\" -> to=\"$URI\">>\n<<^ code=\"&#x0002;\">>\n\n\`\`\`toml meta\nuri-path = \"t.climb.witness/one\"\n\`\`\`\n\n<<^ code=\"&#x0003;\">>\n\n<<^ code=\"&#x0004;\" -> to=\"?\">>\n' > /tmp/climb.mem" 2>/dev/null
+  $COMPOSE exec -T lararium-a sh -c "printf '<<^ code=\`&#x0001;\` from=\`?\` to=\`$URI\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = \"t.climb.witness/one\"\n\`\`\`\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n' > /tmp/climb.mem" 2>/dev/null
   if $COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe lares --file /tmp/climb.mem --json 2>&1 \
      | grep -q '"ok":true'; then ok; else bad "the face wrote nothing — the roll has no inception to strand"; fi
 
@@ -1701,7 +1701,7 @@ run_title() {
   # link and a fenced block, each carrying a speaker-aim URI in the BODY.
   step "★ B — userinfo in the BODY passes UNTOUCHED (the over-enforcement trap) ★"
   local BODY_URI="lar:///t.title.context/capture"
-  $COMPOSE exec -T lararium-a sh -c "printf '<<^ code=\"&#x0001;\" from=\"?\" -> to=\"$BODY_URI\">>\n<<^ code=\"&#x0002;\">>\n\n\`\`\`toml meta\nuri-path = \"t.title.context/capture\"\n\`\`\`\n\n<<~ lares aim from=\"lar://mara:operator@crossroads/operator.asks.the-cost\" -> to=\"lar://compita:agent@crossroads/clerk.reads.the-record\">>\n\nA quoted link: lar://alias:grant@host/some.path.here\n\n\`\`\`\n<<~ lares yield from=\"lar://compita:agent@crossroads/clerk.named.the-source\" -> to=\"?\">>\n\`\`\`\n\n<<^ code=\"&#x0003;\">>\n\n<<^ code=\"&#x0004;\" -> to=\"?\">>\n' > /tmp/capture.mem" 2>/dev/null
+  $COMPOSE exec -T lararium-a sh -c "printf '<<^ code=\`&#x0001;\` from=\`?\` to=\`$BODY_URI\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = \"t.title.context/capture\"\n\`\`\`\n\n<<~ set lares=\`aim\` from=\`lar://mara:operator@crossroads/operator.asks.the-cost\` to=\`lar://compita:agent@crossroads/clerk.reads.the-record\`>>\n\nA quoted link: lar://alias:grant@host/some.path.here\n\n\`\`\`\n<<~ set lares=\`yield\` from=\`lar://compita:agent@crossroads/clerk.named.the-source\` to=\`?\`>>\n\`\`\`\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n' > /tmp/capture.mem" 2>/dev/null
   local CPUT CGET
   CPUT=$($COMPOSE exec -T lararium-a $LARES meme put "$BODY_URI" --recipe lares --file /tmp/capture.mem --json 2>&1)
   if ! printf '%s' "$CPUT" | grep -q '"ok":true'; then

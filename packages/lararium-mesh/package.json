@@ -52,6 +52,10 @@
       "import": "./dist/capture/harvest.js",
       "types": "./dist/capture/harvest.d.ts"
     },
+    "./plane-labels": {
+      "import": "./dist/plane-labels.js",
+      "types": "./dist/plane-labels.d.ts"
+    },
     "./lar-uris": {
       "import": "./dist/lar-uris.js",
       "types": "./dist/lar-uris.d.ts"

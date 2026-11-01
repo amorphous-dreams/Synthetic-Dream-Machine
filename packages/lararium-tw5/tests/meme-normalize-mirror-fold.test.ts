@@ -25,10 +25,10 @@ const READ_ONLY_MIRRORS = GENERATED_SIGILS
   .map((s) => ({ name: s.name, canonical: s.aliasFor! }));
 
 const HEAD = (body: string, meta = "") =>
-  `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>\n\n` +
-  `<<^ code="&#x0001;" from="?" -> to="lar:///t/x">>\n<<^ code="&#x0002;">>\n` +
+  `<<!DOCTYPE type=\`memetic-wikitext+tiddlywiki\` spec=\`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\`>>\n\n` +
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///t/x\`>>\n<<^ code=\`&#x0002;\`>>\n` +
   '```toml meta\ncacheable = true\n' + meta + '```\n\n' +
-  body + `\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  body + `\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 describe("normalizeMemeSource — every read-only mirror folds to its canonical head", () => {
   // `fragment` alone opens bare (`<<fragment`, no `~`) — its own dedicated test below exercises
@@ -44,10 +44,10 @@ describe("normalizeMemeSource — every read-only mirror folds to its canonical 
     });
 
   test("fragment (the one bare-form mirror) folds its open AND close to ahu", () => {
-    const src = HEAD("<<fragment #/head>>\nbody\n<</fragment>>");
+    const src = HEAD("<<fragment slot=`#/head`>>\nbody\n<</fragment>>");
     const { text, changed } = normalizeMemeSource(src);
     expect(changed).toBe(true);
-    expect(text).toContain("<<ahu #/head>>");
+    expect(text).toContain("<<ahu slot=`#/head`>>");
     expect(text).toContain("<</ahu>>");
     expect(text).not.toContain("fragment");
   });
@@ -71,16 +71,16 @@ describe("normalizeMemeSource — every read-only mirror folds to its canonical 
   });
 
   test("CONTROL — a canonical head's own invocation stays byte-identical", () => {
-    const src = HEAD('<<~ kahea "lar:///a.b.c/x">>');
+    const src = HEAD('<<~ kahea uri=`lar:///a.b.c/x`>>');
     const { changed } = normalizeMemeSource(src);
     expect(changed).toBe(false);
   });
 
   test("CONTROL — a mirror word inside an ARGUMENT never folds (head token only)", () => {
-    const src = HEAD('<<~ kahea "lar:///import/shadow/link">>');
+    const src = HEAD('<<~ kahea uri=`lar:///import/shadow/link`>>');
     const { text, changed } = normalizeMemeSource(src);
     expect(changed).toBe(false);
-    expect(text).toContain('"lar:///import/shadow/link"');
+    expect(text).toContain('uri=`lar:///import/shadow/link`');
   });
 
   test("CONTROL — a fenced example of a mirror stays verbatim", () => {

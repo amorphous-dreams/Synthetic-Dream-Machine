@@ -136,7 +136,7 @@ describe("ingest-gate — the Confluence triangle decides", () => {
   test("unparseable carrier → refuse, loudly", () => {
     // a closer swallowed by a TRULY unclosed fence (opened at the tail,
     // nothing after it to close on) — the doubling hazard
-    const broken = source.replace("\n<<^ code=\"&#x0003;\">>", "\n```text\n<<^ code=\"&#x0003;\">>");
+    const broken = source.replace("\n<<^ code=`&#x0003;`>>", "\n```text\n<<^ code=`&#x0003;`>>");
     expect(broken).not.toBe(source);
     const d = decideIngest({
       uri: URI, diskText: broken, diskHash: sha(broken),
@@ -193,7 +193,7 @@ describe("ingest-gate — the Confluence triangle decides", () => {
     });
 
     test("a TORN frame (STX, no ETX) still refuses — never an honest edit", () => {
-      const torn = source.slice(0, source.indexOf("<<^ code=\"&#x0003;\">>"));
+      const torn = source.slice(0, source.indexOf("<<^ code=`&#x0003;`>>"));
       expect(torn).not.toBe(source);
       const d = decideIngest({
         uri: URI, diskText: torn, diskHash: sha(torn),
@@ -205,8 +205,8 @@ describe("ingest-gate — the Confluence triangle decides", () => {
 
     test("a SECOND live ETX (frame-malformed) still refuses — unchanged by the mismatch fix", () => {
       const doubled = source.replace(
-        "<<^ code=\"&#x0003;\">>",
-        "<<^ code=\"&#x0003;\">>\n\nstray trailing body\n\n<<^ code=\"&#x0003;\">>",
+        "<<^ code=`&#x0003;`>>",
+        "<<^ code=`&#x0003;`>>\n\nstray trailing body\n\n<<^ code=`&#x0003;`>>",
       );
       expect(doubled).not.toBe(source);
       const d = decideIngest({
@@ -219,8 +219,8 @@ describe("ingest-gate — the Confluence triangle decides", () => {
 
     test("a literal ETB mark (torn-spelling) still refuses — the weld to the frame fault kind", () => {
       const withEtb = source.replace(
-        '<<^ code="&#x0004;" -> to="?">>',
-        '<<^ code="&#x0017;">>\n<<^ code="&#x0004;" -> to="?">>',
+        '<<^ code=`&#x0004;` to=`?`>>',
+        '<<^ code=`&#x0017;`>>\n<<^ code=`&#x0004;` to=`?`>>',
       );
       expect(withEtb).not.toBe(source);
       const d = decideIngest({

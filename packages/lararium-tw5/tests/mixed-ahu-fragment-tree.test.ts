@@ -10,13 +10,36 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
+import { stampCarrier } from "@lararium/memetic-frame";
 
 import { expandMemeRefs, memeticWikitextDeserializer } from "../src/deserializer.js";
 import { parseMemeText } from "../src/meme-ast/parse.js";
 
 const URI = "lar:///test/mixed-ahu-fragment-tree";
 const FIXTURE = fileURLToPath(new URL("./fixtures/mixed-ahu-fragment-tree.mem", import.meta.url));
-const carrier = readFileSync(FIXTURE, "utf8");
+
+/**
+ * THE AUTHORED BYTES ARE BUILT HERE. The fixture rests canonical (every slot a sharktooth `ahu`), because
+ * the staged-carrier gate folds the English mirror on write and a fixture holding it cannot land. This
+ * suite authors the mixed surface from it — the slots below re-spelled `<<fragment …>>` with their own
+ * closers — and re-stamps the check, so the bytes under test still carry both spellings.
+ */
+const ENGLISH = new Set(["#/ridge/fern", "#/tide", "#/tide/reef/fish", "#/sky/cloud"]);
+function authoredMixed(canonical: string): string {
+  const stack: boolean[] = [];
+  const lines = canonical.split("\n").map((line) => {
+    const open = /^<<~ ahu slot=`([^`]+)`>>$/.exec(line);
+    if (open) {
+      const english = ENGLISH.has(open[1]!);
+      stack.push(english);
+      return english ? `<<fragment slot=\`${open[1]}\`>>` : line;
+    }
+    if (line === "<<~/ahu>>") return stack.pop() ? "<</fragment>>" : line;
+    return line;
+  });
+  return stampCarrier(lines.join("\n"));
+}
+const carrier = authoredMixed(readFileSync(FIXTURE, "utf8"));
 
 const addressed = [
   URI,

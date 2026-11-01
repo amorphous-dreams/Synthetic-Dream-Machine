@@ -14,11 +14,11 @@ import { normalizeMemeSource } from "../src/meme-normalize.js";
 import { CARRIER_DECLARATION as DECLARATION } from "@lararium/memetic-frame";
 
 const HEAD = (body: string) =>
-  `${DECLARATION}\n\n<<^ code="&#x0001;" from="?" -> to="lar:///x">>\n` +
+  `${DECLARATION}\n\n<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///x\`>>\n` +
   "```toml meta\n" +
   `cacheable = true\n` +
-  "```\n\n<<^ code=\"&#x0002;\">>\n\n" + body + "\n\n" +
-  "<<^ code=\"&#x0003;\">>\n";
+  "```\n\n<<^ code=`&#x0002;`>>\n\n" + body + "\n\n" +
+  "<<^ code=`&#x0003;`>>\n";
 
 describe("normalizeMemeSource — lar: fragment rooting", () => {
   test("a wikilink target roots an unrooted fragment", () => {
@@ -72,7 +72,7 @@ describe("normalizeMemeSource — lar: fragment rooting", () => {
   });
 
   test("a child-slot open (bare #name, no lar: prefix) is untouched by this clause", () => {
-    const src = HEAD("<<~ ahu #name>>\n\nbody\n\n<<~/ahu>>");
+    const src = HEAD("<<~ ahu slot=`#name`>>\n\nbody\n\n<<~/ahu>>");
     const r = normalizeMemeSource(src);
     // Clause 4 handles slot roots separately; this clause's lar: prefix requirement
     // means it never fires on a bare slot open either way — assert no DOUBLE "//" artifact.

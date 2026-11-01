@@ -23,9 +23,12 @@ import { FRAME_MARKS } from "./marks.js";
 import { bccOf, bccOfSpan, classifyPostamble, verifyBcc } from "./check.js";
 import { checkSpan } from "./span.js";
 
-/** The one declaration a carrier opens on: this grammar, at the address that specifies it. */
+/**
+ * The one declaration a carrier opens on: this grammar (`type=`), at the address that specifies it
+ * (`spec=`). Both values name themselves and ride backtick runs, as every value in the grammar does.
+ */
 export const CARRIER_DECLARATION =
-  '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>';
+  "<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>";
 
 /** A mark's entity by its NAME — so a writer names a mark rather than spelling its code. */
 export function markCode(name: string): string {
@@ -43,11 +46,25 @@ export interface FrameHeadSpec {
   readonly kapu?: boolean;
 }
 
-/** The canonical head sigil: `code` first, the namespace where one stands, both bearing ends quoted. */
+/**
+ * The canonical head sigil: `code` first, the namespace where one stands, then the bearing pair,
+ * `from` before `to`. Every value rides a backtick run, and no arrow stands between the ends: the
+ * pair carries the relation.
+ */
 export function headSigil(head: FrameHeadSpec): string {
   const ns = (head.namespace ?? "").trim();
   const code = markCode(head.kapu ? "SOH2" : "SOH");
-  return `<<^ code="${code}"${ns ? ` namespace="${ns}"` : ""} from="?" -> to="${head.uri}">>`;
+  return `<<^ code=\`${code}\`${ns ? ` namespace=\`${ns}\`` : ""} from=\`?\` to=\`${head.uri}\`>>`;
+}
+
+/** A bare frame mark by its NAME — ``<<^ code=`&#x0002;`>>`` for STX — the one spelling every writer mints. */
+export function markSigil(name: string): string {
+  return `<<^ code=\`${markCode(name)}\`>>`;
+}
+
+/** The release: EOT, resolving toward an address it cannot know — ``<<^ code=`&#x0004;` to=`?`>>``. */
+export function releaseSigil(): string {
+  return `<<^ code=\`${markCode("EOT")}\` to=\`?\`>>`;
 }
 
 export interface FrameCarrierInput {
@@ -77,11 +94,11 @@ export function frameCarrier(input: FrameCarrierInput): string {
   out += `${headSigil(input.head)}\n`;
   // THE SPAN OPENS HERE, on the STX sigil's first byte.
   const spanStart = out.length;
-  out += `<<^ code="${markCode("STX")}">>\n\n${input.body}\n\n<<^ code="${markCode("ETX")}">>`;
+  out += `${markSigil("STX")}\n\n${input.body}\n\n${markSigil("ETX")}`;
   // ETX takes its check adjacent, per the received framing (STX -> text -> ETX -> BCC).
   out += bccOfSpan(out.slice(spanStart));
   out += "\n";
-  out += `\n<<^ code="${markCode("EOT")}" -> to="?">>\n`;
+  out += `\n${releaseSigil()}\n`;
   out += (input.postamble ?? "").replace(/^\n+/, "");
   return out;
 }

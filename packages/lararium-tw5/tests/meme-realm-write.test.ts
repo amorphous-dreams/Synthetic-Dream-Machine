@@ -29,9 +29,9 @@ const LARES = bagUri("lares");
 const DEFAULT_REALM = "default-realm";
 const REALM_B = "b".repeat(64);
 const meme = (slot: string): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n` +
-  `<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/ford"\n\`\`\`\n\n<<~ ahu #${slot}>>\n\n! ${slot}\n\n<<~/ahu>>\n\n` +
-  `<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n` +
+  `<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/ford"\n\`\`\`\n\n<<~ ahu slot=\`#${slot}\`>>\n\n! ${slot}\n\n<<~/ahu>>\n\n` +
+  `<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 const ctx = (): VerbContext => ({
   daemon: {} as CompositeStore,

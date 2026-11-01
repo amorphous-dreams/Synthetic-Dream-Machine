@@ -17,7 +17,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  carriageDocUrl, foundingRoster, hearthPinIndex, materializeSharedLarDoc, FLOW_SOCKET_ROUTE, rollAnchorKey,
+  carriageDocUrl, DAEMON_BAG_ID, foundingRoster, hearthPinIndex, materializeSharedLarDoc, FLOW_SOCKET_ROUTE, rollAnchorKey,
   rollAnchorsFromBoard, type LarDoc,
 } from "@lararium/mesh";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
@@ -128,7 +128,7 @@ async function filed(nyms: readonly string[]): Promise<{ pins: boolean[]; counte
       expect((await readings()).map((r) => r.aid), "the hearth reads its own Nexus").toContain(aid);
       const pull = vesselCarriagePull({
         placeClass: "lararium", ownPlaceKey: own, sign: async () => new Uint8Array(64), readings, ownNexus: () => aid,
-        openBoard: (url) => boards.open(url, "board:carriage-contracts"), pins, audience: "@daemon",
+        openBoard: (url) => boards.open(url, "board:carriage-contracts"), pins, audience: DAEMON_BAG_ID,
         deadlines: { draw: () => ({ cancel() {} }) },
       });
       await pull("http://127.0.0.1:9", nyms[0]!);

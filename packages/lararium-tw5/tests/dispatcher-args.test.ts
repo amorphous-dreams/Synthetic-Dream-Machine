@@ -28,18 +28,18 @@ describe.skipIf(wikiSkip)(`the whole argument run${skipNote}`, () => {
   });
 
   test("★ an edge annotation carries BOTH its ends ★", () => {
-    const html = r('<<~ pono "lar:///a.b.c/x" -> "lar:///a.b.c/y">>');
+    const html = r("<<~ pono from=`lar:///a.b.c/x` to=`lar:///a.b.c/y`>>");
     expect(html, "the FROM end was dropped").toContain("lar:///a.b.c/x");
     expect(html, "the TO end was dropped — the edge points nowhere").toContain("lar:///a.b.c/y");
   });
 
   test("★ a reaction edge carries its whole wire ★", () => {
-    const html = r('<<~ papalohe "lar:///a.b.c/x" -> "lar:///a.b.c/y">>');
+    const html = r("<<~ papalohe from=`lar:///a.b.c/x` to=`lar:///a.b.c/y`>>");
     expect(html).toContain("lar:///a.b.c/x");
     expect(html).toContain("lar:///a.b.c/y");
   });
 
-  test("★ and the slots still bind separately for the definitions that compose from them ★", () => {
-    expect(r('<<~ stage "20" "Mischief-Muse">>')).toContain("Mischief-Muse @20");
+  test("★ and the named values still bind separately for the definitions that compose from them ★", () => {
+    expect(r("<<~ stage rank=`20` name=`Mischief-Muse`>>")).toContain("Mischief-Muse@20");
   });
 });

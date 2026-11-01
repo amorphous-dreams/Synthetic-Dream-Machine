@@ -105,6 +105,7 @@ export * from "./projection-registry.js";
 export * from "./readiness.js";
 export * from "./lar-uris.js";
 export * from "./boot-resolver.js";
+export * from "./plane-labels.js";
 export * from "./capture/branch-frontier.js";
 export * from "./capture/gone-turns.js";
 export * from "./stream-adapter.js";

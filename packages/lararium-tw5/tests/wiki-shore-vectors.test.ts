@@ -42,7 +42,7 @@ async function settleTurns(r: Awaited<ReturnType<typeof rig>>, titles: readonly 
 }
 const Repo = createRequire(import.meta.resolve("@lararium/mesh"))("@automerge/automerge-repo").Repo as new (options: { network: unknown[] }) => RepoType;
 const saveDoc = createRequire(import.meta.resolve("@lararium/mesh"))("@automerge/automerge").save as (doc: LarDoc) => Uint8Array;
-const framed = (uri: string): string => `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${uri.slice(7)}"\n\`\`\`\n\n<<~ ahu #/a>>\n\n! body\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+const framed = (uri: string): string => `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.slice(7)}"\n\`\`\`\n\n<<~ ahu slot=\`#/a\`>>\n\n! body\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 class ManualBoundary {
   private adaptor: IslandAdaptor | null = null;
@@ -777,7 +777,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await placeMeme({ uri: title, text: framed(title) }, placeSink);
     const placed = [...placedByProduct.values()];
     expect(placed.map((record) => record.title)).toEqual([title, `${title}#/a`]);
-    expect(placed[0]?.text).toContain("<<~ kahea ahu #/a>>");
+    expect(placed[0]?.text).toContain("<<~ kahea ahu slot=`#/a`>>");
     expect(placed[1]).toMatchObject({ "uri-path": "t/shore/backstop#/a", "$fragment-parent": title });
     await r.working.writeFamily(placed.map((record) => ({ tiddler: record })), [], remote, { bag: workingBag });
     await r.adaptor.armSeedCheckpoint();
@@ -904,7 +904,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     const child = r.wiki.getTiddler(`${title}#/a`) as { fields: Record<string, unknown> };
     expect(unsplitFields).toMatchObject({ title, type: CARRIER_TYPE, text: framed(title) });
     expect(root.fields).toMatchObject({ title, type: CARRIER_TYPE, "uri-path": "t/shore/backstop-unsplit" });
-    expect(root.fields.text).toContain("<<~ kahea ahu #/a>>");
+    expect(root.fields.text).toContain("<<~ kahea ahu slot=`#/a`>>");
     expect(root.fields.text).not.toContain("! body");
     expect(child.fields).toMatchObject({ title: `${title}#/a`, type: CARRIER_TYPE, text: "! body", "uri-path": "t/shore/backstop-unsplit#/a", "$fragment-parent": title, "$slot": "#/a" });
     expect(placeWrites.map((write) => write.title).filter((writtenTitle) => writtenTitle === title || writtenTitle === `${title}#/a`)).toEqual([title, `${title}#/a`]);
