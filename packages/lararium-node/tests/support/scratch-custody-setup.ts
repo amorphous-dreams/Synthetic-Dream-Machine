@@ -34,12 +34,15 @@ process.env.GIT_CONFIG_GLOBAL = "/dev/null";
 
 /** The synthetic route (the seat fixture founds under the same string, so either opens the other's tree). */
 export const SCRATCH_PASSPHRASE = "fixture-custody-passphrase";
-/** The published test route a harness tool binds a staged root to (`tools/test-custody-route.mjs` spells it). */
-const STAGED_ROUTE_PASSPHRASE = "test-founding-passphrase";
 
 // A write to a face the floor index does not name founds that face under the scratch route, in every suite: the product
 // founds each face by its own act and seats no such policy.
 seatFaceAutoFounder(() => [{ t: 1, pins: [{ kind: "passphrase", passphrase: SCRATCH_PASSPHRASE }] }]);
+
+/** The route the faces of a standing custody open by: the scratch route, or the one a harness seated for its own face foundings. */
+let faceRoute = SCRATCH_PASSPHRASE;
+/** A harness that founds faces under its own route seats that route here, beside its `seatFaceRoute`; the faces open by it. */
+export function seatScratchFaceRoute(passphrase: string): void { faceRoute = passphrase; }
 
 /** Thrown when a suite reaches a sealed row outside a scratch root. */
 export class ScratchCustodyRefused extends Error {
@@ -83,22 +86,14 @@ export async function openScratch(holder: CustodyHolder): Promise<void> {
     founded.treeKey.fill(0);
     return;
   }
-  // One route at a time: `openTreeKey` derives a scrypt per passphrase offered, so the scratch route goes alone and the
-  // staged route follows only when the scratch route refuses.
-  const routes = [SCRATCH_PASSPHRASE, STAGED_ROUTE_PASSPHRASE].map((passphrase) => [{ kind: "passphrase" as const, passphrase }]);
-  let opened: (typeof routes)[number] | null = null;
-  let reading = "no-slot-opens";
-  for (const route of routes) {
-    const u = await holder.unlock(route);
-    reading = u.reading;
-    if (u.reading === "opens" || u.reading === "already-unlocked") { opened = route; break; }
+  // The node tree opens by the scratch route alone, and each face by its own route in one call: the route a harness
+  // seated beside its face founding (`seatScratchFaceRoute`), the scratch route otherwise. Nothing offers one route's
+  // passphrase to a tree another route founded, so a face founded under an unexpected route stays shut and reads red.
+  const u = await holder.unlock([{ kind: "passphrase", passphrase: SCRATCH_PASSPHRASE }]);
+  if (u.reading !== "opens" && u.reading !== "already-unlocked") {
+    throw new ScratchCustodyRefused(`the custody standing at ${identity} reads ${u.reading} under the scratch route`);
   }
-  if (opened === null) {
-    throw new ScratchCustodyRefused(`the custody standing at ${identity} reads ${reading} under the scratch routes`);
-  }
-  // The faces keep BOTH routes in one call (`--all`, one attempt): a face tree may stand under either route whichever
-  // route opened the node tree (a harness founds its faces under the staged route beside a scratch node tree).
-  await holder.unlockFaces(routes.flat());
+  await holder.unlockFaces([{ kind: "passphrase", passphrase: faceRoute }]);
 }
 
 function arm(): void {
