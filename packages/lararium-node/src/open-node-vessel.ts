@@ -3155,6 +3155,8 @@ async function prepareNodeBootOn(
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
       // floor's island holds no veil.
       ...(sovereign ? { seatDuties: (facts) => askSeatDutiesAsVessel(facts).answer } : {}),
+      // The operator's road reads the fleet this vessel wears, as the fold's settle does (road `T34`).
+      wornFleet: () => wornFleetOf().worn,
       // A feed asks the island's `realm-feed` as the face, from this thread, over the host channel.
       askIsland: (verb, args, requestedBy, requestId) => {
         if (!daemonVm) throw new Error("the daemon island does not stand yet");
