@@ -132,6 +132,9 @@ export async function loadContext({ repo, planes, planesPath } = {}) {
   const frame = await corpus.distModule(repo, join(repo, "packages/lararium-memetic-frame/dist/index.js"),
     "grammar-cut", "pnpm --filter @lararium/memetic-frame build");
   const { wiki } = await corpus.bootTW5Engine(join(repo, "packages/lararium-tw5/dist"), "grammar-cut");
+  // THE ONE FINDER. The bags corpus comes from the shore every reader calls (it skips the frozen
+  // specimens and the submodules); a glob of this tool's own would re-open a second answer.
+  const { carrierFiles } = await corpus.distCarrierFiles(repo, "grammar-cut");
   const declared = [...frame.CARRIER_DECLARATION.matchAll(/([A-Za-z][\w-]*)=`/g)].map((m) => m[1]);
   const doctype = declared.length === 2
     ? { names: declared, fromFrame: true }
@@ -149,7 +152,7 @@ export async function loadContext({ repo, planes, planesPath } = {}) {
     try { return walk(wiki.parseText("text/vnd.tiddlywiki", src, { parseAsInline: false }).tree); } catch { return null; }
   };
   return {
-    repo, frame, parse, doctype,
+    repo, frame, parse, doctype, carrierFiles,
     sigs: loadSignatures(repo),
     bare: loadBareHouse(repo),
     planes: {
@@ -675,8 +678,9 @@ export function canonCarriers(repo) {
   } catch { return null; }
 }
 
-export function defaultFiles(repo) {
-  return git(repo, ["ls-files", "bags"]).split("\n").filter((f) => f.endsWith(".mem") && f !== SEED_REL).concat(GUIDE_REL);
+/** The bags carriers the shore finds, less the seed, plus the guide named by path. */
+export function defaultFiles(ctx) {
+  return ctx.carrierFiles(ctx.repo).filter((f) => f.startsWith("bags/") && f !== SEED_REL).concat(GUIDE_REL);
 }
 
 async function main(argv) {
@@ -703,7 +707,7 @@ async function main(argv) {
     return 0;
   }
 
-  const files = (given ?? defaultFiles(repo)).filter((f) => f !== SEED_REL && !f.startsWith(".claude/") && !f.startsWith("packages/lararium-tw5/tiddlers/"));
+  const files = (given ?? defaultFiles(ctx)).filter((f) => f !== SEED_REL && !f.startsWith(".claude/") && !f.startsWith("packages/lararium-tw5/tiddlers/"));
   if (flag("--census")) {
     const total = {};
     for (const rel of files) for (const [k, v] of Object.entries(censusText(readFileSync(join(repo, rel), "utf8"), ctx))) total[k] = (total[k] ?? 0) + v;
