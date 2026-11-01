@@ -648,3 +648,17 @@ test("RED: QUEUE: a security-class lane with no SHIP for its exact head refuses 
   const ok = await runQ(w);
   assert.equal(ok.code, 0, ok.out);
 });
+
+test("RED: QUEUE: train N+1 builds on train N's head while N verifies, and re-chains when N reds", async () => {
+  const w = world(["a", "b", "c", "d"]);
+  const r = await runQ(w, { k: 2, depth: 2, red: (sha) => hasFile(w, sha, "packages/p-b/f.txt") });
+  assert.equal(r.code, 11, r.out);
+  const trains = pushedTrains(r.out);
+  const [t1, t2] = trains;
+  assert.ok(t2 && isAnc(w, t1.sha, t2.sha), "train 2 was pushed on train 1's head (speculation)");
+  const final = originRef(w, SPAN);
+  for (const s of ["a", "c", "d"]) assert.ok(hasFile(w, final, `packages/p-${s}/f.txt`), `${s} landed`);
+  assert.ok(!hasFile(w, final, "packages/p-b/f.txt"));
+  assert.ok(!isAnc(w, t2.sha, final), "the speculative train never landed: its base died with train 1");
+  assert.equal(refAt(w, t2.branch), null, "the dead speculative train's branch is gone");
+});
