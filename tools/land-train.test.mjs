@@ -728,3 +728,17 @@ test("RED: QUEUE: the held-out gate pauses on a RED newest completed run (15) an
   assert.equal(go.code, 0, go.out);
   assert.ok(reads >= 2, "the gate waited on the run in flight");
 });
+
+test("RED: QUEUE: a conflict at chain build drops that lane by name, and every later lane carrying its commits, and lands the rest", async () => {
+  const w = world(["a", "b"], { touch: () => "packages/shared/f.txt" });
+  sh(w.work, "checkout", "-q", "-b", `${SPAN}--c`, w.heads.b);
+  w.heads.c = w.commit(w.work, "packages/p-c/f.txt", "c\n", "lane c on b");
+  sh(w.work, "push", "-q", "origin", `${SPAN}--c`); sh(w.work, "checkout", "-q", SPAN);
+  w.lanes.push("c"); w.msgs.c = join(w.dir, "c.msg"); writeFileSync(w.msgs.c, "lar:///w/c — merge PR #102: lane c\n");
+  const r = await runQ(w);
+  assert.equal(r.code, 11, r.out);
+  assert.match(r.out, /DROPPED b: conflict/);
+  assert.match(r.out, /DROPPED c: carries b/);
+  const final = originRef(w, SPAN);
+  assert.equal(sh(w.work, "rev-parse", `${final}^2`), w.heads.a);
+});
