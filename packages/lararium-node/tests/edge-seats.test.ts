@@ -15,7 +15,7 @@ import {
 } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
-import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "../src/commands/edge-seats.js";
+import { runEdgeSeatFacts, runEdgeSeatMarks, fleetRaisesOf, EdgeSeatError } from "../src/commands/edge-seats.js";
 import { assertDyadBinds } from "../src/commands/device-admit.js";
 import { direct } from "./direct-store.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
@@ -264,6 +264,24 @@ describe("a planted roll mark answers no raise (road T33)", () => {
       const kept = keptSeatRolls(ledger.doc(), fleetRoot.toLowerCase(), own);
       expect(kept.map((r) => verifiedSeatRoll(r, own) !== null)).toEqual([true]);
     });
+  });
+
+  it("RED (u1 half): the vessel's fold keeps a raise owed whose mark a hand planted", async () => {
+    const fleetRoot = (await loadPersonaGroupRootVerifyingKey(0))!;
+    const raise = await direct(runEdgeKapae)({ device: "b3".repeat(32), raised: true });
+    await plant(fleetRoot, raise.actCid, JSON.stringify({ edgeId: raise.edgeId, how: "revoked" }));
+    const repo = restingRepo(larDataDir());
+    try {
+      const fold = await fleetRaisesOf({ repo, fleetRoot });
+      expect(fold.read).toBe(true);
+      expect(fold.counted).toContain(raise.actCid);
+      expect(fold.unanswered, "a planted mark leaves the raise owed").toContain(raise.actCid);
+    } finally { await repo.rest(); }
+    // CONTROL: the vessel's own signed roll answers it.
+    await direct(runEdgeSeatMarks)({ fleetRoot, rolls: [await rollOf(fleetRoot, raise.edgeId, raise.actCid)] });
+    const again = restingRepo(larDataDir());
+    try { expect((await fleetRaisesOf({ repo: again, fleetRoot })).unanswered).not.toContain(raise.actCid); }
+    finally { await again.rest(); }
   });
 
   it("CONTROL: the vessel's own receipt-signed mark answers the raise", async () => {
