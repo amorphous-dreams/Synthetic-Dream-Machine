@@ -230,7 +230,7 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
         fleets.push({
           fleetRoot, frontier, readings: read.readings,
           selfAside: read.readings.get(deviceEdgeId(fleetRoot, deps.vesselKey()))?.stands === true,
-          rolled: raisesSeenThrough(read.ledger.doc(), fleetRoot),
+          rolled: raisesSeenThrough(read.ledger.doc(), fleetRoot, deps.vesselKey()),
         });
       }
       const realms: RealmFold[] = [];

@@ -78,7 +78,7 @@ import { runIntentCommand, IntentRefused, type IntentCommandOptions } from "./co
 import { runIntentRelayCommand } from "./commands/intent-relay.js";
 import { FaceNotNamed, faceRowArgs } from "./face-selector.js";
 import { runEdgeRollAnchors, rollAnchorFace, EdgeRollAnchorError } from "./commands/edge-roll-anchor.js";
-import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
+import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError, type WornFleet } from "./commands/edge-seats.js";
 import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "./commands/edge-cosign.js";
 import { runCabalVouch, CabalVouchError } from "./commands/cabal-vouch.js";
 import { runCabalFace, runCabalFeed, CabalFaceError, type AskIslandAsFace } from "./commands/cabal-face.js";
@@ -129,6 +129,9 @@ export interface StoreDoorDeps {
   readonly seatDuties?: (facts: { readonly fleetRoot: string; readonly acts: readonly unknown[]; readonly rolled: readonly string[] }) => Promise<Record<string, unknown>>;
   /** Ask the daemon island one verb as a face from the main thread (a feed's `realm-feed`); absent where no island stands. */
   readonly askIsland?: AskIslandAsFace;
+  /** The fleet the standing vessel WEARS (its device edge's root, its own atom), lent by the composer so the operator's
+   *  road settles a joinee's own fleet as the fold does (road `T34`). Absent on a direct act and at the floor. */
+  readonly wornFleet?: () => WornFleet | undefined;
 }
 
 /** How long a row waits for `onRolled`'s own truthful answer before reporting the refold `"pending"`. The
@@ -258,6 +261,8 @@ function need(verb: string, args: Readonly<Record<string, unknown>>, key: string
 /** The rows over one holder, by verb. */
 function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
   const { storageDir, sealHome, repo } = deps;
+  /** The worn fleet the composer lent, as the edge-seat rows spread it; none on a direct act. */
+  const wornOf = (): { worn?: WornFleet } => { const worn = deps.wornFleet?.(); return worn ? { worn } : {}; };
   const intent = (action: IntentCommandOptions["action"], args: Readonly<Record<string, unknown>>) =>
     runIntentCommand({ repo, ...opt("catalogUrl", deps.catalogUrl), action,
       ...opt("face", int(args["face"])), ...opt("target", str(args["target"])),
@@ -482,7 +487,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     })),
     // THE KEY SIDE OF A REMOVAL, the vessel's two short acts around the island's `seat-duties` verb (kapae#/keys).
     "edge-seat-facts": (args) => answer("edge-seat-facts", async () => ({
-      ...(await runEdgeSeatFacts({ repo, ...opt("fleetRoot", str(args["fleetRoot"])) })),
+      ...(await runEdgeSeatFacts({ repo, ...opt("fleetRoot", str(args["fleetRoot"])), ...wornOf() })),
     })),
     // THE OPERATOR'S ROAD TO `seat-duties`. The island's verb answers the vessel's main thread alone, so
     // `lares edge settle` asks through this row. THE ROW TAKES NO FACTS FROM ITS CALLER: it names one fleet, and
@@ -493,12 +498,12 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       const fleetRoot = str(args["fleetRoot"]);
       if (!fleetRoot || Object.keys(args).some((k) => k !== "fleetRoot")) throw new EdgeSeatError("edge-seat-duties names one fleet and nothing else: { fleetRoot }");
       if (!deps.seatDuties) throw new EdgeSeatError("no unlocked vessel stands here to answer on the key side: stand the vessel, unlock it, then settle");
-      const facts = (await runEdgeSeatFacts({ repo, fleetRoot })).fleets[0];
+      const facts = (await runEdgeSeatFacts({ repo, fleetRoot, ...wornOf() })).fleets[0];
       if (!facts) throw new EdgeSeatError("this vessel reads no facts for that fleet");
       return { ...(await deps.seatDuties({ fleetRoot: facts.fleetRoot, acts: facts.acts, rolled: facts.rolled })) };
     }),
     "edge-seat-marks": (args) => answer("edge-seat-marks", async () => ({
-      ...(await runEdgeSeatMarks({ repo, fleetRoot: str(args["fleetRoot"]) ?? "", rolls: Array.isArray(args["rolls"]) ? args["rolls"] : [] })),
+      ...(await runEdgeSeatMarks({ repo, fleetRoot: str(args["fleetRoot"]) ?? "", rolls: Array.isArray(args["rolls"]) ? args["rolls"] : [], ...wornOf() })),
     })),
     // THE COSIGN DOOR: a quorum edge act between seats on separate vessels (`commands/edge-cosign`).
     "edge-partial": (args) => answer("edge-partial", async () => ({

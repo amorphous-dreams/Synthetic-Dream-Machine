@@ -16,7 +16,7 @@
 import type { Repo } from "@automerge/automerge-repo";
 import {
   fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, faceAtomKeyFromSeed, raisesSeenThrough, raisesMarkedAnswered, markRaiseRolled, verifiedSeatRoll,
-  type EdgeKapae, type SeatRoll,
+  type EdgeKapae, type SignedSeatRoll,
 } from "@lararium/mesh";
 import { listPersonaRoots, loadPersonaGroupRootVerifyingKey } from "../node-vessel-identity.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
@@ -50,6 +50,28 @@ async function servedFleetRoots(): Promise<string[]> {
   return [...new Set(roots)].sort();
 }
 
+/**
+ * The fleet a vessel WEARS, as its composer reads it (road `T34`): the root its own device edge names and its own atom key,
+ * which names its ledger and signs its roll receipts. A joinee holds no root of that fleet, so the roster never decides
+ * whether it reads its own fleet: the device edge does.
+ */
+export interface WornFleet {
+  readonly fleetRoot: string;
+  readonly atomKey:   string;
+}
+
+/** The fleet one door acts on and the key that names this vessel's ledger there: the worn fleet under its own atom, or a
+ *  fleet the roster serves under that face's atom. Any other fleet refuses by name. */
+async function seatOf(fleetRoot: string, worn: WornFleet | undefined, refusal: string): Promise<{ readonly fleetRoot: string; readonly vesselKey: string }> {
+  if (worn !== undefined) {
+    const wornRoot = bare(worn.fleetRoot), atomKey = bare(worn.atomKey);
+    if (!HEX64.test(wornRoot) || !HEX64.test(atomKey)) throw new EdgeSeatError("the worn fleet names a 64-hex root and a 64-hex atom key.");
+    if (wornRoot === fleetRoot) return { fleetRoot, vesselKey: atomKey };
+  }
+  if (!(await servedFleetRoots()).includes(fleetRoot)) throw new EdgeSeatError(refusal);
+  return { fleetRoot, vesselKey: await atomKeyForFleet(fleetRoot) };
+}
+
 async function atomKeyForFleet(fleetRoot: string): Promise<string> {
   for (const index of await listPersonaRoots()) {
     if (bare((await loadPersonaGroupRootVerifyingKey(index)) ?? "") !== fleetRoot) continue;
@@ -65,17 +87,17 @@ async function atomKeyForFleet(fleetRoot: string): Promise<string> {
  * Read the facts for each fleet this vessel serves, or for the one it names among them. The read runs through
  * the vessel's ledger, so a raise a hand deleted from the board still counts here.
  */
-export async function runEdgeSeatFacts(opts: { readonly repo: Repo; readonly fleetRoot?: string }): Promise<{ readonly fleets: readonly EdgeSeatFacts[] }> {
-  let roots = await servedFleetRoots();
+export async function runEdgeSeatFacts(opts: { readonly repo: Repo; readonly fleetRoot?: string; readonly worn?: WornFleet }): Promise<{ readonly fleets: readonly EdgeSeatFacts[] }> {
+  const refusal = "REFUSED: this vessel holds no face under that fleet root — a vessel settles its own fleets alone.";
+  let roots: string[];
   if (opts.fleetRoot !== undefined) {
     const named = bare(opts.fleetRoot);
     if (!HEX64.test(named)) throw new EdgeSeatError(`--fleet expects a 64-hex fleet root, got "${opts.fleetRoot}".`);
-    if (!roots.includes(named)) throw new EdgeSeatError("REFUSED: this vessel holds no face under that fleet root — a vessel settles its own fleets alone.");
     roots = [named];
-  }
+  } else roots = opts.worn !== undefined ? [bare(opts.worn.fleetRoot)] : await servedFleetRoots();
   const fleets: EdgeSeatFacts[] = [];
-  for (const fleetRoot of roots) {
-    const vesselKey = await atomKeyForFleet(fleetRoot);
+  for (const root of roots) {
+    const { fleetRoot, vesselKey } = await seatOf(root, opts.worn, refusal);
     const read = await readVesselEdgeBoard({
       repo: opts.repo, scope: fleetRoot, kind: "fleet", boardUrl: fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
       vesselKey, authorityFor: fleetEdgeAuthority(fleetRoot),
@@ -86,7 +108,7 @@ export async function runEdgeSeatFacts(opts: { readonly repo: Repo; readonly fle
     fleets.push({
       fleetRoot, acts: [...read.counted.acts].sort((a, b) => a.actCid.localeCompare(b.actCid)), edges,
       // A raise answered with no authority over its seat stays owed: the island tries it again at each settle.
-      rolled: [...raisesSeenThrough(read.ledger.doc(), fleetRoot)].sort(),
+      rolled: [...raisesSeenThrough(read.ledger.doc(), fleetRoot, vesselKey)].sort(),
       selfAside: read.readings.get(deviceEdgeId(fleetRoot, vesselKey))?.stands === true,
     });
   }
@@ -95,22 +117,31 @@ export async function runEdgeSeatFacts(opts: { readonly repo: Repo; readonly fle
 }
 
 /**
- * The raises this vessel counts on one fleet's board, and those no subscriber has taken yet (no ledger mark): what
- * the content-key holder counts a removal version by, and what it owes a roll for, a restart included. The read runs
- * through the ledger, as `runEdgeSeatFacts` does, so a raise deleted from the board still counts.
+ * The raises this vessel counts on the fleet it WEARS, and those no subscriber has taken yet (no signed mark): what the
+ * content-key holder counts a removal version by, and what it owes a roll for, a restart included. The read runs through
+ * the ledger, as `runEdgeSeatFacts` does, so a raise deleted from the board still counts.
+ *
+ * THE WORN FACE DECIDES, NEVER THE ROSTER (roads `T34`, `T35`): `worn` names the root the vessel's device edge pins and
+ * its own atom key, a joinee's as a founder's. Only a vessel that wears no face (`worn: null`) answers `read: false`,
+ * and the island judges that. A worn face whose root or atom stands unread refuses by name, so the sign door refuses
+ * and nothing seals on a head an owed removal should have moved; it never answers a silent zero.
  */
-export async function fleetRaisesOf(opts: { readonly repo: Repo; readonly fleetRoot: string | null }): Promise<{ readonly read: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] }> {
-  // AN UNREAD FOLD SAYS SO: a vessel that wears no face, or serves no fleet under the root it wears (a joinee holds
-  // no root), reads no board here. It answers `read: false`, never a silent zero, and the island judges it.
-  const fleetRoot = opts.fleetRoot === null ? "" : bare(opts.fleetRoot);
-  if (!HEX64.test(fleetRoot) || !(await servedFleetRoots()).includes(fleetRoot)) return { read: false, counted: [], unanswered: [] };
-  const vesselKey = await atomKeyForFleet(fleetRoot);
+export async function fleetRaisesOf(opts: {
+  readonly repo: Repo; readonly worn: { readonly fleetRoot: string | null; readonly atomKey: string | null } | null;
+}): Promise<{ readonly read: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] }> {
+  if (opts.worn === null) return { read: false, counted: [], unanswered: [] };
+  const { fleetRoot: wornRoot, atomKey } = opts.worn;
+  if (wornRoot === null || atomKey === null) {
+    throw new EdgeSeatError(`the worn face reads no fold yet: its ${wornRoot === null ? "fleet root" : "atom"} stands unread, and a fold never reads a silent zero.`);
+  }
+  const worn: WornFleet = { fleetRoot: wornRoot, atomKey };
+  const { fleetRoot, vesselKey } = await seatOf(bare(wornRoot), worn, "the worn fleet reads no board here.");
   const read = await readVesselEdgeBoard({
     repo: opts.repo, scope: fleetRoot, kind: "fleet", boardUrl: fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
     vesselKey, authorityFor: fleetEdgeAuthority(fleetRoot),
   });
   const counted = [...new Set([...read.readings.values()].flatMap((r) => [...r.raiseCids]))].sort();
-  const answered = raisesMarkedAnswered(read.ledger.doc(), fleetRoot);
+  const answered = raisesMarkedAnswered(read.ledger.doc(), fleetRoot, vesselKey);
   return { read: true, counted, unanswered: counted.filter((cid) => !answered.has(cid)) };
 }
 
@@ -122,14 +153,12 @@ export async function fleetRaisesOf(opts: { readonly repo: Repo; readonly fleetR
  * hand marks a raise ahead of its arrival. The first mark of a raise stands.
  */
 export async function runEdgeSeatMarks(opts: {
-  readonly repo: Repo; readonly fleetRoot: string; readonly rolls: readonly unknown[];
+  readonly repo: Repo; readonly fleetRoot?: string; readonly worn?: WornFleet; readonly rolls: readonly unknown[];
 }): Promise<{ readonly fleetRoot: string; readonly marked: readonly string[]; readonly unknown: readonly string[] }> {
-  const fleetRoot = bare(opts.fleetRoot);
-  if (!HEX64.test(fleetRoot)) throw new EdgeSeatError("a mark names its fleet root — expected 64 hex.");
-  if (!(await servedFleetRoots()).includes(fleetRoot)) {
-    throw new EdgeSeatError("REFUSED: this vessel holds no face under that fleet root — it keeps no roll for another fleet.");
-  }
-  const vesselKey = await atomKeyForFleet(fleetRoot);
+  const named = bare(opts.fleetRoot ?? opts.worn?.fleetRoot ?? "");
+  if (!HEX64.test(named)) throw new EdgeSeatError("a mark names its fleet root — expected 64 hex.");
+  const { fleetRoot, vesselKey } = await seatOf(named, opts.worn,
+    "REFUSED: this vessel holds no face under that fleet root — it keeps no roll for another fleet.");
   const read = await readVesselEdgeBoard({
     repo: opts.repo, scope: fleetRoot, kind: "fleet", boardUrl: fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
     vesselKey, authorityFor: fleetEdgeAuthority(fleetRoot),
@@ -138,7 +167,7 @@ export async function runEdgeSeatMarks(opts: {
   const raiseEdge = new Map<string, string>();
   for (const [edgeId, r] of read.readings) for (const cid of r.raiseCids) raiseEdge.set(cid, edgeId);
   const marked: string[] = [], unknown: string[] = [];
-  const keep: { cid: string; roll: Pick<SeatRoll, "edgeId" | "how" | "seat"> }[] = [];
+  const keep: { cid: string; roll: SignedSeatRoll }[] = [];
   for (const raw of opts.rolls) {
     // ONLY THIS VESSEL'S OWN ISLAND ANSWERS FOR ITS KEYS: a roll counts under a receipt this vessel's key signed.
     const roll = verifiedSeatRoll(raw, vesselKey);
@@ -148,11 +177,12 @@ export async function runEdgeSeatMarks(opts: {
     const edgeId = roll.edgeId.toLowerCase();
     for (const cid of roll.raiseCids.map((c) => c.toLowerCase())) {
       if (raiseEdge.get(cid) !== edgeId) { unknown.push(cid); continue; }
-      keep.push({ cid, roll: { edgeId, how: roll.how, ...(roll.seat ? { seat: roll.seat } : {}) } });
+      // The mark keeps the whole roll with its receipt: every reader verifies it again (road `T33`).
+      keep.push({ cid, roll: { ...roll, receipt: (raw as { receipt: string }).receipt } });
       marked.push(cid);
     }
   }
-  if (keep.length > 0) read.ledger.change((d) => { for (const k of keep) markRaiseRolled(d, fleetRoot, k.cid, k.roll); });
+  if (keep.length > 0) read.ledger.change((d) => { for (const k of keep) markRaiseRolled(d, fleetRoot, k.cid, k.roll, vesselKey); });
   await opts.repo.flush();
   return { fleetRoot, marked: [...new Set(marked)].sort(), unknown: [...new Set(unknown)].sort() };
 }

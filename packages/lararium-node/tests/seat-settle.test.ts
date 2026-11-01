@@ -142,7 +142,7 @@ describe("a fold of the fleet's board settles the key side", () => {
     const first = await raise(device);
     await foldReads(unwired.ring, first);
     expect(raisesOwed(unwired.ring.fold(), fleetRoot)).toEqual({ owed: [first], selfAside: false });
-    expect([...raisesSeenThrough(await ledger(), fleetRoot)]).toEqual([]);
+    expect([...raisesSeenThrough(await ledger(), fleetRoot, vesselKey)]).toEqual([]);
     expect(asked).toEqual([]);
     unwired.ring.dispose();
 
@@ -152,8 +152,8 @@ describe("a fold of the fleet's board settles the key side", () => {
     await foldReads(wired.ring, second);
     await wired.settler!.idle();
     expect(asked).toEqual([[first, second].sort()]);
-    expect([...raisesSeenThrough(await ledger(), fleetRoot)].sort()).toEqual([first, second].sort());
-    expect(keptSeatRolls(await ledger(), fleetRoot).map((r) => r.how)).toEqual(["revoked", "revoked"]);
+    expect([...raisesSeenThrough(await ledger(), fleetRoot, vesselKey)].sort()).toEqual([first, second].sort());
+    expect(keptSeatRolls(await ledger(), fleetRoot, vesselKey).map((r) => r.how)).toEqual(["revoked", "revoked"]);
     // The ring read the marks: no raise stays owed, and a gate reads the seat as rolled.
     expect(raisesOwed(wired.ring.fold(), fleetRoot)).toEqual({ owed: [], selfAside: false });
     expect(logs.some((l) => l.includes("2 raise(s) owed, 2 marked"))).toBe(true);
@@ -171,7 +171,7 @@ describe("a fold of the fleet's board settles the key side", () => {
     await wired.settler!.idle();
     expect(asked.flat().filter((cid) => cid === first).length).toBe(1);
     expect(asked[asked.length - 1]).toEqual([second]);
-    expect([...raisesSeenThrough(await ledger(), fleetRoot)].sort()).toEqual([first, second].sort());
+    expect([...raisesSeenThrough(await ledger(), fleetRoot, vesselKey)].sort()).toEqual([first, second].sort());
     wired.ring.dispose();
   });
 
@@ -181,8 +181,8 @@ describe("a fold of the fleet's board settles the key side", () => {
     const held = await raise("ab".repeat(32));
     await foldReads(wired.ring, held);
     await wired.settler!.idle();
-    expect(keptSeatRolls(await ledger(), fleetRoot).map((r) => r.how)).toEqual(["no-authority"]);   // the roll stays kept
-    expect([...raisesSeenThrough(await ledger(), fleetRoot)]).toEqual([]);                            // and the raise owed
+    expect(keptSeatRolls(await ledger(), fleetRoot, vesselKey).map((r) => r.how)).toEqual(["no-authority"]);   // the roll stays kept
+    expect([...raisesSeenThrough(await ledger(), fleetRoot, vesselKey)]).toEqual([]);                            // and the raise owed
     expect(raisesOwed(wired.ring.fold(), fleetRoot)!.owed).toEqual([held]);
     const tries = asked.length;
     // No fold, no retry: nothing spins between folds.
@@ -195,7 +195,7 @@ describe("a fold of the fleet's board settles the key side", () => {
     await foldReads(wired.ring, other);
     await wired.settler!.idle();
     expect(asked[asked.length - 1]).toEqual([held, other].sort());
-    expect([...raisesSeenThrough(await ledger(), fleetRoot)].sort()).toEqual([held, other].sort());
+    expect([...raisesSeenThrough(await ledger(), fleetRoot, vesselKey)].sort()).toEqual([held, other].sort());
     wired.ring.dispose();
   });
 
@@ -206,7 +206,7 @@ describe("a fold of the fleet's board settles the key side", () => {
     await wired.settler!.idle();
     expect(wired.ring.fold()!.fleets[0]!.readings.get(deviceEdgeId(fleetRoot, vesselKey))?.stands).toBe(true);
     expect(asked).toEqual([]);
-    expect([...raisesSeenThrough(await ledger(), fleetRoot)]).toEqual([]);
+    expect([...raisesSeenThrough(await ledger(), fleetRoot, vesselKey)]).toEqual([]);
     wired.ring.dispose();
   });
 });

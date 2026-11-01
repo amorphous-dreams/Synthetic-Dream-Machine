@@ -5,7 +5,7 @@ import type { DyadReader } from "./operator-daemon-behavior.js";
 import { watchHandles, witnessedStandings } from "./face-intent-door.js";
 import { standingOfReading } from "./face-seat-summons.js";
 
-export function boardDyadReader(repo: Repo, ledger?: DocHandle<LarDoc> | Promise<DocHandle<LarDoc>>, restLedger?: () => Promise<void>, _ownDevice?: string, seatLedger?: LarDoc, scope?: string, lineage?: HandLineage | null): DyadReader {
+export function boardDyadReader(repo: Repo, ledger?: DocHandle<LarDoc> | Promise<DocHandle<LarDoc>>, restLedger?: () => Promise<void>, ownDevice?: string, seatLedger?: LarDoc, scope?: string, lineage?: HandLineage | null): DyadReader {
   return async (fleetRootDid, deviceVerifyingKey) => {
     try {
       const fleetScope = fleetRootDid.trim().toLowerCase().replace(/^0x/, "");
@@ -32,7 +32,7 @@ export function boardDyadReader(repo: Repo, ledger?: DocHandle<LarDoc> | Promise
         owned.change((draft) => { writeFrontierPin(draft, fleetScope, FLEET_HAND, frontier.asOf[FLEET_HAND]!); });
         await restLedger?.();
       }
-      return edgeStandingAsOf(reading, scope ? raisesSeenThrough(seatLedger, scope) : undefined,
+      return edgeStandingAsOf(reading, scope ? raisesSeenThrough(seatLedger, scope, ownDevice ?? "") : undefined,
         frontier?.status === "known");
     } catch { return "aside"; }
   };

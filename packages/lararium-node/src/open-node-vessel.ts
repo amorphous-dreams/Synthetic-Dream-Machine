@@ -106,7 +106,7 @@ import { setCasDoor, setRestDoor, setCustodyWriteDoor, setDyadDoor, setSessionSi
 import { writeCasEntriesFs } from "./node-cas.js";
 import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass, PersonaGroupIdentityRing } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
-import { readBootTiddlers, vesselPrivateBook, vesselPrivateRelationOpens } from "./vessel-private.js";
+import { classDeviceLedgers, readBootTiddlers, vesselPrivateBook, vesselPrivateRelationOpens } from "./vessel-private.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder, carryPersonaKelUpTheGradient } from "./persona-kel-ring.js";
 import { vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
@@ -180,7 +180,7 @@ import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
 import { askIslandMemory, askIslandVerb, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
 import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
-import { runEdgeSeatFacts, runEdgeSeatMarks, fleetRaisesOf, EdgeSeatError } from "./commands/edge-seats.js";
+import { runEdgeSeatFacts, runEdgeSeatMarks, fleetRaisesOf, EdgeSeatError, type WornFleet } from "./commands/edge-seats.js";
 import type { PersonaSelvesPlane, SealedActContext } from "./sealed-acts.js";
 
 /** The hearth dial a custody act reads: `SealedActContext.walk`, lent by the standing composition. */
@@ -1440,6 +1440,10 @@ async function prepareNodeBootOn(
   // the fleet its device edge names reads no facts for it, exactly as `lares edge settle` refuses there, and says
   // so once.
   let rootlessSaid = false;
+  // THE FLEET THIS VESSEL WEARS (road `T34`): its device edge's root and its own atom, the pair every edge-seats door reads
+  // its own fleet by, so a joinee (which holds no root) settles its own foundings on a counted removal. None at the floor.
+  const wornFleetOf = (): { worn?: WornFleet } =>
+    wornFleetRoot && activeAtom ? { worn: { fleetRoot: wornFleetRoot, atomKey: activeAtom.key } } : {};
   // THE ONE ASKER OF `seat-duties`: this main thread, signing each ask as the vessel. The fold's settle below and
   // the store door's row for `lares edge settle` share it; no other road reaches the verb with a proof.
   const askSeatDutiesAsVessel = (facts: { readonly fleetRoot: string; readonly acts: readonly unknown[]; readonly rolled: readonly string[] }): IslandAsk => {
@@ -1457,7 +1461,7 @@ async function prepareNodeBootOn(
     wornFleetRoot: () => wornFleetRoot,
     fold:          () => builtRing.fold(),
     facts: async (fleetRoot) => {
-      try { return (await runEdgeSeatFacts({ repo, fleetRoot })).fleets[0] ?? null; }
+      try { return (await runEdgeSeatFacts({ repo, fleetRoot, ...wornFleetOf() })).fleets[0] ?? null; }
       catch (err) {
         if (!(err instanceof EdgeSeatError)) throw err;
         if (!rootlessSaid) { rootlessSaid = true; console.log(`[edge-seats] no settle runs here for this vessel's own fleet: ${err.message}`); }
@@ -1469,7 +1473,7 @@ async function prepareNodeBootOn(
       const ask = askSeatDutiesAsVessel(facts);
       return { answer: ask.answer as Promise<unknown> as Promise<SeatDutiesAnswer>, abandon: () => ask.abandon() };
     },
-    mark:       (fleetRoot, rolls) => runEdgeSeatMarks({ repo, fleetRoot, rolls }),
+    mark:       (fleetRoot, rolls) => runEdgeSeatMarks({ repo, fleetRoot, rolls, ...wornFleetOf() }),
     // The marks moved the ledger and no board: the ring folds again so every gate reads the roll, and the Repo
     // re-reads its verdicts. This fold sets off no further settle.
     afterMarks: async () => { await builtRing.refold(); reverdict(); },
@@ -1747,7 +1751,11 @@ async function prepareNodeBootOn(
   const sessionSigns = new SessionSignBook();
   // Each read carries the vessel's own fold of the face's fleet board: the raises it counts and those no subscriber
   // took yet, so the holder counts removal versions and owed rolls across a restart.
-  setSessionSignDoor(sessionSigns.door(() => dialAnchor.chain(), async () => fleetRaisesOf({ repo, fleetRoot: wornFleetRoot })));
+  // A vessel that wears a face folds that face's fleet off its device edge's root and its own atom; a piece still unread
+  // refuses the fold by name (road `T35`). Only a faceless vessel reads unread.
+  setSessionSignDoor(sessionSigns.door(() => dialAnchor.chain(), async () => fleetRaisesOf({
+    repo, worn: custodyGroup ? { fleetRoot: wornFleetRoot, atomKey: activeAtom?.key ?? null } : null,
+  })));
   stood.push({ what: "the session sign door", down: () => { setSessionSignDoor(null); } });
   // Set when the vessel stands its dial down: a late dial still in flight then stands nothing.
   let dialStoodDown = false;
@@ -2039,6 +2047,7 @@ async function prepareNodeBootOn(
         const seed = await loadFaceAtomOfGroup(custodyGroup);
         if (!seed) throw new Error("face-not-named: system canon needs the selected face atom");
         activeAtom = faceAtomKeyFromSeed(seed, custodyGroup);
+        classDeviceLedgers(vesselPrivate, [activeAtom.key]);
       }
       kahuCanon = await standKahuCanon({
         repo, sealHome, vesselKey: activeAtom?.key ?? "",
@@ -2145,6 +2154,10 @@ async function prepareNodeBootOn(
     addressSecretBytes?.fill(0);
     const placeAid = await loadPlaceAid().catch(() => null);
     if (activeAtom && deviceEdge && activeAtom.key !== deviceEdge.deviceVerifyingKey) throw new Error("this face's atom differs from its device edge");
+    // THE EDGE LEDGER STAYS ON THIS DEVICE (road `T33`): its roll marks, frontier pins and `seen` rows answer for this
+    // device's own key acts, and its id derives from the atom key the fleet board shows in the clear. It classes
+    // `vessel-private` under the `device` owner, which no relation opens, from the device edge (readable at the floor).
+    classDeviceLedgers(vesselPrivate, [deviceEdge?.deviceVerifyingKey, activeAtom?.key]);
     // ── THE DYAD DOOR (kapae#/reach) ─────────────────────────────────────────────────────────────
     // The daemon island's gates ask what one device's edge reads on the worn fleet's board: the Binding Gate for
     // this vessel's own seat, the join gate for the device a summons names. The ring folds the fleet this edge
@@ -2578,10 +2591,13 @@ async function prepareNodeBootOn(
       log: (line: string) => console.log(`[lararium] ${line}`),
     } : null;
     const joinedFaces = siblingPorts ? await joinedFaceAuth(siblingPorts) : [];
+    // Each joined face's edge ledger stays on this device too (road `T33`): the island opens it under that face's atom.
+    classDeviceLedgers(vesselPrivate, joinedFaces.map((face) => face.atom.key));
     lightFace = async (ordinal) => {
       if (!siblingPorts) throw new Error(`face h${ordinal} cannot light without a mounted face`);
       const [entry] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal] });
       if (entry) {
+        classDeviceLedgers(vesselPrivate, [entry.atom.key]);   // classed before the island opens it
         await daemonVm.lightFace(entry);
         const group = (await loadIdentityAnchors(ordinal))?.personaGroupId;
         if (group) await registerFacePlanesForRelay({ group, relayEnabled: async (g) => (await enabledIntentRelayFaces()).includes(g), prove: proveRelayFace, register: registerInCatalog });
@@ -3147,6 +3163,8 @@ async function prepareNodeBootOn(
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
       // floor's island holds no veil.
       ...(sovereign ? { seatDuties: (facts) => askSeatDutiesAsVessel(facts).answer } : {}),
+      // The operator's road reads the fleet this vessel wears, as the fold's settle does (road `T34`).
+      wornFleet: () => wornFleetOf().worn,
       // A feed asks the island's `realm-feed` as the face, from this thread, over the host channel.
       askIsland: (verb, args, requestedBy, requestId) => {
         if (!daemonVm) throw new Error("the daemon island does not stand yet");

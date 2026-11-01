@@ -1,0 +1,130 @@
+/**
+ * edge-seats-worn — A JOINEE READS ITS OWN FLEET (road `T34`, controller ruling F1(b)).
+ *
+ * A joinee wears a face whose root it never holds: its device edge names the fleet root, and its own atom names its
+ * ledger. The facts, the marks and the fold read the fleet the vessel WEARS from those two (the composer hands them in,
+ * `worn: { fleetRoot, atomKey }`), never from the roster, so a joinee settles its own foundings on a counted removal.
+ *
+ *   W1  RED: on a vessel that holds no persona root, the worn fleet's facts name the counted raise, and the fold reads it
+ *       owed; CONTROL: a fleet the vessel neither wears nor serves still refuses by name.
+ *   W2  RED: the joinee keeps its own receipt-signed roll (under its atom), and the fold then reads the raise answered.
+ *   W3  RED (road `T35`): a vessel that wears a face whose fleet root or atom stands unread never reads a silent zero: the
+ *       fold refuses by name, so the session sign door refuses and nothing seals on a pre-removal head. CONTROL: a vessel
+ *       that wears no face reads `read: false`, and the island judges it.
+ *   W4  RED (cold read M1): the operator's road (`lares edge settle`, the store door's edge-seat rows) reads the worn fleet
+ *       too, so a joinee settles by hand as the fold settles it; CONTROL: a door lent no worn fleet still refuses a fleet
+ *       the roster does not serve.
+ */
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import {
+  deviceEdgeId, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, fleetEdgeBoardDocUrl, materializeSharedLarDoc, signEdgeKapae,
+  signSeatRoll, writeEdgeKapae,
+} from "@lararium/mesh";
+import { restEvery, restingRepo } from "./resting-repo.js";
+import { generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
+import { larDataDir } from "../src/vessel-paths.js";
+import { runEdgeSeatFacts, runEdgeSeatMarks, fleetRaisesOf, EdgeSeatError } from "../src/commands/edge-seats.js";
+import { seedFaceAtom, atomSeedOf } from "./atom-fixture.js";
+import { storeDoorReactors } from "../src/store-door-verbs.js";
+import { larSealHome } from "../src/vessel-paths.js";
+
+const ROOT_SEED = new Uint8Array(32).fill(0x5a);       // the fleet root's seed: held by the founder, never by this joinee
+const REMOVED = "c4".repeat(32);
+
+type Worn = { readonly fleetRoot: string; readonly atomKey: string };
+type WornFacts = (o: { repo: unknown; worn?: Worn; fleetRoot?: string }) => ReturnType<typeof runEdgeSeatFacts>;
+type WornMarks = (o: { repo: unknown; worn?: Worn; fleetRoot?: string; rolls: readonly unknown[] }) => ReturnType<typeof runEdgeSeatMarks>;
+type WornFold = (o: { repo: unknown; worn?: { fleetRoot: string | null; atomKey: string | null } | null; fleetRoot?: string | null }) => ReturnType<typeof fleetRaisesOf>;
+
+let root: string;
+let priorLarRoot: string | undefined;
+beforeEach(async () => {
+  root = mkdtempSync(join(tmpdir(), "lares-edge-seats-worn-"));
+  priorLarRoot = process.env["LAR_ROOT"];
+  process.env["LAR_ROOT"] = root;
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
+  await seedFaceAtom(0);                                   // the joinee's own atom and anchors; no persona root stands
+});
+afterEach(async () => {
+  await restEvery();
+  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
+  else process.env["LAR_ROOT"] = priorLarRoot;
+  rmSync(root, { recursive: true, force: true });
+});
+
+/** The founder raises a removal on the fleet board: an act the fleet root signs, written where the joinee reads it. */
+async function raiseOnBoard(fleetRoot: string): Promise<{ actCid: string; edgeId: string }> {
+  const act = await signEdgeKapae({ edgeId: deviceEdgeId(fleetRoot, REMOVED), raised: true, hand: "holder", parents: [] },
+    [{ signer: fleetRoot, sign: ed25519SignerFromSeed(ROOT_SEED) }]);
+  const repo = restingRepo(larDataDir());
+  const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(fleetRoot), "board:edge-kapae");
+  board.change((d) => { writeEdgeKapae(d, act); });
+  await repo.flush();
+  await repo.rest();
+  return { actCid: act.actCid, edgeId: act.edgeId };
+}
+const wornOf = async (): Promise<Worn> => {
+  const { faceAtomKeyFromSeed } = await import("@lararium/mesh");
+  return { fleetRoot: await ed25519VerifyingKeyFromSeed(ROOT_SEED), atomKey: faceAtomKeyFromSeed(await atomSeedOf(0), "group-fixture-h0").key };
+};
+
+describe("a joinee reads the fleet it wears (T34)", () => {
+  it("W1 — RED: the worn fleet's facts name the counted raise and the fold reads it owed; CONTROL: another fleet refuses", async () => {
+    const worn = await wornOf();
+    const raise = await raiseOnBoard(worn.fleetRoot);
+    const repo = restingRepo(larDataDir());
+    try {
+      const facts = await (runEdgeSeatFacts as unknown as WornFacts)({ repo, worn });
+      expect(facts.fleets.map((f) => f.fleetRoot), "the worn fleet reads").toEqual([worn.fleetRoot]);
+      expect(facts.fleets[0]!.edges).toContainEqual({ edgeId: raise.edgeId, aside: true, raiseCids: [raise.actCid] });
+      const fold = await (fleetRaisesOf as unknown as WornFold)({ repo, worn });
+      expect(fold, "the joinee's fold reads its own fleet").toEqual({ read: true, counted: [raise.actCid], unanswered: [raise.actCid] });
+      // CONTROL: a fleet this vessel neither wears nor serves still refuses by name.
+      await expect((runEdgeSeatFacts as unknown as WornFacts)({ repo, fleetRoot: "7e".repeat(32) })).rejects.toThrow(EdgeSeatError);
+    } finally { await repo.rest(); }
+  });
+
+  it("W2 — RED: the joinee keeps its own receipt-signed roll, and the fold reads the raise answered", async () => {
+    const worn = await wornOf();
+    const raise = await raiseOnBoard(worn.fleetRoot);
+    const roll = await signSeatRoll({ kind: "seat-roll", scope: worn.fleetRoot, edgeId: raise.edgeId, raiseCids: [raise.actCid], how: "no-authority" },
+      ed25519SignerFromSeed(await atomSeedOf(0)));
+    const repo = restingRepo(larDataDir());
+    try {
+      const marked = await (runEdgeSeatMarks as unknown as WornMarks)({ repo, worn, rolls: [roll] });
+      expect(marked.marked).toEqual([raise.actCid]);
+      expect((await (fleetRaisesOf as unknown as WornFold)({ repo, worn })).unanswered).toEqual([]);
+    } finally { await repo.rest(); }
+  });
+
+  it("W3 — RED (T35): a worn face with no root or no atom refuses by name; CONTROL: a faceless vessel reads unread", async () => {
+    const worn = await wornOf();
+    await raiseOnBoard(worn.fleetRoot);
+    const repo = restingRepo(larDataDir());
+    try {
+      const fold = fleetRaisesOf as unknown as WornFold;
+      await expect(fold({ repo, worn: { fleetRoot: null, atomKey: worn.atomKey } }), "no root read yet").rejects.toThrow(EdgeSeatError);
+      await expect(fold({ repo, worn: { fleetRoot: worn.fleetRoot, atomKey: null } }), "no atom opened yet").rejects.toThrow(EdgeSeatError);
+      expect(await fold({ repo, worn: null }), "CONTROL: a faceless vessel").toEqual({ read: false, counted: [], unanswered: [] });
+    } finally { await repo.rest(); }
+  });
+
+  it("W4 — RED (M1): the store door's edge-seat rows read the worn fleet; CONTROL: a door lent none refuses it", async () => {
+    const worn = await wornOf();
+    const raise = await raiseOnBoard(worn.fleetRoot);
+    const repo = restingRepo(larDataDir());
+    try {
+      const base = { storageDir: larDataDir(), sealHome: larSealHome(), repo };
+      const lent = storeDoorReactors({ ...base, wornFleet: () => worn } as never);
+      const facts = await lent["edge-seat-facts"]({ fleetRoot: worn.fleetRoot }, {} as never) as { fleets?: Array<{ fleetRoot: string; edges: unknown[] }> };
+      expect(facts.fleets?.map((f) => f.fleetRoot), "the worn fleet reads through the store door").toEqual([worn.fleetRoot]);
+      expect(facts.fleets?.[0]?.edges).toContainEqual({ edgeId: raise.edgeId, aside: true, raiseCids: [raise.actCid] });
+      const bare = storeDoorReactors(base);
+      const refused = await bare["edge-seat-facts"]({ fleetRoot: worn.fleetRoot }, {} as never) as { refused?: string };
+      expect(refused.refused, "CONTROL: a door lent no worn fleet refuses it by name").toMatch(/holds no face under that fleet root/);
+    } finally { await repo.rest(); }
+  });
+});
