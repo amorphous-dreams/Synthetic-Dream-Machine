@@ -15,6 +15,8 @@ import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
 import { makeCustodyHolder, seatFaceAutoFounder } from "../src/custody-holder.js";
 import type { CustodyHomes } from "../src/vault-carriers.js";
+import { personaGroupDigest } from "../src/persona-group-file.js";
+import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000 });
 
@@ -35,7 +37,9 @@ async function found(slots: readonly SlotSpec[]) {
   return makeCustodyHolder(target);
 }
 beforeEach(() => seatFaceAutoFounder(() => [{ t: 1, pins: [pass(RIGHT)] }]));
-afterEach(() => {
+let seat: SeatedScratchCustody | null = null;
+afterEach(async () => {
+  await seat?.drop(); seat = null;
   seatFaceAutoFounder(null);
   for (const r of roots.splice(0)) rmSync(r, { recursive: true, force: true });
 });
@@ -77,5 +81,15 @@ describe("one attempt per distinct passphrase", () => {
     const other = draftPaperPin({ threshold: 2, count: 3 });
     const h = await found([{ t: 1, pins: [{ kind: "paper", confirmed: confirmPaperPin(held, held.sheets) }] }]);
     expect(await h.unlock([{ kind: "paper", sheets: other.sheets.slice(0, 2) }])).toEqual({ reading: "no-slot-opens", attemptsLeft: 2 });
+  });
+
+  test("a face unlock offering four passphrases spends the face's three, and the fourth refuses unread", async () => {
+    seat = await seatScratchCustody("attempts-face");
+    const { holder } = seat;
+    const a = await holder.foundFace({ group: personaGroupDigest("group-attempts-a"), slots: [{ t: 1, pins: [pass("route-a")] }] });
+    await holder.lockFace(a.fcid);
+    const offered = [pass("wrong-1"), pass("wrong-2"), pass("wrong-3"), pass("route-a")];
+    expect(await holder.unlockFace({ fcid: a.fcid }, offered)).toEqual({ reading: "attempts-spent", fcid: a.fcid });
+    expect((await holder.unlockFace({ fcid: a.fcid }, [pass("route-a")])).reading).toBe("attempts-spent");
   });
 });
