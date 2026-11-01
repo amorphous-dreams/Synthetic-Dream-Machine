@@ -6,14 +6,14 @@ lar-mirror-of: kanawai
 lar-tongue: en
 lar-weave: primary
 lar-see-also: kanawai
-lar-pattern: <<~\s*law\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
-lar-example: <<~ law "lar:///a.b.c/x">>
+lar-pattern: <<~\s*law\s+uri=`([^`]*)`\s*>>
+lar-example: <<~ law uri=`lar:///a.b.c/x`>>
 type: text/vnd.tiddlywiki
 
 <!-- law — RULED (operator): kānāwai's primary English weave — the BINDING pin, `kanawai`'s own
      sigil, never a delegation to aka or kahea. `pin` weaves `aka` (informative); `law` weaves
      `kanawai` (binding). -->
 
-\procedure ~law(p1:"")
-<$transclude $variable="~kanawai" p1=<<p1>>/>
+\procedure ~law(uri:"")
+<$transclude $variable="~kanawai" uri=<<uri>>/>
 \end

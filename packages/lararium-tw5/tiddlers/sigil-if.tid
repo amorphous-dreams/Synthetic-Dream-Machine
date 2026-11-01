@@ -4,9 +4,9 @@ lar-kind: control
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/heihei
 lar-mirror-of: heihei
 lar-see-also: heihei
-lar-open-pattern: <<~\s*if\s+([^>]+?)\s*>>
+lar-open-pattern: <<~\s*if\s+filter=`([^`]*)`(?:\s+sigil=`[^`]*`)?\s*>>
 lar-close-pattern: <<~\/if\s*>>
-lar-example: <<~ if "[<x>match[1]]">>
+lar-example: <<~ if filter=`[<x>match[1]]`>>
 type: text/vnd.tiddlywiki
 
 <!-- \if — conditional block using TW5 <%if filter%>...<%endif%> shortcut (TW5 5.3+).
@@ -20,8 +20,8 @@ type: text/vnd.tiddlywiki
 
      No mode= param — control flow has no projection posture. -->
 
-\procedure ~if(p1:"" p2:"")
-<%if [<p1>]%>
-<$transclude $variable="~" name=<<p2>>/>
+\procedure ~if(filter:"" sigil:"")
+<%if [<filter>]%>
+<$transclude $variable="~" name=<<sigil>>/>
 <%endif%>
 \end

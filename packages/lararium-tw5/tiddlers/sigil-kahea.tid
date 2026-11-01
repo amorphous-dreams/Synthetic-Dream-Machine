@@ -2,25 +2,25 @@ title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kahea
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: edge-sugar
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kahea
-lar-pattern: <<~\s*kahea\s+("?lar:[^"\s>]+"?|[^\s>(]+\/[^\s>]*|[^\s>(]+#[^\s>]*)\s*>>
+lar-pattern: <<~\s*kahea(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\suri=`([^`]*)`)(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*>>
 lar-open-pattern: <<~\s*kahea\s+([a-z][\w-]*)(?:\s+([^>]*?))?\s*>>
 lar-close-pattern: <<~\/kahea\s*>>
 lar-default-family: dataflow
 lar-layer: both
-lar-example: <<~ kahea "lar:///a.b.c/x">>
+lar-example: <<~ kahea uri=`lar:///a.b.c/x`>>
 type: text/vnd.tiddlywiki
 
 <!-- kahea — live transclusion; picks KaheaTemplate cascade.
      aka carries the projection/frozen posture via its own AkaTemplate cascade.
 
      Dispatch shapes:
-       <<~ kahea lar:///uri>>      → ~kahea(p1=uri)       — URI leaf
-       <<~ kahea ahu #slot>>       → ~kahea~ahu(p1="#slot") — child-slot summons
-       <<~ aka ahu #slot>>         → ~aka~ahu               — projection child-slot -->
+       <<~ kahea uri=`lar:///uri`>>   → ~kahea(uri name)       — URI leaf (name = the mask)
+       <<~ kahea ahu slot=`#/slot`>> → ~kahea~ahu(slot to)    — child-slot summons
+       <<~ aka ahu slot=`#/slot`>>   → ~aka~ahu(slot to)      — projection child-slot -->
 
-\widget ~kahea(p1:"" p2:"")
-<$set name="_k-uri" filter="[<p1>regexp[^#]]" value={{{ [<p1>addprefix<currentTiddler>] }}} emptyValue=<<p1>>>
-<$let _k-template={{{ [<p2>!match[]] ~[all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/kahea-template]!is[draft]!has[draft.of]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/lararium/templates/kahea/html]] }}}>
+\widget ~kahea(uri:"" name:"")
+<$set name="_k-uri" filter="[<uri>regexp[^#]]" value={{{ [<uri>addprefix<currentTiddler>] }}} emptyValue=<<uri>>>
+<$let _k-template={{{ [<name>!match[]] ~[all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/kahea-template]!is[draft]!has[draft.of]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/lararium/templates/kahea/html]] }}}>
 <$tiddler tiddler=<<_k-uri>>>
 <$transclude $tiddler=<<_k-template>>/>
 </$tiddler>

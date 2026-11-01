@@ -4,8 +4,8 @@ lar-kind: leaf
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kukali
 lar-mirror-of: kukali
 lar-see-also: kukali
-lar-pattern: <<~\s*suspends(?:\s+trigger[=:]"?([\w.-]+)"?)?\s*>>
-lar-example: <<~ suspends trigger="on-score">>
+lar-pattern: <<~\s*suspends(?:\s+trigger=`([^`]*)`)?\s*>>
+lar-example: <<~ suspends trigger=`on-score`>>
 type: text/vnd.tiddlywiki
 
 <!-- suspends — the English mirror of `kukali`, the wait that parks a causal island until a named
