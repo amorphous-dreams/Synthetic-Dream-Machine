@@ -7,6 +7,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import * as LT from "./land-train.mjs";
 import {
   ACTIVE_STATUSES, activeRuns, diskRefusal, ghEnv, landTrain, parseSpec, readSuiteLog, repoOfRemote, runsToCancel, sharedPackages, spanPushRefusal, verdictWords, worktreeCapRefusal,
 } from "./land-train.mjs";
@@ -66,6 +67,8 @@ function world(lanes = ["a", "b"], { touch = (s) => `packages/p-${s}/f.txt` } = 
   cfg("user.name", "Test Lane"); cfg("user.email", "test@example.com");
   const commit = (wt, file, body, msg) => { mkdirSync(join(wt, file, ".."), { recursive: true }); writeFileSync(join(wt, file), body); sh(wt, "add", "-A"); sh(wt, "commit", "-q", "-m", msg); return sh(wt, "rev-parse", "HEAD"); };
   commit(work, "README", "base\n", "base");
+  // The security-class table stands in the span's tree (the queue reads it from the span head, never from a lane).
+  commit(work, "tools/security-class-paths.json", `${JSON.stringify({ paths: ["tools/security-class-paths.json", "tools/land-train.mjs"], tokens: ["custody"] })}\n`, "the security table");
   sh(work, "push", "-q", "origin", SPAN);
   const base = sh(work, "rev-parse", "HEAD");
   const heads = {}, msgs = {};
@@ -73,12 +76,12 @@ function world(lanes = ["a", "b"], { touch = (s) => `packages/p-${s}/f.txt` } = 
     sh(work, "checkout", "-q", "-b", `${SPAN}--${s}`, base);
     heads[s] = commit(work, touch(s), `${s}\n`, `lane ${s}`);
     sh(work, "push", "-q", "origin", `${SPAN}--${s}`);
-    msgs[s] = join(dir, `${s}.msg`); writeFileSync(msgs[s], `lar:///w/${s} — merge PR #${s}: lane ${s}\n`);
+    msgs[s] = join(dir, `${s}.msg`); writeFileSync(msgs[s], `lar:///w/${s} — merge PR #${100 + lanes.indexOf(s)}: lane ${s}\n`);
   }
   sh(work, "checkout", "-q", SPAN);
   return { dir, origin, work, base, heads, msgs, lanes, cfg, commit };
 }
-const specsOf = (w, only = w.lanes) => only.map((s, i) => `${s}:${100 + i}:${w.heads[s]}:${w.msgs[s]}`);
+const specsOf = (w, only = w.lanes) => only.map((s) => `${s}:${100 + w.lanes.indexOf(s)}:${w.heads[s]}:${w.msgs[s]}`);
 
 /** The injected ops: network, disk and the train are stand-ins; git is real. */
 function opsOf(w, over = {}) {
@@ -127,7 +130,7 @@ test("CONTROL: a recorded clean batch of two lanes lands as chained commits whos
   assert.equal(sh(w.work, "rev-parse", `${first}^2`), w.heads.a);
   assert.equal(sh(w.work, "rev-parse", `${second}^`), first, "the second land chains on the first");
   assert.equal(sh(w.work, "rev-parse", `${second}^2`), w.heads.b);
-  assert.match(sh(w.work, "log", "-1", "--format=%s", first), / — merge PR #a/);
+  assert.match(sh(w.work, "log", "-1", "--format=%s", first), / — merge PR #100:/);
   assert.equal(originRef(w, `${SPAN}--a`), first, "each lane branch moves to its land commit");
   assert.equal(originRef(w, `${SPAN}--b`), second);
   assert.deepEqual(r.calls.cancelled.sort(), [`${SPAN}--a`, `${SPAN}--b`]);
@@ -159,7 +162,7 @@ test("RED: --plan prints the commits it would write and pushes nothing, builds n
   assert.match(r.out, /PLAN .*lane a.*PR #100/);
   assert.match(r.out, /PLAN .*lane b.*PR #101/);
   assert.match(r.out, new RegExp(w.heads.a.slice(0, 9)));
-  assert.match(r.out, / — merge PR #a/, "the land message's subject is printed");
+  assert.match(r.out, / — merge PR #100:/, "the land message's subject is printed");
   assert.equal(r.calls.cancelled.length, 0);
 });
 
@@ -534,4 +537,57 @@ test("RED: a lane head with no CI run reads GREEN when its nearest lane ancestor
   const m3 = lane(w3, "notes.md", "a docs-only lane head");
   const red = await run(w3, { verdict: verdictFor(m3, { ci: "red", heldOut: "unread" }) }, {}, ["a"]);
   assert.equal(red.code, 8, red.out);
+});
+
+// ── QUEUE: the train verifies in the cloud on the merge result ───────────────────────────────────────────────
+// The CI stand-in answers per sha from the refs that hold it at the origin (the span and its `--train-*` branches), so
+// a pushed train head, a probe of an existing chain commit and the span head each hold their own run. `red(sha, w,
+// attempt)` decides each run's conclusion from the tree it would test.
+const hasFile = (w, sha, path) => { try { sh(w.work, "cat-file", "-e", `${sha}:${path}`); return true; } catch { return false; } };
+function opsQ(w, { red = () => false, extra = () => [], over = {} } = {}) {
+  const { ops, calls } = opsOf(w);
+  const localTrain = ops.train;
+  Object.assign(calls, { local: 0, asked: [], reruns: [], cancelledRuns: [], dispatched: [] });
+  const attempts = new Map(), ids = new Map();
+  const refsAt = (sha) => sh(w.origin, "for-each-ref", "--points-at", sha, "--format=%(refname:short)", "refs/heads").split("\n").filter(Boolean);
+  Object.assign(ops, {
+    // The local battery: QUEUE never runs it (counted, and green, so a tool that still trains locally lands and says so).
+    train: async (ctx) => { calls.local++; try { return await localTrain(ctx); } catch { return { state: "conflict", worktree: null, files: ["(the local merge stopped)"] }; } },
+    ciRuns: async (sha) => {
+      calls.asked.push(sha);
+      return refsAt(sha).filter((b) => b === SPAN || b.startsWith(`${SPAN}--train-`)).map((b) => {
+        const key = `${b}@${sha}`; if (!ids.has(key)) ids.set(key, ids.size + 1);
+        const id = ids.get(key), attempt = attempts.get(id) ?? 1;
+        return { databaseId: id, headBranch: b, headSha: sha, status: "completed", conclusion: red(sha, w, attempt) ? "failure" : "success", attempt, createdAt: "2026-11-01T00:00:00Z" };
+      }).concat(extra(sha));
+    },
+    rerun: async (id) => { calls.reruns.push(id); attempts.set(id, (attempts.get(id) ?? 1) + 1); },
+    cancelRun: async (id) => { calls.cancelledRuns.push(id); },
+    heldOut: async () => ({ covered: originRef(w, SPAN), state: "green", inFlight: 0 }),
+    dispatchCI: async (ref) => { calls.dispatched.push(ref); },
+    ...over,
+  });
+  return { ops, calls };
+}
+const runQ = (w, { red, extra, over, only, ...opts } = {}) => {
+  const { ops, calls } = opsQ(w, { red, extra, over });
+  const lines = []; ops.log = (l) => lines.push(l);
+  return LT.landTrain({ name: "q1", base: w.base, specs: specsOf(w, only), span: SPAN, cwd: w.work, shipDir: join(w.dir, "ship"), queueDir: join(w.dir, "q"), ...opts }, ops)
+    .then((r) => ({ ...r, calls, out: lines.join("\n") }));
+};
+const pushedTrains = (out) => [...out.matchAll(/^pushed train (\S+) ([0-9a-f]{40})$/gm)].map((m) => ({ branch: m[1], sha: m[2] }));
+const refAt = (w, ref) => { try { return originRef(w, ref); } catch { return null; } };
+const isAnc = (w, a, b) => { try { sh(w.work, "merge-base", "--is-ancestor", a, b); return true; } catch { return false; } };
+const spanAhead = (w) => { const c = w.commit(w.work, "ahead.txt", "a\n", "span ahead — merge PR #0: an earlier land"); sh(w.work, "push", "-q", "origin", SPAN); return c; };
+
+test("RED: QUEUE: a lane lacking the span head lands through a train (exit 9 today, base passed as the span head); its land keeps the house subject", async () => {
+  const w = world(["a"]);
+  const SP = spanAhead(w);
+  const r = await runQ(w, { base: SP });
+  assert.equal(r.code, 0, r.out);
+  const land = originRef(w, SPAN);
+  assert.equal(sh(w.work, "rev-parse", `${land}^`), SP, "the land chains on the span head");
+  assert.equal(sh(w.work, "rev-parse", `${land}^2`), w.heads.a);
+  assert.match(sh(w.work, "log", "-1", "--format=%s", land), / — merge PR #100:/);
+  assert.equal(r.calls.local, 0, "no local battery ran");
 });
