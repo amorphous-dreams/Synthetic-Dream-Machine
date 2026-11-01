@@ -150,6 +150,72 @@ def inspect_legacy_siting(repo: Path) -> list[str]:
     return [f"Legacy Projection Loom carrier outside subtree: {p}" for p in stale]
 
 
+LOOM_WORKFLOWS = frozenset({
+    "loom-fire-grammar.yml",
+    "projection-loom-generalized.yml",
+    "projection-loom-studies.yml",
+    "projection-loom.yml",
+})
+MANUAL_STUDIES = frozenset({
+    "upstream-cc0", "experiment-zero", "native-readiness", "source-seed",
+    "evergreen-native", "coevolution", "architectural-birth",
+    "fullres-massing", "four-attractor", "cc0-comparison", "ortho-gallery",
+})
+
+
+def inspect_workflow_set(paths: set[str]) -> list[str]:
+    """Refuse returning retired experiments as active CI orchestrators."""
+    actual = {
+        Path(p).name for p in paths
+        if Path(p).name.startswith((
+            "projection-loom", "necrospire", "loom-fire", "brutalist-upstream",
+            "experiment-zero-native", "retire-integrated-art-sigils",
+        ))
+    }
+    return [
+        *(f"Missing active Loom workflow: {p}" for p in sorted(LOOM_WORKFLOWS - actual)),
+        *(f"Unexpected Loom workflow: {p}" for p in sorted(actual - LOOM_WORKFLOWS)),
+    ]
+
+
+def inspect_workflow_surface(repo: Path) -> list[str]:
+    """All four Loom workflows read-only; selected studies each retain receipts."""
+    result = subprocess.run(
+        ["git", "ls-files", "--cached", "--", ".github/workflows"],
+        cwd=repo, check=False, capture_output=True, text=True,
+    )
+    if result.returncode:
+        return [f"Could not inspect tracked workflows: {result.stderr.strip()}"]
+    errors = inspect_workflow_set(set(result.stdout.splitlines()))
+    for name in sorted(LOOM_WORKFLOWS):
+        path = repo / ".github/workflows" / name
+        if not path.is_file():
+            continue
+        src = path.read_text(encoding="utf-8")
+        if not re.search(r'^permissions:\n  contents: read$', src, re.MULTILINE):
+            errors.append(f"{name}: must declare read-only repository access")
+        if re.search(r'\b(?:git push|git commit|contents: write)\b', src):
+            errors.append(f"{name}: write authority survived the burn")
+        if name != "projection-loom-studies.yml":
+            continue
+        parts = src.split("\njobs:\n", 1)
+        if len(parts) != 2:
+            errors.append(f"{name}: studies need independent jobs")
+            continue
+        header, body = parts
+        if "  workflow_dispatch:" not in header or re.search(
+            r'^  (?:push|pull_request):', header, re.MULTILINE
+        ):
+            errors.append(f"{name}: experiments must be operator-selected")
+        options = set(re.findall(r'^          - ([a-z0-9-]+)$', header, re.MULTILINE))
+        jobs = set(re.findall(r'^  ([a-z0-9-]+):\s*$', body, re.MULTILINE))
+        if options != MANUAL_STUDIES | {"all"} or jobs != MANUAL_STUDIES:
+            errors.append(f"{name}: experiment options and jobs diverged")
+        if body.count("actions/upload-artifact@v4") != len(MANUAL_STUDIES):
+            errors.append(f"{name}: independent study lost artifact upload")
+    return errors
+
+
 def inspect_living_surface(loom: Path) -> list[str]:
     """Check tracked Markdown, live front links and canonical Lares carriers."""
     repo = loom.resolve().parents[1]
@@ -166,6 +232,7 @@ def inspect_living_surface(loom: Path) -> list[str]:
     for path in sorted(FRONTS):
         errors.extend(inspect_markdown_links(repo / path, repo))
     errors.extend(inspect_legacy_siting(repo))
+    errors.extend(inspect_workflow_surface(repo))
     for path in CARRIERS:
         carrier = repo / path
         errors.extend(inspect_carrier(carrier, no_nested_ashes=path in ASHES_RELEASED))
@@ -181,7 +248,7 @@ def main() -> None:
         for error in errors:
             print("Loom o-takiage gate: " + error)
         raise SystemExit(1)
-    print("Loom o-takiage gate: two living Markdown fronts; links and Lares frames verified")
+    print("Loom o-takiage gate: two fronts, four workflows, links and Lares frames verified")
 
 
 if __name__ == "__main__":

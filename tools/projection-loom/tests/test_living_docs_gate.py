@@ -87,3 +87,15 @@ def test_all_carriers_are_sited_in_their_own_namespaces() -> None:
         carrier = repo / path
         assert carrier.is_file()
         assert gate.inspect_carrier_siting(carrier, repo) == []
+
+def test_workflow_surface_refuses_resurrected_projections() -> None:
+    active = {".github/workflows/" + x for x in gate.LOOM_WORKFLOWS}
+    assert gate.inspect_workflow_set(active) == []
+    extras = active | {".github/workflows/necrospire-four-attractor-lineage.yml"}
+    assert any("Unexpected Loom workflow" in e for e in gate.inspect_workflow_set(extras))
+    assert any("Missing active Loom workflow" in e for e in gate.inspect_workflow_set(set()))
+
+
+def test_surviving_workflows_read_only_with_independent_receipts() -> None:
+    repo = Path(__file__).resolve().parents[3]
+    assert gate.inspect_workflow_surface(repo) == []
