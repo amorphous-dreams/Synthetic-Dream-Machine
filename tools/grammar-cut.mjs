@@ -17,7 +17,6 @@
  *        from and to last); a lone `~aperture`/`~ooda-ha`/`~drift-ward` becomes a steer.
  * Cut 5: the `file-path` meta key retires (operator ruling, 2026-11-01): residency rides the
  *        envelope, so every `file-path = …` line leaves every meta fence, a quoted one included.
- *        It rides with the envelope, so Canon's hand-cut carriers take it too.
  *
  * ── WHAT IT NEVER GUESSES ───────────────────────────────────────────────────────────────────────
  * It REFUSES and lists, leaving the sigil byte-for-byte: a head with no tiddler (`unsigned`), a
@@ -34,16 +33,14 @@
  *
  * ── SCOPE ───────────────────────────────────────────────────────────────────────────────────────
  * Default files: every tracked `bags/**\/*.mem` plus the Elyncia referee guide, minus the seed
- * (row Q7 lands it). Canon's hand-cut carriers (the diff 9f15dc896..084752cd1, less the three it
- * touched but never cut, CANON_CUT_WHOLE) take the ENVELOPE
- * only (DOCTYPE and the frame marks, then the seal); their bodies must already read as cut, and
- * any body change counts as a red. `--outside` lists, never writes, the sigils still owed in
+ * (row Q7 lands it). The tool reads no git history: every carrier it walks cuts whole (Canon's
+ * envelope-only pass, keyed on a commit range, retired once the cut landed). `--outside` lists,
+ * never writes, the sigils still owed in
  * CHANGELOG.md, README.md, packages/AGENTS.md and .claude/.
  *
  * Usage: node tools/grammar-cut.mjs [--write] [--check] [--census] [--outside] [--out <dir>] [--hand-reviewed]
  *                                   [--planes <map.json>] [--files <path> …]
- * Dry run by default. Exit 1 on a red: an unmapped at-name, an oracle disagreement, a Canon body
- * change, a seal that does not verify. `--write` also refuses until the frame package declares
+ * Dry run by default. Exit 1 on a red: an unmapped at-name, an oracle disagreement, a seal that does not verify. `--write` also refuses until the frame package declares
  * the DOCTYPE names (Reader's shore flip, row Q4) and while any target file sits dirty. `--check`
  * (the witness) also exits 1 while any file still owes the cut.
  * Idempotent: a second run writes nothing, so a lane that rebases over the bulk commit re-runs
@@ -56,13 +53,6 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const SEED_REL = "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem";
-export const CANON_RANGE = ["9f15dc896", "084752cd1"];
-/** Carriers in Canon's range that Canon touched but never cut (lead ruling, 2026-11-01): cut whole. */
-export const CANON_CUT_WHOLE = new Set([
-  "bags/lares/ha.ka.ba/lares/api/art-sigils/spec.mem",
-  "bags/lares/ha.ka.ba/lares/api/pono/system-pattern-integrities.mem",
-  "bags/lares/ha.ka.ba/lares/docs/pono/otakiage.mem",
-]);
 export const GUIDE_REL = "elyncia/Elyncia_04_The_Referee_Noosphere_Guide.md";
 export const OUTSIDE = ["CHANGELOG.md", "README.md", "packages/AGENTS.md", ".claude"];
 /** Prose voice tags (F4): a play line or a voice, never a call. Listed for a hand pass. */
@@ -519,8 +509,8 @@ function spansOf(ctx, text) {
 const spanAt = (spans, i) => spans.find((s) => i >= s.start && i < s.end) ?? null;
 
 /**
- * Cut a text. opts: { rel, envelopeOnly, disable }.
- * Returns { text, changes, refusals, unmapped, bodyChanges, seal, counts, foreign }.
+ * Cut a text. opts: { rel, disable, handReviewed }.
+ * Returns { text, changes, refusals, unmapped, seal, counts, foreign }.
  */
 export function cutText(text, ctx, opts = {}) {
   const rel = opts.rel ?? "(text)";
@@ -530,7 +520,6 @@ export function cutText(text, ctx, opts = {}) {
   const refusals = [];
   const lists = { partialTurns: [] };
   const counts = { sigils: 0, cut: 0, turns: 0, foreign: 0 };
-  let bodyChanges = 0;
   const refuse = (m, kind, why) => refusals.push({ rel, line: lineAt(text, m.start), kind, why, src: m.src.replace(/\n/g, "⏎").slice(0, 140) });
 
   const zone = (m) => {
@@ -541,9 +530,7 @@ export function cutText(text, ctx, opts = {}) {
     if (DEFINITION_LINE.test(text.slice(ls, m.start + 1))) return { definition: true, span: a };
     return { span: a };
   };
-  const envelope = (m, z) => !z.span && (m.src.startsWith("<<^") || m.src.startsWith("<<!DOCTYPE"));
-  const push = (start, end, out, z, isEnvelope) => {
-    if (opts.envelopeOnly && !isEnvelope) { bodyChanges++; return; }
+  const push = (start, end, out, z) => {
     edits.push({ start, end, text: out, span: z.span?.kind === "inline" ? z.span : null, src: text.slice(start, end) });
   };
 
@@ -605,7 +592,7 @@ export function cutText(text, ctx, opts = {}) {
     if (r.refuse) { refuse(m, r.refuse, r.why); continue; }
     if (!opts.handReviewed && !agrees(ctx, m.src, r.before, r.prefixOnly)) { refuse(m, "old-misread", "the parser reads the old call otherwise (a bare URI, an apostrophe, an old pragma form): hand-cut"); continue; }
     if (!agrees(ctx, r.text, r.intended)) { refuse(m, "oracle-after", "the parser reads the new call otherwise"); continue; }
-    push(m.start, m.end, r.text, z, envelope(m, z));
+    push(m.start, m.end, r.text, z);
     counts.cut++;
   }
 
@@ -640,8 +627,8 @@ export function cutText(text, ctx, opts = {}) {
 
   // ── Cut 2 over the whole text ──
   const at = cutAt(next, ctx.planes);
-  if (opts.envelopeOnly) { bodyChanges += at.phase + at.renamed; } else next = at.text;
-  const unmapped = opts.envelopeOnly ? [] : [...at.unmapped].sort();
+  next = at.text;
+  const unmapped = [...at.unmapped].sort();
 
   // ── Cut 5: the retired `file-path` line, envelope-class (the identity fence) ──
   let filePath = 0;
@@ -657,14 +644,14 @@ export function cutText(text, ctx, opts = {}) {
     // name and the file stays exactly as it stood.
     if (standing !== "ok" && standing !== "unchecked") {
       refusals.push({ rel, line: 1, kind: "seal-broken", why: `the arriving check reads ${standing}: re-seal by hand after reading the body`, src: "" });
-      return { text, changes: 0, refusals, unmapped, bodyChanges, seal: standing, lists, counts: { ...counts, phase: 0, renamed: 0, filePath: 0 } };
+      return { text, changes: 0, refusals, unmapped, seal: standing, lists, counts: { ...counts, phase: 0, renamed: 0, filePath: 0 } };
     }
     const stamped = next === text ? next : ctx.frame.stampCarrier(next);
     seal = ctx.frame.verifyBcc(stamped);
     if (seal === "ok") next = stamped;
   }
-  const changes = flat.length + filePath + (opts.envelopeOnly ? 0 : at.phase + at.renamed);
-  return { text: next, changes, refusals, unmapped, bodyChanges, seal, lists, counts: { ...counts, phase: at.phase, renamed: at.renamed, filePath } };
+  const changes = flat.length + filePath + at.phase + at.renamed;
+  return { text: next, changes, refusals, unmapped, seal, lists, counts: { ...counts, phase: at.phase, renamed: at.renamed, filePath } };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -752,13 +739,6 @@ export function tickFaults(text, ctx, spans = spansOf(ctx, text)) {
 
 const git = (repo, args) => execFileSync("git", args, { cwd: repo, encoding: "utf8", maxBuffer: 1 << 28 });
 
-export function canonCarriers(repo) {
-  try {
-    return new Set(git(repo, ["diff", "--name-only", ...CANON_RANGE, "--", "bags"]).split("\n")
-      .filter((f) => f.endsWith(".mem") && existsSync(join(repo, f)) && !CANON_CUT_WHOLE.has(f)));
-  } catch { return null; }
-}
-
 /** The bags carriers the shore finds, less the seed, plus the guide named by path. */
 export function defaultFiles(ctx) {
   return ctx.carrierFiles(ctx.repo).filter((f) => f.startsWith("bags/") && f !== SEED_REL).concat(GUIDE_REL);
@@ -776,8 +756,6 @@ async function main(argv) {
   const filesAt = argv.indexOf("--files");
   const given = filesAt >= 0 ? argv.slice(filesAt + 1).filter((a) => !a.startsWith("--")) : null;
   const ctx = await loadContext({ repo, planesPath: val("--planes") });
-  const canon = canonCarriers(repo);
-  if (!canon) { console.error("[grammar-cut] cannot read Canon's hand-cut range " + CANON_RANGE.join("..")); process.exit(2); }
 
   if (flag("--outside")) {
     const files = git(repo, ["ls-files", ...OUTSIDE]).split("\n").filter((f) => /\.(md|mem|tid)$|noosphere-boot$/.test(f));
@@ -796,15 +774,14 @@ async function main(argv) {
     return 0;
   }
 
-  const report = { files: files.length, touched: [], changes: 0, turns: 0, cut: 0, phase: 0, renamed: 0, filePath: 0, refusals: [], unmapped: {}, canonBody: {}, sealBlocked: [], partialTurns: [] };
+  const report = { files: files.length, touched: [], changes: 0, turns: 0, cut: 0, phase: 0, renamed: 0, filePath: 0, refusals: [], unmapped: {}, sealBlocked: [], partialTurns: [] };
   const outputs = [];
   for (const rel of files) {
     const before = readFileSync(join(repo, rel), "utf8");
-    const r = cutText(before, ctx, { rel, envelopeOnly: canon.has(rel), handReviewed });
+    const r = cutText(before, ctx, { rel, handReviewed });
     report.refusals.push(...r.refusals);
     report.partialTurns.push(...r.lists.partialTurns);
     for (const u of r.unmapped) (report.unmapped[u] ??= []).push(rel);
-    if (canon.has(rel) && r.bodyChanges) report.canonBody[rel] = r.bodyChanges;
     // A broken arriving seal leaves the file untouched, so it reds here, before the unchanged skip.
     if (r.seal !== "ok" && r.seal !== "none") report.sealBlocked.push(`${rel} (${r.seal})`);
     if (r.text === before) continue;
@@ -829,14 +806,13 @@ async function main(argv) {
     for (const k of Object.keys(laws)) if (c[k]) { laws[k] += c[k]; lawHits.push(`${rel} ${k}=${c[k]}`); }
   }
   const lawReds = Object.values(laws).reduce((a, b) => a + b, 0);
-  const reds = Object.keys(report.unmapped).length + oracle + renamed + lawReds + Object.keys(report.canonBody).length + report.sealBlocked.length;
+  const reds = Object.keys(report.unmapped).length + oracle + renamed + lawReds + report.sealBlocked.length;
 
   console.log(`grammar-cut ${write ? "WRITES" : "dry run"}: ${report.touched.length} of ${files.length} file(s) change · ${report.cut} call(s) cut · ${report.turns} turn firing(s) folded · ${report.phase} phase mark(s) fused · ${report.renamed} at-name(s) renamed · ${report.filePath} file-path line(s) dropped`);
   console.log(`  refusals: ${report.refusals.length} ${JSON.stringify(byKind)}`);
   console.log(`  unsigned and prose-voice heads: ${JSON.stringify(Object.fromEntries(Object.entries(byHead).sort((a, b) => b[1] - a[1])))}`);
   console.log(`  partial turns (folded, a partner missing): ${report.partialTurns.length}`);
   console.log(`  unmapped at-names (RED): ${Object.keys(report.unmapped).sort().join(" ") || "none"}`);
-  console.log(`  Canon body changes (RED): ${JSON.stringify(report.canonBody)}`);
   console.log(`  seal not verifying (RED): ${report.sealBlocked.length}`);
   console.log(`  renamed heads (RED): ${renamed}`);
   console.log(`  census laws (RED): ${JSON.stringify(laws)}${lawHits.length ? "\n    " + lawHits.join("\n    ") : ""}`);

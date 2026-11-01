@@ -11,7 +11,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { loadContext, cutText, censusText, canonCarriers, CANON_CUT_WHOLE } from './grammar-cut.mjs';
+import { loadContext, cutText, censusText } from './grammar-cut.mjs';
 
 const REPO = fileURLToPath(new URL('../', import.meta.url));
 const PLANES = {
@@ -110,15 +110,6 @@ test('CONTROL: a clean sealed carrier still cuts and re-seals', () => {
   assert.equal(r.seal, 'ok');
   assert.equal(ctx.frame.verifyBcc(r.text), 'ok');
   assert.deepEqual(kinds(r), []);
-});
-
-test('Canon envelope-only: the head and foot cut, the body stays, and a body change counts as a red', () => {
-  const r = cut(SEALED, { envelopeOnly: true });
-  assert.ok(r.text.includes('<<~ ahu #/head>>'));
-  assert.ok(r.text.startsWith('<<!DOCTYPE type=`'));
-  assert.equal(r.bodyChanges, 1);
-  const clean = cut(reseal(SEALED.replace('<<~ ahu #/head>>', '<<~ ahu slot=`#/head`>>')), { envelopeOnly: true });
-  assert.equal(clean.bodyChanges, 0);
 });
 
 test('triple quotes, a held backtick, a bare named value, and the colon separator', () => {
@@ -250,12 +241,6 @@ test('the cut reads no git history: in a clone without the old range it still ru
   assert.match(r.stdout, /0 of 1 file\(s\) change/);
 });
 
-test('Canon carriers touched but never cut leave the envelope-only list; the rest stay on it', () => {
-  const canon = canonCarriers(REPO);
-  assert.equal(canon.size, 15);
-  for (const f of CANON_CUT_WHOLE) assert.ok(!canon.has(f), f);
-});
-
 test('a text that declares no carrier keeps its foot as written', () => {
   const body = CARRIER.split('\n').slice(2).join('\n');
   const r = cut(body);
@@ -280,9 +265,8 @@ test('Cut 5: every file-path meta line leaves, a quoted fence included; prose na
   assert.equal(r.counts.filePath, 2);
   assert.equal(censusText(src, ctx).filePath, 2);
   assert.equal(censusText(r.text, ctx).filePath, 0);
-  // CONTROL: with the rule off the line stands, and a Canon carrier (envelope-only) still takes it.
+  // CONTROL: with the rule off the line stands.
   assert.match(cut(src, { disable: ['file-path'] }).text, /^file-path = "bags/m);
-  assert.equal(cut(src, { envelopeOnly: true }).counts.filePath, 2);
   assert.equal(cut(r.text).changes, 0);
 });
 
