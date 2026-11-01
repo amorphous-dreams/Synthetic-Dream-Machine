@@ -118,9 +118,11 @@ export function resolveMempalaceExe(): string {
 // ── The `~/.lares` vessel home (isolation base + vessel-identity) ─────────────────────────────────
 
 /** The `~/.lares` vessel home — `LAR_ROOT` (isolated instance) or `~/.lares`. Hosts vessel-identity
- *  (a separate concern, kept at its `~/.lares` spelling). */
+ *  (a separate concern, kept at its `~/.lares` spelling). An EMPTY `LAR_ROOT` reads as unset, as the socket
+ *  resolver (`lares_uds.py`), the runtime home and the container shims read it: an empty root would put every
+ *  path under it relative to whatever cwd a process happens to hold. */
 export function larHome(): string {
-  return process.env["LAR_ROOT"] ?? join(homedir(), ".lares");
+  return process.env["LAR_ROOT"] || join(homedir(), ".lares");
 }
 
 // ── The one-segment law (every caller-named dir passes through it) ───────────────────────────────

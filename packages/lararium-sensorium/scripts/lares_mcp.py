@@ -14,6 +14,67 @@ Meme: lar:///ha.ka.ba/lararium/sensorium/lares-mcp (the isomorphic surface).
 from __future__ import annotations
 
 import os
+import re
+
+# The `mcp` this seat builds on — the pin `requirements.txt` names and the image lock repeats (a test welds
+# all three). An older `mcp` lacks `mcp.server.mcpserver`, and a seat that died on that import inside its build
+# reached the harness as a closed connection and nothing more. A LAUNCH reads the installed version FIRST, ahead
+# of every import below, and refuses by name: before the stack loads (chroma takes seconds to stand for nothing)
+# and before `import mempalace` strips PYTHONPATH from sys.path, so the version read answers for the same path
+# the launch was handed.
+MCP_PIN = "2.3.0"
+
+
+_VERSION = re.compile(r"^v?(\d+(?:\.\d+)*)(.*)$", re.IGNORECASE)
+_PRE = re.compile(r"^[-_.]?(a|b|c|rc|alpha|beta|pre|preview|dev)", re.IGNORECASE)
+
+
+def _release(version: str) -> "tuple[tuple[int, ...], bool]":
+    """A version's numeric release and whether it reads FINAL (`2.3.0rc1` -> ((2, 3, 0), False);
+    `2.3.0.post1` -> ((2, 3, 0), True)). A pre-release or dev build of a release sorts below that release (PEP 440),
+    so it may lack what the release carries. An unreadable version reads as ((), False), below every pin."""
+    m = _VERSION.match(version.strip())
+    if not m:
+        return (), False
+    return tuple(int(n) for n in m.group(1).split(".")), not _PRE.match(m.group(2))
+
+
+def _below(found: str, pin: str) -> bool:
+    (have, have_final), (need, _) = _release(found), _release(pin)
+    width = max(len(have), len(need))   # `2.3` and `2.3.0` name one release: pad before the compare
+    have, need = have + (0,) * (width - len(have)), need + (0,) * (width - len(need))
+    return have < need or (have == need and not have_final)
+
+
+def mcp_floor_refusal() -> "str | None":
+    """Why this interpreter cannot carry the seat, or None. Reads the version of the `mcp` copy the import
+    WILL load, without importing it, so a stale install refuses here, by name, before any build touches it.
+
+    THE COPY THAT RUNS ANSWERS. `metadata.version` reads the first `mcp-*.dist-info` on sys.path, which may
+    belong to another copy than the package `import mcp` finds; so the read takes the distribution whose
+    files hold the very `mcp/__init__.py` the import resolves, and falls to the first only when none claims it."""
+    import importlib.util
+    from importlib import metadata
+
+    cure = (f"install the pin into the interpreter that runs this seat: "
+            f"<python> -m pip install -r packages/lararium-sensorium/requirements.txt (mcp=={MCP_PIN})")
+    spec = importlib.util.find_spec("mcp")
+    dists = list(metadata.distributions(name="mcp"))
+    if spec is None or spec.origin is None or not dists:
+        return f"lares_mcp: no mcp installed; the seat needs mcp=={MCP_PIN}. {cure}"
+    origin = os.path.realpath(spec.origin)
+    runs = next((d for d in dists if os.path.realpath(str(d.locate_file("mcp/__init__.py"))) == origin), dists[0])
+    found = runs.version
+    if _below(found, MCP_PIN):
+        return f"lares_mcp: mcp {found} stands below the pin mcp=={MCP_PIN}; the seat cannot build on it. {cure}"
+    return None
+
+
+if __name__ == "__main__":
+    _refusal = mcp_floor_refusal()
+    if _refusal is not None:
+        raise SystemExit(_refusal)
+
 
 import content_io as cio
 import worldline_io as wl
