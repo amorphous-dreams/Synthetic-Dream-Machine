@@ -20,7 +20,7 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { carrierHeadPattern, maskedExecAll } from "@lararium/memetic-frame";
+import { carrierHeadPattern, frameMarks, maskedExecAll } from "@lararium/memetic-frame";
 import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { join } from "node:path";
@@ -39,7 +39,7 @@ const squeeze = (s: string) =>
   s.replace(/\n{2,}/g, "\n").replace(/[ \t]+$/gm, "").replace(/\n+$/g, "\n");
 /**
  * Law-mandated normalizations the render MAY apply (glyph-ward ruling). The code-0002/0003/0004
- * sigils strip FIRST, against their literal un-spaced `">>"` — before the universal `\s*>>` → `
+ * sigils strip FIRST, against their literal ticked, un-spaced ``code=`&#x000N;`>>`` — before the universal `\s*>>` → `
  * >>` pass below inserts a space ahead of EVERY `>>` (including theirs), which would otherwise
  * leave the strip regexes matching nothing and the carrier's own re-stamped check hash (which
  * legitimately differs byte-for-byte from the committed one on any file the render reflows even
@@ -48,11 +48,18 @@ const squeeze = (s: string) =>
  * trailer is out of the comparison.
  */
 const sigilNorm = (s: string) => s
-  .replace(/<<\^ code="&#x0002;">>\n*/g, "").replace(/<<\^ code="&#x0003;">>[^\n]*\n*/g, "")
-  .replace(/<<\^ code="&#x0004;"[^\n]*>>\n*/g, "")
+  .replace(/<<\^ code=`&#x0002;`>>\n*/g, "").replace(/<<\^ code=`&#x0003;`>>[^\n]*\n*/g, "")
+  .replace(/<<\^ code=`&#x0004;`[^\n]*>>\n*/g, "")
   .replace(/<<~\s*/g, "<<~ ").replace(/\s*>>/g, " >>")
-  .replace(/<<\^ code="&#x(0001|0011);"[^>\n]*?( from=\?)/g, '<<^ code="&#x$1;"$2');  // the namespace re-homes (framing)
+  .replace(/<<\^ code=`&#x(0001|0011);`[^>\n]*?( from=`\?`)/g, "<<^ code=`&#x$1;`$2");  // the namespace re-homes (framing)
 const lawView = (s: string) => squeeze(sigilNorm(contentView(s)));
+
+/**
+ * The live closers of a render — quoted closer MENTIONS stay content, so only unmasked ones count.
+ * The shore's `frameMarks` reads each mark whole from its `<<^`, which stands outside the backtick
+ * pair a ticked value rides in; a bare code match would land inside that pair and mask.
+ */
+export const liveClosers = (text: string): number => frameMarks(text).etx.length;
 
 const skipped: string[] = [];
 
@@ -74,6 +81,19 @@ function carriers(): Array<{ rel: string; src: string; uri: string }> {
 /** A walk that deserializes every corpus carrier twice scales with the corpus; measured ~4.3 s alone,
  *  past the 5 s default under the full suite's parallel load. */
 const CORPUS_WALK_MS = 30_000;
+
+describe("liveClosers — a closer reads by its whole mark, never by its ticked code", () => {
+  test("RED→GREEN — a ticked ``<<^ code=`&#x0003;`>>`` closer counts as ONE live closer", () => {
+    // The kupono cut ticks every named value, so the code rides inside a backtick pair the mask
+    // reads as an inline code span. A bare `&#x0003;` match lands inside that span and masks;
+    // the shore's own readers anchor at the mark's `<<^`, which stands outside it.
+    expect(liveClosers("<<^ code=`&#x0002;`>>\nbody\n<<^ code=`&#x0003;`>>ni:///sha-256;AAAA\n")).toBe(1);
+  });
+
+  test("CONTROL — a closer QUOTED in inline code stays content and counts zero", () => {
+    expect(liveClosers("prose quoting ``<<^ code=`&#x0003;`>>`` as an example\n")).toBe(0);
+  });
+});
 
 describe("corpus round-trip — the lens laws over every bag carrier", () => {
   const all = carriers();
@@ -98,7 +118,7 @@ describe("corpus round-trip — the lens laws over every bag carrier", () => {
       if (out === null) { failures.push(`${rel}: render null`); continue; }
 
       // Quoted closer MENTIONS stay content — count only unmasked closers.
-      const closers = maskedExecAll(out, /&#x0003;/g).length;
+      const closers = liveClosers(out);
       if (closers !== 1) { failures.push(`${rel}: ${closers} closers (doubling)`); continue; }
 
       if (lawView(out) !== lawView(src)) { failures.push(`${rel}: content drift`); continue; }

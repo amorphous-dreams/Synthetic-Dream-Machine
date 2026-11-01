@@ -260,8 +260,8 @@ export type { MetaFenceSpan } from "./root-meta.js";
 // never the path — see carrier-files.ts.
 export {
   carrierFiles, readCarrierFiles, forgetCarrierFiles,
-  declaresCarrier, inSubmodule,
-  SUBMODULES,
+  declaresCarrier, inSubmodule, inFrozenSpecimen, outsideCorpus,
+  SUBMODULES, FROZEN_SPECIMENS,
 } from "./carrier-files.js";
 export type { CarrierDeclaration, CarrierDeclarationForm, CarrierFile as DeclaredCarrierFile } from "./carrier-files.js";
 // The carrier reader the genesis floor cut shares with every door that reads a carrier (`genesis-floor.ts`).

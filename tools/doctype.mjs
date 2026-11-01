@@ -17,7 +17,7 @@ import { readCarrier, vanishedNote, distCarrierFiles } from "./corpus-read.mjs";
 import { join } from "path";
 
 const REPO = process.env["REPO"] ?? process.cwd();
-const { carrierFiles, inSubmodule } = await distCarrierFiles(REPO, "doctype");
+const { carrierFiles, outsideCorpus } = await distCarrierFiles(REPO, "doctype");
 // A FENCED DECLARATION DECLARES NOTHING. A carrier that TEACHES the register writes the declaration in
 // a fence, and a reader counting lines takes the lesson for the carrier's own act.
 //
@@ -50,7 +50,7 @@ const hidden = [];
 const tracked = execFileSync("git", ["ls-files", "-z"], { cwd: REPO, encoding: "utf8", maxBuffer: 1 << 28 })
   .split("\0").filter(Boolean);
 for (const f of tracked) {
-  if (inSubmodule(f)) continue;
+  if (outsideCorpus(f)) continue;
   // A tracked path that refuses to read as text — a symlink to nowhere, a binary blob — holds no line.
   let text;
   try { text = readFileSync(join(REPO, f), "utf8"); } catch { continue; }

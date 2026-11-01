@@ -1,6 +1,8 @@
 // vm-grammar-boundary: exempt — reads fence-mask.ts's OWN fenceLineOpen/fenceLineClose to
 // toggle fences the same way the compile layer does — it drives no meme-ast parse at all, only
-// the mask layer's line-fence rule, the same reasoning as fence-mask-info-string.test.ts.
+// the mask layer's line-fence rule, the same reasoning as fence-mask-info-string.test.ts. It also
+// composes its opener from ahu-scan.ts's exported `SLOT_PATH_SRC` (a regex source, no parse), so the
+// slot spelling it counts never drifts from the one the scanner reads.
 /**
  * ahu-sections-address — every named `ahu` section becomes an addressable tiddler.
  *
@@ -35,6 +37,13 @@ import path from "node:path";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { carrierFiles } from "../src/carrier-files.js";
 import { fenceLineOpen, fenceLineClose, type FenceOpen } from "@lararium/memetic-frame";
+import { SLOT_PATH_SRC } from "../src/meme-ast/ahu-scan.js";
+
+/** A section open whose ticked slot omits the root slash — ``slot=`#name` `` — the name captured. */
+const BARE_SLOT_RE = /^<<(?:~ ?ahu|fragment|~ ?kahea ahu) slot=`#(?!\/)([^`\/]+)`/i;
+
+/** A section open, its rooted slot path captured whole — the scanner's own spelling, every segment. */
+const SECTION_OPEN_RE = new RegExp(`^(?:<<~ (?:kahea |aka )?ahu|<<fragment) slot=\`(${SLOT_PATH_SRC})\``);
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 
@@ -56,8 +65,9 @@ export function frame(text: string): { opens: string[]; closes: number } {
     if (fence) { if (fenceLineClose(line, fence)) fence = null; continue; }
     fence = fenceLineOpen(line);
     if (fence) continue;
-    const open = /^(?:<<~ (?:kahea |aka )?ahu|<<fragment) slot=`#\/?([a-z0-9-]+)`/.exec(line);
-    if (open) opens.push(open[1]!);
+    // The leaf is what ② finds an open under: `#/observe/observe-ha` counts as `observe-ha`.
+    const open = SECTION_OPEN_RE.exec(line);
+    if (open) opens.push(open[1]!.split("/").pop()!);
     if (/^(?:<<~\/ahu|<<\/fragment)/.test(line)) closes += 1;
   }
   return { opens, closes };
@@ -83,6 +93,29 @@ function addressed(file: string, disk: string): Set<string> | null {
   return out;
 }
 
+describe("frame() — a compound slot reads whole and counts its LEAF", () => {
+  test("RED→GREEN — a nested ``slot=`#/observe/observe-ha` `` opens, and counts as `observe-ha`", () => {
+    // ② pairs each open with the leaf the deserialiser addresses, so an open must push the leaf. A
+    // one-segment opener regex never matched a compound slot at all: the nest's opens vanished
+    // while its closes still counted, and ① read every OODA-HA carrier as unbalanced.
+    const text = [
+      "<<~ ahu slot=`#/observe`>>",
+      "<<~ ahu slot=`#/observe/observe-ha`>>",
+      "<<~/ahu>>",
+      "<<~/ahu>>",
+    ].join("\n");
+    const { opens, closes } = frame(text);
+    expect(opens).toEqual(["observe", "observe-ha"]);
+    expect(closes).toBe(2);
+  });
+
+  test("CONTROL — a one-segment slot still opens under its own name", () => {
+    const { opens, closes } = frame(["<<~ ahu slot=`#/charge`>>", "<<~/ahu>>"].join("\n"));
+    expect(opens).toEqual(["charge"]);
+    expect(closes).toBe(1);
+  });
+});
+
 describe("frame() — fence toggling reads CommonMark §4.5, never a naive line.startsWith", () => {
   test("RED→GREEN — a hard-wrapped prose line opening with a quad-backtick inline span does NOT desync the count", () => {
     // CommonMark §4.5: a backtick fence's own info string may not itself carry a backtick — a line
@@ -92,7 +125,7 @@ describe("frame() — fence toggling reads CommonMark §4.5, never a naive line.
     const text = [
       "prose before",
       "```memetic-wikitext tangle`more prose",
-      "<<~ ahu slot=`#a`>>",
+      "<<~ ahu slot=`#/a`>>",
       "body",
       "<<~/ahu>>",
     ].join("\n");
@@ -104,10 +137,10 @@ describe("frame() — fence toggling reads CommonMark §4.5, never a naive line.
   test("CONTROL — a real fence (clean info string) still masks the open/close it carries", () => {
     const text = [
       "```text",
-      "<<~ ahu slot=`#fenced-example`>>",
+      "<<~ ahu slot=`#/fenced-example`>>",
       "<<~/ahu>>",
       "```",
-      "<<~ ahu slot=`#real`>>",
+      "<<~ ahu slot=`#/real`>>",
       "<<~/ahu>>",
     ].join("\n");
     const { opens, closes } = frame(text);
@@ -143,7 +176,7 @@ describe("★ every named ahu section addresses ★", () => {
         if (fence) { if (fenceLineClose(line, fence)) fence = null; return; }
         fence = fenceLineOpen(line);
         if (fence) return;
-        const m = /^<<(?:~ ?ahu|fragment|~ ?kahea ahu) #(?!\/)([a-z0-9-]+)/i.exec(line);
+        const m = BARE_SLOT_RE.exec(line);
         if (m) bare.push(`${f}:${i + 1} #${m[1]}`);
       });
     }

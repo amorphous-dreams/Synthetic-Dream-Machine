@@ -50,6 +50,18 @@ export const SUBMODULES: readonly string[] = [
   "ftls",
 ];
 
+/**
+ * Frozen specimens: fixtures that stand in an OLDER carrier form on purpose. Each pins a grammar
+ * version for its own reader (the tree-sitter grammar's specimens, the sensorium testbeds), so its
+ * older form marks it frozen, never a straggler (working-procedures, "a `git ls-files '*.mem'` sweep
+ * reaches frozen fixtures"). They still declare, so a declaration-only finder enrolled them and every
+ * per-carrier law read their older form as drift. A grammar cut leaves them as they stand.
+ */
+export const FROZEN_SPECIMENS: readonly string[] = [
+  "packages/tree-sitter-memetic-wikitext/fixtures/specimens",
+  "packages/lararium-sensorium/scripts/fixtures",
+];
+
 /** How a file says it carries: a doctype line, or its `type`. */
 export type CarrierDeclarationForm = "doctype" | "type-field";
 
@@ -142,6 +154,20 @@ export function inSubmodule(rel: string): boolean {
   return SUBMODULES.some((s) => rel === s || rel.startsWith(s + "/"));
 }
 
+/** Whether a repo-relative path stands under a frozen-specimen dir. */
+export function inFrozenSpecimen(rel: string): boolean {
+  return FROZEN_SPECIMENS.some((s) => rel === s || rel.startsWith(s + "/"));
+}
+
+/**
+ * Whether a repo-relative path stands outside this repo's corpus: a vendored tree or a frozen
+ * specimen. The ONE path test the finder applies, and the one a gate walking `git ls-files` on its
+ * own reuses, so the corpus boundary reads the same everywhere.
+ */
+export function outsideCorpus(rel: string): boolean {
+  return inSubmodule(rel) || inFrozenSpecimen(rel);
+}
+
 /** A file that declares, with the declaration it carries. */
 export interface CarrierFile extends CarrierDeclaration {
   /** Repo-relative, forward-slashed — the spelling `git ls-files` reports. */
@@ -187,7 +213,7 @@ export function readCarrierFiles(repo: string): CarrierFile[] {
 
   const out: CarrierFile[] = [];
   for (const rel of tracked) {
-    if (inSubmodule(rel)) continue;
+    if (outsideCorpus(rel)) continue;
     let text: string;
     // A file git tracks may still refuse to read as text — a symlink to nowhere, a binary blob.
     // Refusing to read is refusing to declare.
