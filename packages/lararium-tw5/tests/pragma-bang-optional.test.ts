@@ -36,10 +36,10 @@ function hasErrorNode(src: string): boolean {
 
 describe("pragma-kind sigils accept an optional `!` — both spellings PAIR (scan+build layer)", () => {
   test.each([
-    ["wehe",   '<<~%s wehe greet(name:"world")>>Hello<<~/wehe>>'],
-    ["kumu",   '<<~%s kumu TypeName(params)>>body<<~/kumu>>'],
-    ["helu",   '<<~%s helu tally(x)>>[<x>count[]]<<~/helu>>'],
-    ["widget", '<<~%s widget ~mana(uri:"")>>body<<~/widget>>'],
+    ["wehe",   '<<~%s wehe name=`greet` params=`name:"world"`>>Hello<<~/wehe>>'],
+    ["kumu",   '<<~%s kumu name=`TypeName` params=`params`>>body<<~/kumu>>'],
+    ["helu",   '<<~%s helu name=`tally` params=`x`>>[<x>count[]]<<~/helu>>'],
+    ["widget", '<<~%s widget name=`~mana` params=`uri:""`>>body<<~/widget>>'],
   ])("%s — bare and `!` both pair, no Error node", (_name, template) => {
     const bare = template.replace("%s", "");
     const bang = template.replace("%s", "!");
@@ -48,17 +48,17 @@ describe("pragma-kind sigils accept an optional `!` — both spellings PAIR (sca
   });
 
   test("canon's own worked example (memetic-wikitext.mem:617) pairs", () => {
-    const src = '<<~! wehe greeting(name "World")>>Hello, <<~ kahea name>>!<<~/wehe>>';
+    const src = '<<~! wehe name=`greeting` params=`name "World"`>>Hello, <<~ kahea uri=`name`>>!<<~/wehe>>';
     expect(hasErrorNode(src)).toBe(false);
   });
 
   test("waiho's bare block form still pairs (open/close, unaffected by the pragma-pattern addition)", () => {
-    const src = '<<~ waiho name "value">>body<<~/waiho>>';
+    const src = '<<~ waiho name=`name` value=`value`>>body<<~/waiho>>';
     expect(hasErrorNode(src)).toBe(false);
   });
 
   test("waiho's `!` form fires as a standalone PRAGMA event — no closer expected, never an Error", () => {
-    const src = '<<~! waiho name = value>>\nrest of carrier\n';
+    const src = '<<~! waiho name=`name` value=`value`>>\nrest of carrier\n';
     const events = collectEvents(src, GRAMMAR);
     const pragma = events.find((e) => e.sigilName === "waiho" && e.eventType === "pragma");
     expect(pragma, "the carrier-scoped waiho form never fired as a pragma event").toBeTruthy();
@@ -66,7 +66,7 @@ describe("pragma-kind sigils accept an optional `!` — both spellings PAIR (sca
   });
 
   test("const's `!` form erases to waiho and fires as a standalone PRAGMA event", () => {
-    const src = '<<~! const name = value>>\n';
+    const src = '<<~! const name=`name` value=`value`>>\n';
     const events = collectEvents(src, GRAMMAR);
     const pragma = events.find((e) => e.sigilName === "waiho" && e.eventType === "pragma");
     expect(pragma, "const's carrier-scoped form never fired as a pragma event").toBeTruthy();
@@ -102,7 +102,7 @@ describe.skipIf(wikiSkip)(`pragma-kind sigils' both spellings RENDER, live${skip
   test.each(["wehe", "kumu", "helu", "widget"])(
     "%s — bare and `!` both dispatch (neither goes to water, neither leaves a literal closer)", (name) => {
       for (const bang of ["", "!"]) {
-        const html = renderWikitext(e, `<<~${bang} ${name} x>>\nbody\n<<~/${name}>>`);
+        const html = renderWikitext(e, `<<~${bang} ${name} name=\`x\`>>\nbody\n<<~/${name}>>`);
         expect(html, `<<~${bang} ${name} …>> rendered as WATER`).not.toMatch(/lar-sigil-water/);
         expect(html, `<<~${bang} ${name} …>> left its closer on the page`).not.toContain(`/${name}&gt;&gt;`);
       }
@@ -110,7 +110,7 @@ describe.skipIf(wikiSkip)(`pragma-kind sigils' both spellings RENDER, live${skip
 
   test.each(["wehe", "kumu", "helu", "widget"])(
     "%s — POSITIVE: `!` builds the SAME compound-sigil transclude node the bare form builds", (name) => {
-      const src = (bang: string) => `<<~${bang} ${name} x>>\nbody\n<<~/${name}>>`;
+      const src = (bang: string) => `<<~${bang} ${name} name=\`x\`>>\nbody\n<<~/${name}>>`;
       const bareNode = compoundTransclude(e, name, src(""));
       const bangNode = compoundTransclude(e, name, src("!"));
       expect(bareNode, `<<~ ${name} …>> built no compound transclude node at all`).toBeTruthy();
@@ -119,8 +119,8 @@ describe.skipIf(wikiSkip)(`pragma-kind sigils' both spellings RENDER, live${skip
     });
 
   test("CONTROL — a NON-pragma-kind sigil refuses `!`: `huli` builds no compound node at all", () => {
-    const bareNode = compoundTransclude(e, "huli", '<<~ huli "[tag[x]]" as item>>\nbody\n<<~/huli>>');
-    const bangNode = compoundTransclude(e, "huli", '<<~! huli "[tag[x]]" as item>>\nbody\n<<~/huli>>');
+    const bareNode = compoundTransclude(e, "huli", '<<~ huli filter=`[tag[x]]`>>\nbody\n<<~/huli>>');
+    const bangNode = compoundTransclude(e, "huli", '<<~! huli filter=`[tag[x]]`>>\nbody\n<<~/huli>>');
     expect(bareNode, "the bare CONTROL itself lost its huli dispatch").toBeTruthy();
     expect(bangNode, "`!` reached a sigil outside the pragma-kind set — huli is not pragma-kind").toBeUndefined();
   });

@@ -1,0 +1,14 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-flows
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: relation
+lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
+lar-pattern: <<~\s*flows\s+name=`([\w.-]+)`(?:\s+path=`([^`]*)`)?\s*>>
+lar-example: <<~ flows name=`turn` path=`reads-the-instruments -> holds-the-nalu -> flushes-to-the-drawer`>>
+type: text/vnd.tiddlywiki
+
+<!-- flows — a named FLOW and the path it runs. The path is ONE ticked value: a chain with no `from`/`to` slots names
+     its steps with the arrow INSIDE the value (the arrow between values retired with Cut 1). -->
+
+\procedure ~flows(name:"" path:"")
+<span class="lar-flows"><<name>> <$text text=<<path>>/></span>
+\end

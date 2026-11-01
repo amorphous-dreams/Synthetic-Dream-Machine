@@ -2,33 +2,28 @@ title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kau
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: child-slot
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kau
-lar-pattern: <<~\s*kau\s+(#[\w-]+\s+)?([\w][\w.-]*)(?:\s+([^>]*))?\s*>>
-lar-example: <<~ kau Laptop>>
+lar-pattern: <<~\s*kau(?:\s+slot=`(#[\w-]+)`)?\s+name=`([\w][\w.-]*)`(?:\s+props=`([^`]*)`)?\s*>>
+lar-example: <<~ kau name=`Laptop`>>
 type: text/vnd.tiddlywiki
 
 <!-- kau — device-slot child-slot sigil. TW5-native \widget handles all render;
      ~kahea~kau and ~aka~kau follow the ahu template-cascade pattern.
 
-     Dispatch shapes:
-       <<~ kau #frag Name props>>    → ~kau(args="#frag Name props") — placement
-       <<~ kau Name>>                → ~kau(args="Name")             — invocation
-       <<~ kahea kau #slot>>         → ~kahea~kau(p1="#slot")
-       <<~ aka   kau #slot>>         → ~aka~kau(p1="#slot")
+     Dispatch shapes (every value rides named, ticked):
+       <<~ kau slot=`#frag` name=`Name` props=`props`>>  → ~kau(slot name props) — placement
+       <<~ kau name=`Name`>>                             → ~kau(name)            — invocation
+       <<~ kahea kau slot=`#slot`>>                      → ~kahea~kau(slot)
+       <<~ aka   kau slot=`#slot`>>                      → ~aka~kau(slot)
 
-     args parse: first token starting with # = fragment; remainder = name + props. This widget
-     reads the argument RUN and not the slots, because its shape is positional-by-prefix rather
-     than positional-by-arity — a placement carries a fragment the invocation form omits.
+     The widget reads its three names directly: a placement carries a `slot` fragment the invocation
+     form omits, and `props` rides as one named value.
      Template cascade tag: lar:///ha.ka.ba/tags/kau-template
      Keyhive capability and UUID write-back: deferred; handled by explicit action
      tiddlers when Keyhive WASM lands. -->
 
-\widget ~kau(p1:"" p2:"" p3:"" args:"")
-<$set name="_kau-fst" filter="[<args>split[ ]first[]]" emptyValue="">
-<$set name="_kau-frag" filter="[<_kau-fst>regexp[^#]]" emptyValue="">
-<$set name="_kau-after" filter="[<_kau-fst>regexp[^#]]" value={{{ [<args>removeprefix<_kau-fst>trim[]] }}} emptyValue=<<args>>>
-<$set name="_kau-name" filter="[<_kau-after>split[ ]first[]]" emptyValue="">
-<$set name="_kau-props" filter="[<_kau-after>removeprefix<_kau-name>trim[]]" emptyValue="">
-<$let _kau-def={{{ [all[tiddlers+shadows]tag[lar:///ha.ka.ba/tags/kumu]field:kumu-name<_kau-name>first[]else[]] }}}
+\widget ~kau(slot:"" name:"" props:"")
+<$let _kau-frag=<<slot>> _kau-name=<<name>> _kau-props=<<props>>
+      _kau-def={{{ [all[tiddlers+shadows]tag[lar:///ha.ka.ba/tags/kumu]field:kumu-name<name>first[]else[]] }}}
       _kau-template={{{ [all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/kau-template]!is[draft]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/lararium/templates/kau/html]] }}}>
 <$set name="kau-name" value=<<_kau-name>>><$set name="kau-def" value=<<_kau-def>>><$set name="kau-props" value=<<_kau-props>>><$set name="kau-frag" value=<<_kau-frag>>>
 <$list filter="[<_kau-frag>!match[]]" variable=ignore>
@@ -41,16 +36,15 @@ type: text/vnd.tiddlywiki
 </$list>
 </$set></$set></$set></$set>
 </$let>
-</$set></$set></$set></$set></$set>
 \end
 
-\procedure ~kahea~kau(p1:"" p2:"" p3:"" args:"")
-<$transclude $variable="~kau" p1=<<p1>> p2=<<p2>> p3=<<p3>> args=<<args>>/>
+\procedure ~kahea~kau(slot:"" name:"" props:"")
+<$transclude $variable="~kau" slot=<<slot>> name=<<name>> props=<<props>>/>
 \end
 
-\procedure ~aka~kau(slot:"" uri:"" p1:"")
-<$let _ak-slot={{{ [<slot>!match[]] ~[<p1>] }}}>
-<$let _ak-uri={{{ [<uri>!match[]!regexp[^lar:///unknown]] ~[<_ak-slot>regexp[^lar:]] ~[<currentTiddler>addsuffix<_ak-slot>] }}}
+\procedure ~aka~kau(slot:"" to:"")
+<$let _ak-slot=<<slot>>>
+<$let _ak-uri={{{ [<to>!match[]!regexp[^lar:///unknown]] ~[<_ak-slot>regexp[^lar:]] ~[<currentTiddler>addsuffix<_ak-slot>] }}}
       _ak-template={{{ [all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/aka-template]!is[draft]!has[draft.of]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/lararium/templates/aka/html]] }}}>
 <$tiddler tiddler=<<_ak-uri>>>
 <$transclude $tiddler=<<_ak-template>>/>
