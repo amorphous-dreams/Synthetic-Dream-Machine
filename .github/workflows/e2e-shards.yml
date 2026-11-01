@@ -76,6 +76,24 @@ jobs:
         run: pnpm --filter @lararium/tw5 build:tw5-vendor
       - name: Build (vessels run from dist)
         run: pnpm build
+      # THE MCP SEAT WALKS HERE TOO. `mcp-seat-binds-the-hearth` spawns the real `lares_mcp.py` against a staged
+      # hearth, so the shard holds THE venv (`~/.venv`) the seat resolves, stood from the same list and cached
+      # under the same key as ci.yml's test cells (one cache, restored by key).
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Cache the holder venv
+        id: venv-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.venv
+          key: holder-venv-${{ runner.os }}-py312-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
+      - name: Stand the holder venv (~/.venv)
+        if: steps.venv-cache.outputs.cache-hit != 'true'
+        run: |
+          python3 -m venv ~/.venv
+          ~/.venv/bin/python3 -m pip install --upgrade pip
+          ~/.venv/bin/python3 -m pip install -e ./mempalace -r packages/lararium-sensorium/requirements.txt
       - name: Run this shard's slice of its e2e set
         working-directory: ${{ matrix.dir }}
         env:
