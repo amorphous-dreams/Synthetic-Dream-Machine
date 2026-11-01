@@ -14,10 +14,12 @@ import { fold } from "./fold.mjs";
 import { heldBytes } from "./held-text.mjs";
 import { parseMemeText } from "../../lararium-tw5/dist/meme-ast/parse.js";
 import { defaultWidgetRegistry, resolveWidgetTree } from "../../lararium-tw5/dist/meme-ast/widget-tree.js";
+import { loadContext, cutText } from "../../../tools/grammar-cut.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const grammar = path.join(root, "tree-sitter-memetic_wikitext.wasm");
 const runtime = path.join(root, "node_modules/web-tree-sitter/web-tree-sitter.wasm");
+const repo = path.resolve(root, "../..");
 const names = ["authored-01-unreached-constructs.mem", "authored-02-comment.mem", "wild-01-voices.mem", "wild-02-pragma.mem"];
 
 /** Shared reduction: authored ahu slots and loulou targets, in preorder. A block loulou sigil is the childless
@@ -65,13 +67,24 @@ test("widget-tree-parity: reviewed source and seven fixture-derived specimens ag
     // spelling and the spaced close. The specimens hold some of each, so the corpus canonicalizes the legacy
     // spelling for BOTH sides, and the two divergences stand pinned below as they are.
     const canon = (text) => text.replace(/(<<~\s*ahu\s+)#(?!\/)/g, "$1#/");
+    // The specimens stay FROZEN for the tree-sitter corpus and speak the grammar of their day; the live in-VM
+    // reader speaks the kupono grammar alone (ticked named values). The parity compares the two parsers over
+    // input the live grammar speaks, so each specimen passes through the house's own cut (tools/grammar-cut)
+    // in memory first; a specimen holding an old-form ahu opener must move.
+    const ctx = await loadContext({ repo });
+    const kupono = (text) => {
+      const cut = cutText(text, ctx, { rel: "parity-specimen" }).text;
+      if (/<<~\s*ahu\s+#/.test(text)) assert.notEqual(cut, text, "the cut moves a frozen specimen's old-form opener");
+      assert.doesNotMatch(cut, /<<~\s*ahu\s+#/, "no old-form ahu opener survives the cut");
+      return cut;
+    };
     const spaced = fixtures[0].slice(fixtures[0].indexOf("<<~ ahu #open-and-close"), fixtures[0].indexOf("\\procedure"));
     const corpus = [
       "! Start\n\nSee [[Alpha]] and [[Beta]].", // widget-tree.test.ts reviewed source
-      ...fixtures.slice(1).map(canon),
-      canon(fixtures[2].slice(fixtures[2].indexOf("<<~ ahu #meme-header"), fixtures[2].indexOf("<<~ ahu #architecture"))),
-      canon(fixtures[3].slice(fixtures[3].indexOf("<<~ ahu #the-ground"), fixtures[3].indexOf("<<~ ahu #the-rhizome"))),
-      '<<~ ahu #/control>>\n<<<quote\nbody\n<<<\n```fence\nbody\n```\n| A | B |\n<$button>Go</$button>\n<<~/ahu>>',
+      ...fixtures.slice(1).map((f) => kupono(canon(f))),
+      kupono(canon(fixtures[2].slice(fixtures[2].indexOf("<<~ ahu #meme-header"), fixtures[2].indexOf("<<~ ahu #architecture")))),
+      kupono(canon(fixtures[3].slice(fixtures[3].indexOf("<<~ ahu #the-ground"), fixtures[3].indexOf("<<~ ahu #the-rhizome")))),
+      '<<~ ahu slot=`#/control`>>\n<<<quote\nbody\n<<<\n```fence\nbody\n```\n| A | B |\n<$button>Go</$button>\n<<~/ahu>>',
     ];
     for (const [index, source] of corpus.entries()) {
       const bytes = new TextEncoder().encode(source);
@@ -99,7 +112,7 @@ test("widget-tree-parity: reviewed source and seven fixture-derived specimens ag
     const legacyBytes = new TextEncoder().encode(legacy);
     assert.deepEqual(fromWidget(legacy), [], "the in-VM parser reads no slot from the legacy spelling");
     assert.deepEqual(fromHost(fold(legacyBytes, artifact), legacyBytes).map((t) => t.value), ["#legacy"], "the host fold reads it");
-    const witnessSource = "<<~ ahu #/witness>>\n<<~/ahu>>";
+    const witnessSource = "<<~ ahu slot=`#/witness`>>\n<<~/ahu>>";
     const witnessBytes = new TextEncoder().encode(witnessSource);
     const witness = fromWidget(witnessSource);
     const hostWitness = fromHost(fold(witnessBytes, artifact), witnessBytes);
