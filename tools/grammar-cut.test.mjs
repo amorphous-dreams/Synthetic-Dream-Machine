@@ -47,8 +47,11 @@ test('an arrow inside a value stays', () => {
   assert.equal(one('<<~ loops "a -> b -> c">>\n'), '<<~ loops phases=`a -> b -> c`>>\n');
 });
 
+// The input carrier speaks the pre-cut grammar on purpose. Its declaration builds from the spec address,
+// so type-parity reads it as a template the test composes, never as a second spelling of the authority.
+const SPEC = 'lar:///ha.ka.ba/lares/api/pono/memetic-wikitext';
 const CARRIER = [
-  '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>',
+  `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "${SPEC}">>`,
   '',
   '<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/x/y">>',
   '<<^ code="&#x0002;">>',
