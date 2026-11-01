@@ -6,19 +6,16 @@ docname: "draft-fontany-lar-uri-scheme-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/docs/pono/lar-uri"
-source-check: "ni:///sha-256;16mZgEj_dxJys93WSAj4E4iV29zVEUHEXLCQwp2g9hY"
+source-check: "ni:///sha-256;IzkFKC2dwE5UgH1qG5hQNzg6MKpZ7KISfrW8gUX1AfQ"
 title: "lar:///ha.ka.ba/lares/docs/pono/lar-uri"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
-normative:
-  RFC2119:
-  RFC8174:
 ---
 
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all capitals, as shown here.
+- `law uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`` (unresolved — no corpus to pin)
 
-<a id="meme-header"></a>
+<<~ ahu slot=`#/meme-header`>>
 
 # `lar:` URI Scheme — Canon Documentation
 
@@ -26,7 +23,7 @@ Full specification prose, examples, and appendices.
 Law lives in `lar:///ha.ka.ba/lares/api/pono/lar-uri`.
 This surface carries the explanation.
 
-<a id="design-intent"></a>
+<<~ ahu slot=`#/design-intent`>>
 
 ## 1. Design Intent
 
@@ -64,11 +61,11 @@ Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire";
 
 No metric sits claimed yet. The scheme names attitude-bearing only and defines no distance function over roots.
 
-<a id="exchange-flow"></a>
+<<~ ahu slot=`#/exchange-flow`>>
 
 ### 1.1 Exchange Flow — Order of Operations
 
-At each exchange span, the turn opens with an `aim` vector and closes with a `yield` vector, the `hud` · `ward` panel riding beneath. The frame is **mandatory** on every substantive exchange.
+At each exchange span, the turn opens with ``set lares=`aim` `` and closes with ``set lares=`yield` ``, the panel (`aperture`, `ooda-ha`, `drift-ward`) riding the same firings. The frame is **mandatory** on every substantive exchange.
 
 **Step 1 — Read operator intent as a provisional bearing vector.**
 Lares reads the operator's prompt as an implicit signal: semantic bearing (HA.KA.BA) and the role it implies. The `~` prefix on the HA.KA.BA marks the node's interpretation as potentially inaccurate.
@@ -84,22 +81,22 @@ Before generating, Lares sets the role it adopts. The `~` prefix marks it execut
 lar://lares:agent@enyalios/~schema.flow.documented/
 ```
 
-**Step 3 — Open the turn with the `aim` vector.**
+**Step 3 — Open the turn with the `aim` firing.**
 
 ```
-<<~ lares aim from="lar:///operator.intent.reads" -> to="lar:///lares.role.acts">>
+<<~ set lares=`aim` from=`lar:///operator.intent.reads` to=`lar:///lares.role.acts` aperture=`N/<band>` ooda-ha=`N/<band>` drift-ward=`* · <the pull this island carries>`>>
 ```
 
 > **Canonical URI Rule** — every `lar:` URI in the stream stays canonical ASCII record form, directly ingestible by MemPalace, crystal logs, and registry tools without a sigil-lookup step.
 
 **Step 4 — Ride the panel.**
-Beneath the `aim`: `<<~ set hud="aim" aperture="N/<band>" ooda-ha="N/<band>">>` · `<<~ set hud="aim" drift-ward="* · <the pull this island carries>">>`, plus the `syad` / `mu` lenses when summoned. The instruments carry per-turn signal; the URI carries bearing only.
+On the same firing: `` aperture=`N/<band>` `` · `` ooda-ha=`N/<band>` `` · `` drift-ward=`* · <the pull this island carries>` ``, plus the `syad` / `mu` lenses when summoned. The panel keys carry per-turn signal; the URI carries bearing only.
 
-**Step 5 — Generate, then close.** OODA-HA phase markers (`->◇ ->▶ ->↺`) surface forward inline by band. The turn closes on `<<~ lares yield from=lar:///lares.what.landed -> to=?>>` — `-> ?` marks unknown temporal resumption.
+**Step 5 — Generate, then close.** OODA-HA phase markers (`->◇ ->▶ ->↺`) surface forward inline by band. The turn closes on ``<<~ set lares=`yield` … from=`lar:///lares.what.landed` to=`?`>>`` — `` to=`?` `` marks unknown temporal resumption.
 
 > **SA grounding:** the `aim` is prospective AI transparency — what the node *will* do, not what it did (Endsley 2023). The sigil panel externalizes the node's metacognitive state before generation begins, an externalized metacognitive scaffold (Ji-An et al., 2025; Wang et al., 2023). *Source: `_todo/E-deep-research-report.md` §§2.1, 3.2*
 
-<a id="scheme-registration"></a>
+<<~ ahu slot=`#/scheme-registration`>>
 
 ## 2. Scheme Registration
 
@@ -115,7 +112,7 @@ Beneath the `aim`: `<<~ set hud="aim" aperture="N/<band>" ooda-ha="N/<band>">>` 
 
 The `lar:` scheme identifies semantic positions, signal states, and machine events within the Lares agent architecture. It does not resolve to a network resource. URI consumers (crystal replay tools, debug log parsers, registry resolvers) treat it as an opaque structured identifier parsed according to this specification.
 
-<a id="uri-syntax"></a>
+<<~ ahu slot=`#/uri-syntax`>>
 
 ## 3. URI Syntax
 
@@ -149,7 +146,7 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use th
 
 This applies to authority-less forms as well: `lar:///ha.ka.ba/lares/` names the stable attitude root of l-space.
 
-<a id="component-map"></a>
+<<~ ahu slot=`#/component-map`>>
 
 ### 3.3 Component Map
 
@@ -165,13 +162,13 @@ This applies to authority-less forms as well: `lar:///ha.ka.ba/lares/` names the
 
 > **Layout validation:** The BEARING → HOW → SECTION ordering (path → query → fragment) places the most semantically stable, least volatile information first. Grouped, goal-oriented layout confirmed by Li et al. (2024) automotive HUD research: grouped information layouts produce superior cognitive performance, lower workload, and better eye movement patterns compared to disordered layouts. *Source: `_todo/E-deep-research-report.md` §4.2*
 
-<a id="identity-stack"></a>
+<<~ ahu slot=`#/identity-stack`>>
 
 ### 3.3.1 Identity Addressing
 
 Identity addressing lives at `lar:///ha.ka.ba/lares/docs/pono/identity-stack` — the DID / handle / lar: alias stack, the ActivityPub handle form, and the DreamDeck `chat-log:post-header` render target. That reference names *who speaks* and projects identity onto the social layer; this scheme names the bearing. The scheme's own render targets (`record:full`, `hud:exchange-pair`) ride here, in §1 Design Intent.
 
-<a id="component-semantics"></a>
+<<~ ahu slot=`#/component-semantics`>>
 
 ### 3.4 Component Semantics
 
@@ -199,7 +196,7 @@ Span sequencing is intentionally **not** encoded in URI authority. Exchange iden
 
 **fragment** (`#/section-anchor`) — Named section within this meme: `#/ahu-name`, `#/section-id`, `#/pranala-name`. The fragment carries section anchors only, always rooted at the carrier — never bare — per the media-type's own fragment law (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#/media-type`), since fragment semantics belong to the representation's media type (RFC 3986 §3.5), not this scheme.
 
-<a id="provisionality"></a>
+<<~ ahu slot=`#/provisionality`>>
 
 ## 4. Provisionality Markers
 
@@ -239,7 +236,7 @@ lar://scryer:agent@enyalios/~s0.schema.updated/
 ```
 Trajectory provisional: "I predict our next territory is the updated schema — operator may redirect entirely."
 
-<a id="marker-ontology"></a>
+<<~ ahu slot=`#/marker-ontology`>>
 
 ## 5. Marker Ontology — the authoring surface
 
@@ -252,7 +249,7 @@ The marker grammar — the meme span opener `? ->` and closer `→ ?`, the `ahu`
 
 A `lar:` URI *names* a meme; how memes, waypoints, and transclusions get *written* belongs to the authoring surface above. The per-marker semantics — what each marker settles and what it leaves open — live rigorously in `ahu` and `kahea`.
 
-<a id="stable-address"></a>
+<<~ ahu slot=`#/stable-address`>>
 
 ## 6. Stable Address — Named Graph Form
 
@@ -268,7 +265,7 @@ No authority (empty), no query, no fragment. This is the invariant semantic bear
 
 **Comparison rule:** two URIs designate the same stable address iff their lowercased, stripped paths are byte-identical. Query and fragment are excluded from comparison.
 
-<a id="cache-tiers"></a>
+<<~ ahu slot=`#/cache-tiers`>>
 
 ## 7. Invariant-Core Cache Tier Mapping
 
@@ -279,7 +276,7 @@ No authority (empty), no query, no fragment. This is the invariant semantic bear
 | 2 — Session Core | Cached within session; rolling `cache_control` breakpoint | Session-stable |
 | 3 — Dynamic | Ephemeral (5-min TTL with hit-reset) | Per-exchange |
 
-<a id="module-registry"></a>
+<<~ ahu slot=`#/module-registry`>>
 
 ## 8. Module and Registry Metadata
 
@@ -304,7 +301,7 @@ version-num = 1
 
 Module descriptors use `version_num` or semver-like fields for content versioning. Exchange sequencing belongs to spanSpan metadata (`span_seq`), not module descriptors.
 
-<a id="validation"></a>
+<<~ ahu slot=`#/validation`>>
 
 ## 9. Validation Rules
 
@@ -344,7 +341,7 @@ A spanSpan record is **consistent** when:
 4. Two URIs designate the same stable address iff their lowercased, stripped paths are byte-identical
 5. Query and fragment components are excluded from stable-address comparison
 
-<a id="security"></a>
+<<~ ahu slot=`#/security`>>
 
 ## 10. Security Considerations
 
@@ -360,7 +357,7 @@ A spanSpan record is **consistent** when:
 
 > **Status:** Security section partially complete — required for IANA registration (RFC 7595 §7.4). To be expanded with formal threat model before any provisional IANA registration attempt.
 
-<a id="prior-art"></a>
+<<~ ahu slot=`#/prior-art`>>
 
 ## 11. Prior Art
 
@@ -378,27 +375,26 @@ A spanSpan record is **consistent** when:
 - **OODA-HA Composable Invariant Modules** (Telarus / Lares, 2026) — Phase-scoped instruction loading with section-level confidence URIs.
 - **Kowloon / ActivityStreams export model** — Kowloon's Activity envelope (`actorId`, `object`, `target`, `to`, `canReply`, `canReact`) is a good downstream publication adapter for Lares spans. Kowloon IDs remain sink-local identifiers, not replacements for `span_id`.
 
-<a id="how-to-read"></a>
+<<~ ahu slot=`#/how-to-read`>>
 
 ## Appendix A — How to Read an Exchange Opening
 
 A complete exchange opening, annotated by scan order. The `aim` URI carries bearing; the sigil panel beside it carries the rest.
 
 ```text
-<<~ lares aim from="lar:///operator.threshold.opens" -> to="lar:///scryer.parse.models">>
-<<~ set hud="aim" aperture="10/measure" ooda-ha="7/declare-glyphs" drift-ward="* · <the pull this island carries>">>
-<<~ stance "🏛️/*!">>
+<<~ set lares=`aim` from=`lar:///operator.threshold.opens` to=`lar:///scryer.parse.models` aperture=`10/measure` ooda-ha=`7/declare-glyphs` drift-ward=`* · <the pull this island carries>`>>
+<<~ stance named=`🏛️/*!`>>
 ```
 
 Quick read:
 
 > Operator opens at territory threshold / uncertain / opens; Scryer adopts the parse-span role.
-> `aperture="10/measure"` — paragraph grain; `ooda-ha="7/declare-glyphs"` shows the node a phase ahead, orienting from the operator's observe.
+> `` aperture=`10/measure` `` — paragraph grain; `` ooda-ha=`7/declare-glyphs` `` shows the node a phase ahead, orienting from the operator's observe.
 > `syad 🏛️/*!` — Philosopher in Visual-Micro.
 
-The standpoint reads within its own frame (Syadasti rule): a Philosopher weighs propositional support, a Poet weighs resonance — never one universal truth-scale. A bare `<<~ stance "🏛️ 🌊 🎭">>` names which frames a claim spans without flattening them.
+The standpoint reads within its own frame (Syadasti rule): a Philosopher weighs propositional support, a Poet weighs resonance — never one universal truth-scale. A bare ``<<~ stance named=`🏛️ 🌊 🎭`>>`` names which frames a claim spans without flattening them.
 
-<a id="lineage"></a>
+<<~ ahu slot=`#/lineage`>>
 
 ## Lineage — the Ha-Ka-Ba palimpsest
 
@@ -415,9 +411,9 @@ Source: Luka Rejec, *Vastlands Guidebook* §"Death and Hakaba" --- *"the existen
 
 Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire"; "Ba: Psyche... unique direction." These anchors justify heading/angle/dynamic reinterpretation without claiming strict one-to-one term identity.
 
-<a id="edges"></a>
+<<~ ahu slot=`#/edges`>>
 
 ## Edges
 
-- `loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri"`
-- `loulou "lar:///ha.ka.ba/lares/docs/pono/identity-stack"`
+- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri``
+- `loulou uri=`lar:///ha.ka.ba/lares/docs/pono/identity-stack``

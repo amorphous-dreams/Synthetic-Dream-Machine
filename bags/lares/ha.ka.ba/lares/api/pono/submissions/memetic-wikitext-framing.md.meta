@@ -1,7 +1,7 @@
 title: lar:///ha.ka.ba/lares/api/pono/submissions/memetic-wikitext-framing
 type: text/markdown
 source: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing
-source-check: ni:///sha-256;HqH4JMwWA3F0_GeIl_xmkj5-CmACrFSvMjmBO6Txkbc
+source-check: ni:///sha-256;oAPQJ-Nf5k-JAx8k0IqcL5uM8T7pqBbyZqNKNEsLXQY
 variant: kramdown-rfc2629
 tongue: en
 projected-by: weave (lares meme project --to md · meme-project)

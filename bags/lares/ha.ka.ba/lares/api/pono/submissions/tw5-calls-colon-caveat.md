@@ -1,14 +1,14 @@
 ---
 lang: "en"
 source: "lar:///ha.ka.ba/lares/docs/tw5-calls-colon-caveat"
-source-check: "ni:///sha-256;vAquQu-jlBroqFT5QPE4E6qVzWPfyhbcAiESux5T_5U"
+source-check: "ni:///sha-256;blhDIv00o7C5JrUs5cul_i_Q7dJeirWK8n9pFZgItyM"
 title: "lar:///ha.ka.ba/lares/api/pono/submissions/tw5-calls-colon-caveat"
 tongue: "x-lares>en"
 variant: "GFM"
 ---
 
 
-<a id="entry"></a>
+<<~ ahu slot=`#/entry`>>
 
 # Calls ~ an unquoted value carrying a colon
 
@@ -16,7 +16,7 @@ variant: "GFM"
 
 **Title** Document that an unquoted parameter value cannot contain a colon
 
-<a id="the-claim"></a>
+<<~ ahu slot=`#/the-claim`>>
 
 ## The claim being corrected
 
@@ -28,7 +28,7 @@ That last sentence promises more than the grammar allows, and the gap stays sile
 
 `Call Syntax` already states this correctly. `param-name ":" value` stands as one of its productions, and `param-name` reads as a sequence of letters, digits, hyphens and underscores. A URI scheme spells with exactly those characters, so `https://example.com` matches the named-parameter form. The prose in `Calls` reaches past its own grammar.
 
-<a id="the-change"></a>
+<<~ ahu slot=`#/the-change`>>
 
 ## The proposed change
 
@@ -51,15 +51,15 @@ positional parameter receives nothing. Enclose such a value in quotes, or label 
 parameter name — `<<my-procedure address=https://example.com>>` — where no quotes are needed.""">>
 ```
 
-<a id="for-the-reviewer"></a>
+<<~ ahu slot=`#/for-the-reviewer`>>
 
 ## Notes for the reviewer
 
 A tiddler title needs no delimiters, and the reason carries the whole behaviour: `$:/some/tiddler` fails the parameter-name test at `$:/some`, so it rides whole. A URI scheme passes that test. Nothing else separates the two cases.
 
-The `name=value` form asks the least of an author, since it drops the quoting entirely — the `=` binds before the value's colon arrives.
+The `name=value` form asks the least of an author, since it drops the quoting entirely — the `=` binds before the value's colon arrives. The house writes that form with a backtick value, ``name=`https://example.com` ``, which the host reads as a substituted value after the `=` (`parseutils.js:333`); a backtick run without its name keeps its backticks and splits at the first space.
 
-<a id="measured"></a>
+<<~ ahu slot=`#/measured`>>
 
 ## Measured
 
@@ -76,7 +76,7 @@ Rendered in TiddlyWiki against `\procedure link-to(target)` returning `[target=<
 
 A time of day trips the case a URI trips, so the warning leads with the general shape rather than with URIs alone.
 
-<a id="edges"></a>
+<<~ ahu slot=`#/edges`>>
 
-- `loulou "lar:///ha.ka.ba/lares/docs/relational-parameter"`
-- `loulou "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"`
+- `loulou uri=`lar:///ha.ka.ba/lares/docs/relational-parameter``
+- `loulou uri=`lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext``

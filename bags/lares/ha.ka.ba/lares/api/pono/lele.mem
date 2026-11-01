@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/lele"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Lele
 
@@ -32,7 +32,7 @@ Grammar only --- the fire-and-continue execution runtime awaits the async-first 
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -44,25 +44,25 @@ A lele edge MUST NOT wait for a response from the target.
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```text
-<<~ lele "lar:///target/uri">>
-<<~ branch "lar:///target/uri">>
+<<~ lele to=`lar:///target/uri`>>
+<<~ branch to=`lar:///target/uri`>>
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-branch">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-branch`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gxB7Kl3eccR4mGFSM0_QgHcP9ds8JqkTgI8pRRUteWQ
+<<^ code="&#x0003;">>ni:///sha-256;OcTzm6jsEgcsikfWV1-eySwL7Da6mDTxNnnWa_fN-Pw
 
 <<^ code="&#x0004;" -> to="?">>

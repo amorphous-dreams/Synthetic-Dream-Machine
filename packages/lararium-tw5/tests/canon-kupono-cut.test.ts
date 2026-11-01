@@ -40,8 +40,9 @@ const LAW_MEMES = [
   "api/voices.mem",
 ];
 
-const TICKED = /`[^`]*`/g;
-const CALL = /<<(?:[^>\n]|>(?!>))*>>/g;
+/** A triple-backtick run takes the value that holds a backtick; a single-backtick run takes the rest. */
+const TICKED = /```[\s\S]*?```|`[^`]*`/g;
+const CALL = /<<(?:(?!<<)(?:[^>\n]|>(?!>)))*>>/g;
 const HEAD = /^<<\s*([~^!]?)\s*([^\s>]*)\s*([\s\S]*?)\s*>>$/;
 
 interface Call { line: number; text: string; prefix: string; head: string; rest: string }
@@ -55,15 +56,17 @@ function bodyOf(text: string): { line: number; text: string }[] {
   return lines.slice(stx + 1, etx).map((t, i) => ({ line: stx + 2 + i, text: t }));
 }
 
-/** Every single-line sigil CALL in the body, inline code and fences included; a regex line (head not a word) and a pragma stand outside. */
+/** Every single-line sigil CALL in the body, inline code and fences included; a plain TW5 macro call, a regex line (head not a word) and a pragma stand outside. */
 function callsOf(body: { line: number; text: string }[]): Call[] {
   const out: Call[] = [];
   for (const { line, text } of body) {
     if (text.startsWith("\\procedure") || text.startsWith("\\widget")) continue;
     for (const m of text.matchAll(CALL)) {
       const h = HEAD.exec(m[0]);
-      if (!h || !/^\/?[A-Za-z]/.test(h[2]!)) continue;
-      out.push({ line, text: m[0], prefix: h[1]!, head: h[2]!, rest: h[3]! });
+      if (!h || h[1] === "" || !/^\/?[A-Za-z]/.test(h[2]!)) continue;
+      // A control mark's head is the caret itself: `code=` is its first parameter, not its name.
+      const control = h[1] === "^";
+      out.push({ line, text: m[0], prefix: h[1]!, head: control ? "^" : h[2]!, rest: control ? `${h[2]} ${h[3]}`.trim() : h[3]! });
     }
   }
   return out;
@@ -171,6 +174,7 @@ describe("CONTROLS: each law names the fault planted for it", () => {
       "<<~ ahu slot=`#/head`>>",
       "<<~ pranala from=`?` to=`lar:///a` family=`code`>>",
       "<<~ scale name=`x` ranks=`a@0 -> b@1`>>",
+      "<<~ scale name=`y` ranks=```a ~ `$slot` -> b```>>",
       "<<~ set lares=`aim` from=`lar:///a.b.c` to=`lar:///d.e.f` mode=`draft` drift-ward=`w`>>",
       "<<~ set lares=`yield` drift-ward=`w` ooda-ha=`closed 0↺ -> open 1φ◇:r` from=`lar:///a.b.c` to=`?`>>",
       "pattern = '<<~\\s*papalohe\\s+(\\S+)\\s*->\\s*(\\S+)>>'",

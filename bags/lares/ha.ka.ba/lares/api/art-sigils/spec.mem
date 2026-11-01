@@ -33,7 +33,7 @@ Art Sigils use **two distinct, native TiddlyWiki5 5.4.0+ forms**, not one univer
 * **Procedure invocations** use `=` followed by **backtick-wrapped parameter values**, e.g. `<<art subject=` followed by a backtick-wrapped `an artist's "impossible" passage` and the closing `>>`. This supports natural apostrophes or embedded double quotes without quoting the whole value as a directive to print text.
 * The canonical `art()` declaration and optional Folio definitions live in [[Art Sigils Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]]. Inscription and Folio artifacts contain **invocations only**, with an external reference to the Procedures meme. Native TW5 execution requires those definitions in scope; direct model interpretation may work without them.
 * **Terminology boundary:** **Art Sigils** names the art-direction practice, documents and ontology; the native procedure bears the name `art`. Neither name requires glyphs, magical symbols or printed labels in the depicted work.
-* **Scope of rule:** `art`, `art-study`, `art-counterpoint` and `art-facture` invocations use backtick-wrapped `name=` values; their declared defaults use colon plus double quotes. Lares house sigils follow separate house syntax.
+* **Scope of rule:** `art`, `art-study`, `art-counterpoint` and `art-facture` invocations use backtick-wrapped `name=` values; their declared defaults use colon plus double quotes. Lares house sigils write the same form: `=` followed by a backtick value, every value named.
 * **Delegation:** TW5 substitutes a declared default literally when the call omits the named value. The receiving artist or AI interprets that phrase in context. Silence, delegation and explicit withholding remain distinct artistic states.
 * **Rendered reading:** the native single-line procedure body concatenates phrases in declared order. A companion literal-rendering reference records expected parameter substitution, defaults and punctuation; written reference text alone does not attest live TW5 execution.
 * **Dynamic substitution caveat:** backtick values in TW5 may support internal variable substitution. Portable literal Inscription values should avoid unintentional interpolation markers. Optional dynamic Folios should declare their source context.
@@ -223,6 +223,6 @@ The grammar accommodates portraits, abstract fields, textiles, photographs, inst
 <<~/ahu>>
 
 
-<<^ code="&#x0003;">>ni:///sha-256;cYNfwvUdP0VwdOyfPHbAW1GoyvVZBHLKz-Dcr8vpkxA
+<<^ code="&#x0003;">>ni:///sha-256;J4BzxGhcfqDsmt_A9pFXU81Qgd-zoQZ0Lxc9kXbeWFo
 
 <<^ code="&#x0004;" -> to="?">>

@@ -374,7 +374,7 @@ desc  = "A threshold MUST present an outward face and keep an inward face, and M
 ```toml #THR_2_NO_LEAK
 id    = "THR_2_NO_LEAK"
 label = "Nothing of the inward face rides the outward one"
-desc  = "The test, run against every threshold: name its outward face, name its inward face, and ask what lets one leak into the other. Leaks this law catches: a host-minted stub that lets a guest's lineage follow her out and names her; a cleartext vessel seed or persona root standing beside the floor; a walker syncing the whole carriage board, which puts the Nexus's infra graph on a guest's face; a herm asked to speak as a house, which puts a household's face on a waystone. One leak recurs at every threshold that carries a party across it: a NAME on the outside. The outside carries only what its reader already holds or resolves — a bearing to an address, or the reader's own out-of-band pin — and a party's identity rides only inside the span a check or a proof covers. Hence a carrier's heading reads `from=\"?\"` and its authorship begins after STX (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/bearing-arrow`), and the wire never names the gate key a dialer proves to — the dialer's pin, which Noise IK carries as its `<- s` pre-message (`lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober`). The release's `-> to=\"?\"` hands the initiative back (`lar:///ha.ka.ba/lares/api/noosphere-boot#/causal-islands`) and answers a different question; THR_5 governs the gate's silence and not the carrier."
+desc  = "The test, run against every threshold: name its outward face, name its inward face, and ask what lets one leak into the other. Leaks this law catches: a host-minted stub that lets a guest's lineage follow her out and names her; a cleartext vessel seed or persona root standing beside the floor; a walker syncing the whole carriage board, which puts the Nexus's infra graph on a guest's face; a herm asked to speak as a house, which puts a household's face on a waystone. One leak recurs at every threshold that carries a party across it: a NAME on the outside. The outside carries only what its reader already holds or resolves — a bearing to an address, or the reader's own out-of-band pin — and a party's identity rides only inside the span a check or a proof covers. Hence a carrier's heading reads `from=\"?\"` and its authorship begins after STX (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/bearing-pair`), and the wire never names the gate key a dialer proves to — the dialer's pin, which Noise IK carries as its `<- s` pre-message (`lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober`). The release's `-> to=\"?\"` hands the initiative back (`lar:///ha.ka.ba/lares/api/noosphere-boot#/causal-islands`) and answers a different question; THR_5 governs the gate's silence and not the carrier."
 ```
 
 ```toml #THR_3_THE_DOORKEEPER_OWNS_NOTHING
@@ -413,6 +413,6 @@ desc  = "A rejection confesses that something understood the question (siege-res
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;m8eHOmYiIFyeGzOaCadNYanUnOeb6sEduBcwY0pdTow
+<<^ code="&#x0003;">>ni:///sha-256;SG6ufs6SobtB0wrAAPQjoM6hx2rXAOQhKwpceEzoQyk
 
 <<^ code="&#x0004;" -> to="?">>
