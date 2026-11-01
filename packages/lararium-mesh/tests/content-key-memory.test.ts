@@ -224,6 +224,22 @@ describe("the cut: the section seals inside the holder", () => {
     expect("section" in refused).toBe(false);
   });
 
+  it("a chainless vessel whose rest holds only lockboxes for OTHER seats cuts an empty section: none opens for its own seat", async () => {
+    const { old } = await lostAndReturned();
+    await seal(old, "sealed elsewhere");
+    let chainNow: string | null = null;
+    const lone = await vessel(world(), "lone-device", { standing: { holdsWrite: () => true, chainOf: () => chainNow } });
+    // The lockbox reaches this rest whole, wrapped for another seat alone.
+    for (const [k, b] of old.rest.values) if (k.startsWith("lockbox/")) await lone.rest.put("lockbox", k.slice("lockbox/".length), Uint8Array.from(b));
+    expect((await lone.store.lockboxes()).length).toBeGreaterThan(0);
+    const r = await lone.holder.cutMemory({ bags: [BAG], to: mintMemoryKeypair().public });
+    expect(said(r)).toBe("OK");
+    if ("holds" in r) expect(r.holds).toEqual([]);
+    // CONTROL (the test above): a lockbox that opens for this seat makes the same chainless cut refuse `chain-absent`.
+    chainNow = "chain-one";
+    expect(said(await lone.holder.cutMemory({ bags: [BAG], to: mintMemoryKeypair().public }))).toBe("OK");
+  });
+
   it("a locked holder refuses the cut and the import by name", async () => {
     const { old, fresh } = await lostAndReturned();
     await seal(old, "one");
