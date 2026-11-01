@@ -849,3 +849,13 @@ test("RED: a span head whose only run was cancelled clean gets a dispatched run 
   assert.ok(dispatched, "the span head got its own run");
   assert.match(r.out, /DROPPED a: /);
 });
+
+test("RED: a lane whose change already stands on the span adds nothing to the chain: it drops by name (no empty train waits on a run that never comes)", async () => {
+  const w = world(["a", "b"]);
+  w.commit(w.work, "packages/p-a/f.txt", "a\n", "the same change — merge PR #0: landed by another road");
+  sh(w.work, "push", "-q", "origin", SPAN);
+  const r = await runQ(w);
+  assert.equal(r.code, 11, r.out);
+  assert.match(r.out, /DROPPED a: its change already stands on the span/);
+  assert.equal(sh(w.work, "rev-parse", `${originRef(w, SPAN)}^2`), w.heads.b);
+});
