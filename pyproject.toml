@@ -57,7 +57,7 @@ testpaths = [
 # suite that spawns the real CLI as a child hands it an environment with no path at all. Do not try
 # to fix that by writing `PYTHONPATH` from a `pytest_configure` hook — doing so costs three tests at
 # collection (`test_capture_corpus.py` stops resolving `holder_caps`), reproducible on a clean tree.
-# The cure belongs at each spawn; `test_loci_io.py::_child_env` carries the worked one.
+# The cure belongs at each spawn; `test_holder_cli.py::_env` carries the worked one.
 pythonpath = [
     "mempalace",
     "packages/lararium-sensorium/scripts",

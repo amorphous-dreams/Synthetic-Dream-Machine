@@ -7,7 +7,7 @@ house — the upstream install at ~/.mempalace, a separate capability the House 
 processes we stand ourselves carry their own name (operator ruling, 2026-07-29).
 
 NOT a base class to subclass. A LIBRARY OF CAPABILITIES (caps) that a holder
-COMPOSES. Each holder (loci_io · structurepalace_io · form_encoder · kg_io) is a
+COMPOSES. Each holder (structurepalace_io · content_io · kg_io) is a
 NAMELESS entity whose identity IS its cap-stack — the set of caps it #has, fused
 with the OPS it declares. The caps live here as free functions + one small
 composition root; a holder imports the caps it needs, declares its ops as a
@@ -33,8 +33,8 @@ Serve:     serve_lock_path / acquire_serve_lock /
            serve_loop                             — the raw-fd NDJSON loop + idle-reap
            run_holder                            — the serve composition root
 
-The serve caps form the HEAVY shared machinery (structurepalace_io + form_encoder #has
-the full serve stack); the batch CLIs (loci_io + kg_io) #has only the lighter
+The serve caps form the HEAVY shared machinery (structurepalace_io #has the full serve
+stack); the batch CLI (kg_io) #has only the lighter
 path/NDJSON caps — an entity carries only the components it needs.
 """
 from __future__ import annotations
@@ -198,10 +198,10 @@ def mine_busy_retry(fn, attempts: int = 6, base_ms: float = 100.0):
 # store-readback cap — read STORED vectors back out of ANY chroma collection
 # ---------------------------------------------------------------------------
 
-# The form/structure store's collection name. The SHARED home (form_encoder.py
+# The form/structure store's collection name. The SHARED home (form_store.py
 # re-declares the same literal value, FORM_COLLECTION = "form", as its store
 # target); a reader that joins the form plane keys off this. One name, two
-# holders agree by value — the cross-graph join (living-grammar-palace#two-planes).
+# modules agree by value — the cross-graph join (living-grammar-palace#two-planes).
 FORM_COLLECTION = "form"
 
 

@@ -442,7 +442,7 @@ def sweep_lambdas(root: str, *, lambdas=None, extracted_root: "str | None" = Non
 def _red_form_dimension(root: str) -> "int | None":
     """The wrapped bed's induced-constructicon size, read off the durable form store's
     own pinned dimension (the count the membership vectors carry)."""
-    from form_encoder import FormPalaceStore
+    from form_store import FormPalaceStore
 
     store = FormPalaceStore(os.path.join(root, "form"))
     got = store._col.get(limit=1, include=["metadatas"])  # noqa: SLF001 — the dial reads the raw plane
