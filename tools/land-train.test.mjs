@@ -710,3 +710,21 @@ test("RED: QUEUE: a red over a span head with no real run probes the span (dispa
   assert.ok(dispatched, "the span head got its own run");
   assert.equal(originRef(w, SPAN), w.base);
 });
+
+test("RED: QUEUE: the held-out gate pauses on a RED newest completed run (15) and past M=3 lands beyond its covered sha with none in flight; CONTROL: a run in flight that turns green lets the queue go", async () => {
+  const w = world(["a"]);
+  const r = await runQ(w, { over: { heldOut: async () => ({ covered: w.base, state: "red", inFlight: 0 }) } });
+  assert.equal(r.code, 15, r.out);
+  assert.match(r.out, new RegExp(`HELD-OUT RED at ${w.base.slice(0, 9)}`));
+  const covered = w.base;
+  for (let i = 1; i <= 4; i++) w.commit(w.work, `l${i}.txt`, `${i}\n`, `land ${i} — merge PR #${i}: earlier`);
+  sh(w.work, "push", "-q", "origin", SPAN);
+  const lag = await runQ(w, { over: { heldOut: async () => ({ covered, state: "green", inFlight: 0 }) } });
+  assert.equal(lag.code, 15, lag.out);
+  assert.match(lag.out, /HELD-OUT LAGS: 4 lands past/);
+  assert.equal(pushedTrains(lag.out).length, 0);
+  let reads = 0;
+  const go = await runQ(w, { over: { heldOut: async () => (++reads === 1 ? { covered, state: "green", inFlight: 1 } : { covered: originRef(w, SPAN), state: "green", inFlight: 0 }) } });
+  assert.equal(go.code, 0, go.out);
+  assert.ok(reads >= 2, "the gate waited on the run in flight");
+});
