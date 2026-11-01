@@ -19,41 +19,50 @@
  *   ci-cells.mjs verify-tests --artifacts-dir <dir>
  *   ci-cells.mjs verify-witnesses --artifacts-dir <dir>
  */
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { createWriteStream, existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const pkg = (name, dir, shard, extra = {}) => ({ name, dir, ...(shard ? { shard } : {}), ...extra });
+/** A dealt part: file `part` of `parts` by measured weight (see `nodeUnitFiles`), where vitest's own `--shard` would hash by path. */
+const dealt = (name, dir, part, parts) => pkg(name, dir, null, { deal: "node-unit", part, parts });
 
 /**
  * The package-suite cells. A `shard` of `i/n` runs vitest's own shard; the n rows of one package are the whole package.
  * `vitest: false` marks a suite that writes no vitest JSON report (the TiddlyWiki5 jasmine edition): the cell's own exit
  * answers for it.
  *
- * NODE RIDES ONE CELL, NEVER SHARDS. Measured on runs 40977288914 and 40985431558: node's serial run is 841 s, yet two
- * vitest shards ran 1350 s together and three ran 1437 s. Each shard runs the config's serial `heavy` project beside its
- * parallel `main` project, and the path hash clusters the heavy files, so a shard's wall clock barely falls with its file
- * count. Each added shard bought a runner's setup and more run time, and no shorter path than the e2e shards set. The
- * per-file reports in the `test-cell-node` artifact are the evidence for the later refactor of that config.
+ * NODE RIDES TWO DEALT CELLS, NEVER VITEST SHARDS. Measured on runs 40977288914 and 40985431558: vitest's `--shard` ran
+ * two node shards in 1350 s together and three in 1437 s, against 841 s serial. Each shard runs the config's serial
+ * `heavy` project beside its parallel `main` project, and the path hash clusters the heavy files, so a shard's wall clock
+ * barely falls with its file count. The cells below deal FILES instead, as the e2e shards do: `nodeUnitFiles` pins every
+ * `heavy` file to the last part (the serial project runs after `main`, so one cell carries it whole), and deals the `main`
+ * files by measured weight (`node-unit` in e2e-shard-weights.json) so the two parts finish together. The test gate holds
+ * the two reports to the tracked file set (each file once, every heavy file in the last part), the law vitest's shard no
+ * longer gives. Measured on run 41280151942: `main` 417 files, 3653 file-seconds across 4 workers (window 0-1050 s), then
+ * 67 `heavy` files serial (1052-1293 s).
  *
- * FEW CELLS, BECAUSE THE RUNNER POOL IS SHARED. Every cell repeats checkout, install, build and engines (60 to 260 seconds
- * measured on run 40977288914), and the lanes of this repository draw on one capped pool, so the number that decides is
- * total job-minutes, with each run's critical path held at or under the slowest e2e shard (about 16 minutes). Run seconds
- * of the serial job (run 40956130282): node 841 · web 390 · cli 171 · mesh 141 · tw5 100 · browser 58 · keyhive 27.
+ * TEN JOBS A RUN, BECAUSE THE RUNNER POOL IS SHARED. The account runs about twenty jobs at once, so a full run raises at
+ * most ten (tools/ci-graph.test.mjs holds the workflow to it) and a second full run starts beside it. Every cell repeats
+ * checkout, install and build (0.9 to 2 minutes measured on run 41280151942), so the cells are few and full, with each run's
+ * critical path held at the slowest e2e shard (about 17 minutes). Run seconds (run 41280151942): node 1297 · web 576 ·
+ * cli 296 · mesh 256 · tw5 172 · browser 99 · keyhive 46 · tiddlywiki jasmine ~27.
  */
 export const TEST_CELLS = Object.freeze([
-  { cell: "node", packages: [pkg("@lararium/node", "packages/lararium-node")] },
-  { cell: "web-cli", packages: [
+  { cell: "node-a", packages: [dealt("@lararium/node", "packages/lararium-node", 1, 2)] },
+  { cell: "node-b", packages: [dealt("@lararium/node", "packages/lararium-node", 2, 2)] },
+  { cell: "web-tw5", packages: [
     pkg("@lararium/web", "packages/lararium-web"),
+    pkg("@lararium/tw5", "packages/lararium-tw5"),
+  ] },
+  { cell: "cli-mesh", packages: [
     pkg("@lares/cli", "packages/lares-cli"),
     pkg("@lares/harness", "tests"),
     pkg("@lararium/memetic-frame", "packages/lararium-memetic-frame"),
     pkg("@lararium/mempalace", "packages/lararium-mempalace"),
     pkg("@lararium/sensorium", "packages/lararium-sensorium"),
-  ] },
-  { cell: "mesh-tw5", packages: [
     pkg("@lararium/mesh", "packages/lararium-mesh"),
-    pkg("@lararium/tw5", "packages/lararium-tw5"),
     pkg("@lararium/browser", "packages/lararium-browser"),
     pkg("@lararium/keyhive", "packages/lararium-keyhive"),
     pkg("tiddlywiki", "TiddlyWiki5", null, { vitest: false }),
@@ -62,17 +71,64 @@ export const TEST_CELLS = Object.freeze([
 
 const CLEAN = /^witness-all: every witness clean$/m;
 /**
- * The witness cells. `only` names an apart witness (`APART` in witness-all.sh), which rides a cell of its own; the `rest`
+ * The witness cells. `host` names the job that runs a cell when it has no matrix row of its own. `only` names an apart witness (`APART` in witness-all.sh), which rides a cell of its own; the `rest`
  * cell runs the fleet without it, then the tool self-tests, and its log must carry the fleet's held-out roll call and the
  * self-tests' summary. `must` is what a green log carries.
  * Measured (seconds): contract-witness 373 · the rest of the fleet ~460 · self-tests 258.
  */
 export const WITNESS_CELLS = Object.freeze([
-  { cell: "contract-witness", only: "contract-witness", runs: [["tools/witness-all.sh", "--only", "contract-witness"]], must: [CLEAN] },
+  // `host: "quick"` rides the quick job (a job of its own would spend one of the ten); the gate keys on the cell's artifact name.
+  { cell: "contract-witness", only: "contract-witness", host: "quick", runs: [["tools/witness-all.sh", "--only", "contract-witness"]], must: [CLEAN] },
   { cell: "rest", runs: [["tools/witness-all.sh", "--except-apart"], "self-tests"], must: [CLEAN, /held out of this run/, /^ℹ tests [1-9]\d*$/m, /^ℹ fail 0$/m] },
 ]);
 
 export const cellIds = (cells) => cells.map((c) => c.cell);
+
+// ── the node deal: files to the two node cells by measured weight ────────────────────────────────
+
+/** The serial `heavy` project runs on one worker where `main` runs on four: a heavy file's seconds weigh this much more in the deal. */
+export const HEAVY_FACTOR = 4;
+const NODE_DIR = "packages/lararium-node";
+const REPO_ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
+
+/**
+ * The files of part `part` of `parts`, relative to the node package (`tests/x.test.ts`). Every `heavy` file goes to the last
+ * part; the rest deal heaviest first, each to the lightest part so far, the last part starting loaded with its heavy files.
+ * A file with no weight weighs the median. Pure and order-free: every runner computes the same deal from the same list.
+ */
+export function nodeUnitFiles({ files, heavy = [], weights = {}, part, parts = 2 }) {
+  const known = Object.values(weights).filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
+  const median = known.length > 0 ? known[Math.floor(known.length / 2)] : 5;
+  const isHeavy = new Set(heavy);
+  const weigh = (f) => (weights[f] ?? median) * (isHeavy.has(f) ? HEAVY_FACTOR : 1);
+  const loads = Array(parts).fill(0);
+  const dealtTo = Array.from({ length: parts }, () => []);
+  for (const f of files.filter((x) => isHeavy.has(x))) { dealtTo[parts - 1].push(f); loads[parts - 1] += weigh(f); }
+  const rest = files.filter((x) => !isHeavy.has(x)).sort((a, b) => weigh(b) - weigh(a) || (a < b ? -1 : 1));
+  for (const f of rest) {
+    const at = loads.indexOf(Math.min(...loads));
+    dealtTo[at].push(f);
+    loads[at] += weigh(f);
+  }
+  return dealtTo[part - 1].sort();
+}
+
+/** The node package's tracked suites the vitest include selects (`tests/**\/*.test.ts` beside `tests/e2e`), relative to the package. */
+export function trackedNodeFiles(root = REPO_ROOT) {
+  const out = execFileSync("git", ["ls-files", `${NODE_DIR}/tests`], { cwd: root, encoding: "utf8" });
+  return out.split("\n").map((s) => s.trim()).filter((f) => /\.test\.ts$/.test(f)).map((f) => f.slice(NODE_DIR.length + 1)).filter((f) => !f.startsWith("tests/e2e/")).sort();
+}
+
+/** The `heavy` roster of the package's vitest config, read off the config's own array (the one place it stands). */
+export function readNodeHeavy(root = REPO_ROOT) {
+  const text = readFileSync(join(root, NODE_DIR, "vitest.config.ts"), "utf8");
+  const start = text.indexOf("export const heavy");
+  const end = text.indexOf("export const mainExclude");
+  if (start === -1 || end === -1 || end < start) throw new Error("ci-cells: vitest.config.ts no longer names `heavy` and `mainExclude` in that order");
+  return [...text.slice(start, end).matchAll(/^\s*"(tests\/[^"]+\.test\.ts)",?/gm)].map((m) => m[1]).sort();
+}
+
+const nodeWeights = () => JSON.parse(readFileSync(new URL("./e2e-shard-weights.json", import.meta.url), "utf8"))["node-unit"] ?? {};
 
 const slug = (dir) => dir.split("/").pop();
 /** The JSON report one package of one cell writes, which is also that cell's per-file timing. */
@@ -83,8 +139,11 @@ export function expectedTestReports(cells = TEST_CELLS) {
   return cells.flatMap((c) => c.packages.filter((p) => p.vitest !== false).map((p) => ({ cell: c.cell, file: testReportName(c.cell, p), pkg: p.name })));
 }
 
-/** The test gate's whole law. `reports` maps a report file name to `{ cell, report, parseError? }`. */
-export function evaluateTestCells({ reports, cells = TEST_CELLS }) {
+/**
+ * The test gate's whole law. `reports` maps a report file name to `{ cell, report, parseError? }`. `tracked` maps a dealt
+ * package's dir to `{ files, heavy }` (relative to it): the files the dealt cells together must run, each once.
+ */
+export function evaluateTestCells({ reports, cells = TEST_CELLS, tracked }) {
   const problems = [];
   const owed = expectedTestReports(cells);
   const owedFiles = new Map(owed.map((r) => [r.file, r]));
@@ -103,7 +162,40 @@ export function evaluateTestCells({ reports, cells = TEST_CELLS }) {
   for (const [file, got] of reports) {
     if (owedFiles.get(file)?.cell !== got.cell) problems.push(`unexpected report: cell ${got.cell} sent ${file}, which the table does not owe`);
   }
+  problems.push(...dealtFileProblems({ reports, cells, tracked }));
   return { ok: problems.length === 0, problems, totalTests, reportCount: reports.size };
+}
+
+/** The dealt packages' file law: each tracked file ran in exactly one cell, every heavy file in the last part, no file ran that nobody tracks. */
+function dealtFileProblems({ reports, cells, tracked }) {
+  const problems = [];
+  const rows = cells.flatMap((c) => c.packages.filter((p) => p.deal).map((p) => ({ cell: c.cell, ...p })));
+  for (const dir of new Set(rows.map((r) => r.dir))) {
+    const mine = rows.filter((r) => r.dir === dir);
+    const want = tracked?.[dir];
+    if (!want || !Array.isArray(want.files) || want.files.length === 0) { problems.push(`unread file set: ${dir} is dealt across cells and the gate was handed no tracked list for it`); continue; }
+    const last = Math.max(...mine.map((r) => r.part));
+    const ranBy = new Map();
+    for (const r of mine) {
+      const got = reports.get(testReportName(r.cell, r));
+      if (!got?.report?.testResults) continue; // a missing or unparseable report already read red above
+      for (const t of got.report.testResults) {
+        const at = String(t.name).replaceAll("\\", "/").lastIndexOf(`${dir}/`);
+        const rel = at === -1 ? String(t.name) : String(t.name).replaceAll("\\", "/").slice(at + dir.length + 1);
+        ranBy.set(rel, [...(ranBy.get(rel) ?? []), r]);
+      }
+    }
+    const tracks = new Set(want.files);
+    const heavy = new Set(want.heavy ?? []);
+    for (const f of want.files) {
+      const by = ranBy.get(f) ?? [];
+      if (by.length === 0) problems.push(`file run by no cell: ${dir}/${f} is tracked and ran in no cell`);
+      else if (by.length > 1) problems.push(`file run twice: ${dir}/${f} ran in more than one cell (${by.map((r) => r.cell).join(", ")})`);
+      else if (heavy.has(f) && by[0].part !== last) problems.push(`heavy file outside the last part: ${dir}/${f} is heavy and ran in ${by[0].cell}, not in the last part`);
+    }
+    for (const f of ranBy.keys()) if (!tracks.has(f)) problems.push(`untracked file ran: ${dir}/${f} ran and the tracked list does not name it`);
+  }
+  return problems;
 }
 
 /** The witness gate's whole law. `logs` maps a cell to its log text. */
@@ -169,11 +261,16 @@ async function runTestCell(id, out) {
   let worst = 0;
   for (const p of cell.packages) {
     const args = ["--filter", p.name, "test"];
+    if (p.deal) {
+      const files = nodeUnitFiles({ files: trackedNodeFiles(), heavy: readNodeHeavy(), weights: nodeWeights(), part: p.part, parts: p.parts });
+      if (files.length === 0) throw new Error(`ci-cells: the deal gave ${id} no file`);
+      args.push(...files);
+    }
     if (p.vitest !== false) {
       if (p.shard) args.push(`--shard=${p.shard}`);
       args.push("--reporter=default", "--reporter=json", `--outputFile.json=${resolve(out, testReportName(id, p))}`);
     }
-    console.log(`── ${id}: ${p.name}${p.shard ? ` ${p.shard}` : ""} ──`);
+    console.log(`── ${id}: ${p.name}${p.shard ? ` ${p.shard}` : ""}${p.deal ? ` part ${p.part}/${p.parts}` : ""} ──`);
     worst = Math.max(worst, await runCommand("pnpm", args));
   }
   return worst;
@@ -204,7 +301,7 @@ async function main() {
   if (sub === "verify-tests" || sub === "verify-witnesses") {
     const dir = resolve(flag(rest, "--artifacts-dir") ?? "artifacts");
     const tests = sub === "verify-tests";
-    const verdict = tests ? evaluateTestCells({ reports: readTestReports(dir) }) : evaluateWitnessCells({ logs: readWitnessLogs(dir) });
+    const verdict = tests ? evaluateTestCells({ reports: readTestReports(dir), tracked: { [NODE_DIR]: { files: trackedNodeFiles(), heavy: readNodeHeavy() } } }) : evaluateWitnessCells({ logs: readWitnessLogs(dir) });
     console.log(`${tests ? "TEST-CELLS" : "WITNESS-CELLS"}: ok=${verdict.ok} cells=${cellIds(tests ? TEST_CELLS : WITNESS_CELLS).length}${tests ? ` totalTests=${verdict.totalTests}` : ""}`);
     for (const p of verdict.problems) console.error(`${tests ? "TEST-CELLS" : "WITNESS-CELLS"} problem: ${p}`);
     process.exitCode = verdict.ok ? 0 : 1;
