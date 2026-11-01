@@ -140,7 +140,8 @@ describe("the dyad door", () => {
     expect(src).toMatch(/return shadowRing\.deviceStanding\(fleetRoot, deviceKey\);/);
     expect(src).toMatch(/try \{ await shadowRing\.refold\(\); \} catch \{ return "aside"; \}/);
     expect(src).toMatch(/for \(let tries = 0; tries < 3 && !shadowRing\.fold\(\); tries\+\+\) \{/);
-    expect(src).toMatch(/down: \(\) => setDyadDoor\(null\)/);
+    // ...with the island's doors, after the island shuts (T27; the carried-Nexus rig reads it behaviourally)
+    expect(src).toMatch(/what: "the island doors",\s+down: \(\) => \{ setDyadDoor\(null\); setCustodyWriteDoor\(null\); \}/);
   });
 
   test("D7 — the leaf reads its fleet board for sibling sync while the daemon island reads its own board for dyad standing (a source weld)", () => {

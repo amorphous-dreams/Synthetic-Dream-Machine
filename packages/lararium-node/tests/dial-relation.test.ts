@@ -39,7 +39,7 @@ import { chooseHearthDial } from "../src/hearth-gate-pins.js";
 import { keepFaceJoinRecord, readFaceJoinRecord } from "../src/fleet-join-custody.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { faceFleetViews } from "../src/face-fleet-view.js";
-import { selfSlotShareDecision } from "../src/self-slot-share.js";
+import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 
 type Relation = { readonly kind: string; readonly personaGroup?: string; readonly nexus?: string | null };
 type DialRelationModule = {
@@ -76,8 +76,9 @@ function seatRig() {
   const maps: { peerClassMap: Map<string, PeerClass>; peerNexus: Map<string, string | null>; faceViews: ReturnType<typeof faceFleetViews>; dialedHearth?: { pinned: boolean; aid: string | null } | null } =
     { peerClassMap: new Map<string, PeerClass>(), peerNexus: new Map<string, string | null>(), faceViews: faceFleetViews(() => bootstrap(ONE), () => G1), dialedHearth: null };
   const verdict = (peerId: string, url: string) => selfSlotShareDecision({
-    hasWsSocket: true, peerClass: maps.peerClassMap.get(peerId), selfSlotFedGate: shelf, antigenRing: null, membership: null, planeSeal: null,
+    hasWsSocket: true, peerClass: maps.peerClassMap.get(peerId), selfSlotFedGate: shelf, antigenRing: NO_BANS, membership: null, planeSeal: null,
     peerId, documentId: idOf(url), sessionFace: maps.faceViews.gateFor(peerId),
+    shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
   } as Parameters<typeof selfSlotShareDecision>[0]);
   return { maps, verdict };
 }
