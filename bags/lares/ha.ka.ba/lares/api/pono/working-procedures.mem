@@ -95,7 +95,7 @@ Collide each before trusting it.
 * ''A fixture pins the grammar; only the corpus pins the reader.'' A hand-written fixture can agree with itself and disagree with every file on the shelf.
 * ''A grep for callers counts mentions'', including comments that say the caller does not exist. Follow the call; never grep the door.
 * ''A grep over sigils written with `[^>]` stops at the first `>` inside a value.'' A value still holds `>` (a rank's or slide's `->`, a result arrow), so the class `[^>]` cuts the sigil short there. Use `(?:[^>\n]|>(?!>))`, and fence the boundary the claim names.
-* ''A `git ls-files '*.mem'` sweep reaches frozen fixtures'' under `packages/tree-sitter-memetic-wikitext/fixtures/specimens/` and `packages/lararium-sensorium/scripts/fixtures/`. Their standing in an older carrier form marks them as frozen, never as stragglers; sweep `bags/` by name.
+* ''A `git ls-files '*.mem'` sweep reaches frozen fixtures'' under `packages/tree-sitter-memetic-wikitext/fixtures/specimens/`. Their standing in an older carrier form marks them as frozen, never as stragglers; sweep `bags/` by name.
 * ''A blanket re-stamp signs edits nobody authored.'' `lares meme normalize` names its files and takes no glob, and it NAMES every dirty carrier a run passed over.
 * ''Derive, never enumerate'': a quoted count drifts.
 * ''A commit subject claims; it proves nothing.'' A reader stricter than the parser still lies.
@@ -213,6 +213,6 @@ Straight to the operator, at once: a classifier refusal; a destroy-class act pas
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;`>>ni:///sha-256;f_Rgb6XLS0DOQvAxwpXJMydh5YSu2CK2R7BwLlSGxCo
+<<^ code=`&#x0003;`>>ni:///sha-256;4EKoSHTs6PplJjCHwOyWgN5kevTH1o0DNP5qBZOoShE
 
 <<^ code=`&#x0004;` to=`?`>>

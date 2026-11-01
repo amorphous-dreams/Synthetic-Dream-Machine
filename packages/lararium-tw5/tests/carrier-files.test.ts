@@ -136,7 +136,8 @@ describe("carrierFiles — the corpus, from the declarations that make it", () =
    */
   test("RED→GREEN — a frozen specimen stays out; CONTROL — a real bags carrier rides in", () => {
     expect(found).not.toContain("packages/tree-sitter-memetic-wikitext/fixtures/specimens/wild-01-voices.mem");
-    expect(found).not.toContain("packages/lararium-sensorium/scripts/fixtures/placebo-kumulipo/kumulipo-beckwith.mem");
+    // The sensorium fixtures come from a live writer in the kupono frame, so they ride in as carriers.
+    expect(found).toContain("packages/lararium-sensorium/scripts/fixtures/placebo-kumulipo/kumulipo-beckwith.mem");
     expect(found).toContain("bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
   });
 

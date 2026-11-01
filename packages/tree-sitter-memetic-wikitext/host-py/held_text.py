@@ -6,7 +6,7 @@ whose meta block declares the held text's own media type. The ahu's body is the 
 backtick run longer than any run the text carries, so every wikitext law reads the fence as a quotation
 (the fence-mask law) and none reads inside it.
 
-    <<~ ahu #/held>>
+    <<~ ahu slot=`#/held`>>
     ```toml meta
     type = "<the held text's media type>"
     ```
@@ -20,7 +20,8 @@ backtick run longer than any run the text carries, so every wikitext law reads t
 The fence is the only escape, and `held` undoes it: the text comes back exactly as it went in. A text
 holding no such ahu reads as itself, so a reader may pass any file through `held`.
 
-`host-ts/held-text.mjs` reads the same shape, and the parity gate proves both hosts agree.
+`host-ts/held-text.mjs` reads the same shape, and the parity gate proves both hosts agree. The frozen
+specimens keep the opener they were written with (`<<~ ahu #/held>>`), and both readers hold it too.
 
 Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
 """
@@ -28,11 +29,11 @@ from __future__ import annotations
 
 import re
 
-DECLARATION = ('<<!DOCTYPE "memetic-wikitext+tiddlywiki" '
-               '"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>')
+DECLARATION = ("<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` "
+               "spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>")
 CARRIER_TYPE = "text/memetic-wikitext+tiddlywiki"
 
-_AHU_OPEN = re.compile(r"^<<~ ahu #/[\w/-]+>>$")
+_AHU_OPEN = re.compile(r"^<<~ ahu (?:slot=`#/[\w/-]+`|#/[\w/-]+)>>$")
 _META_OPEN = "```toml meta"
 _TYPE_KEY = re.compile(r'^type\s*=\s*"([^"]+)"\s*$')
 _FENCE = re.compile(r"^(`{3,})[ \t]*$")
@@ -115,7 +116,7 @@ def hold(text: str, *, uri: str, role: str, held_type: str) -> str:
         f'uri-path  = "{uri}"\n'
         "```\n"
         "\n"
-        "<<~ ahu #/held>>\n"
+        "<<~ ahu slot=`#/held`>>\n"
         "```toml meta\n"
         f'type = "{held_type}"\n'
         "```\n"
@@ -129,12 +130,12 @@ def hold(text: str, *, uri: str, role: str, held_type: str) -> str:
     return (
         f"{DECLARATION}\n"
         "\n"
-        f'<<^ code="&#x0001;" from="?" -> to="lar:///{uri}">>\n'
-        '<<^ code="&#x0002;">>\n'
+        f"<<^ code=`&#x0001;` from=`?` to=`lar:///{uri}`>>\n"
+        "<<^ code=`&#x0002;`>>\n"
         "\n"
         f"{body}\n"
         "\n"
-        '<<^ code="&#x0003;">>\n'
+        "<<^ code=`&#x0003;`>>\n"
         "\n"
-        '<<^ code="&#x0004;" -> to="?">>\n'
+        "<<^ code=`&#x0004;` to=`?`>>\n"
     )

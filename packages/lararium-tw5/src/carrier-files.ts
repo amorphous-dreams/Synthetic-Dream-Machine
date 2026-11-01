@@ -52,14 +52,13 @@ export const SUBMODULES: readonly string[] = [
 
 /**
  * Frozen specimens: fixtures that stand in an OLDER carrier form on purpose. Each pins a grammar
- * version for its own reader (the tree-sitter grammar's specimens, the sensorium testbeds), so its
- * older form marks it frozen, never a straggler (working-procedures, "a `git ls-files '*.mem'` sweep
+ * version for its own reader (the tree-sitter grammar's specimens), so its older form marks it
+ * frozen, never a straggler (working-procedures, "a `git ls-files '*.mem'` sweep
  * reaches frozen fixtures"). They still declare, so a declaration-only finder enrolled them and every
  * per-carrier law read their older form as drift. A grammar cut leaves them as they stand.
  */
 export const FROZEN_SPECIMENS: readonly string[] = [
   "packages/tree-sitter-memetic-wikitext/fixtures/specimens",
-  "packages/lararium-sensorium/scripts/fixtures",
 ];
 
 /** How a file says it carries: a doctype line, or its `type`. */
